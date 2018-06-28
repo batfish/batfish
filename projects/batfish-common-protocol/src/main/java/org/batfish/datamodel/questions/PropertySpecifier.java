@@ -53,7 +53,7 @@ public abstract class PropertySpecifier {
     String queryWithStars = ".*" + (finalQuery.isEmpty() ? "" : finalQuery + ".*");
     Pattern queryPattern = safeGetPattern(queryWithStars);
 
-    /**
+    /*
      * if queryWithStars is not a valid Pattern, finalQuery must be a funky string that will not
      * match anything as string.contains or regex.matches; so we skip formalities altogether
      */

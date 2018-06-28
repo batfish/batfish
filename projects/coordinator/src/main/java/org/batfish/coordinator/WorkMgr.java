@@ -531,7 +531,7 @@ public class WorkMgr extends AbstractCoordinator {
       }
     }
 
-    /** Delete questionsToDelete and add questionsToAdd */
+    /* Delete questionsToDelete and add questionsToAdd */
     Path questionsDir = aDir.resolve(BfConsts.RELPATH_QUESTIONS_DIR);
     for (String qName : questionsToDelete) {
       CommonUtil.deleteDirectory(questionsDir.resolve(qName));
@@ -870,7 +870,7 @@ public class WorkMgr extends AbstractCoordinator {
   /**
    * Returns the latest testrig in the container.
    *
-   * @returns An {@link Optional} object with the latest testrig or empty if no testrigs exist
+   * @return An {@link Optional} object with the latest testrig or empty if no testrigs exist
    */
   public Optional<String> getLatestTestrig(String container) {
     Function<String, Instant> toTestrigTimestamp =
@@ -887,7 +887,7 @@ public class WorkMgr extends AbstractCoordinator {
    *
    * @param container The container for which we should fetch the node roles
    * @return The node roles
-   * @throws {@link IOException} The contents of node roles file cannot be converted to {@link
+   * @throws IOException The contents of node roles file cannot be converted to {@link
    *     NodeRolesData}
    */
   public NodeRolesData getNodeRolesData(String container) throws IOException {
@@ -1020,7 +1020,7 @@ public class WorkMgr extends AbstractCoordinator {
   public Path getTestrigObject(String containerName, String testrigName, String objectName) {
     Path testrigDir = getdirTestrig(containerName, testrigName);
     Path file = testrigDir.resolve(objectName);
-    /**
+    /*
      * Check if we got an object name outside of the testrig folder, perhaps because of ".." in the
      * name; disallow it
      */
@@ -1346,7 +1346,7 @@ public class WorkMgr extends AbstractCoordinator {
     Path analysisDir = getdirContainerAnalysis(containerName, analysisName);
     Path questionsDir = analysisDir.resolve(BfConsts.RELPATH_QUESTIONS_DIR);
     if (!Files.exists(questionsDir)) {
-      /** TODO: Something better than returning empty set? */
+      /* TODO: Something better than returning empty set? */
       return new TreeSet<>();
     }
     SortedSet<Path> subdirectories = CommonUtil.getSubdirectories(questionsDir);
@@ -1559,7 +1559,7 @@ public class WorkMgr extends AbstractCoordinator {
     Path zipFile = CommonUtil.createTempFile("coord_up_env_", ".zip");
     CommonUtil.writeStreamToFile(fileStream, zipFile);
 
-    /** First copy base environment if it is set */
+    /* First copy base environment if it is set */
     if (baseEnvName.length() > 0) {
       Path baseEnvPath = environmentsDir.resolve(Paths.get(baseEnvName, BfConsts.RELPATH_ENV_DIR));
       if (!Files.exists(baseEnvPath)) {

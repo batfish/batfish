@@ -21,7 +21,7 @@ public class NetworkSlice {
   /**
    * Indicates whether this slice is for the catch-all destination equivalence class.
    *
-   * @see DestinationClasses#addCatchAllCase(List, List, Map)
+   * @see DestinationClasses#addCatchAllCase
    */
   private boolean _isDefaultCase;
 

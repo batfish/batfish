@@ -194,7 +194,7 @@ public class Row implements Comparable<Row> {
    *
    * @param columnName The column to fetch
    * @return The {@link JsonNode} object that represents the stored object
-   * @throws {@link NoSuchElementException} if this column does not exist
+   * @throws NoSuchElementException if this column does not exist
    */
   public JsonNode get(String columnName) {
     if (!_data.has(columnName)) {
