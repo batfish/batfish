@@ -605,9 +605,7 @@ public class Client extends AbstractClient implements IClient {
     }
     _logger.debug("Uploaded question. Answering now.\n");
     // delete the temporary params file
-    if (questionFile != null) {
-      CommonUtil.deleteIfExists(questionFile);
-    }
+    CommonUtil.deleteIfExists(questionFile);
     // answer the question
     WorkItem wItemAs =
         WorkItemBuilder.getWorkItemAnswerQuestion(

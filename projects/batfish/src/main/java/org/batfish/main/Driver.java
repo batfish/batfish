@@ -245,7 +245,6 @@ public class Driver {
     return false;
   }
 
-  @Nullable
   public static synchronized Task killTask(String taskId) {
     Task task = _taskLog.get(taskId);
     if (_mainSettings.getParentPid() <= 0) {

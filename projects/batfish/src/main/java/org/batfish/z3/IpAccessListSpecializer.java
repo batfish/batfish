@@ -72,10 +72,7 @@ public class IpAccessListSpecializer implements GenericAclLineMatchExprVisitor<A
      * Currently, specialization is based on srcIp and dstIp only. We can specialize only
      * if we have at least one IpSpace specializer.
      */
-    _canSpecialize =
-        _dstIpSpaceSpecializer != null
-            || _srcIpSpaceSpecializer != null
-            || _srcOrDstIpSpaceSpecializer != null;
+    _canSpecialize = _dstIpSpaceSpecializer != null || _srcIpSpaceSpecializer != null;
   }
 
   public IpAccessList specialize(IpAccessList ipAccessList) {

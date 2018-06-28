@@ -688,7 +688,7 @@ class EncoderSlice {
               Interface i = e.getStart();
               Prefix p = i.getAddress().getPrefix();
 
-              boolean doModel = !(proto.isConnected() && p != null && !relevantPrefix(p));
+              boolean doModel = !(proto.isConnected() && !relevantPrefix(p));
               // PolicyQuotient: Don't model the connected interfaces that aren't relevant
               if (doModel) {
                 if (notNeeded) {
