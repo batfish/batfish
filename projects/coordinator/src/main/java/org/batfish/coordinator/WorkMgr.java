@@ -5,7 +5,6 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectWriter;
-import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
@@ -74,6 +73,7 @@ import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.AutocompleteSuggestion;
 import org.batfish.datamodel.answers.AutocompleteSuggestion.CompletionType;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
+import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.pojo.Topology;
 import org.batfish.datamodel.questions.InterfacePropertySpecifier;
 import org.batfish.datamodel.questions.NodePropertySpecifier;
@@ -305,8 +305,7 @@ public class WorkMgr extends AbstractCoordinator {
       case NODE:
         {
           checkArgument(
-              !Strings.isNullOrEmpty(testrig),
-              "Testrig name should be supplied for 'NODE' autoCompletion");
+              !isNullOrEmpty(testrig), "Testrig name should be supplied for 'NODE' autoCompletion");
           List<AutocompleteSuggestion> suggestions =
               NodesSpecifier.autoComplete(
                   query, getNodes(container, testrig), getNodeRolesData(container));
@@ -916,7 +915,7 @@ public class WorkMgr extends AbstractCoordinator {
         getdirTestrig(container, testrig).resolve(BfConsts.RELPATH_TESTRIG_POJO_TOPOLOGY_PATH);
     Topology topology =
         BatfishObjectMapper.mapper().readValue(pojoTopologyPath.toFile(), Topology.class);
-    return topology.getNodes().stream().map(node -> node.getName()).collect(Collectors.toSet());
+    return topology.getNodes().stream().map(Node::getName).collect(Collectors.toSet());
   }
 
   public JSONObject getParsingResults(String containerName, String testrigName)
@@ -1340,11 +1339,8 @@ public class WorkMgr extends AbstractCoordinator {
       return true;
     }
     boolean suggested = AnalysisMetadataMgr.getAnalysisSuggestedOrFalse(containerName, aName);
-    if (analysisType == AnalysisType.SUGGESTED && suggested
-        || analysisType == AnalysisType.USER && !suggested) {
-      return true;
-    }
-    return false;
+    return (analysisType == AnalysisType.SUGGESTED && suggested
+        || analysisType == AnalysisType.USER && !suggested);
   }
 
   public SortedSet<String> listAnalysisQuestions(String containerName, String analysisName) {
@@ -1495,13 +1491,7 @@ public class WorkMgr extends AbstractCoordinator {
     }
     // as an optimization trigger AssignWork to see if we can schedule this (or another) work
     if (success) {
-      Thread thread =
-          new Thread() {
-            @Override
-            public void run() {
-              assignWork();
-            }
-          };
+      Thread thread = new Thread(this::assignWork);
       thread.start();
     }
     return success;

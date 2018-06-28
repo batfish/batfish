@@ -37,12 +37,35 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class IsisTest {
 
-  @Test
-  public void testRoutes() {
+  private static final String R1 = "r1";
+  private static final String R2 = "r2";
+  private static final String R3 = "r3";
+  private static final String R4 = "r4";
+  private static final String R5 = "r5";
+
+  private static void assertInterAreaRoute(
+      SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routesByNode,
+      String hostname,
+      Prefix prefix,
+      long expectedCost) {
+    assertThat(routesByNode, hasKey(hostname));
+    SortedMap<String, SortedSet<AbstractRoute>> routesByVrf = routesByNode.get(hostname);
+    assertThat(routesByVrf, hasKey(Configuration.DEFAULT_VRF_NAME));
+    SortedSet<AbstractRoute> routes = routesByVrf.get(Configuration.DEFAULT_VRF_NAME);
+    assertThat(routes, hasItem(hasPrefix(prefix)));
+    AbstractRoute route =
+        routes.stream().filter(r -> r.getNetwork().equals(prefix)).findAny().get();
+    assertThat(route, hasMetric(expectedCost));
+    assertThat(route, hasProtocol(ISIS_L1));
+    assertThat(route, isIsisRouteThat(hasDown()));
+  }
+
+  private IncrementalDataPlane computeDataPlane() {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
@@ -57,8 +80,7 @@ public class IsisTest {
     IsisLevelSettings levelSettings = IsisLevelSettings.builder().build();
 
     // r1
-    String r1Name = "r1";
-    Configuration r1 = cb.setHostname(r1Name).build();
+    Configuration r1 = cb.setHostname(R1).build();
     Vrf v1 = vb.setOwner(r1).build();
     ib.setOwner(r1).setVrf(v1);
     iib.setLevel1(null);
@@ -81,8 +103,7 @@ public class IsisTest {
         .build();
 
     // r2
-    String r2Name = "r2";
-    Configuration r2 = cb.setHostname(r2Name).build();
+    Configuration r2 = cb.setHostname(R2).build();
     Vrf v2 = vb.setOwner(r2).build();
     ib.setOwner(r2).setVrf(v2);
     iib.setLevel1(null);
@@ -105,8 +126,7 @@ public class IsisTest {
         .build();
 
     // r3
-    String r3Name = "r3";
-    Configuration r3 = cb.setHostname(r3Name).build();
+    Configuration r3 = cb.setHostname(R3).build();
     Vrf v3 = vb.setOwner(r3).build();
     ib.setOwner(r3).setVrf(v3);
     ipb.setVrf(v3)
@@ -136,8 +156,7 @@ public class IsisTest {
         .build();
 
     // r4
-    String r4Name = "r4";
-    Configuration r4 = cb.setHostname(r4Name).build();
+    Configuration r4 = cb.setHostname(R4).build();
     Vrf v4 = vb.setOwner(r4).build();
     ib.setOwner(r4).setVrf(v4);
     iib.setLevel2(null);
@@ -160,8 +179,7 @@ public class IsisTest {
         .build();
 
     // r5
-    String r5Name = "r5";
-    Configuration r5 = cb.setHostname(r5Name).build();
+    Configuration r5 = cb.setHostname(R5).build();
     Vrf v5 = vb.setOwner(r5).build();
     ib.setOwner(r5).setVrf(v5);
     iib.setLevel2(null);
@@ -205,69 +223,57 @@ public class IsisTest {
         (IncrementalDataPlane)
             engine.computeDataPlane(false, configurations, topology, Collections.emptySet())
                 ._dataPlane;
+    return dp;
+  }
+
+  @Test
+  public void testL1AndL2Routes() {
+    IncrementalDataPlane dp = computeDataPlane();
     SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
         IncrementalBdpEngine.getRoutes(dp);
 
     // r1
-    assertNoRoute(routes, r1Name, Prefix.ZERO);
-    assertRoute(routes, ISIS_L2, r1Name, Prefix.parse("10.2.2.2/32"), 10L);
-    assertRoute(routes, ISIS_L2, r1Name, Prefix.parse("10.2.3.0/24"), 20L);
-    assertRoute(routes, ISIS_L2, r1Name, Prefix.parse("10.3.3.3/32"), 10L);
-    assertRoute(routes, ISIS_L2, r1Name, Prefix.parse("10.3.4.0/24"), 20L);
-    assertRoute(routes, ISIS_L2, r1Name, Prefix.parse("10.3.5.0/24"), 20L);
-    assertRoute(routes, ISIS_L2, r1Name, Prefix.parse("10.4.4.4/32"), 20L);
-    assertRoute(routes, ISIS_L2, r1Name, Prefix.parse("10.4.5.0/24"), 30L);
-    assertRoute(routes, ISIS_L2, r1Name, Prefix.parse("10.5.5.5/32"), 20L);
-    /* TODO: https://github.com/batfish/batfish/issues/1703 */
-    // assertRoute(routes, ISIS_L2, r1Name, Prefix.parse("10.3.3.100/32"), 10L);
+    assertNoRoute(routes, R1, Prefix.ZERO);
+    assertRoute(routes, ISIS_L2, R1, Prefix.parse("10.2.2.2/32"), 10L);
+    assertRoute(routes, ISIS_L2, R1, Prefix.parse("10.2.3.0/24"), 20L);
+    assertRoute(routes, ISIS_L2, R1, Prefix.parse("10.3.3.3/32"), 10L);
+    assertRoute(routes, ISIS_L2, R1, Prefix.parse("10.3.4.0/24"), 20L);
+    assertRoute(routes, ISIS_L2, R1, Prefix.parse("10.3.5.0/24"), 20L);
+    assertRoute(routes, ISIS_L2, R1, Prefix.parse("10.4.4.4/32"), 20L);
+    assertRoute(routes, ISIS_L2, R1, Prefix.parse("10.4.5.0/24"), 30L);
+    assertRoute(routes, ISIS_L2, R1, Prefix.parse("10.5.5.5/32"), 20L);
 
     // r2
-    assertNoRoute(routes, r2Name, Prefix.ZERO);
-    assertRoute(routes, ISIS_L2, r2Name, Prefix.parse("10.1.1.1/32"), 10L);
-    assertRoute(routes, ISIS_L2, r2Name, Prefix.parse("10.1.3.0/24"), 20L);
-    assertRoute(routes, ISIS_L2, r2Name, Prefix.parse("10.3.3.3/32"), 10L);
-    assertRoute(routes, ISIS_L2, r2Name, Prefix.parse("10.3.4.0/24"), 20L);
-    assertRoute(routes, ISIS_L2, r2Name, Prefix.parse("10.3.5.0/24"), 20L);
-    assertRoute(routes, ISIS_L2, r2Name, Prefix.parse("10.4.4.4/32"), 20L);
-    assertRoute(routes, ISIS_L2, r2Name, Prefix.parse("10.4.5.0/24"), 30L);
-    assertRoute(routes, ISIS_L2, r2Name, Prefix.parse("10.5.5.5/32"), 20L);
-    /* TODO: https://github.com/batfish/batfish/issues/1703 */
-    // assertRoute(routes, ISIS_L2, r2Name, Prefix.parse("10.3.3.100/32"), 10L);
+    assertNoRoute(routes, R2, Prefix.ZERO);
+    assertRoute(routes, ISIS_L2, R2, Prefix.parse("10.1.1.1/32"), 10L);
+    assertRoute(routes, ISIS_L2, R2, Prefix.parse("10.1.3.0/24"), 20L);
+    assertRoute(routes, ISIS_L2, R2, Prefix.parse("10.3.3.3/32"), 10L);
+    assertRoute(routes, ISIS_L2, R2, Prefix.parse("10.3.4.0/24"), 20L);
+    assertRoute(routes, ISIS_L2, R2, Prefix.parse("10.3.5.0/24"), 20L);
+    assertRoute(routes, ISIS_L2, R2, Prefix.parse("10.4.4.4/32"), 20L);
+    assertRoute(routes, ISIS_L2, R2, Prefix.parse("10.4.5.0/24"), 30L);
+    assertRoute(routes, ISIS_L2, R2, Prefix.parse("10.5.5.5/32"), 20L);
 
     // r3
-    assertNoRoute(routes, r3Name, Prefix.ZERO);
-    assertRoute(routes, ISIS_L2, r3Name, Prefix.parse("10.1.1.1/32"), 10L);
-    assertRoute(routes, ISIS_L2, r3Name, Prefix.parse("10.1.2.0/24"), 20L);
-    assertRoute(routes, ISIS_L2, r3Name, Prefix.parse("10.2.2.2/32"), 10L);
-    assertRoute(routes, ISIS_L1, r3Name, Prefix.parse("10.4.4.4/32"), 10L);
-    assertRoute(routes, ISIS_L1, r3Name, Prefix.parse("10.4.5.0/24"), 20L);
-    assertRoute(routes, ISIS_L1, r3Name, Prefix.parse("10.5.5.5/32"), 10L);
+    assertNoRoute(routes, R3, Prefix.ZERO);
+    assertRoute(routes, ISIS_L2, R3, Prefix.parse("10.1.1.1/32"), 10L);
+    assertRoute(routes, ISIS_L2, R3, Prefix.parse("10.1.2.0/24"), 20L);
+    assertRoute(routes, ISIS_L2, R3, Prefix.parse("10.2.2.2/32"), 10L);
+    assertRoute(routes, ISIS_L1, R3, Prefix.parse("10.4.4.4/32"), 10L);
+    assertRoute(routes, ISIS_L1, R3, Prefix.parse("10.4.5.0/24"), 20L);
+    assertRoute(routes, ISIS_L1, R3, Prefix.parse("10.5.5.5/32"), 10L);
 
     // r4
-    assertRoute(routes, ISIS_L1, r4Name, Prefix.ZERO, 10L);
-    assertRoute(routes, ISIS_L1, r4Name, Prefix.parse("10.3.3.3/32"), 10L);
-    assertRoute(routes, ISIS_L1, r4Name, Prefix.parse("10.3.5.0/24"), 20L);
-    assertRoute(routes, ISIS_L1, r4Name, Prefix.parse("10.5.5.5/32"), 10L);
-    /* TODO: https://github.com/batfish/batfish/issues/1703 */
-    // assertInterAreaRoute(routes, r4Name, Prefix.parse("10.1.1.1/32"), 148L);
-    // assertInterAreaRoute(routes, r4Name, Prefix.parse("10.1.2.0/24"), 158L);
-    // assertInterAreaRoute(routes, r4Name, Prefix.parse("10.1.3.0/24"), 148L);
-    // assertInterAreaRoute(routes, r4Name, Prefix.parse("10.2.2.2/32"), 148L);
-    // assertInterAreaRoute(routes, r4Name, Prefix.parse("10.2.3.0/24"), 148L);
-    // assertRoute(routes, ISIS_L1, r4Name, Prefix.parse("10.3.3.100/32"), 10L);
+    assertRoute(routes, ISIS_L1, R4, Prefix.ZERO, 10L);
+    assertRoute(routes, ISIS_L1, R4, Prefix.parse("10.3.3.3/32"), 10L);
+    assertRoute(routes, ISIS_L1, R4, Prefix.parse("10.3.5.0/24"), 20L);
+    assertRoute(routes, ISIS_L1, R4, Prefix.parse("10.5.5.5/32"), 10L);
 
     // r5
-    assertRoute(routes, ISIS_L1, r5Name, Prefix.ZERO, 10L);
-    assertRoute(routes, ISIS_L1, r5Name, Prefix.parse("10.3.3.3/32"), 10L);
-    assertRoute(routes, ISIS_L1, r5Name, Prefix.parse("10.3.4.0/24"), 20L);
-    assertRoute(routes, ISIS_L1, r5Name, Prefix.parse("10.4.4.4/32"), 10L);
-    /* TODO: https://github.com/batfish/batfish/issues/1703 */
-    // assertInterAreaRoute(routes, r5Name, Prefix.parse("10.1.1.1/32"), 148L);
-    // assertInterAreaRoute(routes, r5Name, Prefix.parse("10.1.2.0/24"), 158L);
-    // assertInterAreaRoute(routes, r5Name, Prefix.parse("10.1.3.0/24"), 148L);
-    // assertInterAreaRoute(routes, r5Name, Prefix.parse("10.2.2.2/32"), 148L);
-    // assertInterAreaRoute(routes, r5Name, Prefix.parse("10.2.3.0/24"), 148L);
-    // assertRoute(routes, ISIS_L1, r5Name, Prefix.parse("10.3.3.100/32"), 10L);
+    assertRoute(routes, ISIS_L1, R5, Prefix.ZERO, 10L);
+    assertRoute(routes, ISIS_L1, R5, Prefix.parse("10.3.3.3/32"), 10L);
+    assertRoute(routes, ISIS_L1, R5, Prefix.parse("10.3.4.0/24"), 20L);
+    assertRoute(routes, ISIS_L1, R5, Prefix.parse("10.4.4.4/32"), 10L);
 
     // Assert r1/r2 have empty l1 rib
     assertThat(
@@ -294,20 +300,36 @@ public class IsisTest {
         Sets.intersection(r3Vr._isisL1Rib.getRoutes(), r3Vr._isisL2Rib.getRoutes()), empty());
   }
 
-  private static void assertInterAreaRoute(
-      SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routesByNode,
-      String hostname,
-      Prefix prefix,
-      long expectedCost) {
-    assertThat(routesByNode, hasKey(hostname));
-    SortedMap<String, SortedSet<AbstractRoute>> routesByVrf = routesByNode.get(hostname);
-    assertThat(routesByVrf, hasKey(Configuration.DEFAULT_VRF_NAME));
-    SortedSet<AbstractRoute> routes = routesByVrf.get(Configuration.DEFAULT_VRF_NAME);
-    assertThat(routes, hasItem(hasPrefix(prefix)));
-    AbstractRoute route =
-        routes.stream().filter(r -> r.getNetwork().equals(prefix)).findAny().get();
-    assertThat(route, hasMetric(expectedCost));
-    assertThat(route, hasProtocol(ISIS_L1));
-    assertThat(route, isIsisRouteThat(hasDown()));
+  @Ignore("https://github.com/batfish/batfish/issues/1703")
+  @Test
+  public void testLeakedRoutes() {
+    IncrementalDataPlane dp = computeDataPlane();
+    SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
+        IncrementalBdpEngine.getRoutes(dp);
+
+    assertInterAreaRoute(routes, R4, Prefix.parse("10.1.1.1/32"), 148L);
+    assertInterAreaRoute(routes, R4, Prefix.parse("10.1.2.0/24"), 158L);
+    assertInterAreaRoute(routes, R4, Prefix.parse("10.1.3.0/24"), 148L);
+    assertInterAreaRoute(routes, R4, Prefix.parse("10.2.2.2/32"), 148L);
+    assertInterAreaRoute(routes, R4, Prefix.parse("10.2.3.0/24"), 148L);
+
+    assertInterAreaRoute(routes, R5, Prefix.parse("10.1.1.1/32"), 148L);
+    assertInterAreaRoute(routes, R5, Prefix.parse("10.1.2.0/24"), 158L);
+    assertInterAreaRoute(routes, R5, Prefix.parse("10.1.3.0/24"), 148L);
+    assertInterAreaRoute(routes, R5, Prefix.parse("10.2.2.2/32"), 148L);
+    assertInterAreaRoute(routes, R5, Prefix.parse("10.2.3.0/24"), 148L);
+  }
+
+  @Ignore("https://github.com/batfish/batfish/issues/1703")
+  @Test
+  public void testRedistributedRoutes() {
+    IncrementalDataPlane dp = computeDataPlane();
+    SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
+        IncrementalBdpEngine.getRoutes(dp);
+
+    assertRoute(routes, ISIS_L2, R1, Prefix.parse("10.3.3.100/32"), 10L);
+    assertRoute(routes, ISIS_L2, R2, Prefix.parse("10.3.3.100/32"), 10L);
+    assertRoute(routes, ISIS_L1, R4, Prefix.parse("10.3.3.100/32"), 10L);
+    assertRoute(routes, ISIS_L1, R5, Prefix.parse("10.3.3.100/32"), 10L);
   }
 }

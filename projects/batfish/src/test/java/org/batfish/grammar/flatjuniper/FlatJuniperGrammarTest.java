@@ -1104,7 +1104,7 @@ public class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testNestedConfigLineMap() throws IOException {
+  public void testNestedConfigLineMap() {
     String hostname = "nested-config";
     Flattener flattener =
         Batfish.flatten(

@@ -284,7 +284,7 @@ public final class AclTracer extends Evaluator {
       return false;
     }
     if (!headerSpace.getTcpFlags().isEmpty()
-        && !headerSpace.getTcpFlags().stream().anyMatch(tcpFlags -> tcpFlags.match(_flow))) {
+        && headerSpace.getTcpFlags().stream().noneMatch(tcpFlags -> tcpFlags.match(_flow))) {
       return false;
     }
     return true;

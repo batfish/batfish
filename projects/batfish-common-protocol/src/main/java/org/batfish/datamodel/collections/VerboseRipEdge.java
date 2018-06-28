@@ -3,6 +3,7 @@ package org.batfish.datamodel.collections;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
+import java.util.Comparator;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.RipNeighbor;
 
@@ -46,16 +47,10 @@ public final class VerboseRipEdge implements Serializable, Comparable<VerboseRip
   }
 
   @Override
-  public int compareTo(VerboseRipEdge o) {
-    int cmp = _edgeSummary.compareTo(o._edgeSummary);
-    if (cmp != 0) {
-      return cmp;
-    }
-    cmp = _session1.compareTo(o._session1);
-    if (cmp != 0) {
-      return cmp;
-    }
-    cmp = _session2.compareTo(o._session2);
-    return cmp;
+  public int compareTo(@Nonnull VerboseRipEdge o) {
+    return Comparator.comparing(VerboseRipEdge::getEdgeSummary)
+        .thenComparing(edge -> edge.getSession1().getIpEdge())
+        .thenComparing(edge -> edge.getSession2().getIpEdge())
+        .compare(this, o);
   }
 }

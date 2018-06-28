@@ -292,7 +292,7 @@ public class Hierarchy {
         Set_line_tailContext setLineTail = new Set_line_tailContext(setLine, -1);
         TerminalNode newline =
             new TerminalNodeImpl(new CommonToken(FlatJuniperLexer.NEWLINE, "\n"));
-        setLine.children = new ArrayList<ParseTree>();
+        setLine.children = new ArrayList<>();
         setLine.children.add(set);
         setLine.children.add(setLineTail);
         setLine.children.add(newline);
@@ -307,7 +307,7 @@ public class Hierarchy {
         StatementContext newStatement = newConfiguration.set_line(0).set_line_tail().statement();
         newStatement.parent = setLineTail;
 
-        setLineTail.children = new ArrayList<ParseTree>();
+        setLineTail.children = new ArrayList<>();
         if (!clusterGroup || !IsHostnameStatement.isHostnameStatement(newStatement)) {
           setLineTail.children.add(newStatement);
           lines.add(setLine);
@@ -490,7 +490,7 @@ public class Hierarchy {
       TerminalNode set = new TerminalNodeImpl(new CommonToken(FlatJuniperLexer.SET, "set"));
       Set_line_tailContext setLineTail = new Set_line_tailContext(setLine, -1);
       TerminalNode newline = new TerminalNodeImpl(new CommonToken(FlatJuniperLexer.NEWLINE, "\n"));
-      setLine.children = new ArrayList<ParseTree>();
+      setLine.children = new ArrayList<>();
       setLine.children.add(set);
       setLine.children.add(setLineTail);
       setLine.children.add(newline);
@@ -501,7 +501,7 @@ public class Hierarchy {
       StatementContext newStatement = newConfiguration.set_line(0).set_line_tail().statement();
       newStatement.parent = setLineTail;
 
-      setLineTail.children = new ArrayList<ParseTree>();
+      setLineTail.children = new ArrayList<>();
       setLineTail.children.add(newStatement);
 
       return setLine;

@@ -439,10 +439,10 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
       _nodeRegex = nodeRegex == null ? NodesSpecifier.ALL : nodeRegex;
       _prefixSpace = prefixSpace == null ? new PrefixSpace() : prefixSpace;
       _protocols = protocols == null ? new TreeSet<>() : protocols;
-      _againstEnvironment = againstEnvironment != null && againstEnvironment.booleanValue();
-      _fromEnvironment = fromEnvironment != null && fromEnvironment.booleanValue();
-      _useCompression = useCompression != null && useCompression.booleanValue();
-      _detail = detail != null && detail.booleanValue();
+      _againstEnvironment = againstEnvironment != null && againstEnvironment;
+      _fromEnvironment = fromEnvironment != null && fromEnvironment;
+      _useCompression = useCompression != null && useCompression;
+      _detail = detail != null && detail;
 
       // sanity check
       if (_againstEnvironment && _fromEnvironment) {

@@ -14,10 +14,10 @@ import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.batfish.specifier.ConstantIpSpaceSpecifier;
 import org.batfish.specifier.ConstantUniverseIpSpaceSpecifierFactory;
 import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
-import org.batfish.specifier.NameRegexInterfaceLinkLocationSpecifier;
 import org.batfish.specifier.NameRegexNodeSpecifier;
 import org.batfish.specifier.NameRegexNodeSpecifierFactory;
 import org.batfish.specifier.NoNodesNodeSpecifier;
+import org.batfish.specifier.NodeNameRegexInterfaceLinkLocationSpecifier;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -108,7 +108,7 @@ public class SpecifiersReachabilityQuestionTest {
     question.setSourceLocationSpecifierInput("foo");
     assertThat(
         question.getSourceLocationSpecifier(),
-        equalTo(new NameRegexInterfaceLinkLocationSpecifier(Pattern.compile("foo"))));
+        equalTo(new NodeNameRegexInterfaceLinkLocationSpecifier(Pattern.compile("foo"))));
   }
 
   @Test

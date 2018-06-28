@@ -1,0 +1,4 @@
+set deviceconfig system hostname interface-reference
+set network virtual-router default interface [ ethernet1/1 ethernet1/undefined ]
+set network interface ethernet ethernet1/1 layer3 ip 1.1.1.1/24
+set network interface ethernet ethernet1/unused layer3 ip 1.1.2.1/24

@@ -99,7 +99,7 @@ public class NodProgram {
     _queries.forEach(
         query -> sb.append(String.format("(query %s)\n", query.getFuncDecl().getName())));
 
-    String[] variablesAsNames = _context.getVariableNames().stream().toArray(String[]::new);
+    String[] variablesAsNames = _context.getVariableNames().toArray(new String[0]);
 
     String[] variablesAsDebruijnIndices =
         IntStream.range(0, variablesAsNames.length)

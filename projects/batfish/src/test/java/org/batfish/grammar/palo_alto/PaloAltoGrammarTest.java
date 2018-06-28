@@ -8,6 +8,9 @@ import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructureWithDefinitionLines;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDescription;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
@@ -35,11 +38,14 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.grammar.VendorConfigurationFormatDetector;
 import org.batfish.grammar.flattener.Flattener;
 import org.batfish.grammar.flattener.FlattenerLineMap;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
+import org.batfish.representation.palo_alto.PaloAltoStructureType;
+import org.batfish.representation.palo_alto.PaloAltoStructureUsage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -135,6 +141,28 @@ public class PaloAltoGrammarTest {
   }
 
   @Test
+  public void testInterfaceReference() throws IOException {
+    String hostname = "interface-reference";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    // Confirm reference counts are correct for both used and unused structures
+    assertThat(ccae, hasNumReferrers(hostname, PaloAltoStructureType.INTERFACE, "ethernet1/1", 1));
+    assertThat(
+        ccae, hasNumReferrers(hostname, PaloAltoStructureType.INTERFACE, "ethernet1/unused", 0));
+
+    // Confirm undefined reference is detected
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            hostname,
+            PaloAltoStructureType.INTERFACE,
+            "ethernet1/undefined",
+            PaloAltoStructureUsage.VIRTUAL_ROUTER_INTERFACE));
+  }
+
+  @Test
   public void testLogSettingsSyslog() throws IOException {
     String hostname = "log-settings-syslog";
     Configuration c = parseConfig(hostname);
@@ -181,6 +209,24 @@ public class PaloAltoGrammarTest {
     assertThat(lineMap.getOriginalLine(2, setLineText.indexOf("system")), equalTo(2));
     assertThat(lineMap.getOriginalLine(2, setLineText.indexOf("hostname")), equalTo(3));
     assertThat(lineMap.getOriginalLine(2, setLineText.indexOf("nested-config")), equalTo(3));
+  }
+
+  @Test
+  public void testNestedConfigStructureDef() throws IOException {
+    String hostname = "nested-config-structure-def";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    // Confirm defined structures in nested config show up with original definition line numbers
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(
+            hostname, PaloAltoStructureType.INTERFACE, "ethernet1/1", contains(8, 9, 10, 11, 12)));
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(
+            hostname, PaloAltoStructureType.INTERFACE, "ethernet1/2", contains(8, 16, 17, 18, 19)));
   }
 
   @Test

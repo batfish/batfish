@@ -3,8 +3,8 @@ package org.batfish.datamodel.matchers;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.EncryptionAlgorithm;
-import org.batfish.datamodel.IkeAuthenticationAlgorithm;
 import org.batfish.datamodel.IkeAuthenticationMethod;
+import org.batfish.datamodel.IkeHashingAlgorithm;
 import org.batfish.datamodel.IkeProposal;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
@@ -12,13 +12,13 @@ import org.hamcrest.Matcher;
 final class IkeProposalMatchersImpl {
 
   static final class HasAuthenticationAlgorithm
-      extends FeatureMatcher<IkeProposal, IkeAuthenticationAlgorithm> {
-    HasAuthenticationAlgorithm(@Nonnull Matcher<? super IkeAuthenticationAlgorithm> subMatcher) {
+      extends FeatureMatcher<IkeProposal, IkeHashingAlgorithm> {
+    HasAuthenticationAlgorithm(@Nonnull Matcher<? super IkeHashingAlgorithm> subMatcher) {
       super(subMatcher, "An IKE Proposal with Auth algo:", "AuthenticationAlgorithm");
     }
 
     @Override
-    protected IkeAuthenticationAlgorithm featureValueOf(IkeProposal actual) {
+    protected IkeHashingAlgorithm featureValueOf(IkeProposal actual) {
       return actual.getAuthenticationAlgorithm();
     }
   }

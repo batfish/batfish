@@ -4,8 +4,8 @@ import static org.hamcrest.Matchers.equalTo;
 
 import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.EncryptionAlgorithm;
-import org.batfish.datamodel.IkeAuthenticationAlgorithm;
 import org.batfish.datamodel.IkeAuthenticationMethod;
+import org.batfish.datamodel.IkeHashingAlgorithm;
 import org.batfish.datamodel.matchers.IkeProposalMatchersImpl.HasAuthenticationAlgorithm;
 import org.batfish.datamodel.matchers.IkeProposalMatchersImpl.HasAuthenticationMethod;
 import org.batfish.datamodel.matchers.IkeProposalMatchersImpl.HasDiffieHellmanGroup;
@@ -28,8 +28,8 @@ public final class IkeProposalMatchers {
    * matches specified {@code authenticationAlgorithm}
    */
   public static HasAuthenticationAlgorithm hasAuthenticationAlgorithm(
-      IkeAuthenticationAlgorithm ikeAuthenticationAlgorithm) {
-    return new HasAuthenticationAlgorithm(equalTo(ikeAuthenticationAlgorithm));
+      IkeHashingAlgorithm ikeHashingAlgorithm) {
+    return new HasAuthenticationAlgorithm(equalTo(ikeHashingAlgorithm));
   }
 
   /**

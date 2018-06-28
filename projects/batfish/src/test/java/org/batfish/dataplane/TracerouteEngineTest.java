@@ -197,7 +197,7 @@ public class TracerouteEngineTest {
    * if and only if iface1 and iface2 are in the same VRF.
    */
   @Test
-  public void testArpVrf() throws IOException {
+  public void testArpVrf() {
     // Construct interfaces
     NetworkFactory nf = new NetworkFactory();
     Interface.Builder ib = nf.interfaceBuilder();

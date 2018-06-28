@@ -90,6 +90,11 @@ public class OspfNeighbor extends ComparableStructure<IpLink> {
   }
 
   @JsonIgnore
+  public IpLink getIpLink() {
+    return _key;
+  }
+
+  @JsonIgnore
   public Ip getLocalIp() {
     return _key.getIp1();
   }

@@ -1217,7 +1217,7 @@
                     "multipathIbgp" : true,
                     "neighbors" : {
                       "2.1.2.1/32" : {
-                        "name" : "2.1.2.1/32",
+                        "remotePrefix" : "2.1.2.1/32",
                         "additionalPathsReceive" : true,
                         "additionalPathsSelectAll" : true,
                         "additionalPathsSend" : true,
@@ -1236,13 +1236,12 @@
                         "localAs" : 2,
                         "localIp" : "2.1.1.1",
                         "remoteAs" : 2,
-                        "remotePrefix" : "2.1.2.1/32",
                         "routeReflectorClient" : false,
                         "sendCommunity" : true,
                         "vrf" : "default"
                       },
                       "2.1.2.2/32" : {
-                        "name" : "2.1.2.2/32",
+                        "remotePrefix" : "2.1.2.2/32",
                         "additionalPathsReceive" : true,
                         "additionalPathsSelectAll" : true,
                         "additionalPathsSend" : true,
@@ -1261,13 +1260,12 @@
                         "localAs" : 2,
                         "localIp" : "2.1.1.1",
                         "remoteAs" : 2,
-                        "remotePrefix" : "2.1.2.2/32",
                         "routeReflectorClient" : false,
                         "sendCommunity" : true,
                         "vrf" : "default"
                       },
                       "10.12.11.1/32" : {
-                        "name" : "10.12.11.1/32",
+                        "remotePrefix" : "10.12.11.1/32",
                         "additionalPathsReceive" : true,
                         "additionalPathsSelectAll" : true,
                         "additionalPathsSend" : true,
@@ -1293,7 +1291,6 @@
                         "localAs" : 2,
                         "localIp" : "10.12.11.2",
                         "remoteAs" : 1,
-                        "remotePrefix" : "10.12.11.1/32",
                         "routeReflectorClient" : false,
                         "sendCommunity" : true,
                         "vrf" : "default"

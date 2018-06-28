@@ -369,7 +369,7 @@ public class WorkQueueMgr {
   }
 
   // when assignment attempt ends in error, we do not try to reassign
-  public synchronized void markAssignmentError(QueuedWork work) throws Exception {
+  public synchronized void markAssignmentError(QueuedWork work) {
     _queueIncompleteWork.delete(work);
     _queueCompletedWork.enque(work);
     work.setStatus(WorkStatusCode.ASSIGNMENTERROR);
@@ -578,7 +578,7 @@ public class WorkQueueMgr {
     return _queueIncompleteWork.enque(work);
   }
 
-  private boolean queueBlockedWork(QueuedWork work, QueuedWork blocker) throws Exception {
+  private boolean queueBlockedWork(QueuedWork work, QueuedWork blocker) {
     _blockingWork.add(blocker.getId());
     work.setStatus(WorkStatusCode.BLOCKED);
     return _queueIncompleteWork.enque(work);

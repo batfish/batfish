@@ -91,7 +91,7 @@ public abstract class PropertySpecifier {
           ((Map<?, ?>) outputPropertyValue)
               .keySet()
               .stream()
-              .map(k -> k.toString())
+              .map(Object::toString)
               .collect(Collectors.toSet());
     }
 

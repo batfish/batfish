@@ -61,6 +61,7 @@ java_library(
 
 junit_tests(
     name = "client_tests",
+    size = "small",
     srcs = glob([
         "src/test/java/**/*Test.java",
     ]),
@@ -77,5 +78,4 @@ junit_tests(
         "@jackson_databind//:compile",
         "@jettison//:compile",
     ],
-    size = "small",
 )
