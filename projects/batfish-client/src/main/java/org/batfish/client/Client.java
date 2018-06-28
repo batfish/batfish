@@ -1623,11 +1623,7 @@ public class Client extends AbstractClient implements IClient {
     WorkItem wItemProcessEnv =
         WorkItemBuilder.getWorkItemProcessEnvironment(
             _currContainerName, _currDeltaTestrig, _currDeltaEnv);
-    if (!execute(wItemProcessEnv, outWriter)) {
-      return false;
-    }
-
-    return true;
+    return execute(wItemProcessEnv, outWriter);
   }
 
   private boolean initEnvironment(
@@ -2739,11 +2735,7 @@ public class Client extends AbstractClient implements IClient {
 
     WorkItem wItemParse = WorkItemBuilder.getWorkItemParse(_currContainerName, testrig);
 
-    if (!execute(wItemParse, outWriter)) {
-      return false;
-    }
-
-    return true;
+    return execute(wItemParse, outWriter);
   }
 
   public void run(List<String> initialCommands) {

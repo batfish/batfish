@@ -1338,11 +1338,8 @@ public class WorkMgr extends AbstractCoordinator {
       return true;
     }
     boolean suggested = AnalysisMetadataMgr.getAnalysisSuggestedOrFalse(containerName, aName);
-    if (analysisType == AnalysisType.SUGGESTED && suggested
-        || analysisType == AnalysisType.USER && !suggested) {
-      return true;
-    }
-    return false;
+    return (analysisType == AnalysisType.SUGGESTED && suggested
+        || analysisType == AnalysisType.USER && !suggested);
   }
 
   public SortedSet<String> listAnalysisQuestions(String containerName, String analysisName) {

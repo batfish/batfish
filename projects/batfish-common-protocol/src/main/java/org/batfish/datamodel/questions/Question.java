@@ -350,11 +350,7 @@ public abstract class Question implements IQuestion {
   public static boolean isQuestionClass(String className) {
     try {
       Class<?> clazz = Class.forName(className);
-      if (Question.class.isAssignableFrom(clazz)) {
-        return true;
-      } else {
-        return false;
-      }
+      return Question.class.isAssignableFrom(clazz);
     } catch (ClassNotFoundException e) {
       throw new BatfishException("'" + className + "' is not a valid Question class");
     }
