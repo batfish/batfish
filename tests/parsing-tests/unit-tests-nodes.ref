@@ -96,7 +96,18 @@
         "vendorFamily" : {
           "cisco" : {
             "aaa" : {
-              "authentication" : { },
+              "authentication" : {
+                "login" : {
+                  "lists" : {
+                    "default" : {
+                      "methods" : [
+                        "UNKNOWN"
+                      ]
+                    }
+                  },
+                  "privilegeMode" : false
+                }
+              },
               "newModel" : false
             },
             "hostname" : "aaa_authentication_login_default_tacacs_local",
@@ -4317,7 +4328,36 @@
                   "default" : { }
                 }
               },
-              "authentication" : { },
+              "authentication" : {
+                "login" : {
+                  "lists" : {
+                    "blah" : {
+                      "methods" : [
+                        "GROUP_TACACS",
+                        "ENABLE"
+                      ]
+                    },
+                    "default" : {
+                      "methods" : [
+                        "LINE"
+                      ]
+                    },
+                    "http" : {
+                      "methods" : [
+                        "GROUP_USER_DEFINED",
+                        "LOCAL_CASE"
+                      ]
+                    },
+                    "telnet" : {
+                      "methods" : [
+                        "GROUP_USER_DEFINED",
+                        "LOCAL_CASE"
+                      ]
+                    }
+                  },
+                  "privilegeMode" : true
+                }
+              },
               "newModel" : false
             },
             "hostname" : "cisco_aaa",

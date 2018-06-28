@@ -30,7 +30,7 @@ public class Aaa implements Serializable {
   }
 
   public void setAuthentication(AaaAuthentication aaaAuthentication) {
-    _authentication = new AaaAuthentication();
+    _authentication = aaaAuthentication;
   }
 
   public void setNewModel(boolean newModel) {

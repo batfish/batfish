@@ -3964,7 +3964,11 @@
         "vendorFamily" : {
           "cisco" : {
             "aaa" : {
-              "authentication" : { },
+              "authentication" : {
+                "login" : {
+                  "privilegeMode" : true
+                }
+              },
               "newModel" : true
             },
             "hostname" : "as2border1",
