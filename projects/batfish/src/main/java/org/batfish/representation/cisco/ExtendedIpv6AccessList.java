@@ -35,10 +35,10 @@ public class ExtendedIpv6AccessList extends ComparableStructure<String> {
 
   @Override
   public String toString() {
-    String output = super.toString() + "\n" + "Identifier: " + _key;
+    StringBuilder output = new StringBuilder(super.toString() + "\n" + "Identifier: " + _key);
     for (ExtendedIpv6AccessListLine line : _lines) {
-      output += "\n" + line;
+      output.append("\n").append(line);
     }
-    return output;
+    return output.toString();
   }
 }

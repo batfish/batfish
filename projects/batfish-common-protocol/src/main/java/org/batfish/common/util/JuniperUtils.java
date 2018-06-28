@@ -66,7 +66,7 @@ public final class JuniperUtils {
     char first = nibble(chars, 1).charAt(0);
     nibble(chars, _characterFamilyReverseIndexMap.get(first));
     char prev = first;
-    String decrypted = "";
+    StringBuilder decrypted = new StringBuilder();
 
     while (chars[0].length() > 0) {
       List<Integer> decode = _codeMatrix.get(decrypted.length() % _codeMatrix.size());
@@ -81,9 +81,9 @@ public final class JuniperUtils {
         gaps.add(g);
       }
       char newChar = gapDecode(gaps, decode);
-      decrypted += newChar;
+      decrypted.append(newChar);
     }
-    return decrypted;
+    return decrypted.toString();
   }
 
   private int gap(char a, char b) {
