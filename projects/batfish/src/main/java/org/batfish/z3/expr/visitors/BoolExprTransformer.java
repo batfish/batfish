@@ -141,7 +141,7 @@ public class BoolExprTransformer
         .map(preconditionState -> transformStateExpr(preconditionState, ImmutableSet.of()))
         .forEach(preconditions::add);
     return ctx.mkImplies(
-        ctx.mkAnd(preconditions.build().stream().toArray(BoolExpr[]::new)),
+        ctx.mkAnd(preconditions.build().toArray(new BoolExpr[0])),
         transformStateExpr(basicRuleStatement.getPostconditionState(), transformedVars));
   }
 

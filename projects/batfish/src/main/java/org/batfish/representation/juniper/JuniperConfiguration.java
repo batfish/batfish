@@ -1979,6 +1979,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         .forEach(
             ikeProposal ->
                 _c.getIkeProposals().put(ikeProposal.getName(), toIkeProposal(ikeProposal)));
+
     _ikeProposals
         .values()
         .forEach(

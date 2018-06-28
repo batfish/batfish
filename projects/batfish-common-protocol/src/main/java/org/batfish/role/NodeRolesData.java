@@ -115,8 +115,7 @@ public class NodeRolesData {
     // check first
     return data.getNodeRoleDimensions()
         .stream()
-        .sorted(Comparator.comparing(d -> d.getName()))
-        .findFirst();
+        .min(Comparator.comparing(NodeRoleDimension::getName));
   }
 
   @JsonProperty(PROP_ROLE_DIMENSIONS)

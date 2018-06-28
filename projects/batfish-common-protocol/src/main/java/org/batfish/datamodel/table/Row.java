@@ -184,7 +184,7 @@ public class Row implements Comparable<Row> {
 
   @Override
   public boolean equals(Object o) {
-    if (o == null || !(o instanceof Row)) {
+    if (!(o instanceof Row)) {
       return false;
     }
     return _data.equals(((Row) o)._data);
@@ -233,7 +233,7 @@ public class Row implements Comparable<Row> {
    */
   public Set<String> getColumnNames() {
     HashSet<String> columns = new HashSet<>();
-    _data.fieldNames().forEachRemaining(column -> columns.add(column));
+    _data.fieldNames().forEachRemaining(columns::add);
     return columns;
   }
 

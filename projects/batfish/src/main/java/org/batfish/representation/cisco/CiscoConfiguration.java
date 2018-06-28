@@ -389,6 +389,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private final Map<String, NetworkObjectGroup> _networkObjectGroups;
 
+  private final Map<String, NetworkObject> _networkObjects;
+
   private String _ntpSourceInterface;
 
   private CiscoNxBgpGlobalConfiguration _nxBgpGlobalConfiguration;
@@ -465,6 +467,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _macAccessLists = new TreeMap<>();
     _natPools = new TreeMap<>();
     _networkObjectGroups = new TreeMap<>();
+    _networkObjects = new TreeMap<>();
     _nxBgpGlobalConfiguration = new CiscoNxBgpGlobalConfiguration();
     _objectGroups = new TreeMap<>();
     _prefixLists = new TreeMap<>();
@@ -2192,18 +2195,19 @@ public final class CiscoConfiguration extends VendorConfiguration {
           String.format(
               "Invalid local address interface configured for ISAKMP profile %s",
               isakmpProfileName));
-    }
-    if (isakmpProfile.getKeyring() == null || !_keyrings.containsKey(isakmpProfile.getKeyring())) {
+    } else if (isakmpProfile.getKeyring() == null
+        || !_keyrings.containsKey(isakmpProfile.getKeyring())) {
       _w.redFlag(String.format("Cannot find keyring for ISAKMP profile %s", isakmpProfileName));
-    }
-    Keyring keyring = _keyrings.get(isakmpProfile.getKeyring());
-    if (Objects.equals(keyring.getLocalAddress(), Ip.AUTO)) {
-      _w.redFlag(
-          String.format(
-              "Invalid local address interface configured for keyring %s", keyring.getName()));
-    }
-    if (keyring.match(isakmpProfile.getLocalAddress(), isakmpProfile.getMatchIdentity())) {
-      psk = keyring.getKey();
+    } else {
+      Keyring keyring = _keyrings.get(isakmpProfile.getKeyring());
+      if (Objects.equals(keyring.getLocalAddress(), Ip.AUTO)) {
+        _w.redFlag(
+            String.format(
+                "Invalid local address interface configured for keyring %s", keyring.getName()));
+      } else if (keyring.match(isakmpProfile.getLocalAddress(), isakmpProfile.getMatchIdentity())) {
+        // found a matching keyring
+        psk = keyring.getKey();
+      }
     }
     return psk;
   }
@@ -3166,10 +3170,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
       c.getIpAccessLists().put(ipaList.getName(), ipaList);
     }
 
-    // convert each NetworkObjectGroup to IpSpace
+    // convert each NetworkObject and NetworkObjectGroup to IpSpace
     _networkObjectGroups.forEach(
         (name, networkObjectGroup) ->
             c.getIpSpaces().put(name, CiscoConversions.toIpSpace(networkObjectGroup)));
+    _networkObjects.forEach(
+        (name, networkObject) -> c.getIpSpaces().put(name, networkObject.getIpSpace()));
 
     // convert each ProtocolObjectGroup to IpAccessList
     _protocolObjectGroups.forEach(
@@ -3266,6 +3272,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     // ISAKMP policies to IKE proposals
     for (Entry<String, IsakmpPolicy> e : _isakmpPolicies.entrySet()) {
       c.getIkeProposals().put(e.getKey(), toIkeProposal(e.getValue()));
+
       c.getIkePhase1Proposals().put(e.getKey(), toIkePhase1Proposal(e.getValue()));
     }
     resolveKeyringIsakmpProfileAddresses();
@@ -3574,13 +3581,16 @@ public final class CiscoConfiguration extends VendorConfiguration {
     markConcreteStructure(
         CiscoStructureType.NETWORK_OBJECT_GROUP,
         CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP,
-        CiscoStructureUsage.NETWORK_OBJECT_GROUP_GROUP_OBJECT,
-        CiscoStructureUsage.NETWORK_OBJECT_GROUP_NETWORK_OBJECT);
+        CiscoStructureUsage.NETWORK_OBJECT_GROUP_GROUP_OBJECT);
     markAbstractStructure(
         CiscoStructureType.PROTOCOL_OR_SERVICE_OBJECT_GROUP,
         CiscoStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OR_SERVICE_OBJECT_GROUP,
         ImmutableList.of(
             CiscoStructureType.PROTOCOL_OBJECT_GROUP, CiscoStructureType.SERVICE_OBJECT_GROUP));
+
+    // objects
+    markConcreteStructure(
+        CiscoStructureType.NETWORK_OBJECT, CiscoStructureUsage.NETWORK_OBJECT_GROUP_NETWORK_OBJECT);
 
     // service template
     markConcreteStructure(
@@ -4151,6 +4161,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public Map<String, NetworkObjectGroup> getNetworkObjectGroups() {
     return _networkObjectGroups;
+  }
+
+  public Map<String, NetworkObject> getNetworkObjects() {
+    return _networkObjects;
   }
 
   public Map<String, ObjectGroup> getObjectGroups() {

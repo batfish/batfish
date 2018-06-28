@@ -23,11 +23,7 @@ public class CommandCompleter implements Completer {
     String buffer = parsedLine.word().trim();
 
     if (Strings.isNullOrEmpty(buffer)) {
-      candidates.addAll(
-          _commandStrs
-              .stream()
-              .map(command -> new Candidate(command))
-              .collect(Collectors.toList()));
+      candidates.addAll(_commandStrs.stream().map(Candidate::new).collect(Collectors.toList()));
     } else {
       for (String match : _commandStrs.tailSet(buffer)) {
         if (!match.startsWith(buffer)) {

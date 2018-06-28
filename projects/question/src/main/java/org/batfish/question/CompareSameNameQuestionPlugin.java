@@ -173,7 +173,7 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
           hostnames
               .stream()
               .map(configurations::get)
-              .map(structureMapRetriever::apply)
+              .map(structureMapRetriever)
               .flatMap(structureMap -> structureMap.keySet().stream())
               .filter(structName -> !ignored(structName))
               .collect(ImmutableSet.toImmutableSet());
@@ -329,7 +329,7 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
     private SortedSet<String> toLowerCase(Collection<String> names) {
       return names
           .stream()
-          .map(name -> name.toLowerCase())
+          .map(String::toLowerCase)
           .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
     }
   }
