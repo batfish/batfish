@@ -4,7 +4,6 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -45,7 +44,7 @@ public class ParseTreePrettyPrinterTest {
   }
 
   @Test
-  public void testGetParseTreeSentencesLineNumbers() throws IOException {
+  public void testGetParseTreeSentencesLineNumbers() {
     String configText = CommonUtil.readResource("org/batfish/grammar/line_numbers");
     GrammarSettings settings = new MockGrammarSettings(false, 0, 0, 1000, true, true, true, true);
     RecoveryCombinedParser cp = new RecoveryCombinedParser(configText, settings);
@@ -72,7 +71,7 @@ public class ParseTreePrettyPrinterTest {
   }
 
   @Test
-  public void testGetParseTreeSentencesMappedLineNumbers() throws IOException {
+  public void testGetParseTreeSentencesMappedLineNumbers() {
     String configText = CommonUtil.readResource("org/batfish/grammar/line_numbers");
     GrammarSettings settings = new MockGrammarSettings(false, 0, 0, 1000, true, true, true, true);
     FlattenerLineMap lineMap = new FlattenerLineMap();

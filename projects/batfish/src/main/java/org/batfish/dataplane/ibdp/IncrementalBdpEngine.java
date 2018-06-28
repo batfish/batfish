@@ -1,7 +1,6 @@
 package org.batfish.dataplane.ibdp;
 
 import static org.batfish.common.util.CommonUtil.computeIpNodeOwners;
-import static org.batfish.common.util.CommonUtil.computeIpOwnersSimple;
 import static org.batfish.common.util.CommonUtil.computeIpVrfOwners;
 import static org.batfish.common.util.CommonUtil.computeNodeInterfaces;
 import static org.batfish.common.util.CommonUtil.initBgpTopology;
@@ -79,11 +78,9 @@ class IncrementalBdpEngine {
     _bfLogger.info("\nComputing Data Plane using iBDP\n");
 
     Map<Ip, Set<String>> ipOwners = computeIpNodeOwners(configurations, true);
-    Map<Ip, String> ipOwnersSimple = computeIpOwnersSimple(ipOwners);
     Map<Ip, Map<String, Set<String>>> ipVrfOwners =
         computeIpVrfOwners(true, computeNodeInterfaces(configurations));
     dpBuilder.setIpOwners(ipOwners);
-    dpBuilder.setIpOwnersSimple(ipOwnersSimple);
     dpBuilder.setIpVrfOwners(ipVrfOwners);
 
     // Generate our nodes, keyed by name, sorted for determinism
@@ -160,20 +157,16 @@ class IncrementalBdpEngine {
     MutableNetwork<IsisNode, IsisEdge> graph =
         NetworkBuilder.directed().allowsParallelEdges(false).allowsSelfLoops(false).build();
     ImmutableSet.Builder<IsisNode> nodes = ImmutableSet.builder();
-    edges
-        .stream()
-        .forEach(
-            edge -> {
-              nodes.add(edge.getNode1());
-              nodes.add(edge.getNode2());
-            });
+    edges.forEach(
+        edge -> {
+          nodes.add(edge.getNode1());
+          nodes.add(edge.getNode2());
+        });
     nodes.build().forEach(graph::addNode);
-    edges
-        .stream()
-        .forEach(
-            edge -> {
-              graph.addEdge(edge.getNode1(), edge.getNode2(), edge);
-            });
+    edges.forEach(
+        edge -> {
+          graph.addEdge(edge.getNode1(), edge.getNode2(), edge);
+        });
     return ImmutableNetwork.copyOf(graph);
   }
 

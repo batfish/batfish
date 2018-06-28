@@ -1662,7 +1662,7 @@
               "multipathIbgp" : false,
               "neighbors" : {
                 "10.10.10.37/32" : {
-                  "name" : "10.10.10.37/32",
+                  "remotePrefix" : "10.10.10.37/32",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
@@ -1685,13 +1685,12 @@
                   "localAs" : 65301,
                   "localIp" : "10.10.10.38",
                   "remoteAs" : 65201,
-                  "remotePrefix" : "10.10.10.37/32",
                   "routeReflectorClient" : false,
                   "sendCommunity" : false,
                   "vrf" : "default"
                 },
                 "10.10.10.45/32" : {
-                  "name" : "10.10.10.45/32",
+                  "remotePrefix" : "10.10.10.45/32",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
@@ -1710,13 +1709,12 @@
                   "localAs" : 65301,
                   "localIp" : "10.10.10.46",
                   "remoteAs" : 65202,
-                  "remotePrefix" : "10.10.10.45/32",
                   "routeReflectorClient" : false,
                   "sendCommunity" : false,
                   "vrf" : "default"
                 },
                 "10.10.30.2/32" : {
-                  "name" : "10.10.30.2/32",
+                  "remotePrefix" : "10.10.30.2/32",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
@@ -1738,13 +1736,12 @@
                   "localAs" : 65301,
                   "localIp" : "10.10.30.1",
                   "remoteAs" : 65331,
-                  "remotePrefix" : "10.10.30.2/32",
                   "routeReflectorClient" : false,
                   "sendCommunity" : false,
                   "vrf" : "default"
                 },
                 "10.10.255.7/32" : {
-                  "name" : "10.10.255.7/32",
+                  "remotePrefix" : "10.10.255.7/32",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
@@ -1762,13 +1759,12 @@
                   "localAs" : 65301,
                   "localIp" : "10.10.255.8",
                   "remoteAs" : 65301,
-                  "remotePrefix" : "10.10.255.7/32",
                   "routeReflectorClient" : false,
                   "sendCommunity" : false,
                   "vrf" : "default"
                 },
                 "169.254.13.237/32" : {
-                  "name" : "169.254.13.237/32",
+                  "remotePrefix" : "169.254.13.237/32",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
@@ -1802,13 +1798,12 @@
                   "localAs" : 65301,
                   "localIp" : "169.254.13.238",
                   "remoteAs" : 65401,
-                  "remotePrefix" : "169.254.13.237/32",
                   "routeReflectorClient" : false,
                   "sendCommunity" : false,
                   "vrf" : "default"
                 },
                 "169.254.15.193/32" : {
-                  "name" : "169.254.15.193/32",
+                  "remotePrefix" : "169.254.15.193/32",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
@@ -1842,7 +1837,6 @@
                   "localAs" : 65301,
                   "localIp" : "169.254.15.194",
                   "remoteAs" : 65401,
-                  "remotePrefix" : "169.254.15.193/32",
                   "routeReflectorClient" : false,
                   "sendCommunity" : false,
                   "vrf" : "default"
@@ -3978,7 +3972,7 @@
               "multipathIbgp" : false,
               "neighbors" : {
                 "169.254.13.238/32" : {
-                  "name" : "169.254.13.238/32",
+                  "remotePrefix" : "169.254.13.238/32",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
@@ -3995,13 +3989,12 @@
                   "localAs" : 65401,
                   "localIp" : "169.254.13.237",
                   "remoteAs" : 65301,
-                  "remotePrefix" : "169.254.13.238/32",
                   "routeReflectorClient" : false,
                   "sendCommunity" : false,
                   "vrf" : "default"
                 },
                 "169.254.15.194/32" : {
-                  "name" : "169.254.15.194/32",
+                  "remotePrefix" : "169.254.15.194/32",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
@@ -4018,13 +4011,12 @@
                   "localAs" : 65401,
                   "localIp" : "169.254.15.193",
                   "remoteAs" : 65301,
-                  "remotePrefix" : "169.254.15.194/32",
                   "routeReflectorClient" : false,
                   "sendCommunity" : false,
                   "vrf" : "default"
                 },
                 "240.0.0.7/32" : {
-                  "name" : "240.0.0.7/32",
+                  "remotePrefix" : "240.0.0.7/32",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
@@ -4042,7 +4034,6 @@
                   "localAs" : 65401,
                   "localIp" : "240.0.0.6",
                   "remoteAs" : 65401,
-                  "remotePrefix" : "240.0.0.7/32",
                   "routeReflectorClient" : false,
                   "sendCommunity" : true,
                   "vrf" : "default"
@@ -4136,7 +4127,7 @@
               "multipathIbgp" : false,
               "neighbors" : {
                 "240.0.0.6/32" : {
-                  "name" : "240.0.0.6/32",
+                  "remotePrefix" : "240.0.0.6/32",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
@@ -4154,7 +4145,6 @@
                   "localAs" : 65401,
                   "localIp" : "240.0.0.7",
                   "remoteAs" : 65401,
-                  "remotePrefix" : "240.0.0.6/32",
                   "routeReflectorClient" : false,
                   "sendCommunity" : true,
                   "vrf" : "default"

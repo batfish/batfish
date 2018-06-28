@@ -33,7 +33,7 @@ import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "class")
+@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
 public abstract class Question implements IQuestion {
 
   public static class InstanceData {
@@ -350,11 +350,7 @@ public abstract class Question implements IQuestion {
   public static boolean isQuestionClass(String className) {
     try {
       Class<?> clazz = Class.forName(className);
-      if (Question.class.isAssignableFrom(clazz)) {
-        return true;
-      } else {
-        return false;
-      }
+      return Question.class.isAssignableFrom(clazz);
     } catch (ClassNotFoundException e) {
       throw new BatfishException("'" + className + "' is not a valid Question class");
     }

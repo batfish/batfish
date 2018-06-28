@@ -61,8 +61,7 @@ public final class AclReachabilityAnswererUtils {
     }
 
     private void sanitizeLine(int lineNum, AclLineMatchExpr newMatchExpr) {
-      _sanitizedLines =
-          firstNonNull(_sanitizedLines, _acl.getLines().stream().collect(Collectors.toList()));
+      _sanitizedLines = firstNonNull(_sanitizedLines, new ArrayList<>(_acl.getLines()));
       IpAccessListLine originalLine = _sanitizedLines.remove(lineNum);
       _sanitizedLines.add(
           lineNum,
@@ -248,7 +247,7 @@ public final class AclReachabilityAnswererUtils {
                 visited
                     .subList(dependencyIndex, visited.size())
                     .stream()
-                    .map(n -> n.getName())
+                    .map(AclNode::getName)
                     .collect(Collectors.toList()));
         cyclesFound.add(cycleAcls);
       } else {
@@ -376,6 +375,6 @@ public final class AclReachabilityAnswererUtils {
         }
       }
     }
-    return aclSpecs.stream().map(aclSpec -> aclSpec.build()).collect(Collectors.toList());
+    return aclSpecs.stream().map(AclSpecs.Builder::build).collect(Collectors.toList());
   }
 }

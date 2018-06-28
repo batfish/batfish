@@ -40,6 +40,7 @@ public enum CiscoStructureType implements StructureType {
   L2TP_CLASS("l2tp-class"),
   MAC_ACCESS_LIST("mac acl"),
   NAT_POOL("nat pool"),
+  NETWORK_OBJECT("object network"),
   NETWORK_OBJECT_GROUP("object-group network"),
   POLICY_MAP("policy-map"),
   PREFIX_LIST("ipv4 prefix-list"),

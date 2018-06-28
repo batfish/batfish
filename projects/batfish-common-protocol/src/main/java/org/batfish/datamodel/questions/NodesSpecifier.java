@@ -75,7 +75,7 @@ public class NodesSpecifier {
                 "Illegal NodesSpecifier filter %s. Should be one of %s",
                 parts[0],
                 Arrays.stream(Type.values())
-                    .map(v -> v.toString())
+                    .map(Object::toString)
                     .collect(Collectors.joining(", "))));
       }
       if (parts.length == 2 && _type == Type.NAME) {

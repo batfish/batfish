@@ -22,11 +22,7 @@ public class NodeRoleBean {
   public NodeRoleBean(NodeRole role, Set<String> fromNodes) {
     name = role.getName();
     regex = role.getRegex();
-    nodes =
-        fromNodes
-            .stream()
-            .filter(node -> role.matches(node))
-            .collect(ImmutableSet.toImmutableSet());
+    nodes = fromNodes.stream().filter(role::matches).collect(ImmutableSet.toImmutableSet());
   }
 
   @Override

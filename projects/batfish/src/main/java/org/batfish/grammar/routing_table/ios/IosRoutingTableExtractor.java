@@ -6,6 +6,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.common.BatfishException;
@@ -98,10 +99,7 @@ public class IosRoutingTableExtractor extends IosRoutingTableParserBaseListener
     int admin;
     int cost;
     List<String> nextHopInterfaces =
-        ctx.nexthopifaces
-            .stream()
-            .map(nextHopIfaceCtx -> nextHopIfaceCtx.getText())
-            .collect(Collectors.toList());
+        ctx.nexthopifaces.stream().map(RuleContext::getText).collect(Collectors.toList());
     List<Ip> nextHopIps =
         ctx.nexthops
             .stream()

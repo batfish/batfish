@@ -2375,7 +2375,7 @@
             "multipathIbgp" : true,
             "neighbors" : {
               "1.10.1.1/32" : {
-                "name" : "1.10.1.1/32",
+                "remotePrefix" : "1.10.1.1/32",
                 "additionalPathsReceive" : true,
                 "additionalPathsSelectAll" : true,
                 "additionalPathsSend" : true,
@@ -2394,13 +2394,12 @@
                 "localAs" : 1,
                 "localIp" : "1.1.1.1",
                 "remoteAs" : 1,
-                "remotePrefix" : "1.10.1.1/32",
                 "routeReflectorClient" : false,
                 "sendCommunity" : true,
                 "vrf" : "default"
               },
               "3.2.2.2/32" : {
-                "name" : "3.2.2.2/32",
+                "remotePrefix" : "3.2.2.2/32",
                 "additionalPathsReceive" : true,
                 "additionalPathsSelectAll" : true,
                 "additionalPathsSend" : true,
@@ -2418,13 +2417,12 @@
                 "group" : "bad-ebgp",
                 "localAs" : 1,
                 "remoteAs" : 666,
-                "remotePrefix" : "3.2.2.2/32",
                 "routeReflectorClient" : false,
                 "sendCommunity" : false,
                 "vrf" : "default"
               },
               "5.6.7.8/32" : {
-                "name" : "5.6.7.8/32",
+                "remotePrefix" : "5.6.7.8/32",
                 "additionalPathsReceive" : true,
                 "additionalPathsSelectAll" : true,
                 "additionalPathsSend" : true,
@@ -2442,13 +2440,12 @@
                 "group" : "xanadu",
                 "localAs" : 1,
                 "remoteAs" : 555,
-                "remotePrefix" : "5.6.7.8/32",
                 "routeReflectorClient" : false,
                 "sendCommunity" : false,
                 "vrf" : "default"
               },
               "10.12.11.2/32" : {
-                "name" : "10.12.11.2/32",
+                "remotePrefix" : "10.12.11.2/32",
                 "additionalPathsReceive" : true,
                 "additionalPathsSelectAll" : true,
                 "additionalPathsSend" : true,
@@ -2474,7 +2471,6 @@
                 "localAs" : 1,
                 "localIp" : "10.12.11.1",
                 "remoteAs" : 2,
-                "remotePrefix" : "10.12.11.2/32",
                 "routeReflectorClient" : false,
                 "sendCommunity" : true,
                 "vrf" : "default"

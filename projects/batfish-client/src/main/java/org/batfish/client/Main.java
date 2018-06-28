@@ -24,6 +24,6 @@ public class Main {
     }
 
     Client client = new Client(settings);
-    client.run(new LinkedList<String>());
+    client.run(new LinkedList<>());
   }
 }

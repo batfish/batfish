@@ -153,7 +153,7 @@ public class Settings extends BaseSettings {
         "mode in which to start batfish",
         Arrays.stream(RunMode.values())
             .filter(v -> v != RunMode.WORKER)
-            .map(v -> v.toString())
+            .map(Object::toString)
             .collect(Collectors.joining("|")));
 
     addOption(ARG_CLIENT_ARGS, "arguments for the client process", "client_args");

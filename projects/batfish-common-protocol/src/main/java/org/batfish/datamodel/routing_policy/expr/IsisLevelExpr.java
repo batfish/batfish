@@ -5,7 +5,7 @@ import java.io.Serializable;
 import org.batfish.datamodel.IsisLevel;
 import org.batfish.datamodel.routing_policy.Environment;
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "class")
+@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
 public abstract class IsisLevelExpr implements Serializable {
 
   /** */

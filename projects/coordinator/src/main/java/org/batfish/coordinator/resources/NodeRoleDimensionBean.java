@@ -87,7 +87,7 @@ public class NodeRoleDimensionBean {
             ? null
             : roles
                 .stream()
-                .map(role -> role.toNodeRole())
+                .map(NodeRoleBean::toNodeRole)
                 .collect(ImmutableSortedSet.toImmutableSortedSet(NodeRole::compareTo));
     return new NodeRoleDimension(name, nodeRoles, type, null);
   }
