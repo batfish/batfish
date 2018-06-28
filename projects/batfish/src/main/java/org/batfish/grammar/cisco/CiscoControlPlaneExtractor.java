@@ -1688,18 +1688,16 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     /* Pad priority number with zeros, so string sorting sorts in numerical order too */
     String priority = String.format("%03d", toInteger(ctx.priority));
     _currentIsakmpPolicy = new IsakmpPolicy(priority);
-    _currentIsakmpPolicy.getProposal().setAuthenticationAlgorithm(IkeHashingAlgorithm.SHA1);
-    _currentIsakmpPolicy.getProposal().setEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC);
-    _currentIsakmpPolicy
-        .getProposal()
-        .setAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS);
+    _currentIsakmpPolicy.setHashAlgorithm(IkeHashingAlgorithm.SHA1);
+    _currentIsakmpPolicy.setEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC);
+    _currentIsakmpPolicy.setAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS);
     if (_format == ARUBAOS) {
-      _currentIsakmpPolicy.getProposal().setDiffieHellmanGroup(DiffieHellmanGroup.GROUP1);
+      _currentIsakmpPolicy.setDiffieHellmanGroup(DiffieHellmanGroup.GROUP1);
     } else {
-      _currentIsakmpPolicy.getProposal().setDiffieHellmanGroup(DiffieHellmanGroup.GROUP2);
+      _currentIsakmpPolicy.setDiffieHellmanGroup(DiffieHellmanGroup.GROUP2);
     }
 
-    _currentIsakmpPolicy.getProposal().setLifetimeSeconds(86400);
+    _currentIsakmpPolicy.setLifetimeSeconds(86400);
     defineStructure(ISAKMP_POLICY, priority, ctx);
     /* Isakmp policies are checked in order not explicitly referenced, so add a self-reference
     here */
@@ -1736,13 +1734,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitCispol_authentication(Cispol_authenticationContext ctx) {
     if (ctx.PRE_SHARE() != null) {
-      _currentIsakmpPolicy
-          .getProposal()
-          .setAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS);
+      _currentIsakmpPolicy.setAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS);
     } else if (ctx.RSA_SIG() != null) {
-      _currentIsakmpPolicy
-          .getProposal()
-          .setAuthenticationMethod(IkeAuthenticationMethod.RSA_SIGNATURES);
+      _currentIsakmpPolicy.setAuthenticationMethod(IkeAuthenticationMethod.RSA_SIGNATURES);
     } else {
       throw new BatfishException("Unsupported authentication method in " + ctx.getText());
     }
@@ -1750,34 +1744,28 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitCispol_encr(Cispol_encrContext ctx) {
-    _currentIsakmpPolicy
-        .getProposal()
-        .setEncryptionAlgorithm(toEncryptionAlgorithm(ctx.ike_encryption()));
+    _currentIsakmpPolicy.setEncryptionAlgorithm(toEncryptionAlgorithm(ctx.ike_encryption()));
   }
 
   @Override
   public void exitCispol_encryption(Cispol_encryptionContext ctx) {
-    _currentIsakmpPolicy
-        .getProposal()
-        .setEncryptionAlgorithm(toEncryptionAlgorithm(ctx.ike_encryption_aruba()));
+    _currentIsakmpPolicy.setEncryptionAlgorithm(toEncryptionAlgorithm(ctx.ike_encryption_aruba()));
   }
 
   @Override
   public void exitCispol_group(Cispol_groupContext ctx) {
     int group = Integer.parseInt(ctx.DEC().getText());
-    _currentIsakmpPolicy
-        .getProposal()
-        .setDiffieHellmanGroup(DiffieHellmanGroup.fromGroupNumber(group));
+    _currentIsakmpPolicy.setDiffieHellmanGroup(DiffieHellmanGroup.fromGroupNumber(group));
   }
 
   @Override
   public void exitCispol_hash(Cispol_hashContext ctx) {
     if (ctx.MD5() != null) {
-      _currentIsakmpPolicy.getProposal().setAuthenticationAlgorithm(IkeHashingAlgorithm.MD5);
+      _currentIsakmpPolicy.setHashAlgorithm(IkeHashingAlgorithm.MD5);
     } else if (ctx.SHA() != null) {
-      _currentIsakmpPolicy.getProposal().setAuthenticationAlgorithm(IkeHashingAlgorithm.SHA1);
+      _currentIsakmpPolicy.setHashAlgorithm(IkeHashingAlgorithm.SHA1);
     } else if (ctx.SHA2_256_128() != null) {
-      _currentIsakmpPolicy.getProposal().setAuthenticationAlgorithm(IkeHashingAlgorithm.SHA_256);
+      _currentIsakmpPolicy.setHashAlgorithm(IkeHashingAlgorithm.SHA_256);
     } else {
       throw new BatfishException("Unsupported authentication method in " + ctx.getText());
     }
@@ -1785,7 +1773,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitCispol_lifetime(Cispol_lifetimeContext ctx) {
-    _currentIsakmpPolicy.getProposal().setLifetimeSeconds(Integer.parseInt(ctx.DEC().getText()));
+    _currentIsakmpPolicy.setLifetimeSeconds(Integer.parseInt(ctx.DEC().getText()));
   }
 
   @Override

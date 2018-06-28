@@ -84,7 +84,6 @@ import org.batfish.datamodel.IcmpCode;
 import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.IkeAuthenticationMethod;
 import org.batfish.datamodel.IkeHashingAlgorithm;
-import org.batfish.datamodel.IkeProposal;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
@@ -490,6 +489,7 @@ import org.batfish.representation.juniper.HostProtocol;
 import org.batfish.representation.juniper.HostSystemService;
 import org.batfish.representation.juniper.IkeGateway;
 import org.batfish.representation.juniper.IkePolicy;
+import org.batfish.representation.juniper.IkeProposal;
 import org.batfish.representation.juniper.Interface;
 import org.batfish.representation.juniper.IpBgpGroup;
 import org.batfish.representation.juniper.IpsecPolicy;
@@ -4801,15 +4801,68 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   private Set<String> initIkeProposalSet(Proposal_set_typeContext ctx) {
     Set<String> proposals = new HashSet<>();
     if (ctx.BASIC() != null) {
-      proposals.add(initIkeProposal(IkeProposal.PSK_DES_DH1_SHA1));
-      proposals.add(initIkeProposal(IkeProposal.PSK_DES_DH1_MD5));
+      IkeProposal.Builder ikeProposalBuilder =
+          org.batfish.representation.juniper.IkeProposal.builder()
+              .setEncryptionAlgorithm(EncryptionAlgorithm.DES_CBC)
+              .setAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS)
+              .setDiffieHellmanGroup(DiffieHellmanGroup.GROUP1);
+      proposals.add(
+          initIkeProposal(
+              ikeProposalBuilder
+                  .setName("PSK_DES_DH1_SHA1")
+                  .setAuthenticationAlgorithm(IkeHashingAlgorithm.SHA1)
+                  .build()));
+      proposals.add(
+          initIkeProposal(
+              ikeProposalBuilder
+                  .setName("PSK_DES_DH1_MD5")
+                  .setAuthenticationAlgorithm(IkeHashingAlgorithm.MD5)
+                  .build()));
     } else if (ctx.COMPATIBLE() != null) {
-      proposals.add(initIkeProposal(IkeProposal.PSK_3DES_DH2_MD5));
-      proposals.add(initIkeProposal(IkeProposal.PSK_DES_DH2_SHA1));
-      proposals.add(initIkeProposal(IkeProposal.PSK_DES_DH2_MD5));
+      IkeProposal.Builder ikeProposalBuilder =
+          org.batfish.representation.juniper.IkeProposal.builder()
+              .setAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS)
+              .setDiffieHellmanGroup(DiffieHellmanGroup.GROUP2);
+      proposals.add(
+          initIkeProposal(
+              ikeProposalBuilder
+                  .setName("PSK_3DES_DH2_MD5")
+                  .setEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC)
+                  .setAuthenticationAlgorithm(IkeHashingAlgorithm.MD5)
+                  .build()));
+      proposals.add(
+          initIkeProposal(
+              ikeProposalBuilder
+                  .setName("PSK_DES_DH2_SHA1")
+                  .setEncryptionAlgorithm(EncryptionAlgorithm.DES_CBC)
+                  .setAuthenticationAlgorithm(IkeHashingAlgorithm.SHA1)
+                  .build()));
+      proposals.add(
+          initIkeProposal(
+              ikeProposalBuilder
+                  .setName("PSK_DES_DH2_MD5")
+                  .setEncryptionAlgorithm(EncryptionAlgorithm.DES_CBC)
+                  .setAuthenticationAlgorithm(IkeHashingAlgorithm.MD5)
+                  .build()));
     } else if (ctx.STANDARD() != null) {
-      proposals.add(initIkeProposal(IkeProposal.PSK_3DES_DH2_SHA1));
-      proposals.add(initIkeProposal(IkeProposal.PSK_AES128_DH2_SHA1));
+      IkeProposal.Builder ikeProposalBuilder =
+          org.batfish.representation.juniper.IkeProposal.builder()
+              .setAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS)
+              .setDiffieHellmanGroup(DiffieHellmanGroup.GROUP2);
+      proposals.add(
+          initIkeProposal(
+              ikeProposalBuilder
+                  .setName("PSK_3DES_DH2_SHA1")
+                  .setEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC)
+                  .setAuthenticationAlgorithm(IkeHashingAlgorithm.SHA1)
+                  .build()));
+      proposals.add(
+          initIkeProposal(
+              ikeProposalBuilder
+                  .setName("PSK_AES128_DH2_SHA1")
+                  .setEncryptionAlgorithm(EncryptionAlgorithm.AES_128_CBC)
+                  .setAuthenticationAlgorithm(IkeHashingAlgorithm.SHA1)
+                  .build()));
     }
     return proposals;
   }
