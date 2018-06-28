@@ -9079,6 +9079,10 @@
                 }
               }
             ]
+          },
+          "obj_any" : {
+            "class" : "org.batfish.datamodel.PrefixIpSpace",
+            "prefix" : "0.0.0.0/0"
           }
         },
         "vendorFamily" : {
