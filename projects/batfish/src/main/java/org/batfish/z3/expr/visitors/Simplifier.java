@@ -109,7 +109,7 @@ public class Simplifier
 
   @Override
   public Statement visitBasicRuleStatement(BasicRuleStatement basicRuleStatement) {
-    /** TODO: something smarter */
+    /* TODO: something smarter */
     BooleanExpr originalPreconditionStateIndependentConstraints =
         basicRuleStatement.getPreconditionStateIndependentConstraints();
     BooleanExpr simplifiedPreconditionStateIndependentConstraints =

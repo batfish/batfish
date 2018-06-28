@@ -15,7 +15,7 @@ public class NodJobResult extends BatfishJobResult<Set<Flow>, NodAnswerElement> 
 
   public NodJobResult(long startTime, BatfishLoggerHistory history) {
     super(System.currentTimeMillis() - startTime, history);
-    _flows = Collections.<Flow>emptySet();
+    _flows = Collections.emptySet();
   }
 
   public NodJobResult(long startTime, BatfishLoggerHistory history, Set<Flow> flows) {

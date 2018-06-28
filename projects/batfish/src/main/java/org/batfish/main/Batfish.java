@@ -2551,9 +2551,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
         initStepAnswerElement
             .getErrors()
             .forEach(
-                (hostname, initStepErrors) -> {
-                  errors.computeIfAbsent(hostname, k -> new ArrayList<>()).add(initStepErrors);
-                });
+                (hostname, initStepErrors) ->
+                    errors.computeIfAbsent(hostname, k -> new ArrayList<>()).add(initStepErrors));
       }
       SortedMap<String, Warnings> warnings = initInfoAnswerElement.getWarnings();
       initStepAnswerElement
@@ -3089,8 +3088,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Map<String, Configuration> configs = loadConfigurations();
     SortedSet<Edge> edges = CommonUtil.synthesizeTopology(configs).getEdges();
     Set<Edge> symmetricEdgePairs = getSymmetricEdgePairs(edges);
-    List<Edge> edgeList = new ArrayList<>();
-    edgeList.addAll(symmetricEdgePairs);
+    List<Edge> edgeList = new ArrayList<>(symmetricEdgePairs);
     for (int i = 0; i < edgeList.size() / 2; i++) {
       Edge edge1 = edgeList.get(2 * i);
       Edge edge2 = edgeList.get(2 * i + 1);
@@ -4029,9 +4027,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     // warn about unused overlays
     overlayHostConfigurations.forEach(
-        (name, overlay) -> {
-          answerElement.getParseStatus().put(name, ParseStatus.ORPHANED);
-        });
+        (name, overlay) -> answerElement.getParseStatus().put(name, ParseStatus.ORPHANED));
 
     serializeObjects(output);
     _logger.printElapsedTime();

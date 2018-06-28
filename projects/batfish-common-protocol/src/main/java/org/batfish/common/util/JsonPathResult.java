@@ -1,8 +1,8 @@
 package org.batfish.common.util;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import org.batfish.common.BatfishException;
@@ -58,7 +58,7 @@ public class JsonPathResult {
   private static List<String> getPrefixParts(JsonNode prefix) {
     String text = prefix.textValue();
     if (text.equals("$")) {
-      return Arrays.asList("$");
+      return Collections.singletonList("$");
     }
     if (text.length() < 2) {
       throw new BatfishException("Unexpected prefix " + text);
@@ -83,6 +83,6 @@ public class JsonPathResult {
 
   /** Tells us if the suffix is null or empty */
   public boolean isNullOrEmptySuffix() {
-    return _suffix == null || (_suffix.isArray() && ((ArrayNode) _suffix).size() == 0);
+    return _suffix == null || (_suffix.isArray() && _suffix.size() == 0);
   }
 }

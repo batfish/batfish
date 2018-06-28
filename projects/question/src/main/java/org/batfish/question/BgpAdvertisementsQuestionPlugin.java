@@ -135,9 +135,8 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
     public String prettyPrint() {
       StringBuilder sb = new StringBuilder();
       _bgpAdvertisements.forEach(
-          (hostname, adverts) -> {
-            adverts.forEach(advert -> sb.append(advert.prettyPrint(hostname + " ")));
-          });
+          (hostname, adverts) ->
+              adverts.forEach(advert -> sb.append(advert.prettyPrint(hostname + " "))));
       return sb.toString();
     }
   }
@@ -229,7 +228,6 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
     private boolean _sent;
 
     public BgpAdvertisementsQuestion() {
-      _nodeRegex = NodesSpecifier.ALL;
       _ebgp = true;
       _ibgp = true;
       _nodeRegex = NodesSpecifier.ALL;

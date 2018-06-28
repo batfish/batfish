@@ -163,10 +163,7 @@ class IncrementalBdpEngine {
           nodes.add(edge.getNode2());
         });
     nodes.build().forEach(graph::addNode);
-    edges.forEach(
-        edge -> {
-          graph.addEdge(edge.getNode1(), edge.getNode2(), edge);
-        });
+    edges.forEach(edge -> graph.addEdge(edge.getNode1(), edge.getNode2(), edge));
     return ImmutableNetwork.copyOf(graph);
   }
 
