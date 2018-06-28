@@ -690,7 +690,7 @@ public class Client extends AbstractClient implements IClient {
         String parameterValue = e.getValue().toString();
         Object parameterObj;
         try {
-          parameterObj = new JSONTokener(parameterValue.toString()).nextValue();
+          parameterObj = new JSONTokener(parameterValue).nextValue();
           questionJson.put(parameterName, parameterObj);
         } catch (JSONException e1) {
           throw new BatfishException(
