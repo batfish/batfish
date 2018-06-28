@@ -241,7 +241,8 @@ public class HostConfiguration extends VendorConfiguration {
 
     _c.getDefaultVrf()
         .getStaticRoutes()
-        .addAll(_staticRoutes.stream().map(hsr -> hsr.toStaticRoute()).collect(Collectors.toSet()));
+        .addAll(
+            _staticRoutes.stream().map(HostStaticRoute::toStaticRoute).collect(Collectors.toSet()));
     Set<StaticRoute> staticRoutes = _c.getDefaultVrf().getStaticRoutes();
     for (HostInterface iface : _hostInterfaces.values()) {
       Ip gateway = iface.getGateway();

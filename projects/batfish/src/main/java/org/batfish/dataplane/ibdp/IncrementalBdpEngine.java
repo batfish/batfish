@@ -160,20 +160,16 @@ class IncrementalBdpEngine {
     MutableNetwork<IsisNode, IsisEdge> graph =
         NetworkBuilder.directed().allowsParallelEdges(false).allowsSelfLoops(false).build();
     ImmutableSet.Builder<IsisNode> nodes = ImmutableSet.builder();
-    edges
-        .stream()
-        .forEach(
-            edge -> {
-              nodes.add(edge.getNode1());
-              nodes.add(edge.getNode2());
-            });
+    edges.forEach(
+        edge -> {
+          nodes.add(edge.getNode1());
+          nodes.add(edge.getNode2());
+        });
     nodes.build().forEach(graph::addNode);
-    edges
-        .stream()
-        .forEach(
-            edge -> {
-              graph.addEdge(edge.getNode1(), edge.getNode2(), edge);
-            });
+    edges.forEach(
+        edge -> {
+          graph.addEdge(edge.getNode1(), edge.getNode2(), edge);
+        });
     return ImmutableNetwork.copyOf(graph);
   }
 

@@ -66,7 +66,7 @@ public class IpsecVpnStatusAnswerer extends Answerer {
         IpsecVpnInfo vpnInfo = analyzeIpsecVpn(ipsecVpn);
         if ((vpnInfo.getRemoteEndpoint() == null
                 || includeNodes2.contains(vpnInfo.getRemoteEndpoint().getHostname()))
-            && vpnInfo.getProblems().stream().anyMatch(v -> question.matchesProblem(v))) {
+            && vpnInfo.getProblems().stream().anyMatch(question::matchesProblem)) {
           answerElement.getIpsecVpns().add(vpnInfo);
         }
       }

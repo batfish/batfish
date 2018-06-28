@@ -50,7 +50,7 @@ public final class SubRange implements Serializable, Comparable<SubRange> {
         throw new BatfishException("Invalid subrange end: \"" + parts[1] + "\"", e);
       }
     } else if (o instanceof Integer) {
-      int i = ((Integer) o).intValue();
+      int i = (Integer) o;
       _start = i;
       _end = i;
     } else {

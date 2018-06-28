@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
  * etc. Locations are pure data -- they should have no behavior other than the accept method that
  * allows them to be inspected.
  */
-@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "class")
+@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
 public interface Location {
   <T> T accept(LocationVisitor<T> visitor);
 }

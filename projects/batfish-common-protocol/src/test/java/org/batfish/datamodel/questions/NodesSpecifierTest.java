@@ -27,7 +27,7 @@ public class NodesSpecifierTest {
     NodeRoleDimension dim1 =
         new NodeRoleDimension(
             "dim10",
-            new ImmutableSortedSet.Builder<NodeRole>(NodeRole::compareTo)
+            new ImmutableSortedSet.Builder<>(NodeRole::compareTo)
                 .add(new NodeRole("role1", ".*"))
                 .add(new NodeRole("role2", ".*"))
                 .build(),
@@ -36,17 +36,14 @@ public class NodesSpecifierTest {
     NodeRoleDimension dim2 =
         new NodeRoleDimension(
             "dim20",
-            new ImmutableSortedSet.Builder<NodeRole>(NodeRole::compareTo)
+            new ImmutableSortedSet.Builder<>(NodeRole::compareTo)
                 .add(new NodeRole("role1", ".*"))
                 .add(new NodeRole("role2", ".*"))
                 .build(),
             NodeRoleDimension.Type.CUSTOM,
             null);
     SortedSet<NodeRoleDimension> roleDimensions =
-        new ImmutableSortedSet.Builder<NodeRoleDimension>(NodeRoleDimension::compareTo)
-            .add(dim1)
-            .add(dim2)
-            .build();
+        new ImmutableSortedSet.Builder<>(NodeRoleDimension::compareTo).add(dim1).add(dim2).build();
     return new NodeRolesData(null, null, roleDimensions);
   }
 
@@ -202,7 +199,7 @@ public class NodesSpecifierTest {
     NodeRole role2 = new NodeRole("match2", "svr-border.*");
     NodeRole role3 = new NodeRole("dumb0", "lhr-core.*");
     SortedSet<NodeRole> roles =
-        new ImmutableSortedSet.Builder<NodeRole>(NodeRole::compareTo)
+        new ImmutableSortedSet.Builder<>(NodeRole::compareTo)
             .add(role1)
             .add(role2)
             .add(role3)

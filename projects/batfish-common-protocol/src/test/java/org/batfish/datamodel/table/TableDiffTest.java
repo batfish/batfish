@@ -84,16 +84,14 @@ public class TableDiffTest {
   public void diffCells() {
     /** One value is null */
     assertThat(
-        TableDiff.diffCells(null, new Integer(1), Schema.INTEGER),
+        TableDiff.diffCells(null, 1, Schema.INTEGER),
         equalTo(TableDiff.resultDifferent(TableDiff.NULL_VALUE_BASE)));
 
     /** Both values are null */
     assertThat(TableDiff.diffCells(null, null, Schema.INTEGER), equalTo(TableDiff.RESULT_SAME));
 
     /** Integer difference */
-    assertThat(
-        TableDiff.diffCells(new Integer(1), new Integer(2), Schema.INTEGER),
-        equalTo(TableDiff.resultDifferent("-1")));
+    assertThat(TableDiff.diffCells(1, 2, Schema.INTEGER), equalTo(TableDiff.resultDifferent("-1")));
 
     /** Set difference */
     String diffValue =

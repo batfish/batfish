@@ -161,7 +161,7 @@ public class UniqueIpAssignmentsQuestionPlugin extends QuestionPlugin {
         @JsonProperty(PROP_ENABLED_IPS_ONLY) Boolean enabledIpsOnly,
         @JsonProperty(PROP_INTERFACES_SPECIFIER) InterfacesSpecifier interfacesSpecifier,
         @JsonProperty(PROP_NODE_REGEX) NodesSpecifier nodesSpecifier) {
-      _enabledIpsOnly = enabledIpsOnly != null && enabledIpsOnly.booleanValue();
+      _enabledIpsOnly = enabledIpsOnly != null && enabledIpsOnly;
       _interfacesSpecifier =
           interfacesSpecifier == null ? InterfacesSpecifier.ALL : interfacesSpecifier;
       _nodeRegex = nodesSpecifier == null ? NodesSpecifier.ALL : nodesSpecifier;

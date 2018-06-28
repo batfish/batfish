@@ -295,14 +295,11 @@ public class VirtualRouterTest {
 
     // checking that both bgp advertisements have the same network and the supplied next hop IPs
     Set<Ip> nextHopIps = new HashSet<>();
-    _testVirtualRouter
-        ._sentBgpAdvertisements
-        .stream()
-        .forEach(
-            bgpAdvertisement -> {
-              assertThat(bgpAdvertisement, hasNetwork(TEST_NETWORK));
-              nextHopIps.add(bgpAdvertisement.getNextHopIp());
-            });
+    _testVirtualRouter._sentBgpAdvertisements.forEach(
+        bgpAdvertisement -> {
+          assertThat(bgpAdvertisement, hasNetwork(TEST_NETWORK));
+          nextHopIps.add(bgpAdvertisement.getNextHopIp());
+        });
 
     assertThat(
         "Next Hop IPs not valid in BGP advertisements",
@@ -342,14 +339,11 @@ public class VirtualRouterTest {
 
     // checking that both bgp advertisements have the same network and correct AS Paths
     Set<AsPath> asPaths = new HashSet<>();
-    _testVirtualRouter
-        ._sentBgpAdvertisements
-        .stream()
-        .forEach(
-            bgpAdvertisement -> {
-              assertThat(bgpAdvertisement, hasNetwork(TEST_NETWORK));
-              asPaths.add(bgpAdvertisement.getAsPath());
-            });
+    _testVirtualRouter._sentBgpAdvertisements.forEach(
+        bgpAdvertisement -> {
+          assertThat(bgpAdvertisement, hasNetwork(TEST_NETWORK));
+          asPaths.add(bgpAdvertisement.getAsPath());
+        });
 
     // next Hop IP for the active OSPF route  will be the neighbor's local IP
     assertThat(

@@ -161,7 +161,7 @@ public class Main {
     _authorizer = authorizer;
   }
 
-  static void initAuthorizer() throws Exception {
+  static void initAuthorizer() {
     Settings settings = getSettings();
     Authorizer.Type type = settings.getAuthorizationType();
     switch (type) {

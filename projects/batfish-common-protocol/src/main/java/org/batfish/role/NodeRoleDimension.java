@@ -78,7 +78,7 @@ public class NodeRoleDimension implements Comparable<NodeRoleDimension> {
   /** If names are equal the NodeRoleDimension objects are considered equal */
   @Override
   public boolean equals(Object o) {
-    if (o == null || !(o instanceof NodeRoleDimension)) {
+    if (!(o instanceof NodeRoleDimension)) {
       return false;
     }
     NodeRoleDimension other = (NodeRoleDimension) o;

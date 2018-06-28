@@ -10,7 +10,7 @@ import java.util.Comparator;
 import java.util.Objects;
 import javax.annotation.Nullable;
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "class")
+@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
 public abstract class AclLineMatchExpr implements Serializable, Comparable<AclLineMatchExpr> {
   protected static final String PROP_DESCRIPTION = "description";
 
