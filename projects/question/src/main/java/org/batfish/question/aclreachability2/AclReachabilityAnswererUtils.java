@@ -61,8 +61,7 @@ public final class AclReachabilityAnswererUtils {
     }
 
     private void sanitizeLine(int lineNum, AclLineMatchExpr newMatchExpr) {
-      _sanitizedLines =
-          firstNonNull(_sanitizedLines, _acl.getLines().stream().collect(Collectors.toList()));
+      _sanitizedLines = firstNonNull(_sanitizedLines, new ArrayList<>(_acl.getLines()));
       IpAccessListLine originalLine = _sanitizedLines.remove(lineNum);
       _sanitizedLines.add(
           lineNum,

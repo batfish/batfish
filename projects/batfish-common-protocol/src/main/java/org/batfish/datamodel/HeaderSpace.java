@@ -1122,7 +1122,7 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
     if (!_states.isEmpty() && !_states.contains(flow.getState())) {
       return false;
     }
-    if (!_tcpFlags.isEmpty() && !_tcpFlags.stream().anyMatch(tcpFlags -> tcpFlags.match(flow))) {
+    if (!_tcpFlags.isEmpty() && _tcpFlags.stream().noneMatch(tcpFlags -> tcpFlags.match(flow))) {
       return false;
     }
     return true;

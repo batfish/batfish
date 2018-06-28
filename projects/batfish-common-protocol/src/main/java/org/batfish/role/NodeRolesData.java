@@ -113,10 +113,7 @@ public class NodeRolesData {
       return optAuto;
     }
     // check first
-    return data.getNodeRoleDimensions()
-        .stream()
-        .sorted(Comparator.comparing(d -> d.getName()))
-        .findFirst();
+    return data.getNodeRoleDimensions().stream().min(Comparator.comparing(d -> d.getName()));
   }
 
   @JsonProperty(PROP_ROLE_DIMENSIONS)
