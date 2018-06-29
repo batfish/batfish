@@ -37,10 +37,9 @@ public final class TracerouteQuestion extends IPacketTraceQuestion {
 
   private static final String PROP_SOURCE_LOCATION_SPECIFIER_INPUT = "traceStart";
 
-  private static final String PROP_SOURCE_IP_SPACE_SPECIFIER_FACTORY =
-      "sourceIpSpaceSpecifierFactory";
+  private static final String PROP_SOURCE_IP_SPACE_SPECIFIER_FACTORY = "srcIpSpaceSpecifierFactory";
 
-  private static final String PROP_SOURCE_IP_SPACE_SPECIFIER_INPUT = "sourceIpSpace";
+  private static final String PROP_SOURCE_IP_SPACE_SPECIFIER_INPUT = "srcIpSpace";
 
   private boolean _ignoreAcls = false;
 
