@@ -5276,6 +5276,11 @@ ASTERISK
    '*'
 ;
 
+BACKWARD_SLASH
+:
+   '\\'
+;
+
 CARAT
 :
    '^'
@@ -5346,6 +5351,7 @@ FLOAT
    )
 ;
 */
+
 FORWARD_SLASH
 :
    '/'
@@ -5482,6 +5488,11 @@ PERIOD
 PLUS
 :
    '+'
+;
+
+QUESTION_MARK
+:
+   '?'
 ;
 
 SEMICOLON
@@ -5976,6 +5987,11 @@ M_Members_DOUBLE_QUOTE
    '"' -> channel ( HIDDEN )
 ;
 
+M_Members_BACKWARD_SLASH
+:
+   '\\' -> type (BACKWARD_SLASH)
+;
+
 M_Members_L
 :
    'L' -> type ( L )
@@ -6024,14 +6040,29 @@ M_Members_PERIOD
    '.' -> type ( PERIOD )
 ;
 
+M_Members_PLUS
+:
+   '+' -> type ( PLUS )
+;
+
 M_Members_PIPE
 :
    '|' -> type ( PIPE )
 ;
 
+M_Members_QUESTION_MARK
+:
+   '?' -> type ( QUESTION_MARK )
+;
+
 M_Members_TARGET
 :
    'target' -> type ( TARGET )
+;
+
+M_Members_UNDERSCORE
+:
+   '_' -> type ( UNDERSCORE )
 ;
 
 M_Members_WS
