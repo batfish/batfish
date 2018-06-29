@@ -1,4 +1,4 @@
-package org.batfish.question;
+package org.batfish.question.aaaauthenticationlogin;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
@@ -24,6 +24,7 @@ import org.batfish.datamodel.table.Row.RowBuilder;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
 import org.batfish.datamodel.vendor_family.cisco.Line;
+import org.batfish.question.QuestionPlugin;
 
 @AutoService(Plugin.class)
 public class AaaAuthenticationLoginQuestionPlugin extends QuestionPlugin {
@@ -45,7 +46,7 @@ public class AaaAuthenticationLoginQuestionPlugin extends QuestionPlugin {
      * @return The creates the answer element object.
      */
     @VisibleForTesting
-    public static TableAnswerElement create(AaaAuthenticationQuestion question) {
+    static TableAnswerElement create(AaaAuthenticationQuestion question) {
       List<ColumnMetadata> columnMetadata =
           ImmutableList.of(
               new ColumnMetadata(COLUMN_NODE, Schema.NODE, "Node", true, false),
@@ -86,7 +87,7 @@ public class AaaAuthenticationLoginQuestionPlugin extends QuestionPlugin {
     }
 
     @VisibleForTesting
-    public static Row getRow(String nodeName, Collection<Line> lines) {
+    static Row getRow(String nodeName, Collection<Line> lines) {
       List<String> exposedLines = new ArrayList<>();
       for (Line line : lines) {
         if (!line.requiresAuthentication()) {
