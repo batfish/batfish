@@ -3479,6 +3479,11 @@ NO_ADJACENCY_DOWN_NOTIFICATION
    'no-adjacency-down-notification'
 ;
 
+NO_ADVERTISE
+:
+   'no-advertise'
+;
+
 NO_ANTI_REPLAY
 :
    'no-anti-replay'
@@ -5989,9 +5994,9 @@ M_Members_NEWLINE
    -> type ( NEWLINE ) , popMode
 ;
 
-NO_ADVERTISE
+M_Members_NO_ADVERTISE
 :
-   'no-advertise'
+   'no-advertise' -> type ( NO_ADVERTISE )
 ;
 
 M_Members_NO_EXPORT
