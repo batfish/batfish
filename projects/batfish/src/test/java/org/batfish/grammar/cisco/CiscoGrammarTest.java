@@ -1714,15 +1714,13 @@ public class CiscoGrammarTest {
     String nxosRegexExpMulti = getCLRegex(nxosCommunityLists, "nxos_exp_multi");
 
     // Check well known community regexes are generated properly
-    String regexInternet =
-        "^" + CommonUtil.longToCommunity(WellKnownCommunity.INTERNET.getValue()) + "$";
-    String regexNoAdv =
-        "^" + CommonUtil.longToCommunity(WellKnownCommunity.NO_ADVERTISE.getValue()) + "$";
-    String regexNoExport =
-        "^" + CommonUtil.longToCommunity(WellKnownCommunity.NO_EXPORT.getValue()) + "$";
-    String regexGshut = "^" + CommonUtil.longToCommunity(WellKnownCommunity.GSHUT.getValue()) + "$";
+    String regexInternet = "^" + CommonUtil.longToCommunity(WellKnownCommunity.INTERNET) + "$";
+    String regexNoAdv = "^" + CommonUtil.longToCommunity(WellKnownCommunity.NO_ADVERTISE) + "$";
+    String regexNoExport = "^" + CommonUtil.longToCommunity(WellKnownCommunity.NO_EXPORT) + "$";
+    String regexGshut =
+        "^" + CommonUtil.longToCommunity(WellKnownCommunity.GRACEFUL_SHUTDOWN) + "$";
     String regexLocalAs =
-        "^" + CommonUtil.longToCommunity(WellKnownCommunity.LOCAL_AS.getValue()) + "$";
+        "^" + CommonUtil.longToCommunity(WellKnownCommunity.NO_EXPORT_SUBCONFED) + "$";
     assertThat(iosRegexStdInternet, equalTo(regexInternet));
     assertThat(iosRegexStdNoAdv, equalTo(regexNoAdv));
     assertThat(iosRegexStdNoExport, equalTo(regexNoExport));
