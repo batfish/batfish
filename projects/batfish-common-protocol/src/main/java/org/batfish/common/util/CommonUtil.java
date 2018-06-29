@@ -1393,16 +1393,6 @@ public class CommonUtil {
     }
   }
 
-  public static int nullChecker(Object a, Object b) {
-    if (a == null && b == null) {
-      return 0;
-    } else if (a != null && b != null) {
-      return 1;
-    } else {
-      return -1;
-    }
-  }
-
   public static void outputFileLines(Path downloadedFile, Consumer<String> outputFunction) {
     try (BufferedReader br = Files.newBufferedReader(downloadedFile, StandardCharsets.UTF_8)) {
       String line = null;
