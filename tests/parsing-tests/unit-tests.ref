@@ -42274,7 +42274,7 @@
             "                    DEC:'3'  <== mode:M_Members",
             "                    CLOSE_PAREN:')'  <== mode:M_Members",
             "                    ASTERISK:'*'  <== mode:M_Members",
-            "                    BACKWARD_SLASH:'\\'  <== mode:M_Members",
+            "                    BACKSLASH:'\\'  <== mode:M_Members",
             "                    QUESTION_MARK:'?'  <== mode:M_Members",
             "                    COLON:':'  <== mode:M_Members",
             "                    OPEN_BRACKET:'['  <== mode:M_Members",

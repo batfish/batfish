@@ -5276,7 +5276,7 @@ ASTERISK
    '*'
 ;
 
-BACKWARD_SLASH
+BACKSLASH
 :
    '\\'
 ;
@@ -5937,6 +5937,11 @@ M_Members_ASTERISK
    '*' -> type ( ASTERISK )
 ;
 
+M_Members_BACKSLASH
+:
+   '\\' -> type (BACKSLASH)
+;
+
 M_Members_CARAT
 :
    '^' -> type ( CARAT )
@@ -5985,11 +5990,6 @@ M_Members_DOLLAR
 M_Members_DOUBLE_QUOTE
 :
    '"' -> channel ( HIDDEN )
-;
-
-M_Members_BACKWARD_SLASH
-:
-   '\\' -> type (BACKWARD_SLASH)
 ;
 
 M_Members_L
