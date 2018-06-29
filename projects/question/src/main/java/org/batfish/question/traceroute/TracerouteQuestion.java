@@ -33,9 +33,9 @@ public final class TracerouteQuestion extends IPacketTraceQuestion {
   private static final String PROP_IGNORE_ACLS = "ignoreAcls";
 
   private static final String PROP_SOURCE_LOCATION_SPECIFIER_FACTORY =
-      "sourceLocationSpecifierFactory";
+      "traceStartLocationSpecifierFactory";
 
-  private static final String PROP_SOURCE_LOCATION_SPECIFIER_INPUT = "sourceLocation";
+  private static final String PROP_SOURCE_LOCATION_SPECIFIER_INPUT = "traceStart";
 
   private static final String PROP_SOURCE_IP_SPACE_SPECIFIER_FACTORY =
       "sourceIpSpaceSpecifierFactory";
