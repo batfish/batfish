@@ -685,7 +685,6 @@ null_single
             | IGMP
             | LOAD_SHARING
             | LOCAL
-            | NAME_SERVER
             | MFIB
             | MFWD
             | MOBILE
@@ -715,6 +714,7 @@ null_single
             | VERIFY
          )
       )
+      | ( NO IP (NAME_SERVER))
       | IP_ADDRESS_LITERAL
       | IP_FLOW_EXPORT_PROFILE
       |
@@ -882,7 +882,7 @@ null_single
       | SHELL
       | SMTP_SERVER
       | SNMP
-      | SNMP_SERVER
+      | (NO SNMP_SERVER)
       | SOFTWARE
       | SPD
       | SPE
