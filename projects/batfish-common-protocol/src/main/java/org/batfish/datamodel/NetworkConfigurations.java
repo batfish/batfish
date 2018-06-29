@@ -14,7 +14,7 @@ public final class NetworkConfigurations {
   @Nonnull private final Map<String, Configuration> _configurations;
 
   /** Wrap a configurations map */
-  public NetworkConfigurations(@Nonnull Map<String, Configuration> configurations) {
+  private NetworkConfigurations(@Nonnull Map<String, Configuration> configurations) {
     _configurations = requireNonNull(configurations);
   }
 
