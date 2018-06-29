@@ -4,15 +4,15 @@ ALLINONE_PATH=$(dirname "$ALLINONE")
 ALLINONE_JAR="$ALLINONE_PATH/target/allinone-bundle-${BATFISH_VERSION}.jar"
 CPSEP=":"
 if batfish_cygwin; then
-   ALLINONE_JAR="$(cygpath -w $ALLINONE_JAR)"
+   ALLINONE_JAR="$(cygpath -w ${ALLINONE_JAR})"
    ALLINONE_JAVA_ARGS="$ALLINONE_JAVA_ARGS -Djline.terminal=jline.UnixTerminal"
    stty -icanon min 1 -echo
    CPSEP=";"
 fi
-java $ALLINONE_JAVA_ARGS -cp "${ALLINONE_JAR}${CPSEP}${ALLINONE_CLASSPATH}" org.batfish.allinone.Main "$@"
+java ${ALLINONE_JAVA_ARGS} -cp "${ALLINONE_JAR}${CPSEP}${ALLINONE_CLASSPATH}" org.batfish.allinone.Main "$@"
 EXIT_CODE=$?
 if batfish_cygwin; then
    stty icanon echo
 fi
-exit $EXIT_CODE
+exit ${EXIT_CODE}
 
