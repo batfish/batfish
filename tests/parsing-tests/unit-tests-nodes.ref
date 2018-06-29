@@ -13717,6 +13717,16 @@
             ],
             "name" : "COMM_NON_CUST",
             "invertMatch" : false
+          },
+          "COMM_REGEX" : {
+            "lines" : [
+              {
+                "action" : "ACCEPT",
+                "regex" : "^_200_5?(1-3)*\\?:[^3]+$"
+              }
+            ],
+            "name" : "COMM_REGEX",
+            "invertMatch" : false
           }
         },
         "defaultCrossZoneAction" : "ACCEPT",
