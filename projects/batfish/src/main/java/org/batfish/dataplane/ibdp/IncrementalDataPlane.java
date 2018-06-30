@@ -6,6 +6,8 @@ import static org.batfish.common.util.CommonUtil.toImmutableSortedMap;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Table;
+import com.google.common.collect.TreeBasedTable;
 import com.google.common.graph.Network;
 import java.io.Serializable;
 import java.util.Map;
@@ -15,6 +17,7 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpPeerConfig;
+import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpSession;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
@@ -170,6 +173,25 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
                 nodeEntry.getValue().getVirtualRouters(),
                 Entry::getKey,
                 vrfEntry -> vrfEntry.getValue().getMainRib()));
+  }
+
+  @Override
+  public Table<String, String, Set<BgpRoute>> getBgpRoutes(boolean multipath) {
+    Table<String, String, Set<BgpRoute>> table = TreeBasedTable.create();
+
+    _nodes.forEach(
+        (hostname, node) ->
+            node.getVirtualRouters()
+                .forEach(
+                    (vrfName, vr) -> {
+                      table.put(
+                          hostname,
+                          vrfName,
+                          multipath
+                              ? vr.getBgpMultipathRib().getRoutes()
+                              : vr.getBgpBestPathRib().getRoutes());
+                    }));
+    return table;
   }
 
   @Override

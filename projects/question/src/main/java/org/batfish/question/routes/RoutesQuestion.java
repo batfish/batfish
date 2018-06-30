@@ -23,7 +23,8 @@ public class RoutesQuestion extends Question {
   /** RIBs of these protocols are available for examining routes using {@link RoutesQuestion}. */
   public enum RibProtocol {
     ALL("all"),
-    BGP("bgp");
+    BGP("bgp"),
+    BGPMP("bgpmp"); // BGP multi path
 
     private final String _protocolName;
 
