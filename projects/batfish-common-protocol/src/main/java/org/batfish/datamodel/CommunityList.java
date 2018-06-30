@@ -17,12 +17,10 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.common.BatfishException;
 import org.batfish.common.util.CommonUtil;
 
 @JsonSchemaDescription(
@@ -46,7 +44,9 @@ public class CommunityList implements Serializable {
 
   @Nonnull private final String _name;
 
-  private transient LoadingCache<Long, Boolean> _cache;
+  private transient LoadingCache<Long, Boolean> _communityCache;
+
+  private transient LoadingCache<String, Pattern> _patternCache;
 
   @JsonCreator
   private static CommunityList newCommunityList(
@@ -65,7 +65,7 @@ public class CommunityList implements Serializable {
   public CommunityList(@Nonnull String name, @Nonnull List<CommunityListLine> lines) {
     _name = name;
     _lines = lines;
-    initCache();
+    initCaches();
   }
 
   /** Check if any line matches given community */
@@ -83,8 +83,8 @@ public class CommunityList implements Serializable {
 
   /** Check if line matches community. If yes, return line action, otherwise {@code null}. */
   @Nullable
-  private static LineAction executeLineMatch(long community, CommunityListLine line) {
-    Pattern p = Pattern.compile(line.getRegex());
+  private LineAction executeLineMatch(long community, CommunityListLine line) {
+    Pattern p = _patternCache.getUnchecked(line.getRegex());
     String communityStr = CommonUtil.longToCommunity(community);
     Matcher matcher = p.matcher(communityStr);
     return matcher.find() ? line.getAction() : null;
@@ -106,14 +106,23 @@ public class CommunityList implements Serializable {
     return Objects.hash(_invertMatch, _lines);
   }
 
-  private void initCache() {
-    _cache =
+  private void initCaches() {
+    _communityCache =
         CacheBuilder.newBuilder()
             .build(
                 new CacheLoader<Long, Boolean>() {
                   @Override
                   public Boolean load(@Nonnull Long community) {
                     return computeIfMatches(community);
+                  }
+                });
+    _patternCache =
+        CacheBuilder.newBuilder()
+            .build(
+                new CacheLoader<String, Pattern>() {
+                  @Override
+                  public Pattern load(@Nonnull String regex) {
+                    return Pattern.compile(regex);
                   }
                 });
   }
@@ -142,16 +151,12 @@ public class CommunityList implements Serializable {
 
   /** Check if a given community is permitted/accepted by this list. */
   public boolean permits(long community) {
-    try {
-      return _cache.get(community);
-    } catch (ExecutionException e) {
-      throw new BatfishException("Could not match BGP community regex");
-    }
+    return _communityCache.getUnchecked(community);
   }
 
   private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
     in.defaultReadObject();
-    initCache();
+    initCaches();
   }
 
   public void setInvertMatch(boolean invertMatch) {
