@@ -3,6 +3,7 @@ package org.batfish.datamodel;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Table;
 import com.google.common.graph.Network;
 import com.google.common.graph.NetworkBuilder;
 import java.util.Map;
@@ -14,6 +15,8 @@ import javax.annotation.Nullable;
 public class MockDataPlane implements DataPlane {
 
   public static class Builder {
+
+    private Table<String, String, Set<BgpRoute>> _bgpRoutes;
 
     private Network<BgpPeerConfig, BgpSession> _bgpTopology;
 
@@ -44,6 +47,10 @@ public class MockDataPlane implements DataPlane {
 
     public MockDataPlane build() {
       return new MockDataPlane(this);
+    }
+
+    public void setBgpRoutes(Table<String, String, Set<BgpRoute>> bgpRoutes) {
+      this._bgpRoutes = bgpRoutes;
     }
 
     public Builder setBgpTopology(Network<BgpPeerConfig, BgpSession> bgpTopology) {
@@ -83,6 +90,8 @@ public class MockDataPlane implements DataPlane {
     return new Builder();
   }
 
+  private Table<String, String, Set<BgpRoute>> _bgpRoutes;
+
   private final Network<BgpPeerConfig, BgpSession> _bgpTopology;
 
   private final Map<String, Configuration> _configurations;
@@ -111,6 +120,16 @@ public class MockDataPlane implements DataPlane {
     _ribs = ImmutableSortedMap.copyOf(builder._ribs);
     _topology = builder._topology;
     _topologyEdges = ImmutableSortedSet.copyOf(builder._topologyEdges);
+  }
+
+  @Override
+  public Table<String, String, Set<BgpRoute>> getBgpRoutes(boolean multipath) {
+    return _bgpRoutes;
+  }
+
+  @Override
+  public Network<BgpPeerConfig, BgpSession> getBgpTopology() {
+    return _bgpTopology;
   }
 
   @Override
@@ -147,11 +166,6 @@ public class MockDataPlane implements DataPlane {
   @Override
   public SortedSet<Edge> getTopologyEdges() {
     return _topologyEdges;
-  }
-
-  @Override
-  public Network<BgpPeerConfig, BgpSession> getBgpTopology() {
-    return _bgpTopology;
   }
 
   @Override

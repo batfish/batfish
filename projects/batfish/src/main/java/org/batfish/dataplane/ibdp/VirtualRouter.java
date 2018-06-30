@@ -126,7 +126,7 @@ public class VirtualRouter extends ComparableStructure<String> {
       new RouteDependencyTracker<>();
 
   /** Best-path BGP RIB */
-  transient BgpBestPathRib _bgpBestPathRib;
+  BgpBestPathRib _bgpBestPathRib;
 
   /** Builder for constructing {@link RibDelta} as pertains to the best-path BGP RIB */
   private transient RibDelta.Builder<BgpRoute> _bgpBestPathDeltaBuilder;
@@ -135,7 +135,7 @@ public class VirtualRouter extends ComparableStructure<String> {
   transient SortedMap<UndirectedBgpSession, Queue<RouteAdvertisement<BgpRoute>>> _bgpIncomingRoutes;
 
   /** BGP multipath RIB */
-  transient BgpMultipathRib _bgpMultipathRib;
+  BgpMultipathRib _bgpMultipathRib;
 
   /** Builder for constructing {@link RibDelta} as pertains to the multipath BGP RIB */
   private transient RibDelta.Builder<BgpRoute> _bgpMultiPathDeltaBuilder;
@@ -3016,5 +3016,9 @@ public class VirtualRouter extends ComparableStructure<String> {
 
   Set<BgpAdvertisement> getSentBgpAdvertisements() {
     return _sentBgpAdvertisements;
+  }
+
+  public BgpMultipathRib getBgpMultipathRib() {
+    return _bgpMultipathRib;
   }
 }
