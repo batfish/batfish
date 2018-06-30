@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 import java.io.Serializable;
 import java.util.LinkedHashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -39,13 +40,7 @@ public class CommunityListLine implements Serializable {
       return false;
     }
     CommunityListLine other = (CommunityListLine) o;
-    if (_action != other._action) {
-      return false;
-    }
-    if (!_regex.equals(other._regex)) {
-      return false;
-    }
-    return true;
+    return _action == other._action && Objects.equals(_regex, other._regex);
   }
 
   @JsonProperty(PROP_ACTION)
@@ -89,11 +84,7 @@ public class CommunityListLine implements Serializable {
 
   @Override
   public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + _action.ordinal();
-    result = prime * result + _regex.hashCode();
-    return result;
+    return Objects.hash(_action.ordinal(), _regex);
   }
 
   public Long toLiteralCommunity() {
