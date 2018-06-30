@@ -1,5 +1,6 @@
 package org.batfish.question.routes;
 
+import static org.batfish.datamodel.Prefix.MAX_PREFIX_LENGTH;
 import static org.batfish.question.routes.RoutesAnswerer.COL_AS_PATH;
 import static org.batfish.question.routes.RoutesAnswerer.COL_COMMUNITIES;
 import static org.batfish.question.routes.RoutesAnswerer.COL_LOCAL_PREF;
@@ -12,6 +13,7 @@ import static org.batfish.question.routes.RoutesAnswerer.COL_ORIGIN_PROTOCOL;
 import static org.batfish.question.routes.RoutesAnswerer.COL_PROTOCOL;
 import static org.batfish.question.routes.RoutesAnswerer.COL_VRF_NAME;
 import static org.batfish.question.routes.RoutesAnswerer.getMainRibRoutes;
+import static org.batfish.question.routes.RoutesAnswerer.getRowsForBgpRoutes;
 import static org.batfish.question.routes.RoutesAnswerer.getTableMetadata;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
@@ -21,12 +23,16 @@ import static org.hamcrest.Matchers.hasSize;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Multiset;
 import java.util.List;
 import java.util.SortedMap;
 import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.BgpRoute.Builder;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.GenericRib;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.answers.Schema;
@@ -139,5 +145,26 @@ public class RoutesAnswererTest {
             .map(ColumnMetadata::getName)
             .collect(ImmutableList.toImmutableList()),
         equalTo(expected));
+  }
+
+  @Test
+  public void testGetBgpRoutesCommunities() {
+    Ip ip = new Ip("1.1.1.1");
+    List<Row> rows =
+        getRowsForBgpRoutes(
+            "node",
+            "vrf",
+            ImmutableSet.of(
+                new Builder()
+                    .setNetwork(new Prefix(ip, MAX_PREFIX_LENGTH))
+                    .setOriginType(OriginType.IGP)
+                    .setOriginatorIp(ip)
+                    .setReceivedFromIp(ip)
+                    .setCommunities(ImmutableSortedSet.of(65537L))
+                    .build()));
+
+    assertThat(
+        rows.get(0).get(COL_COMMUNITIES, Schema.list(Schema.STRING)),
+        equalTo(ImmutableList.of("1:1")));
   }
 }

@@ -1,6 +1,7 @@
 package org.batfish.question.routes;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.collect.ImmutableList.toImmutableList;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashMultiset;
@@ -15,6 +16,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
+import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.DataPlane;
@@ -139,13 +141,13 @@ public class RoutesAnswerer extends Answerer {
                     .put(COL_NEXT_HOP, firstNonNull(route.getNextHop(), VALUE_NA))
                     .put(COL_PROTOCOL, route.getProtocol())
                     .build())
-        .collect(ImmutableList.toImmutableList());
+        .collect(toImmutableList());
   }
 
   /** Convert a set of {@link BgpRoute} into a list of rows. */
   @Nonnull
-  private static List<Row> getRowsForBgpRoutes(
-      String hostname, String vrfName, Set<BgpRoute> routes) {
+  @VisibleForTesting
+  static List<Row> getRowsForBgpRoutes(String hostname, String vrfName, Set<BgpRoute> routes) {
     Node nodeObj = new Node(hostname);
     return routes
         .stream()
@@ -160,10 +162,16 @@ public class RoutesAnswerer extends Answerer {
                     .put(COL_AS_PATH, route.getAsPath().getAsPathString())
                     .put(COL_METRIC, route.getMetric())
                     .put(COL_LOCAL_PREF, route.getLocalPreference())
-                    .put(COL_COMMUNITIES, route.getCommunities())
+                    .put(
+                        COL_COMMUNITIES,
+                        route
+                            .getCommunities()
+                            .stream()
+                            .map(CommonUtil::longToCommunity)
+                            .collect(toImmutableList()))
                     .put(COL_ORIGIN_PROTOCOL, firstNonNull(route.getSrcProtocol(), VALUE_NA))
                     .build())
-        .collect(ImmutableList.toImmutableList());
+        .collect(toImmutableList());
   }
 
   /** Generate the table metadata based on the protocol for which we are examining the RIBs */
@@ -178,7 +186,7 @@ public class RoutesAnswerer extends Answerer {
         columnBuilder.add(new ColumnMetadata(COL_METRIC, Schema.INTEGER, "Metric"));
         columnBuilder.add(new ColumnMetadata(COL_LOCAL_PREF, Schema.INTEGER, "Local Preference"));
         columnBuilder.add(
-            new ColumnMetadata(COL_COMMUNITIES, Schema.list(Schema.INTEGER), "BGP communities"));
+            new ColumnMetadata(COL_COMMUNITIES, Schema.list(Schema.STRING), "BGP communities"));
         columnBuilder.add(
             new ColumnMetadata(COL_ORIGIN_PROTOCOL, Schema.STRING, "Origin protocol"));
         break;
