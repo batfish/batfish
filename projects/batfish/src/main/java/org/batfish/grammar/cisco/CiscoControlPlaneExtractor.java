@@ -1801,7 +1801,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitCisprf_match(Cisprf_matchContext ctx) {
-    _currentIsakmpProfile.setMatchIdentity(toIp(ctx.address), toIp(ctx.mask));
+    _currentIsakmpProfile.setMatchIdentity(
+        new IpWildcard(toIp(ctx.address), toIp(ctx.mask).inverted()));
   }
 
   @Override
@@ -1829,8 +1830,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitCkr_psk(Ckr_pskContext ctx) {
-    Ip wildCardMask =
-        ctx.wildcard_mask == null ? new Ip("255.255.255.255") : toIp(ctx.wildcard_mask);
+    Ip wildCardMask = ctx.wildcard_mask == null ? Ip.MAX : toIp(ctx.wildcard_mask);
     _currentKeyring.setKey(
         CommonUtil.sha256Digest(ctx.variable_permissive().getText() + CommonUtil.salt()));
     _currentKeyring.setRemoteIdentity(

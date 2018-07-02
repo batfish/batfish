@@ -5,6 +5,7 @@ import javax.annotation.Nonnull;
 import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.datamodel.IkePhase1Policy;
 import org.batfish.datamodel.IkePhase1Proposal;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpWildcard;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
@@ -30,6 +31,17 @@ final class IkePhase1PolicyMatchersImpl {
     @Override
     protected IpWildcard featureValueOf(IkePhase1Policy actual) {
       return actual.getRemoteIdentity();
+    }
+  }
+
+  static final class HasSelfIdentity extends FeatureMatcher<IkePhase1Policy, Ip> {
+    HasSelfIdentity(@Nonnull Matcher<? super Ip> subMatcher) {
+      super(subMatcher, "An IKE phase 1 policy with SelfIdentity:", "SelfIdentity");
+    }
+
+    @Override
+    protected Ip featureValueOf(IkePhase1Policy actual) {
+      return actual.getSelfIdentity();
     }
   }
 

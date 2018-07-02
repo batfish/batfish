@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.util.ComparableStructure;
 
@@ -23,7 +24,7 @@ public class IkePhase1Policy extends ComparableStructure<String> {
 
   private static final String PROP_LOCAL_INTERFACE = "localInterface";
 
-  private List<IkePhase1Proposal> _ikePhase1Proposals;
+  private @Nonnull List<IkePhase1Proposal> _ikePhase1Proposals;
 
   private IkePhase1Key _ikePhase1Key;
 

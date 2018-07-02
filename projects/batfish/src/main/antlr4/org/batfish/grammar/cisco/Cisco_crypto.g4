@@ -394,6 +394,7 @@ cis_profile
       | cisprf_local_address
       | cisprf_match
       | cisprf_null
+      | cisprf_self_identity
    )*
 ;
 
@@ -476,7 +477,7 @@ cisprf_null
 
 cisprf_self_identity
 :
-   SELF_IDENTITY IP_ADDRESS
+   SELF_IDENTITY IP_ADDRESS NEWLINE
 ;
 
 

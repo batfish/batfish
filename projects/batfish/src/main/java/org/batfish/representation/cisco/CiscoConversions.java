@@ -146,8 +146,8 @@ class CiscoConversions {
   }
 
   /**
-   * Resolves the interface names of the addresses used as local addresses of IsaKmpProfiles and
-   * Keyrings
+   * Resolves the interface names of the addresses used as local addresses of {@link IsakmpProfile}
+   * and {@link Keyring}
    */
   static void resolveKeyringIsakmpProfileIfaceNames(
       Map<String, Interface> interfaces,
@@ -208,8 +208,8 @@ class CiscoConversions {
   }
 
   static IkePhase1Key toIkePhase1Key(Keyring keyring) {
-    IkePhase1Key ikePhase1Key = new IkePhase1Key(keyring.getName());
-    ikePhase1Key.setKey(keyring.getKey());
+    IkePhase1Key ikePhase1Key = new IkePhase1Key();
+    ikePhase1Key.setKeyValue(keyring.getKey());
     ikePhase1Key.setKeyType(IkeKeyType.PRE_SHARED_KEY);
     ikePhase1Key.setLocalInterface(keyring.getLocalInterfaceName());
     ikePhase1Key.setRemoteIdentity(keyring.getRemoteIdentity());
@@ -229,9 +229,8 @@ class CiscoConversions {
                 ikePhase1ProposalBuilder.add(ikePhase1ProposalEntry.getValue())));
     ikePhase1Policy.setIkePhase1Proposals(ikePhase1ProposalBuilder.build());
     ikePhase1Policy.setSelfIdentity(isakmpProfile.getSelfIdentity());
-    if (isakmpProfile.getMatchIdentity() != null) {
-      ikePhase1Policy.setRemoteIdentity(new IpWildcard(isakmpProfile.getMatchIdentity()));
-    }
+    ikePhase1Policy.setRemoteIdentity(isakmpProfile.getMatchIdentity());
+
     ikePhase1Policy.setLocalInterface(isakmpProfile.getLocalInterfaceName());
     ikePhase1Policy.setIkePhase1Key(getMatchingPsk(isakmpProfile, w, c.getIkePhase1Keys()));
     return ikePhase1Policy;
@@ -260,7 +259,7 @@ class CiscoConversions {
         w.redFlag(
             String.format(
                 "Invalid local address interface configured for keyring %s",
-                tempIkePhase1Key.getName()));
+                isakmpProfile.getKeyring()));
       } else if (tempIkePhase1Key.match(
           isakmpProfile.getLocalInterfaceName(), isakmpProfile.getMatchIdentity())) {
         // found a matching keyring

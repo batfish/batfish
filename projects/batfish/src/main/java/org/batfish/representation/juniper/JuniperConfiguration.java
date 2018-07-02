@@ -4,10 +4,13 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.ImmutableSortedMap.Builder;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -1175,16 +1178,21 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return newIkePolicy;
   }
 
-  private IkePhase1Policy toIkePhase1Policy(IkePolicy ikePolicy) {
+  /**
+   * Converts {@link IkePolicy} to {@link IkePhase1Policy} and puts the used pre-shared key as a
+   * {@link IkePhase1Key} in the passed-in {@code ikePhase1Keys}
+   */
+  private IkePhase1Policy toIkePhase1Policy(
+      IkePolicy ikePolicy, ImmutableSortedMap.Builder<String, IkePhase1Key> ikePhase1Keys) {
     String name = ikePolicy.getName();
     IkePhase1Policy ikePhase1Policy = new IkePhase1Policy(name);
 
     // pre-shared-key
-    IkePhase1Key ikePhase1Key = new IkePhase1Key(String.format("%s-key", ikePolicy.getName()));
+    IkePhase1Key ikePhase1Key = new IkePhase1Key();
     ikePhase1Key.setKeyType(IkeKeyType.PRE_SHARED_KEY);
-    ikePhase1Key.setKey(ikePolicy.getPreSharedKeyHash());
+    ikePhase1Key.setKeyValue(ikePolicy.getPreSharedKeyHash());
 
-    _c.getIkePhase1Keys().put(ikePhase1Key.getName(), ikePhase1Key);
+    ikePhase1Keys.put(String.format("~IKE_PHASE1_KEY_%s~", ikePolicy.getName()), ikePhase1Key);
 
     ikePhase1Policy.setIkePhase1Key(ikePhase1Key);
     ImmutableList.Builder<IkePhase1Proposal> ikePhase1ProposalBuilder = ImmutableList.builder();
@@ -1994,6 +2002,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
                 _c.getIkePhase1Proposals()
                     .put(ikeProposal.getName(), toIkePhase1Proposal(ikeProposal)));
 
+    ImmutableSortedMap.Builder<String, IkePhase1Key> ikePhase1KeysBuilder =
+        new Builder<>(Comparator.naturalOrder());
+
     // convert ike policies
     for (Entry<String, IkePolicy> e : _ikePolicies.entrySet()) {
       String name = e.getKey();
@@ -2001,8 +2012,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
       org.batfish.datamodel.IkePolicy newPolicy = toIkePolicy(oldIkePolicy);
       _c.getIkePolicies().put(name, newPolicy);
       // storing IKE phase 1 policy
-      _c.getIkePhase1Policies().put(name, toIkePhase1Policy(oldIkePolicy));
+      _c.getIkePhase1Policies().put(name, toIkePhase1Policy(oldIkePolicy, ikePhase1KeysBuilder));
     }
+
+    _c.setIkePhase1Keys(ikePhase1KeysBuilder.build());
 
     // convert ike gateways
     for (Entry<String, IkeGateway> e : _ikeGateways.entrySet()) {

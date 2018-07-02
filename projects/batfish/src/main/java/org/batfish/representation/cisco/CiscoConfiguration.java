@@ -53,6 +53,7 @@ import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.GeneratedRoute6;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IkeGateway;
+import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.datamodel.IkePolicy;
 import org.batfish.datamodel.IkeProposal;
 import org.batfish.datamodel.InterfaceAddress;
@@ -3235,9 +3236,13 @@ public final class CiscoConfiguration extends VendorConfiguration {
     addIkePoliciesAndGateways(c);
 
     // keyrings to IKE phase 1 keys
+    ImmutableMap.Builder<String, IkePhase1Key> ikePhase1KeysBuilder =
+        new ImmutableSortedMap.Builder<>(Comparator.naturalOrder());
     _keyrings
         .values()
-        .forEach(keyring -> c.getIkePhase1Keys().put(keyring.getName(), toIkePhase1Key(keyring)));
+        .forEach(keyring -> ikePhase1KeysBuilder.put(keyring.getName(), toIkePhase1Key(keyring)));
+
+    c.setIkePhase1Keys(ikePhase1KeysBuilder.build());
 
     // ISAKMP profiles to IKE phase 1 policies
     _isakmpProfiles
@@ -3880,8 +3885,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
       }
 
       Ip localAddress = isakmpProfile.getLocalAddress();
-      Prefix remotePrefix = isakmpProfile.getMatchIdentity();
-      if (localAddress == null || remotePrefix == null) {
+      IpWildcard remoteIdentity = isakmpProfile.getMatchIdentity();
+      if (localAddress == null || remoteIdentity == null) {
         _w.redFlag(
             String.format(
                 "Can't get IkeGateway: Local or remote address is not set for isakmpProfile %s",
@@ -3889,8 +3894,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
       } else {
         IkeGateway ikeGateway = new IkeGateway(e.getKey());
         c.getIkeGateways().put(name, ikeGateway);
-        ikeGateway.setAddress(remotePrefix.getStartIp());
-        Interface oldIface = getInterfaceByTunnelAddresses(localAddress, remotePrefix);
+        ikeGateway.setAddress(remoteIdentity.toPrefix().getStartIp());
+        Interface oldIface = getInterfaceByTunnelAddresses(localAddress, remoteIdentity.toPrefix());
         if (oldIface != null) {
           ikeGateway.setExternalInterface(c.getInterfaces().get(oldIface.getName()));
         } else {

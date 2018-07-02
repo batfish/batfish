@@ -5,7 +5,6 @@ import javax.annotation.Nullable;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpWildcard;
-import org.batfish.datamodel.Prefix;
 
 public class Keyring extends ComparableStructure<String> {
 
@@ -14,9 +13,6 @@ public class Keyring extends ComparableStructure<String> {
   @Nullable private Ip _localAddress;
 
   @Nullable private String _localInterfaceName;
-
-  // TODO: deprecate once old Ike Phase 1 data-model is phased out
-  private Ip _remoteAddress;
 
   private IpWildcard _remoteIdentity;
 
@@ -40,17 +36,22 @@ public class Keyring extends ComparableStructure<String> {
     return _localInterfaceName;
   }
 
-  public Ip getRemoteAddress() {
-    return _remoteAddress;
-  }
-
   public IpWildcard getRemoteIdentity() {
     return _remoteIdentity;
   }
 
-  public boolean match(Ip localAddress, Prefix matchIdentity) {
-    IpWildcard candidateIpWildcard = new IpWildcard(matchIdentity);
-    return _remoteIdentity.supersetOf(candidateIpWildcard)
+  /**
+   * Returns true if this {@link Keyring} can be used with the given localInterface and
+   * matchIdentity
+   *
+   * @param localAddress {@link org.batfish.datamodel.Interface} {@link Ip} on which this {@link
+   *     Keyring} is intended to be used
+   * @param matchIdentity {@link IpWildcard} for the remote peers with which this {@link Keyring} is
+   *     intended to be used
+   * @return true if this {@link Keyring} can be used with the given localAddress and matchIdentity
+   */
+  public boolean match(Ip localAddress, IpWildcard matchIdentity) {
+    return _remoteIdentity.supersetOf(matchIdentity)
         && (_localAddress == null || Objects.equals(localAddress, _localAddress));
   }
 
@@ -64,10 +65,6 @@ public class Keyring extends ComparableStructure<String> {
 
   public void setLocalInterfaceName(String localInterfaceName) {
     _localInterfaceName = localInterfaceName;
-  }
-
-  public void setRemoteAddress(Ip address) {
-    _remoteAddress = address;
   }
 
   public void setRemoteIdentity(IpWildcard remoteIdentity) {

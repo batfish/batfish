@@ -3,11 +3,11 @@ package org.batfish.datamodel;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import java.io.Serializable;
 import java.util.Objects;
-import org.batfish.common.util.ComparableStructure;
 
 /** Represents a key to be used with IKE phase 1 policy */
-public class IkePhase1Key extends ComparableStructure<String> {
+public class IkePhase1Key implements Serializable {
   private static final long serialVersionUID = 1L;
 
   private static final String PROP_KEY_TYPE = "keyType";
@@ -20,16 +20,14 @@ public class IkePhase1Key extends ComparableStructure<String> {
 
   private IkeKeyType _keyType;
 
-  private String _key;
+  private String _keyValue;
 
   private IpWildcard _remoteIdentity;
 
   private String _localInterface;
 
   @JsonCreator
-  public IkePhase1Key(@JsonProperty(PROP_NAME) String name) {
-    super(name);
-  }
+  public IkePhase1Key() {}
 
   @JsonPropertyDescription("Type of key")
   @JsonProperty(PROP_KEY_TYPE)
@@ -51,14 +49,25 @@ public class IkePhase1Key extends ComparableStructure<String> {
 
   @JsonPropertyDescription("Value of the key")
   @JsonProperty(PROP_KEY)
-  public String getKey() {
-    return _key;
+  public String getKeyValue() {
+    return _keyValue;
   }
 
-  public boolean match(String localInterface, Prefix matchIdentity) {
+  /**
+   * Returns true if this {@link IkePhase1Key} can be used with the given localInterface and
+   * matchIdentity
+   *
+   * @param localInterface {@link Interface} name on which this {@link IkePhase1Key} is intended to
+   *     be used
+   * @param matchIdentity {@link IpWildcard} for the remote peers with which this {@link
+   *     IkePhase1Key} is intended to be used
+   * @return true if this {@link IkePhase1Key} can be used with the given localInterface and
+   *     matchIdentity
+   */
+  public boolean match(String localInterface, IpWildcard matchIdentity) {
     return _remoteIdentity != null
         && matchIdentity != null
-        && _remoteIdentity.supersetOf(new IpWildcard(matchIdentity))
+        && _remoteIdentity.supersetOf(matchIdentity)
         && (_localInterface == null || Objects.equals(_localInterface, localInterface));
   }
 
@@ -68,8 +77,8 @@ public class IkePhase1Key extends ComparableStructure<String> {
   }
 
   @JsonProperty(PROP_KEY)
-  public void setKey(String key) {
-    _key = key;
+  public void setKeyValue(String keyValue) {
+    _keyValue = keyValue;
   }
 
   @JsonProperty(PROP_REMOTE_IDENTITY)

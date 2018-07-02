@@ -22,12 +22,14 @@ crypto keyring ISAKMP-KEYRING-INTERFACE
 !
 crypto isakmp profile ISAKMP-PROFILE-ADDRESS
    keyring ISAKMP-KEYRING-ADDRESS
+   self-identity 2.3.4.6
    match identity address 1.2.3.4 255.255.255.255
    keepalive 10 retry 3
    local-address 2.3.4.6
 !
 crypto isakmp profile ISAKMP-PROFILE-INTERFACE
    keyring ISAKMP-KEYRING-INTERFACE
+   self-identity 2.3.4.6
    match identity address 1.2.3.4 255.255.255.255
    keepalive 10 retry 3
    local-address TenGigabitEthernet0/0

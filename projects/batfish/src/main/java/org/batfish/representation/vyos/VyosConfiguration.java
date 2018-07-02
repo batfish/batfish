@@ -159,11 +159,12 @@ public class VyosConfiguration extends VendorConfiguration {
         IkePhase1Policy ikePhase1Policy = new IkePhase1Policy(ikeGroupName);
 
         // pre-shared-key
-        IkePhase1Key ikePhase1Key = new IkePhase1Key(String.format("%s-key", ipsecPeer.getName()));
+        IkePhase1Key ikePhase1Key = new IkePhase1Key();
         ikePhase1Key.setKeyType(IkeKeyType.PRE_SHARED_KEY);
-        ikePhase1Key.setKey(ipsecPeer.getAuthenticationPreSharedSecretHash());
+        ikePhase1Key.setKeyValue(ipsecPeer.getAuthenticationPreSharedSecretHash());
 
-        _c.getIkePhase1Keys().put(ikePhase1Key.getName(), ikePhase1Key);
+        _c.getIkePhase1Keys()
+            .put(String.format("~IKE_PHASE1_KEY_%s~", ipsecPeer.getName()), ikePhase1Key);
 
         ikePhase1Policy.setIkePhase1Key(ikePhase1Key);
 

@@ -65,6 +65,7 @@ import static org.batfish.datamodel.matchers.IkePhase1PolicyMatchers.hasIkePhase
 import static org.batfish.datamodel.matchers.IkePhase1PolicyMatchers.hasIkePhase1Proposals;
 import static org.batfish.datamodel.matchers.IkePhase1PolicyMatchers.hasLocalInterface;
 import static org.batfish.datamodel.matchers.IkePhase1PolicyMatchers.hasRemoteIdentity;
+import static org.batfish.datamodel.matchers.IkePhase1PolicyMatchers.hasSelfIdentity;
 import static org.batfish.datamodel.matchers.IkePolicyMatchers.hasPresharedKeyHash;
 import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasAuthenticationAlgorithm;
 import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasAuthenticationMethod;
@@ -1951,9 +1952,10 @@ public class CiscoGrammarTest {
             "ISAKMP-PROFILE-ADDRESS",
             allOf(
                 hasIkePhase1Key(
-                    IkePhase1KeyMatchers.hasKey(
+                    IkePhase1KeyMatchers.hasKeyValue(
                         CommonUtil.sha256Digest("psk1" + CommonUtil.salt()))),
                 hasRemoteIdentity(equalTo(new IpWildcard("1.2.3.4:0.0.0.0"))),
+                hasSelfIdentity(equalTo(new Ip("2.3.4.6"))),
                 hasLocalInterface(equalTo("TenGigabitEthernet0/0")),
                 hasIkePhase1Proposals(
                     contains(
@@ -1967,9 +1969,10 @@ public class CiscoGrammarTest {
             "ISAKMP-PROFILE-INTERFACE",
             allOf(
                 hasIkePhase1Key(
-                    IkePhase1KeyMatchers.hasKey(
+                    IkePhase1KeyMatchers.hasKeyValue(
                         CommonUtil.sha256Digest("psk1" + CommonUtil.salt()))),
                 hasRemoteIdentity(equalTo(new IpWildcard("1.2.3.4:0.0.0.0"))),
+                hasSelfIdentity(equalTo(new Ip("2.3.4.6"))),
                 hasLocalInterface(equalTo("TenGigabitEthernet0/0")),
                 hasIkePhase1Proposals(
                     contains(

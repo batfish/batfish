@@ -4,11 +4,13 @@ import java.util.List;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.datamodel.IkePhase1Proposal;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.matchers.IkePhase1PolicyMatchersImpl.HasIkePhase1Key;
 import org.batfish.datamodel.matchers.IkePhase1PolicyMatchersImpl.HasIkePhase1Proposals;
 import org.batfish.datamodel.matchers.IkePhase1PolicyMatchersImpl.HasLocalInterface;
 import org.batfish.datamodel.matchers.IkePhase1PolicyMatchersImpl.HasRemoteIdentity;
+import org.batfish.datamodel.matchers.IkePhase1PolicyMatchersImpl.HasSelfIdentity;
 import org.hamcrest.Matcher;
 
 public final class IkePhase1PolicyMatchers {
@@ -28,6 +30,14 @@ public final class IkePhase1PolicyMatchers {
   public static HasRemoteIdentity hasRemoteIdentity(
       @Nonnull Matcher<? super IpWildcard> subMatcher) {
     return new HasRemoteIdentity(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the IkE Phase 1
+   * Policy's Self Identity
+   */
+  public static HasSelfIdentity hasSelfIdentity(@Nonnull Matcher<? super Ip> subMatcher) {
+    return new HasSelfIdentity(subMatcher);
   }
 
   /**
