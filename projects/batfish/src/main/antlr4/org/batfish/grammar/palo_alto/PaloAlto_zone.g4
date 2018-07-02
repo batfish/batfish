@@ -23,8 +23,3 @@ szn_layer3
 :
     LAYER3 variable_list?
 ;
-
-blah3
-:
-    LAYER3
-;

@@ -197,7 +197,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     String hostname = getHostname();
     _c = new Configuration(hostname, _vendor);
     _c.setDefaultCrossZoneAction(LineAction.REJECT);
-    _c.setDefaultInboundAction(LineAction.REJECT);
+    _c.setDefaultInboundAction(LineAction.ACCEPT);
     _c.setDnsServers(getDnsServers());
     _c.setNtpServers(getNtpServers());
 
