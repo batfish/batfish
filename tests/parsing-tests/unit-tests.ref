@@ -18566,7 +18566,7 @@
             "        (ckr_psk",
             "          PRE_SHARED_KEY:'pre-shared-key'  <== mode:DEFAULT_MODE",
             "          ADDRESS:'address'  <== mode:DEFAULT_MODE",
-            "          IP_ADDRESS:'1.1.1.1'  <== mode:DEFAULT_MODE",
+            "          ip_address = IP_ADDRESS:'1.1.1.1'  <== mode:DEFAULT_MODE",
             "          KEY:'key'  <== mode:DEFAULT_MODE",
             "          (variable_permissive",
             "            VARIABLE:'9Aa9'  <== mode:DEFAULT_MODE",

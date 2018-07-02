@@ -418,9 +418,32 @@
             "localAddress" : "172.16.1.2"
           }
         },
+        "ikePhase1Keys" : {
+          "keyring-vpn-ba2e34a8-0" : {
+            "name" : "keyring-vpn-ba2e34a8-0",
+            "key" : "7db2fd6e9dcffcf826743b57bc0518cfcbca8f4db0b80a7a2c3f0c3b09deb49a",
+            "keyType" : "PRE_SHARED_KEY",
+            "localInterface" : "GigabitEthernet2/0",
+            "remoteIdentity" : "52.27.166.152"
+          },
+          "keyring-vpn-ba2e34a8-1" : {
+            "name" : "keyring-vpn-ba2e34a8-1",
+            "key" : "84d71e5f49cce153c80a1f13b47989d25f2aa29d9bbc75624ab73435db792f87",
+            "keyType" : "PRE_SHARED_KEY",
+            "localInterface" : "GigabitEthernet2/0",
+            "remoteIdentity" : "52.39.121.126"
+          }
+        },
         "ikePhase1Policies" : {
           "isakmp-vpn-ba2e34a8-0" : {
             "name" : "isakmp-vpn-ba2e34a8-0",
+            "ikePhase1Key" : {
+              "name" : "keyring-vpn-ba2e34a8-0",
+              "key" : "7db2fd6e9dcffcf826743b57bc0518cfcbca8f4db0b80a7a2c3f0c3b09deb49a",
+              "keyType" : "PRE_SHARED_KEY",
+              "localInterface" : "GigabitEthernet2/0",
+              "remoteIdentity" : "52.27.166.152"
+            },
             "ikePhase1Proposals" : [
               {
                 "name" : "200",
@@ -439,10 +462,18 @@
                 "lifetimeSeconds" : 28800
               }
             ],
-            "preSharedKey" : "7db2fd6e9dcffcf826743b57bc0518cfcbca8f4db0b80a7a2c3f0c3b09deb49a"
+            "localInterface" : "GigabitEthernet2/0",
+            "remoteIdentity" : "52.27.166.152"
           },
           "isakmp-vpn-ba2e34a8-1" : {
             "name" : "isakmp-vpn-ba2e34a8-1",
+            "ikePhase1Key" : {
+              "name" : "keyring-vpn-ba2e34a8-1",
+              "key" : "84d71e5f49cce153c80a1f13b47989d25f2aa29d9bbc75624ab73435db792f87",
+              "keyType" : "PRE_SHARED_KEY",
+              "localInterface" : "GigabitEthernet2/0",
+              "remoteIdentity" : "52.39.121.126"
+            },
             "ikePhase1Proposals" : [
               {
                 "name" : "200",
@@ -461,7 +492,8 @@
                 "lifetimeSeconds" : 28800
               }
             ],
-            "preSharedKey" : "84d71e5f49cce153c80a1f13b47989d25f2aa29d9bbc75624ab73435db792f87"
+            "localInterface" : "GigabitEthernet2/0",
+            "remoteIdentity" : "52.39.121.126"
           }
         },
         "ikePhase1Proposals" : {
