@@ -134,6 +134,7 @@ public enum CiscoStructureUsage implements StructureUsage {
   ROUTE_POLICY_PREFIX_SET("route-policy prefix-set"),
   ROUTER_ISIS_DISTRIBUTE_LIST_ACL("router isis distribute-list acl"),
   ROUTER_VRRP_INTERFACE("router vrrp interface"),
+  SERVICE_OBJECT_GROUP_SERVICE_OBJECT("object-group service service-object object"),
   SERVICE_POLICY_GLOBAL("service-policy global"),
   SERVICE_POLICY_INTERFACE("service-policy interface"),
   SERVICE_POLICY_INTERFACE_POLICY("service-policy interface policy"),

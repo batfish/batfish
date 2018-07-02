@@ -455,7 +455,7 @@ ogs_service_object
    SERVICE_OBJECT
    (
       (
-         protocol ~NEWLINE*
+         service_specifier
       )
       |
       (
@@ -546,9 +546,7 @@ os_description
 
 os_service
 :
-   SERVICE protocol NEWLINE
-   //todo: change to os_service_type allowing tcp and udp port ranges
-
+   SERVICE service_specifier NEWLINE
 ;
 
 pm_class
