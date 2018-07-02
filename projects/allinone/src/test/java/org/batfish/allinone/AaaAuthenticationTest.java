@@ -1,6 +1,8 @@
 package org.batfish.allinone;
 
-import static org.batfish.datamodel.matchers.RowsMatchers.hasSize;
+import static org.batfish.datamodel.matchers.DataModelMatchers.forAll;
+import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
+import static org.batfish.datamodel.matchers.TableAnswerElementMatchers.hasRows;
 import static org.batfish.question.aaaauthenticationlogin.AaaAuthenticationLoginQuestionPlugin.AaaAuthenticationAnswerer.COLUMN_LINE_NAMES;
 import static org.batfish.question.aaaauthenticationlogin.AaaAuthenticationLoginQuestionPlugin.AaaAuthenticationAnswerer.COLUMN_NODE;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -9,9 +11,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
+import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.NodesSpecifier;
-import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -46,18 +48,14 @@ public class AaaAuthenticationTest {
     AaaAuthenticationAnswerer answerer = new AaaAuthenticationAnswerer(question, batfish);
     TableAnswerElement answer = answerer.answer();
 
-    assertThat(answer.getRows(), hasSize(1));
-
-    for (Row row : answer.getRows().getData()) {
-      // there should only be one row
-      assertThat(
-          row,
-          equalTo(
-              Row.of(
-                  COLUMN_NODE,
-                  new Node(hostname2),
-                  COLUMN_LINE_NAMES,
-                  Collections.singletonList("aux0"))));
-    }
+    assertThat(
+        answer,
+        hasRows(
+            forAll(
+                hasColumn(COLUMN_NODE, equalTo(new Node(hostname2)), Schema.NODE),
+                hasColumn(
+                    COLUMN_LINE_NAMES,
+                    equalTo(Collections.singletonList("aux0")),
+                    Schema.list(Schema.STRING)))));
   }
 }
