@@ -213,6 +213,9 @@
         "nexus_ntp" : "nexus_ntp",
         "nexus_ssh" : "nexus_ssh",
         "no_aaa_group_server" : "no_aaa_group_server",
+        "no_ip_name_server" : "cisco_noipns",
+        "no_mask_reply" : "cisco_nomaskreply",
+        "no_snmp_server" : "cisco_nosnmp",
         "non_nexus_neighbor_af" : "non_nexus_neighbor_af",
         "nxos_acl" : "nxos_acl",
         "nxos_bgp" : "nxos_bgp",
@@ -462,6 +465,9 @@
         "nexus_ntp" : "PASSED",
         "nexus_ssh" : "PASSED",
         "no_aaa_group_server" : "PASSED",
+        "no_ip_name_server" : "PASSED",
+        "no_mask_reply" : "PASSED",
+        "no_snmp_server" : "PASSED",
         "non_nexus_neighbor_af" : "PASSED",
         "nxos_acl" : "PASSED",
         "nxos_bgp" : "PASSED",
@@ -48642,6 +48648,83 @@
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
           ]
         },
+        "no_ip_name_server" : {
+          "sentences" : [
+            "(cisco_configuration",
+            "  (stanza",
+            "    (s_hostname",
+            "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
+            "      VARIABLE:'no_ip_name_server'  <== mode:DEFAULT_MODE",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "  (stanza",
+            "    (s_null",
+            "      (null_single",
+            "        NO:'no'  <== mode:DEFAULT_MODE",
+            "        IP:'ip'  <== mode:DEFAULT_MODE",
+            "        NAME_SERVER:'name-server'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
+          ]
+        },
+        "no_mask_reply" : {
+          "sentences" : [
+            "(cisco_configuration",
+            "  (stanza",
+            "    (s_hostname",
+            "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
+            "      VARIABLE:'no_mask_reply'  <== mode:DEFAULT_MODE",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "  (stanza",
+            "    (s_interface",
+            "      INTERFACE:'interface'  <== mode:DEFAULT_MODE",
+            "      iname = (interface_name",
+            "        name_prefix_alpha = M_Interface_PREFIX:'GigabitEthernet'  <== mode:M_Interface",
+            "        (range",
+            "          (subrange",
+            "            low = DEC:'1'  <== mode:M_Interface)))",
+            "      NEWLINE:'\\n'  <== mode:M_Interface",
+            "      (if_ip_address",
+            "        IP:'ip'  <== mode:DEFAULT_MODE",
+            "        ADDRESS:'address'  <== mode:DEFAULT_MODE",
+            "        ip = IP_ADDRESS:'10.10.10.1'  <== mode:DEFAULT_MODE",
+            "        subnet = IP_ADDRESS:'255.255.255.0'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (if_null_block",
+            "        NO:'no'  <== mode:DEFAULT_MODE",
+            "        IP:'ip'  <== mode:DEFAULT_MODE",
+            "        MASK_REPLY:'mask-reply'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (if_shutdown",
+            "        NO:'no'  <== mode:DEFAULT_MODE",
+            "        SHUTDOWN:'shutdown'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n\\n\\n'  <== mode:DEFAULT_MODE)))",
+            "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
+          ]
+        },
+        "no_snmp_server" : {
+          "sentences" : [
+            "(cisco_configuration",
+            "  (stanza",
+            "    (s_hostname",
+            "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
+            "      VARIABLE:'no_snmp_server'  <== mode:DEFAULT_MODE",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "  (stanza",
+            "    (s_null",
+            "      (null_single",
+            "        NO:'no'  <== mode:DEFAULT_MODE",
+            "        IP:'ip'  <== mode:DEFAULT_MODE",
+            "        NAME_SERVER:'name-server'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "  (stanza",
+            "    (s_null",
+            "      (null_single",
+            "        NO:'no'  <== mode:DEFAULT_MODE",
+            "        SNMP_SERVER:'snmp-server'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
+          ]
+        },
         "non_nexus_neighbor_af" : {
           "sentences" : [
             "(cisco_configuration",
@@ -56830,6 +56913,21 @@
         "nexus_ntp" : { },
         "nexus_ssh" : { },
         "no_aaa_group_server" : { },
+        "no_ip_name_server" : { },
+        "no_mask_reply" : {
+          "interface" : {
+            "GigabitEthernet1" : {
+              "definitionLines" : [
+                4,
+                5,
+                6,
+                7
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
+        "no_snmp_server" : { },
         "non_nexus_neighbor_af" : { },
         "nxos_acl" : {
           "extended ipv4 access-list" : {
@@ -58771,6 +58869,9 @@
         "nexus_ntp" : "PASSED",
         "nexus_ssh" : "PASSED",
         "no_aaa_group_server" : "PASSED",
+        "no_ip_name_server" : "PASSED",
+        "no_mask_reply" : "PASSED",
+        "no_snmp_server" : "PASSED",
         "non_nexus_neighbor_af" : "PASSED",
         "nxos_acl" : "PASSED",
         "nxos_bgp" : "PASSED",

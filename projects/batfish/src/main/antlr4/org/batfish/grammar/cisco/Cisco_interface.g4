@@ -536,6 +536,7 @@ if_null_block
             | IP_ADDRESS
             | IRDP
             | LOAD_SHARING
+            | MASK_REPLY
             | MROUTE_CACHE
             | MTU
             | MULTICAST
