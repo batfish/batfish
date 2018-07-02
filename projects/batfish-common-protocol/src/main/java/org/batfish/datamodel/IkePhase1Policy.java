@@ -14,11 +14,23 @@ public class IkePhase1Policy extends ComparableStructure<String> {
 
   private static final String PROP_IKE_PHASE1_PROPOSALS = "ikePhase1Proposals";
 
-  private static final String PROP_PRE_SHARED_KEY = "preSharedKey";
+  private static final String PROP_IKE_PHASE1_KEY = "ikePhase1Key";
+
+  private static final String PROP_REMOTE_IDENTITY = "remoteIdentity";
+
+  private static final String PROP_SELF_IDENTITY = "selfIdentity";
+
+  private static final String PROP_LOCAL_INTERFACE = "localInterface";
 
   private List<IkePhase1Proposal> _ikePhase1Proposals;
 
-  private String _preSharedKey;
+  private IkePhase1Key _ikePhase1Key;
+
+  private IpWildcard _remoteIdentity;
+
+  private Ip _selfIdentity;
+
+  private String _localInterface;
 
   @JsonCreator
   public IkePhase1Policy(@JsonProperty(PROP_NAME) String name) {
@@ -32,10 +44,30 @@ public class IkePhase1Policy extends ComparableStructure<String> {
     return _ikePhase1Proposals;
   }
 
-  @JsonPropertyDescription("Pre-shared key to be used with this IKE phase 1 policy")
-  @JsonProperty(PROP_PRE_SHARED_KEY)
-  public String getPreSharedKey() {
-    return _preSharedKey;
+  @JsonPropertyDescription("Key to be used with this IKE phase 1 policy")
+  @JsonProperty(PROP_IKE_PHASE1_KEY)
+  public IkePhase1Key getIkePhase1Key() {
+    return _ikePhase1Key;
+  }
+
+  @JsonPropertyDescription(
+      "Identity of the remote peer that can match with this IKE phase 1 policy")
+  @JsonProperty(PROP_REMOTE_IDENTITY)
+  public IpWildcard getRemoteIdentity() {
+    return _remoteIdentity;
+  }
+
+  @JsonPropertyDescription(
+      "Self identity to be used with a remote peer while using this IKE phase 1 policy")
+  @JsonProperty(PROP_SELF_IDENTITY)
+  public Ip getSelfIdentity() {
+    return _selfIdentity;
+  }
+
+  @JsonPropertyDescription("Local interface on which this IKE phase 1 policy can be used")
+  @JsonProperty(PROP_LOCAL_INTERFACE)
+  public String getLocalInterface() {
+    return _localInterface;
   }
 
   @JsonProperty(PROP_IKE_PHASE1_PROPOSALS)
@@ -43,8 +75,23 @@ public class IkePhase1Policy extends ComparableStructure<String> {
     _ikePhase1Proposals = ikePhase1Proposals;
   }
 
-  @JsonProperty(PROP_PRE_SHARED_KEY)
-  public void setPreSharedKey(String preSharedKey) {
-    _preSharedKey = preSharedKey;
+  @JsonProperty(PROP_IKE_PHASE1_KEY)
+  public void setIkePhase1Key(IkePhase1Key ikePhase1Key) {
+    _ikePhase1Key = ikePhase1Key;
+  }
+
+  @JsonProperty(PROP_REMOTE_IDENTITY)
+  public void setRemoteIdentity(IpWildcard remoteIdentity) {
+    _remoteIdentity = remoteIdentity;
+  }
+
+  @JsonProperty(PROP_SELF_IDENTITY)
+  public void setSelfIdentity(Ip selfIdentity) {
+    _selfIdentity = selfIdentity;
+  }
+
+  @JsonProperty(PROP_LOCAL_INTERFACE)
+  public void setLocalInterface(String localInterface) {
+    _localInterface = localInterface;
   }
 }

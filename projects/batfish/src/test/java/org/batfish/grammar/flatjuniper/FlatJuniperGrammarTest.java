@@ -26,8 +26,8 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.hasRouteFilterLis
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRouteFilterLists;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
 import static org.batfish.datamodel.matchers.DataModelMatchers.isDynamic;
+import static org.batfish.datamodel.matchers.IkePhase1PolicyMatchers.hasIkePhase1Key;
 import static org.batfish.datamodel.matchers.IkePhase1PolicyMatchers.hasIkePhase1Proposals;
-import static org.batfish.datamodel.matchers.IkePhase1PolicyMatchers.hasPresharedKey;
 import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasAuthenticationAlgorithm;
 import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasAuthenticationMethod;
 import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasDiffieHellmanGroup;
@@ -151,6 +151,7 @@ import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.InitInfoAnswerElement;
+import org.batfish.datamodel.matchers.IkePhase1KeyMatchers;
 import org.batfish.datamodel.matchers.IkePhase1ProposalMatchers;
 import org.batfish.datamodel.matchers.IpAccessListMatchers;
 import org.batfish.datamodel.matchers.IpsecPolicyMatchers;
@@ -1253,7 +1254,9 @@ public class FlatJuniperGrammarTest {
         hasIkePhase1Policy(
             "policy1",
             allOf(
-                hasPresharedKey(CommonUtil.sha256Digest("psk1" + CommonUtil.salt())),
+                hasIkePhase1Key(
+                    IkePhase1KeyMatchers.hasKey(
+                        CommonUtil.sha256Digest("psk1" + CommonUtil.salt()))),
                 hasIkePhase1Proposals(
                     contains(ImmutableList.of(IkePhase1ProposalMatchers.hasName("proposal1")))))));
   }

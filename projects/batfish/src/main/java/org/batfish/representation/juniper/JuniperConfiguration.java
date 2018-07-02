@@ -37,6 +37,8 @@ import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.IkeKeyType;
+import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.datamodel.IkePhase1Policy;
 import org.batfish.datamodel.IkePhase1Proposal;
 import org.batfish.datamodel.InterfaceAddress;
@@ -1178,7 +1180,13 @@ public final class JuniperConfiguration extends VendorConfiguration {
     IkePhase1Policy ikePhase1Policy = new IkePhase1Policy(name);
 
     // pre-shared-key
-    ikePhase1Policy.setPreSharedKey(ikePolicy.getPreSharedKeyHash());
+    IkePhase1Key ikePhase1Key = new IkePhase1Key(String.format("%s-key", ikePolicy.getName()));
+    ikePhase1Key.setKeyType(IkeKeyType.PRE_SHARED_KEY);
+    ikePhase1Key.setKey(ikePolicy.getPreSharedKeyHash());
+
+    _c.getIkePhase1Keys().put(ikePhase1Key.getName(), ikePhase1Key);
+
+    ikePhase1Policy.setIkePhase1Key(ikePhase1Key);
 
     // ike proposals
     ikePolicy

@@ -61,8 +61,10 @@ import static org.batfish.datamodel.matchers.IkeGatewayMatchers.hasAddress;
 import static org.batfish.datamodel.matchers.IkeGatewayMatchers.hasExternalInterface;
 import static org.batfish.datamodel.matchers.IkeGatewayMatchers.hasIkePolicy;
 import static org.batfish.datamodel.matchers.IkeGatewayMatchers.hasLocalIp;
+import static org.batfish.datamodel.matchers.IkePhase1PolicyMatchers.hasIkePhase1Key;
 import static org.batfish.datamodel.matchers.IkePhase1PolicyMatchers.hasIkePhase1Proposals;
-import static org.batfish.datamodel.matchers.IkePhase1PolicyMatchers.hasPresharedKey;
+import static org.batfish.datamodel.matchers.IkePhase1PolicyMatchers.hasLocalInterface;
+import static org.batfish.datamodel.matchers.IkePhase1PolicyMatchers.hasRemoteIdentity;
 import static org.batfish.datamodel.matchers.IkePolicyMatchers.hasPresharedKeyHash;
 import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasAuthenticationAlgorithm;
 import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasAuthenticationMethod;
@@ -196,6 +198,7 @@ import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.matchers.ConfigurationMatchers;
 import org.batfish.datamodel.matchers.IkeGatewayMatchers;
+import org.batfish.datamodel.matchers.IkePhase1KeyMatchers;
 import org.batfish.datamodel.matchers.IkePhase1ProposalMatchers;
 import org.batfish.datamodel.matchers.InterfaceMatchers;
 import org.batfish.datamodel.matchers.IpsecPolicyMatchers;
@@ -1947,7 +1950,11 @@ public class CiscoGrammarTest {
         hasIkePhase1Policy(
             "ISAKMP-PROFILE-ADDRESS",
             allOf(
-                hasPresharedKey(CommonUtil.sha256Digest("psk1" + CommonUtil.salt())),
+                hasIkePhase1Key(
+                    IkePhase1KeyMatchers.hasKey(
+                        CommonUtil.sha256Digest("psk1" + CommonUtil.salt()))),
+                hasRemoteIdentity(equalTo(new IpWildcard("1.2.3.4:0.0.0.0"))),
+                hasLocalInterface(equalTo("TenGigabitEthernet0/0")),
                 hasIkePhase1Proposals(
                     contains(
                         ImmutableList.of(
@@ -1959,7 +1966,11 @@ public class CiscoGrammarTest {
         hasIkePhase1Policy(
             "ISAKMP-PROFILE-INTERFACE",
             allOf(
-                hasPresharedKey(CommonUtil.sha256Digest("psk1" + CommonUtil.salt())),
+                hasIkePhase1Key(
+                    IkePhase1KeyMatchers.hasKey(
+                        CommonUtil.sha256Digest("psk1" + CommonUtil.salt()))),
+                hasRemoteIdentity(equalTo(new IpWildcard("1.2.3.4:0.0.0.0"))),
+                hasLocalInterface(equalTo("TenGigabitEthernet0/0")),
                 hasIkePhase1Proposals(
                     contains(
                         ImmutableList.of(

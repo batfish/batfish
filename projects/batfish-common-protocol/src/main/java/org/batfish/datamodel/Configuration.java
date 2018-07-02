@@ -117,6 +117,8 @@ public final class Configuration extends ComparableStructure<String> {
 
   private static final String PROP_IKE_PROPOSALS = "ikeProposals";
 
+  private static final String PROP_IKE_PHASE1_KEYS = "ikePhase1Keys";
+
   private static final String PROP_IKE_PHASE1_POLICIES = "ikePhase1Policies";
 
   private static final String PROP_IKE_PHASE1_PROPOSALS = "ikePhase1Proposals";
@@ -182,6 +184,8 @@ public final class Configuration extends ComparableStructure<String> {
   private NavigableMap<String, IkePolicy> _ikePolicies;
 
   private NavigableMap<String, IkeProposal> _ikeProposals;
+
+  private NavigableMap<String, IkePhase1Key> _ikePhase1keys;
 
   private NavigableMap<String, IkePhase1Proposal> _ikePhase1Proposals;
 
@@ -269,6 +273,7 @@ public final class Configuration extends ComparableStructure<String> {
     _ikeGateways = new TreeMap<>();
     _ikePolicies = new TreeMap<>();
     _ikeProposals = new TreeMap<>();
+    _ikePhase1keys = new TreeMap<>();
     _ikePhase1Policies = new TreeMap<>();
     _ikePhase1Proposals = new TreeMap<>();
     _interfaces = new TreeMap<>();
@@ -431,6 +436,12 @@ public final class Configuration extends ComparableStructure<String> {
   @JsonPropertyDescription("Dictionary of all IKE proposals for this node.")
   public NavigableMap<String, IkeProposal> getIkeProposals() {
     return _ikeProposals;
+  }
+
+  @JsonProperty(PROP_IKE_PHASE1_KEYS)
+  @JsonPropertyDescription("Dictionary of all IKE phase1 keys for this node.")
+  public NavigableMap<String, IkePhase1Key> getIkePhase1Keys() {
+    return _ikePhase1keys;
   }
 
   @JsonProperty(PROP_IKE_PHASE1_POLICIES)
@@ -691,6 +702,11 @@ public final class Configuration extends ComparableStructure<String> {
   @JsonProperty(PROP_IKE_POLICIES)
   public void setIkePolicies(NavigableMap<String, IkePolicy> ikePolicies) {
     _ikePolicies = ikePolicies;
+  }
+
+  @JsonProperty(PROP_IKE_PHASE1_KEYS)
+  public void setIkePhase1Keys(NavigableMap<String, IkePhase1Key> ikePhase1Keys) {
+    _ikePhase1keys = ikePhase1Keys;
   }
 
   @JsonProperty(PROP_IKE_PHASE1_POLICIES)

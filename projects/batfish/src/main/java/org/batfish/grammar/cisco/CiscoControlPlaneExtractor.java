@@ -417,6 +417,7 @@ import org.batfish.grammar.cisco.CiscoParser.Cispol_lifetimeContext;
 import org.batfish.grammar.cisco.CiscoParser.Cisprf_keyringContext;
 import org.batfish.grammar.cisco.CiscoParser.Cisprf_local_addressContext;
 import org.batfish.grammar.cisco.CiscoParser.Cisprf_matchContext;
+import org.batfish.grammar.cisco.CiscoParser.Cisprf_self_identityContext;
 import org.batfish.grammar.cisco.CiscoParser.Ckr_local_addressContext;
 import org.batfish.grammar.cisco.CiscoParser.Ckr_pskContext;
 import org.batfish.grammar.cisco.CiscoParser.Clb_docsis_policyContext;
@@ -1804,6 +1805,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitCisprf_self_identity(Cisprf_self_identityContext ctx) {
+    _currentIsakmpProfile.setSelfIdentity(toIp(ctx.IP_ADDRESS()));
+  }
+
+  @Override
   public void exitCisprf_local_address(Cisprf_local_addressContext ctx) {
     if (ctx.IP_ADDRESS() != null) {
       _currentIsakmpProfile.setLocalAddress(toIp(ctx.IP_ADDRESS()));
@@ -1823,9 +1829,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitCkr_psk(Ckr_pskContext ctx) {
+    Ip wildCardMask =
+        ctx.wildcard_mask == null ? new Ip("255.255.255.255") : toIp(ctx.wildcard_mask);
     _currentKeyring.setKey(
         CommonUtil.sha256Digest(ctx.variable_permissive().getText() + CommonUtil.salt()));
-    _currentKeyring.setRemoteAddress(toIp(ctx.IP_ADDRESS()));
+    _currentKeyring.setRemoteIdentity(
+        new IpWildcard(toIp(ctx.ip_address), wildCardMask.inverted()));
   }
 
   @Override

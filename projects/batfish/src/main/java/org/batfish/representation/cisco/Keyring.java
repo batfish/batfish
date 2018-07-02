@@ -4,6 +4,7 @@ import java.util.Objects;
 import javax.annotation.Nullable;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
 
 public class Keyring extends ComparableStructure<String> {
@@ -14,7 +15,10 @@ public class Keyring extends ComparableStructure<String> {
 
   @Nullable private String _localInterfaceName;
 
+  // TODO: deprecate once old Ike Phase 1 data-model is phased out
   private Ip _remoteAddress;
+
+  private IpWildcard _remoteIdentity;
 
   private String _key;
 
@@ -40,8 +44,13 @@ public class Keyring extends ComparableStructure<String> {
     return _remoteAddress;
   }
 
+  public IpWildcard getRemoteIdentity() {
+    return _remoteIdentity;
+  }
+
   public boolean match(Ip localAddress, Prefix matchIdentity) {
-    return matchIdentity.containsIp(_remoteAddress)
+    IpWildcard candidateIpWildcard = new IpWildcard(matchIdentity);
+    return _remoteIdentity.supersetOf(candidateIpWildcard)
         && (_localAddress == null || Objects.equals(localAddress, _localAddress));
   }
 
@@ -59,5 +68,9 @@ public class Keyring extends ComparableStructure<String> {
 
   public void setRemoteAddress(Ip address) {
     _remoteAddress = address;
+  }
+
+  public void setRemoteIdentity(IpWildcard remoteIdentity) {
+    _remoteIdentity = remoteIdentity;
   }
 }

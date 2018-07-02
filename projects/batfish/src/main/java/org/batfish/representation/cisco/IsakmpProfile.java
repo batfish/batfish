@@ -16,7 +16,10 @@ public class IsakmpProfile extends ComparableStructure<String> {
 
   @Nullable private String _localInterfaceName;
 
+  // TODO: change to IpWildcard
   private Prefix _matchIdentity;
+
+  @Nullable private Ip _selfIdentity;
 
   public IsakmpProfile(String name) {
     super(name);
@@ -40,6 +43,10 @@ public class IsakmpProfile extends ComparableStructure<String> {
     return _matchIdentity;
   }
 
+  public Ip getSelfIdentity() {
+    return _selfIdentity;
+  }
+
   public void setKeyring(String keyring) {
     _keyring = keyring;
   }
@@ -54,5 +61,9 @@ public class IsakmpProfile extends ComparableStructure<String> {
 
   public void setMatchIdentity(Ip address, Ip mask) {
     _matchIdentity = new Prefix(address, mask);
+  }
+
+  public void setSelfIdentity(Ip selfIdentity) {
+    _selfIdentity = selfIdentity;
   }
 }

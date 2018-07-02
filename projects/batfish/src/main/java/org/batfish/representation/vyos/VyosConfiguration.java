@@ -15,6 +15,8 @@ import org.batfish.common.VendorConversionException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.IkeGateway;
+import org.batfish.datamodel.IkeKeyType;
+import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.datamodel.IkePhase1Policy;
 import org.batfish.datamodel.IkePhase1Proposal;
 import org.batfish.datamodel.IkePolicy;
@@ -155,7 +157,16 @@ public class VyosConfiguration extends VendorConfiguration {
         newIkePolicy.setPreSharedKeyHash(ipsecPeer.getAuthenticationPreSharedSecretHash());
 
         IkePhase1Policy ikePhase1Policy = new IkePhase1Policy(ikeGroupName);
-        ikePhase1Policy.setPreSharedKey(ipsecPeer.getAuthenticationPreSharedSecretHash());
+
+        // pre-shared-key
+        IkePhase1Key ikePhase1Key = new IkePhase1Key(String.format("%s-key", ipsecPeer.getName()));
+        ikePhase1Key.setKeyType(IkeKeyType.PRE_SHARED_KEY);
+        ikePhase1Key.setKey(ipsecPeer.getAuthenticationPreSharedSecretHash());
+
+        _c.getIkePhase1Keys().put(ikePhase1Key.getName(), ikePhase1Key);
+
+        ikePhase1Policy.setIkePhase1Key(ikePhase1Key);
+
         _c.getIkePhase1Policies().put(ikeGroupName, ikePhase1Policy);
 
         // convert contained ike proposals
