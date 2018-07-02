@@ -1187,7 +1187,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     _c.getIkePhase1Keys().put(ikePhase1Key.getName(), ikePhase1Key);
 
     ikePhase1Policy.setIkePhase1Key(ikePhase1Key);
-
+    ImmutableList.Builder<IkePhase1Proposal> ikePhase1ProposalBuilder = ImmutableList.builder();
     // ike proposals
     ikePolicy
         .getProposals()
@@ -1195,9 +1195,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
             ikeProposalName -> {
               IkePhase1Proposal ikePhase1Proposal = _c.getIkePhase1Proposals().get(ikeProposalName);
               if (ikePhase1Proposal != null) {
-                ikePhase1Policy.getIkePhase1Proposals().add(ikePhase1Proposal);
+                ikePhase1ProposalBuilder.add(ikePhase1Proposal);
               }
             });
+    ikePhase1Policy.setIkePhase1Proposals(ikePhase1ProposalBuilder.build());
 
     return ikePhase1Policy;
   }
@@ -2000,8 +2001,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       org.batfish.datamodel.IkePolicy newPolicy = toIkePolicy(oldIkePolicy);
       _c.getIkePolicies().put(name, newPolicy);
       // storing IKE phase 1 policy
-      IkePhase1Policy ikePhase1Policy = toIkePhase1Policy(oldIkePolicy);
-      _c.getIkePhase1Policies().put(name, ikePhase1Policy);
+      _c.getIkePhase1Policies().put(name, toIkePhase1Policy(oldIkePolicy));
     }
 
     // convert ike gateways

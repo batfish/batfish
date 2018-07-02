@@ -56,7 +56,9 @@ public class IkePhase1Key extends ComparableStructure<String> {
   }
 
   public boolean match(String localInterface, Prefix matchIdentity) {
-    return _remoteIdentity.supersetOf(new IpWildcard(matchIdentity))
+    return _remoteIdentity != null
+        && matchIdentity != null
+        && _remoteIdentity.supersetOf(new IpWildcard(matchIdentity))
         && (_localInterface == null || Objects.equals(_localInterface, localInterface));
   }
 

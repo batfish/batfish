@@ -12,7 +12,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Stream;
@@ -220,24 +219,30 @@ class CiscoConversions {
   static IkePhase1Policy toIkePhase1Policy(
       IsakmpProfile isakmpProfile, Configuration c, Warnings w) {
     IkePhase1Policy ikePhase1Policy = new IkePhase1Policy(isakmpProfile.getName());
+
+    ImmutableList.Builder<IkePhase1Proposal> ikePhase1ProposalBuilder = ImmutableList.builder();
     // adding IKE proposals in sorted order of names
     c.getIkePhase1Proposals()
         .entrySet()
         .forEach(
             (ikePhase1ProposalEntry ->
-                ikePhase1Policy.getIkePhase1Proposals().add(ikePhase1ProposalEntry.getValue())));
+                ikePhase1ProposalBuilder.add(ikePhase1ProposalEntry.getValue())));
+    ikePhase1Policy.setIkePhase1Proposals(ikePhase1ProposalBuilder.build());
     ikePhase1Policy.setSelfIdentity(isakmpProfile.getSelfIdentity());
-    ikePhase1Policy.setRemoteIdentity(new IpWildcard(isakmpProfile.getMatchIdentity()));
+    if (isakmpProfile.getMatchIdentity() != null) {
+      ikePhase1Policy.setRemoteIdentity(new IpWildcard(isakmpProfile.getMatchIdentity()));
+    }
     ikePhase1Policy.setLocalInterface(isakmpProfile.getLocalInterfaceName());
     ikePhase1Policy.setIkePhase1Key(getMatchingPsk(isakmpProfile, w, c.getIkePhase1Keys()));
     return ikePhase1Policy;
   }
 
-  private static IkePhase1Key getMatchingPsk(
+  static IkePhase1Key getMatchingPsk(
       IsakmpProfile isakmpProfile, Warnings w, Map<String, IkePhase1Key> ikePhase1Keys) {
     IkePhase1Key ikePhase1Key = null;
     String isakmpProfileName = isakmpProfile.getName();
-    if (Objects.equals(isakmpProfile.getLocalAddress(), Ip.AUTO)) {
+    if (isakmpProfile.getLocalInterfaceName() != null
+        && isakmpProfile.getLocalInterfaceName().isEmpty()) {
       w.redFlag(
           String.format(
               "Invalid local address interface configured for ISAKMP profile %s",
@@ -251,7 +256,7 @@ class CiscoConversions {
               isakmpProfile.getKeyring(), isakmpProfileName));
     } else {
       IkePhase1Key tempIkePhase1Key = ikePhase1Keys.get(isakmpProfile.getKeyring());
-      if (tempIkePhase1Key.getLocalInterface() == null) {
+      if (tempIkePhase1Key.getLocalInterface().isEmpty()) {
         w.redFlag(
             String.format(
                 "Invalid local address interface configured for keyring %s",

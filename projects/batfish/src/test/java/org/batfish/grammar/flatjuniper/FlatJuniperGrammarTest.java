@@ -1294,7 +1294,7 @@ public class FlatJuniperGrammarTest {
   public void testIkeProposalSet() throws IOException {
     Configuration c = parseConfig("ike-proposal");
 
-    /** TODO: Replace with IKE phase 1 proposal tests */
+    /* TODO: Replace with IKE phase 1 proposal tests */
     // ike proposals added as part of the `basic` proposal set
     assertThat(
         c,

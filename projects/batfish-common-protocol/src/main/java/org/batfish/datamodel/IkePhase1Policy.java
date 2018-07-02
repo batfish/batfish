@@ -3,8 +3,9 @@ package org.batfish.datamodel;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
-import java.util.ArrayList;
+import com.google.common.collect.ImmutableList;
 import java.util.List;
+import javax.annotation.Nullable;
 import org.batfish.common.util.ComparableStructure;
 
 /** Represents the IKE policy used for IKE phase 1 negotiation */
@@ -35,7 +36,7 @@ public class IkePhase1Policy extends ComparableStructure<String> {
   @JsonCreator
   public IkePhase1Policy(@JsonProperty(PROP_NAME) String name) {
     super(name);
-    _ikePhase1Proposals = new ArrayList<>();
+    _ikePhase1Proposals = ImmutableList.of();
   }
 
   @JsonPropertyDescription("IKE phase 1 proposals to be used with this IKE phase 1 policy")
@@ -71,8 +72,9 @@ public class IkePhase1Policy extends ComparableStructure<String> {
   }
 
   @JsonProperty(PROP_IKE_PHASE1_PROPOSALS)
-  public void setIkePhase1Proposals(List<IkePhase1Proposal> ikePhase1Proposals) {
-    _ikePhase1Proposals = ikePhase1Proposals;
+  public void setIkePhase1Proposals(@Nullable List<IkePhase1Proposal> ikePhase1Proposals) {
+    _ikePhase1Proposals =
+        ikePhase1Proposals == null ? ImmutableList.of() : ImmutableList.copyOf(ikePhase1Proposals);
   }
 
   @JsonProperty(PROP_IKE_PHASE1_KEY)
