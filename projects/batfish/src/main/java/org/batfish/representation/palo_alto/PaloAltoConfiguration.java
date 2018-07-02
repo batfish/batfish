@@ -41,11 +41,14 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
   private final SortedMap<String, VirtualRouter> _virtualRouters;
 
+  private final SortedMap<String, Zone> _zones;
+
   public PaloAltoConfiguration(Set<String> unimplementedFeatures) {
     _interfaces = new TreeMap<>();
     _syslogServerGroups = new TreeMap<>();
     _unimplementedFeatures = unimplementedFeatures;
     _virtualRouters = new TreeMap<>();
+    _zones = new TreeMap<>();
   }
 
   private NavigableSet<String> getDnsServers() {
@@ -86,6 +89,10 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
   public SortedMap<String, VirtualRouter> getVirtualRouters() {
     return _virtualRouters;
+  }
+
+  public SortedMap<String, Zone> getZones() {
+    return _zones;
   }
 
   public void setDnsServerPrimary(String dnsServerPrimary) {
@@ -178,12 +185,19 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     return vrf;
   }
 
+  /** */
+  private org.batfish.datamodel.Zone toZone(Zone zone) {
+    org.batfish.datamodel.Zone newZone = new org.batfish.datamodel.Zone(zone.getName());
+    newZone.getInterfaces().addAll(zone.getInterfaceNames());
+    return newZone;
+  }
+
   @Override
   public Configuration toVendorIndependentConfiguration() throws VendorConversionException {
     String hostname = getHostname();
     _c = new Configuration(hostname, _vendor);
     _c.setDefaultCrossZoneAction(LineAction.REJECT);
-    _c.setDefaultInboundAction(LineAction.ACCEPT);
+    _c.setDefaultInboundAction(LineAction.REJECT);
     _c.setDnsServers(getDnsServers());
     _c.setNtpServers(getNtpServers());
 
@@ -199,6 +213,10 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
     for (Entry<String, VirtualRouter> vr : _virtualRouters.entrySet()) {
       _c.getVrfs().put(vr.getKey(), toVrf(vr.getValue()));
+    }
+
+    for (Entry<String, Zone> zone : _zones.entrySet()) {
+      _c.getZones().put(zone.getKey(), toZone(zone.getValue()));
     }
 
     // Count and mark structure usages and identify undefined references
