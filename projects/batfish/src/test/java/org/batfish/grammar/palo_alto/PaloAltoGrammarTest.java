@@ -291,11 +291,14 @@ public class PaloAltoGrammarTest {
     // Confirm zone definitions are recorded properly
     assertThat(ccae, hasDefinedStructure(hostname, PaloAltoStructureType.ZONE, "z1"));
     assertThat(ccae, hasDefinedStructure(hostname, PaloAltoStructureType.ZONE, "zempty"));
-    assertThat(ccae, hasDefinedStructure(hostname, PaloAltoStructureType.ZONE, "zunused"));
+
+    // Confirm interface references in zones are recorded properly
+    assertThat(ccae, hasNumReferrers(hostname, PaloAltoStructureType.INTERFACE, "ethernet1/1", 1));
+    assertThat(ccae, hasNumReferrers(hostname, PaloAltoStructureType.INTERFACE, "ethernet1/2", 1));
 
     // Confirm zones contain the correct interfaces
-    assertThat(c, hasZone("z1", hasMemberInterfaces(not(empty()))));
+    assertThat(
+        c, hasZone("z1", hasMemberInterfaces(containsInAnyOrder("ethernet1/1", "ethernet1/2"))));
     assertThat(c, hasZone("zempty", hasMemberInterfaces(empty())));
-    assertThat(c, hasZone("zunused", hasMemberInterfaces(not(empty()))));
   }
 }
