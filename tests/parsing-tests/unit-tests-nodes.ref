@@ -5811,7 +5811,6 @@
         "deviceType" : "SWITCH",
         "ikePhase1Keys" : {
           "VRF:ABC:DEF:GHI:1234" : {
-            "name" : "VRF:ABC:DEF:GHI:1234",
             "key" : "f300fd9a9833dc8b16a2c399b2b51c32fc40293606df9c1e814d978f6ebcb9f8",
             "keyType" : "PRE_SHARED_KEY",
             "remoteIdentity" : "1.1.1.1"
@@ -5830,7 +5829,8 @@
                 "lifetimeSeconds" : 28800
               }
             ],
-            "remoteIdentity" : "1.2.3.4"
+            "remoteIdentity" : "1.2.3.4",
+            "selfIdentity" : "2.3.4.6"
           }
         },
         "ikePhase1Proposals" : {
@@ -14730,8 +14730,7 @@
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "SWITCH",
         "ikePhase1Keys" : {
-          "1.2.3.4-key" : {
-            "name" : "1.2.3.4-key",
+          "~IKE_PHASE1_KEY_1.2.3.4~" : {
             "keyType" : "PRE_SHARED_KEY"
           }
         },
@@ -14739,7 +14738,6 @@
           "1.2.3.4" : {
             "name" : "1.2.3.4",
             "ikePhase1Key" : {
-              "name" : "1.2.3.4-key",
               "keyType" : "PRE_SHARED_KEY"
             },
             "ikePhase1Proposals" : [

@@ -18401,6 +18401,10 @@
             "            REVERSE_ROUTE:'reverse-route'  <== mode:DEFAULT_MODE",
             "            (null_rest_of_line",
             "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "          (cisprf_self_identity",
+            "            SELF_IDENTITY:'self-identity'  <== mode:DEFAULT_MODE",
+            "            IP_ADDRESS:'2.3.4.6'  <== mode:DEFAULT_MODE",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "          (cisprf_null",
             "            VRF:'vrf'  <== mode:DEFAULT_MODE",
             "            (null_rest_of_line",
@@ -54891,7 +54895,8 @@
                 189,
                 190,
                 191,
-                192
+                192,
+                193
               ],
               "numReferrers" : 1
             }
@@ -54899,8 +54904,8 @@
           "crypto keyring" : {
             "VRF:ABC:DEF:GHI:1234" : {
               "definitionLines" : [
-                211,
-                212
+                212,
+                213
               ],
               "numReferrers" : 0
             }
@@ -54930,18 +54935,17 @@
           "crypto-map-set" : {
             "VPN" : {
               "definitionLines" : [
-                217,
                 218,
                 219,
                 220,
                 221,
-                222
+                222,
+                223
               ],
               "numReferrers" : 0
             },
             "VPNMAP" : {
               "definitionLines" : [
-                232,
                 233,
                 234,
                 235,
@@ -54949,13 +54953,14 @@
                 237,
                 238,
                 239,
-                240
+                240,
+                241
               ],
               "numReferrers" : 0
             },
             "myothermap" : {
               "definitionLines" : [
-                214
+                215
               ],
               "numReferrers" : 0
             }
@@ -57456,7 +57461,7 @@
           "crypto ipsec transform-set" : {
             "bleep" : {
               "crypto map ipsec-isakmp transform-set" : [
-                221
+                222
               ]
             },
             "hijklmnop" : {
@@ -57466,14 +57471,14 @@
             },
             "mytransformset" : {
               "crypto map ipsec-isakmp transform-set" : [
-                240
+                241
               ]
             }
           },
           "crypto isakmp profile" : {
             "myisakmpprofile" : {
               "crypto map ipsec-isakmp isakmp-profile" : [
-                236
+                237
               ]
             },
             "someOtherprofile" : {
@@ -57492,19 +57497,19 @@
           "crypto-dynamic-map-set" : {
             "bippety" : {
               "crypto map ipsec-isakmp crypto-dynamic-map-set" : [
-                223
+                224
               ]
             }
           },
           "ipv4/6 acl" : {
             "myvpnacl" : {
               "crypto map ipsec-isakmp acl" : [
-                234
+                235
               ]
             },
             "someacl" : {
               "crypto map ipsec-isakmp acl" : [
-                218
+                219
               ]
             }
           }
