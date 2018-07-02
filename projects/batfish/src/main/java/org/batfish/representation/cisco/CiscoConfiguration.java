@@ -278,6 +278,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return String.format("~PROTOCOL_OBJECT_GROUP~%s~", name);
   }
 
+  public static String computeServiceObjectAclName(String name) {
+    return String.format("~SERVICE_OBJECT~%s~", name);
+  }
+
   public static String computeServiceObjectGroupAclName(String name) {
     return String.format("~SERVICE_OBJECT_GROUP~%s~", name);
   }
@@ -405,6 +409,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private final Map<String, RoutePolicy> _routePolicies;
 
+  private final Map<String, ServiceObject> _serviceObjects;
+
   private SnmpServer _snmpServer;
 
   private String _snmpSourceInterface;
@@ -476,6 +482,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _securityZonePairs = new TreeMap<>();
     _securityZones = new TreeMap<>();
     _serviceObjectGroups = new TreeMap<>();
+    _serviceObjects = new TreeMap<>();
     _standardAccessLists = new TreeMap<>();
     _standardIpv6AccessLists = new TreeMap<>();
     _standardCommunityLists = new TreeMap<>();
@@ -3134,13 +3141,19 @@ public final class CiscoConfiguration extends VendorConfiguration {
             c.getIpAccessLists()
                 .put(computeProtocolObjectGroupAclName(name), toIpAccessList(protocolObjectGroup)));
 
-    // convert each ServiceObjectGroup to IpAccessList
+    // convert each ServiceObject and ServiceObjectGroup to IpAccessList
     _serviceObjectGroups.forEach(
         (name, serviceObjectGroup) ->
             c.getIpAccessLists()
                 .put(
                     computeServiceObjectGroupAclName(name),
                     CiscoConversions.toIpAccessList(serviceObjectGroup)));
+    _serviceObjects.forEach(
+        (name, serviceObject) ->
+            c.getIpAccessLists()
+                .put(
+                    computeServiceObjectAclName(name),
+                    CiscoConversions.toIpAccessList(serviceObject)));
 
     // convert standard/extended ipv6 access lists to ipv6 access lists or
     // route6 filter
@@ -3529,6 +3542,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
     // objects
     markConcreteStructure(
         CiscoStructureType.NETWORK_OBJECT, CiscoStructureUsage.NETWORK_OBJECT_GROUP_NETWORK_OBJECT);
+    markConcreteStructure(
+        CiscoStructureType.SERVICE_OBJECT, CiscoStructureUsage.SERVICE_OBJECT_GROUP_SERVICE_OBJECT);
 
     // service template
     markConcreteStructure(
@@ -4114,6 +4129,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public Map<String, ServiceObjectGroup> getServiceObjectGroups() {
     return _serviceObjectGroups;
+  }
+
+  public Map<String, ServiceObject> getServiceObjects() {
+    return _serviceObjects;
   }
 
   public Map<String, InspectClassMap> getInspectClassMaps() {

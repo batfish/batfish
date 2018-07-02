@@ -52,6 +52,7 @@ public enum CiscoStructureType implements StructureType {
   ROUTE_MAP_CLAUSE("route-map-clause"),
   SECURITY_ZONE("zone security"),
   SERVICE_CLASS("cable service-class"),
+  SERVICE_OBJECT("object service"),
   SERVICE_OBJECT_GROUP("object-group service"),
   SERVICE_TEMPLATE("service-template");
 
