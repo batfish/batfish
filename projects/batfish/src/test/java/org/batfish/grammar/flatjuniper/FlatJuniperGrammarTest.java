@@ -8,6 +8,7 @@ import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbor;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbors;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIkeProposal;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterfaces;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessList;
@@ -23,6 +24,11 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.hasRouteFilterLis
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRouteFilterLists;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
 import static org.batfish.datamodel.matchers.DataModelMatchers.isDynamic;
+import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasAuthenticationAlgorithm;
+import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasAuthenticationMethod;
+import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasDiffieHellmanGroup;
+import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasEncryptionAlgorithm;
+import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasLifeTimeSeconds;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAccessVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAdditionalArpIps;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
@@ -113,6 +119,8 @@ import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.IkeAuthenticationMethod;
+import org.batfish.datamodel.IkeHashingAlgorithm;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
@@ -1075,6 +1083,14 @@ public class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testNestedConfigLineComments() throws IOException {
+    String hostname = "nested-config-line-comments";
+
+    // Confirm extraction works for nested configs even in the presence of line comments
+    assertThat(parseTextConfigs(hostname).keySet(), contains(hostname));
+  }
+
+  @Test
   public void testNestedConfigStructureDef() throws IOException {
     String hostname = "nested-config-structure-def";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -1221,6 +1237,71 @@ public class FlatJuniperGrammarTest {
   public void testTacplusPsk() throws IOException {
     /* allow both encrypted and unencrypted key */
     parseConfig("tacplus-psk");
+  }
+
+  @Test
+  public void testIkeProposal() throws IOException {
+    Configuration c = parseConfig("ike-proposal");
+
+    assertThat(
+        c,
+        hasIkeProposal(
+            "proposal1",
+            allOf(
+                hasEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC),
+                hasAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS),
+                hasAuthenticationAlgorithm(IkeHashingAlgorithm.MD5),
+                hasDiffieHellmanGroup(DiffieHellmanGroup.GROUP14),
+                hasLifeTimeSeconds(50000))));
+  }
+
+  @Test
+  public void testIkeProposalSet() throws IOException {
+    Configuration c = parseConfig("ike-proposal");
+
+    // ike proposals added as part of the `basic` proposal set
+    assertThat(
+        c,
+        hasIkeProposal(
+            "PSK_DES_DH1_SHA1",
+            allOf(
+                hasEncryptionAlgorithm(EncryptionAlgorithm.DES_CBC),
+                hasAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS),
+                hasAuthenticationAlgorithm(IkeHashingAlgorithm.SHA1),
+                hasDiffieHellmanGroup(DiffieHellmanGroup.GROUP1),
+                hasLifeTimeSeconds(28800))));
+    assertThat(
+        c,
+        hasIkeProposal(
+            "PSK_DES_DH1_MD5",
+            allOf(
+                hasEncryptionAlgorithm(EncryptionAlgorithm.DES_CBC),
+                hasAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS),
+                hasAuthenticationAlgorithm(IkeHashingAlgorithm.MD5),
+                hasDiffieHellmanGroup(DiffieHellmanGroup.GROUP1),
+                hasLifeTimeSeconds(28800))));
+
+    // ike proposals added as part of `standard` proposal set
+    assertThat(
+        c,
+        hasIkeProposal(
+            "PSK_3DES_DH2_SHA1",
+            allOf(
+                hasEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC),
+                hasAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS),
+                hasAuthenticationAlgorithm(IkeHashingAlgorithm.SHA1),
+                hasDiffieHellmanGroup(DiffieHellmanGroup.GROUP2),
+                hasLifeTimeSeconds(28800))));
+    assertThat(
+        c,
+        hasIkeProposal(
+            "PSK_AES128_DH2_SHA1",
+            allOf(
+                hasEncryptionAlgorithm(EncryptionAlgorithm.AES_128_CBC),
+                hasAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS),
+                hasAuthenticationAlgorithm(IkeHashingAlgorithm.SHA1),
+                hasDiffieHellmanGroup(DiffieHellmanGroup.GROUP2),
+                hasLifeTimeSeconds(28800))));
   }
 
   @Test

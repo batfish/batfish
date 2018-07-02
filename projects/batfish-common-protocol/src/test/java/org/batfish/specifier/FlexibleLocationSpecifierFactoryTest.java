@@ -1,5 +1,7 @@
 package org.batfish.specifier;
 
+import static org.batfish.specifier.FlexibleLocationSpecifierFactory.LOCATION_TYPE_INTERFACE;
+import static org.batfish.specifier.FlexibleLocationSpecifierFactory.LOCATION_TYPE_INTERFACE_LINK;
 import static org.batfish.specifier.FlexibleLocationSpecifierFactory.parseSpecifier;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -115,8 +117,8 @@ public class FlexibleLocationSpecifierFactoryTest {
   public void testParseSpecifier_type() {
     LocationSpecifier iface = new NodeNameRegexInterfaceLocationSpecifier(_foo);
     LocationSpecifier ifaceLink = new NodeNameRegexInterfaceLinkLocationSpecifier(_foo);
-    assertThat(parseSpecifier("interfaceLink:foo"), equalTo(ifaceLink));
-    assertThat(parseSpecifier("interface:foo"), equalTo(iface));
+    assertThat(parseSpecifier(LOCATION_TYPE_INTERFACE_LINK + ":foo"), equalTo(ifaceLink));
+    assertThat(parseSpecifier(LOCATION_TYPE_INTERFACE + ":foo"), equalTo(iface));
     assertThat(parseSpecifier("foo"), equalTo(ifaceLink));
   }
 }

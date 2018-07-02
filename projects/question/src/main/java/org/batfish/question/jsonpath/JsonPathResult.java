@@ -14,6 +14,7 @@ import com.jayway.jsonpath.Configuration.ConfigurationBuilder;
 import com.jayway.jsonpath.JsonPath;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -90,7 +91,7 @@ public class JsonPathResult {
     private static List<String> getPrefixParts(JsonNode prefix) {
       String text = prefix.textValue();
       if (text.equals("$")) {
-        return Arrays.asList("$");
+        return Collections.singletonList("$");
       }
       if (text.length() < 2) {
         throw new BatfishException("Unexpected prefix " + text);
@@ -220,7 +221,7 @@ public class JsonPathResult {
         JsonNode varNode = _displayValues.get(resultKey).get(varName);
         if (extractions.get(varName).getSchemaAsObject().getType() == Type.LIST
             || extractions.get(varName).getSchemaAsObject().getType() == Type.SET) {
-          object.set(propertyName, ((ArrayNode) varNode).get(index));
+          object.set(propertyName, varNode.get(index));
         } else {
           object.set(propertyName, varNode);
         }

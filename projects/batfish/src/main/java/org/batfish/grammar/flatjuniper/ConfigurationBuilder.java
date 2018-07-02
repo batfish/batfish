@@ -84,7 +84,6 @@ import org.batfish.datamodel.IcmpCode;
 import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.IkeAuthenticationMethod;
 import org.batfish.datamodel.IkeHashingAlgorithm;
-import org.batfish.datamodel.IkeProposal;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
@@ -490,6 +489,7 @@ import org.batfish.representation.juniper.HostProtocol;
 import org.batfish.representation.juniper.HostSystemService;
 import org.batfish.representation.juniper.IkeGateway;
 import org.batfish.representation.juniper.IkePolicy;
+import org.batfish.representation.juniper.IkeProposal;
 import org.batfish.representation.juniper.Interface;
 import org.batfish.representation.juniper.IpBgpGroup;
 import org.batfish.representation.juniper.IpsecPolicy;
@@ -4800,16 +4800,72 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   private Set<String> initIkeProposalSet(Proposal_set_typeContext ctx) {
     Set<String> proposals = new HashSet<>();
+
+    // the proposal-sets have been defined as per the specifications in the link:
+    // https://www.juniper.net/documentation/en_US/junos/topics/reference/configuration-statement/security-edit-proposal-set-ike.html
     if (ctx.BASIC() != null) {
-      proposals.add(initIkeProposal(IkeProposal.PSK_DES_DH1_SHA1));
-      proposals.add(initIkeProposal(IkeProposal.PSK_DES_DH1_MD5));
+      IkeProposal proposal1 = new IkeProposal("PSK_DES_DH1_SHA1");
+      IkeProposal proposal2 = new IkeProposal("PSK_DES_DH1_MD5");
+
+      proposals.add(
+          initIkeProposal(
+              proposal1
+                  .setEncryptionAlgorithm(EncryptionAlgorithm.DES_CBC)
+                  .setAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS)
+                  .setDiffieHellmanGroup(DiffieHellmanGroup.GROUP1)
+                  .setAuthenticationAlgorithm(IkeHashingAlgorithm.SHA1)));
+      proposals.add(
+          initIkeProposal(
+              proposal2
+                  .setEncryptionAlgorithm(EncryptionAlgorithm.DES_CBC)
+                  .setAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS)
+                  .setDiffieHellmanGroup(DiffieHellmanGroup.GROUP1)
+                  .setAuthenticationAlgorithm(IkeHashingAlgorithm.MD5)));
     } else if (ctx.COMPATIBLE() != null) {
-      proposals.add(initIkeProposal(IkeProposal.PSK_3DES_DH2_MD5));
-      proposals.add(initIkeProposal(IkeProposal.PSK_DES_DH2_SHA1));
-      proposals.add(initIkeProposal(IkeProposal.PSK_DES_DH2_MD5));
+      IkeProposal proposal1 = new IkeProposal("PSK_3DES_DH2_MD5");
+      IkeProposal proposal2 = new IkeProposal("PSK_DES_DH2_SHA1");
+      IkeProposal proposal3 = new IkeProposal("PSK_DES_DH2_MD5");
+
+      proposals.add(
+          initIkeProposal(
+              proposal1
+                  .setAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS)
+                  .setDiffieHellmanGroup(DiffieHellmanGroup.GROUP2)
+                  .setEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC)
+                  .setAuthenticationAlgorithm(IkeHashingAlgorithm.MD5)));
+      proposals.add(
+          initIkeProposal(
+              proposal2
+                  .setAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS)
+                  .setDiffieHellmanGroup(DiffieHellmanGroup.GROUP2)
+                  .setEncryptionAlgorithm(EncryptionAlgorithm.DES_CBC)
+                  .setAuthenticationAlgorithm(IkeHashingAlgorithm.SHA1)));
+      proposals.add(
+          initIkeProposal(
+              proposal3
+                  .setAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS)
+                  .setDiffieHellmanGroup(DiffieHellmanGroup.GROUP2)
+                  .setEncryptionAlgorithm(EncryptionAlgorithm.DES_CBC)
+                  .setAuthenticationAlgorithm(IkeHashingAlgorithm.MD5)));
+
     } else if (ctx.STANDARD() != null) {
-      proposals.add(initIkeProposal(IkeProposal.PSK_3DES_DH2_SHA1));
-      proposals.add(initIkeProposal(IkeProposal.PSK_AES128_DH2_SHA1));
+      IkeProposal proposal1 = new IkeProposal("PSK_3DES_DH2_SHA1");
+      IkeProposal proposal2 = new IkeProposal("PSK_AES128_DH2_SHA1");
+
+      proposals.add(
+          initIkeProposal(
+              proposal1
+                  .setAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS)
+                  .setDiffieHellmanGroup(DiffieHellmanGroup.GROUP2)
+                  .setEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC)
+                  .setAuthenticationAlgorithm(IkeHashingAlgorithm.SHA1)));
+      proposals.add(
+          initIkeProposal(
+              proposal2
+                  .setAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS)
+                  .setDiffieHellmanGroup(DiffieHellmanGroup.GROUP2)
+                  .setEncryptionAlgorithm(EncryptionAlgorithm.AES_128_CBC)
+                  .setAuthenticationAlgorithm(IkeHashingAlgorithm.SHA1)));
     }
     return proposals;
   }

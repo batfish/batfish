@@ -58,7 +58,7 @@ public final class ColumnMetadata {
       throw new IllegalArgumentException(
           String.format(
               "Illegal column name '%s'. Column names should match '%s",
-              name, COLUMN_NAME_PATTERN.toString()));
+              name, COLUMN_NAME_PATTERN));
     }
     _name = name;
     _schema = schema;

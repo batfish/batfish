@@ -3,7 +3,7 @@
 
 trap 'kill -9 $(pgrep -g $$ | grep -v $$) >& /dev/null' EXIT SIGINT SIGTERM
 
-. tools/batfish_functions.sh
+. "$(dirname "$0")/../tools/batfish_functions.sh"
 
 
 # Build batfish and run the Maven unit tests.
@@ -59,7 +59,7 @@ echo -e "\n .... Failed tests: "
 
 echo -e "\n .... Diffing failed tests:"
 for i in $("$GNU_FIND" -name *.testout); do
-   echo -e "\n $i"; diff -u ${i%.testout} $i
+   echo -e "\n $i"; diff -u ${i%.testout} ${i}
 done
 
-exit $exit_code
+exit ${exit_code}

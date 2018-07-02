@@ -42,10 +42,7 @@ public class NamedStructureRoleConsistencyQuestionPlugin extends QuestionPlugin 
 
     @Override
     public String prettyPrint() {
-
-      StringBuffer sb = new StringBuffer();
-
-      return sb.toString();
+      return "";
     }
 
     @JsonProperty(PROP_ANSWERS)

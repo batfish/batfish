@@ -67,6 +67,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.KeyManager;
@@ -259,12 +260,26 @@ public class CommonUtil {
     }
   }
 
-  public static long communityStringToLong(String str) {
+  /** @throws IllegalArgumentException if the given number is over 2^16-1. */
+  private static void checkLongWithin16Bit(long l) {
+    if (l > 0xFFFFL) {
+      throw new IllegalArgumentException("AS Number larger than 16-bit");
+    }
+  }
+
+  /**
+   * Convert a BGP community string to its numeric representation. Only 16-bit AS numbers and
+   * community values are supported.
+   *
+   * @throws IllegalArgumentException if the AS number or community value is over 16 bits.
+   */
+  public static long communityStringToLong(@Nonnull String str) {
     String[] parts = str.split(":");
     long high = Long.parseLong(parts[0]);
+    checkLongWithin16Bit(high);
     long low = Long.parseLong(parts[1]);
-    long result = low + (high << 16);
-    return result;
+    checkLongWithin16Bit(low);
+    return low + (high << 16);
   }
 
   public static <C extends Comparable<? super C>> int compareIterable(
@@ -1007,7 +1022,7 @@ public class CommonUtil {
    * DataPlane)} for more details.
    *
    * @param configurations configuration keyed by hostname
-   * @param ipOwners Ip owners (see {@link #computeIpNodeOwners(boolean, Map)}
+   * @param ipOwners Ip owners (see {@link #computeIpNodeOwners(Map, boolean)}
    * @param keepInvalid whether to keep improperly configured neighbors. If performing configuration
    *     checks, you probably want this set to {@code true}, otherwise (e.g., computing dataplane)
    *     you want this to be {@code false}.
@@ -1377,9 +1392,11 @@ public class CommonUtil {
     }
   }
 
-  public static String longToCommunity(Long l) {
-    Long upper = l >> 16;
-    Long lower = l & 0xFFFF;
+  /** Convert a given long to a string BGP community representation. */
+  @Nonnull
+  public static String longToCommunity(long l) {
+    long upper = l >> 16;
+    long lower = l & 0xFFFF;
     return upper + ":" + lower;
   }
 
@@ -1390,16 +1407,6 @@ public class CommonUtil {
     } else {
       copyFile(srcPath, dstPath);
       delete(srcPath);
-    }
-  }
-
-  public static int nullChecker(Object a, Object b) {
-    if (a == null && b == null) {
-      return 0;
-    } else if (a != null && b != null) {
-      return 1;
-    } else {
-      return -1;
     }
   }
 

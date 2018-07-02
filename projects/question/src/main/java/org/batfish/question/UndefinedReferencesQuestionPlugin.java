@@ -50,9 +50,8 @@ public class UndefinedReferencesQuestionPlugin extends QuestionPlugin {
                       (name, byUsage) -> {
                         sb.append("    " + name + ":\n");
                         byUsage.forEach(
-                            (usage, lines) -> {
-                              sb.append("      " + usage + ": lines " + lines + "\n");
-                            });
+                            (usage, lines) ->
+                                sb.append("      " + usage + ": lines " + lines + "\n"));
                       });
                 });
           });
@@ -109,31 +108,30 @@ public class UndefinedReferencesQuestionPlugin extends QuestionPlugin {
                 String filename = hostnameFilenameMap.get(hostname);
                 if (filename != null) {
                   byType.forEach(
-                      (type, byName) -> {
-                        byName.forEach(
-                            (name, byUsage) -> {
-                              byUsage.forEach(
-                                  (usage, lines) -> {
-                                    String problemShort =
-                                        "undefined:" + type + ":usage:" + usage + ":" + name;
-                                    Problem problem = answerElement.getProblems().get(problemShort);
-                                    if (problem == null) {
-                                      problem = new Problem();
-                                      String problemLong =
-                                          "Undefined reference to structure of type: '"
-                                              + type
-                                              + "' with usage: '"
-                                              + usage
-                                              + "' named '"
-                                              + name
-                                              + "'";
-                                      problem.setDescription(problemLong);
-                                      answerElement.getProblems().put(problemShort, problem);
-                                    }
-                                    problem.getFiles().put(filename, lines);
-                                  });
-                            });
-                      });
+                      (type, byName) ->
+                          byName.forEach(
+                              (name, byUsage) ->
+                                  byUsage.forEach(
+                                      (usage, lines) -> {
+                                        String problemShort =
+                                            "undefined:" + type + ":usage:" + usage + ":" + name;
+                                        Problem problem =
+                                            answerElement.getProblems().get(problemShort);
+                                        if (problem == null) {
+                                          problem = new Problem();
+                                          String problemLong =
+                                              "Undefined reference to structure of type: '"
+                                                  + type
+                                                  + "' with usage: '"
+                                                  + usage
+                                                  + "' named '"
+                                                  + name
+                                                  + "'";
+                                          problem.setDescription(problemLong);
+                                          answerElement.getProblems().put(problemShort, problem);
+                                        }
+                                        problem.getFiles().put(filename, lines);
+                                      })));
                 }
               });
       answerElement.updateSummary();

@@ -148,7 +148,7 @@ java_library(
         ":RecoveryParserListener.java",
     ],
     deps = [
-        ":common",
+        ":parser_common",
         "@antlr4_runtime//:compile",
     ],
 )

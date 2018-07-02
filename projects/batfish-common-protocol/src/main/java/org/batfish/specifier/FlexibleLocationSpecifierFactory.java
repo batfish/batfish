@@ -45,8 +45,8 @@ import javax.annotation.Nullable;
 public final class FlexibleLocationSpecifierFactory implements LocationSpecifierFactory {
   public static final String NAME = FlexibleLocationSpecifierFactory.class.getSimpleName();
 
-  private static final String LOCATION_TYPE_INTERFACE = "interface";
-  private static final String LOCATION_TYPE_INTERFACE_LINK = "interfaceLink";
+  static final String LOCATION_TYPE_INTERFACE = "source";
+  static final String LOCATION_TYPE_INTERFACE_LINK = "intermediate";
   private static final String DEFAULT_LOCATION_TYPE = LOCATION_TYPE_INTERFACE_LINK;
 
   private static final String PROPERTY_TYPE_INTERFACE_NAME = "interface";
