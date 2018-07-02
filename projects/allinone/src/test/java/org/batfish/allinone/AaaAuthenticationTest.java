@@ -2,11 +2,15 @@ package org.batfish.allinone;
 
 import static org.batfish.datamodel.matchers.DataModelMatchers.forAll;
 import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
+import static org.batfish.datamodel.matchers.RowsMatchers.hasSize;
 import static org.batfish.datamodel.matchers.TableAnswerElementMatchers.hasRows;
 import static org.batfish.question.aaaauthenticationlogin.AaaAuthenticationLoginQuestionPlugin.AaaAuthenticationAnswerer.COLUMN_LINE_NAMES;
 import static org.batfish.question.aaaauthenticationlogin.AaaAuthenticationLoginQuestionPlugin.AaaAuthenticationAnswerer.COLUMN_NODE;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.not;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -48,14 +52,26 @@ public class AaaAuthenticationTest {
     AaaAuthenticationAnswerer answerer = new AaaAuthenticationAnswerer(question, batfish);
     TableAnswerElement answer = answerer.answer();
 
+    // answer should have exactly one row
+    assertThat(answer.getRows(), hasSize(1));
+
     assertThat(
         answer,
         hasRows(
-            forAll(
-                hasColumn(COLUMN_NODE, equalTo(new Node(hostname2)), Schema.NODE),
-                hasColumn(
-                    COLUMN_LINE_NAMES,
-                    equalTo(Collections.singletonList("aux0")),
-                    Schema.list(Schema.STRING)))));
+            contains(
+                allOf(
+                    hasColumn(COLUMN_NODE, equalTo(new Node(hostname2)), Schema.NODE),
+                    hasColumn(
+                        COLUMN_LINE_NAMES,
+                        equalTo(Collections.singletonList("aux0")),
+                        Schema.list(Schema.STRING))))));
+
+    assertThat(
+        answer,
+        hasRows(not(contains(hasColumn(COLUMN_NODE, equalTo(new Node(hostname1)), Schema.NODE)))));
+
+    assertThat(
+        answer,
+        hasRows(not(contains(hasColumn(COLUMN_NODE, equalTo(new Node(hostname3)), Schema.NODE)))));
   }
 }
