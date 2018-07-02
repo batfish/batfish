@@ -1,0 +1,17 @@
+!
+hostname iosNoAuthentication
+!
+aaa new-model
+!
+aaa authentication login noAuth group serverGroup serverGroup2 line none
+!
+line con 0
+line vty 0
+  login authentication hasAuth
+line vty 1 4
+line aux 0
+  login authentication noAuth
+!
+aaa authentication login hasAuth krb5-telnet group radius enable local
+aaa authentication login default group tacacs+ krb5 local-case local
+!
