@@ -1890,6 +1890,28 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testInvalidCryptoMapDef() throws IOException {
+    String hostname = "ios-crypto-map";
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    assertThat(
+        ccae,
+        hasRedFlagWarning(
+            hostname,
+            containsString(
+                "Interface TenGigabitEthernet0/2 with declared crypto-map mymap is shutdown")));
+    assertThat(
+        ccae,
+        hasRedFlagWarning(
+            hostname,
+            containsString(
+                "Interface TenGigabitEthernet0/1 with declared crypto-map mymap has no ip-address")));
+  }
+
+  @Test
   public void testIsakmpPolicyAruba() throws IOException {
     Configuration c = parseConfig("arubaCrypto");
     assertThat(

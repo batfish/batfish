@@ -2019,6 +2019,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
    */
   private List<IpsecVpn> toIpsecVpns(
       Configuration c, CryptoMapEntry cryptoMapEntry, String ipsecVpnName, String cryptoMapName) {
+
     List<org.batfish.datamodel.Interface> referencingInterfaces =
         c.getInterfaces()
             .values()
@@ -2029,6 +2030,21 @@ public final class CiscoConfiguration extends VendorConfiguration {
     List<IpsecVpn> ipsecVpns = new ArrayList<>();
 
     for (org.batfish.datamodel.Interface iface : referencingInterfaces) {
+      // skipping shutdown interfaces or interfaces with no ip-address
+      if (!iface.getActive()) {
+        _w.redFlag(
+            String.format(
+                "Interface %s with declared crypto-map %s is shutdown",
+                iface.getName(), cryptoMapName));
+        continue;
+      }
+      if (iface.getAddress() == null) {
+        _w.redFlag(
+            String.format(
+                "Interface %s with declared crypto-map %s has no ip-address",
+                iface.getName(), cryptoMapName));
+        continue;
+      }
       Ip bindingInterfaceIp = iface.getAddress().getIp();
       IkeGateway ikeGateway = null;
 
