@@ -511,6 +511,45 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testAsaServiceObject() throws IOException {
+    String hostname = "asa-service-object";
+    Configuration c = parseConfig(hostname);
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    String osIcmpAclName = computeServiceObjectAclName("OS_ICMP");
+    String osTcpAclName = computeServiceObjectAclName("OS_TCPUDP");
+    String ogsAclName = computeServiceObjectGroupAclName("OGS1");
+
+    Flow flowIcmpPass = createIcmpFlow(IcmpType.ECHO_REQUEST);
+    Flow flowIcmpFail = createIcmpFlow(IcmpType.ECHO_REPLY);
+    Flow flowInlinePass = createFlow(IpProtocol.UDP, 1, 1234);
+    Flow flowTcpPass = createFlow(IpProtocol.TCP, 65535, 1);
+    Flow flowUdpPass = createFlow(IpProtocol.UDP, 65535, 1);
+    Flow flowTcpFail = createFlow(IpProtocol.TCP, 65534, 1);
+
+    /* Confirm service objects have the correct number of referrers */
+    assertThat(ccae, hasNumReferrers(hostname, CiscoStructureType.SERVICE_OBJECT, "OS_TCPUDP", 1));
+    assertThat(ccae, hasNumReferrers(hostname, CiscoStructureType.SERVICE_OBJECT, "OS_ICMP", 0));
+    /* Confirm undefined reference shows up as such */
+    assertThat(
+        ccae, hasUndefinedReference(hostname, CiscoStructureType.SERVICE_OBJECT, "OS_UNDEFINED"));
+
+    /* Confirm IpAcls created from service objects permit and reject the correct flows */
+    assertThat(c, hasIpAccessList(osTcpAclName, accepts(flowTcpPass, null, c)));
+    assertThat(c, hasIpAccessList(osTcpAclName, accepts(flowUdpPass, null, c)));
+    assertThat(c, hasIpAccessList(osTcpAclName, not(accepts(flowTcpFail, null, c))));
+    assertThat(c, hasIpAccessList(osIcmpAclName, accepts(flowIcmpPass, null, c)));
+    assertThat(c, hasIpAccessList(osIcmpAclName, not(accepts(flowIcmpFail, null, c))));
+
+    /* Confirm object-group permits and rejects the flows determined by its constituent service objects */
+    assertThat(c, hasIpAccessList(ogsAclName, accepts(flowTcpPass, null, c)));
+    assertThat(c, hasIpAccessList(ogsAclName, not(accepts(flowTcpFail, null, c))));
+    assertThat(c, hasIpAccessList(ogsAclName, accepts(flowInlinePass, null, c)));
+  }
+
+  @Test
   public void testIosLoggingOnDefault() throws IOException {
     Configuration loggingOnOmitted = parseConfig("iosLoggingOnOmitted");
     assertThat(loggingOnOmitted, hasVendorFamily(hasCisco(hasLogging(isOn()))));
@@ -2459,45 +2498,6 @@ public class CiscoGrammarTest {
         assertThat(vrf.getOspfProcess().getRfc1583Compatible(), is(expectedResults[i]));
       }
     }
-  }
-
-  @Test
-  public void testServiceObject() throws IOException {
-    String hostname = "service-object";
-    Configuration c = parseConfig(hostname);
-    Batfish batfish = getBatfishForConfigurationNames(hostname);
-    ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
-
-    String osIcmpAclName = computeServiceObjectAclName("OS_ICMP");
-    String osTcpAclName = computeServiceObjectAclName("OS_TCPUDP");
-    String ogsAclName = computeServiceObjectGroupAclName("OGS1");
-
-    Flow flowIcmpPass = createIcmpFlow(IcmpType.ECHO_REQUEST);
-    Flow flowIcmpFail = createIcmpFlow(IcmpType.ECHO_REPLY);
-    Flow flowInlinePass = createFlow(IpProtocol.UDP, 1, 1234);
-    Flow flowTcpPass = createFlow(IpProtocol.TCP, 65535, 1);
-    Flow flowUdpPass = createFlow(IpProtocol.UDP, 65535, 1);
-    Flow flowTcpFail = createFlow(IpProtocol.TCP, 65534, 1);
-
-    /* Confirm service objects have the correct number of referrers */
-    assertThat(ccae, hasNumReferrers(hostname, CiscoStructureType.SERVICE_OBJECT, "OS_TCPUDP", 1));
-    assertThat(ccae, hasNumReferrers(hostname, CiscoStructureType.SERVICE_OBJECT, "OS_ICMP", 0));
-    /* Confirm undefined reference shows up as such */
-    assertThat(
-        ccae, hasUndefinedReference(hostname, CiscoStructureType.SERVICE_OBJECT, "OS_UNDEFINED"));
-
-    /* Confirm IpAcls created from service objects permit and reject the correct flows */
-    assertThat(c, hasIpAccessList(osTcpAclName, accepts(flowTcpPass, null, c)));
-    assertThat(c, hasIpAccessList(osTcpAclName, accepts(flowUdpPass, null, c)));
-    assertThat(c, hasIpAccessList(osTcpAclName, not(accepts(flowTcpFail, null, c))));
-    assertThat(c, hasIpAccessList(osIcmpAclName, accepts(flowIcmpPass, null, c)));
-    assertThat(c, hasIpAccessList(osIcmpAclName, not(accepts(flowIcmpFail, null, c))));
-
-    /* Confirm object-group permits and rejects the flows determined by its constituent service objects */
-    assertThat(c, hasIpAccessList(ogsAclName, accepts(flowTcpPass, null, c)));
-    assertThat(c, hasIpAccessList(ogsAclName, not(accepts(flowTcpFail, null, c))));
-    assertThat(c, hasIpAccessList(ogsAclName, accepts(flowInlinePass, null, c)));
   }
 
   @Test
