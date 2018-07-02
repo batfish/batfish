@@ -1,6 +1,5 @@
 package org.batfish.allinone;
 
-import static org.batfish.datamodel.matchers.DataModelMatchers.forAll;
 import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
 import static org.batfish.datamodel.matchers.RowsMatchers.hasSize;
 import static org.batfish.datamodel.matchers.TableAnswerElementMatchers.hasRows;
