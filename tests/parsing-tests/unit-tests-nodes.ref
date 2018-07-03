@@ -1214,9 +1214,19 @@
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "SWITCH",
+        "ikePhase1Proposals" : {
+          "1" : {
+            "name" : "1",
+            "authenticationMethod" : "RSA_SIGNATURES",
+            "diffieHellmanGroup" : "GROUP20",
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "hashingAlgorithm" : "SHA_256",
+            "lifetimeSeconds" : 86400
+          }
+        },
         "ikeProposals" : {
-          "001" : {
-            "name" : "001",
+          "1" : {
+            "name" : "1",
             "authenticationAlgorithm" : "SHA_256",
             "authenticationMethod" : "RSA_SIGNATURES",
             "diffieHellmanGroup" : "GROUP20",
@@ -5799,17 +5809,52 @@
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "SWITCH",
+        "ikePhase1Keys" : {
+          "VRF:ABC:DEF:GHI:1234" : {
+            "keyHash" : "f300fd9a9833dc8b16a2c399b2b51c32fc40293606df9c1e814d978f6ebcb9f8",
+            "keyType" : "PRE_SHARED_KEY",
+            "localInterface" : "unset_local_interface",
+            "remoteIdentity" : {
+              "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+              "ipWildcard" : "1.1.1.1"
+            }
+          }
+        },
+        "ikePhase1Policies" : {
+          "myprofile" : {
+            "name" : "myprofile",
+            "ikePhase1Proposals" : [
+              "1"
+            ],
+            "localInterface" : "unset_local_interface",
+            "remoteIdentity" : {
+              "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+              "ipWildcard" : "1.2.3.4"
+            },
+            "selfIdentity" : "2.3.4.6"
+          }
+        },
+        "ikePhase1Proposals" : {
+          "1" : {
+            "name" : "1",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP2",
+            "encryptionAlgorithm" : "THREEDES_CBC",
+            "hashingAlgorithm" : "MD5",
+            "lifetimeSeconds" : 28800
+          }
+        },
         "ikePolicies" : {
           "myprofile" : {
             "name" : "myprofile",
             "proposals" : [
-              "001"
+              "1"
             ]
           }
         },
         "ikeProposals" : {
-          "001" : {
-            "name" : "001",
+          "1" : {
+            "name" : "1",
             "authenticationAlgorithm" : "MD5",
             "authenticationMethod" : "PRE_SHARED_KEYS",
             "diffieHellmanGroup" : "GROUP2",
@@ -14709,6 +14754,38 @@
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "SWITCH",
+        "ikePhase1Keys" : {
+          "~IKE_PHASE1_KEY_1.2.3.4~" : {
+            "keyType" : "PRE_SHARED_KEY",
+            "localInterface" : "unset_local_interface",
+            "remoteIdentity" : {
+              "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+              "ipWildcard" : "0.0.0.0"
+            }
+          }
+        },
+        "ikePhase1Policies" : {
+          "1.2.3.4" : {
+            "name" : "1.2.3.4",
+            "ikePhase1Key" : {
+              "keyType" : "PRE_SHARED_KEY",
+              "localInterface" : "unset_local_interface",
+              "remoteIdentity" : {
+                "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                "ipWildcard" : "0.0.0.0"
+              }
+            },
+            "ikePhase1Proposals" : [
+              "PROPOSAL"
+            ]
+          }
+        },
+        "ikePhase1Proposals" : {
+          "PROPOSAL" : {
+            "name" : "PROPOSAL",
+            "lifetimeSeconds" : 28800
+          }
+        },
         "ikePolicies" : {
           "1.2.3.4" : {
             "name" : "1.2.3.4",

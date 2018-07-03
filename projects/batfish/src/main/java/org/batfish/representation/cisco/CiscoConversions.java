@@ -2,20 +2,24 @@ package org.batfish.representation.cisco;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.util.Collections.singletonList;
+import static org.batfish.datamodel.Interface.INVALID_LOCAL_INTERFACE;
 
 import com.google.common.collect.ImmutableList;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishException;
+import org.batfish.common.Warnings;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AsPathAccessList;
@@ -24,6 +28,11 @@ import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.IkeKeyType;
+import org.batfish.datamodel.IkePhase1Key;
+import org.batfish.datamodel.IkePhase1Policy;
+import org.batfish.datamodel.IkePhase1Proposal;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.Ip6AccessList;
@@ -121,6 +130,60 @@ class CiscoConversions {
         ImmutableList.of());
   }
 
+  /**
+   * Computes a mapping of primary {@link Ip}s to the names of interfaces owning them. Filters out
+   * the interfaces having no primary {@link InterfaceAddress}
+   */
+  private static Map<Ip, String> computeIpToIfaceNameMap(Map<String, Interface> interfaces) {
+    Map<Ip, String> ipToIfaceNameMap = new HashMap<>();
+    for (Entry<String, Interface> interfaceNameToInterface : interfaces.entrySet()) {
+      interfaceNameToInterface
+          .getValue()
+          .getAllAddresses()
+          .forEach(
+              interfaceAddress -> {
+                ipToIfaceNameMap.put(interfaceAddress.getIp(), interfaceNameToInterface.getKey());
+              });
+    }
+    return ipToIfaceNameMap;
+  }
+
+  /** Resolves the interface names of the addresses used as local addresses of {@link Keyring} */
+  static void resolveKeyringIfaceNames(
+      Map<String, Interface> interfaces, Map<String, Keyring> keyrings) {
+    Map<Ip, String> iptoIfaceName = computeIpToIfaceNameMap(interfaces);
+
+    // setting empty string as interface name if cannot find the IP
+    keyrings
+        .values()
+        .stream()
+        .filter(keyring -> keyring.getLocalAddress() != null)
+        .forEach(
+            keyring ->
+                keyring.setLocalInterfaceName(
+                    firstNonNull(
+                        iptoIfaceName.get(keyring.getLocalAddress()), INVALID_LOCAL_INTERFACE)));
+  }
+
+  /**
+   * Resolves the interface names of the addresses used as local addresses of {@link IsakmpProfile}
+   */
+  static void resolveIsakmpProfileIfaceNames(
+      Map<String, Interface> interfaces, Map<String, IsakmpProfile> isakpProfiles) {
+    Map<Ip, String> iptoIfaceName = computeIpToIfaceNameMap(interfaces);
+
+    isakpProfiles
+        .values()
+        .stream()
+        .filter(isakmpProfile -> isakmpProfile.getLocalAddress() != null)
+        .forEach(
+            isakmpProfile ->
+                isakmpProfile.setLocalInterfaceName(
+                    firstNonNull(
+                        iptoIfaceName.get(isakmpProfile.getLocalAddress()),
+                        INVALID_LOCAL_INTERFACE)));
+  }
+
   static AsPathAccessList toAsPathAccessList(AsPathSet asPathSet) {
     List<AsPathAccessListLine> lines =
         asPathSet
@@ -149,6 +212,83 @@ class CiscoConversions {
             .map(CiscoConversions::toCommunityListLine)
             .collect(ImmutableList.toImmutableList());
     return new CommunityList(ecList.getName(), cllList);
+  }
+
+  static IkePhase1Key toIkePhase1Key(Keyring keyring) {
+    IkePhase1Key ikePhase1Key = new IkePhase1Key();
+    ikePhase1Key.setKeyHash(keyring.getKey());
+    ikePhase1Key.setKeyType(IkeKeyType.PRE_SHARED_KEY);
+    ikePhase1Key.setLocalInterface(keyring.getLocalInterfaceName());
+    if (keyring.getRemoteIdentity() != null) {
+      ikePhase1Key.setRemoteIdentity(keyring.getRemoteIdentity().toIpSpace());
+    }
+    return ikePhase1Key;
+  }
+
+  static IkePhase1Policy toIkePhase1Policy(
+      IsakmpProfile isakmpProfile, CiscoConfiguration oldConfig, Configuration config, Warnings w) {
+    IkePhase1Policy ikePhase1Policy = new IkePhase1Policy(isakmpProfile.getName());
+
+    ImmutableList.Builder<String> ikePhase1ProposalBuilder = ImmutableList.builder();
+    for (Entry<Integer, IsakmpPolicy> entry : oldConfig.getIsakmpPolicies().entrySet()) {
+      ikePhase1ProposalBuilder.add(entry.getKey().toString());
+    }
+
+    ikePhase1Policy.setIkePhase1Proposals(ikePhase1ProposalBuilder.build());
+    ikePhase1Policy.setSelfIdentity(isakmpProfile.getSelfIdentity());
+    if (isakmpProfile.getMatchIdentity() != null) {
+      ikePhase1Policy.setRemoteIdentity(isakmpProfile.getMatchIdentity().toIpSpace());
+    }
+
+    ikePhase1Policy.setLocalInterface(isakmpProfile.getLocalInterfaceName());
+    ikePhase1Policy.setIkePhase1Key(getMatchingPsk(isakmpProfile, w, config.getIkePhase1Keys()));
+    return ikePhase1Policy;
+  }
+
+  /**
+   * Gets the {@link IkePhase1Key} that can be used for the given {@link IsakmpProfile} based on
+   * {@code remoteIdentity} and {@code localInterfaceName} present in the {@link IkePhase1Key}
+   */
+  static IkePhase1Key getMatchingPsk(
+      IsakmpProfile isakmpProfile, Warnings w, Map<String, IkePhase1Key> ikePhase1Keys) {
+    IkePhase1Key ikePhase1Key = null;
+    String isakmpProfileName = isakmpProfile.getName();
+    if (isakmpProfile.getLocalInterfaceName().equals(INVALID_LOCAL_INTERFACE)) {
+      w.redFlag(
+          String.format(
+              "Invalid local address interface configured for ISAKMP profile %s",
+              isakmpProfileName));
+    } else if (isakmpProfile.getKeyring() == null) {
+      w.redFlag(String.format("Keyring not set for ISAKMP profile %s", isakmpProfileName));
+    } else if (!ikePhase1Keys.containsKey(isakmpProfile.getKeyring())) {
+      w.redFlag(
+          String.format(
+              "Cannot find keyring %s for ISAKMP profile %s",
+              isakmpProfile.getKeyring(), isakmpProfileName));
+    } else {
+      IkePhase1Key tempIkePhase1Key = ikePhase1Keys.get(isakmpProfile.getKeyring());
+      if (tempIkePhase1Key.getLocalInterface().equals(INVALID_LOCAL_INTERFACE)) {
+        w.redFlag(
+            String.format(
+                "Invalid local address interface configured for keyring %s",
+                isakmpProfile.getKeyring()));
+      } else if (tempIkePhase1Key.match(
+          isakmpProfile.getLocalInterfaceName(), isakmpProfile.getMatchIdentity())) {
+        // found a matching keyring
+        ikePhase1Key = tempIkePhase1Key;
+      }
+    }
+    return ikePhase1Key;
+  }
+
+  static IkePhase1Proposal toIkePhase1Proposal(IsakmpPolicy isakmpPolicy) {
+    IkePhase1Proposal ikePhase1Proposal = new IkePhase1Proposal(isakmpPolicy.getName().toString());
+    ikePhase1Proposal.setDiffieHellmanGroup(isakmpPolicy.getDiffieHellmanGroup());
+    ikePhase1Proposal.setAuthenticationMethod(isakmpPolicy.getAuthenticationMethod());
+    ikePhase1Proposal.setEncryptionAlgorithm(isakmpPolicy.getEncryptionAlgorithm());
+    ikePhase1Proposal.setLifetimeSeconds(isakmpPolicy.getLifetimeSeconds());
+    ikePhase1Proposal.setHashingAlgorithm(isakmpPolicy.getHashAlgorithm());
+    return ikePhase1Proposal;
   }
 
   static Ip6AccessList toIp6AccessList(ExtendedIpv6AccessList eaList) {

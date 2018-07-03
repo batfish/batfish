@@ -1,9 +1,12 @@
 package org.batfish.representation.cisco;
 
+import static org.batfish.datamodel.Interface.UNSET_LOCAL_INTERFACE;
+
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.IpWildcard;
 
 public class IsakmpProfile extends ComparableStructure<String> {
 
@@ -14,12 +17,15 @@ public class IsakmpProfile extends ComparableStructure<String> {
 
   @Nullable private Ip _localAddress;
 
-  @Nullable private String _localInterfaceName;
+  @Nonnull private String _localInterfaceName;
 
-  private Prefix _matchIdentity;
+  private IpWildcard _matchIdentity;
+
+  @Nullable private Ip _selfIdentity;
 
   public IsakmpProfile(String name) {
     super(name);
+    _localInterfaceName = UNSET_LOCAL_INTERFACE;
   }
 
   public String getKeyring() {
@@ -31,13 +37,17 @@ public class IsakmpProfile extends ComparableStructure<String> {
     return _localAddress;
   }
 
-  @Nullable
+  @Nonnull
   public String getLocalInterfaceName() {
     return _localInterfaceName;
   }
 
-  public Prefix getMatchIdentity() {
+  public IpWildcard getMatchIdentity() {
     return _matchIdentity;
+  }
+
+  public Ip getSelfIdentity() {
+    return _selfIdentity;
   }
 
   public void setKeyring(String keyring) {
@@ -48,11 +58,15 @@ public class IsakmpProfile extends ComparableStructure<String> {
     _localAddress = address;
   }
 
-  public void setLocalInterfaceName(String localInterfaceName) {
+  public void setLocalInterfaceName(@Nonnull String localInterfaceName) {
     _localInterfaceName = localInterfaceName;
   }
 
-  public void setMatchIdentity(Ip address, Ip mask) {
-    _matchIdentity = new Prefix(address, mask);
+  public void setMatchIdentity(IpWildcard matchIdentity) {
+    _matchIdentity = matchIdentity;
+  }
+
+  public void setSelfIdentity(Ip selfIdentity) {
+    _selfIdentity = selfIdentity;
   }
 }

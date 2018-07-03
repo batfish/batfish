@@ -2,10 +2,16 @@ package org.batfish.representation.cisco;
 
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import static org.batfish.common.util.CommonUtil.toImmutableMap;
+import static org.batfish.datamodel.Interface.UNSET_LOCAL_INTERFACE;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
 import static org.batfish.representation.cisco.CiscoConversions.generateAggregateRoutePolicy;
+import static org.batfish.representation.cisco.CiscoConversions.resolveIsakmpProfileIfaceNames;
+import static org.batfish.representation.cisco.CiscoConversions.resolveKeyringIfaceNames;
 import static org.batfish.representation.cisco.CiscoConversions.suppressSummarizedPrefixes;
+import static org.batfish.representation.cisco.CiscoConversions.toIkePhase1Key;
+import static org.batfish.representation.cisco.CiscoConversions.toIkePhase1Policy;
+import static org.batfish.representation.cisco.CiscoConversions.toIkePhase1Proposal;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -49,6 +55,8 @@ import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.GeneratedRoute6;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IkeGateway;
+import org.batfish.datamodel.IkePhase1Key;
+import org.batfish.datamodel.IkePhase1Proposal;
 import org.batfish.datamodel.IkePolicy;
 import org.batfish.datamodel.IkeProposal;
 import org.batfish.datamodel.InterfaceAddress;
@@ -379,7 +387,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private final Map<String, IpsecTransformSet> _ipsecTransformSets;
 
-  private final Map<String, IsakmpPolicy> _isakmpPolicies;
+  private final Map<Integer, IsakmpPolicy> _isakmpPolicies;
 
   private final Map<String, IsakmpProfile> _isakmpProfiles;
 
@@ -758,7 +766,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return _ipsecTransformSets;
   }
 
-  public Map<String, IsakmpPolicy> getIsakmpPolicies() {
+  public Map<Integer, IsakmpPolicy> getIsakmpPolicies() {
     return _isakmpPolicies;
   }
 
@@ -2180,7 +2188,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
   }
 
   private static IkeProposal toIkeProposal(IsakmpPolicy isakmpPolicy) {
-    IkeProposal ikeProposal = new IkeProposal(isakmpPolicy.getName());
+    IkeProposal ikeProposal = new IkeProposal(isakmpPolicy.getName().toString());
     ikeProposal.setDiffieHellmanGroup(isakmpPolicy.getDiffieHellmanGroup());
     ikeProposal.setAuthenticationMethod(isakmpPolicy.getAuthenticationMethod());
     ikeProposal.setEncryptionAlgorithm(isakmpPolicy.getEncryptionAlgorithm());
@@ -3240,12 +3248,37 @@ public final class CiscoConfiguration extends VendorConfiguration {
     applyVrrp(c);
 
     // ISAKMP policies to IKE proposals
-    for (Entry<String, IsakmpPolicy> e : _isakmpPolicies.entrySet()) {
-      c.getIkeProposals().put(e.getKey(), toIkeProposal(e.getValue()));
+    for (Entry<Integer, IsakmpPolicy> e : _isakmpPolicies.entrySet()) {
+      IkeProposal ikeProposal = toIkeProposal(e.getValue());
+      c.getIkeProposals().put(ikeProposal.getName(), ikeProposal);
+
+      IkePhase1Proposal ikePhase1Proposal = toIkePhase1Proposal(e.getValue());
+      c.getIkePhase1Proposals().put(ikePhase1Proposal.getName(), ikePhase1Proposal);
     }
     resolveKeyringIsakmpProfileAddresses();
     resolveTunnelSourceInterfaces();
+
+    resolveKeyringIfaceNames(_interfaces, _keyrings);
+    resolveIsakmpProfileIfaceNames(_interfaces, _isakmpProfiles);
+
     addIkePoliciesAndGateways(c);
+
+    // keyrings to IKE phase 1 keys
+    ImmutableSortedMap.Builder<String, IkePhase1Key> ikePhase1KeysBuilder =
+        ImmutableSortedMap.naturalOrder();
+    _keyrings
+        .values()
+        .forEach(keyring -> ikePhase1KeysBuilder.put(keyring.getName(), toIkePhase1Key(keyring)));
+
+    c.setIkePhase1Keys(ikePhase1KeysBuilder.build());
+
+    // ISAKMP profiles to IKE phase 1 policies
+    _isakmpProfiles
+        .values()
+        .forEach(
+            isakmpProfile ->
+                c.getIkePhase1Policies()
+                    .put(isakmpProfile.getName(), toIkePhase1Policy(isakmpProfile, this, c, _w)));
 
     // ipsec proposals
     for (Entry<String, IpsecTransformSet> e : _ipsecTransformSets.entrySet()) {
@@ -3882,8 +3915,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
       }
 
       Ip localAddress = isakmpProfile.getLocalAddress();
-      Prefix remotePrefix = isakmpProfile.getMatchIdentity();
-      if (localAddress == null || remotePrefix == null) {
+      IpWildcard remoteIdentity = isakmpProfile.getMatchIdentity();
+      if (localAddress == null || remoteIdentity == null) {
         _w.redFlag(
             String.format(
                 "Can't get IkeGateway: Local or remote address is not set for isakmpProfile %s",
@@ -3891,8 +3924,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
       } else {
         IkeGateway ikeGateway = new IkeGateway(e.getKey());
         c.getIkeGateways().put(name, ikeGateway);
-        ikeGateway.setAddress(remotePrefix.getStartIp());
-        Interface oldIface = getInterfaceByTunnelAddresses(localAddress, remotePrefix);
+        ikeGateway.setAddress(remoteIdentity.toPrefix().getStartIp());
+        Interface oldIface = getInterfaceByTunnelAddresses(localAddress, remoteIdentity.toPrefix());
         if (oldIface != null) {
           ikeGateway.setExternalInterface(c.getInterfaces().get(oldIface.getName()));
         } else {
@@ -4090,7 +4123,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _keyrings
         .values()
         .stream()
-        .filter(keyring -> keyring.getLocalInterfaceName() != null)
+        .filter(keyring -> !keyring.getLocalInterfaceName().equals(UNSET_LOCAL_INTERFACE))
         .forEach(
             keyring ->
                 keyring.setLocalAddress(
@@ -4100,7 +4133,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _isakmpProfiles
         .values()
         .stream()
-        .filter(isakmpProfile -> isakmpProfile.getLocalInterfaceName() != null)
+        .filter(
+            isakmpProfile -> !isakmpProfile.getLocalInterfaceName().equals(UNSET_LOCAL_INTERFACE))
         .forEach(
             isakmpProfile ->
                 isakmpProfile.setLocalAddress(

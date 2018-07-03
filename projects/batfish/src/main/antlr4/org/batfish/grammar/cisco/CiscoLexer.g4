@@ -10269,6 +10269,11 @@ SELF
    'self'
 ;
 
+SELF_IDENTITY
+:
+   'self-identity'
+;
+
 SEND
 :
    'send'

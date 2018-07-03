@@ -394,6 +394,7 @@ cis_profile
       | cisprf_local_address
       | cisprf_match
       | cisprf_null
+      | cisprf_self_identity
    )*
 ;
 
@@ -474,6 +475,12 @@ cisprf_null
    ) null_rest_of_line
 ;
 
+cisprf_self_identity
+:
+   SELF_IDENTITY IP_ADDRESS NEWLINE
+;
+
+
 ck_null
 :
    (
@@ -520,7 +527,7 @@ ckr_local_address
 
 ckr_psk
 :
-   PRE_SHARED_KEY ADDRESS IP_ADDRESS KEY variable_permissive NEWLINE
+   PRE_SHARED_KEY ADDRESS ip_address = IP_ADDRESS (wildcard_mask = IP_ADDRESS)? KEY variable_permissive NEWLINE
 ;
 
 cpki_certificate_chain

@@ -15,6 +15,10 @@ import org.batfish.common.VendorConversionException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.IkeGateway;
+import org.batfish.datamodel.IkeKeyType;
+import org.batfish.datamodel.IkePhase1Key;
+import org.batfish.datamodel.IkePhase1Policy;
+import org.batfish.datamodel.IkePhase1Proposal;
 import org.batfish.datamodel.IkePolicy;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
@@ -152,6 +156,20 @@ public class VyosConfiguration extends VendorConfiguration {
         newIkeGateway.setIkePolicy(newIkePolicy);
         newIkePolicy.setPreSharedKeyHash(ipsecPeer.getAuthenticationPreSharedSecretHash());
 
+        IkePhase1Policy ikePhase1Policy = new IkePhase1Policy(ikeGroupName);
+
+        // pre-shared-key
+        IkePhase1Key ikePhase1Key = new IkePhase1Key();
+        ikePhase1Key.setKeyType(IkeKeyType.PRE_SHARED_KEY);
+        ikePhase1Key.setKeyHash(ipsecPeer.getAuthenticationPreSharedSecretHash());
+
+        _c.getIkePhase1Keys()
+            .put(String.format("~IKE_PHASE1_KEY_%s~", ipsecPeer.getName()), ikePhase1Key);
+
+        ikePhase1Policy.setIkePhase1Key(ikePhase1Key);
+
+        _c.getIkePhase1Policies().put(ikeGroupName, ikePhase1Policy);
+
         // convert contained ike proposals
         for (Entry<Integer, IkeProposal> ikeProposalEntry : ikeGroup.getProposals().entrySet()) {
           String newIkeProposalName =
@@ -167,6 +185,16 @@ public class VyosConfiguration extends VendorConfiguration {
           newIkeProposal.setAuthenticationAlgorithm(
               ikeProposal.getHashAlgorithm().toIkeAuthenticationAlgorithm());
           newIkeProposal.setAuthenticationMethod(ipsecPeer.getAuthenticationMode());
+
+          IkePhase1Proposal ikePhase1Proposal = new IkePhase1Proposal(newIkeProposalName);
+          ikePhase1Proposal.setDiffieHellmanGroup(ikeProposal.getDhGroup());
+          ikePhase1Proposal.setEncryptionAlgorithm(ikeProposal.getEncryptionAlgorithm());
+          ikePhase1Proposal.setLifetimeSeconds(ikeGroup.getLifetimeSeconds());
+          ikePhase1Proposal.setHashingAlgorithm(
+              ikeProposal.getHashAlgorithm().toIkeAuthenticationAlgorithm());
+          ikePhase1Proposal.setAuthenticationMethod(ipsecPeer.getAuthenticationMode());
+          _c.getIkePhase1Proposals().put(newIkeProposalName, ikePhase1Proposal);
+          ikePhase1Policy.getIkePhase1Proposals().add(newIkeProposalName);
         }
       }
 

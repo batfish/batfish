@@ -302,7 +302,7 @@
         "description" : "Undefined reference to structure of type: 'crypto ipsec transform-set' with usage: 'crypto map ipsec-isakmp transform-set' named 'bleep'",
         "files" : {
           "cisco_crypto" : [
-            221
+            222
           ]
         }
       },
@@ -310,7 +310,7 @@
         "description" : "Undefined reference to structure of type: 'crypto ipsec transform-set' with usage: 'crypto map ipsec-isakmp transform-set' named 'mytransformset'",
         "files" : {
           "cisco_crypto" : [
-            240
+            241
           ]
         }
       },
@@ -326,7 +326,7 @@
         "description" : "Undefined reference to structure of type: 'crypto isakmp profile' with usage: 'crypto map ipsec-isakmp isakmp-profile' named 'myisakmpprofile'",
         "files" : {
           "cisco_crypto" : [
-            236
+            237
           ]
         }
       },
@@ -350,7 +350,7 @@
         "description" : "Undefined reference to structure of type: 'crypto-dynamic-map-set' with usage: 'crypto map ipsec-isakmp crypto-dynamic-map-set' named 'bippety'",
         "files" : {
           "cisco_crypto" : [
-            223
+            224
           ]
         }
       },
@@ -779,7 +779,7 @@
         "description" : "Undefined reference to structure of type: 'ipv4/6 acl' with usage: 'crypto map ipsec-isakmp acl' named 'myvpnacl'",
         "files" : {
           "cisco_crypto" : [
-            234
+            235
           ]
         }
       },
@@ -787,7 +787,7 @@
         "description" : "Undefined reference to structure of type: 'ipv4/6 acl' with usage: 'crypto map ipsec-isakmp acl' named 'someacl'",
         "files" : {
           "cisco_crypto" : [
-            218
+            219
           ]
         }
       },
@@ -1607,7 +1607,7 @@
         "crypto ipsec transform-set" : {
           "bleep" : {
             "crypto map ipsec-isakmp transform-set" : [
-              221
+              222
             ]
           },
           "hijklmnop" : {
@@ -1617,14 +1617,14 @@
           },
           "mytransformset" : {
             "crypto map ipsec-isakmp transform-set" : [
-              240
+              241
             ]
           }
         },
         "crypto isakmp profile" : {
           "myisakmpprofile" : {
             "crypto map ipsec-isakmp isakmp-profile" : [
-              236
+              237
             ]
           },
           "someOtherprofile" : {
@@ -1643,19 +1643,19 @@
         "crypto-dynamic-map-set" : {
           "bippety" : {
             "crypto map ipsec-isakmp crypto-dynamic-map-set" : [
-              223
+              224
             ]
           }
         },
         "ipv4/6 acl" : {
           "myvpnacl" : {
             "crypto map ipsec-isakmp acl" : [
-              234
+              235
             ]
           },
           "someacl" : {
             "crypto map ipsec-isakmp acl" : [
-              218
+              219
             ]
           }
         }

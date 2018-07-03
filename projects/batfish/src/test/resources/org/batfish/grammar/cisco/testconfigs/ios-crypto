@@ -1,16 +1,14 @@
 !
 hostname ios-crypto
 !
+crypto isakmp policy 20
+!
 crypto isakmp policy 10
   hash md5
   group 1
   encr aes
   authentication rsa-sig
   lifetime 14400
-!
-crypto isakmp policy 20
-!
-!
 !
 crypto keyring ISAKMP-KEYRING-ADDRESS
   pre-shared-key address 1.2.3.4 key psk1
@@ -22,12 +20,14 @@ crypto keyring ISAKMP-KEYRING-INTERFACE
 !
 crypto isakmp profile ISAKMP-PROFILE-ADDRESS
    keyring ISAKMP-KEYRING-ADDRESS
+   self-identity 2.3.4.6
    match identity address 1.2.3.4 255.255.255.255
    keepalive 10 retry 3
    local-address 2.3.4.6
 !
 crypto isakmp profile ISAKMP-PROFILE-INTERFACE
    keyring ISAKMP-KEYRING-INTERFACE
+   self-identity 2.3.4.6
    match identity address 1.2.3.4 255.255.255.255
    keepalive 10 retry 3
    local-address TenGigabitEthernet0/0

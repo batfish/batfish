@@ -388,8 +388,8 @@
         "description" : "Unused structure of type: 'crypto keyring' with name: 'VRF:ABC:DEF:GHI:1234'",
         "files" : {
           "cisco_crypto" : [
-            211,
-            212
+            212,
+            213
           ]
         }
       },
@@ -424,12 +424,12 @@
         "description" : "Unused structure of type: 'crypto-map-set' with name: 'VPN'",
         "files" : {
           "cisco_crypto" : [
-            217,
             218,
             219,
             220,
             221,
-            222
+            222,
+            223
           ]
         }
       },
@@ -437,7 +437,6 @@
         "description" : "Unused structure of type: 'crypto-map-set' with name: 'VPNMAP'",
         "files" : {
           "cisco_crypto" : [
-            232,
             233,
             234,
             235,
@@ -445,7 +444,8 @@
             237,
             238,
             239,
-            240
+            240,
+            241
           ]
         }
       },
@@ -453,7 +453,7 @@
         "description" : "Unused structure of type: 'crypto-map-set' with name: 'myothermap'",
         "files" : {
           "cisco_crypto" : [
-            214
+            215
           ]
         }
       },
@@ -1755,8 +1755,8 @@
         },
         "crypto keyring" : {
           "VRF:ABC:DEF:GHI:1234" : [
-            211,
-            212
+            212,
+            213
           ]
         },
         "crypto-dynamic-map-set" : {
@@ -1770,15 +1770,14 @@
         },
         "crypto-map-set" : {
           "VPN" : [
-            217,
             218,
             219,
             220,
             221,
-            222
+            222,
+            223
           ],
           "VPNMAP" : [
-            232,
             233,
             234,
             235,
@@ -1786,10 +1785,11 @@
             237,
             238,
             239,
-            240
+            240,
+            241
           ],
           "myothermap" : [
-            214
+            215
           ]
         }
       },
