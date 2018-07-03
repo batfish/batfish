@@ -139,9 +139,9 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
     private SortedSet<Edge> _lanNeighbors;
 
     private Layer1Topology _layer1Neighbors;
-    
+
     private Layer2Topology _layer2Neighbors;
-    
+
     private SortedSet<IpEdge> _ospfNeighbors;
 
     private SortedSet<IpEdge> _ripNeighbors;
