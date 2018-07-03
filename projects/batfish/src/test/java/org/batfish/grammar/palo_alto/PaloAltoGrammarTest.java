@@ -8,9 +8,12 @@ import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructure;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructureWithDefinitionLines;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasMemberInterfaces;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasZone;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDescription;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
@@ -20,6 +23,7 @@ import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
@@ -44,6 +48,7 @@ import org.batfish.grammar.flattener.Flattener;
 import org.batfish.grammar.flattener.FlattenerLineMap;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
+import org.batfish.representation.palo_alto.Interface;
 import org.batfish.representation.palo_alto.PaloAltoStructureType;
 import org.batfish.representation.palo_alto.PaloAltoStructureUsage;
 import org.junit.Rule;
@@ -138,6 +143,28 @@ public class PaloAltoGrammarTest {
     assertThat(c, hasInterface(interfaceName1, isActive()));
     assertThat(c, hasInterface(interfaceName2, not(isActive())));
     assertThat(c, hasInterface(interfaceName3, isActive()));
+  }
+
+  @Test
+  public void testInterfaceUnits() throws IOException {
+    String hostname = "interface-units";
+    String interfaceNameUnit1 = "ethernet1/1.1";
+    String interfaceNameUnit2 = "ethernet1/1.2";
+    Configuration c = parseConfig(hostname);
+
+    // Confirm interface MTU is extracted
+    assertThat(c, hasInterface(interfaceNameUnit1, hasMtu(Interface.DEFAULT_INTERFACE_MTU)));
+    assertThat(c, hasInterface(interfaceNameUnit2, hasMtu(1234)));
+
+    // Confirm address is extracted
+    assertThat(
+        c,
+        hasInterface(
+            interfaceNameUnit1, hasAllAddresses(contains(new InterfaceAddress("1.1.1.1/24")))));
+    assertThat(
+        c,
+        hasInterface(
+            interfaceNameUnit2, hasAllAddresses(contains(new InterfaceAddress("1.1.2.1/24")))));
   }
 
   @Test
@@ -275,5 +302,27 @@ public class PaloAltoGrammarTest {
     assertThat(c, hasVrf("default", hasInterfaces(hasItem("ethernet1/1"))));
     assertThat(c, hasVrf("somename", hasInterfaces(hasItems("ethernet1/2", "ethernet1/3"))));
     assertThat(c, hasVrf("someothername", hasInterfaces(emptyIterable())));
+  }
+
+  @Test
+  public void testZones() throws IOException {
+    String hostname = "zones";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Configuration c = batfish.loadConfigurations().get(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    // Confirm zone definitions are recorded properly
+    assertThat(ccae, hasDefinedStructure(hostname, PaloAltoStructureType.ZONE, "z1"));
+    assertThat(ccae, hasDefinedStructure(hostname, PaloAltoStructureType.ZONE, "zempty"));
+
+    // Confirm interface references in zones are recorded properly
+    assertThat(ccae, hasNumReferrers(hostname, PaloAltoStructureType.INTERFACE, "ethernet1/1", 1));
+    assertThat(ccae, hasNumReferrers(hostname, PaloAltoStructureType.INTERFACE, "ethernet1/2", 1));
+
+    // Confirm zones contain the correct interfaces
+    assertThat(
+        c, hasZone("z1", hasMemberInterfaces(containsInAnyOrder("ethernet1/1", "ethernet1/2"))));
+    assertThat(c, hasZone("zempty", hasMemberInterfaces(empty())));
   }
 }

@@ -1,10 +1,13 @@
 package org.batfish.representation.cisco;
 
+import static org.batfish.datamodel.Interface.UNSET_LOCAL_INTERFACE;
+
 import java.util.Objects;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.IpWildcard;
 
 public class Keyring extends ComparableStructure<String> {
 
@@ -12,14 +15,15 @@ public class Keyring extends ComparableStructure<String> {
 
   @Nullable private Ip _localAddress;
 
-  @Nullable private String _localInterfaceName;
+  @Nonnull private String _localInterfaceName;
 
-  private Ip _remoteAddress;
+  private IpWildcard _remoteIdentity;
 
   private String _key;
 
   public Keyring(String name) {
     super(name);
+    _localInterfaceName = UNSET_LOCAL_INTERFACE;
   }
 
   public String getKey() {
@@ -31,17 +35,27 @@ public class Keyring extends ComparableStructure<String> {
     return _localAddress;
   }
 
-  @Nullable
   public String getLocalInterfaceName() {
     return _localInterfaceName;
   }
 
-  public Ip getRemoteAddress() {
-    return _remoteAddress;
+  public IpWildcard getRemoteIdentity() {
+    return _remoteIdentity;
   }
 
-  public boolean match(Ip localAddress, Prefix matchIdentity) {
-    return Objects.equals(localAddress, _localAddress) && matchIdentity.containsIp(_remoteAddress);
+  /**
+   * Returns true if this {@link Keyring} can be used with the given localInterface and
+   * matchIdentity
+   *
+   * @param localAddress {@link org.batfish.datamodel.Interface} {@link Ip} on which this {@link
+   *     Keyring} is intended to be used
+   * @param matchIdentity {@link IpWildcard} for the remote peers with which this {@link Keyring} is
+   *     intended to be used
+   * @return true if this {@link Keyring} can be used with the given localAddress and matchIdentity
+   */
+  public boolean match(Ip localAddress, IpWildcard matchIdentity) {
+    return _remoteIdentity.supersetOf(matchIdentity)
+        && (_localAddress == null || Objects.equals(localAddress, _localAddress));
   }
 
   public void setKey(String key) {
@@ -52,11 +66,11 @@ public class Keyring extends ComparableStructure<String> {
     _localAddress = address;
   }
 
-  public void setLocalInterfaceName(String localInterfaceName) {
+  public void setLocalInterfaceName(@Nonnull String localInterfaceName) {
     _localInterfaceName = localInterfaceName;
   }
 
-  public void setRemoteAddress(Ip address) {
-    _remoteAddress = address;
+  public void setRemoteIdentity(IpWildcard remoteIdentity) {
+    _remoteIdentity = remoteIdentity;
   }
 }
