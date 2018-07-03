@@ -1306,22 +1306,30 @@ public class Batfish extends PluginConsumer implements IBatfish {
     CommonUtil.initRemoteIpsecVpns(configurations);
     for (Configuration c : configurations.values()) {
       for (IpsecVpn vpn : c.getIpsecVpns().values()) {
+        Interface bindInterface = vpn.getBindInterface();
+        if (bindInterface == null) {
+          // Nothing to disable.
+          continue;
+        }
+
+        if (bindInterface.getInterfaceType() == InterfaceType.PHYSICAL) {
+          // Skip tunnels bound to physical interfaces (aka, Cisco interface crypto-map).
+          continue;
+        }
+
         IpsecVpn remoteVpn = vpn.getRemoteIpsecVpn();
         if (remoteVpn == null
             || !vpn.compatibleIkeProposals(remoteVpn)
             || !vpn.compatibleIpsecProposals(remoteVpn)
             || !vpn.compatiblePreSharedKey(remoteVpn)) {
           String hostname = c.getHostname();
-          Interface bindInterface = vpn.getBindInterface();
-          if (bindInterface != null) {
-            bindInterface.setActive(false);
-            bindInterface.setBlacklisted(true);
-            String bindInterfaceName = bindInterface.getName();
-            _logger.warnf(
-                "WARNING: Disabling unusable vpn interface because we cannot determine remote "
-                    + "endpoint: \"%s:%s\"\n",
-                hostname, bindInterfaceName);
-          }
+          bindInterface.setActive(false);
+          bindInterface.setBlacklisted(true);
+          String bindInterfaceName = bindInterface.getName();
+          _logger.warnf(
+              "WARNING: Disabling unusable vpn interface because we cannot determine remote "
+                  + "endpoint: \"%s:%s\"\n",
+              hostname, bindInterfaceName);
         }
       }
     }
