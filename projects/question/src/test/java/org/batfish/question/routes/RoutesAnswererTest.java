@@ -1,6 +1,7 @@
 package org.batfish.question.routes;
 
 import static org.batfish.datamodel.Prefix.MAX_PREFIX_LENGTH;
+import static org.batfish.question.routes.RoutesAnswerer.COL_ADMIN_DISTANCE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_AS_PATH;
 import static org.batfish.question.routes.RoutesAnswerer.COL_COMMUNITIES;
 import static org.batfish.question.routes.RoutesAnswerer.COL_LOCAL_PREF;
@@ -11,6 +12,7 @@ import static org.batfish.question.routes.RoutesAnswerer.COL_NEXT_HOP_IP;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NODE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ORIGIN_PROTOCOL;
 import static org.batfish.question.routes.RoutesAnswerer.COL_PROTOCOL;
+import static org.batfish.question.routes.RoutesAnswerer.COL_TAG;
 import static org.batfish.question.routes.RoutesAnswerer.COL_VRF_NAME;
 import static org.batfish.question.routes.RoutesAnswerer.getMainRibRoutes;
 import static org.batfish.question.routes.RoutesAnswerer.getRowsForBgpRoutes;
@@ -110,7 +112,15 @@ public class RoutesAnswererTest {
             .stream()
             .map(ColumnMetadata::getName)
             .collect(ImmutableList.toImmutableList()),
-        contains(COL_NODE, COL_VRF_NAME, COL_NETWORK, COL_PROTOCOL, COL_NEXT_HOP, COL_NEXT_HOP_IP));
+        contains(
+            COL_NODE,
+            COL_VRF_NAME,
+            COL_NETWORK,
+            COL_PROTOCOL,
+            COL_TAG,
+            COL_NEXT_HOP_IP,
+            COL_NEXT_HOP,
+            COL_ADMIN_DISTANCE));
 
     assertThat(
         columnMetadata
@@ -118,7 +128,14 @@ public class RoutesAnswererTest {
             .map(ColumnMetadata::getSchema)
             .collect(ImmutableList.toImmutableList()),
         contains(
-            Schema.NODE, Schema.STRING, Schema.PREFIX, Schema.STRING, Schema.STRING, Schema.IP));
+            Schema.NODE,
+            Schema.STRING,
+            Schema.PREFIX,
+            Schema.STRING,
+            Schema.INTEGER,
+            Schema.IP,
+            Schema.STRING,
+            Schema.INTEGER));
   }
 
   @Test
@@ -130,6 +147,7 @@ public class RoutesAnswererTest {
         COL_VRF_NAME,
         COL_NETWORK,
         COL_PROTOCOL,
+        COL_TAG,
         COL_NEXT_HOP_IP,
         // BGP attributes
         COL_AS_PATH,

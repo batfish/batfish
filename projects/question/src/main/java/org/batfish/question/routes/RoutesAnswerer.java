@@ -40,10 +40,14 @@ public class RoutesAnswerer extends Answerer {
   static final String COL_VRF_NAME = "VRF";
   static final String COL_NETWORK = "Network";
   static final String COL_NEXT_HOP_IP = "NextHopIp";
+  static final String COL_TAG = "Tag";
 
   // Present sometimes
   static final String COL_NEXT_HOP = "NextHop";
   static final String COL_PROTOCOL = "Protocol";
+
+  // Main RIB
+  static final String COL_ADMIN_DISTANCE = "AdminDistance";
 
   // BGP only
   static final String COL_AS_PATH = "AsPath";
@@ -140,6 +144,7 @@ public class RoutesAnswerer extends Answerer {
                     .put(COL_NEXT_HOP_IP, route.getNextHopIp())
                     .put(COL_NEXT_HOP, firstNonNull(route.getNextHop(), VALUE_NA))
                     .put(COL_PROTOCOL, route.getProtocol())
+                    .put(COL_TAG, route.getTag())
                     .build())
         .collect(toImmutableList());
   }
@@ -181,29 +186,65 @@ public class RoutesAnswerer extends Answerer {
     addCommonTableColumns(columnBuilder);
     switch (protocol) {
       case BGP:
-        columnBuilder.add(new ColumnMetadata(COL_NEXT_HOP_IP, Schema.IP, "Route's next hop IP"));
-        columnBuilder.add(new ColumnMetadata(COL_AS_PATH, Schema.STRING, "AS path"));
-        columnBuilder.add(new ColumnMetadata(COL_METRIC, Schema.INTEGER, "Metric"));
-        columnBuilder.add(new ColumnMetadata(COL_LOCAL_PREF, Schema.INTEGER, "Local Preference"));
         columnBuilder.add(
-            new ColumnMetadata(COL_COMMUNITIES, Schema.list(Schema.STRING), "BGP communities"));
+            new ColumnMetadata(
+                COL_NEXT_HOP_IP, Schema.IP, "Route's next hop IP", Boolean.FALSE, Boolean.TRUE));
         columnBuilder.add(
-            new ColumnMetadata(COL_ORIGIN_PROTOCOL, Schema.STRING, "Origin protocol"));
+            new ColumnMetadata(COL_AS_PATH, Schema.STRING, "AS path", Boolean.FALSE, Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(COL_METRIC, Schema.INTEGER, "Metric", Boolean.FALSE, Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_LOCAL_PREF, Schema.INTEGER, "Local Preference", Boolean.FALSE, Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_COMMUNITIES,
+                Schema.list(Schema.STRING),
+                "BGP communities",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_ORIGIN_PROTOCOL,
+                Schema.STRING,
+                "Origin protocol",
+                Boolean.FALSE,
+                Boolean.TRUE));
         break;
       case ALL:
       default:
         columnBuilder.add(
-            new ColumnMetadata(COL_NEXT_HOP, Schema.STRING, "Route's next hop (as node hostname)"));
-        columnBuilder.add(new ColumnMetadata(COL_NEXT_HOP_IP, Schema.IP, "Route's next hop IP"));
+            new ColumnMetadata(
+                COL_NEXT_HOP_IP, Schema.IP, "Route's next hop IP", Boolean.FALSE, Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_NEXT_HOP,
+                Schema.STRING,
+                "Route's next hop (as node hostname)",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_ADMIN_DISTANCE,
+                Schema.INTEGER,
+                "Route's admin distance",
+                Boolean.FALSE,
+                Boolean.TRUE));
     }
     return new TableMetadata(columnBuilder.build(), new DisplayHints());
   }
 
   /** Generate table columns that should be always present, at the start of table. */
   private static void addCommonTableColumns(ImmutableList.Builder<ColumnMetadata> columnBuilder) {
-    columnBuilder.add(new ColumnMetadata(COL_NODE, Schema.NODE, "Node"));
-    columnBuilder.add(new ColumnMetadata(COL_VRF_NAME, Schema.STRING, "VRF name"));
-    columnBuilder.add(new ColumnMetadata(COL_NETWORK, Schema.PREFIX, "Route network (prefix)"));
+    columnBuilder.add(
+        new ColumnMetadata(COL_NODE, Schema.NODE, "Node", Boolean.TRUE, Boolean.FALSE));
+    columnBuilder.add(
+        new ColumnMetadata(COL_VRF_NAME, Schema.STRING, "VRF name", Boolean.TRUE, Boolean.FALSE));
+    columnBuilder.add(
+        new ColumnMetadata(
+            COL_NETWORK, Schema.PREFIX, "Route network (prefix)", Boolean.TRUE, Boolean.TRUE));
     columnBuilder.add(new ColumnMetadata(COL_PROTOCOL, Schema.STRING, "Route protocol"));
+    columnBuilder.add(
+        new ColumnMetadata(COL_TAG, Schema.INTEGER, "Route tag", Boolean.FALSE, Boolean.TRUE));
   }
 }
