@@ -224,6 +224,30 @@
           ]
         }
       },
+      "unused:bgp group:someipv4bgpgroup" : {
+        "description" : "Unused structure of type: 'bgp group' with name: 'someipv4bgpgroup'",
+        "files" : {
+          "juniper_bgp_remove_private_as" : [
+            5,
+            9,
+            10,
+            11,
+            12
+          ]
+        }
+      },
+      "unused:bgp group:someipv6bgpgroup" : {
+        "description" : "Unused structure of type: 'bgp group' with name: 'someipv6bgpgroup'",
+        "files" : {
+          "juniper_bgp_remove_private_as" : [
+            7,
+            13,
+            14,
+            15,
+            16
+          ]
+        }
+      },
       "unused:bgp group:ucr" : {
         "description" : "Unused structure of type: 'bgp group' with name: 'ucr'",
         "files" : {
@@ -1466,7 +1490,7 @@
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 141
+      "numResults" : 143
     },
     "unusedStructures" : {
       "aggAddress" : {
@@ -2171,6 +2195,24 @@
         "application" : {
           "APP" : [
             4
+          ]
+        }
+      },
+      "juniper_bgp_remove_private_as" : {
+        "bgp group" : {
+          "someipv4bgpgroup" : [
+            5,
+            9,
+            10,
+            11,
+            12
+          ],
+          "someipv6bgpgroup" : [
+            7,
+            13,
+            14,
+            15,
+            16
           ]
         }
       },
