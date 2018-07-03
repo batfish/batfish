@@ -3354,6 +3354,11 @@ NATIVE_VLAN_ID
    'native-vlan-id'
 ;
 
+NEAREST
+:
+   'nearest'
+;
+
 NEIGHBOR
 :
    'neighbor'
@@ -3542,6 +3547,11 @@ NO_NEIGHBOR_DOWN_NOTIFICATION
 NO_NEXTHOP_CHANGE
 :
    'no-nexthop-change'
+;
+
+NO_PEER_LOOP_CHECK
+:
+   'no-peer-loop-check'
 ;
 
 NO_READVERTISE
@@ -4202,6 +4212,11 @@ REMOVE_PRIVATE
 REMOVED
 :
    'Removed'
+;
+
+REPLACE
+:
+   'replace'
 ;
 
 REQUIRED_OPTION_MISSING
