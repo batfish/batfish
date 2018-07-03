@@ -14,7 +14,7 @@ final class IkePhase1KeyMatchersImpl {
 
     @Override
     protected String featureValueOf(IkePhase1Key actual) {
-      return actual.getKeyValue();
+      return actual.getKeyHash();
     }
   }
 }

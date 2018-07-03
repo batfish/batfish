@@ -15,7 +15,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.NavigableSet;
-import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -187,7 +186,7 @@ public final class Configuration extends ComparableStructure<String> {
 
   private NavigableMap<String, IkeProposal> _ikeProposals;
 
-  private @Nonnull SortedMap<String, IkePhase1Key> _ikePhase1keys;
+  private @Nonnull NavigableMap<String, IkePhase1Key> _ikePhase1keys;
 
   private NavigableMap<String, IkePhase1Proposal> _ikePhase1Proposals;
 
@@ -442,7 +441,7 @@ public final class Configuration extends ComparableStructure<String> {
 
   @JsonProperty(PROP_IKE_PHASE1_KEYS)
   @JsonPropertyDescription("Dictionary of all IKE phase1 keys for this node.")
-  public SortedMap<String, IkePhase1Key> getIkePhase1Keys() {
+  public NavigableMap<String, IkePhase1Key> getIkePhase1Keys() {
     return _ikePhase1keys;
   }
 
@@ -707,7 +706,7 @@ public final class Configuration extends ComparableStructure<String> {
   }
 
   @JsonProperty(PROP_IKE_PHASE1_KEYS)
-  public void setIkePhase1Keys(@Nullable Map<String, IkePhase1Key> ikePhase1Keys) {
+  public void setIkePhase1Keys(@Nullable NavigableMap<String, IkePhase1Key> ikePhase1Keys) {
     _ikePhase1keys =
         ikePhase1Keys == null ? ImmutableSortedMap.of() : ImmutableSortedMap.copyOf(ikePhase1Keys);
   }

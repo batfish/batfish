@@ -5,12 +5,10 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
-import com.google.common.collect.ImmutableSortedMap.Builder;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -1190,7 +1188,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     // pre-shared-key
     IkePhase1Key ikePhase1Key = new IkePhase1Key();
     ikePhase1Key.setKeyType(IkeKeyType.PRE_SHARED_KEY);
-    ikePhase1Key.setKeyValue(ikePolicy.getPreSharedKeyHash());
+    ikePhase1Key.setKeyHash(ikePolicy.getPreSharedKeyHash());
 
     ikePhase1Keys.put(String.format("~IKE_PHASE1_KEY_%s~", ikePolicy.getName()), ikePhase1Key);
 
@@ -2003,7 +2001,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
                     .put(ikeProposal.getName(), toIkePhase1Proposal(ikeProposal)));
 
     ImmutableSortedMap.Builder<String, IkePhase1Key> ikePhase1KeysBuilder =
-        new Builder<>(Comparator.naturalOrder());
+        ImmutableSortedMap.naturalOrder();
 
     // convert ike policies
     for (Entry<String, IkePolicy> e : _ikePolicies.entrySet()) {

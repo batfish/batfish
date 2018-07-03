@@ -5,7 +5,8 @@ import static org.batfish.common.util.CommonUtil.toImmutableMap;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
 import static org.batfish.representation.cisco.CiscoConversions.generateAggregateRoutePolicy;
-import static org.batfish.representation.cisco.CiscoConversions.resolveKeyringIsakmpProfileIfaceNames;
+import static org.batfish.representation.cisco.CiscoConversions.resolveIsakmpProfileIfaceNames;
+import static org.batfish.representation.cisco.CiscoConversions.resolveKeyringIfaceNames;
 import static org.batfish.representation.cisco.CiscoConversions.suppressSummarizedPrefixes;
 import static org.batfish.representation.cisco.CiscoConversions.toIkePhase1Key;
 import static org.batfish.representation.cisco.CiscoConversions.toIkePhase1Policy;
@@ -3231,13 +3232,14 @@ public final class CiscoConfiguration extends VendorConfiguration {
     resolveKeyringIsakmpProfileAddresses();
     resolveTunnelSourceInterfaces();
 
-    resolveKeyringIsakmpProfileIfaceNames(_interfaces, _keyrings, _isakmpProfiles);
+    resolveKeyringIfaceNames(_interfaces, _keyrings);
+    resolveIsakmpProfileIfaceNames(_interfaces, _isakmpProfiles);
 
     addIkePoliciesAndGateways(c);
 
     // keyrings to IKE phase 1 keys
-    ImmutableMap.Builder<String, IkePhase1Key> ikePhase1KeysBuilder =
-        new ImmutableSortedMap.Builder<>(Comparator.naturalOrder());
+    ImmutableSortedMap.Builder<String, IkePhase1Key> ikePhase1KeysBuilder =
+        ImmutableSortedMap.naturalOrder();
     _keyrings
         .values()
         .forEach(keyring -> ikePhase1KeysBuilder.put(keyring.getName(), toIkePhase1Key(keyring)));

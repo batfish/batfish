@@ -1,6 +1,9 @@
 package org.batfish.representation.cisco;
 
+import static org.batfish.datamodel.Interface.UNSET_INTERFACE_NAME;
+
 import java.util.Objects;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.Ip;
@@ -12,7 +15,7 @@ public class Keyring extends ComparableStructure<String> {
 
   @Nullable private Ip _localAddress;
 
-  @Nullable private String _localInterfaceName;
+  @Nonnull private String _localInterfaceName;
 
   private IpWildcard _remoteIdentity;
 
@@ -20,6 +23,7 @@ public class Keyring extends ComparableStructure<String> {
 
   public Keyring(String name) {
     super(name);
+    _localInterfaceName = UNSET_INTERFACE_NAME;
   }
 
   public String getKey() {
@@ -31,7 +35,6 @@ public class Keyring extends ComparableStructure<String> {
     return _localAddress;
   }
 
-  @Nullable
   public String getLocalInterfaceName() {
     return _localInterfaceName;
   }
@@ -63,7 +66,7 @@ public class Keyring extends ComparableStructure<String> {
     _localAddress = address;
   }
 
-  public void setLocalInterfaceName(String localInterfaceName) {
+  public void setLocalInterfaceName(@Nonnull String localInterfaceName) {
     _localInterfaceName = localInterfaceName;
   }
 

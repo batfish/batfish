@@ -1,5 +1,6 @@
 package org.batfish.representation.cisco;
 
+import static org.batfish.datamodel.Interface.UNKNOWN_INTERFACE_NAME;
 import static org.batfish.representation.cisco.CiscoConversions.getMatchingPsk;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -35,11 +36,11 @@ public class CiscoConversionsTest {
   public void testGetMatchingPskInvalidLocalIface() {
     IsakmpProfile isakmpProfile = new IsakmpProfile("Missing_Local_Interface");
     // Empty interfaceName value represents incorrect local-address value
-    isakmpProfile.setLocalInterfaceName("");
+    isakmpProfile.setLocalInterfaceName(UNKNOWN_INTERFACE_NAME);
     isakmpProfile.setKeyring("IKE_Phase1_Key");
 
     IkePhase1Key ikePhase1Key = new IkePhase1Key();
-    ikePhase1Key.setKeyValue("test_key");
+    ikePhase1Key.setKeyHash("test_key");
     ikePhase1Key.setKeyType(IkeKeyType.PRE_SHARED_KEY);
     ikePhase1Key.setLocalInterface("local_interface");
 
@@ -60,7 +61,7 @@ public class CiscoConversionsTest {
     isakmpProfile.setLocalInterfaceName("local_interface");
 
     IkePhase1Key ikePhase1Key = new IkePhase1Key();
-    ikePhase1Key.setKeyValue("test_key");
+    ikePhase1Key.setKeyHash("test_key");
     ikePhase1Key.setKeyType(IkeKeyType.PRE_SHARED_KEY);
     ikePhase1Key.setLocalInterface("local_interface");
 
@@ -81,7 +82,7 @@ public class CiscoConversionsTest {
     isakmpProfile.setKeyring("Unknown_Key");
 
     IkePhase1Key ikePhase1Key = new IkePhase1Key();
-    ikePhase1Key.setKeyValue("test_key");
+    ikePhase1Key.setKeyHash("test_key");
     ikePhase1Key.setKeyType(IkeKeyType.PRE_SHARED_KEY);
     ikePhase1Key.setLocalInterface("local_interface");
 
@@ -102,9 +103,9 @@ public class CiscoConversionsTest {
     isakmpProfile.setKeyring("IKE_Phase1_Key");
 
     IkePhase1Key ikePhase1Key = new IkePhase1Key();
-    ikePhase1Key.setKeyValue("test_key");
+    ikePhase1Key.setKeyHash("test_key");
     ikePhase1Key.setKeyType(IkeKeyType.PRE_SHARED_KEY);
-    ikePhase1Key.setLocalInterface("");
+    ikePhase1Key.setLocalInterface(UNKNOWN_INTERFACE_NAME);
 
     IkePhase1Key matchingKey =
         getMatchingPsk(isakmpProfile, _warnings, ImmutableMap.of(IKE_PHASE1_KEY, ikePhase1Key));
@@ -124,7 +125,7 @@ public class CiscoConversionsTest {
     isakmpProfile.setMatchIdentity(new IpWildcard("1.2.3.4:0.0.0.0"));
 
     IkePhase1Key ikePhase1Key = new IkePhase1Key();
-    ikePhase1Key.setKeyValue("test_key");
+    ikePhase1Key.setKeyHash("test_key");
     ikePhase1Key.setKeyType(IkeKeyType.PRE_SHARED_KEY);
     ikePhase1Key.setLocalInterface("local_interface");
     ikePhase1Key.setRemoteIdentity(new IpWildcard("1.2.3.4:0.0.0.0"));
@@ -144,7 +145,7 @@ public class CiscoConversionsTest {
     isakmpProfile.setMatchIdentity(new IpWildcard("1.2.3.4:255.255.255.255"));
 
     IkePhase1Key ikePhase1Key = new IkePhase1Key();
-    ikePhase1Key.setKeyValue("test_key");
+    ikePhase1Key.setKeyHash("test_key");
     ikePhase1Key.setKeyType(IkeKeyType.PRE_SHARED_KEY);
     ikePhase1Key.setLocalInterface("local_interface");
     ikePhase1Key.setRemoteIdentity(new IpWildcard("1.2.3.5:0.0.0.0"));

@@ -1,5 +1,8 @@
 package org.batfish.representation.cisco;
 
+import static org.batfish.datamodel.Interface.UNSET_INTERFACE_NAME;
+
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.Ip;
@@ -14,7 +17,7 @@ public class IsakmpProfile extends ComparableStructure<String> {
 
   @Nullable private Ip _localAddress;
 
-  @Nullable private String _localInterfaceName;
+  @Nonnull private String _localInterfaceName;
 
   private IpWildcard _matchIdentity;
 
@@ -22,6 +25,7 @@ public class IsakmpProfile extends ComparableStructure<String> {
 
   public IsakmpProfile(String name) {
     super(name);
+    _localInterfaceName = UNSET_INTERFACE_NAME;
   }
 
   public String getKeyring() {
@@ -33,7 +37,7 @@ public class IsakmpProfile extends ComparableStructure<String> {
     return _localAddress;
   }
 
-  @Nullable
+  @Nonnull
   public String getLocalInterfaceName() {
     return _localInterfaceName;
   }
@@ -54,7 +58,7 @@ public class IsakmpProfile extends ComparableStructure<String> {
     _localAddress = address;
   }
 
-  public void setLocalInterfaceName(String localInterfaceName) {
+  public void setLocalInterfaceName(@Nonnull String localInterfaceName) {
     _localInterfaceName = localInterfaceName;
   }
 

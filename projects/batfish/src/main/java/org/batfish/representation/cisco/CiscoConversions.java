@@ -2,6 +2,7 @@ package org.batfish.representation.cisco;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.util.Collections.singletonList;
+import static org.batfish.datamodel.Interface.UNKNOWN_INTERFACE_NAME;
 
 import com.google.common.collect.ImmutableList;
 import java.math.BigInteger;
@@ -17,7 +18,6 @@ import java.util.TreeSet;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.apache.commons.lang3.ObjectUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.CommonUtil;
@@ -135,24 +135,22 @@ class CiscoConversions {
    * the interfaces having no primary {@link InterfaceAddress}
    */
   private static Map<Ip, String> computeIpToIfaceNameMap(Map<String, Interface> interfaces) {
-    Map<Ip, String> primaryIpToIfaceNames = new HashMap<>();
+    Map<Ip, String> IpToIfaceNameMap = new HashMap<>();
     for (Entry<String, Interface> interfaceNameToInterface : interfaces.entrySet()) {
-      InterfaceAddress primaryAddress = interfaceNameToInterface.getValue().getAddress();
-      if (primaryAddress != null) {
-        primaryIpToIfaceNames.put(primaryAddress.getIp(), interfaceNameToInterface.getKey());
-      }
+      interfaceNameToInterface
+          .getValue()
+          .getAllAddresses()
+          .forEach(
+              interfaceAddress -> {
+                IpToIfaceNameMap.put(interfaceAddress.getIp(), interfaceNameToInterface.getKey());
+              });
     }
-    return primaryIpToIfaceNames;
+    return IpToIfaceNameMap;
   }
 
-  /**
-   * Resolves the interface names of the addresses used as local addresses of {@link IsakmpProfile}
-   * and {@link Keyring}
-   */
-  static void resolveKeyringIsakmpProfileIfaceNames(
-      Map<String, Interface> interfaces,
-      Map<String, Keyring> keyrings,
-      Map<String, IsakmpProfile> isakpProfiles) {
+  /** Resolves the interface names of the addresses used as local addresses of {@link Keyring} */
+  static void resolveKeyringIfaceNames(
+      Map<String, Interface> interfaces, Map<String, Keyring> keyrings) {
     Map<Ip, String> primaryIptoIfaceName = computeIpToIfaceNameMap(interfaces);
 
     // setting empty string as interface name if cannot find the IP
@@ -163,8 +161,17 @@ class CiscoConversions {
         .forEach(
             keyring ->
                 keyring.setLocalInterfaceName(
-                    ObjectUtils.firstNonNull(
-                        primaryIptoIfaceName.get(keyring.getLocalAddress()), "")));
+                    firstNonNull(
+                        primaryIptoIfaceName.get(keyring.getLocalAddress()),
+                        UNKNOWN_INTERFACE_NAME)));
+  }
+
+  /**
+   * Resolves the interface names of the addresses used as local addresses of {@link IsakmpProfile}
+   */
+  static void resolveIsakmpProfileIfaceNames(
+      Map<String, Interface> interfaces, Map<String, IsakmpProfile> isakpProfiles) {
+    Map<Ip, String> primaryIptoIfaceName = computeIpToIfaceNameMap(interfaces);
 
     isakpProfiles
         .values()
@@ -173,8 +180,9 @@ class CiscoConversions {
         .forEach(
             isakmpProfile ->
                 isakmpProfile.setLocalInterfaceName(
-                    ObjectUtils.firstNonNull(
-                        primaryIptoIfaceName.get(isakmpProfile.getLocalAddress()), "")));
+                    firstNonNull(
+                        primaryIptoIfaceName.get(isakmpProfile.getLocalAddress()),
+                        UNKNOWN_INTERFACE_NAME)));
   }
 
   static AsPathAccessList toAsPathAccessList(AsPathSet asPathSet) {
@@ -209,7 +217,7 @@ class CiscoConversions {
 
   static IkePhase1Key toIkePhase1Key(Keyring keyring) {
     IkePhase1Key ikePhase1Key = new IkePhase1Key();
-    ikePhase1Key.setKeyValue(keyring.getKey());
+    ikePhase1Key.setKeyHash(keyring.getKey());
     ikePhase1Key.setKeyType(IkeKeyType.PRE_SHARED_KEY);
     ikePhase1Key.setLocalInterface(keyring.getLocalInterfaceName());
     ikePhase1Key.setRemoteIdentity(keyring.getRemoteIdentity());
@@ -244,8 +252,7 @@ class CiscoConversions {
       IsakmpProfile isakmpProfile, Warnings w, Map<String, IkePhase1Key> ikePhase1Keys) {
     IkePhase1Key ikePhase1Key = null;
     String isakmpProfileName = isakmpProfile.getName();
-    if (isakmpProfile.getLocalInterfaceName() != null
-        && isakmpProfile.getLocalInterfaceName().isEmpty()) {
+    if (isakmpProfile.getLocalInterfaceName().equals(UNKNOWN_INTERFACE_NAME)) {
       w.redFlag(
           String.format(
               "Invalid local address interface configured for ISAKMP profile %s",
@@ -259,7 +266,7 @@ class CiscoConversions {
               isakmpProfile.getKeyring(), isakmpProfileName));
     } else {
       IkePhase1Key tempIkePhase1Key = ikePhase1Keys.get(isakmpProfile.getKeyring());
-      if (tempIkePhase1Key.getLocalInterface().isEmpty()) {
+      if (tempIkePhase1Key.getLocalInterface().equals(UNKNOWN_INTERFACE_NAME)) {
         w.redFlag(
             String.format(
                 "Invalid local address interface configured for keyring %s",

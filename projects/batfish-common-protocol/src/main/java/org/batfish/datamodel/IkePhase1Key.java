@@ -1,5 +1,7 @@
 package org.batfish.datamodel;
 
+import static org.batfish.datamodel.Interface.UNSET_INTERFACE_NAME;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
@@ -12,7 +14,7 @@ public class IkePhase1Key implements Serializable {
 
   private static final String PROP_KEY_TYPE = "keyType";
 
-  private static final String PROP_KEY = "key";
+  private static final String PROP_KEY_HASH = "keyHash";
 
   private static final String PROP_REMOTE_IDENTITY = "remoteIdentity";
 
@@ -20,7 +22,7 @@ public class IkePhase1Key implements Serializable {
 
   private IkeKeyType _keyType;
 
-  private String _keyValue;
+  private String _keyHash;
 
   private IpWildcard _remoteIdentity;
 
@@ -48,9 +50,9 @@ public class IkePhase1Key implements Serializable {
   }
 
   @JsonPropertyDescription("Value of the key")
-  @JsonProperty(PROP_KEY)
-  public String getKeyValue() {
-    return _keyValue;
+  @JsonProperty(PROP_KEY_HASH)
+  public String getKeyHash() {
+    return _keyHash;
   }
 
   /**
@@ -68,7 +70,8 @@ public class IkePhase1Key implements Serializable {
     return _remoteIdentity != null
         && matchIdentity != null
         && _remoteIdentity.supersetOf(matchIdentity)
-        && (_localInterface == null || Objects.equals(_localInterface, localInterface));
+        && (_localInterface.equals(UNSET_INTERFACE_NAME)
+            || Objects.equals(_localInterface, localInterface));
   }
 
   @JsonProperty(PROP_KEY_TYPE)
@@ -76,9 +79,9 @@ public class IkePhase1Key implements Serializable {
     _keyType = keyType;
   }
 
-  @JsonProperty(PROP_KEY)
-  public void setKeyValue(String keyValue) {
-    _keyValue = keyValue;
+  @JsonProperty(PROP_KEY_HASH)
+  public void setKeyHash(String keyHash) {
+    _keyHash = keyHash;
   }
 
   @JsonProperty(PROP_REMOTE_IDENTITY)
