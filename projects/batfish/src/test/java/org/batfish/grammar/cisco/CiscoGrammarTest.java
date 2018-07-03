@@ -1902,12 +1902,6 @@ public class CiscoGrammarTest {
         hasRedFlagWarning(
             hostname,
             containsString(
-                "Interface TenGigabitEthernet0/2 with declared crypto-map mymap is shutdown")));
-    assertThat(
-        ccae,
-        hasRedFlagWarning(
-            hostname,
-            containsString(
                 "Interface TenGigabitEthernet0/1 with declared crypto-map mymap has no ip-address")));
   }
 

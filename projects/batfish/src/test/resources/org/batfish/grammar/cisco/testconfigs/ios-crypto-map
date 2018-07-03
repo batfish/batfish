@@ -44,10 +44,6 @@ interface TenGigabitEthernet0/1
  no ip address
  crypto map mymap
 !
-interface TenGigabitEthernet0/2
- shutdown
- crypto map mymap
-!
 interface Tunnel1
  ip address 6.7.8.9 255.255.255.252
  tunnel source TenGigabitEthernet0/0

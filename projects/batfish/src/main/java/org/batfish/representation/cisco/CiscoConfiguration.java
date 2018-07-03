@@ -2030,14 +2030,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     List<IpsecVpn> ipsecVpns = new ArrayList<>();
 
     for (org.batfish.datamodel.Interface iface : referencingInterfaces) {
-      // skipping shutdown interfaces or interfaces with no ip-address
-      if (!iface.getActive()) {
-        _w.redFlag(
-            String.format(
-                "Interface %s with declared crypto-map %s is shutdown",
-                iface.getName(), cryptoMapName));
-        continue;
-      }
+      // skipping interfaces with no ip-address
       if (iface.getAddress() == null) {
         _w.redFlag(
             String.format(
