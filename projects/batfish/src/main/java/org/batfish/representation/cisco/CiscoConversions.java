@@ -135,23 +135,23 @@ class CiscoConversions {
    * the interfaces having no primary {@link InterfaceAddress}
    */
   private static Map<Ip, String> computeIpToIfaceNameMap(Map<String, Interface> interfaces) {
-    Map<Ip, String> IpToIfaceNameMap = new HashMap<>();
+    Map<Ip, String> ipToIfaceNameMap = new HashMap<>();
     for (Entry<String, Interface> interfaceNameToInterface : interfaces.entrySet()) {
       interfaceNameToInterface
           .getValue()
           .getAllAddresses()
           .forEach(
               interfaceAddress -> {
-                IpToIfaceNameMap.put(interfaceAddress.getIp(), interfaceNameToInterface.getKey());
+                ipToIfaceNameMap.put(interfaceAddress.getIp(), interfaceNameToInterface.getKey());
               });
     }
-    return IpToIfaceNameMap;
+    return ipToIfaceNameMap;
   }
 
   /** Resolves the interface names of the addresses used as local addresses of {@link Keyring} */
   static void resolveKeyringIfaceNames(
       Map<String, Interface> interfaces, Map<String, Keyring> keyrings) {
-    Map<Ip, String> primaryIptoIfaceName = computeIpToIfaceNameMap(interfaces);
+    Map<Ip, String> iptoIfaceName = computeIpToIfaceNameMap(interfaces);
 
     // setting empty string as interface name if cannot find the IP
     keyrings
@@ -162,8 +162,7 @@ class CiscoConversions {
             keyring ->
                 keyring.setLocalInterfaceName(
                     firstNonNull(
-                        primaryIptoIfaceName.get(keyring.getLocalAddress()),
-                        UNKNOWN_INTERFACE_NAME)));
+                        iptoIfaceName.get(keyring.getLocalAddress()), UNKNOWN_INTERFACE_NAME)));
   }
 
   /**
@@ -171,7 +170,7 @@ class CiscoConversions {
    */
   static void resolveIsakmpProfileIfaceNames(
       Map<String, Interface> interfaces, Map<String, IsakmpProfile> isakpProfiles) {
-    Map<Ip, String> primaryIptoIfaceName = computeIpToIfaceNameMap(interfaces);
+    Map<Ip, String> iptoIfaceName = computeIpToIfaceNameMap(interfaces);
 
     isakpProfiles
         .values()
@@ -181,7 +180,7 @@ class CiscoConversions {
             isakmpProfile ->
                 isakmpProfile.setLocalInterfaceName(
                     firstNonNull(
-                        primaryIptoIfaceName.get(isakmpProfile.getLocalAddress()),
+                        iptoIfaceName.get(isakmpProfile.getLocalAddress()),
                         UNKNOWN_INTERFACE_NAME)));
   }
 

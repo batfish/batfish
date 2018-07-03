@@ -5811,8 +5811,9 @@
         "deviceType" : "SWITCH",
         "ikePhase1Keys" : {
           "VRF:ABC:DEF:GHI:1234" : {
-            "key" : "f300fd9a9833dc8b16a2c399b2b51c32fc40293606df9c1e814d978f6ebcb9f8",
+            "keyHash" : "f300fd9a9833dc8b16a2c399b2b51c32fc40293606df9c1e814d978f6ebcb9f8",
             "keyType" : "PRE_SHARED_KEY",
+            "localInterface" : "unset_interface_name",
             "remoteIdentity" : "1.1.1.1"
           }
         },
@@ -5829,6 +5830,7 @@
                 "lifetimeSeconds" : 28800
               }
             ],
+            "localInterface" : "unset_interface_name",
             "remoteIdentity" : "1.2.3.4",
             "selfIdentity" : "2.3.4.6"
           }
