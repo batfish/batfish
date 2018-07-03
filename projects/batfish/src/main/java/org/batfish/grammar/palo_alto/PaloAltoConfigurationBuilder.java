@@ -28,6 +28,8 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Snie_commentContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snie_link_statusContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sniel3_ipContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sniel3_mtuContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sniel3_unitsContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sniel3u_tagContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snvr_interfaceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snvr_routing_tableContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snvrrt_admin_distContext;
@@ -54,6 +56,8 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   private Interface _currentInterface;
 
   private boolean _currentNtpServerPrimary;
+
+  private Interface _currentParentInterface;
 
   private StaticRoute _currentStaticRoute;
 
@@ -122,6 +126,10 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   /** Return token text with enclosing quotes removed, if applicable */
   private String getText(ParserRuleContext ctx) {
     return unquote(ctx.getText());
+  }
+
+  private static int toInteger(Token t) {
+    return Integer.parseInt(t.getText());
   }
 
   private String unquote(String text) {
@@ -200,12 +208,14 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void enterSni_ethernet(Sni_ethernetContext ctx) {
     String name = ctx.name.getText();
-    _currentInterface = _configuration.getInterfaces().computeIfAbsent(name, Interface::new);
+    _currentParentInterface = _configuration.getInterfaces().computeIfAbsent(name, Interface::new);
+    _currentInterface = _currentParentInterface;
     defineStructure(INTERFACE, name, ctx);
   }
 
   @Override
   public void exitSni_ethernet(Sni_ethernetContext ctx) {
+    _currentParentInterface = null;
     _currentInterface = null;
   }
 
@@ -229,6 +239,20 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void exitSniel3_mtu(Sniel3_mtuContext ctx) {
     _currentInterface.setMtu(Integer.parseInt(ctx.mtu.getText()));
+  }
+
+  @Override
+  public void enterSniel3_units(Sniel3_unitsContext ctx) {
+    String name = ctx.name.getText();
+    _currentInterface = _configuration.getInterfaces().computeIfAbsent(name, Interface::new);
+    _currentInterface.setParent(_currentParentInterface);
+    _currentParentInterface.getUnits().add(_currentInterface);
+    defineStructure(INTERFACE, name, ctx);
+  }
+
+  @Override
+  public void exitSniel3u_tag(Sniel3u_tagContext ctx) {
+    _currentInterface.setTag(toInteger(ctx.tag));
   }
 
   @Override

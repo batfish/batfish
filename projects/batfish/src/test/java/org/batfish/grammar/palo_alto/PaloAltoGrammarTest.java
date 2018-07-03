@@ -44,6 +44,7 @@ import org.batfish.grammar.flattener.Flattener;
 import org.batfish.grammar.flattener.FlattenerLineMap;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
+import org.batfish.representation.palo_alto.Interface;
 import org.batfish.representation.palo_alto.PaloAltoStructureType;
 import org.batfish.representation.palo_alto.PaloAltoStructureUsage;
 import org.junit.Rule;
@@ -138,6 +139,28 @@ public class PaloAltoGrammarTest {
     assertThat(c, hasInterface(interfaceName1, isActive()));
     assertThat(c, hasInterface(interfaceName2, not(isActive())));
     assertThat(c, hasInterface(interfaceName3, isActive()));
+  }
+
+  @Test
+  public void testInterfaceUnits() throws IOException {
+    String hostname = "interface-units";
+    String interfaceNameUnit1 = "ethernet1/1.1";
+    String interfaceNameUnit2 = "ethernet1/1.2";
+    Configuration c = parseConfig(hostname);
+
+    // Confirm interface MTU is extracted
+    assertThat(c, hasInterface(interfaceNameUnit1, hasMtu(Interface.DEFAULT_INTERFACE_MTU)));
+    assertThat(c, hasInterface(interfaceNameUnit2, hasMtu(1234)));
+
+    // Confirm address is extracted
+    assertThat(
+        c,
+        hasInterface(
+            interfaceNameUnit1, hasAllAddresses(contains(new InterfaceAddress("1.1.1.1/24")))));
+    assertThat(
+        c,
+        hasInterface(
+            interfaceNameUnit2, hasAllAddresses(contains(new InterfaceAddress("1.1.2.1/24")))));
   }
 
   @Test
