@@ -1314,84 +1314,87 @@ s_interface
 
       NEWLINE?
    )
-   (
-      if_autostate
-      | if_bandwidth
-      | if_channel_group
-      | if_crypto_map
-      | if_default_gw
-      | if_description
-      | if_flow_sampler
-      | if_hsrp
-      | if_ip_proxy_arp
-      | if_ip_verify
-      | if_ip_access_group
-      | if_ip_address
-      | if_ip_address_dhcp
-      | if_ip_address_secondary
-      | if_ip_dhcp
-      | if_ip_flow_monitor
-      | if_ip_helper_address
-      | if_ip_inband_access_group
-      | if_ip_igmp
-      | if_ip_nat_destination
-      | if_ip_nat_source
-      | if_ip_nbar
-      | if_ip_ospf_area
-      | if_ip_ospf_cost
-      | if_ip_ospf_dead_interval
-      | if_ip_ospf_dead_interval_minimal
-      | if_ip_ospf_hello_interval
-      | if_ip_ospf_network
-      | if_ip_ospf_passive_interface
-      | if_ip_ospf_shutdown
-      | if_ip_passive_interface_eigrp
-      | if_ip_pim_neighbor_filter
-      | if_ip_policy
-      | if_ip_router_isis
-      | if_ip_router_ospf_area
-      | if_ip_rtp
-      | if_ip_sticky_arp
-      | if_ip_summary_address
-      | if_ip_virtual_router
-      | if_ip_vrf_forwarding
-      | if_isis_circuit_type
-      | if_isis_enable
-      | if_isis_hello_interval
-      | if_isis_metric
-      | if_isis_network
-      | if_isis_passive
-      | if_isis_tag
-      | if_load_interval
-      | if_mtu
-      | if_no_ip_address
-      | if_port_security
-      | if_private_vlan
-      | if_service_instance
-      | if_service_policy
-      | if_shutdown
-      | if_spanning_tree
-      | if_speed_auto
-      | if_speed_eos
-      | if_speed_ios
-      | if_speed_ios_dot11radio
-      | if_switchport
-      | if_switchport_access
-      | if_switchport_mode
-      | if_switchport_private_vlan_association
-      | if_switchport_private_vlan_host_association
-      | if_switchport_private_vlan_mapping
-      | if_switchport_trunk_allowed
-      | if_switchport_trunk_encapsulation
-      | if_switchport_trunk_native
-      | if_tunnel
-      | if_vrf
-      | if_vrf_member
-      | if_vrrp
-      | if_zone_member
-      // do not rearrange items below
+   if_inner*
+;
 
-      | if_null_single
-      | if_null_block
-   )*
+if_inner
+:
+   if_autostate
+   | if_bandwidth
+   | if_channel_group
+   | if_crypto_map
+   | if_default_gw
+   | if_description
+   | if_flow_sampler
+   | if_hsrp
+   | if_ip_proxy_arp
+   | if_ip_verify
+   | if_ip_access_group
+   | if_ip_address
+   | if_ip_address_dhcp
+   | if_ip_address_secondary
+   | if_ip_dhcp
+   | if_ip_flow_monitor
+   | if_ip_helper_address
+   | if_ip_inband_access_group
+   | if_ip_igmp
+   | if_ip_nat_destination
+   | if_ip_nat_source
+   | if_ip_nbar
+   | if_ip_ospf_area
+   | if_ip_ospf_cost
+   | if_ip_ospf_dead_interval
+   | if_ip_ospf_dead_interval_minimal
+   | if_ip_ospf_hello_interval
+   | if_ip_ospf_network
+   | if_ip_ospf_passive_interface
+   | if_ip_ospf_shutdown
+   | if_ip_passive_interface_eigrp
+   | if_ip_pim_neighbor_filter
+   | if_ip_policy
+   | if_ip_router_isis
+   | if_ip_router_ospf_area
+   | if_ip_rtp
+   | if_ip_sticky_arp
+   | if_ip_summary_address
+   | if_ip_virtual_router
+   | if_ip_vrf_forwarding
+   | if_isis_circuit_type
+   | if_isis_enable
+   | if_isis_hello_interval
+   | if_isis_metric
+   | if_isis_network
+   | if_isis_passive
+   | if_isis_tag
+   | if_load_interval
+   | if_mtu
+   | if_no_ip_address
+   | if_port_security
+   | if_private_vlan
+   | if_service_instance
+   | if_service_policy
+   | if_shutdown
+   | if_spanning_tree
+   | if_speed_auto
+   | if_speed_eos
+   | if_speed_ios
+   | if_speed_ios_dot11radio
+   | if_switchport
+   | if_switchport_access
+   | if_switchport_mode
+   | if_switchport_private_vlan_association
+   | if_switchport_private_vlan_host_association
+   | if_switchport_private_vlan_mapping
+   | if_switchport_trunk_allowed
+   | if_switchport_trunk_encapsulation
+   | if_switchport_trunk_native
+   | if_tunnel
+   | if_vrf
+   | if_vrf_member
+   | if_vrrp
+   | if_zone_member
+   // do not rearrange items below
+ 
+   | if_null_single
+   | if_null_block
 ;
