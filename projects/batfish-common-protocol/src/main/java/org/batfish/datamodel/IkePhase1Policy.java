@@ -79,22 +79,22 @@ public class IkePhase1Policy extends ComparableStructure<String> {
   }
 
   @JsonProperty(PROP_IKE_PHASE1_KEY)
-  public void setIkePhase1Key(IkePhase1Key ikePhase1Key) {
+  public void setIkePhase1Key(@Nullable IkePhase1Key ikePhase1Key) {
     _ikePhase1Key = ikePhase1Key;
   }
 
   @JsonProperty(PROP_REMOTE_IDENTITY)
-  public void setRemoteIdentity(IpSpace remoteIdentity) {
+  public void setRemoteIdentity(@Nullable IpSpace remoteIdentity) {
     _remoteIdentity = remoteIdentity;
   }
 
   @JsonProperty(PROP_SELF_IDENTITY)
-  public void setSelfIdentity(Ip selfIdentity) {
+  public void setSelfIdentity(@Nullable Ip selfIdentity) {
     _selfIdentity = selfIdentity;
   }
 
   @JsonProperty(PROP_LOCAL_INTERFACE)
-  public void setLocalInterface(String localInterface) {
+  public void setLocalInterface(@Nullable String localInterface) {
     _localInterface = localInterface;
   }
 }

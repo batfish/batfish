@@ -2172,8 +2172,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
   }
 
   private static IkeProposal toIkeProposal(IsakmpPolicy isakmpPolicy) {
-    /* Pad priority number with zeros, so string sorting sorts in numerical order too */
-    IkeProposal ikeProposal = new IkeProposal(String.format("%03d", isakmpPolicy.getName()));
+    IkeProposal ikeProposal = new IkeProposal(isakmpPolicy.getName().toString());
     ikeProposal.setDiffieHellmanGroup(isakmpPolicy.getDiffieHellmanGroup());
     ikeProposal.setAuthenticationMethod(isakmpPolicy.getAuthenticationMethod());
     ikeProposal.setEncryptionAlgorithm(isakmpPolicy.getEncryptionAlgorithm());
@@ -3861,7 +3860,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
   }
 
   private void addIkePoliciesAndGateways(Configuration c) {
-    // get IKE gateways and policies from Cisco isakmp profiles and keyrings
+    // get IKE gateways and policies from Cisco isakmp profiles and keyringso
     for (Entry<String, IsakmpProfile> e : _isakmpProfiles.entrySet()) {
       String name = e.getKey();
       IsakmpProfile isakmpProfile = e.getValue();

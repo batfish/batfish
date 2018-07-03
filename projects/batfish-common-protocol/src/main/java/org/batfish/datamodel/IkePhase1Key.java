@@ -1,5 +1,6 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.datamodel.Interface.UNSET_LOCAL_INTERFACE;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -8,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import java.io.Serializable;
 import java.util.Objects;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.visitors.IpSpaceRepresentative;
 
 /** Represents a key to be used with IKE phase 1 policy */
@@ -81,22 +83,22 @@ public class IkePhase1Key implements Serializable {
   }
 
   @JsonProperty(PROP_KEY_TYPE)
-  public void setKeyType(IkeKeyType keyType) {
+  public void setKeyType(@Nullable IkeKeyType keyType) {
     _keyType = keyType;
   }
 
   @JsonProperty(PROP_KEY_HASH)
-  public void setKeyHash(String keyHash) {
+  public void setKeyHash(@Nullable String keyHash) {
     _keyHash = keyHash;
   }
 
   @JsonProperty(PROP_REMOTE_IDENTITY)
-  public void setRemoteIdentity(IpSpace remoteIdentity) {
-    _remoteIdentity = remoteIdentity;
+  public void setRemoteIdentity(@Nullable IpSpace remoteIdentity) {
+    _remoteIdentity = firstNonNull(remoteIdentity, new IpWildcard("0.0.0.0:0.0.0.0").toIpSpace());
   }
 
   @JsonProperty(PROP_LOCAL_INTERFACE)
-  public void setLocalInterface(String localInterface) {
-    _localInterface = localInterface;
+  public void setLocalInterface(@Nullable String localInterface) {
+    _localInterface = firstNonNull(localInterface, UNSET_LOCAL_INTERFACE);
   }
 }
