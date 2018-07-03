@@ -41,11 +41,14 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
   private final SortedMap<String, VirtualRouter> _virtualRouters;
 
+  private final SortedMap<String, Zone> _zones;
+
   public PaloAltoConfiguration(Set<String> unimplementedFeatures) {
     _interfaces = new TreeMap<>();
     _syslogServerGroups = new TreeMap<>();
     _unimplementedFeatures = unimplementedFeatures;
     _virtualRouters = new TreeMap<>();
+    _zones = new TreeMap<>();
   }
 
   private NavigableSet<String> getDnsServers() {
@@ -86,6 +89,10 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
   public SortedMap<String, VirtualRouter> getVirtualRouters() {
     return _virtualRouters;
+  }
+
+  public SortedMap<String, Zone> getZones() {
+    return _zones;
   }
 
   public void setDnsServerPrimary(String dnsServerPrimary) {
@@ -178,6 +185,13 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     return vrf;
   }
 
+  /** Convert Palo Alto zone to vendor independent model zone */
+  private org.batfish.datamodel.Zone toZone(Zone zone) {
+    org.batfish.datamodel.Zone newZone = new org.batfish.datamodel.Zone(zone.getName());
+    newZone.setInterfaces(zone.getInterfaceNames());
+    return newZone;
+  }
+
   @Override
   public Configuration toVendorIndependentConfiguration() throws VendorConversionException {
     String hostname = getHostname();
@@ -201,9 +215,15 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
       _c.getVrfs().put(vr.getKey(), toVrf(vr.getValue()));
     }
 
+    for (Entry<String, Zone> zone : _zones.entrySet()) {
+      _c.getZones().put(zone.getKey(), toZone(zone.getValue()));
+    }
+
     // Count and mark structure usages and identify undefined references
     markConcreteStructure(
-        PaloAltoStructureType.INTERFACE, PaloAltoStructureUsage.VIRTUAL_ROUTER_INTERFACE);
+        PaloAltoStructureType.INTERFACE,
+        PaloAltoStructureUsage.VIRTUAL_ROUTER_INTERFACE,
+        PaloAltoStructureUsage.ZONE_INTERFACE);
     return _c;
   }
 }
