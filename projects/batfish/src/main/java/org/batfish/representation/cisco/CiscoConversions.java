@@ -219,7 +219,9 @@ class CiscoConversions {
     ikePhase1Key.setKeyHash(keyring.getKey());
     ikePhase1Key.setKeyType(IkeKeyType.PRE_SHARED_KEY);
     ikePhase1Key.setLocalInterface(keyring.getLocalInterfaceName());
-    ikePhase1Key.setRemoteIdentity(keyring.getRemoteIdentity());
+    if (keyring.getRemoteIdentity() != null) {
+      ikePhase1Key.setRemoteIdentity(keyring.getRemoteIdentity().toIpSpace());
+    }
     return ikePhase1Key;
   }
 
@@ -234,7 +236,9 @@ class CiscoConversions {
 
     ikePhase1Policy.setIkePhase1Proposals(ikePhase1ProposalBuilder.build());
     ikePhase1Policy.setSelfIdentity(isakmpProfile.getSelfIdentity());
-    ikePhase1Policy.setRemoteIdentity(isakmpProfile.getMatchIdentity());
+    if (isakmpProfile.getMatchIdentity() != null) {
+      ikePhase1Policy.setRemoteIdentity(isakmpProfile.getMatchIdentity().toIpSpace());
+    }
 
     ikePhase1Policy.setLocalInterface(isakmpProfile.getLocalInterfaceName());
     ikePhase1Policy.setIkePhase1Key(getMatchingPsk(isakmpProfile, w, config.getIkePhase1Keys()));

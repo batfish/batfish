@@ -5814,7 +5814,10 @@
             "keyHash" : "f300fd9a9833dc8b16a2c399b2b51c32fc40293606df9c1e814d978f6ebcb9f8",
             "keyType" : "PRE_SHARED_KEY",
             "localInterface" : "unset_interface_name",
-            "remoteIdentity" : "1.1.1.1"
+            "remoteIdentity" : {
+              "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+              "ipWildcard" : "1.1.1.1"
+            }
           }
         },
         "ikePhase1Policies" : {
@@ -5824,7 +5827,10 @@
               "1"
             ],
             "localInterface" : "unset_interface_name",
-            "remoteIdentity" : "1.2.3.4",
+            "remoteIdentity" : {
+              "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+              "ipWildcard" : "1.2.3.4"
+            },
             "selfIdentity" : "2.3.4.6"
           }
         },

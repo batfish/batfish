@@ -4,7 +4,7 @@ import java.util.List;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.matchers.IkePhase1PolicyMatchersImpl.HasIkePhase1Key;
 import org.batfish.datamodel.matchers.IkePhase1PolicyMatchersImpl.HasIkePhase1Proposals;
 import org.batfish.datamodel.matchers.IkePhase1PolicyMatchersImpl.HasLocalInterface;
@@ -26,8 +26,7 @@ public final class IkePhase1PolicyMatchers {
    * Provides a matcher that matches if the provided {@code subMatcher} matches the IkE Phase 1
    * Policy's Remote Identity
    */
-  public static HasRemoteIdentity hasRemoteIdentity(
-      @Nonnull Matcher<? super IpWildcard> subMatcher) {
+  public static HasRemoteIdentity hasRemoteIdentity(@Nonnull Matcher<? super IpSpace> subMatcher) {
     return new HasRemoteIdentity(subMatcher);
   }
 

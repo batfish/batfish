@@ -28,7 +28,7 @@ public class IkePhase1Policy extends ComparableStructure<String> {
 
   private IkePhase1Key _ikePhase1Key;
 
-  private IpWildcard _remoteIdentity;
+  private IpSpace _remoteIdentity;
 
   private Ip _selfIdentity;
 
@@ -55,7 +55,7 @@ public class IkePhase1Policy extends ComparableStructure<String> {
   @JsonPropertyDescription(
       "Identity of the remote peer that can match with this IKE phase 1 policy")
   @JsonProperty(PROP_REMOTE_IDENTITY)
-  public IpWildcard getRemoteIdentity() {
+  public IpSpace getRemoteIdentity() {
     return _remoteIdentity;
   }
 
@@ -84,7 +84,7 @@ public class IkePhase1Policy extends ComparableStructure<String> {
   }
 
   @JsonProperty(PROP_REMOTE_IDENTITY)
-  public void setRemoteIdentity(IpWildcard remoteIdentity) {
+  public void setRemoteIdentity(IpSpace remoteIdentity) {
     _remoteIdentity = remoteIdentity;
   }
 

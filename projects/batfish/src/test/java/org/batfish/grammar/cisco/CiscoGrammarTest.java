@@ -1954,7 +1954,7 @@ public class CiscoGrammarTest {
                 hasIkePhase1Key(
                     IkePhase1KeyMatchers.hasKeyValue(
                         CommonUtil.sha256Digest("psk1" + CommonUtil.salt()))),
-                hasRemoteIdentity(equalTo(new IpWildcard("1.2.3.4:0.0.0.0"))),
+                hasRemoteIdentity(containsIp(new Ip("1.2.3.4"))),
                 hasSelfIdentity(equalTo(new Ip("2.3.4.6"))),
                 hasLocalInterface(equalTo("TenGigabitEthernet0/0")),
                 hasIkePhase1Proposals(equalTo(ImmutableList.of("10", "20"))))));
@@ -1967,7 +1967,7 @@ public class CiscoGrammarTest {
                 hasIkePhase1Key(
                     IkePhase1KeyMatchers.hasKeyValue(
                         CommonUtil.sha256Digest("psk1" + CommonUtil.salt()))),
-                hasRemoteIdentity(equalTo(new IpWildcard("1.2.3.4:0.0.0.0"))),
+                hasRemoteIdentity(containsIp(new Ip("1.2.3.4"))),
                 hasSelfIdentity(equalTo(new Ip("2.3.4.6"))),
                 hasLocalInterface(equalTo("TenGigabitEthernet0/0")),
                 hasIkePhase1Proposals(equalTo(ImmutableList.of("10", "20"))))));

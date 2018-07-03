@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import java.io.Serializable;
 import java.util.Objects;
+import org.batfish.datamodel.visitors.IpSpaceRepresentative;
 
 /** Represents a key to be used with IKE phase 1 policy */
 public class IkePhase1Key implements Serializable {
@@ -24,7 +25,7 @@ public class IkePhase1Key implements Serializable {
 
   private String _keyHash;
 
-  private IpWildcard _remoteIdentity;
+  private IpSpace _remoteIdentity;
 
   private String _localInterface;
 
@@ -39,7 +40,7 @@ public class IkePhase1Key implements Serializable {
 
   @JsonPropertyDescription("Identity of the remote peer which matches this key")
   @JsonProperty(PROP_REMOTE_IDENTITY)
-  public IpWildcard getRemoteIdentity() {
+  public IpSpace getRemoteIdentity() {
     return _remoteIdentity;
   }
 
@@ -69,7 +70,9 @@ public class IkePhase1Key implements Serializable {
   public boolean match(String localInterface, IpWildcard matchIdentity) {
     return _remoteIdentity != null
         && matchIdentity != null
-        && _remoteIdentity.supersetOf(matchIdentity)
+        && IpSpaceRepresentative.load()
+            .getRepresentative(AclIpSpace.intersection(_remoteIdentity, matchIdentity.toIpSpace()))
+            .isPresent()
         && (_localInterface.equals(UNSET_INTERFACE_NAME)
             || Objects.equals(_localInterface, localInterface));
   }
@@ -85,7 +88,7 @@ public class IkePhase1Key implements Serializable {
   }
 
   @JsonProperty(PROP_REMOTE_IDENTITY)
-  public void setRemoteIdentity(IpWildcard remoteIdentity) {
+  public void setRemoteIdentity(IpSpace remoteIdentity) {
     _remoteIdentity = remoteIdentity;
   }
 
