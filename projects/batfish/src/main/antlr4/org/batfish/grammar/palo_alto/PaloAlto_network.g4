@@ -51,8 +51,8 @@ snie_layer3
 :
     LAYER3
     (
-        sniel3_ip
-        | sniel3_mtu
+        sniel3_common
+        | sniel3_units
     )
 ;
 
@@ -63,6 +63,15 @@ snie_link_status
         AUTO
         | DOWN
         | UP
+    )
+;
+
+// Common syntax between layer3 interfaces and subinterfaces (units)
+sniel3_common
+:
+    (
+        sniel3_ip
+        | sniel3_mtu
     )
 ;
 
@@ -78,6 +87,20 @@ sniel3_ip
 sniel3_mtu
 :
     MTU mtu = DEC
+;
+
+sniel3_units
+:
+    UNITS name = variable
+    (
+        sniel3_common
+        | sniel3u_tag
+    )
+;
+
+sniel3u_tag
+:
+    TAG tag = DEC
 ;
 
 snvr_interface

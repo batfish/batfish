@@ -1,0 +1,6 @@
+set deviceconfig system hostname interface-units
+set network interface ethernet ethernet1/1 layer3 units ethernet1/1.1 tag 1
+set network interface ethernet ethernet1/1 layer3 units ethernet1/1.1 ip 1.1.1.1/24
+set network interface ethernet ethernet1/1 layer3 units ethernet1/1.2 tag 2
+set network interface ethernet ethernet1/1 layer3 units ethernet1/1.2 ip 1.1.2.1/24
+set network interface ethernet ethernet1/1 layer3 units ethernet1/1.2 mtu 1234
