@@ -3860,7 +3860,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
   }
 
   private void addIkePoliciesAndGateways(Configuration c) {
-    // get IKE gateways and policies from Cisco isakmp profiles and keyringso
+    // get IKE gateways and policies from Cisco isakmp profiles and keyrings
     for (Entry<String, IsakmpProfile> e : _isakmpProfiles.entrySet()) {
       String name = e.getKey();
       IsakmpProfile isakmpProfile = e.getValue();
