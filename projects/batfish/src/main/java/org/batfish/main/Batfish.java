@@ -80,6 +80,10 @@ import org.batfish.common.plugin.ExternalBgpAdvertisementPlugin;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.PluginClientType;
 import org.batfish.common.plugin.PluginConsumer;
+import org.batfish.common.topology.Layer1Topology;
+import org.batfish.common.topology.Layer2Topology;
+import org.batfish.common.topology.Layer3Topology;
+import org.batfish.common.topology.TopologyUtil;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
@@ -231,6 +235,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
     settings.setInferredNodeRolesPath(
         testrigDir.resolve(
             Paths.get(BfConsts.RELPATH_TEST_RIG_DIR, BfConsts.RELPATH_INFERRED_NODE_ROLES_PATH)));
+    settings.setL1TopologyPath(
+        testrigDir.resolve(
+            Paths.get(BfConsts.RELPATH_TEST_RIG_DIR, BfConsts.RELPATH_TESTRIG_L1_TOPOLOGY_PATH)));
     settings.setTopologyPath(testrigDir.resolve(BfConsts.RELPATH_TESTRIG_TOPOLOGY_PATH));
     settings.setPojoTopologyPath(testrigDir.resolve(BfConsts.RELPATH_TESTRIG_POJO_TOPOLOGY_PATH));
     if (envName != null) {
@@ -1081,12 +1088,28 @@ public class Batfish extends PluginConsumer implements IBatfish {
   private Topology computeTestrigTopology(
       Path testRigPath, Map<String, Configuration> configurations) {
     Path topologyFilePath = testRigPath.resolve(TOPOLOGY_FILENAME);
+    Path l1TopologyPath = _testrigSettings.getL1TopologyPath();
     Topology topology;
     // Get generated facts from topology file
     if (Files.exists(topologyFilePath)) {
-      topology = processTopologyFile(topologyFilePath);
       _logger.infof(
           "Testrig:%s in container:%s has topology file", getTestrigName(), getContainerName());
+      topology = processTopologyFile(topologyFilePath);
+    } else if (Files.exists(l1TopologyPath)) {
+      _logger.infof(
+          "Testrig:%s in container:%s has layer-1 topology file",
+          getTestrigName(), getContainerName());
+      newBatch("Processing layer-1 topology", 0);
+      Layer1Topology rawLayer1Topology = parseLayer1Topology(l1TopologyPath);
+      Layer1Topology layer1Topology =
+          TopologyUtil.computeLayer1Topology(rawLayer1Topology, configurations);
+      newBatch("Computing layer-2 topology", 0);
+      Layer2Topology layer2Topology =
+          TopologyUtil.computeLayer2Topology(layer1Topology, configurations);
+      newBatch("Computing layer-3 topology", 0);
+      Layer3Topology layer3Topology =
+          TopologyUtil.computeLayer3Topology(layer2Topology, configurations);
+      topology = TopologyUtil.toTopology(layer3Topology);
     } else {
       // guess adjacencies based on interface subnetworks
       _logger.info("*** (GUESSING TOPOLOGY IN ABSENCE OF EXPLICIT FILE) ***\n");
@@ -2792,6 +2815,18 @@ public class Batfish extends PluginConsumer implements IBatfish {
     } catch (IOException e) {
       _logger.fatal("...ERROR\n");
       throw new BatfishException("Topology format error " + e.getMessage(), e);
+    }
+  }
+
+  public Layer1Topology parseLayer1Topology(Path topologyFilePath) {
+    _logger.info("*** PARSING LAYER-1 TOPOLOGY ***\n");
+    String topologyFileText = CommonUtil.readFile(topologyFilePath);
+    _logger.infof("Parsing: \"%s\" ...", topologyFilePath.toAbsolutePath());
+    try {
+      return BatfishObjectMapper.mapper().readValue(topologyFileText, Layer1Topology.class);
+    } catch (IOException e) {
+      _logger.fatal("...ERROR\n");
+      throw new BatfishException("Layer-1 topology format error", e);
     }
   }
 
@@ -4517,5 +4552,22 @@ public class Batfish extends PluginConsumer implements IBatfish {
     } catch (JSONException e) {
       throw new BatfishException("Failed to synthesize JSON topology", e);
     }
+  }
+
+  @Override
+  public @Nullable Layer1Topology getLayer1Topology() {
+    if (!Files.exists(_testrigSettings.getL1TopologyPath())) {
+      return null;
+    }
+    return parseLayer1Topology(_testrigSettings.getL1TopologyPath());
+  }
+
+  @Override
+  public @Nullable Layer2Topology getLayer2Topology() {
+    if (!Files.exists(_testrigSettings.getL1TopologyPath())) {
+      return null;
+    }
+    Layer1Topology layer1Topology = parseLayer1Topology(_testrigSettings.getL1TopologyPath());
+    return TopologyUtil.computeLayer2Topology(layer1Topology, loadConfigurations());
   }
 }
