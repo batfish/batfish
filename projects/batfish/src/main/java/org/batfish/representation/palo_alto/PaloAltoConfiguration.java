@@ -19,6 +19,10 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
   private static final long serialVersionUID = 1L;
 
+  public static final String DEFAULT_VSYS_NAME = "vsys1";
+
+  public static final String SHARED_VSYS_NAME = "~SHARED~";
+
   private Configuration _c;
 
   private String _dnsServerPrimary;
@@ -33,19 +37,19 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
   private String _ntpServerSecondary;
 
-  private SortedMap<String, SortedMap<String, SyslogServer>> _syslogServerGroups;
-
   private transient Set<String> _unimplementedFeatures;
 
   private ConfigurationFormat _vendor;
 
   private final SortedMap<String, VirtualRouter> _virtualRouters;
 
+  private final SortedMap<String, Vsys> _vsys;
+
   public PaloAltoConfiguration(Set<String> unimplementedFeatures) {
     _interfaces = new TreeMap<>();
-    _syslogServerGroups = new TreeMap<>();
     _unimplementedFeatures = unimplementedFeatures;
     _virtualRouters = new TreeMap<>();
+    _vsys = new TreeMap<>();
   }
 
   private NavigableSet<String> getDnsServers() {
@@ -88,6 +92,10 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     return _virtualRouters;
   }
 
+  public SortedMap<String, Vsys> getVsys() {
+    return _vsys;
+  }
+
   public void setDnsServerPrimary(String dnsServerPrimary) {
     _dnsServerPrimary = dnsServerPrimary;
   }
@@ -107,16 +115,6 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
   public void setNtpServerSecondary(String ntpServerSecondary) {
     _ntpServerSecondary = ntpServerSecondary;
-  }
-
-  /**
-   * Returns a syslog server with the specified name in the specified server group. If a matching
-   * server does not exist, one is created.
-   */
-  public SyslogServer getSyslogServer(String serverGroupName, String serverName) {
-    SortedMap<String, SyslogServer> serverGroup =
-        _syslogServerGroups.computeIfAbsent(serverGroupName, g -> new TreeMap<>());
-    return serverGroup.computeIfAbsent(serverName, SyslogServer::new);
   }
 
   @Override
@@ -192,9 +190,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     }
 
     NavigableSet<String> loggingServers = new TreeSet<>();
-    _syslogServerGroups
-        .values()
-        .forEach(g -> g.values().forEach(s -> loggingServers.add(s.getAddress())));
+    _vsys.values().forEach(v -> loggingServers.addAll(v.getSyslogServerAddresses()));
     _c.setLoggingServers(loggingServers);
 
     for (Entry<String, VirtualRouter> vr : _virtualRouters.entrySet()) {

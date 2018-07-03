@@ -168,7 +168,8 @@ public class PaloAltoGrammarTest {
     Configuration c = parseConfig(hostname);
 
     // Confirm all the defined syslog servers show up in VI model
-    assertThat(c.getLoggingServers(), containsInAnyOrder("1.1.1.1", "2.2.2.2", "3.3.3.3"));
+    assertThat(
+        c.getLoggingServers(), containsInAnyOrder("1.1.1.1", "2.2.2.2", "3.3.3.3", "4.4.4.4"));
   }
 
   @Test

@@ -1,6 +1,8 @@
 package org.batfish.grammar.palo_alto;
 
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
+import static org.batfish.representation.palo_alto.PaloAltoConfiguration.DEFAULT_VSYS_NAME;
+import static org.batfish.representation.palo_alto.PaloAltoConfiguration.SHARED_VSYS_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.VIRTUAL_ROUTER_INTERFACE;
 
@@ -17,6 +19,8 @@ import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Palo_alto_configurationContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.S_sharedContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.S_vsysContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_hostnameContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_ntp_serversContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sdsd_serversContext;
@@ -44,6 +48,7 @@ import org.batfish.representation.palo_alto.PaloAltoConfiguration;
 import org.batfish.representation.palo_alto.StaticRoute;
 import org.batfish.representation.palo_alto.SyslogServer;
 import org.batfish.representation.palo_alto.VirtualRouter;
+import org.batfish.representation.palo_alto.Vsys;
 import org.batfish.vendor.StructureType;
 
 public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
@@ -62,6 +67,8 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   private String _currentSyslogServerGroupName;
 
   private VirtualRouter _currentVirtualRouter;
+
+  private Vsys _currentVsys;
 
   private PaloAltoCombinedParser _parser;
 
@@ -143,6 +150,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void enterPalo_alto_configuration(Palo_alto_configurationContext ctx) {
     _configuration = new PaloAltoConfiguration(_unimplementedFeatures);
+    _currentVsys = _configuration.getVsys().put(DEFAULT_VSYS_NAME, new Vsys(DEFAULT_VSYS_NAME));
   }
 
   @Override
@@ -280,6 +288,16 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
+  public void enterS_shared(S_sharedContext ctx) {
+    _currentVsys = _configuration.getVsys().computeIfAbsent(SHARED_VSYS_NAME, Vsys::new);
+  }
+
+  @Override
+  public void exitS_shared(S_sharedContext ctx) {
+    _currentVsys = _configuration.getVsys().get(DEFAULT_VSYS_NAME);
+  }
+
+  @Override
   public void enterSsl_syslog(Ssl_syslogContext ctx) {
     _currentSyslogServerGroupName = getText(ctx.name);
   }
@@ -292,7 +310,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void enterSsls_server(Ssls_serverContext ctx) {
     _currentSyslogServer =
-        _configuration.getSyslogServer(_currentSyslogServerGroupName, getText(ctx.name));
+        _currentVsys.getSyslogServer(_currentSyslogServerGroupName, getText(ctx.name));
   }
 
   @Override
@@ -303,6 +321,16 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void exitSslss_server(Sslss_serverContext ctx) {
     _currentSyslogServer.setAddress(ctx.address.getText());
+  }
+
+  @Override
+  public void enterS_vsys(S_vsysContext ctx) {
+    _currentVsys = _configuration.getVsys().computeIfAbsent(ctx.name.getText(), Vsys::new);
+  }
+
+  @Override
+  public void exitS_vsys(S_vsysContext ctx) {
+    _currentVsys = _configuration.getVsys().get(DEFAULT_VSYS_NAME);
   }
 
   public PaloAltoConfiguration getConfiguration() {

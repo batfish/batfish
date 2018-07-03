@@ -210,6 +210,11 @@ VIRTUAL_ROUTER
     'virtual-router'
 ;
 
+VSYS
+:
+    'vsys'
+;
+
 // Complex tokens
 
 DEC
