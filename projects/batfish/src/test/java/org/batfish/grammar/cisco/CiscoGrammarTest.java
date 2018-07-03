@@ -1846,7 +1846,7 @@ public class CiscoGrammarTest {
     assertThat(
         c,
         hasIkeProposal(
-            "020",
+            "20",
             allOf(
                 hasEncryptionAlgorithm(EncryptionAlgorithm.AES_128_CBC),
                 hasAuthenticationMethod(IkeAuthenticationMethod.RSA_SIGNATURES),
@@ -1857,7 +1857,7 @@ public class CiscoGrammarTest {
     assertThat(
         c,
         hasIkeProposal(
-            "030",
+            "30",
             allOf(
                 hasEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC),
                 hasAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS),
@@ -1873,7 +1873,7 @@ public class CiscoGrammarTest {
     assertThat(
         c,
         hasIkeProposal(
-            "010",
+            "10",
             allOf(
                 hasEncryptionAlgorithm(EncryptionAlgorithm.AES_128_CBC),
                 hasAuthenticationMethod(IkeAuthenticationMethod.RSA_SIGNATURES),
@@ -1885,7 +1885,7 @@ public class CiscoGrammarTest {
     assertThat(
         c,
         hasIkeProposal(
-            "020",
+            "20",
             allOf(
                 hasEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC),
                 hasAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS),
