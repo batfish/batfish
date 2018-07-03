@@ -194,7 +194,7 @@ public class VyosConfiguration extends VendorConfiguration {
               ikeProposal.getHashAlgorithm().toIkeAuthenticationAlgorithm());
           ikePhase1Proposal.setAuthenticationMethod(ipsecPeer.getAuthenticationMode());
           _c.getIkePhase1Proposals().put(newIkeProposalName, ikePhase1Proposal);
-          ikePhase1Policy.getIkePhase1Proposals().add(ikePhase1Proposal);
+          ikePhase1Policy.getIkePhase1Proposals().add(newIkeProposalName);
         }
       }
 

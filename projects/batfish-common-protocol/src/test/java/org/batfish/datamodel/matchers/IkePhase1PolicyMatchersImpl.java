@@ -4,7 +4,6 @@ import java.util.List;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.datamodel.IkePhase1Policy;
-import org.batfish.datamodel.IkePhase1Proposal;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpWildcard;
 import org.hamcrest.FeatureMatcher;
@@ -56,14 +55,13 @@ final class IkePhase1PolicyMatchersImpl {
     }
   }
 
-  static final class HasIkePhase1Proposals
-      extends FeatureMatcher<IkePhase1Policy, List<IkePhase1Proposal>> {
-    HasIkePhase1Proposals(@Nonnull Matcher<? super List<IkePhase1Proposal>> subMatcher) {
+  static final class HasIkePhase1Proposals extends FeatureMatcher<IkePhase1Policy, List<String>> {
+    HasIkePhase1Proposals(@Nonnull Matcher<? super List<String>> subMatcher) {
       super(subMatcher, "An IKE phase 1 policy with IkePhase1Proposals:", "IkePhase1Proposals");
     }
 
     @Override
-    protected List<IkePhase1Proposal> featureValueOf(IkePhase1Policy actual) {
+    protected List<String> featureValueOf(IkePhase1Policy actual) {
       return actual.getIkePhase1Proposals();
     }
   }

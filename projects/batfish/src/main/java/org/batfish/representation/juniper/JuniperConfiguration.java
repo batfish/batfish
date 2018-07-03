@@ -1180,7 +1180,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
    * Converts {@link IkePolicy} to {@link IkePhase1Policy} and puts the used pre-shared key as a
    * {@link IkePhase1Key} in the passed-in {@code ikePhase1Keys}
    */
-  private IkePhase1Policy toIkePhase1Policy(
+  private static IkePhase1Policy toIkePhase1Policy(
       IkePolicy ikePolicy, ImmutableSortedMap.Builder<String, IkePhase1Key> ikePhase1Keys) {
     String name = ikePolicy.getName();
     IkePhase1Policy ikePhase1Policy = new IkePhase1Policy(name);
@@ -1193,17 +1193,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
     ikePhase1Keys.put(String.format("~IKE_PHASE1_KEY_%s~", ikePolicy.getName()), ikePhase1Key);
 
     ikePhase1Policy.setIkePhase1Key(ikePhase1Key);
-    ImmutableList.Builder<IkePhase1Proposal> ikePhase1ProposalBuilder = ImmutableList.builder();
+    ImmutableList.Builder<String> ikePhase1ProposalBuilder = ImmutableList.builder();
     // ike proposals
-    ikePolicy
-        .getProposals()
-        .forEach(
-            ikeProposalName -> {
-              IkePhase1Proposal ikePhase1Proposal = _c.getIkePhase1Proposals().get(ikeProposalName);
-              if (ikePhase1Proposal != null) {
-                ikePhase1ProposalBuilder.add(ikePhase1Proposal);
-              }
-            });
+    ikePolicy.getProposals().forEach(ikePhase1ProposalBuilder::add);
     ikePhase1Policy.setIkePhase1Proposals(ikePhase1ProposalBuilder.build());
 
     return ikePhase1Policy;

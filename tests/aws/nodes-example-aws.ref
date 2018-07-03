@@ -442,22 +442,8 @@
               "remoteIdentity" : "52.27.166.152"
             },
             "ikePhase1Proposals" : [
-              {
-                "name" : "200",
-                "authenticationMethod" : "PRE_SHARED_KEYS",
-                "diffieHellmanGroup" : "GROUP2",
-                "encryptionAlgorithm" : "AES_128_CBC",
-                "hashingAlgorithm" : "SHA1",
-                "lifetimeSeconds" : 28800
-              },
-              {
-                "name" : "201",
-                "authenticationMethod" : "PRE_SHARED_KEYS",
-                "diffieHellmanGroup" : "GROUP2",
-                "encryptionAlgorithm" : "AES_128_CBC",
-                "hashingAlgorithm" : "SHA1",
-                "lifetimeSeconds" : 28800
-              }
+              "200",
+              "201"
             ],
             "localInterface" : "GigabitEthernet2/0",
             "remoteIdentity" : "52.27.166.152"
@@ -471,22 +457,8 @@
               "remoteIdentity" : "52.39.121.126"
             },
             "ikePhase1Proposals" : [
-              {
-                "name" : "200",
-                "authenticationMethod" : "PRE_SHARED_KEYS",
-                "diffieHellmanGroup" : "GROUP2",
-                "encryptionAlgorithm" : "AES_128_CBC",
-                "hashingAlgorithm" : "SHA1",
-                "lifetimeSeconds" : 28800
-              },
-              {
-                "name" : "201",
-                "authenticationMethod" : "PRE_SHARED_KEYS",
-                "diffieHellmanGroup" : "GROUP2",
-                "encryptionAlgorithm" : "AES_128_CBC",
-                "hashingAlgorithm" : "SHA1",
-                "lifetimeSeconds" : 28800
-              }
+              "200",
+              "201"
             ],
             "localInterface" : "GigabitEthernet2/0",
             "remoteIdentity" : "52.39.121.126"

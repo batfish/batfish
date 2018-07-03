@@ -6,7 +6,7 @@ import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.IkeAuthenticationMethod;
 import org.batfish.datamodel.IkeHashingAlgorithm;
 
-public class IsakmpPolicy extends ComparableStructure<String> {
+public class IsakmpPolicy extends ComparableStructure<Integer> {
 
   /** */
   private static final long serialVersionUID = 1L;
@@ -21,7 +21,7 @@ public class IsakmpPolicy extends ComparableStructure<String> {
 
   private Integer _lifetimeSeconds;
 
-  public IsakmpPolicy(String name) {
+  public IsakmpPolicy(Integer name) {
     super(name);
   }
 

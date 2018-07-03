@@ -3,7 +3,6 @@ package org.batfish.datamodel.matchers;
 import java.util.List;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.IkePhase1Key;
-import org.batfish.datamodel.IkePhase1Proposal;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.matchers.IkePhase1PolicyMatchersImpl.HasIkePhase1Key;
@@ -53,7 +52,7 @@ public final class IkePhase1PolicyMatchers {
    * Policy's IKE Phase 1 proposals
    */
   public static HasIkePhase1Proposals hasIkePhase1Proposals(
-      @Nonnull Matcher<? super List<IkePhase1Proposal>> subMatcher) {
+      @Nonnull Matcher<? super List<String>> subMatcher) {
     return new HasIkePhase1Proposals(subMatcher);
   }
 

@@ -54035,7 +54035,7 @@
         "aruba_airgroup" : { },
         "aruba_crypto" : {
           "crypto isakmp policy" : {
-            "001" : {
+            "1" : {
               "definitionLines" : [
                 12,
                 13,
@@ -54875,7 +54875,7 @@
             }
           },
           "crypto isakmp policy" : {
-            "001" : {
+            "1" : {
               "definitionLines" : [
                 180,
                 181,

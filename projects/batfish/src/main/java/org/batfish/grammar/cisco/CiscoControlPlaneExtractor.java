@@ -1700,8 +1700,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterCis_policy(Cis_policyContext ctx) {
-    /* Pad priority number with zeros, so string sorting sorts in numerical order too */
-    String priority = String.format("%03d", toInteger(ctx.priority));
+    Integer priority = toInteger(ctx.priority);
     _currentIsakmpPolicy = new IsakmpPolicy(priority);
     _currentIsakmpPolicy.setHashAlgorithm(IkeHashingAlgorithm.SHA1);
     _currentIsakmpPolicy.setEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC);
@@ -1713,11 +1712,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
 
     _currentIsakmpPolicy.setLifetimeSeconds(86400);
-    defineStructure(ISAKMP_POLICY, priority, ctx);
+    defineStructure(ISAKMP_POLICY, priority.toString(), ctx);
     /* Isakmp policies are checked in order not explicitly referenced, so add a self-reference
     here */
     _configuration.referenceStructure(
-        ISAKMP_POLICY, priority, ISAKMP_POLICY_SELF_REF, ctx.priority.getLine());
+        ISAKMP_POLICY, priority.toString(), ISAKMP_POLICY_SELF_REF, ctx.priority.getLine());
   }
 
   @Override

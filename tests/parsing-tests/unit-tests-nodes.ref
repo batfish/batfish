@@ -1215,8 +1215,8 @@
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "SWITCH",
         "ikePhase1Proposals" : {
-          "001" : {
-            "name" : "001",
+          "1" : {
+            "name" : "1",
             "authenticationMethod" : "RSA_SIGNATURES",
             "diffieHellmanGroup" : "GROUP20",
             "encryptionAlgorithm" : "AES_256_CBC",
@@ -5821,14 +5821,7 @@
           "myprofile" : {
             "name" : "myprofile",
             "ikePhase1Proposals" : [
-              {
-                "name" : "001",
-                "authenticationMethod" : "PRE_SHARED_KEYS",
-                "diffieHellmanGroup" : "GROUP2",
-                "encryptionAlgorithm" : "THREEDES_CBC",
-                "hashingAlgorithm" : "MD5",
-                "lifetimeSeconds" : 28800
-              }
+              "1"
             ],
             "localInterface" : "unset_interface_name",
             "remoteIdentity" : "1.2.3.4",
@@ -5836,8 +5829,8 @@
           }
         },
         "ikePhase1Proposals" : {
-          "001" : {
-            "name" : "001",
+          "1" : {
+            "name" : "1",
             "authenticationMethod" : "PRE_SHARED_KEYS",
             "diffieHellmanGroup" : "GROUP2",
             "encryptionAlgorithm" : "THREEDES_CBC",
@@ -14743,10 +14736,7 @@
               "keyType" : "PRE_SHARED_KEY"
             },
             "ikePhase1Proposals" : [
-              {
-                "name" : "PROPOSAL",
-                "lifetimeSeconds" : 28800
-              }
+              "PROPOSAL"
             ]
           }
         },

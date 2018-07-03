@@ -56,6 +56,7 @@ import org.batfish.datamodel.GeneratedRoute6;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IkeGateway;
 import org.batfish.datamodel.IkePhase1Key;
+import org.batfish.datamodel.IkePhase1Proposal;
 import org.batfish.datamodel.IkePolicy;
 import org.batfish.datamodel.IkeProposal;
 import org.batfish.datamodel.InterfaceAddress;
@@ -382,7 +383,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private final Map<String, IpsecTransformSet> _ipsecTransformSets;
 
-  private final Map<String, IsakmpPolicy> _isakmpPolicies;
+  private final Map<Integer, IsakmpPolicy> _isakmpPolicies;
 
   private final Map<String, IsakmpProfile> _isakmpProfiles;
 
@@ -758,7 +759,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return _ipsecTransformSets;
   }
 
-  public Map<String, IsakmpPolicy> getIsakmpPolicies() {
+  public Map<Integer, IsakmpPolicy> getIsakmpPolicies() {
     return _isakmpPolicies;
   }
 
@@ -2171,7 +2172,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
   }
 
   private static IkeProposal toIkeProposal(IsakmpPolicy isakmpPolicy) {
-    IkeProposal ikeProposal = new IkeProposal(isakmpPolicy.getName());
+    /* Pad priority number with zeros, so string sorting sorts in numerical order too */
+    IkeProposal ikeProposal = new IkeProposal(String.format("%03d", isakmpPolicy.getName()));
     ikeProposal.setDiffieHellmanGroup(isakmpPolicy.getDiffieHellmanGroup());
     ikeProposal.setAuthenticationMethod(isakmpPolicy.getAuthenticationMethod());
     ikeProposal.setEncryptionAlgorithm(isakmpPolicy.getEncryptionAlgorithm());
@@ -3225,10 +3227,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
     applyVrrp(c);
 
     // ISAKMP policies to IKE proposals
-    for (Entry<String, IsakmpPolicy> e : _isakmpPolicies.entrySet()) {
-      c.getIkeProposals().put(e.getKey(), toIkeProposal(e.getValue()));
+    for (Entry<Integer, IsakmpPolicy> e : _isakmpPolicies.entrySet()) {
+      IkeProposal ikeProposal = toIkeProposal(e.getValue());
+      c.getIkeProposals().put(ikeProposal.getName(), ikeProposal);
 
-      c.getIkePhase1Proposals().put(e.getKey(), toIkePhase1Proposal(e.getValue()));
+      IkePhase1Proposal ikePhase1Proposal = toIkePhase1Proposal(e.getValue());
+      c.getIkePhase1Proposals().put(ikePhase1Proposal.getName(), ikePhase1Proposal);
     }
     resolveKeyringIsakmpProfileAddresses();
     resolveTunnelSourceInterfaces();
@@ -3253,7 +3257,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         .forEach(
             isakmpProfile ->
                 c.getIkePhase1Policies()
-                    .put(isakmpProfile.getName(), toIkePhase1Policy(isakmpProfile, c, _w)));
+                    .put(isakmpProfile.getName(), toIkePhase1Policy(isakmpProfile, this, c, _w)));
 
     // ipsec proposals
     for (Entry<String, IpsecTransformSet> e : _ipsecTransformSets.entrySet()) {

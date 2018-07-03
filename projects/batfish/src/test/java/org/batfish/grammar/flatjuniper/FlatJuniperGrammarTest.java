@@ -1257,8 +1257,7 @@ public class FlatJuniperGrammarTest {
                 hasIkePhase1Key(
                     IkePhase1KeyMatchers.hasKeyValue(
                         CommonUtil.sha256Digest("psk1" + CommonUtil.salt()))),
-                hasIkePhase1Proposals(
-                    contains(ImmutableList.of(IkePhase1ProposalMatchers.hasName("proposal1")))))));
+                hasIkePhase1Proposals(equalTo(ImmutableList.of("proposal1"))))));
   }
 
   @Test

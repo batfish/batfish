@@ -1897,7 +1897,7 @@ public class CiscoGrammarTest {
     assertThat(
         c,
         hasIkePhase1Proposal(
-            "010",
+            "10",
             allOf(
                 IkePhase1ProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_128_CBC),
                 IkePhase1ProposalMatchers.hasAuthenticationMethod(
@@ -1909,7 +1909,7 @@ public class CiscoGrammarTest {
     assertThat(
         c,
         hasIkePhase1Proposal(
-            "020",
+            "20",
             allOf(
                 IkePhase1ProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC),
                 IkePhase1ProposalMatchers.hasAuthenticationMethod(
@@ -1957,11 +1957,7 @@ public class CiscoGrammarTest {
                 hasRemoteIdentity(equalTo(new IpWildcard("1.2.3.4:0.0.0.0"))),
                 hasSelfIdentity(equalTo(new Ip("2.3.4.6"))),
                 hasLocalInterface(equalTo("TenGigabitEthernet0/0")),
-                hasIkePhase1Proposals(
-                    contains(
-                        ImmutableList.of(
-                            IkePhase1ProposalMatchers.hasName("010"),
-                            IkePhase1ProposalMatchers.hasName("020")))))));
+                hasIkePhase1Proposals(equalTo(ImmutableList.of("10", "20"))))));
 
     assertThat(
         c,
@@ -1974,11 +1970,7 @@ public class CiscoGrammarTest {
                 hasRemoteIdentity(equalTo(new IpWildcard("1.2.3.4:0.0.0.0"))),
                 hasSelfIdentity(equalTo(new Ip("2.3.4.6"))),
                 hasLocalInterface(equalTo("TenGigabitEthernet0/0")),
-                hasIkePhase1Proposals(
-                    contains(
-                        ImmutableList.of(
-                            IkePhase1ProposalMatchers.hasName("010"),
-                            IkePhase1ProposalMatchers.hasName("020")))))));
+                hasIkePhase1Proposals(equalTo(ImmutableList.of("10", "20"))))));
   }
 
   private static String getCLRegex(

@@ -224,22 +224,20 @@ class CiscoConversions {
   }
 
   static IkePhase1Policy toIkePhase1Policy(
-      IsakmpProfile isakmpProfile, Configuration c, Warnings w) {
+      IsakmpProfile isakmpProfile, CiscoConfiguration oldConfig, Configuration config, Warnings w) {
     IkePhase1Policy ikePhase1Policy = new IkePhase1Policy(isakmpProfile.getName());
 
-    ImmutableList.Builder<IkePhase1Proposal> ikePhase1ProposalBuilder = ImmutableList.builder();
-    // adding IKE proposals in sorted order of names
-    c.getIkePhase1Proposals()
-        .entrySet()
-        .forEach(
-            (ikePhase1ProposalEntry ->
-                ikePhase1ProposalBuilder.add(ikePhase1ProposalEntry.getValue())));
+    ImmutableList.Builder<String> ikePhase1ProposalBuilder = ImmutableList.builder();
+    for (Entry<Integer, IsakmpPolicy> entry : oldConfig.getIsakmpPolicies().entrySet()) {
+      ikePhase1ProposalBuilder.add(entry.getKey().toString());
+    }
+
     ikePhase1Policy.setIkePhase1Proposals(ikePhase1ProposalBuilder.build());
     ikePhase1Policy.setSelfIdentity(isakmpProfile.getSelfIdentity());
     ikePhase1Policy.setRemoteIdentity(isakmpProfile.getMatchIdentity());
 
     ikePhase1Policy.setLocalInterface(isakmpProfile.getLocalInterfaceName());
-    ikePhase1Policy.setIkePhase1Key(getMatchingPsk(isakmpProfile, w, c.getIkePhase1Keys()));
+    ikePhase1Policy.setIkePhase1Key(getMatchingPsk(isakmpProfile, w, config.getIkePhase1Keys()));
     return ikePhase1Policy;
   }
 
@@ -280,7 +278,7 @@ class CiscoConversions {
   }
 
   static IkePhase1Proposal toIkePhase1Proposal(IsakmpPolicy isakmpPolicy) {
-    IkePhase1Proposal ikePhase1Proposal = new IkePhase1Proposal(isakmpPolicy.getName());
+    IkePhase1Proposal ikePhase1Proposal = new IkePhase1Proposal(isakmpPolicy.getName().toString());
     ikePhase1Proposal.setDiffieHellmanGroup(isakmpPolicy.getDiffieHellmanGroup());
     ikePhase1Proposal.setAuthenticationMethod(isakmpPolicy.getAuthenticationMethod());
     ikePhase1Proposal.setEncryptionAlgorithm(isakmpPolicy.getEncryptionAlgorithm());

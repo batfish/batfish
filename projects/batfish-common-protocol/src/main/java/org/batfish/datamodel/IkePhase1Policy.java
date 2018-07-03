@@ -24,7 +24,7 @@ public class IkePhase1Policy extends ComparableStructure<String> {
 
   private static final String PROP_LOCAL_INTERFACE = "localInterface";
 
-  private @Nonnull List<IkePhase1Proposal> _ikePhase1Proposals;
+  private @Nonnull List<String> _ikePhase1Proposals;
 
   private IkePhase1Key _ikePhase1Key;
 
@@ -42,7 +42,7 @@ public class IkePhase1Policy extends ComparableStructure<String> {
 
   @JsonPropertyDescription("IKE phase 1 proposals to be used with this IKE phase 1 policy")
   @JsonProperty(PROP_IKE_PHASE1_PROPOSALS)
-  public List<IkePhase1Proposal> getIkePhase1Proposals() {
+  public List<String> getIkePhase1Proposals() {
     return _ikePhase1Proposals;
   }
 
@@ -73,7 +73,7 @@ public class IkePhase1Policy extends ComparableStructure<String> {
   }
 
   @JsonProperty(PROP_IKE_PHASE1_PROPOSALS)
-  public void setIkePhase1Proposals(@Nullable List<IkePhase1Proposal> ikePhase1Proposals) {
+  public void setIkePhase1Proposals(@Nullable List<String> ikePhase1Proposals) {
     _ikePhase1Proposals =
         ikePhase1Proposals == null ? ImmutableList.of() : ImmutableList.copyOf(ikePhase1Proposals);
   }
