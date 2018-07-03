@@ -188,6 +188,7 @@ crypto isakmp profile myprofile
    keyring VRF:MMS:RMT:UPM:1143
    match identity address 1.2.3.4 255.255.255.255
    reverse-route
+   self-identity 2.3.4.6
    vrf VRF:MMS:RMT:UPM:1143
    keepalive 10 retry 3
 !

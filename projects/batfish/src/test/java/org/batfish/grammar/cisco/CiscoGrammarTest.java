@@ -25,6 +25,8 @@ import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbors;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurationFormat;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIkeGateway;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIkePhase1Policy;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIkePhase1Proposal;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIkeProposal;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterfaces;
@@ -59,6 +61,11 @@ import static org.batfish.datamodel.matchers.IkeGatewayMatchers.hasAddress;
 import static org.batfish.datamodel.matchers.IkeGatewayMatchers.hasExternalInterface;
 import static org.batfish.datamodel.matchers.IkeGatewayMatchers.hasIkePolicy;
 import static org.batfish.datamodel.matchers.IkeGatewayMatchers.hasLocalIp;
+import static org.batfish.datamodel.matchers.IkePhase1PolicyMatchers.hasIkePhase1Key;
+import static org.batfish.datamodel.matchers.IkePhase1PolicyMatchers.hasIkePhase1Proposals;
+import static org.batfish.datamodel.matchers.IkePhase1PolicyMatchers.hasLocalInterface;
+import static org.batfish.datamodel.matchers.IkePhase1PolicyMatchers.hasRemoteIdentity;
+import static org.batfish.datamodel.matchers.IkePhase1PolicyMatchers.hasSelfIdentity;
 import static org.batfish.datamodel.matchers.IkePolicyMatchers.hasPresharedKeyHash;
 import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasAuthenticationAlgorithm;
 import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasAuthenticationMethod;
@@ -194,6 +201,8 @@ import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.matchers.ConfigurationMatchers;
 import org.batfish.datamodel.matchers.IkeGatewayMatchers;
+import org.batfish.datamodel.matchers.IkePhase1KeyMatchers;
+import org.batfish.datamodel.matchers.IkePhase1ProposalMatchers;
 import org.batfish.datamodel.matchers.InterfaceMatchers;
 import org.batfish.datamodel.matchers.IpsecPolicyMatchers;
 import org.batfish.datamodel.matchers.IpsecProposalMatchers;
@@ -1913,7 +1922,7 @@ public class CiscoGrammarTest {
     assertThat(
         c,
         hasIkeProposal(
-            "020",
+            "20",
             allOf(
                 hasEncryptionAlgorithm(EncryptionAlgorithm.AES_128_CBC),
                 hasAuthenticationMethod(IkeAuthenticationMethod.RSA_SIGNATURES),
@@ -1924,7 +1933,7 @@ public class CiscoGrammarTest {
     assertThat(
         c,
         hasIkeProposal(
-            "030",
+            "30",
             allOf(
                 hasEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC),
                 hasAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS),
@@ -1940,7 +1949,7 @@ public class CiscoGrammarTest {
     assertThat(
         c,
         hasIkeProposal(
-            "010",
+            "10",
             allOf(
                 hasEncryptionAlgorithm(EncryptionAlgorithm.AES_128_CBC),
                 hasAuthenticationMethod(IkeAuthenticationMethod.RSA_SIGNATURES),
@@ -1952,13 +1961,38 @@ public class CiscoGrammarTest {
     assertThat(
         c,
         hasIkeProposal(
-            "020",
+            "20",
             allOf(
                 hasEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC),
                 hasAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS),
                 hasAuthenticationAlgorithm(IkeHashingAlgorithm.SHA1),
                 hasDiffieHellmanGroup(DiffieHellmanGroup.GROUP2),
                 hasLifeTimeSeconds(86400))));
+
+    // test for IKE phase1 proposals
+    assertThat(
+        c,
+        hasIkePhase1Proposal(
+            "10",
+            allOf(
+                IkePhase1ProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_128_CBC),
+                IkePhase1ProposalMatchers.hasAuthenticationMethod(
+                    IkeAuthenticationMethod.RSA_SIGNATURES),
+                IkePhase1ProposalMatchers.hasHashingAlgorithm(IkeHashingAlgorithm.MD5),
+                IkePhase1ProposalMatchers.hasDiffieHellmanGroup(DiffieHellmanGroup.GROUP1),
+                IkePhase1ProposalMatchers.hasLifeTimeSeconds(14400))));
+
+    assertThat(
+        c,
+        hasIkePhase1Proposal(
+            "20",
+            allOf(
+                IkePhase1ProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC),
+                IkePhase1ProposalMatchers.hasAuthenticationMethod(
+                    IkeAuthenticationMethod.PRE_SHARED_KEYS),
+                IkePhase1ProposalMatchers.hasHashingAlgorithm(IkeHashingAlgorithm.SHA1),
+                IkePhase1ProposalMatchers.hasDiffieHellmanGroup(DiffieHellmanGroup.GROUP2),
+                IkePhase1ProposalMatchers.hasLifeTimeSeconds(86400))));
   }
 
   @Test
@@ -1986,6 +2020,33 @@ public class CiscoGrammarTest {
                 hasLocalIp(new Ip("2.3.4.6")),
                 hasIkePolicy(
                     hasPresharedKeyHash(CommonUtil.sha256Digest("psk1" + CommonUtil.salt()))))));
+
+    // test for IKE phase 1 policy
+    assertThat(
+        c,
+        hasIkePhase1Policy(
+            "ISAKMP-PROFILE-ADDRESS",
+            allOf(
+                hasIkePhase1Key(
+                    IkePhase1KeyMatchers.hasKeyHash(
+                        CommonUtil.sha256Digest("psk1" + CommonUtil.salt()))),
+                hasRemoteIdentity(containsIp(new Ip("1.2.3.4"))),
+                hasSelfIdentity(equalTo(new Ip("2.3.4.6"))),
+                hasLocalInterface(equalTo("TenGigabitEthernet0/0")),
+                hasIkePhase1Proposals(equalTo(ImmutableList.of("10", "20"))))));
+
+    assertThat(
+        c,
+        hasIkePhase1Policy(
+            "ISAKMP-PROFILE-INTERFACE",
+            allOf(
+                hasIkePhase1Key(
+                    IkePhase1KeyMatchers.hasKeyHash(
+                        CommonUtil.sha256Digest("psk1" + CommonUtil.salt()))),
+                hasRemoteIdentity(containsIp(new Ip("1.2.3.4"))),
+                hasSelfIdentity(equalTo(new Ip("2.3.4.6"))),
+                hasLocalInterface(equalTo("TenGigabitEthernet0/0")),
+                hasIkePhase1Proposals(equalTo(ImmutableList.of("10", "20"))))));
   }
 
   private static String getCLRegex(

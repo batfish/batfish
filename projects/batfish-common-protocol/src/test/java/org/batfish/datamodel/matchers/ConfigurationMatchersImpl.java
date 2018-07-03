@@ -6,6 +6,8 @@ import javax.annotation.Nonnull;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.IkeGateway;
+import org.batfish.datamodel.IkePhase1Policy;
+import org.batfish.datamodel.IkePhase1Proposal;
 import org.batfish.datamodel.IkeProposal;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpAccessList;
@@ -82,6 +84,41 @@ final class ConfigurationMatchersImpl {
     @Override
     protected IkeProposal featureValueOf(Configuration actual) {
       return actual.getIkeProposals().get(_name);
+    }
+  }
+
+  static final class HasIkePhase1Policy extends FeatureMatcher<Configuration, IkePhase1Policy> {
+    private final String _name;
+
+    HasIkePhase1Policy(@Nonnull String name, @Nonnull Matcher<? super IkePhase1Policy> subMatcher) {
+      super(
+          subMatcher,
+          "A Configuration with ikePhase1Policy " + name + ":",
+          "ikePhase1Policy " + name);
+      _name = name;
+    }
+
+    @Override
+    protected IkePhase1Policy featureValueOf(Configuration actual) {
+      return actual.getIkePhase1Policies().get(_name);
+    }
+  }
+
+  static final class HasIkePhase1Proposal extends FeatureMatcher<Configuration, IkePhase1Proposal> {
+    private final String _name;
+
+    HasIkePhase1Proposal(
+        @Nonnull String name, @Nonnull Matcher<? super IkePhase1Proposal> subMatcher) {
+      super(
+          subMatcher,
+          "A Configuration with ikePhase1Proposal " + name + ":",
+          "ikePhase1Proposal " + name);
+      _name = name;
+    }
+
+    @Override
+    protected IkePhase1Proposal featureValueOf(Configuration actual) {
+      return actual.getIkePhase1Proposals().get(_name);
     }
   }
 
