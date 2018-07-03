@@ -152,7 +152,9 @@ public class WorkMgrService {
 
   private void checkContainerAccessibility(String apiKey, String containerName) {
     if (!Main.getAuthorizer().isAccessibleContainer(apiKey, containerName, true)) {
-      throw new AccessControlException("container is not accessible by the api key");
+      throw new AccessControlException(
+          String.format(
+              "container '%s' is not accessible by the api key '%s", containerName, apiKey));
     }
   }
 
