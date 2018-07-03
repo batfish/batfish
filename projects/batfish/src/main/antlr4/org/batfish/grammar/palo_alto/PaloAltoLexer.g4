@@ -210,6 +210,11 @@ VIRTUAL_ROUTER
     'virtual-router'
 ;
 
+ZONE
+:
+    'zone'
+;
+
 // Complex tokens
 
 DEC
