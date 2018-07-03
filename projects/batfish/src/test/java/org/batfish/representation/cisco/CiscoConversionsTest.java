@@ -1,6 +1,6 @@
 package org.batfish.representation.cisco;
 
-import static org.batfish.datamodel.Interface.UNKNOWN_INTERFACE_NAME;
+import static org.batfish.datamodel.Interface.INVALID_LOCAL_INTERFACE;
 import static org.batfish.representation.cisco.CiscoConversions.getMatchingPsk;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -36,7 +36,7 @@ public class CiscoConversionsTest {
   public void testGetMatchingPskInvalidLocalIface() {
     IsakmpProfile isakmpProfile = new IsakmpProfile("Missing_Local_Interface");
     // Empty interfaceName value represents incorrect local-address value
-    isakmpProfile.setLocalInterfaceName(UNKNOWN_INTERFACE_NAME);
+    isakmpProfile.setLocalInterfaceName(INVALID_LOCAL_INTERFACE);
     isakmpProfile.setKeyring("IKE_Phase1_Key");
 
     IkePhase1Key ikePhase1Key = new IkePhase1Key();
@@ -105,7 +105,7 @@ public class CiscoConversionsTest {
     IkePhase1Key ikePhase1Key = new IkePhase1Key();
     ikePhase1Key.setKeyHash("test_key");
     ikePhase1Key.setKeyType(IkeKeyType.PRE_SHARED_KEY);
-    ikePhase1Key.setLocalInterface(UNKNOWN_INTERFACE_NAME);
+    ikePhase1Key.setLocalInterface(INVALID_LOCAL_INTERFACE);
 
     IkePhase1Key matchingKey =
         getMatchingPsk(isakmpProfile, _warnings, ImmutableMap.of(IKE_PHASE1_KEY, ikePhase1Key));
@@ -133,7 +133,7 @@ public class CiscoConversionsTest {
     IkePhase1Key matchingKey =
         getMatchingPsk(isakmpProfile, _warnings, ImmutableMap.of(IKE_PHASE1_KEY, ikePhase1Key));
 
-    assertThat(matchingKey, IkePhase1KeyMatchers.hasKeyValue("test_key"));
+    assertThat(matchingKey, IkePhase1KeyMatchers.hasKeyHash("test_key"));
   }
 
   @Test

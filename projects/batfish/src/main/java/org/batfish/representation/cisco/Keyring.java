@@ -1,6 +1,6 @@
 package org.batfish.representation.cisco;
 
-import static org.batfish.datamodel.Interface.UNSET_INTERFACE_NAME;
+import static org.batfish.datamodel.Interface.UNSET_LOCAL_INTERFACE;
 
 import java.util.Objects;
 import javax.annotation.Nonnull;
@@ -23,7 +23,7 @@ public class Keyring extends ComparableStructure<String> {
 
   public Keyring(String name) {
     super(name);
-    _localInterfaceName = UNSET_INTERFACE_NAME;
+    _localInterfaceName = UNSET_LOCAL_INTERFACE;
   }
 
   public String getKey() {

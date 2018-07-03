@@ -2,7 +2,7 @@ package org.batfish.representation.cisco;
 
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import static org.batfish.common.util.CommonUtil.toImmutableMap;
-import static org.batfish.datamodel.Interface.UNSET_INTERFACE_NAME;
+import static org.batfish.datamodel.Interface.UNSET_LOCAL_INTERFACE;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
 import static org.batfish.representation.cisco.CiscoConversions.generateAggregateRoutePolicy;
@@ -4100,7 +4100,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _keyrings
         .values()
         .stream()
-        .filter(keyring -> !keyring.getLocalInterfaceName().equals(UNSET_INTERFACE_NAME))
+        .filter(keyring -> !keyring.getLocalInterfaceName().equals(UNSET_LOCAL_INTERFACE))
         .forEach(
             keyring ->
                 keyring.setLocalAddress(
@@ -4111,7 +4111,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         .values()
         .stream()
         .filter(
-            isakmpProfile -> !isakmpProfile.getLocalInterfaceName().equals(UNSET_INTERFACE_NAME))
+            isakmpProfile -> !isakmpProfile.getLocalInterfaceName().equals(UNSET_LOCAL_INTERFACE))
         .forEach(
             isakmpProfile ->
                 isakmpProfile.setLocalAddress(

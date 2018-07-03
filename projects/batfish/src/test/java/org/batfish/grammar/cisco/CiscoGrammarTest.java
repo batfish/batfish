@@ -1952,7 +1952,7 @@ public class CiscoGrammarTest {
             "ISAKMP-PROFILE-ADDRESS",
             allOf(
                 hasIkePhase1Key(
-                    IkePhase1KeyMatchers.hasKeyValue(
+                    IkePhase1KeyMatchers.hasKeyHash(
                         CommonUtil.sha256Digest("psk1" + CommonUtil.salt()))),
                 hasRemoteIdentity(containsIp(new Ip("1.2.3.4"))),
                 hasSelfIdentity(equalTo(new Ip("2.3.4.6"))),
@@ -1965,7 +1965,7 @@ public class CiscoGrammarTest {
             "ISAKMP-PROFILE-INTERFACE",
             allOf(
                 hasIkePhase1Key(
-                    IkePhase1KeyMatchers.hasKeyValue(
+                    IkePhase1KeyMatchers.hasKeyHash(
                         CommonUtil.sha256Digest("psk1" + CommonUtil.salt()))),
                 hasRemoteIdentity(containsIp(new Ip("1.2.3.4"))),
                 hasSelfIdentity(equalTo(new Ip("2.3.4.6"))),

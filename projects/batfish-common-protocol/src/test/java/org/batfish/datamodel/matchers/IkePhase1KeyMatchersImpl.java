@@ -7,9 +7,9 @@ import org.hamcrest.Matcher;
 
 final class IkePhase1KeyMatchersImpl {
 
-  static final class HasKeyValue extends FeatureMatcher<IkePhase1Key, String> {
-    HasKeyValue(@Nonnull Matcher<? super String> subMatcher) {
-      super(subMatcher, "An IKE phase 1 key with KeyValue:", "KeyValue");
+  static final class HasKeyHash extends FeatureMatcher<IkePhase1Key, String> {
+    HasKeyHash(@Nonnull Matcher<? super String> subMatcher) {
+      super(subMatcher, "An IKE phase 1 key with KeyHash:", "KeyHash");
     }
 
     @Override

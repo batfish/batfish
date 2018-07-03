@@ -2,7 +2,7 @@ package org.batfish.representation.cisco;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.util.Collections.singletonList;
-import static org.batfish.datamodel.Interface.UNKNOWN_INTERFACE_NAME;
+import static org.batfish.datamodel.Interface.INVALID_LOCAL_INTERFACE;
 
 import com.google.common.collect.ImmutableList;
 import java.math.BigInteger;
@@ -162,7 +162,7 @@ class CiscoConversions {
             keyring ->
                 keyring.setLocalInterfaceName(
                     firstNonNull(
-                        iptoIfaceName.get(keyring.getLocalAddress()), UNKNOWN_INTERFACE_NAME)));
+                        iptoIfaceName.get(keyring.getLocalAddress()), INVALID_LOCAL_INTERFACE)));
   }
 
   /**
@@ -181,7 +181,7 @@ class CiscoConversions {
                 isakmpProfile.setLocalInterfaceName(
                     firstNonNull(
                         iptoIfaceName.get(isakmpProfile.getLocalAddress()),
-                        UNKNOWN_INTERFACE_NAME)));
+                        INVALID_LOCAL_INTERFACE)));
   }
 
   static AsPathAccessList toAsPathAccessList(AsPathSet asPathSet) {
@@ -253,7 +253,7 @@ class CiscoConversions {
       IsakmpProfile isakmpProfile, Warnings w, Map<String, IkePhase1Key> ikePhase1Keys) {
     IkePhase1Key ikePhase1Key = null;
     String isakmpProfileName = isakmpProfile.getName();
-    if (isakmpProfile.getLocalInterfaceName().equals(UNKNOWN_INTERFACE_NAME)) {
+    if (isakmpProfile.getLocalInterfaceName().equals(INVALID_LOCAL_INTERFACE)) {
       w.redFlag(
           String.format(
               "Invalid local address interface configured for ISAKMP profile %s",
@@ -267,7 +267,7 @@ class CiscoConversions {
               isakmpProfile.getKeyring(), isakmpProfileName));
     } else {
       IkePhase1Key tempIkePhase1Key = ikePhase1Keys.get(isakmpProfile.getKeyring());
-      if (tempIkePhase1Key.getLocalInterface().equals(UNKNOWN_INTERFACE_NAME)) {
+      if (tempIkePhase1Key.getLocalInterface().equals(INVALID_LOCAL_INTERFACE)) {
         w.redFlag(
             String.format(
                 "Invalid local address interface configured for keyring %s",

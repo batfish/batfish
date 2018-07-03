@@ -1,6 +1,6 @@
 package org.batfish.representation.cisco;
 
-import static org.batfish.datamodel.Interface.UNSET_INTERFACE_NAME;
+import static org.batfish.datamodel.Interface.UNSET_LOCAL_INTERFACE;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -25,7 +25,7 @@ public class IsakmpProfile extends ComparableStructure<String> {
 
   public IsakmpProfile(String name) {
     super(name);
-    _localInterfaceName = UNSET_INTERFACE_NAME;
+    _localInterfaceName = UNSET_LOCAL_INTERFACE;
   }
 
   public String getKeyring() {
