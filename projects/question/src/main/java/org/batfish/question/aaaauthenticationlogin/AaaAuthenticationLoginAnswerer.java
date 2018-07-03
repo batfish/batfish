@@ -60,7 +60,6 @@ public class AaaAuthenticationLoginAnswerer extends Answerer {
 
   @Override
   public TableAnswerElement answer() {
-    System.out.println("answering AAA Auth question");
     AaaAuthenticationLoginQuestion question = (AaaAuthenticationLoginQuestion) _question;
 
     TableAnswerElement answerElement = create(question);
