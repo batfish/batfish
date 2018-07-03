@@ -236,6 +236,10 @@ class CiscoConversions {
     return ikePhase1Policy;
   }
 
+  /**
+   * Gets the {@link IkePhase1Key} that can be used for the given {@link IsakmpProfile} based on
+   * {@code remoteIdentity} and {@code localInterfaceName} present in the {@link IkePhase1Key}
+   */
   static IkePhase1Key getMatchingPsk(
       IsakmpProfile isakmpProfile, Warnings w, Map<String, IkePhase1Key> ikePhase1Keys) {
     IkePhase1Key ikePhase1Key = null;
