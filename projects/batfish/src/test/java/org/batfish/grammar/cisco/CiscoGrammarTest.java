@@ -1887,6 +1887,8 @@ public class CiscoGrammarTest {
                 hasBindInterface(InterfaceMatchers.hasName("TenGigabitEthernet0/0")),
                 IpsecVpnMatchers.hasIpsecPolicy(IpsecPolicyMatchers.hasName("mymap:30:15")),
                 hasPolicy(hasLines(equalTo(expectedAclLines))))));
+
+    assertThat(c, hasInterface("TenGigabitEthernet0/0", isActive()));
   }
 
   @Test
