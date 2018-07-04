@@ -63,6 +63,8 @@ public class BgpGroup implements Serializable {
 
   private Long _peerAs;
 
+  private Integer _preference;
+
   private Boolean _removePrivate;
 
   private BgpGroupType _type;
@@ -135,6 +137,9 @@ public class BgpGroup implements Serializable {
       }
       if (_peerAs == null) {
         _peerAs = _parent._peerAs;
+      }
+      if (_preference == null) {
+        _preference = _parent._preference;
       }
       if (_type == null) {
         _type = _parent._type;
@@ -230,6 +235,11 @@ public class BgpGroup implements Serializable {
     return _peerAs;
   }
 
+  @Nullable
+  public Integer getPreference() {
+    return _preference;
+  }
+
   public Boolean getRemovePrivate() {
     return _removePrivate;
   }
@@ -312,6 +322,10 @@ public class BgpGroup implements Serializable {
 
   public void setPeerAs(long peerAs) {
     _peerAs = peerAs;
+  }
+
+  public final void setPreference(@Nullable Integer preference) {
+    _preference = preference;
   }
 
   public void setRemovePrivate(boolean removePrivate) {

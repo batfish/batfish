@@ -38,5 +38,6 @@ set protocols bgp group someinternalipv6group peer-as 54321
 set protocols bgp group someinternalipv6group type internal
 set protocols bgp log-updown
 set protocols bgp path-selection external-router-id
+set protocols bgp preference 140
 #
 

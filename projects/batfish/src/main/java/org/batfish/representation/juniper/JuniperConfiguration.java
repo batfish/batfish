@@ -151,6 +151,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   private static final String FIRST_LOOPBACK_INTERFACE_NAME = "lo0";
 
+  // See https://www.juniper.net/documentation/en_US/junos/topics/example/bgp-preference.html
+  private static final int DEFAULT_BGP_PREFERENCE = 170;
+
   /** */
   private static final long serialVersionUID = 1L;
 
@@ -315,6 +318,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
     boolean multipathEbgpSet = false;
     boolean multipathIbgpSet = false;
     boolean multipathMultipleAsSet = false;
+
+    // Juniper does not let you configure EBGP and IBGP admin distance separately.
+    int preference = firstNonNull(mg.getPreference(), DEFAULT_BGP_PREFERENCE);
+    proc.setDefaultEbgpAdminDistance(preference);
+    proc.setDefaultIbgpAdminDistance(preference);
 
     if (mg.getLocalAs() == null) {
       Long routingInstanceAs = routingInstance.getAs();

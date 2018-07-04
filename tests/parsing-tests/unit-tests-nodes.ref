@@ -2103,6 +2103,8 @@
           "default" : {
             "name" : "default",
             "bgpProcess" : {
+              "defaultEbgpAdminDistance" : 170,
+              "defaultIbgpAdminDistance" : 170,
               "dynamicNeighbors" : {
                 "10.1.1.0/24" : {
                   "class" : "org.batfish.datamodel.BgpPassivePeerConfig",
@@ -2370,6 +2372,8 @@
           "default" : {
             "name" : "default",
             "bgpProcess" : {
+              "defaultEbgpAdminDistance" : 170,
+              "defaultIbgpAdminDistance" : 170,
               "multipathEbgp" : true,
               "multipathEquivalentAsPathMatchMode" : "FIRST_AS",
               "multipathIbgp" : false,
@@ -15043,6 +15047,8 @@
           "default" : {
             "name" : "default",
             "bgpProcess" : {
+              "defaultEbgpAdminDistance" : 140,
+              "defaultIbgpAdminDistance" : 140,
               "multipathEbgp" : false,
               "multipathEquivalentAsPathMatchMode" : "FIRST_AS",
               "multipathIbgp" : false,
@@ -15398,6 +15404,8 @@
           "default" : {
             "name" : "default",
             "bgpProcess" : {
+              "defaultEbgpAdminDistance" : 170,
+              "defaultIbgpAdminDistance" : 170,
               "multipathEbgp" : true,
               "multipathEquivalentAsPathMatchMode" : "FIRST_AS",
               "multipathIbgp" : false,
@@ -15594,6 +15602,8 @@
           "default" : {
             "name" : "default",
             "bgpProcess" : {
+              "defaultEbgpAdminDistance" : 170,
+              "defaultIbgpAdminDistance" : 170,
               "multipathEbgp" : false,
               "multipathEquivalentAsPathMatchMode" : "FIRST_AS",
               "multipathIbgp" : false,

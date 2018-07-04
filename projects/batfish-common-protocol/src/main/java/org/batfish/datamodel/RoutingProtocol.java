@@ -121,10 +121,6 @@ public enum RoutingProtocol {
           case FORCE10:
           case FOUNDRY:
             return 20;
-          case FLAT_JUNIPER:
-          case JUNIPER:
-          case JUNIPER_SWITCH:
-            return 170;
           case FLAT_VYOS:
           case VYOS:
             return 20;
@@ -246,10 +242,6 @@ public enum RoutingProtocol {
           case FORCE10:
           case FOUNDRY:
             return 200;
-          case FLAT_JUNIPER:
-          case JUNIPER:
-          case JUNIPER_SWITCH:
-            return 170;
           case FLAT_VYOS:
           case VYOS:
             return 200;
