@@ -21,7 +21,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
   public static final String DEFAULT_VSYS_NAME = "vsys1";
 
-  public static final String SHARED_VSYS_NAME = "~SHARED~";
+  public static final String SHARED_VSYS_NAME = "~SHARED_VSYS~";
 
   private Configuration _c;
 
@@ -45,14 +45,11 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
   private final SortedMap<String, Vsys> _vsys;
 
-  private final SortedMap<String, Zone> _zones;
-
   public PaloAltoConfiguration(Set<String> unimplementedFeatures) {
     _interfaces = new TreeMap<>();
     _unimplementedFeatures = unimplementedFeatures;
     _virtualRouters = new TreeMap<>();
     _vsys = new TreeMap<>();
-    _zones = new TreeMap<>();
   }
 
   private NavigableSet<String> getDnsServers() {
@@ -99,10 +96,6 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     return _vsys;
   }
 
-  public SortedMap<String, Zone> getZones() {
-    return _zones;
-  }
-
   public void setDnsServerPrimary(String dnsServerPrimary) {
     _dnsServerPrimary = dnsServerPrimary;
   }
@@ -127,6 +120,26 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   @Override
   public void setVendor(ConfigurationFormat format) {
     _vendor = format;
+  }
+
+  // Visible for testing
+  public static String computeZoneName(String vsysName, String zoneName) {
+    return String.format("%s~%s", vsysName, zoneName);
+  }
+
+  /** Convert vsys components to vendor independent model */
+  private void convertVsys() {
+    NavigableSet<String> loggingServers = new TreeSet<>();
+
+    for (Vsys vsys : _vsys.values()) {
+      loggingServers.addAll(vsys.getSyslogServerAddresses());
+      for (Entry<String, Zone> zoneEntry : vsys.getZones().entrySet()) {
+        Zone zone = zoneEntry.getValue();
+        String zoneName = zone.getName();
+        _c.getZones().put(zoneName, toZone(zoneName, zone));
+      }
+    }
+    _c.setLoggingServers(loggingServers);
   }
 
   /** Convert Palo Alto specific interface into vendor independent model interface */
@@ -185,8 +198,8 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   }
 
   /** Convert Palo Alto zone to vendor independent model zone */
-  private org.batfish.datamodel.Zone toZone(Zone zone) {
-    org.batfish.datamodel.Zone newZone = new org.batfish.datamodel.Zone(zone.getName());
+  private org.batfish.datamodel.Zone toZone(String name, Zone zone) {
+    org.batfish.datamodel.Zone newZone = new org.batfish.datamodel.Zone(name);
     newZone.setInterfaces(zone.getInterfaceNames());
     return newZone;
   }
@@ -204,17 +217,12 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
       _c.getInterfaces().put(i.getKey(), toInterface(i.getValue()));
     }
 
-    NavigableSet<String> loggingServers = new TreeSet<>();
-    _vsys.values().forEach(v -> loggingServers.addAll(v.getSyslogServerAddresses()));
-    _c.setLoggingServers(loggingServers);
-
     for (Entry<String, VirtualRouter> vr : _virtualRouters.entrySet()) {
       _c.getVrfs().put(vr.getKey(), toVrf(vr.getValue()));
     }
 
-    for (Entry<String, Zone> zone : _zones.entrySet()) {
-      _c.getZones().put(zone.getKey(), toZone(zone.getValue()));
-    }
+    // Handle converting items within vsys's
+    convertVsys();
 
     // Count and mark structure usages and identify undefined references
     markConcreteStructure(

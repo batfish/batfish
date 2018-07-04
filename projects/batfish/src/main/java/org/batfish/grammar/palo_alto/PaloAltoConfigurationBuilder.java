@@ -3,6 +3,7 @@ package org.batfish.grammar.palo_alto;
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.DEFAULT_VSYS_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.SHARED_VSYS_NAME;
+import static org.batfish.representation.palo_alto.PaloAltoConfiguration.computeZoneName;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ZONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.VIRTUAL_ROUTER_INTERFACE;
@@ -80,6 +81,8 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   private Vsys _currentVsys;
 
   private Zone _currentZone;
+
+  private Vsys _defaultVsys;
 
   private PaloAltoCombinedParser _parser;
 
@@ -165,13 +168,15 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void enterPalo_alto_configuration(Palo_alto_configurationContext ctx) {
     _configuration = new PaloAltoConfiguration(_unimplementedFeatures);
-    _currentVsys = _configuration.getVsys().put(DEFAULT_VSYS_NAME, new Vsys(DEFAULT_VSYS_NAME));
+    _defaultVsys = _configuration.getVsys().computeIfAbsent(DEFAULT_VSYS_NAME, Vsys::new);
+    _currentVsys = _defaultVsys;
   }
 
   @Override
   public void enterS_zone(S_zoneContext ctx) {
-    String name = ctx.name.getText();
-    _currentZone = _configuration.getZones().computeIfAbsent(name, Zone::new);
+    // Use constructed zone name so same-named zone defs and refs across vsys are unique
+    String name = computeZoneName(_currentVsys.getName(), ctx.name.getText());
+    _currentZone = _currentVsys.getZones().computeIfAbsent(name, Zone::new);
     defineStructure(ZONE, name, ctx);
   }
 
@@ -337,7 +342,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitS_shared(S_sharedContext ctx) {
-    _currentVsys = _configuration.getVsys().get(DEFAULT_VSYS_NAME);
+    _currentVsys = _defaultVsys;
   }
 
   @Override
@@ -373,9 +378,10 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitS_vsys(S_vsysContext ctx) {
-    _currentVsys = _configuration.getVsys().get(DEFAULT_VSYS_NAME);
+    _currentVsys = _defaultVsys;
   }
 
+  @Override
   public void exitSzn_layer3(Szn_layer3Context ctx) {
     if (ctx.variable_list() != null) {
       for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
