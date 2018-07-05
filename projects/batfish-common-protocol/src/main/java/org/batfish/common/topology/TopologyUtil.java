@@ -38,7 +38,7 @@ public final class TopologyUtil {
         && i2.getSwitchportMode() == SwitchportMode.TRUNK) {
       i1.getAllowedVlans()
           .stream()
-          .flatMapToInt(SubRange::flatten)
+          .flatMapToInt(SubRange::asStream)
           .filter(
               i1AllowedVlan ->
                   i2.getAllowedVlans().stream().anyMatch(sr -> sr.includes(i1AllowedVlan)))
@@ -104,7 +104,7 @@ public final class TopologyUtil {
                     .add(i.getName());
                 i.getAllowedVlans()
                     .stream()
-                    .flatMapToInt(SubRange::flatten)
+                    .flatMapToInt(SubRange::asStream)
                     .forEach(
                         allowedVlan -> {
                           switchportsByVlan
@@ -242,7 +242,7 @@ public final class TopologyUtil {
                     .add(i.getName());
                 i.getAllowedVlans()
                     .stream()
-                    .flatMapToInt(SubRange::flatten)
+                    .flatMapToInt(SubRange::asStream)
                     .forEach(
                         allowedVlan -> {
                           switchportsByVlan

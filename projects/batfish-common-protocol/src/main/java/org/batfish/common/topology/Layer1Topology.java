@@ -3,7 +3,6 @@ package org.batfish.common.topology;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.graph.ImmutableNetwork;
 import com.google.common.graph.MutableNetwork;
@@ -26,14 +25,12 @@ public final class Layer1Topology {
   public Layer1Topology(@Nonnull Iterable<Layer1Edge> edges) {
     MutableNetwork<Layer1Node, Layer1Edge> graph =
         NetworkBuilder.directed().allowsParallelEdges(false).allowsSelfLoops(false).build();
-    ImmutableSet.Builder<Layer1Node> nodes = ImmutableSet.builder();
     edges.forEach(
         edge -> {
-          nodes.add(edge.getNode1());
-          nodes.add(edge.getNode2());
+          graph.addNode(edge.getNode1());
+          graph.addNode(edge.getNode2());
+          graph.addEdge(edge.getNode1(), edge.getNode2(), edge);
         });
-    nodes.build().forEach(graph::addNode);
-    edges.forEach(edge -> graph.addEdge(edge.getNode1(), edge.getNode2(), edge));
     _graph = ImmutableNetwork.copyOf(graph);
   }
 

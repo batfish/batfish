@@ -20,6 +20,7 @@ import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.Layer2Topology;
+import org.batfish.common.topology.TopologyUtil;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpSession;
@@ -729,8 +730,18 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
         }
       }
 
-      if (question.getNeighborTypes().contains(NeighborType.LAYER1)) {
-        answerElement.setLayer1Neighbors(_batfish.getLayer1Topology());
+      Layer1Topology layer1Topology;
+      boolean layer1 = question.getNeighborTypes().contains(NeighborType.LAYER1);
+      boolean layer2 = question.getNeighborTypes().contains(NeighborType.LAYER2);
+      if (layer1 || layer2) {
+        layer1Topology = _batfish.getLayer1Topology();
+        if (layer1) {
+          answerElement.setLayer1Neighbors(layer1Topology);
+        }
+        if (layer2) {
+          answerElement.setLayer2Neighbors(
+              TopologyUtil.computeLayer2Topology(layer1Topology, configurations));
+        }
       }
       return answerElement;
     }

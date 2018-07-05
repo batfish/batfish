@@ -60,6 +60,10 @@ public final class SubRange implements Serializable, Comparable<SubRange> {
     }
   }
 
+  public IntStream asStream() {
+    return IntStream.range(_start, _end + 1);
+  }
+
   @Override
   public int compareTo(SubRange rhs) {
     int ret = Integer.compare(_start, rhs._start);
@@ -103,6 +107,10 @@ public final class SubRange implements Serializable, Comparable<SubRange> {
     return result;
   }
 
+  public boolean includes(int integer) {
+    return _start <= integer && integer <= _end;
+  }
+
   @JsonValue
   public String serializedForm() {
     return String.format("%d-%d", _start, _end);
@@ -111,13 +119,5 @@ public final class SubRange implements Serializable, Comparable<SubRange> {
   @Override
   public String toString() {
     return "[" + _start + "," + _end + "]";
-  }
-
-  public IntStream flatten() {
-    return IntStream.range(_start, _end + 1);
-  }
-
-  public boolean includes(int integer) {
-    return _start <= integer && integer <= _end;
   }
 }
