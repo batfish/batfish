@@ -168,7 +168,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void enterPalo_alto_configuration(Palo_alto_configurationContext ctx) {
     _configuration = new PaloAltoConfiguration(_unimplementedFeatures);
-    _defaultVsys = _configuration.getVsys().computeIfAbsent(DEFAULT_VSYS_NAME, Vsys::new);
+    _defaultVsys = _configuration.getVirtualSystems().computeIfAbsent(DEFAULT_VSYS_NAME, Vsys::new);
     _currentVsys = _defaultVsys;
   }
 
@@ -339,7 +339,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void enterS_shared(S_sharedContext ctx) {
-    _currentVsys = _configuration.getVsys().computeIfAbsent(SHARED_VSYS_NAME, Vsys::new);
+    _currentVsys = _configuration.getVirtualSystems().computeIfAbsent(SHARED_VSYS_NAME, Vsys::new);
   }
 
   @Override
@@ -375,7 +375,8 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void enterS_vsys(S_vsysContext ctx) {
-    _currentVsys = _configuration.getVsys().computeIfAbsent(ctx.name.getText(), Vsys::new);
+    _currentVsys =
+        _configuration.getVirtualSystems().computeIfAbsent(ctx.name.getText(), Vsys::new);
   }
 
   @Override

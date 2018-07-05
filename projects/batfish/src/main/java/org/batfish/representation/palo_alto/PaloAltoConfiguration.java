@@ -43,13 +43,13 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
   private final SortedMap<String, VirtualRouter> _virtualRouters;
 
-  private final SortedMap<String, Vsys> _vsys;
+  private final SortedMap<String, Vsys> _virtualSystems;
 
   public PaloAltoConfiguration(Set<String> unimplementedFeatures) {
     _interfaces = new TreeMap<>();
     _unimplementedFeatures = unimplementedFeatures;
     _virtualRouters = new TreeMap<>();
-    _vsys = new TreeMap<>();
+    _virtualSystems = new TreeMap<>();
   }
 
   private NavigableSet<String> getDnsServers() {
@@ -92,8 +92,8 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     return _virtualRouters;
   }
 
-  public SortedMap<String, Vsys> getVsys() {
-    return _vsys;
+  public SortedMap<String, Vsys> getVirtualSystems() {
+    return _virtualSystems;
   }
 
   public void setDnsServerPrimary(String dnsServerPrimary) {
@@ -132,10 +132,10 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   }
 
   /** Convert vsys components to vendor independent model */
-  private void convertVsys() {
+  private void convertVirtualSystems() {
     NavigableSet<String> loggingServers = new TreeSet<>();
 
-    for (Vsys vsys : _vsys.values()) {
+    for (Vsys vsys : _virtualSystems.values()) {
       loggingServers.addAll(vsys.getSyslogServerAddresses());
       for (Entry<String, Zone> zoneEntry : vsys.getZones().entrySet()) {
         Zone zone = zoneEntry.getValue();
@@ -225,8 +225,8 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
       _c.getVrfs().put(vr.getKey(), toVrf(vr.getValue()));
     }
 
-    // Handle converting items within vsys's
-    convertVsys();
+    // Handle converting items within virtual systems
+    convertVirtualSystems();
 
     // Count and mark structure usages and identify undefined references
     markConcreteStructure(
