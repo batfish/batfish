@@ -267,8 +267,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
     private String _name;
 
-    private Path _l1TopologyPath;
-
     private Path _nodeRolesPath;
 
     private Path _parseAnswerPath;
@@ -315,10 +313,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
     public String getName() {
       return _name;
-    }
-
-    public Path getL1TopologyPath() {
-      return _l1TopologyPath;
     }
 
     public Path getNodeRolesPath() {
@@ -374,10 +368,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
     public void setInferredNodeRolesPath(Path inferredNodeRolesPath) {
       _inferredNodeRolesPath = inferredNodeRolesPath;
-    }
-
-    public void setL1TopologyPath(Path l1TopologyPath) {
-      _l1TopologyPath = l1TopologyPath;
     }
 
     public void setName(String name) {

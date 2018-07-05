@@ -1605,11 +1605,6 @@ public class CommonUtil {
                 Comparator.naturalOrder(), keyFunction, valueFunction));
   }
 
-  public static <E extends Comparable<? super E>>
-      Collector<E, ?, ImmutableSortedSet<E>> toImmutableSortedSet() {
-    return ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder());
-  }
-
   public static <S extends Set<T>, T> S union(
       Set<T> set1, Set<T> set2, Supplier<S> setConstructor) {
     S unionSet = setConstructor.get();
