@@ -128,6 +128,8 @@ public final class Configuration extends ComparableStructure<String> {
 
   private static final String PROP_IP_SPACES = "ipSpaces";
 
+  private static final String PROP_IPSEC_PEER_CONFIGS = "ipsecPeerConfigs";
+
   private static final String PROP_IPSEC_PHASE2_PROPOSALS = "ipsecPhase2Proposals";
 
   private static final String PROP_IPSEC_PHASE2_POLICIES = "ipsecPhase2Policies";
@@ -203,6 +205,8 @@ public final class Configuration extends ComparableStructure<String> {
   private NavigableMap<String, IpAccessList> _ipAccessLists;
 
   private NavigableMap<String, IpSpace> _ipSpaces;
+
+  private NavigableMap<String, IpsecPeerConfig> _ipsecPeerConfigs;
 
   private NavigableMap<String, IpsecPhase2Proposal> _ipsecPhase2Proposals;
 
@@ -289,6 +293,7 @@ public final class Configuration extends ComparableStructure<String> {
     _ipAccessLists = new TreeMap<>();
     _ip6AccessLists = new TreeMap<>();
     _ipSpaces = new TreeMap<>();
+    _ipsecPeerConfigs = ImmutableSortedMap.of();
     _ipsecPhase2Proposals = ImmutableSortedMap.of();
     _ipsecPhase2Policies = ImmutableSortedMap.of();
     _ipsecPolicies = new TreeMap<>();
@@ -481,6 +486,12 @@ public final class Configuration extends ComparableStructure<String> {
   @JsonPropertyDescription("Dictionary of all IPV4 access-lists for this node.")
   public NavigableMap<String, IpAccessList> getIpAccessLists() {
     return _ipAccessLists;
+  }
+
+  @JsonPropertyDescription("IPSec peer configs present for this configuration")
+  @JsonProperty(PROP_IPSEC_PEER_CONFIGS)
+  public NavigableMap<String, IpsecPeerConfig> getIpsecPeerconfigs() {
+    return _ipsecPeerConfigs;
   }
 
   @JsonProperty(PROP_IP_SPACES)
@@ -764,6 +775,15 @@ public final class Configuration extends ComparableStructure<String> {
   @JsonProperty(PROP_IP_SPACES)
   public void setIpSpaces(NavigableMap<String, IpSpace> ipSpaces) {
     _ipSpaces = ipSpaces;
+  }
+
+  @JsonProperty(PROP_IPSEC_PEER_CONFIGS)
+  public void setIpsecPeerConfigs(
+      @Nullable NavigableMap<String, IpsecPeerConfig> ipsecPeerConfigs) {
+    _ipsecPeerConfigs =
+        ipsecPeerConfigs == null
+            ? ImmutableSortedMap.of()
+            : ImmutableSortedMap.copyOf(ipsecPeerConfigs);
   }
 
   @JsonProperty(PROP_IPSEC_PHASE2_PROPOSALS)
