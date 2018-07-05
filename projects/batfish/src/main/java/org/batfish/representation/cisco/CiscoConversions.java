@@ -43,6 +43,8 @@ import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.IpsecPhase2Proposal;
+import org.batfish.datamodel.IpsecProposal;
 import org.batfish.datamodel.IsisLevelSettings;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
@@ -347,6 +349,25 @@ class CiscoConversions {
 
   static IpSpace toIpSpace(NetworkObjectGroup networkObjectGroup) {
     return AclIpSpace.union(networkObjectGroup.getLines());
+  }
+
+  static IpsecProposal toIpsecProposal(IpsecTransformSet ipsecTransformSet) {
+    IpsecProposal ipsecProposal = new IpsecProposal(ipsecTransformSet.getName());
+    ipsecProposal.setAuthenticationAlgorithm(ipsecTransformSet.getAuthenticationAlgorithm());
+    ipsecProposal.setEncryptionAlgorithm(ipsecTransformSet.getEncryptionAlgorithm());
+    ipsecProposal.setProtocols(ipsecTransformSet.getProtocols());
+
+    return ipsecProposal;
+  }
+
+  static IpsecPhase2Proposal toIpsecPhase2Proposal(IpsecTransformSet ipsecTransformSet) {
+    IpsecPhase2Proposal ipsecPhase2Proposal = new IpsecPhase2Proposal();
+    ipsecPhase2Proposal.setAuthenticationAlgorithm(ipsecTransformSet.getAuthenticationAlgorithm());
+    ipsecPhase2Proposal.setEncryptionAlgorithm(ipsecTransformSet.getEncryptionAlgorithm());
+    ipsecPhase2Proposal.setProtocols(ipsecTransformSet.getProtocols());
+    ipsecPhase2Proposal.setIpsecEncapsulationMode(ipsecTransformSet.getIpsecEncapsulationMode());
+
+    return ipsecPhase2Proposal;
   }
 
   static org.batfish.datamodel.IsisProcess toIsisProcess(

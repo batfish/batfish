@@ -1,18 +1,16 @@
-package org.batfish.representation.cisco;
-
-import static com.google.common.base.MoreObjects.firstNonNull;
+package org.batfish.representation.juniper;
 
 import java.util.SortedSet;
 import java.util.TreeSet;
-import javax.annotation.Nullable;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
 import org.batfish.datamodel.IpsecEncapsulationMode;
 import org.batfish.datamodel.IpsecProtocol;
 
-public class IpsecTransformSet extends ComparableStructure<String> {
+public class IpsecProposal extends ComparableStructure<String> {
 
+  /** */
   private static final long serialVersionUID = 1L;
 
   private IpsecAuthenticationAlgorithm _authenticationAlgorithm;
@@ -21,12 +19,15 @@ public class IpsecTransformSet extends ComparableStructure<String> {
 
   private IpsecEncapsulationMode _ipsecEncapsulationMode;
 
+  private Integer _lifetimeKilobytes;
+
+  private Integer _lifetimeSeconds;
+
   private SortedSet<IpsecProtocol> _protocols;
 
-  public IpsecTransformSet(String name) {
+  public IpsecProposal(String name) {
     super(name);
     _protocols = new TreeSet<>();
-    _ipsecEncapsulationMode = IpsecEncapsulationMode.TUNNEL;
   }
 
   public IpsecAuthenticationAlgorithm getAuthenticationAlgorithm() {
@@ -41,23 +42,43 @@ public class IpsecTransformSet extends ComparableStructure<String> {
     return _ipsecEncapsulationMode;
   }
 
+  public Integer getLifetimeKilobytes() {
+    return _lifetimeKilobytes;
+  }
+
+  public Integer getLifetimeSeconds() {
+    return _lifetimeSeconds;
+  }
+
   public SortedSet<IpsecProtocol> getProtocols() {
     return _protocols;
   }
 
-  public void setAuthenticationAlgorithm(IpsecAuthenticationAlgorithm authenticationAlgorithm) {
+  public IpsecProposal setAuthenticationAlgorithm(
+      IpsecAuthenticationAlgorithm authenticationAlgorithm) {
     _authenticationAlgorithm = authenticationAlgorithm;
+    return this;
   }
 
-  public void setEncryptionAlgorithm(@Nullable EncryptionAlgorithm encryptionAlgorithm) {
+  public IpsecProposal setEncryptionAlgorithm(EncryptionAlgorithm encryptionAlgorithm) {
     _encryptionAlgorithm = encryptionAlgorithm;
+    return this;
   }
 
-  public void setIpsecEncapsulationMode(@Nullable IpsecEncapsulationMode ipsecEncapsulationMode) {
-    _ipsecEncapsulationMode = firstNonNull(ipsecEncapsulationMode, IpsecEncapsulationMode.TUNNEL);
+  public void setIpsecEncapsulationMode(IpsecEncapsulationMode ipsecEncapsulationMode) {
+    _ipsecEncapsulationMode = ipsecEncapsulationMode;
   }
 
-  public void setProtocols(SortedSet<IpsecProtocol> protocols) {
+  public void setLifetimeKilobytes(int lifetimeKilobytes) {
+    _lifetimeKilobytes = lifetimeKilobytes;
+  }
+
+  public void setLifetimeSeconds(int lifetimeSeconds) {
+    _lifetimeSeconds = lifetimeSeconds;
+  }
+
+  public IpsecProposal setProtocols(SortedSet<IpsecProtocol> protocols) {
     _protocols = protocols;
+    return this;
   }
 }

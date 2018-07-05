@@ -49,7 +49,7 @@ import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
-import org.batfish.datamodel.IpsecProposal;
+import org.batfish.datamodel.IpsecPhase2Proposal;
 import org.batfish.datamodel.IsisInterfaceMode;
 import org.batfish.datamodel.IsisProcess;
 import org.batfish.datamodel.IsoAddress;
@@ -1512,7 +1512,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
         .getProposals()
         .forEach(
             ipsecProposalName -> {
-              IpsecProposal ipsecProposal = _c.getIpsecProposals().get(ipsecProposalName);
+              org.batfish.datamodel.IpsecProposal ipsecProposal =
+                  _c.getIpsecProposals().get(ipsecProposalName);
               if (ipsecProposal != null) {
                 newIpsecPolicy.getProposals().add(ipsecProposal);
               }
@@ -1522,6 +1523,27 @@ public final class JuniperConfiguration extends VendorConfiguration {
     newIpsecPolicy.setPfsKeyGroup(oldIpsecPolicy.getPfsKeyGroup());
 
     return newIpsecPolicy;
+  }
+
+  private static org.batfish.datamodel.IpsecProposal toIpsecProposal(
+      IpsecProposal oldIpsecProposal) {
+    org.batfish.datamodel.IpsecProposal newIpsecProposal =
+        new org.batfish.datamodel.IpsecProposal(oldIpsecProposal.getName());
+    newIpsecProposal.setAuthenticationAlgorithm(oldIpsecProposal.getAuthenticationAlgorithm());
+    newIpsecProposal.setEncryptionAlgorithm(oldIpsecProposal.getEncryptionAlgorithm());
+    newIpsecProposal.setProtocols(oldIpsecProposal.getProtocols());
+
+    return newIpsecProposal;
+  }
+
+  private static IpsecPhase2Proposal toIpsecPhase2Proposal(IpsecProposal oldIpsecProposal) {
+    IpsecPhase2Proposal ipsecPhase2Proposal = new IpsecPhase2Proposal();
+    ipsecPhase2Proposal.setAuthenticationAlgorithm(oldIpsecProposal.getAuthenticationAlgorithm());
+    ipsecPhase2Proposal.setEncryptionAlgorithm(oldIpsecProposal.getEncryptionAlgorithm());
+    ipsecPhase2Proposal.setProtocols(oldIpsecProposal.getProtocols());
+    ipsecPhase2Proposal.setIpsecEncapsulationMode(oldIpsecProposal.getIpsecEncapsulationMode());
+
+    return ipsecPhase2Proposal;
   }
 
   private org.batfish.datamodel.IpsecVpn toIpsecVpn(IpsecVpn oldIpsecVpn) {
@@ -2015,8 +2037,15 @@ public final class JuniperConfiguration extends VendorConfiguration {
       _c.getIkeGateways().put(name, newIkeGateway);
     }
 
-    // copy ipsec proposals
-    _c.getIpsecProposals().putAll(_ipsecProposals);
+    // convert ipsec proposals
+    ImmutableSortedMap.Builder<String, IpsecPhase2Proposal> ipsecPhase2ProposalsBuilder =
+        ImmutableSortedMap.naturalOrder();
+    _ipsecProposals.forEach(
+        (ipsecProposalName, ipsecProposal) -> {
+          _c.getIpsecProposals().put(ipsecProposalName, toIpsecProposal(ipsecProposal));
+          ipsecPhase2ProposalsBuilder.put(ipsecProposalName, toIpsecPhase2Proposal(ipsecProposal));
+        });
+    _c.setIpsecPhase2Proposals(ipsecPhase2ProposalsBuilder.build());
 
     // convert ipsec policies
     for (Entry<String, IpsecPolicy> e : _ipsecPolicies.entrySet()) {

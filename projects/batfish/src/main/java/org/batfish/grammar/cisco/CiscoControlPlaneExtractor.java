@@ -245,7 +245,7 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
-import org.batfish.datamodel.IpsecProposal;
+import org.batfish.datamodel.IpsecEncapsulationMode;
 import org.batfish.datamodel.IpsecProtocol;
 import org.batfish.datamodel.IsisInterfaceMode;
 import org.batfish.datamodel.IsisLevel;
@@ -1645,21 +1645,22 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
     _currentIpsecTransformSet = new IpsecTransformSet(ctx.name.getText());
     defineStructure(IPSEC_TRANSFORM_SET, ctx.name.getText(), ctx);
-    IpsecProposal proposal = _currentIpsecTransformSet.getProposal();
     if (ctx.ipsec_encryption() != null) {
-      proposal.setEncryptionAlgorithm(toEncryptionAlgorithm(ctx.ipsec_encryption()));
+      _currentIpsecTransformSet.setEncryptionAlgorithm(
+          toEncryptionAlgorithm(ctx.ipsec_encryption()));
     } else if (ctx.ipsec_encryption_aruba() != null) {
-      proposal.setEncryptionAlgorithm(toEncryptionAlgorithm(ctx.ipsec_encryption_aruba()));
+      _currentIpsecTransformSet.setEncryptionAlgorithm(
+          toEncryptionAlgorithm(ctx.ipsec_encryption_aruba()));
     }
     // If any encryption algorithm was set then ESP protocol is used
-    if (proposal.getEncryptionAlgorithm() != null) {
-      proposal.getProtocols().add(IpsecProtocol.ESP);
+    if (_currentIpsecTransformSet.getEncryptionAlgorithm() != null) {
+      _currentIpsecTransformSet.getProtocols().add(IpsecProtocol.ESP);
     }
 
     if (ctx.ipsec_authentication() != null) {
-      proposal.setAuthenticationAlgorithm(
+      _currentIpsecTransformSet.setAuthenticationAlgorithm(
           toIpsecAuthenticationAlgorithm(ctx.ipsec_authentication()));
-      proposal.getProtocols().add(toProtocol(ctx.ipsec_authentication()));
+      _currentIpsecTransformSet.getProtocols().add(toProtocol(ctx.ipsec_authentication()));
     }
   }
 
@@ -1703,9 +1704,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitCipt_mode(Cipt_modeContext ctx) {
     if (ctx.TRANSPORT() != null) {
-      // do nothing for now
+      _currentIpsecTransformSet.setIpsecEncapsulationMode(IpsecEncapsulationMode.TRANSPORT);
     } else if (ctx.TUNNEL() != null) {
-      _currentIpsecTransformSet.setMode(ctx.TUNNEL().getText());
+      _currentIpsecTransformSet.setIpsecEncapsulationMode(IpsecEncapsulationMode.TUNNEL);
     } else {
       throw new BatfishException("Unsupported mode " + ctx.getText());
     }

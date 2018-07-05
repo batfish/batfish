@@ -12,6 +12,8 @@ import static org.batfish.representation.cisco.CiscoConversions.suppressSummariz
 import static org.batfish.representation.cisco.CiscoConversions.toIkePhase1Key;
 import static org.batfish.representation.cisco.CiscoConversions.toIkePhase1Policy;
 import static org.batfish.representation.cisco.CiscoConversions.toIkePhase1Proposal;
+import static org.batfish.representation.cisco.CiscoConversions.toIpsecPhase2Proposal;
+import static org.batfish.representation.cisco.CiscoConversions.toIpsecProposal;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -65,6 +67,7 @@ import org.batfish.datamodel.Ip6AccessList;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.IpsecPhase2Proposal;
 import org.batfish.datamodel.IpsecPolicy;
 import org.batfish.datamodel.IpsecProposal;
 import org.batfish.datamodel.IpsecVpn;
@@ -3280,10 +3283,14 @@ public final class CiscoConfiguration extends VendorConfiguration {
                 c.getIkePhase1Policies()
                     .put(isakmpProfile.getName(), toIkePhase1Policy(isakmpProfile, this, c, _w)));
 
-    // ipsec proposals
+    // convert ipsec transform sets
+    ImmutableSortedMap.Builder<String, IpsecPhase2Proposal> ipsecPhase2ProposalsBuilder =
+        ImmutableSortedMap.naturalOrder();
     for (Entry<String, IpsecTransformSet> e : _ipsecTransformSets.entrySet()) {
-      c.getIpsecProposals().put(e.getKey(), e.getValue().getProposal());
+      c.getIpsecProposals().put(e.getKey(), toIpsecProposal(e.getValue()));
+      ipsecPhase2ProposalsBuilder.put(e.getKey(), toIpsecPhase2Proposal(e.getValue()));
     }
+    c.setIpsecPhase2Proposals(ipsecPhase2ProposalsBuilder.build());
 
     // ipsec policies
     for (IpsecProfile ipsecProfile : _ipsecProfiles.values()) {
