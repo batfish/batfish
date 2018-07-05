@@ -21,7 +21,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasInterfaces;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.DEFAULT_VSYS_NAME;
-import static org.batfish.representation.palo_alto.PaloAltoConfiguration.computeZoneName;
+import static org.batfish.representation.palo_alto.PaloAltoConfiguration.computeObjectName;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -314,8 +314,8 @@ public class PaloAltoGrammarTest {
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse();
 
-    String zoneName = computeZoneName("vsys1", "z1");
-    String zoneEmptyName = computeZoneName("vsys11", "z1");
+    String zoneName = computeObjectName("vsys1", "z1");
+    String zoneEmptyName = computeObjectName("vsys11", "z1");
 
     // Confirm zone definitions are recorded properly
     assertThat(ccae, hasDefinedStructure(hostname, PaloAltoStructureType.ZONE, zoneName));
@@ -340,8 +340,8 @@ public class PaloAltoGrammarTest {
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse();
 
-    String z1Name = computeZoneName(DEFAULT_VSYS_NAME, "z1");
-    String zEmptyName = computeZoneName(DEFAULT_VSYS_NAME, "zempty");
+    String z1Name = computeObjectName(DEFAULT_VSYS_NAME, "z1");
+    String zEmptyName = computeObjectName(DEFAULT_VSYS_NAME, "zempty");
 
     // Confirm zone definitions are recorded properly
     assertThat(ccae, hasDefinedStructure(hostname, PaloAltoStructureType.ZONE, z1Name));

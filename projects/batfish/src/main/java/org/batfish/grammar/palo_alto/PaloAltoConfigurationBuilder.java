@@ -3,7 +3,7 @@ package org.batfish.grammar.palo_alto;
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.DEFAULT_VSYS_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.SHARED_VSYS_NAME;
-import static org.batfish.representation.palo_alto.PaloAltoConfiguration.computeZoneName;
+import static org.batfish.representation.palo_alto.PaloAltoConfiguration.computeObjectName;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ZONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.VIRTUAL_ROUTER_INTERFACE;
@@ -174,10 +174,12 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void enterS_zone(S_zoneContext ctx) {
-    // Use constructed zone name so same-named zone defs and refs across vsys are unique
-    String name = computeZoneName(_currentVsys.getName(), ctx.name.getText());
+    String name = ctx.name.getText();
     _currentZone = _currentVsys.getZones().computeIfAbsent(name, Zone::new);
-    defineStructure(ZONE, name, ctx);
+
+    // Use constructed zone name so same-named zone defs across vsys are unique
+    String uniqueName = computeObjectName(_currentVsys.getName(), name);
+    defineStructure(ZONE, uniqueName, ctx);
   }
 
   @Override

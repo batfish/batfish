@@ -123,8 +123,12 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   }
 
   // Visible for testing
-  public static String computeZoneName(String vsysName, String zoneName) {
-    return String.format("%s~%s", vsysName, zoneName);
+  /**
+   * Generate unique object name (no collision across vsys namespaces) given a vsys name and
+   * original object name
+   */
+  public static String computeObjectName(String vsysName, String objectName) {
+    return String.format("%s~%s", vsysName, objectName);
   }
 
   /** Convert vsys components to vendor independent model */
