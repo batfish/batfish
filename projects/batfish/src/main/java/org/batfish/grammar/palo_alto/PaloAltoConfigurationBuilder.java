@@ -1,8 +1,11 @@
 package org.batfish.grammar.palo_alto;
 
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
+import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ZONE;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.RULEBASE_DESTINATION_ADDRESS;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.RULEBASE_SOURCE_ADDRESS;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.VIRTUAL_ROUTER_INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.ZONE_INTERFACE;
 
@@ -17,8 +20,12 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Palo_alto_configurationContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.S_rulebaseContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_zoneContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_hostnameContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_ntp_serversContext;
@@ -40,6 +47,10 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Snvrrt_destinationContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snvrrt_interfaceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snvrrt_metricContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snvrrt_nexthopContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sr_securityContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Src_or_dst_list_itemContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_destinationContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_sourceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ssl_syslogContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ssls_serverContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sslss_serverContext;
@@ -137,6 +148,20 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   private static int toInteger(Token t) {
     return Integer.parseInt(t.getText());
+  }
+
+  /** Convert source or destination list item into an appropriate IpSpace */
+  private IpSpace toIpSpace(Src_or_dst_list_itemContext ctx) {
+    if (ctx.ANY() != null) {
+      return UniverseIpSpace.INSTANCE;
+    } else if (ctx.IP_PREFIX() != null) {
+      return Prefix.parse(ctx.IP_PREFIX().getText()).toIpSpace();
+    } else if (ctx.name != null) {
+      // TODO add in the appropriate namespace here...or convert it later
+      return new IpSpaceReference(ctx.name.getText());
+    }
+    _w.redFlag("Unhandled source/destination item conversion: " + getFullText(ctx));
+    return null;
   }
 
   private String unquote(String text) {
@@ -320,6 +345,37 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void exitSnvrrt_nexthop(Snvrrt_nexthopContext ctx) {
     _currentStaticRoute.setNextHopIp(new Ip(ctx.address.getText()));
+  }
+
+  @Override
+  public void enterSr_security(Sr_securityContext ctx) {
+    // TODO create rule named ctx.name.getText()
+  }
+
+  @Override
+  public void exitSrs_destination(Srs_destinationContext ctx) {
+    for (Src_or_dst_list_itemContext var : ctx.src_or_dst_list().src_or_dst_list_item()) {
+      String name = var.getText();
+      // TODO attach this to the current rule
+      toIpSpace(var);
+      if (var.name != null) {
+        _configuration.referenceStructure(
+            ADDRESS, name, RULEBASE_DESTINATION_ADDRESS, getLine(var.name.getStart()));
+      }
+    }
+  }
+
+  @Override
+  public void exitSrs_source(Srs_sourceContext ctx) {
+    for (Src_or_dst_list_itemContext var : ctx.src_or_dst_list().src_or_dst_list_item()) {
+      String name = var.getText();
+      // TODO attach this to the current rule
+      toIpSpace(var);
+      if (var.name != null) {
+        _configuration.referenceStructure(
+            ADDRESS, name, RULEBASE_SOURCE_ADDRESS, getLine(var.name.getStart()));
+      }
+    }
   }
 
   @Override

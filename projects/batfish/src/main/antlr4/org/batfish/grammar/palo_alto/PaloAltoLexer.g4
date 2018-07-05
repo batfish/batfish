@@ -10,9 +10,29 @@ options {
 
 // Keywords
 
+ACTION
+:
+    'action'
+;
+
 ADMIN_DIST
 :
     'admin-dist'
+;
+
+ALLOW
+:
+    'allow'
+;
+
+ANY
+:
+    'any'
+;
+
+APPLICATION
+:
+    'application'
 ;
 
 AUTHENTICATION_TYPE
@@ -40,6 +60,16 @@ CONFIG
     'config'
 ;
 
+DENY
+:
+    'deny'
+;
+
+DESCRIPTION
+:
+    'description'
+;
+
 DESTINATION
 :
     'destination'
@@ -55,6 +85,16 @@ DEVICECONFIG
     'deviceconfig'
 ;
 
+DISABLED
+:
+    'disabled'
+;
+
+DNS
+:
+    'dns'
+;
+
 DNS_SETTING
 :
     'dns-setting'
@@ -65,14 +105,29 @@ DOWN
     'down'
 ;
 
+DROP
+:
+    'drop'
+;
+
 ETHERNET
 :
     'ethernet'
 ;
 
+FROM
+:
+    'from'
+;
+
 HOSTNAME
 :
     'hostname'
+;
+
+ICMP
+:
+    'icmp'
 ;
 
 INTERFACE
@@ -125,6 +180,11 @@ NEXTHOP
     'nexthop'
 ;
 
+NO
+:
+    'no'
+;
+
 NTP_SERVER_ADDRESS
 :
     'ntp-server-address'
@@ -155,6 +215,16 @@ ROUTING_TABLE
     'routing-table'
 ;
 
+RULEBASE
+:
+    'rulebase'
+;
+
+RULES
+:
+    'rules'
+;
+
 SECONDARY
 :
     'secondary'
@@ -163,6 +233,11 @@ SECONDARY
 SECONDARY_NTP_SERVER
 :
     'secondary-ntp-server'
+;
+
+SECURITY
+:
+    'security'
 ;
 
 SERVER
@@ -175,6 +250,11 @@ SERVERS
     'servers'
 ;
 
+SERVICE
+:
+    'service'
+;
+
 SET
 :
     'set'
@@ -183,6 +263,11 @@ SET
 SHARED
 :
     'shared'
+;
+
+SOURCE
+:
+    'source'
 ;
 
 STATIC_ROUTE
@@ -205,6 +290,11 @@ TAG
     'tag'
 ;
 
+TO
+:
+    'to'
+;
+
 UNITS
 :
     'units'
@@ -218,6 +308,11 @@ UP
 VIRTUAL_ROUTER
 :
     'virtual-router'
+;
+
+YES
+:
+    'yes'
 ;
 
 ZONE
@@ -264,6 +359,11 @@ NEWLINE
 SINGLE_QUOTED_STRING
 :
     '\'' ~'\''* '\''
+;
+
+US
+:
+    'US'
 ;
 
 VARIABLE

@@ -266,6 +266,15 @@ public class PaloAltoGrammarTest {
   }
 
   @Test
+  public void testRulebase() throws IOException {
+    String hostname = "rulebase";
+    Configuration c = parseConfig(hostname);
+
+    // Confirm both ntp servers show up
+    assertThat(c.getNtpServers(), containsInAnyOrder("1.1.1.1", "ntpservername"));
+  }
+
+  @Test
   public void testStaticRoute() throws IOException {
     String hostname = "static-route";
     String vrName = "somename";
