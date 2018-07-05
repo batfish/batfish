@@ -139,7 +139,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
       loggingServers.addAll(vsys.getSyslogServerAddresses());
       for (Entry<String, Zone> zoneEntry : vsys.getZones().entrySet()) {
         Zone zone = zoneEntry.getValue();
-        String zoneName = zone.getName();
+        String zoneName = computeObjectName(vsys.getName(), zone.getName());
         _c.getZones().put(zoneName, toZone(zoneName, zone));
       }
     }
