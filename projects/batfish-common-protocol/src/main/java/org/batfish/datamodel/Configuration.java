@@ -130,6 +130,8 @@ public final class Configuration extends ComparableStructure<String> {
 
   private static final String PROP_IPSEC_PHASE2_PROPOSALS = "ipsecPhase2Proposals";
 
+  private static final String PROP_IPSEC_PHASE2_POLICIES = "ipsecPhase2Policies";
+
   private static final String PROP_IPSEC_POLICIES = "ipsecPolicies";
 
   private static final String PROP_IPSEC_PROPOSALS = "ipsecProposals";
@@ -203,6 +205,8 @@ public final class Configuration extends ComparableStructure<String> {
   private NavigableMap<String, IpSpace> _ipSpaces;
 
   private NavigableMap<String, IpsecPhase2Proposal> _ipsecPhase2Proposals;
+
+  private NavigableMap<String, IpsecPhase2Policy> _ipsecPhase2Policies;
 
   private NavigableMap<String, IpsecPolicy> _ipsecPolicies;
 
@@ -286,6 +290,7 @@ public final class Configuration extends ComparableStructure<String> {
     _ip6AccessLists = new TreeMap<>();
     _ipSpaces = new TreeMap<>();
     _ipsecPhase2Proposals = ImmutableSortedMap.of();
+    _ipsecPhase2Policies = ImmutableSortedMap.of();
     _ipsecPolicies = new TreeMap<>();
     _ipsecProposals = new TreeMap<>();
     _ipsecVpns = new TreeMap<>();
@@ -487,6 +492,12 @@ public final class Configuration extends ComparableStructure<String> {
   @JsonPropertyDescription("Dictionary of all IPSec phase 2 proposals for this node.")
   public NavigableMap<String, IpsecPhase2Proposal> getIpsecPhase2Proposals() {
     return _ipsecPhase2Proposals;
+  }
+
+  @JsonProperty(PROP_IPSEC_PHASE2_POLICIES)
+  @JsonPropertyDescription("Dictionary of all IPSec phase 2 policies for this node.")
+  public NavigableMap<String, IpsecPhase2Policy> getIpsecPhase2Policies() {
+    return _ipsecPhase2Policies;
   }
 
   @JsonProperty(PROP_IPSEC_POLICIES)
@@ -762,6 +773,15 @@ public final class Configuration extends ComparableStructure<String> {
         ipsecPhase2Proposals == null
             ? ImmutableSortedMap.of()
             : ImmutableSortedMap.copyOf(ipsecPhase2Proposals);
+  }
+
+  @JsonProperty(PROP_IPSEC_PHASE2_POLICIES)
+  public void setIpsecPhase2Policies(
+      @Nullable NavigableMap<String, IpsecPhase2Policy> ipsecPhase2Policies) {
+    _ipsecPhase2Policies =
+        ipsecPhase2Policies == null
+            ? ImmutableSortedMap.of()
+            : ImmutableSortedMap.copyOf(ipsecPhase2Policies);
   }
 
   @JsonProperty(PROP_IPSEC_POLICIES)

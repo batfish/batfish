@@ -49,6 +49,7 @@ import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
+import org.batfish.datamodel.IpsecPhase2Policy;
 import org.batfish.datamodel.IpsecPhase2Proposal;
 import org.batfish.datamodel.IsisInterfaceMode;
 import org.batfish.datamodel.IsisProcess;
@@ -1525,6 +1526,14 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return newIpsecPolicy;
   }
 
+  static IpsecPhase2Policy toIpsecPhase2Policy(IpsecPolicy ipsecPolicy) {
+    IpsecPhase2Policy ipsecPhase2Policy = new IpsecPhase2Policy();
+    ipsecPhase2Policy.setPfsKeyGroup(ipsecPolicy.getPfsKeyGroup());
+    ipsecPhase2Policy.setProposals(ImmutableList.copyOf(ipsecPolicy.getProposals()));
+
+    return ipsecPhase2Policy;
+  }
+
   private static org.batfish.datamodel.IpsecProposal toIpsecProposal(
       IpsecProposal oldIpsecProposal) {
     org.batfish.datamodel.IpsecProposal newIpsecProposal =
@@ -2048,11 +2057,14 @@ public final class JuniperConfiguration extends VendorConfiguration {
     _c.setIpsecPhase2Proposals(ipsecPhase2ProposalsBuilder.build());
 
     // convert ipsec policies
+    ImmutableSortedMap.Builder<String, IpsecPhase2Policy> ipsecPhase2PoliciesBuilder =
+        ImmutableSortedMap.naturalOrder();
     for (Entry<String, IpsecPolicy> e : _ipsecPolicies.entrySet()) {
       String name = e.getKey();
       IpsecPolicy oldIpsecPolicy = e.getValue();
       org.batfish.datamodel.IpsecPolicy newPolicy = toIpsecPolicy(oldIpsecPolicy);
       _c.getIpsecPolicies().put(name, newPolicy);
+      ipsecPhase2PoliciesBuilder.put(name, toIpsecPhase2Policy(oldIpsecPolicy));
     }
 
     // convert ipsec vpns

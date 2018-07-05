@@ -3,56 +3,32 @@ package org.batfish.datamodel.matchers;
 import java.util.List;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.DiffieHellmanGroup;
-import org.batfish.datamodel.IkeGateway;
-import org.batfish.datamodel.IpsecPolicy;
-import org.batfish.datamodel.IpsecProposal;
+import org.batfish.datamodel.IpsecPhase2Policy;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 
-final class IpsecPolicyMatchersImpl {
+final class IpsecPhase2PolicyMatchersImpl {
 
-  static class HasIpsecProposals extends FeatureMatcher<IpsecPolicy, List<IpsecProposal>> {
+  static class HasIpsecProposals extends FeatureMatcher<IpsecPhase2Policy, List<String>> {
 
-    public HasIpsecProposals(@Nonnull Matcher<? super List<IpsecProposal>> subMatcher) {
-      super(subMatcher, "An IpsecPolicy with IpsecProposals:", "IpsecProposals");
+    public HasIpsecProposals(@Nonnull Matcher<? super List<String>> subMatcher) {
+      super(subMatcher, "An IPSec phase 2 policy with IpsecProposals:", "IpsecProposals");
     }
 
     @Override
-    protected List<IpsecProposal> featureValueOf(IpsecPolicy actual) {
+    protected List<String> featureValueOf(IpsecPhase2Policy actual) {
       return actual.getProposals();
     }
   }
 
-  static final class HasPfsKeyGroup extends FeatureMatcher<IpsecPolicy, DiffieHellmanGroup> {
+  static final class HasPfsKeyGroup extends FeatureMatcher<IpsecPhase2Policy, DiffieHellmanGroup> {
     HasPfsKeyGroup(@Nonnull Matcher<? super DiffieHellmanGroup> subMatcher) {
-      super(subMatcher, "An Ipsec policy with PfsKeyGroup:", "PfsKeyGroup");
+      super(subMatcher, "An IPSec phase 2 policy with PfsKeyGroup:", "PfsKeyGroup");
     }
 
     @Override
-    protected DiffieHellmanGroup featureValueOf(IpsecPolicy actual) {
+    protected DiffieHellmanGroup featureValueOf(IpsecPhase2Policy actual) {
       return actual.getPfsKeyGroup();
-    }
-  }
-
-  static final class HasIkeGateway extends FeatureMatcher<IpsecPolicy, IkeGateway> {
-    HasIkeGateway(@Nonnull Matcher<? super IkeGateway> subMatcher) {
-      super(subMatcher, "An Ipsec policy with IkeGateway:", "IkeGateway");
-    }
-
-    @Override
-    protected IkeGateway featureValueOf(IpsecPolicy actual) {
-      return actual.getIkeGateway();
-    }
-  }
-
-  static final class HasName extends FeatureMatcher<IpsecPolicy, String> {
-    HasName(@Nonnull Matcher<? super String> subMatcher) {
-      super(subMatcher, "An Ipsec policy with Name:", "Name");
-    }
-
-    @Override
-    protected String featureValueOf(IpsecPolicy actual) {
-      return actual.getName();
     }
   }
 }

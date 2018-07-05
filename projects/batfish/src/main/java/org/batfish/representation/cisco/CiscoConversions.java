@@ -43,6 +43,7 @@ import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.IpsecPhase2Policy;
 import org.batfish.datamodel.IpsecPhase2Proposal;
 import org.batfish.datamodel.IpsecProposal;
 import org.batfish.datamodel.IsisLevelSettings;
@@ -368,6 +369,14 @@ class CiscoConversions {
     ipsecPhase2Proposal.setIpsecEncapsulationMode(ipsecTransformSet.getIpsecEncapsulationMode());
 
     return ipsecPhase2Proposal;
+  }
+
+  static IpsecPhase2Policy toIpsecPhase2Policy(IpsecProfile ipsecProfile) {
+    IpsecPhase2Policy ipsecPhase2Policy = new IpsecPhase2Policy();
+    ipsecPhase2Policy.setPfsKeyGroup(ipsecProfile.getPfsGroup());
+    ipsecPhase2Policy.setProposals(ImmutableList.copyOf(ipsecProfile.getTransformSets()));
+
+    return ipsecPhase2Policy;
   }
 
   static org.batfish.datamodel.IsisProcess toIsisProcess(
