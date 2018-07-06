@@ -1456,10 +1456,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     return newInterface;
   }
 
+  private String convErrorMessage(Class<?> type, ParserRuleContext ctx) {
+    return String.format("Could not convert to %s: %s", type.getSimpleName(), getFullText(ctx));
+  }
+
   private BatfishException convError(Class<?> type, ParserRuleContext ctx) {
-    String typeName = type.getSimpleName();
-    String txt = getFullText(ctx);
-    return new BatfishException("Could not convert to " + typeName + ": " + txt);
+    return new BatfishException(convErrorMessage(type, ctx));
   }
 
   private Vrf currentVrf() {
@@ -9568,7 +9570,19 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return toRoutePolicyStatement(wctx);
     }
 
-    throw convError(RoutePolicyStatement.class, ctx);
+    return convProblem(
+        RoutePolicyStatement.class,
+        ctx,
+        new RoutePolicyComment("NOP: unsupported route-policy statement"));
+  }
+
+  private <T, U extends T> T convProblem(
+      Class<T> returnType, ParserRuleContext ctx, U defaultReturnValue) {
+    if (!_unrecognizedAsRedFlag) {
+      throw convError(returnType, ctx);
+    }
+    _w.redFlag(convErrorMessage(returnType, ctx));
+    return defaultReturnValue;
   }
 
   private RoutePolicyStatement toRoutePolicyStatement(Set_tag_rp_stanzaContext ctx) {
