@@ -35,6 +35,16 @@ public final class Layer2Edge implements Comparable<Layer2Edge> {
   private final Layer2Node _node2;
 
   public Layer2Edge(
+      @Nonnull Layer1Node node1,
+      @Nullable Integer node1VlanId,
+      @Nonnull Layer1Node node2,
+      @Nullable Integer node2VlanId,
+      @Nullable Integer encapsulatedVlanId) {
+    this(
+        new Layer2Node(node1, node1VlanId), new Layer2Node(node2, node2VlanId), encapsulatedVlanId);
+  }
+
+  public Layer2Edge(
       @Nonnull Layer2Node node1, @Nonnull Layer2Node node2, @Nullable Integer encapsulatedVlanId) {
     _node1 = node1;
     _node2 = node2;

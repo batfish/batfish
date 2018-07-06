@@ -127,7 +127,6 @@ final class BatfishStorage {
   }
 
   public @Nullable Layer1Topology loadLayer1Topology(@Nonnull String testrig) {
-    _newBatch.apply("Reading layer-1 topology", 0);
     Path path =
         getTestrigDir(testrig)
             .resolve(
@@ -136,6 +135,7 @@ final class BatfishStorage {
     if (!Files.exists(path)) {
       return null;
     }
+    _newBatch.apply("Reading layer-1 topology", 0);
     String topologyFileText = CommonUtil.readFile(path);
     try {
       return BatfishObjectMapper.mapper().readValue(topologyFileText, Layer1Topology.class);

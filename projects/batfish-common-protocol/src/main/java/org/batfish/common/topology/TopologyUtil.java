@@ -31,10 +31,8 @@ public final class TopologyUtil {
       Interface i1,
       Interface i2,
       ImmutableSet.Builder<Layer2Edge> edges,
-      String node1Name,
-      String node1InterfaceName,
-      String node2Name,
-      String node2InterfaceName) {
+      Layer1Node node1,
+      Layer1Node node2) {
     if (i1.getSwitchportMode() == SwitchportMode.TRUNK
         && i2.getSwitchportMode() == SwitchportMode.TRUNK) {
       i1.getAllowedVlans()
@@ -45,48 +43,16 @@ public final class TopologyUtil {
                   i2.getAllowedVlans().stream().anyMatch(sr -> sr.includes(i1AllowedVlan)))
           .forEach(
               allowedVlan ->
-                  edges.add(
-                      new Layer2Edge(
-                          node1Name,
-                          node1InterfaceName,
-                          allowedVlan,
-                          node2Name,
-                          node2InterfaceName,
-                          allowedVlan,
-                          allowedVlan)));
-      edges.add(
-          new Layer2Edge(
-              node1Name,
-              node1InterfaceName,
-              i1.getNativeVlan(),
-              node2Name,
-              node2InterfaceName,
-              i2.getNativeVlan(),
-              null));
+                  edges.add(new Layer2Edge(node1, allowedVlan, node2, allowedVlan, allowedVlan)));
+      edges.add(new Layer2Edge(node1, i1.getNativeVlan(), node2, i2.getNativeVlan(), null));
     } else if (i1.getSwitchportMode() == SwitchportMode.TRUNK) {
       Integer node2VlanId =
           i2.getSwitchportMode() == SwitchportMode.ACCESS ? i2.getAccessVlan() : null;
-      edges.add(
-          new Layer2Edge(
-              node1Name,
-              node1InterfaceName,
-              i1.getNativeVlan(),
-              node2Name,
-              node2InterfaceName,
-              node2VlanId,
-              null));
+      edges.add(new Layer2Edge(node1, i1.getNativeVlan(), node2, node2VlanId, null));
     } else if (i2.getSwitchportMode() == SwitchportMode.TRUNK) {
       Integer node1VlanId =
           i1.getSwitchportMode() == SwitchportMode.ACCESS ? i1.getAccessVlan() : null;
-      edges.add(
-          new Layer2Edge(
-              node1Name,
-              node1InterfaceName,
-              node1VlanId,
-              node2Name,
-              node2InterfaceName,
-              i2.getNativeVlan(),
-              null));
+      edges.add(new Layer2Edge(node1, node1VlanId, node2, i2.getNativeVlan(), null));
     }
   }
 
@@ -197,34 +163,21 @@ public final class TopologyUtil {
       @Nonnull Map<String, Configuration> configurations,
       @Nonnull ImmutableSet.Builder<Layer2Edge> edges) {
     Layer1Node node1 = layer1Edge.getNode1();
-    String node1Name = node1.getHostname();
-    String node1InterfaceName = node1.getInterfaceName();
-    Interface i1 = getInterface(node1, configurations);
     Layer1Node node2 = layer1Edge.getNode2();
-    String node2Name = node2.getHostname();
-    String node2InterfaceName = node2.getInterfaceName();
+    Interface i1 = getInterface(node1, configurations);
     Interface i2 = getInterface(node2, configurations);
     if (i1 == null || i2 == null) {
       return;
     }
     if (i1.getSwitchportMode() == SwitchportMode.TRUNK
         || i2.getSwitchportMode() == SwitchportMode.TRUNK) {
-      addLayer2TrunkEdges(
-          i1, i2, edges, node1Name, node1InterfaceName, node2Name, node2InterfaceName);
+      addLayer2TrunkEdges(i1, i2, edges, node1, node2);
     } else {
       Integer node1VlanId =
           i1.getSwitchportMode() == SwitchportMode.ACCESS ? i1.getAccessVlan() : null;
       Integer node2VlanId =
           i2.getSwitchportMode() == SwitchportMode.ACCESS ? i2.getAccessVlan() : null;
-      edges.add(
-          new Layer2Edge(
-              node1Name,
-              node1InterfaceName,
-              node1VlanId,
-              node2Name,
-              node2InterfaceName,
-              node2VlanId,
-              null));
+      edges.add(new Layer2Edge(node1, node1VlanId, node2, node2VlanId, null));
     }
   }
 

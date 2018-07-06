@@ -34,6 +34,12 @@ public final class Layer2Node implements Comparable<Layer2Node> {
 
   private final Integer _vlanId;
 
+  public Layer2Node(@Nonnull Layer1Node layer1Node, @Nullable Integer vlanId) {
+    _hostname = layer1Node.getHostname();
+    _interfaceName = layer1Node.getInterfaceName();
+    _vlanId = vlanId;
+  }
+
   public Layer2Node(
       @Nonnull String hostname, @Nonnull String interfaceName, @Nullable Integer vlanId) {
     _hostname = hostname;
