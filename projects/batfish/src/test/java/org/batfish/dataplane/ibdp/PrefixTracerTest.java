@@ -108,8 +108,6 @@ public class PrefixTracerTest {
                 .build()));
     BgpProcess bp = nf.bgpProcessBuilder().setVrf(vrf1).setRouterId(neighbor1Ip).build();
     nf.bgpNeighborBuilder()
-        .setOwner(c1)
-        .setVrf(vrf1)
         .setBgpProcess(bp)
         .setLocalIp(neighbor1Ip)
         .setLocalAs(1L)
@@ -129,8 +127,6 @@ public class PrefixTracerTest {
         .build();
     bp = nf.bgpProcessBuilder().setVrf(vrf2).setRouterId(neighbor2Ip).build();
     nf.bgpNeighborBuilder()
-        .setOwner(c2)
-        .setVrf(vrf2)
         .setBgpProcess(bp)
         .setLocalIp(neighbor2Ip)
         .setLocalAs(2L)

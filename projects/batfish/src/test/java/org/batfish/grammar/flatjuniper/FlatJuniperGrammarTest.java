@@ -4,8 +4,9 @@ import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasClusterId;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasEnforceFirstAs;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasLocalAs;
-import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbor;
+import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasActiveNeighbor;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbors;
+import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasPassiveNeighbor;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIkePhase1Policy;
@@ -25,7 +26,6 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.hasReferenceBandw
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRouteFilterList;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRouteFilterLists;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
-import static org.batfish.datamodel.matchers.DataModelMatchers.isDynamic;
 import static org.batfish.datamodel.matchers.IkePhase1PolicyMatchers.hasIkePhase1Key;
 import static org.batfish.datamodel.matchers.IkePhase1PolicyMatchers.hasIkePhase1Proposals;
 import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasAuthenticationAlgorithm;
@@ -84,6 +84,7 @@ import static org.batfish.representation.juniper.JuniperConfiguration.computeOsp
 import static org.batfish.representation.juniper.JuniperConfiguration.computePeerExportPolicyName;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.anything;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.emptyIterable;
@@ -490,7 +491,8 @@ public class FlatJuniperGrammarTest {
   public void testBgpAllow() throws IOException {
     Configuration c = parseConfig("bgp-allow");
     assertThat(
-        c, hasDefaultVrf(hasBgpProcess(hasNeighbor(Prefix.parse("10.1.1.0/24"), isDynamic()))));
+        c,
+        hasDefaultVrf(hasBgpProcess(hasPassiveNeighbor(Prefix.parse("10.1.1.0/24"), anything()))));
   }
 
   @Test
@@ -513,9 +515,9 @@ public class FlatJuniperGrammarTest {
     Configuration c2 = configurations.get(c2Name);
     Configuration c3 = configurations.get(c3Name);
 
-    assertThat(c1, hasDefaultVrf(hasBgpProcess(hasNeighbor(neighborPrefix, hasLocalAs(1L)))));
-    assertThat(c2, hasDefaultVrf(hasBgpProcess(hasNeighbor(neighborPrefix, hasLocalAs(1L)))));
-    assertThat(c3, hasDefaultVrf(hasBgpProcess(hasNeighbor(neighborPrefix, hasLocalAs(1L)))));
+    assertThat(c1, hasDefaultVrf(hasBgpProcess(hasActiveNeighbor(neighborPrefix, hasLocalAs(1L)))));
+    assertThat(c2, hasDefaultVrf(hasBgpProcess(hasActiveNeighbor(neighborPrefix, hasLocalAs(1L)))));
+    assertThat(c3, hasDefaultVrf(hasBgpProcess(hasActiveNeighbor(neighborPrefix, hasLocalAs(1L)))));
   }
 
   @Test
@@ -537,9 +539,9 @@ public class FlatJuniperGrammarTest {
     Configuration rr = configurations.get(configName);
     BgpProcess proc = rr.getDefaultVrf().getBgpProcess();
     BgpPeerConfig neighbor1 =
-        proc.getNeighbors().get(new Prefix(neighbor1Ip, Prefix.MAX_PREFIX_LENGTH));
+        proc.getActiveNeighbors().get(new Prefix(neighbor1Ip, Prefix.MAX_PREFIX_LENGTH));
     BgpPeerConfig neighbor2 =
-        proc.getNeighbors().get(new Prefix(neighbor2Ip, Prefix.MAX_PREFIX_LENGTH));
+        proc.getActiveNeighbors().get(new Prefix(neighbor2Ip, Prefix.MAX_PREFIX_LENGTH));
 
     assertThat(neighbor1, hasClusterId(new Ip("3.3.3.3").asLong()));
     assertThat(neighbor2, hasClusterId(new Ip("1.1.1.1").asLong()));

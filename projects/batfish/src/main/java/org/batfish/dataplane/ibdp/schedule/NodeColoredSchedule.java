@@ -2,13 +2,14 @@ package org.batfish.dataplane.ibdp.schedule;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
-import com.google.common.graph.Network;
+import com.google.common.graph.EndpointPair;
+import com.google.common.graph.ValueGraph;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.batfish.datamodel.BgpPeerConfig;
-import org.batfish.datamodel.BgpSession;
+import org.batfish.datamodel.BgpPeerConfigId;
+import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.dataplane.ibdp.Node;
 import org.jgrapht.Graph;
 import org.jgrapht.alg.color.GreedyColoring;
@@ -37,7 +38,9 @@ public class NodeColoredSchedule extends IbdpSchedule {
    * @param bgpTopology the bgp peering relationships
    */
   public NodeColoredSchedule(
-      Map<String, Node> nodes, Coloring algorithm, Network<BgpPeerConfig, BgpSession> bgpTopology) {
+      Map<String, Node> nodes,
+      Coloring algorithm,
+      ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology) {
     super(nodes);
     makeGraph(nodes, bgpTopology);
 
@@ -74,7 +77,8 @@ public class NodeColoredSchedule extends IbdpSchedule {
    *
    * @param nodes all nodes in the network
    */
-  private void makeGraph(Map<String, Node> nodes, Network<BgpPeerConfig, BgpSession> bgpTopology) {
+  private void makeGraph(
+      Map<String, Node> nodes, ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology) {
     /*
      * For the purposes of coloring, two nodes are adjacent if:
      * - They have established a BGP session
@@ -85,9 +89,8 @@ public class NodeColoredSchedule extends IbdpSchedule {
     nodes.keySet().forEach(n -> _graph.addVertex(n));
 
     // Process BGP connections
-    for (BgpSession session : bgpTopology.edges()) {
-      _graph.addEdge(
-          session.getSrc().getOwner().getHostname(), session.getDst().getOwner().getHostname());
+    for (EndpointPair<BgpPeerConfigId> edge : bgpTopology.edges()) {
+      _graph.addEdge(edge.source().getHostname(), edge.target().getHostname());
     }
   }
 
