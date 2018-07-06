@@ -8,7 +8,9 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ZONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.RULEBASE_DESTINATION_ADDRESS;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.RULEBASE_FROM_ZONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.RULEBASE_SOURCE_ADDRESS;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.RULEBASE_TO_ZONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.VIRTUAL_ROUTER_INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.ZONE_INTERFACE;
 
@@ -25,6 +27,7 @@ import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceReference;
+import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Palo_alto_configurationContext;
@@ -53,8 +56,11 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Snvrrt_metricContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snvrrt_nexthopContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sr_securityContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Src_or_dst_list_itemContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_actionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_destinationContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_fromContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_sourceContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_toContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ssl_syslogContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ssls_serverContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sslss_serverContext;
@@ -366,7 +372,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void enterSr_security(Sr_securityContext ctx) {
-    _currentRule = _configuration.getRules().computeIfAbsent(ctx.name.getText(), Rule::new);
+    _currentRule = _currentVsys.getRules().computeIfAbsent(ctx.name.getText(), Rule::new);
   }
 
   @Override
@@ -375,28 +381,55 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
+  public void exitSrs_action(Srs_actionContext ctx) {
+    if (ctx.ALLOW() != null) {
+      _currentRule.setAction(LineAction.ACCEPT);
+    } else if (ctx.DENY() != null || ctx.DROP() != null) {
+      _currentRule.setAction(LineAction.REJECT);
+    } else {
+      _w.redFlag("Unimplemented rule action: " + getFullText(ctx));
+    }
+  }
+
+  @Override
   public void exitSrs_destination(Srs_destinationContext ctx) {
     for (Src_or_dst_list_itemContext var : ctx.src_or_dst_list().src_or_dst_list_item()) {
-      String name = var.getText();
-      // TODO attach this to the current rule
-      _currentRule = toIpSpace(var);
+      String destination = var.getText();
+      _currentRule.getDestination().add(toIpSpace(var));
       if (var.name != null) {
         _configuration.referenceStructure(
-            ADDRESS, name, RULEBASE_DESTINATION_ADDRESS, getLine(var.name.getStart()));
+            ADDRESS, destination, RULEBASE_DESTINATION_ADDRESS, getLine(var.name.getStart()));
       }
+    }
+  }
+
+  @Override
+  public void exitSrs_from(Srs_fromContext ctx) {
+    for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
+      String name = var.getText();
+      _currentRule.getFrom().add(name);
+      _configuration.referenceStructure(ZONE, name, RULEBASE_FROM_ZONE, getLine(var.start));
     }
   }
 
   @Override
   public void exitSrs_source(Srs_sourceContext ctx) {
     for (Src_or_dst_list_itemContext var : ctx.src_or_dst_list().src_or_dst_list_item()) {
-      String name = var.getText();
-      // TODO attach this to the current rule
-      toIpSpace(var);
+      String source = var.getText();
+      _currentRule.getSource().add(toIpSpace(var));
       if (var.name != null) {
         _configuration.referenceStructure(
-            ADDRESS, name, RULEBASE_SOURCE_ADDRESS, getLine(var.name.getStart()));
+            ADDRESS, source, RULEBASE_SOURCE_ADDRESS, getLine(var.name.getStart()));
       }
+    }
+  }
+
+  @Override
+  public void exitSrs_to(Srs_toContext ctx) {
+    for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
+      String name = var.getText();
+      _currentRule.getTo().add(name);
+      _configuration.referenceStructure(ZONE, name, RULEBASE_TO_ZONE, getLine(var.start));
     }
   }
 

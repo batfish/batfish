@@ -9,7 +9,7 @@ set rulebase security rules RULE1 to any
 set rulebase security rules RULE1 source 1.1.2.255
 set rulebase security rules RULE1 destination any
 set rulebase security rules RULE1 service any
-set rulebase security rules RULE1 application ping
+set rulebase security rules RULE1 application [ ping dns ]
 set rulebase security rules RULE1 action allow
 # set rulebase security rules RULE1 negate-source yes
 set rulebase security rules RULE1 disabled yes

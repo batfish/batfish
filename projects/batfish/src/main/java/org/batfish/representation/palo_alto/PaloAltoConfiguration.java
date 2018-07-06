@@ -1,5 +1,6 @@
 package org.batfish.representation.palo_alto;
 
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.NavigableSet;
@@ -7,10 +8,13 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import org.apache.commons.collections4.list.TreeList;
 import org.batfish.common.VendorConversionException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.InterfaceType;
+import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Vrf;
 import org.batfish.vendor.VendorConfiguration;
@@ -20,6 +24,8 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   private static final long serialVersionUID = 1L;
 
   public static final String DEFAULT_VSYS_NAME = "vsys1";
+
+  private static final String RULEBASE_NAME = "RULEBASE";
 
   public static final String SHARED_VSYS_NAME = "~SHARED_VSYS~";
 
@@ -37,8 +43,6 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
   private String _ntpServerSecondary;
 
-  private SortedMap<String, Rule> _rules;
-
   private transient Set<String> _unimplementedFeatures;
 
   private ConfigurationFormat _vendor;
@@ -49,7 +53,6 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
   public PaloAltoConfiguration(Set<String> unimplementedFeatures) {
     _interfaces = new TreeMap<>();
-    _rules = new TreeMap<>();
     _unimplementedFeatures = unimplementedFeatures;
     _virtualRouters = new TreeMap<>();
     _virtualSystems = new TreeMap<>();
@@ -84,10 +87,6 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
       servers.add(_ntpServerSecondary);
     }
     return servers;
-  }
-
-  public SortedMap<String, Rule> getRules() {
-    return _rules;
   }
 
   @Override
@@ -144,6 +143,12 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
     for (Vsys vsys : _virtualSystems.values()) {
       loggingServers.addAll(vsys.getSyslogServerAddresses());
+
+      // Create IpAccessLists from firewall rules
+      String ipAclName = computeObjectName(vsys.getName(), RULEBASE_NAME);
+      _c.getIpAccessLists().put(ipAclName, toIpAccessList(ipAclName, vsys.getRules()));
+
+      // Convert PAN zones and associate firewall rules with zones' interfaces
       for (Entry<String, Zone> zoneEntry : vsys.getZones().entrySet()) {
         Zone zone = zoneEntry.getValue();
         String zoneName = computeObjectName(vsys.getName(), zone.getName());
@@ -151,6 +156,21 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
       }
     }
     _c.setLoggingServers(loggingServers);
+  }
+
+  /** Convert firewall rules into an IpAccessList */
+  private IpAccessList toIpAccessList(String name, SortedMap<String, Rule> rules) {
+    List<IpAccessListLine> lines = new TreeList<>();
+    for (Entry<String, Rule> ruleEntry : rules.entrySet()) {
+      lines.add(toIpAccessListLine(ruleEntry.getValue()));
+    }
+    return IpAccessList.builder().setName(name).setLines(lines).build();
+  }
+
+  /** Convert specified firewall rule into an IpAccessListLine */
+  private IpAccessListLine toIpAccessListLine(Rule rule) {
+    // TODO actually populate the IpAclLine
+    return IpAccessListLine.builder().setName(rule.getName()).build();
   }
 
   /** Convert Palo Alto specific interface into vendor independent model interface */
@@ -166,6 +186,8 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     newIface.setAllAddresses(iface.getAllAddresses());
     newIface.setActive(iface.getActive());
     newIface.setDescription(iface.getComment());
+
+    String ipAclName = computeObjectName(iface.getVsys().getName(), RULEBASE_NAME);
 
     return newIface;
   }
@@ -224,6 +246,10 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     _c.setDnsServers(getDnsServers());
     _c.setNtpServers(getNtpServers());
 
+    // Handle converting items within virtual systems
+    // This needs to happen before other conversions as it updates things like interface filters
+    convertVirtualSystems();
+
     for (Entry<String, Interface> i : _interfaces.entrySet()) {
       _c.getInterfaces().put(i.getKey(), toInterface(i.getValue()));
     }
@@ -231,9 +257,6 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     for (Entry<String, VirtualRouter> vr : _virtualRouters.entrySet()) {
       _c.getVrfs().put(vr.getKey(), toVrf(vr.getValue()));
     }
-
-    // Handle converting items within virtual systems
-    convertVirtualSystems();
 
     // Count and mark structure usages and identify undefined references
     markConcreteStructure(
