@@ -1,6 +1,11 @@
 package org.batfish.symbolic.bdd;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
+import com.google.common.collect.ImmutableList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDException;
 import net.sf.javabdd.BDDFactory;
@@ -47,6 +52,51 @@ public class BDDInteger {
     return bdd;
   }
 
+  /** Find a representative value of the represented integer that satisfies a given constraint. */
+  public Optional<Long> getValueSatisfying(BDD bdd) {
+    BDD satAssignment = bdd.fullSatOne();
+    return satAssignment.isZero()
+        ? Optional.empty()
+        : Optional.of(satAssignmentToLong(satAssignment));
+  }
+
+  /** @param satAssignment a satisfying assignment (i.e. produced by fullSat, allSat, etc) */
+  public Long satAssignmentToLong(BDD satAssignment) {
+    if (_bitvec.length > Long.SIZE) {
+      throw new IllegalArgumentException(
+          "Can't get a representative of a BDDInteger with more than Long.SIZE bits");
+    }
+
+    long value = 0;
+    for (int i = 0; i < _bitvec.length; i++) {
+      BDD bitBDD = _bitvec[_bitvec.length - i - 1];
+      if (!satAssignment.and(bitBDD).isZero()) {
+        value |= ((long) 1) << i;
+      }
+    }
+    return value;
+  }
+
+  public List<Long> getValuesSatisfying(BDD bdd, int max) {
+    ImmutableList.Builder<Long> values = new ImmutableList.Builder<>();
+
+    checkArgument(max > 0, "max must be > 0");
+
+    int num = 0;
+    while (num < max) {
+      BDD satAssignment = bdd.fullSatOne();
+      if (satAssignment.isZero()) {
+        break;
+      }
+
+      Long val = satAssignmentToLong(satAssignment);
+      values.add(val);
+      bdd = bdd.and(value(val).not());
+      num++;
+    }
+    return values.build();
+  }
+
   /*
    * Create an integer and initialize it to a concrete value
    */
@@ -70,8 +120,8 @@ public class BDDInteger {
   /*
    * Create a BDD representing the exact value
    */
-  public BDD value(int val) {
-    int currentVal = val;
+  public BDD value(long val) {
+    long currentVal = val;
     BDD bdd = _factory.one();
     for (int i = this._bitvec.length - 1; i >= 0; i--) {
       BDD b = this._bitvec[i];
@@ -88,8 +138,8 @@ public class BDDInteger {
   /*
    * Less than or equal to on integers
    */
-  public BDD leq(int val) {
-    int currentVal = val;
+  public BDD leq(long val) {
+    long currentVal = val;
     BDD[] eq = new BDD[_bitvec.length];
     BDD[] less = new BDD[_bitvec.length];
     for (int i = _bitvec.length - 1; i >= 0; i--) {
@@ -112,8 +162,8 @@ public class BDDInteger {
   /*
    * Less than or equal to on integers
    */
-  public BDD geq(int val) {
-    int currentVal = val;
+  public BDD geq(long val) {
+    long currentVal = val;
     BDD[] eq = new BDD[_bitvec.length];
     BDD[] greater = new BDD[_bitvec.length];
     for (int i = _bitvec.length - 1; i >= 0; i--) {

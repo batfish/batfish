@@ -26,9 +26,9 @@ import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 
 public class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
 
-  private final BDDOps _bddOps;
+  private final BDDInteger _bddInteger;
 
-  private final BDD[] _bitBDDs;
+  private final BDDOps _bddOps;
 
   private final BDDFactory _factory;
 
@@ -37,16 +37,16 @@ public class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
   private final Map<String, BDD> _namedIpSpaceBDDs;
 
   public IpSpaceToBDD(BDDFactory factory, BDDInteger var) {
+    _bddInteger = var;
     _bddOps = new BDDOps(factory);
-    _bitBDDs = var.getBitvec();
     _factory = factory;
     _namedIpSpaces = ImmutableMap.of();
     _namedIpSpaceBDDs = ImmutableMap.of();
   }
 
   public IpSpaceToBDD(BDDFactory factory, BDDInteger var, Map<String, IpSpace> namedIpSpaces) {
+    _bddInteger = var;
     _bddOps = new BDDOps(factory);
-    _bitBDDs = var.getBitvec();
     _factory = factory;
     _namedIpSpaces = ImmutableMap.copyOf(namedIpSpaces);
     _namedIpSpaceBDDs = new HashMap<>();
@@ -57,8 +57,8 @@ public class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
     return (BDD) o;
   }
 
-  public BDD[] getBitBDDs() {
-    return _bitBDDs.clone();
+  public BDDInteger getBDDInteger() {
+    return _bddInteger;
   }
 
   /*
@@ -72,12 +72,13 @@ public class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
   private BDD firstBitsEqual(Ip ip, int length) {
     long b = ip.asLong();
     BDD acc = _factory.one();
+    BDD[] bitBDDs = _bddInteger.getBitvec();
     for (int i = 0; i < length; i++) {
       boolean bitValue = Ip.getBitAtPosition(b, i);
       if (bitValue) {
-        acc = acc.and(_bitBDDs[i]);
+        acc = acc.and(bitBDDs[i]);
       } else {
-        acc = acc.and(_bitBDDs[i].not());
+        acc = acc.and(bitBDDs[i].not());
       }
     }
     return acc;
@@ -98,14 +99,15 @@ public class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
     long ip = ipWildcard.getIp().asLong();
     long wildcard = ipWildcard.getWildcard().asLong();
     BDD acc = _factory.one();
+    BDD[] bitBDDs = _bddInteger.getBitvec();
     for (int i = 0; i < Prefix.MAX_PREFIX_LENGTH; i++) {
       boolean significant = !Ip.getBitAtPosition(wildcard, i);
       if (significant) {
         boolean bitValue = Ip.getBitAtPosition(ip, i);
         if (bitValue) {
-          acc = acc.and(_bitBDDs[i]);
+          acc = acc.and(bitBDDs[i]);
         } else {
-          acc = acc.and(_bitBDDs[i].not());
+          acc = acc.and(bitBDDs[i].not());
         }
       }
     }
