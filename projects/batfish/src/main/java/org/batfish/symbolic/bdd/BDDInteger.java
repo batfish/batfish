@@ -85,15 +85,16 @@ public class BDDInteger {
     checkArgument(max > 0, "max must be > 0");
 
     int num = 0;
+    BDD pred = bdd;
     while (num < max) {
-      BDD satAssignment = bdd.fullSatOne();
+      BDD satAssignment = pred.fullSatOne();
       if (satAssignment.isZero()) {
         break;
       }
 
       Long val = satAssignmentToLong(satAssignment);
       values.add(val);
-      bdd = bdd.and(value(val).not());
+      pred = pred.and(value(val).not());
       num++;
     }
     return values.build();
