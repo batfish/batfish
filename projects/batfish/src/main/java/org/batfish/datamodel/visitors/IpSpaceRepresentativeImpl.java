@@ -15,10 +15,11 @@ import org.batfish.symbolic.bdd.IpSpaceToBDD;
  * Finds a representative {@link Ip} contained in an input {@link IpSpace}, if any exists. In
  * particular, it finds the numerically smallest representative.
  */
-@AutoService(IpSpaceRepresentative.class) public final class IpSpaceRepresentativeImpl
-    implements IpSpaceRepresentative {
+@AutoService(IpSpaceRepresentative.class)
+public final class IpSpaceRepresentativeImpl implements IpSpaceRepresentative {
   /** Returns some representative element of an {@link IpSpace ip space}, if any exists. */
-  @Override public Optional<Ip> getRepresentative(IpSpace ipSpace) {
+  @Override
+  public Optional<Ip> getRepresentative(IpSpace ipSpace) {
     BDDInteger ipAddrBdd = BDDInteger.makeFromIndex(factory, Prefix.MAX_PREFIX_LENGTH, 0, false);
     IpSpaceToBDD ipSpaceToBDD = new IpSpaceToBDD(factory, ipAddrBdd);
     BDD ipSpaceBDD = ipSpace.accept(ipSpaceToBDD);
