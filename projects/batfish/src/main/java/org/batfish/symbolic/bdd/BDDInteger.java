@@ -39,6 +39,8 @@ public class BDDInteger {
    */
   public static BDDInteger makeFromIndex(
       BDDFactory factory, int length, int start, boolean reverse) {
+    assert factory.varNum() >= start + length;
+
     BDDInteger bdd = new BDDInteger(factory, length);
     for (int i = 0; i < length; i++) {
       int idx;
