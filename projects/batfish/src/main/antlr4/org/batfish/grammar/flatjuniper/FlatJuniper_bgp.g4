@@ -234,6 +234,12 @@ b_peer_as
 b_remove_private
 :
    REMOVE_PRIVATE
+   (
+     ALL
+     | NEAREST
+     | REPLACE
+     | NO_PEER_LOOP_CHECK
+   )?
 ;
 
 b_tcp_mss

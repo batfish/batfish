@@ -315,6 +315,11 @@ YES
     'yes'
 ;
 
+VSYS
+:
+    'vsys'
+;
+
 ZONE
 :
     'zone'

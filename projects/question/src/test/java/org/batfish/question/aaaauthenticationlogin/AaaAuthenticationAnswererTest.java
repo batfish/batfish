@@ -1,7 +1,7 @@
 package org.batfish.question.aaaauthenticationlogin;
 
-import static org.batfish.question.aaaauthenticationlogin.AaaAuthenticationLoginQuestionPlugin.AaaAuthenticationAnswerer.COLUMN_LINE_NAMES;
-import static org.batfish.question.aaaauthenticationlogin.AaaAuthenticationLoginQuestionPlugin.AaaAuthenticationAnswerer.COLUMN_NODE;
+import static org.batfish.question.aaaauthenticationlogin.AaaAuthenticationLoginAnswerer.COLUMN_LINE_NAMES;
+import static org.batfish.question.aaaauthenticationlogin.AaaAuthenticationLoginAnswerer.COLUMN_NODE;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsNull.nullValue;
@@ -17,8 +17,6 @@ import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.vendor_family.cisco.AaaAuthenticationLoginList;
 import org.batfish.datamodel.vendor_family.cisco.Line;
-import org.batfish.question.aaaauthenticationlogin.AaaAuthenticationLoginQuestionPlugin.AaaAuthenticationAnswerer;
-import org.batfish.question.aaaauthenticationlogin.AaaAuthenticationLoginQuestionPlugin.AaaAuthenticationQuestion;
 import org.junit.Test;
 
 public class AaaAuthenticationAnswererTest {
@@ -35,11 +33,11 @@ public class AaaAuthenticationAnswererTest {
         new AaaAuthenticationLoginList(Collections.singletonList(AuthenticationMethod.NONE)));
 
     assertThat(
-        AaaAuthenticationAnswerer.getRow(
+        AaaAuthenticationLoginAnswerer.getRow(
             "requiresAuthentication", Collections.singletonList(lineRequiresAuthentication)),
         nullValue());
     assertThat(
-        AaaAuthenticationAnswerer.getRow(
+        AaaAuthenticationLoginAnswerer.getRow(
             "noAuthentication", Arrays.asList(lineRequiresAuthentication, lineNoAuthentication)),
         equalTo(
             Row.of(
@@ -51,8 +49,8 @@ public class AaaAuthenticationAnswererTest {
 
   @Test
   public void testTableAnswerElementColumns() {
-    AaaAuthenticationQuestion question = new AaaAuthenticationQuestion();
-    TableAnswerElement tableAnswerElement = AaaAuthenticationAnswerer.create(question);
+    AaaAuthenticationLoginQuestion question = new AaaAuthenticationLoginQuestion();
+    TableAnswerElement tableAnswerElement = AaaAuthenticationLoginAnswerer.create(question);
 
     Set<String> columnNames =
         tableAnswerElement
