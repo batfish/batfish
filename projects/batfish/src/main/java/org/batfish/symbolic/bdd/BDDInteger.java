@@ -79,6 +79,13 @@ public class BDDInteger {
     return value;
   }
 
+  /**
+   * Return a list of values satisfying the input {@link BDD}, up to some maximum number.
+   *
+   * @param bdd A constraint on this.
+   * @param max The maximum number of values desired.
+   * @return The satisfying values.
+   */
   public List<Long> getValuesSatisfying(BDD bdd, int max) {
     ImmutableList.Builder<Long> values = new ImmutableList.Builder<>();
 
