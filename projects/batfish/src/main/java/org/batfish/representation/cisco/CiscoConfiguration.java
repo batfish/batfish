@@ -1403,7 +1403,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     // Process passive neighbors next
     Map<Prefix, BgpPassivePeerConfig> passiveNeighbors =
         CiscoNxConversions.getPassiveNeighbors(c, v, newBgpProcess, nxBgpGlobal, nxBgpVrf, _w);
-    newBgpProcess.setDynamicNeighbors(ImmutableSortedMap.copyOf(passiveNeighbors));
+    newBgpProcess.setPassiveNeighbors(ImmutableSortedMap.copyOf(passiveNeighbors));
 
     return newBgpProcess;
   }

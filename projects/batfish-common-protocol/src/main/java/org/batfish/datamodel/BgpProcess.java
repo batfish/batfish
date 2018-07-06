@@ -145,11 +145,11 @@ public class BgpProcess implements Serializable {
     return _clusterIds.get();
   }
 
-  /** @return {@link #_passiveNeighbors} */
-  @JsonProperty(PROP_PASSIVE_NEIGHBORS)
+  /** @return {@link #_activeNeighbors} */
+  @JsonProperty(PROP_ACTIVE_NEIGHBORS)
   @JsonPropertyDescription("Neighbor relationships configured for this BGP process")
-  public SortedMap<Prefix, BgpPassivePeerConfig> getPassiveNeighbors() {
-    return _passiveNeighbors;
+  public SortedMap<Prefix, BgpActivePeerConfig> getActiveNeighbors() {
+    return _activeNeighbors;
   }
 
   /** @return {@link #_generatedRoutes} */
@@ -174,11 +174,11 @@ public class BgpProcess implements Serializable {
     return _multipathIbgp;
   }
 
-  /** @return {@link #_activeNeighbors} */
-  @JsonProperty(PROP_ACTIVE_NEIGHBORS)
+  /** @return {@link #_passiveNeighbors} */
+  @JsonProperty(PROP_PASSIVE_NEIGHBORS)
   @JsonPropertyDescription("Neighbor relationships configured for this BGP process")
-  public SortedMap<Prefix, BgpActivePeerConfig> getActiveNeighbors() {
-    return _activeNeighbors;
+  public SortedMap<Prefix, BgpPassivePeerConfig> getPassiveNeighbors() {
+    return _passiveNeighbors;
   }
 
   @JsonIgnore
@@ -197,11 +197,6 @@ public class BgpProcess implements Serializable {
   @JsonProperty(PROP_TIE_BREAKER)
   public BgpTieBreaker getTieBreaker() {
     return _tieBreaker;
-  }
-
-  @JsonProperty(PROP_PASSIVE_NEIGHBORS)
-  public void setDynamicNeighbors(@Nullable SortedMap<Prefix, BgpPassivePeerConfig> neighbors) {
-    _passiveNeighbors = firstNonNull(neighbors, new TreeMap<>());
   }
 
   @JsonProperty(PROP_GENERATED_ROUTES)
@@ -231,6 +226,11 @@ public class BgpProcess implements Serializable {
 
   public void setOriginationSpace(PrefixSpace originationSpace) {
     _originationSpace = originationSpace;
+  }
+
+  @JsonProperty(PROP_PASSIVE_NEIGHBORS)
+  public void setPassiveNeighbors(@Nullable SortedMap<Prefix, BgpPassivePeerConfig> neighbors) {
+    _passiveNeighbors = firstNonNull(neighbors, new TreeMap<>());
   }
 
   @JsonProperty(PROP_ROUTER_ID)
