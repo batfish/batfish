@@ -9383,6 +9383,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       t = RoutePolicyDispositionType.DROP;
     } else if (ctx.PASS() != null) {
       t = RoutePolicyDispositionType.PASS;
+    } else if (ctx.UNSUPPRESS_ROUTE() != null) {
+      t = RoutePolicyDispositionType.UNSUPPRESS_ROUTE;
     }
     return new RoutePolicyDispositionStatement(t);
   }

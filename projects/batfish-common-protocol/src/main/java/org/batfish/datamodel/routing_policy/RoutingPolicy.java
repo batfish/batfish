@@ -180,7 +180,7 @@ public class RoutingPolicy extends ComparableStructure<String> {
             .setPeerPrefix(peerPrefix)
             .build();
     Result result = call(environment);
-    return result.getBooleanValue();
+    return result.getBooleanValue() && !(Boolean.TRUE.equals(environment.getSuppressed()));
   }
 
   @JsonProperty(PROP_STATEMENTS)
