@@ -21,7 +21,7 @@ import org.batfish.datamodel.Prefix;
  */
 public class BDDPacket {
 
-  static BDDFactory factory;
+  public static BDDFactory factory;
 
   private static BDDPairing pairing;
 

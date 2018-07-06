@@ -85,8 +85,8 @@ public class AclLineMatchExprToBDD implements GenericAclLineMatchExprVisitor<BDD
   }
 
   private static BDD toBDD(SubRange range, BDDInteger var) {
-    int start = range.getStart();
-    int end = range.getEnd();
+    long start = range.getStart();
+    long end = range.getEnd();
     return start == end ? var.value(start) : var.geq(start).and(var.leq(end));
   }
 
