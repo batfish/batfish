@@ -25,7 +25,6 @@ import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Palo_alto_configurationContext;
-import org.batfish.grammar.palo_alto.PaloAltoParser.S_rulebaseContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_zoneContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_hostnameContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_ntp_serversContext;
@@ -58,6 +57,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Szn_layer3Context;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Variable_list_itemContext;
 import org.batfish.representation.palo_alto.Interface;
 import org.batfish.representation.palo_alto.PaloAltoConfiguration;
+import org.batfish.representation.palo_alto.Rule;
 import org.batfish.representation.palo_alto.StaticRoute;
 import org.batfish.representation.palo_alto.SyslogServer;
 import org.batfish.representation.palo_alto.VirtualRouter;
@@ -74,6 +74,8 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   private boolean _currentNtpServerPrimary;
 
   private Interface _currentParentInterface;
+
+  private Rule _currentRule;
 
   private StaticRoute _currentStaticRoute;
 
@@ -349,7 +351,12 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void enterSr_security(Sr_securityContext ctx) {
-    // TODO create rule named ctx.name.getText()
+    _currentRule = _configuration.getRules().computeIfAbsent(ctx.name.getText(), Rule::new);
+  }
+
+  @Override
+  public void exitSr_security(Sr_securityContext ctx) {
+    _currentRule = null;
   }
 
   @Override
@@ -357,7 +364,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     for (Src_or_dst_list_itemContext var : ctx.src_or_dst_list().src_or_dst_list_item()) {
       String name = var.getText();
       // TODO attach this to the current rule
-      toIpSpace(var);
+      _currentRule = toIpSpace(var);
       if (var.name != null) {
         _configuration.referenceStructure(
             ADDRESS, name, RULEBASE_DESTINATION_ADDRESS, getLine(var.name.getStart()));

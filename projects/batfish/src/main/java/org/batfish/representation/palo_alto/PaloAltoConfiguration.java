@@ -33,6 +33,8 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
   private String _ntpServerSecondary;
 
+  private SortedMap<String, Rule> _rules;
+
   private SortedMap<String, SortedMap<String, SyslogServer>> _syslogServerGroups;
 
   private transient Set<String> _unimplementedFeatures;
@@ -45,6 +47,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
   public PaloAltoConfiguration(Set<String> unimplementedFeatures) {
     _interfaces = new TreeMap<>();
+    _rules = new TreeMap<>();
     _syslogServerGroups = new TreeMap<>();
     _unimplementedFeatures = unimplementedFeatures;
     _virtualRouters = new TreeMap<>();
@@ -80,6 +83,10 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
       servers.add(_ntpServerSecondary);
     }
     return servers;
+  }
+
+  public SortedMap<String, Rule> getRules() {
+    return _rules;
   }
 
   @Override
