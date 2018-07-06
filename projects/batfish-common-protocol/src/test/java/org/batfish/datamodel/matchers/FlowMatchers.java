@@ -36,8 +36,8 @@ public final class FlowMatchers {
     return new HasDstIp(ipMatcher);
   }
 
-  public static Matcher<Flow> hasDstPort(int ip) {
-    return new HasDstPort(equalTo(ip));
+  public static Matcher<Flow> hasDstPort(int port) {
+    return new HasDstPort(equalTo(port));
   }
 
   public static Matcher<Flow> hasDstPort(Matcher<? super Integer> portMatcher) {
@@ -100,8 +100,8 @@ public final class FlowMatchers {
     return new HasSrcIp(ipMatcher);
   }
 
-  public static Matcher<Flow> hasSrcPort(int ip) {
-    return new HasSrcPort(equalTo(ip));
+  public static Matcher<Flow> hasSrcPort(int port) {
+    return new HasSrcPort(equalTo(port));
   }
 
   public static Matcher<Flow> hasSrcPort(Matcher<? super Integer> portMatcher) {
