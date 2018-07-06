@@ -220,6 +220,11 @@ VIRTUAL_ROUTER
     'virtual-router'
 ;
 
+VSYS
+:
+    'vsys'
+;
+
 ZONE
 :
     'zone'

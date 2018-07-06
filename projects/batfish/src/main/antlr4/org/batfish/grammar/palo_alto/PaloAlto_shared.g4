@@ -10,8 +10,14 @@ s_shared
 :
     SHARED
     (
-        ss_log_settings
+        ss_common
     )
+;
+
+// Common syntax between set shared and set vsys
+ss_common
+:
+    ss_log_settings
 ;
 
 ss_log_settings
