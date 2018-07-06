@@ -52,12 +52,12 @@ public final class FlowMatchers {
     return new HasIcmpCode(icmpCodeMatcher);
   }
 
-  public static Matcher<Flow> hasIcmpType(int IcmpType) {
-    return new HasIcmpType(equalTo(IcmpType));
+  public static Matcher<Flow> hasIcmpType(int icmpType) {
+    return new HasIcmpType(equalTo(icmpType));
   }
 
-  public static Matcher<Flow> hasIcmpType(Matcher<? super Integer> IcmpTypeMatcher) {
-    return new HasIcmpType(IcmpTypeMatcher);
+  public static Matcher<Flow> hasIcmpType(Matcher<? super Integer> matcher) {
+    return new HasIcmpType(matcher);
   }
 
   public static Matcher<Flow> hasIngressInterface(String ingressInterface) {
