@@ -10,12 +10,12 @@ import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.matchers.BgpProcessMatchersImpl.HasDynamicNeighbor;
+import org.batfish.datamodel.matchers.BgpProcessMatchersImpl.HasActiveNeighbor;
 import org.batfish.datamodel.matchers.BgpProcessMatchersImpl.HasMultipathEbgp;
 import org.batfish.datamodel.matchers.BgpProcessMatchersImpl.HasMultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.matchers.BgpProcessMatchersImpl.HasMultipathIbgp;
 import org.batfish.datamodel.matchers.BgpProcessMatchersImpl.HasNeighbors;
-import org.batfish.datamodel.matchers.BgpProcessMatchersImpl.HasPointToPointNeighbor;
+import org.batfish.datamodel.matchers.BgpProcessMatchersImpl.HasPassiveNeighbor;
 import org.batfish.datamodel.matchers.BgpProcessMatchersImpl.HasRouterId;
 import org.hamcrest.Matcher;
 
@@ -67,14 +67,14 @@ public class BgpProcessMatchers {
    * Provides a matcher that matches if the provided {@code subMatcher} matches the BGP process's
    * neighbor with specified prefix.
    */
-  public static HasPointToPointNeighbor hasNeighbor(
+  public static HasActiveNeighbor hasActiveNeighbor(
       @Nonnull Prefix prefix, @Nonnull Matcher<? super BgpActivePeerConfig> subMatcher) {
-    return new HasPointToPointNeighbor(prefix, subMatcher);
+    return new HasActiveNeighbor(prefix, subMatcher);
   }
 
-  public static HasDynamicNeighbor hasDynamicNeighbor(
+  public static HasPassiveNeighbor hasPassiveNeighbor(
       @Nonnull Prefix prefix, @Nonnull Matcher<? super BgpPassivePeerConfig> subMatcher) {
-    return new HasDynamicNeighbor(prefix, subMatcher);
+    return new HasPassiveNeighbor(prefix, subMatcher);
   }
 
   /**

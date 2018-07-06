@@ -35,11 +35,10 @@ final class BgpProcessMatchersImpl {
     }
   }
 
-  static final class HasPointToPointNeighbor
-      extends FeatureMatcher<BgpProcess, BgpActivePeerConfig> {
+  static final class HasActiveNeighbor extends FeatureMatcher<BgpProcess, BgpActivePeerConfig> {
     private final Prefix _prefix;
 
-    HasPointToPointNeighbor(
+    HasActiveNeighbor(
         @Nonnull Prefix prefix, @Nonnull Matcher<? super BgpActivePeerConfig> subMatcher) {
       super(
           subMatcher,
@@ -54,10 +53,10 @@ final class BgpProcessMatchersImpl {
     }
   }
 
-  static final class HasDynamicNeighbor extends FeatureMatcher<BgpProcess, BgpPassivePeerConfig> {
+  static final class HasPassiveNeighbor extends FeatureMatcher<BgpProcess, BgpPassivePeerConfig> {
     private final Prefix _prefix;
 
-    HasDynamicNeighbor(
+    HasPassiveNeighbor(
         @Nonnull Prefix prefix, @Nonnull Matcher<? super BgpPassivePeerConfig> subMatcher) {
       super(
           subMatcher, "A BGP process with dynamic neighbor " + prefix + ":", "neighbor " + prefix);

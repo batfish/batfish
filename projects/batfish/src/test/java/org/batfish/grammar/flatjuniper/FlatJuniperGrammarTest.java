@@ -4,9 +4,9 @@ import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasClusterId;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasEnforceFirstAs;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasLocalAs;
-import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasDynamicNeighbor;
-import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbor;
+import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasActiveNeighbor;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbors;
+import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasPassiveNeighbor;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIkePhase1Policy;
@@ -492,7 +492,7 @@ public class FlatJuniperGrammarTest {
     Configuration c = parseConfig("bgp-allow");
     assertThat(
         c,
-        hasDefaultVrf(hasBgpProcess(hasDynamicNeighbor(Prefix.parse("10.1.1.0/24"), anything()))));
+        hasDefaultVrf(hasBgpProcess(hasPassiveNeighbor(Prefix.parse("10.1.1.0/24"), anything()))));
   }
 
   @Test
@@ -515,9 +515,9 @@ public class FlatJuniperGrammarTest {
     Configuration c2 = configurations.get(c2Name);
     Configuration c3 = configurations.get(c3Name);
 
-    assertThat(c1, hasDefaultVrf(hasBgpProcess(hasNeighbor(neighborPrefix, hasLocalAs(1L)))));
-    assertThat(c2, hasDefaultVrf(hasBgpProcess(hasNeighbor(neighborPrefix, hasLocalAs(1L)))));
-    assertThat(c3, hasDefaultVrf(hasBgpProcess(hasNeighbor(neighborPrefix, hasLocalAs(1L)))));
+    assertThat(c1, hasDefaultVrf(hasBgpProcess(hasActiveNeighbor(neighborPrefix, hasLocalAs(1L)))));
+    assertThat(c2, hasDefaultVrf(hasBgpProcess(hasActiveNeighbor(neighborPrefix, hasLocalAs(1L)))));
+    assertThat(c3, hasDefaultVrf(hasBgpProcess(hasActiveNeighbor(neighborPrefix, hasLocalAs(1L)))));
   }
 
   @Test
