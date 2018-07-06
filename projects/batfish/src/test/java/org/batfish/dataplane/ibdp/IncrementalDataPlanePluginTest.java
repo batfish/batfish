@@ -7,7 +7,6 @@ import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.in;
-import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.lessThan;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertFalse;
@@ -18,7 +17,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.graph.Network;
+import com.google.common.graph.ValueGraph;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -26,6 +25,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -37,10 +37,11 @@ import org.batfish.common.plugin.DataPlanePlugin;
 import org.batfish.common.plugin.DataPlanePlugin.ComputeDataPlaneResult;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
-import org.batfish.datamodel.BgpPeerConfig;
+import org.batfish.datamodel.BgpActivePeerConfig;
+import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpRoute;
-import org.batfish.datamodel.BgpSession;
+import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.BgpTieBreaker;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -86,7 +87,7 @@ public class IncrementalDataPlanePluginTest {
   private NetworkFactory _nf;
   private Configuration.Builder _cb;
   private Interface.Builder _ib;
-  private BgpPeerConfig.Builder _nb;
+  private BgpActivePeerConfig.Builder _nb;
   private BgpProcess.Builder _pb;
   private Vrf.Builder _vb;
   private RoutingPolicy.Builder _epb;
@@ -128,7 +129,7 @@ public class IncrementalDataPlanePluginTest {
      * Setup as follows:
      * 1.1.1.9               1.1.1.1            1.1.1.2
      * n1+---------x---------+core+---------------+n2
-     * n1 & n2 have same Ips. Core only has route to n2, because of interface masks
+     * Core only has route to n2, because of interface masks
      */
 
     _epb.setStatements(ImmutableList.of(new SetDefaultPolicy("DEF")));
@@ -139,9 +140,7 @@ public class IncrementalDataPlanePluginTest {
     _ib.setOwner(core).setVrf(corevrf).setActive(true);
     _ib.setAddress(new InterfaceAddress(coreId, interfcePrefixBits)).build();
     BgpProcess coreProc = _pb.setRouterId(coreId).setVrf(corevrf).build();
-    _nb.setOwner(core)
-        .setVrf(corevrf)
-        .setBgpProcess(coreProc)
+    _nb.setBgpProcess(coreProc)
         .setRemoteAs(1L)
         .setLocalAs(1L)
         .setLocalIp(coreId)
@@ -155,9 +154,7 @@ public class IncrementalDataPlanePluginTest {
     _ib.setOwner(n1).setVrf(n1Vrf);
     _ib.setAddress(new InterfaceAddress(neighborId1, interfcePrefixBits)).build();
     BgpProcess n1Proc = _pb.setRouterId(neighborId1).setVrf(n1Vrf).build();
-    _nb.setOwner(n1)
-        .setVrf(n1Vrf)
-        .setBgpProcess(n1Proc)
+    _nb.setBgpProcess(n1Proc)
         .setRemoteAs(1L)
         .setLocalAs(1L)
         .setLocalIp(neighborId1)
@@ -170,9 +167,7 @@ public class IncrementalDataPlanePluginTest {
     _ib.setOwner(n2).setVrf(n2Vrf);
     _ib.setAddress(new InterfaceAddress(neighborId2, interfcePrefixBits)).build();
     BgpProcess n2Proc = _pb.setRouterId(neighborId2).setVrf(n2Vrf).build();
-    _nb.setOwner(n2)
-        .setVrf(n2Vrf)
-        .setBgpProcess(n2Proc)
+    _nb.setBgpProcess(n2Proc)
         .setRemoteAs(1L)
         .setLocalAs(1L)
         .setLocalIp(neighborId2)
@@ -749,19 +744,37 @@ public class IncrementalDataPlanePluginTest {
     DataPlanePlugin dataPlanePlugin = batfish.getDataPlanePlugin();
     DataPlane dp = dataPlanePlugin.computeDataPlane(false)._dataPlane;
 
-    Network<BgpPeerConfig, BgpSession> bgpTopology = dp.getBgpTopology();
+    ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology = dp.getBgpTopology();
 
     // N2 has proper neighbor relationship
-    Collection<BgpPeerConfig> n2Neighbors =
-        configs.get("n2").getVrfs().get(DEFAULT_VRF_NAME).getBgpProcess().getNeighbors().values();
+    Set<Entry<Prefix, BgpActivePeerConfig>> n2Neighbors =
+        configs
+            .get("n2")
+            .getVrfs()
+            .get(DEFAULT_VRF_NAME)
+            .getBgpProcess()
+            .getActiveNeighbors()
+            .entrySet();
+    Entry<Prefix, BgpActivePeerConfig> e = n2Neighbors.iterator().next();
     assertThat(n2Neighbors, hasSize(1));
-    assertThat(bgpTopology.degree(n2Neighbors.iterator().next()), is(2));
+    assertThat(
+        bgpTopology.degree(new BgpPeerConfigId("n2", DEFAULT_VRF_NAME, e.getKey(), false)),
+        equalTo(2));
 
     // N1 does not have a full session established, because it's not reachable
-    Collection<BgpPeerConfig> n1Neighbors =
-        configs.get("n1").getVrfs().get(DEFAULT_VRF_NAME).getBgpProcess().getNeighbors().values();
+    Collection<BgpActivePeerConfig> n1Neighbors =
+        configs
+            .get("n1")
+            .getVrfs()
+            .get(DEFAULT_VRF_NAME)
+            .getBgpProcess()
+            .getActiveNeighbors()
+            .values();
+    e = n2Neighbors.iterator().next();
     assertThat(n1Neighbors, hasSize(1));
-    assertThat(bgpTopology.degree(n1Neighbors.iterator().next()), is(0));
+    assertThat(
+        bgpTopology.degree(new BgpPeerConfigId("n1", DEFAULT_VRF_NAME, e.getKey(), false)),
+        equalTo(0));
   }
 
   @Test

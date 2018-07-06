@@ -1,291 +1,133 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 import java.io.Serializable;
-import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
-import java.util.TreeSet;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
 
 /** Represents a configured BGP peering, at the control plane level */
 @JsonSchemaDescription("A configured e/iBGP peering relationship")
-public final class BgpPeerConfig implements Serializable {
+@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
+public abstract class BgpPeerConfig implements Serializable {
 
-  public static class Builder extends NetworkFactoryBuilder<BgpPeerConfig> {
-    private Configuration _owner;
-    private Ip _localIp;
-    private Ip _peerIpAddress;
-    private Long _localAs;
-    private Long _remoteAs;
-    private BgpProcess _bgpProcess;
-    private String _exportPolicy;
-    private Boolean _advertiseExternal;
-    private Boolean _additionalPathSend;
-    private Boolean _additionalPathSelectAll;
-    private Boolean _advertiseInactive;
-    private Vrf _vrf;
-    private Long _clusterId;
-    private Boolean _routeReflectorClient;
-    private boolean _dynamic = false;
+  static final String PROP_ADDITIONAL_PATHS_RECEIVE = "additionalPathsReceive";
 
-    Builder(NetworkFactory networkFactory) {
-      super(networkFactory, BgpPeerConfig.class);
-    }
+  static final String PROP_ADDITIONAL_PATHS_SELECT_ALL = "additionalPathsSelectAll";
 
-    @Override
-    public BgpPeerConfig build() {
-      BgpPeerConfig bgpPeerConfig;
-      Ip peerIpAddress = _peerIpAddress != null ? _peerIpAddress : new Ip(generateLong());
-      bgpPeerConfig = new BgpPeerConfig(peerIpAddress, _owner, _dynamic);
-      if (_clusterId != null) {
-        bgpPeerConfig.setClusterId(_clusterId);
-      }
-      if (_localIp != null) {
-        bgpPeerConfig.setLocalIp(_localIp);
-      }
-      if (_localAs != null) {
-        bgpPeerConfig.setLocalAs(_localAs);
-      }
-      if (_remoteAs != null) {
-        bgpPeerConfig.setRemoteAs(_remoteAs);
-      }
-      if (_bgpProcess != null) {
-        _bgpProcess.getNeighbors().put(bgpPeerConfig.getPrefix(), bgpPeerConfig);
-      }
-      if (_exportPolicy != null) {
-        bgpPeerConfig.setExportPolicy(_exportPolicy);
-      }
-      if (_advertiseInactive != null) {
-        bgpPeerConfig.setAdvertiseInactive(_advertiseInactive);
-      }
-      if (_advertiseExternal != null) {
-        bgpPeerConfig.setAdvertiseExternal(_advertiseExternal);
-      }
-      if (_additionalPathSend != null) {
-        bgpPeerConfig.setAdditionalPathsSend(_additionalPathSend);
-      }
-      if (_additionalPathSelectAll != null) {
-        bgpPeerConfig.setAdditionalPathsSelectAll(_additionalPathSelectAll);
-      }
-      if (_routeReflectorClient != null) {
-        bgpPeerConfig.setRouteReflectorClient(_routeReflectorClient);
-      }
-      if (_vrf != null) {
-        bgpPeerConfig.setVrf(_vrf.getName());
-      }
-      return bgpPeerConfig;
-    }
+  static final String PROP_ADDITIONAL_PATHS_SEND = "additionalPathsSend";
 
-    public Builder setOwner(Configuration owner) {
-      _owner = owner;
-      return this;
-    }
+  static final String PROP_ADVERTISE_EXTERNAL = "advertiseExternal";
 
-    public Builder setBgpProcess(BgpProcess bgpProcess) {
-      _bgpProcess = bgpProcess;
-      return this;
-    }
+  static final String PROP_ADVERTISE_INACTIVE = "advertiseInactive";
 
-    public Builder setLocalIp(Ip localIp) {
-      _localIp = localIp;
-      return this;
-    }
+  static final String PROP_ALLOW_LOCAL_AS_IN = "allowLocalAsIn";
 
-    public Builder setPeerAddress(Ip peerIpAddress) {
-      _peerIpAddress = peerIpAddress;
-      return this;
-    }
+  static final String PROP_ALLOW_REMOTE_AS_OUT = "allowRemoteAsOut";
 
-    public Builder setLocalAs(Long localAs) {
-      _localAs = localAs;
-      return this;
-    }
+  static final String PROP_AUTHENTICATION_SETTINGS = "authenticationSettings";
 
-    public Builder setRemoteAs(Long remoteAs) {
-      _remoteAs = remoteAs;
-      return this;
-    }
+  static final String PROP_CLUSTER_ID = "clusterId";
 
-    public Builder setExportPolicy(String exportPolicy) {
-      _exportPolicy = exportPolicy;
-      return this;
-    }
+  static final String PROP_DEFAULT_METRIC = "defaultMetric";
 
-    public Builder setAdvertiseExternal(Boolean advertiseExternal) {
-      _advertiseExternal = advertiseExternal;
-      return this;
-    }
+  static final String PROP_DESCRIPTION = "description";
 
-    public Builder setAdditionalPathSend(Boolean additionalPathSend) {
-      _additionalPathSend = additionalPathSend;
-      return this;
-    }
+  static final String PROP_EBGP_MULTIHOP = "ebgpMultihop";
 
-    public Builder setAdditionalPathSelectAll(Boolean additionalPathSelectAll) {
-      _additionalPathSelectAll = additionalPathSelectAll;
-      return this;
-    }
+  static final String PROP_ENFORCE_FIRST_AS = "enforceFirstAs";
 
-    public Builder setAdvertiseInactive(Boolean advertiseInactive) {
-      _advertiseInactive = advertiseInactive;
-      return this;
-    }
+  static final String PROP_EXPORT_POLICY = "exportPolicy";
 
-    public Builder setVrf(Vrf vrf) {
-      _vrf = vrf;
-      return this;
-    }
+  static final String PROP_EXPORT_POLICY_SOURCES = "exportPolicySources";
 
-    public Builder setClusterId(Long clusterId) {
-      _clusterId = clusterId;
-      return this;
-    }
+  static final String PROP_GENERATED_ROUTES = "generatedRoutes";
 
-    public Builder setRouteReflectorClient(Boolean routeReflectorClient) {
-      _routeReflectorClient = routeReflectorClient;
-      return this;
-    }
+  static final String PROP_GROUP = "group";
 
-    public Builder setDynamic(boolean dynamic) {
-      _dynamic = dynamic;
-      return this;
-    }
-  }
+  static final String PROP_IMPORT_POLICY = "importPolicy";
 
-  private static final String PROP_ADDITIONAL_PATHS_RECEIVE = "additionalPathsReceive";
+  static final String PROP_IMPORT_POLICY_SOURCES = "importPolicySources";
 
-  private static final String PROP_ADDITIONAL_PATHS_SELECT_ALL = "additionalPathsSelectAll";
+  static final String PROP_LOCAL_AS = "localAs";
 
-  private static final String PROP_ADDITIONAL_PATHS_SEND = "additionalPathsSend";
+  static final String PROP_LOCAL_IP = "localIp";
 
-  private static final String PROP_ADDRESS = "address";
+  static final String PROP_REMOTE_AS = "remoteAs";
 
-  private static final String PROP_ADVERTISE_EXTERNAL = "advertiseExternal";
+  static final String PROP_ROUTE_REFLECTOR = "routeReflectorClient";
 
-  private static final String PROP_ADVERTISE_INACTIVE = "advertiseInactive";
+  static final String PROP_SEND_COMMUNITY = "sendCommunity";
 
-  private static final String PROP_ALLOW_LOCAL_AS_IN = "allowLocalAsIn";
+  static final long serialVersionUID = 1L;
 
-  private static final String PROP_ALLOW_REMOTE_AS_OUT = "allowRemoteAsOut";
+  private final boolean _additionalPathsReceive;
 
-  private static final String PROP_AUTHENTICATION_SETTINGS = "authenticationSettings";
+  private final boolean _additionalPathsSelectAll;
 
-  private static final String PROP_CLUSTER_ID = "clusterId";
+  private final boolean _additionalPathsSend;
 
-  private static final String PROP_DEFAULT_METRIC = "defaultMetric";
+  private final boolean _advertiseExternal;
 
-  private static final String PROP_DESCRIPTION = "description";
+  private final boolean _advertiseInactive;
 
-  private static final String PROP_DYNAMIC = "dynamic";
+  private final boolean _allowLocalAsIn;
 
-  private static final String PROP_EBGP_MULTIHOP = "ebgpMultihop";
+  private final boolean _allowRemoteAsOut;
 
-  private static final String PROP_ENFORCE_FIRST_AS = "enforceFirstAs";
-
-  private static final String PROP_EXPORT_POLICY = "exportPolicy";
-
-  private static final String PROP_EXPORT_POLICY_SOURCES = "exportPolicySources";
-
-  private static final String PROP_GENERATED_ROUTES = "generatedRoutes";
-
-  private static final String PROP_GROUP = "group";
-
-  private static final String PROP_IMPORT_POLICY = "importPolicy";
-
-  private static final String PROP_IMPORT_POLICY_SOURCES = "importPolicySources";
-
-  private static final String PROP_LOCAL_AS = "localAs";
-
-  private static final String PROP_LOCAL_IP = "localIp";
-
-  private static final String PROP_OWNER = "owner";
-
-  private static final String PROP_REMOTE_AS = "remoteAs";
-
-  private static final String PROP_REMOTE_PREFIX = "remotePrefix";
-
-  private static final String PROP_SEND_COMMUNITY = "sendCommunity";
-
-  private static final long serialVersionUID = 1L;
-
-  private boolean _additionalPathsReceive;
-
-  private boolean _additionalPathsSelectAll;
-
-  private boolean _additionalPathsSend;
-
-  private boolean _advertiseExternal;
-
-  private boolean _advertiseInactive;
-
-  private boolean _allowLocalAsIn;
-
-  private boolean _allowRemoteAsOut;
-
-  private BgpAuthenticationSettings _authenticationSettings;
+  @Nullable private final BgpAuthenticationSettings _authenticationSettings;
 
   /** The cluster id associated with this peer to be used in route reflection */
-  private Long _clusterId;
+  private final Long _clusterId;
 
   /** The default metric associated with routes sent to this peer */
-  private int _defaultMetric;
+  private final int _defaultMetric;
 
-  private String _description;
+  protected final String _description;
 
-  private boolean _ebgpMultihop;
+  private final boolean _ebgpMultihop;
 
-  private boolean _enforceFirstAs;
+  private final boolean _enforceFirstAs;
 
-  private String _exportPolicy;
+  @Nullable private final String _exportPolicy;
 
-  private SortedSet<String> _exportPolicySources;
+  @Nonnull private SortedSet<String> _exportPolicySources;
 
   /**
    * The set of generated and/or aggregate routes to be potentially sent to this peer before
    * outbound policies are taken into account
    */
-  private Set<GeneratedRoute> _generatedRoutes;
+  @Nonnull private final Set<GeneratedRoute> _generatedRoutes;
 
   /**
    * The group name associated with this peer in the vendor-specific configuration from which the
    * containing configuration is derived. This field is OPTIONAL and should not impact the
    * subsequent data plane computation.
    */
-  private String _group;
+  @Nullable private final String _group;
 
-  private String _importPolicy;
+  @Nullable private final String _importPolicy;
 
-  private SortedSet<String> _importPolicySources;
+  @Nonnull private SortedSet<String> _importPolicySources;
 
   /** The autonomous system number of the containing BGP process as reported to this peer */
-  private Long _localAs;
+  @Nullable private final Long _localAs;
 
   /** The ip address of the containing router as reported to this peer */
-  private Ip _localIp;
-
-  private Configuration _owner;
-
-  /** Whether this session is passive/dynamic (e.g., listens for incoming connections only) */
-  private boolean _dynamic;
-
-  /**
-   * The remote peer's IPv4 prefix. Currently nullable because: 1) we sometimes pass null in the
-   * constructor; 2) Jackson deserialization without any enforcement checks.
-   */
-  @Nullable private Prefix _prefix;
-
-  /** The autonomous system number that the containing BGP process considers this peer to have. */
-  private Long _remoteAs;
+  @Nullable private final Ip _localIp;
 
   /** Flag indicating that this neighbor is a route reflector client */
-  private boolean _routeReflectorClient;
+  private final boolean _routeReflectorClient;
 
   /**
    * Flag governing whether to include community numbers in outgoing route advertisements to this
@@ -293,141 +135,55 @@ public final class BgpPeerConfig implements Serializable {
    */
   private boolean _sendCommunity;
 
-  private String _vrf;
-
-  @SuppressWarnings("unused")
-  private BgpPeerConfig() {
-    this(null);
-  }
-
-  /**
-   * Constructs a BgpPeerConfig with the given peer ip address for {@code address} and owner for
-   * {@code owner}. Allows specifying whether the end of this session is passive with {@code
-   * passive}
-   *
-   * @param address The address of this neighbor
-   * @param owner The owner of this neighbor
-   * @param dynamic Whether the peering is passive (a.k.a dynamic)
-   */
-  public BgpPeerConfig(Ip address, Configuration owner, boolean dynamic) {
-    this(new Prefix(address, Prefix.MAX_PREFIX_LENGTH), owner, dynamic);
-  }
-
   @JsonCreator
-  public BgpPeerConfig(@Nullable @JsonProperty(PROP_REMOTE_PREFIX) Prefix prefix) {
-    _prefix = prefix;
-    _exportPolicySources = new TreeSet<>();
-    _generatedRoutes = new LinkedHashSet<>();
-    _importPolicySources = new TreeSet<>();
-    _dynamic = false;
-  }
-
-  /**
-   * Constructs a BgpPeerConfig with the given peer dynamic ip range for {@code prefix} and owner
-   * for {@code owner}
-   *
-   * @param prefix The dynamic ip range of this neighbor
-   * @param owner The owner of this neighbor
-   * @param dynamic Whether the peering is passive (a.k.a dynamic)
-   */
-  public BgpPeerConfig(Prefix prefix, Configuration owner, boolean dynamic) {
-    this(prefix);
-    _owner = owner;
-    _dynamic = dynamic;
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (o == this) {
-      return true;
-    } else if (!(o instanceof BgpPeerConfig)) {
-      return false;
-    }
-    BgpPeerConfig other = (BgpPeerConfig) o;
-    if (this._advertiseExternal != other._advertiseExternal) {
-      return false;
-    }
-    if (this._advertiseInactive != other._advertiseInactive) {
-      return false;
-    }
-    if (this._allowLocalAsIn != other._allowLocalAsIn) {
-      return false;
-    }
-    if (this._allowRemoteAsOut != other._allowRemoteAsOut) {
-      return false;
-    }
-    if (Objects.equals(this._authenticationSettings, other._authenticationSettings)) {
-      return false;
-    }
-    if (_clusterId == null) {
-      if (other._clusterId != null) {
-        return false;
-      }
-    } else if (!this._clusterId.equals(other._clusterId)) {
-      return false;
-    }
-    if (this._defaultMetric != other._defaultMetric) {
-      return false;
-    }
-    // we will skip description
-    if (this._ebgpMultihop != other._ebgpMultihop) {
-      return false;
-    }
-    if (_enforceFirstAs != other._enforceFirstAs) {
-      return false;
-    }
-    if (!this._exportPolicy.equals(other._exportPolicy)) {
-      return false;
-    }
-    // we will skip generated routes.
-    if (!Objects.equals(this._group, other._group)) {
-      return false;
-    }
-    if (!Objects.equals(this._importPolicy, other._importPolicy)) {
-      return false;
-    }
-    if (!this._localAs.equals(other._localAs)) {
-      return false;
-    }
-    if (!Objects.equals(this._localIp, other._localIp)) {
-      return false;
-    }
-    // we will skip owner.
-    return this._remoteAs.equals(other._remoteAs)
-        && this._routeReflectorClient == other._routeReflectorClient
-        && this._sendCommunity == other._sendCommunity
-        && this._dynamic == other._dynamic;
-  }
-
-  @Override
-  public int hashCode() {
-    // SKIPS: description, generated routes, owner to be consistent with equals
-    return Objects.hash(
-        _additionalPathsReceive,
-        _additionalPathsSelectAll,
-        _additionalPathsSend,
-        _advertiseExternal,
-        _advertiseInactive,
-        _allowLocalAsIn,
-        _allowRemoteAsOut,
-        _authenticationSettings,
-        _clusterId,
-        _defaultMetric,
-        _ebgpMultihop,
-        _enforceFirstAs,
-        _exportPolicy,
-        _exportPolicySources,
-        _group,
-        _importPolicy,
-        _importPolicySources,
-        _localAs,
-        _localIp,
-        _dynamic,
-        _prefix,
-        _remoteAs,
-        _routeReflectorClient,
-        _sendCommunity,
-        _vrf);
+  protected BgpPeerConfig(
+      @JsonProperty(PROP_ADDITIONAL_PATHS_RECEIVE) boolean additionalPathsReceive,
+      @JsonProperty(PROP_ADDITIONAL_PATHS_SELECT_ALL) boolean additionalPathsSelectAll,
+      @JsonProperty(PROP_ADDITIONAL_PATHS_SEND) boolean additionalPathsSend,
+      @JsonProperty(PROP_ADVERTISE_EXTERNAL) boolean advertiseExternal,
+      @JsonProperty(PROP_ADVERTISE_INACTIVE) boolean advertiseInactive,
+      @JsonProperty(PROP_ALLOW_LOCAL_AS_IN) boolean allowLocalAsIn,
+      @JsonProperty(PROP_ALLOW_REMOTE_AS_OUT) boolean allowRemoteAsOut,
+      @JsonProperty(PROP_AUTHENTICATION_SETTINGS) @Nullable
+          BgpAuthenticationSettings authenticationSettings,
+      @JsonProperty(PROP_CLUSTER_ID) @Nullable Long clusterId,
+      @JsonProperty(PROP_DEFAULT_METRIC) int defaultMetric,
+      @JsonProperty(PROP_DESCRIPTION) @Nullable String description,
+      @JsonProperty(PROP_EBGP_MULTIHOP) boolean ebgpMultihop,
+      @JsonProperty(PROP_ENFORCE_FIRST_AS) boolean enforceFirstAs,
+      @JsonProperty(PROP_EXPORT_POLICY) @Nullable String exportPolicy,
+      @JsonProperty(PROP_EXPORT_POLICY_SOURCES) @Nullable SortedSet<String> exportPolicySources,
+      @JsonProperty(PROP_GENERATED_ROUTES) @Nullable Set<GeneratedRoute> generatedRoutes,
+      @JsonProperty(PROP_GROUP) @Nullable String group,
+      @JsonProperty(PROP_IMPORT_POLICY) @Nullable String importPolicy,
+      @JsonProperty(PROP_IMPORT_POLICY_SOURCES) @Nullable SortedSet<String> importPolicySources,
+      @JsonProperty(PROP_LOCAL_AS) @Nullable Long localAs,
+      @JsonProperty(PROP_LOCAL_IP) @Nullable Ip localIp,
+      @JsonProperty(PROP_ROUTE_REFLECTOR) boolean routeReflectorClient,
+      @JsonProperty(PROP_SEND_COMMUNITY) boolean sendCommunity) {
+    _additionalPathsReceive = additionalPathsReceive;
+    _additionalPathsSelectAll = additionalPathsSelectAll;
+    _additionalPathsSend = additionalPathsSend;
+    _advertiseExternal = advertiseExternal;
+    _advertiseInactive = advertiseInactive;
+    _allowLocalAsIn = allowLocalAsIn;
+    _allowRemoteAsOut = allowRemoteAsOut;
+    _authenticationSettings = authenticationSettings;
+    _clusterId = clusterId;
+    _defaultMetric = defaultMetric;
+    _description = description;
+    _ebgpMultihop = ebgpMultihop;
+    _enforceFirstAs = enforceFirstAs;
+    _exportPolicy = exportPolicy;
+    _exportPolicySources = firstNonNull(exportPolicySources, ImmutableSortedSet.of());
+    _generatedRoutes = firstNonNull(generatedRoutes, ImmutableSet.of());
+    _group = group;
+    _importPolicy = importPolicy;
+    _importPolicySources = firstNonNull(importPolicySources, ImmutableSortedSet.of());
+    _localAs = localAs;
+    _localIp = localIp;
+    _routeReflectorClient = routeReflectorClient;
+    _sendCommunity = sendCommunity;
   }
 
   @JsonProperty(PROP_ADDITIONAL_PATHS_RECEIVE)
@@ -443,17 +199,6 @@ public final class BgpPeerConfig implements Serializable {
   @JsonProperty(PROP_ADDITIONAL_PATHS_SEND)
   public boolean getAdditionalPathsSend() {
     return _additionalPathsSend;
-  }
-
-  @Nullable
-  @JsonProperty(PROP_ADDRESS)
-  @JsonPropertyDescription("The IPV4 address of the remote peer if not dynamic (passive)")
-  public Ip getAddress() {
-    if (_prefix != null && _prefix.getPrefixLength() == Prefix.MAX_PREFIX_LENGTH) {
-      return _prefix.getStartIp();
-    } else {
-      return null;
-    }
   }
 
   @JsonProperty(PROP_ADVERTISE_EXTERNAL)
@@ -511,14 +256,6 @@ public final class BgpPeerConfig implements Serializable {
     return _description;
   }
 
-  @JsonProperty(PROP_DYNAMIC)
-  @JsonPropertyDescription(
-      "Whether this represents a connection to a specific peer (false) or a passive connection to "
-          + "a network of peers (true)")
-  public boolean getDynamic() {
-    return _dynamic;
-  }
-
   @JsonProperty(PROP_EBGP_MULTIHOP)
   @JsonPropertyDescription(
       "Whether to allow establishment of a multihop eBGP connection with this peer")
@@ -548,6 +285,7 @@ public final class BgpPeerConfig implements Serializable {
   @JsonProperty(PROP_GENERATED_ROUTES)
   @JsonPropertyDescription(
       "Generated routes specific to this peer not otherwise imported into any of this node's RIBs")
+  @Nonnull
   public Set<GeneratedRoute> getGeneratedRoutes() {
     return _generatedRoutes;
   }
@@ -584,26 +322,7 @@ public final class BgpPeerConfig implements Serializable {
     return _localIp;
   }
 
-  @JsonIgnore
-  public Configuration getOwner() {
-    return _owner;
-  }
-
-  @JsonProperty(PROP_REMOTE_PREFIX)
-  @JsonPropertyDescription(
-      "The remote (destination) IPV4 address of this peering (when not-dynamic), or the "
-          + "network of peers allowed to connect on this peering (otherwise)")
-  public Prefix getPrefix() {
-    return _prefix;
-  }
-
-  @JsonProperty(PROP_REMOTE_AS)
-  @JsonPropertyDescription("The remote autonomous system of this peering")
-  @Nullable
-  public Long getRemoteAs() {
-    return _remoteAs;
-  }
-
+  @JsonProperty(PROP_ROUTE_REFLECTOR)
   @JsonPropertyDescription("Whether or not this peer is a route-reflector client")
   public boolean getRouteReflectorClient() {
     return _routeReflectorClient;
@@ -616,161 +335,233 @@ public final class BgpPeerConfig implements Serializable {
     return _sendCommunity;
   }
 
-  @JsonPropertyDescription(
-      "The name of the VRF containing the BGP process containing this " + "peering")
-  public String getVrf() {
-    return _vrf;
-  }
-
-  public void resolveReferences(Configuration owner) {
-    _owner = owner;
-  }
-
-  @JsonProperty(PROP_ADDITIONAL_PATHS_RECEIVE)
-  public void setAdditionalPathsReceive(boolean additionalPathsReceive) {
-    _additionalPathsReceive = additionalPathsReceive;
-  }
-
-  @JsonProperty(PROP_ADDITIONAL_PATHS_SELECT_ALL)
-  public void setAdditionalPathsSelectAll(boolean additionalPathsSelectAll) {
-    _additionalPathsSelectAll = additionalPathsSelectAll;
-  }
-
-  @JsonProperty(PROP_ADDITIONAL_PATHS_SEND)
-  public void setAdditionalPathsSend(boolean additionalPathsSend) {
-    _additionalPathsSend = additionalPathsSend;
-  }
-
-  @JsonProperty(PROP_ADDRESS)
-  public void setAddress(Ip address) {
-    // Intentionally empty
-  }
-
-  @JsonProperty(PROP_ADVERTISE_EXTERNAL)
-  public void setAdvertiseExternal(boolean advertiseExternal) {
-    _advertiseExternal = advertiseExternal;
-  }
-
-  @JsonProperty(PROP_ADVERTISE_INACTIVE)
-  public void setAdvertiseInactive(boolean advertiseInactive) {
-    _advertiseInactive = advertiseInactive;
-  }
-
-  @JsonProperty(PROP_ALLOW_LOCAL_AS_IN)
-  public void setAllowLocalAsIn(boolean allowLocalAsIn) {
-    _allowLocalAsIn = allowLocalAsIn;
-  }
-
-  @JsonProperty(PROP_ALLOW_REMOTE_AS_OUT)
-  public void setAllowRemoteAsOut(boolean allowRemoteAsOut) {
-    _allowRemoteAsOut = allowRemoteAsOut;
-  }
-
-  @JsonProperty(PROP_AUTHENTICATION_SETTINGS)
-  public void setAuthenticationSettings(BgpAuthenticationSettings authenticationSettings) {
-    _authenticationSettings = authenticationSettings;
-  }
-
-  @JsonProperty(PROP_CLUSTER_ID)
-  public void setClusterId(Long clusterId) {
-    _clusterId = clusterId;
-  }
-
-  @JsonProperty(PROP_DEFAULT_METRIC)
-  public void setDefaultMetric(int defaultMetric) {
-    _defaultMetric = defaultMetric;
-  }
-
-  @JsonProperty(PROP_DESCRIPTION)
-  public void setDescription(String description) {
-    _description = description;
-  }
-
-  @JsonProperty(PROP_DYNAMIC)
-  public void setDynamic(boolean dynamic) {
-    _dynamic = dynamic;
-  }
-
-  @JsonProperty(PROP_EBGP_MULTIHOP)
-  public void setEbgpMultihop(boolean ebgpMultihop) {
-    _ebgpMultihop = ebgpMultihop;
-  }
-
-  @JsonProperty(PROP_ENFORCE_FIRST_AS)
-  public void setEnforceFirstAs(boolean enforceFistAs) {
-    _enforceFirstAs = enforceFistAs;
-  }
-
-  @JsonProperty(PROP_EXPORT_POLICY)
-  public void setExportPolicy(String originationPolicyName) {
-    _exportPolicy = originationPolicyName;
-  }
-
-  @JsonProperty(PROP_EXPORT_POLICY_SOURCES)
-  public void setExportPolicySources(SortedSet<String> exportPolicySources) {
+  public void setExportPolicySources(@Nonnull SortedSet<String> exportPolicySources) {
     _exportPolicySources = exportPolicySources;
   }
 
-  @JsonProperty(PROP_GENERATED_ROUTES)
-  public void setGeneratedRoutes(Set<GeneratedRoute> generatedRoutes) {
-    _generatedRoutes = generatedRoutes;
-  }
-
-  @JsonProperty(PROP_GROUP)
-  public void setGroup(String name) {
-    _group = name;
-  }
-
-  @JsonProperty(PROP_IMPORT_POLICY)
-  public void setImportPolicy(String importPolicy) {
-    _importPolicy = importPolicy;
-  }
-
-  @JsonProperty(PROP_IMPORT_POLICY_SOURCES)
-  public void setImportPolicySources(SortedSet<String> importPolicySources) {
+  public void setImportPolicySources(@Nonnull SortedSet<String> importPolicySources) {
     _importPolicySources = importPolicySources;
   }
 
-  @JsonProperty(PROP_LOCAL_AS)
-  public void setLocalAs(Long localAs) {
-    _localAs = localAs;
-  }
-
-  @JsonProperty(PROP_LOCAL_IP)
-  public void setLocalIp(Ip localIp) {
-    _localIp = localIp;
-  }
-
-  @JsonProperty(PROP_OWNER)
-  public void setOwner(Configuration owner) {
-    _owner = owner;
-  }
-
-  @JsonProperty(PROP_REMOTE_AS)
-  public void setRemoteAs(Long remoteAs) {
-    _remoteAs = remoteAs;
-  }
-
-  @JsonProperty(PROP_REMOTE_PREFIX)
-  public void setRemotePrefix(Prefix remotePrefix) {
-    // Intentionally empty
-  }
-
-  public void setRouteReflectorClient(boolean routeReflectorClient) {
-    _routeReflectorClient = routeReflectorClient;
-  }
-
-  @JsonProperty(PROP_SEND_COMMUNITY)
-  public void setSendCommunity(boolean sendCommunity) {
-    _sendCommunity = sendCommunity;
-  }
-
-  public void setVrf(String vrf) {
-    _vrf = vrf;
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    BgpPeerConfig that = (BgpPeerConfig) o;
+    return _additionalPathsReceive == that._additionalPathsReceive
+        && _additionalPathsSelectAll == that._additionalPathsSelectAll
+        && _additionalPathsSend == that._additionalPathsSend
+        && _advertiseExternal == that._advertiseExternal
+        && _advertiseInactive == that._advertiseInactive
+        && _allowLocalAsIn == that._allowLocalAsIn
+        && _allowRemoteAsOut == that._allowRemoteAsOut
+        && _defaultMetric == that._defaultMetric
+        && _ebgpMultihop == that._ebgpMultihop
+        && _enforceFirstAs == that._enforceFirstAs
+        && _routeReflectorClient == that._routeReflectorClient
+        && _sendCommunity == that._sendCommunity
+        && Objects.equals(_authenticationSettings, that._authenticationSettings)
+        && Objects.equals(_clusterId, that._clusterId)
+        && Objects.equals(_description, that._description)
+        && Objects.equals(_exportPolicy, that._exportPolicy)
+        && Objects.equals(_exportPolicySources, that._exportPolicySources)
+        && Objects.equals(_generatedRoutes, that._generatedRoutes)
+        && Objects.equals(_group, that._group)
+        && Objects.equals(_importPolicy, that._importPolicy)
+        && Objects.equals(_importPolicySources, that._importPolicySources)
+        && Objects.equals(_localAs, that._localAs)
+        && Objects.equals(_localIp, that._localIp);
   }
 
   @Override
-  public String toString() {
-    return "BgpPeerConfig<Prefix:" + _prefix + ", AS:" + _remoteAs + ">";
+  public int hashCode() {
+    return Objects.hash(
+        _additionalPathsReceive,
+        _additionalPathsSelectAll,
+        _additionalPathsSend,
+        _advertiseExternal,
+        _advertiseInactive,
+        _allowLocalAsIn,
+        _allowRemoteAsOut,
+        _authenticationSettings,
+        _clusterId,
+        _defaultMetric,
+        _description,
+        _ebgpMultihop,
+        _enforceFirstAs,
+        _exportPolicy,
+        _exportPolicySources,
+        _generatedRoutes,
+        _group,
+        _importPolicy,
+        _importPolicySources,
+        _localAs,
+        _localIp,
+        _routeReflectorClient,
+        _sendCommunity);
+  }
+
+  public abstract static class Builder<S extends Builder<S, T>, T extends BgpPeerConfig> {
+    protected boolean _additionalPathsReceive;
+    protected boolean _additionalPathsSelectAll;
+    protected boolean _additionalPathsSend;
+    protected boolean _advertiseExternal;
+    protected boolean _advertiseInactive;
+    protected boolean _allowLocalAsIn;
+    protected boolean _allowRemoteAsOut;
+    @Nullable protected BgpAuthenticationSettings _authenticationSettings;
+    @Nullable protected BgpProcess _bgpProcess;
+    protected Long _clusterId;
+    protected int _defaultMetric;
+    protected String _description;
+    protected boolean _ebgpMultihop;
+    protected boolean _enforceFirstAs;
+    protected String _exportPolicy;
+    @Nullable protected SortedSet<String> _exportPolicySources;
+    @Nullable protected Set<GeneratedRoute> _generatedRoutes;
+    @Nullable protected String _group;
+    @Nullable protected String _importPolicy;
+    @Nullable protected SortedSet<String> _importPolicySources;
+    @Nullable protected Long _localAs;
+    @Nullable protected Ip _localIp;
+    protected boolean _routeReflectorClient;
+    protected boolean _sendCommunity;
+
+    // Identifying fields
+    @Nullable protected String _hostname;
+
+    protected Builder() {}
+
+    public abstract T build();
+
+    protected abstract S getThis();
+
+    public S setAdditionalPathsReceive(boolean additionalPathsReceive) {
+      _additionalPathsReceive = additionalPathsReceive;
+      return getThis();
+    }
+
+    public S setAdditionalPathsSelectAll(boolean additionalPathsSelectAll) {
+      _additionalPathsSelectAll = additionalPathsSelectAll;
+      return getThis();
+    }
+
+    public S setAdditionalPathsSend(boolean additionalPathsSend) {
+      _additionalPathsSend = additionalPathsSend;
+      return getThis();
+    }
+
+    public S setAdvertiseExternal(boolean advertiseExternal) {
+      _advertiseExternal = advertiseExternal;
+      return getThis();
+    }
+
+    public S setAdvertiseInactive(boolean advertiseInactive) {
+      _advertiseInactive = advertiseInactive;
+      return getThis();
+    }
+
+    public S setAllowLocalAsIn(boolean allowLocalAsIn) {
+      _allowLocalAsIn = allowLocalAsIn;
+      return getThis();
+    }
+
+    public S setAllowRemoteAsOut(boolean allowRemoteAsOut) {
+      _allowRemoteAsOut = allowRemoteAsOut;
+      return getThis();
+    }
+
+    public S setAuthenticationSettings(@Nullable BgpAuthenticationSettings authenticationSettings) {
+      _authenticationSettings = authenticationSettings;
+      return getThis();
+    }
+
+    /**
+     * If specified, upon calling {@link #build()}, the neighbor will be added to the appropriate
+     * list of neighbors in the given {@link BgpProcess}.
+     */
+    public S setBgpProcess(@Nonnull BgpProcess bgpProcess) {
+      _bgpProcess = bgpProcess;
+      return getThis();
+    }
+
+    public S setClusterId(Long clusterId) {
+      _clusterId = clusterId;
+      return getThis();
+    }
+
+    public S setDefaultMetric(int defaultMetric) {
+      _defaultMetric = defaultMetric;
+      return getThis();
+    }
+
+    public S setDescription(String description) {
+      _description = description;
+      return getThis();
+    }
+
+    public S setEbgpMultihop(boolean ebgpMultihop) {
+      _ebgpMultihop = ebgpMultihop;
+      return getThis();
+    }
+
+    public S setEnforceFirstAs(boolean enforceFirstAs) {
+      _enforceFirstAs = enforceFirstAs;
+      return getThis();
+    }
+
+    public S setExportPolicy(String exportPolicy) {
+      _exportPolicy = exportPolicy;
+      return getThis();
+    }
+
+    public S setExportPolicySources(@Nullable SortedSet<String> exportPolicySources) {
+      _exportPolicySources = exportPolicySources;
+      return getThis();
+    }
+
+    public S setGeneratedRoutes(@Nullable Set<GeneratedRoute> generatedRoutes) {
+      _generatedRoutes = generatedRoutes;
+      return getThis();
+    }
+
+    public S setGroup(@Nullable String group) {
+      _group = group;
+      return getThis();
+    }
+
+    public S setImportPolicy(@Nullable String importPolicy) {
+      _importPolicy = importPolicy;
+      return getThis();
+    }
+
+    public S setImportPolicySources(@Nullable SortedSet<String> importPolicySources) {
+      _importPolicySources = importPolicySources;
+      return getThis();
+    }
+
+    public S setLocalAs(@Nullable Long localAs) {
+      _localAs = localAs;
+      return getThis();
+    }
+
+    public S setLocalIp(@Nullable Ip localIp) {
+      _localIp = localIp;
+      return getThis();
+    }
+
+    public S setRouteReflectorClient(boolean routeReflectorClient) {
+      _routeReflectorClient = routeReflectorClient;
+      return getThis();
+    }
+
+    public S setSendCommunity(boolean sendCommunity) {
+      _sendCommunity = sendCommunity;
+      return getThis();
+    }
   }
 }

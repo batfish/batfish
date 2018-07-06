@@ -1,6 +1,7 @@
 package org.batfish.datamodel.matchers;
 
 import javax.annotation.Nonnull;
+import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
@@ -40,25 +41,14 @@ final class BgpNeighborMatchersImpl {
     }
   }
 
-  static final class HasRemoteAs extends FeatureMatcher<BgpPeerConfig, Long> {
+  static final class HasRemoteAs extends FeatureMatcher<BgpActivePeerConfig, Long> {
     HasRemoteAs(@Nonnull Matcher<? super Long> subMatcher) {
       super(subMatcher, "A BgpPeerConfig with remoteAs:", "remoteAs");
     }
 
     @Override
-    protected Long featureValueOf(BgpPeerConfig actual) {
+    protected Long featureValueOf(BgpActivePeerConfig actual) {
       return actual.getRemoteAs();
-    }
-  }
-
-  static final class IsDynamic extends FeatureMatcher<BgpPeerConfig, Boolean> {
-    IsDynamic(@Nonnull Matcher<? super Boolean> subMatcher) {
-      super(subMatcher, "A BgpPeerConfig with dynamic set to:", "dynamic");
-    }
-
-    @Override
-    protected Boolean featureValueOf(BgpPeerConfig actual) {
-      return actual.getDynamic();
     }
   }
 }
