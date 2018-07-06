@@ -20,6 +20,8 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasInterfaces;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
+import static org.batfish.representation.palo_alto.PaloAltoConfiguration.DEFAULT_VSYS_NAME;
+import static org.batfish.representation.palo_alto.PaloAltoConfiguration.computeObjectName;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -195,7 +197,8 @@ public class PaloAltoGrammarTest {
     Configuration c = parseConfig(hostname);
 
     // Confirm all the defined syslog servers show up in VI model
-    assertThat(c.getLoggingServers(), containsInAnyOrder("1.1.1.1", "2.2.2.2", "3.3.3.3"));
+    assertThat(
+        c.getLoggingServers(), containsInAnyOrder("1.1.1.1", "2.2.2.2", "3.3.3.3", "4.4.4.4"));
   }
 
   @Test
@@ -304,16 +307,19 @@ public class PaloAltoGrammarTest {
   }
 
   @Test
-  public void testZones() throws IOException {
-    String hostname = "zones";
+  public void testVsysZones() throws IOException {
+    String hostname = "vsys-zones";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     Configuration c = batfish.loadConfigurations().get(hostname);
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse();
 
+    String zoneName = computeObjectName("vsys1", "z1");
+    String zoneEmptyName = computeObjectName("vsys11", "z1");
+
     // Confirm zone definitions are recorded properly
-    assertThat(ccae, hasDefinedStructure(hostname, PaloAltoStructureType.ZONE, "z1"));
-    assertThat(ccae, hasDefinedStructure(hostname, PaloAltoStructureType.ZONE, "zempty"));
+    assertThat(ccae, hasDefinedStructure(hostname, PaloAltoStructureType.ZONE, zoneName));
+    assertThat(ccae, hasDefinedStructure(hostname, PaloAltoStructureType.ZONE, zoneEmptyName));
 
     // Confirm interface references in zones are recorded properly
     assertThat(ccae, hasNumReferrers(hostname, PaloAltoStructureType.INTERFACE, "ethernet1/1", 1));
@@ -321,7 +327,33 @@ public class PaloAltoGrammarTest {
 
     // Confirm zones contain the correct interfaces
     assertThat(
-        c, hasZone("z1", hasMemberInterfaces(containsInAnyOrder("ethernet1/1", "ethernet1/2"))));
-    assertThat(c, hasZone("zempty", hasMemberInterfaces(empty())));
+        c,
+        hasZone(zoneName, hasMemberInterfaces(containsInAnyOrder("ethernet1/1", "ethernet1/2"))));
+    assertThat(c, hasZone(zoneEmptyName, hasMemberInterfaces(empty())));
+  }
+
+  @Test
+  public void testZones() throws IOException {
+    String hostname = "zones";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Configuration c = batfish.loadConfigurations().get(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    String z1Name = computeObjectName(DEFAULT_VSYS_NAME, "z1");
+    String zEmptyName = computeObjectName(DEFAULT_VSYS_NAME, "zempty");
+
+    // Confirm zone definitions are recorded properly
+    assertThat(ccae, hasDefinedStructure(hostname, PaloAltoStructureType.ZONE, z1Name));
+    assertThat(ccae, hasDefinedStructure(hostname, PaloAltoStructureType.ZONE, zEmptyName));
+
+    // Confirm interface references in zones are recorded properly
+    assertThat(ccae, hasNumReferrers(hostname, PaloAltoStructureType.INTERFACE, "ethernet1/1", 1));
+    assertThat(ccae, hasNumReferrers(hostname, PaloAltoStructureType.INTERFACE, "ethernet1/2", 1));
+
+    // Confirm zones contain the correct interfaces
+    assertThat(
+        c, hasZone(z1Name, hasMemberInterfaces(containsInAnyOrder("ethernet1/1", "ethernet1/2"))));
+    assertThat(c, hasZone(zEmptyName, hasMemberInterfaces(empty())));
   }
 }
