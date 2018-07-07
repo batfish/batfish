@@ -27,7 +27,7 @@ public abstract class StateExpr extends Expr {
   public abstract <R> R accept(GenericStateExprVisitor<R> visitor);
 
   private int computeHashCode() {
-    return Objects.hash(getClass(), _params.get());
+    return Objects.hash(getClass().getCanonicalName(), _params.get());
   }
 
   private List<StateParameter> computeParameters() {
