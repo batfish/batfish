@@ -20,13 +20,15 @@ public final class IpSpaceRepresentativeImpl implements IpSpaceRepresentative {
   /** Returns some representative element of an {@link IpSpace ip space}, if any exists. */
   @Override
   public Optional<Ip> getRepresentative(IpSpace ipSpace) {
-    if (factory.varNum() < Prefix.MAX_PREFIX_LENGTH) {
-      factory.setVarNum(Prefix.MAX_PREFIX_LENGTH);
-    }
+    synchronized (factory) {
+      if (factory.varNum() < Prefix.MAX_PREFIX_LENGTH) {
+        factory.setVarNum(Prefix.MAX_PREFIX_LENGTH);
+      }
 
-    BDDInteger ipAddrBdd = BDDInteger.makeFromIndex(factory, Prefix.MAX_PREFIX_LENGTH, 0, false);
-    IpSpaceToBDD ipSpaceToBDD = new IpSpaceToBDD(factory, ipAddrBdd);
-    BDD ipSpaceBDD = ipSpace.accept(ipSpaceToBDD);
-    return ipSpaceToBDD.getBDDInteger().getValueSatisfying(ipSpaceBDD).map(Ip::new);
+      BDDInteger ipAddrBdd = BDDInteger.makeFromIndex(factory, Prefix.MAX_PREFIX_LENGTH, 0, true);
+      IpSpaceToBDD ipSpaceToBDD = new IpSpaceToBDD(factory, ipAddrBdd);
+      BDD ipSpaceBDD = ipSpace.accept(ipSpaceToBDD);
+      return ipSpaceToBDD.getBDDInteger().getValueSatisfying(ipSpaceBDD).map(Ip::new);
+    }
   }
 }
