@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.batfish.common.BatfishException;
+import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
@@ -408,8 +409,9 @@ class Optimizations {
 
                   boolean acc = true;
                   BgpProcess p = conf.getDefaultVrf().getBgpProcess();
-                  for (Map.Entry<Prefix, BgpPeerConfig> e : p.getNeighbors().entrySet()) {
-                    BgpPeerConfig n = e.getValue();
+                  for (Map.Entry<Prefix, BgpActivePeerConfig> e :
+                      p.getActiveNeighbors().entrySet()) {
+                    BgpActivePeerConfig n = e.getValue();
                     // If iBGP used, then don't merge
                     if (n.getLocalAs().equals(n.getRemoteAs())) {
                       acc = false;
