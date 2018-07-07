@@ -3,8 +3,11 @@ package org.batfish.datamodel;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.google.common.collect.ImmutableList;
 import java.io.Serializable;
 import java.util.List;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /** Represents a configured dynamic(remote peer not specified) IPSec peer */
 public class IpsecDynamicPeerConfig extends IpsecPeerConfig implements Serializable {
@@ -16,22 +19,23 @@ public class IpsecDynamicPeerConfig extends IpsecPeerConfig implements Serializa
   /** */
   private static final long serialVersionUID = 1L;
 
-  private List<String> _ikePhase1Policies;
+  @Nonnull private List<String> _ikePhase1Policies;
 
-  private List<IpsecPeerConfig> _peerConfigs;
+  @Nonnull private List<IpsecPeerConfig> _peerConfigs;
 
   @JsonCreator
   public IpsecDynamicPeerConfig(
-      @JsonProperty(PROP_IPSEC_POLICY) String ipsecPolicy,
-      @JsonProperty(PROP_PHYSICAL_INTERFACE) String physicalInterface,
-      @JsonProperty(PROP_POLICY_ACCESS_LIST) IpAccessList policyAccessList,
-      @JsonProperty(PROP_SOURCE_ADDRESS) Ip sourceAddress,
-      @JsonProperty(PROP_TUNNEL_INTERFACE) String tunnelInterface,
-      @JsonProperty(PROP_IKE_PHASE1_POLICIES) List<String> ikePhase1Policies,
-      @JsonProperty(PROP_PEER_CONFIGS) List<IpsecPeerConfig> peerConfigs) {
+      @JsonProperty(PROP_IPSEC_POLICY) @Nullable String ipsecPolicy,
+      @JsonProperty(PROP_PHYSICAL_INTERFACE) @Nullable String physicalInterface,
+      @JsonProperty(PROP_POLICY_ACCESS_LIST) @Nullable IpAccessList policyAccessList,
+      @JsonProperty(PROP_SOURCE_ADDRESS) @Nullable Ip sourceAddress,
+      @JsonProperty(PROP_TUNNEL_INTERFACE) @Nullable String tunnelInterface,
+      @JsonProperty(PROP_IKE_PHASE1_POLICIES) @Nullable List<String> ikePhase1Policies,
+      @JsonProperty(PROP_PEER_CONFIGS) @Nullable List<IpsecPeerConfig> peerConfigs) {
     super(ipsecPolicy, physicalInterface, policyAccessList, sourceAddress, tunnelInterface);
-    _ikePhase1Policies = ikePhase1Policies;
-    _peerConfigs = peerConfigs;
+    _ikePhase1Policies =
+        ikePhase1Policies == null ? ImmutableList.of() : ImmutableList.copyOf(ikePhase1Policies);
+    _peerConfigs = peerConfigs == null ? ImmutableList.of() : ImmutableList.copyOf(peerConfigs);
   }
 
   @JsonPropertyDescription("IKE phase 1 policies which can be used with this IPSec peer")

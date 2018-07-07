@@ -1,9 +1,12 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import java.io.Serializable;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /** Represents a configured static(having a specified remote peer) IPSec peer */
@@ -18,24 +21,24 @@ public class IpsecStaticPeerConfig extends IpsecPeerConfig implements Serializab
   /** */
   private static final long serialVersionUID = 1L;
 
-  private Ip _destinationAddress;
+  @Nonnull private Ip _destinationAddress;
 
-  private String _ikePhase1Policy;
+  @Nullable private String _ikePhase1Policy;
 
-  private IpsecPeerConfig _peerConfig;
+  @Nullable private IpsecPeerConfig _peerConfig;
 
   @JsonCreator
   public IpsecStaticPeerConfig(
-      @JsonProperty(PROP_IPSEC_POLICY) String ipsecPolicy,
-      @JsonProperty(PROP_PHYSICAL_INTERFACE) String physicalInterface,
-      @JsonProperty(PROP_POLICY_ACCESS_LIST) IpAccessList policyAccessList,
-      @JsonProperty(PROP_SOURCE_ADDRESS) Ip sourceAddress,
-      @JsonProperty(PROP_TUNNEL_INTERFACE) String tunnelInterface,
-      @JsonProperty(PROP_DESTINATION_ADDRESS) Ip destinationAddress,
-      @JsonProperty(PROP_IKE_PHASE1_POLICY) String ikePhasePolicy,
-      @JsonProperty(PROP_PEER_CONFIG) IpsecPeerConfig peerConfig) {
+      @JsonProperty(PROP_IPSEC_POLICY) @Nullable String ipsecPolicy,
+      @JsonProperty(PROP_PHYSICAL_INTERFACE) @Nullable String physicalInterface,
+      @JsonProperty(PROP_POLICY_ACCESS_LIST) @Nullable IpAccessList policyAccessList,
+      @JsonProperty(PROP_SOURCE_ADDRESS) @Nullable Ip sourceAddress,
+      @JsonProperty(PROP_TUNNEL_INTERFACE) @Nullable String tunnelInterface,
+      @JsonProperty(PROP_DESTINATION_ADDRESS) @Nullable Ip destinationAddress,
+      @JsonProperty(PROP_IKE_PHASE1_POLICY) @Nullable String ikePhasePolicy,
+      @JsonProperty(PROP_PEER_CONFIG) @Nullable IpsecPeerConfig peerConfig) {
     super(ipsecPolicy, physicalInterface, policyAccessList, sourceAddress, tunnelInterface);
-    _destinationAddress = destinationAddress;
+    _destinationAddress = firstNonNull(destinationAddress, Ip.AUTO);
     _ikePhase1Policy = ikePhasePolicy;
     _peerConfig = peerConfig;
   }

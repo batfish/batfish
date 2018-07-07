@@ -1,11 +1,16 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+import static org.batfish.datamodel.Interface.UNSET_LOCAL_INTERFACE;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 import java.io.Serializable;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /** Represents a configured IPSec peer */
 @JsonSchemaDescription("A configured IPSec peering relationship")
@@ -25,27 +30,27 @@ public abstract class IpsecPeerConfig implements Serializable {
   /** */
   private static final long serialVersionUID = 1L;
 
-  private String _ipsecPolicy;
+  @Nullable private String _ipsecPolicy;
 
-  private String _physicalInterface;
+  @Nonnull private String _physicalInterface;
 
-  private IpAccessList _policyAccessList;
+  @Nullable private IpAccessList _policyAccessList;
 
-  private Ip _sourceAddress;
+  @Nonnull private Ip _sourceAddress;
 
-  private String _tunnelInterface;
+  @Nullable private String _tunnelInterface;
 
   @JsonCreator
   public IpsecPeerConfig(
-      @JsonProperty(PROP_IPSEC_POLICY) String ipsecPolicy,
-      @JsonProperty(PROP_PHYSICAL_INTERFACE) String physicalInterface,
-      @JsonProperty(PROP_POLICY_ACCESS_LIST) IpAccessList policyAccessList,
-      @JsonProperty(PROP_SOURCE_ADDRESS) Ip sourceAddress,
-      @JsonProperty(PROP_TUNNEL_INTERFACE) String tunnelInterface) {
+      @JsonProperty(PROP_IPSEC_POLICY) @Nullable String ipsecPolicy,
+      @JsonProperty(PROP_PHYSICAL_INTERFACE) @Nullable String physicalInterface,
+      @JsonProperty(PROP_POLICY_ACCESS_LIST) @Nullable IpAccessList policyAccessList,
+      @JsonProperty(PROP_SOURCE_ADDRESS) @Nullable Ip sourceAddress,
+      @JsonProperty(PROP_TUNNEL_INTERFACE) @Nullable String tunnelInterface) {
     _ipsecPolicy = ipsecPolicy;
-    _physicalInterface = physicalInterface;
+    _physicalInterface = firstNonNull(physicalInterface, UNSET_LOCAL_INTERFACE);
     _policyAccessList = policyAccessList;
-    _sourceAddress = sourceAddress;
+    _sourceAddress = firstNonNull(sourceAddress, Ip.AUTO);
     _tunnelInterface = tunnelInterface;
   }
 
