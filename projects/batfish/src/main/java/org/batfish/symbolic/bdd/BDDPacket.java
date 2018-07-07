@@ -24,27 +24,28 @@ import org.batfish.datamodel.Prefix;
  */
 public class BDDPacket {
 
-  public static BDDFactory factory;
+  public static final BDDFactory factory = JFactory.init(10000, 1000);
 
   private static BDDPairing pairing;
 
   static {
-    factory = JFactory.init(10000, 1000);
-    factory.disableReorder();
-    factory.setCacheRatio(64);
-    // Disables printing
-    /*
-    try {
-      CallbackHandler handler = new CallbackHandler();
-      Method m = handler.getClass().getDeclaredMethod("handle", (Class<?>[]) null);
-      factory.registerGCCallback(handler, m);
-      factory.registerResizeCallback(handler, m);
-      factory.registerReorderCallback(handler, m);
-    } catch (NoSuchMethodException e) {
-      e.printStackTrace();
+    synchronized (factory) {
+      factory.disableReorder();
+      factory.setCacheRatio(64);
+      // Disables printing
+      /*
+      try {
+        CallbackHandler handler = new CallbackHandler();
+        Method m = handler.getClass().getDeclaredMethod("handle", (Class<?>[]) null);
+        factory.registerGCCallback(handler, m);
+        factory.registerResizeCallback(handler, m);
+        factory.registerReorderCallback(handler, m);
+      } catch (NoSuchMethodException e) {
+        e.printStackTrace();
+      }
+      */
+      pairing = factory.makePair();
     }
-    */
-    pairing = factory.makePair();
   }
 
   private Map<Integer, String> _bitNames;
