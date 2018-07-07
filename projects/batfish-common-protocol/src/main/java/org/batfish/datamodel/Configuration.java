@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Iterables;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 import java.util.Collections;
 import java.util.Comparator;
@@ -330,7 +331,10 @@ public final class Configuration extends ComparableStructure<String> {
     for (Vrf vrf : _vrfs.values()) {
       BgpProcess bgpProcess = vrf.getBgpProcess();
       if (bgpProcess != null) {
-        for (BgpPeerConfig neighbor : bgpProcess.getNeighbors().values()) {
+        for (BgpPeerConfig neighbor :
+            Iterables.concat(
+                bgpProcess.getActiveNeighbors().values(),
+                bgpProcess.getPassiveNeighbors().values())) {
           neighbor.setExportPolicySources(getRoutingPolicySources(neighbor.getExportPolicy()));
           neighbor.setImportPolicySources(getRoutingPolicySources(neighbor.getImportPolicy()));
         }

@@ -1,7 +1,7 @@
 package org.batfish.datamodel;
 
 import com.google.common.collect.Table;
-import com.google.common.graph.Network;
+import com.google.common.graph.ValueGraph;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.Set;
@@ -12,7 +12,7 @@ public interface DataPlane extends Serializable {
 
   Table<String, String, Set<BgpRoute>> getBgpRoutes(boolean multipath);
 
-  Network<BgpPeerConfig, BgpSession> getBgpTopology();
+  ValueGraph<BgpPeerConfigId, BgpSessionProperties> getBgpTopology();
 
   Map<String, Configuration> getConfigurations();
 

@@ -5,13 +5,16 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.BDDPairing;
 import net.sf.javabdd.JFactory;
 import org.batfish.common.BatfishException;
+import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.Prefix;
 
 /**
@@ -21,7 +24,7 @@ import org.batfish.datamodel.Prefix;
  */
 public class BDDPacket {
 
-  static BDDFactory factory;
+  public static BDDFactory factory;
 
   private static BDDPairing pairing;
 
@@ -80,7 +83,7 @@ public class BDDPacket {
    * Creates a collection of BDD variables representing the
    * various attributes of a control plane advertisement.
    */
-  BDDPacket() {
+  public BDDPacket() {
 
     // Make sure we have the right number of variables
     int numVars = factory.varNum();
@@ -227,6 +230,35 @@ public class BDDPacket {
     visited.add(bdd);
     dotRec(sb, bdd.low(), visited);
     dotRec(sb, bdd.high(), visited);
+  }
+
+  /**
+   * @param bdd a BDD representing a set of packet headers
+   * @return A Flow.Builder for a representative of the set, if it's non-empty
+   */
+  public Optional<Flow.Builder> getFlow(BDD bdd) {
+    BDD satAssignment = bdd.fullSatOne();
+    if (satAssignment.isZero()) {
+      return Optional.empty();
+    }
+
+    Flow.Builder fb = Flow.builder();
+    fb.setDstIp(new Ip(_dstIp.satAssignmentToLong(satAssignment)));
+    fb.setSrcIp(new Ip(_srcIp.satAssignmentToLong(satAssignment)));
+    fb.setDstPort(_dstPort.satAssignmentToLong(satAssignment).intValue());
+    fb.setSrcPort(_srcPort.satAssignmentToLong(satAssignment).intValue());
+    fb.setIpProtocol(
+        IpProtocol.fromNumber(_ipProtocol.satAssignmentToLong(satAssignment).intValue()));
+    fb.setIcmpCode(_icmpCode.satAssignmentToLong(satAssignment).intValue());
+    fb.setIcmpType(_icmpType.satAssignmentToLong(satAssignment).intValue());
+    fb.setTcpFlagsAck(_tcpAck.and(satAssignment).isZero() ? 0 : 1);
+    fb.setTcpFlagsCwr(_tcpCwr.and(satAssignment).isZero() ? 0 : 1);
+    fb.setTcpFlagsEce(_tcpEce.and(satAssignment).isZero() ? 0 : 1);
+    fb.setTcpFlagsFin(_tcpFin.and(satAssignment).isZero() ? 0 : 1);
+    fb.setTcpFlagsPsh(_tcpPsh.and(satAssignment).isZero() ? 0 : 1);
+    fb.setTcpFlagsRst(_tcpRst.and(satAssignment).isZero() ? 0 : 1);
+    fb.setTcpFlagsUrg(_tcpUrg.and(satAssignment).isZero() ? 0 : 1);
+    return Optional.of(fb);
   }
 
   public BDDInteger getDstIp() {

@@ -10,10 +10,10 @@ import java.util.SortedSet;
 import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.datamodel.BgpSessionProperties.SessionType;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.question.bgpsessionstatus.BgpSessionInfo.SessionStatus;
-import org.batfish.question.bgpsessionstatus.BgpSessionInfo.SessionType;
 
 /** Based on node configurations, determines the status of IBGP and EBGP sessions. */
 public class BgpSessionStatusQuestion extends Question {
@@ -59,7 +59,7 @@ public class BgpSessionStatusQuestion extends Question {
    *     Default is '.*' (all nodes).
    * @param statusRegex Regular expression to match status type (see {@link
    *     BgpSessionInfo.SessionStatus})
-   * @param type Regular expression to match session type (see {@link BgpSessionInfo.SessionType})
+   * @param type Regular expression to match session type (see {@link SessionType})
    */
   @JsonCreator
   public BgpSessionStatusQuestion(

@@ -52,6 +52,8 @@ import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
 import org.batfish.datamodel.AsPathAccessList;
+import org.batfish.datamodel.BgpActivePeerConfig;
+import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpTieBreaker;
 import org.batfish.datamodel.CommunityList;
@@ -1405,22 +1407,15 @@ public final class CiscoConfiguration extends VendorConfiguration {
     // Before we process any neighbors, execute the inheritance.
     nxBgpGlobal.doInherit(_w);
 
-    // This is ugly logic to handle the fact that BgpPeerConfig does not currently support
-    // separate tracking of active and passive neighbors.
-    SortedMap<Prefix, BgpPeerConfig> newNeighbors = new TreeMap<>();
     // Process active neighbors first.
-    Map<Ip, BgpPeerConfig> activeNeighbors =
+    Map<Prefix, BgpActivePeerConfig> activeNeighbors =
         CiscoNxConversions.getNeighbors(c, v, newBgpProcess, nxBgpGlobal, nxBgpVrf, _w);
-    activeNeighbors.forEach(
-        (key, value) -> newNeighbors.put(new Prefix(key, Prefix.MAX_PREFIX_LENGTH), value));
-    // Process passive neighbors next. Note that for now, a passive neighbor listening
-    // to a /32 will overwrite an active neighbor of the same IP.
-    // TODO(https://github.com/batfish/batfish/issues/1228)
-    Map<Prefix, BgpPeerConfig> passiveNeighbors =
-        CiscoNxConversions.getPassiveNeighbors(c, v, newBgpProcess, nxBgpGlobal, nxBgpVrf, _w);
-    newNeighbors.putAll(passiveNeighbors);
+    newBgpProcess.setNeighbors(ImmutableSortedMap.copyOf(activeNeighbors));
 
-    newBgpProcess.setNeighbors(ImmutableSortedMap.copyOf(newNeighbors));
+    // Process passive neighbors next
+    Map<Prefix, BgpPassivePeerConfig> passiveNeighbors =
+        CiscoNxConversions.getPassiveNeighbors(c, v, newBgpProcess, nxBgpGlobal, nxBgpVrf, _w);
+    newBgpProcess.setDynamicNeighbors(ImmutableSortedMap.copyOf(passiveNeighbors));
 
     return newBgpProcess;
   }
@@ -1451,7 +1446,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     newBgpProcess.setMultipathEbgp(multipathEbgp);
     newBgpProcess.setMultipathIbgp(multipathIbgp);
 
-    Map<Prefix, BgpPeerConfig> newBgpNeighbors = newBgpProcess.getNeighbors();
     int defaultMetric = proc.getDefaultMetric();
     Ip bgpRouterId = getBgpRouterId(c, vrfName, proc);
     newBgpProcess.setRouterId(bgpRouterId);
@@ -1901,47 +1895,51 @@ public final class CiscoConfiguration extends VendorConfiguration {
         }
         Long pgLocalAs = lpg.getLocalAs();
         long localAs = pgLocalAs != null ? pgLocalAs : proc.getName();
-        BgpPeerConfig newNeighbor;
+
+        BgpPeerConfig.Builder<?, ?> newNeighborBuilder;
         if (lpg instanceof IpBgpPeerGroup) {
           IpBgpPeerGroup ipg = (IpBgpPeerGroup) lpg;
-          Ip neighborAddress = ipg.getIp();
-          newNeighbor = new BgpPeerConfig(neighborAddress, c, false);
+          newNeighborBuilder =
+              BgpActivePeerConfig.builder()
+                  .setPeerAddress(ipg.getIp())
+                  .setRemoteAs(lpg.getRemoteAs());
         } else if (lpg instanceof DynamicIpBgpPeerGroup) {
           DynamicIpBgpPeerGroup dpg = (DynamicIpBgpPeerGroup) lpg;
-          Prefix neighborAddressRange = dpg.getPrefix();
-          newNeighbor = new BgpPeerConfig(neighborAddressRange, c, true);
+          newNeighborBuilder =
+              BgpPassivePeerConfig.builder()
+                  .setPeerPrefix(dpg.getPrefix())
+                  .setRemoteAs(ImmutableList.of(lpg.getRemoteAs()));
         } else if (lpg instanceof Ipv6BgpPeerGroup || lpg instanceof DynamicIpv6BgpPeerGroup) {
           // TODO: implement ipv6 bgp neighbors
           continue;
         } else {
           throw new VendorConversionException("Invalid BGP leaf neighbor type");
         }
-        newBgpNeighbors.put(newNeighbor.getPrefix(), newNeighbor);
+        newNeighborBuilder.setBgpProcess(newBgpProcess);
 
-        newNeighbor.setAdditionalPathsReceive(lpg.getAdditionalPathsReceive());
-        newNeighbor.setAdditionalPathsSelectAll(lpg.getAdditionalPathsSelectAll());
-        newNeighbor.setAdditionalPathsSend(lpg.getAdditionalPathsSend());
-        newNeighbor.setAdvertiseInactive(lpg.getAdvertiseInactive());
-        newNeighbor.setAllowLocalAsIn(lpg.getAllowAsIn());
-        newNeighbor.setAllowRemoteAsOut(lpg.getDisablePeerAsCheck());
-        newNeighbor.setRouteReflectorClient(lpg.getRouteReflectorClient());
-        newNeighbor.setClusterId(clusterId.asLong());
-        newNeighbor.setDefaultMetric(defaultMetric);
-        newNeighbor.setDescription(description);
-        newNeighbor.setEbgpMultihop(lpg.getEbgpMultihop());
+        newNeighborBuilder.setAdditionalPathsReceive(lpg.getAdditionalPathsReceive());
+        newNeighborBuilder.setAdditionalPathsSelectAll(lpg.getAdditionalPathsSelectAll());
+        newNeighborBuilder.setAdditionalPathsSend(lpg.getAdditionalPathsSend());
+        newNeighborBuilder.setAdvertiseInactive(lpg.getAdvertiseInactive());
+        newNeighborBuilder.setAllowLocalAsIn(lpg.getAllowAsIn());
+        newNeighborBuilder.setAllowRemoteAsOut(lpg.getDisablePeerAsCheck());
+        newNeighborBuilder.setRouteReflectorClient(lpg.getRouteReflectorClient());
+        newNeighborBuilder.setClusterId(clusterId.asLong());
+        newNeighborBuilder.setDefaultMetric(defaultMetric);
+        newNeighborBuilder.setDescription(description);
+        newNeighborBuilder.setEbgpMultihop(lpg.getEbgpMultihop());
         if (defaultRoute != null) {
-          newNeighbor.getGeneratedRoutes().add(defaultRoute.build());
+          newNeighborBuilder.setGeneratedRoutes(ImmutableSet.of(defaultRoute.build()));
         }
-        newNeighbor.setGroup(lpg.getGroupName());
+        newNeighborBuilder.setGroup(lpg.getGroupName());
         if (importPolicy != null) {
-          newNeighbor.setImportPolicy(inboundRouteMapName);
+          newNeighborBuilder.setImportPolicy(inboundRouteMapName);
         }
-        newNeighbor.setLocalAs(localAs);
-        newNeighbor.setLocalIp(updateSource);
-        newNeighbor.setExportPolicy(peerExportPolicyName);
-        newNeighbor.setRemoteAs(lpg.getRemoteAs());
-        newNeighbor.setSendCommunity(lpg.getSendCommunity());
-        newNeighbor.setVrf(vrfName);
+        newNeighborBuilder.setLocalAs(localAs);
+        newNeighborBuilder.setLocalIp(updateSource);
+        newNeighborBuilder.setExportPolicy(peerExportPolicyName);
+        newNeighborBuilder.setSendCommunity(lpg.getSendCommunity());
+        newNeighborBuilder.build();
       }
     }
     return newBgpProcess;

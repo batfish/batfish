@@ -4,16 +4,18 @@ import static org.hamcrest.Matchers.equalTo;
 
 import java.util.Map;
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.BgpPeerConfig;
+import org.batfish.datamodel.BgpActivePeerConfig;
+import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.matchers.BgpProcessMatchersImpl.HasActiveNeighbor;
 import org.batfish.datamodel.matchers.BgpProcessMatchersImpl.HasMultipathEbgp;
 import org.batfish.datamodel.matchers.BgpProcessMatchersImpl.HasMultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.matchers.BgpProcessMatchersImpl.HasMultipathIbgp;
-import org.batfish.datamodel.matchers.BgpProcessMatchersImpl.HasNeighbor;
 import org.batfish.datamodel.matchers.BgpProcessMatchersImpl.HasNeighbors;
+import org.batfish.datamodel.matchers.BgpProcessMatchersImpl.HasPassiveNeighbor;
 import org.batfish.datamodel.matchers.BgpProcessMatchersImpl.HasRouterId;
 import org.hamcrest.Matcher;
 
@@ -65,9 +67,14 @@ public class BgpProcessMatchers {
    * Provides a matcher that matches if the provided {@code subMatcher} matches the BGP process's
    * neighbor with specified prefix.
    */
-  public static HasNeighbor hasNeighbor(
-      @Nonnull Prefix prefix, @Nonnull Matcher<? super BgpPeerConfig> subMatcher) {
-    return new HasNeighbor(prefix, subMatcher);
+  public static HasActiveNeighbor hasActiveNeighbor(
+      @Nonnull Prefix prefix, @Nonnull Matcher<? super BgpActivePeerConfig> subMatcher) {
+    return new HasActiveNeighbor(prefix, subMatcher);
+  }
+
+  public static HasPassiveNeighbor hasPassiveNeighbor(
+      @Nonnull Prefix prefix, @Nonnull Matcher<? super BgpPassivePeerConfig> subMatcher) {
+    return new HasPassiveNeighbor(prefix, subMatcher);
   }
 
   /**
@@ -75,7 +82,7 @@ public class BgpProcessMatchers {
    * neighbors.
    */
   public static HasNeighbors hasNeighbors(
-      @Nonnull Matcher<? super Map<Prefix, BgpPeerConfig>> subMatcher) {
+      @Nonnull Matcher<? super Map<Prefix, BgpActivePeerConfig>> subMatcher) {
     return new HasNeighbors(subMatcher);
   }
 
