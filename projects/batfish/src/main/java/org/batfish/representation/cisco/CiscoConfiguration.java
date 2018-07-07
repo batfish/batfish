@@ -6,12 +6,16 @@ import static org.batfish.datamodel.Interface.UNSET_LOCAL_INTERFACE;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
 import static org.batfish.representation.cisco.CiscoConversions.generateAggregateRoutePolicy;
+import static org.batfish.representation.cisco.CiscoConversions.getIkePhase1Policy;
+import static org.batfish.representation.cisco.CiscoConversions.getMatchingIKePhase1Policies;
 import static org.batfish.representation.cisco.CiscoConversions.resolveIsakmpProfileIfaceNames;
 import static org.batfish.representation.cisco.CiscoConversions.resolveKeyringIfaceNames;
+import static org.batfish.representation.cisco.CiscoConversions.resolveTunnelfaceNames;
 import static org.batfish.representation.cisco.CiscoConversions.suppressSummarizedPrefixes;
 import static org.batfish.representation.cisco.CiscoConversions.toIkePhase1Key;
 import static org.batfish.representation.cisco.CiscoConversions.toIkePhase1Policy;
 import static org.batfish.representation.cisco.CiscoConversions.toIkePhase1Proposal;
+import static org.batfish.representation.cisco.CiscoConversions.toIpsecPeerConfig;
 import static org.batfish.representation.cisco.CiscoConversions.toIpsecPhase2Policy;
 import static org.batfish.representation.cisco.CiscoConversions.toIpsecPhase2Proposal;
 import static org.batfish.representation.cisco.CiscoConversions.toIpsecProposal;
@@ -68,10 +72,13 @@ import org.batfish.datamodel.Ip6AccessList;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.IpsecDynamicPeerConfig;
+import org.batfish.datamodel.IpsecPeerConfig;
 import org.batfish.datamodel.IpsecPhase2Policy;
 import org.batfish.datamodel.IpsecPhase2Proposal;
 import org.batfish.datamodel.IpsecPolicy;
 import org.batfish.datamodel.IpsecProposal;
+import org.batfish.datamodel.IpsecStaticPeerConfig;
 import org.batfish.datamodel.IpsecVpn;
 import org.batfish.datamodel.IsisInterfaceLevelSettings;
 import org.batfish.datamodel.IsisInterfaceSettings;
@@ -1958,7 +1965,30 @@ public final class CiscoConfiguration extends VendorConfiguration {
     }
 
     IpsecPolicy ipsecPolicy = toIpsecPolicy(c, cryptoMapEntry, generatedName);
+
     c.getIpsecPolicies().put(generatedName, ipsecPolicy);
+
+    ImmutableSortedMap.Builder<String, IpsecPhase2Policy> ipsecPhase2PolicyBuilder =
+        ImmutableSortedMap.naturalOrder();
+
+    IpsecPhase2Policy ipsecPhase2Policy = toIpsecPhase2Policy(cryptoMapEntry);
+    String ipsecPhase2PolicyName = String.format("~IPSEC_PHASE2_POLICY:%s~", generatedName);
+    // add IPSec phase 2 policies to existing ones
+    c.setIpsecPhase2Policies(
+        ipsecPhase2PolicyBuilder
+            .putAll(c.getIpsecPhase2Policies())
+            .put(ipsecPhase2PolicyName, ipsecPhase2Policy)
+            .build());
+
+    ImmutableSortedMap.Builder<String, IpsecPeerConfig> ipsecPeerConfigsBuilder =
+        ImmutableSortedMap.naturalOrder();
+    c.setIpsecPeerConfigs(
+        ipsecPeerConfigsBuilder
+            .putAll(c.getIpsecPeerconfigs())
+            .putAll(
+                toIpsecPeerConfigs(
+                    c, cryptoMapEntry, generatedName, cryptoMapName, ipsecPhase2PolicyName))
+            .build());
 
     List<IpsecVpn> ipsecVpns = toIpsecVpns(c, cryptoMapEntry, generatedName, cryptoMapName);
     ipsecVpns.forEach(
@@ -2000,7 +2030,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     }
   }
 
-  /** Converts a CryptoMapEntry to an IpsecPolicy */
+  /** Converts a CryptoMapEntry to an IPSecPolicy */
   private static IpsecPolicy toIpsecPolicy(
       Configuration c, CryptoMapEntry cryptoMapEntry, String ipsecPolicyName) {
     IpsecPolicy ipsecPolicy = new IpsecPolicy(ipsecPolicyName);
@@ -2025,6 +2055,81 @@ public final class CiscoConfiguration extends VendorConfiguration {
     ipsecPolicy.setPfsKeyGroup(cryptoMapEntry.getPfsKeyGroup());
 
     return ipsecPolicy;
+  }
+
+  /**
+   * Converts a crypto map entry to multiple IPSec peer configs(one per interface on which it is
+   * referred)
+   */
+  private Map<String, IpsecPeerConfig> toIpsecPeerConfigs(
+      Configuration c,
+      CryptoMapEntry cryptoMapEntry,
+      String generatedName,
+      String cryptoMapName,
+      String ipsecPhase2Policy) {
+
+    List<org.batfish.datamodel.Interface> referencingInterfaces =
+        c.getInterfaces()
+            .values()
+            .stream()
+            .filter(iface -> Objects.equals(iface.getCryptoMap(), cryptoMapName))
+            .collect(Collectors.toList());
+
+    ImmutableSortedMap.Builder<String, IpsecPeerConfig> ipsecPeerConfigsBuilder =
+        ImmutableSortedMap.naturalOrder();
+    IpsecPeerConfig.Builder<?, ?> newIpsecPeerConfigBuilder;
+
+    for (org.batfish.datamodel.Interface iface : referencingInterfaces) {
+      // skipping interfaces with no ip-address
+      if (iface.getAddress() == null) {
+        _w.redFlag(
+            String.format(
+                "Interface %s with declared crypto-map %s has no ip-address",
+                iface.getName(), cryptoMapName));
+        continue;
+      }
+
+      String ikePhase1Policy = cryptoMapEntry.getIsakmpProfile();
+
+      // dynamic crypto maps
+      if (cryptoMapEntry.getPeer() != null) {
+        if (ikePhase1Policy == null) {
+          ikePhase1Policy =
+              getIkePhase1Policy(
+                  c.getIkePhase1Policies(), cryptoMapEntry.getPeer(), iface.getName());
+        }
+        newIpsecPeerConfigBuilder =
+            IpsecStaticPeerConfig.builder()
+                .setDestinationAddress(cryptoMapEntry.getPeer())
+                .setIkePhase1Policy(ikePhase1Policy);
+      } else {
+        // static crypto maps
+        List<String> ikePhase1Policies;
+        if (ikePhase1Policy == null) {
+          ikePhase1Policies =
+              getMatchingIKePhase1Policies(c.getIkePhase1Policies(), iface.getName());
+        } else {
+          ikePhase1Policies = ImmutableList.of(ikePhase1Policy);
+        }
+        newIpsecPeerConfigBuilder =
+            IpsecDynamicPeerConfig.builder().setIkePhase1Policies(ikePhase1Policies);
+      }
+      newIpsecPeerConfigBuilder
+          .setPhysicalInterface(iface.getName())
+          .setIpsecPolicy(ipsecPhase2Policy)
+          .setSourceAddress(iface.getAddress().getIp());
+
+      if (cryptoMapEntry.getAccessList() != null) {
+        IpAccessList cryptoAcl = c.getIpAccessLists().get(cryptoMapEntry.getAccessList());
+        if (cryptoAcl != null) {
+          newIpsecPeerConfigBuilder.setPolicyAccessList(makeSymmetrical(cryptoAcl));
+        }
+      }
+      ipsecPeerConfigsBuilder.put(
+          String.format("~IPSEC_PEER_CONFIG:%s_%s~", generatedName, iface.getName()),
+          newIpsecPeerConfigBuilder.build());
+    }
+    return ipsecPeerConfigsBuilder.build();
   }
 
   /**
@@ -3265,6 +3370,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     resolveKeyringIfaceNames(_interfaces, _keyrings);
     resolveIsakmpProfileIfaceNames(_interfaces, _isakmpProfiles);
+    resolveTunnelfaceNames(_interfaces);
 
     addIkePoliciesAndGateways(c);
 
@@ -3310,11 +3416,18 @@ public final class CiscoConfiguration extends VendorConfiguration {
     }
 
     // ipsec vpns
+    ImmutableSortedMap.Builder<String, IpsecPeerConfig> ipsecPeerConfigBuilder =
+        ImmutableSortedMap.naturalOrder();
+    ipsecPeerConfigBuilder.putAll(c.getIpsecPeerconfigs());
     for (Entry<String, Interface> e : _interfaces.entrySet()) {
       String name = e.getKey();
       Interface iface = e.getValue();
       Tunnel tunnel = iface.getTunnel();
       if (tunnel != null && tunnel.getMode() == TunnelMode.IPSEC) {
+        if (tunnel.getIpsecProfileName() == null) {
+          _w.redFlag(String.format("No Ipsec Profile set for Ipsec tunnel %s", name));
+          continue;
+        }
         IpsecVpn ipsecVpn = new IpsecVpn(name, c);
         ipsecVpn.setBindInterface(c.getInterfaces().get(name));
         ipsecVpn.setIpsecPolicy(c.getIpsecPolicies().get(tunnel.getIpsecProfileName()));
@@ -3334,8 +3447,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
           }
         }
         c.getIpsecVpns().put(ipsecVpn.getName(), ipsecVpn);
+        // convert to IpsecPeerConfig
+        ipsecPeerConfigBuilder.put(name, toIpsecPeerConfig(tunnel, name, this, c));
       }
     }
+    c.setIpsecPeerConfigs(ipsecPeerConfigBuilder.build());
 
     // convert routing processes
     _vrfs.forEach(
@@ -4161,7 +4277,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     for (Interface iface : _interfaces.values()) {
       Tunnel tunnel = iface.getTunnel();
-      if (tunnel != null && tunnel.getSourceInterfaceName() != null) {
+      if (tunnel != null && !tunnel.getSourceInterfaceName().equals(UNSET_LOCAL_INTERFACE)) {
         tunnel.setSourceAddress(ifaceNameToPrimaryIp.get(tunnel.getSourceInterfaceName()));
       }
     }

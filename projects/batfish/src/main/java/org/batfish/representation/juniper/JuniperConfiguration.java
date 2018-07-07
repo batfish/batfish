@@ -49,8 +49,10 @@ import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
+import org.batfish.datamodel.IpsecPeerConfig;
 import org.batfish.datamodel.IpsecPhase2Policy;
 import org.batfish.datamodel.IpsecPhase2Proposal;
+import org.batfish.datamodel.IpsecStaticPeerConfig;
 import org.batfish.datamodel.IsisInterfaceMode;
 import org.batfish.datamodel.IsisProcess;
 import org.batfish.datamodel.IsoAddress;
@@ -1526,7 +1528,42 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return newIpsecPolicy;
   }
 
-  static IpsecPhase2Policy toIpsecPhase2Policy(IpsecPolicy ipsecPolicy) {
+  @Nullable
+  private IpsecPeerConfig toIpsecPeerConfig(IpsecVpn ipsecVpn) {
+    IpsecStaticPeerConfig.Builder ipsecStaticConfigBuilder = IpsecStaticPeerConfig.builder();
+    ipsecStaticConfigBuilder.setTunnelInterface(ipsecVpn.getBindInterface().getName());
+    IkeGateway ikeGateway = _ikeGateways.get(ipsecVpn.getGateway());
+
+    if (ikeGateway == null) {
+      _w.redFlag(
+          String.format(
+              "Cannot find the IKE gateway %s for ipsec vpn %s",
+              ipsecVpn.getGateway(), ipsecVpn.getName()));
+      return null;
+    }
+    ipsecStaticConfigBuilder.setDestinationAddress(ikeGateway.getAddress());
+    ipsecStaticConfigBuilder.setPhysicalInterface(ikeGateway.getExternalInterface().getName());
+
+    if (ikeGateway.getLocalAddress() != null) {
+      ipsecStaticConfigBuilder.setSourceAddress(ikeGateway.getLocalAddress());
+    } else if (ikeGateway.getExternalInterface() != null
+        && ikeGateway.getExternalInterface().getPrimaryAddress() != null) {
+      ipsecStaticConfigBuilder.setSourceAddress(
+          ikeGateway.getExternalInterface().getPrimaryAddress().getIp());
+    } else {
+      _w.redFlag(
+          String.format(
+              "External interface %s configured on IKE Gateway %s does not have any IP",
+              ikeGateway.getExternalInterface().getName(), ikeGateway.getName()));
+      return null;
+    }
+
+    ipsecStaticConfigBuilder.setIpsecPolicy(ipsecVpn.getIpsecPolicy());
+    ipsecStaticConfigBuilder.setIkePhase1Policy(ikeGateway.getIkePolicy());
+    return ipsecStaticConfigBuilder.build();
+  }
+
+  private static IpsecPhase2Policy toIpsecPhase2Policy(IpsecPolicy ipsecPolicy) {
     IpsecPhase2Policy ipsecPhase2Policy = new IpsecPhase2Policy();
     ipsecPhase2Policy.setPfsKeyGroup(ipsecPolicy.getPfsKeyGroup());
     ipsecPhase2Policy.setProposals(ImmutableList.copyOf(ipsecPolicy.getProposals()));
@@ -2067,13 +2104,23 @@ public final class JuniperConfiguration extends VendorConfiguration {
       ipsecPhase2PoliciesBuilder.put(name, toIpsecPhase2Policy(oldIpsecPolicy));
     }
 
+    _c.setIpsecPhase2Policies(ipsecPhase2PoliciesBuilder.build());
+    ImmutableSortedMap.Builder<String, IpsecPeerConfig> ipsecPeerConfigBuilder =
+        ImmutableSortedMap.naturalOrder();
     // convert ipsec vpns
     for (Entry<String, IpsecVpn> e : _ipsecVpns.entrySet()) {
       String name = e.getKey();
       IpsecVpn oldIpsecVpn = e.getValue();
       org.batfish.datamodel.IpsecVpn newIpsecVpn = toIpsecVpn(oldIpsecVpn);
       _c.getIpsecVpns().put(name, newIpsecVpn);
+
+      IpsecPeerConfig ipsecPeerConfig = toIpsecPeerConfig(oldIpsecVpn);
+      if (ipsecPeerConfig != null) {
+        ipsecPeerConfigBuilder.put(name, ipsecPeerConfig);
+      }
     }
+
+    _c.setIpsecPeerConfigs(ipsecPeerConfigBuilder.build());
 
     // zones
     for (Zone zone : _zones.values()) {

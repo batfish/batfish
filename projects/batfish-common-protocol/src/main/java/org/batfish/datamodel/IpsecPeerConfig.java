@@ -5,33 +5,44 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import java.io.Serializable;
 
-public class IpsecPeerConfig implements Serializable {
+public abstract class IpsecPeerConfig implements Serializable {
 
-  private static final String PROP_SOURCE_ADDRESS = "sourceAddress";
+  static final String PROP_IPSEC_POLICY = "ipsecPolicy";
 
-  private static final String PROP_TUNNEL_INTERFACE = "tunnelInterface";
+  static final String PROP_PHYSICAL_INTERFACE = "physicalInterface";
 
-  private static final String PROP_PHYSICAL_INTERFACE = "physicalInterface";
+  static final String PROP_POLICY_ACCESS_LIST = "policyAccessList";
 
-  private static final String PROP_IPSEC_POLICY = "ipsecPolicy";
+  static final String PROP_SOURCE_ADDRESS = "sourceAddress";
 
-  private static final String PROP_POLICY_ACCESS_LIST = "policyAccessList";
+  static final String PROP_TUNNEL_INTERFACE = "tunnelInterface";
 
   /** */
   private static final long serialVersionUID = 1L;
 
-  private Ip _sourceAddress;
+  private String _ipsecPolicy;
 
   private String _physicalInterface;
 
-  private String _tunnelInterface;
-
-  private String _ipsecPolicy;
-
   private IpAccessList _policyAccessList;
 
+  private Ip _sourceAddress;
+
+  private String _tunnelInterface;
+
   @JsonCreator
-  public IpsecPeerConfig() {}
+  public IpsecPeerConfig(
+      @JsonProperty(PROP_IPSEC_POLICY) String ipsecPolicy,
+      @JsonProperty(PROP_PHYSICAL_INTERFACE) String physicalInterface,
+      @JsonProperty(PROP_POLICY_ACCESS_LIST) IpAccessList policyAccessList,
+      @JsonProperty(PROP_SOURCE_ADDRESS) Ip sourceAddress,
+      @JsonProperty(PROP_TUNNEL_INTERFACE) String tunnelInterface) {
+    _ipsecPolicy = ipsecPolicy;
+    _physicalInterface = physicalInterface;
+    _policyAccessList = policyAccessList;
+    _sourceAddress = sourceAddress;
+    _tunnelInterface = tunnelInterface;
+  }
 
   @JsonPropertyDescription("Source address for IPSec peer")
   @JsonProperty(PROP_SOURCE_ADDRESS)
@@ -63,28 +74,44 @@ public class IpsecPeerConfig implements Serializable {
     return _policyAccessList;
   }
 
-  @JsonProperty(PROP_SOURCE_ADDRESS)
-  public void setSourceAddress(Ip sourceAddress) {
-    _sourceAddress = sourceAddress;
-  }
+  public abstract static class Builder<S extends Builder<S, T>, T extends IpsecPeerConfig> {
+    Ip _sourceAddress;
 
-  @JsonProperty(PROP_PHYSICAL_INTERFACE)
-  public void setPhysicalInterface(String physicalInterface) {
-    _physicalInterface = physicalInterface;
-  }
+    String _physicalInterface;
 
-  @JsonProperty(PROP_TUNNEL_INTERFACE)
-  public void setTunnelInterface(String tunnelInterface) {
-    _tunnelInterface = tunnelInterface;
-  }
+    String _tunnelInterface;
 
-  @JsonProperty(PROP_IPSEC_POLICY)
-  public void setIpsecPolicy(String ipsecPolicy) {
-    _ipsecPolicy = ipsecPolicy;
-  }
+    String _ipsecPolicy;
 
-  @JsonProperty(PROP_POLICY_ACCESS_LIST)
-  public void setPolicyAccessList(IpAccessList policyAccessList) {
-    _policyAccessList = policyAccessList;
+    IpAccessList _policyAccessList;
+
+    public abstract T build();
+
+    protected abstract S getThis();
+
+    public final S setSourceAddress(Ip sourceAddress) {
+      _sourceAddress = sourceAddress;
+      return getThis();
+    }
+
+    public final S setPhysicalInterface(String physicalInterface) {
+      _physicalInterface = physicalInterface;
+      return getThis();
+    }
+
+    public final S setTunnelInterface(String tunnelInterface) {
+      _tunnelInterface = tunnelInterface;
+      return getThis();
+    }
+
+    public final S setIpsecPolicy(String ipsecPolicy) {
+      _ipsecPolicy = ipsecPolicy;
+      return getThis();
+    }
+
+    public final S setPolicyAccessList(IpAccessList policyAccessList) {
+      _policyAccessList = policyAccessList;
+      return getThis();
+    }
   }
 }

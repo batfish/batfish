@@ -6,6 +6,7 @@ import javax.annotation.Nonnull;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpsecPeerConfig;
+import org.batfish.datamodel.IpsecStaticPeerConfig;
 import org.batfish.datamodel.matchers.IpsecStaticPeerConfigMatchersImpl.HasDestinationAddress;
 import org.batfish.datamodel.matchers.IpsecStaticPeerConfigMatchersImpl.HasIkePhase1Policy;
 import org.batfish.datamodel.matchers.IpsecStaticPeerConfigMatchersImpl.HasIpsecPolicy;
@@ -14,6 +15,7 @@ import org.batfish.datamodel.matchers.IpsecStaticPeerConfigMatchersImpl.HasPhysi
 import org.batfish.datamodel.matchers.IpsecStaticPeerConfigMatchersImpl.HasPolicyAccessList;
 import org.batfish.datamodel.matchers.IpsecStaticPeerConfigMatchersImpl.HasSourceAddress;
 import org.batfish.datamodel.matchers.IpsecStaticPeerConfigMatchersImpl.HasTunnelInterface;
+import org.batfish.datamodel.matchers.IpsecStaticPeerConfigMatchersImpl.IsIpsecStaticPeerConfig;
 import org.hamcrest.Matcher;
 
 public final class IpsecStaticPeerConfigMatchers {
@@ -35,11 +37,11 @@ public final class IpsecStaticPeerConfigMatchers {
   }
 
   /**
-   * Provides a matcher that matches if the provided {@code tunnelInterface} matches the IPSec peer
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the IPSec peer
    * config's {@code tunnelInterface}
    */
-  public static @Nonnull HasTunnelInterface hasTunnelInterface(String tunnelInterface) {
-    return new HasTunnelInterface(equalTo(tunnelInterface));
+  public static @Nonnull HasTunnelInterface hasTunnelInterface(Matcher<? super String> subMatcher) {
+    return new HasTunnelInterface(subMatcher);
   }
 
   /**
@@ -63,9 +65,8 @@ public final class IpsecStaticPeerConfigMatchers {
    * Provides a matcher that matches if the provided {@code submatcher} matches the IPSec peer
    * config's {@code ikePhase1Policy}
    */
-  public static @Nonnull HasIkePhase1Policy hasIkePhase1Policy(
-      @Nonnull Matcher<? super String> subMatcher) {
-    return new HasIkePhase1Policy(subMatcher);
+  public static @Nonnull HasIkePhase1Policy hasIkePhase1Policy(String ikePhase1Policy) {
+    return new HasIkePhase1Policy(equalTo(ikePhase1Policy));
   }
 
   /**
@@ -83,6 +84,15 @@ public final class IpsecStaticPeerConfigMatchers {
    */
   public static @Nonnull HasDestinationAddress hasDestinationAddress(Ip destinationAddress) {
     return new HasDestinationAddress(equalTo(destinationAddress));
+  }
+
+  /**
+   * Provides a matcher that matches if the object is a {@link IpsecStaticPeerConfig} matched by the
+   * provided {@code subMatcher}.
+   */
+  public static IsIpsecStaticPeerConfig isIpsecStaticPeerConfigThat(
+      @Nonnull Matcher<? super IpsecStaticPeerConfig> subMatcher) {
+    return new IsIpsecStaticPeerConfig(subMatcher);
   }
 
   private IpsecStaticPeerConfigMatchers() {}

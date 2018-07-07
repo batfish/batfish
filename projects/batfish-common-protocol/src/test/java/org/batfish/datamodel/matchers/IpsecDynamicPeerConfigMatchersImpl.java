@@ -13,7 +13,7 @@ final class IpsecDynamicPeerConfigMatchersImpl {
 
   static class HasSourceAddress extends FeatureMatcher<IpsecDynamicPeerConfig, Ip> {
 
-    public HasSourceAddress(@Nonnull Matcher<? super Ip> subMatcher) {
+    HasSourceAddress(@Nonnull Matcher<? super Ip> subMatcher) {
       super(subMatcher, "An IPSec peer config with SourceAddress:", "SourceAddress");
     }
 
@@ -25,7 +25,7 @@ final class IpsecDynamicPeerConfigMatchersImpl {
 
   static class HasPhysicalInterface extends FeatureMatcher<IpsecDynamicPeerConfig, String> {
 
-    public HasPhysicalInterface(@Nonnull Matcher<? super String> subMatcher) {
+    HasPhysicalInterface(@Nonnull Matcher<? super String> subMatcher) {
       super(subMatcher, "An IPSec peer config with PhysicalInterface:", "PhysicalInterface");
     }
 
@@ -37,7 +37,7 @@ final class IpsecDynamicPeerConfigMatchersImpl {
 
   static class HasTunnelInterface extends FeatureMatcher<IpsecDynamicPeerConfig, String> {
 
-    public HasTunnelInterface(@Nonnull Matcher<? super String> subMatcher) {
+    HasTunnelInterface(@Nonnull Matcher<? super String> subMatcher) {
       super(subMatcher, "An IPSec peer config with TunnelInterface:", "TunnelInterface");
     }
 
@@ -49,7 +49,7 @@ final class IpsecDynamicPeerConfigMatchersImpl {
 
   static class HasIpsecPolicy extends FeatureMatcher<IpsecDynamicPeerConfig, String> {
 
-    public HasIpsecPolicy(@Nonnull Matcher<? super String> subMatcher) {
+    HasIpsecPolicy(@Nonnull Matcher<? super String> subMatcher) {
       super(subMatcher, "An IPSec peer config with IpsecPolicy:", "IpsecPolicy");
     }
 
@@ -61,7 +61,7 @@ final class IpsecDynamicPeerConfigMatchersImpl {
 
   static class HasPolicyAccessList extends FeatureMatcher<IpsecDynamicPeerConfig, IpAccessList> {
 
-    public HasPolicyAccessList(@Nonnull Matcher<? super IpAccessList> subMatcher) {
+    HasPolicyAccessList(@Nonnull Matcher<? super IpAccessList> subMatcher) {
       super(subMatcher, "An IPSec peer config with PolicyAccessList:", "PolicyAccessList");
     }
 
@@ -73,7 +73,7 @@ final class IpsecDynamicPeerConfigMatchersImpl {
 
   static class HasIkePhase1Policies extends FeatureMatcher<IpsecDynamicPeerConfig, List<String>> {
 
-    public HasIkePhase1Policies(@Nonnull Matcher<? super List<String>> subMatcher) {
+    HasIkePhase1Policies(@Nonnull Matcher<? super List<String>> subMatcher) {
       super(subMatcher, "An IPSec peer config with IkePhase1Policies:", "IkePhase1Policies");
     }
 
@@ -86,13 +86,20 @@ final class IpsecDynamicPeerConfigMatchersImpl {
   static class HasPeerConfigs
       extends FeatureMatcher<IpsecDynamicPeerConfig, List<IpsecPeerConfig>> {
 
-    public HasPeerConfigs(@Nonnull Matcher<? super List<IpsecPeerConfig>> subMatcher) {
+    HasPeerConfigs(@Nonnull Matcher<? super List<IpsecPeerConfig>> subMatcher) {
       super(subMatcher, "An IPSec peer config with PeerConfigs:", "PeerConfigs");
     }
 
     @Override
     protected List<IpsecPeerConfig> featureValueOf(IpsecDynamicPeerConfig actual) {
       return actual.getPeerConfigs();
+    }
+  }
+
+  static class IsIpsecDynamicPeerConfig
+      extends IsInstanceThat<IpsecPeerConfig, IpsecDynamicPeerConfig> {
+    IsIpsecDynamicPeerConfig(@Nonnull Matcher<? super IpsecDynamicPeerConfig> subMatcher) {
+      super(IpsecDynamicPeerConfig.class, subMatcher);
     }
   }
 }

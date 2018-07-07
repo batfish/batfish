@@ -3,8 +3,10 @@ package org.batfish.representation.cisco;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.util.Collections.singletonList;
 import static org.batfish.datamodel.Interface.INVALID_LOCAL_INTERFACE;
+import static org.batfish.datamodel.Interface.UNSET_LOCAL_INTERFACE;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -43,9 +45,11 @@ import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.IpsecPeerConfig;
 import org.batfish.datamodel.IpsecPhase2Policy;
 import org.batfish.datamodel.IpsecPhase2Proposal;
 import org.batfish.datamodel.IpsecProposal;
+import org.batfish.datamodel.IpsecStaticPeerConfig;
 import org.batfish.datamodel.IsisLevelSettings;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
@@ -185,6 +189,22 @@ class CiscoConversions {
                     firstNonNull(
                         iptoIfaceName.get(isakmpProfile.getLocalAddress()),
                         INVALID_LOCAL_INTERFACE)));
+  }
+
+  /** Resolves the interface names of the addresses used as source addresses of {@link Tunnel} */
+  static void resolveTunnelfaceNames(Map<String, Interface> interfaces) {
+    Map<Ip, String> iptoIfaceName = computeIpToIfaceNameMap(interfaces);
+
+    for (Interface iface : interfaces.values()) {
+      Tunnel tunnel = iface.getTunnel();
+      // resolve if tunnel's source interface name is not populated
+      if (tunnel != null
+          && tunnel.getSourceInterfaceName().equals(UNSET_LOCAL_INTERFACE)
+          && tunnel.getSourceAddress() != null) {
+        tunnel.setSourceInterfaceName(
+            firstNonNull(iptoIfaceName.get(tunnel.getSourceAddress()), INVALID_LOCAL_INTERFACE));
+      }
+    }
   }
 
   static AsPathAccessList toAsPathAccessList(AsPathSet asPathSet) {
@@ -350,6 +370,76 @@ class CiscoConversions {
 
   static IpSpace toIpSpace(NetworkObjectGroup networkObjectGroup) {
     return AclIpSpace.union(networkObjectGroup.getLines());
+  }
+
+  static IpsecPeerConfig toIpsecPeerConfig(
+      Tunnel tunnel,
+      String tunnelIfaceName,
+      CiscoConfiguration oldConfig,
+      Configuration newConfig) {
+    IpsecStaticPeerConfig.Builder ipsecStaticPeerConfigBuilder =
+        IpsecStaticPeerConfig.builder()
+            .setTunnelInterface(tunnelIfaceName)
+            .setDestinationAddress(tunnel.getDestination())
+            .setSourceAddress(tunnel.getSourceAddress())
+            .setPhysicalInterface(tunnel.getSourceInterfaceName());
+
+    IpsecProfile ipsecProfile = oldConfig.getIpsecProfiles().get(tunnel.getIpsecProfileName());
+    String ikePhase1Policy = null;
+    if (ipsecProfile != null && ipsecProfile.getIsakmpProfile() != null) {
+      ikePhase1Policy = ipsecProfile.getIsakmpProfile();
+    }
+    if (ikePhase1Policy == null) {
+      ikePhase1Policy =
+          getIkePhase1Policy(
+              newConfig.getIkePhase1Policies(),
+              tunnel.getDestination(),
+              tunnel.getSourceInterfaceName());
+    }
+    ipsecStaticPeerConfigBuilder
+        .setIkePhase1Policy(ikePhase1Policy)
+        .setIpsecPolicy(tunnel.getIpsecProfileName());
+
+    return ipsecStaticPeerConfigBuilder.build();
+  }
+
+  static IpsecPhase2Policy toIpsecPhase2Policy(CryptoMapEntry cryptoMapEntry) {
+    IpsecPhase2Policy ipsecPhase2Policy = new IpsecPhase2Policy();
+    ipsecPhase2Policy.setProposals(ImmutableList.copyOf(cryptoMapEntry.getTransforms()));
+    ipsecPhase2Policy.setPfsKeyGroup(cryptoMapEntry.getPfsKeyGroup());
+    return ipsecPhase2Policy;
+  }
+
+  /**
+   * Returns the first {@link IkePhase1Policy} name matching {@code remoteAddress} and {@code
+   * localInterface}, null is returned if no matching {@link IkePhase1Policy} could not be found
+   */
+  static String getIkePhase1Policy(
+      Map<String, IkePhase1Policy> ikePhase1Policies, Ip remoteAddress, String localInterface) {
+    for (Entry<String, IkePhase1Policy> e : ikePhase1Policies.entrySet()) {
+      IkePhase1Policy ikePhase1Policy = e.getValue();
+      String ikePhase1PolicyLocalInterface = ikePhase1Policy.getLocalInterface();
+      if (ikePhase1Policy.getRemoteIdentity().containsIp(remoteAddress, ImmutableMap.of())
+          && (ikePhase1PolicyLocalInterface == null
+              || ikePhase1PolicyLocalInterface.equals(localInterface))) {
+        return e.getKey();
+      }
+    }
+    return null;
+  }
+
+  /** Returns all {@link IkePhase1Policy} name matching the {@code localInterface} */
+  static List<String> getMatchingIKePhase1Policies(
+      Map<String, IkePhase1Policy> ikePhase1Policies, String localInterface) {
+    List<String> filteredIkePhase1Policies = new ArrayList<>();
+    for (Entry<String, IkePhase1Policy> e : ikePhase1Policies.entrySet()) {
+      String ikePhase1PolicyLocalInterface = e.getValue().getLocalInterface();
+      if ((ikePhase1PolicyLocalInterface == null
+          || ikePhase1PolicyLocalInterface.equals(localInterface))) {
+        filteredIkePhase1Policies.add(e.getKey());
+      }
+    }
+    return filteredIkePhase1Policies;
   }
 
   static IpsecProposal toIpsecProposal(IpsecTransformSet ipsecTransformSet) {

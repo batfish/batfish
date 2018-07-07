@@ -6,6 +6,7 @@ import java.util.List;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.IpsecDynamicPeerConfig;
 import org.batfish.datamodel.IpsecPeerConfig;
 import org.batfish.datamodel.matchers.IpsecDynamicPeerConfigMatchersImpl.HasIkePhase1Policies;
 import org.batfish.datamodel.matchers.IpsecDynamicPeerConfigMatchersImpl.HasIpsecPolicy;
@@ -14,6 +15,7 @@ import org.batfish.datamodel.matchers.IpsecDynamicPeerConfigMatchersImpl.HasPhys
 import org.batfish.datamodel.matchers.IpsecDynamicPeerConfigMatchersImpl.HasPolicyAccessList;
 import org.batfish.datamodel.matchers.IpsecDynamicPeerConfigMatchersImpl.HasSourceAddress;
 import org.batfish.datamodel.matchers.IpsecDynamicPeerConfigMatchersImpl.HasTunnelInterface;
+import org.batfish.datamodel.matchers.IpsecDynamicPeerConfigMatchersImpl.IsIpsecDynamicPeerConfig;
 import org.hamcrest.Matcher;
 
 public final class IpsecDynamicPeerConfigMatchers {
@@ -35,11 +37,11 @@ public final class IpsecDynamicPeerConfigMatchers {
   }
 
   /**
-   * Provides a matcher that matches if the provided {@code tunnelInterface} matches the IPSec peer
+   * Provides a matcher that matches if the provided {@code submatcher} matches the IPSec peer
    * config's {@code tunnelInterface}
    */
-  public static @Nonnull HasTunnelInterface hasTunnelInterface(String tunnelInterface) {
-    return new HasTunnelInterface(equalTo(tunnelInterface));
+  public static @Nonnull HasTunnelInterface hasTunnelInterface(Matcher<? super String> subMatcher) {
+    return new HasTunnelInterface(subMatcher);
   }
 
   /**
@@ -75,6 +77,15 @@ public final class IpsecDynamicPeerConfigMatchers {
   public static @Nonnull HasPeerConfigs hasPeerConfigs(
       @Nonnull Matcher<? super List<IpsecPeerConfig>> subMatcher) {
     return new HasPeerConfigs(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the object is a {@link IpsecDynamicPeerConfig} matched by
+   * the provided {@code subMatcher}.
+   */
+  public static IsIpsecDynamicPeerConfig isIpsecDynamicPeerConfigThat(
+      @Nonnull Matcher<? super IpsecDynamicPeerConfig> subMatcher) {
+    return new IsIpsecDynamicPeerConfig(subMatcher);
   }
 
   private IpsecDynamicPeerConfigMatchers() {}

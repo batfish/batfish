@@ -1,7 +1,5 @@
 package org.batfish.datamodel.matchers;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-
 import java.util.List;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.DiffieHellmanGroup;
@@ -21,11 +19,12 @@ public final class IpsecPhase2PolicyMatchers {
   }
 
   /**
-   * Provides a matcher that matches if the provided {@code pfsKeyGroup} matches the Ipsec phase 2
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the Ipsec phase 2
    * policy's PfsKeyGroup
    */
-  public static @Nonnull HasPfsKeyGroup hasPfsKeyGroup(DiffieHellmanGroup pfsKeyGroup) {
-    return new HasPfsKeyGroup(equalTo(pfsKeyGroup));
+  public static @Nonnull HasPfsKeyGroup hasPfsKeyGroup(
+      Matcher<? super DiffieHellmanGroup> subMatcher) {
+    return new HasPfsKeyGroup(subMatcher);
   }
 
   private IpsecPhase2PolicyMatchers() {}
