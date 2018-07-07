@@ -7,6 +7,7 @@ import static org.batfish.datamodel.Interface.UNSET_LOCAL_INTERFACE;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSortedMap;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -15,8 +16,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -30,6 +34,7 @@ import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.IkeGateway;
 import org.batfish.datamodel.IkeKeyType;
 import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.datamodel.IkePhase1Policy;
@@ -45,11 +50,14 @@ import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.IpsecDynamicPeerConfig;
 import org.batfish.datamodel.IpsecPeerConfig;
 import org.batfish.datamodel.IpsecPhase2Policy;
 import org.batfish.datamodel.IpsecPhase2Proposal;
+import org.batfish.datamodel.IpsecPolicy;
 import org.batfish.datamodel.IpsecProposal;
 import org.batfish.datamodel.IpsecStaticPeerConfig;
+import org.batfish.datamodel.IpsecVpn;
 import org.batfish.datamodel.IsisLevelSettings;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
@@ -76,10 +84,100 @@ import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
+import org.batfish.datamodel.visitors.HeaderSpaceConverter;
 
 /** Utilities that convert Cisco-specific representations to vendor-independent model. */
 @ParametersAreNonnullByDefault
 class CiscoConversions {
+
+  /** Converts a crypto map entry to an Ipsec policy and a list of Ipsec VPNs */
+  static void convertCryptoMapEntry(
+      final Configuration c,
+      CryptoMapEntry cryptoMapEntry,
+      String generatedName,
+      String cryptoMapName,
+      Warnings w) {
+    // skipping incomplete static or dynamic crypto maps
+    if (!cryptoMapEntry.getDynamic()) {
+      if (cryptoMapEntry.getAccessList() == null || cryptoMapEntry.getPeer() == null) {
+        return;
+      }
+    } else {
+      if (cryptoMapEntry.getAccessList() == null) {
+        return;
+      }
+    }
+
+    IpsecPolicy ipsecPolicy = toIpsecPolicy(c, cryptoMapEntry, generatedName);
+
+    c.getIpsecPolicies().put(generatedName, ipsecPolicy);
+
+    ImmutableSortedMap.Builder<String, IpsecPhase2Policy> ipsecPhase2PolicyBuilder =
+        ImmutableSortedMap.naturalOrder();
+
+    IpsecPhase2Policy ipsecPhase2Policy = toIpsecPhase2Policy(cryptoMapEntry);
+    String ipsecPhase2PolicyName = String.format("~IPSEC_PHASE2_POLICY:%s~", generatedName);
+    // add IPSec phase 2 policies to existing ones
+    c.setIpsecPhase2Policies(
+        ipsecPhase2PolicyBuilder
+            .putAll(c.getIpsecPhase2Policies())
+            .put(ipsecPhase2PolicyName, ipsecPhase2Policy)
+            .build());
+
+    ImmutableSortedMap.Builder<String, IpsecPeerConfig> ipsecPeerConfigsBuilder =
+        ImmutableSortedMap.naturalOrder();
+    c.setIpsecPeerConfigs(
+        ipsecPeerConfigsBuilder
+            .putAll(c.getIpsecPeerconfigs())
+            .putAll(
+                toIpsecPeerConfigs(
+                    c, cryptoMapEntry, generatedName, cryptoMapName, ipsecPhase2PolicyName, w))
+            .build());
+
+    List<IpsecVpn> ipsecVpns = toIpsecVpns(c, cryptoMapEntry, generatedName, cryptoMapName, w);
+    ipsecVpns.forEach(
+        ipsecVpn -> {
+          ipsecVpn.setIpsecPolicy(ipsecPolicy);
+          c.getIpsecVpns().put(ipsecVpn.getName(), ipsecVpn);
+        });
+  }
+
+  /**
+   * Converts each crypto map entry in all crypto map sets to an Ipsec policy and a list of Ipsec
+   * VPNs
+   */
+  static void convertCryptoMapSet(
+      Configuration c,
+      CryptoMapSet ciscoCryptoMapSet,
+      Map<String, CryptoMapSet> cryptoMapSets,
+      Warnings w) {
+    if (ciscoCryptoMapSet.getDynamic()) {
+      return;
+    }
+    for (CryptoMapEntry cryptoMapEntry : ciscoCryptoMapSet.getCryptoMapEntries()) {
+      String nameSeqNum =
+          String.format("%s:%s", cryptoMapEntry.getName(), cryptoMapEntry.getSequenceNumber());
+      if (cryptoMapEntry.getReferredDynamicMapSet() != null) {
+        CryptoMapSet dynamicCryptoMapSet =
+            cryptoMapSets.get(cryptoMapEntry.getReferredDynamicMapSet());
+        if (dynamicCryptoMapSet != null && dynamicCryptoMapSet.getDynamic()) {
+          // convert all entries of the referred dynamic crypto map
+          dynamicCryptoMapSet
+              .getCryptoMapEntries()
+              .forEach(
+                  cryptoMap ->
+                      convertCryptoMapEntry(
+                          c,
+                          cryptoMap,
+                          String.format("%s:%s", nameSeqNum, cryptoMap.getSequenceNumber()),
+                          cryptoMapEntry.getName(),
+                          w));
+        }
+      } else {
+        convertCryptoMapEntry(c, cryptoMapEntry, nameSeqNum, cryptoMapEntry.getName(), w);
+      }
+    }
+  }
 
   /**
    * Generates and returns a {@link RoutingPolicy} that matches routes that should be aggregated for
@@ -304,6 +402,27 @@ class CiscoConversions {
     return ikePhase1Key;
   }
 
+  private static IpAccessList makeSymmetrical(IpAccessList ipAccessList) {
+    List<IpAccessListLine> aclLines = new ArrayList<>(ipAccessList.getLines());
+
+    for (IpAccessListLine ipAccessListLine : ipAccessList.getLines()) {
+      HeaderSpace srcHeaderSpace =
+          HeaderSpaceConverter.convert(ipAccessListLine.getMatchCondition());
+      aclLines.add(
+          IpAccessListLine.builder()
+              .setMatchCondition(
+                  new MatchHeaderSpace(
+                      HeaderSpace.builder()
+                          .setDstIps(srcHeaderSpace.getSrcIps())
+                          .setSrcIps(srcHeaderSpace.getDstIps())
+                          .build()))
+              .setAction(ipAccessListLine.getAction())
+              .build());
+    }
+
+    return new IpAccessList(ipAccessList.getName(), aclLines);
+  }
+
   static IkePhase1Proposal toIkePhase1Proposal(IsakmpPolicy isakmpPolicy) {
     IkePhase1Proposal ikePhase1Proposal = new IkePhase1Proposal(isakmpPolicy.getName().toString());
     ikePhase1Proposal.setDiffieHellmanGroup(isakmpPolicy.getDiffieHellmanGroup());
@@ -411,6 +530,82 @@ class CiscoConversions {
   }
 
   /**
+   * Converts a crypto map entry to multiple IPSec peer configs(one per interface on which it is
+   * referred)
+   */
+  private static Map<String, IpsecPeerConfig> toIpsecPeerConfigs(
+      Configuration c,
+      CryptoMapEntry cryptoMapEntry,
+      String generatedName,
+      String cryptoMapName,
+      String ipsecPhase2Policy,
+      Warnings w) {
+
+    List<org.batfish.datamodel.Interface> referencingInterfaces =
+        c.getInterfaces()
+            .values()
+            .stream()
+            .filter(iface -> Objects.equals(iface.getCryptoMap(), cryptoMapName))
+            .collect(Collectors.toList());
+
+    ImmutableSortedMap.Builder<String, IpsecPeerConfig> ipsecPeerConfigsBuilder =
+        ImmutableSortedMap.naturalOrder();
+    IpsecPeerConfig.Builder<?, ?> newIpsecPeerConfigBuilder;
+
+    for (org.batfish.datamodel.Interface iface : referencingInterfaces) {
+      // skipping interfaces with no ip-address
+      if (iface.getAddress() == null) {
+        w.redFlag(
+            String.format(
+                "Interface %s with declared crypto-map %s has no ip-address",
+                iface.getName(), cryptoMapName));
+        continue;
+      }
+
+      String ikePhase1Policy = cryptoMapEntry.getIsakmpProfile();
+
+      // dynamic crypto maps
+      if (cryptoMapEntry.getPeer() != null) {
+        if (ikePhase1Policy == null) {
+          ikePhase1Policy =
+              getIkePhase1Policy(
+                  c.getIkePhase1Policies(), cryptoMapEntry.getPeer(), iface.getName());
+        }
+        newIpsecPeerConfigBuilder =
+            IpsecStaticPeerConfig.builder()
+                .setDestinationAddress(cryptoMapEntry.getPeer())
+                .setIkePhase1Policy(ikePhase1Policy);
+      } else {
+        // static crypto maps
+        List<String> ikePhase1Policies;
+        if (ikePhase1Policy == null) {
+          ikePhase1Policies =
+              getMatchingIKePhase1Policies(c.getIkePhase1Policies(), iface.getName());
+        } else {
+          ikePhase1Policies = ImmutableList.of(ikePhase1Policy);
+        }
+        newIpsecPeerConfigBuilder =
+            IpsecDynamicPeerConfig.builder().setIkePhase1Policies(ikePhase1Policies);
+      }
+      newIpsecPeerConfigBuilder
+          .setPhysicalInterface(iface.getName())
+          .setIpsecPolicy(ipsecPhase2Policy)
+          .setSourceAddress(iface.getAddress().getIp());
+
+      if (cryptoMapEntry.getAccessList() != null) {
+        IpAccessList cryptoAcl = c.getIpAccessLists().get(cryptoMapEntry.getAccessList());
+        if (cryptoAcl != null) {
+          newIpsecPeerConfigBuilder.setPolicyAccessList(makeSymmetrical(cryptoAcl));
+        }
+      }
+      ipsecPeerConfigsBuilder.put(
+          String.format("~IPSEC_PEER_CONFIG:%s_%s~", generatedName, iface.getName()),
+          newIpsecPeerConfigBuilder.build());
+    }
+    return ipsecPeerConfigsBuilder.build();
+  }
+
+  /**
    * Returns the first {@link IkePhase1Policy} name matching {@code remoteAddress} and {@code
    * localInterface}, null is returned if no matching {@link IkePhase1Policy} could not be found
    */
@@ -467,6 +662,109 @@ class CiscoConversions {
     ipsecPhase2Policy.setProposals(ImmutableList.copyOf(ipsecProfile.getTransformSets()));
 
     return ipsecPhase2Policy;
+  }
+
+  /** Converts a CryptoMapEntry to an IPSecPolicy */
+  private static IpsecPolicy toIpsecPolicy(
+      Configuration c, CryptoMapEntry cryptoMapEntry, String ipsecPolicyName) {
+    IpsecPolicy ipsecPolicy = new IpsecPolicy(ipsecPolicyName);
+
+    if (cryptoMapEntry.getIsakmpProfile() != null) {
+      IkeGateway ikeGateway = c.getIkeGateways().get(cryptoMapEntry.getIsakmpProfile());
+      if (ikeGateway != null) {
+        ipsecPolicy.setIkeGateway(ikeGateway);
+      }
+    }
+
+    cryptoMapEntry
+        .getTransforms()
+        .forEach(
+            transform -> {
+              IpsecProposal ipsecProposal = c.getIpsecProposals().get(transform);
+              if (ipsecProposal != null) {
+                ipsecPolicy.getProposals().add(ipsecProposal);
+              }
+            });
+
+    ipsecPolicy.setPfsKeyGroup(cryptoMapEntry.getPfsKeyGroup());
+
+    return ipsecPolicy;
+  }
+
+  /**
+   * Converts a crypto map entry to a list of ipsec vpns(one per interface on which it is referred)
+   */
+  private static List<IpsecVpn> toIpsecVpns(
+      Configuration c,
+      CryptoMapEntry cryptoMapEntry,
+      String ipsecVpnName,
+      String cryptoMapName,
+      Warnings w) {
+
+    List<org.batfish.datamodel.Interface> referencingInterfaces =
+        c.getInterfaces()
+            .values()
+            .stream()
+            .filter(iface -> Objects.equals(iface.getCryptoMap(), cryptoMapName))
+            .collect(Collectors.toList());
+
+    List<IpsecVpn> ipsecVpns = new ArrayList<>();
+
+    for (org.batfish.datamodel.Interface iface : referencingInterfaces) {
+      // skipping interfaces with no ip-address
+      if (iface.getAddress() == null) {
+        w.redFlag(
+            String.format(
+                "Interface %s with declared crypto-map %s has no ip-address",
+                iface.getName(), cryptoMapName));
+        continue;
+      }
+      Ip bindingInterfaceIp = iface.getAddress().getIp();
+      IkeGateway ikeGateway = null;
+
+      if (cryptoMapEntry.getIsakmpProfile() != null) {
+        ikeGateway = c.getIkeGateways().get(cryptoMapEntry.getIsakmpProfile());
+        if (ikeGateway != null
+            && (!ikeGateway.getAddress().equals(cryptoMapEntry.getPeer())
+                || !ikeGateway.getLocalIp().equals(bindingInterfaceIp))) {
+          w.redFlag(
+              String.format(
+                  "cryptoMap %s's binding interface or peer does not match ISAKMP profile's local "
+                      + "Ip/remote Ip",
+                  cryptoMapEntry.getName()));
+          continue;
+        }
+      }
+
+      IpsecVpn ipsecVpn = new IpsecVpn(String.format("%s:%s", ipsecVpnName, iface.getName()));
+
+      if (ikeGateway != null) {
+        ipsecVpn.setIkeGateway(ikeGateway);
+      } else {
+        // getting an IKE gateway which can be used for this VPN
+        Optional<IkeGateway> filteredIkeGateway =
+            c.getIkeGateways()
+                .values()
+                .stream()
+                .filter(
+                    ikeGateway1 ->
+                        ikeGateway1.getLocalIp().equals(bindingInterfaceIp)
+                            && ikeGateway1.getAddress().equals(cryptoMapEntry.getPeer()))
+                .findFirst();
+        filteredIkeGateway.ifPresent(ipsecVpn::setIkeGateway);
+      }
+
+      ipsecVpn.setBindInterface(iface);
+      if (cryptoMapEntry.getAccessList() != null) {
+        IpAccessList cryptoAcl = c.getIpAccessLists().get(cryptoMapEntry.getAccessList());
+        if (cryptoAcl != null) {
+          ipsecVpn.setPolicyAccessList(makeSymmetrical(cryptoAcl));
+        }
+      }
+      ipsecVpns.add(ipsecVpn);
+    }
+
+    return ipsecVpns;
   }
 
   static org.batfish.datamodel.IsisProcess toIsisProcess(
