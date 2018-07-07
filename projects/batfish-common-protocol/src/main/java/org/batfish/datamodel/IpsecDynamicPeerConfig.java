@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import java.io.Serializable;
 import java.util.List;
 
+/** Represents a configured dynamic(remote peer not specified) IPSec peer */
 public class IpsecDynamicPeerConfig extends IpsecPeerConfig implements Serializable {
 
   private static final String PROP_IKE_PHASE1_POLICIES = "ikePhase1Policies";

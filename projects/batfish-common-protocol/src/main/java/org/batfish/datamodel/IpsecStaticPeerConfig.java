@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import java.io.Serializable;
 import javax.annotation.Nullable;
 
+/** Represents a configured static(having a specified remote peer) IPSec peer */
 public class IpsecStaticPeerConfig extends IpsecPeerConfig implements Serializable {
 
   private static final String PROP_DESTINATION_ADDRESS = "destinationAddress";
