@@ -2114,11 +2114,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
       _c.getIpsecPolicies().put(name, newPolicy);
       ipsecPhase2PoliciesBuilder.put(name, toIpsecPhase2Policy(oldIpsecPolicy));
     }
-
     _c.setIpsecPhase2Policies(ipsecPhase2PoliciesBuilder.build());
+
+    // convert ipsec vpns
     ImmutableSortedMap.Builder<String, IpsecPeerConfig> ipsecPeerConfigBuilder =
         ImmutableSortedMap.naturalOrder();
-    // convert ipsec vpns
     for (Entry<String, IpsecVpn> e : _ipsecVpns.entrySet()) {
       String name = e.getKey();
       IpsecVpn oldIpsecVpn = e.getValue();
@@ -2130,7 +2130,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
         ipsecPeerConfigBuilder.put(name, ipsecPeerConfig);
       }
     }
-
     _c.setIpsecPeerConfigs(ipsecPeerConfigBuilder.build());
 
     // zones

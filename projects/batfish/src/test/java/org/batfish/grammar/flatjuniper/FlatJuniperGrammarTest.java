@@ -1491,7 +1491,7 @@ public class FlatJuniperGrammarTest {
     assertThat(c, hasIpsecPolicy("policy5", hasPfsKeyGroup(DiffieHellmanGroup.GROUP20)));
     assertThat(c, hasIpsecPolicy("policy6", hasPfsKeyGroup(DiffieHellmanGroup.GROUP5)));
 
-    // tests for conversion to IKE phase 2 policies
+    // tests for conversion to IPSec phase 2 policies
     assertThat(
         c,
         hasIpsecPhase2Policy(

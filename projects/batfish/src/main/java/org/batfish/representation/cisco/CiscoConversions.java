@@ -90,11 +90,14 @@ import org.batfish.datamodel.visitors.HeaderSpaceConverter;
 @ParametersAreNonnullByDefault
 class CiscoConversions {
 
-  /** Converts a crypto map entry to an Ipsec policy and a list of Ipsec VPNs */
-  static void convertCryptoMapEntry(
+  /**
+   * Converts a {@link CryptoMapEntry} to an {@link IpsecPolicy}, a list of {@link IpsecVpn}. Also
+   * converts it to an {@link IpsecPhase2Policy} and a list of {@link IpsecPeerConfig}
+   */
+  private static void convertCryptoMapEntry(
       final Configuration c,
       CryptoMapEntry cryptoMapEntry,
-      String generatedName,
+      String cryptoMapNameSeqNumber,
       String cryptoMapName,
       Warnings w) {
     // skipping incomplete static or dynamic crypto maps
@@ -108,16 +111,17 @@ class CiscoConversions {
       }
     }
 
-    IpsecPolicy ipsecPolicy = toIpsecPolicy(c, cryptoMapEntry, generatedName);
+    IpsecPolicy ipsecPolicy = toIpsecPolicy(c, cryptoMapEntry, cryptoMapNameSeqNumber);
 
-    c.getIpsecPolicies().put(generatedName, ipsecPolicy);
-
-    ImmutableSortedMap.Builder<String, IpsecPhase2Policy> ipsecPhase2PolicyBuilder =
-        ImmutableSortedMap.naturalOrder();
+    c.getIpsecPolicies().put(cryptoMapNameSeqNumber, ipsecPolicy);
 
     IpsecPhase2Policy ipsecPhase2Policy = toIpsecPhase2Policy(cryptoMapEntry);
-    String ipsecPhase2PolicyName = String.format("~IPSEC_PHASE2_POLICY:%s~", generatedName);
+    String ipsecPhase2PolicyName =
+        String.format("~IPSEC_PHASE2_POLICY:%s~", cryptoMapNameSeqNumber);
+
     // add IPSec phase 2 policies to existing ones
+    ImmutableSortedMap.Builder<String, IpsecPhase2Policy> ipsecPhase2PolicyBuilder =
+        ImmutableSortedMap.naturalOrder();
     c.setIpsecPhase2Policies(
         ipsecPhase2PolicyBuilder
             .putAll(c.getIpsecPhase2Policies())
@@ -131,10 +135,16 @@ class CiscoConversions {
             .putAll(c.getIpsecPeerconfigs())
             .putAll(
                 toIpsecPeerConfigs(
-                    c, cryptoMapEntry, generatedName, cryptoMapName, ipsecPhase2PolicyName, w))
+                    c,
+                    cryptoMapEntry,
+                    cryptoMapNameSeqNumber,
+                    cryptoMapName,
+                    ipsecPhase2PolicyName,
+                    w))
             .build());
 
-    List<IpsecVpn> ipsecVpns = toIpsecVpns(c, cryptoMapEntry, generatedName, cryptoMapName, w);
+    List<IpsecVpn> ipsecVpns =
+        toIpsecVpns(c, cryptoMapEntry, cryptoMapNameSeqNumber, cryptoMapName, w);
     ipsecVpns.forEach(
         ipsecVpn -> {
           ipsecVpn.setIpsecPolicy(ipsecPolicy);
@@ -143,8 +153,8 @@ class CiscoConversions {
   }
 
   /**
-   * Converts each crypto map entry in all crypto map sets to an Ipsec policy and a list of Ipsec
-   * VPNs
+   * Converts each crypto map entry in all crypto map sets to {@link IpsecPolicy}, {@link
+   * IpsecVpn}s, {@link IpsecPhase2Policy} and {@link IpsecPeerConfig}s
    */
   static void convertCryptoMapSet(
       Configuration c,
@@ -289,13 +299,13 @@ class CiscoConversions {
                         INVALID_LOCAL_INTERFACE)));
   }
 
-  /** Resolves the interface names of the addresses used as source addresses of {@link Tunnel} */
+  /** Resolves the interface names of the addresses used as source addresses in {@link Tunnel}s */
   static void resolveTunnelfaceNames(Map<String, Interface> interfaces) {
     Map<Ip, String> iptoIfaceName = computeIpToIfaceNameMap(interfaces);
 
     for (Interface iface : interfaces.values()) {
       Tunnel tunnel = iface.getTunnel();
-      // resolve if tunnel's source interface name is not populated
+      // resolve if tunnel's source interface name is not set
       if (tunnel != null
           && tunnel.getSourceInterfaceName().equals(UNSET_LOCAL_INTERFACE)
           && tunnel.getSourceAddress() != null) {
@@ -402,6 +412,7 @@ class CiscoConversions {
     return ikePhase1Key;
   }
 
+  /** Makes an {@link IpAccessList} symmetrical by adding mirror image {@link IpAccessListLine}s */
   private static IpAccessList makeSymmetrical(IpAccessList ipAccessList) {
     List<IpAccessListLine> aclLines = new ArrayList<>(ipAccessList.getLines());
 
@@ -491,6 +502,7 @@ class CiscoConversions {
     return AclIpSpace.union(networkObjectGroup.getLines());
   }
 
+  /** Converts a {@link Tunnel} to an {@link IpsecPeerConfig} */
   static IpsecPeerConfig toIpsecPeerConfig(
       Tunnel tunnel,
       String tunnelIfaceName,
@@ -522,21 +534,14 @@ class CiscoConversions {
     return ipsecStaticPeerConfigBuilder.build();
   }
 
-  static IpsecPhase2Policy toIpsecPhase2Policy(CryptoMapEntry cryptoMapEntry) {
-    IpsecPhase2Policy ipsecPhase2Policy = new IpsecPhase2Policy();
-    ipsecPhase2Policy.setProposals(ImmutableList.copyOf(cryptoMapEntry.getTransforms()));
-    ipsecPhase2Policy.setPfsKeyGroup(cryptoMapEntry.getPfsKeyGroup());
-    return ipsecPhase2Policy;
-  }
-
   /**
-   * Converts a crypto map entry to multiple IPSec peer configs(one per interface on which it is
-   * referred)
+   * Converts a crypto map entry to multiple IPSec peer configs(one per interface on which crypto
+   * map is referred)
    */
   private static Map<String, IpsecPeerConfig> toIpsecPeerConfigs(
       Configuration c,
       CryptoMapEntry cryptoMapEntry,
-      String generatedName,
+      String cryptoMapNameSeqNumber,
       String cryptoMapName,
       String ipsecPhase2Policy,
       Warnings w) {
@@ -599,7 +604,7 @@ class CiscoConversions {
         }
       }
       ipsecPeerConfigsBuilder.put(
-          String.format("~IPSEC_PEER_CONFIG:%s_%s~", generatedName, iface.getName()),
+          String.format("~IPSEC_PEER_CONFIG:%s_%s~", cryptoMapNameSeqNumber, iface.getName()),
           newIpsecPeerConfigBuilder.build());
     }
     return ipsecPeerConfigsBuilder.build();
@@ -609,7 +614,8 @@ class CiscoConversions {
    * Returns the first {@link IkePhase1Policy} name matching {@code remoteAddress} and {@code
    * localInterface}, null is returned if no matching {@link IkePhase1Policy} could not be found
    */
-  static String getIkePhase1Policy(
+  @Nullable
+  private static String getIkePhase1Policy(
       Map<String, IkePhase1Policy> ikePhase1Policies, Ip remoteAddress, String localInterface) {
     for (Entry<String, IkePhase1Policy> e : ikePhase1Policies.entrySet()) {
       IkePhase1Policy ikePhase1Policy = e.getValue();
@@ -623,8 +629,8 @@ class CiscoConversions {
     return null;
   }
 
-  /** Returns all {@link IkePhase1Policy} name matching the {@code localInterface} */
-  static List<String> getMatchingIKePhase1Policies(
+  /** Returns all {@link IkePhase1Policy} names matching the {@code localInterface} */
+  private static List<String> getMatchingIKePhase1Policies(
       Map<String, IkePhase1Policy> ikePhase1Policies, String localInterface) {
     List<String> filteredIkePhase1Policies = new ArrayList<>();
     for (Entry<String, IkePhase1Policy> e : ikePhase1Policies.entrySet()) {
@@ -661,6 +667,13 @@ class CiscoConversions {
     ipsecPhase2Policy.setPfsKeyGroup(ipsecProfile.getPfsGroup());
     ipsecPhase2Policy.setProposals(ImmutableList.copyOf(ipsecProfile.getTransformSets()));
 
+    return ipsecPhase2Policy;
+  }
+
+  static IpsecPhase2Policy toIpsecPhase2Policy(CryptoMapEntry cryptoMapEntry) {
+    IpsecPhase2Policy ipsecPhase2Policy = new IpsecPhase2Policy();
+    ipsecPhase2Policy.setProposals(ImmutableList.copyOf(cryptoMapEntry.getTransforms()));
+    ipsecPhase2Policy.setPfsKeyGroup(cryptoMapEntry.getPfsKeyGroup());
     return ipsecPhase2Policy;
   }
 

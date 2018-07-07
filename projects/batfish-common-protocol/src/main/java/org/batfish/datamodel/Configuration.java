@@ -492,7 +492,7 @@ public final class Configuration extends ComparableStructure<String> {
     return _ipAccessLists;
   }
 
-  @JsonPropertyDescription("IPSec peer configs present for this configuration")
+  @JsonPropertyDescription("Dictionary of all IPSec peer configs for this node")
   @JsonProperty(PROP_IPSEC_PEER_CONFIGS)
   public NavigableMap<String, IpsecPeerConfig> getIpsecPeerconfigs() {
     return _ipsecPeerConfigs;
