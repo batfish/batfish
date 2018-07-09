@@ -185,6 +185,7 @@ disposition_rp_stanza
       DONE
       | DROP
       | PASS
+      | UNSUPPRESS_ROUTE
    ) NEWLINE
 ;
 
