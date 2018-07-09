@@ -3040,6 +3040,14 @@ s_telephony_service
    )*
 ;
 
+s_template
+:
+  TEMPLATE null_rest_of_line
+  (
+    template_null
+  )*
+;
+
 s_time_range
 :
    TIME_RANGE name = variable PERIODIC? NEWLINE
@@ -3426,6 +3434,7 @@ ssh_server
       (
          IPV6 ACCESS_LIST acl6 = variable
       )
+      | LOGGING
       |
       (
          SESSION_LIMIT limit = DEC
@@ -3632,6 +3641,7 @@ stanza
    | s_tacacs_server
    | s_tap
    | s_telephony_service
+   | s_template
    | s_time_range
    | s_track
    | s_tunnel_group
@@ -3792,6 +3802,18 @@ telephony_service_null
       | SRST
       | TRANSFER_SYSTEM
    ) null_rest_of_line
+;
+
+template_null
+:
+  NO?
+  (
+    ACCESS_SESSION
+    | AUTHENTICATION
+    | DOT1X
+    | MAB
+    | RADIUS_SERVER
+  ) null_rest_of_line
 ;
 
 tg_null

@@ -232,7 +232,6 @@ null_block
       | TAG_TYPE
       | TASKGROUP
       | TCP
-      | TEMPLATE
       | TERMINAL
       | TIME_RANGE
       | TFTP

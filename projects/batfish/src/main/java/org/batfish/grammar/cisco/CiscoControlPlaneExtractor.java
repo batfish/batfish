@@ -1044,6 +1044,7 @@ import org.batfish.representation.cisco.RoutePolicyIfStatement;
 import org.batfish.representation.cisco.RoutePolicyInlinePrefix6Set;
 import org.batfish.representation.cisco.RoutePolicyInlinePrefixSet;
 import org.batfish.representation.cisco.RoutePolicyNextHop;
+import org.batfish.representation.cisco.RoutePolicyNextHopDiscard;
 import org.batfish.representation.cisco.RoutePolicyNextHopIP6;
 import org.batfish.representation.cisco.RoutePolicyNextHopIp;
 import org.batfish.representation.cisco.RoutePolicyNextHopPeerAddress;
@@ -1102,6 +1103,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private static final int DEFAULT_STATIC_ROUTE_DISTANCE = 1;
 
   private static final String DUPLICATE = "DUPLICATE";
+
+  private static final String F_AGGREGATE_ADDRESS_ROUTE_POLICY =
+      "bgp - aggregate-address with route-policy";
 
   private static final String F_ALLOWAS_IN_NUMBER =
       "bgp -  allowas-in with number - ignored and effectively infinite for now";
@@ -3891,6 +3895,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       String map = ctx.mapname.getText();
       _configuration.referenceStructure(
           ROUTE_MAP, map, BGP_VRF_AGGREGATE_ROUTE_MAP, ctx.mapname.getStart().getLine());
+    } else if (ctx.rp != null) {
+      todo(ctx, F_AGGREGATE_ADDRESS_ROUTE_POLICY);
     }
   }
 
@@ -9492,7 +9498,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private RoutePolicyStatement toRoutePolicyStatement(Set_next_hop_rp_stanzaContext ctx) {
     RoutePolicyNextHop hop = null;
-    if (ctx.IP_ADDRESS() != null) {
+    if (ctx.DISCARD() != null) {
+      hop = new RoutePolicyNextHopDiscard();
+    } else if (ctx.IP_ADDRESS() != null) {
       hop = new RoutePolicyNextHopIp(toIp(ctx.IP_ADDRESS()));
     } else if (ctx.IPV6_ADDRESS() != null) {
       hop = new RoutePolicyNextHopIP6(toIp6(ctx.IPV6_ADDRESS()));

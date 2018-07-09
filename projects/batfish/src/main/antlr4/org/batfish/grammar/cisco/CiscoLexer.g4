@@ -169,6 +169,11 @@ ACCESS_MAP
    'access-map'
 ;
 
+ACCESS_SESSION
+:
+   'access-session'
+;
+
 ACCOUNTING
 :
    'accounting'
