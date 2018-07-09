@@ -3882,6 +3882,11 @@ EOU
    'eou'
 ;
 
+EPHONE_DN_TEMPLATE
+:
+  'ephone-dn-template'
+;
+
 EPM
 :
    'epm'
@@ -4722,6 +4727,11 @@ GBPS
     'Gbps'
 ;
 
+GDOI
+:
+  'gdoi'
+;
+
 GE
 :
    'ge'
@@ -5160,6 +5170,11 @@ HOST_UNREACHABLE
 HOSTNAME
 :
    'hostname'
+;
+
+HOSTNAMEPREFIX
+:
+   'hostnameprefix'
 ;
 
 HOTSPOT
@@ -6172,6 +6187,11 @@ LIMIT_RESOURCE
 LINE
 :
    'line'
+;
+
+LINE_TERMINATION
+:
+   'line-termination'
 ;
 
 LINECARD
@@ -7639,6 +7659,11 @@ NETMASK
    'netmask'
 ;
 
+NETMASK_FORMAT
+:
+   'netmask-format'
+;
+
 NETSERVICE
 :
    'netservice'
@@ -8402,6 +8427,11 @@ PATH_OPTION
 PATH_RETRANSMIT
 :
    'path-retransmit'
+;
+
+PATH_SELECTION
+:
+  'path-selection'
 ;
 
 PATHCOST
@@ -10989,6 +11019,11 @@ SRR_QUEUE
    'srr-queue'
 ;
 
+SRST
+:
+  'srst'
+;
+
 SSH
 :
    'ssh'
@@ -11626,6 +11661,11 @@ TCS_LOAD_BALANCE
    'tcs-load-balance'
 ;
 
+TELEPHONY_SERVICE
+:
+  'telephony-service'
+;
+
 TELNET
 :
    'telnet'
@@ -12194,6 +12234,11 @@ UNREACHABLES
 UNSUPPRESS_MAP
 :
    'unsuppress-map'
+;
+
+UNSUPPRESS_ROUTE
+:
+   'unsuppress-route'
 ;
 
 UNICAST

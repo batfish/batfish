@@ -50,6 +50,10 @@ public class RoutePolicyDispositionStatement extends RoutePolicyStatement {
           break;
         }
 
+      case UNSUPPRESS_ROUTE:
+        statements.add(Statements.Unsuppress.toStaticStatement());
+        break;
+
       default:
         throw new BatfishException("Invalid disposition type");
     }

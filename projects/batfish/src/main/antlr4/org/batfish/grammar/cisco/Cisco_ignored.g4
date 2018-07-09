@@ -21,7 +21,6 @@ null_block
       | AS_PATH_SET
       | ATM
       | BASH
-      | BFD
       | BGP DISABLE_ADVERTISEMENT
       | BLOGGERD
       | BSD_CLIENT
@@ -716,6 +715,13 @@ null_single
       | ( NO IP (NAME_SERVER))
       | IP_ADDRESS_LITERAL
       | IP_FLOW_EXPORT_PROFILE
+      |
+      (
+         IPV4
+         (
+            NETMASK_FORMAT
+         )
+      )
       |
       (
          IPV6

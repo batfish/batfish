@@ -126,7 +126,7 @@ class CiscoConversions {
     return new If(
         "Suppress more specific networks for summary-only aggregate-address networks",
         new MatchPrefixSet(new DestinationNetwork(), new NamedPrefixSet(matchLonger.getName())),
-        ImmutableList.of(Statements.ReturnFalse.toStaticStatement()),
+        ImmutableList.of(Statements.Suppress.toStaticStatement()),
         ImmutableList.of());
   }
 
