@@ -40,10 +40,7 @@ final class BgpProcessMatchersImpl {
 
     HasActiveNeighbor(
         @Nonnull Prefix prefix, @Nonnull Matcher<? super BgpActivePeerConfig> subMatcher) {
-      super(
-          subMatcher,
-          "A BGP process with point-to-point neighbor " + prefix + ":",
-          "neighbor " + prefix);
+      super(subMatcher, "A BGP process with active neighbor " + prefix + ":", "neighbor " + prefix);
       _prefix = prefix;
     }
 
@@ -59,7 +56,7 @@ final class BgpProcessMatchersImpl {
     HasPassiveNeighbor(
         @Nonnull Prefix prefix, @Nonnull Matcher<? super BgpPassivePeerConfig> subMatcher) {
       super(
-          subMatcher, "A BGP process with dynamic neighbor " + prefix + ":", "neighbor " + prefix);
+          subMatcher, "A BGP process with passive neighbor " + prefix + ":", "neighbor " + prefix);
       _prefix = prefix;
     }
 
