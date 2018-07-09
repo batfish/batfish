@@ -159,6 +159,7 @@ route-policy doodlepop
     apply bgp_standard
     set community (1234:666, 1234:65498, 1234:$hub_comm) additive
     set next-hop 1234:1234::118:9a41:ff0
+    unsuppress-route
   endif
 end-policy
 !

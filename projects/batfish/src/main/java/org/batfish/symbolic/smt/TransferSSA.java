@@ -1003,6 +1003,8 @@ class TransferSSA {
             curResult = returnValue(curP, curResult, true);
             break;
 
+            // TODO: implement proper unsuppression of routes covered by aggregates
+          case Unsuppress:
           case ReturnTrue:
             doesReturn = true;
             curP.debug("ReturnTrue");
@@ -1015,6 +1017,8 @@ class TransferSSA {
             curResult = returnValue(curP, curResult, false);
             break;
 
+            // TODO: implement proper suppression of routes covered by aggregates
+          case Suppress:
           case ReturnFalse:
             doesReturn = true;
             curP.debug("ReturnFalse");
