@@ -27,7 +27,9 @@ public enum Statements {
   SetLocalDefaultActionReject,
   SetReadIntermediateBgpAttributes,
   SetWriteIntermediateBgpAttributes,
-  UnsetWriteIntermediateBgpAttributes;
+  Suppress,
+  UnsetWriteIntermediateBgpAttributes,
+  Unsuppress;
 
   public static class StaticStatement extends Statement {
 
@@ -141,8 +143,16 @@ public enum Statements {
           environment.setWriteToIntermediateBgpAttributes(true);
           break;
 
+        case Suppress:
+          environment.setSuppressed(true);
+          break;
+
         case UnsetWriteIntermediateBgpAttributes:
           environment.setWriteToIntermediateBgpAttributes(false);
+          break;
+
+        case Unsuppress:
+          environment.setSuppressed(false);
           break;
 
         default:

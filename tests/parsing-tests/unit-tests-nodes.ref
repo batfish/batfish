@@ -394,7 +394,7 @@
                 "trueStatements" : [
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ReturnFalse"
+                    "type" : "Suppress"
                   }
                 ]
               },
@@ -5084,7 +5084,7 @@
                 "trueStatements" : [
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ReturnFalse"
+                    "type" : "Suppress"
                   }
                 ]
               },
@@ -19595,6 +19595,10 @@
                         "type" : "SetLocalDefaultActionAccept"
                       }
                     ]
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "Unsuppress"
                   }
                 ]
               }
