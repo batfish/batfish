@@ -145,6 +145,7 @@ public class RoutesAnswerer extends Answerer {
                     .put(COL_NEXT_HOP, firstNonNull(route.getNextHop(), VALUE_NA))
                     .put(COL_PROTOCOL, route.getProtocol())
                     .put(COL_TAG, route.getTag())
+                    .put(COL_ADMIN_DISTANCE, route.getAdministrativeCost())
                     .build())
         .collect(toImmutableList());
   }

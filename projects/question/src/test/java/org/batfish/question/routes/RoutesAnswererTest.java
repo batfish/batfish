@@ -104,6 +104,26 @@ public class RoutesAnswererTest {
   }
 
   @Test
+  public void testHasAdminDistanceValue() {
+    SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs =
+        ImmutableSortedMap.of(
+            "n1",
+            ImmutableSortedMap.of(
+                Configuration.DEFAULT_VRF_NAME,
+                new MockRib<>(
+                    ImmutableSet.of(
+                        StaticRoute.builder()
+                            .setNetwork(Prefix.parse("1.1.1.0/24"))
+                            .setNextHopInterface("Null")
+                            .setAdministrativeCost(10)
+                            .build()))));
+
+    Multiset<Row> actual = getMainRibRoutes(ribs, ImmutableSet.of("n1"), ".*");
+
+    assertThat(actual.iterator().next().get(COL_ADMIN_DISTANCE, Schema.INTEGER), equalTo(10));
+  }
+
+  @Test
   public void testGetTableMetadataProtocolAll() {
     List<ColumnMetadata> columnMetadata = getTableMetadata(RibProtocol.ALL).getColumnMetadata();
 
