@@ -96,6 +96,9 @@ import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.AutocompleteSuggestion.CompletionType;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.pojo.WorkStatus;
+import org.batfish.datamodel.questions.InterfacePropertySpecifier;
+import org.batfish.datamodel.questions.NodePropertySpecifier;
+import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.Question.InstanceData;
 import org.batfish.datamodel.questions.Question.InstanceData.Variable;
@@ -345,11 +348,12 @@ public class Client extends AbstractClient implements IClient {
               String.format("It is not a valid JSON %s value", expectedType.getName()));
         }
         break;
-      case LONG:
-        if (!value.isLong()) {
+      case INTERFACE_PROPERTY_SPEC:
+        if (!(value.isTextual())) {
           throw new BatfishException(
-              String.format("It is not a valid JSON %s value", expectedType.getName()));
+              String.format("interfacePropertySpec must be a JSON string", expectedType.getName()));
         }
+        new InterfacePropertySpecifier(value.textValue());
         break;
       case IP:
         // TODO: Need to double check isInetAddress()
@@ -395,6 +399,26 @@ public class Client extends AbstractClient implements IClient {
               String.format("A Batfish %s must be a JSON string", expectedType.getName()));
         }
         validateJsonPathRegex(value.textValue());
+        break;
+      case LONG:
+        if (!value.isLong()) {
+          throw new BatfishException(
+              String.format("It is not a valid JSON %s value", expectedType.getName()));
+        }
+        break;
+      case NODE_PROPERTY_SPEC:
+        if (!(value.isTextual())) {
+          throw new BatfishException(
+              String.format("nodePropertySpec must be a JSON string", expectedType.getName()));
+        }
+        new NodePropertySpecifier(value.textValue());
+        break;
+      case NODE_SPEC:
+        if (!(value.isTextual())) {
+          throw new BatfishException(
+              String.format("nodeSpec must be a JSON string", expectedType.getName()));
+        }
+        new NodesSpecifier(value.textValue());
         break;
       case PREFIX:
         if (!value.isTextual()) {
