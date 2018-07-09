@@ -9573,7 +9573,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     return convProblem(
         RoutePolicyStatement.class,
         ctx,
-        new RoutePolicyComment("NOP: unsupported route-policy statement"));
+        new RoutePolicyComment(
+            String.format("NOP: unsupported route-policy statement: '%s'", getFullText(ctx))));
   }
 
   private <T, U extends T> T convProblem(
