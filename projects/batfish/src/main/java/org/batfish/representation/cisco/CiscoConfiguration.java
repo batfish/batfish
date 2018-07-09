@@ -2033,6 +2033,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     newIface.setAutoState(iface.getAutoState());
     newIface.setVrf(c.getVrfs().get(vrfName));
     newIface.setBandwidth(iface.getBandwidth());
+    newIface.setDelay(iface.getDelay());
     if (iface.getDhcpRelayClient()) {
       newIface.getDhcpRelayAddresses().addAll(_dhcpRelayServers);
     } else {

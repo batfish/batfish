@@ -497,6 +497,7 @@ import org.batfish.grammar.cisco.CiscoParser.If_autostateContext;
 import org.batfish.grammar.cisco.CiscoParser.If_bandwidthContext;
 import org.batfish.grammar.cisco.CiscoParser.If_channel_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.If_crypto_mapContext;
+import org.batfish.grammar.cisco.CiscoParser.If_delayContext;
 import org.batfish.grammar.cisco.CiscoParser.If_descriptionContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_access_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_addressContext;
@@ -4969,6 +4970,17 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     _currentInterfaces.forEach(i -> i.setCryptoMap(ctx.name.getText()));
   }
 
+  @Override
+  public void exitIf_delay(If_delayContext ctx) {
+    Double newDelayPs;
+    if (ctx.NO() != null) {
+      newDelayPs = null;
+    } else {
+      newDelayPs = toLong(ctx.DEC()) * 1E7;
+    }
+    _currentInterfaces.forEach(i -> i.setDelay(newDelayPs));
+  }
+
   private @Nullable String computeAggregatedInterfaceName(int num, ConfigurationFormat format) {
     switch (format) {
       case CISCO_ASA:
@@ -8280,8 +8292,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
             ? CiscoConfiguration.MANAGEMENT_VRF_NAME
             : Configuration.DEFAULT_VRF_NAME;
     double bandwidth = Interface.getDefaultBandwidth(canonicalNamePrefix, _format);
+    double delay = Interface.getDefaultDelay(canonicalNamePrefix, _format);
     int mtu = Interface.getDefaultMtu();
     iface.setBandwidth(bandwidth);
+    iface.setDelay(delay);
     iface.setVrf(vrf);
     initVrf(vrf);
     iface.setMtu(mtu);

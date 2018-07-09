@@ -37,6 +37,8 @@ public class Interface extends ComparableStructure<String> {
   /** dirty hack: just chose a very large number */
   private static final double LOOPBACK_BANDWIDTH = 1E12;
 
+  private static final double LOOPBACK_DELAY = 5E9;
+
   /** NX-OS Ethernet 802.3z - may not apply for non-NX-OS */
   private static final double NXOS_ETHERNET_BANDWIDTH = 1E9;
 
@@ -105,6 +107,24 @@ public class Interface extends ComparableStructure<String> {
     return bandwidth;
   }
 
+  public static double getDefaultDelay(String name, ConfigurationFormat format) {
+    if (name.startsWith("Loopback")) {
+      return LOOPBACK_DELAY;
+    }
+    double bandwidth = getDefaultBandwidth(name, format);
+    if (bandwidth == 0D) {
+      return 0D;
+    }
+
+    /*
+     * This is not true for all cases, but it is true for all of the cases that are defined above.
+     * See https://tools.ietf.org/html/draft-savage-eigrp-00#section-5.5.1.2
+     *
+     * Delay is only relevant on routers that support EIGRP (Cisco).
+     */
+    return 1E13 / bandwidth;
+  }
+
   public static int getDefaultMtu() {
     return DEFAULT_INTERFACE_MTU;
   }
@@ -122,6 +142,8 @@ public class Interface extends ComparableStructure<String> {
   private String _channelGroup;
 
   private String _cryptoMap;
+
+  private Double _delay;
 
   private String _description;
 
@@ -278,6 +300,10 @@ public class Interface extends ComparableStructure<String> {
 
   public String getCryptoMap() {
     return _cryptoMap;
+  }
+
+  public Double getDelay() {
+    return _delay;
   }
 
   public String getDescription() {
@@ -445,6 +471,10 @@ public class Interface extends ComparableStructure<String> {
 
   public void setDescription(String description) {
     _description = description;
+  }
+
+  public void setDelay(Double delay) {
+    _delay = delay;
   }
 
   public void setDhcpRelayAddress(SortedSet<Ip> dhcpRelayAddress) {
