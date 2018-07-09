@@ -1,7 +1,7 @@
 package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import java.util.Map;
+import java.util.SortedMap;
 import java.util.TreeSet;
 
 public class NeighborsDiff extends ConfigDiffElement {
@@ -9,7 +9,9 @@ public class NeighborsDiff extends ConfigDiffElement {
   @JsonCreator
   private NeighborsDiff() {}
 
-  public NeighborsDiff(Map<Prefix, BgpPeerConfig> before, Map<Prefix, BgpPeerConfig> after) {
+  public NeighborsDiff(
+      SortedMap<Prefix, ? extends BgpPeerConfig> before,
+      SortedMap<Prefix, ? extends BgpPeerConfig> after) {
     super(new TreeSet<>(), new TreeSet<>());
 
     for (Prefix beforePrefix : before.keySet()) {

@@ -8,7 +8,7 @@ import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Table;
 import com.google.common.collect.TreeBasedTable;
-import com.google.common.graph.Network;
+import com.google.common.graph.ValueGraph;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -16,9 +16,9 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import org.batfish.datamodel.AbstractRoute;
-import org.batfish.datamodel.BgpPeerConfig;
+import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpRoute;
-import org.batfish.datamodel.BgpSession;
+import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Edge;
@@ -36,7 +36,7 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
 
   public static class Builder {
 
-    private Network<BgpPeerConfig, BgpSession> _bgpTopology;
+    private ValueGraph<BgpPeerConfigId, BgpSessionProperties> _bgpTopology;
 
     private Map<Ip, Set<String>> _ipOwners;
 
@@ -46,7 +46,7 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
 
     private Topology _topology;
 
-    public Builder setBgpTopology(Network<BgpPeerConfig, BgpSession> bgpTopology) {
+    public Builder setBgpTopology(ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology) {
       _bgpTopology = bgpTopology;
       return this;
     }
@@ -113,7 +113,7 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
     return new Builder();
   }
 
-  private final transient Network<BgpPeerConfig, BgpSession> _bgpTopology;
+  private final transient ValueGraph<BgpPeerConfigId, BgpSessionProperties> _bgpTopology;
 
   private final Supplier<Map<String, Configuration>> _configurations =
       Suppliers.memoize(new ConfigurationsSupplier());
@@ -195,7 +195,7 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
   }
 
   @Override
-  public Network<BgpPeerConfig, BgpSession> getBgpTopology() {
+  public ValueGraph<BgpPeerConfigId, BgpSessionProperties> getBgpTopology() {
     return _bgpTopology;
   }
 

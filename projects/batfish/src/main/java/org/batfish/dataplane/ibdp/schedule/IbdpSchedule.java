@@ -2,13 +2,13 @@ package org.batfish.dataplane.ibdp.schedule;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.graph.Network;
+import com.google.common.graph.ValueGraph;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import org.batfish.common.BatfishException;
-import org.batfish.datamodel.BgpPeerConfig;
-import org.batfish.datamodel.BgpSession;
+import org.batfish.datamodel.BgpPeerConfigId;
+import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.dataplane.ibdp.IncrementalDataPlaneSettings;
 import org.batfish.dataplane.ibdp.Node;
 import org.batfish.dataplane.ibdp.schedule.NodeColoredSchedule.Coloring;
@@ -78,7 +78,7 @@ public abstract class IbdpSchedule implements Iterator<Map<String, Node>> {
   public static IbdpSchedule getSchedule(
       IncrementalDataPlaneSettings settings,
       Map<String, Node> allNodes,
-      Network<BgpPeerConfig, BgpSession> bgpTopology) {
+      ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology) {
     Schedule schedule = settings.getScheduleName();
     switch (schedule) {
       case ALL:
