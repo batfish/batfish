@@ -13,8 +13,10 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.Configuration.Builder;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Interface;
@@ -32,28 +34,30 @@ public class IpSpaceSpecifierTest {
 
   private static final SpecifierContext _context;
 
+  private static final Configuration _c1;
+
   private static final Interface _i1;
   private static final Interface _i2;
 
   static {
     NetworkFactory nf = new NetworkFactory();
-    Configuration.Builder cb = nf.configurationBuilder();
+    Builder cb = nf.configurationBuilder();
     cb.setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
     Interface.Builder ib = nf.interfaceBuilder();
 
-    Configuration n1 = cb.build();
-    ib.setOwner(n1);
+    _c1 = cb.build();
+    ib.setOwner(_c1);
 
     _i1 = ib.setAddress(new InterfaceAddress("1.0.0.0/24")).build();
-    _i2 = nf.interfaceBuilder().setOwner(n1).build();
+    _i2 = nf.interfaceBuilder().setOwner(_c1).build();
 
-    _configs = ImmutableMap.of(n1.getHostname(), n1);
+    _configs = ImmutableMap.of(_c1.getHostname(), _c1);
     _context =
         MockSpecifierContext.builder()
             .setConfigs(_configs)
             .setInterfaceOwnedIps(
                 ImmutableMap.of(
-                    n1.getName(),
+                    _c1.getName(),
                     ImmutableMap.of(
                         _i1.getName(),
                         _i1.getAddress().getIp().toIpSpace(),
@@ -111,5 +115,18 @@ public class IpSpaceSpecifierTest {
         hasEntry(
             equalTo(EmptyIpSpace.INSTANCE),
             contains(new InterfaceLinkLocation(_i2.getOwner().getName(), _i2.getName()))));
+  }
+
+  @Test
+  public void testNodeNameRegexInterfaceLinksIpSpaceSpecifier() {
+    Pattern pattern = Pattern.compile(_c1.getName());
+    IpSpaceAssignment assignment =
+        new NodeNameRegexConnectedHostsIpSpaceSpecifier(pattern).resolve(_allLocations, _context);
+
+    assertThat(
+        assignment,
+        hasEntry(
+            allOf(containsIp(new Ip("1.0.0.1")), not(containsIp(new Ip("1.0.0.0")))),
+            equalTo(_allLocations)));
   }
 }
