@@ -17,9 +17,9 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import org.apache.commons.lang3.StringUtils;
 import org.batfish.datamodel.AsPath;
+import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.BgpAdvertisement.BgpAdvertisementType;
-import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.FilterResult;
 import org.batfish.datamodel.Flow;
@@ -171,7 +171,7 @@ class CounterExample {
           int pathLength = intVal(r.getMetric());
 
           // Create dummy information
-          BgpPeerConfig n = slice.getGraph().getEbgpNeighbors().get(lge.getEdge());
+          BgpActivePeerConfig n = slice.getGraph().getEbgpNeighbors().get(lge.getEdge());
           String srcNode = "as" + n.getRemoteAs();
           Ip zeroIp = new Ip(0);
           Ip dstIp = n.getLocalIp();

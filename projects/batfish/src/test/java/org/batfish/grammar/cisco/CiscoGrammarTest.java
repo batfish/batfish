@@ -10,6 +10,7 @@ import static org.batfish.datamodel.AuthenticationMethod.LINE;
 import static org.batfish.datamodel.AuthenticationMethod.LOCAL;
 import static org.batfish.datamodel.AuthenticationMethod.LOCAL_CASE;
 import static org.batfish.datamodel.AuthenticationMethod.NONE;
+import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.matchers.AaaAuthenticationLoginListMatchers.hasMethod;
 import static org.batfish.datamodel.matchers.AaaAuthenticationLoginMatchers.hasListForKey;
 import static org.batfish.datamodel.matchers.AaaAuthenticationMatchers.hasLogin;
@@ -18,9 +19,9 @@ import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.hasConjuncts;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.isAndMatchExprThat;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasRemoteAs;
+import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasActiveNeighbor;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathEbgp;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathEquivalentAsPathMatchMode;
-import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbor;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbors;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurationFormat;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
@@ -148,7 +149,7 @@ import static org.junit.Assert.assertTrue;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.graph.Network;
+import com.google.common.graph.ValueGraph;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
@@ -164,8 +165,8 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpAdvertisement;
-import org.batfish.datamodel.BgpPeerConfig;
-import org.batfish.datamodel.BgpSession;
+import org.batfish.datamodel.BgpPeerConfigId;
+import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -849,7 +850,7 @@ public class CiscoGrammarTest {
     batfish.computeDataPlane(false);
     DataPlane dp = batfish.loadDataPlane();
     Set<AbstractRoute> routesOnListener =
-        dp.getRibs().get("listener").get(Configuration.DEFAULT_VRF_NAME).getRoutes();
+        dp.getRibs().get("listener").get(DEFAULT_VRF_NAME).getRoutes();
 
     // Ensure that default route is advertised to and installed on listener
     assertThat(routesOnListener, hasItem(hasPrefix(Prefix.ZERO)));
@@ -1589,24 +1590,26 @@ public class CiscoGrammarTest {
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations();
     Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpNodeOwners(configurations, true);
-    Network<BgpPeerConfig, BgpSession> bgpTopology =
+    ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
         CommonUtil.initBgpTopology(configurations, ipOwners, false);
-    Configuration r1 = configurations.get("r1");
-    Configuration r2 = configurations.get("r2");
+
+    // Edge one direction
     assertThat(
         bgpTopology
-            .outEdges(
-                r1.getDefaultVrf().getBgpProcess().getNeighbors().get(Prefix.parse("1.2.0.2/32")))
-            .stream()
-            .map(BgpSession::getDst),
-        is(notNullValue()));
+            .adjacentNodes(
+                new BgpPeerConfigId("r1", DEFAULT_VRF_NAME, Prefix.parse("1.2.0.2/32"), false))
+            .iterator()
+            .next(),
+        equalTo(new BgpPeerConfigId("r2", DEFAULT_VRF_NAME, Prefix.parse("1.2.0.1/32"), false)));
+
+    // Edge the other direction
     assertThat(
         bgpTopology
-            .outEdges(
-                r2.getDefaultVrf().getBgpProcess().getNeighbors().get(Prefix.parse("1.2.0.1/32")))
-            .stream()
-            .map(BgpSession::getDst),
-        is(notNullValue()));
+            .adjacentNodes(
+                new BgpPeerConfigId("r2", DEFAULT_VRF_NAME, Prefix.parse("1.2.0.1/32"), false))
+            .iterator()
+            .next(),
+        equalTo(new BgpPeerConfigId("r1", DEFAULT_VRF_NAME, Prefix.parse("1.2.0.2/32"), false)));
   }
 
   @Test
@@ -1657,7 +1660,7 @@ public class CiscoGrammarTest {
     Configuration c = parseConfig("ios-bgp-origination-space");
 
     assertThat(
-        c.getVrfs().get(Configuration.DEFAULT_VRF_NAME).getBgpProcess().getOriginationSpace(),
+        c.getVrfs().get(DEFAULT_VRF_NAME).getBgpProcess().getOriginationSpace(),
         equalTo(
             new PrefixSpace(
                 PrefixRange.fromPrefix(Prefix.parse("1.1.1.1/32")),
@@ -1684,7 +1687,7 @@ public class CiscoGrammarTest {
     // Check that 1.1.1.1/32 appears on r3
     SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
         dataPlanePlugin.getRoutes(batfish.loadDataPlane());
-    SortedSet<AbstractRoute> r3Routes = routes.get("r3").get(Configuration.DEFAULT_VRF_NAME);
+    SortedSet<AbstractRoute> r3Routes = routes.get("r3").get(DEFAULT_VRF_NAME);
     Set<Prefix> r3Prefixes =
         r3Routes.stream().map(AbstractRoute::getNetwork).collect(Collectors.toSet());
     Prefix r1Loopback = Prefix.parse("1.1.1.1/32");
@@ -2069,7 +2072,8 @@ public class CiscoGrammarTest {
      * The peer with a remote-as should appear in the datamodel. The peer without a remote-as
      * should not appear, and there should be a warning about the missing remote-as.
      */
-    assertThat(c, hasDefaultVrf(hasBgpProcess(hasNeighbor(neighborWithRemoteAs, hasRemoteAs(1L)))));
+    assertThat(
+        c, hasDefaultVrf(hasBgpProcess(hasActiveNeighbor(neighborWithRemoteAs, hasRemoteAs(1L)))));
     assertThat(c, hasDefaultVrf(hasBgpProcess(hasNeighbors(not(hasKey(neighborWithoutRemoteAs))))));
     assertThat(
         ccae,
@@ -2587,7 +2591,7 @@ public class CiscoGrammarTest {
   @Test
   public void testNxosBgpVrf() throws IOException {
     Configuration c = parseConfig("nxosBgpVrf");
-    assertThat(c.getVrfs().get("bar").getBgpProcess().getNeighbors().values(), hasSize(1));
+    assertThat(c.getVrfs().get("bar").getBgpProcess().getActiveNeighbors().values(), hasSize(1));
   }
 
   @Test
