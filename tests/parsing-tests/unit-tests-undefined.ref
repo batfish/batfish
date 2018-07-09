@@ -86,7 +86,7 @@
         "description" : "Undefined reference to structure of type: 'bgp group' with usage: 'bgp neighbor statement' named 'UNDEFINED_PEER_GROUP'",
         "files" : {
           "ios_bgp" : [
-            6
+            7
           ]
         }
       },
@@ -707,7 +707,7 @@
         "description" : "Undefined reference to structure of type: 'ipv4 acl' with usage: 'ssh ipv4 access-list' named 'ACL99'",
         "files" : {
           "ios_xr_ssh" : [
-            5
+            6
           ]
         }
       },
@@ -910,7 +910,7 @@
         "description" : "Undefined reference to structure of type: 'ipv6 acl' with usage: 'ssh ipv6 access-list' named 'ipv6-vty-acl'",
         "files" : {
           "ios_xr_ssh" : [
-            5
+            6
           ]
         }
       },
@@ -2131,7 +2131,7 @@
         "bgp group" : {
           "UNDEFINED_PEER_GROUP" : {
             "bgp neighbor statement" : [
-              6
+              7
             ]
           }
         }
@@ -2174,14 +2174,14 @@
         "ipv4 acl" : {
           "ACL99" : {
             "ssh ipv4 access-list" : [
-              5
+              6
             ]
           }
         },
         "ipv6 acl" : {
           "ipv6-vty-acl" : {
             "ssh ipv6 access-list" : [
-              5
+              6
             ]
           }
         }

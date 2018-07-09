@@ -817,21 +817,26 @@ if_null_inner
 
 if_null_single
 :
-   NO?
-   (
-      BCMC_OPTIMIZATION
-      | DOT1X
-      | IP TRAFFIC_EXPORT
-      | JUMBO
-      | LINKDEBOUNCE
-      | MAB
-      | PHY
-      | REDUNDANCY
-      | SWITCHPORT CAPTURE
-      | SUPPRESS_ARP
-      | TRIMODE
-      | TRUSTED
-   ) ~NEWLINE* NEWLINE // do not change to null_rest_of_line
+  NO?
+  (
+    BCMC_OPTIMIZATION
+    | DOT1X
+    | IP TRAFFIC_EXPORT
+    | JUMBO
+    | LINKDEBOUNCE
+    | MAB
+    | PHY
+    | REDUNDANCY
+    |
+    (
+      SPEED NONEGOTIATE
+    )
+    | SWITCHPORT CAPTURE
+    | SUPPRESS_ARP
+    | TRIMODE
+    | TRUSTED
+  ) ~NEWLINE* NEWLINE // do not change to null_rest_of_line
+
 ;
 
 if_port_security
@@ -1011,6 +1016,11 @@ if_port_security_null
 if_service_policy
 :
    SERVICE_POLICY (INPUT | OUTPUT) policy_map = variable NEWLINE
+;
+
+if_service_policy_control
+:
+   SERVICE_POLICY TYPE CONTROL SUBSCRIBER policy_map = variable NEWLINE
 ;
 
 if_shutdown
@@ -1373,6 +1383,7 @@ if_inner
    | if_private_vlan
    | if_service_instance
    | if_service_policy
+   | if_service_policy_control
    | if_shutdown
    | if_spanning_tree
    | if_speed_auto
