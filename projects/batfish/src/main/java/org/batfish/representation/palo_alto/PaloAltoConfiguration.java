@@ -1,5 +1,6 @@
 package org.batfish.representation.palo_alto;
 
+import com.google.common.collect.ImmutableList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
@@ -12,16 +13,25 @@ import org.apache.commons.collections4.list.TreeList;
 import org.batfish.common.VendorConversionException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.AndMatchExpr;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.MatchSrcInterface;
+import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.vendor.VendorConfiguration;
 
 public final class PaloAltoConfiguration extends VendorConfiguration {
 
   private static final long serialVersionUID = 1L;
+
+  public static final String CATCHALL_ZONE_NAME = "any";
 
   public static final String DEFAULT_VSYS_NAME = "vsys1";
 
@@ -144,33 +154,75 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     for (Vsys vsys : _virtualSystems.values()) {
       loggingServers.addAll(vsys.getSyslogServerAddresses());
 
-      // Create IpAccessLists from firewall rules
-      String ipAclName = computeObjectName(vsys.getName(), RULEBASE_NAME);
-      _c.getIpAccessLists().put(ipAclName, toIpAccessList(ipAclName, vsys.getRules()));
-
-      // Convert PAN zones and associate firewall rules with zones' interfaces
+      // Convert PAN zones and create their corresponding outgoing ACLs
       for (Entry<String, Zone> zoneEntry : vsys.getZones().entrySet()) {
         Zone zone = zoneEntry.getValue();
         String zoneName = computeObjectName(vsys.getName(), zone.getName());
         _c.getZones().put(zoneName, toZone(zoneName, zone));
+
+        String aclName = String.format("%s~OUTGOING_FILTER", zoneName);
+        _c.getIpAccessLists().put(aclName, toIpAccessList(aclName, vsys.getRules(), zone));
       }
     }
     _c.setLoggingServers(loggingServers);
   }
 
-  /** Convert firewall rules into an IpAccessList */
-  private IpAccessList toIpAccessList(String name, SortedMap<String, Rule> rules) {
+  /** Convert firewall rules into a zone-specific outgoing IpAccessList */
+  private IpAccessList toIpAccessList(String name, SortedMap<String, Rule> rules, Zone toZone) {
     List<IpAccessListLine> lines = new TreeList<>();
-    for (Entry<String, Rule> ruleEntry : rules.entrySet()) {
-      lines.add(toIpAccessListLine(ruleEntry.getValue()));
+    for (Rule rule : rules.values()) {
+      if (!rule.getDisabled()
+          && (rule.getTo().contains(toZone.getName())
+              || rule.getTo().contains(CATCHALL_ZONE_NAME))) {
+        lines.add(toIpAccessListLine(rule));
+      }
     }
     return IpAccessList.builder().setName(name).setLines(lines).build();
   }
 
   /** Convert specified firewall rule into an IpAccessListLine */
   private IpAccessListLine toIpAccessListLine(Rule rule) {
-    // TODO actually populate the IpAclLine
-    return IpAccessListLine.builder().setName(rule.getName()).build();
+    IpAccessListLine.Builder ipAccessListLineBuilder = IpAccessListLine.builder();
+    if (rule.getAction() == LineAction.ACCEPT) {
+      ipAccessListLineBuilder.accepting();
+    } else {
+      ipAccessListLineBuilder.rejecting();
+    }
+
+    HeaderSpace.Builder headerSpaceBuilder = HeaderSpace.builder();
+    for (IpSpace source : rule.getSource()) {
+      headerSpaceBuilder.addSrcIp(source);
+    }
+    for (IpSpace destination : rule.getDestination()) {
+      headerSpaceBuilder.addDstIp(destination);
+    }
+    // TODO handle service and application
+
+    List<String> srcInterfaces = new TreeList<>();
+    for (String zoneName : rule.getFrom()) {
+      if (zoneName.equals(CATCHALL_ZONE_NAME)) {
+        srcInterfaces.clear();
+        break;
+      }
+      srcInterfaces.addAll(rule.getVsys().getZones().get(zoneName).getInterfaceNames());
+    }
+
+    MatchHeaderSpace matchHeaderSpace = new MatchHeaderSpace(headerSpaceBuilder.build());
+    AclLineMatchExpr aclLineMatchExpr;
+    if (srcInterfaces.isEmpty()) {
+      // IpAccessListLine should just match headerspace
+      aclLineMatchExpr = matchHeaderSpace;
+    } else {
+      // IpAccessListLine should match headerspace AND srcInterface
+      aclLineMatchExpr =
+          new AndMatchExpr(
+              ImmutableList.of(matchHeaderSpace, new MatchSrcInterface(srcInterfaces)));
+    }
+
+    return ipAccessListLineBuilder
+        .setName(rule.getName())
+        .setMatchCondition(aclLineMatchExpr)
+        .build();
   }
 
   /** Convert Palo Alto specific interface into vendor independent model interface */
@@ -187,7 +239,19 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     newIface.setActive(iface.getActive());
     newIface.setDescription(iface.getComment());
 
-    String ipAclName = computeObjectName(iface.getVsys().getName(), RULEBASE_NAME);
+    if (iface.getZone() != null) {
+      String ipAclName = String.format("%s~OUTGOING_FILTER", iface.getZone().getName());
+      newIface.setOutgoingFilter(
+          IpAccessList.builder()
+              .setOwner(_c)
+              .setName(String.format("%s~OUTGOING_FILTER", iface.getName()))
+              .setLines(
+                  ImmutableList.of(
+                      IpAccessListLine.accepting()
+                          .setMatchCondition(new PermittedByAcl(ipAclName))
+                          .build()))
+              .build());
+    }
 
     return newIface;
   }
@@ -247,7 +311,6 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     _c.setNtpServers(getNtpServers());
 
     // Handle converting items within virtual systems
-    // This needs to happen before other conversions as it updates things like interface filters
     convertVirtualSystems();
 
     for (Entry<String, Interface> i : _interfaces.entrySet()) {

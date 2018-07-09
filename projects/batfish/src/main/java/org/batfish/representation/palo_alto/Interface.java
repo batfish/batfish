@@ -29,6 +29,10 @@ public final class Interface extends ComparableStructure<String> {
 
   private final SortedSet<Interface> _units;
 
+  private Vsys _vsys;
+
+  private Zone _zone;
+
   public Interface(String name) {
     super(name);
     _active = true;
@@ -69,6 +73,14 @@ public final class Interface extends ComparableStructure<String> {
     return _units;
   }
 
+  public Vsys getVsys() {
+    return _vsys;
+  }
+
+  public Zone getZone() {
+    return _zone;
+  }
+
   public void setActive(boolean active) {
     _active = active;
   }
@@ -91,5 +103,13 @@ public final class Interface extends ComparableStructure<String> {
 
   public void setTag(Integer tag) {
     _tag = tag;
+  }
+
+  public void setVsys(Vsys vsys) {
+    _vsys = vsys;
+  }
+
+  public void setZone(Zone zone) {
+    _zone = zone;
   }
 }

@@ -4,21 +4,19 @@ set network interface ethernet ethernet1/2 layer3 ip 1.1.2.1/24
 set network interface ethernet ethernet1/3 layer3 ip 1.1.3.1/24
 set zone z1 network layer3 [ ethernet1/1 ethernet1/2 ]
 
+set rulebase security rules RULE0 disabled yes
+set rulebase security rules RULE0 from any
+set rulebase security rules RULE0 to any
+set rulebase security rules RULE0 source any
+set rulebase security rules RULE0 destination any
+set rulebase security rules RULE0 service any
+set rulebase security rules RULE0 application any
+set rulebase security rules RULE0 action drop
+
 set rulebase security rules RULE1 from [ z1 ]
 set rulebase security rules RULE1 to any
 set rulebase security rules RULE1 source 1.1.2.255
 set rulebase security rules RULE1 destination any
 set rulebase security rules RULE1 service any
-set rulebase security rules RULE1 application [ ping dns ]
+set rulebase security rules RULE1 application any
 set rulebase security rules RULE1 action allow
-# set rulebase security rules RULE1 negate-source yes
-set rulebase security rules RULE1 disabled yes
-
-set rulebase security rules RULE2 from any
-set rulebase security rules RULE2 to z1
-set rulebase security rules RULE2 source any
-# set rulebase security rules RULE2 destination [ 1.1.1.1/24 1.1.2.1-1.1.2.10 ]
-set rulebase security rules RULE2 destination [ 1.1.1.1/24 1.1.2.1/32 ]
-set rulebase security rules RULE2 service any
-set rulebase security rules RULE2 application any
-set rulebase security rules RULE2 action allow

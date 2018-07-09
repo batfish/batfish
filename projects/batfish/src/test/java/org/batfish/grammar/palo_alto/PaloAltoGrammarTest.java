@@ -7,6 +7,7 @@ import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasNextHopIp;
 import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessList;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructure;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructureWithDefinitionLines;
@@ -18,6 +19,8 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDescription;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
+import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
+import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasInterfaces;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.DEFAULT_VSYS_NAME;
@@ -41,6 +44,7 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
@@ -78,6 +82,15 @@ public class PaloAltoGrammarTest {
   private Map<String, Configuration> parseTextConfigs(String... configurationNames)
       throws IOException {
     return getBatfishForConfigurationNames(configurationNames).loadConfigurations();
+  }
+
+  private static Flow createFlow(String sourceAddress, String destinationAddress) {
+    Flow.Builder fb = new Flow.Builder();
+    fb.setIngressNode("node");
+    fb.setSrcIp(new Ip(sourceAddress));
+    fb.setDstIp(new Ip(destinationAddress));
+    fb.setTag("test");
+    return fb.build();
   }
 
   @Test
@@ -271,6 +284,24 @@ public class PaloAltoGrammarTest {
   @Test
   public void testRulebase() throws IOException {
     String hostname = "rulebase";
+    Configuration c = parseConfig(hostname);
+
+    Flow z1ToZ1permitted = createFlow("1.1.2.255", "1.1.1.2");
+    Flow z1ToZ1rejected = createFlow("1.1.2.2", "1.1.1.2");
+    Flow noZoneToZ1rejected = createFlow("1.1.3.2", "1.1.1.2");
+
+    assertThat(
+        c, hasIpAccessList("vsys1~z1~OUTGOING_FILTER", accepts(z1ToZ1permitted, "ethernet1/2", c)));
+    assertThat(
+        c, hasIpAccessList("vsys1~z1~OUTGOING_FILTER", rejects(z1ToZ1rejected, "ethernet1/2", c)));
+    assertThat(
+        c,
+        hasIpAccessList("vsys1~z1~OUTGOING_FILTER", rejects(noZoneToZ1rejected, "ethernet1/3", c)));
+  }
+
+  @Test
+  public void testVsysRulebase() throws IOException {
+    String hostname = "vsys-rulebase";
     Configuration c = parseConfig(hostname);
 
     // Confirm both ntp servers show up

@@ -45,6 +45,7 @@ src_or_dst_list_item
 :
     (
         ANY
+        | IP_ADDRESS
         | IP_PREFIX
         // TODO handle this
         // | IP_RANGE

@@ -12,7 +12,11 @@ public final class Rule implements Serializable {
 
   private LineAction _action;
 
+  private String _description;
+
   private SortedSet<IpSpace> _destination;
+
+  private boolean _disabled;
 
   private SortedSet<String> _from;
 
@@ -24,8 +28,11 @@ public final class Rule implements Serializable {
 
   private final String _name;
 
+  private Vsys _vsys;
+
   public Rule(String name) {
     _destination = new TreeSet<>();
+    _disabled = false;
     _from = new TreeSet<>();
     _service = new TreeSet<>();
     _source = new TreeSet<>();
@@ -41,8 +48,16 @@ public final class Rule implements Serializable {
     return _action;
   }
 
+  public String getDescription() {
+    return _description;
+  }
+
   public SortedSet<IpSpace> getDestination() {
     return _destination;
+  }
+
+  public boolean getDisabled() {
+    return _disabled;
   }
 
   public SortedSet<String> getFrom() {
@@ -61,7 +76,23 @@ public final class Rule implements Serializable {
     return _to;
   }
 
+  public Vsys getVsys() {
+    return _vsys;
+  }
+
   public void setAction(LineAction action) {
     _action = action;
+  }
+
+  public void setDescription(String description) {
+    _description = description;
+  }
+
+  public void setDisabled(boolean disabled) {
+    _disabled = disabled;
+  }
+
+  public void setVsys(Vsys vsys) {
+    _vsys = vsys;
   }
 }

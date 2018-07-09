@@ -57,7 +57,9 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Snvrrt_nexthopContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sr_securityContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Src_or_dst_list_itemContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_actionContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_descriptionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_destinationContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_disabledContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_fromContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_sourceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_toContext;
@@ -172,6 +174,8 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   private IpSpace toIpSpace(Src_or_dst_list_itemContext ctx) {
     if (ctx.ANY() != null) {
       return UniverseIpSpace.INSTANCE;
+    } else if (ctx.IP_ADDRESS() != null) {
+      return new Ip(ctx.IP_ADDRESS().getText()).toIpSpace();
     } else if (ctx.IP_PREFIX() != null) {
       return Prefix.parse(ctx.IP_PREFIX().getText()).toIpSpace();
     } else if (ctx.name != null) {
@@ -206,9 +210,28 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
+  public void exitPalo_alto_configuration(Palo_alto_configurationContext ctx) {
+    // Assign the appropriate vsys and zone to each interface
+    for (Vsys vsys : _configuration.getVirtualSystems().values()) {
+      for (Zone zone : vsys.getZones().values()) {
+        for (String ifname : zone.getInterfaceNames()) {
+          _configuration.getInterfaces().get(ifname).setVsys(vsys);
+          _configuration.getInterfaces().get(ifname).setZone(zone);
+        }
+      }
+    }
+    for (Interface iface : _configuration.getInterfaces().values()) {
+      if (iface.getVsys() == null) {
+        iface.setVsys(_defaultVsys);
+        iface.setZone(null);
+      }
+    }
+  }
+
+  @Override
   public void enterS_zone(S_zoneContext ctx) {
     String name = ctx.name.getText();
-    _currentZone = _currentVsys.getZones().computeIfAbsent(name, Zone::new);
+    _currentZone = _currentVsys.getZones().computeIfAbsent(name, n -> new Zone(n, _currentVsys));
 
     // Use constructed zone name so same-named zone defs across vsys are unique
     String uniqueName = computeObjectName(_currentVsys.getName(), name);
@@ -373,6 +396,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void enterSr_security(Sr_securityContext ctx) {
     _currentRule = _currentVsys.getRules().computeIfAbsent(ctx.name.getText(), Rule::new);
+    _currentRule.setVsys(_currentVsys);
   }
 
   @Override
@@ -392,6 +416,11 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
+  public void exitSrs_description(Srs_descriptionContext ctx) {
+    _currentRule.setDescription(ctx.description.getText());
+  }
+
+  @Override
   public void exitSrs_destination(Srs_destinationContext ctx) {
     for (Src_or_dst_list_itemContext var : ctx.src_or_dst_list().src_or_dst_list_item()) {
       String destination = var.getText();
@@ -401,6 +430,11 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
             ADDRESS, destination, RULEBASE_DESTINATION_ADDRESS, getLine(var.name.getStart()));
       }
     }
+  }
+
+  @Override
+  public void exitSrs_disabled(Srs_disabledContext ctx) {
+    _currentRule.setDisabled(ctx.YES() != null);
   }
 
   @Override
