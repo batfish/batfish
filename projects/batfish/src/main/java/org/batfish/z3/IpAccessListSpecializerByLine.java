@@ -1,15 +1,16 @@
 package org.batfish.z3;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.SortedSet;
 import java.util.stream.Collectors;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.FalseExpr;
@@ -24,37 +25,35 @@ import org.batfish.datamodel.acl.TrueExpr;
 
 /**
  * Specialize an {@link IpAccessList} to a given {@link HeaderSpace}. Lines that can never match the
- * {@link HeaderSpace} can be removed.
+ * {@link HeaderSpace} are not removed, but their match expressions are replaced with FalseExprs.
  */
 public class IpAccessListSpecializerByLine
     implements GenericAclLineMatchExprVisitor<AclLineMatchExpr> {
   private final IpAccessListLine _line;
+  private final Map<String, IpSpace> _namedIpSpaces;
 
-  public IpAccessListSpecializerByLine(IpAccessListLine line) {
+  private List<IpAccessListLine> lines;
+
+  public IpAccessListSpecializerByLine(IpAccessListLine line, Map<String, IpSpace> namedIpSpaces) {
     _line = line;
+    _namedIpSpaces = namedIpSpaces;
   }
 
   public IpAccessList specialize(IpAccessList ipAccessList) {
-    List<IpAccessListLine> specializedLines =
-        ipAccessList.getLines().stream().map(this::specialize).collect(Collectors.toList());
-
-    return createAcl(ipAccessList.getName(), specializedLines);
+    return specializeSublist(ipAccessList, ipAccessList.getLines().size() - 1);
   }
 
   public IpAccessList specializeSublist(IpAccessList ipAccessList, int lastLineNum) {
-    List<IpAccessListLine> specializedLines =
+    lines = ipAccessList.getLines().subList(0, lastLineNum + 1);
+    List<IpAccessListLine> specialized =
         ipAccessList
             .getLines()
-            .subList(0, lastLineNum + 1)
+            .subList(0, lastLineNum)
             .stream()
             .map(this::specialize)
             .collect(Collectors.toList());
-
-    return createAcl(ipAccessList.getName(), specializedLines);
-  }
-
-  private IpAccessList createAcl(String name, List<IpAccessListLine> lines) {
-    return IpAccessList.builder().setName(name).setLines(lines).build();
+    specialized.add(_line);
+    return IpAccessList.builder().setName(ipAccessList.getName()).setLines(specialized).build();
   }
 
   public IpAccessListLine specialize(IpAccessListLine ipAccessListLine) {
@@ -71,12 +70,12 @@ public class IpAccessListSpecializerByLine
             .map(expr -> expr.accept(this))
             .filter(expr -> expr != TrueExpr.INSTANCE)
             .collect(ImmutableList.toImmutableList());
-    for (AclLineMatchExpr conjunct : andMatchExpr.getConjuncts()) {
-      if (conjunct.accept(this) == FalseExpr.INSTANCE) {
-        return FalseExpr.INSTANCE;
-      }
+    if (conjuncts.isEmpty()) {
+      return TrueExpr.INSTANCE;
     }
-    return new AndMatchExpr(conjuncts);
+    return conjuncts.contains(FalseExpr.INSTANCE)
+        ? FalseExpr.INSTANCE
+        : new AndMatchExpr(conjuncts);
   }
 
   @Override
@@ -86,13 +85,15 @@ public class IpAccessListSpecializerByLine
 
   @Override
   public AclLineMatchExpr visitMatchHeaderSpace(MatchHeaderSpace matchHeaderSpace) {
-    IpAccessListSpecializer specializer =
-        new IpAccessListSpecializer(matchHeaderSpace.getHeaderspace(), ImmutableMap.of());
-    return specializer.specialize(_line).isPresent() ? matchHeaderSpace : FalseExpr.INSTANCE;
+    HeaderSpaceSpecializerByLine headerSpaceSpecializer =
+        new HeaderSpaceSpecializerByLine(matchHeaderSpace.getHeaderspace());
+    return _line.getMatchCondition().accept(headerSpaceSpecializer);
   }
 
   @Override
   public AclLineMatchExpr visitMatchSrcInterface(MatchSrcInterface matchSrcInterface) {
+    /* Can't be optimized because of the case where specializer's line is blocked because every
+    interface is matched by a previous MatchSrcInterface line. */
     return matchSrcInterface;
   }
 
@@ -128,9 +129,8 @@ public class IpAccessListSpecializerByLine
 
     if (disjuncts.isEmpty()) {
       return FalseExpr.INSTANCE;
-    } else {
-      return new OrMatchExpr(disjuncts);
     }
+    return disjuncts.contains(TrueExpr.INSTANCE) ? TrueExpr.INSTANCE : new OrMatchExpr(disjuncts);
   }
 
   @Override

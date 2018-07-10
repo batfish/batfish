@@ -726,6 +726,17 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public void answerAclReachability(
       List<AclSpecs> aclSpecs, AclLinesAnswerElementInterface answerRows) {
 
+    long t0 = System.currentTimeMillis();
+    //    long t1 = 0;
+    //    long t3 = 0;
+    //    int withz3 = 0;
+    //    int without = 0;
+    //    int multipleBlocking = 0;
+    List<Long> phase1times = new ArrayList<>();
+    List<Long> phase3times = new ArrayList<>();
+    AtomicInteger withz3 = new AtomicInteger();
+    AtomicInteger without = new AtomicInteger();
+
     aclSpecs
         .parallelStream()
         .forEach(
@@ -751,7 +762,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
               for (int lineNum = 0; lineNum < sanitizedAcl.getLines().size(); lineNum++) {
                 IpAccessListLine line = sanitizedAcl.getLines().get(lineNum);
-                IpAccessListSpecializerByLine specializer = new IpAccessListSpecializerByLine(line);
+                IpAccessListSpecializerByLine specializer =
+                    new IpAccessListSpecializerByLine(line, ImmutableMap.of());
                 IpAccessList specializedAcl = specializer.specializeSublist(sanitizedAcl, lineNum);
                 Map<String, IpAccessList> specializedDependencies =
                     dependencies
@@ -771,11 +783,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
                         .build();
                 c.setIpAccessLists(aclsMap);
 
+                long t1 = System.currentTimeMillis();
                 // See if it's unreachable
                 Map<AclLine, Boolean> linesReachableMap = new TreeMap<>();
                 computeNodSatOutput(
                     ImmutableList.of(generateUnreachableAclLineJob(specializedAcl, c, lineNum)),
                     linesReachableMap);
+                phase1times.add(System.currentTimeMillis() - t1);
 
                 if (linesReachableMap.containsValue(true)) {
                   continue;
@@ -788,21 +802,35 @@ public class Batfish extends PluginConsumer implements IBatfish {
                 }
 
                 // Line isn't unmatchable; find blocking lines
-                List<NodFirstUnsatJob<AclLine, Integer>> blockingLineJobs =
-                    generateEarliestMoreGeneralAclLineJobs(
-                        c,
-                        specializedAcl,
-                        ImmutableSet.of(lineNum),
-                        ImmutableSet.of(),
-                        IntStream.range(0, specializedAcl.getLines().size())
-                            .mapToObj(i -> new AclLine(hostname, aclName, i))
-                            .collect(Collectors.toList()));
-                Map<AclLine, Integer> blockingLinesMap = new TreeMap<>();
-                computeNodFirstUnsatOutput(blockingLineJobs, blockingLinesMap);
+                long t3 = System.currentTimeMillis();
+                Integer blockingLineNum;
+                for (blockingLineNum = 0; blockingLineNum < lineNum; blockingLineNum++) {
+                  if (specializedAcl.getLines().get(blockingLineNum).getMatchCondition()
+                      == org.batfish.datamodel.acl.TrueExpr.INSTANCE) {
+                    break;
+                  }
+                }
+                if (blockingLineNum == lineNum) {
+                  Map<AclLine, Integer> blockingLinesMap = new TreeMap<>();
+                  List<NodFirstUnsatJob<AclLine, Integer>> blockingLineJobs =
+                      generateEarliestMoreGeneralAclLineJobs(
+                          c,
+                          specializedAcl,
+                          ImmutableSet.of(lineNum),
+                          ImmutableSet.of(),
+                          IntStream.range(0, specializedAcl.getLines().size())
+                              .mapToObj(i -> new AclLine(hostname, aclName, i))
+                              .collect(Collectors.toList()));
+                  computeNodFirstUnsatOutput(blockingLineJobs, blockingLinesMap);
+
+                  blockingLineNum = blockingLinesMap.get(new AclLine(hostname, aclName, lineNum));
+                  withz3.incrementAndGet();
+                } else {
+                  without.incrementAndGet();
+                }
+                phase3times.add(System.currentTimeMillis() - t3);
 
                 // Report line
-                Integer blockingLineNum =
-                    blockingLinesMap.get(new AclLine(hostname, aclName, lineNum));
                 SortedSet<Integer> blockingLineNums =
                     blockingLineNum == null
                         ? ImmutableSortedSet.of()
@@ -810,6 +838,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
                 answerRows.addUnreachableLine(aclSpec, lineNum, false, blockingLineNums);
               }
             });
+    System.out.println("Total time: " + ((System.currentTimeMillis() - t0) / 60000.));
+    System.out.println(
+        "Phase 1: " + (phase1times.stream().mapToLong(Long::longValue).sum() / 60000.));
+    System.out.println(
+        "Phase 3: " + (phase3times.stream().mapToLong(Long::longValue).sum() / 60000.));
+    System.out.println("With z3: " + withz3.get());
+    System.out.println("Without z3: " + without.get());
+    System.out.println();
   }
 
   private NodSatJob<AclLine> generateUnreachableAclLineJob(
