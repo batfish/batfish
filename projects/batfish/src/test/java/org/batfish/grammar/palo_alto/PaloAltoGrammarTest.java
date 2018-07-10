@@ -306,9 +306,24 @@ public class PaloAltoGrammarTest {
         batfish.loadConvertConfigurationAnswerElementOrReparse();
 
     // Confirm structure definitions are tracked
-    assertThat(ccae, hasDefinedStructure(hostname, PaloAltoStructureType.SERVICE, "SERVICE1"));
-    assertThat(ccae, hasDefinedStructure(hostname, PaloAltoStructureType.SERVICE, "SERVICE2"));
-    assertThat(ccae, hasDefinedStructure(hostname, PaloAltoStructureType.SERVICE, "SERVICE3"));
+    assertThat(
+        ccae,
+        hasDefinedStructure(
+            hostname,
+            PaloAltoStructureType.SERVICE,
+            computeObjectName(DEFAULT_VSYS_NAME, "SERVICE1")));
+    assertThat(
+        ccae,
+        hasDefinedStructure(
+            hostname,
+            PaloAltoStructureType.SERVICE,
+            computeObjectName(DEFAULT_VSYS_NAME, "SERVICE2")));
+    assertThat(
+        ccae,
+        hasDefinedStructure(
+            hostname,
+            PaloAltoStructureType.SERVICE,
+            computeObjectName(DEFAULT_VSYS_NAME, "SERVICE3")));
   }
 
   @Test
