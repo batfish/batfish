@@ -1,5 +1,10 @@
 package org.batfish.representation.palo_alto;
 
+import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
+
+import com.google.common.collect.SortedMultiset;
+import java.util.Collections;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.NavigableSet;
@@ -13,6 +18,7 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Vrf;
+import org.batfish.vendor.StructureUsage;
 import org.batfish.vendor.VendorConfiguration;
 
 public final class PaloAltoConfiguration extends VendorConfiguration {
@@ -131,6 +137,11 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     return String.format("%s~%s", vsysName, objectName);
   }
 
+  /** Extract vsys name from an object name with an embedded namespace */
+  private static String getVsysName(String objectName) {
+    return objectName.split("~", -1)[0];
+  }
+
   /** Convert vsys components to vendor independent model */
   private void convertVirtualSystems() {
     NavigableSet<String> loggingServers = new TreeSet<>();
@@ -233,6 +244,51 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
         PaloAltoStructureType.INTERFACE,
         PaloAltoStructureUsage.VIRTUAL_ROUTER_INTERFACE,
         PaloAltoStructureUsage.ZONE_INTERFACE);
+
+    markServiceOrServiceGroup(PaloAltoStructureUsage.SERVICE_GROUP_MEMBER);
     return _c;
+  }
+
+  /** Mark services or service-groups in order of decreasing specificity */
+  private void markServiceOrServiceGroup(PaloAltoStructureUsage... usages) {
+    for (PaloAltoStructureUsage usage : usages) {
+      Map<String, SortedMap<StructureUsage, SortedMultiset<Integer>>> references =
+          firstNonNull(
+              _structureReferences.get(PaloAltoStructureType.SERVICE_OR_SERVICE_GROUP),
+              Collections.emptyMap());
+      references.forEach(
+          (name, byUsage) -> {
+            String vsysName = getVsysName(name);
+            String debug = "test";
+            name = debug;
+          });
+
+      /*Map<String, SortedMap<StructureUsage, SortedMultiset<Integer>>> references =
+          firstNonNull(_structureReferences.get(type), Collections.emptyMap());
+      references.forEach(
+          (name, byUsage) -> {
+            Multiset<Integer> lines = firstNonNull(byUsage.get(usage), TreeMultiset.create());
+            List<DefinedStructureInfo> matchingStructures =
+                structureTypesToCheck
+                    .stream()
+                    .map(t -> _structureDefinitions.get(t.getDescription()))
+                    .filter(Objects::nonNull)
+                    .map(m -> m.get(name))
+                    .filter(Objects::nonNull)
+                    .collect(ImmutableList.toImmutableList());
+            if (matchingStructures.isEmpty()) {
+              for (int line : lines) {
+                undefined(type, name, usage, line);
+              }
+            } else {
+              matchingStructures.forEach(
+                  info ->
+                      info.setNumReferrers(
+                          info.getNumReferrers() == DefinedStructureInfo.UNKNOWN_NUM_REFERRERS
+                              ? DefinedStructureInfo.UNKNOWN_NUM_REFERRERS
+                              : info.getNumReferrers() + lines.size()));
+            }
+          });*/
+    }
   }
 }

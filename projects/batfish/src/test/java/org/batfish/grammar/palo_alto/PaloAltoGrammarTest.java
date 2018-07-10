@@ -305,25 +305,37 @@ public class PaloAltoGrammarTest {
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse();
 
+    String service1Name = computeObjectName(DEFAULT_VSYS_NAME, "SERVICE1");
+    String service2Name = computeObjectName(DEFAULT_VSYS_NAME, "SERVICE2");
+    String service3Name = computeObjectName(DEFAULT_VSYS_NAME, "SERVICE3");
+    String serviceGroup1Name = computeObjectName(DEFAULT_VSYS_NAME, "SG1");
+    String serviceGroup2Name = computeObjectName(DEFAULT_VSYS_NAME, "SG2");
+
     // Confirm structure definitions are tracked
+    assertThat(ccae, hasDefinedStructure(hostname, PaloAltoStructureType.SERVICE, service1Name));
+    assertThat(ccae, hasDefinedStructure(hostname, PaloAltoStructureType.SERVICE, service2Name));
+    assertThat(ccae, hasDefinedStructure(hostname, PaloAltoStructureType.SERVICE, service3Name));
     assertThat(
         ccae,
-        hasDefinedStructure(
-            hostname,
-            PaloAltoStructureType.SERVICE,
-            computeObjectName(DEFAULT_VSYS_NAME, "SERVICE1")));
+        hasDefinedStructure(hostname, PaloAltoStructureType.SERVICE_GROUP, serviceGroup1Name));
     assertThat(
         ccae,
-        hasDefinedStructure(
-            hostname,
-            PaloAltoStructureType.SERVICE,
-            computeObjectName(DEFAULT_VSYS_NAME, "SERVICE2")));
+        hasDefinedStructure(hostname, PaloAltoStructureType.SERVICE_GROUP, serviceGroup2Name));
+
+    // Confirm structure references are tracked properly
+    assertThat(ccae, hasNumReferrers(hostname, PaloAltoStructureType.SERVICE, service1Name, 1));
+    assertThat(ccae, hasNumReferrers(hostname, PaloAltoStructureType.SERVICE, service2Name, 1));
+    assertThat(ccae, hasNumReferrers(hostname, PaloAltoStructureType.SERVICE, service3Name, 0));
+    assertThat(
+        ccae, hasNumReferrers(hostname, PaloAltoStructureType.SERVICE_GROUP, serviceGroup1Name, 1));
+    assertThat(
+        ccae, hasNumReferrers(hostname, PaloAltoStructureType.SERVICE_GROUP, serviceGroup2Name, 0));
+
+    // Confirm undefined reference shows up as such
     assertThat(
         ccae,
-        hasDefinedStructure(
-            hostname,
-            PaloAltoStructureType.SERVICE,
-            computeObjectName(DEFAULT_VSYS_NAME, "SERVICE3")));
+        hasUndefinedReference(
+            hostname, PaloAltoStructureType.SERVICE_OR_SERVICE_GROUP, "SERVICE_UNDEFINED"));
   }
 
   @Test

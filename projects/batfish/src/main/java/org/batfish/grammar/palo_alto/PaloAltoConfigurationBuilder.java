@@ -5,7 +5,10 @@ import static org.batfish.representation.palo_alto.PaloAltoConfiguration.DEFAULT
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.SHARED_VSYS_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.computeObjectName;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.INTERFACE;
+import static org.batfish.representation.palo_alto.PaloAltoStructureType.SERVICE_GROUP;
+import static org.batfish.representation.palo_alto.PaloAltoStructureType.SERVICE_OR_SERVICE_GROUP;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ZONE;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.SERVICE_GROUP_MEMBER;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.VIRTUAL_ROUTER_INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.ZONE_INTERFACE;
 
@@ -25,6 +28,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Palo_alto_configurationContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_serviceContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.S_service_groupContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_sharedContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_vsysContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_zoneContext;
@@ -52,6 +56,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Sserv_descriptionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sserv_portContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sserv_protocolContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sserv_source_portContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sservgrp_membersContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ssl_syslogContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ssls_serverContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sslss_serverContext;
@@ -385,6 +390,26 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   public void exitSserv_source_port(Sserv_source_portContext ctx) {
     for (TerminalNode item : ctx.variable_comma_separated_dec().DEC()) {
       _currentService.getSourcePorts().add(new SubRange(toInteger(item.getSymbol())));
+    }
+  }
+
+  @Override
+  public void enterS_service_group(S_service_groupContext ctx) {
+    String name = ctx.name.getText();
+    // TODO create service group
+
+    // Use constructed service-group name so same-named defs across vsys are unique
+    String uniqueName = computeObjectName(_currentVsys.getName(), name);
+    defineStructure(SERVICE_GROUP, uniqueName, ctx);
+  }
+
+  @Override
+  public void exitSservgrp_members(Sservgrp_membersContext ctx) {
+    for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
+      // Use constructed service-group name so same-named defs across vsys are unique
+      String uniqueName = computeObjectName(_currentVsys.getName(), getText(var));
+      _configuration.referenceStructure(
+          SERVICE_OR_SERVICE_GROUP, uniqueName, SERVICE_GROUP_MEMBER, getLine(var.getStart()));
     }
   }
 
