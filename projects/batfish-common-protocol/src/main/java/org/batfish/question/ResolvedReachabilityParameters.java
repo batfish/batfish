@@ -11,7 +11,6 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.ForwardingAction;
 import org.batfish.datamodel.HeaderSpace;
-import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.questions.InvalidReachabilityParametersException;
 import org.batfish.specifier.IpSpaceAssignment;
 
@@ -27,8 +26,6 @@ public final class ResolvedReachabilityParameters {
     private Map<String, Configuration> _configurations;
 
     private DataPlane _dataPlane;
-
-    private IpSpace _destinationIpSpace;
 
     private Set<String> _finalNodes;
 
@@ -64,11 +61,6 @@ public final class ResolvedReachabilityParameters {
 
     public Builder setDataPlane(DataPlane dataPlane) {
       _dataPlane = dataPlane;
-      return this;
-    }
-
-    public Builder setDestinationIpSpace(IpSpace ipSpaceAssignment) {
-      _destinationIpSpace = ipSpaceAssignment;
       return this;
     }
 
@@ -124,8 +116,6 @@ public final class ResolvedReachabilityParameters {
 
   private final DataPlane _dataPlane;
 
-  private final IpSpace _destinationIpSpace;
-
   private final Set<String> _finalNodes;
 
   private Set<String> _forbiddenTransitNodes;
@@ -149,7 +139,6 @@ public final class ResolvedReachabilityParameters {
     _actions = builder._actions;
     _configurations = builder._configurations;
     _dataPlane = builder._dataPlane;
-    _destinationIpSpace = builder._destinationIpSpace;
     _finalNodes = builder._finalNodes;
     _forbiddenTransitNodes = builder._forbiddenTransitNodes;
     _headerSpace = builder._headerSpace;
@@ -196,10 +185,6 @@ public final class ResolvedReachabilityParameters {
 
   public DataPlane getDataPlane() {
     return _dataPlane;
-  }
-
-  public IpSpace getDestinationIpSpace() {
-    return _destinationIpSpace;
   }
 
   public Set<String> getFinalNodes() {

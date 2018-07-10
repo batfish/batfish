@@ -8,6 +8,8 @@ import org.batfish.common.NetworkSnapshot;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
+import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.questions.InvalidReachabilityParametersException;
 import org.batfish.main.Batfish.CompressDataPlaneResult;
 import org.batfish.question.ReachabilityParameters;
@@ -48,22 +50,26 @@ final class ReachabilityParametersResolver {
         new ReachabilityParametersResolver(batfish, params, snapshot);
 
     SpecifierContext context = new SpecifierContextImpl(batfish, resolver._configs);
+
+    HeaderSpace headerSpace = params.getHeaderSpace();
+    IpSpace destinationIpSpace =
+        AclIpSpace.union(
+            params
+                .getDestinationIpSpaceSpecifier()
+                .resolve(ImmutableSet.of(), context)
+                .getEntries()
+                .stream()
+                .map(Entry::getIpSpace)
+                .collect(ImmutableList.toImmutableList()));
+    headerSpace.setDstIps(destinationIpSpace);
+
     return ResolvedReachabilityParameters.builder()
         .setActions(params.getActions())
         .setConfigurations(resolver._configs)
         .setDataPlane(resolver._dataPlane)
-        .setDestinationIpSpace(
-            AclIpSpace.union(
-                params
-                    .getDestinationIpSpaceSpecifier()
-                    .resolve(ImmutableSet.of(), context)
-                    .getEntries()
-                    .stream()
-                    .map(Entry::getIpSpace)
-                    .collect(ImmutableList.toImmutableList())))
         .setFinalNodes(params.getFinalNodesSpecifier().resolve(context))
         .setForbiddenTransitNodes(params.getForbiddenTransitNodesSpecifier().resolve(context))
-        .setHeaderSpace(params.getHeaderSpace())
+        .setHeaderSpace(headerSpace)
         .setMaxChunkSize(params.getMaxChunkSize())
         .setSourceIpSpaceAssignment(
             params
