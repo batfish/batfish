@@ -146,20 +146,26 @@ public class AclIpSpace extends IpSpace {
     return new Builder().thenRejecting(ipSpaces);
   }
 
-  /** Set-theoretic union of multiple IpSpaces */
-  public static IpSpace union(IpSpace... ipSpaces) {
+  /**
+   * Set-theoretic union of multiple {@link IpSpace IP spaces}.<br>
+   * {@code null} ipSpaces are ignored. If all arguments are {@code null}, returns {@code null}.
+   */
+  public static @Nullable IpSpace union(IpSpace... ipSpaces) {
     return unionNonnull(Arrays.stream(ipSpaces).filter(Objects::nonNull).toArray(IpSpace[]::new));
   }
 
-  /** Set-theoretic union of multiple IpSpaces */
-  public static IpSpace union(Iterable<IpSpace> ipSpaces) {
+  /**
+   * Set-theoretic union of multiple {@link IpSpace IP spaces}.<br>
+   * {@code null} ipSpaces are ignored. If all arguments are {@code null}, returns {@code null}.
+   */
+  public static @Nullable IpSpace union(Iterable<IpSpace> ipSpaces) {
     return unionNonnull(
         StreamSupport.stream(ipSpaces.spliterator(), false)
             .filter(Objects::nonNull)
             .toArray(IpSpace[]::new));
   }
 
-  private static IpSpace unionNonnull(IpSpace... ipSpaces) {
+  private static @Nullable IpSpace unionNonnull(IpSpace... ipSpaces) {
     if (ipSpaces.length == 0) {
       return null;
     } else if (ipSpaces.length == 1) {
