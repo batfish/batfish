@@ -309,6 +309,7 @@ public class PaloAltoGrammarTest {
     String service2Name = computeObjectName(DEFAULT_VSYS_NAME, "SERVICE2");
     String service3Name = computeObjectName(DEFAULT_VSYS_NAME, "SERVICE3");
     String service4Name = computeObjectName(DEFAULT_VSYS_NAME, "SERVICE4");
+    String serviceUndefinedName = computeObjectName(DEFAULT_VSYS_NAME, "SERVICE_UNDEFINED");
     String serviceGroup1Name = computeObjectName(DEFAULT_VSYS_NAME, "SG1");
     String serviceGroup2Name = computeObjectName(DEFAULT_VSYS_NAME, "SG2");
 
@@ -338,7 +339,7 @@ public class PaloAltoGrammarTest {
     assertThat(
         ccae,
         hasUndefinedReference(
-            hostname, PaloAltoStructureType.SERVICE_OR_SERVICE_GROUP, "SERVICE_UNDEFINED"));
+            hostname, PaloAltoStructureType.SERVICE_OR_SERVICE_GROUP, serviceUndefinedName));
   }
 
   @Test

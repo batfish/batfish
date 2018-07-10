@@ -3,9 +3,11 @@ package org.batfish.representation.palo_alto;
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.SortedMultiset;
 import com.google.common.collect.TreeMultiset;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -15,6 +17,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import javax.annotation.Nullable;
 import org.batfish.common.VendorConversionException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -255,87 +258,66 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
         PaloAltoStructureUsage.VIRTUAL_ROUTER_INTERFACE,
         PaloAltoStructureUsage.ZONE_INTERFACE);
 
-    markServiceOrServiceGroup(PaloAltoStructureUsage.SERVICE_GROUP_MEMBER);
+    markAbstractStructureFromVariableNamespace(
+        PaloAltoStructureType.SERVICE_OR_SERVICE_GROUP,
+        ImmutableList.of(PaloAltoStructureType.SERVICE, PaloAltoStructureType.SERVICE_GROUP),
+        PaloAltoStructureUsage.SERVICE_GROUP_MEMBER);
     return _c;
   }
 
-  /** Mark services or service-groups in order of decreasing specificity */
-  private void markServiceOrServiceGroup(PaloAltoStructureUsage... usages) {
+  /**
+   * Helper method to find the definition of a structure that could be any of the specified types
+   */
+  private @Nullable DefinedStructureInfo findDefinedStructure(
+      String name, Collection<PaloAltoStructureType> structureTypesToCheck) {
+    DefinedStructureInfo info = null;
+    // Check this namespace first
+    for (PaloAltoStructureType typeToCheck : structureTypesToCheck) {
+      Map<String, DefinedStructureInfo> matchingType =
+          _structureDefinitions.get(typeToCheck.getDescription());
+      if (!matchingType.isEmpty()) {
+        info = matchingType.get(name);
+        if (info != null) {
+          break;
+        }
+      }
+    }
+    return info;
+  }
+
+  /** Mark abstract structure type from either the reference's namespace or shared namespace */
+  private void markAbstractStructureFromVariableNamespace(
+      PaloAltoStructureType type,
+      Collection<PaloAltoStructureType> structureTypesToCheck,
+      PaloAltoStructureUsage... usages) {
+    Map<String, SortedMap<StructureUsage, SortedMultiset<Integer>>> references =
+        firstNonNull(_structureReferences.get(type), Collections.emptyMap());
     for (PaloAltoStructureUsage usage : usages) {
-      Map<String, SortedMap<StructureUsage, SortedMultiset<Integer>>> references =
-          firstNonNull(
-              _structureReferences.get(PaloAltoStructureType.SERVICE_OR_SERVICE_GROUP),
-              Collections.emptyMap());
       references.forEach(
           (name, byUsage) -> {
             Multiset<Integer> lines =
                 MoreObjects.firstNonNull(byUsage.get(usage), TreeMultiset.create());
-            String vsysName = extractVsysName(name);
-            String objName = extractObjectName(name);
+            // Check this namespace first
+            DefinedStructureInfo info = findDefinedStructure(name, structureTypesToCheck);
 
-            /* Check:
-             *    vsys service
-             *    vsys service-group
-             *    shared service
-             *    shared service-group
-             */
-            DefinedStructureInfo info = null;
-            if (_virtualSystems.get(vsysName).getServices().get(objName) != null) {
-              info =
-                  _structureDefinitions
-                      .get(PaloAltoStructureType.SERVICE.getDescription())
-                      .get(name);
-              String debug2 = "test";
-            } else if (_virtualSystems.get(vsysName).getServiceGroups().get(objName) != null) {
-              // TODO
-            } else if (_virtualSystems.get(SHARED_VSYS_NAME).getServices().get(objName) != null) {
-              info =
-                  _structureDefinitions
-                      .get(PaloAltoStructureType.SERVICE.getDescription())
-                      .get(computeObjectName(SHARED_VSYS_NAME, objName));
-              String debug2 = "test";
-            } else if (_virtualSystems.get(vsysName).getServiceGroups().get(objName) != null) {
-              // TODO
+            // Check shared namespace if there was no match
+            if (info == null) {
+              String sharedName = computeObjectName(SHARED_VSYS_NAME, extractObjectName(name));
+              info = findDefinedStructure(sharedName, structureTypesToCheck);
             }
 
+            // Now update reference
             if (info != null) {
               info.setNumReferrers(
                   info.getNumReferrers() == DefinedStructureInfo.UNKNOWN_NUM_REFERRERS
                       ? DefinedStructureInfo.UNKNOWN_NUM_REFERRERS
                       : info.getNumReferrers() + lines.size());
-            }
-
-            String debug = "test";
-            name = debug;
-          });
-
-      /*Map<String, SortedMap<StructureUsage, SortedMultiset<Integer>>> references =
-          firstNonNull(_structureReferences.get(type), Collections.emptyMap());
-      references.forEach(
-          (name, byUsage) -> {
-            Multiset<Integer> lines = firstNonNull(byUsage.get(usage), TreeMultiset.create());
-
-            List<DefinedStructureInfo> matchingStructures =
-                structureTypesToCheck
-                    .stream()
-                    .map(t -> _structureDefinitions.get(t.getDescription()))
-                    .filter(Objects::nonNull)
-                    .map(m -> m.get(name))
-                    .filter(Objects::nonNull)
-                    .collect(ImmutableList.toImmutableList());
-            if (matchingStructures.isEmpty()) {
+            } else {
               for (int line : lines) {
                 undefined(type, name, usage, line);
               }
-            } else {
-              matchingStructures.forEach(
-                  info ->
-                      info.setNumReferrers(
-                          info.getNumReferrers() == DefinedStructureInfo.UNKNOWN_NUM_REFERRERS
-                              ? DefinedStructureInfo.UNKNOWN_NUM_REFERRERS
-                              : info.getNumReferrers() + lines.size()));
             }
-          });*/
+          });
     }
   }
 }

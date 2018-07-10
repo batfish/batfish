@@ -52,10 +52,10 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Snvrrt_interfaceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snvrrt_metricContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snvrrt_nexthopContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sserv_descriptionContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sserv_portContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sserv_protocolContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sserv_source_portContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sservgrp_membersContext;
-import org.batfish.grammar.palo_alto.PaloAltoParser.Sservp_portContext;
-import org.batfish.grammar.palo_alto.PaloAltoParser.Sservp_source_portContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ssl_syslogContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ssls_serverContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sslss_serverContext;
@@ -65,6 +65,7 @@ import org.batfish.representation.palo_alto.Interface;
 import org.batfish.representation.palo_alto.PaloAltoConfiguration;
 import org.batfish.representation.palo_alto.PaloAltoStructureType;
 import org.batfish.representation.palo_alto.Service;
+import org.batfish.representation.palo_alto.ServiceGroup;
 import org.batfish.representation.palo_alto.StaticRoute;
 import org.batfish.representation.palo_alto.SyslogServer;
 import org.batfish.representation.palo_alto.VirtualRouter;
@@ -84,6 +85,8 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   private Interface _currentParentInterface;
 
   private Service _currentService;
+
+  private ServiceGroup _currentServiceGroup;
 
   private StaticRoute _currentStaticRoute;
 
@@ -183,6 +186,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void enterPalo_alto_configuration(Palo_alto_configurationContext ctx) {
     _configuration = new PaloAltoConfiguration(_unimplementedFeatures);
+    _configuration.getVirtualSystems().computeIfAbsent(SHARED_VSYS_NAME, Vsys::new);
     _defaultVsys = _configuration.getVirtualSystems().computeIfAbsent(DEFAULT_VSYS_NAME, Vsys::new);
     _currentVsys = _defaultVsys;
   }
@@ -373,6 +377,13 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
+  public void exitSserv_port(Sserv_portContext ctx) {
+    for (TerminalNode item : ctx.variable_comma_separated_dec().DEC()) {
+      _currentService.getPorts().add(toInteger(item.getSymbol()));
+    }
+  }
+
+  @Override
   public void exitSserv_protocol(Sserv_protocolContext ctx) {
     if (ctx.SCTP() != null) {
       _currentService.setProtocol(IpProtocol.SCTP);
@@ -384,14 +395,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
-  public void exitSservp_port(Sservp_portContext ctx) {
-    for (TerminalNode item : ctx.variable_comma_separated_dec().DEC()) {
-      _currentService.getPorts().add(toInteger(item.getSymbol()));
-    }
-  }
-
-  @Override
-  public void exitSservp_source_port(Sservp_source_portContext ctx) {
+  public void exitSserv_source_port(Sserv_source_portContext ctx) {
     for (TerminalNode item : ctx.variable_comma_separated_dec().DEC()) {
       _currentService.getSourcePorts().add(toInteger(item.getSymbol()));
     }
@@ -400,11 +404,16 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void enterS_service_group(S_service_groupContext ctx) {
     String name = ctx.name.getText();
-    // TODO create service group
+    _currentServiceGroup = _currentVsys.getServiceGroups().computeIfAbsent(name, ServiceGroup::new);
 
     // Use constructed service-group name so same-named defs across vsys are unique
     String uniqueName = computeObjectName(_currentVsys.getName(), name);
     defineStructure(SERVICE_GROUP, uniqueName, ctx);
+  }
+
+  @Override
+  public void exitS_service_group(S_service_groupContext ctx) {
+    _currentServiceGroup = null;
   }
 
   @Override

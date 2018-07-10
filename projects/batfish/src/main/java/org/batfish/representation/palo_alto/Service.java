@@ -2,8 +2,10 @@ package org.batfish.representation.palo_alto;
 
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.SubRange;
 
 public final class Service implements ServiceGroupMember {
   private static final long serialVersionUID = 1L;
@@ -54,8 +56,12 @@ public final class Service implements ServiceGroupMember {
 
   @Override
   public void applyTo(HeaderSpace.Builder srcHeaderSpaceBuilder) {
-    srcHeaderSpaceBuilder.getSrcPorts().addAll(_sourcePorts);
-    srcHeaderSpaceBuilder.getDstPorts().addAll(_ports);
+    srcHeaderSpaceBuilder
+        .getSrcPorts()
+        .addAll(_sourcePorts.stream().map(SubRange::new).collect(Collectors.toSet()));
+    srcHeaderSpaceBuilder
+        .getDstPorts()
+        .addAll(_ports.stream().map(SubRange::new).collect(Collectors.toSet()));
     srcHeaderSpaceBuilder.getIpProtocols().add(_protocol);
   }
 }
