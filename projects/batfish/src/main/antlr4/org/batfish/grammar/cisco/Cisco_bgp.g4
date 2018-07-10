@@ -52,6 +52,9 @@ address_family_rb_stanza
    address_family_header
    (
       additional_paths_rb_stanza
+      | additional_paths_receive_xr_rb_stanza
+      | additional_paths_selection_xr_rb_stanza
+      | additional_paths_send_xr_rb_stanza
       | aggregate_address_rb_stanza
       | bgp_tail
       |
@@ -78,22 +81,26 @@ af_group_rb_stanza
 
 aggregate_address_rb_stanza
 :
-   AGGREGATE_ADDRESS
-   (
-      (
-         network = IP_ADDRESS subnet = IP_ADDRESS
-      )
-      | prefix = IP_PREFIX
-      | ipv6_prefix = IPV6_PREFIX
-   )
-   (
-      as_set = AS_SET
-      | summary_only = SUMMARY_ONLY
-      |
-      (
-         ATTRIBUTE_MAP mapname = variable
-      )
-   )* NEWLINE
+  AGGREGATE_ADDRESS
+  (
+    (
+      network = IP_ADDRESS subnet = IP_ADDRESS
+    )
+    | prefix = IP_PREFIX
+    | ipv6_prefix = IPV6_PREFIX
+  )
+  (
+    as_set = AS_SET
+    | summary_only = SUMMARY_ONLY
+    |
+    (
+      ATTRIBUTE_MAP mapname = variable
+    )
+    |
+    (
+      ROUTE_POLICY rp = variable
+    )
+  )* NEWLINE
 ;
 
 additional_paths_rb_stanza
@@ -112,9 +119,29 @@ additional_paths_rb_stanza
    ) NEWLINE
 ;
 
+additional_paths_receive_xr_rb_stanza
+:
+  ADDITIONAL_PATHS RECEIVE NEWLINE
+;
+
+additional_paths_selection_xr_rb_stanza
+:
+  ADDITIONAL_PATHS SELECTION ROUTE_POLICY name = variable NEWLINE
+;
+
+additional_paths_send_xr_rb_stanza
+:
+  ADDITIONAL_PATHS SEND NEWLINE
+;
+
 advertise_bgp_tail
 :
    ADVERTISE ADDITIONAL_PATHS ALL NEWLINE
+;
+
+advertise_map_bgp_tail
+:
+  ADVERTISE_MAP am_name = variable EXIST_MAP em_name = variable NEWLINE
 ;
 
 allowas_in_bgp_tail
@@ -189,6 +216,7 @@ bgp_tail
 :
    activate_bgp_tail
    | advertise_bgp_tail
+   | advertise_map_bgp_tail
    | allowas_in_bgp_tail
    | as_override_bgp_tail
    | cluster_id_bgp_tail
