@@ -41,7 +41,7 @@ public abstract class IpsecPeerConfig implements Serializable {
   @Nullable private String _tunnelInterface;
 
   @JsonCreator
-  public IpsecPeerConfig(
+  protected IpsecPeerConfig(
       @JsonProperty(PROP_IPSEC_POLICY) @Nullable String ipsecPolicy,
       @JsonProperty(PROP_PHYSICAL_INTERFACE) @Nullable String physicalInterface,
       @JsonProperty(PROP_POLICY_ACCESS_LIST) @Nullable IpAccessList policyAccessList,
