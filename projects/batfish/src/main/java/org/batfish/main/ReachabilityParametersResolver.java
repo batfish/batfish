@@ -1,14 +1,20 @@
 package org.batfish.main;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import java.util.Map;
 import org.batfish.common.BatfishException;
 import org.batfish.common.NetworkSnapshot;
+import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
+import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.questions.InvalidReachabilityParametersException;
 import org.batfish.main.Batfish.CompressDataPlaneResult;
 import org.batfish.question.ReachabilityParameters;
 import org.batfish.question.ResolvedReachabilityParameters;
+import org.batfish.specifier.IpSpaceAssignment.Entry;
 import org.batfish.specifier.SpecifierContext;
 import org.batfish.specifier.SpecifierContextImpl;
 
@@ -44,13 +50,36 @@ final class ReachabilityParametersResolver {
         new ReachabilityParametersResolver(batfish, params, snapshot);
 
     SpecifierContext context = new SpecifierContextImpl(batfish, resolver._configs);
+
+    /*
+     * From the resolver's perspective, all fields are independent. The one exception is that the
+     * source IpSpace may depend on the source locations (this will probably change in the future).
+     * Things like final nodes do not affect destination IPs. If that is desired, the question is
+     * responsible for using an IpSpaceSpecifier that uses the final node regex.
+     */
+    IpSpace destinationIpSpace =
+        AclIpSpace.union(
+            params
+                .getDestinationIpSpaceSpecifier()
+                .resolve(ImmutableSet.of(), context)
+                .getEntries()
+                .stream()
+                .map(Entry::getIpSpace)
+                .collect(ImmutableList.toImmutableList()));
+    HeaderSpace headerSpace = params.getHeaderSpace();
+    if (headerSpace == null) {
+      headerSpace = HeaderSpace.builder().setDstIps(destinationIpSpace).build();
+    } else {
+      headerSpace.setDstIps(destinationIpSpace);
+    }
+
     return ResolvedReachabilityParameters.builder()
         .setActions(params.getActions())
         .setConfigurations(resolver._configs)
         .setDataPlane(resolver._dataPlane)
         .setFinalNodes(params.getFinalNodesSpecifier().resolve(context))
         .setForbiddenTransitNodes(params.getForbiddenTransitNodesSpecifier().resolve(context))
-        .setHeaderSpace(params.getHeaderSpace())
+        .setHeaderSpace(headerSpace)
         .setMaxChunkSize(params.getMaxChunkSize())
         .setSourceIpSpaceAssignment(
             params
