@@ -954,6 +954,14 @@
           ]
         }
       },
+      "undefined:policy-map:usage:interface service-policy type control subscriber:FOOBAR" : {
+        "description" : "Undefined reference to structure of type: 'policy-map' with usage: 'interface service-policy type control subscriber' named 'FOOBAR'",
+        "files" : {
+          "ios_interface" : [
+            5
+          ]
+        }
+      },
       "undefined:policy-map:usage:policy-map class service-policy:prioritize_backbone" : {
         "description" : "Undefined reference to structure of type: 'policy-map' with usage: 'policy-map class service-policy' named 'prioritize_backbone'",
         "files" : {
@@ -1382,7 +1390,7 @@
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 170
+      "numResults" : 171
     },
     "undefinedReferences" : {
       "IosXrMultiCast" : {
@@ -2167,6 +2175,15 @@
           },
           "EXIST_MAP" : {
             "bgp neighbor advertise-map exist-map" : [
+              5
+            ]
+          }
+        }
+      },
+      "ios_interface" : {
+        "policy-map" : {
+          "FOOBAR" : {
+            "interface service-policy type control subscriber" : [
               5
             ]
           }

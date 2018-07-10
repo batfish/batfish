@@ -39469,7 +39469,7 @@
             "            low = DEC:'1'  <== mode:M_Interface)))",
             "      NEWLINE:'\\n'  <== mode:M_Interface",
             "      (if_inner",
-            "        (if_service_policy_control",
+            "        (if_service_policy_control_subscriber",
             "          SERVICE_POLICY:'service-policy'  <== mode:DEFAULT_MODE",
             "          TYPE:'type'  <== mode:DEFAULT_MODE",
             "          CONTROL:'control'  <== mode:DEFAULT_MODE",
@@ -59453,6 +59453,15 @@
             },
             "EXIST_MAP" : {
               "bgp neighbor advertise-map exist-map" : [
+                5
+              ]
+            }
+          }
+        },
+        "ios_interface" : {
+          "policy-map" : {
+            "FOOBAR" : {
+              "interface service-policy type control subscriber" : [
                 5
               ]
             }
