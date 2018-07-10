@@ -182,11 +182,13 @@ public class BgpSessionStatusAnswerer extends Answerer {
     SessionStatus configuredStatus;
     if (bgpPeerConfig instanceof BgpPassivePeerConfig) {
       configuredStatus = SessionStatus.DYNAMIC_LISTEN;
+    } else if (bgpPeerConfig instanceof BgpActivePeerConfig) {
+      configuredStatus = getLocallyBrokenStatus((BgpActivePeerConfig) bgpPeerConfig, sessionType);
     } else {
-      configuredStatus = getLocallyBrokenStatus(bgpPeerConfig, sessionType);
+      throw new BatfishException("Unsupported type of BGP peer config (not active or passive)");
     }
 
-    if (configuredStatus == null && bgpPeerConfig instanceof BgpActivePeerConfig) {
+    if (configuredStatus == null) {
       /*
        * Nothing blatantly broken so far on the local side, keep checking.
        * Also at this point we know this is not a Dynamic bgp neighbor
@@ -239,7 +241,8 @@ public class BgpSessionStatusAnswerer extends Answerer {
 
   @Nullable
   @VisibleForTesting
-  static SessionStatus getLocallyBrokenStatus(BgpPeerConfig neighbor, SessionType sessionType) {
+  static SessionStatus getLocallyBrokenStatus(
+      BgpActivePeerConfig neighbor, SessionType sessionType) {
     if (neighbor.getLocalIp() == null) {
       if (sessionType == BgpSessionProperties.SessionType.EBGP_MULTIHOP
           || sessionType == BgpSessionProperties.SessionType.IBGP) {
@@ -247,6 +250,8 @@ public class BgpSessionStatusAnswerer extends Answerer {
       } else {
         return SessionStatus.NO_LOCAL_IP;
       }
+    } else if (neighbor.getRemoteAs() == null) {
+      return SessionStatus.NO_REMOTE_AS;
     }
     return null;
   }
