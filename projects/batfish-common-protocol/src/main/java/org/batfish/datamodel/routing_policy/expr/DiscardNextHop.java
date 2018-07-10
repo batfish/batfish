@@ -3,6 +3,10 @@ package org.batfish.datamodel.routing_policy.expr;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.routing_policy.Environment;
 
+/**
+ * A next hop expression indicating that the route should drop traffic destined to its network, but
+ * otherwise leave route parameters unchanged.
+ */
 public class DiscardNextHop extends NextHopExpr {
 
   private static final long serialVersionUID = 1L;
