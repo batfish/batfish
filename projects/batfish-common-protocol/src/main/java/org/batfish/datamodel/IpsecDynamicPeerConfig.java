@@ -54,7 +54,7 @@ public final class IpsecDynamicPeerConfig extends IpsecPeerConfig implements Ser
     return new Builder();
   }
 
-  public static class Builder
+  public static final class Builder
       extends IpsecPeerConfig.Builder<IpsecDynamicPeerConfig.Builder, IpsecDynamicPeerConfig> {
     private List<String> _ikePhase1Polcies;
 

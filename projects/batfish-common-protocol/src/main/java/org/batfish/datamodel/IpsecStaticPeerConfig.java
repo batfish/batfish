@@ -65,7 +65,8 @@ public final class IpsecStaticPeerConfig extends IpsecPeerConfig implements Seri
     return new Builder();
   }
 
-  public static class Builder extends IpsecPeerConfig.Builder<Builder, IpsecStaticPeerConfig> {
+  public static final class Builder
+      extends IpsecPeerConfig.Builder<Builder, IpsecStaticPeerConfig> {
     private Ip _destinationAddress;
 
     private String _ikePhase1Policy;
