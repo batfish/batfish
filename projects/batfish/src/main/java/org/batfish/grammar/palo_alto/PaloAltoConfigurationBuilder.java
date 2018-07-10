@@ -156,10 +156,6 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     return unquote(ctx.getText());
   }
 
-  private static int toInteger(ParserRuleContext ctx) {
-    return Integer.parseInt(ctx.getText());
-  }
-
   private static int toInteger(Token t) {
     return Integer.parseInt(t.getText());
   }
@@ -388,7 +384,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void exitSserv_source_port(Sserv_source_portContext ctx) {
     for (TerminalNode item : ctx.variable_comma_separated_dec().DEC()) {
-      _currentService.getPorts().add(new SubRange(toInteger(item.getSymbol())));
+      _currentService.getSourcePorts().add(new SubRange(toInteger(item.getSymbol())));
     }
   }
 

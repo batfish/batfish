@@ -6,7 +6,7 @@ import java.util.TreeSet;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.SubRange;
 
-public class Service implements Serializable {
+public final class Service implements Serializable {
   private static final long serialVersionUID = 1L;
 
   private String _description;
