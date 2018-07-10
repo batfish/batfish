@@ -702,7 +702,8 @@ set_next_hop_rp_stanza
 :
    SET NEXT_HOP
    (
-      IP_ADDRESS
+      DISCARD
+      | IP_ADDRESS
       | IPV6_ADDRESS
       | PEER_ADDRESS
    ) DESTINATION_VRF? NEWLINE
