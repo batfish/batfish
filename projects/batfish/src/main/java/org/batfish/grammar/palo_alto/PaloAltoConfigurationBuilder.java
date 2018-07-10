@@ -25,7 +25,6 @@ import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.SubRange;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Palo_alto_configurationContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_serviceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_service_groupContext;
@@ -53,10 +52,10 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Snvrrt_interfaceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snvrrt_metricContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snvrrt_nexthopContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sserv_descriptionContext;
-import org.batfish.grammar.palo_alto.PaloAltoParser.Sserv_portContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sserv_protocolContext;
-import org.batfish.grammar.palo_alto.PaloAltoParser.Sserv_source_portContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sservgrp_membersContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sservp_portContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sservp_source_portContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ssl_syslogContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ssls_serverContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sslss_serverContext;
@@ -364,15 +363,13 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
-  public void exitSserv_description(Sserv_descriptionContext ctx) {
-    _currentService.setDescription(getText(ctx.description));
+  public void exitS_service(S_serviceContext ctx) {
+    _currentService = null;
   }
 
   @Override
-  public void exitSserv_port(Sserv_portContext ctx) {
-    for (TerminalNode item : ctx.variable_comma_separated_dec().DEC()) {
-      _currentService.getPorts().add(new SubRange(toInteger(item.getSymbol())));
-    }
+  public void exitSserv_description(Sserv_descriptionContext ctx) {
+    _currentService.setDescription(getText(ctx.description));
   }
 
   @Override
@@ -387,9 +384,16 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
-  public void exitSserv_source_port(Sserv_source_portContext ctx) {
+  public void exitSservp_port(Sservp_portContext ctx) {
     for (TerminalNode item : ctx.variable_comma_separated_dec().DEC()) {
-      _currentService.getSourcePorts().add(new SubRange(toInteger(item.getSymbol())));
+      _currentService.getPorts().add(toInteger(item.getSymbol()));
+    }
+  }
+
+  @Override
+  public void exitSservp_source_port(Sservp_source_portContext ctx) {
+    for (TerminalNode item : ctx.variable_comma_separated_dec().DEC()) {
+      _currentService.getSourcePorts().add(toInteger(item.getSymbol()));
     }
   }
 

@@ -308,6 +308,7 @@ public class PaloAltoGrammarTest {
     String service1Name = computeObjectName(DEFAULT_VSYS_NAME, "SERVICE1");
     String service2Name = computeObjectName(DEFAULT_VSYS_NAME, "SERVICE2");
     String service3Name = computeObjectName(DEFAULT_VSYS_NAME, "SERVICE3");
+    String service4Name = computeObjectName(DEFAULT_VSYS_NAME, "SERVICE4");
     String serviceGroup1Name = computeObjectName(DEFAULT_VSYS_NAME, "SG1");
     String serviceGroup2Name = computeObjectName(DEFAULT_VSYS_NAME, "SG2");
 
@@ -315,6 +316,7 @@ public class PaloAltoGrammarTest {
     assertThat(ccae, hasDefinedStructure(hostname, PaloAltoStructureType.SERVICE, service1Name));
     assertThat(ccae, hasDefinedStructure(hostname, PaloAltoStructureType.SERVICE, service2Name));
     assertThat(ccae, hasDefinedStructure(hostname, PaloAltoStructureType.SERVICE, service3Name));
+    assertThat(ccae, hasDefinedStructure(hostname, PaloAltoStructureType.SERVICE, service4Name));
     assertThat(
         ccae,
         hasDefinedStructure(hostname, PaloAltoStructureType.SERVICE_GROUP, serviceGroup1Name));
@@ -326,6 +328,7 @@ public class PaloAltoGrammarTest {
     assertThat(ccae, hasNumReferrers(hostname, PaloAltoStructureType.SERVICE, service1Name, 1));
     assertThat(ccae, hasNumReferrers(hostname, PaloAltoStructureType.SERVICE, service2Name, 1));
     assertThat(ccae, hasNumReferrers(hostname, PaloAltoStructureType.SERVICE, service3Name, 0));
+    assertThat(ccae, hasNumReferrers(hostname, PaloAltoStructureType.SERVICE, service4Name, 0));
     assertThat(
         ccae, hasNumReferrers(hostname, PaloAltoStructureType.SERVICE_GROUP, serviceGroup1Name, 1));
     assertThat(
