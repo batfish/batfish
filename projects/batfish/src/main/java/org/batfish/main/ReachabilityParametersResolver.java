@@ -51,7 +51,6 @@ final class ReachabilityParametersResolver {
 
     SpecifierContext context = new SpecifierContextImpl(batfish, resolver._configs);
 
-    HeaderSpace headerSpace = params.getHeaderSpace();
     IpSpace destinationIpSpace =
         AclIpSpace.union(
             params
@@ -61,7 +60,12 @@ final class ReachabilityParametersResolver {
                 .stream()
                 .map(Entry::getIpSpace)
                 .collect(ImmutableList.toImmutableList()));
-    headerSpace.setDstIps(destinationIpSpace);
+    HeaderSpace headerSpace = params.getHeaderSpace();
+    if (headerSpace == null) {
+      headerSpace = HeaderSpace.builder().setDstIps(destinationIpSpace).build();
+    } else {
+      headerSpace.setDstIps(destinationIpSpace);
+    }
 
     return ResolvedReachabilityParameters.builder()
         .setActions(params.getActions())

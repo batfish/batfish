@@ -5,6 +5,7 @@ import static org.batfish.datamodel.ForwardingAction.ACCEPT;
 import static org.batfish.main.ReachabilityParametersResolver.resolveReachabilityParameters;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.nullValue;
 
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
@@ -57,8 +58,10 @@ public class ReachabilityParametersResolverTest {
     ReachabilityParameters reachabilityParameters = reachabilityParametersBuilder.build();
     ResolvedReachabilityParameters resolvedReachabilityParameters =
         resolveReachabilityParameters(_batfish, reachabilityParameters, _snapshot);
+    assertThat(resolvedReachabilityParameters.getHeaderSpace().getNotDstIps(), nullValue());
     assertThat(
-        resolvedReachabilityParameters.getDestinationIpSpace(), equalTo(UniverseIpSpace.INSTANCE));
+        resolvedReachabilityParameters.getHeaderSpace().getDstIps(),
+        equalTo(UniverseIpSpace.INSTANCE));
 
     // test setting destination IpSpace
     reachabilityParameters =
@@ -67,7 +70,9 @@ public class ReachabilityParametersResolverTest {
             .build();
     resolvedReachabilityParameters =
         resolveReachabilityParameters(_batfish, reachabilityParameters, _snapshot);
+    assertThat(resolvedReachabilityParameters.getHeaderSpace().getNotDstIps(), nullValue());
     assertThat(
-        resolvedReachabilityParameters.getDestinationIpSpace(), equalTo(EmptyIpSpace.INSTANCE));
+        resolvedReachabilityParameters.getHeaderSpace().getDstIps(),
+        equalTo(EmptyIpSpace.INSTANCE));
   }
 }
