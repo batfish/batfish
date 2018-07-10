@@ -1322,6 +1322,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
     newIface.setSwitchportTrunkEncapsulation(swe);
     newIface.setBandwidth(iface.getBandwidth());
+    newIface.setOspfPointToPoint(iface.getOspfPointToPoint());
     return newIface;
   }
 
