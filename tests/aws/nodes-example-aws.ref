@@ -1050,8 +1050,8 @@
             "destinationAddress" : "52.27.166.152",
             "ikePhase1Policy" : "isakmp-vpn-ba2e34a8-0",
             "ipsecPolicy" : "ipsec-vpn-ba2e34a8-0",
+            "localAddress" : "172.16.1.2",
             "physicalInterface" : "GigabitEthernet2/0",
-            "sourceAddress" : "172.16.1.2",
             "tunnelInterface" : "Tunnel1"
           },
           "Tunnel2" : {
@@ -1059,8 +1059,8 @@
             "destinationAddress" : "52.39.121.126",
             "ikePhase1Policy" : "isakmp-vpn-ba2e34a8-1",
             "ipsecPolicy" : "ipsec-vpn-ba2e34a8-1",
+            "localAddress" : "172.16.1.2",
             "physicalInterface" : "GigabitEthernet2/0",
-            "sourceAddress" : "172.16.1.2",
             "tunnelInterface" : "Tunnel2"
           }
         },
