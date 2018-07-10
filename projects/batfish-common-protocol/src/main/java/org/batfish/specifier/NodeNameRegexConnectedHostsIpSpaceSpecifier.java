@@ -1,6 +1,7 @@
 package org.batfish.specifier;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
 import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -22,20 +23,23 @@ public final class NodeNameRegexConnectedHostsIpSpaceSpecifier implements IpSpac
 
   @Override
   public IpSpaceAssignment resolve(Set<Location> locations, SpecifierContext ctxt) {
-    IpSpace ipSpace =
-        AclIpSpace.union(
-            ctxt.getConfigs()
-                .values()
-                .stream()
-                .filter(node -> _pattern.matcher(node.getName()).matches())
-                .flatMap(node -> node.getInterfaces().values().stream())
-                .flatMap(iface -> iface.getAllAddresses().stream())
-                .filter(ifaceAddr -> ifaceAddr.getPrefix().getPrefixLength() <= MAX_PREFIX_LENGTH)
-                .map(
-                    ifaceAddr ->
-                        AclIpSpace.difference(
-                            ifaceAddr.getPrefix().toIpSpace(), ifaceAddr.getIp().toIpSpace()))
-                .collect(ImmutableList.toImmutableList()));
+    Builder<IpSpace> includeBuilder = ImmutableList.builder();
+    Builder<IpSpace> excludeBuilder = ImmutableList.builder();
+    ctxt.getConfigs()
+        .values()
+        .stream()
+        .filter(node -> _pattern.matcher(node.getName()).matches())
+        .flatMap(node -> node.getInterfaces().values().stream())
+        .flatMap(iface -> iface.getAllAddresses().stream())
+        .filter(ifaceAddr -> ifaceAddr.getPrefix().getPrefixLength() <= MAX_PREFIX_LENGTH)
+        .forEach(
+            ifaceAddr -> {
+              includeBuilder.add(ifaceAddr.getPrefix().toIpSpace());
+              excludeBuilder.add(ifaceAddr.getIp().toIpSpace());
+            });
+    IpSpace include = AclIpSpace.union(includeBuilder.build());
+    IpSpace exclude = AclIpSpace.union(excludeBuilder.build());
+    IpSpace ipSpace = AclIpSpace.difference(include, exclude);
     return IpSpaceAssignment.builder().assign(locations, ipSpace).build();
   }
 
