@@ -38,7 +38,6 @@ public class IpSpaceSpecifierTest {
 
   private static final Interface _i1;
   private static final Interface _i2;
-  private static final Interface _i3;
 
   static {
     NetworkFactory nf = new NetworkFactory();
@@ -50,7 +49,10 @@ public class IpSpaceSpecifierTest {
     ib.setOwner(_c1);
 
     _i1 = ib.setAddress(new InterfaceAddress("1.0.0.0/24")).build();
-    _i3 = ib.setAddress(new InterfaceAddress("1.0.0.3/24")).build();
+
+    // another interface on _i1's subnet
+    ib.setAddress(new InterfaceAddress("1.0.0.3/24")).build();
+
     _i2 = nf.interfaceBuilder().setOwner(_c1).build();
 
     _configs = ImmutableMap.of(_c1.getHostname(), _c1);
@@ -132,7 +134,7 @@ public class IpSpaceSpecifierTest {
                 containsIp(new Ip("1.0.0.1")),
                 // does not include _i1's IP.
                 not(containsIp(new Ip("1.0.0.0"))),
-                // does not include _i3's IP.
+                // does not include the IP of the other interface on _i1's subnet
                 not(containsIp(new Ip("1.0.0.3")))),
             equalTo(_allLocations)));
   }
