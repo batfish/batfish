@@ -44,6 +44,7 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVendorFami
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrfs;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasAclName;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasBandwidth;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasDelay;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasIpProtocols;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasMemberInterfaces;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasName;
@@ -801,6 +802,16 @@ public class CiscoGrammarTest {
     assertThat(eth2Acl, rejects(deniedByBoth, eth1Name, c.getIpAccessLists(), c.getIpSpaces()));
     assertThat(eth3Acl, rejects(deniedByBoth, eth0Name, c.getIpAccessLists(), c.getIpSpaces()));
     assertThat(eth3Acl, rejects(deniedByBoth, eth1Name, c.getIpAccessLists(), c.getIpSpaces()));
+  }
+
+  @Test
+  public void testIosInterfaceDelay() throws IOException {
+    String hostname = "ios-interface-delay";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(c, hasInterface("GigabitEthernet0/0", hasDelay(1E4)));
+    assertThat(c, hasInterface("GigabitEthernet0/1", hasDelay(1E10)));
+    assertThat(c, hasInterface("FastEthernet0/2", hasDelay(1E5)));
   }
 
   @Test

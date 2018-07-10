@@ -1,0 +1,11 @@
+!
+hostname ios-interface-delay
+!
+interface GigabitEthernet0/0
+!
+interface GigabitEthernet0/1
+ delay 1000
+!
+interface FastEthernet0/2
+!
+!
