@@ -199,6 +199,11 @@ class TracerouteEngineImplContext {
       Flow transformedFlow) {
     Ip dstIp = transformedFlow.getDstIp();
     Configuration currentConfiguration = _configurations.get(currentNodeName);
+    if (currentConfiguration == null) {
+      throw new BatfishException(
+          String.format(
+              "Node %s is not in the network, cannot perform traceroute", currentNodeName));
+    }
     if (_dataPlane
         .getIpVrfOwners()
         .getOrDefault(dstIp, ImmutableMap.of())
