@@ -652,6 +652,8 @@ public class CommonUtil {
               .setSrcPorts(originalHeaderSpace.getSrcPorts())
               .setDstPorts(originalHeaderSpace.getDstPorts())
               .setIpProtocols(originalHeaderSpace.getIpProtocols())
+              .setIcmpCodes(originalHeaderSpace.getIcmpCodes())
+              .setTcpFlags(originalHeaderSpace.getTcpFlags())
               .build())) {
         //  not supported if the access list line contains any more fields
         return null;
@@ -1410,7 +1412,7 @@ public class CommonUtil {
     for (Configuration c : configurations.values()) {
       for (IpsecVpn ipsecVpn : c.getIpsecVpns().values()) {
         IkeGateway ikeGateway = ipsecVpn.getIkeGateway();
-        if (ikeGateway == null) {
+        if (ikeGateway == null || ikeGateway.getExternalInterface() == null) {
           continue;
         }
         Ip remoteIp = ikeGateway.getAddress();

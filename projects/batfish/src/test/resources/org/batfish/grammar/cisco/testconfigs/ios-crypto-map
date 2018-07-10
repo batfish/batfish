@@ -25,7 +25,7 @@ crypto ipsec transform-set ts1 esp-aes 256 esp-md5-hmac
  mode tunnel
 !
 crypto ipsec transform-set ts2 esp-aes 256 esp-sha-hmac
- mode tunnelF
+ mode tunnel
 !
 crypto ipsec profile IPSEC-PROFILE1
   set transform-set ts1 ts2
@@ -69,13 +69,6 @@ interface Tunnel1
  ip address 6.7.8.9 255.255.255.252
  tunnel source TenGigabitEthernet0/0
  tunnel destination 1.2.3.4
- tunnel mode ipsec ipv4
- tunnel protection ipsec profile IPSEC-PROFILE1
-!
-interface Tunnel2
- ip address 6.7.8.10 255.255.255.252
- tunnel source TenGigabitEthernet0/0
- tunnel destination 3.4.5.6
  tunnel mode ipsec ipv4
  tunnel protection ipsec profile IPSEC-PROFILE1
 !

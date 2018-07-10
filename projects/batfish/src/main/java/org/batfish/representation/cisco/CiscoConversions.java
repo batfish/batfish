@@ -599,7 +599,7 @@ class CiscoConversions {
   private static void setIpsecPeerConfigPolicyAccessList(
       Configuration c,
       CryptoMapEntry cryptoMapEntry,
-      IpsecPeerConfig.Builder ipsecPeerConfigBuilder,
+      IpsecPeerConfig.Builder<?, ?> ipsecPeerConfigBuilder,
       Warnings w) {
     if (cryptoMapEntry.getAccessList() != null) {
       IpAccessList cryptoAcl = c.getIpAccessLists().get(cryptoMapEntry.getAccessList());
@@ -781,7 +781,7 @@ class CiscoConversions {
         if (cryptoAcl != null) {
           IpAccessList symmetricCryptoAcl = createAclWithSymmetricalLines(cryptoAcl);
           if (symmetricCryptoAcl != null) {
-            ipsecVpn.setPolicyAccessList(createAclWithSymmetricalLines(cryptoAcl));
+            ipsecVpn.setPolicyAccessList(symmetricCryptoAcl);
           } else {
             w.redFlag(
                 String.format(
