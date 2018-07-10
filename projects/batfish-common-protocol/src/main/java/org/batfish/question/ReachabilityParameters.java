@@ -5,7 +5,9 @@ import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.ForwardingAction;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.specifier.AllInterfacesLocationSpecifier;
+import org.batfish.specifier.ConstantIpSpaceSpecifier;
 import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
 import org.batfish.specifier.IpSpaceSpecifier;
 import org.batfish.specifier.LocationSpecifier;
@@ -20,6 +22,9 @@ public final class ReachabilityParameters {
 
   public static class Builder {
     private @Nonnull SortedSet<ForwardingAction> _actions = ImmutableSortedSet.of();
+
+    private @Nonnull IpSpaceSpecifier _destinationIpSpaceSpecifier =
+        new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE);
 
     private @Nonnull NodeSpecifier _finalNodesSpecifier = NoNodesNodeSpecifier.INSTANCE;
 
@@ -52,8 +57,9 @@ public final class ReachabilityParameters {
       return this;
     }
 
-    public Builder setSourceSpecifier(LocationSpecifier sourceLocationSpecifier) {
-      _sourceLocationSpecifier = sourceLocationSpecifier;
+    public Builder setDestinationIpSpaceSpecifier(
+        @Nonnull IpSpaceSpecifier destinationIpSpaceSpecifier) {
+      _destinationIpSpaceSpecifier = destinationIpSpaceSpecifier;
       return this;
     }
 
@@ -68,8 +74,13 @@ public final class ReachabilityParameters {
       return this;
     }
 
-    public Builder setSourceIpSpaceSpecifier(IpSpaceSpecifier sourceIpSpaceSpecifier) {
+    public Builder setSourceIpSpaceSpecifier(@Nonnull IpSpaceSpecifier sourceIpSpaceSpecifier) {
       _sourceIpSpaceSpecifier = sourceIpSpaceSpecifier;
+      return this;
+    }
+
+    public Builder setSourceLocationSpecifier(@Nonnull LocationSpecifier sourceLocationSpecifier) {
+      _sourceLocationSpecifier = sourceLocationSpecifier;
       return this;
     }
 
@@ -106,6 +117,9 @@ public final class ReachabilityParameters {
 
   private final SortedSet<ForwardingAction> _actions;
 
+  private @Nonnull IpSpaceSpecifier _destinationIpSpaceSpecifier =
+      new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE);
+
   private final NodeSpecifier _finalNodesSpecifier;
 
   private final @Nonnull NodeSpecifier _forbiddenTransitNodesSpecifier;
@@ -128,6 +142,7 @@ public final class ReachabilityParameters {
 
   private ReachabilityParameters(Builder builder) {
     _actions = builder._actions;
+    _destinationIpSpaceSpecifier = builder._destinationIpSpaceSpecifier;
     _finalNodesSpecifier = builder._finalNodesSpecifier;
     _forbiddenTransitNodesSpecifier = builder._forbiddenTransitNodesSpecifier;
     _headerSpace = builder._headerSpace;
@@ -146,6 +161,11 @@ public final class ReachabilityParameters {
 
   public SortedSet<ForwardingAction> getActions() {
     return _actions;
+  }
+
+  @Nonnull
+  public IpSpaceSpecifier getDestinationIpSpaceSpecifier() {
+    return _destinationIpSpaceSpecifier;
   }
 
   public NodeSpecifier getFinalNodesSpecifier() {
