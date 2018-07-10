@@ -1,0 +1,14 @@
+!
+hostname isr_crypto_gdoi
+!
+crypto gdoi group MYGDOIGROUP
+ identity number 1234
+ server address ipv4 1.2.3.4
+!
+!
+crypto map MYMAP local-address Loopback0
+crypto map MYMAP 1 gdoi
+ set group MYGDOIGROUP
+!
+!
+

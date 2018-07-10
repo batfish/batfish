@@ -1,0 +1,7 @@
+!! IOS XR Configuration 5.3.4
+!
+hostname ios_xr_logging
+!
+logging hostnameprefix boop
+!
+

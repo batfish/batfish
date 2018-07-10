@@ -3468,6 +3468,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     // mark references to route-maps
     markConcreteStructure(
         CiscoStructureType.ROUTE_MAP,
+        CiscoStructureUsage.BGP_ADVERTISE_MAP_EXIST_MAP,
         CiscoStructureUsage.BGP_AGGREGATE_ATTRIBUTE_MAP,
         CiscoStructureUsage.BGP_DEFAULT_ORIGINATE_ROUTE_MAP,
         CiscoStructureUsage.BGP_INBOUND_ROUTE_MAP,
@@ -3503,6 +3504,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.RIP_REDISTRIBUTE_BGP_MAP,
         CiscoStructureUsage.RIP_REDISTRIBUTE_CONNECTED_MAP,
         CiscoStructureUsage.RIP_REDISTRIBUTE_STATIC_MAP);
+
+    markConcreteStructure(
+        CiscoStructureType.ROUTE_POLICY,
+        CiscoStructureUsage.BGP_ADDITIONAL_PATHS_SELECTION_ROUTE_POLICY,
+        CiscoStructureUsage.BGP_AGGREGATE_ROUTE_POLICY);
 
     markConcreteStructure(
         CiscoStructureType.BGP_TEMPLATE_PEER, CiscoStructureUsage.BGP_INHERITED_PEER);
@@ -3564,6 +3570,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     markConcreteStructure(
         CiscoStructureType.POLICY_MAP,
         CiscoStructureUsage.INTERFACE_SERVICE_POLICY,
+        CiscoStructureUsage.INTERFACE_SERVICE_POLICY_CONTROL_SUBSCRIBER,
         CiscoStructureUsage.POLICY_MAP_CLASS_SERVICE_POLICY,
         CiscoStructureUsage.SERVICE_POLICY_GLOBAL,
         CiscoStructureUsage.SERVICE_POLICY_INTERFACE_POLICY);

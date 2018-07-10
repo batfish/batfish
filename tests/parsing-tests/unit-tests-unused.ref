@@ -301,6 +301,21 @@
             8,
             9,
             10
+          ],
+          "ios_xr_class_map" : [
+            5,
+            6,
+            7
+          ]
+        }
+      },
+      "unused:class-map:ABCD" : {
+        "description" : "Unused structure of type: 'class-map' with name: 'ABCD'",
+        "files" : {
+          "ios_xr_class_map" : [
+            9,
+            10,
+            11
           ]
         }
       },
@@ -1490,7 +1505,7 @@
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 143
+      "numResults" : 145
     },
     "unusedStructures" : {
       "aggAddress" : {
@@ -2174,6 +2189,20 @@
           ],
           "blibber" : [
             15
+          ]
+        }
+      },
+      "ios_xr_class_map" : {
+        "class-map" : {
+          "ABC" : [
+            5,
+            6,
+            7
+          ],
+          "ABCD" : [
+            9,
+            10,
+            11
           ]
         }
       },

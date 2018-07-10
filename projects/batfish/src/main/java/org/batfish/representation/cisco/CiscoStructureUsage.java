@@ -3,7 +3,10 @@ package org.batfish.representation.cisco;
 import org.batfish.vendor.StructureUsage;
 
 public enum CiscoStructureUsage implements StructureUsage {
+  BGP_ADDITIONAL_PATHS_SELECTION_ROUTE_POLICY("bgp additional-paths selection route-policy"),
+  BGP_ADVERTISE_MAP_EXIST_MAP("bgp neighbor advertise-map exist-map"),
   BGP_AGGREGATE_ATTRIBUTE_MAP("bgp vrf aggregate-address attribute-map"),
+  BGP_AGGREGATE_ROUTE_POLICY("aggregate-address route-policy"),
   BGP_DEFAULT_ORIGINATE_ROUTE_MAP("bgp default-originate route-map"),
   BGP_INBOUND_FILTER_LIST("bgp inbound filter-list"),
   BGP_INBOUND_FILTER6_LIST("bgp inbound ipv6 filter-list"),
@@ -78,6 +81,7 @@ public enum CiscoStructureUsage implements StructureUsage {
   INTERFACE_POLICY_ROUTING_MAP("interface policy-routing route-map"),
   INTERFACE_SELF_REF("interface"),
   INTERFACE_SERVICE_POLICY("interface service-policy"),
+  INTERFACE_SERVICE_POLICY_CONTROL_SUBSCRIBER("interface service-policy type control subscriber"),
   INTERFACE_SUMMARY_ADDRESS_EIGRP_LEAK_MAP("interface summary-address eigrp leak-map"),
   INTERFACE_ZONE_MEMBER("interface zone-member"),
   IP_NAT_DESTINATION_ACCESS_LIST("ip nat destination acl"),
@@ -86,8 +90,8 @@ public enum CiscoStructureUsage implements StructureUsage {
   IPSEC_PROFILE_ISAKMP_PROFILE("ipsec profile set isakmp-profile"),
   IPSEC_PROFILE_TRANSFORM_SET("ipsec profile set transform-set"),
   ISAKMP_POLICY_SELF_REF("isakmp policy"),
-  ISAKMP_PROFILE_SELF_REF("isakmp profile"),
   ISAKMP_PROFILE_KEYRING("isakmp profile keyring"),
+  ISAKMP_PROFILE_SELF_REF("isakmp profile"),
   LINE_ACCESS_CLASS_LIST("line access-class list"),
   LINE_ACCESS_CLASS_LIST6("line access-class ipv6 list"),
   MANAGEMENT_SSH_ACCESS_GROUP("management ssh ip access-group"),
