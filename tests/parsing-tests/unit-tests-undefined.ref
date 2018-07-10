@@ -1114,6 +1114,14 @@
           ]
         }
       },
+      "undefined:route-map:usage:bgp address-family aggregate-address advertise-map:ADVERTISE_MAP" : {
+        "description" : "Undefined reference to structure of type: 'route-map' with usage: 'bgp address-family aggregate-address advertise-map' named 'ADVERTISE_MAP'",
+        "files" : {
+          "ios_bgp" : [
+            5
+          ]
+        }
+      },
       "undefined:route-map:usage:bgp address-family aggregate-address advertise-map:AGG6_MAP" : {
         "description" : "Undefined reference to structure of type: 'route-map' with usage: 'bgp address-family aggregate-address advertise-map' named 'AGG6_MAP'",
         "files" : {
@@ -1183,6 +1191,14 @@
         "files" : {
           "nexus_bgp" : [
             21
+          ]
+        }
+      },
+      "undefined:route-map:usage:bgp neighbor advertise-map exist-map:EXIST_MAP" : {
+        "description" : "Undefined reference to structure of type: 'route-map' with usage: 'bgp neighbor advertise-map exist-map' named 'EXIST_MAP'",
+        "files" : {
+          "ios_bgp" : [
+            5
           ]
         }
       },
@@ -1314,6 +1330,14 @@
           ]
         }
       },
+      "undefined:route-policy:usage:aggregate-address route-policy:AGGREGATE_POLICY" : {
+        "description" : "Undefined reference to structure of type: 'route-policy' with usage: 'aggregate-address route-policy' named 'AGGREGATE_POLICY'",
+        "files" : {
+          "ios_xr_bgp" : [
+            10
+          ]
+        }
+      },
       "undefined:service-template:usage:class-map activate-service-template:DEF" : {
         "description" : "Undefined reference to structure of type: 'service-template' with usage: 'class-map activate-service-template' named 'DEF'",
         "files" : {
@@ -1358,7 +1382,7 @@
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 167
+      "numResults" : 170
     },
     "undefinedReferences" : {
       "IosXrMultiCast" : {
@@ -2132,6 +2156,27 @@
           "UNDEFINED_PEER_GROUP" : {
             "bgp neighbor statement" : [
               7
+            ]
+          }
+        },
+        "route-map" : {
+          "ADVERTISE_MAP" : {
+            "bgp address-family aggregate-address advertise-map" : [
+              5
+            ]
+          },
+          "EXIST_MAP" : {
+            "bgp neighbor advertise-map exist-map" : [
+              5
+            ]
+          }
+        }
+      },
+      "ios_xr_bgp" : {
+        "route-policy" : {
+          "AGGREGATE_POLICY" : {
+            "aggregate-address route-policy" : [
+              10
             ]
           }
         }

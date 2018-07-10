@@ -59444,6 +59444,27 @@
                 7
               ]
             }
+          },
+          "route-map" : {
+            "ADVERTISE_MAP" : {
+              "bgp address-family aggregate-address advertise-map" : [
+                5
+              ]
+            },
+            "EXIST_MAP" : {
+              "bgp neighbor advertise-map exist-map" : [
+                5
+              ]
+            }
+          }
+        },
+        "ios_xr_bgp" : {
+          "route-policy" : {
+            "AGGREGATE_POLICY" : {
+              "aggregate-address route-policy" : [
+                10
+              ]
+            }
           }
         },
         "ios_xr_bgp_neighbor_group" : {
