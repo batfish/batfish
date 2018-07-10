@@ -4,6 +4,7 @@ import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasClusterId;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasEnforceFirstAs;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasLocalAs;
+import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasRemoteAs;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasActiveNeighbor;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbors;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasPassiveNeighbor;
@@ -42,6 +43,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasIsis;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfAreaName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfCost;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfPointToPoint;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortMode;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasZoneName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isOspfPassive;
@@ -582,6 +584,17 @@ public class FlatJuniperGrammarTest {
     assertThat(multipleAsDisabled, equalTo(MultipathEquivalentAsPathMatchMode.FIRST_AS));
     assertThat(multipleAsEnabled, equalTo(MultipathEquivalentAsPathMatchMode.PATH_LENGTH));
     assertThat(multipleAsMixed, equalTo(MultipathEquivalentAsPathMatchMode.FIRST_AS));
+  }
+
+  /** Make sure bgp type internal properly sets remote as when non explicitly specified */
+  @Test
+  public void testBgpTypeInternalPeerAs() throws IOException {
+    String hostname = "bgp-type-internal";
+    Configuration c = parseConfig(hostname);
+    assertThat(
+        c,
+        hasDefaultVrf(
+            hasBgpProcess(hasActiveNeighbor(Prefix.parse("1.1.1.1/32"), hasRemoteAs(1L)))));
   }
 
   @Test
@@ -1356,6 +1369,13 @@ public class FlatJuniperGrammarTest {
     /* Properly configured interfaces should be present in respective areas. */
     assertThat(c.getInterfaces().keySet(), equalTo(Collections.singleton("xe-0/0/0:0.0")));
     assertThat(c, hasInterface("xe-0/0/0:0.0", hasMtu(9000)));
+  }
+
+  @Test
+  public void testInteraceOspfPointToPoint() throws IOException {
+    String hostname = "ospf-interface-point-to-point";
+    Configuration c = parseConfig(hostname);
+    assertThat(c, hasInterface("ge-0/0/0.0", hasOspfPointToPoint(equalTo(true))));
   }
 
   @Test

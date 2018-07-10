@@ -351,7 +351,7 @@ public class Client extends AbstractClient implements IClient {
       case INTERFACE_PROPERTY_SPEC:
         if (!(value.isTextual())) {
           throw new BatfishException(
-              String.format("interfacePropertySpec must be a JSON string", expectedType.getName()));
+              String.format("A Batfish %s must be a JSON string", expectedType.getName()));
         }
         new InterfacePropertySpecifier(value.textValue());
         break;
@@ -409,14 +409,14 @@ public class Client extends AbstractClient implements IClient {
       case NODE_PROPERTY_SPEC:
         if (!(value.isTextual())) {
           throw new BatfishException(
-              String.format("nodePropertySpec must be a JSON string", expectedType.getName()));
+              String.format("A Batfish %s must be a JSON string", expectedType.getName()));
         }
         new NodePropertySpecifier(value.textValue());
         break;
       case NODE_SPEC:
         if (!(value.isTextual())) {
           throw new BatfishException(
-              String.format("nodeSpec must be a JSON string", expectedType.getName()));
+              String.format("A Batfish %s must be a JSON string", expectedType.getName()));
         }
         new NodesSpecifier(value.textValue());
         break;

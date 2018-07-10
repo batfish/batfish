@@ -733,6 +733,11 @@ set_origin_rp_stanza
    SET ORIGIN origin_expr NEWLINE
 ;
 
+set_path_selection_rp_stanza
+:
+   SET PATH_SELECTION null_rest_of_line
+;
+
 set_tag_rm_stanza
 :
    SET TAG tag = DEC NEWLINE
@@ -800,6 +805,7 @@ set_rp_stanza
    | set_next_hop_rp_stanza
    | set_next_hop_self_rp_stanza
    | set_origin_rp_stanza
+   | set_path_selection_rp_stanza
    | set_tag_rp_stanza
    | set_weight_rp_stanza
 ;

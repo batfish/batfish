@@ -21,6 +21,7 @@ public class BgpSessionInfo implements Comparable<BgpSessionInfo> {
     DYNAMIC_LISTEN,
     LOCAL_IP_UNKNOWN_STATICALLY,
     NO_LOCAL_IP,
+    NO_REMOTE_AS,
     INVALID_LOCAL_IP,
     UNKNOWN_REMOTE,
     HALF_OPEN,

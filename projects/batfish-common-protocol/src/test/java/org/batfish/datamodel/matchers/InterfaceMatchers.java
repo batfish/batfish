@@ -28,6 +28,7 @@ import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasName;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasOspfArea;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasOspfAreaName;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasOspfCost;
+import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasOspfPointToPoint;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasSourceNats;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasSwitchPortMode;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasVrf;
@@ -178,6 +179,15 @@ public final class InterfaceMatchers {
    */
   public static HasOspfCost hasOspfCost(Matcher<Integer> subMatcher) {
     return new HasOspfCost(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the interface's OSPF
+   * point to point.
+   */
+  public static @Nonnull Matcher<Interface> hasOspfPointToPoint(
+      @Nonnull Matcher<? super Boolean> subMatcher) {
+    return new HasOspfPointToPoint(subMatcher);
   }
 
   /**

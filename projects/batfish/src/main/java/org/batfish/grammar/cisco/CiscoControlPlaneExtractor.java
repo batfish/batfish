@@ -50,11 +50,15 @@ import static org.batfish.representation.cisco.CiscoStructureType.PREFIX_SET;
 import static org.batfish.representation.cisco.CiscoStructureType.PROTOCOL_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureType.PROTOCOL_OR_SERVICE_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureType.ROUTE_MAP;
+import static org.batfish.representation.cisco.CiscoStructureType.ROUTE_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureType.SECURITY_ZONE;
 import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_CLASS;
 import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_TEMPLATE;
+import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_ADDITIONAL_PATHS_SELECTION_ROUTE_POLICY;
+import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_ADVERTISE_MAP_EXIST_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_AGGREGATE_ATTRIBUTE_MAP;
+import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_AGGREGATE_ROUTE_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_DEFAULT_ORIGINATE_ROUTE_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_INBOUND_FILTER6_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_INBOUND_FILTER_LIST;
@@ -124,6 +128,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_PIM
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_POLICY_ROUTING_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_SELF_REF;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_SERVICE_POLICY;
+import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_SERVICE_POLICY_CONTROL_SUBSCRIBER;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_SUMMARY_ADDRESS_EIGRP_LEAK_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_ZONE_MEMBER;
 import static org.batfish.representation.cisco.CiscoStructureUsage.IPSEC_PROFILE_ISAKMP_PROFILE;
@@ -355,8 +360,10 @@ import org.batfish.grammar.cisco.CiscoParser.Access_list_ip6_rangeContext;
 import org.batfish.grammar.cisco.CiscoParser.Access_list_ip_rangeContext;
 import org.batfish.grammar.cisco.CiscoParser.Activate_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Additional_paths_rb_stanzaContext;
+import org.batfish.grammar.cisco.CiscoParser.Additional_paths_selection_xr_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Address_family_headerContext;
 import org.batfish.grammar.cisco.CiscoParser.Address_family_rb_stanzaContext;
+import org.batfish.grammar.cisco.CiscoParser.Advertise_map_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Af_group_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Aggregate_address_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Allowas_in_bgp_tailContext;
@@ -426,6 +433,7 @@ import org.batfish.grammar.cisco.CiscoParser.Clbdg_docsis_policyContext;
 import org.batfish.grammar.cisco.CiscoParser.Cluster_id_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Cm_ios_inspectContext;
 import org.batfish.grammar.cisco.CiscoParser.Cm_iosi_matchContext;
+import org.batfish.grammar.cisco.CiscoParser.Cm_matchContext;
 import org.batfish.grammar.cisco.CiscoParser.Cmm_access_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.Cmm_access_listContext;
 import org.batfish.grammar.cisco.CiscoParser.Cmm_activated_service_templateContext;
@@ -517,6 +525,7 @@ import org.batfish.grammar.cisco.CiscoParser.If_isis_metricContext;
 import org.batfish.grammar.cisco.CiscoParser.If_mtuContext;
 import org.batfish.grammar.cisco.CiscoParser.If_rp_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.If_service_policyContext;
+import org.batfish.grammar.cisco.CiscoParser.If_service_policy_control_subscriberContext;
 import org.batfish.grammar.cisco.CiscoParser.If_shutdownContext;
 import org.batfish.grammar.cisco.CiscoParser.If_spanning_treeContext;
 import org.batfish.grammar.cisco.CiscoParser.If_speed_eosContext;
@@ -1122,6 +1131,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private static final String F_BGP_NEIGHBOR_DISTRIBUTE_LIST = "bgp - neighbor distribute-list";
 
   private static final String F_BGP_REDISTRIBUTE_AGGREGATE = "bgp - redistribute aggregate";
+
+  private static final String F_CM_MATCH_NOT = "class-map - match not (criteria)";
 
   private static final String F_FRAGMENTS = "acl fragments";
 
@@ -3828,8 +3839,34 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitAdditional_paths_selection_xr_rb_stanza(
+      Additional_paths_selection_xr_rb_stanzaContext ctx) {
+    if (ctx.name != null) {
+      String name = ctx.name.getText();
+      _configuration.referenceStructure(
+          ROUTE_POLICY,
+          name,
+          BGP_ADDITIONAL_PATHS_SELECTION_ROUTE_POLICY,
+          ctx.name.getStart().getLine());
+    }
+  }
+
+  @Override
   public void exitAddress_family_rb_stanza(Address_family_rb_stanzaContext ctx) {
     popPeer();
+  }
+
+  @Override
+  public void exitAdvertise_map_bgp_tail(Advertise_map_bgp_tailContext ctx) {
+    // TODO: https://github.com/batfish/batfish/issues/1836
+    String advertiseMapName = ctx.am_name.getText();
+    _configuration.referenceStructure(
+        ROUTE_MAP, advertiseMapName, BGP_ROUTE_MAP_ADVERTISE, ctx.am_name.getStart().getLine());
+    if (ctx.em_name != null) {
+      String existMapName = ctx.em_name.getText();
+      _configuration.referenceStructure(
+          ROUTE_MAP, existMapName, BGP_ADVERTISE_MAP_EXIST_MAP, ctx.em_name.getStart().getLine());
+    }
   }
 
   @Override
@@ -3865,6 +3902,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           net.setAttributeMap(mapName);
           _configuration.referenceStructure(
               ROUTE_MAP, mapName, BGP_AGGREGATE_ATTRIBUTE_MAP, ctx.mapname.getStart().getLine());
+        } else if (ctx.rp != null) {
+          String policyName = ctx.rp.getText();
+          net.setAttributeMap(policyName);
+          _configuration.referenceStructure(
+              ROUTE_POLICY, policyName, BGP_AGGREGATE_ROUTE_POLICY, ctx.rp.getStart().getLine());
         }
         proc.getAggregateNetworks().put(prefix, net);
       } else if (ctx.ipv6_prefix != null) {
@@ -4177,6 +4219,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return InspectClassMapProtocol.UDP;
     } else {
       throw convError(InspectClassMapProtocol.class, ctx);
+    }
+  }
+
+  @Override
+  public void exitCm_match(Cm_matchContext ctx) {
+    if (ctx.NOT() != null) {
+      // TODO: https://github.com/batfish/batfish/issues/1835
+      todo(ctx, F_CM_MATCH_NOT);
     }
   }
 
@@ -5200,6 +5250,15 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String mapname = ctx.policy_map.getText();
     _configuration.referenceStructure(
         POLICY_MAP, mapname, INTERFACE_SERVICE_POLICY, ctx.getStart().getLine());
+  }
+
+  @Override
+  public void exitIf_service_policy_control_subscriber(
+      If_service_policy_control_subscriberContext ctx) {
+    // TODO: do something with this.
+    String mapname = ctx.policy_map.getText();
+    _configuration.referenceStructure(
+        POLICY_MAP, mapname, INTERFACE_SERVICE_POLICY_CONTROL_SUBSCRIBER, ctx.getStart().getLine());
   }
 
   @Override

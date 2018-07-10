@@ -2,7 +2,9 @@ package org.batfish.specifier;
 
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.AclIpSpace;
+import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.IpSpace;
 
@@ -29,13 +31,18 @@ public final class InferFromLocationIpSpaceSpecifier implements IpSpaceSpecifier
     public IpSpace visitInterfaceLinkLocation(InterfaceLinkLocation interfaceLinkLocation) {
       String node = interfaceLinkLocation.getNodeName();
       String iface = interfaceLinkLocation.getInterfaceName();
-      return AclIpSpace.difference(
+
+      @Nullable
+      IpSpace linkIpSpace =
           AclIpSpace.union(
               interfaceAddresses(node, iface)
                   .stream()
                   .map(address -> address.getPrefix().toIpSpace())
-                  .collect(Collectors.toList())),
-          _specifierContext.getInterfaceOwnedIps(node, iface));
+                  .collect(Collectors.toList()));
+
+      return linkIpSpace == null
+          ? EmptyIpSpace.INSTANCE
+          : AclIpSpace.difference(linkIpSpace, _specifierContext.getInterfaceOwnedIps(node, iface));
     }
 
     @Override
