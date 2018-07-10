@@ -326,16 +326,15 @@ public final class JuniperConfiguration extends VendorConfiguration {
       Prefix prefix = e.getKey();
       IpBgpGroup ig = e.getValue();
       BgpPeerConfig.Builder<?, ?> neighbor;
+      Long remoteAs = ig.getType() == BgpGroupType.INTERNAL ? ig.getLocalAs() : ig.getPeerAs();
       if (ig.getDynamic()) {
         neighbor =
             BgpPassivePeerConfig.builder()
                 .setPeerPrefix(prefix)
-                .setRemoteAs(ImmutableList.of(ig.getLocalAs()));
+                .setRemoteAs(ImmutableList.of(remoteAs));
       } else {
         neighbor =
-            BgpActivePeerConfig.builder()
-                .setPeerAddress(prefix.getStartIp())
-                .setRemoteAs(ig.getPeerAs());
+            BgpActivePeerConfig.builder().setPeerAddress(prefix.getStartIp()).setRemoteAs(remoteAs);
       }
 
       // route reflection
