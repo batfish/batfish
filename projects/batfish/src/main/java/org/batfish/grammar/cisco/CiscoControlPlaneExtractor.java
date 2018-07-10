@@ -1101,7 +1101,6 @@ import org.batfish.representation.cisco.nx.CiscoNxBgpVrfNeighborAddressFamilyCon
 import org.batfish.representation.cisco.nx.CiscoNxBgpVrfNeighborConfiguration;
 import org.batfish.representation.cisco.nx.CiscoNxBgpVrfNeighborConfiguration.RemovePrivateAsMode;
 import org.batfish.vendor.StructureType;
-import org.batfish.vendor.StructureUsage;
 import org.batfish.vendor.VendorConfiguration;
 
 public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
