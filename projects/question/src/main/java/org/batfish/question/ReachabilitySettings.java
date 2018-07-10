@@ -1,5 +1,7 @@
 package org.batfish.question;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.Objects;
 import java.util.SortedSet;
@@ -302,18 +304,11 @@ public final class ReachabilitySettings {
         _useCompression);
   }
 
-  IpSpaceSpecifier toIpSpaceSpecifier(IpSpace include, IpSpace exclude) {
-    if (include != null && exclude != null) {
-      return new ConstantIpSpaceSpecifier(AclIpSpace.difference(include, exclude));
-    }
-    if (include != null) {
-      return new ConstantIpSpaceSpecifier(include);
-    }
-    if (exclude != null) {
-      return new ConstantIpSpaceSpecifier(AclIpSpace.difference(UniverseIpSpace.INSTANCE, exclude));
-    }
-    return new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE);
+  private static IpSpaceSpecifier toIpSpaceSpecifier(IpSpace include, IpSpace exclude) {
+    return new ConstantIpSpaceSpecifier(
+        firstNonNull(AclIpSpace.difference(include, exclude), UniverseIpSpace.INSTANCE));
   }
+
   /**
    * Convert to a {@link ReachabilityParameters} object. Mostly this means converting user input
    * into {@link LocationSpecifier} and {@link IpSpaceSpecifier} objects. At some point, this class
