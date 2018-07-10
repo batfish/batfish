@@ -9,11 +9,23 @@ import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.IpSpace;
 
 /**
- * An {@link IpSpaceSpecifier} that represents the {@link IpSpace} of host subnets (less than 30-bit
- * prefixes) connected to nodes with names matching an input {@link Pattern regex}.
+ * An {@link IpSpaceSpecifier} that represents the {@link IpSpace} of host subnets (prefixes of
+ * length less than or equal to {@length HOST_SUBNET_MAX_PREFIX_LENGTH 29} bits) connected to nodes
+ * with names matching an input {@link Pattern regex}.
  */
 public final class NodeNameRegexConnectedHostsIpSpaceSpecifier implements IpSpaceSpecifier {
-  private static final int MAX_PREFIX_LENGTH = 29;
+  /**
+   * /32s are loopback interfaces -- no hosts are connected.
+   *
+   * <p>/31s are point-to-point connections between nodes -- again, no hosts.
+   *
+   * <p>/30s could have hosts, but usually do not. Historically, each subnet was required to reserve
+   * two addresses: one identifying the network itself, and a broadcast address. This made /31s
+   * invalid, since there were no usable IPs left over. A /30 had 2 usable IPs, so was used for
+   * point-to-point connections. Eventually /31s were allowed, but we assume here that any /30s are
+   * hold-over point-to-point connections in the legacy model.
+   */
+  private static final int HOST_SUBNET_MAX_PREFIX_LENGTH = 29;
 
   private final Pattern _pattern;
 
@@ -31,7 +43,8 @@ public final class NodeNameRegexConnectedHostsIpSpaceSpecifier implements IpSpac
         .filter(node -> _pattern.matcher(node.getName()).matches())
         .flatMap(node -> node.getInterfaces().values().stream())
         .flatMap(iface -> iface.getAllAddresses().stream())
-        .filter(ifaceAddr -> ifaceAddr.getPrefix().getPrefixLength() <= MAX_PREFIX_LENGTH)
+        .filter(
+            ifaceAddr -> ifaceAddr.getPrefix().getPrefixLength() <= HOST_SUBNET_MAX_PREFIX_LENGTH)
         .forEach(
             ifaceAddr -> {
               includeBuilder.add(ifaceAddr.getPrefix().toIpSpace());
