@@ -13,11 +13,11 @@ import org.batfish.datamodel.matchers.IpsecPeerConfigMatchersImpl.HasDestination
 import org.batfish.datamodel.matchers.IpsecPeerConfigMatchersImpl.HasIkePhase1Policies;
 import org.batfish.datamodel.matchers.IpsecPeerConfigMatchersImpl.HasIkePhase1Policy;
 import org.batfish.datamodel.matchers.IpsecPeerConfigMatchersImpl.HasIpsecPolicy;
+import org.batfish.datamodel.matchers.IpsecPeerConfigMatchersImpl.HasLocalAddress;
 import org.batfish.datamodel.matchers.IpsecPeerConfigMatchersImpl.HasPeerConfig;
 import org.batfish.datamodel.matchers.IpsecPeerConfigMatchersImpl.HasPeerConfigs;
 import org.batfish.datamodel.matchers.IpsecPeerConfigMatchersImpl.HasPhysicalInterface;
 import org.batfish.datamodel.matchers.IpsecPeerConfigMatchersImpl.HasPolicyAccessList;
-import org.batfish.datamodel.matchers.IpsecPeerConfigMatchersImpl.HasSourceAddress;
 import org.batfish.datamodel.matchers.IpsecPeerConfigMatchersImpl.HasTunnelInterface;
 import org.batfish.datamodel.matchers.IpsecPeerConfigMatchersImpl.IsIpsecDynamicPeerConfig;
 import org.batfish.datamodel.matchers.IpsecPeerConfigMatchersImpl.IsIpsecStaticPeerConfig;
@@ -26,11 +26,11 @@ import org.hamcrest.Matcher;
 public final class IpsecPeerConfigMatchers {
 
   /**
-   * Provides a matcher that matches if the provided {@code sourceAddress} matches the IPSec peer
+   * Provides a matcher that matches if the provided {@code localAddress} matches the IPSec peer
    * config's {@code sourceAddress}
    */
-  public static @Nonnull HasSourceAddress hasSourceAddress(Ip sourceAddress) {
-    return new HasSourceAddress(equalTo(sourceAddress));
+  public static @Nonnull HasLocalAddress hasLocalAddress(Ip localAddress) {
+    return new HasLocalAddress(equalTo(localAddress));
   }
 
   /**

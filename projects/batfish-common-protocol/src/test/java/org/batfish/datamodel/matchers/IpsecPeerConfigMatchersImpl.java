@@ -12,10 +12,10 @@ import org.hamcrest.Matcher;
 
 final class IpsecPeerConfigMatchersImpl {
 
-  static class HasSourceAddress extends FeatureMatcher<IpsecPeerConfig, Ip> {
+  static class HasLocalAddress extends FeatureMatcher<IpsecPeerConfig, Ip> {
 
-    HasSourceAddress(@Nonnull Matcher<? super Ip> subMatcher) {
-      super(subMatcher, "An IPSec peer config with SourceAddress:", "SourceAddress");
+    HasLocalAddress(@Nonnull Matcher<? super Ip> subMatcher) {
+      super(subMatcher, "An IPSec peer config with LocalAddress:", "LocalAddress");
     }
 
     @Override
