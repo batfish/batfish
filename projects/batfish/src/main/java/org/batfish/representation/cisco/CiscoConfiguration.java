@@ -3568,6 +3568,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     markConcreteStructure(
         CiscoStructureType.POLICY_MAP,
         CiscoStructureUsage.INTERFACE_SERVICE_POLICY,
+        CiscoStructureUsage.INTERFACE_SERVICE_POLICY_CONTROL_SUBSCRIBER,
         CiscoStructureUsage.POLICY_MAP_CLASS_SERVICE_POLICY,
         CiscoStructureUsage.SERVICE_POLICY_GLOBAL,
         CiscoStructureUsage.SERVICE_POLICY_INTERFACE_POLICY);

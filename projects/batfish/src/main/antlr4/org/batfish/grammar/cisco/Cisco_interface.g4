@@ -1018,7 +1018,7 @@ if_service_policy
    SERVICE_POLICY (INPUT | OUTPUT) policy_map = variable NEWLINE
 ;
 
-if_service_policy_control
+if_service_policy_control_subscriber
 :
    SERVICE_POLICY TYPE CONTROL SUBSCRIBER policy_map = variable NEWLINE
 ;
@@ -1383,7 +1383,7 @@ if_inner
    | if_private_vlan
    | if_service_instance
    | if_service_policy
-   | if_service_policy_control
+   | if_service_policy_control_subscriber
    | if_shutdown
    | if_spanning_tree
    | if_speed_auto
