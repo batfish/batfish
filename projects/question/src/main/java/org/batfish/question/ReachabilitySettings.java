@@ -362,7 +362,7 @@ public final class ReachabilitySettings {
         .setMaxChunkSize(_maxChunkSize)
         .setRequiredTransitNodesSpecifier(NodeSpecifiers.from(_transitNodes))
         .setSourceIpSpaceSpecifier(sourceIpSpace)
-        .setSourceSpecifier(sourceLocations)
+        .setSourceLocationSpecifier(sourceLocations)
         .setSrcNatted(SrcNattedConstraint.fromBoolean(_srcNatted))
         .setSpecialize(_specialize)
         .setUseCompression(_useCompression)

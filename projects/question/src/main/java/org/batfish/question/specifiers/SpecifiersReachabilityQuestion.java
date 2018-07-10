@@ -154,7 +154,7 @@ public final class SpecifiersReachabilityQuestion extends Question {
         .setForbiddenTransitNodesSpecifier(getForbiddenTransitNodesSpecifier())
         .setHeaderSpace(_headerSpace != null ? _headerSpace : HeaderSpace.builder().build())
         .setRequiredTransitNodesSpecifier(getRequiredTransitNodesSpecifier())
-        .setSourceSpecifier(getSourceLocationSpecifier())
+        .setSourceLocationSpecifier(getSourceLocationSpecifier())
         .setSourceIpSpaceSpecifier(getSourceIpSpaceSpecifier())
         .setSpecialize(true)
         .build();
