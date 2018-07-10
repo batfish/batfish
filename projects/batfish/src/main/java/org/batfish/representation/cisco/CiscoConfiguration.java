@@ -3506,7 +3506,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.RIP_REDISTRIBUTE_STATIC_MAP);
 
     markConcreteStructure(
-        CiscoStructureType.ROUTE_POLICY, CiscoStructureUsage.BGP_AGGREGATE_ROUTE_POLICY);
+        CiscoStructureType.ROUTE_POLICY,
+        CiscoStructureUsage.BGP_ADDITIONAL_PATHS_SELECTION_ROUTE_POLICY,
+        CiscoStructureUsage.BGP_AGGREGATE_ROUTE_POLICY);
 
     markConcreteStructure(
         CiscoStructureType.BGP_TEMPLATE_PEER, CiscoStructureUsage.BGP_INHERITED_PEER);

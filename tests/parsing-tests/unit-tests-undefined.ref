@@ -1346,6 +1346,14 @@
           ]
         }
       },
+      "undefined:route-policy:usage:bgp additional-paths selection route-policy:ADDITIONAL_PATHS_POLICY" : {
+        "description" : "Undefined reference to structure of type: 'route-policy' with usage: 'bgp additional-paths selection route-policy' named 'ADDITIONAL_PATHS_POLICY'",
+        "files" : {
+          "ios_xr_bgp" : [
+            8
+          ]
+        }
+      },
       "undefined:service-template:usage:class-map activate-service-template:DEF" : {
         "description" : "Undefined reference to structure of type: 'service-template' with usage: 'class-map activate-service-template' named 'DEF'",
         "files" : {
@@ -1390,7 +1398,7 @@
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 171
+      "numResults" : 172
     },
     "undefinedReferences" : {
       "IosXrMultiCast" : {
@@ -2191,6 +2199,11 @@
       },
       "ios_xr_bgp" : {
         "route-policy" : {
+          "ADDITIONAL_PATHS_POLICY" : {
+            "bgp additional-paths selection route-policy" : [
+              8
+            ]
+          },
           "AGGREGATE_POLICY" : {
             "aggregate-address route-policy" : [
               10

@@ -59469,6 +59469,11 @@
         },
         "ios_xr_bgp" : {
           "route-policy" : {
+            "ADDITIONAL_PATHS_POLICY" : {
+              "bgp additional-paths selection route-policy" : [
+                8
+              ]
+            },
             "AGGREGATE_POLICY" : {
               "aggregate-address route-policy" : [
                 10
