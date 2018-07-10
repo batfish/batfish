@@ -28,11 +28,11 @@ public final class IpsecDynamicPeerConfig extends IpsecPeerConfig implements Ser
       @JsonProperty(PROP_IPSEC_POLICY) @Nullable String ipsecPolicy,
       @JsonProperty(PROP_PHYSICAL_INTERFACE) @Nullable String physicalInterface,
       @JsonProperty(PROP_POLICY_ACCESS_LIST) @Nullable IpAccessList policyAccessList,
-      @JsonProperty(PROP_LOCAL_ADDRESS) @Nullable Ip sourceAddress,
+      @JsonProperty(PROP_LOCAL_ADDRESS) @Nullable Ip localAddress,
       @JsonProperty(PROP_TUNNEL_INTERFACE) @Nullable String tunnelInterface,
       @JsonProperty(PROP_IKE_PHASE1_POLICIES) @Nullable List<String> ikePhase1Policies,
       @JsonProperty(PROP_PEER_CONFIGS) @Nullable List<IpsecPeerConfig> peerConfigs) {
-    super(ipsecPolicy, physicalInterface, policyAccessList, sourceAddress, tunnelInterface);
+    super(ipsecPolicy, physicalInterface, policyAccessList, localAddress, tunnelInterface);
     _ikePhase1Policies =
         ikePhase1Policies == null ? ImmutableList.of() : ImmutableList.copyOf(ikePhase1Policies);
     _peerConfigs = peerConfigs == null ? ImmutableList.of() : ImmutableList.copyOf(peerConfigs);

@@ -44,7 +44,6 @@ import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.FileTime;
 import java.security.KeyStore;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -104,13 +103,10 @@ import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.FlowTrace;
-import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IkeGateway;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpLink;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
@@ -126,12 +122,10 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.Vrf;
-import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfNeighbor;
 import org.batfish.datamodel.ospf.OspfProcess;
-import org.batfish.datamodel.visitors.HeaderSpaceConverter;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.grizzly.ssl.SSLContextConfigurator;
 import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
@@ -631,50 +625,6 @@ public class CommonUtil {
       throw new BatfishException(
           "Could not create directories leading up to and including '" + path + "'", e);
     }
-  }
-
-  /**
-   * Returns a new symmetrical {@link IpAccessList} by adding mirror image {@link IpAccessListLine}s
-   * to the original {@link IpAccessList} or null if the conversion is not supported
-   */
-  @Nullable
-  public static IpAccessList createAclWithSymmetricalLines(IpAccessList ipAccessList) {
-    List<IpAccessListLine> aclLines = new ArrayList<>(ipAccessList.getLines());
-
-    for (IpAccessListLine ipAccessListLine : ipAccessList.getLines()) {
-      HeaderSpace originalHeaderSpace =
-          HeaderSpaceConverter.convert(ipAccessListLine.getMatchCondition());
-
-      if (!originalHeaderSpace.equals(
-          HeaderSpace.builder()
-              .setSrcIps(originalHeaderSpace.getSrcIps())
-              .setDstIps(originalHeaderSpace.getDstIps())
-              .setSrcPorts(originalHeaderSpace.getSrcPorts())
-              .setDstPorts(originalHeaderSpace.getDstPorts())
-              .setIpProtocols(originalHeaderSpace.getIpProtocols())
-              .setIcmpCodes(originalHeaderSpace.getIcmpCodes())
-              .setTcpFlags(originalHeaderSpace.getTcpFlags())
-              .build())) {
-        //  not supported if the access list line contains any more fields
-        return null;
-      } else {
-        HeaderSpace.Builder reversedHeaderSpaceBuilder = originalHeaderSpace.toBuilder();
-        aclLines.add(
-            IpAccessListLine.builder()
-                .setMatchCondition(
-                    new MatchHeaderSpace(
-                        reversedHeaderSpaceBuilder
-                            .setSrcIps(originalHeaderSpace.getDstIps())
-                            .setSrcPorts(originalHeaderSpace.getDstPorts())
-                            .setDstIps(originalHeaderSpace.getSrcIps())
-                            .setDstPorts(originalHeaderSpace.getSrcPorts())
-                            .build()))
-                .setAction(ipAccessListLine.getAction())
-                .build());
-      }
-    }
-
-    return new IpAccessList(ipAccessList.getName(), aclLines);
   }
 
   /**

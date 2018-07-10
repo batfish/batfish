@@ -2,10 +2,10 @@ package org.batfish.representation.cisco;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.util.Collections.singletonList;
-import static org.batfish.common.util.CommonUtil.createAclWithSymmetricalLines;
 import static org.batfish.datamodel.Interface.INVALID_LOCAL_INTERFACE;
 import static org.batfish.datamodel.Interface.UNSET_LOCAL_INTERFACE;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
@@ -85,6 +85,7 @@ import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
+import org.batfish.datamodel.visitors.HeaderSpaceConverter;
 
 /** Utilities that convert Cisco-specific representations to vendor-independent model. */
 @ParametersAreNonnullByDefault
@@ -616,6 +617,51 @@ class CiscoConversions {
         }
       }
     }
+  }
+
+  /**
+   * Returns a new symmetrical {@link IpAccessList} by adding mirror image {@link IpAccessListLine}s
+   * to the original {@link IpAccessList} or null if the conversion is not supported
+   */
+  @VisibleForTesting
+  @Nullable
+  static IpAccessList createAclWithSymmetricalLines(IpAccessList ipAccessList) {
+    List<IpAccessListLine> aclLines = new ArrayList<>(ipAccessList.getLines());
+
+    for (IpAccessListLine ipAccessListLine : ipAccessList.getLines()) {
+      HeaderSpace originalHeaderSpace =
+          HeaderSpaceConverter.convert(ipAccessListLine.getMatchCondition());
+
+      if (!originalHeaderSpace.equals(
+          HeaderSpace.builder()
+              .setSrcIps(originalHeaderSpace.getSrcIps())
+              .setDstIps(originalHeaderSpace.getDstIps())
+              .setSrcPorts(originalHeaderSpace.getSrcPorts())
+              .setDstPorts(originalHeaderSpace.getDstPorts())
+              .setIpProtocols(originalHeaderSpace.getIpProtocols())
+              .setIcmpCodes(originalHeaderSpace.getIcmpCodes())
+              .setTcpFlags(originalHeaderSpace.getTcpFlags())
+              .build())) {
+        //  not supported if the access list line contains any more fields
+        return null;
+      } else {
+        HeaderSpace.Builder reversedHeaderSpaceBuilder = originalHeaderSpace.toBuilder();
+        aclLines.add(
+            IpAccessListLine.builder()
+                .setMatchCondition(
+                    new MatchHeaderSpace(
+                        reversedHeaderSpaceBuilder
+                            .setSrcIps(originalHeaderSpace.getDstIps())
+                            .setSrcPorts(originalHeaderSpace.getDstPorts())
+                            .setDstIps(originalHeaderSpace.getSrcIps())
+                            .setDstPorts(originalHeaderSpace.getSrcPorts())
+                            .build()))
+                .setAction(ipAccessListLine.getAction())
+                .build());
+      }
+    }
+
+    return new IpAccessList(ipAccessList.getName(), aclLines);
   }
 
   /**

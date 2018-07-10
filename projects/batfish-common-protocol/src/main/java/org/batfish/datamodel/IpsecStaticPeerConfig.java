@@ -32,12 +32,12 @@ public final class IpsecStaticPeerConfig extends IpsecPeerConfig implements Seri
       @JsonProperty(PROP_IPSEC_POLICY) @Nullable String ipsecPolicy,
       @JsonProperty(PROP_PHYSICAL_INTERFACE) @Nullable String physicalInterface,
       @JsonProperty(PROP_POLICY_ACCESS_LIST) @Nullable IpAccessList policyAccessList,
-      @JsonProperty(PROP_LOCAL_ADDRESS) @Nullable Ip sourceAddress,
+      @JsonProperty(PROP_LOCAL_ADDRESS) @Nullable Ip localAddress,
       @JsonProperty(PROP_TUNNEL_INTERFACE) @Nullable String tunnelInterface,
       @JsonProperty(PROP_DESTINATION_ADDRESS) @Nullable Ip destinationAddress,
       @JsonProperty(PROP_IKE_PHASE1_POLICY) @Nullable String ikePhasePolicy,
       @JsonProperty(PROP_PEER_CONFIG) @Nullable IpsecPeerConfig peerConfig) {
-    super(ipsecPolicy, physicalInterface, policyAccessList, sourceAddress, tunnelInterface);
+    super(ipsecPolicy, physicalInterface, policyAccessList, localAddress, tunnelInterface);
     _destinationAddress = firstNonNull(destinationAddress, Ip.AUTO);
     _ikePhase1Policy = ikePhasePolicy;
     _peerConfig = peerConfig;

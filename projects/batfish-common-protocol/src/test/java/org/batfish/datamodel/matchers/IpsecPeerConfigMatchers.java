@@ -27,7 +27,7 @@ public final class IpsecPeerConfigMatchers {
 
   /**
    * Provides a matcher that matches if the provided {@code localAddress} matches the IPSec peer
-   * config's {@code sourceAddress}
+   * config's {@code localAddress}
    */
   public static @Nonnull HasLocalAddress hasLocalAddress(Ip localAddress) {
     return new HasLocalAddress(equalTo(localAddress));
