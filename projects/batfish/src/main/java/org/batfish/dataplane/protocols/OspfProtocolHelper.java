@@ -56,13 +56,15 @@ public class OspfProtocolHelper {
   /**
    * Decide whether a default inter-area OSPF route should be originated by neighbor
    *
+   * @param process the receiving node's {@link OspfProcess}
    * @param neighborProc The adjacent {@link OspfProcess}
    * @param neighborArea The propagator's OSPF area configuration
    * @return {@code true} iff the route should be considered for installation into the OSPF RIB
    */
   public static boolean isOspfInterAreaDefaultOriginationAllowed(
-      OspfProcess neighborProc, OspfArea neighborArea) {
+      OspfProcess process, OspfProcess neighborProc, OspfArea neighborArea) {
     return neighborProc.isAreaBorderRouter()
+        && !process.isAreaBorderRouter()
         && (neighborArea.getStubType() == StubType.STUB
             || (neighborArea.getStubType() == StubType.NSSA
                 && neighborArea.getNssa().getDefaultOriginateType()

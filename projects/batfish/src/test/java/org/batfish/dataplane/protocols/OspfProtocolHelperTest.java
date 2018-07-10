@@ -1,13 +1,20 @@
 package org.batfish.dataplane.protocols;
 
+import static org.batfish.dataplane.protocols.OspfProtocolHelper.isOspfInterAreaDefaultOriginationAllowed;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.ImmutableSortedMap;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.OspfInterAreaRoute;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.ospf.OspfArea;
+import org.batfish.datamodel.ospf.OspfProcess;
+import org.batfish.datamodel.ospf.OspfProcess.Builder;
+import org.batfish.datamodel.ospf.StubType;
 import org.junit.Test;
 
 /** Tests for {@link OspfProtocolHelper} */
@@ -70,5 +77,24 @@ public class OspfProtocolHelperTest {
         OspfProtocolHelper.computeUpdatedOspfSummaryMetric(
             sameAreaRoute, Prefix.ZERO, null, definedArea, true),
         equalTo(null));
+  }
+
+  @Test
+  public void testisOspfInterAreaDefaultOriginationAllowed() {
+    NetworkFactory nf = new NetworkFactory();
+    Builder b = nf.ospfProcessBuilder();
+    OspfProcess proc = b.build();
+    OspfProcess neighborProc = b.build();
+    OspfArea area1 = new OspfArea(1L);
+    area1.setStubType(StubType.STUB);
+    neighborProc.setAreas(ImmutableSortedMap.of(0L, new OspfArea(0L), 1L, area1));
+
+    // Receiving process is NOT an ABR
+    proc.setAreas(ImmutableSortedMap.of(1L, area1));
+    assertThat(isOspfInterAreaDefaultOriginationAllowed(proc, neighborProc, area1), equalTo(true));
+
+    // Receiving process IS an ABR
+    proc.setAreas(ImmutableSortedMap.of(0L, new OspfArea(0L), 1L, area1));
+    assertThat(isOspfInterAreaDefaultOriginationAllowed(proc, neighborProc, area1), equalTo(false));
   }
 }
