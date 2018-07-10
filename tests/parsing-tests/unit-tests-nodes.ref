@@ -5851,6 +5851,66 @@
             "lifetimeSeconds" : 28800
           }
         },
+        "ipsecPhase2Policies" : {
+          "abcdefg" : {
+            "proposals" : [
+              "hijklmnop"
+            ]
+          },
+          "~IPSEC_PHASE2_POLICY:VPN:5~" : {
+            "pfsKeyGroup" : "GROUP14",
+            "proposals" : [
+              "bleep"
+            ]
+          },
+          "~IPSEC_PHASE2_POLICY:VPNMAP:2~" : {
+            "pfsKeyGroup" : "GROUP2",
+            "proposals" : [
+              "mytransformset"
+            ]
+          }
+        },
+        "ipsecPhase2Proposals" : {
+          "ESP-3DES-MD5" : {
+            "authenticationAlgorithm" : "HMAC_MD5_96",
+            "encryptionAlgorithm" : "THREEDES_CBC",
+            "ipsecEncapsulationMode" : "TUNNEL",
+            "protocols" : [
+              "ESP"
+            ]
+          },
+          "IPSEC_AES_256" : {
+            "authenticationAlgorithm" : "HMAC_SHA1_96",
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "ipsecEncapsulationMode" : "TUNNEL",
+            "protocols" : [
+              "ESP"
+            ]
+          },
+          "cipts1" : {
+            "authenticationAlgorithm" : "HMAC_SHA_256_128",
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "ipsecEncapsulationMode" : "TUNNEL",
+            "protocols" : [
+              "ESP"
+            ]
+          },
+          "cipts2" : {
+            "authenticationAlgorithm" : "HMAC_SHA_512",
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "ipsecEncapsulationMode" : "TUNNEL",
+            "protocols" : [
+              "ESP"
+            ]
+          },
+          "noAuthHeader" : {
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "ipsecEncapsulationMode" : "TUNNEL",
+            "protocols" : [
+              "ESP"
+            ]
+          }
+        },
         "ipsecPolicies" : {
           "VPN:5" : {
             "name" : "VPN:5",

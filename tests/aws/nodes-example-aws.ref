@@ -1044,6 +1044,58 @@
             ]
           }
         },
+        "ipsecPeerConfigs" : {
+          "Tunnel1" : {
+            "class" : "org.batfish.datamodel.IpsecStaticPeerConfig",
+            "destinationAddress" : "52.27.166.152",
+            "ikePhase1Policy" : "isakmp-vpn-ba2e34a8-0",
+            "ipsecPolicy" : "ipsec-vpn-ba2e34a8-0",
+            "localAddress" : "172.16.1.2",
+            "physicalInterface" : "GigabitEthernet2/0",
+            "tunnelInterface" : "Tunnel1"
+          },
+          "Tunnel2" : {
+            "class" : "org.batfish.datamodel.IpsecStaticPeerConfig",
+            "destinationAddress" : "52.39.121.126",
+            "ikePhase1Policy" : "isakmp-vpn-ba2e34a8-1",
+            "ipsecPolicy" : "ipsec-vpn-ba2e34a8-1",
+            "localAddress" : "172.16.1.2",
+            "physicalInterface" : "GigabitEthernet2/0",
+            "tunnelInterface" : "Tunnel2"
+          }
+        },
+        "ipsecPhase2Policies" : {
+          "ipsec-vpn-ba2e34a8-0" : {
+            "pfsKeyGroup" : "GROUP2",
+            "proposals" : [
+              "ipsec-prop-vpn-ba2e34a8-0"
+            ]
+          },
+          "ipsec-vpn-ba2e34a8-1" : {
+            "pfsKeyGroup" : "GROUP2",
+            "proposals" : [
+              "ipsec-prop-vpn-ba2e34a8-1"
+            ]
+          }
+        },
+        "ipsecPhase2Proposals" : {
+          "ipsec-prop-vpn-ba2e34a8-0" : {
+            "authenticationAlgorithm" : "HMAC_SHA1_96",
+            "encryptionAlgorithm" : "AES_128_CBC",
+            "ipsecEncapsulationMode" : "TUNNEL",
+            "protocols" : [
+              "ESP"
+            ]
+          },
+          "ipsec-prop-vpn-ba2e34a8-1" : {
+            "authenticationAlgorithm" : "HMAC_SHA1_96",
+            "encryptionAlgorithm" : "AES_128_CBC",
+            "ipsecEncapsulationMode" : "TUNNEL",
+            "protocols" : [
+              "ESP"
+            ]
+          }
+        },
         "ipsecPolicies" : {
           "ipsec-vpn-ba2e34a8-0" : {
             "name" : "ipsec-vpn-ba2e34a8-0",
