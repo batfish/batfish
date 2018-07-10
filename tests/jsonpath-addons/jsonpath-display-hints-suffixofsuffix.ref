@@ -70,6 +70,7 @@
                   "declaredNames" : [
                     "Ethernet0/0"
                   ],
+                  "delay" : 1000000.0,
                   "mtu" : 1500,
                   "nativeVlan" : 1,
                   "ospfDeadInterval" : 0,
@@ -98,6 +99,7 @@
                   "declaredNames" : [
                     "GigabitEthernet0/0"
                   ],
+                  "delay" : 10000.0,
                   "incomingFilter" : "OUTSIDE_TO_INSIDE",
                   "mtu" : 1500,
                   "nativeVlan" : 1,
@@ -129,6 +131,7 @@
                   "declaredNames" : [
                     "GigabitEthernet1/0"
                   ],
+                  "delay" : 10000.0,
                   "mtu" : 1500,
                   "nativeVlan" : 1,
                   "ospfArea" : 1,
@@ -160,6 +163,7 @@
                   "declaredNames" : [
                     "GigabitEthernet2/0"
                   ],
+                  "delay" : 10000.0,
                   "mtu" : 1500,
                   "nativeVlan" : 1,
                   "ospfArea" : 1,
@@ -191,6 +195,7 @@
                   "declaredNames" : [
                     "Loopback0"
                   ],
+                  "delay" : 5.0E9,
                   "mtu" : 1500,
                   "nativeVlan" : 1,
                   "ospfArea" : 1,

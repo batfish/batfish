@@ -802,6 +802,7 @@
             "declaredNames" : [
               "Ethernet0"
             ],
+            "delay" : 1000000.0,
             "dhcpRelayAddresses" : [
               "1.2.3.4",
               "2.3.4.5"
@@ -831,6 +832,7 @@
             "declaredNames" : [
               "Ethernet1"
             ],
+            "delay" : 1000000.0,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -886,6 +888,7 @@
             "declaredNames" : [
               "Vlan1"
             ],
+            "delay" : 10.0,
             "dhcpRelayAddresses" : [
               "5.5.5.5"
             ],
@@ -1294,6 +1297,7 @@
             "declaredNames" : [
               "gigabitethernet0/0/0"
             ],
+            "delay" : 10000.0,
             "description" : "\"blah\"",
             "dhcpRelayAddresses" : [
               "2.3.4.5"
@@ -1730,6 +1734,7 @@
             "declaredNames" : [
               "Ethernet0/0"
             ],
+            "delay" : 1000000.0,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfArea" : 0,
@@ -3467,6 +3472,7 @@
             "declaredNames" : [
               "ethernet6/0.0"
             ],
+            "delay" : 1000000.0,
             "description" : "\"squeee\"",
             "mtu" : 1500,
             "nativeVlan" : 1,
@@ -3497,6 +3503,7 @@
             "declaredNames" : [
               "ethernet6/0.48"
             ],
+            "delay" : 1000000.0,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -3523,6 +3530,7 @@
             "declaredNames" : [
               "ethernet6/1"
             ],
+            "delay" : 1000000.0,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -3548,6 +3556,7 @@
             "declaredNames" : [
               "cable-downstream1/2"
             ],
+            "delay" : 10.0,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -3573,6 +3582,7 @@
             "declaredNames" : [
               "cable-downstream1/2/3"
             ],
+            "delay" : 10.0,
             "description" : "\"blah\"",
             "mtu" : 1500,
             "nativeVlan" : 1,
@@ -3599,6 +3609,7 @@
             "declaredNames" : [
               "cable-downstream5/0/0"
             ],
+            "delay" : 10.0,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -3624,6 +3635,7 @@
             "declaredNames" : [
               "cable-mac1"
             ],
+            "delay" : 10.0,
             "description" : "\"cable-mac 1\"",
             "mtu" : 1500,
             "nativeVlan" : 1,
@@ -3653,6 +3665,7 @@
             "declaredNames" : [
               "cable-mac1.1"
             ],
+            "delay" : 10.0,
             "description" : "\"foobar\"",
             "mtu" : 1500,
             "nativeVlan" : 1,
@@ -3686,6 +3699,7 @@
             "declaredNames" : [
               "cable-mac1.2"
             ],
+            "delay" : 10.0,
             "description" : "\"bleep\"",
             "mtu" : 1500,
             "nativeVlan" : 1,
@@ -3713,6 +3727,7 @@
             "declaredNames" : [
               "cable-mac2"
             ],
+            "delay" : 10.0,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -3738,6 +3753,7 @@
             "declaredNames" : [
               "cable-mac3"
             ],
+            "delay" : 10.0,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -3763,6 +3779,7 @@
             "declaredNames" : [
               "cable-upstream1/0/0"
             ],
+            "delay" : 10.0,
             "description" : "\"bleh\"",
             "mtu" : 1500,
             "nativeVlan" : 1,
@@ -3789,6 +3806,7 @@
             "declaredNames" : [
               "cable-upstream1/0/0.0"
             ],
+            "delay" : 10.0,
             "description" : "\"blarp\"",
             "mtu" : 1500,
             "nativeVlan" : 1,
@@ -3815,6 +3833,7 @@
             "declaredNames" : [
               "cable-upstream1/0/10"
             ],
+            "delay" : 10.0,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -3840,6 +3859,7 @@
             "declaredNames" : [
               "mgmt6/0"
             ],
+            "delay" : 10.0,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -5655,6 +5675,7 @@
             "declaredNames" : [
               "Cable1/2/3"
             ],
+            "delay" : 10.0,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -6119,6 +6140,34 @@
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "SWITCH",
+        "interfaces" : {
+          "Ethernet0" : {
+            "name" : "Ethernet0",
+            "accessVlan" : 0,
+            "active" : true,
+            "autostate" : true,
+            "bandwidth" : 1.0E7,
+            "declaredNames" : [
+              "Ethernet0"
+            ],
+            "delay" : 1.0E10,
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : true,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          }
+        },
         "ipAccessLists" : {
           "bippety" : {
             "name" : "bippety",
@@ -6285,7 +6334,10 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "interfaces" : [
+              "Ethernet0"
+            ]
           }
         }
       },
@@ -6326,6 +6378,7 @@
             "declaredNames" : [
               "GigabitEthernet0/1"
             ],
+            "delay" : 10000.0,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -6396,6 +6449,7 @@
             "declaredNames" : [
               "TenGigE0/0/2/2"
             ],
+            "delay" : 1000.0,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -6446,6 +6500,7 @@
             "declaredNames" : [
               "Async1"
             ],
+            "delay" : 10.0,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -6471,6 +6526,7 @@
             "declaredNames" : [
               "Cable1/2/3:4"
             ],
+            "delay" : 10.0,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -6496,6 +6552,7 @@
             "declaredNames" : [
               "Crypto-Engine1/2/3"
             ],
+            "delay" : 10.0,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -6521,6 +6578,7 @@
             "declaredNames" : [
               "Dot11Radio0"
             ],
+            "delay" : 10.0,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -6550,6 +6608,7 @@
             "declaredNames" : [
               "Ethernet0"
             ],
+            "delay" : 1.0E7,
             "description" : "description-goes-here",
             "dhcpRelayAddresses" : [
               "1.2.3.4",
@@ -6585,6 +6644,7 @@
             "declaredNames" : [
               "ethernet1/11"
             ],
+            "delay" : 1000000.0,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -6610,6 +6670,7 @@
             "declaredNames" : [
               "ethernet1/12"
             ],
+            "delay" : 1000000.0,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -6638,6 +6699,7 @@
             "declaredNames" : [
               "GigabitEthernet0/0"
             ],
+            "delay" : 10000.0,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfCost" : 60,
@@ -6665,6 +6727,7 @@
             "declaredNames" : [
               "Loopback0"
             ],
+            "delay" : 5.0E9,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -6690,6 +6753,7 @@
             "declaredNames" : [
               "Modular-Cable1/2/3:4"
             ],
+            "delay" : 10.0,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -6715,6 +6779,7 @@
             "declaredNames" : [
               "Null0"
             ],
+            "delay" : 10.0,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -6740,6 +6805,7 @@
             "declaredNames" : [
               "vlan1"
             ],
+            "delay" : 10.0,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -6765,6 +6831,7 @@
             "declaredNames" : [
               "vlan1005"
             ],
+            "delay" : 10.0,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -6790,6 +6857,7 @@
             "declaredNames" : [
               "vlan1006"
             ],
+            "delay" : 10.0,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -6815,6 +6883,7 @@
             "declaredNames" : [
               "Vlan111"
             ],
+            "delay" : 10.0,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -6840,6 +6909,7 @@
             "declaredNames" : [
               "vlan1234"
             ],
+            "delay" : 10.0,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -6865,6 +6935,7 @@
             "declaredNames" : [
               "vlan2"
             ],
+            "delay" : 10.0,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -6890,6 +6961,7 @@
             "declaredNames" : [
               "vlan3"
             ],
+            "delay" : 10.0,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -6915,6 +6987,7 @@
             "declaredNames" : [
               "vlan4094"
             ],
+            "delay" : 10.0,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -6940,6 +7013,7 @@
             "declaredNames" : [
               "Vxlan1"
             ],
+            "delay" : 10.0,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -6965,6 +7039,7 @@
             "declaredNames" : [
               "Wideband-Cable1/2/3:4"
             ],
+            "delay" : 10.0,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -6990,6 +7065,7 @@
             "declaredNames" : [
               "tunnel-ip6"
             ],
+            "delay" : 10.0,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -7563,6 +7639,7 @@
             "declaredNames" : [
               "GigabitEthernet0/0"
             ],
+            "delay" : 10000.0,
             "isis" : {
               "level1" : {
                 "mode" : "passive"
@@ -7600,6 +7677,7 @@
             "declaredNames" : [
               "GigabitEthernet0/0/1"
             ],
+            "delay" : 10000.0,
             "isis" : {
               "level1" : {
                 "cost" : 15,
@@ -7637,6 +7715,7 @@
             "declaredNames" : [
               "GigabitEthernet0/1"
             ],
+            "delay" : 10000.0,
             "isis" : {
               "level1" : {
                 "mode" : "active"
@@ -7671,6 +7750,7 @@
             "declaredNames" : [
               "HundredGigE0/0/0/0.2302"
             ],
+            "delay" : 10.0,
             "isis" : {
               "level1" : {
                 "mode" : "active"
@@ -7705,6 +7785,7 @@
             "declaredNames" : [
               "Loopback0"
             ],
+            "delay" : 5.0E9,
             "isis" : {
               "level1" : {
                 "mode" : "passive"
@@ -7739,6 +7820,7 @@
             "declaredNames" : [
               "Serial4/0"
             ],
+            "delay" : 10.0,
             "isis" : {
               "level1" : {
                 "mode" : "active"
@@ -8896,6 +8978,7 @@
             "declaredNames" : [
               "ethernet0/0"
             ],
+            "delay" : 1000000.0,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -8925,6 +9008,7 @@
             "declaredNames" : [
               "loopback0"
             ],
+            "delay" : 5.0E9,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -10121,6 +10205,7 @@
             "declaredNames" : [
               "Ethernet0"
             ],
+            "delay" : 1000000.0,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -10824,6 +10909,7 @@
             "declaredNames" : [
               "ethernet1/15"
             ],
+            "delay" : 1000000.0,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -11207,6 +11293,7 @@
             "declaredNames" : [
               "eth0"
             ],
+            "delay" : 1000000.0,
             "incomingFilter" : "iptables_Ethernet0_ingress",
             "mtu" : 1500,
             "nativeVlan" : 1,
@@ -11239,6 +11326,7 @@
             "declaredNames" : [
               "eth1"
             ],
+            "delay" : 1000000.0,
             "incomingFilter" : "iptables_Ethernet1_ingress",
             "mtu" : 1500,
             "nativeVlan" : 1,
@@ -11649,6 +11737,7 @@
             "declaredNames" : [
               "Vlan303"
             ],
+            "delay" : 10.0,
             "mtu" : 9100,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -11678,6 +11767,7 @@
             "declaredNames" : [
               "Vlan803"
             ],
+            "delay" : 10.0,
             "dhcpRelayAddresses" : [
               "10.22.33.111",
               "10.22.33.112"
@@ -11734,6 +11824,7 @@
             "declaredNames" : [
               "FastEthernet12/13"
             ],
+            "delay" : 100000.0,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -11759,6 +11850,7 @@
             "declaredNames" : [
               "HundredGigE0/6/0/8"
             ],
+            "delay" : 10.0,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -11784,6 +11876,7 @@
             "declaredNames" : [
               "Port-channel1"
             ],
+            "delay" : 0.0,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -11809,6 +11902,7 @@
             "declaredNames" : [
               "Vlan100"
             ],
+            "delay" : 10.0,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -11862,6 +11956,7 @@
             "declaredNames" : [
               "Loopback0"
             ],
+            "delay" : 5.0E9,
             "description" : "SLO-AGG1 lo0 (Loopback0 Address)",
             "mtu" : 1500,
             "nativeVlan" : 1,
@@ -11974,6 +12069,7 @@
             "declaredNames" : [
               "GigabitEthernet1/0/1"
             ],
+            "delay" : 10000.0,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -12506,6 +12602,7 @@
             "declaredNames" : [
               "GigabitEthernet0/2/1/6"
             ],
+            "delay" : 10000.0,
             "isis" : {
               "level1" : {
                 "mode" : "active"
@@ -12652,6 +12749,7 @@
             "declaredNames" : [
               "Bundle-Ether101"
             ],
+            "delay" : 0.0,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -12677,6 +12775,7 @@
             "declaredNames" : [
               "Bundle-Ether103"
             ],
+            "delay" : 0.0,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -12702,6 +12801,7 @@
             "declaredNames" : [
               "Bundle-Ether201"
             ],
+            "delay" : 0.0,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfCost" : 1,
@@ -12728,6 +12828,7 @@
             "declaredNames" : [
               "HundredGigE0/2/0/0.292"
             ],
+            "delay" : 10.0,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -12753,6 +12854,7 @@
             "declaredNames" : [
               "HundredGigE0/2/0/3"
             ],
+            "delay" : 10.0,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -12778,6 +12880,7 @@
             "declaredNames" : [
               "Loopback0"
             ],
+            "delay" : 5.0E9,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -12803,6 +12906,7 @@
             "declaredNames" : [
               "TenGigE0/0/0/2"
             ],
+            "delay" : 1000.0,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -12828,6 +12932,7 @@
             "declaredNames" : [
               "TenGigE0/0/0/4"
             ],
+            "delay" : 1000.0,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -12853,6 +12958,7 @@
             "declaredNames" : [
               "TenGigE0/0/0/5"
             ],
+            "delay" : 1000.0,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -15555,6 +15661,7 @@
             "declaredNames" : [
               "et1"
             ],
+            "delay" : 1000000.0,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -15580,6 +15687,7 @@
             "declaredNames" : [
               "et2"
             ],
+            "delay" : 1000000.0,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -15605,6 +15713,7 @@
             "declaredNames" : [
               "ma1"
             ],
+            "delay" : 10.0,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -15630,6 +15739,7 @@
             "declaredNames" : [
               "ap1"
             ],
+            "delay" : 10.0,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -16852,6 +16962,7 @@
             "declaredNames" : [
               "GigabitEthernet1"
             ],
+            "delay" : 10000.0,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -17211,6 +17322,7 @@
             "declaredNames" : [
               "Ethernet0/0"
             ],
+            "delay" : 10000.0,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -17236,6 +17348,7 @@
             "declaredNames" : [
               "nve1"
             ],
+            "delay" : 10.0,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -19230,6 +19343,7 @@
             "declaredNames" : [
               "loopback1"
             ],
+            "delay" : 5.0E9,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -22756,6 +22870,7 @@
             "declaredNames" : [
               "FastEthernet0/1"
             ],
+            "delay" : 100000.0,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -23255,6 +23370,7 @@
             "declaredNames" : [
               "FastEthernet0/0"
             ],
+            "delay" : 100000.0,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -23305,6 +23421,7 @@
             "declaredNames" : [
               "FastEthernet0/0"
             ],
+            "delay" : 100000.0,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,

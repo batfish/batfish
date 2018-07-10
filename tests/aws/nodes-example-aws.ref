@@ -546,6 +546,7 @@
             "declaredNames" : [
               "Ethernet0/0"
             ],
+            "delay" : 1000000.0,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -574,6 +575,7 @@
             "declaredNames" : [
               "Ethernet1/0"
             ],
+            "delay" : 1000000.0,
             "description" : "link to lhr-fw-01 e1/3",
             "mtu" : 1500,
             "nativeVlan" : 1,
@@ -606,6 +608,7 @@
             "declaredNames" : [
               "Ethernet1/1"
             ],
+            "delay" : 1000000.0,
             "description" : "link to lhr-fw-02 e1/3",
             "mtu" : 1500,
             "nativeVlan" : 1,
@@ -635,6 +638,7 @@
             "declaredNames" : [
               "Ethernet1/2"
             ],
+            "delay" : 1000000.0,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -663,6 +667,7 @@
             "declaredNames" : [
               "Ethernet1/3"
             ],
+            "delay" : 1000000.0,
             "description" : "link to lix-peer-01 e1/1",
             "incomingFilter" : "LIMIT_PEER",
             "mtu" : 1500,
@@ -691,6 +696,7 @@
             "declaredNames" : [
               "Ethernet1/4"
             ],
+            "delay" : 1000000.0,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -716,6 +722,7 @@
             "declaredNames" : [
               "Ethernet1/5"
             ],
+            "delay" : 1000000.0,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -741,6 +748,7 @@
             "declaredNames" : [
               "Ethernet1/6"
             ],
+            "delay" : 1000000.0,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -766,6 +774,7 @@
             "declaredNames" : [
               "Ethernet1/7"
             ],
+            "delay" : 1000000.0,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -794,6 +803,7 @@
             "declaredNames" : [
               "GigabitEthernet0/0"
             ],
+            "delay" : 10000.0,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -823,6 +833,7 @@
             "declaredNames" : [
               "GigabitEthernet2/0"
             ],
+            "delay" : 10000.0,
             "description" : "Border Interface",
             "mtu" : 1500,
             "nativeVlan" : 1,
@@ -853,6 +864,7 @@
             "declaredNames" : [
               "Loopback0"
             ],
+            "delay" : 5.0E9,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfArea" : 0,
@@ -884,6 +896,7 @@
             "declaredNames" : [
               "Tunnel1"
             ],
+            "delay" : 10.0,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -913,6 +926,7 @@
             "declaredNames" : [
               "Tunnel2"
             ],
+            "delay" : 10.0,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,

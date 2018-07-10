@@ -25,6 +25,7 @@
           "declaredNames" : [
             "GigabitEthernet2/0"
           ],
+          "delay" : 10000.0,
           "incomingFilter" : "blocktelnet",
           "mtu" : 1500,
           "nativeVlan" : 1,
@@ -71,6 +72,7 @@
           "declaredNames" : [
             "GigabitEthernet3/0"
           ],
+          "delay" : 10000.0,
           "incomingFilter" : "blocktelnet",
           "mtu" : 1500,
           "nativeVlan" : 1,
