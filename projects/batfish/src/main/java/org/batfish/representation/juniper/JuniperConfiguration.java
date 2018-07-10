@@ -17,6 +17,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.NavigableSet;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -2122,16 +2124,19 @@ public final class JuniperConfiguration extends VendorConfiguration {
       }
 
       // create is-is process
-      // is-is runs only if iso address is configured on lo0 unit 0
-      Interface loopback0 =
-          _defaultRoutingInstance.getInterfaces().get(FIRST_LOOPBACK_INTERFACE_NAME + ".0");
-      if (loopback0 != null) {
-        IsoAddress isisNet = loopback0.getIsoAddress();
-        if (isisNet != null) {
-          // now we should create is-is process
-          IsisProcess proc = createIsisProcess(ri, isisNet);
-          vrf.setIsisProcess(proc);
-        }
+      // is-is runs only if at least one interface is an ISO address
+      Optional<IsoAddress> isoAddress =
+          _defaultRoutingInstance
+              .getInterfaces()
+              .values()
+              .stream()
+              .map(Interface::getIsoAddress)
+              .filter(Objects::nonNull)
+              .findFirst();
+      if (isoAddress.isPresent()) {
+        // now we should create is-is process
+        IsisProcess proc = createIsisProcess(ri, isoAddress.get());
+        vrf.setIsisProcess(proc);
       }
 
       // create bgp process

@@ -6,8 +6,10 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.IsisLevelSettings;
 import org.batfish.datamodel.IsisProcess;
+import org.batfish.datamodel.IsoAddress;
 import org.batfish.datamodel.matchers.IsisProcessMatchersImpl.HasLevel1;
 import org.batfish.datamodel.matchers.IsisProcessMatchersImpl.HasLevel2;
+import org.batfish.datamodel.matchers.IsisProcessMatchersImpl.HasNetAddress;
 import org.batfish.datamodel.matchers.IsisProcessMatchersImpl.HasOverloadTimeout;
 import org.batfish.datamodel.matchers.IsisProcessMatchersImpl.HasReferenceBandwidth;
 import org.hamcrest.Matcher;
@@ -65,6 +67,15 @@ public final class IsisProcessMatchers {
   public static @Nonnull Matcher<IsisProcess> hasReferenceBandwidth(
       @Nonnull Matcher<? super Double> subMatcher) {
     return new HasReferenceBandwidth(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the {@link
+   * IsisProcess}'s netAddress.
+   */
+  public static @Nonnull Matcher<IsisProcess> hasNetAddress(
+      @Nonnull Matcher<? super IsoAddress> subMatcher) {
+    return new HasNetAddress(subMatcher);
   }
 
   private IsisProcessMatchers() {}

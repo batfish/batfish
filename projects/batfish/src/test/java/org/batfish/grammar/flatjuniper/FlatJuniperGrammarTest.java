@@ -61,6 +61,7 @@ import static org.batfish.datamodel.matchers.IsisInterfaceSettingsMatchers.hasIs
 import static org.batfish.datamodel.matchers.IsisInterfaceSettingsMatchers.hasLevel1;
 import static org.batfish.datamodel.matchers.IsisInterfaceSettingsMatchers.hasLevel2;
 import static org.batfish.datamodel.matchers.IsisLevelSettingsMatchers.hasWideMetricsOnly;
+import static org.batfish.datamodel.matchers.IsisProcessMatchers.hasNetAddress;
 import static org.batfish.datamodel.matchers.IsisProcessMatchers.hasOverloadTimeout;
 import static org.batfish.datamodel.matchers.LiteralIntMatcher.hasVal;
 import static org.batfish.datamodel.matchers.LiteralIntMatcher.isLiteralIntThat;
@@ -1706,6 +1707,23 @@ public class FlatJuniperGrammarTest {
         hasInterface(
             physical, hasIsis(hasLevel2(IsisInterfaceLevelSettingsMatchers.hasHelloInterval(1)))));
     assertThat(c, hasInterface(physical, hasIsis(hasLevel2(hasHoldTime(3)))));
+  }
+
+  @Test
+  public void testJuniperIsisNoIsoAddress() throws IOException {
+    Configuration c = parseConfig("juniper-isis-no-iso");
+
+    assertThat(c, hasDefaultVrf(hasIsisProcess(nullValue())));
+  }
+
+  @Test
+  public void testJuniperIsisNonLoopbackIsoAddress() throws IOException {
+    Configuration c = parseConfig("juniper-isis-iso-non-loopback");
+
+    assertThat(
+        c,
+        hasDefaultVrf(
+            hasIsisProcess(hasNetAddress(equalTo(new IsoAddress("12.1234.1234.1234.1234.01"))))));
   }
 
   @Test
