@@ -15,6 +15,9 @@ import org.batfish.datamodel.IkeProposal;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.IpsecPeerConfig;
+import org.batfish.datamodel.IpsecPhase2Policy;
+import org.batfish.datamodel.IpsecPhase2Proposal;
 import org.batfish.datamodel.IpsecPolicy;
 import org.batfish.datamodel.IpsecProposal;
 import org.batfish.datamodel.IpsecVpn;
@@ -32,6 +35,9 @@ import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasIpAccessList;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasIpAccessLists;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasIpSpace;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasIpSpaces;
+import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasIpsecPeerConfig;
+import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasIpsecPhase2Policy;
+import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasIpsecPhase2Proposal;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasIpsecPolicy;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasIpsecProposal;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasIpsecVpn;
@@ -151,7 +157,34 @@ public class ConfigurationMatchers {
 
   /**
    * Provides a matcher that matches if the provided {@code subMatcher} matches the configuration's
-   * Ipsec proposal with specified name.
+   * IPSec peer config with specified name.
+   */
+  public static HasIpsecPeerConfig hasIpsecPeerConfig(
+      @Nonnull String name, @Nonnull Matcher<? super IpsecPeerConfig> subMatcher) {
+    return new HasIpsecPeerConfig(name, subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the configuration's
+   * IPSec Phase2 policy with specified name.
+   */
+  public static HasIpsecPhase2Policy hasIpsecPhase2Policy(
+      @Nonnull String name, @Nonnull Matcher<? super IpsecPhase2Policy> subMatcher) {
+    return new HasIpsecPhase2Policy(name, subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the configuration's
+   * IPSec Phase2 proposal with specified name.
+   */
+  public static HasIpsecPhase2Proposal hasIpsecPhase2Proposal(
+      @Nonnull String name, @Nonnull Matcher<? super IpsecPhase2Proposal> subMatcher) {
+    return new HasIpsecPhase2Proposal(name, subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the configuration's
+   * IPSec proposal with specified name.
    */
   public static HasIpsecProposal hasIpsecProposal(
       @Nonnull String name, @Nonnull Matcher<? super IpsecProposal> subMatcher) {
@@ -160,7 +193,7 @@ public class ConfigurationMatchers {
 
   /**
    * Provides a matcher that matches if the provided {@code subMatcher} matches the configuration's
-   * Ipsec vpn with specified name.
+   * IPSec vpn with specified name.
    */
   public static @Nonnull HasIpsecVpn hasIpsecVpn(
       @Nonnull String name, @Nonnull Matcher<? super IpsecVpn> subMatcher) {

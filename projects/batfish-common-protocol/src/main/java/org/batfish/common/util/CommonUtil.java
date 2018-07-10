@@ -1362,7 +1362,7 @@ public class CommonUtil {
     for (Configuration c : configurations.values()) {
       for (IpsecVpn ipsecVpn : c.getIpsecVpns().values()) {
         IkeGateway ikeGateway = ipsecVpn.getIkeGateway();
-        if (ikeGateway == null) {
+        if (ikeGateway == null || ikeGateway.getExternalInterface() == null) {
           continue;
         }
         Ip remoteIp = ikeGateway.getAddress();

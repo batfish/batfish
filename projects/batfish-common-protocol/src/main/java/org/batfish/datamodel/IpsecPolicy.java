@@ -32,7 +32,7 @@ public class IpsecPolicy extends ComparableStructure<String> {
   public IpsecPolicy(@JsonProperty(PROP_NAME) String name) {
     super(name);
     _proposals =
-        new ArrayList<>(); /* Ipsec proposals are applied in the order they are specified */
+        new ArrayList<>(); /* IPSec proposals are applied in the order they are specified */
   }
 
   public DiffieHellmanGroup getPfsKeyGroup() {

@@ -14,7 +14,7 @@ import org.hamcrest.Matcher;
 public final class IpsecVpnMatchers {
 
   /**
-   * Provides a matcher that matches if the Ipsec VPN's value of {@code subMatcher} matches
+   * Provides a matcher that matches if the IPSec VPN's value of {@code subMatcher} matches
    * specified {@code bindInterface}
    */
   public static @Nonnull HasBindInterface hasBindInterface(
@@ -23,7 +23,7 @@ public final class IpsecVpnMatchers {
   }
 
   /**
-   * Provides a matcher that matches if the Ipsec VPN's value of {@code subMatcher} matches
+   * Provides a matcher that matches if the IPSec VPN's value of {@code subMatcher} matches
    * specified {@code ikeGateway}
    */
   public static @Nonnull HasIkeGatewaay hasIkeGatewaay(
@@ -32,7 +32,7 @@ public final class IpsecVpnMatchers {
   }
 
   /**
-   * Provides a matcher that matches if the Ipsec VPN's value of {@code subMatcher} matches
+   * Provides a matcher that matches if the IPSec VPN's value of {@code subMatcher} matches
    * specified {@code ipsecPolicy}
    */
   public static @Nonnull HasIpsecPolicy hasIpsecPolicy(
@@ -41,7 +41,7 @@ public final class IpsecVpnMatchers {
   }
 
   /**
-   * Provides a matcher that matches if the Ipsec VPN's value of {@code subMatcher} matches
+   * Provides a matcher that matches if the IPSec VPN's value of {@code subMatcher} matches
    * specified {@code policy}
    */
   public static @Nonnull HasPolicy hasPolicy(@Nonnull Matcher<? super IpAccessList> subMatcher) {
