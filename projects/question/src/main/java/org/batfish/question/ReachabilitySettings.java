@@ -302,6 +302,18 @@ public final class ReachabilitySettings {
         _useCompression);
   }
 
+  IpSpaceSpecifier toIpSpaceSpecifier(IpSpace include, IpSpace exclude) {
+    if (include != null && exclude != null) {
+      return new ConstantIpSpaceSpecifier(AclIpSpace.difference(include, exclude));
+    }
+    if (include != null) {
+      return new ConstantIpSpaceSpecifier(include);
+    }
+    if (exclude != null) {
+      return new ConstantIpSpaceSpecifier(AclIpSpace.difference(UniverseIpSpace.INSTANCE, exclude));
+    }
+    return new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE);
+  }
   /**
    * Convert to a {@link ReachabilityParameters} object. Mostly this means converting user input
    * into {@link LocationSpecifier} and {@link IpSpaceSpecifier} objects. At some point, this class
@@ -334,26 +346,26 @@ public final class ReachabilitySettings {
       sourceLocations = ingressNodes;
     }
 
-    // compute the source IpSpaceSpecifier
-    IpSpaceSpecifier sourceIpSpace = new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE);
-    IpSpace srcIps = _headerSpace.getSrcIps();
-    IpSpace notSrcIps = _headerSpace.getNotSrcIps();
-    if (srcIps != null && notSrcIps != null) {
-      sourceIpSpace = new ConstantIpSpaceSpecifier(AclIpSpace.difference(srcIps, notSrcIps));
-    } else if (srcIps != null) {
-      sourceIpSpace = new ConstantIpSpaceSpecifier(srcIps);
-    } else if (notSrcIps != null) {
-      sourceIpSpace =
-          new ConstantIpSpaceSpecifier(AclIpSpace.difference(UniverseIpSpace.INSTANCE, notSrcIps));
-    }
+    // compute the source and destination IpSpaceSpecifier
+    IpSpaceSpecifier sourceIpSpaceSpecifier =
+        toIpSpaceSpecifier(_headerSpace.getSrcIps(), _headerSpace.getNotSrcIps());
+    IpSpaceSpecifier destinationIpSpaceSpecifier =
+        toIpSpaceSpecifier(_headerSpace.getDstIps(), _headerSpace.getNotDstIps());
 
-    // remove src IPs from headerspace since they're specified via an IpSpaceSpecifier
+    // remove src and dst IPs from headerspace since they're specified via IpSpaceSpecifiers
     IpSpace nullIpSpace = null;
     HeaderSpace headerSpace =
-        _headerSpace.toBuilder().setNotSrcIps(nullIpSpace).setSrcIps(nullIpSpace).build();
+        _headerSpace
+            .toBuilder()
+            .setDstIps(nullIpSpace)
+            .setNotDstIps(nullIpSpace)
+            .setNotSrcIps(nullIpSpace)
+            .setSrcIps(nullIpSpace)
+            .build();
 
     return ReachabilityParameters.builder()
         .setActions(_actions)
+        .setDestinationIpSpaceSpecifier(destinationIpSpaceSpecifier)
         .setFinalNodesSpecifier(
             NodeSpecifiers.difference(
                 NodeSpecifiers.from(_finalNodes), NodeSpecifiers.from(_notFinalNodes)))
@@ -361,7 +373,7 @@ public final class ReachabilitySettings {
         .setHeaderSpace(headerSpace)
         .setMaxChunkSize(_maxChunkSize)
         .setRequiredTransitNodesSpecifier(NodeSpecifiers.from(_transitNodes))
-        .setSourceIpSpaceSpecifier(sourceIpSpace)
+        .setSourceIpSpaceSpecifier(sourceIpSpaceSpecifier)
         .setSourceLocationSpecifier(sourceLocations)
         .setSrcNatted(SrcNattedConstraint.fromBoolean(_srcNatted))
         .setSpecialize(_specialize)
