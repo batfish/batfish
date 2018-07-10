@@ -252,6 +252,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_reference_bandwidthCo
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oa_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oa_nssaContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oa_stubContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oai_interface_typeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oai_passiveContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oan_default_lsaContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oan_no_summariesContext;
@@ -3656,6 +3657,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitOaa_restrict(FlatJuniperParser.Oaa_restrictContext ctx) {
     _currentAreaRangeRestrict = true;
+  }
+
+  @Override
+  public void exitOai_interface_type(Oai_interface_typeContext ctx) {
+    if (ctx.P2P() != null) {
+      _currentOspfInterface.setOspfPointToPoint(true);
+    }
   }
 
   @Override
