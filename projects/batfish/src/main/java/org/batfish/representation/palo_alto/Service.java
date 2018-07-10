@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import org.batfish.datamodel.IpProtocol;
-import org.batfish.datamodel.SubRange;
 
 public final class Service implements Serializable {
   private static final long serialVersionUID = 1L;
@@ -13,11 +12,11 @@ public final class Service implements Serializable {
 
   private final String _name;
 
-  private final SortedSet<SubRange> _ports;
+  private final SortedSet<Integer> _ports;
 
   private IpProtocol _protocol;
 
-  private final SortedSet<SubRange> _sourcePorts;
+  private final SortedSet<Integer> _sourcePorts;
 
   public Service(String name) {
     _name = name;
@@ -33,7 +32,7 @@ public final class Service implements Serializable {
     return _name;
   }
 
-  public SortedSet<SubRange> getPorts() {
+  public SortedSet<Integer> getPorts() {
     return _ports;
   }
 
@@ -41,7 +40,7 @@ public final class Service implements Serializable {
     return _protocol;
   }
 
-  public SortedSet<SubRange> getSourcePorts() {
+  public SortedSet<Integer> getSourcePorts() {
     return _sourcePorts;
   }
 
