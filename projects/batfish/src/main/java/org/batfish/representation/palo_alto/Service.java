@@ -1,12 +1,12 @@
 package org.batfish.representation.palo_alto;
 
-import java.io.Serializable;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.SubRange;
 
-public final class Service implements Serializable {
+public final class Service implements ServiceGroupMember {
   private static final long serialVersionUID = 1L;
 
   private String _description;
@@ -51,5 +51,12 @@ public final class Service implements Serializable {
 
   public void setProtocol(IpProtocol protocol) {
     _protocol = protocol;
+  }
+
+  @Override
+  public void applyTo(HeaderSpace.Builder srcHeaderSpaceBuilder) {
+    srcHeaderSpaceBuilder.getSrcPorts().addAll(_sourcePorts);
+    srcHeaderSpaceBuilder.getDstPorts().addAll(_ports);
+    srcHeaderSpaceBuilder.getIpProtocols().add(_protocol);
   }
 }

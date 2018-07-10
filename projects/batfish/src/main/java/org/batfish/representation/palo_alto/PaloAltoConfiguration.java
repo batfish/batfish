@@ -2,7 +2,10 @@ package org.batfish.representation.palo_alto;
 
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.Multiset;
 import com.google.common.collect.SortedMultiset;
+import com.google.common.collect.TreeMultiset;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -15,6 +18,7 @@ import java.util.TreeSet;
 import org.batfish.common.VendorConversionException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.DefinedStructureInfo;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Vrf;
@@ -137,8 +141,14 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     return String.format("%s~%s", vsysName, objectName);
   }
 
+  /** Extract object name from an object name with an embedded namespace */
+  private static String extractObjectName(String objectName) {
+    String[] parts = objectName.split("~", -1);
+    return parts[parts.length - 1];
+  }
+
   /** Extract vsys name from an object name with an embedded namespace */
-  private static String getVsysName(String objectName) {
+  private static String extractVsysName(String objectName) {
     return objectName.split("~", -1)[0];
   }
 
@@ -258,7 +268,43 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
               Collections.emptyMap());
       references.forEach(
           (name, byUsage) -> {
-            String vsysName = getVsysName(name);
+            Multiset<Integer> lines =
+                MoreObjects.firstNonNull(byUsage.get(usage), TreeMultiset.create());
+            String vsysName = extractVsysName(name);
+            String objName = extractObjectName(name);
+
+            /* Check:
+             *    vsys service
+             *    vsys service-group
+             *    shared service
+             *    shared service-group
+             */
+            DefinedStructureInfo info = null;
+            if (_virtualSystems.get(vsysName).getServices().get(objName) != null) {
+              info =
+                  _structureDefinitions
+                      .get(PaloAltoStructureType.SERVICE.getDescription())
+                      .get(name);
+              String debug2 = "test";
+            } else if (_virtualSystems.get(vsysName).getServiceGroups().get(objName) != null) {
+              // TODO
+            } else if (_virtualSystems.get(SHARED_VSYS_NAME).getServices().get(objName) != null) {
+              info =
+                  _structureDefinitions
+                      .get(PaloAltoStructureType.SERVICE.getDescription())
+                      .get(computeObjectName(SHARED_VSYS_NAME, objName));
+              String debug2 = "test";
+            } else if (_virtualSystems.get(vsysName).getServiceGroups().get(objName) != null) {
+              // TODO
+            }
+
+            if (info != null) {
+              info.setNumReferrers(
+                  info.getNumReferrers() == DefinedStructureInfo.UNKNOWN_NUM_REFERRERS
+                      ? DefinedStructureInfo.UNKNOWN_NUM_REFERRERS
+                      : info.getNumReferrers() + lines.size());
+            }
+
             String debug = "test";
             name = debug;
           });
@@ -268,6 +314,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
       references.forEach(
           (name, byUsage) -> {
             Multiset<Integer> lines = firstNonNull(byUsage.get(usage), TreeMultiset.create());
+
             List<DefinedStructureInfo> matchingStructures =
                 structureTypesToCheck
                     .stream()
