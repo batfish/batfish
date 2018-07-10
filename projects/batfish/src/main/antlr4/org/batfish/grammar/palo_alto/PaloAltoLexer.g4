@@ -40,6 +40,11 @@ CONFIG
     'config'
 ;
 
+DESCRIPTION
+:
+    'description'
+;
+
 DESTINATION
 :
     'destination'
@@ -140,6 +145,11 @@ OPEN_BRACKET
     '['
 ;
 
+PORT
+:
+    'port'
+;
+
 PRIMARY
 :
     'primary'
@@ -150,9 +160,19 @@ PRIMARY_NTP_SERVER
     'primary-ntp-server'
 ;
 
+PROTOCOL
+:
+    'protocol'
+;
+
 ROUTING_TABLE
 :
     'routing-table'
+;
+
+SCTP
+:
+    'sctp'
 ;
 
 SECONDARY
@@ -175,6 +195,11 @@ SERVERS
     'servers'
 ;
 
+SERVICE
+:
+    'service'
+;
+
 SET
 :
     'set'
@@ -183,6 +208,11 @@ SET
 SHARED
 :
     'shared'
+;
+
+SOURCE_PORT
+:
+    'source-port'
 ;
 
 STATIC_ROUTE
@@ -203,6 +233,16 @@ SYSTEM
 TAG
 :
     'tag'
+;
+
+TCP
+:
+    'tcp'
+;
+
+UDP
+:
+    'udp'
 ;
 
 UNITS
@@ -231,6 +271,11 @@ ZONE
 ;
 
 // Complex tokens
+
+COMMA
+:
+    ','
+;
 
 DEC
 :
@@ -352,7 +397,7 @@ F_Whitespace
 fragment
 F_Variable_VarChar
 :
-    ~[ \t\n\r;{}[\]&|()"']
+    ~[ \t\n\r;,{}[\]&|()"']
 ;
 
 // Modes
