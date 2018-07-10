@@ -19928,6 +19928,35 @@
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.BufferedStatement",
                     "statement" : {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.SetNextHop",
+                      "destinationVrf" : false,
+                      "expr" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.DiscardNextHop"
+                      }
+                    }
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                    "falseStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "SetDefaultActionAccept"
+                      }
+                    ],
+                    "guard" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                      "type" : "CallExprContext"
+                    },
+                    "trueStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "SetLocalDefaultActionAccept"
+                      }
+                    ]
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.BufferedStatement",
+                    "statement" : {
                       "class" : "org.batfish.datamodel.routing_policy.statement.Comment",
                       "comment" : "NOP: unsupported route-policy statement: 'set path-selection backup 1 install multipath-protect advertise\n'"
                     }
