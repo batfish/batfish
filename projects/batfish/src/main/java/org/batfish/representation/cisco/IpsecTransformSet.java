@@ -4,6 +4,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 
 import java.util.SortedSet;
 import java.util.TreeSet;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.EncryptionAlgorithm;
@@ -15,13 +16,13 @@ public class IpsecTransformSet extends ComparableStructure<String> {
 
   private static final long serialVersionUID = 1L;
 
-  private IpsecAuthenticationAlgorithm _authenticationAlgorithm;
+  @Nullable private IpsecAuthenticationAlgorithm _authenticationAlgorithm;
 
-  private EncryptionAlgorithm _encryptionAlgorithm;
+  @Nullable private EncryptionAlgorithm _encryptionAlgorithm;
 
-  private IpsecEncapsulationMode _ipsecEncapsulationMode;
+  @Nonnull private IpsecEncapsulationMode _ipsecEncapsulationMode;
 
-  private SortedSet<IpsecProtocol> _protocols;
+  @Nonnull private SortedSet<IpsecProtocol> _protocols;
 
   public IpsecTransformSet(String name) {
     super(name);
@@ -49,7 +50,7 @@ public class IpsecTransformSet extends ComparableStructure<String> {
     _authenticationAlgorithm = authenticationAlgorithm;
   }
 
-  public void setEncryptionAlgorithm(@Nullable EncryptionAlgorithm encryptionAlgorithm) {
+  public void setEncryptionAlgorithm(EncryptionAlgorithm encryptionAlgorithm) {
     _encryptionAlgorithm = encryptionAlgorithm;
   }
 
@@ -57,7 +58,7 @@ public class IpsecTransformSet extends ComparableStructure<String> {
     _ipsecEncapsulationMode = firstNonNull(ipsecEncapsulationMode, IpsecEncapsulationMode.TUNNEL);
   }
 
-  public void setProtocols(SortedSet<IpsecProtocol> protocols) {
-    _protocols = protocols;
+  public void setProtocols(@Nullable SortedSet<IpsecProtocol> protocols) {
+    _protocols = protocols == null ? new TreeSet<>() : protocols;
   }
 }

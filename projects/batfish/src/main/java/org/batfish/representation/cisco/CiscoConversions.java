@@ -2,6 +2,7 @@ package org.batfish.representation.cisco;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.util.Collections.singletonList;
+import static org.batfish.common.util.CommonUtil.createAclWithSymmetricalLines;
 import static org.batfish.datamodel.Interface.INVALID_LOCAL_INTERFACE;
 import static org.batfish.datamodel.Interface.UNSET_LOCAL_INTERFACE;
 
@@ -84,7 +85,6 @@ import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
-import org.batfish.datamodel.visitors.HeaderSpaceConverter;
 
 /** Utilities that convert Cisco-specific representations to vendor-independent model. */
 @ParametersAreNonnullByDefault
@@ -300,7 +300,7 @@ class CiscoConversions {
   }
 
   /** Resolves the interface names of the addresses used as source addresses in {@link Tunnel}s */
-  static void resolveTunnelfaceNames(Map<String, Interface> interfaces) {
+  static void resolveTunnelIfaceNames(Map<String, Interface> interfaces) {
     Map<Ip, String> iptoIfaceName = computeIpToIfaceNameMap(interfaces);
 
     for (Interface iface : interfaces.values()) {
@@ -412,28 +412,6 @@ class CiscoConversions {
     return ikePhase1Key;
   }
 
-  /** Makes an {@link IpAccessList} symmetrical by adding mirror image {@link IpAccessListLine}s */
-  private static IpAccessList makeSymmetrical(IpAccessList ipAccessList) {
-    List<IpAccessListLine> aclLines = new ArrayList<>(ipAccessList.getLines());
-
-    for (IpAccessListLine ipAccessListLine : ipAccessList.getLines()) {
-      HeaderSpace srcHeaderSpace =
-          HeaderSpaceConverter.convert(ipAccessListLine.getMatchCondition());
-      aclLines.add(
-          IpAccessListLine.builder()
-              .setMatchCondition(
-                  new MatchHeaderSpace(
-                      HeaderSpace.builder()
-                          .setDstIps(srcHeaderSpace.getSrcIps())
-                          .setSrcIps(srcHeaderSpace.getDstIps())
-                          .build()))
-              .setAction(ipAccessListLine.getAction())
-              .build());
-    }
-
-    return new IpAccessList(ipAccessList.getName(), aclLines);
-  }
-
   static IkePhase1Proposal toIkePhase1Proposal(IsakmpPolicy isakmpPolicy) {
     IkePhase1Proposal ikePhase1Proposal = new IkePhase1Proposal(isakmpPolicy.getName().toString());
     ikePhase1Proposal.setDiffieHellmanGroup(isakmpPolicy.getDiffieHellmanGroup());
@@ -508,35 +486,36 @@ class CiscoConversions {
       String tunnelIfaceName,
       CiscoConfiguration oldConfig,
       Configuration newConfig) {
+
     IpsecStaticPeerConfig.Builder ipsecStaticPeerConfigBuilder =
         IpsecStaticPeerConfig.builder()
             .setTunnelInterface(tunnelIfaceName)
             .setDestinationAddress(tunnel.getDestination())
-            .setSourceAddress(tunnel.getSourceAddress())
-            .setPhysicalInterface(tunnel.getSourceInterfaceName());
+            .setLocalAddress(tunnel.getSourceAddress())
+            .setPhysicalInterface(tunnel.getSourceInterfaceName())
+            .setIpsecPolicy(tunnel.getIpsecProfileName());
 
-    IpsecProfile ipsecProfile = oldConfig.getIpsecProfiles().get(tunnel.getIpsecProfileName());
-    String ikePhase1Policy = null;
-    if (ipsecProfile != null && ipsecProfile.getIsakmpProfile() != null) {
-      ikePhase1Policy = ipsecProfile.getIsakmpProfile();
+    IpsecProfile ipsecProfile = null;
+    if (tunnel.getIpsecProfileName() != null) {
+      ipsecProfile = oldConfig.getIpsecProfiles().get(tunnel.getIpsecProfileName());
     }
-    if (ikePhase1Policy == null) {
-      ikePhase1Policy =
+
+    if (ipsecProfile != null && ipsecProfile.getIsakmpProfile() != null) {
+      ipsecStaticPeerConfigBuilder.setIkePhase1Policy(ipsecProfile.getIsakmpProfile());
+    } else {
+      ipsecStaticPeerConfigBuilder.setIkePhase1Policy(
           getIkePhase1Policy(
               newConfig.getIkePhase1Policies(),
               tunnel.getDestination(),
-              tunnel.getSourceInterfaceName());
+              tunnel.getSourceInterfaceName()));
     }
-    ipsecStaticPeerConfigBuilder
-        .setIkePhase1Policy(ikePhase1Policy)
-        .setIpsecPolicy(tunnel.getIpsecProfileName());
 
     return ipsecStaticPeerConfigBuilder.build();
   }
 
   /**
-   * Converts a crypto map entry to multiple IPSec peer configs(one per interface on which crypto
-   * map is referred)
+   * Converts a {@link CryptoMapEntry} to multiple {@link IpsecPeerConfig}(one per interface on
+   * which crypto map is referred)
    */
   private static Map<String, IpsecPeerConfig> toIpsecPeerConfigs(
       Configuration c,
@@ -555,7 +534,6 @@ class CiscoConversions {
 
     ImmutableSortedMap.Builder<String, IpsecPeerConfig> ipsecPeerConfigsBuilder =
         ImmutableSortedMap.naturalOrder();
-    IpsecPeerConfig.Builder<?, ?> newIpsecPeerConfigBuilder;
 
     for (org.batfish.datamodel.Interface iface : referencingInterfaces) {
       // skipping interfaces with no ip-address
@@ -566,48 +544,78 @@ class CiscoConversions {
                 iface.getName(), cryptoMapName));
         continue;
       }
-
-      String ikePhase1Policy = cryptoMapEntry.getIsakmpProfile();
-
-      // dynamic crypto maps
-      if (cryptoMapEntry.getPeer() != null) {
-        if (ikePhase1Policy == null) {
-          ikePhase1Policy =
-              getIkePhase1Policy(
-                  c.getIkePhase1Policies(), cryptoMapEntry.getPeer(), iface.getName());
-        }
-        newIpsecPeerConfigBuilder =
-            IpsecStaticPeerConfig.builder()
-                .setDestinationAddress(cryptoMapEntry.getPeer())
-                .setIkePhase1Policy(ikePhase1Policy);
-      } else {
-        // static crypto maps
-        List<String> ikePhase1Policies;
-        if (ikePhase1Policy == null) {
-          ikePhase1Policies =
-              getMatchingIKePhase1Policies(c.getIkePhase1Policies(), iface.getName());
-        } else {
-          ikePhase1Policies = ImmutableList.of(ikePhase1Policy);
-        }
-        newIpsecPeerConfigBuilder =
-            IpsecDynamicPeerConfig.builder().setIkePhase1Policies(ikePhase1Policies);
-      }
-      newIpsecPeerConfigBuilder
-          .setPhysicalInterface(iface.getName())
-          .setIpsecPolicy(ipsecPhase2Policy)
-          .setSourceAddress(iface.getAddress().getIp());
-
-      if (cryptoMapEntry.getAccessList() != null) {
-        IpAccessList cryptoAcl = c.getIpAccessLists().get(cryptoMapEntry.getAccessList());
-        if (cryptoAcl != null) {
-          newIpsecPeerConfigBuilder.setPolicyAccessList(makeSymmetrical(cryptoAcl));
-        }
-      }
+      // add one IPSec peer config per interface for the crypto map entry
       ipsecPeerConfigsBuilder.put(
           String.format("~IPSEC_PEER_CONFIG:%s_%s~", cryptoMapNameSeqNumber, iface.getName()),
-          newIpsecPeerConfigBuilder.build());
+          toIpsecPeerConfig(c, cryptoMapEntry, iface, ipsecPhase2Policy, w));
     }
     return ipsecPeerConfigsBuilder.build();
+  }
+
+  private static IpsecPeerConfig toIpsecPeerConfig(
+      Configuration c,
+      CryptoMapEntry cryptoMapEntry,
+      org.batfish.datamodel.Interface iface,
+      String ipsecPhase2Policy,
+      Warnings w) {
+
+    IpsecPeerConfig.Builder<?, ?> newIpsecPeerConfigBuilder;
+
+    String ikePhase1Policy = cryptoMapEntry.getIsakmpProfile();
+
+    // static crypto maps
+    if (cryptoMapEntry.getPeer() != null) {
+      if (ikePhase1Policy == null) {
+        ikePhase1Policy =
+            getIkePhase1Policy(c.getIkePhase1Policies(), cryptoMapEntry.getPeer(), iface.getName());
+      }
+      newIpsecPeerConfigBuilder =
+          IpsecStaticPeerConfig.builder()
+              .setDestinationAddress(cryptoMapEntry.getPeer())
+              .setIkePhase1Policy(ikePhase1Policy);
+    } else {
+      // dynamic crypto maps
+      List<String> ikePhase1Policies;
+      if (ikePhase1Policy != null) {
+        ikePhase1Policies = ImmutableList.of(ikePhase1Policy);
+      } else {
+        ikePhase1Policies = getMatchingIKePhase1Policies(c.getIkePhase1Policies(), iface.getName());
+      }
+
+      newIpsecPeerConfigBuilder =
+          IpsecDynamicPeerConfig.builder().setIkePhase1Policies(ikePhase1Policies);
+    }
+
+    newIpsecPeerConfigBuilder
+        .setPhysicalInterface(iface.getName())
+        .setIpsecPolicy(ipsecPhase2Policy)
+        .setLocalAddress(iface.getAddress().getIp());
+
+    setIpsecPeerConfigPolicyAccessList(c, cryptoMapEntry, newIpsecPeerConfigBuilder, w);
+
+    return newIpsecPeerConfigBuilder.build();
+  }
+
+  private static void setIpsecPeerConfigPolicyAccessList(
+      Configuration c,
+      CryptoMapEntry cryptoMapEntry,
+      IpsecPeerConfig.Builder ipsecPeerConfigBuilder,
+      Warnings w) {
+    if (cryptoMapEntry.getAccessList() != null) {
+      IpAccessList cryptoAcl = c.getIpAccessLists().get(cryptoMapEntry.getAccessList());
+      if (cryptoAcl != null) {
+        IpAccessList symmetricCryptoAcl = createAclWithSymmetricalLines(cryptoAcl);
+        if (symmetricCryptoAcl != null) {
+          ipsecPeerConfigBuilder.setPolicyAccessList(symmetricCryptoAcl);
+        } else {
+          // log a warning if the ACL was not made symmetrical successfully
+          w.redFlag(
+              String.format(
+                  "Cannot process the Access List for crypto map %s:%s",
+                  cryptoMapEntry.getName(), cryptoMapEntry.getSequenceNumber()));
+        }
+      }
+    }
   }
 
   /**
@@ -677,7 +685,7 @@ class CiscoConversions {
     return ipsecPhase2Policy;
   }
 
-  /** Converts a CryptoMapEntry to an IPSecPolicy */
+  /** Converts a {@link CryptoMapEntry} to an {@link IpsecPolicy} */
   private static IpsecPolicy toIpsecPolicy(
       Configuration c, CryptoMapEntry cryptoMapEntry, String ipsecPolicyName) {
     IpsecPolicy ipsecPolicy = new IpsecPolicy(ipsecPolicyName);
@@ -771,7 +779,15 @@ class CiscoConversions {
       if (cryptoMapEntry.getAccessList() != null) {
         IpAccessList cryptoAcl = c.getIpAccessLists().get(cryptoMapEntry.getAccessList());
         if (cryptoAcl != null) {
-          ipsecVpn.setPolicyAccessList(makeSymmetrical(cryptoAcl));
+          IpAccessList symmetricCryptoAcl = createAclWithSymmetricalLines(cryptoAcl);
+          if (symmetricCryptoAcl != null) {
+            ipsecVpn.setPolicyAccessList(createAclWithSymmetricalLines(cryptoAcl));
+          } else {
+            w.redFlag(
+                String.format(
+                    "Cannot process the Access List for crypto map %s:%s",
+                    cryptoMapEntry.getName(), cryptoMapEntry.getSequenceNumber()));
+          }
         }
       }
       ipsecVpns.add(ipsecVpn);

@@ -78,12 +78,6 @@ public class IpsecPhase2Proposal implements Serializable {
     _ipsecEncapsulationMode = firstNonNull(ipsecEncapsulationMode, IpsecEncapsulationMode.TUNNEL);
   }
 
-  /** @deprecated Use {@link #setProtocols(SortedSet)} instead. */
-  @Deprecated
-  public void setProtocol(IpsecProtocol protocol) {
-    setProtocols(ImmutableSortedSet.of(protocol));
-  }
-
   @JsonProperty(PROP_PROTOCOLS)
   public void setProtocols(@Nullable SortedSet<IpsecProtocol> protocols) {
     _protocols = protocols == null ? ImmutableSortedSet.of() : ImmutableSortedSet.copyOf(protocols);

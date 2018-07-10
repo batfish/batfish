@@ -9,8 +9,8 @@ import java.io.Serializable;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-/** Represents a configured static(having a specified remote peer) IPSec peer */
-public class IpsecStaticPeerConfig extends IpsecPeerConfig implements Serializable {
+/** Represents a configured static (having a specified remote peer) IPSec peer */
+public final class IpsecStaticPeerConfig extends IpsecPeerConfig implements Serializable {
 
   private static final String PROP_DESTINATION_ADDRESS = "destinationAddress";
 
@@ -28,11 +28,11 @@ public class IpsecStaticPeerConfig extends IpsecPeerConfig implements Serializab
   @Nullable private IpsecPeerConfig _peerConfig;
 
   @JsonCreator
-  public IpsecStaticPeerConfig(
+  private IpsecStaticPeerConfig(
       @JsonProperty(PROP_IPSEC_POLICY) @Nullable String ipsecPolicy,
       @JsonProperty(PROP_PHYSICAL_INTERFACE) @Nullable String physicalInterface,
       @JsonProperty(PROP_POLICY_ACCESS_LIST) @Nullable IpAccessList policyAccessList,
-      @JsonProperty(PROP_SOURCE_ADDRESS) @Nullable Ip sourceAddress,
+      @JsonProperty(PROP_LOCAL_ADDRESS) @Nullable Ip sourceAddress,
       @JsonProperty(PROP_TUNNEL_INTERFACE) @Nullable String tunnelInterface,
       @JsonProperty(PROP_DESTINATION_ADDRESS) @Nullable Ip destinationAddress,
       @JsonProperty(PROP_IKE_PHASE1_POLICY) @Nullable String ikePhasePolicy,
@@ -65,21 +65,6 @@ public class IpsecStaticPeerConfig extends IpsecPeerConfig implements Serializab
     return new Builder();
   }
 
-  @JsonProperty(PROP_DESTINATION_ADDRESS)
-  public void setDestinationAddress(@Nullable Ip destinationAddress) {
-    _destinationAddress = destinationAddress;
-  }
-
-  @JsonProperty(PROP_IKE_PHASE1_POLICY)
-  public void setIkePhase1Policy(@Nullable String ikePhase1Policy) {
-    _ikePhase1Policy = ikePhase1Policy;
-  }
-
-  @JsonProperty(PROP_PEER_CONFIG)
-  public void setPeerConfig(@Nullable IpsecPeerConfig peerConfig) {
-    _peerConfig = peerConfig;
-  }
-
   public static class Builder extends IpsecPeerConfig.Builder<Builder, IpsecStaticPeerConfig> {
     private Ip _destinationAddress;
 
@@ -93,7 +78,7 @@ public class IpsecStaticPeerConfig extends IpsecPeerConfig implements Serializab
           _ipsecPolicy,
           _physicalInterface,
           _policyAccessList,
-          _sourceAddress,
+          _localAddress,
           _tunnelInterface,
           _destinationAddress,
           _ikePhase1Policy,

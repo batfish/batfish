@@ -6,6 +6,7 @@ import static org.batfish.common.util.CommonUtil.communityStringToLong;
 import static org.batfish.common.util.CommonUtil.computeIpInterfaceOwners;
 import static org.batfish.common.util.CommonUtil.computeIpNodeOwners;
 import static org.batfish.common.util.CommonUtil.computeNodeInterfaces;
+import static org.batfish.common.util.CommonUtil.createAclWithSymmetricalLines;
 import static org.batfish.common.util.CommonUtil.longToCommunity;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
@@ -13,6 +14,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.nullValue;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
@@ -20,12 +22,18 @@ import java.util.Map;
 import java.util.Set;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.IpAccessListLine;
+import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.VrrpGroup;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -211,6 +219,30 @@ public class CommonUtilTest {
   @Test(expected = IllegalArgumentException.class)
   public void testCommunityStringLowTooBig() {
     communityStringToLong("1:65537");
+  }
+
+  @Test
+  public void testCreateAclWithSymmetricalLines() {
+    IpAccessList ipAccessList =
+        _nf.aclBuilder()
+            .setLines(
+                ImmutableList.of(
+                    IpAccessListLine.accepting()
+                        .setName("permit ip 1.1.1.1 0.0.0.0 2.2.2.2 0.0.0.0")
+                        .setMatchCondition(
+                            new MatchHeaderSpace(
+                                HeaderSpace.builder()
+                                    .setSrcIps(new IpWildcard("1.1.1.1").toIpSpace())
+                                    .setDstIps(new IpWildcard("2.2.2.2").toIpSpace())
+                                    .setNotSrcIps(new IpWildcard("3.3.3.3").toIpSpace())
+                                    .setIpProtocols(ImmutableSet.of(IpProtocol.IP))
+                                    .build()))
+                        .build()))
+            .build();
+
+    // notSrcIps should cause the returned IpAccessList to be null
+
+    assertThat(createAclWithSymmetricalLines(ipAccessList), nullValue());
   }
 
   @Test

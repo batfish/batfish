@@ -16,7 +16,7 @@ import org.batfish.datamodel.matchers.IpsecPhase2ProposalMatchersImpl.HasProtoco
 public final class IpsecPhase2ProposalMatchers {
 
   /**
-   * Provides a matcher that matches if the Ipsec Phase 2 Proposal's value of {@code
+   * Provides a matcher that matches if the IPSec Phase 2 Proposal's value of {@code
    * encryptionAlgorithm} matches specified {@code encryptionAlgorithm}
    */
   public static @Nonnull HasEncryptionAlgorithm hasEncryptionAlgorithm(
@@ -25,7 +25,7 @@ public final class IpsecPhase2ProposalMatchers {
   }
 
   /**
-   * Provides a matcher that matches if the Ipsec Phase 2 Proposal's value of {@code
+   * Provides a matcher that matches if the IPSec Phase 2 Proposal's value of {@code
    * authenticationAlgorithm} matches specified {@code authenticationAlgorithm}
    */
   public static @Nonnull HasAuthenticationAlgorithm hasAuthenticationAlgorithm(
@@ -34,7 +34,7 @@ public final class IpsecPhase2ProposalMatchers {
   }
 
   /**
-   * Provides a matcher that matches if the Ipsec Phase 2 Proposal's value of {@code protocols}
+   * Provides a matcher that matches if the IPSec Phase 2 Proposal's value of {@code protocols}
    * matches specified {@code protocols}
    */
   public static HasProtocols hasProtocols(Set<IpsecProtocol> protocols) {
@@ -42,7 +42,7 @@ public final class IpsecPhase2ProposalMatchers {
   }
 
   /**
-   * Provides a matcher that matches if the Ipsec Phase 2 Proposal's value of {@code
+   * Provides a matcher that matches if the IPSec Phase 2 Proposal's value of {@code
    * ipsecEncapsulationMode} matches specified {@code ipsecEncapsulationMode}
    */
   public static HasIpsecEncapsulationMode hasIpsecEncapsulationMode(

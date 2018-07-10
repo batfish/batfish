@@ -4376,8 +4376,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitSeipp_proposal_set(Seipp_proposal_setContext ctx) {
-    Set<String> proposalsInSet = initIpsecProposalSet(ctx.proposal_set_type());
-    for (String proposal : proposalsInSet) {
+    for (String proposal : initIpsecProposalSet(ctx.proposal_set_type())) {
       _currentIpsecPolicy.getProposals().add(proposal);
     }
   }
@@ -4913,8 +4912,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     return name;
   }
 
-  private Set<String> initIpsecProposalSet(Proposal_set_typeContext ctx) {
-    Set<String> proposals = new HashSet<>();
+  private List<String> initIpsecProposalSet(Proposal_set_typeContext ctx) {
+    List<String> proposals = new ArrayList<>();
     if (ctx.BASIC() != null) {
       IpsecProposal proposal1 = new IpsecProposal("NOPFS_ESP_DES_SHA");
       IpsecProposal proposal2 = new IpsecProposal("NOPFS_ESP_DES_MD5");

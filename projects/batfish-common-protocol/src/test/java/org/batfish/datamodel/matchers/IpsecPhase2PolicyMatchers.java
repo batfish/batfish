@@ -10,8 +10,8 @@ import org.hamcrest.Matcher;
 public final class IpsecPhase2PolicyMatchers {
 
   /**
-   * Provides a matcher that matches if the provided {@code subMatcher} matches the Ipsec phase 2
-   * policy's Ipsec Proposals.
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the IPSec phase 2
+   * policy's IPSec Proposals.
    */
   public static @Nonnull HasIpsecProposals hasIpsecProposals(
       @Nonnull Matcher<? super List<String>> subMatcher) {
@@ -19,7 +19,7 @@ public final class IpsecPhase2PolicyMatchers {
   }
 
   /**
-   * Provides a matcher that matches if the provided {@code subMatcher} matches the Ipsec phase 2
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the IPSec phase 2
    * policy's PfsKeyGroup
    */
   public static @Nonnull HasPfsKeyGroup hasPfsKeyGroup(

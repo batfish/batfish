@@ -1556,10 +1556,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
     ipsecStaticConfigBuilder.setPhysicalInterface(ikeGateway.getExternalInterface().getName());
 
     if (ikeGateway.getLocalAddress() != null) {
-      ipsecStaticConfigBuilder.setSourceAddress(ikeGateway.getLocalAddress());
+      ipsecStaticConfigBuilder.setLocalAddress(ikeGateway.getLocalAddress());
     } else if (ikeGateway.getExternalInterface() != null
         && ikeGateway.getExternalInterface().getPrimaryAddress() != null) {
-      ipsecStaticConfigBuilder.setSourceAddress(
+      ipsecStaticConfigBuilder.setLocalAddress(
           ikeGateway.getExternalInterface().getPrimaryAddress().getIp());
     } else {
       _w.redFlag(

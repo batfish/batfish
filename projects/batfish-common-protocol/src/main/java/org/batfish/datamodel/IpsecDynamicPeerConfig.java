@@ -9,8 +9,8 @@ import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-/** Represents a configured dynamic(remote peer not specified) IPSec peer */
-public class IpsecDynamicPeerConfig extends IpsecPeerConfig implements Serializable {
+/** Represents a configured dynamic (remote peer not specified) IPSec peer */
+public final class IpsecDynamicPeerConfig extends IpsecPeerConfig implements Serializable {
 
   private static final String PROP_IKE_PHASE1_POLICIES = "ikePhase1Policies";
 
@@ -24,11 +24,11 @@ public class IpsecDynamicPeerConfig extends IpsecPeerConfig implements Serializa
   @Nonnull private List<IpsecPeerConfig> _peerConfigs;
 
   @JsonCreator
-  public IpsecDynamicPeerConfig(
+  private IpsecDynamicPeerConfig(
       @JsonProperty(PROP_IPSEC_POLICY) @Nullable String ipsecPolicy,
       @JsonProperty(PROP_PHYSICAL_INTERFACE) @Nullable String physicalInterface,
       @JsonProperty(PROP_POLICY_ACCESS_LIST) @Nullable IpAccessList policyAccessList,
-      @JsonProperty(PROP_SOURCE_ADDRESS) @Nullable Ip sourceAddress,
+      @JsonProperty(PROP_LOCAL_ADDRESS) @Nullable Ip sourceAddress,
       @JsonProperty(PROP_TUNNEL_INTERFACE) @Nullable String tunnelInterface,
       @JsonProperty(PROP_IKE_PHASE1_POLICIES) @Nullable List<String> ikePhase1Policies,
       @JsonProperty(PROP_PEER_CONFIGS) @Nullable List<IpsecPeerConfig> peerConfigs) {
@@ -66,7 +66,7 @@ public class IpsecDynamicPeerConfig extends IpsecPeerConfig implements Serializa
           _ipsecPolicy,
           _physicalInterface,
           _policyAccessList,
-          _sourceAddress,
+          _localAddress,
           _tunnelInterface,
           _ikePhase1Polcies,
           _peerConfigs);

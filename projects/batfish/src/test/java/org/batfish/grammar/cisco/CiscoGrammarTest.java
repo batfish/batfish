@@ -90,16 +90,16 @@ import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.hasLines;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
-import static org.batfish.datamodel.matchers.IpsecDynamicPeerConfigMatchers.isIpsecDynamicPeerConfigThat;
+import static org.batfish.datamodel.matchers.IpsecPeerConfigMatchers.hasDestinationAddress;
+import static org.batfish.datamodel.matchers.IpsecPeerConfigMatchers.hasPhysicalInterface;
+import static org.batfish.datamodel.matchers.IpsecPeerConfigMatchers.hasPolicyAccessList;
+import static org.batfish.datamodel.matchers.IpsecPeerConfigMatchers.hasSourceAddress;
+import static org.batfish.datamodel.matchers.IpsecPeerConfigMatchers.hasTunnelInterface;
+import static org.batfish.datamodel.matchers.IpsecPeerConfigMatchers.isIpsecDynamicPeerConfigThat;
+import static org.batfish.datamodel.matchers.IpsecPeerConfigMatchers.isIpsecStaticPeerConfigThat;
 import static org.batfish.datamodel.matchers.IpsecPolicyMatchers.hasIpsecProposals;
 import static org.batfish.datamodel.matchers.IpsecPolicyMatchers.hasPfsKeyGroup;
 import static org.batfish.datamodel.matchers.IpsecProposalMatchers.hasProtocols;
-import static org.batfish.datamodel.matchers.IpsecStaticPeerConfigMatchers.hasDestinationAddress;
-import static org.batfish.datamodel.matchers.IpsecStaticPeerConfigMatchers.hasPhysicalInterface;
-import static org.batfish.datamodel.matchers.IpsecStaticPeerConfigMatchers.hasPolicyAccessList;
-import static org.batfish.datamodel.matchers.IpsecStaticPeerConfigMatchers.hasSourceAddress;
-import static org.batfish.datamodel.matchers.IpsecStaticPeerConfigMatchers.hasTunnelInterface;
-import static org.batfish.datamodel.matchers.IpsecStaticPeerConfigMatchers.isIpsecStaticPeerConfigThat;
 import static org.batfish.datamodel.matchers.IpsecVpnMatchers.hasBindInterface;
 import static org.batfish.datamodel.matchers.IpsecVpnMatchers.hasIkeGatewaay;
 import static org.batfish.datamodel.matchers.IpsecVpnMatchers.hasPolicy;
@@ -216,12 +216,11 @@ import org.batfish.datamodel.matchers.IkeGatewayMatchers;
 import org.batfish.datamodel.matchers.IkePhase1KeyMatchers;
 import org.batfish.datamodel.matchers.IkePhase1ProposalMatchers;
 import org.batfish.datamodel.matchers.InterfaceMatchers;
-import org.batfish.datamodel.matchers.IpsecDynamicPeerConfigMatchers;
+import org.batfish.datamodel.matchers.IpsecPeerConfigMatchers;
 import org.batfish.datamodel.matchers.IpsecPhase2PolicyMatchers;
 import org.batfish.datamodel.matchers.IpsecPhase2ProposalMatchers;
 import org.batfish.datamodel.matchers.IpsecPolicyMatchers;
 import org.batfish.datamodel.matchers.IpsecProposalMatchers;
-import org.batfish.datamodel.matchers.IpsecStaticPeerConfigMatchers;
 import org.batfish.datamodel.matchers.IpsecVpnMatchers;
 import org.batfish.datamodel.matchers.OspfAreaMatchers;
 import org.batfish.datamodel.matchers.StubSettingsMatchers;
@@ -1927,12 +1926,24 @@ public class CiscoGrammarTest {
     assertThat(
         c,
         hasIpsecPeerConfig(
+            "~IPSEC_PEER_CONFIG:mymap:20_TenGigabitEthernet0/0~",
+            isIpsecStaticPeerConfigThat(
+                allOf(
+                    hasDestinationAddress(new Ip("3.4.5.6")),
+                    IpsecPeerConfigMatchers.hasIkePhase1Policy("ISAKMP-PROFILE-MATCHED"),
+                    IpsecPeerConfigMatchers.hasIpsecPolicy("~IPSEC_PHASE2_POLICY:mymap:20~"),
+                    hasPhysicalInterface("TenGigabitEthernet0/0"),
+                    hasPolicyAccessList(hasLines(equalTo(expectedAclLines))),
+                    hasSourceAddress(new Ip("2.3.4.6"))))));
+    assertThat(
+        c,
+        hasIpsecPeerConfig(
             "~IPSEC_PEER_CONFIG:mymap:10_TenGigabitEthernet0/0~",
             isIpsecStaticPeerConfigThat(
                 allOf(
                     hasDestinationAddress(new Ip("1.2.3.4")),
-                    IpsecStaticPeerConfigMatchers.hasIkePhase1Policy("ISAKMP-PROFILE"),
-                    IpsecStaticPeerConfigMatchers.hasIpsecPolicy("~IPSEC_PHASE2_POLICY:mymap:10~"),
+                    IpsecPeerConfigMatchers.hasIkePhase1Policy("ISAKMP-PROFILE"),
+                    IpsecPeerConfigMatchers.hasIpsecPolicy("~IPSEC_PHASE2_POLICY:mymap:10~"),
                     hasPhysicalInterface("TenGigabitEthernet0/0"),
                     hasPolicyAccessList(hasLines(equalTo(expectedAclLines))),
                     hasSourceAddress(new Ip("2.3.4.6"))))));
@@ -1943,15 +1954,13 @@ public class CiscoGrammarTest {
             "~IPSEC_PEER_CONFIG:mymap:30:15_TenGigabitEthernet0/0~",
             isIpsecDynamicPeerConfigThat(
                 allOf(
-                    IpsecDynamicPeerConfigMatchers.hasIkePhase1Policies(
-                        equalTo(ImmutableList.of("ISAKMP-PROFILE"))),
-                    IpsecDynamicPeerConfigMatchers.hasIpsecPolicy(
-                        "~IPSEC_PHASE2_POLICY:mymap:30:15~"),
-                    IpsecDynamicPeerConfigMatchers.hasPhysicalInterface("TenGigabitEthernet0/0"),
-                    IpsecDynamicPeerConfigMatchers.hasPolicyAccessList(
-                        hasLines(equalTo(expectedAclLines))),
-                    IpsecDynamicPeerConfigMatchers.hasSourceAddress(new Ip("2.3.4.6")),
-                    IpsecDynamicPeerConfigMatchers.hasTunnelInterface(nullValue())))));
+                    IpsecPeerConfigMatchers.hasIkePhase1Policies(
+                        equalTo(ImmutableList.of("ISAKMP-PROFILE", "ISAKMP-PROFILE-MATCHED"))),
+                    IpsecPeerConfigMatchers.hasIpsecPolicy("~IPSEC_PHASE2_POLICY:mymap:30:15~"),
+                    hasPhysicalInterface("TenGigabitEthernet0/0"),
+                    hasPolicyAccessList(hasLines(equalTo(expectedAclLines))),
+                    hasSourceAddress(new Ip("2.3.4.6")),
+                    hasTunnelInterface(nullValue())))));
 
     assertThat(
         c,
@@ -1959,15 +1968,13 @@ public class CiscoGrammarTest {
             "~IPSEC_PEER_CONFIG:mymap:30:5_TenGigabitEthernet0/0~",
             isIpsecDynamicPeerConfigThat(
                 allOf(
-                    IpsecDynamicPeerConfigMatchers.hasIkePhase1Policies(
-                        equalTo(ImmutableList.of("ISAKMP-PROFILE"))),
-                    IpsecDynamicPeerConfigMatchers.hasIpsecPolicy(
-                        "~IPSEC_PHASE2_POLICY:mymap:30:5~"),
-                    IpsecDynamicPeerConfigMatchers.hasPhysicalInterface("TenGigabitEthernet0/0"),
-                    IpsecDynamicPeerConfigMatchers.hasPolicyAccessList(
-                        hasLines(equalTo(expectedAclLines))),
-                    IpsecDynamicPeerConfigMatchers.hasSourceAddress(new Ip("2.3.4.6")),
-                    IpsecDynamicPeerConfigMatchers.hasTunnelInterface(nullValue())))));
+                    IpsecPeerConfigMatchers.hasIkePhase1Policies(
+                        equalTo(ImmutableList.of("ISAKMP-PROFILE", "ISAKMP-PROFILE-MATCHED"))),
+                    IpsecPeerConfigMatchers.hasIpsecPolicy("~IPSEC_PHASE2_POLICY:mymap:30:5~"),
+                    hasPhysicalInterface("TenGigabitEthernet0/0"),
+                    hasPolicyAccessList(hasLines(equalTo(expectedAclLines))),
+                    hasSourceAddress(new Ip("2.3.4.6")),
+                    hasTunnelInterface(nullValue())))));
 
     assertThat(
         c,
@@ -1976,8 +1983,8 @@ public class CiscoGrammarTest {
             isIpsecStaticPeerConfigThat(
                 allOf(
                     hasDestinationAddress(new Ip("1.2.3.4")),
-                    IpsecStaticPeerConfigMatchers.hasIkePhase1Policy("ISAKMP-PROFILE"),
-                    IpsecStaticPeerConfigMatchers.hasIpsecPolicy("IPSEC-PROFILE1"),
+                    IpsecPeerConfigMatchers.hasIkePhase1Policy("ISAKMP-PROFILE"),
+                    IpsecPeerConfigMatchers.hasIpsecPolicy("IPSEC-PROFILE1"),
                     hasPhysicalInterface("TenGigabitEthernet0/0"),
                     hasSourceAddress(new Ip("2.3.4.6")),
                     hasTunnelInterface(equalTo("Tunnel1"))))));

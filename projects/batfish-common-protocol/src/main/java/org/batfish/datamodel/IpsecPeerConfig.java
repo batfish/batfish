@@ -23,7 +23,7 @@ public abstract class IpsecPeerConfig implements Serializable {
 
   static final String PROP_POLICY_ACCESS_LIST = "policyAccessList";
 
-  static final String PROP_SOURCE_ADDRESS = "sourceAddress";
+  static final String PROP_LOCAL_ADDRESS = "localAddress";
 
   static final String PROP_TUNNEL_INTERFACE = "tunnelInterface";
 
@@ -36,7 +36,7 @@ public abstract class IpsecPeerConfig implements Serializable {
 
   @Nullable private IpAccessList _policyAccessList;
 
-  @Nonnull private Ip _sourceAddress;
+  @Nonnull private Ip _localAddress;
 
   @Nullable private String _tunnelInterface;
 
@@ -45,19 +45,19 @@ public abstract class IpsecPeerConfig implements Serializable {
       @JsonProperty(PROP_IPSEC_POLICY) @Nullable String ipsecPolicy,
       @JsonProperty(PROP_PHYSICAL_INTERFACE) @Nullable String physicalInterface,
       @JsonProperty(PROP_POLICY_ACCESS_LIST) @Nullable IpAccessList policyAccessList,
-      @JsonProperty(PROP_SOURCE_ADDRESS) @Nullable Ip sourceAddress,
+      @JsonProperty(PROP_LOCAL_ADDRESS) @Nullable Ip localAddress,
       @JsonProperty(PROP_TUNNEL_INTERFACE) @Nullable String tunnelInterface) {
     _ipsecPolicy = ipsecPolicy;
     _physicalInterface = firstNonNull(physicalInterface, UNSET_LOCAL_INTERFACE);
     _policyAccessList = policyAccessList;
-    _sourceAddress = firstNonNull(sourceAddress, Ip.AUTO);
+    _localAddress = firstNonNull(localAddress, Ip.AUTO);
     _tunnelInterface = tunnelInterface;
   }
 
-  @JsonPropertyDescription("Source address for IPSec peer")
-  @JsonProperty(PROP_SOURCE_ADDRESS)
-  public Ip getSourceAddress() {
-    return _sourceAddress;
+  @JsonPropertyDescription("Local address for IPSec peer")
+  @JsonProperty(PROP_LOCAL_ADDRESS)
+  public Ip getLocalAddress() {
+    return _localAddress;
   }
 
   @JsonPropertyDescription("Physical interface for IPSec peer")
@@ -85,7 +85,7 @@ public abstract class IpsecPeerConfig implements Serializable {
   }
 
   public abstract static class Builder<S extends Builder<S, T>, T extends IpsecPeerConfig> {
-    Ip _sourceAddress;
+    Ip _localAddress;
 
     String _physicalInterface;
 
@@ -99,8 +99,8 @@ public abstract class IpsecPeerConfig implements Serializable {
 
     protected abstract S getThis();
 
-    public final S setSourceAddress(Ip sourceAddress) {
-      _sourceAddress = sourceAddress;
+    public final S setLocalAddress(Ip localAddress) {
+      _localAddress = localAddress;
       return getThis();
     }
 

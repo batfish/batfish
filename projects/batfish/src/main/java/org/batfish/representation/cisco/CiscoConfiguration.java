@@ -9,7 +9,7 @@ import static org.batfish.representation.cisco.CiscoConversions.convertCryptoMap
 import static org.batfish.representation.cisco.CiscoConversions.generateAggregateRoutePolicy;
 import static org.batfish.representation.cisco.CiscoConversions.resolveIsakmpProfileIfaceNames;
 import static org.batfish.representation.cisco.CiscoConversions.resolveKeyringIfaceNames;
-import static org.batfish.representation.cisco.CiscoConversions.resolveTunnelfaceNames;
+import static org.batfish.representation.cisco.CiscoConversions.resolveTunnelIfaceNames;
 import static org.batfish.representation.cisco.CiscoConversions.suppressSummarizedPrefixes;
 import static org.batfish.representation.cisco.CiscoConversions.toIkePhase1Key;
 import static org.batfish.representation.cisco.CiscoConversions.toIkePhase1Policy;
@@ -3083,7 +3083,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     resolveKeyringIfaceNames(_interfaces, _keyrings);
     resolveIsakmpProfileIfaceNames(_interfaces, _isakmpProfiles);
-    resolveTunnelfaceNames(_interfaces);
+    resolveTunnelIfaceNames(_interfaces);
 
     addIkePoliciesAndGateways(c);
 
@@ -3128,7 +3128,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       convertCryptoMapSet(c, cryptoMapSet, _cryptoMapSets, _w);
     }
 
-    // ipsec vpns
+    // IPSec vpns
     ImmutableSortedMap.Builder<String, IpsecPeerConfig> ipsecPeerConfigBuilder =
         ImmutableSortedMap.naturalOrder();
     ipsecPeerConfigBuilder.putAll(c.getIpsecPeerconfigs());
@@ -3374,7 +3374,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     markConcreteStructure(
         CiscoStructureType.L2TP_CLASS, CiscoStructureUsage.DEPI_TUNNEL_L2TP_CLASS);
 
-    // Crypto, Isakmp, and Ipsec
+    // Crypto, Isakmp, and IPSec
     markConcreteStructure(
         CiscoStructureType.CRYPTO_DYNAMIC_MAP_SET,
         CiscoStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_CRYPTO_DYNAMIC_MAP_SET);
@@ -3474,7 +3474,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         .build();
   }
 
-  /** Converts an Ipsec Profile to Ipsec policy */
+  /** Converts an IPSec Profile to IPSec policy */
   private IpsecPolicy toIpSecPolicy(Configuration configuration, IpsecProfile ipsecProfile) {
     String name = ipsecProfile.getName();
 
