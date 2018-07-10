@@ -24,6 +24,7 @@ import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
+import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.vendor.VendorConfiguration;
 
@@ -147,6 +148,11 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     return String.format("%s~%s", vsysName, objectName);
   }
 
+  /** Generate egress IpAccessList name given an interface or zone name */
+  private static String computeOutgoingFilterName(String interfaceOrZoneName) {
+    return String.format("%s~OUTGOING_FILTER", interfaceOrZoneName);
+  }
+
   /** Convert vsys components to vendor independent model */
   private void convertVirtualSystems() {
     NavigableSet<String> loggingServers = new TreeSet<>();
@@ -160,7 +166,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
         String zoneName = computeObjectName(vsys.getName(), zone.getName());
         _c.getZones().put(zoneName, toZone(zoneName, zone));
 
-        String aclName = String.format("%s~OUTGOING_FILTER", zoneName);
+        String aclName = computeOutgoingFilterName(zoneName);
         _c.getIpAccessLists().put(aclName, toIpAccessList(aclName, vsys.getRules(), zone));
       }
     }
@@ -170,6 +176,12 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   /** Convert firewall rules into a zone-specific outgoing IpAccessList */
   private IpAccessList toIpAccessList(String name, SortedMap<String, Rule> rules, Zone toZone) {
     List<IpAccessListLine> lines = new TreeList<>();
+    // Traffic from the device itself is always allowed
+    lines.add(
+        IpAccessListLine.builder()
+            .accepting()
+            .setMatchCondition(OriginatingFromDevice.INSTANCE)
+            .build());
     for (Rule rule : rules.values()) {
       if (!rule.getDisabled()
           && (rule.getTo().contains(toZone.getName())
@@ -201,7 +213,9 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     List<String> srcInterfaces = new TreeList<>();
     for (String zoneName : rule.getFrom()) {
       if (zoneName.equals(CATCHALL_ZONE_NAME)) {
-        srcInterfaces.clear();
+        for (Zone zone : rule.getVsys().getZones().values()) {
+          srcInterfaces.addAll(zone.getInterfaceNames());
+        }
         break;
       }
       srcInterfaces.addAll(rule.getVsys().getZones().get(zoneName).getInterfaceNames());
@@ -239,16 +253,31 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     newIface.setActive(iface.getActive());
     newIface.setDescription(iface.getComment());
 
+    String ifAclName = computeOutgoingFilterName(iface.getName());
     if (iface.getZone() != null) {
-      String ipAclName = String.format("%s~OUTGOING_FILTER", iface.getZone().getName());
       newIface.setOutgoingFilter(
           IpAccessList.builder()
               .setOwner(_c)
-              .setName(String.format("%s~OUTGOING_FILTER", iface.getName()))
+              .setName(ifAclName)
               .setLines(
                   ImmutableList.of(
                       IpAccessListLine.accepting()
-                          .setMatchCondition(new PermittedByAcl(ipAclName))
+                          .setMatchCondition(
+                              new PermittedByAcl(
+                                  computeOutgoingFilterName(iface.getZone().getName())))
+                          .build()))
+              .build());
+    } else {
+      // Only traffic from the device itself is allowed out if an interface is not in a zone
+      newIface.setOutgoingFilter(
+          IpAccessList.builder()
+              .setOwner(_c)
+              .setName(ifAclName)
+              .setLines(
+                  ImmutableList.of(
+                      IpAccessListLine.builder()
+                          .accepting()
+                          .setMatchCondition(OriginatingFromDevice.INSTANCE)
                           .build()))
               .build());
     }

@@ -286,17 +286,22 @@ public class PaloAltoGrammarTest {
     String hostname = "rulebase";
     Configuration c = parseConfig(hostname);
 
+    String ipAclName = DEFAULT_VSYS_NAME + "~z1~OUTGOING_FILTER";
     Flow z1ToZ1permitted = createFlow("1.1.2.255", "1.1.1.2");
-    Flow z1ToZ1rejected = createFlow("1.1.2.2", "1.1.1.2");
+    Flow z1ToZ1rejected = createFlow("1.1.2.2", "1.1.1.3");
+    Flow z2ToZ1permitted = createFlow("1.1.4.255", "1.1.1.2");
     Flow noZoneToZ1rejected = createFlow("1.1.3.2", "1.1.1.2");
 
-    assertThat(
-        c, hasIpAccessList("vsys1~z1~OUTGOING_FILTER", accepts(z1ToZ1permitted, "ethernet1/2", c)));
-    assertThat(
-        c, hasIpAccessList("vsys1~z1~OUTGOING_FILTER", rejects(z1ToZ1rejected, "ethernet1/2", c)));
-    assertThat(
-        c,
-        hasIpAccessList("vsys1~z1~OUTGOING_FILTER", rejects(noZoneToZ1rejected, "ethernet1/3", c)));
+    // Confirm intrazone flow matching rule is accepted
+    assertThat(c, hasIpAccessList(ipAclName, accepts(z1ToZ1permitted, "ethernet1/2", c)));
+    // Confirm intrazone flow not matching rule (bad destination address) is rejected
+    assertThat(c, hasIpAccessList(ipAclName, rejects(z1ToZ1rejected, "ethernet1/2", c)));
+    // Confirm interzone flow matching rule is accepted
+    assertThat(c, hasIpAccessList(ipAclName, accepts(z2ToZ1permitted, "ethernet1/4", c)));
+    // Confirm flow from an unzoned interface is rejected
+    assertThat(c, hasIpAccessList(ipAclName, rejects(noZoneToZ1rejected, "ethernet1/3", c)));
+    // Confirm flow originating from device is accepted
+    assertThat(c, hasIpAccessList(ipAclName, accepts(z1ToZ1rejected, null, c)));
   }
 
   @Test
@@ -304,8 +309,13 @@ public class PaloAltoGrammarTest {
     String hostname = "vsys-rulebase";
     Configuration c = parseConfig(hostname);
 
-    // Confirm both ntp servers show up
-    assertThat(c.getNtpServers(), containsInAnyOrder("1.1.1.1", "ntpservername"));
+    String ipAclName1 = "vsys1~z1~OUTGOING_FILTER";
+    Flow flow = createFlow("1.1.2.255", "1.1.1.2");
+
+    // Confirm intravsys flow is accepted
+    assertThat(c, hasIpAccessList(ipAclName1, accepts(flow, "ethernet1/2", c)));
+    // Confirm intervsys flow is rejected
+    assertThat(c, hasIpAccessList(ipAclName1, rejects(flow, "ethernet1/3", c)));
   }
 
   @Test
