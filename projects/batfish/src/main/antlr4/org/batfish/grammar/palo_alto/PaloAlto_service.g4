@@ -31,7 +31,7 @@ sserv_protocol
     (
         sservp_port
         | sservp_source_port
-    )+
+    )*
 ;
 
 sservp_port

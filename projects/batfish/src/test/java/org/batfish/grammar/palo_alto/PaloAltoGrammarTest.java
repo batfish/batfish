@@ -324,6 +324,12 @@ public class PaloAltoGrammarTest {
             hostname,
             PaloAltoStructureType.SERVICE,
             computeObjectName(DEFAULT_VSYS_NAME, "SERVICE3")));
+    assertThat(
+        ccae,
+        hasDefinedStructure(
+            hostname,
+            PaloAltoStructureType.SERVICE,
+            computeObjectName(DEFAULT_VSYS_NAME, "SERVICE4")));
   }
 
   @Test
