@@ -17,7 +17,7 @@ final class IpsecPhase2ProposalMatchersImpl {
     HasAuthenticationAlgorithm(@Nonnull Matcher<? super IpsecAuthenticationAlgorithm> subMatcher) {
       super(
           subMatcher,
-          "An Ipsec Phase2 Proposal with AuthenticationAlgorithm:",
+          "An IPSec Phase2 Proposal with AuthenticationAlgorithm:",
           "AuthenticationAlgorithm");
     }
 
@@ -31,7 +31,7 @@ final class IpsecPhase2ProposalMatchersImpl {
       extends FeatureMatcher<IpsecPhase2Proposal, EncryptionAlgorithm> {
     HasEncryptionAlgorithm(@Nonnull Matcher<? super EncryptionAlgorithm> subMatcher) {
       super(
-          subMatcher, "An Ipsec Phase2 Proposal with EncryptionAlgorithm:", "EncryptionAlgorithm");
+          subMatcher, "An IPSec Phase2 Proposal with EncryptionAlgorithm:", "EncryptionAlgorithm");
     }
 
     @Override
@@ -45,7 +45,7 @@ final class IpsecPhase2ProposalMatchersImpl {
     HasIpsecEncapsulationMode(@Nonnull Matcher<? super IpsecEncapsulationMode> subMatcher) {
       super(
           subMatcher,
-          "An Ipsec Phase2 Proposal with IpsecEncapsulationMode:",
+          "An IPSec Phase2 Proposal with IpsecEncapsulationMode:",
           "IpsecEncapsulationMode");
     }
 
@@ -58,7 +58,7 @@ final class IpsecPhase2ProposalMatchersImpl {
   static final class HasProtocols
       extends FeatureMatcher<IpsecPhase2Proposal, SortedSet<IpsecProtocol>> {
     HasProtocols(@Nonnull Matcher<? super SortedSet<IpsecProtocol>> subMatcher) {
-      super(subMatcher, "An Ipsec Phase2 Proposal with protocols:", "protocols");
+      super(subMatcher, "An IPSec Phase2 Proposal with protocols:", "protocols");
     }
 
     @Override

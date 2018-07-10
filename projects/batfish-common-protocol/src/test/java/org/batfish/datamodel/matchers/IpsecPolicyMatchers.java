@@ -16,8 +16,8 @@ import org.hamcrest.Matcher;
 public final class IpsecPolicyMatchers {
 
   /**
-   * Provides a matcher that matches if the provided {@code subMatcher} matches the Ipsec policy's
-   * Ipsec Proposals.
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the IPSec policy's
+   * IPSec Proposals.
    */
   public static @Nonnull HasIpsecProposals hasIpsecProposals(
       @Nonnull Matcher<? super List<IpsecProposal>> subMatcher) {
@@ -25,7 +25,7 @@ public final class IpsecPolicyMatchers {
   }
 
   /**
-   * Provides a matcher that matches if the provided {@code subMatcher} matches the Ipsec policy's
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the IPSec policy's
    * Ike Gateway
    */
   public static @Nonnull HasIkeGateway hasIkeGateway(
@@ -34,7 +34,7 @@ public final class IpsecPolicyMatchers {
   }
 
   /**
-   * Provides a matcher that matches if the provided {@code pfsKeyGroup} matches the Ipsec policy's
+   * Provides a matcher that matches if the provided {@code pfsKeyGroup} matches the IPSec policy's
    * PfsKeyGroup
    */
   public static @Nonnull HasPfsKeyGroup hasPfsKeyGroup(DiffieHellmanGroup pfsKeyGroup) {
@@ -42,7 +42,7 @@ public final class IpsecPolicyMatchers {
   }
 
   /**
-   * Provides a matcher that matches if the provided {@code name} matches the Ipsec policy's name
+   * Provides a matcher that matches if the provided {@code name} matches the IPSec policy's name
    */
   public static @Nonnull HasName hasName(String name) {
     return new HasName(equalTo(name));

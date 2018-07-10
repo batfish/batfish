@@ -3138,7 +3138,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       Tunnel tunnel = iface.getTunnel();
       if (tunnel != null && tunnel.getMode() == TunnelMode.IPSEC) {
         if (tunnel.getIpsecProfileName() == null) {
-          _w.redFlag(String.format("No Ipsec Profile set for Ipsec tunnel %s", name));
+          _w.redFlag(String.format("No IPSec Profile set for IPSec tunnel %s", name));
           continue;
         }
         IpsecVpn ipsecVpn = new IpsecVpn(name, c);

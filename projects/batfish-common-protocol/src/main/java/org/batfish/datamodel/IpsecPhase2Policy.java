@@ -33,7 +33,7 @@ public class IpsecPhase2Policy implements Serializable {
     return _pfsKeyGroup;
   }
 
-  @JsonPropertyDescription("Ipsec phase 1 proposals to be used with this IPSec policy")
+  @JsonPropertyDescription("IPSec phase 1 proposals to be used with this IPSec policy")
   @JsonProperty(PROP_PROPOSALS)
   public List<String> getProposals() {
     return _proposals;

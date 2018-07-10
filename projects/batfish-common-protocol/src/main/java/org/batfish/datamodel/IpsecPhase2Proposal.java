@@ -56,7 +56,7 @@ public class IpsecPhase2Proposal implements Serializable {
     return _ipsecEncapsulationMode;
   }
 
-  @JsonPropertyDescription("Ipsec protocols to be used with this IPSec Proposal")
+  @JsonPropertyDescription("IPSec protocols to be used with this IPSec Proposal")
   @JsonProperty(PROP_PROTOCOLS)
   public SortedSet<IpsecProtocol> getProtocols() {
     return _protocols;
