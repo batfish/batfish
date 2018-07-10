@@ -11,6 +11,6 @@ public class RoutePolicyNextHopDiscard extends RoutePolicyNextHop {
 
   @Override
   public NextHopExpr toNextHopExpr(CiscoConfiguration cc, Configuration c, Warnings w) {
-    return new DiscardNextHop();
+    return DiscardNextHop.INSTANCE;
   }
 }
