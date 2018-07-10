@@ -48,9 +48,9 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Snvrrt_interfaceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snvrrt_metricContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snvrrt_nexthopContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sserv_descriptionContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sserv_portContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sserv_protocolContext;
-import org.batfish.grammar.palo_alto.PaloAltoParser.Sservp_portContext;
-import org.batfish.grammar.palo_alto.PaloAltoParser.Sservp_source_portContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sserv_source_portContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ssl_syslogContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ssls_serverContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sslss_serverContext;
@@ -368,6 +368,13 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
+  public void exitSserv_port(Sserv_portContext ctx) {
+    for (TerminalNode item : ctx.variable_comma_separated_dec().DEC()) {
+      _currentService.getPorts().add(toInteger(item.getSymbol()));
+    }
+  }
+
+  @Override
   public void exitSserv_protocol(Sserv_protocolContext ctx) {
     if (ctx.SCTP() != null) {
       _currentService.setProtocol(IpProtocol.SCTP);
@@ -379,14 +386,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
-  public void exitSservp_port(Sservp_portContext ctx) {
-    for (TerminalNode item : ctx.variable_comma_separated_dec().DEC()) {
-      _currentService.getPorts().add(toInteger(item.getSymbol()));
-    }
-  }
-
-  @Override
-  public void exitSservp_source_port(Sservp_source_portContext ctx) {
+  public void exitSserv_source_port(Sserv_source_portContext ctx) {
     for (TerminalNode item : ctx.variable_comma_separated_dec().DEC()) {
       _currentService.getSourcePorts().add(toInteger(item.getSymbol()));
     }

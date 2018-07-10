@@ -11,13 +11,20 @@ s_service
     SERVICE name = variable
     (
         sserv_description
+        | sserv_port
         | sserv_protocol
+        | sserv_source_port
     )+
 ;
 
 sserv_description
 :
     DESCRIPTION description = variable
+;
+
+sserv_port
+:
+    PORT variable_comma_separated_dec
 ;
 
 sserv_protocol
@@ -28,18 +35,9 @@ sserv_protocol
         | TCP
         | UDP
     )
-    (
-        sservp_port
-        | sservp_source_port
-    )*
 ;
 
-sservp_port
-:
-    PORT variable_comma_separated_dec
-;
-
-sservp_source_port
+sserv_source_port
 :
     SOURCE_PORT variable_comma_separated_dec
 ;
