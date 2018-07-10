@@ -359,6 +359,11 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
+  public void exitS_service(S_serviceContext ctx) {
+    _currentService = null;
+  }
+
+  @Override
   public void exitSserv_description(Sserv_descriptionContext ctx) {
     _currentService.setDescription(getText(ctx.description));
   }
