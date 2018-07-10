@@ -2100,7 +2100,7 @@ public class VirtualRouter extends ComparableStructure<String> {
       int adminCost,
       long linkAreaNum) {
     return OspfProtocolHelper.isOspfInterAreaDefaultOriginationAllowed(
-            neighborProc, neighborInterface.getOspfArea())
+            _vrf.getOspfProcess(), neighborProc, neighborInterface.getOspfArea())
         && _ospfInterAreaStagingRib.mergeRoute(
             new OspfInterAreaRoute(
                 Prefix.ZERO,
