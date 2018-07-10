@@ -51,6 +51,12 @@ final class ReachabilityParametersResolver {
 
     SpecifierContext context = new SpecifierContextImpl(batfish, resolver._configs);
 
+    /*
+     * From the resolver's perspective, all fields are independent. The one exception is that the
+     * source IpSpace may depend on the source locations (this will probably change in the future).
+     * Things like final nodes do not affect destination IPs. If that is desired, the question is
+     * responsible for using an IpSpaceSpecifier that uses the final node regex.
+     */
     IpSpace destinationIpSpace =
         AclIpSpace.union(
             params
