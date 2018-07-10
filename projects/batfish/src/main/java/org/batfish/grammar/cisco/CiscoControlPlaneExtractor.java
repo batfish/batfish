@@ -1044,6 +1044,7 @@ import org.batfish.representation.cisco.RoutePolicyIfStatement;
 import org.batfish.representation.cisco.RoutePolicyInlinePrefix6Set;
 import org.batfish.representation.cisco.RoutePolicyInlinePrefixSet;
 import org.batfish.representation.cisco.RoutePolicyNextHop;
+import org.batfish.representation.cisco.RoutePolicyNextHopDiscard;
 import org.batfish.representation.cisco.RoutePolicyNextHopIP6;
 import org.batfish.representation.cisco.RoutePolicyNextHopIp;
 import org.batfish.representation.cisco.RoutePolicyNextHopPeerAddress;
@@ -9492,7 +9493,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private RoutePolicyStatement toRoutePolicyStatement(Set_next_hop_rp_stanzaContext ctx) {
     RoutePolicyNextHop hop = null;
-    if (ctx.IP_ADDRESS() != null) {
+    if (ctx.DISCARD() != null) {
+      hop = new RoutePolicyNextHopDiscard();
+    } else if (ctx.IP_ADDRESS() != null) {
       hop = new RoutePolicyNextHopIp(toIp(ctx.IP_ADDRESS()));
     } else if (ctx.IPV6_ADDRESS() != null) {
       hop = new RoutePolicyNextHopIP6(toIp6(ctx.IPV6_ADDRESS()));
