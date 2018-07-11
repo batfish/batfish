@@ -24,7 +24,6 @@ import org.batfish.datamodel.acl.TrueExpr;
  *
  * @param <T> Type of {@link AclLineMatchExpr} to collect from the visited expression.
  */
-@SuppressWarnings("unchecked")
 public class TypeMatchExprsCollector<T extends AclLineMatchExpr>
     implements GenericAclLineMatchExprVisitor<List<T>> {
 
@@ -38,7 +37,7 @@ public class TypeMatchExprsCollector<T extends AclLineMatchExpr>
   public List<T> visitAndMatchExpr(AndMatchExpr andMatchExpr) {
     List<T> matchingExprs = new ArrayList<>();
     if (_type.isAssignableFrom(AndMatchExpr.class)) {
-      matchingExprs.add((T) andMatchExpr);
+      matchingExprs.add(_type.cast(andMatchExpr));
     }
     for (AclLineMatchExpr conjunct : andMatchExpr.getConjuncts()) {
       matchingExprs.addAll(conjunct.accept(this));
@@ -49,21 +48,21 @@ public class TypeMatchExprsCollector<T extends AclLineMatchExpr>
   @Override
   public List<T> visitFalseExpr(FalseExpr falseExpr) {
     return _type.isAssignableFrom(FalseExpr.class)
-        ? ImmutableList.of((T) falseExpr)
+        ? ImmutableList.of(_type.cast(falseExpr))
         : ImmutableList.of();
   }
 
   @Override
   public List<T> visitMatchHeaderSpace(MatchHeaderSpace matchHeaderSpace) {
     return _type.isAssignableFrom(MatchHeaderSpace.class)
-        ? ImmutableList.of((T) matchHeaderSpace)
+        ? ImmutableList.of(_type.cast(matchHeaderSpace))
         : ImmutableList.of();
   }
 
   @Override
   public List<T> visitMatchSrcInterface(MatchSrcInterface matchSrcInterface) {
     return _type.isAssignableFrom(MatchSrcInterface.class)
-        ? ImmutableList.of((T) matchSrcInterface)
+        ? ImmutableList.of(_type.cast(matchSrcInterface))
         : ImmutableList.of();
   }
 
@@ -71,7 +70,7 @@ public class TypeMatchExprsCollector<T extends AclLineMatchExpr>
   public List<T> visitNotMatchExpr(NotMatchExpr notMatchExpr) {
     List<T> matchingExprs = new ArrayList<>();
     if (_type.isAssignableFrom(NotMatchExpr.class)) {
-      matchingExprs.add((T) notMatchExpr);
+      matchingExprs.add(_type.cast(notMatchExpr));
     }
     matchingExprs.addAll(notMatchExpr.getOperand().accept(this));
     return matchingExprs;
@@ -80,7 +79,7 @@ public class TypeMatchExprsCollector<T extends AclLineMatchExpr>
   @Override
   public List<T> visitOriginatingFromDevice(OriginatingFromDevice originatingFromDevice) {
     return _type.isAssignableFrom(OriginatingFromDevice.class)
-        ? ImmutableList.of((T) originatingFromDevice)
+        ? ImmutableList.of(_type.cast(originatingFromDevice))
         : ImmutableList.of();
   }
 
@@ -88,7 +87,7 @@ public class TypeMatchExprsCollector<T extends AclLineMatchExpr>
   public List<T> visitOrMatchExpr(OrMatchExpr orMatchExpr) {
     List<T> matchingExprs = new ArrayList<>();
     if (_type.isAssignableFrom(OrMatchExpr.class)) {
-      matchingExprs.add((T) orMatchExpr);
+      matchingExprs.add(_type.cast(orMatchExpr));
     }
     for (AclLineMatchExpr disjunct : orMatchExpr.getDisjuncts()) {
       matchingExprs.addAll(disjunct.accept(this));
@@ -99,14 +98,14 @@ public class TypeMatchExprsCollector<T extends AclLineMatchExpr>
   @Override
   public List<T> visitPermittedByAcl(PermittedByAcl permittedByAcl) {
     return _type.isAssignableFrom(PermittedByAcl.class)
-        ? ImmutableList.of((T) permittedByAcl)
+        ? ImmutableList.of(_type.cast(permittedByAcl))
         : ImmutableList.of();
   }
 
   @Override
   public List<T> visitTrueExpr(TrueExpr trueExpr) {
     return _type.isAssignableFrom(TrueExpr.class)
-        ? ImmutableList.of((T) trueExpr)
+        ? ImmutableList.of(_type.cast(trueExpr))
         : ImmutableList.of();
   }
 }
