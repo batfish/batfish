@@ -19,9 +19,11 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.CanonicalAcl;
+import org.batfish.datamodel.acl.CircularReferenceException;
 import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.PermittedByAcl;
+import org.batfish.datamodel.acl.UndefinedReferenceException;
 import org.batfish.datamodel.answers.AclLinesAnswerElementInterface;
 import org.batfish.datamodel.answers.AclLinesAnswerElementInterface.AclSpecs;
 
@@ -210,14 +212,19 @@ public final class AclReachabilityAnswererUtils {
 
       // Dereference all IpSpace references, or mark line unmatchable if it has invalid references
       if (!lineMarkedUnmatchable) {
-        AclLineMatchExpr sanitizedForIpSpaces = matchExpr.accept(headerSpaceSanitizer);
-        if (sanitizedForIpSpaces == null) {
-          // Header space contained an undefined reference; line is unmatchable
+        try {
+          AclLineMatchExpr sanitizedForIpSpaces = matchExpr.accept(headerSpaceSanitizer);
+          if (!matchExpr.equals(sanitizedForIpSpaces)) {
+            node.sanitizeLine(index, sanitizedForIpSpaces);
+          }
+        } catch (CircularReferenceException e) {
+          // Line contains an IpSpaceReference that is part of a circular chain of references.
           node.addUndefinedRef(index);
           lineMarkedUnmatchable = true;
-        } else if (!matchExpr.equals(sanitizedForIpSpaces)) {
-          // Match expression contained IpSpaces that were dereferenced; sanitize line
-          node.sanitizeLine(index, sanitizedForIpSpaces);
+        } catch (UndefinedReferenceException e) {
+          // Line contains an IpSpaceReference that refers to an undefined IpSpace.
+          node.addUndefinedRef(index);
+          lineMarkedUnmatchable = true;
         }
       }
 
