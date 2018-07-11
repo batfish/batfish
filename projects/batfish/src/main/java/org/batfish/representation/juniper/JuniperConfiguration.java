@@ -22,6 +22,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.apache.commons.collections4.list.TreeList;
 import org.batfish.common.BatfishException;
@@ -645,11 +646,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   private org.batfish.datamodel.IsisInterfaceSettings toIsisInterfaceSettings(
       IsisSettings settings,
-      IsisInterfaceSettings interfaceSettings,
+      @Nonnull IsisInterfaceSettings interfaceSettings,
       IsoAddress isoAddress,
       boolean level1,
       boolean level2) {
-    if (interfaceSettings == null || isoAddress == null) {
+    if (!interfaceSettings.getEnabled()) {
       return null;
     }
     org.batfish.datamodel.IsisInterfaceSettings.Builder newInterfaceSettingsBuilder =
