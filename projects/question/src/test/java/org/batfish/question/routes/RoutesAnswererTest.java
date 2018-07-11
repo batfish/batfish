@@ -19,8 +19,11 @@ import static org.batfish.question.routes.RoutesAnswerer.getRowsForBgpRoutes;
 import static org.batfish.question.routes.RoutesAnswerer.getTableMetadata;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.emptyString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.notNullValue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -38,6 +41,7 @@ import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.question.routes.RoutesQuestion.RibProtocol;
@@ -204,5 +208,14 @@ public class RoutesAnswererTest {
     assertThat(
         rows.get(0).get(COL_COMMUNITIES, Schema.list(Schema.STRING)),
         equalTo(ImmutableList.of("1:1")));
+  }
+
+  @Test
+  public void testHasDisplayHints() {
+    DisplayHints dh = getTableMetadata(RibProtocol.ALL).getDisplayHints();
+
+    assert dh != null;
+    assertThat(dh.getTextDesc(), notNullValue());
+    assertThat(dh.getTextDesc(), not(emptyString()));
   }
 }
