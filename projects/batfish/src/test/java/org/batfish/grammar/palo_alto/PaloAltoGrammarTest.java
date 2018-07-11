@@ -42,10 +42,8 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.grammar.VendorConfigurationFormatDetector;
@@ -81,16 +79,6 @@ public class PaloAltoGrammarTest {
   private Map<String, Configuration> parseTextConfigs(String... configurationNames)
       throws IOException {
     return getBatfishForConfigurationNames(configurationNames).loadConfigurations();
-  }
-
-  private static Flow createFlow(IpProtocol protocol, int sourcePort, int destinationPort) {
-    Flow.Builder fb = new Flow.Builder();
-    fb.setIngressNode("node");
-    fb.setIpProtocol(protocol);
-    fb.setDstPort(destinationPort);
-    fb.setSrcPort(sourcePort);
-    fb.setTag("test");
-    return fb.build();
   }
 
   @Test

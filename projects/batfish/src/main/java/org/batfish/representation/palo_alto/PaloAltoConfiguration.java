@@ -131,15 +131,6 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     return String.format("%s~%s", vsysName, objectName);
   }
 
-  // Visible for testing
-  /**
-   * Generate IpAccessList name for the specified serviceGroupMemberName in the specified vsysName
-   */
-  public static String computeServiceGroupMemberAclName(
-      String vsysName, String serviceGroupMemberName) {
-    return String.format("%s~SERVICE_GROUP_MEMBER~%s", vsysName, serviceGroupMemberName);
-  }
-
   /** Convert vsys components to vendor independent model */
   private void convertVirtualSystems() {
     NavigableSet<String> loggingServers = new TreeSet<>();
