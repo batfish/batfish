@@ -13,31 +13,29 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
-import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
-import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.CanonicalAcl;
 import org.batfish.datamodel.acl.FalseExpr;
-import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
-import org.batfish.datamodel.acl.NotMatchExpr;
-import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.answers.AclLinesAnswerElementInterface;
 import org.batfish.datamodel.answers.AclLinesAnswerElementInterface.AclSpecs;
-import org.batfish.datamodel.visitors.IpSpaceDereferencer;
 
 /**
  * Class to hold methods used by both {@link AclReachability2Answerer} and the original ACL
  * reachability question plugin.
  */
 public final class AclReachabilityAnswererUtils {
+
+  private static final TypeMatchExprsCollector<PermittedByAcl> permittedByAclCollector =
+      new TypeMatchExprsCollector<>(PermittedByAcl.class);
+
+  private static final TypeMatchExprsCollector<MatchSrcInterface> matchSrcInterfaceCollector =
+      new TypeMatchExprsCollector<>(MatchSrcInterface.class);
 
   private static final class AclNode {
 
@@ -63,7 +61,7 @@ public final class AclReachabilityAnswererUtils {
       _acl = acl;
     }
 
-    private void sanitizeLine(int lineNum, AclLineMatchExpr newMatchExpr) {
+    public void sanitizeLine(int lineNum, AclLineMatchExpr newMatchExpr) {
       _sanitizedLines = firstNonNull(_sanitizedLines, new ArrayList<>(_acl.getLines()));
       IpAccessListLine originalLine = _sanitizedLines.remove(lineNum);
       _sanitizedLines.add(
@@ -128,68 +126,6 @@ public final class AclReachabilityAnswererUtils {
       _interfaces.addAll(newInterfaces);
     }
 
-    // Dereferences any IpSpace references in the match expression.
-    // Returns true if all went well, false if it found an undefined reference.
-    public boolean sanitizeHeaderSpaces(
-        int lineNum, AclLineMatchExpr matchExpr, Map<String, IpSpace> namedIpSpaces) {
-      AclLineMatchExpr sanitizedMatchExpr = sanitizeHeaderSpacesHelper(matchExpr, namedIpSpaces);
-      if (sanitizedMatchExpr == null) {
-        // One of the IpSpaces was a cycle or undefined ref.
-        addUndefinedRef(lineNum);
-        return false;
-      } else if (!matchExpr.equals(sanitizedMatchExpr)) {
-        // There were IpSpaces that got dereferenced. Sanitize the line.
-        sanitizeLine(lineNum, sanitizedMatchExpr);
-      }
-      return true;
-    }
-
-    // Returns a version of the given match expression with any IpSpace references dereferenced. If
-    // there is any undefined IpSpace reference, returns null instead.
-    private static AclLineMatchExpr sanitizeHeaderSpacesHelper(
-        AclLineMatchExpr matchExpr, Map<String, IpSpace> namedIpSpaces) {
-      if (matchExpr instanceof MatchHeaderSpace) {
-        try {
-          // Try dereferencing all IpSpace fields in header space. If that results in a header space
-          // different from the original, sanitize the line.
-          HeaderSpace headerSpace = ((MatchHeaderSpace) matchExpr).getHeaderspace();
-          return new MatchHeaderSpace(
-              IpSpaceDereferencer.dereferenceHeaderSpace(headerSpace, namedIpSpaces));
-        } catch (BatfishException e) {
-          // If dereferencing causes an error, one of the IpSpaces was a cycle or undefined ref.
-          return null;
-        }
-      } else if (matchExpr instanceof AndMatchExpr) {
-        List<AclLineMatchExpr> newConjuncts = new ArrayList<>();
-        for (AclLineMatchExpr conjunct : ((AndMatchExpr) matchExpr).getConjuncts()) {
-          AclLineMatchExpr sanitizedConjunct = sanitizeHeaderSpacesHelper(conjunct, namedIpSpaces);
-          if (sanitizedConjunct == null) {
-            return null;
-          }
-          newConjuncts.add(sanitizedConjunct);
-        }
-        return new AndMatchExpr(newConjuncts);
-      } else if (matchExpr instanceof OrMatchExpr) {
-        List<AclLineMatchExpr> newDisjuncts = new ArrayList<>();
-        for (AclLineMatchExpr disjunct : ((OrMatchExpr) matchExpr).getDisjuncts()) {
-          AclLineMatchExpr sanitizedDisjunct = sanitizeHeaderSpacesHelper(disjunct, namedIpSpaces);
-          if (sanitizedDisjunct == null) {
-            return null;
-          }
-          newDisjuncts.add(sanitizedDisjunct);
-        }
-        return new OrMatchExpr(newDisjuncts);
-      } else if (matchExpr instanceof NotMatchExpr) {
-        AclLineMatchExpr sanitizedOperand =
-            sanitizeHeaderSpacesHelper(((NotMatchExpr) matchExpr).getOperand(), namedIpSpaces);
-        if (sanitizedOperand == null) {
-          return null;
-        }
-        return new NotMatchExpr(sanitizedOperand);
-      }
-      return matchExpr;
-    }
-
     public void addUndefinedRef(int lineNum) {
       _linesWithUndefinedRefs.add(lineNum);
       sanitizeLine(lineNum, FalseExpr.INSTANCE);
@@ -228,7 +164,7 @@ public final class AclReachabilityAnswererUtils {
       IpAccessList acl,
       Map<String, AclNode> aclNodeMap,
       SortedMap<String, IpAccessList> acls,
-      Map<String, IpSpace> namedIpSpaces,
+      HeaderSpaceSanitizer headerSpaceSanitizer,
       Set<String> nodeInterfaces) {
 
     // Create ACL node for current ACL
@@ -242,8 +178,7 @@ public final class AclReachabilityAnswererUtils {
       boolean lineMarkedUnmatchable = false;
 
       // Find all references to other ACLs and record them
-      List<PermittedByAcl> permittedByAclExprs =
-          findMatchExprsOfType(PermittedByAcl.class, matchExpr);
+      List<PermittedByAcl> permittedByAclExprs = matchExpr.accept(permittedByAclCollector);
       if (!permittedByAclExprs.isEmpty()) {
         Set<String> referencedAcls =
             permittedByAclExprs
@@ -260,7 +195,11 @@ public final class AclReachabilityAnswererUtils {
             if (referencedAclNode == null) {
               // Referenced ACL not yet recorded; recurse on it
               createAclNode(
-                  acls.get(referencedAclName), aclNodeMap, acls, namedIpSpaces, nodeInterfaces);
+                  acls.get(referencedAclName),
+                  aclNodeMap,
+                  acls,
+                  headerSpaceSanitizer,
+                  nodeInterfaces);
               referencedAclNode = aclNodeMap.get(referencedAclName);
             }
             // Referenced ACL has now been recorded; add dependency
@@ -270,15 +209,22 @@ public final class AclReachabilityAnswererUtils {
       }
 
       // Dereference all IpSpace references, or mark line unmatchable if it has invalid references
-      if (!lineMarkedUnmatchable && !node.sanitizeHeaderSpaces(index, matchExpr, namedIpSpaces)) {
-        // Header space contained an undefined reference; line is unmatchable
-        lineMarkedUnmatchable = true;
+      if (!lineMarkedUnmatchable) {
+        AclLineMatchExpr sanitizedForIpSpaces = matchExpr.accept(headerSpaceSanitizer);
+        if (sanitizedForIpSpaces == null) {
+          // Header space contained an undefined reference; line is unmatchable
+          node.addUndefinedRef(index);
+          lineMarkedUnmatchable = true;
+        } else if (!matchExpr.equals(sanitizedForIpSpaces)) {
+          // Match expression contained IpSpaces that were dereferenced; sanitize line
+          node.sanitizeLine(index, sanitizedForIpSpaces);
+        }
       }
 
       // Find all references to interfaces and ensure they exist
       if (!lineMarkedUnmatchable) {
         List<MatchSrcInterface> matchSrcInterfaceExprs =
-            findMatchExprsOfType(MatchSrcInterface.class, matchExpr);
+            matchExpr.accept(matchSrcInterfaceCollector);
         Set<String> referencedInterfaces =
             matchSrcInterfaceExprs
                 .stream()
@@ -294,30 +240,6 @@ public final class AclReachabilityAnswererUtils {
 
       index++;
     }
-  }
-
-  private static <T extends AclLineMatchExpr> List<T> findMatchExprsOfType(
-      Class<T> tClass, AclLineMatchExpr matchExpr) {
-    if (matchExpr.getClass().equals(tClass)) {
-      return ImmutableList.of((T) matchExpr);
-    } else if (matchExpr instanceof NotMatchExpr) {
-      return findMatchExprsOfType(tClass, ((NotMatchExpr) matchExpr).getOperand());
-    } else if (matchExpr instanceof AndMatchExpr) {
-      List<T> matchExprs = new ArrayList<>();
-      ((AndMatchExpr) matchExpr)
-          .getConjuncts()
-          .parallelStream()
-          .forEach(conjunct -> matchExprs.addAll(findMatchExprsOfType(tClass, conjunct)));
-      return matchExprs;
-    } else if (matchExpr instanceof OrMatchExpr) {
-      List<T> matchExprs = new ArrayList<>();
-      ((OrMatchExpr) matchExpr)
-          .getDisjuncts()
-          .parallelStream()
-          .forEach(disjunct -> matchExprs.addAll(findMatchExprsOfType(tClass, disjunct)));
-      return matchExprs;
-    }
-    return ImmutableList.of();
   }
 
   private static List<ImmutableList<String>> sanitizeNode(
@@ -399,7 +321,7 @@ public final class AclReachabilityAnswererUtils {
       if (specifiedNodes.contains(hostname)) {
         Configuration c = configurations.get(hostname);
         SortedMap<String, IpAccessList> acls = c.getIpAccessLists();
-        Map<String, IpSpace> namedIpSpaces = c.getIpSpaces();
+        HeaderSpaceSanitizer headerSpaceSanitizer = new HeaderSpaceSanitizer(c.getIpSpaces());
         Map<String, Interface> nodeInterfaces = c.getInterfaces();
 
         // Build graph of AclNodes containing pointers to dependencies and referencing nodes
@@ -407,7 +329,7 @@ public final class AclReachabilityAnswererUtils {
         for (IpAccessList acl : acls.values()) {
           String aclName = acl.getName();
           if (!aclNodeMap.containsKey(aclName) && aclRegex.matcher(aclName).matches()) {
-            createAclNode(acl, aclNodeMap, acls, namedIpSpaces, nodeInterfaces.keySet());
+            createAclNode(acl, aclNodeMap, acls, headerSpaceSanitizer, nodeInterfaces.keySet());
           }
         }
 
