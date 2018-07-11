@@ -1958,6 +1958,13 @@ public class FlatJuniperGrammarTest {
         hasInterface(
             physical, hasIsis(hasLevel2(IsisInterfaceLevelSettingsMatchers.hasHelloInterval(1)))));
     assertThat(c, hasInterface(physical, hasIsis(hasLevel2(hasHoldTime(3)))));
+
+    // Assert non-ISIS interface has no ISIS, but has IP address
+    assertThat(c, hasInterface("ge-1/0/0.0", hasIsis(nullValue())));
+    assertThat(
+        c,
+        hasInterface(
+            "ge-1/0/0.0", hasAllAddresses(contains(new InterfaceAddress(new Ip("10.1.1.1"), 24)))));
   }
 
   @Test
