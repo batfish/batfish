@@ -486,12 +486,26 @@ class TracerouteEngineImplContext {
       if (!edge.getNode1().equals(transmissionContext._currentNodeName)) {
         continue;
       }
-      processFlowReception(edge, transmissionContext, visitedEdges);
+      processFlowReception(
+          edge, transmissionContext, visitedEdges, finalNextHopIp != null ? finalNextHopIp : dstIp);
     }
   }
 
   void processFlowReception(
-      Edge edge, TransmissionContext oldTransmissionContext, Set<Edge> visitedEdges) {
+      Edge edge,
+      TransmissionContext oldTransmissionContext,
+      Set<Edge> visitedEdges,
+      @Nullable Ip arpIp) {
+    // do nothing if this neighbor would not have replied to ARP (excluding injection case)
+    if (arpIp != null
+        && !_forwardingAnalysis
+            .getArpReplies()
+            .get(edge.getNode2())
+            .get(edge.getInt2())
+            .containsIp(arpIp, _configurations.get(edge.getNode2()).getIpSpaces())) {
+      return;
+    }
+
     // branch because other edges share the same oldTransmissionContext
     TransmissionContext transmissionContext = oldTransmissionContext.branch();
     Set<Edge> newVisitedEdges = new LinkedHashSet<>(visitedEdges);
@@ -574,7 +588,7 @@ class TracerouteEngineImplContext {
                         flow,
                         new TreeSet<>(),
                         flow);
-                processFlowReception(edge, transmissionContext, new TreeSet<>());
+                processFlowReception(edge, transmissionContext, new TreeSet<>(), null);
               } else {
                 collectFlowTraces(
                     ingressNodeName,
@@ -618,6 +632,7 @@ class TracerouteEngineImplContext {
     }
     Ip arpIp = finalNextHopIp != null ? finalNextHopIp : dstIp;
     Configuration c = _configurations.get(transmissionContext._currentNodeName);
+    // halt processing and add neighbor-unreachable trace if no one would respond
     if (_forwardingAnalysis
         .getNeighborUnreachable()
         .get(transmissionContext._currentNodeName)
