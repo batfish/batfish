@@ -22,6 +22,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.apache.commons.collections4.list.TreeList;
 import org.batfish.common.BatfishException;
@@ -620,33 +621,41 @@ public final class JuniperConfiguration extends VendorConfiguration {
     if (level2) {
       newProc.setLevel2(toIsisLevelSettings(settings.getLevel2Settings()));
     }
-    processIsisInterfaceSettings(routingInstance, settings, level1, level2);
+    processIsisInterfaceSettings(routingInstance, settings, netAddress, level1, level2);
     newProc.setOverloadTimeout(settings.getOverloadTimeout());
     newProc.setReferenceBandwidth(settings.getReferenceBandwidth());
     return newProc.build();
   }
 
   private void processIsisInterfaceSettings(
-      RoutingInstance routingInstance, IsisSettings settings, boolean level1, boolean level2) {
+      RoutingInstance routingInstance,
+      IsisSettings settings,
+      IsoAddress procIsoAddress,
+      boolean level1,
+      boolean level2) {
     _c.getVrfs()
         .get(routingInstance.getName())
         .getInterfaces()
         .forEach(
             (ifaceName, newIface) -> {
               Interface iface = routingInstance.getInterfaces().get(ifaceName);
+              IsoAddress netAddress = iface.getIsoAddress();
+              if (netAddress == null) {
+                netAddress = procIsoAddress;
+              }
               newIface.setIsis(
                   toIsisInterfaceSettings(
-                      settings, iface.getIsisSettings(), iface.getIsoAddress(), level1, level2));
+                      settings, iface.getIsisSettings(), netAddress, level1, level2));
             });
   }
 
   private org.batfish.datamodel.IsisInterfaceSettings toIsisInterfaceSettings(
       IsisSettings settings,
-      IsisInterfaceSettings interfaceSettings,
+      @Nonnull IsisInterfaceSettings interfaceSettings,
       IsoAddress isoAddress,
       boolean level1,
       boolean level2) {
-    if (interfaceSettings == null || isoAddress == null) {
+    if (!interfaceSettings.getEnabled() || isoAddress == null) {
       return null;
     }
     org.batfish.datamodel.IsisInterfaceSettings.Builder newInterfaceSettingsBuilder =
