@@ -171,6 +171,7 @@ public class RoutesAnswerer extends Answerer {
     if (nextHopIp == null || ipOwners == null) {
       return null;
     }
+    // TODO: https://github.com/batfish/batfish/issues/1862
     return ipOwners
         .getOrDefault(nextHopIp, ImmutableSet.of())
         .stream()
