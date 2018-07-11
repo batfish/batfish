@@ -232,7 +232,9 @@ public class RoutesAnswerer extends Answerer {
                 Boolean.FALSE,
                 Boolean.TRUE));
     }
-    return new TableMetadata(columnBuilder.build(), new DisplayHints());
+    DisplayHints dh = new DisplayHints();
+    dh.setTextDesc("Display RIB routes");
+    return new TableMetadata(columnBuilder.build(), dh);
   }
 
   /** Generate table columns that should be always present, at the start of table. */
