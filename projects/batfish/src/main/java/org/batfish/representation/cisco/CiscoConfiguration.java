@@ -70,6 +70,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6AccessList;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
+import org.batfish.datamodel.IpSpaceMetadata;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpsecPeerConfig;
 import org.batfish.datamodel.IpsecPhase2Policy;
@@ -2972,8 +2973,26 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _networkObjectGroups.forEach(
         (name, networkObjectGroup) ->
             c.getIpSpaces().put(name, CiscoConversions.toIpSpace(networkObjectGroup)));
+    _networkObjectGroups
+        .keySet()
+        .forEach(
+            name ->
+                c.getIpSpaceMetadata()
+                    .put(
+                        name,
+                        new IpSpaceMetadata(
+                            name, CiscoStructureType.NETWORK_OBJECT_GROUP.getDescription())));
     _networkObjects.forEach(
         (name, networkObject) -> c.getIpSpaces().put(name, networkObject.getIpSpace()));
+    _networkObjects
+        .keySet()
+        .forEach(
+            name ->
+                c.getIpSpaceMetadata()
+                    .put(
+                        name,
+                        new IpSpaceMetadata(
+                            name, CiscoStructureType.NETWORK_OBJECT.getDescription())));
 
     // convert each ProtocolObjectGroup to IpAccessList
     _protocolObjectGroups.forEach(
@@ -3234,6 +3253,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
     }
 
     markConcreteStructure(
+        CiscoStructureType.SECURITY_ZONE_PAIR, CiscoStructureUsage.SECURITY_ZONE_PAIR_SELF_REF);
+
+    markConcreteStructure(
         CiscoStructureType.INTERFACE,
         CiscoStructureUsage.BGP_UPDATE_SOURCE_INTERFACE,
         CiscoStructureUsage.INTERFACE_SELF_REF,
@@ -3478,6 +3500,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
                     .setMatchCondition(protocolObjectGroup.toAclLineMatchExpr())
                     .build()))
         .setName(computeProtocolObjectGroupAclName(protocolObjectGroup.getName()))
+        .setSourceName(protocolObjectGroup.getName())
+        .setSourceType(CiscoStructureType.PROTOCOL_OBJECT_GROUP.getDescription())
         .build();
   }
 
@@ -3538,6 +3562,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
               .setLines(
                   ImmutableList.of(
                       IpAccessListLine.accepting().setMatchCondition(matchClassMap).build()))
+              .setSourceName(inspectClassMapName)
+              .setSourceType(CiscoStructureType.INSPECT_CLASS_MAP.getDescription())
               .build();
         });
   }
@@ -3608,6 +3634,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
               .setOwner(c)
               .setName(inspectPolicyMapAclName)
               .setLines(policyMapAclLines.build())
+              .setSourceName(inspectPolicyMapName)
+              .setSourceType(CiscoStructureType.INSPECT_POLICY_MAP.getDescription())
               .build();
         });
   }
@@ -3660,7 +3688,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
                                 matchSrcInterfaceBySrcZone.get(srcZoneName),
                                 zoneName,
                                 srcZoneName,
-                                zonePair.getInspectPolicyMap())
+                                zonePair)
                             .ifPresent(zonePolicies::add));
               }
 
@@ -3677,7 +3705,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
       MatchSrcInterface matchSrcZoneInterface,
       String dstZoneName,
       String srcZoneName,
-      String inspectPolicyMapName) {
+      SecurityZonePair zonePair) {
+    String inspectPolicyMapName = zonePair.getInspectPolicyMap();
     if (!_securityZones.containsKey(srcZoneName)) {
       return Optional.empty();
     }
@@ -3704,6 +3733,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
                             "Allow traffic received on interface in zone '%s' permitted by policy-map: '%s'",
                             srcZoneName, inspectPolicyMapName))
                     .build()))
+        .setSourceName(zonePair.getName())
+        .setSourceType(CiscoStructureType.SECURITY_ZONE_PAIR.getDescription())
         .build();
     return Optional.of(
         IpAccessListLine.accepting()

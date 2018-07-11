@@ -474,7 +474,17 @@ class CiscoConversions {
             .stream()
             .map(l -> toIpAccessListLine(l, objectGroups))
             .collect(ImmutableList.toImmutableList());
-    return new IpAccessList(eaList.getName(), lines);
+    String sourceType =
+        eaList.getParent() != null
+            ? CiscoStructureType.IPV4_ACCESS_LIST_STANDARD.getDescription()
+            : CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED.getDescription();
+    String name = eaList.getName();
+    return IpAccessList.builder()
+        .setName(name)
+        .setLines(lines)
+        .setSourceName(name)
+        .setSourceType(sourceType)
+        .build();
   }
 
   static IpSpace toIpSpace(NetworkObjectGroup networkObjectGroup) {
@@ -661,7 +671,7 @@ class CiscoConversions {
       }
     }
 
-    return new IpAccessList(ipAccessList.getName(), aclLines);
+    return IpAccessList.builder().setName(ipAccessList.getName()).setLines(aclLines).build();
   }
 
   /**
@@ -935,6 +945,8 @@ class CiscoConversions {
                     .setMatchCondition(serviceObjectGroup.toAclLineMatchExpr())
                     .build()))
         .setName(CiscoConfiguration.computeServiceObjectGroupAclName(serviceObjectGroup.getName()))
+        .setSourceName(serviceObjectGroup.getName())
+        .setSourceType(CiscoStructureType.SERVICE_OBJECT_GROUP.getDescription())
         .build();
   }
 
@@ -946,6 +958,8 @@ class CiscoConversions {
                     .setMatchCondition(serviceObject.toAclLineMatchExpr())
                     .build()))
         .setName(CiscoConfiguration.computeServiceObjectAclName(serviceObject.getName()))
+        .setSourceName(serviceObject.getName())
+        .setSourceType(CiscoStructureType.SERVICE_OBJECT.getDescription())
         .build();
   }
 

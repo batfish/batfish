@@ -1,12 +1,17 @@
 package org.batfish.datamodel.acl;
 
+import static java.util.Objects.requireNonNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.MoreObjects;
 import java.util.Objects;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.IpSpaceMetadata;
 
-public final class PermittedByNamedIpSpace implements TraceEvent {
+public final class PermittedByNamedIpSpace extends IpSpaceTraceEvent {
 
   private static final String PROP_DESCRIPTION = "description";
 
@@ -14,16 +19,63 @@ public final class PermittedByNamedIpSpace implements TraceEvent {
 
   private static final long serialVersionUID = 1L;
 
-  private final String _description;
+  private static String computeDescription(
+      @Nonnull Ip ip,
+      @Nonnull String ipDescription,
+      @Nonnull String ipSpaceDescription,
+      @Nullable IpSpaceMetadata ipSpaceMetadata,
+      @Nonnull String name) {
+    String type;
+    String displayName;
+    String description;
+    if (ipSpaceMetadata != null) {
+      type = ipSpaceMetadata.getSourceType();
+      displayName = ipSpaceMetadata.getSourceName();
+      description = "";
+    } else {
+      type = IpSpace.class.getSimpleName();
+      displayName = name;
+      description = String.format(": %s", ipSpaceDescription);
+    }
+    return String.format(
+        "%s %s permitted by '%s' named '%s'%s", ipDescription, ip, type, displayName, description);
+  }
+
+  @JsonCreator
+  private static PermittedByNamedIpSpace create(
+      @JsonProperty(PROP_DESCRIPTION) String description,
+      @JsonProperty(PROP_IP) Ip ip,
+      @JsonProperty(PROP_IP_DESCRIPTION) String ipDescription,
+      @JsonProperty(PROP_NAME) String name) {
+    return new PermittedByNamedIpSpace(
+        requireNonNull(description),
+        requireNonNull(ip),
+        requireNonNull(ipDescription),
+        requireNonNull(name));
+  }
 
   private final String _name;
 
-  @JsonCreator
   public PermittedByNamedIpSpace(
-      @JsonProperty(PROP_NAME) @Nonnull String name,
-      @JsonProperty(PROP_DESCRIPTION) @Nonnull String description) {
+      @Nonnull Ip ip,
+      @Nonnull String ipDescription,
+      @Nonnull String ipSpaceDescription,
+      @Nullable IpSpaceMetadata ipSpaceMetadata,
+      @Nonnull String name) {
+    this(
+        computeDescription(ip, ipDescription, ipSpaceDescription, ipSpaceMetadata, name),
+        ip,
+        ipDescription,
+        name);
+  }
+
+  private PermittedByNamedIpSpace(
+      @Nonnull String description,
+      @Nonnull Ip ip,
+      @Nonnull String ipDescription,
+      @Nonnull String name) {
+    super(description, ip, ipDescription);
     _name = name;
-    _description = description;
   }
 
   @Override
@@ -35,12 +87,10 @@ public final class PermittedByNamedIpSpace implements TraceEvent {
       return false;
     }
     PermittedByNamedIpSpace rhs = (PermittedByNamedIpSpace) obj;
-    return _description.equals(rhs._description) && _name.equals(rhs._name);
-  }
-
-  @JsonProperty(PROP_DESCRIPTION)
-  public @Nonnull String getDescription() {
-    return _description;
+    return getDescription().equals(rhs.getDescription())
+        && getIp().equals(rhs.getIp())
+        && getIpDescription().equals(rhs.getIpDescription())
+        && _name.equals(rhs._name);
   }
 
   @JsonProperty(PROP_NAME)
@@ -50,14 +100,6 @@ public final class PermittedByNamedIpSpace implements TraceEvent {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_description, _name);
-  }
-
-  @Override
-  public String toString() {
-    return MoreObjects.toStringHelper(getClass())
-        .add(PROP_NAME, _name)
-        .add(PROP_DESCRIPTION, _description)
-        .toString();
+    return Objects.hash(getDescription(), getIp(), getIpDescription(), _name);
   }
 }
