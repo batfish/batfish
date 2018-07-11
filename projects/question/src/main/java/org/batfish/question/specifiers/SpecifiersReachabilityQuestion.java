@@ -186,7 +186,8 @@ public final class SpecifiersReachabilityQuestion extends Question {
         NoNodesNodeSpecifier.INSTANCE);
   }
 
-  private HeaderSpace getHeaderSpace() {
+  @VisibleForTesting
+  HeaderSpace getHeaderSpace() {
     return HeaderSpace.builder()
         .setDstPorts(firstNonNull(_dstPorts, ImmutableList.of()))
         .setDstProtocols(firstNonNull(_dstProtocols, ImmutableList.of()))
