@@ -14,6 +14,7 @@ import static org.batfish.question.routes.RoutesAnswerer.COL_ORIGIN_PROTOCOL;
 import static org.batfish.question.routes.RoutesAnswerer.COL_PROTOCOL;
 import static org.batfish.question.routes.RoutesAnswerer.COL_TAG;
 import static org.batfish.question.routes.RoutesAnswerer.COL_VRF_NAME;
+import static org.batfish.question.routes.RoutesAnswerer.computeNextHopNode;
 import static org.batfish.question.routes.RoutesAnswerer.getMainRibRoutes;
 import static org.batfish.question.routes.RoutesAnswerer.getRowsForBgpRoutes;
 import static org.batfish.question.routes.RoutesAnswerer.getTableMetadata;
@@ -21,8 +22,10 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.nullValue;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
@@ -51,7 +54,7 @@ public class RoutesAnswererTest {
         ImmutableSortedMap.of(
             "n1", ImmutableSortedMap.of(Configuration.DEFAULT_VRF_NAME, new MockRib<>()));
 
-    Multiset<Row> actual = getMainRibRoutes(ribs, ImmutableSet.of("n1"), ".*");
+    Multiset<Row> actual = getMainRibRoutes(ribs, ImmutableSet.of("n1"), ".*", null);
 
     assertThat(actual, hasSize(0));
   }
@@ -70,7 +73,7 @@ public class RoutesAnswererTest {
                             .setNextHopInterface("Null")
                             .build()))));
 
-    Multiset<Row> actual = getMainRibRoutes(ribs, ImmutableSet.of("differentNode"), ".*");
+    Multiset<Row> actual = getMainRibRoutes(ribs, ImmutableSet.of("differentNode"), ".*", null);
 
     assertThat(actual, hasSize(0));
   }
@@ -96,7 +99,7 @@ public class RoutesAnswererTest {
                             .setNextHopInterface("Null")
                             .build()))));
 
-    Multiset<Row> actual = getMainRibRoutes(ribs, ImmutableSet.of("n1"), "^not.*");
+    Multiset<Row> actual = getMainRibRoutes(ribs, ImmutableSet.of("n1"), "^not.*", null);
 
     assertThat(actual, hasSize(1));
     assertThat(
@@ -118,7 +121,7 @@ public class RoutesAnswererTest {
                             .setAdministrativeCost(10)
                             .build()))));
 
-    Multiset<Row> actual = getMainRibRoutes(ribs, ImmutableSet.of("n1"), ".*");
+    Multiset<Row> actual = getMainRibRoutes(ribs, ImmutableSet.of("n1"), ".*", null);
 
     assertThat(actual.iterator().next().get(COL_ADMIN_DISTANCE, Schema.INTEGER), equalTo(10));
   }
@@ -204,5 +207,20 @@ public class RoutesAnswererTest {
     assertThat(
         rows.get(0).get(COL_COMMUNITIES, Schema.list(Schema.STRING)),
         equalTo(ImmutableList.of("1:1")));
+  }
+
+  @Test
+  public void testComputeNextHopNode() {
+    assertThat(computeNextHopNode(null, ImmutableMap.of()), nullValue());
+    assertThat(computeNextHopNode(new Ip("1.1.1.1"), null), nullValue());
+    assertThat(computeNextHopNode(new Ip("1.1.1.1"), ImmutableMap.of()), nullValue());
+    assertThat(
+        computeNextHopNode(
+            new Ip("1.1.1.1"), ImmutableMap.of(new Ip("1.1.1.1"), ImmutableSet.of("n1"))),
+        equalTo("n1"));
+    assertThat(
+        computeNextHopNode(
+            new Ip("1.1.1.1"), ImmutableMap.of(new Ip("1.1.1.2"), ImmutableSet.of("n1"))),
+        nullValue());
   }
 }
