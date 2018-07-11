@@ -7,7 +7,6 @@ import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasNextHopIp;
 import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
-import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessList;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructure;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructureWithDefinitionLines;
@@ -19,14 +18,11 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDescription;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
-import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
-import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasInterfaces;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.DEFAULT_VSYS_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.SHARED_VSYS_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.computeObjectName;
-import static org.batfish.representation.palo_alto.PaloAltoConfiguration.computeServiceGroupMemberAclName;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -311,48 +307,6 @@ public class PaloAltoGrammarTest {
     assertThat(c, hasVrf(vrName, hasStaticRoutes(hasItem(hasAdministrativeCost(equalTo(10))))));
     assertThat(c, hasVrf(vrName, hasStaticRoutes(hasItem(hasMetric(equalTo(10L))))));
     assertThat(c, hasVrf(vrName, hasStaticRoutes(hasItem(hasPrefix(Prefix.parse("0.0.0.0/0"))))));
-  }
-
-  @Test
-  public void testService() throws IOException {
-    String hostname = "service";
-    Configuration c = parseConfig(hostname);
-
-    String service1AclName = computeServiceGroupMemberAclName(DEFAULT_VSYS_NAME, "SERVICE1");
-    String service2AclName = computeServiceGroupMemberAclName(DEFAULT_VSYS_NAME, "SERVICE2");
-    String service3AclName = computeServiceGroupMemberAclName(DEFAULT_VSYS_NAME, "SERVICE3");
-    String service4AclName = computeServiceGroupMemberAclName(DEFAULT_VSYS_NAME, "SERVICE4");
-    String serviceGroup1AclName = computeServiceGroupMemberAclName(DEFAULT_VSYS_NAME, "SG1");
-    String serviceGroup2AclName = computeServiceGroupMemberAclName(DEFAULT_VSYS_NAME, "SG2");
-
-    Flow service1Flow = createFlow(IpProtocol.TCP, 999, 1);
-    Flow service2Flow = createFlow(IpProtocol.UDP, 4, 999);
-    Flow service3Flow1 = createFlow(IpProtocol.UDP, 10, 5);
-    Flow service3Flow2 = createFlow(IpProtocol.UDP, 9, 6);
-    Flow service4Flow = createFlow(IpProtocol.SCTP, 1, 1);
-
-    // Confirm services accept flows matching their definitions and reject others
-    assertThat(c, hasIpAccessList(service1AclName, accepts(service1Flow, null, c)));
-    assertThat(c, hasIpAccessList(service1AclName, rejects(service2Flow, null, c)));
-
-    assertThat(c, hasIpAccessList(service2AclName, accepts(service2Flow, null, c)));
-    assertThat(c, hasIpAccessList(service2AclName, rejects(service3Flow1, null, c)));
-
-    assertThat(c, hasIpAccessList(service3AclName, accepts(service3Flow1, null, c)));
-    assertThat(c, hasIpAccessList(service3AclName, accepts(service3Flow2, null, c)));
-    assertThat(c, hasIpAccessList(service3AclName, rejects(service2Flow, null, c)));
-
-    assertThat(c, hasIpAccessList(service4AclName, accepts(service4Flow, null, c)));
-    assertThat(c, hasIpAccessList(service4AclName, rejects(service1Flow, null, c)));
-
-    // Confirm serviceGroups accept flows matching their member definitions and reject others
-    assertThat(c, hasIpAccessList(serviceGroup1AclName, accepts(service1Flow, null, c)));
-    assertThat(c, hasIpAccessList(serviceGroup1AclName, accepts(service2Flow, null, c)));
-    assertThat(c, hasIpAccessList(serviceGroup1AclName, rejects(service3Flow1, null, c)));
-
-    assertThat(c, hasIpAccessList(serviceGroup2AclName, accepts(service1Flow, null, c)));
-    assertThat(c, hasIpAccessList(serviceGroup2AclName, accepts(service2Flow, null, c)));
-    assertThat(c, hasIpAccessList(serviceGroup2AclName, rejects(service3Flow1, null, c)));
   }
 
   @Test

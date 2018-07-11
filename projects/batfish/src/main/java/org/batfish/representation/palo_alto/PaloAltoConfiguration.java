@@ -1,6 +1,5 @@
 package org.batfish.representation.palo_alto;
 
-import java.util.List;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.NavigableSet;
@@ -8,13 +7,10 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import org.apache.commons.collections4.list.TreeList;
 import org.batfish.common.VendorConversionException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.InterfaceType;
-import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Vrf;
 import org.batfish.vendor.VendorConfiguration;
@@ -150,39 +146,13 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
     for (Vsys vsys : _virtualSystems.values()) {
       loggingServers.addAll(vsys.getSyslogServerAddresses());
-      String vsysName = vsys.getName();
-
-      // Zones
       for (Entry<String, Zone> zoneEntry : vsys.getZones().entrySet()) {
         Zone zone = zoneEntry.getValue();
         String zoneName = computeObjectName(vsys.getName(), zone.getName());
         _c.getZones().put(zoneName, toZone(zoneName, zone));
       }
-
-      // Services
-      for (Service service : vsys.getServices().values()) {
-        String serviceGroupAclName = computeServiceGroupMemberAclName(vsysName, service.getName());
-        _c.getIpAccessLists()
-            .put(serviceGroupAclName, toIpAccessList(serviceGroupAclName, vsys, service));
-      }
-
-      // Service groups
-      for (ServiceGroup serviceGroup : vsys.getServiceGroups().values()) {
-        String serviceGroupAclName =
-            computeServiceGroupMemberAclName(vsysName, serviceGroup.getName());
-        _c.getIpAccessLists()
-            .put(serviceGroupAclName, toIpAccessList(serviceGroupAclName, vsys, serviceGroup));
-      }
     }
     _c.setLoggingServers(loggingServers);
-  }
-
-  /** Convert a serviceGroupMember in the specified vsys to a vendor independent IpAccessList */
-  private IpAccessList toIpAccessList(
-      String name, Vsys vsys, ServiceGroupMember serviceGroupMember) {
-    List<IpAccessListLine> lines = new TreeList<>();
-    serviceGroupMember.addTo(lines, LineAction.ACCEPT, this, vsys);
-    return new IpAccessList(name, lines);
   }
 
   /** Convert Palo Alto specific interface into vendor independent model interface */
