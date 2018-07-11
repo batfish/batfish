@@ -32,12 +32,12 @@ public final class Vsys implements Serializable {
     return _name;
   }
 
-  /** Returns a map of service name to services for the services in this vsys. */
+  /** Returns a map of service name to service for the services in this vsys. */
   public SortedMap<String, Service> getServices() {
     return _services;
   }
 
-  /** Returns a map of service group name to serviceGroups for the service groups in this vsys. */
+  /** Returns a map of service group name to serviceGroup for the service groups in this vsys. */
   public SortedMap<String, ServiceGroup> getServiceGroups() {
     return _serviceGroups;
   }

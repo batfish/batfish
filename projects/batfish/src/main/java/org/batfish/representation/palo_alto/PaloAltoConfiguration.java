@@ -144,17 +144,6 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     return String.format("%s~SERVICE_GROUP_MEMBER~%s", vsysName, serviceGroupMemberName);
   }
 
-  /** Extract object name from an object name with an embedded namespace */
-  private static String extractObjectName(String objectName) {
-    String[] parts = objectName.split("~", -1);
-    return parts[parts.length - 1];
-  }
-
-  /** Extract vsys name from an object name with an embedded namespace */
-  private static String extractVsysName(String objectName) {
-    return objectName.split("~", -1)[0];
-  }
-
   /** Convert vsys components to vendor independent model */
   private void convertVirtualSystems() {
     NavigableSet<String> loggingServers = new TreeSet<>();

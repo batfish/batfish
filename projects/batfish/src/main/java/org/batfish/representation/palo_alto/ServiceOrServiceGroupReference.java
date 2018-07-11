@@ -8,7 +8,8 @@ import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.acl.PermittedByAcl;
 
-public class ServiceOrServiceGroupReference implements ServiceGroupMember, Comparable {
+public class ServiceOrServiceGroupReference
+    implements ServiceGroupMember, Comparable<ServiceOrServiceGroupReference> {
   private static final long serialVersionUID = 1L;
 
   private final String _name;
@@ -32,21 +33,10 @@ public class ServiceOrServiceGroupReference implements ServiceGroupMember, Compa
                   new PermittedByAcl(computeServiceGroupMemberAclName(vsys.getName(), _name)))
               .build());
     }
-
-    /*
-    // Unroll members
-    ServiceGroupMember member = vsys.getServices().get(_name);
-    if (member == null) {
-      member = vsys.getServiceGroups().get(_name);
-    }
-    if (member != null) {
-      member.applyTo(vsys, action, lines);
-    }
-    */
   }
 
   @Override
-  public int compareTo(@Nonnull Object o) {
-    return _name.compareTo(((ServiceOrServiceGroupReference) o)._name);
+  public int compareTo(@Nonnull ServiceOrServiceGroupReference o) {
+    return _name.compareTo(o._name);
   }
 }
