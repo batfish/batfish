@@ -12,6 +12,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import java.io.File;
 import java.io.IOException;
@@ -30,6 +31,9 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import org.batfish.common.BatfishException;
+import org.batfish.common.topology.Layer1Edge;
+import org.batfish.common.topology.Layer1Node;
+import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -127,6 +131,21 @@ public class BatfishTest {
     assertThat(
         configurations.get("host1").getInterfaces().get("Ethernet0").getIncomingFilterName(),
         is(notNullValue()));
+  }
+
+  @Test
+  public void testLoadLayer1Topology() throws IOException {
+    TestrigText.Builder testrigTextBuilder =
+        TestrigText.builder().setLayer1TopologyText("org/batfish/common/topology/testrigs/layer1");
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(testrigTextBuilder.build(), _folder);
+    Layer1Topology layer1Topology = batfish.getLayer1Topology();
+
+    Layer1Node node1 = new Layer1Node("c1", "i1");
+    Layer1Node node2 = new Layer1Node("c2", "i2");
+    assertThat(
+        layer1Topology.getGraph().edges(),
+        equalTo(ImmutableSet.of(new Layer1Edge(node1, node2), new Layer1Edge(node2, node1))));
   }
 
   @Test

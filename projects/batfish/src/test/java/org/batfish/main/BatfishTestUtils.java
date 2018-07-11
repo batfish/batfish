@@ -2,6 +2,7 @@ package org.batfish.main;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.collect.ImmutableMap;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -164,6 +165,7 @@ public class BatfishTestUtils {
     Map<String, String> configurationText = testrigText.getConfigurationText();
     Map<String, String> hostsText = testrigText.getHostsText();
     Map<String, String> iptablesFilesText = testrigText.getIptablesFilesText();
+    String layer1TopologyText = testrigText.getLayer1TopologyText();
     Map<String, String> routingTablesText = testrigText.getRoutingTablesText();
 
     Settings settings = new Settings(new String[] {});
@@ -189,6 +191,9 @@ public class BatfishTestUtils {
     writeTemporaryTestrigFiles(bgpTablesText, envSettings.getEnvironmentBgpTablesPath());
     writeTemporaryTestrigFiles(hostsText, testrigPath.resolve(BfConsts.RELPATH_HOST_CONFIGS_DIR));
     writeTemporaryTestrigFiles(iptablesFilesText, testrigPath.resolve("iptables"));
+    writeTemporaryTestrigFiles(
+        ImmutableMap.of(BfConsts.RELPATH_TESTRIG_L1_TOPOLOGY_PATH, layer1TopologyText),
+        testrigPath);
     writeTemporaryTestrigFiles(routingTablesText, envSettings.getEnvironmentRoutingTablesPath());
     Batfish batfish =
         new Batfish(

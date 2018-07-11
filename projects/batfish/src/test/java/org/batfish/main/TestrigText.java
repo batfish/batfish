@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.function.Function;
+import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BfConsts;
 import org.batfish.common.util.CommonUtil;
@@ -26,6 +27,8 @@ public class TestrigText {
 
     private Map<String, String> _iptablesFilesText;
 
+    private String _layer1TopologyText;
+
     private Map<String, String> _routingTablesText;
 
     public TestrigText build() {
@@ -35,18 +38,20 @@ public class TestrigText {
       testrigText.setConfigurationText(_configurationText);
       testrigText.setHostsText(_hostsText);
       testrigText.setIptablesFilesText(_iptablesFilesText);
+      testrigText.setLayer1TopologyText(_layer1TopologyText);
       testrigText.setRoutingTablesText(_routingTablesText);
       return testrigText;
     }
 
     private static Map<String, String> readTestrigResources(
-        String testrigResourcePrefix, String subfolder, Iterable<String> filenames) {
+        String testrigResourcePrefix, @Nullable String subfolder, Iterable<String> filenames) {
       if (filenames != null) {
         List<String> filenameList = ImmutableList.copyOf(filenames);
         SortedSet<String> filenameSet = ImmutableSortedSet.copyOf(filenames);
         if (filenameList.size() != filenameSet.size()) {
           throw new BatfishException("Duplicate filenames provided in: " + filenameList);
         }
+        String subfolderText = subfolder != null ? String.format("/%s", subfolder) : "";
         return filenameList
             .stream()
             .collect(
@@ -55,7 +60,7 @@ public class TestrigText {
                     filename ->
                         CommonUtil.readResource(
                             String.format(
-                                "%s/%s/%s", testrigResourcePrefix, subfolder, filename))));
+                                "%s%s/%s", testrigResourcePrefix, subfolderText, filename))));
       } else {
         return Collections.emptyMap();
       }
@@ -117,6 +122,18 @@ public class TestrigText {
       return this;
     }
 
+    public Builder setLayer1TopologyText(String testrigResourcePrefix) {
+      _layer1TopologyText =
+          readTestrigResources(
+                  testrigResourcePrefix,
+                  null,
+                  ImmutableList.of(BfConsts.RELPATH_TESTRIG_L1_TOPOLOGY_PATH))
+              .values()
+              .iterator()
+              .next();
+      return this;
+    }
+
     public Builder setRoutingTablesText(String testrigResourcePrefix, Iterable<String> filenames) {
       _routingTablesText =
           readTestrigResources(
@@ -146,6 +163,8 @@ public class TestrigText {
 
   private Map<String, String> _routingTablesText;
 
+  private String _layer1TopologyText;
+
   public Map<String, String> getAwsText() {
     return _awsText;
   }
@@ -164,6 +183,10 @@ public class TestrigText {
 
   public Map<String, String> getIptablesFilesText() {
     return _iptablesFilesText;
+  }
+
+  public String getLayer1TopologyText() {
+    return _layer1TopologyText;
   }
 
   public Map<String, String> getRoutingTablesText() {
@@ -188,6 +211,10 @@ public class TestrigText {
 
   public void setIptablesFilesText(Map<String, String> iptablesFilesText) {
     _iptablesFilesText = iptablesFilesText;
+  }
+
+  public void setLayer1TopologyText(String layer1TopologyText) {
+    _layer1TopologyText = layer1TopologyText;
   }
 
   public void setRoutingTablesText(Map<String, String> routingTablesText) {
