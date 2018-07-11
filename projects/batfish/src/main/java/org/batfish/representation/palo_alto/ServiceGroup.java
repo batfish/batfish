@@ -27,9 +27,10 @@ public final class ServiceGroup implements ServiceGroupMember {
   }
 
   @Override
-  public void applyTo(Vsys vsys, LineAction action, List<IpAccessListLine> lines) {
+  public void addTo(
+      List<IpAccessListLine> lines, LineAction action, PaloAltoConfiguration pc, Vsys vsys) {
     for (ServiceGroupMember member : _members) {
-      member.applyTo(vsys, action, lines);
+      member.addTo(lines, action, pc, vsys);
     }
   }
 }

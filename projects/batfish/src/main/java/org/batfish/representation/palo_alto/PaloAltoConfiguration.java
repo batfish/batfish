@@ -181,7 +181,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   private IpAccessList toIpAccessList(
       String name, Vsys vsys, ServiceGroupMember serviceGroupMember) {
     List<IpAccessListLine> lines = new TreeList<>();
-    serviceGroupMember.applyTo(vsys, LineAction.ACCEPT, lines);
+    serviceGroupMember.addTo(lines, LineAction.ACCEPT, this, vsys);
     return new IpAccessList(name, lines);
   }
 

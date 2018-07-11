@@ -60,7 +60,8 @@ public final class Service implements ServiceGroupMember {
   }
 
   @Override
-  public void applyTo(Vsys vsys, LineAction action, List<IpAccessListLine> lines) {
+  public void addTo(
+      List<IpAccessListLine> lines, LineAction action, PaloAltoConfiguration pc, Vsys vsys) {
     HeaderSpace.Builder headerSpaceBuilder = HeaderSpace.builder();
     headerSpaceBuilder.setSrcPorts(
         _sourcePorts.stream().map(SubRange::new).collect(Collectors.toSet()));

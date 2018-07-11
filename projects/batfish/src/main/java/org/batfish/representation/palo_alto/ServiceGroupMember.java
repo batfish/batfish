@@ -10,5 +10,5 @@ public interface ServiceGroupMember extends Serializable {
    * Add the ServiceGroupMember match conditions with the specified action as a new IpAccessListLine
    * to the provided list of IpAccessListLines
    */
-  void applyTo(Vsys vsys, LineAction action, List<IpAccessListLine> lines);
+  void addTo(List<IpAccessListLine> lines, LineAction action, PaloAltoConfiguration pc, Vsys vsys);
 }
