@@ -13,10 +13,12 @@ import org.batfish.specifier.AllInterfaceLinksLocationSpecifierFactory;
 import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.batfish.specifier.ConstantIpSpaceSpecifier;
 import org.batfish.specifier.ConstantUniverseIpSpaceSpecifierFactory;
+import org.batfish.specifier.ConstantWildcardSetIpSpaceSpecifierFactory;
 import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
 import org.batfish.specifier.NameRegexNodeSpecifier;
 import org.batfish.specifier.NameRegexNodeSpecifierFactory;
 import org.batfish.specifier.NoNodesNodeSpecifier;
+import org.batfish.specifier.NodeNameRegexConnectedHostsIpSpaceSpecifier;
 import org.batfish.specifier.NodeNameRegexInterfaceLinkLocationSpecifier;
 import org.junit.Rule;
 import org.junit.Test;
@@ -28,6 +30,39 @@ import org.junit.rules.ExpectedException;
  */
 public class SpecifiersReachabilityQuestionTest {
   @Rule public final ExpectedException exception = ExpectedException.none();
+
+  @Test
+  public void getDestinationIpSpace_bothNull() {
+    SpecifiersReachabilityQuestion question = new SpecifiersReachabilityQuestion();
+    exception.expect(IllegalArgumentException.class);
+    exception.expectMessage(
+        "NodeNameRegexConnectedHostsIpSpaceSpecifierFactory requires input of type String");
+    question.getDestinationIpSpaceSpecifier();
+  }
+
+  @Test
+  public void getDestinationIpSpace_factoryNull() {
+    SpecifiersReachabilityQuestion question = new SpecifiersReachabilityQuestion();
+    question.setDestinationIpSpaceSpecifierInput("foo");
+    assertThat(
+        question.getDestinationIpSpaceSpecifier(),
+        equalTo(new NodeNameRegexConnectedHostsIpSpaceSpecifier(Pattern.compile("foo"))));
+  }
+
+  @Test
+  public void getDestinationIpSpace() {
+    SpecifiersReachabilityQuestion question = new SpecifiersReachabilityQuestion();
+    question.setDestinationIpSpaceSpecifierFactory(ConstantWildcardSetIpSpaceSpecifierFactory.NAME);
+    question.setDestinationIpSpaceSpecifierInput("1.2.3.0/24 - 1.2.3.4");
+    assertThat(
+        question.getDestinationIpSpaceSpecifier(),
+        equalTo(
+            new ConstantIpSpaceSpecifier(
+                IpWildcardSetIpSpace.builder()
+                    .including(new IpWildcard("1.2.3.0/24"))
+                    .excluding(new IpWildcard("1.2.3.4"))
+                    .build())));
+  }
 
   @Test
   public void getFinalNodes_bothNull() {
