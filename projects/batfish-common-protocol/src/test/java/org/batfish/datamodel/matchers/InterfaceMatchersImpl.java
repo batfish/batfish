@@ -162,6 +162,17 @@ final class InterfaceMatchersImpl {
     }
   }
 
+  static final class HasOspfPointToPoint extends FeatureMatcher<Interface, Boolean> {
+    HasOspfPointToPoint(@Nonnull Matcher<? super Boolean> subMatcher) {
+      super(subMatcher, "an Interface with ospfPointToPoint:", "ospfPointToPoint");
+    }
+
+    @Override
+    protected Boolean featureValueOf(Interface actual) {
+      return actual.getOspfPointToPoint();
+    }
+  }
+
   static final class HasOutgoingFilter extends FeatureMatcher<Interface, IpAccessList> {
     HasOutgoingFilter(@Nonnull Matcher<? super IpAccessList> subMatcher) {
       super(subMatcher, "an Interface with outgoingFilter:", "outgoingFilter");

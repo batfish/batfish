@@ -90,7 +90,6 @@ import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
-import org.batfish.datamodel.IpsecProposal;
 import org.batfish.datamodel.IpsecProtocol;
 import org.batfish.datamodel.IsisAuthenticationAlgorithm;
 import org.batfish.datamodel.IsisHelloAuthenticationType;
@@ -252,6 +251,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_reference_bandwidthCo
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oa_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oa_nssaContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oa_stubContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oai_interface_typeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oai_passiveContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oan_default_lsaContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oan_no_summariesContext;
@@ -493,6 +493,7 @@ import org.batfish.representation.juniper.IkeProposal;
 import org.batfish.representation.juniper.Interface;
 import org.batfish.representation.juniper.IpBgpGroup;
 import org.batfish.representation.juniper.IpsecPolicy;
+import org.batfish.representation.juniper.IpsecProposal;
 import org.batfish.representation.juniper.IpsecVpn;
 import org.batfish.representation.juniper.IsisInterfaceLevelSettings;
 import org.batfish.representation.juniper.IsisLevelSettings;
@@ -3659,6 +3660,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   @Override
+  public void exitOai_interface_type(Oai_interface_typeContext ctx) {
+    if (ctx.P2P() != null) {
+      _currentOspfInterface.setOspfPointToPoint(true);
+    }
+  }
+
+  @Override
   public void exitOai_metric(FlatJuniperParser.Oai_metricContext ctx) {
     int ospfCost = toInt(ctx.DEC());
     _currentOspfInterface.setOspfCost(ospfCost);
@@ -4376,8 +4384,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitSeipp_proposal_set(Seipp_proposal_setContext ctx) {
-    Set<String> proposalsInSet = initIpsecProposalSet(ctx.proposal_set_type());
-    for (String proposal : proposalsInSet) {
+    for (String proposal : initIpsecProposalSet(ctx.proposal_set_type())) {
       _currentIpsecPolicy.getProposals().add(proposal);
     }
   }
@@ -4913,19 +4920,68 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     return name;
   }
 
-  private Set<String> initIpsecProposalSet(Proposal_set_typeContext ctx) {
-    Set<String> proposals = new HashSet<>();
+  private List<String> initIpsecProposalSet(Proposal_set_typeContext ctx) {
+    List<String> proposals = new ArrayList<>();
     if (ctx.BASIC() != null) {
-      proposals.add(initIpsecProposal(IpsecProposal.NOPFS_ESP_DES_SHA));
-      proposals.add(initIpsecProposal(IpsecProposal.NOPFS_ESP_DES_MD5));
+      IpsecProposal proposal1 = new IpsecProposal("NOPFS_ESP_DES_SHA");
+      IpsecProposal proposal2 = new IpsecProposal("NOPFS_ESP_DES_MD5");
+      proposals.add(
+          initIpsecProposal(
+              proposal1
+                  .setProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP))
+                  .setEncryptionAlgorithm(EncryptionAlgorithm.DES_CBC)
+                  .setAuthenticationAlgorithm(IpsecAuthenticationAlgorithm.HMAC_SHA1_96)));
+      proposals.add(
+          initIpsecProposal(
+              proposal2
+                  .setProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP))
+                  .setEncryptionAlgorithm(EncryptionAlgorithm.DES_CBC)
+                  .setAuthenticationAlgorithm(IpsecAuthenticationAlgorithm.HMAC_MD5_96)));
     } else if (ctx.COMPATIBLE() != null) {
-      proposals.add(initIpsecProposal(IpsecProposal.NOPFS_ESP_3DES_SHA));
-      proposals.add(initIpsecProposal(IpsecProposal.NOPFS_ESP_3DES_MD5));
-      proposals.add(initIpsecProposal(IpsecProposal.NOPFS_ESP_DES_SHA));
-      proposals.add(initIpsecProposal(IpsecProposal.NOPFS_ESP_DES_MD5));
+      IpsecProposal proposal1 = new IpsecProposal("NOPFS_ESP_3DES_SHA");
+      IpsecProposal proposal2 = new IpsecProposal("NOPFS_ESP_3DES_MD5");
+      IpsecProposal proposal3 = new IpsecProposal("NOPFS_ESP_DES_SHA");
+      IpsecProposal proposal4 = new IpsecProposal("NOPFS_ESP_DES_MD5");
+      proposals.add(
+          initIpsecProposal(
+              proposal1
+                  .setProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP))
+                  .setEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC)
+                  .setAuthenticationAlgorithm(IpsecAuthenticationAlgorithm.HMAC_SHA1_96)));
+      proposals.add(
+          initIpsecProposal(
+              proposal2
+                  .setProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP))
+                  .setEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC)
+                  .setAuthenticationAlgorithm(IpsecAuthenticationAlgorithm.HMAC_MD5_96)));
+      proposals.add(
+          initIpsecProposal(
+              proposal3
+                  .setProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP))
+                  .setEncryptionAlgorithm(EncryptionAlgorithm.DES_CBC)
+                  .setAuthenticationAlgorithm(IpsecAuthenticationAlgorithm.HMAC_SHA1_96)));
+      proposals.add(
+          initIpsecProposal(
+              proposal4
+                  .setProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP))
+                  .setEncryptionAlgorithm(EncryptionAlgorithm.DES_CBC)
+                  .setAuthenticationAlgorithm(IpsecAuthenticationAlgorithm.HMAC_MD5_96)));
     } else if (ctx.STANDARD() != null) {
-      proposals.add(initIpsecProposal(IpsecProposal.G2_ESP_3DES_SHA));
-      proposals.add(initIpsecProposal(IpsecProposal.G2_ESP_AES128_SHA));
+      IpsecProposal proposal1 = new IpsecProposal("G2_ESP_3DES_SHA");
+      IpsecProposal proposal2 = new IpsecProposal("G2_ESP_AES128_SHA");
+      proposals.add(
+          initIpsecProposal(
+              proposal1
+                  .setProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP))
+                  .setEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC)
+                  .setAuthenticationAlgorithm(IpsecAuthenticationAlgorithm.HMAC_SHA1_96)));
+      proposals.add(
+          initIpsecProposal(
+              proposal2
+                  .setProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP))
+                  .setEncryptionAlgorithm(EncryptionAlgorithm.AES_128_CBC)
+                  .setAuthenticationAlgorithm(IpsecAuthenticationAlgorithm.HMAC_SHA1_96)));
+      _currentIpsecPolicy.setPfsKeyGroup(DiffieHellmanGroup.GROUP2);
     }
     return proposals;
   }

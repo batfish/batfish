@@ -278,14 +278,6 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     // Handle converting items within virtual systems
     convertVirtualSystems();
 
-    List<IpAccessListLine> lines = new TreeList<>();
-    _virtualSystems
-        .get(DEFAULT_VSYS_NAME)
-        .getServiceGroups()
-        .get("SG1")
-        .applyTo(_virtualSystems.get(DEFAULT_VSYS_NAME), LineAction.ACCEPT, lines);
-    String debug = "test";
-
     // Count and mark structure usages and identify undefined references
     markConcreteStructure(
         PaloAltoStructureType.INTERFACE,

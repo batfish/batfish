@@ -25,7 +25,7 @@ final class IpsecPolicyMatchersImpl {
 
   static final class HasPfsKeyGroup extends FeatureMatcher<IpsecPolicy, DiffieHellmanGroup> {
     HasPfsKeyGroup(@Nonnull Matcher<? super DiffieHellmanGroup> subMatcher) {
-      super(subMatcher, "An Ipsec policy with PfsKeyGroup:", "PfsKeyGroup");
+      super(subMatcher, "An IPSec policy with PfsKeyGroup:", "PfsKeyGroup");
     }
 
     @Override
@@ -36,7 +36,7 @@ final class IpsecPolicyMatchersImpl {
 
   static final class HasIkeGateway extends FeatureMatcher<IpsecPolicy, IkeGateway> {
     HasIkeGateway(@Nonnull Matcher<? super IkeGateway> subMatcher) {
-      super(subMatcher, "An Ipsec policy with IkeGateway:", "IkeGateway");
+      super(subMatcher, "An IPSec policy with IkeGateway:", "IkeGateway");
     }
 
     @Override
@@ -47,7 +47,7 @@ final class IpsecPolicyMatchersImpl {
 
   static final class HasName extends FeatureMatcher<IpsecPolicy, String> {
     HasName(@Nonnull Matcher<? super String> subMatcher) {
-      super(subMatcher, "An Ipsec policy with Name:", "Name");
+      super(subMatcher, "An IPSec policy with Name:", "Name");
     }
 
     @Override

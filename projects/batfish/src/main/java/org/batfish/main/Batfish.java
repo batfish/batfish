@@ -1857,7 +1857,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return _settings.getImmutableConfiguration();
   }
 
-  private NetworkSnapshot getNetworkSnapshot() {
+  NetworkSnapshot getNetworkSnapshot() {
     return new NetworkSnapshot(
         _settings.getContainer(),
         new Snapshot(

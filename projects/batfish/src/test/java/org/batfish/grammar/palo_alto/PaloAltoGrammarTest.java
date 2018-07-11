@@ -394,11 +394,11 @@ public class PaloAltoGrammarTest {
   }
 
   @Test
-  public void testVsysService() throws IOException {
+  public void testVsysServiceReference() throws IOException {
     String hostname = "vsys-service";
-    String vsys1Name = "vsys1";
-    String vsys2Name = "vsys2";
-    String serviceName = "SERVICE1";
+    String vsys1ServiceName = computeObjectName("vsys1", "SERVICE1");
+    String vsys2ServiceName = computeObjectName("vsys2", "SERVICE1");
+    String sharedServiceName = computeObjectName(SHARED_VSYS_NAME, "SERVICE1");
 
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
@@ -406,19 +406,11 @@ public class PaloAltoGrammarTest {
 
     // Confirm structure definitions are tracked separately for each vsys
     assertThat(
-        ccae,
-        hasDefinedStructure(
-            hostname, PaloAltoStructureType.SERVICE, computeObjectName(vsys1Name, serviceName)));
+        ccae, hasDefinedStructure(hostname, PaloAltoStructureType.SERVICE, vsys1ServiceName));
     assertThat(
-        ccae,
-        hasDefinedStructure(
-            hostname, PaloAltoStructureType.SERVICE, computeObjectName(vsys2Name, serviceName)));
+        ccae, hasDefinedStructure(hostname, PaloAltoStructureType.SERVICE, vsys2ServiceName));
     assertThat(
-        ccae,
-        hasDefinedStructure(
-            hostname,
-            PaloAltoStructureType.SERVICE,
-            computeObjectName(SHARED_VSYS_NAME, serviceName)));
+        ccae, hasDefinedStructure(hostname, PaloAltoStructureType.SERVICE, sharedServiceName));
   }
 
   @Test
