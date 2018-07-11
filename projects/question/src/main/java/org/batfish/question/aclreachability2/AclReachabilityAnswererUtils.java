@@ -21,10 +21,13 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.CanonicalAcl;
 import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
+import org.batfish.datamodel.acl.NotMatchExpr;
+import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.answers.AclLinesAnswerElementInterface;
 import org.batfish.datamodel.answers.AclLinesAnswerElementInterface.AclSpecs;
@@ -125,20 +128,66 @@ public final class AclReachabilityAnswererUtils {
       _interfaces.addAll(newInterfaces);
     }
 
-    public void sanitizeHeaderSpace(
-        int lineNum, HeaderSpace headerSpace, Map<String, IpSpace> namedIpSpaces) {
-      try {
-        // Try dereferencing all IpSpace fields in header space. If that results in a header space
-        // different from the original, sanitize the line.
-        HeaderSpace dereferenced =
-            IpSpaceDereferencer.dereferenceHeaderSpace(headerSpace, namedIpSpaces);
-        if (!dereferenced.equals(headerSpace)) {
-          sanitizeLine(lineNum, new MatchHeaderSpace(dereferenced));
-        }
-      } catch (BatfishException e) {
-        // If dereferencing causes an error, one of the IpSpaces was a cycle or undefined ref.
+    // Dereferences any IpSpace references in the match expression.
+    // Returns true if all went well, false if it found an undefined reference.
+    public boolean sanitizeHeaderSpaces(
+        int lineNum, AclLineMatchExpr matchExpr, Map<String, IpSpace> namedIpSpaces) {
+      AclLineMatchExpr sanitizedMatchExpr = sanitizeHeaderSpacesHelper(matchExpr, namedIpSpaces);
+      if (sanitizedMatchExpr == null) {
+        // One of the IpSpaces was a cycle or undefined ref.
         addUndefinedRef(lineNum);
+        return false;
+      } else if (!matchExpr.equals(sanitizedMatchExpr)) {
+        // There were IpSpaces that got dereferenced. Sanitize the line.
+        sanitizeLine(lineNum, sanitizedMatchExpr);
       }
+      return true;
+    }
+
+    // Returns a version of the given match expression with any IpSpace references dereferenced. If
+    // there is any undefined IpSpace reference, returns null instead.
+    private static AclLineMatchExpr sanitizeHeaderSpacesHelper(
+        AclLineMatchExpr matchExpr, Map<String, IpSpace> namedIpSpaces) {
+      if (matchExpr instanceof MatchHeaderSpace) {
+        try {
+          // Try dereferencing all IpSpace fields in header space. If that results in a header space
+          // different from the original, sanitize the line.
+          HeaderSpace headerSpace = ((MatchHeaderSpace) matchExpr).getHeaderspace();
+          return new MatchHeaderSpace(
+              IpSpaceDereferencer.dereferenceHeaderSpace(headerSpace, namedIpSpaces));
+        } catch (BatfishException e) {
+          // If dereferencing causes an error, one of the IpSpaces was a cycle or undefined ref.
+          return null;
+        }
+      } else if (matchExpr instanceof AndMatchExpr) {
+        List<AclLineMatchExpr> newConjuncts = new ArrayList<>();
+        for (AclLineMatchExpr conjunct : ((AndMatchExpr) matchExpr).getConjuncts()) {
+          AclLineMatchExpr sanitizedConjunct = sanitizeHeaderSpacesHelper(conjunct, namedIpSpaces);
+          if (sanitizedConjunct == null) {
+            return null;
+          }
+          newConjuncts.add(sanitizedConjunct);
+        }
+        return new AndMatchExpr(newConjuncts);
+      } else if (matchExpr instanceof OrMatchExpr) {
+        List<AclLineMatchExpr> newDisjuncts = new ArrayList<>();
+        for (AclLineMatchExpr disjunct : ((OrMatchExpr) matchExpr).getDisjuncts()) {
+          AclLineMatchExpr sanitizedDisjunct = sanitizeHeaderSpacesHelper(disjunct, namedIpSpaces);
+          if (sanitizedDisjunct == null) {
+            return null;
+          }
+          newDisjuncts.add(sanitizedDisjunct);
+        }
+        return new OrMatchExpr(newDisjuncts);
+      } else if (matchExpr instanceof NotMatchExpr) {
+        AclLineMatchExpr sanitizedOperand =
+            sanitizeHeaderSpacesHelper(((NotMatchExpr) matchExpr).getOperand(), namedIpSpaces);
+        if (sanitizedOperand == null) {
+          return null;
+        }
+        return new NotMatchExpr(sanitizedOperand);
+      }
+      return matchExpr;
     }
 
     public void addUndefinedRef(int lineNum) {
@@ -189,39 +238,86 @@ public final class AclReachabilityAnswererUtils {
     // Go through lines and add dependencies
     int index = 0;
     for (IpAccessListLine line : acl.getLines()) {
-      AclLineMatchExpr matchCondition = line.getMatchCondition();
-      if (matchCondition instanceof PermittedByAcl) {
-        String referencedAclName = ((PermittedByAcl) matchCondition).getAclName();
-        IpAccessList referencedAcl = acls.get(referencedAclName);
-        if (referencedAcl == null) {
-          // Referenced ACL doesn't exist. Mark line as unmatchable.
+      AclLineMatchExpr matchExpr = line.getMatchCondition();
+      boolean lineMarkedUnmatchable = false;
+
+      // Find all references to other ACLs and record them
+      List<PermittedByAcl> permittedByAclExprs =
+          findMatchExprsOfType(PermittedByAcl.class, matchExpr);
+      if (!permittedByAclExprs.isEmpty()) {
+        Set<String> referencedAcls =
+            permittedByAclExprs
+                .stream()
+                .map(PermittedByAcl::getAclName)
+                .collect(Collectors.toSet());
+        if (!acls.keySet().containsAll(referencedAcls)) {
+          // Not all referenced ACLs exist. Mark line as unmatchable.
           node.addUndefinedRef(index);
+          lineMarkedUnmatchable = true;
         } else {
-          AclNode referencedAclNode = aclNodeMap.get(referencedAclName);
-          if (referencedAclNode == null) {
-            // Referenced ACL not yet recorded; recurse on it
-            createAclNode(referencedAcl, aclNodeMap, acls, namedIpSpaces, nodeInterfaces);
-            referencedAclNode = aclNodeMap.get(referencedAclName);
+          for (String referencedAclName : referencedAcls) {
+            AclNode referencedAclNode = aclNodeMap.get(referencedAclName);
+            if (referencedAclNode == null) {
+              // Referenced ACL not yet recorded; recurse on it
+              createAclNode(
+                  acls.get(referencedAclName), aclNodeMap, acls, namedIpSpaces, nodeInterfaces);
+              referencedAclNode = aclNodeMap.get(referencedAclName);
+            }
+            // Referenced ACL has now been recorded; add dependency
+            node.addDependency(referencedAclNode, index);
           }
-          // Referenced ACL has now been recorded; add dependency
-          node.addDependency(referencedAclNode, index);
         }
-      } else if (matchCondition instanceof MatchHeaderSpace) {
-        // Sanitize IP space references, or mark the line unmatchable if it has invalid references
-        HeaderSpace headerSpace = ((MatchHeaderSpace) matchCondition).getHeaderspace();
-        node.sanitizeHeaderSpace(index, headerSpace, namedIpSpaces);
-      } else if (matchCondition instanceof MatchSrcInterface) {
-        Set<String> referencedInterfaces = ((MatchSrcInterface) matchCondition).getSrcInterfaces();
+      }
+
+      // Dereference all IpSpace references, or mark line unmatchable if it has invalid references
+      if (!lineMarkedUnmatchable && !node.sanitizeHeaderSpaces(index, matchExpr, namedIpSpaces)) {
+        // Header space contained an undefined reference; line is unmatchable
+        lineMarkedUnmatchable = true;
+      }
+
+      // Find all references to interfaces and ensure they exist
+      if (!lineMarkedUnmatchable) {
+        List<MatchSrcInterface> matchSrcInterfaceExprs =
+            findMatchExprsOfType(MatchSrcInterface.class, matchExpr);
+        Set<String> referencedInterfaces =
+            matchSrcInterfaceExprs
+                .stream()
+                .flatMap(expr -> expr.getSrcInterfaces().stream())
+                .collect(Collectors.toSet());
         if (!nodeInterfaces.containsAll(referencedInterfaces)) {
           // Line references an undefined source interface. Report undefined ref.
           node.addUndefinedRef(index);
         } else {
-          // Line interfaces are valid. Record.
           node.addInterfaces(referencedInterfaces);
         }
       }
+
       index++;
     }
+  }
+
+  private static <T extends AclLineMatchExpr> List<T> findMatchExprsOfType(
+      Class<T> tClass, AclLineMatchExpr matchExpr) {
+    if (matchExpr.getClass().equals(tClass)) {
+      return ImmutableList.of((T) matchExpr);
+    } else if (matchExpr instanceof NotMatchExpr) {
+      return findMatchExprsOfType(tClass, ((NotMatchExpr) matchExpr).getOperand());
+    } else if (matchExpr instanceof AndMatchExpr) {
+      List<T> matchExprs = new ArrayList<>();
+      ((AndMatchExpr) matchExpr)
+          .getConjuncts()
+          .parallelStream()
+          .forEach(conjunct -> matchExprs.addAll(findMatchExprsOfType(tClass, conjunct)));
+      return matchExprs;
+    } else if (matchExpr instanceof OrMatchExpr) {
+      List<T> matchExprs = new ArrayList<>();
+      ((OrMatchExpr) matchExpr)
+          .getDisjuncts()
+          .parallelStream()
+          .forEach(disjunct -> matchExprs.addAll(findMatchExprsOfType(tClass, disjunct)));
+      return matchExprs;
+    }
+    return ImmutableList.of();
   }
 
   private static List<ImmutableList<String>> sanitizeNode(
