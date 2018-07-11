@@ -66,6 +66,7 @@ import org.batfish.representation.palo_alto.PaloAltoConfiguration;
 import org.batfish.representation.palo_alto.PaloAltoStructureType;
 import org.batfish.representation.palo_alto.Service;
 import org.batfish.representation.palo_alto.ServiceGroup;
+import org.batfish.representation.palo_alto.ServiceOrServiceGroupReference;
 import org.batfish.representation.palo_alto.StaticRoute;
 import org.batfish.representation.palo_alto.SyslogServer;
 import org.batfish.representation.palo_alto.VirtualRouter;
@@ -419,8 +420,11 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void exitSservgrp_members(Sservgrp_membersContext ctx) {
     for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
-      // Use constructed service-group name so same-named defs across vsys are unique
-      String uniqueName = computeObjectName(_currentVsys.getName(), getText(var));
+      String name = getText(var);
+      _currentServiceGroup.getMembers().add(new ServiceOrServiceGroupReference(name));
+
+      // Use constructed object name so same-named refs across vsys are unique
+      String uniqueName = computeObjectName(_currentVsys.getName(), name);
       _configuration.referenceStructure(
           SERVICE_OR_SERVICE_GROUP, uniqueName, SERVICE_GROUP_MEMBER, getLine(var.getStart()));
     }

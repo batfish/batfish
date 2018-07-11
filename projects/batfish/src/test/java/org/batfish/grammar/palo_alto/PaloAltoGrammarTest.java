@@ -7,6 +7,7 @@ import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasNextHopIp;
 import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessList;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructure;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructureWithDefinitionLines;
@@ -18,11 +19,14 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDescription;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
+import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
+import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasInterfaces;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.DEFAULT_VSYS_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.SHARED_VSYS_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.computeObjectName;
+import static org.batfish.representation.palo_alto.PaloAltoConfiguration.computeServiceGroupMemberAclName;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -42,8 +46,10 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.grammar.VendorConfigurationFormatDetector;
@@ -79,6 +85,16 @@ public class PaloAltoGrammarTest {
   private Map<String, Configuration> parseTextConfigs(String... configurationNames)
       throws IOException {
     return getBatfishForConfigurationNames(configurationNames).loadConfigurations();
+  }
+
+  private static Flow createFlow(IpProtocol protocol, int sourcePort, int destinationPort) {
+    Flow.Builder fb = new Flow.Builder();
+    fb.setIngressNode("node");
+    fb.setIpProtocol(protocol);
+    fb.setDstPort(destinationPort);
+    fb.setSrcPort(sourcePort);
+    fb.setTag("test");
+    return fb.build();
   }
 
   @Test
@@ -300,6 +316,48 @@ public class PaloAltoGrammarTest {
   @Test
   public void testService() throws IOException {
     String hostname = "service";
+    Configuration c = parseConfig(hostname);
+
+    String service1AclName = computeServiceGroupMemberAclName(DEFAULT_VSYS_NAME, "SERVICE1");
+    String service2AclName = computeServiceGroupMemberAclName(DEFAULT_VSYS_NAME, "SERVICE2");
+    String service3AclName = computeServiceGroupMemberAclName(DEFAULT_VSYS_NAME, "SERVICE3");
+    String service4AclName = computeServiceGroupMemberAclName(DEFAULT_VSYS_NAME, "SERVICE4");
+    String serviceGroup1AclName = computeServiceGroupMemberAclName(DEFAULT_VSYS_NAME, "SG1");
+    String serviceGroup2AclName = computeServiceGroupMemberAclName(DEFAULT_VSYS_NAME, "SG2");
+
+    Flow service1Flow = createFlow(IpProtocol.TCP, 999, 1);
+    Flow service2Flow = createFlow(IpProtocol.UDP, 4, 999);
+    Flow service3Flow1 = createFlow(IpProtocol.UDP, 10, 5);
+    Flow service3Flow2 = createFlow(IpProtocol.UDP, 9, 6);
+    Flow service4Flow = createFlow(IpProtocol.SCTP, 1, 1);
+
+    // Confirm services accept flows matching their definitions and reject others
+    assertThat(c, hasIpAccessList(service1AclName, accepts(service1Flow, null, c)));
+    assertThat(c, hasIpAccessList(service1AclName, rejects(service2Flow, null, c)));
+
+    assertThat(c, hasIpAccessList(service2AclName, accepts(service2Flow, null, c)));
+    assertThat(c, hasIpAccessList(service2AclName, rejects(service3Flow1, null, c)));
+
+    assertThat(c, hasIpAccessList(service3AclName, accepts(service3Flow1, null, c)));
+    assertThat(c, hasIpAccessList(service3AclName, accepts(service3Flow2, null, c)));
+    assertThat(c, hasIpAccessList(service3AclName, rejects(service2Flow, null, c)));
+
+    assertThat(c, hasIpAccessList(service4AclName, accepts(service4Flow, null, c)));
+    assertThat(c, hasIpAccessList(service4AclName, rejects(service1Flow, null, c)));
+
+    // Confirm serviceGroups accept flows matching their member definitions and reject others
+    assertThat(c, hasIpAccessList(serviceGroup1AclName, accepts(service1Flow, null, c)));
+    assertThat(c, hasIpAccessList(serviceGroup1AclName, accepts(service2Flow, null, c)));
+    assertThat(c, hasIpAccessList(serviceGroup1AclName, rejects(service3Flow1, null, c)));
+
+    assertThat(c, hasIpAccessList(serviceGroup2AclName, accepts(service1Flow, null, c)));
+    assertThat(c, hasIpAccessList(serviceGroup2AclName, accepts(service2Flow, null, c)));
+    assertThat(c, hasIpAccessList(serviceGroup2AclName, rejects(service3Flow1, null, c)));
+  }
+
+  @Test
+  public void testServiceReference() throws IOException {
+    String hostname = "service";
 
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
@@ -309,7 +367,6 @@ public class PaloAltoGrammarTest {
     String service2Name = computeObjectName(DEFAULT_VSYS_NAME, "SERVICE2");
     String service3Name = computeObjectName(DEFAULT_VSYS_NAME, "SERVICE3");
     String service4Name = computeObjectName(DEFAULT_VSYS_NAME, "SERVICE4");
-    String serviceUndefinedName = computeObjectName(DEFAULT_VSYS_NAME, "SERVICE_UNDEFINED");
     String serviceGroup1Name = computeObjectName(DEFAULT_VSYS_NAME, "SG1");
     String serviceGroup2Name = computeObjectName(DEFAULT_VSYS_NAME, "SG2");
 
@@ -324,22 +381,6 @@ public class PaloAltoGrammarTest {
     assertThat(
         ccae,
         hasDefinedStructure(hostname, PaloAltoStructureType.SERVICE_GROUP, serviceGroup2Name));
-
-    // Confirm structure references are tracked properly
-    assertThat(ccae, hasNumReferrers(hostname, PaloAltoStructureType.SERVICE, service1Name, 1));
-    assertThat(ccae, hasNumReferrers(hostname, PaloAltoStructureType.SERVICE, service2Name, 1));
-    assertThat(ccae, hasNumReferrers(hostname, PaloAltoStructureType.SERVICE, service3Name, 0));
-    assertThat(ccae, hasNumReferrers(hostname, PaloAltoStructureType.SERVICE, service4Name, 0));
-    assertThat(
-        ccae, hasNumReferrers(hostname, PaloAltoStructureType.SERVICE_GROUP, serviceGroup1Name, 1));
-    assertThat(
-        ccae, hasNumReferrers(hostname, PaloAltoStructureType.SERVICE_GROUP, serviceGroup2Name, 0));
-
-    // Confirm undefined reference shows up as such
-    assertThat(
-        ccae,
-        hasUndefinedReference(
-            hostname, PaloAltoStructureType.SERVICE_OR_SERVICE_GROUP, serviceUndefinedName));
   }
 
   @Test

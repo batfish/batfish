@@ -1,15 +1,6 @@
 package org.batfish.representation.palo_alto;
 
-import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
-
-import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Multiset;
-import com.google.common.collect.SortedMultiset;
-import com.google.common.collect.TreeMultiset;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.NavigableSet;
@@ -17,15 +8,15 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import javax.annotation.Nullable;
+import org.apache.commons.collections4.list.TreeList;
 import org.batfish.common.VendorConversionException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.datamodel.DefinedStructureInfo;
 import org.batfish.datamodel.InterfaceType;
+import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Vrf;
-import org.batfish.vendor.StructureUsage;
 import org.batfish.vendor.VendorConfiguration;
 
 public final class PaloAltoConfiguration extends VendorConfiguration {
@@ -144,6 +135,15 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     return String.format("%s~%s", vsysName, objectName);
   }
 
+  // Visible for testing
+  /**
+   * Generate IpAccessList name for the specified serviceGroupMemberName in the specified vsysName
+   */
+  public static String computeServiceGroupMemberAclName(
+      String vsysName, String serviceGroupMemberName) {
+    return String.format("%s~SERVICE_GROUP_MEMBER~%s", vsysName, serviceGroupMemberName);
+  }
+
   /** Extract object name from an object name with an embedded namespace */
   private static String extractObjectName(String objectName) {
     String[] parts = objectName.split("~", -1);
@@ -161,13 +161,39 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
     for (Vsys vsys : _virtualSystems.values()) {
       loggingServers.addAll(vsys.getSyslogServerAddresses());
+      String vsysName = vsys.getName();
+
+      // Zones
       for (Entry<String, Zone> zoneEntry : vsys.getZones().entrySet()) {
         Zone zone = zoneEntry.getValue();
         String zoneName = computeObjectName(vsys.getName(), zone.getName());
         _c.getZones().put(zoneName, toZone(zoneName, zone));
       }
+
+      // Services
+      for (Service service : vsys.getServices().values()) {
+        String serviceGroupAclName = computeServiceGroupMemberAclName(vsysName, service.getName());
+        _c.getIpAccessLists()
+            .put(serviceGroupAclName, toIpAccessList(serviceGroupAclName, vsys, service));
+      }
+
+      // Service groups
+      for (ServiceGroup serviceGroup : vsys.getServiceGroups().values()) {
+        String serviceGroupAclName =
+            computeServiceGroupMemberAclName(vsysName, serviceGroup.getName());
+        _c.getIpAccessLists()
+            .put(serviceGroupAclName, toIpAccessList(serviceGroupAclName, vsys, serviceGroup));
+      }
     }
     _c.setLoggingServers(loggingServers);
+  }
+
+  /** Convert a serviceGroupMember in the specified vsys to a vendor independent IpAccessList */
+  private IpAccessList toIpAccessList(
+      String name, Vsys vsys, ServiceGroupMember serviceGroupMember) {
+    List<IpAccessListLine> lines = new TreeList<>();
+    serviceGroupMember.applyTo(vsys, LineAction.ACCEPT, lines);
+    return new IpAccessList(name, lines);
   }
 
   /** Convert Palo Alto specific interface into vendor independent model interface */
@@ -252,72 +278,19 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     // Handle converting items within virtual systems
     convertVirtualSystems();
 
+    List<IpAccessListLine> lines = new TreeList<>();
+    _virtualSystems
+        .get(DEFAULT_VSYS_NAME)
+        .getServiceGroups()
+        .get("SG1")
+        .applyTo(_virtualSystems.get(DEFAULT_VSYS_NAME), LineAction.ACCEPT, lines);
+    String debug = "test";
+
     // Count and mark structure usages and identify undefined references
     markConcreteStructure(
         PaloAltoStructureType.INTERFACE,
         PaloAltoStructureUsage.VIRTUAL_ROUTER_INTERFACE,
         PaloAltoStructureUsage.ZONE_INTERFACE);
-
-    markAbstractStructureFromVariableNamespace(
-        PaloAltoStructureType.SERVICE_OR_SERVICE_GROUP,
-        ImmutableList.of(PaloAltoStructureType.SERVICE, PaloAltoStructureType.SERVICE_GROUP),
-        PaloAltoStructureUsage.SERVICE_GROUP_MEMBER);
     return _c;
-  }
-
-  /**
-   * Helper method to find the definition of a structure that could be any of the specified types
-   */
-  private @Nullable DefinedStructureInfo findDefinedStructure(
-      String name, Collection<PaloAltoStructureType> structureTypesToCheck) {
-    DefinedStructureInfo info = null;
-    // Check this namespace first
-    for (PaloAltoStructureType typeToCheck : structureTypesToCheck) {
-      Map<String, DefinedStructureInfo> matchingType =
-          _structureDefinitions.get(typeToCheck.getDescription());
-      if (!matchingType.isEmpty()) {
-        info = matchingType.get(name);
-        if (info != null) {
-          break;
-        }
-      }
-    }
-    return info;
-  }
-
-  /** Mark abstract structure type from either the reference's namespace or shared namespace */
-  private void markAbstractStructureFromVariableNamespace(
-      PaloAltoStructureType type,
-      Collection<PaloAltoStructureType> structureTypesToCheck,
-      PaloAltoStructureUsage... usages) {
-    Map<String, SortedMap<StructureUsage, SortedMultiset<Integer>>> references =
-        firstNonNull(_structureReferences.get(type), Collections.emptyMap());
-    for (PaloAltoStructureUsage usage : usages) {
-      references.forEach(
-          (name, byUsage) -> {
-            Multiset<Integer> lines =
-                MoreObjects.firstNonNull(byUsage.get(usage), TreeMultiset.create());
-            // Check this namespace first
-            DefinedStructureInfo info = findDefinedStructure(name, structureTypesToCheck);
-
-            // Check shared namespace if there was no match
-            if (info == null) {
-              String sharedName = computeObjectName(SHARED_VSYS_NAME, extractObjectName(name));
-              info = findDefinedStructure(sharedName, structureTypesToCheck);
-            }
-
-            // Now update reference
-            if (info != null) {
-              info.setNumReferrers(
-                  info.getNumReferrers() == DefinedStructureInfo.UNKNOWN_NUM_REFERRERS
-                      ? DefinedStructureInfo.UNKNOWN_NUM_REFERRERS
-                      : info.getNumReferrers() + lines.size());
-            } else {
-              for (int line : lines) {
-                undefined(type, name, usage, line);
-              }
-            }
-          });
-    }
   }
 }
