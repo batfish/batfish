@@ -1722,8 +1722,8 @@ public class VirtualRouter extends ComparableStructure<String> {
     int l2Admin = RoutingProtocol.ISIS_L2.getDefaultAdministrativeCost(_c.getConfigurationFormat());
     _isisIncomingRoutes.forEach(
         (edge, queue) -> {
-          Ip nextHopIp = edge.getNode2().getInterface(nodes).getAddress().getIp();
-          Interface iface = edge.getNode1().getInterface(nodes);
+          Ip nextHopIp = edge.getNode1().getInterface(nodes).getAddress().getIp();
+          Interface iface = edge.getNode2().getInterface(nodes);
           routeBuilder.setNextHopIp(nextHopIp);
           while (queue.peek() != null) {
             RouteAdvertisement<IsisRoute> routeAdvert = queue.remove();
