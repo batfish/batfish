@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableSortedSet;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -17,6 +18,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.NavigableSet;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -2210,16 +2213,31 @@ public final class JuniperConfiguration extends VendorConfiguration {
       }
 
       // create is-is process
-      // is-is runs only if iso address is configured on lo0 unit 0
-      Interface loopback0 =
-          _defaultRoutingInstance.getInterfaces().get(FIRST_LOOPBACK_INTERFACE_NAME + ".0");
-      if (loopback0 != null) {
-        IsoAddress isisNet = loopback0.getIsoAddress();
-        if (isisNet != null) {
-          // now we should create is-is process
-          IsisProcess proc = createIsisProcess(ri, isisNet);
-          vrf.setIsisProcess(proc);
-        }
+      // is-is runs only if at least one interface has an ISO address, check loopback first
+      Optional<IsoAddress> isoAddress =
+          _defaultRoutingInstance
+              .getInterfaces()
+              .values()
+              .stream()
+              .filter(i -> i.getName().startsWith(FIRST_LOOPBACK_INTERFACE_NAME))
+              .map(Interface::getIsoAddress)
+              .filter(Objects::nonNull)
+              .min(Comparator.comparing(IsoAddress::toString));
+      // Try all the other interfaces if no ISO address on Loopback
+      if (!isoAddress.isPresent()) {
+        isoAddress =
+            _defaultRoutingInstance
+                .getInterfaces()
+                .values()
+                .stream()
+                .map(Interface::getIsoAddress)
+                .filter(Objects::nonNull)
+                .min(Comparator.comparing(IsoAddress::toString));
+      }
+      if (isoAddress.isPresent()) {
+        // now we should create is-is process
+        IsisProcess proc = createIsisProcess(ri, isoAddress.get());
+        vrf.setIsisProcess(proc);
       }
 
       // create bgp process
