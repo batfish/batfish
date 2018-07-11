@@ -1,9 +1,9 @@
 package org.batfish.datamodel.matchers;
 
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.IsisLevelSettings;
-import org.batfish.datamodel.IsisProcess;
 import org.batfish.datamodel.IsoAddress;
+import org.batfish.datamodel.isis.IsisLevelSettings;
+import org.batfish.datamodel.isis.IsisProcess;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 
