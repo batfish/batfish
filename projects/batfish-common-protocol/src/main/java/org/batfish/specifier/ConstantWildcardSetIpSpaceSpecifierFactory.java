@@ -2,6 +2,7 @@ package org.batfish.specifier;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import com.google.auto.service.AutoService;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import java.util.Arrays;
@@ -15,6 +16,7 @@ import org.batfish.datamodel.IpWildcardSetIpSpace;
  * least 1 is required). Wildcards to the right of the dash (-), if present, are blacklisted. Can
  * also use backslash (\) instead of dash.
  */
+@AutoService(IpSpaceSpecifierFactory.class)
 public final class ConstantWildcardSetIpSpaceSpecifierFactory implements IpSpaceSpecifierFactory {
   public static final String NAME =
       ConstantWildcardSetIpSpaceSpecifierFactory.class.getSimpleName();
