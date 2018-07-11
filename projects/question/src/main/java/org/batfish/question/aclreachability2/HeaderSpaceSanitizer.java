@@ -19,6 +19,13 @@ import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.visitors.IpSpaceDereferencer;
 
+/**
+ * Visits an {@link AclLineMatchExpr} and replaces any named IP space references with the
+ * dereferenced {@link IpSpace}. An {@link AclLineMatchExpr} may contain multiple IP space
+ * references if it is of type {@link AndMatchExpr}, {@link OrMatchExpr}, or {@link NotMatchExpr}.
+ * Returns a version of the original {@link AclLineMatchExpr} with all IP spaces dereferenced, or
+ * {@code null} if any undefined IP space is referenced.
+ */
 public class HeaderSpaceSanitizer implements GenericAclLineMatchExprVisitor<AclLineMatchExpr> {
 
   private final Map<String, IpSpace> _namedIpSpaces;

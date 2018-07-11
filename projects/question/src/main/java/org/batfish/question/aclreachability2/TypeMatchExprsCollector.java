@@ -15,7 +15,17 @@ import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
 
-public class TypeMatchExprsCollector<T> implements GenericAclLineMatchExprVisitor<List<T>> {
+/**
+ * Collects all {@link AclLineMatchExpr}s of the given type built into the visited expression.
+ * Multiple expressions of the given type may be built into the visited expression if the visited
+ * expression is of type {@link AndMatchExpr}, {@link OrMatchExpr}, or {@link NotMatchExpr}. This
+ * visitor is therefore useful for finding all ACLs referenced or all header spaces contained within
+ * a single ACL line.
+ *
+ * @param <T> Type of {@link AclLineMatchExpr} to collect from the visited expression.
+ */
+public class TypeMatchExprsCollector<T extends AclLineMatchExpr>
+    implements GenericAclLineMatchExprVisitor<List<T>> {
 
   private final Class<T> _type;
 
