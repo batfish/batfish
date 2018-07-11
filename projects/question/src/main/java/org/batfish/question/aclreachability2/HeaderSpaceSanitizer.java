@@ -38,7 +38,7 @@ public class HeaderSpaceSanitizer implements GenericAclLineMatchExprVisitor<AclL
   public AclLineMatchExpr visitAndMatchExpr(AndMatchExpr andMatchExpr)
       throws CircularReferenceException, UndefinedReferenceException {
     return new AndMatchExpr(
-        andMatchExpr.getConjuncts().stream().map(c -> c.accept(this)).collect(Collectors.toList()));
+        andMatchExpr.getConjuncts().stream().map(this::visit).collect(Collectors.toList()));
   }
 
   @Override
@@ -62,7 +62,7 @@ public class HeaderSpaceSanitizer implements GenericAclLineMatchExprVisitor<AclL
   @Override
   public AclLineMatchExpr visitNotMatchExpr(NotMatchExpr notMatchExpr)
       throws CircularReferenceException, UndefinedReferenceException {
-    return new NotMatchExpr(notMatchExpr.getOperand().accept(this));
+    return new NotMatchExpr(visit(notMatchExpr.getOperand()));
   }
 
   @Override
@@ -74,7 +74,7 @@ public class HeaderSpaceSanitizer implements GenericAclLineMatchExprVisitor<AclL
   public AclLineMatchExpr visitOrMatchExpr(OrMatchExpr orMatchExpr)
       throws CircularReferenceException, UndefinedReferenceException {
     return new OrMatchExpr(
-        orMatchExpr.getDisjuncts().stream().map(d -> d.accept(this)).collect(Collectors.toList()));
+        orMatchExpr.getDisjuncts().stream().map(this::visit).collect(Collectors.toList()));
   }
 
   @Override

@@ -217,12 +217,8 @@ public final class AclReachabilityAnswererUtils {
           if (!matchExpr.equals(sanitizedForIpSpaces)) {
             node.sanitizeLine(index, sanitizedForIpSpaces);
           }
-        } catch (CircularReferenceException e) {
-          // Line contains an IpSpaceReference that is part of a circular chain of references.
-          node.addUndefinedRef(index);
-          lineMarkedUnmatchable = true;
-        } catch (UndefinedReferenceException e) {
-          // Line contains an IpSpaceReference that refers to an undefined IpSpace.
+        } catch (CircularReferenceException | UndefinedReferenceException e) {
+          // Line contains invalid IpSpaceReference: undefined or part of a circular reference chain
           node.addUndefinedRef(index);
           lineMarkedUnmatchable = true;
         }

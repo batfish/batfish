@@ -40,7 +40,7 @@ public class TypeMatchExprsCollector<T extends AclLineMatchExpr>
       matchingExprs.add(_type.cast(andMatchExpr));
     }
     for (AclLineMatchExpr conjunct : andMatchExpr.getConjuncts()) {
-      matchingExprs.addAll(conjunct.accept(this));
+      matchingExprs.addAll(visit(conjunct));
     }
     return matchingExprs;
   }
@@ -72,7 +72,7 @@ public class TypeMatchExprsCollector<T extends AclLineMatchExpr>
     if (_type.isAssignableFrom(NotMatchExpr.class)) {
       matchingExprs.add(_type.cast(notMatchExpr));
     }
-    matchingExprs.addAll(notMatchExpr.getOperand().accept(this));
+    matchingExprs.addAll(visit(notMatchExpr.getOperand()));
     return matchingExprs;
   }
 
@@ -90,7 +90,7 @@ public class TypeMatchExprsCollector<T extends AclLineMatchExpr>
       matchingExprs.add(_type.cast(orMatchExpr));
     }
     for (AclLineMatchExpr disjunct : orMatchExpr.getDisjuncts()) {
-      matchingExprs.addAll(disjunct.accept(this));
+      matchingExprs.addAll(visit(disjunct));
     }
     return matchingExprs;
   }
