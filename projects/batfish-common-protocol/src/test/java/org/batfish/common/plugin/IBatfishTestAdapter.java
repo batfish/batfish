@@ -23,6 +23,7 @@ import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowHistory;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.AclLinesAnswerElementInterface;
 import org.batfish.datamodel.answers.AclLinesAnswerElementInterface.AclSpecs;
@@ -292,6 +293,11 @@ public class IBatfishTestAdapter implements IBatfish {
 
   @Override
   public void pushDeltaEnvironment() {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public Optional<Flow> reachFilter(String nodeName, IpAccessList acl) {
     throw new UnsupportedOperationException();
   }
 

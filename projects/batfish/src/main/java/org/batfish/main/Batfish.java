@@ -182,6 +182,7 @@ import org.batfish.specifier.SpecifierContext;
 import org.batfish.specifier.SpecifierContextImpl;
 import org.batfish.symbolic.abstraction.BatfishCompressor;
 import org.batfish.symbolic.abstraction.Roles;
+import org.batfish.symbolic.bdd.BDDAcl;
 import org.batfish.symbolic.smt.PropertyChecker;
 import org.batfish.vendor.VendorConfiguration;
 import org.batfish.z3.AclLine;
@@ -4184,6 +4185,15 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     AnswerElement answerElement = getHistory();
     return answerElement;
+  }
+
+  @Override
+  public Optional<Flow> reachFilter(String nodeName, IpAccessList acl) {
+    BDDAcl bddAcl = BDDAcl.create(acl);
+    return bddAcl
+        .getPkt()
+        .getFlow(bddAcl.getBdd())
+        .map(flowBuilder -> flowBuilder.setTag(getFlowTag()).setIngressNode(nodeName).build());
   }
 
   @Override

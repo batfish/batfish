@@ -88,6 +88,7 @@ public class BDDAcl {
     // Check if there is an ACL first
     if (_acl == null) {
       _bdd = _factory.one();
+      return;
     }
 
     _bdd = _factory.zero();
