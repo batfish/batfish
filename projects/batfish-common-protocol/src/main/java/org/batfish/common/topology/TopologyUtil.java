@@ -1,5 +1,7 @@
 package org.batfish.common.topology;
 
+import static org.batfish.common.util.CommonUtil.forEachWithIndex;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
@@ -14,6 +16,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Interface;
@@ -93,15 +96,17 @@ public final class TopologyUtil {
     switchportsByVlan.forEach(
         (vlanId, interfaceNamesBuilder) -> {
           List<String> interfaceNames = interfaceNamesBuilder.build();
-          interfaceNames.forEach(
-              i1 ->
-                  interfaceNames.forEach(
-                      i2 -> {
-                        if (i1 == i2) {
-                          return;
-                        }
-                        edges.add(new Layer2Edge(hostname, i1, vlanId, hostname, i2, vlanId, null));
-                      }));
+          forEachWithIndex(
+              interfaceNames,
+              (i, i1Name) -> {
+                for (int j = i + 1; j < interfaceNames.size(); j++) {
+                  String i2Name = interfaceNames.get(j);
+                  edges.add(
+                      new Layer2Edge(hostname, i1Name, vlanId, hostname, i2Name, vlanId, null));
+                  edges.add(
+                      new Layer2Edge(hostname, i2Name, vlanId, hostname, i1Name, vlanId, null));
+                }
+              });
         });
   }
 
@@ -213,15 +218,17 @@ public final class TopologyUtil {
     switchportsByVlan.forEach(
         (vlanId, interfaceNamesBuilder) -> {
           List<String> interfaceNames = interfaceNamesBuilder.build();
-          interfaceNames.forEach(
-              i1 ->
-                  interfaceNames.forEach(
-                      i2 -> {
-                        if (i1 == i2) {
-                          return;
-                        }
-                        edges.add(new Layer2Edge(hostname, i1, vlanId, hostname, i2, vlanId, null));
-                      }));
+          CommonUtil.forEachWithIndex(
+              interfaceNames,
+              (i, i1Name) -> {
+                for (int j = i + 1; j < interfaceNames.size(); j++) {
+                  String i2Name = interfaceNames.get(j);
+                  edges.add(
+                      new Layer2Edge(hostname, i1Name, vlanId, hostname, i2Name, vlanId, null));
+                  edges.add(
+                      new Layer2Edge(hostname, i2Name, vlanId, hostname, i1Name, vlanId, null));
+                }
+              });
         });
   }
 
