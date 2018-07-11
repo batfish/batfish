@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Table;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -170,7 +171,11 @@ public class RoutesAnswerer extends Answerer {
     if (nextHopIp == null || ipOwners == null) {
       return null;
     }
-    return ipOwners.getOrDefault(nextHopIp, ImmutableSet.of()).stream().findFirst().orElse(null);
+    return ipOwners
+        .getOrDefault(nextHopIp, ImmutableSet.of())
+        .stream()
+        .min(Comparator.naturalOrder())
+        .orElse(null);
   }
 
   /** Convert a set of {@link BgpRoute} into a list of rows. */
