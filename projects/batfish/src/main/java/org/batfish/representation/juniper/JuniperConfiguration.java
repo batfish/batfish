@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableSortedSet;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -17,11 +18,14 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.NavigableSet;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.apache.commons.collections4.list.TreeList;
 import org.batfish.common.BatfishException;
@@ -55,8 +59,6 @@ import org.batfish.datamodel.IpsecPeerConfig;
 import org.batfish.datamodel.IpsecPhase2Policy;
 import org.batfish.datamodel.IpsecPhase2Proposal;
 import org.batfish.datamodel.IpsecStaticPeerConfig;
-import org.batfish.datamodel.IsisInterfaceMode;
-import org.batfish.datamodel.IsisProcess;
 import org.batfish.datamodel.IsoAddress;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
@@ -80,6 +82,8 @@ import org.batfish.datamodel.acl.NotMatchExpr;
 import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
+import org.batfish.datamodel.isis.IsisInterfaceMode;
+import org.batfish.datamodel.isis.IsisProcess;
 import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -643,17 +647,17 @@ public final class JuniperConfiguration extends VendorConfiguration {
             });
   }
 
-  private org.batfish.datamodel.IsisInterfaceSettings toIsisInterfaceSettings(
+  private org.batfish.datamodel.isis.IsisInterfaceSettings toIsisInterfaceSettings(
       IsisSettings settings,
-      IsisInterfaceSettings interfaceSettings,
+      @Nonnull IsisInterfaceSettings interfaceSettings,
       IsoAddress isoAddress,
       boolean level1,
       boolean level2) {
-    if (interfaceSettings == null || isoAddress == null) {
+    if (!interfaceSettings.getEnabled()) {
       return null;
     }
-    org.batfish.datamodel.IsisInterfaceSettings.Builder newInterfaceSettingsBuilder =
-        org.batfish.datamodel.IsisInterfaceSettings.builder();
+    org.batfish.datamodel.isis.IsisInterfaceSettings.Builder newInterfaceSettingsBuilder =
+        org.batfish.datamodel.isis.IsisInterfaceSettings.builder();
     if (level1) {
       newInterfaceSettingsBuilder.setLevel1(
           toIsisInterfaceLevelSettings(interfaceSettings, interfaceSettings.getLevel1Settings()));
@@ -671,9 +675,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
         .build();
   }
 
-  private org.batfish.datamodel.IsisInterfaceLevelSettings toIsisInterfaceLevelSettings(
+  private org.batfish.datamodel.isis.IsisInterfaceLevelSettings toIsisInterfaceLevelSettings(
       IsisInterfaceSettings interfaceSettings, IsisInterfaceLevelSettings settings) {
-    return org.batfish.datamodel.IsisInterfaceLevelSettings.builder()
+    return org.batfish.datamodel.isis.IsisInterfaceLevelSettings.builder()
         .setCost(settings.getMetric())
         .setHelloAuthenticationKey(settings.getHelloAuthenticationKey())
         .setHelloAuthenticationType(settings.getHelloAuthenticationType())
@@ -684,9 +688,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
         .build();
   }
 
-  private org.batfish.datamodel.IsisLevelSettings toIsisLevelSettings(
+  private org.batfish.datamodel.isis.IsisLevelSettings toIsisLevelSettings(
       IsisLevelSettings levelSettings) {
-    return org.batfish.datamodel.IsisLevelSettings.builder()
+    return org.batfish.datamodel.isis.IsisLevelSettings.builder()
         .setWideMetricsOnly(levelSettings.getWideMetricsOnly())
         .build();
   }
@@ -2209,16 +2213,31 @@ public final class JuniperConfiguration extends VendorConfiguration {
       }
 
       // create is-is process
-      // is-is runs only if iso address is configured on lo0 unit 0
-      Interface loopback0 =
-          _defaultRoutingInstance.getInterfaces().get(FIRST_LOOPBACK_INTERFACE_NAME + ".0");
-      if (loopback0 != null) {
-        IsoAddress isisNet = loopback0.getIsoAddress();
-        if (isisNet != null) {
-          // now we should create is-is process
-          IsisProcess proc = createIsisProcess(ri, isisNet);
-          vrf.setIsisProcess(proc);
-        }
+      // is-is runs only if at least one interface has an ISO address, check loopback first
+      Optional<IsoAddress> isoAddress =
+          _defaultRoutingInstance
+              .getInterfaces()
+              .values()
+              .stream()
+              .filter(i -> i.getName().startsWith(FIRST_LOOPBACK_INTERFACE_NAME))
+              .map(Interface::getIsoAddress)
+              .filter(Objects::nonNull)
+              .min(Comparator.comparing(IsoAddress::toString));
+      // Try all the other interfaces if no ISO address on Loopback
+      if (!isoAddress.isPresent()) {
+        isoAddress =
+            _defaultRoutingInstance
+                .getInterfaces()
+                .values()
+                .stream()
+                .map(Interface::getIsoAddress)
+                .filter(Objects::nonNull)
+                .min(Comparator.comparing(IsoAddress::toString));
+      }
+      if (isoAddress.isPresent()) {
+        // now we should create is-is process
+        IsisProcess proc = createIsisProcess(ri, isoAddress.get());
+        vrf.setIsisProcess(proc);
       }
 
       // create bgp process
