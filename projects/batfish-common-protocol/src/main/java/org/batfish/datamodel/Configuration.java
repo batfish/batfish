@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Iterables;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 import java.util.Collections;
 import java.util.Comparator;
@@ -128,6 +129,12 @@ public final class Configuration extends ComparableStructure<String> {
 
   private static final String PROP_IP_SPACES = "ipSpaces";
 
+  private static final String PROP_IPSEC_PEER_CONFIGS = "ipsecPeerConfigs";
+
+  private static final String PROP_IPSEC_PHASE2_POLICIES = "ipsecPhase2Policies";
+
+  private static final String PROP_IPSEC_PHASE2_PROPOSALS = "ipsecPhase2Proposals";
+
   private static final String PROP_IPSEC_POLICIES = "ipsecPolicies";
 
   private static final String PROP_IPSEC_PROPOSALS = "ipsecProposals";
@@ -199,6 +206,12 @@ public final class Configuration extends ComparableStructure<String> {
   private NavigableMap<String, IpAccessList> _ipAccessLists;
 
   private NavigableMap<String, IpSpace> _ipSpaces;
+
+  private NavigableMap<String, IpsecPeerConfig> _ipsecPeerConfigs;
+
+  private NavigableMap<String, IpsecPhase2Policy> _ipsecPhase2Policies;
+
+  private NavigableMap<String, IpsecPhase2Proposal> _ipsecPhase2Proposals;
 
   private NavigableMap<String, IpsecPolicy> _ipsecPolicies;
 
@@ -281,6 +294,9 @@ public final class Configuration extends ComparableStructure<String> {
     _ipAccessLists = new TreeMap<>();
     _ip6AccessLists = new TreeMap<>();
     _ipSpaces = new TreeMap<>();
+    _ipsecPeerConfigs = ImmutableSortedMap.of();
+    _ipsecPhase2Policies = ImmutableSortedMap.of();
+    _ipsecPhase2Proposals = ImmutableSortedMap.of();
     _ipsecPolicies = new TreeMap<>();
     _ipsecProposals = new TreeMap<>();
     _ipsecVpns = new TreeMap<>();
@@ -315,7 +331,10 @@ public final class Configuration extends ComparableStructure<String> {
     for (Vrf vrf : _vrfs.values()) {
       BgpProcess bgpProcess = vrf.getBgpProcess();
       if (bgpProcess != null) {
-        for (BgpPeerConfig neighbor : bgpProcess.getNeighbors().values()) {
+        for (BgpPeerConfig neighbor :
+            Iterables.concat(
+                bgpProcess.getActiveNeighbors().values(),
+                bgpProcess.getPassiveNeighbors().values())) {
           neighbor.setExportPolicySources(getRoutingPolicySources(neighbor.getExportPolicy()));
           neighbor.setImportPolicySources(getRoutingPolicySources(neighbor.getImportPolicy()));
         }
@@ -473,9 +492,27 @@ public final class Configuration extends ComparableStructure<String> {
     return _ipAccessLists;
   }
 
+  @JsonPropertyDescription("Dictionary of all IPSec peer configs for this node")
+  @JsonProperty(PROP_IPSEC_PEER_CONFIGS)
+  public NavigableMap<String, IpsecPeerConfig> getIpsecPeerconfigs() {
+    return _ipsecPeerConfigs;
+  }
+
   @JsonProperty(PROP_IP_SPACES)
   public NavigableMap<String, IpSpace> getIpSpaces() {
     return _ipSpaces;
+  }
+
+  @JsonProperty(PROP_IPSEC_PHASE2_POLICIES)
+  @JsonPropertyDescription("Dictionary of all IPSec phase 2 policies for this node.")
+  public NavigableMap<String, IpsecPhase2Policy> getIpsecPhase2Policies() {
+    return _ipsecPhase2Policies;
+  }
+
+  @JsonProperty(PROP_IPSEC_PHASE2_PROPOSALS)
+  @JsonPropertyDescription("Dictionary of all IPSec phase 2 proposals for this node.")
+  public NavigableMap<String, IpsecPhase2Proposal> getIpsecPhase2Proposals() {
+    return _ipsecPhase2Proposals;
   }
 
   @JsonProperty(PROP_IPSEC_POLICIES)
@@ -742,6 +779,33 @@ public final class Configuration extends ComparableStructure<String> {
   @JsonProperty(PROP_IP_SPACES)
   public void setIpSpaces(NavigableMap<String, IpSpace> ipSpaces) {
     _ipSpaces = ipSpaces;
+  }
+
+  @JsonProperty(PROP_IPSEC_PEER_CONFIGS)
+  public void setIpsecPeerConfigs(
+      @Nullable NavigableMap<String, IpsecPeerConfig> ipsecPeerConfigs) {
+    _ipsecPeerConfigs =
+        ipsecPeerConfigs == null
+            ? ImmutableSortedMap.of()
+            : ImmutableSortedMap.copyOf(ipsecPeerConfigs);
+  }
+
+  @JsonProperty(PROP_IPSEC_PHASE2_POLICIES)
+  public void setIpsecPhase2Policies(
+      @Nullable NavigableMap<String, IpsecPhase2Policy> ipsecPhase2Policies) {
+    _ipsecPhase2Policies =
+        ipsecPhase2Policies == null
+            ? ImmutableSortedMap.of()
+            : ImmutableSortedMap.copyOf(ipsecPhase2Policies);
+  }
+
+  @JsonProperty(PROP_IPSEC_PHASE2_PROPOSALS)
+  public void setIpsecPhase2Proposals(
+      @Nullable NavigableMap<String, IpsecPhase2Proposal> ipsecPhase2Proposals) {
+    _ipsecPhase2Proposals =
+        ipsecPhase2Proposals == null
+            ? ImmutableSortedMap.of()
+            : ImmutableSortedMap.copyOf(ipsecPhase2Proposals);
   }
 
   @JsonProperty(PROP_IPSEC_POLICIES)

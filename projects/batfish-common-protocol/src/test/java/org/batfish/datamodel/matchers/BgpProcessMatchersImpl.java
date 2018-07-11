@@ -2,7 +2,8 @@ package org.batfish.datamodel.matchers;
 
 import java.util.Map;
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.BgpPeerConfig;
+import org.batfish.datamodel.BgpActivePeerConfig;
+import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
@@ -34,28 +35,46 @@ final class BgpProcessMatchersImpl {
     }
   }
 
-  static final class HasNeighbor extends FeatureMatcher<BgpProcess, BgpPeerConfig> {
+  static final class HasActiveNeighbor extends FeatureMatcher<BgpProcess, BgpActivePeerConfig> {
     private final Prefix _prefix;
 
-    HasNeighbor(@Nonnull Prefix prefix, @Nonnull Matcher<? super BgpPeerConfig> subMatcher) {
-      super(subMatcher, "A BGP process with neighbor " + prefix + ":", "neighbor " + prefix);
+    HasActiveNeighbor(
+        @Nonnull Prefix prefix, @Nonnull Matcher<? super BgpActivePeerConfig> subMatcher) {
+      super(subMatcher, "A BGP process with active neighbor " + prefix + ":", "neighbor " + prefix);
       _prefix = prefix;
     }
 
     @Override
-    protected BgpPeerConfig featureValueOf(BgpProcess actual) {
-      return actual.getNeighbors().get(_prefix);
+    protected BgpActivePeerConfig featureValueOf(BgpProcess actual) {
+      return actual.getActiveNeighbors().get(_prefix);
     }
   }
 
-  static final class HasNeighbors extends FeatureMatcher<BgpProcess, Map<Prefix, BgpPeerConfig>> {
-    HasNeighbors(@Nonnull Matcher<? super Map<Prefix, BgpPeerConfig>> subMatcher) {
+  static final class HasPassiveNeighbor extends FeatureMatcher<BgpProcess, BgpPassivePeerConfig> {
+    private final Prefix _prefix;
+
+    HasPassiveNeighbor(
+        @Nonnull Prefix prefix, @Nonnull Matcher<? super BgpPassivePeerConfig> subMatcher) {
+      super(
+          subMatcher, "A BGP process with passive neighbor " + prefix + ":", "neighbor " + prefix);
+      _prefix = prefix;
+    }
+
+    @Override
+    protected BgpPassivePeerConfig featureValueOf(BgpProcess actual) {
+      return actual.getPassiveNeighbors().get(_prefix);
+    }
+  }
+
+  static final class HasNeighbors
+      extends FeatureMatcher<BgpProcess, Map<Prefix, BgpActivePeerConfig>> {
+    HasNeighbors(@Nonnull Matcher<? super Map<Prefix, BgpActivePeerConfig>> subMatcher) {
       super(subMatcher, "A BGP process with neighbors:", "neighbors");
     }
 
     @Override
-    protected Map<Prefix, BgpPeerConfig> featureValueOf(BgpProcess actual) {
-      return actual.getNeighbors();
+    protected Map<Prefix, BgpActivePeerConfig> featureValueOf(BgpProcess actual) {
+      return actual.getActiveNeighbors();
     }
   }
 

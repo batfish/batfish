@@ -19,9 +19,9 @@ import org.batfish.common.plugin.DataPlanePlugin.ComputeDataPlaneResult;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
+import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.BgpAdvertisement.BgpAdvertisementType;
-import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -94,7 +94,7 @@ public class RouteReflectionTest {
 
   private Interface.Builder _ib;
 
-  private BgpPeerConfig.Builder _nb;
+  private BgpActivePeerConfig.Builder _nb;
 
   private NetworkFactory _nf;
 
@@ -135,9 +135,7 @@ public class RouteReflectionTest {
                 .build()));
     BgpProcess edge1Proc = _pb.setRouterId(edge1LoopbackIp).setVrf(vEdge1).build();
     RoutingPolicy edge1EbgpExportPolicy = _nullExportPolicyBuilder.setOwner(edge1).build();
-    _nb.setOwner(edge1)
-        .setVrf(vEdge1)
-        .setBgpProcess(edge1Proc)
+    _nb.setBgpProcess(edge1Proc)
         .setClusterId(edge1LoopbackIp.asLong())
         .setRemoteAs(1L)
         .setLocalIp(edge1EbgpIfaceIp)
@@ -167,9 +165,7 @@ public class RouteReflectionTest {
                 .build()));
     BgpProcess rrProc = _pb.setRouterId(rrLoopbackIp).setVrf(vRr).build();
     RoutingPolicy rrExportPolicy = _defaultExportPolicyBuilder.setOwner(rr).build();
-    _nb.setOwner(rr)
-        .setVrf(vRr)
-        .setBgpProcess(rrProc)
+    _nb.setBgpProcess(rrProc)
         .setClusterId(rrLoopbackIp.asLong())
         .setRemoteAs(2L)
         .setLocalIp(rrLoopbackIp)
@@ -198,9 +194,7 @@ public class RouteReflectionTest {
                 .build()));
     BgpProcess edge2Proc = _pb.setRouterId(edge2LoopbackIp).setVrf(vEdge2).build();
     RoutingPolicy edge2EbgpExportPolicy = _nullExportPolicyBuilder.setOwner(edge2).build();
-    _nb.setOwner(edge2)
-        .setVrf(vEdge2)
-        .setBgpProcess(edge2Proc)
+    _nb.setBgpProcess(edge2Proc)
         .setClusterId(edge2LoopbackIp.asLong())
         .setRemoteAs(3L)
         .setLocalIp(edge2EbgpIfaceIp)
@@ -279,9 +273,7 @@ public class RouteReflectionTest {
                 .build()));
     BgpProcess edge1Proc = _pb.setRouterId(edge1LoopbackIp).setVrf(vEdge1).build();
     RoutingPolicy edge1EbgpExportPolicy = _nullExportPolicyBuilder.setOwner(edge1).build();
-    _nb.setOwner(edge1)
-        .setVrf(vEdge1)
-        .setBgpProcess(edge1Proc)
+    _nb.setBgpProcess(edge1Proc)
         .setClusterId(edge1LoopbackIp.asLong())
         .setRemoteAs(1L)
         .setLocalIp(edge1EbgpIfaceIp)
@@ -311,9 +303,7 @@ public class RouteReflectionTest {
                 .build()));
     BgpProcess rr1Proc = _pb.setRouterId(rr1LoopbackIp).setVrf(vRr1).build();
     RoutingPolicy rr1ExportPolicy = _defaultExportPolicyBuilder.setOwner(rr1).build();
-    _nb.setOwner(rr1)
-        .setVrf(vRr1)
-        .setBgpProcess(rr1Proc)
+    _nb.setBgpProcess(rr1Proc)
         .setClusterId(rr1LoopbackIp.asLong())
         .setRemoteAs(2L)
         .setLocalIp(rr1LoopbackIp)
@@ -337,9 +327,7 @@ public class RouteReflectionTest {
     RoutingPolicy edge2IbgpExportPolicy = _defaultExportPolicyBuilder.setOwner(rr2).build();
 
     Ip rr2ClusterIdForRr1 = useSameClusterIds ? rr1LoopbackIp : rr2LoopbackIp;
-    _nb.setOwner(rr2)
-        .setVrf(vRr2)
-        .setBgpProcess(rr2Proc)
+    _nb.setBgpProcess(rr2Proc)
         .setClusterId(rr2ClusterIdForRr1.asLong())
         .setLocalIp(rr2LoopbackIp)
         .setPeerAddress(rr1LoopbackIp)

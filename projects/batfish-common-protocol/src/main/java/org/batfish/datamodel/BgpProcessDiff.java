@@ -16,6 +16,8 @@ public class BgpProcessDiff {
 
   private NeighborsDiff _neighborsDiff;
 
+  private NeighborsDiff _dynamicNeighborsDiff;
+
   @JsonCreator
   public BgpProcessDiff() {}
 
@@ -25,9 +27,14 @@ public class BgpProcessDiff {
     } else if (before == null && after != null) {
       _inAfterOnly = true;
     } else if (before != null && after != null) {
-      _neighborsDiff = new NeighborsDiff(before.getNeighbors(), after.getNeighbors());
+      _neighborsDiff = new NeighborsDiff(before.getActiveNeighbors(), after.getActiveNeighbors());
       if (_neighborsDiff.isEmpty()) {
         _neighborsDiff = null;
+      }
+      _dynamicNeighborsDiff =
+          new NeighborsDiff(before.getPassiveNeighbors(), after.getPassiveNeighbors());
+      if (_dynamicNeighborsDiff.isEmpty()) {
+        _dynamicNeighborsDiff = null;
       }
     }
   }
@@ -44,7 +51,10 @@ public class BgpProcessDiff {
 
   @JsonIgnore
   public boolean isEmpty() {
-    return _neighborsDiff == null && _inBeforeOnly == null && _inAfterOnly == null;
+    return _dynamicNeighborsDiff == null
+        && _neighborsDiff == null
+        && _inBeforeOnly == null
+        && _inAfterOnly == null;
   }
 
   @JsonProperty(PROP_IN_AFTER_ONLY)

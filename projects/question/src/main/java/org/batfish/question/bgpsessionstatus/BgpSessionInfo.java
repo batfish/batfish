@@ -8,6 +8,7 @@ import java.util.Comparator;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.datamodel.BgpSessionProperties.SessionType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.collections.NodeInterfacePair;
@@ -15,17 +16,12 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 /** Captures the configuration state of a BGP session. */
 public class BgpSessionInfo implements Comparable<BgpSessionInfo> {
 
-  public enum SessionType {
-    IBGP,
-    EBGP_SINGLEHOP,
-    EBGP_MULTIHOP
-  }
-
   public enum SessionStatus {
     // ordered by how we evaluate status
     DYNAMIC_LISTEN,
     LOCAL_IP_UNKNOWN_STATICALLY,
     NO_LOCAL_IP,
+    NO_REMOTE_AS,
     INVALID_LOCAL_IP,
     UNKNOWN_REMOTE,
     HALF_OPEN,

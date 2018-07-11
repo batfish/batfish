@@ -1,5 +1,7 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
@@ -12,6 +14,8 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
 
 /** Represents a bgp process on a router */
@@ -55,7 +59,7 @@ public class BgpProcess implements Serializable {
 
     @Override
     public Set<Long> get() {
-      return _neighbors
+      return _activeNeighbors
           .values()
           .stream()
           .map(BgpPeerConfig::getClusterId)
@@ -63,19 +67,20 @@ public class BgpProcess implements Serializable {
     }
   }
 
+  private static final String PROP_PASSIVE_NEIGHBORS = "dynamicNeighbors";
+
   private static final String PROP_GENERATED_ROUTES = "generatedRoutes";
 
   private static final String PROP_MULTIPATH_EBGP = "multipathEbgp";
 
   private static final String PROP_MULTIPATH_IBGP = "multipathIbgp";
 
-  private static final String PROP_NEIGHBORS = "neighbors";
+  private static final String PROP_ACTIVE_NEIGHBORS = "neighbors";
 
   private static final String PROP_ROUTER_ID = "routerId";
 
   private static final String PROP_TIE_BREAKER = "tieBreaker";
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private Supplier<Set<Long>> _clusterIds;
@@ -93,10 +98,16 @@ public class BgpProcess implements Serializable {
   private boolean _multipathIbgp;
 
   /**
-   * A map of all the bgp neighbors with which the router owning this process is configured to peer,
-   * keyed by prefix
+   * A map of all non-dynamic bgp neighbors with which the router owning this process is configured
+   * to peer, keyed unique ID.
    */
-  private SortedMap<Prefix, BgpPeerConfig> _neighbors;
+  @Nonnull private SortedMap<Prefix, BgpActivePeerConfig> _activeNeighbors;
+
+  /**
+   * A map of all dynamic bgp neighbors with which the router owning this process is configured to
+   * peer, keyed by unique ID.
+   */
+  @Nonnull private SortedMap<Prefix, BgpPassivePeerConfig> _passiveNeighbors;
 
   /** Space of prefixes to be advertised using explicit network statements */
   private PrefixSpace _originationSpace;
@@ -107,11 +118,13 @@ public class BgpProcess implements Serializable {
 
   /** Constructs a BgpProcess */
   public BgpProcess() {
-    _neighbors = new TreeMap<>();
+    _activeNeighbors = new TreeMap<>();
     _generatedRoutes = new TreeSet<>();
     _tieBreaker = BgpTieBreaker.ARRIVAL_ORDER;
     _clusterIds = new ClusterIdsSupplier();
     _originationSpace = new PrefixSpace();
+    _activeNeighbors = new TreeMap<>();
+    _passiveNeighbors = new TreeMap<>();
   }
 
   /**
@@ -130,6 +143,13 @@ public class BgpProcess implements Serializable {
   @JsonIgnore
   public Set<Long> getClusterIds() {
     return _clusterIds.get();
+  }
+
+  /** @return {@link #_activeNeighbors} */
+  @JsonProperty(PROP_ACTIVE_NEIGHBORS)
+  @JsonPropertyDescription("Neighbor relationships configured for this BGP process")
+  public SortedMap<Prefix, BgpActivePeerConfig> getActiveNeighbors() {
+    return _activeNeighbors;
   }
 
   /** @return {@link #_generatedRoutes} */
@@ -154,11 +174,11 @@ public class BgpProcess implements Serializable {
     return _multipathIbgp;
   }
 
-  /** @return {@link #_neighbors} */
-  @JsonProperty(PROP_NEIGHBORS)
+  /** @return {@link #_passiveNeighbors} */
+  @JsonProperty(PROP_PASSIVE_NEIGHBORS)
   @JsonPropertyDescription("Neighbor relationships configured for this BGP process")
-  public SortedMap<Prefix, BgpPeerConfig> getNeighbors() {
-    return _neighbors;
+  public SortedMap<Prefix, BgpPassivePeerConfig> getPassiveNeighbors() {
+    return _passiveNeighbors;
   }
 
   @JsonIgnore
@@ -199,13 +219,18 @@ public class BgpProcess implements Serializable {
     _multipathIbgp = multipathIbgp;
   }
 
-  @JsonProperty(PROP_NEIGHBORS)
-  public void setNeighbors(SortedMap<Prefix, BgpPeerConfig> neighbors) {
-    _neighbors = neighbors;
+  @JsonProperty(PROP_ACTIVE_NEIGHBORS)
+  public void setNeighbors(SortedMap<Prefix, BgpActivePeerConfig> neighbors) {
+    _activeNeighbors = firstNonNull(neighbors, new TreeMap<>());
   }
 
   public void setOriginationSpace(PrefixSpace originationSpace) {
     _originationSpace = originationSpace;
+  }
+
+  @JsonProperty(PROP_PASSIVE_NEIGHBORS)
+  public void setPassiveNeighbors(@Nullable SortedMap<Prefix, BgpPassivePeerConfig> neighbors) {
+    _passiveNeighbors = firstNonNull(neighbors, new TreeMap<>());
   }
 
   @JsonProperty(PROP_ROUTER_ID)

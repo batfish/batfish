@@ -1,0 +1,14 @@
+!! IOS XR Configuration 5.3.4
+!
+hostname ios_xr_class_map
+!
+class-map match-any ABC
+ match dscp ipv4 cs4
+ end-class-map
+!
+class-map match-any ABCD
+ match not dscp ipv4 cs2 cs3 cs4
+ end-class-map
+!
+!
+

@@ -21,6 +21,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasInterfaces;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.DEFAULT_VSYS_NAME;
+import static org.batfish.representation.palo_alto.PaloAltoConfiguration.SHARED_VSYS_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.computeObjectName;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
@@ -297,6 +298,41 @@ public class PaloAltoGrammarTest {
   }
 
   @Test
+  public void testService() throws IOException {
+    String hostname = "service";
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    // Confirm structure definitions are tracked
+    assertThat(
+        ccae,
+        hasDefinedStructure(
+            hostname,
+            PaloAltoStructureType.SERVICE,
+            computeObjectName(DEFAULT_VSYS_NAME, "SERVICE1")));
+    assertThat(
+        ccae,
+        hasDefinedStructure(
+            hostname,
+            PaloAltoStructureType.SERVICE,
+            computeObjectName(DEFAULT_VSYS_NAME, "SERVICE2")));
+    assertThat(
+        ccae,
+        hasDefinedStructure(
+            hostname,
+            PaloAltoStructureType.SERVICE,
+            computeObjectName(DEFAULT_VSYS_NAME, "SERVICE3")));
+    assertThat(
+        ccae,
+        hasDefinedStructure(
+            hostname,
+            PaloAltoStructureType.SERVICE,
+            computeObjectName(DEFAULT_VSYS_NAME, "SERVICE4")));
+  }
+
+  @Test
   public void testVirtualRouterInterfaces() throws IOException {
     String hostname = "virtual-router-interfaces";
     Configuration c = parseConfig(hostname);
@@ -304,6 +340,34 @@ public class PaloAltoGrammarTest {
     assertThat(c, hasVrf("default", hasInterfaces(hasItem("ethernet1/1"))));
     assertThat(c, hasVrf("somename", hasInterfaces(hasItems("ethernet1/2", "ethernet1/3"))));
     assertThat(c, hasVrf("someothername", hasInterfaces(emptyIterable())));
+  }
+
+  @Test
+  public void testVsysService() throws IOException {
+    String hostname = "vsys-service";
+    String vsys1Name = "vsys1";
+    String vsys2Name = "vsys2";
+    String serviceName = "SERVICE1";
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    // Confirm structure definitions are tracked separately for each vsys
+    assertThat(
+        ccae,
+        hasDefinedStructure(
+            hostname, PaloAltoStructureType.SERVICE, computeObjectName(vsys1Name, serviceName)));
+    assertThat(
+        ccae,
+        hasDefinedStructure(
+            hostname, PaloAltoStructureType.SERVICE, computeObjectName(vsys2Name, serviceName)));
+    assertThat(
+        ccae,
+        hasDefinedStructure(
+            hostname,
+            PaloAltoStructureType.SERVICE,
+            computeObjectName(SHARED_VSYS_NAME, serviceName)));
   }
 
   @Test

@@ -10,6 +10,7 @@ import static org.batfish.datamodel.AuthenticationMethod.LINE;
 import static org.batfish.datamodel.AuthenticationMethod.LOCAL;
 import static org.batfish.datamodel.AuthenticationMethod.LOCAL_CASE;
 import static org.batfish.datamodel.AuthenticationMethod.NONE;
+import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.matchers.AaaAuthenticationLoginListMatchers.hasMethod;
 import static org.batfish.datamodel.matchers.AaaAuthenticationLoginMatchers.hasListForKey;
 import static org.batfish.datamodel.matchers.AaaAuthenticationMatchers.hasLogin;
@@ -18,9 +19,9 @@ import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.hasConjuncts;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.isAndMatchExprThat;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasRemoteAs;
+import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasActiveNeighbor;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathEbgp;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathEquivalentAsPathMatchMode;
-import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbor;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbors;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurationFormat;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
@@ -33,6 +34,9 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterfaces
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessList;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessLists;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpSpace;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpsecPeerConfig;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpsecPhase2Policy;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpsecPhase2Proposal;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpsecPolicy;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpsecProposal;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpsecVpn;
@@ -86,6 +90,13 @@ import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.hasLines;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
+import static org.batfish.datamodel.matchers.IpsecPeerConfigMatchers.hasDestinationAddress;
+import static org.batfish.datamodel.matchers.IpsecPeerConfigMatchers.hasLocalAddress;
+import static org.batfish.datamodel.matchers.IpsecPeerConfigMatchers.hasPhysicalInterface;
+import static org.batfish.datamodel.matchers.IpsecPeerConfigMatchers.hasPolicyAccessList;
+import static org.batfish.datamodel.matchers.IpsecPeerConfigMatchers.hasTunnelInterface;
+import static org.batfish.datamodel.matchers.IpsecPeerConfigMatchers.isIpsecDynamicPeerConfigThat;
+import static org.batfish.datamodel.matchers.IpsecPeerConfigMatchers.isIpsecStaticPeerConfigThat;
 import static org.batfish.datamodel.matchers.IpsecPolicyMatchers.hasIpsecProposals;
 import static org.batfish.datamodel.matchers.IpsecPolicyMatchers.hasPfsKeyGroup;
 import static org.batfish.datamodel.matchers.IpsecProposalMatchers.hasProtocols;
@@ -148,7 +159,7 @@ import static org.junit.Assert.assertTrue;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.graph.Network;
+import com.google.common.graph.ValueGraph;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
@@ -164,8 +175,8 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpAdvertisement;
-import org.batfish.datamodel.BgpPeerConfig;
-import org.batfish.datamodel.BgpSession;
+import org.batfish.datamodel.BgpPeerConfigId;
+import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -186,6 +197,7 @@ import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
+import org.batfish.datamodel.IpsecEncapsulationMode;
 import org.batfish.datamodel.IpsecProtocol;
 import org.batfish.datamodel.LineType;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
@@ -204,6 +216,9 @@ import org.batfish.datamodel.matchers.IkeGatewayMatchers;
 import org.batfish.datamodel.matchers.IkePhase1KeyMatchers;
 import org.batfish.datamodel.matchers.IkePhase1ProposalMatchers;
 import org.batfish.datamodel.matchers.InterfaceMatchers;
+import org.batfish.datamodel.matchers.IpsecPeerConfigMatchers;
+import org.batfish.datamodel.matchers.IpsecPhase2PolicyMatchers;
+import org.batfish.datamodel.matchers.IpsecPhase2ProposalMatchers;
 import org.batfish.datamodel.matchers.IpsecPolicyMatchers;
 import org.batfish.datamodel.matchers.IpsecProposalMatchers;
 import org.batfish.datamodel.matchers.IpsecVpnMatchers;
@@ -849,7 +864,7 @@ public class CiscoGrammarTest {
     batfish.computeDataPlane(false);
     DataPlane dp = batfish.loadDataPlane();
     Set<AbstractRoute> routesOnListener =
-        dp.getRibs().get("listener").get(Configuration.DEFAULT_VRF_NAME).getRoutes();
+        dp.getRibs().get("listener").get(DEFAULT_VRF_NAME).getRoutes();
 
     // Ensure that default route is advertised to and installed on listener
     assertThat(routesOnListener, hasItem(hasPrefix(Prefix.ZERO)));
@@ -1589,24 +1604,26 @@ public class CiscoGrammarTest {
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations();
     Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpNodeOwners(configurations, true);
-    Network<BgpPeerConfig, BgpSession> bgpTopology =
+    ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
         CommonUtil.initBgpTopology(configurations, ipOwners, false);
-    Configuration r1 = configurations.get("r1");
-    Configuration r2 = configurations.get("r2");
+
+    // Edge one direction
     assertThat(
         bgpTopology
-            .outEdges(
-                r1.getDefaultVrf().getBgpProcess().getNeighbors().get(Prefix.parse("1.2.0.2/32")))
-            .stream()
-            .map(BgpSession::getDst),
-        is(notNullValue()));
+            .adjacentNodes(
+                new BgpPeerConfigId("r1", DEFAULT_VRF_NAME, Prefix.parse("1.2.0.2/32"), false))
+            .iterator()
+            .next(),
+        equalTo(new BgpPeerConfigId("r2", DEFAULT_VRF_NAME, Prefix.parse("1.2.0.1/32"), false)));
+
+    // Edge the other direction
     assertThat(
         bgpTopology
-            .outEdges(
-                r2.getDefaultVrf().getBgpProcess().getNeighbors().get(Prefix.parse("1.2.0.1/32")))
-            .stream()
-            .map(BgpSession::getDst),
-        is(notNullValue()));
+            .adjacentNodes(
+                new BgpPeerConfigId("r2", DEFAULT_VRF_NAME, Prefix.parse("1.2.0.1/32"), false))
+            .iterator()
+            .next(),
+        equalTo(new BgpPeerConfigId("r1", DEFAULT_VRF_NAME, Prefix.parse("1.2.0.2/32"), false)));
   }
 
   @Test
@@ -1657,7 +1674,7 @@ public class CiscoGrammarTest {
     Configuration c = parseConfig("ios-bgp-origination-space");
 
     assertThat(
-        c.getVrfs().get(Configuration.DEFAULT_VRF_NAME).getBgpProcess().getOriginationSpace(),
+        c.getVrfs().get(DEFAULT_VRF_NAME).getBgpProcess().getOriginationSpace(),
         equalTo(
             new PrefixSpace(
                 PrefixRange.fromPrefix(Prefix.parse("1.1.1.1/32")),
@@ -1684,7 +1701,7 @@ public class CiscoGrammarTest {
     // Check that 1.1.1.1/32 appears on r3
     SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
         dataPlanePlugin.getRoutes(batfish.loadDataPlane());
-    SortedSet<AbstractRoute> r3Routes = routes.get("r3").get(Configuration.DEFAULT_VRF_NAME);
+    SortedSet<AbstractRoute> r3Routes = routes.get("r3").get(DEFAULT_VRF_NAME);
     Set<Prefix> r3Prefixes =
         r3Routes.stream().map(AbstractRoute::getNetwork).collect(Collectors.toSet());
     Prefix r1Loopback = Prefix.parse("1.1.1.1/32");
@@ -1822,7 +1839,7 @@ public class CiscoGrammarTest {
   }
 
   @Test
-  public void testCryptoMapsToIpsecPolicies() throws IOException {
+  public void testToIpsecPolicies() throws IOException {
     Configuration c = parseConfig("ios-crypto-map");
 
     assertThat(
@@ -1846,6 +1863,131 @@ public class CiscoGrammarTest {
         hasIpsecPolicy(
             "mymap:30:15",
             hasIpsecProposals(contains(ImmutableList.of(IpsecProposalMatchers.hasName("ts2"))))));
+
+    // tests for IPSec phase 2 policies conversion
+    assertThat(
+        c,
+        hasIpsecPhase2Policy(
+            "IPSEC-PROFILE1",
+            allOf(
+                IpsecPhase2PolicyMatchers.hasIpsecProposals(
+                    equalTo(ImmutableList.of("ts1", "ts2"))),
+                IpsecPhase2PolicyMatchers.hasPfsKeyGroup(equalTo(DiffieHellmanGroup.GROUP14)))));
+
+    assertThat(
+        c,
+        hasIpsecPhase2Policy(
+            "~IPSEC_PHASE2_POLICY:mymap:10~",
+            allOf(
+                IpsecPhase2PolicyMatchers.hasIpsecProposals(equalTo(ImmutableList.of("ts1"))),
+                IpsecPhase2PolicyMatchers.hasPfsKeyGroup(equalTo(DiffieHellmanGroup.GROUP14)))));
+
+    assertThat(
+        c,
+        hasIpsecPhase2Policy(
+            "~IPSEC_PHASE2_POLICY:mymap:30:15~",
+            allOf(
+                IpsecPhase2PolicyMatchers.hasIpsecProposals(equalTo(ImmutableList.of("ts2"))),
+                IpsecPhase2PolicyMatchers.hasPfsKeyGroup(nullValue()))));
+
+    assertThat(
+        c,
+        hasIpsecPhase2Policy(
+            "~IPSEC_PHASE2_POLICY:mymap:30:5~",
+            allOf(
+                IpsecPhase2PolicyMatchers.hasIpsecProposals(equalTo(ImmutableList.of("ts1"))),
+                IpsecPhase2PolicyMatchers.hasPfsKeyGroup(equalTo(DiffieHellmanGroup.GROUP2)))));
+  }
+
+  @Test
+  public void testCryptoMapsAndTunnelsToIpsecPeerConfigs() throws IOException {
+    Configuration c = parseConfig("ios-crypto-map");
+
+    List<IpAccessListLine> expectedAclLines =
+        ImmutableList.of(
+            IpAccessListLine.accepting()
+                .setName("permit ip 1.1.1.1 0.0.0.0 2.2.2.2 0.0.0.0")
+                .setMatchCondition(
+                    new MatchHeaderSpace(
+                        HeaderSpace.builder()
+                            .setSrcIps(new IpWildcard("1.1.1.1").toIpSpace())
+                            .setDstIps(new IpWildcard("2.2.2.2").toIpSpace())
+                            .build()))
+                .build(),
+            IpAccessListLine.accepting()
+                .setMatchCondition(
+                    new MatchHeaderSpace(
+                        HeaderSpace.builder()
+                            .setSrcIps(new IpWildcard("2.2.2.2").toIpSpace())
+                            .setDstIps(new IpWildcard("1.1.1.1").toIpSpace())
+                            .build()))
+                .build());
+
+    assertThat(
+        c,
+        hasIpsecPeerConfig(
+            "~IPSEC_PEER_CONFIG:mymap:20_TenGigabitEthernet0/0~",
+            isIpsecStaticPeerConfigThat(
+                allOf(
+                    hasDestinationAddress(new Ip("3.4.5.6")),
+                    IpsecPeerConfigMatchers.hasIkePhase1Policy("ISAKMP-PROFILE-MATCHED"),
+                    IpsecPeerConfigMatchers.hasIpsecPolicy("~IPSEC_PHASE2_POLICY:mymap:20~"),
+                    hasPhysicalInterface("TenGigabitEthernet0/0"),
+                    hasPolicyAccessList(hasLines(equalTo(expectedAclLines))),
+                    hasLocalAddress(new Ip("2.3.4.6"))))));
+    assertThat(
+        c,
+        hasIpsecPeerConfig(
+            "~IPSEC_PEER_CONFIG:mymap:10_TenGigabitEthernet0/0~",
+            isIpsecStaticPeerConfigThat(
+                allOf(
+                    hasDestinationAddress(new Ip("1.2.3.4")),
+                    IpsecPeerConfigMatchers.hasIkePhase1Policy("ISAKMP-PROFILE"),
+                    IpsecPeerConfigMatchers.hasIpsecPolicy("~IPSEC_PHASE2_POLICY:mymap:10~"),
+                    hasPhysicalInterface("TenGigabitEthernet0/0"),
+                    hasPolicyAccessList(hasLines(equalTo(expectedAclLines))),
+                    hasLocalAddress(new Ip("2.3.4.6"))))));
+
+    assertThat(
+        c,
+        hasIpsecPeerConfig(
+            "~IPSEC_PEER_CONFIG:mymap:30:15_TenGigabitEthernet0/0~",
+            isIpsecDynamicPeerConfigThat(
+                allOf(
+                    IpsecPeerConfigMatchers.hasIkePhase1Policies(
+                        equalTo(ImmutableList.of("ISAKMP-PROFILE", "ISAKMP-PROFILE-MATCHED"))),
+                    IpsecPeerConfigMatchers.hasIpsecPolicy("~IPSEC_PHASE2_POLICY:mymap:30:15~"),
+                    hasPhysicalInterface("TenGigabitEthernet0/0"),
+                    hasPolicyAccessList(hasLines(equalTo(expectedAclLines))),
+                    hasLocalAddress(new Ip("2.3.4.6")),
+                    hasTunnelInterface(nullValue())))));
+
+    assertThat(
+        c,
+        hasIpsecPeerConfig(
+            "~IPSEC_PEER_CONFIG:mymap:30:5_TenGigabitEthernet0/0~",
+            isIpsecDynamicPeerConfigThat(
+                allOf(
+                    IpsecPeerConfigMatchers.hasIkePhase1Policies(
+                        equalTo(ImmutableList.of("ISAKMP-PROFILE", "ISAKMP-PROFILE-MATCHED"))),
+                    IpsecPeerConfigMatchers.hasIpsecPolicy("~IPSEC_PHASE2_POLICY:mymap:30:5~"),
+                    hasPhysicalInterface("TenGigabitEthernet0/0"),
+                    hasPolicyAccessList(hasLines(equalTo(expectedAclLines))),
+                    hasLocalAddress(new Ip("2.3.4.6")),
+                    hasTunnelInterface(nullValue())))));
+
+    assertThat(
+        c,
+        hasIpsecPeerConfig(
+            "Tunnel1",
+            isIpsecStaticPeerConfigThat(
+                allOf(
+                    hasDestinationAddress(new Ip("1.2.3.4")),
+                    IpsecPeerConfigMatchers.hasIkePhase1Policy("ISAKMP-PROFILE"),
+                    IpsecPeerConfigMatchers.hasIpsecPolicy("IPSEC-PROFILE1"),
+                    hasPhysicalInterface("TenGigabitEthernet0/0"),
+                    hasLocalAddress(new Ip("2.3.4.6")),
+                    hasTunnelInterface(equalTo("Tunnel1"))))));
   }
 
   @Test
@@ -2069,7 +2211,8 @@ public class CiscoGrammarTest {
      * The peer with a remote-as should appear in the datamodel. The peer without a remote-as
      * should not appear, and there should be a warning about the missing remote-as.
      */
-    assertThat(c, hasDefaultVrf(hasBgpProcess(hasNeighbor(neighborWithRemoteAs, hasRemoteAs(1L)))));
+    assertThat(
+        c, hasDefaultVrf(hasBgpProcess(hasActiveNeighbor(neighborWithRemoteAs, hasRemoteAs(1L)))));
     assertThat(c, hasDefaultVrf(hasBgpProcess(hasNeighbors(not(hasKey(neighborWithoutRemoteAs))))));
     assertThat(
         ccae,
@@ -2300,6 +2443,83 @@ public class CiscoGrammarTest {
                     IpsecAuthenticationAlgorithm.HMAC_MD5_96),
                 IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.NULL),
                 hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
+  }
+
+  @Test
+  public void testTransformsetToIpsecphase2Proposal() throws IOException {
+    Configuration c = parseConfig("ios-crypto-transform-set");
+    assertThat(
+        c,
+        hasIpsecPhase2Proposal(
+            "ts1",
+            allOf(
+                IpsecPhase2ProposalMatchers.hasAuthenticationAlgorithm(
+                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
+                IpsecPhase2ProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_256_CBC),
+                IpsecPhase2ProposalMatchers.hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)),
+                IpsecPhase2ProposalMatchers.hasIpsecEncapsulationMode(
+                    IpsecEncapsulationMode.TUNNEL))));
+    assertThat(
+        c,
+        hasIpsecPhase2Proposal(
+            "ts2",
+            allOf(
+                IpsecPhase2ProposalMatchers.hasAuthenticationAlgorithm(
+                    IpsecAuthenticationAlgorithm.HMAC_SHA1_96),
+                IpsecPhase2ProposalMatchers.hasEncryptionAlgorithm(
+                    EncryptionAlgorithm.THREEDES_CBC),
+                IpsecPhase2ProposalMatchers.hasProtocols(
+                    ImmutableSortedSet.of(IpsecProtocol.ESP, IpsecProtocol.AH)),
+                IpsecPhase2ProposalMatchers.hasIpsecEncapsulationMode(
+                    IpsecEncapsulationMode.TUNNEL))));
+    assertThat(
+        c,
+        hasIpsecPhase2Proposal(
+            "ts3",
+            allOf(
+                IpsecPhase2ProposalMatchers.hasAuthenticationAlgorithm(
+                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
+                IpsecPhase2ProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_192_CBC),
+                IpsecPhase2ProposalMatchers.hasProtocols(
+                    ImmutableSortedSet.of(IpsecProtocol.ESP, IpsecProtocol.AH)),
+                IpsecPhase2ProposalMatchers.hasIpsecEncapsulationMode(
+                    IpsecEncapsulationMode.TUNNEL))));
+    assertThat(
+        c,
+        hasIpsecPhase2Proposal(
+            "ts4",
+            allOf(
+                IpsecPhase2ProposalMatchers.hasAuthenticationAlgorithm(
+                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
+                IpsecPhase2ProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_128_GCM),
+                IpsecPhase2ProposalMatchers.hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)),
+                IpsecPhase2ProposalMatchers.hasIpsecEncapsulationMode(
+                    IpsecEncapsulationMode.TUNNEL))));
+
+    assertThat(
+        c,
+        hasIpsecPhase2Proposal(
+            "ts5",
+            allOf(
+                IpsecPhase2ProposalMatchers.hasAuthenticationAlgorithm(
+                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
+                IpsecPhase2ProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_256_GCM),
+                IpsecPhase2ProposalMatchers.hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)),
+                IpsecPhase2ProposalMatchers.hasIpsecEncapsulationMode(
+                    IpsecEncapsulationMode.TUNNEL))));
+
+    assertThat(
+        c,
+        hasIpsecPhase2Proposal(
+            "ts6",
+            allOf(
+                IpsecPhase2ProposalMatchers.hasAuthenticationAlgorithm(
+                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
+                IpsecPhase2ProposalMatchers.hasEncryptionAlgorithm(
+                    EncryptionAlgorithm.AES_128_GMAC),
+                IpsecPhase2ProposalMatchers.hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)),
+                IpsecPhase2ProposalMatchers.hasIpsecEncapsulationMode(
+                    IpsecEncapsulationMode.TUNNEL))));
   }
 
   @Test
@@ -2587,7 +2807,7 @@ public class CiscoGrammarTest {
   @Test
   public void testNxosBgpVrf() throws IOException {
     Configuration c = parseConfig("nxosBgpVrf");
-    assertThat(c.getVrfs().get("bar").getBgpProcess().getNeighbors().values(), hasSize(1));
+    assertThat(c.getVrfs().get("bar").getBgpProcess().getActiveNeighbors().values(), hasSize(1));
   }
 
   @Test

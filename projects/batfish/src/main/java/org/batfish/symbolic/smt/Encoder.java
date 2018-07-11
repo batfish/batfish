@@ -25,6 +25,7 @@ import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Pair;
 import org.batfish.config.Settings;
+import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
@@ -239,7 +240,7 @@ public class Encoder {
     if (_modelIgp) {
       SortedSet<Pair<String, Ip>> ibgpRouters = new TreeSet<>();
 
-      for (Entry<GraphEdge, BgpPeerConfig> entry : g.getIbgpNeighbors().entrySet()) {
+      for (Entry<GraphEdge, BgpActivePeerConfig> entry : g.getIbgpNeighbors().entrySet()) {
         GraphEdge ge = entry.getKey();
         BgpPeerConfig n = entry.getValue();
         String router = ge.getRouter();

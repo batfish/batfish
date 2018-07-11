@@ -31,8 +31,10 @@ import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclIpSpaceLine;
 import org.batfish.datamodel.AuthenticationKey;
 import org.batfish.datamodel.AuthenticationKeyChain;
+import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpAuthenticationAlgorithm;
 import org.batfish.datamodel.BgpAuthenticationSettings;
+import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
@@ -49,7 +51,10 @@ import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
-import org.batfish.datamodel.IpsecProposal;
+import org.batfish.datamodel.IpsecPeerConfig;
+import org.batfish.datamodel.IpsecPhase2Policy;
+import org.batfish.datamodel.IpsecPhase2Proposal;
+import org.batfish.datamodel.IpsecStaticPeerConfig;
 import org.batfish.datamodel.IsisInterfaceMode;
 import org.batfish.datamodel.IsisProcess;
 import org.batfish.datamodel.IsoAddress;
@@ -323,8 +328,17 @@ public final class JuniperConfiguration extends VendorConfiguration {
     for (Entry<Prefix, IpBgpGroup> e : routingInstance.getIpBgpGroups().entrySet()) {
       Prefix prefix = e.getKey();
       IpBgpGroup ig = e.getValue();
-      BgpPeerConfig neighbor = new BgpPeerConfig(prefix, _c, ig.getDynamic());
-      neighbor.setVrf(vrfName);
+      BgpPeerConfig.Builder<?, ?> neighbor;
+      Long remoteAs = ig.getType() == BgpGroupType.INTERNAL ? ig.getLocalAs() : ig.getPeerAs();
+      if (ig.getDynamic()) {
+        neighbor =
+            BgpPassivePeerConfig.builder()
+                .setPeerPrefix(prefix)
+                .setRemoteAs(ImmutableList.of(remoteAs));
+      } else {
+        neighbor =
+            BgpActivePeerConfig.builder().setPeerAddress(prefix.getStartIp()).setRemoteAs(remoteAs);
+      }
 
       // route reflection
       Ip declaredClusterId = ig.getClusterId();
@@ -464,7 +478,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
       // inherit local-as
       neighbor.setLocalAs(ig.getLocalAs());
-      if (neighbor.getLocalAs() == null) {
+      if (ig.getLocalAs() == null) {
         _w.redFlag("Missing local-as for neighbor: " + ig.getRemoteAddress());
         continue;
       }
@@ -475,7 +489,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
        * Also set multipath
        */
       if (ig.getType() == BgpGroupType.INTERNAL) {
-        neighbor.setRemoteAs(ig.getLocalAs());
         boolean currentGroupMultipathIbgp = ig.getMultipath();
         if (multipathIbgpSet && currentGroupMultipathIbgp != multipathIbgp) {
           _w.redFlag(
@@ -487,7 +500,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
           multipathIbgpSet = true;
         }
       } else {
-        neighbor.setRemoteAs(ig.getPeerAs());
         boolean currentGroupMultipathEbgp = ig.getMultipath();
         if (multipathEbgpSet && currentGroupMultipathEbgp != multipathEbgp) {
           _w.redFlag(
@@ -532,7 +544,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         }
       }
       if (localIp == null) {
-        if (neighbor.getDynamic()) {
+        if (ig.getDynamic()) {
           _w.redFlag(
               "Could not determine local ip for bgp peering with neighbor prefix: " + prefix);
         } else {
@@ -543,7 +555,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
       } else {
         neighbor.setLocalIp(localIp);
       }
-      proc.getNeighbors().put(neighbor.getPrefix(), neighbor);
+      neighbor.setBgpProcess(proc);
+      neighbor.build();
     }
     proc.setMultipathEbgp(multipathEbgpSet);
     proc.setMultipathIbgp(multipathIbgp);
@@ -1312,6 +1325,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
     newIface.setSwitchportTrunkEncapsulation(swe);
     newIface.setBandwidth(iface.getBandwidth());
+    newIface.setOspfPointToPoint(iface.getOspfPointToPoint());
     return newIface;
   }
 
@@ -1512,7 +1526,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
         .getProposals()
         .forEach(
             ipsecProposalName -> {
-              IpsecProposal ipsecProposal = _c.getIpsecProposals().get(ipsecProposalName);
+              org.batfish.datamodel.IpsecProposal ipsecProposal =
+                  _c.getIpsecProposals().get(ipsecProposalName);
               if (ipsecProposal != null) {
                 newIpsecPolicy.getProposals().add(ipsecProposal);
               }
@@ -1522,6 +1537,70 @@ public final class JuniperConfiguration extends VendorConfiguration {
     newIpsecPolicy.setPfsKeyGroup(oldIpsecPolicy.getPfsKeyGroup());
 
     return newIpsecPolicy;
+  }
+
+  @Nullable
+  private IpsecPeerConfig toIpsecPeerConfig(IpsecVpn ipsecVpn) {
+    IpsecStaticPeerConfig.Builder ipsecStaticConfigBuilder = IpsecStaticPeerConfig.builder();
+    ipsecStaticConfigBuilder.setTunnelInterface(ipsecVpn.getBindInterface().getName());
+    IkeGateway ikeGateway = _ikeGateways.get(ipsecVpn.getGateway());
+
+    if (ikeGateway == null) {
+      _w.redFlag(
+          String.format(
+              "Cannot find the IKE gateway %s for ipsec vpn %s",
+              ipsecVpn.getGateway(), ipsecVpn.getName()));
+      return null;
+    }
+    ipsecStaticConfigBuilder.setDestinationAddress(ikeGateway.getAddress());
+    ipsecStaticConfigBuilder.setPhysicalInterface(ikeGateway.getExternalInterface().getName());
+
+    if (ikeGateway.getLocalAddress() != null) {
+      ipsecStaticConfigBuilder.setLocalAddress(ikeGateway.getLocalAddress());
+    } else if (ikeGateway.getExternalInterface() != null
+        && ikeGateway.getExternalInterface().getPrimaryAddress() != null) {
+      ipsecStaticConfigBuilder.setLocalAddress(
+          ikeGateway.getExternalInterface().getPrimaryAddress().getIp());
+    } else {
+      _w.redFlag(
+          String.format(
+              "External interface %s configured on IKE Gateway %s does not have any IP",
+              ikeGateway.getExternalInterface().getName(), ikeGateway.getName()));
+      return null;
+    }
+
+    ipsecStaticConfigBuilder.setIpsecPolicy(ipsecVpn.getIpsecPolicy());
+    ipsecStaticConfigBuilder.setIkePhase1Policy(ikeGateway.getIkePolicy());
+    return ipsecStaticConfigBuilder.build();
+  }
+
+  private static IpsecPhase2Policy toIpsecPhase2Policy(IpsecPolicy ipsecPolicy) {
+    IpsecPhase2Policy ipsecPhase2Policy = new IpsecPhase2Policy();
+    ipsecPhase2Policy.setPfsKeyGroup(ipsecPolicy.getPfsKeyGroup());
+    ipsecPhase2Policy.setProposals(ImmutableList.copyOf(ipsecPolicy.getProposals()));
+
+    return ipsecPhase2Policy;
+  }
+
+  private static org.batfish.datamodel.IpsecProposal toIpsecProposal(
+      IpsecProposal oldIpsecProposal) {
+    org.batfish.datamodel.IpsecProposal newIpsecProposal =
+        new org.batfish.datamodel.IpsecProposal(oldIpsecProposal.getName());
+    newIpsecProposal.setAuthenticationAlgorithm(oldIpsecProposal.getAuthenticationAlgorithm());
+    newIpsecProposal.setEncryptionAlgorithm(oldIpsecProposal.getEncryptionAlgorithm());
+    newIpsecProposal.setProtocols(oldIpsecProposal.getProtocols());
+
+    return newIpsecProposal;
+  }
+
+  private static IpsecPhase2Proposal toIpsecPhase2Proposal(IpsecProposal oldIpsecProposal) {
+    IpsecPhase2Proposal ipsecPhase2Proposal = new IpsecPhase2Proposal();
+    ipsecPhase2Proposal.setAuthenticationAlgorithm(oldIpsecProposal.getAuthenticationAlgorithm());
+    ipsecPhase2Proposal.setEncryptionAlgorithm(oldIpsecProposal.getEncryptionAlgorithm());
+    ipsecPhase2Proposal.setProtocols(oldIpsecProposal.getProtocols());
+    ipsecPhase2Proposal.setIpsecEncapsulationMode(oldIpsecProposal.getIpsecEncapsulationMode());
+
+    return ipsecPhase2Proposal;
   }
 
   private org.batfish.datamodel.IpsecVpn toIpsecVpn(IpsecVpn oldIpsecVpn) {
@@ -2015,24 +2094,43 @@ public final class JuniperConfiguration extends VendorConfiguration {
       _c.getIkeGateways().put(name, newIkeGateway);
     }
 
-    // copy ipsec proposals
-    _c.getIpsecProposals().putAll(_ipsecProposals);
+    // convert ipsec proposals
+    ImmutableSortedMap.Builder<String, IpsecPhase2Proposal> ipsecPhase2ProposalsBuilder =
+        ImmutableSortedMap.naturalOrder();
+    _ipsecProposals.forEach(
+        (ipsecProposalName, ipsecProposal) -> {
+          _c.getIpsecProposals().put(ipsecProposalName, toIpsecProposal(ipsecProposal));
+          ipsecPhase2ProposalsBuilder.put(ipsecProposalName, toIpsecPhase2Proposal(ipsecProposal));
+        });
+    _c.setIpsecPhase2Proposals(ipsecPhase2ProposalsBuilder.build());
 
     // convert ipsec policies
+    ImmutableSortedMap.Builder<String, IpsecPhase2Policy> ipsecPhase2PoliciesBuilder =
+        ImmutableSortedMap.naturalOrder();
     for (Entry<String, IpsecPolicy> e : _ipsecPolicies.entrySet()) {
       String name = e.getKey();
       IpsecPolicy oldIpsecPolicy = e.getValue();
       org.batfish.datamodel.IpsecPolicy newPolicy = toIpsecPolicy(oldIpsecPolicy);
       _c.getIpsecPolicies().put(name, newPolicy);
+      ipsecPhase2PoliciesBuilder.put(name, toIpsecPhase2Policy(oldIpsecPolicy));
     }
+    _c.setIpsecPhase2Policies(ipsecPhase2PoliciesBuilder.build());
 
     // convert ipsec vpns
+    ImmutableSortedMap.Builder<String, IpsecPeerConfig> ipsecPeerConfigBuilder =
+        ImmutableSortedMap.naturalOrder();
     for (Entry<String, IpsecVpn> e : _ipsecVpns.entrySet()) {
       String name = e.getKey();
       IpsecVpn oldIpsecVpn = e.getValue();
       org.batfish.datamodel.IpsecVpn newIpsecVpn = toIpsecVpn(oldIpsecVpn);
       _c.getIpsecVpns().put(name, newIpsecVpn);
+
+      IpsecPeerConfig ipsecPeerConfig = toIpsecPeerConfig(oldIpsecVpn);
+      if (ipsecPeerConfig != null) {
+        ipsecPeerConfigBuilder.put(name, ipsecPeerConfig);
+      }
     }
+    _c.setIpsecPeerConfigs(ipsecPeerConfigBuilder.build());
 
     // zones
     for (Zone zone : _zones.values()) {
