@@ -1971,6 +1971,7 @@ public class FlatJuniperGrammarTest {
     assertThat(c, hasDefaultVrf(hasOspfProcess(hasArea(3L, hasStubType(StubType.STUB)))));
     assertThat(c, hasDefaultVrf(hasOspfProcess(hasArea(4L, hasStubType(StubType.STUB)))));
     assertThat(c, hasDefaultVrf(hasOspfProcess(hasArea(5L, hasStubType(StubType.NONE)))));
+    assertThat(c, hasDefaultVrf(hasOspfProcess(hasArea(6L, hasStubType(StubType.STUB)))));
 
     // Check for stub subtype settings
     assertThat(
@@ -1994,6 +1995,10 @@ public class FlatJuniperGrammarTest {
         c,
         hasDefaultVrf(
             hasOspfProcess(hasArea(4L, hasStub(StubSettingsMatchers.hasSuppressType3())))));
+    assertThat(
+        c,
+        hasDefaultVrf(
+            hasOspfProcess(hasArea(6L, hasStub(StubSettingsMatchers.hasSuppressType3())))));
   }
 
   @Test

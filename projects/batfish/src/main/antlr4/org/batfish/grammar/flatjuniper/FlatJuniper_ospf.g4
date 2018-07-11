@@ -163,7 +163,7 @@ oa_stub
    (
       oas_no_summaries
       | oas_default_metric
-   )?
+   )*?
 ;
 
 oaa_override_metric
