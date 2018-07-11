@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableSortedSet;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -2124,15 +2125,27 @@ public final class JuniperConfiguration extends VendorConfiguration {
       }
 
       // create is-is process
-      // is-is runs only if at least one interface is an ISO address
+      // is-is runs only if at least one interface has an ISO address, check loopback first
       Optional<IsoAddress> isoAddress =
           _defaultRoutingInstance
               .getInterfaces()
               .values()
               .stream()
+              .filter(i -> i.getName().startsWith(FIRST_LOOPBACK_INTERFACE_NAME))
               .map(Interface::getIsoAddress)
               .filter(Objects::nonNull)
-              .findFirst();
+              .min(Comparator.comparing(IsoAddress::toString));
+      // Try all the other interfaces if no ISO address on Loopback
+      if (!isoAddress.isPresent()) {
+        isoAddress =
+            _defaultRoutingInstance
+                .getInterfaces()
+                .values()
+                .stream()
+                .map(Interface::getIsoAddress)
+                .filter(Objects::nonNull)
+                .min(Comparator.comparing(IsoAddress::toString));
+      }
       if (isoAddress.isPresent()) {
         // now we should create is-is process
         IsisProcess proc = createIsisProcess(ri, isoAddress.get());
