@@ -24,6 +24,7 @@ import org.batfish.datamodel.acl.TrueExpr;
  *
  * @param <T> Type of {@link AclLineMatchExpr} to collect from the visited expression.
  */
+@SuppressWarnings("unchecked")
 public class TypeMatchExprsCollector<T extends AclLineMatchExpr>
     implements GenericAclLineMatchExprVisitor<List<T>> {
 
