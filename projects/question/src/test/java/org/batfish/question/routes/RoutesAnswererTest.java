@@ -35,11 +35,17 @@ import java.util.SortedMap;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpRoute.Builder;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.MockDataPlane;
+import org.batfish.datamodel.NetworkConfigurations;
+import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
+import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
@@ -222,5 +228,46 @@ public class RoutesAnswererTest {
         computeNextHopNode(
             new Ip("1.1.1.1"), ImmutableMap.of(new Ip("1.1.1.2"), ImmutableSet.of("n1"))),
         nullValue());
+  }
+
+  /** Run through full pipeline (create question and answerer), */
+  @Test
+  public void testFullAnswerPipelineAndNumResults() {
+    // Setup mock data structures
+    NetworkFactory nf = new NetworkFactory();
+    Configuration c =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
+    Vrf vrf = nf.vrfBuilder().setOwner(c).build();
+    SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs =
+        ImmutableSortedMap.of(
+            c.getName(),
+            ImmutableSortedMap.of(
+                vrf.getName(),
+                new MockRib<>(
+                    ImmutableSet.of(
+                        StaticRoute.builder()
+                            .setNetwork(Prefix.parse("1.1.1.1/32"))
+                            .setNextHopInterface("Null")
+                            .build()))));
+    NetworkConfigurations nc = NetworkConfigurations.of(ImmutableMap.of(c.getName(), c));
+
+    AnswerElement el =
+        new RoutesAnswerer(
+                new RoutesQuestion(),
+                new MockBatfish(nc, MockDataPlane.builder().setRibs(ribs).build()))
+            .answer();
+
+    assert el.getSummary() != null;
+    assertThat(el.getSummary().getNumResults(), equalTo(1));
+
+    // no results for empty ribs
+    el =
+        new RoutesAnswerer(
+                new RoutesQuestion(),
+                new MockBatfish(
+                    nc, MockDataPlane.builder().setRibs(ImmutableSortedMap.of()).build()))
+            .answer();
+    assert el.getSummary() != null;
+    assertThat(el.getSummary().getNumResults(), equalTo(0));
   }
 }
