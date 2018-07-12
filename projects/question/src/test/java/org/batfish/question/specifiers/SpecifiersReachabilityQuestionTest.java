@@ -3,10 +3,14 @@ package org.batfish.question.specifiers;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
+import com.google.common.collect.ImmutableSortedSet;
 import java.util.regex.Pattern;
 import org.batfish.common.BatfishException;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
+import org.batfish.datamodel.Protocol;
+import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.specifier.AllInterfaceLinksLocationSpecifier;
 import org.batfish.specifier.AllInterfaceLinksLocationSpecifierFactory;
@@ -97,6 +101,20 @@ public class SpecifiersReachabilityQuestionTest {
     exception.expect(BatfishException.class);
     exception.expectMessage("Could not find NodeSpecifierFactory with name foo");
     question.getFinalNodesSpecifier();
+  }
+
+  @Test
+  public void getHeaderspace() {
+    ImmutableSortedSet<SubRange> dstPorts = ImmutableSortedSet.of(new SubRange(1, 2));
+    ImmutableSortedSet<Protocol> dstProtocols = ImmutableSortedSet.of(Protocol.DNS);
+
+    SpecifiersReachabilityQuestion question = new SpecifiersReachabilityQuestion();
+    question.setDstPorts(dstPorts);
+    question.setDstProtocols(dstProtocols);
+
+    HeaderSpace headerSpace = question.getHeaderSpace();
+    assertThat(headerSpace.getDstPorts(), equalTo(dstPorts));
+    assertThat(headerSpace.getDstProtocols(), equalTo(dstProtocols));
   }
 
   @Test
