@@ -33,15 +33,32 @@ public class IpAccessListSpecializerByLine
     _line = line;
   }
 
-  public IpAccessList specialize(IpAccessList ipAccessList) {
-    return specializeSublist(ipAccessList, ipAccessList.getLines().size() - 1);
+  /**
+   * Fully specializes the given ACL.
+   *
+   * @param ipAccessList ACL to specialize
+   * @return Specialized version of given ACL
+   */
+  public IpAccessList specializeDependency(IpAccessList ipAccessList) {
+    List<IpAccessListLine> specialized =
+        ipAccessList.getLines().stream().map(this::specialize).collect(Collectors.toList());
+    return IpAccessList.builder().setName(ipAccessList.getName()).setLines(specialized).build();
   }
 
-  public IpAccessList specializeSublist(IpAccessList ipAccessList, int lastLineNum) {
+  /**
+   * Specializes the ACL containing the line being analyzed. Only specializes up to the line being
+   * analyzed, and adds the line being analyzed to the end of the specialized ACL.
+   *
+   * @param ipAccessList ACL to specialize
+   * @param lineNumToAnalyze Line number of the line being analyzed
+   * @return Specialized version of ACL up to the given line number, with line being analyzed added
+   *     at the end
+   */
+  public IpAccessList specializeMainAcl(IpAccessList ipAccessList, int lineNumToAnalyze) {
     List<IpAccessListLine> specialized =
         ipAccessList
             .getLines()
-            .subList(0, lastLineNum)
+            .subList(0, lineNumToAnalyze)
             .stream()
             .map(this::specialize)
             .collect(Collectors.toList());
@@ -49,7 +66,7 @@ public class IpAccessListSpecializerByLine
     return IpAccessList.builder().setName(ipAccessList.getName()).setLines(specialized).build();
   }
 
-  public IpAccessListLine specialize(IpAccessListLine ipAccessListLine) {
+  private IpAccessListLine specialize(IpAccessListLine ipAccessListLine) {
     AclLineMatchExpr aclLineMatchExpr = ipAccessListLine.getMatchCondition().accept(this);
     return ipAccessListLine.toBuilder().setMatchCondition(aclLineMatchExpr).build();
   }

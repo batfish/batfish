@@ -748,14 +748,17 @@ public class Batfish extends PluginConsumer implements IBatfish {
       for (int lineNum = 0; lineNum < sanitizedAcl.getLines().size(); lineNum++) {
         IpAccessListLine line = sanitizedAcl.getLines().get(lineNum);
         IpAccessListSpecializerByLine specializer = new IpAccessListSpecializerByLine(line);
-        IpAccessList specializedAcl = specializer.specializeSublist(sanitizedAcl, lineNum);
+        IpAccessList specializedAcl = specializer.specializeMainAcl(sanitizedAcl, lineNum);
+
+        // TODO only need to specialize dependencies referenced before current line...
         Map<String, IpAccessList> specializedDependencies =
             dependencies
                 .keySet()
                 .stream()
                 .collect(
                     Collectors.toMap(
-                        Function.identity(), k -> specializer.specialize(dependencies.get(k))));
+                        Function.identity(),
+                        k -> specializer.specializeDependency(dependencies.get(k))));
 
         // Inject specialized ACL and dependencies into phony configuration
         NavigableMap<String, IpAccessList> aclsMap =
