@@ -669,70 +669,67 @@ public class Driver {
           "Failed while applying auto basedir. (All arguments are supplied?): " + e.getMessage());
     }
 
-    if (settings.canExecute()) {
-      if (claimIdle()) {
-
-        // lets put a try-catch around all the code around claimIdle
-        // so that we never the worker non-idle accidentally
-
-        try {
-
-          final BatfishLogger jobLogger =
-              new BatfishLogger(
-                  settings.getLogLevel(),
-                  settings.getTimestamp(),
-                  settings.getLogFile(),
-                  settings.getLogTee(),
-                  false);
-          settings.setLogger(jobLogger);
-
-          final Task task = new Task(args);
-
-          logTask(taskId, task);
-
-          @Nullable
-          SpanContext runTaskSpanContext =
-              GlobalTracer.get().activeSpan() == null
-                  ? null
-                  : GlobalTracer.get().activeSpan().context();
-
-          // run batfish on a new thread and set idle to true when done
-          Thread thread =
-              new Thread(
-                  () -> {
-                    try (ActiveSpan runBatfishSpan =
-                        GlobalTracer.get()
-                            .buildSpan("Initialize Batfish in a new thread")
-                            .addReference(References.FOLLOWS_FROM, runTaskSpanContext)
-                            .startActive()) {
-                      assert runBatfishSpan != null; // avoid unused warning
-                      task.setStatus(TaskStatus.InProgress);
-                      String errMsg = runBatfish(settings);
-                      if (errMsg == null) {
-                        task.setStatus(TaskStatus.TerminatedNormally);
-                      } else {
-                        task.setStatus(TaskStatus.TerminatedAbnormally);
-                        task.setErrMessage(errMsg);
-                      }
-                      task.setTerminated(new Date());
-                      jobLogger.close();
-                      makeIdle();
-                    }
-                  });
-
-          thread.start();
-
-          return Arrays.asList(BfConsts.SVC_SUCCESS_KEY, "running now");
-        } catch (Exception e) {
-          _mainLogger.error("Exception while running task: " + e.getMessage());
-          makeIdle();
-          return Arrays.asList(BfConsts.SVC_FAILURE_KEY, e.getMessage());
-        }
-      } else {
-        return Arrays.asList(BfConsts.SVC_FAILURE_KEY, "Not idle");
-      }
-    } else {
+    if (!settings.canExecute()) {
       return Arrays.asList(BfConsts.SVC_FAILURE_KEY, "Non-executable command");
+    }
+
+    if (!claimIdle()) {
+      return Arrays.asList(BfConsts.SVC_FAILURE_KEY, "Not idle");
+    }
+
+    // try/catch so that the worker becomes idle again in case of problem submitting thread.
+    try {
+
+      final BatfishLogger jobLogger =
+          new BatfishLogger(
+              settings.getLogLevel(),
+              settings.getTimestamp(),
+              settings.getLogFile(),
+              settings.getLogTee(),
+              false);
+      settings.setLogger(jobLogger);
+
+      final Task task = new Task(args);
+
+      logTask(taskId, task);
+
+      @Nullable
+      SpanContext runTaskSpanContext =
+          GlobalTracer.get().activeSpan() == null
+              ? null
+              : GlobalTracer.get().activeSpan().context();
+
+      // run batfish on a new thread and set idle to true when done
+      Thread thread =
+          new Thread(
+              () -> {
+                try (ActiveSpan runBatfishSpan =
+                    GlobalTracer.get()
+                        .buildSpan("Initialize Batfish in a new thread")
+                        .addReference(References.FOLLOWS_FROM, runTaskSpanContext)
+                        .startActive()) {
+                  assert runBatfishSpan != null; // avoid unused warning
+                  task.setStatus(TaskStatus.InProgress);
+                  String errMsg = runBatfish(settings);
+                  if (errMsg == null) {
+                    task.setStatus(TaskStatus.TerminatedNormally);
+                  } else {
+                    task.setStatus(TaskStatus.TerminatedAbnormally);
+                    task.setErrMessage(errMsg);
+                  }
+                  task.setTerminated(new Date());
+                  jobLogger.close();
+                  makeIdle();
+                }
+              });
+
+      thread.start();
+
+      return Arrays.asList(BfConsts.SVC_SUCCESS_KEY, "running now");
+    } catch (Exception e) {
+      _mainLogger.error("Exception while running task: " + e.getMessage());
+      makeIdle();
+      return Arrays.asList(BfConsts.SVC_FAILURE_KEY, e.getMessage());
     }
   }
 

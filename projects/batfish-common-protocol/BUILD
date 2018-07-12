@@ -104,6 +104,7 @@ java_library(
         ":common",
         ":recovery_grammar",
         "@antlr4_runtime//:compile",
+        "@commons_configuration2//:compile",
         "@commons_lang3//:compile",
         "@guava//:compile",
         "@hamcrest//:compile",
