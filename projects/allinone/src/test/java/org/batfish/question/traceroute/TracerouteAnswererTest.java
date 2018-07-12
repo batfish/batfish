@@ -117,6 +117,7 @@ public class TracerouteAnswererTest {
     TracerouteAnswerer answerer = new TracerouteAnswerer(question, _batfish);
     Set<Flow> flows = answerer.getFlows(TAG);
 
+    // neither interfaces have networks for which link (host) IPs can be inferred
     String ingressVrf = null;
     assertThat(flows, hasSize(2));
     assertThat(
@@ -135,7 +136,7 @@ public class TracerouteAnswererTest {
                 hasIngressInterface(FAST_ETHERNET),
                 hasIngressNode("node1"),
                 hasIngressVrf(ingressVrf),
-                hasSrcIp(NODE1_FAST_ETHERNET_LINK_IP),
+                hasSrcIp(Ip.ZERO),
                 hasTag(TAG))));
   }
 
