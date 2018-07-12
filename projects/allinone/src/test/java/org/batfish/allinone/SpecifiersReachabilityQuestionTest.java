@@ -22,7 +22,6 @@ import java.util.List;
 import org.batfish.datamodel.FlowHistory;
 import org.batfish.datamodel.FlowHistory.FlowHistoryInfo;
 import org.batfish.datamodel.ForwardingAction;
-import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.main.Batfish;
@@ -128,21 +127,6 @@ public class SpecifiersReachabilityQuestionTest {
                     not(hasDstIp(NODE1_LOOPBACK_IP)),
                     not(hasDstIp(NODE2_FAST_ETHERNET_IP)),
                     not(hasDstIp(NODE2_LOOPBACK_IP))))));
-  }
-
-  /**
-   * Both the srcIp constraint and the {@link HeaderSpace} constraint must be satisfied -- if they
-   * conflict, no flows will be found.
-   */
-  @Test
-  public void testConflictWithHeaderSpaceConstraint() {
-    SpecifiersReachabilityQuestion question = new SpecifiersReachabilityQuestion();
-    question.setDestinationIpSpaceSpecifierFactory(ConstantUniverseIpSpaceSpecifierFactory.NAME);
-    question.setHeaderSpace(HeaderSpace.builder().setSrcIps(new Ip("5.5.5.5").toIpSpace()).build());
-    AnswerElement answer = new SpecifiersReachabilityAnswerer(question, _batfish).answer();
-    assertThat(answer, instanceOf(FlowHistory.class));
-    Collection<FlowHistoryInfo> flowHistoryInfos = ((FlowHistory) answer).getTraces().values();
-    assertThat(flowHistoryInfos, hasSize(0));
   }
 
   /**
