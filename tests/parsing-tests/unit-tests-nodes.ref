@@ -246,26 +246,24 @@
               "multipathIbgp" : false,
               "neighbors" : {
                 "1.2.3.4/32" : {
-                  "remotePrefix" : "1.2.3.4/32",
+                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
-                  "address" : "1.2.3.4",
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
                   "allowRemoteAsOut" : false,
                   "clusterId" : 0,
                   "defaultMetric" : 0,
-                  "dynamic" : false,
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:1.2.3.4~",
                   "localAs" : 1,
+                  "peerAddress" : "1.2.3.4",
                   "remoteAs" : 1,
                   "routeReflectorClient" : false,
-                  "sendCommunity" : false,
-                  "vrf" : "default"
+                  "sendCommunity" : false
                 }
               },
               "routerId" : "0.0.0.0",
@@ -396,7 +394,7 @@
                 "trueStatements" : [
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ReturnFalse"
+                    "type" : "Suppress"
                   }
                 ]
               },
@@ -1214,9 +1212,19 @@
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "SWITCH",
+        "ikePhase1Proposals" : {
+          "1" : {
+            "name" : "1",
+            "authenticationMethod" : "RSA_SIGNATURES",
+            "diffieHellmanGroup" : "GROUP20",
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "hashingAlgorithm" : "SHA_256",
+            "lifetimeSeconds" : 86400
+          }
+        },
         "ikeProposals" : {
-          "001" : {
-            "name" : "001",
+          "1" : {
+            "name" : "1",
             "authenticationAlgorithm" : "SHA_256",
             "authenticationMethod" : "RSA_SIGNATURES",
             "diffieHellmanGroup" : "GROUP20",
@@ -2062,12 +2070,9 @@
           "default" : {
             "name" : "default",
             "bgpProcess" : {
-              "multipathEbgp" : true,
-              "multipathEquivalentAsPathMatchMode" : "FIRST_AS",
-              "multipathIbgp" : false,
-              "neighbors" : {
+              "dynamicNeighbors" : {
                 "10.1.1.0/24" : {
-                  "remotePrefix" : "10.1.1.0/24",
+                  "class" : "org.batfish.datamodel.BgpPassivePeerConfig",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
@@ -2080,7 +2085,6 @@
                   },
                   "clusterId" : 16843009,
                   "defaultMetric" : 0,
-                  "dynamic" : true,
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~PEER_EXPORT_POLICY:10.1.1.0/24~",
@@ -2088,12 +2092,17 @@
                   "importPolicy" : "~PEER_IMPORT_POLICY:10.1.1.0/24~",
                   "localAs" : 1,
                   "localIp" : "1.1.1.1",
-                  "remoteAs" : 2,
+                  "peerPrefix" : "10.1.1.0/24",
+                  "remoteAs" : [
+                    2
+                  ],
                   "routeReflectorClient" : false,
-                  "sendCommunity" : true,
-                  "vrf" : "default"
+                  "sendCommunity" : true
                 }
               },
+              "multipathEbgp" : true,
+              "multipathEquivalentAsPathMatchMode" : "FIRST_AS",
+              "multipathIbgp" : false,
               "routerId" : "1.1.1.1",
               "tieBreaker" : "ARRIVAL_ORDER"
             }
@@ -2303,11 +2312,10 @@
               "multipathIbgp" : false,
               "neighbors" : {
                 "1.1.1.1/32" : {
-                  "remotePrefix" : "1.1.1.1/32",
+                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
-                  "address" : "1.1.1.1",
                   "advertiseExternal" : false,
                   "advertiseInactive" : false,
                   "allowLocalAsIn" : false,
@@ -2317,17 +2325,16 @@
                   },
                   "clusterId" : 0,
                   "defaultMetric" : 0,
-                  "dynamic" : false,
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : true,
                   "exportPolicy" : "~PEER_EXPORT_POLICY:1.1.1.1/32~",
                   "group" : "MYGROUP",
                   "importPolicy" : "~PEER_IMPORT_POLICY:1.1.1.1/32~",
                   "localAs" : 1,
+                  "peerAddress" : "1.1.1.1",
                   "remoteAs" : 2,
                   "routeReflectorClient" : false,
-                  "sendCommunity" : true,
-                  "vrf" : "default"
+                  "sendCommunity" : true
                 }
               },
               "routerId" : "0.0.0.0",
@@ -2582,50 +2589,46 @@
               "multipathIbgp" : true,
               "neighbors" : {
                 "1.10.1.1/32" : {
-                  "remotePrefix" : "1.10.1.1/32",
+                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
-                  "address" : "1.10.1.1",
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
                   "allowRemoteAsOut" : false,
                   "clusterId" : 16843009,
                   "defaultMetric" : 0,
-                  "dynamic" : false,
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:1.10.1.1~",
                   "group" : "as1",
                   "localAs" : 1,
+                  "peerAddress" : "1.10.1.1",
                   "remoteAs" : 1,
                   "routeReflectorClient" : false,
-                  "sendCommunity" : true,
-                  "vrf" : "default"
+                  "sendCommunity" : true
                 },
                 "10.12.11.2/32" : {
-                  "remotePrefix" : "10.12.11.2/32",
+                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
-                  "address" : "10.12.11.2",
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
                   "allowRemoteAsOut" : false,
                   "clusterId" : 16843009,
                   "defaultMetric" : 0,
-                  "dynamic" : false,
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:10.12.11.2~",
                   "group" : "as2",
                   "localAs" : 1,
+                  "peerAddress" : "10.12.11.2",
                   "remoteAs" : 2,
                   "routeReflectorClient" : false,
-                  "sendCommunity" : true,
-                  "vrf" : "default"
+                  "sendCommunity" : true
                 }
               },
               "routerId" : "1.1.1.1",
@@ -3054,11 +3057,10 @@
               "multipathIbgp" : false,
               "neighbors" : {
                 "64.57.21.1/32" : {
-                  "remotePrefix" : "64.57.21.1/32",
+                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
-                  "address" : "64.57.21.1",
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
@@ -3066,16 +3068,15 @@
                   "clusterId" : 0,
                   "defaultMetric" : 0,
                   "description" : "cps AS11164 - SVL-PNI",
-                  "dynamic" : false,
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:64.57.21.1~",
                   "group" : "EBGP-PEER-SVL-PNI",
                   "localAs" : 2152,
+                  "peerAddress" : "64.57.21.1",
                   "remoteAs" : 11164,
                   "routeReflectorClient" : false,
-                  "sendCommunity" : false,
-                  "vrf" : "default"
+                  "sendCommunity" : false
                 }
               },
               "routerId" : "0.0.0.0",
@@ -5083,7 +5084,7 @@
                 "trueStatements" : [
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ReturnFalse"
+                    "type" : "Suppress"
                   }
                 ]
               },
@@ -5538,18 +5539,16 @@
               "multipathIbgp" : false,
               "neighbors" : {
                 "10.0.1.2/32" : {
-                  "remotePrefix" : "10.0.1.2/32",
+                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
-                  "address" : "10.0.1.2",
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
                   "allowRemoteAsOut" : false,
                   "clusterId" : 0,
                   "defaultMetric" : 0,
-                  "dynamic" : false,
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:aVrfWithInnerStatements:10.0.1.2~",
@@ -5558,10 +5557,10 @@
                     "CONNECTED-TO-BGP"
                   ],
                   "localAs" : 1,
+                  "peerAddress" : "10.0.1.2",
                   "remoteAs" : 65001,
                   "routeReflectorClient" : false,
-                  "sendCommunity" : false,
-                  "vrf" : "aVrfWithInnerStatements"
+                  "sendCommunity" : false
                 }
               },
               "routerId" : "0.0.0.0",
@@ -5799,22 +5798,117 @@
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "SWITCH",
+        "ikePhase1Keys" : {
+          "VRF:ABC:DEF:GHI:1234" : {
+            "keyHash" : "f300fd9a9833dc8b16a2c399b2b51c32fc40293606df9c1e814d978f6ebcb9f8",
+            "keyType" : "PRE_SHARED_KEY",
+            "localInterface" : "unset_local_interface",
+            "remoteIdentity" : {
+              "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+              "ipWildcard" : "1.1.1.1"
+            }
+          }
+        },
+        "ikePhase1Policies" : {
+          "myprofile" : {
+            "name" : "myprofile",
+            "ikePhase1Proposals" : [
+              "1"
+            ],
+            "localInterface" : "unset_local_interface",
+            "remoteIdentity" : {
+              "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+              "ipWildcard" : "1.2.3.4"
+            },
+            "selfIdentity" : "2.3.4.6"
+          }
+        },
+        "ikePhase1Proposals" : {
+          "1" : {
+            "name" : "1",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP2",
+            "encryptionAlgorithm" : "THREEDES_CBC",
+            "hashingAlgorithm" : "MD5",
+            "lifetimeSeconds" : 28800
+          }
+        },
         "ikePolicies" : {
           "myprofile" : {
             "name" : "myprofile",
             "proposals" : [
-              "001"
+              "1"
             ]
           }
         },
         "ikeProposals" : {
-          "001" : {
-            "name" : "001",
+          "1" : {
+            "name" : "1",
             "authenticationAlgorithm" : "MD5",
             "authenticationMethod" : "PRE_SHARED_KEYS",
             "diffieHellmanGroup" : "GROUP2",
             "encryptionAlgorithm" : "THREEDES_CBC",
             "lifetimeSeconds" : 28800
+          }
+        },
+        "ipsecPhase2Policies" : {
+          "abcdefg" : {
+            "proposals" : [
+              "hijklmnop"
+            ]
+          },
+          "~IPSEC_PHASE2_POLICY:VPN:5~" : {
+            "pfsKeyGroup" : "GROUP14",
+            "proposals" : [
+              "bleep"
+            ]
+          },
+          "~IPSEC_PHASE2_POLICY:VPNMAP:2~" : {
+            "pfsKeyGroup" : "GROUP2",
+            "proposals" : [
+              "mytransformset"
+            ]
+          }
+        },
+        "ipsecPhase2Proposals" : {
+          "ESP-3DES-MD5" : {
+            "authenticationAlgorithm" : "HMAC_MD5_96",
+            "encryptionAlgorithm" : "THREEDES_CBC",
+            "ipsecEncapsulationMode" : "TUNNEL",
+            "protocols" : [
+              "ESP"
+            ]
+          },
+          "IPSEC_AES_256" : {
+            "authenticationAlgorithm" : "HMAC_SHA1_96",
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "ipsecEncapsulationMode" : "TUNNEL",
+            "protocols" : [
+              "ESP"
+            ]
+          },
+          "cipts1" : {
+            "authenticationAlgorithm" : "HMAC_SHA_256_128",
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "ipsecEncapsulationMode" : "TUNNEL",
+            "protocols" : [
+              "ESP"
+            ]
+          },
+          "cipts2" : {
+            "authenticationAlgorithm" : "HMAC_SHA_512",
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "ipsecEncapsulationMode" : "TUNNEL",
+            "protocols" : [
+              "ESP"
+            ]
+          },
+          "noAuthHeader" : {
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "ipsecEncapsulationMode" : "TUNNEL",
+            "protocols" : [
+              "ESP"
+            ]
           }
         },
         "ipsecPolicies" : {
@@ -8757,26 +8851,24 @@
               "multipathIbgp" : false,
               "neighbors" : {
                 "2.2.2.2/32" : {
-                  "remotePrefix" : "2.2.2.2/32",
+                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
-                  "address" : "2.2.2.2",
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
                   "allowRemoteAsOut" : false,
                   "clusterId" : 0,
                   "defaultMetric" : 0,
-                  "dynamic" : false,
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:2.2.2.2~",
                   "localAs" : 65500,
+                  "peerAddress" : "2.2.2.2",
                   "remoteAs" : 6600,
                   "routeReflectorClient" : false,
-                  "sendCommunity" : false,
-                  "vrf" : "default"
+                  "sendCommunity" : false
                 }
               },
               "routerId" : "0.0.0.0",
@@ -11866,6 +11958,76 @@
           }
         }
       },
+      "ios_interface" : {
+        "configurationFormat" : "CISCO_IOS",
+        "name" : "ios_interface",
+        "defaultCrossZoneAction" : "ACCEPT",
+        "defaultInboundAction" : "ACCEPT",
+        "deviceType" : "SWITCH",
+        "interfaces" : {
+          "GigabitEthernet1/0/1" : {
+            "name" : "GigabitEthernet1/0/1",
+            "accessVlan" : 0,
+            "active" : true,
+            "autostate" : true,
+            "bandwidth" : 1.0E9,
+            "declaredNames" : [
+              "GigabitEthernet1/0/1"
+            ],
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : true,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          }
+        },
+        "vendorFamily" : {
+          "cisco" : {
+            "hostname" : "ios_interface",
+            "logging" : {
+              "on" : true
+            }
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default",
+            "interfaces" : [
+              "GigabitEthernet1/0/1"
+            ]
+          }
+        }
+      },
+      "ios_template" : {
+        "configurationFormat" : "CISCO_IOS",
+        "name" : "ios_template",
+        "defaultCrossZoneAction" : "ACCEPT",
+        "defaultInboundAction" : "ACCEPT",
+        "deviceType" : "SWITCH",
+        "vendorFamily" : {
+          "cisco" : {
+            "hostname" : "ios_template",
+            "logging" : {
+              "on" : true
+            }
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default"
+          }
+        }
+      },
       "ios_xr_acl" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "ios_xr_acl",
@@ -11892,15 +12054,168 @@
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "ROUTER",
+        "routeFilterLists" : {
+          "~MATCH_SUPPRESSED_SUMMARY_ONLY:default~" : {
+            "name" : "~MATCH_SUPPRESSED_SUMMARY_ONLY:default~",
+            "lines" : [
+              {
+                "action" : "ACCEPT",
+                "ipWildcard" : "1.0.0.0/8",
+                "lengthRange" : "9-32"
+              }
+            ]
+          }
+        },
         "routingPolicies" : {
+          "~AGGREGATE_ROUTE_GEN:default:1.0.0.0/8~" : {
+            "name" : "~AGGREGATE_ROUTE_GEN:default:1.0.0.0/8~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                  "prefix" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                  },
+                  "prefixSet" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                    "prefixSpace" : [
+                      "1.0.0.0/8:9-32"
+                    ]
+                  }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ]
+              }
+            ]
+          },
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
             "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
             "statements" : [
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "comment" : "Suppress more specific networks for summary-only aggregate-address networks",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                  "prefix" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                  },
+                  "prefixSet" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
+                    "name" : "~MATCH_SUPPRESSED_SUMMARY_ONLY:default~"
+                  }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "Suppress"
+                  }
+                ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
                 "guard" : {
                   "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
                   "disjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
+                      "conjuncts" : [
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                          "prefix" : {
+                            "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                          },
+                          "prefixSet" : {
+                            "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                            "prefixSpace" : [
+                              "1.0.0.0/8"
+                            ]
+                          }
+                        },
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                          "protocol" : "aggregate"
+                        },
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr",
+                          "expr" : {
+                            "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                            "type" : "True"
+                          },
+                          "postStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "UnsetWriteIntermediateBgpAttributes"
+                            }
+                          ],
+                          "postTrueStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "SetReadIntermediateBgpAttributes"
+                            },
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
+                              "originType" : {
+                                "class" : "org.batfish.datamodel.routing_policy.expr.LiteralOrigin",
+                                "originType" : "igp"
+                              }
+                            }
+                          ],
+                          "preStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "SetWriteIntermediateBgpAttributes"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
+                      "comment" : "Redistribute static routes into BGP",
+                      "conjuncts" : [
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                          "protocol" : "static"
+                        },
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr",
+                          "expr" : {
+                            "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                            "type" : "True"
+                          },
+                          "postStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "UnsetWriteIntermediateBgpAttributes"
+                            }
+                          ],
+                          "postTrueStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "SetReadIntermediateBgpAttributes"
+                            },
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
+                              "originType" : {
+                                "class" : "org.batfish.datamodel.routing_policy.expr.LiteralOrigin",
+                                "originType" : "incomplete"
+                              }
+                            }
+                          ],
+                          "preStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "SetWriteIntermediateBgpAttributes"
+                            }
+                          ]
+                        }
+                      ]
+                    },
                     {
                       "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
                       "protocol" : "bgp"
@@ -11936,6 +12251,18 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
+            "aggregateRoutes" : [
+              {
+                "class" : "org.batfish.datamodel.GeneratedRoute",
+                "administrativeCost" : 200,
+                "asPath" : [ ],
+                "discard" : true,
+                "generationPolicy" : "~AGGREGATE_ROUTE_GEN:default:1.0.0.0/8~",
+                "metric" : 0,
+                "network" : "1.0.0.0/8",
+                "nextHopIp" : "AUTO/NONE(-1l)"
+              }
+            ],
             "bgpProcess" : {
               "multipathEbgp" : false,
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
@@ -12074,11 +12401,10 @@
               "multipathIbgp" : false,
               "neighbors" : {
                 "1.2.1.1/32" : {
-                  "remotePrefix" : "1.2.1.1/32",
+                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
-                  "address" : "1.2.1.1",
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
@@ -12086,23 +12412,21 @@
                   "clusterId" : 0,
                   "defaultMetric" : 0,
                   "description" : "htegiofnoirwejhg",
-                  "dynamic" : false,
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:1.2.1.1~",
                   "group" : "foobar-iBGP_ipv4",
                   "localAs" : 5555,
+                  "peerAddress" : "1.2.1.1",
                   "remoteAs" : 5555,
                   "routeReflectorClient" : false,
-                  "sendCommunity" : false,
-                  "vrf" : "default"
+                  "sendCommunity" : false
                 },
                 "1.2.1.2/32" : {
-                  "remotePrefix" : "1.2.1.2/32",
+                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
-                  "address" : "1.2.1.2",
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
@@ -12110,23 +12434,21 @@
                   "clusterId" : 0,
                   "defaultMetric" : 0,
                   "description" : "hejtuignrfojfgner",
-                  "dynamic" : false,
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:1.2.1.2~",
                   "group" : "foobar-iBGP_ipv4",
                   "localAs" : 5555,
+                  "peerAddress" : "1.2.1.2",
                   "remoteAs" : 5555,
                   "routeReflectorClient" : false,
-                  "sendCommunity" : false,
-                  "vrf" : "default"
+                  "sendCommunity" : false
                 },
                 "1.2.1.3/32" : {
-                  "remotePrefix" : "1.2.1.3/32",
+                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
-                  "address" : "1.2.1.3",
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
@@ -12134,21 +12456,37 @@
                   "clusterId" : 0,
                   "defaultMetric" : 0,
                   "description" : "bafjewoifj",
-                  "dynamic" : false,
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:1.2.1.3~",
                   "group" : "foobar-iBGP_border_ipv4",
                   "localAs" : 5555,
+                  "peerAddress" : "1.2.1.3",
                   "remoteAs" : 5555,
                   "routeReflectorClient" : false,
-                  "sendCommunity" : false,
-                  "vrf" : "default"
+                  "sendCommunity" : false
                 }
               },
               "routerId" : "0.0.0.0",
               "tieBreaker" : "ARRIVAL_ORDER"
             }
+          }
+        }
+      },
+      "ios_xr_class_map" : {
+        "configurationFormat" : "CISCO_IOS_XR",
+        "name" : "ios_xr_class_map",
+        "defaultCrossZoneAction" : "ACCEPT",
+        "defaultInboundAction" : "ACCEPT",
+        "deviceType" : "SWITCH",
+        "vendorFamily" : {
+          "cisco" : {
+            "hostname" : "ios_xr_class_map"
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default"
           }
         }
       },
@@ -12208,6 +12546,43 @@
             "interfaces" : [
               "GigabitEthernet0/2/1/6"
             ]
+          }
+        }
+      },
+      "ios_xr_logging" : {
+        "configurationFormat" : "CISCO_IOS_XR",
+        "name" : "ios_xr_logging",
+        "defaultCrossZoneAction" : "ACCEPT",
+        "defaultInboundAction" : "ACCEPT",
+        "deviceType" : "SWITCH",
+        "vendorFamily" : {
+          "cisco" : {
+            "hostname" : "ios_xr_logging",
+            "logging" : {
+              "on" : true
+            }
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default"
+          }
+        }
+      },
+      "ios_xr_misc" : {
+        "configurationFormat" : "CISCO_IOS_XR",
+        "name" : "ios_xr_misc",
+        "defaultCrossZoneAction" : "ACCEPT",
+        "defaultInboundAction" : "ACCEPT",
+        "deviceType" : "SWITCH",
+        "vendorFamily" : {
+          "cisco" : {
+            "hostname" : "ios_xr_misc"
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default"
           }
         }
       },
@@ -12769,6 +13144,46 @@
         "vendorFamily" : {
           "cisco" : {
             "hostname" : "ip_prefix_list_single_line",
+            "logging" : {
+              "on" : true
+            }
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default"
+          }
+        }
+      },
+      "isr_crypto_gdoi" : {
+        "configurationFormat" : "CISCO_IOS",
+        "name" : "isr_crypto_gdoi",
+        "defaultCrossZoneAction" : "ACCEPT",
+        "defaultInboundAction" : "ACCEPT",
+        "deviceType" : "SWITCH",
+        "vendorFamily" : {
+          "cisco" : {
+            "hostname" : "isr_crypto_gdoi",
+            "logging" : {
+              "on" : true
+            }
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default"
+          }
+        }
+      },
+      "isr_voip" : {
+        "configurationFormat" : "CISCO_IOS",
+        "name" : "isr_voip",
+        "defaultCrossZoneAction" : "ACCEPT",
+        "defaultInboundAction" : "ACCEPT",
+        "deviceType" : "SWITCH",
+        "vendorFamily" : {
+          "cisco" : {
+            "hostname" : "isr_voip",
             "logging" : {
               "on" : true
             }
@@ -13645,11 +14060,10 @@
               "multipathIbgp" : false,
               "neighbors" : {
                 "172.16.2.1/32" : {
-                  "remotePrefix" : "172.16.2.1/32",
+                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
-                  "address" : "172.16.2.1",
                   "advertiseExternal" : false,
                   "advertiseInactive" : false,
                   "allowLocalAsIn" : false,
@@ -13661,24 +14075,22 @@
                   },
                   "clusterId" : 0,
                   "defaultMetric" : 0,
-                  "dynamic" : false,
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~PEER_EXPORT_POLICY:172.16.2.1/32~",
                   "group" : "ext",
                   "importPolicy" : "~PEER_IMPORT_POLICY:172.16.2.1/32~",
                   "localAs" : 65533,
+                  "peerAddress" : "172.16.2.1",
                   "remoteAs" : 65530,
                   "routeReflectorClient" : false,
-                  "sendCommunity" : true,
-                  "vrf" : "default"
+                  "sendCommunity" : true
                 },
                 "172.16.2.2/32" : {
-                  "remotePrefix" : "172.16.2.2/32",
+                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
-                  "address" : "172.16.2.2",
                   "advertiseExternal" : false,
                   "advertiseInactive" : false,
                   "allowLocalAsIn" : false,
@@ -13689,19 +14101,129 @@
                   },
                   "clusterId" : 0,
                   "defaultMetric" : 0,
-                  "dynamic" : false,
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~PEER_EXPORT_POLICY:172.16.2.2/32~",
                   "group" : "ext1",
                   "importPolicy" : "~PEER_IMPORT_POLICY:172.16.2.2/32~",
                   "localAs" : 65533,
+                  "peerAddress" : "172.16.2.2",
                   "remoteAs" : 65530,
                   "routeReflectorClient" : false,
-                  "sendCommunity" : true,
-                  "vrf" : "default"
+                  "sendCommunity" : true
                 }
               },
+              "routerId" : "0.0.0.0",
+              "tieBreaker" : "ARRIVAL_ORDER"
+            }
+          }
+        }
+      },
+      "juniper_bgp_remove_private_as" : {
+        "configurationFormat" : "FLAT_JUNIPER",
+        "name" : "juniper_bgp_remove_private_as",
+        "defaultCrossZoneAction" : "ACCEPT",
+        "defaultInboundAction" : "ACCEPT",
+        "deviceType" : "ROUTER",
+        "routingPolicies" : {
+          "~DEFAULT_BGP_EXPORT_POLICY~" : {
+            "name" : "~DEFAULT_BGP_EXPORT_POLICY~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                    "falseStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "ExitReject"
+                      }
+                    ],
+                    "guard" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                      "type" : "CallExprContext"
+                    },
+                    "trueStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "ReturnFalse"
+                      }
+                    ]
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
+                  "disjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                      "protocol" : "bgp"
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                      "protocol" : "ibgp"
+                    }
+                  ]
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                    "falseStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "ExitAccept"
+                      }
+                    ],
+                    "guard" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                      "type" : "CallExprContext"
+                    },
+                    "trueStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "ReturnTrue"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "~DEFAULT_BGP_IMPORT_POLICY~" : {
+            "name" : "~DEFAULT_BGP_IMPORT_POLICY~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitAccept"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                  "type" : "CallExprContext"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "vendorFamily" : {
+          "juniper" : { }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default",
+            "bgpProcess" : {
+              "multipathEbgp" : false,
+              "multipathEquivalentAsPathMatchMode" : "FIRST_AS",
+              "multipathIbgp" : false,
               "routerId" : "0.0.0.0",
               "tieBreaker" : "ARRIVAL_ORDER"
             }
@@ -14709,6 +15231,38 @@
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "SWITCH",
+        "ikePhase1Keys" : {
+          "~IKE_PHASE1_KEY_1.2.3.4~" : {
+            "keyType" : "PRE_SHARED_KEY",
+            "localInterface" : "unset_local_interface",
+            "remoteIdentity" : {
+              "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+              "ipWildcard" : "0.0.0.0"
+            }
+          }
+        },
+        "ikePhase1Policies" : {
+          "1.2.3.4" : {
+            "name" : "1.2.3.4",
+            "ikePhase1Key" : {
+              "keyType" : "PRE_SHARED_KEY",
+              "localInterface" : "unset_local_interface",
+              "remoteIdentity" : {
+                "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                "ipWildcard" : "0.0.0.0"
+              }
+            },
+            "ikePhase1Proposals" : [
+              "PROPOSAL"
+            ]
+          }
+        },
+        "ikePhase1Proposals" : {
+          "PROPOSAL" : {
+            "name" : "PROPOSAL",
+            "lifetimeSeconds" : 28800
+          }
+        },
         "ikePolicies" : {
           "1.2.3.4" : {
             "name" : "1.2.3.4",
@@ -15322,26 +15876,24 @@
               "multipathIbgp" : false,
               "neighbors" : {
                 "123.123.123.123/32" : {
-                  "remotePrefix" : "123.123.123.123/32",
+                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
-                  "address" : "123.123.123.123",
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
                   "allowRemoteAsOut" : false,
                   "clusterId" : 0,
                   "defaultMetric" : 0,
-                  "dynamic" : false,
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:123.123.123.123~",
                   "localAs" : 1,
+                  "peerAddress" : "123.123.123.123",
                   "remoteAs" : 1,
                   "routeReflectorClient" : false,
-                  "sendCommunity" : false,
-                  "vrf" : "default"
+                  "sendCommunity" : false
                 }
               },
               "routerId" : "0.0.0.0",
@@ -15491,26 +16043,24 @@
               "multipathIbgp" : false,
               "neighbors" : {
                 "123.123.123.123/32" : {
-                  "remotePrefix" : "123.123.123.123/32",
+                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
-                  "address" : "123.123.123.123",
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
                   "allowRemoteAsOut" : false,
                   "clusterId" : 0,
                   "defaultMetric" : 0,
-                  "dynamic" : false,
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:123.123.123.123~",
                   "localAs" : 1,
+                  "peerAddress" : "123.123.123.123",
                   "remoteAs" : 1,
                   "routeReflectorClient" : false,
-                  "sendCommunity" : false,
-                  "vrf" : "default"
+                  "sendCommunity" : false
                 }
               },
               "routerId" : "0.0.0.0",
@@ -15720,11 +16270,10 @@
               "multipathIbgp" : false,
               "neighbors" : {
                 "1.1.1.1/32" : {
-                  "remotePrefix" : "1.1.1.1/32",
+                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
-                  "address" : "1.1.1.1",
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
@@ -15732,22 +16281,20 @@
                   "clusterId" : 168430090,
                   "defaultMetric" : 0,
                   "description" : "neighbor-4-4-4-4-remote-as-4-af-ipv6-desc !nexus",
-                  "dynamic" : false,
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:1.1.1.1~",
                   "localAs" : 1,
+                  "peerAddress" : "1.1.1.1",
                   "remoteAs" : 1,
                   "routeReflectorClient" : false,
-                  "sendCommunity" : false,
-                  "vrf" : "default"
+                  "sendCommunity" : false
                 },
                 "3.3.3.3/32" : {
-                  "remotePrefix" : "3.3.3.3/32",
+                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
-                  "address" : "3.3.3.3",
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
@@ -15755,22 +16302,20 @@
                   "clusterId" : 168430090,
                   "defaultMetric" : 0,
                   "description" : "neighbor-4-4-4-4-remote-as-4-af-ipv6-desc !nexus",
-                  "dynamic" : false,
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:3.3.3.3~",
                   "localAs" : 1,
+                  "peerAddress" : "3.3.3.3",
                   "remoteAs" : 3,
                   "routeReflectorClient" : false,
-                  "sendCommunity" : false,
-                  "vrf" : "default"
+                  "sendCommunity" : false
                 },
                 "4.4.4.4/32" : {
-                  "remotePrefix" : "4.4.4.4/32",
+                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
-                  "address" : "4.4.4.4",
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
@@ -15778,15 +16323,14 @@
                   "clusterId" : 168430090,
                   "defaultMetric" : 0,
                   "description" : "neighbor-4-4-4-4-remote-as-4-af-ipv6-desc !nexus",
-                  "dynamic" : false,
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:4.4.4.4~",
                   "localAs" : 1,
+                  "peerAddress" : "4.4.4.4",
                   "remoteAs" : 4,
                   "routeReflectorClient" : false,
-                  "sendCommunity" : false,
-                  "vrf" : "default"
+                  "sendCommunity" : false
                 }
               },
               "routerId" : "10.10.10.10",
@@ -16514,26 +17058,24 @@
               "multipathIbgp" : false,
               "neighbors" : {
                 "10.0.0.0/32" : {
-                  "remotePrefix" : "10.0.0.0/32",
+                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
-                  "address" : "10.0.0.0",
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
                   "allowRemoteAsOut" : false,
                   "clusterId" : 0,
                   "defaultMetric" : 0,
-                  "dynamic" : false,
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:10.0.0.0~",
                   "localAs" : 2,
+                  "peerAddress" : "10.0.0.0",
                   "remoteAs" : 1,
                   "routeReflectorClient" : false,
-                  "sendCommunity" : false,
-                  "vrf" : "default"
+                  "sendCommunity" : false
                 }
               },
               "routerId" : "0.0.0.0",
@@ -18610,12 +19152,9 @@
           "default" : {
             "name" : "default",
             "bgpProcess" : {
-              "multipathEbgp" : true,
-              "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
-              "multipathIbgp" : true,
-              "neighbors" : {
+              "dynamicNeighbors" : {
                 "10.98.25.0/25" : {
-                  "remotePrefix" : "10.98.25.0/25",
+                  "class" : "org.batfish.datamodel.BgpPassivePeerConfig",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
@@ -18626,23 +19165,28 @@
                   "clusterId" : 0,
                   "defaultMetric" : 0,
                   "description" : "inheritance in which the neighbor is a prefix",
-                  "dynamic" : true,
                   "ebgpMultihop" : true,
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:10.98.25.0/25~",
                   "group" : "RAAS",
                   "localAs" : 64601,
-                  "remoteAs" : 65511,
+                  "peerPrefix" : "10.98.25.0/25",
+                  "remoteAs" : [
+                    65511
+                  ],
                   "routeReflectorClient" : false,
-                  "sendCommunity" : false,
-                  "vrf" : "default"
-                },
+                  "sendCommunity" : false
+                }
+              },
+              "multipathEbgp" : true,
+              "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
+              "multipathIbgp" : true,
+              "neighbors" : {
                 "100.93.100.16/32" : {
-                  "remotePrefix" : "100.93.100.16/32",
+                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
-                  "address" : "100.93.100.16",
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : true,
@@ -18650,16 +19194,15 @@
                   "clusterId" : 0,
                   "defaultMetric" : 0,
                   "description" : "a simple inheritance example",
-                  "dynamic" : false,
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:100.93.100.16~",
                   "group" : "SPINE",
                   "localAs" : 64601,
+                  "peerAddress" : "100.93.100.16",
                   "remoteAs" : 64802,
                   "routeReflectorClient" : false,
-                  "sendCommunity" : false,
-                  "vrf" : "default"
+                  "sendCommunity" : false
                 }
               },
               "routerId" : "0.0.0.0",
@@ -19441,6 +19984,65 @@
                         "type" : "SetLocalDefaultActionAccept"
                       }
                     ]
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.BufferedStatement",
+                    "statement" : {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.SetNextHop",
+                      "destinationVrf" : false,
+                      "expr" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.DiscardNextHop"
+                      }
+                    }
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                    "falseStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "SetDefaultActionAccept"
+                      }
+                    ],
+                    "guard" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                      "type" : "CallExprContext"
+                    },
+                    "trueStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "SetLocalDefaultActionAccept"
+                      }
+                    ]
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.BufferedStatement",
+                    "statement" : {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Comment",
+                      "comment" : "NOP: unsupported route-policy statement: 'set path-selection backup 1 install multipath-protect advertise\n'"
+                    }
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                    "falseStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "SetDefaultActionAccept"
+                      }
+                    ],
+                    "guard" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                      "type" : "CallExprContext"
+                    },
+                    "trueStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "SetLocalDefaultActionAccept"
+                      }
+                    ]
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "Unsuppress"
                   }
                 ]
               }
@@ -20963,18 +21565,16 @@
               "multipathIbgp" : false,
               "neighbors" : {
                 "1.1.1.1/32" : {
-                  "remotePrefix" : "1.1.1.1/32",
+                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
-                  "address" : "1.1.1.1",
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
                   "allowRemoteAsOut" : false,
                   "clusterId" : 0,
                   "defaultMetric" : 0,
-                  "dynamic" : false,
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:1.1.1.1~",
@@ -20984,10 +21584,10 @@
                     "FROM_ABC_V4"
                   ],
                   "localAs" : 1,
+                  "peerAddress" : "1.1.1.1",
                   "remoteAs" : 2,
                   "routeReflectorClient" : false,
-                  "sendCommunity" : true,
-                  "vrf" : "default"
+                  "sendCommunity" : true
                 }
               },
               "routerId" : "0.0.0.0",

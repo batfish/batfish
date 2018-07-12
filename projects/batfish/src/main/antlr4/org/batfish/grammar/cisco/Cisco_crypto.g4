@@ -141,6 +141,14 @@ certificate
    ~QUIT+
 ;
 
+cg_null
+:
+   (
+      IDENTITY
+      | SERVER
+   ) null_rest_of_line
+;
+
 ci1_null
 :
    (
@@ -394,6 +402,7 @@ cis_profile
       | cisprf_local_address
       | cisprf_match
       | cisprf_null
+      | cisprf_self_identity
    )*
 ;
 
@@ -474,6 +483,12 @@ cisprf_null
    ) null_rest_of_line
 ;
 
+cisprf_self_identity
+:
+   SELF_IDENTITY IP_ADDRESS NEWLINE
+;
+
+
 ck_null
 :
    (
@@ -520,7 +535,7 @@ ckr_local_address
 
 ckr_psk
 :
-   PRE_SHARED_KEY ADDRESS IP_ADDRESS KEY variable_permissive NEWLINE
+   PRE_SHARED_KEY ADDRESS ip_address = IP_ADDRESS (wildcard_mask = IP_ADDRESS)? KEY variable_permissive NEWLINE
 ;
 
 cpki_certificate_chain
@@ -641,6 +656,14 @@ crypto_engine
    ENGINE null_rest_of_line
 ;
 
+crypto_gdoi
+:
+   GDOI null_rest_of_line
+   (
+      cg_null
+   )*
+;
+
 crypto_ikev1
 :
    IKEV1
@@ -714,6 +737,7 @@ crypto_map_null
 :
    (
       INTERFACE
+      | LOCAL_ADDRESS
       | REDUNDANCY
    ) null_rest_of_line
 ;
@@ -721,9 +745,25 @@ crypto_map_null
 crypto_map_tail
 :
    (
-      crypto_map_t_ipsec_isakmp
+      crypto_map_t_gdoi
+      | crypto_map_t_ipsec_isakmp
       | crypto_map_t_null
    )
+;
+
+crypto_map_t_g_null
+:
+   (
+      SET
+   ) null_rest_of_line
+;
+
+crypto_map_t_gdoi
+:
+   GDOI NEWLINE
+   (
+      crypto_map_t_g_null
+   )*
 ;
 
 crypto_map_t_ii_match_address
@@ -915,6 +955,7 @@ s_crypto
       | crypto_csr_params
       | crypto_dynamic_map
       | crypto_engine
+      | crypto_gdoi
       | crypto_ikev1
       | crypto_ikev2
       | crypto_ipsec

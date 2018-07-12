@@ -159,10 +159,15 @@
         "interface_name" : "interface_name",
         "interface_sdr" : "interface_sdr",
         "ios_bgp" : "ios_bgp",
+        "ios_interface" : "ios_interface",
+        "ios_template" : "ios_template",
         "ios_xr_acl" : "ios_xr_acl",
         "ios_xr_bgp" : "ios_xr_bgp",
         "ios_xr_bgp_neighbor_group" : "ios_xr_bgp_neighbor_group",
+        "ios_xr_class_map" : "ios_xr_class_map",
         "ios_xr_isis" : "ios_xr_isis",
+        "ios_xr_logging" : "ios_xr_logging",
+        "ios_xr_misc" : "ios_xr_misc",
         "ios_xr_multipart" : "ios_xr_multipart",
         "ios_xr_ntp" : "ios_xr_ntp",
         "ios_xr_ospf" : "ios_xr_ospf",
@@ -170,12 +175,15 @@
         "ios_xr_ssh" : "ios_xr_ssh",
         "ios_xr_taskgroup" : "ios_xr_taskgroup",
         "ip_prefix_list_single_line" : "ip_prefix_list_single_line",
+        "isr_crypto_gdoi" : "isr_crypto",
+        "isr_voip" : "isr_voip",
         "juniper-ospf" : "juniper_ospf",
         "juniper-tcpflags" : "juniper-tcpflags",
         "juniper_application" : "juniper_application",
         "juniper_apply_macro" : "juniper_apply_macro",
         "juniper_bgp" : "juniper_bgp",
         "juniper_bgp_authentication" : "juniper_bgp_authentication",
+        "juniper_bgp_remove_private_as" : "juniper_bgp_remove_private_as",
         "juniper_extended_community" : "juniper_extended_community",
         "juniper_firewall" : "juniper_firewall",
         "juniper_forwarding_options" : "juniper_forwarding_options",
@@ -410,10 +418,15 @@
         "interface_name" : "PASSED",
         "interface_sdr" : "PASSED",
         "ios_bgp" : "PASSED",
+        "ios_interface" : "PASSED",
+        "ios_template" : "PASSED",
         "ios_xr_acl" : "PASSED",
         "ios_xr_bgp" : "PASSED",
         "ios_xr_bgp_neighbor_group" : "PASSED",
+        "ios_xr_class_map" : "PASSED",
         "ios_xr_isis" : "PASSED",
+        "ios_xr_logging" : "PASSED",
+        "ios_xr_misc" : "PASSED",
         "ios_xr_multipart" : "PASSED",
         "ios_xr_ntp" : "PASSED",
         "ios_xr_ospf" : "PASSED",
@@ -421,12 +434,15 @@
         "ios_xr_ssh" : "PASSED",
         "ios_xr_taskgroup" : "PASSED",
         "ip_prefix_list_single_line" : "PASSED",
+        "isr_crypto_gdoi" : "PASSED",
+        "isr_voip" : "PASSED",
         "juniper-ospf" : "PASSED",
         "juniper-tcpflags" : "PASSED",
         "juniper_application" : "PASSED",
         "juniper_apply_macro" : "PASSED",
         "juniper_bgp" : "PASSED",
         "juniper_bgp_authentication" : "PASSED",
+        "juniper_bgp_remove_private_as" : "PASSED",
         "juniper_extended_community" : "PASSED",
         "juniper_firewall" : "PASSED",
         "juniper_forwarding_options" : "PASSED",
@@ -17006,6 +17022,21 @@
             "            low = DEC:'0'  <== mode:M_Interface)))",
             "      NEWLINE:'\\n'  <== mode:M_Interface",
             "      (cntlr_null",
+            "        DESCRIPTION:'description'  <== mode:DEFAULT_MODE",
+            "        (null_rest_of_line",
+            "          RAW_TEXT:' blah'  <== mode:M_Description",
+            "          NEWLINE:'\\n'  <== mode:M_Description))",
+            "      (cntlr_null",
+            "        FRAMING:'framing'  <== mode:DEFAULT_MODE",
+            "        (null_rest_of_line",
+            "          VARIABLE:'no-crc4'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "      (cntlr_null",
+            "        LINE_TERMINATION:'line-termination'  <== mode:DEFAULT_MODE",
+            "        (null_rest_of_line",
+            "          VARIABLE:'75-ohm'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "      (cntlr_null",
             "        PRI_GROUP:'pri-group'  <== mode:DEFAULT_MODE",
             "        (null_rest_of_line",
             "          VARIABLE:'timeslots'  <== mode:DEFAULT_MODE",
@@ -18588,6 +18619,10 @@
             "            REVERSE_ROUTE:'reverse-route'  <== mode:DEFAULT_MODE",
             "            (null_rest_of_line",
             "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "          (cisprf_self_identity",
+            "            SELF_IDENTITY:'self-identity'  <== mode:DEFAULT_MODE",
+            "            IP_ADDRESS:'2.3.4.6'  <== mode:DEFAULT_MODE",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "          (cisprf_null",
             "            VRF:'vrf'  <== mode:DEFAULT_MODE",
             "            (null_rest_of_line",
@@ -18753,7 +18788,7 @@
             "        (ckr_psk",
             "          PRE_SHARED_KEY:'pre-shared-key'  <== mode:DEFAULT_MODE",
             "          ADDRESS:'address'  <== mode:DEFAULT_MODE",
-            "          IP_ADDRESS:'1.1.1.1'  <== mode:DEFAULT_MODE",
+            "          ip_address = IP_ADDRESS:'1.1.1.1'  <== mode:DEFAULT_MODE",
             "          KEY:'key'  <== mode:DEFAULT_MODE",
             "          (variable_permissive",
             "            VARIABLE:'9Aa9'  <== mode:DEFAULT_MODE",
@@ -36452,6 +36487,11 @@
             "              TCP:'tcp'  <== mode:DEFAULT_MODE",
             "              VARIABLE:'establish'  <== mode:DEFAULT_MODE",
             "              DEC:'2'  <== mode:DEFAULT_MODE",
+            "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "          (voice_class_h323_null",
+            "            TELEPHONY_SERVICE:'telephony-service'  <== mode:DEFAULT_MODE",
+            "            (null_rest_of_line",
+            "              VARIABLE:'ccm-compatible'  <== mode:DEFAULT_MODE",
             "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))))",
             "  (stanza",
             "    (s_voice",
@@ -39377,6 +39417,19 @@
             "      procnum = DEC:'1'  <== mode:DEFAULT_MODE",
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "      (router_bgp_stanza_tail",
+            "        (neighbor_flat_rb_stanza",
+            "          NEIGHBOR:'neighbor'  <== mode:DEFAULT_MODE",
+            "          ip = IP_ADDRESS:'1.2.3.4'  <== mode:M_NEIGHBOR",
+            "          (bgp_tail",
+            "            (advertise_map_bgp_tail",
+            "              ADVERTISE_MAP:'advertise-map'  <== mode:DEFAULT_MODE",
+            "              am_name = (variable",
+            "                VARIABLE:'ADVERTISE_MAP'  <== mode:DEFAULT_MODE)",
+            "              EXIST_MAP:'exist-map'  <== mode:DEFAULT_MODE",
+            "              em_name = (variable",
+            "                VARIABLE:'EXIST_MAP'  <== mode:DEFAULT_MODE)",
+            "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
+            "      (router_bgp_stanza_tail",
             "        (address_family_rb_stanza",
             "          (address_family_header",
             "            ADDRESS_FAMILY:'address-family'  <== mode:DEFAULT_MODE",
@@ -39391,6 +39444,98 @@
             "                ACTIVATE:'activate'  <== mode:DEFAULT_MODE",
             "                NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "          (address_family_footer)))))",
+            "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
+          ]
+        },
+        "ios_interface" : {
+          "sentences" : [
+            "(cisco_configuration",
+            "  (stanza",
+            "    (s_hostname",
+            "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
+            "      VARIABLE:'ios_interface'  <== mode:DEFAULT_MODE",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "  (stanza",
+            "    (s_interface",
+            "      INTERFACE:'interface'  <== mode:DEFAULT_MODE",
+            "      iname = (interface_name",
+            "        name_prefix_alpha = M_Interface_PREFIX:'GigabitEthernet'  <== mode:M_Interface",
+            "        DEC:'1'  <== mode:M_Interface",
+            "        FORWARD_SLASH:'/'  <== mode:M_Interface",
+            "        DEC:'0'  <== mode:M_Interface",
+            "        FORWARD_SLASH:'/'  <== mode:M_Interface",
+            "        (range",
+            "          (subrange",
+            "            low = DEC:'1'  <== mode:M_Interface)))",
+            "      NEWLINE:'\\n'  <== mode:M_Interface",
+            "      (if_inner",
+            "        (if_service_policy_control_subscriber",
+            "          SERVICE_POLICY:'service-policy'  <== mode:DEFAULT_MODE",
+            "          TYPE:'type'  <== mode:DEFAULT_MODE",
+            "          CONTROL:'control'  <== mode:DEFAULT_MODE",
+            "          SUBSCRIBER:'subscriber'  <== mode:DEFAULT_MODE",
+            "          policy_map = (variable",
+            "            VARIABLE:'FOOBAR'  <== mode:DEFAULT_MODE)",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "      (if_inner",
+            "        (if_null_single",
+            "          SPEED:'speed'  <== mode:DEFAULT_MODE",
+            "          NONEGOTIATE:'nonegotiate'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
+            "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
+          ]
+        },
+        "ios_template" : {
+          "sentences" : [
+            "(cisco_configuration",
+            "  (stanza",
+            "    (s_hostname",
+            "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
+            "      VARIABLE:'ios_template'  <== mode:DEFAULT_MODE",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "  (stanza",
+            "    (s_template",
+            "      TEMPLATE:'template'  <== mode:DEFAULT_MODE",
+            "      (null_rest_of_line",
+            "        VARIABLE:'TEMPLATE_NAME'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (template_null",
+            "        ACCESS_SESSION:'access-session'  <== mode:DEFAULT_MODE",
+            "        (null_rest_of_line",
+            "          VARIABLE:'port-control'  <== mode:DEFAULT_MODE",
+            "          AUTO:'auto'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "      (template_null",
+            "        AUTHENTICATION:'authentication'  <== mode:DEFAULT_MODE",
+            "        (null_rest_of_line",
+            "          VARIABLE:'periodic'  <== mode:M_Authentication",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "      (template_null",
+            "        AUTHENTICATION:'authentication'  <== mode:DEFAULT_MODE",
+            "        (null_rest_of_line",
+            "          VARIABLE:'timer'  <== mode:M_Authentication",
+            "          VARIABLE:'reauthenticate'  <== mode:DEFAULT_MODE",
+            "          DEC:'7200'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "      (template_null",
+            "        DOT1X:'dot1x'  <== mode:DEFAULT_MODE",
+            "        (null_rest_of_line",
+            "          VARIABLE:'pae'  <== mode:DEFAULT_MODE",
+            "          VARIABLE:'authenticator'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "      (template_null",
+            "        MAB:'mab'  <== mode:DEFAULT_MODE",
+            "        (null_rest_of_line",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "      (template_null",
+            "        RADIUS_SERVER:'radius-server'  <== mode:DEFAULT_MODE",
+            "        (null_rest_of_line",
+            "          VARIABLE:'dead-criteria'  <== mode:DEFAULT_MODE",
+            "          TIME:'time'  <== mode:DEFAULT_MODE",
+            "          DEC:'30'  <== mode:DEFAULT_MODE",
+            "          VARIABLE:'tries'  <== mode:DEFAULT_MODE",
+            "          DEC:'3'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
           ]
         },
@@ -39450,7 +39595,47 @@
             "          BGP:'bgp'  <== mode:DEFAULT_MODE",
             "          BESTPATH:'bestpath'  <== mode:DEFAULT_MODE",
             "          COMPARE_ROUTERID:'compare-routerid'  <== mode:DEFAULT_MODE",
-            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "      (router_bgp_stanza_tail",
+            "        (address_family_rb_stanza",
+            "          (address_family_header",
+            "            ADDRESS_FAMILY:'address-family'  <== mode:DEFAULT_MODE",
+            "            af = (bgp_address_family",
+            "              IPV4:'ipv4'  <== mode:DEFAULT_MODE",
+            "              UNICAST:'unicast'  <== mode:DEFAULT_MODE)",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "          (additional_paths_receive_xr_rb_stanza",
+            "            ADDITIONAL_PATHS:'additional-paths'  <== mode:DEFAULT_MODE",
+            "            RECEIVE:'receive'  <== mode:DEFAULT_MODE",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "          (additional_paths_selection_xr_rb_stanza",
+            "            ADDITIONAL_PATHS:'additional-paths'  <== mode:DEFAULT_MODE",
+            "            SELECTION:'selection'  <== mode:DEFAULT_MODE",
+            "            ROUTE_POLICY:'route-policy'  <== mode:DEFAULT_MODE",
+            "            name = (variable",
+            "              VARIABLE:'ADDITIONAL_PATHS_POLICY'  <== mode:DEFAULT_MODE)",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "          (additional_paths_send_xr_rb_stanza",
+            "            ADDITIONAL_PATHS:'additional-paths'  <== mode:DEFAULT_MODE",
+            "            SEND:'send'  <== mode:DEFAULT_MODE",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "          (aggregate_address_rb_stanza",
+            "            AGGREGATE_ADDRESS:'aggregate-address'  <== mode:DEFAULT_MODE",
+            "            prefix = IP_PREFIX:'1.0.0.0/8'  <== mode:DEFAULT_MODE",
+            "            as_set = AS_SET:'as-set'  <== mode:DEFAULT_MODE",
+            "            summary_only = SUMMARY_ONLY:'summary-only'  <== mode:DEFAULT_MODE",
+            "            ROUTE_POLICY:'route-policy'  <== mode:DEFAULT_MODE",
+            "            rp = (variable",
+            "              VARIABLE:'AGGREGATE_POLICY'  <== mode:DEFAULT_MODE)",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "          (bgp_tail",
+            "            (redistribute_static_bgp_tail",
+            "              REDISTRIBUTE:'redistribute'  <== mode:DEFAULT_MODE",
+            "              STATIC:'static'  <== mode:DEFAULT_MODE",
+            "              ROUTE_POLICY:'route-policy'  <== mode:DEFAULT_MODE",
+            "              policy = VARIABLE:'REDISTRIBUTE_STATIC_POLICY'  <== mode:DEFAULT_MODE",
+            "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "          (address_family_footer)))))",
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
           ]
         },
@@ -39928,6 +40113,58 @@
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
           ]
         },
+        "ios_xr_class_map" : {
+          "sentences" : [
+            "(cisco_configuration",
+            "  (stanza",
+            "    (s_hostname",
+            "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
+            "      VARIABLE:'ios_xr_class_map'  <== mode:DEFAULT_MODE",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "  (stanza",
+            "    (s_class_map",
+            "      CLASS_MAP:'class-map'  <== mode:DEFAULT_MODE",
+            "      MATCH_ANY:'match-any'  <== mode:DEFAULT_MODE",
+            "      name = (variable",
+            "        VARIABLE:'ABC'  <== mode:DEFAULT_MODE)",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
+            "      (cm_match",
+            "        MATCH:'match'  <== mode:DEFAULT_MODE",
+            "        (cmm_dscp",
+            "          DSCP:'dscp'  <== mode:DEFAULT_MODE",
+            "          IPV4:'ipv4'  <== mode:DEFAULT_MODE",
+            "          (dscp_type",
+            "            CS4:'cs4'  <== mode:DEFAULT_MODE)",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "      (cm_end_class_map",
+            "        END_CLASS_MAP:'end-class-map'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "  (stanza",
+            "    (s_class_map",
+            "      CLASS_MAP:'class-map'  <== mode:DEFAULT_MODE",
+            "      MATCH_ANY:'match-any'  <== mode:DEFAULT_MODE",
+            "      name = (variable",
+            "        VARIABLE:'ABCD'  <== mode:DEFAULT_MODE)",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
+            "      (cm_match",
+            "        MATCH:'match'  <== mode:DEFAULT_MODE",
+            "        NOT:'not'  <== mode:DEFAULT_MODE",
+            "        (cmm_dscp",
+            "          DSCP:'dscp'  <== mode:DEFAULT_MODE",
+            "          IPV4:'ipv4'  <== mode:DEFAULT_MODE",
+            "          (dscp_type",
+            "            CS2:'cs2'  <== mode:DEFAULT_MODE)",
+            "          (dscp_type",
+            "            CS3:'cs3'  <== mode:DEFAULT_MODE)",
+            "          (dscp_type",
+            "            CS4:'cs4'  <== mode:DEFAULT_MODE)",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "      (cm_end_class_map",
+            "        END_CLASS_MAP:'end-class-map'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
+          ]
+        },
         "ios_xr_isis" : {
           "sentences" : [
             "(cisco_configuration",
@@ -40023,6 +40260,55 @@
             "                  METRIC:'metric'  <== mode:DEFAULT_MODE",
             "                  DEC:'9000'  <== mode:DEFAULT_MODE",
             "                  NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))))))",
+            "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
+          ]
+        },
+        "ios_xr_logging" : {
+          "sentences" : [
+            "(cisco_configuration",
+            "  (stanza",
+            "    (s_hostname",
+            "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
+            "      VARIABLE:'ios_xr_logging'  <== mode:DEFAULT_MODE",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "  (stanza",
+            "    (s_logging",
+            "      LOGGING:'logging'  <== mode:DEFAULT_MODE",
+            "      (logging_common",
+            "        (logging_null",
+            "          HOSTNAMEPREFIX:'hostnameprefix'  <== mode:DEFAULT_MODE",
+            "          (null_rest_of_line",
+            "            VARIABLE:'boop'  <== mode:DEFAULT_MODE",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))))",
+            "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
+          ]
+        },
+        "ios_xr_misc" : {
+          "sentences" : [
+            "(cisco_configuration",
+            "  (stanza",
+            "    (s_hostname",
+            "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
+            "      VARIABLE:'ios_xr_misc'  <== mode:DEFAULT_MODE",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "  (stanza",
+            "    (s_bfd",
+            "      BFD:'bfd'  <== mode:DEFAULT_MODE",
+            "      (null_rest_of_line",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (bfd_null",
+            "        TRAP:'trap'  <== mode:DEFAULT_MODE",
+            "        (null_rest_of_line",
+            "          VARIABLE:'singlehop'  <== mode:DEFAULT_MODE",
+            "          VARIABLE:'pre-mapped'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
+            "  (stanza",
+            "    (s_null",
+            "      (null_single",
+            "        IPV4:'ipv4'  <== mode:DEFAULT_MODE",
+            "        NETMASK_FORMAT:'netmask-format'  <== mode:DEFAULT_MODE",
+            "        VARIABLE:'bit-count'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
           ]
         },
@@ -40914,6 +41200,13 @@
             "      SSH:'ssh'  <== mode:DEFAULT_MODE",
             "      (ssh_server",
             "        SERVER:'server'  <== mode:DEFAULT_MODE",
+            "        LOGGING:'logging'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "  (stanza",
+            "    (s_ssh",
+            "      SSH:'ssh'  <== mode:DEFAULT_MODE",
+            "      (ssh_server",
+            "        SERVER:'server'  <== mode:DEFAULT_MODE",
             "        VRF:'vrf'  <== mode:DEFAULT_MODE",
             "        vrf = (variable",
             "          DEFAULT:'default'  <== mode:DEFAULT_MODE)",
@@ -41220,6 +41513,159 @@
             "      (null_single",
             "        END:'end'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n\\n'  <== mode:DEFAULT_MODE)))",
+            "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
+          ]
+        },
+        "isr_crypto_gdoi" : {
+          "sentences" : [
+            "(cisco_configuration",
+            "  (stanza",
+            "    (s_hostname",
+            "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
+            "      VARIABLE:'isr_crypto_gdoi'  <== mode:DEFAULT_MODE",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "  (stanza",
+            "    (s_crypto",
+            "      CRYPTO:'crypto'  <== mode:DEFAULT_MODE",
+            "      (crypto_gdoi",
+            "        GDOI:'gdoi'  <== mode:DEFAULT_MODE",
+            "        (null_rest_of_line",
+            "          GROUP:'group'  <== mode:DEFAULT_MODE",
+            "          VARIABLE:'MYGDOIGROUP'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "        (cg_null",
+            "          IDENTITY:'identity'  <== mode:DEFAULT_MODE",
+            "          (null_rest_of_line",
+            "            VARIABLE:'number'  <== mode:DEFAULT_MODE",
+            "            DEC:'1234'  <== mode:DEFAULT_MODE",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "        (cg_null",
+            "          SERVER:'server'  <== mode:DEFAULT_MODE",
+            "          (null_rest_of_line",
+            "            ADDRESS:'address'  <== mode:DEFAULT_MODE",
+            "            IPV4:'ipv4'  <== mode:DEFAULT_MODE",
+            "            IP_ADDRESS:'1.2.3.4'  <== mode:DEFAULT_MODE",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))))",
+            "  (stanza",
+            "    (s_crypto",
+            "      CRYPTO:'crypto'  <== mode:DEFAULT_MODE",
+            "      (crypto_map",
+            "        MAP:'map'  <== mode:DEFAULT_MODE",
+            "        name = (variable",
+            "          VARIABLE:'MYMAP'  <== mode:DEFAULT_MODE)",
+            "        (crypto_map_null",
+            "          LOCAL_ADDRESS:'local-address'  <== mode:DEFAULT_MODE",
+            "          (null_rest_of_line",
+            "            VARIABLE:'Loopback0'  <== mode:DEFAULT_MODE",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))))",
+            "  (stanza",
+            "    (s_crypto",
+            "      CRYPTO:'crypto'  <== mode:DEFAULT_MODE",
+            "      (crypto_map",
+            "        MAP:'map'  <== mode:DEFAULT_MODE",
+            "        name = (variable",
+            "          VARIABLE:'MYMAP'  <== mode:DEFAULT_MODE)",
+            "        seq_num = DEC:'1'  <== mode:DEFAULT_MODE",
+            "        (crypto_map_tail",
+            "          (crypto_map_t_gdoi",
+            "            GDOI:'gdoi'  <== mode:DEFAULT_MODE",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
+            "            (crypto_map_t_g_null",
+            "              SET:'set'  <== mode:DEFAULT_MODE",
+            "              (null_rest_of_line",
+            "                GROUP:'group'  <== mode:DEFAULT_MODE",
+            "                VARIABLE:'MYGDOIGROUP'  <== mode:DEFAULT_MODE",
+            "                NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))))))",
+            "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
+          ]
+        },
+        "isr_voip" : {
+          "sentences" : [
+            "(cisco_configuration",
+            "  (stanza",
+            "    (s_hostname",
+            "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
+            "      VARIABLE:'isr_voip'  <== mode:DEFAULT_MODE",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "  (stanza",
+            "    (s_ephone_dn_template",
+            "      EPHONE_DN_TEMPLATE:'ephone-dn-template'  <== mode:DEFAULT_MODE",
+            "      (null_rest_of_line",
+            "        DEC:'2'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (ednt_null",
+            "        CALL_FORWARD:'call-forward'  <== mode:DEFAULT_MODE",
+            "        (null_rest_of_line",
+            "          VARIABLE:'busy'  <== mode:DEFAULT_MODE",
+            "          DEC:'11111111111111'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "      (ednt_null",
+            "        CALL_FORWARD:'call-forward'  <== mode:DEFAULT_MODE",
+            "        (null_rest_of_line",
+            "          VARIABLE:'noan'  <== mode:DEFAULT_MODE",
+            "          DEC:'22222222222222'  <== mode:DEFAULT_MODE",
+            "          TIMEOUT:'timeout'  <== mode:DEFAULT_MODE",
+            "          DEC:'16'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
+            "  (stanza",
+            "    (s_telephony_service",
+            "      TELEPHONY_SERVICE:'telephony-service'  <== mode:DEFAULT_MODE",
+            "      (null_rest_of_line",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (telephony_service_null",
+            "        IP:'ip'  <== mode:DEFAULT_MODE",
+            "        (null_rest_of_line",
+            "          SOURCE_ADDRESS:'source-address'  <== mode:DEFAULT_MODE",
+            "          IP_ADDRESS:'111.111.111.111'  <== mode:DEFAULT_MODE",
+            "          PORT:'port'  <== mode:DEFAULT_MODE",
+            "          DEC:'1111'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "      (telephony_service_null",
+            "        MAX_CONFERENCES:'max-conferences'  <== mode:DEFAULT_MODE",
+            "        (null_rest_of_line",
+            "          DEC:'8'  <== mode:DEFAULT_MODE",
+            "          VARIABLE:'gain'  <== mode:DEFAULT_MODE",
+            "          DASH:'-'  <== mode:DEFAULT_MODE",
+            "          DEC:'6'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "      (telephony_service_null",
+            "        MAX_EPHONES:'max-ephones'  <== mode:DEFAULT_MODE",
+            "        (null_rest_of_line",
+            "          DEC:'25'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "      (telephony_service_null",
+            "        SRST:'srst'  <== mode:DEFAULT_MODE",
+            "        (null_rest_of_line",
+            "          VARIABLE:'dn'  <== mode:DEFAULT_MODE",
+            "          VARIABLE:'line-mode'  <== mode:DEFAULT_MODE",
+            "          VARIABLE:'dual'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "      (telephony_service_null",
+            "        SRST:'srst'  <== mode:DEFAULT_MODE",
+            "        (null_rest_of_line",
+            "          VARIABLE:'dn'  <== mode:DEFAULT_MODE",
+            "          TEMPLATE:'template'  <== mode:DEFAULT_MODE",
+            "          DEC:'2'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "      (telephony_service_null",
+            "        SRST:'srst'  <== mode:DEFAULT_MODE",
+            "        (null_rest_of_line",
+            "          VARIABLE:'ephone'  <== mode:DEFAULT_MODE",
+            "          DESCRIPTION:'description'  <== mode:DEFAULT_MODE",
+            "          RAW_TEXT:' srst fallback auto-provisioned phone : Sep 01 1970 00:00:00'  <== mode:M_Description",
+            "          NEWLINE:'\\n'  <== mode:M_Description))",
+            "      (telephony_service_null",
+            "        SRST:'srst'  <== mode:DEFAULT_MODE",
+            "        (null_rest_of_line",
+            "          MODE:'mode'  <== mode:DEFAULT_MODE",
+            "          VARIABLE:'auto-provision'  <== mode:DEFAULT_MODE",
+            "          NONE:'none'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "      (telephony_service_null",
+            "        TRANSFER_SYSTEM:'transfer-system'  <== mode:DEFAULT_MODE",
+            "        (null_rest_of_line",
+            "          VARIABLE:'full-consult'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
           ]
         },
@@ -42678,6 +43124,262 @@
             "                      (variable",
             "                        text = VARIABLE:'bgp-auth1'  <== mode:DEFAULT_MODE))))))))))",
             "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
+          ]
+        },
+        "juniper_bgp_remove_private_as" : {
+          "sentences" : [
+            "(flat_juniper_configuration",
+            "  (set_line",
+            "    SET:'set'  <== mode:DEFAULT_MODE",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_system",
+            "            SYSTEM:'system'  <== mode:DEFAULT_MODE",
+            "            (sy_host_name",
+            "              HOST_NAME:'host-name'  <== mode:DEFAULT_MODE",
+            "              (variable",
+            "                text = VARIABLE:'juniper_bgp_remove_private_as'  <== mode:DEFAULT_MODE))))))",
+            "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "  (set_line",
+            "    SET:'set'  <== mode:DEFAULT_MODE",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_protocols",
+            "            PROTOCOLS:'protocols'  <== mode:DEFAULT_MODE",
+            "            (p_bgp",
+            "              BGP:'bgp'  <== mode:DEFAULT_MODE",
+            "              (b_common",
+            "                (b_family",
+            "                  FAMILY:'family'  <== mode:DEFAULT_MODE",
+            "                  (bf_inet",
+            "                    INET:'inet'  <== mode:DEFAULT_MODE",
+            "                    (bfi_unicast",
+            "                      UNICAST:'unicast'  <== mode:DEFAULT_MODE",
+            "                      (apply))))))))))",
+            "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "  (set_line",
+            "    SET:'set'  <== mode:DEFAULT_MODE",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_protocols",
+            "            PROTOCOLS:'protocols'  <== mode:DEFAULT_MODE",
+            "            (p_bgp",
+            "              BGP:'bgp'  <== mode:DEFAULT_MODE",
+            "              (b_group",
+            "                GROUP:'group'  <== mode:DEFAULT_MODE",
+            "                name = (variable",
+            "                  text = VARIABLE:'someipv4bgpgroup'  <== mode:M_VarOrWildcard)",
+            "                (b_common",
+            "                  (b_family",
+            "                    FAMILY:'family'  <== mode:DEFAULT_MODE",
+            "                    (bf_inet",
+            "                      INET:'inet'  <== mode:DEFAULT_MODE",
+            "                      (bfi_unicast",
+            "                        UNICAST:'unicast'  <== mode:DEFAULT_MODE",
+            "                        (apply)))))))))))",
+            "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "  (set_line",
+            "    SET:'set'  <== mode:DEFAULT_MODE",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_protocols",
+            "            PROTOCOLS:'protocols'  <== mode:DEFAULT_MODE",
+            "            (p_bgp",
+            "              BGP:'bgp'  <== mode:DEFAULT_MODE",
+            "              (b_common",
+            "                (b_family",
+            "                  FAMILY:'family'  <== mode:DEFAULT_MODE",
+            "                  (bf_inet6",
+            "                    INET6:'inet6'  <== mode:DEFAULT_MODE",
+            "                    (bfi6_unicast",
+            "                      UNICAST:'unicast'  <== mode:DEFAULT_MODE",
+            "                      (apply))))))))))",
+            "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "  (set_line",
+            "    SET:'set'  <== mode:DEFAULT_MODE",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_protocols",
+            "            PROTOCOLS:'protocols'  <== mode:DEFAULT_MODE",
+            "            (p_bgp",
+            "              BGP:'bgp'  <== mode:DEFAULT_MODE",
+            "              (b_group",
+            "                GROUP:'group'  <== mode:DEFAULT_MODE",
+            "                name = (variable",
+            "                  text = VARIABLE:'someipv6bgpgroup'  <== mode:M_VarOrWildcard)",
+            "                (b_common",
+            "                  (b_family",
+            "                    FAMILY:'family'  <== mode:DEFAULT_MODE",
+            "                    (bf_inet6",
+            "                      INET6:'inet6'  <== mode:DEFAULT_MODE",
+            "                      (bfi6_unicast",
+            "                        UNICAST:'unicast'  <== mode:DEFAULT_MODE",
+            "                        (apply)))))))))))",
+            "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "  (set_line",
+            "    SET:'set'  <== mode:DEFAULT_MODE",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_protocols",
+            "            PROTOCOLS:'protocols'  <== mode:DEFAULT_MODE",
+            "            (p_bgp",
+            "              BGP:'bgp'  <== mode:DEFAULT_MODE",
+            "              (b_common",
+            "                (b_null",
+            "                  GRACEFUL_RESTART:'graceful-restart'  <== mode:DEFAULT_MODE",
+            "                  (null_filler))))))))",
+            "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "  (set_line",
+            "    SET:'set'  <== mode:DEFAULT_MODE",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_protocols",
+            "            PROTOCOLS:'protocols'  <== mode:DEFAULT_MODE",
+            "            (p_bgp",
+            "              BGP:'bgp'  <== mode:DEFAULT_MODE",
+            "              (b_group",
+            "                GROUP:'group'  <== mode:DEFAULT_MODE",
+            "                name = (variable",
+            "                  text = VARIABLE:'someipv4bgpgroup'  <== mode:M_VarOrWildcard)",
+            "                (b_common",
+            "                  (b_remove_private",
+            "                    REMOVE_PRIVATE:'remove-private'  <== mode:DEFAULT_MODE",
+            "                    ALL:'all'  <== mode:DEFAULT_MODE))))))))",
+            "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "  (set_line",
+            "    SET:'set'  <== mode:DEFAULT_MODE",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_protocols",
+            "            PROTOCOLS:'protocols'  <== mode:DEFAULT_MODE",
+            "            (p_bgp",
+            "              BGP:'bgp'  <== mode:DEFAULT_MODE",
+            "              (b_group",
+            "                GROUP:'group'  <== mode:DEFAULT_MODE",
+            "                name = (variable",
+            "                  text = VARIABLE:'someipv4bgpgroup'  <== mode:M_VarOrWildcard)",
+            "                (b_common",
+            "                  (b_remove_private",
+            "                    REMOVE_PRIVATE:'remove-private'  <== mode:DEFAULT_MODE",
+            "                    NEAREST:'nearest'  <== mode:DEFAULT_MODE))))))))",
+            "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "  (set_line",
+            "    SET:'set'  <== mode:DEFAULT_MODE",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_protocols",
+            "            PROTOCOLS:'protocols'  <== mode:DEFAULT_MODE",
+            "            (p_bgp",
+            "              BGP:'bgp'  <== mode:DEFAULT_MODE",
+            "              (b_group",
+            "                GROUP:'group'  <== mode:DEFAULT_MODE",
+            "                name = (variable",
+            "                  text = VARIABLE:'someipv4bgpgroup'  <== mode:M_VarOrWildcard)",
+            "                (b_common",
+            "                  (b_remove_private",
+            "                    REMOVE_PRIVATE:'remove-private'  <== mode:DEFAULT_MODE",
+            "                    REPLACE:'replace'  <== mode:DEFAULT_MODE))))))))",
+            "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "  (set_line",
+            "    SET:'set'  <== mode:DEFAULT_MODE",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_protocols",
+            "            PROTOCOLS:'protocols'  <== mode:DEFAULT_MODE",
+            "            (p_bgp",
+            "              BGP:'bgp'  <== mode:DEFAULT_MODE",
+            "              (b_group",
+            "                GROUP:'group'  <== mode:DEFAULT_MODE",
+            "                name = (variable",
+            "                  text = VARIABLE:'someipv4bgpgroup'  <== mode:M_VarOrWildcard)",
+            "                (b_common",
+            "                  (b_remove_private",
+            "                    REMOVE_PRIVATE:'remove-private'  <== mode:DEFAULT_MODE",
+            "                    NO_PEER_LOOP_CHECK:'no-peer-loop-check'  <== mode:DEFAULT_MODE))))))))",
+            "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "  (set_line",
+            "    SET:'set'  <== mode:DEFAULT_MODE",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_protocols",
+            "            PROTOCOLS:'protocols'  <== mode:DEFAULT_MODE",
+            "            (p_bgp",
+            "              BGP:'bgp'  <== mode:DEFAULT_MODE",
+            "              (b_group",
+            "                GROUP:'group'  <== mode:DEFAULT_MODE",
+            "                name = (variable",
+            "                  text = VARIABLE:'someipv6bgpgroup'  <== mode:M_VarOrWildcard)",
+            "                (b_common",
+            "                  (b_remove_private",
+            "                    REMOVE_PRIVATE:'remove-private'  <== mode:DEFAULT_MODE",
+            "                    ALL:'all'  <== mode:DEFAULT_MODE))))))))",
+            "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "  (set_line",
+            "    SET:'set'  <== mode:DEFAULT_MODE",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_protocols",
+            "            PROTOCOLS:'protocols'  <== mode:DEFAULT_MODE",
+            "            (p_bgp",
+            "              BGP:'bgp'  <== mode:DEFAULT_MODE",
+            "              (b_group",
+            "                GROUP:'group'  <== mode:DEFAULT_MODE",
+            "                name = (variable",
+            "                  text = VARIABLE:'someipv6bgpgroup'  <== mode:M_VarOrWildcard)",
+            "                (b_common",
+            "                  (b_remove_private",
+            "                    REMOVE_PRIVATE:'remove-private'  <== mode:DEFAULT_MODE",
+            "                    NEAREST:'nearest'  <== mode:DEFAULT_MODE))))))))",
+            "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "  (set_line",
+            "    SET:'set'  <== mode:DEFAULT_MODE",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_protocols",
+            "            PROTOCOLS:'protocols'  <== mode:DEFAULT_MODE",
+            "            (p_bgp",
+            "              BGP:'bgp'  <== mode:DEFAULT_MODE",
+            "              (b_group",
+            "                GROUP:'group'  <== mode:DEFAULT_MODE",
+            "                name = (variable",
+            "                  text = VARIABLE:'someipv6bgpgroup'  <== mode:M_VarOrWildcard)",
+            "                (b_common",
+            "                  (b_remove_private",
+            "                    REMOVE_PRIVATE:'remove-private'  <== mode:DEFAULT_MODE",
+            "                    REPLACE:'replace'  <== mode:DEFAULT_MODE))))))))",
+            "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "  (set_line",
+            "    SET:'set'  <== mode:DEFAULT_MODE",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_protocols",
+            "            PROTOCOLS:'protocols'  <== mode:DEFAULT_MODE",
+            "            (p_bgp",
+            "              BGP:'bgp'  <== mode:DEFAULT_MODE",
+            "              (b_group",
+            "                GROUP:'group'  <== mode:DEFAULT_MODE",
+            "                name = (variable",
+            "                  text = VARIABLE:'someipv6bgpgroup'  <== mode:M_VarOrWildcard)",
+            "                (b_common",
+            "                  (b_remove_private",
+            "                    REMOVE_PRIVATE:'remove-private'  <== mode:DEFAULT_MODE",
+            "                    NO_PEER_LOOP_CHECK:'no-peer-loop-check'  <== mode:DEFAULT_MODE))))))))",
+            "    NEWLINE:'\\n\\n'  <== mode:DEFAULT_MODE)",
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
           ]
         },
@@ -52533,6 +53235,29 @@
             "                  NEXT_HOP:'next-hop'  <== mode:DEFAULT_MODE",
             "                  IPV6_ADDRESS:'1234:1234::118:9a41:ff0'  <== mode:DEFAULT_MODE",
             "                  NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "            (rp_stanza",
+            "              (set_rp_stanza",
+            "                (set_next_hop_rp_stanza",
+            "                  SET:'set'  <== mode:DEFAULT_MODE",
+            "                  NEXT_HOP:'next-hop'  <== mode:DEFAULT_MODE",
+            "                  DISCARD:'discard'  <== mode:DEFAULT_MODE",
+            "                  NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "            (rp_stanza",
+            "              (set_rp_stanza",
+            "                (set_path_selection_rp_stanza",
+            "                  SET:'set'  <== mode:DEFAULT_MODE",
+            "                  PATH_SELECTION:'path-selection'  <== mode:DEFAULT_MODE",
+            "                  (null_rest_of_line",
+            "                    BACKUP:'backup'  <== mode:DEFAULT_MODE",
+            "                    DEC:'1'  <== mode:DEFAULT_MODE",
+            "                    INSTALL:'install'  <== mode:DEFAULT_MODE",
+            "                    VARIABLE:'multipath-protect'  <== mode:DEFAULT_MODE",
+            "                    ADVERTISE:'advertise'  <== mode:DEFAULT_MODE",
+            "                    NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
+            "            (rp_stanza",
+            "              (disposition_rp_stanza",
+            "                UNSUPPRESS_ROUTE:'unsuppress-route'  <== mode:DEFAULT_MODE",
+            "                NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "            ENDIF:'endif'  <== mode:DEFAULT_MODE",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "        END_POLICY:'end-policy'  <== mode:DEFAULT_MODE",
@@ -54524,7 +55249,8 @@
         },
         "ios_bgp" : {
           "Red flags" : {
-            "1" : "MISCELLANEOUS: reference to undeclared peer group: 'UNDEFINED_PEER_GROUP'"
+            "1" : "MISCELLANEOUS: Ignoring reference to undeclared peer group: '1.2.3.4'",
+            "2" : "MISCELLANEOUS: reference to undeclared peer group: 'UNDEFINED_PEER_GROUP'"
           }
         },
         "ios_xr_ospf" : {
@@ -54561,6 +55287,11 @@
           "Red flags" : {
             "1" : "MISCELLANEOUS: Ignoring reference to undeclared peer group: '1.2.3.4'",
             "2" : "MISCELLANEOUS: Ignoring reference to undeclared peer group: '1a01:111:0:1000:a:0:0:1'"
+          }
+        },
+        "rP" : {
+          "Red flags" : {
+            "1" : "MISCELLANEOUS: Could not convert to RoutePolicyStatement: set path-selection backup 1 install multipath-protect advertise\n"
           }
         },
         "vlan_access_map4" : {
@@ -54691,7 +55422,7 @@
         "aruba_airgroup" : { },
         "aruba_crypto" : {
           "crypto isakmp policy" : {
-            "001" : {
+            "1" : {
               "definitionLines" : [
                 12,
                 13,
@@ -55531,7 +56262,7 @@
             }
           },
           "crypto isakmp policy" : {
-            "001" : {
+            "1" : {
               "definitionLines" : [
                 180,
                 181,
@@ -55551,7 +56282,8 @@
                 189,
                 190,
                 191,
-                192
+                192,
+                193
               ],
               "numReferrers" : 1
             }
@@ -55559,8 +56291,8 @@
           "crypto keyring" : {
             "VRF:ABC:DEF:GHI:1234" : {
               "definitionLines" : [
-                211,
-                212
+                212,
+                213
               ],
               "numReferrers" : 0
             }
@@ -55590,18 +56322,17 @@
           "crypto-map-set" : {
             "VPN" : {
               "definitionLines" : [
-                217,
                 218,
                 219,
                 220,
                 221,
-                222
+                222,
+                223
               ],
               "numReferrers" : 0
             },
             "VPNMAP" : {
               "definitionLines" : [
-                232,
                 233,
                 234,
                 235,
@@ -55609,13 +56340,14 @@
                 237,
                 238,
                 239,
-                240
+                240,
+                241
               ],
               "numReferrers" : 0
             },
             "myothermap" : {
               "definitionLines" : [
-                214
+                215
               ],
               "numReferrers" : 0
             }
@@ -56918,6 +57650,19 @@
           }
         },
         "ios_bgp" : { },
+        "ios_interface" : {
+          "interface" : {
+            "GigabitEthernet1/0/1" : {
+              "definitionLines" : [
+                4,
+                5,
+                6
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
+        "ios_template" : { },
         "ios_xr_acl" : { },
         "ios_xr_bgp" : { },
         "ios_xr_bgp_neighbor_group" : {
@@ -56992,7 +57737,29 @@
             }
           }
         },
+        "ios_xr_class_map" : {
+          "class-map" : {
+            "ABC" : {
+              "definitionLines" : [
+                5,
+                6,
+                7
+              ],
+              "numReferrers" : 0
+            },
+            "ABCD" : {
+              "definitionLines" : [
+                9,
+                10,
+                11
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
         "ios_xr_isis" : { },
+        "ios_xr_logging" : { },
+        "ios_xr_misc" : { },
         "ios_xr_multipart" : { },
         "ios_xr_ntp" : { },
         "ios_xr_ospf" : { },
@@ -57009,6 +57776,8 @@
             }
           }
         },
+        "isr_crypto_gdoi" : { },
+        "isr_voip" : { },
         "juniper-ospf" : { },
         "juniper-tcpflags" : {
           "firewall filter" : {
@@ -57121,6 +57890,30 @@
                 23
               ],
               "numReferrers" : 1
+            }
+          }
+        },
+        "juniper_bgp_remove_private_as" : {
+          "bgp group" : {
+            "someipv4bgpgroup" : {
+              "definitionLines" : [
+                5,
+                9,
+                10,
+                11,
+                12
+              ],
+              "numReferrers" : 0
+            },
+            "someipv6bgpgroup" : {
+              "definitionLines" : [
+                7,
+                13,
+                14,
+                15,
+                16
+              ],
+              "numReferrers" : 0
             }
           }
         },
@@ -58131,7 +58924,7 @@
           "crypto ipsec transform-set" : {
             "bleep" : {
               "crypto map ipsec-isakmp transform-set" : [
-                221
+                222
               ]
             },
             "hijklmnop" : {
@@ -58141,14 +58934,14 @@
             },
             "mytransformset" : {
               "crypto map ipsec-isakmp transform-set" : [
-                240
+                241
               ]
             }
           },
           "crypto isakmp profile" : {
             "myisakmpprofile" : {
               "crypto map ipsec-isakmp isakmp-profile" : [
-                236
+                237
               ]
             },
             "someOtherprofile" : {
@@ -58167,19 +58960,19 @@
           "crypto-dynamic-map-set" : {
             "bippety" : {
               "crypto map ipsec-isakmp crypto-dynamic-map-set" : [
-                223
+                224
               ]
             }
           },
           "ipv4/6 acl" : {
             "myvpnacl" : {
               "crypto map ipsec-isakmp acl" : [
-                234
+                235
               ]
             },
             "someacl" : {
               "crypto map ipsec-isakmp acl" : [
-                218
+                219
               ]
             }
           }
@@ -58655,7 +59448,42 @@
           "bgp group" : {
             "UNDEFINED_PEER_GROUP" : {
               "bgp neighbor statement" : [
-                6
+                7
+              ]
+            }
+          },
+          "route-map" : {
+            "ADVERTISE_MAP" : {
+              "bgp address-family aggregate-address advertise-map" : [
+                5
+              ]
+            },
+            "EXIST_MAP" : {
+              "bgp neighbor advertise-map exist-map" : [
+                5
+              ]
+            }
+          }
+        },
+        "ios_interface" : {
+          "policy-map" : {
+            "FOOBAR" : {
+              "interface service-policy type control subscriber" : [
+                5
+              ]
+            }
+          }
+        },
+        "ios_xr_bgp" : {
+          "route-policy" : {
+            "ADDITIONAL_PATHS_POLICY" : {
+              "bgp additional-paths selection route-policy" : [
+                8
+              ]
+            },
+            "AGGREGATE_POLICY" : {
+              "aggregate-address route-policy" : [
+                10
               ]
             }
           }
@@ -58698,14 +59526,14 @@
           "ipv4 acl" : {
             "ACL99" : {
               "ssh ipv4 access-list" : [
-                5
+                6
               ]
             }
           },
           "ipv6 acl" : {
             "ipv6-vty-acl" : {
               "ssh ipv6 access-list" : [
-                5
+                6
               ]
             }
           }
@@ -59062,7 +59890,8 @@
         },
         "cisco_crypto" : {
           "Red flags" : {
-            "1" : "MISCELLANEOUS: Can't get IkeGateway: Local or remote address is not set for isakmpProfile myprofile"
+            "1" : "MISCELLANEOUS: Can't get IkeGateway: Local or remote address is not set for isakmpProfile myprofile",
+            "2" : "MISCELLANEOUS: Cannot find keyring VRF:MMS:RMT:UPM:1143 for ISAKMP profile myprofile"
           }
         },
         "cisco_interface" : {
@@ -59117,6 +59946,11 @@
             "1" : "MISCELLANEOUS: Both authentication-key and authentication-key-chain specified for neighbor 172.16.2.1/32",
             "2" : "MISCELLANEOUS: Could not determine local ip for bgp peering with neighbor ip: 172.16.2.1",
             "3" : "MISCELLANEOUS: Could not determine local ip for bgp peering with neighbor ip: 172.16.2.2"
+          }
+        },
+        "juniper_bgp_remove_private_as" : {
+          "Red flags" : {
+            "1" : "MISCELLANEOUS: BGP BROKEN FOR THIS ROUTER: Cannot determine local autonomous system"
           }
         },
         "juniper_firewall" : {
@@ -59352,10 +60186,15 @@
         "interface_name" : "PASSED",
         "interface_sdr" : "PASSED",
         "ios_bgp" : "PASSED",
+        "ios_interface" : "PASSED",
+        "ios_template" : "PASSED",
         "ios_xr_acl" : "PASSED",
         "ios_xr_bgp" : "PASSED",
         "ios_xr_bgp_neighbor_group" : "PASSED",
+        "ios_xr_class_map" : "PASSED",
         "ios_xr_isis" : "PASSED",
+        "ios_xr_logging" : "PASSED",
+        "ios_xr_misc" : "PASSED",
         "ios_xr_multipart" : "PASSED",
         "ios_xr_ntp" : "PASSED",
         "ios_xr_ospf" : "PASSED",
@@ -59363,12 +60202,15 @@
         "ios_xr_ssh" : "PASSED",
         "ios_xr_taskgroup" : "PASSED",
         "ip_prefix_list_single_line" : "PASSED",
+        "isr_crypto_gdoi" : "PASSED",
+        "isr_voip" : "PASSED",
         "juniper-ospf" : "PASSED",
         "juniper-tcpflags" : "PASSED",
         "juniper_application" : "PASSED",
         "juniper_apply_macro" : "PASSED",
         "juniper_bgp" : "PASSED",
         "juniper_bgp_authentication" : "PASSED",
+        "juniper_bgp_remove_private_as" : "PASSED",
         "juniper_extended_community" : "PASSED",
         "juniper_firewall" : "PASSED",
         "juniper_forwarding_options" : "PASSED",

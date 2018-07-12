@@ -22,6 +22,8 @@ import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
+import org.batfish.datamodel.isis.IsisInterfaceMode;
+import org.batfish.datamodel.isis.IsisInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -291,6 +293,10 @@ public final class Interface extends ComparableStructure<String> {
   public static final String FLOW_SINK_TERMINATION_NAME = "flow_sink_termination";
 
   public static final String NULL_INTERFACE_NAME = "null_interface";
+
+  public static final String UNSET_LOCAL_INTERFACE = "unset_local_interface";
+
+  public static final String INVALID_LOCAL_INTERFACE = "invalid_local_interface";
 
   private static final String PROP_ACCESS_VLAN = "accessVlan";
 

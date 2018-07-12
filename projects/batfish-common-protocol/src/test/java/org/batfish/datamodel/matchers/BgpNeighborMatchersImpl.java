@@ -1,6 +1,9 @@
 package org.batfish.datamodel.matchers;
 
+import java.util.List;
 import javax.annotation.Nonnull;
+import org.batfish.datamodel.BgpActivePeerConfig;
+import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
@@ -40,25 +43,25 @@ final class BgpNeighborMatchersImpl {
     }
   }
 
-  static final class HasRemoteAs extends FeatureMatcher<BgpPeerConfig, Long> {
+  static final class HasRemoteAs extends FeatureMatcher<BgpActivePeerConfig, Long> {
     HasRemoteAs(@Nonnull Matcher<? super Long> subMatcher) {
       super(subMatcher, "A BgpPeerConfig with remoteAs:", "remoteAs");
     }
 
     @Override
-    protected Long featureValueOf(BgpPeerConfig actual) {
+    protected Long featureValueOf(BgpActivePeerConfig actual) {
       return actual.getRemoteAs();
     }
   }
 
-  static final class IsDynamic extends FeatureMatcher<BgpPeerConfig, Boolean> {
-    IsDynamic(@Nonnull Matcher<? super Boolean> subMatcher) {
-      super(subMatcher, "A BgpPeerConfig with dynamic set to:", "dynamic");
+  static final class HasRemoteAses extends FeatureMatcher<BgpPassivePeerConfig, List<Long>> {
+    HasRemoteAses(@Nonnull Matcher<? super List<Long>> subMatcher) {
+      super(subMatcher, "A BgpPeerConfig with remoteAs:", "remoteAs");
     }
 
     @Override
-    protected Boolean featureValueOf(BgpPeerConfig actual) {
-      return actual.getDynamic();
+    protected List<Long> featureValueOf(BgpPassivePeerConfig actual) {
+      return actual.getRemoteAs();
     }
   }
 }

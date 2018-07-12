@@ -224,6 +224,30 @@
           ]
         }
       },
+      "unused:bgp group:someipv4bgpgroup" : {
+        "description" : "Unused structure of type: 'bgp group' with name: 'someipv4bgpgroup'",
+        "files" : {
+          "juniper_bgp_remove_private_as" : [
+            5,
+            9,
+            10,
+            11,
+            12
+          ]
+        }
+      },
+      "unused:bgp group:someipv6bgpgroup" : {
+        "description" : "Unused structure of type: 'bgp group' with name: 'someipv6bgpgroup'",
+        "files" : {
+          "juniper_bgp_remove_private_as" : [
+            7,
+            13,
+            14,
+            15,
+            16
+          ]
+        }
+      },
       "unused:bgp group:ucr" : {
         "description" : "Unused structure of type: 'bgp group' with name: 'ucr'",
         "files" : {
@@ -277,6 +301,21 @@
             8,
             9,
             10
+          ],
+          "ios_xr_class_map" : [
+            5,
+            6,
+            7
+          ]
+        }
+      },
+      "unused:class-map:ABCD" : {
+        "description" : "Unused structure of type: 'class-map' with name: 'ABCD'",
+        "files" : {
+          "ios_xr_class_map" : [
+            9,
+            10,
+            11
           ]
         }
       },
@@ -388,8 +427,8 @@
         "description" : "Unused structure of type: 'crypto keyring' with name: 'VRF:ABC:DEF:GHI:1234'",
         "files" : {
           "cisco_crypto" : [
-            211,
-            212
+            212,
+            213
           ]
         }
       },
@@ -424,12 +463,12 @@
         "description" : "Unused structure of type: 'crypto-map-set' with name: 'VPN'",
         "files" : {
           "cisco_crypto" : [
-            217,
             218,
             219,
             220,
             221,
-            222
+            222,
+            223
           ]
         }
       },
@@ -437,7 +476,6 @@
         "description" : "Unused structure of type: 'crypto-map-set' with name: 'VPNMAP'",
         "files" : {
           "cisco_crypto" : [
-            232,
             233,
             234,
             235,
@@ -445,7 +483,8 @@
             237,
             238,
             239,
-            240
+            240,
+            241
           ]
         }
       },
@@ -453,7 +492,7 @@
         "description" : "Unused structure of type: 'crypto-map-set' with name: 'myothermap'",
         "files" : {
           "cisco_crypto" : [
-            214
+            215
           ]
         }
       },
@@ -1466,7 +1505,7 @@
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 141
+      "numResults" : 145
     },
     "unusedStructures" : {
       "aggAddress" : {
@@ -1755,8 +1794,8 @@
         },
         "crypto keyring" : {
           "VRF:ABC:DEF:GHI:1234" : [
-            211,
-            212
+            212,
+            213
           ]
         },
         "crypto-dynamic-map-set" : {
@@ -1770,15 +1809,14 @@
         },
         "crypto-map-set" : {
           "VPN" : [
-            217,
             218,
             219,
             220,
             221,
-            222
+            222,
+            223
           ],
           "VPNMAP" : [
-            232,
             233,
             234,
             235,
@@ -1786,10 +1824,11 @@
             237,
             238,
             239,
-            240
+            240,
+            241
           ],
           "myothermap" : [
-            214
+            215
           ]
         }
       },
@@ -2153,6 +2192,20 @@
           ]
         }
       },
+      "ios_xr_class_map" : {
+        "class-map" : {
+          "ABC" : [
+            5,
+            6,
+            7
+          ],
+          "ABCD" : [
+            9,
+            10,
+            11
+          ]
+        }
+      },
       "ip_prefix_list_single_line" : {
         "ipv4 prefix-list" : {
           "DENY-IPV4-ANY-IN" : [
@@ -2171,6 +2224,24 @@
         "application" : {
           "APP" : [
             4
+          ]
+        }
+      },
+      "juniper_bgp_remove_private_as" : {
+        "bgp group" : {
+          "someipv4bgpgroup" : [
+            5,
+            9,
+            10,
+            11,
+            12
+          ],
+          "someipv6bgpgroup" : [
+            7,
+            13,
+            14,
+            15,
+            16
           ]
         }
       },

@@ -19,6 +19,10 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
   private static final long serialVersionUID = 1L;
 
+  public static final String DEFAULT_VSYS_NAME = "vsys1";
+
+  public static final String SHARED_VSYS_NAME = "~SHARED_VSYS~";
+
   private Configuration _c;
 
   private String _dnsServerPrimary;
@@ -33,19 +37,19 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
   private String _ntpServerSecondary;
 
-  private SortedMap<String, SortedMap<String, SyslogServer>> _syslogServerGroups;
-
   private transient Set<String> _unimplementedFeatures;
 
   private ConfigurationFormat _vendor;
 
   private final SortedMap<String, VirtualRouter> _virtualRouters;
 
+  private final SortedMap<String, Vsys> _virtualSystems;
+
   public PaloAltoConfiguration(Set<String> unimplementedFeatures) {
     _interfaces = new TreeMap<>();
-    _syslogServerGroups = new TreeMap<>();
     _unimplementedFeatures = unimplementedFeatures;
     _virtualRouters = new TreeMap<>();
+    _virtualSystems = new TreeMap<>();
   }
 
   private NavigableSet<String> getDnsServers() {
@@ -88,6 +92,10 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     return _virtualRouters;
   }
 
+  public SortedMap<String, Vsys> getVirtualSystems() {
+    return _virtualSystems;
+  }
+
   public void setDnsServerPrimary(String dnsServerPrimary) {
     _dnsServerPrimary = dnsServerPrimary;
   }
@@ -109,19 +117,33 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     _ntpServerSecondary = ntpServerSecondary;
   }
 
-  /**
-   * Returns a syslog server with the specified name in the specified server group. If a matching
-   * server does not exist, one is created.
-   */
-  public SyslogServer getSyslogServer(String serverGroupName, String serverName) {
-    SortedMap<String, SyslogServer> serverGroup =
-        _syslogServerGroups.computeIfAbsent(serverGroupName, g -> new TreeMap<>());
-    return serverGroup.computeIfAbsent(serverName, SyslogServer::new);
-  }
-
   @Override
   public void setVendor(ConfigurationFormat format) {
     _vendor = format;
+  }
+
+  // Visible for testing
+  /**
+   * Generate unique object name (no collision across vsys namespaces) given a vsys name and
+   * original object name
+   */
+  public static String computeObjectName(String vsysName, String objectName) {
+    return String.format("%s~%s", vsysName, objectName);
+  }
+
+  /** Convert vsys components to vendor independent model */
+  private void convertVirtualSystems() {
+    NavigableSet<String> loggingServers = new TreeSet<>();
+
+    for (Vsys vsys : _virtualSystems.values()) {
+      loggingServers.addAll(vsys.getSyslogServerAddresses());
+      for (Entry<String, Zone> zoneEntry : vsys.getZones().entrySet()) {
+        Zone zone = zoneEntry.getValue();
+        String zoneName = computeObjectName(vsys.getName(), zone.getName());
+        _c.getZones().put(zoneName, toZone(zoneName, zone));
+      }
+    }
+    _c.setLoggingServers(loggingServers);
   }
 
   /** Convert Palo Alto specific interface into vendor independent model interface */
@@ -137,6 +159,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     newIface.setAllAddresses(iface.getAllAddresses());
     newIface.setActive(iface.getActive());
     newIface.setDescription(iface.getComment());
+
     return newIface;
   }
 
@@ -178,6 +201,13 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     return vrf;
   }
 
+  /** Convert Palo Alto zone to vendor independent model zone */
+  private org.batfish.datamodel.Zone toZone(String name, Zone zone) {
+    org.batfish.datamodel.Zone newZone = new org.batfish.datamodel.Zone(name);
+    newZone.setInterfaces(zone.getInterfaceNames());
+    return newZone;
+  }
+
   @Override
   public Configuration toVendorIndependentConfiguration() throws VendorConversionException {
     String hostname = getHostname();
@@ -191,19 +221,18 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
       _c.getInterfaces().put(i.getKey(), toInterface(i.getValue()));
     }
 
-    NavigableSet<String> loggingServers = new TreeSet<>();
-    _syslogServerGroups
-        .values()
-        .forEach(g -> g.values().forEach(s -> loggingServers.add(s.getAddress())));
-    _c.setLoggingServers(loggingServers);
-
     for (Entry<String, VirtualRouter> vr : _virtualRouters.entrySet()) {
       _c.getVrfs().put(vr.getKey(), toVrf(vr.getValue()));
     }
 
+    // Handle converting items within virtual systems
+    convertVirtualSystems();
+
     // Count and mark structure usages and identify undefined references
     markConcreteStructure(
-        PaloAltoStructureType.INTERFACE, PaloAltoStructureUsage.VIRTUAL_ROUTER_INTERFACE);
+        PaloAltoStructureType.INTERFACE,
+        PaloAltoStructureUsage.VIRTUAL_ROUTER_INTERFACE,
+        PaloAltoStructureUsage.ZONE_INTERFACE);
     return _c;
   }
 }

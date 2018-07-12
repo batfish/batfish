@@ -8,7 +8,6 @@ import java.util.Set;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
@@ -16,7 +15,6 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceReference;
-import org.batfish.datamodel.IsisProcess;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.Route6FilterList;
@@ -35,8 +33,8 @@ import org.batfish.datamodel.acl.PermittedByAclIpSpaceLine;
 import org.batfish.datamodel.acl.PermittedByIpAccessListLine;
 import org.batfish.datamodel.acl.TraceEvent;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.isis.IsisProcess;
 import org.batfish.datamodel.matchers.AclTraceMatchers.HasEvents;
-import org.batfish.datamodel.matchers.BgpNeighborMatchersImpl.IsDynamic;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasRoute6FilterList;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasRouteFilterList;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasRouteFilterLists;
@@ -409,14 +407,6 @@ public final class DataModelMatchers {
       @Nonnull String ipSpaceName) {
     return new IsPermittedByNamedIpSpaceThat(
         new PermittedByNamedIpSpaceMatchers.HasName(equalTo(ipSpaceName)));
-  }
-
-  /**
-   * Provides a matcher that matches if the {@link BgpPeerConfig} is configured as a listening end
-   * of a dynamic BGP peering.
-   */
-  public static @Nonnull Matcher<BgpPeerConfig> isDynamic() {
-    return new IsDynamic(equalTo(true));
   }
 
   /**

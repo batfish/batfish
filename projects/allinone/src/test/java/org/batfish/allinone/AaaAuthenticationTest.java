@@ -3,8 +3,8 @@ package org.batfish.allinone;
 import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
 import static org.batfish.datamodel.matchers.RowsMatchers.hasSize;
 import static org.batfish.datamodel.matchers.TableAnswerElementMatchers.hasRows;
-import static org.batfish.question.aaaauthenticationlogin.AaaAuthenticationLoginQuestionPlugin.AaaAuthenticationAnswerer.COLUMN_LINE_NAMES;
-import static org.batfish.question.aaaauthenticationlogin.AaaAuthenticationLoginQuestionPlugin.AaaAuthenticationAnswerer.COLUMN_NODE;
+import static org.batfish.question.aaaauthenticationlogin.AaaAuthenticationLoginAnswerer.COLUMN_LINE_NAMES;
+import static org.batfish.question.aaaauthenticationlogin.AaaAuthenticationLoginAnswerer.COLUMN_NODE;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
@@ -20,8 +20,8 @@ import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
-import org.batfish.question.aaaauthenticationlogin.AaaAuthenticationLoginQuestionPlugin.AaaAuthenticationAnswerer;
-import org.batfish.question.aaaauthenticationlogin.AaaAuthenticationLoginQuestionPlugin.AaaAuthenticationQuestion;
+import org.batfish.question.aaaauthenticationlogin.AaaAuthenticationLoginAnswerer;
+import org.batfish.question.aaaauthenticationlogin.AaaAuthenticationLoginQuestion;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -46,9 +46,9 @@ public class AaaAuthenticationTest {
 
     Batfish batfish = getBatfishForConfigurationNames(hostname1, hostname2, hostname3);
 
-    AaaAuthenticationQuestion question = new AaaAuthenticationQuestion();
+    AaaAuthenticationLoginQuestion question = new AaaAuthenticationLoginQuestion();
     question.setNodeRegex(new NodesSpecifier("ios.*", true));
-    AaaAuthenticationAnswerer answerer = new AaaAuthenticationAnswerer(question, batfish);
+    AaaAuthenticationLoginAnswerer answerer = new AaaAuthenticationLoginAnswerer(question, batfish);
     TableAnswerElement answer = answerer.answer();
 
     // answer should have exactly one row

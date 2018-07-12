@@ -1,6 +1,10 @@
 package org.batfish.representation.cisco;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+import static org.batfish.datamodel.Interface.UNSET_LOCAL_INTERFACE;
+
 import java.io.Serializable;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
@@ -24,7 +28,11 @@ public final class Tunnel implements Serializable {
 
   private @Nullable Ip _sourceAddress;
 
-  private @Nullable String _sourceInterfaceName;
+  private @Nonnull String _sourceInterfaceName;
+
+  public Tunnel() {
+    _sourceInterfaceName = UNSET_LOCAL_INTERFACE;
+  }
 
   public Ip getDestination() {
     return _destination;
@@ -47,7 +55,6 @@ public final class Tunnel implements Serializable {
     return _sourceAddress;
   }
 
-  @Nullable
   public String getSourceInterfaceName() {
     return _sourceInterfaceName;
   }
@@ -72,7 +79,7 @@ public final class Tunnel implements Serializable {
     _sourceAddress = source;
   }
 
-  public void setSourceInterfaceName(String sourceInterfaceName) {
-    _sourceInterfaceName = sourceInterfaceName;
+  public void setSourceInterfaceName(@Nullable String sourceInterfaceName) {
+    _sourceInterfaceName = firstNonNull(sourceInterfaceName, UNSET_LOCAL_INTERFACE);
   }
 }

@@ -1,0 +1,24 @@
+#
+set system host-name juniper-isis-no-iso
+#
+set interfaces lo0 unit 0 family inet address 1.1.1.1/32 
+#
+set interfaces ge-0/0/0 unit 0 family inet address 10.0.0.0/24 
+#
+set protocols isis interface ge-0/0/0.0 bfd-liveness-detection minimum-interval 250
+set protocols isis interface ge-0/0/0.0 bfd-liveness-detection multiplier 3
+# "hello there"
+set protocols isis interface ge-0/0/0.0 level 2 hello-authentication-key "$9$tc4xpORrlMxNbhSdsY2oan/CAu1SyKWX-tu"
+set protocols isis interface ge-0/0/0.0 level 2 hello-authentication-type md5
+set protocols isis interface ge-0/0/0.0 level 2 hello-interval 1
+set protocols isis interface ge-0/0/0.0 level 2 hold-time 3
+set protocols isis interface ge-0/0/0.0 level 2 metric 5
+set protocols isis interface ge-0/0/0.0 point-to-point
+#
+set protocols isis interface lo0.0 passive
+#
+set protocols isis level 1 disable
+set protocols isis level 2 wide-metrics-only
+set protocols isis overload timeout 360
+set protocols isis reference-bandwidth 100g
+#

@@ -86,7 +86,7 @@
         "description" : "Undefined reference to structure of type: 'bgp group' with usage: 'bgp neighbor statement' named 'UNDEFINED_PEER_GROUP'",
         "files" : {
           "ios_bgp" : [
-            6
+            7
           ]
         }
       },
@@ -302,7 +302,7 @@
         "description" : "Undefined reference to structure of type: 'crypto ipsec transform-set' with usage: 'crypto map ipsec-isakmp transform-set' named 'bleep'",
         "files" : {
           "cisco_crypto" : [
-            221
+            222
           ]
         }
       },
@@ -310,7 +310,7 @@
         "description" : "Undefined reference to structure of type: 'crypto ipsec transform-set' with usage: 'crypto map ipsec-isakmp transform-set' named 'mytransformset'",
         "files" : {
           "cisco_crypto" : [
-            240
+            241
           ]
         }
       },
@@ -326,7 +326,7 @@
         "description" : "Undefined reference to structure of type: 'crypto isakmp profile' with usage: 'crypto map ipsec-isakmp isakmp-profile' named 'myisakmpprofile'",
         "files" : {
           "cisco_crypto" : [
-            236
+            237
           ]
         }
       },
@@ -350,7 +350,7 @@
         "description" : "Undefined reference to structure of type: 'crypto-dynamic-map-set' with usage: 'crypto map ipsec-isakmp crypto-dynamic-map-set' named 'bippety'",
         "files" : {
           "cisco_crypto" : [
-            223
+            224
           ]
         }
       },
@@ -707,7 +707,7 @@
         "description" : "Undefined reference to structure of type: 'ipv4 acl' with usage: 'ssh ipv4 access-list' named 'ACL99'",
         "files" : {
           "ios_xr_ssh" : [
-            5
+            6
           ]
         }
       },
@@ -779,7 +779,7 @@
         "description" : "Undefined reference to structure of type: 'ipv4/6 acl' with usage: 'crypto map ipsec-isakmp acl' named 'myvpnacl'",
         "files" : {
           "cisco_crypto" : [
-            234
+            235
           ]
         }
       },
@@ -787,7 +787,7 @@
         "description" : "Undefined reference to structure of type: 'ipv4/6 acl' with usage: 'crypto map ipsec-isakmp acl' named 'someacl'",
         "files" : {
           "cisco_crypto" : [
-            218
+            219
           ]
         }
       },
@@ -910,7 +910,7 @@
         "description" : "Undefined reference to structure of type: 'ipv6 acl' with usage: 'ssh ipv6 access-list' named 'ipv6-vty-acl'",
         "files" : {
           "ios_xr_ssh" : [
-            5
+            6
           ]
         }
       },
@@ -950,6 +950,14 @@
         "description" : "Undefined reference to structure of type: 'policy-map type inspect' with usage: 'zone-pair service-policy type inspect' named 'p1'",
         "files" : {
           "cisco_zone" : [
+            5
+          ]
+        }
+      },
+      "undefined:policy-map:usage:interface service-policy type control subscriber:FOOBAR" : {
+        "description" : "Undefined reference to structure of type: 'policy-map' with usage: 'interface service-policy type control subscriber' named 'FOOBAR'",
+        "files" : {
+          "ios_interface" : [
             5
           ]
         }
@@ -1114,6 +1122,14 @@
           ]
         }
       },
+      "undefined:route-map:usage:bgp address-family aggregate-address advertise-map:ADVERTISE_MAP" : {
+        "description" : "Undefined reference to structure of type: 'route-map' with usage: 'bgp address-family aggregate-address advertise-map' named 'ADVERTISE_MAP'",
+        "files" : {
+          "ios_bgp" : [
+            5
+          ]
+        }
+      },
       "undefined:route-map:usage:bgp address-family aggregate-address advertise-map:AGG6_MAP" : {
         "description" : "Undefined reference to structure of type: 'route-map' with usage: 'bgp address-family aggregate-address advertise-map' named 'AGG6_MAP'",
         "files" : {
@@ -1183,6 +1199,14 @@
         "files" : {
           "nexus_bgp" : [
             21
+          ]
+        }
+      },
+      "undefined:route-map:usage:bgp neighbor advertise-map exist-map:EXIST_MAP" : {
+        "description" : "Undefined reference to structure of type: 'route-map' with usage: 'bgp neighbor advertise-map exist-map' named 'EXIST_MAP'",
+        "files" : {
+          "ios_bgp" : [
+            5
           ]
         }
       },
@@ -1314,6 +1338,22 @@
           ]
         }
       },
+      "undefined:route-policy:usage:aggregate-address route-policy:AGGREGATE_POLICY" : {
+        "description" : "Undefined reference to structure of type: 'route-policy' with usage: 'aggregate-address route-policy' named 'AGGREGATE_POLICY'",
+        "files" : {
+          "ios_xr_bgp" : [
+            10
+          ]
+        }
+      },
+      "undefined:route-policy:usage:bgp additional-paths selection route-policy:ADDITIONAL_PATHS_POLICY" : {
+        "description" : "Undefined reference to structure of type: 'route-policy' with usage: 'bgp additional-paths selection route-policy' named 'ADDITIONAL_PATHS_POLICY'",
+        "files" : {
+          "ios_xr_bgp" : [
+            8
+          ]
+        }
+      },
       "undefined:service-template:usage:class-map activate-service-template:DEF" : {
         "description" : "Undefined reference to structure of type: 'service-template' with usage: 'class-map activate-service-template' named 'DEF'",
         "files" : {
@@ -1358,7 +1398,7 @@
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 167
+      "numResults" : 172
     },
     "undefinedReferences" : {
       "IosXrMultiCast" : {
@@ -1607,7 +1647,7 @@
         "crypto ipsec transform-set" : {
           "bleep" : {
             "crypto map ipsec-isakmp transform-set" : [
-              221
+              222
             ]
           },
           "hijklmnop" : {
@@ -1617,14 +1657,14 @@
           },
           "mytransformset" : {
             "crypto map ipsec-isakmp transform-set" : [
-              240
+              241
             ]
           }
         },
         "crypto isakmp profile" : {
           "myisakmpprofile" : {
             "crypto map ipsec-isakmp isakmp-profile" : [
-              236
+              237
             ]
           },
           "someOtherprofile" : {
@@ -1643,19 +1683,19 @@
         "crypto-dynamic-map-set" : {
           "bippety" : {
             "crypto map ipsec-isakmp crypto-dynamic-map-set" : [
-              223
+              224
             ]
           }
         },
         "ipv4/6 acl" : {
           "myvpnacl" : {
             "crypto map ipsec-isakmp acl" : [
-              234
+              235
             ]
           },
           "someacl" : {
             "crypto map ipsec-isakmp acl" : [
-              218
+              219
             ]
           }
         }
@@ -2131,7 +2171,42 @@
         "bgp group" : {
           "UNDEFINED_PEER_GROUP" : {
             "bgp neighbor statement" : [
-              6
+              7
+            ]
+          }
+        },
+        "route-map" : {
+          "ADVERTISE_MAP" : {
+            "bgp address-family aggregate-address advertise-map" : [
+              5
+            ]
+          },
+          "EXIST_MAP" : {
+            "bgp neighbor advertise-map exist-map" : [
+              5
+            ]
+          }
+        }
+      },
+      "ios_interface" : {
+        "policy-map" : {
+          "FOOBAR" : {
+            "interface service-policy type control subscriber" : [
+              5
+            ]
+          }
+        }
+      },
+      "ios_xr_bgp" : {
+        "route-policy" : {
+          "ADDITIONAL_PATHS_POLICY" : {
+            "bgp additional-paths selection route-policy" : [
+              8
+            ]
+          },
+          "AGGREGATE_POLICY" : {
+            "aggregate-address route-policy" : [
+              10
             ]
           }
         }
@@ -2174,14 +2249,14 @@
         "ipv4 acl" : {
           "ACL99" : {
             "ssh ipv4 access-list" : [
-              5
+              6
             ]
           }
         },
         "ipv6 acl" : {
           "ipv6-vty-acl" : {
             "ssh ipv6 access-list" : [
-              5
+              6
             ]
           }
         }

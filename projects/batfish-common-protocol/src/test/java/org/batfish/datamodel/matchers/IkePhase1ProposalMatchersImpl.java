@@ -70,4 +70,15 @@ final class IkePhase1ProposalMatchersImpl {
       return actual.getLifetimeSeconds();
     }
   }
+
+  static final class HasName extends FeatureMatcher<IkePhase1Proposal, String> {
+    HasName(@Nonnull Matcher<? super String> subMatcher) {
+      super(subMatcher, "An IKE Phase 1 Proposal with Name:", "Name");
+    }
+
+    @Override
+    protected String featureValueOf(IkePhase1Proposal actual) {
+      return actual.getName();
+    }
+  }
 }

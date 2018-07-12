@@ -11,6 +11,7 @@ import org.batfish.datamodel.matchers.IkePhase1ProposalMatchersImpl.HasDiffieHel
 import org.batfish.datamodel.matchers.IkePhase1ProposalMatchersImpl.HasEncryptionAlgorithm;
 import org.batfish.datamodel.matchers.IkePhase1ProposalMatchersImpl.HasHashingAlgorithm;
 import org.batfish.datamodel.matchers.IkePhase1ProposalMatchersImpl.HasLifeTimeSeconds;
+import org.batfish.datamodel.matchers.IkePhase1ProposalMatchersImpl.HasName;
 
 public final class IkePhase1ProposalMatchers {
 
@@ -54,6 +55,14 @@ public final class IkePhase1ProposalMatchers {
    */
   public static HasLifeTimeSeconds hasLifeTimeSeconds(Integer lifeTimeSeconds) {
     return new HasLifeTimeSeconds(equalTo(lifeTimeSeconds));
+  }
+
+  /**
+   * Provides a matcher that matches if the IKE Phase 1 Proposal's value of {@code name} matches
+   * specified {@code name}
+   */
+  public static HasName hasName(String name) {
+    return new HasName(equalTo(name));
   }
 
   private IkePhase1ProposalMatchers() {}

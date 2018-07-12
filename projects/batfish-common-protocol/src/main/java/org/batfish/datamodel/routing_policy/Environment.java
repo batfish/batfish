@@ -61,6 +61,8 @@ public class Environment {
 
   private boolean _writeToIntermediateBgpAttributes;
 
+  private Boolean _suppressed;
+
   public Environment(
       boolean buffered,
       boolean callExprContext,
@@ -368,5 +370,13 @@ public class Environment {
           vrf,
           _writeToIntermediateBgpAttributes);
     }
+  }
+
+  public @Nullable Boolean getSuppressed() {
+    return _suppressed;
+  }
+
+  public void setSuppressed(@Nullable Boolean suppressed) {
+    _suppressed = suppressed;
   }
 }

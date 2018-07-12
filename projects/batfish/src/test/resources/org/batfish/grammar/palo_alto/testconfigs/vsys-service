@@ -1,0 +1,4 @@
+set deviceconfig system hostname vsys-service
+set vsys vsys1 service SERVICE1 protocol tcp port 1
+set vsys vsys2 service SERVICE1 protocol udp source-port 2
+set shared service SERVICE1 protocol udp port 3

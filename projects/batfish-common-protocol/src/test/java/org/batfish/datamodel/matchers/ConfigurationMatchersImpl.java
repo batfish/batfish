@@ -6,10 +6,15 @@ import javax.annotation.Nonnull;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.IkeGateway;
+import org.batfish.datamodel.IkePhase1Policy;
+import org.batfish.datamodel.IkePhase1Proposal;
 import org.batfish.datamodel.IkeProposal;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.IpsecPeerConfig;
+import org.batfish.datamodel.IpsecPhase2Policy;
+import org.batfish.datamodel.IpsecPhase2Proposal;
 import org.batfish.datamodel.IpsecPolicy;
 import org.batfish.datamodel.IpsecProposal;
 import org.batfish.datamodel.IpsecVpn;
@@ -85,6 +90,41 @@ final class ConfigurationMatchersImpl {
     }
   }
 
+  static final class HasIkePhase1Policy extends FeatureMatcher<Configuration, IkePhase1Policy> {
+    private final String _name;
+
+    HasIkePhase1Policy(@Nonnull String name, @Nonnull Matcher<? super IkePhase1Policy> subMatcher) {
+      super(
+          subMatcher,
+          "A Configuration with ikePhase1Policy " + name + ":",
+          "ikePhase1Policy " + name);
+      _name = name;
+    }
+
+    @Override
+    protected IkePhase1Policy featureValueOf(Configuration actual) {
+      return actual.getIkePhase1Policies().get(_name);
+    }
+  }
+
+  static final class HasIkePhase1Proposal extends FeatureMatcher<Configuration, IkePhase1Proposal> {
+    private final String _name;
+
+    HasIkePhase1Proposal(
+        @Nonnull String name, @Nonnull Matcher<? super IkePhase1Proposal> subMatcher) {
+      super(
+          subMatcher,
+          "A Configuration with ikePhase1Proposal " + name + ":",
+          "ikePhase1Proposal " + name);
+      _name = name;
+    }
+
+    @Override
+    protected IkePhase1Proposal featureValueOf(Configuration actual) {
+      return actual.getIkePhase1Proposals().get(_name);
+    }
+  }
+
   static final class HasInterface extends FeatureMatcher<Configuration, Interface> {
     private final String _name;
 
@@ -133,6 +173,43 @@ final class ConfigurationMatchersImpl {
     @Override
     protected Map<String, IpAccessList> featureValueOf(Configuration actual) {
       return actual.getIpAccessLists();
+    }
+  }
+
+  static final class HasIpsecPhase2Policy extends FeatureMatcher<Configuration, IpsecPhase2Policy> {
+    private final String _name;
+
+    HasIpsecPhase2Policy(
+        @Nonnull String name, @Nonnull Matcher<? super IpsecPhase2Policy> subMatcher) {
+      super(
+          subMatcher,
+          "A Configuration with ipsecPhase2Policy " + name + ":",
+          "ipsecPhase2Policy " + name);
+      _name = name;
+    }
+
+    @Override
+    protected IpsecPhase2Policy featureValueOf(Configuration actual) {
+      return actual.getIpsecPhase2Policies().get(_name);
+    }
+  }
+
+  static final class HasIpsecPhase2Proposal
+      extends FeatureMatcher<Configuration, IpsecPhase2Proposal> {
+    private final String _name;
+
+    HasIpsecPhase2Proposal(
+        @Nonnull String name, @Nonnull Matcher<? super IpsecPhase2Proposal> subMatcher) {
+      super(
+          subMatcher,
+          "A Configuration with ipsecPhase2Proposal " + name + ":",
+          "ipsecPhase2Proposal " + name);
+      _name = name;
+    }
+
+    @Override
+    protected IpsecPhase2Proposal featureValueOf(Configuration actual) {
+      return actual.getIpsecPhase2Proposals().get(_name);
     }
   }
 
@@ -187,6 +264,23 @@ final class ConfigurationMatchersImpl {
     @Override
     protected Map<String, IpSpace> featureValueOf(Configuration actual) {
       return actual.getIpSpaces();
+    }
+  }
+
+  static final class HasIpsecPeerConfig extends FeatureMatcher<Configuration, IpsecPeerConfig> {
+    private final String _name;
+
+    HasIpsecPeerConfig(@Nonnull String name, @Nonnull Matcher<? super IpsecPeerConfig> subMatcher) {
+      super(
+          subMatcher,
+          "A Configuration with ipsecPeerConfig " + name + ":",
+          "ipsecPeerConfig " + name);
+      _name = name;
+    }
+
+    @Override
+    protected IpsecPeerConfig featureValueOf(Configuration actual) {
+      return actual.getIpsecPeerconfigs().get(_name);
     }
   }
 
