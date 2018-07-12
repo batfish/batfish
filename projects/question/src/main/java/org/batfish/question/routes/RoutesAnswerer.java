@@ -1,18 +1,22 @@
 package org.batfish.question.routes;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.collect.ImmutableList.toImmutableList;
+import static org.batfish.common.util.CommonUtil.computeIpNodeOwners;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Table;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
@@ -21,6 +25,7 @@ import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.GenericRib;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
@@ -55,7 +60,6 @@ public class RoutesAnswerer extends Answerer {
   static final String COL_LOCAL_PREF = "LocalPref";
   static final String COL_COMMUNITIES = "Communities";
   static final String COL_ORIGIN_PROTOCOL = "OriginProtocol";
-  static final String VALUE_NA = "N/A";
 
   RoutesAnswerer(Question question, IBatfish batfish) {
     super(question, batfish);
@@ -72,12 +76,17 @@ public class RoutesAnswerer extends Answerer {
             dp,
             question.getProtocol(),
             question.getNodeRegex().getMatchingNodes(_batfish),
-            question.getVrfRegex()));
+            question.getVrfRegex(),
+            computeIpNodeOwners(_batfish.loadConfigurations(), true)));
     return answer;
   }
 
   private static Multiset<Row> generateRows(
-      DataPlane dp, RibProtocol protocol, Set<String> matchingNodes, String vrfRegex) {
+      DataPlane dp,
+      RibProtocol protocol,
+      Set<String> matchingNodes,
+      String vrfRegex,
+      @Nullable Map<Ip, Set<String>> ipOwners) {
     switch (protocol) {
       case BGP:
         return getBgpRibRoutes(dp.getBgpRoutes(false), matchingNodes, vrfRegex);
@@ -85,7 +94,7 @@ public class RoutesAnswerer extends Answerer {
         return getBgpRibRoutes(dp.getBgpRoutes(true), matchingNodes, vrfRegex);
       case ALL:
       default:
-        return getMainRibRoutes(dp.getRibs(), matchingNodes, vrfRegex);
+        return getMainRibRoutes(dp.getRibs(), matchingNodes, vrfRegex, ipOwners);
     }
   }
 
@@ -111,7 +120,8 @@ public class RoutesAnswerer extends Answerer {
   static Multiset<Row> getMainRibRoutes(
       SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs,
       Set<String> matchingNodes,
-      String vrfRegex) {
+      String vrfRegex,
+      @Nullable Map<Ip, Set<String>> ipOwners) {
     HashMultiset<Row> rows = HashMultiset.create();
     Pattern compiledVrfRegex = Pattern.compile(vrfRegex);
     ribs.forEach(
@@ -120,7 +130,7 @@ public class RoutesAnswerer extends Answerer {
             vrfMap.forEach(
                 (vrfName, rib) -> {
                   if (compiledVrfRegex.matcher(vrfName).matches()) {
-                    rows.addAll(getRowsForAbstractRoutes(node, vrfName, rib.getRoutes()));
+                    rows.addAll(getRowsForAbstractRoutes(node, vrfName, rib.getRoutes(), ipOwners));
                   }
                 });
           }
@@ -131,7 +141,10 @@ public class RoutesAnswerer extends Answerer {
   /** Convert a {@link Set} of {@link AbstractRoute} into a list of rows. */
   @Nonnull
   private static List<Row> getRowsForAbstractRoutes(
-      String node, String vrfName, Set<AbstractRoute> routes) {
+      String node,
+      String vrfName,
+      Set<AbstractRoute> routes,
+      @Nullable Map<Ip, Set<String>> ipOwners) {
     Node nodeObj = new Node(node);
     return routes
         .stream()
@@ -142,12 +155,28 @@ public class RoutesAnswerer extends Answerer {
                     .put(COL_VRF_NAME, vrfName)
                     .put(COL_NETWORK, route.getNetwork())
                     .put(COL_NEXT_HOP_IP, route.getNextHopIp())
-                    .put(COL_NEXT_HOP, firstNonNull(route.getNextHop(), VALUE_NA))
+                    .put(COL_NEXT_HOP, computeNextHopNode(route.getNextHopIp(), ipOwners))
                     .put(COL_PROTOCOL, route.getProtocol())
                     .put(COL_TAG, route.getTag())
                     .put(COL_ADMIN_DISTANCE, route.getAdministrativeCost())
                     .build())
         .collect(toImmutableList());
+  }
+
+  /** Compute the next hop node for a given next hop IP. */
+  @Nullable
+  @VisibleForTesting
+  static String computeNextHopNode(
+      @Nullable Ip nextHopIp, @Nullable Map<Ip, Set<String>> ipOwners) {
+    if (nextHopIp == null || ipOwners == null) {
+      return null;
+    }
+    // TODO: https://github.com/batfish/batfish/issues/1862
+    return ipOwners
+        .getOrDefault(nextHopIp, ImmutableSet.of())
+        .stream()
+        .min(Comparator.naturalOrder())
+        .orElse(null);
   }
 
   /** Convert a set of {@link BgpRoute} into a list of rows. */
@@ -175,7 +204,7 @@ public class RoutesAnswerer extends Answerer {
                             .stream()
                             .map(CommonUtil::longToCommunity)
                             .collect(toImmutableList()))
-                    .put(COL_ORIGIN_PROTOCOL, firstNonNull(route.getSrcProtocol(), VALUE_NA))
+                    .put(COL_ORIGIN_PROTOCOL, route.getSrcProtocol())
                     .build())
         .collect(toImmutableList());
   }
