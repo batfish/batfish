@@ -3,14 +3,12 @@ package org.batfish.z3;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.SortedSet;
 import java.util.stream.Collectors;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
-import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.FalseExpr;
@@ -30,13 +28,9 @@ import org.batfish.datamodel.acl.TrueExpr;
 public class IpAccessListSpecializerByLine
     implements GenericAclLineMatchExprVisitor<AclLineMatchExpr> {
   private final IpAccessListLine _line;
-  private final Map<String, IpSpace> _namedIpSpaces;
 
-  private List<IpAccessListLine> lines;
-
-  public IpAccessListSpecializerByLine(IpAccessListLine line, Map<String, IpSpace> namedIpSpaces) {
+  public IpAccessListSpecializerByLine(IpAccessListLine line) {
     _line = line;
-    _namedIpSpaces = namedIpSpaces;
   }
 
   public IpAccessList specialize(IpAccessList ipAccessList) {
@@ -44,7 +38,6 @@ public class IpAccessListSpecializerByLine
   }
 
   public IpAccessList specializeSublist(IpAccessList ipAccessList, int lastLineNum) {
-    lines = ipAccessList.getLines().subList(0, lastLineNum + 1);
     List<IpAccessListLine> specialized =
         ipAccessList
             .getLines()

@@ -747,8 +747,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
       for (int lineNum = 0; lineNum < sanitizedAcl.getLines().size(); lineNum++) {
         IpAccessListLine line = sanitizedAcl.getLines().get(lineNum);
-        IpAccessListSpecializerByLine specializer =
-            new IpAccessListSpecializerByLine(line, ImmutableMap.of());
+        IpAccessListSpecializerByLine specializer = new IpAccessListSpecializerByLine(line);
         IpAccessList specializedAcl = specializer.specializeSublist(sanitizedAcl, lineNum);
         Map<String, IpAccessList> specializedDependencies =
             dependencies
