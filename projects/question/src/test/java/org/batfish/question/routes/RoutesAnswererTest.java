@@ -1,5 +1,7 @@
 package org.batfish.question.routes;
 
+import static com.google.common.collect.ImmutableSortedMap.toImmutableSortedMap;
+import static java.util.Comparator.naturalOrder;
 import static org.batfish.datamodel.Prefix.MAX_PREFIX_LENGTH;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ADMIN_DISTANCE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_AS_PATH;
@@ -34,13 +36,21 @@ import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Multiset;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.SortedMap;
+import java.util.SortedSet;
+import org.batfish.common.BatfishLogger;
+import org.batfish.common.plugin.IBatfishTestAdapter;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpRoute.Builder;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.MockDataPlane;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.NetworkFactory;
@@ -282,5 +292,91 @@ public class RoutesAnswererTest {
     assert dh != null;
     assertThat(dh.getTextDesc(), notNullValue());
     assertThat(dh.getTextDesc(), not(emptyString()));
+  }
+
+  static class MockBatfish extends IBatfishTestAdapter {
+
+    private final NetworkConfigurations _configs;
+    private final DataPlane _dp;
+
+    public MockBatfish(NetworkConfigurations configs, DataPlane dp) {
+      _configs = configs;
+      _dp = dp;
+    }
+
+    @Override
+    public SortedMap<String, Configuration> loadConfigurations() {
+      return _configs
+          .getMap()
+          .entrySet()
+          .stream()
+          .collect(toImmutableSortedMap(naturalOrder(), Entry::getKey, Entry::getValue));
+    }
+
+    @Override
+    public DataPlane loadDataPlane() {
+      return _dp;
+    }
+
+    @Override
+    public BatfishLogger getLogger() {
+      return null;
+    }
+  }
+
+  /** Mock rib that only supports one operation: returning pre-set routes. */
+  static class MockRib<R extends AbstractRoute> implements GenericRib<R> {
+
+    private static final long serialVersionUID = 1L;
+
+    private Set<R> _routes;
+
+    MockRib() {
+      _routes = ImmutableSet.of();
+    }
+
+    MockRib(Set<R> routes) {
+      _routes = routes;
+    }
+
+    @Override
+    public int comparePreference(R lhs, R rhs) {
+      return 0;
+    }
+
+    @Override
+    public Map<Prefix, IpSpace> getMatchingIps() {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public SortedSet<Prefix> getPrefixes() {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public IpSpace getRoutableIps() {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Set<R> getRoutes() {
+      return _routes;
+    }
+
+    @Override
+    public Set<R> longestPrefixMatch(Ip address) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean mergeRoute(R route) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Map<Prefix, Set<Ip>> nextHopIpsByPrefix() {
+      throw new UnsupportedOperationException();
+    }
   }
 }
