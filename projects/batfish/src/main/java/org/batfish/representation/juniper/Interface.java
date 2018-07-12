@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import javax.annotation.Nonnull;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
@@ -55,7 +56,7 @@ public class Interface extends ComparableStructure<String> {
 
   private transient boolean _inherited;
 
-  private final IsisInterfaceSettings _isisSettings;
+  @Nonnull private final IsisInterfaceSettings _isisSettings;
 
   private IsoAddress _isoAddress;
 
@@ -160,6 +161,7 @@ public class Interface extends ComparableStructure<String> {
     return _incomingFilter;
   }
 
+  @Nonnull
   public IsisInterfaceSettings getIsisSettings() {
     return _isisSettings;
   }
