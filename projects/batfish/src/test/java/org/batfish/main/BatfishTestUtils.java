@@ -191,9 +191,11 @@ public class BatfishTestUtils {
     writeTemporaryTestrigFiles(bgpTablesText, envSettings.getEnvironmentBgpTablesPath());
     writeTemporaryTestrigFiles(hostsText, testrigPath.resolve(BfConsts.RELPATH_HOST_CONFIGS_DIR));
     writeTemporaryTestrigFiles(iptablesFilesText, testrigPath.resolve("iptables"));
-    writeTemporaryTestrigFiles(
-        ImmutableMap.of(BfConsts.RELPATH_TESTRIG_L1_TOPOLOGY_PATH, layer1TopologyText),
-        testrigPath);
+    if (layer1TopologyText != null) {
+      writeTemporaryTestrigFiles(
+          ImmutableMap.of(BfConsts.RELPATH_TESTRIG_L1_TOPOLOGY_PATH, layer1TopologyText),
+          testrigPath);
+    }
     writeTemporaryTestrigFiles(routingTablesText, envSettings.getEnvironmentRoutingTablesPath());
     Batfish batfish =
         new Batfish(

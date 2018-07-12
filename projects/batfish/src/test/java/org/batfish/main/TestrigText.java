@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.function.Function;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BfConsts;
@@ -122,7 +123,7 @@ public class TestrigText {
       return this;
     }
 
-    public Builder setLayer1TopologyText(String testrigResourcePrefix) {
+    public @Nonnull Builder setLayer1TopologyText(@Nonnull String testrigResourcePrefix) {
       _layer1TopologyText =
           readTestrigResources(
                   testrigResourcePrefix,
@@ -185,7 +186,7 @@ public class TestrigText {
     return _iptablesFilesText;
   }
 
-  public String getLayer1TopologyText() {
+  public @Nullable String getLayer1TopologyText() {
     return _layer1TopologyText;
   }
 
