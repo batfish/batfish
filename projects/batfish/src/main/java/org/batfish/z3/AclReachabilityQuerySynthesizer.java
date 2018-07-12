@@ -16,9 +16,7 @@ public final class AclReachabilityQuerySynthesizer extends SatQuerySynthesizer<A
       List<RuleStatement> rules, String hostname, String aclName, int lineNum) {
     _rules = rules;
     _lineNum = lineNum;
-    for (int i = 0; i <= lineNum; i++) {
-      _keys.add(new AclLine(hostname, aclName, lineNum));
-    }
+    _keys.add(new AclLine(hostname, aclName, lineNum));
   }
 
   @Override
