@@ -35,6 +35,7 @@ public final class Service implements ServiceGroupMember {
     return _description;
   }
 
+  @Override
   public String getName() {
     return _name;
   }

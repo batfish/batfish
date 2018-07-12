@@ -18,6 +18,7 @@ public final class ServiceGroup implements ServiceGroupMember {
     _members = new TreeSet<>();
   }
 
+  @Override
   public String getName() {
     return _name;
   }

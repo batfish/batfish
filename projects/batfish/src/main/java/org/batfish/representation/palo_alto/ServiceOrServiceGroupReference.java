@@ -44,6 +44,11 @@ public class ServiceOrServiceGroupReference
     }
   }
 
+  @Override
+  public String getName() {
+    return _name;
+  }
+
   /**
    * Returns Service or ServiceGroup with the specified name in the specified vsys, or returns null
    * if no match is found

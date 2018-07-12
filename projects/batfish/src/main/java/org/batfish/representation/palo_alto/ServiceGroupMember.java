@@ -11,4 +11,7 @@ public interface ServiceGroupMember extends Serializable {
    * IpAccessListLines
    */
   void addTo(List<IpAccessListLine> lines, LineAction action, PaloAltoConfiguration pc, Vsys vsys);
+
+  /** Return the name of this ServiceGroupMember */
+  String getName();
 }
