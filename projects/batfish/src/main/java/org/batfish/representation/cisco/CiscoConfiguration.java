@@ -3171,6 +3171,16 @@ public final class CiscoConfiguration extends VendorConfiguration {
             newVrf.setOspfProcess(newOspfProcess);
           }
 
+          // convert eigrp process
+          EigrpProcess eigrpProcess = vrf.getEigrpProcess();
+          if (eigrpProcess != null) {
+            org.batfish.datamodel.eigrp.EigrpProcess newEigrpProcess = CiscoConversions.toEigrpProcess(eigrpProcess,
+                vrfName,
+                c,
+                this);
+            newVrf.setEigrpProcess(newEigrpProcess);
+          }
+
           // convert isis process
           IsisProcess isisProcess = vrf.getIsisProcess();
           if (isisProcess != null) {

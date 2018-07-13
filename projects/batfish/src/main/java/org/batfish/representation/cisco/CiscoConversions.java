@@ -873,6 +873,35 @@ class CiscoConversions {
     return ipsecVpns;
   }
 
+  @Nullable
+  static org.batfish.datamodel.eigrp.EigrpProcess toEigrpProcess(EigrpProcess proc,
+      String vrfName, Configuration c, CiscoConfiguration oldConfig) {
+    org.batfish.datamodel.eigrp.EigrpProcess.Builder newProcess = org.batfish.datamodel.eigrp.EigrpProcess
+        .builder();
+    org.batfish.datamodel.Vrf vrf = c.getVrfs().get(vrfName);
+
+    newProcess.setAsNumber(proc.getAsNumber());
+    newProcess.setMode(proc.getMode());
+
+    // TODO set stub process
+    //newProcess.setStub(proc.isStub())
+
+    // TODO create summary filters
+
+    // TODO apply redistribution policy
+
+    Ip routerId = proc.getRouterId();
+    if (routerId == null) {
+      routerId = getHighestIp(oldConfig.getInterfaces());
+      if (routerId == Ip.ZERO) {
+        oldConfig.getWarnings().redFlag("No candidates for EIGRP router-id");
+        return null;
+      }
+    }
+    newProcess.setRouterId(routerId);
+    return newProcess.build();
+  }
+
   static org.batfish.datamodel.isis.IsisProcess toIsisProcess(
       IsisProcess proc, Configuration c, CiscoConfiguration oldConfig) {
     org.batfish.datamodel.isis.IsisProcess.Builder newProcess =
