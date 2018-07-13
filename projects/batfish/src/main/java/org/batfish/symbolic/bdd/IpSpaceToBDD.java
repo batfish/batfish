@@ -13,8 +13,8 @@ import java.util.stream.Collectors;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import org.batfish.common.BatfishException;
-import org.batfish.common.util.NonReentrantSupplier;
-import org.batfish.common.util.NonReentrantSupplier.NonReentrantSupplierException;
+import org.batfish.common.util.NonRecursiveSupplier;
+import org.batfish.common.util.NonRecursiveSupplier.NonRecursiveSupplierException;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclIpSpaceLine;
 import org.batfish.datamodel.EmptyIpSpace;
@@ -61,7 +61,7 @@ public final class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
             namedIpSpaces,
             Entry::getKey,
             entry ->
-                Suppliers.memoize(new NonReentrantSupplier<>(() -> this.visit(entry.getValue()))));
+                Suppliers.memoize(new NonRecursiveSupplier<>(() -> this.visit(entry.getValue()))));
   }
 
   @Override
@@ -163,7 +163,7 @@ public final class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
         _namedIpSpaceBDDs.containsKey(name), "Undefined IpSpace reference: %s", name);
     try {
       return _namedIpSpaceBDDs.get(name).get();
-    } catch (NonReentrantSupplierException e) {
+    } catch (NonRecursiveSupplierException e) {
       throw new BatfishException("Circular IpSpaceReference: " + name);
     }
   }
