@@ -269,6 +269,11 @@ ADD
    'add'
 ;
 
+ADD_PATHS
+:
+   'add-paths'
+;
+
 ADD_VLAN
 :
    'add-vlan'
@@ -447,6 +452,11 @@ AESA
 AF_GROUP
 :
    'af-group'
+;
+
+AF_INTERFACE
+:
+   'af-interface'
 ;
 
 AF11
@@ -1221,6 +1231,11 @@ AUTOHANGUP
    'autohangup'
 ;
 
+AUTONOMOUS_SYSTEM
+:
+   'autonomous-system'
+;
+
 AUTORECOVERY
 :
    'autorecovery'
@@ -1296,6 +1311,11 @@ BANDWIDTH_CONTRACT
    'bandwidth-contract'
 ;
 
+BANDWIDTH_PERCENT
+:
+   'bandwidth-percent'
+;
+
 BANDWIDTH_PERCENTAGE
 :
    'bandwidth-percentage'
@@ -1304,6 +1324,11 @@ BANDWIDTH_PERCENTAGE
 BANNER
 :
    'banner' -> pushMode ( M_Banner )
+;
+
+BASE
+:
+   'base'
 ;
 
 BASH
@@ -2580,6 +2605,16 @@ DAMPEN_IGP_METRIC
 DAMPENING
 :
    'dampening'
+;
+
+DAMPENING_CHANGE
+:
+   'dampening-change'
+;
+
+DAMPENING_INTERVAL
+:
+   'dampening-interval'
 ;
 
 DATA_PRIVACY
@@ -4173,6 +4208,16 @@ EXIT_ADDRESS_FAMILY
    'exit-address-family'
 ;
 
+EXIT_AF_INTERFACE
+:
+   'exit-af-interface'
+;
+
+EXIT_AF_TOPOLOGY
+:
+   'exit-af-topology'
+;
+
 EXIT_PEER_POLICY
 :
    'exit-peer-policy'
@@ -4181,6 +4226,21 @@ EXIT_PEER_POLICY
 EXIT_PEER_SESSION
 :
    'exit-peer-session'
+;
+
+EXIT_SERVICE_FAMILY
+:
+   'exit-service-family'
+;
+
+EXIT_SF_INTERFACE
+:
+   'exit-sf-interface'
+;
+
+EXIT_SF_TOPOLOGY
+:
+   'exit-sf-topology'
 ;
 
 EXIT_VRF
@@ -5110,6 +5170,11 @@ HIGH_RESOLUTION
 HISTORY
 :
    'history'
+;
+
+HOLD_TIME
+:
+   'hold-time'
 ;
 
 HOLD_QUEUE
@@ -6909,6 +6974,16 @@ MAXIMUM_ROUTES
    'maximum-routes'
 ;
 
+MAXIMUM_SECONDARY_PATHS
+:
+   'maximum-secondary-paths'
+;
+
+MAXIMUM_SERVICE
+:
+   'maximum-service'
+;
+
 MAXPOLL
 :
    'maxpoll'
@@ -8012,6 +8087,11 @@ OFDM
 OFDM_THROUGHPUT
 :
   'ofdm-throughput'
+;
+
+OFFSET_LIST
+:
+   'offset-list'
 ;
 
 ON
@@ -9604,6 +9684,11 @@ REMOTE_IP
    'remote-ip'
 ;
 
+REMOTE_NEIGHBORS
+:
+   'remote-neighbors'
+;
+
 REMOTE_PORT
 :
    'remote-port'
@@ -10439,6 +10524,11 @@ SERVICE_CLASS
    'service-class'
 ;
 
+SERVICE_FAMILY
+:
+   'service-family'
+;
+
 SERVICE_LIST
 :
    'service-list'
@@ -10547,6 +10637,11 @@ SETUP
 SEVERITY
 :
    'severity'
+;
+
+SF_INTERFACE
+:
+   'sf-interface'
 ;
 
 SFLOW
@@ -10897,6 +10992,11 @@ SOFT_PREEMPTION
 SOFT_RECONFIGURATION
 :
    'soft' '-reconfiguration'?
+;
+
+SOFT_SIA
+:
+   'soft-sia'
 ;
 
 SOFTWARE
@@ -11251,6 +11351,11 @@ STUB
    'stub'
 ;
 
+STUB_SITE
+:
+   'stub-site'
+;
+
 SUBJECT_NAME
 :
    'subject-name'
@@ -11324,6 +11429,11 @@ SUMMARY_ADDRESS
 SUMMARY_LSA
 :
    'summary-lsa'
+;
+
+SUMMARY_METRIC
+:
+   'summary-metric'
 ;
 
 SUMMARY_ONLY
@@ -11771,6 +11881,11 @@ THU
    'Thu'
 ;
 
+TID
+:
+   'tid'
+;
+
 TIME
 :
    'time'
@@ -11871,6 +11986,16 @@ TOP
    'top'
 ;
 
+TOPO_INTERFACE
+:
+   'topo-interface'
+;
+
+TOPOLOGY
+:
+   'topology'
+;
+
 TOS
 :
    'tos'
@@ -11924,6 +12049,11 @@ TRAFFIC_EXPORT
 TRAFFIC_INDEX
 :
    'traffic-index'
+;
+
+TRAFFIC_SHARE
+:
+   'traffic-share'
 ;
 
 TRANSFER_SYSTEM
@@ -12509,6 +12639,11 @@ VALIDATION_USAGE
 VAP_ENABLE
 :
    'vap-enable'
+;
+
+VARIANCE
+:
+   'variance'
 ;
 
 VDC

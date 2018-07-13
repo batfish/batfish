@@ -3481,6 +3481,7 @@ stanza
    | route_map_stanza
    | route_policy_stanza
    | router_bgp_stanza
+   | router_eigrp_stanza
    | router_hsrp_stanza
    | router_isis_stanza
    | router_multicast_stanza
@@ -3616,7 +3617,6 @@ stanza
    | s_redundancy
    | s_rf
    | s_role
-   | s_router_eigrp
    | s_router_ospf
    | s_router_ospfv3
    | s_router_rip
