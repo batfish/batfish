@@ -91,6 +91,37 @@ import org.batfish.datamodel.visitors.HeaderSpaceConverter;
 @ParametersAreNonnullByDefault
 class CiscoConversions {
 
+  static Ip getHighestIp(Map<String, Interface> allInterfaces) {
+    Map<String, Interface> interfacesToCheck;
+    Map<String, Interface> loopbackInterfaces = new HashMap<>();
+    for (Entry<String, Interface> e : allInterfaces.entrySet()) {
+      String ifaceName = e.getKey();
+      Interface iface = e.getValue();
+      if (ifaceName.toLowerCase().startsWith("loopback") && iface.getActive()
+          && iface.getAddress() != null) {
+        loopbackInterfaces.put(ifaceName, iface);
+      }
+    }
+    if (loopbackInterfaces.isEmpty()) {
+      interfacesToCheck = allInterfaces;
+    } else {
+      interfacesToCheck = loopbackInterfaces;
+    }
+    Ip highestIp = Ip.ZERO;
+    for (Interface iface : interfacesToCheck.values()) {
+      if (!iface.getActive()) {
+        continue;
+      }
+      for (InterfaceAddress address : iface.getAllAddresses()) {
+        Ip ip = address.getIp();
+        if (highestIp.asLong() < ip.asLong()) {
+          highestIp = ip;
+        }
+      }
+    }
+    return highestIp;
+  }
+
   /**
    * Converts a {@link CryptoMapEntry} to an {@link IpsecPolicy}, a list of {@link IpsecVpn}. Also
    * converts it to an {@link IpsecPhase2Policy} and a list of {@link IpsecPeerConfig}

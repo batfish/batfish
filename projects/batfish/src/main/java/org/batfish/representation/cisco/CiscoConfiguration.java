@@ -2458,40 +2458,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
     newProcess.setReferenceBandwidth(proc.getReferenceBandwidth());
     Ip routerId = proc.getRouterId();
     if (routerId == null) {
-      Map<String, Interface> interfacesToCheck;
-      Map<String, Interface> allInterfaces = oldConfig.getInterfaces();
-      Map<String, Interface> loopbackInterfaces = new HashMap<>();
-      for (Entry<String, Interface> e : allInterfaces.entrySet()) {
-        String ifaceName = e.getKey();
-        Interface iface = e.getValue();
-        if (ifaceName.toLowerCase().startsWith("loopback")
-            && iface.getActive()
-            && iface.getAddress() != null) {
-          loopbackInterfaces.put(ifaceName, iface);
-        }
-      }
-      if (loopbackInterfaces.isEmpty()) {
-        interfacesToCheck = allInterfaces;
-      } else {
-        interfacesToCheck = loopbackInterfaces;
-      }
-      Ip highestIp = Ip.ZERO;
-      for (Interface iface : interfacesToCheck.values()) {
-        if (!iface.getActive()) {
-          continue;
-        }
-        for (InterfaceAddress address : iface.getAllAddresses()) {
-          Ip ip = address.getIp();
-          if (highestIp.asLong() < ip.asLong()) {
-            highestIp = ip;
-          }
-        }
-      }
-      if (highestIp == Ip.ZERO) {
+      routerId = CiscoConversions.getHighestIp(oldConfig.getInterfaces());
+      if (routerId == Ip.ZERO) {
         _w.redFlag("No candidates for OSPF router-id");
         return null;
       }
-      routerId = highestIp;
     }
     newProcess.setRouterId(routerId);
     return newProcess;
