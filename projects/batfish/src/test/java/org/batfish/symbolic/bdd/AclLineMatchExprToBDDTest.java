@@ -7,6 +7,7 @@ import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -122,5 +123,20 @@ public class AclLineMatchExprToBDDTest {
     exception.expect(BatfishException.class);
     exception.expectMessage("Circular PermittedByAcl reference: foo");
     permittedByAcl.accept(toBDD);
+  }
+
+  @Test
+  public void testMatchHeaderSpace_dscps() {
+    HeaderSpace headerSpace =
+        HeaderSpace.builder()
+            .setDscps(ImmutableSet.of(1, 2, 3))
+            .setNotDscps(ImmutableSet.of(3, 4, 5))
+            .build();
+    AclLineMatchExpr matchExpr = new MatchHeaderSpace(headerSpace);
+    BDD bdd = _toBDD.toBDD(matchExpr);
+
+    BDDInteger dscp = _pkt.getDscp();
+    BDD dscpBDD = dscp.value(1).or(dscp.value(2));
+    assertThat(bdd, equalTo(dscpBDD));
   }
 }
