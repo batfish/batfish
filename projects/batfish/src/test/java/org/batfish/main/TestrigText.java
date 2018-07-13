@@ -18,32 +18,6 @@ public class TestrigText {
 
   public static class Builder {
 
-    private Map<String, String> _awsText;
-
-    private Map<String, String> _bgpTablesText;
-
-    private Map<String, String> _configurationText;
-
-    private Map<String, String> _hostsText;
-
-    private Map<String, String> _iptablesFilesText;
-
-    private String _layer1TopologyText;
-
-    private Map<String, String> _routingTablesText;
-
-    public TestrigText build() {
-      TestrigText testrigText = new TestrigText();
-      testrigText.setAwsText(_awsText);
-      testrigText.setBgpTablesText(_bgpTablesText);
-      testrigText.setConfigurationText(_configurationText);
-      testrigText.setHostsText(_hostsText);
-      testrigText.setIptablesFilesText(_iptablesFilesText);
-      testrigText.setLayer1TopologyText(_layer1TopologyText);
-      testrigText.setRoutingTablesText(_routingTablesText);
-      return testrigText;
-    }
-
     private static Map<String, String> readTestrigResources(
         String testrigResourcePrefix, @Nullable String subfolder, Iterable<String> filenames) {
       if (filenames != null) {
@@ -67,14 +41,48 @@ public class TestrigText {
       }
     }
 
+    private Map<String, String> _awsText;
+
+    private Map<String, String> _bgpTablesText;
+
+    private Map<String, String> _configurationText;
+
+    private Map<String, String> _hostsText;
+
+    private Map<String, String> _iptablesFilesText;
+
+    private String _layer1TopologyText;
+
+    private String _legacyTopologyText;
+
+    private Map<String, String> _routingTablesText;
+
+    public TestrigText build() {
+      TestrigText testrigText = new TestrigText();
+      testrigText.setAwsText(_awsText);
+      testrigText.setBgpTablesText(_bgpTablesText);
+      testrigText.setConfigurationText(_configurationText);
+      testrigText.setHostsText(_hostsText);
+      testrigText.setIptablesFilesText(_iptablesFilesText);
+      testrigText.setLayer1TopologyText(_layer1TopologyText);
+      testrigText.setLegacyTopologyText(_legacyTopologyText);
+      testrigText.setRoutingTablesText(_routingTablesText);
+      return testrigText;
+    }
+
+    public Builder setAwsText(Map<String, String> awsText) {
+      _awsText = awsText;
+      return this;
+    }
+
     public Builder setAwsText(String testrigResourcePrefix, Iterable<String> filenames) {
       _awsText =
           readTestrigResources(testrigResourcePrefix, BfConsts.RELPATH_AWS_CONFIGS_DIR, filenames);
       return this;
     }
 
-    public Builder setAwsText(Map<String, String> awsText) {
-      _awsText = awsText;
+    public Builder setBgpTablesText(Map<String, String> bgpTablesText) {
+      _bgpTablesText = bgpTablesText;
       return this;
     }
 
@@ -85,8 +93,8 @@ public class TestrigText {
       return this;
     }
 
-    public Builder setBgpTablesText(Map<String, String> bgpTablesText) {
-      _bgpTablesText = bgpTablesText;
+    public Builder setConfigurationText(Map<String, String> configurationText) {
+      _configurationText = configurationText;
       return this;
     }
 
@@ -97,8 +105,8 @@ public class TestrigText {
       return this;
     }
 
-    public Builder setConfigurationText(Map<String, String> configurationText) {
-      _configurationText = configurationText;
+    public Builder setHostsText(Map<String, String> hostsText) {
+      _hostsText = hostsText;
       return this;
     }
 
@@ -108,18 +116,13 @@ public class TestrigText {
       return this;
     }
 
-    public Builder setHostsText(Map<String, String> hostsText) {
-      _hostsText = hostsText;
+    public Builder setIptablesFilesText(Map<String, String> iptablesFilesText) {
+      _iptablesFilesText = iptablesFilesText;
       return this;
     }
 
     public Builder setIptablesFilesText(String testrigResourcePrefix, Iterable<String> filenames) {
       _iptablesFilesText = readTestrigResources(testrigResourcePrefix, "iptables", filenames);
-      return this;
-    }
-
-    public Builder setIptablesFilesText(Map<String, String> iptablesFilesText) {
-      _iptablesFilesText = iptablesFilesText;
       return this;
     }
 
@@ -135,15 +138,27 @@ public class TestrigText {
       return this;
     }
 
-    public Builder setRoutingTablesText(String testrigResourcePrefix, Iterable<String> filenames) {
-      _routingTablesText =
+    public Builder setLegacyTopologyText(@Nonnull String testrigResourcePrefix) {
+      _legacyTopologyText =
           readTestrigResources(
-              testrigResourcePrefix, BfConsts.RELPATH_ENVIRONMENT_ROUTING_TABLES, filenames);
+                  testrigResourcePrefix,
+                  null,
+                  ImmutableList.of(BfConsts.RELPATH_TESTRIG_LEGACY_TOPOLOGY_PATH))
+              .values()
+              .iterator()
+              .next();
       return this;
     }
 
     public Builder setRoutingTablesText(Map<String, String> routingTablesText) {
       _routingTablesText = routingTablesText;
+      return this;
+    }
+
+    public Builder setRoutingTablesText(String testrigResourcePrefix, Iterable<String> filenames) {
+      _routingTablesText =
+          readTestrigResources(
+              testrigResourcePrefix, BfConsts.RELPATH_ENVIRONMENT_ROUTING_TABLES, filenames);
       return this;
     }
   }
@@ -162,9 +177,11 @@ public class TestrigText {
 
   private Map<String, String> _iptablesFilesText;
 
-  private Map<String, String> _routingTablesText;
-
   private String _layer1TopologyText;
+
+  private String _legacyTopologyText;
+
+  private Map<String, String> _routingTablesText;
 
   public Map<String, String> getAwsText() {
     return _awsText;
@@ -188,6 +205,10 @@ public class TestrigText {
 
   public @Nullable String getLayer1TopologyText() {
     return _layer1TopologyText;
+  }
+
+  public @Nullable String getLegacyTopologyText() {
+    return _legacyTopologyText;
   }
 
   public Map<String, String> getRoutingTablesText() {
@@ -214,8 +235,12 @@ public class TestrigText {
     _iptablesFilesText = iptablesFilesText;
   }
 
-  public void setLayer1TopologyText(String layer1TopologyText) {
+  public void setLayer1TopologyText(@Nullable String layer1TopologyText) {
     _layer1TopologyText = layer1TopologyText;
+  }
+
+  public void setLegacyTopologyText(@Nullable String legacyTopologyText) {
+    _legacyTopologyText = legacyTopologyText;
   }
 
   public void setRoutingTablesText(Map<String, String> routingTablesText) {

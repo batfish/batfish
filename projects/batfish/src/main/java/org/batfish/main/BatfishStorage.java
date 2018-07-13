@@ -37,6 +37,7 @@ import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 
 /** A utility class that abstracts the underlying file system storage used by {@link Batfish}. */
@@ -122,6 +123,27 @@ final class BatfishStorage {
       _logger.errorf(
           "Failed to deserialize ConvertConfigurationAnswerElement: %s",
           Throwables.getStackTraceAsString(e));
+      return null;
+    }
+  }
+
+  public @Nullable Topology loadLegacyTopology(@Nonnull String testrig) {
+    Path path =
+        getTestrigDir(testrig)
+            .resolve(
+                Paths.get(
+                    BfConsts.RELPATH_TEST_RIG_DIR, BfConsts.RELPATH_TESTRIG_LEGACY_TOPOLOGY_PATH));
+    if (!Files.exists(path)) {
+      return null;
+    }
+    _newBatch.apply("Reading legacy topology", 0);
+    String topologyFileText = CommonUtil.readFile(path);
+    try {
+      return BatfishObjectMapper.mapper().readValue(topologyFileText, Topology.class);
+    } catch (IOException e) {
+      _logger.warnf(
+          "Unexpected exception caught while loading legacy testrig topology for testrig %s: %s",
+          testrig, Throwables.getStackTraceAsString(e));
       return null;
     }
   }

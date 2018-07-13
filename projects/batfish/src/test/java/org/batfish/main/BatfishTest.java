@@ -2,11 +2,12 @@ package org.batfish.main;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.collection.IsEmptyCollection.empty;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
@@ -134,6 +135,36 @@ public class BatfishTest {
   }
 
   @Test
+  public void testInitTestrigWithLayer1Topology() throws IOException {
+    String testrigResourcePrefix = "org/batfish/common/topology/testrigs/layer1";
+    TestrigText.Builder testrigTextBuilder =
+        TestrigText.builder()
+            .setLayer1TopologyText(testrigResourcePrefix)
+            .setHostsText(testrigResourcePrefix, ImmutableSet.of("c1.json", "c2.json"));
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(testrigTextBuilder.build(), _folder);
+
+    assertThat(
+        batfish.computeTestrigTopology(batfish.loadConfigurations()).getEdges(),
+        containsInAnyOrder(new Edge("c1", "i1", "c2", "i2"), new Edge("c2", "i2", "c1", "i1")));
+  }
+
+  @Test
+  public void testInitTestrigWithLegacyTopology() throws IOException {
+    String testrigResourcePrefix = "org/batfish/common/topology/testrigs/legacy";
+    TestrigText.Builder testrigTextBuilder =
+        TestrigText.builder()
+            .setLegacyTopologyText("org/batfish/common/topology/testrigs/legacy")
+            .setHostsText(testrigResourcePrefix, ImmutableSet.of("c1.json", "c2.json"));
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(testrigTextBuilder.build(), _folder);
+
+    assertThat(
+        batfish.computeTestrigTopology(batfish.loadConfigurations()).getEdges(),
+        containsInAnyOrder(new Edge("c1", "i1", "c2", "i2"), new Edge("c2", "i2", "c1", "i1")));
+  }
+
+  @Test
   public void testLoadLayer1Topology() throws IOException {
     TestrigText.Builder testrigTextBuilder =
         TestrigText.builder().setLayer1TopologyText("org/batfish/common/topology/testrigs/layer1");
@@ -170,63 +201,6 @@ public class BatfishTest {
     Path emptyFolder = _folder.newFolder("emptyFolder").toPath();
     List<Path> result = Batfish.listAllFiles(emptyFolder);
     assertThat(result, empty());
-  }
-
-  @Test
-  public void testParseTopologyBadJson() throws IOException {
-    // missing node2interface
-    String topologyBadJson =
-        "["
-            + "{ "
-            + "\"node1\" : \"as1border1\","
-            + "\"node1interface\" : \"GigabitEthernet0/0\","
-            + "\"node2\" : \"as1core1\","
-            + "},"
-            + "]";
-
-    Path topologyFilePath = _folder.newFile("testParseTopologyJson").toPath();
-    Files.write(topologyFilePath, topologyBadJson.getBytes(StandardCharsets.UTF_8));
-    Batfish batfish = BatfishTestUtils.getBatfish(new TreeMap<>(), _folder);
-    String errorMessage = "Topology format error";
-    _thrown.expect(BatfishException.class);
-    _thrown.expectMessage(errorMessage);
-    batfish.parseTopology(topologyFilePath);
-  }
-
-  @Test
-  public void testParseTopologyEmpty() throws IOException {
-    Path topologyFilePath = _folder.newFile("testParseTopologyJson").toPath();
-    Files.write(topologyFilePath, new byte[0]);
-    Batfish batfish = BatfishTestUtils.getBatfish(new TreeMap<>(), _folder);
-    String errorMessage = "ERROR: empty topology\n";
-    _thrown.expect(BatfishException.class);
-    _thrown.expectMessage(errorMessage);
-    batfish.parseTopology(topologyFilePath);
-  }
-
-  @Test
-  public void testParseTopologyJson() throws IOException {
-    String topologyJson =
-        "["
-            + "{ "
-            + "\"node1\" : \"as1border1\","
-            + "\"node1interface\" : \"GigabitEthernet0/0\","
-            + "\"node2\" : \"as1core1\","
-            + "\"node2interface\" : \"GigabitEthernet1/0\""
-            + "},"
-            + "{"
-            + "\"node1\" : \"as1border1\","
-            + "\"node1interface\" : \"GigabitEthernet1/0\","
-            + "\"node2\" : \"as2border1\","
-            + "\"node2interface\" : \"GigabitEthernet0/0\""
-            + "}"
-            + "]";
-
-    Path topologyFilePath = _folder.newFile("testParseTopologyJson").toPath();
-    Files.write(topologyFilePath, topologyJson.getBytes(StandardCharsets.UTF_8));
-    Batfish batfish = BatfishTestUtils.getBatfish(new TreeMap<>(), _folder);
-    Topology topology = batfish.parseTopology(topologyFilePath);
-    assertEquals(topology.getEdges().size(), 2);
   }
 
   @Test
