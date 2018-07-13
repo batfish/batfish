@@ -51,7 +51,6 @@ public class TracerouteAnswererTest {
   private static final String NODE1 = "node1";
   private static final String NODE2 = "node2";
   private static final Ip NODE1_FAST_ETHERNET_IP = new Ip("1.1.1.2");
-  private static final Ip NODE1_FAST_ETHERNET_LINK_IP = new Ip("1.1.1.3");
   private static final Ip NODE1_LOOPBACK_IP = new Ip("1.1.1.1");
   private static final Ip NODE2_FAST_ETHERNET_IP = new Ip("1.1.1.3");
   private static final Ip NODE2_LOOPBACK_IP = new Ip("2.2.2.2");
