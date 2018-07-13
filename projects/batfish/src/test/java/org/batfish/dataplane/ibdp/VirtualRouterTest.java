@@ -1212,14 +1212,5 @@ public class VirtualRouterTest {
     assertThat(bestPathRib.getRoutes(), contains(oldRoute2));
     // Both good routes
     assertThat(multipathRib.getRoutes(), containsInAnyOrder(oldRoute2, oldRoute3));
-
-    RibDelta<BgpRoute> bpDelta = e.getKey();
-    RibDelta<BgpRoute> mpDelta = e.getValue();
-    assert bpDelta != null;
-    assert mpDelta != null;
-    // 2 operations for best path rib, one withdraw, one add
-    assertThat(bpDelta.getActions(), hasSize(2));
-    // 1 operations for multipath rib, one withdraw
-    assertThat(mpDelta.getActions(), hasSize(1));
   }
 }
