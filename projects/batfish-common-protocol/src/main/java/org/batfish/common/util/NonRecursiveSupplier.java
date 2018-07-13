@@ -1,5 +1,6 @@
 package org.batfish.common.util;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
 /**
@@ -15,22 +16,18 @@ public class NonRecursiveSupplier<T> implements Supplier<T>, com.google.common.b
   private final Supplier<T> _inner;
 
   /*
-   * True if we are currently inside a call to _inner.get(). If so, and we call again, then we
-   * have reentered.
+   * True if we are currently inside a call to _inner.get(). If so, and we try to call again,
+   * then we have detected recursion.
    */
-  private boolean _inInner;
+  private AtomicBoolean _inInner;
 
   public NonRecursiveSupplier(Supplier<T> inner) {
     _inner = inner;
-    _inInner = false;
+    _inInner = new AtomicBoolean(false);
   }
 
-  /*
-   * Synchronizing ensures only one thread can call get at at time. However, that thread may
-   * call get recursively without blocking (since it already has the lock).
-   */
   @Override
-  public synchronized T get() {
+  public T get() {
     acquire();
     try {
       return _inner.get();
@@ -40,16 +37,14 @@ public class NonRecursiveSupplier<T> implements Supplier<T>, com.google.common.b
   }
 
   private void acquire() {
-    if (_inInner) {
+    if (!_inInner.compareAndSet(false, true)) {
       throw new NonRecursiveSupplierException();
     }
-    _inInner = true;
   }
 
   private void release() {
-    if (!_inInner) {
-      throw new IllegalStateException("_inInner should be true");
+    if (!_inInner.compareAndSet(true, false)) {
+      throw new IllegalStateException("_inInner should be true when exiting _inner");
     }
-    _inInner = false;
   }
 }
