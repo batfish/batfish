@@ -48,7 +48,7 @@ public class NonRecursiveSupplier<T> implements Supplier<T>, com.google.common.b
 
   private void release() {
     if (!_inInner) {
-      throw new IllegalStateException("Releasing unacquired semaphore");
+      throw new IllegalStateException("_inInner should be true");
     }
     _inInner = false;
   }
