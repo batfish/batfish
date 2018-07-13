@@ -60,6 +60,14 @@ variable
     ~NEWLINE
 ;
 
+variable_comma_separated_dec
+:
+    DEC
+    (
+        COMMA DEC
+    )*
+;
+
 variable_list
 :
     (

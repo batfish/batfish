@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import javax.annotation.Nonnull;
 import org.batfish.datamodel.IpSpace;
 
 /**
@@ -17,11 +18,11 @@ import org.batfish.datamodel.IpSpace;
 public final class IpSpaceAssignment {
   /** */
   public static class Entry {
-    private final IpSpace _ipSpace;
+    private final @Nonnull IpSpace _ipSpace;
 
-    private final Set<Location> _locations;
+    private final @Nonnull Set<Location> _locations;
 
-    Entry(IpSpace ipSpace, Set<Location> locations) {
+    Entry(@Nonnull IpSpace ipSpace, @Nonnull Set<Location> locations) {
       _ipSpace = ipSpace;
       _locations = ImmutableSet.copyOf(locations);
     }

@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-import org.batfish.common.BatfishException;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclIpSpaceLine;
 import org.batfish.datamodel.EmptyIpSpace;
@@ -17,8 +16,10 @@ import org.batfish.datamodel.IpWildcardIpSpace;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.PrefixIpSpace;
 import org.batfish.datamodel.UniverseIpSpace;
+import org.batfish.datamodel.acl.CircularReferenceException;
+import org.batfish.datamodel.acl.UndefinedReferenceException;
 
-/** Returns the TODO non-IpSpaceReference IpSpace that the given IpSpace points to. */
+/** Returns the non-IpSpaceReference IpSpace that the given IpSpace points to. */
 public class IpSpaceDereferencer implements GenericIpSpaceVisitor<IpSpace> {
 
   private final Map<String, IpSpace> _namedIpSpaces;
@@ -35,11 +36,14 @@ public class IpSpaceDereferencer implements GenericIpSpaceVisitor<IpSpace> {
    * @param headerSpace The header space whose IpSpaces to dereference
    * @param namedIpSpaces Named IP spaces in the context of the given header space.
    * @return A version of the given header space with all {@link IpSpace} fields dereferenced.
-   * @throws BatfishException if any {@link IpSpace} in the header space points to any cyclical or
-   *     undefined reference.
+   * @throws {@link CircularReferenceException} if any {@link IpSpace} in the header space points to
+   *     a cyclical reference.
+   * @throws {@link UndefinedReferenceException} if any {@link IpSpace} in the header space points
+   *     to an undefined reference.
    */
   public static HeaderSpace dereferenceHeaderSpace(
-      HeaderSpace headerSpace, Map<String, IpSpace> namedIpSpaces) throws BatfishException {
+      HeaderSpace headerSpace, Map<String, IpSpace> namedIpSpaces)
+      throws CircularReferenceException, UndefinedReferenceException {
     HeaderSpace.Builder hsb = headerSpace.toBuilder();
     IpSpace original = headerSpace.getSrcIps();
     if (original != null) {
@@ -73,11 +77,14 @@ public class IpSpaceDereferencer implements GenericIpSpaceVisitor<IpSpace> {
    * @param aclIpSpace The {@link AclIpSpace} to dereference
    * @return An {@link AclIpSpace} identical to the original but with all uses of {@link
    *     IpSpaceReference} replaced with the dereferenced {@link IpSpace} they represent
-   * @throws BatfishException if original {@link AclIpSpace} points to any cyclical or undefined
-   *     reference
+   * @throws {@link CircularReferenceException} if original {@link AclIpSpace} points to a cyclical
+   *     reference.
+   * @throws {@link UndefinedReferenceException} if original {@link AclIpSpace} points to an
+   *     undefined reference.
    */
   @Override
-  public IpSpace visitAclIpSpace(AclIpSpace aclIpSpace) throws BatfishException {
+  public IpSpace visitAclIpSpace(AclIpSpace aclIpSpace)
+      throws CircularReferenceException, UndefinedReferenceException {
     List<AclIpSpaceLine> sanitizedLines = new ArrayList<>();
     for (AclIpSpaceLine line : aclIpSpace.getLines()) {
       IpSpace ipSpace = line.getIpSpace().accept(this);
@@ -100,15 +107,18 @@ public class IpSpaceDereferencer implements GenericIpSpaceVisitor<IpSpace> {
   /**
    * @param ipSpaceReference {@link IpSpaceReference} to dereference
    * @return The dereferenced {@link IpSpace} referenced by the given {@link IpSpaceReference}
-   * @throws BatfishException if the given {@link IpSpaceReference} points to a circular chain of
-   *     references or an undefined {@link IpSpace}
+   * @throws {@link CircularReferenceException} if the given {@link IpSpaceReference} points to a
+   *     cyclical reference.
+   * @throws {@link UndefinedReferenceException} if the given {@link IpSpaceReference} points to an
+   *     undefined reference.
    */
   @Override
-  public IpSpace visitIpSpaceReference(IpSpaceReference ipSpaceReference) throws BatfishException {
+  public IpSpace visitIpSpaceReference(IpSpaceReference ipSpaceReference)
+      throws CircularReferenceException, UndefinedReferenceException {
     String name = ipSpaceReference.getName();
     if (!_referencedIpSpaces.add(name)) {
       // This is a reference to an already-referenced IP space. Line is in a cycle.
-      throw new BatfishException(
+      throw new CircularReferenceException(
           String.format(
               "Cannot dereference IpSpaceReference to IP space %s because it is a circular reference.",
               name));
@@ -116,7 +126,7 @@ public class IpSpaceDereferencer implements GenericIpSpaceVisitor<IpSpace> {
     IpSpace referenced = _namedIpSpaces.get(name);
     if (referenced == null) {
       // This reference is to an undefined IP space.
-      throw new BatfishException(
+      throw new UndefinedReferenceException(
           String.format(
               "Cannot dereference IpSpaceReference to IP space %s because there is no such IP space.",
               name));

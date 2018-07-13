@@ -7,6 +7,7 @@ public enum PaloAltoStructureUsage implements StructureUsage {
   RULEBASE_FROM_ZONE("rulebase security rules from"),
   RULEBASE_SOURCE_ADDRESS("rulebase security rules source"),
   RULEBASE_TO_ZONE("rulebase security rules to"),
+  SERVICE_GROUP_MEMBER("service-group members"),
   VIRTUAL_ROUTER_INTERFACE("virtual-router interface"),
   ZONE_INTERFACE("zone network layer3");
 

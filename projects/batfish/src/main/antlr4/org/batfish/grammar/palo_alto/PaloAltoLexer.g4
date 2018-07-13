@@ -160,6 +160,11 @@ LOG_SETTINGS
     'log-settings'
 ;
 
+MEMBERS
+:
+    'members'
+;
+
 METRIC
 :
     'metric'
@@ -200,6 +205,11 @@ OPEN_BRACKET
     '['
 ;
 
+PORT
+:
+    'port'
+;
+
 PRIMARY
 :
     'primary'
@@ -208,6 +218,11 @@ PRIMARY
 PRIMARY_NTP_SERVER
 :
     'primary-ntp-server'
+;
+
+PROTOCOL
+:
+    'protocol'
 ;
 
 ROUTING_TABLE
@@ -223,6 +238,11 @@ RULEBASE
 RULES
 :
     'rules'
+;
+
+SCTP
+:
+    'sctp'
 ;
 
 SECONDARY
@@ -255,6 +275,11 @@ SERVICE
     'service'
 ;
 
+SERVICE_GROUP
+:
+    'service-group'
+;
+
 SET
 :
     'set'
@@ -268,6 +293,11 @@ SHARED
 SOURCE
 :
     'source'
+;
+
+SOURCE_PORT
+:
+    'source-port'
 ;
 
 STATIC_ROUTE
@@ -293,6 +323,16 @@ TAG
 TO
 :
     'to'
+;
+
+TCP
+:
+    'tcp'
+;
+
+UDP
+:
+    'udp'
 ;
 
 UNITS
@@ -326,6 +366,11 @@ ZONE
 ;
 
 // Complex tokens
+
+COMMA
+:
+    ','
+;
 
 DEC
 :
@@ -452,7 +497,7 @@ F_Whitespace
 fragment
 F_Variable_VarChar
 :
-    ~[ \t\n\r;{}[\]&|()"']
+    ~[ \t\n\r;,{}[\]&|()"']
 ;
 
 // Modes

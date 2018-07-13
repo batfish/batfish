@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import javax.annotation.Nonnull;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
@@ -55,7 +56,7 @@ public class Interface extends ComparableStructure<String> {
 
   private transient boolean _inherited;
 
-  private final IsisInterfaceSettings _isisSettings;
+  @Nonnull private final IsisInterfaceSettings _isisSettings;
 
   private IsoAddress _isoAddress;
 
@@ -72,6 +73,8 @@ public class Interface extends ComparableStructure<String> {
   private int _ospfHelloMultiplier;
 
   private boolean _ospfPassive;
+
+  private boolean _ospfPointToPoint;
 
   private String _outgoingFilter;
 
@@ -158,6 +161,7 @@ public class Interface extends ComparableStructure<String> {
     return _incomingFilter;
   }
 
+  @Nonnull
   public IsisInterfaceSettings getIsisSettings() {
     return _isisSettings;
   }
@@ -192,6 +196,10 @@ public class Interface extends ComparableStructure<String> {
 
   public boolean getOspfPassive() {
     return _ospfPassive;
+  }
+
+  public boolean getOspfPointToPoint() {
+    return _ospfPointToPoint;
   }
 
   public String getOutgoingFilter() {
@@ -304,6 +312,10 @@ public class Interface extends ComparableStructure<String> {
 
   public void setOspfPassive(boolean ospfPassive) {
     _ospfPassive = true;
+  }
+
+  public void setOspfPointToPoint(boolean opsfPointToPoint) {
+    _ospfPointToPoint = opsfPointToPoint;
   }
 
   public void setOutgoingFilter(String accessListName) {

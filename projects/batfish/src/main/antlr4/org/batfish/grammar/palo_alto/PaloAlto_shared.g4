@@ -1,6 +1,6 @@
 parser grammar PaloAlto_shared;
 
-import PaloAlto_common;
+import PaloAlto_common, PaloAlto_service, PaloAlto_service_group;
 
 options {
     tokenVocab = PaloAltoLexer;
@@ -17,7 +17,9 @@ s_shared
 // Common syntax between set shared and set vsys
 ss_common
 :
-    ss_log_settings
+    s_service
+    | s_service_group
+    | ss_log_settings
 ;
 
 ss_log_settings

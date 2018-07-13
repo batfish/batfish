@@ -69,6 +69,17 @@ public class FibImpl implements Fib {
       return;
     }
     Ip nextHopIp = route.getNextHopIp();
+
+    /* For BGP next-hop-discard routes, ignore next-hop-ip and exit early */
+    if (route instanceof BgpRoute && ((BgpRoute) route).getDiscard()) {
+      Map<Ip, Set<AbstractRoute>> nextHopInterfaceRoutesByFinalNextHopIp =
+          nextHopInterfaces.computeIfAbsent(Interface.NULL_INTERFACE_NAME, k -> new HashMap<>());
+      Set<AbstractRoute> nextHopInterfaceRoutes =
+          nextHopInterfaceRoutesByFinalNextHopIp.computeIfAbsent(
+              Route.UNSET_ROUTE_NEXT_HOP_IP, k -> new TreeSet<>());
+      nextHopInterfaceRoutes.add(route);
+      return;
+    }
     if (!nextHopIp.equals(Route.UNSET_ROUTE_NEXT_HOP_IP)) {
       Set<AbstractRoute> nextHopLongestPrefixMatchRoutes = rib.longestPrefixMatch(nextHopIp);
       for (AbstractRoute nextHopLongestPrefixMatchRoute : nextHopLongestPrefixMatchRoutes) {

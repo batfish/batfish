@@ -4,8 +4,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Table;
-import com.google.common.graph.Network;
-import com.google.common.graph.NetworkBuilder;
+import com.google.common.graph.ValueGraph;
+import com.google.common.graph.ValueGraphBuilder;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
@@ -15,10 +15,9 @@ import javax.annotation.Nullable;
 public class MockDataPlane implements DataPlane {
 
   public static class Builder {
-
     private Table<String, String, Set<BgpRoute>> _bgpRoutes;
 
-    private Network<BgpPeerConfig, BgpSession> _bgpTopology;
+    private ValueGraph<BgpPeerConfigId, BgpSessionProperties> _bgpTopology;
 
     private Map<String, Configuration> _configurations;
 
@@ -37,7 +36,7 @@ public class MockDataPlane implements DataPlane {
     Map<Ip, Map<String, Set<String>>> _ipVrfOwners;
 
     private Builder() {
-      _bgpTopology = NetworkBuilder.directed().build();
+      _bgpTopology = ValueGraphBuilder.directed().build();
       _configurations = ImmutableMap.of();
       _fibs = ImmutableMap.of();
       _ribs = ImmutableSortedMap.of();
@@ -53,7 +52,7 @@ public class MockDataPlane implements DataPlane {
       this._bgpRoutes = bgpRoutes;
     }
 
-    public Builder setBgpTopology(Network<BgpPeerConfig, BgpSession> bgpTopology) {
+    public Builder setBgpTopology(ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology) {
       _bgpTopology = bgpTopology;
       return this;
     }
@@ -92,7 +91,7 @@ public class MockDataPlane implements DataPlane {
 
   private Table<String, String, Set<BgpRoute>> _bgpRoutes;
 
-  private final Network<BgpPeerConfig, BgpSession> _bgpTopology;
+  private final ValueGraph<BgpPeerConfigId, BgpSessionProperties> _bgpTopology;
 
   private final Map<String, Configuration> _configurations;
 
@@ -128,7 +127,7 @@ public class MockDataPlane implements DataPlane {
   }
 
   @Override
-  public Network<BgpPeerConfig, BgpSession> getBgpTopology() {
+  public ValueGraph<BgpPeerConfigId, BgpSessionProperties> getBgpTopology() {
     return _bgpTopology;
   }
 

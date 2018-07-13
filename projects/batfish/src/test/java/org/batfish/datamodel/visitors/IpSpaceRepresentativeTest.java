@@ -12,6 +12,8 @@ import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.UniverseIpSpace;
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -62,7 +64,9 @@ public class IpSpaceRepresentativeTest {
             .thenPermitting(ip3.toIpSpace())
             .thenPermitting(ip4.toIpSpace())
             .build();
-    assertThat(_ipSpaceRepresentative.getRepresentative(ipSpace), equalTo(Optional.of(ip4)));
+    Optional<Ip> representative = _ipSpaceRepresentative.getRepresentative(ipSpace);
+    MatcherAssert.assertThat("no representative", representative.isPresent());
+    assertThat(representative.get(), Matchers.oneOf(ip1, ip2, ip3, ip4));
   }
 
   @Test

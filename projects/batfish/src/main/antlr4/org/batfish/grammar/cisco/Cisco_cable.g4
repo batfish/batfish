@@ -209,6 +209,7 @@ cntlr_null
       | FDL
       | FRAMING
       | G709
+      | LINE_TERMINATION
       | LINECODE
       | PM
       | PRI_GROUP

@@ -24,7 +24,9 @@ import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasInterfaces;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.DEFAULT_VSYS_NAME;
+import static org.batfish.representation.palo_alto.PaloAltoConfiguration.SHARED_VSYS_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.computeObjectName;
+import static org.batfish.representation.palo_alto.PaloAltoConfiguration.computeServiceGroupMemberAclName;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -47,6 +49,7 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.grammar.VendorConfigurationFormatDetector;
@@ -89,6 +92,16 @@ public class PaloAltoGrammarTest {
     fb.setIngressNode("node");
     fb.setSrcIp(new Ip(sourceAddress));
     fb.setDstIp(new Ip(destinationAddress));
+    fb.setTag("test");
+    return fb.build();
+  }
+
+  private static Flow createFlow(IpProtocol protocol, int sourcePort, int destinationPort) {
+    Flow.Builder fb = new Flow.Builder();
+    fb.setIngressNode("node");
+    fb.setIpProtocol(protocol);
+    fb.setDstPort(destinationPort);
+    fb.setSrcPort(sourcePort);
     fb.setTag("test");
     return fb.build();
   }
@@ -286,7 +299,7 @@ public class PaloAltoGrammarTest {
     String hostname = "rulebase";
     Configuration c = parseConfig(hostname);
 
-    String ipAclName = DEFAULT_VSYS_NAME + "~z1~OUTGOING_FILTER";
+    String ipAclName = String.format("~%s~z1~OUTGOING_FILTER~", DEFAULT_VSYS_NAME;
     Flow z1ToZ1permitted = createFlow("1.1.2.255", "1.1.1.2");
     Flow z1ToZ1rejected = createFlow("1.1.2.2", "1.1.1.3");
     Flow z2ToZ1permitted = createFlow("1.1.4.255", "1.1.1.2");
@@ -309,7 +322,7 @@ public class PaloAltoGrammarTest {
     String hostname = "vsys-rulebase";
     Configuration c = parseConfig(hostname);
 
-    String ipAclName1 = "vsys1~z1~OUTGOING_FILTER";
+    String ipAclName1 = "~vsys1~z1~OUTGOING_FILTER~";
     Flow flow = createFlow("1.1.2.255", "1.1.1.2");
 
     // Confirm intravsys flow is accepted
@@ -347,6 +360,77 @@ public class PaloAltoGrammarTest {
   }
 
   @Test
+  public void testService() throws IOException {
+    String hostname = "service";
+    Configuration c = parseConfig(hostname);
+
+    String service1AclName = computeServiceGroupMemberAclName(DEFAULT_VSYS_NAME, "SERVICE1");
+    String service2AclName = computeServiceGroupMemberAclName(DEFAULT_VSYS_NAME, "SERVICE2");
+    String service3AclName = computeServiceGroupMemberAclName(DEFAULT_VSYS_NAME, "SERVICE3");
+    String service4AclName = computeServiceGroupMemberAclName(DEFAULT_VSYS_NAME, "SERVICE4");
+    String serviceGroup1AclName = computeServiceGroupMemberAclName(DEFAULT_VSYS_NAME, "SG1");
+    String serviceGroup2AclName = computeServiceGroupMemberAclName(DEFAULT_VSYS_NAME, "SG2");
+
+    Flow service1Flow = createFlow(IpProtocol.TCP, 999, 1);
+    Flow service2Flow = createFlow(IpProtocol.UDP, 4, 999);
+    Flow service3Flow1 = createFlow(IpProtocol.UDP, 10, 5);
+    Flow service3Flow2 = createFlow(IpProtocol.UDP, 9, 6);
+    Flow service4Flow = createFlow(IpProtocol.SCTP, 1, 1);
+
+    // Confirm services accept flows matching their definitions and reject others
+    assertThat(c, hasIpAccessList(service1AclName, accepts(service1Flow, null, c)));
+    assertThat(c, hasIpAccessList(service1AclName, rejects(service2Flow, null, c)));
+
+    assertThat(c, hasIpAccessList(service2AclName, accepts(service2Flow, null, c)));
+    assertThat(c, hasIpAccessList(service2AclName, rejects(service3Flow1, null, c)));
+
+    assertThat(c, hasIpAccessList(service3AclName, accepts(service3Flow1, null, c)));
+    assertThat(c, hasIpAccessList(service3AclName, accepts(service3Flow2, null, c)));
+    assertThat(c, hasIpAccessList(service3AclName, rejects(service2Flow, null, c)));
+
+    assertThat(c, hasIpAccessList(service4AclName, accepts(service4Flow, null, c)));
+    assertThat(c, hasIpAccessList(service4AclName, rejects(service1Flow, null, c)));
+
+    // Confirm service-group SG1 accepts flows matching its member definitions and rejects others
+    assertThat(c, hasIpAccessList(serviceGroup1AclName, accepts(service1Flow, null, c)));
+    assertThat(c, hasIpAccessList(serviceGroup1AclName, accepts(service2Flow, null, c)));
+    assertThat(c, hasIpAccessList(serviceGroup1AclName, rejects(service3Flow1, null, c)));
+
+    // Confirm SG2 accepts flows matching its member's member definitions and rejects others
+    assertThat(c, hasIpAccessList(serviceGroup2AclName, accepts(service1Flow, null, c)));
+    assertThat(c, hasIpAccessList(serviceGroup2AclName, accepts(service2Flow, null, c)));
+    assertThat(c, hasIpAccessList(serviceGroup2AclName, rejects(service3Flow1, null, c)));
+  }
+
+  @Test
+  public void testServiceReference() throws IOException {
+    String hostname = "service";
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    String service1Name = computeObjectName(DEFAULT_VSYS_NAME, "SERVICE1");
+    String service2Name = computeObjectName(DEFAULT_VSYS_NAME, "SERVICE2");
+    String service3Name = computeObjectName(DEFAULT_VSYS_NAME, "SERVICE3");
+    String service4Name = computeObjectName(DEFAULT_VSYS_NAME, "SERVICE4");
+    String serviceGroup1Name = computeObjectName(DEFAULT_VSYS_NAME, "SG1");
+    String serviceGroup2Name = computeObjectName(DEFAULT_VSYS_NAME, "SG2");
+
+    // Confirm structure definitions are tracked
+    assertThat(ccae, hasDefinedStructure(hostname, PaloAltoStructureType.SERVICE, service1Name));
+    assertThat(ccae, hasDefinedStructure(hostname, PaloAltoStructureType.SERVICE, service2Name));
+    assertThat(ccae, hasDefinedStructure(hostname, PaloAltoStructureType.SERVICE, service3Name));
+    assertThat(ccae, hasDefinedStructure(hostname, PaloAltoStructureType.SERVICE, service4Name));
+    assertThat(
+        ccae,
+        hasDefinedStructure(hostname, PaloAltoStructureType.SERVICE_GROUP, serviceGroup1Name));
+    assertThat(
+        ccae,
+        hasDefinedStructure(hostname, PaloAltoStructureType.SERVICE_GROUP, serviceGroup2Name));
+  }
+
+  @Test
   public void testVirtualRouterInterfaces() throws IOException {
     String hostname = "virtual-router-interfaces";
     Configuration c = parseConfig(hostname);
@@ -354,6 +438,80 @@ public class PaloAltoGrammarTest {
     assertThat(c, hasVrf("default", hasInterfaces(hasItem("ethernet1/1"))));
     assertThat(c, hasVrf("somename", hasInterfaces(hasItems("ethernet1/2", "ethernet1/3"))));
     assertThat(c, hasVrf("someothername", hasInterfaces(emptyIterable())));
+  }
+
+  @Test
+  public void testVsysService() throws IOException {
+    String hostname = "vsys-service";
+    Configuration c = parseConfig(hostname);
+
+    String vsys1ServiceName = computeServiceGroupMemberAclName("vsys1", "SERVICE1");
+    String vsys2ServiceName = computeServiceGroupMemberAclName("vsys2", "SERVICE1");
+    String sharedServiceName = computeServiceGroupMemberAclName(SHARED_VSYS_NAME, "SERVICE1");
+    String sharedOnlyServiceName = computeServiceGroupMemberAclName(SHARED_VSYS_NAME, "SERVICE2");
+
+    String vsys1ServiceGroupName = computeServiceGroupMemberAclName("vsys1", "SG1");
+    String vsys2ServiceGroupName = computeServiceGroupMemberAclName("vsys2", "SG1");
+    String sharedServiceGroupName = computeServiceGroupMemberAclName(SHARED_VSYS_NAME, "SG1");
+
+    Flow vsys1Flow = createFlow(IpProtocol.UDP, 999, 1);
+    Flow vsys2Flow = createFlow(IpProtocol.UDP, 999, 2);
+    Flow sharedFlow = createFlow(IpProtocol.UDP, 999, 3);
+    Flow sharedOnlyFlow = createFlow(IpProtocol.UDP, 999, 4);
+
+    // Confirm services accept flows matching their definitions and reject others
+    assertThat(c, hasIpAccessList(vsys1ServiceName, accepts(vsys1Flow, null, c)));
+    assertThat(c, hasIpAccessList(vsys1ServiceName, rejects(vsys2Flow, null, c)));
+    assertThat(c, hasIpAccessList(vsys2ServiceName, accepts(vsys2Flow, null, c)));
+    assertThat(c, hasIpAccessList(vsys2ServiceName, rejects(vsys1Flow, null, c)));
+    assertThat(c, hasIpAccessList(sharedServiceName, accepts(sharedFlow, null, c)));
+    assertThat(c, hasIpAccessList(sharedServiceName, rejects(vsys1Flow, null, c)));
+    assertThat(c, hasIpAccessList(sharedOnlyServiceName, accepts(sharedOnlyFlow, null, c)));
+    assertThat(c, hasIpAccessList(sharedOnlyServiceName, rejects(vsys1Flow, null, c)));
+
+    // Confirm group in vsys1 namespace references its own service, not shared or neighbor services
+    assertThat(c, hasIpAccessList(vsys1ServiceGroupName, accepts(vsys1Flow, null, c)));
+    assertThat(c, hasIpAccessList(vsys1ServiceGroupName, rejects(vsys2Flow, null, c)));
+    assertThat(c, hasIpAccessList(vsys1ServiceGroupName, rejects(sharedFlow, null, c)));
+    // Confirm group in the vsys1 namespace correctly references the shared service
+    assertThat(c, hasIpAccessList(vsys1ServiceGroupName, accepts(sharedOnlyFlow, null, c)));
+
+    // Confirm group in vsys2 namespace references its own service, not shared or neighbor services
+    assertThat(c, hasIpAccessList(vsys2ServiceGroupName, accepts(vsys2Flow, null, c)));
+    assertThat(c, hasIpAccessList(vsys2ServiceGroupName, rejects(vsys1Flow, null, c)));
+    assertThat(c, hasIpAccessList(vsys2ServiceGroupName, rejects(sharedFlow, null, c)));
+    // Confirm group in the vsys2 namespace correctly references the shared service
+    assertThat(c, hasIpAccessList(vsys2ServiceGroupName, accepts(sharedOnlyFlow, null, c)));
+
+    // Confirm group in shared namespace references its own service, not vsys specific services
+    assertThat(c, hasIpAccessList(sharedServiceGroupName, accepts(sharedFlow, null, c)));
+    assertThat(c, hasIpAccessList(sharedServiceGroupName, rejects(vsys1Flow, null, c)));
+    assertThat(c, hasIpAccessList(sharedServiceGroupName, rejects(vsys2Flow, null, c)));
+    // Confirm group in the shared namespace correctly references the shared service
+    assertThat(c, hasIpAccessList(sharedServiceGroupName, accepts(sharedOnlyFlow, null, c)));
+  }
+
+  @Test
+  public void testVsysServiceReference() throws IOException {
+    String hostname = "vsys-service";
+    String vsys1ServiceName = computeObjectName("vsys1", "SERVICE1");
+    String vsys2ServiceName = computeObjectName("vsys2", "SERVICE1");
+    String sharedServiceName = computeObjectName(SHARED_VSYS_NAME, "SERVICE1");
+    String sharedOnlyServiceName = computeObjectName(SHARED_VSYS_NAME, "SERVICE2");
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    // Confirm structure definitions are tracked separately for each vsys
+    assertThat(
+        ccae, hasDefinedStructure(hostname, PaloAltoStructureType.SERVICE, vsys1ServiceName));
+    assertThat(
+        ccae, hasDefinedStructure(hostname, PaloAltoStructureType.SERVICE, vsys2ServiceName));
+    assertThat(
+        ccae, hasDefinedStructure(hostname, PaloAltoStructureType.SERVICE, sharedServiceName));
+    assertThat(
+        ccae, hasDefinedStructure(hostname, PaloAltoStructureType.SERVICE, sharedOnlyServiceName));
   }
 
   @Test
