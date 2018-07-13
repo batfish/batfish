@@ -320,7 +320,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     references.forEach(
         (name, byUsage) -> {
           Multiset<Integer> lines =
-              MoreObjects.firstNonNull(byUsage.get(usage), TreeMultiset.create());
+              firstNonNull(byUsage.get(usage), TreeMultiset.create());
           // Check this namespace first
           DefinedStructureInfo info = findDefinedStructure(name, structureTypesToCheck);
           // Check shared namespace if there was no match
