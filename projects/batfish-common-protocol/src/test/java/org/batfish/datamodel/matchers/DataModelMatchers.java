@@ -48,6 +48,7 @@ import org.batfish.datamodel.matchers.DeniedByIpAccessListLineMatchersImpl.IsDen
 import org.batfish.datamodel.matchers.DeniedByNamedIpSpaceMatchers.IsDeniedByNamedIpSpaceThat;
 import org.batfish.datamodel.matchers.HeaderSpaceMatchersImpl.HasSrcOrDstPorts;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasBandwidth;
+import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasDelay;
 import org.batfish.datamodel.matchers.OspfProcessMatchersImpl.HasReferenceBandwidth;
 import org.batfish.datamodel.matchers.PermittedByAclIpSpaceLineMatchersImpl.IsPermittedByAclIpSpaceLineThat;
 import org.batfish.datamodel.matchers.PermittedByIpAccessListLineMatchersImpl.IsPermittedByIpAccessListLineThat;
@@ -242,6 +243,21 @@ public final class DataModelMatchers {
           @Nonnull Matcher<? super Set<Integer>> subMatcher) {
     return new ConvertConfigurationAnswerElementMatchers.HasDefinedStructureWithDefinitionLines(
         hostname, type, structureName, subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code delay} is that of the {@link Interface}.
+   */
+  public static @Nonnull Matcher<Interface> hasDelay(double delay) {
+    return hasDelay(equalTo(delay));
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the {@link
+   * Interface}'s bandwidth.
+   */
+  public static @Nonnull Matcher<Interface> hasDelay(Matcher<? super Double> subMatcher) {
+    return new HasDelay(subMatcher);
   }
 
   /**

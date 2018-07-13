@@ -44,6 +44,8 @@ public final class Interface extends ComparableStructure<String> {
 
     private SortedSet<String> _declaredNames;
 
+    @Nullable private Double _delay;
+
     private IpAccessList _incomingFilter;
 
     private IsisInterfaceSettings _isis;
@@ -100,6 +102,7 @@ public final class Interface extends ComparableStructure<String> {
       iface.setBandwidth(_bandwidth);
       iface.setBlacklisted(_blacklisted);
       iface.setDeclaredNames(_declaredNames);
+      iface.setDelay(_delay);
       iface.setIncomingFilter(_incomingFilter);
       iface.setIsis(_isis);
       iface.setOspfArea(_ospfArea);
@@ -199,6 +202,11 @@ public final class Interface extends ComparableStructure<String> {
 
     public Builder setDeclaredNames(Iterable<String> declaredNames) {
       _declaredNames = ImmutableSortedSet.copyOf(declaredNames);
+      return this;
+    }
+
+    public Builder setDelay(@Nullable Double delay) {
+      _delay = delay;
       return this;
     }
 
@@ -319,6 +327,8 @@ public final class Interface extends ComparableStructure<String> {
   private static final String PROP_CRYPTO_MAP = "cryptoMap";
 
   private static final String PROP_DECLARED_NAMES = "declaredNames";
+
+  private static final String PROP_DELAY = "delay";
 
   private static final String PROP_DESCRIPTION = "description";
 
@@ -572,6 +582,8 @@ public final class Interface extends ComparableStructure<String> {
 
   private SortedSet<String> _declaredNames;
 
+  @Nullable private Double _delay;
+
   private String _description;
 
   private List<Ip> _dhcpRelayAddresses;
@@ -722,6 +734,9 @@ public final class Interface extends ComparableStructure<String> {
     if (!Objects.equals(_cryptoMap, other._cryptoMap)) {
       return false;
     }
+    if (!Objects.equals(_delay, other._delay)) {
+      return false;
+    }
     // we check ACLs for name match only -- full ACL diff can be done
     // elsewhere.
     if (!IpAccessList.bothNullOrSameName(this.getInboundFilter(), other.getInboundFilter())) {
@@ -831,6 +846,14 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_DECLARED_NAMES)
   public SortedSet<String> getDeclaredNames() {
     return _declaredNames;
+  }
+
+  @JsonProperty(PROP_DELAY)
+  @JsonPropertyDescription(
+      "The nominal delay of this interface in microseconds for use in protocol cost calculations")
+  @Nullable
+  public Double getDelay() {
+    return _delay;
   }
 
   @JsonProperty(PROP_DESCRIPTION)
@@ -1197,6 +1220,11 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_DECLARED_NAMES)
   public void setDeclaredNames(SortedSet<String> declaredNames) {
     _declaredNames = ImmutableSortedSet.copyOf(declaredNames);
+  }
+
+  @JsonProperty(PROP_DELAY)
+  public void setDelay(@Nullable Double delay) {
+    _delay = delay;
   }
 
   @JsonProperty(PROP_DESCRIPTION)

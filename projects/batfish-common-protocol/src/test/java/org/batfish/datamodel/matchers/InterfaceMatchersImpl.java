@@ -85,6 +85,17 @@ final class InterfaceMatchersImpl {
     }
   }
 
+  static final class HasDelay extends FeatureMatcher<Interface, Double> {
+    HasDelay(@Nonnull Matcher<? super Double> subMatcher) {
+      super(subMatcher, "an Interface with delay:", "delay");
+    }
+
+    @Override
+    protected Double featureValueOf(Interface actual) {
+      return actual.getDelay();
+    }
+  }
+
   static final class HasDescription extends FeatureMatcher<Interface, String> {
     HasDescription(@Nonnull Matcher<? super String> subMatcher) {
       super(subMatcher, "An Interface with description:", "description");

@@ -54,6 +54,11 @@ if_default_gw
    DEFAULT_GW IP_ADDRESS NEWLINE
 ;
 
+if_delay
+:
+   NO? DELAY DEC NEWLINE
+;
+
 if_description
 :
    description_line
@@ -1334,6 +1339,7 @@ if_inner
    | if_channel_group
    | if_crypto_map
    | if_default_gw
+   | if_delay
    | if_description
    | if_flow_sampler
    | if_hsrp

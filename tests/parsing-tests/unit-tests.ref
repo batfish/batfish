@@ -20974,6 +20974,20 @@
             "          NETWORK:'network'  <== mode:DEFAULT_MODE",
             "          address = IP_ADDRESS:'1.1.1.1'  <== mode:DEFAULT_MODE",
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
+            "  (stanza",
+            "    (s_interface",
+            "      INTERFACE:'interface'  <== mode:DEFAULT_MODE",
+            "      iname = (interface_name",
+            "        name_prefix_alpha = M_Interface_PREFIX:'Ethernet'  <== mode:M_Interface",
+            "        (range",
+            "          (subrange",
+            "            low = DEC:'0'  <== mode:M_Interface)))",
+            "      NEWLINE:'\\n'  <== mode:M_Interface",
+            "      (if_inner",
+            "        (if_delay",
+            "          DELAY:'delay'  <== mode:DEFAULT_MODE",
+            "          DEC:'1000'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n\\n\\n'  <== mode:DEFAULT_MODE))))",
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
           ]
         },
@@ -21848,7 +21862,7 @@
             "          PASSIVE:'passive'  <== mode:DEFAULT_MODE",
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "      (if_inner",
-            "        (if_null_block",
+            "        (if_delay",
             "          DELAY:'delay'  <== mode:DEFAULT_MODE",
             "          DEC:'1'  <== mode:DEFAULT_MODE",
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
@@ -56379,6 +56393,15 @@
                 91
               ],
               "numReferrers" : 0
+            }
+          },
+          "interface" : {
+            "Ethernet0" : {
+              "definitionLines" : [
+                104,
+                105
+              ],
+              "numReferrers" : 1
             }
           }
         },

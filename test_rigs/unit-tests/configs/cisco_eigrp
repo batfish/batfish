@@ -101,4 +101,6 @@ router eigrp 5
  no passive-interface GigabitEthernet2/5/3
  network 1.1.1.1
 !
+interface Ethernet0
+ delay 1000
 
