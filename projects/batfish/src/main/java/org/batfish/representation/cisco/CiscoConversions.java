@@ -98,7 +98,8 @@ class CiscoConversions {
     for (Entry<String, Interface> e : allInterfaces.entrySet()) {
       String ifaceName = e.getKey();
       Interface iface = e.getValue();
-      if (ifaceName.toLowerCase().startsWith("loopback") && iface.getActive()
+      if (ifaceName.toLowerCase().startsWith("loopback")
+          && iface.getActive()
           && iface.getAddress() != null) {
         loopbackInterfaces.put(ifaceName, iface);
       }
@@ -875,10 +876,10 @@ class CiscoConversions {
   }
 
   @Nullable
-  static org.batfish.datamodel.eigrp.EigrpProcess toEigrpProcess(EigrpProcess proc,
-      String vrfName, Configuration c, CiscoConfiguration oldConfig) {
-    org.batfish.datamodel.eigrp.EigrpProcess.Builder newProcess = org.batfish.datamodel.eigrp.EigrpProcess
-        .builder();
+  static org.batfish.datamodel.eigrp.EigrpProcess toEigrpProcess(
+      EigrpProcess proc, String vrfName, Configuration c, CiscoConfiguration oldConfig) {
+    org.batfish.datamodel.eigrp.EigrpProcess.Builder newProcess =
+        org.batfish.datamodel.eigrp.EigrpProcess.builder();
     org.batfish.datamodel.Vrf vrf = c.getVrfs().get(vrfName);
 
     newProcess.setAsNumber(proc.getAsNumber());
@@ -904,16 +905,19 @@ class CiscoConversions {
         iface.setEigrp(builder.build());
       } else {
         if (iface.getEigrp() != null && iface.getEigrp().getDelay() != null) {
-          oldConfig.getWarnings()
-              .redFlag("Interface: '" + iface.getName()
-                  + "' contains EIGRP settings but is not part of the EIGRP process");
+          oldConfig
+              .getWarnings()
+              .redFlag(
+                  "Interface: '"
+                      + iface.getName()
+                      + "' contains EIGRP settings but is not part of the EIGRP process");
         }
         iface.setEigrp(null);
       }
     }
 
     // TODO set stub process
-    //newProcess.setStub(proc.isStub())
+    // newProcess.setStub(proc.isStub())
 
     // TODO create summary filters
 

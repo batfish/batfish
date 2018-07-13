@@ -1638,8 +1638,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void enterAddress_family_eigrp_named_stanza(
-      Address_family_eigrp_named_stanzaContext ctx) {
+  public void enterAddress_family_eigrp_named_stanza(Address_family_eigrp_named_stanzaContext ctx) {
 
     // Step into a new address family. This results in a new EIGRP process with a specified VRF and
     // AS number
@@ -3936,8 +3935,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void exitAddress_family_eigrp_named_stanza(
-      Address_family_eigrp_named_stanzaContext ctx) {
+  public void exitAddress_family_eigrp_named_stanza(Address_family_eigrp_named_stanzaContext ctx) {
     // Check if address family was supported
     if (_currentEigrpProcess != null) {
       _currentEigrpProcess.computeNetworks(_configuration.getInterfaces().values());

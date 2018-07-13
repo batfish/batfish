@@ -104,7 +104,8 @@ final class InterfaceMatchersImpl {
     }
 
     @Override
-    @Nullable protected EigrpInterfaceSettings featureValueOf(Interface actual) {
+    @Nullable
+    protected EigrpInterfaceSettings featureValueOf(Interface actual) {
       return actual.getEigrp();
     }
   }

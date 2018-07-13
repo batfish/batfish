@@ -2094,8 +2094,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
       newIface.setEigrp(builder.build());
     } else {
       if (iface.getDelay() != null) {
-        _w.redFlag("Interface: '" + iface.getName()
-            + "' contains EIGRP settings, but there is no EIGRP process");
+        _w.redFlag(
+            "Interface: '"
+                + iface.getName()
+                + "' contains EIGRP settings, but there is no EIGRP process");
       }
     }
 
@@ -3193,10 +3195,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
           // convert eigrp process
           EigrpProcess eigrpProcess = vrf.getEigrpProcess();
           if (eigrpProcess != null) {
-            org.batfish.datamodel.eigrp.EigrpProcess newEigrpProcess = CiscoConversions.toEigrpProcess(eigrpProcess,
-                vrfName,
-                c,
-                this);
+            org.batfish.datamodel.eigrp.EigrpProcess newEigrpProcess =
+                CiscoConversions.toEigrpProcess(eigrpProcess, vrfName, c, this);
             newVrf.setEigrpProcess(newEigrpProcess);
           }
 
