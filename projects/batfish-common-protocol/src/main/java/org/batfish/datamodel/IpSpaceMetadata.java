@@ -16,7 +16,7 @@ public class IpSpaceMetadata implements Serializable {
   private static final long serialVersionUID = 1L;
 
   @JsonCreator
-  private static IpSpaceMetadata IpSpaceMetaData(
+  private static IpSpaceMetadata create(
       @JsonProperty(PROP_SOURCE_NAME) String sourceName,
       @JsonProperty(PROP_SOURCE_TYPE) String sourceType) {
     return new IpSpaceMetadata(requireNonNull(sourceName), requireNonNull(sourceType));
