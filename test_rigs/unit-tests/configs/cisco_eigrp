@@ -102,3 +102,23 @@ router eigrp 5
  network 1.1.1.1
 !
 
+router eigrp 5
+ network 5.5.5.5
+ address-family ipv4 unicast vrf vrf autonomous-system 55
+  network 1.1.2.1
+
+router eigrp virtual
+ address-family ipv4 multicast vrf autonomous-system autonomous-system 4
+  network 1.1.1.100
+  af-interface Ethernet0
+  exit-af-interface
+  topology base
+  exit-af-topology
+ exit-address-family
+ service-family ipv4 vrf service-family autonomous-system 3
+  neighbor 1.1.1.100
+  sf-interface Ethernet0
+  exit-sf-interface
+  topology base
+ exit-service-family
+!
