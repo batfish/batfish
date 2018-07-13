@@ -1205,8 +1205,6 @@ public class VirtualRouterTest {
      * Old best path is gone. Now must choose best path from the multipath RIB.
      * new routes should exist for the new prefix
      */
-    Entry<RibDelta<BgpRoute>, RibDelta<BgpRoute>> e =
-        VirtualRouter.syncBgpDeltaPropagation(bestPathRib, multipathRib, staging);
 
     // One route only, taken from the multipathRib
     assertThat(bestPathRib.getRoutes(), contains(oldRoute2));
