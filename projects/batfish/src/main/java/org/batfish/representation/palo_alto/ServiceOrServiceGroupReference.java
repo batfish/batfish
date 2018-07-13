@@ -22,6 +22,7 @@ public class ServiceOrServiceGroupReference
     return _name.compareTo(o._name);
   }
 
+  /** Return the name of the referenced Service or ServiceGroup */
   public String getName() {
     return _name;
   }
