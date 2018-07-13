@@ -209,6 +209,7 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
@@ -273,6 +274,7 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.TcpFlags;
+import org.batfish.datamodel.eigrp.EigrpProcessMode;
 import org.batfish.datamodel.isis.IsisInterfaceMode;
 import org.batfish.datamodel.isis.IsisLevel;
 import org.batfish.datamodel.isis.IsisMetricType;
@@ -361,6 +363,8 @@ import org.batfish.grammar.cisco.CiscoParser.Access_list_ip_rangeContext;
 import org.batfish.grammar.cisco.CiscoParser.Activate_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Additional_paths_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Additional_paths_selection_xr_rb_stanzaContext;
+import org.batfish.grammar.cisco.CiscoParser.Address_family_eigrp_classic_stanzaContext;
+import org.batfish.grammar.cisco.CiscoParser.Address_family_eigrp_named_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Address_family_headerContext;
 import org.batfish.grammar.cisco.CiscoParser.Address_family_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Advertise_map_bgp_tailContext;
@@ -621,6 +625,7 @@ import org.batfish.grammar.cisco.CiscoParser.Neighbor_group_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Net_is_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Network6_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Network_bgp_tailContext;
+import org.batfish.grammar.cisco.CiscoParser.Network_eigrp_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Next_hop_self_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.No_ip_prefix_list_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.No_neighbor_activate_rb_stanzaContext;
@@ -786,6 +791,7 @@ import org.batfish.grammar.cisco.CiscoParser.Route_map_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Route_policy_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Route_reflector_client_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Router_bgp_stanzaContext;
+import org.batfish.grammar.cisco.CiscoParser.Router_eigrp_classic_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Router_id_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Router_isis_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Rp_community_setContext;
@@ -947,6 +953,7 @@ import org.batfish.representation.cisco.CryptoMapEntry;
 import org.batfish.representation.cisco.CryptoMapSet;
 import org.batfish.representation.cisco.DynamicIpBgpPeerGroup;
 import org.batfish.representation.cisco.DynamicIpv6BgpPeerGroup;
+import org.batfish.representation.cisco.EigrpProcess;
 import org.batfish.representation.cisco.ExpandedCommunityList;
 import org.batfish.representation.cisco.ExpandedCommunityListLine;
 import org.batfish.representation.cisco.ExtendedAccessList;
@@ -1309,6 +1316,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private DynamicIpv6BgpPeerGroup _currentDynamicIpv6PeerGroup;
 
+  @Nullable private EigrpProcess _currentEigrpProcess;
+
   private ExpandedCommunityList _currentExpandedCommunityList;
 
   private ExtendedAccessList _currentExtendedAcl;
@@ -1402,6 +1411,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private boolean _inIpv6BgpPeer;
 
   private boolean _no;
+
+  @Nullable private EigrpProcess _parentEigrpProcess;
 
   private final CiscoCombinedParser _parser;
 
@@ -1599,6 +1610,58 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         line.setAaaAuthenticationLoginList(_currentAaaAuthenticationLoginList);
       }
     }
+  }
+
+  @Override
+  public void enterAddress_family_eigrp_classic_stanza(
+      Address_family_eigrp_classic_stanzaContext ctx) {
+
+    // Step into a new address family. This results in a new EIGRP process with a specified VRF and
+    // AS number
+
+    // There may not be an ASN specified here, but it will be specified in this AF context
+    long asn = ctx.asnum == null ? -1 : toLong(ctx.asnum);
+    if (asn == -1) {
+      todo(ctx, "add support for 'autonomous-system' configured inside address-family");
+      _parentEigrpProcess = _currentEigrpProcess;
+      return;
+    }
+
+    EigrpProcess proc = new EigrpProcess(asn, EigrpProcessMode.CLASSIC, _format);
+
+    _currentVrf = ctx.vrf.getText();
+    currentVrf().setEigrpProcess(proc);
+
+    _parentEigrpProcess = _currentEigrpProcess;
+    _currentEigrpProcess = proc;
+  }
+
+  @Override
+  public void enterAddress_family_eigrp_named_stanza(
+      Address_family_eigrp_named_stanzaContext ctx) {
+
+    // Step into a new address family. This results in a new EIGRP process with a specified VRF and
+    // AS number
+
+    long asn = toLong(ctx.asnum);
+
+    if (ctx.IPV6() != null) {
+      todo(ctx, "add support for ipv6 address family in eigrp");
+      return;
+    }
+    if (ctx.MULTICAST() != null) {
+      todo(ctx, "add support for multicast address family in eigrp");
+      return;
+    }
+
+    EigrpProcess proc = new EigrpProcess(asn, EigrpProcessMode.NAMED, _format);
+
+    if (ctx.vrf != null) {
+      _currentVrf = ctx.vrf.getText();
+    }
+    currentVrf().setEigrpProcess(proc);
+
+    _currentEigrpProcess = proc;
   }
 
   @Override
@@ -3229,6 +3292,15 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void enterRouter_eigrp_classic_stanza(Router_eigrp_classic_stanzaContext ctx) {
+    // Create a classic EIGRP process with ASN
+    long asn = toLong(ctx.asnum);
+    EigrpProcess proc = new EigrpProcess(asn, EigrpProcessMode.CLASSIC, _format);
+    currentVrf().setEigrpProcess(proc);
+    _currentEigrpProcess = proc;
+  }
+
+  @Override
   public void enterRouter_isis_stanza(Router_isis_stanzaContext ctx) {
     IsisProcess isisProcess = new IsisProcess();
     isisProcess.setLevel(IsisLevel.LEVEL_1_2);
@@ -3850,6 +3922,27 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           BGP_ADDITIONAL_PATHS_SELECTION_ROUTE_POLICY,
           ctx.name.getStart().getLine());
     }
+  }
+
+  @Override
+  public void exitAddress_family_eigrp_classic_stanza(
+      Address_family_eigrp_classic_stanzaContext ctx) {
+    Objects.requireNonNull(_currentEigrpProcess)
+        .computeNetworks(_configuration.getInterfaces().values());
+    _currentEigrpProcess = _parentEigrpProcess;
+    _parentEigrpProcess = null;
+    _currentVrf = Configuration.DEFAULT_VRF_NAME;
+  }
+
+  @Override
+  public void exitAddress_family_eigrp_named_stanza(
+      Address_family_eigrp_named_stanzaContext ctx) {
+    // Check if address family was supported
+    if (_currentEigrpProcess != null) {
+      _currentEigrpProcess.computeNetworks(_configuration.getInterfaces().values());
+    }
+    _currentEigrpProcess = null;
+    _currentVrf = Configuration.DEFAULT_VRF_NAME;
   }
 
   @Override
@@ -6258,6 +6351,17 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitNetwork_eigrp_stanza(Network_eigrp_stanzaContext ctx) {
+    if (_currentEigrpProcess == null) {
+      todo(ctx, "network not supported here");
+      return;
+    }
+    Ip address = toIp(ctx.address);
+    Ip mask = (ctx.mask != null) ? toIp(ctx.mask) : address.getClassMask().inverted();
+    _currentEigrpProcess.getWildcardNetworks().add(new IpWildcard(address, mask));
+  }
+
+  @Override
   public void exitNext_hop_self_bgp_tail(Next_hop_self_bgp_tailContext ctx) {
     boolean val = ctx.NO() == null;
     _currentPeerGroup.setNextHopSelf(val);
@@ -7279,6 +7383,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     Ip routerId = toIp(ctx.routerid);
     BgpProcess proc = currentVrf().getBgpProcess();
     proc.setRouterId(routerId);
+  }
+
+  @Override
+  public void exitRouter_eigrp_classic_stanza(Router_eigrp_classic_stanzaContext ctx) {
+    Objects.requireNonNull(_currentEigrpProcess)
+        .computeNetworks(_configuration.getInterfaces().values());
+    _currentEigrpProcess = null;
+    _currentVrf = Configuration.DEFAULT_VRF_NAME;
   }
 
   @Override
