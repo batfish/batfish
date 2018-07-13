@@ -44,9 +44,9 @@ public class EigrpProcess extends ComparableStructure<Long> {
         long wildcardLong = wn.getWildcard().asLong();
         long eigrpNetworkLong = wn.getIp().asLong();
         long intIpLong = address.getIp().asLong();
-        long wildcardedOspfNetworkLong = eigrpNetworkLong | wildcardLong;
+        long wildcardedNetworkLong = eigrpNetworkLong | wildcardLong;
         long wildcardedIntIpLong = intIpLong | wildcardLong;
-        if (wildcardedOspfNetworkLong == wildcardedIntIpLong) {
+        if (wildcardedNetworkLong == wildcardedIntIpLong) {
           // since we have a match, we add the INTERFACE network, ignoring
           // the wildcard stuff from before
           _networks.add(address.getPrefix());

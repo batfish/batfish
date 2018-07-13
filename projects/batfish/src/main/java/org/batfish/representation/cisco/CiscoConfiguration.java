@@ -2088,7 +2088,15 @@ public final class CiscoConfiguration extends VendorConfiguration {
        * interface
        */
       EigrpInterfaceSettings.Builder builder = EigrpInterfaceSettings.builder();
+      if (iface.getDelay() != null) {
+        builder.setDelay(iface.getDelay());
+      }
       newIface.setEigrp(builder.build());
+    } else {
+      if (iface.getDelay() != null) {
+        _w.redFlag("Interface: '" + iface.getName()
+            + "' contains EIGRP settings, but there is no EIGRP process");
+      }
     }
 
     boolean level1 = false;

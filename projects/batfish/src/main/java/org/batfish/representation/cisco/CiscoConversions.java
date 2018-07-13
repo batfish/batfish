@@ -895,9 +895,19 @@ class CiscoConversions {
       if (match) {
         EigrpInterfaceSettings.Builder builder = EigrpInterfaceSettings.builder();
         builder.setAsn(proc.getAsNumber());
+        if (iface.getEigrp() != null && iface.getEigrp().getDelay() != null) {
+          builder.setDelay(iface.getEigrp().getDelay());
+        } else {
+          builder.setDelay(Interface.getDefaultDelay(iface.getName(), c.getConfigurationFormat()));
+        }
         builder.setEnabled(true);
         iface.setEigrp(builder.build());
       } else {
+        if (iface.getEigrp() != null && iface.getEigrp().getDelay() != null) {
+          oldConfig.getWarnings()
+              .redFlag("Interface: '" + iface.getName()
+                  + "' contains EIGRP settings but is not part of the EIGRP process");
+        }
         iface.setEigrp(null);
       }
     }

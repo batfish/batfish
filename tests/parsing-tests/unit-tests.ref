@@ -21921,7 +21921,7 @@
             "          PASSIVE:'passive'  <== mode:DEFAULT_MODE",
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "      (if_inner",
-            "        (if_null_block",
+            "        (if_delay",
             "          DELAY:'delay'  <== mode:DEFAULT_MODE",
             "          DEC:'1'  <== mode:DEFAULT_MODE",
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
@@ -59975,7 +59975,8 @@
         },
         "cisco_interface" : {
           "Red flags" : {
-            "1" : "MISCELLANEOUS: Interface: 'Ethernet0' contains OSPF settings, but there is no OSPF process"
+            "1" : "MISCELLANEOUS: Interface: 'Ethernet0' contains OSPF settings, but there is no OSPF process",
+            "2" : "MISCELLANEOUS: Interface: 'Ethernet0' contains EIGRP settings, but there is no EIGRP process"
           }
         },
         "cisco_nxos_bgp" : {

@@ -6,6 +6,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.eigrp.EigrpInterfaceSettings;
 import org.batfish.datamodel.matchers.EigrpInterfaceSettingsMatchersImpl.HasAsn;
+import org.batfish.datamodel.matchers.EigrpInterfaceSettingsMatchersImpl.HasDelay;
 import org.batfish.datamodel.matchers.EigrpInterfaceSettingsMatchersImpl.HasEnabled;
 import org.hamcrest.Matcher;
 
@@ -28,6 +29,23 @@ public class EigrpInterfaceSettingsMatchers {
   public static @Nonnull Matcher<EigrpInterfaceSettings> hasAsn(
       @Nonnull Matcher<? super Long> subMatcher) {
     return new HasAsn(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the {@link EigrpInterfaceSettings}'s delay is {@code
+   * expectedDelay}.
+   */
+  public static @Nonnull Matcher<EigrpInterfaceSettings> hasDelay(@Nullable Double expectedDelay) {
+    return new HasDelay(equalTo(expectedDelay));
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the {@link
+   * EigrpInterfaceSettings}'s delay.
+   */
+  public static @Nonnull Matcher<EigrpInterfaceSettings> hasDelay(
+      @Nonnull Matcher<? super Double> subMatcher) {
+    return new HasDelay(subMatcher);
   }
 
   /**

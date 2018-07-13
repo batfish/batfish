@@ -17,6 +17,17 @@ final class EigrpInterfaceSettingsMatchersImpl {
     }
   }
 
+  static final class HasDelay extends FeatureMatcher<EigrpInterfaceSettings, Double> {
+    public HasDelay(@Nonnull Matcher<? super Double> subMatcher) {
+      super(subMatcher, "An EigrpInterfaceSettings with delay:", "delay");
+    }
+
+    @Override
+    protected Double featureValueOf(EigrpInterfaceSettings actual) {
+      return actual.getDelay();
+    }
+  }
+
   static final class HasEnabled extends FeatureMatcher<EigrpInterfaceSettings, Boolean> {
     public HasEnabled(@Nonnull Matcher<? super Boolean> subMatcher) {
       super(subMatcher, "An EigrpInterfaceSettings with enabled:", "enabled");
