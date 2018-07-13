@@ -137,7 +137,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
    */
   public static String computeServiceGroupMemberAclName(
       String vsysName, String serviceGroupMemberName) {
-    return String.format("%s~SERVICE_GROUP_MEMBER~%s", vsysName, serviceGroupMemberName);
+    return String.format("~%s~SERVICE_GROUP_MEMBER~%s~", vsysName, serviceGroupMemberName);
   }
 
   /** Convert vsys components to vendor independent model */
@@ -151,7 +151,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
       // Zones
       for (Entry<String, Zone> zoneEntry : vsys.getZones().entrySet()) {
         Zone zone = zoneEntry.getValue();
-        String zoneName = computeObjectName(vsys.getName(), zone.getName());
+        String zoneName = computeObjectName(vsysName, zone.getName());
         _c.getZones().put(zoneName, toZone(zoneName, zone));
       }
 
