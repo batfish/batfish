@@ -103,6 +103,7 @@ import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
+import org.batfish.datamodel.eigrp.EigrpInterfaceSettings;
 import org.batfish.datamodel.isis.IsisInterfaceLevelSettings;
 import org.batfish.datamodel.isis.IsisInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfArea;
@@ -2078,6 +2079,16 @@ public final class CiscoConfiguration extends VendorConfiguration {
       newIface.setOspfCost(iface.getOspfCost());
       newIface.setOspfDeadInterval(iface.getOspfDeadInterval());
       newIface.setOspfHelloMultiplier(iface.getOspfHelloMultiplier());
+    }
+
+    EigrpProcess eigrpProcess = vrf.getEigrpProcess();
+    if (eigrpProcess != null) {
+      /*
+       * Some settings are here, others are set later when the EigrpProcess sets this
+       * interface
+       */
+      EigrpInterfaceSettings.Builder builder = EigrpInterfaceSettings.builder();
+      newIface.setEigrp(builder.build());
     }
 
     boolean level1 = false;

@@ -5,6 +5,7 @@ import javax.annotation.Nonnull;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.eigrp.EigrpProcess;
 import org.batfish.datamodel.isis.IsisProcess;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.hamcrest.FeatureMatcher;
@@ -20,6 +21,17 @@ final class VrfMatchersImpl {
     @Override
     protected BgpProcess featureValueOf(Vrf actual) {
       return actual.getBgpProcess();
+    }
+  }
+
+  static final class HasEigrpProcess extends FeatureMatcher<Vrf, EigrpProcess> {
+    HasEigrpProcess(@Nonnull Matcher<? super EigrpProcess> subMatcher) {
+      super(subMatcher, "A Vrf with eigrpProcess:", "eigrpProcess");
+    }
+
+    @Override
+    protected EigrpProcess featureValueOf(Vrf actual) {
+      return actual.getEigrpProcess();
     }
   }
 

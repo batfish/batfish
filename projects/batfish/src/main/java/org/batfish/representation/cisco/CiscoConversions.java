@@ -74,6 +74,7 @@ import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.eigrp.EigrpInterfaceSettings;
 import org.batfish.datamodel.isis.IsisLevelSettings;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.AsPathSetElem;
@@ -882,6 +883,24 @@ class CiscoConversions {
 
     newProcess.setAsNumber(proc.getAsNumber());
     newProcess.setMode(proc.getMode());
+
+    // Establish associated interfaces
+    for (Entry<String, org.batfish.datamodel.Interface> e : vrf.getInterfaces().entrySet()) {
+      org.batfish.datamodel.Interface iface = e.getValue();
+      InterfaceAddress interfaceAddress = iface.getAddress();
+      if (interfaceAddress == null) {
+        continue;
+      }
+      boolean match = proc.getNetworks().stream().anyMatch(interfaceAddress.getPrefix()::equals);
+      if (match) {
+        EigrpInterfaceSettings.Builder builder = EigrpInterfaceSettings.builder();
+        builder.setAsn(proc.getAsNumber());
+        builder.setEnabled(true);
+        iface.setEigrp(builder.build());
+      } else {
+        iface.setEigrp(null);
+      }
+    }
 
     // TODO set stub process
     //newProcess.setStub(proc.isStub())
