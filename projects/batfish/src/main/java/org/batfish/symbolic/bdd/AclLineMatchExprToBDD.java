@@ -1,13 +1,19 @@
 package org.batfish.symbolic.bdd;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import org.batfish.common.BatfishException;
+import org.batfish.common.util.NonRecursiveSupplier.NonRecursiveSupplierException;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpProtocol;
@@ -26,17 +32,28 @@ import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
 
+/** Visit an {@link AclLineMatchExpr} and convert it to a BDD. */
 public class AclLineMatchExprToBDD implements GenericAclLineMatchExprVisitor<BDD> {
+
+  private final Map<String, Supplier<BDD>> _aclEnv;
 
   private final BDDOps _bddOps;
 
   private final BDDFactory _factory;
 
+  private Map<String, IpSpace> _namedIpSpaces;
+
   private final BDDPacket _packet;
 
-  public AclLineMatchExprToBDD(BDDFactory factory, BDDPacket packet) {
+  public AclLineMatchExprToBDD(
+      BDDFactory factory,
+      BDDPacket packet,
+      Map<String, Supplier<BDD>> aclEnv,
+      Map<String, IpSpace> namedIpSpaces) {
+    _aclEnv = ImmutableMap.copyOf(aclEnv);
     _factory = factory;
     _bddOps = new BDDOps(factory);
+    _namedIpSpaces = ImmutableMap.copyOf(namedIpSpaces);
     _packet = packet;
   }
 
@@ -52,7 +69,7 @@ public class AclLineMatchExprToBDD implements GenericAclLineMatchExprVisitor<BDD
     }
   }
 
-  public BDD toBDD(AclLineMatchExpr expr) {
+  public @Nonnull BDD toBDD(AclLineMatchExpr expr) {
     return expr.accept(this);
   }
 
@@ -60,7 +77,7 @@ public class AclLineMatchExprToBDD implements GenericAclLineMatchExprVisitor<BDD
     if (ipSpace == null) {
       return null;
     }
-    return ipSpace.accept(new IpSpaceToBDD(_factory, var));
+    return ipSpace.accept(new IpSpaceToBDD(_factory, var, _namedIpSpaces));
   }
 
   private @Nullable BDD toBDD(Set<IpProtocol> ipProtocols) {
@@ -151,8 +168,14 @@ public class AclLineMatchExprToBDD implements GenericAclLineMatchExprVisitor<BDD
     return _bddOps.and(
         toBDD(headerSpace.getDstIps(), _packet.getDstIp()),
         toBDD(headerSpace.getSrcIps(), _packet.getSrcIp()),
+        BDDOps.orNull(
+            toBDD(headerSpace.getSrcOrDstIps(), _packet.getDstIp()),
+            toBDD(headerSpace.getSrcOrDstIps(), _packet.getSrcIp())),
         toBDD(headerSpace.getDstPorts(), _packet.getDstPort()),
         toBDD(headerSpace.getSrcPorts(), _packet.getSrcPort()),
+        BDDOps.orNull(
+            toBDD(headerSpace.getSrcOrDstPorts(), _packet.getSrcPort()),
+            toBDD(headerSpace.getSrcOrDstPorts(), _packet.getDstPort())),
         toBDD(headerSpace.getTcpFlags()),
         toBDD(headerSpace.getIcmpCodes(), _packet.getIcmpCode()),
         toBDD(headerSpace.getIcmpTypes(), _packet.getIcmpType()),
@@ -186,7 +209,14 @@ public class AclLineMatchExprToBDD implements GenericAclLineMatchExprVisitor<BDD
 
   @Override
   public BDD visitPermittedByAcl(PermittedByAcl permittedByAcl) {
-    throw new BatfishException("PermittedByAcl is unsupported");
+    String name = permittedByAcl.getAclName();
+    Preconditions.checkArgument(
+        _aclEnv.containsKey(name), "Undefined PermittedByAcl reference: %s", name);
+    try {
+      return _aclEnv.get(name).get();
+    } catch (NonRecursiveSupplierException e) {
+      throw new BatfishException("Circular PermittedByAcl reference: " + name);
+    }
   }
 
   @Override

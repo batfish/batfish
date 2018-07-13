@@ -1,11 +1,14 @@
 package org.batfish.specifier;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Pattern;
 import org.batfish.datamodel.AclIpSpace;
+import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.IpSpace;
 
 /**
@@ -25,11 +28,11 @@ public final class NodeNameRegexConnectedHostsIpSpaceSpecifier implements IpSpac
    * point-to-point connections. Eventually /31s were allowed, but we assume here that any /30s are
    * hold-over point-to-point connections in the legacy model.
    */
-  private static final int HOST_SUBNET_MAX_PREFIX_LENGTH = 29;
+  public static final int HOST_SUBNET_MAX_PREFIX_LENGTH = 29;
 
   private final Pattern _pattern;
 
-  NodeNameRegexConnectedHostsIpSpaceSpecifier(Pattern pattern) {
+  public NodeNameRegexConnectedHostsIpSpaceSpecifier(Pattern pattern) {
     _pattern = pattern;
   }
 
@@ -52,7 +55,7 @@ public final class NodeNameRegexConnectedHostsIpSpaceSpecifier implements IpSpac
             });
     IpSpace include = AclIpSpace.union(includeBuilder.build());
     IpSpace exclude = AclIpSpace.union(excludeBuilder.build());
-    IpSpace ipSpace = AclIpSpace.difference(include, exclude);
+    IpSpace ipSpace = firstNonNull(AclIpSpace.difference(include, exclude), EmptyIpSpace.INSTANCE);
     return IpSpaceAssignment.builder().assign(locations, ipSpace).build();
   }
 

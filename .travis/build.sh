@@ -42,9 +42,9 @@ allinone -cmdfile tests/aws/commands || exit_code=$?
 echo -e "\n  ..... Running java-smt client tests"
 allinone -cmdfile tests/java-smt/commands || exit_code=$?
 
-echo -e "\n  ..... Running watchdog tests"
-allinone -cmdfile tests/watchdog/commands -batfishmode watchdog || exit_code=$?
-sleep 5
+# echo -e "\n  ..... Running watchdog tests"
+# allinone -cmdfile tests/watchdog/commands -batfishmode watchdog || exit_code=$?
+# sleep 5
 
 echo -e "\n .... Aggregating coverage data"
 java -jar "$JACOCO_CLI_JAR" merge $("$GNU_FIND" -name 'jacoco*.exec') --destfile "$JACOCO_ALL_DESTFILE"

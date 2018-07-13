@@ -1,8 +1,9 @@
 package org.batfish.datamodel.matchers;
 
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.IsisLevelSettings;
-import org.batfish.datamodel.IsisProcess;
+import org.batfish.datamodel.IsoAddress;
+import org.batfish.datamodel.isis.IsisLevelSettings;
+import org.batfish.datamodel.isis.IsisProcess;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 
@@ -27,6 +28,17 @@ final class IsisProcessMatchersImpl {
     @Override
     protected IsisLevelSettings featureValueOf(IsisProcess actual) {
       return actual.getLevel2();
+    }
+  }
+
+  static final class HasNetAddress extends FeatureMatcher<IsisProcess, IsoAddress> {
+    HasNetAddress(@Nonnull Matcher<? super IsoAddress> subMatcher) {
+      super(subMatcher, "An IsisProcess with netAddress:", "netAddress");
+    }
+
+    @Override
+    protected IsoAddress featureValueOf(IsisProcess actual) {
+      return actual.getNetAddress();
     }
   }
 
