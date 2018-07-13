@@ -2,7 +2,6 @@ package org.batfish.representation.palo_alto;
 
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 
-import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.SortedMultiset;
@@ -319,8 +318,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
         firstNonNull(_structureReferences.get(type), Collections.emptyMap());
     references.forEach(
         (name, byUsage) -> {
-          Multiset<Integer> lines =
-              firstNonNull(byUsage.get(usage), TreeMultiset.create());
+          Multiset<Integer> lines = firstNonNull(byUsage.get(usage), TreeMultiset.create());
           // Check this namespace first
           DefinedStructureInfo info = findDefinedStructure(name, structureTypesToCheck);
           // Check shared namespace if there was no match
