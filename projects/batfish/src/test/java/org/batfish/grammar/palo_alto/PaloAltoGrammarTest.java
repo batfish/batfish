@@ -370,7 +370,6 @@ public class PaloAltoGrammarTest {
     String service4Name = computeObjectName(DEFAULT_VSYS_NAME, "SERVICE4");
     String serviceGroup1Name = computeObjectName(DEFAULT_VSYS_NAME, "SG1");
     String serviceGroup2Name = computeObjectName(DEFAULT_VSYS_NAME, "SG2");
-    String serviceUndefinedName = computeObjectName(DEFAULT_VSYS_NAME, "SERVICE_UNDEFINED");
 
     // Confirm structure definitions are tracked
     assertThat(ccae, hasDefinedStructure(hostname, PaloAltoStructureType.SERVICE, service1Name));
@@ -398,7 +397,7 @@ public class PaloAltoGrammarTest {
     assertThat(
         ccae,
         hasUndefinedReference(
-            hostname, PaloAltoStructureType.SERVICE_OR_SERVICE_GROUP, serviceUndefinedName));
+            hostname, PaloAltoStructureType.SERVICE_OR_SERVICE_GROUP, "SERVICE_UNDEFINED"));
   }
 
   @Test

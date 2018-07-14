@@ -143,7 +143,10 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     return String.format("%s~%s", vsysName, objectName);
   }
 
-  /** Extract object name from a name with an embedded namespace */
+  /**
+   * Extract object name from a name with an embedded namespace. For example: nameWithNamespace
+   * might be `vsys1~SERVICE1`, where `SERVICE1` is the object name extracted and returned.
+   */
   private static String extractObjectName(String nameWithNamespace) {
     String[] parts = nameWithNamespace.split("~", -1);
     return parts[parts.length - 1];
@@ -317,16 +320,17 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     Map<String, SortedMap<StructureUsage, SortedMultiset<Integer>>> references =
         firstNonNull(_structureReferences.get(type), Collections.emptyMap());
     references.forEach(
-        (name, byUsage) -> {
+        (nameWithNamespace, byUsage) -> {
+          String name = extractObjectName(nameWithNamespace);
           Multiset<Integer> lines = firstNonNull(byUsage.get(usage), TreeMultiset.create());
           // Check this namespace first
-          DefinedStructureInfo info = findDefinedStructure(name, structureTypesToCheck);
+          DefinedStructureInfo info =
+              findDefinedStructure(nameWithNamespace, structureTypesToCheck);
           // Check shared namespace if there was no match
           if (info == null) {
             info =
                 findDefinedStructure(
-                    computeObjectName(SHARED_VSYS_NAME, extractObjectName(name)),
-                    structureTypesToCheck);
+                    computeObjectName(SHARED_VSYS_NAME, name), structureTypesToCheck);
           }
 
           // Now update reference count if applicable
