@@ -22,6 +22,8 @@ import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
+import org.batfish.datamodel.isis.IsisInterfaceMode;
+import org.batfish.datamodel.isis.IsisInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -374,6 +376,8 @@ public final class Interface extends ComparableStructure<String> {
 
   private static final String PROP_SWITCHPORT_TRUNK_ENCAPSULATION = "switchportTrunkEncapsulation";
 
+  private static final String PROP_VLAN = "vlan";
+
   private static final String PROP_VRF = "vrf";
 
   private static final String PROP_VRRP_GROUPS = "vrrpGroups";
@@ -633,6 +637,8 @@ public final class Interface extends ComparableStructure<String> {
   private SwitchportMode _switchportMode;
 
   private SwitchportEncapsulationType _switchportTrunkEncapsulation;
+
+  private Integer _vlan;
 
   private Vrf _vrf;
 
@@ -1070,6 +1076,11 @@ public final class Interface extends ComparableStructure<String> {
     return _switchportTrunkEncapsulation;
   }
 
+  @JsonProperty(PROP_VLAN)
+  public @Nullable Integer getVlan() {
+    return _vlan;
+  }
+
   @JsonIgnore
   public Vrf getVrf() {
     return _vrf;
@@ -1372,6 +1383,11 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_SWITCHPORT_TRUNK_ENCAPSULATION)
   public void setSwitchportTrunkEncapsulation(SwitchportEncapsulationType encapsulation) {
     _switchportTrunkEncapsulation = encapsulation;
+  }
+
+  @JsonProperty(PROP_VLAN)
+  public void setVlan(@Nullable Integer vlan) {
+    _vlan = vlan;
   }
 
   @JsonIgnore

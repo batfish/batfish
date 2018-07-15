@@ -49,6 +49,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
+import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
@@ -66,6 +67,7 @@ import org.batfish.datamodel.IkePhase1Proposal;
 import org.batfish.datamodel.IkePolicy;
 import org.batfish.datamodel.IkeProposal;
 import org.batfish.datamodel.InterfaceAddress;
+import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6AccessList;
 import org.batfish.datamodel.IpAccessList;
@@ -77,8 +79,6 @@ import org.batfish.datamodel.IpsecPhase2Proposal;
 import org.batfish.datamodel.IpsecPolicy;
 import org.batfish.datamodel.IpsecProposal;
 import org.batfish.datamodel.IpsecVpn;
-import org.batfish.datamodel.IsisInterfaceLevelSettings;
-import org.batfish.datamodel.IsisInterfaceSettings;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OriginType;
@@ -105,6 +105,8 @@ import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
+import org.batfish.datamodel.isis.IsisInterfaceLevelSettings;
+import org.batfish.datamodel.isis.IsisInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfAreaSummary;
 import org.batfish.datamodel.ospf.OspfDefaultOriginateType;
@@ -2024,6 +2026,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
       Interface iface, Map<String, IpAccessList> ipAccessLists, Configuration c) {
     String name = iface.getName();
     org.batfish.datamodel.Interface newIface = new org.batfish.datamodel.Interface(name, c);
+    if (newIface.getInterfaceType() == InterfaceType.VLAN) {
+      newIface.setVlan(CommonUtil.getInterfaceVlanNumber(name));
+    }
     String vrfName = iface.getVrf();
     Vrf vrf = _vrfs.computeIfAbsent(vrfName, Vrf::new);
     newIface.setDescription(iface.getDescription());
@@ -3203,7 +3208,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
           // convert isis process
           IsisProcess isisProcess = vrf.getIsisProcess();
           if (isisProcess != null) {
-            org.batfish.datamodel.IsisProcess newIsisProcess =
+            org.batfish.datamodel.isis.IsisProcess newIsisProcess =
                 CiscoConversions.toIsisProcess(isisProcess, c, this);
             newVrf.setIsisProcess(newIsisProcess);
           }

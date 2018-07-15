@@ -4,12 +4,12 @@ import static org.batfish.common.util.CommonUtil.computeIpNodeOwners;
 import static org.batfish.common.util.CommonUtil.initBgpTopology;
 import static org.batfish.common.util.CommonUtil.synthesizeTopology;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.datamodel.isis.IsisTopology.initIsisTopology;
 import static org.batfish.datamodel.matchers.BgpAdvertisementMatchers.hasDestinationIp;
 import static org.batfish.datamodel.matchers.BgpAdvertisementMatchers.hasNetwork;
 import static org.batfish.datamodel.matchers.BgpAdvertisementMatchers.hasOriginatorIp;
 import static org.batfish.datamodel.matchers.BgpAdvertisementMatchers.hasSourceIp;
 import static org.batfish.datamodel.matchers.BgpAdvertisementMatchers.hasType;
-import static org.batfish.dataplane.ibdp.IncrementalBdpEngine.initIsisTopology;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.contains;
@@ -58,12 +58,6 @@ import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IsisInterfaceLevelSettings;
-import org.batfish.datamodel.IsisInterfaceMode;
-import org.batfish.datamodel.IsisInterfaceSettings;
-import org.batfish.datamodel.IsisLevel;
-import org.batfish.datamodel.IsisLevelSettings;
-import org.batfish.datamodel.IsisProcess;
 import org.batfish.datamodel.IsoAddress;
 import org.batfish.datamodel.LocalRoute;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
@@ -84,6 +78,14 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.isis.IsisEdge;
+import org.batfish.datamodel.isis.IsisInterfaceLevelSettings;
+import org.batfish.datamodel.isis.IsisInterfaceMode;
+import org.batfish.datamodel.isis.IsisInterfaceSettings;
+import org.batfish.datamodel.isis.IsisLevel;
+import org.batfish.datamodel.isis.IsisLevelSettings;
+import org.batfish.datamodel.isis.IsisNode;
+import org.batfish.datamodel.isis.IsisProcess;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
@@ -95,8 +97,6 @@ import org.batfish.dataplane.rib.RibDelta;
 import org.batfish.dataplane.rib.RibDelta.Builder;
 import org.batfish.dataplane.rib.RouteAdvertisement;
 import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
-import org.batfish.dataplane.topology.IsisEdge;
-import org.batfish.dataplane.topology.IsisNode;
 import org.batfish.main.BatfishTestUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -1205,21 +1205,11 @@ public class VirtualRouterTest {
      * Old best path is gone. Now must choose best path from the multipath RIB.
      * new routes should exist for the new prefix
      */
-    Entry<RibDelta<BgpRoute>, RibDelta<BgpRoute>> e =
-        VirtualRouter.syncBgpDeltaPropagation(bestPathRib, multipathRib, staging);
+    VirtualRouter.syncBgpDeltaPropagation(bestPathRib, multipathRib, staging);
 
     // One route only, taken from the multipathRib
     assertThat(bestPathRib.getRoutes(), contains(oldRoute2));
     // Both good routes
     assertThat(multipathRib.getRoutes(), containsInAnyOrder(oldRoute2, oldRoute3));
-
-    RibDelta<BgpRoute> bpDelta = e.getKey();
-    RibDelta<BgpRoute> mpDelta = e.getValue();
-    assert bpDelta != null;
-    assert mpDelta != null;
-    // 2 operations for best path rib, one withdraw, one add
-    assertThat(bpDelta.getActions(), hasSize(2));
-    // 1 operations for multipath rib, one withdraw
-    assertThat(mpDelta.getActions(), hasSize(1));
   }
 }

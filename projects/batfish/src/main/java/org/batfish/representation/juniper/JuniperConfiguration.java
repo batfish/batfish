@@ -59,8 +59,6 @@ import org.batfish.datamodel.IpsecPeerConfig;
 import org.batfish.datamodel.IpsecPhase2Policy;
 import org.batfish.datamodel.IpsecPhase2Proposal;
 import org.batfish.datamodel.IpsecStaticPeerConfig;
-import org.batfish.datamodel.IsisInterfaceMode;
-import org.batfish.datamodel.IsisProcess;
 import org.batfish.datamodel.IsoAddress;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
@@ -84,6 +82,8 @@ import org.batfish.datamodel.acl.NotMatchExpr;
 import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
+import org.batfish.datamodel.isis.IsisInterfaceMode;
+import org.batfish.datamodel.isis.IsisProcess;
 import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -647,7 +647,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
             });
   }
 
-  private org.batfish.datamodel.IsisInterfaceSettings toIsisInterfaceSettings(
+  private org.batfish.datamodel.isis.IsisInterfaceSettings toIsisInterfaceSettings(
       IsisSettings settings,
       @Nonnull IsisInterfaceSettings interfaceSettings,
       IsoAddress isoAddress,
@@ -656,8 +656,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
     if (!interfaceSettings.getEnabled()) {
       return null;
     }
-    org.batfish.datamodel.IsisInterfaceSettings.Builder newInterfaceSettingsBuilder =
-        org.batfish.datamodel.IsisInterfaceSettings.builder();
+    org.batfish.datamodel.isis.IsisInterfaceSettings.Builder newInterfaceSettingsBuilder =
+        org.batfish.datamodel.isis.IsisInterfaceSettings.builder();
     if (level1) {
       newInterfaceSettingsBuilder.setLevel1(
           toIsisInterfaceLevelSettings(interfaceSettings, interfaceSettings.getLevel1Settings()));
@@ -675,9 +675,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
         .build();
   }
 
-  private org.batfish.datamodel.IsisInterfaceLevelSettings toIsisInterfaceLevelSettings(
+  private org.batfish.datamodel.isis.IsisInterfaceLevelSettings toIsisInterfaceLevelSettings(
       IsisInterfaceSettings interfaceSettings, IsisInterfaceLevelSettings settings) {
-    return org.batfish.datamodel.IsisInterfaceLevelSettings.builder()
+    return org.batfish.datamodel.isis.IsisInterfaceLevelSettings.builder()
         .setCost(settings.getMetric())
         .setHelloAuthenticationKey(settings.getHelloAuthenticationKey())
         .setHelloAuthenticationType(settings.getHelloAuthenticationType())
@@ -688,9 +688,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
         .build();
   }
 
-  private org.batfish.datamodel.IsisLevelSettings toIsisLevelSettings(
+  private org.batfish.datamodel.isis.IsisLevelSettings toIsisLevelSettings(
       IsisLevelSettings levelSettings) {
-    return org.batfish.datamodel.IsisLevelSettings.builder()
+    return org.batfish.datamodel.isis.IsisLevelSettings.builder()
         .setWideMetricsOnly(levelSettings.getWideMetricsOnly())
         .build();
   }
