@@ -104,6 +104,8 @@ import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.IkeGateway;
+import org.batfish.datamodel.IkePhase1Policy;
+import org.batfish.datamodel.IkePhase1Proposal;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
@@ -113,6 +115,12 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpWildcardIpSpace;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
+import org.batfish.datamodel.IpsecDynamicPeerConfig;
+import org.batfish.datamodel.IpsecPeerConfig;
+import org.batfish.datamodel.IpsecPhase2Policy;
+import org.batfish.datamodel.IpsecPhase2Proposal;
+import org.batfish.datamodel.IpsecSession;
+import org.batfish.datamodel.IpsecStaticPeerConfig;
 import org.batfish.datamodel.IpsecVpn;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.NetworkConfigurations;
@@ -1172,6 +1180,255 @@ public class CommonUtil {
       }
     }
     return ImmutableValueGraph.copyOf(graph);
+  }
+
+  public static ValueGraph<Pair<Configuration, IpsecPeerConfig>, IpsecSession> initIpsecTopology(
+      Map<String, Configuration> configurations) {
+
+    Map<Ip, Set<IpsecPeerConfig>> localIpIpsecPeerConfigs = new HashMap<>();
+    Map<IpsecPeerConfig, Configuration> ipsecPeerConfigOwners = new HashMap<>();
+    MutableValueGraph<Pair<Configuration, IpsecPeerConfig>, IpsecSession> graph =
+        ValueGraphBuilder.directed().allowsSelfLoops(false).build();
+
+    for (Configuration node : configurations.values()) {
+      for (IpsecPeerConfig ipsecPeerConfig : node.getIpsecPeerconfigs().values()) {
+        Set<IpsecPeerConfig> ipsecPeerConfigsWithIp =
+            localIpIpsecPeerConfigs.computeIfAbsent(
+                ipsecPeerConfig.getLocalAddress(), k -> new HashSet<>());
+        ipsecPeerConfigsWithIp.add(ipsecPeerConfig);
+        ipsecPeerConfigOwners.put(ipsecPeerConfig, node);
+        graph.addNode(new Pair<>(node, ipsecPeerConfig));
+      }
+    }
+
+    // populating the graph
+    for (Pair<Configuration, IpsecPeerConfig> ownerIpsecPeerConfig : graph.nodes()) {
+      IpsecPeerConfig ipsecPeerConfig = ownerIpsecPeerConfig.getSecond();
+      if (ipsecPeerConfig instanceof IpsecDynamicPeerConfig) {
+        continue;
+      }
+      // IPSec peer should be static
+      IpsecStaticPeerConfig ipsecStaticPeerConfig = (IpsecStaticPeerConfig) ipsecPeerConfig;
+
+      if (ipsecStaticPeerConfig.getDestinationAddress() == null) {
+        continue;
+      }
+      Configuration initiatorOwner = ipsecPeerConfigOwners.get(ipsecPeerConfig);
+      for (IpsecPeerConfig candidateIpsecPeer :
+          localIpIpsecPeerConfigs.get(ipsecStaticPeerConfig.getDestinationAddress())) {
+        // skip if an IPSec peer is a crypto map based vpn and other is a tunnel interface based vpn
+        if (ipsecStaticPeerConfig.getTunnelInterface() == null
+            ^ candidateIpsecPeer.getTunnelInterface() == null) {
+          continue;
+        }
+        Configuration candidateOwner = ipsecPeerConfigOwners.get(candidateIpsecPeer);
+        IpsecSession ipsecSession =
+            getIpsecSession(
+                initiatorOwner, candidateOwner, ipsecStaticPeerConfig, candidateIpsecPeer);
+
+        if (ipsecSession != null) {
+          graph.putEdgeValue(
+              ownerIpsecPeerConfig, new Pair<>(candidateOwner, candidateIpsecPeer), ipsecSession);
+        }
+      }
+    }
+
+    return graph;
+  }
+
+  private static IpsecSession getIpsecSession(
+      Configuration initiatorOwner,
+      Configuration peerOwner,
+      IpsecStaticPeerConfig initiator,
+      IpsecPeerConfig candidatePeer) {
+    IpsecSession ipsecSession = new IpsecSession();
+
+    negotiateIkeP1(initiatorOwner, peerOwner, initiator, candidatePeer, ipsecSession);
+
+    if (ipsecSession.getNegotiatedIkeP1Proposal() == null
+        || ipsecSession.getNegotiatedIkePhase1Key() == null) {
+      return ipsecSession;
+    }
+
+    negotiateIpsecP2(initiatorOwner, peerOwner, initiator, candidatePeer, ipsecSession);
+
+    return ipsecSession;
+  }
+
+  private static void negotiateIkeP1(
+      Configuration initiatorOwner,
+      Configuration responderOwner,
+      IpsecStaticPeerConfig initiator,
+      IpsecPeerConfig responder,
+      IpsecSession ipsecSession) {
+    IkePhase1Policy initiatorIkePhase1Policy =
+        initiator.getIkePhase1Policy() == null
+            ? null
+            : initiatorOwner.getIkePhase1Policies().get(initiator.getIkePhase1Policy());
+
+    IkePhase1Policy responderIkeP1Policy;
+    if (responder instanceof IpsecStaticPeerConfig) {
+      IpsecStaticPeerConfig ipsecStaticPeerConfig = (IpsecStaticPeerConfig) responder;
+      responderIkeP1Policy =
+          ipsecStaticPeerConfig.getIkePhase1Policy() == null
+              ? null
+              : responderOwner
+                  .getIkePhase1Policies()
+                  .get(ipsecStaticPeerConfig.getIkePhase1Policy());
+    } else {
+      responderIkeP1Policy = getMatchingDynamicIkeP1Policy(initiator, responder, responderOwner);
+    }
+
+    ipsecSession.setInitiatorIkeP1Policy(initiatorIkePhase1Policy);
+    ipsecSession.setResponderIkeP1Policy(responderIkeP1Policy);
+
+    // if initiator or responder don't have an IKE P1 policy for each other, no negotiation can
+    // happen
+    if (initiatorIkePhase1Policy == null || responderIkeP1Policy == null) {
+      return;
+    }
+
+    IkePhase1Proposal negotiatedIkePhase1Proposal =
+        getMatchingIkeP1Proposal(
+            initiatorOwner,
+            responderOwner,
+            initiatorIkePhase1Policy.getIkePhase1Proposals(),
+            responderIkeP1Policy.getIkePhase1Proposals());
+
+    ipsecSession.setNegotiatedIkeP1Proposal(negotiatedIkePhase1Proposal);
+
+    if (negotiatedIkePhase1Proposal != null
+        && initiatorIkePhase1Policy
+            .getIkePhase1Key()
+            .equals(responderIkeP1Policy.getIkePhase1Key())) {
+      ipsecSession.setNegotiatedIkePhase1Key(initiatorIkePhase1Policy.getIkePhase1Key());
+    }
+  }
+
+  private static void negotiateIpsecP2(
+      Configuration initiatorOwner,
+      Configuration responderOwner,
+      IpsecStaticPeerConfig initiator,
+      IpsecPeerConfig responder,
+      IpsecSession ipsecSession) {
+    IpsecPhase2Policy initiatorIpsecP2policy =
+        initiator.getIpsecPolicy() == null
+            ? null
+            : initiatorOwner.getIpsecPhase2Policies().get(initiator.getIpsecPolicy());
+    IpsecPhase2Policy responderIpsecP2Policy =
+        responder.getIpsecPolicy() == null
+            ? null
+            : responderOwner.getIpsecPhase2Policies().get(responder.getIpsecPolicy());
+
+    ipsecSession.setInitiatorIpsecP2Policy(initiatorIpsecP2policy);
+    ipsecSession.setResponderIpsecP2Policy(responderIpsecP2Policy);
+
+    // if initiator or responder don't have an Ipsec phase 2 policy, further negotiation can't
+    // happen
+    if (initiatorIpsecP2policy == null || responderIpsecP2Policy == null) {
+      return;
+    }
+
+    IpsecPhase2Proposal negotiatedIpsecPhase2Proposal =
+        getMatchingIpsecP2Proposal(
+            initiatorOwner,
+            responderOwner,
+            initiatorIpsecP2policy.getProposals(),
+            responderIpsecP2Policy.getProposals());
+
+    ipsecSession.setNegotiatedIpsecPhase2Proposal(negotiatedIpsecPhase2Proposal);
+  }
+
+  @Nullable
+  private static IkePhase1Proposal getMatchingIkeP1Proposal(
+      Configuration initiatorOwner,
+      Configuration responderOwner,
+      List<String> initiatorProposals,
+      List<String> responderProposals) {
+    Map<IkePhase1Proposal, IkePhase1Proposal> responderProposalMap =
+        responderProposals
+            .stream()
+            .map(ikeProposalName -> responderOwner.getIkePhase1Proposals().get(ikeProposalName))
+            .filter(Objects::nonNull)
+            .collect(Collectors.toMap(Function.identity(), Function.identity(), (e1, e2) -> e1));
+
+    List<IkePhase1Proposal> initiatorProposalList =
+        initiatorProposals
+            .stream()
+            .map(ikeProposalName -> initiatorOwner.getIkePhase1Proposals().get(ikeProposalName))
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList());
+
+    for (IkePhase1Proposal ikePhase1Proposal : initiatorProposalList) {
+      IkePhase1Proposal matchedProposal = responderProposalMap.get(ikePhase1Proposal);
+      if (matchedProposal != null) {
+        IkePhase1Proposal negotiatedProposal =
+            new IkePhase1Proposal("~NEGOTIATED_IKE_P1_PROPOSAL~");
+        negotiatedProposal.setHashingAlgorithm(ikePhase1Proposal.getHashingAlgorithm());
+        negotiatedProposal.setEncryptionAlgorithm(ikePhase1Proposal.getEncryptionAlgorithm());
+        negotiatedProposal.setDiffieHellmanGroup(ikePhase1Proposal.getDiffieHellmanGroup());
+        negotiatedProposal.setAuthenticationMethod(ikePhase1Proposal.getAuthenticationMethod());
+        negotiatedProposal.setLifetimeSeconds(
+            Math.min(ikePhase1Proposal.getLifetimeSeconds(), matchedProposal.getLifetimeSeconds()));
+        return negotiatedProposal;
+      }
+    }
+
+    return null;
+  }
+
+  @Nullable
+  private static IpsecPhase2Proposal getMatchingIpsecP2Proposal(
+      Configuration initiatorOwner,
+      Configuration responderOwner,
+      List<String> initiatorProposals,
+      List<String> responderProposals) {
+    Set<IpsecPhase2Proposal> responderProposalSet =
+        responderProposals
+            .stream()
+            .map(
+                ipsecP2ProposalName ->
+                    responderOwner.getIpsecPhase2Proposals().get(ipsecP2ProposalName))
+            .filter(Objects::nonNull)
+            .collect(Collectors.toSet());
+    List<IpsecPhase2Proposal> initiatorProposalList =
+        initiatorProposals
+            .stream()
+            .map(
+                ipsecP2ProposalName ->
+                    initiatorOwner.getIpsecPhase2Proposals().get(ipsecP2ProposalName))
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList());
+
+    for (IpsecPhase2Proposal ipsecPhase2Proposal : initiatorProposalList) {
+      if (responderProposalSet.contains(ipsecPhase2Proposal)) {
+        return ipsecPhase2Proposal;
+      }
+    }
+
+    return null;
+  }
+
+  @Nullable
+  private static IkePhase1Policy getMatchingDynamicIkeP1Policy(
+      IpsecStaticPeerConfig initiator, IpsecPeerConfig responder, Configuration responderOwner) {
+    List<IkePhase1Policy> dynamicIkePhase1Policies =
+        ((IpsecDynamicPeerConfig) responder)
+            .getIkePhase1Poliies()
+            .stream()
+            .map(ikePhase1Policy -> responderOwner.getIkePhase1Policies().get(ikePhase1Policy))
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList());
+
+    return dynamicIkePhase1Policies
+        .stream()
+        .filter(
+            dynamicIkeP1Policy ->
+                dynamicIkeP1Policy
+                    .getRemoteIdentity()
+                    .containsIp(initiator.getLocalAddress(), ImmutableMap.of()))
+        .findFirst()
+        .orElse(null);
   }
 
   static boolean bgpConfigPassesSanityChecks(
