@@ -169,6 +169,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.stream.Collectors;
+import org.batfish.common.Pair;
 import org.batfish.common.WellKnownCommunity;
 import org.batfish.common.plugin.DataPlanePlugin;
 import org.batfish.common.util.CommonUtil;
@@ -198,7 +199,9 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
 import org.batfish.datamodel.IpsecEncapsulationMode;
+import org.batfish.datamodel.IpsecPeerConfig;
 import org.batfish.datamodel.IpsecProtocol;
+import org.batfish.datamodel.IpsecSession;
 import org.batfish.datamodel.LineType;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.NamedPort;
@@ -2552,6 +2555,22 @@ public class CiscoGrammarTest {
             .filter(i -> i.getInterfaceType().equals(InterfaceType.TUNNEL) && i.getActive())
             .count(),
         equalTo(4L));
+  }
+
+  @Test
+  public void testCryptoMapTopology() throws IOException {
+    String testrigName = "ios-crypto-ipsec";
+    List<String> configurationNames = ImmutableList.of("r1", "r2", "r3");
+
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
+    Map<String, Configuration> configurations = batfish.loadConfigurations();
+    ValueGraph<Pair<Configuration, IpsecPeerConfig>, IpsecSession> graph =
+        CommonUtil.initIpsecTopology(configurations);
   }
 
   @Test
