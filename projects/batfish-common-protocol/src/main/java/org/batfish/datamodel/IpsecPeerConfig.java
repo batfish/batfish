@@ -15,7 +15,7 @@ import javax.annotation.Nullable;
 /** Represents a configured IPSec peer */
 @JsonSchemaDescription("A configured IPSec peering relationship")
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
-public abstract class IpsecPeerConfig implements Serializable {
+public abstract class IpsecPeerConfig implements Serializable, Comparable<IpsecPeerConfig> {
 
   static final String PROP_IPSEC_POLICY = "ipsecPolicy";
 
@@ -52,6 +52,11 @@ public abstract class IpsecPeerConfig implements Serializable {
     _policyAccessList = policyAccessList;
     _localAddress = firstNonNull(localAddress, Ip.AUTO);
     _tunnelInterface = tunnelInterface;
+  }
+
+  @Override
+  public int compareTo(@Nonnull IpsecPeerConfig rhs) {
+    return _physicalInterface.compareTo(rhs._physicalInterface);
   }
 
   @JsonPropertyDescription("Local address for IPSec peer")

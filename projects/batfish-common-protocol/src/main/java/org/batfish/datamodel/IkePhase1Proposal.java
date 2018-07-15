@@ -3,6 +3,7 @@ package org.batfish.datamodel;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import java.util.Objects;
 import org.batfish.common.util.ComparableStructure;
 
 /** Represents the IKE proposal used for IKE phase 1 negotiation */
@@ -89,5 +90,28 @@ public class IkePhase1Proposal extends ComparableStructure<String> {
   @JsonProperty(PROP_LIFETIME_SECONDS)
   public void setLifetimeSeconds(Integer lifetimeSeconds) {
     _lifetimeSeconds = lifetimeSeconds;
+  }
+
+  /** equals() is being used only during negotiation, so lifetimeSeconds is ignored */
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof IkePhase1Proposal)) {
+      return false;
+    }
+    IkePhase1Proposal other = (IkePhase1Proposal) o;
+    return Objects.equals(_authenticationMethod, other._authenticationMethod)
+        && Objects.equals(_diffieHellmanGroup, other._diffieHellmanGroup)
+        && Objects.equals(_encryptionAlgorithm, other._encryptionAlgorithm)
+        && Objects.equals(_hashingAlgorithm, other._hashingAlgorithm);
+  }
+
+  /** hashCode() is being used only during negotiation, so lifetimeSeconds is ignored */
+  @Override
+  public int hashCode() {
+    return Objects.hash(
+        _authenticationMethod, _diffieHellmanGroup, _encryptionAlgorithm, _hashingAlgorithm);
   }
 }
