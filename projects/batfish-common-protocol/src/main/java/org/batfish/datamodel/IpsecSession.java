@@ -1,85 +1,88 @@
 package org.batfish.datamodel;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
-import com.google.common.collect.ImmutableSortedSet;
-import java.io.Serializable;
-import java.util.SortedSet;
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class IpsecPhase2Proposal implements Serializable {
+public class IpsecSession {
 
-  /** */
-  private static final long serialVersionUID = 1L;
+  @Nullable private IkePhase1Policy _initiatorIkeP1Policy;
 
-  private static final String PROP_AUTHENTICATION_ALGORITHM = "authenticationAlgorithm";
+  @Nullable private IpsecPhase2Policy _initiatorIpsecP2Policy;
 
-  private static final String PROP_ENCRYPTION_ALGORITHM = "encryptionAlgorithm";
+  @Nullable private IkePhase1Proposal _negotiatedIkeP1Proposal;
 
-  private static final String PROP_IPSEC_ENCAPSULATION_MODE = "ipsecEncapsulationMode";
+  @Nullable private IkePhase1Key _negotiatedIkePhase1Key;
 
-  private static final String PROP_PROTOCOLS = "protocols";
+  @Nullable private IpsecPhase2Proposal _negotiatedIpsecPhase2Proposal;
 
-  private IpsecAuthenticationAlgorithm _authenticationAlgorithm;
+  @Nullable private IkePhase1Policy _responderIkeP1Policy;
 
-  private EncryptionAlgorithm _encryptionAlgorithm;
+  @Nullable private IpsecPhase2Policy _responderIpsecP2Policy;
 
-  private @Nonnull IpsecEncapsulationMode _ipsecEncapsulationMode;
-
-  private @Nonnull SortedSet<IpsecProtocol> _protocols;
-
-  @JsonCreator
-  public IpsecPhase2Proposal() {
-    _protocols = ImmutableSortedSet.of();
-    _ipsecEncapsulationMode = IpsecEncapsulationMode.TUNNEL;
+  @Nullable
+  public IkePhase1Policy getInitiatorIkeP1Policy() {
+    return _initiatorIkeP1Policy;
   }
 
-  @JsonPropertyDescription("Authentication algorithm to be used with this IPSec Proposal")
-  @JsonProperty(PROP_AUTHENTICATION_ALGORITHM)
-  public IpsecAuthenticationAlgorithm getAuthenticationAlgorithm() {
-    return _authenticationAlgorithm;
+  @Nullable
+  public IpsecPhase2Policy getInitiatorIpsecP2Policy() {
+    return _initiatorIpsecP2Policy;
   }
 
-  @JsonPropertyDescription("Encryption algorithm to be used with this IPSec Proposal")
-  @JsonProperty(PROP_ENCRYPTION_ALGORITHM)
-  public EncryptionAlgorithm getEncryptionAlgorithm() {
-    return _encryptionAlgorithm;
+  @Nullable
+  public IkePhase1Policy getResponderIkeP1Policy() {
+    return _responderIkeP1Policy;
   }
 
-  @JsonPropertyDescription("IPSec encapsulation mode to be used with this IPSec Proposal")
-  @JsonProperty(PROP_IPSEC_ENCAPSULATION_MODE)
-  public IpsecEncapsulationMode getIpsecEncapsulationMode() {
-    return _ipsecEncapsulationMode;
+  @Nullable
+  public IpsecPhase2Policy getResponderIpsecP2Policy() {
+    return _responderIpsecP2Policy;
   }
 
-  @JsonPropertyDescription("IPSec protocols to be used with this IPSec Proposal")
-  @JsonProperty(PROP_PROTOCOLS)
-  public SortedSet<IpsecProtocol> getProtocols() {
-    return _protocols;
+  @Nullable
+  public IkePhase1Proposal getNegotiatedIkeP1Proposal() {
+    return _negotiatedIkeP1Proposal;
   }
 
-  @JsonProperty(PROP_AUTHENTICATION_ALGORITHM)
-  public void setAuthenticationAlgorithm(
-      @Nullable IpsecAuthenticationAlgorithm authenticationAlgorithm) {
-    _authenticationAlgorithm = authenticationAlgorithm;
+  @Nullable
+  public IkePhase1Key getNegotiatedIkePhase1Key() {
+    return _negotiatedIkePhase1Key;
   }
 
-  @JsonProperty(PROP_ENCRYPTION_ALGORITHM)
-  public void setEncryptionAlgorithm(@Nullable EncryptionAlgorithm encryptionAlgorithm) {
-    _encryptionAlgorithm = encryptionAlgorithm;
+  @Nullable
+  public IpsecPhase2Proposal getNegotiatedIpsecPhase2Proposal() {
+    return _negotiatedIpsecPhase2Proposal;
   }
 
-  @JsonProperty(PROP_IPSEC_ENCAPSULATION_MODE)
-  public void setIpsecEncapsulationMode(@Nullable IpsecEncapsulationMode ipsecEncapsulationMode) {
-    _ipsecEncapsulationMode = firstNonNull(ipsecEncapsulationMode, IpsecEncapsulationMode.TUNNEL);
+  public void setInitiatorIkeP1Policy(@Nullable IkePhase1Policy initiatorIkeP1Policy) {
+    _initiatorIkeP1Policy = initiatorIkeP1Policy;
   }
 
-  @JsonProperty(PROP_PROTOCOLS)
-  public void setProtocols(@Nullable SortedSet<IpsecProtocol> protocols) {
-    _protocols = protocols == null ? ImmutableSortedSet.of() : ImmutableSortedSet.copyOf(protocols);
+  public void setInitiatorIpsecP2Policy(@Nullable IpsecPhase2Policy initiatorIpsecP2Policy) {
+    _initiatorIpsecP2Policy = initiatorIpsecP2Policy;
+  }
+
+  public void setResponderIkeP1Policy(@Nullable IkePhase1Policy responderIkeP1Policy) {
+    _responderIkeP1Policy = responderIkeP1Policy;
+  }
+
+  public void setResponderIpsecP2Policy(@Nullable IpsecPhase2Policy responderIpsecP2Policy) {
+    _responderIpsecP2Policy = responderIpsecP2Policy;
+  }
+
+  public void setNegotiatedIkeP1Proposal(@Nullable IkePhase1Proposal ikePhase1Proposal) {
+    _negotiatedIkeP1Proposal = ikePhase1Proposal;
+  }
+
+  public void setNegotiatedIkePhase1Key(@Nullable IkePhase1Key negotiatedIkePhase1Key) {
+    _negotiatedIkePhase1Key = negotiatedIkePhase1Key;
+  }
+
+  public void setNegotiatedIpsecPhase2Proposal(@Nullable IpsecPhase2Proposal ipsecPhase2Proposal) {
+    _negotiatedIpsecPhase2Proposal = ipsecPhase2Proposal;
+  }
+
+  public enum IpsecSessionType {
+    STATIC,
+    DYNAMIC
   }
 }
