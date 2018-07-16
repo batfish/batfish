@@ -6974,16 +6974,6 @@ MAXIMUM_ROUTES
    'maximum-routes'
 ;
 
-MAXIMUM_SECONDARY_PATHS
-:
-   'maximum-secondary-paths'
-;
-
-MAXIMUM_SERVICE
-:
-   'maximum-service'
-;
-
 MAXPOLL
 :
    'maxpoll'
@@ -10994,11 +10984,6 @@ SOFT_RECONFIGURATION
    'soft' '-reconfiguration'?
 ;
 
-SOFT_SIA
-:
-   'soft-sia'
-;
-
 SOFTWARE
 :
    'software'
@@ -11349,11 +11334,6 @@ STS_1
 STUB
 :
    'stub'
-;
-
-STUB_SITE
-:
-   'stub-site'
 ;
 
 SUBJECT_NAME
@@ -11984,11 +11964,6 @@ TOOL
 TOP
 :
    'top'
-;
-
-TOPO_INTERFACE
-:
-   'topo-interface'
 ;
 
 TOPOLOGY

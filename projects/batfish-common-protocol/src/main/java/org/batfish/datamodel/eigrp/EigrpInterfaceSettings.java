@@ -4,16 +4,18 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 import java.util.Objects;
+import javax.annotation.Nullable;
 
+/** Settings for a {@link org.batfish.datamodel.Interface} with an {@link EigrpProcess}. */
 public class EigrpInterfaceSettings implements Serializable {
 
   private static final String PROP_ASN = "asn";
   private static final String PROP_DELAY = "delay";
   private static final String PROP_ENABLED = "enabled";
   private static final long serialVersionUID = 1L;
-  private Long _asn;
-  private Double _delay;
-  private boolean _enabled;
+  private final Long _asn;
+  private final Double _delay;
+  private final boolean _enabled;
 
   private EigrpInterfaceSettings(Builder builder) {
     _asn = builder._asn;
@@ -49,16 +51,21 @@ public class EigrpInterfaceSettings implements Serializable {
         && (_enabled == rhs._enabled);
   }
 
+  /** @return The AS number for this interface */
   @JsonProperty(PROP_ASN)
+  @Nullable
   public Long getAsNumber() {
     return _asn;
   }
 
+  /** @return The delay for this interface */
   @JsonProperty(PROP_DELAY)
+  @Nullable
   public Double getDelay() {
     return _delay;
   }
 
+  /** @return Whether EIGRP is enabled on this interface */
   @JsonProperty(PROP_ENABLED)
   public boolean getEnabled() {
     return _enabled;

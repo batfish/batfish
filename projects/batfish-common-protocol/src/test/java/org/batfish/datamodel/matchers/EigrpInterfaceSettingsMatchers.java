@@ -3,7 +3,6 @@ package org.batfish.datamodel.matchers;
 import static org.hamcrest.Matchers.equalTo;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import org.batfish.datamodel.eigrp.EigrpInterfaceSettings;
 import org.batfish.datamodel.matchers.EigrpInterfaceSettingsMatchersImpl.HasAsn;
 import org.batfish.datamodel.matchers.EigrpInterfaceSettingsMatchersImpl.HasDelay;
@@ -18,7 +17,7 @@ public class EigrpInterfaceSettingsMatchers {
    * Provides a matcher that matches if the {@link EigrpInterfaceSettings}'s asn is {@code
    * expectedAsn}.
    */
-  public static @Nonnull Matcher<EigrpInterfaceSettings> hasAsn(@Nullable Long expectedAsn) {
+  public static @Nonnull Matcher<EigrpInterfaceSettings> hasAsn(long expectedAsn) {
     return new HasAsn(equalTo(expectedAsn));
   }
 
@@ -35,7 +34,7 @@ public class EigrpInterfaceSettingsMatchers {
    * Provides a matcher that matches if the {@link EigrpInterfaceSettings}'s delay is {@code
    * expectedDelay}.
    */
-  public static @Nonnull Matcher<EigrpInterfaceSettings> hasDelay(@Nullable Double expectedDelay) {
+  public static @Nonnull Matcher<EigrpInterfaceSettings> hasDelay(double expectedDelay) {
     return new HasDelay(equalTo(expectedDelay));
   }
 
@@ -52,8 +51,7 @@ public class EigrpInterfaceSettingsMatchers {
    * Provides a matcher that matches if the {@link EigrpInterfaceSettings}'s enabled is {@code
    * expectedEnabled}.
    */
-  public static @Nonnull Matcher<EigrpInterfaceSettings> hasEnabled(
-      @Nullable Boolean expectedEnabled) {
+  public static @Nonnull Matcher<EigrpInterfaceSettings> hasEnabled(boolean expectedEnabled) {
     return new HasEnabled(equalTo(expectedEnabled));
   }
 

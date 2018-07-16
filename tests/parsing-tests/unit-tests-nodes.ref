@@ -6286,9 +6286,6 @@
         "vrfs" : {
           "default" : {
             "name" : "default"
-          },
-          "vrf" : {
-            "name" : "vrf"
           }
         }
       },

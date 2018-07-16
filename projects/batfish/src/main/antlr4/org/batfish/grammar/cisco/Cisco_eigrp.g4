@@ -57,7 +57,6 @@ eigrp_af_int_null_stanza
       | PASSIVE_INTERFACE
       | SHUTDOWN
       | SPLIT_HORIZON
-      | STUB_SITE
       | SUMMARY_ADDRESS
    ) null_rest_of_line
 ;
@@ -80,14 +79,12 @@ eigrp_af_topology_null_stanza
       | EIGRP
       | FAST_REROUTE
       | MAXIMUM_PATHS
-      | MAXIMUM_SECONDARY_PATHS
       | METRIC
       | OFFSET_LIST
       | REDISTRIBUTE
       | SNMP
       | SUMMARY_METRIC
       | TIMERS
-      | TOPO_INTERFACE
       | TRAFFIC_SHARE
       | VARIANCE
    ) null_rest_of_line
@@ -147,7 +144,6 @@ eigrp_classic_af_null_stanza
       | EIGRP
       | MAXIMUM_PATHS
       | MAXIMUM_PREFIX
-      | MAXIMUM_SECONDARY_PATHS
       | METRIC
       | NEIGHBOR
       | NSF
@@ -183,7 +179,6 @@ eigrp_classic_null_stanza
       | EIGRP
       | HELLO_INTERVAL
       | MAXIMUM_PATHS
-      | MAXIMUM_SECONDARY_PATHS
       | METRIC
       | NEIGHBOR
       | NSF
@@ -218,7 +213,6 @@ eigrp_named_af_null_stanza
       | NSF
       | REMOTE_NEIGHBORS
       | SHUTDOWN
-      | SOFT_SIA
       | TIMERS
    ) null_rest_of_line
 ;
@@ -240,7 +234,6 @@ eigrp_sf_null_stanza
    NO?
    (
       EIGRP
-      | MAXIMUM_SERVICE
       | METRIC
       | NEIGHBOR
       | REMOTE_NEIGHBORS

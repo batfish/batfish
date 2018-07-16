@@ -2,14 +2,12 @@ package org.batfish.datamodel.eigrp;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
-import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 import java.io.Serializable;
 import java.util.Objects;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Vrf;
 
-@JsonSchemaDescription("An EIGRP routing process")
+/** Represents an EIGRP process on a router */
 public class EigrpProcess implements Serializable {
 
   private static final String PROP_ASN = "asn";
@@ -52,25 +50,25 @@ public class EigrpProcess implements Serializable {
         && Objects.equals(_routerId, rhs._routerId);
   }
 
+  /** @return The router-id of this EIGRP process */
   @JsonProperty(PROP_ROUTER_ID)
-  @JsonPropertyDescription("The router-id of this EIGRP process")
   public Ip getRouterId() {
     return _routerId;
   }
 
+  /** @return The AS number for this process */
   @JsonProperty(PROP_ASN)
-  @JsonPropertyDescription("The AS number for this process")
   public Long getAsn() {
     return _asn;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_asn, _routerId);
+    return Objects.hash(_asn, _mode.ordinal(), _routerId);
   }
 
+  /** @return The EIGRP mode for this process */
   @JsonProperty(PROP_MODE)
-  @JsonPropertyDescription("The EIGRP mode for this process")
   public EigrpProcessMode getMode() {
     return _mode;
   }
