@@ -133,9 +133,9 @@ class IpsecPeersAnswerer extends Answerer {
     }
     if (ipsecSession.getNegotiatedIkeP1Proposal() == null) {
       rowBuilder.put(COL_STATUS, IKE_PHASE1_FAILED);
-    } else if (ipsecSession.getNegotiatedIkePhase1Key() == null) {
+    } else if (ipsecSession.getNegotiatedIkeP1Key() == null) {
       rowBuilder.put(COL_STATUS, IKE_PHASE1_KEY_MISMATCH);
-    } else if (ipsecSession.getNegotiatedIpsecPhase2Proposal() == null) {
+    } else if (ipsecSession.getNegotiatedIpsecP2Proposal() == null) {
       rowBuilder.put(COL_STATUS, IPSEC_PHASE2_FAILED);
     } else {
       rowBuilder.put(COL_STATUS, IPSEC_SESSION_ESTABLISHED);

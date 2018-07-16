@@ -56,7 +56,7 @@ public class IpsecPeersAnswererTest {
 
   @Test
   public void testGenerateRowsIke1Fail() {
-    // IPSecSession does not has IKE phase 1 proposal set
+    // IPSecSession does not have IKE phase 1 proposal set
     _graph.putEdgeValue(
         new Pair<>(_initiator, _ipsecStaticPeerConfigBuilder.build()),
         new Pair<>(_responder, _ipsecStaticPeerConfigBuilder.build()),
@@ -79,7 +79,7 @@ public class IpsecPeersAnswererTest {
 
   @Test
   public void testGenerateRowsIke1KeyFail() {
-    // IPSecSession does not has IKE phase 1 key set
+    // IPSecSession does not have IKE phase 1 key set
     _ipsecSession.setNegotiatedIkeP1Proposal(new IkePhase1Proposal("test_ike_proposal"));
     _graph.putEdgeValue(
         new Pair<>(_initiator, _ipsecStaticPeerConfigBuilder.build()),
@@ -103,9 +103,9 @@ public class IpsecPeersAnswererTest {
 
   @Test
   public void testGenerateRowsIpsec2Fail() {
-    // IPSecSession does not has IPsec phase 2 proposal set
+    // IPSecSession does not have IPSec phase 2 proposal set
     _ipsecSession.setNegotiatedIkeP1Proposal(new IkePhase1Proposal("test_ike_proposal"));
-    _ipsecSession.setNegotiatedIkePhase1Key(new IkePhase1Key());
+    _ipsecSession.setNegotiatedIkeP1Key(new IkePhase1Key());
     _graph.putEdgeValue(
         new Pair<>(_initiator, _ipsecStaticPeerConfigBuilder.build()),
         new Pair<>(_responder, _ipsecStaticPeerConfigBuilder.build()),
@@ -146,10 +146,10 @@ public class IpsecPeersAnswererTest {
 
   @Test
   public void testGenerateRowsIpsecEstablished() {
-    // IPSecSession does not has IPsec phase 2 proposal set
+    // IPSecSession does not have IPSec phase 2 proposal set
     _ipsecSession.setNegotiatedIkeP1Proposal(new IkePhase1Proposal("test_ike_proposal"));
-    _ipsecSession.setNegotiatedIkePhase1Key(new IkePhase1Key());
-    _ipsecSession.setNegotiatedIpsecPhase2Proposal(new IpsecPhase2Proposal());
+    _ipsecSession.setNegotiatedIkeP1Key(new IkePhase1Key());
+    _ipsecSession.setNegotiatedIpsecP2Proposal(new IpsecPhase2Proposal());
     _graph.putEdgeValue(
         new Pair<>(_initiator, _ipsecStaticPeerConfigBuilder.build()),
         new Pair<>(_responder, _ipsecStaticPeerConfigBuilder.build()),
