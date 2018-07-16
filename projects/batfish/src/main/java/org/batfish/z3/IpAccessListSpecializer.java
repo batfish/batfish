@@ -36,6 +36,9 @@ import org.batfish.datamodel.acl.TrueExpr;
 public abstract class IpAccessListSpecializer
     implements GenericAclLineMatchExprVisitor<AclLineMatchExpr> {
 
+  private static final IpAccessListLine FALSE_LINE =
+      IpAccessListLine.accepting().setMatchCondition(FALSE).build();
+
   private static <T> boolean emptyDisjuction(Collection<T> orig, Collection<T> specialized) {
     return orig != null && !orig.isEmpty() && specialized.isEmpty();
   }
@@ -62,8 +65,8 @@ public abstract class IpAccessListSpecializer
             .getLines()
             .stream()
             .map(this::specialize)
-            .filter(Optional::isPresent)
-            .map(Optional::get)
+            // replace unmatchable lines with FALSE_LINE to preserve line numbers
+            .map(line -> line.orElse(FALSE_LINE))
             .collect(Collectors.toList());
 
     return IpAccessList.builder()
