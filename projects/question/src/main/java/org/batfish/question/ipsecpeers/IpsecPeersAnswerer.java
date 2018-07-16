@@ -1,11 +1,11 @@
-package org.batfish.question.ipsecPeers;
+package org.batfish.question.ipsecpeers;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
-import static org.batfish.question.ipsecPeers.IpsecPeersAnswerer.IpsecPeeringStatus.IKE_PHASE1_FAILED;
-import static org.batfish.question.ipsecPeers.IpsecPeersAnswerer.IpsecPeeringStatus.IKE_PHASE1_KEY_NOT_MATCHING;
-import static org.batfish.question.ipsecPeers.IpsecPeersAnswerer.IpsecPeeringStatus.IPSEC_PHASE2_FAILED;
-import static org.batfish.question.ipsecPeers.IpsecPeersAnswerer.IpsecPeeringStatus.IPSEC_SESSION_ESTABLISHED;
-import static org.batfish.question.ipsecPeers.IpsecPeersAnswerer.IpsecPeeringStatus.MISSING_END_POINT;
+import static org.batfish.question.ipsecpeers.IpsecPeersAnswerer.IpsecPeeringStatus.IKE_PHASE1_FAILED;
+import static org.batfish.question.ipsecpeers.IpsecPeersAnswerer.IpsecPeeringStatus.IKE_PHASE1_KEY_MISMATCH;
+import static org.batfish.question.ipsecpeers.IpsecPeersAnswerer.IpsecPeeringStatus.IPSEC_PHASE2_FAILED;
+import static org.batfish.question.ipsecpeers.IpsecPeersAnswerer.IpsecPeeringStatus.IPSEC_SESSION_ESTABLISHED;
+import static org.batfish.question.ipsecpeers.IpsecPeersAnswerer.IpsecPeeringStatus.MISSING_END_POINT;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashMultiset;
@@ -25,6 +25,7 @@ import org.batfish.datamodel.IpsecPeerConfig;
 import org.batfish.datamodel.IpsecSession;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.ColumnMetadata;
@@ -33,11 +34,11 @@ import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
 
 class IpsecPeersAnswerer extends Answerer {
-  private static final String COL_INITIATOR = "Initiator";
-  private static final String COL_INIT_INTERFACE_IP = "InitiatorInterfaceAndIp";
-  private static final String COL_RESPONDER = "Responder";
-  private static final String COL_RESPONDER_INTERFACE_IP = "ResponderInterfaceAndIp";
-  private static final String COL_STATUS = "status";
+  static final String COL_INITIATOR = "Initiator";
+  static final String COL_INIT_INTERFACE_IP = "InitiatorInterfaceAndIp";
+  static final String COL_RESPONDER = "Responder";
+  static final String COL_RESPONDER_INTERFACE_IP = "ResponderInterfaceAndIp";
+  static final String COL_STATUS = "status";
   private static final String COL_TUNNEL_INTERFACE = "TunnelInterface";
   private static final String NOT_APPLICABLE = "Not Applicable";
 
@@ -74,13 +75,16 @@ class IpsecPeersAnswerer extends Answerer {
         continue;
       }
       Row.RowBuilder rowBuilder = Row.builder();
-      rowBuilder.put(COL_INITIATOR, node.getFirst().getHostname());
+
+      rowBuilder.put(COL_INITIATOR, new Node(node.getFirst().getHostname()));
       rowBuilder.put(
           COL_INIT_INTERFACE_IP,
           String.format(
               "%s:%s",
               node.getSecond().getPhysicalInterface(), node.getSecond().getLocalAddress()));
+
       Set<Pair<Configuration, IpsecPeerConfig>> neigbors = ipsecTopology.adjacentNodes(node);
+
       if (neigbors.isEmpty()) {
         rowBuilder.put(COL_STATUS, MISSING_END_POINT);
         rowBuilder.put(
@@ -89,6 +93,7 @@ class IpsecPeersAnswerer extends Answerer {
         rows.add(rowBuilder.build());
         continue;
       }
+
       for (Pair<Configuration, IpsecPeerConfig> neighbor : neigbors) {
         if (!responderNodes.contains(neighbor.getFirst().getHostname())) {
           continue;
@@ -97,36 +102,44 @@ class IpsecPeersAnswerer extends Answerer {
         if (ipsecSession == null) {
           continue;
         }
-        rowBuilder.put(COL_RESPONDER, neighbor.getFirst().getHostname());
-        rowBuilder.put(
-            COL_RESPONDER_INTERFACE_IP,
-            String.format(
-                "%s:%s",
-                neighbor.getSecond().getPhysicalInterface(),
-                neighbor.getSecond().getLocalAddress()));
-        rowBuilder.put(COL_TUNNEL_INTERFACE, NOT_APPLICABLE);
-        if (node.getSecond().getTunnelInterface() != null
-            && node.getSecond().getTunnelInterface() != null) {
-          rowBuilder.put(
-              COL_TUNNEL_INTERFACE,
-              String.format(
-                  "%s:%s",
-                  node.getSecond().getTunnelInterface(),
-                  neighbor.getSecond().getTunnelInterface()));
-        }
-        if (ipsecSession.getNegotiatedIkeP1Proposal() == null) {
-          rowBuilder.put(COL_STATUS, IKE_PHASE1_FAILED);
-        } else if (ipsecSession.getNegotiatedIkePhase1Key() == null) {
-          rowBuilder.put(COL_STATUS, IKE_PHASE1_KEY_NOT_MATCHING);
-        } else if (ipsecSession.getNegotiatedIpsecPhase2Proposal() == null) {
-          rowBuilder.put(COL_STATUS, IPSEC_PHASE2_FAILED);
-        } else {
-          rowBuilder.put(COL_STATUS, IPSEC_SESSION_ESTABLISHED);
-        }
+        processNeighbor(rowBuilder, node, neighbor, ipsecTopology, ipsecSession);
         rows.add(rowBuilder.build());
       }
     }
     return rows;
+  }
+
+  private static void processNeighbor(
+      Row.RowBuilder rowBuilder,
+      Pair<Configuration, IpsecPeerConfig> node,
+      Pair<Configuration, IpsecPeerConfig> neighbor,
+      ValueGraph<Pair<Configuration, IpsecPeerConfig>, IpsecSession> ipsecTopology,
+      IpsecSession ipsecSession) {
+
+    rowBuilder.put(COL_RESPONDER, new Node(neighbor.getFirst().getHostname()));
+    rowBuilder.put(
+        COL_RESPONDER_INTERFACE_IP,
+        String.format(
+            "%s:%s",
+            neighbor.getSecond().getPhysicalInterface(), neighbor.getSecond().getLocalAddress()));
+    rowBuilder.put(COL_TUNNEL_INTERFACE, NOT_APPLICABLE);
+    if (node.getSecond().getTunnelInterface() != null
+        && node.getSecond().getTunnelInterface() != null) {
+      rowBuilder.put(
+          COL_TUNNEL_INTERFACE,
+          String.format(
+              "%s:%s",
+              node.getSecond().getTunnelInterface(), neighbor.getSecond().getTunnelInterface()));
+    }
+    if (ipsecSession.getNegotiatedIkeP1Proposal() == null) {
+      rowBuilder.put(COL_STATUS, IKE_PHASE1_FAILED);
+    } else if (ipsecSession.getNegotiatedIkePhase1Key() == null) {
+      rowBuilder.put(COL_STATUS, IKE_PHASE1_KEY_MISMATCH);
+    } else if (ipsecSession.getNegotiatedIpsecPhase2Proposal() == null) {
+      rowBuilder.put(COL_STATUS, IPSEC_PHASE2_FAILED);
+    } else {
+      rowBuilder.put(COL_STATUS, IPSEC_SESSION_ESTABLISHED);
+    }
   }
 
   /** Create table metadata for this answer. */
@@ -140,7 +153,6 @@ class IpsecPeersAnswerer extends Answerer {
             COL_INIT_INTERFACE_IP,
             COL_RESPONDER,
             COL_RESPONDER_INTERFACE_IP,
-            COL_TUNNEL_INTERFACE,
             COL_STATUS));
     return new TableMetadata(columnMetadata, displayHints);
   }
@@ -159,7 +171,7 @@ class IpsecPeersAnswerer extends Answerer {
   public enum IpsecPeeringStatus {
     IPSEC_SESSION_ESTABLISHED,
     IKE_PHASE1_FAILED,
-    IKE_PHASE1_KEY_NOT_MATCHING,
+    IKE_PHASE1_KEY_MISMATCH,
     IPSEC_PHASE2_FAILED,
     MISSING_END_POINT
   }

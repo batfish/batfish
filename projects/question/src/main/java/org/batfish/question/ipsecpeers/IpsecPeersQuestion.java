@@ -1,4 +1,4 @@
-package org.batfish.question.ipsecPeers;
+package org.batfish.question.ipsecpeers;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;

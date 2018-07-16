@@ -1,4 +1,4 @@
-package org.batfish.question.ipsecPeers;
+package org.batfish.question.ipsecpeers;
 
 import com.google.auto.service.AutoService;
 import org.batfish.common.plugin.IBatfish;
