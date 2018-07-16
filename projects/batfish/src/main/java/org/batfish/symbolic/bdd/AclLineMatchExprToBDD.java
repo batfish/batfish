@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
@@ -55,10 +54,6 @@ public class AclLineMatchExprToBDD implements GenericAclLineMatchExprVisitor<BDD
     _bddOps = new BDDOps(factory);
     _namedIpSpaces = ImmutableMap.copyOf(namedIpSpaces);
     _packet = packet;
-  }
-
-  public @Nonnull BDD toBDD(AclLineMatchExpr expr) {
-    return expr.accept(this);
   }
 
   private @Nullable BDD toBDD(Collection<Integer> ints, BDDInteger var) {
@@ -147,32 +142,32 @@ public class AclLineMatchExprToBDD implements GenericAclLineMatchExprVisitor<BDD
     HeaderSpace headerSpace = matchHeaderSpace.getHeaderspace();
     return _bddOps.and(
         toBDD(headerSpace.getDstIps(), _packet.getDstIp()),
-        BDDOps.notDefaultNull(toBDD(headerSpace.getNotDstIps(), _packet.getDstIp())),
+        BDDOps.negateIfNonNull(toBDD(headerSpace.getNotDstIps(), _packet.getDstIp())),
         toBDD(headerSpace.getSrcIps(), _packet.getSrcIp()),
-        BDDOps.notDefaultNull(toBDD(headerSpace.getNotSrcIps(), _packet.getSrcIp())),
+        BDDOps.negateIfNonNull(toBDD(headerSpace.getNotSrcIps(), _packet.getSrcIp())),
         BDDOps.orNull(
             toBDD(headerSpace.getSrcOrDstIps(), _packet.getDstIp()),
             toBDD(headerSpace.getSrcOrDstIps(), _packet.getSrcIp())),
         toBDD(headerSpace.getDstPorts(), _packet.getDstPort()),
-        BDDOps.notDefaultNull(toBDD(headerSpace.getNotDstPorts(), _packet.getDstPort())),
+        BDDOps.negateIfNonNull(toBDD(headerSpace.getNotDstPorts(), _packet.getDstPort())),
         toBDD(headerSpace.getSrcPorts(), _packet.getSrcPort()),
-        BDDOps.notDefaultNull(toBDD(headerSpace.getNotSrcPorts(), _packet.getSrcPort())),
+        BDDOps.negateIfNonNull(toBDD(headerSpace.getNotSrcPorts(), _packet.getSrcPort())),
         BDDOps.orNull(
             toBDD(headerSpace.getSrcOrDstPorts(), _packet.getSrcPort()),
             toBDD(headerSpace.getSrcOrDstPorts(), _packet.getDstPort())),
         toBDD(headerSpace.getTcpFlags()),
         toBDD(headerSpace.getIcmpCodes(), _packet.getIcmpCode()),
-        BDDOps.notDefaultNull(toBDD(headerSpace.getNotIcmpCodes(), _packet.getIcmpCode())),
+        BDDOps.negateIfNonNull(toBDD(headerSpace.getNotIcmpCodes(), _packet.getIcmpCode())),
         toBDD(headerSpace.getIcmpTypes(), _packet.getIcmpType()),
-        BDDOps.notDefaultNull(toBDD(headerSpace.getIcmpTypes(), _packet.getIcmpType())),
+        BDDOps.negateIfNonNull(toBDD(headerSpace.getIcmpTypes(), _packet.getIcmpType())),
         toBDD(headerSpace.getIpProtocols()),
-        BDDOps.notDefaultNull(toBDD(headerSpace.getNotIpProtocols())),
+        BDDOps.negateIfNonNull(toBDD(headerSpace.getNotIpProtocols())),
         toBDD(headerSpace.getDscps(), _packet.getDscp()),
-        BDDOps.notDefaultNull(toBDD(headerSpace.getNotDscps(), _packet.getDscp())),
+        BDDOps.negateIfNonNull(toBDD(headerSpace.getNotDscps(), _packet.getDscp())),
         toBDD(headerSpace.getEcns(), _packet.getEcn()),
-        BDDOps.notDefaultNull(toBDD(headerSpace.getNotEcns(), _packet.getEcn())),
+        BDDOps.negateIfNonNull(toBDD(headerSpace.getNotEcns(), _packet.getEcn())),
         toBDD(headerSpace.getFragmentOffsets(), _packet.getFragmentOffset()),
-        BDDOps.notDefaultNull(
+        BDDOps.negateIfNonNull(
             toBDD(headerSpace.getNotFragmentOffsets(), _packet.getFragmentOffset())),
         toBDD(
             headerSpace.getStates().stream().map(s -> s.number()).collect(Collectors.toList()),
@@ -200,7 +195,7 @@ public class AclLineMatchExprToBDD implements GenericAclLineMatchExprVisitor<BDD
         orMatchExpr
             .getDisjuncts()
             .stream()
-            .map(this::toBDD)
+            .map(this::visit)
             .collect(ImmutableList.toImmutableList()));
   }
 

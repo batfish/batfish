@@ -191,6 +191,7 @@ public class BDDPacket {
     idx += FRAGMENT_OFFSET_LENGTH;
     _state = BDDInteger.makeFromIndex(factory, STATE_LENGTH, idx, false);
     addBitNames("state", STATE_LENGTH, idx, false);
+    idx += STATE_LENGTH;
   }
 
   /*
