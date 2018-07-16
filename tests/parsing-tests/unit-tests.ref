@@ -55965,6 +55965,15 @@
               ],
               "numReferrers" : 1
             }
+          },
+          "zone-pair security" : {
+            "zp1" : {
+              "definitionLines" : [
+                4,
+                5
+              ],
+              "numReferrers" : 0
+            }
           }
         },
         "cisco_aaa" : { },
