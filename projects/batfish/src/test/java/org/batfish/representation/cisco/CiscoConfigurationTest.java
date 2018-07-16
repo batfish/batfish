@@ -4,6 +4,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.ImmutableList;
 import java.util.Collections;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Ip;
@@ -48,7 +49,8 @@ public class CiscoConfigurationTest {
         _config.processSourceNat(
             nat,
             _interface,
-            Collections.singletonMap(ACL, new IpAccessList(ACL, Collections.emptyList())));
+            Collections.singletonMap(
+                ACL, IpAccessList.builder().setName(ACL).setLines(ImmutableList.of()).build()));
 
     assertThat(convertedNat, notNullValue());
     assertThat(convertedNat.getAcl().getName(), equalTo(ACL));

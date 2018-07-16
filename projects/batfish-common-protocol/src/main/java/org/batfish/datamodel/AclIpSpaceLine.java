@@ -8,6 +8,7 @@ import java.io.Serializable;
 import java.util.Comparator;
 import java.util.Objects;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public class AclIpSpaceLine implements Comparable<AclIpSpaceLine>, Serializable {
 
@@ -17,12 +18,14 @@ public class AclIpSpaceLine implements Comparable<AclIpSpaceLine>, Serializable 
 
     private IpSpace _ipSpace;
 
+    private String _srcText;
+
     private Builder() {
       _action = LineAction.ACCEPT;
     }
 
     public AclIpSpaceLine build() {
-      return new AclIpSpaceLine(_ipSpace, _action);
+      return new AclIpSpaceLine(_ipSpace, _action, _srcText);
     }
 
     public Builder setAction(@Nonnull LineAction action) {
@@ -34,6 +37,11 @@ public class AclIpSpaceLine implements Comparable<AclIpSpaceLine>, Serializable 
       _ipSpace = ipSpace;
       return this;
     }
+
+    public Builder setSrcText(@Nullable String srcText) {
+      _srcText = srcText;
+      return this;
+    }
   }
 
   public static final AclIpSpaceLine DENY_ALL = AclIpSpaceLine.reject(UniverseIpSpace.INSTANCE);
@@ -43,6 +51,8 @@ public class AclIpSpaceLine implements Comparable<AclIpSpaceLine>, Serializable 
   private static final String PROP_ACTION = "action";
 
   private static final String PROP_IP_SPACE = "ipSpace";
+
+  private static final String PROP_SRC_TEXT = "srcText";
 
   /** */
   private static final long serialVersionUID = 1L;
@@ -63,12 +73,16 @@ public class AclIpSpaceLine implements Comparable<AclIpSpaceLine>, Serializable 
 
   private final IpSpace _ipSpace;
 
+  private final String _srcText;
+
   @JsonCreator
   private AclIpSpaceLine(
       @JsonProperty(PROP_IP_SPACE) @Nonnull IpSpace ipSpace,
-      @JsonProperty(PROP_ACTION) @Nonnull LineAction action) {
+      @JsonProperty(PROP_ACTION) @Nonnull LineAction action,
+      @JsonProperty(PROP_SRC_TEXT) String srcText) {
     _ipSpace = ipSpace;
     _action = action;
+    _srcText = srcText;
   }
 
   @Override
@@ -98,6 +112,11 @@ public class AclIpSpaceLine implements Comparable<AclIpSpaceLine>, Serializable 
   @JsonProperty(PROP_IP_SPACE)
   public IpSpace getIpSpace() {
     return _ipSpace;
+  }
+
+  @JsonProperty(PROP_SRC_TEXT)
+  public String getSrcText() {
+    return _srcText;
   }
 
   @Override

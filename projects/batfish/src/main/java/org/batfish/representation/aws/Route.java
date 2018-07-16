@@ -166,13 +166,19 @@ public class Route implements Serializable {
                     .getIpAccessLists()
                     .getOrDefault(
                         Region.SG_INGRESS_ACL_NAME,
-                        new IpAccessList(Region.SG_INGRESS_ACL_NAME, new LinkedList<>())));
+                        IpAccessList.builder()
+                            .setName(Region.SG_INGRESS_ACL_NAME)
+                            .setLines(new LinkedList<>())
+                            .build()));
             instanceIface.setOutgoingFilter(
                 instanceCfgNode
                     .getIpAccessLists()
                     .getOrDefault(
                         Region.SG_EGRESS_ACL_NAME,
-                        new IpAccessList(Region.SG_EGRESS_ACL_NAME, new LinkedList<>())));
+                        IpAccessList.builder()
+                            .setName(Region.SG_EGRESS_ACL_NAME)
+                            .setLines(new LinkedList<>())
+                            .build()));
             Ip nextHopIp = instanceIfaceAddress.getIp();
             srBuilder.setNextHopIp(nextHopIp);
           }

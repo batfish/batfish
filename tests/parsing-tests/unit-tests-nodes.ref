@@ -703,7 +703,9 @@
                 },
                 "name" : "20 deny ip any any"
               }
-            ]
+            ],
+            "sourceName" : "abcd",
+            "sourceType" : "extended ipv4 access-list"
           }
         },
         "vendorFamily" : {
@@ -1024,7 +1026,9 @@
                 },
                 "name" : "10 permit 1.2.4.8/16"
               }
-            ]
+            ],
+            "sourceName" : "sshabc",
+            "sourceType" : "standard ipv4 access-list"
           }
         },
         "vendorFamily" : {
@@ -1613,7 +1617,9 @@
                 },
                 "name" : "permit host 0.0.0.0"
               }
-            ]
+            ],
+            "sourceName" : "Local_LAN_Access",
+            "sourceType" : "standard ipv4 access-list"
           },
           "outside" : {
             "name" : "outside",
@@ -1643,7 +1649,9 @@
                 },
                 "name" : "permit tcp object-group drawbridge_hosts interface outside eq https"
               }
-            ]
+            ],
+            "sourceName" : "outside",
+            "sourceType" : "extended ipv4 access-list"
           },
           "outside_in" : {
             "name" : "outside_in",
@@ -1672,7 +1680,9 @@
                 },
                 "name" : "permit udp any4 host 1.2.3.4 eq tftp"
               }
-            ]
+            ],
+            "sourceName" : "outside_in",
+            "sourceType" : "extended ipv4 access-list"
           }
         },
         "vendorFamily" : {
@@ -3262,7 +3272,9 @@
                 },
                 "name" : "permit 1.2.3.0 0.0.0.255"
               }
-            ]
+            ],
+            "sourceName" : "50",
+            "sourceType" : "standard ipv4 access-list"
           },
           "51" : {
             "name" : "51",
@@ -3303,7 +3315,9 @@
                 },
                 "name" : "deny   any"
               }
-            ]
+            ],
+            "sourceName" : "51",
+            "sourceType" : "standard ipv4 access-list"
           },
           "99" : {
             "name" : "99",
@@ -3326,7 +3340,9 @@
                 },
                 "name" : "permit 3.4.5.6"
               }
-            ]
+            ],
+            "sourceName" : "99",
+            "sourceType" : "standard ipv4 access-list"
           }
         },
         "vendorFamily" : {
@@ -4794,7 +4810,9 @@
                 },
                 "name" : "270 permit tcp any any eq microsoft-ds 5432"
               }
-            ]
+            ],
+            "sourceName" : "BLAH-BLAH",
+            "sourceType" : "extended ipv4 access-list"
           },
           "blah" : {
             "name" : "blah",
@@ -4817,13 +4835,19 @@
                 },
                 "name" : "10 permit ip any any"
               }
-            ]
+            ],
+            "sourceName" : "blah",
+            "sourceType" : "extended ipv4 access-list"
           },
           "extended" : {
-            "name" : "extended"
+            "name" : "extended",
+            "sourceName" : "extended",
+            "sourceType" : "extended ipv4 access-list"
           },
           "standard" : {
-            "name" : "standard"
+            "name" : "standard",
+            "sourceName" : "standard",
+            "sourceType" : "extended ipv4 access-list"
           }
         },
         "routeFilterLists" : {
@@ -6244,7 +6268,9 @@
                 },
                 "name" : "permit tcp any host 1.1.1.1 eq 65111"
               }
-            ]
+            ],
+            "sourceName" : "bippety",
+            "sourceType" : "extended ipv4 access-list"
           },
           "bloop_blop" : {
             "name" : "bloop_blop",
@@ -6273,7 +6299,9 @@
                 },
                 "name" : "permit tcp addrgroup bleep_blorp any eq 13000"
               }
-            ]
+            ],
+            "sourceName" : "bloop_blop",
+            "sourceType" : "extended ipv4 access-list"
           }
         },
         "vendorFamily" : {
@@ -7041,7 +7069,9 @@
                 },
                 "name" : "10 permit tcp any any"
               }
-            ]
+            ],
+            "sourceName" : "abc",
+            "sourceType" : "extended ipv4 access-list"
           }
         },
         "vendorFamily" : {
@@ -8501,7 +8531,9 @@
                   ]
                 }
               }
-            ]
+            ],
+            "sourceName" : "SVCGRP-ICMP",
+            "sourceType" : "object-group service"
           }
         },
         "vendorFamily" : {
@@ -8671,7 +8703,9 @@
                 },
                 "name" : "10 permit icmp any any"
               }
-            ]
+            ],
+            "sourceName" : "copp-system-acl-icmp",
+            "sourceType" : "extended ipv4 access-list"
           }
         },
         "vendorFamily" : {
@@ -9164,7 +9198,27 @@
                 },
                 "name" : "class-default action: ACCEPT"
               }
-            ]
+            ],
+            "sourceName" : "pminspect",
+            "sourceType" : "policy-map type inspect"
+          }
+        },
+        "ipSpaceMetadata" : {
+          "1.2.3.4-24" : {
+            "sourceName" : "1.2.3.4-24",
+            "sourceType" : "object-group network"
+          },
+          "dns_servers" : {
+            "sourceName" : "dns_servers",
+            "sourceType" : "object-group network"
+          },
+          "ntp_servers" : {
+            "sourceName" : "ntp_servers",
+            "sourceType" : "object-group network"
+          },
+          "obj_any" : {
+            "sourceName" : "obj_any",
+            "sourceType" : "object network"
           }
         },
         "ipSpaces" : {
@@ -9775,7 +9829,9 @@
                 },
                 "name" : "permit ip any any"
               }
-            ]
+            ],
+            "sourceName" : "blah",
+            "sourceType" : "extended ipv4 access-list"
           }
         },
         "vendorFamily" : {
@@ -9819,7 +9875,9 @@
                 },
                 "name" : "permit any"
               }
-            ]
+            ],
+            "sourceName" : "1",
+            "sourceType" : "standard ipv4 access-list"
           }
         },
         "vendorFamily" : {
@@ -13406,7 +13464,9 @@
                 },
                 "name" : "bar"
               }
-            ]
+            ],
+            "sourceName" : "foo",
+            "sourceType" : "firewall filter"
           }
         },
         "vendorFamily" : {
@@ -14334,7 +14394,9 @@
                 },
                 "name" : "blorp"
               }
-            ]
+            ],
+            "sourceName" : "blah",
+            "sourceType" : "firewall filter"
           }
         },
         "vendorFamily" : {
@@ -15329,7 +15391,9 @@
                 },
                 "name" : "123-4"
               }
-            ]
+            ],
+            "sourceName" : "~FROM_ZONE~A~TO_ZONE~B",
+            "sourceType" : "firewall filter"
           },
           "~GLOBAL_SECURITY_POLICY~" : {
             "name" : "~GLOBAL_SECURITY_POLICY~",
@@ -15344,7 +15408,9 @@
                 },
                 "name" : "p1"
               }
-            ]
+            ],
+            "sourceName" : "~GLOBAL_SECURITY_POLICY~",
+            "sourceType" : "firewall filter"
           }
         },
         "ipSpaces" : {
@@ -17124,13 +17190,19 @@
                 },
                 "name" : "10 permit ip any any"
               }
-            ]
+            ],
+            "sourceName" : "blah",
+            "sourceType" : "extended ipv4 access-list"
           },
           "extended" : {
-            "name" : "extended"
+            "name" : "extended",
+            "sourceName" : "extended",
+            "sourceType" : "extended ipv4 access-list"
           },
           "standard" : {
-            "name" : "standard"
+            "name" : "standard",
+            "sourceName" : "standard",
+            "sourceType" : "extended ipv4 access-list"
           }
         },
         "vendorFamily" : {
@@ -23183,7 +23255,9 @@
                 },
                 "name" : "permit tcp 1.2.3.4/31 any fin ack"
               }
-            ]
+            ],
+            "sourceName" : "100",
+            "sourceType" : "extended ipv4 access-list"
           }
         },
         "vendorFamily" : {
