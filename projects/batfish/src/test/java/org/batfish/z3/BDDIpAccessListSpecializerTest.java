@@ -1,5 +1,6 @@
 package org.batfish.z3;
 
+import static org.batfish.datamodel.IpAccessListLine.acceptingHeaderSpace;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.TRUE;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.match;
 import static org.hamcrest.Matchers.equalTo;
@@ -100,7 +101,7 @@ public class BDDIpAccessListSpecializerTest {
   @Test
   public void testSpecializeIpAccessListLine_singleSrc() {
     IpAccessListLine ipAccessListLine =
-        IpAccessListLine.acceptingHeaderSpace(
+        acceptingHeaderSpace(
             HeaderSpace.builder().setSrcIps(new IpWildcard("1.2.3.0/24").toIpSpace()).build());
 
     assertThat(
@@ -155,7 +156,14 @@ public class BDDIpAccessListSpecializerTest {
                 HeaderSpace.builder(),
                 ImmutableList.of(new SubRange(0, 10), new SubRange(250, 300)))
             .build();
+    // all subranges removed
     assertThat(specializer.specialize(original), equalTo(UNCONSTRAINED));
+
+    /*
+     * Since none of the choices from the original headerspace is matchable, the line itself is
+     * unmatchable and can be removed.
+     */
+    assertThat(specializer.specialize(acceptingHeaderSpace(original)), equalTo(Optional.empty()));
   }
 
   @Test

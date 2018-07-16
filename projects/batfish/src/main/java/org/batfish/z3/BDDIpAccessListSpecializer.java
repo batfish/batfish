@@ -5,7 +5,6 @@ import com.google.common.collect.ImmutableSortedSet;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.SortedSet;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
@@ -97,12 +96,9 @@ public final class BDDIpAccessListSpecializer extends IpAccessListSpecializer {
         ? null
         : ipProtocols
             .stream()
-            .map(
+            .filter(
                 ipProtocol ->
-                    _headerSpaceBDD.and(_pkt.getIpProtocol().value(ipProtocol.number())).isZero()
-                        ? null
-                        : ipProtocol)
-            .filter(Objects::nonNull)
+                    !_headerSpaceBDD.and(_pkt.getIpProtocol().value(ipProtocol.number())).isZero())
             .collect(ImmutableSortedSet.toImmutableSortedSet(ipProtocols.comparator()));
   }
 
@@ -113,14 +109,14 @@ public final class BDDIpAccessListSpecializer extends IpAccessListSpecializer {
         ? null
         : subRanges
             .stream()
-            .map(
+            .filter(
                 subRange ->
+                    /*
+                     * If none of the vars can match this subRange, remove it.
+                     */
                     varList
-                            .stream()
-                            .allMatch(var -> _headerSpaceBDD.and(toBDD(subRange, var)).isZero())
-                        ? null
-                        : subRange)
-            .filter(Objects::nonNull)
+                        .stream()
+                        .anyMatch(var -> !_headerSpaceBDD.and(toBDD(subRange, var)).isZero()))
             .collect(ImmutableSortedSet.toImmutableSortedSet(subRanges.comparator()));
   }
 
@@ -133,7 +129,7 @@ public final class BDDIpAccessListSpecializer extends IpAccessListSpecializer {
         ? null
         : tcpFlags
             .stream()
-            .map(
+            .filter(
                 flags -> {
                   BDD flagsBDD =
                       BDDOps.andNull(
@@ -144,9 +140,8 @@ public final class BDDIpAccessListSpecializer extends IpAccessListSpecializer {
                           tcpFlagBDD(flags.getUsePsh(), flags.getPsh(), _pkt.getTcpPsh()),
                           tcpFlagBDD(flags.getUseRst(), flags.getRst(), _pkt.getTcpRst()),
                           tcpFlagBDD(flags.getUseUrg(), flags.getUrg(), _pkt.getTcpUrg()));
-                  return flagsBDD == null || _headerSpaceBDD.and(flagsBDD).isZero() ? null : flags;
+                  return flagsBDD != null && !_headerSpaceBDD.and(flagsBDD).isZero();
                 })
-            .filter(Objects::nonNull)
             .collect(ImmutableList.toImmutableList());
   }
 
