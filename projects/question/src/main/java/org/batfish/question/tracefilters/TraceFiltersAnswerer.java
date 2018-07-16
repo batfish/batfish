@@ -96,7 +96,8 @@ public class TraceFiltersAnswerer extends Answerer {
                 flow,
                 question.getIngressInterface(),
                 c.getIpAccessLists(),
-                c.getIpSpaces());
+                c.getIpSpaces(),
+                c.getIpSpaceMetadata());
         FilterResult result =
             filter.filter(
                 flow, question.getIngressInterface(), c.getIpAccessLists(), c.getIpSpaces());

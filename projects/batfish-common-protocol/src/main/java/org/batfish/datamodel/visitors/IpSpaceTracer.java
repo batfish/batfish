@@ -23,13 +23,19 @@ import org.batfish.datamodel.acl.AclTracer;
  */
 public class IpSpaceTracer implements GenericIpSpaceVisitor<Boolean> {
 
+  private final IpSpaceDescriber _ipSpaceDescriber;
+
   private final Ip _ip;
 
   private final AclTracer _aclTracer;
 
-  public IpSpaceTracer(AclTracer aclTracer, Ip ip) {
+  private final String _ipDescription;
+
+  public IpSpaceTracer(AclTracer aclTracer, Ip ip, String ipDescription) {
     _aclTracer = aclTracer;
     _ip = ip;
+    _ipDescription = ipDescription;
+    _ipSpaceDescriber = new IpSpaceDescriber(aclTracer);
   }
 
   @Override
@@ -45,13 +51,21 @@ public class IpSpaceTracer implements GenericIpSpaceVisitor<Boolean> {
       AclIpSpaceLine line = lines.get(i);
       if (line.getIpSpace().accept(this)) {
         if (name != null) {
-          _aclTracer.recordAction(name, i, line);
+          _aclTracer.recordAction(
+              name,
+              _aclTracer.getIpSpaceMetadata().get(aclIpSpace),
+              i,
+              line,
+              _ip,
+              _ipDescription,
+              _ipSpaceDescriber);
         }
         return line.getAction() == LineAction.ACCEPT;
       }
     }
     if (name != null) {
-      _aclTracer.recordDefaultDeny(name);
+      _aclTracer.recordDefaultDeny(
+          name, _aclTracer.getIpSpaceMetadata().get(aclIpSpace), _ip, _ipDescription);
     }
     return false;
   }
@@ -81,7 +95,13 @@ public class IpSpaceTracer implements GenericIpSpaceVisitor<Boolean> {
     boolean result = ipSpace.containsIp(_ip, _aclTracer.getNamedIpSpaces());
     String name = _aclTracer.getIpSpaceNames().get(ipSpace);
     if (name != null) {
-      _aclTracer.recordNamedIpSpaceAction(name, ipSpace.toString(), result);
+      _aclTracer.recordNamedIpSpaceAction(
+          name,
+          ipSpace.accept(_ipSpaceDescriber),
+          _aclTracer.getIpSpaceMetadata().get(ipSpace),
+          result,
+          _ip,
+          _ipDescription);
     }
     return result;
   }

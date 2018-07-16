@@ -5,7 +5,10 @@ import static org.batfish.representation.palo_alto.PaloAltoConfiguration.DEFAULT
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.SHARED_VSYS_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.computeObjectName;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.INTERFACE;
+import static org.batfish.representation.palo_alto.PaloAltoStructureType.SERVICE_GROUP;
+import static org.batfish.representation.palo_alto.PaloAltoStructureType.SERVICE_OR_SERVICE_GROUP;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ZONE;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.SERVICE_GROUP_MEMBER;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.VIRTUAL_ROUTER_INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.ZONE_INTERFACE;
 
@@ -20,8 +23,11 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.Prefix;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Palo_alto_configurationContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.S_serviceContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.S_service_groupContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_sharedContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_vsysContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_zoneContext;
@@ -45,6 +51,11 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Snvrrt_destinationContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snvrrt_interfaceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snvrrt_metricContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snvrrt_nexthopContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sserv_descriptionContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sserv_portContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sserv_protocolContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sserv_source_portContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sservgrp_membersContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ssl_syslogContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ssls_serverContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sslss_serverContext;
@@ -52,6 +63,10 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Szn_layer3Context;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Variable_list_itemContext;
 import org.batfish.representation.palo_alto.Interface;
 import org.batfish.representation.palo_alto.PaloAltoConfiguration;
+import org.batfish.representation.palo_alto.PaloAltoStructureType;
+import org.batfish.representation.palo_alto.Service;
+import org.batfish.representation.palo_alto.ServiceGroup;
+import org.batfish.representation.palo_alto.ServiceOrServiceGroupReference;
 import org.batfish.representation.palo_alto.StaticRoute;
 import org.batfish.representation.palo_alto.SyslogServer;
 import org.batfish.representation.palo_alto.VirtualRouter;
@@ -69,6 +84,10 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   private boolean _currentNtpServerPrimary;
 
   private Interface _currentParentInterface;
+
+  private Service _currentService;
+
+  private ServiceGroup _currentServiceGroup;
 
   private StaticRoute _currentStaticRoute;
 
@@ -168,6 +187,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void enterPalo_alto_configuration(Palo_alto_configurationContext ctx) {
     _configuration = new PaloAltoConfiguration(_unimplementedFeatures);
+    _configuration.getVirtualSystems().computeIfAbsent(SHARED_VSYS_NAME, Vsys::new);
     _defaultVsys = _configuration.getVirtualSystems().computeIfAbsent(DEFAULT_VSYS_NAME, Vsys::new);
     _currentVsys = _defaultVsys;
   }
@@ -335,6 +355,79 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void exitSnvrrt_nexthop(Snvrrt_nexthopContext ctx) {
     _currentStaticRoute.setNextHopIp(new Ip(ctx.address.getText()));
+  }
+
+  @Override
+  public void enterS_service(S_serviceContext ctx) {
+    String name = ctx.name.getText();
+    _currentService = _currentVsys.getServices().computeIfAbsent(name, Service::new);
+
+    // Use constructed service name so same-named defs across vsys are unique
+    String uniqueName = computeObjectName(_currentVsys.getName(), name);
+    defineStructure(PaloAltoStructureType.SERVICE, uniqueName, ctx);
+  }
+
+  @Override
+  public void exitS_service(S_serviceContext ctx) {
+    _currentService = null;
+  }
+
+  @Override
+  public void exitSserv_description(Sserv_descriptionContext ctx) {
+    _currentService.setDescription(getText(ctx.description));
+  }
+
+  @Override
+  public void exitSserv_port(Sserv_portContext ctx) {
+    for (TerminalNode item : ctx.variable_comma_separated_dec().DEC()) {
+      _currentService.getPorts().add(toInteger(item.getSymbol()));
+    }
+  }
+
+  @Override
+  public void exitSserv_protocol(Sserv_protocolContext ctx) {
+    if (ctx.SCTP() != null) {
+      _currentService.setProtocol(IpProtocol.SCTP);
+    } else if (ctx.TCP() != null) {
+      _currentService.setProtocol(IpProtocol.TCP);
+    } else if (ctx.UDP() != null) {
+      _currentService.setProtocol(IpProtocol.UDP);
+    }
+  }
+
+  @Override
+  public void exitSserv_source_port(Sserv_source_portContext ctx) {
+    for (TerminalNode item : ctx.variable_comma_separated_dec().DEC()) {
+      _currentService.getSourcePorts().add(toInteger(item.getSymbol()));
+    }
+  }
+
+  @Override
+  public void enterS_service_group(S_service_groupContext ctx) {
+    String name = ctx.name.getText();
+    _currentServiceGroup = _currentVsys.getServiceGroups().computeIfAbsent(name, ServiceGroup::new);
+
+    // Use constructed service-group name so same-named defs across vsys are unique
+    String uniqueName = computeObjectName(_currentVsys.getName(), name);
+    defineStructure(SERVICE_GROUP, uniqueName, ctx);
+  }
+
+  @Override
+  public void exitS_service_group(S_service_groupContext ctx) {
+    _currentServiceGroup = null;
+  }
+
+  @Override
+  public void exitSservgrp_members(Sservgrp_membersContext ctx) {
+    for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
+      String name = getText(var);
+      _currentServiceGroup.getReferences().add(new ServiceOrServiceGroupReference(name));
+
+      // Use constructed object name so same-named refs across vsys are unique
+      String uniqueName = computeObjectName(_currentVsys.getName(), name);
+      _configuration.referenceStructure(
+          SERVICE_OR_SERVICE_GROUP, uniqueName, SERVICE_GROUP_MEMBER, getLine(var.getStart()));
+    }
   }
 
   @Override

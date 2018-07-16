@@ -8,11 +8,11 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IsisInterfaceSettings;
 import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.isis.IsisInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
@@ -159,6 +159,17 @@ final class InterfaceMatchersImpl {
     @Override
     protected Integer featureValueOf(Interface actual) {
       return actual.getOspfCost();
+    }
+  }
+
+  static final class HasOspfPointToPoint extends FeatureMatcher<Interface, Boolean> {
+    HasOspfPointToPoint(@Nonnull Matcher<? super Boolean> subMatcher) {
+      super(subMatcher, "an Interface with ospfPointToPoint:", "ospfPointToPoint");
+    }
+
+    @Override
+    protected Boolean featureValueOf(Interface actual) {
+      return actual.getOspfPointToPoint();
     }
   }
 

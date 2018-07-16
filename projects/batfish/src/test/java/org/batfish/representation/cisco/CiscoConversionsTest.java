@@ -1,18 +1,27 @@
 package org.batfish.representation.cisco;
 
 import static org.batfish.datamodel.Interface.INVALID_LOCAL_INTERFACE;
+import static org.batfish.representation.cisco.CiscoConversions.createAclWithSymmetricalLines;
 import static org.batfish.representation.cisco.CiscoConversions.getMatchingPsk;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import org.batfish.common.Warnings;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IkeKeyType;
 import org.batfish.datamodel.IkePhase1Key;
+import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.IpAccessListLine;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.NetworkFactory;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.matchers.IkePhase1KeyMatchers;
 import org.junit.Before;
 import org.junit.Test;
@@ -24,12 +33,38 @@ import org.junit.runners.JUnit4;
 public class CiscoConversionsTest {
 
   private static final String IKE_PHASE1_KEY = "IKE_Phase1_Key";
+  private NetworkFactory _nf;
   private Warnings _warnings;
 
   @Before
   public void before() {
     _warnings = new Warnings();
     _warnings.setRedFlagRecord(true);
+    _nf = new NetworkFactory();
+  }
+
+  @Test
+  public void testCreateAclWithSymmetricalLines() {
+    IpAccessList ipAccessList =
+        _nf.aclBuilder()
+            .setLines(
+                ImmutableList.of(
+                    IpAccessListLine.accepting()
+                        .setName("permit ip 1.1.1.1 0.0.0.0 2.2.2.2 0.0.0.0")
+                        .setMatchCondition(
+                            new MatchHeaderSpace(
+                                HeaderSpace.builder()
+                                    .setSrcIps(new IpWildcard("1.1.1.1").toIpSpace())
+                                    .setDstIps(new IpWildcard("2.2.2.2").toIpSpace())
+                                    .setNotSrcIps(new IpWildcard("3.3.3.3").toIpSpace())
+                                    .setIpProtocols(ImmutableSet.of(IpProtocol.IP))
+                                    .build()))
+                        .build()))
+            .build();
+
+    // notSrcIps should cause the returned IpAccessList to be null
+
+    assertThat(createAclWithSymmetricalLines(ipAccessList), nullValue());
   }
 
   @Test

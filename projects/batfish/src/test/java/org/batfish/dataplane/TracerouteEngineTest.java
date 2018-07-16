@@ -65,7 +65,7 @@ public class TracerouteEngineTest {
   private static IpAccessList makeAcl(String name, LineAction action) {
     IpAccessListLine aclLine =
         IpAccessListLine.builder().setAction(action).setMatchCondition(TrueExpr.INSTANCE).build();
-    return new IpAccessList(name, singletonList(aclLine));
+    return IpAccessList.builder().setName(name).setLines(singletonList(aclLine)).build();
   }
 
   @Test
@@ -189,6 +189,55 @@ public class TracerouteEngineTest {
 
     assertThat(flowTraces, hasEntry(equalTo(flow1), contains(hasDisposition(NO_ROUTE))));
     assertThat(flowTraces, hasEntry(equalTo(flow2), contains(hasDisposition(ACCEPTED))));
+  }
+
+  @Test
+  public void testArpMultipleAccess() throws IOException {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+    Vrf.Builder vb = nf.vrfBuilder().setName(Configuration.DEFAULT_VRF_NAME);
+    Interface.Builder ib = nf.interfaceBuilder().setActive(true).setProxyArp(true);
+
+    Configuration source = cb.build();
+    Vrf vSource = vb.setOwner(source).build();
+    ib.setOwner(source).setVrf(vSource).setAddress(new InterfaceAddress("10.0.0.1/24")).build();
+
+    Configuration dst = cb.build();
+    Vrf vDst = vb.setOwner(dst).build();
+    ib.setOwner(dst).setVrf(vDst).setAddress(new InterfaceAddress("10.0.0.2/24")).build();
+
+    Configuration other = cb.build();
+    Vrf vOther = vb.setOwner(other).build();
+    ib.setOwner(other).setVrf(vOther).setAddress(new InterfaceAddress("10.0.0.3/24")).build();
+
+    SortedMap<String, Configuration> configurations =
+        ImmutableSortedMap.<String, Configuration>naturalOrder()
+            .put(source.getName(), source)
+            .put(dst.getName(), dst)
+            .put(other.getName(), other)
+            .build();
+    Batfish batfish = BatfishTestUtils.getBatfish(configurations, _tempFolder);
+    batfish.computeDataPlane(false);
+    DataPlane dp = batfish.loadDataPlane();
+    Flow flow =
+        Flow.builder()
+            .setIngressNode(source.getName())
+            .setSrcIp(new Ip("10.0.0.1"))
+            .setDstIp(new Ip("10.0.0.2"))
+            .setTag("tag")
+            .build();
+    Set<FlowTrace> traces =
+        TracerouteEngineImpl.getInstance()
+            .processFlows(dp, ImmutableSet.of(flow), dp.getFibs(), false)
+            .get(flow);
+
+    /*
+     *  Since the 'other' neighbor should not respond to ARP:
+     *  - There should only be one trace, ending at 'dst'.
+     *  - It should be accepting.
+     */
+    assertThat(traces, contains(hasDisposition(ACCEPTED)));
   }
 
   /*

@@ -29,7 +29,7 @@ public class CryptoMapEntry extends ComparableStructure<String> {
 
   public CryptoMapEntry(String name, int sequenceNumber) {
     super(name);
-    _transforms = new ArrayList<>(); /* transforms or Ipsec proposals are applied in order */
+    _transforms = new ArrayList<>(); /* transforms or IPSec proposals are applied in order */
     _sequenceNumber = sequenceNumber;
   }
 

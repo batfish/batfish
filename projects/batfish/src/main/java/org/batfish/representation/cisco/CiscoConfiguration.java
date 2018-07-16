@@ -5,13 +5,19 @@ import static org.batfish.common.util.CommonUtil.toImmutableMap;
 import static org.batfish.datamodel.Interface.UNSET_LOCAL_INTERFACE;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
+import static org.batfish.representation.cisco.CiscoConversions.convertCryptoMapSet;
 import static org.batfish.representation.cisco.CiscoConversions.generateAggregateRoutePolicy;
 import static org.batfish.representation.cisco.CiscoConversions.resolveIsakmpProfileIfaceNames;
 import static org.batfish.representation.cisco.CiscoConversions.resolveKeyringIfaceNames;
+import static org.batfish.representation.cisco.CiscoConversions.resolveTunnelIfaceNames;
 import static org.batfish.representation.cisco.CiscoConversions.suppressSummarizedPrefixes;
 import static org.batfish.representation.cisco.CiscoConversions.toIkePhase1Key;
 import static org.batfish.representation.cisco.CiscoConversions.toIkePhase1Policy;
 import static org.batfish.representation.cisco.CiscoConversions.toIkePhase1Proposal;
+import static org.batfish.representation.cisco.CiscoConversions.toIpsecPeerConfig;
+import static org.batfish.representation.cisco.CiscoConversions.toIpsecPhase2Policy;
+import static org.batfish.representation.cisco.CiscoConversions.toIpsecPhase2Proposal;
+import static org.batfish.representation.cisco.CiscoConversions.toIpsecProposal;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -38,12 +44,12 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
+import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
@@ -55,18 +61,22 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DefinedStructureInfo;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.GeneratedRoute6;
-import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IkeGateway;
 import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.datamodel.IkePhase1Proposal;
 import org.batfish.datamodel.IkePolicy;
 import org.batfish.datamodel.IkeProposal;
 import org.batfish.datamodel.InterfaceAddress;
+import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6AccessList;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
+import org.batfish.datamodel.IpSpaceMetadata;
 import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.IpsecPeerConfig;
+import org.batfish.datamodel.IpsecPhase2Policy;
+import org.batfish.datamodel.IpsecPhase2Proposal;
 import org.batfish.datamodel.IpsecPolicy;
 import org.batfish.datamodel.IpsecProposal;
 import org.batfish.datamodel.IpsecVpn;
@@ -94,12 +104,13 @@ import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.Zone;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
-import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
+import org.batfish.datamodel.isis.IsisInterfaceLevelSettings;
+import org.batfish.datamodel.isis.IsisInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfAreaSummary;
 import org.batfish.datamodel.ospf.OspfDefaultOriginateType;
@@ -1933,186 +1944,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return newBgpProcess;
   }
 
-  /** Converts a crypto map entry to an Ipsec policy and a list of Ipsec VPNs */
-  private void convertCryptoMapEntry(
-      final Configuration c,
-      CryptoMapEntry cryptoMapEntry,
-      String generatedName,
-      String cryptoMapName) {
-    // skipping incomplete static or dynamic crypto maps
-    if (!cryptoMapEntry.getDynamic()) {
-      if (cryptoMapEntry.getAccessList() == null || cryptoMapEntry.getPeer() == null) {
-        return;
-      }
-    } else {
-      if (cryptoMapEntry.getAccessList() == null) {
-        return;
-      }
-    }
-
-    IpsecPolicy ipsecPolicy = toIpsecPolicy(c, cryptoMapEntry, generatedName);
-    c.getIpsecPolicies().put(generatedName, ipsecPolicy);
-
-    List<IpsecVpn> ipsecVpns = toIpsecVpns(c, cryptoMapEntry, generatedName, cryptoMapName);
-    ipsecVpns.forEach(
-        ipsecVpn -> {
-          ipsecVpn.setIpsecPolicy(ipsecPolicy);
-          c.getIpsecVpns().put(ipsecVpn.getName(), ipsecVpn);
-        });
-  }
-
-  /**
-   * Converts each crypto map entry in all crypto map sets to an Ipsec policy and a list of Ipsec
-   * VPNs
-   */
-  private void convertCryptoMapSet(Configuration c, CryptoMapSet ciscoCryptoMapSet) {
-    if (ciscoCryptoMapSet.getDynamic()) {
-      return;
-    }
-    for (CryptoMapEntry cryptoMapEntry : ciscoCryptoMapSet.getCryptoMapEntries()) {
-      String nameSeqNum =
-          String.format("%s:%s", cryptoMapEntry.getName(), cryptoMapEntry.getSequenceNumber());
-      if (cryptoMapEntry.getReferredDynamicMapSet() != null) {
-        CryptoMapSet dynamicCryptoMapSet =
-            _cryptoMapSets.get(cryptoMapEntry.getReferredDynamicMapSet());
-        if (dynamicCryptoMapSet != null && dynamicCryptoMapSet.getDynamic()) {
-          // convert all entries of the referred dynamic crypto map
-          dynamicCryptoMapSet
-              .getCryptoMapEntries()
-              .forEach(
-                  cryptoMap ->
-                      convertCryptoMapEntry(
-                          c,
-                          cryptoMap,
-                          String.format("%s:%s", nameSeqNum, cryptoMap.getSequenceNumber()),
-                          cryptoMapEntry.getName()));
-        }
-      } else {
-        convertCryptoMapEntry(c, cryptoMapEntry, nameSeqNum, cryptoMapEntry.getName());
-      }
-    }
-  }
-
-  /** Converts a CryptoMapEntry to an IpsecPolicy */
-  private static IpsecPolicy toIpsecPolicy(
-      Configuration c, CryptoMapEntry cryptoMapEntry, String ipsecPolicyName) {
-    IpsecPolicy ipsecPolicy = new IpsecPolicy(ipsecPolicyName);
-
-    if (cryptoMapEntry.getIsakmpProfile() != null) {
-      IkeGateway ikeGateway = c.getIkeGateways().get(cryptoMapEntry.getIsakmpProfile());
-      if (ikeGateway != null) {
-        ipsecPolicy.setIkeGateway(ikeGateway);
-      }
-    }
-
-    cryptoMapEntry
-        .getTransforms()
-        .forEach(
-            transform -> {
-              IpsecProposal ipsecProposal = c.getIpsecProposals().get(transform);
-              if (ipsecProposal != null) {
-                ipsecPolicy.getProposals().add(ipsecProposal);
-              }
-            });
-
-    ipsecPolicy.setPfsKeyGroup(cryptoMapEntry.getPfsKeyGroup());
-
-    return ipsecPolicy;
-  }
-
-  /**
-   * Converts a crypto map entry to a list of ipsec vpns(one per interface on which it is referred)
-   */
-  private List<IpsecVpn> toIpsecVpns(
-      Configuration c, CryptoMapEntry cryptoMapEntry, String ipsecVpnName, String cryptoMapName) {
-
-    List<org.batfish.datamodel.Interface> referencingInterfaces =
-        c.getInterfaces()
-            .values()
-            .stream()
-            .filter(iface -> Objects.equals(iface.getCryptoMap(), cryptoMapName))
-            .collect(Collectors.toList());
-
-    List<IpsecVpn> ipsecVpns = new ArrayList<>();
-
-    for (org.batfish.datamodel.Interface iface : referencingInterfaces) {
-      // skipping interfaces with no ip-address
-      if (iface.getAddress() == null) {
-        _w.redFlag(
-            String.format(
-                "Interface %s with declared crypto-map %s has no ip-address",
-                iface.getName(), cryptoMapName));
-        continue;
-      }
-      Ip bindingInterfaceIp = iface.getAddress().getIp();
-      IkeGateway ikeGateway = null;
-
-      if (cryptoMapEntry.getIsakmpProfile() != null) {
-        ikeGateway = c.getIkeGateways().get(cryptoMapEntry.getIsakmpProfile());
-        if (ikeGateway != null
-            && (!ikeGateway.getAddress().equals(cryptoMapEntry.getPeer())
-                || !ikeGateway.getLocalIp().equals(bindingInterfaceIp))) {
-          _w.redFlag(
-              String.format(
-                  "cryptoMap %s's binding interface or peer does not match ISAKMP profile's local "
-                      + "Ip/remote Ip",
-                  cryptoMapEntry.getName()));
-          continue;
-        }
-      }
-
-      IpsecVpn ipsecVpn = new IpsecVpn(String.format("%s:%s", ipsecVpnName, iface.getName()));
-
-      if (ikeGateway != null) {
-        ipsecVpn.setIkeGateway(ikeGateway);
-      } else {
-        // getting an IKE gateway which can be used for this VPN
-        Optional<IkeGateway> filteredIkeGateway =
-            c.getIkeGateways()
-                .values()
-                .stream()
-                .filter(
-                    ikeGateway1 ->
-                        ikeGateway1.getLocalIp().equals(bindingInterfaceIp)
-                            && ikeGateway1.getAddress().equals(cryptoMapEntry.getPeer()))
-                .findFirst();
-        filteredIkeGateway.ifPresent(ipsecVpn::setIkeGateway);
-      }
-
-      ipsecVpn.setBindInterface(iface);
-      if (cryptoMapEntry.getAccessList() != null) {
-        IpAccessList cryptoAcl = c.getIpAccessLists().get(cryptoMapEntry.getAccessList());
-        if (cryptoAcl != null) {
-          ipsecVpn.setPolicyAccessList(makeSymmetrical(cryptoAcl));
-        }
-      }
-      ipsecVpns.add(ipsecVpn);
-    }
-
-    return ipsecVpns;
-  }
-
-  private IpAccessList makeSymmetrical(IpAccessList ipAccessList) {
-    List<IpAccessListLine> aclLines = new ArrayList<>(ipAccessList.getLines());
-
-    for (IpAccessListLine ipAccessListLine : ipAccessList.getLines()) {
-      HeaderSpace srcHeaderSpace =
-          HeaderSpaceConverter.convert(ipAccessListLine.getMatchCondition());
-      aclLines.add(
-          IpAccessListLine.builder()
-              .setMatchCondition(
-                  new MatchHeaderSpace(
-                      HeaderSpace.builder()
-                          .setDstIps(srcHeaderSpace.getSrcIps())
-                          .setSrcIps(srcHeaderSpace.getDstIps())
-                          .build()))
-              .setAction(ipAccessListLine.getAction())
-              .build());
-    }
-
-    return new IpAccessList(ipAccessList.getName(), aclLines);
-  }
-
   /**
    * Processes a {@link CiscoSourceNat} rule. This function performs two actions:
    *
@@ -2199,6 +2030,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
       Interface iface, Map<String, IpAccessList> ipAccessLists, Configuration c) {
     String name = iface.getName();
     org.batfish.datamodel.Interface newIface = new org.batfish.datamodel.Interface(name, c);
+    if (newIface.getInterfaceType() == InterfaceType.VLAN) {
+      newIface.setVlan(CommonUtil.getInterfaceVlanNumber(name));
+    }
     String vrfName = iface.getVrf();
     Vrf vrf = _vrfs.computeIfAbsent(vrfName, Vrf::new);
     newIface.setDescription(iface.getDescription());
@@ -3147,8 +2981,26 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _networkObjectGroups.forEach(
         (name, networkObjectGroup) ->
             c.getIpSpaces().put(name, CiscoConversions.toIpSpace(networkObjectGroup)));
+    _networkObjectGroups
+        .keySet()
+        .forEach(
+            name ->
+                c.getIpSpaceMetadata()
+                    .put(
+                        name,
+                        new IpSpaceMetadata(
+                            name, CiscoStructureType.NETWORK_OBJECT_GROUP.getDescription())));
     _networkObjects.forEach(
         (name, networkObject) -> c.getIpSpaces().put(name, networkObject.getIpSpace()));
+    _networkObjects
+        .keySet()
+        .forEach(
+            name ->
+                c.getIpSpaceMetadata()
+                    .put(
+                        name,
+                        new IpSpaceMetadata(
+                            name, CiscoStructureType.NETWORK_OBJECT.getDescription())));
 
     // convert each ProtocolObjectGroup to IpAccessList
     _protocolObjectGroups.forEach(
@@ -3258,6 +3110,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     resolveKeyringIfaceNames(_interfaces, _keyrings);
     resolveIsakmpProfileIfaceNames(_interfaces, _isakmpProfiles);
+    resolveTunnelIfaceNames(_interfaces);
 
     addIkePoliciesAndGateways(c);
 
@@ -3278,28 +3131,43 @@ public final class CiscoConfiguration extends VendorConfiguration {
                 c.getIkePhase1Policies()
                     .put(isakmpProfile.getName(), toIkePhase1Policy(isakmpProfile, this, c, _w)));
 
-    // ipsec proposals
+    // convert ipsec transform sets
+    ImmutableSortedMap.Builder<String, IpsecPhase2Proposal> ipsecPhase2ProposalsBuilder =
+        ImmutableSortedMap.naturalOrder();
     for (Entry<String, IpsecTransformSet> e : _ipsecTransformSets.entrySet()) {
-      c.getIpsecProposals().put(e.getKey(), e.getValue().getProposal());
+      c.getIpsecProposals().put(e.getKey(), toIpsecProposal(e.getValue()));
+      ipsecPhase2ProposalsBuilder.put(e.getKey(), toIpsecPhase2Proposal(e.getValue()));
     }
+    c.setIpsecPhase2Proposals(ipsecPhase2ProposalsBuilder.build());
 
     // ipsec policies
+    ImmutableSortedMap.Builder<String, IpsecPhase2Policy> ipsecPhase2PoliciesBuilder =
+        ImmutableSortedMap.naturalOrder();
     for (IpsecProfile ipsecProfile : _ipsecProfiles.values()) {
       IpsecPolicy ipsecPolicy = toIpSecPolicy(c, ipsecProfile);
       c.getIpsecPolicies().put(ipsecPolicy.getName(), ipsecPolicy);
+      ipsecPhase2PoliciesBuilder.put(ipsecPolicy.getName(), toIpsecPhase2Policy(ipsecProfile));
     }
+    c.setIpsecPhase2Policies(ipsecPhase2PoliciesBuilder.build());
 
     // crypto-map sets
     for (CryptoMapSet cryptoMapSet : _cryptoMapSets.values()) {
-      convertCryptoMapSet(c, cryptoMapSet);
+      convertCryptoMapSet(c, cryptoMapSet, _cryptoMapSets, _w);
     }
 
-    // ipsec vpns
+    // IPSec vpns
+    ImmutableSortedMap.Builder<String, IpsecPeerConfig> ipsecPeerConfigBuilder =
+        ImmutableSortedMap.naturalOrder();
+    ipsecPeerConfigBuilder.putAll(c.getIpsecPeerconfigs());
     for (Entry<String, Interface> e : _interfaces.entrySet()) {
       String name = e.getKey();
       Interface iface = e.getValue();
       Tunnel tunnel = iface.getTunnel();
       if (tunnel != null && tunnel.getMode() == TunnelMode.IPSEC) {
+        if (tunnel.getIpsecProfileName() == null) {
+          _w.redFlag(String.format("No IPSec Profile set for IPSec tunnel %s", name));
+          continue;
+        }
         IpsecVpn ipsecVpn = new IpsecVpn(name, c);
         ipsecVpn.setBindInterface(c.getInterfaces().get(name));
         ipsecVpn.setIpsecPolicy(c.getIpsecPolicies().get(tunnel.getIpsecProfileName()));
@@ -3319,8 +3187,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
           }
         }
         c.getIpsecVpns().put(ipsecVpn.getName(), ipsecVpn);
+        // convert to IpsecPeerConfig
+        ipsecPeerConfigBuilder.put(name, toIpsecPeerConfig(tunnel, name, this, c));
       }
     }
+    c.setIpsecPeerConfigs(ipsecPeerConfigBuilder.build());
 
     // convert routing processes
     _vrfs.forEach(
@@ -3359,7 +3230,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
           // convert isis process
           IsisProcess isisProcess = vrf.getIsisProcess();
           if (isisProcess != null) {
-            org.batfish.datamodel.IsisProcess newIsisProcess =
+            org.batfish.datamodel.isis.IsisProcess newIsisProcess =
                 CiscoConversions.toIsisProcess(isisProcess, c, this);
             newVrf.setIsisProcess(newIsisProcess);
           }
@@ -3388,6 +3259,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
           CiscoStructureUsage.BGP_NEIGHBOR_STATEMENT,
           e.getValue());
     }
+
+    markConcreteStructure(
+        CiscoStructureType.SECURITY_ZONE_PAIR, CiscoStructureUsage.SECURITY_ZONE_PAIR_SELF_REF);
 
     markConcreteStructure(
         CiscoStructureType.INTERFACE,
@@ -3468,6 +3342,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     // mark references to route-maps
     markConcreteStructure(
         CiscoStructureType.ROUTE_MAP,
+        CiscoStructureUsage.BGP_ADVERTISE_MAP_EXIST_MAP,
         CiscoStructureUsage.BGP_AGGREGATE_ATTRIBUTE_MAP,
         CiscoStructureUsage.BGP_DEFAULT_ORIGINATE_ROUTE_MAP,
         CiscoStructureUsage.BGP_INBOUND_ROUTE_MAP,
@@ -3505,6 +3380,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.RIP_REDISTRIBUTE_STATIC_MAP);
 
     markConcreteStructure(
+        CiscoStructureType.ROUTE_POLICY,
+        CiscoStructureUsage.BGP_ADDITIONAL_PATHS_SELECTION_ROUTE_POLICY,
+        CiscoStructureUsage.BGP_AGGREGATE_ROUTE_POLICY);
+
+    markConcreteStructure(
         CiscoStructureType.BGP_TEMPLATE_PEER, CiscoStructureUsage.BGP_INHERITED_PEER);
     markConcreteStructure(
         CiscoStructureType.BGP_TEMPLATE_PEER_POLICY, CiscoStructureUsage.BGP_INHERITED_PEER_POLICY);
@@ -3530,7 +3410,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     markConcreteStructure(
         CiscoStructureType.L2TP_CLASS, CiscoStructureUsage.DEPI_TUNNEL_L2TP_CLASS);
 
-    // Crypto, Isakmp, and Ipsec
+    // Crypto, Isakmp, and IPSec
     markConcreteStructure(
         CiscoStructureType.CRYPTO_DYNAMIC_MAP_SET,
         CiscoStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_CRYPTO_DYNAMIC_MAP_SET);
@@ -3564,6 +3444,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     markConcreteStructure(
         CiscoStructureType.POLICY_MAP,
         CiscoStructureUsage.INTERFACE_SERVICE_POLICY,
+        CiscoStructureUsage.INTERFACE_SERVICE_POLICY_CONTROL_SUBSCRIBER,
         CiscoStructureUsage.POLICY_MAP_CLASS_SERVICE_POLICY,
         CiscoStructureUsage.SERVICE_POLICY_GLOBAL,
         CiscoStructureUsage.SERVICE_POLICY_INTERFACE_POLICY);
@@ -3627,10 +3508,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
                     .setMatchCondition(protocolObjectGroup.toAclLineMatchExpr())
                     .build()))
         .setName(computeProtocolObjectGroupAclName(protocolObjectGroup.getName()))
+        .setSourceName(protocolObjectGroup.getName())
+        .setSourceType(CiscoStructureType.PROTOCOL_OBJECT_GROUP.getDescription())
         .build();
   }
 
-  /** Converts an Ipsec Profile to Ipsec policy */
+  /** Converts an IPSec Profile to IPSec policy */
   private IpsecPolicy toIpSecPolicy(Configuration configuration, IpsecProfile ipsecProfile) {
     String name = ipsecProfile.getName();
 
@@ -3687,6 +3570,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
               .setLines(
                   ImmutableList.of(
                       IpAccessListLine.accepting().setMatchCondition(matchClassMap).build()))
+              .setSourceName(inspectClassMapName)
+              .setSourceType(CiscoStructureType.INSPECT_CLASS_MAP.getDescription())
               .build();
         });
   }
@@ -3757,6 +3642,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
               .setOwner(c)
               .setName(inspectPolicyMapAclName)
               .setLines(policyMapAclLines.build())
+              .setSourceName(inspectPolicyMapName)
+              .setSourceType(CiscoStructureType.INSPECT_POLICY_MAP.getDescription())
               .build();
         });
   }
@@ -3809,7 +3696,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
                                 matchSrcInterfaceBySrcZone.get(srcZoneName),
                                 zoneName,
                                 srcZoneName,
-                                zonePair.getInspectPolicyMap())
+                                zonePair)
                             .ifPresent(zonePolicies::add));
               }
 
@@ -3826,7 +3713,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
       MatchSrcInterface matchSrcZoneInterface,
       String dstZoneName,
       String srcZoneName,
-      String inspectPolicyMapName) {
+      SecurityZonePair zonePair) {
+    String inspectPolicyMapName = zonePair.getInspectPolicyMap();
     if (!_securityZones.containsKey(srcZoneName)) {
       return Optional.empty();
     }
@@ -3853,6 +3741,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
                             "Allow traffic received on interface in zone '%s' permitted by policy-map: '%s'",
                             srcZoneName, inspectPolicyMapName))
                     .build()))
+        .setSourceName(zonePair.getName())
+        .setSourceType(CiscoStructureType.SECURITY_ZONE_PAIR.getDescription())
         .build();
     return Optional.of(
         IpAccessListLine.accepting()
@@ -4146,7 +4036,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     for (Interface iface : _interfaces.values()) {
       Tunnel tunnel = iface.getTunnel();
-      if (tunnel != null && tunnel.getSourceInterfaceName() != null) {
+      if (tunnel != null && !tunnel.getSourceInterfaceName().equals(UNSET_LOCAL_INTERFACE)) {
         tunnel.setSourceAddress(ifaceNameToPrimaryIp.get(tunnel.getSourceInterfaceName()));
       }
     }

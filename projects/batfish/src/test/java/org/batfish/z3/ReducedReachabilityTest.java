@@ -123,7 +123,7 @@ public class ReducedReachabilityTest {
                 .setFinalNodesSpecifier(new NameRegexNodeSpecifier(Pattern.compile(NODE2)))
                 .setHeaderSpace(
                     HeaderSpace.builder().setDstIps(NODE2_ALTERNATE_IP.toIpSpace()).build())
-                .setSourceSpecifier(
+                .setSourceLocationSpecifier(
                     /* Source = loopback0 on node1 */
                     new IntersectionLocationSpecifier(
                         new NodeNameRegexInterfaceLocationSpecifier(Pattern.compile(NODE1)),

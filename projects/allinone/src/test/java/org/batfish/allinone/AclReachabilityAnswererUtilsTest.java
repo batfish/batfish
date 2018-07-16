@@ -12,6 +12,7 @@ import com.google.common.collect.ImmutableSortedMap;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclIpSpaceLine;
 import org.batfish.datamodel.Configuration;
@@ -24,10 +25,14 @@ import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.CanonicalAcl;
 import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
+import org.batfish.datamodel.acl.NotMatchExpr;
+import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.answers.AclLines2Rows;
 import org.batfish.datamodel.answers.AclLinesAnswerElementInterface.AclSpecs;
@@ -100,6 +105,153 @@ public class AclReachabilityAnswererUtilsTest {
     List<AclSpecs> aclSpecs = getAclSpecs(ImmutableSet.of("c1", "c2"));
 
     assertThat(aclSpecs, hasSize(1));
+  }
+
+  @Test
+  public void testAclReferenceInAndOrNotExprIsFound() {
+    _aclb.setLines(ImmutableList.of()).setName("acl0").build();
+
+    // acl1 references acl0 in permittedbyacl concealed within and expr; should have that dependency
+    _aclb
+        .setLines(
+            ImmutableList.of(
+                IpAccessListLine.accepting()
+                    .setMatchCondition(
+                        new AndMatchExpr(ImmutableList.of(new PermittedByAcl("acl0"))))
+                    .build()))
+        .setName("acl1")
+        .build();
+
+    // acl2 references acl0 in permittedbyacl concealed within or expr; should have that dependency
+    _aclb
+        .setLines(
+            ImmutableList.of(
+                IpAccessListLine.accepting()
+                    .setMatchCondition(
+                        new OrMatchExpr(ImmutableList.of(new PermittedByAcl("acl0"))))
+                    .build()))
+        .setName("acl2")
+        .build();
+
+    // acl3 references acl0 in permittedbyacl concealed within not expr; should have that dependency
+    _aclb
+        .setLines(
+            ImmutableList.of(
+                IpAccessListLine.accepting()
+                    .setMatchCondition(new NotMatchExpr(new PermittedByAcl("acl0")))
+                    .build()))
+        .setName("acl3")
+        .build();
+
+    List<AclSpecs> aclSpecs = getAclSpecs(ImmutableSet.of("c1"));
+
+    // Everything except acl0 should have a dependency on acl0
+    List<Set<String>> dependencies =
+        aclSpecs
+            .stream()
+            .filter(spec -> !spec.acl.getAclName().equals("acl0"))
+            .map(spec -> spec.acl.getDependencies().keySet())
+            .collect(Collectors.toList());
+    assertThat(
+        dependencies,
+        equalTo(
+            ImmutableList.of(
+                ImmutableSet.of("acl0"), ImmutableSet.of("acl0"), ImmutableSet.of("acl0"))));
+  }
+
+  @Test
+  public void testIpSpaceReferenceInAndOrNotExprIsFound() {
+    MatchHeaderSpace ipSpaceReference =
+        new MatchHeaderSpace(
+            HeaderSpace.builder().setSrcIps(new IpSpaceReference("ipSpace")).build());
+
+    // acl1 has IpSpace reference concealed within and expr; should remove dependency
+    _aclb
+        .setLines(
+            ImmutableList.of(
+                IpAccessListLine.accepting()
+                    .setMatchCondition(new AndMatchExpr(ImmutableList.of(ipSpaceReference)))
+                    .build()))
+        .setName("acl1")
+        .build();
+
+    // acl2 has IpSpace reference concealed within or expr; should remove dependency
+    _aclb
+        .setLines(
+            ImmutableList.of(
+                IpAccessListLine.accepting()
+                    .setMatchCondition(new OrMatchExpr(ImmutableList.of(ipSpaceReference)))
+                    .build()))
+        .setName("acl2")
+        .build();
+
+    // acl3 has IpSpace reference concealed within not expr; should remove dependency
+    _aclb
+        .setLines(
+            ImmutableList.of(
+                IpAccessListLine.accepting()
+                    .setMatchCondition(new NotMatchExpr(ipSpaceReference))
+                    .build()))
+        .setName("acl3")
+        .build();
+
+    List<AclSpecs> aclSpecs = getAclSpecs(ImmutableSet.of("c1"));
+
+    MatchHeaderSpace dereferencedIpSpace =
+        new MatchHeaderSpace(
+            HeaderSpace.builder().setSrcIps(new Ip("1.2.3.4").toIpSpace()).build());
+
+    Set<AclLineMatchExpr> matchExprs =
+        aclSpecs
+            .stream()
+            .map(spec -> spec.acl.getSanitizedAcl().getLines().get(0).getMatchCondition())
+            .collect(Collectors.toSet());
+    assertThat(
+        matchExprs,
+        equalTo(
+            ImmutableSet.of(
+                new AndMatchExpr(ImmutableList.of(dereferencedIpSpace)),
+                new OrMatchExpr(ImmutableList.of(dereferencedIpSpace)),
+                new NotMatchExpr(dereferencedIpSpace))));
+  }
+
+  @Test
+  public void testInterfaceReferenceInAndOrNotExprIsFound() {
+    _c1.setInterfaces(
+        ImmutableSortedMap.of(
+            "iface1",
+            Interface.builder().setName("iface").build(),
+            "iface2",
+            Interface.builder().setName("iface2").build(),
+            "iface3",
+            Interface.builder().setName("iface2").build()));
+
+    // acl references iface1 within and expr, iface2 within or expr, and iface3 within not expr; all
+    // three should be included in referenced interfaces
+    _aclb
+        .setLines(
+            ImmutableList.of(
+                IpAccessListLine.accepting()
+                    .setMatchCondition(
+                        new AndMatchExpr(
+                            ImmutableList.of(new MatchSrcInterface(ImmutableList.of("iface1")))))
+                    .build(),
+                IpAccessListLine.accepting()
+                    .setMatchCondition(
+                        new OrMatchExpr(
+                            ImmutableList.of(new MatchSrcInterface(ImmutableList.of("iface2")))))
+                    .build(),
+                IpAccessListLine.accepting()
+                    .setMatchCondition(
+                        new NotMatchExpr(new MatchSrcInterface(ImmutableList.of("iface3"))))
+                    .build()))
+        .build();
+
+    List<AclSpecs> aclSpecs = getAclSpecs(ImmutableSet.of("c1"));
+
+    assertThat(
+        aclSpecs.get(0).acl.getInterfaces(),
+        equalTo(ImmutableSet.of("iface1", "iface2", "iface3")));
   }
 
   @Test

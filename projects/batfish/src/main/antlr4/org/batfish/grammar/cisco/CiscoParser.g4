@@ -230,6 +230,14 @@ banner_stanza
    BANNER banner_type banner
 ;
 
+bfd_null
+:
+   NO?
+   (
+      TRAP
+   ) null_rest_of_line
+;
+
 cisco_configuration
 :
    NEWLINE?
@@ -539,6 +547,14 @@ dspf_null
       | CODEC
       | MAXIMUM
       | SHUTDOWN
+   ) null_rest_of_line
+;
+
+ednt_null
+:
+   NO?
+   (
+      CALL_FORWARD
    ) null_rest_of_line
 ;
 
@@ -2153,6 +2169,14 @@ s_authentication
    AUTHENTICATION null_rest_of_line
 ;
 
+s_bfd
+:
+   BFD null_rest_of_line
+   (
+      bfd_null
+   )*
+;
+
 s_cluster
 :
    NO? CLUSTER
@@ -2351,6 +2375,14 @@ s_enable
       | enable_password
       | enable_secret
    )
+;
+
+s_ephone_dn_template
+:
+   EPHONE_DN_TEMPLATE null_rest_of_line
+   (
+      ednt_null
+   )*
 ;
 
 s_event
@@ -3000,6 +3032,22 @@ s_tap
    )*
 ;
 
+s_telephony_service
+:
+   TELEPHONY_SERVICE null_rest_of_line
+   (
+      telephony_service_null
+   )*
+;
+
+s_template
+:
+  TEMPLATE null_rest_of_line
+  (
+    template_null
+  )*
+;
+
 s_time_range
 :
    TIME_RANGE name = variable PERIODIC? NEWLINE
@@ -3386,6 +3434,7 @@ ssh_server
       (
          IPV6 ACCESS_LIST acl6 = variable
       )
+      | LOGGING
       |
       (
          SESSION_LIMIT limit = DEC
@@ -3447,6 +3496,7 @@ stanza
    | s_archive
    | s_arp_access_list_extended
    | s_authentication
+   | s_bfd
    | s_cable
    | s_call_home
    | s_callhome
@@ -3475,6 +3525,7 @@ stanza
    | s_dspfarm
    | s_dynamic_access_policy_record
    | s_enable
+   | s_ephone_dn_template
    | s_ethernet_services
    | s_event
    | s_event_handler
@@ -3589,6 +3640,8 @@ stanza
    | s_tacacs
    | s_tacacs_server
    | s_tap
+   | s_telephony_service
+   | s_template
    | s_time_range
    | s_track
    | s_tunnel_group
@@ -3737,6 +3790,30 @@ tap_null
    (
       MODE
    ) null_rest_of_line
+;
+
+telephony_service_null
+:
+   NO?
+   (
+      IP
+      | MAX_CONFERENCES
+      | MAX_EPHONES
+      | SRST
+      | TRANSFER_SYSTEM
+   ) null_rest_of_line
+;
+
+template_null
+:
+  NO?
+  (
+    ACCESS_SESSION
+    | AUTHENTICATION
+    | DOT1X
+    | MAB
+    | RADIUS_SERVER
+  ) null_rest_of_line
 ;
 
 tg_null
@@ -4062,6 +4139,7 @@ voice_class_h323_null
    (
       CALL
       | H225
+      | TELEPHONY_SERVICE
    ) null_rest_of_line
 ;
 

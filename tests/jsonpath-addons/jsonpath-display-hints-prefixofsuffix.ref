@@ -251,7 +251,9 @@
                       },
                       "name" : "permit ip host 1.0.2.0 host 255.255.255.0"
                     }
-                  ]
+                  ],
+                  "sourceName" : "101",
+                  "sourceType" : "extended ipv4 access-list"
                 },
                 "103" : {
                   "name" : "103",
@@ -292,7 +294,9 @@
                       },
                       "name" : "permit ip host 3.0.2.0 host 255.255.255.0"
                     }
-                  ]
+                  ],
+                  "sourceName" : "103",
+                  "sourceType" : "extended ipv4 access-list"
                 },
                 "INSIDE_TO_AS1" : {
                   "name" : "INSIDE_TO_AS1",
@@ -351,7 +355,9 @@
                       },
                       "name" : "deny   ip any any"
                     }
-                  ]
+                  ],
+                  "sourceName" : "INSIDE_TO_AS1",
+                  "sourceType" : "extended ipv4 access-list"
                 },
                 "OUTSIDE_TO_INSIDE" : {
                   "name" : "OUTSIDE_TO_INSIDE",
@@ -410,7 +416,9 @@
                       },
                       "name" : "permit ip any any"
                     }
-                  ]
+                  ],
+                  "sourceName" : "OUTSIDE_TO_INSIDE",
+                  "sourceType" : "extended ipv4 access-list"
                 }
               },
               "ntpServers" : [

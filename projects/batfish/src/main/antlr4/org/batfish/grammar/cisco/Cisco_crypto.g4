@@ -141,6 +141,14 @@ certificate
    ~QUIT+
 ;
 
+cg_null
+:
+   (
+      IDENTITY
+      | SERVER
+   ) null_rest_of_line
+;
+
 ci1_null
 :
    (
@@ -648,6 +656,14 @@ crypto_engine
    ENGINE null_rest_of_line
 ;
 
+crypto_gdoi
+:
+   GDOI null_rest_of_line
+   (
+      cg_null
+   )*
+;
+
 crypto_ikev1
 :
    IKEV1
@@ -721,6 +737,7 @@ crypto_map_null
 :
    (
       INTERFACE
+      | LOCAL_ADDRESS
       | REDUNDANCY
    ) null_rest_of_line
 ;
@@ -728,9 +745,25 @@ crypto_map_null
 crypto_map_tail
 :
    (
-      crypto_map_t_ipsec_isakmp
+      crypto_map_t_gdoi
+      | crypto_map_t_ipsec_isakmp
       | crypto_map_t_null
    )
+;
+
+crypto_map_t_g_null
+:
+   (
+      SET
+   ) null_rest_of_line
+;
+
+crypto_map_t_gdoi
+:
+   GDOI NEWLINE
+   (
+      crypto_map_t_g_null
+   )*
 ;
 
 crypto_map_t_ii_match_address
@@ -922,6 +955,7 @@ s_crypto
       | crypto_csr_params
       | crypto_dynamic_map
       | crypto_engine
+      | crypto_gdoi
       | crypto_ikev1
       | crypto_ikev2
       | crypto_ipsec

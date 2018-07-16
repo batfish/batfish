@@ -15,7 +15,7 @@ import org.batfish.datamodel.matchers.IpsecProposalMatchersImpl.HasProtocols;
 public final class IpsecProposalMatchers {
 
   /**
-   * Provides a matcher that matches if the Ipsec Proposal's value of {@code encryptionAlgorithm}
+   * Provides a matcher that matches if the IPSec Proposal's value of {@code encryptionAlgorithm}
    * matches specified {@code encryptionAlgorithm}
    */
   public static @Nonnull HasEncryptionAlgorithm hasEncryptionAlgorithm(
@@ -24,7 +24,7 @@ public final class IpsecProposalMatchers {
   }
 
   /**
-   * Provides a matcher that matches if the Ipsec Proposal's value of {@code
+   * Provides a matcher that matches if the IPSec Proposal's value of {@code
    * authenticationAlgorithm} matches specified {@code authenticationAlgorithm}
    */
   public static @Nonnull HasAuthenticationAlgorithm hasAuthenticationAlgorithm(
@@ -33,7 +33,7 @@ public final class IpsecProposalMatchers {
   }
 
   /**
-   * Provides a matcher that matches if the Ipsec Proposal's value of {@code name} matches specified
+   * Provides a matcher that matches if the IPSec Proposal's value of {@code name} matches specified
    * {@code name}
    */
   public static @Nonnull HasName hasName(String name) {
@@ -41,7 +41,7 @@ public final class IpsecProposalMatchers {
   }
 
   /**
-   * Provides a matcher that matches if the Ipsec Proposal's value of {@code protocols} matches
+   * Provides a matcher that matches if the IPSec Proposal's value of {@code protocols} matches
    * specified {@code protocols}
    */
   public static HasProtocols hasProtocols(Set<IpsecProtocol> protocols) {

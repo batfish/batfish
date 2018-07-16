@@ -22,7 +22,6 @@ import java.util.List;
 import org.batfish.datamodel.FlowHistory;
 import org.batfish.datamodel.FlowHistory.FlowHistoryInfo;
 import org.batfish.datamodel.ForwardingAction;
-import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.main.Batfish;
@@ -31,6 +30,7 @@ import org.batfish.main.TestrigText;
 import org.batfish.question.specifiers.SpecifiersReachabilityAnswerer;
 import org.batfish.question.specifiers.SpecifiersReachabilityQuestion;
 import org.batfish.specifier.AllInterfacesLocationSpecifierFactory;
+import org.batfish.specifier.ConstantUniverseIpSpaceSpecifierFactory;
 import org.batfish.specifier.NameRegexInterfaceLocationSpecifierFactory;
 import org.junit.Before;
 import org.junit.Rule;
@@ -74,6 +74,7 @@ public class SpecifiersReachabilityQuestionTest {
   @Test
   public void testInferSrcIpFromLocation() {
     SpecifiersReachabilityQuestion question = new SpecifiersReachabilityQuestion();
+    question.setDestinationIpSpaceSpecifierFactory(ConstantUniverseIpSpaceSpecifierFactory.NAME);
     question.setSourceLocationSpecifierFactory(NameRegexInterfaceLocationSpecifierFactory.NAME);
     question.setSourceLocationSpecifierInput(LOOPBACK);
     AnswerElement answer = new SpecifiersReachabilityAnswerer(question, _batfish).answer();
@@ -96,6 +97,7 @@ public class SpecifiersReachabilityQuestionTest {
   @Test
   public void testDrop() {
     SpecifiersReachabilityQuestion question = new SpecifiersReachabilityQuestion();
+    question.setDestinationIpSpaceSpecifierFactory(ConstantUniverseIpSpaceSpecifierFactory.NAME);
     question.setSourceLocationSpecifierFactory(NameRegexInterfaceLocationSpecifierFactory.NAME);
     question.setSourceLocationSpecifierInput(LOOPBACK);
     question.setActions(ImmutableSortedSet.of(ForwardingAction.DROP));
@@ -128,20 +130,6 @@ public class SpecifiersReachabilityQuestionTest {
   }
 
   /**
-   * Both the srcIp constraint and the {@link HeaderSpace} constraint must be satisfied -- if they
-   * conflict, no flows will be found.
-   */
-  @Test
-  public void testConflictWithHeaderSpaceConstraint() {
-    SpecifiersReachabilityQuestion question = new SpecifiersReachabilityQuestion();
-    question.setHeaderSpace(HeaderSpace.builder().setSrcIps(new Ip("5.5.5.5").toIpSpace()).build());
-    AnswerElement answer = new SpecifiersReachabilityAnswerer(question, _batfish).answer();
-    assertThat(answer, instanceOf(FlowHistory.class));
-    Collection<FlowHistoryInfo> flowHistoryInfos = ((FlowHistory) answer).getTraces().values();
-    assertThat(flowHistoryInfos, hasSize(0));
-  }
-
-  /**
    * Test that a different source IpSpace specifier produces different source IPs. If an input is
    * given without a factory, {@link SpecifiersReachabilityQuestion} uses {@link
    * org.batfish.specifier.ConstantWildcardSetIpSpaceSpecifierFactory} by default.
@@ -149,6 +137,7 @@ public class SpecifiersReachabilityQuestionTest {
   @Test
   public void testConstantWildcard() {
     SpecifiersReachabilityQuestion question = new SpecifiersReachabilityQuestion();
+    question.setDestinationIpSpaceSpecifierFactory(ConstantUniverseIpSpaceSpecifierFactory.NAME);
     question.setSourceIpSpaceSpecifierInput("5.5.5.5");
     AnswerElement answer = new SpecifiersReachabilityAnswerer(question, _batfish).answer();
     assertThat(answer, instanceOf(FlowHistory.class));
@@ -195,6 +184,7 @@ public class SpecifiersReachabilityQuestionTest {
   @Test
   public void testForbiddenTransitNodes() {
     SpecifiersReachabilityQuestion question = new SpecifiersReachabilityQuestion();
+    question.setDestinationIpSpaceSpecifierFactory(ConstantUniverseIpSpaceSpecifierFactory.NAME);
     question.setSourceLocationSpecifierFactory(AllInterfacesLocationSpecifierFactory.NAME);
     question.setForbiddenTransitNodesNodeSpecifierInput(".*");
     AnswerElement answer = new SpecifiersReachabilityAnswerer(question, _batfish).answer();
@@ -228,6 +218,7 @@ public class SpecifiersReachabilityQuestionTest {
   @Test
   public void testRequiredTransitNodes() {
     SpecifiersReachabilityQuestion question = new SpecifiersReachabilityQuestion();
+    question.setDestinationIpSpaceSpecifierFactory(ConstantUniverseIpSpaceSpecifierFactory.NAME);
     question.setSourceLocationSpecifierFactory(NameRegexInterfaceLocationSpecifierFactory.NAME);
     question.setSourceLocationSpecifierInput(LOOPBACK);
     question.setRequiredTransitNodesNodeSpecifierInput(".*");

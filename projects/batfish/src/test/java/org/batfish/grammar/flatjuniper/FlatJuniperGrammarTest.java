@@ -20,6 +20,9 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIkeProposa
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterfaces;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessList;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpsecPeerConfig;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpsecPhase2Policy;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpsecPhase2Proposal;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpsecPolicy;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpsecProposal;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
@@ -47,12 +50,15 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasIsis;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfAreaName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfCost;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfPointToPoint;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortMode;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasZoneName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isOspfPassive;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
+import static org.batfish.datamodel.matchers.IpsecPeerConfigMatchers.hasDestinationAddress;
+import static org.batfish.datamodel.matchers.IpsecPeerConfigMatchers.isIpsecStaticPeerConfigThat;
 import static org.batfish.datamodel.matchers.IpsecPolicyMatchers.hasPfsKeyGroup;
 import static org.batfish.datamodel.matchers.IpsecProposalMatchers.hasProtocols;
 import static org.batfish.datamodel.matchers.IsisInterfaceLevelSettingsMatchers.hasHelloAuthenticationType;
@@ -64,6 +70,7 @@ import static org.batfish.datamodel.matchers.IsisInterfaceSettingsMatchers.hasIs
 import static org.batfish.datamodel.matchers.IsisInterfaceSettingsMatchers.hasLevel1;
 import static org.batfish.datamodel.matchers.IsisInterfaceSettingsMatchers.hasLevel2;
 import static org.batfish.datamodel.matchers.IsisLevelSettingsMatchers.hasWideMetricsOnly;
+import static org.batfish.datamodel.matchers.IsisProcessMatchers.hasNetAddress;
 import static org.batfish.datamodel.matchers.IsisProcessMatchers.hasOverloadTimeout;
 import static org.batfish.datamodel.matchers.LineMatchers.hasAuthenticationLoginList;
 import static org.batfish.datamodel.matchers.LiteralIntMatcher.hasVal;
@@ -142,9 +149,8 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
+import org.batfish.datamodel.IpsecEncapsulationMode;
 import org.batfish.datamodel.IpsecProtocol;
-import org.batfish.datamodel.IsisHelloAuthenticationType;
-import org.batfish.datamodel.IsisInterfaceMode;
 import org.batfish.datamodel.IsoAddress;
 import org.batfish.datamodel.Line;
 import org.batfish.datamodel.LineAction;
@@ -161,9 +167,14 @@ import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.InitInfoAnswerElement;
+import org.batfish.datamodel.isis.IsisHelloAuthenticationType;
+import org.batfish.datamodel.isis.IsisInterfaceMode;
 import org.batfish.datamodel.matchers.IkePhase1KeyMatchers;
 import org.batfish.datamodel.matchers.IkePhase1ProposalMatchers;
 import org.batfish.datamodel.matchers.IpAccessListMatchers;
+import org.batfish.datamodel.matchers.IpsecPeerConfigMatchers;
+import org.batfish.datamodel.matchers.IpsecPhase2PolicyMatchers;
+import org.batfish.datamodel.matchers.IpsecPhase2ProposalMatchers;
 import org.batfish.datamodel.matchers.IpsecPolicyMatchers;
 import org.batfish.datamodel.matchers.IpsecProposalMatchers;
 import org.batfish.datamodel.matchers.IsisInterfaceLevelSettingsMatchers;
@@ -1406,6 +1417,13 @@ public class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testInteraceOspfPointToPoint() throws IOException {
+    String hostname = "ospf-interface-point-to-point";
+    Configuration c = parseConfig(hostname);
+    assertThat(c, hasInterface("ge-0/0/0.0", hasOspfPointToPoint(equalTo(true))));
+  }
+
+  @Test
   public void testInterfaceVlan() throws IOException {
     Configuration c = parseConfig("interface-vlan");
 
@@ -1525,6 +1543,55 @@ public class FlatJuniperGrammarTest {
     assertThat(c, hasIpsecPolicy("policy4", hasPfsKeyGroup(DiffieHellmanGroup.GROUP19)));
     assertThat(c, hasIpsecPolicy("policy5", hasPfsKeyGroup(DiffieHellmanGroup.GROUP20)));
     assertThat(c, hasIpsecPolicy("policy6", hasPfsKeyGroup(DiffieHellmanGroup.GROUP5)));
+
+    // tests for conversion to IPSec phase 2 policies
+    assertThat(
+        c,
+        hasIpsecPhase2Policy(
+            "policy1",
+            allOf(
+                IpsecPhase2PolicyMatchers.hasIpsecProposals(
+                    equalTo(ImmutableList.of("TRANSFORM-SET1", "TRANSFORM-SET2"))),
+                IpsecPhase2PolicyMatchers.hasPfsKeyGroup(equalTo(DiffieHellmanGroup.GROUP14)))));
+
+    assertThat(
+        c,
+        hasIpsecPhase2Policy(
+            "policy2",
+            allOf(
+                IpsecPhase2PolicyMatchers.hasIpsecProposals(equalTo(ImmutableList.of())),
+                IpsecPhase2PolicyMatchers.hasPfsKeyGroup(equalTo(DiffieHellmanGroup.GROUP15)))));
+
+    assertThat(
+        c,
+        hasIpsecPhase2Policy(
+            "policy3",
+            allOf(
+                IpsecPhase2PolicyMatchers.hasIpsecProposals(equalTo(ImmutableList.of())),
+                IpsecPhase2PolicyMatchers.hasPfsKeyGroup(equalTo(DiffieHellmanGroup.GROUP16)))));
+
+    assertThat(
+        c,
+        hasIpsecPhase2Policy(
+            "policy4",
+            allOf(
+                IpsecPhase2PolicyMatchers.hasIpsecProposals(equalTo(ImmutableList.of())),
+                IpsecPhase2PolicyMatchers.hasPfsKeyGroup(equalTo(DiffieHellmanGroup.GROUP19)))));
+
+    assertThat(
+        c,
+        hasIpsecPhase2Policy(
+            "policy5",
+            allOf(
+                IpsecPhase2PolicyMatchers.hasIpsecProposals(equalTo(ImmutableList.of())),
+                IpsecPhase2PolicyMatchers.hasPfsKeyGroup(equalTo(DiffieHellmanGroup.GROUP20)))));
+    assertThat(
+        c,
+        hasIpsecPhase2Policy(
+            "policy6",
+            allOf(
+                IpsecPhase2PolicyMatchers.hasIpsecProposals(equalTo(ImmutableList.of())),
+                IpsecPhase2PolicyMatchers.hasPfsKeyGroup(equalTo(DiffieHellmanGroup.GROUP5)))));
   }
 
   @Test
@@ -1584,6 +1651,200 @@ public class FlatJuniperGrammarTest {
                     IpsecAuthenticationAlgorithm.HMAC_MD5_96),
                 IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_256_GCM),
                 hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
+  }
+
+  @Test
+  public void testIpsecProposalSet() throws IOException {
+    Configuration c = parseConfig("ipsec-proposal-set");
+
+    assertThat(
+        c,
+        hasIpsecPhase2Proposal(
+            "NOPFS_ESP_3DES_MD5",
+            allOf(
+                IpsecPhase2ProposalMatchers.hasAuthenticationAlgorithm(
+                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
+                IpsecPhase2ProposalMatchers.hasEncryptionAlgorithm(
+                    EncryptionAlgorithm.THREEDES_CBC),
+                IpsecPhase2ProposalMatchers.hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)),
+                IpsecPhase2ProposalMatchers.hasIpsecEncapsulationMode(
+                    IpsecEncapsulationMode.TUNNEL))));
+
+    assertThat(
+        c,
+        hasIpsecPhase2Proposal(
+            "NOPFS_ESP_3DES_SHA",
+            allOf(
+                IpsecPhase2ProposalMatchers.hasAuthenticationAlgorithm(
+                    IpsecAuthenticationAlgorithm.HMAC_SHA1_96),
+                IpsecPhase2ProposalMatchers.hasEncryptionAlgorithm(
+                    EncryptionAlgorithm.THREEDES_CBC),
+                IpsecPhase2ProposalMatchers.hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)),
+                IpsecPhase2ProposalMatchers.hasIpsecEncapsulationMode(
+                    IpsecEncapsulationMode.TUNNEL))));
+
+    assertThat(
+        c,
+        hasIpsecPhase2Proposal(
+            "NOPFS_ESP_DES_MD5",
+            allOf(
+                IpsecPhase2ProposalMatchers.hasAuthenticationAlgorithm(
+                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
+                IpsecPhase2ProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.DES_CBC),
+                IpsecPhase2ProposalMatchers.hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)),
+                IpsecPhase2ProposalMatchers.hasIpsecEncapsulationMode(
+                    IpsecEncapsulationMode.TUNNEL))));
+
+    assertThat(
+        c,
+        hasIpsecPhase2Proposal(
+            "NOPFS_ESP_DES_SHA",
+            allOf(
+                IpsecPhase2ProposalMatchers.hasAuthenticationAlgorithm(
+                    IpsecAuthenticationAlgorithm.HMAC_SHA1_96),
+                IpsecPhase2ProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.DES_CBC),
+                IpsecPhase2ProposalMatchers.hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)),
+                IpsecPhase2ProposalMatchers.hasIpsecEncapsulationMode(
+                    IpsecEncapsulationMode.TUNNEL))));
+
+    assertThat(
+        c,
+        hasIpsecPhase2Proposal(
+            "G2_ESP_3DES_SHA",
+            allOf(
+                IpsecPhase2ProposalMatchers.hasAuthenticationAlgorithm(
+                    IpsecAuthenticationAlgorithm.HMAC_SHA1_96),
+                IpsecPhase2ProposalMatchers.hasEncryptionAlgorithm(
+                    EncryptionAlgorithm.THREEDES_CBC),
+                IpsecPhase2ProposalMatchers.hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)),
+                IpsecPhase2ProposalMatchers.hasIpsecEncapsulationMode(
+                    IpsecEncapsulationMode.TUNNEL))));
+
+    assertThat(
+        c,
+        hasIpsecPhase2Proposal(
+            "G2_ESP_AES128_SHA",
+            allOf(
+                IpsecPhase2ProposalMatchers.hasAuthenticationAlgorithm(
+                    IpsecAuthenticationAlgorithm.HMAC_SHA1_96),
+                IpsecPhase2ProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_128_CBC),
+                IpsecPhase2ProposalMatchers.hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)),
+                IpsecPhase2ProposalMatchers.hasIpsecEncapsulationMode(
+                    IpsecEncapsulationMode.TUNNEL))));
+
+    assertThat(
+        c,
+        hasIpsecPhase2Policy(
+            "policy1",
+            allOf(
+                IpsecPhase2PolicyMatchers.hasIpsecProposals(
+                    equalTo(ImmutableList.of("G2_ESP_3DES_SHA", "G2_ESP_AES128_SHA"))),
+                IpsecPhase2PolicyMatchers.hasPfsKeyGroup(equalTo(DiffieHellmanGroup.GROUP2)))));
+
+    assertThat(
+        c,
+        hasIpsecPhase2Policy(
+            "policy2",
+            allOf(
+                IpsecPhase2PolicyMatchers.hasIpsecProposals(
+                    equalTo(
+                        ImmutableList.of(
+                            "NOPFS_ESP_3DES_SHA",
+                            "NOPFS_ESP_3DES_MD5",
+                            "NOPFS_ESP_DES_SHA",
+                            "NOPFS_ESP_DES_MD5"))),
+                IpsecPhase2PolicyMatchers.hasPfsKeyGroup(nullValue()))));
+  }
+
+  @Test
+  public void testIpsecProposalToIpsecPhase2Proposal() throws IOException {
+    Configuration c = parseConfig("ipsec-proposal");
+    assertThat(
+        c,
+        hasIpsecPhase2Proposal(
+            "prop1",
+            allOf(
+                IpsecPhase2ProposalMatchers.hasAuthenticationAlgorithm(
+                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
+                IpsecPhase2ProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_128_CBC),
+                IpsecPhase2ProposalMatchers.hasProtocols(
+                    ImmutableSortedSet.of(IpsecProtocol.ESP, IpsecProtocol.AH)),
+                IpsecPhase2ProposalMatchers.hasIpsecEncapsulationMode(
+                    IpsecEncapsulationMode.TUNNEL))));
+    assertThat(
+        c,
+        hasIpsecPhase2Proposal(
+            "prop2",
+            allOf(
+                IpsecPhase2ProposalMatchers.hasAuthenticationAlgorithm(
+                    IpsecAuthenticationAlgorithm.HMAC_SHA1_96),
+                IpsecPhase2ProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_192_CBC),
+                IpsecPhase2ProposalMatchers.hasProtocols(ImmutableSortedSet.of(IpsecProtocol.AH)),
+                IpsecPhase2ProposalMatchers.hasIpsecEncapsulationMode(
+                    IpsecEncapsulationMode.TUNNEL))));
+    assertThat(
+        c,
+        hasIpsecPhase2Proposal(
+            "prop3",
+            allOf(
+                IpsecPhase2ProposalMatchers.hasAuthenticationAlgorithm(
+                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
+                IpsecPhase2ProposalMatchers.hasEncryptionAlgorithm(
+                    EncryptionAlgorithm.THREEDES_CBC),
+                IpsecPhase2ProposalMatchers.hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)),
+                IpsecPhase2ProposalMatchers.hasIpsecEncapsulationMode(
+                    IpsecEncapsulationMode.TUNNEL))));
+    assertThat(
+        c,
+        hasIpsecPhase2Proposal(
+            "prop4",
+            allOf(
+                IpsecPhase2ProposalMatchers.hasAuthenticationAlgorithm(
+                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
+                IpsecPhase2ProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_128_GCM),
+                IpsecPhase2ProposalMatchers.hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)),
+                IpsecPhase2ProposalMatchers.hasIpsecEncapsulationMode(
+                    IpsecEncapsulationMode.TUNNEL))));
+    assertThat(
+        c,
+        hasIpsecPhase2Proposal(
+            "prop5",
+            allOf(
+                IpsecPhase2ProposalMatchers.hasAuthenticationAlgorithm(
+                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
+                IpsecPhase2ProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_192_GCM),
+                IpsecPhase2ProposalMatchers.hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)),
+                IpsecPhase2ProposalMatchers.hasIpsecEncapsulationMode(
+                    IpsecEncapsulationMode.TUNNEL))));
+    assertThat(
+        c,
+        hasIpsecPhase2Proposal(
+            "prop6",
+            allOf(
+                IpsecPhase2ProposalMatchers.hasAuthenticationAlgorithm(
+                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
+                IpsecPhase2ProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_256_GCM),
+                IpsecPhase2ProposalMatchers.hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)),
+                IpsecPhase2ProposalMatchers.hasIpsecEncapsulationMode(
+                    IpsecEncapsulationMode.TUNNEL))));
+  }
+
+  @Test
+  public void testToIpsecPeerConfig() throws IOException {
+    Configuration c = parseConfig("ipsec-vpn");
+
+    assertThat(
+        c,
+        hasIpsecPeerConfig(
+            "ike-vpn-chicago",
+            isIpsecStaticPeerConfigThat(
+                allOf(
+                    hasDestinationAddress(new Ip("198.51.100.102")),
+                    IpsecPeerConfigMatchers.hasIkePhase1Policy("ike-phase1-policy"),
+                    IpsecPeerConfigMatchers.hasIpsecPolicy("ipsec-phase2-policy"),
+                    IpsecPeerConfigMatchers.hasPhysicalInterface("ge-0/0/3.0"),
+                    IpsecPeerConfigMatchers.hasLocalAddress(new Ip("198.51.100.2")),
+                    IpsecPeerConfigMatchers.hasTunnelInterface(equalTo("st0.0"))))));
   }
 
   @Test
@@ -1733,6 +1994,30 @@ public class FlatJuniperGrammarTest {
         hasInterface(
             physical, hasIsis(hasLevel2(IsisInterfaceLevelSettingsMatchers.hasHelloInterval(1)))));
     assertThat(c, hasInterface(physical, hasIsis(hasLevel2(hasHoldTime(3)))));
+
+    // Assert non-ISIS interface has no ISIS, but has IP address
+    assertThat(c, hasInterface("ge-1/0/0.0", hasIsis(nullValue())));
+    assertThat(
+        c,
+        hasInterface(
+            "ge-1/0/0.0", hasAllAddresses(contains(new InterfaceAddress(new Ip("10.1.1.1"), 24)))));
+  }
+
+  @Test
+  public void testJuniperIsisNoIsoAddress() throws IOException {
+    Configuration c = parseConfig("juniper-isis-no-iso");
+
+    assertThat(c, hasDefaultVrf(hasIsisProcess(nullValue())));
+  }
+
+  @Test
+  public void testJuniperIsisNonLoopbackIsoAddress() throws IOException {
+    Configuration c = parseConfig("juniper-isis-iso-non-loopback");
+
+    assertThat(
+        c,
+        hasDefaultVrf(
+            hasIsisProcess(hasNetAddress(equalTo(new IsoAddress("12.1234.1234.1234.1234.01"))))));
   }
 
   @Test
@@ -1746,6 +2031,7 @@ public class FlatJuniperGrammarTest {
     assertThat(c, hasDefaultVrf(hasOspfProcess(hasArea(3L, hasStubType(StubType.STUB)))));
     assertThat(c, hasDefaultVrf(hasOspfProcess(hasArea(4L, hasStubType(StubType.STUB)))));
     assertThat(c, hasDefaultVrf(hasOspfProcess(hasArea(5L, hasStubType(StubType.NONE)))));
+    assertThat(c, hasDefaultVrf(hasOspfProcess(hasArea(6L, hasStubType(StubType.STUB)))));
 
     // Check for stub subtype settings
     assertThat(
@@ -1769,6 +2055,10 @@ public class FlatJuniperGrammarTest {
         c,
         hasDefaultVrf(
             hasOspfProcess(hasArea(4L, hasStub(StubSettingsMatchers.hasSuppressType3())))));
+    assertThat(
+        c,
+        hasDefaultVrf(
+            hasOspfProcess(hasArea(6L, hasStub(StubSettingsMatchers.hasSuppressType3())))));
   }
 
   @Test

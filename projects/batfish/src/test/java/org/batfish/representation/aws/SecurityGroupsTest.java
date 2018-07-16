@@ -287,7 +287,8 @@ public class SecurityGroupsTest {
 
     sg.addInOutAccessLines(inboundRules, outboundRules, _region);
 
-    IpAccessList outFilter = new IpAccessList(TEST_ACL, outboundRules);
+    IpAccessList outFilter =
+        IpAccessList.builder().setName(TEST_ACL).setLines(outboundRules).build();
 
     // flow containing SYN and ~ACK should be rejected
     _flowBuilder.setDstIp(new Ip("1.2.3.4"));
@@ -311,7 +312,8 @@ public class SecurityGroupsTest {
 
     sg.addInOutAccessLines(inboundRules, outboundRules, _region);
 
-    IpAccessList outFilter = new IpAccessList(TEST_ACL, outboundRules);
+    IpAccessList outFilter =
+        IpAccessList.builder().setName(TEST_ACL).setLines(outboundRules).build();
 
     // flow containing SYN and ACK should be accepted
     _flowBuilder.setDstIp(new Ip("1.2.3.4"));
@@ -335,7 +337,8 @@ public class SecurityGroupsTest {
 
     sg.addInOutAccessLines(inboundRules, outboundRules, _region);
 
-    IpAccessList outFilter = new IpAccessList(TEST_ACL, outboundRules);
+    IpAccessList outFilter =
+        IpAccessList.builder().setName(TEST_ACL).setLines(outboundRules).build();
 
     // flow containing wrong destination IP should be rejected
     _flowBuilder.setDstIp(new Ip("1.2.3.5"));

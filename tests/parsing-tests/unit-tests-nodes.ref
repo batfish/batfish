@@ -703,7 +703,9 @@
                 },
                 "name" : "20 deny ip any any"
               }
-            ]
+            ],
+            "sourceName" : "abcd",
+            "sourceType" : "extended ipv4 access-list"
           }
         },
         "vendorFamily" : {
@@ -904,6 +906,7 @@
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "VLAN",
+            "vlan" : 1,
             "vrf" : "mgmt",
             "vrrpGroups" : {
               "1" : {
@@ -1023,7 +1026,9 @@
                 },
                 "name" : "10 permit 1.2.4.8/16"
               }
-            ]
+            ],
+            "sourceName" : "sshabc",
+            "sourceType" : "standard ipv4 access-list"
           }
         },
         "vendorFamily" : {
@@ -1612,7 +1617,9 @@
                 },
                 "name" : "permit host 0.0.0.0"
               }
-            ]
+            ],
+            "sourceName" : "Local_LAN_Access",
+            "sourceType" : "standard ipv4 access-list"
           },
           "outside" : {
             "name" : "outside",
@@ -1642,7 +1649,9 @@
                 },
                 "name" : "permit tcp object-group drawbridge_hosts interface outside eq https"
               }
-            ]
+            ],
+            "sourceName" : "outside",
+            "sourceType" : "extended ipv4 access-list"
           },
           "outside_in" : {
             "name" : "outside_in",
@@ -1671,7 +1680,9 @@
                 },
                 "name" : "permit udp any4 host 1.2.3.4 eq tftp"
               }
-            ]
+            ],
+            "sourceName" : "outside_in",
+            "sourceType" : "extended ipv4 access-list"
           }
         },
         "vendorFamily" : {
@@ -3321,7 +3332,9 @@
                 },
                 "name" : "permit 1.2.3.0 0.0.0.255"
               }
-            ]
+            ],
+            "sourceName" : "50",
+            "sourceType" : "standard ipv4 access-list"
           },
           "51" : {
             "name" : "51",
@@ -3362,7 +3375,9 @@
                 },
                 "name" : "deny   any"
               }
-            ]
+            ],
+            "sourceName" : "51",
+            "sourceType" : "standard ipv4 access-list"
           },
           "99" : {
             "name" : "99",
@@ -3385,7 +3400,9 @@
                 },
                 "name" : "permit 3.4.5.6"
               }
-            ]
+            ],
+            "sourceName" : "99",
+            "sourceType" : "standard ipv4 access-list"
           }
         },
         "vendorFamily" : {
@@ -4853,7 +4870,9 @@
                 },
                 "name" : "270 permit tcp any any eq microsoft-ds 5432"
               }
-            ]
+            ],
+            "sourceName" : "BLAH-BLAH",
+            "sourceType" : "extended ipv4 access-list"
           },
           "blah" : {
             "name" : "blah",
@@ -4876,13 +4895,19 @@
                 },
                 "name" : "10 permit ip any any"
               }
-            ]
+            ],
+            "sourceName" : "blah",
+            "sourceType" : "extended ipv4 access-list"
           },
           "extended" : {
-            "name" : "extended"
+            "name" : "extended",
+            "sourceName" : "extended",
+            "sourceType" : "extended ipv4 access-list"
           },
           "standard" : {
-            "name" : "standard"
+            "name" : "standard",
+            "sourceName" : "standard",
+            "sourceType" : "extended ipv4 access-list"
           }
         },
         "routeFilterLists" : {
@@ -5911,6 +5936,66 @@
             "lifetimeSeconds" : 28800
           }
         },
+        "ipsecPhase2Policies" : {
+          "abcdefg" : {
+            "proposals" : [
+              "hijklmnop"
+            ]
+          },
+          "~IPSEC_PHASE2_POLICY:VPN:5~" : {
+            "pfsKeyGroup" : "GROUP14",
+            "proposals" : [
+              "bleep"
+            ]
+          },
+          "~IPSEC_PHASE2_POLICY:VPNMAP:2~" : {
+            "pfsKeyGroup" : "GROUP2",
+            "proposals" : [
+              "mytransformset"
+            ]
+          }
+        },
+        "ipsecPhase2Proposals" : {
+          "ESP-3DES-MD5" : {
+            "authenticationAlgorithm" : "HMAC_MD5_96",
+            "encryptionAlgorithm" : "THREEDES_CBC",
+            "ipsecEncapsulationMode" : "TUNNEL",
+            "protocols" : [
+              "ESP"
+            ]
+          },
+          "IPSEC_AES_256" : {
+            "authenticationAlgorithm" : "HMAC_SHA1_96",
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "ipsecEncapsulationMode" : "TUNNEL",
+            "protocols" : [
+              "ESP"
+            ]
+          },
+          "cipts1" : {
+            "authenticationAlgorithm" : "HMAC_SHA_256_128",
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "ipsecEncapsulationMode" : "TUNNEL",
+            "protocols" : [
+              "ESP"
+            ]
+          },
+          "cipts2" : {
+            "authenticationAlgorithm" : "HMAC_SHA_512",
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "ipsecEncapsulationMode" : "TUNNEL",
+            "protocols" : [
+              "ESP"
+            ]
+          },
+          "noAuthHeader" : {
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "ipsecEncapsulationMode" : "TUNNEL",
+            "protocols" : [
+              "ESP"
+            ]
+          }
+        },
         "ipsecPolicies" : {
           "VPN:5" : {
             "name" : "VPN:5",
@@ -6243,7 +6328,9 @@
                 },
                 "name" : "permit tcp any host 1.1.1.1 eq 65111"
               }
-            ]
+            ],
+            "sourceName" : "bippety",
+            "sourceType" : "extended ipv4 access-list"
           },
           "bloop_blop" : {
             "name" : "bloop_blop",
@@ -6272,7 +6359,9 @@
                 },
                 "name" : "permit tcp addrgroup bleep_blorp any eq 13000"
               }
-            ]
+            ],
+            "sourceName" : "bloop_blop",
+            "sourceType" : "extended ipv4 access-list"
           }
         },
         "vendorFamily" : {
@@ -6754,6 +6843,7 @@
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "VLAN",
+            "vlan" : 1,
             "vrf" : "default"
           },
           "Vlan1005" : {
@@ -6779,6 +6869,7 @@
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "VLAN",
+            "vlan" : 1005,
             "vrf" : "default"
           },
           "Vlan1006" : {
@@ -6804,6 +6895,7 @@
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "VLAN",
+            "vlan" : 1006,
             "vrf" : "default"
           },
           "Vlan111" : {
@@ -6829,6 +6921,7 @@
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "VLAN",
+            "vlan" : 111,
             "vrf" : "default"
           },
           "Vlan1234" : {
@@ -6854,6 +6947,7 @@
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "VLAN",
+            "vlan" : 1234,
             "vrf" : "default"
           },
           "Vlan2" : {
@@ -6879,6 +6973,7 @@
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "VLAN",
+            "vlan" : 2,
             "vrf" : "default"
           },
           "Vlan3" : {
@@ -6904,6 +6999,7 @@
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "VLAN",
+            "vlan" : 3,
             "vrf" : "default"
           },
           "Vlan4094" : {
@@ -6929,6 +7025,7 @@
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "VLAN",
+            "vlan" : 4094,
             "vrf" : "default"
           },
           "Vxlan1" : {
@@ -7032,7 +7129,9 @@
                 },
                 "name" : "10 permit tcp any any"
               }
-            ]
+            ],
+            "sourceName" : "abc",
+            "sourceType" : "extended ipv4 access-list"
           }
         },
         "vendorFamily" : {
@@ -8492,7 +8591,9 @@
                   ]
                 }
               }
-            ]
+            ],
+            "sourceName" : "SVCGRP-ICMP",
+            "sourceType" : "object-group service"
           }
         },
         "vendorFamily" : {
@@ -8662,7 +8763,9 @@
                 },
                 "name" : "10 permit icmp any any"
               }
-            ]
+            ],
+            "sourceName" : "copp-system-acl-icmp",
+            "sourceType" : "extended ipv4 access-list"
           }
         },
         "vendorFamily" : {
@@ -9155,7 +9258,27 @@
                 },
                 "name" : "class-default action: ACCEPT"
               }
-            ]
+            ],
+            "sourceName" : "pminspect",
+            "sourceType" : "policy-map type inspect"
+          }
+        },
+        "ipSpaceMetadata" : {
+          "1.2.3.4-24" : {
+            "sourceName" : "1.2.3.4-24",
+            "sourceType" : "object-group network"
+          },
+          "dns_servers" : {
+            "sourceName" : "dns_servers",
+            "sourceType" : "object-group network"
+          },
+          "ntp_servers" : {
+            "sourceName" : "ntp_servers",
+            "sourceType" : "object-group network"
+          },
+          "obj_any" : {
+            "sourceName" : "obj_any",
+            "sourceType" : "object network"
           }
         },
         "ipSpaces" : {
@@ -9766,7 +9889,9 @@
                 },
                 "name" : "permit ip any any"
               }
-            ]
+            ],
+            "sourceName" : "blah",
+            "sourceType" : "extended ipv4 access-list"
           }
         },
         "vendorFamily" : {
@@ -9810,7 +9935,9 @@
                 },
                 "name" : "permit any"
               }
-            ]
+            ],
+            "sourceName" : "1",
+            "sourceType" : "standard ipv4 access-list"
           }
         },
         "vendorFamily" : {
@@ -11664,6 +11791,7 @@
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "VLAN",
+            "vlan" : 303,
             "vrf" : "default"
           },
           "Vlan803" : {
@@ -11697,6 +11825,7 @@
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "VLAN",
+            "vlan" : 803,
             "vrf" : "default"
           }
         },
@@ -11823,6 +11952,7 @@
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "VLAN",
+            "vlan" : 100,
             "vrf" : "default"
           }
         },
@@ -11958,6 +12088,76 @@
           }
         }
       },
+      "ios_interface" : {
+        "configurationFormat" : "CISCO_IOS",
+        "name" : "ios_interface",
+        "defaultCrossZoneAction" : "ACCEPT",
+        "defaultInboundAction" : "ACCEPT",
+        "deviceType" : "SWITCH",
+        "interfaces" : {
+          "GigabitEthernet1/0/1" : {
+            "name" : "GigabitEthernet1/0/1",
+            "accessVlan" : 0,
+            "active" : true,
+            "autostate" : true,
+            "bandwidth" : 1.0E9,
+            "declaredNames" : [
+              "GigabitEthernet1/0/1"
+            ],
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : true,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          }
+        },
+        "vendorFamily" : {
+          "cisco" : {
+            "hostname" : "ios_interface",
+            "logging" : {
+              "on" : true
+            }
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default",
+            "interfaces" : [
+              "GigabitEthernet1/0/1"
+            ]
+          }
+        }
+      },
+      "ios_template" : {
+        "configurationFormat" : "CISCO_IOS",
+        "name" : "ios_template",
+        "defaultCrossZoneAction" : "ACCEPT",
+        "defaultInboundAction" : "ACCEPT",
+        "deviceType" : "SWITCH",
+        "vendorFamily" : {
+          "cisco" : {
+            "hostname" : "ios_template",
+            "logging" : {
+              "on" : true
+            }
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default"
+          }
+        }
+      },
       "ios_xr_acl" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "ios_xr_acl",
@@ -11984,15 +12184,168 @@
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "ROUTER",
+        "routeFilterLists" : {
+          "~MATCH_SUPPRESSED_SUMMARY_ONLY:default~" : {
+            "name" : "~MATCH_SUPPRESSED_SUMMARY_ONLY:default~",
+            "lines" : [
+              {
+                "action" : "ACCEPT",
+                "ipWildcard" : "1.0.0.0/8",
+                "lengthRange" : "9-32"
+              }
+            ]
+          }
+        },
         "routingPolicies" : {
+          "~AGGREGATE_ROUTE_GEN:default:1.0.0.0/8~" : {
+            "name" : "~AGGREGATE_ROUTE_GEN:default:1.0.0.0/8~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                  "prefix" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                  },
+                  "prefixSet" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                    "prefixSpace" : [
+                      "1.0.0.0/8:9-32"
+                    ]
+                  }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ]
+              }
+            ]
+          },
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
             "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
             "statements" : [
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "comment" : "Suppress more specific networks for summary-only aggregate-address networks",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                  "prefix" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                  },
+                  "prefixSet" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
+                    "name" : "~MATCH_SUPPRESSED_SUMMARY_ONLY:default~"
+                  }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "Suppress"
+                  }
+                ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
                 "guard" : {
                   "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
                   "disjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
+                      "conjuncts" : [
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                          "prefix" : {
+                            "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                          },
+                          "prefixSet" : {
+                            "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                            "prefixSpace" : [
+                              "1.0.0.0/8"
+                            ]
+                          }
+                        },
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                          "protocol" : "aggregate"
+                        },
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr",
+                          "expr" : {
+                            "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                            "type" : "True"
+                          },
+                          "postStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "UnsetWriteIntermediateBgpAttributes"
+                            }
+                          ],
+                          "postTrueStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "SetReadIntermediateBgpAttributes"
+                            },
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
+                              "originType" : {
+                                "class" : "org.batfish.datamodel.routing_policy.expr.LiteralOrigin",
+                                "originType" : "igp"
+                              }
+                            }
+                          ],
+                          "preStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "SetWriteIntermediateBgpAttributes"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
+                      "comment" : "Redistribute static routes into BGP",
+                      "conjuncts" : [
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                          "protocol" : "static"
+                        },
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr",
+                          "expr" : {
+                            "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                            "type" : "True"
+                          },
+                          "postStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "UnsetWriteIntermediateBgpAttributes"
+                            }
+                          ],
+                          "postTrueStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "SetReadIntermediateBgpAttributes"
+                            },
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
+                              "originType" : {
+                                "class" : "org.batfish.datamodel.routing_policy.expr.LiteralOrigin",
+                                "originType" : "incomplete"
+                              }
+                            }
+                          ],
+                          "preStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "SetWriteIntermediateBgpAttributes"
+                            }
+                          ]
+                        }
+                      ]
+                    },
                     {
                       "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
                       "protocol" : "bgp"
@@ -12028,6 +12381,18 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
+            "aggregateRoutes" : [
+              {
+                "class" : "org.batfish.datamodel.GeneratedRoute",
+                "administrativeCost" : 200,
+                "asPath" : [ ],
+                "discard" : true,
+                "generationPolicy" : "~AGGREGATE_ROUTE_GEN:default:1.0.0.0/8~",
+                "metric" : 0,
+                "network" : "1.0.0.0/8",
+                "nextHopIp" : "AUTO/NONE(-1l)"
+              }
+            ],
             "bgpProcess" : {
               "multipathEbgp" : false,
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
@@ -12238,6 +12603,23 @@
           }
         }
       },
+      "ios_xr_class_map" : {
+        "configurationFormat" : "CISCO_IOS_XR",
+        "name" : "ios_xr_class_map",
+        "defaultCrossZoneAction" : "ACCEPT",
+        "defaultInboundAction" : "ACCEPT",
+        "deviceType" : "SWITCH",
+        "vendorFamily" : {
+          "cisco" : {
+            "hostname" : "ios_xr_class_map"
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default"
+          }
+        }
+      },
       "ios_xr_isis" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "ios_xr_isis",
@@ -12294,6 +12676,43 @@
             "interfaces" : [
               "GigabitEthernet0/2/1/6"
             ]
+          }
+        }
+      },
+      "ios_xr_logging" : {
+        "configurationFormat" : "CISCO_IOS_XR",
+        "name" : "ios_xr_logging",
+        "defaultCrossZoneAction" : "ACCEPT",
+        "defaultInboundAction" : "ACCEPT",
+        "deviceType" : "SWITCH",
+        "vendorFamily" : {
+          "cisco" : {
+            "hostname" : "ios_xr_logging",
+            "logging" : {
+              "on" : true
+            }
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default"
+          }
+        }
+      },
+      "ios_xr_misc" : {
+        "configurationFormat" : "CISCO_IOS_XR",
+        "name" : "ios_xr_misc",
+        "defaultCrossZoneAction" : "ACCEPT",
+        "defaultInboundAction" : "ACCEPT",
+        "deviceType" : "SWITCH",
+        "vendorFamily" : {
+          "cisco" : {
+            "hostname" : "ios_xr_misc"
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default"
           }
         }
       },
@@ -12866,6 +13285,46 @@
           }
         }
       },
+      "isr_crypto_gdoi" : {
+        "configurationFormat" : "CISCO_IOS",
+        "name" : "isr_crypto_gdoi",
+        "defaultCrossZoneAction" : "ACCEPT",
+        "defaultInboundAction" : "ACCEPT",
+        "deviceType" : "SWITCH",
+        "vendorFamily" : {
+          "cisco" : {
+            "hostname" : "isr_crypto_gdoi",
+            "logging" : {
+              "on" : true
+            }
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default"
+          }
+        }
+      },
+      "isr_voip" : {
+        "configurationFormat" : "CISCO_IOS",
+        "name" : "isr_voip",
+        "defaultCrossZoneAction" : "ACCEPT",
+        "defaultInboundAction" : "ACCEPT",
+        "deviceType" : "SWITCH",
+        "vendorFamily" : {
+          "cisco" : {
+            "hostname" : "isr_voip",
+            "logging" : {
+              "on" : true
+            }
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default"
+          }
+        }
+      },
       "juniper-ospf" : {
         "configurationFormat" : "FLAT_JUNIPER",
         "name" : "juniper-ospf",
@@ -13095,7 +13554,9 @@
                 },
                 "name" : "bar"
               }
-            ]
+            ],
+            "sourceName" : "foo",
+            "sourceType" : "firewall filter"
           }
         },
         "vendorFamily" : {
@@ -14233,7 +14694,9 @@
                 },
                 "name" : "blorp"
               }
-            ]
+            ],
+            "sourceName" : "blah",
+            "sourceType" : "firewall filter"
           }
         },
         "vendorFamily" : {
@@ -15617,7 +16080,9 @@
                 },
                 "name" : "123-4"
               }
-            ]
+            ],
+            "sourceName" : "~FROM_ZONE~A~TO_ZONE~B",
+            "sourceType" : "firewall filter"
           },
           "~GLOBAL_SECURITY_POLICY~" : {
             "name" : "~GLOBAL_SECURITY_POLICY~",
@@ -15632,7 +16097,9 @@
                 },
                 "name" : "p1"
               }
-            ]
+            ],
+            "sourceName" : "~GLOBAL_SECURITY_POLICY~",
+            "sourceType" : "firewall filter"
           }
         },
         "ipSpaces" : {
@@ -17561,13 +18028,19 @@
                 },
                 "name" : "10 permit ip any any"
               }
-            ]
+            ],
+            "sourceName" : "blah",
+            "sourceType" : "extended ipv4 access-list"
           },
           "extended" : {
-            "name" : "extended"
+            "name" : "extended",
+            "sourceName" : "extended",
+            "sourceType" : "extended ipv4 access-list"
           },
           "standard" : {
-            "name" : "standard"
+            "name" : "standard",
+            "sourceName" : "standard",
+            "sourceType" : "extended ipv4 access-list"
           }
         },
         "vendorFamily" : {
@@ -20413,6 +20886,61 @@
                           "1234:1234:0:0:0:118:9a41:ff0"
                         ]
                       }
+                    }
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                    "falseStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "SetDefaultActionAccept"
+                      }
+                    ],
+                    "guard" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                      "type" : "CallExprContext"
+                    },
+                    "trueStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "SetLocalDefaultActionAccept"
+                      }
+                    ]
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.BufferedStatement",
+                    "statement" : {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.SetNextHop",
+                      "destinationVrf" : false,
+                      "expr" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.DiscardNextHop"
+                      }
+                    }
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                    "falseStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "SetDefaultActionAccept"
+                      }
+                    ],
+                    "guard" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                      "type" : "CallExprContext"
+                    },
+                    "trueStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "SetLocalDefaultActionAccept"
+                      }
+                    ]
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.BufferedStatement",
+                    "statement" : {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Comment",
+                      "comment" : "NOP: unsupported route-policy statement: 'set path-selection backup 1 install multipath-protect advertise\n'"
                     }
                   },
                   {
@@ -23565,7 +24093,9 @@
                 },
                 "name" : "permit tcp 1.2.3.4/31 any fin ack"
               }
-            ]
+            ],
+            "sourceName" : "100",
+            "sourceType" : "extended ipv4 access-list"
           }
         },
         "vendorFamily" : {

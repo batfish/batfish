@@ -51,6 +51,7 @@
                 10000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.0.0.0/31",
@@ -77,6 +78,7 @@
                 10001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.0.1.0/31",
@@ -103,6 +105,7 @@
                 10100
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.1.0.0/31",
@@ -129,6 +132,7 @@
                 10101
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.1.1.0/31",
@@ -155,6 +159,7 @@
                 10000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.0.0.1/32",
@@ -181,6 +186,7 @@
                 10001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.0.1.1/32",
@@ -207,6 +213,7 @@
                 10100
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.1.0.1/32",
@@ -233,6 +240,7 @@
                 10101
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.1.1.1/32",
@@ -256,6 +264,7 @@
                 50000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "5.0.0.1/32",
@@ -279,6 +288,7 @@
                 50001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "5.1.0.1/32",
@@ -351,6 +361,7 @@
                 10000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.0.0.0/31",
@@ -377,6 +388,7 @@
                 10001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.0.1.0/31",
@@ -403,6 +415,7 @@
                 10100
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.1.0.0/31",
@@ -429,6 +442,7 @@
                 10101
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.1.1.0/31",
@@ -455,6 +469,7 @@
                 10000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.0.0.1/32",
@@ -481,6 +496,7 @@
                 10001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.0.1.1/32",
@@ -507,6 +523,7 @@
                 10100
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.1.0.1/32",
@@ -533,6 +550,7 @@
                 10101
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.1.1.1/32",
@@ -556,6 +574,7 @@
                 50000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "5.0.1.1/32",
@@ -579,6 +598,7 @@
                 50001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "5.1.1.1/32",
@@ -665,6 +685,7 @@
                 10000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.0.0.0/31",
@@ -688,6 +709,7 @@
                 10001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.0.1.0/31",
@@ -717,6 +739,7 @@
                 10100
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.1.0.0/31",
@@ -746,6 +769,7 @@
                 10101
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.1.1.0/31",
@@ -769,6 +793,7 @@
                 10000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.0.0.1/32",
@@ -792,6 +817,7 @@
                 10001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.0.1.1/32",
@@ -821,6 +847,7 @@
                 10100
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.1.0.1/32",
@@ -850,6 +877,7 @@
                 10101
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.1.1.1/32",
@@ -884,6 +912,7 @@
                 50001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "5.1.0.1/32",
@@ -907,6 +936,7 @@
                 60000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "6.0.0.1/32",
@@ -985,6 +1015,7 @@
                 10000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.0.0.0/31",
@@ -1008,6 +1039,7 @@
                 10001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.0.1.0/31",
@@ -1037,6 +1069,7 @@
                 10100
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.1.0.0/31",
@@ -1066,6 +1099,7 @@
                 10101
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.1.1.0/31",
@@ -1089,6 +1123,7 @@
                 10000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.0.0.1/32",
@@ -1112,6 +1147,7 @@
                 10001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.0.1.1/32",
@@ -1141,6 +1177,7 @@
                 10100
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.1.0.1/32",
@@ -1170,6 +1207,7 @@
                 10101
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.1.1.1/32",
@@ -1204,6 +1242,7 @@
                 50001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "5.1.1.1/32",
@@ -1227,6 +1266,7 @@
                 60001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "6.1.0.1/32",
@@ -1308,6 +1348,7 @@
                 10001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.0.1.0/31",
@@ -1334,6 +1375,7 @@
                 10001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.0.1.0/31",
@@ -1366,6 +1408,7 @@
                 10100
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.1.0.0/31",
@@ -1398,6 +1441,7 @@
                 10100
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.1.0.0/31",
@@ -1430,6 +1474,7 @@
                 10101
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.1.1.0/31",
@@ -1462,6 +1507,7 @@
                 10101
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.1.1.0/31",
@@ -1496,6 +1542,7 @@
                 10001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.0.1.1/32",
@@ -1522,6 +1569,7 @@
                 10001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.0.1.1/32",
@@ -1554,6 +1602,7 @@
                 10100
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.1.0.1/32",
@@ -1586,6 +1635,7 @@
                 10100
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.1.0.1/32",
@@ -1618,6 +1668,7 @@
                 10101
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.1.1.1/32",
@@ -1650,6 +1701,7 @@
                 10101
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.1.1.1/32",
@@ -1673,6 +1725,7 @@
                 50000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "5.0.0.1/32",
@@ -1696,6 +1749,7 @@
                 50000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "5.0.1.1/32",
@@ -1725,6 +1779,7 @@
                 50001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "5.1.0.1/32",
@@ -1754,6 +1809,7 @@
                 50001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "5.1.1.1/32",
@@ -1780,6 +1836,7 @@
                 60000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "6.0.0.1/32",
@@ -1806,6 +1863,7 @@
                 60001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "6.1.0.1/32",
@@ -1870,6 +1928,7 @@
                 10000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.0.0.0/31",
@@ -1896,6 +1955,7 @@
                 10000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.0.0.0/31",
@@ -1945,6 +2005,7 @@
                 10100
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.1.0.0/31",
@@ -1977,6 +2038,7 @@
                 10100
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.1.0.0/31",
@@ -2009,6 +2071,7 @@
                 10101
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.1.1.0/31",
@@ -2041,6 +2104,7 @@
                 10101
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.1.1.0/31",
@@ -2067,6 +2131,7 @@
                 10000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.0.0.1/32",
@@ -2093,6 +2158,7 @@
                 10000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.0.0.1/32",
@@ -2133,6 +2199,7 @@
                 10100
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.1.0.1/32",
@@ -2165,6 +2232,7 @@
                 10100
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.1.0.1/32",
@@ -2197,6 +2265,7 @@
                 10101
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.1.1.1/32",
@@ -2229,6 +2298,7 @@
                 10101
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.1.1.1/32",
@@ -2252,6 +2322,7 @@
                 50000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "5.0.0.1/32",
@@ -2275,6 +2346,7 @@
                 50000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "5.0.1.1/32",
@@ -2304,6 +2376,7 @@
                 50001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "5.1.0.1/32",
@@ -2333,6 +2406,7 @@
                 50001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "5.1.1.1/32",
@@ -2359,6 +2433,7 @@
                 60000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "6.0.0.1/32",
@@ -2385,6 +2460,7 @@
                 60001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "6.1.0.1/32",
@@ -2469,6 +2545,7 @@
                 10000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.0.0.0/31",
@@ -2498,6 +2575,7 @@
                 10001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.0.1.0/31",
@@ -2521,6 +2599,7 @@
                 10100
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.1.0.0/31",
@@ -2544,6 +2623,7 @@
                 10101
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.1.1.0/31",
@@ -2573,6 +2653,7 @@
                 10000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.0.0.1/32",
@@ -2602,6 +2683,7 @@
                 10001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.0.1.1/32",
@@ -2625,6 +2707,7 @@
                 10100
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.1.0.1/32",
@@ -2648,6 +2731,7 @@
                 10101
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.1.1.1/32",
@@ -2674,6 +2758,7 @@
                 50000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "5.0.0.1/32",
@@ -2705,6 +2790,7 @@
                 60000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "6.0.0.1/32",
@@ -2789,6 +2875,7 @@
                 10000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.0.0.0/31",
@@ -2818,6 +2905,7 @@
                 10001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.0.1.0/31",
@@ -2841,6 +2929,7 @@
                 10100
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.1.0.0/31",
@@ -2864,6 +2953,7 @@
                 10101
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.1.1.0/31",
@@ -2893,6 +2983,7 @@
                 10000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.0.0.1/32",
@@ -2922,6 +3013,7 @@
                 10001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.0.1.1/32",
@@ -2945,6 +3037,7 @@
                 10100
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.1.0.1/32",
@@ -2968,6 +3061,7 @@
                 10101
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.1.1.1/32",
@@ -2994,6 +3088,7 @@
                 50000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "5.0.1.1/32",
@@ -3025,6 +3120,7 @@
                 60001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "6.1.0.1/32",
@@ -3095,6 +3191,7 @@
                 10000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.0.0.0/31",
@@ -3127,6 +3224,7 @@
                 10000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.0.0.0/31",
@@ -3159,6 +3257,7 @@
                 10001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.0.1.0/31",
@@ -3191,6 +3290,7 @@
                 10001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.0.1.0/31",
@@ -3234,6 +3334,7 @@
                 10101
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.1.1.0/31",
@@ -3260,6 +3361,7 @@
                 10101
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.1.1.0/31",
@@ -3292,6 +3394,7 @@
                 10000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.0.0.1/32",
@@ -3324,6 +3427,7 @@
                 10000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.0.0.1/32",
@@ -3356,6 +3460,7 @@
                 10001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.0.1.1/32",
@@ -3388,6 +3493,7 @@
                 10001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.0.1.1/32",
@@ -3422,6 +3528,7 @@
                 10101
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.1.1.1/32",
@@ -3448,6 +3555,7 @@
                 10101
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.1.1.1/32",
@@ -3477,6 +3585,7 @@
                 50000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "5.0.0.1/32",
@@ -3506,6 +3615,7 @@
                 50000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "5.0.1.1/32",
@@ -3529,6 +3639,7 @@
                 50001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "5.1.0.1/32",
@@ -3552,6 +3663,7 @@
                 50001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "5.1.1.1/32",
@@ -3578,6 +3690,7 @@
                 60000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "6.0.0.1/32",
@@ -3604,6 +3717,7 @@
                 60001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "6.1.0.1/32",
@@ -3674,6 +3788,7 @@
                 10000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.0.0.0/31",
@@ -3706,6 +3821,7 @@
                 10000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.0.0.0/31",
@@ -3738,6 +3854,7 @@
                 10001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.0.1.0/31",
@@ -3770,6 +3887,7 @@
                 10001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.0.1.0/31",
@@ -3796,6 +3914,7 @@
                 10100
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.1.0.0/31",
@@ -3822,6 +3941,7 @@
                 10100
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.1.0.0/31",
@@ -3871,6 +3991,7 @@
                 10000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.0.0.1/32",
@@ -3903,6 +4024,7 @@
                 10000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.0.0.1/32",
@@ -3935,6 +4057,7 @@
                 10001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.0.1.1/32",
@@ -3967,6 +4090,7 @@
                 10001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.0.1.1/32",
@@ -3993,6 +4117,7 @@
                 10100
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.1.0.1/32",
@@ -4019,6 +4144,7 @@
                 10100
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.1.0.1/32",
@@ -4056,6 +4182,7 @@
                 50000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "5.0.0.1/32",
@@ -4085,6 +4212,7 @@
                 50000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "5.0.1.1/32",
@@ -4108,6 +4236,7 @@
                 50001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "5.1.0.1/32",
@@ -4131,6 +4260,7 @@
                 50001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "5.1.1.1/32",
@@ -4157,6 +4287,7 @@
                 60000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "6.0.0.1/32",
@@ -4183,6 +4314,7 @@
                 60001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "6.1.0.1/32",
