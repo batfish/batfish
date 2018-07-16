@@ -1,7 +1,11 @@
 package org.batfish.z3;
 
+import static org.batfish.datamodel.acl.AclLineMatchExprs.FALSE;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.TRUE;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -31,23 +35,22 @@ import org.batfish.datamodel.acl.TrueExpr;
  */
 public abstract class IpAccessListSpecializer
     implements GenericAclLineMatchExprVisitor<AclLineMatchExpr> {
+
+  private static <T> boolean emptyDisjuction(Collection<T> orig, Collection<T> specialized) {
+    return orig != null && !orig.isEmpty() && specialized.isEmpty();
+  }
+
   private static IpSpace simplifyNegativeIpConstraint(IpSpace ipSpace) {
-    if (ipSpace == EmptyIpSpace.INSTANCE) {
-      return null;
-    }
-    return ipSpace;
+    return ipSpace == EmptyIpSpace.INSTANCE ? null : ipSpace;
   }
 
   private static IpSpace simplifyPositiveIpConstraint(IpSpace ipSpace) {
-    if (ipSpace == UniverseIpSpace.INSTANCE) {
-      return null;
-    }
-    return ipSpace;
+    return ipSpace == UniverseIpSpace.INSTANCE ? null : ipSpace;
   }
 
-  protected abstract boolean canSpecialize();
+  abstract boolean canSpecialize();
 
-  protected abstract HeaderSpace specialize(HeaderSpace headerSpace);
+  abstract HeaderSpace specialize(HeaderSpace headerSpace);
 
   public final IpAccessList specialize(IpAccessList ipAccessList) {
     if (!canSpecialize()) {
@@ -71,12 +74,9 @@ public abstract class IpAccessListSpecializer
 
   public final Optional<IpAccessListLine> specialize(IpAccessListLine ipAccessListLine) {
     AclLineMatchExpr aclLineMatchExpr = ipAccessListLine.getMatchCondition().accept(this);
-
-    if (aclLineMatchExpr == FalseExpr.INSTANCE) {
-      return Optional.empty();
-    }
-
-    return Optional.of(ipAccessListLine.toBuilder().setMatchCondition(aclLineMatchExpr).build());
+    return aclLineMatchExpr == FALSE
+        ? Optional.empty()
+        : Optional.of(ipAccessListLine.toBuilder().setMatchCondition(aclLineMatchExpr).build());
   }
 
   @Override
@@ -104,25 +104,51 @@ public abstract class IpAccessListSpecializer
 
   @Override
   public final AclLineMatchExpr visitMatchHeaderSpace(MatchHeaderSpace matchHeaderSpace) {
-    HeaderSpace headerSpace = specialize(matchHeaderSpace.getHeaderspace());
+    HeaderSpace originalHeaderSpace = matchHeaderSpace.getHeaderspace();
+    HeaderSpace headerSpace = specialize(originalHeaderSpace);
     IpSpace dstIps = headerSpace.getDstIps();
     IpSpace notDstIps = headerSpace.getNotDstIps();
     IpSpace notSrcIps = headerSpace.getNotSrcIps();
     IpSpace srcIps = headerSpace.getSrcIps();
     IpSpace srcOrDstIps = headerSpace.getSrcOrDstIps();
 
-    boolean empty =
+    boolean emptyIpSpace =
         dstIps == EmptyIpSpace.INSTANCE
             || srcIps == EmptyIpSpace.INSTANCE
             || srcOrDstIps == EmptyIpSpace.INSTANCE
             || notDstIps == UniverseIpSpace.INSTANCE
             || notSrcIps == UniverseIpSpace.INSTANCE;
 
-    if (empty) {
-      return FalseExpr.INSTANCE;
+    if (emptyIpSpace) {
+      return FALSE;
     }
 
-    HeaderSpace specializedHeaderSpace =
+    /*
+     * if any field has an empty list of required values (i.e. it must be one of zero choices), then
+     * false. Exclude empty lists of forbidden values (that part of the constraint has become true).
+     */
+    boolean emptyDisjunction =
+        emptyDisjuction(originalHeaderSpace.getDscps(), headerSpace.getDscps())
+            || emptyDisjuction(originalHeaderSpace.getEcns(), headerSpace.getEcns())
+            || emptyDisjuction(originalHeaderSpace.getDstPorts(), headerSpace.getDstPorts())
+            || emptyDisjuction(
+                originalHeaderSpace.getFragmentOffsets(), headerSpace.getFragmentOffsets())
+            || emptyDisjuction(originalHeaderSpace.getIcmpCodes(), headerSpace.getIcmpCodes())
+            || emptyDisjuction(originalHeaderSpace.getIcmpTypes(), headerSpace.getIcmpTypes())
+            || emptyDisjuction(originalHeaderSpace.getIpProtocols(), headerSpace.getIpProtocols())
+            || emptyDisjuction(originalHeaderSpace.getSrcPorts(), headerSpace.getSrcPorts())
+            || emptyDisjuction(
+                originalHeaderSpace.getSrcOrDstPorts(), headerSpace.getSrcOrDstPorts())
+            || emptyDisjuction(
+                originalHeaderSpace.getSrcOrDstProtocols(), headerSpace.getSrcOrDstProtocols())
+            || emptyDisjuction(originalHeaderSpace.getStates(), headerSpace.getStates())
+            || emptyDisjuction(originalHeaderSpace.getTcpFlags(), headerSpace.getTcpFlags());
+
+    if (emptyDisjunction) {
+      return FALSE;
+    }
+
+    HeaderSpace simplifiedHeaderSpace =
         headerSpace
             .toBuilder()
             .setDstIps(simplifyPositiveIpConstraint(dstIps))
@@ -132,11 +158,12 @@ public abstract class IpAccessListSpecializer
             .setSrcOrDstIps(simplifyPositiveIpConstraint(srcOrDstIps))
             .build();
 
-    if (specializedHeaderSpace.equals(HeaderSpace.builder().build())) {
-      return TrueExpr.INSTANCE;
+    if (simplifiedHeaderSpace.equals(HeaderSpace.builder().build())) {
+      // unconstrained: the input headerspace contains the space we're specializing to
+      return TRUE;
     }
 
-    return new MatchHeaderSpace(specializedHeaderSpace);
+    return new MatchHeaderSpace(simplifiedHeaderSpace);
   }
 
   @Override
