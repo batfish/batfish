@@ -2,6 +2,7 @@ package org.batfish.datamodel;
 
 import javax.annotation.Nullable;
 
+/** Represents the attributes of the session established between two {@link IpsecPeerConfig}s */
 public class IpsecSession {
 
   @Nullable private IkePhase1Policy _initiatorIkeP1Policy;
@@ -10,9 +11,9 @@ public class IpsecSession {
 
   @Nullable private IkePhase1Proposal _negotiatedIkeP1Proposal;
 
-  @Nullable private IkePhase1Key _negotiatedIkePhase1Key;
+  @Nullable private IkePhase1Key _negotiatedIkeP1Key;
 
-  @Nullable private IpsecPhase2Proposal _negotiatedIpsecPhase2Proposal;
+  @Nullable private IpsecPhase2Proposal _negotiatedIpsecP2Proposal;
 
   @Nullable private IkePhase1Policy _responderIkeP1Policy;
 
@@ -44,13 +45,13 @@ public class IpsecSession {
   }
 
   @Nullable
-  public IkePhase1Key getNegotiatedIkePhase1Key() {
-    return _negotiatedIkePhase1Key;
+  public IkePhase1Key getNegotiatedIkeP1Key() {
+    return _negotiatedIkeP1Key;
   }
 
   @Nullable
-  public IpsecPhase2Proposal getNegotiatedIpsecPhase2Proposal() {
-    return _negotiatedIpsecPhase2Proposal;
+  public IpsecPhase2Proposal getNegotiatedIpsecP2Proposal() {
+    return _negotiatedIpsecP2Proposal;
   }
 
   public void setInitiatorIkeP1Policy(@Nullable IkePhase1Policy initiatorIkeP1Policy) {
@@ -73,12 +74,12 @@ public class IpsecSession {
     _negotiatedIkeP1Proposal = ikePhase1Proposal;
   }
 
-  public void setNegotiatedIkePhase1Key(@Nullable IkePhase1Key negotiatedIkePhase1Key) {
-    _negotiatedIkePhase1Key = negotiatedIkePhase1Key;
+  public void setNegotiatedIkeP1Key(@Nullable IkePhase1Key negotiatedIkePhase1Key) {
+    _negotiatedIkeP1Key = negotiatedIkePhase1Key;
   }
 
-  public void setNegotiatedIpsecPhase2Proposal(@Nullable IpsecPhase2Proposal ipsecPhase2Proposal) {
-    _negotiatedIpsecPhase2Proposal = ipsecPhase2Proposal;
+  public void setNegotiatedIpsecP2Proposal(@Nullable IpsecPhase2Proposal ipsecPhase2Proposal) {
+    _negotiatedIpsecP2Proposal = ipsecPhase2Proposal;
   }
 
   public enum IpsecSessionType {

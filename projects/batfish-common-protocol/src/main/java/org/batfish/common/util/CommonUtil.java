@@ -1182,6 +1182,14 @@ public class CommonUtil {
     return ImmutableValueGraph.copyOf(graph);
   }
 
+  /**
+   * Computes the IPSec topology which is a {@link ValueGraph} of nodes where each node is a {@link
+   * Pair} of {@link Configuration} and {@link IpsecPeerConfig}, where the {@link Configuration}
+   * owns the {@link IpsecPeerConfig}
+   *
+   * @param configurations {@link Configuration}s for which the topology has to be computed
+   * @return the constructed {@link ValueGraph} for the IPSec topology
+   */
   public static ValueGraph<Pair<Configuration, IpsecPeerConfig>, IpsecSession> initIpsecTopology(
       Map<String, Configuration> configurations) {
 
@@ -1233,9 +1241,13 @@ public class CommonUtil {
       }
     }
 
-    return graph;
+    return ImmutableValueGraph.copyOf(graph);
   }
 
+  /**
+   * Gets the {@link IpsecSession} between two {@link IpsecPeerConfig}s where the initiator should
+   * always be {@link IpsecStaticPeerConfig}
+   */
   private static IpsecSession getIpsecSession(
       Configuration initiatorOwner,
       Configuration peerOwner,
@@ -1246,7 +1258,7 @@ public class CommonUtil {
     negotiateIkeP1(initiatorOwner, peerOwner, initiator, candidatePeer, ipsecSession);
 
     if (ipsecSession.getNegotiatedIkeP1Proposal() == null
-        || ipsecSession.getNegotiatedIkePhase1Key() == null) {
+        || ipsecSession.getNegotiatedIkeP1Key() == null) {
       return ipsecSession;
     }
 
@@ -1255,6 +1267,10 @@ public class CommonUtil {
     return ipsecSession;
   }
 
+  /**
+   * Populates the negotiated {@link IkePhase1Proposal and {@link IkePhase1Key }} between two {@link
+   * IpsecPeerConfig}s where the initiator should always be {@link IpsecStaticPeerConfig}
+   */
   private static void negotiateIkeP1(
       Configuration initiatorOwner,
       Configuration responderOwner,
@@ -1301,10 +1317,14 @@ public class CommonUtil {
         && initiatorIkePhase1Policy
             .getIkePhase1Key()
             .equals(responderIkeP1Policy.getIkePhase1Key())) {
-      ipsecSession.setNegotiatedIkePhase1Key(initiatorIkePhase1Policy.getIkePhase1Key());
+      ipsecSession.setNegotiatedIkeP1Key(initiatorIkePhase1Policy.getIkePhase1Key());
     }
   }
 
+  /**
+   * Populates the negotiated {@link IpsecPhase2Proposal} between two {@link IpsecPeerConfig}s where
+   * the initiator should always be {@link IpsecStaticPeerConfig}
+   */
   private static void negotiateIpsecP2(
       Configuration initiatorOwner,
       Configuration responderOwner,
@@ -1336,9 +1356,14 @@ public class CommonUtil {
             initiatorIpsecP2policy.getProposals(),
             responderIpsecP2Policy.getProposals());
 
-    ipsecSession.setNegotiatedIpsecPhase2Proposal(negotiatedIpsecPhase2Proposal);
+    ipsecSession.setNegotiatedIpsecP2Proposal(negotiatedIpsecPhase2Proposal);
   }
 
+  /**
+   * Returns a negotiated {@link IkePhase1Proposal} using a {@link List} of initiator's {@link
+   * IkePhase1Proposal}s and responder's {@link IkePhase1Proposal}s, returns null if no compatible
+   * {@link IkePhase1Proposal} could be found
+   */
   @Nullable
   private static IkePhase1Proposal getMatchingIkeP1Proposal(
       Configuration initiatorOwner,
@@ -1377,6 +1402,11 @@ public class CommonUtil {
     return null;
   }
 
+  /**
+   * Returns a negotiated {@link IpsecPhase2Proposal} using a {@link List} of initiator's {@link
+   * IpsecPhase2Proposal}s and responder's {@link IpsecPhase2Proposal}s, returns null if no
+   * compatible {@link IpsecPhase2Proposal} could be found
+   */
   @Nullable
   private static IpsecPhase2Proposal getMatchingIpsecP2Proposal(
       Configuration initiatorOwner,
@@ -1409,6 +1439,10 @@ public class CommonUtil {
     return null;
   }
 
+  /**
+   * Searches and returns the {@link IkePhase1Policy} which can be used for peering with the
+   * initiator on the responder. Returns null if no such {@link IkePhase1Policy} could be found.
+   */
   @Nullable
   private static IkePhase1Policy getMatchingDynamicIkeP1Policy(
       IpsecStaticPeerConfig initiator, IpsecPeerConfig responder, Configuration responderOwner) {
