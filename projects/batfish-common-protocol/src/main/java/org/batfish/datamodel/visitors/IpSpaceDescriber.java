@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import javax.annotation.Nullable;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AclIpSpace;
+import org.batfish.datamodel.AclIpSpaceLine;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.IpIpSpace;
 import org.batfish.datamodel.IpSpace;
@@ -44,11 +45,9 @@ public class IpSpaceDescriber implements GenericIpSpaceVisitor<String> {
       return metadataDescription;
     }
     ImmutableList.Builder<String> lineDescs = ImmutableList.builder();
-    CommonUtil.forEachWithIndex(
+    CommonUtil.<AclIpSpaceLine>forEachWithIndex(
         aclIpSpace.getLines(),
-        (i, line) -> {
-          lineDescs.add(String.format("%d: %s", line.getIpSpace().accept(this)));
-        });
+        (i, line) -> lineDescs.add(String.format("%d: %s", i, line.getIpSpace().accept(this))));
     return lineDescs.build().toString();
   }
 
