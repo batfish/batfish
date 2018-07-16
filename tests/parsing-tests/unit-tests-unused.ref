@@ -1500,12 +1500,21 @@
             16
           ]
         }
+      },
+      "unused:zone-pair security:zp1" : {
+        "description" : "Unused structure of type: 'zone-pair security' with name: 'zp1'",
+        "files" : {
+          "cisco_zone" : [
+            4,
+            5
+          ]
+        }
       }
     },
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 145
+      "numResults" : 146
     },
     "unusedStructures" : {
       "aggAddress" : {
@@ -1664,6 +1673,14 @@
             5,
             6,
             7
+          ]
+        }
+      },
+      "cisco-zone" : {
+        "zone-pair security" : {
+          "zp1" : [
+            4,
+            5
           ]
         }
       },

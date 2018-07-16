@@ -94,7 +94,7 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
         }
 
         String aclName = "iptables_" + i.getName() + "_ingress";
-        IpAccessList acl = new IpAccessList(aclName, newRules);
+        IpAccessList acl = IpAccessList.builder().setName(aclName).setLines(newRules).build();
         if (configuration.getIpAccessLists().putIfAbsent(aclName, acl) != null) {
           throw new BatfishException(dbgName + " acl " + aclName + " already exists");
         }
@@ -127,7 +127,7 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
         }
 
         String aclName = "iptables_" + i.getName() + "_egress";
-        IpAccessList acl = new IpAccessList(aclName, newRules);
+        IpAccessList acl = IpAccessList.builder().setName(aclName).setLines(newRules).build();
         if (configuration.getIpAccessLists().putIfAbsent(aclName, acl) != null) {
           throw new BatfishException(dbgName + " acl " + aclName + " already exists");
         }
@@ -239,8 +239,7 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
             .build();
     lines.add(defaultLine);
 
-    IpAccessList acl = new IpAccessList(aclName, lines.build());
-    return acl;
+    return IpAccessList.builder().setName(aclName).setLines(lines.build()).build();
   }
 
   private String toIpAccessListName(String tableName, String chainName) {
