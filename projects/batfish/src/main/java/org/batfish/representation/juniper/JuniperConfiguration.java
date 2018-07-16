@@ -84,6 +84,7 @@ import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.isis.IsisInterfaceMode;
 import org.batfish.datamodel.isis.IsisProcess;
+import org.batfish.datamodel.ospf.OspfAreaSummary;
 import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -706,7 +707,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     newProc.setExportPolicy(ospfExportPolicyName);
     If ospfExportPolicyConditional = new If();
     // TODO: set default metric-type for special cases based on ospf process
-    // setttings
+    // settings
     ospfExportPolicy.getStatements().add(new SetOspfMetricType(OspfMetricType.E2));
     ospfExportPolicy.getStatements().add(ospfExportPolicyConditional);
     Disjunction matchSomeExportPolicy = new Disjunction();
@@ -1072,6 +1073,39 @@ public final class JuniperConfiguration extends VendorConfiguration {
         new org.batfish.datamodel.GeneratedRoute.Builder();
     newRoute.setNetwork(prefix);
     newRoute.setAdmin(administrativeCost);
+    newRoute.setDiscard(true);
+    newRoute.setGenerationPolicy(policyName);
+    _c.getRoutingPolicies().put(policyName, routingPolicy);
+    _c.getRouteFilterLists().put(rflName, rfList);
+    return newRoute.build();
+  }
+
+  private org.batfish.datamodel.GeneratedRoute ospfSummaryToAggregateRoute(
+      Prefix prefix, OspfAreaSummary summary) {
+    int prefixLength = prefix.getPrefixLength();
+    String policyNameSuffix = prefix.toString().replace('/', '_').replace('.', '_');
+    String policyName = "~SUMMARY" + policyNameSuffix + "~";
+    RoutingPolicy routingPolicy = new RoutingPolicy(policyName, _c);
+    If routingPolicyConditional = new If();
+    routingPolicy.getStatements().add(routingPolicyConditional);
+    routingPolicyConditional.getTrueStatements().add(Statements.ExitAccept.toStaticStatement());
+    routingPolicyConditional.getFalseStatements().add(Statements.ExitReject.toStaticStatement());
+    String rflName = "~SUMMARY" + policyNameSuffix + "_RF~";
+    MatchPrefixSet isContributingRoute =
+        new MatchPrefixSet(new DestinationNetwork(), new NamedPrefixSet(rflName));
+    routingPolicyConditional.setGuard(isContributingRoute);
+    RouteFilterList rfList = new RouteFilterList(rflName);
+    rfList.addLine(
+        new org.batfish.datamodel.RouteFilterLine(
+            LineAction.ACCEPT, prefix, new SubRange(prefixLength + 1, Prefix.MAX_PREFIX_LENGTH)));
+    org.batfish.datamodel.GeneratedRoute.Builder newRoute =
+        new org.batfish.datamodel.GeneratedRoute.Builder();
+    newRoute.setNetwork(prefix);
+    newRoute.setAdmin(
+        RoutingProtocol.OSPF_IA.getDefaultAdministrativeCost(ConfigurationFormat.JUNIPER));
+    if (summary.getMetric() != null) {
+      newRoute.setMetric(summary.getMetric());
+    }
     newRoute.setDiscard(true);
     newRoute.setGenerationPolicy(policyName);
     _c.getRoutingPolicies().put(policyName, routingPolicy);
@@ -2210,6 +2244,18 @@ public final class JuniperConfiguration extends VendorConfiguration {
       if (ri.getOspfAreas().size() > 0) {
         OspfProcess oproc = createOspfProcess(ri);
         vrf.setOspfProcess(oproc);
+        // add discard routes for OSPF summaries
+        oproc
+            .getAreas()
+            .values()
+            .stream()
+            .flatMap(a -> a.getSummaries().entrySet().stream())
+            .forEach(
+                summaryEntry ->
+                    vrf.getGeneratedRoutes()
+                        .add(
+                            ospfSummaryToAggregateRoute(
+                                summaryEntry.getKey(), summaryEntry.getValue())));
       }
 
       // create is-is process
