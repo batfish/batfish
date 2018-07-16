@@ -1,11 +1,10 @@
-package org.batfish.datamodel.vendor_family.cisco;
+package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 import java.io.Serializable;
 import java.util.List;
-import org.batfish.datamodel.AuthenticationMethod;
 
 public class AaaAuthenticationLoginList implements Serializable {
 
