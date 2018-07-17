@@ -2573,10 +2573,10 @@ public class CiscoGrammarTest {
                 .build(),
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations();
-    ValueGraph<Pair<Configuration, IpsecPeerConfig>, IpsecSession> graph =
+    ValueGraph<Pair<String, IpsecPeerConfig>, IpsecSession> graph =
         CommonUtil.initIpsecTopology(configurations);
 
-    Set<EndpointPair<Pair<Configuration, IpsecPeerConfig>>> edges = graph.edges();
+    Set<EndpointPair<Pair<String, IpsecPeerConfig>>> edges = graph.edges();
 
     // there should be six edges in total, two for the static crypto map session between r1 and r2
     // two for the dynamic crypto map session from r1->r3 and r2->r3 (unidirectional)
@@ -2584,7 +2584,7 @@ public class CiscoGrammarTest {
     assertThat(edges, hasSize(6));
 
     // checking that the negotiated IKE and IPSec proposals are set in all the sessions
-    for (EndpointPair<Pair<Configuration, IpsecPeerConfig>> edge : edges) {
+    for (EndpointPair<Pair<String, IpsecPeerConfig>> edge : edges) {
       IpsecSession ipsecSession = graph.edgeValueOrDefault(edge.nodeU(), edge.nodeV(), null);
 
       assertThat(ipsecSession, notNullValue());
