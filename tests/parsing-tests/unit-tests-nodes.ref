@@ -21372,6 +21372,16 @@
                                           "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
                                           "value" : 65535
                                         }
+                                      },
+                                      {
+                                        "prefix" : {
+                                          "class" : "org.batfish.datamodel.routing_policy.expr.RangeCommunitySetElemHalf",
+                                          "range" : "0-65535"
+                                        },
+                                        "suffix" : {
+                                          "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                                          "value" : 12345
+                                        }
                                       }
                                     ]
                                   }
