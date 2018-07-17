@@ -8421,7 +8421,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else if (ctx.ASTERISK() != null) {
       return new RangeCommunitySetElemHalf(new SubRange(0, 65535));
     } else {
-      throw convError(CommunitySetElem.class, ctx);
+      // For an unhandled expression, treat it as matching everything.
+      return convProblem(
+          CommunitySetElemHalfExpr.class,
+          ctx,
+          new RangeCommunitySetElemHalf(new SubRange(0, 65535)));
     }
   }
 
