@@ -3,6 +3,9 @@ package org.batfish.datamodel.acl;
 import java.util.Arrays;
 import java.util.List;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.Prefix;
 
 public final class AclLineMatchExprs {
   private AclLineMatchExprs() {}
@@ -24,6 +27,22 @@ public final class AclLineMatchExprs {
 
   public static MatchHeaderSpace match(HeaderSpace headerSpace) {
     return new MatchHeaderSpace(headerSpace);
+  }
+
+  public static MatchHeaderSpace matchDst(IpSpace ipSpace) {
+    return new MatchHeaderSpace(HeaderSpace.builder().setDstIps(ipSpace).build());
+  }
+
+  public static MatchHeaderSpace matchDst(Ip ip) {
+    return matchDst(ip.toIpSpace());
+  }
+
+  public static MatchHeaderSpace matchDst(Prefix prefix) {
+    return matchDst(prefix.toIpSpace());
+  }
+
+  public static MatchHeaderSpace matchDstIp(String ip) {
+    return matchDst(new Ip(ip).toIpSpace());
   }
 
   public static NotMatchExpr not(AclLineMatchExpr expr) {
