@@ -1184,18 +1184,18 @@ public class CommonUtil {
 
   /**
    * Computes the IPSec topology which is a {@link ValueGraph} of nodes where each node is a {@link
-   * Pair} of {@link Configuration} and {@link IpsecPeerConfig}, where the {@link Configuration}
-   * owns the {@link IpsecPeerConfig}
+   * Pair} of {@link Configuration} hostname and {@link IpsecPeerConfig}, where the {@link
+   * Configuration} hostname owns the {@link IpsecPeerConfig}
    *
    * @param configurations {@link Configuration}s for which the topology has to be computed
    * @return the constructed {@link ValueGraph} for the IPSec topology
    */
-  public static ValueGraph<Pair<Configuration, IpsecPeerConfig>, IpsecSession> initIpsecTopology(
+  public static ValueGraph<Pair<String, IpsecPeerConfig>, IpsecSession> initIpsecTopology(
       Map<String, Configuration> configurations) {
 
     Map<Ip, Set<IpsecPeerConfig>> localIpIpsecPeerConfigs = new HashMap<>();
     Map<IpsecPeerConfig, Configuration> ipsecPeerConfigOwners = new HashMap<>();
-    MutableValueGraph<Pair<Configuration, IpsecPeerConfig>, IpsecSession> graph =
+    MutableValueGraph<Pair<String, IpsecPeerConfig>, IpsecSession> graph =
         ValueGraphBuilder.directed().allowsSelfLoops(false).build();
 
     for (Configuration node : configurations.values()) {
@@ -1205,13 +1205,13 @@ public class CommonUtil {
                 ipsecPeerConfig.getLocalAddress(), k -> new HashSet<>());
         ipsecPeerConfigsWithIp.add(ipsecPeerConfig);
         ipsecPeerConfigOwners.put(ipsecPeerConfig, node);
-        graph.addNode(new Pair<>(node, ipsecPeerConfig));
+        graph.addNode(new Pair<>(node.getHostname(), ipsecPeerConfig));
       }
     }
 
     // populating the graph
-    for (Pair<Configuration, IpsecPeerConfig> ownerIpsecPeerConfig : graph.nodes()) {
-      IpsecPeerConfig ipsecPeerConfig = ownerIpsecPeerConfig.getSecond();
+    for (Pair<String, IpsecPeerConfig> hostnameIpsecPeerConfig : graph.nodes()) {
+      IpsecPeerConfig ipsecPeerConfig = hostnameIpsecPeerConfig.getSecond();
       if (ipsecPeerConfig instanceof IpsecDynamicPeerConfig) {
         continue;
       }
@@ -1236,7 +1236,9 @@ public class CommonUtil {
 
         if (ipsecSession != null) {
           graph.putEdgeValue(
-              ownerIpsecPeerConfig, new Pair<>(candidateOwner, candidateIpsecPeer), ipsecSession);
+              hostnameIpsecPeerConfig,
+              new Pair<>(candidateOwner.getHostname(), candidateIpsecPeer),
+              ipsecSession);
         }
       }
     }
