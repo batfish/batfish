@@ -1,9 +1,16 @@
 package org.batfish.question.ipsecpeers;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Strings;
+import java.util.regex.Pattern;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
+import org.batfish.question.ipsecpeers.IpsecPeeringInfo.IpsecPeeringStatus;
 
 /** Return status of all IPSec peers in the network */
 public class IpsecPeersQuestion extends Question {
@@ -12,18 +19,27 @@ public class IpsecPeersQuestion extends Question {
 
   private static final String PROP_RESPONDER_REGEX = "responderRegex";
 
+  private static final String PROP_STATUS_REGEX = "statusRegex";
+
   private static final String QUESTION_NAME = "ipsecpeers";
 
-  private NodesSpecifier _initiatorRegex;
+  @Nonnull private NodesSpecifier _initiatorRegex;
 
-  private NodesSpecifier _responderRegex;
+  @Nonnull private NodesSpecifier _responderRegex;
+
+  @Nonnull private Pattern _statusRegex;
 
   @JsonCreator
   public IpsecPeersQuestion(
-      @JsonProperty(PROP_INITIATOR_REGEX) NodesSpecifier initiatorRegex,
-      @JsonProperty(PROP_RESPONDER_REGEX) NodesSpecifier responderRegex) {
-    _initiatorRegex = initiatorRegex == null ? NodesSpecifier.ALL : initiatorRegex;
-    _responderRegex = responderRegex == null ? NodesSpecifier.ALL : responderRegex;
+      @Nullable @JsonProperty(PROP_INITIATOR_REGEX) NodesSpecifier initiatorRegex,
+      @Nullable @JsonProperty(PROP_RESPONDER_REGEX) NodesSpecifier responderRegex,
+      @Nullable @JsonProperty(PROP_STATUS_REGEX) String statusRegex) {
+    _initiatorRegex = firstNonNull(initiatorRegex, NodesSpecifier.ALL);
+    _responderRegex = firstNonNull(responderRegex, NodesSpecifier.ALL);
+    _statusRegex =
+        Strings.isNullOrEmpty(statusRegex)
+            ? Pattern.compile(".*")
+            : Pattern.compile(statusRegex.toUpperCase());
   }
 
   @Override
@@ -44,5 +60,14 @@ public class IpsecPeersQuestion extends Question {
   @JsonProperty(PROP_RESPONDER_REGEX)
   public NodesSpecifier getResponderRegex() {
     return _responderRegex;
+  }
+
+  @JsonProperty(PROP_STATUS_REGEX)
+  public String getStatusRegex() {
+    return _statusRegex.toString();
+  }
+
+  boolean matchesStatus(@Nullable IpsecPeeringStatus status) {
+    return status != null && _statusRegex.matcher(status.toString()).matches();
   }
 }

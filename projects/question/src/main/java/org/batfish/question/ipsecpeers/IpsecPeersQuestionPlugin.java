@@ -17,6 +17,6 @@ public class IpsecPeersQuestionPlugin extends QuestionPlugin {
 
   @Override
   protected Question createQuestion() {
-    return new IpsecPeersQuestion(null, null);
+    return new IpsecPeersQuestion(null, null, null);
   }
 }
