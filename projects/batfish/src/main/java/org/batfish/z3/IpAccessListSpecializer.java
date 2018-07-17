@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.SortedSet;
-import java.util.stream.Collectors;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpAccessList;
@@ -64,10 +63,9 @@ public abstract class IpAccessListSpecializer
         ipAccessList
             .getLines()
             .stream()
-            .map(this::specialize)
             // replace unmatchable lines with FALSE_LINE to preserve line numbers
-            .map(line -> line.orElse(FALSE_LINE))
-            .collect(Collectors.toList());
+            .map(line -> specialize(line).orElse(FALSE_LINE))
+            .collect(ImmutableList.toImmutableList());
 
     return IpAccessList.builder()
         .setName(ipAccessList.getName())
