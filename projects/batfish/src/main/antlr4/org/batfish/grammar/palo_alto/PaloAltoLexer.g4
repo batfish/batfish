@@ -392,6 +392,11 @@ IP_PREFIX
     F_IpAddress '/' F_PrefixLength
 ;
 
+IP_RANGE
+:
+    F_IpAddress '-' F_IpAddress
+;
+
 LINE_COMMENT
 :
     (

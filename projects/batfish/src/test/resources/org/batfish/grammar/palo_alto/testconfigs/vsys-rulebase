@@ -13,4 +13,12 @@ set vsys vsys1 rulebase security rules RULE1 source any
 set vsys vsys1 rulebase security rules RULE1 destination any
 set vsys vsys1 rulebase security rules RULE1 service any
 set vsys vsys1 rulebase security rules RULE1 application any
-set vsys vsys1 rulebase security rules RULE1 action allow
+set vsys vsys1 rulebase security rules RULE1 action deny
+
+set vsys vsys2 rulebase security rules RULE1 from any
+set vsys vsys2 rulebase security rules RULE1 to any
+set vsys vsys2 rulebase security rules RULE1 source any
+set vsys vsys2 rulebase security rules RULE1 destination any
+set vsys vsys2 rulebase security rules RULE1 service any
+set vsys vsys2 rulebase security rules RULE1 application any
+set vsys vsys2 rulebase security rules RULE1 action allow

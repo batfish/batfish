@@ -7,6 +7,7 @@ import java.util.NavigableMap;
 import java.util.NavigableSet;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import org.apache.commons.collections4.list.TreeList;
@@ -24,13 +25,17 @@ import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
+import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
+import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.vendor.VendorConfiguration;
 
 public final class PaloAltoConfiguration extends VendorConfiguration {
 
   private static final long serialVersionUID = 1L;
+
+  public static final String CATCHALL_SERVICE_NAME = "any";
 
   public static final String CATCHALL_ZONE_NAME = "any";
 
@@ -201,12 +206,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   /** Convert firewall rules into a zone-specific outgoing IpAccessList */
   private IpAccessList toIpAccessList(String name, SortedMap<String, Rule> rules, Zone toZone) {
     List<IpAccessListLine> lines = new TreeList<>();
-    // Traffic from the device itself is always allowed
-    lines.add(
-        IpAccessListLine.builder()
-            .accepting()
-            .setMatchCondition(OriginatingFromDevice.INSTANCE)
-            .build());
+
     for (Rule rule : rules.values()) {
       if (!rule.getDisabled()
           && (rule.getTo().contains(toZone.getName())
@@ -214,11 +214,20 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
         lines.add(toIpAccessListLine(rule));
       }
     }
+
+    // Intrazone traffic is allowed by default
+    lines.add(
+        IpAccessListLine.builder()
+            .accepting()
+            .setMatchCondition(new MatchSrcInterface(toZone.getInterfaceNames()))
+            .build());
+
     return IpAccessList.builder().setName(name).setLines(lines).build();
   }
 
   /** Convert specified firewall rule into an IpAccessListLine */
   private IpAccessListLine toIpAccessListLine(Rule rule) {
+    List<AclLineMatchExpr> conjuncts = new TreeList<>();
     IpAccessListLine.Builder ipAccessListLineBuilder = IpAccessListLine.builder();
     if (rule.getAction() == LineAction.ACCEPT) {
       ipAccessListLineBuilder.accepting();
@@ -226,6 +235,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
       ipAccessListLineBuilder.rejecting();
     }
 
+    // Construct headerspace match expression
     HeaderSpace.Builder headerSpaceBuilder = HeaderSpace.builder();
     for (IpSpace source : rule.getSource()) {
       headerSpaceBuilder.addSrcIp(source);
@@ -233,31 +243,52 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     for (IpSpace destination : rule.getDestination()) {
       headerSpaceBuilder.addDstIp(destination);
     }
-    // TODO handle service and application
+    conjuncts.add(new MatchHeaderSpace(headerSpaceBuilder.build()));
 
-    List<String> srcInterfaces = new TreeList<>();
-    for (String zoneName : rule.getFrom()) {
-      if (zoneName.equals(CATCHALL_ZONE_NAME)) {
-        for (Zone zone : rule.getVsys().getZones().values()) {
-          srcInterfaces.addAll(zone.getInterfaceNames());
+    // Construct source zone (source interface) match expression
+    SortedSet<String> ruleFroms = rule.getFrom();
+    if (!ruleFroms.isEmpty()) {
+      List<String> srcInterfaces = new TreeList<>();
+      for (String zoneName : ruleFroms) {
+        if (zoneName.equals(CATCHALL_ZONE_NAME)) {
+          for (Zone zone : rule.getVsys().getZones().values()) {
+            srcInterfaces.addAll(zone.getInterfaceNames());
+          }
+          break;
         }
-        break;
+        srcInterfaces.addAll(rule.getVsys().getZones().get(zoneName).getInterfaceNames());
       }
-      srcInterfaces.addAll(rule.getVsys().getZones().get(zoneName).getInterfaceNames());
+      conjuncts.add(new MatchSrcInterface(srcInterfaces));
     }
 
-    MatchHeaderSpace matchHeaderSpace = new MatchHeaderSpace(headerSpaceBuilder.build());
+    // Construct service match expression
+    SortedSet<ServiceOrServiceGroupReference> ruleServices = rule.getService();
+    if (!ruleServices.isEmpty()) {
+      List<AclLineMatchExpr> serviceDisjuncts = new TreeList<>();
+      for (ServiceOrServiceGroupReference service : ruleServices) {
+        if (service.getName().equals(CATCHALL_SERVICE_NAME)) {
+          serviceDisjuncts.add(TrueExpr.INSTANCE);
+          break;
+        } else {
+          serviceDisjuncts.add(
+              new PermittedByAcl(
+                  computeServiceGroupMemberAclName(
+                      service.getVsysName(this, rule.getVsys()), service.getName())));
+        }
+      }
+      conjuncts.add(new OrMatchExpr(serviceDisjuncts));
+    }
+
+    // TODO handle application
+
     AclLineMatchExpr aclLineMatchExpr;
-    if (srcInterfaces.isEmpty()) {
+    if (conjuncts.size() == 1) {
       // IpAccessListLine should just match headerspace
-      aclLineMatchExpr = matchHeaderSpace;
+      aclLineMatchExpr = conjuncts.get(0);
     } else {
       // IpAccessListLine should match headerspace AND srcInterface
-      aclLineMatchExpr =
-          new AndMatchExpr(
-              ImmutableList.of(matchHeaderSpace, new MatchSrcInterface(srcInterfaces)));
+      aclLineMatchExpr = new AndMatchExpr(conjuncts);
     }
-
     return ipAccessListLineBuilder
         .setName(rule.getName())
         .setMatchCondition(aclLineMatchExpr)
@@ -280,6 +311,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
     String ifAclName = computeOutgoingFilterName(iface.getName());
     if (iface.getZone() != null) {
+      Zone zone = iface.getZone();
       newIface.setOutgoingFilter(
           IpAccessList.builder()
               .setOwner(_c)
@@ -289,7 +321,8 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
                       IpAccessListLine.accepting()
                           .setMatchCondition(
                               new PermittedByAcl(
-                                  computeOutgoingFilterName(iface.getZone().getName())))
+                                  computeOutgoingFilterName(
+                                      computeObjectName(zone.getVsys().getName(), zone.getName()))))
                           .build()))
               .build());
     } else {

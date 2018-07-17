@@ -13,6 +13,7 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructu
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructureWithDefinitionLines;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasMemberInterfaces;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasOutgoingFilter;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasZone;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
@@ -87,18 +88,24 @@ public class PaloAltoGrammarTest {
     return getBatfishForConfigurationNames(configurationNames).loadConfigurations();
   }
 
+  private static Flow createFlow(IpProtocol protocol, int sourcePort, int destinationPort) {
+    return createFlow("1.1.1.1", "2.2.2.2", protocol, sourcePort, destinationPort);
+  }
+
   private static Flow createFlow(String sourceAddress, String destinationAddress) {
+    return createFlow(sourceAddress, destinationAddress, IpProtocol.TCP, 1, 1);
+  }
+
+  private static Flow createFlow(
+      String sourceAddress,
+      String destinationAddress,
+      IpProtocol protocol,
+      int sourcePort,
+      int destinationPort) {
     Flow.Builder fb = new Flow.Builder();
     fb.setIngressNode("node");
     fb.setSrcIp(new Ip(sourceAddress));
     fb.setDstIp(new Ip(destinationAddress));
-    fb.setTag("test");
-    return fb.build();
-  }
-
-  private static Flow createFlow(IpProtocol protocol, int sourcePort, int destinationPort) {
-    Flow.Builder fb = new Flow.Builder();
-    fb.setIngressNode("node");
     fb.setIpProtocol(protocol);
     fb.setDstPort(destinationPort);
     fb.setSrcPort(sourcePort);
@@ -299,22 +306,68 @@ public class PaloAltoGrammarTest {
     String hostname = "rulebase";
     Configuration c = parseConfig(hostname);
 
-    String ipAclName = String.format("~%s~z1~OUTGOING_FILTER~", DEFAULT_VSYS_NAME;
+    String if1name = "ethernet1/1";
+    String if2name = "ethernet1/2";
+    String if3name = "ethernet1/3";
+    String if4name = "ethernet1/4";
     Flow z1ToZ1permitted = createFlow("1.1.2.255", "1.1.1.2");
-    Flow z1ToZ1rejected = createFlow("1.1.2.2", "1.1.1.3");
+    Flow z1ToZ1rejectedDestination = createFlow("1.1.2.2", "1.1.1.3");
+    Flow z1ToZ1rejectedService = createFlow("1.1.2.2", "1.1.1.3", IpProtocol.TCP, 1, 999);
     Flow z2ToZ1permitted = createFlow("1.1.4.255", "1.1.1.2");
     Flow noZoneToZ1rejected = createFlow("1.1.3.2", "1.1.1.2");
 
-    // Confirm intrazone flow matching rule is accepted
-    assertThat(c, hasIpAccessList(ipAclName, accepts(z1ToZ1permitted, "ethernet1/2", c)));
-    // Confirm intrazone flow not matching rule (bad destination address) is rejected
-    assertThat(c, hasIpAccessList(ipAclName, rejects(z1ToZ1rejected, "ethernet1/2", c)));
-    // Confirm interzone flow matching rule is accepted
-    assertThat(c, hasIpAccessList(ipAclName, accepts(z2ToZ1permitted, "ethernet1/4", c)));
+    // Confirm flow matching deny rule is rejected
+    assertThat(
+        c, hasInterface(if1name, hasOutgoingFilter(rejects(z1ToZ1rejectedService, if2name, c))));
+
+    // Confirm intrazone flow matching allow rule is accepted
+    assertThat(c, hasInterface(if1name, hasOutgoingFilter(accepts(z1ToZ1permitted, if2name, c))));
+    // Confirm intrazone flow not matching allow rule (bad destination address) is rejected
+    assertThat(
+        c,
+        hasInterface(if1name, hasOutgoingFilter(rejects(z1ToZ1rejectedDestination, if2name, c))));
+    // Confirm interzone flow matching allow rule is accepted
+    assertThat(c, hasInterface(if1name, hasOutgoingFilter(accepts(z2ToZ1permitted, if4name, c))));
+
     // Confirm flow from an unzoned interface is rejected
-    assertThat(c, hasIpAccessList(ipAclName, rejects(noZoneToZ1rejected, "ethernet1/3", c)));
+    assertThat(
+        c, hasInterface(if1name, hasOutgoingFilter(rejects(noZoneToZ1rejected, if3name, c))));
     // Confirm flow originating from device is accepted
-    assertThat(c, hasIpAccessList(ipAclName, accepts(z1ToZ1rejected, null, c)));
+    assertThat(
+        c, hasInterface(if1name, hasOutgoingFilter(accepts(z1ToZ1rejectedDestination, null, c))));
+  }
+
+  @Test
+  public void testRulebaseDefault() throws IOException {
+    String hostname = "rulebase-default";
+    Configuration c = parseConfig(hostname);
+
+    String if1name = "ethernet1/1";
+    String if2name = "ethernet1/2";
+    String if3name = "ethernet1/3";
+    String if4name = "ethernet1/4";
+    Flow z1ToZ1 = createFlow("1.1.1.2", "1.1.2.2");
+    Flow z1ToZ2 = createFlow("1.1.1.2", "1.1.4.2");
+    Flow z2ToZ1 = createFlow("1.1.4.2", "1.1.1.2");
+    Flow noZoneToZ1 = createFlow("1.1.3.2", "1.1.1.2");
+    Flow z1ToNoZone = createFlow("1.1.1.2", "1.1.3.2");
+    Flow deviceOriginZ1 = createFlow("1.1.1.1", "1.1.1.2");
+    Flow deviceOriginZ2 = createFlow("1.1.4.1", "1.1.4.2");
+
+    // Confirm intrazone flow is accepted by default
+    assertThat(c, hasInterface(if2name, hasOutgoingFilter(accepts(z1ToZ1, if1name, c))));
+
+    // Confirm interzone flows are rejected by default
+    assertThat(c, hasInterface(if4name, hasOutgoingFilter(rejects(z1ToZ2, if1name, c))));
+    assertThat(c, hasInterface(if1name, hasOutgoingFilter(rejects(z2ToZ1, if4name, c))));
+
+    // Confirm unzoned flows are rejected by default
+    assertThat(c, hasInterface(if1name, hasOutgoingFilter(rejects(noZoneToZ1, if3name, c))));
+    assertThat(c, hasInterface(if3name, hasOutgoingFilter(rejects(z1ToNoZone, if1name, c))));
+
+    // Confirm flow originating from device is accepted by default
+    assertThat(c, hasInterface(if1name, hasOutgoingFilter(accepts(deviceOriginZ1, null, c))));
+    assertThat(c, hasInterface(if3name, hasOutgoingFilter(accepts(deviceOriginZ2, null, c))));
   }
 
   @Test
@@ -322,13 +375,22 @@ public class PaloAltoGrammarTest {
     String hostname = "vsys-rulebase";
     Configuration c = parseConfig(hostname);
 
+    String if1name = "ethernet1/1";
+    String if2name = "ethernet1/2";
+    String if3name = "ethernet1/3";
+    String if4name = "ethernet1/4";
     String ipAclName1 = "~vsys1~z1~OUTGOING_FILTER~";
-    Flow flow = createFlow("1.1.2.255", "1.1.1.2");
+    String ipAclName2 = "~vsys2~z1~OUTGOING_FILTER~";
+    Flow flow = createFlow("1.1.4.255", "1.1.3.2");
 
-    // Confirm intravsys flow is accepted
-    assertThat(c, hasIpAccessList(ipAclName1, accepts(flow, "ethernet1/2", c)));
-    // Confirm intervsys flow is rejected
-    assertThat(c, hasIpAccessList(ipAclName1, rejects(flow, "ethernet1/3", c)));
+    // Confirm flow is rejected by vsys1 deny rule
+    assertThat(c, hasIpAccessList(ipAclName1, rejects(flow, "ethernet1/2", c)));
+    assertThat(c, hasInterface(if1name, hasOutgoingFilter(rejects(flow, if2name, c))));
+
+    // Confirm intravsys flow is accepted in vsys2
+    assertThat(c, hasIpAccessList(ipAclName2, accepts(flow, "ethernet1/4", c)));
+    // Confirm intervsys flow is rejected in vsys2
+    assertThat(c, hasIpAccessList(ipAclName2, rejects(flow, "ethernet1/2", c)));
   }
 
   @Test

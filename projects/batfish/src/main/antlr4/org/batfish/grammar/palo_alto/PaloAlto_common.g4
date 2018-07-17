@@ -15,16 +15,8 @@ pan_application
     ANY
     | DNS
     | ICMP
+    | name = variable
 ;
-
-
-// TODO handle country codes
-/*
-pan_country_code
-:
-    US
-;
-*/
 
 src_or_dst_list
 :
@@ -47,10 +39,7 @@ src_or_dst_list_item
         ANY
         | IP_ADDRESS
         | IP_PREFIX
-        // TODO handle this
-        // | IP_RANGE
-        // TODO handle this
-        // | pan_country_code
+        | IP_RANGE
         | name = variable
     )
 ;

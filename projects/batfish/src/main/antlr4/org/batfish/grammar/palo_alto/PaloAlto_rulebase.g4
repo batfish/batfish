@@ -30,11 +30,6 @@ sr_security
     )
 ;
 
-baz
-:
-    LAYER3 LAYER3
-;
-
 srs_action
 :
     ACTION

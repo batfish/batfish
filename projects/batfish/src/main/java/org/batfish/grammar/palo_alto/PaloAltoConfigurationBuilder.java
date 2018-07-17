@@ -11,6 +11,7 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureType.SERVICE
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ZONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.RULEBASE_DESTINATION_ADDRESS;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.RULEBASE_FROM_ZONE;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.RULEBASE_SERVICE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.RULEBASE_SOURCE_ADDRESS;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.RULEBASE_TO_ZONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.SERVICE_GROUP_MEMBER;
@@ -67,6 +68,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_descriptionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_destinationContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_disabledContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_fromContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_serviceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_sourceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_toContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sserv_descriptionContext;
@@ -231,21 +233,22 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitPalo_alto_configuration(Palo_alto_configurationContext ctx) {
-    // Assign the appropriate vsys and zone to each interface
+    // Assign the appropriate zone to each interface
     for (Vsys vsys : _configuration.getVirtualSystems().values()) {
       for (Zone zone : vsys.getZones().values()) {
         for (String ifname : zone.getInterfaceNames()) {
-          _configuration.getInterfaces().get(ifname).setVsys(vsys);
           _configuration.getInterfaces().get(ifname).setZone(zone);
         }
       }
     }
+    /*
     for (Interface iface : _configuration.getInterfaces().values()) {
       if (iface.getVsys() == null) {
         iface.setVsys(_defaultVsys);
         iface.setZone(null);
       }
     }
+    */
   }
 
   @Override
@@ -415,8 +418,8 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void enterSr_security(Sr_securityContext ctx) {
-    _currentRule = _currentVsys.getRules().computeIfAbsent(ctx.name.getText(), Rule::new);
-    _currentRule.setVsys(_currentVsys);
+    _currentRule =
+        _currentVsys.getRules().computeIfAbsent(ctx.name.getText(), n -> new Rule(n, _currentVsys));
   }
 
   @Override
@@ -467,10 +470,26 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
+  public void exitSrs_service(Srs_serviceContext ctx) {
+    for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
+      String serviceName = var.getText();
+      _currentRule.getService().add(new ServiceOrServiceGroupReference(serviceName));
+
+      // Use constructed object name so same-named refs across vsys are unique
+      String uniqueName = computeObjectName(_currentVsys.getName(), serviceName);
+      _configuration.referenceStructure(
+          SERVICE_OR_SERVICE_GROUP, uniqueName, RULEBASE_SERVICE, getLine(var.start));
+    }
+  }
+
+  @Override
   public void exitSrs_source(Srs_sourceContext ctx) {
     for (Src_or_dst_list_itemContext var : ctx.src_or_dst_list().src_or_dst_list_item()) {
       String source = var.getText();
-      _currentRule.getSource().add(toIpSpace(var));
+      IpSpace sourceIpSpace = toIpSpace(var);
+      if (sourceIpSpace != null) {
+        _currentRule.getSource().add(sourceIpSpace);
+      }
       if (var.name != null) {
         _configuration.referenceStructure(
             ADDRESS, source, RULEBASE_SOURCE_ADDRESS, getLine(var.name.getStart()));
