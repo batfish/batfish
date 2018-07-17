@@ -8418,6 +8418,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       int last = toInteger(ctx.last);
       SubRange range = new SubRange(first, last);
       return new RangeCommunitySetElemHalf(range);
+    } else if (ctx.ASTERISK() != null) {
+      return new RangeCommunitySetElemHalf(new SubRange(0, 65535));
     } else {
       throw convError(CommunitySetElem.class, ctx);
     }

@@ -114,7 +114,7 @@ route-policy to_chillmap
   elseif (next-hop in null) then
     drop
     # End blackhole matching
-  elseif community matches-any (40027:65535) then
+  elseif community matches-any (40027:65535, *:12345) then
     drop
     # Intent is to not advertise if prefix is tagged with Chills ASN & 65535
   elseif (community matches-any scenes_No_Export) then
