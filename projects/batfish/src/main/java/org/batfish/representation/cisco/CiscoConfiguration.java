@@ -3258,6 +3258,13 @@ public final class CiscoConfiguration extends VendorConfiguration {
     }
 
     markConcreteStructure(
+        CiscoStructureType.COMMUNITY_SET,
+        CiscoStructureUsage.ROUTE_POLICY_COMMUNITY_MATCHES_ANY,
+        CiscoStructureUsage.ROUTE_POLICY_COMMUNITY_MATCHES_EVERY,
+        CiscoStructureUsage.ROUTE_POLICY_DELETE_COMMUNITY_IN,
+        CiscoStructureUsage.ROUTE_POLICY_SET_COMMUNITY);
+
+    markConcreteStructure(
         CiscoStructureType.SECURITY_ZONE_PAIR, CiscoStructureUsage.SECURITY_ZONE_PAIR_SELF_REF);
 
     markConcreteStructure(

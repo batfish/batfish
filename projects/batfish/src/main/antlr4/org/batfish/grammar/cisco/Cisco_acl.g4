@@ -133,8 +133,8 @@ cadant_stdacl_name
 
 community_set_stanza
 :
-   COMMUNITY_SET name = variable NEWLINE community_set_elem_list END_SET
-   NEWLINE
+   COMMUNITY_SET name = variable NEWLINE
+   community_set_elem_list END_SET NEWLINE
 ;
 
 community_set_elem_list

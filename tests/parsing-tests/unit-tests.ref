@@ -57420,7 +57420,115 @@
         "cisco_webvpn" : { },
         "cisco_wsma" : { },
         "colon_in_vrf" : { },
-        "commSet" : { },
+        "commSet" : {
+          "community-set" : {
+            "EBGP-PEER" : {
+              "definitionLines" : [
+                40,
+                41,
+                42,
+                43
+              ],
+              "numReferrers" : 0
+            },
+            "all_community" : {
+              "definitionLines" : [
+                7,
+                8,
+                9
+              ],
+              "numReferrers" : 0
+            },
+            "cenic_default_network_community" : {
+              "definitionLines" : [
+                31,
+                32,
+                33
+              ],
+              "numReferrers" : 0
+            },
+            "community_52" : {
+              "definitionLines" : [
+                4,
+                5,
+                6
+              ],
+              "numReferrers" : 0
+            },
+            "dc_and_isp_blackhole_community" : {
+              "definitionLines" : [
+                28,
+                29,
+                30
+              ],
+              "numReferrers" : 0
+            },
+            "dc_and_isp_routes_community" : {
+              "definitionLines" : [
+                25,
+                26,
+                27
+              ],
+              "numReferrers" : 0
+            },
+            "hpr_blackhole_community" : {
+              "definitionLines" : [
+                13,
+                14,
+                15
+              ],
+              "numReferrers" : 0
+            },
+            "hpr_routes_community" : {
+              "definitionLines" : [
+                10,
+                11,
+                12
+              ],
+              "numReferrers" : 0
+            },
+            "ucla_blackhole_community" : {
+              "definitionLines" : [
+                16,
+                17,
+                18
+              ],
+              "numReferrers" : 0
+            },
+            "ucla_to_dc_and_isp_community_ipv4" : {
+              "definitionLines" : [
+                34,
+                35,
+                36
+              ],
+              "numReferrers" : 0
+            },
+            "ucla_to_dc_and_isp_community_ipv6" : {
+              "definitionLines" : [
+                37,
+                38,
+                39
+              ],
+              "numReferrers" : 0
+            },
+            "ucla_to_hpr_community_ipv4" : {
+              "definitionLines" : [
+                19,
+                20,
+                21
+              ],
+              "numReferrers" : 0
+            },
+            "ucla_to_hpr_community_ipv6" : {
+              "definitionLines" : [
+                22,
+                23,
+                24
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
         "community-name-numbers" : {
           "route-map" : {
             "AAA1-BBB-CCC" : {
@@ -57493,7 +57601,26 @@
             }
           }
         },
-        "community_set" : { },
+        "community_set" : {
+          "community-set" : {
+            "190" : {
+              "definitionLines" : [
+                9,
+                10,
+                11,
+                12
+              ],
+              "numReferrers" : 0
+            },
+            "foo" : {
+              "definitionLines" : [
+                5,
+                6
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
         "foundry_access_list" : {
           "extended ipv6 access-list" : {
             "RT404888-Caltech" : {
@@ -59751,6 +59878,88 @@
               ]
             }
           },
+          "community-set" : {
+            "CF_fooey_Associates-chillmap" : {
+              "route-policy community matches-any" : [
+                145
+              ]
+            },
+            "DC_AT_CHILL" : {
+              "route-policy community matches-any" : [
+                150
+              ]
+            },
+            "EBGP-CUST-EXT" : {
+              "route-policy community matches-any" : [
+                98
+              ]
+            },
+            "EBGP-CUST-NOEXP-PEER-NA" : {
+              "route-policy community matches-any" : [
+                88
+              ]
+            },
+            "barbar_to_fooey_community_ipv4" : {
+              "route-policy set community" : [
+                52
+              ]
+            },
+            "blackhole-all" : {
+              "route-policy community matches-any" : [
+                107,
+                158
+              ]
+            },
+            "blackhole-isp" : {
+              "route-policy community matches-any" : [
+                110
+              ]
+            },
+            "chillmap" : {
+              "route-policy community matches-any" : [
+                141
+              ]
+            },
+            "community_5555" : {
+              "route-policy community matches-any" : [
+                33
+              ],
+              "route-policy delete community [not] in" : [
+                34
+              ]
+            },
+            "fooey_blackhole_community" : {
+              "route-policy community matches-any" : [
+                5
+              ]
+            },
+            "fooey_routes_community" : {
+              "route-policy community matches-any" : [
+                16
+              ]
+            },
+            "scenes_No_Export" : {
+              "route-policy community matches-any" : [
+                120
+              ]
+            },
+            "to-peers-backbone" : {
+              "route-policy community matches-any" : [
+                137
+              ]
+            },
+            "wrn-expanded" : {
+              "route-policy community matches-any" : [
+                129,
+                143
+              ]
+            },
+            "wrn-squelch-40027" : {
+              "route-policy community matches-any" : [
+                126
+              ]
+            }
+          },
           "prefix-set" : {
             "EBGP-PEER-BOGONS" : {
               "route-policy prefix-set" : [
@@ -59807,6 +60016,18 @@
           }
         },
         "route_policy_as_path_set" : {
+          "community-set" : {
+            "13979:90" : {
+              "route-policy set community" : [
+                7
+              ]
+            },
+            "SOCAL-USERS" : {
+              "route-policy community matches-any" : [
+                5
+              ]
+            }
+          },
           "prefix-set" : {
             "CENIC_DC_Internal" : {
               "route-policy prefix-set" : [
@@ -59820,7 +60041,43 @@
             }
           }
         },
+        "route_policy_igp_cost" : {
+          "community-set" : {
+            "DC_AT_MEMBERS" : {
+              "route-policy community matches-any" : [
+                5
+              ]
+            },
+            "DC_CF_COMMODITY_PEER" : {
+              "route-policy community matches-any" : [
+                5
+              ]
+            },
+            "DC_CF_ISP" : {
+              "route-policy community matches-any" : [
+                5
+              ]
+            },
+            "HPR_CF_RE_PEER" : {
+              "route-policy community matches-any" : [
+                5
+              ]
+            },
+            "No_Export" : {
+              "route-policy community matches-any" : [
+                7
+              ]
+            }
+          }
+        },
         "route_policy_metric_type" : {
+          "community-set" : {
+            "No_Export" : {
+              "route-policy community matches-any" : [
+                5
+              ]
+            }
+          },
           "prefix-set" : {
             "DC_Internal" : {
               "route-policy prefix-set" : [
@@ -59830,6 +60087,13 @@
           }
         },
         "route_policy_param" : {
+          "community-set" : {
+            "blackhole-all" : {
+              "route-policy community matches-any" : [
+                13
+              ]
+            }
+          },
           "prefix-set" : {
             "$cust_v4_pfx" : {
               "route-policy prefix-set" : [
