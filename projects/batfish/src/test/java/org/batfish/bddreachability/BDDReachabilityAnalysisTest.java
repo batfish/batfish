@@ -59,7 +59,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 public final class BDDReachabilityAnalysisTest {
-  @Rule TemporaryFolder temp = new TemporaryFolder();
+  @Rule public TemporaryFolder temp = new TemporaryFolder();
 
   private static final String FLOW_TAG = "FLOW_TAG";
 
