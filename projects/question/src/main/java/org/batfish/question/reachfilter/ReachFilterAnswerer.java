@@ -40,6 +40,10 @@ public class ReachFilterAnswerer extends Answerer {
       throw new BatfishException("No matching filters");
     }
 
+    /*
+     * For each query ACL, try to get a flow. If one exists, run traceFilter on that flow.
+     * Concatenate the answers for all flows into one big table.
+     */
     TableAnswerElement answer = null;
     for (Pair<Configuration, IpAccessList> pair : acls) {
       Optional<Flow> result = null;
@@ -64,7 +68,8 @@ public class ReachFilterAnswerer extends Answerer {
     return answer;
   }
 
-  private List<Pair<Configuration, IpAccessList>> getQueryAcls(ReachFilterQuestion question) {
+  @VisibleForTesting
+  List<Pair<Configuration, IpAccessList>> getQueryAcls(ReachFilterQuestion question) {
     SortedMap<String, Configuration> configs = _batfish.loadConfigurations();
     List<Pair<Configuration, IpAccessList>> acls =
         question

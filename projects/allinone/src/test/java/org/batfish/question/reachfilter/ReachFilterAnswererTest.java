@@ -8,15 +8,21 @@ import static org.batfish.question.reachfilter.ReachFilterAnswerer.toMatchLineAc
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.oneOf;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 import java.util.SortedMap;
+import org.batfish.common.Pair;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Flow;
@@ -27,6 +33,8 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.datamodel.questions.FiltersSpecifier;
+import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -44,9 +52,9 @@ public final class ReachFilterAnswererTest {
 
   private static final Ip IP3 = new Ip("1.1.1.3");
 
-  private static IpAccessList ACL =
+  private static final IpAccessList ACL =
       IpAccessList.builder()
-          .setName("foo")
+          .setName("acl")
           .setLines(
               ImmutableList.of(
                   IpAccessListLine.accepting()
@@ -63,12 +71,65 @@ public final class ReachFilterAnswererTest {
                       .build()))
           .build();
 
-  private static final IpAccessList ACCEPT_ALL =
+  private static final IpAccessList ACCEPT_ALL_ACL =
       IpAccessList.builder()
           .setName("ACCEPT_ALL")
           .setLines(ImmutableList.of(IpAccessListLine.ACCEPT_ALL))
           .build();
-  private static final IpAccessList REJECT_ALL =
+
+  private static final IpAccessList BLOCKED_LINE_ACL =
+      IpAccessList.builder()
+          .setName("blockedAcl")
+          .setLines(
+              ImmutableList.of(
+                  IpAccessListLine.accepting()
+                      .setMatchCondition(AclLineMatchExprs.matchDst(IP0))
+                      .build(),
+                  IpAccessListLine.rejecting()
+                      .setMatchCondition(AclLineMatchExprs.matchDst(IP1))
+                      .build(),
+                  IpAccessListLine.accepting()
+                      .setMatchCondition(AclLineMatchExprs.matchDst(Prefix.parse("1.1.1.0/31")))
+                      .build()))
+          .build();
+
+  private static final IpAccessList DENY_ACL =
+      IpAccessList.builder()
+          .setName("foo")
+          .setLines(
+              ImmutableList.of(
+                  IpAccessListLine.rejecting()
+                      .setMatchCondition(AclLineMatchExprs.matchDst(IP0))
+                      .build(),
+                  IpAccessListLine.accepting()
+                      .setMatchCondition(AclLineMatchExprs.matchDst(IP1))
+                      .build(),
+                  IpAccessListLine.accepting()
+                      .setMatchCondition(AclLineMatchExprs.matchDst(IP2))
+                      .build(),
+                  IpAccessListLine.rejecting()
+                      .setMatchCondition(AclLineMatchExprs.matchDst(IP3))
+                      .build(),
+                  IpAccessListLine.ACCEPT_ALL))
+          .build();
+
+  private static final IpAccessList MATCH_LINE2_ACL =
+      IpAccessList.builder()
+          .setName("foo")
+          .setLines(
+              ImmutableList.of(
+                  IpAccessListLine.rejecting()
+                      .setMatchCondition(AclLineMatchExprs.matchDst(IP0))
+                      .build(),
+                  IpAccessListLine.rejecting()
+                      .setMatchCondition(AclLineMatchExprs.matchDst(IP1))
+                      .build(),
+                  IpAccessListLine.accepting()
+                      .setMatchCondition(AclLineMatchExprs.matchDst(IP2))
+                      .build()))
+          .build();
+
+  private static final IpAccessList REJECT_ALL_ACL =
       IpAccessList.builder()
           .setName("REJECT_ALL")
           .setLines(ImmutableList.of(IpAccessListLine.REJECT_ALL))
@@ -88,7 +149,9 @@ public final class ReachFilterAnswererTest {
             .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
             .setHostname("A")
             .build();
-    _config.getIpAccessLists().put(ACL.getName(), ACL);
+    _config
+        .getIpAccessLists()
+        .putAll(ImmutableMap.of(ACL.getName(), ACL, BLOCKED_LINE_ACL.getName(), BLOCKED_LINE_ACL));
 
     SortedMap<String, Configuration> configurationMap =
         ImmutableSortedMap.of(_config.getName(), _config);
@@ -97,26 +160,71 @@ public final class ReachFilterAnswererTest {
   }
 
   @Test
+  public void testGetQueryAcls_permit() {
+    ReachFilterQuestion question = new ReachFilterQuestion();
+    question.setQuery("permit");
+    question.setNodesSpecifier(new NodesSpecifier(".*"));
+    question.setFiltersSpecifier(new FiltersSpecifier(ACL.getName()));
+    ReachFilterAnswerer answerer = new ReachFilterAnswerer(question, _batfish);
+    List<Pair<Configuration, IpAccessList>> queryAcls = answerer.getQueryAcls(question);
+    assertThat(queryAcls, hasSize(1));
+    Configuration queryConfig = queryAcls.get(0).getFirst();
+    IpAccessList queryAcl = queryAcls.get(0).getSecond();
+    assertThat(queryConfig, is(_config));
+    assertThat(queryAcl, is(ACL));
+  }
+
+  @Test
+  public void testGetQueryAcls_deny() {
+    ReachFilterQuestion question = new ReachFilterQuestion();
+    question.setQuery("deny");
+    question.setNodesSpecifier(new NodesSpecifier(".*"));
+    question.setFiltersSpecifier(new FiltersSpecifier(ACL.getName()));
+    ReachFilterAnswerer answerer = new ReachFilterAnswerer(question, _batfish);
+    List<Pair<Configuration, IpAccessList>> queryAcls = answerer.getQueryAcls(question);
+    assertThat(queryAcls, hasSize(1));
+    Configuration queryConfig = queryAcls.get(0).getFirst();
+    IpAccessList queryAcl = queryAcls.get(0).getSecond();
+    assertThat(queryConfig, is(_config));
+    assertThat(queryAcl, is(DENY_ACL));
+  }
+
+  @Test
+  public void testGetQueryAcls_matchLine2() {
+    ReachFilterQuestion question = new ReachFilterQuestion();
+    question.setQuery("matchLine 2");
+    question.setNodesSpecifier(new NodesSpecifier(".*"));
+    question.setFiltersSpecifier(new FiltersSpecifier(ACL.getName()));
+    ReachFilterAnswerer answerer = new ReachFilterAnswerer(question, _batfish);
+    List<Pair<Configuration, IpAccessList>> queryAcls = answerer.getQueryAcls(question);
+    assertThat(queryAcls, hasSize(1));
+    Configuration queryConfig = queryAcls.get(0).getFirst();
+    IpAccessList queryAcl = queryAcls.get(0).getSecond();
+    assertThat(queryConfig, is(_config));
+    assertThat(queryAcl, is(MATCH_LINE2_ACL));
+  }
+
+  @Test
   public void testReachFilter_deny_ACCEPT_ALL() {
-    Optional<Flow> permitFlow = _batfish.reachFilter(_config.getName(), toDenyAcl(ACCEPT_ALL));
+    Optional<Flow> permitFlow = _batfish.reachFilter(_config.getName(), toDenyAcl(ACCEPT_ALL_ACL));
     assertThat("Should not find permitted flow", !permitFlow.isPresent());
   }
 
   @Test
   public void testReachFilter_deny_REJECT_ALL() {
-    Optional<Flow> permitFlow = _batfish.reachFilter(_config.getName(), toDenyAcl(REJECT_ALL));
+    Optional<Flow> permitFlow = _batfish.reachFilter(_config.getName(), toDenyAcl(REJECT_ALL_ACL));
     assertThat("Should find permitted flow", permitFlow.isPresent());
   }
 
   @Test
   public void testReachFilter_permit_ACCEPT_ALL() {
-    Optional<Flow> permitFlow = _batfish.reachFilter(_config.getName(), ACCEPT_ALL);
+    Optional<Flow> permitFlow = _batfish.reachFilter(_config.getName(), ACCEPT_ALL_ACL);
     assertThat("Should find permitted flow", permitFlow.isPresent());
   }
 
   @Test
   public void testReachFilter_permit_REJECT_ALL() {
-    Optional<Flow> permitFlow = _batfish.reachFilter(_config.getName(), REJECT_ALL);
+    Optional<Flow> permitFlow = _batfish.reachFilter(_config.getName(), REJECT_ALL_ACL);
     assertThat(permitFlow, equalTo(Optional.empty()));
   }
 
@@ -155,22 +263,8 @@ public final class ReachFilterAnswererTest {
 
   @Test
   public void testReachFilter_matchLine_blocked() {
-    IpAccessList acl =
-        IpAccessList.builder()
-            .setName("foo")
-            .setLines(
-                ImmutableList.of(
-                    IpAccessListLine.accepting()
-                        .setMatchCondition(AclLineMatchExprs.matchDst(IP0))
-                        .build(),
-                    IpAccessListLine.rejecting()
-                        .setMatchCondition(AclLineMatchExprs.matchDst(IP1))
-                        .build(),
-                    IpAccessListLine.rejecting()
-                        .setMatchCondition(AclLineMatchExprs.matchDst(Prefix.parse("1.1.1.0/31")))
-                        .build()))
-            .build();
-    Optional<Flow> permitFlow = _batfish.reachFilter(_config.getName(), toMatchLineAcl(2, acl));
+    Optional<Flow> permitFlow =
+        _batfish.reachFilter(_config.getName(), toMatchLineAcl(2, BLOCKED_LINE_ACL));
     assertThat("Should not find permitted flow", !permitFlow.isPresent());
   }
 
@@ -187,7 +281,27 @@ public final class ReachFilterAnswererTest {
             contains(
                 allOf(
                     hasColumn("action", equalTo("REJECT"), Schema.STRING),
+                    hasColumn("filterName", equalTo(ACL.getName()), Schema.STRING)))));
+  }
+
+  @Test
+  public void testAnswer() {
+    ReachFilterQuestion question = new ReachFilterQuestion();
+    ReachFilterAnswerer answerer = new ReachFilterAnswerer(question, _batfish);
+    question.setNodesSpecifier(new NodesSpecifier(".*"));
+    question.setFiltersSpecifier(new FiltersSpecifier(".*"));
+    TableAnswerElement ae = (TableAnswerElement) answerer.answer();
+    assertThat(
+        ae,
+        hasRows(
+            containsInAnyOrder(
+                allOf(
+                    hasColumn("action", equalTo("ACCEPT"), Schema.STRING),
                     hasColumn("filterName", equalTo(ACL.getName()), Schema.STRING),
-                    hasColumn("action", equalTo("REJECT"), Schema.STRING)))));
+                    hasColumn("lineNumber", oneOf(0, 3), Schema.INTEGER)),
+                allOf(
+                    hasColumn("action", equalTo("ACCEPT"), Schema.STRING),
+                    hasColumn("filterName", equalTo(BLOCKED_LINE_ACL.getName()), Schema.STRING),
+                    hasColumn("lineNumber", equalTo(0), Schema.INTEGER)))));
   }
 }
