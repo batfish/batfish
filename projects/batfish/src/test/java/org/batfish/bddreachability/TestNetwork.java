@@ -20,33 +20,29 @@ import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Vrf;
-import org.batfish.main.Batfish;
-import org.batfish.main.BatfishTestUtils;
-import org.junit.rules.TemporaryFolder;
 
 /** A test network with two nodes and two static routes from one to the other. */
-final class TestNetwork {
-  static final Prefix DST_PREFIX_1 = Prefix.parse("1.1.0.0/32");
-  static final Prefix DST_PREFIX_2 = Prefix.parse("2.1.0.0/32");
-  static final Prefix LINK_1_NETWORK = Prefix.parse("1.0.0.0/31");
-  static final Prefix LINK_2_NETWORK = Prefix.parse("2.0.0.0/31");
-  static final Ip SOURCE_NAT_ACL_IP = new Ip("5.5.5.5");
-  static final Ip SOURCE_NAT_POOL_IP = new Ip("6.6.6.6");
-  static final int POST_SOURCE_NAT_ACL_DEST_PORT = 1234;
+public final class TestNetwork {
+  public static final Prefix DST_PREFIX_1 = Prefix.parse("1.1.0.0/32");
+  public static final Prefix DST_PREFIX_2 = Prefix.parse("2.1.0.0/32");
+  public static final Prefix LINK_1_NETWORK = Prefix.parse("1.0.0.0/31");
+  public static final Prefix LINK_2_NETWORK = Prefix.parse("2.0.0.0/31");
+  public static final Ip SOURCE_NAT_ACL_IP = new Ip("5.5.5.5");
+  public static final Ip SOURCE_NAT_POOL_IP = new Ip("6.6.6.6");
+  public static final int POST_SOURCE_NAT_ACL_DEST_PORT = 1234;
 
-  final Batfish _batfish;
-  final SortedMap<String, Configuration> _configs;
-  final Interface _dstIface1;
-  final Interface _dstIface2;
-  final Configuration _dstNode;
-  final Configuration _srcNode;
-  final Interface _link1Src;
-  final Interface _link2Src;
-  final Interface _link1Dst;
-  final Interface _link2Dst;
-  final IpAccessList _link2SrcSourceNatAcl;
+  public final SortedMap<String, Configuration> _configs;
+  public final Interface _dstIface1;
+  public final Interface _dstIface2;
+  public final Configuration _dstNode;
+  public final Configuration _srcNode;
+  public final Interface _link1Src;
+  public final Interface _link2Src;
+  public final Interface _link1Dst;
+  public final Interface _link2Dst;
+  public final IpAccessList _link2SrcSourceNatAcl;
 
-  TestNetwork() throws IOException {
+  public TestNetwork() throws IOException {
     NetworkFactory nf = new NetworkFactory();
     Builder cb = nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
     Interface.Builder ib = nf.interfaceBuilder().setActive(true).setBandwidth(1E9d);
@@ -154,8 +150,5 @@ final class TestNetwork {
             bld.setNetwork(DST_PREFIX_2).setNextHopIp(LINK_2_NETWORK.getEndIp()).build()));
 
     _configs = ImmutableSortedMap.of(_srcNode.getName(), _srcNode, _dstNode.getName(), _dstNode);
-    TemporaryFolder temp = new TemporaryFolder();
-    temp.create();
-    _batfish = BatfishTestUtils.getBatfish(_configs, temp);
   }
 }

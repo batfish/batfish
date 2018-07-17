@@ -28,6 +28,8 @@ import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.UniverseIpSpace;
+import org.batfish.main.Batfish;
+import org.batfish.main.BatfishTestUtils;
 import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.symbolic.bdd.BDDAcl;
@@ -52,14 +54,19 @@ import org.batfish.z3.state.PreOutEdge;
 import org.batfish.z3.state.PreOutEdgePostNat;
 import org.batfish.z3.state.PreOutVrf;
 import org.junit.Before;
-import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 public final class BDDReachabilityAnalysisTest {
+  @Rule TemporaryFolder temp = new TemporaryFolder();
+
   private static final String FLOW_TAG = "FLOW_TAG";
-  private static BDDReachabilityAnalysis GRAPH;
-  private static BDDReachabilityAnalysisFactory GRAPH_FACTORY;
-  private static TestNetwork NET;
+
+  private BDDReachabilityAnalysis _graph;
+  private BDDReachabilityAnalysisFactory _graphFactory;
+  private TestNetwork _net;
+  private Batfish _batfish;
 
   private BDDOps _bddOps;
 
@@ -101,73 +108,71 @@ public final class BDDReachabilityAnalysisTest {
   private PreOutEdgePostNat _srcPreOutEdgePostNat2;
   private PreOutVrf _srcPreOutVrf;
 
-  @BeforeClass
-  public static void initFactory() throws IOException {
-    NET = new TestNetwork();
-    NET._batfish.computeDataPlane(false);
-    DataPlane dataPlane = NET._batfish.loadDataPlane();
-    GRAPH_FACTORY =
-        new BDDReachabilityAnalysisFactory(NET._configs, dataPlane.getForwardingAnalysis());
+  @Before
+  public void setup() throws IOException {
+    _net = new TestNetwork();
+    _batfish = BatfishTestUtils.getBatfish(_net._configs, temp);
+
+    _batfish.computeDataPlane(false);
+    DataPlane dataPlane = _batfish.loadDataPlane();
+    _graphFactory =
+        new BDDReachabilityAnalysisFactory(_net._configs, dataPlane.getForwardingAnalysis());
 
     IpSpaceAssignment assignment =
         IpSpaceAssignment.builder()
             .assign(
-                new InterfaceLocation(NET._srcNode.getName(), NET._link1Src.getName()),
+                new InterfaceLocation(_net._srcNode.getName(), _net._link1Src.getName()),
                 UniverseIpSpace.INSTANCE)
             .build();
-    GRAPH = GRAPH_FACTORY.bddReachabilityAnalysis(assignment);
-  }
-
-  @Before
-  public void setup() {
+    _graph = _graphFactory.bddReachabilityAnalysis(assignment);
     _bddOps = new BDDOps(BDDPacket.factory);
     _dstIface1Ip = DST_PREFIX_1.getStartIp();
     _dstIface1IpBDD = dstIpBDD(_dstIface1Ip);
     _dstIface2Ip = DST_PREFIX_2.getStartIp();
     _dstIface2IpBDD = dstIpBDD(_dstIface2Ip);
-    _dstIface1Name = NET._dstIface1.getName();
-    _dstIface2Name = NET._dstIface2.getName();
-    _dstName = NET._dstNode.getHostname();
+    _dstIface1Name = _net._dstIface1.getName();
+    _dstIface2Name = _net._dstIface2.getName();
+    _dstName = _net._dstNode.getHostname();
     _dstNodeAccept = new NodeAccept(_dstName);
     _dstPostInVrf = new PostInVrf(_dstName, DEFAULT_VRF_NAME);
     _dstPreOutVrf = new PreOutVrf(_dstName, DEFAULT_VRF_NAME);
 
     _link1DstIpBDD = dstIpBDD(LINK_1_NETWORK.getEndIp());
-    _link1DstName = NET._link1Dst.getName();
+    _link1DstName = _net._link1Dst.getName();
 
     _link1SrcIpBDD = dstIpBDD(LINK_1_NETWORK.getStartIp());
 
     _link2DstIpBDD = dstIpBDD(LINK_2_NETWORK.getEndIp());
-    _link2DstName = NET._link2Dst.getName();
+    _link2DstName = _net._link2Dst.getName();
 
     _link2SrcIpBDD = dstIpBDD(LINK_2_NETWORK.getStartIp());
-    String link2SrcName = NET._link2Src.getName();
+    String link2SrcName = _net._link2Src.getName();
 
-    _srcName = NET._srcNode.getHostname();
+    _srcName = _net._srcNode.getHostname();
     _srcNodeAccept = new NodeAccept(_srcName);
     _srcPostInVrf = new PostInVrf(_srcName, DEFAULT_VRF_NAME);
 
     _dstPreInInterface1 = new PreInInterface(_dstName, _link1DstName);
     _dstPreInInterface2 = new PreInInterface(_dstName, _link2DstName);
 
-    _srcPreInInterface1 = new PreInInterface(_srcName, NET._link1Src.getName());
+    _srcPreInInterface1 = new PreInInterface(_srcName, _net._link1Src.getName());
     _srcPreInInterface2 = new PreInInterface(_srcName, link2SrcName);
 
-    _dstPreOutEdge1 = new PreOutEdge(_dstName, _link1DstName, _srcName, NET._link1Src.getName());
+    _dstPreOutEdge1 = new PreOutEdge(_dstName, _link1DstName, _srcName, _net._link1Src.getName());
     _dstPreOutEdge2 = new PreOutEdge(_dstName, _link2DstName, _srcName, link2SrcName);
     _dstPreOutEdgePostNat1 =
-        new PreOutEdgePostNat(_dstName, _link1DstName, _srcName, NET._link1Src.getName());
+        new PreOutEdgePostNat(_dstName, _link1DstName, _srcName, _net._link1Src.getName());
     _dstPreOutEdgePostNat2 = new PreOutEdgePostNat(_dstName, _link2DstName, _srcName, link2SrcName);
-    _srcPreOutEdge1 = new PreOutEdge(_srcName, NET._link1Src.getName(), _dstName, _link1DstName);
+    _srcPreOutEdge1 = new PreOutEdge(_srcName, _net._link1Src.getName(), _dstName, _link1DstName);
     _srcPreOutEdge2 = new PreOutEdge(_srcName, link2SrcName, _dstName, _link2DstName);
     _srcPreOutEdgePostNat1 =
-        new PreOutEdgePostNat(_srcName, NET._link1Src.getName(), _dstName, _link1DstName);
+        new PreOutEdgePostNat(_srcName, _net._link1Src.getName(), _dstName, _link1DstName);
     _srcPreOutEdgePostNat2 = new PreOutEdgePostNat(_srcName, link2SrcName, _dstName, _link2DstName);
     _srcPreOutVrf = new PreOutVrf(_srcName, DEFAULT_VRF_NAME);
   }
 
-  private static List<Ip> bddIps(BDD bdd) {
-    BDDInteger bddInteger = GRAPH_FACTORY.getIpSpaceToBDD().getBDDInteger();
+  private List<Ip> bddIps(BDD bdd) {
+    BDDInteger bddInteger = _graphFactory.getIpSpaceToBDD().getBDDInteger();
 
     return bddInteger
         .getValuesSatisfying(bdd, 10)
@@ -176,8 +181,8 @@ public final class BDDReachabilityAnalysisTest {
         .collect(Collectors.toList());
   }
 
-  private static BDD bddTransition(StateExpr preState, StateExpr postState) {
-    return GRAPH_FACTORY.getBDDTransitions().get(preState).get(postState);
+  private BDD bddTransition(StateExpr preState, StateExpr postState) {
+    return _graphFactory.getBDDTransitions().get(preState).get(postState);
   }
 
   private static BDD dstIpBDD(Ip ip) {
@@ -196,8 +201,8 @@ public final class BDDReachabilityAnalysisTest {
     return _bddOps.or(bdds);
   }
 
-  private static BDD vrfAcceptBDD(String node) {
-    return GRAPH_FACTORY.getVrfAcceptBDDs().get(node).get(DEFAULT_VRF_NAME);
+  private BDD vrfAcceptBDD(String node) {
+    return _graphFactory.getVrfAcceptBDDs().get(node).get(DEFAULT_VRF_NAME);
   }
 
   @Test
@@ -264,8 +269,8 @@ public final class BDDReachabilityAnalysisTest {
 
   @Test
   public void testBDDTransitions_PreOutVrf_outEdges() {
-    String link1SrcName = NET._link1Src.getName();
-    String link2SrcName = NET._link2Src.getName();
+    String link1SrcName = _net._link1Src.getName();
+    String link2SrcName = _net._link2Src.getName();
     BDD nodeDropNullRoute = bddTransition(_srcPreOutVrf, new NodeDropNullRoute(_srcName));
     BDD nodeInterfaceNeighborUnreachable1 =
         bddTransition(_srcPreOutVrf, new NodeInterfaceNeighborUnreachable(_srcName, link1SrcName));
@@ -282,9 +287,9 @@ public final class BDDReachabilityAnalysisTest {
 
     assertThat(
         bddIps(preOutEdge1),
-        containsInAnyOrder(_dstIface1Ip, _dstIface2Ip, NET._link1Dst.getAddress().getIp()));
+        containsInAnyOrder(_dstIface1Ip, _dstIface2Ip, _net._link1Dst.getAddress().getIp()));
     assertThat(
-        bddIps(preOutEdge2), containsInAnyOrder(_dstIface2Ip, NET._link2Dst.getAddress().getIp()));
+        bddIps(preOutEdge2), containsInAnyOrder(_dstIface2Ip, _net._link2Dst.getAddress().getIp()));
 
     // ECMP: _dstIface1Ip is routed out both edges
     assertThat(preOutEdge1.and(preOutEdge2), equalTo(dstIpBDD(_dstIface2Ip)));
@@ -347,7 +352,7 @@ public final class BDDReachabilityAnalysisTest {
 
   @Test
   public void testGraph_terminalStates() {
-    Set<StateExpr> terminalStates = GRAPH.getLeafStates();
+    Set<StateExpr> terminalStates = _graph.getLeafStates();
     assertThat(
         terminalStates,
         equalTo(ImmutableSet.of(Accept.INSTANCE, Drop.INSTANCE, NeighborUnreachable.INSTANCE)));
@@ -358,15 +363,15 @@ public final class BDDReachabilityAnalysisTest {
     IpSpaceAssignment assignment =
         IpSpaceAssignment.builder()
             .assign(
-                new InterfaceLocation(NET._srcNode.getName(), NET._link1Src.getName()),
+                new InterfaceLocation(_net._srcNode.getName(), _net._link1Src.getName()),
                 SOURCE_NAT_ACL_IP.toIpSpace())
             .build();
 
     BDDReachabilityAnalysis graph =
-        GRAPH_FACTORY.bddReachabilityAnalysis(assignment, _dstIface2Ip.toIpSpace());
+        _graphFactory.bddReachabilityAnalysis(assignment, _dstIface2Ip.toIpSpace());
 
     BDD natAclIpBDD = srcIpBDD(SOURCE_NAT_ACL_IP);
-    BDD srcNatAclBDD = BDDAcl.create(NET._link2SrcSourceNatAcl).getBdd();
+    BDD srcNatAclBDD = BDDAcl.create(_net._link2SrcSourceNatAcl).getBdd();
     assertThat(srcNatAclBDD, equalTo(natAclIpBDD));
 
     OriginateVrf originateVrf = new OriginateVrf(_srcName, Configuration.DEFAULT_VRF_NAME);
@@ -387,14 +392,14 @@ public final class BDDReachabilityAnalysisTest {
     IpSpaceAssignment assignment =
         IpSpaceAssignment.builder()
             .assign(
-                new InterfaceLocation(NET._srcNode.getName(), NET._link1Src.getName()),
+                new InterfaceLocation(_net._srcNode.getName(), _net._link1Src.getName()),
                 Ip.MAX.toIpSpace())
             .build();
 
     BDDReachabilityAnalysis graph =
-        GRAPH_FACTORY.bddReachabilityAnalysis(assignment, _dstIface2Ip.toIpSpace());
+        _graphFactory.bddReachabilityAnalysis(assignment, _dstIface2Ip.toIpSpace());
 
-    BDD dstIpBDD = GRAPH_FACTORY.getIpSpaceToBDD().toBDD(_dstIface2Ip);
+    BDD dstIpBDD = _graphFactory.getIpSpaceToBDD().toBDD(_dstIface2Ip);
     BDD srcIpBDD = srcIpBDD(Ip.MAX);
     BDD postNatAclBDD = dstPortBDD(POST_SOURCE_NAT_ACL_DEST_PORT);
 
