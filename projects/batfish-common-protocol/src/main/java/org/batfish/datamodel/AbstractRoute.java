@@ -50,6 +50,8 @@ public abstract class AbstractRoute implements Serializable, Comparable<Abstract
 
   private boolean _nonRouting;
 
+  private boolean _nonForwarding;
+
   @Nullable private String _vrf;
 
   @JsonCreator
@@ -133,6 +135,11 @@ public abstract class AbstractRoute implements Serializable, Comparable<Abstract
   }
 
   @JsonIgnore
+  public final boolean getNonForwarding() {
+    return _nonForwarding;
+  }
+
+  @JsonIgnore
   public abstract RoutingProtocol getProtocol();
 
   @JsonIgnore
@@ -163,6 +170,11 @@ public abstract class AbstractRoute implements Serializable, Comparable<Abstract
   @JsonIgnore
   public final void setNonRouting(boolean nonRouting) {
     _nonRouting = nonRouting;
+  }
+
+  @JsonIgnore
+  public final void setNonForwarding(boolean nonForwarding) {
+    _nonForwarding = nonForwarding;
   }
 
   @JsonProperty(PROP_VRF)
