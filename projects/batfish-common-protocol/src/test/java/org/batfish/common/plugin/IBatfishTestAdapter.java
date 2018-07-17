@@ -405,4 +405,9 @@ public class IBatfishTestAdapter implements IBatfish {
   public void writeDataPlane(DataPlane dp, DataPlaneAnswerElement ae) {
     throw new UnsupportedOperationException();
   }
+
+  @Override
+  public Set<Flow> bddMultipathConsistency() {
+    throw new UnsupportedOperationException();
+  }
 }
