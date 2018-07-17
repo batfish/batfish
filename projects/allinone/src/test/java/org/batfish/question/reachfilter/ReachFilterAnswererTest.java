@@ -295,13 +295,14 @@ public final class ReachFilterAnswererTest {
         ae,
         hasRows(
             containsInAnyOrder(
-                allOf(
-                    hasColumn("action", equalTo("ACCEPT"), Schema.STRING),
-                    hasColumn("filterName", equalTo(ACL.getName()), Schema.STRING),
-                    hasColumn("lineNumber", oneOf(0, 3), Schema.INTEGER)),
-                allOf(
-                    hasColumn("action", equalTo("ACCEPT"), Schema.STRING),
-                    hasColumn("filterName", equalTo(BLOCKED_LINE_ACL.getName()), Schema.STRING),
-                    hasColumn("lineNumber", equalTo(0), Schema.INTEGER)))));
+                ImmutableList.of(
+                    allOf(
+                        hasColumn("action", equalTo("ACCEPT"), Schema.STRING),
+                        hasColumn("filterName", equalTo(ACL.getName()), Schema.STRING),
+                        hasColumn("lineNumber", oneOf(0, 3), Schema.INTEGER)),
+                    allOf(
+                        hasColumn("action", equalTo("ACCEPT"), Schema.STRING),
+                        hasColumn("filterName", equalTo(BLOCKED_LINE_ACL.getName()), Schema.STRING),
+                        hasColumn("lineNumber", equalTo(0), Schema.INTEGER))))));
   }
 }
