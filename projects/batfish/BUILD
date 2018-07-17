@@ -77,6 +77,7 @@ java_library(
         "//projects/batfish-common-protocol:common",
         "//projects/batfish-common-protocol:common_testlib",
         "//projects/batfish/src/main/antlr4/org/batfish/grammar/flatjuniper",
+        "//projects/lib/bdd",
         "//projects/lib/z3",
         "@antlr4_runtime//:compile",
         "@commons_collections4//:compile",
