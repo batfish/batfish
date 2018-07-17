@@ -8,8 +8,8 @@ import org.batfish.specifier.Location;
  * from any {@link Location source} to any destination, and returns traces for all detected
  * multipath inconsistencies.
  *
- * In the future, we can consider adding a flag that would stop the reachability analysis after the
- * first multipath inconsistency is found.
+ * <p>In the future, we can consider adding a flag that would stop the reachability analysis after
+ * the first multipath inconsistency is found.
  */
 public class MultipathConsistencyQuestion extends Question {
   @Override
