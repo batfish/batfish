@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.SortedSet;
-import java.util.stream.Collectors;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpAccessList;
@@ -35,6 +34,9 @@ import org.batfish.datamodel.acl.TrueExpr;
  */
 public abstract class IpAccessListSpecializer
     implements GenericAclLineMatchExprVisitor<AclLineMatchExpr> {
+
+  private static final IpAccessListLine FALSE_LINE =
+      IpAccessListLine.accepting().setMatchCondition(FALSE).build();
 
   private static <T> boolean emptyDisjuction(Collection<T> orig, Collection<T> specialized) {
     return orig != null && !orig.isEmpty() && specialized.isEmpty();
@@ -61,10 +63,9 @@ public abstract class IpAccessListSpecializer
         ipAccessList
             .getLines()
             .stream()
-            .map(this::specialize)
-            .filter(Optional::isPresent)
-            .map(Optional::get)
-            .collect(Collectors.toList());
+            // replace unmatchable lines with FALSE_LINE to preserve line numbers
+            .map(line -> specialize(line).orElse(FALSE_LINE))
+            .collect(ImmutableList.toImmutableList());
 
     return IpAccessList.builder()
         .setName(ipAccessList.getName())
