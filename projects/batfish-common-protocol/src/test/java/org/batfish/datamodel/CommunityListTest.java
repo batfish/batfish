@@ -12,7 +12,7 @@ public class CommunityListTest {
 
   @Test
   public void testEmptyMatch() {
-    CommunityList cl = new CommunityList("name", ImmutableList.of());
+    CommunityList cl = new CommunityList("name", ImmutableList.of(), false);
 
     assertThat(cl.permits(communityStringToLong("65111:34")), equalTo(false));
   }
@@ -22,7 +22,8 @@ public class CommunityListTest {
     CommunityList cl =
         new CommunityList(
             "name",
-            ImmutableList.of(new CommunityListLine(LineAction.ACCEPT, "65[0-9][0-9][0-9]:*")));
+            ImmutableList.of(new CommunityListLine(LineAction.ACCEPT, "65[0-9][0-9][0-9]:*")),
+            false);
 
     assertThat(cl.permits(communityStringToLong("65111:34")), equalTo(true));
     assertThat(cl.permits(communityStringToLong("64111:34")), equalTo(false));
@@ -33,7 +34,8 @@ public class CommunityListTest {
     CommunityList cl =
         new CommunityList(
             "name",
-            ImmutableList.of(new CommunityListLine(LineAction.REJECT, "65[0-9][0-9][0-9]:*")));
+            ImmutableList.of(new CommunityListLine(LineAction.REJECT, "65[0-9][0-9][0-9]:*")),
+            false);
 
     assertThat(cl.permits(communityStringToLong("65111:34")), equalTo(false));
     assertThat(cl.permits(communityStringToLong("64111:34")), equalTo(false));

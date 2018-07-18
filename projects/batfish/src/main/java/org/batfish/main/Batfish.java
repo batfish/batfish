@@ -6,6 +6,7 @@ import static org.batfish.main.ReachabilityParametersResolver.resolveReachabilit
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 import com.google.common.base.Verify;
 import com.google.common.cache.Cache;
@@ -59,6 +60,8 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.apache.commons.configuration2.ImmutableConfiguration;
 import org.apache.commons.lang3.SerializationUtils;
+import org.batfish.bddreachability.BDDReachabilityAnalysis;
+import org.batfish.bddreachability.BDDReachabilityAnalysisFactory;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishException.BatfishStackTrace;
@@ -80,6 +83,10 @@ import org.batfish.common.plugin.ExternalBgpAdvertisementPlugin;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.PluginClientType;
 import org.batfish.common.plugin.PluginConsumer;
+import org.batfish.common.topology.Layer1Topology;
+import org.batfish.common.topology.Layer2Topology;
+import org.batfish.common.topology.Layer3Topology;
+import org.batfish.common.topology.TopologyUtil;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
@@ -98,6 +105,7 @@ import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowHistory;
 import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.ForwardingAction;
+import org.batfish.datamodel.ForwardingAnalysis;
 import org.batfish.datamodel.GenericConfigObject;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
@@ -170,13 +178,18 @@ import org.batfish.representation.iptables.IptablesVendorConfiguration;
 import org.batfish.role.InferRoles;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
+import org.batfish.specifier.AllInterfaceLinksLocationSpecifier;
+import org.batfish.specifier.AllInterfacesLocationSpecifier;
+import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
 import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.SpecifierContext;
 import org.batfish.specifier.SpecifierContextImpl;
+import org.batfish.specifier.UnionLocationSpecifier;
 import org.batfish.symbolic.abstraction.BatfishCompressor;
 import org.batfish.symbolic.abstraction.Roles;
+import org.batfish.symbolic.bdd.BDDAcl;
 import org.batfish.symbolic.smt.PropertyChecker;
 import org.batfish.vendor.VendorConfiguration;
 import org.batfish.z3.AclLine;
@@ -213,8 +226,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public static final String DIFFERENTIAL_FLOW_TAG = "DIFFERENTIAL";
 
   /** The name of the [optional] topology file within a test-rig */
-  private static final String TOPOLOGY_FILENAME = "topology.net";
-
   public static void applyBaseDir(
       TestrigSettings settings, Path containerDir, String testrig, String envName) {
     Path testrigDir = containerDir.resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR, testrig));
@@ -1039,7 +1050,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   Topology computeEnvironmentTopology(Map<String, Configuration> configurations) {
     _logger.resetTimer();
-    Topology topology = computeTestrigTopology(_testrigSettings.getTestRigPath(), configurations);
+    Topology topology = computeTestrigTopology(configurations);
     topology.prune(getEdgeBlacklist(), getNodeBlacklist(), getInterfaceBlacklist());
     _logger.printElapsedTime();
     return topology;
@@ -1078,21 +1089,31 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _logger.printElapsedTime();
   }
 
-  private Topology computeTestrigTopology(
-      Path testRigPath, Map<String, Configuration> configurations) {
-    Path topologyFilePath = testRigPath.resolve(TOPOLOGY_FILENAME);
-    Topology topology;
-    // Get generated facts from topology file
-    if (Files.exists(topologyFilePath)) {
-      topology = processTopologyFile(topologyFilePath);
-      _logger.infof(
-          "Testrig:%s in container:%s has topology file", getTestrigName(), getContainerName());
-    } else {
-      // guess adjacencies based on interface subnetworks
-      _logger.info("*** (GUESSING TOPOLOGY IN ABSENCE OF EXPLICIT FILE) ***\n");
-      topology = CommonUtil.synthesizeTopology(configurations);
+  @VisibleForTesting
+  Topology computeTestrigTopology(Map<String, Configuration> configurations) {
+    Topology legacyTopology = _storage.loadLegacyTopology(_testrigSettings.getName());
+    if (legacyTopology != null) {
+      return legacyTopology;
     }
-    return topology;
+    Layer1Topology rawLayer1Topology = _storage.loadLayer1Topology(_testrigSettings.getName());
+    if (rawLayer1Topology != null) {
+      _logger.infof(
+          "Testrig:%s in container:%s has layer-1 topology file",
+          getTestrigName(), getContainerName());
+      newBatch("Processing layer-1 topology", 0);
+      Layer1Topology layer1Topology =
+          TopologyUtil.computeLayer1Topology(rawLayer1Topology, configurations);
+      newBatch("Computing layer-2 topology", 0);
+      Layer2Topology layer2Topology =
+          TopologyUtil.computeLayer2Topology(layer1Topology, configurations);
+      newBatch("Computing layer-3 topology", 0);
+      Layer3Topology layer3Topology =
+          TopologyUtil.computeLayer3Topology(layer2Topology, configurations);
+      return TopologyUtil.toTopology(layer3Topology);
+    }
+    // guess adjacencies based on interface subnetworks
+    _logger.info("*** (GUESSING TOPOLOGY IN ABSENCE OF EXPLICIT FILE) ***\n");
+    return CommonUtil.synthesizeTopology(configurations);
   }
 
   private Map<String, Configuration> convertConfigurations(
@@ -1390,12 +1411,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
       _logger.debugf("Writing config to \"%s\"...", outputFileAsString);
       CommonUtil.writeFile(outputFile, flatConfigText);
       _logger.debug("OK\n");
-    }
-    Path inputTopologyPath = inputPath.resolve(TOPOLOGY_FILENAME);
-    Path outputTopologyPath = outputPath.resolve(TOPOLOGY_FILENAME);
-    if (Files.isRegularFile(inputTopologyPath)) {
-      String topologyFileText = CommonUtil.readFile(inputTopologyPath);
-      CommonUtil.writeFile(outputTopologyPath, topologyFileText);
     }
   }
 
@@ -2780,21 +2795,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return nodes;
   }
 
-  public Topology parseTopology(Path topologyFilePath) {
-    _logger.info("*** PARSING TOPOLOGY ***\n");
-    String topologyFileText = CommonUtil.readFile(topologyFilePath);
-    if (topologyFileText.trim().isEmpty()) {
-      throw new BatfishException("ERROR: empty topology\n");
-    }
-    _logger.infof("Parsing: \"%s\" ...", topologyFilePath.toAbsolutePath());
-    try {
-      return BatfishObjectMapper.mapper().readValue(topologyFileText, Topology.class);
-    } catch (IOException e) {
-      _logger.fatal("...ERROR\n");
-      throw new BatfishException("Topology format error " + e.getMessage(), e);
-    }
-  }
-
   private SortedMap<String, VendorConfiguration> parseVendorConfigurations(
       Map<Path, String> configurationData,
       ParseVendorConfigurationAnswerElement answerElement,
@@ -3239,11 +3239,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
         veae.getUndefinedNodeBlacklistNodes().add(hostname);
       }
     }
-  }
-
-  private Topology processTopologyFile(Path topologyFilePath) {
-    Topology topology = parseTopology(topologyFilePath);
-    return topology;
   }
 
   @Override
@@ -3951,8 +3946,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       answer.addAnswerElement(answerElement);
     }
     Map<String, Configuration> configurations = getConfigurations(vendorConfigPath, answerElement);
-    Topology testrigTopology =
-        computeTestrigTopology(_testrigSettings.getTestRigPath(), configurations);
+    Topology testrigTopology = computeTestrigTopology(configurations);
     serializeAsJson(_testrigSettings.getTopologyPath(), testrigTopology, "testrig topology");
     checkTopology(configurations, testrigTopology);
     org.batfish.datamodel.pojo.Topology pojoTopology =
@@ -4201,6 +4195,15 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
+  public Optional<Flow> reachFilter(String nodeName, IpAccessList acl) {
+    BDDAcl bddAcl = BDDAcl.create(acl);
+    return bddAcl
+        .getPkt()
+        .getFlow(bddAcl.getBdd())
+        .map(flowBuilder -> flowBuilder.setTag(getFlowTag()).setIngressNode(nodeName).build());
+  }
+
+  @Override
   public AnswerElement smtBlackhole(HeaderQuestion q) {
     PropertyChecker p = new PropertyChecker(this, _settings);
     return p.checkBlackHole(q);
@@ -4320,6 +4323,29 @@ public class Batfish extends PluginConsumer implements IBatfish {
         ImmutableSet.of(),
         IpSpaceAssignment.empty(),
         false);
+  }
+
+  @Override
+  public Set<Flow> bddMultipathConsistency() {
+    Map<String, Configuration> configurations = loadConfigurations();
+    DataPlane dataPlane = loadDataPlane();
+    ForwardingAnalysis forwardingAnalysis = dataPlane.getForwardingAnalysis();
+    SpecifierContextImpl specifierContext = new SpecifierContextImpl(this, configurations);
+    String tag = getFlowTag();
+    Set<Location> locations =
+        new UnionLocationSpecifier(
+                AllInterfacesLocationSpecifier.INSTANCE,
+                AllInterfaceLinksLocationSpecifier.INSTANCE)
+            .resolve(specifierContext);
+    IpSpaceAssignment sourceIpAssignment =
+        InferFromLocationIpSpaceSpecifier.INSTANCE.resolve(locations, specifierContext);
+
+    BDDReachabilityAnalysisFactory analysisFactory =
+        new BDDReachabilityAnalysisFactory(configurations, forwardingAnalysis);
+    BDDReachabilityAnalysis bddReachabilityAnalysis =
+        analysisFactory.bddReachabilityAnalysis(sourceIpAssignment);
+
+    return bddReachabilityAnalysis.multipathInconsistencies(tag);
   }
 
   @Nonnull
@@ -4517,5 +4543,19 @@ public class Batfish extends PluginConsumer implements IBatfish {
     } catch (JSONException e) {
       throw new BatfishException("Failed to synthesize JSON topology", e);
     }
+  }
+
+  @Override
+  public @Nullable Layer1Topology getLayer1Topology() {
+    return _storage.loadLayer1Topology(_testrigSettings.getName());
+  }
+
+  @Override
+  public @Nullable Layer2Topology getLayer2Topology() {
+    Layer1Topology layer1Topology = getLayer1Topology();
+    if (layer1Topology == null) {
+      return null;
+    }
+    return TopologyUtil.computeLayer2Topology(layer1Topology, loadConfigurations());
   }
 }

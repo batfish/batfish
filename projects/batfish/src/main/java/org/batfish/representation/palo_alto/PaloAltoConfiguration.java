@@ -1,7 +1,15 @@
 package org.batfish.representation.palo_alto;
 
+import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
+
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Multiset;
+import com.google.common.collect.SortedMultiset;
+import com.google.common.collect.TreeMultiset;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.NavigableSet;
@@ -10,10 +18,12 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import javax.annotation.Nullable;
 import org.apache.commons.collections4.list.TreeList;
 import org.batfish.common.VendorConversionException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.DefinedStructureInfo;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.IpAccessList;
@@ -29,6 +39,7 @@ import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
+import org.batfish.vendor.StructureUsage;
 import org.batfish.vendor.VendorConfiguration;
 
 public final class PaloAltoConfiguration extends VendorConfiguration {
@@ -156,6 +167,15 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   /** Generate egress IpAccessList name given an interface or zone name */
   private static String computeOutgoingFilterName(String interfaceOrZoneName) {
     return String.format("~%s~OUTGOING_FILTER~", interfaceOrZoneName);
+  }
+
+  /**
+   * Extract object name from a name with an embedded namespace. For example: nameWithNamespace
+   * might be `vsys1~SERVICE1`, where `SERVICE1` is the object name extracted and returned.
+   */
+  private static String extractObjectName(String nameWithNamespace) {
+    String[] parts = nameWithNamespace.split("~", -1);
+    return parts[parts.length - 1];
   }
 
   // Visible for testing
@@ -408,11 +428,80 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
       _c.getVrfs().put(vr.getKey(), toVrf(vr.getValue()));
     }
 
-    // Count and mark structure usages and identify undefined references
+    // Handle converting items within virtual systems
+    convertVirtualSystems();
+
+    // Count and mark simple structure usages and identify undefined references
     markConcreteStructure(
         PaloAltoStructureType.INTERFACE,
         PaloAltoStructureUsage.VIRTUAL_ROUTER_INTERFACE,
         PaloAltoStructureUsage.ZONE_INTERFACE);
+
+    // Handle marking for structures that may exist in one of a couple namespaces
+    markAbstractStructureFromUnknownNamespace(
+        PaloAltoStructureType.SERVICE_OR_SERVICE_GROUP,
+        ImmutableList.of(PaloAltoStructureType.SERVICE, PaloAltoStructureType.SERVICE_GROUP),
+        // PaloAltoStructureUsage.SERVICE_GROUP_MEMBER,
+        PaloAltoStructureUsage.RULEBASE_SERVICE);
     return _c;
+  }
+
+  /**
+   * Helper method to return DefinedStructureInfo for the structure with the specified name that
+   * could be any of the specified structureTypesToCheck, return null if no match is found
+   */
+  private @Nullable DefinedStructureInfo findDefinedStructure(
+      String name, Collection<PaloAltoStructureType> structureTypesToCheck) {
+    for (PaloAltoStructureType typeToCheck : structureTypesToCheck) {
+      Map<String, DefinedStructureInfo> matchingDefinitions =
+          _structureDefinitions.get(typeToCheck.getDescription());
+      if (matchingDefinitions != null && !matchingDefinitions.isEmpty()) {
+        DefinedStructureInfo definition = matchingDefinitions.get(name);
+        if (definition != null) {
+          return definition;
+        }
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Update referrers and/or warn for undefined structures based on references to an abstract
+   * structure type existing in either the reference's namespace or shared namespace
+   */
+  private void markAbstractStructureFromUnknownNamespace(
+      PaloAltoStructureType type,
+      Collection<PaloAltoStructureType> structureTypesToCheck,
+      PaloAltoStructureUsage... usages) {
+    Map<String, SortedMap<StructureUsage, SortedMultiset<Integer>>> references =
+        firstNonNull(_structureReferences.get(type), Collections.emptyMap());
+    for (PaloAltoStructureUsage usage : usages) {
+      references.forEach(
+          (nameWithNamespace, byUsage) -> {
+            String name = extractObjectName(nameWithNamespace);
+            Multiset<Integer> lines = firstNonNull(byUsage.get(usage), TreeMultiset.create());
+            // Check this namespace first
+            DefinedStructureInfo info =
+                findDefinedStructure(nameWithNamespace, structureTypesToCheck);
+            // Check shared namespace if there was no match
+            if (info == null) {
+              info =
+                  findDefinedStructure(
+                      computeObjectName(SHARED_VSYS_NAME, name), structureTypesToCheck);
+            }
+
+            // Now update reference count if applicable
+            if (info != null) {
+              info.setNumReferrers(
+                  info.getNumReferrers() == DefinedStructureInfo.UNKNOWN_NUM_REFERRERS
+                      ? DefinedStructureInfo.UNKNOWN_NUM_REFERRERS
+                      : info.getNumReferrers() + lines.size());
+            } else {
+              for (int line : lines) {
+                undefined(type, name, usage, line);
+              }
+            }
+          });
+    }
   }
 }

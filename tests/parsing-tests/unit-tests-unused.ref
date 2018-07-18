@@ -369,6 +369,157 @@
           ]
         }
       },
+      "unused:community-set:190" : {
+        "description" : "Unused structure of type: 'community-set' with name: '190'",
+        "files" : {
+          "community_set" : [
+            9,
+            10,
+            11,
+            12
+          ]
+        }
+      },
+      "unused:community-set:EBGP-PEER" : {
+        "description" : "Unused structure of type: 'community-set' with name: 'EBGP-PEER'",
+        "files" : {
+          "ios_xr_community_set" : [
+            40,
+            41,
+            42,
+            43
+          ]
+        }
+      },
+      "unused:community-set:all_community" : {
+        "description" : "Unused structure of type: 'community-set' with name: 'all_community'",
+        "files" : {
+          "ios_xr_community_set" : [
+            7,
+            8,
+            9
+          ]
+        }
+      },
+      "unused:community-set:cenic_default_network_community" : {
+        "description" : "Unused structure of type: 'community-set' with name: 'cenic_default_network_community'",
+        "files" : {
+          "ios_xr_community_set" : [
+            31,
+            32,
+            33
+          ]
+        }
+      },
+      "unused:community-set:community_52" : {
+        "description" : "Unused structure of type: 'community-set' with name: 'community_52'",
+        "files" : {
+          "ios_xr_community_set" : [
+            4,
+            5,
+            6
+          ]
+        }
+      },
+      "unused:community-set:dc_and_isp_blackhole_community" : {
+        "description" : "Unused structure of type: 'community-set' with name: 'dc_and_isp_blackhole_community'",
+        "files" : {
+          "ios_xr_community_set" : [
+            28,
+            29,
+            30
+          ]
+        }
+      },
+      "unused:community-set:dc_and_isp_routes_community" : {
+        "description" : "Unused structure of type: 'community-set' with name: 'dc_and_isp_routes_community'",
+        "files" : {
+          "ios_xr_community_set" : [
+            25,
+            26,
+            27
+          ]
+        }
+      },
+      "unused:community-set:foo" : {
+        "description" : "Unused structure of type: 'community-set' with name: 'foo'",
+        "files" : {
+          "community_set" : [
+            5,
+            6
+          ]
+        }
+      },
+      "unused:community-set:hpr_blackhole_community" : {
+        "description" : "Unused structure of type: 'community-set' with name: 'hpr_blackhole_community'",
+        "files" : {
+          "ios_xr_community_set" : [
+            13,
+            14,
+            15
+          ]
+        }
+      },
+      "unused:community-set:hpr_routes_community" : {
+        "description" : "Unused structure of type: 'community-set' with name: 'hpr_routes_community'",
+        "files" : {
+          "ios_xr_community_set" : [
+            10,
+            11,
+            12
+          ]
+        }
+      },
+      "unused:community-set:ucla_blackhole_community" : {
+        "description" : "Unused structure of type: 'community-set' with name: 'ucla_blackhole_community'",
+        "files" : {
+          "ios_xr_community_set" : [
+            16,
+            17,
+            18
+          ]
+        }
+      },
+      "unused:community-set:ucla_to_dc_and_isp_community_ipv4" : {
+        "description" : "Unused structure of type: 'community-set' with name: 'ucla_to_dc_and_isp_community_ipv4'",
+        "files" : {
+          "ios_xr_community_set" : [
+            34,
+            35,
+            36
+          ]
+        }
+      },
+      "unused:community-set:ucla_to_dc_and_isp_community_ipv6" : {
+        "description" : "Unused structure of type: 'community-set' with name: 'ucla_to_dc_and_isp_community_ipv6'",
+        "files" : {
+          "ios_xr_community_set" : [
+            37,
+            38,
+            39
+          ]
+        }
+      },
+      "unused:community-set:ucla_to_hpr_community_ipv4" : {
+        "description" : "Unused structure of type: 'community-set' with name: 'ucla_to_hpr_community_ipv4'",
+        "files" : {
+          "ios_xr_community_set" : [
+            19,
+            20,
+            21
+          ]
+        }
+      },
+      "unused:community-set:ucla_to_hpr_community_ipv6" : {
+        "description" : "Unused structure of type: 'community-set' with name: 'ucla_to_hpr_community_ipv6'",
+        "files" : {
+          "ios_xr_community_set" : [
+            22,
+            23,
+            24
+          ]
+        }
+      },
       "unused:crypto ipsec profile:abcdefg" : {
         "description" : "Unused structure of type: 'crypto ipsec profile' with name: 'abcdefg'",
         "files" : {
@@ -1500,12 +1651,21 @@
             16
           ]
         }
+      },
+      "unused:zone-pair security:zp1" : {
+        "description" : "Unused structure of type: 'zone-pair security' with name: 'zp1'",
+        "files" : {
+          "cisco_zone" : [
+            4,
+            5
+          ]
+        }
       }
     },
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 145
+      "numResults" : 161
     },
     "unusedStructures" : {
       "aggAddress" : {
@@ -1664,6 +1824,14 @@
             5,
             6,
             7
+          ]
+        }
+      },
+      "cisco-zone" : {
+        "zone-pair security" : {
+          "zp1" : [
+            4,
+            5
           ]
         }
       },
@@ -2103,6 +2271,76 @@
           ]
         }
       },
+      "commSet" : {
+        "community-set" : {
+          "EBGP-PEER" : [
+            40,
+            41,
+            42,
+            43
+          ],
+          "all_community" : [
+            7,
+            8,
+            9
+          ],
+          "cenic_default_network_community" : [
+            31,
+            32,
+            33
+          ],
+          "community_52" : [
+            4,
+            5,
+            6
+          ],
+          "dc_and_isp_blackhole_community" : [
+            28,
+            29,
+            30
+          ],
+          "dc_and_isp_routes_community" : [
+            25,
+            26,
+            27
+          ],
+          "hpr_blackhole_community" : [
+            13,
+            14,
+            15
+          ],
+          "hpr_routes_community" : [
+            10,
+            11,
+            12
+          ],
+          "ucla_blackhole_community" : [
+            16,
+            17,
+            18
+          ],
+          "ucla_to_dc_and_isp_community_ipv4" : [
+            34,
+            35,
+            36
+          ],
+          "ucla_to_dc_and_isp_community_ipv6" : [
+            37,
+            38,
+            39
+          ],
+          "ucla_to_hpr_community_ipv4" : [
+            19,
+            20,
+            21
+          ],
+          "ucla_to_hpr_community_ipv6" : [
+            22,
+            23,
+            24
+          ]
+        }
+      },
       "community-name-numbers" : {
         "route-map" : {
           "AAA1-BBB-CCC" : [
@@ -2131,6 +2369,20 @@
             8,
             9,
             10
+          ]
+        }
+      },
+      "community_set" : {
+        "community-set" : {
+          "190" : [
+            9,
+            10,
+            11,
+            12
+          ],
+          "foo" : [
+            5,
+            6
           ]
         }
       },

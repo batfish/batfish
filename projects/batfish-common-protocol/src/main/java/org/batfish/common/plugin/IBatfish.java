@@ -13,6 +13,8 @@ import javax.annotation.Nullable;
 import org.apache.commons.configuration2.ImmutableConfiguration;
 import org.batfish.common.Answerer;
 import org.batfish.common.Directory;
+import org.batfish.common.topology.Layer1Topology;
+import org.batfish.common.topology.Layer2Topology;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Configuration;
@@ -20,6 +22,7 @@ import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowHistory;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.AclLinesAnswerElementInterface;
 import org.batfish.datamodel.answers.AclLinesAnswerElementInterface.AclSpecs;
@@ -73,6 +76,12 @@ public interface IBatfish extends IPluginConsumer {
   GrammarSettings getGrammarSettings();
 
   FlowHistory getHistory();
+
+  @Nullable
+  Layer1Topology getLayer1Topology();
+
+  @Nullable
+  Layer2Topology getLayer2Topology();
 
   NodeRolesData getNodeRolesData();
 
@@ -164,6 +173,8 @@ public interface IBatfish extends IPluginConsumer {
   void registerExternalBgpAdvertisementPlugin(
       ExternalBgpAdvertisementPlugin externalBgpAdvertisementPlugin);
 
+  Optional<Flow> reachFilter(String nodeName, IpAccessList acl);
+
   AnswerElement smtBlackhole(HeaderQuestion q);
 
   AnswerElement smtBoundedLength(HeaderLocationQuestion q, Integer bound);
@@ -191,4 +202,6 @@ public interface IBatfish extends IPluginConsumer {
   AnswerElement standard(ReachabilityParameters reachabilityParameters);
 
   void writeDataPlane(DataPlane dp, DataPlaneAnswerElement ae);
+
+  Set<Flow> bddMultipathConsistency();
 }

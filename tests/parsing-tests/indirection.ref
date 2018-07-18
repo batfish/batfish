@@ -1011,6 +1011,26 @@
           }
         },
         "n3" : {
+          "community-set" : {
+            "community_3" : {
+              "definitionLines" : [
+                53,
+                54,
+                55,
+                56
+              ],
+              "numReferrers" : 2
+            },
+            "my_community" : {
+              "definitionLines" : [
+                58,
+                59,
+                60,
+                61
+              ],
+              "numReferrers" : 1
+            }
+          },
           "prefix-set" : {
             "bgp_sub2_route_filter" : {
               "definitionLines" : [

@@ -121,14 +121,18 @@ public final class JuniperConfiguration extends VendorConfiguration {
   public static final String ACL_NAME_SECURITY_POLICY = "~SECURITY_POLICIES_TO~";
 
   private static final IpAccessList ACL_EXISTING_CONNECTION =
-      new IpAccessList(
-          ACL_NAME_EXISTING_CONNECTION,
-          ImmutableList.of(
-              new IpAccessListLine(
-                  LineAction.ACCEPT,
-                  new MatchHeaderSpace(
-                      HeaderSpace.builder().setStates(ImmutableList.of(State.ESTABLISHED)).build()),
-                  ACL_NAME_EXISTING_CONNECTION)));
+      IpAccessList.builder()
+          .setName(ACL_NAME_EXISTING_CONNECTION)
+          .setLines(
+              ImmutableList.of(
+                  new IpAccessListLine(
+                      LineAction.ACCEPT,
+                      new MatchHeaderSpace(
+                          HeaderSpace.builder()
+                              .setStates(ImmutableList.of(State.ESTABLISHED))
+                              .build()),
+                      ACL_NAME_EXISTING_CONNECTION)))
+          .build();
 
   private static final int DEFAULT_AGGREGATE_ROUTE_COST = 0;
 
@@ -1090,8 +1094,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       newLines.add(newLine);
     }
     org.batfish.datamodel.CommunityList newCl =
-        new org.batfish.datamodel.CommunityList(name, newLines);
-    newCl.setInvertMatch(cl.getInvertMatch());
+        new org.batfish.datamodel.CommunityList(name, newLines, cl.getInvertMatch());
     return newCl;
   }
 
@@ -1384,7 +1387,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     zoneAclLines.add(
         new IpAccessListLine(_defaultCrossZoneAction, TrueExpr.INSTANCE, "DEFAULT_POLICY"));
 
-    IpAccessList zoneAcl = new IpAccessList(name, zoneAclLines);
+    IpAccessList zoneAcl = IpAccessList.builder().setName(name).setLines(zoneAclLines).build();
     _c.getIpAccessLists().put(name, zoneAcl);
     return zoneAcl;
   }
@@ -1412,11 +1415,13 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
     String combinedAclName = ACL_NAME_COMBINED_OUTGOING + iface.getName();
     IpAccessList combinedAcl =
-        new IpAccessList(
-            combinedAclName,
-            ImmutableList.of(
-                new IpAccessListLine(
-                    LineAction.ACCEPT, new AndMatchExpr(aclConjunctList), "ACCEPT")));
+        IpAccessList.builder()
+            .setName(combinedAclName)
+            .setLines(
+                ImmutableList.of(
+                    new IpAccessListLine(
+                        LineAction.ACCEPT, new AndMatchExpr(aclConjunctList), "ACCEPT")))
+            .build();
     _c.getIpAccessLists().put(combinedAclName, combinedAcl);
     return combinedAcl;
   }
@@ -1475,7 +1480,12 @@ public final class JuniperConfiguration extends VendorConfiguration {
         lines.add(line);
       }
     }
-    return new IpAccessList(aclName, mergeIpAccessListLines(lines, conjunctMatchExpr));
+    return IpAccessList.builder()
+        .setName(aclName)
+        .setLines(mergeIpAccessListLines(lines, conjunctMatchExpr))
+        .setSourceName(aclName)
+        .setSourceType(JuniperStructureType.FIREWALL_FILTER.getDescription())
+        .build();
   }
 
   /** Merge the list of lines with the specified conjunct match expression. */

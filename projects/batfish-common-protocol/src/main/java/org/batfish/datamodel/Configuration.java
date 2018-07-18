@@ -129,6 +129,8 @@ public final class Configuration extends ComparableStructure<String> {
 
   private static final String PROP_IP_SPACES = "ipSpaces";
 
+  private static final String PROP_IP_SPACE_METADATA = "ipSpaceMetadata";
+
   private static final String PROP_IPSEC_PEER_CONFIGS = "ipsecPeerConfigs";
 
   private static final String PROP_IPSEC_PHASE2_POLICIES = "ipsecPhase2Policies";
@@ -206,6 +208,8 @@ public final class Configuration extends ComparableStructure<String> {
   private NavigableMap<String, IpAccessList> _ipAccessLists;
 
   private NavigableMap<String, IpSpace> _ipSpaces;
+
+  private NavigableMap<String, IpSpaceMetadata> _ipSpaceMetadata;
 
   private NavigableMap<String, IpsecPeerConfig> _ipsecPeerConfigs;
 
@@ -294,6 +298,7 @@ public final class Configuration extends ComparableStructure<String> {
     _ipAccessLists = new TreeMap<>();
     _ip6AccessLists = new TreeMap<>();
     _ipSpaces = new TreeMap<>();
+    _ipSpaceMetadata = new TreeMap<>();
     _ipsecPeerConfigs = ImmutableSortedMap.of();
     _ipsecPhase2Policies = ImmutableSortedMap.of();
     _ipsecPhase2Proposals = ImmutableSortedMap.of();
@@ -501,6 +506,11 @@ public final class Configuration extends ComparableStructure<String> {
   @JsonProperty(PROP_IP_SPACES)
   public NavigableMap<String, IpSpace> getIpSpaces() {
     return _ipSpaces;
+  }
+
+  @JsonProperty(PROP_IP_SPACE_METADATA)
+  public NavigableMap<String, IpSpaceMetadata> getIpSpaceMetadata() {
+    return _ipSpaceMetadata;
   }
 
   @JsonProperty(PROP_IPSEC_PHASE2_POLICIES)

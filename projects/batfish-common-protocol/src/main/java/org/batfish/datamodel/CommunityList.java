@@ -28,13 +28,15 @@ import org.batfish.common.util.CommonUtil;
         + "attributes sent with a bgp advertisement")
 public class CommunityList implements Serializable {
 
+  private static final String PROP_INVERT_MATCH = "invertMatch";
+
   private static final String PROP_LINES = "lines";
 
   private static final String PROP_NAME = "name";
 
   private static final long serialVersionUID = 1L;
 
-  private boolean _invertMatch;
+  private final boolean _invertMatch;
 
   /**
    * The list of lines that are checked in order against the community attribute(s) of a bgp
@@ -51,8 +53,12 @@ public class CommunityList implements Serializable {
   @JsonCreator
   private static CommunityList newCommunityList(
       @Nullable @JsonProperty(PROP_NAME) String name,
-      @Nullable @JsonProperty(PROP_LINES) List<CommunityListLine> lines) {
-    return new CommunityList(requireNonNull(name), firstNonNull(lines, ImmutableList.of()));
+      @Nullable @JsonProperty(PROP_LINES) List<CommunityListLine> lines,
+      @Nullable @JsonProperty(PROP_INVERT_MATCH) Boolean invertMatch) {
+    return new CommunityList(
+        requireNonNull(name),
+        firstNonNull(lines, ImmutableList.of()),
+        firstNonNull(invertMatch, Boolean.FALSE));
   }
 
   /**
@@ -62,9 +68,11 @@ public class CommunityList implements Serializable {
    * @param name The name of the structure
    * @param lines The lines in the list
    */
-  public CommunityList(@Nonnull String name, @Nonnull List<CommunityListLine> lines) {
+  public CommunityList(
+      @Nonnull String name, @Nonnull List<CommunityListLine> lines, boolean invertMatch) {
     _name = name;
     _lines = lines;
+    _invertMatch = invertMatch;
     initCaches();
   }
 
@@ -130,6 +138,7 @@ public class CommunityList implements Serializable {
   @JsonPropertyDescription(
       "Specifies whether or not lines should match the complement of their criteria (does not "
           + "change whether a line permits or denies).")
+  @JsonProperty(PROP_INVERT_MATCH)
   public boolean getInvertMatch() {
     return _invertMatch;
   }
@@ -157,9 +166,5 @@ public class CommunityList implements Serializable {
   private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
     in.defaultReadObject();
     initCaches();
-  }
-
-  public void setInvertMatch(boolean invertMatch) {
-    _invertMatch = invertMatch;
   }
 }
