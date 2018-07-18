@@ -1580,6 +1580,431 @@
           ]
         }
       },
+      "unused:route-policy:EBGP-PEER" : {
+        "description" : "Unused structure of type: 'route-policy' with name: 'EBGP-PEER'",
+        "files" : {
+          "vlan_access_map2" : [
+            27,
+            28,
+            29,
+            30
+          ]
+        }
+      },
+      "unused:route-policy:EBGP-PEER-AS2828-LAX-PNI-OUT" : {
+        "description" : "Unused structure of type: 'route-policy' with name: 'EBGP-PEER-AS2828-LAX-PNI-OUT'",
+        "files" : {
+          "ios_xr_route_policy" : [
+            86,
+            87,
+            88,
+            89,
+            90,
+            91,
+            92,
+            93,
+            94,
+            95,
+            96,
+            97,
+            98,
+            99,
+            100,
+            101,
+            102,
+            103,
+            104
+          ]
+        }
+      },
+      "unused:route-policy:EBGP-PEER-AS6461-LAX-PNI-IN" : {
+        "description" : "Unused structure of type: 'route-policy' with name: 'EBGP-PEER-AS6461-LAX-PNI-IN'",
+        "files" : {
+          "ios_xr_route_policy" : [
+            56,
+            57,
+            58,
+            59,
+            60,
+            61,
+            62,
+            63,
+            64
+          ]
+        }
+      },
+      "unused:route-policy:EBGP-PEER-SANITY-IN" : {
+        "description" : "Unused structure of type: 'route-policy' with name: 'EBGP-PEER-SANITY-IN'",
+        "files" : {
+          "ios_xr_route_policy" : [
+            75,
+            76,
+            77,
+            78,
+            79,
+            80,
+            81,
+            82,
+            83,
+            84,
+            85
+          ]
+        }
+      },
+      "unused:route-policy:EBGP_CUST_FULL_v4" : {
+        "description" : "Unused structure of type: 'route-policy' with name: 'EBGP_CUST_FULL_v4'",
+        "files" : {
+          "route_policy_igp_cost" : [
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12
+          ]
+        }
+      },
+      "unused:route-policy:FOO" : {
+        "description" : "Unused structure of type: 'route-policy' with name: 'FOO'",
+        "files" : {
+          "if_tag_is" : [
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21
+          ]
+        }
+      },
+      "unused:route-policy:FOOBAR" : {
+        "description" : "Unused structure of type: 'route-policy' with name: 'FOOBAR'",
+        "files" : {
+          "set_inline_community" : [
+            4,
+            5,
+            6
+          ]
+        }
+      },
+      "unused:route-policy:aaaa" : {
+        "description" : "Unused structure of type: 'route-policy' with name: 'aaaa'",
+        "files" : {
+          "ios_xr_route_policy" : [
+            27,
+            28,
+            29,
+            30,
+            31
+          ]
+        }
+      },
+      "unused:route-policy:barbar_to_fooey_community_ipv4" : {
+        "description" : "Unused structure of type: 'route-policy' with name: 'barbar_to_fooey_community_ipv4'",
+        "files" : {
+          "ios_xr_route_policy" : [
+            50,
+            51,
+            52,
+            53,
+            54,
+            55
+          ]
+        }
+      },
+      "unused:route-policy:cust_v4_in" : {
+        "description" : "Unused structure of type: 'route-policy' with name: 'cust_v4_in'",
+        "files" : {
+          "route_policy_param" : [
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10
+          ]
+        }
+      },
+      "unused:route-policy:doodlepop" : {
+        "description" : "Unused structure of type: 'route-policy' with name: 'doodlepop'",
+        "files" : {
+          "ios_xr_route_policy" : [
+            157,
+            158,
+            159,
+            160,
+            161,
+            162,
+            163,
+            164,
+            165,
+            166
+          ]
+        }
+      },
+      "unused:route-policy:drop_community_5555" : {
+        "description" : "Unused structure of type: 'route-policy' with name: 'drop_community_5555'",
+        "files" : {
+          "ios_xr_route_policy" : [
+            32,
+            33,
+            34,
+            35,
+            36,
+            37
+          ]
+        }
+      },
+      "unused:route-policy:erick-test" : {
+        "description" : "Unused structure of type: 'route-policy' with name: 'erick-test'",
+        "files" : {
+          "route_policy_as_path" : [
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11
+          ]
+        }
+      },
+      "unused:route-policy:fooey_blackhole" : {
+        "description" : "Unused structure of type: 'route-policy' with name: 'fooey_blackhole'",
+        "files" : {
+          "ios_xr_route_policy" : [
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11
+          ]
+        }
+      },
+      "unused:route-policy:fooey_to_barbar_ipv4" : {
+        "description" : "Unused structure of type: 'route-policy' with name: 'fooey_to_barbar_ipv4'",
+        "files" : {
+          "ios_xr_route_policy" : [
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19
+          ]
+        }
+      },
+      "unused:route-policy:fooey_to_barbar_ipv6" : {
+        "description" : "Unused structure of type: 'route-policy' with name: 'fooey_to_barbar_ipv6'",
+        "files" : {
+          "ios_xr_route_policy" : [
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26
+          ]
+        }
+      },
+      "unused:route-policy:global_cust_v4" : {
+        "description" : "Unused structure of type: 'route-policy' with name: 'global_cust_v4'",
+        "files" : {
+          "route_policy_param" : [
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21
+          ]
+        }
+      },
+      "unused:route-policy:ospf_default_ipv4" : {
+        "description" : "Unused structure of type: 'route-policy' with name: 'ospf_default_ipv4'",
+        "files" : {
+          "ios_xr_route_policy" : [
+            38,
+            39,
+            40,
+            41,
+            42
+          ]
+        }
+      },
+      "unused:route-policy:perfsonar_andsn_ipv4" : {
+        "description" : "Unused structure of type: 'route-policy' with name: 'perfsonar_andsn_ipv4'",
+        "files" : {
+          "ios_xr_route_policy" : [
+            43,
+            44,
+            45,
+            46,
+            47,
+            48,
+            49
+          ]
+        }
+      },
+      "unused:route-policy:redistribute-static-isis" : {
+        "description" : "Unused structure of type: 'route-policy' with name: 'redistribute-static-isis'",
+        "files" : {
+          "ios_xr_route_policy" : [
+            65,
+            66,
+            67,
+            68,
+            69,
+            70,
+            71,
+            72,
+            73,
+            74
+          ]
+        }
+      },
+      "unused:route-policy:routetype" : {
+        "description" : "Unused structure of type: 'route-policy' with name: 'routetype'",
+        "files" : {
+          "ios_xr_route_policy" : [
+            168,
+            169,
+            170,
+            171,
+            172,
+            173,
+            174
+          ]
+        }
+      },
+      "unused:route-policy:to_chillmap" : {
+        "description" : "Unused structure of type: 'route-policy' with name: 'to_chillmap'",
+        "files" : {
+          "ios_xr_route_policy" : [
+            106,
+            107,
+            108,
+            109,
+            110,
+            111,
+            112,
+            113,
+            114,
+            115,
+            116,
+            117,
+            118,
+            119,
+            120,
+            121,
+            122,
+            123,
+            124,
+            125,
+            126,
+            127,
+            128,
+            129,
+            130,
+            131,
+            132,
+            133,
+            134,
+            135,
+            136,
+            137,
+            138,
+            139,
+            140,
+            141,
+            142,
+            143,
+            144,
+            145,
+            146,
+            147,
+            148,
+            149,
+            150,
+            151,
+            152,
+            153,
+            154,
+            155
+          ]
+        }
+      },
+      "unused:route-policy:to_csuchico" : {
+        "description" : "Unused structure of type: 'route-policy' with name: 'to_csuchico'",
+        "files" : {
+          "route_policy_metric_type" : [
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13
+          ]
+        }
+      },
+      "unused:route-policy:to_fooey" : {
+        "description" : "Unused structure of type: 'route-policy' with name: 'to_fooey'",
+        "files" : {
+          "route_policy_as_path" : [
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            30,
+            31,
+            32
+          ]
+        }
+      },
       "unused:service-template:template_name" : {
         "description" : "Unused structure of type: 'service-template' with name: 'template_name'",
         "files" : {
@@ -1665,7 +2090,7 @@
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 161
+      "numResults" : 185
     },
     "unusedStructures" : {
       "aggAddress" : {
@@ -2420,6 +2845,30 @@
           ]
         }
       },
+      "if_tag_is" : {
+        "route-policy" : {
+          "FOO" : [
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21
+          ]
+        }
+      },
       "ios_xr_bgp_neighbor_group" : {
         "bgp group" : {
           "blabbety" : [
@@ -2832,6 +3281,208 @@
           ]
         }
       },
+      "rP" : {
+        "route-policy" : {
+          "EBGP-PEER-AS2828-LAX-PNI-OUT" : [
+            86,
+            87,
+            88,
+            89,
+            90,
+            91,
+            92,
+            93,
+            94,
+            95,
+            96,
+            97,
+            98,
+            99,
+            100,
+            101,
+            102,
+            103,
+            104
+          ],
+          "EBGP-PEER-AS6461-LAX-PNI-IN" : [
+            56,
+            57,
+            58,
+            59,
+            60,
+            61,
+            62,
+            63,
+            64
+          ],
+          "EBGP-PEER-SANITY-IN" : [
+            75,
+            76,
+            77,
+            78,
+            79,
+            80,
+            81,
+            82,
+            83,
+            84,
+            85
+          ],
+          "aaaa" : [
+            27,
+            28,
+            29,
+            30,
+            31
+          ],
+          "barbar_to_fooey_community_ipv4" : [
+            50,
+            51,
+            52,
+            53,
+            54,
+            55
+          ],
+          "doodlepop" : [
+            157,
+            158,
+            159,
+            160,
+            161,
+            162,
+            163,
+            164,
+            165,
+            166
+          ],
+          "drop_community_5555" : [
+            32,
+            33,
+            34,
+            35,
+            36,
+            37
+          ],
+          "fooey_blackhole" : [
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11
+          ],
+          "fooey_to_barbar_ipv4" : [
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19
+          ],
+          "fooey_to_barbar_ipv6" : [
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26
+          ],
+          "ospf_default_ipv4" : [
+            38,
+            39,
+            40,
+            41,
+            42
+          ],
+          "perfsonar_andsn_ipv4" : [
+            43,
+            44,
+            45,
+            46,
+            47,
+            48,
+            49
+          ],
+          "redistribute-static-isis" : [
+            65,
+            66,
+            67,
+            68,
+            69,
+            70,
+            71,
+            72,
+            73,
+            74
+          ],
+          "routetype" : [
+            168,
+            169,
+            170,
+            171,
+            172,
+            173,
+            174
+          ],
+          "to_chillmap" : [
+            106,
+            107,
+            108,
+            109,
+            110,
+            111,
+            112,
+            113,
+            114,
+            115,
+            116,
+            117,
+            118,
+            119,
+            120,
+            121,
+            122,
+            123,
+            124,
+            125,
+            126,
+            127,
+            128,
+            129,
+            130,
+            131,
+            132,
+            133,
+            134,
+            135,
+            136,
+            137,
+            138,
+            139,
+            140,
+            141,
+            142,
+            143,
+            144,
+            145,
+            146,
+            147,
+            148,
+            149,
+            150,
+            151,
+            152,
+            153,
+            154,
+            155
+          ]
+        }
+      },
       "route_policy_as_path_set" : {
         "as-path-set" : {
           "ama-coe-as-path" : [
@@ -2849,6 +3500,105 @@
             41,
             42,
             43
+          ]
+        },
+        "route-policy" : {
+          "erick-test" : [
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11
+          ],
+          "to_fooey" : [
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            30,
+            31,
+            32
+          ]
+        }
+      },
+      "route_policy_igp_cost" : {
+        "route-policy" : {
+          "EBGP_CUST_FULL_v4" : [
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12
+          ]
+        }
+      },
+      "route_policy_metric_type" : {
+        "route-policy" : {
+          "to_csuchico" : [
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13
+          ]
+        }
+      },
+      "route_policy_param" : {
+        "route-policy" : {
+          "cust_v4_in" : [
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10
+          ],
+          "global_cust_v4" : [
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21
+          ]
+        }
+      },
+      "set_inline_community" : {
+        "route-policy" : {
+          "FOOBAR" : [
+            4,
+            5,
+            6
           ]
         }
       },
@@ -2869,6 +3619,16 @@
           "JKL_MNO_PQR" : [
             4,
             5
+          ]
+        }
+      },
+      "vlan_access_map4" : {
+        "route-policy" : {
+          "EBGP-PEER" : [
+            27,
+            28,
+            29,
+            30
           ]
         }
       }
