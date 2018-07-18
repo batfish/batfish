@@ -382,6 +382,7 @@ class IncrementalBdpEngine {
       SortedMap<String, Node> nodes, Topology topology, IncrementalBdpAnswerElement ae) {
 
     int numOspfInternalIterations;
+    int numEigrpInternalIterations;
 
     /*
      * For each virtual router, setup the initial easy-to-do routes, init protocol-based RIBs,
@@ -389,7 +390,8 @@ class IncrementalBdpEngine {
      */
     AtomicInteger initialCompleted =
         _newBatch.apply(
-            "Compute initial connected and static routes, ospf setup, bgp setup", nodes.size());
+            "Compute initial connected and static routes, eigrp setup, ospf setup, bgp setup",
+            nodes.size());
     nodes
         .values()
         .parallelStream()
@@ -400,6 +402,9 @@ class IncrementalBdpEngine {
               }
               initialCompleted.incrementAndGet();
             });
+
+    // EIGRP internal routes
+    numEigrpInternalIterations = initEigrpInternalRoutes(nodes, topology);
 
     // OSPF internal routes
     numOspfInternalIterations = initOspfInternalRoutes(nodes, topology);
@@ -424,6 +429,7 @@ class IncrementalBdpEngine {
 
     // Set iteration stats in the answer
     ae.setOspfInternalIterations(numOspfInternalIterations);
+    ae.setEigrpInternalIterations(numEigrpInternalIterations);
   }
 
   /**
@@ -666,6 +672,79 @@ class IncrementalBdpEngine {
                 Entry::getKey,
                 vrfEntry ->
                     ImmutableSortedSet.copyOf(vrfEntry.getValue().getMainRib().getRoutes())));
+  }
+
+  /**
+   * Run the IGP EIGRP computation until convergence.
+   *
+   * @param nodes list of nodes for which to initialize the EIGRP routes
+   * @param topology the network topology
+   * @return the number of iterations it took for internal EIGRP routes to converge
+   */
+  private int initEigrpInternalRoutes(Map<String, Node> nodes, Topology topology) {
+    AtomicBoolean eigrpInternalChanged = new AtomicBoolean(true);
+    int eigrpInternalIterations = 0;
+    while (eigrpInternalChanged.get()) {
+      eigrpInternalIterations++;
+      eigrpInternalChanged.set(false);
+
+      AtomicInteger eigrpSummaryCompleted =
+          _newBatch.apply(
+              "Compute EIGRP summaries: iteration " + eigrpInternalIterations, nodes.size());
+      nodes
+          .values()
+          .parallelStream()
+          .forEach(
+              n -> {
+                for (VirtualRouter vr : n.getVirtualRouters().values()) {
+                  if (vr.computeEigrpManualSummaries()) {
+                    eigrpInternalChanged.set(true);
+                  }
+                }
+                eigrpSummaryCompleted.incrementAndGet();
+              });
+      AtomicInteger eigrpInternalCompleted =
+          _newBatch.apply(
+              "Compute EIGRP Internal routes: iteration " + eigrpInternalIterations, nodes.size());
+      nodes
+          .values()
+          .parallelStream()
+          .forEach(
+              n -> {
+                for (VirtualRouter vr : n.getVirtualRouters().values()) {
+                  if (vr.propagateEigrpInternalRoutes(nodes, topology)) {
+                    eigrpInternalChanged.set(true);
+                  }
+                }
+                eigrpInternalCompleted.incrementAndGet();
+              });
+      AtomicInteger eigrpInternalUnstageCompleted =
+          _newBatch.apply(
+              "Unstage EIGRP Internal routes: iteration " + eigrpInternalIterations, nodes.size());
+      nodes
+          .values()
+          .parallelStream()
+          .forEach(
+              n -> {
+                for (VirtualRouter vr : n.getVirtualRouters().values()) {
+                  vr.unstageEigrpInternalRoutes();
+                }
+                eigrpInternalUnstageCompleted.incrementAndGet();
+              });
+    }
+    AtomicInteger eigrpInternalImportCompleted =
+        _newBatch.apply("Import EIGRP Internal routes", nodes.size());
+    nodes
+        .values()
+        .parallelStream()
+        .forEach(
+            n -> {
+              for (VirtualRouter vr : n.getVirtualRouters().values()) {
+                vr.importEigrpInternalRoutes();
+              }
+              eigrpInternalImportCompleted.incrementAndGet();
+            });
+    return eigrpInternalIterations;
   }
 
   /**

@@ -3079,9 +3079,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
         c.setDeviceType(DeviceType.HOST);
       }
       for (Vrf vrf : c.getVrfs().values()) {
-        // If vrf has BGP, OSPF, or RIP process and device isn't a host, set device type to router
+        // If vrf has BGP, EIGRP, OSPF, or RIP process and device isn't a host, set device type to
+        // router
         if (c.getDeviceType() == null
             && (vrf.getBgpProcess() != null
+                || vrf.getEigrpProcess() != null
                 || vrf.getOspfProcess() != null
                 || vrf.getRipProcess() != null)) {
           c.setDeviceType(DeviceType.ROUTER);
