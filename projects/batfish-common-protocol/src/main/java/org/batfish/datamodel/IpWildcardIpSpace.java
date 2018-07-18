@@ -16,7 +16,7 @@ public class IpWildcardIpSpace extends IpSpace {
   private final IpWildcard _ipWildcard;
 
   @JsonCreator
-  IpWildcardIpSpace(@JsonProperty(PROP_IP_WILDCARD) IpWildcard ipWildcard) {
+  public IpWildcardIpSpace(@JsonProperty(PROP_IP_WILDCARD) IpWildcard ipWildcard) {
     _ipWildcard = ipWildcard;
   }
 
