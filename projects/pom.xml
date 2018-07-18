@@ -194,6 +194,8 @@
           <configuration>
             <doclint>all,-missing</doclint>
             <failOnError>false</failOnError>
+            <failOnWarning>false</failOnWarning>
+            <quiet>true</quiet>
           </configuration>
         </plugin>
 
