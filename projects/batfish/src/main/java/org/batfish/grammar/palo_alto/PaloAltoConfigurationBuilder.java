@@ -4,14 +4,11 @@ import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.DEFAULT_VSYS_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.SHARED_VSYS_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.computeObjectName;
-import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.SERVICE_GROUP;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.SERVICE_OR_SERVICE_GROUP;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ZONE;
-import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.RULEBASE_DESTINATION_ADDRESS;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.RULEBASE_SERVICE;
-import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.RULEBASE_SOURCE_ADDRESS;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.SERVICE_GROUP_MEMBER;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.VIRTUAL_ROUTER_INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.ZONE_INTERFACE;
@@ -432,18 +429,9 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void exitSrs_destination(Srs_destinationContext ctx) {
     for (Src_or_dst_list_itemContext var : ctx.src_or_dst_list().src_or_dst_list_item()) {
-      String destination = var.getText();
       IpSpace destinationIpSpace = toIpSpace(var);
       if (destinationIpSpace != null) {
         _currentRule.getDestination().add(destinationIpSpace);
-      }
-      if (var.name != null) {
-        // Use constructed object name so same-named refs across vsys are unique
-        _configuration.referenceStructure(
-            ADDRESS,
-            computeObjectName(_currentVsys.getName(), destination),
-            RULEBASE_DESTINATION_ADDRESS,
-            getLine(var.name.getStart()));
       }
     }
   }
@@ -477,18 +465,9 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void exitSrs_source(Srs_sourceContext ctx) {
     for (Src_or_dst_list_itemContext var : ctx.src_or_dst_list().src_or_dst_list_item()) {
-      String source = var.getText();
       IpSpace sourceIpSpace = toIpSpace(var);
       if (sourceIpSpace != null) {
         _currentRule.getSource().add(sourceIpSpace);
-      }
-      if (var.name != null) {
-        // Use constructed object name so same-named refs across vsys are unique
-        _configuration.referenceStructure(
-            ADDRESS,
-            computeObjectName(_currentVsys.getName(), source),
-            RULEBASE_SOURCE_ADDRESS,
-            getLine(var.name.getStart()));
       }
     }
   }

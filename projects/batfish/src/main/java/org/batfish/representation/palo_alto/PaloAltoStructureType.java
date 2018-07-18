@@ -3,7 +3,6 @@ package org.batfish.representation.palo_alto;
 import org.batfish.vendor.StructureType;
 
 public enum PaloAltoStructureType implements StructureType {
-  ADDRESS("address"),
   INTERFACE("interface"),
   SERVICE("service"),
   SERVICE_GROUP("service-group"),

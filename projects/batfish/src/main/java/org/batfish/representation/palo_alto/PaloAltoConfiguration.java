@@ -36,7 +36,6 @@ import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.OrMatchExpr;
-import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.vendor.StructureUsage;
@@ -346,7 +345,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
                           .build()))
               .build());
     } else {
-      // Only traffic from the device itself is allowed out if an interface is not in a zone
+      // Do not allow any traffic exiting an unzoned interface
       newIface.setOutgoingFilter(
           IpAccessList.builder()
               .setOwner(_c)
@@ -354,8 +353,8 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
               .setLines(
                   ImmutableList.of(
                       IpAccessListLine.builder()
-                          .accepting()
-                          .setMatchCondition(OriginatingFromDevice.INSTANCE)
+                          .rejecting()
+                          .setMatchCondition(TrueExpr.INSTANCE)
                           .build()))
               .build());
     }
@@ -441,7 +440,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     markAbstractStructureFromUnknownNamespace(
         PaloAltoStructureType.SERVICE_OR_SERVICE_GROUP,
         ImmutableList.of(PaloAltoStructureType.SERVICE, PaloAltoStructureType.SERVICE_GROUP),
-        // PaloAltoStructureUsage.SERVICE_GROUP_MEMBER,
+        PaloAltoStructureUsage.SERVICE_GROUP_MEMBER,
         PaloAltoStructureUsage.RULEBASE_SERVICE);
     return _c;
   }

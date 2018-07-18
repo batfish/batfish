@@ -336,28 +336,6 @@ public class PaloAltoGrammarTest {
   }
 
   @Test
-  public void testRulebaseReference() throws IOException {
-    String hostname = "rulebase";
-    Batfish batfish = getBatfishForConfigurationNames(hostname);
-    ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
-
-    String serviceName = computeObjectName(DEFAULT_VSYS_NAME, "SERVICE1");
-
-    // Confirm reference counts are correct for used structure
-    assertThat(ccae, hasNumReferrers(hostname, PaloAltoStructureType.SERVICE, serviceName, 1));
-
-    // Confirm undefined reference is detected
-    assertThat(
-        ccae,
-        hasUndefinedReference(
-            hostname,
-            PaloAltoStructureType.SERVICE_OR_SERVICE_GROUP,
-            "SERVICE_UNDEF",
-            PaloAltoStructureUsage.RULEBASE_SERVICE));
-  }
-
-  @Test
   public void testRulebaseDefault() throws IOException {
     String hostname = "rulebase-default";
     Configuration c = parseConfig(hostname);
@@ -382,6 +360,28 @@ public class PaloAltoGrammarTest {
     // Confirm unzoned flows are rejected by default
     assertThat(c, hasInterface(if1name, hasOutgoingFilter(rejects(noZoneToZ1, if3name, c))));
     assertThat(c, hasInterface(if3name, hasOutgoingFilter(rejects(z1ToNoZone, if1name, c))));
+  }
+
+  @Test
+  public void testRulebaseReference() throws IOException {
+    String hostname = "rulebase";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    String serviceName = computeObjectName(DEFAULT_VSYS_NAME, "SERVICE1");
+
+    // Confirm reference count is correct for used structure
+    assertThat(ccae, hasNumReferrers(hostname, PaloAltoStructureType.SERVICE, serviceName, 1));
+
+    // Confirm undefined reference is detected
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            hostname,
+            PaloAltoStructureType.SERVICE_OR_SERVICE_GROUP,
+            "SERVICE_UNDEF",
+            PaloAltoStructureUsage.RULEBASE_SERVICE));
   }
 
   @Test
