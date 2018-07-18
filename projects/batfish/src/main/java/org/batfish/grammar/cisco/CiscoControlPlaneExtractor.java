@@ -3762,7 +3762,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void enterViaf_vrrp(Viaf_vrrpContext ctx) {
     int groupNum = toInteger(ctx.groupnum);
-    final int line = ctx.getStart().getLine();
     _currentVrrpGroup =
         _configuration
             .getVrrpGroups()
@@ -5516,7 +5515,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitIfvrrp_authentication(Ifvrrp_authenticationContext ctx) {
     String hashedAuthenticationText =
         CommonUtil.sha256Digest(ctx.text.getText() + CommonUtil.salt());
-    final int line = ctx.getStart().getLine();
     for (Interface iface : _currentInterfaces) {
       String ifaceName = iface.getName();
       VrrpGroup vrrpGroup =
@@ -5532,7 +5530,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitIfvrrp_ip(Ifvrrp_ipContext ctx) {
     Ip ip = toIp(ctx.ip);
-    final int line = ctx.getStart().getLine();
     for (Interface iface : _currentInterfaces) {
       String ifaceName = iface.getName();
       VrrpGroup vrrpGroup =
@@ -5547,7 +5544,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitIfvrrp_preempt(Ifvrrp_preemptContext ctx) {
-    final int line = ctx.getStart().getLine();
     for (Interface iface : _currentInterfaces) {
       String ifaceName = iface.getName();
       VrrpGroup vrrpGroup =
@@ -5563,7 +5559,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitIfvrrp_priority(Ifvrrp_priorityContext ctx) {
     int priority = toInteger(ctx.priority);
-    final int line = ctx.getStart().getLine();
     for (Interface iface : _currentInterfaces) {
       String ifaceName = iface.getName();
       VrrpGroup vrrpGroup =
