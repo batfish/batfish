@@ -38,21 +38,25 @@ public class Book implements Comparable<Book> {
     checkArgument(name != null, "Address book name cannot be null");
     checkValidName(name, "book");
 
-    // make things non-null for easier follow on code
-    addressGroups = firstNonNull(addressGroups, ImmutableList.of());
-    serviceEndpoints = firstNonNull(serviceEndpoints, ImmutableList.of());
-    serviceObjectGroups = firstNonNull(serviceObjectGroups, ImmutableList.of());
-    serviceObjects = firstNonNull(serviceObjects, ImmutableList.of());
+    // non-null versions for easier follow on code
+    List<AddressGroup> nnAddressGroups = firstNonNull(addressGroups, ImmutableList.of());
+    List<ServiceEndpoint> nnServiceEndpoints = firstNonNull(serviceEndpoints, ImmutableList.of());
+    List<ServiceObjectGroup> nnServiceObjectGroups =
+        firstNonNull(serviceObjectGroups, ImmutableList.of());
+    List<ServiceObject> nnServiceObjects = firstNonNull(serviceObjects, ImmutableList.of());
 
     // collect names for sanity checking
     List<String> addressGroupNames =
-        addressGroups.stream().map(AddressGroup::getName).collect(Collectors.toList());
+        nnAddressGroups.stream().map(AddressGroup::getName).collect(Collectors.toList());
     List<String> serviceEndpointNames =
-        serviceEndpoints.stream().map(ServiceEndpoint::getName).collect(Collectors.toList());
+        nnServiceEndpoints.stream().map(ServiceEndpoint::getName).collect(Collectors.toList());
     List<String> serviceObjectGroupNames =
-        serviceObjectGroups.stream().map(ServiceObjectGroup::getName).collect(Collectors.toList());
+        nnServiceObjectGroups
+            .stream()
+            .map(ServiceObjectGroup::getName)
+            .collect(Collectors.toList());
     List<String> serviceObjectNames =
-        serviceObjects.stream().map(ServiceObject::getName).collect(Collectors.toList());
+        nnServiceObjects.stream().map(ServiceObject::getName).collect(Collectors.toList());
     List<String> allServiceNames =
         Stream.concat(serviceObjectNames.stream(), serviceObjectGroupNames.stream())
             .collect(Collectors.toList());
@@ -65,16 +69,16 @@ public class Book implements Comparable<Book> {
     checkDuplicates("service object or group", allServiceNames);
 
     // check that there are no dangling pointers to non-existent names
-    serviceEndpoints.forEach(s -> s.checkUndefinedReferences(addressGroupNames, allServiceNames));
-    serviceObjectGroups.forEach(s -> s.checkUndefinedReferences(allServiceNames));
+    nnServiceEndpoints.forEach(s -> s.checkUndefinedReferences(addressGroupNames, allServiceNames));
+    nnServiceObjectGroups.forEach(s -> s.checkUndefinedReferences(allServiceNames));
 
     // TODO: figure out what to do about circular pointers in service names
 
-    _addressGroups = ImmutableSortedSet.copyOf(addressGroups);
+    _addressGroups = ImmutableSortedSet.copyOf(nnAddressGroups);
     _name = name;
-    _serviceEndpoints = ImmutableSortedSet.copyOf(serviceEndpoints);
-    _serviceObjectGroups = ImmutableSortedSet.copyOf(serviceObjectGroups);
-    _serviceObjects = ImmutableSortedSet.copyOf(serviceObjects);
+    _serviceEndpoints = ImmutableSortedSet.copyOf(nnServiceEndpoints);
+    _serviceObjectGroups = ImmutableSortedSet.copyOf(nnServiceObjectGroups);
+    _serviceObjects = ImmutableSortedSet.copyOf(nnServiceObjects);
   }
 
   @Override
