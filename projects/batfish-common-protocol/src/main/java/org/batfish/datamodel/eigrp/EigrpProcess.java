@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 import java.util.Objects;
+import javax.annotation.Nullable;
+import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Vrf;
 
@@ -71,6 +73,19 @@ public class EigrpProcess implements Serializable {
   @JsonProperty(PROP_MODE)
   public EigrpProcessMode getMode() {
     return _mode;
+  }
+
+  @Nullable
+  public EigrpMetric getInterfaceMetric(Interface iface) {
+    EigrpInterfaceSettings eigrp = iface.getEigrp();
+    if (eigrp == null) {
+      return null;
+    }
+    return EigrpMetric.builder()
+        .setBandwidth(iface.getBandwidth())
+        .setDelay(eigrp.getDelay())
+        .setMode(_mode)
+        .build();
   }
 
   public static class Builder {
