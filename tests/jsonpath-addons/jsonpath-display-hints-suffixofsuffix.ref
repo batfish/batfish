@@ -187,7 +187,7 @@
                     "2.1.1.1/32"
                   ],
                   "autostate" : true,
-                  "bandwidth" : 1.0E12,
+                  "bandwidth" : 8.0E9,
                   "declaredNames" : [
                     "Loopback0"
                   ],

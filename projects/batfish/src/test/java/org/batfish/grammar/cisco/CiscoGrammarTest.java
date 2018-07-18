@@ -832,9 +832,9 @@ public class CiscoGrammarTest {
     String hostname = "ios-interface-delay";
     Configuration c = parseConfig(hostname);
 
-    assertThat(c, hasInterface("GigabitEthernet0/0", hasEigrp(hasDelay(1E4))));
+    assertThat(c, hasInterface("GigabitEthernet0/0", hasEigrp(hasDelay(1E7))));
     assertThat(c, hasInterface("GigabitEthernet0/1", hasEigrp(hasDelay(1E10))));
-    assertThat(c, hasInterface("FastEthernet0/1", hasEigrp(hasDelay(1E5))));
+    assertThat(c, hasInterface("FastEthernet0/1", hasEigrp(hasDelay(1E8))));
   }
 
   @Test
