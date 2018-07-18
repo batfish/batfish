@@ -1,12 +1,12 @@
 package org.batfish.representation.cisco;
 
-import org.batfish.common.util.ComparableStructure;
+import java.io.Serializable;
 import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.IkeAuthenticationMethod;
 import org.batfish.datamodel.IkeHashingAlgorithm;
 
-public class IsakmpPolicy extends ComparableStructure<Integer> {
+public class IsakmpPolicy implements Serializable {
 
   /** */
   private static final long serialVersionUID = 1L;
@@ -21,8 +21,10 @@ public class IsakmpPolicy extends ComparableStructure<Integer> {
 
   private Integer _lifetimeSeconds;
 
+  private final Integer _name;
+
   public IsakmpPolicy(Integer name) {
-    super(name);
+    _name = name;
   }
 
   public IkeAuthenticationMethod getAuthenticationMethod() {
@@ -43,6 +45,10 @@ public class IsakmpPolicy extends ComparableStructure<Integer> {
 
   public Integer getLifetimeSeconds() {
     return _lifetimeSeconds;
+  }
+
+  public Integer getName() {
+    return _name;
   }
 
   public void setAuthenticationMethod(IkeAuthenticationMethod authenticationMethod) {

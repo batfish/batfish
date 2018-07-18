@@ -3775,7 +3775,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void enterVrf_block_rb_stanza(Vrf_block_rb_stanzaContext ctx) {
     _currentVrf = ctx.name.getText();
     int procNum =
-        _configuration.getVrfs().get(Configuration.DEFAULT_VRF_NAME).getBgpProcess().getName();
+        _configuration.getVrfs().get(Configuration.DEFAULT_VRF_NAME).getBgpProcess().getProcnum();
     BgpProcess proc = new BgpProcess(_format, procNum);
     currentVrf().setBgpProcess(proc);
     pushPeer(proc.getMasterBgpPeerGroup());

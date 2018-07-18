@@ -1,19 +1,21 @@
 package org.batfish.representation.cisco;
 
-import org.batfish.common.util.ComparableStructure;
+import java.io.Serializable;
 import org.batfish.datamodel.Prefix;
 
-public class BgpNetwork extends ComparableStructure<Prefix> {
+public class BgpNetwork implements Serializable {
 
   /** */
   private static final long serialVersionUID = 1L;
+
+  private final Prefix _prefix;
 
   private final Integer _routeMapLine;
 
   private final String _routeMapName;
 
-  public BgpNetwork(Prefix name, String routeMapName, Integer routeMapLine) {
-    super(name);
+  public BgpNetwork(Prefix prefix, String routeMapName, Integer routeMapLine) {
+    _prefix = prefix;
     _routeMapName = routeMapName;
     _routeMapLine = routeMapLine;
   }

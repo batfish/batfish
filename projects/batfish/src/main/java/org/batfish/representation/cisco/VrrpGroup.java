@@ -1,14 +1,16 @@
 package org.batfish.representation.cisco;
 
-import org.batfish.common.util.ComparableStructure;
+import java.io.Serializable;
 import org.batfish.datamodel.Ip;
 
-public class VrrpGroup extends ComparableStructure<Integer> {
+public class VrrpGroup implements Serializable {
 
   /** */
   private static final long serialVersionUID = 1L;
 
   private String _authenticationTextHash;
+
+  private final Integer _name;
 
   private boolean _preempt;
 
@@ -17,7 +19,7 @@ public class VrrpGroup extends ComparableStructure<Integer> {
   private Ip _virtualAddress;
 
   public VrrpGroup(Integer name) {
-    super(name);
+    _name = name;
     _preempt = CiscoConfiguration.DEFAULT_VRRP_PREEMPT;
     _priority = CiscoConfiguration.DEFAULT_VRRP_PRIORITY;
   }

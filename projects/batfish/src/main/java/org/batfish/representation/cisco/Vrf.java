@@ -1,11 +1,11 @@
 package org.batfish.representation.cisco;
 
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
-import org.batfish.common.util.ComparableStructure;
 import org.batfish.representation.cisco.nx.CiscoNxBgpVrfConfiguration;
 
-public final class Vrf extends ComparableStructure<String> {
+public final class Vrf implements Serializable {
 
   /** */
   private static final long serialVersionUID = 1L;
@@ -18,6 +18,8 @@ public final class Vrf extends ComparableStructure<String> {
 
   private IsisProcess _isisProcess;
 
+  private final String _name;
+
   private OspfProcess _ospfProcess;
 
   private RipProcess _ripProcess;
@@ -25,7 +27,7 @@ public final class Vrf extends ComparableStructure<String> {
   private final Set<StaticRoute> _staticRoutes;
 
   public Vrf(String name) {
-    super(name);
+    _name = name;
     _staticRoutes = new HashSet<>();
   }
 

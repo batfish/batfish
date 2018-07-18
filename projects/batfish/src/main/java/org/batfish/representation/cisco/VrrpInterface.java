@@ -1,20 +1,22 @@
 package org.batfish.representation.cisco;
 
+import java.io.Serializable;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import org.batfish.common.util.ComparableStructure;
 
-public class VrrpInterface extends ComparableStructure<String> {
+public class VrrpInterface implements Serializable {
 
   /** */
   private static final long serialVersionUID = 1L;
 
   private final int _definitionLine;
 
+  private final String _name;
+
   private final SortedMap<Integer, VrrpGroup> _vrrpGroups;
 
   public VrrpInterface(String name, int definitionLine) {
-    super(name);
+    _name = name;
     _definitionLine = definitionLine;
     _vrrpGroups = new TreeMap<>();
   }

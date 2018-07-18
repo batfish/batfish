@@ -1890,7 +1890,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
           continue;
         }
         Long pgLocalAs = lpg.getLocalAs();
-        long localAs = pgLocalAs != null ? pgLocalAs : proc.getName();
+        long localAs = pgLocalAs != null ? pgLocalAs : proc.getProcnum();
 
         BgpPeerConfig.Builder<?, ?> newNeighborBuilder;
         if (lpg instanceof IpBgpPeerGroup) {
