@@ -346,43 +346,63 @@ public class WorkMgrService {
   }
 
   /**
-   * Delete the specified container
+   * Delete the specified network. Deprecated in favor of {@link #delNetwork(String, String, String)
+   * delNetwork}.
    *
    * @param apiKey The API key of the requester
    * @param clientVersion The version of the client
-   * @param containerName The name of the container to delete
+   * @param containerName The name of the network to delete
    * @return TODO: document JSON response
    */
   @POST
   @Path(CoordConsts.SVC_RSC_DEL_CONTAINER)
   @Produces(MediaType.APPLICATION_JSON)
+  @Deprecated
   public JSONArray delContainer(
       @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
       @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
       @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName) {
+    return delNetwork(apiKey, clientVersion, containerName);
+  }
+
+  /**
+   * Delete the specified network
+   *
+   * @param apiKey The API key of the requester
+   * @param clientVersion The version of the client
+   * @param networkName The name of the network to delete
+   * @return TODO: document JSON response
+   */
+  @POST
+  @Path(CoordConsts.SVC_RSC_DEL_NETWORK)
+  @Produces(MediaType.APPLICATION_JSON)
+  public JSONArray delNetwork(
+      @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
+      @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
+      @FormDataParam(CoordConsts.SVC_KEY_NETWORK_NAME) String networkName) {
     try {
-      _logger.infof("WMS:delContainer %s\n", containerName);
+      _logger.infof("WMS:delNetwork %s\n", networkName);
 
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
-      checkStringParam(containerName, "Container name");
+      checkStringParam(networkName, "Network name");
 
       checkApiKeyValidity(apiKey);
       checkClientVersion(clientVersion);
-      checkContainerAccessibility(apiKey, containerName);
+      checkContainerAccessibility(apiKey, networkName);
 
-      boolean status = Main.getWorkMgr().delContainer(containerName);
+      boolean status = Main.getWorkMgr().delContainer(networkName);
 
       return successResponse(new JSONObject().put("result", status));
 
     } catch (IllegalArgumentException | AccessControlException e) {
-      _logger.errorf("WMS:delContainer exception: %s\n", e.getMessage());
+      _logger.errorf("WMS:delNetwork exception: %s\n", e.getMessage());
       return failureResponse(e.getMessage());
     } catch (Exception e) {
       String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.errorf(
-          "WMS:delContainer exception for apikey:%s in container:%s; exception:%s",
-          apiKey, containerName, stackTrace);
+          "WMS:delNetwork exception for apikey:%s in network:%s; exception:%s",
+          apiKey, networkName, stackTrace);
       return failureResponse(e.getMessage());
     }
   }
@@ -751,42 +771,64 @@ public class WorkMgrService {
   }
 
   /**
-   * Get information of the container
+   * Get information of the network. Deprecated in favor of {@link #getNetwork(String, String,
+   * String) getNetwork}.
    *
    * @param apiKey The API key of the client
    * @param clientVersion The version of the client
-   * @param containerName The name of the container in which the question was asked
+   * @param containerName The name of the network in which the question was asked
    * @return A {@link Response Response} with an entity consists either a json representation of the
-   *     container {@code containerName} or an error message if: the container {@code containerName}
-   *     does not exist or the {@code apiKey} has no acess to the container {@code containerName}
+   *     network {@code containerName} or an error message if: the network {@code containerName}
+   *     does not exist or the {@code apiKey} has no access to the network {@code containerName}
    */
   @POST
   @Path(CoordConsts.SVC_RSC_GET_CONTAINER)
   @Produces(MediaType.APPLICATION_JSON)
+  @Deprecated
   public Response getContainer(
       @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
       @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
       @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName) {
+    return getNetwork(apiKey, clientVersion, containerName);
+  }
+
+  /**
+   * Get information of the network
+   *
+   * @param apiKey The API key of the client
+   * @param clientVersion The version of the client
+   * @param networkName The name of the network in which the question was asked
+   * @return A {@link Response Response} with an entity consists either a json representation of the
+   *     network {@code networkName} or an error message if: the network {@code networkName} does
+   *     not exist or the {@code apiKey} has no access to the network {@code networkName}
+   */
+  @POST
+  @Path(CoordConsts.SVC_RSC_GET_NETWORK)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response getNetwork(
+      @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
+      @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
+      @FormDataParam(CoordConsts.SVC_KEY_NETWORK_NAME) String networkName) {
     try {
-      _logger.infof("WMS:getContainer %s\n", containerName);
+      _logger.infof("WMS:getNetwork %s\n", networkName);
 
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
-      checkStringParam(containerName, "Container name");
+      checkStringParam(networkName, "Network name");
 
       checkApiKeyValidity(apiKey);
       checkClientVersion(clientVersion);
 
       java.nio.file.Path containerDir =
-          Main.getSettings().getContainersLocation().resolve(containerName).toAbsolutePath();
+          Main.getSettings().getContainersLocation().resolve(networkName).toAbsolutePath();
       if (containerDir == null || !Files.exists(containerDir)) {
         return Response.status(Response.Status.NOT_FOUND)
-            .entity("Container '" + containerName + "' not found")
+            .entity("Network '" + networkName + "' not found")
             .type(MediaType.TEXT_PLAIN)
             .build();
       }
 
-      checkContainerAccessibility(apiKey, containerName);
+      checkContainerAccessibility(apiKey, networkName);
 
       Container container = Main.getWorkMgr().getContainer(containerDir);
       String containerString = BatfishObjectMapper.writeString(container);
@@ -805,8 +847,8 @@ public class WorkMgrService {
     } catch (Exception e) {
       String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.errorf(
-          "WMS:getContainer exception for apikey:%s in container:%s; exception:%s",
-          apiKey, containerName, stackTrace);
+          "WMS:getNetwork exception for apikey:%s in network:%s; exception:%s",
+          apiKey, networkName, stackTrace);
       return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
           .entity(e.getCause())
           .type(MediaType.TEXT_PLAIN)
@@ -1018,50 +1060,83 @@ public class WorkMgrService {
   }
 
   /**
-   * Initialize a new container
+   * Initialize a new network. Deprecated in favor of {@link #initNetwork(String, String, String,
+   * String) initNetwork}.
    *
    * @param apiKey The API key of the client
    * @param clientVersion The version of the client
-   * @param containerName The name of the container to initialize (overrides containerPrefix)
-   * @param containerPrefix The prefix used to generate the container name (ignored if containerName
-   *     is not empty)
+   * @param containerName The name of the network to initialize (overrides {@code containerPrefix})
+   * @param containerPrefix The prefix used to generate the network name (ignored if {@code
+   *     containerName} is not empty)
    * @return TODO: document JSON response
    */
   @POST
   @Path(CoordConsts.SVC_RSC_INIT_CONTAINER)
   @Produces(MediaType.APPLICATION_JSON)
+  @Deprecated
   public JSONArray initContainer(
       @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
       @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
       @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName,
       @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_PREFIX) String containerPrefix) {
+    return initNetworkHelper(
+        apiKey, clientVersion, containerName, containerPrefix, CoordConsts.SVC_KEY_CONTAINER_NAME);
+  }
+
+  /**
+   * Initialize a new network
+   *
+   * @param apiKey The API key of the client
+   * @param clientVersion The version of the client
+   * @param networkName The name of the network to initialize (overrides {@code networkPrefix})
+   * @param networkPrefix The prefix used to generate the network name (ignored if {@code
+   *     networkName} is not empty)
+   * @return TODO: document JSON response
+   */
+  @POST
+  @Path(CoordConsts.SVC_RSC_INIT_NETWORK)
+  @Produces(MediaType.APPLICATION_JSON)
+  public JSONArray initNetwork(
+      @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
+      @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
+      @FormDataParam(CoordConsts.SVC_KEY_NETWORK_NAME) String networkName,
+      @FormDataParam(CoordConsts.SVC_KEY_NETWORK_PREFIX) String networkPrefix) {
+    return initNetworkHelper(
+        apiKey, clientVersion, networkName, networkPrefix, CoordConsts.SVC_KEY_NETWORK_NAME);
+  }
+
+  private JSONArray initNetworkHelper(
+      String apiKey,
+      String clientVersion,
+      String networkName,
+      String networkPrefix,
+      String responseKey) {
     try {
-      _logger.infof("WMS:initContainer %s\n", containerPrefix);
+      _logger.infof("WMS:initNetwork %s\n", networkPrefix);
 
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
-      if (containerName == null || containerName.equals("")) {
-        checkStringParam(containerPrefix, "Container prefix");
+      if (networkName == null || networkName.equals("")) {
+        checkStringParam(networkPrefix, "Network prefix");
       }
 
       checkApiKeyValidity(apiKey);
       checkClientVersion(clientVersion);
 
-      String outputContainerName = Main.getWorkMgr().initContainer(containerName, containerPrefix);
-      _logger.infof("Initialized container:%s using api-key:%s\n", outputContainerName, apiKey);
+      String outputNetworkName = Main.getWorkMgr().initContainer(networkName, networkPrefix);
+      _logger.infof("Initialized network:%s using api-key:%s\n", outputNetworkName, apiKey);
 
-      Main.getAuthorizer().authorizeContainer(apiKey, outputContainerName);
+      Main.getAuthorizer().authorizeContainer(apiKey, outputNetworkName);
 
-      return successResponse(
-          new JSONObject().put(CoordConsts.SVC_KEY_CONTAINER_NAME, outputContainerName));
+      return successResponse(new JSONObject().put(responseKey, outputNetworkName));
     } catch (IllegalArgumentException | AccessControlException e) {
-      _logger.errorf("WMS:initContainer exception: %s\n", e.getMessage());
+      _logger.errorf("WMS:initNetwork exception: %s\n", e.getMessage());
       return failureResponse(e.getMessage());
     } catch (Exception e) {
       String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.errorf(
-          "WMS:initContainer exception for apikey:%s in container:%s; exception:%s",
-          apiKey, containerName, stackTrace);
+          "WMS:initNetwork exception for apikey:%s in network:%s; exception:%s",
+          apiKey, networkName, stackTrace);
       return failureResponse(e.getMessage());
     }
   }
@@ -1174,7 +1249,8 @@ public class WorkMgrService {
   }
 
   /**
-   * List the containers that the specified API key can access
+   * List the networks that the specified API key can access. Deprecated in favor of {@link
+   * #listNetworks(String, String) listNetworks}.
    *
    * @param apiKey The API key of the client
    * @param clientVersion The version of the client
@@ -1183,29 +1259,46 @@ public class WorkMgrService {
   @POST
   @Path(CoordConsts.SVC_RSC_LIST_CONTAINERS)
   @Produces(MediaType.APPLICATION_JSON)
+  @Deprecated
   public JSONArray listContainers(
       @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
       @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion) {
-    try {
-      _logger.infof("WMS:listContainers %s\n", apiKey);
+    return listNetworksHelper(apiKey, clientVersion, CoordConsts.SVC_KEY_CONTAINER_LIST);
+  }
 
+  /**
+   * List the networks that the specified API key can access
+   *
+   * @param apiKey The API key of the client
+   * @param clientVersion The version of the client
+   * @return TODO: document JSON response
+   */
+  @POST
+  @Path(CoordConsts.SVC_RSC_LIST_NETWORKS)
+  @Produces(MediaType.APPLICATION_JSON)
+  public JSONArray listNetworks(
+      @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
+      @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion) {
+    return listNetworksHelper(apiKey, clientVersion, CoordConsts.SVC_KEY_NETWORK_LIST);
+  }
+
+  private JSONArray listNetworksHelper(String apiKey, String clientVersion, String responseKey) {
+    _logger.infof("WMS:listNetworks %s\n", apiKey);
+    try {
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
 
       checkApiKeyValidity(apiKey);
       checkClientVersion(clientVersion);
 
-      SortedSet<String> containerList = Main.getWorkMgr().listContainers(apiKey);
-
-      return successResponse(
-          new JSONObject().put(CoordConsts.SVC_KEY_CONTAINER_LIST, new JSONArray(containerList)));
+      SortedSet<String> networks = Main.getWorkMgr().listContainers(apiKey);
+      return successResponse(new JSONObject().put(responseKey, networks));
     } catch (IllegalArgumentException | AccessControlException e) {
-      _logger.errorf("WMS:listContainers exception: %s\n", e.getMessage());
+      _logger.errorf("WMS:listNetworks exception: %s\n", e.getMessage());
       return failureResponse(e.getMessage());
     } catch (Exception e) {
       String stackTrace = Throwables.getStackTraceAsString(e);
-      _logger.errorf(
-          "WMS:listContainers exception for apikey:%s, exception:%s", apiKey, stackTrace);
+      _logger.errorf("WMS:listNetworks exception for apikey:%s, exception:%s", apiKey, stackTrace);
       return failureResponse(e.getMessage());
     }
   }
