@@ -343,7 +343,7 @@ class CiscoConversions {
             .stream()
             .map(CiscoConversions::toCommunityListLine)
             .collect(ImmutableList.toImmutableList());
-    return new CommunityList(ecList.getName(), cllList);
+    return new CommunityList(ecList.getName(), cllList, false);
   }
 
   static IkePhase1Key toIkePhase1Key(Keyring keyring) {

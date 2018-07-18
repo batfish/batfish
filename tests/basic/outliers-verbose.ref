@@ -60,14 +60,14 @@
         "hypothesis" : "sameDefinition",
         "name" : "as2_community",
         "structDefinition" : {
+          "invertMatch" : false,
           "lines" : [
             {
               "action" : "ACCEPT",
               "regex" : "(,|\\{|\\}|^|$| )2:"
             }
           ],
-          "name" : "as2_community",
-          "invertMatch" : false
+          "name" : "as2_community"
         },
         "structType" : "CommunityList"
       },
@@ -83,14 +83,14 @@
         "hypothesis" : "sameDefinition",
         "name" : "as1_community",
         "structDefinition" : {
+          "invertMatch" : false,
           "lines" : [
             {
               "action" : "ACCEPT",
               "regex" : "(,|\\{|\\}|^|$| )1:"
             }
           ],
-          "name" : "as1_community",
-          "invertMatch" : false
+          "name" : "as1_community"
         },
         "structType" : "CommunityList"
       },
@@ -106,14 +106,14 @@
         "hypothesis" : "sameDefinition",
         "name" : "as3_community",
         "structDefinition" : {
+          "invertMatch" : false,
           "lines" : [
             {
               "action" : "ACCEPT",
               "regex" : "(,|\\{|\\}|^|$| )3:"
             }
           ],
-          "name" : "as3_community",
-          "invertMatch" : false
+          "name" : "as3_community"
         },
         "structType" : "CommunityList"
       },
@@ -298,14 +298,14 @@
         "hypothesis" : "sameDefinition",
         "name" : "dept_community",
         "structDefinition" : {
+          "invertMatch" : false,
           "lines" : [
             {
               "action" : "ACCEPT",
               "regex" : "(,|\\{|\\}|^|$| )65001:"
             }
           ],
-          "name" : "dept_community",
-          "invertMatch" : false
+          "name" : "dept_community"
         },
         "structType" : "CommunityList"
       },
@@ -774,14 +774,14 @@
         "hypothesis" : "sameDefinition",
         "name" : "as4_community",
         "structDefinition" : {
+          "invertMatch" : false,
           "lines" : [
             {
               "action" : "ACCEPT",
               "regex" : "(,|\\{|\\}|^|$| )4:"
             }
           ],
-          "name" : "as4_community",
-          "invertMatch" : false
+          "name" : "as4_community"
         },
         "structType" : "CommunityList"
       },
