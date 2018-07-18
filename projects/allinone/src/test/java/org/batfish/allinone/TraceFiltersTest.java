@@ -58,7 +58,6 @@ public class TraceFiltersTest {
     _c = _cb.build();
   }
 
-  @SuppressWarnings("unchecked")
   @Test
   public void testIndirection() throws IOException {
     IpAccessList.Builder aclb = _nf.aclBuilder().setOwner(_c);
@@ -113,9 +112,10 @@ public class TraceFiltersTest {
                     TraceFiltersAnswerer.COLUMN_TRACE,
                     hasEvents(
                         contains(
-                            isDefaultDeniedByIpAccessListNamed(referencedAcl.getName()),
-                            isPermittedByIpAccessListLineThat(
-                                PermittedByIpAccessListLineMatchers.hasName(acl.getName())))),
+                            ImmutableList.of(
+                                isDefaultDeniedByIpAccessListNamed(referencedAcl.getName()),
+                                isPermittedByIpAccessListLineThat(
+                                    PermittedByIpAccessListLineMatchers.hasName(acl.getName()))))),
                     Schema.ACL_TRACE))));
     /* Trace should be present for referenced acl with one event: not matching the referenced acl */
     assertThat(

@@ -17,6 +17,7 @@ import static org.batfish.representation.cisco.CiscoStructureType.CLASS_MAP;
 import static org.batfish.representation.cisco.CiscoStructureType.COMMUNITY_LIST;
 import static org.batfish.representation.cisco.CiscoStructureType.COMMUNITY_LIST_EXPANDED;
 import static org.batfish.representation.cisco.CiscoStructureType.COMMUNITY_LIST_STANDARD;
+import static org.batfish.representation.cisco.CiscoStructureType.COMMUNITY_SET;
 import static org.batfish.representation.cisco.CiscoStructureType.CRYPTO_DYNAMIC_MAP_SET;
 import static org.batfish.representation.cisco.CiscoStructureType.CRYPTO_MAP_SET;
 import static org.batfish.representation.cisco.CiscoStructureType.DEPI_CLASS;
@@ -179,7 +180,11 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_MAT
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_MATCH_IPV6_PREFIX_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_SET_COMMUNITY;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_POLICY_AS_PATH_IN;
+import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_POLICY_COMMUNITY_MATCHES_ANY;
+import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_POLICY_COMMUNITY_MATCHES_EVERY;
+import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_POLICY_DELETE_COMMUNITY_IN;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_POLICY_PREFIX_SET;
+import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_POLICY_SET_COMMUNITY;
 import static org.batfish.representation.cisco.CiscoStructureUsage.SERVICE_POLICY_GLOBAL;
 import static org.batfish.representation.cisco.CiscoStructureUsage.SERVICE_POLICY_INTERFACE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.SERVICE_POLICY_INTERFACE_POLICY;
@@ -441,6 +446,7 @@ import org.batfish.grammar.cisco.CiscoParser.Cmm_service_templateContext;
 import org.batfish.grammar.cisco.CiscoParser.Cntlr_rf_channelContext;
 import org.batfish.grammar.cisco.CiscoParser.Cntlrrfc_depi_tunnelContext;
 import org.batfish.grammar.cisco.CiscoParser.CommunityContext;
+import org.batfish.grammar.cisco.CiscoParser.Community_set_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Compare_routerid_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Continue_rm_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Copsl_access_listContext;
@@ -1897,6 +1903,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void enterCommunity_set_stanza(Community_set_stanzaContext ctx) {
+    String name = ctx.name.getText();
+    defineStructure(COMMUNITY_SET, name, ctx);
+  }
+
+  @Override
   public void enterCrypto_keyring(Crypto_keyringContext ctx) {
     if (_currentKeyring != null) {
       throw new BatfishException("Keyring should be null!");
@@ -3206,6 +3218,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     List<RoutePolicyStatement> stmts = _currentRoutePolicy.getStatements();
 
     stmts.addAll(toRoutePolicyStatementList(ctx.route_policy_tail().stanzas));
+    defineStructure(ROUTE_POLICY, name, ctx);
   }
 
   @Override
@@ -4109,6 +4122,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String dstName = ctx.destination.getText();
     int dstLine = ctx.destination.getStart().getLine();
     _configuration.referenceStructure(SECURITY_ZONE, dstName, ZONE_PAIR_DESTINATION_ZONE, dstLine);
+    defineStructure(CiscoStructureType.SECURITY_ZONE_PAIR, name, ctx);
     _currentSecurityZonePair =
         _configuration
             .getSecurityZonePairs()
@@ -8417,8 +8431,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       int last = toInteger(ctx.last);
       SubRange range = new SubRange(first, last);
       return new RangeCommunitySetElemHalf(range);
+    } else if (ctx.ASTERISK() != null) {
+      return new RangeCommunitySetElemHalf(new SubRange(0, 65535));
     } else {
-      throw convError(CommunitySetElem.class, ctx);
+      // For an unhandled expression, treat it as matching everything.
+      return convProblem(
+          CommunitySetElemHalfExpr.class,
+          ctx,
+          new RangeCommunitySetElemHalf(new SubRange(0, 65535)));
     }
   }
 
@@ -9187,13 +9207,15 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private RoutePolicyBoolean toRoutePolicyBoolean(
       Boolean_community_matches_any_rp_stanzaContext ctx) {
-    RoutePolicyCommunitySet communitySet = toRoutePolicyCommunitySet(ctx.rp_community_set());
+    RoutePolicyCommunitySet communitySet =
+        toRoutePolicyCommunitySet(ctx.rp_community_set(), ROUTE_POLICY_COMMUNITY_MATCHES_ANY);
     return new RoutePolicyBooleanCommunityMatchesAny(communitySet);
   }
 
   private RoutePolicyBoolean toRoutePolicyBoolean(
       Boolean_community_matches_every_rp_stanzaContext ctx) {
-    RoutePolicyCommunitySet communitySet = toRoutePolicyCommunitySet(ctx.rp_community_set());
+    RoutePolicyCommunitySet communitySet =
+        toRoutePolicyCommunitySet(ctx.rp_community_set(), ROUTE_POLICY_COMMUNITY_MATCHES_EVERY);
     return new RoutePolicyBooleanCommunityMatchesEvery(communitySet);
   }
 
@@ -9341,10 +9363,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     return new RoutePolicyBooleanTagIs(cmp, rhs);
   }
 
-  private RoutePolicyCommunitySet toRoutePolicyCommunitySet(Rp_community_setContext ctx) {
+  private RoutePolicyCommunitySet toRoutePolicyCommunitySet(
+      Rp_community_setContext ctx, CiscoStructureUsage usage) {
     if (ctx.name != null) {
-      // named
-      return new RoutePolicyCommunitySetName(ctx.name.getText());
+      String name = ctx.name.getText();
+      _configuration.referenceStructure(COMMUNITY_SET, name, usage, ctx.name.getStart().getLine());
+      return new RoutePolicyCommunitySetName(name);
     } else {
       // inline
       return new RoutePolicyCommunitySetInline(
@@ -9434,7 +9458,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else {
       boolean negated = (ctx.NOT() != null);
       return new RoutePolicyDeleteCommunityStatement(
-          negated, toRoutePolicyCommunitySet(ctx.rp_community_set()));
+          negated,
+          toRoutePolicyCommunitySet(ctx.rp_community_set(), ROUTE_POLICY_DELETE_COMMUNITY_IN));
     }
   }
 
@@ -9516,7 +9541,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   private RoutePolicyStatement toRoutePolicyStatement(Set_community_rp_stanzaContext ctx) {
-    RoutePolicyCommunitySet cset = toRoutePolicyCommunitySet(ctx.rp_community_set());
+    RoutePolicyCommunitySet cset =
+        toRoutePolicyCommunitySet(ctx.rp_community_set(), ROUTE_POLICY_SET_COMMUNITY);
     boolean additive = (ctx.ADDITIVE() != null);
     return new RoutePolicySetCommunity(cset, additive);
   }

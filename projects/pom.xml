@@ -36,6 +36,7 @@
     <maven-install-plugin.version>2.5.2</maven-install-plugin.version>
     <maven-jacoco-plugin.version>0.8.1</maven-jacoco-plugin.version>
     <maven-jar-plugin.version>3.0.2</maven-jar-plugin.version>
+    <maven-javadoc-plugin.version>3.0.1</maven-javadoc-plugin.version>
     <maven-jxr-plugin.version>2.5</maven-jxr-plugin.version>
     <maven-license-plugin.version>1.13</maven-license-plugin.version>
     <maven-pmd-plugin.version>3.10.0</maven-pmd-plugin.version>
@@ -184,6 +185,15 @@
               </goals>
             </execution>
           </executions>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <version>${maven-javadoc-plugin.version}</version>
+          <configuration>
+            <failOnError>false</failOnError>
+          </configuration>
         </plugin>
 
         <plugin>

@@ -14,6 +14,8 @@ import org.apache.commons.configuration2.ImmutableConfiguration;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Directory;
+import org.batfish.common.topology.Layer1Topology;
+import org.batfish.common.topology.Layer2Topology;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Configuration;
@@ -21,6 +23,7 @@ import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowHistory;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.AclLinesAnswerElementInterface;
 import org.batfish.datamodel.answers.AclLinesAnswerElementInterface.AclSpecs;
@@ -123,12 +126,29 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public NodeRolesData getNodeRolesData() {
+  public Layer1Topology getLayer1Topology() {
+    throw new UnsupportedOperationException(
+        "no implementation for generated method"); // TODO Auto-generated method stub
+  }
+
+  @Override
+  public Layer2Topology getLayer2Topology() {
+    throw new UnsupportedOperationException(
+        "no implementation for generated method"); // TODO Auto-generated method stub
+  }
+
+  @Override
+  public BatfishLogger getLogger() {
     throw new UnsupportedOperationException();
   }
 
   @Override
   public Optional<NodeRoleDimension> getNodeRoleDimension(String roleDimension) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public NodeRolesData getNodeRolesData() {
     throw new UnsupportedOperationException();
   }
 
@@ -220,6 +240,12 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
+  public Set<BgpAdvertisement> loadExternalBgpAnnouncements(
+      Map<String, Configuration> configurations) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public ParseEnvironmentBgpTablesAnswerElement loadParseEnvironmentBgpTablesAnswerElement() {
     throw new UnsupportedOperationException();
   }
@@ -256,12 +282,6 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public Set<BgpAdvertisement> loadExternalBgpAnnouncements(
-      Map<String, Configuration> configurations) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
   public void processFlows(Set<Flow> flows, boolean ignoreAcls) {
     throw new UnsupportedOperationException();
   }
@@ -273,6 +293,11 @@ public class IBatfishTestAdapter implements IBatfish {
 
   @Override
   public void pushDeltaEnvironment() {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public Optional<Flow> reachFilter(String nodeName, IpAccessList acl) {
     throw new UnsupportedOperationException();
   }
 
@@ -382,7 +407,7 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public BatfishLogger getLogger() {
+  public Set<Flow> bddMultipathConsistency() {
     throw new UnsupportedOperationException();
   }
 }

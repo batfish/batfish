@@ -52661,6 +52661,13 @@
             "                          (rp_community_set_elem",
             "                            (community",
             "                              com = COMMUNITY_NUMBER:'40027:65535'  <== mode:DEFAULT_MODE))",
+            "                          COMMA:','  <== mode:DEFAULT_MODE",
+            "                          (rp_community_set_elem",
+            "                            prefix = (rp_community_set_elem_half",
+            "                              ASTERISK:'*'  <== mode:DEFAULT_MODE)",
+            "                            COLON:':'  <== mode:DEFAULT_MODE",
+            "                            suffix = (rp_community_set_elem_half",
+            "                              value = DEC:'12345'  <== mode:DEFAULT_MODE))",
             "                          PAREN_RIGHT:')'  <== mode:DEFAULT_MODE))))))",
             "              THEN:'then'  <== mode:DEFAULT_MODE",
             "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
@@ -55965,6 +55972,15 @@
               ],
               "numReferrers" : 1
             }
+          },
+          "zone-pair security" : {
+            "zp1" : {
+              "definitionLines" : [
+                4,
+                5
+              ],
+              "numReferrers" : 0
+            }
           }
         },
         "cisco_aaa" : { },
@@ -57404,7 +57420,115 @@
         "cisco_webvpn" : { },
         "cisco_wsma" : { },
         "colon_in_vrf" : { },
-        "commSet" : { },
+        "commSet" : {
+          "community-set" : {
+            "EBGP-PEER" : {
+              "definitionLines" : [
+                40,
+                41,
+                42,
+                43
+              ],
+              "numReferrers" : 0
+            },
+            "all_community" : {
+              "definitionLines" : [
+                7,
+                8,
+                9
+              ],
+              "numReferrers" : 0
+            },
+            "cenic_default_network_community" : {
+              "definitionLines" : [
+                31,
+                32,
+                33
+              ],
+              "numReferrers" : 0
+            },
+            "community_52" : {
+              "definitionLines" : [
+                4,
+                5,
+                6
+              ],
+              "numReferrers" : 0
+            },
+            "dc_and_isp_blackhole_community" : {
+              "definitionLines" : [
+                28,
+                29,
+                30
+              ],
+              "numReferrers" : 0
+            },
+            "dc_and_isp_routes_community" : {
+              "definitionLines" : [
+                25,
+                26,
+                27
+              ],
+              "numReferrers" : 0
+            },
+            "hpr_blackhole_community" : {
+              "definitionLines" : [
+                13,
+                14,
+                15
+              ],
+              "numReferrers" : 0
+            },
+            "hpr_routes_community" : {
+              "definitionLines" : [
+                10,
+                11,
+                12
+              ],
+              "numReferrers" : 0
+            },
+            "ucla_blackhole_community" : {
+              "definitionLines" : [
+                16,
+                17,
+                18
+              ],
+              "numReferrers" : 0
+            },
+            "ucla_to_dc_and_isp_community_ipv4" : {
+              "definitionLines" : [
+                34,
+                35,
+                36
+              ],
+              "numReferrers" : 0
+            },
+            "ucla_to_dc_and_isp_community_ipv6" : {
+              "definitionLines" : [
+                37,
+                38,
+                39
+              ],
+              "numReferrers" : 0
+            },
+            "ucla_to_hpr_community_ipv4" : {
+              "definitionLines" : [
+                19,
+                20,
+                21
+              ],
+              "numReferrers" : 0
+            },
+            "ucla_to_hpr_community_ipv6" : {
+              "definitionLines" : [
+                22,
+                23,
+                24
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
         "community-name-numbers" : {
           "route-map" : {
             "AAA1-BBB-CCC" : {
@@ -57477,7 +57601,26 @@
             }
           }
         },
-        "community_set" : { },
+        "community_set" : {
+          "community-set" : {
+            "190" : {
+              "definitionLines" : [
+                9,
+                10,
+                11,
+                12
+              ],
+              "numReferrers" : 0
+            },
+            "foo" : {
+              "definitionLines" : [
+                5,
+                6
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
         "foundry_access_list" : {
           "extended ipv6 access-list" : {
             "RT404888-Caltech" : {
@@ -57569,7 +57712,33 @@
             }
           }
         },
-        "if_tag_is" : { },
+        "if_tag_is" : {
+          "route-policy" : {
+            "FOO" : {
+              "definitionLines" : [
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
         "interface_exit" : {
           "interface" : {
             "Vlan303" : {
@@ -58523,7 +58692,253 @@
             }
           }
         },
-        "rP" : { },
+        "rP" : {
+          "route-policy" : {
+            "EBGP-PEER-AS2828-LAX-PNI-OUT" : {
+              "definitionLines" : [
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104
+              ],
+              "numReferrers" : 0
+            },
+            "EBGP-PEER-AS6461-LAX-PNI-IN" : {
+              "definitionLines" : [
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64
+              ],
+              "numReferrers" : 0
+            },
+            "EBGP-PEER-SANITY-IN" : {
+              "definitionLines" : [
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85
+              ],
+              "numReferrers" : 0
+            },
+            "aaaa" : {
+              "definitionLines" : [
+                27,
+                28,
+                29,
+                30,
+                31
+              ],
+              "numReferrers" : 0
+            },
+            "barbar_to_fooey_community_ipv4" : {
+              "definitionLines" : [
+                50,
+                51,
+                52,
+                53,
+                54,
+                55
+              ],
+              "numReferrers" : 0
+            },
+            "doodlepop" : {
+              "definitionLines" : [
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166
+              ],
+              "numReferrers" : 0
+            },
+            "drop_community_5555" : {
+              "definitionLines" : [
+                32,
+                33,
+                34,
+                35,
+                36,
+                37
+              ],
+              "numReferrers" : 0
+            },
+            "fooey_blackhole" : {
+              "definitionLines" : [
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11
+              ],
+              "numReferrers" : 0
+            },
+            "fooey_to_barbar_ipv4" : {
+              "definitionLines" : [
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19
+              ],
+              "numReferrers" : 0
+            },
+            "fooey_to_barbar_ipv6" : {
+              "definitionLines" : [
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26
+              ],
+              "numReferrers" : 0
+            },
+            "ospf_default_ipv4" : {
+              "definitionLines" : [
+                38,
+                39,
+                40,
+                41,
+                42
+              ],
+              "numReferrers" : 0
+            },
+            "perfsonar_andsn_ipv4" : {
+              "definitionLines" : [
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49
+              ],
+              "numReferrers" : 0
+            },
+            "redistribute-static-isis" : {
+              "definitionLines" : [
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74
+              ],
+              "numReferrers" : 0
+            },
+            "routetype" : {
+              "definitionLines" : [
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174
+              ],
+              "numReferrers" : 0
+            },
+            "to_chillmap" : {
+              "definitionLines" : [
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
         "route_maps_in_two_address_families" : {
           "bgp template peer" : {
             "ABC" : {
@@ -58603,13 +59018,129 @@
               ],
               "numReferrers" : 0
             }
+          },
+          "route-policy" : {
+            "erick-test" : {
+              "definitionLines" : [
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11
+              ],
+              "numReferrers" : 0
+            },
+            "to_fooey" : {
+              "definitionLines" : [
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32
+              ],
+              "numReferrers" : 0
+            }
           }
         },
-        "route_policy_igp_cost" : { },
-        "route_policy_metric_type" : { },
-        "route_policy_param" : { },
+        "route_policy_igp_cost" : {
+          "route-policy" : {
+            "EBGP_CUST_FULL_v4" : {
+              "definitionLines" : [
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
+        "route_policy_metric_type" : {
+          "route-policy" : {
+            "to_csuchico" : {
+              "definitionLines" : [
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
+        "route_policy_param" : {
+          "route-policy" : {
+            "cust_v4_in" : {
+              "definitionLines" : [
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10
+              ],
+              "numReferrers" : 0
+            },
+            "global_cust_v4" : {
+              "definitionLines" : [
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
         "router_msdp" : { },
-        "set_inline_community" : { },
+        "set_inline_community" : {
+          "route-policy" : {
+            "FOOBAR" : {
+              "definitionLines" : [
+                4,
+                5,
+                6
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
         "statistics" : { },
         "switchport_range" : {
           "interface" : {
@@ -58673,7 +59204,19 @@
             }
           }
         },
-        "vlan_access_map4" : { },
+        "vlan_access_map4" : {
+          "route-policy" : {
+            "EBGP-PEER" : {
+              "definitionLines" : [
+                27,
+                28,
+                29,
+                30
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
         "vrf_context" : { },
         "vxlan" : { }
       },
@@ -59735,6 +60278,88 @@
               ]
             }
           },
+          "community-set" : {
+            "CF_fooey_Associates-chillmap" : {
+              "route-policy community matches-any" : [
+                145
+              ]
+            },
+            "DC_AT_CHILL" : {
+              "route-policy community matches-any" : [
+                150
+              ]
+            },
+            "EBGP-CUST-EXT" : {
+              "route-policy community matches-any" : [
+                98
+              ]
+            },
+            "EBGP-CUST-NOEXP-PEER-NA" : {
+              "route-policy community matches-any" : [
+                88
+              ]
+            },
+            "barbar_to_fooey_community_ipv4" : {
+              "route-policy set community" : [
+                52
+              ]
+            },
+            "blackhole-all" : {
+              "route-policy community matches-any" : [
+                107,
+                158
+              ]
+            },
+            "blackhole-isp" : {
+              "route-policy community matches-any" : [
+                110
+              ]
+            },
+            "chillmap" : {
+              "route-policy community matches-any" : [
+                141
+              ]
+            },
+            "community_5555" : {
+              "route-policy community matches-any" : [
+                33
+              ],
+              "route-policy delete community [not] in" : [
+                34
+              ]
+            },
+            "fooey_blackhole_community" : {
+              "route-policy community matches-any" : [
+                5
+              ]
+            },
+            "fooey_routes_community" : {
+              "route-policy community matches-any" : [
+                16
+              ]
+            },
+            "scenes_No_Export" : {
+              "route-policy community matches-any" : [
+                120
+              ]
+            },
+            "to-peers-backbone" : {
+              "route-policy community matches-any" : [
+                137
+              ]
+            },
+            "wrn-expanded" : {
+              "route-policy community matches-any" : [
+                129,
+                143
+              ]
+            },
+            "wrn-squelch-40027" : {
+              "route-policy community matches-any" : [
+                126
+              ]
+            }
+          },
           "prefix-set" : {
             "EBGP-PEER-BOGONS" : {
               "route-policy prefix-set" : [
@@ -59791,6 +60416,18 @@
           }
         },
         "route_policy_as_path_set" : {
+          "community-set" : {
+            "13979:90" : {
+              "route-policy set community" : [
+                7
+              ]
+            },
+            "SOCAL-USERS" : {
+              "route-policy community matches-any" : [
+                5
+              ]
+            }
+          },
           "prefix-set" : {
             "CENIC_DC_Internal" : {
               "route-policy prefix-set" : [
@@ -59804,7 +60441,43 @@
             }
           }
         },
+        "route_policy_igp_cost" : {
+          "community-set" : {
+            "DC_AT_MEMBERS" : {
+              "route-policy community matches-any" : [
+                5
+              ]
+            },
+            "DC_CF_COMMODITY_PEER" : {
+              "route-policy community matches-any" : [
+                5
+              ]
+            },
+            "DC_CF_ISP" : {
+              "route-policy community matches-any" : [
+                5
+              ]
+            },
+            "HPR_CF_RE_PEER" : {
+              "route-policy community matches-any" : [
+                5
+              ]
+            },
+            "No_Export" : {
+              "route-policy community matches-any" : [
+                7
+              ]
+            }
+          }
+        },
         "route_policy_metric_type" : {
+          "community-set" : {
+            "No_Export" : {
+              "route-policy community matches-any" : [
+                5
+              ]
+            }
+          },
           "prefix-set" : {
             "DC_Internal" : {
               "route-policy prefix-set" : [
@@ -59814,6 +60487,13 @@
           }
         },
         "route_policy_param" : {
+          "community-set" : {
+            "blackhole-all" : {
+              "route-policy community matches-any" : [
+                13
+              ]
+            }
+          },
           "prefix-set" : {
             "$cust_v4_pfx" : {
               "route-policy prefix-set" : [

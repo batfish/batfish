@@ -25,6 +25,8 @@ public class NetworkAcl implements AwsVpcEntity, Serializable {
 
   private static final long serialVersionUID = 1L;
 
+  private static final String SOURCE_TYPE_NAME = "Network ACL";
+
   private List<NetworkAclEntry> _entries = new LinkedList<>();
 
   private List<NetworkAclAssociation> _networkAclAssociations = new LinkedList<>();
@@ -100,7 +102,13 @@ public class NetworkAcl implements AwsVpcEntity, Serializable {
       }
     }
     List<IpAccessListLine> lines = ImmutableList.copyOf(lineMap.values());
-    IpAccessList list = new IpAccessList(listName, lines);
+    IpAccessList list =
+        IpAccessList.builder()
+            .setName(listName)
+            .setLines(lines)
+            .setSourceName(_networkAclId)
+            .setSourceType(NetworkAcl.SOURCE_TYPE_NAME)
+            .build();
     return list;
   }
 

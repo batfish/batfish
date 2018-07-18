@@ -369,8 +369,10 @@ public class Region implements Serializable {
                   securityGroup.addInOutAccessLines(inboundRules, outboundRules, this));
 
       // create ACLs from inboundRules and outboundRules
-      IpAccessList inAcl = new IpAccessList(SG_INGRESS_ACL_NAME, inboundRules);
-      IpAccessList outAcl = new IpAccessList(SG_EGRESS_ACL_NAME, outboundRules);
+      IpAccessList inAcl =
+          IpAccessList.builder().setName(SG_INGRESS_ACL_NAME).setLines(inboundRules).build();
+      IpAccessList outAcl =
+          IpAccessList.builder().setName(SG_EGRESS_ACL_NAME).setLines(outboundRules).build();
 
       cfgNode.getIpAccessLists().put(SG_INGRESS_ACL_NAME, inAcl);
       cfgNode.getIpAccessLists().put(SG_EGRESS_ACL_NAME, outAcl);

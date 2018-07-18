@@ -65,7 +65,7 @@ public class TracerouteEngineTest {
   private static IpAccessList makeAcl(String name, LineAction action) {
     IpAccessListLine aclLine =
         IpAccessListLine.builder().setAction(action).setMatchCondition(TrueExpr.INSTANCE).build();
-    return new IpAccessList(name, singletonList(aclLine));
+    return IpAccessList.builder().setName(name).setLines(singletonList(aclLine)).build();
   }
 
   @Test
