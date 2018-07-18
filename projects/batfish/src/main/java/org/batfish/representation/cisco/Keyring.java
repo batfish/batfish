@@ -2,14 +2,14 @@ package org.batfish.representation.cisco;
 
 import static org.batfish.datamodel.Interface.UNSET_LOCAL_INTERFACE;
 
+import java.io.Serializable;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpWildcard;
 
-public class Keyring extends ComparableStructure<String> {
+public class Keyring implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
@@ -21,8 +21,10 @@ public class Keyring extends ComparableStructure<String> {
 
   private String _key;
 
+  private final String _name;
+
   public Keyring(String name) {
-    super(name);
+    _name = name;
     _localInterfaceName = UNSET_LOCAL_INTERFACE;
   }
 
@@ -37,6 +39,10 @@ public class Keyring extends ComparableStructure<String> {
 
   public String getLocalInterfaceName() {
     return _localInterfaceName;
+  }
+
+  public String getName() {
+    return _name;
   }
 
   public IpWildcard getRemoteIdentity() {

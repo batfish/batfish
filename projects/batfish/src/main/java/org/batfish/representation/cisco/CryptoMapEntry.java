@@ -1,13 +1,13 @@
 package org.batfish.representation.cisco;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nullable;
-import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.Ip;
 
-public class CryptoMapEntry extends ComparableStructure<String> {
+public class CryptoMapEntry implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
@@ -27,8 +27,10 @@ public class CryptoMapEntry extends ComparableStructure<String> {
 
   private int _sequenceNumber;
 
+  private final String _name;
+
   public CryptoMapEntry(String name, int sequenceNumber) {
-    super(name);
+    _name = name;
     _transforms = new ArrayList<>(); /* transforms or IPSec proposals are applied in order */
     _sequenceNumber = sequenceNumber;
   }
@@ -43,6 +45,10 @@ public class CryptoMapEntry extends ComparableStructure<String> {
 
   public @Nullable String getIsakmpProfile() {
     return _isakmpProfile;
+  }
+
+  public String getName() {
+    return _name;
   }
 
   public @Nullable Ip getPeer() {
