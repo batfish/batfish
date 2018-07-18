@@ -43,7 +43,7 @@ public class LibraryTest {
                 CommonUtil.readResource("org/batfish/role/addressbook/libraryTwoBooks.json"),
                 Library.class);
 
-    assertThat(library.getAddressBooks(), hasSize(2));
+    assertThat(library.getBooks(), hasSize(2));
   }
 
   /** check that we barf on duplicate book names */

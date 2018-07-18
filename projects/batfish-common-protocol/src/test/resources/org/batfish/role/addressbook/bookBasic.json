@@ -29,7 +29,8 @@
     {
       "name": "sog1",
       "services": [
-        "so1"
+        "so1",
+        "sog2"
       ]
     },
     {

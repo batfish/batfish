@@ -97,7 +97,7 @@ public class Library {
   }
 
   @JsonValue
-  public SortedSet<Book> getAddressBooks() {
+  public SortedSet<Book> getBooks() {
     return _books;
   }
 

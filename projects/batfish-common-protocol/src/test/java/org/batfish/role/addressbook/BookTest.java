@@ -43,7 +43,7 @@ public class BookTest {
 
   /** check that we throw an error when the same name is used in a service object and group */
   @Test
-  public void bookDeserializationDupServiceNae() throws IOException {
+  public void bookDeserializationDupServiceName() throws IOException {
     _thrown.expect(InvalidDefinitionException.class);
     _thrown.expectMessage("Duplicate");
 

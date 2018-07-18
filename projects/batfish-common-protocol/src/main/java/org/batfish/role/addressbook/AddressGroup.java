@@ -8,15 +8,15 @@ import com.google.common.collect.ImmutableSortedSet;
 import java.util.Comparator;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
-import org.batfish.datamodel.IpWildcardIpSpace;
 
 public class AddressGroup implements Comparable<AddressGroup> {
 
   private static final String PROP_ADDRESSES = "addresses";
   private static final String PROP_NAME = "name";
 
-  @Nonnull private SortedSet<IpWildcardIpSpace> _addresses;
+  @Nonnull private SortedSet<IpSpace> _addresses;
   @Nonnull private String _name;
 
   public AddressGroup(
@@ -30,7 +30,7 @@ public class AddressGroup implements Comparable<AddressGroup> {
     _addresses =
         addresses
             .stream()
-            .map(s -> new IpWildcardIpSpace(new IpWildcard(s)))
+            .map(s -> new IpWildcard(s).toIpSpace())
             .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
   }
 
@@ -40,7 +40,7 @@ public class AddressGroup implements Comparable<AddressGroup> {
   }
 
   @JsonProperty(PROP_ADDRESSES)
-  public SortedSet<IpWildcardIpSpace> getAddresses() {
+  public SortedSet<IpSpace> getAddresses() {
     return _addresses;
   }
 
