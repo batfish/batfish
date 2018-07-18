@@ -7,34 +7,34 @@
         "name" : "as1border1",
         "communityLists" : {
           "as1_community" : {
+            "invertMatch" : false,
             "lines" : [
               {
                 "action" : "ACCEPT",
                 "regex" : "(,|\\{|\\}|^|$| )1:"
               }
             ],
-            "name" : "as1_community",
-            "invertMatch" : false
+            "name" : "as1_community"
           },
           "as2_community" : {
+            "invertMatch" : false,
             "lines" : [
               {
                 "action" : "ACCEPT",
                 "regex" : "(,|\\{|\\}|^|$| )2:"
               }
             ],
-            "name" : "as2_community",
-            "invertMatch" : false
+            "name" : "as2_community"
           },
           "as3_community" : {
+            "invertMatch" : false,
             "lines" : [
               {
                 "action" : "ACCEPT",
                 "regex" : "(,|\\{|\\}|^|$| )3:"
               }
             ],
-            "name" : "as3_community",
-            "invertMatch" : false
+            "name" : "as3_community"
           }
         },
         "defaultCrossZoneAction" : "ACCEPT",
@@ -1241,44 +1241,44 @@
         "name" : "as1border2",
         "communityLists" : {
           "as1_community" : {
+            "invertMatch" : false,
             "lines" : [
               {
                 "action" : "ACCEPT",
                 "regex" : "(,|\\{|\\}|^|$| )1:"
               }
             ],
-            "name" : "as1_community",
-            "invertMatch" : false
+            "name" : "as1_community"
           },
           "as2_community" : {
+            "invertMatch" : false,
             "lines" : [
               {
                 "action" : "ACCEPT",
                 "regex" : "(,|\\{|\\}|^|$| )2:"
               }
             ],
-            "name" : "as2_community",
-            "invertMatch" : false
+            "name" : "as2_community"
           },
           "as3_community" : {
+            "invertMatch" : false,
             "lines" : [
               {
                 "action" : "ACCEPT",
                 "regex" : "(,|\\{|\\}|^|$| )3:"
               }
             ],
-            "name" : "as3_community",
-            "invertMatch" : false
+            "name" : "as3_community"
           },
           "as4_community" : {
+            "invertMatch" : false,
             "lines" : [
               {
                 "action" : "ACCEPT",
                 "regex" : "(,|\\{|\\}|^|$| )4:"
               }
             ],
-            "name" : "as4_community",
-            "invertMatch" : false
+            "name" : "as4_community"
           }
         },
         "defaultCrossZoneAction" : "ACCEPT",
@@ -2909,34 +2909,34 @@
         "name" : "as2border1",
         "communityLists" : {
           "as1_community" : {
+            "invertMatch" : false,
             "lines" : [
               {
                 "action" : "ACCEPT",
                 "regex" : "(,|\\{|\\}|^|$| )1:"
               }
             ],
-            "name" : "as1_community",
-            "invertMatch" : false
+            "name" : "as1_community"
           },
           "as2_community" : {
+            "invertMatch" : false,
             "lines" : [
               {
                 "action" : "ACCEPT",
                 "regex" : "(,|\\{|\\}|^|$| )2:"
               }
             ],
-            "name" : "as2_community",
-            "invertMatch" : false
+            "name" : "as2_community"
           },
           "as3_community" : {
+            "invertMatch" : false,
             "lines" : [
               {
                 "action" : "ACCEPT",
                 "regex" : "(,|\\{|\\}|^|$| )3:"
               }
             ],
-            "name" : "as3_community",
-            "invertMatch" : false
+            "name" : "as3_community"
           }
         },
         "defaultCrossZoneAction" : "ACCEPT",
@@ -4216,34 +4216,34 @@
         "name" : "as2border2",
         "communityLists" : {
           "as1_community" : {
+            "invertMatch" : false,
             "lines" : [
               {
                 "action" : "ACCEPT",
                 "regex" : "(,|\\{|\\}|^|$| )1:"
               }
             ],
-            "name" : "as1_community",
-            "invertMatch" : false
+            "name" : "as1_community"
           },
           "as2_community" : {
+            "invertMatch" : false,
             "lines" : [
               {
                 "action" : "ACCEPT",
                 "regex" : "(,|\\{|\\}|^|$| )2:"
               }
             ],
-            "name" : "as2_community",
-            "invertMatch" : false
+            "name" : "as2_community"
           },
           "as3_community" : {
+            "invertMatch" : false,
             "lines" : [
               {
                 "action" : "ACCEPT",
                 "regex" : "(,|\\{|\\}|^|$| )3:"
               }
             ],
-            "name" : "as3_community",
-            "invertMatch" : false
+            "name" : "as3_community"
           }
         },
         "defaultCrossZoneAction" : "ACCEPT",
@@ -6629,14 +6629,14 @@
         "name" : "as2dept1",
         "communityLists" : {
           "as2_community" : {
+            "invertMatch" : false,
             "lines" : [
               {
                 "action" : "ACCEPT",
                 "regex" : "(,|\\{|\\}|^|$| )2:"
               }
             ],
-            "name" : "as2_community",
-            "invertMatch" : false
+            "name" : "as2_community"
           }
         },
         "defaultCrossZoneAction" : "ACCEPT",
@@ -7589,14 +7589,14 @@
         "name" : "as2dist1",
         "communityLists" : {
           "dept_community" : {
+            "invertMatch" : false,
             "lines" : [
               {
                 "action" : "ACCEPT",
                 "regex" : "(,|\\{|\\}|^|$| )65001:"
               }
             ],
-            "name" : "dept_community",
-            "invertMatch" : false
+            "name" : "dept_community"
           }
         },
         "defaultCrossZoneAction" : "ACCEPT",
@@ -8349,14 +8349,14 @@
         "name" : "as2dist2",
         "communityLists" : {
           "dept_community" : {
+            "invertMatch" : false,
             "lines" : [
               {
                 "action" : "ACCEPT",
                 "regex" : "(,|\\{|\\}|^|$| )65001:"
               }
             ],
-            "name" : "dept_community",
-            "invertMatch" : false
+            "name" : "dept_community"
           }
         },
         "defaultCrossZoneAction" : "ACCEPT",
@@ -9109,34 +9109,34 @@
         "name" : "as3border1",
         "communityLists" : {
           "as1_community" : {
+            "invertMatch" : false,
             "lines" : [
               {
                 "action" : "ACCEPT",
                 "regex" : "(,|\\{|\\}|^|$| )1:"
               }
             ],
-            "name" : "as1_community",
-            "invertMatch" : false
+            "name" : "as1_community"
           },
           "as2_community" : {
+            "invertMatch" : false,
             "lines" : [
               {
                 "action" : "ACCEPT",
                 "regex" : "(,|\\{|\\}|^|$| )2:"
               }
             ],
-            "name" : "as2_community",
-            "invertMatch" : false
+            "name" : "as2_community"
           },
           "as3_community" : {
+            "invertMatch" : false,
             "lines" : [
               {
                 "action" : "ACCEPT",
                 "regex" : "(,|\\{|\\}|^|$| )3:"
               }
             ],
-            "name" : "as3_community",
-            "invertMatch" : false
+            "name" : "as3_community"
           }
         },
         "defaultCrossZoneAction" : "ACCEPT",
@@ -10265,34 +10265,34 @@
         "name" : "as3border2",
         "communityLists" : {
           "as1_community" : {
+            "invertMatch" : false,
             "lines" : [
               {
                 "action" : "ACCEPT",
                 "regex" : "(,|\\{|\\}|^|$| )1:"
               }
             ],
-            "name" : "as1_community",
-            "invertMatch" : false
+            "name" : "as1_community"
           },
           "as2_community" : {
+            "invertMatch" : false,
             "lines" : [
               {
                 "action" : "ACCEPT",
                 "regex" : "(,|\\{|\\}|^|$| )2:"
               }
             ],
-            "name" : "as2_community",
-            "invertMatch" : false
+            "name" : "as2_community"
           },
           "as3_community" : {
+            "invertMatch" : false,
             "lines" : [
               {
                 "action" : "ACCEPT",
                 "regex" : "(,|\\{|\\}|^|$| )3:"
               }
             ],
-            "name" : "as3_community",
-            "invertMatch" : false
+            "name" : "as3_community"
           }
         },
         "defaultCrossZoneAction" : "ACCEPT",
