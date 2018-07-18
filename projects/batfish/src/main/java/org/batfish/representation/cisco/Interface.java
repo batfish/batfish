@@ -1,6 +1,7 @@
 package org.batfish.representation.cisco;
 
 import com.google.common.collect.ImmutableSortedSet;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -9,7 +10,6 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
-import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
@@ -18,7 +18,7 @@ import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.isis.IsisInterfaceMode;
 
-public class Interface extends ComparableStructure<String> {
+public class Interface implements Serializable {
 
   private static final double ARISTA_ETHERNET_BANDWIDTH = 1E9;
 
@@ -139,6 +139,8 @@ public class Interface extends ComparableStructure<String> {
 
   private int _mtu;
 
+  private final String _name;
+
   private int _nativeVlan;
 
   private boolean _ospfActive;
@@ -198,13 +200,13 @@ public class Interface extends ComparableStructure<String> {
   }
 
   public Interface(String name, CiscoConfiguration c) {
-    super(name);
     _active = true;
     _autoState = true;
     _allowedVlans = new ArrayList<>();
     _declaredNames = ImmutableSortedSet.of();
     _dhcpRelayAddresses = new TreeSet<>();
     _isisInterfaceMode = IsisInterfaceMode.UNSET;
+    _name = name;
     _nativeVlan = 1;
     _secondaryAddresses = new LinkedHashSet<>();
     SwitchportMode defaultSwitchportMode = c.getCf().getDefaultSwitchportMode();
@@ -310,6 +312,10 @@ public class Interface extends ComparableStructure<String> {
 
   public int getMtu() {
     return _mtu;
+  }
+
+  public String getName() {
+    return _name;
   }
 
   public int getNativeVlan() {
