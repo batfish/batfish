@@ -9,15 +9,6 @@ null_rest_of_line
     ~NEWLINE*
 ;
 
-// TODO flesh out more predefined applications
-pan_application
-:
-    ANY
-    | DNS
-    | ICMP
-    | name = variable
-;
-
 src_or_dst_list
 :
     (

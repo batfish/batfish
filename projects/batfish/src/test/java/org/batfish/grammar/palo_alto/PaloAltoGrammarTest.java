@@ -326,15 +326,35 @@ public class PaloAltoGrammarTest {
     assertThat(
         c,
         hasInterface(if1name, hasOutgoingFilter(rejects(z1ToZ1rejectedDestination, if2name, c))));
+
     // Confirm interzone flow matching allow rule is accepted
     assertThat(c, hasInterface(if1name, hasOutgoingFilter(accepts(z2ToZ1permitted, if4name, c))));
 
     // Confirm flow from an unzoned interface is rejected
     assertThat(
         c, hasInterface(if1name, hasOutgoingFilter(rejects(noZoneToZ1rejected, if3name, c))));
-    // Confirm flow originating from device is accepted
+  }
+
+  @Test
+  public void testRulebaseReference() throws IOException {
+    String hostname = "rulebase";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    String serviceName = computeObjectName(DEFAULT_VSYS_NAME, "SERVICE1");
+
+    // Confirm reference counts are correct for used structure
+    assertThat(ccae, hasNumReferrers(hostname, PaloAltoStructureType.SERVICE, serviceName, 1));
+
+    // Confirm undefined reference is detected
     assertThat(
-        c, hasInterface(if1name, hasOutgoingFilter(accepts(z1ToZ1rejectedDestination, null, c))));
+        ccae,
+        hasUndefinedReference(
+            hostname,
+            PaloAltoStructureType.SERVICE_OR_SERVICE_GROUP,
+            "SERVICE_UNDEF",
+            PaloAltoStructureUsage.RULEBASE_SERVICE));
   }
 
   @Test
@@ -351,8 +371,6 @@ public class PaloAltoGrammarTest {
     Flow z2ToZ1 = createFlow("1.1.4.2", "1.1.1.2");
     Flow noZoneToZ1 = createFlow("1.1.3.2", "1.1.1.2");
     Flow z1ToNoZone = createFlow("1.1.1.2", "1.1.3.2");
-    Flow deviceOriginZ1 = createFlow("1.1.1.1", "1.1.1.2");
-    Flow deviceOriginZ2 = createFlow("1.1.4.1", "1.1.4.2");
 
     // Confirm intrazone flow is accepted by default
     assertThat(c, hasInterface(if2name, hasOutgoingFilter(accepts(z1ToZ1, if1name, c))));
@@ -364,10 +382,6 @@ public class PaloAltoGrammarTest {
     // Confirm unzoned flows are rejected by default
     assertThat(c, hasInterface(if1name, hasOutgoingFilter(rejects(noZoneToZ1, if3name, c))));
     assertThat(c, hasInterface(if3name, hasOutgoingFilter(rejects(z1ToNoZone, if1name, c))));
-
-    // Confirm flow originating from device is accepted by default
-    assertThat(c, hasInterface(if1name, hasOutgoingFilter(accepts(deviceOriginZ1, null, c))));
-    assertThat(c, hasInterface(if3name, hasOutgoingFilter(accepts(deviceOriginZ2, null, c))));
   }
 
   @Test

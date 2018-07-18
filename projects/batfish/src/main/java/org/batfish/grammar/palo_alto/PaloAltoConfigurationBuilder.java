@@ -10,10 +10,8 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureType.SERVICE
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.SERVICE_OR_SERVICE_GROUP;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ZONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.RULEBASE_DESTINATION_ADDRESS;
-import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.RULEBASE_FROM_ZONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.RULEBASE_SERVICE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.RULEBASE_SOURCE_ADDRESS;
-import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.RULEBASE_TO_ZONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.SERVICE_GROUP_MEMBER;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.VIRTUAL_ROUTER_INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.ZONE_INTERFACE;
@@ -31,7 +29,6 @@ import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
-import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.UniverseIpSpace;
@@ -199,9 +196,6 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
       return new Ip(ctx.IP_ADDRESS().getText()).toIpSpace();
     } else if (ctx.IP_PREFIX() != null) {
       return Prefix.parse(ctx.IP_PREFIX().getText()).toIpSpace();
-    } else if (ctx.name != null) {
-      // TODO add in the appropriate namespace here...or convert it later
-      return new IpSpaceReference(ctx.name.getText());
     }
     _w.redFlag("Unhandled source/destination item conversion: " + getFullText(ctx));
     return null;
@@ -241,14 +235,6 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
         }
       }
     }
-    /*
-    for (Interface iface : _configuration.getInterfaces().values()) {
-      if (iface.getVsys() == null) {
-        iface.setVsys(_defaultVsys);
-        iface.setZone(null);
-      }
-    }
-    */
   }
 
   @Override
@@ -447,10 +433,17 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   public void exitSrs_destination(Srs_destinationContext ctx) {
     for (Src_or_dst_list_itemContext var : ctx.src_or_dst_list().src_or_dst_list_item()) {
       String destination = var.getText();
-      _currentRule.getDestination().add(toIpSpace(var));
+      IpSpace destinationIpSpace = toIpSpace(var);
+      if (destinationIpSpace != null) {
+        _currentRule.getDestination().add(destinationIpSpace);
+      }
       if (var.name != null) {
+        // Use constructed object name so same-named refs across vsys are unique
         _configuration.referenceStructure(
-            ADDRESS, destination, RULEBASE_DESTINATION_ADDRESS, getLine(var.name.getStart()));
+            ADDRESS,
+            computeObjectName(_currentVsys.getName(), destination),
+            RULEBASE_DESTINATION_ADDRESS,
+            getLine(var.name.getStart()));
       }
     }
   }
@@ -465,7 +458,6 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
       String name = var.getText();
       _currentRule.getFrom().add(name);
-      _configuration.referenceStructure(ZONE, name, RULEBASE_FROM_ZONE, getLine(var.start));
     }
   }
 
@@ -491,8 +483,12 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
         _currentRule.getSource().add(sourceIpSpace);
       }
       if (var.name != null) {
+        // Use constructed object name so same-named refs across vsys are unique
         _configuration.referenceStructure(
-            ADDRESS, source, RULEBASE_SOURCE_ADDRESS, getLine(var.name.getStart()));
+            ADDRESS,
+            computeObjectName(_currentVsys.getName(), source),
+            RULEBASE_SOURCE_ADDRESS,
+            getLine(var.name.getStart()));
       }
     }
   }
@@ -502,7 +498,6 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
       String name = var.getText();
       _currentRule.getTo().add(name);
-      _configuration.referenceStructure(ZONE, name, RULEBASE_TO_ZONE, getLine(var.start));
     }
   }
 

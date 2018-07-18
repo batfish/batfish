@@ -42,8 +42,7 @@ srs_action
 
 srs_application
 :
-    // TODO still need to handle PAN applications here
-    APPLICATION name = variable_list
+    APPLICATION variable_list
 ;
 
 srs_description
@@ -54,16 +53,6 @@ srs_description
 srs_destination
 :
     DESTINATION src_or_dst_list
-    /*
-    (
-        ANY
-        // TODO still need to handle this
-        // | ip_range
-        | IP_PREFIX
-        // TODO still need to handle this
-        // | pan_country_code
-    )
-    */
 ;
 
 srs_disabled
