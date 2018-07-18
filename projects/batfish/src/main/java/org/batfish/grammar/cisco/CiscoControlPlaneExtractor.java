@@ -1935,7 +1935,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     CryptoMapSet cryptoMapSet = _configuration.getCryptoMapSets().get(name);
     // if this is the first crypto map entry in the crypto map set
     if (cryptoMapSet == null) {
-      cryptoMapSet = new CryptoMapSet(name);
+      cryptoMapSet = new CryptoMapSet();
       cryptoMapSet.setDynamic(true);
       _configuration.getCryptoMapSets().put(name, cryptoMapSet);
       defineStructure(CRYPTO_DYNAMIC_MAP_SET, name, ctx);
@@ -1955,7 +1955,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     CryptoMapSet cryptoMapSet = _configuration.getCryptoMapSets().get(_currentCryptoMapName);
     // if this is the first crypto map entry in the crypto map set
     if (cryptoMapSet == null) {
-      cryptoMapSet = new CryptoMapSet(_currentCryptoMapName);
+      cryptoMapSet = new CryptoMapSet();
       _configuration.getCryptoMapSets().put(_currentCryptoMapName, cryptoMapSet);
       defineStructure(CRYPTO_MAP_SET, _currentCryptoMapName, ctx);
     } else if (cryptoMapSet.getDynamic()) {
@@ -2116,7 +2116,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void enterIp_nat_pool(Ip_nat_poolContext ctx) {
     String name = ctx.name.getText();
-    NatPool natPool = new NatPool(name);
+    NatPool natPool = new NatPool();
     _configuration.getNatPools().put(name, natPool);
     _currentNatPool = natPool;
     defineStructure(NAT_POOL, name, ctx);
@@ -3766,7 +3766,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     _currentVrrpGroup =
         _configuration
             .getVrrpGroups()
-            .computeIfAbsent(_currentVrrpInterface, name -> new VrrpInterface(name, line))
+            .computeIfAbsent(_currentVrrpInterface, name -> new VrrpInterface())
             .getVrrpGroups()
             .computeIfAbsent(groupNum, VrrpGroup::new);
   }
@@ -5522,7 +5522,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       VrrpGroup vrrpGroup =
           _configuration
               .getVrrpGroups()
-              .computeIfAbsent(ifaceName, n -> new VrrpInterface(ifaceName, line))
+              .computeIfAbsent(ifaceName, n -> new VrrpInterface())
               .getVrrpGroups()
               .computeIfAbsent(_currentVrrpGroupNum, VrrpGroup::new);
       vrrpGroup.setAuthenticationTextHash(hashedAuthenticationText);
@@ -5538,7 +5538,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       VrrpGroup vrrpGroup =
           _configuration
               .getVrrpGroups()
-              .computeIfAbsent(ifaceName, n -> new VrrpInterface(ifaceName, line))
+              .computeIfAbsent(ifaceName, n -> new VrrpInterface())
               .getVrrpGroups()
               .computeIfAbsent(_currentVrrpGroupNum, VrrpGroup::new);
       vrrpGroup.setVirtualAddress(ip);
@@ -5553,7 +5553,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       VrrpGroup vrrpGroup =
           _configuration
               .getVrrpGroups()
-              .computeIfAbsent(ifaceName, n -> new VrrpInterface(ifaceName, line))
+              .computeIfAbsent(ifaceName, n -> new VrrpInterface())
               .getVrrpGroups()
               .computeIfAbsent(_currentVrrpGroupNum, VrrpGroup::new);
       vrrpGroup.setPreempt(true);
@@ -5569,7 +5569,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       VrrpGroup vrrpGroup =
           _configuration
               .getVrrpGroups()
-              .computeIfAbsent(ifaceName, n -> new VrrpInterface(ifaceName, line))
+              .computeIfAbsent(ifaceName, n -> new VrrpInterface())
               .getVrrpGroups()
               .computeIfAbsent(_currentVrrpGroupNum, VrrpGroup::new);
       vrrpGroup.setPriority(priority);
@@ -6249,7 +6249,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       mapLine = ctx.mapname.getStart().getLine();
       _configuration.referenceStructure(ROUTE_MAP, map, BGP_NETWORK_ORIGINATION_ROUTE_MAP, mapLine);
     }
-    BgpNetwork bgpNetwork = new BgpNetwork(prefix, map, mapLine);
+    BgpNetwork bgpNetwork = new BgpNetwork(map, mapLine);
     BgpProcess proc = currentVrf().getBgpProcess();
     proc.getIpNetworks().put(prefix, bgpNetwork);
   }
@@ -6266,7 +6266,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           ROUTE_MAP, map, BGP_NETWORK6_ORIGINATION_ROUTE_MAP, mapLine);
     }
     BgpProcess proc = currentVrf().getBgpProcess();
-    BgpNetwork6 bgpNetwork6 = new BgpNetwork6(prefix6, map, mapLine);
+    BgpNetwork6 bgpNetwork6 = new BgpNetwork6(map, mapLine);
     proc.getIpv6Networks().put(prefix6, bgpNetwork6);
   }
 

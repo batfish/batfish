@@ -20,4 +20,8 @@ public class MacAccessList implements Serializable {
   public List<MacAccessListLine> getLines() {
     return _lines;
   }
+
+  public String getName() {
+    return _name;
+  }
 }

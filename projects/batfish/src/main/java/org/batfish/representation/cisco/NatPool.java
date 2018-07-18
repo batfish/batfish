@@ -12,12 +12,6 @@ public class NatPool implements Serializable {
 
   private Ip _last;
 
-  private final String _name;
-
-  public NatPool(String name) {
-    _name = name;
-  }
-
   public Ip getFirst() {
     return _first;
   }

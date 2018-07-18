@@ -13,11 +13,8 @@ public class CryptoMapSet implements Serializable {
 
   private List<CryptoMapEntry> _cryptoMapEntries;
 
-  private final String _name;
-
-  public CryptoMapSet(String name) {
+  public CryptoMapSet() {
     _cryptoMapEntries = new ArrayList<>();
-    _name = name;
   }
 
   public boolean getDynamic() {

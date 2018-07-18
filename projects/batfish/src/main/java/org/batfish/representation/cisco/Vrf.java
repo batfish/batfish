@@ -47,6 +47,10 @@ public final class Vrf implements Serializable {
     return _isisProcess;
   }
 
+  public String getName() {
+    return _name;
+  }
+
   public OspfProcess getOspfProcess() {
     return _ospfProcess;
   }

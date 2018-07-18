@@ -12,4 +12,8 @@ public class SecurityZone implements Serializable {
   public SecurityZone(String name) {
     _name = name;
   }
+
+  public String getName() {
+    return _name;
+  }
 }

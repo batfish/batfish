@@ -28,6 +28,10 @@ public class VrrpGroup implements Serializable {
     return _authenticationTextHash;
   }
 
+  public Integer getName() {
+    return _name;
+  }
+
   public boolean getPreempt() {
     return _preempt;
   }
