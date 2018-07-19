@@ -1,12 +1,15 @@
 package org.batfish.datamodel.eigrp;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
+import java.util.Map;
 import java.util.Objects;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpLink;
 import org.batfish.datamodel.Vrf;
 
 /** Represents an EIGRP process on a router */
@@ -17,6 +20,7 @@ public class EigrpProcess implements Serializable {
   private static final String PROP_ROUTER_ID = "router-id";
   private static final long serialVersionUID = 1L;
   private final Long _asn;
+  private transient Map<IpLink, EigrpNeighbor> _eigrpNeighbors;
   private final EigrpProcessMode _mode;
   private final Ip _routerId;
 
@@ -69,6 +73,11 @@ public class EigrpProcess implements Serializable {
     return Objects.hash(_asn, _mode.ordinal(), _routerId);
   }
 
+  @JsonIgnore
+  public Map<IpLink, EigrpNeighbor> getEigrpNeighbors() {
+    return _eigrpNeighbors;
+  }
+
   /** @return The EIGRP mode for this process */
   @JsonProperty(PROP_MODE)
   public EigrpProcessMode getMode() {
@@ -86,6 +95,11 @@ public class EigrpProcess implements Serializable {
         .setDelay(eigrp.getDelay())
         .setMode(_mode)
         .build();
+  }
+
+  @JsonIgnore
+  public void setEigrpNeighbors(Map<IpLink, EigrpNeighbor> eigrpNeighbors) {
+    _eigrpNeighbors = eigrpNeighbors;
   }
 
   public static class Builder {
