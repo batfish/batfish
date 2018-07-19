@@ -363,8 +363,6 @@ import org.batfish.grammar.cisco.CiscoParser.Access_list_ip_rangeContext;
 import org.batfish.grammar.cisco.CiscoParser.Activate_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Additional_paths_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Additional_paths_selection_xr_rb_stanzaContext;
-import org.batfish.grammar.cisco.CiscoParser.Address_family_eigrp_classic_stanzaContext;
-import org.batfish.grammar.cisco.CiscoParser.Address_family_eigrp_named_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Address_family_headerContext;
 import org.batfish.grammar.cisco.CiscoParser.Address_family_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Advertise_map_bgp_tailContext;
@@ -626,7 +624,6 @@ import org.batfish.grammar.cisco.CiscoParser.Neighbor_group_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Net_is_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Network6_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Network_bgp_tailContext;
-import org.batfish.grammar.cisco.CiscoParser.Network_eigrp_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Next_hop_self_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.No_ip_prefix_list_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.No_neighbor_activate_rb_stanzaContext;
@@ -753,6 +750,9 @@ import org.batfish.grammar.cisco.CiscoParser.Rbnx_template_peer_policyContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_template_peer_sessionContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_v_local_asContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_vrfContext;
+import org.batfish.grammar.cisco.CiscoParser.Re_classicContext;
+import org.batfish.grammar.cisco.CiscoParser.Re_networkContext;
+import org.batfish.grammar.cisco.CiscoParser.Rec_address_familyContext;
 import org.batfish.grammar.cisco.CiscoParser.Redistribute_aggregate_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Redistribute_connected_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Redistribute_connected_is_stanzaContext;
@@ -763,6 +763,7 @@ import org.batfish.grammar.cisco.CiscoParser.Redistribute_static_bgp_tailContext
 import org.batfish.grammar.cisco.CiscoParser.Redistribute_static_is_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Remote_as_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Remove_private_as_bgp_tailContext;
+import org.batfish.grammar.cisco.CiscoParser.Ren_address_familyContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_areaContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_area_filterlistContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_area_nssaContext;
@@ -792,7 +793,6 @@ import org.batfish.grammar.cisco.CiscoParser.Route_map_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Route_policy_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Route_reflector_client_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Router_bgp_stanzaContext;
-import org.batfish.grammar.cisco.CiscoParser.Router_eigrp_classic_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Router_id_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Router_isis_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Rp_community_setContext;
@@ -1614,9 +1614,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void enterAddress_family_eigrp_classic_stanza(
-      Address_family_eigrp_classic_stanzaContext ctx) {
-
+  public void enterRec_address_family(Rec_address_familyContext ctx) {
     // Step into a new address family. This results in a new EIGRP process with a specified VRF and
     // AS number
 
@@ -1638,8 +1636,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void enterAddress_family_eigrp_named_stanza(Address_family_eigrp_named_stanzaContext ctx) {
-
+  public void enterRen_address_family(Ren_address_familyContext ctx) {
     // Step into a new address family. This results in a new EIGRP process with a specified VRF and
     // AS number
 
@@ -3292,7 +3289,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void enterRouter_eigrp_classic_stanza(Router_eigrp_classic_stanzaContext ctx) {
+  public void enterRe_classic(Re_classicContext ctx) {
     // Create a classic EIGRP process with ASN
     long asn = toLong(ctx.asnum);
     EigrpProcess proc = new EigrpProcess(asn, EigrpProcessMode.CLASSIC, _format);
@@ -3925,8 +3922,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void exitAddress_family_eigrp_classic_stanza(
-      Address_family_eigrp_classic_stanzaContext ctx) {
+  public void exitRec_address_family(Rec_address_familyContext ctx) {
     Objects.requireNonNull(_currentEigrpProcess)
         .computeNetworks(_configuration.getInterfaces().values());
     _currentEigrpProcess = _parentEigrpProcess;
@@ -3935,7 +3931,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void exitAddress_family_eigrp_named_stanza(Address_family_eigrp_named_stanzaContext ctx) {
+  public void exitRen_address_family(Ren_address_familyContext ctx) {
     // Check if address family was supported
     if (_currentEigrpProcess != null) {
       _currentEigrpProcess.computeNetworks(_configuration.getInterfaces().values());
@@ -6361,7 +6357,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void exitNetwork_eigrp_stanza(Network_eigrp_stanzaContext ctx) {
+  public void exitRe_network(Re_networkContext ctx) {
     if (_currentEigrpProcess == null) {
       todo(ctx, "network not supported here");
       return;
@@ -7396,7 +7392,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void exitRouter_eigrp_classic_stanza(Router_eigrp_classic_stanzaContext ctx) {
+  public void exitRe_classic(Re_classicContext ctx) {
     Objects.requireNonNull(_currentEigrpProcess)
         .computeNetworks(_configuration.getInterfaces().values());
     _currentEigrpProcess = null;

@@ -6,42 +6,57 @@ options {
    tokenVocab = CiscoLexer;
 }
 
-address_family_eigrp_classic_stanza
+re_classic
 :
-   ADDRESS_FAMILY IPV4 UNICAST? VRF vrf = variable
-   (
-      AUTONOMOUS_SYSTEM asnum = DEC
-   )? NEWLINE
-   eigrp_classic_af_stanza* address_family_footer
+   ROUTER EIGRP asnum = DEC NEWLINE
+   re_classic_tail*
 ;
 
-address_family_eigrp_named_stanza
+re_classic_tail
 :
-   ADDRESS_FAMILY
-   (
-      IPV4
-      | IPV6
-   )
-   (
-      UNICAST
-      | MULTICAST
-   )?
-   (
-      VRF vrf = variable
-   )? AUTONOMOUS_SYSTEM asnum = DEC NEWLINE
-   eigrp_named_af_stanza* address_family_footer
+   rec_address_family
+   | rec_null
+   | re_network
 ;
 
-af_interface_eigrp_stanza
+re_named
+:
+   ROUTER EIGRP virtname = variable NEWLINE
+   re_named_tail*
+;
+
+re_named_tail
+:
+   ren_address_family
+   | ren_null
+   | ren_service_family
+;
+
+re_network
+:
+   NETWORK address = IP_ADDRESS mask = IP_ADDRESS? NEWLINE
+;
+
+re_topology_base
+:
+   TOPOLOGY BASE NEWLINE
+;
+
+re_topology_name
+:
+   TOPOLOGY topo_name = variable TID topo_num = DEC NEWLINE
+;
+
+reaf_interface
 :
    AF_INTERFACE iname = interface_name NEWLINE
-   eigrp_af_int_stanza*
+   reaf_interface_tail*
    (
       EXIT_AF_INTERFACE NEWLINE
    )?
 ;
 
-eigrp_af_int_null_stanza
+reaf_interface_null
 :
    NO?
    (
@@ -61,12 +76,28 @@ eigrp_af_int_null_stanza
    ) null_rest_of_line
 ;
 
-eigrp_af_int_stanza
+reaf_interface_tail
 :
-   eigrp_af_int_null_stanza
+   reaf_interface_null
 ;
 
-eigrp_af_topology_null_stanza
+reaf_topology_tail
+:
+   reaf_topology_null
+;
+
+reaf_topology
+:
+   (
+     re_topology_base
+     | re_topology_name
+   ) reaf_topology_tail*
+   (
+      EXIT_AF_TOPOLOGY NEWLINE
+   )?
+;
+
+reaf_topology_null
 :
    NO?
    (
@@ -90,47 +121,16 @@ eigrp_af_topology_null_stanza
    ) null_rest_of_line
 ;
 
-eigrp_af_topology_stanza
+rec_address_family
 :
-   eigrp_af_topology_null_stanza
-;
-
-eigrp_sf_int_null_stanza
-:
-   NO?
+   ADDRESS_FAMILY IPV4 UNICAST? VRF vrf = variable
    (
-      AUTHENTICATION
-      | BANDWIDTH_PERCENT
-      | DAMPENING_CHANGE
-      | DAMPENING_INTERVAL
-      | HELLO_INTERVAL
-      | HOLD_TIME
-      | SHUTDOWN
-      | SPLIT_HORIZON
-   ) null_rest_of_line
+      AUTONOMOUS_SYSTEM asnum = DEC
+   )? NEWLINE
+   rec_address_family_tail* address_family_footer
 ;
 
-eigrp_sf_int_stanza
-:
-   eigrp_sf_int_null_stanza
-;
-
-eigrp_sf_topology_null_stanza
-:
-   NO?
-   (
-      EIGRP
-      | METRIC
-      | TIMERS
-   ) null_rest_of_line
-;
-
-eigrp_sf_topology_stanza
-:
-   eigrp_sf_topology_null_stanza
-;
-
-eigrp_classic_af_null_stanza
+rec_address_family_null
 :
    NO?
    (
@@ -153,20 +153,13 @@ eigrp_classic_af_null_stanza
    ) null_rest_of_line
 ;
 
-eigrp_classic_af_stanza
+rec_address_family_tail
 :
-   network_eigrp_stanza
-   | eigrp_classic_af_null_stanza
+   re_network
+   | rec_address_family_null
 ;
 
-eigrp_classic_stanza
-:
-   address_family_eigrp_classic_stanza
-   | eigrp_classic_null_stanza
-   | network_eigrp_stanza
-;
-
-eigrp_classic_null_stanza
+rec_null
 :
    NO?
    (
@@ -194,15 +187,24 @@ eigrp_classic_null_stanza
    ) null_rest_of_line
 ;
 
-eigrp_named_af_stanza
+ren_address_family
 :
-   af_interface_eigrp_stanza
-   | eigrp_named_af_null_stanza
-   | network_eigrp_stanza
-   | topology_af_eigrp_stanza
+   ADDRESS_FAMILY
+   (
+      IPV4
+      | IPV6
+   )
+   (
+      UNICAST
+      | MULTICAST
+   )?
+   (
+      VRF vrf = variable
+   )? AUTONOMOUS_SYSTEM asnum = DEC NEWLINE
+   ren_address_family_tail* address_family_footer
 ;
 
-eigrp_named_af_null_stanza
+ren_address_family_null
 :
    NO?
    (
@@ -217,19 +219,70 @@ eigrp_named_af_null_stanza
    ) null_rest_of_line
 ;
 
-eigrp_named_null_stanza
+ren_address_family_tail
+:
+   reaf_interface
+   | ren_address_family_null
+   | re_network
+   | reaf_topology
+;
+
+ren_null
 :
    NO? SHUTDOWN
 ;
 
-eigrp_named_stanza
+ren_service_family
 :
-   address_family_eigrp_named_stanza
-   | eigrp_named_null_stanza
-   | service_family_eigrp_stanza
+   SERVICE_FAMILY
+   (
+      IPV4
+      | IPV6
+   )
+   (
+      VRF vrf = variable
+   )? AUTONOMOUS_SYSTEM asnum = DEC NEWLINE
+   ren_service_family_tail*
+   resf_footer
 ;
 
-eigrp_sf_null_stanza
+ren_service_family_tail
+:
+   resf_interface
+   | ren_address_family_null
+   | resf_topology
+;
+
+resf_interface
+:
+   SF_INTERFACE iname = interface_name NEWLINE
+   resf_interface_tail*
+   (
+      EXIT_SF_INTERFACE NEWLINE
+   )?
+;
+
+resf_interface_null
+:
+   NO?
+   (
+      AUTHENTICATION
+      | BANDWIDTH_PERCENT
+      | DAMPENING_CHANGE
+      | DAMPENING_INTERVAL
+      | HELLO_INTERVAL
+      | HOLD_TIME
+      | SHUTDOWN
+      | SPLIT_HORIZON
+   ) null_rest_of_line
+;
+
+resf_interface_tail
+:
+   resf_interface_null
+;
+
+resf_null
 :
    NO?
    (
@@ -242,49 +295,22 @@ eigrp_sf_null_stanza
    ) null_rest_of_line
 ;
 
-eigrp_sf_stanza
+resf_topology_tail
 :
-   sf_interface_eigrp_stanza
-   | eigrp_sf_null_stanza
-   | topology_sf_eigrp_stanza
+   resf_topology_null
 ;
 
-network_eigrp_stanza
+resf_topology_null
 :
-   NETWORK address = IP_ADDRESS mask = IP_ADDRESS? NEWLINE
-;
-
-router_eigrp_stanza
-:
-  router_eigrp_classic_stanza
-  | router_eigrp_named_stanza
-;
-
-router_eigrp_classic_stanza
-:
-   ROUTER EIGRP asnum = DEC NEWLINE
-   eigrp_classic_stanza*
-;
-router_eigrp_named_stanza
-:
-   ROUTER EIGRP virtname = variable NEWLINE
-   eigrp_named_stanza*
-;
-
-service_family_eigrp_stanza
-:
-   SERVICE_FAMILY
+   NO?
    (
-      IPV4
-      | IPV6
-   )
-   (
-      VRF vrf = variable
-   )? AUTONOMOUS_SYSTEM asnum = DEC NEWLINE
-   eigrp_sf_stanza* service_family_footer
+      EIGRP
+      | METRIC
+      | TIMERS
+   ) null_rest_of_line
 ;
 
-service_family_footer
+resf_footer
 :
    (
       (
@@ -294,42 +320,19 @@ service_family_footer
    )?
 ;
 
-sf_interface_eigrp_stanza
-:
-   SF_INTERFACE iname = interface_name NEWLINE eigrp_sf_int_stanza*
-   (
-      EXIT_SF_INTERFACE NEWLINE
-   )?
-;
-
-topology_af_eigrp_stanza
+resf_topology
 :
    (
-     topology_base_stanza
-     | topology_name_stanza
-   ) eigrp_af_topology_stanza*
-   (
-      EXIT_AF_TOPOLOGY NEWLINE
-   )?
-;
-
-topology_base_stanza
-:
-   TOPOLOGY BASE NEWLINE
-;
-
-topology_name_stanza
-:
-   TOPOLOGY topo_name = variable TID topo_num = DEC NEWLINE
-;
-
-topology_sf_eigrp_stanza
-:
-   (
-     topology_base_stanza
-     | topology_name_stanza
-   ) eigrp_sf_topology_stanza*
+     re_topology_base
+     | re_topology_name
+   ) resf_topology_tail*
    (
       EXIT_SF_TOPOLOGY NEWLINE
    )?
+;
+
+s_router_eigrp
+:
+  re_classic
+  | re_named
 ;
