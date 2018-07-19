@@ -2547,7 +2547,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     String name = ctx.name.getText();
     _currentAddressSetAddressBookEntry
         .getEntries()
-        .add(new AddressSetEntry(name, _currentAddressBook));
+        .put(name, new AddressSetEntry(name, _currentAddressBook));
   }
 
   @Override
@@ -2555,7 +2555,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     String name = ctx.name.getText();
     _currentAddressSetAddressBookEntry
         .getEntries()
-        .add(new AddressSetEntry(name, _currentAddressBook));
+        .put(name, new AddressSetEntry(name, _currentAddressBook));
   }
 
   @Override
@@ -2734,7 +2734,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void enterSezs_host_inbound_traffic(Sezs_host_inbound_trafficContext ctx) {
     if (_currentZoneInterface != null) {
       _currentZoneInboundFilter =
-          _currentZone.getInboundInterfaceFilters().get(_currentZoneInterface);
+          _currentZone.getInboundInterfaceFilters().get(_currentZoneInterface.getName());
       if (_currentZoneInboundFilter == null) {
         String name =
             "~ZONE_INTERFACE_FILTER~"
@@ -2745,7 +2745,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
         _configuration.getFirewallFilters().put(name, _currentZoneInboundFilter);
         _currentZone
             .getInboundInterfaceFilters()
-            .put(_currentZoneInterface, _currentZoneInboundFilter);
+            .put(_currentZoneInterface.getName(), _currentZoneInboundFilter);
       }
     }
   }
@@ -2754,7 +2754,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void enterSezs_interfaces(Sezs_interfacesContext ctx) {
     _currentZoneInterface = initInterface(ctx.interface_id());
     _currentZone.getInterfaces().add(_currentZoneInterface);
-    _configuration.getInterfaceZones().put(_currentZoneInterface, _currentZone);
+    _configuration.getInterfaceZones().put(_currentZoneInterface.getName(), _currentZone);
   }
 
   @Override
@@ -4634,7 +4634,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     String name = ctx.name.getText();
     _currentAddressSetAddressBookEntry
         .getEntries()
-        .add(new AddressSetEntry(name, _currentAddressBook));
+        .put(name, new AddressSetEntry(name, _currentAddressBook));
   }
 
   @Override
@@ -4642,7 +4642,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     String name = ctx.name.getText();
     _currentAddressSetAddressBookEntry
         .getEntries()
-        .add(new AddressSetEntry(name, _currentAddressBook));
+        .put(name, new AddressSetEntry(name, _currentAddressBook));
   }
 
   @Override

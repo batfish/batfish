@@ -1,7 +1,7 @@
 package org.batfish.representation.juniper;
 
 import java.io.Serializable;
-import java.util.Set;
+import java.util.SortedMap;
 import java.util.SortedSet;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.IpWildcard;
@@ -17,7 +17,7 @@ public abstract class AddressBookEntry implements Serializable {
     _name = name;
   }
 
-  public abstract Set<AddressSetEntry> getEntries();
+  public abstract SortedMap<String, AddressSetEntry> getEntries();
 
   public abstract SortedSet<IpWildcard> getIpWildcards(Warnings w);
 

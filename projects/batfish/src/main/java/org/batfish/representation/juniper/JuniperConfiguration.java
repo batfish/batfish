@@ -193,7 +193,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   private final Map<String, Interface> _interfaces;
 
-  private final Map<Interface, Zone> _interfaceZones;
+  private final Map<String, Zone> _interfaceZones;
 
   private final Map<String, IpsecPolicy> _ipsecPolicies;
 
@@ -842,7 +842,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return _interfaces;
   }
 
-  public Map<Interface, Zone> getInterfaceZones() {
+  public Map<String, Zone> getInterfaceZones() {
     return _interfaceZones;
   }
 
@@ -1254,10 +1254,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
     newIface.setVrrpGroups(iface.getVrrpGroups());
     newIface.setVrf(_c.getVrfs().get(iface.getRoutingInstance()));
     newIface.setAdditionalArpIps(iface.getAdditionalArpIps());
-    Zone zone = _interfaceZones.get(iface);
+    Zone zone = _interfaceZones.get(iface.getName());
     if (zone != null) {
       // filter for interface in zone
-      FirewallFilter zoneInboundInterfaceFilter = zone.getInboundInterfaceFilters().get(iface);
+      FirewallFilter zoneInboundInterfaceFilter =
+          zone.getInboundInterfaceFilters().get(iface.getName());
       if (zoneInboundInterfaceFilter != null) {
         String zoneInboundInterfaceFilterName = zoneInboundInterfaceFilter.getName();
         IpAccessList zoneInboundInterfaceFilterList =
@@ -1672,9 +1673,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
                     ImmutableList.builder();
                 entry
                     .getEntries()
+                    .keySet()
                     .forEach(
-                        subEntry -> {
-                          String subEntryName = bookName + "~" + subEntry.getName();
+                        name -> {
+                          String subEntryName = bookName + "~" + name;
                           aclIpSpaceLineBuilder.add(
                               AclIpSpaceLine.builder()
                                   .setIpSpace(new IpSpaceReference(subEntryName))
@@ -2359,10 +2361,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
     org.batfish.datamodel.Zone newZone =
         new org.batfish.datamodel.Zone(
             zone.getName(), inboundFilterList, fromHostFilterList, toHostFilterList);
-    for (Entry<Interface, FirewallFilter> e : zone.getInboundInterfaceFilters().entrySet()) {
-      Interface inboundInterface = e.getKey();
+    for (Entry<String, FirewallFilter> e : zone.getInboundInterfaceFilters().entrySet()) {
+      String inboundInterfaceName = e.getKey();
       FirewallFilter inboundInterfaceFilter = e.getValue();
-      String inboundInterfaceName = inboundInterface.getName();
       String inboundInterfaceFilterName = inboundInterfaceFilter.getName();
       org.batfish.datamodel.Interface newIface = _c.getInterfaces().get(inboundInterfaceName);
       IpAccessList inboundInterfaceFilterList =
@@ -2382,7 +2383,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       String ifaceName = iface.getName();
       org.batfish.datamodel.Interface newIface = _c.getInterfaces().get(ifaceName);
       newIface.setZone(newZone);
-      FirewallFilter inboundInterfaceFilter = zone.getInboundInterfaceFilters().get(iface);
+      FirewallFilter inboundInterfaceFilter = zone.getInboundInterfaceFilters().get(ifaceName);
       IpAccessList inboundInterfaceFilterList;
       if (inboundInterfaceFilter != null) {
         String name = inboundInterfaceFilter.getName();
