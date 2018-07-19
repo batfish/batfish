@@ -1,10 +1,10 @@
 package org.batfish.representation.juniper;
 
+import java.io.Serializable;
 import java.util.Map;
 import java.util.TreeMap;
-import org.batfish.common.util.ComparableStructure;
 
-public class NodeDevice extends ComparableStructure<String> {
+public class NodeDevice implements Serializable {
 
   /** */
   private static final long serialVersionUID = 1L;
@@ -12,7 +12,6 @@ public class NodeDevice extends ComparableStructure<String> {
   private final Map<String, Interface> _interfaces;
 
   public NodeDevice(String name) {
-    super(name);
     _interfaces = new TreeMap<>();
   }
 

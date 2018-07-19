@@ -1,6 +1,7 @@
 package org.batfish.representation.juniper;
 
 import com.google.common.collect.ImmutableSet;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -9,7 +10,6 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import javax.annotation.Nonnull;
-import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IsoAddress;
@@ -18,7 +18,7 @@ import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.VrrpGroup;
 
-public class Interface extends ComparableStructure<String> {
+public class Interface implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
@@ -62,6 +62,8 @@ public class Interface extends ComparableStructure<String> {
 
   private Integer _mtu;
 
+  private final String _name;
+
   private int _nativeVlan;
 
   private Ip _ospfArea;
@@ -100,7 +102,6 @@ public class Interface extends ComparableStructure<String> {
   }
 
   public Interface(String name, int definitionLine) {
-    super(name);
     _active = true;
     _additionalArpIps = ImmutableSet.of();
     _allAddresses = new LinkedHashSet<>();
@@ -108,6 +109,7 @@ public class Interface extends ComparableStructure<String> {
     _bandwidth = getDefaultBandwidthByName(name);
     _definitionLine = definitionLine;
     _isisSettings = new IsisInterfaceSettings();
+    _name = name;
     _nativeVlan = 1;
     _switchportMode = SwitchportMode.NONE;
     _switchportTrunkEncapsulation = SwitchportEncapsulationType.DOT1Q;
@@ -172,6 +174,10 @@ public class Interface extends ComparableStructure<String> {
 
   public Integer getMtu() {
     return _mtu;
+  }
+
+  public String getName() {
+    return _name;
   }
 
   public int getNativeVlan() {

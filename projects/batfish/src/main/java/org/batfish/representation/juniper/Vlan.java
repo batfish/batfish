@@ -1,8 +1,8 @@
 package org.batfish.representation.juniper;
 
-import org.batfish.common.util.ComparableStructure;
+import java.io.Serializable;
 
-public class Vlan extends ComparableStructure<String> {
+public class Vlan implements Serializable {
 
   /** */
   private static final long serialVersionUID = 1L;
@@ -10,7 +10,6 @@ public class Vlan extends ComparableStructure<String> {
   private int _vlanId;
 
   public Vlan(String vlanName, int vlanId) {
-    super(vlanName);
     _vlanId = vlanId;
   }
 

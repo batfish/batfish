@@ -1771,7 +1771,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void enterA_application_set(A_application_setContext ctx) {
     String name = ctx.name.getText();
     _currentApplicationSet =
-        _configuration.getApplicationSets().computeIfAbsent(name, ApplicationSet::new);
+        _configuration.getApplicationSets().computeIfAbsent(name, n -> new ApplicationSet());
     defineStructure(APPLICATION_SET, name, ctx);
   }
 
@@ -1843,7 +1843,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void enterAa_term(Aa_termContext ctx) {
     String name = ctx.name.getText();
-    _currentApplicationTerm = _currentApplication.getTerms().computeIfAbsent(name, Term::new);
+    _currentApplicationTerm = _currentApplication.getTerms().computeIfAbsent(name, n -> new Term());
   }
 
   @Override
@@ -1961,7 +1961,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     DhcpRelayServerGroup serverGroup =
         _currentRoutingInstance
             .getDhcpRelayServerGroups()
-            .computeIfAbsent(name, DhcpRelayServerGroup::new);
+            .computeIfAbsent(name, n -> new DhcpRelayServerGroup());
     Ip ip = new Ip(ctx.address.getText());
     serverGroup.getServers().add(ip);
     defineStructure(DHCP_RELAY_SERVER_GROUP, name, ctx);
