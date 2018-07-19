@@ -75,6 +75,7 @@ import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.eigrp.EigrpInterfaceSettings;
+import org.batfish.datamodel.eigrp.EigrpMetric;
 import org.batfish.datamodel.isis.IsisLevelSettings;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.AsPathSetElem;
@@ -904,15 +905,31 @@ class CiscoConversions {
       }
       boolean match = proc.getNetworks().stream().anyMatch(interfaceAddress.getPrefix()::equals);
       if (match) {
-        EigrpInterfaceSettings.Builder builder = EigrpInterfaceSettings.builder();
-        builder.setAsn(proc.getAsNumber());
-        if (iface.getEigrp() != null && iface.getEigrp().getDelay() != null) {
-          builder.setDelay(iface.getEigrp().getDelay());
-        } else {
-          builder.setDelay(Interface.getDefaultDelay(iface.getName(), c.getConfigurationFormat()));
+        Double delay = null;
+        Double bandwidth = null;
+        if (iface.getEigrp() != null) {
+          delay = iface.getEigrp().getDelay();
+          bandwidth = iface.getEigrp().getBandwidth();
         }
-        builder.setEnabled(true);
-        iface.setEigrp(builder.build());
+
+        // For bandwidth/delay, defaults are separate from actuals to inform metric calculations
+        EigrpMetric metric =
+            EigrpMetric.builder()
+                .setBandwidth(bandwidth)
+                .setMode(proc.getMode())
+                .setDelay(delay)
+                .setDefaultBandwidth(
+                    Interface.getDefaultBandwidth(iface.getName(), c.getConfigurationFormat()))
+                .setDefaultDelay(
+                    Interface.getDefaultDelay(iface.getName(), c.getConfigurationFormat()))
+                .build();
+
+        iface.setEigrp(
+            EigrpInterfaceSettings.builder()
+                .setEnabled(true)
+                .setAsn(proc.getAsNumber())
+                .setMetric(metric)
+                .build());
       } else {
         if (iface.getEigrp() != null && iface.getEigrp().getDelay() != null) {
           oldConfig

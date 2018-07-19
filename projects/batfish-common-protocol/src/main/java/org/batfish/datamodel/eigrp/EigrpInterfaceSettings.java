@@ -10,27 +10,37 @@ import javax.annotation.Nullable;
 public class EigrpInterfaceSettings implements Serializable {
 
   private static final String PROP_ASN = "asn";
+  private static final String PROP_BANDWIDTH = "bandwidth";
   private static final String PROP_DELAY = "delay";
   private static final String PROP_ENABLED = "enabled";
+  private static final String PROP_METRIC = "metric";
   private static final long serialVersionUID = 1L;
   private final Long _asn;
+  private final Double _bandwidth;
   private final Double _delay;
   private final boolean _enabled;
+  private final EigrpMetric _metric;
 
   private EigrpInterfaceSettings(Builder builder) {
     _asn = builder._asn;
+    _bandwidth = builder._bandwidth;
     _delay = builder._delay;
     _enabled = builder._enabled;
+    _metric = builder._metric;
   }
 
   @JsonCreator
   private EigrpInterfaceSettings(
       @JsonProperty(PROP_ASN) Long asn,
+      @JsonProperty(PROP_BANDWIDTH) Double bandwidth,
       @JsonProperty(PROP_DELAY) Double delay,
-      @JsonProperty(PROP_ENABLED) boolean enabled) {
+      @JsonProperty(PROP_ENABLED) boolean enabled,
+      @JsonProperty(PROP_METRIC) EigrpMetric metric) {
     _asn = asn;
+    _bandwidth = bandwidth;
     _delay = delay;
     _enabled = enabled;
+    _metric = metric;
   }
 
   public static Builder builder() {
@@ -47,8 +57,10 @@ public class EigrpInterfaceSettings implements Serializable {
     }
     EigrpInterfaceSettings rhs = (EigrpInterfaceSettings) obj;
     return Objects.equals(_asn, rhs._asn)
-        && (Objects.equals(_delay, rhs._delay))
-        && (_enabled == rhs._enabled);
+        && Objects.equals(_bandwidth, rhs._bandwidth)
+        && Objects.equals(_delay, rhs._delay)
+        && (_enabled == rhs._enabled)
+        && Objects.equals(_metric, rhs._metric);
   }
 
   /** @return The AS number for this interface */
@@ -58,17 +70,37 @@ public class EigrpInterfaceSettings implements Serializable {
     return _asn;
   }
 
+  /** @return The bandwidth for this interface */
+  @JsonProperty(PROP_BANDWIDTH)
+  @Nullable
+  public Double getBandwidth() {
+    return _bandwidth;
+  }
+
   /** @return The delay for this interface */
   @JsonProperty(PROP_DELAY)
   @Nullable
   public Double getDelay() {
-    return _delay;
+    if (_delay != null) {
+      return _delay;
+    }
+    if (_metric != null) {
+      return _metric.getDelay();
+    }
+    return null;
   }
 
   /** @return Whether EIGRP is enabled on this interface */
   @JsonProperty(PROP_ENABLED)
   public boolean getEnabled() {
     return _enabled;
+  }
+
+  /** @return The interface metric */
+  @JsonProperty(PROP_METRIC)
+  @Nullable
+  public EigrpMetric getMetric() {
+    return _metric;
   }
 
   @Override
@@ -79,9 +111,13 @@ public class EigrpInterfaceSettings implements Serializable {
   public static class Builder {
     private Long _asn;
 
-    private Double _delay;
+    @Nullable private Double _bandwidth;
+
+    @Nullable private Double _delay;
 
     private boolean _enabled;
+
+    @Nullable private EigrpMetric _metric;
 
     private Builder() {}
 
@@ -94,13 +130,23 @@ public class EigrpInterfaceSettings implements Serializable {
       return this;
     }
 
-    public Builder setDelay(Double delay) {
+    public Builder setDelay(@Nullable Double delay) {
       _delay = delay;
       return this;
     }
 
     public Builder setEnabled(boolean enabled) {
       _enabled = enabled;
+      return this;
+    }
+
+    public Builder setMetric(@Nullable EigrpMetric metric) {
+      _metric = metric;
+      return this;
+    }
+
+    public Builder setBandwidth(@Nullable Double bandwidth) {
+      _bandwidth = bandwidth;
       return this;
     }
   }

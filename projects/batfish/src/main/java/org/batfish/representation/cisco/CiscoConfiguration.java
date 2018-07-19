@@ -2039,7 +2039,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
     newIface.setCryptoMap(iface.getCryptoMap());
     newIface.setAutoState(iface.getAutoState());
     newIface.setVrf(c.getVrfs().get(vrfName));
-    newIface.setBandwidth(iface.getBandwidth());
+    if (iface.getBandwidth() == null) {
+      newIface.setBandwidth(
+          Interface.getDefaultBandwidth(iface.getName(), c.getConfigurationFormat()));
+    } else {
+      newIface.setBandwidth(iface.getBandwidth());
+    }
     if (iface.getDhcpRelayClient()) {
       newIface.getDhcpRelayAddresses().addAll(_dhcpRelayServers);
     } else {
@@ -2093,11 +2098,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
        * Some settings are here, others are set later when the EigrpProcess sets this
        * interface
        */
-      EigrpInterfaceSettings.Builder builder = EigrpInterfaceSettings.builder();
-      if (iface.getDelay() != null) {
-        builder.setDelay(iface.getDelay());
-      }
-      newIface.setEigrp(builder.build());
+      newIface.setEigrp(
+          EigrpInterfaceSettings.builder()
+              .setBandwidth(iface.getBandwidth())
+              .setDelay(iface.getDelay())
+              .build());
     } else {
       if (iface.getDelay() != null) {
         _w.redFlag(

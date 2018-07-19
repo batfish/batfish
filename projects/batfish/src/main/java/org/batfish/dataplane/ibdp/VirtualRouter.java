@@ -428,9 +428,10 @@ public class VirtualRouter extends ComparableStructure<String> {
      */
     for (String ifaceName : _vrf.getInterfaceNames()) {
       Interface iface = _c.getInterfaces().get(ifaceName);
-      EigrpMetric interfaceEigrpCost = proc.getInterfaceMetric(iface);
-      if (!iface.getActive() || iface.getEigrp() == null || !iface.getEigrp().getEnabled()
-          || interfaceEigrpCost == null) {
+      if (!iface.getActive()
+          || iface.getEigrp() == null
+          || !iface.getEigrp().getEnabled()
+          || iface.getEigrp().getMetric() == null) {
         continue;
       }
       Set<Prefix> allNetworkPrefixes =
@@ -447,7 +448,7 @@ public class VirtualRouter extends ComparableStructure<String> {
                 prefix,
                 ifaceName,
                 null,
-                interfaceEigrpCost);
+                iface.getEigrp().getMetric());
         _eigrpInternalRib.mergeRoute(route);
       }
     }
@@ -2118,12 +2119,11 @@ public class VirtualRouter extends ComparableStructure<String> {
     Long asn = settings.getAsNumber();
     Long neighborAsn = neighborSettings.getAsNumber();
     long procAsn = proc.getAsn();
-    EigrpMetric interfaceMetric = proc.getInterfaceMetric(connectingInterface);
     if (!Objects.equals(procAsn, asn)
         || !Objects.equals(procAsn, neighborAsn)
         || !settings.getEnabled()
         || !neighborSettings.getEnabled()
-        || interfaceMetric == null) {
+        || settings.getMetric() == null) {
       return false;
     }
 
@@ -2150,7 +2150,7 @@ public class VirtualRouter extends ComparableStructure<String> {
         continue;
       }
 
-      EigrpMetric newMetric = interfaceMetric.accumulate(neighborRoute.getEigrpMetric());
+      EigrpMetric newMetric = settings.getMetric().accumulate(neighborRoute.getEigrpMetric());
       Ip nextHopIp = neighborInterface.getAddress().getIp();
       EigrpRoute newRoute =
           new EigrpInternalRoute(

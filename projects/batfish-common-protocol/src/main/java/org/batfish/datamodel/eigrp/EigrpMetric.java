@@ -183,6 +183,12 @@ public class EigrpMetric implements Serializable {
     return _cost;
   }
 
+  /** Returns the configured or default delay */
+  @JsonIgnore
+  public double getDelay() {
+    return _namedDelay;
+  }
+
   /** The named bandwidth metric */
   @JsonProperty(PROP_NAMED_BANDWIDTH)
   private long getNamedBandwidth() {
@@ -220,18 +226,33 @@ public class EigrpMetric implements Serializable {
   public static class Builder {
     @Nullable private Double _bandwidth;
     @Nullable private Double _delay;
+    private Double _defaultDelay;
+    private Double _defaultBandwidth;
     private EigrpProcessMode _mode;
 
     @Nullable
     public EigrpMetric build() {
-      if (_bandwidth == null || _delay == null || _mode == null) {
+      Double delay = _delay == null ? _defaultDelay : _delay;
+      Double bandwidth = _bandwidth == null ? _defaultBandwidth : _bandwidth;
+
+      if (bandwidth == null || delay == null || _mode == null) {
         return null;
       }
-      return new EigrpMetric(_bandwidth, _delay, _mode);
+      return new EigrpMetric(bandwidth, delay, _mode);
     }
 
     public Builder setBandwidth(@Nullable Double bandwidth) {
       _bandwidth = bandwidth;
+      return this;
+    }
+
+    public Builder setDefaultDelay(double defaultDelay) {
+      _defaultDelay = defaultDelay;
+      return this;
+    }
+
+    public Builder setDefaultBandwidth(double defaultBandwidth) {
+      _defaultBandwidth = defaultBandwidth;
       return this;
     }
 
