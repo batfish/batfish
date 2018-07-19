@@ -16,6 +16,8 @@ public final class Vrf implements Serializable {
 
   private String _description;
 
+  private EigrpProcess _eigrpProcess;
+
   private IsisProcess _isisProcess;
 
   private final String _name;
@@ -41,6 +43,10 @@ public final class Vrf implements Serializable {
 
   public String getDescription() {
     return _description;
+  }
+
+  public EigrpProcess getEigrpProcess() {
+    return _eigrpProcess;
   }
 
   public IsisProcess getIsisProcess() {
@@ -73,6 +79,10 @@ public final class Vrf implements Serializable {
 
   public void setDescription(String description) {
     _description = description;
+  }
+
+  public void setEigrpProcess(EigrpProcess eigrpProcess) {
+    _eigrpProcess = eigrpProcess;
   }
 
   public void setIsisProcess(IsisProcess isisProcess) {

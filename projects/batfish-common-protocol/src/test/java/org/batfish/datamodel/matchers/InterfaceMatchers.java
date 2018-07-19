@@ -15,6 +15,7 @@ import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.eigrp.EigrpInterfaceSettings;
 import org.batfish.datamodel.isis.IsisInterfaceSettings;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasAccessVlan;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasAdditionalArpIps;
@@ -22,6 +23,7 @@ import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasAllAddresses;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasAllowedVlans;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasDeclaredNames;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasDescription;
+import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasEigrp;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasIsis;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasMtu;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasName;
@@ -121,6 +123,15 @@ public final class InterfaceMatchers {
    */
   public static Matcher<Interface> hasDescription(String expectedDescription) {
     return new HasDescription(equalTo(expectedDescription));
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the interface's
+   * eigrp.
+   */
+  public static @Nonnull Matcher<Interface> hasEigrp(
+      @Nonnull Matcher<? super EigrpInterfaceSettings> subMatcher) {
+    return new HasEigrp(subMatcher);
   }
 
   /**
