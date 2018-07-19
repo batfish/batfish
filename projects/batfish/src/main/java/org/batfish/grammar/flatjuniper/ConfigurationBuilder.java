@@ -2794,37 +2794,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   @Override
-  public void enterSy_authentication_order(Sy_authentication_orderContext ctx) {
-    List<AuthenticationMethod> methods = new ArrayList<>();
-
-    if (ctx.sy_authentication_method() != null) {
-      // only one method specified
-      methods.add(
-          AuthenticationMethod.toAuthenticationMethod(ctx.sy_authentication_method().getText()));
-    } else {
-      // authentication list specified
-      for (Sy_authentication_methodContext method : ctx.sy_authentication_method_set().methods) {
-        methods.add(AuthenticationMethod.toAuthenticationMethod(method.getText()));
-      }
-    }
-
-    AaaAuthenticationLoginList authenticationOrder = new AaaAuthenticationLoginList(methods);
-
-    if (_currentLine != null) {
-      // in system services/ports hierarchy
-      _currentLine.setAaaAuthenticationLoginList(authenticationOrder);
-    } else {
-      // in system hierarchy
-      _configuration.getJf().setSystemAuthenticationOrder(authenticationOrder);
-      for (Line line : _configuration.getJf().getLines().values()) {
-        if (line.getAaaAuthenticationLoginList() == null) {
-          line.setAaaAuthenticationLoginList(authenticationOrder);
-        }
-      }
-    }
-  }
-
-  @Override
   public void enterSy_ports(Sy_portsContext ctx) {
     String name = ctx.porttype.getText();
     // aux and console ports should already exist unless they've been disabled, if disabled don't
@@ -4768,6 +4737,37 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     Ip ip = new Ip(ctx.target.getText());
     String name = ip.toString();
     _currentSnmpServer.getHosts().computeIfAbsent(name, k -> new SnmpHost(ip.toString()));
+  }
+
+  @Override
+  public void exitSy_authentication_order(Sy_authentication_orderContext ctx) {
+    List<AuthenticationMethod> methods = new ArrayList<>();
+
+    if (ctx.sy_authentication_method() != null) {
+      // only one method specified
+      methods.add(
+          AuthenticationMethod.toAuthenticationMethod(ctx.sy_authentication_method().getText()));
+    } else {
+      // authentication list specified
+      for (Sy_authentication_methodContext method : ctx.sy_authentication_method_set().methods) {
+        methods.add(AuthenticationMethod.toAuthenticationMethod(method.getText()));
+      }
+    }
+
+    AaaAuthenticationLoginList authenticationOrder = new AaaAuthenticationLoginList(methods);
+
+    if (_currentLine != null) {
+      // in system services/ports hierarchy
+      _currentLine.setAaaAuthenticationLoginList(authenticationOrder);
+    } else {
+      // in system hierarchy
+      _configuration.getJf().setSystemAuthenticationOrder(authenticationOrder);
+      for (Line line : _configuration.getJf().getLines().values()) {
+        if (line.getAaaAuthenticationLoginList() == null) {
+          line.setAaaAuthenticationLoginList(authenticationOrder);
+        }
+      }
+    }
   }
 
   @Override

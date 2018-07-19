@@ -495,7 +495,6 @@ public class FlatJuniperGrammarTest {
     Configuration configuration = parseConfig(hostname);
     SortedMap<String, Line> lines = configuration.getVendorFamily().getJuniper().getLines();
 
-    // TODO: change string literals to static final strings
     assertThat(lines.get(AUXILIARY_LINE_NAME), nullValue());
 
     assertThat(
