@@ -90,6 +90,9 @@ public class CoordConsts {
   public static final String SVC_KEY_FILE2 = "file2";
   public static final String SVC_KEY_FORCE = "force";
   public static final String SVC_KEY_MAX_SUGGESTIONS = "maxsuggestions";
+  public static final String SVC_KEY_NETWORK_LIST = "networklist";
+  public static final String SVC_KEY_NETWORK_NAME = "networkname";
+  public static final String SVC_KEY_NETWORK_PREFIX = "networkprefix";
   public static final String SVC_KEY_NEW_ANALYSIS = "newanalysis";
   public static final String SVC_KEY_OBJECT_NAME = "objectname";
   public static final String SVC_KEY_PLUGIN_ID = "pluginid";
@@ -125,6 +128,7 @@ public class CoordConsts {
   public static final String SVC_RSC_DEL_ANALYSIS = "delanalysis";
   public static final String SVC_RSC_DEL_CONTAINER = "delcontainer";
   public static final String SVC_RSC_DEL_ENVIRONMENT = "delenvironment";
+  public static final String SVC_RSC_DEL_NETWORK = "delnetwork";
   public static final String SVC_RSC_DEL_QUESTION = "delquestion";
   public static final String SVC_RSC_DEL_TESTRIG = "deltestrig";
   public static final String SVC_RSC_CONFIGURE_QUESTION_TEMPLATE = "configurequestiontemplate";
@@ -133,6 +137,7 @@ public class CoordConsts {
   public static final String SVC_RSC_GET_CONFIGURATION = "getconfiguration";
   public static final String SVC_RSC_GET_CONTAINER = "getcontainer";
   public static final String SVC_RSC_GET_DATAPLANING_WORK = "getdataplaningwork";
+  public static final String SVC_RSC_GET_NETWORK = "getnetwork";
   public static final String SVC_RSC_GET_OBJECT = "getobject";
   public static final String SVC_RSC_GET_PARSING_RESULTS = "getparsingresults";
   public static final String SVC_RSC_GET_PARSING_WORK = "getparsingwork";
@@ -140,11 +145,13 @@ public class CoordConsts {
   public static final String SVC_RSC_GET_WORKSTATUS = "getworkstatus";
   public static final String SVC_RSC_GETSTATUS = "getstatus";
   public static final String SVC_RSC_INIT_CONTAINER = "initcontainer";
+  public static final String SVC_RSC_INIT_NETWORK = "initnetwork";
   public static final String SVC_RSC_KILL_WORK = "killwork";
   public static final String SVC_RSC_LIST_ANALYSES = "listanalyses";
   public static final String SVC_RSC_LIST_CONTAINERS = "listcontainers";
   public static final String SVC_RSC_LIST_ENVIRONMENTS = "listenvironments";
   public static final String SVC_RSC_LIST_INCOMPLETE_WORK = "listincompletework";
+  public static final String SVC_RSC_LIST_NETWORKS = "listnetworks";
   public static final String SVC_RSC_LIST_QUESTIONS = "listquestions";
   public static final String SVC_RSC_LIST_TESTRIGS = "listtestrigs";
   public static final String SVC_RSC_POOL_GET_QUESTION_TEMPLATES = "getquestiontemplates";
