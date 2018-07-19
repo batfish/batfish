@@ -23,7 +23,7 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 
 /** Class that describes the address library information */
-public class Library {
+public class AddressLibrary {
 
   /**
    * Describes valid names for library objects. Must start with letters or underscore, and only
@@ -33,16 +33,16 @@ public class Library {
 
   private static final Pattern _NAME_PATTERN = Pattern.compile(NAME_PATTERN);
 
-  @Nonnull private SortedSet<Book> _books;
+  @Nonnull private SortedSet<AddressBook> _books;
 
   /**
    * The argument to this constructor is a List (not a SortedSet) to prevent Jackson from silently
    * removing duplicate entries.
    */
   @JsonCreator
-  public Library(List<Book> books) {
+  public AddressLibrary(List<AddressBook> books) {
     checkArgument(books != null, "Library cannot have a null list of books (empty list is OK)");
-    checkDuplicates("book", books.stream().map(Book::getName).collect(Collectors.toList()));
+    checkDuplicates("book", books.stream().map(AddressBook::getName).collect(Collectors.toList()));
 
     _books =
         books.stream().collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
@@ -69,35 +69,36 @@ public class Library {
         "Invalid '%s' name '%s'. Valid names match '%s'",
         objectType,
         name,
-        Library.NAME_PATTERN);
+        AddressLibrary.NAME_PATTERN);
   }
 
   @Override
   public boolean equals(Object o) {
-    if (!(o instanceof Library)) {
+    if (!(o instanceof AddressLibrary)) {
       return false;
     }
-    return Objects.equals(_books, ((Library) o)._books);
+    return Objects.equals(_books, ((AddressLibrary) o)._books);
   }
 
   /** Returns the specified dimension in this AddressLibrary object */
-  public Optional<Book> getBook(String bookName) {
+  public Optional<AddressBook> getAddressBook(String bookName) {
     return _books.stream().filter(d -> d.getName().equals(bookName)).findFirst();
   }
 
   /**
-   * From the {@link Library} at {@code dataPath}, get the {@link Book} with name {@code bookName}.
+   * From the {@link AddressLibrary} at {@code dataPath}, get the {@link AddressBook} with name
+   * {@code bookName}.
    *
-   * @throws IOException If the contents of the file could not be cast to {@link Library}
+   * @throws IOException If the contents of the file could not be cast to {@link AddressLibrary}
    */
-  public static Optional<Book> getBook(@Nonnull Path dataPath, @Nonnull String bookName)
-      throws IOException {
-    Library data = read(dataPath);
-    return data.getBook(bookName);
+  public static Optional<AddressBook> getAddressBook(
+      @Nonnull Path dataPath, @Nonnull String bookName) throws IOException {
+    AddressLibrary data = read(dataPath);
+    return data.getAddressBook(bookName);
   }
 
   @JsonValue
-  public SortedSet<Book> getBooks() {
+  public SortedSet<AddressBook> getAddressBooks() {
     return _books;
   }
 
@@ -107,19 +108,46 @@ public class Library {
   }
 
   /**
-   * Reads the {@link Library} object from {@code dataPath}. If the path does not exist, initializes
-   * a new object.
-   *
-   * @throws IOException If file exists but its contents could not be cast to {@link Library}
+   * Adds the address books in {@code newBooks} to the AddressLibrary at {@code path}. Books with
+   * the same name are overwritten
    */
-  public static Library read(Path dataPath) throws IOException {
-    if (Files.exists(dataPath)) {
-      return BatfishObjectMapper.mapper().readValue(CommonUtil.readFile(dataPath), Library.class);
-    }
-    return new Library(null);
+  public static void mergeAddressBooks(@Nonnull Path path, @Nonnull SortedSet<AddressBook> newBooks)
+      throws IOException {
+
+    AddressLibrary originalLibrary = read(path);
+
+    List<AddressBook> booksToKeep =
+        originalLibrary
+            ._books
+            .stream()
+            .filter(
+                originalBook ->
+                    !newBooks
+                        .stream()
+                        .anyMatch(newBook -> newBook.getName().equals(originalBook.getName())))
+            .collect(Collectors.toList());
+
+    booksToKeep.addAll(newBooks);
+    AddressLibrary newLibrary = new AddressLibrary(booksToKeep);
+
+    write(newLibrary, path);
   }
 
-  public static synchronized void write(Library data, Path dataPath)
+  /**
+   * Reads the {@link AddressLibrary} object from {@code dataPath}. If the path does not exist,
+   * initializes a new object.
+   *
+   * @throws IOException If file exists but its contents could not be cast to {@link AddressLibrary}
+   */
+  public static AddressLibrary read(Path dataPath) throws IOException {
+    if (Files.exists(dataPath)) {
+      return BatfishObjectMapper.mapper()
+          .readValue(CommonUtil.readFile(dataPath), AddressLibrary.class);
+    }
+    return new AddressLibrary(null);
+  }
+
+  public static synchronized void write(AddressLibrary data, Path dataPath)
       throws JsonProcessingException {
     CommonUtil.writeFile(dataPath, BatfishObjectMapper.writePrettyString(data));
   }

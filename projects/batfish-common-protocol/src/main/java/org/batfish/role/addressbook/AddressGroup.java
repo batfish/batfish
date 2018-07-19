@@ -1,12 +1,14 @@
 package org.batfish.role.addressbook;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
-import static org.batfish.role.addressbook.Library.checkValidName;
+import static org.batfish.role.addressbook.AddressLibrary.checkValidName;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.Comparator;
 import java.util.SortedSet;
+import java.util.TreeSet;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
@@ -22,13 +24,12 @@ public class AddressGroup implements Comparable<AddressGroup> {
   public AddressGroup(
       @JsonProperty(PROP_ADDRESSES) SortedSet<String> addresses,
       @JsonProperty(PROP_NAME) String name) {
-    checkArgument(addresses != null, "Address group addresses cannot not be null");
     checkArgument(name != null, "Address group name cannot not be null");
     checkValidName(name, "address group");
 
     _name = name;
     _addresses =
-        addresses
+        firstNonNull(addresses, new TreeSet<String>())
             .stream()
             .map(s -> new IpWildcard(s).toIpSpace())
             .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));

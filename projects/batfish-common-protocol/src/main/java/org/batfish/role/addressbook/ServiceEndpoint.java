@@ -1,7 +1,7 @@
 package org.batfish.role.addressbook;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static org.batfish.role.addressbook.Library.checkValidName;
+import static org.batfish.role.addressbook.AddressLibrary.checkValidName;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;

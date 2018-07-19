@@ -2,8 +2,8 @@ package org.batfish.role.addressbook;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
-import static org.batfish.role.addressbook.Library.checkDuplicates;
-import static org.batfish.role.addressbook.Library.checkValidName;
+import static org.batfish.role.addressbook.AddressLibrary.checkDuplicates;
+import static org.batfish.role.addressbook.AddressLibrary.checkValidName;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 
-public class Book implements Comparable<Book> {
+public class AddressBook implements Comparable<AddressBook> {
 
   private static final String PROP_ADDRESS_GROUPS = "addressGroups";
   private static final String PROP_NAME = "name";
@@ -29,7 +29,7 @@ public class Book implements Comparable<Book> {
   @Nonnull private SortedSet<ServiceObjectGroup> _serviceObjectGroups;
   @Nonnull private SortedSet<ServiceObject> _serviceObjects;
 
-  public Book(
+  public AddressBook(
       @JsonProperty(PROP_ADDRESS_GROUPS) List<AddressGroup> addressGroups,
       @JsonProperty(PROP_NAME) String name,
       @JsonProperty(PROP_SERVICE_ENDPOINTS) List<ServiceEndpoint> serviceEndpoints,
@@ -82,19 +82,19 @@ public class Book implements Comparable<Book> {
   }
 
   @Override
-  public int compareTo(Book o) {
+  public int compareTo(AddressBook o) {
     return _name.compareTo(o._name);
   }
 
   @Override
   public boolean equals(Object o) {
-    if (!(o instanceof Book)) {
+    if (!(o instanceof AddressBook)) {
       return false;
     }
-    return Objects.equals(_addressGroups, ((Book) o)._addressGroups)
-        && Objects.equals(_serviceEndpoints, ((Book) o)._serviceEndpoints)
-        && Objects.equals(_serviceObjectGroups, ((Book) o)._serviceObjectGroups)
-        && Objects.equals(_serviceObjects, ((Book) o)._serviceObjects);
+    return Objects.equals(_addressGroups, ((AddressBook) o)._addressGroups)
+        && Objects.equals(_serviceEndpoints, ((AddressBook) o)._serviceEndpoints)
+        && Objects.equals(_serviceObjectGroups, ((AddressBook) o)._serviceObjectGroups)
+        && Objects.equals(_serviceObjects, ((AddressBook) o)._serviceObjects);
   }
 
   @JsonProperty(PROP_ADDRESS_GROUPS)

@@ -259,6 +259,8 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
   public static final class TestrigSettings {
 
+    private Path _addressBooksPath;
+
     private Path _basePath;
 
     private EnvironmentSettings _environmentSettings;
@@ -297,6 +299,10 @@ public final class Settings extends BaseSettings implements GrammarSettings {
       TestrigSettings other = (TestrigSettings) obj;
       return _name.equals(other._name)
           && _environmentSettings._name.equals(other._environmentSettings._name);
+    }
+
+    public Path getAddressBooksPath() {
+      return _addressBooksPath;
     }
 
     public Path getBasePath() {
@@ -356,6 +362,10 @@ public final class Settings extends BaseSettings implements GrammarSettings {
           prime * result
               + ((_environmentSettings._name == null) ? 0 : _environmentSettings._name.hashCode());
       return result;
+    }
+
+    public void setAddressBooksPath(Path path) {
+      _addressBooksPath = path;
     }
 
     public void setBasePath(Path basePath) {

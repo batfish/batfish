@@ -11,17 +11,18 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-public class BookTest {
+public class AddressBookTest {
 
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
   /** check that we deserialize a basic object correctly */
   @Test
   public void bookDeserializationBasic() throws IOException {
-    Book book =
+    AddressBook book =
         BatfishObjectMapper.mapper()
             .readValue(
-                CommonUtil.readResource("org/batfish/role/addressbook/bookBasic.json"), Book.class);
+                CommonUtil.readResource("org/batfish/role/addressbook/bookBasic.json"),
+                AddressBook.class);
 
     assertThat(book.getAddressGroups(), hasSize(2));
     assertThat(book.getServiceEndpoints(), hasSize(2));
@@ -38,7 +39,7 @@ public class BookTest {
     BatfishObjectMapper.mapper()
         .readValue(
             CommonUtil.readResource("org/batfish/role/addressbook/bookDupAddressGroup.json"),
-            Book.class);
+            AddressBook.class);
   }
 
   /** check that we throw an error when the same name is used in a service object and group */
@@ -50,7 +51,7 @@ public class BookTest {
     BatfishObjectMapper.mapper()
         .readValue(
             CommonUtil.readResource("org/batfish/role/addressbook/bookDupServiceName.json"),
-            Book.class);
+            AddressBook.class);
   }
 
   /** check that we throw an error for undefined address groups */
@@ -62,7 +63,7 @@ public class BookTest {
     BatfishObjectMapper.mapper()
         .readValue(
             CommonUtil.readResource("org/batfish/role/addressbook/bookUndefAddressGroup.json"),
-            Book.class);
+            AddressBook.class);
   }
 
   /** check that we throw an error for undefined service name */
@@ -74,6 +75,6 @@ public class BookTest {
     BatfishObjectMapper.mapper()
         .readValue(
             CommonUtil.readResource("org/batfish/role/addressbook/bookUndefServiceName.json"),
-            Book.class);
+            AddressBook.class);
   }
 }
