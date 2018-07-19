@@ -106,6 +106,7 @@ import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
+import org.batfish.datamodel.eigrp.EigrpInterfaceSettings;
 import org.batfish.datamodel.isis.IsisInterfaceLevelSettings;
 import org.batfish.datamodel.isis.IsisInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfArea;
@@ -2086,6 +2087,26 @@ public final class CiscoConfiguration extends VendorConfiguration {
       newIface.setOspfHelloMultiplier(iface.getOspfHelloMultiplier());
     }
 
+    EigrpProcess eigrpProcess = vrf.getEigrpProcess();
+    if (eigrpProcess != null) {
+      /*
+       * Some settings are here, others are set later when the EigrpProcess sets this
+       * interface
+       */
+      EigrpInterfaceSettings.Builder builder = EigrpInterfaceSettings.builder();
+      if (iface.getDelay() != null) {
+        builder.setDelay(iface.getDelay());
+      }
+      newIface.setEigrp(builder.build());
+    } else {
+      if (iface.getDelay() != null) {
+        _w.redFlag(
+            "Interface: '"
+                + iface.getName()
+                + "' contains EIGRP settings, but there is no EIGRP process");
+      }
+    }
+
     boolean level1 = false;
     boolean level2 = false;
     IsisProcess isisProcess = vrf.getIsisProcess();
@@ -2464,40 +2485,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
     newProcess.setReferenceBandwidth(proc.getReferenceBandwidth());
     Ip routerId = proc.getRouterId();
     if (routerId == null) {
-      Map<String, Interface> interfacesToCheck;
-      Map<String, Interface> allInterfaces = oldConfig.getInterfaces();
-      Map<String, Interface> loopbackInterfaces = new HashMap<>();
-      for (Entry<String, Interface> e : allInterfaces.entrySet()) {
-        String ifaceName = e.getKey();
-        Interface iface = e.getValue();
-        if (ifaceName.toLowerCase().startsWith("loopback")
-            && iface.getActive()
-            && iface.getAddress() != null) {
-          loopbackInterfaces.put(ifaceName, iface);
-        }
-      }
-      if (loopbackInterfaces.isEmpty()) {
-        interfacesToCheck = allInterfaces;
-      } else {
-        interfacesToCheck = loopbackInterfaces;
-      }
-      Ip highestIp = Ip.ZERO;
-      for (Interface iface : interfacesToCheck.values()) {
-        if (!iface.getActive()) {
-          continue;
-        }
-        for (InterfaceAddress address : iface.getAllAddresses()) {
-          Ip ip = address.getIp();
-          if (highestIp.asLong() < ip.asLong()) {
-            highestIp = ip;
-          }
-        }
-      }
-      if (highestIp == Ip.ZERO) {
+      routerId = CiscoConversions.getHighestIp(oldConfig.getInterfaces());
+      if (routerId == Ip.ZERO) {
         _w.redFlag("No candidates for OSPF router-id");
         return null;
       }
-      routerId = highestIp;
     }
     newProcess.setRouterId(routerId);
     return newProcess;
@@ -3222,6 +3214,14 @@ public final class CiscoConfiguration extends VendorConfiguration {
             org.batfish.datamodel.ospf.OspfProcess newOspfProcess =
                 toOspfProcess(ospfProcess, vrfName, c, this);
             newVrf.setOspfProcess(newOspfProcess);
+          }
+
+          // convert eigrp process
+          EigrpProcess eigrpProcess = vrf.getEigrpProcess();
+          if (eigrpProcess != null) {
+            org.batfish.datamodel.eigrp.EigrpProcess newEigrpProcess =
+                CiscoConversions.toEigrpProcess(eigrpProcess, vrfName, c, this);
+            newVrf.setEigrpProcess(newEigrpProcess);
           }
 
           // convert isis process

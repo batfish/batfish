@@ -6,33 +6,30 @@ options {
    tokenVocab = CiscoLexer;
 }
 
-s_router_eigrp
+re_classic
 :
-   ROUTER EIGRP procnum = DEC NEWLINE s_router_eigrp_tail*
+   ROUTER EIGRP asnum = DEC NEWLINE
+   re_classic_tail*
 ;
 
-s_router_eigrp_tail
+re_classic_tail
 :
-   re_auto_summary
-   | re_distribute_list
+   rec_address_family
+   | rec_null
    | re_network
-   | re_nsf
-   | re_passive_interface
-   | re_redistribute
 ;
 
-re_auto_summary
+re_named
 :
-   NO? AUTO_SUMMARY NEWLINE
+   ROUTER EIGRP virtname = variable NEWLINE
+   re_named_tail*
 ;
 
-re_distribute_list
+re_named_tail
 :
-   DISTRIBUTE_LIST DEC
-   (
-      OUT
-      | IN
-   ) NEWLINE
+   ren_address_family
+   | ren_null
+   | ren_service_family
 ;
 
 re_network
@@ -40,58 +37,302 @@ re_network
    NETWORK address = IP_ADDRESS mask = IP_ADDRESS? NEWLINE
 ;
 
-re_nsf
+re_topology_base
 :
-   NSF NEWLINE
+   TOPOLOGY BASE NEWLINE
 ;
 
-re_passive_interface
-locals [boolean no] @init {$no = false;}
+re_topology_name
+:
+   TOPOLOGY topo_name = variable TID topo_num = DEC NEWLINE
+;
+
+reaf_interface
+:
+   AF_INTERFACE iname = interface_name NEWLINE
+   reaf_interface_tail*
+   (
+      EXIT_AF_INTERFACE NEWLINE
+   )?
+;
+
+reaf_interface_null
+:
+   NO?
+   (
+      ADD_PATHS
+      | AUTHENTICATION
+      | BANDWIDTH_PERCENT
+      | BFD
+      | DAMPENING_CHANGE
+      | DAMPENING_INTERVAL
+      | HELLO_INTERVAL
+      | HOLD_TIME
+      | NEXT_HOP_SELF
+      | PASSIVE_INTERFACE
+      | SHUTDOWN
+      | SPLIT_HORIZON
+      | SUMMARY_ADDRESS
+   ) null_rest_of_line
+;
+
+reaf_interface_tail
+:
+   reaf_interface_null
+;
+
+reaf_topology_tail
+:
+   reaf_topology_null
+;
+
+reaf_topology
 :
    (
-      NO
-      {$no = true;}
-
-   )? PASSIVE_INTERFACE re_passive_interface_tail [$no]
+     re_topology_base
+     | re_topology_name
+   ) reaf_topology_tail*
+   (
+      EXIT_AF_TOPOLOGY NEWLINE
+   )?
 ;
 
-re_passive_interface_tail [boolean no]
+reaf_topology_null
 :
-   repi_default [$no]
-   | repi_interface [$no]
+   NO?
+   (
+      AUTO_SUMMARY
+      | CTS
+      | DEFAULT_INFORMATION
+      | DEFAULT_METRIC
+      | DISTANCE
+      | DISTRIBUTE_LIST
+      | EIGRP
+      | FAST_REROUTE
+      | MAXIMUM_PATHS
+      | METRIC
+      | OFFSET_LIST
+      | REDISTRIBUTE
+      | SNMP
+      | SUMMARY_METRIC
+      | TIMERS
+      | TRAFFIC_SHARE
+      | VARIANCE
+   ) null_rest_of_line
 ;
 
-re_redistribute
+rec_address_family
 :
-   REDISTRIBUTE re_redistribute_tail
+   ADDRESS_FAMILY IPV4 UNICAST? VRF vrf = variable
+   (
+      AUTONOMOUS_SYSTEM asnum = DEC
+   )? NEWLINE
+   rec_address_family_tail* address_family_footer
 ;
 
-re_redistribute_tail
+rec_address_family_null
 :
-   rer_static
+   NO?
+   (
+      AUTO_SUMMARY
+      | AUTONOMOUS_SYSTEM
+      | BFD
+      | DEFAULT_INFORMATION
+      | DEFAULT_METRIC
+      | DISTANCE
+      | DISTRIBUTE_LIST
+      | EIGRP
+      | MAXIMUM_PATHS
+      | MAXIMUM_PREFIX
+      | METRIC
+      | NEIGHBOR
+      | NSF
+      | OFFSET_LIST
+      | PASSIVE_INTERFACE
+      | REDISTRIBUTE
+   ) null_rest_of_line
 ;
 
-repi_default [boolean no]
+rec_address_family_tail
 :
-   DEFAULT NEWLINE
+   re_network
+   | rec_address_family_null
 ;
 
-repi_interface [boolean no]
+rec_null
 :
-   iname = interface_name NEWLINE
+   NO?
+   (
+      AUTO_SUMMARY
+      | BFD
+      | DEFAULT_INFORMATION
+      | DEFAULT_METRIC
+      | DISTANCE
+      | DISTRIBUTE_LIST
+      | EIGRP
+      | HELLO_INTERVAL
+      | MAXIMUM_PATHS
+      | METRIC
+      | NEIGHBOR
+      | NSF
+      | OFFSET_LIST
+      | PASSIVE_INTERFACE
+      | REDISTRIBUTE
+      | SHUTDOWN
+      | SPLIT_HORIZON
+      | SUMMARY_METRIC
+      | TIMERS
+      | TRAFFIC_SHARE
+      | VARIANCE
+   ) null_rest_of_line
 ;
 
-rer_static
+ren_address_family
 :
-   STATIC
+   ADDRESS_FAMILY
+   (
+      IPV4
+      | IPV6
+   )
+   (
+      UNICAST
+      | MULTICAST
+   )?
+   (
+      VRF vrf = variable
+   )? AUTONOMOUS_SYSTEM asnum = DEC NEWLINE
+   ren_address_family_tail* address_family_footer
+;
+
+ren_address_family_null
+:
+   NO?
+   (
+      EIGRP
+      | MAXIMUM_PREFIX
+      | METRIC
+      | NEIGHBOR
+      | NSF
+      | REMOTE_NEIGHBORS
+      | SHUTDOWN
+      | TIMERS
+   ) null_rest_of_line
+;
+
+ren_address_family_tail
+:
+   reaf_interface
+   | ren_address_family_null
+   | re_network
+   | reaf_topology
+;
+
+ren_null
+:
+   NO? SHUTDOWN
+;
+
+ren_service_family
+:
+   SERVICE_FAMILY
+   (
+      IPV4
+      | IPV6
+   )
+   (
+      VRF vrf = variable
+   )? AUTONOMOUS_SYSTEM asnum = DEC NEWLINE
+   ren_service_family_tail*
+   resf_footer
+;
+
+ren_service_family_tail
+:
+   resf_interface
+   | ren_address_family_null
+   | resf_topology
+;
+
+resf_interface
+:
+   SF_INTERFACE iname = interface_name NEWLINE
+   resf_interface_tail*
+   (
+      EXIT_SF_INTERFACE NEWLINE
+   )?
+;
+
+resf_interface_null
+:
+   NO?
+   (
+      AUTHENTICATION
+      | BANDWIDTH_PERCENT
+      | DAMPENING_CHANGE
+      | DAMPENING_INTERVAL
+      | HELLO_INTERVAL
+      | HOLD_TIME
+      | SHUTDOWN
+      | SPLIT_HORIZON
+   ) null_rest_of_line
+;
+
+resf_interface_tail
+:
+   resf_interface_null
+;
+
+resf_null
+:
+   NO?
+   (
+      EIGRP
+      | METRIC
+      | NEIGHBOR
+      | REMOTE_NEIGHBORS
+      | SHUTDOWN
+      | TIMERS
+   ) null_rest_of_line
+;
+
+resf_topology_tail
+:
+   resf_topology_null
+;
+
+resf_topology_null
+:
+   NO?
+   (
+      EIGRP
+      | METRIC
+      | TIMERS
+   ) null_rest_of_line
+;
+
+resf_footer
+:
    (
       (
-         ROUTE_MAP map = VARIABLE
-      )
-      |
-      (
-         METRIC bandwidth_metric_kbps = DEC delay_metric_10us_units = DEC
-         reliability_metric = DEC loading_metric = DEC eigrp_path_mtu = DEC
-      )
-   )* NEWLINE
+         EXIT_SERVICE_FAMILY
+         | EXIT
+      ) NEWLINE
+   )?
+;
+
+resf_topology
+:
+   (
+     re_topology_base
+     | re_topology_name
+   ) resf_topology_tail*
+   (
+      EXIT_SF_TOPOLOGY NEWLINE
+   )?
+;
+
+s_router_eigrp
+:
+  re_classic
+  | re_named
 ;
