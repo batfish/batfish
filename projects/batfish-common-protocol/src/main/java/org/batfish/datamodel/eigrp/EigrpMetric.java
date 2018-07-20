@@ -235,7 +235,7 @@ public class EigrpMetric implements Serializable {
       Double delay = _delay == null ? _defaultDelay : _delay;
       Double bandwidth = _bandwidth == null ? _defaultBandwidth : _bandwidth;
 
-      if (bandwidth == null || delay == null || _mode == null) {
+      if (bandwidth == null || bandwidth == 0D || delay == null || _mode == null) {
         return null;
       }
       return new EigrpMetric(bandwidth, delay, _mode);
