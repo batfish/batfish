@@ -2317,16 +2317,15 @@ public class Client extends AbstractClient implements IClient {
     }
   }
 
-  private boolean pollWork(
-      @Nullable FileWriter outWriter, List<String> options, List<String> parameters) {
+  private boolean pollWork(List<String> options, List<String> parameters) {
     if (!isValidArgument(options, parameters, 0, 1, 1, Command.POLL_WORK)) {
       return false;
     }
     UUID workId = UUID.fromString(parameters.get(0));
-    return pollWork(workId, outWriter);
+    return pollWork(workId);
   }
 
-  private boolean pollWork(UUID wItemId, @Nullable FileWriter outWriter) {
+  private boolean pollWork(UUID wItemId) {
 
     Pair<WorkStatusCode, String> response;
     try (ActiveSpan workStatusSpan =
@@ -2360,7 +2359,7 @@ public class Client extends AbstractClient implements IClient {
 
   private boolean pollWorkAndGetAnswer(WorkItem wItem, @Nullable FileWriter outWriter) {
 
-    boolean pollResult = pollWork(wItem.getId(), outWriter);
+    boolean pollResult = pollWork(wItem.getId());
     if (!pollResult) {
       return false;
     }
@@ -2484,7 +2483,7 @@ public class Client extends AbstractClient implements IClient {
     }
     _logger.debugf("Doing command: %s\n", line);
     String[] words = line.split("\\s+");
-    if (words.length > 0 && !validCommandUsage(words)) {
+    if (words.length > 0) {
       return false;
     }
     return processCommand(words, null);
@@ -2618,7 +2617,7 @@ public class Client extends AbstractClient implements IClient {
       case LOAD_QUESTIONS:
         return loadQuestions(outWriter, options, parameters, _bfq);
       case POLL_WORK:
-        return pollWork(outWriter, options, parameters);
+        return pollWork(options, parameters);
       case PROMPT:
         return prompt(options, parameters);
       case PWD:
@@ -3416,10 +3415,6 @@ public class Client extends AbstractClient implements IClient {
           "Could not create or write question template: " + e.getMessage(), e);
     }
 
-    return true;
-  }
-
-  private boolean validCommandUsage(String[] words) {
     return true;
   }
 }

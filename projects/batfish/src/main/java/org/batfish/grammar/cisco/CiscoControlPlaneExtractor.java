@@ -1635,7 +1635,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return;
     }
 
-    EigrpProcess proc = new EigrpProcess(asn, EigrpProcessMode.CLASSIC, _format);
+    EigrpProcess proc = new EigrpProcess(asn, EigrpProcessMode.CLASSIC);
 
     _currentVrf = ctx.vrf.getText();
     currentVrf().setEigrpProcess(proc);
@@ -1660,7 +1660,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return;
     }
 
-    EigrpProcess proc = new EigrpProcess(asn, EigrpProcessMode.NAMED, _format);
+    EigrpProcess proc = new EigrpProcess(asn, EigrpProcessMode.NAMED);
 
     if (ctx.vrf != null) {
       _currentVrf = ctx.vrf.getText();
@@ -3308,7 +3308,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void enterRe_classic(Re_classicContext ctx) {
     // Create a classic EIGRP process with ASN
     long asn = toLong(ctx.asnum);
-    EigrpProcess proc = new EigrpProcess(asn, EigrpProcessMode.CLASSIC, _format);
+    EigrpProcess proc = new EigrpProcess(asn, EigrpProcessMode.CLASSIC);
     currentVrf().setEigrpProcess(proc);
     _currentEigrpProcess = proc;
   }

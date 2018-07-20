@@ -11,7 +11,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 import org.batfish.common.BatfishLogger;
 import org.batfish.coordinator.Main;
 import org.batfish.role.NodeRoleDimension;
@@ -29,11 +28,9 @@ public class NodeRolesResource {
 
   private BatfishLogger _logger = Main.getLogger();
   private String _container;
-  private UriInfo _uriInfo;
 
-  public NodeRolesResource(UriInfo uriInfo, String container) {
+  public NodeRolesResource(String container) {
     _container = container;
-    _uriInfo = uriInfo;
   }
 
   @POST
@@ -68,7 +65,7 @@ public class NodeRolesResource {
   @Path("/{dimension}")
   public NodeRoleDimensionResource getNodeRoleDimensionResource(
       @PathParam("dimension") String dimension) {
-    return new NodeRoleDimensionResource(_uriInfo, _container, dimension);
+    return new NodeRoleDimensionResource(_container, dimension);
   }
 
   /** Returns information about node roles in the container */

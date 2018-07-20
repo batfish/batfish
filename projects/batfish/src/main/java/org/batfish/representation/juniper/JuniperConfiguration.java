@@ -631,14 +631,14 @@ public final class JuniperConfiguration extends VendorConfiguration {
     if (level2) {
       newProc.setLevel2(toIsisLevelSettings(settings.getLevel2Settings()));
     }
-    processIsisInterfaceSettings(routingInstance, settings, level1, level2);
+    processIsisInterfaceSettings(routingInstance, level1, level2);
     newProc.setOverloadTimeout(settings.getOverloadTimeout());
     newProc.setReferenceBandwidth(settings.getReferenceBandwidth());
     return newProc.build();
   }
 
   private void processIsisInterfaceSettings(
-      RoutingInstance routingInstance, IsisSettings settings, boolean level1, boolean level2) {
+      RoutingInstance routingInstance, boolean level1, boolean level2) {
     _c.getVrfs()
         .get(routingInstance.getName())
         .getInterfaces()
@@ -647,12 +647,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
               Interface iface = routingInstance.getInterfaces().get(ifaceName);
               newIface.setIsis(
                   toIsisInterfaceSettings(
-                      settings, iface.getIsisSettings(), iface.getIsoAddress(), level1, level2));
+                      iface.getIsisSettings(), iface.getIsoAddress(), level1, level2));
             });
   }
 
   private org.batfish.datamodel.isis.IsisInterfaceSettings toIsisInterfaceSettings(
-      IsisSettings settings,
       @Nonnull IsisInterfaceSettings interfaceSettings,
       IsoAddress isoAddress,
       boolean level1,
