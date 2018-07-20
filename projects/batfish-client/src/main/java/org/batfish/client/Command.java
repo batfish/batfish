@@ -224,7 +224,7 @@ public enum Command {
     descs.put(
         GET_CONFIGURATION,
         new Pair<>(
-            "<container-name> <testrig-name> <configuration-name>",
+            "<network-name> <testrig-name> <configuration-name>",
             "Get the file content of the configuration file"));
     descs.put(GET_CONTAINER, new Pair<>("<network-name>", "Get the information of the network"));
     descs.put(
@@ -242,7 +242,7 @@ public enum Command {
     descs.put(
         INIT_ANALYSIS,
         new Pair<>(
-            "<analysis-name> <question-directory>", "Initialize a new analysis for the container"));
+            "<analysis-name> <question-directory>", "Initialize a new analysis for the network"));
     descs.put(
         INIT_CONTAINER,
         new Pair<>(
@@ -320,16 +320,15 @@ public enum Command {
     descs.put(LIST_ANALYSES, new Pair<>("", "List the analyses and their configuration"));
     descs.put(LIST_CONTAINERS, new Pair<>("", "List the networks to which you have access"));
     descs.put(
-        LIST_INCOMPLETE_WORK, new Pair<>("", "List all incomplete works for the active container"));
+        LIST_INCOMPLETE_WORK, new Pair<>("", "List all incomplete works for the active network"));
     descs.put(
         LIST_ENVIRONMENTS,
-        new Pair<>("", "List the environments under current container and testrig"));
+        new Pair<>("", "List the environments under current network and testrig"));
     descs.put(LIST_NETWORKS, new Pair<>("", "List the networks to which you have access"));
     descs.put(
-        LIST_QUESTIONS, new Pair<>("", "List the questions under current container and testrig"));
+        LIST_QUESTIONS, new Pair<>("", "List the questions under current network and testrig"));
     descs.put(
-        LIST_TESTRIGS,
-        new Pair<>("[-nometadata]", "List the testrigs within the current container"));
+        LIST_TESTRIGS, new Pair<>("[-nometadata]", "List the testrigs within the current network"));
     descs.put(
         LOAD_QUESTIONS,
         new Pair<>(

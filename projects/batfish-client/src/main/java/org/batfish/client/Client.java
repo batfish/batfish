@@ -2511,7 +2511,7 @@ public class Client extends AbstractClient implements IClient {
     String deprecationReason = Command.getDeprecatedMap().get(command);
     if (deprecationReason != null) {
       _logger.outputf(
-          "WARNING: Command %s has been deprecated and may be removed. %s\n\n",
+          "WARNING: Command %s has been deprecated and may be removed. %s\n",
           command.commandName(), deprecationReason);
     }
 
