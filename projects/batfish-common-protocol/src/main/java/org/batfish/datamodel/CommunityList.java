@@ -6,27 +6,66 @@ import static java.util.Objects.requireNonNull;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableList;
-import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
-import java.io.IOException;
-import java.io.ObjectInputStream;
+import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.common.util.CommonUtil;
+import org.batfish.datamodel.routing_policy.Environment;
+import org.batfish.datamodel.routing_policy.expr.CommunitySetExpr;
 
-@JsonSchemaDescription(
-    "Represents a named access-list whose matching criteria is restricted to regexes on community "
-        + "attributes sent with a bgp advertisement")
-public class CommunityList implements Serializable {
+/**
+ * Represents a named access-list whose matching criteria is restricted to regexes on community
+ * attributes sent with a bgp advertisement.
+ */
+public class CommunityList extends CommunitySetExpr {
+
+  private final class CommunityCacheSupplier
+      implements Supplier<LoadingCache<Long, Boolean>>, Serializable {
+    private static final long serialVersionUID = 1L;
+
+    @Override
+    public LoadingCache<Long, Boolean> get() {
+      return CacheBuilder.newBuilder()
+          .build(
+              new CacheLoader<Long, Boolean>() {
+                @Override
+                public Boolean load(@Nonnull Long community) {
+                  return computeIfMatches(community, null);
+                }
+              });
+    }
+  }
+
+  private final class DynamicSupplier implements Supplier<Boolean>, Serializable {
+    private static final long serialVersionUID = 1L;
+
+    @Override
+    public Boolean get() {
+      return initDynamic();
+    }
+  }
+
+  private final class LiteralCommunitiesSupplier
+      implements Supplier<SortedSet<Long>>, Serializable {
+    private static final long serialVersionUID = 1L;
+
+    @Override
+    public SortedSet<Long> get() {
+      return initLiteralCommunities();
+    }
+  }
 
   private static final String PROP_INVERT_MATCH = "invertMatch";
 
@@ -36,30 +75,26 @@ public class CommunityList implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
+  @JsonCreator
+  private static @Nonnull CommunityList create(
+      @JsonProperty(PROP_LINES) List<CommunityListLine> lines,
+      @JsonProperty(PROP_INVERT_MATCH) boolean invertMatch,
+      @JsonProperty(PROP_NAME) String name) {
+    return new CommunityList(
+        requireNonNull(name), firstNonNull(lines, ImmutableList.of()), invertMatch);
+  }
+
+  private final Supplier<LoadingCache<Long, Boolean>> _communityCache;
+
+  private final Supplier<Boolean> _dynamic;
+
   private final boolean _invertMatch;
 
-  /**
-   * The list of lines that are checked in order against the community attribute(s) of a bgp
-   * advertisement
-   */
   @Nonnull private final List<CommunityListLine> _lines;
 
+  private final Supplier<SortedSet<Long>> _literalCommunities;
+
   @Nonnull private final String _name;
-
-  private transient LoadingCache<Long, Boolean> _communityCache;
-
-  private transient LoadingCache<String, Pattern> _patternCache;
-
-  @JsonCreator
-  private static CommunityList newCommunityList(
-      @Nullable @JsonProperty(PROP_NAME) String name,
-      @Nullable @JsonProperty(PROP_LINES) List<CommunityListLine> lines,
-      @Nullable @JsonProperty(PROP_INVERT_MATCH) Boolean invertMatch) {
-    return new CommunityList(
-        requireNonNull(name),
-        firstNonNull(lines, ImmutableList.of()),
-        firstNonNull(invertMatch, Boolean.FALSE));
-  }
 
   /**
    * Constructs a CommunityList with the given name for {@link #_name}, and lines for {@link
@@ -73,29 +108,32 @@ public class CommunityList implements Serializable {
     _name = name;
     _lines = lines;
     _invertMatch = invertMatch;
-    initCaches();
+    _literalCommunities = Suppliers.memoize(new LiteralCommunitiesSupplier());
+    _communityCache = Suppliers.memoize(new CommunityCacheSupplier());
+    _dynamic = Suppliers.memoize(new DynamicSupplier());
+  }
+
+  @Override
+  public @Nonnull SortedSet<Long> asLiteralCommunities(Environment environment)
+      throws UnsupportedOperationException {
+    return _literalCommunities.get();
   }
 
   /** Check if any line matches given community */
-  private boolean computeIfMatches(long community) {
+  private boolean computeIfMatches(long community, @Nullable Environment environment) {
     Optional<LineAction> action =
         _lines
             .stream()
-            .map(line -> executeLineMatch(community, line))
+            .map(
+                line ->
+                    line.getMatchCondition().matchCommunity(environment, community)
+                        ? line.getAction()
+                        : null)
             .filter(Objects::nonNull)
             .findFirst();
 
     // "invert != condition" is a concise way of inverting a boolean
     return action.isPresent() && _invertMatch != (action.get() == LineAction.ACCEPT);
-  }
-
-  /** Check if line matches community. If yes, return line action, otherwise {@code null}. */
-  @Nullable
-  private LineAction executeLineMatch(long community, CommunityListLine line) {
-    Pattern p = _patternCache.getUnchecked(line.getRegex());
-    String communityStr = CommonUtil.longToCommunity(community);
-    Matcher matcher = p.matcher(communityStr);
-    return matcher.find() ? line.getAction() : null;
   }
 
   @Override
@@ -109,44 +147,20 @@ public class CommunityList implements Serializable {
     return _invertMatch == other._invertMatch && Objects.equals(_lines, other._lines);
   }
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(_invertMatch, _lines);
-  }
-
-  private void initCaches() {
-    _communityCache =
-        CacheBuilder.newBuilder()
-            .build(
-                new CacheLoader<Long, Boolean>() {
-                  @Override
-                  public Boolean load(@Nonnull Long community) {
-                    return computeIfMatches(community);
-                  }
-                });
-    _patternCache =
-        CacheBuilder.newBuilder()
-            .build(
-                new CacheLoader<String, Pattern>() {
-                  @Override
-                  public Pattern load(@Nonnull String regex) {
-                    return Pattern.compile(regex);
-                  }
-                });
-  }
-
-  @JsonPropertyDescription(
-      "Specifies whether or not lines should match the complement of their criteria (does not "
-          + "change whether a line permits or denies).")
+  /**
+   * Specifies whether or not lines should match the complement of their criteria (does not change
+   * whether a line permits or denies).
+   */
   @JsonProperty(PROP_INVERT_MATCH)
   public boolean getInvertMatch() {
     return _invertMatch;
   }
 
+  /**
+   * The list of lines that are checked in order against the community attribute(s) of a bgp
+   * advertisement.
+   */
   @JsonProperty(PROP_LINES)
-  @JsonPropertyDescription(
-      "The list of lines that are checked in order against the community attribute(s) of a bgp "
-          + "advertisement")
   public List<CommunityListLine> getLines() {
     return _lines;
   }
@@ -158,13 +172,47 @@ public class CommunityList implements Serializable {
     return _name;
   }
 
-  /** Check if a given community is permitted/accepted by this list. */
-  public boolean permits(long community) {
-    return _communityCache.getUnchecked(community);
+  @Override
+  public int hashCode() {
+    return Objects.hash(_invertMatch, _lines);
   }
 
-  private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-    in.defaultReadObject();
-    initCaches();
+  public boolean initDynamic() {
+    return _lines
+        .stream()
+        .map(CommunityListLine::getMatchCondition)
+        .anyMatch(CommunitySetExpr::dynamicMatchCommunity);
+  }
+
+  private SortedSet<Long> initLiteralCommunities() {
+    return _lines
+        .stream()
+        .map(CommunityListLine::getMatchCondition)
+        .map(lineMatchCondition -> lineMatchCondition.asLiteralCommunities(null))
+        .flatMap(Collection::stream)
+        .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
+  }
+
+  @Override
+  public boolean dynamicMatchCommunity() {
+    return _dynamic.get();
+  }
+
+  /**
+   * Check if a given community is permitted/accepted by this list.
+   *
+   * @throws {@link UnsupportedOperationException} if {@code environment} is {@code null} and this
+   *     is a dynamic {@link CommunityList}.
+   */
+  @Override
+  public boolean matchCommunity(@Nullable Environment environment, long community) {
+    if (_dynamic.get()) {
+      if (environment == null) {
+        throw new UnsupportedOperationException(
+            "Supplied environment must not be null for a dynamic CommunityList");
+      }
+      return computeIfMatches(community, environment);
+    }
+    return _communityCache.get().getUnchecked(community);
   }
 }

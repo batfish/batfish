@@ -47,7 +47,7 @@ public class SetCommunity extends Statement {
   public Result execute(Environment environment) {
     Result result = new Result();
     BgpRoute.Builder bgpRoute = (BgpRoute.Builder) environment.getOutputRoute();
-    SortedSet<Long> communities = _expr.allCommunities(environment);
+    SortedSet<Long> communities = _expr.asLiteralCommunities(environment);
     bgpRoute.getCommunities().clear();
     bgpRoute.getCommunities().addAll(communities);
     if (environment.getWriteToIntermediateBgpAttributes()) {

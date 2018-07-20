@@ -8,6 +8,7 @@ import static org.junit.Assert.assertTrue;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
+import org.batfish.representation.cisco.InlineCommunitySet;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -19,17 +20,17 @@ public class InlineCommunitySetTest {
   public void testCommunities() {
     InlineCommunitySet set = new InlineCommunitySet(ImmutableList.of(1L, 2L, 3L));
 
-    assertThat(set.allCommunities(null), equalTo(ImmutableSet.of(2L, 3L, 1L)));
+    assertThat(set.asLiteralCommunities(null), equalTo(ImmutableSet.of(2L, 3L, 1L)));
   }
 
   @Test
   public void testMatchSingleCommunity() {
     InlineCommunitySet set = new InlineCommunitySet(ImmutableList.of(1L, 2L, 3L));
 
-    assertTrue(set.matchSingleCommunity(null, Sets.newHashSet(2L)));
-    assertTrue(set.matchSingleCommunity(null, Sets.newHashSet(1L, 2L, 3L)));
-    assertTrue(set.matchSingleCommunity(null, Sets.newHashSet(4L, 1L)));
+    assertTrue(set.matchAnyCommunity(null, Sets.newHashSet(2L)));
+    assertTrue(set.matchAnyCommunity(null, Sets.newHashSet(1L, 2L, 3L)));
+    assertTrue(set.matchAnyCommunity(null, Sets.newHashSet(4L, 1L)));
 
-    assertFalse(set.matchSingleCommunity(null, Sets.newHashSet(4L)));
+    assertFalse(set.matchAnyCommunity(null, Sets.newHashSet(4L)));
   }
 }

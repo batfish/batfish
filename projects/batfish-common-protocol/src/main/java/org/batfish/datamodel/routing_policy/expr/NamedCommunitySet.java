@@ -1,46 +1,36 @@
 package org.batfish.datamodel.routing_policy.expr;
 
+import static java.util.Objects.requireNonNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.Comparator;
 import java.util.Set;
 import java.util.SortedSet;
-import org.batfish.datamodel.CommunityList;
-import org.batfish.datamodel.CommunityListLine;
+import javax.annotation.Nonnull;
 import org.batfish.datamodel.routing_policy.Environment;
 
 public class NamedCommunitySet extends CommunitySetExpr {
 
-  /** */
+  private static final String PROP_NAME = "name";
+
   private static final long serialVersionUID = 1L;
 
-  private String _name;
-
   @JsonCreator
-  private NamedCommunitySet() {}
+  private static NamedCommunitySet create(@JsonProperty(PROP_NAME) String name) {
+    return new NamedCommunitySet(requireNonNull(name));
+  }
 
-  public NamedCommunitySet(String name) {
+  private final String _name;
+
+  public NamedCommunitySet(@Nonnull String name) {
     _name = name;
   }
 
   @Override
-  public SortedSet<Long> allCommunities(Environment environment) {
-    ImmutableSortedSet.Builder<Long> out = ImmutableSortedSet.naturalOrder();
-    CommunityList cl = environment.getConfiguration().getCommunityLists().get(_name);
-    for (CommunityListLine line : cl.getLines()) {
-      Long community = line.toLiteralCommunity();
-      out.add(community);
-    }
-    return out.build();
-  }
-
-  @Override
-  public SortedSet<Long> communities(Environment environment, Set<Long> communityCandidates) {
-    CommunityList cl = environment.getConfiguration().getCommunityLists().get(_name);
-    return communityCandidates
-        .stream()
-        .filter(cl::permits)
-        .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
+  public SortedSet<Long> asLiteralCommunities(Environment environment) {
+    return resolve(environment).asLiteralCommunities(environment);
   }
 
   @Override
@@ -48,21 +38,10 @@ public class NamedCommunitySet extends CommunitySetExpr {
     if (this == obj) {
       return true;
     }
-    if (obj == null) {
+    if (!(obj instanceof NamedCommunitySet)) {
       return false;
     }
-    if (getClass() != obj.getClass()) {
-      return false;
-    }
-    NamedCommunitySet other = (NamedCommunitySet) obj;
-    if (_name == null) {
-      if (other._name != null) {
-        return false;
-      }
-    } else if (!_name.equals(other._name)) {
-      return false;
-    }
-    return true;
+    return _name.equals(((NamedCommunitySet) obj)._name);
   }
 
   public String getName() {
@@ -71,13 +50,42 @@ public class NamedCommunitySet extends CommunitySetExpr {
 
   @Override
   public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + ((_name == null) ? 0 : _name.hashCode());
-    return result;
+    return _name.hashCode();
   }
 
-  public void setName(String name) {
-    _name = name;
+  @Override
+  public final boolean dynamicMatchCommunity() {
+    return true;
+  }
+
+  @Override
+  public boolean matchAnyCommunity(Environment environment, Set<Long> communityCandidates) {
+    CommunitySetExpr resolved = resolve(environment);
+    return communityCandidates
+        .stream()
+        .anyMatch(communityCandidate -> resolved.matchCommunity(environment, communityCandidate));
+  }
+
+  @Override
+  public boolean matchCommunity(Environment environment, long community) {
+    return environment
+        .getConfiguration()
+        .getCommunityLists()
+        .get(_name)
+        .matchCommunity(environment, community);
+  }
+
+  @Override
+  public SortedSet<Long> matchedCommunities(
+      Environment environment, Set<Long> communityCandidates) {
+    CommunitySetExpr resolved = resolve(environment);
+    return communityCandidates
+        .stream()
+        .filter(communityCandidate -> resolved.matchCommunity(environment, communityCandidate))
+        .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
+  }
+
+  private @Nonnull CommunitySetExpr resolve(@Nonnull Environment environment) {
+    return requireNonNull(environment.getConfiguration().getCommunityLists().get(_name));
   }
 }

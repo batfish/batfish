@@ -3,9 +3,7 @@ package org.batfish.representation.cisco;
 import java.util.List;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.routing_policy.expr.CommunitySetElem;
 import org.batfish.datamodel.routing_policy.expr.CommunitySetExpr;
-import org.batfish.datamodel.routing_policy.expr.InlineCommunitySet;
 
 public class RoutePolicyCommunitySetInline extends RoutePolicyCommunitySet {
 

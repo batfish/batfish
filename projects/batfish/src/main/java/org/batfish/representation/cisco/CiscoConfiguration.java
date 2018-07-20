@@ -2936,8 +2936,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     // convert standard/expanded community lists to community lists
     for (StandardCommunityList scList : _standardCommunityLists.values()) {
-      ExpandedCommunityList ecList = scList.toExpandedCommunityList();
-      CommunityList cList = CiscoConversions.toCommunityList(ecList);
+      CommunityList cList = CiscoConversions.toCommunityList(scList);
       c.getCommunityLists().put(cList.getName(), cList);
     }
     for (ExpandedCommunityList ecList : _expandedCommunityLists.values()) {

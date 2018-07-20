@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -64,6 +65,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
+import org.batfish.datamodel.RegexCommunitySet;
 import org.batfish.datamodel.Route6FilterLine;
 import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterLine;
@@ -78,8 +80,11 @@ import org.batfish.datamodel.isis.IsisLevelSettings;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.AsPathSetElem;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
+import org.batfish.datamodel.routing_policy.expr.CommunitySetExpr;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
+import org.batfish.datamodel.routing_policy.expr.LiteralCommunityConjunction;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.statement.If;
@@ -344,6 +349,16 @@ class CiscoConversions {
             .map(CiscoConversions::toCommunityListLine)
             .collect(ImmutableList.toImmutableList());
     return new CommunityList(ecList.getName(), cllList, false);
+  }
+
+  public static CommunityList toCommunityList(StandardCommunityList scList) {
+    List<CommunityListLine> cllList =
+        scList
+            .getLines()
+            .stream()
+            .map(CiscoConversions::toCommunityListLine)
+            .collect(ImmutableList.toImmutableList());
+    return new CommunityList(scList.getName(), cllList, false);
   }
 
   static IkePhase1Key toIkePhase1Key(Keyring keyring) {
@@ -1004,7 +1019,16 @@ class CiscoConversions {
 
   private static CommunityListLine toCommunityListLine(ExpandedCommunityListLine eclLine) {
     String javaRegex = CiscoConfiguration.toJavaRegex(eclLine.getRegex());
-    return new CommunityListLine(eclLine.getAction(), javaRegex);
+    return new CommunityListLine(eclLine.getAction(), new RegexCommunitySet(javaRegex));
+  }
+
+  private static CommunityListLine toCommunityListLine(StandardCommunityListLine sclLine) {
+    Collection<Long> lineCommunities = sclLine.getCommunities();
+    CommunitySetExpr expr =
+        lineCommunities.size() == 1
+            ? new LiteralCommunity(lineCommunities.iterator().next())
+            : new LiteralCommunityConjunction(lineCommunities);
+    return new CommunityListLine(sclLine.getAction(), expr);
   }
 
   private static Route6FilterLine toRoute6FilterLine(ExtendedIpv6AccessListLine fromLine) {

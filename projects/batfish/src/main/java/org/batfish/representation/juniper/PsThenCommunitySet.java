@@ -5,9 +5,9 @@ import java.util.List;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.routing_policy.expr.InlineCommunitySet;
 import org.batfish.datamodel.routing_policy.statement.SetCommunity;
 import org.batfish.datamodel.routing_policy.statement.Statement;
+import org.batfish.representation.cisco.InlineCommunitySet;
 
 public final class PsThenCommunitySet extends PsThen {
 
