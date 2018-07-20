@@ -895,6 +895,7 @@ class CiscoConversions {
 
     newProcess.setAsNumber(proc.getAsNumber());
     newProcess.setMode(proc.getMode());
+    newProcess.setVrf(vrf);
 
     // Establish associated interfaces
     for (Entry<String, org.batfish.datamodel.Interface> e : vrf.getInterfaces().entrySet()) {
