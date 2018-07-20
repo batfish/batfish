@@ -55438,6 +55438,11 @@
             "1" : "MISCELLANEOUS: Ignoring reference to undeclared peer group: '13.16.3.16'"
           }
         },
+        "bgp_default_originate_policy" : {
+          "Red flags" : {
+            "1" : "MISCELLANEOUS: Unimplemented: IOS-XR RPL functionsroute-policy cust_v4_in(ama-coe-v4, ama-coe-as-path, ama-coe-no-auth, ama-coe-need-auth, 65517, ama-coe-isp-authorized) in\n"
+          }
+        },
         "cadant_bgp" : {
           "Red flags" : {
             "1" : "MISCELLANEOUS: Ignoring reference to undeclared peer group: '1.2.3.4'",
@@ -59517,6 +59522,20 @@
             }
           }
         },
+        "bgp_default_originate_policy" : {
+          "route-policy" : {
+            "EBGP_CUST_FULL_v4" : {
+              "bgp neighbor route-policy out" : [
+                13
+              ]
+            },
+            "cust_v4_in" : {
+              "bgp neighbor route-policy in" : [
+                11
+              ]
+            }
+          }
+        },
         "bgp_foundry" : {
           "route-map" : {
             "from_ucr" : {
@@ -59536,6 +59555,18 @@
             "EBGP-PEER-SVL-PNI" : {
               "inherited BGP group" : [
                 0
+              ]
+            }
+          },
+          "route-policy" : {
+            "EBGP-PEER-AS11164-SVL-PNI-IN" : {
+              "bgp neighbor route-policy in" : [
+                24
+              ]
+            },
+            "EBGP-PEER-AS11164-SVL-PNI-OUT" : {
+              "bgp neighbor route-policy out" : [
+                26
               ]
             }
           }
@@ -60278,6 +60309,30 @@
                 48,
                 58,
                 69
+              ]
+            }
+          },
+          "route-policy" : {
+            "advertise_fooey_dc_and_isp_routes_ipv4" : {
+              "bgp neighbor route-policy out" : [
+                25,
+                29
+              ]
+            },
+            "advertise_fooey_routes_only" : {
+              "bgp neighbor route-policy out" : [
+                39
+              ]
+            },
+            "deny_bgp_routes" : {
+              "bgp neighbor route-policy in" : [
+                24,
+                28
+              ]
+            },
+            "deny_default_network_ipv4" : {
+              "bgp neighbor route-policy out" : [
+                60
               ]
             }
           }
