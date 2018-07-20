@@ -1,0 +1,13 @@
+load-questions questions/stable
+init-testrig test_rigs/example tr-example
+
+# validate ipOwners
+test -raw tests/questions/stable/ipOwners.ref validate-template ipOwners duplicatesOnly=false
+
+# validate routes
+test -raw tests/questions/stable/routes.ref validate-template routes nodeRegex=".*", vrfRegex=".*", protocol="all" 
+
+# test tracefilters
+test tests/questions/stable/tracefilters.ref answer tracefilters questionName=tracefilters, nodeRegex="host1", dst="1.1.1.1", srcIp="1.0.1.1"
+
+

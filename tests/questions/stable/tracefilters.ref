@@ -1,0 +1,575 @@
+[
+  {
+    "class" : "org.batfish.datamodel.table.TableAnswerElement",
+    "metadata" : {
+      "columnMetadata" : [
+        {
+          "description" : "Node",
+          "isKey" : true,
+          "isValue" : false,
+          "name" : "node",
+          "schema" : "Node"
+        },
+        {
+          "description" : "Filter name",
+          "isKey" : true,
+          "isValue" : false,
+          "name" : "filterName",
+          "schema" : "String"
+        },
+        {
+          "description" : "Evaluated flow",
+          "isKey" : true,
+          "isValue" : false,
+          "name" : "flow",
+          "schema" : "Flow"
+        },
+        {
+          "description" : "Outcome",
+          "isKey" : false,
+          "isValue" : true,
+          "name" : "action",
+          "schema" : "String"
+        },
+        {
+          "description" : "Line number",
+          "isKey" : false,
+          "isValue" : true,
+          "name" : "lineNumber",
+          "schema" : "Integer"
+        },
+        {
+          "description" : "Line content",
+          "isKey" : false,
+          "isValue" : true,
+          "name" : "lineContent",
+          "schema" : "String"
+        },
+        {
+          "description" : "ACL trace",
+          "isKey" : false,
+          "isValue" : true,
+          "name" : "trace",
+          "schema" : "AclTrace"
+        }
+      ],
+      "displayHints" : {
+        "textDesc" : "Filter ${filterName} on node ${node} will ${action} flow ${flow} at line ${lineNumber} ${lineContent}"
+      }
+    },
+    "rows" : [
+      {
+        "node" : {
+          "id" : "node-host1",
+          "name" : "host1"
+        },
+        "filterName" : "filter::OUTPUT",
+        "flow" : {
+          "dscp" : 0,
+          "dstIp" : "1.1.1.1",
+          "dstPort" : 0,
+          "ecn" : 0,
+          "fragmentOffset" : 0,
+          "icmpCode" : 255,
+          "icmpVar" : 255,
+          "ingressNode" : "host1",
+          "ingressVrf" : "default",
+          "ipProtocol" : "IP",
+          "packetLength" : 0,
+          "srcIp" : "1.0.1.1",
+          "srcPort" : 0,
+          "state" : "NEW",
+          "tag" : "BASE",
+          "tcpFlagsAck" : 0,
+          "tcpFlagsCwr" : 0,
+          "tcpFlagsEce" : 0,
+          "tcpFlagsFin" : 0,
+          "tcpFlagsPsh" : 0,
+          "tcpFlagsRst" : 0,
+          "tcpFlagsSyn" : 0,
+          "tcpFlagsUrg" : 0
+        },
+        "action" : "ACCEPT",
+        "lineNumber" : 0,
+        "lineContent" : "default",
+        "trace" : {
+          "events" : [
+            {
+              "class" : "org.batfish.datamodel.acl.PermittedByIpAccessListLine",
+              "description" : "Flow permitted by ACL named 'filter::OUTPUT', index 0: default",
+              "index" : 0,
+              "lineDescription" : "default",
+              "name" : "filter::OUTPUT"
+            }
+          ]
+        }
+      },
+      {
+        "node" : {
+          "id" : "node-host1",
+          "name" : "host1"
+        },
+        "filterName" : "mangle::OUTPUT",
+        "flow" : {
+          "dscp" : 0,
+          "dstIp" : "1.1.1.1",
+          "dstPort" : 0,
+          "ecn" : 0,
+          "fragmentOffset" : 0,
+          "icmpCode" : 255,
+          "icmpVar" : 255,
+          "ingressNode" : "host1",
+          "ingressVrf" : "default",
+          "ipProtocol" : "IP",
+          "packetLength" : 0,
+          "srcIp" : "1.0.1.1",
+          "srcPort" : 0,
+          "state" : "NEW",
+          "tag" : "BASE",
+          "tcpFlagsAck" : 0,
+          "tcpFlagsCwr" : 0,
+          "tcpFlagsEce" : 0,
+          "tcpFlagsFin" : 0,
+          "tcpFlagsPsh" : 0,
+          "tcpFlagsRst" : 0,
+          "tcpFlagsSyn" : 0,
+          "tcpFlagsUrg" : 0
+        },
+        "action" : "ACCEPT",
+        "lineNumber" : 0,
+        "lineContent" : "default",
+        "trace" : {
+          "events" : [
+            {
+              "class" : "org.batfish.datamodel.acl.PermittedByIpAccessListLine",
+              "description" : "Flow permitted by ACL named 'mangle::OUTPUT', index 0: default",
+              "index" : 0,
+              "lineDescription" : "default",
+              "name" : "mangle::OUTPUT"
+            }
+          ]
+        }
+      },
+      {
+        "node" : {
+          "id" : "node-host1",
+          "name" : "host1"
+        },
+        "filterName" : "mangle::PREROUTING",
+        "flow" : {
+          "dscp" : 0,
+          "dstIp" : "1.1.1.1",
+          "dstPort" : 0,
+          "ecn" : 0,
+          "fragmentOffset" : 0,
+          "icmpCode" : 255,
+          "icmpVar" : 255,
+          "ingressNode" : "host1",
+          "ingressVrf" : "default",
+          "ipProtocol" : "IP",
+          "packetLength" : 0,
+          "srcIp" : "1.0.1.1",
+          "srcPort" : 0,
+          "state" : "NEW",
+          "tag" : "BASE",
+          "tcpFlagsAck" : 0,
+          "tcpFlagsCwr" : 0,
+          "tcpFlagsEce" : 0,
+          "tcpFlagsFin" : 0,
+          "tcpFlagsPsh" : 0,
+          "tcpFlagsRst" : 0,
+          "tcpFlagsSyn" : 0,
+          "tcpFlagsUrg" : 0
+        },
+        "action" : "ACCEPT",
+        "lineNumber" : 0,
+        "lineContent" : "default",
+        "trace" : {
+          "events" : [
+            {
+              "class" : "org.batfish.datamodel.acl.PermittedByIpAccessListLine",
+              "description" : "Flow permitted by ACL named 'mangle::PREROUTING', index 0: default",
+              "index" : 0,
+              "lineDescription" : "default",
+              "name" : "mangle::PREROUTING"
+            }
+          ]
+        }
+      },
+      {
+        "node" : {
+          "id" : "node-host1",
+          "name" : "host1"
+        },
+        "filterName" : "mangle::POSTROUTING",
+        "flow" : {
+          "dscp" : 0,
+          "dstIp" : "1.1.1.1",
+          "dstPort" : 0,
+          "ecn" : 0,
+          "fragmentOffset" : 0,
+          "icmpCode" : 255,
+          "icmpVar" : 255,
+          "ingressNode" : "host1",
+          "ingressVrf" : "default",
+          "ipProtocol" : "IP",
+          "packetLength" : 0,
+          "srcIp" : "1.0.1.1",
+          "srcPort" : 0,
+          "state" : "NEW",
+          "tag" : "BASE",
+          "tcpFlagsAck" : 0,
+          "tcpFlagsCwr" : 0,
+          "tcpFlagsEce" : 0,
+          "tcpFlagsFin" : 0,
+          "tcpFlagsPsh" : 0,
+          "tcpFlagsRst" : 0,
+          "tcpFlagsSyn" : 0,
+          "tcpFlagsUrg" : 0
+        },
+        "action" : "ACCEPT",
+        "lineNumber" : 0,
+        "lineContent" : "default",
+        "trace" : {
+          "events" : [
+            {
+              "class" : "org.batfish.datamodel.acl.PermittedByIpAccessListLine",
+              "description" : "Flow permitted by ACL named 'mangle::POSTROUTING', index 0: default",
+              "index" : 0,
+              "lineDescription" : "default",
+              "name" : "mangle::POSTROUTING"
+            }
+          ]
+        }
+      },
+      {
+        "node" : {
+          "id" : "node-host1",
+          "name" : "host1"
+        },
+        "filterName" : "filter::FORWARD",
+        "flow" : {
+          "dscp" : 0,
+          "dstIp" : "1.1.1.1",
+          "dstPort" : 0,
+          "ecn" : 0,
+          "fragmentOffset" : 0,
+          "icmpCode" : 255,
+          "icmpVar" : 255,
+          "ingressNode" : "host1",
+          "ingressVrf" : "default",
+          "ipProtocol" : "IP",
+          "packetLength" : 0,
+          "srcIp" : "1.0.1.1",
+          "srcPort" : 0,
+          "state" : "NEW",
+          "tag" : "BASE",
+          "tcpFlagsAck" : 0,
+          "tcpFlagsCwr" : 0,
+          "tcpFlagsEce" : 0,
+          "tcpFlagsFin" : 0,
+          "tcpFlagsPsh" : 0,
+          "tcpFlagsRst" : 0,
+          "tcpFlagsSyn" : 0,
+          "tcpFlagsUrg" : 0
+        },
+        "action" : "ACCEPT",
+        "lineNumber" : 0,
+        "lineContent" : "default",
+        "trace" : {
+          "events" : [
+            {
+              "class" : "org.batfish.datamodel.acl.PermittedByIpAccessListLine",
+              "description" : "Flow permitted by ACL named 'filter::FORWARD', index 0: default",
+              "index" : 0,
+              "lineDescription" : "default",
+              "name" : "filter::FORWARD"
+            }
+          ]
+        }
+      },
+      {
+        "node" : {
+          "id" : "node-host1",
+          "name" : "host1"
+        },
+        "filterName" : "nat::PREROUTING",
+        "flow" : {
+          "dscp" : 0,
+          "dstIp" : "1.1.1.1",
+          "dstPort" : 0,
+          "ecn" : 0,
+          "fragmentOffset" : 0,
+          "icmpCode" : 255,
+          "icmpVar" : 255,
+          "ingressNode" : "host1",
+          "ingressVrf" : "default",
+          "ipProtocol" : "IP",
+          "packetLength" : 0,
+          "srcIp" : "1.0.1.1",
+          "srcPort" : 0,
+          "state" : "NEW",
+          "tag" : "BASE",
+          "tcpFlagsAck" : 0,
+          "tcpFlagsCwr" : 0,
+          "tcpFlagsEce" : 0,
+          "tcpFlagsFin" : 0,
+          "tcpFlagsPsh" : 0,
+          "tcpFlagsRst" : 0,
+          "tcpFlagsSyn" : 0,
+          "tcpFlagsUrg" : 0
+        },
+        "action" : "ACCEPT",
+        "lineNumber" : 0,
+        "lineContent" : "default",
+        "trace" : {
+          "events" : [
+            {
+              "class" : "org.batfish.datamodel.acl.PermittedByIpAccessListLine",
+              "description" : "Flow permitted by ACL named 'nat::PREROUTING', index 0: default",
+              "index" : 0,
+              "lineDescription" : "default",
+              "name" : "nat::PREROUTING"
+            }
+          ]
+        }
+      },
+      {
+        "node" : {
+          "id" : "node-host1",
+          "name" : "host1"
+        },
+        "filterName" : "mangle::INPUT",
+        "flow" : {
+          "dscp" : 0,
+          "dstIp" : "1.1.1.1",
+          "dstPort" : 0,
+          "ecn" : 0,
+          "fragmentOffset" : 0,
+          "icmpCode" : 255,
+          "icmpVar" : 255,
+          "ingressNode" : "host1",
+          "ingressVrf" : "default",
+          "ipProtocol" : "IP",
+          "packetLength" : 0,
+          "srcIp" : "1.0.1.1",
+          "srcPort" : 0,
+          "state" : "NEW",
+          "tag" : "BASE",
+          "tcpFlagsAck" : 0,
+          "tcpFlagsCwr" : 0,
+          "tcpFlagsEce" : 0,
+          "tcpFlagsFin" : 0,
+          "tcpFlagsPsh" : 0,
+          "tcpFlagsRst" : 0,
+          "tcpFlagsSyn" : 0,
+          "tcpFlagsUrg" : 0
+        },
+        "action" : "ACCEPT",
+        "lineNumber" : 0,
+        "lineContent" : "default",
+        "trace" : {
+          "events" : [
+            {
+              "class" : "org.batfish.datamodel.acl.PermittedByIpAccessListLine",
+              "description" : "Flow permitted by ACL named 'mangle::INPUT', index 0: default",
+              "index" : 0,
+              "lineDescription" : "default",
+              "name" : "mangle::INPUT"
+            }
+          ]
+        }
+      },
+      {
+        "node" : {
+          "id" : "node-host1",
+          "name" : "host1"
+        },
+        "filterName" : "filter::INPUT",
+        "flow" : {
+          "dscp" : 0,
+          "dstIp" : "1.1.1.1",
+          "dstPort" : 0,
+          "ecn" : 0,
+          "fragmentOffset" : 0,
+          "icmpCode" : 255,
+          "icmpVar" : 255,
+          "ingressNode" : "host1",
+          "ingressVrf" : "default",
+          "ipProtocol" : "IP",
+          "packetLength" : 0,
+          "srcIp" : "1.0.1.1",
+          "srcPort" : 0,
+          "state" : "NEW",
+          "tag" : "BASE",
+          "tcpFlagsAck" : 0,
+          "tcpFlagsCwr" : 0,
+          "tcpFlagsEce" : 0,
+          "tcpFlagsFin" : 0,
+          "tcpFlagsPsh" : 0,
+          "tcpFlagsRst" : 0,
+          "tcpFlagsSyn" : 0,
+          "tcpFlagsUrg" : 0
+        },
+        "action" : "REJECT",
+        "lineNumber" : 2,
+        "lineContent" : "default",
+        "trace" : {
+          "events" : [
+            {
+              "class" : "org.batfish.datamodel.acl.DeniedByIpAccessListLine",
+              "description" : "Flow denied by ACL named 'filter::INPUT', index 2: default",
+              "index" : 2,
+              "lineDescription" : "default",
+              "name" : "filter::INPUT"
+            }
+          ]
+        }
+      },
+      {
+        "node" : {
+          "id" : "node-host1",
+          "name" : "host1"
+        },
+        "filterName" : "nat::OUTPUT",
+        "flow" : {
+          "dscp" : 0,
+          "dstIp" : "1.1.1.1",
+          "dstPort" : 0,
+          "ecn" : 0,
+          "fragmentOffset" : 0,
+          "icmpCode" : 255,
+          "icmpVar" : 255,
+          "ingressNode" : "host1",
+          "ingressVrf" : "default",
+          "ipProtocol" : "IP",
+          "packetLength" : 0,
+          "srcIp" : "1.0.1.1",
+          "srcPort" : 0,
+          "state" : "NEW",
+          "tag" : "BASE",
+          "tcpFlagsAck" : 0,
+          "tcpFlagsCwr" : 0,
+          "tcpFlagsEce" : 0,
+          "tcpFlagsFin" : 0,
+          "tcpFlagsPsh" : 0,
+          "tcpFlagsRst" : 0,
+          "tcpFlagsSyn" : 0,
+          "tcpFlagsUrg" : 0
+        },
+        "action" : "ACCEPT",
+        "lineNumber" : 0,
+        "lineContent" : "default",
+        "trace" : {
+          "events" : [
+            {
+              "class" : "org.batfish.datamodel.acl.PermittedByIpAccessListLine",
+              "description" : "Flow permitted by ACL named 'nat::OUTPUT', index 0: default",
+              "index" : 0,
+              "lineDescription" : "default",
+              "name" : "nat::OUTPUT"
+            }
+          ]
+        }
+      },
+      {
+        "node" : {
+          "id" : "node-host1",
+          "name" : "host1"
+        },
+        "filterName" : "mangle::FORWARD",
+        "flow" : {
+          "dscp" : 0,
+          "dstIp" : "1.1.1.1",
+          "dstPort" : 0,
+          "ecn" : 0,
+          "fragmentOffset" : 0,
+          "icmpCode" : 255,
+          "icmpVar" : 255,
+          "ingressNode" : "host1",
+          "ingressVrf" : "default",
+          "ipProtocol" : "IP",
+          "packetLength" : 0,
+          "srcIp" : "1.0.1.1",
+          "srcPort" : 0,
+          "state" : "NEW",
+          "tag" : "BASE",
+          "tcpFlagsAck" : 0,
+          "tcpFlagsCwr" : 0,
+          "tcpFlagsEce" : 0,
+          "tcpFlagsFin" : 0,
+          "tcpFlagsPsh" : 0,
+          "tcpFlagsRst" : 0,
+          "tcpFlagsSyn" : 0,
+          "tcpFlagsUrg" : 0
+        },
+        "action" : "ACCEPT",
+        "lineNumber" : 0,
+        "lineContent" : "default",
+        "trace" : {
+          "events" : [
+            {
+              "class" : "org.batfish.datamodel.acl.PermittedByIpAccessListLine",
+              "description" : "Flow permitted by ACL named 'mangle::FORWARD', index 0: default",
+              "index" : 0,
+              "lineDescription" : "default",
+              "name" : "mangle::FORWARD"
+            }
+          ]
+        }
+      },
+      {
+        "node" : {
+          "id" : "node-host1",
+          "name" : "host1"
+        },
+        "filterName" : "nat::POSTROUTING",
+        "flow" : {
+          "dscp" : 0,
+          "dstIp" : "1.1.1.1",
+          "dstPort" : 0,
+          "ecn" : 0,
+          "fragmentOffset" : 0,
+          "icmpCode" : 255,
+          "icmpVar" : 255,
+          "ingressNode" : "host1",
+          "ingressVrf" : "default",
+          "ipProtocol" : "IP",
+          "packetLength" : 0,
+          "srcIp" : "1.0.1.1",
+          "srcPort" : 0,
+          "state" : "NEW",
+          "tag" : "BASE",
+          "tcpFlagsAck" : 0,
+          "tcpFlagsCwr" : 0,
+          "tcpFlagsEce" : 0,
+          "tcpFlagsFin" : 0,
+          "tcpFlagsPsh" : 0,
+          "tcpFlagsRst" : 0,
+          "tcpFlagsSyn" : 0,
+          "tcpFlagsUrg" : 0
+        },
+        "action" : "ACCEPT",
+        "lineNumber" : 0,
+        "lineContent" : "default",
+        "trace" : {
+          "events" : [
+            {
+              "class" : "org.batfish.datamodel.acl.PermittedByIpAccessListLine",
+              "description" : "Flow permitted by ACL named 'nat::POSTROUTING', index 0: default",
+              "index" : 0,
+              "lineDescription" : "default",
+              "name" : "nat::POSTROUTING"
+            }
+          ]
+        }
+      }
+    ],
+    "summary" : {
+      "notes" : "Found 11 results",
+      "numFailed" : 0,
+      "numPassed" : 0,
+      "numResults" : 11
+    }
+  }
+]
