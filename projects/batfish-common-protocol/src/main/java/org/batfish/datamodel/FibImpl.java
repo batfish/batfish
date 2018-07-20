@@ -70,6 +70,11 @@ public class FibImpl implements Fib {
     }
     Ip nextHopIp = route.getNextHopIp();
 
+    // For non-forwarding routes, abort
+    if (route.getNonForwarding()) {
+      return;
+    }
+
     /* For BGP next-hop-discard routes, ignore next-hop-ip and exit early */
     if (route instanceof BgpRoute && ((BgpRoute) route).getDiscard()) {
       Map<Ip, Set<AbstractRoute>> nextHopInterfaceRoutesByFinalNextHopIp =
