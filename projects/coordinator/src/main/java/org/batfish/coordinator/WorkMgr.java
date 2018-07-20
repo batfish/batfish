@@ -81,6 +81,7 @@ import org.batfish.datamodel.questions.NodePropertySpecifier;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.role.NodeRolesData;
+import org.batfish.role.addressbook.AddressLibrary;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -103,9 +104,7 @@ public class WorkMgr extends AbstractCoordinator {
   private static final int MAX_SHOWN_TESTRIG_INFO_SUBDIR_ENTRIES = 10;
 
   private static Set<String> initContainerFilenames() {
-    Set<String> envFilenames =
-        new ImmutableSet.Builder<String>().add(BfConsts.RELPATH_NODE_ROLES_PATH).build();
-    return envFilenames;
+    return ImmutableSet.of(BfConsts.RELPATH_ADDRESS_LIBRARY_PATH, BfConsts.RELPATH_NODE_ROLES_PATH);
   }
 
   private static Set<String> initEnvFilenames() {
@@ -1141,6 +1140,7 @@ public class WorkMgr extends AbstractCoordinator {
     boolean routingTables = false;
     boolean bgpTables = false;
     boolean roleData = false;
+    boolean addressLibraryData = false;
     for (Path subFile : subFileList) {
       String name = subFile.getFileName().toString();
       if (isEnvFile(subFile)) {
@@ -1170,14 +1170,26 @@ public class WorkMgr extends AbstractCoordinator {
             _logger.errorf("Could not process node role data: %s", e);
           }
         }
+        if (name.equals(BfConsts.RELPATH_ADDRESS_LIBRARY_PATH)) {
+          addressLibraryData = true;
+          try {
+            AddressLibrary testrigData = AddressLibrary.read(subFile);
+            Path path = containerDir.resolve(BfConsts.RELPATH_ADDRESS_LIBRARY_PATH);
+            AddressLibrary.mergeAddressBooks(path, testrigData.getAddressBooks());
+          } catch (IOException e) {
+            // lets not stop the upload because that file is busted.
+            // TODO: figure out a way to surface this error to the user
+            _logger.errorf("Could not process address library data: %s", e);
+          }
+        }
       } else {
         // rest is plain copy
         CommonUtil.copy(subFile, srcTestrigDir.resolve(subFile.getFileName()));
       }
     }
     _logger.infof(
-        "Environment data for testrig:%s; bgpTables:%s, routingTables:%s, roleData:%s\n",
-        testrigName, bgpTables, routingTables, roleData);
+        "Environment data for testrig:%s; bgpTables:%s, routingTables:%s, nodeRoles:%s addressBooks:%s\n",
+        testrigName, bgpTables, routingTables, roleData, addressLibraryData);
 
     if (autoAnalyze) {
       for (WorkItem workItem : getAutoWorkQueue(containerName, testrigName)) {

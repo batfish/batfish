@@ -46,6 +46,7 @@ import org.batfish.grammar.GrammarSettings;
 import org.batfish.question.ReachabilityParameters;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
+import org.batfish.role.addressbook.AddressLibrary;
 import org.batfish.specifier.SpecifierContext;
 
 /**
@@ -77,6 +78,11 @@ public class IBatfishTestAdapter implements IBatfish {
 
   @Override
   public boolean debugFlagEnabled(String flag) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public AddressLibrary getAddressLibraryData() {
     throw new UnsupportedOperationException();
   }
 

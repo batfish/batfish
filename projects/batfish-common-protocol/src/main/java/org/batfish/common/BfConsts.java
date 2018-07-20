@@ -121,6 +121,7 @@ public class BfConsts {
   public static final String PROP_VALUE = "value";
   public static final String PROP_VARIABLES = "variables";
 
+  public static final String RELPATH_ADDRESS_LIBRARY_PATH = "address_library.json";
   public static final String RELPATH_ANALYSES_DIR = "analyses";
   public static final String RELPATH_ANALYSIS_FILE = "analysis";
   public static final String RELPATH_ANSWER_HTML = "answer.html";
