@@ -1,0 +1,25 @@
+{
+  "class" : "org.batfish.question.nodeproperties.NodePropertiesQuestion",
+  "nodeRegex" : ".*",
+  "propertySpec" : "ntp.*",
+  "differential" : false,
+  "includeOneTableKeys" : false,
+  "instance" : {
+    "description" : "Gets properties of nodes",
+    "instanceName" : "qname",
+    "variables" : {
+      "nodeRegex" : {
+        "description" : "Only include nodes that match this specification",
+        "optional" : true,
+        "type" : "nodeSpec",
+        "value" : ".*"
+      },
+      "propertySpec" : {
+        "description" : "Which properties to fetch; default is all of them",
+        "optional" : true,
+        "type" : "nodePropertySpec",
+        "value" : "ntp.*"
+      }
+    }
+  }
+}

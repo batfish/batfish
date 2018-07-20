@@ -1,0 +1,28 @@
+{
+  "class" : "org.batfish.question.prefixtracer.PrefixTracerQuestion",
+  "nodeRegex" : ".*",
+  "prefix" : "0.0.0.0/0",
+  "differential" : false,
+  "includeOneTableKeys" : false,
+  "instance" : {
+    "description" : "Trace route prefix propagation throughout the network",
+    "instanceName" : "qname",
+    "tags" : [
+      "dataplane"
+    ],
+    "variables" : {
+      "nodeRegex" : {
+        "description" : "Nodes matching this regex will have their prefix tracing information reported",
+        "optional" : true,
+        "type" : "string",
+        "value" : ".*"
+      },
+      "prefix" : {
+        "description" : "Which prefix to trace",
+        "optional" : true,
+        "type" : "prefix",
+        "value" : "0.0.0.0/0"
+      }
+    }
+  }
+}
