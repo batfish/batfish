@@ -2796,14 +2796,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   @Override
-  public void enterSy_authentication_method(Sy_authentication_methodContext ctx) {
-    if (_currentAuthenticationOrder != null) {
-      _currentAuthenticationOrder.addMethod(
-          AuthenticationMethod.toAuthenticationMethod(ctx.method.getText()));
-    }
-  }
-
-  @Override
   public void enterSy_authentication_order(Sy_authentication_orderContext ctx) {
     if (_currentLine != null) {
       // in system services/ports hierarchy
@@ -4771,6 +4763,14 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     Ip ip = new Ip(ctx.target.getText());
     String name = ip.toString();
     _currentSnmpServer.getHosts().computeIfAbsent(name, k -> new SnmpHost(ip.toString()));
+  }
+
+  @Override
+  public void exitSy_authentication_method(Sy_authentication_methodContext ctx) {
+    if (_currentAuthenticationOrder != null) {
+      _currentAuthenticationOrder.addMethod(
+          AuthenticationMethod.toAuthenticationMethod(ctx.method.getText()));
+    }
   }
 
   @Override
