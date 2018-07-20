@@ -38,28 +38,60 @@ public class WorkMgrServiceV2 {
   /** Information on the URI of a request, injected by the server framework at runtime. */
   @Context private UriInfo _uriInfo;
 
-  /** Returns the list of {@link Container containers} that the given API key may access. */
+  /**
+   * Returns the list of {@link Container containers} that the given API key may access. Deprecated
+   * in favor of {@link #getNetworks()} getNetworks}.
+   */
   @GET
   @Path(CoordConstsV2.RSC_CONTAINERS)
+  @Deprecated
   public Response getContainers() {
-    _logger.info("WMS2:getContainers\n");
+    return getNetworks();
+  }
+
+  /** Returns the list of {@link Container networks} that the given API key may access. */
+  @GET
+  @Path(CoordConstsV2.RSC_NETWORKS)
+  public Response getNetworks() {
+    _logger.info("WMS2:getNetworks\n");
     List<Container> containers = Main.getWorkMgr().getContainers(_apiKey);
     return Response.ok(containers).build();
   }
 
-  /** Redirect to /containers if the user does not supply a container ID. */
+  /**
+   * Redirect to /networks if the user does not supply a network ID. Deprecated in favor of {@link
+   * #redirectNetwork() redirectNetwork}.
+   */
   @GET
   @Path(CoordConstsV2.RSC_CONTAINER)
+  @Deprecated
   public Response redirectContainer() {
-    _logger.info("WMS2:redirect container\n");
+    return redirectNetwork();
+  }
+
+  /** Redirect to /networks if the user does not supply a network ID. */
+  @GET
+  @Path(CoordConstsV2.RSC_NETWORK)
+  public Response redirectNetwork() {
+    _logger.info("WMS2:redirect network\n");
     return Response.status(Status.MOVED_PERMANENTLY)
-        .location(_uriInfo.getRequestUri().resolve(CoordConstsV2.RSC_CONTAINERS))
+        .location(_uriInfo.getRequestUri().resolve(CoordConstsV2.RSC_NETWORKS))
         .build();
   }
 
-  /** Relocate the request to ContainerResource. */
+  /**
+   * Relocate the request to ContainerResource. Deprecated in favor of {@link
+   * #getNetworkResource(String)} getNetworkResource}.
+   */
   @Path(CoordConstsV2.RSC_CONTAINERS + "/{id}")
+  @Deprecated
   public ContainerResource getContainerResource(@PathParam("id") String id) {
+    return getNetworkResource(id);
+  }
+
+  /** Relocate the request to ContainerResource. */
+  @Path(CoordConstsV2.RSC_NETWORKS + "/{id}")
+  public ContainerResource getNetworkResource(@PathParam("id") String id) {
     return new ContainerResource(_uriInfo, _apiKey, id);
   }
 }

@@ -20,6 +20,8 @@ public enum CiscoStructureUsage implements StructureUsage {
   BGP_INHERITED_SESSION("inherited BGP peer-session"),
   BGP_NEIGHBOR_FILTER_AS_PATH_ACCESS_LIST("bgp neighbor filter-list access-list"),
   BGP_NEIGHBOR_REMOTE_AS_ROUTE_MAP("bgp neighbor remote-as route-map"),
+  BGP_NEIGHBOR_ROUTE_POLICY_IN("bgp neighbor route-policy in"),
+  BGP_NEIGHBOR_ROUTE_POLICY_OUT("bgp neighbor route-policy out"),
   BGP_NEIGHBOR_STATEMENT("bgp neighbor statement"),
   BGP_NETWORK_ORIGINATION_ROUTE_MAP("bgp ipv4 network statement route-map"),
   BGP_NETWORK6_ORIGINATION_ROUTE_MAP("bgp ipv6 network statement route-map"),
