@@ -3280,7 +3280,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
     List<RoutePolicyStatement> stmts = _currentRoutePolicy.getStatements();
 
-    stmts.addAll(toRoutePolicyStatementList(ctx.route_policy_tail().stanzas));
+    stmts.addAll(toRoutePolicyStatementList(ctx.stanzas));
     defineStructure(ROUTE_POLICY, name, ctx);
   }
 
