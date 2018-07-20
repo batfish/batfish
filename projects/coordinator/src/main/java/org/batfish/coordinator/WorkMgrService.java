@@ -340,13 +340,14 @@ public class WorkMgrService {
   }
 
   /**
-   * Delete the specified network. Deprecated in favor of {@link #delNetwork(String, String, String)
-   * delNetwork}.
+   * Delete the specified network
    *
    * @param apiKey The API key of the requester
    * @param clientVersion The version of the client
    * @param containerName The name of the network to delete
    * @return TODO: document JSON response
+   * @deprecated because containers were renamed to networks. Use {@link #delNetwork(String, String,
+   *     String) delNetwork} instead.
    */
   @POST
   @Path(CoordConsts.SVC_RSC_DEL_CONTAINER)
@@ -495,14 +496,15 @@ public class WorkMgrService {
   }
 
   /**
-   * Deletes the specified snapshot in the specified network. Deprecated in favor of {@link
-   * #delSnapshot(String, String, String, String) delSnapshot}.
+   * Deletes the specified snapshot in the specified network
    *
    * @param apiKey The API key of the requester
    * @param clientVersion The version of the client
    * @param containerName The name of the network in which the snapshot resides
    * @param testrigName The name of the snapshot to delete
    * @return TODO: document JSON response
+   * @deprecated because testrigs were renamed to snapshots. Use {@link #delSnapshot(String, String,
+   *     String, String) delSnapshot} instead.
    */
   @POST
   @Path(CoordConsts.SVC_RSC_DEL_TESTRIG)
@@ -794,8 +796,7 @@ public class WorkMgrService {
   }
 
   /**
-   * Get information of the network. Deprecated in favor of {@link #getNetwork(String, String,
-   * String) getNetwork}.
+   * Get information of the network
    *
    * @param apiKey The API key of the client
    * @param clientVersion The version of the client
@@ -803,6 +804,8 @@ public class WorkMgrService {
    * @return A {@link Response Response} with an entity consists either a json representation of the
    *     network {@code containerName} or an error message if: the network {@code containerName}
    *     does not exist or the {@code apiKey} has no access to the network {@code containerName}
+   * @deprecated because containers were renamed to networks. Use {@link #getNetwork(String, String,
+   *     String) getNetwork} instead.
    */
   @POST
   @Path(CoordConsts.SVC_RSC_GET_CONTAINER)
@@ -1083,8 +1086,7 @@ public class WorkMgrService {
   }
 
   /**
-   * Initialize a new network. Deprecated in favor of {@link #initNetwork(String, String, String,
-   * String) initNetwork}.
+   * Initialize a new network
    *
    * @param apiKey The API key of the client
    * @param clientVersion The version of the client
@@ -1092,6 +1094,8 @@ public class WorkMgrService {
    * @param containerPrefix The prefix used to generate the network name (ignored if {@code
    *     containerName} is not empty)
    * @return TODO: document JSON response
+   * @deprecated because containers were renamed to networks. Use {@link #initNetwork(String,
+   *     String, String, String) initNetwork} instead.
    */
   @POST
   @Path(CoordConsts.SVC_RSC_INIT_CONTAINER)
@@ -1272,12 +1276,13 @@ public class WorkMgrService {
   }
 
   /**
-   * List the networks that the specified API key can access. Deprecated in favor of {@link
-   * #listNetworks(String, String) listNetworks}.
+   * List the networks that the specified API key can access
    *
    * @param apiKey The API key of the client
    * @param clientVersion The version of the client
    * @return TODO: document JSON response
+   * @deprecated because containers were renamed to networks. Use {@link #listNetworks(String,
+   *     String) listNetworks} instead.
    */
   @POST
   @Path(CoordConsts.SVC_RSC_LIST_CONTAINERS)
@@ -1475,13 +1480,14 @@ public class WorkMgrService {
   }
 
   /**
-   * List the snapshots under the specified network. Deprecated in favor of {@link
-   * #listSnapshots(String, String, String) listSnapshots}.
+   * List the snapshots under the specified network
    *
    * @param apiKey The API key of the client
    * @param clientVersion The version of the client
    * @param containerName The name of the network whose testrigs are to be listed
    * @return TODO: document JSON response
+   * @deprecated because testrigs were renamed to snapshots. Use {@link #listSnapshots(String,
+   *     String, String) listSnapshots} instead.
    */
   @POST
   @Path(CoordConsts.SVC_RSC_LIST_TESTRIGS)
@@ -1677,14 +1683,15 @@ public class WorkMgrService {
   }
 
   /**
-   * Sync snapshots. Deprecated in favor of {@link #syncSnapshotsSyncNow(String, String, String,
-   * String, String) syncSnapshots}.
+   * Sync snapshots
    *
    * @param apiKey The API key of the client
    * @param clientVersion The version of the client
    * @param containerName The network to sync snapshots for
    * @param pluginId The plugin id to use for syncing
    * @return TODO: document JSON response
+   * @deprecated because testrigs were renamed to snapshots. Use {@link
+   *     #syncSnapshotsSyncNow(String, String, String, String, String) syncSnapshots} instead.
    */
   @POST
   @Path(CoordConsts.SVC_RSC_SYNC_TESTRIGS_SYNC_NOW)
@@ -1747,9 +1754,7 @@ public class WorkMgrService {
   }
 
   /**
-   * Update settings for syncing snapshots. Deprecated in favor of {@link
-   * #syncSnapshotsUpdateSettings(String, String, String, String, String)
-   * syncSnapshotsUpdateSettings}.
+   * Update settings for syncing snapshots
    *
    * @param apiKey The API key of the client
    * @param clientVersion The version of the client
@@ -1757,6 +1762,9 @@ public class WorkMgrService {
    * @param pluginId The plugin id to use for syncing
    * @param settingsStr The stringified version of settings
    * @return TODO: document JSON response
+   * @deprecated because testrigs were renamed to snapshots. Use {@link
+   *     #syncSnapshotsUpdateSettings(String, String, String, String, String)
+   *     syncSnapshotsUpdateSettings} instead.
    */
   @POST
   @Path(CoordConsts.SVC_RSC_SYNC_TESTRIGS_UPDATE_SETTINGS)
