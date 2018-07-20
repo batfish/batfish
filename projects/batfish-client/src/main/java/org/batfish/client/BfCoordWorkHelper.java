@@ -246,13 +246,13 @@ public class BfCoordWorkHelper {
               .delete();
 
       if (response.getStatus() != Status.NO_CONTENT.getStatusCode()) {
-        _logger.errorf("delContainer: Did not get OK response. Got: %s\n", response.getStatus());
+        _logger.errorf("delNetwork: Did not get OK response. Got: %s\n", response.getStatus());
         _logger.error(response.readEntity(String.class) + "\n");
         return false;
       }
       return true;
     } catch (Exception e) {
-      _logger.errorf("Exception in delContainer from %s for %s\n", _coordWorkMgrV2, containerName);
+      _logger.errorf("Exception in delNetwork from %s for %s\n", _coordWorkMgrV2, containerName);
       _logger.error(Throwables.getStackTraceAsString(e) + "\n");
       return false;
     }
