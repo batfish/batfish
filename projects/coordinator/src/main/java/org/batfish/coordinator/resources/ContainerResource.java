@@ -39,7 +39,7 @@ public class ContainerResource {
   /** Returns information about the given {@link Container}, provided this user can access it. */
   @GET
   public Response getContainer() {
-    _logger.infof("WMS2: getContainer '%s'\n", _name);
+    _logger.infof("WMS2: getNetwork '%s'\n", _name);
     Container container = Main.getWorkMgr().getContainer(_name);
     return Response.ok(container).build();
   }
@@ -53,7 +53,7 @@ public class ContainerResource {
   /** Delete a specified container with name: {@link #_name}. */
   @DELETE
   public Response deleteContainer() {
-    _logger.infof("WMS2: delContainer '%s'\n", _name);
+    _logger.infof("WMS2: delNetwork '%s'\n", _name);
     if (Main.getWorkMgr().delContainer(_name)) {
       return Response.noContent().build();
     } else {
@@ -64,12 +64,12 @@ public class ContainerResource {
   /** Check if {@code container} exists and {@code apiKey} has access to it. */
   private static void checkAccessToContainer(String apiKey, String container) {
     if (!Main.getWorkMgr().checkContainerExists(container)) {
-      throw new NotFoundException(String.format("Container '%s' does not exist", container));
+      throw new NotFoundException(String.format("Network '%s' does not exist", container));
     }
 
     if (!Main.getAuthorizer().isAccessibleContainer(apiKey, container, false)) {
       throw new ForbiddenException(
-          String.format("container '%s' is not accessible by the api key: %s", container, apiKey));
+          String.format("network '%s' is not accessible by the api key: %s", container, apiKey));
     }
   }
 }

@@ -126,6 +126,6 @@ public class WorkMgrServiceV2Test extends WorkMgrServiceV2TestBase {
     assertThat(resp.getStatus(), equalTo(FORBIDDEN.getStatusCode()));
     assertThat(
         resp.readEntity(String.class),
-        equalTo("container 'someContainer' is not accessible by the api key: AnotherApiKey"));
+        equalTo("network 'someContainer' is not accessible by the api key: AnotherApiKey"));
   }
 }
