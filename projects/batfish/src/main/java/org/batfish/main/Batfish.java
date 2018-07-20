@@ -178,6 +178,7 @@ import org.batfish.representation.iptables.IptablesVendorConfiguration;
 import org.batfish.role.InferRoles;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
+import org.batfish.role.addressbook.AddressLibrary;
 import org.batfish.specifier.AllInterfaceLinksLocationSpecifier;
 import org.batfish.specifier.AllInterfacesLocationSpecifier;
 import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
@@ -236,6 +237,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
         testrigDir.resolve(BfConsts.RELPATH_VENDOR_SPECIFIC_CONFIG_DIR));
     settings.setTestRigPath(testrigDir.resolve(BfConsts.RELPATH_TEST_RIG_DIR));
     settings.setParseAnswerPath(testrigDir.resolve(BfConsts.RELPATH_PARSE_ANSWER_PATH));
+    settings.setAddressBooksPath(
+        testrigDir.resolve(
+            Paths.get(BfConsts.RELPATH_TEST_RIG_DIR, BfConsts.RELPATH_ADDRESS_LIBRARY_PATH)));
     settings.setNodeRolesPath(
         testrigDir.resolve(
             Paths.get(BfConsts.RELPATH_TEST_RIG_DIR, BfConsts.RELPATH_NODE_ROLES_PATH)));
@@ -1584,6 +1588,26 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // // write stubs to disk
     // serializeIndependentConfigs(stubConfigurations,
     // _testrigSettings.getSerializeIndependentPath());
+  }
+
+  /**
+   * Gets the {@link NodeRolesData} for the testrig
+   *
+   * @return The {@link NodeRolesData} object.
+   */
+  @Override
+  public AddressLibrary getAddressLibraryData() {
+    Path addressBooksPath =
+        _settings
+            .getStorageBase()
+            .resolve(_settings.getContainer())
+            .resolve(BfConsts.RELPATH_ADDRESS_LIBRARY_PATH);
+    try {
+      return AddressLibrary.read(addressBooksPath);
+    } catch (IOException e) {
+      _logger.errorf("Could not read address books data from %s: %s", addressBooksPath, e);
+      return null;
+    }
   }
 
   @Override

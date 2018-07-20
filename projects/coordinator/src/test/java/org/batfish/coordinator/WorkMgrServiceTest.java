@@ -169,7 +169,7 @@ public class WorkMgrServiceTest {
             "testrig",
             "config1.cfg");
     String actualMessage = response.getEntity().toString();
-    assertThat(actualMessage, equalTo("Container 'nonExistContainer' not found"));
+    assertThat(actualMessage, equalTo("Network 'nonExistContainer' not found"));
   }
 
   @Test
