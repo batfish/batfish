@@ -340,13 +340,14 @@ public class WorkMgrService {
   }
 
   /**
-   * Delete the specified network. Deprecated in favor of {@link #delNetwork(String, String, String)
-   * delNetwork}.
+   * Delete the specified network
    *
    * @param apiKey The API key of the requester
    * @param clientVersion The version of the client
    * @param containerName The name of the network to delete
    * @return TODO: document JSON response
+   * @deprecated because containers were renamed to networks. Use {@link #delNetwork(String, String,
+   *     String) delNetwork} instead.
    */
   @POST
   @Path(CoordConsts.SVC_RSC_DEL_CONTAINER)
@@ -495,46 +496,69 @@ public class WorkMgrService {
   }
 
   /**
-   * Deletesthe specified testrig under the specified container
+   * Deletes the specified snapshot in the specified network
    *
    * @param apiKey The API key of the requester
    * @param clientVersion The version of the client
-   * @param containerName The name of the container in which the testrig resides
-   * @param testrigName The name of the testrig to delete
+   * @param containerName The name of the network in which the snapshot resides
+   * @param testrigName The name of the snapshot to delete
    * @return TODO: document JSON response
+   * @deprecated because testrigs were renamed to snapshots. Use {@link #delSnapshot(String, String,
+   *     String, String) delSnapshot} instead.
    */
   @POST
   @Path(CoordConsts.SVC_RSC_DEL_TESTRIG)
   @Produces(MediaType.APPLICATION_JSON)
+  @Deprecated
   public JSONArray delTestrig(
       @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
       @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
       @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName,
       @FormDataParam(CoordConsts.SVC_KEY_TESTRIG_NAME) String testrigName) {
+    return delSnapshot(apiKey, clientVersion, containerName, testrigName);
+  }
+
+  /**
+   * Deletes the specified snapshot in the specified network
+   *
+   * @param apiKey The API key of the requester
+   * @param clientVersion The version of the client
+   * @param networkName The name of the network in which the snapshot resides
+   * @param snapshotName The name of the snapshot to delete
+   * @return TODO: document JSON response
+   */
+  @POST
+  @Path(CoordConsts.SVC_RSC_DEL_SNAPSHOT)
+  @Produces(MediaType.APPLICATION_JSON)
+  public JSONArray delSnapshot(
+      @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
+      @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
+      @FormDataParam(CoordConsts.SVC_KEY_NETWORK_NAME) String networkName,
+      @FormDataParam(CoordConsts.SVC_KEY_SNAPSHOT_NAME) String snapshotName) {
     try {
-      _logger.infof("WMS:delTestrig %s\n", containerName);
+      _logger.infof("WMS:delSnapshot %s\n", networkName);
 
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
-      checkStringParam(containerName, "Container name");
-      checkStringParam(testrigName, "Testrig name");
+      checkStringParam(networkName, "Network name");
+      checkStringParam(snapshotName, "Snapshot name");
 
       checkApiKeyValidity(apiKey);
       checkClientVersion(clientVersion);
-      checkNetworkAccessibility(apiKey, containerName);
+      checkNetworkAccessibility(apiKey, networkName);
 
-      Main.getWorkMgr().delTestrig(containerName, testrigName);
+      Main.getWorkMgr().delTestrig(networkName, snapshotName);
 
       return successResponse(new JSONObject().put("result", "true"));
 
     } catch (IllegalArgumentException | AccessControlException e) {
-      _logger.errorf("WMS:delTestrig exception: %s\n", e.getMessage());
+      _logger.errorf("WMS:delSnapshot exception: %s\n", e.getMessage());
       return failureResponse(e.getMessage());
     } catch (Exception e) {
       String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.errorf(
-          "WMS:delTestrig exception for apikey:%s in container:%s, testrig:%s; exception:%s",
-          apiKey, containerName, testrigName, stackTrace);
+          "WMS:delSnapshot exception for apikey:%s in network:%s, snapshot:%s; exception:%s",
+          apiKey, networkName, snapshotName, stackTrace);
       return failureResponse(e.getMessage());
     }
   }
@@ -772,8 +796,7 @@ public class WorkMgrService {
   }
 
   /**
-   * Get information of the network. Deprecated in favor of {@link #getNetwork(String, String,
-   * String) getNetwork}.
+   * Get information of the network
    *
    * @param apiKey The API key of the client
    * @param clientVersion The version of the client
@@ -781,6 +804,8 @@ public class WorkMgrService {
    * @return A {@link Response Response} with an entity consists either a json representation of the
    *     network {@code containerName} or an error message if: the network {@code containerName}
    *     does not exist or the {@code apiKey} has no access to the network {@code containerName}
+   * @deprecated because containers were renamed to networks. Use {@link #getNetwork(String, String,
+   *     String) getNetwork} instead.
    */
   @POST
   @Path(CoordConsts.SVC_RSC_GET_CONTAINER)
@@ -1061,8 +1086,7 @@ public class WorkMgrService {
   }
 
   /**
-   * Initialize a new network. Deprecated in favor of {@link #initNetwork(String, String, String,
-   * String) initNetwork}.
+   * Initialize a new network
    *
    * @param apiKey The API key of the client
    * @param clientVersion The version of the client
@@ -1070,6 +1094,8 @@ public class WorkMgrService {
    * @param containerPrefix The prefix used to generate the network name (ignored if {@code
    *     containerName} is not empty)
    * @return TODO: document JSON response
+   * @deprecated because containers were renamed to networks. Use {@link #initNetwork(String,
+   *     String, String, String) initNetwork} instead.
    */
   @POST
   @Path(CoordConsts.SVC_RSC_INIT_CONTAINER)
@@ -1250,12 +1276,13 @@ public class WorkMgrService {
   }
 
   /**
-   * List the networks that the specified API key can access. Deprecated in favor of {@link
-   * #listNetworks(String, String) listNetworks}.
+   * List the networks that the specified API key can access
    *
    * @param apiKey The API key of the client
    * @param clientVersion The version of the client
    * @return TODO: document JSON response
+   * @deprecated because containers were renamed to networks. Use {@link #listNetworks(String,
+   *     String) listNetworks} instead.
    */
   @POST
   @Path(CoordConsts.SVC_RSC_LIST_CONTAINERS)
@@ -1453,61 +1480,105 @@ public class WorkMgrService {
   }
 
   /**
-   * List the testrigs under the specified container
+   * List the snapshots under the specified network
    *
    * @param apiKey The API key of the client
    * @param clientVersion The version of the client
-   * @param containerName The name of the container whose testrigs are to be listed
+   * @param containerName The name of the network whose testrigs are to be listed
    * @return TODO: document JSON response
+   * @deprecated because testrigs were renamed to snapshots. Use {@link #listSnapshots(String,
+   *     String, String) listSnapshots} instead.
    */
   @POST
   @Path(CoordConsts.SVC_RSC_LIST_TESTRIGS)
   @Produces(MediaType.APPLICATION_JSON)
+  @Deprecated
   public JSONArray listTestrigs(
       @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
       @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
       @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName) {
+    return listSnapshotsHelper(
+        apiKey,
+        clientVersion,
+        containerName,
+        CoordConsts.SVC_KEY_TESTRIG_NAME,
+        CoordConsts.SVC_KEY_TESTRIG_INFO,
+        CoordConsts.SVC_KEY_TESTRIG_METADATA,
+        CoordConsts.SVC_KEY_TESTRIG_LIST);
+  }
+
+  /**
+   * List the snapshots under the specified network
+   *
+   * @param apiKey The API key of the client
+   * @param clientVersion The version of the client
+   * @param networkName The name of the network whose snapshots are to be listed
+   * @return TODO: document JSON response
+   */
+  @POST
+  @Path(CoordConsts.SVC_RSC_LIST_SNAPSHOTS)
+  @Produces(MediaType.APPLICATION_JSON)
+  public JSONArray listSnapshots(
+      @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
+      @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
+      @FormDataParam(CoordConsts.SVC_KEY_NETWORK_NAME) String networkName) {
+    return listSnapshotsHelper(
+        apiKey,
+        clientVersion,
+        networkName,
+        CoordConsts.SVC_KEY_SNAPSHOT_NAME,
+        CoordConsts.SVC_KEY_SNAPSHOT_INFO,
+        CoordConsts.SVC_KEY_SNAPSHOT_METADATA,
+        CoordConsts.SVC_KEY_SNAPSHOT_LIST);
+  }
+
+  private JSONArray listSnapshotsHelper(
+      String apiKey,
+      String clientVersion,
+      String networkName,
+      String nameKey,
+      String infoKey,
+      String metadataKey,
+      String listKey) {
     try {
-      _logger.infof("WMS:listTestrigs %s %s\n", apiKey, containerName);
+      _logger.infof("WMS:listSnapshots %s %s\n", apiKey, networkName);
 
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
-      checkStringParam(containerName, "Container name");
+      checkStringParam(networkName, "Network name");
 
       checkApiKeyValidity(apiKey);
       checkClientVersion(clientVersion);
-      checkNetworkAccessibility(apiKey, containerName);
+      checkNetworkAccessibility(apiKey, networkName);
 
       JSONArray retArray = new JSONArray();
 
-      List<String> testrigList = Main.getWorkMgr().listTestrigs(containerName);
+      List<String> snapshotList = Main.getWorkMgr().listTestrigs(networkName);
 
-      for (String testrig : testrigList) {
+      for (String snapshot : snapshotList) {
         try {
-          String testrigInfo = Main.getWorkMgr().getTestrigInfo(containerName, testrig);
-          TestrigMetadata trMetadata = Main.getWorkMgr().getTestrigMetadata(containerName, testrig);
+          String snapshotInfo = Main.getWorkMgr().getTestrigInfo(networkName, snapshot);
+          TestrigMetadata ssMetadata = Main.getWorkMgr().getTestrigMetadata(networkName, snapshot);
 
           JSONObject jObject =
               new JSONObject()
-                  .put(CoordConsts.SVC_KEY_TESTRIG_NAME, testrig)
-                  .put(CoordConsts.SVC_KEY_TESTRIG_INFO, testrigInfo)
-                  .put(
-                      CoordConsts.SVC_KEY_TESTRIG_METADATA,
-                      BatfishObjectMapper.writePrettyString(trMetadata));
+                  .put(nameKey, snapshot)
+                  .put(infoKey, snapshotInfo)
+                  .put(metadataKey, BatfishObjectMapper.writePrettyString(ssMetadata));
 
           retArray.put(jObject);
         } catch (Exception e) {
           _logger.warnf(
-              "Error listing testrig %s in container %s: %s",
-              containerName, testrig, Throwables.getStackTraceAsString(e));
+              "Error listing snapshot %s in network %s: %s",
+              networkName, snapshot, Throwables.getStackTraceAsString(e));
         }
       }
 
-      return successResponse(new JSONObject().put(CoordConsts.SVC_KEY_TESTRIG_LIST, retArray));
+      return successResponse(new JSONObject().put(listKey, retArray));
     } catch (Exception e) {
       _logger.errorf(
-          "WMS:listTestrigs exception for apikey:%s in container:%s; exception:%s",
-          apiKey, containerName, Throwables.getStackTraceAsString(e));
+          "WMS:listSnapshots exception for apikey:%s in network:%s; exception:%s",
+          apiKey, networkName, Throwables.getStackTraceAsString(e));
       return failureResponse(e.getMessage());
     }
   }
@@ -1612,105 +1683,155 @@ public class WorkMgrService {
   }
 
   /**
-   * Sync testrigs
+   * Sync snapshots
    *
    * @param apiKey The API key of the client
    * @param clientVersion The version of the client
-   * @param containerName The container to sync testrigs for
+   * @param containerName The network to sync snapshots for
    * @param pluginId The plugin id to use for syncing
    * @return TODO: document JSON response
+   * @deprecated because testrigs were renamed to snapshots. Use {@link
+   *     #syncSnapshotsSyncNow(String, String, String, String, String) syncSnapshots} instead.
    */
   @POST
   @Path(CoordConsts.SVC_RSC_SYNC_TESTRIGS_SYNC_NOW)
   @Produces(MediaType.APPLICATION_JSON)
+  @Deprecated
   public JSONArray syncTestrigsSyncNow(
       @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
       @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
       @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName,
       @FormDataParam(CoordConsts.SVC_KEY_PLUGIN_ID) String pluginId,
       @FormDataParam(CoordConsts.SVC_KEY_FORCE) String forceStr) {
+    return syncSnapshotsSyncNow(apiKey, clientVersion, containerName, pluginId, forceStr);
+  }
+
+  /**
+   * Sync snapshots
+   *
+   * @param apiKey The API key of the client
+   * @param clientVersion The version of the client
+   * @param networkName The network to sync snapshots for
+   * @param pluginId The plugin id to use for syncing
+   * @return TODO: document JSON response
+   */
+  @POST
+  @Path(CoordConsts.SVC_RSC_SYNC_SNAPSHOTS_SYNC_NOW)
+  @Produces(MediaType.APPLICATION_JSON)
+  public JSONArray syncSnapshotsSyncNow(
+      @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
+      @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
+      @FormDataParam(CoordConsts.SVC_KEY_NETWORK_NAME) String networkName,
+      @FormDataParam(CoordConsts.SVC_KEY_PLUGIN_ID) String pluginId,
+      @FormDataParam(CoordConsts.SVC_KEY_FORCE) String forceStr) {
     try {
-      _logger.infof("WMS:syncTestrigsSyncNow %s %s %s\n", apiKey, containerName, pluginId);
+      _logger.infof("WMS:syncSnapshotsSyncNow %s %s %s\n", apiKey, networkName, pluginId);
 
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
-      checkStringParam(containerName, "Container name");
+      checkStringParam(networkName, "Network name");
       checkStringParam(pluginId, "Plugin Id");
 
       checkApiKeyValidity(apiKey);
       checkClientVersion(clientVersion);
-      checkNetworkAccessibility(apiKey, containerName);
+      checkNetworkAccessibility(apiKey, networkName);
 
       boolean force = !Strings.isNullOrEmpty(forceStr) && Boolean.parseBoolean(forceStr);
 
-      int numCommits = Main.getWorkMgr().syncTestrigsSyncNow(containerName, pluginId, force);
+      int numCommits = Main.getWorkMgr().syncTestrigsSyncNow(networkName, pluginId, force);
 
       return successResponse(new JSONObject().put("numCommits", numCommits));
     } catch (IllegalArgumentException | AccessControlException e) {
-      _logger.errorf("WMS:syncTestrigsSyncNow exception: %s\n", e.getMessage());
+      _logger.errorf("WMS:syncSnapshotsSyncNow exception: %s\n", e.getMessage());
       return failureResponse(e.getMessage());
     } catch (Exception e) {
       String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.errorf(
-          "WMS:syncTestrigsSyncNow exception for apikey:%s in container:%s; exception:%s",
-          apiKey, containerName, stackTrace);
+          "WMS:syncSnapshotsSyncNow exception for apikey:%s in network:%s; exception:%s",
+          apiKey, networkName, stackTrace);
       return failureResponse(e.getMessage());
     }
   }
 
   /**
-   * Update settings for syncing testrigs
+   * Update settings for syncing snapshots
    *
    * @param apiKey The API key of the client
    * @param clientVersion The version of the client
-   * @param containerName The container to sync testrigs for
+   * @param containerName The network to sync snapshots for
    * @param pluginId The plugin id to use for syncing
    * @param settingsStr The stringified version of settings
    * @return TODO: document JSON response
+   * @deprecated because testrigs were renamed to snapshots. Use {@link
+   *     #syncSnapshotsUpdateSettings(String, String, String, String, String)
+   *     syncSnapshotsUpdateSettings} instead.
    */
   @POST
   @Path(CoordConsts.SVC_RSC_SYNC_TESTRIGS_UPDATE_SETTINGS)
   @Produces(MediaType.APPLICATION_JSON)
+  @Deprecated
   public JSONArray syncTestrigsUpdateSettings(
       @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
       @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
       @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName,
       @FormDataParam(CoordConsts.SVC_KEY_PLUGIN_ID) String pluginId,
       @FormDataParam(CoordConsts.SVC_KEY_SETTINGS) String settingsStr) {
+    return syncSnapshotsUpdateSettings(apiKey, clientVersion, containerName, pluginId, settingsStr);
+  }
+
+  /**
+   * Update settings for syncing snapshots
+   *
+   * @param apiKey The API key of the client
+   * @param clientVersion The version of the client
+   * @param networkName The network to sync snapshots for
+   * @param pluginId The plugin id to use for syncing
+   * @param settingsStr The stringified version of settings
+   * @return TODO: document JSON response
+   */
+  @POST
+  @Path(CoordConsts.SVC_RSC_SYNC_SNAPSHOTS_UPDATE_SETTINGS)
+  @Produces(MediaType.APPLICATION_JSON)
+  public JSONArray syncSnapshotsUpdateSettings(
+      @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
+      @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
+      @FormDataParam(CoordConsts.SVC_KEY_NETWORK_NAME) String networkName,
+      @FormDataParam(CoordConsts.SVC_KEY_PLUGIN_ID) String pluginId,
+      @FormDataParam(CoordConsts.SVC_KEY_SETTINGS) String settingsStr) {
     try {
       _logger.infof(
-          "WMS:syncTestrigsUpdateSettings %s %s %s %s\n",
-          apiKey, containerName, pluginId, settingsStr);
+          "WMS:syncSnapshotsUpdateSettings %s %s %s %s\n",
+          apiKey, networkName, pluginId, settingsStr);
 
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
-      checkStringParam(containerName, "Container name");
+      checkStringParam(networkName, "Network name");
       checkStringParam(pluginId, "Plugin Id");
       checkStringParam(settingsStr, "Settings");
 
       checkApiKeyValidity(apiKey);
       checkClientVersion(clientVersion);
-      checkNetworkAccessibility(apiKey, containerName);
+      checkNetworkAccessibility(apiKey, networkName);
 
       Map<String, String> settings =
           BatfishObjectMapper.mapper()
               .readValue(settingsStr, new TypeReference<Map<String, String>>() {});
 
       boolean result =
-          Main.getWorkMgr().syncTestrigsUpdateSettings(containerName, pluginId, settings);
+          Main.getWorkMgr().syncTestrigsUpdateSettings(networkName, pluginId, settings);
 
       return successResponse(new JSONObject().put("result", result));
     } catch (FileExistsException
         | FileNotFoundException
         | IllegalArgumentException
         | AccessControlException e) {
-      _logger.errorf("WMS:syncTestrigsUpdateSettings exception: %s\n", e.getMessage());
+      _logger.errorf("WMS:syncSnapshotsUpdateSettings exception: %s\n", e.getMessage());
       return failureResponse(e.getMessage());
     } catch (Exception e) {
       String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.errorf(
-          "WMS:syncTestrigsUpdateSettings exception for apikey:%s in container:%s; exception:%s",
-          apiKey, containerName, stackTrace);
+          "WMS:syncSnapshotsUpdateSettings exception for apikey:%s in network:%s; exception:%s",
+          apiKey, networkName, stackTrace);
       return failureResponse(e.getMessage());
     }
   }
