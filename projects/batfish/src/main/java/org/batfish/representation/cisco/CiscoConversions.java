@@ -74,6 +74,7 @@ import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.eigrp.EigrpInterfaceSettings;
 import org.batfish.datamodel.isis.IsisLevelSettings;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.AsPathSetElem;
@@ -90,6 +91,38 @@ import org.batfish.datamodel.visitors.HeaderSpaceConverter;
 /** Utilities that convert Cisco-specific representations to vendor-independent model. */
 @ParametersAreNonnullByDefault
 class CiscoConversions {
+
+  static Ip getHighestIp(Map<String, Interface> allInterfaces) {
+    Map<String, Interface> interfacesToCheck;
+    Map<String, Interface> loopbackInterfaces = new HashMap<>();
+    for (Entry<String, Interface> e : allInterfaces.entrySet()) {
+      String ifaceName = e.getKey();
+      Interface iface = e.getValue();
+      if (ifaceName.toLowerCase().startsWith("loopback")
+          && iface.getActive()
+          && iface.getAddress() != null) {
+        loopbackInterfaces.put(ifaceName, iface);
+      }
+    }
+    if (loopbackInterfaces.isEmpty()) {
+      interfacesToCheck = allInterfaces;
+    } else {
+      interfacesToCheck = loopbackInterfaces;
+    }
+    Ip highestIp = Ip.ZERO;
+    for (Interface iface : interfacesToCheck.values()) {
+      if (!iface.getActive()) {
+        continue;
+      }
+      for (InterfaceAddress address : iface.getAllAddresses()) {
+        Ip ip = address.getIp();
+        if (highestIp.asLong() < ip.asLong()) {
+          highestIp = ip;
+        }
+      }
+    }
+    return highestIp;
+  }
 
   /**
    * Converts a {@link CryptoMapEntry} to an {@link IpsecPolicy}, a list of {@link IpsecVpn}. Also
@@ -850,6 +883,66 @@ class CiscoConversions {
     }
 
     return ipsecVpns;
+  }
+
+  @Nullable
+  static org.batfish.datamodel.eigrp.EigrpProcess toEigrpProcess(
+      EigrpProcess proc, String vrfName, Configuration c, CiscoConfiguration oldConfig) {
+    org.batfish.datamodel.eigrp.EigrpProcess.Builder newProcess =
+        org.batfish.datamodel.eigrp.EigrpProcess.builder();
+    org.batfish.datamodel.Vrf vrf = c.getVrfs().get(vrfName);
+
+    newProcess.setAsNumber(proc.getAsNumber());
+    newProcess.setMode(proc.getMode());
+
+    // Establish associated interfaces
+    for (Entry<String, org.batfish.datamodel.Interface> e : vrf.getInterfaces().entrySet()) {
+      org.batfish.datamodel.Interface iface = e.getValue();
+      InterfaceAddress interfaceAddress = iface.getAddress();
+      if (interfaceAddress == null) {
+        continue;
+      }
+      boolean match = proc.getNetworks().stream().anyMatch(interfaceAddress.getPrefix()::equals);
+      if (match) {
+        EigrpInterfaceSettings.Builder builder = EigrpInterfaceSettings.builder();
+        builder.setAsn(proc.getAsNumber());
+        if (iface.getEigrp() != null && iface.getEigrp().getDelay() != null) {
+          builder.setDelay(iface.getEigrp().getDelay());
+        } else {
+          builder.setDelay(Interface.getDefaultDelay(iface.getName(), c.getConfigurationFormat()));
+        }
+        builder.setEnabled(true);
+        iface.setEigrp(builder.build());
+      } else {
+        if (iface.getEigrp() != null && iface.getEigrp().getDelay() != null) {
+          oldConfig
+              .getWarnings()
+              .redFlag(
+                  "Interface: '"
+                      + iface.getName()
+                      + "' contains EIGRP settings but is not part of the EIGRP process");
+        }
+        iface.setEigrp(null);
+      }
+    }
+
+    // TODO set stub process
+    // newProcess.setStub(proc.isStub())
+
+    // TODO create summary filters
+
+    // TODO apply redistribution policy
+
+    Ip routerId = proc.getRouterId();
+    if (routerId == null) {
+      routerId = getHighestIp(oldConfig.getInterfaces());
+      if (routerId == Ip.ZERO) {
+        oldConfig.getWarnings().redFlag("No candidates for EIGRP router-id");
+        return null;
+      }
+    }
+    newProcess.setRouterId(routerId);
+    return newProcess.build();
   }
 
   static org.batfish.datamodel.isis.IsisProcess toIsisProcess(
