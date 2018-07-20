@@ -102,6 +102,9 @@ import static org.batfish.datamodel.matchers.IpsecPeerConfigMatchers.isIpsecStat
 import static org.batfish.datamodel.matchers.IpsecPolicyMatchers.hasIpsecProposals;
 import static org.batfish.datamodel.matchers.IpsecPolicyMatchers.hasPfsKeyGroup;
 import static org.batfish.datamodel.matchers.IpsecProposalMatchers.hasProtocols;
+import static org.batfish.datamodel.matchers.IpsecSessionMatchers.hasNegotiatedIkeP1Key;
+import static org.batfish.datamodel.matchers.IpsecSessionMatchers.hasNegotiatedIkeP1Proposal;
+import static org.batfish.datamodel.matchers.IpsecSessionMatchers.hasNegotiatedIpsecP2Proposal;
 import static org.batfish.datamodel.matchers.IpsecVpnMatchers.hasBindInterface;
 import static org.batfish.datamodel.matchers.IpsecVpnMatchers.hasIkeGatewaay;
 import static org.batfish.datamodel.matchers.IpsecVpnMatchers.hasPolicy;
@@ -162,6 +165,7 @@ import static org.junit.Assert.assertTrue;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.graph.EndpointPair;
 import com.google.common.graph.ValueGraph;
 import java.io.IOException;
 import java.util.Arrays;
@@ -172,6 +176,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.stream.Collectors;
+import org.batfish.common.Pair;
 import org.batfish.common.WellKnownCommunity;
 import org.batfish.common.plugin.DataPlanePlugin;
 import org.batfish.common.util.CommonUtil;
@@ -201,7 +206,9 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
 import org.batfish.datamodel.IpsecEncapsulationMode;
+import org.batfish.datamodel.IpsecPeerConfig;
 import org.batfish.datamodel.IpsecProtocol;
+import org.batfish.datamodel.IpsecSession;
 import org.batfish.datamodel.LineType;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.NamedPort;
@@ -2586,6 +2593,40 @@ public class CiscoGrammarTest {
             .filter(i -> i.getInterfaceType().equals(InterfaceType.TUNNEL) && i.getActive())
             .count(),
         equalTo(4L));
+  }
+
+  @Test
+  public void testIpsecTopology() throws IOException {
+    String testrigName = "ios-crypto-ipsec";
+    List<String> configurationNames = ImmutableList.of("r1", "r2", "r3");
+
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
+    Map<String, Configuration> configurations = batfish.loadConfigurations();
+    ValueGraph<Pair<String, IpsecPeerConfig>, IpsecSession> graph =
+        CommonUtil.initIpsecTopology(configurations);
+
+    Set<EndpointPair<Pair<String, IpsecPeerConfig>>> edges = graph.edges();
+
+    // there should be six edges in total, two for the static crypto map session between r1 and r2
+    // two for the dynamic crypto map session from r1->r3 and r2->r3 (unidirectional)
+    // two for the tunnel interface IPSec session between r2 and r3
+    assertThat(edges, hasSize(6));
+
+    // checking that the negotiated IKE and IPSec proposals are set in all the sessions
+    for (EndpointPair<Pair<String, IpsecPeerConfig>> edge : edges) {
+      IpsecSession ipsecSession = graph.edgeValueOrDefault(edge.nodeU(), edge.nodeV(), null);
+
+      assertThat(ipsecSession, notNullValue());
+
+      assertThat(ipsecSession, hasNegotiatedIkeP1Proposal(notNullValue()));
+      assertThat(ipsecSession, hasNegotiatedIkeP1Key(notNullValue()));
+      assertThat(ipsecSession, hasNegotiatedIpsecP2Proposal(notNullValue()));
+    }
   }
 
   @Test
