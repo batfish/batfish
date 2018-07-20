@@ -11,6 +11,7 @@ public enum AuthenticationMethod {
   LOCAL,
   LOCAL_CASE,
   NONE,
+  PASSWORD, // juniper's name for LOCAL
   UNKNOWN;
 
   public static AuthenticationMethod toAuthenticationMethod(String method) {
@@ -29,9 +30,11 @@ public enum AuthenticationMethod {
       return LOCAL_CASE;
     } else if (methodLowerCase.equals("none")) {
       return NONE;
-    } else if (methodLowerCase.equals("groupradius")) {
+    } else if (methodLowerCase.equals("password")) {
+      return PASSWORD;
+    } else if (methodLowerCase.equals("groupradius") || methodLowerCase.equals("radius")) {
       return GROUP_RADIUS;
-    } else if (methodLowerCase.equals("grouptacacs+")) {
+    } else if (methodLowerCase.equals("grouptacacs+") || methodLowerCase.equals("tacplus")) {
       return GROUP_TACACS;
     } else if (methodLowerCase.startsWith("group")) {
       return GROUP_USER_DEFINED;

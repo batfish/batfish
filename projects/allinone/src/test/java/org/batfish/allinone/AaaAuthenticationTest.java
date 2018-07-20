@@ -43,11 +43,12 @@ public class AaaAuthenticationTest {
     String hostname1 = "asaNode";
     String hostname2 = "iosNoAuthentication";
     String hostname3 = "iosRequiresAuthentication";
+    String hostname4 = "juniperAuthenticationOrder";
 
-    Batfish batfish = getBatfishForConfigurationNames(hostname1, hostname2, hostname3);
+    Batfish batfish = getBatfishForConfigurationNames(hostname1, hostname2, hostname3, hostname4);
 
     AaaAuthenticationLoginQuestion question = new AaaAuthenticationLoginQuestion();
-    question.setNodeRegex(new NodesSpecifier("ios.*", true));
+    question.setNodeRegex(new NodesSpecifier("((ios)|(juniper)).*", true));
     AaaAuthenticationLoginAnswerer answerer = new AaaAuthenticationLoginAnswerer(question, batfish);
     TableAnswerElement answer = answerer.answer();
 
