@@ -1629,6 +1629,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   private JuniperAuthenticationKeyChain _currentAuthenticationKeyChain;
 
+  private AaaAuthenticationLoginList _currentAuthenticationOrder;
+
   private BgpGroup _currentBgpGroup;
 
   private CommunityList _currentCommunityList;
@@ -2794,6 +2796,37 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   @Override
+  public void enterSy_authentication_method(Sy_authentication_methodContext ctx) {
+    if (_currentAuthenticationOrder != null) {
+      _currentAuthenticationOrder.addMethod(
+          AuthenticationMethod.toAuthenticationMethod(ctx.method.getText()));
+    }
+  }
+
+  @Override
+  public void enterSy_authentication_order(Sy_authentication_orderContext ctx) {
+    if (_currentLine != null) {
+      // in system services/ports hierarchy
+      _currentAuthenticationOrder = _currentLine.getAaaAuthenticationLoginList();
+      if (_currentAuthenticationOrder == null || _currentAuthenticationOrder.isDefault()) {
+        // if the line already has a default authentication order, give it a new non-default one
+        _currentAuthenticationOrder = new AaaAuthenticationLoginList(new ArrayList<>(), false);
+        _currentLine.setAaaAuthenticationLoginList(_currentAuthenticationOrder);
+      }
+    } else {
+      // in system hierarchy
+      _currentAuthenticationOrder = _configuration.getJf().getSystemAuthenticationOrder();
+      if (_currentAuthenticationOrder == null || _currentAuthenticationOrder.isDefault()) {
+        // if system already has a default authentication order, give it a new non-default one
+        _currentAuthenticationOrder = new AaaAuthenticationLoginList(new ArrayList<>(), false);
+        _configuration.getJf().setSystemAuthenticationOrder(_currentAuthenticationOrder);
+      }
+    }
+
+    // _currentAuthenticationOrder = authenticationOrder.getMethods();
+  }
+
+  @Override
   public void enterSy_ports(Sy_portsContext ctx) {
     String name = ctx.porttype.getText();
     // aux and console ports should already exist unless they've been disabled, if disabled don't
@@ -2812,7 +2845,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     if (_configuration.getJf().getSystemAuthenticationOrder() != null
         && _currentLine.getAaaAuthenticationLoginList() == null) {
       _currentLine.setAaaAuthenticationLoginList(
-          _configuration.getJf().getSystemAuthenticationOrder());
+          new AaaAuthenticationLoginList(
+              _configuration.getJf().getSystemAuthenticationOrder().getMethods(), true));
     }
   }
 
@@ -4741,33 +4775,19 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitSy_authentication_order(Sy_authentication_orderContext ctx) {
-    List<AuthenticationMethod> methods = new ArrayList<>();
-
-    if (ctx.sy_authentication_method() != null) {
-      // only one method specified
-      methods.add(
-          AuthenticationMethod.toAuthenticationMethod(ctx.sy_authentication_method().getText()));
-    } else {
-      // authentication list specified
-      for (Sy_authentication_methodContext method : ctx.sy_authentication_method_set().methods) {
-        methods.add(AuthenticationMethod.toAuthenticationMethod(method.getText()));
-      }
-    }
-
-    AaaAuthenticationLoginList authenticationOrder = new AaaAuthenticationLoginList(methods);
-
-    if (_currentLine != null) {
-      // in system services/ports hierarchy
-      _currentLine.setAaaAuthenticationLoginList(authenticationOrder);
-    } else {
+    if (_currentLine == null) {
       // in system hierarchy
-      _configuration.getJf().setSystemAuthenticationOrder(authenticationOrder);
       for (Line line : _configuration.getJf().getLines().values()) {
-        if (line.getAaaAuthenticationLoginList() == null) {
-          line.setAaaAuthenticationLoginList(authenticationOrder);
+        if (line.getAaaAuthenticationLoginList() == null
+            || line.getAaaAuthenticationLoginList().isDefault()) {
+          // line has no login list or has default login list, give it the system's login list
+          line.setAaaAuthenticationLoginList(
+              new AaaAuthenticationLoginList(_currentAuthenticationOrder.getMethods(), true));
         }
       }
     }
+
+    _currentAuthenticationOrder = null;
   }
 
   @Override

@@ -29,7 +29,8 @@ public class JuniperFamily implements Serializable {
     _lines = new TreeMap<>();
     _tacplusServers = new TreeMap<>();
     _systemAuthenticationOrder = // default authentication order is just password authentication
-        new AaaAuthenticationLoginList(Collections.singletonList(AuthenticationMethod.PASSWORD));
+        new AaaAuthenticationLoginList(
+            Collections.singletonList(AuthenticationMethod.PASSWORD), true);
 
     // Juniper has by default the console and aux lines enabled
     Line console = new Line(CONSOLE_LINE_NAME);

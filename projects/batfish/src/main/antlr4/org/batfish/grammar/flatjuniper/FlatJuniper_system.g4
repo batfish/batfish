@@ -27,26 +27,17 @@ s_system
 
 sy_authentication_method
 :
-   PASSWORD
-   | RADIUS
-   | TACPLUS
-;
-
-sy_authentication_method_set
-:
-   OPEN_BRACKET
+   method =
    (
-      methods += sy_authentication_method
-   )+ CLOSE_BRACKET
+      PASSWORD
+      | RADIUS
+      | TACPLUS
+   )
 ;
 
 sy_authentication_order
 :
-   AUTHENTICATION_ORDER
-   (
-      sy_authentication_method
-      | sy_authentication_method_set
-   )
+   AUTHENTICATION_ORDER sy_authentication_method
 ;
 
 sy_default_address_selection
