@@ -23,6 +23,7 @@ public enum Command {
   DEL_BATFISH_OPTION("del-batfish-option"),
   DEL_CONTAINER("del-container"),
   DEL_ENVIRONMENT("del-environment"),
+  DEL_NETWORK("del-network"),
   DEL_QUESTION("del-question"),
   DEL_TESTRIG("del-testrig"),
   DIR("dir"),
@@ -40,6 +41,7 @@ public enum Command {
   GET_CONFIGURATION("get-configuration"),
   GET_CONTAINER("get-container"),
   GET_DELTA("get-delta"),
+  GET_NETWORK("get-network"),
   GET_OBJECT("get-object"),
   GET_OBJECT_DELTA("get-delta-object"),
   GET_QUESTION("get-question"),
@@ -50,12 +52,14 @@ public enum Command {
   INIT_CONTAINER("init-container"),
   INIT_DELTA_TESTRIG("init-delta-testrig"),
   INIT_ENVIRONMENT("init-environment"),
+  INIT_NETWORK("init-network"),
   INIT_TESTRIG("init-testrig"),
   KILL_WORK("kill-work"),
   LIST_ANALYSES("list-analyses"),
   LIST_CONTAINERS("list-containers"),
   LIST_ENVIRONMENTS("list-environments"),
   LIST_INCOMPLETE_WORK("list-incomplete-work"),
+  LIST_NETWORKS("list-networks"),
   LIST_QUESTIONS("list-questions"),
   LIST_TESTRIGS("list-testrigs"),
   LOAD_QUESTIONS("load-questions"),
@@ -76,6 +80,7 @@ public enum Command {
   SET_ENV("set-environment"),
   SET_FIXED_WORKITEM_ID("set-fixed-workitem-id"),
   SET_LOGLEVEL("set-loglevel"),
+  SET_NETWORK("set-network"),
   SET_PRETTY_PRINT("set-pretty-print"),
   SET_TESTRIG("set-testrig"),
   SHOW_API_KEY("show-api-key"),
@@ -85,6 +90,7 @@ public enum Command {
   SHOW_COORDINATOR_HOST("show-coordinator-host"),
   SHOW_DELTA_TESTRIG("show-delta-testrig"),
   SHOW_LOGLEVEL("show-loglevel"),
+  SHOW_NETWORK("show-network"),
   SHOW_TESTRIG("show-testrig"),
   SHOW_VERSION("show-version"),
   SYNC_TESTRIGS_SYNC_NOW("sync-testrigs-sync-now"),
@@ -103,6 +109,8 @@ public enum Command {
 
   private static final Map<String, Command> _nameMap = buildNameMap();
 
+  private static final Map<Command, String> _deprecatedMap = buildDeprecatedMap();
+
   private static final Map<Command, Pair<String, String>> _usageMap = buildUsageMap();
 
   private static Map<String, Command> buildNameMap() {
@@ -111,6 +119,41 @@ public enum Command {
       String name = value._name;
       map.put(name, value);
     }
+    return map.build();
+  }
+
+  private static Map<Command, String> buildDeprecatedMap() {
+    ImmutableMap.Builder<Command, String> map = ImmutableMap.builder();
+    map.put(
+        DEL_CONTAINER,
+        String.format(
+            "The term \"container\" has been replaced with \"network\". Use %s instead.",
+            DEL_NETWORK));
+    map.put(
+        GET_CONTAINER,
+        String.format(
+            "The term \"container\" has been replaced with \"network\". Use %s instead.",
+            GET_NETWORK));
+    map.put(
+        INIT_CONTAINER,
+        String.format(
+            "The term \"container\" has been replaced with \"network\". Use %s instead.",
+            INIT_NETWORK));
+    map.put(
+        LIST_CONTAINERS,
+        String.format(
+            "The term \"container\" has been replaced with \"network\". Use %s instead.",
+            LIST_NETWORKS));
+    map.put(
+        SET_CONTAINER,
+        String.format(
+            "The term \"container\" has been replaced with \"network\". Use %s instead.",
+            SET_NETWORK));
+    map.put(
+        SHOW_CONTAINER,
+        String.format(
+            "The term \"container\" has been replaced with \"network\". Use %s instead.",
+            SHOW_NETWORK));
     return map.build();
   }
 
@@ -156,9 +199,10 @@ public enum Command {
             "<analysis-name> qname1 [qname2 [qname3] ...]", "Delete questions from the analysis"));
     descs.put(
         DEL_BATFISH_OPTION, new Pair<>("<option-key>", "Stop passing this option to Batfish"));
-    descs.put(DEL_CONTAINER, new Pair<>("<container-name>", "Delete the specified container"));
+    descs.put(DEL_CONTAINER, new Pair<>("<network-name>", "Delete the specified network"));
     descs.put(
         DEL_ENVIRONMENT, new Pair<>("<environment-name>", "Delete the specified environment"));
+    descs.put(DEL_NETWORK, new Pair<>("<network-name>", "Delete the specified network"));
     descs.put(DEL_QUESTION, new Pair<>("<question-name>", "Delete the specified question"));
     descs.put(DEL_TESTRIG, new Pair<>("<testrig-name>", "Delete the specified testrig"));
     descs.put(DIR, new Pair<>("<dir>", "List directory contents"));
@@ -182,13 +226,13 @@ public enum Command {
         new Pair<>(
             "<container-name> <testrig-name> <configuration-name>",
             "Get the file content of the configuration file"));
-    descs.put(
-        GET_CONTAINER, new Pair<>("<container-name>", "Get the information of the container"));
+    descs.put(GET_CONTAINER, new Pair<>("<network-name>", "Get the information of the network"));
     descs.put(
         GET_DELTA,
         new Pair<>(
             "<question-file>  [param1=value1 [param2=value2] ...]",
             "Answer the question by type for the delta environment"));
+    descs.put(GET_NETWORK, new Pair<>("<network-name>", "Get the information of the network"));
     descs.put(GET_OBJECT, new Pair<>("<object path>", "Get the object"));
     descs.put(GET_OBJECT_DELTA, new Pair<>("<object path>", "Get the object from delta testrig"));
     descs.put(GET_QUESTION, new Pair<>("<question-name>", "Get the question and parameter files"));
@@ -202,7 +246,7 @@ public enum Command {
     descs.put(
         INIT_CONTAINER,
         new Pair<>(
-            "[-setname <container-name> | <container-name-prefix>]", "Initialize a new container"));
+            "[-setname <network-name> | <network-name-prefix>]", "Initialize a new network"));
     descs.put(
         INIT_DELTA_TESTRIG,
         new Pair<>(
@@ -264,18 +308,23 @@ public enum Command {
     + "newly-created\n"
     + "        environment.\n"));*/
     descs.put(
+        INIT_NETWORK,
+        new Pair<>(
+            "[-setname <network-name> | <network-name-prefix>]", "Initialize a new network"));
+    descs.put(
         INIT_TESTRIG,
         new Pair<>(
             "[-autoanalyze] <testrig zipfile or directory> [<testrig-name>]",
             "Initialize the testrig with default environment"));
     descs.put(KILL_WORK, new Pair<>("<guid>", "Kill work with the given GUID"));
     descs.put(LIST_ANALYSES, new Pair<>("", "List the analyses and their configuration"));
-    descs.put(LIST_CONTAINERS, new Pair<>("", "List the containers to which you have access"));
+    descs.put(LIST_CONTAINERS, new Pair<>("", "List the networks to which you have access"));
     descs.put(
         LIST_INCOMPLETE_WORK, new Pair<>("", "List all incomplete works for the active container"));
     descs.put(
         LIST_ENVIRONMENTS,
         new Pair<>("", "List the environments under current container and testrig"));
+    descs.put(LIST_NETWORKS, new Pair<>("", "List the networks to which you have access"));
     descs.put(
         LIST_QUESTIONS, new Pair<>("", "List the questions under current container and testrig"));
     descs.put(
@@ -304,7 +353,7 @@ public enum Command {
     descs.put(
         SET_BATFISH_LOGLEVEL,
         new Pair<>("<debug|info|output|warn|error>", "Set the batfish loglevel. Default is warn"));
-    descs.put(SET_CONTAINER, new Pair<>("<container-name>", "Set the current container"));
+    descs.put(SET_CONTAINER, new Pair<>("<network-name>", "Set the current network"));
     descs.put(SET_DELTA_ENV, new Pair<>("<environment-name>", "Set the delta environment"));
     descs.put(
         SET_DELTA_TESTRIG,
@@ -316,6 +365,7 @@ public enum Command {
     descs.put(
         SET_LOGLEVEL,
         new Pair<>("<debug|info|output|warn|error>", "Set the client loglevel. Default is output"));
+    descs.put(SET_NETWORK, new Pair<>("<network-name>", "Set the current network"));
     descs.put(SET_PRETTY_PRINT, new Pair<>("<true|false>", "Whether to pretty print answers"));
     descs.put(SET_TESTRIG, new Pair<>("<testrig-name> [environment name]", "Set the base testrig"));
     descs.put(SHOW_API_KEY, new Pair<>("", "Show API Key"));
@@ -323,10 +373,11 @@ public enum Command {
     descs.put(
         SHOW_BATFISH_OPTIONS,
         new Pair<>("", "Show the additional options that will be sent to batfish"));
-    descs.put(SHOW_CONTAINER, new Pair<>("", "Show active container"));
+    descs.put(SHOW_CONTAINER, new Pair<>("", "Show active network"));
     descs.put(SHOW_COORDINATOR_HOST, new Pair<>("", "Show coordinator host"));
-    descs.put(SHOW_LOGLEVEL, new Pair<>("", "Show current client loglevel"));
     descs.put(SHOW_DELTA_TESTRIG, new Pair<>("", "Show delta testrig and environment"));
+    descs.put(SHOW_LOGLEVEL, new Pair<>("", "Show current client loglevel"));
+    descs.put(SHOW_NETWORK, new Pair<>("", "Show active network"));
     descs.put(SHOW_TESTRIG, new Pair<>("", "Show base testrig and environment"));
     descs.put(SHOW_VERSION, new Pair<>("", "Show the version of Client and Service"));
     descs.put(
