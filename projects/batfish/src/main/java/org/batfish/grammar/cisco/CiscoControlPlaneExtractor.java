@@ -7382,19 +7382,16 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String name = ctx.name.getText();
     CiscoStructureUsage usage;
     if (ctx.IN() != null) {
-      // BUG here -- needs to reference RoutingPolicy
       _currentPeerGroup.setInboundRouteMap(name);
       usage = BGP_NEIGHBOR_ROUTE_POLICY_IN;
     } else {
-      // BUG here -- needs to reference RoutingPolicy
       _currentPeerGroup.setOutboundRouteMap(name);
       usage = BGP_NEIGHBOR_ROUTE_POLICY_OUT;
     }
     _configuration.referenceStructure(ROUTE_POLICY, name, usage, ctx.name.getStart().getLine());
 
-    if (!ctx.route_policy_params_list().isEmpty()) {
-      // TODO -- need to implement this
-      _w.redFlag("Partially unimplemented: " + getFullText(ctx));
+    if (ctx.route_policy_params_list() != null && !ctx.route_policy_params_list().isEmpty()) {
+      _w.redFlag("Unimplemented: IOS-XR RPL functions" + getFullText(ctx));
     }
   }
 
