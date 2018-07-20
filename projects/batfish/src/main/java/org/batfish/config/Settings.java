@@ -732,10 +732,14 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     if (getTaskId() == null) {
       return null;
     }
+    String tr = getTestrig();
+    if (getDeltaTestrig() != null && !getDifferential()) {
+      tr = getDeltaTestrig();
+    }
     return getStorageBase()
         .resolve(getContainer())
         .resolve(BfConsts.RELPATH_TESTRIGS_DIR)
-        .resolve(getTestrig())
+        .resolve(tr)
         .resolve(getTaskId() + BfConsts.SUFFIX_LOG_FILE)
         .toString();
   }
