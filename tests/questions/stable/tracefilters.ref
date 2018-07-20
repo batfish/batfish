@@ -4,7 +4,7 @@
   "nodeRegex" : ".*",
   "differential" : false,
   "dscp" : 12,
-  "dst" : "a",
+  "dst" : "1.2.3.4",
   "dstPort" : 23,
   "dstProtocol" : "udp",
   "ecn" : 1,
@@ -33,7 +33,7 @@
         "description" : "Destination hostname or IP address",
         "optional" : false,
         "type" : "string",
-        "value" : "a"
+        "value" : "1.2.3.4"
       },
       "dstPort" : {
         "description" : "Destination port in TCP/UDP header",
