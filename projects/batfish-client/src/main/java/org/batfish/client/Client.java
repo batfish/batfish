@@ -934,13 +934,13 @@ public class Client extends AbstractClient implements IClient {
     return true;
   }
 
-  private boolean delContainer(List<String> options, List<String> parameters) {
-    if (!isValidArgument(options, parameters, 0, 1, 1, Command.DEL_CONTAINER)) {
+  private boolean delNetwork(List<String> options, List<String> parameters) {
+    if (!isValidArgument(options, parameters, 0, 1, 1, Command.DEL_NETWORK)) {
       return false;
     }
     String containerName = parameters.get(0);
     boolean result = _workHelper.delContainer(containerName);
-    _logger.outputf("Result of deleting container: %s\n", result);
+    _logger.outputf("Result of deleting network: %s\n", result);
     return true;
   }
 
@@ -1333,8 +1333,8 @@ public class Client extends AbstractClient implements IClient {
    *
    * <p>Returns {@code true} if successfully get container information, {@code false} otherwise
    */
-  private boolean getContainer(List<String> options, List<String> parameters) {
-    if (!isValidArgument(options, parameters, 0, 1, 1, Command.GET_CONTAINER)) {
+  private boolean getNetwork(List<String> options, List<String> parameters) {
+    if (!isValidArgument(options, parameters, 0, 1, 1, Command.GET_NETWORK)) {
       return false;
     }
     String containerName = parameters.get(0);
@@ -1522,24 +1522,24 @@ public class Client extends AbstractClient implements IClient {
     return true;
   }
 
-  private boolean initContainer(List<String> options, List<String> parameters) {
+  private boolean initNetwork(List<String> options, List<String> parameters) {
     if (options.contains("-setname")) {
-      if (!isValidArgument(options, parameters, 1, 1, 1, Command.INIT_CONTAINER)) {
+      if (!isValidArgument(options, parameters, 1, 1, 1, Command.INIT_NETWORK)) {
         return false;
       }
       _currContainerName = _workHelper.initContainer(parameters.get(0), null);
     } else {
-      if (!isValidArgument(options, parameters, 0, 0, 1, Command.INIT_CONTAINER)) {
+      if (!isValidArgument(options, parameters, 0, 0, 1, Command.INIT_NETWORK)) {
         return false;
       }
       String containerPrefix = parameters.isEmpty() ? DEFAULT_CONTAINER_PREFIX : parameters.get(0);
       _currContainerName = _workHelper.initContainer(null, containerPrefix);
     }
     if (_currContainerName == null) {
-      _logger.errorf("Could not init container\n");
+      _logger.errorf("Could not init network\n");
       return false;
     }
-    _logger.output("Active container is set");
+    _logger.output("Active network is set");
     _logger.infof(" to  %s\n", _currContainerName);
     _logger.output("\n");
     return true;
@@ -1801,10 +1801,10 @@ public class Client extends AbstractClient implements IClient {
     if (!isSetContainer(false)) {
       _currContainerName = _workHelper.initContainer(null, DEFAULT_CONTAINER_PREFIX);
       if (_currContainerName == null) {
-        _logger.errorf("Could not init container\n");
+        _logger.errorf("Could not init network\n");
         return false;
       }
-      _logger.output("Init'ed and set active container");
+      _logger.output("Init'ed and set active network");
       _logger.infof(" to %s\n", _currContainerName);
       _logger.output("\n");
     }
@@ -1859,7 +1859,7 @@ public class Client extends AbstractClient implements IClient {
 
     if (_currContainerName == null) {
       if (printError) {
-        _logger.errorf("Active container is not set\n");
+        _logger.errorf("Active network is not set\n");
       }
       return false;
     }
@@ -1973,12 +1973,12 @@ public class Client extends AbstractClient implements IClient {
     return true;
   }
 
-  private boolean listContainers(List<String> options, List<String> parameters) {
-    if (!isValidArgument(options, parameters, 0, 0, 0, Command.LIST_CONTAINERS)) {
+  private boolean listNetworks(List<String> options, List<String> parameters) {
+    if (!isValidArgument(options, parameters, 0, 0, 0, Command.LIST_NETWORKS)) {
       return false;
     }
     String[] containerList = _workHelper.listContainers();
-    _logger.outputf("Containers: %s\n", Arrays.toString(containerList));
+    _logger.outputf("Networks: %s\n", Arrays.toString(containerList));
     return true;
   }
 
@@ -2437,7 +2437,15 @@ public class Client extends AbstractClient implements IClient {
 
   private void printUsage(Command command) {
     Pair<String, String> usage = Command.getUsageMap().get(command);
-    _logger.outputf("%s %s\n\t%s\n\n", command.commandName(), usage.getFirst(), usage.getSecond());
+    String deprecationReason = Command.getDeprecatedMap().get(command);
+    if (deprecationReason == null) {
+      _logger.outputf(
+          "%s %s\n\t%s\n\n", command.commandName(), usage.getFirst(), usage.getSecond());
+    } else {
+      _logger.outputf(
+          "(deprecated) %s %s\n\t%s\n\t%s\n\n",
+          command.commandName(), usage.getFirst(), usage.getSecond(), deprecationReason);
+    }
   }
 
   private void printWorkStatusResponse(
@@ -2499,6 +2507,14 @@ public class Client extends AbstractClient implements IClient {
       return false;
     }
 
+    // If command is deprecated, encourage user to use alternative.
+    String deprecationReason = Command.getDeprecatedMap().get(command);
+    if (deprecationReason != null) {
+      _logger.outputf(
+          "WARNING: Command %s has been deprecated and may be removed. %s\n",
+          command.commandName(), deprecationReason);
+    }
+
     List<String> options = getCommandOptions(words);
     List<String> parameters = getCommandParameters(words, options.size());
 
@@ -2544,9 +2560,11 @@ public class Client extends AbstractClient implements IClient {
       case DEL_BATFISH_OPTION:
         return delBatfishOption(options, parameters);
       case DEL_CONTAINER:
-        return delContainer(options, parameters);
+        return delNetwork(options, parameters);
       case DEL_ENVIRONMENT:
         return delEnvironment(options, parameters);
+      case DEL_NETWORK:
+        return delNetwork(options, parameters);
       case DEL_QUESTION:
         return delQuestion(options, parameters);
       case DEL_TESTRIG:
@@ -2564,7 +2582,7 @@ public class Client extends AbstractClient implements IClient {
       case GET_CONFIGURATION:
         return getConfiguration(options, parameters);
       case GET_CONTAINER:
-        return getContainer(options, parameters);
+        return getNetwork(options, parameters);
       case GET_DELTA:
         return get(words, outWriter, options, parameters, true);
       case GET_ANALYSIS_ANSWERS:
@@ -2579,6 +2597,8 @@ public class Client extends AbstractClient implements IClient {
         return getAnswer(outWriter, options, parameters, true, false);
       case GET_ANSWER_DIFFERENTIAL:
         return getAnswer(outWriter, options, parameters, false, true);
+      case GET_NETWORK:
+        return getNetwork(options, parameters);
       case GET_OBJECT:
         return getObject(outWriter, options, parameters, false);
       case GET_OBJECT_DELTA:
@@ -2594,11 +2614,13 @@ public class Client extends AbstractClient implements IClient {
       case INIT_ANALYSIS:
         return initOrAddAnalysis(outWriter, options, parameters, true);
       case INIT_CONTAINER:
-        return initContainer(options, parameters);
+        return initNetwork(options, parameters);
       case INIT_DELTA_TESTRIG:
         return initTestrig(outWriter, options, parameters, true);
       case INIT_ENVIRONMENT:
         return initEnvironment(words, outWriter, options, parameters);
+      case INIT_NETWORK:
+        return initNetwork(options, parameters);
       case INIT_TESTRIG:
         return initTestrig(outWriter, options, parameters, false);
       case KILL_WORK:
@@ -2606,11 +2628,13 @@ public class Client extends AbstractClient implements IClient {
       case LIST_ANALYSES:
         return listAnalyses(outWriter, options, parameters);
       case LIST_CONTAINERS:
-        return listContainers(options, parameters);
+        return listNetworks(options, parameters);
       case LIST_ENVIRONMENTS:
         return listEnvironments(options, parameters);
       case LIST_INCOMPLETE_WORK:
         return listIncompleteWork(options, parameters);
+      case LIST_NETWORKS:
+        return listNetworks(options, parameters);
       case LIST_QUESTIONS:
         return listQuestions(options, parameters);
       case LIST_TESTRIGS:
@@ -2638,7 +2662,7 @@ public class Client extends AbstractClient implements IClient {
       case SET_BATFISH_LOGLEVEL:
         return setBatfishLogLevel(options, parameters);
       case SET_CONTAINER:
-        return setContainer(options, parameters);
+        return setNetwork(options, parameters);
       case SET_DELTA_ENV:
         return setDeltaEnv(options, parameters);
       case SET_ENV:
@@ -2649,6 +2673,8 @@ public class Client extends AbstractClient implements IClient {
         return setDeltaTestrig(options, parameters);
       case SET_LOGLEVEL:
         return setLogLevel(options, parameters);
+      case SET_NETWORK:
+        return setNetwork(options, parameters);
       case SET_PRETTY_PRINT:
         return setPrettyPrint(options, parameters);
       case SET_TESTRIG:
@@ -2660,13 +2686,15 @@ public class Client extends AbstractClient implements IClient {
       case SHOW_BATFISH_OPTIONS:
         return showBatfishOptions(options, parameters);
       case SHOW_CONTAINER:
-        return showContainer(options, parameters);
+        return showNetwork(options, parameters);
       case SHOW_COORDINATOR_HOST:
         return showCoordinatorHost(options, parameters);
       case SHOW_DELTA_TESTRIG:
         return showDeltaTestrig(options, parameters);
       case SHOW_LOGLEVEL:
         return showLogLevel(options, parameters);
+      case SHOW_NETWORK:
+        return showNetwork(options, parameters);
       case SHOW_TESTRIG:
         return showTestrig(options, parameters);
       case SHOW_VERSION:
@@ -2928,12 +2956,12 @@ public class Client extends AbstractClient implements IClient {
     return true;
   }
 
-  private boolean setContainer(List<String> options, List<String> parameters) {
-    if (!isValidArgument(options, parameters, 0, 1, 1, Command.SET_CONTAINER)) {
+  private boolean setNetwork(List<String> options, List<String> parameters) {
+    if (!isValidArgument(options, parameters, 0, 1, 1, Command.SET_NETWORK)) {
       return false;
     }
     _currContainerName = parameters.get(0);
-    _logger.outputf("Active container is now set to %s\n", _currContainerName);
+    _logger.outputf("Active network is now set to %s\n", _currContainerName);
     return true;
   }
 
@@ -3049,11 +3077,11 @@ public class Client extends AbstractClient implements IClient {
     return true;
   }
 
-  private boolean showContainer(List<String> options, List<String> parameters) {
-    if (!isValidArgument(options, parameters, 0, 0, 0, Command.SHOW_CONTAINER)) {
+  private boolean showNetwork(List<String> options, List<String> parameters) {
+    if (!isValidArgument(options, parameters, 0, 0, 0, Command.SHOW_NETWORK)) {
       return false;
     }
-    _logger.outputf("Current container is %s\n", _currContainerName);
+    _logger.outputf("Current network is %s\n", _currContainerName);
     return true;
   }
 
