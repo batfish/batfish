@@ -11,7 +11,7 @@ public class NodeDevice implements Serializable {
 
   private final Map<String, Interface> _interfaces;
 
-  public NodeDevice(String name) {
+  public NodeDevice() {
     _interfaces = new TreeMap<>();
   }
 

@@ -9,7 +9,7 @@ public class Vlan implements Serializable {
 
   private int _vlanId;
 
-  public Vlan(String vlanName, int vlanId) {
+  public Vlan(int vlanId) {
     _vlanId = vlanId;
   }
 

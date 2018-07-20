@@ -17,7 +17,7 @@ public class DhcpRelayGroup implements Serializable {
 
   private SortedSet<String> _interfaces;
 
-  public DhcpRelayGroup(String name) {
+  public DhcpRelayGroup() {
     _interfaces = new TreeSet<>();
   }
 

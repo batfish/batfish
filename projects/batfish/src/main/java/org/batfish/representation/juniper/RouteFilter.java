@@ -16,7 +16,7 @@ public final class RouteFilter implements Serializable {
 
   private final Map<RouteFilterLine, RouteFilterLine> _lines;
 
-  public RouteFilter(String name) {
+  public RouteFilter() {
     _lines = new LinkedHashMap<>();
   }
 
