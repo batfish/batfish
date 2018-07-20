@@ -2437,7 +2437,15 @@ public class Client extends AbstractClient implements IClient {
 
   private void printUsage(Command command) {
     Pair<String, String> usage = Command.getUsageMap().get(command);
-    _logger.outputf("%s %s\n\t%s\n\n", command.commandName(), usage.getFirst(), usage.getSecond());
+    String deprecationReason = Command.getDeprecatedMap().get(command);
+    if (deprecationReason == null) {
+      _logger.outputf(
+          "%s %s\n\t%s\n\n", command.commandName(), usage.getFirst(), usage.getSecond());
+    } else {
+      _logger.outputf(
+          "(deprecated) %s %s\n\t%s\n\t%s\n\n",
+          command.commandName(), usage.getFirst(), usage.getSecond(), deprecationReason);
+    }
   }
 
   private void printWorkStatusResponse(

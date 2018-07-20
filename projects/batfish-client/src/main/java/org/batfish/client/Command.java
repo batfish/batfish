@@ -128,32 +128,32 @@ public enum Command {
         DEL_CONTAINER,
         String.format(
             "The term \"container\" has been replaced with \"network\". Use %s instead.",
-            DEL_NETWORK));
+            DEL_NETWORK.commandName()));
     map.put(
         GET_CONTAINER,
         String.format(
             "The term \"container\" has been replaced with \"network\". Use %s instead.",
-            GET_NETWORK));
+            GET_NETWORK.commandName()));
     map.put(
         INIT_CONTAINER,
         String.format(
             "The term \"container\" has been replaced with \"network\". Use %s instead.",
-            INIT_NETWORK));
+            INIT_NETWORK.commandName()));
     map.put(
         LIST_CONTAINERS,
         String.format(
             "The term \"container\" has been replaced with \"network\". Use %s instead.",
-            LIST_NETWORKS));
+            LIST_NETWORKS.commandName()));
     map.put(
         SET_CONTAINER,
         String.format(
             "The term \"container\" has been replaced with \"network\". Use %s instead.",
-            SET_NETWORK));
+            SET_NETWORK.commandName()));
     map.put(
         SHOW_CONTAINER,
         String.format(
             "The term \"container\" has been replaced with \"network\". Use %s instead.",
-            SHOW_NETWORK));
+            SHOW_NETWORK.commandName()));
     return map.build();
   }
 
@@ -417,6 +417,10 @@ public enum Command {
 
   public static Map<String, Command> getNameMap() {
     return _nameMap;
+  }
+
+  public static Map<Command, String> getDeprecatedMap() {
+    return _deprecatedMap;
   }
 
   public static Map<Command, Pair<String, String>> getUsageMap() {
