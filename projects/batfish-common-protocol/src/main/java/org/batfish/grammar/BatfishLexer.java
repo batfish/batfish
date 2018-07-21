@@ -1,5 +1,6 @@
 package org.batfish.grammar;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.Lexer;
@@ -26,6 +27,15 @@ public abstract class BatfishLexer extends Lexer {
   @Nullable
   public BatfishLexerRecoveryStrategy getRecoveryStrategy() {
     return _recoveryStrategy;
+  }
+
+  /** Return a string consisting of the next {@code size} characters in the stream. */
+  public @Nonnull String lookAheadString(int size) {
+    StringBuilder sb = new StringBuilder();
+    for (int i = 1; i <= size; i++) {
+      sb.append((char) _input.LA(i));
+    }
+    return sb.toString();
   }
 
   public void initErrorListener(BatfishCombinedParser<?, ?> parser) {
