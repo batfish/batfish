@@ -22,4 +22,9 @@ public class AclLine extends Pair<String, Pair<String, Integer>> {
   public int getLine() {
     return _second.getSecond();
   }
+
+  public boolean matchesAcl(Pair<String, String> hostnameAndAclName) {
+    return hostnameAndAclName.getFirst().equals(getHostname())
+        && hostnameAndAclName.getSecond().equals(getAclName());
+  }
 }

@@ -113,7 +113,6 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpsecVpn;
 import org.batfish.datamodel.RipNeighbor;
@@ -706,17 +705,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
    */
   public Set<Integer> computeIndependentlyUnmatchableAclLines(
       Configuration c, String aclName, Set<Integer> linesToCheck) {
-    List<NodSatJob<AclLine>> jobs = new ArrayList<>();
-
-    String hostname = c.getHostname();
-    Synthesizer aclSynthesizer = synthesizeAcls(hostname, c, aclName);
-    for (int lineNumber : linesToCheck) {
-      AclLineIndependentSatisfiabilityQuerySynthesizer query =
-          new AclLineIndependentSatisfiabilityQuerySynthesizer(hostname, aclName, lineNumber);
-      NodSatJob<AclLine> job = new NodSatJob<>(_settings, aclSynthesizer, query, true);
-      jobs.add(job);
-    }
-
+    List<NodSatJob<AclLine>> jobs = generateUnmatchableAclLineJobs(c, aclName, linesToCheck);
     Map<AclLine, Boolean> satisfiabilityByLine = new TreeMap<>();
     computeNodSatOutput(jobs, satisfiabilityByLine);
 
@@ -728,80 +717,155 @@ public class Batfish extends PluginConsumer implements IBatfish {
         .collect(Collectors.toSet());
   }
 
-  private boolean unmatchable(Configuration c, String aclName, int lineNum) {
-    return !computeIndependentlyUnmatchableAclLines(c, aclName, ImmutableSet.of(lineNum)).isEmpty();
+  private List<NodSatJob<AclLine>> generateUnmatchableAclLineJobs(
+      Configuration c, String aclName, Set<Integer> linesToCheck) {
+    List<NodSatJob<AclLine>> jobs = new ArrayList<>();
+
+    String hostname = c.getHostname();
+    Synthesizer aclSynthesizer = synthesizeAcls(hostname, c, aclName);
+    for (int lineNumber : linesToCheck) {
+      AclLineIndependentSatisfiabilityQuerySynthesizer query =
+          new AclLineIndependentSatisfiabilityQuerySynthesizer(hostname, aclName, lineNumber);
+      NodSatJob<AclLine> job = new NodSatJob<>(_settings, aclSynthesizer, query, true);
+      jobs.add(job);
+    }
+    return jobs;
   }
 
   @Override
   public void answerAclReachability(
       List<AclSpecs> aclSpecs, AclLinesAnswerElementInterface answerRows) {
 
-    for (AclSpecs aclSpec : aclSpecs) {
-      String hostname = "h";
-      String aclName = aclSpec.acl.getAclName();
+    // Build a phony config for each aclspec
+    List<Configuration> configs =
+        aclSpecs
+            .stream()
+            .map(
+                aclSpec -> {
+                  String hostname = aclSpec.reprHostname;
+                  Configuration c = new Configuration(hostname, ConfigurationFormat.CISCO_IOS);
+                  Set<String> interfaceNames = aclSpec.acl.getInterfaces();
+                  c.setInterfaces(
+                      ImmutableSortedMap.copyOf(
+                          interfaceNames
+                              .stream()
+                              .collect(
+                                  toMap(
+                                      Function.identity(),
+                                      iface ->
+                                          Interface.builder()
+                                              .setName(iface)
+                                              .setOwner(c)
+                                              .build()))));
+                  IpAccessList sanitizedAcl = aclSpec.acl.getSanitizedAcl();
+                  Map<String, IpAccessList> dependencies = aclSpec.acl.getDependencies();
 
-      // Create phony configuration for this ACL
-      Configuration c = new Configuration(hostname, ConfigurationFormat.CISCO_IOS);
-      Set<String> interfaceNames = aclSpec.acl.getInterfaces();
-      c.setInterfaces(
-          ImmutableSortedMap.copyOf(
-              interfaceNames
-                  .stream()
-                  .collect(
-                      toMap(
-                          Function.identity(),
-                          iface -> Interface.builder().setName(iface).setOwner(c).build()))));
+                  // Inject specialized ACL and dependencies into phony configuration
+                  NavigableMap<String, IpAccessList> aclsMap =
+                      (new ImmutableSortedMap.Builder<String, IpAccessList>(
+                              Comparator.naturalOrder()))
+                          .putAll(dependencies)
+                          .put(aclSpec.acl.getAclName(), sanitizedAcl)
+                          .build();
+                  c.setIpAccessLists(aclsMap);
+                  return c;
+                })
+            .collect(Collectors.toList());
 
-      IpAccessList sanitizedAcl = aclSpec.acl.getSanitizedAcl();
-      Map<String, IpAccessList> dependencies = aclSpec.acl.getDependencies();
-
+    // Find all unreachable lines
+    List<NodSatJob<AclLine>> lineReachabilityJobs = new ArrayList<>();
+    for (int i = 0; i < aclSpecs.size(); i++) {
+      IpAccessList sanitizedAcl = aclSpecs.get(i).acl.getSanitizedAcl();
+      // Create job for each line to see if it's unreachable
       for (int lineNum = 0; lineNum < sanitizedAcl.getLines().size(); lineNum++) {
-        IpAccessListLine line = sanitizedAcl.getLines().get(lineNum);
+        lineReachabilityJobs.add(
+            generateUnreachableAclLineJob(sanitizedAcl, configs.get(i), lineNum));
+      }
+    }
+    Map<AclLine, Boolean> lineReachabilityMap = new TreeMap<>();
+    computeNodSatOutput(lineReachabilityJobs, lineReachabilityMap);
 
-        // Inject specialized ACL and dependencies into phony configuration
-        NavigableMap<String, IpAccessList> aclsMap =
-            (new ImmutableSortedMap.Builder<String, IpAccessList>(Comparator.naturalOrder()))
-                .putAll(dependencies)
-                .put(aclSpec.acl.getAclName(), sanitizedAcl)
-                .build();
-        c.setIpAccessLists(aclsMap);
+    List<Set<Integer>> unreachableLines =
+        aclSpecs
+            .stream()
+            .map(
+                aclSpec ->
+                    lineReachabilityMap
+                        .entrySet()
+                        .stream()
+                        .filter(
+                            e ->
+                                !e.getValue()
+                                    && e.getKey().getAclName().equals(aclSpec.acl.getAclName())
+                                    && e.getKey().getHostname().equals(aclSpec.reprHostname))
+                        .map(e -> e.getKey().getLine())
+                        .collect(
+                            ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder())))
+            .collect(Collectors.toList());
 
-        // See if it's unreachable
-        Map<AclLine, Boolean> linesReachableMap = new TreeMap<>();
-        computeNodSatOutput(
-            ImmutableList.of(generateUnreachableAclLineJob(sanitizedAcl, c, lineNum)),
-            linesReachableMap);
+    // For all unreachable lines, see if they are unmatchable
+    List<NodSatJob<AclLine>> lineMatchabilityJobs = new ArrayList<>();
+    for (int i = 0; i < aclSpecs.size(); i++) {
+      IpAccessList sanitizedAcl = aclSpecs.get(i).acl.getSanitizedAcl();
+      // Create job for each line to see if it's unreachable
+      for (int lineNum = 0; lineNum < sanitizedAcl.getLines().size(); lineNum++) {
+        lineMatchabilityJobs.addAll(
+            generateUnmatchableAclLineJobs(
+                configs.get(i), sanitizedAcl.getName(), unreachableLines.get(i)));
+      }
+    }
+    Map<AclLine, Boolean> lineMatchabilityMap = new TreeMap<>();
+    computeNodSatOutput(lineMatchabilityJobs, lineMatchabilityMap);
 
-        if (linesReachableMap.containsValue(true)) {
-          continue;
+    List<Set<Integer>> unmatchableLines =
+        aclSpecs
+            .stream()
+            .map(
+                aclSpec ->
+                    lineMatchabilityMap
+                        .entrySet()
+                        .stream()
+                        .filter(
+                            e ->
+                                !e.getValue()
+                                    && e.getKey().getAclName().equals(aclSpec.acl.getAclName())
+                                    && e.getKey().getHostname().equals(aclSpec.reprHostname))
+                        .map(e -> e.getKey().getLine())
+                        .collect(
+                            ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder())))
+            .collect(Collectors.toList());
+
+    // For lines that are unreachable but not unmatchable, find earlier blocking lines
+    List<NodFirstUnsatJob<AclLine, Integer>> blockingLineJobs = new ArrayList<>();
+    for (int i = 0; i < aclSpecs.size(); i++) {
+      blockingLineJobs.addAll(
+          generateEarliestMoreGeneralAclLineJobs(
+              configs.get(i),
+              aclSpecs.get(i).acl.getSanitizedAcl(),
+              unreachableLines.get(i),
+              unmatchableLines.get(i)));
+    }
+    Map<AclLine, Integer> blockingLinesMap = new TreeMap<>();
+    computeNodFirstUnsatOutput(blockingLineJobs, blockingLinesMap);
+
+    // Report lines
+    for (int i = 0; i < aclSpecs.size(); i++) {
+      for (int lineNum : unreachableLines.get(i)) {
+        if (unmatchableLines.get(i).contains(lineNum)) {
+          // Line is unmatchable
+          answerRows.addUnreachableLine(aclSpecs.get(i), lineNum, true, new TreeSet<>());
+        } else {
+          // Line is matchable, but blocked
+          String hostname = aclSpecs.get(i).reprHostname;
+          String aclName = aclSpecs.get(i).acl.getAclName();
+
+          Integer blockingLineNum = blockingLinesMap.get(new AclLine(hostname, aclName, lineNum));
+          SortedSet<Integer> blockingLineNums =
+              blockingLineNum == null
+                  ? ImmutableSortedSet.of()
+                  : ImmutableSortedSet.of(blockingLineNum);
+          answerRows.addUnreachableLine(aclSpecs.get(i), lineNum, false, blockingLineNums);
         }
-
-        // Line is unreachable. Check if unmatchable
-        if (unmatchable(c, aclName, lineNum)) {
-          answerRows.addUnreachableLine(aclSpec, lineNum, true, new TreeSet<>());
-          continue;
-        }
-
-        // Line isn't unmatchable; find blocking lines
-        List<NodFirstUnsatJob<AclLine, Integer>> blockingLineJobs =
-            generateEarliestMoreGeneralAclLineJobs(
-                c,
-                sanitizedAcl,
-                ImmutableSet.of(lineNum),
-                ImmutableSet.of(),
-                IntStream.range(0, sanitizedAcl.getLines().size())
-                    .mapToObj(i -> new AclLine(hostname, aclName, i))
-                    .collect(Collectors.toList()));
-        Map<AclLine, Integer> blockingLinesMap = new TreeMap<>();
-        computeNodFirstUnsatOutput(blockingLineJobs, blockingLinesMap);
-
-        // Report line
-        Integer blockingLineNum = blockingLinesMap.get(new AclLine(hostname, aclName, lineNum));
-        SortedSet<Integer> blockingLineNums =
-            blockingLineNum == null
-                ? ImmutableSortedSet.of()
-                : ImmutableSortedSet.of(blockingLineNum);
-        answerRows.addUnreachableLine(aclSpec, lineNum, false, blockingLineNums);
       }
     }
   }
@@ -830,14 +894,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
       Configuration c,
       IpAccessList acl,
       Set<Integer> unreachableAclLines,
-      Set<Integer> unmatchableLineNums,
-      List<AclLine> aclLines) {
-    List<NodFirstUnsatJob<AclLine, Integer>> jobs = new ArrayList<>();
-
+      Set<Integer> unmatchableLineNums) {
     String hostname = c.getHostname();
     String aclName = acl.getName();
     Synthesizer aclSynthesizer = synthesizeAcls(hostname, c, aclName);
-
     List<String> nodeInterfaces =
         ImmutableList.sortedCopyOf(
             c.getInterfaces()
@@ -846,30 +906,27 @@ public class Batfish extends PluginConsumer implements IBatfish {
                 .map(Interface::getName)
                 .collect(Collectors.toList()));
 
-    // Generate job for earlier blocking lines in this ACL
-    for (int i : unreachableAclLines) {
-      // Create job to find blocking line if current line is unreachable but not unmatchable
-      if (!unmatchableLineNums.contains(i)) {
-        List<AclLine> toCheck = new ArrayList<>();
-        for (int j = 0; j < i; j++) {
-          if (!unreachableAclLines.contains(j)) {
-            toCheck.add(aclLines.get(j));
-          }
-        }
-        EarliestMoreGeneralReachableLineQuerySynthesizer query =
-            new EarliestMoreGeneralReachableLineQuerySynthesizer(
-                aclLines.get(i),
-                toCheck,
-                acl,
-                c.getIpSpaces(),
-                c.getIpAccessLists(),
-                nodeInterfaces);
-        NodFirstUnsatJob<AclLine, Integer> job =
-            new NodFirstUnsatJob<>(_settings, aclSynthesizer, query, true);
-        jobs.add(job);
-      }
-    }
-    return jobs;
+    // Create jobs to find blocking lines for all unreachable lines that aren't unmatchable
+    return unreachableAclLines
+        .stream()
+        .filter(lineNum -> !unmatchableLineNums.contains(lineNum))
+        .map(
+            lineNum -> {
+              List<AclLine> toCheck =
+                  IntStream.range(0, lineNum)
+                      .mapToObj(i -> new AclLine(hostname, aclName, i))
+                      .collect(Collectors.toList());
+              EarliestMoreGeneralReachableLineQuerySynthesizer query =
+                  new EarliestMoreGeneralReachableLineQuerySynthesizer(
+                      new AclLine(hostname, aclName, lineNum),
+                      toCheck,
+                      acl,
+                      c.getIpSpaces(),
+                      c.getIpAccessLists(),
+                      nodeInterfaces);
+              return new NodFirstUnsatJob<>(_settings, aclSynthesizer, query, true);
+            })
+        .collect(Collectors.toList());
   }
 
   public static Warnings buildWarnings(Settings settings) {
