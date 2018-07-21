@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import org.batfish.common.BatfishException;
-import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
@@ -83,7 +82,7 @@ public class Instance implements AwsVpcEntity, Serializable {
 
   private final String _vpcId;
 
-  public Instance(JSONObject jObj, BatfishLogger logger) throws JSONException {
+  public Instance(JSONObject jObj) throws JSONException {
     _securityGroups = new LinkedList<>();
     _networkInterfaces = new LinkedList<>();
     _instanceId = jObj.getString(JSON_KEY_INSTANCE_ID);
@@ -93,10 +92,10 @@ public class Instance implements AwsVpcEntity, Serializable {
     _subnetId = hasVpcId ? jObj.getString(JSON_KEY_SUBNET_ID) : null;
 
     JSONArray securityGroups = jObj.getJSONArray(JSON_KEY_SECURITY_GROUPS);
-    initSecurityGroups(securityGroups, logger);
+    initSecurityGroups(securityGroups);
 
     JSONArray networkInterfaces = jObj.getJSONArray(JSON_KEY_NETWORK_INTERFACES);
-    initNetworkInterfaces(networkInterfaces, logger);
+    initNetworkInterfaces(networkInterfaces);
 
     _tags = new HashMap<>();
     JSONArray tagArray = jObj.getJSONArray(JSON_KEY_TAGS);
@@ -141,7 +140,7 @@ public class Instance implements AwsVpcEntity, Serializable {
     return _vpcId;
   }
 
-  private void initNetworkInterfaces(JSONArray routes, BatfishLogger logger) throws JSONException {
+  private void initNetworkInterfaces(JSONArray routes) throws JSONException {
 
     for (int index = 0; index < routes.length(); index++) {
       JSONObject childObject = routes.getJSONObject(index);
@@ -149,8 +148,7 @@ public class Instance implements AwsVpcEntity, Serializable {
     }
   }
 
-  private void initSecurityGroups(JSONArray associations, BatfishLogger logger)
-      throws JSONException {
+  private void initSecurityGroups(JSONArray associations) throws JSONException {
 
     for (int index = 0; index < associations.length(); index++) {
       JSONObject childObject = associations.getJSONObject(index);
@@ -158,8 +156,7 @@ public class Instance implements AwsVpcEntity, Serializable {
     }
   }
 
-  public Configuration toConfigurationNode(
-      AwsConfiguration awsVpcConfig, Region region, Warnings warnings) {
+  public Configuration toConfigurationNode(Region region, Warnings warnings) {
     String name = _tags.getOrDefault("Name", _instanceId);
     Configuration cfgNode = Utils.newAwsConfiguration(name, "aws");
 

@@ -1,4 +1,4 @@
-package org.batfish.datamodel.vendor_family.cisco;
+package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -7,8 +7,6 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.annotation.Nullable;
 import org.batfish.common.util.ComparableStructure;
-import org.batfish.datamodel.AuthenticationMethod;
-import org.batfish.datamodel.LineType;
 
 public class Line extends ComparableStructure<String> {
 

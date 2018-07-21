@@ -11,6 +11,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.Line;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.DisplayHints;
@@ -20,7 +21,6 @@ import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.Row.RowBuilder;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
-import org.batfish.datamodel.vendor_family.cisco.Line;
 
 @ParametersAreNonnullByDefault
 public class AaaAuthenticationLoginAnswerer extends Answerer {
@@ -69,8 +69,14 @@ public class AaaAuthenticationLoginAnswerer extends Answerer {
     SortedMap<String, Configuration> configs = _batfish.loadConfigurations();
     configs.forEach(
         (configName, config) -> {
-          if (specifiedNodes.contains(configName) && config.getVendorFamily().getCisco() != null) {
-            Row row = getRow(configName, config.getVendorFamily().getCisco().getLines().values());
+          if (specifiedNodes.contains(configName)) {
+            Row row = null;
+            if (config.getVendorFamily().getCisco() != null) {
+              row = getRow(configName, config.getVendorFamily().getCisco().getLines().values());
+            } else if (config.getVendorFamily().getJuniper() != null) {
+              row = getRow(configName, config.getVendorFamily().getJuniper().getLines().values());
+            }
+
             if (row != null) {
               answerElement.addRow(row);
             }

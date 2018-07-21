@@ -1,5 +1,9 @@
 package org.batfish.grammar.flatjuniper;
 
+import static org.batfish.datamodel.AuthenticationMethod.GROUP_RADIUS;
+import static org.batfish.datamodel.AuthenticationMethod.GROUP_TACACS;
+import static org.batfish.datamodel.AuthenticationMethod.PASSWORD;
+import static org.batfish.datamodel.matchers.AaaAuthenticationLoginListMatchers.hasMethods;
 import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasClusterId;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasEnforceFirstAs;
@@ -68,6 +72,7 @@ import static org.batfish.datamodel.matchers.IsisInterfaceSettingsMatchers.hasLe
 import static org.batfish.datamodel.matchers.IsisLevelSettingsMatchers.hasWideMetricsOnly;
 import static org.batfish.datamodel.matchers.IsisProcessMatchers.hasNetAddress;
 import static org.batfish.datamodel.matchers.IsisProcessMatchers.hasOverloadTimeout;
+import static org.batfish.datamodel.matchers.LineMatchers.hasAuthenticationLoginList;
 import static org.batfish.datamodel.matchers.LiteralIntMatcher.hasVal;
 import static org.batfish.datamodel.matchers.LiteralIntMatcher.isLiteralIntThat;
 import static org.batfish.datamodel.matchers.NssaSettingsMatchers.hasDefaultOriginateType;
@@ -85,6 +90,8 @@ import static org.batfish.datamodel.matchers.SetAdministrativeCostMatchers.isSet
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasOspfProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
+import static org.batfish.datamodel.vendor_family.juniper.JuniperFamily.AUXILIARY_LINE_NAME;
+import static org.batfish.datamodel.vendor_family.juniper.JuniperFamily.CONSOLE_LINE_NAME;
 import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_EXISTING_CONNECTION;
 import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_GLOBAL_POLICY;
 import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_SECURITY_POLICY;
@@ -145,6 +152,7 @@ import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
 import org.batfish.datamodel.IpsecEncapsulationMode;
 import org.batfish.datamodel.IpsecProtocol;
 import org.batfish.datamodel.IsoAddress;
+import org.batfish.datamodel.Line;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LocalRoute;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
@@ -478,6 +486,32 @@ public class FlatJuniperGrammarTest {
     assertThat(
         ccae,
         hasUndefinedReference(hostname, JuniperStructureType.AUTHENTICATION_KEY_CHAIN, "KC_UNDEF"));
+  }
+
+  @Test
+  public void testAuthenticationOrder() throws IOException {
+    String hostname = "authentication-order";
+
+    Configuration configuration = parseConfig(hostname);
+    SortedMap<String, Line> lines = configuration.getVendorFamily().getJuniper().getLines();
+
+    assertThat(lines.get(AUXILIARY_LINE_NAME), nullValue());
+
+    assertThat(
+        lines.get(CONSOLE_LINE_NAME),
+        hasAuthenticationLoginList(hasMethods(equalTo(Collections.singletonList(GROUP_TACACS)))));
+
+    assertThat(
+        lines.get("telnet"),
+        hasAuthenticationLoginList(hasMethods(equalTo(Arrays.asList(GROUP_TACACS, PASSWORD)))));
+
+    assertThat(
+        lines.get("ssh"),
+        hasAuthenticationLoginList(hasMethods(equalTo(Arrays.asList(GROUP_RADIUS, GROUP_TACACS)))));
+
+    assertThat(
+        lines.get("ftp"),
+        hasAuthenticationLoginList(hasMethods(equalTo(Collections.singletonList(GROUP_RADIUS)))));
   }
 
   @Test

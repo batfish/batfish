@@ -96,46 +96,46 @@ public class Region implements Serializable {
       throws JSONException {
     switch (elementType) {
       case AwsVpcEntity.JSON_KEY_ADDRESSES:
-        Address address = new Address(jsonObject, logger);
+        Address address = new Address(jsonObject);
         _addresses.put(address.getId(), address);
         break;
       case AwsVpcEntity.JSON_KEY_INSTANCES:
-        Instance instance = new Instance(jsonObject, logger);
+        Instance instance = new Instance(jsonObject);
         if (instance.getStatus() == Status.RUNNING) {
           _instances.put(instance.getId(), instance);
         }
         break;
       case AwsVpcEntity.JSON_KEY_CUSTOMER_GATEWAYS:
-        CustomerGateway cGateway = new CustomerGateway(jsonObject, logger);
+        CustomerGateway cGateway = new CustomerGateway(jsonObject);
         _customerGateways.put(cGateway.getId(), cGateway);
         break;
       case AwsVpcEntity.JSON_KEY_DB_INSTANCES:
-        RdsInstance rdsInstance = new RdsInstance(jsonObject, logger);
+        RdsInstance rdsInstance = new RdsInstance(jsonObject);
         if (rdsInstance.getDbInstanceStatus() == RdsInstance.Status.AVAILABLE) {
           _rdsInstances.put(rdsInstance.getId(), rdsInstance);
         }
         break;
       case AwsVpcEntity.JSON_KEY_DOMAIN_STATUS_LIST:
-        ElasticsearchDomain elasticsearchDomain = new ElasticsearchDomain(jsonObject, logger);
+        ElasticsearchDomain elasticsearchDomain = new ElasticsearchDomain(jsonObject);
         // we cannot represent an elasticsearch domain without vpc and subnets as a node
         if (elasticsearchDomain.getAvailable() && elasticsearchDomain.getVpcId() != null) {
           _elasticsearchDomains.put(elasticsearchDomain.getId(), elasticsearchDomain);
         }
         break;
       case AwsVpcEntity.JSON_KEY_INTERNET_GATEWAYS:
-        InternetGateway iGateway = new InternetGateway(jsonObject, logger);
+        InternetGateway iGateway = new InternetGateway(jsonObject);
         _internetGateways.put(iGateway.getId(), iGateway);
         break;
       case AwsVpcEntity.JSON_KEY_NAT_GATEWAYS:
-        NatGateway natGateway = new NatGateway(jsonObject, logger);
+        NatGateway natGateway = new NatGateway(jsonObject);
         _natGateways.put(natGateway.getId(), natGateway);
         break;
       case AwsVpcEntity.JSON_KEY_NETWORK_ACLS:
-        NetworkAcl networkAcl = new NetworkAcl(jsonObject, logger);
+        NetworkAcl networkAcl = new NetworkAcl(jsonObject);
         _networkAcls.put(networkAcl.getId(), networkAcl);
         break;
       case AwsVpcEntity.JSON_KEY_NETWORK_INTERFACES:
-        NetworkInterface networkInterface = new NetworkInterface(jsonObject, logger);
+        NetworkInterface networkInterface = new NetworkInterface(jsonObject);
         _networkInterfaces.put(networkInterface.getId(), networkInterface);
         break;
       case AwsVpcEntity.JSON_KEY_RESERVATIONS:
@@ -147,19 +147,19 @@ public class Region implements Serializable {
         }
         break;
       case AwsVpcEntity.JSON_KEY_ROUTE_TABLES:
-        RouteTable routeTable = new RouteTable(jsonObject, logger);
+        RouteTable routeTable = new RouteTable(jsonObject);
         _routeTables.put(routeTable.getId(), routeTable);
         break;
       case AwsVpcEntity.JSON_KEY_SECURITY_GROUPS:
-        SecurityGroup sGroup = new SecurityGroup(jsonObject, logger);
+        SecurityGroup sGroup = new SecurityGroup(jsonObject);
         _securityGroups.put(sGroup.getId(), sGroup);
         break;
       case AwsVpcEntity.JSON_KEY_SUBNETS:
-        Subnet subnet = new Subnet(jsonObject, logger);
+        Subnet subnet = new Subnet(jsonObject);
         _subnets.put(subnet.getId(), subnet);
         break;
       case AwsVpcEntity.JSON_KEY_VPCS:
-        Vpc vpc = new Vpc(jsonObject, logger);
+        Vpc vpc = new Vpc(jsonObject);
         _vpcs.put(vpc.getId(), vpc);
         break;
       case AwsVpcEntity.JSON_KEY_VPC_PEERING_CONNECTIONS:
@@ -168,7 +168,7 @@ public class Region implements Serializable {
                 .getJSONObject(AwsVpcEntity.JSON_KEY_STATUS)
                 .getString(AwsVpcEntity.JSON_KEY_CODE);
         if (!code.equals(AwsVpcEntity.STATUS_DELETED)) {
-          VpcPeeringConnection vpcPeerConn = new VpcPeeringConnection(jsonObject, logger);
+          VpcPeeringConnection vpcPeerConn = new VpcPeeringConnection(jsonObject);
           _vpcPeerings.put(vpcPeerConn.getId(), vpcPeerConn);
         }
         break;
@@ -177,7 +177,7 @@ public class Region implements Serializable {
         _vpnConnections.put(vpnConnection.getId(), vpnConnection);
         break;
       case AwsVpcEntity.JSON_KEY_VPN_GATEWAYS:
-        VpnGateway vpnGateway = new VpnGateway(jsonObject, logger);
+        VpnGateway vpnGateway = new VpnGateway(jsonObject);
         _vpnGateways.put(vpnGateway.getId(), vpnGateway);
         break;
       default:
@@ -296,7 +296,7 @@ public class Region implements Serializable {
 
     for (InternetGateway igw : getInternetGateways().values()) {
       Warnings warnings = Batfish.buildWarnings(awsConfiguration.getSettings());
-      Configuration cfgNode = igw.toConfigurationNode(awsConfiguration, this, warnings);
+      Configuration cfgNode = igw.toConfigurationNode(awsConfiguration, this);
       configurationNodes.put(cfgNode.getName(), cfgNode);
       awsConfiguration.getWarningsByHost().put(cfgNode.getName(), warnings);
     }
@@ -318,7 +318,7 @@ public class Region implements Serializable {
 
     for (Instance instance : getInstances().values()) {
       Warnings warnings = Batfish.buildWarnings(awsConfiguration.getSettings());
-      Configuration cfgNode = instance.toConfigurationNode(awsConfiguration, this, warnings);
+      Configuration cfgNode = instance.toConfigurationNode(this, warnings);
       cfgNode.setDeviceType(DeviceType.HOST);
       configurationNodes.put(cfgNode.getName(), cfgNode);
       awsConfiguration.getWarningsByHost().put(cfgNode.getName(), warnings);

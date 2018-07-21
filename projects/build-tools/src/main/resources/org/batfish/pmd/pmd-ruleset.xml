@@ -32,7 +32,6 @@
      <exclude name="PositionLiteralsFirstInComparisons"/>
      <exclude name="PreserveStackTrace"/>
      <exclude name="SystemPrintln"/>
-     <exclude name="UnusedFormalParameter"/>
      <exclude name="UnusedPrivateMethod"/> <!--reenable after resolution of https://github.com/pmd/pmd/issues/1189 -->
      <exclude name="UseVarargs"/>
   </rule>
