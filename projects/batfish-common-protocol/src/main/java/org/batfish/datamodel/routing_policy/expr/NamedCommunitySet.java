@@ -4,8 +4,6 @@ import static java.util.Objects.requireNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableSortedSet;
-import java.util.Comparator;
 import java.util.Set;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
@@ -34,6 +32,11 @@ public class NamedCommunitySet extends CommunitySetExpr {
   }
 
   @Override
+  public final boolean dynamicMatchCommunity() {
+    return true;
+  }
+
+  @Override
   public boolean equals(Object obj) {
     if (this == obj) {
       return true;
@@ -54,16 +57,13 @@ public class NamedCommunitySet extends CommunitySetExpr {
   }
 
   @Override
-  public final boolean dynamicMatchCommunity() {
-    return true;
+  public boolean matchAnyCommunity(Environment environment, Set<Long> communityCandidates) {
+    return resolve(environment).matchAnyCommunity(environment, communityCandidates);
   }
 
   @Override
-  public boolean matchAnyCommunity(Environment environment, Set<Long> communityCandidates) {
-    CommunitySetExpr resolved = resolve(environment);
-    return communityCandidates
-        .stream()
-        .anyMatch(communityCandidate -> resolved.matchCommunity(environment, communityCandidate));
+  public boolean matchCommunities(Environment environment, Set<Long> communitySetCandidate) {
+    return resolve(environment).matchCommunities(environment, communitySetCandidate);
   }
 
   @Override
@@ -78,11 +78,12 @@ public class NamedCommunitySet extends CommunitySetExpr {
   @Override
   public SortedSet<Long> matchedCommunities(
       Environment environment, Set<Long> communityCandidates) {
-    CommunitySetExpr resolved = resolve(environment);
-    return communityCandidates
-        .stream()
-        .filter(communityCandidate -> resolved.matchCommunity(environment, communityCandidate))
-        .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
+    return resolve(environment).matchedCommunities(environment, communityCandidates);
+  }
+
+  @Override
+  public boolean reducible() {
+    return false;
   }
 
   private @Nonnull CommunitySetExpr resolve(@Nonnull Environment environment) {

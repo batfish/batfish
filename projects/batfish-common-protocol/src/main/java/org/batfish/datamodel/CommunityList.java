@@ -19,6 +19,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -67,6 +68,15 @@ public class CommunityList extends CommunitySetExpr {
     }
   }
 
+  private final class ReducibleSupplier implements Supplier<Boolean>, Serializable {
+    private static final long serialVersionUID = 1L;
+
+    @Override
+    public Boolean get() {
+      return initReducible();
+    }
+  }
+
   private static final String PROP_INVERT_MATCH = "invertMatch";
 
   private static final String PROP_LINES = "lines";
@@ -96,6 +106,8 @@ public class CommunityList extends CommunitySetExpr {
 
   @Nonnull private final String _name;
 
+  private final Supplier<Boolean> _reducible;
+
   /**
    * Constructs a CommunityList with the given name for {@link #_name}, and lines for {@link
    * #_lines}
@@ -111,8 +123,9 @@ public class CommunityList extends CommunitySetExpr {
     _literalCommunities = Suppliers.memoize(new LiteralCommunitiesSupplier());
     _communityCache = Suppliers.memoize(new CommunityCacheSupplier());
     _dynamic = Suppliers.memoize(new DynamicSupplier());
+    _reducible = Suppliers.memoize(new ReducibleSupplier());
   }
-
+  
   @Override
   public @Nonnull SortedSet<Long> asLiteralCommunities(Environment environment)
       throws UnsupportedOperationException {
@@ -134,6 +147,11 @@ public class CommunityList extends CommunitySetExpr {
 
     // "invert != condition" is a concise way of inverting a boolean
     return action.isPresent() && _invertMatch != (action.get() == LineAction.ACCEPT);
+  }
+
+  @Override
+  public boolean dynamicMatchCommunity() {
+    return _dynamic.get();
   }
 
   @Override
@@ -193,9 +211,33 @@ public class CommunityList extends CommunitySetExpr {
         .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
   }
 
+  public boolean initReducible() {
+    return _lines
+        .stream()
+        .map(CommunityListLine::getMatchCondition)
+        .allMatch(CommunitySetExpr::reducible);
+  }
+
   @Override
-  public boolean dynamicMatchCommunity() {
-    return _dynamic.get();
+  public boolean matchCommunities(Environment environment, Set<Long> communitySetCandidate) {
+    if (_reducible.get()) {
+      return communitySetCandidate
+          .stream()
+          .anyMatch(community -> matchCommunity(environment, community));
+    }
+    Optional<LineAction> action =
+        _lines
+            .stream()
+            .map(
+                line ->
+                    line.getMatchCondition().matchCommunities(environment, communitySetCandidate)
+                        ? line.getAction()
+                        : null)
+            .filter(Objects::nonNull)
+            .findFirst();
+
+    // "invert != condition" is a concise way of inverting a boolean
+    return action.isPresent() && _invertMatch != (action.get() == LineAction.ACCEPT);
   }
 
   /**
@@ -214,5 +256,10 @@ public class CommunityList extends CommunitySetExpr {
       return computeIfMatches(community, environment);
     }
     return _communityCache.get().getUnchecked(community);
+  }
+
+  @Override
+  public boolean reducible() {
+    return _reducible.get();
   }
 }

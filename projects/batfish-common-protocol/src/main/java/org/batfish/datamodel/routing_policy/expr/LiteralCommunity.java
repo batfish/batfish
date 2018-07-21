@@ -3,6 +3,7 @@ package org.batfish.datamodel.routing_policy.expr;
 import static java.util.Objects.requireNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.Set;
 import java.util.SortedSet;
@@ -11,10 +12,12 @@ import org.batfish.datamodel.routing_policy.Environment;
 
 public class LiteralCommunity extends CommunitySetExpr {
 
+  private static final String PROP_COMMUNITY = "community";
+
   private static final long serialVersionUID = 1L;
 
   @JsonCreator
-  private static @Nonnull LiteralCommunity create(Long community) {
+  private static @Nonnull LiteralCommunity create(@JsonProperty(PROP_COMMUNITY) Long community) {
     return new LiteralCommunity(requireNonNull(community));
   }
 
@@ -31,31 +34,42 @@ public class LiteralCommunity extends CommunitySetExpr {
 
   @Override
   public boolean dynamicMatchCommunity() {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    return false;
   }
 
   @Override
   public boolean equals(Object obj) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    if (this == obj) {
+      return true;
+    }
+    if (!(obj instanceof LiteralCommunity)) {
+      return false;
+    }
+    return _community == ((LiteralCommunity) obj)._community;
+  }
+
+  @JsonProperty(PROP_COMMUNITY)
+  public long getCommunity() {
+    return _community;
   }
 
   @Override
   public int hashCode() {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    return Long.hashCode(_community);
   }
 
   @Override
   public boolean matchCommunities(Environment environment, Set<Long> communitySetCandidate) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    return communitySetCandidate.contains(_community);
   }
 
   @Override
   public boolean matchCommunity(Environment environment, long community) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    return community == _community;
+  }
+
+  @Override
+  public boolean reducible() {
+    return true;
   }
 }

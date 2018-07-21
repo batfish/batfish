@@ -70,4 +70,10 @@ public abstract class CommunitySetExpr implements Serializable {
         .filter(communityCandidate -> matchCommunity(environment, communityCandidate))
         .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
   }
+
+  /**
+   * Whether membership of a candidate set of candidate in this {@link CommunitySetExpr} can be
+   * reduced to checking membership of any community from the candidate set.
+   */
+  public abstract boolean reducible();
 }

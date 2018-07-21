@@ -1,0 +1,78 @@
+package org.batfish.datamodel.routing_policy.expr;
+
+import static com.google.common.base.MoreObjects.firstNonNull;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Sets;
+import java.util.Collection;
+import java.util.Set;
+import java.util.SortedSet;
+import javax.annotation.Nonnull;
+import org.batfish.datamodel.routing_policy.Environment;
+
+public class LiteralCommunitySet extends CommunitySetExpr {
+
+  private static final String PROP_COMMUNITIES = "communities";
+
+  private static final long serialVersionUID = 1L;
+
+  @JsonCreator
+  private static @Nonnull LiteralCommunitySet create(
+      @JsonProperty(PROP_COMMUNITIES) SortedSet<Long> communities) {
+    return new LiteralCommunitySet(firstNonNull(communities, ImmutableSortedSet.of()));
+  }
+
+  private final SortedSet<Long> _communities;
+
+  public LiteralCommunitySet(@Nonnull Collection<Long> communities) {
+    _communities = ImmutableSortedSet.copyOf(communities);
+  }
+
+  @Override
+  public SortedSet<Long> asLiteralCommunities(Environment environment) {
+    return _communities;
+  }
+
+  @Override
+  public boolean dynamicMatchCommunity() {
+    return false;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (!(obj instanceof LiteralCommunitySet)) {
+      return false;
+    }
+    return _communities.equals(((LiteralCommunitySet) obj)._communities);
+  }
+
+  public @Nonnull SortedSet<Long> getCommunities() {
+    return _communities;
+  }
+
+  @Override
+  public int hashCode() {
+    return _communities.hashCode();
+  }
+
+  @Override
+  public boolean matchCommunities(Environment environment, Set<Long> communitySetCandidate) {
+    return Sets.intersection(_communities, communitySetCandidate).size()
+        == communitySetCandidate.size();
+  }
+
+  @Override
+  public boolean matchCommunity(Environment environment, long community) {
+    return _communities.contains(community);
+  }
+
+  @Override
+  public boolean reducible() {
+    return true;
+  }
+}

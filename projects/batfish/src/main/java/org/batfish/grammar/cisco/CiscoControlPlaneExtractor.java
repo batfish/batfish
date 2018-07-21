@@ -1906,6 +1906,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void enterCommunity_set_stanza(Community_set_stanzaContext ctx) {
     String name = ctx.name.getText();
     defineStructure(COMMUNITY_SET, name, ctx);
+    ctx.community_set_elem_list()
+    _currentCommunitySet = _configuration.getCommunitySets().computeIfAbsent(name, NamedCommunitySet::new);
   }
 
   @Override
@@ -8863,7 +8865,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   public long toLong(CommunityContext ctx) {
-    if (ctx.COMMUNITY_NUMBER() != null) {
+    if (ctx.ACCEPT_OWN() != null) {
+      return WellKnownCommunity.ACCEPT_OWN;
+    } else if (ctx.COMMUNITY_NUMBER() != null) {
       String numberText = ctx.com.getText();
       String[] parts = numberText.split(":");
       String leftStr = parts[0];

@@ -39,7 +39,7 @@ public final class LiteralCommunityConjunction extends CommunitySetExpr {
 
   @Override
   public boolean dynamicMatchCommunity() {
-    return true;
+    return false;
   }
 
   @Override
@@ -72,5 +72,10 @@ public final class LiteralCommunityConjunction extends CommunitySetExpr {
   @Override
   public boolean matchCommunity(Environment environment, long community) {
     throw new UnsupportedOperationException("Can only be used to match a set of communities");
+  }
+
+  @Override
+  public boolean reducible() {
+    return false;
   }
 }

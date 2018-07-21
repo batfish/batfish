@@ -51,7 +51,12 @@ public final class RouteMapSetAdditiveCommunityListLine extends RouteMapSetLine 
         }
       }
     }
-    statements.add(new AddCommunity(new InlineCommunitySet(communities)));
+    _communityLists.forEach(
+        communityListName ->
+            statements.add(
+                new AddCommunity(
+                    new org.batfish.datamodel.routing_policy.expr.NamedCommunitySet(
+                        communityListName))));
   }
 
   @Override

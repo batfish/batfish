@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import java.io.Serializable;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
@@ -50,6 +51,11 @@ public final class RegexCommunitySet extends CommunitySetExpr {
   }
 
   @Override
+  public boolean dynamicMatchCommunity() {
+    return false;
+  }
+
+  @Override
   public boolean equals(Object obj) {
     if (this == obj) {
       return true;
@@ -71,12 +77,19 @@ public final class RegexCommunitySet extends CommunitySetExpr {
   }
 
   @Override
-  public boolean dynamicMatchCommunity() {
-    return false;
+  public boolean matchCommunities(Environment environment, Set<Long> communitySetCandidate) {
+    return communitySetCandidate
+        .stream()
+        .anyMatch(community -> matchCommunity(environment, community));
   }
 
   @Override
   public boolean matchCommunity(Environment environment, long community) {
     return _pattern.get().matcher(CommonUtil.longToCommunity(community)).find();
+  }
+
+  @Override
+  public boolean reducible() {
+    return true;
   }
 }
