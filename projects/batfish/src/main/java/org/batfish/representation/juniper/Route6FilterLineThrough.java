@@ -15,7 +15,7 @@ public final class Route6FilterLineThrough extends Route6FilterLine {
 
   public Route6FilterLineThrough(Prefix6 prefix6, Prefix6 throughPrefix6) {
     super(prefix6);
-    _throughPrefix6 = prefix6;
+    _throughPrefix6 = throughPrefix6;
   }
 
   @Override

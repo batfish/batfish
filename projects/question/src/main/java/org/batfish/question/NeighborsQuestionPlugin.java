@@ -500,7 +500,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       if (question.getNeighborTypes().contains(NeighborType.OSPF)) {
         SortedSet<VerboseOspfEdge> vedges = new TreeSet<>();
         initTopology();
-        initRemoteOspfNeighbors(_batfish, configurations, _topology);
+        initRemoteOspfNeighbors(configurations, _topology);
         for (Configuration c : configurations.values()) {
           String hostname = c.getHostname();
           for (Vrf vrf : c.getVrfs().values()) {
@@ -798,7 +798,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
     }
 
     private void initRemoteOspfNeighbors(
-        IBatfish batfish, Map<String, Configuration> configurations, Topology topology) {
+        Map<String, Configuration> configurations, Topology topology) {
       if (!_remoteOspfNeighborsInitialized) {
         Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpNodeOwners(configurations, true);
         CommonUtil.initRemoteOspfNeighbors(configurations, ipOwners, topology);
