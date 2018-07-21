@@ -10,7 +10,6 @@ import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 import org.batfish.common.BatfishLogger;
 import org.batfish.coordinator.Main;
 import org.batfish.role.NodeRoleDimension;
@@ -31,7 +30,7 @@ public class NodeRoleDimensionResource {
   private String _container;
   private String _dimension;
 
-  public NodeRoleDimensionResource(UriInfo uriInfo, String container, String dimension) {
+  public NodeRoleDimensionResource(String container, String dimension) {
     _container = container;
     _dimension = dimension;
   }

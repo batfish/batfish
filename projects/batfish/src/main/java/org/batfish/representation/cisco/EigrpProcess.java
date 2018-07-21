@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.TreeSet;
 import org.batfish.common.util.ComparableStructure;
-import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpWildcard;
@@ -22,7 +21,7 @@ public class EigrpProcess extends ComparableStructure<Long> {
   private Set<IpWildcard> _wildcardNetworks;
   private Set<Prefix> _networks;
 
-  public EigrpProcess(Long asn, EigrpProcessMode mode, ConfigurationFormat format) {
+  public EigrpProcess(Long asn, EigrpProcessMode mode) {
     super(asn);
 
     _addressFamily = DEFAULT_ADDRESS_FAMILY;

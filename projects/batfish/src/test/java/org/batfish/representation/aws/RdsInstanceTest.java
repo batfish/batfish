@@ -198,7 +198,7 @@ public class RdsInstanceTest {
     JSONArray rdsArray = jObj.getJSONArray(JSON_KEY_DB_INSTANCES);
     List<RdsInstance> rdsList = new LinkedList<>();
     for (int i = 0; i < rdsArray.length(); i++) {
-      rdsList.add(new RdsInstance(rdsArray.getJSONObject(i), null));
+      rdsList.add(new RdsInstance(rdsArray.getJSONObject(i)));
     }
 
     // checking the count of RDS initialized

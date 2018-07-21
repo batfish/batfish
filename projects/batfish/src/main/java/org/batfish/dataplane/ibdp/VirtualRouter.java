@@ -1246,8 +1246,8 @@ public class VirtualRouter extends ComparableStructure<String> {
     _ospfExternalType2StagingRib = new OspfExternalType2Rib(getHostname(), null);
     _ospfInterAreaRib = new OspfInterAreaRib();
     _ospfInterAreaStagingRib = new OspfInterAreaRib();
-    _ospfIntraAreaRib = new OspfIntraAreaRib(this);
-    _ospfIntraAreaStagingRib = new OspfIntraAreaRib(this);
+    _ospfIntraAreaRib = new OspfIntraAreaRib();
+    _ospfIntraAreaStagingRib = new OspfIntraAreaRib();
     _ospfRib = new OspfRib();
     _ripInternalRib = new RipInternalRib();
     _ripInternalStagingRib = new RipInternalRib();

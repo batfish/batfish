@@ -2512,7 +2512,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
   }
 
   private org.batfish.datamodel.RipProcess toRipProcess(
-      RipProcess proc, String vrfName, Configuration c, CiscoConfiguration oldConfig) {
+      RipProcess proc, String vrfName, Configuration c) {
     org.batfish.datamodel.RipProcess newProcess = new org.batfish.datamodel.RipProcess();
     org.batfish.datamodel.Vrf vrf = c.getVrfs().get(vrfName);
 
@@ -3203,8 +3203,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
           // convert rip process
           RipProcess ripProcess = vrf.getRipProcess();
           if (ripProcess != null) {
-            org.batfish.datamodel.RipProcess newRipProcess =
-                toRipProcess(ripProcess, vrfName, c, this);
+            org.batfish.datamodel.RipProcess newRipProcess = toRipProcess(ripProcess, vrfName, c);
             newVrf.setRipProcess(newRipProcess);
           }
 

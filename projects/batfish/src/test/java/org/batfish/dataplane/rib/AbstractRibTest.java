@@ -207,7 +207,7 @@ public class AbstractRibTest {
   @Test
   public void testGetRoutesWithReplacement() {
     // Use OSPF RIBs for this, as routes with better metric can replace other routes
-    OspfIntraAreaRib rib = new OspfIntraAreaRib(null);
+    OspfIntraAreaRib rib = new OspfIntraAreaRib();
     Prefix prefix = Prefix.parse("1.1.1.1/32");
     rib.mergeRouteGetDelta(new OspfIntraAreaRoute(prefix, null, 100, 30, 1));
 

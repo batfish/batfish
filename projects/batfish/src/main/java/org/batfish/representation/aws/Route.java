@@ -6,7 +6,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
-import org.batfish.common.BatfishLogger;
 import org.batfish.common.Pair;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
@@ -46,7 +45,7 @@ public class Route implements Serializable {
   private String _target;
   private TargetType _targetType;
 
-  public Route(JSONObject jObj, BatfishLogger logger) throws JSONException {
+  public Route(JSONObject jObj) throws JSONException {
     _destinationCidrBlock =
         Prefix.parse(jObj.getString(AwsVpcEntity.JSON_KEY_DESTINATION_CIDR_BLOCK));
     _state = State.valueOf(jObj.getString(AwsVpcEntity.JSON_KEY_STATE).toUpperCase());
