@@ -15096,6 +15096,61 @@
                 "action" : "ACCEPT",
                 "ipWildcard" : "2001:db8:1239:0:0:0:0:0/98",
                 "lengthRange" : "98-98"
+              },
+              {
+                "action" : "ACCEPT",
+                "ipWildcard" : "2001:db8:1239:0:0:0:0:0/99",
+                "lengthRange" : "99-99"
+              },
+              {
+                "action" : "ACCEPT",
+                "ipWildcard" : "2001:db8:1239:0:0:0:0:0/100",
+                "lengthRange" : "100-100"
+              },
+              {
+                "action" : "ACCEPT",
+                "ipWildcard" : "2001:db8:1239:0:0:0:0:0/101",
+                "lengthRange" : "101-101"
+              },
+              {
+                "action" : "ACCEPT",
+                "ipWildcard" : "2001:db8:1239:0:0:0:0:0/102",
+                "lengthRange" : "102-102"
+              },
+              {
+                "action" : "ACCEPT",
+                "ipWildcard" : "2001:db8:1239:0:0:0:0:0/103",
+                "lengthRange" : "103-103"
+              },
+              {
+                "action" : "ACCEPT",
+                "ipWildcard" : "2001:db8:1239:0:0:0:0:0/104",
+                "lengthRange" : "104-104"
+              },
+              {
+                "action" : "ACCEPT",
+                "ipWildcard" : "2001:db8:1239:0:0:0:0:0/105",
+                "lengthRange" : "105-105"
+              },
+              {
+                "action" : "ACCEPT",
+                "ipWildcard" : "2001:db8:1239:0:0:0:0:0/106",
+                "lengthRange" : "106-106"
+              },
+              {
+                "action" : "ACCEPT",
+                "ipWildcard" : "2001:db8:1239:0:0:0:0:0/107",
+                "lengthRange" : "107-107"
+              },
+              {
+                "action" : "ACCEPT",
+                "ipWildcard" : "2001:db8:1239:0:0:0:0:0/108",
+                "lengthRange" : "108-108"
+              },
+              {
+                "action" : "ACCEPT",
+                "ipWildcard" : "2001:db8:1239:0:0:0:0:0/109",
+                "lengthRange" : "109-109"
               }
             ],
             "name" : "route-filter-test-v6:t1"
