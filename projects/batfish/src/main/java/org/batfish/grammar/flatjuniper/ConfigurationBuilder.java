@@ -1958,14 +1958,17 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     _currentDhcpRelayGroup =
         _currentRoutingInstance
             .getDhcpRelayGroups()
-            .computeIfAbsent(DhcpRelayGroup.MASTER_DHCP_RELAY_GROUP_NAME, DhcpRelayGroup::new);
+            .computeIfAbsent(
+                DhcpRelayGroup.MASTER_DHCP_RELAY_GROUP_NAME, n -> new DhcpRelayGroup());
   }
 
   @Override
   public void enterFod_group(Fod_groupContext ctx) {
     String name = ctx.name.getText();
     _currentDhcpRelayGroup =
-        _currentRoutingInstance.getDhcpRelayGroups().computeIfAbsent(name, DhcpRelayGroup::new);
+        _currentRoutingInstance
+            .getDhcpRelayGroups()
+            .computeIfAbsent(name, n -> new DhcpRelayGroup());
   }
 
   @Override
@@ -2047,7 +2050,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
         String nodeDeviceName = ctx.interface_id().node.getText();
         nodeDevicePrefix = nodeDeviceName + ":";
         NodeDevice nodeDevice =
-            _configuration.getNodeDevices().computeIfAbsent(nodeDeviceName, NodeDevice::new);
+            _configuration.getNodeDevices().computeIfAbsent(nodeDeviceName, n -> new NodeDevice());
         interfaces = nodeDevice.getInterfaces();
       }
       currentInterface = interfaces.get(ifaceName);
@@ -2295,7 +2298,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     _currentRouteFilter = _termRouteFilters.get(_currentPsTerm);
     if (_currentRouteFilter == null) {
       String rfName = _currentPolicyStatement.getName() + ":" + _currentPsTerm.getName();
-      _currentRouteFilter = new RouteFilter(rfName);
+      _currentRouteFilter = new RouteFilter();
       _termRouteFilters.put(_currentPsTerm, _currentRouteFilter);
       _configuration.getRouteFilters().put(rfName, _currentRouteFilter);
       PsFromRouteFilter from = new PsFromRouteFilter(rfName);
@@ -4984,7 +4987,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     if (id.node != null) {
       String nodeDeviceName = id.node.getText();
       NodeDevice nodeDevice =
-          _configuration.getNodeDevices().computeIfAbsent(nodeDeviceName, NodeDevice::new);
+          _configuration.getNodeDevices().computeIfAbsent(nodeDeviceName, n -> new NodeDevice());
       interfaces = nodeDevice.getInterfaces();
     } else {
       interfaces = _configuration.getInterfaces();
