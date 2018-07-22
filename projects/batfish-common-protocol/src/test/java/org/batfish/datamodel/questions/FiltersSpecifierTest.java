@@ -1,6 +1,7 @@
 package org.batfish.datamodel.questions;
 
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 import java.util.regex.Pattern;
@@ -87,5 +88,21 @@ public class FiltersSpecifierTest {
 
     assertThat(outputFilterSpecifier.matches(outAcl, c), equalTo(true));
     assertThat(outputFilterSpecifier.matches(inAcl, c), equalTo(false));
+  }
+
+  @Test
+  public void defaultWithColons() {
+    String expression = "foo::bar::baz";
+    FiltersSpecifier specifier = new FiltersSpecifier(expression);
+    assertThat(specifier.getType(), is(Type.NAME));
+    assertThat(specifier.getRegex().pattern(), equalTo(expression));
+  }
+
+  @Test
+  public void nameWithColons() {
+    String expression = "foo::bar::baz";
+    FiltersSpecifier specifier = new FiltersSpecifier("name:" + expression);
+    assertThat(specifier.getType(), is(Type.NAME));
+    assertThat(specifier.getRegex().pattern(), equalTo(expression));
   }
 }

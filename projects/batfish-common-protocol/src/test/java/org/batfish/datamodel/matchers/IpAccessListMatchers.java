@@ -1,5 +1,7 @@
 package org.batfish.datamodel.matchers;
 
+import static org.hamcrest.Matchers.equalTo;
+
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nonnull;
@@ -11,6 +13,7 @@ import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.matchers.IpAccessListMatchersImpl.Accepts;
 import org.batfish.datamodel.matchers.IpAccessListMatchersImpl.HasLines;
+import org.batfish.datamodel.matchers.IpAccessListMatchersImpl.HasName;
 import org.batfish.datamodel.matchers.IpAccessListMatchersImpl.Rejects;
 import org.hamcrest.Matcher;
 
@@ -44,6 +47,14 @@ public final class IpAccessListMatchers {
    */
   public static HasLines hasLines(@Nonnull Matcher<? super List<IpAccessListLine>> subMatcher) {
     return new HasLines(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the Ip Access List's value of {@code name} matches specified
+   * {@code name}
+   */
+  public static @Nonnull HasName hasName(String name) {
+    return new HasName(equalTo(name));
   }
 
   /**

@@ -3,21 +3,27 @@ package org.batfish.question.specifiers;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
+import com.google.common.collect.ImmutableSortedSet;
 import java.util.regex.Pattern;
 import org.batfish.common.BatfishException;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
+import org.batfish.datamodel.Protocol;
+import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.specifier.AllInterfaceLinksLocationSpecifier;
 import org.batfish.specifier.AllInterfaceLinksLocationSpecifierFactory;
 import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.batfish.specifier.ConstantIpSpaceSpecifier;
 import org.batfish.specifier.ConstantUniverseIpSpaceSpecifierFactory;
+import org.batfish.specifier.ConstantWildcardSetIpSpaceSpecifierFactory;
 import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
-import org.batfish.specifier.NameRegexInterfaceLinkLocationSpecifier;
 import org.batfish.specifier.NameRegexNodeSpecifier;
 import org.batfish.specifier.NameRegexNodeSpecifierFactory;
 import org.batfish.specifier.NoNodesNodeSpecifier;
+import org.batfish.specifier.NodeNameRegexConnectedHostsIpSpaceSpecifier;
+import org.batfish.specifier.NodeNameRegexInterfaceLinkLocationSpecifier;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -28,6 +34,39 @@ import org.junit.rules.ExpectedException;
  */
 public class SpecifiersReachabilityQuestionTest {
   @Rule public final ExpectedException exception = ExpectedException.none();
+
+  @Test
+  public void getDestinationIpSpace_bothNull() {
+    SpecifiersReachabilityQuestion question = new SpecifiersReachabilityQuestion();
+    exception.expect(IllegalArgumentException.class);
+    exception.expectMessage(
+        "NodeNameRegexConnectedHostsIpSpaceSpecifierFactory requires input of type String");
+    question.getDestinationIpSpaceSpecifier();
+  }
+
+  @Test
+  public void getDestinationIpSpace_factoryNull() {
+    SpecifiersReachabilityQuestion question = new SpecifiersReachabilityQuestion();
+    question.setDestinationIpSpaceSpecifierInput("foo");
+    assertThat(
+        question.getDestinationIpSpaceSpecifier(),
+        equalTo(new NodeNameRegexConnectedHostsIpSpaceSpecifier(Pattern.compile("foo"))));
+  }
+
+  @Test
+  public void getDestinationIpSpace() {
+    SpecifiersReachabilityQuestion question = new SpecifiersReachabilityQuestion();
+    question.setDestinationIpSpaceSpecifierFactory(ConstantWildcardSetIpSpaceSpecifierFactory.NAME);
+    question.setDestinationIpSpaceSpecifierInput("1.2.3.0/24 - 1.2.3.4");
+    assertThat(
+        question.getDestinationIpSpaceSpecifier(),
+        equalTo(
+            new ConstantIpSpaceSpecifier(
+                IpWildcardSetIpSpace.builder()
+                    .including(new IpWildcard("1.2.3.0/24"))
+                    .excluding(new IpWildcard("1.2.3.4"))
+                    .build())));
+  }
 
   @Test
   public void getFinalNodes_bothNull() {
@@ -62,6 +101,20 @@ public class SpecifiersReachabilityQuestionTest {
     exception.expect(BatfishException.class);
     exception.expectMessage("Could not find NodeSpecifierFactory with name foo");
     question.getFinalNodesSpecifier();
+  }
+
+  @Test
+  public void getHeaderspace() {
+    ImmutableSortedSet<SubRange> dstPorts = ImmutableSortedSet.of(new SubRange(1, 2));
+    ImmutableSortedSet<Protocol> dstProtocols = ImmutableSortedSet.of(Protocol.DNS);
+
+    SpecifiersReachabilityQuestion question = new SpecifiersReachabilityQuestion();
+    question.setDstPorts(dstPorts);
+    question.setDstProtocols(dstProtocols);
+
+    HeaderSpace headerSpace = question.getHeaderSpace();
+    assertThat(headerSpace.getDstPorts(), equalTo(dstPorts));
+    assertThat(headerSpace.getDstProtocols(), equalTo(dstProtocols));
   }
 
   @Test
@@ -108,7 +161,7 @@ public class SpecifiersReachabilityQuestionTest {
     question.setSourceLocationSpecifierInput("foo");
     assertThat(
         question.getSourceLocationSpecifier(),
-        equalTo(new NameRegexInterfaceLinkLocationSpecifier(Pattern.compile("foo"))));
+        equalTo(new NodeNameRegexInterfaceLinkLocationSpecifier(Pattern.compile("foo"))));
   }
 
   @Test

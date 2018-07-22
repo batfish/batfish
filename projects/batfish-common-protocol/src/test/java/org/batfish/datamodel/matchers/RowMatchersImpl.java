@@ -2,11 +2,11 @@ package org.batfish.datamodel.matchers;
 
 import static org.hamcrest.Matchers.hasItem;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Throwables;
 import java.util.Collection;
 import java.util.Optional;
 import javax.annotation.Nonnull;
+import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.table.Row;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -17,15 +17,15 @@ final class RowMatchersImpl {
   static final class HasColumn<V> extends TypeSafeDiagnosingMatcher<Row> {
     private final Matcher<? super String> _keyMatcher;
     private final Matcher<? super V> _valueMatcher;
-    private final TypeReference<V> _valueTypeReference;
+    private final Schema _schema;
 
     public HasColumn(
         @Nonnull Matcher<? super String> keyMatcher,
         @Nonnull Matcher<? super V> valueMatcher,
-        TypeReference<V> valueTypeReference) {
+        Schema schema) {
       _keyMatcher = keyMatcher;
       _valueMatcher = valueMatcher;
-      _valueTypeReference = valueTypeReference;
+      _schema = schema;
     }
 
     @Override
@@ -48,16 +48,14 @@ final class RowMatchersImpl {
         return false;
       }
       String columnName = columnNameOption.get();
-      V value;
+      Object value;
       try {
-        value = item.get(columnName, _valueTypeReference);
+        value = item.get(columnName, _schema);
       } catch (Exception e) {
         mismatchDescription.appendText(
             String.format(
                 "Value for column '%s' could not be converted to a '%s': %s",
-                columnName,
-                _valueTypeReference.getType().getTypeName(),
-                Throwables.getStackTraceAsString(e)));
+                columnName, _schema, Throwables.getStackTraceAsString(e)));
         return false;
       }
       if (!_valueMatcher.matches(value)) {

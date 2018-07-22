@@ -4,10 +4,13 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Collections;
 import java.util.Set;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
-import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Flow.Builder;
 import org.batfish.datamodel.questions.IPacketTraceQuestion;
+import org.batfish.specifier.FlexibleLocationSpecifierFactory;
+import org.batfish.specifier.InferFromLocationIpSpaceSpecifierFactory;
 
 /**
  * A question to perform a traceroute.
@@ -20,29 +23,35 @@ import org.batfish.datamodel.questions.IPacketTraceQuestion;
  * reverse connectivity is not needed. This feature can help debug connectivity issues by decoupling
  * the two directions.
  */
-public class TracerouteQuestion extends IPacketTraceQuestion {
+public final class TracerouteQuestion extends IPacketTraceQuestion {
+  private static final String DEFAULT_SOURCE_LOCATION_SPECIFIER_FACTORY =
+      FlexibleLocationSpecifierFactory.NAME;
+
+  private static final String DEFAULT_SOURCE_IP_SPACE_SPECIFIER_FACTORY =
+      InferFromLocationIpSpaceSpecifierFactory.NAME;
+
   private static final String PROP_IGNORE_ACLS = "ignoreAcls";
-  private static final String PROP_INGRESS_NODE = "ingressNode";
-  private static final String PROP_INGRESS_VRF = "ingressVrf";
 
-  private boolean _ignoreAcls;
-  private String _ingressNode;
-  private String _ingressVrf;
+  private static final String PROP_SOURCE_LOCATION_SPECIFIER_FACTORY =
+      "traceStartLocationSpecifierFactory";
 
-  public TracerouteQuestion() {
-    _ignoreAcls = false;
-  }
+  private static final String PROP_SOURCE_LOCATION_SPECIFIER_INPUT = "traceStart";
 
-  private Flow.Builder createFlowBuilder() {
-    Flow.Builder flowBuilder = createBaseFlowBuilder();
-    if (_ingressNode != null) {
-      flowBuilder.setIngressNode(_ingressNode);
-    }
-    if (_ingressVrf != null) {
-      flowBuilder.setIngressVrf(_ingressVrf);
-    }
-    return flowBuilder;
-  }
+  private static final String PROP_SOURCE_IP_SPACE_SPECIFIER_FACTORY = "srcIpSpaceSpecifierFactory";
+
+  private static final String PROP_SOURCE_IP_SPACE_SPECIFIER_INPUT = "srcIpSpace";
+
+  private boolean _ignoreAcls = false;
+
+  private String _sourceLocationSpecifierFactory = DEFAULT_SOURCE_LOCATION_SPECIFIER_FACTORY;
+
+  private @Nullable String _sourceLocationSpecifierInput = null;
+
+  private String _sourceIpSpaceSpecifierFactory = DEFAULT_SOURCE_IP_SPACE_SPECIFIER_FACTORY;
+
+  private @Nullable String _sourceIpSpaceSpecifierInput = null;
+
+  public TracerouteQuestion() {}
 
   @Override
   public boolean getDataPlane() {
@@ -56,17 +65,27 @@ public class TracerouteQuestion extends IPacketTraceQuestion {
 
   @JsonIgnore
   public Set<Builder> getFlowBuilders() {
-    return Collections.singleton(createFlowBuilder());
+    return Collections.singleton(createBaseFlowBuilder());
   }
 
-  @JsonProperty(PROP_INGRESS_NODE)
-  public String getIngressNode() {
-    return _ingressNode;
+  @JsonProperty(PROP_SOURCE_LOCATION_SPECIFIER_FACTORY)
+  public @Nonnull String getSourceLocationSpecifierFactory() {
+    return _sourceLocationSpecifierFactory;
   }
 
-  @JsonProperty(PROP_INGRESS_VRF)
-  public String getIngressVrf() {
-    return _ingressVrf;
+  @JsonProperty(PROP_SOURCE_LOCATION_SPECIFIER_INPUT)
+  public @Nullable String getSourceLocationSpecifierInput() {
+    return _sourceLocationSpecifierInput;
+  }
+
+  @JsonProperty(PROP_SOURCE_IP_SPACE_SPECIFIER_FACTORY)
+  public @Nonnull String getSourceIpSpaceSpecifierFactory() {
+    return _sourceIpSpaceSpecifierFactory;
+  }
+
+  @JsonProperty(PROP_SOURCE_IP_SPACE_SPECIFIER_INPUT)
+  public @Nullable String getSourceIpSpaceSpecifierInput() {
+    return _sourceIpSpaceSpecifierInput;
   }
 
   @Override
@@ -77,13 +96,30 @@ public class TracerouteQuestion extends IPacketTraceQuestion {
   @Override
   public String prettyPrint() {
     try {
-      String retString =
-          String.format("traceroute %singressNode=%s", prettyPrintBase(), _ingressNode);
-      if (_ingressVrf != null) {
-        retString += String.format(", %s=%s", PROP_INGRESS_VRF, _ingressVrf);
+      StringBuilder sb = new StringBuilder();
+      sb.append(String.format("traceroute %s", prettyPrintBase()));
+      if (!_sourceLocationSpecifierFactory.equals(DEFAULT_SOURCE_LOCATION_SPECIFIER_FACTORY)) {
+        sb.append(
+            String.format(
+                ", %s=%s",
+                PROP_SOURCE_LOCATION_SPECIFIER_FACTORY, _sourceLocationSpecifierFactory));
       }
-      retString += toString(); // calls parent toString()
-      return retString;
+      if (_sourceLocationSpecifierInput != null) {
+        sb.append(
+            String.format(
+                ", %s=%s", PROP_SOURCE_LOCATION_SPECIFIER_INPUT, _sourceLocationSpecifierInput));
+      }
+      if (_sourceIpSpaceSpecifierFactory.equals(DEFAULT_SOURCE_IP_SPACE_SPECIFIER_FACTORY)) {
+        sb.append(
+            String.format(
+                ", %s=%s", PROP_SOURCE_IP_SPACE_SPECIFIER_FACTORY, _sourceIpSpaceSpecifierFactory));
+      }
+      if (_sourceIpSpaceSpecifierInput != null) {
+        sb.append(
+            String.format(
+                ", %s=%s", PROP_SOURCE_IP_SPACE_SPECIFIER_FACTORY, _sourceIpSpaceSpecifierInput));
+      }
+      return sb.toString();
     } catch (Exception e) {
       try {
         return "Pretty printing failed. Printing Json\n" + toJsonString();
@@ -98,13 +134,23 @@ public class TracerouteQuestion extends IPacketTraceQuestion {
     _ignoreAcls = ignoreAcls;
   }
 
-  @JsonProperty(PROP_INGRESS_NODE)
-  public void setIngressNode(String ingressNode) {
-    _ingressNode = ingressNode;
+  @JsonProperty(PROP_SOURCE_LOCATION_SPECIFIER_FACTORY)
+  public void setSourceLocationSpecifierFactory(String sourceLocationSpecifierFactory) {
+    _sourceLocationSpecifierFactory = sourceLocationSpecifierFactory;
   }
 
-  @JsonProperty(PROP_INGRESS_VRF)
-  public void setIngressVrf(String ingressVrf) {
-    _ingressVrf = ingressVrf;
+  @JsonProperty(PROP_SOURCE_LOCATION_SPECIFIER_INPUT)
+  public void setSourceLocationSpecifierInput(String sourceLocationSpecifierInput) {
+    _sourceLocationSpecifierInput = sourceLocationSpecifierInput;
+  }
+
+  @JsonProperty(PROP_SOURCE_IP_SPACE_SPECIFIER_FACTORY)
+  public void setSourceIpSpaceSpecifierFactory(String sourceIpSpaceSpecifierFactory) {
+    _sourceIpSpaceSpecifierFactory = sourceIpSpaceSpecifierFactory;
+  }
+
+  @JsonProperty(PROP_SOURCE_IP_SPACE_SPECIFIER_INPUT)
+  public void setSourceIpSpaceSpecifierInput(String sourceIpSpaceSpecifierInput) {
+    _sourceIpSpaceSpecifierInput = sourceIpSpaceSpecifierInput;
   }
 }

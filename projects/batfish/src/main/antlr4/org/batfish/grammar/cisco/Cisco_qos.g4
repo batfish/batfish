@@ -13,7 +13,8 @@ cm_end_class_map
 
 cm_ios_inspect
 :
-   INSPECT HTTP? match_semantics? name = variable_permissive NEWLINE cm_iosi_match*
+   INSPECT HTTP? match_semantics? name = variable_permissive NEWLINE
+   cm_iosi_match*
 ;
 
 cm_iosi_match
@@ -55,7 +56,7 @@ cm_iosim_response
 
 cm_match
 :
-   num = DEC? MATCH
+   num = DEC? MATCH NOT?
    (
       cmm_access_group
       | cmm_access_list
@@ -111,7 +112,7 @@ cmm_access_list
 
 cmm_activated_service_template
 :
-    ACTIVATED_SERVICE_TEMPLATE name = variable NEWLINE
+   ACTIVATED_SERVICE_TEMPLATE name = variable NEWLINE
 ;
 
 cmm_any
@@ -149,7 +150,7 @@ cmm_default_inspection_traffic
 
 cmm_dscp
 :
-   IP? DSCP
+   IP? DSCP IPV4?
    (
       (
          dscp_types += dscp_type
@@ -221,21 +222,20 @@ cmm_redirect
 
 cmm_result_type
 :
-    RESULT_TYPE
-    (
+   RESULT_TYPE
+   (
       METHOD
       (
          DOT1X
          | MAB
          | WEBAUTH
       )
-    )?
-    variable NEWLINE
+   )? variable NEWLINE
 ;
 
 cmm_service_template
 :
-    SERVICE_TEMPLATE name = variable NEWLINE
+   SERVICE_TEMPLATE name = variable NEWLINE
 ;
 
 color_setter
@@ -409,6 +409,7 @@ ogn_network_object
          address = IP_ADDRESS
          | address6 = IPV6_ADDRESS
          // Do not reorder: variable_permissive captures all tokens in line
+
          | host = variable_permissive
       )
       | wildcard_address = IP_ADDRESS wildcard_mask = IP_ADDRESS
@@ -416,6 +417,7 @@ ogn_network_object
       | prefix6 = IPV6_PREFIX
       | OBJECT name = variable_permissive
       // Do not reorder: variable_permissive captures all tokens in line
+
       | host = variable_permissive
    ) NEWLINE
 ;
@@ -455,7 +457,7 @@ ogs_service_object
    SERVICE_OBJECT
    (
       (
-         protocol ~NEWLINE*
+         service_specifier
       )
       |
       (
@@ -546,27 +548,27 @@ os_description
 
 os_service
 :
-   SERVICE protocol NEWLINE
-   //todo: change to os_service_type allowing tcp and udp port ranges
-
+   SERVICE service_specifier NEWLINE
 ;
 
 pm_class
 :
    num = DEC? CLASS
-   (   TYPE
-       (
-          CONTROL_PLANE
-          | NETWORK_QOS
-          | PBR
-          | QOS
-          | QUEUING
-       ) name = variable_permissive
-       | name = variable_permissive
+   (
+      TYPE
+      (
+         CONTROL_PLANE
+         | NETWORK_QOS
+         | PBR
+         | QOS
+         | QUEUING
+      ) name = variable_permissive
+      | name = variable_permissive
    ) NEWLINE
    (
       pmc_null
       | pmc_police
+      | pmc_service_policy
    )*
 ;
 
@@ -586,22 +588,22 @@ pm_event
 pm_event_class
 :
    DEC CLASS
-   ( ALWAYS
-     | classname = variable
-   )
-   DO_UNTIL_FAILURE NEWLINE
+   (
+      ALWAYS
+      | classname = variable
+   ) DO_UNTIL_FAILURE NEWLINE
    (
       DEC
       (
-          ACTIVATE SERVICE_TEMPLATE stname = variable
-          | AUTHENTICATE
-          | AUTHENTICATION_RESTART
-          | AUTHORIZE
-          | CLEAR_SESSION
-          | PAUSE
-          | RESTRICT
-          | RESUME
-          | TERMINATE
+         ACTIVATE SERVICE_TEMPLATE stname = variable
+         | AUTHENTICATE
+         | AUTHENTICATION_RESTART
+         | AUTHORIZE
+         | CLEAR_SESSION
+         | PAUSE
+         | RESTRICT
+         | RESUME
+         | TERMINATE
       ) null_rest_of_line
    )*
 ;
@@ -693,7 +695,6 @@ pmc_null
       | QUEUE_BUFFERS
       | QUEUE_LIMIT
       | RANDOM_DETECT
-      | SERVICE_POLICY
       | SET
       | SHAPE
       | TRUST
@@ -707,6 +708,11 @@ pmc_police
    (
       pmcp_null
    )*
+;
+
+pmc_service_policy
+:
+   SERVICE_POLICY name = variable NEWLINE
 ;
 
 pmcp_null
@@ -817,7 +823,9 @@ s_policy_map
             | QUEUING
             | QOS
          ) mapname = variable
-         (TEMPLATE template = variable)?
+         (
+            TEMPLATE template = variable
+         )?
       )
    ) NEWLINE
    (
@@ -844,8 +852,8 @@ s_qos_mapping
 
 s_service_template
 :
-    SERVICE_TEMPLATE name = variable NEWLINE
-    (
+   SERVICE_TEMPLATE name = variable NEWLINE
+   (
       st_access_group
       | st_description
       | st_inactivity_timer
@@ -853,7 +861,7 @@ s_service_template
       | st_tag
       | st_vlan
       | st_voice_vlan
-    )*
+   )*
 ;
 
 s_table_map
@@ -871,36 +879,36 @@ st_access_group
 
 st_description
 :
-    DESCRIPTION null_rest_of_line
+   DESCRIPTION null_rest_of_line
 ;
 
 st_inactivity_timer
 :
-    INACTIVITY_TIMER DEC NEWLINE
+   INACTIVITY_TIMER DEC NEWLINE
 ;
 
 st_linksec
 :
-    LINKSEC POLICY
-    (
-        MUST_SECURE
-        | SHOULD_SECURE
-    ) NEWLINE
+   LINKSEC POLICY
+   (
+      MUST_SECURE
+      | SHOULD_SECURE
+   ) NEWLINE
 ;
 
 st_tag
 :
-    TAG name = variable NEWLINE
+   TAG name = variable NEWLINE
 ;
 
 st_vlan
 :
-    VLAN DEC NEWLINE
+   VLAN DEC NEWLINE
 ;
 
 st_voice_vlan
 :
-    VOICE VLAN NEWLINE
+   VOICE VLAN NEWLINE
 ;
 
 table_map_null

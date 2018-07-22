@@ -96,7 +96,18 @@
         "vendorFamily" : {
           "cisco" : {
             "aaa" : {
-              "authentication" : { },
+              "authentication" : {
+                "login" : {
+                  "lists" : {
+                    "default" : {
+                      "methods" : [
+                        "UNKNOWN"
+                      ]
+                    }
+                  },
+                  "privilegeMode" : false
+                }
+              },
               "newModel" : false
             },
             "hostname" : "aaa_authentication_login_default_tacacs_local",
@@ -235,27 +246,24 @@
               "multipathIbgp" : false,
               "neighbors" : {
                 "1.2.3.4/32" : {
-                  "name" : "1.2.3.4/32",
+                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
-                  "address" : "1.2.3.4",
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
                   "allowRemoteAsOut" : false,
                   "clusterId" : 0,
                   "defaultMetric" : 0,
-                  "dynamic" : false,
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:1.2.3.4~",
                   "localAs" : 1,
+                  "peerAddress" : "1.2.3.4",
                   "remoteAs" : 1,
-                  "remotePrefix" : "1.2.3.4/32",
                   "routeReflectorClient" : false,
-                  "sendCommunity" : false,
-                  "vrf" : "default"
+                  "sendCommunity" : false
                 }
               },
               "routerId" : "0.0.0.0",
@@ -386,7 +394,7 @@
                 "trueStatements" : [
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ReturnFalse"
+                    "type" : "Suppress"
                   }
                 ]
               },
@@ -695,7 +703,9 @@
                 },
                 "name" : "20 deny ip any any"
               }
-            ]
+            ],
+            "sourceName" : "abcd",
+            "sourceType" : "extended ipv4 access-list"
           }
         },
         "vendorFamily" : {
@@ -896,6 +906,7 @@
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "VLAN",
+            "vlan" : 1,
             "vrf" : "mgmt",
             "vrrpGroups" : {
               "1" : {
@@ -948,6 +959,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "1.2.3.32/29",
                 "nextHopInterface" : "null_interface",
                 "nextHopIp" : "AUTO/NONE(-1l)",
@@ -956,6 +968,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "2.3.4.5/32",
                 "nextHopInterface" : "dynamic",
                 "nextHopIp" : "3.4.5.6",
@@ -1013,7 +1026,9 @@
                 },
                 "name" : "10 permit 1.2.4.8/16"
               }
-            ]
+            ],
+            "sourceName" : "sshabc",
+            "sourceType" : "standard ipv4 access-list"
           }
         },
         "vendorFamily" : {
@@ -1202,9 +1217,19 @@
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "SWITCH",
+        "ikePhase1Proposals" : {
+          "1" : {
+            "name" : "1",
+            "authenticationMethod" : "RSA_SIGNATURES",
+            "diffieHellmanGroup" : "GROUP20",
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "hashingAlgorithm" : "SHA_256",
+            "lifetimeSeconds" : 86400
+          }
+        },
         "ikeProposals" : {
-          "001" : {
-            "name" : "001",
+          "1" : {
+            "name" : "1",
             "authenticationAlgorithm" : "SHA_256",
             "authenticationMethod" : "RSA_SIGNATURES",
             "diffieHellmanGroup" : "GROUP20",
@@ -1592,7 +1617,9 @@
                 },
                 "name" : "permit host 0.0.0.0"
               }
-            ]
+            ],
+            "sourceName" : "Local_LAN_Access",
+            "sourceType" : "standard ipv4 access-list"
           },
           "outside" : {
             "name" : "outside",
@@ -1622,7 +1649,9 @@
                 },
                 "name" : "permit tcp object-group drawbridge_hosts interface outside eq https"
               }
-            ]
+            ],
+            "sourceName" : "outside",
+            "sourceType" : "extended ipv4 access-list"
           },
           "outside_in" : {
             "name" : "outside_in",
@@ -1651,7 +1680,9 @@
                 },
                 "name" : "permit udp any4 host 1.2.3.4 eq tftp"
               }
-            ]
+            ],
+            "sourceName" : "outside_in",
+            "sourceType" : "extended ipv4 access-list"
           }
         },
         "vendorFamily" : {
@@ -1737,7 +1768,15 @@
         },
         "vendorFamily" : {
           "cisco" : {
-            "hostname" : "asa_ospf"
+            "hostname" : "asa_ospf",
+            "lines" : {
+              "serial" : {
+                "name" : "serial",
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "SERIAL"
+              }
+            }
           }
         },
         "vrfs" : {
@@ -1773,6 +1812,14 @@
         "vendorFamily" : {
           "cisco" : {
             "hostname" : "asa_ssh",
+            "lines" : {
+              "ssh" : {
+                "name" : "ssh",
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "SSH"
+              }
+            },
             "logging" : {
               "on" : true
             }
@@ -2028,18 +2075,45 @@
           }
         },
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
             "name" : "default",
             "bgpProcess" : {
-              "multipathEbgp" : true,
-              "multipathEquivalentAsPathMatchMode" : "FIRST_AS",
-              "multipathIbgp" : false,
-              "neighbors" : {
+              "dynamicNeighbors" : {
                 "10.1.1.0/24" : {
-                  "name" : "10.1.1.0/24",
+                  "class" : "org.batfish.datamodel.BgpPassivePeerConfig",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
@@ -2052,7 +2126,6 @@
                   },
                   "clusterId" : 16843009,
                   "defaultMetric" : 0,
-                  "dynamic" : true,
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~PEER_EXPORT_POLICY:10.1.1.0/24~",
@@ -2060,13 +2133,17 @@
                   "importPolicy" : "~PEER_IMPORT_POLICY:10.1.1.0/24~",
                   "localAs" : 1,
                   "localIp" : "1.1.1.1",
-                  "remoteAs" : 2,
-                  "remotePrefix" : "10.1.1.0/24",
+                  "peerPrefix" : "10.1.1.0/24",
+                  "remoteAs" : [
+                    2
+                  ],
                   "routeReflectorClient" : false,
-                  "sendCommunity" : true,
-                  "vrf" : "default"
+                  "sendCommunity" : true
                 }
               },
+              "multipathEbgp" : true,
+              "multipathEquivalentAsPathMatchMode" : "FIRST_AS",
+              "multipathIbgp" : false,
               "routerId" : "1.1.1.1",
               "tieBreaker" : "ARRIVAL_ORDER"
             }
@@ -2265,7 +2342,37 @@
           }
         },
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -2276,11 +2383,10 @@
               "multipathIbgp" : false,
               "neighbors" : {
                 "1.1.1.1/32" : {
-                  "name" : "1.1.1.1/32",
+                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
-                  "address" : "1.1.1.1",
                   "advertiseExternal" : false,
                   "advertiseInactive" : false,
                   "allowLocalAsIn" : false,
@@ -2290,18 +2396,16 @@
                   },
                   "clusterId" : 0,
                   "defaultMetric" : 0,
-                  "dynamic" : false,
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : true,
                   "exportPolicy" : "~PEER_EXPORT_POLICY:1.1.1.1/32~",
                   "group" : "MYGROUP",
                   "importPolicy" : "~PEER_IMPORT_POLICY:1.1.1.1/32~",
                   "localAs" : 1,
+                  "peerAddress" : "1.1.1.1",
                   "remoteAs" : 2,
-                  "remotePrefix" : "1.1.1.1/32",
                   "routeReflectorClient" : false,
-                  "sendCommunity" : true,
-                  "vrf" : "default"
+                  "sendCommunity" : true
                 }
               },
               "routerId" : "0.0.0.0",
@@ -2556,52 +2660,46 @@
               "multipathIbgp" : true,
               "neighbors" : {
                 "1.10.1.1/32" : {
-                  "name" : "1.10.1.1/32",
+                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
-                  "address" : "1.10.1.1",
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
                   "allowRemoteAsOut" : false,
                   "clusterId" : 16843009,
                   "defaultMetric" : 0,
-                  "dynamic" : false,
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:1.10.1.1~",
                   "group" : "as1",
                   "localAs" : 1,
+                  "peerAddress" : "1.10.1.1",
                   "remoteAs" : 1,
-                  "remotePrefix" : "1.10.1.1/32",
                   "routeReflectorClient" : false,
-                  "sendCommunity" : true,
-                  "vrf" : "default"
+                  "sendCommunity" : true
                 },
                 "10.12.11.2/32" : {
-                  "name" : "10.12.11.2/32",
+                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
-                  "address" : "10.12.11.2",
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
                   "allowRemoteAsOut" : false,
                   "clusterId" : 16843009,
                   "defaultMetric" : 0,
-                  "dynamic" : false,
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:10.12.11.2~",
                   "group" : "as2",
                   "localAs" : 1,
+                  "peerAddress" : "10.12.11.2",
                   "remoteAs" : 2,
-                  "remotePrefix" : "10.12.11.2/32",
                   "routeReflectorClient" : false,
-                  "sendCommunity" : true,
-                  "vrf" : "default"
+                  "sendCommunity" : true
                 }
               },
               "routerId" : "1.1.1.1",
@@ -3030,11 +3128,10 @@
               "multipathIbgp" : false,
               "neighbors" : {
                 "64.57.21.1/32" : {
-                  "name" : "64.57.21.1/32",
+                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
-                  "address" : "64.57.21.1",
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
@@ -3042,17 +3139,15 @@
                   "clusterId" : 0,
                   "defaultMetric" : 0,
                   "description" : "cps AS11164 - SVL-PNI",
-                  "dynamic" : false,
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:64.57.21.1~",
                   "group" : "EBGP-PEER-SVL-PNI",
                   "localAs" : 2152,
+                  "peerAddress" : "64.57.21.1",
                   "remoteAs" : 11164,
-                  "remotePrefix" : "64.57.21.1/32",
                   "routeReflectorClient" : false,
-                  "sendCommunity" : false,
-                  "vrf" : "default"
+                  "sendCommunity" : false
                 }
               },
               "routerId" : "0.0.0.0",
@@ -3237,7 +3332,9 @@
                 },
                 "name" : "permit 1.2.3.0 0.0.0.255"
               }
-            ]
+            ],
+            "sourceName" : "50",
+            "sourceType" : "standard ipv4 access-list"
           },
           "51" : {
             "name" : "51",
@@ -3278,7 +3375,9 @@
                 },
                 "name" : "deny   any"
               }
-            ]
+            ],
+            "sourceName" : "51",
+            "sourceType" : "standard ipv4 access-list"
           },
           "99" : {
             "name" : "99",
@@ -3301,7 +3400,9 @@
                 },
                 "name" : "permit 3.4.5.6"
               }
-            ]
+            ],
+            "sourceName" : "99",
+            "sourceType" : "standard ipv4 access-list"
           }
         },
         "vendorFamily" : {
@@ -3894,6 +3995,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 253,
+                "metric" : 0,
                 "network" : "0.0.0.0/0",
                 "nextHopInterface" : "dynamic",
                 "nextHopIp" : "1.1.1.1",
@@ -3902,6 +4004,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 254,
+                "metric" : 0,
                 "network" : "0.0.0.0/0",
                 "nextHopInterface" : "dynamic",
                 "nextHopIp" : "2.2.2.2",
@@ -3910,6 +4013,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "1.1.1.0/24",
                 "nextHopInterface" : "dynamic",
                 "nextHopIp" : "6.6.6.6",
@@ -3918,6 +4022,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "22.71.224.0/19",
                 "nextHopInterface" : "dynamic",
                 "nextHopIp" : "22.71.252.185",
@@ -3931,6 +4036,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "0.0.0.0/0",
                 "nextHopInterface" : "dynamic",
                 "nextHopIp" : "7.7.7.7",
@@ -3939,6 +4045,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "9.9.9.0/27",
                 "nextHopInterface" : "dynamic",
                 "nextHopIp" : "10.10.10.10",
@@ -3952,6 +4059,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "0.0.0.0/0",
                 "nextHopInterface" : "dynamic",
                 "nextHopIp" : "127.0.0.1",
@@ -3976,7 +4084,9 @@
           "default" : {
             "name" : "default",
             "isisProcess" : {
-              "level" : "LEVEL_1",
+              "level1" : {
+                "wideMetricsOnly" : false
+              },
               "netAddress" : "12.3456.7890.1234.5678.90"
             }
           }
@@ -4290,10 +4400,65 @@
                   "default" : { }
                 }
               },
-              "authentication" : { },
+              "authentication" : {
+                "login" : {
+                  "lists" : {
+                    "blah" : {
+                      "methods" : [
+                        "GROUP_TACACS",
+                        "ENABLE"
+                      ]
+                    },
+                    "default" : {
+                      "methods" : [
+                        "LINE"
+                      ]
+                    },
+                    "http" : {
+                      "methods" : [
+                        "GROUP_USER_DEFINED",
+                        "LOCAL_CASE"
+                      ]
+                    },
+                    "telnet" : {
+                      "methods" : [
+                        "GROUP_USER_DEFINED",
+                        "LOCAL_CASE"
+                      ]
+                    }
+                  },
+                  "privilegeMode" : true
+                }
+              },
               "newModel" : false
             },
             "hostname" : "cisco_aaa",
+            "lines" : {
+              "http" : {
+                "name" : "http",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "GROUP_USER_DEFINED",
+                    "LOCAL_CASE"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "HTTP"
+              },
+              "telnet" : {
+                "name" : "telnet",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "GROUP_USER_DEFINED",
+                    "LOCAL_CASE"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "TELNET"
+              }
+            },
             "logging" : {
               "on" : true
             }
@@ -4705,7 +4870,9 @@
                 },
                 "name" : "270 permit tcp any any eq microsoft-ds 5432"
               }
-            ]
+            ],
+            "sourceName" : "BLAH-BLAH",
+            "sourceType" : "extended ipv4 access-list"
           },
           "blah" : {
             "name" : "blah",
@@ -4728,13 +4895,19 @@
                 },
                 "name" : "10 permit ip any any"
               }
-            ]
+            ],
+            "sourceName" : "blah",
+            "sourceType" : "extended ipv4 access-list"
           },
           "extended" : {
-            "name" : "extended"
+            "name" : "extended",
+            "sourceName" : "extended",
+            "sourceType" : "extended ipv4 access-list"
           },
           "standard" : {
-            "name" : "standard"
+            "name" : "standard",
+            "sourceName" : "standard",
+            "sourceType" : "extended ipv4 access-list"
           }
         },
         "routeFilterLists" : {
@@ -4996,7 +5169,7 @@
                 "trueStatements" : [
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ReturnFalse"
+                    "type" : "Suppress"
                   }
                 ]
               },
@@ -5451,18 +5624,16 @@
               "multipathIbgp" : false,
               "neighbors" : {
                 "10.0.1.2/32" : {
-                  "name" : "10.0.1.2/32",
+                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
-                  "address" : "10.0.1.2",
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
                   "allowRemoteAsOut" : false,
                   "clusterId" : 0,
                   "defaultMetric" : 0,
-                  "dynamic" : false,
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:aVrfWithInnerStatements:10.0.1.2~",
@@ -5471,11 +5642,10 @@
                     "CONNECTED-TO-BGP"
                   ],
                   "localAs" : 1,
+                  "peerAddress" : "10.0.1.2",
                   "remoteAs" : 65001,
-                  "remotePrefix" : "10.0.1.2/32",
                   "routeReflectorClient" : false,
-                  "sendCommunity" : false,
-                  "vrf" : "aVrfWithInnerStatements"
+                  "sendCommunity" : false
                 }
               },
               "routerId" : "0.0.0.0",
@@ -5713,17 +5883,52 @@
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "SWITCH",
+        "ikePhase1Keys" : {
+          "VRF:ABC:DEF:GHI:1234" : {
+            "keyHash" : "f300fd9a9833dc8b16a2c399b2b51c32fc40293606df9c1e814d978f6ebcb9f8",
+            "keyType" : "PRE_SHARED_KEY",
+            "localInterface" : "unset_local_interface",
+            "remoteIdentity" : {
+              "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+              "ipWildcard" : "1.1.1.1"
+            }
+          }
+        },
+        "ikePhase1Policies" : {
+          "myprofile" : {
+            "name" : "myprofile",
+            "ikePhase1Proposals" : [
+              "1"
+            ],
+            "localInterface" : "unset_local_interface",
+            "remoteIdentity" : {
+              "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+              "ipWildcard" : "1.2.3.4"
+            },
+            "selfIdentity" : "2.3.4.6"
+          }
+        },
+        "ikePhase1Proposals" : {
+          "1" : {
+            "name" : "1",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP2",
+            "encryptionAlgorithm" : "THREEDES_CBC",
+            "hashingAlgorithm" : "MD5",
+            "lifetimeSeconds" : 28800
+          }
+        },
         "ikePolicies" : {
           "myprofile" : {
             "name" : "myprofile",
             "proposals" : [
-              "001"
+              "1"
             ]
           }
         },
         "ikeProposals" : {
-          "001" : {
-            "name" : "001",
+          "1" : {
+            "name" : "1",
             "authenticationAlgorithm" : "MD5",
             "authenticationMethod" : "PRE_SHARED_KEYS",
             "diffieHellmanGroup" : "GROUP2",
@@ -5731,7 +5936,77 @@
             "lifetimeSeconds" : 28800
           }
         },
+        "ipsecPhase2Policies" : {
+          "abcdefg" : {
+            "proposals" : [
+              "hijklmnop"
+            ]
+          },
+          "~IPSEC_PHASE2_POLICY:VPN:5~" : {
+            "pfsKeyGroup" : "GROUP14",
+            "proposals" : [
+              "bleep"
+            ]
+          },
+          "~IPSEC_PHASE2_POLICY:VPNMAP:2~" : {
+            "pfsKeyGroup" : "GROUP2",
+            "proposals" : [
+              "mytransformset"
+            ]
+          }
+        },
+        "ipsecPhase2Proposals" : {
+          "ESP-3DES-MD5" : {
+            "authenticationAlgorithm" : "HMAC_MD5_96",
+            "encryptionAlgorithm" : "THREEDES_CBC",
+            "ipsecEncapsulationMode" : "TUNNEL",
+            "protocols" : [
+              "ESP"
+            ]
+          },
+          "IPSEC_AES_256" : {
+            "authenticationAlgorithm" : "HMAC_SHA1_96",
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "ipsecEncapsulationMode" : "TUNNEL",
+            "protocols" : [
+              "ESP"
+            ]
+          },
+          "cipts1" : {
+            "authenticationAlgorithm" : "HMAC_SHA_256_128",
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "ipsecEncapsulationMode" : "TUNNEL",
+            "protocols" : [
+              "ESP"
+            ]
+          },
+          "cipts2" : {
+            "authenticationAlgorithm" : "HMAC_SHA_512",
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "ipsecEncapsulationMode" : "TUNNEL",
+            "protocols" : [
+              "ESP"
+            ]
+          },
+          "noAuthHeader" : {
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "ipsecEncapsulationMode" : "TUNNEL",
+            "protocols" : [
+              "ESP"
+            ]
+          }
+        },
         "ipsecPolicies" : {
+          "VPN:5" : {
+            "name" : "VPN:5",
+            "pfsKeyGroup" : "GROUP14",
+            "pfsKeyGroupDynamicIke" : false
+          },
+          "VPNMAP:2" : {
+            "name" : "VPNMAP:2",
+            "pfsKeyGroup" : "GROUP2",
+            "pfsKeyGroupDynamicIke" : false
+          },
           "abcdefg" : {
             "name" : "abcdefg",
             "pfsKeyGroupDynamicIke" : false
@@ -6053,7 +6328,9 @@
                 },
                 "name" : "permit tcp any host 1.1.1.1 eq 65111"
               }
-            ]
+            ],
+            "sourceName" : "bippety",
+            "sourceType" : "extended ipv4 access-list"
           },
           "bloop_blop" : {
             "name" : "bloop_blop",
@@ -6082,7 +6359,9 @@
                 },
                 "name" : "permit tcp addrgroup bleep_blorp any eq 13000"
               }
-            ]
+            ],
+            "sourceName" : "bloop_blop",
+            "sourceType" : "extended ipv4 access-list"
           }
         },
         "vendorFamily" : {
@@ -6564,6 +6843,7 @@
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "VLAN",
+            "vlan" : 1,
             "vrf" : "default"
           },
           "Vlan1005" : {
@@ -6589,6 +6869,7 @@
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "VLAN",
+            "vlan" : 1005,
             "vrf" : "default"
           },
           "Vlan1006" : {
@@ -6614,6 +6895,7 @@
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "VLAN",
+            "vlan" : 1006,
             "vrf" : "default"
           },
           "Vlan111" : {
@@ -6639,6 +6921,7 @@
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "VLAN",
+            "vlan" : 111,
             "vrf" : "default"
           },
           "Vlan1234" : {
@@ -6664,6 +6947,7 @@
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "VLAN",
+            "vlan" : 1234,
             "vrf" : "default"
           },
           "Vlan2" : {
@@ -6689,6 +6973,7 @@
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "VLAN",
+            "vlan" : 2,
             "vrf" : "default"
           },
           "Vlan3" : {
@@ -6714,6 +6999,7 @@
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "VLAN",
+            "vlan" : 3,
             "vrf" : "default"
           },
           "Vlan4094" : {
@@ -6739,6 +7025,7 @@
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "VLAN",
+            "vlan" : 4094,
             "vrf" : "default"
           },
           "Vxlan1" : {
@@ -6842,7 +7129,9 @@
                 },
                 "name" : "10 permit tcp any any"
               }
-            ]
+            ],
+            "sourceName" : "abc",
+            "sourceType" : "extended ipv4 access-list"
           }
         },
         "vendorFamily" : {
@@ -6947,6 +7236,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 100,
+                "metric" : 0,
                 "network" : "0.0.0.0/0",
                 "nextHopInterface" : "Loopback66",
                 "nextHopIp" : "AUTO/NONE(-1l)",
@@ -6955,6 +7245,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 150,
+                "metric" : 0,
                 "network" : "0.0.0.0/0",
                 "nextHopInterface" : "Loopback99",
                 "nextHopIp" : "AUTO/NONE(-1l)",
@@ -6963,6 +7254,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 250,
+                "metric" : 0,
                 "network" : "0.0.0.0/0",
                 "nextHopInterface" : "Dialer1",
                 "nextHopIp" : "AUTO/NONE(-1l)",
@@ -6971,6 +7263,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 300,
+                "metric" : 0,
                 "network" : "0.0.0.0/0",
                 "nextHopInterface" : "Dialer2",
                 "nextHopIp" : "AUTO/NONE(-1l)",
@@ -6979,6 +7272,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 10,
+                "metric" : 0,
                 "network" : "1.2.3.0/25",
                 "nextHopInterface" : "dynamic",
                 "nextHopIp" : "2.3.4.5",
@@ -6987,6 +7281,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "1.2.3.4/32",
                 "nextHopInterface" : "dynamic",
                 "nextHopIp" : "2.3.4.5",
@@ -6995,6 +7290,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "1.2.37.104/29",
                 "nextHopInterface" : "GigabitEthernet3/0/0.212",
                 "nextHopIp" : "AUTO/NONE(-1l)",
@@ -7003,6 +7299,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "1.2.39.17/32",
                 "nextHopInterface" : "Serial5/0:2",
                 "nextHopIp" : "AUTO/NONE(-1l)",
@@ -7011,6 +7308,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 210,
+                "metric" : 0,
                 "network" : "1.2.39.22/32",
                 "nextHopInterface" : "dynamic",
                 "nextHopIp" : "1.2.32.39",
@@ -7019,6 +7317,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 240,
+                "metric" : 0,
                 "network" : "1.2.39.32/32",
                 "nextHopInterface" : "Serial5/1:5",
                 "nextHopIp" : "1.2.32.59",
@@ -7027,6 +7326,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "1.2.39.69/32",
                 "nextHopInterface" : "POS5/3:10",
                 "nextHopIp" : "AUTO/NONE(-1l)",
@@ -7040,6 +7340,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "0.0.0.0/0",
                 "nextHopInterface" : "dynamic",
                 "nextHopIp" : "5.6.7.8",
@@ -7583,7 +7884,12 @@
               "Serial4/0"
             ],
             "isisProcess" : {
-              "level" : "LEVEL_1_2",
+              "level1" : {
+                "wideMetricsOnly" : false
+              },
+              "level2" : {
+                "wideMetricsOnly" : false
+              },
               "netAddress" : "12.1234.1234.1234.1234.12"
             }
           }
@@ -7629,6 +7935,7 @@
                 "execTimeoutMinutes" : 0,
                 "execTimeoutSeconds" : 0,
                 "inputAccessList" : "40",
+                "lineType" : "UNKNOWN",
                 "transportInput" : [
                   "telnet"
                 ],
@@ -7644,6 +7951,7 @@
                 "execTimeoutMinutes" : 0,
                 "execTimeoutSeconds" : 0,
                 "inputAccessList" : "40",
+                "lineType" : "UNKNOWN",
                 "transportInput" : [
                   "telnet"
                 ],
@@ -7659,6 +7967,7 @@
                 "execTimeoutMinutes" : 0,
                 "execTimeoutSeconds" : 0,
                 "inputAccessList" : "40",
+                "lineType" : "UNKNOWN",
                 "transportInput" : [
                   "telnet"
                 ],
@@ -7674,6 +7983,7 @@
                 "execTimeoutMinutes" : 0,
                 "execTimeoutSeconds" : 0,
                 "inputAccessList" : "40",
+                "lineType" : "UNKNOWN",
                 "transportInput" : [
                   "telnet"
                 ],
@@ -7689,6 +7999,7 @@
                 "execTimeoutMinutes" : 0,
                 "execTimeoutSeconds" : 0,
                 "inputAccessList" : "40",
+                "lineType" : "UNKNOWN",
                 "transportInput" : [
                   "telnet"
                 ],
@@ -7704,6 +8015,7 @@
                 "execTimeoutMinutes" : 0,
                 "execTimeoutSeconds" : 0,
                 "inputAccessList" : "40",
+                "lineType" : "UNKNOWN",
                 "transportInput" : [
                   "telnet"
                 ],
@@ -7719,6 +8031,7 @@
                 "execTimeoutMinutes" : 0,
                 "execTimeoutSeconds" : 0,
                 "inputAccessList" : "40",
+                "lineType" : "UNKNOWN",
                 "transportInput" : [
                   "telnet"
                 ],
@@ -7734,6 +8047,7 @@
                 "execTimeoutMinutes" : 0,
                 "execTimeoutSeconds" : 0,
                 "inputAccessList" : "40",
+                "lineType" : "UNKNOWN",
                 "transportInput" : [
                   "telnet"
                 ],
@@ -7749,6 +8063,7 @@
                 "execTimeoutMinutes" : 0,
                 "execTimeoutSeconds" : 0,
                 "inputAccessList" : "40",
+                "lineType" : "UNKNOWN",
                 "transportInput" : [
                   "telnet"
                 ],
@@ -7764,6 +8079,7 @@
                 "execTimeoutMinutes" : 0,
                 "execTimeoutSeconds" : 0,
                 "inputAccessList" : "40",
+                "lineType" : "UNKNOWN",
                 "transportInput" : [
                   "telnet"
                 ],
@@ -7779,6 +8095,7 @@
                 "execTimeoutMinutes" : 0,
                 "execTimeoutSeconds" : 0,
                 "inputAccessList" : "40",
+                "lineType" : "UNKNOWN",
                 "transportInput" : [
                   "telnet"
                 ],
@@ -7794,6 +8111,7 @@
                 "execTimeoutMinutes" : 0,
                 "execTimeoutSeconds" : 0,
                 "inputAccessList" : "40",
+                "lineType" : "UNKNOWN",
                 "transportInput" : [
                   "telnet"
                 ],
@@ -7809,6 +8127,7 @@
                 "execTimeoutMinutes" : 0,
                 "execTimeoutSeconds" : 0,
                 "inputAccessList" : "40",
+                "lineType" : "UNKNOWN",
                 "transportInput" : [
                   "telnet"
                 ],
@@ -7824,6 +8143,7 @@
                 "execTimeoutMinutes" : 0,
                 "execTimeoutSeconds" : 0,
                 "inputAccessList" : "40",
+                "lineType" : "UNKNOWN",
                 "transportInput" : [
                   "telnet"
                 ],
@@ -7839,6 +8159,7 @@
                 "execTimeoutMinutes" : 0,
                 "execTimeoutSeconds" : 0,
                 "inputAccessList" : "40",
+                "lineType" : "UNKNOWN",
                 "transportInput" : [
                   "telnet"
                 ],
@@ -7854,6 +8175,7 @@
                 "execTimeoutMinutes" : 0,
                 "execTimeoutSeconds" : 0,
                 "inputAccessList" : "40",
+                "lineType" : "UNKNOWN",
                 "transportInput" : [
                   "telnet"
                 ],
@@ -7868,6 +8190,7 @@
                 "name" : "<UNNAMED>2",
                 "execTimeoutMinutes" : 1,
                 "execTimeoutSeconds" : 0,
+                "lineType" : "UNKNOWN",
                 "transportInput" : [
                   "ssh",
                   "telnet"
@@ -7877,6 +8200,7 @@
                 "name" : "<UNNAMED>35",
                 "execTimeoutMinutes" : 0,
                 "execTimeoutSeconds" : 0,
+                "lineType" : "UNKNOWN",
                 "transportInput" : [
                   "all"
                 ]
@@ -7885,6 +8209,7 @@
                 "name" : "<UNNAMED>36",
                 "execTimeoutMinutes" : 0,
                 "execTimeoutSeconds" : 0,
+                "lineType" : "UNKNOWN",
                 "transportInput" : [
                   "all"
                 ]
@@ -7893,6 +8218,7 @@
                 "name" : "<UNNAMED>37",
                 "execTimeoutMinutes" : 0,
                 "execTimeoutSeconds" : 0,
+                "lineType" : "UNKNOWN",
                 "transportInput" : [
                   "all"
                 ]
@@ -7901,6 +8227,7 @@
                 "name" : "<UNNAMED>38",
                 "execTimeoutMinutes" : 0,
                 "execTimeoutSeconds" : 0,
+                "lineType" : "UNKNOWN",
                 "transportInput" : [
                   "all"
                 ]
@@ -7909,6 +8236,7 @@
                 "name" : "<UNNAMED>39",
                 "execTimeoutMinutes" : 0,
                 "execTimeoutSeconds" : 0,
+                "lineType" : "UNKNOWN",
                 "transportInput" : [
                   "all"
                 ]
@@ -7917,6 +8245,7 @@
                 "name" : "<UNNAMED>40",
                 "execTimeoutMinutes" : 0,
                 "execTimeoutSeconds" : 0,
+                "lineType" : "UNKNOWN",
                 "transportInput" : [
                   "all"
                 ]
@@ -7925,6 +8254,7 @@
                 "name" : "<UNNAMED>41",
                 "execTimeoutMinutes" : 0,
                 "execTimeoutSeconds" : 0,
+                "lineType" : "UNKNOWN",
                 "transportInput" : [
                   "all"
                 ]
@@ -7933,6 +8263,7 @@
                 "name" : "<UNNAMED>42",
                 "execTimeoutMinutes" : 0,
                 "execTimeoutSeconds" : 0,
+                "lineType" : "UNKNOWN",
                 "transportInput" : [
                   "all"
                 ]
@@ -7941,6 +8272,7 @@
                 "name" : "<UNNAMED>43",
                 "execTimeoutMinutes" : 0,
                 "execTimeoutSeconds" : 0,
+                "lineType" : "UNKNOWN",
                 "transportInput" : [
                   "all"
                 ]
@@ -7949,6 +8281,7 @@
                 "name" : "<UNNAMED>44",
                 "execTimeoutMinutes" : 0,
                 "execTimeoutSeconds" : 0,
+                "lineType" : "UNKNOWN",
                 "transportInput" : [
                   "all"
                 ]
@@ -7957,6 +8290,7 @@
                 "name" : "<UNNAMED>45",
                 "execTimeoutMinutes" : 0,
                 "execTimeoutSeconds" : 0,
+                "lineType" : "UNKNOWN",
                 "transportInput" : [
                   "all"
                 ]
@@ -7965,6 +8299,7 @@
                 "name" : "<UNNAMED>46",
                 "execTimeoutMinutes" : 0,
                 "execTimeoutSeconds" : 0,
+                "lineType" : "UNKNOWN",
                 "transportInput" : [
                   "all"
                 ]
@@ -7973,6 +8308,7 @@
                 "name" : "<UNNAMED>47",
                 "execTimeoutMinutes" : 0,
                 "execTimeoutSeconds" : 0,
+                "lineType" : "UNKNOWN",
                 "transportInput" : [
                   "all"
                 ]
@@ -7981,6 +8317,7 @@
                 "name" : "<UNNAMED>48",
                 "execTimeoutMinutes" : 0,
                 "execTimeoutSeconds" : 0,
+                "lineType" : "UNKNOWN",
                 "transportInput" : [
                   "all"
                 ]
@@ -7988,13 +8325,15 @@
               "console" : {
                 "name" : "console",
                 "execTimeoutMinutes" : 15,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
               },
               "vty" : {
                 "name" : "vty",
                 "execTimeoutMinutes" : 0,
                 "execTimeoutSeconds" : 0,
-                "inputAccessList" : "vty-acl"
+                "inputAccessList" : "vty-acl",
+                "lineType" : "VTY"
               },
               "vty0" : {
                 "name" : "vty0",
@@ -8002,6 +8341,7 @@
                 "execTimeoutSeconds" : 0,
                 "inputAccessList" : "99",
                 "inputIpv6AccessList" : "ipv6-vty-acl",
+                "lineType" : "VTY",
                 "transportPreferred" : [
                   "none"
                 ]
@@ -8012,6 +8352,7 @@
                 "execTimeoutSeconds" : 0,
                 "inputAccessList" : "99",
                 "inputIpv6AccessList" : "ipv6-vty-acl",
+                "lineType" : "VTY",
                 "transportPreferred" : [
                   "none"
                 ]
@@ -8020,37 +8361,43 @@
                 "name" : "vty10",
                 "execTimeoutMinutes" : 15,
                 "execTimeoutSeconds" : 0,
-                "inputAccessList" : "40"
+                "inputAccessList" : "40",
+                "lineType" : "VTY"
               },
               "vty11" : {
                 "name" : "vty11",
                 "execTimeoutMinutes" : 15,
                 "execTimeoutSeconds" : 0,
-                "inputAccessList" : "40"
+                "inputAccessList" : "40",
+                "lineType" : "VTY"
               },
               "vty12" : {
                 "name" : "vty12",
                 "execTimeoutMinutes" : 15,
                 "execTimeoutSeconds" : 0,
-                "inputAccessList" : "40"
+                "inputAccessList" : "40",
+                "lineType" : "VTY"
               },
               "vty13" : {
                 "name" : "vty13",
                 "execTimeoutMinutes" : 15,
                 "execTimeoutSeconds" : 0,
-                "inputAccessList" : "40"
+                "inputAccessList" : "40",
+                "lineType" : "VTY"
               },
               "vty14" : {
                 "name" : "vty14",
                 "execTimeoutMinutes" : 15,
                 "execTimeoutSeconds" : 0,
-                "inputAccessList" : "40"
+                "inputAccessList" : "40",
+                "lineType" : "VTY"
               },
               "vty15" : {
                 "name" : "vty15",
                 "execTimeoutMinutes" : 15,
                 "execTimeoutSeconds" : 0,
-                "inputAccessList" : "40"
+                "inputAccessList" : "40",
+                "lineType" : "VTY"
               },
               "vty2" : {
                 "name" : "vty2",
@@ -8058,6 +8405,7 @@
                 "execTimeoutSeconds" : 0,
                 "inputAccessList" : "99",
                 "inputIpv6AccessList" : "ipv6-vty-acl",
+                "lineType" : "VTY",
                 "transportPreferred" : [
                   "none"
                 ]
@@ -8068,6 +8416,7 @@
                 "execTimeoutSeconds" : 0,
                 "inputAccessList" : "99",
                 "inputIpv6AccessList" : "ipv6-vty-acl",
+                "lineType" : "VTY",
                 "transportPreferred" : [
                   "none"
                 ]
@@ -8078,6 +8427,7 @@
                 "execTimeoutSeconds" : 0,
                 "inputAccessList" : "99",
                 "inputIpv6AccessList" : "ipv6-vty-acl",
+                "lineType" : "VTY",
                 "transportPreferred" : [
                   "none"
                 ]
@@ -8086,31 +8436,36 @@
                 "name" : "vty5",
                 "execTimeoutMinutes" : 15,
                 "execTimeoutSeconds" : 0,
-                "inputAccessList" : "40"
+                "inputAccessList" : "40",
+                "lineType" : "VTY"
               },
               "vty6" : {
                 "name" : "vty6",
                 "execTimeoutMinutes" : 15,
                 "execTimeoutSeconds" : 0,
-                "inputAccessList" : "40"
+                "inputAccessList" : "40",
+                "lineType" : "VTY"
               },
               "vty7" : {
                 "name" : "vty7",
                 "execTimeoutMinutes" : 15,
                 "execTimeoutSeconds" : 0,
-                "inputAccessList" : "40"
+                "inputAccessList" : "40",
+                "lineType" : "VTY"
               },
               "vty8" : {
                 "name" : "vty8",
                 "execTimeoutMinutes" : 15,
                 "execTimeoutSeconds" : 0,
-                "inputAccessList" : "40"
+                "inputAccessList" : "40",
+                "lineType" : "VTY"
               },
               "vty9" : {
                 "name" : "vty9",
                 "execTimeoutMinutes" : 15,
                 "execTimeoutSeconds" : 0,
-                "inputAccessList" : "40"
+                "inputAccessList" : "40",
+                "lineType" : "VTY"
               }
             },
             "logging" : {
@@ -8219,10 +8574,26 @@
               {
                 "action" : "ACCEPT",
                 "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.OrMatchExpr"
+                  "class" : "org.batfish.datamodel.acl.OrMatchExpr",
+                  "disjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                      "headerSpace" : {
+                        "icmpTypes" : [
+                          "8-8"
+                        ],
+                        "ipProtocols" : [
+                          "ICMP"
+                        ],
+                        "negate" : false
+                      }
+                    }
+                  ]
                 }
               }
-            ]
+            ],
+            "sourceName" : "SVCGRP-ICMP",
+            "sourceType" : "object-group service"
           }
         },
         "vendorFamily" : {
@@ -8392,7 +8763,9 @@
                 },
                 "name" : "10 permit icmp any any"
               }
-            ]
+            ],
+            "sourceName" : "copp-system-acl-icmp",
+            "sourceType" : "extended ipv4 access-list"
           }
         },
         "vendorFamily" : {
@@ -8581,27 +8954,24 @@
               "multipathIbgp" : false,
               "neighbors" : {
                 "2.2.2.2/32" : {
-                  "name" : "2.2.2.2/32",
+                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
-                  "address" : "2.2.2.2",
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
                   "allowRemoteAsOut" : false,
                   "clusterId" : 0,
                   "defaultMetric" : 0,
-                  "dynamic" : false,
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:2.2.2.2~",
                   "localAs" : 65500,
+                  "peerAddress" : "2.2.2.2",
                   "remoteAs" : 6600,
-                  "remotePrefix" : "2.2.2.2/32",
                   "routeReflectorClient" : false,
-                  "sendCommunity" : false,
-                  "vrf" : "default"
+                  "sendCommunity" : false
                 }
               },
               "routerId" : "0.0.0.0",
@@ -8631,10 +9001,8 @@
             ],
             "mtu" : 1500,
             "nativeVlan" : 1,
-            "ospfArea" : 0,
-            "ospfCost" : 4000,
             "ospfDeadInterval" : 0,
-            "ospfEnabled" : true,
+            "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
@@ -8785,14 +9153,7 @@
               "areas" : {
                 "0" : {
                   "name" : 0,
-                  "interfaces" : [
-                    "Ethernet0/0"
-                  ],
-                  "nssa" : {
-                    "defaultOriginateType" : "INTER_AREA",
-                    "suppressType3" : true
-                  },
-                  "stubType" : "NSSA",
+                  "stubType" : "NONE",
                   "summaries" : {
                     "1.2.3.0/24" : {
                       "advertise" : true,
@@ -8897,7 +9258,27 @@
                 },
                 "name" : "class-default action: ACCEPT"
               }
-            ]
+            ],
+            "sourceName" : "pminspect",
+            "sourceType" : "policy-map type inspect"
+          }
+        },
+        "ipSpaceMetadata" : {
+          "1.2.3.4-24" : {
+            "sourceName" : "1.2.3.4-24",
+            "sourceType" : "object-group network"
+          },
+          "dns_servers" : {
+            "sourceName" : "dns_servers",
+            "sourceType" : "object-group network"
+          },
+          "ntp_servers" : {
+            "sourceName" : "ntp_servers",
+            "sourceType" : "object-group network"
+          },
+          "obj_any" : {
+            "sourceName" : "obj_any",
+            "sourceType" : "object network"
           }
         },
         "ipSpaces" : {
@@ -8927,6 +9308,10 @@
                 }
               }
             ]
+          },
+          "obj_any" : {
+            "class" : "org.batfish.datamodel.PrefixIpSpace",
+            "prefix" : "0.0.0.0/0"
           }
         },
         "vendorFamily" : {
@@ -9504,7 +9889,9 @@
                 },
                 "name" : "permit ip any any"
               }
-            ]
+            ],
+            "sourceName" : "blah",
+            "sourceType" : "extended ipv4 access-list"
           }
         },
         "vendorFamily" : {
@@ -9548,7 +9935,9 @@
                 },
                 "name" : "permit any"
               }
-            ]
+            ],
+            "sourceName" : "1",
+            "sourceType" : "standard ipv4 access-list"
           }
         },
         "vendorFamily" : {
@@ -9830,6 +10219,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "0.0.0.0/0",
                 "nextHopInterface" : "dynamic",
                 "nextHopIp" : "1.2.3.4",
@@ -10068,14 +10458,14 @@
         "name" : "community-name-numbers",
         "communityLists" : {
           "9999-RRR" : {
+            "invertMatch" : false,
             "lines" : [
               {
                 "action" : "ACCEPT",
                 "regex" : "^9999:8888$"
               }
             ],
-            "name" : "9999-RRR",
-            "invertMatch" : false
+            "name" : "9999-RRR"
           }
         },
         "defaultCrossZoneAction" : "ACCEPT",
@@ -10148,14 +10538,14 @@
         "name" : "community-name-numbers_dos",
         "communityLists" : {
           "9999-RRR" : {
+            "invertMatch" : false,
             "lines" : [
               {
                 "action" : "ACCEPT",
                 "regex" : "^9999:8888$"
               }
             ],
-            "name" : "9999-RRR",
-            "invertMatch" : false
+            "name" : "9999-RRR"
           }
         },
         "defaultCrossZoneAction" : "ACCEPT",
@@ -10228,14 +10618,14 @@
         "name" : "community_list_named",
         "communityLists" : {
           "COMM_LIST_NAME" : {
+            "invertMatch" : false,
             "lines" : [
               {
                 "action" : "ACCEPT",
                 "regex" : "^75:42$"
               }
             ],
-            "name" : "COMM_LIST_NAME",
-            "invertMatch" : false
+            "name" : "COMM_LIST_NAME"
           }
         },
         "defaultCrossZoneAction" : "ACCEPT",
@@ -10616,6 +11006,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "1.2.28.104/31",
                 "nextHopInterface" : "Ethernet13/10",
                 "nextHopIp" : "AUTO/NONE(-1l)",
@@ -10914,6 +11305,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "0.0.0.0/0",
                 "nextHopInterface" : "eth0",
                 "nextHopIp" : "AUTO/NONE(-1l)",
@@ -11399,6 +11791,7 @@
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "VLAN",
+            "vlan" : 303,
             "vrf" : "default"
           },
           "Vlan803" : {
@@ -11432,6 +11825,7 @@
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "VLAN",
+            "vlan" : 803,
             "vrf" : "default"
           }
         },
@@ -11558,6 +11952,7 @@
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "VLAN",
+            "vlan" : 100,
             "vrf" : "default"
           }
         },
@@ -11693,6 +12088,76 @@
           }
         }
       },
+      "ios_interface" : {
+        "configurationFormat" : "CISCO_IOS",
+        "name" : "ios_interface",
+        "defaultCrossZoneAction" : "ACCEPT",
+        "defaultInboundAction" : "ACCEPT",
+        "deviceType" : "SWITCH",
+        "interfaces" : {
+          "GigabitEthernet1/0/1" : {
+            "name" : "GigabitEthernet1/0/1",
+            "accessVlan" : 0,
+            "active" : true,
+            "autostate" : true,
+            "bandwidth" : 1.0E9,
+            "declaredNames" : [
+              "GigabitEthernet1/0/1"
+            ],
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : true,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          }
+        },
+        "vendorFamily" : {
+          "cisco" : {
+            "hostname" : "ios_interface",
+            "logging" : {
+              "on" : true
+            }
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default",
+            "interfaces" : [
+              "GigabitEthernet1/0/1"
+            ]
+          }
+        }
+      },
+      "ios_template" : {
+        "configurationFormat" : "CISCO_IOS",
+        "name" : "ios_template",
+        "defaultCrossZoneAction" : "ACCEPT",
+        "defaultInboundAction" : "ACCEPT",
+        "deviceType" : "SWITCH",
+        "vendorFamily" : {
+          "cisco" : {
+            "hostname" : "ios_template",
+            "logging" : {
+              "on" : true
+            }
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default"
+          }
+        }
+      },
       "ios_xr_acl" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "ios_xr_acl",
@@ -11719,15 +12184,168 @@
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "ROUTER",
+        "routeFilterLists" : {
+          "~MATCH_SUPPRESSED_SUMMARY_ONLY:default~" : {
+            "name" : "~MATCH_SUPPRESSED_SUMMARY_ONLY:default~",
+            "lines" : [
+              {
+                "action" : "ACCEPT",
+                "ipWildcard" : "1.0.0.0/8",
+                "lengthRange" : "9-32"
+              }
+            ]
+          }
+        },
         "routingPolicies" : {
+          "~AGGREGATE_ROUTE_GEN:default:1.0.0.0/8~" : {
+            "name" : "~AGGREGATE_ROUTE_GEN:default:1.0.0.0/8~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                  "prefix" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                  },
+                  "prefixSet" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                    "prefixSpace" : [
+                      "1.0.0.0/8:9-32"
+                    ]
+                  }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ]
+              }
+            ]
+          },
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
             "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
             "statements" : [
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "comment" : "Suppress more specific networks for summary-only aggregate-address networks",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                  "prefix" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                  },
+                  "prefixSet" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
+                    "name" : "~MATCH_SUPPRESSED_SUMMARY_ONLY:default~"
+                  }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "Suppress"
+                  }
+                ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
                 "guard" : {
                   "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
                   "disjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
+                      "conjuncts" : [
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                          "prefix" : {
+                            "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                          },
+                          "prefixSet" : {
+                            "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                            "prefixSpace" : [
+                              "1.0.0.0/8"
+                            ]
+                          }
+                        },
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                          "protocol" : "aggregate"
+                        },
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr",
+                          "expr" : {
+                            "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                            "type" : "True"
+                          },
+                          "postStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "UnsetWriteIntermediateBgpAttributes"
+                            }
+                          ],
+                          "postTrueStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "SetReadIntermediateBgpAttributes"
+                            },
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
+                              "originType" : {
+                                "class" : "org.batfish.datamodel.routing_policy.expr.LiteralOrigin",
+                                "originType" : "igp"
+                              }
+                            }
+                          ],
+                          "preStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "SetWriteIntermediateBgpAttributes"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
+                      "comment" : "Redistribute static routes into BGP",
+                      "conjuncts" : [
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                          "protocol" : "static"
+                        },
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr",
+                          "expr" : {
+                            "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                            "type" : "True"
+                          },
+                          "postStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "UnsetWriteIntermediateBgpAttributes"
+                            }
+                          ],
+                          "postTrueStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "SetReadIntermediateBgpAttributes"
+                            },
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
+                              "originType" : {
+                                "class" : "org.batfish.datamodel.routing_policy.expr.LiteralOrigin",
+                                "originType" : "incomplete"
+                              }
+                            }
+                          ],
+                          "preStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "SetWriteIntermediateBgpAttributes"
+                            }
+                          ]
+                        }
+                      ]
+                    },
                     {
                       "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
                       "protocol" : "bgp"
@@ -11763,6 +12381,18 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
+            "aggregateRoutes" : [
+              {
+                "class" : "org.batfish.datamodel.GeneratedRoute",
+                "administrativeCost" : 200,
+                "asPath" : [ ],
+                "discard" : true,
+                "generationPolicy" : "~AGGREGATE_ROUTE_GEN:default:1.0.0.0/8~",
+                "metric" : 0,
+                "network" : "1.0.0.0/8",
+                "nextHopIp" : "AUTO/NONE(-1l)"
+              }
+            ],
             "bgpProcess" : {
               "multipathEbgp" : false,
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
@@ -11901,11 +12531,10 @@
               "multipathIbgp" : false,
               "neighbors" : {
                 "1.2.1.1/32" : {
-                  "name" : "1.2.1.1/32",
+                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
-                  "address" : "1.2.1.1",
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
@@ -11913,24 +12542,21 @@
                   "clusterId" : 0,
                   "defaultMetric" : 0,
                   "description" : "htegiofnoirwejhg",
-                  "dynamic" : false,
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:1.2.1.1~",
                   "group" : "foobar-iBGP_ipv4",
                   "localAs" : 5555,
+                  "peerAddress" : "1.2.1.1",
                   "remoteAs" : 5555,
-                  "remotePrefix" : "1.2.1.1/32",
                   "routeReflectorClient" : false,
-                  "sendCommunity" : false,
-                  "vrf" : "default"
+                  "sendCommunity" : false
                 },
                 "1.2.1.2/32" : {
-                  "name" : "1.2.1.2/32",
+                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
-                  "address" : "1.2.1.2",
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
@@ -11938,24 +12564,21 @@
                   "clusterId" : 0,
                   "defaultMetric" : 0,
                   "description" : "hejtuignrfojfgner",
-                  "dynamic" : false,
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:1.2.1.2~",
                   "group" : "foobar-iBGP_ipv4",
                   "localAs" : 5555,
+                  "peerAddress" : "1.2.1.2",
                   "remoteAs" : 5555,
-                  "remotePrefix" : "1.2.1.2/32",
                   "routeReflectorClient" : false,
-                  "sendCommunity" : false,
-                  "vrf" : "default"
+                  "sendCommunity" : false
                 },
                 "1.2.1.3/32" : {
-                  "name" : "1.2.1.3/32",
+                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
-                  "address" : "1.2.1.3",
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
@@ -11963,22 +12586,37 @@
                   "clusterId" : 0,
                   "defaultMetric" : 0,
                   "description" : "bafjewoifj",
-                  "dynamic" : false,
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:1.2.1.3~",
                   "group" : "foobar-iBGP_border_ipv4",
                   "localAs" : 5555,
+                  "peerAddress" : "1.2.1.3",
                   "remoteAs" : 5555,
-                  "remotePrefix" : "1.2.1.3/32",
                   "routeReflectorClient" : false,
-                  "sendCommunity" : false,
-                  "vrf" : "default"
+                  "sendCommunity" : false
                 }
               },
               "routerId" : "0.0.0.0",
               "tieBreaker" : "ARRIVAL_ORDER"
             }
+          }
+        }
+      },
+      "ios_xr_class_map" : {
+        "configurationFormat" : "CISCO_IOS_XR",
+        "name" : "ios_xr_class_map",
+        "defaultCrossZoneAction" : "ACCEPT",
+        "defaultInboundAction" : "ACCEPT",
+        "deviceType" : "SWITCH",
+        "vendorFamily" : {
+          "cisco" : {
+            "hostname" : "ios_xr_class_map"
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default"
           }
         }
       },
@@ -12037,10 +12675,44 @@
             "name" : "default",
             "interfaces" : [
               "GigabitEthernet0/2/1/6"
-            ],
-            "isisProcess" : {
-              "level" : "LEVEL_1_2"
+            ]
+          }
+        }
+      },
+      "ios_xr_logging" : {
+        "configurationFormat" : "CISCO_IOS_XR",
+        "name" : "ios_xr_logging",
+        "defaultCrossZoneAction" : "ACCEPT",
+        "defaultInboundAction" : "ACCEPT",
+        "deviceType" : "SWITCH",
+        "vendorFamily" : {
+          "cisco" : {
+            "hostname" : "ios_xr_logging",
+            "logging" : {
+              "on" : true
             }
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default"
+          }
+        }
+      },
+      "ios_xr_misc" : {
+        "configurationFormat" : "CISCO_IOS_XR",
+        "name" : "ios_xr_misc",
+        "defaultCrossZoneAction" : "ACCEPT",
+        "defaultInboundAction" : "ACCEPT",
+        "deviceType" : "SWITCH",
+        "vendorFamily" : {
+          "cisco" : {
+            "hostname" : "ios_xr_misc"
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default"
           }
         }
       },
@@ -12450,6 +13122,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "1.2.0.0/16",
                 "nextHopInterface" : "null_interface",
                 "nextHopIp" : "AUTO/NONE(-1l)",
@@ -12458,6 +13131,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "1.2.11.251/32",
                 "nextHopInterface" : "null_interface",
                 "nextHopIp" : "AUTO/NONE(-1l)",
@@ -12466,6 +13140,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "1.2.16.0/24",
                 "nextHopInterface" : "null_interface",
                 "nextHopIp" : "AUTO/NONE(-1l)",
@@ -12474,6 +13149,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "1.2.16.255/32",
                 "nextHopInterface" : "null_interface",
                 "nextHopIp" : "AUTO/NONE(-1l)",
@@ -12482,6 +13158,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "1.2.42.185/32",
                 "nextHopInterface" : "dynamic",
                 "nextHopIp" : "1.2.42.186",
@@ -12490,6 +13167,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "1.2.220.0/24",
                 "nextHopInterface" : "TenGigabitEthernet0/0/2/3",
                 "nextHopIp" : "1.2.220.245",
@@ -12498,6 +13176,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "2.3.0.0/16",
                 "nextHopInterface" : "null_interface",
                 "nextHopIp" : "AUTO/NONE(-1l)",
@@ -12506,6 +13185,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "4.5.0.0/16",
                 "nextHopInterface" : "null_interface",
                 "nextHopIp" : "AUTO/NONE(-1l)",
@@ -12514,6 +13194,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "6.7.165.2/32",
                 "nextHopInterface" : "dynamic",
                 "nextHopIp" : "198.188.255.22",
@@ -12522,6 +13203,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "9.8.192.32/29",
                 "nextHopInterface" : "GigabitEthernet0/2/1/5.290",
                 "nextHopIp" : "1.2.24.98",
@@ -12592,6 +13274,46 @@
         "vendorFamily" : {
           "cisco" : {
             "hostname" : "ip_prefix_list_single_line",
+            "logging" : {
+              "on" : true
+            }
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default"
+          }
+        }
+      },
+      "isr_crypto_gdoi" : {
+        "configurationFormat" : "CISCO_IOS",
+        "name" : "isr_crypto_gdoi",
+        "defaultCrossZoneAction" : "ACCEPT",
+        "defaultInboundAction" : "ACCEPT",
+        "deviceType" : "SWITCH",
+        "vendorFamily" : {
+          "cisco" : {
+            "hostname" : "isr_crypto_gdoi",
+            "logging" : {
+              "on" : true
+            }
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default"
+          }
+        }
+      },
+      "isr_voip" : {
+        "configurationFormat" : "CISCO_IOS",
+        "name" : "isr_voip",
+        "defaultCrossZoneAction" : "ACCEPT",
+        "defaultInboundAction" : "ACCEPT",
+        "deviceType" : "SWITCH",
+        "vendorFamily" : {
+          "cisco" : {
+            "hostname" : "isr_voip",
             "logging" : {
               "on" : true
             }
@@ -12729,7 +13451,37 @@
           }
         },
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -12802,11 +13554,43 @@
                 },
                 "name" : "bar"
               }
-            ]
+            ],
+            "sourceName" : "foo",
+            "sourceType" : "firewall filter"
           }
         },
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -12821,7 +13605,37 @@
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -12836,7 +13650,37 @@
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -13132,7 +13976,37 @@
           }
         },
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -13457,7 +14331,37 @@
           }
         },
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -13468,11 +14372,10 @@
               "multipathIbgp" : false,
               "neighbors" : {
                 "172.16.2.1/32" : {
-                  "name" : "172.16.2.1/32",
+                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
-                  "address" : "172.16.2.1",
                   "advertiseExternal" : false,
                   "advertiseInactive" : false,
                   "allowLocalAsIn" : false,
@@ -13484,25 +14387,22 @@
                   },
                   "clusterId" : 0,
                   "defaultMetric" : 0,
-                  "dynamic" : false,
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~PEER_EXPORT_POLICY:172.16.2.1/32~",
                   "group" : "ext",
                   "importPolicy" : "~PEER_IMPORT_POLICY:172.16.2.1/32~",
                   "localAs" : 65533,
+                  "peerAddress" : "172.16.2.1",
                   "remoteAs" : 65530,
-                  "remotePrefix" : "172.16.2.1/32",
                   "routeReflectorClient" : false,
-                  "sendCommunity" : true,
-                  "vrf" : "default"
+                  "sendCommunity" : true
                 },
                 "172.16.2.2/32" : {
-                  "name" : "172.16.2.2/32",
+                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
-                  "address" : "172.16.2.2",
                   "advertiseExternal" : false,
                   "advertiseInactive" : false,
                   "allowLocalAsIn" : false,
@@ -13513,20 +14413,159 @@
                   },
                   "clusterId" : 0,
                   "defaultMetric" : 0,
-                  "dynamic" : false,
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~PEER_EXPORT_POLICY:172.16.2.2/32~",
                   "group" : "ext1",
                   "importPolicy" : "~PEER_IMPORT_POLICY:172.16.2.2/32~",
                   "localAs" : 65533,
+                  "peerAddress" : "172.16.2.2",
                   "remoteAs" : 65530,
-                  "remotePrefix" : "172.16.2.2/32",
                   "routeReflectorClient" : false,
-                  "sendCommunity" : true,
-                  "vrf" : "default"
+                  "sendCommunity" : true
                 }
               },
+              "routerId" : "0.0.0.0",
+              "tieBreaker" : "ARRIVAL_ORDER"
+            }
+          }
+        }
+      },
+      "juniper_bgp_remove_private_as" : {
+        "configurationFormat" : "FLAT_JUNIPER",
+        "name" : "juniper_bgp_remove_private_as",
+        "defaultCrossZoneAction" : "ACCEPT",
+        "defaultInboundAction" : "ACCEPT",
+        "deviceType" : "ROUTER",
+        "routingPolicies" : {
+          "~DEFAULT_BGP_EXPORT_POLICY~" : {
+            "name" : "~DEFAULT_BGP_EXPORT_POLICY~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                    "falseStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "ExitReject"
+                      }
+                    ],
+                    "guard" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                      "type" : "CallExprContext"
+                    },
+                    "trueStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "ReturnFalse"
+                      }
+                    ]
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
+                  "disjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                      "protocol" : "bgp"
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                      "protocol" : "ibgp"
+                    }
+                  ]
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                    "falseStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "ExitAccept"
+                      }
+                    ],
+                    "guard" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                      "type" : "CallExprContext"
+                    },
+                    "trueStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "ReturnTrue"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "~DEFAULT_BGP_IMPORT_POLICY~" : {
+            "name" : "~DEFAULT_BGP_IMPORT_POLICY~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitAccept"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                  "type" : "CallExprContext"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "vendorFamily" : {
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default",
+            "bgpProcess" : {
+              "multipathEbgp" : false,
+              "multipathEquivalentAsPathMatchMode" : "FIRST_AS",
+              "multipathIbgp" : false,
               "routerId" : "0.0.0.0",
               "tieBreaker" : "ARRIVAL_ORDER"
             }
@@ -13538,31 +14577,71 @@
         "name" : "juniper_extended_community",
         "communityLists" : {
           "COMM_ALL" : {
+            "invertMatch" : false,
             "lines" : [
               {
                 "action" : "ACCEPT",
                 "regex" : "target:123456L:.*$"
               }
             ],
-            "name" : "COMM_ALL",
-            "invertMatch" : false
+            "name" : "COMM_ALL"
           },
           "COMM_NON_CUST" : {
+            "invertMatch" : false,
             "lines" : [
               {
                 "action" : "ACCEPT",
                 "regex" : "8075:[1][0][0-3,5-9][0-9][0-9]$"
               }
             ],
-            "name" : "COMM_NON_CUST",
-            "invertMatch" : false
+            "name" : "COMM_NON_CUST"
+          },
+          "COMM_REGEX" : {
+            "invertMatch" : false,
+            "lines" : [
+              {
+                "action" : "ACCEPT",
+                "regex" : "^_200_5?(1-3)*\\?:[^3]+$"
+              }
+            ],
+            "name" : "COMM_REGEX"
           }
         },
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -13615,11 +14694,43 @@
                 },
                 "name" : "blorp"
               }
-            ]
+            ],
+            "sourceName" : "blah",
+            "sourceType" : "firewall filter"
           }
         },
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -13714,7 +14825,37 @@
           }
         },
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -13848,7 +14989,37 @@
           }
         },
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -13896,7 +15067,37 @@
           }
         },
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -13914,7 +15115,37 @@
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -13930,7 +15161,37 @@
         "deviceType" : "SWITCH",
         "domainName" : "my.domain.name",
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -13949,7 +15210,37 @@
           "2.3.4.5"
         ],
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -14006,7 +15297,37 @@
           }
         },
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -14046,7 +15367,36 @@
         ],
         "vendorFamily" : {
           "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
             "rootAuthenticationEncryptedPassword" : "afb9a6be03f8232c331c9b2a9537695acc8f4037591633ca55e81a2f8def821e",
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            },
             "tacplusServers" : {
               "1.2.3.4" : {
                 "name" : "1.2.3.4",
@@ -14192,7 +15542,37 @@
           }
         },
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -14265,7 +15645,37 @@
           }
         },
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -14315,6 +15725,61 @@
                 "action" : "ACCEPT",
                 "ipWildcard" : "2001:db8:1239:0:0:0:0:0/98",
                 "lengthRange" : "98-98"
+              },
+              {
+                "action" : "ACCEPT",
+                "ipWildcard" : "2001:db8:1239:0:0:0:0:0/99",
+                "lengthRange" : "99-99"
+              },
+              {
+                "action" : "ACCEPT",
+                "ipWildcard" : "2001:db8:1239:0:0:0:0:0/100",
+                "lengthRange" : "100-100"
+              },
+              {
+                "action" : "ACCEPT",
+                "ipWildcard" : "2001:db8:1239:0:0:0:0:0/101",
+                "lengthRange" : "101-101"
+              },
+              {
+                "action" : "ACCEPT",
+                "ipWildcard" : "2001:db8:1239:0:0:0:0:0/102",
+                "lengthRange" : "102-102"
+              },
+              {
+                "action" : "ACCEPT",
+                "ipWildcard" : "2001:db8:1239:0:0:0:0:0/103",
+                "lengthRange" : "103-103"
+              },
+              {
+                "action" : "ACCEPT",
+                "ipWildcard" : "2001:db8:1239:0:0:0:0:0/104",
+                "lengthRange" : "104-104"
+              },
+              {
+                "action" : "ACCEPT",
+                "ipWildcard" : "2001:db8:1239:0:0:0:0:0/105",
+                "lengthRange" : "105-105"
+              },
+              {
+                "action" : "ACCEPT",
+                "ipWildcard" : "2001:db8:1239:0:0:0:0:0/106",
+                "lengthRange" : "106-106"
+              },
+              {
+                "action" : "ACCEPT",
+                "ipWildcard" : "2001:db8:1239:0:0:0:0:0/107",
+                "lengthRange" : "107-107"
+              },
+              {
+                "action" : "ACCEPT",
+                "ipWildcard" : "2001:db8:1239:0:0:0:0:0/108",
+                "lengthRange" : "108-108"
+              },
+              {
+                "action" : "ACCEPT",
+                "ipWildcard" : "2001:db8:1239:0:0:0:0:0/109",
+                "lengthRange" : "109-109"
               }
             ],
             "name" : "route-filter-test-v6:t1"
@@ -14439,7 +15904,37 @@
           }
         },
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -14498,7 +15993,37 @@
           }
         },
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -14524,6 +16049,38 @@
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "SWITCH",
+        "ikePhase1Keys" : {
+          "~IKE_PHASE1_KEY_1.2.3.4~" : {
+            "keyType" : "PRE_SHARED_KEY",
+            "localInterface" : "unset_local_interface",
+            "remoteIdentity" : {
+              "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+              "ipWildcard" : "0.0.0.0"
+            }
+          }
+        },
+        "ikePhase1Policies" : {
+          "1.2.3.4" : {
+            "name" : "1.2.3.4",
+            "ikePhase1Key" : {
+              "keyType" : "PRE_SHARED_KEY",
+              "localInterface" : "unset_local_interface",
+              "remoteIdentity" : {
+                "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                "ipWildcard" : "0.0.0.0"
+              }
+            },
+            "ikePhase1Proposals" : [
+              "PROPOSAL"
+            ]
+          }
+        },
+        "ikePhase1Proposals" : {
+          "PROPOSAL" : {
+            "name" : "PROPOSAL",
+            "lifetimeSeconds" : 28800
+          }
+        },
         "ikePolicies" : {
           "1.2.3.4" : {
             "name" : "1.2.3.4",
@@ -14534,7 +16091,8 @@
         },
         "ikeProposals" : {
           "PROPOSAL" : {
-            "name" : "PROPOSAL"
+            "name" : "PROPOSAL",
+            "lifetimeSeconds" : 28800
           }
         },
         "ipAccessLists" : {
@@ -14577,7 +16135,9 @@
                 },
                 "name" : "123-4"
               }
-            ]
+            ],
+            "sourceName" : "~FROM_ZONE~A~TO_ZONE~B",
+            "sourceType" : "firewall filter"
           },
           "~GLOBAL_SECURITY_POLICY~" : {
             "name" : "~GLOBAL_SECURITY_POLICY~",
@@ -14592,7 +16152,9 @@
                 },
                 "name" : "p1"
               }
-            ]
+            ],
+            "sourceName" : "~GLOBAL_SECURITY_POLICY~",
+            "sourceType" : "firewall filter"
           }
         },
         "ipSpaces" : {
@@ -14601,7 +16163,37 @@
           }
         },
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -14627,7 +16219,37 @@
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -14665,7 +16287,37 @@
           "1.2.3.4"
         ],
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -14680,7 +16332,37 @@
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -14700,6 +16382,35 @@
         ],
         "vendorFamily" : {
           "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            },
             "tacplusServers" : {
               "1.2.3.4" : {
                 "name" : "1.2.3.4",
@@ -15136,27 +16847,24 @@
               "multipathIbgp" : false,
               "neighbors" : {
                 "123.123.123.123/32" : {
-                  "name" : "123.123.123.123/32",
+                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
-                  "address" : "123.123.123.123",
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
                   "allowRemoteAsOut" : false,
                   "clusterId" : 0,
                   "defaultMetric" : 0,
-                  "dynamic" : false,
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:123.123.123.123~",
                   "localAs" : 1,
+                  "peerAddress" : "123.123.123.123",
                   "remoteAs" : 1,
-                  "remotePrefix" : "123.123.123.123/32",
                   "routeReflectorClient" : false,
-                  "sendCommunity" : false,
-                  "vrf" : "default"
+                  "sendCommunity" : false
                 }
               },
               "routerId" : "0.0.0.0",
@@ -15306,27 +17014,24 @@
               "multipathIbgp" : false,
               "neighbors" : {
                 "123.123.123.123/32" : {
-                  "name" : "123.123.123.123/32",
+                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
-                  "address" : "123.123.123.123",
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
                   "allowRemoteAsOut" : false,
                   "clusterId" : 0,
                   "defaultMetric" : 0,
-                  "dynamic" : false,
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:123.123.123.123~",
                   "localAs" : 1,
+                  "peerAddress" : "123.123.123.123",
                   "remoteAs" : 1,
-                  "remotePrefix" : "123.123.123.123/32",
                   "routeReflectorClient" : false,
-                  "sendCommunity" : false,
-                  "vrf" : "default"
+                  "sendCommunity" : false
                 }
               },
               "routerId" : "0.0.0.0",
@@ -15536,11 +17241,10 @@
               "multipathIbgp" : false,
               "neighbors" : {
                 "1.1.1.1/32" : {
-                  "name" : "1.1.1.1/32",
+                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
-                  "address" : "1.1.1.1",
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
@@ -15548,23 +17252,20 @@
                   "clusterId" : 168430090,
                   "defaultMetric" : 0,
                   "description" : "neighbor-4-4-4-4-remote-as-4-af-ipv6-desc !nexus",
-                  "dynamic" : false,
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:1.1.1.1~",
                   "localAs" : 1,
+                  "peerAddress" : "1.1.1.1",
                   "remoteAs" : 1,
-                  "remotePrefix" : "1.1.1.1/32",
                   "routeReflectorClient" : false,
-                  "sendCommunity" : false,
-                  "vrf" : "default"
+                  "sendCommunity" : false
                 },
                 "3.3.3.3/32" : {
-                  "name" : "3.3.3.3/32",
+                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
-                  "address" : "3.3.3.3",
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
@@ -15572,23 +17273,20 @@
                   "clusterId" : 168430090,
                   "defaultMetric" : 0,
                   "description" : "neighbor-4-4-4-4-remote-as-4-af-ipv6-desc !nexus",
-                  "dynamic" : false,
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:3.3.3.3~",
                   "localAs" : 1,
+                  "peerAddress" : "3.3.3.3",
                   "remoteAs" : 3,
-                  "remotePrefix" : "3.3.3.3/32",
                   "routeReflectorClient" : false,
-                  "sendCommunity" : false,
-                  "vrf" : "default"
+                  "sendCommunity" : false
                 },
                 "4.4.4.4/32" : {
-                  "name" : "4.4.4.4/32",
+                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
-                  "address" : "4.4.4.4",
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
@@ -15596,16 +17294,14 @@
                   "clusterId" : 168430090,
                   "defaultMetric" : 0,
                   "description" : "neighbor-4-4-4-4-remote-as-4-af-ipv6-desc !nexus",
-                  "dynamic" : false,
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:4.4.4.4~",
                   "localAs" : 1,
+                  "peerAddress" : "4.4.4.4",
                   "remoteAs" : 4,
-                  "remotePrefix" : "4.4.4.4/32",
                   "routeReflectorClient" : false,
-                  "sendCommunity" : false,
-                  "vrf" : "default"
+                  "sendCommunity" : false
                 }
               },
               "routerId" : "10.10.10.10",
@@ -16088,6 +17784,100 @@
           }
         }
       },
+      "no_ip_name_server" : {
+        "configurationFormat" : "CISCO_IOS",
+        "name" : "no_ip_name_server",
+        "defaultCrossZoneAction" : "ACCEPT",
+        "defaultInboundAction" : "ACCEPT",
+        "deviceType" : "SWITCH",
+        "vendorFamily" : {
+          "cisco" : {
+            "hostname" : "no_ip_name_server",
+            "logging" : {
+              "on" : true
+            }
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default"
+          }
+        }
+      },
+      "no_mask_reply" : {
+        "configurationFormat" : "CISCO_IOS",
+        "name" : "no_mask_reply",
+        "defaultCrossZoneAction" : "ACCEPT",
+        "defaultInboundAction" : "ACCEPT",
+        "deviceType" : "SWITCH",
+        "interfaces" : {
+          "GigabitEthernet1" : {
+            "name" : "GigabitEthernet1",
+            "accessVlan" : 0,
+            "active" : true,
+            "allPrefixes" : [
+              "10.10.10.1/24"
+            ],
+            "autostate" : true,
+            "bandwidth" : 1.0E9,
+            "declaredNames" : [
+              "GigabitEthernet1"
+            ],
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "prefix" : "10.10.10.1/24",
+            "proxyArp" : true,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          }
+        },
+        "vendorFamily" : {
+          "cisco" : {
+            "hostname" : "no_mask_reply",
+            "logging" : {
+              "on" : true
+            }
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default",
+            "interfaces" : [
+              "GigabitEthernet1"
+            ]
+          }
+        }
+      },
+      "no_snmp_server" : {
+        "configurationFormat" : "CISCO_IOS",
+        "name" : "no_snmp_server",
+        "defaultCrossZoneAction" : "ACCEPT",
+        "defaultInboundAction" : "ACCEPT",
+        "deviceType" : "SWITCH",
+        "vendorFamily" : {
+          "cisco" : {
+            "hostname" : "no_snmp_server",
+            "logging" : {
+              "on" : true
+            }
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default"
+          }
+        }
+      },
       "non_nexus_neighbor_af" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "non_nexus_neighbor_af",
@@ -16239,27 +18029,24 @@
               "multipathIbgp" : false,
               "neighbors" : {
                 "10.0.0.0/32" : {
-                  "name" : "10.0.0.0/32",
+                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
-                  "address" : "10.0.0.0",
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
                   "allowRemoteAsOut" : false,
                   "clusterId" : 0,
                   "defaultMetric" : 0,
-                  "dynamic" : false,
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:10.0.0.0~",
                   "localAs" : 2,
+                  "peerAddress" : "10.0.0.0",
                   "remoteAs" : 1,
-                  "remotePrefix" : "10.0.0.0/32",
                   "routeReflectorClient" : false,
-                  "sendCommunity" : false,
-                  "vrf" : "default"
+                  "sendCommunity" : false
                 }
               },
               "routerId" : "0.0.0.0",
@@ -16296,13 +18083,19 @@
                 },
                 "name" : "10 permit ip any any"
               }
-            ]
+            ],
+            "sourceName" : "blah",
+            "sourceType" : "extended ipv4 access-list"
           },
           "extended" : {
-            "name" : "extended"
+            "name" : "extended",
+            "sourceName" : "extended",
+            "sourceType" : "extended ipv4 access-list"
           },
           "standard" : {
-            "name" : "standard"
+            "name" : "standard",
+            "sourceName" : "standard",
+            "sourceType" : "extended ipv4 access-list"
           }
         },
         "vendorFamily" : {
@@ -18336,12 +20129,9 @@
           "default" : {
             "name" : "default",
             "bgpProcess" : {
-              "multipathEbgp" : true,
-              "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
-              "multipathIbgp" : true,
-              "neighbors" : {
+              "dynamicNeighbors" : {
                 "10.98.25.0/25" : {
-                  "name" : "10.98.25.0/25",
+                  "class" : "org.batfish.datamodel.BgpPassivePeerConfig",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
@@ -18352,24 +20142,28 @@
                   "clusterId" : 0,
                   "defaultMetric" : 0,
                   "description" : "inheritance in which the neighbor is a prefix",
-                  "dynamic" : true,
                   "ebgpMultihop" : true,
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:10.98.25.0/25~",
                   "group" : "RAAS",
                   "localAs" : 64601,
-                  "remoteAs" : 65511,
-                  "remotePrefix" : "10.98.25.0/25",
+                  "peerPrefix" : "10.98.25.0/25",
+                  "remoteAs" : [
+                    65511
+                  ],
                   "routeReflectorClient" : false,
-                  "sendCommunity" : false,
-                  "vrf" : "default"
-                },
+                  "sendCommunity" : false
+                }
+              },
+              "multipathEbgp" : true,
+              "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
+              "multipathIbgp" : true,
+              "neighbors" : {
                 "100.93.100.16/32" : {
-                  "name" : "100.93.100.16/32",
+                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
-                  "address" : "100.93.100.16",
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : true,
@@ -18377,17 +20171,15 @@
                   "clusterId" : 0,
                   "defaultMetric" : 0,
                   "description" : "a simple inheritance example",
-                  "dynamic" : false,
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:100.93.100.16~",
                   "group" : "SPINE",
                   "localAs" : 64601,
+                  "peerAddress" : "100.93.100.16",
                   "remoteAs" : 64802,
-                  "remotePrefix" : "100.93.100.16/32",
                   "routeReflectorClient" : false,
-                  "sendCommunity" : false,
-                  "vrf" : "default"
+                  "sendCommunity" : false
                 }
               },
               "routerId" : "0.0.0.0",
@@ -19169,6 +20961,65 @@
                         "type" : "SetLocalDefaultActionAccept"
                       }
                     ]
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.BufferedStatement",
+                    "statement" : {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.SetNextHop",
+                      "destinationVrf" : false,
+                      "expr" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.DiscardNextHop"
+                      }
+                    }
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                    "falseStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "SetDefaultActionAccept"
+                      }
+                    ],
+                    "guard" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                      "type" : "CallExprContext"
+                    },
+                    "trueStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "SetLocalDefaultActionAccept"
+                      }
+                    ]
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.BufferedStatement",
+                    "statement" : {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Comment",
+                      "comment" : "NOP: unsupported route-policy statement: 'set path-selection backup 1 install multipath-protect advertise\n'"
+                    }
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                    "falseStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "SetDefaultActionAccept"
+                      }
+                    ],
+                    "guard" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                      "type" : "CallExprContext"
+                    },
+                    "trueStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "SetLocalDefaultActionAccept"
+                      }
+                    ]
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "Unsuppress"
                   }
                 ]
               }
@@ -20414,6 +22265,16 @@
                                           "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
                                           "value" : 65535
                                         }
+                                      },
+                                      {
+                                        "prefix" : {
+                                          "class" : "org.batfish.datamodel.routing_policy.expr.RangeCommunitySetElemHalf",
+                                          "range" : "0-65535"
+                                        },
+                                        "suffix" : {
+                                          "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                                          "value" : 12345
+                                        }
                                       }
                                     ]
                                   }
@@ -20691,18 +22552,16 @@
               "multipathIbgp" : false,
               "neighbors" : {
                 "1.1.1.1/32" : {
-                  "name" : "1.1.1.1/32",
+                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
-                  "address" : "1.1.1.1",
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
                   "allowRemoteAsOut" : false,
                   "clusterId" : 0,
                   "defaultMetric" : 0,
-                  "dynamic" : false,
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:1.1.1.1~",
@@ -20712,11 +22571,10 @@
                     "FROM_ABC_V4"
                   ],
                   "localAs" : 1,
+                  "peerAddress" : "1.1.1.1",
                   "remoteAs" : 2,
-                  "remotePrefix" : "1.1.1.1/32",
                   "routeReflectorClient" : false,
-                  "sendCommunity" : true,
-                  "vrf" : "default"
+                  "sendCommunity" : true
                 }
               },
               "routerId" : "0.0.0.0",
@@ -22300,7 +24158,9 @@
                 },
                 "name" : "permit tcp 1.2.3.4/31 any fin ack"
               }
-            ]
+            ],
+            "sourceName" : "100",
+            "sourceType" : "extended ipv4 access-list"
           }
         },
         "vendorFamily" : {
@@ -22613,6 +24473,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "1.1.1.0/24",
                 "nextHopInterface" : "dynamic",
                 "nextHopIp" : "5.6.7.8",
@@ -22626,6 +24487,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "0.0.0.0/0",
                 "nextHopInterface" : "dynamic",
                 "nextHopIp" : "1.2.3.4",

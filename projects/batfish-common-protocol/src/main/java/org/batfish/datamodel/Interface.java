@@ -22,6 +22,9 @@ import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
+import org.batfish.datamodel.eigrp.EigrpInterfaceSettings;
+import org.batfish.datamodel.isis.IsisInterfaceMode;
+import org.batfish.datamodel.isis.IsisInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -42,7 +45,11 @@ public final class Interface extends ComparableStructure<String> {
 
     private SortedSet<String> _declaredNames;
 
+    private EigrpInterfaceSettings _eigrp;
+
     private IpAccessList _incomingFilter;
+
+    private IsisInterfaceSettings _isis;
 
     private String _name;
 
@@ -96,7 +103,9 @@ public final class Interface extends ComparableStructure<String> {
       iface.setBandwidth(_bandwidth);
       iface.setBlacklisted(_blacklisted);
       iface.setDeclaredNames(_declaredNames);
+      iface.setEigrp(_eigrp);
       iface.setIncomingFilter(_incomingFilter);
+      iface.setIsis(_isis);
       iface.setOspfArea(_ospfArea);
       if (_ospfArea != null) {
         _ospfArea.getInterfaces().add(name);
@@ -154,11 +163,11 @@ public final class Interface extends ComparableStructure<String> {
      * Set the primary address and secondary addresses of the interface. <br>
      * The {@link Interface#getAllAddresses()} method of the built {@link Interface} will return a
      * set containing the primary address and secondary addresses.<br>
-     * The node will accept traffic whose destination IP belongs is among any of the addresses of
-     * any of the interfaces. The primary address is the one used by default as the source IP for
-     * traffic sent out the interface. A secondary address is another address potentially associated
-     * with a different subnet living on the interface. The interface will reply to ARP for the
-     * primary or any secondary IP.
+     * The node will accept traffic whose destination IP is among any of the addresses of any of the
+     * interfaces. The primary address is the one used by default as the source IP for traffic sent
+     * out the interface. A secondary address is another address potentially associated with a
+     * different subnet living on the interface. The interface will reply to ARP for the primary or
+     * any secondary IP.
      */
     public Builder setAddresses(
         InterfaceAddress primaryAddress, InterfaceAddress... secondaryAddresses) {
@@ -197,8 +206,18 @@ public final class Interface extends ComparableStructure<String> {
       return this;
     }
 
+    public Builder setEigrp(EigrpInterfaceSettings eigrp) {
+      _eigrp = eigrp;
+      return this;
+    }
+
     public Builder setIncomingFilter(IpAccessList incomingFilter) {
       _incomingFilter = incomingFilter;
+      return this;
+    }
+
+    public Builder setIsis(IsisInterfaceSettings isis) {
+      _isis = isis;
       return this;
     }
 
@@ -284,6 +303,10 @@ public final class Interface extends ComparableStructure<String> {
 
   public static final String NULL_INTERFACE_NAME = "null_interface";
 
+  public static final String UNSET_LOCAL_INTERFACE = "unset_local_interface";
+
+  public static final String INVALID_LOCAL_INTERFACE = "invalid_local_interface";
+
   private static final String PROP_ACCESS_VLAN = "accessVlan";
 
   private static final String PROP_ACTIVE = "active";
@@ -302,11 +325,15 @@ public final class Interface extends ComparableStructure<String> {
 
   private static final String PROP_CHANNEL_GROUP_MEMBERS = "channelGroupMembers";
 
+  private static final String PROP_CRYPTO_MAP = "cryptoMap";
+
   private static final String PROP_DECLARED_NAMES = "declaredNames";
 
   private static final String PROP_DESCRIPTION = "description";
 
   private static final String PROP_DHCP_RELAY_ADDRESSES = "dhcpRelayAddresses";
+
+  private static final String PROP_EIGRP = "eigrp";
 
   private static final String PROP_INBOUND_FILTER = "inboundFilter";
 
@@ -359,6 +386,8 @@ public final class Interface extends ComparableStructure<String> {
   private static final String PROP_SWITCHPORT_MODE = "switchportMode";
 
   private static final String PROP_SWITCHPORT_TRUNK_ENCAPSULATION = "switchportTrunkEncapsulation";
+
+  private static final String PROP_VLAN = "vlan";
 
   private static final String PROP_VRF = "vrf";
 
@@ -552,11 +581,15 @@ public final class Interface extends ComparableStructure<String> {
 
   private SortedSet<String> _channelGroupMembers;
 
+  private String _cryptoMap;
+
   private SortedSet<String> _declaredNames;
 
   private String _description;
 
   private List<Ip> _dhcpRelayAddresses;
+
+  private EigrpInterfaceSettings _eigrp;
 
   private IpAccessList _inboundFilter;
 
@@ -617,6 +650,8 @@ public final class Interface extends ComparableStructure<String> {
   private SwitchportMode _switchportMode;
 
   private SwitchportEncapsulationType _switchportTrunkEncapsulation;
+
+  private Integer _vlan;
 
   private Vrf _vrf;
 
@@ -701,6 +736,9 @@ public final class Interface extends ComparableStructure<String> {
     if (!Objects.equals(_bandwidth, other._bandwidth)) {
       return false;
     }
+    if (!Objects.equals(_cryptoMap, other._cryptoMap)) {
+      return false;
+    }
     // we check ACLs for name match only -- full ACL diff can be done
     // elsewhere.
     if (!IpAccessList.bothNullOrSameName(this.getInboundFilter(), other.getInboundFilter())) {
@@ -715,6 +753,11 @@ public final class Interface extends ComparableStructure<String> {
     if (!Objects.equals(_key, other._key)) {
       return false;
     }
+
+    if (!Objects.equals(_eigrp, other._eigrp)) {
+      return false;
+    }
+
     // TODO: check ISIS settings for equality.
     if (_mtu != other._mtu) {
       return false;
@@ -802,6 +845,11 @@ public final class Interface extends ComparableStructure<String> {
     return _channelGroupMembers;
   }
 
+  @JsonProperty(PROP_CRYPTO_MAP)
+  public String getCryptoMap() {
+    return _cryptoMap;
+  }
+
   @JsonProperty(PROP_DECLARED_NAMES)
   public SortedSet<String> getDeclaredNames() {
     return _declaredNames;
@@ -816,6 +864,11 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_DHCP_RELAY_ADDRESSES)
   public List<Ip> getDhcpRelayAddresses() {
     return _dhcpRelayAddresses;
+  }
+
+  @JsonProperty(PROP_EIGRP)
+  public @Nullable EigrpInterfaceSettings getEigrp() {
+    return _eigrp;
   }
 
   @JsonIgnore
@@ -1046,6 +1099,11 @@ public final class Interface extends ComparableStructure<String> {
     return _switchportTrunkEncapsulation;
   }
 
+  @JsonProperty(PROP_VLAN)
+  public @Nullable Integer getVlan() {
+    return _vlan;
+  }
+
   @JsonIgnore
   public Vrf getVrf() {
     return _vrf;
@@ -1163,6 +1221,11 @@ public final class Interface extends ComparableStructure<String> {
     _channelGroupMembers = ImmutableSortedSet.copyOf(channelGroupMembers);
   }
 
+  @JsonProperty(PROP_CRYPTO_MAP)
+  public void setCryptoMap(String cryptoMap) {
+    _cryptoMap = cryptoMap;
+  }
+
   @JsonProperty(PROP_DECLARED_NAMES)
   public void setDeclaredNames(SortedSet<String> declaredNames) {
     _declaredNames = ImmutableSortedSet.copyOf(declaredNames);
@@ -1176,6 +1239,11 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_DHCP_RELAY_ADDRESSES)
   public void setDhcpRelayAddresses(List<Ip> dhcpRelayAddresses) {
     _dhcpRelayAddresses = dhcpRelayAddresses;
+  }
+
+  @JsonProperty(PROP_EIGRP)
+  public void setEigrp(@Nullable EigrpInterfaceSettings eigrp) {
+    _eigrp = eigrp;
   }
 
   @JsonIgnore
@@ -1343,6 +1411,11 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_SWITCHPORT_TRUNK_ENCAPSULATION)
   public void setSwitchportTrunkEncapsulation(SwitchportEncapsulationType encapsulation) {
     _switchportTrunkEncapsulation = encapsulation;
+  }
+
+  @JsonProperty(PROP_VLAN)
+  public void setVlan(@Nullable Integer vlan) {
+    _vlan = vlan;
   }
 
   @JsonIgnore

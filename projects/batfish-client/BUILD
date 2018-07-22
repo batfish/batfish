@@ -25,6 +25,7 @@ java_library(
         "//projects/lib/jackson-jsonschema:jackson_jsonschema",
         "@commons_io//:compile",
         "@commons_lang3//:compile",
+        "@diffutils//:compile",
         "@guava//:compile",
         "@jackson_annotations//:compile",
         "@jackson_core//:compile",
@@ -60,6 +61,7 @@ java_library(
 
 junit_tests(
     name = "client_tests",
+    size = "small",
     srcs = glob([
         "src/test/java/**/*Test.java",
     ]),
@@ -71,9 +73,9 @@ junit_tests(
         ":client_testlib",
         "//projects/batfish-common-protocol:common",
         "@commons_lang3//:compile",
+        "@diffutils//:compile",
         "@guava//:compile",
         "@jackson_databind//:compile",
         "@jettison//:compile",
     ],
-    size = "small",
 )

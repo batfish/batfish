@@ -185,6 +185,7 @@ disposition_rp_stanza
       DONE
       | DROP
       | PASS
+      | UNSUPPRESS_ROUTE
    ) NEWLINE
 ;
 
@@ -425,7 +426,11 @@ route_policy_stanza
    ROUTE_POLICY name = variable
    (
       PAREN_LEFT varlist = route_policy_params_list PAREN_RIGHT
-   )? NEWLINE route_policy_tail
+   )? NEWLINE
+   (
+         stanzas += rp_stanza
+   )*
+   END_POLICY NEWLINE
 ;
 
 route_policy_params_list
@@ -434,13 +439,6 @@ route_policy_params_list
    (
       COMMA params_list += variable
    )*
-;
-
-route_policy_tail
-:
-   (
-      stanzas += rp_stanza
-   )* END_POLICY NEWLINE
 ;
 
 rp_community_set
@@ -701,7 +699,8 @@ set_next_hop_rp_stanza
 :
    SET NEXT_HOP
    (
-      IP_ADDRESS
+      DISCARD
+      | IP_ADDRESS
       | IPV6_ADDRESS
       | PEER_ADDRESS
    ) DESTINATION_VRF? NEWLINE
@@ -729,6 +728,11 @@ set_origin_rm_stanza
 set_origin_rp_stanza
 :
    SET ORIGIN origin_expr NEWLINE
+;
+
+set_path_selection_rp_stanza
+:
+   SET PATH_SELECTION null_rest_of_line
 ;
 
 set_tag_rm_stanza
@@ -798,6 +802,7 @@ set_rp_stanza
    | set_next_hop_rp_stanza
    | set_next_hop_self_rp_stanza
    | set_origin_rp_stanza
+   | set_path_selection_rp_stanza
    | set_tag_rp_stanza
    | set_weight_rp_stanza
 ;

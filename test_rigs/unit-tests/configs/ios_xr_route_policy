@@ -114,7 +114,7 @@ route-policy to_chillmap
   elseif (next-hop in null) then
     drop
     # End blackhole matching
-  elseif community matches-any (40027:65535) then
+  elseif community matches-any (40027:65535, *:12345) then
     drop
     # Intent is to not advertise if prefix is tagged with Chills ASN & 65535
   elseif (community matches-any scenes_No_Export) then
@@ -159,6 +159,9 @@ route-policy doodlepop
     apply bgp_standard
     set community (1234:666, 1234:65498, 1234:$hub_comm) additive
     set next-hop 1234:1234::118:9a41:ff0
+    set next-hop discard
+    set path-selection backup 1 install multipath-protect advertise
+    unsuppress-route
   endif
 end-policy
 !

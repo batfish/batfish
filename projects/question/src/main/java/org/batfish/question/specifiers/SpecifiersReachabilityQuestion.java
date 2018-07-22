@@ -4,25 +4,27 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.ForwardingAction;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.Protocol;
+import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.question.ReachabilityParameters;
-import org.batfish.specifier.AllInterfaceLinksLocationSpecifier;
 import org.batfish.specifier.AllNodesNodeSpecifier;
-import org.batfish.specifier.ConstantWildcardSetIpSpaceSpecifierFactory;
-import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
+import org.batfish.specifier.FlexibleIpSpaceSpecifierFactory;
+import org.batfish.specifier.FlexibleLocationSpecifierFactory;
 import org.batfish.specifier.IpSpaceSpecifier;
 import org.batfish.specifier.IpSpaceSpecifierFactory;
 import org.batfish.specifier.LocationSpecifier;
 import org.batfish.specifier.LocationSpecifierFactory;
-import org.batfish.specifier.NameRegexInterfaceLinkLocationSpecifierFactory;
 import org.batfish.specifier.NameRegexNodeSpecifierFactory;
 import org.batfish.specifier.NoNodesNodeSpecifier;
+import org.batfish.specifier.NodeNameRegexConnectedHostsIpSpaceSpecifierFactory;
 import org.batfish.specifier.NodeSpecifier;
 import org.batfish.specifier.NodeSpecifierFactory;
 
@@ -31,7 +33,26 @@ import org.batfish.specifier.NodeSpecifierFactory;
  * IpSpaceSpecifier ipSpace} specifiers.
  */
 public final class SpecifiersReachabilityQuestion extends Question {
+  private static final String DEFAULT_DESTINATION_IP_SPACE_SPECIFIER_FACTORY =
+      NodeNameRegexConnectedHostsIpSpaceSpecifierFactory.NAME;
+
+  private static final String DEFAULT_SOURCE_IP_SPACE_SPECIFIER_FACTORY =
+      FlexibleIpSpaceSpecifierFactory.NAME;
+
+  private static final String DEFAULT_SOURCE_LOCATION_SPECIFIER_FACTORY =
+      FlexibleLocationSpecifierFactory.NAME;
+
   private static final String PROP_ACTIONS = "actions";
+
+  private static final String PROP_DESTINATION_IP_SPACE_SPECIFIER_FACTORY =
+      "destinationIpSpaceSpecifierFactory";
+
+  private static final String PROP_DESTINATION_IP_SPACE_SPECIFIER_INPUT =
+      "destinationIpSpaceSpecifierInput";
+
+  private static final String PROP_DST_PORTS = "dstPorts";
+
+  private static final String PROP_DST_PROTOCOLS = "dstProtocols";
 
   private static final String PROP_FINAL_NODES_SPECIFIER_FACTORY = "finalNodesSpecifierFactory";
 
@@ -42,8 +63,6 @@ public final class SpecifiersReachabilityQuestion extends Question {
 
   private static final String PROP_FORBIDDEN_TRANSIT_NODES_NODE_SPECIFIER_FACTORY =
       "forbiddenTransitNodesNodeSpecifierInput";
-
-  private static final String PROP_HEADERSPACE = "headerSpace";
 
   private static final String PROP_SOURCE_IP_SPACE_SPECIFIER_FACTORY =
       "sourceIpSpaceSpecifierFactory";
@@ -61,30 +80,6 @@ public final class SpecifiersReachabilityQuestion extends Question {
   private static final String PROP_REQUIRED_TRANSIT_NODES_SPECIFIER_INPUT =
       "requiredTransitNodesNodeSpecifierInput";
 
-  private static LocationSpecifier getLocationSpecifier(
-      @Nullable String factoryName, @Nullable String input, @Nonnull LocationSpecifier def) {
-    if (factoryName == null && input == null) {
-      return def;
-    }
-    LocationSpecifierFactory factory =
-        (factoryName == null)
-            ? new NameRegexInterfaceLinkLocationSpecifierFactory()
-            : LocationSpecifierFactory.load(factoryName);
-    return factory.buildLocationSpecifier(input);
-  }
-
-  private static IpSpaceSpecifier getIpSpaceSpecifier(
-      @Nullable String factoryName, @Nullable String input, @Nonnull IpSpaceSpecifier def) {
-    if (factoryName == null && input == null) {
-      return def;
-    }
-    IpSpaceSpecifierFactory factory =
-        (factoryName == null)
-            ? new ConstantWildcardSetIpSpaceSpecifierFactory()
-            : IpSpaceSpecifierFactory.load(factoryName);
-    return factory.buildIpSpaceSpecifier(input);
-  }
-
   private static NodeSpecifier getNodeSpecifier(
       @Nullable String factoryName, @Nullable String input, @Nonnull NodeSpecifier def) {
     if (factoryName == null && input == null) {
@@ -99,6 +94,14 @@ public final class SpecifiersReachabilityQuestion extends Question {
 
   private SortedSet<ForwardingAction> _actions;
 
+  private String _destinationIpSpaceSpecifierFactory;
+
+  private String _destinationIpSpaceSpecifierInput;
+
+  private SortedSet<SubRange> _dstPorts;
+
+  private SortedSet<Protocol> _dstProtocols;
+
   private String _finalNodesNodeSpecifierFactory;
 
   private String _finalNodesNodeSpecifierInput;
@@ -106,8 +109,6 @@ public final class SpecifiersReachabilityQuestion extends Question {
   private String _forbiddenTransitNodesNodeSpecifierFactory;
 
   private String _forbiddenTransitNodesNodeSpecifierInput;
-
-  private HeaderSpace _headerSpace;
 
   private String _sourceIpSpaceSpecifierFactory;
 
@@ -128,9 +129,37 @@ public final class SpecifiersReachabilityQuestion extends Question {
     return firstNonNull(_actions, ImmutableSortedSet.of(ForwardingAction.ACCEPT));
   }
 
+  IpSpaceSpecifier getDestinationIpSpaceSpecifier() {
+    return IpSpaceSpecifierFactory.load(
+            firstNonNull(
+                _destinationIpSpaceSpecifierFactory,
+                DEFAULT_DESTINATION_IP_SPACE_SPECIFIER_FACTORY))
+        .buildIpSpaceSpecifier(_destinationIpSpaceSpecifierInput);
+  }
+
+  @JsonProperty(PROP_DESTINATION_IP_SPACE_SPECIFIER_FACTORY)
+  public @Nullable String getDestinationIpSpaceSpecifierFactory() {
+    return _destinationIpSpaceSpecifierFactory;
+  }
+
+  @JsonProperty(PROP_DESTINATION_IP_SPACE_SPECIFIER_INPUT)
+  public @Nullable String getDestinationIpSpaceSpecifierInput() {
+    return _destinationIpSpaceSpecifierInput;
+  }
+
   @Override
   public boolean getDataPlane() {
     return true;
+  }
+
+  @JsonProperty(PROP_DST_PORTS)
+  public SortedSet<SubRange> getDstPorts() {
+    return _dstPorts;
+  }
+
+  @JsonProperty(PROP_DST_PROTOCOLS)
+  public SortedSet<Protocol> getDstProtocols() {
+    return _dstProtocols;
   }
 
   NodeSpecifier getFinalNodesSpecifier() {
@@ -157,9 +186,12 @@ public final class SpecifiersReachabilityQuestion extends Question {
         NoNodesNodeSpecifier.INSTANCE);
   }
 
-  @JsonProperty(PROP_HEADERSPACE)
-  private HeaderSpace getHeaderSpace() {
-    return _headerSpace;
+  @VisibleForTesting
+  HeaderSpace getHeaderSpace() {
+    return HeaderSpace.builder()
+        .setDstPorts(firstNonNull(_dstPorts, ImmutableList.of()))
+        .setDstProtocols(firstNonNull(_dstProtocols, ImmutableList.of()))
+        .build();
   }
 
   @Override
@@ -170,11 +202,12 @@ public final class SpecifiersReachabilityQuestion extends Question {
   ReachabilityParameters getReachabilityParameters() {
     return ReachabilityParameters.builder()
         .setActions(getActions())
+        .setDestinationIpSpaceSpecifier(getDestinationIpSpaceSpecifier())
         .setFinalNodesSpecifier(getFinalNodesSpecifier())
         .setForbiddenTransitNodesSpecifier(getForbiddenTransitNodesSpecifier())
-        .setHeaderSpace(_headerSpace != null ? _headerSpace : HeaderSpace.builder().build())
+        .setHeaderSpace(getHeaderSpace())
         .setRequiredTransitNodesSpecifier(getRequiredTransitNodesSpecifier())
-        .setSourceSpecifier(getSourceLocationSpecifier())
+        .setSourceLocationSpecifier(getSourceLocationSpecifier())
         .setSourceIpSpaceSpecifier(getSourceIpSpaceSpecifier())
         .setSpecialize(true)
         .build();
@@ -188,10 +221,9 @@ public final class SpecifiersReachabilityQuestion extends Question {
   }
 
   IpSpaceSpecifier getSourceIpSpaceSpecifier() {
-    return getIpSpaceSpecifier(
-        _sourceIpSpaceSpecifierFactory,
-        _sourceIpSpaceSpecifierInput,
-        InferFromLocationIpSpaceSpecifier.INSTANCE);
+    return IpSpaceSpecifierFactory.load(
+            firstNonNull(_sourceIpSpaceSpecifierFactory, DEFAULT_SOURCE_IP_SPACE_SPECIFIER_FACTORY))
+        .buildIpSpaceSpecifier(_sourceIpSpaceSpecifierInput);
   }
 
   @JsonProperty(PROP_SOURCE_IP_SPACE_SPECIFIER_FACTORY)
@@ -206,10 +238,10 @@ public final class SpecifiersReachabilityQuestion extends Question {
 
   @VisibleForTesting
   LocationSpecifier getSourceLocationSpecifier() {
-    return getLocationSpecifier(
-        _sourceLocationSpecifierFactory,
-        _sourceLocationSpecifierInput,
-        AllInterfaceLinksLocationSpecifier.INSTANCE);
+    return LocationSpecifierFactory.load(
+            firstNonNull(
+                _sourceLocationSpecifierFactory, DEFAULT_SOURCE_LOCATION_SPECIFIER_FACTORY))
+        .buildLocationSpecifier(_sourceLocationSpecifierInput);
   }
 
   @JsonProperty(PROP_SOURCE_LOCATION_SPECIFIER_FACTORY)
@@ -237,6 +269,26 @@ public final class SpecifiersReachabilityQuestion extends Question {
     _actions = ImmutableSortedSet.copyOf(actionSet);
   }
 
+  @JsonProperty(PROP_DESTINATION_IP_SPACE_SPECIFIER_FACTORY)
+  public void setDestinationIpSpaceSpecifierFactory(String ipSpaceSpecifierFactory) {
+    _destinationIpSpaceSpecifierFactory = ipSpaceSpecifierFactory;
+  }
+
+  @JsonProperty(PROP_DESTINATION_IP_SPACE_SPECIFIER_INPUT)
+  public void setDestinationIpSpaceSpecifierInput(String ipSpaceSpecifierInput) {
+    _destinationIpSpaceSpecifierInput = ipSpaceSpecifierInput;
+  }
+
+  @JsonProperty(PROP_DST_PORTS)
+  public void setDstPorts(SortedSet<SubRange> dstPorts) {
+    _dstPorts = ImmutableSortedSet.copyOf(dstPorts);
+  }
+
+  @JsonProperty(PROP_DST_PROTOCOLS)
+  public void setDstProtocols(SortedSet<Protocol> dstProtocols) {
+    _dstProtocols = ImmutableSortedSet.copyOf(dstProtocols);
+  }
+
   @JsonProperty(PROP_FINAL_NODES_SPECIFIER_FACTORY)
   public void setFinalNodesSpecifierFactory(String finalNodesNodeSpecifierFactory) {
     _finalNodesNodeSpecifierFactory = finalNodesNodeSpecifierFactory;
@@ -245,11 +297,6 @@ public final class SpecifiersReachabilityQuestion extends Question {
   @JsonProperty(PROP_FINAL_NODES_SPECIFIER_INPUT)
   public void setFinalNodesSpecifierInput(String finalNodesNodeSpecifierInput) {
     _finalNodesNodeSpecifierInput = finalNodesNodeSpecifierInput;
-  }
-
-  @JsonProperty(PROP_HEADERSPACE)
-  public void setHeaderSpace(HeaderSpace headerSpace) {
-    _headerSpace = headerSpace;
   }
 
   @JsonProperty(PROP_FORBIDDEN_TRANSIT_NODES_NODE_SPECIFIER_FACTORY)

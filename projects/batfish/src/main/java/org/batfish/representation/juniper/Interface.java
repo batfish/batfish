@@ -2,13 +2,13 @@ package org.batfish.representation.juniper;
 
 import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import javax.annotation.Nonnull;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
@@ -54,11 +54,9 @@ public class Interface extends ComparableStructure<String> {
 
   private String _incomingFilter;
 
-  private int _incomingFilterLine;
-
   private transient boolean _inherited;
 
-  private final IsisInterfaceSettings _isisSettings;
+  @Nonnull private final IsisInterfaceSettings _isisSettings;
 
   private IsoAddress _isoAddress;
 
@@ -66,7 +64,7 @@ public class Interface extends ComparableStructure<String> {
 
   private int _nativeVlan;
 
-  private Ip _ospfActiveArea;
+  private Ip _ospfArea;
 
   private Integer _ospfCost;
 
@@ -74,11 +72,11 @@ public class Interface extends ComparableStructure<String> {
 
   private int _ospfHelloMultiplier;
 
-  private final Set<Ip> _ospfPassiveAreas;
+  private boolean _ospfPassive;
+
+  private boolean _ospfPointToPoint;
 
   private String _outgoingFilter;
-
-  private int _outgoingFilterLine;
 
   private Interface _parent;
 
@@ -115,7 +113,6 @@ public class Interface extends ComparableStructure<String> {
     _switchportTrunkEncapsulation = SwitchportEncapsulationType.DOT1Q;
     _allowedVlans = new ArrayList<>();
     _ospfCost = null;
-    _ospfPassiveAreas = new HashSet<>();
     _units = new TreeMap<>();
     _vrrpGroups = new TreeMap<>();
   }
@@ -164,10 +161,7 @@ public class Interface extends ComparableStructure<String> {
     return _incomingFilter;
   }
 
-  public int getIncomingFilterLine() {
-    return _incomingFilterLine;
-  }
-
+  @Nonnull
   public IsisInterfaceSettings getIsisSettings() {
     return _isisSettings;
   }
@@ -184,8 +178,8 @@ public class Interface extends ComparableStructure<String> {
     return _nativeVlan;
   }
 
-  public Ip getOspfActiveArea() {
-    return _ospfActiveArea;
+  public Ip getOspfArea() {
+    return _ospfArea;
   }
 
   public Integer getOspfCost() {
@@ -200,16 +194,16 @@ public class Interface extends ComparableStructure<String> {
     return _ospfHelloMultiplier;
   }
 
-  public Set<Ip> getOspfPassiveAreas() {
-    return _ospfPassiveAreas;
+  public boolean getOspfPassive() {
+    return _ospfPassive;
+  }
+
+  public boolean getOspfPointToPoint() {
+    return _ospfPointToPoint;
   }
 
   public String getOutgoingFilter() {
     return _outgoingFilter;
-  }
-
-  public int getOutgoingFilterLine() {
-    return _outgoingFilterLine;
   }
 
   public Interface getParent() {
@@ -259,8 +253,8 @@ public class Interface extends ComparableStructure<String> {
     if (_ospfCost == null) {
       _ospfCost = _parent._ospfCost;
     }
-    if (_ospfActiveArea == null) {
-      _ospfActiveArea = _parent._ospfActiveArea;
+    if (_ospfArea == null) {
+      _ospfArea = _parent._ospfArea;
     }
   }
 
@@ -288,10 +282,6 @@ public class Interface extends ComparableStructure<String> {
     _incomingFilter = accessListName;
   }
 
-  public void setIncomingFilterLine(int incomingFilterLine) {
-    _incomingFilterLine = incomingFilterLine;
-  }
-
   public void setIsoAddress(IsoAddress address) {
     _isoAddress = address;
   }
@@ -304,8 +294,8 @@ public class Interface extends ComparableStructure<String> {
     _nativeVlan = vlan;
   }
 
-  public void setOspfActiveArea(Ip ospfActiveArea) {
-    _ospfActiveArea = ospfActiveArea;
+  public void setOspfArea(Ip ospfArea) {
+    _ospfArea = ospfArea;
   }
 
   public void setOspfCost(int ospfCost) {
@@ -320,12 +310,16 @@ public class Interface extends ComparableStructure<String> {
     _ospfHelloMultiplier = multiplier;
   }
 
-  public void setOutgoingFilter(String accessListName) {
-    _outgoingFilter = accessListName;
+  public void setOspfPassive(boolean ospfPassive) {
+    _ospfPassive = true;
   }
 
-  public void setOutgoingFilterLine(int outgoingFilterLine) {
-    _outgoingFilterLine = outgoingFilterLine;
+  public void setOspfPointToPoint(boolean opsfPointToPoint) {
+    _ospfPointToPoint = opsfPointToPoint;
+  }
+
+  public void setOutgoingFilter(String accessListName) {
+    _outgoingFilter = accessListName;
   }
 
   public void setParent(Interface parent) {

@@ -17,8 +17,10 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.IpSpaceMetadata;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Protocol;
+import org.batfish.datamodel.visitors.IpSpaceDescriber;
 import org.batfish.datamodel.visitors.IpSpaceTracer;
 
 /**
@@ -33,11 +35,15 @@ public final class AclTracer extends Evaluator {
       @Nonnull Flow flow,
       @Nullable String srcInterface,
       @Nonnull Map<String, IpAccessList> availableAcls,
-      @Nonnull Map<String, IpSpace> namedIpSpaces) {
-    AclTracer tracer = new AclTracer(flow, srcInterface, availableAcls, namedIpSpaces);
+      @Nonnull Map<String, IpSpace> namedIpSpaces,
+      @Nonnull Map<String, IpSpaceMetadata> namedIpSpaceMetadata) {
+    AclTracer tracer =
+        new AclTracer(flow, srcInterface, availableAcls, namedIpSpaces, namedIpSpaceMetadata);
     tracer.trace(ipAccessList);
     return tracer.getTrace();
   }
+
+  private final Map<IpSpace, IpSpaceMetadata> _ipSpaceMetadata;
 
   private final Map<IpSpace, String> _ipSpaceNames;
 
@@ -47,15 +53,31 @@ public final class AclTracer extends Evaluator {
       @Nonnull Flow flow,
       @Nullable String srcInterface,
       @Nonnull Map<String, IpAccessList> availableAcls,
-      @Nonnull Map<String, IpSpace> namedIpSpaces) {
+      @Nonnull Map<String, IpSpace> namedIpSpaces,
+      @Nonnull Map<String, IpSpaceMetadata> namedIpSpaceMetadata) {
     super(flow, srcInterface, availableAcls, namedIpSpaces);
     _ipSpaceNames = new IdentityHashMap<>();
+    _ipSpaceMetadata = new IdentityHashMap<>();
     _traceEvents = ImmutableList.builder();
     namedIpSpaces.forEach((name, ipSpace) -> _ipSpaceNames.put(ipSpace, name));
+    namedIpSpaceMetadata.forEach(
+        (name, ipSpaceMetadata) -> _ipSpaceMetadata.put(namedIpSpaces.get(name), ipSpaceMetadata));
+  }
+
+  private String computeLineDescription(AclIpSpaceLine line, IpSpaceDescriber describer) {
+    String srcText = line.getSrcText();
+    if (srcText != null) {
+      return srcText;
+    }
+    return line.getIpSpace().accept(describer);
   }
 
   public Flow getFlow() {
     return _flow;
+  }
+
+  public Map<IpSpace, IpSpaceMetadata> getIpSpaceMetadata() {
+    return _ipSpaceMetadata;
   }
 
   public @Nonnull Map<IpSpace, String> getIpSpaceNames() {
@@ -72,39 +94,84 @@ public final class AclTracer extends Evaluator {
 
   public void recordAction(
       @Nonnull IpAccessList ipAccessList, int index, @Nonnull IpAccessListLine line) {
-    String description = firstNonNull(line.getName(), line.toString());
+    String lineDescription = firstNonNull(line.getName(), line.toString());
     if (line.getAction() == LineAction.ACCEPT) {
-      _traceEvents.add(new PermittedByIpAccessListLine(ipAccessList.getName(), index, description));
+      _traceEvents.add(
+          new PermittedByIpAccessListLine(
+              index,
+              lineDescription,
+              ipAccessList.getName(),
+              ipAccessList.getSourceName(),
+              ipAccessList.getSourceType()));
     } else {
-      _traceEvents.add(new DeniedByIpAccessListLine(ipAccessList.getName(), index, description));
+      _traceEvents.add(
+          new DeniedByIpAccessListLine(
+              index,
+              lineDescription,
+              ipAccessList.getName(),
+              ipAccessList.getSourceName(),
+              ipAccessList.getSourceType()));
     }
   }
 
   public void recordAction(
-      @Nonnull String aclIpSpaceName, int index, @Nonnull AclIpSpaceLine line) {
+      @Nonnull String aclIpSpaceName,
+      @Nullable IpSpaceMetadata ipSpaceMetadata,
+      int index,
+      @Nonnull AclIpSpaceLine line,
+      Ip ip,
+      String ipDescription,
+      IpSpaceDescriber describer) {
     if (line.getAction() == LineAction.ACCEPT) {
       _traceEvents.add(
-          new PermittedByAclIpSpaceLine(aclIpSpaceName, index, line.getIpSpace().toString()));
+          new PermittedByAclIpSpaceLine(
+              aclIpSpaceName,
+              ipSpaceMetadata,
+              index,
+              computeLineDescription(line, describer),
+              ip,
+              ipDescription));
     } else {
       _traceEvents.add(
-          new DeniedByAclIpSpaceLine(aclIpSpaceName, index, line.getIpSpace().toString()));
+          new DeniedByAclIpSpaceLine(
+              aclIpSpaceName,
+              ipSpaceMetadata,
+              index,
+              computeLineDescription(line, describer),
+              ip,
+              ipDescription));
     }
   }
 
   public void recordDefaultDeny(@Nonnull IpAccessList ipAccessList) {
-    _traceEvents.add(new DefaultDeniedByIpAccessList(ipAccessList.getName()));
+    _traceEvents.add(
+        new DefaultDeniedByIpAccessList(
+            ipAccessList.getName(), ipAccessList.getSourceName(), ipAccessList.getSourceType()));
   }
 
-  public void recordDefaultDeny(@Nonnull String aclIpSpaceName) {
-    _traceEvents.add(new DefaultDeniedByAclIpSpace(aclIpSpaceName));
+  public void recordDefaultDeny(
+      @Nonnull String aclIpSpaceName,
+      @Nullable IpSpaceMetadata ipSpaceMetadata,
+      Ip ip,
+      String ipDescription) {
+    _traceEvents.add(
+        new DefaultDeniedByAclIpSpace(aclIpSpaceName, ip, ipDescription, ipSpaceMetadata));
   }
 
   public void recordNamedIpSpaceAction(
-      @Nonnull String name, @Nonnull String description, boolean permit) {
+      @Nonnull String name,
+      @Nonnull String ipSpaceDescription,
+      IpSpaceMetadata ipSpaceMetadata,
+      boolean permit,
+      Ip ip,
+      String ipDescription) {
     if (permit) {
-      _traceEvents.add(new PermittedByNamedIpSpace(name, description));
+      _traceEvents.add(
+          new PermittedByNamedIpSpace(
+              ip, ipDescription, ipSpaceDescription, ipSpaceMetadata, name));
     } else {
-      _traceEvents.add(new DeniedByNamedIpSpace(name, description));
+      _traceEvents.add(
+          new DeniedByNamedIpSpace(ip, ipDescription, ipSpaceDescription, ipSpaceMetadata, name));
     }
   }
 
@@ -116,10 +183,11 @@ public final class AclTracer extends Evaluator {
         && headerSpace.getNotDscps().contains(_flow.getDscp())) {
       return false;
     }
-    if (headerSpace.getDstIps() != null && !trace(headerSpace.getDstIps(), _flow.getDstIp())) {
+    if (headerSpace.getDstIps() != null && !traceDstIp(headerSpace.getDstIps(), _flow.getDstIp())) {
       return false;
     }
-    if (headerSpace.getNotDstIps() != null && trace(headerSpace.getNotDstIps(), _flow.getDstIp())) {
+    if (headerSpace.getNotDstIps() != null
+        && traceDstIp(headerSpace.getNotDstIps(), _flow.getDstIp())) {
       return false;
     }
     if (!headerSpace.getDstPorts().isEmpty()
@@ -204,8 +272,8 @@ public final class AclTracer extends Evaluator {
       return false;
     }
     if (headerSpace.getSrcOrDstIps() != null
-        && !(trace(headerSpace.getSrcOrDstIps(), _flow.getSrcIp())
-            || trace(headerSpace.getSrcOrDstIps(), _flow.getDstIp()))) {
+        && !(traceSrcIp(headerSpace.getSrcOrDstIps(), _flow.getSrcIp())
+            || traceDstIp(headerSpace.getSrcOrDstIps(), _flow.getDstIp()))) {
       return false;
     }
     if (!headerSpace.getSrcOrDstPorts().isEmpty()
@@ -233,10 +301,11 @@ public final class AclTracer extends Evaluator {
         return false;
       }
     }
-    if (headerSpace.getSrcIps() != null && !trace(headerSpace.getSrcIps(), _flow.getSrcIp())) {
+    if (headerSpace.getSrcIps() != null && !traceSrcIp(headerSpace.getSrcIps(), _flow.getSrcIp())) {
       return false;
     }
-    if (headerSpace.getNotSrcIps() != null && trace(headerSpace.getNotSrcIps(), _flow.getSrcIp())) {
+    if (headerSpace.getNotSrcIps() != null
+        && traceSrcIp(headerSpace.getNotSrcIps(), _flow.getSrcIp())) {
       return false;
     }
     if (!headerSpace.getSrcPorts().isEmpty()
@@ -284,7 +353,7 @@ public final class AclTracer extends Evaluator {
       return false;
     }
     if (!headerSpace.getTcpFlags().isEmpty()
-        && !headerSpace.getTcpFlags().stream().anyMatch(tcpFlags -> tcpFlags.match(_flow))) {
+        && headerSpace.getTcpFlags().stream().noneMatch(tcpFlags -> tcpFlags.match(_flow))) {
       return false;
     }
     return true;
@@ -303,8 +372,16 @@ public final class AclTracer extends Evaluator {
     return false;
   }
 
-  public boolean trace(@Nonnull IpSpace ipSpace, @Nonnull Ip ip) {
-    return ipSpace.accept(new IpSpaceTracer(this, ip));
+  public boolean trace(@Nonnull IpSpace ipSpace, @Nonnull Ip ip, @Nonnull String ipDescription) {
+    return ipSpace.accept(new IpSpaceTracer(this, ip, ipDescription));
+  }
+
+  public boolean traceDstIp(@Nonnull IpSpace ipSpace, @Nonnull Ip ip) {
+    return ipSpace.accept(new IpSpaceTracer(this, ip, "destination IP"));
+  }
+
+  public boolean traceSrcIp(@Nonnull IpSpace ipSpace, @Nonnull Ip ip) {
+    return ipSpace.accept(new IpSpaceTracer(this, ip, "source IP"));
   }
 
   @Override

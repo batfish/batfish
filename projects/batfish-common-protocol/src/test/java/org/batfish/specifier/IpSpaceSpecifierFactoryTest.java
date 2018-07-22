@@ -1,18 +1,22 @@
 package org.batfish.specifier;
 
+import static org.batfish.specifier.IpSpaceSpecifierFactory.load;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 
+import java.util.regex.Pattern;
+import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.UniverseIpSpace;
+import org.hamcrest.Matchers;
 import org.junit.Test;
 
 public class IpSpaceSpecifierFactoryTest {
   @Test
   public void testLoad() {
-    IpSpaceSpecifierFactory loaded =
-        IpSpaceSpecifierFactory.load(new InferFromLocationIpSpaceSpecifierFactory().getName());
+    IpSpaceSpecifierFactory loaded = load(new InferFromLocationIpSpaceSpecifierFactory().getName());
     assertThat(loaded, instanceOf(InferFromLocationIpSpaceSpecifierFactory.class));
   }
 
@@ -28,5 +32,31 @@ public class IpSpaceSpecifierFactoryTest {
     assertThat(
         new InferFromLocationIpSpaceSpecifierFactory().buildIpSpaceSpecifier(null),
         is(InferFromLocationIpSpaceSpecifier.INSTANCE));
+  }
+
+  @Test
+  public void testNodeNameRegexConnecgtedHostsIpSpaceSpecifierFactory() {
+    assertThat(
+        load(NodeNameRegexConnectedHostsIpSpaceSpecifierFactory.NAME),
+        Matchers.instanceOf(NodeNameRegexConnectedHostsIpSpaceSpecifierFactory.class));
+    assertThat(
+        new NodeNameRegexConnectedHostsIpSpaceSpecifierFactory().buildIpSpaceSpecifier("foo"),
+        equalTo(new NodeNameRegexConnectedHostsIpSpaceSpecifier(Pattern.compile("foo"))));
+  }
+
+  @Test
+  public void testConstantWildcardSetIpSpaceSpecifierFactory() {
+    assertThat(
+        load(ConstantWildcardSetIpSpaceSpecifierFactory.NAME),
+        Matchers.instanceOf(ConstantWildcardSetIpSpaceSpecifierFactory.class));
+    assertThat(
+        new ConstantWildcardSetIpSpaceSpecifierFactory()
+            .buildIpSpaceSpecifier("1.2.3.0/24 - 1.2.3.4"),
+        equalTo(
+            new ConstantIpSpaceSpecifier(
+                IpWildcardSetIpSpace.builder()
+                    .including(new IpWildcard("1.2.3.0/24"))
+                    .excluding(new IpWildcard("1.2.3.4"))
+                    .build())));
   }
 }

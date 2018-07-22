@@ -33,7 +33,7 @@ public enum JunosApplicationSet {
 
   private final Supplier<ApplicationSet> _applicationSet;
 
-  private JunosApplicationSet() {
+  JunosApplicationSet() {
     _applicationSet = Suppliers.memoize(this::init);
   }
 

@@ -19,7 +19,8 @@ import javax.annotation.Nullable;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.datamodel.BgpNeighbor;
+import org.batfish.datamodel.BgpActivePeerConfig;
+import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.CommunityListLine;
@@ -91,8 +92,8 @@ public class Graph {
   private Set<GraphEdge> _allRealEdges;
   private Set<GraphEdge> _allEdges;
   private Map<GraphEdge, GraphEdge> _otherEnd;
-  private Map<GraphEdge, BgpNeighbor> _ebgpNeighbors;
-  private Map<GraphEdge, BgpNeighbor> _ibgpNeighbors;
+  private Map<GraphEdge, BgpActivePeerConfig> _ebgpNeighbors;
+  private Map<GraphEdge, BgpActivePeerConfig> _ibgpNeighbors;
   private Map<String, String> _routeReflectorParent;
   private Map<String, Set<String>> _routeReflectorClients;
   private Map<String, Integer> _originatorId;
@@ -338,9 +339,7 @@ public class Graph {
 
     if (proto.isStatic()) {
       for (StaticRoute sr : conf.getDefaultVrf().getStaticRoutes()) {
-        if (sr.getNetwork() != null) {
-          acc.add(sr.getNetwork());
-        }
+        acc.add(sr.getNetwork());
       }
       return acc;
     }
@@ -516,19 +515,19 @@ public class Graph {
    */
   private void initEbgpNeighbors() {
     Map<String, List<Ip>> ips = new HashMap<>();
-    Map<String, List<BgpNeighbor>> neighbors = new HashMap<>();
+    Map<String, List<BgpActivePeerConfig>> neighbors = new HashMap<>();
 
     for (Entry<String, Configuration> entry : _configurations.entrySet()) {
       String router = entry.getKey();
       Configuration conf = entry.getValue();
       List<Ip> ipList = new ArrayList<>();
-      List<BgpNeighbor> ns = new ArrayList<>();
+      List<BgpActivePeerConfig> ns = new ArrayList<>();
       ips.put(router, ipList);
       neighbors.put(router, ns);
       if (conf.getDefaultVrf().getBgpProcess() != null) {
         BgpProcess bgp = conf.getDefaultVrf().getBgpProcess();
-        for (BgpNeighbor neighbor : bgp.getNeighbors().values()) {
-          ipList.add(neighbor.getAddress());
+        for (BgpActivePeerConfig neighbor : bgp.getActiveNeighbors().values()) {
+          ipList.add(neighbor.getPeerAddress());
           ns.add(neighbor);
         }
       }
@@ -538,13 +537,13 @@ public class Graph {
       String router = entry.getKey();
       Configuration conf = entry.getValue();
       List<Ip> ipList = ips.get(router);
-      List<BgpNeighbor> ns = neighbors.get(router);
+      List<BgpActivePeerConfig> ns = neighbors.get(router);
       if (conf.getDefaultVrf().getBgpProcess() != null) {
         List<GraphEdge> edges = _edgeMap.get(router);
         for (GraphEdge ge : edges) {
           for (int i = 0; i < ipList.size(); i++) {
             Ip ip = ipList.get(i);
-            BgpNeighbor n = ns.get(i);
+            BgpActivePeerConfig n = ns.get(i);
             Interface iface = ge.getStart();
             if (ip != null && iface.getAddress().getPrefix().containsIp(ip)) {
               _ebgpNeighbors.put(ge, n);
@@ -559,13 +558,11 @@ public class Graph {
    * Create a new "fake" interface to correspond to an abstract
    * iBGP control plane edge in the network.
    */
-  private Interface createIbgpInterface(BgpNeighbor n, String peer) {
+  private Interface createIbgpInterface(BgpActivePeerConfig n, String peer) {
     Interface iface = new Interface("iBGP-" + peer);
     iface.setActive(true);
     // TODO is this valid.
-    Prefix p = n.getPrefix();
-    assert p.getPrefixLength() == Prefix.MAX_PREFIX_LENGTH;
-    iface.setAddress(new InterfaceAddress(n.getPrefix().getStartIp(), Prefix.MAX_PREFIX_LENGTH));
+    iface.setAddress(new InterfaceAddress(n.getPeerAddress(), Prefix.MAX_PREFIX_LENGTH));
     iface.setBandwidth(0.);
     return iface;
   }
@@ -578,15 +575,15 @@ public class Graph {
   private void initIbgpNeighbors() {
     Map<String, Ip> ips = new HashMap<>();
 
-    Table2<String, String, BgpNeighbor> neighbors = new Table2<>();
+    Table2<String, String, BgpActivePeerConfig> neighbors = new Table2<>();
 
-    // Match iBGP sessions with pairs of routers and BgpNeighbor
+    // Match iBGP sessions with pairs of routers and BgpPeerConfig
     for (Entry<String, Configuration> entry : _configurations.entrySet()) {
       String router = entry.getKey();
       Configuration conf = entry.getValue();
       BgpProcess p = conf.getDefaultVrf().getBgpProcess();
       if (p != null) {
-        for (BgpNeighbor n : p.getNeighbors().values()) {
+        for (BgpActivePeerConfig n : p.getActiveNeighbors().values()) {
           if (n.getLocalAs().equals(n.getRemoteAs()) && n.getLocalIp() != null) {
             ips.put(router, n.getLocalIp());
           }
@@ -599,9 +596,9 @@ public class Graph {
       Configuration conf = entry.getValue();
       BgpProcess p = conf.getDefaultVrf().getBgpProcess();
       if (p != null) {
-        for (Entry<Prefix, BgpNeighbor> entry2 : p.getNeighbors().entrySet()) {
+        for (Entry<Prefix, BgpActivePeerConfig> entry2 : p.getActiveNeighbors().entrySet()) {
           Prefix pfx = entry2.getKey();
-          BgpNeighbor n = entry2.getValue();
+          BgpActivePeerConfig n = entry2.getValue();
           if (n.getLocalAs().equals(n.getRemoteAs())) {
             for (Entry<String, Ip> ipEntry : ips.entrySet()) {
               String r = ipEntry.getKey();
@@ -622,7 +619,7 @@ public class Graph {
         (r1, r2, n1) -> {
           Interface iface1 = createIbgpInterface(n1, r2);
 
-          BgpNeighbor n2 = neighbors.get(r2, r1);
+          BgpActivePeerConfig n2 = neighbors.get(r2, r1);
 
           GraphEdge ge;
           if (n2 != null) {
@@ -1004,10 +1001,10 @@ public class Graph {
       return routerId(peerConf, proto);
     }
 
-    BgpNeighbor n = findBgpNeighbor(ge);
+    BgpActivePeerConfig n = findBgpNeighbor(ge);
 
-    if (n != null && n.getAddress() != null) {
-      return n.getAddress().asLong();
+    if (n != null && n.getPeerAddress() != null) {
+      return n.getPeerAddress().asLong();
     }
 
     throw new BatfishException("Unable to find router id for " + ge + "," + proto.name());
@@ -1075,8 +1072,8 @@ public class Graph {
 
     // Only use an edge in BGP if there is an explicit peering
     if (proto.isBgp()) {
-      BgpNeighbor n1 = _ebgpNeighbors.get(ge);
-      BgpNeighbor n2 = _ibgpNeighbors.get(ge);
+      BgpPeerConfig n1 = _ebgpNeighbors.get(ge);
+      BgpPeerConfig n2 = _ibgpNeighbors.get(ge);
       return n1 != null || n2 != null;
     }
 
@@ -1104,7 +1101,7 @@ public class Graph {
   /*
    * Find the BGP neighbor of a particular edge
    */
-  public BgpNeighbor findBgpNeighbor(GraphEdge e) {
+  public BgpActivePeerConfig findBgpNeighbor(GraphEdge e) {
     if (e.isAbstract()) {
       return _ibgpNeighbors.get(e);
     } else {
@@ -1128,7 +1125,7 @@ public class Graph {
       return null;
     }
     if (proto.isBgp()) {
-      BgpNeighbor n = findBgpNeighbor(ge);
+      BgpPeerConfig n = findBgpNeighbor(ge);
       if (n == null || n.getImportPolicy() == null) {
         return null;
       }
@@ -1158,7 +1155,7 @@ public class Graph {
       return conf.getRoutingPolicies().get(exp);
     }
     if (proto.isBgp()) {
-      BgpNeighbor n = findBgpNeighbor(ge);
+      BgpPeerConfig n = findBgpNeighbor(ge);
       // if no neighbor (e.g., loopback), or no export policy
       if (n == null || n.getExportPolicy() == null) {
         return null;
@@ -1196,12 +1193,13 @@ public class Graph {
     _ebgpNeighbors.forEach(
         (ge, n) -> {
           sb.append(n);
-          sb.append("Edge: ").append(ge).append(" (").append(n.getAddress()).append(")\n");
+          sb.append("Edge: ").append(ge).append(" (").append(n.getPeerAddress()).append(")\n");
         });
 
     sb.append("---------------- iBGP Neighbors ----------------\n");
     _ibgpNeighbors.forEach(
-        (ge, n) -> sb.append("Edge: ").append(ge).append(" (").append(n.getPrefix()).append(")\n"));
+        (ge, n) ->
+            sb.append("Edge: ").append(ge).append(" (").append(n.getPeerAddress()).append(")\n"));
 
     sb.append("---------- Static Routes by Interface ----------\n");
     _staticRoutes.forEach(
@@ -1247,11 +1245,11 @@ public class Graph {
     return _originatorId;
   }
 
-  public Map<GraphEdge, BgpNeighbor> getEbgpNeighbors() {
+  public Map<GraphEdge, BgpActivePeerConfig> getEbgpNeighbors() {
     return _ebgpNeighbors;
   }
 
-  public Map<GraphEdge, BgpNeighbor> getIbgpNeighbors() {
+  public Map<GraphEdge, BgpActivePeerConfig> getIbgpNeighbors() {
     return _ibgpNeighbors;
   }
 

@@ -65,9 +65,7 @@ public class PerRoleOutliersQuestionPlugin extends QuestionPlugin {
       for (OutlierSet<?> outlier : _serverOutliers) {
         sb.append("  Hypothesis");
         Optional<String> role = outlier.getRole();
-        if (role.isPresent()) {
-          sb.append(" for role " + role.get());
-        }
+        role.ifPresent(s -> sb.append(" for role " + s));
         sb.append(":\n");
         sb.append("    every node should have the following set of ");
         sb.append(outlier.getName() + ": " + outlier.getDefinition() + "\n");
@@ -80,9 +78,7 @@ public class PerRoleOutliersQuestionPlugin extends QuestionPlugin {
       for (NamedStructureOutlierSet<?> outlier : _namedStructureOutliers) {
         sb.append("  Hypothesis");
         Optional<String> role = outlier.getRole();
-        if (role.isPresent()) {
-          sb.append(" for role " + role.get());
-        }
+        role.ifPresent(s -> sb.append(" for role " + s));
         sb.append(":\n");
         switch (outlier.getHypothesis()) {
           case SAME_DEFINITION:

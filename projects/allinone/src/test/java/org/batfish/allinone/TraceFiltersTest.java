@@ -15,7 +15,6 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
 import java.io.IOException;
@@ -27,8 +26,8 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.acl.AclTrace;
 import org.batfish.datamodel.acl.PermittedByAcl;
+import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.matchers.PermittedByIpAccessListLineMatchers;
 import org.batfish.datamodel.questions.FiltersSpecifier;
 import org.batfish.datamodel.questions.NodesSpecifier;
@@ -59,7 +58,6 @@ public class TraceFiltersTest {
     _c = _cb.build();
   }
 
-  @SuppressWarnings("unchecked")
   @Test
   public void testIndirection() throws IOException {
     IpAccessList.Builder aclb = _nf.aclBuilder().setOwner(_c);
@@ -109,30 +107,27 @@ public class TraceFiltersTest {
         answer,
         hasRows(
             forAll(
-                hasColumn(
-                    COLUMN_FILTER_NAME, equalTo(acl.getName()), new TypeReference<String>() {}),
+                hasColumn(COLUMN_FILTER_NAME, equalTo(acl.getName()), Schema.STRING),
                 hasColumn(
                     TraceFiltersAnswerer.COLUMN_TRACE,
                     hasEvents(
                         contains(
-                            isDefaultDeniedByIpAccessListNamed(referencedAcl.getName()),
-                            isPermittedByIpAccessListLineThat(
-                                PermittedByIpAccessListLineMatchers.hasName(acl.getName())))),
-                    new TypeReference<AclTrace>() {}))));
+                            ImmutableList.of(
+                                isDefaultDeniedByIpAccessListNamed(referencedAcl.getName()),
+                                isPermittedByIpAccessListLineThat(
+                                    PermittedByIpAccessListLineMatchers.hasName(acl.getName()))))),
+                    Schema.ACL_TRACE))));
     /* Trace should be present for referenced acl with one event: not matching the referenced acl */
     assertThat(
         answer,
         hasRows(
             forAll(
-                hasColumn(
-                    COLUMN_FILTER_NAME,
-                    equalTo(referencedAcl.getName()),
-                    new TypeReference<String>() {}),
+                hasColumn(COLUMN_FILTER_NAME, equalTo(referencedAcl.getName()), Schema.STRING),
                 hasColumn(
                     TraceFiltersAnswerer.COLUMN_TRACE,
                     hasEvents(
                         contains(isDefaultDeniedByIpAccessListNamed(referencedAcl.getName()))),
-                    new TypeReference<AclTrace>() {}))));
+                    Schema.ACL_TRACE))));
   }
 
   @Test

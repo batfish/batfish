@@ -3,6 +3,7 @@ package org.batfish.question;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
+import com.google.common.collect.Iterables;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -13,7 +14,7 @@ import java.util.TreeSet;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
-import org.batfish.datamodel.BgpNeighbor;
+import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.Configuration;
@@ -121,7 +122,9 @@ public class BgpLoopbacksQuestionPlugin extends QuestionPlugin {
           }
           BgpProcess proc = vrf.getBgpProcess();
           Set<RoutingPolicy> exportPolicies = new TreeSet<>();
-          for (BgpNeighbor neighbor : proc.getNeighbors().values()) {
+          for (BgpPeerConfig neighbor :
+              Iterables.concat(
+                  proc.getActiveNeighbors().values(), proc.getPassiveNeighbors().values())) {
             String exportPolicyName = neighbor.getExportPolicy();
             if (exportPolicyName != null) {
               RoutingPolicy exportPolicy = c.getRoutingPolicies().get(exportPolicyName);

@@ -1,5 +1,6 @@
 package org.batfish.common.plugin;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -12,6 +13,8 @@ import javax.annotation.Nullable;
 import org.apache.commons.configuration2.ImmutableConfiguration;
 import org.batfish.common.Answerer;
 import org.batfish.common.Directory;
+import org.batfish.common.topology.Layer1Topology;
+import org.batfish.common.topology.Layer2Topology;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Configuration;
@@ -19,8 +22,10 @@ import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowHistory;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.AclLinesAnswerElementInterface;
+import org.batfish.datamodel.answers.AclLinesAnswerElementInterface.AclSpecs;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.DataPlaneAnswerElement;
@@ -29,7 +34,6 @@ import org.batfish.datamodel.answers.ParseEnvironmentBgpTablesAnswerElement;
 import org.batfish.datamodel.answers.ParseEnvironmentRoutingTablesAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
-import org.batfish.datamodel.collections.NamedStructureEquivalenceSets;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.questions.Question;
@@ -41,14 +45,12 @@ import org.batfish.grammar.GrammarSettings;
 import org.batfish.question.ReachabilityParameters;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
+import org.batfish.role.addressbook.AddressLibrary;
 import org.batfish.specifier.SpecifierContext;
 
 public interface IBatfish extends IPluginConsumer {
 
-  void answerAclReachability(
-      String aclNameRegexStr,
-      NamedStructureEquivalenceSets<?> aclEqSets,
-      AclLinesAnswerElementInterface emptyAnswer);
+  void answerAclReachability(List<AclSpecs> aclSpecs, AclLinesAnswerElementInterface emptyAnswer);
 
   void checkDataPlane();
 
@@ -57,6 +59,8 @@ public interface IBatfish extends IPluginConsumer {
   DataPlaneAnswerElement computeDataPlane(boolean differentialContext);
 
   boolean debugFlagEnabled(String flag);
+
+  AddressLibrary getAddressLibraryData();
 
   Map<String, BiFunction<Question, IBatfish, Answerer>> getAnswererCreators();
 
@@ -75,6 +79,12 @@ public interface IBatfish extends IPluginConsumer {
   GrammarSettings getGrammarSettings();
 
   FlowHistory getHistory();
+
+  @Nullable
+  Layer1Topology getLayer1Topology();
+
+  @Nullable
+  Layer2Topology getLayer2Topology();
 
   NodeRolesData getNodeRolesData();
 
@@ -166,6 +176,8 @@ public interface IBatfish extends IPluginConsumer {
   void registerExternalBgpAdvertisementPlugin(
       ExternalBgpAdvertisementPlugin externalBgpAdvertisementPlugin);
 
+  Optional<Flow> reachFilter(String nodeName, IpAccessList acl);
+
   AnswerElement smtBlackhole(HeaderQuestion q);
 
   AnswerElement smtBoundedLength(HeaderLocationQuestion q, Integer bound);
@@ -193,4 +205,6 @@ public interface IBatfish extends IPluginConsumer {
   AnswerElement standard(ReachabilityParameters reachabilityParameters);
 
   void writeDataPlane(DataPlane dp, DataPlaneAnswerElement ae);
+
+  Set<Flow> bddMultipathConsistency();
 }

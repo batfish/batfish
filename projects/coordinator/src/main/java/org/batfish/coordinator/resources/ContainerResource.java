@@ -8,7 +8,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Container;
 import org.batfish.common.CoordConstsV2;
@@ -28,12 +27,10 @@ public class ContainerResource {
   private BatfishLogger _logger = Main.getLogger();
 
   private String _name;
-  private UriInfo _uriInfo;
 
-  public ContainerResource(UriInfo uriInfo, String apiKey, String name) {
+  public ContainerResource(String apiKey, String name) {
     checkAccessToContainer(apiKey, name);
     _name = name;
-    _uriInfo = uriInfo;
   }
 
   /** Relocate the request to {@link AddressLibrary}. */
@@ -45,7 +42,7 @@ public class ContainerResource {
   /** Returns information about the given {@link Container}, provided this user can access it. */
   @GET
   public Response getContainer() {
-    _logger.infof("WMS2: getContainer '%s'\n", _name);
+    _logger.infof("WMS2: getNetwork '%s'\n", _name);
     Container container = Main.getWorkMgr().getContainer(_name);
     return Response.ok(container).build();
   }
@@ -53,13 +50,13 @@ public class ContainerResource {
   /** Relocate the request to {@link NodeRolesResource}. */
   @Path(CoordConstsV2.RSC_NODE_ROLES)
   public NodeRolesResource getNodeRolesResource() {
-    return new NodeRolesResource(_uriInfo, _name);
+    return new NodeRolesResource(_name);
   }
 
   /** Delete a specified container with name: {@link #_name}. */
   @DELETE
   public Response deleteContainer() {
-    _logger.infof("WMS2: delContainer '%s'\n", _name);
+    _logger.infof("WMS2: delNetwork '%s'\n", _name);
     if (Main.getWorkMgr().delContainer(_name)) {
       return Response.noContent().build();
     } else {
@@ -70,12 +67,12 @@ public class ContainerResource {
   /** Check if {@code container} exists and {@code apiKey} has access to it. */
   private static void checkAccessToContainer(String apiKey, String container) {
     if (!Main.getWorkMgr().checkContainerExists(container)) {
-      throw new NotFoundException(String.format("Container '%s' does not exist", container));
+      throw new NotFoundException(String.format("Network '%s' does not exist", container));
     }
 
     if (!Main.getAuthorizer().isAccessibleContainer(apiKey, container, false)) {
       throw new ForbiddenException(
-          String.format("container '%s' is not accessible by the api key: %s", container, apiKey));
+          String.format("network '%s' is not accessible by the api key: %s", container, apiKey));
     }
   }
 }

@@ -22,6 +22,7 @@ filegroup(
         "src/main/java/org/batfish/grammar/BatfishParserErrorListener.java",
         "src/main/java/org/batfish/grammar/GrammarSettings.java",
         "src/main/java/org/batfish/grammar/ParseTreePrettyPrinter.java",
+        "src/main/java/org/batfish/grammar/flattener/FlattenerLineMap.java",
     ],
 )
 
@@ -44,12 +45,12 @@ java_library(
     srcs = glob([
         "src/main/**/*.java",
     ]),
+    plugins = [
+        "//:auto_service_plugin",
+    ],
     resources = [
         "src/generated/resources/org/batfish/common/common.properties",
         "src/main/resources/org/batfish/common/util/salt",
-    ],
-    plugins = [
-        "//:auto_service_plugin",
     ],
     runtime_deps = [
         "@commons_beanutils//:runtime",
@@ -103,6 +104,7 @@ java_library(
         ":common",
         ":recovery_grammar",
         "@antlr4_runtime//:compile",
+        "@commons_configuration2//:compile",
         "@commons_lang3//:compile",
         "@guava//:compile",
         "@hamcrest//:compile",
@@ -147,7 +149,7 @@ java_library(
         ":RecoveryParserListener.java",
     ],
     deps = [
-        ":common",
+        ":parser_common",
         "@antlr4_runtime//:compile",
     ],
 )

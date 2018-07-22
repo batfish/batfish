@@ -2,9 +2,11 @@ package org.batfish.common.util;
 
 import static org.batfish.common.util.CommonUtil.asNegativeIpWildcards;
 import static org.batfish.common.util.CommonUtil.asPositiveIpWildcards;
+import static org.batfish.common.util.CommonUtil.communityStringToLong;
 import static org.batfish.common.util.CommonUtil.computeIpInterfaceOwners;
 import static org.batfish.common.util.CommonUtil.computeIpNodeOwners;
 import static org.batfish.common.util.CommonUtil.computeNodeInterfaces;
+import static org.batfish.common.util.CommonUtil.longToCommunity;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
@@ -183,5 +185,37 @@ public class CommonUtilTest {
                 new Ip("1.1.1.1"),
                 ImmutableMap.of(
                     "node", ImmutableSet.of("active", "shut", "active-black", "shut-black")))));
+  }
+
+  @Test
+  public void testCommunityStringToLong() {
+    assertThat(communityStringToLong("0:0"), equalTo(0L));
+    assertThat(communityStringToLong("65535:65535"), equalTo(4294967295L));
+  }
+
+  @Test(expected = ArrayIndexOutOfBoundsException.class)
+  public void testCommunityStringToLongInvalidInput() {
+    communityStringToLong("111");
+  }
+
+  @Test(expected = NumberFormatException.class)
+  public void testCommunityStringToLongNoInput() {
+    communityStringToLong("");
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testCommunityStringHighTooBig() {
+    communityStringToLong("65537:1");
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testCommunityStringLowTooBig() {
+    communityStringToLong("1:65537");
+  }
+
+  @Test
+  public void testLongToCommunity() {
+    assertThat(longToCommunity(0L), equalTo("0:0"));
+    assertThat(longToCommunity(4294967295L), equalTo("65535:65535"));
   }
 }

@@ -1,5 +1,6 @@
 package org.batfish.specifier;
 
+import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 
 /**
@@ -14,7 +15,7 @@ public abstract class TypedLocationSpecifierFactory<T> implements LocationSpecif
   protected abstract Class<T> getInputClass();
 
   @Override
-  public LocationSpecifier buildLocationSpecifier(Object input) {
+  public final LocationSpecifier buildLocationSpecifier(@Nullable Object input) {
     Class<T> inputClass = getInputClass();
     if (!getInputClass().isInstance(input)) {
       throw new BatfishException(

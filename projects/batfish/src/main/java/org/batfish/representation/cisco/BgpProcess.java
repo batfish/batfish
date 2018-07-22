@@ -1,12 +1,12 @@
 package org.batfish.representation.cisco;
 
+import java.io.Serializable;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
-import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.BgpTieBreaker;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Ip;
@@ -15,7 +15,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.RoutingProtocol;
 
-public class BgpProcess extends ComparableStructure<Integer> {
+public class BgpProcess implements Serializable {
 
   private static final int DEFAULT_BGP_DEFAULT_METRIC = 0;
 
@@ -65,6 +65,8 @@ public class BgpProcess extends ComparableStructure<Integer> {
 
   private Map<String, NamedBgpPeerGroup> _peerSessions;
 
+  private final int _procnum;
+
   private final Map<RoutingProtocol, BgpRedistributionPolicy> _redistributionPolicies;
 
   private Ip _routerId;
@@ -72,7 +74,6 @@ public class BgpProcess extends ComparableStructure<Integer> {
   private BgpTieBreaker _tieBreaker;
 
   public BgpProcess(ConfigurationFormat format, int procnum) {
-    super(procnum);
     _afGroups = new HashMap<>();
     _aggregateNetworks = new HashMap<>();
     _aggregateIpv6Networks = new HashMap<>();
@@ -86,6 +87,7 @@ public class BgpProcess extends ComparableStructure<Integer> {
     _ipv6Networks = new LinkedHashMap<>();
     _ipv6PeerGroups = new HashMap<>();
     _peerSessions = new HashMap<>();
+    _procnum = procnum;
     _redistributionPolicies = new EnumMap<>(RoutingProtocol.class);
     _masterBgpPeerGroup = new MasterBgpPeerGroup();
     if (format == ConfigurationFormat.ARISTA) {
@@ -237,6 +239,10 @@ public class BgpProcess extends ComparableStructure<Integer> {
 
   public Map<String, NamedBgpPeerGroup> getPeerSessions() {
     return _peerSessions;
+  }
+
+  public int getProcnum() {
+    return _procnum;
   }
 
   public Map<RoutingProtocol, BgpRedistributionPolicy> getRedistributionPolicies() {

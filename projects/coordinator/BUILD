@@ -66,6 +66,7 @@ java_library(
 
 junit_tests(
     name = "coordinator_tests",
+    size = "small",
     srcs = glob([
         "src/test/java/**/*Test.java",
     ]),
@@ -90,5 +91,4 @@ junit_tests(
         "@jettison//:compile",
         "@junit//:compile",
     ],
-    size = "small",
 )

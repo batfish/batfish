@@ -242,10 +242,10 @@
             "        (s_common",
             "          (s_system",
             "            SYSTEM:'system'  <== mode:DEFAULT_MODE",
-            "            (sy_null",
+            "            (sy_services",
             "              SERVICES:'services'  <== mode:DEFAULT_MODE",
-            "              (null_filler",
-            "                SSH:'ssh'  <== mode:DEFAULT_MODE))))))",
+            "              (sy_services_linetype",
+            "                linetype = SSH:'ssh'  <== mode:DEFAULT_MODE))))))",
             "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "  (set_line",
             "    SET:'set'  <== mode:DEFAULT_MODE",
@@ -254,15 +254,16 @@
             "        (s_common",
             "          (s_system",
             "            SYSTEM:'system'  <== mode:DEFAULT_MODE",
-            "            (sy_null",
+            "            (sy_services",
             "              SERVICES:'services'  <== mode:DEFAULT_MODE",
-            "              (null_filler",
-            "                VARIABLE:'web-management'  <== mode:DEFAULT_MODE",
-            "                HTTP:'http'  <== mode:DEFAULT_MODE",
-            "                INTERFACE:'interface'  <== mode:DEFAULT_MODE",
-            "                VARIABLE:'fxp0'  <== mode:M_Interface",
-            "                PERIOD:'.'  <== mode:DEFAULT_MODE",
-            "                DEC:'0'  <== mode:DEFAULT_MODE))))))",
+            "              (sy_services_null",
+            "                WEB_MANAGEMENT:'web-management'  <== mode:DEFAULT_MODE",
+            "                (null_filler",
+            "                  HTTP:'http'  <== mode:DEFAULT_MODE",
+            "                  INTERFACE:'interface'  <== mode:DEFAULT_MODE",
+            "                  VARIABLE:'fxp0'  <== mode:M_Interface",
+            "                  PERIOD:'.'  <== mode:DEFAULT_MODE",
+            "                  DEC:'0'  <== mode:DEFAULT_MODE)))))))",
             "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "  (set_line",
             "    SET:'set'  <== mode:DEFAULT_MODE",
@@ -2618,10 +2619,10 @@
             "        (s_common",
             "          (s_system",
             "            SYSTEM:'system'  <== mode:DEFAULT_MODE",
-            "            (sy_null",
+            "            (sy_services",
             "              SERVICES:'services'  <== mode:DEFAULT_MODE",
-            "              (null_filler",
-            "                SSH:'ssh'  <== mode:DEFAULT_MODE))))))",
+            "              (sy_services_linetype",
+            "                linetype = SSH:'ssh'  <== mode:DEFAULT_MODE))))))",
             "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "  (set_line",
             "    SET:'set'  <== mode:DEFAULT_MODE",
@@ -2630,15 +2631,16 @@
             "        (s_common",
             "          (s_system",
             "            SYSTEM:'system'  <== mode:DEFAULT_MODE",
-            "            (sy_null",
+            "            (sy_services",
             "              SERVICES:'services'  <== mode:DEFAULT_MODE",
-            "              (null_filler",
-            "                VARIABLE:'web-management'  <== mode:DEFAULT_MODE",
-            "                HTTP:'http'  <== mode:DEFAULT_MODE",
-            "                INTERFACE:'interface'  <== mode:DEFAULT_MODE",
-            "                VARIABLE:'fxp0'  <== mode:M_Interface",
-            "                PERIOD:'.'  <== mode:DEFAULT_MODE",
-            "                DEC:'0'  <== mode:DEFAULT_MODE))))))",
+            "              (sy_services_null",
+            "                WEB_MANAGEMENT:'web-management'  <== mode:DEFAULT_MODE",
+            "                (null_filler",
+            "                  HTTP:'http'  <== mode:DEFAULT_MODE",
+            "                  INTERFACE:'interface'  <== mode:DEFAULT_MODE",
+            "                  VARIABLE:'fxp0'  <== mode:M_Interface",
+            "                  PERIOD:'.'  <== mode:DEFAULT_MODE",
+            "                  DEC:'0'  <== mode:DEFAULT_MODE)))))))",
             "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "  (set_line",
             "    SET:'set'  <== mode:DEFAULT_MODE",
@@ -4496,10 +4498,10 @@
             "        (s_common",
             "          (s_system",
             "            SYSTEM:'system'  <== mode:DEFAULT_MODE",
-            "            (sy_null",
+            "            (sy_services",
             "              SERVICES:'services'  <== mode:DEFAULT_MODE",
-            "              (null_filler",
-            "                SSH:'ssh'  <== mode:DEFAULT_MODE))))))",
+            "              (sy_services_linetype",
+            "                linetype = SSH:'ssh'  <== mode:DEFAULT_MODE))))))",
             "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "  (set_line",
             "    SET:'set'  <== mode:DEFAULT_MODE",
@@ -4508,15 +4510,16 @@
             "        (s_common",
             "          (s_system",
             "            SYSTEM:'system'  <== mode:DEFAULT_MODE",
-            "            (sy_null",
+            "            (sy_services",
             "              SERVICES:'services'  <== mode:DEFAULT_MODE",
-            "              (null_filler",
-            "                VARIABLE:'web-management'  <== mode:DEFAULT_MODE",
-            "                HTTP:'http'  <== mode:DEFAULT_MODE",
-            "                INTERFACE:'interface'  <== mode:DEFAULT_MODE",
-            "                VARIABLE:'fxp0'  <== mode:M_Interface",
-            "                PERIOD:'.'  <== mode:DEFAULT_MODE",
-            "                DEC:'0'  <== mode:DEFAULT_MODE))))))",
+            "              (sy_services_null",
+            "                WEB_MANAGEMENT:'web-management'  <== mode:DEFAULT_MODE",
+            "                (null_filler",
+            "                  HTTP:'http'  <== mode:DEFAULT_MODE",
+            "                  INTERFACE:'interface'  <== mode:DEFAULT_MODE",
+            "                  VARIABLE:'fxp0'  <== mode:M_Interface",
+            "                  PERIOD:'.'  <== mode:DEFAULT_MODE",
+            "                  DEC:'0'  <== mode:DEFAULT_MODE)))))))",
             "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "  (set_line",
             "    SET:'set'  <== mode:DEFAULT_MODE",
@@ -5969,49 +5972,24 @@
           "ipsec policy" : {
             "test-ipsec-policy" : {
               "definitionLines" : [
-                31
+                31,
+                32
               ],
-              "numReferrers" : 2
-            }
-          },
-          "ipsec proposal" : {
-            "NOPFS_ESP_DES_MD5" : {
-              "definitionLines" : [
-                -1
-              ],
-              "numReferrers" : 1
-            },
-            "NOPFS_ESP_DES_SHA" : {
-              "definitionLines" : [
-                -1
-              ],
-              "numReferrers" : 1
+              "numReferrers" : 0
             }
           },
           "policy-statement" : {
             "bgp_export" : {
               "definitionLines" : [
-                115
+                115,
+                116
               ],
               "numReferrers" : 1
             },
             "loadbal" : {
               "definitionLines" : [
-                117
-              ],
-              "numReferrers" : 1
-            }
-          },
-          "secure tunnel interface" : {
-            "st0.2" : {
-              "definitionLines" : [
-                36
-              ],
-              "numReferrers" : 1
-            },
-            "st0.3" : {
-              "definitionLines" : [
-                33
+                117,
+                118
               ],
               "numReferrers" : 1
             }
@@ -6058,43 +6036,17 @@
           "ipsec policy" : {
             "test-ipsec-policy" : {
               "definitionLines" : [
-                31
+                31,
+                32
               ],
-              "numReferrers" : 2
-            }
-          },
-          "ipsec proposal" : {
-            "NOPFS_ESP_DES_MD5" : {
-              "definitionLines" : [
-                -1
-              ],
-              "numReferrers" : 1
-            },
-            "NOPFS_ESP_DES_SHA" : {
-              "definitionLines" : [
-                -1
-              ],
-              "numReferrers" : 1
+              "numReferrers" : 0
             }
           },
           "policy-statement" : {
             "bgp_export" : {
               "definitionLines" : [
-                98
-              ],
-              "numReferrers" : 1
-            }
-          },
-          "secure tunnel interface" : {
-            "st0.1" : {
-              "definitionLines" : [
-                33
-              ],
-              "numReferrers" : 1
-            },
-            "st0.3" : {
-              "definitionLines" : [
-                36
+                98,
+                99
               ],
               "numReferrers" : 1
             }
@@ -6141,45 +6093,88 @@
           "ipsec policy" : {
             "test-ipsec-policy" : {
               "definitionLines" : [
-                31
+                31,
+                32
               ],
-              "numReferrers" : 1
-            }
-          },
-          "ipsec proposal" : {
-            "NOPFS_ESP_DES_MD5" : {
-              "definitionLines" : [
-                -1
-              ],
-              "numReferrers" : 1
-            },
-            "NOPFS_ESP_DES_SHA" : {
-              "definitionLines" : [
-                -1
-              ],
-              "numReferrers" : 1
+              "numReferrers" : 0
             }
           },
           "policy-statement" : {
             "bgp_export" : {
               "definitionLines" : [
-                89
+                89,
+                90
               ],
               "numReferrers" : 1
             }
-          },
-          "secure tunnel interface" : {
-            "st0.1" : {
-              "definitionLines" : [
-                59
-              ],
-              "numReferrers" : 0
+          }
+        }
+      },
+      "undefinedReferences" : {
+        "junos-srx-1" : {
+          "interface" : {
+            "ge-0/0/0.0" : {
+              "ike gateway external-interface" : [
+                30
+              ]
+            },
+            "ge-0/0/1.0" : {
+              "ike gateway external-interface" : [
+                27
+              ]
             },
             "st0.2" : {
-              "definitionLines" : [
+              "ipsec vpn bind-interface" : [
+                36
+              ]
+            },
+            "st0.3" : {
+              "ipsec vpn bind-interface" : [
                 33
-              ],
-              "numReferrers" : 1
+              ]
+            }
+          }
+        },
+        "junos-srx-2" : {
+          "interface" : {
+            "ge-0/0/0.0" : {
+              "ike gateway external-interface" : [
+                27
+              ]
+            },
+            "ge-0/0/1.0" : {
+              "ike gateway external-interface" : [
+                30
+              ]
+            },
+            "st0.1" : {
+              "ipsec vpn bind-interface" : [
+                33
+              ]
+            },
+            "st0.3" : {
+              "ipsec vpn bind-interface" : [
+                36
+              ]
+            }
+          }
+        },
+        "junos-srx-3" : {
+          "interface" : {
+            "ge-0/0/0.0" : {
+              "ike gateway external-interface" : [
+                30
+              ]
+            },
+            "ge-0/0/1.0" : {
+              "ike gateway external-interface" : [
+                27
+              ]
+            },
+            "st0.2" : {
+              "ipsec vpn bind-interface" : [
+                33
+              ]
             }
           }
         }

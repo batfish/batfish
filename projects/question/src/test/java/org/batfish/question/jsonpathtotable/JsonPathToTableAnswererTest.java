@@ -5,7 +5,6 @@ import static org.junit.Assert.assertThat;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
-import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -20,7 +19,7 @@ import org.junit.Test;
 public class JsonPathToTableAnswererTest {
 
   @Test
-  public void computeAnswerTable() throws IOException {
+  public void computeAnswerTable() {
     String innerAnswer = "{ 'excludeKey' : 'excludeVal', 'includeKey' : 'includeVal'}";
     String pathQuery = "$.*";
 
@@ -58,13 +57,18 @@ public class JsonPathToTableAnswererTest {
     assertThat(answer.getRows().size(), equalTo(1));
     assertThat(answer.getExcludedRows().size(), equalTo(1));
 
-    // the one row should have includeVal
-    ObjectNode data = BatfishObjectMapper.mapper().createObjectNode();
-    data.set("val", new TextNode("includeVal"));
-    data.set(
-        "node",
-        BatfishObjectMapper.mapper().createObjectNode().set("name", new TextNode("includeVal")));
-    assertThat(answer.getRows().contains(new Row(data)), equalTo(true));
+    assertThat(
+        answer
+            .getRows()
+            .contains(
+                Row.of(
+                    "val",
+                    new TextNode("includeVal"),
+                    "node",
+                    BatfishObjectMapper.mapper()
+                        .createObjectNode()
+                        .set("name", new TextNode("includeVal")))),
+        equalTo(true));
 
     // the summary should have the right count
     assertThat(answer.getSummary().getNumResults(), equalTo(1));

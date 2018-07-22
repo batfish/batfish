@@ -10,12 +10,12 @@ public abstract class NodeRoleRegexLocationSpecifierFactory
     extends TypedLocationSpecifierFactory<String> {
 
   @Override
-  protected Class<String> getInputClass() {
+  protected final Class<String> getInputClass() {
     return String.class;
   }
 
   @Override
-  public LocationSpecifier buildLocationSpecifierTyped(String input) {
+  public final LocationSpecifier buildLocationSpecifierTyped(String input) {
     String[] parts = input.split(":");
 
     if (parts.length != 2) {

@@ -1,14 +1,14 @@
 package org.batfish.datamodel.visitors;
 
+import static org.batfish.symbolic.bdd.BDDPacket.factory;
+
 import com.google.auto.service.AutoService;
 import java.util.Optional;
 import net.sf.javabdd.BDD;
-import net.sf.javabdd.BDDFactory;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.Prefix;
 import org.batfish.symbolic.bdd.BDDInteger;
-import org.batfish.symbolic.bdd.BDDUtils;
 import org.batfish.symbolic.bdd.IpSpaceToBDD;
 
 /**
@@ -17,28 +17,18 @@ import org.batfish.symbolic.bdd.IpSpaceToBDD;
  */
 @AutoService(IpSpaceRepresentative.class)
 public final class IpSpaceRepresentativeImpl implements IpSpaceRepresentative {
-
   /** Returns some representative element of an {@link IpSpace ip space}, if any exists. */
   @Override
   public Optional<Ip> getRepresentative(IpSpace ipSpace) {
-    BDDFactory factory = BDDUtils.bddFactory(Prefix.MAX_PREFIX_LENGTH);
-    BDDInteger ipAddrBdd = BDDInteger.makeFromIndex(factory, Prefix.MAX_PREFIX_LENGTH, 0, false);
-
-    BDD bdd = ipSpace.accept(new IpSpaceToBDD(factory, ipAddrBdd));
-
-    if (bdd.isZero()) {
-      // unsatisfiable
-      return Optional.empty();
-    }
-
-    BDD satAssignment = bdd.fullSatOne();
-    long ip = 0;
-    for (int i = 0; i < 32; i++) {
-      BDD bitBDD = ipAddrBdd.getBitvec()[31 - i];
-      if (!satAssignment.and(bitBDD).isZero()) {
-        ip += 1 << i;
+    synchronized (factory) {
+      if (factory.varNum() < Prefix.MAX_PREFIX_LENGTH) {
+        factory.setVarNum(Prefix.MAX_PREFIX_LENGTH);
       }
+
+      BDDInteger ipAddrBdd = BDDInteger.makeFromIndex(factory, Prefix.MAX_PREFIX_LENGTH, 0, true);
+      IpSpaceToBDD ipSpaceToBDD = new IpSpaceToBDD(factory, ipAddrBdd);
+      BDD ipSpaceBDD = ipSpace.accept(ipSpaceToBDD);
+      return ipSpaceToBDD.getBDDInteger().getValueSatisfying(ipSpaceBDD).map(Ip::new);
     }
-    return Optional.of(new Ip(ip));
   }
 }

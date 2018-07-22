@@ -1,7 +1,6 @@
 package org.batfish.representation.aws;
 
 import java.io.Serializable;
-import org.batfish.common.BatfishLogger;
 import org.batfish.datamodel.Prefix;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -20,7 +19,7 @@ public class VpcPeeringConnection implements AwsVpcEntity, Serializable {
 
   private final String _vpcPeeringConnectionId;
 
-  public VpcPeeringConnection(JSONObject jObj, BatfishLogger logger) throws JSONException {
+  public VpcPeeringConnection(JSONObject jObj) throws JSONException {
     _vpcPeeringConnectionId = jObj.getString(JSON_KEY_VPC_PEERING_CONNECTION_ID);
 
     JSONObject accepterJson = jObj.getJSONObject(JSON_KEY_ACCEPTER_VPC_INFO);

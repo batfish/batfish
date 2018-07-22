@@ -4,10 +4,10 @@ import static org.hamcrest.Matchers.equalTo;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.IsisHelloAuthenticationType;
-import org.batfish.datamodel.IsisInterfaceLevelSettings;
-import org.batfish.datamodel.IsisInterfaceMode;
-import org.batfish.datamodel.IsisInterfaceSettings;
+import org.batfish.datamodel.isis.IsisHelloAuthenticationType;
+import org.batfish.datamodel.isis.IsisInterfaceLevelSettings;
+import org.batfish.datamodel.isis.IsisInterfaceMode;
+import org.batfish.datamodel.isis.IsisInterfaceSettings;
 import org.batfish.datamodel.matchers.IsisInterfaceLevelSettingsMatchersImpl.HasCost;
 import org.batfish.datamodel.matchers.IsisInterfaceLevelSettingsMatchersImpl.HasHelloAuthenticationType;
 import org.batfish.datamodel.matchers.IsisInterfaceLevelSettingsMatchersImpl.HasHelloInterval;
@@ -21,8 +21,7 @@ public final class IsisInterfaceLevelSettingsMatchers {
    * Provides a matcher that matches when the {@link IsisInterfaceLevelSettings}'s cost is {@code
    * expectedCost}.
    */
-  public static @Nonnull Matcher<IsisInterfaceLevelSettings> hasCost(
-      @Nullable Integer expectedCost) {
+  public static @Nonnull Matcher<IsisInterfaceLevelSettings> hasCost(@Nullable Long expectedCost) {
     return new HasCost(equalTo(expectedCost));
   }
 
@@ -31,7 +30,7 @@ public final class IsisInterfaceLevelSettingsMatchers {
    * IsisInterfaceLevelSettings}'s cost.
    */
   public static @Nonnull Matcher<IsisInterfaceLevelSettings> hasCost(
-      @Nonnull Matcher<? super Integer> subMatcher) {
+      @Nonnull Matcher<? super Long> subMatcher) {
     return new HasCost(subMatcher);
   }
 

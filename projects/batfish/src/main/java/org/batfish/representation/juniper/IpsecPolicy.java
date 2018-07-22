@@ -1,7 +1,7 @@
 package org.batfish.representation.juniper;
 
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.ArrayList;
+import java.util.List;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.DiffieHellmanGroup;
 
@@ -10,27 +10,20 @@ public class IpsecPolicy extends ComparableStructure<String> {
   /** */
   private static final long serialVersionUID = 1L;
 
-  private final int _definitionLine;
-
   private DiffieHellmanGroup _pfsKeyGroup;
 
-  private final Map<String, Integer> _proposals;
+  private final List<String> _proposals;
 
-  public IpsecPolicy(String name, int definitionLine) {
+  public IpsecPolicy(String name) {
     super(name);
-    _definitionLine = definitionLine;
-    _proposals = new TreeMap<>();
-  }
-
-  public int getDefinitionLine() {
-    return _definitionLine;
+    _proposals = new ArrayList<>();
   }
 
   public DiffieHellmanGroup getPfsKeyGroup() {
     return _pfsKeyGroup;
   }
 
-  public Map<String, Integer> getProposals() {
+  public List<String> getProposals() {
     return _proposals;
   }
 

@@ -157,6 +157,7 @@ logging_null
       | EVENTS
       | FACILITY
       | HISTORY
+      | HOSTNAMEPREFIX
       | IP
       | LEVEL
       | LINECARD

@@ -86,7 +86,7 @@
         "description" : "Undefined reference to structure of type: 'bgp group' with usage: 'bgp neighbor statement' named 'UNDEFINED_PEER_GROUP'",
         "files" : {
           "ios_bgp" : [
-            6
+            7
           ]
         }
       },
@@ -298,11 +298,211 @@
           ]
         }
       },
+      "undefined:community-set:usage:route-policy community matches-any:CF_fooey_Associates-chillmap" : {
+        "description" : "Undefined reference to structure of type: 'community-set' with usage: 'route-policy community matches-any' named 'CF_fooey_Associates-chillmap'",
+        "files" : {
+          "ios_xr_route_policy" : [
+            145
+          ]
+        }
+      },
+      "undefined:community-set:usage:route-policy community matches-any:DC_AT_CHILL" : {
+        "description" : "Undefined reference to structure of type: 'community-set' with usage: 'route-policy community matches-any' named 'DC_AT_CHILL'",
+        "files" : {
+          "ios_xr_route_policy" : [
+            150
+          ]
+        }
+      },
+      "undefined:community-set:usage:route-policy community matches-any:DC_AT_MEMBERS" : {
+        "description" : "Undefined reference to structure of type: 'community-set' with usage: 'route-policy community matches-any' named 'DC_AT_MEMBERS'",
+        "files" : {
+          "route_policy_igp_cost" : [
+            5
+          ]
+        }
+      },
+      "undefined:community-set:usage:route-policy community matches-any:DC_CF_COMMODITY_PEER" : {
+        "description" : "Undefined reference to structure of type: 'community-set' with usage: 'route-policy community matches-any' named 'DC_CF_COMMODITY_PEER'",
+        "files" : {
+          "route_policy_igp_cost" : [
+            5
+          ]
+        }
+      },
+      "undefined:community-set:usage:route-policy community matches-any:DC_CF_ISP" : {
+        "description" : "Undefined reference to structure of type: 'community-set' with usage: 'route-policy community matches-any' named 'DC_CF_ISP'",
+        "files" : {
+          "route_policy_igp_cost" : [
+            5
+          ]
+        }
+      },
+      "undefined:community-set:usage:route-policy community matches-any:EBGP-CUST-EXT" : {
+        "description" : "Undefined reference to structure of type: 'community-set' with usage: 'route-policy community matches-any' named 'EBGP-CUST-EXT'",
+        "files" : {
+          "ios_xr_route_policy" : [
+            98
+          ]
+        }
+      },
+      "undefined:community-set:usage:route-policy community matches-any:EBGP-CUST-NOEXP-PEER-NA" : {
+        "description" : "Undefined reference to structure of type: 'community-set' with usage: 'route-policy community matches-any' named 'EBGP-CUST-NOEXP-PEER-NA'",
+        "files" : {
+          "ios_xr_route_policy" : [
+            88
+          ]
+        }
+      },
+      "undefined:community-set:usage:route-policy community matches-any:HPR_CF_RE_PEER" : {
+        "description" : "Undefined reference to structure of type: 'community-set' with usage: 'route-policy community matches-any' named 'HPR_CF_RE_PEER'",
+        "files" : {
+          "route_policy_igp_cost" : [
+            5
+          ]
+        }
+      },
+      "undefined:community-set:usage:route-policy community matches-any:No_Export" : {
+        "description" : "Undefined reference to structure of type: 'community-set' with usage: 'route-policy community matches-any' named 'No_Export'",
+        "files" : {
+          "route_policy_igp_cost" : [
+            7
+          ],
+          "route_policy_metric_type" : [
+            5
+          ]
+        }
+      },
+      "undefined:community-set:usage:route-policy community matches-any:SOCAL-USERS" : {
+        "description" : "Undefined reference to structure of type: 'community-set' with usage: 'route-policy community matches-any' named 'SOCAL-USERS'",
+        "files" : {
+          "route_policy_as_path" : [
+            5
+          ]
+        }
+      },
+      "undefined:community-set:usage:route-policy community matches-any:blackhole-all" : {
+        "description" : "Undefined reference to structure of type: 'community-set' with usage: 'route-policy community matches-any' named 'blackhole-all'",
+        "files" : {
+          "ios_xr_route_policy" : [
+            107,
+            158
+          ],
+          "route_policy_param" : [
+            13
+          ]
+        }
+      },
+      "undefined:community-set:usage:route-policy community matches-any:blackhole-isp" : {
+        "description" : "Undefined reference to structure of type: 'community-set' with usage: 'route-policy community matches-any' named 'blackhole-isp'",
+        "files" : {
+          "ios_xr_route_policy" : [
+            110
+          ]
+        }
+      },
+      "undefined:community-set:usage:route-policy community matches-any:chillmap" : {
+        "description" : "Undefined reference to structure of type: 'community-set' with usage: 'route-policy community matches-any' named 'chillmap'",
+        "files" : {
+          "ios_xr_route_policy" : [
+            141
+          ]
+        }
+      },
+      "undefined:community-set:usage:route-policy community matches-any:community_5555" : {
+        "description" : "Undefined reference to structure of type: 'community-set' with usage: 'route-policy community matches-any' named 'community_5555'",
+        "files" : {
+          "ios_xr_route_policy" : [
+            33
+          ]
+        }
+      },
+      "undefined:community-set:usage:route-policy community matches-any:fooey_blackhole_community" : {
+        "description" : "Undefined reference to structure of type: 'community-set' with usage: 'route-policy community matches-any' named 'fooey_blackhole_community'",
+        "files" : {
+          "ios_xr_route_policy" : [
+            5
+          ]
+        }
+      },
+      "undefined:community-set:usage:route-policy community matches-any:fooey_routes_community" : {
+        "description" : "Undefined reference to structure of type: 'community-set' with usage: 'route-policy community matches-any' named 'fooey_routes_community'",
+        "files" : {
+          "ios_xr_route_policy" : [
+            16
+          ]
+        }
+      },
+      "undefined:community-set:usage:route-policy community matches-any:scenes_No_Export" : {
+        "description" : "Undefined reference to structure of type: 'community-set' with usage: 'route-policy community matches-any' named 'scenes_No_Export'",
+        "files" : {
+          "ios_xr_route_policy" : [
+            120
+          ]
+        }
+      },
+      "undefined:community-set:usage:route-policy community matches-any:to-peers-backbone" : {
+        "description" : "Undefined reference to structure of type: 'community-set' with usage: 'route-policy community matches-any' named 'to-peers-backbone'",
+        "files" : {
+          "ios_xr_route_policy" : [
+            137
+          ]
+        }
+      },
+      "undefined:community-set:usage:route-policy community matches-any:wrn-expanded" : {
+        "description" : "Undefined reference to structure of type: 'community-set' with usage: 'route-policy community matches-any' named 'wrn-expanded'",
+        "files" : {
+          "ios_xr_route_policy" : [
+            129,
+            143
+          ]
+        }
+      },
+      "undefined:community-set:usage:route-policy community matches-any:wrn-squelch-40027" : {
+        "description" : "Undefined reference to structure of type: 'community-set' with usage: 'route-policy community matches-any' named 'wrn-squelch-40027'",
+        "files" : {
+          "ios_xr_route_policy" : [
+            126
+          ]
+        }
+      },
+      "undefined:community-set:usage:route-policy delete community [not] in:community_5555" : {
+        "description" : "Undefined reference to structure of type: 'community-set' with usage: 'route-policy delete community [not] in' named 'community_5555'",
+        "files" : {
+          "ios_xr_route_policy" : [
+            34
+          ]
+        }
+      },
+      "undefined:community-set:usage:route-policy set community:13979:90" : {
+        "description" : "Undefined reference to structure of type: 'community-set' with usage: 'route-policy set community' named '13979:90'",
+        "files" : {
+          "route_policy_as_path" : [
+            7
+          ]
+        }
+      },
+      "undefined:community-set:usage:route-policy set community:barbar_to_fooey_community_ipv4" : {
+        "description" : "Undefined reference to structure of type: 'community-set' with usage: 'route-policy set community' named 'barbar_to_fooey_community_ipv4'",
+        "files" : {
+          "ios_xr_route_policy" : [
+            52
+          ]
+        }
+      },
+      "undefined:crypto ipsec transform-set:usage:crypto map ipsec-isakmp transform-set:bleep" : {
+        "description" : "Undefined reference to structure of type: 'crypto ipsec transform-set' with usage: 'crypto map ipsec-isakmp transform-set' named 'bleep'",
+        "files" : {
+          "cisco_crypto" : [
+            222
+          ]
+        }
+      },
       "undefined:crypto ipsec transform-set:usage:crypto map ipsec-isakmp transform-set:mytransformset" : {
         "description" : "Undefined reference to structure of type: 'crypto ipsec transform-set' with usage: 'crypto map ipsec-isakmp transform-set' named 'mytransformset'",
         "files" : {
           "cisco_crypto" : [
-            218
+            241
           ]
         }
       },
@@ -310,7 +510,7 @@
         "description" : "Undefined reference to structure of type: 'crypto ipsec transform-set' with usage: 'ipsec profile set transform-set' named 'hijklmnop'",
         "files" : {
           "cisco_crypto" : [
-            146
+            159
           ]
         }
       },
@@ -318,7 +518,7 @@
         "description" : "Undefined reference to structure of type: 'crypto isakmp profile' with usage: 'crypto map ipsec-isakmp isakmp-profile' named 'myisakmpprofile'",
         "files" : {
           "cisco_crypto" : [
-            214
+            237
           ]
         }
       },
@@ -326,7 +526,7 @@
         "description" : "Undefined reference to structure of type: 'crypto isakmp profile' with usage: 'ipsec profile set isakmp-profile' named 'someOtherprofile'",
         "files" : {
           "cisco_crypto" : [
-            149
+            162
           ]
         }
       },
@@ -334,7 +534,15 @@
         "description" : "Undefined reference to structure of type: 'crypto keyring' with usage: 'isakmp profile keyring' named 'VRF:MMS:RMT:UPM:1143'",
         "files" : {
           "cisco_crypto" : [
-            175
+            188
+          ]
+        }
+      },
+      "undefined:crypto-dynamic-map-set:usage:crypto map ipsec-isakmp crypto-dynamic-map-set:bippety" : {
+        "description" : "Undefined reference to structure of type: 'crypto-dynamic-map-set' with usage: 'crypto map ipsec-isakmp crypto-dynamic-map-set' named 'bippety'",
+        "files" : {
+          "cisco_crypto" : [
+            224
           ]
         }
       },
@@ -350,6 +558,7 @@
         "description" : "Undefined reference to structure of type: 'dhcp-relay server-group' with usage: 'dhcp relay group active-server-group' named 'site-dhcp'",
         "files" : {
           "juniper_forwarding_options" : [
+            8,
             13
           ]
         }
@@ -358,7 +567,15 @@
         "description" : "Undefined reference to structure of type: 'interface' with usage: 'router vrrp interface' named 'GigabitEthernet0/0/0/19'",
         "files" : {
           "cisco_vrrp" : [
-            16
+            14
+          ]
+        }
+      },
+      "undefined:interface:usage:router vrrp interface:ManagementEthernet0/RSP0/CPU0/0" : {
+        "description" : "Undefined reference to structure of type: 'interface' with usage: 'router vrrp interface' named 'ManagementEthernet0/RSP0/CPU0/0'",
+        "files" : {
+          "cisco_vrrp" : [
+            24
           ]
         }
       },
@@ -366,7 +583,15 @@
         "description" : "Undefined reference to structure of type: 'interface' with usage: 'router vrrp interface' named 'ManagementEthernet0/RSP1/CPU0/0'",
         "files" : {
           "cisco_vrrp" : [
-            28
+            26
+          ]
+        }
+      },
+      "undefined:interface:usage:service-policy interface:Loopback0" : {
+        "description" : "Undefined reference to structure of type: 'interface' with usage: 'service-policy interface' named 'Loopback0'",
+        "files" : {
+          "cisco_misc" : [
+            238
           ]
         }
       },
@@ -377,7 +602,11 @@
             14
           ],
           "ios_xr_bgp_neighbor_group" : [
-            0
+            22,
+            36,
+            48,
+            58,
+            69
           ]
         }
       },
@@ -385,7 +614,19 @@
         "description" : "Undefined reference to structure of type: 'interface' with usage: 'update-source interface' named 'Loopback1'",
         "files" : {
           "foundry_bgp" : [
-            0
+            16
+          ],
+          "peer_template" : [
+            16
+          ]
+        }
+      },
+      "undefined:interface:usage:update-source interface:Loopback15" : {
+        "description" : "Undefined reference to structure of type: 'interface' with usage: 'update-source interface' named 'Loopback15'",
+        "files" : {
+          "cadant_bgp" : [
+            12,
+            17
           ]
         }
       },
@@ -401,7 +642,7 @@
         "description" : "Undefined reference to structure of type: 'ipv4 acl' with usage: 'interface ip verify access-list' named '167'",
         "files" : {
           "cisco_interface" : [
-            123
+            129
           ]
         }
       },
@@ -409,7 +650,7 @@
         "description" : "Undefined reference to structure of type: 'ipv4 acl' with usage: 'interface outgoing ip access-list' named '310-systems'",
         "files" : {
           "cisco_interface" : [
-            126
+            132
           ]
         }
       },
@@ -436,7 +677,7 @@
         "description" : "Undefined reference to structure of type: 'ipv4 acl' with usage: 'ip nat destination acl' named 'mynatacl'",
         "files" : {
           "cisco_interface" : [
-            87
+            88
           ]
         }
       },
@@ -444,7 +685,7 @@
         "description" : "Undefined reference to structure of type: 'ipv4 acl' with usage: 'ip nat source dynamic access-list' named 'def'",
         "files" : {
           "cisco_interface" : [
-            90
+            91
           ]
         }
       },
@@ -489,6 +730,14 @@
             30,
             46,
             47
+          ]
+        }
+      },
+      "undefined:ipv4 acl:usage:ntp access-group:ntp-peer-group" : {
+        "description" : "Undefined reference to structure of type: 'ipv4 acl' with usage: 'ntp access-group' named 'ntp-peer-group'",
+        "files" : {
+          "cisco_ntp" : [
+            4
           ]
         }
       },
@@ -650,7 +899,7 @@
         "description" : "Undefined reference to structure of type: 'ipv4 acl' with usage: 'ssh ipv4 access-list' named 'ACL99'",
         "files" : {
           "ios_xr_ssh" : [
-            5
+            6
           ]
         }
       },
@@ -722,7 +971,15 @@
         "description" : "Undefined reference to structure of type: 'ipv4/6 acl' with usage: 'crypto map ipsec-isakmp acl' named 'myvpnacl'",
         "files" : {
           "cisco_crypto" : [
-            212
+            235
+          ]
+        }
+      },
+      "undefined:ipv4/6 acl:usage:crypto map ipsec-isakmp acl:someacl" : {
+        "description" : "Undefined reference to structure of type: 'ipv4/6 acl' with usage: 'crypto map ipsec-isakmp acl' named 'someacl'",
+        "files" : {
+          "cisco_crypto" : [
+            219
           ]
         }
       },
@@ -730,7 +987,7 @@
         "description" : "Undefined reference to structure of type: 'ipv4/6 acl' with usage: 'interface igmp access-group acl' named '1'",
         "files" : {
           "cisco_interface" : [
-            77
+            78
           ]
         }
       },
@@ -739,14 +996,6 @@
         "files" : {
           "cadant_interface" : [
             130
-          ]
-        }
-      },
-      "undefined:ipv4/6 acl:usage:ip nat source dynamic access-list:def" : {
-        "description" : "Undefined reference to structure of type: 'ipv4/6 acl' with usage: 'ip nat source dynamic access-list' named 'def'",
-        "files" : {
-          "cisco_interface" : [
-            90
           ]
         }
       },
@@ -853,7 +1102,7 @@
         "description" : "Undefined reference to structure of type: 'ipv6 acl' with usage: 'ssh ipv6 access-list' named 'ipv6-vty-acl'",
         "files" : {
           "ios_xr_ssh" : [
-            5
+            6
           ]
         }
       },
@@ -877,7 +1126,7 @@
         "description" : "Undefined reference to structure of type: 'nat pool' with usage: 'ip nat source pool' named 'beeble'",
         "files" : {
           "cisco_interface" : [
-            91
+            92
           ]
         }
       },
@@ -897,12 +1146,38 @@
           ]
         }
       },
+      "undefined:policy-map:usage:interface service-policy type control subscriber:FOOBAR" : {
+        "description" : "Undefined reference to structure of type: 'policy-map' with usage: 'interface service-policy type control subscriber' named 'FOOBAR'",
+        "files" : {
+          "ios_interface" : [
+            5
+          ]
+        }
+      },
+      "undefined:policy-map:usage:policy-map class service-policy:prioritize_backbone" : {
+        "description" : "Undefined reference to structure of type: 'policy-map' with usage: 'policy-map class service-policy' named 'prioritize_backbone'",
+        "files" : {
+          "cisco_qos" : [
+            74
+          ]
+        }
+      },
+      "undefined:policy-map:usage:service-policy interface policy:some-interface-policy" : {
+        "description" : "Undefined reference to structure of type: 'policy-map' with usage: 'service-policy interface policy' named 'some-interface-policy'",
+        "files" : {
+          "cisco_misc" : [
+            238
+          ]
+        }
+      },
       "undefined:policy-statement:usage:bgp export policy-statement:someexportpolicy" : {
         "description" : "Undefined reference to structure of type: 'policy-statement' with usage: 'bgp export policy-statement' named 'someexportpolicy'",
         "files" : {
           "juniper_bgp" : [
             8,
-            22
+            15,
+            22,
+            31
           ]
         }
       },
@@ -911,7 +1186,9 @@
         "files" : {
           "juniper_bgp" : [
             10,
-            24
+            17,
+            24,
+            33
           ]
         }
       },
@@ -1037,6 +1314,14 @@
           ]
         }
       },
+      "undefined:route-map:usage:bgp address-family aggregate-address advertise-map:ADVERTISE_MAP" : {
+        "description" : "Undefined reference to structure of type: 'route-map' with usage: 'bgp address-family aggregate-address advertise-map' named 'ADVERTISE_MAP'",
+        "files" : {
+          "ios_bgp" : [
+            5
+          ]
+        }
+      },
       "undefined:route-map:usage:bgp address-family aggregate-address advertise-map:AGG6_MAP" : {
         "description" : "Undefined reference to structure of type: 'route-map' with usage: 'bgp address-family aggregate-address advertise-map' named 'AGG6_MAP'",
         "files" : {
@@ -1106,6 +1391,14 @@
         "files" : {
           "nexus_bgp" : [
             21
+          ]
+        }
+      },
+      "undefined:route-map:usage:bgp neighbor advertise-map exist-map:EXIST_MAP" : {
+        "description" : "Undefined reference to structure of type: 'route-map' with usage: 'bgp neighbor advertise-map exist-map' named 'EXIST_MAP'",
+        "files" : {
+          "ios_bgp" : [
+            5
           ]
         }
       },
@@ -1197,11 +1490,19 @@
           ]
         }
       },
+      "undefined:route-map:usage:interface summary-address eigrp leak-map:eigrp-leak-map" : {
+        "description" : "Undefined reference to structure of type: 'route-map' with usage: 'interface summary-address eigrp leak-map' named 'eigrp-leak-map'",
+        "files" : {
+          "cisco_interface" : [
+            125
+          ]
+        }
+      },
       "undefined:route-map:usage:ospf redistribute connected route-map:DIRECT_OSPF" : {
         "description" : "Undefined reference to structure of type: 'route-map' with usage: 'ospf redistribute connected route-map' named 'DIRECT_OSPF'",
         "files" : {
           "cisco_ospf" : [
-            54
+            55
           ]
         }
       },
@@ -1213,11 +1514,101 @@
           ]
         }
       },
+      "undefined:route-map:usage:ospf redistribute eigrp route-map:eigrp-ospf-route-map" : {
+        "description" : "Undefined reference to structure of type: 'route-map' with usage: 'ospf redistribute eigrp route-map' named 'eigrp-ospf-route-map'",
+        "files" : {
+          "cisco_ospf" : [
+            56
+          ]
+        }
+      },
       "undefined:route-map:usage:ospf redistribute static route-map:RM_OSPF_STATIC" : {
         "description" : "Undefined reference to structure of type: 'route-map' with usage: 'ospf redistribute static route-map' named 'RM_OSPF_STATIC'",
         "files" : {
           "nxos_ospf" : [
             10
+          ]
+        }
+      },
+      "undefined:route-policy:usage:aggregate-address route-policy:AGGREGATE_POLICY" : {
+        "description" : "Undefined reference to structure of type: 'route-policy' with usage: 'aggregate-address route-policy' named 'AGGREGATE_POLICY'",
+        "files" : {
+          "ios_xr_bgp" : [
+            10
+          ]
+        }
+      },
+      "undefined:route-policy:usage:bgp additional-paths selection route-policy:ADDITIONAL_PATHS_POLICY" : {
+        "description" : "Undefined reference to structure of type: 'route-policy' with usage: 'bgp additional-paths selection route-policy' named 'ADDITIONAL_PATHS_POLICY'",
+        "files" : {
+          "ios_xr_bgp" : [
+            8
+          ]
+        }
+      },
+      "undefined:route-policy:usage:bgp neighbor route-policy in:EBGP-PEER-AS11164-SVL-PNI-IN" : {
+        "description" : "Undefined reference to structure of type: 'route-policy' with usage: 'bgp neighbor route-policy in' named 'EBGP-PEER-AS11164-SVL-PNI-IN'",
+        "files" : {
+          "bgp_route_policy" : [
+            24
+          ]
+        }
+      },
+      "undefined:route-policy:usage:bgp neighbor route-policy in:cust_v4_in" : {
+        "description" : "Undefined reference to structure of type: 'route-policy' with usage: 'bgp neighbor route-policy in' named 'cust_v4_in'",
+        "files" : {
+          "bgp_default_originate_policy" : [
+            11
+          ]
+        }
+      },
+      "undefined:route-policy:usage:bgp neighbor route-policy in:deny_bgp_routes" : {
+        "description" : "Undefined reference to structure of type: 'route-policy' with usage: 'bgp neighbor route-policy in' named 'deny_bgp_routes'",
+        "files" : {
+          "ios_xr_bgp_neighbor_group" : [
+            24,
+            28
+          ]
+        }
+      },
+      "undefined:route-policy:usage:bgp neighbor route-policy out:EBGP-PEER-AS11164-SVL-PNI-OUT" : {
+        "description" : "Undefined reference to structure of type: 'route-policy' with usage: 'bgp neighbor route-policy out' named 'EBGP-PEER-AS11164-SVL-PNI-OUT'",
+        "files" : {
+          "bgp_route_policy" : [
+            26
+          ]
+        }
+      },
+      "undefined:route-policy:usage:bgp neighbor route-policy out:EBGP_CUST_FULL_v4" : {
+        "description" : "Undefined reference to structure of type: 'route-policy' with usage: 'bgp neighbor route-policy out' named 'EBGP_CUST_FULL_v4'",
+        "files" : {
+          "bgp_default_originate_policy" : [
+            13
+          ]
+        }
+      },
+      "undefined:route-policy:usage:bgp neighbor route-policy out:advertise_fooey_dc_and_isp_routes_ipv4" : {
+        "description" : "Undefined reference to structure of type: 'route-policy' with usage: 'bgp neighbor route-policy out' named 'advertise_fooey_dc_and_isp_routes_ipv4'",
+        "files" : {
+          "ios_xr_bgp_neighbor_group" : [
+            25,
+            29
+          ]
+        }
+      },
+      "undefined:route-policy:usage:bgp neighbor route-policy out:advertise_fooey_routes_only" : {
+        "description" : "Undefined reference to structure of type: 'route-policy' with usage: 'bgp neighbor route-policy out' named 'advertise_fooey_routes_only'",
+        "files" : {
+          "ios_xr_bgp_neighbor_group" : [
+            39
+          ]
+        }
+      },
+      "undefined:route-policy:usage:bgp neighbor route-policy out:deny_default_network_ipv4" : {
+        "description" : "Undefined reference to structure of type: 'route-policy' with usage: 'bgp neighbor route-policy out' named 'deny_default_network_ipv4'",
+        "files" : {
+          "ios_xr_bgp_neighbor_group" : [
+            60
           ]
         }
       },
@@ -1257,7 +1648,7 @@
         "description" : "Undefined reference to structure of type: 'zone security' with usage: 'interface zone-member' named 'z1'",
         "files" : {
           "cisco_interface" : [
-            277
+            285
           ]
         }
       }
@@ -1265,7 +1656,7 @@
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 156
+      "numResults" : 204
     },
     "undefinedReferences" : {
       "IosXrMultiCast" : {
@@ -1338,6 +1729,20 @@
           }
         }
       },
+      "bgp_default_originate_policy" : {
+        "route-policy" : {
+          "EBGP_CUST_FULL_v4" : {
+            "bgp neighbor route-policy out" : [
+              13
+            ]
+          },
+          "cust_v4_in" : {
+            "bgp neighbor route-policy in" : [
+              11
+            ]
+          }
+        }
+      },
       "bgp_foundry" : {
         "route-map" : {
           "from_ucr" : {
@@ -1359,9 +1764,29 @@
               0
             ]
           }
+        },
+        "route-policy" : {
+          "EBGP-PEER-AS11164-SVL-PNI-IN" : {
+            "bgp neighbor route-policy in" : [
+              24
+            ]
+          },
+          "EBGP-PEER-AS11164-SVL-PNI-OUT" : {
+            "bgp neighbor route-policy out" : [
+              26
+            ]
+          }
         }
       },
       "cadant_bgp" : {
+        "interface" : {
+          "Loopback15" : {
+            "update-source interface" : [
+              12,
+              17
+            ]
+          }
+        },
         "route-map" : {
           "blarp" : {
             "bgp outbound route-map" : [
@@ -1504,40 +1929,57 @@
       },
       "cisco_crypto" : {
         "crypto ipsec transform-set" : {
+          "bleep" : {
+            "crypto map ipsec-isakmp transform-set" : [
+              222
+            ]
+          },
           "hijklmnop" : {
             "ipsec profile set transform-set" : [
-              146
+              159
             ]
           },
           "mytransformset" : {
             "crypto map ipsec-isakmp transform-set" : [
-              218
+              241
             ]
           }
         },
         "crypto isakmp profile" : {
           "myisakmpprofile" : {
             "crypto map ipsec-isakmp isakmp-profile" : [
-              214
+              237
             ]
           },
           "someOtherprofile" : {
             "ipsec profile set isakmp-profile" : [
-              149
+              162
             ]
           }
         },
         "crypto keyring" : {
           "VRF:MMS:RMT:UPM:1143" : {
             "isakmp profile keyring" : [
-              175
+              188
+            ]
+          }
+        },
+        "crypto-dynamic-map-set" : {
+          "bippety" : {
+            "crypto map ipsec-isakmp crypto-dynamic-map-set" : [
+              224
             ]
           }
         },
         "ipv4/6 acl" : {
           "myvpnacl" : {
             "crypto map ipsec-isakmp acl" : [
-              212
+              235
+            ]
+          },
+          "someacl" : {
+            "crypto map ipsec-isakmp acl" : [
+              219
             ]
           }
         }
@@ -1546,12 +1988,12 @@
         "ipv4 acl" : {
           "167" : {
             "interface ip verify access-list" : [
-              123
+              129
             ]
           },
           "310-systems" : {
             "interface outgoing ip access-list" : [
-              126
+              132
             ]
           },
           "ag1" : {
@@ -1566,38 +2008,40 @@
           },
           "def" : {
             "ip nat source dynamic access-list" : [
-              90
+              91
             ]
           },
           "mynatacl" : {
             "ip nat destination acl" : [
-              87
+              88
             ]
           }
         },
         "ipv4/6 acl" : {
           "1" : {
             "interface igmp access-group acl" : [
-              77
-            ]
-          },
-          "def" : {
-            "ip nat source dynamic access-list" : [
-              90
+              78
             ]
           }
         },
         "nat pool" : {
           "beeble" : {
             "ip nat source pool" : [
-              91
+              92
+            ]
+          }
+        },
+        "route-map" : {
+          "eigrp-leak-map" : {
+            "interface summary-address eigrp leak-map" : [
+              125
             ]
           }
         },
         "zone security" : {
           "z1" : {
             "interface zone-member" : [
-              277
+              285
             ]
           }
         }
@@ -1661,10 +2105,33 @@
             ]
           }
         },
+        "interface" : {
+          "Loopback0" : {
+            "service-policy interface" : [
+              238
+            ]
+          }
+        },
         "ipv4/6 acl" : {
           "cops-acl" : {
             "cops listener access-list" : [
               42
+            ]
+          }
+        },
+        "policy-map" : {
+          "some-interface-policy" : {
+            "service-policy interface policy" : [
+              238
+            ]
+          }
+        }
+      },
+      "cisco_ntp" : {
+        "ipv4 acl" : {
+          "ntp-peer-group" : {
+            "ntp access-group" : [
+              4
             ]
           }
         }
@@ -1682,7 +2149,12 @@
         "route-map" : {
           "DIRECT_OSPF" : {
             "ospf redistribute connected route-map" : [
-              54
+              55
+            ]
+          },
+          "eigrp-ospf-route-map" : {
+            "ospf redistribute eigrp route-map" : [
+              56
             ]
           }
         }
@@ -1795,6 +2267,13 @@
           "cinspect" : {
             "policy-map type inspect class type inspect" : [
               43
+            ]
+          }
+        },
+        "policy-map" : {
+          "prioritize_backbone" : {
+            "policy-map class service-policy" : [
+              74
             ]
           }
         },
@@ -1923,12 +2402,17 @@
         "interface" : {
           "GigabitEthernet0/0/0/19" : {
             "router vrrp interface" : [
-              16
+              14
+            ]
+          },
+          "ManagementEthernet0/RSP0/CPU0/0" : {
+            "router vrrp interface" : [
+              24
             ]
           },
           "ManagementEthernet0/RSP1/CPU0/0" : {
             "router vrrp interface" : [
-              28
+              26
             ]
           }
         }
@@ -1946,7 +2430,7 @@
         "interface" : {
           "Loopback1" : {
             "update-source interface" : [
-              0
+              16
             ]
           }
         }
@@ -1971,7 +2455,42 @@
         "bgp group" : {
           "UNDEFINED_PEER_GROUP" : {
             "bgp neighbor statement" : [
-              6
+              7
+            ]
+          }
+        },
+        "route-map" : {
+          "ADVERTISE_MAP" : {
+            "bgp address-family aggregate-address advertise-map" : [
+              5
+            ]
+          },
+          "EXIST_MAP" : {
+            "bgp neighbor advertise-map exist-map" : [
+              5
+            ]
+          }
+        }
+      },
+      "ios_interface" : {
+        "policy-map" : {
+          "FOOBAR" : {
+            "interface service-policy type control subscriber" : [
+              5
+            ]
+          }
+        }
+      },
+      "ios_xr_bgp" : {
+        "route-policy" : {
+          "ADDITIONAL_PATHS_POLICY" : {
+            "bgp additional-paths selection route-policy" : [
+              8
+            ]
+          },
+          "AGGREGATE_POLICY" : {
+            "aggregate-address route-policy" : [
+              10
             ]
           }
         }
@@ -1992,7 +2511,35 @@
         "interface" : {
           "Loopback0" : {
             "update-source interface" : [
-              0
+              22,
+              36,
+              48,
+              58,
+              69
+            ]
+          }
+        },
+        "route-policy" : {
+          "advertise_fooey_dc_and_isp_routes_ipv4" : {
+            "bgp neighbor route-policy out" : [
+              25,
+              29
+            ]
+          },
+          "advertise_fooey_routes_only" : {
+            "bgp neighbor route-policy out" : [
+              39
+            ]
+          },
+          "deny_bgp_routes" : {
+            "bgp neighbor route-policy in" : [
+              24,
+              28
+            ]
+          },
+          "deny_default_network_ipv4" : {
+            "bgp neighbor route-policy out" : [
+              60
             ]
           }
         }
@@ -2010,14 +2557,14 @@
         "ipv4 acl" : {
           "ACL99" : {
             "ssh ipv4 access-list" : [
-              5
+              6
             ]
           }
         },
         "ipv6 acl" : {
           "ipv6-vty-acl" : {
             "ssh ipv6 access-list" : [
-              5
+              6
             ]
           }
         }
@@ -2027,13 +2574,17 @@
           "someexportpolicy" : {
             "bgp export policy-statement" : [
               8,
-              22
+              15,
+              22,
+              31
             ]
           },
           "someimportpolicy" : {
             "bgp import policy-statement" : [
               10,
-              24
+              17,
+              24,
+              33
             ]
           }
         }
@@ -2051,6 +2602,7 @@
         "dhcp-relay server-group" : {
           "site-dhcp" : {
             "dhcp relay group active-server-group" : [
+              8,
               13
             ]
           }
@@ -2171,6 +2723,13 @@
         }
       },
       "peer_template" : {
+        "interface" : {
+          "Loopback1" : {
+            "update-source interface" : [
+              16
+            ]
+          }
+        },
         "route-map" : {
           "PROTECT-LEAF" : {
             "bgp inbound route-map" : [
@@ -2204,6 +2763,88 @@
           "xo-deny-as" : {
             "route-policy as-path in" : [
               90
+            ]
+          }
+        },
+        "community-set" : {
+          "CF_fooey_Associates-chillmap" : {
+            "route-policy community matches-any" : [
+              145
+            ]
+          },
+          "DC_AT_CHILL" : {
+            "route-policy community matches-any" : [
+              150
+            ]
+          },
+          "EBGP-CUST-EXT" : {
+            "route-policy community matches-any" : [
+              98
+            ]
+          },
+          "EBGP-CUST-NOEXP-PEER-NA" : {
+            "route-policy community matches-any" : [
+              88
+            ]
+          },
+          "barbar_to_fooey_community_ipv4" : {
+            "route-policy set community" : [
+              52
+            ]
+          },
+          "blackhole-all" : {
+            "route-policy community matches-any" : [
+              107,
+              158
+            ]
+          },
+          "blackhole-isp" : {
+            "route-policy community matches-any" : [
+              110
+            ]
+          },
+          "chillmap" : {
+            "route-policy community matches-any" : [
+              141
+            ]
+          },
+          "community_5555" : {
+            "route-policy community matches-any" : [
+              33
+            ],
+            "route-policy delete community [not] in" : [
+              34
+            ]
+          },
+          "fooey_blackhole_community" : {
+            "route-policy community matches-any" : [
+              5
+            ]
+          },
+          "fooey_routes_community" : {
+            "route-policy community matches-any" : [
+              16
+            ]
+          },
+          "scenes_No_Export" : {
+            "route-policy community matches-any" : [
+              120
+            ]
+          },
+          "to-peers-backbone" : {
+            "route-policy community matches-any" : [
+              137
+            ]
+          },
+          "wrn-expanded" : {
+            "route-policy community matches-any" : [
+              129,
+              143
+            ]
+          },
+          "wrn-squelch-40027" : {
+            "route-policy community matches-any" : [
+              126
             ]
           }
         },
@@ -2263,6 +2904,18 @@
         }
       },
       "route_policy_as_path_set" : {
+        "community-set" : {
+          "13979:90" : {
+            "route-policy set community" : [
+              7
+            ]
+          },
+          "SOCAL-USERS" : {
+            "route-policy community matches-any" : [
+              5
+            ]
+          }
+        },
         "prefix-set" : {
           "CENIC_DC_Internal" : {
             "route-policy prefix-set" : [
@@ -2276,7 +2929,43 @@
           }
         }
       },
+      "route_policy_igp_cost" : {
+        "community-set" : {
+          "DC_AT_MEMBERS" : {
+            "route-policy community matches-any" : [
+              5
+            ]
+          },
+          "DC_CF_COMMODITY_PEER" : {
+            "route-policy community matches-any" : [
+              5
+            ]
+          },
+          "DC_CF_ISP" : {
+            "route-policy community matches-any" : [
+              5
+            ]
+          },
+          "HPR_CF_RE_PEER" : {
+            "route-policy community matches-any" : [
+              5
+            ]
+          },
+          "No_Export" : {
+            "route-policy community matches-any" : [
+              7
+            ]
+          }
+        }
+      },
       "route_policy_metric_type" : {
+        "community-set" : {
+          "No_Export" : {
+            "route-policy community matches-any" : [
+              5
+            ]
+          }
+        },
         "prefix-set" : {
           "DC_Internal" : {
             "route-policy prefix-set" : [
@@ -2286,6 +2975,13 @@
         }
       },
       "route_policy_param" : {
+        "community-set" : {
+          "blackhole-all" : {
+            "route-policy community matches-any" : [
+              13
+            ]
+          }
+        },
         "prefix-set" : {
           "$cust_v4_pfx" : {
             "route-policy prefix-set" : [

@@ -1,16 +1,14 @@
 package org.batfish.representation.juniper;
 
+import java.io.Serializable;
 import java.util.Set;
 import java.util.TreeSet;
-import org.batfish.common.util.ReferenceCountedStructure;
 import org.batfish.datamodel.Prefix;
 
-public class PrefixList extends ReferenceCountedStructure {
+public class PrefixList implements Serializable {
 
   /** */
   private static final long serialVersionUID = 1L;
-
-  private final int _definitionLine;
 
   private boolean _ipv6;
 
@@ -18,14 +16,9 @@ public class PrefixList extends ReferenceCountedStructure {
 
   private Set<Prefix> _prefixes;
 
-  public PrefixList(String name, int definitionLine) {
+  public PrefixList(String name) {
     _name = name;
-    _definitionLine = definitionLine;
     _prefixes = new TreeSet<>();
-  }
-
-  public int getDefinitionLine() {
-    return _definitionLine;
   }
 
   public boolean getIpv6() {

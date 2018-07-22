@@ -161,7 +161,7 @@ public class Main {
     _authorizer = authorizer;
   }
 
-  static void initAuthorizer() throws Exception {
+  static void initAuthorizer() {
     Settings settings = getSettings();
     Authorizer.Type type = settings.getAuthorizationType();
     switch (type) {
@@ -242,9 +242,11 @@ public class Main {
             .register(ExceptionMapper.class)
             .register(CrossDomainFilter.class);
     if (_settings.getTracingEnable()) {
+      _logger.infof("Registering feature %s", ServerTracingDynamicFeature.class.getSimpleName());
       rcWork.register(ServerTracingDynamicFeature.class);
     }
     for (Class<?> feature : features) {
+      _logger.infof("Registering feature %s", feature.getSimpleName());
       rcWork.register(feature);
     }
 
@@ -321,10 +323,10 @@ public class Main {
   }
 
   public static void main(String[] args) {
-    main(
-        args,
-        new BatfishLogger(_settings.getLogLevel(), false, _settings.getLogFile(), false, true),
-        new BindPortFutures());
+    mainInit(args);
+    _logger =
+        new BatfishLogger(_settings.getLogLevel(), false, _settings.getLogFile(), false, true);
+    mainRun(new BindPortFutures());
   }
 
   public static void main(String[] args, BatfishLogger logger, BindPortFutures portFutures) {

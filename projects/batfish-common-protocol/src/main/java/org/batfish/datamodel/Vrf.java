@@ -1,9 +1,12 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.google.common.collect.ImmutableSortedSet;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 import java.util.Map;
 import java.util.NavigableMap;
@@ -13,6 +16,8 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
+import org.batfish.datamodel.eigrp.EigrpProcess;
+import org.batfish.datamodel.isis.IsisProcess;
 import org.batfish.datamodel.ospf.OspfProcess;
 
 @JsonSchemaDescription("A virtual routing and forwarding (VRF) instance on a node.")
@@ -59,6 +64,8 @@ public class Vrf extends ComparableStructure<String> {
 
   private static final String PROP_ISIS_PROCESS = "isisProcess";
 
+  private static final String PROP_EIGRP_PROCESS = "eigrpProcess";
+
   private static final String PROP_OSPF_PROCESS = "ospfProcess";
 
   private static final String PROP_RIP_PROCESS = "ripProcess";
@@ -81,6 +88,8 @@ public class Vrf extends ComparableStructure<String> {
   private transient SortedSet<String> _interfaceNames;
 
   private NavigableMap<String, Interface> _interfaces;
+
+  private EigrpProcess _eigrpProcess;
 
   private IsisProcess _isisProcess;
 
@@ -149,13 +158,19 @@ public class Vrf extends ComparableStructure<String> {
     return _generatedRoutes;
   }
 
+  @JsonProperty(PROP_EIGRP_PROCESS)
+  @JsonPropertyDescription("EIGRP routing process for this VRF")
+  public EigrpProcess getEigrpProcess() {
+    return _eigrpProcess;
+  }
+
   @JsonProperty(PROP_INTERFACES)
   @JsonPropertyDescription("Interfaces assigned to this VRF")
   public SortedSet<String> getInterfaceNames() {
     if (_interfaces != null && !_interfaces.isEmpty()) {
       return new TreeSet<>(_interfaces.keySet());
     } else {
-      return _interfaceNames;
+      return firstNonNull(_interfaceNames, ImmutableSortedSet.of());
     }
   }
 
@@ -298,6 +313,11 @@ public class Vrf extends ComparableStructure<String> {
   @JsonProperty(PROP_ISIS_PROCESS)
   public void setIsisProcess(IsisProcess process) {
     _isisProcess = process;
+  }
+
+  @JsonProperty(PROP_EIGRP_PROCESS)
+  public void setEigrpProcess(EigrpProcess process) {
+    _eigrpProcess = process;
   }
 
   @JsonProperty(PROP_OSPF_PROCESS)

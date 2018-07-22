@@ -100,6 +100,16 @@ allow_iimgp_stanza
    ALLOW null_rest_of_line aiimgp_stanza*
 ;
 
+allowed_ip
+:
+   (
+      (
+         hostname = IP_ADDRESS mask = IP_ADDRESS
+      )
+      | hostname = IPV6_ADDRESS
+   ) iname = variable NEWLINE
+;
+
 ap_null
 :
    NO?
@@ -218,6 +228,14 @@ av_null
 banner_stanza
 :
    BANNER banner_type banner
+;
+
+bfd_null
+:
+   NO?
+   (
+      TRAP
+   ) null_rest_of_line
 ;
 
 cisco_configuration
@@ -529,6 +547,14 @@ dspf_null
       | CODEC
       | MAXIMUM
       | SHUTDOWN
+   ) null_rest_of_line
+;
+
+ednt_null
+:
+   NO?
+   (
+      CALL_FORWARD
    ) null_rest_of_line
 ;
 
@@ -2067,6 +2093,15 @@ router_multicast_tail
    )*
 ;
 
+s_access_line
+:
+   (
+      linetype = HTTP
+      | linetype = SSH
+      | linetype = TELNET
+   ) allowed_ip
+;
+
 s_airgroupservice
 :
    AIRGROUPSERVICE null_rest_of_line
@@ -2132,6 +2167,14 @@ s_archive
 s_authentication
 :
    AUTHENTICATION null_rest_of_line
+;
+
+s_bfd
+:
+   BFD null_rest_of_line
+   (
+      bfd_null
+   )*
 ;
 
 s_cluster
@@ -2332,6 +2375,14 @@ s_enable
       | enable_password
       | enable_secret
    )
+;
+
+s_ephone_dn_template
+:
+   EPHONE_DN_TEMPLATE null_rest_of_line
+   (
+      ednt_null
+   )*
 ;
 
 s_event
@@ -2861,6 +2912,16 @@ s_service
    )+ NEWLINE
 ;
 
+s_service_policy_global
+:
+   SERVICE_POLICY name = variable GLOBAL NEWLINE
+;
+
+s_service_policy_interface
+:
+   SERVICE_POLICY name = variable INTERFACE iface = interface_name NEWLINE
+;
+
 s_sip_ua
 :
    SIP_UA NEWLINE
@@ -2969,6 +3030,22 @@ s_tap
    (
       tap_null
    )*
+;
+
+s_telephony_service
+:
+   TELEPHONY_SERVICE null_rest_of_line
+   (
+      telephony_service_null
+   )*
+;
+
+s_template
+:
+  TEMPLATE null_rest_of_line
+  (
+    template_null
+  )*
 ;
 
 s_time_range
@@ -3357,6 +3434,7 @@ ssh_server
       (
          IPV6 ACCESS_LIST acl6 = variable
       )
+      | LOGGING
       |
       (
          SESSION_LIMIT limit = DEC
@@ -3408,6 +3486,7 @@ stanza
    | router_multicast_stanza
    | rsvp_stanza
    | s_aaa
+   | s_access_line
    | s_airgroupservice
    | s_ap
    | s_ap_group
@@ -3417,6 +3496,7 @@ stanza
    | s_archive
    | s_arp_access_list_extended
    | s_authentication
+   | s_bfd
    | s_cable
    | s_call_home
    | s_callhome
@@ -3445,6 +3525,7 @@ stanza
    | s_dspfarm
    | s_dynamic_access_policy_record
    | s_enable
+   | s_ephone_dn_template
    | s_ethernet_services
    | s_event
    | s_event_handler
@@ -3543,6 +3624,8 @@ stanza
    | s_router_vrrp
    | s_sccp
    | s_service
+   | s_service_policy_global
+   | s_service_policy_interface
    | s_service_template
    | s_sip_ua
    | s_snmp_server
@@ -3557,6 +3640,8 @@ stanza
    | s_tacacs
    | s_tacacs_server
    | s_tap
+   | s_telephony_service
+   | s_template
    | s_time_range
    | s_track
    | s_tunnel_group
@@ -3705,6 +3790,30 @@ tap_null
    (
       MODE
    ) null_rest_of_line
+;
+
+telephony_service_null
+:
+   NO?
+   (
+      IP
+      | MAX_CONFERENCES
+      | MAX_EPHONES
+      | SRST
+      | TRANSFER_SYSTEM
+   ) null_rest_of_line
+;
+
+template_null
+:
+  NO?
+  (
+    ACCESS_SESSION
+    | AUTHENTICATION
+    | DOT1X
+    | MAB
+    | RADIUS_SERVER
+  ) null_rest_of_line
 ;
 
 tg_null
@@ -4030,6 +4139,7 @@ voice_class_h323_null
    (
       CALL
       | H225
+      | TELEPHONY_SERVICE
    ) null_rest_of_line
 ;
 
@@ -4239,6 +4349,7 @@ vpc_null
       AUTO_RECOVERY
       | DELAY
       | IP
+      | PEER_CONFIG_CHECK_BYPASS
       | PEER_GATEWAY
       | PEER_KEEPALIVE
       | PEER_SWITCH

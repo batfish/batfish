@@ -50,16 +50,14 @@ import org.batfish.common.BfConsts;
 import org.batfish.common.BfConsts.TaskStatus;
 import org.batfish.common.CleanBatfishException;
 import org.batfish.common.CoordConsts;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.QuestionException;
-import org.batfish.common.Snapshot;
 import org.batfish.common.Task;
 import org.batfish.common.Task.Batch;
 import org.batfish.common.Version;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.ConfigurationLocator;
 import org.batfish.config.Settings;
-import org.batfish.config.Settings.EnvironmentSettings;
-import org.batfish.config.Settings.TestrigSettings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.answers.Answer;
@@ -119,21 +117,21 @@ public class Driver {
 
   private static ConcurrentMap<String, Task> _taskLog;
 
-  private static final Cache<TestrigSettings, DataPlane> CACHED_COMPRESSED_DATA_PLANES =
+  private static final Cache<NetworkSnapshot, DataPlane> CACHED_COMPRESSED_DATA_PLANES =
       buildDataPlaneCache();
 
-  private static final Cache<TestrigSettings, DataPlane> CACHED_DATA_PLANES = buildDataPlaneCache();
+  private static final Cache<NetworkSnapshot, DataPlane> CACHED_DATA_PLANES = buildDataPlaneCache();
 
-  private static final Map<EnvironmentSettings, SortedMap<String, BgpAdvertisementsByVrf>>
+  private static final Map<NetworkSnapshot, SortedMap<String, BgpAdvertisementsByVrf>>
       CACHED_ENVIRONMENT_BGP_TABLES = buildEnvironmentBgpTablesCache();
 
-  private static final Map<EnvironmentSettings, SortedMap<String, RoutesByVrf>>
+  private static final Map<NetworkSnapshot, SortedMap<String, RoutesByVrf>>
       CACHED_ENVIRONMENT_ROUTING_TABLES = buildEnvironmentRoutingTablesCache();
 
-  private static final Cache<Snapshot, SortedMap<String, Configuration>> CACHED_TESTRIGS =
+  private static final Cache<NetworkSnapshot, SortedMap<String, Configuration>> CACHED_TESTRIGS =
       buildTestrigCache();
 
-  private static final Cache<Snapshot, SortedMap<String, Configuration>>
+  private static final Cache<NetworkSnapshot, SortedMap<String, Configuration>>
       CACHED_COMPRESSED_TESTRIGS = buildTestrigCache();
 
   private static final int COORDINATOR_CHECK_INTERVAL_MS = 1 * 60 * 1000; // 1 min
@@ -157,25 +155,21 @@ public class Driver {
   static Logger networkListenerLogger =
       Logger.getLogger("org.glassfish.grizzly.http.server.NetworkListener");
 
-  private static Cache<TestrigSettings, DataPlane> buildDataPlaneCache() {
+  private static Cache<NetworkSnapshot, DataPlane> buildDataPlaneCache() {
     return CacheBuilder.newBuilder().maximumSize(MAX_CACHED_DATA_PLANES).weakValues().build();
   }
 
-  private static Map<EnvironmentSettings, SortedMap<String, BgpAdvertisementsByVrf>>
+  private static Map<NetworkSnapshot, SortedMap<String, BgpAdvertisementsByVrf>>
       buildEnvironmentBgpTablesCache() {
-    return Collections.synchronizedMap(
-        new LRUMap<EnvironmentSettings, SortedMap<String, BgpAdvertisementsByVrf>>(
-            MAX_CACHED_ENVIRONMENT_BGP_TABLES));
+    return Collections.synchronizedMap(new LRUMap<>(MAX_CACHED_ENVIRONMENT_BGP_TABLES));
   }
 
-  private static Map<EnvironmentSettings, SortedMap<String, RoutesByVrf>>
+  private static Map<NetworkSnapshot, SortedMap<String, RoutesByVrf>>
       buildEnvironmentRoutingTablesCache() {
-    return Collections.synchronizedMap(
-        new LRUMap<EnvironmentSettings, SortedMap<String, RoutesByVrf>>(
-            MAX_CACHED_ENVIRONMENT_ROUTING_TABLES));
+    return Collections.synchronizedMap(new LRUMap<>(MAX_CACHED_ENVIRONMENT_ROUTING_TABLES));
   }
 
-  private static Cache<Snapshot, SortedMap<String, Configuration>> buildTestrigCache() {
+  private static Cache<NetworkSnapshot, SortedMap<String, Configuration>> buildTestrigCache() {
     return CacheBuilder.newBuilder().maximumSize(MAX_CACHED_TESTRIGS).build();
   }
 
@@ -251,7 +245,6 @@ public class Driver {
     return false;
   }
 
-  @Nullable
   public static synchronized Task killTask(String taskId) {
     Task task = _taskLog.get(taskId);
     if (_mainSettings.getParentPid() <= 0) {
@@ -568,73 +561,71 @@ public class Driver {
               : GlobalTracer.get().activeSpan().context();
 
       Thread thread =
-          new Thread() {
-            @Override
-            public void run() {
-              try (ActiveSpan runBatfishSpan =
-                  GlobalTracer.get()
-                      .buildSpan("Run Batfish job in a new thread and get the answer")
-                      .addReference(References.FOLLOWS_FROM, runBatfishSpanContext)
-                      .startActive()) {
-                assert runBatfishSpan != null;
-                Answer answer = null;
-                String containerName = settings.getContainerDir().getFileName().toString();
-                String testrigName = settings.getTestrig();
-                try {
-                  answer = batfish.run();
-                  if (answer.getStatus() == null) {
-                    answer.setStatus(AnswerStatus.SUCCESS);
-                  }
-                } catch (CleanBatfishException e) {
-                  String msg = "FATAL ERROR: " + e.getMessage();
-                  logger.errorf(
-                      "Exception in container:%s, testrig:%s; exception:%s",
-                      containerName, testrigName, msg);
-                  batfish.setTerminatingExceptionMessage(
-                      e.getClass().getName() + ": " + e.getMessage());
-                  answer = Answer.failureAnswer(msg, null);
-                } catch (QuestionException e) {
-                  String stackTrace = Throwables.getStackTraceAsString(e);
-                  logger.errorf(
-                      "Exception in container:%s, testrig:%s; exception:%s",
-                      containerName, testrigName, stackTrace);
-                  batfish.setTerminatingExceptionMessage(
-                      e.getClass().getName() + ": " + e.getMessage());
-                  answer = e.getAnswer();
-                  answer.setStatus(AnswerStatus.FAILURE);
-                } catch (BatfishException e) {
-                  String stackTrace = Throwables.getStackTraceAsString(e);
-                  logger.errorf(
-                      "Exception in container:%s, testrig:%s; exception:%s",
-                      containerName, testrigName, stackTrace);
-                  batfish.setTerminatingExceptionMessage(
-                      e.getClass().getName() + ": " + e.getMessage());
-                  answer = new Answer();
-                  answer.setStatus(AnswerStatus.FAILURE);
-                  answer.addAnswerElement(e.getBatfishStackTrace());
-                } catch (Throwable e) {
-                  String stackTrace = Throwables.getStackTraceAsString(e);
-                  logger.errorf(
-                      "Exception in container:%s, testrig:%s; exception:%s",
-                      containerName, testrigName, stackTrace);
-                  batfish.setTerminatingExceptionMessage(
-                      e.getClass().getName() + ": " + e.getMessage());
-                  answer = new Answer();
-                  answer.setStatus(AnswerStatus.FAILURE);
-                  answer.addAnswerElement(
-                      new BatfishException("Batfish job failed", e).getBatfishStackTrace());
-                } finally {
-                  try (ActiveSpan outputAnswerSpan =
-                      GlobalTracer.get().buildSpan("Outputting answer").startActive()) {
-                    assert outputAnswerSpan != null;
-                    if (settings.getAnswerJsonPath() != null) {
-                      batfish.outputAnswerWithLog(answer);
+          new Thread(
+              () -> {
+                try (ActiveSpan runBatfishSpan =
+                    GlobalTracer.get()
+                        .buildSpan("Run Batfish job in a new thread and get the answer")
+                        .addReference(References.FOLLOWS_FROM, runBatfishSpanContext)
+                        .startActive()) {
+                  assert runBatfishSpan != null;
+                  Answer answer = null;
+                  String containerName = settings.getContainer();
+                  String testrigName = settings.getTestrig();
+                  try {
+                    answer = batfish.run();
+                    if (answer.getStatus() == null) {
+                      answer.setStatus(AnswerStatus.SUCCESS);
+                    }
+                  } catch (CleanBatfishException e) {
+                    String msg = "FATAL ERROR: " + e.getMessage();
+                    logger.errorf(
+                        "Exception in container:%s, testrig:%s; exception:%s",
+                        containerName, testrigName, msg);
+                    batfish.setTerminatingExceptionMessage(
+                        e.getClass().getName() + ": " + e.getMessage());
+                    answer = Answer.failureAnswer(msg, null);
+                  } catch (QuestionException e) {
+                    String stackTrace = Throwables.getStackTraceAsString(e);
+                    logger.errorf(
+                        "Exception in container:%s, testrig:%s; exception:%s",
+                        containerName, testrigName, stackTrace);
+                    batfish.setTerminatingExceptionMessage(
+                        e.getClass().getName() + ": " + e.getMessage());
+                    answer = e.getAnswer();
+                    answer.setStatus(AnswerStatus.FAILURE);
+                  } catch (BatfishException e) {
+                    String stackTrace = Throwables.getStackTraceAsString(e);
+                    logger.errorf(
+                        "Exception in container:%s, testrig:%s; exception:%s",
+                        containerName, testrigName, stackTrace);
+                    batfish.setTerminatingExceptionMessage(
+                        e.getClass().getName() + ": " + e.getMessage());
+                    answer = new Answer();
+                    answer.setStatus(AnswerStatus.FAILURE);
+                    answer.addAnswerElement(e.getBatfishStackTrace());
+                  } catch (Throwable e) {
+                    String stackTrace = Throwables.getStackTraceAsString(e);
+                    logger.errorf(
+                        "Exception in container:%s, testrig:%s; exception:%s",
+                        containerName, testrigName, stackTrace);
+                    batfish.setTerminatingExceptionMessage(
+                        e.getClass().getName() + ": " + e.getMessage());
+                    answer = new Answer();
+                    answer.setStatus(AnswerStatus.FAILURE);
+                    answer.addAnswerElement(
+                        new BatfishException("Batfish job failed", e).getBatfishStackTrace());
+                  } finally {
+                    try (ActiveSpan outputAnswerSpan =
+                        GlobalTracer.get().buildSpan("Outputting answer").startActive()) {
+                      assert outputAnswerSpan != null;
+                      if (settings.getTaskId() != null) {
+                        batfish.outputAnswerWithLog(answer);
+                      }
                     }
                   }
                 }
-              }
-            }
-          };
+              });
 
       thread.start();
       thread.join(settings.getMaxRuntimeMs());
@@ -678,72 +669,67 @@ public class Driver {
           "Failed while applying auto basedir. (All arguments are supplied?): " + e.getMessage());
     }
 
-    if (settings.canExecute()) {
-      if (claimIdle()) {
-
-        // lets put a try-catch around all the code around claimIdle
-        // so that we never the worker non-idle accidentally
-
-        try {
-
-          final BatfishLogger jobLogger =
-              new BatfishLogger(
-                  settings.getLogLevel(),
-                  settings.getTimestamp(),
-                  settings.getLogFile(),
-                  settings.getLogTee(),
-                  false);
-          settings.setLogger(jobLogger);
-
-          final Task task = new Task(args);
-
-          logTask(taskId, task);
-
-          @Nullable
-          SpanContext runTaskSpanContext =
-              GlobalTracer.get().activeSpan() == null
-                  ? null
-                  : GlobalTracer.get().activeSpan().context();
-
-          // run batfish on a new thread and set idle to true when done
-          Thread thread =
-              new Thread() {
-                @Override
-                public void run() {
-                  try (ActiveSpan runBatfishSpan =
-                      GlobalTracer.get()
-                          .buildSpan("Initialize Batfish in a new thread")
-                          .addReference(References.FOLLOWS_FROM, runTaskSpanContext)
-                          .startActive()) {
-                    assert runBatfishSpan != null; // avoid unused warning
-                    task.setStatus(TaskStatus.InProgress);
-                    String errMsg = runBatfish(settings);
-                    if (errMsg == null) {
-                      task.setStatus(TaskStatus.TerminatedNormally);
-                    } else {
-                      task.setStatus(TaskStatus.TerminatedAbnormally);
-                      task.setErrMessage(errMsg);
-                    }
-                    task.setTerminated(new Date());
-                    jobLogger.close();
-                    makeIdle();
-                  }
-                }
-              };
-
-          thread.start();
-
-          return Arrays.asList(BfConsts.SVC_SUCCESS_KEY, "running now");
-        } catch (Exception e) {
-          _mainLogger.error("Exception while running task: " + e.getMessage());
-          makeIdle();
-          return Arrays.asList(BfConsts.SVC_FAILURE_KEY, e.getMessage());
-        }
-      } else {
-        return Arrays.asList(BfConsts.SVC_FAILURE_KEY, "Not idle");
-      }
-    } else {
+    if (!settings.canExecute()) {
       return Arrays.asList(BfConsts.SVC_FAILURE_KEY, "Non-executable command");
+    }
+
+    if (!claimIdle()) {
+      return Arrays.asList(BfConsts.SVC_FAILURE_KEY, "Not idle");
+    }
+
+    // try/catch so that the worker becomes idle again in case of problem submitting thread.
+    try {
+
+      final BatfishLogger jobLogger =
+          new BatfishLogger(
+              settings.getLogLevel(),
+              settings.getTimestamp(),
+              settings.getLogFile(),
+              settings.getLogTee(),
+              false);
+      settings.setLogger(jobLogger);
+
+      final Task task = new Task(args);
+
+      logTask(taskId, task);
+
+      @Nullable
+      SpanContext runTaskSpanContext =
+          GlobalTracer.get().activeSpan() == null
+              ? null
+              : GlobalTracer.get().activeSpan().context();
+
+      // run batfish on a new thread and set idle to true when done
+      Thread thread =
+          new Thread(
+              () -> {
+                try (ActiveSpan runBatfishSpan =
+                    GlobalTracer.get()
+                        .buildSpan("Initialize Batfish in a new thread")
+                        .addReference(References.FOLLOWS_FROM, runTaskSpanContext)
+                        .startActive()) {
+                  assert runBatfishSpan != null; // avoid unused warning
+                  task.setStatus(TaskStatus.InProgress);
+                  String errMsg = runBatfish(settings);
+                  if (errMsg == null) {
+                    task.setStatus(TaskStatus.TerminatedNormally);
+                  } else {
+                    task.setStatus(TaskStatus.TerminatedAbnormally);
+                    task.setErrMessage(errMsg);
+                  }
+                  task.setTerminated(new Date());
+                  jobLogger.close();
+                  makeIdle();
+                }
+              });
+
+      thread.start();
+
+      return Arrays.asList(BfConsts.SVC_SUCCESS_KEY, "running now");
+    } catch (Exception e) {
+      _mainLogger.error("Exception while running task: " + e.getMessage());
+      makeIdle();
+      return Arrays.asList(BfConsts.SVC_FAILURE_KEY, e.getMessage());
     }
   }
 

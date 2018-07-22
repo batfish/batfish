@@ -1,8 +1,11 @@
 package org.batfish.datamodel.answers;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+import static java.util.Objects.requireNonNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
@@ -29,11 +32,16 @@ public class Issue {
     private static final String COL_MAJOR = "major";
     private static final String COL_MINOR = "minor";
 
-    @Nonnull private String _major;
-    @Nonnull private String _minor;
+    private String _major;
+    private String _minor;
 
     @JsonCreator
-    public Type(@JsonProperty(COL_MAJOR) String major, @JsonProperty(COL_MINOR) String minor) {
+    private static Type createType(
+        @JsonProperty(COL_MAJOR) String major, @JsonProperty(COL_MINOR) String minor) {
+      return new Type(firstNonNull(major, ""), firstNonNull(minor, ""));
+    }
+
+    public Type(String major, String minor) {
       _major = major;
       _minor = minor;
     }
@@ -53,14 +61,22 @@ public class Issue {
   private static final String COL_SEVERITY = "severity";
   private static final String COL_TYPE = "type";
 
-  @Nonnull private String _explanation;
-  @Nonnull private int _severity;
-  @Nonnull private Type _type;
+  private String _explanation;
+  private int _severity;
+  private Type _type;
 
-  public Issue(
-      @JsonProperty(COL_EXPLANATION) String explanation,
-      @JsonProperty(COL_SEVERITY) Integer severity,
-      @JsonProperty(COL_TYPE) Type type) {
+  @JsonCreator
+  private static Issue getIssue(
+      @Nullable @JsonProperty(COL_EXPLANATION) String explanation,
+      @Nullable @JsonProperty(COL_SEVERITY) Integer severity,
+      @Nullable @JsonProperty(COL_TYPE) Type type) {
+    return new Issue(
+        firstNonNull(explanation, ""),
+        requireNonNull(severity, COL_SEVERITY + " cannot be null"),
+        requireNonNull(type, COL_TYPE + " cannot be null"));
+  }
+
+  public Issue(String explanation, Integer severity, Type type) {
     _explanation = explanation;
     _severity = severity;
     _type = type;

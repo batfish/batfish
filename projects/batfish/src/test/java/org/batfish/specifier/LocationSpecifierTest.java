@@ -3,6 +3,7 @@ package org.batfish.specifier;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.not;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -129,6 +130,25 @@ public class LocationSpecifierTest {
   }
 
   @Test
+  public void testIntersectionLocationSpecifier_equalsHashCode() {
+    LocationSpecifier spec1a =
+        new IntersectionLocationSpecifier(
+            AllInterfacesLocationSpecifier.INSTANCE, NullLocationSpecifier.INSTANCE);
+    LocationSpecifier spec1b =
+        new IntersectionLocationSpecifier(
+            AllInterfacesLocationSpecifier.INSTANCE, NullLocationSpecifier.INSTANCE);
+    LocationSpecifier spec2 =
+        new IntersectionLocationSpecifier(
+            AllInterfaceLinksLocationSpecifier.INSTANCE, NullLocationSpecifier.INSTANCE);
+
+    assertThat(spec1a, equalTo(spec1a));
+    assertThat(spec1a, equalTo(spec1b));
+    assertThat(spec1a.hashCode(), equalTo(spec1b.hashCode()));
+    assertThat(spec1a, not(equalTo(spec2)));
+    assertThat(spec1a, not(equalTo(NullLocationSpecifier.INSTANCE)));
+  }
+
+  @Test
   public void testNameRegexInterfaceLocationSpecifiers() {
     // choose 1 interface from each node
     List<Interface> interfaces =
@@ -233,6 +253,25 @@ public class LocationSpecifierTest {
     assertThat(
         new DifferenceLocationSpecifier(locationSpecifier01, locationSpecifier12).resolve(_context),
         equalTo(Sets.difference(locations01, locations12)));
+  }
+
+  @Test
+  public void testUnionLocationSpecifier_equalsHashCode() {
+    LocationSpecifier spec1a =
+        new UnionLocationSpecifier(
+            AllInterfacesLocationSpecifier.INSTANCE, NullLocationSpecifier.INSTANCE);
+    LocationSpecifier spec1b =
+        new UnionLocationSpecifier(
+            AllInterfacesLocationSpecifier.INSTANCE, NullLocationSpecifier.INSTANCE);
+    LocationSpecifier spec2 =
+        new UnionLocationSpecifier(
+            AllInterfaceLinksLocationSpecifier.INSTANCE, NullLocationSpecifier.INSTANCE);
+
+    assertThat(spec1a, equalTo(spec1a));
+    assertThat(spec1a, equalTo(spec1b));
+    assertThat(spec1a.hashCode(), equalTo(spec1b.hashCode()));
+    assertThat(spec1a, not(equalTo(spec2)));
+    assertThat(spec1a, not(equalTo(NullLocationSpecifier.INSTANCE)));
   }
 
   @Test

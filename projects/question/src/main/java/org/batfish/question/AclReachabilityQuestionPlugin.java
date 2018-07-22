@@ -1,20 +1,26 @@
 package org.batfish.question;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
-import com.google.common.collect.ImmutableSortedSet;
+import java.util.List;
+import java.util.Set;
+import java.util.SortedMap;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
+import javax.annotation.Nullable;
 import org.batfish.common.Answerer;
+import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
-import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.answers.AclLinesAnswerElement;
+import org.batfish.datamodel.answers.AclLinesAnswerElementInterface.AclSpecs;
 import org.batfish.datamodel.answers.AnswerElement;
-import org.batfish.datamodel.collections.NamedStructureEquivalenceSets;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
-import org.batfish.question.CompareSameNameQuestionPlugin.CompareSameNameAnswerElement;
-import org.batfish.question.CompareSameNameQuestionPlugin.CompareSameNameAnswerer;
-import org.batfish.question.CompareSameNameQuestionPlugin.CompareSameNameQuestion;
+import org.batfish.question.aclreachability2.AclReachabilityAnswererUtils;
 
 @AutoService(Plugin.class)
 public class AclReachabilityQuestionPlugin extends QuestionPlugin {
@@ -28,22 +34,24 @@ public class AclReachabilityQuestionPlugin extends QuestionPlugin {
     @Override
     public AnswerElement answer() {
       AclReachabilityQuestion question = (AclReachabilityQuestion) _question;
-      // get comparesamename results for acls
-      CompareSameNameQuestion csnQuestion =
-          new CompareSameNameQuestion(
-              true,
-              null,
-              null,
-              ImmutableSortedSet.of(IpAccessList.class.getSimpleName()),
-              question.getNodeRegex(),
-              true);
-      CompareSameNameAnswerer csnAnswerer = new CompareSameNameAnswerer(csnQuestion, _batfish);
-      CompareSameNameAnswerElement csnAnswer = csnAnswerer.answer();
-      NamedStructureEquivalenceSets<?> aclEqSets =
-          csnAnswer.getEquivalenceSets().get(IpAccessList.class.getSimpleName());
-
       AclLinesAnswerElement answer = new AclLinesAnswerElement();
-      _batfish.answerAclReachability(question.getAclNameRegex(), aclEqSets, answer);
+
+      Set<String> specifiedNodes = question.getNodeRegex().getMatchingNodes(_batfish);
+      Pattern aclRegex;
+      try {
+        aclRegex = Pattern.compile(question.getAclNameRegex());
+      } catch (PatternSyntaxException e) {
+        throw new BatfishException(
+            "Supplied regex for nodes is not a valid Java regex: \""
+                + question.getAclNameRegex()
+                + "\"",
+            e);
+      }
+      SortedMap<String, Configuration> configurations = _batfish.loadConfigurations();
+      List<AclSpecs> aclSpecs =
+          AclReachabilityAnswererUtils.getAclSpecs(
+              configurations, specifiedNodes, aclRegex, answer);
+      _batfish.answerAclReachability(aclSpecs, answer);
       return answer;
     }
   }
@@ -57,10 +65,8 @@ public class AclReachabilityQuestionPlugin extends QuestionPlugin {
    * Unreachable lines can indicate erroneous configuration.
    *
    * @type AclReachability onefile
-   * @param aclNameRegex Regular expression for names of the ACLs to analyze. Default value is '.*'
-   *     (i.e., all ACLs).
-   * @param nodeRegex Regular expression for names of nodes to include. Default value is '.*' (all
-   *     nodes).
+   * @param aclNameRegex Regular expression for names of ACLs to analyze. Defaults to '.*'.
+   * @param nodeRegex Regular expression for names of nodes to include. Defaults to '.*'.
    * @example bf_answer("AclReachability", aclNameRegex='OUTSIDE_TO_INSIDE.*') Analyzes only ACLs
    *     whose names start with 'OUTSIDE_TO_INSIDE'.
    */
@@ -77,6 +83,13 @@ public class AclReachabilityQuestionPlugin extends QuestionPlugin {
     public AclReachabilityQuestion() {
       _nodeRegex = NodesSpecifier.ALL;
       _aclNameRegex = ".*";
+    }
+
+    public AclReachabilityQuestion(
+        @Nullable @JsonProperty(PROP_ACL_NAME_REGEX) String aclNameRegex,
+        @Nullable @JsonProperty(PROP_NODE_REGEX) NodesSpecifier nodeRegex) {
+      _aclNameRegex = firstNonNull(aclNameRegex, ".*");
+      _nodeRegex = firstNonNull(nodeRegex, NodesSpecifier.ALL);
     }
 
     @JsonProperty(PROP_ACL_NAME_REGEX)

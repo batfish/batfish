@@ -1,27 +1,33 @@
 package org.batfish.representation.cisco;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.DiffieHellmanGroup;
 
-public class IpsecProfile extends ComparableStructure<String> {
+public class IpsecProfile implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
   private String _isakmpProfile;
+
+  private final String _name;
 
   private DiffieHellmanGroup _pfsGroup;
 
   private List<String> _transformSets;
 
   public IpsecProfile(String name) {
-    super(name);
+    _name = name;
     _transformSets = new ArrayList<>();
   }
 
   public String getIsakmpProfile() {
     return _isakmpProfile;
+  }
+
+  public String getName() {
+    return _name;
   }
 
   public DiffieHellmanGroup getPfsGroup() {

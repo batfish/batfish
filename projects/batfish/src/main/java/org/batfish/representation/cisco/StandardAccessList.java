@@ -1,17 +1,19 @@
 package org.batfish.representation.cisco;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import org.batfish.common.util.ComparableStructure;
 
-public class StandardAccessList extends ComparableStructure<String> {
+public class StandardAccessList implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
   private List<StandardAccessListLine> _lines;
 
+  private final String _name;
+
   public StandardAccessList(String id) {
-    super(id);
+    _name = id;
     _lines = new ArrayList<>();
   }
 
@@ -24,7 +26,7 @@ public class StandardAccessList extends ComparableStructure<String> {
   }
 
   public ExtendedAccessList toExtendedAccessList() {
-    ExtendedAccessList eal = new ExtendedAccessList(_key);
+    ExtendedAccessList eal = new ExtendedAccessList(_name);
     eal.setParent(this);
     eal.getLines().clear();
     for (StandardAccessListLine sall : _lines) {

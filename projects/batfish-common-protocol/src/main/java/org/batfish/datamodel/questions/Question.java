@@ -33,7 +33,7 @@ import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "class")
+@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
 public abstract class Question implements IQuestion {
 
   public static class InstanceData {
@@ -46,6 +46,7 @@ public abstract class Question implements IQuestion {
         DOUBLE("double", false),
         FLOAT("float", false),
         INTEGER("integer", false),
+        INTERFACE_PROPERTY_SPEC("interfacePropertySpec", true),
         IP("ip", true),
         IP_PROTOCOL("ipProtocol", true),
         IP_WILDCARD("ipWildcard", true),
@@ -53,6 +54,8 @@ public abstract class Question implements IQuestion {
         JSON_PATH("jsonPath", true),
         JSON_PATH_REGEX("jsonPathRegex", true),
         LONG("long", false),
+        NODE_PROPERTY_SPEC("nodePropertySpec", true),
+        NODE_SPEC("nodeSpec", true),
         PREFIX("prefix", true),
         PREFIX_RANGE("prefixRange", true),
         PROTOCOL("protocol", true),
@@ -350,11 +353,7 @@ public abstract class Question implements IQuestion {
   public static boolean isQuestionClass(String className) {
     try {
       Class<?> clazz = Class.forName(className);
-      if (Question.class.isAssignableFrom(clazz)) {
-        return true;
-      } else {
-        return false;
-      }
+      return Question.class.isAssignableFrom(clazz);
     } catch (ClassNotFoundException e) {
       throw new BatfishException("'" + className + "' is not a valid Question class");
     }

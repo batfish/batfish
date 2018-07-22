@@ -6,7 +6,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
-import org.batfish.common.BatfishLogger;
 import org.batfish.common.Pair;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
@@ -46,7 +45,7 @@ public class Route implements Serializable {
   private String _target;
   private TargetType _targetType;
 
-  public Route(JSONObject jObj, BatfishLogger logger) throws JSONException {
+  public Route(JSONObject jObj) throws JSONException {
     _destinationCidrBlock =
         Prefix.parse(jObj.getString(AwsVpcEntity.JSON_KEY_DESTINATION_CIDR_BLOCK));
     _state = State.valueOf(jObj.getString(AwsVpcEntity.JSON_KEY_STATE).toUpperCase());
@@ -130,8 +129,8 @@ public class Route implements Serializable {
           NetworkInterface networkInterface = region.getNetworkInterfaces().get(_target);
           String networkInterfaceSubnetId = networkInterface.getSubnetId();
           if (networkInterfaceSubnetId.equals(subnet.getId())) {
-            Set<Ip> networkInterfaceIps = new TreeSet<>();
-            networkInterfaceIps.addAll(networkInterface.getIpAddressAssociations().keySet());
+            Set<Ip> networkInterfaceIps =
+                new TreeSet<>(networkInterface.getIpAddressAssociations().keySet());
             Ip lowestIp = networkInterfaceIps.toArray(new Ip[] {})[0];
             if (!subnet.getCidrBlock().containsIp(lowestIp)) {
               throw new BatfishException(
@@ -166,13 +165,19 @@ public class Route implements Serializable {
                     .getIpAccessLists()
                     .getOrDefault(
                         Region.SG_INGRESS_ACL_NAME,
-                        new IpAccessList(Region.SG_INGRESS_ACL_NAME, new LinkedList<>())));
+                        IpAccessList.builder()
+                            .setName(Region.SG_INGRESS_ACL_NAME)
+                            .setLines(new LinkedList<>())
+                            .build()));
             instanceIface.setOutgoingFilter(
                 instanceCfgNode
                     .getIpAccessLists()
                     .getOrDefault(
                         Region.SG_EGRESS_ACL_NAME,
-                        new IpAccessList(Region.SG_EGRESS_ACL_NAME, new LinkedList<>())));
+                        IpAccessList.builder()
+                            .setName(Region.SG_EGRESS_ACL_NAME)
+                            .setLines(new LinkedList<>())
+                            .build()));
             Ip nextHopIp = instanceIfaceAddress.getIp();
             srBuilder.setNextHopIp(nextHopIp);
           }

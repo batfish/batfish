@@ -2,6 +2,7 @@ package org.batfish.allinone;
 
 import static org.batfish.datamodel.matchers.FlowHistoryInfoMatchers.hasFlow;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasDstIp;
+import static org.batfish.datamodel.matchers.FlowMatchers.hasIngressInterface;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasIngressNode;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasSrcIp;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -21,7 +22,6 @@ import java.util.List;
 import org.batfish.datamodel.FlowHistory;
 import org.batfish.datamodel.FlowHistory.FlowHistoryInfo;
 import org.batfish.datamodel.ForwardingAction;
-import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.main.Batfish;
@@ -30,6 +30,7 @@ import org.batfish.main.TestrigText;
 import org.batfish.question.specifiers.SpecifiersReachabilityAnswerer;
 import org.batfish.question.specifiers.SpecifiersReachabilityQuestion;
 import org.batfish.specifier.AllInterfacesLocationSpecifierFactory;
+import org.batfish.specifier.ConstantUniverseIpSpaceSpecifierFactory;
 import org.batfish.specifier.NameRegexInterfaceLocationSpecifierFactory;
 import org.junit.Before;
 import org.junit.Rule;
@@ -49,7 +50,6 @@ public class SpecifiersReachabilityQuestionTest {
   private static final String TESTRIGS_PREFIX = "org/batfish/allinone/testrigs/";
   private static final String TESTRIG_NAME = "specifiers-reachability";
   private static final List<String> TESTRIG_NODE_NAMES = ImmutableList.of(NODE1, NODE2);
-  private static final String VRF = "default";
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
@@ -74,6 +74,7 @@ public class SpecifiersReachabilityQuestionTest {
   @Test
   public void testInferSrcIpFromLocation() {
     SpecifiersReachabilityQuestion question = new SpecifiersReachabilityQuestion();
+    question.setDestinationIpSpaceSpecifierFactory(ConstantUniverseIpSpaceSpecifierFactory.NAME);
     question.setSourceLocationSpecifierFactory(NameRegexInterfaceLocationSpecifierFactory.NAME);
     question.setSourceLocationSpecifierInput(LOOPBACK);
     AnswerElement answer = new SpecifiersReachabilityAnswerer(question, _batfish).answer();
@@ -96,6 +97,7 @@ public class SpecifiersReachabilityQuestionTest {
   @Test
   public void testDrop() {
     SpecifiersReachabilityQuestion question = new SpecifiersReachabilityQuestion();
+    question.setDestinationIpSpaceSpecifierFactory(ConstantUniverseIpSpaceSpecifierFactory.NAME);
     question.setSourceLocationSpecifierFactory(NameRegexInterfaceLocationSpecifierFactory.NAME);
     question.setSourceLocationSpecifierInput(LOOPBACK);
     question.setActions(ImmutableSortedSet.of(ForwardingAction.DROP));
@@ -128,20 +130,6 @@ public class SpecifiersReachabilityQuestionTest {
   }
 
   /**
-   * Both the srcIp constraint and the {@link HeaderSpace} constraint must be satisfied -- if they
-   * conflict, no flows will be found.
-   */
-  @Test
-  public void testConflictWithHeaderSpaceConstraint() {
-    SpecifiersReachabilityQuestion question = new SpecifiersReachabilityQuestion();
-    question.setHeaderSpace(HeaderSpace.builder().setSrcIps(new Ip("5.5.5.5").toIpSpace()).build());
-    AnswerElement answer = new SpecifiersReachabilityAnswerer(question, _batfish).answer();
-    assertThat(answer, instanceOf(FlowHistory.class));
-    Collection<FlowHistoryInfo> flowHistoryInfos = ((FlowHistory) answer).getTraces().values();
-    assertThat(flowHistoryInfos, hasSize(0));
-  }
-
-  /**
    * Test that a different source IpSpace specifier produces different source IPs. If an input is
    * given without a factory, {@link SpecifiersReachabilityQuestion} uses {@link
    * org.batfish.specifier.ConstantWildcardSetIpSpaceSpecifierFactory} by default.
@@ -149,17 +137,44 @@ public class SpecifiersReachabilityQuestionTest {
   @Test
   public void testConstantWildcard() {
     SpecifiersReachabilityQuestion question = new SpecifiersReachabilityQuestion();
+    question.setDestinationIpSpaceSpecifierFactory(ConstantUniverseIpSpaceSpecifierFactory.NAME);
     question.setSourceIpSpaceSpecifierInput("5.5.5.5");
     AnswerElement answer = new SpecifiersReachabilityAnswerer(question, _batfish).answer();
     assertThat(answer, instanceOf(FlowHistory.class));
     Collection<FlowHistoryInfo> flowHistoryInfos = ((FlowHistory) answer).getTraces().values();
-    assertThat(flowHistoryInfos, hasSize(2));
+    assertThat(flowHistoryInfos, hasSize(4));
     assertThat(
         flowHistoryInfos,
-        hasItem(hasFlow(allOf(hasIngressNode(NODE1), hasSrcIp(new Ip("5.5.5.5"))))));
+        hasItem(
+            hasFlow(
+                allOf(
+                    hasIngressNode(NODE1),
+                    hasIngressInterface(FAST_ETHERNET),
+                    hasSrcIp(new Ip("5.5.5.5"))))));
     assertThat(
         flowHistoryInfos,
-        hasItem(hasFlow(allOf(hasIngressNode(NODE2), hasSrcIp(new Ip("5.5.5.5"))))));
+        hasItem(
+            hasFlow(
+                allOf(
+                    hasIngressNode(NODE1),
+                    hasIngressInterface(LOOPBACK),
+                    hasSrcIp(new Ip("5.5.5.5"))))));
+    assertThat(
+        flowHistoryInfos,
+        hasItem(
+            hasFlow(
+                allOf(
+                    hasIngressNode(NODE2),
+                    hasIngressInterface(FAST_ETHERNET),
+                    hasSrcIp(new Ip("5.5.5.5"))))));
+    assertThat(
+        flowHistoryInfos,
+        hasItem(
+            hasFlow(
+                allOf(
+                    hasIngressNode(NODE2),
+                    hasIngressInterface(LOOPBACK),
+                    hasSrcIp(new Ip("5.5.5.5"))))));
   }
 
   /**
@@ -169,6 +184,7 @@ public class SpecifiersReachabilityQuestionTest {
   @Test
   public void testForbiddenTransitNodes() {
     SpecifiersReachabilityQuestion question = new SpecifiersReachabilityQuestion();
+    question.setDestinationIpSpaceSpecifierFactory(ConstantUniverseIpSpaceSpecifierFactory.NAME);
     question.setSourceLocationSpecifierFactory(AllInterfacesLocationSpecifierFactory.NAME);
     question.setForbiddenTransitNodesNodeSpecifierInput(".*");
     AnswerElement answer = new SpecifiersReachabilityAnswerer(question, _batfish).answer();
@@ -202,6 +218,7 @@ public class SpecifiersReachabilityQuestionTest {
   @Test
   public void testRequiredTransitNodes() {
     SpecifiersReachabilityQuestion question = new SpecifiersReachabilityQuestion();
+    question.setDestinationIpSpaceSpecifierFactory(ConstantUniverseIpSpaceSpecifierFactory.NAME);
     question.setSourceLocationSpecifierFactory(NameRegexInterfaceLocationSpecifierFactory.NAME);
     question.setSourceLocationSpecifierInput(LOOPBACK);
     question.setRequiredTransitNodesNodeSpecifierInput(".*");

@@ -1,19 +1,21 @@
 package org.batfish.representation.cisco;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import org.batfish.common.util.ComparableStructure;
 
-public class ExtendedAccessList extends ComparableStructure<String> {
+public class ExtendedAccessList implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
   private List<ExtendedAccessListLine> _lines;
 
+  private final String _name;
+
   private StandardAccessList _parent;
 
   public ExtendedAccessList(String id) {
-    super(id);
+    _name = id;
     _lines = new ArrayList<>();
   }
 
@@ -23,6 +25,10 @@ public class ExtendedAccessList extends ComparableStructure<String> {
 
   public List<ExtendedAccessListLine> getLines() {
     return _lines;
+  }
+
+  public String getName() {
+    return _name;
   }
 
   public StandardAccessList getParent() {
@@ -35,10 +41,10 @@ public class ExtendedAccessList extends ComparableStructure<String> {
 
   @Override
   public String toString() {
-    String output = super.toString() + "\n" + "Identifier: " + _key;
+    StringBuilder output = new StringBuilder(super.toString() + "\n" + "Identifier: " + _name);
     for (ExtendedAccessListLine line : _lines) {
-      output += "\n" + line;
+      output.append("\n").append(line);
     }
-    return output;
+    return output.toString();
   }
 }

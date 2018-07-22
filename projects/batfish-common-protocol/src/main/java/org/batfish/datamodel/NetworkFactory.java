@@ -55,8 +55,12 @@ public class NetworkFactory {
     return new IpAccessList.Builder(this);
   }
 
-  public BgpNeighbor.Builder bgpNeighborBuilder() {
-    return new BgpNeighbor.Builder(this);
+  public BgpActivePeerConfig.Builder bgpNeighborBuilder() {
+    return BgpActivePeerConfig.builder();
+  }
+
+  public BgpPassivePeerConfig.Builder bgpDynamicNeighborBuilder() {
+    return BgpPassivePeerConfig.builder();
   }
 
   public BgpProcess.Builder bgpProcessBuilder() {

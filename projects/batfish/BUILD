@@ -75,7 +75,9 @@ java_library(
     deps = [
         ":batfish",
         "//projects/batfish-common-protocol:common",
+        "//projects/batfish-common-protocol:common_testlib",
         "//projects/batfish/src/main/antlr4/org/batfish/grammar/flatjuniper",
+        "//projects/lib/bdd",
         "//projects/lib/z3",
         "@antlr4_runtime//:compile",
         "@commons_collections4//:compile",
@@ -88,6 +90,7 @@ java_library(
 
 junit_tests(
     name = "batfish_tests",
+    size = "medium",
     srcs = glob([
         "src/test/**/*Test.java",
     ]),
@@ -109,5 +112,4 @@ junit_tests(
         "@jettison//:compile",
         "@junit//:compile",
     ],
-    size = "medium",
 )

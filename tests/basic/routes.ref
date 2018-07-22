@@ -75,6 +75,7 @@
             "communities" : [
               131073
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "2.128.0.0/16",
@@ -104,6 +105,7 @@
             "communities" : [
               196609
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "3.0.1.0/24",
@@ -133,6 +135,7 @@
             "communities" : [
               196609
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "3.0.2.0/24",
@@ -269,6 +272,7 @@
             "communities" : [
               131073
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "2.128.0.0/16",
@@ -295,6 +299,7 @@
             "communities" : [
               196609
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "3.0.1.0/24",
@@ -321,6 +326,7 @@
             "communities" : [
               196609
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "3.0.2.0/24",
@@ -463,6 +469,7 @@
             "communities" : [
               131073
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "2.128.0.0/16",
@@ -489,6 +496,7 @@
             "communities" : [
               196609
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "3.0.1.0/24",
@@ -515,6 +523,7 @@
             "communities" : [
               196609
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "3.0.2.0/24",
@@ -587,6 +596,7 @@
             "communities" : [
               65538
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "1.0.1.0/24",
@@ -613,6 +623,7 @@
             "communities" : [
               65538
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "1.0.2.0/24",
@@ -907,6 +918,7 @@
             "communities" : [
               4259905538
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "2.128.0.0/24",
@@ -936,6 +948,7 @@
             "communities" : [
               4259905538
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "2.128.0.0/24",
@@ -965,6 +978,7 @@
             "communities" : [
               4259905538
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "2.128.0.0/24",
@@ -994,6 +1008,7 @@
             "communities" : [
               4259905538
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "2.128.0.0/24",
@@ -1023,6 +1038,7 @@
             "communities" : [
               4259905538
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "2.128.1.0/24",
@@ -1052,6 +1068,7 @@
             "communities" : [
               4259905538
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "2.128.1.0/24",
@@ -1081,6 +1098,7 @@
             "communities" : [
               4259905538
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "2.128.1.0/24",
@@ -1110,6 +1128,7 @@
             "communities" : [
               4259905538
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "2.128.1.0/24",
@@ -1139,6 +1158,7 @@
             "communities" : [
               196610
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "3.0.1.0/24",
@@ -1168,6 +1188,7 @@
             "communities" : [
               196610
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "3.0.1.0/24",
@@ -1197,6 +1218,7 @@
             "communities" : [
               196610
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "3.0.2.0/24",
@@ -1226,6 +1248,7 @@
             "communities" : [
               196610
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "3.0.2.0/24",
@@ -1304,6 +1327,7 @@
             "communities" : [
               65538
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "1.0.1.0/24",
@@ -1333,6 +1357,7 @@
             "communities" : [
               65538
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "1.0.1.0/24",
@@ -1362,6 +1387,7 @@
             "communities" : [
               65538
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "1.0.2.0/24",
@@ -1391,6 +1417,7 @@
             "communities" : [
               65538
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "1.0.2.0/24",
@@ -1685,6 +1712,7 @@
             "communities" : [
               4259905538
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "2.128.0.0/24",
@@ -1714,6 +1742,7 @@
             "communities" : [
               4259905538
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "2.128.0.0/24",
@@ -1743,6 +1772,7 @@
             "communities" : [
               4259905538
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "2.128.0.0/24",
@@ -1772,6 +1802,7 @@
             "communities" : [
               4259905538
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "2.128.0.0/24",
@@ -1801,6 +1832,7 @@
             "communities" : [
               4259905538
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "2.128.1.0/24",
@@ -1830,6 +1862,7 @@
             "communities" : [
               4259905538
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "2.128.1.0/24",
@@ -1859,6 +1892,7 @@
             "communities" : [
               4259905538
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "2.128.1.0/24",
@@ -1888,6 +1922,7 @@
             "communities" : [
               4259905538
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "2.128.1.0/24",
@@ -1914,6 +1949,7 @@
             "communities" : [
               196610
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "3.0.1.0/24",
@@ -1940,6 +1976,7 @@
             "communities" : [
               196610
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "3.0.2.0/24",
@@ -2015,6 +2052,7 @@
             "communities" : [
               65538
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "1.0.1.0/24",
@@ -2041,6 +2079,7 @@
             "communities" : [
               65538
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "1.0.2.0/24",
@@ -2296,6 +2335,7 @@
             "class" : "org.batfish.datamodel.BgpRoute",
             "administrativeCost" : 200,
             "asPath" : [ ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "2.128.0.0/16",
@@ -2315,6 +2355,7 @@
             "class" : "org.batfish.datamodel.BgpRoute",
             "administrativeCost" : 200,
             "asPath" : [ ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "2.128.0.0/16",
@@ -2341,6 +2382,7 @@
             "communities" : [
               4259905538
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "2.128.0.0/24",
@@ -2367,6 +2409,7 @@
             "communities" : [
               4259905538
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "2.128.0.0/24",
@@ -2393,6 +2436,7 @@
             "communities" : [
               4259905538
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "2.128.1.0/24",
@@ -2419,6 +2463,7 @@
             "communities" : [
               4259905538
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "2.128.1.0/24",
@@ -2445,6 +2490,7 @@
             "communities" : [
               196610
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "3.0.1.0/24",
@@ -2471,6 +2517,7 @@
             "communities" : [
               196610
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "3.0.2.0/24",
@@ -2529,6 +2576,7 @@
             "communities" : [
               65538
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "1.0.1.0/24",
@@ -2555,6 +2603,7 @@
             "communities" : [
               65538
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "1.0.2.0/24",
@@ -2810,6 +2859,7 @@
             "class" : "org.batfish.datamodel.BgpRoute",
             "administrativeCost" : 200,
             "asPath" : [ ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "2.128.0.0/16",
@@ -2829,6 +2879,7 @@
             "class" : "org.batfish.datamodel.BgpRoute",
             "administrativeCost" : 200,
             "asPath" : [ ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "2.128.0.0/16",
@@ -2855,6 +2906,7 @@
             "communities" : [
               4259905538
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "2.128.0.0/24",
@@ -2881,6 +2933,7 @@
             "communities" : [
               4259905538
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "2.128.0.0/24",
@@ -2907,6 +2960,7 @@
             "communities" : [
               4259905538
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "2.128.1.0/24",
@@ -2933,6 +2987,7 @@
             "communities" : [
               4259905538
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "2.128.1.0/24",
@@ -2959,6 +3014,7 @@
             "communities" : [
               196610
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "3.0.1.0/24",
@@ -2985,6 +3041,7 @@
             "communities" : [
               196610
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "3.0.2.0/24",
@@ -3047,6 +3104,7 @@
               65538,
               196073
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "1.0.1.0/24",
@@ -3077,6 +3135,7 @@
               65538,
               196073
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "1.0.1.0/24",
@@ -3107,6 +3166,7 @@
               65538,
               196073
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "1.0.2.0/24",
@@ -3137,6 +3197,7 @@
               65538,
               196073
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "1.0.2.0/24",
@@ -3243,6 +3304,7 @@
               196073,
               196610
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "3.0.1.0/24",
@@ -3273,6 +3335,7 @@
               196073,
               196610
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "3.0.1.0/24",
@@ -3303,6 +3366,7 @@
               196073,
               196610
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "3.0.2.0/24",
@@ -3333,6 +3397,7 @@
               196073,
               196610
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "3.0.2.0/24",
@@ -3366,6 +3431,7 @@
             "communities" : [
               65538
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "1.0.1.0/24",
@@ -3395,6 +3461,7 @@
             "communities" : [
               65538
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "1.0.1.0/24",
@@ -3424,6 +3491,7 @@
             "communities" : [
               65538
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "1.0.2.0/24",
@@ -3453,6 +3521,7 @@
             "communities" : [
               65538
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "1.0.2.0/24",
@@ -3716,6 +3785,7 @@
             "clusterList" : [
               33620481
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "2.128.0.0/16",
@@ -3738,6 +3808,7 @@
             "clusterList" : [
               33620481
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "2.128.0.0/16",
@@ -3760,6 +3831,7 @@
             "clusterList" : [
               33620482
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "2.128.0.0/16",
@@ -3782,6 +3854,7 @@
             "clusterList" : [
               33620482
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "2.128.0.0/16",
@@ -3808,6 +3881,7 @@
             "communities" : [
               4259905538
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "2.128.0.0/24",
@@ -3834,6 +3908,7 @@
             "communities" : [
               4259905538
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "2.128.1.0/24",
@@ -3863,6 +3938,7 @@
             "communities" : [
               196610
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "3.0.1.0/24",
@@ -3892,6 +3968,7 @@
             "communities" : [
               196610
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "3.0.1.0/24",
@@ -3921,6 +3998,7 @@
             "communities" : [
               196610
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "3.0.2.0/24",
@@ -3950,6 +4028,7 @@
             "communities" : [
               196610
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "3.0.2.0/24",
@@ -4039,6 +4118,7 @@
             "communities" : [
               65538
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "1.0.1.0/24",
@@ -4068,6 +4148,7 @@
             "communities" : [
               65538
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "1.0.1.0/24",
@@ -4097,6 +4178,7 @@
             "communities" : [
               65538
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "1.0.2.0/24",
@@ -4126,6 +4208,7 @@
             "communities" : [
               65538
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "1.0.2.0/24",
@@ -4389,6 +4472,7 @@
             "clusterList" : [
               33620481
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "2.128.0.0/16",
@@ -4411,6 +4495,7 @@
             "clusterList" : [
               33620481
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "2.128.0.0/16",
@@ -4433,6 +4518,7 @@
             "clusterList" : [
               33620482
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "2.128.0.0/16",
@@ -4455,6 +4541,7 @@
             "clusterList" : [
               33620482
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "2.128.0.0/16",
@@ -4481,6 +4568,7 @@
             "communities" : [
               4259905538
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "2.128.0.0/24",
@@ -4507,6 +4595,7 @@
             "communities" : [
               4259905538
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "2.128.1.0/24",
@@ -4536,6 +4625,7 @@
             "communities" : [
               196610
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "3.0.1.0/24",
@@ -4565,6 +4655,7 @@
             "communities" : [
               196610
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "3.0.1.0/24",
@@ -4594,6 +4685,7 @@
             "communities" : [
               196610
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "3.0.2.0/24",
@@ -4623,6 +4715,7 @@
             "communities" : [
               196610
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "3.0.2.0/24",
@@ -4712,6 +4805,7 @@
             "communities" : [
               65539
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "1.0.1.0/24",
@@ -4741,6 +4835,7 @@
             "communities" : [
               65539
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "1.0.2.0/24",
@@ -4767,6 +4862,7 @@
             "communities" : [
               131075
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "2.128.0.0/16",
@@ -4886,6 +4982,7 @@
             "communities" : [
               65539
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "1.0.1.0/24",
@@ -4912,6 +5009,7 @@
             "communities" : [
               65539
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "1.0.2.0/24",
@@ -4941,6 +5039,7 @@
             "communities" : [
               131075
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "2.128.0.0/16",
@@ -5060,6 +5159,7 @@
             "communities" : [
               65539
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "1.0.1.0/24",
@@ -5086,6 +5186,7 @@
             "communities" : [
               65539
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "1.0.2.0/24",
@@ -5112,6 +5213,7 @@
             "communities" : [
               131075
             ],
+            "discard" : false,
             "localPreference" : 350,
             "metric" : 50,
             "network" : "2.128.0.0/16",
@@ -5260,6 +5362,7 @@
           {
             "class" : "org.batfish.datamodel.StaticRoute",
             "administrativeCost" : 1,
+            "metric" : 0,
             "network" : "0.0.0.0/0",
             "nextHopInterface" : "eth0",
             "nextHopIp" : "2.128.0.1",
@@ -5292,6 +5395,7 @@
           {
             "class" : "org.batfish.datamodel.StaticRoute",
             "administrativeCost" : 1,
+            "metric" : 0,
             "network" : "0.0.0.0/0",
             "nextHopInterface" : "eth0",
             "nextHopIp" : "2.128.1.1",

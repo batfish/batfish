@@ -12,5 +12,7 @@ public class CoordConstsV2 {
   public static final String RSC_ADDRESS_LIBRARY = "addresslibrary";
   public static final String RSC_CONTAINER = "container";
   public static final String RSC_CONTAINERS = "containers";
+  public static final String RSC_NETWORK = "network";
+  public static final String RSC_NETWORKS = "networks";
   public static final String RSC_NODE_ROLES = "noderoles";
 }

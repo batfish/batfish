@@ -35,7 +35,7 @@ public class FwFromPrefixListTest {
   @Before
   public void setup() {
     _jc = new JuniperConfiguration(ImmutableSet.of());
-    _jc.getPrefixLists().put(BASE_PREFIX_LIST_NAME, new PrefixList(BASE_PREFIX_LIST_NAME, -1));
+    _jc.getPrefixLists().put(BASE_PREFIX_LIST_NAME, new PrefixList(BASE_PREFIX_LIST_NAME));
     _w = new Warnings();
     _c = new Configuration("test", ConfigurationFormat.FLAT_JUNIPER);
     RouteFilterList rflist = new RouteFilterList(BASE_PREFIX_LIST_NAME);

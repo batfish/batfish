@@ -259,6 +259,8 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
   public static final class TestrigSettings {
 
+    private Path _addressBooksPath;
+
     private Path _basePath;
 
     private EnvironmentSettings _environmentSettings;
@@ -297,6 +299,10 @@ public final class Settings extends BaseSettings implements GrammarSettings {
       TestrigSettings other = (TestrigSettings) obj;
       return _name.equals(other._name)
           && _environmentSettings._name.equals(other._environmentSettings._name);
+    }
+
+    public Path getAddressBooksPath() {
+      return _addressBooksPath;
     }
 
     public Path getBasePath() {
@@ -356,6 +362,10 @@ public final class Settings extends BaseSettings implements GrammarSettings {
           prime * result
               + ((_environmentSettings._name == null) ? 0 : _environmentSettings._name.hashCode());
       return result;
+    }
+
+    public void setAddressBooksPath(Path path) {
+      _addressBooksPath = path;
     }
 
     public void setBasePath(Path basePath) {
@@ -462,6 +472,8 @@ public final class Settings extends BaseSettings implements GrammarSettings {
   public static final String ARG_PARENT_PID = "parentpid";
 
   private static final String ARG_PRINT_PARSE_TREES = "ppt";
+
+  private static final String ARG_PRINT_PARSE_TREE_LINE_NUMS = "printparsetreelinenums";
 
   private static final String ARG_PRINT_SYMMETRIC_EDGES = "printsymmetricedges";
 
@@ -604,11 +616,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     return _config.getBoolean(BfConsts.COMMAND_ANSWER);
   }
 
-  @Nullable
-  public Path getAnswerJsonPath() {
-    return nullablePath(_config.getString(BfConsts.ARG_ANSWER_JSON_PATH));
-  }
-
   public int getAvailableThreads() {
     return Math.min(Runtime.getRuntime().availableProcessors(), getJobs());
   }
@@ -621,8 +628,8 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     return _config.getBoolean(BfConsts.COMMAND_COMPILE_DIFF_ENVIRONMENT);
   }
 
-  public Path getContainerDir() {
-    return Paths.get(_config.getString(BfConsts.ARG_CONTAINER_DIR));
+  public String getContainer() {
+    return _config.getString(BfConsts.ARG_CONTAINER);
   }
 
   public String getCoordinatorHost() {
@@ -730,8 +737,21 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     return _config.getInt(ARG_JOBS);
   }
 
+  @Nullable
   public String getLogFile() {
-    return _config.getString(BfConsts.ARG_LOG_FILE);
+    if (getTaskId() == null) {
+      return null;
+    }
+    String tr = getTestrig();
+    if (getDeltaTestrig() != null && !getDifferential()) {
+      tr = getDeltaTestrig();
+    }
+    return getStorageBase()
+        .resolve(getContainer())
+        .resolve(BfConsts.RELPATH_TESTRIGS_DIR)
+        .resolve(tr)
+        .resolve(getTaskId() + BfConsts.SUFFIX_LOG_FILE)
+        .toString();
   }
 
   public BatfishLogger getLogger() {
@@ -788,6 +808,11 @@ public final class Settings extends BaseSettings implements GrammarSettings {
   @Override
   public boolean getPrintParseTree() {
     return _config.getBoolean(ARG_PRINT_PARSE_TREES);
+  }
+
+  @Override
+  public boolean getPrintParseTreeLineNums() {
+    return _config.getBoolean(ARG_PRINT_PARSE_TREE_LINE_NUMS);
   }
 
   public boolean getPrintSymmetricEdgePairs() {
@@ -884,10 +909,15 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     return _config.getString(BfConsts.ARG_SSL_TRUSTSTORE_PASSWORD);
   }
 
+  public Path getStorageBase() {
+    return Paths.get(_config.getString(BfConsts.ARG_STORAGE_BASE));
+  }
+
   public boolean getSynthesizeJsonTopology() {
     return _config.getBoolean(BfConsts.ARG_SYNTHESIZE_JSON_TOPOLOGY);
   }
 
+  @Nullable
   public String getTaskId() {
     return _config.getString(TASK_ID);
   }
@@ -969,7 +999,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
   private void initConfigDefaults() {
     setDefaultProperty(BfConsts.ARG_ANALYSIS_NAME, null);
-    setDefaultProperty(BfConsts.ARG_ANSWER_JSON_PATH, null);
     setDefaultProperty(BfConsts.ARG_BDP_DETAIL, false);
     setDefaultProperty(BfConsts.ARG_BDP_MAX_OSCILLATION_RECOVERY_ATTEMPTS, 0);
     setDefaultProperty(BfConsts.ARG_BDP_MAX_RECORDED_ITERATIONS, 5);
@@ -977,7 +1006,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     setDefaultProperty(BfConsts.ARG_BDP_PRINT_OSCILLATING_ITERATIONS, false);
     setDefaultProperty(BfConsts.ARG_BDP_RECORD_ALL_ITERATIONS, false);
     setDefaultProperty(CAN_EXECUTE, true);
-    setDefaultProperty(BfConsts.ARG_CONTAINER_DIR, null);
+    setDefaultProperty(BfConsts.ARG_CONTAINER, null);
     setDefaultProperty(ARG_COORDINATOR_REGISTER, false);
     setDefaultProperty(ARG_COORDINATOR_HOST, "localhost");
     setDefaultProperty(ARG_COORDINATOR_POOL_PORT, CoordConsts.SVC_CFG_POOL_PORT);
@@ -1008,7 +1037,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     setDefaultProperty(ARG_IGNORE_UNSUPPORTED, true);
     setDefaultProperty(ARG_IGNORE_UNKNOWN, true);
     setDefaultProperty(ARG_JOBS, Integer.MAX_VALUE);
-    setDefaultProperty(BfConsts.ARG_LOG_FILE, null);
     setDefaultProperty(ARG_LOG_TEE, false);
     setDefaultProperty(BfConsts.ARG_LOG_LEVEL, "debug");
     setDefaultProperty(ARG_MAX_PARSER_CONTEXT_LINES, 10);
@@ -1023,6 +1051,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     setDefaultProperty(BfConsts.ARG_PRETTY_PRINT_ANSWER, false);
     setDefaultProperty(ARG_PARENT_PID, -1);
     setDefaultProperty(ARG_PRINT_PARSE_TREES, false);
+    setDefaultProperty(ARG_PRINT_PARSE_TREE_LINE_NUMS, false);
     setDefaultProperty(ARG_PRINT_SYMMETRIC_EDGES, false);
     setDefaultProperty(BfConsts.ARG_QUESTION_NAME, null);
     setDefaultProperty(BfConsts.ARG_RED_FLAG_AS_ERROR, false);
@@ -1040,6 +1069,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     setDefaultProperty(BfConsts.ARG_SSL_TRUST_ALL_CERTS, false);
     setDefaultProperty(BfConsts.ARG_SSL_TRUSTSTORE_FILE, null);
     setDefaultProperty(BfConsts.ARG_SSL_TRUSTSTORE_PASSWORD, null);
+    setDefaultProperty(BfConsts.ARG_STORAGE_BASE, null);
     setDefaultProperty(BfConsts.ARG_SYNTHESIZE_JSON_TOPOLOGY, false);
     setDefaultProperty(BfConsts.ARG_TASK_PLUGIN, null);
     setDefaultProperty(ARG_THROW_ON_LEXER_ERROR, true);
@@ -1069,9 +1099,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
   private void initOptions() {
 
     addOption(BfConsts.ARG_ANALYSIS_NAME, "name of analysis", ARGNAME_NAME);
-
-    addOption(
-        BfConsts.ARG_ANSWER_JSON_PATH, "save query json output to specified file", ARGNAME_PATH);
 
     addBooleanOption(
         BfConsts.ARG_BDP_DETAIL,
@@ -1109,7 +1136,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
         ARG_CHECK_BGP_REACHABILITY,
         "whether to check BGP session reachability during data plane computation");
 
-    addOption(BfConsts.ARG_CONTAINER_DIR, "path to container directory", ARGNAME_PATH);
+    addOption(BfConsts.ARG_CONTAINER, "name of container", ARGNAME_NAME);
 
     addOption(
         ARG_COORDINATOR_HOST,
@@ -1208,8 +1235,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
     addBooleanOption(ARG_HISTOGRAM, "build histogram of unimplemented features");
 
-    addOption(BfConsts.ARG_LOG_FILE, "path to main log file", ARGNAME_PATH);
-
     addBooleanOption(ARG_LOG_TEE, "print output to both logfile and standard out");
 
     addOption(
@@ -1250,6 +1275,9 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     addBooleanOption(ARG_PRINT_PARSE_TREES, "print parse trees");
 
     addBooleanOption(
+        ARG_PRINT_PARSE_TREE_LINE_NUMS, "print line numbers when printing parse trees");
+
+    addBooleanOption(
         ARG_PRINT_SYMMETRIC_EDGES, "print topology with symmetric edges adjacent in listing");
 
     addOption(BfConsts.ARG_QUESTION_NAME, "name of question", ARGNAME_NAME);
@@ -1266,7 +1294,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     addOption(
         ARG_RUN_MODE,
         "mode to run in",
-        Arrays.stream(RunMode.values()).map(v -> v.toString()).collect(Collectors.joining("|")));
+        Arrays.stream(RunMode.values()).map(Object::toString).collect(Collectors.joining("|")));
 
     addBooleanOption(ARG_SEQUENTIAL, "force sequential operation");
 
@@ -1289,6 +1317,8 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     addBooleanOption(
         BfConsts.ARG_SSL_TRUST_ALL_CERTS,
         "whether to trust all SSL certificates during communication with coordinator");
+
+    addOption(BfConsts.ARG_STORAGE_BASE, "path to the storage base", ARGNAME_PATH);
 
     addBooleanOption(
         BfConsts.ARG_SYNTHESIZE_JSON_TOPOLOGY,
@@ -1368,7 +1398,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     _config.setProperty(CAN_EXECUTE, true);
 
     // SPECIAL OPTIONS
-    getStringOptionValue(BfConsts.ARG_LOG_FILE);
     getStringOptionValue(BfConsts.ARG_LOG_LEVEL);
     if (getBooleanOptionValue(ARG_HELP)) {
       _config.setProperty(CAN_EXECUTE, false);
@@ -1378,7 +1407,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
     if (getBooleanOptionValue(ARG_VERSION)) {
       _config.setProperty(CAN_EXECUTE, false);
-      System.out.printf(Version.getCompleteVersionString());
+      System.out.print(Version.getCompleteVersionString());
       return;
     }
 
@@ -1386,7 +1415,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     getStringOptionValue(BfConsts.ARG_ANALYSIS_NAME);
     getBooleanOptionValue(BfConsts.COMMAND_ANALYZE);
     getBooleanOptionValue(BfConsts.COMMAND_ANSWER);
-    getPathOptionValue(BfConsts.ARG_ANSWER_JSON_PATH);
     getBooleanOptionValue(BfConsts.ARG_BDP_RECORD_ALL_ITERATIONS);
     getBooleanOptionValue(BfConsts.ARG_BDP_DETAIL);
     getIntOptionValue(BfConsts.ARG_BDP_MAX_OSCILLATION_RECOVERY_ATTEMPTS);
@@ -1395,7 +1423,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     getBooleanOptionValue(BfConsts.ARG_BDP_PRINT_OSCILLATING_ITERATIONS);
     getBooleanOptionValue(ARG_CHECK_BGP_REACHABILITY);
     getBooleanOptionValue(BfConsts.COMMAND_COMPILE_DIFF_ENVIRONMENT);
-    getPathOptionValue(BfConsts.ARG_CONTAINER_DIR);
+    getStringOptionValue(BfConsts.ARG_CONTAINER);
     getStringOptionValue(ARG_COORDINATOR_HOST);
     getIntOptionValue(ARG_COORDINATOR_POOL_PORT);
     getBooleanOptionValue(ARG_COORDINATOR_REGISTER);
@@ -1434,6 +1462,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     getBooleanOptionValue(BfConsts.ARG_PEDANTIC_SUPPRESS);
     getBooleanOptionValue(BfConsts.ARG_PRETTY_PRINT_ANSWER);
     getBooleanOptionValue(ARG_PRINT_PARSE_TREES);
+    getBooleanOptionValue(ARG_PRINT_PARSE_TREE_LINE_NUMS);
     getBooleanOptionValue(ARG_PRINT_SYMMETRIC_EDGES);
     getStringOptionValue(BfConsts.ARG_QUESTION_NAME);
     getBooleanOptionValue(BfConsts.ARG_RED_FLAG_AS_ERROR);
@@ -1456,6 +1485,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     getBooleanOptionValue(BfConsts.ARG_SSL_TRUST_ALL_CERTS);
     getPathOptionValue(BfConsts.ARG_SSL_TRUSTSTORE_FILE);
     getStringOptionValue(BfConsts.ARG_SSL_TRUSTSTORE_PASSWORD);
+    getPathOptionValue(BfConsts.ARG_STORAGE_BASE);
     getBooleanOptionValue(BfConsts.ARG_SYNTHESIZE_JSON_TOPOLOGY);
     getStringOptionValue(BfConsts.ARG_TASK_PLUGIN);
     getStringOptionValue(BfConsts.ARG_TESTRIG);
@@ -1482,8 +1512,8 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     _config.setProperty(CAN_EXECUTE, canExecute);
   }
 
-  public void setContainerDir(Path containerDir) {
-    _config.setProperty(BfConsts.ARG_CONTAINER_DIR, containerDir.toString());
+  public void setContainer(String container) {
+    _config.setProperty(BfConsts.ARG_CONTAINER, container);
   }
 
   public void setDebugFlags(List<String> debugFlags) {
@@ -1556,6 +1586,11 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     _config.setProperty(ARG_PRINT_PARSE_TREES, printParseTree);
   }
 
+  @Override
+  public void setPrintParseTreeLineNums(boolean printParseTreeLineNums) {
+    _config.setProperty(ARG_PRINT_PARSE_TREE_LINE_NUMS, printParseTreeLineNums);
+  }
+
   public void setQuestionPath(@Nullable Path questionPath) {
     if (questionPath != null) {
       _config.setProperty(QUESTION_PATH, questionPath.toString());
@@ -1598,6 +1633,10 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
   public void setSslTruststorePassword(String sslTruststorePassword) {
     _config.setProperty(BfConsts.ARG_SSL_TRUSTSTORE_PASSWORD, sslTruststorePassword);
+  }
+
+  public void setStorageBase(Path storageBase) {
+    _config.setProperty(BfConsts.ARG_STORAGE_BASE, storageBase.toString());
   }
 
   public void setTaskId(String taskId) {

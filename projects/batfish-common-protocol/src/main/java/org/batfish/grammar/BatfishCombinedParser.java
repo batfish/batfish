@@ -4,6 +4,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import javax.annotation.Nonnull;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -12,6 +13,7 @@ import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.TokenStream;
 import org.antlr.v4.runtime.atn.PredictionMode;
 import org.batfish.common.BatfishException;
+import org.batfish.grammar.flattener.FlattenerLineMap;
 
 public abstract class BatfishCombinedParser<P extends BatfishParser, L extends BatfishLexer> {
 
@@ -24,6 +26,8 @@ public abstract class BatfishCombinedParser<P extends BatfishParser, L extends B
   protected L _lexer;
 
   private BatfishLexerErrorListener _lexerErrorListener;
+
+  private FlattenerLineMap _lineMap;
 
   protected P _parser;
 
@@ -45,6 +49,7 @@ public abstract class BatfishCombinedParser<P extends BatfishParser, L extends B
     _warnings = new ArrayList<>();
     _errors = new ArrayList<>();
     _input = input;
+    _lineMap = null;
     CharStream inputStream = CharStreams.fromString(input);
     try {
       _lexer = lClass.getConstructor(CharStream.class).newInstance(inputStream);
@@ -91,6 +96,18 @@ public abstract class BatfishCombinedParser<P extends BatfishParser, L extends B
     }
   }
 
+  public BatfishCombinedParser(
+      Class<P> pClass,
+      Class<L> lClass,
+      String input,
+      GrammarSettings settings,
+      BatfishANTLRErrorStrategy.BatfishANTLRErrorStrategyFactory batfishANTLRErrorStrategyFactor,
+      Set<Integer> separatorChars,
+      FlattenerLineMap lineMap) {
+    this(pClass, lClass, input, settings, batfishANTLRErrorStrategyFactor, separatorChars);
+    _lineMap = lineMap;
+  }
+
   /**
    * Escapes certain whitespace {@code \n, \r, \t} in the given token text. This is typically used
    * when printing token text for debugging purposes.
@@ -113,6 +130,12 @@ public abstract class BatfishCombinedParser<P extends BatfishParser, L extends B
 
   public BatfishLexerErrorListener getLexerErrorListener() {
     return _lexerErrorListener;
+  }
+
+  /** Get line number for a specified token, applying line mapping if applicable. */
+  public int getLine(@Nonnull Token t) {
+    int line = t.getLine();
+    return (_lineMap == null) ? line : _lineMap.getOriginalLine(line, t.getCharPositionInLine());
   }
 
   public P getParser() {

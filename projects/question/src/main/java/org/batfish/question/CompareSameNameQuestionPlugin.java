@@ -74,9 +74,7 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
 
     private String equivalenceSetToString(
         String indent, String name, NamedStructureEquivalenceSets<?> nseSets) {
-      StringBuilder sb = new StringBuilder(indent + name + "\n");
-      sb.append(nseSets.prettyPrint(indent + indent));
-      return sb.toString();
+      return indent + name + "\n" + nseSets.prettyPrint(indent + indent);
     }
 
     @JsonProperty(PROP_EQUIVALENCE_SETS_MAP)
@@ -173,7 +171,7 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
           hostnames
               .stream()
               .map(configurations::get)
-              .map(structureMapRetriever::apply)
+              .map(structureMapRetriever)
               .flatMap(structureMap -> structureMap.keySet().stream())
               .filter(structName -> !ignored(structName))
               .collect(ImmutableSet.toImmutableSet());
@@ -329,7 +327,7 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
     private SortedSet<String> toLowerCase(Collection<String> names) {
       return names
           .stream()
-          .map(name -> name.toLowerCase())
+          .map(String::toLowerCase)
           .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
     }
   }

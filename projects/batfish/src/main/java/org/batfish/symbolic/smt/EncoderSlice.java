@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.BgpNeighbor;
+import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
@@ -688,7 +688,7 @@ class EncoderSlice {
               Interface i = e.getStart();
               Prefix p = i.getAddress().getPrefix();
 
-              boolean doModel = !(proto.isConnected() && p != null && !relevantPrefix(p));
+              boolean doModel = !(proto.isConnected() && !relevantPrefix(p));
               // PolicyQuotient: Don't model the connected interfaces that aren't relevant
               if (doModel) {
                 if (notNeeded) {
@@ -820,7 +820,7 @@ class EncoderSlice {
             for (LogicalEdge e : eList) {
               if (e.getEdgeType() == EdgeType.IMPORT) {
                 GraphEdge ge = e.getEdge();
-                BgpNeighbor n = getGraph().getEbgpNeighbors().get(ge);
+                BgpActivePeerConfig n = getGraph().getEbgpNeighbors().get(ge);
                 if (n != null && ge.getEnd() == null) {
 
                   if (!isMainSlice()) {
@@ -829,10 +829,10 @@ class EncoderSlice {
                     _logicalGraph.getEnvironmentVars().put(e, r);
                   } else {
                     String address;
-                    if (n.getAddress() == null) {
+                    if (n.getPeerAddress() == null) {
                       address = "null";
                     } else {
-                      address = n.getAddress().toString();
+                      address = n.getPeerAddress().toString();
                     }
                     String ifaceName = "ENV-" + address;
                     String name =

@@ -26,34 +26,34 @@
               "name" : "as2border1",
               "communityLists" : {
                 "as1_community" : {
+                  "invertMatch" : false,
                   "lines" : [
                     {
                       "action" : "ACCEPT",
                       "regex" : "(,|\\{|\\}|^|$| )1:"
                     }
                   ],
-                  "name" : "as1_community",
-                  "invertMatch" : false
+                  "name" : "as1_community"
                 },
                 "as2_community" : {
+                  "invertMatch" : false,
                   "lines" : [
                     {
                       "action" : "ACCEPT",
                       "regex" : "(,|\\{|\\}|^|$| )2:"
                     }
                   ],
-                  "name" : "as2_community",
-                  "invertMatch" : false
+                  "name" : "as2_community"
                 },
                 "as3_community" : {
+                  "invertMatch" : false,
                   "lines" : [
                     {
                       "action" : "ACCEPT",
                       "regex" : "(,|\\{|\\}|^|$| )3:"
                     }
                   ],
-                  "name" : "as3_community",
-                  "invertMatch" : false
+                  "name" : "as3_community"
                 }
               },
               "defaultCrossZoneAction" : "ACCEPT",
@@ -251,7 +251,9 @@
                       },
                       "name" : "permit ip host 1.0.2.0 host 255.255.255.0"
                     }
-                  ]
+                  ],
+                  "sourceName" : "101",
+                  "sourceType" : "extended ipv4 access-list"
                 },
                 "103" : {
                   "name" : "103",
@@ -292,7 +294,9 @@
                       },
                       "name" : "permit ip host 3.0.2.0 host 255.255.255.0"
                     }
-                  ]
+                  ],
+                  "sourceName" : "103",
+                  "sourceType" : "extended ipv4 access-list"
                 },
                 "INSIDE_TO_AS1" : {
                   "name" : "INSIDE_TO_AS1",
@@ -351,7 +355,9 @@
                       },
                       "name" : "deny   ip any any"
                     }
-                  ]
+                  ],
+                  "sourceName" : "INSIDE_TO_AS1",
+                  "sourceType" : "extended ipv4 access-list"
                 },
                 "OUTSIDE_TO_INSIDE" : {
                   "name" : "OUTSIDE_TO_INSIDE",
@@ -410,7 +416,9 @@
                       },
                       "name" : "permit ip any any"
                     }
-                  ]
+                  ],
+                  "sourceName" : "OUTSIDE_TO_INSIDE",
+                  "sourceType" : "extended ipv4 access-list"
                 }
               },
               "ntpServers" : [
@@ -842,7 +850,7 @@
                       "trueStatements" : [
                         {
                           "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                          "type" : "ReturnFalse"
+                          "type" : "Suppress"
                         }
                       ]
                     },
@@ -1077,38 +1085,75 @@
                   "lines" : {
                     "aux0" : {
                       "name" : "aux0",
+                      "aaaAuthenticationLoginList" : {
+                        "methods" : [
+                          "LOCAL"
+                        ]
+                      },
                       "execTimeoutMinutes" : 0,
-                      "execTimeoutSeconds" : 0
+                      "execTimeoutSeconds" : 0,
+                      "lineType" : "AUX"
                     },
                     "con0" : {
                       "name" : "con0",
                       "execTimeoutMinutes" : 0,
-                      "execTimeoutSeconds" : 0
+                      "execTimeoutSeconds" : 0,
+                      "lineType" : "CON"
                     },
                     "vty0" : {
                       "name" : "vty0",
+                      "aaaAuthenticationLoginList" : {
+                        "methods" : [
+                          "LOCAL"
+                        ]
+                      },
                       "execTimeoutMinutes" : 0,
-                      "execTimeoutSeconds" : 0
+                      "execTimeoutSeconds" : 0,
+                      "lineType" : "VTY"
                     },
                     "vty1" : {
                       "name" : "vty1",
+                      "aaaAuthenticationLoginList" : {
+                        "methods" : [
+                          "LOCAL"
+                        ]
+                      },
                       "execTimeoutMinutes" : 0,
-                      "execTimeoutSeconds" : 0
+                      "execTimeoutSeconds" : 0,
+                      "lineType" : "VTY"
                     },
                     "vty2" : {
                       "name" : "vty2",
+                      "aaaAuthenticationLoginList" : {
+                        "methods" : [
+                          "LOCAL"
+                        ]
+                      },
                       "execTimeoutMinutes" : 0,
-                      "execTimeoutSeconds" : 0
+                      "execTimeoutSeconds" : 0,
+                      "lineType" : "VTY"
                     },
                     "vty3" : {
                       "name" : "vty3",
+                      "aaaAuthenticationLoginList" : {
+                        "methods" : [
+                          "LOCAL"
+                        ]
+                      },
                       "execTimeoutMinutes" : 0,
-                      "execTimeoutSeconds" : 0
+                      "execTimeoutSeconds" : 0,
+                      "lineType" : "VTY"
                     },
                     "vty4" : {
                       "name" : "vty4",
+                      "aaaAuthenticationLoginList" : {
+                        "methods" : [
+                          "LOCAL"
+                        ]
+                      },
                       "execTimeoutMinutes" : 0,
-                      "execTimeoutSeconds" : 0
+                      "execTimeoutSeconds" : 0,
+                      "lineType" : "VTY"
                     }
                   },
                   "logging" : {
@@ -1180,68 +1225,60 @@
                     "multipathIbgp" : true,
                     "neighbors" : {
                       "2.1.2.1/32" : {
-                        "name" : "2.1.2.1/32",
+                        "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                         "additionalPathsReceive" : true,
                         "additionalPathsSelectAll" : true,
                         "additionalPathsSend" : true,
-                        "address" : "2.1.2.1",
                         "advertiseExternal" : false,
                         "advertiseInactive" : true,
                         "allowLocalAsIn" : false,
                         "allowRemoteAsOut" : false,
                         "clusterId" : 33620225,
                         "defaultMetric" : 0,
-                        "dynamic" : false,
                         "ebgpMultihop" : false,
                         "enforceFirstAs" : false,
                         "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:2.1.2.1~",
                         "group" : "as2",
                         "localAs" : 2,
                         "localIp" : "2.1.1.1",
+                        "peerAddress" : "2.1.2.1",
                         "remoteAs" : 2,
-                        "remotePrefix" : "2.1.2.1/32",
                         "routeReflectorClient" : false,
-                        "sendCommunity" : true,
-                        "vrf" : "default"
+                        "sendCommunity" : true
                       },
                       "2.1.2.2/32" : {
-                        "name" : "2.1.2.2/32",
+                        "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                         "additionalPathsReceive" : true,
                         "additionalPathsSelectAll" : true,
                         "additionalPathsSend" : true,
-                        "address" : "2.1.2.2",
                         "advertiseExternal" : false,
                         "advertiseInactive" : true,
                         "allowLocalAsIn" : false,
                         "allowRemoteAsOut" : false,
                         "clusterId" : 33620225,
                         "defaultMetric" : 0,
-                        "dynamic" : false,
                         "ebgpMultihop" : false,
                         "enforceFirstAs" : false,
                         "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:2.1.2.2~",
                         "group" : "as2",
                         "localAs" : 2,
                         "localIp" : "2.1.1.1",
+                        "peerAddress" : "2.1.2.2",
                         "remoteAs" : 2,
-                        "remotePrefix" : "2.1.2.2/32",
                         "routeReflectorClient" : false,
-                        "sendCommunity" : true,
-                        "vrf" : "default"
+                        "sendCommunity" : true
                       },
                       "10.12.11.1/32" : {
-                        "name" : "10.12.11.1/32",
+                        "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                         "additionalPathsReceive" : true,
                         "additionalPathsSelectAll" : true,
                         "additionalPathsSend" : true,
-                        "address" : "10.12.11.1",
                         "advertiseExternal" : false,
                         "advertiseInactive" : true,
                         "allowLocalAsIn" : false,
                         "allowRemoteAsOut" : false,
                         "clusterId" : 33620225,
                         "defaultMetric" : 0,
-                        "dynamic" : false,
                         "ebgpMultihop" : false,
                         "enforceFirstAs" : false,
                         "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:10.12.11.1~",
@@ -1255,11 +1292,10 @@
                         ],
                         "localAs" : 2,
                         "localIp" : "10.12.11.2",
+                        "peerAddress" : "10.12.11.1",
                         "remoteAs" : 1,
-                        "remotePrefix" : "10.12.11.1/32",
                         "routeReflectorClient" : false,
-                        "sendCommunity" : true,
-                        "vrf" : "default"
+                        "sendCommunity" : true
                       }
                     },
                     "routerId" : "2.1.1.1",

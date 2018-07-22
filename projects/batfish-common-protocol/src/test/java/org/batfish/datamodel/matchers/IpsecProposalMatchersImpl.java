@@ -15,7 +15,7 @@ final class IpsecProposalMatchersImpl {
       extends FeatureMatcher<IpsecProposal, IpsecAuthenticationAlgorithm> {
     HasAuthenticationAlgorithm(@Nonnull Matcher<? super IpsecAuthenticationAlgorithm> subMatcher) {
       super(
-          subMatcher, "An Ipsec Proposal with AuthenticationAlgorithm:", "AuthenticationAlgorithm");
+          subMatcher, "An IPSec Proposal with AuthenticationAlgorithm:", "AuthenticationAlgorithm");
     }
 
     @Override
@@ -27,7 +27,7 @@ final class IpsecProposalMatchersImpl {
   static final class HasEncryptionAlgorithm
       extends FeatureMatcher<IpsecProposal, EncryptionAlgorithm> {
     HasEncryptionAlgorithm(@Nonnull Matcher<? super EncryptionAlgorithm> subMatcher) {
-      super(subMatcher, "An Ipsec Proposal with EncryptionAlgorithm:", "EncryptionAlgorithm");
+      super(subMatcher, "An IPSec Proposal with EncryptionAlgorithm:", "EncryptionAlgorithm");
     }
 
     @Override
@@ -36,9 +36,20 @@ final class IpsecProposalMatchersImpl {
     }
   }
 
+  static final class HasName extends FeatureMatcher<IpsecProposal, String> {
+    HasName(@Nonnull Matcher<? super String> subMatcher) {
+      super(subMatcher, "An IPSec Proposal with Name:", "Name");
+    }
+
+    @Override
+    protected String featureValueOf(IpsecProposal actual) {
+      return actual.getName();
+    }
+  }
+
   static final class HasProtocols extends FeatureMatcher<IpsecProposal, SortedSet<IpsecProtocol>> {
     HasProtocols(@Nonnull Matcher<? super SortedSet<IpsecProtocol>> subMatcher) {
-      super(subMatcher, "An Ipsec Proposal with protocols:", "protocols");
+      super(subMatcher, "An IPSec Proposal with protocols:", "protocols");
     }
 
     @Override

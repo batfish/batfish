@@ -4,15 +4,17 @@ import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IsisInterfaceSettings;
 import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.eigrp.EigrpInterfaceSettings;
+import org.batfish.datamodel.isis.IsisInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
@@ -96,6 +98,18 @@ final class InterfaceMatchersImpl {
     }
   }
 
+  static final class HasEigrp extends FeatureMatcher<Interface, EigrpInterfaceSettings> {
+    HasEigrp(@Nonnull Matcher<? super EigrpInterfaceSettings> subMatcher) {
+      super(subMatcher, "An Interface with eigrp:", "eigrp");
+    }
+
+    @Override
+    @Nullable
+    protected EigrpInterfaceSettings featureValueOf(Interface actual) {
+      return actual.getEigrp();
+    }
+  }
+
   static final class HasIsis extends FeatureMatcher<Interface, IsisInterfaceSettings> {
     HasIsis(@Nonnull Matcher<? super IsisInterfaceSettings> subMatcher) {
       super(subMatcher, "An Interface with isis:", "isis");
@@ -140,6 +154,17 @@ final class InterfaceMatchersImpl {
     }
   }
 
+  static final class HasOspfAreaName extends FeatureMatcher<Interface, Long> {
+    HasOspfAreaName(@Nonnull Matcher<? super Long> subMatcher) {
+      super(subMatcher, "an Interface with ospfAreaName:", "ospfAreaName");
+    }
+
+    @Override
+    protected Long featureValueOf(Interface actual) {
+      return actual.getOspfAreaName();
+    }
+  }
+
   static final class HasOspfCost extends FeatureMatcher<Interface, Integer> {
     HasOspfCost(@Nonnull Matcher<? super Integer> subMatcher) {
       super(subMatcher, "an Interface with ospfCost:", "ospfCost");
@@ -148,6 +173,17 @@ final class InterfaceMatchersImpl {
     @Override
     protected Integer featureValueOf(Interface actual) {
       return actual.getOspfCost();
+    }
+  }
+
+  static final class HasOspfPointToPoint extends FeatureMatcher<Interface, Boolean> {
+    HasOspfPointToPoint(@Nonnull Matcher<? super Boolean> subMatcher) {
+      super(subMatcher, "an Interface with ospfPointToPoint:", "ospfPointToPoint");
+    }
+
+    @Override
+    protected Boolean featureValueOf(Interface actual) {
+      return actual.getOspfPointToPoint();
     }
   }
 

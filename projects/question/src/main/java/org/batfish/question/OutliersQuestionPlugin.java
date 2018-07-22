@@ -205,7 +205,7 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
         outliers.addAll(nodes);
       }
       if (_verbose || isWithinThreshold(conformers, outliers)) {
-        rankedOutliers.add(new OutlierSet<T>(name, definition, conformers, outliers));
+        rankedOutliers.add(new OutlierSet<>(name, definition, conformers, outliers));
       }
     }
 
@@ -351,7 +351,7 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
         SortedSet<String> absentNodes =
             ImmutableSortedSet.copyOf(Sets.difference(ImmutableSet.copyOf(nodes), presentNodes));
         NamedStructureEquivalenceSet<T> presentSet =
-            new NamedStructureEquivalenceSet<T>(presentNodes.first(), struct);
+            new NamedStructureEquivalenceSet<>(presentNodes.first(), struct);
         presentSet.setNodes(presentNodes);
         String name = entry.getKey();
         ImmutableSortedSet.Builder<NamedStructureEquivalenceSet<T>> eqSetsBuilder =
@@ -359,7 +359,7 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
         eqSetsBuilder.add(presentSet);
         if (!absentNodes.isEmpty()) {
           NamedStructureEquivalenceSet<T> absentSet =
-              new NamedStructureEquivalenceSet<T>(absentNodes.first(), null);
+              new NamedStructureEquivalenceSet<>(absentNodes.first(), null);
           absentSet.setNodes(absentNodes);
           eqSetsBuilder.add(absentSet);
         }

@@ -4,13 +4,8 @@ import static org.batfish.datamodel.RoutingProtocol.OSPF;
 import static org.batfish.datamodel.RoutingProtocol.OSPF_E1;
 import static org.batfish.datamodel.RoutingProtocol.OSPF_E2;
 import static org.batfish.datamodel.RoutingProtocol.OSPF_IA;
-import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasMetric;
-import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasPrefix;
-import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasProtocol;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.hasKey;
-import static org.hamcrest.Matchers.not;
+import static org.batfish.dataplane.ibdp.TestUtils.assertNoRoute;
+import static org.batfish.dataplane.ibdp.TestUtils.assertRoute;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
@@ -82,50 +77,6 @@ public class OspfTest {
   private static final long MAX_METRIC_STUB_NETWORKS = 65535L;
   private static final long MAX_METRIC_SUMMARY_NETWORKS = 16711680L;
   private static final long MAX_METRIC_TRANSIT_LINKS = 65535L;
-
-  private static void assertNoRoute(
-      SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routesByNode,
-      String hostname,
-      InterfaceAddress address) {
-    assertNoRoute(routesByNode, hostname, address.getPrefix());
-  }
-
-  private static void assertNoRoute(
-      SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routesByNode,
-      String hostname,
-      Prefix prefix) {
-    assertThat(routesByNode, hasKey(hostname));
-    SortedMap<String, SortedSet<AbstractRoute>> routesByVrf = routesByNode.get(hostname);
-    assertThat(routesByVrf, hasKey(Configuration.DEFAULT_VRF_NAME));
-    SortedSet<AbstractRoute> routes = routesByVrf.get(Configuration.DEFAULT_VRF_NAME);
-    assertThat(routes, not(hasItem(hasPrefix(prefix))));
-  }
-
-  private static void assertRoute(
-      SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routesByNode,
-      RoutingProtocol protocol,
-      String hostname,
-      InterfaceAddress address,
-      long expectedCost) {
-    assertRoute(routesByNode, protocol, hostname, address.getPrefix(), expectedCost);
-  }
-
-  private static void assertRoute(
-      SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routesByNode,
-      RoutingProtocol protocol,
-      String hostname,
-      Prefix prefix,
-      long expectedCost) {
-    assertThat(routesByNode, hasKey(hostname));
-    SortedMap<String, SortedSet<AbstractRoute>> routesByVrf = routesByNode.get(hostname);
-    assertThat(routesByVrf, hasKey(Configuration.DEFAULT_VRF_NAME));
-    SortedSet<AbstractRoute> routes = routesByVrf.get(Configuration.DEFAULT_VRF_NAME);
-    assertThat(routes, hasItem(hasPrefix(prefix)));
-    AbstractRoute route =
-        routes.stream().filter(r -> r.getNetwork().equals(prefix)).findAny().get();
-    assertThat(route, hasMetric(expectedCost));
-    assertThat(route, hasProtocol(protocol));
-  }
 
   private static List<Statement> getExportPolicyStatements(InterfaceAddress address) {
     long externalOspfMetric = 20L;

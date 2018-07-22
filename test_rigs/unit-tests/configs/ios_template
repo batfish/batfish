@@ -1,0 +1,13 @@
+!
+hostname ios_template
+!
+template TEMPLATE_NAME
+ access-session port-control auto
+ authentication periodic
+ authentication timer reauthenticate 7200
+ dot1x pae authenticator
+ mab
+ radius-server dead-criteria time 30 tries 3
+!
+!
+

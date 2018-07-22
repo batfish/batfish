@@ -1,20 +1,20 @@
 package org.batfish.datamodel.matchers;
 
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.IsisHelloAuthenticationType;
-import org.batfish.datamodel.IsisInterfaceLevelSettings;
-import org.batfish.datamodel.IsisInterfaceMode;
+import org.batfish.datamodel.isis.IsisHelloAuthenticationType;
+import org.batfish.datamodel.isis.IsisInterfaceLevelSettings;
+import org.batfish.datamodel.isis.IsisInterfaceMode;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 
 final class IsisInterfaceLevelSettingsMatchersImpl {
-  static final class HasCost extends FeatureMatcher<IsisInterfaceLevelSettings, Integer> {
-    public HasCost(Matcher<? super Integer> subMatcher) {
+  static final class HasCost extends FeatureMatcher<IsisInterfaceLevelSettings, Long> {
+    public HasCost(Matcher<? super Long> subMatcher) {
       super(subMatcher, "An IsisInterfaceLevelSettings with cost:", "cost");
     }
 
     @Override
-    protected Integer featureValueOf(IsisInterfaceLevelSettings actual) {
+    protected Long featureValueOf(IsisInterfaceLevelSettings actual) {
       return actual.getCost();
     }
   }

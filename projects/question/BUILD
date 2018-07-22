@@ -42,6 +42,7 @@ junit_tests(
     deps = [
         ":question",
         "//projects/batfish-common-protocol:common",
+        "//projects/batfish-common-protocol:common_testlib",
         "//projects/lib/jsonpath",
         "@auto_service//:compile",
         "@guava//:compile",

@@ -10,6 +10,11 @@ options {
 
 // Keywords
 
+ADMIN_DIST
+:
+    'admin-dist'
+;
+
 AUTHENTICATION_TYPE
 :
     'authentication-type'
@@ -20,6 +25,11 @@ AUTO
     'auto'
 ;
 
+CLOSE_BRACKET
+:
+    ']'
+;
+
 COMMENT
 :
     'comment'
@@ -28,6 +38,16 @@ COMMENT
 CONFIG
 :
     'config'
+;
+
+DESCRIPTION
+:
+    'description'
+;
+
+DESTINATION
+:
+    'destination'
 ;
 
 DEVICES
@@ -70,6 +90,11 @@ IP
     'ip'
 ;
 
+IP_ADDRESS_LITERAL
+:
+    'ip-address'
+;
+
 LAYER3
 :
     'layer3'
@@ -85,6 +110,16 @@ LOG_SETTINGS
     'log-settings'
 ;
 
+MEMBERS
+:
+    'members'
+;
+
+METRIC
+:
+    'metric'
+;
+
 MTU
 :
     'mtu'
@@ -93,6 +128,11 @@ MTU
 NETWORK
 :
     'network'
+;
+
+NEXTHOP
+:
+    'nexthop'
 ;
 
 NTP_SERVER_ADDRESS
@@ -105,6 +145,16 @@ NTP_SERVERS
     'ntp-servers'
 ;
 
+OPEN_BRACKET
+:
+    '['
+;
+
+PORT
+:
+    'port'
+;
+
 PRIMARY
 :
     'primary'
@@ -113,6 +163,21 @@ PRIMARY
 PRIMARY_NTP_SERVER
 :
     'primary-ntp-server'
+;
+
+PROTOCOL
+:
+    'protocol'
+;
+
+ROUTING_TABLE
+:
+    'routing-table'
+;
+
+SCTP
+:
+    'sctp'
 ;
 
 SECONDARY
@@ -135,6 +200,16 @@ SERVERS
     'servers'
 ;
 
+SERVICE
+:
+    'service'
+;
+
+SERVICE_GROUP
+:
+    'service-group'
+;
+
 SET
 :
     'set'
@@ -143,6 +218,16 @@ SET
 SHARED
 :
     'shared'
+;
+
+SOURCE_PORT
+:
+    'source-port'
+;
+
+STATIC_ROUTE
+:
+    'static-route'
 ;
 
 SYSLOG
@@ -155,12 +240,52 @@ SYSTEM
     'system'
 ;
 
+TAG
+:
+    'tag'
+;
+
+TCP
+:
+    'tcp'
+;
+
+UDP
+:
+    'udp'
+;
+
+UNITS
+:
+    'units'
+;
+
 UP
 :
     'up'
 ;
 
+VIRTUAL_ROUTER
+:
+    'virtual-router'
+;
+
+VSYS
+:
+    'vsys'
+;
+
+ZONE
+:
+    'zone'
+;
+
 // Complex tokens
+
+COMMA
+:
+    ','
+;
 
 DEC
 :
@@ -282,7 +407,7 @@ F_Whitespace
 fragment
 F_Variable_VarChar
 :
-    ~[ \t\n\r;{}[\]&|()"']
+    ~[ \t\n\r;,{}[\]&|()"']
 ;
 
 // Modes

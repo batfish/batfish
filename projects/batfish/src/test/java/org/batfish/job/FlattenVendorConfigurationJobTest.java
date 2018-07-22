@@ -38,6 +38,17 @@ public class FlattenVendorConfigurationJobTest {
   }
 
   @Test
+  public void testFlattenVendorConfigurationJobJuniperBrackets() {
+    String nestedConfig = "nested-config-brackets";
+    String flattenedConfig = "nested-config-brackets-flattened";
+
+    String flatText = getFlattenedText(JUNIPER_TESTCONFIGS_PREFIX + nestedConfig);
+    // Confirm Juniper nested config with bracketed list is flattened properly
+    assertThat(
+        flatText, equalTo(CommonUtil.readResource(JUNIPER_TESTCONFIGS_PREFIX + flattenedConfig)));
+  }
+
+  @Test
   public void testFlattenVendorConfigurationJobPaloAlto() {
     String nestedConfig = "nested-config";
     String flattenedConfig = "nested-config-flattened";
@@ -45,6 +56,17 @@ public class FlattenVendorConfigurationJobTest {
     assertThat(
         getFlattenedText(PAN_TESTCONFIGS_PREFIX + nestedConfig),
         equalTo(CommonUtil.readResource(PAN_TESTCONFIGS_PREFIX + flattenedConfig)));
+  }
+
+  @Test
+  public void testFlattenVendorConfigurationJobPaloAltoBrackets() {
+    String nestedConfig = "nested-config-brackets";
+    String flattenedConfig = "nested-config-brackets-flattened";
+
+    String flatText = getFlattenedText(PAN_TESTCONFIGS_PREFIX + nestedConfig);
+    // Confirm Palo Alto nested config with bracketed list is flattened properly
+    assertThat(
+        flatText, equalTo(CommonUtil.readResource(PAN_TESTCONFIGS_PREFIX + flattenedConfig)));
   }
 
   @Test

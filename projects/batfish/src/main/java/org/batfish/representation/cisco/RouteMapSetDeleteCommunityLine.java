@@ -14,11 +14,8 @@ public class RouteMapSetDeleteCommunityLine extends RouteMapSetLine {
 
   private final String _listName;
 
-  private final int _statementLine;
-
-  public RouteMapSetDeleteCommunityLine(String listName, int statementLine) {
+  public RouteMapSetDeleteCommunityLine(String listName) {
     _listName = listName;
-    _statementLine = statementLine;
   }
 
   @Override
@@ -26,22 +23,7 @@ public class RouteMapSetDeleteCommunityLine extends RouteMapSetLine {
       List<Statement> statements, CiscoConfiguration cc, Configuration c, Warnings w) {
     CommunityList list = c.getCommunityLists().get(_listName);
     if (list != null) {
-      String msg = "match community line";
-      StandardCommunityList standardCommunityList = cc.getStandardCommunityLists().get(_listName);
-      if (standardCommunityList != null) {
-        standardCommunityList.getReferers().put(this, msg);
-      }
-      ExpandedCommunityList expandedCommunityList = cc.getExpandedCommunityLists().get(_listName);
-      if (expandedCommunityList != null) {
-        expandedCommunityList.getReferers().put(this, msg);
-      }
       statements.add(new DeleteCommunity(new NamedCommunitySet(_listName)));
-    } else {
-      cc.undefined(
-          CiscoStructureType.COMMUNITY_LIST,
-          _listName,
-          CiscoStructureUsage.ROUTE_MAP_DELETE_COMMUNITY,
-          _statementLine);
     }
   }
 

@@ -169,6 +169,11 @@ ACCESS_MAP
    'access-map'
 ;
 
+ACCESS_SESSION
+:
+   'access-session'
+;
+
 ACCOUNTING
 :
    'accounting'
@@ -262,6 +267,11 @@ ACTIVE
 ADD
 :
    'add'
+;
+
+ADD_PATHS
+:
+   'add-paths'
 ;
 
 ADD_VLAN
@@ -442,6 +452,11 @@ AESA
 AF_GROUP
 :
    'af-group'
+;
+
+AF_INTERFACE
+:
+   'af-interface'
 ;
 
 AF11
@@ -1216,6 +1231,11 @@ AUTOHANGUP
    'autohangup'
 ;
 
+AUTONOMOUS_SYSTEM
+:
+   'autonomous-system'
+;
+
 AUTORECOVERY
 :
    'autorecovery'
@@ -1291,6 +1311,11 @@ BANDWIDTH_CONTRACT
    'bandwidth-contract'
 ;
 
+BANDWIDTH_PERCENT
+:
+   'bandwidth-percent'
+;
+
 BANDWIDTH_PERCENTAGE
 :
    'bandwidth-percentage'
@@ -1299,6 +1324,11 @@ BANDWIDTH_PERCENTAGE
 BANNER
 :
    'banner' -> pushMode ( M_Banner )
+;
+
+BASE
+:
+   'base'
 ;
 
 BASH
@@ -2577,6 +2607,16 @@ DAMPENING
    'dampening'
 ;
 
+DAMPENING_CHANGE
+:
+   'dampening-change'
+;
+
+DAMPENING_INTERVAL
+:
+   'dampening-interval'
+;
+
 DATA_PRIVACY
 :
    'data-privacy'
@@ -3497,6 +3537,11 @@ DTMF_RELAY
    'dtmf-relay'
 ;
 
+DTP
+:
+   'dtp'
+;
+
 DUAL_ACTIVE
 :
    'dual-active'
@@ -3877,6 +3922,11 @@ EOU
    'eou'
 ;
 
+EPHONE_DN_TEMPLATE
+:
+  'ephone-dn-template'
+;
+
 EPM
 :
    'epm'
@@ -4158,6 +4208,16 @@ EXIT_ADDRESS_FAMILY
    'exit-address-family'
 ;
 
+EXIT_AF_INTERFACE
+:
+   'exit-af-interface'
+;
+
+EXIT_AF_TOPOLOGY
+:
+   'exit-af-topology'
+;
+
 EXIT_PEER_POLICY
 :
    'exit-peer-policy'
@@ -4166,6 +4226,21 @@ EXIT_PEER_POLICY
 EXIT_PEER_SESSION
 :
    'exit-peer-session'
+;
+
+EXIT_SERVICE_FAMILY
+:
+   'exit-service-family'
+;
+
+EXIT_SF_INTERFACE
+:
+   'exit-sf-interface'
+;
+
+EXIT_SF_TOPOLOGY
+:
+   'exit-sf-topology'
 ;
 
 EXIT_VRF
@@ -4592,6 +4667,11 @@ FORTYG_FULL
   '40gfull'
 ;
 
+FORWARD
+:
+   'forward'
+;
+
 FORWARD_DIGITS
 :
    'forward-digits'
@@ -4710,6 +4790,11 @@ GATEWAY
 GBPS
 :
     'Gbps'
+;
+
+GDOI
+:
+  'gdoi'
 ;
 
 GE
@@ -5087,6 +5172,11 @@ HISTORY
    'history'
 ;
 
+HOLD_TIME
+:
+   'hold-time'
+;
+
 HOLD_QUEUE
 :
    'hold-queue'
@@ -5150,6 +5240,11 @@ HOST_UNREACHABLE
 HOSTNAME
 :
    'hostname'
+;
+
+HOSTNAMEPREFIX
+:
+   'hostnameprefix'
 ;
 
 HOTSPOT
@@ -5689,6 +5784,11 @@ IPSEC_ISAKMP
    'ipsec-isakmp'
 ;
 
+IPSEC_MANUAL
+:
+   'ipsec-manual'
+;
+
 IPSEC_OVER_TCP
 :
    'ipsec-over-tcp'
@@ -5899,6 +5999,21 @@ KLOGIN
    'klogin'
 ;
 
+KRB5
+:
+   'krb5'
+;
+
+KRB5_TELNET
+:
+   'krb5-telnet'
+;
+
+KOD
+:
+   'kod'
+;
+
 KRON
 :
    'kron'
@@ -6044,6 +6159,11 @@ LE
    'le'
 ;
 
+LEAK_MAP
+:
+   'leak-map'
+;
+
 LEASE
 :
    'lease'
@@ -6137,6 +6257,11 @@ LIMIT_RESOURCE
 LINE
 :
    'line'
+;
+
+LINE_TERMINATION
+:
+   'line-termination'
 ;
 
 LINECARD
@@ -6267,6 +6392,11 @@ LOCAL_AS
 LOCAL_ASA
 :
    'LOCAL'
+;
+
+LOCAL_CASE
+:
+   'local-case'
 ;
 
 LOCAL_INTERFACE
@@ -7599,6 +7729,11 @@ NETMASK
    'netmask'
 ;
 
+NETMASK_FORMAT
+:
+   'netmask-format'
+;
+
 NETSERVICE
 :
    'netservice'
@@ -7944,6 +8079,11 @@ OFDM_THROUGHPUT
   'ofdm-throughput'
 ;
 
+OFFSET_LIST
+:
+   'offset-list'
+;
+
 ON
 :
    'on'
@@ -7977,6 +8117,11 @@ ONE
 ONE_HUNDRED_FULL
 :
   '100full'
+;
+
+ONE_HUNDREDG_FULL
+:
+  '100gfull'
 ;
 
 ONE_OUT_OF
@@ -8229,6 +8374,11 @@ PAGER
    'pager'
 ;
 
+PAGP
+:
+   'pagp'
+;
+
 PAN
 :
    'pan'
@@ -8352,6 +8502,11 @@ PATH_OPTION
 PATH_RETRANSMIT
 :
    'path-retransmit'
+;
+
+PATH_SELECTION
+:
+  'path-selection'
 ;
 
 PATHCOST
@@ -8852,6 +9007,13 @@ PREFIX_LENGTH
 PREFIX_LIST
 :
    'prefix-list'
+   {
+     if (lastTokenType == ADDRESS) {
+       pushMode(M_Words);
+     } else {
+       pushMode(M_Name);
+     }
+   }
 ;
 
 PREFIX_PEER_TIMEOUT
@@ -9037,6 +9199,11 @@ PROTECTION
 PROTOCOL
 :
    'protocol'
+;
+
+PROTOCOL_DISCOVERY
+:
+   'protocol-discovery'
 ;
 
 PROTOCOL_HTTP
@@ -9512,6 +9679,11 @@ REMOTE_AS
 REMOTE_IP
 :
    'remote-ip'
+;
+
+REMOTE_NEIGHBORS
+:
+   'remote-neighbors'
 ;
 
 REMOTE_PORT
@@ -10214,6 +10386,11 @@ SELF
    'self'
 ;
 
+SELF_IDENTITY
+:
+   'self-identity'
+;
+
 SEND
 :
    'send'
@@ -10344,6 +10521,11 @@ SERVICE_CLASS
    'service-class'
 ;
 
+SERVICE_FAMILY
+:
+   'service-family'
+;
+
 SERVICE_LIST
 :
    'service-list'
@@ -10452,6 +10634,11 @@ SETUP
 SEVERITY
 :
    'severity'
+;
+
+SF_INTERFACE
+:
+   'sf-interface'
 ;
 
 SFLOW
@@ -10719,6 +10906,16 @@ SNMP
    'snmp'
 ;
 
+// must be kept above SNMP_SERVER
+SNMP_SERVER_COMMUNITY
+:
+   'snmp-server'
+   {(lastTokenType == NEWLINE || lastTokenType == -1)
+     && isWhitespace(_input.LA(1))
+     && lookAheadStringSkipWhitespace("community ".length()).equals("community ")}?
+   -> type ( SNMP_SERVER ) , pushMode ( M_SnmpServerCommunity )
+;
+
 SNMP_SERVER
 :
    'snmp-server'
@@ -10889,6 +11086,11 @@ SPEED_DUPLEX
    'speed-duplex'
 ;
 
+SPLIT_HORIZON
+:
+   'split-horizon'
+;
+
 SPLIT_TUNNEL_NETWORK_LIST
 :
    'split-tunnel-network-list'
@@ -10922,6 +11124,11 @@ SRLG
 SRR_QUEUE
 :
    'srr-queue'
+;
+
+SRST
+:
+  'srst'
 ;
 
 SSH
@@ -11219,6 +11426,11 @@ SUMMARY_ADDRESS
 SUMMARY_LSA
 :
    'summary-lsa'
+;
+
+SUMMARY_METRIC
+:
+   'summary-metric'
 ;
 
 SUMMARY_ONLY
@@ -11561,6 +11773,11 @@ TCS_LOAD_BALANCE
    'tcs-load-balance'
 ;
 
+TELEPHONY_SERVICE
+:
+  'telephony-service'
+;
+
 TELNET
 :
    'telnet'
@@ -11659,6 +11876,11 @@ THROUGHPUT
 THU
 :
    'Thu'
+;
+
+TID
+:
+   'tid'
 ;
 
 TIME
@@ -11761,6 +11983,11 @@ TOP
    'top'
 ;
 
+TOPOLOGY
+:
+   'topology'
+;
+
 TOS
 :
    'tos'
@@ -11806,9 +12033,19 @@ TRAFFIC_ENG
    'traffic-eng'
 ;
 
+TRAFFIC_EXPORT
+:
+   'traffic-export'
+;
+
 TRAFFIC_INDEX
 :
    'traffic-index'
+;
+
+TRAFFIC_SHARE
+:
+   'traffic-share'
 ;
 
 TRANSFER_SYSTEM
@@ -12126,6 +12363,11 @@ UNSUPPRESS_MAP
    'unsuppress-map'
 ;
 
+UNSUPPRESS_ROUTE
+:
+   'unsuppress-route'
+;
+
 UNICAST
 :
    'unicast'
@@ -12389,6 +12631,11 @@ VALIDATION_USAGE
 VAP_ENABLE
 :
    'vap-enable'
+;
+
+VARIANCE
+:
+   'variance'
 ;
 
 VDC
@@ -14349,6 +14596,11 @@ M_Interface_DOLLAR
    '$' -> type ( DOLLAR ) , popMode
 ;
 
+M_Interface_EIGRP
+:
+   'eigrp' -> type ( EIGRP ) , popMode
+;
+
 M_Interface_EQ
 :
    'eq' -> type ( EQ ) , popMode
@@ -14867,6 +15119,28 @@ M_SHA1_WS
    F_Whitespace+ -> channel ( HIDDEN )
 ;
 
+mode M_SnmpServerCommunity;
+
+M_SnmpServerCommunity_COMMUNITY
+:
+  'community' -> type ( COMMUNITY )
+;
+
+M_SnmpServerCommunity_WS
+:
+   F_Whitespace+ -> channel ( HIDDEN )
+;
+
+M_SnmpServerCommunity_DOUBLE_QUOTE
+:
+   '"' -> type ( DOUBLE_QUOTE ), mode ( M_DoubleQuote )
+;
+
+M_SnmpServerCommunity_CHAR
+:
+   F_NonWhitespace -> mode ( M_Name ), more
+;
+
 mode M_SshKey;
 
 M_SshKey_DSA1024
@@ -14903,3 +15177,21 @@ M_VacantMessage_NEWLINE
 :
    F_Newline+ -> type ( NEWLINE ) , popMode
 ;
+
+mode M_Words;
+
+M_Words_WORD
+:
+   F_NonWhitespace+ -> type ( VARIABLE )
+;
+
+M_Words_NEWLINE
+:
+   F_Newline+ -> type ( NEWLINE ) , popMode
+;
+
+M_Words_WS
+:
+   F_Whitespace+ -> channel ( HIDDEN )
+;
+

@@ -3,7 +3,7 @@
 
 trap 'kill -9 $(pgrep -g $$ | grep -v $$) >& /dev/null' EXIT SIGINT SIGTERM
 
-. tools/batfish_functions.sh
+. "$(dirname "$0")/../tools/batfish_functions.sh"
 
 
 # Build batfish and run the Maven unit tests.
@@ -36,15 +36,21 @@ allinone -cmdfile tests/jsonpathtotable/commands || exit_code=$?
 echo -e "\n  ..... Running ui-focused client tests"
 allinone -cmdfile tests/ui-focused/commands || exit_code=$?
 
+for dir in 'stable' 'experimental'
+do
+  echo -e "\n  ..... Running ${dir} questions tests"
+  allinone -cmdfile tests/questions/${dir}/commands || exit_code=$?
+done
+
 echo -e "\n  ..... Running aws client tests"
 allinone -cmdfile tests/aws/commands || exit_code=$?
 
 echo -e "\n  ..... Running java-smt client tests"
 allinone -cmdfile tests/java-smt/commands || exit_code=$?
 
-echo -e "\n  ..... Running watchdog tests"
-allinone -cmdfile tests/watchdog/commands -batfishmode watchdog || exit_code=$?
-sleep 5
+# echo -e "\n  ..... Running watchdog tests"
+# allinone -cmdfile tests/watchdog/commands -batfishmode watchdog || exit_code=$?
+# sleep 5
 
 echo -e "\n .... Aggregating coverage data"
 java -jar "$JACOCO_CLI_JAR" merge $("$GNU_FIND" -name 'jacoco*.exec') --destfile "$JACOCO_ALL_DESTFILE"
@@ -59,7 +65,7 @@ echo -e "\n .... Failed tests: "
 
 echo -e "\n .... Diffing failed tests:"
 for i in $("$GNU_FIND" -name *.testout); do
-   echo -e "\n $i"; diff -u ${i%.testout} $i
+   echo -e "\n $i"; diff -u ${i%.testout} ${i}
 done
 
-exit $exit_code
+exit ${exit_code}

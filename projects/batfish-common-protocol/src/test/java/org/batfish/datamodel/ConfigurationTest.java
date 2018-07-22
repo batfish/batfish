@@ -49,14 +49,11 @@ public class ConfigurationTest {
     String bgpExportPolicyName = "bgpExportPolicy";
     String bgpImportPolicyName = "bgpImportPolicy";
     String bgpMissingExportPolicyName = "bgpMissingExportPolicy";
-    String bgpMissingImportPolicyName = null;
     String generatedRouteAttributePolicyName = "generatedRouteAttributePolicy";
     String generatedRouteGenerationPolicyName = "generatedRouteGenerationPolicy";
     String ospfExportPolicyName = "ospfExportPolicy";
     String ospfExportSubPolicyName = "ospfExportSubPolicy";
-    Prefix neighborPrefix = new Prefix(Ip.ZERO, Prefix.MAX_PREFIX_LENGTH);
-    Prefix generatedRoutePrefix = neighborPrefix;
-    Prefix neigborWithMissingPoliciesPrefix = new Prefix(Ip.MAX, Prefix.MAX_PREFIX_LENGTH);
+    Prefix generatedRoutePrefix = new Prefix(Ip.ZERO, Prefix.MAX_PREFIX_LENGTH);
 
     Configuration c = new Configuration("test", ConfigurationFormat.CISCO_IOS);
     Vrf vrf = c.getVrfs().computeIfAbsent(Configuration.DEFAULT_VRF_NAME, Vrf::new);
@@ -64,22 +61,28 @@ public class ConfigurationTest {
     // BGP
     BgpProcess bgpProcess = new BgpProcess();
     vrf.setBgpProcess(bgpProcess);
-    BgpNeighbor neighbor =
-        bgpProcess.getNeighbors().computeIfAbsent(neighborPrefix, BgpNeighbor::new);
-    neighbor.setExportPolicy(
-        c.getRoutingPolicies()
-            .computeIfAbsent(bgpExportPolicyName, n -> new RoutingPolicy(n, c))
-            .getName());
-    neighbor.setImportPolicy(
-        c.getRoutingPolicies()
-            .computeIfAbsent(bgpImportPolicyName, n -> new RoutingPolicy(n, c))
-            .getName());
-    BgpNeighbor neighborWithMissingPolicies =
-        bgpProcess
-            .getNeighbors()
-            .computeIfAbsent(neigborWithMissingPoliciesPrefix, BgpNeighbor::new);
-    neighborWithMissingPolicies.setExportPolicy(bgpMissingExportPolicyName);
-    neighborWithMissingPolicies.setImportPolicy(bgpMissingImportPolicyName);
+    BgpPeerConfig neighbor =
+        _factory
+            .bgpNeighborBuilder()
+            .setPeerAddress(Ip.ZERO)
+            .setBgpProcess(bgpProcess)
+            .setExportPolicy(
+                c.getRoutingPolicies()
+                    .computeIfAbsent(bgpExportPolicyName, n -> new RoutingPolicy(n, c))
+                    .getName())
+            .setImportPolicy(
+                c.getRoutingPolicies()
+                    .computeIfAbsent(bgpImportPolicyName, n -> new RoutingPolicy(n, c))
+                    .getName())
+            .build();
+    BgpPeerConfig neighborWithMissingPolicies =
+        _factory
+            .bgpNeighborBuilder()
+            .setPeerAddress(Ip.MAX)
+            .setBgpProcess(bgpProcess)
+            .setExportPolicy(bgpMissingExportPolicyName)
+            .setImportPolicy(null)
+            .build();
 
     // Generated route
     GeneratedRoute gr =

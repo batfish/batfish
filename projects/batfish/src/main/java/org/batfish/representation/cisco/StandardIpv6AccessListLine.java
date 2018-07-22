@@ -8,8 +8,6 @@ import org.batfish.datamodel.Ip6Wildcard;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.State;
-import org.batfish.datamodel.SubRange;
-import org.batfish.datamodel.TcpFlags;
 
 public class StandardIpv6AccessListLine implements Serializable {
 
@@ -59,13 +57,13 @@ public class StandardIpv6AccessListLine implements Serializable {
         null,
         Ip6Wildcard.ANY,
         null,
-        Collections.<SubRange>emptyList(),
-        Collections.<SubRange>emptyList(),
+        Collections.emptyList(),
+        Collections.emptyList(),
         _dscps,
         _ecns,
         null,
         null,
         EnumSet.noneOf(State.class),
-        Collections.<TcpFlags>emptyList());
+        Collections.emptyList());
   }
 }

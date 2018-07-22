@@ -2,6 +2,7 @@ package org.batfish.question;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.SortedSetMultimap;
 import com.google.common.collect.TreeMultimap;
 import java.util.Map;
@@ -10,7 +11,7 @@ import java.util.Set;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
-import org.batfish.datamodel.BgpNeighbor;
+import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Vrf;
@@ -75,7 +76,10 @@ public class BgpAsnUseQuestionPlugin extends QuestionPlugin {
         for (Vrf vrf : c.getVrfs().values()) {
           BgpProcess bgpProc = vrf.getBgpProcess();
           if (bgpProc != null) {
-            for (BgpNeighbor neighbor : bgpProc.getNeighbors().values()) {
+            for (BgpPeerConfig neighbor :
+                Iterables.concat(
+                    bgpProc.getActiveNeighbors().values(),
+                    bgpProc.getPassiveNeighbors().values())) {
               asns.put(neighbor.getLocalAs(), hostname);
             }
           }

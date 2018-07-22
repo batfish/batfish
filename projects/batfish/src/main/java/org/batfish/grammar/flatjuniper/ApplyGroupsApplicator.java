@@ -42,14 +42,12 @@ public class ApplyGroupsApplicator extends FlatJuniperParserBaseListener {
 
   private final Warnings _w;
 
-  public ApplyGroupsApplicator(
-      FlatJuniperCombinedParser combinedParser, Hierarchy hierarchy, Warnings warnings) {
+  public ApplyGroupsApplicator(Hierarchy hierarchy, Warnings warnings) {
     _hierarchy = hierarchy;
     _w = warnings;
   }
 
-  private String applyGroupsExceptionMessage(
-      HierarchyPath currentPath, String groupName, Throwable e) {
+  private String applyGroupsExceptionMessage(String groupName, Throwable e) {
     return String.format(
         "Exception processing apply-groups statement at %s with group '%s': %s: caused by: %s",
         pathString(), groupName, e.getMessage(), Throwables.getStackTraceAsString(e));
@@ -77,7 +75,7 @@ public class ApplyGroupsApplicator extends FlatJuniperParserBaseListener {
       int insertionIndex = _newConfigurationLines.indexOf(_currentSetLine);
       _newConfigurationLines.addAll(insertionIndex, applyGroupsLines);
     } catch (PartialGroupMatchException e) {
-      _w.pedantic(applyGroupsExceptionMessage(_currentPath, groupName, e));
+      _w.pedantic(applyGroupsExceptionMessage(groupName, e));
     } catch (UndefinedGroupBatfishException e) {
       String message =
           String.format(
@@ -86,7 +84,7 @@ public class ApplyGroupsApplicator extends FlatJuniperParserBaseListener {
 
       _w.redFlag(message);
     } catch (BatfishException e) {
-      _w.redFlag(applyGroupsExceptionMessage(_currentPath, groupName, e));
+      _w.redFlag(applyGroupsExceptionMessage(groupName, e));
     }
     if (removeApplyLine) {
       _newConfigurationLines.remove(_currentSetLine);

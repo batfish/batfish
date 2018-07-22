@@ -13,3 +13,34 @@ variable
 :
     ~NEWLINE
 ;
+
+variable_comma_separated_dec
+:
+    DEC
+    (
+        COMMA DEC
+    )*
+;
+
+variable_list
+:
+    (
+        variable_list_item
+        |
+        (
+            OPEN_BRACKET
+            (
+                variable_list_item
+            )*
+            CLOSE_BRACKET
+        )
+    )
+;
+
+variable_list_item
+:
+    ~(
+        CLOSE_BRACKET
+        | NEWLINE
+    )
+;

@@ -21,7 +21,6 @@ null_block
       | AS_PATH_SET
       | ATM
       | BASH
-      | BFD
       | BGP DISABLE_ADVERTISEMENT
       | BLOGGERD
       | BSD_CLIENT
@@ -233,7 +232,6 @@ null_block
       | TAG_TYPE
       | TASKGROUP
       | TCP
-      | TEMPLATE
       | TERMINAL
       | TIME_RANGE
       | TFTP
@@ -486,7 +484,6 @@ null_inner
       | SERVER
       | SERVERFARM
       | SERVER_PRIVATE
-      | SERVICE_POLICY
       | SERVICE_QUEUE
       | SERVICE_TYPE
       | SESSION
@@ -496,7 +493,6 @@ null_inner
       | SINGLE_ROUTER_MODE
       | SLOT
       | SORT_BY
-      | SPEED
       | SPLIT_TUNNEL_NETWORK_LIST
       | SPLIT_TUNNEL_POLICY
       | SSH_KEYDIR
@@ -715,8 +711,16 @@ null_single
             | VERIFY
          )
       )
+      | ( NO IP (NAME_SERVER))
       | IP_ADDRESS_LITERAL
       | IP_FLOW_EXPORT_PROFILE
+      |
+      (
+         IPV4
+         (
+            NETMASK_FORMAT
+         )
+      )
       |
       (
          IPV6
@@ -877,16 +881,15 @@ null_single
       | SDM
       | SECURITY
       | SERVER_TYPE
-      | SERVICE_POLICY
       | SETUP
       | SHELFNAME
       | SHELL
       | SMTP_SERVER
       | SNMP
+      | (NO SNMP_SERVER)
       | SOFTWARE
       | SPD
       | SPE
-      | SPEED
       | STOPBITS
       | SSL
       | STATIC

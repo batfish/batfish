@@ -2,26 +2,30 @@ package org.batfish.datamodel.vendor_family.cisco;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import org.batfish.common.util.DefinedStructure;
 
-public class DocsisPolicy extends DefinedStructure<String> {
+public class DocsisPolicy implements Serializable {
 
   /** */
   private static final long serialVersionUID = 1L;
 
+  private static final String PROP_NAME = "name";
+
+  private final String _name;
+
   private List<String> _rules;
 
   @JsonCreator
-  private DocsisPolicy(@JsonProperty(PROP_NAME) String number) {
-    super(number, -1);
+  public DocsisPolicy(@JsonProperty(PROP_NAME) String number) {
+    _name = number;
     _rules = new ArrayList<>();
   }
 
-  public DocsisPolicy(String number, int definitionLine) {
-    super(number, definitionLine);
-    _rules = new ArrayList<>();
+  @JsonProperty(PROP_NAME)
+  public String getName() {
+    return _name;
   }
 
   public List<String> getRules() {
