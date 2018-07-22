@@ -10,6 +10,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.SortedSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -95,6 +96,11 @@ public class AddressBook implements Comparable<AddressBook> {
         && Objects.equals(_serviceEndpoints, ((AddressBook) o)._serviceEndpoints)
         && Objects.equals(_serviceObjectGroups, ((AddressBook) o)._serviceObjectGroups)
         && Objects.equals(_serviceObjects, ((AddressBook) o)._serviceObjects);
+  }
+
+  /** Return the {@link AddressGroup} with name {@code groupName} */
+  public Optional<AddressGroup> getAddressGroup(String groupName) {
+    return _addressGroups.stream().filter(group -> group.getName().equals(groupName)).findAny();
   }
 
   @JsonProperty(PROP_ADDRESS_GROUPS)

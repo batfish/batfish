@@ -1,12 +1,16 @@
 package org.batfish.specifier;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSortedSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.role.NodeRole;
+import org.batfish.role.addressbook.AddressBook;
 
 public class MockSpecifierContext implements SpecifierContext {
 
@@ -25,6 +29,8 @@ public class MockSpecifierContext implements SpecifierContext {
   }
 
   public static final class Builder {
+    private @Nonnull SortedSet<AddressBook> _addressBooks = ImmutableSortedSet.of();
+
     private @Nonnull Map<String, Configuration> _configs = ImmutableMap.of();
 
     private @Nonnull Map<String, Map<String, IpSpace>> _interfaceOwnedIps = ImmutableMap.of();
@@ -60,6 +66,8 @@ public class MockSpecifierContext implements SpecifierContext {
     }
   }
 
+  private final @Nonnull SortedSet<AddressBook> _addressBooks;
+
   private final @Nonnull Map<String, Configuration> _configs;
 
   private final @Nonnull Map<String, Map<String, IpSpace>> _interfaceOwnedIps;
@@ -69,10 +77,16 @@ public class MockSpecifierContext implements SpecifierContext {
   private final @Nonnull Map<String, Map<String, IpSpace>> _vrfOwnedIps;
 
   private MockSpecifierContext(Builder builder) {
+    _addressBooks = builder._addressBooks;
     _configs = builder._configs;
     _interfaceOwnedIps = builder._interfaceOwnedIps;
     _nodeRolesByDimension = builder._nodeRolesByDimension;
     _vrfOwnedIps = builder._vrfOwnedIps;
+  }
+
+  @Override
+  public Optional<AddressBook> getAddressBook(String bookName) {
+    return _addressBooks.stream().filter(book -> book.getName().equals(bookName)).findAny();
   }
 
   @Override
