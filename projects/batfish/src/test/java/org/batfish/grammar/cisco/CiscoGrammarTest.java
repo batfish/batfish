@@ -1294,10 +1294,13 @@ public class CiscoGrammarTest {
         batfish.loadConvertConfigurationAnswerElementOrReparse();
     Configuration c = batfish.loadConfigurations().get(hostname);
 
-    /* Confirm community string is correctly parsed */
+    /* Confirm community strings are correctly parsed */
     assertThat(c, hasDefaultVrf(hasSnmpServer(hasCommunities(hasKey("test$#!@")))));
+    assertThat(c, hasDefaultVrf(hasSnmpServer(hasCommunities(hasKey("quoted$#!@")))));
 
     /* Confirm ACL is referenced */
+    assertThat(
+        ccae, hasNumReferrers(hostname, CiscoStructureType.IPV4_ACCESS_LIST_STANDARD, "80", 1));
     assertThat(
         ccae, hasNumReferrers(hostname, CiscoStructureType.IPV4_ACCESS_LIST_STANDARD, "90", 1));
   }

@@ -15116,12 +15116,22 @@ mode M_SnmpServerCommunity;
 
 M_SnmpServerCommunity_COMMUNITY
 :
-  'community' -> type ( COMMUNITY ) , mode ( M_Name )
+  'community' -> type ( COMMUNITY )
 ;
 
 M_SnmpServerCommunity_WS
 :
    F_Whitespace+ -> channel ( HIDDEN )
+;
+
+M_SnmpServerCommunity_DOUBLE_QUOTE
+:
+   '"' -> type ( DOUBLE_QUOTE ), mode ( M_DoubleQuote )
+;
+
+M_SnmpServerCommunity_CHAR
+:
+   F_NonWhitespace -> mode ( M_Name ), more
 ;
 
 mode M_SshKey;
