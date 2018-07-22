@@ -3,6 +3,7 @@ package org.batfish.datamodel.vendor_family.cisco;
 import java.io.Serializable;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import org.batfish.datamodel.AaaAuthenticationLoginList;
 
 public class AaaAuthenticationLogin implements Serializable {
 

@@ -2,17 +2,17 @@ package org.batfish.representation.cisco;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 
+import java.io.Serializable;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
 import org.batfish.datamodel.IpsecEncapsulationMode;
 import org.batfish.datamodel.IpsecProtocol;
 
-public class IpsecTransformSet extends ComparableStructure<String> {
+public class IpsecTransformSet implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
@@ -22,12 +22,14 @@ public class IpsecTransformSet extends ComparableStructure<String> {
 
   @Nonnull private IpsecEncapsulationMode _ipsecEncapsulationMode;
 
+  private final String _name;
+
   @Nonnull private SortedSet<IpsecProtocol> _protocols;
 
   public IpsecTransformSet(String name) {
-    super(name);
-    _protocols = new TreeSet<>();
     _ipsecEncapsulationMode = IpsecEncapsulationMode.TUNNEL;
+    _name = name;
+    _protocols = new TreeSet<>();
   }
 
   public IpsecAuthenticationAlgorithm getAuthenticationAlgorithm() {
@@ -40,6 +42,10 @@ public class IpsecTransformSet extends ComparableStructure<String> {
 
   public IpsecEncapsulationMode getIpsecEncapsulationMode() {
     return _ipsecEncapsulationMode;
+  }
+
+  public String getName() {
+    return _name;
   }
 
   public SortedSet<IpsecProtocol> getProtocols() {

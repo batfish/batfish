@@ -59,7 +59,7 @@ public class SecurityGroupsTest {
 
   @Test
   public void testSinglePort() throws JSONException {
-    SecurityGroup sg = new SecurityGroup(_securityGroups.getJSONObject(0), null);
+    SecurityGroup sg = new SecurityGroup(_securityGroups.getJSONObject(0));
 
     List<IpAccessListLine> inboundRules = new LinkedList<>();
     List<IpAccessListLine> outboundRules = new LinkedList<>();
@@ -81,7 +81,7 @@ public class SecurityGroupsTest {
 
   @Test
   public void testBeginningHalfOpenInterval() throws JSONException {
-    SecurityGroup sg = new SecurityGroup(_securityGroups.getJSONObject(1), null);
+    SecurityGroup sg = new SecurityGroup(_securityGroups.getJSONObject(1));
 
     List<IpAccessListLine> inboundRules = new LinkedList<>();
     List<IpAccessListLine> outboundRules = new LinkedList<>();
@@ -103,7 +103,7 @@ public class SecurityGroupsTest {
 
   @Test
   public void testEndHalfOpenInterval() throws JSONException {
-    SecurityGroup sg = new SecurityGroup(_securityGroups.getJSONObject(2), null);
+    SecurityGroup sg = new SecurityGroup(_securityGroups.getJSONObject(2));
 
     List<IpAccessListLine> inboundRules = new LinkedList<>();
     List<IpAccessListLine> outboundRules = new LinkedList<>();
@@ -125,7 +125,7 @@ public class SecurityGroupsTest {
 
   @Test
   public void testFullInterval() throws JSONException {
-    SecurityGroup sg = new SecurityGroup(_securityGroups.getJSONObject(3), null);
+    SecurityGroup sg = new SecurityGroup(_securityGroups.getJSONObject(3));
 
     List<IpAccessListLine> inboundRules = new LinkedList<>();
     List<IpAccessListLine> outboundRules = new LinkedList<>();
@@ -146,7 +146,7 @@ public class SecurityGroupsTest {
 
   @Test
   public void testAllTrafficAllowed() throws JSONException {
-    SecurityGroup sg = new SecurityGroup(_securityGroups.getJSONObject(4), null);
+    SecurityGroup sg = new SecurityGroup(_securityGroups.getJSONObject(4));
 
     List<IpAccessListLine> inboundRules = new LinkedList<>();
     List<IpAccessListLine> outboundRules = new LinkedList<>();
@@ -167,7 +167,7 @@ public class SecurityGroupsTest {
 
   @Test
   public void testClosedInterval() throws JSONException {
-    SecurityGroup sg = new SecurityGroup(_securityGroups.getJSONObject(5), null);
+    SecurityGroup sg = new SecurityGroup(_securityGroups.getJSONObject(5));
 
     List<IpAccessListLine> inboundRules = new LinkedList<>();
     List<IpAccessListLine> outboundRules = new LinkedList<>();
@@ -189,7 +189,7 @@ public class SecurityGroupsTest {
 
   @Test
   public void testInvalidStartInterval() throws JSONException {
-    SecurityGroup sg = new SecurityGroup(_securityGroups.getJSONObject(6), null);
+    SecurityGroup sg = new SecurityGroup(_securityGroups.getJSONObject(6));
 
     List<IpAccessListLine> inboundRules = new LinkedList<>();
     List<IpAccessListLine> outboundRules = new LinkedList<>();
@@ -211,7 +211,7 @@ public class SecurityGroupsTest {
 
   @Test
   public void testInvalidEndInterval() throws JSONException {
-    SecurityGroup sg = new SecurityGroup(_securityGroups.getJSONObject(7), null);
+    SecurityGroup sg = new SecurityGroup(_securityGroups.getJSONObject(7));
 
     List<IpAccessListLine> inboundRules = new LinkedList<>();
     List<IpAccessListLine> outboundRules = new LinkedList<>();
@@ -233,7 +233,7 @@ public class SecurityGroupsTest {
 
   @Test
   public void testStatefulTcpRules() throws JSONException {
-    SecurityGroup sg = new SecurityGroup(_securityGroups.getJSONObject(8), null);
+    SecurityGroup sg = new SecurityGroup(_securityGroups.getJSONObject(8));
 
     List<IpAccessListLine> inboundRules = new LinkedList<>();
     List<IpAccessListLine> outboundRules = new LinkedList<>();
@@ -280,14 +280,15 @@ public class SecurityGroupsTest {
 
   @Test
   public void testDeniedSynOnlyResponse() throws JSONException {
-    SecurityGroup sg = new SecurityGroup(_securityGroups.getJSONObject(8), null);
+    SecurityGroup sg = new SecurityGroup(_securityGroups.getJSONObject(8));
 
     List<IpAccessListLine> inboundRules = new LinkedList<>();
     List<IpAccessListLine> outboundRules = new LinkedList<>();
 
     sg.addInOutAccessLines(inboundRules, outboundRules, _region);
 
-    IpAccessList outFilter = new IpAccessList(TEST_ACL, outboundRules);
+    IpAccessList outFilter =
+        IpAccessList.builder().setName(TEST_ACL).setLines(outboundRules).build();
 
     // flow containing SYN and ~ACK should be rejected
     _flowBuilder.setDstIp(new Ip("1.2.3.4"));
@@ -304,14 +305,15 @@ public class SecurityGroupsTest {
 
   @Test
   public void testAllowedSynAckResponse() throws JSONException {
-    SecurityGroup sg = new SecurityGroup(_securityGroups.getJSONObject(8), null);
+    SecurityGroup sg = new SecurityGroup(_securityGroups.getJSONObject(8));
 
     List<IpAccessListLine> inboundRules = new LinkedList<>();
     List<IpAccessListLine> outboundRules = new LinkedList<>();
 
     sg.addInOutAccessLines(inboundRules, outboundRules, _region);
 
-    IpAccessList outFilter = new IpAccessList(TEST_ACL, outboundRules);
+    IpAccessList outFilter =
+        IpAccessList.builder().setName(TEST_ACL).setLines(outboundRules).build();
 
     // flow containing SYN and ACK should be accepted
     _flowBuilder.setDstIp(new Ip("1.2.3.4"));
@@ -328,14 +330,15 @@ public class SecurityGroupsTest {
 
   @Test
   public void testDeniedWrongIpResponse() throws JSONException {
-    SecurityGroup sg = new SecurityGroup(_securityGroups.getJSONObject(8), null);
+    SecurityGroup sg = new SecurityGroup(_securityGroups.getJSONObject(8));
 
     List<IpAccessListLine> inboundRules = new LinkedList<>();
     List<IpAccessListLine> outboundRules = new LinkedList<>();
 
     sg.addInOutAccessLines(inboundRules, outboundRules, _region);
 
-    IpAccessList outFilter = new IpAccessList(TEST_ACL, outboundRules);
+    IpAccessList outFilter =
+        IpAccessList.builder().setName(TEST_ACL).setLines(outboundRules).build();
 
     // flow containing wrong destination IP should be rejected
     _flowBuilder.setDstIp(new Ip("1.2.3.5"));

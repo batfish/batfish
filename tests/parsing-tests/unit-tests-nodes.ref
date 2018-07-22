@@ -703,7 +703,9 @@
                 },
                 "name" : "20 deny ip any any"
               }
-            ]
+            ],
+            "sourceName" : "abcd",
+            "sourceType" : "extended ipv4 access-list"
           }
         },
         "vendorFamily" : {
@@ -1024,7 +1026,9 @@
                 },
                 "name" : "10 permit 1.2.4.8/16"
               }
-            ]
+            ],
+            "sourceName" : "sshabc",
+            "sourceType" : "standard ipv4 access-list"
           }
         },
         "vendorFamily" : {
@@ -1613,7 +1617,9 @@
                 },
                 "name" : "permit host 0.0.0.0"
               }
-            ]
+            ],
+            "sourceName" : "Local_LAN_Access",
+            "sourceType" : "standard ipv4 access-list"
           },
           "outside" : {
             "name" : "outside",
@@ -1643,7 +1649,9 @@
                 },
                 "name" : "permit tcp object-group drawbridge_hosts interface outside eq https"
               }
-            ]
+            ],
+            "sourceName" : "outside",
+            "sourceType" : "extended ipv4 access-list"
           },
           "outside_in" : {
             "name" : "outside_in",
@@ -1672,7 +1680,9 @@
                 },
                 "name" : "permit udp any4 host 1.2.3.4 eq tftp"
               }
-            ]
+            ],
+            "sourceName" : "outside_in",
+            "sourceType" : "extended ipv4 access-list"
           }
         },
         "vendorFamily" : {
@@ -2065,7 +2075,37 @@
           }
         },
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -2302,7 +2342,37 @@
           }
         },
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -3262,7 +3332,9 @@
                 },
                 "name" : "permit 1.2.3.0 0.0.0.255"
               }
-            ]
+            ],
+            "sourceName" : "50",
+            "sourceType" : "standard ipv4 access-list"
           },
           "51" : {
             "name" : "51",
@@ -3303,7 +3375,9 @@
                 },
                 "name" : "deny   any"
               }
-            ]
+            ],
+            "sourceName" : "51",
+            "sourceType" : "standard ipv4 access-list"
           },
           "99" : {
             "name" : "99",
@@ -3326,7 +3400,9 @@
                 },
                 "name" : "permit 3.4.5.6"
               }
-            ]
+            ],
+            "sourceName" : "99",
+            "sourceType" : "standard ipv4 access-list"
           }
         },
         "vendorFamily" : {
@@ -4794,7 +4870,9 @@
                 },
                 "name" : "270 permit tcp any any eq microsoft-ds 5432"
               }
-            ]
+            ],
+            "sourceName" : "BLAH-BLAH",
+            "sourceType" : "extended ipv4 access-list"
           },
           "blah" : {
             "name" : "blah",
@@ -4817,13 +4895,19 @@
                 },
                 "name" : "10 permit ip any any"
               }
-            ]
+            ],
+            "sourceName" : "blah",
+            "sourceType" : "extended ipv4 access-list"
           },
           "extended" : {
-            "name" : "extended"
+            "name" : "extended",
+            "sourceName" : "extended",
+            "sourceType" : "extended ipv4 access-list"
           },
           "standard" : {
-            "name" : "standard"
+            "name" : "standard",
+            "sourceName" : "standard",
+            "sourceType" : "extended ipv4 access-list"
           }
         },
         "routeFilterLists" : {
@@ -6244,7 +6328,9 @@
                 },
                 "name" : "permit tcp any host 1.1.1.1 eq 65111"
               }
-            ]
+            ],
+            "sourceName" : "bippety",
+            "sourceType" : "extended ipv4 access-list"
           },
           "bloop_blop" : {
             "name" : "bloop_blop",
@@ -6273,7 +6359,9 @@
                 },
                 "name" : "permit tcp addrgroup bleep_blorp any eq 13000"
               }
-            ]
+            ],
+            "sourceName" : "bloop_blop",
+            "sourceType" : "extended ipv4 access-list"
           }
         },
         "vendorFamily" : {
@@ -7041,7 +7129,9 @@
                 },
                 "name" : "10 permit tcp any any"
               }
-            ]
+            ],
+            "sourceName" : "abc",
+            "sourceType" : "extended ipv4 access-list"
           }
         },
         "vendorFamily" : {
@@ -8501,7 +8591,9 @@
                   ]
                 }
               }
-            ]
+            ],
+            "sourceName" : "SVCGRP-ICMP",
+            "sourceType" : "object-group service"
           }
         },
         "vendorFamily" : {
@@ -8671,7 +8763,9 @@
                 },
                 "name" : "10 permit icmp any any"
               }
-            ]
+            ],
+            "sourceName" : "copp-system-acl-icmp",
+            "sourceType" : "extended ipv4 access-list"
           }
         },
         "vendorFamily" : {
@@ -9164,7 +9258,27 @@
                 },
                 "name" : "class-default action: ACCEPT"
               }
-            ]
+            ],
+            "sourceName" : "pminspect",
+            "sourceType" : "policy-map type inspect"
+          }
+        },
+        "ipSpaceMetadata" : {
+          "1.2.3.4-24" : {
+            "sourceName" : "1.2.3.4-24",
+            "sourceType" : "object-group network"
+          },
+          "dns_servers" : {
+            "sourceName" : "dns_servers",
+            "sourceType" : "object-group network"
+          },
+          "ntp_servers" : {
+            "sourceName" : "ntp_servers",
+            "sourceType" : "object-group network"
+          },
+          "obj_any" : {
+            "sourceName" : "obj_any",
+            "sourceType" : "object network"
           }
         },
         "ipSpaces" : {
@@ -9775,7 +9889,9 @@
                 },
                 "name" : "permit ip any any"
               }
-            ]
+            ],
+            "sourceName" : "blah",
+            "sourceType" : "extended ipv4 access-list"
           }
         },
         "vendorFamily" : {
@@ -9819,7 +9935,9 @@
                 },
                 "name" : "permit any"
               }
-            ]
+            ],
+            "sourceName" : "1",
+            "sourceType" : "standard ipv4 access-list"
           }
         },
         "vendorFamily" : {
@@ -10340,14 +10458,14 @@
         "name" : "community-name-numbers",
         "communityLists" : {
           "9999-RRR" : {
+            "invertMatch" : false,
             "lines" : [
               {
                 "action" : "ACCEPT",
                 "regex" : "^9999:8888$"
               }
             ],
-            "name" : "9999-RRR",
-            "invertMatch" : false
+            "name" : "9999-RRR"
           }
         },
         "defaultCrossZoneAction" : "ACCEPT",
@@ -10420,14 +10538,14 @@
         "name" : "community-name-numbers_dos",
         "communityLists" : {
           "9999-RRR" : {
+            "invertMatch" : false,
             "lines" : [
               {
                 "action" : "ACCEPT",
                 "regex" : "^9999:8888$"
               }
             ],
-            "name" : "9999-RRR",
-            "invertMatch" : false
+            "name" : "9999-RRR"
           }
         },
         "defaultCrossZoneAction" : "ACCEPT",
@@ -10500,14 +10618,14 @@
         "name" : "community_list_named",
         "communityLists" : {
           "COMM_LIST_NAME" : {
+            "invertMatch" : false,
             "lines" : [
               {
                 "action" : "ACCEPT",
                 "regex" : "^75:42$"
               }
             ],
-            "name" : "COMM_LIST_NAME",
-            "invertMatch" : false
+            "name" : "COMM_LIST_NAME"
           }
         },
         "defaultCrossZoneAction" : "ACCEPT",
@@ -13375,7 +13493,37 @@
           }
         },
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -13460,11 +13608,43 @@
                 },
                 "name" : "bar"
               }
-            ]
+            ],
+            "sourceName" : "foo",
+            "sourceType" : "firewall filter"
           }
         },
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -13479,7 +13659,37 @@
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -13494,7 +13704,37 @@
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -13790,7 +14030,37 @@
           }
         },
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -14115,7 +14385,37 @@
           }
         },
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -14281,7 +14581,37 @@
           }
         },
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -14301,41 +14631,71 @@
         "name" : "juniper_extended_community",
         "communityLists" : {
           "COMM_ALL" : {
+            "invertMatch" : false,
             "lines" : [
               {
                 "action" : "ACCEPT",
                 "regex" : "target:123456L:.*$"
               }
             ],
-            "name" : "COMM_ALL",
-            "invertMatch" : false
+            "name" : "COMM_ALL"
           },
           "COMM_NON_CUST" : {
+            "invertMatch" : false,
             "lines" : [
               {
                 "action" : "ACCEPT",
                 "regex" : "8075:[1][0][0-3,5-9][0-9][0-9]$"
               }
             ],
-            "name" : "COMM_NON_CUST",
-            "invertMatch" : false
+            "name" : "COMM_NON_CUST"
           },
           "COMM_REGEX" : {
+            "invertMatch" : false,
             "lines" : [
               {
                 "action" : "ACCEPT",
                 "regex" : "^_200_5?(1-3)*\\?:[^3]+$"
               }
             ],
-            "name" : "COMM_REGEX",
-            "invertMatch" : false
+            "name" : "COMM_REGEX"
           }
         },
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -14388,11 +14748,43 @@
                 },
                 "name" : "blorp"
               }
-            ]
+            ],
+            "sourceName" : "blah",
+            "sourceType" : "firewall filter"
           }
         },
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -14487,7 +14879,37 @@
           }
         },
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -14621,7 +15043,37 @@
           }
         },
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -14669,7 +15121,37 @@
           }
         },
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -14687,7 +15169,37 @@
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -14703,7 +15215,37 @@
         "deviceType" : "SWITCH",
         "domainName" : "my.domain.name",
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -14722,7 +15264,37 @@
           "2.3.4.5"
         ],
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -14779,7 +15351,37 @@
           }
         },
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -14819,7 +15421,36 @@
         ],
         "vendorFamily" : {
           "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
             "rootAuthenticationEncryptedPassword" : "afb9a6be03f8232c331c9b2a9537695acc8f4037591633ca55e81a2f8def821e",
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            },
             "tacplusServers" : {
               "1.2.3.4" : {
                 "name" : "1.2.3.4",
@@ -14965,7 +15596,37 @@
           }
         },
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -15038,7 +15699,37 @@
           }
         },
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -15088,6 +15779,61 @@
                 "action" : "ACCEPT",
                 "ipWildcard" : "2001:db8:1239:0:0:0:0:0/98",
                 "lengthRange" : "98-98"
+              },
+              {
+                "action" : "ACCEPT",
+                "ipWildcard" : "2001:db8:1239:0:0:0:0:0/99",
+                "lengthRange" : "99-99"
+              },
+              {
+                "action" : "ACCEPT",
+                "ipWildcard" : "2001:db8:1239:0:0:0:0:0/100",
+                "lengthRange" : "100-100"
+              },
+              {
+                "action" : "ACCEPT",
+                "ipWildcard" : "2001:db8:1239:0:0:0:0:0/101",
+                "lengthRange" : "101-101"
+              },
+              {
+                "action" : "ACCEPT",
+                "ipWildcard" : "2001:db8:1239:0:0:0:0:0/102",
+                "lengthRange" : "102-102"
+              },
+              {
+                "action" : "ACCEPT",
+                "ipWildcard" : "2001:db8:1239:0:0:0:0:0/103",
+                "lengthRange" : "103-103"
+              },
+              {
+                "action" : "ACCEPT",
+                "ipWildcard" : "2001:db8:1239:0:0:0:0:0/104",
+                "lengthRange" : "104-104"
+              },
+              {
+                "action" : "ACCEPT",
+                "ipWildcard" : "2001:db8:1239:0:0:0:0:0/105",
+                "lengthRange" : "105-105"
+              },
+              {
+                "action" : "ACCEPT",
+                "ipWildcard" : "2001:db8:1239:0:0:0:0:0/106",
+                "lengthRange" : "106-106"
+              },
+              {
+                "action" : "ACCEPT",
+                "ipWildcard" : "2001:db8:1239:0:0:0:0:0/107",
+                "lengthRange" : "107-107"
+              },
+              {
+                "action" : "ACCEPT",
+                "ipWildcard" : "2001:db8:1239:0:0:0:0:0/108",
+                "lengthRange" : "108-108"
+              },
+              {
+                "action" : "ACCEPT",
+                "ipWildcard" : "2001:db8:1239:0:0:0:0:0/109",
+                "lengthRange" : "109-109"
               }
             ],
             "name" : "route-filter-test-v6:t1"
@@ -15212,7 +15958,37 @@
           }
         },
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -15271,7 +16047,37 @@
           }
         },
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -15383,7 +16189,9 @@
                 },
                 "name" : "123-4"
               }
-            ]
+            ],
+            "sourceName" : "~FROM_ZONE~A~TO_ZONE~B",
+            "sourceType" : "firewall filter"
           },
           "~GLOBAL_SECURITY_POLICY~" : {
             "name" : "~GLOBAL_SECURITY_POLICY~",
@@ -15398,7 +16206,9 @@
                 },
                 "name" : "p1"
               }
-            ]
+            ],
+            "sourceName" : "~GLOBAL_SECURITY_POLICY~",
+            "sourceType" : "firewall filter"
           }
         },
         "ipSpaces" : {
@@ -15407,7 +16217,37 @@
           }
         },
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -15433,7 +16273,37 @@
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -15471,7 +16341,37 @@
           "1.2.3.4"
         ],
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -15486,7 +16386,37 @@
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -15506,6 +16436,35 @@
         ],
         "vendorFamily" : {
           "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            },
             "tacplusServers" : {
               "1.2.3.4" : {
                 "name" : "1.2.3.4",
@@ -17178,13 +18137,19 @@
                 },
                 "name" : "10 permit ip any any"
               }
-            ]
+            ],
+            "sourceName" : "blah",
+            "sourceType" : "extended ipv4 access-list"
           },
           "extended" : {
-            "name" : "extended"
+            "name" : "extended",
+            "sourceName" : "extended",
+            "sourceType" : "extended ipv4 access-list"
           },
           "standard" : {
-            "name" : "standard"
+            "name" : "standard",
+            "sourceName" : "standard",
+            "sourceType" : "extended ipv4 access-list"
           }
         },
         "vendorFamily" : {
@@ -21354,6 +22319,16 @@
                                           "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
                                           "value" : 65535
                                         }
+                                      },
+                                      {
+                                        "prefix" : {
+                                          "class" : "org.batfish.datamodel.routing_policy.expr.RangeCommunitySetElemHalf",
+                                          "range" : "0-65535"
+                                        },
+                                        "suffix" : {
+                                          "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                                          "value" : 12345
+                                        }
                                       }
                                     ]
                                   }
@@ -23237,7 +24212,9 @@
                 },
                 "name" : "permit tcp 1.2.3.4/31 any fin ack"
               }
-            ]
+            ],
+            "sourceName" : "100",
+            "sourceType" : "extended ipv4 access-list"
           }
         },
         "vendorFamily" : {

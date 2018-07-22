@@ -36,6 +36,12 @@ allinone -cmdfile tests/jsonpathtotable/commands || exit_code=$?
 echo -e "\n  ..... Running ui-focused client tests"
 allinone -cmdfile tests/ui-focused/commands || exit_code=$?
 
+for dir in 'stable' 'experimental'
+do
+  echo -e "\n  ..... Running ${dir} questions tests"
+  allinone -cmdfile tests/questions/${dir}/commands || exit_code=$?
+done
+
 echo -e "\n  ..... Running aws client tests"
 allinone -cmdfile tests/aws/commands || exit_code=$?
 

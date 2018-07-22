@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableList;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.Nullable;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
 import org.batfish.datamodel.acl.Evaluator;
@@ -22,6 +23,10 @@ public class IpAccessList extends ComparableStructure<String> {
 
     private Configuration _owner;
 
+    private String _sourceName;
+
+    private String _sourceType;
+
     Builder(NetworkFactory networkFactory) {
       super(networkFactory, IpAccessList.class);
       _lines = ImmutableList.of();
@@ -30,7 +35,7 @@ public class IpAccessList extends ComparableStructure<String> {
     @Override
     public IpAccessList build() {
       String name = _name != null ? _name : generateName();
-      IpAccessList ipAccessList = new IpAccessList(name, _lines);
+      IpAccessList ipAccessList = new IpAccessList(name, _lines, _sourceName, _sourceType);
       if (_owner != null) {
         _owner.getIpAccessLists().put(name, ipAccessList);
       }
@@ -42,18 +47,32 @@ public class IpAccessList extends ComparableStructure<String> {
       return this;
     }
 
+    public Builder setName(String name) {
+      _name = name;
+      return this;
+    }
+
     public Builder setOwner(Configuration owner) {
       _owner = owner;
       return this;
     }
 
-    public Builder setName(String name) {
-      _name = name;
+    public Builder setSourceName(@Nullable String sourceName) {
+      _sourceName = sourceName;
+      return this;
+    }
+
+    public Builder setSourceType(@Nullable String sourceType) {
+      _sourceType = sourceType;
       return this;
     }
   }
 
   private static final String PROP_LINES = "lines";
+
+  private static final String PROP_SOURCE_NAME = "sourceName";
+
+  private static final String PROP_SOURCE_TYPE = "sourceType";
 
   private static final long serialVersionUID = 1L;
 
@@ -77,20 +96,30 @@ public class IpAccessList extends ComparableStructure<String> {
     }
   }
 
+  public static Builder builder() {
+    return new Builder(null);
+  }
+
   private List<IpAccessListLine> _lines;
+
+  private String _sourceName;
+
+  private String _sourceType;
 
   @JsonCreator
   public IpAccessList(@JsonProperty(PROP_NAME) String name) {
     super(name);
   }
 
-  public IpAccessList(String name, List<IpAccessListLine> lines) {
+  public IpAccessList(
+      String name,
+      List<IpAccessListLine> lines,
+      @Nullable String sourceName,
+      @Nullable String sourceType) {
     super(name);
     _lines = ImmutableList.copyOf(lines);
-  }
-
-  public static Builder builder() {
-    return new Builder(null);
+    _sourceName = sourceName;
+    _sourceType = sourceType;
   }
 
   @Override
@@ -134,6 +163,16 @@ public class IpAccessList extends ComparableStructure<String> {
     return _lines;
   }
 
+  @JsonProperty(PROP_SOURCE_NAME)
+  public @Nullable String getSourceName() {
+    return _sourceName;
+  }
+
+  @JsonProperty(PROP_SOURCE_TYPE)
+  public @Nullable String getSourceType() {
+    return _sourceType;
+  }
+
   private boolean noDenyOrLastDeny(IpAccessList acl) {
     int count = 0;
     for (IpAccessListLine line : acl.getLines()) {
@@ -148,6 +187,16 @@ public class IpAccessList extends ComparableStructure<String> {
   @JsonProperty(PROP_LINES)
   public void setLines(List<IpAccessListLine> lines) {
     _lines = ImmutableList.copyOf(lines);
+  }
+
+  @JsonProperty(PROP_SOURCE_NAME)
+  private void setSourceName(String sourceName) {
+    _sourceName = sourceName;
+  }
+
+  @JsonProperty(PROP_SOURCE_TYPE)
+  private void setSourceType(String sourceType) {
+    _sourceType = sourceType;
   }
 
   @Override

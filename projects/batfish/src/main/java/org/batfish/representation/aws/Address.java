@@ -1,7 +1,6 @@
 package org.batfish.representation.aws;
 
 import java.io.Serializable;
-import org.batfish.common.BatfishLogger;
 import org.batfish.datamodel.Ip;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -16,7 +15,7 @@ public class Address implements AwsVpcEntity, Serializable {
 
   private final Ip _publicIp;
 
-  public Address(JSONObject jObj, BatfishLogger logger) throws JSONException {
+  public Address(JSONObject jObj) throws JSONException {
     _publicIp = new Ip(jObj.getString(JSON_KEY_PUBLIC_IP));
 
     _instanceId = jObj.has(JSON_KEY_INSTANCE_ID) ? jObj.getString(JSON_KEY_INSTANCE_ID) : null;

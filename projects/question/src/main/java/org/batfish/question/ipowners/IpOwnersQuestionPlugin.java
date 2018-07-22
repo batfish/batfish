@@ -17,6 +17,6 @@ public class IpOwnersQuestionPlugin extends QuestionPlugin {
 
   @Override
   protected Question createQuestion() {
-    return new IpOwnersQuestion();
+    return new IpOwnersQuestion(false);
   }
 }

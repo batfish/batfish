@@ -298,6 +298,198 @@
           ]
         }
       },
+      "undefined:community-set:usage:route-policy community matches-any:CF_fooey_Associates-chillmap" : {
+        "description" : "Undefined reference to structure of type: 'community-set' with usage: 'route-policy community matches-any' named 'CF_fooey_Associates-chillmap'",
+        "files" : {
+          "ios_xr_route_policy" : [
+            145
+          ]
+        }
+      },
+      "undefined:community-set:usage:route-policy community matches-any:DC_AT_CHILL" : {
+        "description" : "Undefined reference to structure of type: 'community-set' with usage: 'route-policy community matches-any' named 'DC_AT_CHILL'",
+        "files" : {
+          "ios_xr_route_policy" : [
+            150
+          ]
+        }
+      },
+      "undefined:community-set:usage:route-policy community matches-any:DC_AT_MEMBERS" : {
+        "description" : "Undefined reference to structure of type: 'community-set' with usage: 'route-policy community matches-any' named 'DC_AT_MEMBERS'",
+        "files" : {
+          "route_policy_igp_cost" : [
+            5
+          ]
+        }
+      },
+      "undefined:community-set:usage:route-policy community matches-any:DC_CF_COMMODITY_PEER" : {
+        "description" : "Undefined reference to structure of type: 'community-set' with usage: 'route-policy community matches-any' named 'DC_CF_COMMODITY_PEER'",
+        "files" : {
+          "route_policy_igp_cost" : [
+            5
+          ]
+        }
+      },
+      "undefined:community-set:usage:route-policy community matches-any:DC_CF_ISP" : {
+        "description" : "Undefined reference to structure of type: 'community-set' with usage: 'route-policy community matches-any' named 'DC_CF_ISP'",
+        "files" : {
+          "route_policy_igp_cost" : [
+            5
+          ]
+        }
+      },
+      "undefined:community-set:usage:route-policy community matches-any:EBGP-CUST-EXT" : {
+        "description" : "Undefined reference to structure of type: 'community-set' with usage: 'route-policy community matches-any' named 'EBGP-CUST-EXT'",
+        "files" : {
+          "ios_xr_route_policy" : [
+            98
+          ]
+        }
+      },
+      "undefined:community-set:usage:route-policy community matches-any:EBGP-CUST-NOEXP-PEER-NA" : {
+        "description" : "Undefined reference to structure of type: 'community-set' with usage: 'route-policy community matches-any' named 'EBGP-CUST-NOEXP-PEER-NA'",
+        "files" : {
+          "ios_xr_route_policy" : [
+            88
+          ]
+        }
+      },
+      "undefined:community-set:usage:route-policy community matches-any:HPR_CF_RE_PEER" : {
+        "description" : "Undefined reference to structure of type: 'community-set' with usage: 'route-policy community matches-any' named 'HPR_CF_RE_PEER'",
+        "files" : {
+          "route_policy_igp_cost" : [
+            5
+          ]
+        }
+      },
+      "undefined:community-set:usage:route-policy community matches-any:No_Export" : {
+        "description" : "Undefined reference to structure of type: 'community-set' with usage: 'route-policy community matches-any' named 'No_Export'",
+        "files" : {
+          "route_policy_igp_cost" : [
+            7
+          ],
+          "route_policy_metric_type" : [
+            5
+          ]
+        }
+      },
+      "undefined:community-set:usage:route-policy community matches-any:SOCAL-USERS" : {
+        "description" : "Undefined reference to structure of type: 'community-set' with usage: 'route-policy community matches-any' named 'SOCAL-USERS'",
+        "files" : {
+          "route_policy_as_path" : [
+            5
+          ]
+        }
+      },
+      "undefined:community-set:usage:route-policy community matches-any:blackhole-all" : {
+        "description" : "Undefined reference to structure of type: 'community-set' with usage: 'route-policy community matches-any' named 'blackhole-all'",
+        "files" : {
+          "ios_xr_route_policy" : [
+            107,
+            158
+          ],
+          "route_policy_param" : [
+            13
+          ]
+        }
+      },
+      "undefined:community-set:usage:route-policy community matches-any:blackhole-isp" : {
+        "description" : "Undefined reference to structure of type: 'community-set' with usage: 'route-policy community matches-any' named 'blackhole-isp'",
+        "files" : {
+          "ios_xr_route_policy" : [
+            110
+          ]
+        }
+      },
+      "undefined:community-set:usage:route-policy community matches-any:chillmap" : {
+        "description" : "Undefined reference to structure of type: 'community-set' with usage: 'route-policy community matches-any' named 'chillmap'",
+        "files" : {
+          "ios_xr_route_policy" : [
+            141
+          ]
+        }
+      },
+      "undefined:community-set:usage:route-policy community matches-any:community_5555" : {
+        "description" : "Undefined reference to structure of type: 'community-set' with usage: 'route-policy community matches-any' named 'community_5555'",
+        "files" : {
+          "ios_xr_route_policy" : [
+            33
+          ]
+        }
+      },
+      "undefined:community-set:usage:route-policy community matches-any:fooey_blackhole_community" : {
+        "description" : "Undefined reference to structure of type: 'community-set' with usage: 'route-policy community matches-any' named 'fooey_blackhole_community'",
+        "files" : {
+          "ios_xr_route_policy" : [
+            5
+          ]
+        }
+      },
+      "undefined:community-set:usage:route-policy community matches-any:fooey_routes_community" : {
+        "description" : "Undefined reference to structure of type: 'community-set' with usage: 'route-policy community matches-any' named 'fooey_routes_community'",
+        "files" : {
+          "ios_xr_route_policy" : [
+            16
+          ]
+        }
+      },
+      "undefined:community-set:usage:route-policy community matches-any:scenes_No_Export" : {
+        "description" : "Undefined reference to structure of type: 'community-set' with usage: 'route-policy community matches-any' named 'scenes_No_Export'",
+        "files" : {
+          "ios_xr_route_policy" : [
+            120
+          ]
+        }
+      },
+      "undefined:community-set:usage:route-policy community matches-any:to-peers-backbone" : {
+        "description" : "Undefined reference to structure of type: 'community-set' with usage: 'route-policy community matches-any' named 'to-peers-backbone'",
+        "files" : {
+          "ios_xr_route_policy" : [
+            137
+          ]
+        }
+      },
+      "undefined:community-set:usage:route-policy community matches-any:wrn-expanded" : {
+        "description" : "Undefined reference to structure of type: 'community-set' with usage: 'route-policy community matches-any' named 'wrn-expanded'",
+        "files" : {
+          "ios_xr_route_policy" : [
+            129,
+            143
+          ]
+        }
+      },
+      "undefined:community-set:usage:route-policy community matches-any:wrn-squelch-40027" : {
+        "description" : "Undefined reference to structure of type: 'community-set' with usage: 'route-policy community matches-any' named 'wrn-squelch-40027'",
+        "files" : {
+          "ios_xr_route_policy" : [
+            126
+          ]
+        }
+      },
+      "undefined:community-set:usage:route-policy delete community [not] in:community_5555" : {
+        "description" : "Undefined reference to structure of type: 'community-set' with usage: 'route-policy delete community [not] in' named 'community_5555'",
+        "files" : {
+          "ios_xr_route_policy" : [
+            34
+          ]
+        }
+      },
+      "undefined:community-set:usage:route-policy set community:13979:90" : {
+        "description" : "Undefined reference to structure of type: 'community-set' with usage: 'route-policy set community' named '13979:90'",
+        "files" : {
+          "route_policy_as_path" : [
+            7
+          ]
+        }
+      },
+      "undefined:community-set:usage:route-policy set community:barbar_to_fooey_community_ipv4" : {
+        "description" : "Undefined reference to structure of type: 'community-set' with usage: 'route-policy set community' named 'barbar_to_fooey_community_ipv4'",
+        "files" : {
+          "ios_xr_route_policy" : [
+            52
+          ]
+        }
+      },
       "undefined:crypto ipsec transform-set:usage:crypto map ipsec-isakmp transform-set:bleep" : {
         "description" : "Undefined reference to structure of type: 'crypto ipsec transform-set' with usage: 'crypto map ipsec-isakmp transform-set' named 'bleep'",
         "files" : {
@@ -1354,6 +1546,72 @@
           ]
         }
       },
+      "undefined:route-policy:usage:bgp neighbor route-policy in:EBGP-PEER-AS11164-SVL-PNI-IN" : {
+        "description" : "Undefined reference to structure of type: 'route-policy' with usage: 'bgp neighbor route-policy in' named 'EBGP-PEER-AS11164-SVL-PNI-IN'",
+        "files" : {
+          "bgp_route_policy" : [
+            24
+          ]
+        }
+      },
+      "undefined:route-policy:usage:bgp neighbor route-policy in:cust_v4_in" : {
+        "description" : "Undefined reference to structure of type: 'route-policy' with usage: 'bgp neighbor route-policy in' named 'cust_v4_in'",
+        "files" : {
+          "bgp_default_originate_policy" : [
+            11
+          ]
+        }
+      },
+      "undefined:route-policy:usage:bgp neighbor route-policy in:deny_bgp_routes" : {
+        "description" : "Undefined reference to structure of type: 'route-policy' with usage: 'bgp neighbor route-policy in' named 'deny_bgp_routes'",
+        "files" : {
+          "ios_xr_bgp_neighbor_group" : [
+            24,
+            28
+          ]
+        }
+      },
+      "undefined:route-policy:usage:bgp neighbor route-policy out:EBGP-PEER-AS11164-SVL-PNI-OUT" : {
+        "description" : "Undefined reference to structure of type: 'route-policy' with usage: 'bgp neighbor route-policy out' named 'EBGP-PEER-AS11164-SVL-PNI-OUT'",
+        "files" : {
+          "bgp_route_policy" : [
+            26
+          ]
+        }
+      },
+      "undefined:route-policy:usage:bgp neighbor route-policy out:EBGP_CUST_FULL_v4" : {
+        "description" : "Undefined reference to structure of type: 'route-policy' with usage: 'bgp neighbor route-policy out' named 'EBGP_CUST_FULL_v4'",
+        "files" : {
+          "bgp_default_originate_policy" : [
+            13
+          ]
+        }
+      },
+      "undefined:route-policy:usage:bgp neighbor route-policy out:advertise_fooey_dc_and_isp_routes_ipv4" : {
+        "description" : "Undefined reference to structure of type: 'route-policy' with usage: 'bgp neighbor route-policy out' named 'advertise_fooey_dc_and_isp_routes_ipv4'",
+        "files" : {
+          "ios_xr_bgp_neighbor_group" : [
+            25,
+            29
+          ]
+        }
+      },
+      "undefined:route-policy:usage:bgp neighbor route-policy out:advertise_fooey_routes_only" : {
+        "description" : "Undefined reference to structure of type: 'route-policy' with usage: 'bgp neighbor route-policy out' named 'advertise_fooey_routes_only'",
+        "files" : {
+          "ios_xr_bgp_neighbor_group" : [
+            39
+          ]
+        }
+      },
+      "undefined:route-policy:usage:bgp neighbor route-policy out:deny_default_network_ipv4" : {
+        "description" : "Undefined reference to structure of type: 'route-policy' with usage: 'bgp neighbor route-policy out' named 'deny_default_network_ipv4'",
+        "files" : {
+          "ios_xr_bgp_neighbor_group" : [
+            60
+          ]
+        }
+      },
       "undefined:service-template:usage:class-map activate-service-template:DEF" : {
         "description" : "Undefined reference to structure of type: 'service-template' with usage: 'class-map activate-service-template' named 'DEF'",
         "files" : {
@@ -1398,7 +1656,7 @@
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 172
+      "numResults" : 204
     },
     "undefinedReferences" : {
       "IosXrMultiCast" : {
@@ -1471,6 +1729,20 @@
           }
         }
       },
+      "bgp_default_originate_policy" : {
+        "route-policy" : {
+          "EBGP_CUST_FULL_v4" : {
+            "bgp neighbor route-policy out" : [
+              13
+            ]
+          },
+          "cust_v4_in" : {
+            "bgp neighbor route-policy in" : [
+              11
+            ]
+          }
+        }
+      },
       "bgp_foundry" : {
         "route-map" : {
           "from_ucr" : {
@@ -1490,6 +1762,18 @@
           "EBGP-PEER-SVL-PNI" : {
             "inherited BGP group" : [
               0
+            ]
+          }
+        },
+        "route-policy" : {
+          "EBGP-PEER-AS11164-SVL-PNI-IN" : {
+            "bgp neighbor route-policy in" : [
+              24
+            ]
+          },
+          "EBGP-PEER-AS11164-SVL-PNI-OUT" : {
+            "bgp neighbor route-policy out" : [
+              26
             ]
           }
         }
@@ -2234,6 +2518,30 @@
               69
             ]
           }
+        },
+        "route-policy" : {
+          "advertise_fooey_dc_and_isp_routes_ipv4" : {
+            "bgp neighbor route-policy out" : [
+              25,
+              29
+            ]
+          },
+          "advertise_fooey_routes_only" : {
+            "bgp neighbor route-policy out" : [
+              39
+            ]
+          },
+          "deny_bgp_routes" : {
+            "bgp neighbor route-policy in" : [
+              24,
+              28
+            ]
+          },
+          "deny_default_network_ipv4" : {
+            "bgp neighbor route-policy out" : [
+              60
+            ]
+          }
         }
       },
       "ios_xr_multipart" : {
@@ -2458,6 +2766,88 @@
             ]
           }
         },
+        "community-set" : {
+          "CF_fooey_Associates-chillmap" : {
+            "route-policy community matches-any" : [
+              145
+            ]
+          },
+          "DC_AT_CHILL" : {
+            "route-policy community matches-any" : [
+              150
+            ]
+          },
+          "EBGP-CUST-EXT" : {
+            "route-policy community matches-any" : [
+              98
+            ]
+          },
+          "EBGP-CUST-NOEXP-PEER-NA" : {
+            "route-policy community matches-any" : [
+              88
+            ]
+          },
+          "barbar_to_fooey_community_ipv4" : {
+            "route-policy set community" : [
+              52
+            ]
+          },
+          "blackhole-all" : {
+            "route-policy community matches-any" : [
+              107,
+              158
+            ]
+          },
+          "blackhole-isp" : {
+            "route-policy community matches-any" : [
+              110
+            ]
+          },
+          "chillmap" : {
+            "route-policy community matches-any" : [
+              141
+            ]
+          },
+          "community_5555" : {
+            "route-policy community matches-any" : [
+              33
+            ],
+            "route-policy delete community [not] in" : [
+              34
+            ]
+          },
+          "fooey_blackhole_community" : {
+            "route-policy community matches-any" : [
+              5
+            ]
+          },
+          "fooey_routes_community" : {
+            "route-policy community matches-any" : [
+              16
+            ]
+          },
+          "scenes_No_Export" : {
+            "route-policy community matches-any" : [
+              120
+            ]
+          },
+          "to-peers-backbone" : {
+            "route-policy community matches-any" : [
+              137
+            ]
+          },
+          "wrn-expanded" : {
+            "route-policy community matches-any" : [
+              129,
+              143
+            ]
+          },
+          "wrn-squelch-40027" : {
+            "route-policy community matches-any" : [
+              126
+            ]
+          }
+        },
         "prefix-set" : {
           "EBGP-PEER-BOGONS" : {
             "route-policy prefix-set" : [
@@ -2514,6 +2904,18 @@
         }
       },
       "route_policy_as_path_set" : {
+        "community-set" : {
+          "13979:90" : {
+            "route-policy set community" : [
+              7
+            ]
+          },
+          "SOCAL-USERS" : {
+            "route-policy community matches-any" : [
+              5
+            ]
+          }
+        },
         "prefix-set" : {
           "CENIC_DC_Internal" : {
             "route-policy prefix-set" : [
@@ -2527,7 +2929,43 @@
           }
         }
       },
+      "route_policy_igp_cost" : {
+        "community-set" : {
+          "DC_AT_MEMBERS" : {
+            "route-policy community matches-any" : [
+              5
+            ]
+          },
+          "DC_CF_COMMODITY_PEER" : {
+            "route-policy community matches-any" : [
+              5
+            ]
+          },
+          "DC_CF_ISP" : {
+            "route-policy community matches-any" : [
+              5
+            ]
+          },
+          "HPR_CF_RE_PEER" : {
+            "route-policy community matches-any" : [
+              5
+            ]
+          },
+          "No_Export" : {
+            "route-policy community matches-any" : [
+              7
+            ]
+          }
+        }
+      },
       "route_policy_metric_type" : {
+        "community-set" : {
+          "No_Export" : {
+            "route-policy community matches-any" : [
+              5
+            ]
+          }
+        },
         "prefix-set" : {
           "DC_Internal" : {
             "route-policy prefix-set" : [
@@ -2537,6 +2975,13 @@
         }
       },
       "route_policy_param" : {
+        "community-set" : {
+          "blackhole-all" : {
+            "route-policy community matches-any" : [
+              13
+            ]
+          }
+        },
         "prefix-set" : {
           "$cust_v4_pfx" : {
             "route-policy prefix-set" : [

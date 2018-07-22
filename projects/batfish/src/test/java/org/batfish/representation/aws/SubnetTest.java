@@ -30,7 +30,7 @@ public class SubnetTest {
     JSONArray subnetArray = jObj.getJSONArray(JSON_KEY_SUBNETS);
     _subnetList = new LinkedList<>();
     for (int i = 0; i < subnetArray.length(); i++) {
-      _subnetList.add(new Subnet(subnetArray.getJSONObject(i), null));
+      _subnetList.add(new Subnet(subnetArray.getJSONObject(i)));
     }
   }
 

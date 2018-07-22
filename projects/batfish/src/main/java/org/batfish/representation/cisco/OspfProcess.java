@@ -1,5 +1,6 @@
 package org.batfish.representation.cisco;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -10,7 +11,6 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
-import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
@@ -19,7 +19,7 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.ospf.OspfAreaSummary;
 import org.batfish.datamodel.ospf.OspfMetricType;
 
-public class OspfProcess extends ComparableStructure<String> {
+public class OspfProcess implements Serializable {
 
   private static final long DEFAULT_DEFAULT_INFORMATION_METRIC = 1L;
 
@@ -64,6 +64,8 @@ public class OspfProcess extends ComparableStructure<String> {
   private boolean _maxMetricRouterLsa;
 
   private Long _maxMetricSummaryLsa;
+
+  private final String _name;
 
   private Set<OspfNetwork> _networks;
 
@@ -140,7 +142,7 @@ public class OspfProcess extends ComparableStructure<String> {
   }
 
   public OspfProcess(String name, ConfigurationFormat format) {
-    super(name);
+    _name = name;
     _referenceBandwidth = getReferenceOspfBandwidth(format);
     _networks = new TreeSet<>();
     _defaultInformationMetric = DEFAULT_DEFAULT_INFORMATION_METRIC;
@@ -225,6 +227,10 @@ public class OspfProcess extends ComparableStructure<String> {
 
   public Long getMaxMetricSummaryLsa() {
     return _maxMetricSummaryLsa;
+  }
+
+  public String getName() {
+    return _name;
   }
 
   public Set<OspfNetwork> getNetworks() {
