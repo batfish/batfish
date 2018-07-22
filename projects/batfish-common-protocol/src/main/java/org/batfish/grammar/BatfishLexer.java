@@ -38,6 +38,24 @@ public abstract class BatfishLexer extends Lexer {
     return sb.toString();
   }
 
+  /**
+   * Return a string consisting of the next {@code size} characters in the stream after whitespace
+   * is skipped.
+   */
+  public @Nonnull String lookAheadStringSkipWhitespace(int size) {
+    StringBuilder sb = new StringBuilder();
+    int start = 0;
+    while (isWhitespace(_input.LA(++start))) {}
+    for (int i = start; i < start + size; i++) {
+      sb.append((char) _input.LA(i));
+    }
+    return sb.toString();
+  }
+
+  public boolean isWhitespace(int c) {
+    return c == ' ' || c == '\t';
+  }
+
   public void initErrorListener(BatfishCombinedParser<?, ?> parser) {
     _parser = parser;
     BatfishLexerErrorListener errorListener =

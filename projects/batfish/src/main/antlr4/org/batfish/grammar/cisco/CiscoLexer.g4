@@ -10902,9 +10902,11 @@ SNMP
 // must be kept above SNMP_SERVER
 SNMP_SERVER_COMMUNITY
 :
-   F_Whitespace* 'snmp-server' F_Whitespace+
-   {(lastTokenType == NEWLINE || lastTokenType == -1) && lookAheadString("community ".length()).equals("community ")}? ->
-   type ( SNMP_SERVER ) , pushMode ( M_SnmpServerCommunity )
+   'snmp-server'
+   {(lastTokenType == NEWLINE || lastTokenType == -1)
+     && isWhitespace(_input.LA(1))
+     && lookAheadStringSkipWhitespace("community ".length()).equals("community ")}?
+   -> type ( SNMP_SERVER ) , pushMode ( M_SnmpServerCommunity )
 ;
 
 SNMP_SERVER
@@ -15115,6 +15117,11 @@ mode M_SnmpServerCommunity;
 M_SnmpServerCommunity_COMMUNITY
 :
   'community' -> type ( COMMUNITY ) , mode ( M_Name )
+;
+
+M_SnmpServerCommunity_WS
+:
+   F_Whitespace+ -> channel ( HIDDEN )
 ;
 
 mode M_SshKey;
