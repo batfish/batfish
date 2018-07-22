@@ -1,9 +1,9 @@
 package org.batfish.representation.juniper;
 
-import org.batfish.common.util.ComparableStructure;
+import java.io.Serializable;
 import org.batfish.datamodel.Ip;
 
-public class IkeGateway extends ComparableStructure<String> {
+public class IkeGateway implements Serializable {
 
   /** */
   private static final long serialVersionUID = 1L;
@@ -16,8 +16,10 @@ public class IkeGateway extends ComparableStructure<String> {
 
   private Ip _localAddress;
 
+  private final String _name;
+
   public IkeGateway(String name) {
-    super(name);
+    _name = name;
   }
 
   public Ip getAddress() {
@@ -34,6 +36,10 @@ public class IkeGateway extends ComparableStructure<String> {
 
   public Ip getLocalAddress() {
     return _localAddress;
+  }
+
+  public String getName() {
+    return _name;
   }
 
   public void setAddress(Ip address) {

@@ -1,13 +1,15 @@
 package org.batfish.representation.juniper;
 
+import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
-import org.batfish.common.util.ComparableStructure;
 
-public final class IkePolicy extends ComparableStructure<String> {
+public final class IkePolicy implements Serializable {
 
   /** */
   private static final long serialVersionUID = 1L;
+
+  private final String _name;
 
   private String _preSharedKeyHash;
 
@@ -15,8 +17,12 @@ public final class IkePolicy extends ComparableStructure<String> {
   private final List<String> _proposals;
 
   public IkePolicy(String name) {
-    super(name);
+    _name = name;
     _proposals = new LinkedList<>();
+  }
+
+  public String getName() {
+    return _name;
   }
 
   public String getPreSharedKeyHash() {

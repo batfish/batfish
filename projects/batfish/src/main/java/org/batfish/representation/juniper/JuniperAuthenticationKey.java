@@ -1,10 +1,10 @@
 package org.batfish.representation.juniper;
 
-import org.batfish.common.util.ComparableStructure;
+import java.io.Serializable;
 import org.batfish.datamodel.isis.IsisAuthenticationAlgorithm;
 import org.batfish.datamodel.isis.IsisOption;
 
-public class JuniperAuthenticationKey extends ComparableStructure<String> {
+public class JuniperAuthenticationKey implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
@@ -17,12 +17,14 @@ public class JuniperAuthenticationKey extends ComparableStructure<String> {
 
   private IsisOption _isisOption;
 
+  private final String _name;
+
   private String _secret;
 
   private String _startTime;
 
   public JuniperAuthenticationKey(String name) {
-    super(name);
+    _name = name;
     _isisAuthenticationAlgorithm = DEFAULT_ISIS_AUTHENTICATION_ALGORITHM;
     _isisOption = DEFAULT_ISIS_OPTION;
   }
@@ -33,6 +35,10 @@ public class JuniperAuthenticationKey extends ComparableStructure<String> {
 
   public IsisOption getIsisOption() {
     return _isisOption;
+  }
+
+  public String getName() {
+    return _name;
   }
 
   public String getSecret() {
