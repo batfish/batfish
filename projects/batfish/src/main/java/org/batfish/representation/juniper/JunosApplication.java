@@ -434,20 +434,20 @@ public enum JunosApplication implements Application {
           // TODO: alg
 
           String t2Name = "t2";
-          Term t2 = new Term(t2Name);
+          Term t2 = new Term();
           HeaderSpace.Builder l2 = t2.getHeaderSpace().toBuilder();
           // TODO: alg
           setHeaderSpaceInfo(l2, IpProtocol.UDP, NamedPort.H323_T2.number(), null);
           t2.setHeaderSpace(l2.build());
 
           String t3Name = "t3";
-          Term t3 = new Term(t3Name);
+          Term t3 = new Term();
           HeaderSpace.Builder l3 = t3.getHeaderSpace().toBuilder();
           setHeaderSpaceInfo(l3, IpProtocol.TCP, NamedPort.H323_T3.number(), null);
           t3.setHeaderSpace(l3.build());
 
           String t4Name = "t4";
-          Term t4 = new Term(t4Name);
+          Term t4 = new Term();
           HeaderSpace.Builder l4 = t4.getHeaderSpace().toBuilder();
           setHeaderSpaceInfo(
               l4,
@@ -457,13 +457,13 @@ public enum JunosApplication implements Application {
           t4.setHeaderSpace(l4.build());
 
           String t5Name = "t5";
-          Term t5 = new Term(t5Name);
+          Term t5 = new Term();
           HeaderSpace.Builder l5 = t5.getHeaderSpace().toBuilder();
           setHeaderSpaceInfo(l5, IpProtocol.TCP, NamedPort.H323_T5.number(), null);
           t5.setHeaderSpace(l5.build());
 
           String t6Name = "t6";
-          Term t6 = new Term(t6Name);
+          Term t6 = new Term();
           HeaderSpace.Builder l6 = t6.getHeaderSpace().toBuilder();
           setHeaderSpaceInfo(l6, IpProtocol.TCP, NamedPort.H323_T6.number(), null);
           t6.setHeaderSpace(l6.build());
@@ -765,7 +765,7 @@ public enum JunosApplication implements Application {
           ipProtocol = IpProtocol.TCP;
 
           String t2Name = "t2";
-          Term t2 = new Term(t2Name);
+          Term t2 = new Term();
           HeaderSpace.Builder l2 = t2.getHeaderSpace().toBuilder();
           setHeaderSpaceInfo(
               l2,
@@ -1036,7 +1036,7 @@ public enum JunosApplication implements Application {
     }
 
     String t1Name = "t1";
-    Term t1 = new Term(t1Name);
+    Term t1 = new Term();
     HeaderSpace.Builder l1 = t1.getHeaderSpace().toBuilder();
 
     setHeaderSpaceInfo(l1, ipProtocol, portRangeStart, portRangeEnd);

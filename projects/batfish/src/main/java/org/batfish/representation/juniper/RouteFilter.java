@@ -4,9 +4,8 @@ import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
-import org.batfish.common.util.ComparableStructure;
 
-public final class RouteFilter extends ComparableStructure<String> implements Serializable {
+public final class RouteFilter implements Serializable {
 
   /** */
   private static final long serialVersionUID = 1L;
@@ -17,8 +16,7 @@ public final class RouteFilter extends ComparableStructure<String> implements Se
 
   private final Map<RouteFilterLine, RouteFilterLine> _lines;
 
-  public RouteFilter(String name) {
-    super(name);
+  public RouteFilter() {
     _lines = new LinkedHashMap<>();
   }
 

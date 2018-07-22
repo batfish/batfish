@@ -1,14 +1,14 @@
 package org.batfish.representation.juniper;
 
+import java.io.Serializable;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
 import org.batfish.datamodel.IpsecEncapsulationMode;
 import org.batfish.datamodel.IpsecProtocol;
 
-public class IpsecProposal extends ComparableStructure<String> {
+public class IpsecProposal implements Serializable {
 
   /** */
   private static final long serialVersionUID = 1L;
@@ -23,10 +23,12 @@ public class IpsecProposal extends ComparableStructure<String> {
 
   private Integer _lifetimeSeconds;
 
+  private final String _name;
+
   private SortedSet<IpsecProtocol> _protocols;
 
   public IpsecProposal(String name) {
-    super(name);
+    _name = name;
     _protocols = new TreeSet<>();
   }
 
@@ -48,6 +50,10 @@ public class IpsecProposal extends ComparableStructure<String> {
 
   public Integer getLifetimeSeconds() {
     return _lifetimeSeconds;
+  }
+
+  public String getName() {
+    return _name;
   }
 
   public SortedSet<IpsecProtocol> getProtocols() {
