@@ -44,8 +44,10 @@ public abstract class BatfishLexer extends Lexer {
    */
   public @Nonnull String lookAheadStringSkipWhitespace(int size) {
     StringBuilder sb = new StringBuilder();
-    int start = 0;
-    while (isWhitespace(_input.LA(++start))) {}
+    int start = 1;
+    while (isWhitespace(_input.LA(start))) {
+      start++;
+    }
     for (int i = start; i < start + size; i++) {
       sb.append((char) _input.LA(i));
     }
