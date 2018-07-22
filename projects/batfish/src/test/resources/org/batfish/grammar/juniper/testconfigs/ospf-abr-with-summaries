@@ -1,5 +1,5 @@
 #
-set system host-name abr
+set system host-name ospf-abr-with-summaries
 #
 set interfaces ge-0/0/0 unit 0 family inet address 10.0.0.1/31
 set interfaces ge-0/0/1 unit 0 family inet address 10.0.1.2/31

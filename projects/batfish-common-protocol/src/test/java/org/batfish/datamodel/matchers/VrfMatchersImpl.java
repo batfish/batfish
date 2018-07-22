@@ -3,6 +3,7 @@ package org.batfish.datamodel.matchers;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.BgpProcess;
+import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.isis.IsisProcess;
@@ -64,6 +65,17 @@ final class VrfMatchersImpl {
     @Override
     protected SortedSet<StaticRoute> featureValueOf(Vrf actual) {
       return actual.getStaticRoutes();
+    }
+  }
+
+  static final class HasGeneratedRoutes extends FeatureMatcher<Vrf, SortedSet<GeneratedRoute>> {
+    HasGeneratedRoutes(@Nonnull Matcher<? super SortedSet<GeneratedRoute>> subMatcher) {
+      super(subMatcher, "A VRF with staticRoutes:", "staticRoutes");
+    }
+
+    @Override
+    protected SortedSet<GeneratedRoute> featureValueOf(Vrf actual) {
+      return actual.getGeneratedRoutes();
     }
   }
 }

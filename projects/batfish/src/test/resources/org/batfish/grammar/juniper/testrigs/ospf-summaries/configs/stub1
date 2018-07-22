@@ -1,8 +1,0 @@
-#
-set system host-name stub1
-#
-set interfaces ge-0/0/0 unit 0 family inet address 10.0.1.3/31
-set interfaces lo0 unit 0 family inet address 10.0.1.4/32
-#
-set protocols ospf area 0.0.0.1 interface ge-0/0/0.0
-set protocols ospf area 0.0.0.1 interface lo0.0 passive

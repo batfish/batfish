@@ -1,7 +1,5 @@
 package org.batfish.grammar.flatjuniper;
 
-import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasNextHopInterface;
-import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasNextHopIp;
 import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasClusterId;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasEnforceFirstAs;
@@ -32,6 +30,7 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.hasReferenceBandw
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRouteFilterList;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRouteFilterLists;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
+import static org.batfish.datamodel.matchers.GeneratedRouteMatchers.isDiscard;
 import static org.batfish.datamodel.matchers.IkePhase1PolicyMatchers.hasIkePhase1Key;
 import static org.batfish.datamodel.matchers.IkePhase1PolicyMatchers.hasIkePhase1Proposals;
 import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasAuthenticationAlgorithm;
@@ -85,6 +84,7 @@ import static org.batfish.datamodel.matchers.RouteFilterListMatchers.permits;
 import static org.batfish.datamodel.matchers.SetAdministrativeCostMatchers.hasAdmin;
 import static org.batfish.datamodel.matchers.SetAdministrativeCostMatchers.isSetAdministrativeCostThat;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
+import static org.batfish.datamodel.matchers.VrfMatchers.hasGeneratedRoutes;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasOspfProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_EXISTING_CONNECTION;
@@ -117,14 +117,12 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
-import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpProcess;
@@ -132,15 +130,12 @@ import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ConnectedRoute;
-import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.Flow;
-import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IkeAuthenticationMethod;
 import org.batfish.datamodel.IkeHashingAlgorithm;
-import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
@@ -2284,41 +2279,13 @@ public class FlatJuniperGrammarTest {
 
   @Test
   public void testOspfSummaries() throws IOException {
-    String testrigName = "ospf-summaries";
-    List<String> configurationNames = ImmutableList.of("abr", "area0", "stub1");
+    Configuration c = parseConfig(("ospf-abr-with-summaries"));
 
-    Batfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigText(
-            TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
-                .build(),
-            _folder);
-
-    batfish.computeDataPlane(false);
-    DataPlane dp = batfish.loadDataPlane();
-    SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs = dp.getRibs();
-
-    Set<AbstractRoute> abrRoutes = ribs.get("abr").get(Configuration.DEFAULT_VRF_NAME).getRoutes();
-    Set<AbstractRoute> area0Routes =
-        ribs.get("area0").get(Configuration.DEFAULT_VRF_NAME).getRoutes();
-
-    // ABR has null-routed aggregate/summary
     assertThat(
-        abrRoutes,
-        hasItem(
-            allOf(
-                hasPrefix(Prefix.parse("10.0.1.0/24")),
-                hasNextHopInterface(equalTo(Interface.NULL_INTERFACE_NAME)))));
-
-    // ABR sends summary to area 0
-    assertThat(
-        area0Routes,
-        hasItem(
-            allOf(
-                hasPrefix(Prefix.parse("10.0.1.0/24")),
-                hasNextHopIp(equalTo(new Ip("10.0.0.1"))))));
-
-    // TODO: Assert that stub area 1 has no default and no summary routes
+        c,
+        hasDefaultVrf(
+            hasGeneratedRoutes(
+                hasItem(allOf(hasPrefix(Prefix.parse("10.0.1.0/24")), isDiscard())))));
   }
 
   @Test

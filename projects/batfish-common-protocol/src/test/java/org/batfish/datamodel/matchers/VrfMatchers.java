@@ -2,9 +2,11 @@ package org.batfish.datamodel.matchers;
 
 import java.util.SortedSet;
 import org.batfish.datamodel.BgpProcess;
+import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.matchers.VrfMatchersImpl.HasBgpProcess;
+import org.batfish.datamodel.matchers.VrfMatchersImpl.HasGeneratedRoutes;
 import org.batfish.datamodel.matchers.VrfMatchersImpl.HasInterfaces;
 import org.batfish.datamodel.matchers.VrfMatchersImpl.HasOspfProcess;
 import org.batfish.datamodel.matchers.VrfMatchersImpl.HasStaticRoutes;
@@ -19,6 +21,14 @@ public class VrfMatchers {
    */
   public static HasBgpProcess hasBgpProcess(Matcher<? super BgpProcess> subMatcher) {
     return new HasBgpProcess(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the VRF's
+   * interfaces.
+   */
+  public static Matcher<Vrf> hasInterfaces(Matcher<? super SortedSet<String>> subMatcher) {
+    return new HasInterfaces(subMatcher);
   }
 
   /**
@@ -39,10 +49,11 @@ public class VrfMatchers {
   }
 
   /**
-   * Provides a matcher that matches if the provided {@code subMatcher} matches the VRF's
-   * interfaces.
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the VRF's generated
+   * routes.
    */
-  public static Matcher<Vrf> hasInterfaces(Matcher<? super SortedSet<String>> subMatcher) {
-    return new HasInterfaces(subMatcher);
+  public static HasGeneratedRoutes hasGeneratedRoutes(
+      Matcher<? super SortedSet<GeneratedRoute>> subMatcher) {
+    return new HasGeneratedRoutes(subMatcher);
   }
 }
