@@ -222,7 +222,8 @@ public class FlatVyosControlPlaneExtractor extends FlatVyosParserBaseListener
   @Override
   public void enterEspt_proposal(Espt_proposalContext ctx) {
     int num = toInteger(ctx.num);
-    _currentEspProposal = _currentEspGroup.getProposals().computeIfAbsent(num, EspProposal::new);
+    _currentEspProposal =
+        _currentEspGroup.getProposals().computeIfAbsent(num, n -> new EspProposal());
   }
 
   @Override
@@ -234,7 +235,8 @@ public class FlatVyosControlPlaneExtractor extends FlatVyosParserBaseListener
   @Override
   public void enterIket_proposal(Iket_proposalContext ctx) {
     int num = toInteger(ctx.num);
-    _currentIkeProposal = _currentIkeGroup.getProposals().computeIfAbsent(num, IkeProposal::new);
+    _currentIkeProposal =
+        _currentIkeGroup.getProposals().computeIfAbsent(num, n -> new IkeProposal());
   }
 
   @Override
@@ -246,7 +248,7 @@ public class FlatVyosControlPlaneExtractor extends FlatVyosParserBaseListener
   @Override
   public void enterIvt_ike_group(Ivt_ike_groupContext ctx) {
     String name = ctx.name.getText();
-    _currentIkeGroup = _configuration.getIkeGroups().computeIfAbsent(name, IkeGroup::new);
+    _currentIkeGroup = _configuration.getIkeGroups().computeIfAbsent(name, n -> new IkeGroup());
   }
 
   @Override
@@ -259,7 +261,7 @@ public class FlatVyosControlPlaneExtractor extends FlatVyosParserBaseListener
   public void enterPlt_rule(Plt_ruleContext ctx) {
     int num = toInteger(ctx.num);
     _currentPrefixListRule =
-        _currentPrefixList.getRules().computeIfAbsent(num, PrefixListRule::new);
+        _currentPrefixList.getRules().computeIfAbsent(num, n -> new PrefixListRule());
   }
 
   @Override
@@ -277,7 +279,8 @@ public class FlatVyosControlPlaneExtractor extends FlatVyosParserBaseListener
   @Override
   public void enterRmt_rule(Rmt_ruleContext ctx) {
     int num = toInteger(ctx.num);
-    _currentRouteMapRule = _currentRouteMap.getRules().computeIfAbsent(num, RouteMapRule::new);
+    _currentRouteMapRule =
+        _currentRouteMap.getRules().computeIfAbsent(num, n -> new RouteMapRule());
   }
 
   @Override

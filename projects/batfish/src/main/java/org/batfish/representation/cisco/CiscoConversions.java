@@ -892,7 +892,7 @@ class CiscoConversions {
         org.batfish.datamodel.eigrp.EigrpProcess.builder();
     org.batfish.datamodel.Vrf vrf = c.getVrfs().get(vrfName);
 
-    newProcess.setAsNumber(proc.getAsNumber());
+    newProcess.setAsNumber(proc.getAsn());
     newProcess.setMode(proc.getMode());
 
     // Establish associated interfaces
@@ -905,7 +905,7 @@ class CiscoConversions {
       boolean match = proc.getNetworks().stream().anyMatch(interfaceAddress.getPrefix()::equals);
       if (match) {
         EigrpInterfaceSettings.Builder builder = EigrpInterfaceSettings.builder();
-        builder.setAsn(proc.getAsNumber());
+        builder.setAsn(proc.getAsn());
         if (iface.getEigrp() != null && iface.getEigrp().getDelay() != null) {
           builder.setDelay(iface.getEigrp().getDelay());
         } else {
