@@ -25,11 +25,9 @@ public class AddressLibraryResource {
 
   private BatfishLogger _logger = Main.getLogger();
   private String _container;
-  private UriInfo _uriInfo;
 
-  public AddressLibraryResource(UriInfo uriInfo, String container) {
+  public AddressLibraryResource(String container) {
     _container = container;
-    _uriInfo = uriInfo;
   }
 
   @POST
@@ -55,7 +53,7 @@ public class AddressLibraryResource {
   /** Relocate the request to {@link AddressBookResource}. */
   @Path("/{book}")
   public AddressBookResource getAddressBookResource(@PathParam("book") String book) {
-    return new AddressBookResource(_uriInfo, _container, book);
+    return new AddressBookResource(_container, book);
   }
 
   /** Returns information about node roles in the container */

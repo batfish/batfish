@@ -26,10 +26,11 @@ import org.batfish.role.addressbook.AddressLibrary;
 public class AddressBookResource {
 
   private BatfishLogger _logger = Main.getLogger();
-  private String _container;
-  private String _bookName;
 
-  public AddressBookResource(UriInfo uriInfo, String container, String book) {
+  private String _bookName;
+  private String _container;
+
+  public AddressBookResource(String container, String book) {
     _container = container;
     _bookName = book;
   }

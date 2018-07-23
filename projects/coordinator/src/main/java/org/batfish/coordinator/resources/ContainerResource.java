@@ -8,7 +8,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Container;
 import org.batfish.common.CoordConstsV2;
@@ -28,18 +27,16 @@ public class ContainerResource {
   private BatfishLogger _logger = Main.getLogger();
 
   private String _name;
-  private UriInfo _uriInfo;
 
-  public ContainerResource(UriInfo uriInfo, String apiKey, String name) {
+  public ContainerResource(String apiKey, String name) {
     checkAccessToContainer(apiKey, name);
-    _uriInfo = uriInfo;
     _name = name;
   }
 
   /** Relocate the request to {@link AddressLibraryResource}. */
   @Path(CoordConstsV2.RSC_ADDRESS_LIBRARY)
   public AddressLibraryResource getAddressBooksResource() {
-    return new AddressLibraryResource(_uriInfo, _name);
+    return new AddressLibraryResource(_name);
   }
 
   /** Returns information about the given {@link Container}, provided this user can access it. */
