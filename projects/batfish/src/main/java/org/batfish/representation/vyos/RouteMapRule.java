@@ -1,11 +1,11 @@
 package org.batfish.representation.vyos;
 
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
-import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.LineAction;
 
-public class RouteMapRule extends ComparableStructure<Integer> {
+public class RouteMapRule implements Serializable {
 
   /** */
   private static final long serialVersionUID = 1L;
@@ -14,12 +14,7 @@ public class RouteMapRule extends ComparableStructure<Integer> {
 
   private String _description;
 
-  private final Set<RouteMapMatch> _matches;
-
-  public RouteMapRule(int num) {
-    super(num);
-    _matches = new HashSet<>();
-  }
+  private final Set<RouteMapMatch> _matches = new HashSet<>();
 
   public LineAction getAction() {
     return _action;
