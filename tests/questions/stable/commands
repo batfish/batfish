@@ -1,5 +1,4 @@
 load-questions questions/stable
-init-testrig test_rigs/example tr-example
 
 # validate ipOwners
 test -raw tests/questions/stable/ipOwners.ref validate-template ipOwners duplicatesOnly=false
