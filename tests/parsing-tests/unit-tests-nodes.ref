@@ -6216,6 +6216,35 @@
             ],
             "eigrp" : {
               "enabled" : false,
+              "passive" : true
+            },
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : true,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
+          "FastEthernet0/1" : {
+            "name" : "FastEthernet0/1",
+            "accessVlan" : 0,
+            "active" : true,
+            "autostate" : true,
+            "bandwidth" : 1.0E8,
+            "declaredNames" : [
+              "FastEthernet0/1"
+            ],
+            "eigrp" : {
+              "enabled" : false,
               "passive" : false
             },
             "mtu" : 1500,
@@ -6524,6 +6553,7 @@
             "name" : "default",
             "interfaces" : [
               "Ethernet0",
+              "FastEthernet0/1",
               "GigabitEthernet1/5/3",
               "GigabitEthernet2/5/3",
               "Port-Channel34",
