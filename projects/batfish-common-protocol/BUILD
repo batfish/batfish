@@ -103,6 +103,7 @@ java_library(
     deps = [
         ":common",
         ":recovery_grammar",
+        "//projects/lib/z3",
         "@antlr4_runtime//:compile",
         "@commons_configuration2//:compile",
         "@commons_lang3//:compile",
@@ -127,6 +128,7 @@ junit_tests(
         ":common",
         ":common_testlib",
         ":recovery_grammar",
+        "//projects/lib/z3",
         "@antlr4_runtime//:compile",
         "@guava//:compile",
         "@guava_testlib//:compile",
