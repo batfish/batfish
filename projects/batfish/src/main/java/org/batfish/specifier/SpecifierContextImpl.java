@@ -1,6 +1,7 @@
 package org.batfish.specifier;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import org.batfish.common.util.CommonUtil;
@@ -10,6 +11,7 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.main.Batfish;
 import org.batfish.role.NodeRole;
 import org.batfish.role.NodeRoleDimension;
+import org.batfish.role.addressbook.AddressBook;
 
 public class SpecifierContextImpl implements SpecifierContext {
   private final @Nonnull Batfish _batfish;
@@ -36,6 +38,11 @@ public class SpecifierContextImpl implements SpecifierContext {
   @Override
   public Map<String, Configuration> getConfigs() {
     return _configs;
+  }
+
+  @Override
+  public Optional<AddressBook> getAddressBook(String bookName) {
+    return _batfish.getAddressLibraryData().getAddressBook(bookName);
   }
 
   @Nonnull
