@@ -1,5 +1,4 @@
 load-questions questions/experimental
-init-testrig test_rigs/example tr-example
 
 # validate aclReachability
 test -raw tests/questions/experimental/aclReachability.ref validate-template aclReachability aclNameRegex=".*", nodeRegex=".*"
