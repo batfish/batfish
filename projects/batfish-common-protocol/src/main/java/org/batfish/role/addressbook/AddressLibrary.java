@@ -1,10 +1,12 @@
 package org.batfish.role.addressbook;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -13,6 +15,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.SortedSet;
@@ -41,11 +44,14 @@ public class AddressLibrary {
    */
   @JsonCreator
   public AddressLibrary(List<AddressBook> books) {
-    checkArgument(books != null, "Library cannot have a null list of books (empty list is OK)");
-    checkDuplicates("book", books.stream().map(AddressBook::getName).collect(Collectors.toList()));
+    List<AddressBook> nnBooks = firstNonNull(books, ImmutableList.of());
+    checkDuplicates(
+        "book", nnBooks.stream().map(AddressBook::getName).collect(Collectors.toList()));
 
     _books =
-        books.stream().collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
+        nnBooks
+            .stream()
+            .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
   }
 
   /** Does the provided collection have duplicates? */
@@ -70,6 +76,18 @@ public class AddressLibrary {
         objectType,
         name,
         AddressLibrary.NAME_PATTERN);
+  }
+
+  /** Deletes the book */
+  public void delAddressBook(String bookName) {
+    AddressBook book =
+        getAddressBook(bookName)
+            .orElseThrow(() -> new NoSuchElementException("Book not found: " + bookName));
+    _books =
+        _books
+            .stream()
+            .filter(b -> !b.equals(book))
+            .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
   }
 
   @Override

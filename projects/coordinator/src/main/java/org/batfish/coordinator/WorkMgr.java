@@ -616,6 +616,21 @@ public class WorkMgr extends AbstractCoordinator {
     CommonUtil.deleteDirectory(qDir);
   }
 
+  /**
+   * Gets the {@link AddressLibrary} for the {@code container}.
+   *
+   * @throws IOException The contents of address library file cannot be converted to {@link
+   *     AddressLibrary}
+   */
+  public AddressLibrary getAddressLibrary(String container) throws IOException {
+    return AddressLibrary.read(getAddressLibraryPath(container));
+  }
+
+  /** Gets the path of the address library file */
+  public Path getAddressLibraryPath(String container) {
+    return getdirContainer(container).resolve(BfConsts.RELPATH_ADDRESS_LIBRARY_PATH);
+  }
+
   public Map<String, String> getAnalysisAnswers(
       String containerName,
       String baseTestrig,

@@ -92,6 +92,6 @@ public class WorkMgrServiceV2 {
   /** Relocate the request to ContainerResource. */
   @Path(CoordConstsV2.RSC_NETWORKS + "/{id}")
   public ContainerResource getNetworkResource(@PathParam("id") String id) {
-    return new ContainerResource(_apiKey, id);
+    return new ContainerResource(_uriInfo, _apiKey, id);
   }
 }
