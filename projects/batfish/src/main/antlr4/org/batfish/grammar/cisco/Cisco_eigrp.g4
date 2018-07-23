@@ -323,10 +323,19 @@ ren_service_family
    resf_footer
 ;
 
+ren_service_family_null
+:
+   NO?
+   (
+      EIGRP
+      | TIMERS
+   ) null_rest_of_line
+;
+
 ren_service_family_tail
 :
-   resf_interface
-   | ren_address_family_null
+   ren_service_family_null
+   | resf_interface
    | resf_topology
 ;
 

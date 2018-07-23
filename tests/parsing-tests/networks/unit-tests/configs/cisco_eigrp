@@ -141,7 +141,6 @@ router eigrp virtual
   exit-af-topology
  exit-address-family
  service-family ipv4 vrf service-family autonomous-system 3
-  neighbor 1.1.1.100
   sf-interface Ethernet0
    bandwidth-percent 75
    dampening-change 75
