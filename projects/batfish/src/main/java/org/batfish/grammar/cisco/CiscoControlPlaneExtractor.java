@@ -1506,6 +1506,15 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     return newInterface;
   }
 
+  private Interface getOrAddInterface(Interface_nameContext ctx) {
+    String canonicalIfaceName = getCanonicalInterfaceName(ctx.getText());
+    Interface iface = _configuration.getInterfaces().get(canonicalIfaceName);
+    if (iface == null) {
+      iface = addInterface(canonicalIfaceName, ctx, false);
+    }
+    return iface;
+  }
+
   private String convErrorMessage(Class<?> type, ParserRuleContext ctx) {
     return String.format("Could not convert to %s: %s", type.getSimpleName(), getFullText(ctx));
   }
@@ -2141,12 +2150,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterInterface_is_stanza(Interface_is_stanzaContext ctx) {
-    String ifaceName = ctx.iname.getText();
-    String canonicalIfaceName = getCanonicalInterfaceName(ifaceName);
-    Interface iface = _configuration.getInterfaces().get(canonicalIfaceName);
-    if (iface == null) {
-      iface = addInterface(canonicalIfaceName, ctx.iname, false);
-    }
+    Interface iface = getOrAddInterface(ctx.iname);
     iface.setIsisInterfaceMode(IsisInterfaceMode.ACTIVE);
     _currentIsisInterface = iface;
   }
@@ -6634,12 +6638,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitPassive_interface_is_stanza(Passive_interface_is_stanzaContext ctx) {
-    String ifaceName = ctx.name.getText();
-    String canonicalIfaceName = getCanonicalInterfaceName(ifaceName);
-    Interface iface = _configuration.getInterfaces().get(canonicalIfaceName);
-    if (iface == null) {
-      iface = addInterface(canonicalIfaceName, ctx.name, false);
-    }
+    Interface iface = getOrAddInterface(ctx.name);
     if (ctx.NO() == null) {
       iface.setIsisInterfaceMode(IsisInterfaceMode.PASSIVE);
     } else {
