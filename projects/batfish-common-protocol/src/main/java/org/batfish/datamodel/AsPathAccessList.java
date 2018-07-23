@@ -1,46 +1,48 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.google.common.collect.ImmutableList;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.batfish.common.util.ComparableStructure;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 @JsonSchemaDescription(
     "An AsPathAccessList is used to filter e/iBGP routes according to their AS-path attribute.")
-public final class AsPathAccessList extends ComparableStructure<String> implements Serializable {
+public final class AsPathAccessList implements Serializable {
 
   private static final String PROP_LINES = "lines";
+
+  private static final String PROP_NAME = "name";
 
   private static final long serialVersionUID = 1L;
 
   private transient Set<AsPath> _deniedCache;
 
-  private final List<AsPathAccessListLine> _lines;
+  @Nonnull private final List<AsPathAccessListLine> _lines;
+
+  private final String _name;
 
   private transient Set<AsPath> _permittedCache;
 
-  public AsPathAccessList(String name) {
-    super(name);
-    _lines = new ArrayList<>();
-  }
-
   @JsonCreator
   public AsPathAccessList(
-      @JsonProperty(PROP_NAME) String name,
-      @JsonProperty(PROP_LINES) List<AsPathAccessListLine> lines) {
-    super(name);
-    _lines = lines;
+      @Nullable @JsonProperty(PROP_NAME) String name,
+      @Nullable @JsonProperty(PROP_LINES) List<AsPathAccessListLine> lines) {
+    _lines = firstNonNull(lines, ImmutableList.of());
+    _name = name;
   }
 
   @Override
@@ -57,8 +59,15 @@ public final class AsPathAccessList extends ComparableStructure<String> implemen
   @JsonProperty(PROP_LINES)
   @JsonPropertyDescription(
       "The list of lines against which a route's AS-path will be checked in order.")
+  @Nonnull
   public List<AsPathAccessListLine> getLines() {
     return _lines;
+  }
+
+  @JsonProperty(PROP_NAME)
+  @Nonnull
+  public String getName() {
+    return _name;
   }
 
   private boolean newPermits(AsPath asPath) {
