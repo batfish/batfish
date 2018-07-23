@@ -770,6 +770,8 @@ import org.batfish.grammar.cisco.CiscoParser.Rbnx_v_local_asContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_vrfContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_classicContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_networkContext;
+import org.batfish.grammar.cisco.CiscoParser.Re_passive_interfaceContext;
+import org.batfish.grammar.cisco.CiscoParser.Re_passive_interface_defaultContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_redistribute_bgpContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_redistribute_connectedContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_redistribute_eigrpContext;
@@ -777,6 +779,8 @@ import org.batfish.grammar.cisco.CiscoParser.Re_redistribute_isisContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_redistribute_ospfContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_redistribute_ripContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_redistribute_staticContext;
+import org.batfish.grammar.cisco.CiscoParser.Reaf_interfaceContext;
+import org.batfish.grammar.cisco.CiscoParser.Reafi_passive_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Rec_address_familyContext;
 import org.batfish.grammar.cisco.CiscoParser.Redistribute_aggregate_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Redistribute_connected_bgp_tailContext;
@@ -1342,6 +1346,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private DynamicIpBgpPeerGroup _currentDynamicIpPeerGroup;
 
   private DynamicIpv6BgpPeerGroup _currentDynamicIpv6PeerGroup;
+
+  @Nullable private Interface _currentEigrpInterface;
 
   @Nullable private EigrpProcess _currentEigrpProcess;
 
@@ -3337,6 +3343,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     EigrpProcess proc = new EigrpProcess(asn, EigrpProcessMode.CLASSIC);
     currentVrf().setEigrpProcess(proc);
     _currentEigrpProcess = proc;
+  }
+
+  @Override
+  public void enterReaf_interface(Reaf_interfaceContext ctx) {
+    _currentEigrpInterface = getOrAddInterface(ctx.iname);
   }
 
   @Override
@@ -6414,6 +6425,22 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitRe_passive_interface(Re_passive_interfaceContext ctx) {
+    boolean passive = (ctx.NO() == null);
+    getOrAddInterface(ctx.i).setEigrpPassive(passive);
+  }
+
+  @Override
+  public void exitRe_passive_interface_default(Re_passive_interface_defaultContext ctx) {
+    if (_currentEigrpProcess == null) {
+      todo(ctx, "network not supported here until autonomous-system stanza supported");
+      return;
+    }
+    boolean passive = (ctx.NO() == null);
+    _currentEigrpProcess.setPassiveInterfaceDefault(passive);
+  }
+
+  @Override
   public void exitRe_redistribute_bgp(Re_redistribute_bgpContext ctx) {
     if (ctx.map != null) {
       String mapname = ctx.map.getText();
@@ -6473,6 +6500,22 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       String mapname = ctx.map.getText();
       _configuration.referenceStructure(
           ROUTE_MAP, mapname, EIGRP_REDISTRIBUTE_STATIC_MAP, ctx.map.getStart().getLine());
+    }
+  }
+
+  @Override
+  public void exitReaf_interface(Reaf_interfaceContext ctx) {
+    _currentEigrpInterface = null;
+  }
+
+  @Override
+  public void exitReafi_passive_interface(Reafi_passive_interfaceContext ctx) {
+    boolean passive = (ctx.NO() == null);
+    if (_currentEigrpInterface == null) {
+      // default interface
+      Objects.requireNonNull(_currentEigrpProcess).setPassiveInterfaceDefault(passive);
+    } else {
+      _currentEigrpInterface.setEigrpPassive(passive);
     }
   }
 
