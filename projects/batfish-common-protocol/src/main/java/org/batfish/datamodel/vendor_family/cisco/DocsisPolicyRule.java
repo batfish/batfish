@@ -2,15 +2,24 @@ package org.batfish.datamodel.vendor_family.cisco;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.batfish.common.util.ComparableStructure;
+import java.io.Serializable;
 
-public class DocsisPolicyRule extends ComparableStructure<String> {
+public final class DocsisPolicyRule implements Serializable {
+
+  private static final String PROP_NAME = "name";
 
   /** */
   private static final long serialVersionUID = 1L;
 
+  private final String _name;
+
   @JsonCreator
   public DocsisPolicyRule(@JsonProperty(PROP_NAME) String number) {
-    super(number);
+    _name = number;
+  }
+
+  @JsonProperty(PROP_NAME)
+  public String getName() {
+    return _name;
   }
 }
