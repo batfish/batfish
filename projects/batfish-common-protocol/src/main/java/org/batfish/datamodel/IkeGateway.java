@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import java.io.Serializable;
+import java.util.Objects;
 
 public class IkeGateway implements Serializable {
 
@@ -29,9 +30,9 @@ public class IkeGateway implements Serializable {
 
   private transient String _ikePolicyName;
 
-  private Ip _localIp;
-
   private String _localId;
+
+  private Ip _localIp;
 
   private final String _name;
 
@@ -50,25 +51,19 @@ public class IkeGateway implements Serializable {
       return false;
     }
     IkeGateway other = (IkeGateway) o;
-    if (!other._address.equals(_address)) {
-      return false;
-    }
-    if (!other._externalInterface.equals(_externalInterface)) {
-      return false;
-    }
-    if (!other._ikePolicy.equals(_ikePolicy)) {
-      return false;
-    }
-    if (!other._localIp.equals(_localIp)) {
-      return false;
-    }
-    if (!other._localId.equals(_localId)) {
-      return false;
-    }
-    if (!other._remoteId.equals(_remoteId)) {
-      return false;
-    }
-    return true;
+    return Objects.equals(_address, other._address)
+        && Objects.equals(_externalInterface, other._externalInterface)
+        && Objects.equals(_ikePolicy, other._ikePolicy)
+        && Objects.equals(_localId, other._localId)
+        && Objects.equals(_localIp, other._localIp)
+        && Objects.equals(_name, other._name)
+        && Objects.equals(_remoteId, other._remoteId);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(
+        _address, _externalInterface, _ikePolicy, _localId, _localIp, _name, _remoteId);
   }
 
   @JsonPropertyDescription("Remote IP address of IKE gateway")
@@ -108,16 +103,16 @@ public class IkeGateway implements Serializable {
     }
   }
 
+  @JsonPropertyDescription("Local IKE ID used in connection to IKE gateway.")
+  public String getLocalId() {
+    return _localId;
+  }
+
   @JsonProperty(PROP_LOCAL_ADDRESS)
   @JsonPropertyDescription(
       "Local IP address from which to connect to IKE gateway. Used instead of external interface.")
   public Ip getLocalIp() {
     return _localIp;
-  }
-
-  @JsonPropertyDescription("Local IKE ID used in connection to IKE gateway.")
-  public String getLocalId() {
-    return _localId;
   }
 
   @JsonProperty(PROP_NAME)
@@ -163,13 +158,13 @@ public class IkeGateway implements Serializable {
     _ikePolicyName = ikePolicyName;
   }
 
+  public void setLocalId(String localId) {
+    _localId = localId;
+  }
+
   @JsonProperty(PROP_LOCAL_ADDRESS)
   public void setLocalIp(Ip localIp) {
     _localIp = localIp;
-  }
-
-  public void setLocalId(String localId) {
-    _localId = localId;
   }
 
   public void setRemoteId(String remoteId) {
