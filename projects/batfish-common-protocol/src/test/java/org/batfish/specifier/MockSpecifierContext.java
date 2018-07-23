@@ -41,6 +41,11 @@ public class MockSpecifierContext implements SpecifierContext {
 
     private Builder() {}
 
+    public Builder setAddressBooks(SortedSet<AddressBook> addressBooks) {
+      _addressBooks = ImmutableSortedSet.copyOf(addressBooks);
+      return this;
+    }
+
     public Builder setConfigs(Map<String, Configuration> configs) {
       _configs = ImmutableMap.copyOf(configs);
       return this;
