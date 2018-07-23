@@ -59,7 +59,7 @@ public class AclReachability2Answerer extends Answerer {
    * @param question The question
    * @return The resulting {@link TableMetadata} object
    */
-  private static TableMetadata createMetadata(AclReachability2Question question) {
+  public static TableMetadata createMetadata(Question question) {
     List<ColumnMetadata> columnMetadata =
         new ImmutableList.Builder<ColumnMetadata>()
             .add(
