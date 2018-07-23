@@ -9,7 +9,6 @@ import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 import org.batfish.common.BatfishLogger;
 import org.batfish.coordinator.Main;
 import org.batfish.role.addressbook.AddressLibrary;
