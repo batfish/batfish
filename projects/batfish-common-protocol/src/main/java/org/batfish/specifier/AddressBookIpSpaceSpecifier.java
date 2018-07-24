@@ -3,7 +3,9 @@ package org.batfish.specifier;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.batfish.datamodel.AclIpSpace;
+import org.batfish.datamodel.IpWildcard;
 import org.batfish.role.addressbook.AddressGroup;
 
 /** An {@link IpSpaceSpecifier} that is looks up the IpSpace from the address book. */
@@ -44,7 +46,14 @@ public final class AddressBookIpSpaceSpecifier implements IpSpaceSpecifier {
                 () -> new NoSuchElementException("AddressGroup '" + _addressGroupName + "' found"));
 
     return IpSpaceAssignment.builder()
-        .assign(locations, AclIpSpace.union(addressGroup.getAddresses()))
+        .assign(
+            locations,
+            AclIpSpace.union(
+                addressGroup
+                    .getAddresses()
+                    .stream()
+                    .map(add -> new IpWildcard(add).toIpSpace())
+                    .collect(Collectors.toList())))
         .build();
   }
 }
