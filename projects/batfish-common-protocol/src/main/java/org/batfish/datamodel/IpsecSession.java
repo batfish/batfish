@@ -5,19 +5,19 @@ import javax.annotation.Nullable;
 /** Represents the attributes of the session established between two {@link IpsecPeerConfig}s */
 public class IpsecSession {
 
-  @Nullable private IkePhase1Policy _initiatorIkeP1Policy;
+  @Nullable private final IkePhase1Policy _initiatorIkeP1Policy;
 
-  @Nullable private IpsecPhase2Policy _initiatorIpsecP2Policy;
+  @Nullable private final IpsecPhase2Policy _initiatorIpsecP2Policy;
 
-  @Nullable private IkePhase1Proposal _negotiatedIkeP1Proposal;
+  @Nullable private final IkePhase1Proposal _negotiatedIkeP1Proposal;
 
-  @Nullable private IkePhase1Key _negotiatedIkeP1Key;
+  @Nullable private final IkePhase1Key _negotiatedIkeP1Key;
 
-  @Nullable private IpsecPhase2Proposal _negotiatedIpsecP2Proposal;
+  @Nullable private final IpsecPhase2Proposal _negotiatedIpsecP2Proposal;
 
-  @Nullable private IkePhase1Policy _responderIkeP1Policy;
+  @Nullable private final IkePhase1Policy _responderIkeP1Policy;
 
-  @Nullable private IpsecPhase2Policy _responderIpsecP2Policy;
+  @Nullable private final IpsecPhase2Policy _responderIpsecP2Policy;
 
   private IpsecSession(
       @Nullable IkePhase1Policy initiatorIkeP1Policy,
