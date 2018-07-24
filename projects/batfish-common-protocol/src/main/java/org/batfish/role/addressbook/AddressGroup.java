@@ -5,12 +5,9 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.role.addressbook.AddressLibrary.checkValidName;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableSortedSet;
-import java.util.Comparator;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
 
 public class AddressGroup implements Comparable<AddressGroup> {
@@ -18,7 +15,7 @@ public class AddressGroup implements Comparable<AddressGroup> {
   private static final String PROP_ADDRESSES = "addresses";
   private static final String PROP_NAME = "name";
 
-  @Nonnull private SortedSet<IpSpace> _addresses;
+  @Nonnull private SortedSet<String> _addresses;
   @Nonnull private String _name;
 
   public AddressGroup(
@@ -28,11 +25,10 @@ public class AddressGroup implements Comparable<AddressGroup> {
     checkValidName(name, "address group");
 
     _name = name;
-    _addresses =
-        firstNonNull(addresses, new TreeSet<String>())
-            .stream()
-            .map(s -> new IpWildcard(s).toIpSpace())
-            .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
+    _addresses = firstNonNull(addresses, new TreeSet<String>());
+
+    // check if all the input address strings can be mapped to an IpSpace
+    _addresses.stream().map(s -> new IpWildcard(s).toIpSpace());
   }
 
   @Override
@@ -41,7 +37,7 @@ public class AddressGroup implements Comparable<AddressGroup> {
   }
 
   @JsonProperty(PROP_ADDRESSES)
-  public SortedSet<IpSpace> getAddresses() {
+  public SortedSet<String> getAddresses() {
     return _addresses;
   }
 
