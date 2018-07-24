@@ -69,7 +69,7 @@ public class ReachFilterAnswerer extends Answerer {
     }
     TableAnswerElement answer = TraceFiltersAnswerer.create(new TraceFiltersQuestion(null, null));
     answer.postProcessAnswer(question, initialAnswer.getRows().getData());
-    return initialAnswer;
+    return answer;
   }
 
   @VisibleForTesting
