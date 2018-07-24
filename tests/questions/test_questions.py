@@ -21,32 +21,6 @@ def test_proper_json(question):
 
     assert 'class' in q
 
-NO_HINTS_QUESTIONS = [
-    'questions/stable/edgePath.json',
-    'questions/stable/jsonPath.json',
-    'questions/stable/nodesPath.json',
-    'questions/stable/nodesPathRecursive.json',
-]
-
-
-def test_display_hints_present(question):
-    """Tests that all questions based on JsonPath have display hints."""
-    with open(path.join(REPO, question), 'r') as qfile:
-        q = load(qfile)
-
-    assert 'class' in q
-    if q['class'] != 'org.batfish.question.jsonpath.JsonPathQuestionPlugin$JsonPathQuestion':
-        skip('Not a JsonPath question')
-
-    if question in NO_HINTS_QUESTIONS:
-        skip('Whitelisted JsonPath question without display hints')
-
-    assert 'paths' in q
-    paths = q['paths']
-    assert 1 == len(paths)
-
-    assert 'displayHints' in paths[0]
-
 
 def test_name_and_filename_match(question):
     """Tests that all questions have filenames that match their instance name."""
@@ -81,7 +55,7 @@ def test_indented_with_spaces(question):
         for line in qfile:
             if re.search(pattern, line) is not None:
                 raise ValueError(
-                    "Found tabs intentaion in question {}. Please run \"sed -i '' 's/\\\\t/    /g' {}\" to switch to spaces.".format(question, path.join(REPO, question)))
+                    "Found tab indentation in question {}. Please run \"sed -i '' 's/\\\\t/    /g' {}\" to switch to spaces.".format(question, path.join(REPO, question)))
 
 if __name__ == '__main__':
     pytest.main()
