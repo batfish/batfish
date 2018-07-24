@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 from glob import glob
 from json import load, loads
-from os import path, walk
+from os import pardir, path, walk
 from pytest import fixture, skip
 import re
 
-REPO = path.abspath(path.join(path.dirname(__file__), '../..'))
+REPO = path.abspath(path.join(path.dirname(__file__), pardir, pardir))
 QUESTIONS = glob(REPO + '/questions*/**/*.json', recursive=True)
 
 

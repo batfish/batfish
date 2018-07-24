@@ -3,6 +3,8 @@
 TMP_DIR=$(mktemp -d)
 cd ${TMP_DIR} || exit 1
 
+sudo pip3 install pytest
+
 if [[ ${TRAVIS_OS_NAME} == 'linux' ]]; then
    sudo "${TRAVIS_BUILD_DIR}/tools/install_z3_ubuntu.sh" /usr || exit 1
    z3 --version || exit 1
