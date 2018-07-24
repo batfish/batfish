@@ -5,9 +5,9 @@ import javax.annotation.Nonnull;
 /** Uniquely identifies an IPSec peer in the network */
 public class IpsecPeerConfigId {
 
-  private String _ipsecPeerConfigName;
+  @Nonnull private String _ipsecPeerConfigName;
 
-  private String _hostName;
+  @Nonnull private String _hostName;
 
   public IpsecPeerConfigId(@Nonnull String ipsecPeerConfigName, @Nonnull String hostName) {
     _ipsecPeerConfigName = ipsecPeerConfigName;
