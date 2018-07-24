@@ -638,6 +638,7 @@ public class VirtualRouter implements Serializable {
         // Non-null metric means we generate a new summary and put it in the RIB
         OspfInterAreaRoute summaryRoute =
             new OspfInterAreaRoute(prefix, Ip.ZERO, admin, metric, areaNum);
+        summaryRoute.setNonRouting(true);
         if (_ospfInterAreaStagingRib.mergeRouteGetDelta(summaryRoute) != null) {
           changed = true;
         }
