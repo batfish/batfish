@@ -39,7 +39,7 @@ final class VrfMatchersImpl {
 
   static final class HasGeneratedRoutes extends FeatureMatcher<Vrf, SortedSet<GeneratedRoute>> {
     HasGeneratedRoutes(@Nonnull Matcher<? super SortedSet<GeneratedRoute>> subMatcher) {
-      super(subMatcher, "A VRF with staticRoutes:", "staticRoutes");
+      super(subMatcher, "A VRF with generatedRoutes:", "generatedRoutes");
     }
 
     @Override
