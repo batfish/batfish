@@ -71,8 +71,12 @@ public class IpsecUtil {
         continue;
       }
       Configuration initiatorOwner = configurations.get(ipsecPeerConfigId.getHostName());
-      for (IpsecPeerConfigId candidateIpsecPeerConfigId :
-          localIpIpsecPeerConfigIds.get(ipsecStaticPeerConfig.getDestinationAddress())) {
+      Set<IpsecPeerConfigId> candidateIpsecPeerConfigIds =
+          localIpIpsecPeerConfigIds.get(ipsecStaticPeerConfig.getDestinationAddress());
+      if (candidateIpsecPeerConfigIds == null) {
+        continue;
+      }
+      for (IpsecPeerConfigId candidateIpsecPeerConfigId : candidateIpsecPeerConfigIds) {
 
         IpsecPeerConfig candidateIpsecPeer =
             networkConfigurations.getIpecPeerConfig(candidateIpsecPeerConfigId);
@@ -172,6 +176,9 @@ public class IpsecUtil {
     if (negotiatedIkePhase1Proposal != null) {
       IkePhase1Key initiatorPhase1Key = initiatorIkePhase1Policy.getIkePhase1Key();
       IkePhase1Key responderPhase1Key = responderIkeP1Policy.getIkePhase1Key();
+      if (initiatorPhase1Key == null || responderPhase1Key == null) {
+        return;
+      }
       if (initiatorPhase1Key.getKeyType().equals(responderPhase1Key.getKeyType())
           && initiatorPhase1Key.getKeyHash().equals(responderPhase1Key.getKeyHash())) {
         ipsecSessionBuilder.setNegotiatedIkeP1Key(initiatorIkePhase1Policy.getIkePhase1Key());
