@@ -116,7 +116,7 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
 
     private static final NodesSpecifier DEFAULT_INGRESS_NODES = NodesSpecifier.ALL;
 
-    private static final InterfacesSpecifier DEFAULT_INGRESS_INTERFACES = null;
+    private static final InterfacesSpecifier DEFAULT_INGRESS_INTERFACES = InterfacesSpecifier.ALL;
 
     private static final int DEFAULT_MAX_CHUNK_SIZE = 1;
 
