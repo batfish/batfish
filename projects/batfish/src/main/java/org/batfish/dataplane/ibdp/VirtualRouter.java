@@ -83,6 +83,8 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.eigrp.EigrpEdge;
+import org.batfish.datamodel.eigrp.EigrpInterface;
 import org.batfish.datamodel.eigrp.EigrpInterfaceSettings;
 import org.batfish.datamodel.eigrp.EigrpMetric;
 import org.batfish.datamodel.eigrp.EigrpProcess;
@@ -2098,34 +2100,15 @@ public class VirtualRouter extends ComparableStructure<String> {
   /**
    * Propagate EIGRP Internal routes from a single neighbor.
    *
-   * @param proc The receiving EIGRP process
    * @param neighbor the neighbor
-   * @param connectingInterface interface on which we are connected to the neighbor
+   * @param settings EIGRP interface settings of the interface on which we are connected to the
+   *     neighbor
    * @param neighborInterface interface that the neighbor uses to connect to us
    * @param adminCost route administrative distance
    * @return true if new routes have been added to our staging RIB
    */
   private boolean propagateEigrpInternalRoutesFromNeighbor(
-      EigrpProcess proc,
-      Node neighbor,
-      Interface connectingInterface,
-      Interface neighborInterface,
-      int adminCost) {
-    EigrpInterfaceSettings settings = connectingInterface.getEigrp();
-    EigrpInterfaceSettings neighborSettings = neighborInterface.getEigrp();
-    if (settings == null || neighborSettings == null) {
-      return false;
-    }
-    Long asn = settings.getAsNumber();
-    Long neighborAsn = neighborSettings.getAsNumber();
-    long procAsn = proc.getAsn();
-    if (!Objects.equals(procAsn, asn)
-        || !Objects.equals(procAsn, neighborAsn)
-        || !settings.getEnabled()
-        || !neighborSettings.getEnabled()
-        || settings.getMetric() == null) {
-      return false;
-    }
+      Node neighbor, EigrpInterfaceSettings settings, Interface neighborInterface, int adminCost) {
 
     /*
      * An EIGRP neighbor relationship exists on this edge. We will examine all internal routes
@@ -2150,12 +2133,14 @@ public class VirtualRouter extends ComparableStructure<String> {
         continue;
       }
 
-      EigrpMetric newMetric = settings.getMetric().accumulate(neighborRoute.getEigrpMetric());
+      EigrpMetric interfaceMetric = requireNonNull(settings.getMetric());
+      EigrpMetric newMetric = interfaceMetric.accumulate(neighborRoute.getEigrpMetric());
       Ip nextHopIp = neighborInterface.getAddress().getIp();
+      long asn = requireNonNull(settings.getAsNumber());
       EigrpRoute newRoute =
           new EigrpInternalRoute(
               adminCost,
-              procAsn,
+              asn,
               neighborRoute.getNetwork(),
               neighborInterface.getName(),
               nextHopIp,
@@ -2315,46 +2300,32 @@ public class VirtualRouter extends ComparableStructure<String> {
    *
    * @param nodes mapping of node names to instances.
    * @param topology network topology
+   * @param nc All network configurations
    * @return true if new routes have been added to the staging RIB
    */
-  boolean propagateEigrpInternalRoutes(Map<String, Node> nodes, Topology topology) {
-    EigrpProcess proc = _vrf.getEigrpProcess();
-    if (proc == null) {
-      return false; // nothing to do
-    }
-
-    boolean changed = false;
-    String node = _c.getHostname();
-
+  boolean propagateEigrpInternalRoutes(
+      Map<String, Node> nodes,
+      Network<EigrpInterface, EigrpEdge> topology,
+      NetworkConfigurations nc) {
     // Default EIGRP admin cost for constructing new routes
     int adminCost = RoutingProtocol.EIGRP.getDefaultAdministrativeCost(_c.getConfigurationFormat());
-    SortedSet<Edge> edges = topology.getNodeEdges().get(node);
-    if (edges == null) {
-      // there are no edges, so EIGRP won't produce anything
-      return false;
-    }
 
-    for (Edge edge : edges) {
-      if (!edge.getNode1().equals(node)) {
-        continue;
-      }
-
-      String connectingInterfaceName = edge.getInt1();
-      Interface connectingInterface = _vrf.getInterfaces().get(connectingInterfaceName);
-      if (connectingInterface == null) {
-        // wrong vrf, so skip
-        continue;
-      }
-
-      String neighborName = edge.getNode2();
-      Node neighbor = nodes.get(neighborName);
-      Interface neighborInterface = neighbor.getConfiguration().getInterfaces().get(edge.getInt2());
-
-      changed |=
-          propagateEigrpInternalRoutesFromNeighbor(
-              proc, neighbor, connectingInterface, neighborInterface, adminCost);
-    }
-    return changed;
+    return _vrf.getInterfaceNames()
+            .stream()
+            .map(ifaceName -> new EigrpInterface(_c.getHostname(), ifaceName, _vrf.getName()))
+            .filter(topology.nodes()::contains)
+            .flatMap(n -> topology.inEdges(n).stream())
+            .mapToInt(
+                edge ->
+                    propagateEigrpInternalRoutesFromNeighbor(
+                            nodes.get(edge.getNode1().getHostname()),
+                            edge.getNode2().getInterfaceSettings(nc),
+                            edge.getNode1().getInterface(nc),
+                            adminCost)
+                        ? 1
+                        : 0)
+            .sum()
+        > 0; // Don't use any short-circuit operators
   }
 
   /**

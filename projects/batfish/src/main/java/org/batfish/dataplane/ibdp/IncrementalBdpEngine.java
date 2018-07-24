@@ -38,6 +38,9 @@ import org.batfish.datamodel.OspfExternalType1Route;
 import org.batfish.datamodel.OspfExternalType2Route;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.IncrementalBdpAnswerElement;
+import org.batfish.datamodel.eigrp.EigrpEdge;
+import org.batfish.datamodel.eigrp.EigrpInterface;
+import org.batfish.datamodel.eigrp.EigrpTopology;
 import org.batfish.datamodel.isis.IsisEdge;
 import org.batfish.datamodel.isis.IsisNode;
 import org.batfish.datamodel.isis.IsisTopology;
@@ -88,6 +91,9 @@ class IncrementalBdpEngine {
     dpBuilder.setNodes(nodes);
     dpBuilder.setTopology(topology);
 
+    Network<EigrpInterface, EigrpEdge> eigrpTopology =
+        EigrpTopology.initEigrpTopology(configurations, topology);
+
     /*
      * Run the data plane computation here:
      * - First, let the IGP routes converge
@@ -96,7 +102,7 @@ class IncrementalBdpEngine {
      * - Finally, compute FIBs, return answer
      */
     IncrementalBdpAnswerElement answerElement = new IncrementalBdpAnswerElement();
-    computeIgpDataPlane(nodes, topology, answerElement);
+    computeIgpDataPlane(nodes, topology, eigrpTopology, answerElement, networkConfigurations);
     computeFibs(nodes);
 
     IncrementalDataPlane dp = dpBuilder.build();
@@ -375,11 +381,17 @@ class IncrementalBdpEngine {
    *
    * @param nodes A dictionary of configuration-wrapping Bdp nodes keyed by name
    * @param topology The topology representing Layer 3 adjacencies between interface of the nodes
+   * @param eigrpTopology The topology representing EIGRP adjacencies
    * @param ae The output answer element in which to store a report of the computation. Also
    *     contains the current recovery iteration.
+   * @param networkConfigurations All configurations in the network
    */
   private void computeIgpDataPlane(
-      SortedMap<String, Node> nodes, Topology topology, IncrementalBdpAnswerElement ae) {
+      SortedMap<String, Node> nodes,
+      Topology topology,
+      Network<EigrpInterface, EigrpEdge> eigrpTopology,
+      IncrementalBdpAnswerElement ae,
+      NetworkConfigurations networkConfigurations) {
 
     int numOspfInternalIterations;
     int numEigrpInternalIterations;
@@ -404,7 +416,8 @@ class IncrementalBdpEngine {
             });
 
     // EIGRP internal routes
-    numEigrpInternalIterations = initEigrpInternalRoutes(nodes, topology);
+    numEigrpInternalIterations =
+        initEigrpInternalRoutes(nodes, eigrpTopology, networkConfigurations);
 
     // OSPF internal routes
     numOspfInternalIterations = initOspfInternalRoutes(nodes, topology);
@@ -678,10 +691,14 @@ class IncrementalBdpEngine {
    * Run the IGP EIGRP computation until convergence.
    *
    * @param nodes list of nodes for which to initialize the EIGRP routes
-   * @param topology the network topology
+   * @param eigrpTopology the EIGRP network topology
+   * @param networkConfigurations All configurations in the network
    * @return the number of iterations it took for internal EIGRP routes to converge
    */
-  private int initEigrpInternalRoutes(Map<String, Node> nodes, Topology topology) {
+  private int initEigrpInternalRoutes(
+      Map<String, Node> nodes,
+      Network<EigrpInterface, EigrpEdge> eigrpTopology,
+      NetworkConfigurations networkConfigurations) {
     AtomicBoolean eigrpInternalChanged = new AtomicBoolean(true);
     int eigrpInternalIterations = 0;
     while (eigrpInternalChanged.get()) {
@@ -712,7 +729,8 @@ class IncrementalBdpEngine {
           .forEach(
               n -> {
                 for (VirtualRouter vr : n.getVirtualRouters().values()) {
-                  if (vr.propagateEigrpInternalRoutes(nodes, topology)) {
+                  if (vr.propagateEigrpInternalRoutes(
+                      nodes, eigrpTopology, networkConfigurations)) {
                     eigrpInternalChanged.set(true);
                   }
                 }
