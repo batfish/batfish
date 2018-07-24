@@ -3,12 +3,14 @@ package org.batfish.datamodel.matchers;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.BgpProcess;
+import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.SnmpServer;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.eigrp.EigrpProcess;
 import org.batfish.datamodel.matchers.VrfMatchersImpl.HasBgpProcess;
 import org.batfish.datamodel.matchers.VrfMatchersImpl.HasEigrpProcess;
+import org.batfish.datamodel.matchers.VrfMatchersImpl.HasGeneratedRoutes;
 import org.batfish.datamodel.matchers.VrfMatchersImpl.HasInterfaces;
 import org.batfish.datamodel.matchers.VrfMatchersImpl.HasOspfProcess;
 import org.batfish.datamodel.matchers.VrfMatchersImpl.HasSnmpServer;
@@ -35,6 +37,23 @@ public class VrfMatchers {
   }
 
   /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the VRF's generated
+   * routes.
+   */
+  public static HasGeneratedRoutes hasGeneratedRoutes(
+      Matcher<? super SortedSet<GeneratedRoute>> subMatcher) {
+    return new HasGeneratedRoutes(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the VRF's
+   * interfaces.
+   */
+  public static Matcher<Vrf> hasInterfaces(Matcher<? super SortedSet<String>> subMatcher) {
+    return new HasInterfaces(subMatcher);
+  }
+
+  /**
    * Provides a matcher that matches if the provided {@code subMatcher} matches the VRF's OSPF
    * process.
    */
@@ -54,13 +73,5 @@ public class VrfMatchers {
   public static HasStaticRoutes hasStaticRoutes(
       Matcher<? super SortedSet<StaticRoute>> subMatcher) {
     return new HasStaticRoutes(subMatcher);
-  }
-
-  /**
-   * Provides a matcher that matches if the provided {@code subMatcher} matches the VRF's
-   * interfaces.
-   */
-  public static Matcher<Vrf> hasInterfaces(Matcher<? super SortedSet<String>> subMatcher) {
-    return new HasInterfaces(subMatcher);
   }
 }
