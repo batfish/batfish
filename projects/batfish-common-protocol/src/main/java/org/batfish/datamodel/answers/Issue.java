@@ -1,10 +1,12 @@
 package org.batfish.datamodel.answers;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.MoreObjects.toStringHelper;
 import static java.util.Objects.requireNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Objects;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -55,6 +57,28 @@ public class Issue {
     public String getMinor() {
       return _minor;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (this == obj) {
+        return true;
+      }
+      if (!(obj instanceof Type)) {
+        return false;
+      }
+      Type rhs = (Type) obj;
+      return _major.equals(rhs._major) && _minor.equals(rhs._minor);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(_major, _minor);
+    }
+
+    @Override
+    public String toString() {
+      return toStringHelper(getClass()).add(COL_MAJOR, _major).add(COL_MINOR, _minor).toString();
+    }
   }
 
   private static final String COL_EXPLANATION = "explanation";
@@ -82,6 +106,25 @@ public class Issue {
     _type = type;
   }
 
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (!(obj instanceof Issue)) {
+      return false;
+    }
+    Issue rhs = (Issue) obj;
+    return _explanation.equals(rhs._explanation)
+        && _severity == rhs._severity
+        && _type.equals(rhs._type);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_explanation, _severity, _type);
+  }
+
   @JsonProperty(COL_EXPLANATION)
   public String getExplanation() {
     return _explanation;
@@ -95,5 +138,14 @@ public class Issue {
   @JsonProperty(COL_TYPE)
   public Type getType() {
     return _type;
+  }
+
+  @Override
+  public String toString() {
+    return toStringHelper(getClass())
+        .add(COL_EXPLANATION, _explanation)
+        .add(COL_SEVERITY, _severity)
+        .add(COL_TYPE, _type)
+        .toString();
   }
 }
