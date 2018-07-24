@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Throwables;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
@@ -231,11 +232,10 @@ public class Row implements Comparable<Row> {
     try {
       return mapper.readValue(mapper.treeAsTokens(node), typeReference);
     } catch (IOException e) {
-      throw new BatfishException(
+      throw new ClassCastException(
           String.format(
-              "Cannot cast row element in column '%s' given provided the TypeReference",
-              columnName),
-          e);
+              "Cannot cast row element in column '%s' given the provided TypeReference: %s",
+              columnName, Throwables.getStackTraceAsString(e)));
     }
   }
 

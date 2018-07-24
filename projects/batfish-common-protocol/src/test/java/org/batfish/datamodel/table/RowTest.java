@@ -10,7 +10,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import java.util.NoSuchElementException;
-import org.batfish.common.BatfishException;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.table.Row.TypedRowBuilder;
@@ -40,7 +39,7 @@ public class RowTest {
       String column = "col";
       Row row = Row.builder().put(column, "text").build();
 
-      _thrown.expect(BatfishException.class);
+      _thrown.expect(ClassCastException.class);
       row.get(column, new TypeReference<Integer>() {});
     }
 
