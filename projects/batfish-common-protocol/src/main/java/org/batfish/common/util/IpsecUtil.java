@@ -13,6 +13,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IkePhase1Key;
@@ -89,13 +90,12 @@ public class IpsecUtil {
           continue;
         }
         Configuration candidateOwner = configurations.get(candidateIpsecPeerConfigId.getHostName());
+
         IpsecSession ipsecSession =
             getIpsecSession(
                 initiatorOwner, candidateOwner, ipsecStaticPeerConfig, candidateIpsecPeer);
 
-        if (ipsecSession != null) {
-          graph.putEdgeValue(ipsecPeerConfigId, candidateIpsecPeerConfigId, ipsecSession);
-        }
+        graph.putEdgeValue(ipsecPeerConfigId, candidateIpsecPeerConfigId, ipsecSession);
       }
     }
 
@@ -104,8 +104,11 @@ public class IpsecUtil {
 
   /**
    * Gets the {@link IpsecSession} between two {@link IpsecPeerConfig}s where the initiator should
-   * always be {@link IpsecStaticPeerConfig}
+   * always be an {@link IpsecStaticPeerConfig}. Returned {@link IpsecSession} object will have
+   * respective fields for IKE P1 proposals, IKE P1 keys and IPSec P2 proposals populated depending
+   * on the negotiation.
    */
+  @Nonnull
   private static IpsecSession getIpsecSession(
       Configuration initiatorOwner,
       Configuration peerOwner,
