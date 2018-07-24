@@ -14,7 +14,7 @@ import org.batfish.referencelibrary.AddressGroup;
 import org.batfish.referencelibrary.ReferenceBook;
 import org.junit.Test;
 
-public class AddressBookIpSpaceSpecifierTest {
+public class ReferenceAddressGroupIpSpaceSpecifierTest {
 
   @Test
   public void resolve() {
@@ -27,9 +27,10 @@ public class AddressBookIpSpaceSpecifierTest {
             null,
             null);
     MockSpecifierContext ctxt =
-        MockSpecifierContext.builder().setAddressBooks(ImmutableSortedSet.of(book)).build();
+        MockSpecifierContext.builder().setReferenceBooks(ImmutableSortedSet.of(book)).build();
 
-    AddressGroupIpSpaceSpecifier specifier = new AddressGroupIpSpaceSpecifier("group1", "book1");
+    ReferenceAddressGroupIpSpaceSpecifier specifier =
+        new ReferenceAddressGroupIpSpaceSpecifier("group1", "book1");
     IpSpace resolvedSpace =
         AclIpSpace.union(
             specifier

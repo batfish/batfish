@@ -9,11 +9,11 @@ import org.batfish.datamodel.IpWildcard;
 import org.batfish.referencelibrary.AddressGroup;
 
 /** An {@link IpSpaceSpecifier} that is looks up the IpSpace from the reference book. */
-public final class AddressGroupIpSpaceSpecifier implements IpSpaceSpecifier {
+public final class ReferenceAddressGroupIpSpaceSpecifier implements IpSpaceSpecifier {
   private final String _addressGroupName;
   private final String _bookName;
 
-  public AddressGroupIpSpaceSpecifier(String addressGroupname, String bookName) {
+  public ReferenceAddressGroupIpSpaceSpecifier(String addressGroupname, String bookName) {
     _addressGroupName = addressGroupname;
     _bookName = bookName;
   }
@@ -23,11 +23,12 @@ public final class AddressGroupIpSpaceSpecifier implements IpSpaceSpecifier {
     if (this == o) {
       return true;
     }
-    if (!(o instanceof AddressGroupIpSpaceSpecifier)) {
+    if (!(o instanceof ReferenceAddressGroupIpSpaceSpecifier)) {
       return false;
     }
-    return Objects.equals(_addressGroupName, ((AddressGroupIpSpaceSpecifier) o)._addressGroupName)
-        && Objects.equals(_bookName, ((AddressGroupIpSpaceSpecifier) o)._addressGroupName);
+    return Objects.equals(
+            _addressGroupName, ((ReferenceAddressGroupIpSpaceSpecifier) o)._addressGroupName)
+        && Objects.equals(_bookName, ((ReferenceAddressGroupIpSpaceSpecifier) o)._addressGroupName);
   }
 
   @Override
