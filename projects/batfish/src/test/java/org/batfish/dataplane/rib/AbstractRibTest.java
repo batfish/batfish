@@ -153,7 +153,10 @@ public class AbstractRibTest {
     assertThat(_rib.longestPrefixMatch(new Ip("0.0.0.0")), is(emptyIterableOf(StaticRoute.class)));
   }
 
-  /** Ensure that longestPrefixMatch() returns correct routes when the RIB is non-empty */
+  /**
+   * Ensure that {@link AbstractRib#longestPrefixMatch(Ip)} returns correct routes when the RIB is
+   * non-empty
+   */
   @Test
   public void testLongestPrefixMatch() {
     List<StaticRoute> routes = setupOverlappingRoutes();
@@ -169,6 +172,20 @@ public class AbstractRibTest {
 
     match = _rib.longestPrefixMatch(new Ip("11.1.1.1"));
     assertThat(match, is(emptyIterableOf(StaticRoute.class)));
+  }
+
+  /**
+   * Ensure that {@link AbstractRib#longestPrefixMatch(Ip, int)} returns correct routes when the RIB
+   * is non-empty
+   */
+  @Test
+  public void testLongestPrefixMatchConstrained() {
+    List<StaticRoute> routes = setupOverlappingRoutes();
+
+    // Only the first route matches with prefix len of <= 8
+    Set<StaticRoute> match = _rib.longestPrefixMatch(new Ip("10.1.1.1"), 8);
+    assertThat(match, hasSize(1));
+    assertThat(match, contains(routes.get(0)));
   }
 
   /** Ensure that a RIB is equal to itself */

@@ -31,9 +31,26 @@ public interface GenericRib<R extends AbstractRoute> extends Serializable {
   /** Return a set of routes this RIB contains. */
   Set<R> getRoutes();
 
+  /**
+   * Execute the longest prefix match for a given IP address.
+   *
+   * @param address the IP address to match
+   * @return a set of routes with the maximum allowable prefix length that match the {@code address}
+   */
   Set<R> longestPrefixMatch(Ip address);
 
-  boolean mergeRoute(R route);
+  /**
+   * Execute a constrained longest prefix match for a given IP address.
+   *
+   * <p>To be used when the longest prefix match is unsatisfactory and less specific route(s) is
+   * required.
+   *
+   * @param address the IP address to match
+   * @param maxPrefixLength the maximum prefix length allowed (i.e., do not match more specific
+   *     routes). This is a less than or equal constraint.
+   * @return a set of routes that match the {@code address} given the constraint.
+   */
+  Set<R> longestPrefixMatch(Ip address, int maxPrefixLength);
 
-  Map<Prefix, Set<Ip>> nextHopIpsByPrefix();
+  boolean mergeRoute(R route);
 }

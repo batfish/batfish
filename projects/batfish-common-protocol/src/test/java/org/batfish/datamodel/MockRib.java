@@ -148,12 +148,12 @@ public class MockRib implements GenericRib<AbstractRoute> {
   }
 
   @Override
-  public boolean mergeRoute(AbstractRoute route) {
-    return _mergeRouteTrues.contains(route);
+  public Set<AbstractRoute> longestPrefixMatch(Ip address, int maxPrefixLength) {
+    throw new UnsupportedOperationException();
   }
 
   @Override
-  public Map<Prefix, Set<Ip>> nextHopIpsByPrefix() {
-    return _nextHopIpsByPrefix;
+  public boolean mergeRoute(AbstractRoute route) {
+    return _mergeRouteTrues.contains(route);
   }
 }
