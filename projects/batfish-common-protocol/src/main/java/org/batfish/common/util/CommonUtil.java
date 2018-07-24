@@ -123,8 +123,6 @@ import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
-import org.batfish.datamodel.eigrp.EigrpNeighbor;
-import org.batfish.datamodel.eigrp.EigrpProcess;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfNeighbor;
 import org.batfish.datamodel.ospf.OspfProcess;
@@ -1263,97 +1261,6 @@ public class CommonUtil {
               });
     }
     return builder.build();
-  }
-
-  public static void initRemoteEigrpNeighbors(
-      Map<String, Configuration> configurations, Map<Ip, Set<String>> ipOwners, Topology topology) {
-    for (Entry<String, Configuration> e : configurations.entrySet()) {
-      String hostname = e.getKey();
-      Configuration c = e.getValue();
-      for (Entry<String, Vrf> e2 : c.getVrfs().entrySet()) {
-        Vrf vrf = e2.getValue();
-        EigrpProcess proc = vrf.getEigrpProcess();
-        if (proc == null) {
-          continue;
-        }
-        proc.setEigrpNeighbors(new TreeMap<>());
-        String vrfName = e2.getKey();
-        for (String ifaceName : vrf.getInterfaceNames()) {
-          Interface iface = vrf.getInterfaces().get(ifaceName);
-          if (!iface.getActive()
-              || iface.getEigrp() == null
-              || !iface.getEigrp().getEnabled()
-              || iface.getEigrp().getAsNumber() == null) {
-            continue;
-          }
-          long asn = iface.getEigrp().getAsNumber();
-
-          SortedSet<Edge> ifaceEdges =
-              topology.getInterfaceEdges().get(new NodeInterfacePair(hostname, ifaceName));
-          boolean hasNeighbor = false;
-          Ip localIp = iface.getAddress().getIp();
-          if (ifaceEdges != null) {
-            for (Edge edge : ifaceEdges) {
-              if (edge.getNode1().equals(hostname)) {
-                String remoteHostname = edge.getNode2();
-                String remoteIfaceName = edge.getInt2();
-                Configuration remoteNode = configurations.get(remoteHostname);
-                Interface remoteIface = remoteNode.getInterfaces().get(remoteIfaceName);
-                Vrf remoteVrf = remoteIface.getVrf();
-                String remoteVrfName = remoteVrf.getName();
-                EigrpProcess remoteProc = remoteVrf.getEigrpProcess();
-                if ((remoteProc == null)
-                    || (remoteIface.getEigrp() == null)
-                    || !remoteIface.getEigrp().getEnabled()
-                    || !Objects.equals(asn, remoteIface.getEigrp().getAsNumber())) {
-                  continue;
-                }
-                if (remoteProc.getEigrpNeighbors() == null) {
-                  remoteProc.setEigrpNeighbors(new TreeMap<>());
-                }
-                Ip remoteIp = remoteIface.getAddress().getIp();
-                IpLink localKey = new IpLink(localIp, remoteIp);
-                EigrpNeighbor neighbor = proc.getEigrpNeighbors().get(localKey);
-                if (neighbor != null) {
-                  continue;
-                }
-                hasNeighbor = true;
-
-                // Initialize local neighbor
-                neighbor = new EigrpNeighbor(localKey);
-                neighbor.setAsn(asn);
-                neighbor.setVrf(vrfName);
-                neighbor.setOwner(c);
-                neighbor.setIface(iface);
-                proc.getEigrpNeighbors().put(localKey, neighbor);
-
-                // Initialize remote neighbor
-                IpLink remoteKey = new IpLink(remoteIp, localIp);
-                EigrpNeighbor remoteNeighbor = new EigrpNeighbor(remoteKey);
-                remoteNeighbor.setAsn(asn);
-                remoteNeighbor.setVrf(remoteVrfName);
-                remoteNeighbor.setOwner(remoteNode);
-                remoteNeighbor.setInterface(remoteIface);
-                remoteProc.getEigrpNeighbors().put(remoteKey, remoteNeighbor);
-
-                // link neighbors
-                neighbor.setRemoteEigrpNeighbor(remoteNeighbor);
-                remoteNeighbor.setRemoteEigrpNeighbor(neighbor);
-              }
-            }
-          }
-          if (!hasNeighbor) {
-            IpLink key = new IpLink(localIp, Ip.ZERO);
-            EigrpNeighbor neighbor = new EigrpNeighbor(key);
-            neighbor.setAsn(asn);
-            neighbor.setVrf(vrfName);
-            neighbor.setOwner(c);
-            neighbor.setInterface(iface);
-            proc.getEigrpNeighbors().put(key, neighbor);
-          }
-        }
-      }
-    }
   }
 
   public static void initRemoteOspfNeighbors(

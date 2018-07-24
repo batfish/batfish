@@ -5,7 +5,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.auto.service.AutoService;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.graph.EndpointPair;
+import com.google.common.graph.Network;
 import com.google.common.graph.ValueGraph;
 import java.util.Comparator;
 import java.util.Map;
@@ -45,8 +47,9 @@ import org.batfish.datamodel.collections.VerboseBgpEdge;
 import org.batfish.datamodel.collections.VerboseEigrpEdge;
 import org.batfish.datamodel.collections.VerboseOspfEdge;
 import org.batfish.datamodel.collections.VerboseRipEdge;
-import org.batfish.datamodel.eigrp.EigrpNeighbor;
-import org.batfish.datamodel.eigrp.EigrpProcess;
+import org.batfish.datamodel.eigrp.EigrpEdge;
+import org.batfish.datamodel.eigrp.EigrpInterface;
+import org.batfish.datamodel.eigrp.EigrpTopology;
 import org.batfish.datamodel.ospf.OspfNeighbor;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.questions.NodesSpecifier;
@@ -533,6 +536,8 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
 
     private ValueGraph<BgpPeerConfigId, BgpSessionProperties> _bgpTopology;
 
+    private Network<EigrpInterface, EigrpEdge> _eigrpTopology;
+
     private SortedMap<String, SortedSet<String>> _nodeRolesMap;
 
     private boolean _remoteBgpNeighborsInitialized;
@@ -570,29 +575,21 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       }
 
       if (question.getNeighborTypes().contains(NeighborType.EIGRP)) {
+        NetworkConfigurations nc = NetworkConfigurations.of(configurations);
         SortedSet<VerboseEigrpEdge> vedges = new TreeSet<>();
         initTopology();
         initRemoteEigrpNeighbors(configurations, _topology);
         for (Configuration c : configurations.values()) {
           String hostname = c.getHostname();
           for (Vrf vrf : c.getVrfs().values()) {
-            EigrpProcess proc = vrf.getEigrpProcess();
-            if (proc == null) {
-              continue;
-            }
-            for (EigrpNeighbor eigrpNeighbor : proc.getEigrpNeighbors().values()) {
-              EigrpNeighbor remoteEigrpNeighbor = eigrpNeighbor.getRemoteEigrpNeigbor();
-              if (remoteEigrpNeighbor != null) {
-                Configuration remoteHost = remoteEigrpNeighbor.getOwner();
-                String remoteHostname = remoteHost.getHostname();
-                if (includeNodes1.contains(hostname) && includeNodes2.contains(remoteHostname)) {
-                  Ip localIp = eigrpNeighbor.getLocalIp();
-                  Ip remoteIp = remoteEigrpNeighbor.getLocalIp();
-                  IpEdge edge = new IpEdge(hostname, localIp, remoteHostname, remoteIp);
-                  vedges.add(new VerboseEigrpEdge(eigrpNeighbor, remoteEigrpNeighbor, edge));
-                }
-              }
-            }
+            vedges.addAll(
+                vrf.getInterfaceNames()
+                    .stream()
+                    .map(ifaceName -> new EigrpInterface(hostname, ifaceName, vrf.getName()))
+                    .filter(_eigrpTopology.nodes()::contains)
+                    .flatMap(n -> _eigrpTopology.inEdges(n).stream())
+                    .map(edge -> new VerboseEigrpEdge(edge, edge.toIpEdge(nc)))
+                    .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder())));
           }
         }
 
@@ -930,8 +927,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
     private void initRemoteEigrpNeighbors(
         Map<String, Configuration> configurations, Topology topology) {
       if (!_remoteEigrpNeighborsInitialized) {
-        Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpNodeOwners(configurations, true);
-        CommonUtil.initRemoteEigrpNeighbors(configurations, ipOwners, topology);
+        _eigrpTopology = EigrpTopology.initEigrpTopology(configurations, topology);
         _remoteEigrpNeighborsInitialized = true;
       }
     }
