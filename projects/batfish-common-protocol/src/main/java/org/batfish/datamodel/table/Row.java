@@ -6,9 +6,13 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Throwables;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -219,6 +223,20 @@ public class Row implements Comparable<Row> {
       return null;
     }
     return SchemaUtils.convertType(_data.get(columnName), columnSchema);
+  }
+
+  /** Get the value of specified column safely cast to type specifed via {@code typeReference}. */
+  public <T> T get(String columnName, TypeReference<T> typeReference) {
+    ObjectMapper mapper = BatfishObjectMapper.mapper();
+    JsonNode node = get(columnName);
+    try {
+      return mapper.readValue(mapper.treeAsTokens(node), typeReference);
+    } catch (IOException e) {
+      throw new ClassCastException(
+          String.format(
+              "Cannot cast row element in column '%s' given the provided TypeReference: %s",
+              columnName, Throwables.getStackTraceAsString(e)));
+    }
   }
 
   public Boolean getBoolean(String column) {
