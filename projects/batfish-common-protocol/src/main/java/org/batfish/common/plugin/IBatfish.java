@@ -43,9 +43,9 @@ import org.batfish.datamodel.questions.smt.RoleQuestion;
 import org.batfish.grammar.BgpTableFormat;
 import org.batfish.grammar.GrammarSettings;
 import org.batfish.question.ReachabilityParameters;
+import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
-import org.batfish.role.addressbook.AddressLibrary;
 import org.batfish.specifier.SpecifierContext;
 
 public interface IBatfish extends IPluginConsumer {
@@ -60,7 +60,7 @@ public interface IBatfish extends IPluginConsumer {
 
   boolean debugFlagEnabled(String flag);
 
-  AddressLibrary getAddressLibraryData();
+  ReferenceLibrary getReferenceLibraryData();
 
   Map<String, BiFunction<Question, IBatfish, Answerer>> getAnswererCreators();
 

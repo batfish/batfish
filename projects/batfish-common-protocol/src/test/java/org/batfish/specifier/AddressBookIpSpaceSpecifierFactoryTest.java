@@ -24,6 +24,6 @@ public class AddressBookIpSpaceSpecifierFactoryTest {
   public void buildValidString() {
     IpSpaceSpecifier specifier =
         new AddressBookIpSpaceSpecifierFactory().buildIpSpaceSpecifier("book1:group1");
-    assert specifier instanceof AddressBookIpSpaceSpecifier;
+    assert specifier instanceof AddressGroupIpSpaceSpecifier;
   }
 }

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import java.util.Objects;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.SubRange;
-import org.batfish.role.addressbook.ServiceObject;
+import org.batfish.referencelibrary.ServiceObject;
 
 public class ServiceObjectBean {
 

@@ -5,7 +5,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.SubRange;
-import org.batfish.role.addressbook.ServiceObject;
+import org.batfish.referencelibrary.ServiceObject;
 import org.junit.Test;
 
 public class ServiceObjectBeanTest {

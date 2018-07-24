@@ -80,8 +80,8 @@ import org.batfish.datamodel.questions.InterfacePropertySpecifier;
 import org.batfish.datamodel.questions.NodePropertySpecifier;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
+import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
-import org.batfish.role.addressbook.AddressLibrary;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -104,7 +104,8 @@ public class WorkMgr extends AbstractCoordinator {
   private static final int MAX_SHOWN_TESTRIG_INFO_SUBDIR_ENTRIES = 10;
 
   private static Set<String> initContainerFilenames() {
-    return ImmutableSet.of(BfConsts.RELPATH_ADDRESS_LIBRARY_PATH, BfConsts.RELPATH_NODE_ROLES_PATH);
+    return ImmutableSet.of(
+        BfConsts.RELPATH_REFERENCE_LIBRARY_PATH, BfConsts.RELPATH_NODE_ROLES_PATH);
   }
 
   private static Set<String> initEnvFilenames() {
@@ -616,21 +617,6 @@ public class WorkMgr extends AbstractCoordinator {
     CommonUtil.deleteDirectory(qDir);
   }
 
-  /**
-   * Gets the {@link AddressLibrary} for the {@code container}.
-   *
-   * @throws IOException The contents of address library file cannot be converted to {@link
-   *     AddressLibrary}
-   */
-  public AddressLibrary getAddressLibrary(String container) throws IOException {
-    return AddressLibrary.read(getAddressLibraryPath(container));
-  }
-
-  /** Gets the path of the address library file */
-  public Path getAddressLibraryPath(String container) {
-    return getdirContainer(container).resolve(BfConsts.RELPATH_ADDRESS_LIBRARY_PATH);
-  }
-
   public Map<String, String> getAnalysisAnswers(
       String containerName,
       String baseTestrig,
@@ -980,6 +966,21 @@ public class WorkMgr extends AbstractCoordinator {
         .resolve(BfConsts.RELPATH_METADATA_FILE);
   }
 
+  /**
+   * Gets the {@link ReferenceLibrary} for the {@code container}.
+   *
+   * @throws IOException The contents of reference library file cannot be converted to {@link
+   *     ReferenceLibrary}
+   */
+  public ReferenceLibrary getReferenceLibrary(String container) throws IOException {
+    return ReferenceLibrary.read(getReferenceLibraryPath(container));
+  }
+
+  /** Gets the path of the reference library file */
+  public Path getReferenceLibraryPath(String container) {
+    return getdirContainer(container).resolve(BfConsts.RELPATH_REFERENCE_LIBRARY_PATH);
+  }
+
   public JSONObject getStatusJson() throws JSONException {
     return _workQueueMgr.getStatusJson();
   }
@@ -1155,7 +1156,7 @@ public class WorkMgr extends AbstractCoordinator {
     boolean routingTables = false;
     boolean bgpTables = false;
     boolean roleData = false;
-    boolean addressLibraryData = false;
+    boolean referenceLibraryData = false;
     for (Path subFile : subFileList) {
       String name = subFile.getFileName().toString();
       if (isEnvFile(subFile)) {
@@ -1185,16 +1186,16 @@ public class WorkMgr extends AbstractCoordinator {
             _logger.errorf("Could not process node role data: %s", e);
           }
         }
-        if (name.equals(BfConsts.RELPATH_ADDRESS_LIBRARY_PATH)) {
-          addressLibraryData = true;
+        if (name.equals(BfConsts.RELPATH_REFERENCE_LIBRARY_PATH)) {
+          referenceLibraryData = true;
           try {
-            AddressLibrary testrigData = AddressLibrary.read(subFile);
-            Path path = containerDir.resolve(BfConsts.RELPATH_ADDRESS_LIBRARY_PATH);
-            AddressLibrary.mergeAddressBooks(path, testrigData.getAddressBooks());
+            ReferenceLibrary testrigData = ReferenceLibrary.read(subFile);
+            Path path = containerDir.resolve(BfConsts.RELPATH_REFERENCE_LIBRARY_PATH);
+            ReferenceLibrary.mergeReferenceBooks(path, testrigData.getReferenceBooks());
           } catch (IOException e) {
             // lets not stop the upload because that file is busted.
             // TODO: figure out a way to surface this error to the user
-            _logger.errorf("Could not process address library data: %s", e);
+            _logger.errorf("Could not process reference library data: %s", e);
           }
         }
       } else {
@@ -1203,8 +1204,8 @@ public class WorkMgr extends AbstractCoordinator {
       }
     }
     _logger.infof(
-        "Environment data for testrig:%s; bgpTables:%s, routingTables:%s, nodeRoles:%s addressBooks:%s\n",
-        testrigName, bgpTables, routingTables, roleData, addressLibraryData);
+        "Environment data for testrig:%s; bgpTables:%s, routingTables:%s, nodeRoles:%s referenceBooks:%s\n",
+        testrigName, bgpTables, routingTables, roleData, referenceLibraryData);
 
     if (autoAnalyze) {
       for (WorkItem workItem : getAutoWorkQueue(containerName, testrigName)) {

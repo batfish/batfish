@@ -10,16 +10,16 @@ import java.util.stream.Collectors;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
-import org.batfish.role.addressbook.AddressBook;
-import org.batfish.role.addressbook.AddressGroup;
+import org.batfish.referencelibrary.AddressGroup;
+import org.batfish.referencelibrary.ReferenceBook;
 import org.junit.Test;
 
 public class AddressBookIpSpaceSpecifierTest {
 
   @Test
   public void resolve() {
-    AddressBook book =
-        new AddressBook(
+    ReferenceBook book =
+        new ReferenceBook(
             ImmutableList.of(
                 new AddressGroup(ImmutableSortedSet.of("1.1.1.1", "2.2.2.2:0.0.0.8"), "group1")),
             "book1",
@@ -29,7 +29,7 @@ public class AddressBookIpSpaceSpecifierTest {
     MockSpecifierContext ctxt =
         MockSpecifierContext.builder().setAddressBooks(ImmutableSortedSet.of(book)).build();
 
-    AddressBookIpSpaceSpecifier specifier = new AddressBookIpSpaceSpecifier("group1", "book1");
+    AddressGroupIpSpaceSpecifier specifier = new AddressGroupIpSpaceSpecifier("group1", "book1");
     IpSpace resolvedSpace =
         AclIpSpace.union(
             specifier

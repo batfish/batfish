@@ -8,16 +8,16 @@ import com.google.common.collect.ImmutableSortedSet;
 import java.util.stream.Collectors;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.SubRange;
-import org.batfish.role.addressbook.AddressBook;
-import org.batfish.role.addressbook.AddressGroup;
-import org.batfish.role.addressbook.ServiceEndpoint;
-import org.batfish.role.addressbook.ServiceObject;
-import org.batfish.role.addressbook.ServiceObjectGroup;
+import org.batfish.referencelibrary.AddressGroup;
+import org.batfish.referencelibrary.ReferenceBook;
+import org.batfish.referencelibrary.ServiceEndpoint;
+import org.batfish.referencelibrary.ServiceObject;
+import org.batfish.referencelibrary.ServiceObjectGroup;
 import org.junit.Test;
 
-public class AddressBookBeanTest {
+public class ReferenceBookBeanTest {
 
-  private static void beanBookMatch(AddressBookBean bean, AddressBook book) {
+  private static void beanBookMatch(ReferenceBookBean bean, ReferenceBook book) {
     assertThat(bean.name, equalTo(book.getName()));
     assertThat(
         bean.addressGroups,
@@ -51,29 +51,29 @@ public class AddressBookBeanTest {
 
   @Test
   public void constructorEmptyBook() {
-    AddressBook book1 = new AddressBook(null, "book1", null, null, null);
+    ReferenceBook book1 = new ReferenceBook(null, "book1", null, null, null);
 
-    beanBookMatch(new AddressBookBean(book1), book1);
+    beanBookMatch(new ReferenceBookBean(book1), book1);
   }
 
   @Test
   public void constructorNonEmptyBook() {
-    AddressBook book2 =
-        new AddressBook(
+    ReferenceBook book2 =
+        new ReferenceBook(
             ImmutableList.of(new AddressGroup(ImmutableSortedSet.of(), "ag1")),
             "book2",
             ImmutableList.of(new ServiceEndpoint("ag1", "se1", "so1")),
             ImmutableList.of(new ServiceObjectGroup("sog1", ImmutableSortedSet.of())),
             ImmutableList.of(new ServiceObject(IpProtocol.TCP, "so1", new SubRange(2, 3))));
 
-    beanBookMatch(new AddressBookBean(book2), book2);
+    beanBookMatch(new ReferenceBookBean(book2), book2);
   }
 
   @Test
   public void toAddressBook() {
-    AddressBookBean bean =
-        new AddressBookBean(
-            new AddressBook(
+    ReferenceBookBean bean =
+        new ReferenceBookBean(
+            new ReferenceBook(
                 ImmutableList.of(new AddressGroup(ImmutableSortedSet.of(), "ag1")),
                 "book2",
                 ImmutableList.of(new ServiceEndpoint("ag1", "se1", "so1")),

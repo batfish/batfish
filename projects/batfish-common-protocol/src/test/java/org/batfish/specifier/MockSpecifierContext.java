@@ -9,8 +9,8 @@ import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IpSpace;
+import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.role.NodeRole;
-import org.batfish.role.addressbook.AddressBook;
 
 public class MockSpecifierContext implements SpecifierContext {
 
@@ -29,7 +29,7 @@ public class MockSpecifierContext implements SpecifierContext {
   }
 
   public static final class Builder {
-    private @Nonnull SortedSet<AddressBook> _addressBooks = ImmutableSortedSet.of();
+    private @Nonnull SortedSet<ReferenceBook> _addressBooks = ImmutableSortedSet.of();
 
     private @Nonnull Map<String, Configuration> _configs = ImmutableMap.of();
 
@@ -41,7 +41,7 @@ public class MockSpecifierContext implements SpecifierContext {
 
     private Builder() {}
 
-    public Builder setAddressBooks(SortedSet<AddressBook> addressBooks) {
+    public Builder setAddressBooks(SortedSet<ReferenceBook> addressBooks) {
       _addressBooks = ImmutableSortedSet.copyOf(addressBooks);
       return this;
     }
@@ -71,7 +71,7 @@ public class MockSpecifierContext implements SpecifierContext {
     }
   }
 
-  private final @Nonnull SortedSet<AddressBook> _addressBooks;
+  private final @Nonnull SortedSet<ReferenceBook> _addressBooks;
 
   private final @Nonnull Map<String, Configuration> _configs;
 
@@ -90,7 +90,7 @@ public class MockSpecifierContext implements SpecifierContext {
   }
 
   @Override
-  public Optional<AddressBook> getAddressBook(String bookName) {
+  public Optional<ReferenceBook> getReferenceBook(String bookName) {
     return _addressBooks.stream().filter(book -> book.getName().equals(bookName)).findAny();
   }
 

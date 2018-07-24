@@ -44,9 +44,9 @@ import org.batfish.datamodel.questions.smt.RoleQuestion;
 import org.batfish.grammar.BgpTableFormat;
 import org.batfish.grammar.GrammarSettings;
 import org.batfish.question.ReachabilityParameters;
+import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
-import org.batfish.role.addressbook.AddressLibrary;
 import org.batfish.specifier.SpecifierContext;
 
 /**
@@ -82,7 +82,7 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public AddressLibrary getAddressLibraryData() {
+  public ReferenceLibrary getReferenceLibraryData() {
     throw new UnsupportedOperationException();
   }
 
