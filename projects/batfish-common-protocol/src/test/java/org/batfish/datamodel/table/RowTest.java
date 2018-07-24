@@ -4,6 +4,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.core.IsEqual.equalTo;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -22,6 +23,25 @@ public class RowTest {
   public static class RowBuilderTest {
 
     @Rule public ExpectedException _thrown = ExpectedException.none();
+
+    @Test
+    public void testGetTypeReference() {
+      String column = "col";
+      List<String> stringList = ImmutableList.of("a", "b");
+      Row row = Row.builder().put(column, stringList).build();
+      List<String> extracted = row.get(column, new TypeReference<List<String>>() {});
+
+      assertThat(stringList, equalTo(extracted));
+    }
+
+    @Test
+    public void testGetTypeReferenceInvalid() {
+      String column = "col";
+      Row row = Row.builder().put(column, "text").build();
+
+      _thrown.expect(ClassCastException.class);
+      row.get(column, new TypeReference<Integer>() {});
+    }
 
     @Test
     public void putAllCorrect() {
