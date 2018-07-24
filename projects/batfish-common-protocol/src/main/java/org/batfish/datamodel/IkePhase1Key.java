@@ -101,21 +101,4 @@ public class IkePhase1Key implements Serializable {
   public void setLocalInterface(@Nullable String localInterface) {
     _localInterface = firstNonNull(localInterface, UNSET_LOCAL_INTERFACE);
   }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (!(o instanceof IkePhase1Key)) {
-      return false;
-    }
-    IkePhase1Key other = (IkePhase1Key) o;
-    return Objects.equals(_keyType, other._keyType) && Objects.equals(_keyHash, other._keyHash);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(_keyType, _keyHash);
-  }
 }

@@ -173,10 +173,10 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.stream.Collectors;
-import org.batfish.common.Pair;
 import org.batfish.common.WellKnownCommunity;
 import org.batfish.common.plugin.DataPlanePlugin;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.common.util.IpsecUtil;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpAdvertisement;
@@ -203,7 +203,7 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
 import org.batfish.datamodel.IpsecEncapsulationMode;
-import org.batfish.datamodel.IpsecPeerConfig;
+import org.batfish.datamodel.IpsecPeerConfigId;
 import org.batfish.datamodel.IpsecProtocol;
 import org.batfish.datamodel.IpsecSession;
 import org.batfish.datamodel.LineType;
@@ -2573,10 +2573,9 @@ public class CiscoGrammarTest {
                 .build(),
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations();
-    ValueGraph<Pair<String, IpsecPeerConfig>, IpsecSession> graph =
-        CommonUtil.initIpsecTopology(configurations);
+    ValueGraph<IpsecPeerConfigId, IpsecSession> graph = IpsecUtil.initIpsecTopology(configurations);
 
-    Set<EndpointPair<Pair<String, IpsecPeerConfig>>> edges = graph.edges();
+    Set<EndpointPair<IpsecPeerConfigId>> edges = graph.edges();
 
     // there should be six edges in total, two for the static crypto map session between r1 and r2
     // two for the dynamic crypto map session from r1->r3 and r2->r3 (unidirectional)
@@ -2584,7 +2583,7 @@ public class CiscoGrammarTest {
     assertThat(edges, hasSize(6));
 
     // checking that the negotiated IKE and IPSec proposals are set in all the sessions
-    for (EndpointPair<Pair<String, IpsecPeerConfig>> edge : edges) {
+    for (EndpointPair<IpsecPeerConfigId> edge : edges) {
       IpsecSession ipsecSession = graph.edgeValueOrDefault(edge.nodeU(), edge.nodeV(), null);
 
       assertThat(ipsecSession, notNullValue());
