@@ -53,7 +53,7 @@ public final class AddressBookIpSpaceSpecifier implements IpSpaceSpecifier {
                     .getAddresses()
                     .stream()
                     .map(add -> new IpWildcard(add).toIpSpace())
-                    .collect(Collectors.toSet())))
+                    .collect(Collectors.toList())))
         .build();
   }
 }
