@@ -1,12 +1,12 @@
 package org.batfish.representation.juniper;
 
-import org.batfish.common.util.ComparableStructure;
+import java.io.Serializable;
 import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.IkeAuthenticationMethod;
 import org.batfish.datamodel.IkeHashingAlgorithm;
 
-public class IkeProposal extends ComparableStructure<String> {
+public class IkeProposal implements Serializable {
 
   /** */
   private static final long serialVersionUID = 1L;
@@ -24,9 +24,11 @@ public class IkeProposal extends ComparableStructure<String> {
 
   private Integer _lifetimeSeconds;
 
+  private final String _name;
+
   public IkeProposal(String name) {
-    super(name);
     _lifetimeSeconds = DEFAULT_LIFETIME_SECONDS;
+    _name = name;
   }
 
   public IkeAuthenticationMethod getAuthenticationMethod() {
@@ -47,6 +49,10 @@ public class IkeProposal extends ComparableStructure<String> {
 
   public Integer getLifetimeSeconds() {
     return _lifetimeSeconds;
+  }
+
+  public String getName() {
+    return _name;
   }
 
   public IkeProposal setAuthenticationMethod(IkeAuthenticationMethod authenticationMethod) {

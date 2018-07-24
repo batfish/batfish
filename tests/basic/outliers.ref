@@ -54,7 +54,9 @@
               },
               "name" : "permit ip host 3.0.2.0 host 255.255.255.0"
             }
-          ]
+          ],
+          "sourceName" : "103",
+          "sourceType" : "extended ipv4 access-list"
         },
         "structType" : "IpAccessList"
       },

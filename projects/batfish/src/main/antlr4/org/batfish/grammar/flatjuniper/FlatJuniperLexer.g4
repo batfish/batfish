@@ -443,6 +443,16 @@ AUTHORIZATION
    'authorization'
 ;
 
+AUTHORIZED_KEYS_COMMAND
+:
+   'authorized-keys-command'
+;
+
+AUTHORIZED_KEYS_COMMAND_USER
+:
+   'authorized-keys-command-user'
+;
+
 AUTO_EXPORT
 :
    'auto-export'
@@ -461,6 +471,11 @@ AUTO_SNAPSHOT
 AUTONOMOUS_SYSTEM
 :
    'autonomous-system'
+;
+
+AUXILIARY
+:
+   'auxiliary'
 ;
 
 BACKUP_ROUTER
@@ -573,6 +588,11 @@ CHASSIS
    'chassis'
 ;
 
+CIPHERS
+:
+   'ciphers'
+;
+
 CLASS
 :
    'class'
@@ -586,6 +606,16 @@ CLASS_OF_SERVICE
 CLEAR
 :
    'clear'
+;
+
+CLIENT_ALIVE_COUNT_MAX
+:
+   'client-alive-count-max'
+;
+
+CLIENT_ALIVE_INTERVAL
+:
+   'client-alive-interval'
 ;
 
 CLIENT_LIST
@@ -662,6 +692,11 @@ CONNECTIONS
    'connections'
 ;
 
+CONNECTION_LIMIT
+:
+   'connection-limit'
+;
+
 CONNECTIONS_LIMIT
 :
    'connections-limit'
@@ -710,6 +745,11 @@ DAEMON
 DAMPING
 :
    'damping'
+;
+
+DATABASE_REPLICATION
+:
+   'database-replication'
 ;
 
 DCBX
@@ -867,6 +907,11 @@ DHCP
    'dhcp'
 ;
 
+DHCP_LOCAL_SERVER
+:
+   'dhcp-local-server'
+;
+
 DHCP_RELAY
 :
    'dhcp-relay'
@@ -927,6 +972,11 @@ DSTOPTS
    'dstopts'
 ;
 
+DTCP_ONLY
+:
+   'dtcp-only'
+;
+
 DUMPONPANIC
 :
    'dump-on-panic'
@@ -940,6 +990,11 @@ DVMRP
 DYNAMIC
 :
    'dynamic'
+;
+
+DYNAMIC_DNS
+:
+   'dynamic-dns'
 ;
 
 ECE
@@ -1082,6 +1137,16 @@ EXPRESSION
    'expression'
 ;
 
+EXTENSIBLE_SUBSCRIBER
+:
+   'extensible-subscriber'
+;
+
+EXTENSION_SERVICE
+:
+   'extension-service'
+;
+
 EXTERNAL
 :
    'external'
@@ -1150,6 +1215,11 @@ FILTER
 FINGER
 :
    'finger'
+;
+
+FINGERPRINT_HASH
+:
+   'fingerprint-hash'
 ;
 
 FIREWALL
@@ -1457,6 +1527,11 @@ HOST_UNREACHABLE_FOR_TOS
    'host-unreachable-for-tos'
 ;
 
+HOSTKEY_ALGORITHM
+:
+   'hostkey-algorithm'
+;
+
 HOSTNAME
 :
    'hostname'
@@ -1680,6 +1755,11 @@ INPUT_LIST
 INPUT_VLAN_MAP
 :
    'input-vlan-map'
+;
+
+INSECURE
+:
+   'insecure'
 ;
 
 INSTALL
@@ -2864,6 +2944,11 @@ KEY_CHAIN
    'key-chain'
 ;
 
+KEY_EXCHANGE
+:
+   'key-exchange'
+;
+
 KLOGIN
 :
    'klogin'
@@ -3129,6 +3214,11 @@ MAC
    'mac' -> pushMode ( M_MacAddress )
 ;
 
+MACS
+:
+   'macs'
+;
+
 MAIN
 :
    'main'
@@ -3164,9 +3254,19 @@ MAX_CONFIGURATION_ROLLBACKS
    'max-configuration-rollbacks'
 ;
 
+MAX_PRE_AUTHENTICATION_PACKETS
+:
+   'max-pre-authentication-packets'
+;
+
 MAX_SESSION_NUMBER
 :
    'max-session-number'
+;
+
+MAX_SESSIONS_PER_CONNECTION
+:
+   'max-sessions-per-connection'
 ;
 
 MAXIMUM
@@ -3549,6 +3649,11 @@ NO_NEXTHOP_CHANGE
    'no-nexthop-change'
 ;
 
+NO_PASSWORDS
+:
+   'no-passwords'
+;
+
 NO_PEER_LOOP_CHECK
 :
    'no-peer-loop-check'
@@ -3587,6 +3692,11 @@ NO_NEIGHBOR_LEARN
 NO_SUMMARIES
 :
    'no-summaries'
+;
+
+NO_TCP_FORWARDING
+:
+   'no-tcp-forwarding'
 ;
 
 NO_TRAPS
@@ -3664,6 +3774,11 @@ OUT_DELAY
    'out-delay'
 ;
 
+OUTBOUND_SSH
+:
+   'outbound-ssh'
+;
+
 OUTPUT
 :
    'output'
@@ -3727,6 +3842,11 @@ PARAMETER_PROBLEM
 PASSIVE
 :
    'passive'
+;
+
+PASSWORD
+:
+   'password'
 ;
 
 PATH
@@ -4054,6 +4174,11 @@ PROTOCOL_UNREACHABLE
    'protocol-unreachable'
 ;
 
+PROTOCOL_VERSION
+:
+   'protocol-version'
+;
+
 PROTOCOLS
 :
    'protocols'
@@ -4117,6 +4242,11 @@ RADIUS_SERVER
 RAS
 :
    'ras'
+;
+
+RATE_LIMIT
+:
+   'rate-limit'
 ;
 
 REALAUDIO
@@ -4194,6 +4324,11 @@ REJECT
    'reject'
 ;
 
+REKEY
+:
+   'rekey'
+;
+
 RELAY_AGENT_OPTION
 :
    'relay-agent-option'
@@ -4239,6 +4374,11 @@ RESOURCES
    'resources'
 ;
 
+REST
+:
+   'rest'
+;
+
 RESTRICT
 :
    'restrict'
@@ -4247,6 +4387,11 @@ RESTRICT
 RETAIN
 :
    'retain'
+;
+
+REVERSE
+:
+   'reverse'
 ;
 
 REVERSE_SSH
@@ -4297,6 +4442,11 @@ RLOGIN
 ROOT_AUTHENTICATION
 :
    'root-authentication'
+;
+
+ROOT_LOGIN
+:
+   'root-login'
 ;
 
 ROUTE
@@ -4477,6 +4627,11 @@ SERVER_GROUP
 SERVICE
 :
    'service'
+;
+
+SERVICE_DEPLOYMENT
+:
+   'service-deployment'
 ;
 
 SERVICE_FILTER
@@ -4739,6 +4894,11 @@ STUB
    'stub'
 ;
 
+SUBSCRIBER_MANAGEMENT
+:
+   'subscriber-management'
+;
+
 SUBTRACT
 :
    'subtract'
@@ -4787,6 +4947,11 @@ TACACS
 TACACS_DS
 :
    'tacacs-ds'
+;
+
+TACPLUS
+:
+   'tacplus'
 ;
 
 TACPLUS_SERVER
@@ -4844,6 +5009,11 @@ TCP_FLAGS
    'tcp-flags' -> pushMode ( M_TcpFlags )
 ;
 
+TCP_FORWARDING
+:
+   'tcp-forwarding'
+;
+
 TCP_INITIAL
 :
    'tcp-initial'
@@ -4882,6 +5052,11 @@ TERM
 TFTP
 :
    'tftp'
+;
+
+TFTP_SERVER
+:
+   'tftp-server'
 ;
 
 THEN
@@ -5191,6 +5366,16 @@ VRRP_GROUP
 VSTP
 :
    'vstp'
+;
+
+WEB_MANAGEMENT
+:
+   'web-management'
+;
+
+WEBAPI
+:
+   'webapi'
 ;
 
 WHO

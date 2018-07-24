@@ -16,6 +16,7 @@ import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.graph.Network;
 import com.google.common.graph.ValueGraph;
+import java.io.Serializable;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Collections;
@@ -40,7 +41,6 @@ import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
-import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpActivePeerConfig;
@@ -121,7 +121,7 @@ import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 import org.batfish.dataplane.rib.StaticRib;
 import org.batfish.dataplane.topology.BgpEdgeId;
 
-public class VirtualRouter extends ComparableStructure<String> {
+public class VirtualRouter implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
@@ -199,6 +199,8 @@ public class VirtualRouter extends ComparableStructure<String> {
   /** Keeps track of changes to the main RIB */
   private transient RibDelta.Builder<AbstractRoute> _mainRibRouteDeltaBuiler;
 
+  private final String _name;
+
   transient OspfExternalType1Rib _ospfExternalType1Rib;
 
   transient OspfExternalType1Rib _ospfExternalType1StagingRib;
@@ -273,8 +275,8 @@ public class VirtualRouter extends ComparableStructure<String> {
   final Vrf _vrf;
 
   VirtualRouter(final String name, final Configuration c) {
-    super(name);
     _c = c;
+    _name = name;
     _vrf = c.getVrfs().get(name);
     initRibs();
     // Keep track of sent and received advertisements
@@ -636,6 +638,7 @@ public class VirtualRouter extends ComparableStructure<String> {
         // Non-null metric means we generate a new summary and put it in the RIB
         OspfInterAreaRoute summaryRoute =
             new OspfInterAreaRoute(prefix, Ip.ZERO, admin, metric, areaNum);
+        summaryRoute.setNonRouting(true);
         if (_ospfInterAreaStagingRib.mergeRouteGetDelta(summaryRoute) != null) {
           changed = true;
         }
@@ -861,7 +864,7 @@ public class VirtualRouter extends ComparableStructure<String> {
                     transformedOutgoingRoute,
                     transformedIncomingRouteBuilder,
                     advert.getSrcIp(),
-                    _key,
+                    _name,
                     Direction.IN);
           }
         }
@@ -1048,7 +1051,7 @@ public class VirtualRouter extends ComparableStructure<String> {
     OspfExternalRoute.Builder outputRouteBuilder = new OspfExternalRoute.Builder();
     // Export based on the policy result of processing the potentialExportRoute
     boolean accept =
-        exportPolicy.process(potentialExportRoute, outputRouteBuilder, null, _key, Direction.OUT);
+        exportPolicy.process(potentialExportRoute, outputRouteBuilder, null, _name, Direction.OUT);
     if (!accept) {
       return null;
     }
@@ -1246,8 +1249,8 @@ public class VirtualRouter extends ComparableStructure<String> {
     _ospfExternalType2StagingRib = new OspfExternalType2Rib(getHostname(), null);
     _ospfInterAreaRib = new OspfInterAreaRib();
     _ospfInterAreaStagingRib = new OspfInterAreaRib();
-    _ospfIntraAreaRib = new OspfIntraAreaRib(this);
-    _ospfIntraAreaStagingRib = new OspfIntraAreaRib(this);
+    _ospfIntraAreaRib = new OspfIntraAreaRib();
+    _ospfIntraAreaStagingRib = new OspfIntraAreaRib();
     _ospfRib = new OspfRib();
     _ripInternalRib = new RipInternalRib();
     _ripInternalStagingRib = new RipInternalRib();
@@ -1650,7 +1653,7 @@ public class VirtualRouter extends ComparableStructure<String> {
                     transformedIncomingRouteBuilder,
                     remoteBgpConfig.getLocalIp(),
                     ourConfigId.getRemotePeerPrefix(),
-                    _key,
+                    _name,
                     Direction.IN);
           }
         }

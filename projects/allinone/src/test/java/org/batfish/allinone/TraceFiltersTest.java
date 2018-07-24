@@ -58,7 +58,6 @@ public class TraceFiltersTest {
     _c = _cb.build();
   }
 
-  @SuppressWarnings("unchecked")
   @Test
   public void testIndirection() throws IOException {
     IpAccessList.Builder aclb = _nf.aclBuilder().setOwner(_c);
@@ -92,7 +91,8 @@ public class TraceFiltersTest {
             .setName("acl2")
             .build();
 
-    Batfish batfish = BatfishTestUtils.getBatfish(ImmutableSortedMap.of(_c.getName(), _c), _folder);
+    Batfish batfish =
+        BatfishTestUtils.getBatfish(ImmutableSortedMap.of(_c.getHostname(), _c), _folder);
 
     assertThat(_c, hasIpAccessLists(hasEntry(referencedAcl.getName(), referencedAcl)));
     assertThat(_c, hasIpAccessLists(hasEntry(acl.getName(), acl)));
@@ -113,9 +113,10 @@ public class TraceFiltersTest {
                     TraceFiltersAnswerer.COLUMN_TRACE,
                     hasEvents(
                         contains(
-                            isDefaultDeniedByIpAccessListNamed(referencedAcl.getName()),
-                            isPermittedByIpAccessListLineThat(
-                                PermittedByIpAccessListLineMatchers.hasName(acl.getName())))),
+                            ImmutableList.of(
+                                isDefaultDeniedByIpAccessListNamed(referencedAcl.getName()),
+                                isPermittedByIpAccessListLineThat(
+                                    PermittedByIpAccessListLineMatchers.hasName(acl.getName()))))),
                     Schema.ACL_TRACE))));
     /* Trace should be present for referenced acl with one event: not matching the referenced acl */
     assertThat(
@@ -147,7 +148,8 @@ public class TraceFiltersTest {
 
     Batfish batfish =
         BatfishTestUtils.getBatfish(
-            ImmutableSortedMap.of(c1.getName(), c1, c2.getName(), c2, c3.getName(), c3), _folder);
+            ImmutableSortedMap.of(c1.getHostname(), c1, c2.getHostname(), c2, c3.getHostname(), c3),
+            _folder);
     TraceFiltersQuestion question =
         new TraceFiltersQuestion(NodesSpecifier.ALL, FiltersSpecifier.ALL);
     TraceFiltersAnswerer answerer = new TraceFiltersAnswerer(question, batfish);

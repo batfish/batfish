@@ -3,10 +3,10 @@ package org.batfish.datamodel.matchers;
 import static org.batfish.datamodel.matchers.AaaAuthenticationLoginListMatchers.hasMethods;
 import static org.hamcrest.CoreMatchers.equalTo;
 
+import org.batfish.datamodel.AaaAuthenticationLoginList;
+import org.batfish.datamodel.Line;
 import org.batfish.datamodel.matchers.LineMatchersImpl.HasAuthenticationLoginList;
 import org.batfish.datamodel.matchers.LineMatchersImpl.RequiresAuthentication;
-import org.batfish.datamodel.vendor_family.cisco.AaaAuthenticationLoginList;
-import org.batfish.datamodel.vendor_family.cisco.Line;
 import org.hamcrest.Matcher;
 
 public final class LineMatchers {

@@ -1,20 +1,65 @@
 package org.batfish.datamodel.acl;
 
+import static java.util.Objects.requireNonNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.MoreObjects;
+import java.util.Objects;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import org.batfish.datamodel.AclIpSpace;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpSpaceMetadata;
 
-public final class DefaultDeniedByAclIpSpace implements TraceEvent {
+public final class DefaultDeniedByAclIpSpace extends IpSpaceTraceEvent {
 
   private static final String PROP_NAME = "name";
 
   private static final long serialVersionUID = 1L;
 
-  private final String _name;
+  private static String computeDescription(
+      @Nonnull String name,
+      @Nonnull Ip ip,
+      @Nonnull String ipDescription,
+      @Nullable IpSpaceMetadata ipSpaceMetadata) {
+    String displayName =
+        ipSpaceMetadata != null
+            ? String.format(
+                "'%s' named '%s'", ipSpaceMetadata.getSourceType(), ipSpaceMetadata.getSourceName())
+            : String.format("'%s' named '%s'", AclIpSpace.class.getSimpleName(), name);
+    return String.format("%s %s default-denied by %s", ipDescription, ip, displayName);
+  }
 
   @JsonCreator
-  public DefaultDeniedByAclIpSpace(@JsonProperty(PROP_NAME) @Nonnull String name) {
+  private static @Nonnull DefaultDeniedByAclIpSpace create(
+      @JsonProperty(PROP_NAME) String name,
+      @JsonProperty(PROP_IP) Ip ip,
+      @JsonProperty(PROP_IP_DESCRIPTION) String ipDescription,
+      @JsonProperty(PROP_DESCRIPTION) String description) {
+    return new DefaultDeniedByAclIpSpace(
+        requireNonNull(name),
+        requireNonNull(ip),
+        requireNonNull(ipDescription),
+        requireNonNull(description));
+  }
+
+  private final String _name;
+
+  public DefaultDeniedByAclIpSpace(
+      @Nonnull String name,
+      @Nonnull Ip ip,
+      @Nonnull String ipDescription,
+      @Nullable IpSpaceMetadata ipSpaceMetadata) {
+    super(computeDescription(name, ip, ipDescription, ipSpaceMetadata), ip, ipDescription);
+    _name = name;
+  }
+
+  private DefaultDeniedByAclIpSpace(
+      @Nonnull String name,
+      @Nonnull Ip ip,
+      @Nonnull String ipDescription,
+      @Nonnull String description) {
+    super(description, ip, ipDescription);
     _name = name;
   }
 
@@ -27,7 +72,10 @@ public final class DefaultDeniedByAclIpSpace implements TraceEvent {
       return false;
     }
     DefaultDeniedByAclIpSpace rhs = (DefaultDeniedByAclIpSpace) obj;
-    return _name.equals(rhs._name);
+    return getDescription().equals(rhs.getDescription())
+        && getIp().equals(rhs.getIp())
+        && getIpDescription().equals(rhs.getIpDescription())
+        && _name.equals(rhs._name);
   }
 
   @JsonProperty(PROP_NAME)
@@ -37,11 +85,6 @@ public final class DefaultDeniedByAclIpSpace implements TraceEvent {
 
   @Override
   public int hashCode() {
-    return _name.hashCode();
-  }
-
-  @Override
-  public String toString() {
-    return MoreObjects.toStringHelper(getClass()).add(PROP_NAME, _name).toString();
+    return Objects.hash(getDescription(), getIp(), getIpDescription(), _name);
   }
 }

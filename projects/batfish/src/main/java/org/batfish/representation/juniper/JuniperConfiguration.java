@@ -84,6 +84,7 @@ import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.isis.IsisInterfaceMode;
 import org.batfish.datamodel.isis.IsisProcess;
+import org.batfish.datamodel.ospf.OspfAreaSummary;
 import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -121,14 +122,18 @@ public final class JuniperConfiguration extends VendorConfiguration {
   public static final String ACL_NAME_SECURITY_POLICY = "~SECURITY_POLICIES_TO~";
 
   private static final IpAccessList ACL_EXISTING_CONNECTION =
-      new IpAccessList(
-          ACL_NAME_EXISTING_CONNECTION,
-          ImmutableList.of(
-              new IpAccessListLine(
-                  LineAction.ACCEPT,
-                  new MatchHeaderSpace(
-                      HeaderSpace.builder().setStates(ImmutableList.of(State.ESTABLISHED)).build()),
-                  ACL_NAME_EXISTING_CONNECTION)));
+      IpAccessList.builder()
+          .setName(ACL_NAME_EXISTING_CONNECTION)
+          .setLines(
+              ImmutableList.of(
+                  new IpAccessListLine(
+                      LineAction.ACCEPT,
+                      new MatchHeaderSpace(
+                          HeaderSpace.builder()
+                              .setStates(ImmutableList.of(State.ESTABLISHED))
+                              .build()),
+                      ACL_NAME_EXISTING_CONNECTION)))
+          .build();
 
   private static final int DEFAULT_AGGREGATE_ROUTE_COST = 0;
 
@@ -189,7 +194,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   private final Map<String, Interface> _interfaces;
 
-  private final Map<Interface, Zone> _interfaceZones;
+  private final Map<String, Zone> _interfaceZones;
 
   private final Map<String, IpsecPolicy> _ipsecPolicies;
 
@@ -627,14 +632,14 @@ public final class JuniperConfiguration extends VendorConfiguration {
     if (level2) {
       newProc.setLevel2(toIsisLevelSettings(settings.getLevel2Settings()));
     }
-    processIsisInterfaceSettings(routingInstance, settings, level1, level2);
+    processIsisInterfaceSettings(routingInstance, level1, level2);
     newProc.setOverloadTimeout(settings.getOverloadTimeout());
     newProc.setReferenceBandwidth(settings.getReferenceBandwidth());
     return newProc.build();
   }
 
   private void processIsisInterfaceSettings(
-      RoutingInstance routingInstance, IsisSettings settings, boolean level1, boolean level2) {
+      RoutingInstance routingInstance, boolean level1, boolean level2) {
     _c.getVrfs()
         .get(routingInstance.getName())
         .getInterfaces()
@@ -643,12 +648,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
               Interface iface = routingInstance.getInterfaces().get(ifaceName);
               newIface.setIsis(
                   toIsisInterfaceSettings(
-                      settings, iface.getIsisSettings(), iface.getIsoAddress(), level1, level2));
+                      iface.getIsisSettings(), iface.getIsoAddress(), level1, level2));
             });
   }
 
   private org.batfish.datamodel.isis.IsisInterfaceSettings toIsisInterfaceSettings(
-      IsisSettings settings,
       @Nonnull IsisInterfaceSettings interfaceSettings,
       IsoAddress isoAddress,
       boolean level1,
@@ -706,7 +710,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     newProc.setExportPolicy(ospfExportPolicyName);
     If ospfExportPolicyConditional = new If();
     // TODO: set default metric-type for special cases based on ospf process
-    // setttings
+    // settings
     ospfExportPolicy.getStatements().add(new SetOspfMetricType(OspfMetricType.E2));
     ospfExportPolicy.getStatements().add(ospfExportPolicyConditional);
     Disjunction matchSomeExportPolicy = new Disjunction();
@@ -838,7 +842,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return _interfaces;
   }
 
-  public Map<Interface, Zone> getInterfaceZones() {
+  public Map<String, Zone> getInterfaceZones() {
     return _interfaceZones;
   }
 
@@ -1079,6 +1083,39 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return newRoute.build();
   }
 
+  private org.batfish.datamodel.GeneratedRoute ospfSummaryToAggregateRoute(
+      Prefix prefix, OspfAreaSummary summary) {
+    int prefixLength = prefix.getPrefixLength();
+    String policyNameSuffix = prefix.toString().replace('/', '_').replace('.', '_');
+    String policyName = "~SUMMARY" + policyNameSuffix + "~";
+    RoutingPolicy routingPolicy = new RoutingPolicy(policyName, _c);
+    If routingPolicyConditional = new If();
+    routingPolicy.getStatements().add(routingPolicyConditional);
+    routingPolicyConditional.getTrueStatements().add(Statements.ExitAccept.toStaticStatement());
+    routingPolicyConditional.getFalseStatements().add(Statements.ExitReject.toStaticStatement());
+    String rflName = "~SUMMARY" + policyNameSuffix + "_RF~";
+    MatchPrefixSet isContributingRoute =
+        new MatchPrefixSet(new DestinationNetwork(), new NamedPrefixSet(rflName));
+    routingPolicyConditional.setGuard(isContributingRoute);
+    RouteFilterList rfList = new RouteFilterList(rflName);
+    rfList.addLine(
+        new org.batfish.datamodel.RouteFilterLine(
+            LineAction.ACCEPT, prefix, new SubRange(prefixLength + 1, Prefix.MAX_PREFIX_LENGTH)));
+    org.batfish.datamodel.GeneratedRoute.Builder newRoute =
+        new org.batfish.datamodel.GeneratedRoute.Builder();
+    newRoute.setNetwork(prefix);
+    newRoute.setAdmin(
+        RoutingProtocol.OSPF_IA.getDefaultAdministrativeCost(ConfigurationFormat.JUNIPER));
+    if (summary.getMetric() != null) {
+      newRoute.setMetric(summary.getMetric());
+    }
+    newRoute.setDiscard(true);
+    newRoute.setGenerationPolicy(policyName);
+    _c.getRoutingPolicies().put(policyName, routingPolicy);
+    _c.getRouteFilterLists().put(rflName, rfList);
+    return newRoute.build();
+  }
+
   private org.batfish.datamodel.CommunityList toCommunityList(CommunityList cl) {
     String name = cl.getName();
     List<org.batfish.datamodel.CommunityListLine> newLines = new ArrayList<>();
@@ -1090,8 +1127,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       newLines.add(newLine);
     }
     org.batfish.datamodel.CommunityList newCl =
-        new org.batfish.datamodel.CommunityList(name, newLines);
-    newCl.setInvertMatch(cl.getInvertMatch());
+        new org.batfish.datamodel.CommunityList(name, newLines, cl.getInvertMatch());
     return newCl;
   }
 
@@ -1251,10 +1287,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
     newIface.setVrrpGroups(iface.getVrrpGroups());
     newIface.setVrf(_c.getVrfs().get(iface.getRoutingInstance()));
     newIface.setAdditionalArpIps(iface.getAdditionalArpIps());
-    Zone zone = _interfaceZones.get(iface);
+    Zone zone = _interfaceZones.get(iface.getName());
     if (zone != null) {
       // filter for interface in zone
-      FirewallFilter zoneInboundInterfaceFilter = zone.getInboundInterfaceFilters().get(iface);
+      FirewallFilter zoneInboundInterfaceFilter =
+          zone.getInboundInterfaceFilters().get(iface.getName());
       if (zoneInboundInterfaceFilter != null) {
         String zoneInboundInterfaceFilterName = zoneInboundInterfaceFilter.getName();
         IpAccessList zoneInboundInterfaceFilterList =
@@ -1384,7 +1421,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     zoneAclLines.add(
         new IpAccessListLine(_defaultCrossZoneAction, TrueExpr.INSTANCE, "DEFAULT_POLICY"));
 
-    IpAccessList zoneAcl = new IpAccessList(name, zoneAclLines);
+    IpAccessList zoneAcl = IpAccessList.builder().setName(name).setLines(zoneAclLines).build();
     _c.getIpAccessLists().put(name, zoneAcl);
     return zoneAcl;
   }
@@ -1412,11 +1449,13 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
     String combinedAclName = ACL_NAME_COMBINED_OUTGOING + iface.getName();
     IpAccessList combinedAcl =
-        new IpAccessList(
-            combinedAclName,
-            ImmutableList.of(
-                new IpAccessListLine(
-                    LineAction.ACCEPT, new AndMatchExpr(aclConjunctList), "ACCEPT")));
+        IpAccessList.builder()
+            .setName(combinedAclName)
+            .setLines(
+                ImmutableList.of(
+                    new IpAccessListLine(
+                        LineAction.ACCEPT, new AndMatchExpr(aclConjunctList), "ACCEPT")))
+            .build();
     _c.getIpAccessLists().put(combinedAclName, combinedAcl);
     return combinedAcl;
   }
@@ -1475,7 +1514,12 @@ public final class JuniperConfiguration extends VendorConfiguration {
         lines.add(line);
       }
     }
-    return new IpAccessList(aclName, mergeIpAccessListLines(lines, conjunctMatchExpr));
+    return IpAccessList.builder()
+        .setName(aclName)
+        .setLines(mergeIpAccessListLines(lines, conjunctMatchExpr))
+        .setSourceName(aclName)
+        .setSourceType(JuniperStructureType.FIREWALL_FILTER.getDescription())
+        .build();
   }
 
   /** Merge the list of lines with the specified conjunct match expression. */
@@ -1662,9 +1706,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
                     ImmutableList.builder();
                 entry
                     .getEntries()
+                    .keySet()
                     .forEach(
-                        subEntry -> {
-                          String subEntryName = bookName + "~" + subEntry.getName();
+                        name -> {
+                          String subEntryName = bookName + "~" + name;
                           aclIpSpaceLineBuilder.add(
                               AclIpSpaceLine.builder()
                                   .setIpSpace(new IpSpaceReference(subEntryName))
@@ -2210,6 +2255,18 @@ public final class JuniperConfiguration extends VendorConfiguration {
       if (ri.getOspfAreas().size() > 0) {
         OspfProcess oproc = createOspfProcess(ri);
         vrf.setOspfProcess(oproc);
+        // add discard routes for OSPF summaries
+        oproc
+            .getAreas()
+            .values()
+            .stream()
+            .flatMap(a -> a.getSummaries().entrySet().stream())
+            .forEach(
+                summaryEntry ->
+                    vrf.getGeneratedRoutes()
+                        .add(
+                            ospfSummaryToAggregateRoute(
+                                summaryEntry.getKey(), summaryEntry.getValue())));
       }
 
       // create is-is process
@@ -2349,10 +2406,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
     org.batfish.datamodel.Zone newZone =
         new org.batfish.datamodel.Zone(
             zone.getName(), inboundFilterList, fromHostFilterList, toHostFilterList);
-    for (Entry<Interface, FirewallFilter> e : zone.getInboundInterfaceFilters().entrySet()) {
-      Interface inboundInterface = e.getKey();
+    for (Entry<String, FirewallFilter> e : zone.getInboundInterfaceFilters().entrySet()) {
+      String inboundInterfaceName = e.getKey();
       FirewallFilter inboundInterfaceFilter = e.getValue();
-      String inboundInterfaceName = inboundInterface.getName();
       String inboundInterfaceFilterName = inboundInterfaceFilter.getName();
       org.batfish.datamodel.Interface newIface = _c.getInterfaces().get(inboundInterfaceName);
       IpAccessList inboundInterfaceFilterList =
@@ -2372,7 +2428,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       String ifaceName = iface.getName();
       org.batfish.datamodel.Interface newIface = _c.getInterfaces().get(ifaceName);
       newIface.setZone(newZone);
-      FirewallFilter inboundInterfaceFilter = zone.getInboundInterfaceFilters().get(iface);
+      FirewallFilter inboundInterfaceFilter = zone.getInboundInterfaceFilters().get(ifaceName);
       IpAccessList inboundInterfaceFilterList;
       if (inboundInterfaceFilter != null) {
         String name = inboundInterfaceFilter.getName();

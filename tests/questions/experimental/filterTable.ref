@@ -1,0 +1,48 @@
+{
+  "class" : "org.batfish.question.filtertable.FilterTableQuestion",
+  "columns" : [
+    "interface",
+    "mtu"
+  ],
+  "filter" : "mtu == 1500",
+  "innerQuestion" : {
+    "class" : "org.batfish.question.interfaceproperties.InterfacePropertiesQuestion",
+    "interfaceRegex" : ".*",
+    "nodeRegex" : ".*",
+    "propertySpec" : ".*",
+    "differential" : false,
+    "includeOneTableKeys" : false
+  },
+  "differential" : false,
+  "includeOneTableKeys" : false,
+  "instance" : {
+    "description" : "Filters rows or select columns of the answer of inner question",
+    "instanceName" : "qname",
+    "variables" : {
+      "columns" : {
+        "description" : "The set of columns to fetch",
+        "minElements" : 1,
+        "optional" : true,
+        "type" : "string",
+        "value" : [
+          "interface",
+          "mtu"
+        ]
+      },
+      "filter" : {
+        "description" : "The filter to use",
+        "optional" : true,
+        "type" : "string",
+        "value" : "mtu == 1500"
+      },
+      "innerQuestion" : {
+        "description" : "The inner question whose output should be filtered",
+        "optional" : false,
+        "type" : "question",
+        "value" : {
+          "class" : "org.batfish.question.interfaceproperties.InterfacePropertiesQuestion"
+        }
+      }
+    }
+  }
+}

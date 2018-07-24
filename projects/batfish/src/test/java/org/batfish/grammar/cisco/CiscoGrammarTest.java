@@ -44,6 +44,7 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVendorFami
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrfs;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasAclName;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasBandwidth;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructure;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasIpProtocols;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasMemberInterfaces;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasName;
@@ -59,6 +60,7 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.hasZone;
 import static org.batfish.datamodel.matchers.DataModelMatchers.isIpSpaceReferenceThat;
 import static org.batfish.datamodel.matchers.DataModelMatchers.isPermittedByAclThat;
 import static org.batfish.datamodel.matchers.DataModelMatchers.permits;
+import static org.batfish.datamodel.matchers.EigrpInterfaceSettingsMatchers.hasDelay;
 import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasDstIps;
 import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasSrcIps;
 import static org.batfish.datamodel.matchers.IkeGatewayMatchers.hasAddress;
@@ -78,6 +80,7 @@ import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasEncryptionAl
 import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasLifeTimeSeconds;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDeclaredNames;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasEigrp;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfArea;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrf;
@@ -122,8 +125,11 @@ import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.hasMetric;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.isAdvertised;
 import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasArea;
 import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasAreas;
+import static org.batfish.datamodel.matchers.SnmpServerMatchers.hasCommunities;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
+import static org.batfish.datamodel.matchers.VrfMatchers.hasEigrpProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasOspfProcess;
+import static org.batfish.datamodel.matchers.VrfMatchers.hasSnmpServer;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.batfish.datamodel.vendor_family.VendorFamilyMatchers.hasCisco;
 import static org.batfish.datamodel.vendor_family.cisco.CiscoFamilyMatchers.hasAaa;
@@ -206,6 +212,7 @@ import org.batfish.datamodel.IpsecEncapsulationMode;
 import org.batfish.datamodel.IpsecPeerConfigId;
 import org.batfish.datamodel.IpsecProtocol;
 import org.batfish.datamodel.IpsecSession;
+import org.batfish.datamodel.Line;
 import org.batfish.datamodel.LineType;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.NamedPort;
@@ -219,6 +226,8 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.matchers.ConfigurationMatchers;
+import org.batfish.datamodel.matchers.EigrpInterfaceSettingsMatchers;
+import org.batfish.datamodel.matchers.EigrpProcessMatchers;
 import org.batfish.datamodel.matchers.IkeGatewayMatchers;
 import org.batfish.datamodel.matchers.IkePhase1KeyMatchers;
 import org.batfish.datamodel.matchers.IkePhase1ProposalMatchers;
@@ -235,7 +244,6 @@ import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfDefaultOriginateType;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.ospf.StubType;
-import org.batfish.datamodel.vendor_family.cisco.Line;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
@@ -725,6 +733,25 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testIosEigrpNetwork() throws IOException {
+    Configuration c = parseConfig("ios-eigrp-network");
+
+    /* Confirm classic mode networks are configured correctly */
+    assertThat(c, hasDefaultVrf(hasEigrpProcess(EigrpProcessMatchers.hasAsn(1L))));
+    assertThat(c, hasInterface("Ethernet0", hasEigrp(EigrpInterfaceSettingsMatchers.hasAsn(1L))));
+    assertThat(c, hasInterface("Ethernet1", hasEigrp(EigrpInterfaceSettingsMatchers.hasAsn(1L))));
+    assertThat(c, hasInterface("Ethernet2", hasEigrp(EigrpInterfaceSettingsMatchers.hasAsn(1L))));
+
+    /* Confirm named mode networks are configured correctly */
+    assertThat(
+        c,
+        ConfigurationMatchers.hasVrf("vrf-name", hasEigrpProcess(EigrpProcessMatchers.hasAsn(2L))));
+    assertThat(c, hasInterface("Ethernet3", hasEigrp(EigrpInterfaceSettingsMatchers.hasAsn(2L))));
+    assertThat(c, hasInterface("Ethernet4", hasEigrp(EigrpInterfaceSettingsMatchers.hasAsn(2L))));
+    assertThat(c, hasInterface("Ethernet5", hasEigrp(EigrpInterfaceSettingsMatchers.hasAsn(2L))));
+  }
+
+  @Test
   public void testIosInspection() throws IOException {
     Configuration c = parseConfig("ios-inspection");
 
@@ -808,6 +835,16 @@ public class CiscoGrammarTest {
     assertThat(eth2Acl, rejects(deniedByBoth, eth1Name, c.getIpAccessLists(), c.getIpSpaces()));
     assertThat(eth3Acl, rejects(deniedByBoth, eth0Name, c.getIpAccessLists(), c.getIpSpaces()));
     assertThat(eth3Acl, rejects(deniedByBoth, eth1Name, c.getIpAccessLists(), c.getIpSpaces()));
+  }
+
+  @Test
+  public void testIosInterfaceDelay() throws IOException {
+    String hostname = "ios-interface-delay";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(c, hasInterface("GigabitEthernet0/0", hasEigrp(hasDelay(1E4))));
+    assertThat(c, hasInterface("GigabitEthernet0/1", hasEigrp(hasDelay(1E10))));
+    assertThat(c, hasInterface("FastEthernet0/1", hasEigrp(hasDelay(1E5))));
   }
 
   @Test
@@ -1258,6 +1295,25 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testIosSnmpCommunityString() throws IOException {
+    String hostname = "ios-snmp-community-string";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+    Configuration c = batfish.loadConfigurations().get(hostname);
+
+    /* Confirm community strings are correctly parsed */
+    assertThat(c, hasDefaultVrf(hasSnmpServer(hasCommunities(hasKey("test$#!@")))));
+    assertThat(c, hasDefaultVrf(hasSnmpServer(hasCommunities(hasKey("quoted$#!@")))));
+
+    /* Confirm ACL is referenced */
+    assertThat(
+        ccae, hasNumReferrers(hostname, CiscoStructureType.IPV4_ACCESS_LIST_STANDARD, "80", 1));
+    assertThat(
+        ccae, hasNumReferrers(hostname, CiscoStructureType.IPV4_ACCESS_LIST_STANDARD, "90", 1));
+  }
+
+  @Test
   public void testIosClassMapInspect() throws IOException {
     String hostname = "ios-class-map-inspect";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -1500,12 +1556,20 @@ public class CiscoGrammarTest {
     String classMapDropAclName = computeInspectClassMapAclName(classMapDropName);
 
     Flow flowPass =
-        Flow.builder().setIngressNode(c.getName()).setTag("").setIpProtocol(IpProtocol.TCP).build();
+        Flow.builder()
+            .setIngressNode(c.getHostname())
+            .setTag("")
+            .setIpProtocol(IpProtocol.TCP)
+            .build();
     Flow flowInspect =
-        Flow.builder().setIngressNode(c.getName()).setTag("").setIpProtocol(IpProtocol.UDP).build();
+        Flow.builder()
+            .setIngressNode(c.getHostname())
+            .setTag("")
+            .setIpProtocol(IpProtocol.UDP)
+            .build();
     Flow flowDrop =
         Flow.builder()
-            .setIngressNode(c.getName())
+            .setIngressNode(c.getHostname())
             .setTag("")
             .setIpProtocol(IpProtocol.ICMP)
             .build();
@@ -1538,7 +1602,7 @@ public class CiscoGrammarTest {
     /* Ethernet3 is in zone z3 */
     String e3Name = "Ethernet3";
 
-    Flow flow = Flow.builder().setIngressNode(c.getName()).setTag("").build();
+    Flow flow = Flow.builder().setIngressNode(c.getHostname()).setTag("").build();
 
     /* Traffic originating from device should not be subject to zone filtering */
     assertThat(c, hasInterface(e1Name, hasOutgoingFilter(accepts(flow, null, c))));
@@ -2819,6 +2883,21 @@ public class CiscoGrammarTest {
     String[] names =
         Arrays.stream(configurationNames).map(s -> TESTCONFIGS_PREFIX + s).toArray(String[]::new);
     return BatfishTestUtils.parseTextConfigs(_folder, names);
+  }
+
+  @Test
+  public void testPrefixListNameParsing() throws IOException {
+    String hostname = "prefix-list-name-parsing";
+    String prefixListName = "SET_COMMUNITY_65535:200";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    /* Confirm prefix-list with correct name was defined */
+    assertThat(ccae, hasDefinedStructure(hostname, CiscoStructureType.PREFIX_LIST, prefixListName));
+
+    /* Confirm prefix-list is referenced */
+    assertThat(ccae, hasNumReferrers(hostname, CiscoStructureType.PREFIX_LIST, prefixListName, 1));
   }
 
   @Test

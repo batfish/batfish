@@ -7,7 +7,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import org.batfish.common.BatfishLogger;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
@@ -25,6 +24,8 @@ public class NetworkAcl implements AwsVpcEntity, Serializable {
 
   private static final long serialVersionUID = 1L;
 
+  private static final String SOURCE_TYPE_NAME = "Network ACL";
+
   private List<NetworkAclEntry> _entries = new LinkedList<>();
 
   private List<NetworkAclAssociation> _networkAclAssociations = new LinkedList<>();
@@ -33,15 +34,15 @@ public class NetworkAcl implements AwsVpcEntity, Serializable {
 
   private String _vpcId;
 
-  public NetworkAcl(JSONObject jObj, BatfishLogger logger) throws JSONException {
+  public NetworkAcl(JSONObject jObj) throws JSONException {
     _networkAclId = jObj.getString(JSON_KEY_NETWORK_ACL_ID);
     _vpcId = jObj.getString(JSON_KEY_VPC_ID);
 
     JSONArray associations = jObj.getJSONArray(JSON_KEY_ASSOCIATIONS);
-    initAssociations(associations, logger);
+    initAssociations(associations);
 
     JSONArray entries = jObj.getJSONArray(JSON_KEY_ENTRIES);
-    initEntries(entries, logger);
+    initEntries(entries);
   }
 
   private IpAccessList getAcl(boolean isEgress) {
@@ -100,7 +101,13 @@ public class NetworkAcl implements AwsVpcEntity, Serializable {
       }
     }
     List<IpAccessListLine> lines = ImmutableList.copyOf(lineMap.values());
-    IpAccessList list = new IpAccessList(listName, lines);
+    IpAccessList list =
+        IpAccessList.builder()
+            .setName(listName)
+            .setLines(lines)
+            .setSourceName(_networkAclId)
+            .setSourceType(NetworkAcl.SOURCE_TYPE_NAME)
+            .build();
     return list;
   }
 
@@ -125,17 +132,17 @@ public class NetworkAcl implements AwsVpcEntity, Serializable {
     return _vpcId;
   }
 
-  private void initAssociations(JSONArray associations, BatfishLogger logger) throws JSONException {
+  private void initAssociations(JSONArray associations) throws JSONException {
     for (int index = 0; index < associations.length(); index++) {
       JSONObject childObject = associations.getJSONObject(index);
-      _networkAclAssociations.add(new NetworkAclAssociation(childObject, logger));
+      _networkAclAssociations.add(new NetworkAclAssociation(childObject));
     }
   }
 
-  private void initEntries(JSONArray entries, BatfishLogger logger) throws JSONException {
+  private void initEntries(JSONArray entries) throws JSONException {
     for (int index = 0; index < entries.length(); index++) {
       JSONObject childObject = entries.getJSONObject(index);
-      _entries.add(new NetworkAclEntry(childObject, logger));
+      _entries.add(new NetworkAclEntry(childObject));
     }
   }
 }

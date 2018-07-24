@@ -1,17 +1,19 @@
 package org.batfish.representation.cisco;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import org.batfish.common.util.ComparableStructure;
 
-public class Prefix6List extends ComparableStructure<String> {
+public class Prefix6List implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
   private List<Prefix6ListLine> _lines;
 
+  private final String _name;
+
   public Prefix6List(String name) {
-    super(name);
+    _name = name;
     _lines = new ArrayList<>();
   }
 
@@ -25,5 +27,9 @@ public class Prefix6List extends ComparableStructure<String> {
 
   public List<Prefix6ListLine> getLines() {
     return _lines;
+  }
+
+  public String getName() {
+    return _name;
   }
 }

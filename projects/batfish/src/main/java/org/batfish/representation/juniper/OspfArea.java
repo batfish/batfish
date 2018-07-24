@@ -1,13 +1,13 @@
 package org.batfish.representation.juniper;
 
+import java.io.Serializable;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.ospf.OspfAreaSummary;
 import org.batfish.datamodel.ospf.StubType;
 
-public class OspfArea extends ComparableStructure<Long> {
+public class OspfArea implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
@@ -19,8 +19,10 @@ public class OspfArea extends ComparableStructure<Long> {
 
   private SortedMap<Prefix, OspfAreaSummary> _summaries;
 
+  private final Long _name;
+
   public OspfArea(Long name) {
-    super(name);
+    _name = name;
     _stubType = StubType.NONE;
     _summaries = new TreeMap<>();
   }
@@ -51,5 +53,9 @@ public class OspfArea extends ComparableStructure<Long> {
 
   public void setStubType(StubType stubType) {
     _stubType = stubType;
+  }
+
+  public Long getName() {
+    return _name;
   }
 }

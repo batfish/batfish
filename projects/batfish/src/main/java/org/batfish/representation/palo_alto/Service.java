@@ -67,12 +67,16 @@ public final class Service implements ServiceGroupMember {
         _sourcePorts.stream().map(SubRange::new).collect(Collectors.toSet()));
     headerSpaceBuilder.setDstPorts(_ports.stream().map(SubRange::new).collect(Collectors.toSet()));
     headerSpaceBuilder.setIpProtocols(ImmutableList.of(_protocol));
-    return new IpAccessList(
-        _name,
-        ImmutableList.of(
-            IpAccessListLine.builder()
-                .setAction(action)
-                .setMatchCondition(new MatchHeaderSpace(headerSpaceBuilder.build()))
-                .build()));
+    return IpAccessList.builder()
+        .setName(_name)
+        .setLines(
+            ImmutableList.of(
+                IpAccessListLine.builder()
+                    .setAction(action)
+                    .setMatchCondition(new MatchHeaderSpace(headerSpaceBuilder.build()))
+                    .build()))
+        .setSourceName(_name)
+        .setSourceType(PaloAltoStructureType.SERVICE.getDescription())
+        .build();
   }
 }

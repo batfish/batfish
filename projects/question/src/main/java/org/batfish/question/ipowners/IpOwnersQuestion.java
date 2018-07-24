@@ -9,23 +9,14 @@ public class IpOwnersQuestion extends Question {
 
   private static final String PROP_DUPLICATES_ONLY = "duplicatesOnly";
 
-  private static final String PROP_EXCLUDE_INACTIVE = "excludeInactive";
-
   private static final String QUESTION_NAME = "ipowners";
 
   /** Whether to return duplicate IPs (owned by multiple nodes) only. */
   private boolean _duplicatesOnly;
 
   @JsonCreator
-  public IpOwnersQuestion(
-      @JsonProperty(PROP_DUPLICATES_ONLY) boolean duplicatesOnly,
-      @JsonProperty(PROP_EXCLUDE_INACTIVE) boolean excludeInactive) {
+  public IpOwnersQuestion(@JsonProperty(PROP_DUPLICATES_ONLY) boolean duplicatesOnly) {
     _duplicatesOnly = duplicatesOnly;
-  }
-
-  /** Initialize with default values */
-  IpOwnersQuestion() {
-    this(false, false);
   }
 
   @Override

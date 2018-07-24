@@ -1,10 +1,10 @@
 package org.batfish.representation.juniper;
 
+import java.io.Serializable;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import org.batfish.common.util.ComparableStructure;
 
-public class DhcpRelayGroup extends ComparableStructure<String> {
+public class DhcpRelayGroup implements Serializable {
 
   public static final String MASTER_DHCP_RELAY_GROUP_NAME = "~MASTER_DHCP_RELAY_GROUP~";
 
@@ -17,8 +17,7 @@ public class DhcpRelayGroup extends ComparableStructure<String> {
 
   private SortedSet<String> _interfaces;
 
-  public DhcpRelayGroup(String name) {
-    super(name);
+  public DhcpRelayGroup() {
     _interfaces = new TreeSet<>();
   }
 
