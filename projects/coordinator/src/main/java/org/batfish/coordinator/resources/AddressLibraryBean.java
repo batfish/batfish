@@ -10,6 +10,7 @@ import org.batfish.role.addressbook.AddressLibrary;
 @ParametersAreNonnullByDefault
 public class AddressLibraryBean {
 
+  /** The set of {@link AddressBookBean}s in this library */
   public Set<AddressBookBean> books;
 
   @JsonCreator

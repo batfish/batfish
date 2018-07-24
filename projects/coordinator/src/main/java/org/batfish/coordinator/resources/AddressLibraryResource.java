@@ -29,6 +29,7 @@ public class AddressLibraryResource {
     _container = container;
   }
 
+  /** Adds a new address book to the address library */
   @POST
   public Response addAddressBook(AddressBookBean addressBookBean) {
     _logger.infof("WMS2: addAddressBook '%s'\n", _container);
@@ -55,14 +56,14 @@ public class AddressLibraryResource {
     return new AddressBookResource(_container, book);
   }
 
-  /** Returns information about node roles in the container */
+  /** Returns information about address library in the container */
   @GET
   public AddressLibraryBean getAddressLibrary() {
     _logger.infof("WMS2: getAddressLibrary '%s'\n", _container);
     try {
       return new AddressLibraryBean(Main.getWorkMgr().getAddressLibrary(_container));
     } catch (IOException e) {
-      throw new InternalServerErrorException("Node roles resource is corrupted");
+      throw new InternalServerErrorException("Address library resource is corrupted");
     }
   }
 }

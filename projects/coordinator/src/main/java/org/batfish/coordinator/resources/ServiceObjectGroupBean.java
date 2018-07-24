@@ -9,7 +9,10 @@ import org.batfish.role.addressbook.ServiceObjectGroup;
 
 public class ServiceObjectGroupBean {
 
+  /** The name of this service object group */
   public String name;
+
+  /** The set of names of service objects or service object groups in this service object group */
   public Set<String> services;
 
   @JsonCreator

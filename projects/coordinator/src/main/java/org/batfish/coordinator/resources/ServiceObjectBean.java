@@ -8,8 +8,13 @@ import org.batfish.role.addressbook.ServiceObject;
 
 public class ServiceObjectBean {
 
+  /** The IP protocol this service object (e.g., TCP, UDP, or a protocol number */
   public IpProtocol ipProtocol;
+
+  /** The name of this service object */
   public String name;
+
+  /** The range of ports for this service object (e.g., 80-82) */
   public SubRange ports;
 
   @JsonCreator

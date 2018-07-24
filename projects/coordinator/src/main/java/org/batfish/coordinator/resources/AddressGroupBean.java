@@ -9,7 +9,13 @@ import org.batfish.role.addressbook.AddressGroup;
 
 public class AddressGroupBean {
 
+  /**
+   * The set of address in this address group. An address can be an IP address, prefix, or
+   * address:mask
+   */
   public Set<String> addresses;
+
+  /** The name of this address group */
   public String name;
 
   @JsonCreator

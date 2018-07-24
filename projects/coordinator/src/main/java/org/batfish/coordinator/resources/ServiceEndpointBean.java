@@ -6,8 +6,13 @@ import org.batfish.role.addressbook.ServiceEndpoint;
 
 public class ServiceEndpointBean {
 
+  /** The IP address for this service endpoint */
   public String address;
+
+  /** The name of this service endpoint */
   public String name;
+
+  /** The name of a service object or object group for this endpoint */
   public String service;
 
   @JsonCreator

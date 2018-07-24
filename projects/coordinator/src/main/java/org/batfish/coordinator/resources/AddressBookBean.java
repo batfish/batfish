@@ -9,10 +9,19 @@ import org.batfish.role.addressbook.AddressBook;
 
 @ParametersAreNonnullByDefault
 public class AddressBookBean {
+  /** The name of the address book */
   public String name;
+
+  /** The set of {@link AddressGroupBean}s in this book */
   public Set<AddressGroupBean> addressGroups;
+
+  /** The set of {@link ServiceEndpointBean}s in this book */
   public Set<ServiceEndpointBean> serviceEndpoints;
+
+  /** The set of {@link ServiceObjectGroupBean}s in this book */
   public Set<ServiceObjectGroupBean> serviceObjectGroups;
+
+  /** The set of {@link ServiceObjectBean}s in this book */
   public Set<ServiceObjectBean> serviceObjects;
 
   @JsonCreator
