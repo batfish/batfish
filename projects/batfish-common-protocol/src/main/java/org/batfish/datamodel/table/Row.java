@@ -11,7 +11,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Throwables;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
@@ -228,13 +227,15 @@ public class Row implements Comparable<Row> {
   /** Get the value of specified column safely cast to type specifed via {@code typeReference}. */
   public <T> T get(String columnName, TypeReference<T> typeReference) {
     ObjectMapper mapper = BatfishObjectMapper.mapper();
+    JsonNode node = get(columnName);
     try {
-      return mapper.readValue(mapper.treeAsTokens(get(columnName)), typeReference);
+      return mapper.readValue(mapper.treeAsTokens(node), typeReference);
     } catch (IOException e) {
-      throw new ClassCastException(
+      throw new BatfishException(
           String.format(
-              "Cannot cast element in column '%s' given provided TypeReference: %s",
-              columnName, Throwables.getStackTraceAsString(e)));
+              "Cannot cast row element in column '%s' given provided the TypeReference",
+              columnName),
+          e);
     }
   }
 
