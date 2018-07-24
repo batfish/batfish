@@ -15,11 +15,11 @@ import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.specifier.AllInterfacesLocationSpecifier;
 import org.batfish.specifier.ConstantIpSpaceSpecifier;
 import org.batfish.specifier.DifferenceLocationSpecifier;
+import org.batfish.specifier.IntersectionLocationSpecifier;
 import org.batfish.specifier.IpSpaceSpecifier;
 import org.batfish.specifier.LocationSpecifier;
 import org.batfish.specifier.LocationSpecifiers;
 import org.batfish.specifier.NodeSpecifiers;
-import org.batfish.specifier.UnionLocationSpecifier;
 
 public final class ReachabilitySettings {
 
@@ -334,7 +334,7 @@ public final class ReachabilitySettings {
     // combine ingressInterfaces and ingressNodes into sourceLocations
     LocationSpecifier sourceLocations = AllInterfacesLocationSpecifier.INSTANCE;
     if (ingressInterfaces != null && ingressNodes != null) {
-      sourceLocations = new UnionLocationSpecifier(ingressInterfaces, ingressNodes);
+      sourceLocations = new IntersectionLocationSpecifier(ingressInterfaces, ingressNodes);
     } else if (ingressInterfaces != null) {
       sourceLocations = ingressInterfaces;
     } else if (ingressNodes != null) {
