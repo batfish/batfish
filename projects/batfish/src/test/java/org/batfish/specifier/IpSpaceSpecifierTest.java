@@ -11,6 +11,7 @@ import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import java.util.Map;
 import java.util.Set;
@@ -137,6 +138,14 @@ public class IpSpaceSpecifierTest {
         hasEntry(
             equalTo(EmptyIpSpace.INSTANCE),
             contains(new InterfaceLinkLocation(_i2.getOwner().getHostname(), _i2.getName()))));
+  }
+
+  @Test
+  public void testLocationIpSpaceSpecifier() {
+    IpSpaceAssignment assignment =
+        new LocationIpSpaceSpecifier(AllInterfacesLocationSpecifier.INSTANCE)
+            .resolve(ImmutableSet.of(), _context);
+    assertThat(assignment, hasEntry(containsIp(new Ip("1.0.0.0")), equalTo(ImmutableSet.of())));
   }
 
   @Test
