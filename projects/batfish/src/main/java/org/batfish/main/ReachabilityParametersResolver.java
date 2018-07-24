@@ -11,6 +11,7 @@ import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.questions.InvalidReachabilityParametersException;
+import org.batfish.datamodel.visitors.IpSpaceRepresentativeImpl;
 import org.batfish.main.Batfish.CompressDataPlaneResult;
 import org.batfish.question.ReachabilityParameters;
 import org.batfish.question.ResolvedReachabilityParameters;
@@ -66,6 +67,15 @@ final class ReachabilityParametersResolver {
                 .stream()
                 .map(Entry::getIpSpace)
                 .collect(ImmutableList.toImmutableList()));
+
+    /*
+     * Make sure the destinationIpSpace is non-empty. Otherwise, we'll get no results and no
+     * explanation why.
+     */
+    if (!new IpSpaceRepresentativeImpl().getRepresentative(destinationIpSpace).isPresent()) {
+      throw new InvalidReachabilityParametersException("Empty destination IpSpace");
+    }
+
     HeaderSpace headerSpace = params.getHeaderSpace();
     if (headerSpace == null) {
       headerSpace = HeaderSpace.builder().setDstIps(destinationIpSpace).build();

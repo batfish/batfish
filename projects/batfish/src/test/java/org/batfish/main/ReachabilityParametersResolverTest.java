@@ -14,6 +14,8 @@ import java.util.SortedMap;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.EmptyIpSpace;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpIpSpace;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.Vrf;
@@ -26,10 +28,12 @@ import org.batfish.specifier.ConstantIpSpaceSpecifier;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 
 public class ReachabilityParametersResolverTest {
   @Rule public TemporaryFolder _tempFolder = new TemporaryFolder();
+  @Rule public ExpectedException exception = ExpectedException.none();
 
   private Batfish _batfish;
 
@@ -64,15 +68,29 @@ public class ReachabilityParametersResolverTest {
         equalTo(UniverseIpSpace.INSTANCE));
 
     // test setting destination IpSpace
+    IpIpSpace dstIpSpace = new Ip("1.1.1.1").toIpSpace();
     reachabilityParameters =
         reachabilityParametersBuilder
-            .setDestinationIpSpaceSpecifier(new ConstantIpSpaceSpecifier(EmptyIpSpace.INSTANCE))
+            .setDestinationIpSpaceSpecifier(new ConstantIpSpaceSpecifier(dstIpSpace))
             .build();
     resolvedReachabilityParameters =
         resolveReachabilityParameters(_batfish, reachabilityParameters, _snapshot);
     assertThat(resolvedReachabilityParameters.getHeaderSpace().getNotDstIps(), nullValue());
-    assertThat(
-        resolvedReachabilityParameters.getHeaderSpace().getDstIps(),
-        equalTo(EmptyIpSpace.INSTANCE));
+    assertThat(resolvedReachabilityParameters.getHeaderSpace().getDstIps(), equalTo(dstIpSpace));
+  }
+
+  @Test
+  public void testDestinationIpSpace_emptyDestIpSpace()
+      throws InvalidReachabilityParametersException {
+    ReachabilityParameters reachabilityParameters =
+        ReachabilityParameters.builder()
+            .setActions(ImmutableSortedSet.of(ACCEPT))
+            .setFinalNodesSpecifier(AllNodesNodeSpecifier.INSTANCE)
+            .setDestinationIpSpaceSpecifier(new ConstantIpSpaceSpecifier(EmptyIpSpace.INSTANCE))
+            .build();
+
+    exception.expect(InvalidReachabilityParametersException.class);
+    exception.expectMessage("Empty destination IpSpace");
+    resolveReachabilityParameters(_batfish, reachabilityParameters, _snapshot);
   }
 }
