@@ -392,12 +392,12 @@ public class RoutesAnswererTest {
     }
 
     @Override
-    public boolean mergeRoute(R route) {
+    public Set<R> longestPrefixMatch(Ip address, int maxPrefixLength) {
       throw new UnsupportedOperationException();
     }
 
     @Override
-    public Map<Prefix, Set<Ip>> nextHopIpsByPrefix() {
+    public boolean mergeRoute(R route) {
       throw new UnsupportedOperationException();
     }
   }
