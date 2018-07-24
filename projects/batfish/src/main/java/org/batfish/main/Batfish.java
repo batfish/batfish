@@ -749,7 +749,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     // For all unreachable lines, see if they are unmatchable
     List<NodSatJob<AclLine>> lineMatchabilityJobs =
-        generateAllUnmatchableLineJobs(aclSpecsMap, configs, unreachableLines);
+        generateAllUnmatchableLineJobs(configs, unreachableLines);
     Map<AclLine, Boolean> lineMatchabilityMap = new TreeMap<>();
     computeNodSatOutput(lineMatchabilityJobs, lineMatchabilityMap);
 
@@ -828,17 +828,15 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private List<NodSatJob<AclLine>> generateAllUnmatchableLineJobs(
-      Map<AclIdentifier, AclSpecs> aclSpecsMap,
       Map<AclIdentifier, Configuration> configs,
       Map<AclIdentifier, Set<Integer>> unreachableLines) {
     List<NodSatJob<AclLine>> lineMatchabilityJobs = new ArrayList<>();
-    for (Entry<AclIdentifier, AclSpecs> e : aclSpecsMap.entrySet()) {
-      String aclName = e.getValue().acl.getAclName();
+    for (Entry<AclIdentifier, Set<Integer>> e : unreachableLines.entrySet()) {
+      String aclName = e.getKey().getAclName();
       Configuration c = configs.get(e.getKey());
-      Set<Integer> unreachableLinesSet = unreachableLines.get(e.getKey());
 
       // Create jobs to see if each unreachable line is unmatchable
-      lineMatchabilityJobs.addAll(generateUnmatchableAclLineJobs(c, aclName, unreachableLinesSet));
+      lineMatchabilityJobs.addAll(generateUnmatchableAclLineJobs(c, aclName, e.getValue()));
     }
     return lineMatchabilityJobs;
   }
