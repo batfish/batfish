@@ -10,7 +10,7 @@ test -raw tests/questions/experimental/bgpSessionStatus.ref validate-template bg
 test -raw tests/questions/experimental/filterTable.ref validate-template filterTable filter = "mtu == 1500", innerQuestion={"class": "org.batfish.question.interfaceproperties.InterfacePropertiesQuestion"}, columns=["interface", "mtu"]
 
 # validate interfaceMtu
-test -raw tests/questions/experimental/interfaceMtu.ref validate-template interfaceMtuTest comparator='>', interfaceRegex='Gig.*', mtuBytes=0, nodeRegex='as1core2'
+test -raw tests/questions/experimental/interfaceMtu.ref validate-template interfaceMtu comparator='>', interfaceRegex='Gig.*', mtuBytes=0, nodeRegex='as1core2'
 
 # validate nodeProperties
 test -raw tests/questions/experimental/nodeProperties.ref validate-template nodeProperties nodeRegex=".*", propertySpec="ntp.*"

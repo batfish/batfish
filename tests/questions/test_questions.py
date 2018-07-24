@@ -1,0 +1,88 @@
+#!/usr/bin/env python3
+from glob import glob
+from json import load, loads
+from os import path, walk
+from pytest import fixture, skip
+import re
+
+REPO = path.abspath(path.join(path.dirname(__file__), '../..'))
+QUESTIONS = glob(REPO + '/questions*/**/*.json', recursive=True)
+
+
+@fixture(scope='module', params=QUESTIONS)
+def question(request):
+    yield path.relpath(request.param, REPO)
+
+
+def test_proper_json(question):
+    """Tests that questions are properly formatted."""
+    with open(path.join(REPO, question), 'r') as qfile:
+        q = load(qfile)  # Throws if the question is not valid JSON.
+
+    assert 'class' in q
+
+NO_HINTS_QUESTIONS = [
+    'questions/stable/edgePath.json',
+    'questions/stable/jsonPath.json',
+    'questions/stable/nodesPath.json',
+    'questions/stable/nodesPathRecursive.json',
+]
+
+
+def test_display_hints_present(question):
+    """Tests that all questions based on JsonPath have display hints."""
+    with open(path.join(REPO, question), 'r') as qfile:
+        q = load(qfile)
+
+    assert 'class' in q
+    if q['class'] != 'org.batfish.question.jsonpath.JsonPathQuestionPlugin$JsonPathQuestion':
+        skip('Not a JsonPath question')
+
+    if question in NO_HINTS_QUESTIONS:
+        skip('Whitelisted JsonPath question without display hints')
+
+    assert 'paths' in q
+    paths = q['paths']
+    assert 1 == len(paths)
+
+    assert 'displayHints' in paths[0]
+
+
+def test_name_and_filename_match(question):
+    """Tests that all questions have filenames that match their instance name."""
+    with open(path.join(REPO, question), 'r') as qfile:
+        q = load(qfile)
+
+    assert 'instance' in q
+    assert 'instanceName' in q['instance']
+
+    name = q['instance']['instanceName']
+    filename = path.splitext(path.basename(question))[0]
+    assert name == filename
+
+
+def test_instance_vars_present(question):
+    """Tests that all questions with instance variables use those variables."""
+    with open(path.join(REPO, question), 'r') as qfile:
+        text = qfile.read()
+        q = loads(text)
+
+    assert 'instance' in q
+    instance = q['instance']
+    for v in instance.get('variables', []):
+        v_pattern = '${' + v + '}'
+        assert v_pattern in text
+
+
+def test_indented_with_spaces(question):
+    """Tests that JSON is indented with spaces, and not tabs."""
+    pattern = re.compile(r"\t+")
+    with open(path.join(REPO, question), 'r') as qfile:
+        for line in qfile:
+            if re.search(pattern, line) is not None:
+                raise ValueError(
+                    "Found tabs intentaion in question {}. Please run \"sed -i '' 's/\\\\t/    /g' {}\" to switch to spaces.".format(question, path.join(REPO, question)))
+
+if __name__ == '__main__':
+    pytest.main()
+
