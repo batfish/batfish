@@ -12,8 +12,16 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.specifier.IpSpaceAssignment.Entry;
 
 /**
- * Specify the {@lnk IpSpace} inferred from a set of {@link Location locations} (specified by a
- * {@link LocationSpecifier}.
+ * Specify the {@link IpSpace} inferred from a set of {@link Location locations} (specified by a
+ * {@link LocationSpecifier}). This set of "{@link IpSpace} locations" is independent of the set of
+ * locations that are to be assigned {@link IpSpace IpSpaces}, which input via the {@link #resolve}
+ * method (we could call these the "assignment locations"). All the inferred {@link IpSpace
+ * IpSpaces} are unioned together into a single large space, which is then assigned to each
+ * assignment location.
+ *
+ * <p>Example: We want to analyze the behavior of a set of packets starting at a core router, where
+ * the packets look like they were sent from some set of hosts. Here, the {@link IpSpace} locations
+ * are the host locations, and the assignment locations are the core router locations.
  */
 public final class LocationIpSpaceSpecifier implements IpSpaceSpecifier {
   private final @Nonnull LocationSpecifier _locationSpecifier;
