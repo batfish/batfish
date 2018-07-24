@@ -45,7 +45,7 @@ public class ReachFilterAnswerer extends Answerer {
      * For each query ACL, try to get a flow. If one exists, run traceFilter on that flow.
      * Concatenate the answers for all flows into one big table.
      */
-    TableAnswerElement answer = null;
+    TableAnswerElement initialAnswer = null;
     Map<String, Configuration> configurations = _batfish.loadConfigurations();
     for (Pair<String, IpAccessList> pair : acls) {
       Optional<Flow> result = null;
@@ -61,12 +61,14 @@ public class ReachFilterAnswerer extends Answerer {
       Configuration config = configurations.get(pair.getFirst());
       IpAccessList acl = pair.getSecond();
       Flow flow = result.get();
-      if (answer == null) {
-        answer = traceFilter(config, acl, flow);
+      if (initialAnswer == null) {
+        initialAnswer = traceFilter(config, acl, flow);
       } else {
-        traceFilter(config, acl, flow).getRows().iterator().forEachRemaining(answer::addRow);
+        traceFilter(config, acl, flow).getRows().iterator().forEachRemaining(initialAnswer::addRow);
       }
     }
+    TableAnswerElement answer = TraceFiltersAnswerer.create(new TraceFiltersQuestion(null, null));
+    answer.postProcessAnswer(question, initialAnswer.getRows().getData());
     return answer;
   }
 
