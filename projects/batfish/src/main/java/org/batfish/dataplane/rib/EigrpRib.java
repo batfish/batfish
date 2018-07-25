@@ -5,7 +5,7 @@ import org.batfish.common.BatfishException;
 import org.batfish.datamodel.EigrpRoute;
 import org.batfish.datamodel.RoutingProtocol;
 
-// TOOD javadoc
+/** Rib that stores internal and external EIGRP routes */
 public class EigrpRib extends AbstractRib<EigrpRoute> {
 
   private static final long serialVersionUID = 1L;

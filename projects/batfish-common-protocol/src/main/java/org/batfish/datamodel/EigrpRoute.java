@@ -101,6 +101,8 @@ public abstract class EigrpRoute extends AbstractRoute {
 
   @Override
   public int getTag() {
+    // TODO support EIGRP route tags
+    // https://github.com/batfish/batfish/issues/1945
     return NO_TAG;
   }
 

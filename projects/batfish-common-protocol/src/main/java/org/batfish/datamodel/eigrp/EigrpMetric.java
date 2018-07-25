@@ -43,8 +43,6 @@ public class EigrpMetric implements Serializable {
      * the network. In NAMED mode, EIGRP sends unscaled metrics. All arithmetic operations truncate, so
      * scaling and unscaling results in precision loss. In this class, both "classic" and "named"
      * versions of the metrics are kept, but one is (un)scaled from the other depending on the mode.
-     *
-     * TODO technically, need to know if bandwidth and/or delay were set manually or by default
      */
 
     _classicBandwidth = namedToClassicBandwidth(namedBandwidth);
@@ -55,6 +53,7 @@ public class EigrpMetric implements Serializable {
     }
 
     // TODO set from arguments (from config)
+    // https://github.com/batfish/batfish/issues/1946
     _k1 = K1_DEFAULT;
     _k3 = K3_DEFAULT;
 

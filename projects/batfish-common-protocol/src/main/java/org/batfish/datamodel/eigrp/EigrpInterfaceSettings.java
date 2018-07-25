@@ -105,7 +105,7 @@ public class EigrpInterfaceSettings implements Serializable {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_asn, _delay, _enabled);
+    return Objects.hash(_asn, _bandwidth, _delay, _enabled, _metric);
   }
 
   public static class Builder {
