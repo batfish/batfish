@@ -5,7 +5,7 @@
       "parseStatus" : {
         "as1r1" : "PASSED",
         "host1" : "PASSED",
-        "host1.iptables" : "FAILED"
+        "iptables/host1.iptables" : "FAILED"
       }
     }
   ],
