@@ -39,22 +39,27 @@ public class ToInterfaceLinkLocationSpecifier implements LocationSpecifier {
     return _inner
         .resolve(ctxt)
         .stream()
-        .map(
-            loc ->
-                loc.accept(
-                    new LocationVisitor<Location>() {
-                      @Override
-                      public Location visitInterfaceLinkLocation(
-                          InterfaceLinkLocation interfaceLinkLocation) {
-                        return interfaceLinkLocation;
-                      }
-
-                      @Override
-                      public Location visitInterfaceLocation(InterfaceLocation interfaceLocation) {
-                        return new InterfaceLinkLocation(
-                            interfaceLocation.getNodeName(), interfaceLocation.getInterfaceName());
-                      }
-                    }))
+        .map(ToInterfaceLinkLocationSpecifier::toInterfaceLinkLocation)
         .collect(ImmutableSet.toImmutableSet());
+  }
+
+  /**
+   * Converts {@code loc} to an InterfaceLink location. The function is a no-op if {@code loc} is
+   * already an InterfaceLink location.
+   */
+  static Location toInterfaceLinkLocation(Location loc) {
+    return loc.accept(
+        new LocationVisitor<Location>() {
+          @Override
+          public Location visitInterfaceLinkLocation(InterfaceLinkLocation interfaceLinkLocation) {
+            return interfaceLinkLocation;
+          }
+
+          @Override
+          public Location visitInterfaceLocation(InterfaceLocation interfaceLocation) {
+            return new InterfaceLinkLocation(
+                interfaceLocation.getNodeName(), interfaceLocation.getInterfaceName());
+          }
+        });
   }
 }
