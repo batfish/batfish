@@ -47,7 +47,13 @@ public final class ReferenceAddressGroupIpSpaceSpecifier implements IpSpaceSpeci
                 () -> new NoSuchElementException("ReferenceBook '" + _bookName + "' not found"))
             .getAddressGroup(_addressGroupName)
             .orElseThrow(
-                () -> new NoSuchElementException("AddressGroup '" + _addressGroupName + "' found"));
+                () ->
+                    new NoSuchElementException(
+                        "AddressGroup '"
+                            + _addressGroupName
+                            + "' not found in ReferenceBook '"
+                            + _bookName
+                            + "'"));
 
     return IpSpaceAssignment.builder()
         .assign(
