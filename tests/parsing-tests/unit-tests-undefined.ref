@@ -1490,6 +1490,62 @@
           ]
         }
       },
+      "undefined:route-map:usage:eigrp redistribute bgp route-map:BGP_TO_EIGRP" : {
+        "description" : "Undefined reference to structure of type: 'route-map' with usage: 'eigrp redistribute bgp route-map' named 'BGP_TO_EIGRP'",
+        "files" : {
+          "cisco_eigrp" : [
+            11
+          ]
+        }
+      },
+      "undefined:route-map:usage:eigrp redistribute connected route-map:CONNECTED_TO_EIGRP" : {
+        "description" : "Undefined reference to structure of type: 'route-map' with usage: 'eigrp redistribute connected route-map' named 'CONNECTED_TO_EIGRP'",
+        "files" : {
+          "cisco_eigrp" : [
+            12
+          ]
+        }
+      },
+      "undefined:route-map:usage:eigrp redistribute eigrp route-map:EIGRP_TO_EIGRP" : {
+        "description" : "Undefined reference to structure of type: 'route-map' with usage: 'eigrp redistribute eigrp route-map' named 'EIGRP_TO_EIGRP'",
+        "files" : {
+          "cisco_eigrp" : [
+            13
+          ]
+        }
+      },
+      "undefined:route-map:usage:eigrp redistribute isis route-map:ISIS_TO_EIGRP" : {
+        "description" : "Undefined reference to structure of type: 'route-map' with usage: 'eigrp redistribute isis route-map' named 'ISIS_TO_EIGRP'",
+        "files" : {
+          "cisco_eigrp" : [
+            14
+          ]
+        }
+      },
+      "undefined:route-map:usage:eigrp redistribute ospf route-map:OSPF_TO_EIGRP" : {
+        "description" : "Undefined reference to structure of type: 'route-map' with usage: 'eigrp redistribute ospf route-map' named 'OSPF_TO_EIGRP'",
+        "files" : {
+          "cisco_eigrp" : [
+            15
+          ]
+        }
+      },
+      "undefined:route-map:usage:eigrp redistribute rip route-map:RIP_TO_EIGRP" : {
+        "description" : "Undefined reference to structure of type: 'route-map' with usage: 'eigrp redistribute rip route-map' named 'RIP_TO_EIGRP'",
+        "files" : {
+          "cisco_eigrp" : [
+            16
+          ]
+        }
+      },
+      "undefined:route-map:usage:eigrp redistribute static route-map:STATIC_TO_EIGRP" : {
+        "description" : "Undefined reference to structure of type: 'route-map' with usage: 'eigrp redistribute static route-map' named 'STATIC_TO_EIGRP'",
+        "files" : {
+          "cisco_eigrp" : [
+            17
+          ]
+        }
+      },
       "undefined:route-map:usage:interface summary-address eigrp leak-map:eigrp-leak-map" : {
         "description" : "Undefined reference to structure of type: 'route-map' with usage: 'interface summary-address eigrp leak-map' named 'eigrp-leak-map'",
         "files" : {
@@ -1656,7 +1712,7 @@
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 204
+      "numResults" : 211
     },
     "undefinedReferences" : {
       "IosXrMultiCast" : {
@@ -1980,6 +2036,45 @@
           "someacl" : {
             "crypto map ipsec-isakmp acl" : [
               219
+            ]
+          }
+        }
+      },
+      "cisco_eigrp" : {
+        "route-map" : {
+          "BGP_TO_EIGRP" : {
+            "eigrp redistribute bgp route-map" : [
+              11
+            ]
+          },
+          "CONNECTED_TO_EIGRP" : {
+            "eigrp redistribute connected route-map" : [
+              12
+            ]
+          },
+          "EIGRP_TO_EIGRP" : {
+            "eigrp redistribute eigrp route-map" : [
+              13
+            ]
+          },
+          "ISIS_TO_EIGRP" : {
+            "eigrp redistribute isis route-map" : [
+              14
+            ]
+          },
+          "OSPF_TO_EIGRP" : {
+            "eigrp redistribute ospf route-map" : [
+              15
+            ]
+          },
+          "RIP_TO_EIGRP" : {
+            "eigrp redistribute rip route-map" : [
+              16
+            ]
+          },
+          "STATIC_TO_EIGRP" : {
+            "eigrp redistribute static route-map" : [
+              17
             ]
           }
         }
