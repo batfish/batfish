@@ -120,15 +120,15 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
 
     private static final int DEFAULT_MAX_CHUNK_SIZE = 1;
 
-    private static final NodesSpecifier DEFAULT_NON_TRANSIT_NODES = NodesSpecifier.NONE;
+    private static final NodesSpecifier DEFAULT_NON_TRANSIT_NODES = null;
 
-    private static final NodesSpecifier DEFAULT_NOT_FINAL_NODE_REGEX = NodesSpecifier.NONE;
+    private static final NodesSpecifier DEFAULT_NOT_FINAL_NODE_REGEX = null;
 
-    private static final NodesSpecifier DEFAULT_NOT_INGRESS_NODE_REGEX = NodesSpecifier.NONE;
+    private static final NodesSpecifier DEFAULT_NOT_INGRESS_NODE_REGEX = null;
 
     private static final boolean DEFAULT_SPECIALIZE = true;
 
-    private static final NodesSpecifier DEFAULT_TRANSIT_NODES = NodesSpecifier.NONE;
+    private static final NodesSpecifier DEFAULT_TRANSIT_NODES = null;
 
     private static final boolean DEFAULT_USE_COMPRESSION = false;
 

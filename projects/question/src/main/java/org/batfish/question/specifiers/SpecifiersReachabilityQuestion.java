@@ -7,7 +7,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.SortedSet;
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.ForwardingAction;
 import org.batfish.datamodel.HeaderSpace;
@@ -23,7 +22,6 @@ import org.batfish.specifier.IpSpaceSpecifierFactory;
 import org.batfish.specifier.LocationSpecifier;
 import org.batfish.specifier.LocationSpecifierFactory;
 import org.batfish.specifier.NameRegexNodeSpecifierFactory;
-import org.batfish.specifier.NoNodesNodeSpecifier;
 import org.batfish.specifier.NodeNameRegexConnectedHostsIpSpaceSpecifierFactory;
 import org.batfish.specifier.NodeSpecifier;
 import org.batfish.specifier.NodeSpecifierFactory;
@@ -80,8 +78,8 @@ public final class SpecifiersReachabilityQuestion extends Question {
   private static final String PROP_REQUIRED_TRANSIT_NODES_SPECIFIER_INPUT =
       "requiredTransitNodesNodeSpecifierInput";
 
-  private static NodeSpecifier getNodeSpecifier(
-      @Nullable String factoryName, @Nullable String input, @Nonnull NodeSpecifier def) {
+  private static @Nullable NodeSpecifier getNodeSpecifier(
+      @Nullable String factoryName, @Nullable String input, @Nullable NodeSpecifier def) {
     if (factoryName == null && input == null) {
       return def;
     }
@@ -181,9 +179,7 @@ public final class SpecifiersReachabilityQuestion extends Question {
 
   NodeSpecifier getForbiddenTransitNodesSpecifier() {
     return getNodeSpecifier(
-        _forbiddenTransitNodesNodeSpecifierFactory,
-        _forbiddenTransitNodesNodeSpecifierInput,
-        NoNodesNodeSpecifier.INSTANCE);
+        _forbiddenTransitNodesNodeSpecifierFactory, _forbiddenTransitNodesNodeSpecifierInput, null);
   }
 
   @VisibleForTesting
@@ -215,9 +211,7 @@ public final class SpecifiersReachabilityQuestion extends Question {
 
   NodeSpecifier getRequiredTransitNodesSpecifier() {
     return getNodeSpecifier(
-        _requiredTransitNodesNodeSpecifierFactory,
-        _requiredTransitNodesNodeSpecifierInput,
-        NoNodesNodeSpecifier.INSTANCE);
+        _requiredTransitNodesNodeSpecifierFactory, _requiredTransitNodesNodeSpecifierInput, null);
   }
 
   IpSpaceSpecifier getSourceIpSpaceSpecifier() {
