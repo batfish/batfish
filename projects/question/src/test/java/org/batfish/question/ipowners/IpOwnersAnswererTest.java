@@ -8,6 +8,7 @@ import static org.batfish.question.ipowners.IpOwnersAnswerer.COL_NODE;
 import static org.batfish.question.ipowners.IpOwnersAnswerer.COL_VRFNAME;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
@@ -16,6 +17,7 @@ import static org.hamcrest.Matchers.hasSize;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multiset;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
@@ -44,7 +46,7 @@ public class IpOwnersAnswererTest {
   public void setup() {
     Vrf vrf = new Vrf(Configuration.DEFAULT_VRF_NAME);
     Interface.Builder ib = Interface.builder().setVrf(vrf);
-    InterfaceAddress uniqueAddr = new InterfaceAddress(_uniqueIp, Prefix.MAX_PREFIX_LENGTH);
+    InterfaceAddress uniqueAddr = new InterfaceAddress(_uniqueIp, Prefix.MAX_PREFIX_LENGTH - 1);
     InterfaceAddress duplicateAddr = new InterfaceAddress(_duplicateIp, Prefix.MAX_PREFIX_LENGTH);
     _ownersMap =
         ImmutableMap.of(
@@ -77,7 +79,8 @@ public class IpOwnersAnswererTest {
 
     /*
      * Test that:
-     * We have three rows, one for _uniqueIP, two for _duplicateIp
+     * - We have three rows, one for _uniqueIP, two for _duplicateIp
+     * - Masks are as expected
      */
     assertThat(rows, hasSize(3));
     Map<Ip, Long> counts =
@@ -86,6 +89,13 @@ public class IpOwnersAnswererTest {
             .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
     assertThat(counts, hasEntry(_uniqueIp, 1L));
     assertThat(counts, hasEntry(_duplicateIp, 2L));
+
+    List<Integer> masks =
+        rows.stream().map(r -> r.getInteger(COL_MASK)).collect(Collectors.toList());
+    assertThat(
+        masks,
+        containsInAnyOrder(
+            Prefix.MAX_PREFIX_LENGTH - 1, Prefix.MAX_PREFIX_LENGTH, Prefix.MAX_PREFIX_LENGTH));
   }
 
   @Test
