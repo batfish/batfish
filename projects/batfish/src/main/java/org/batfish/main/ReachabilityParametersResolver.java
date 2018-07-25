@@ -1,13 +1,19 @@
 package org.batfish.main;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
+import org.batfish.datamodel.ForwardingAction;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.questions.InvalidReachabilityParametersException;
@@ -15,17 +21,21 @@ import org.batfish.datamodel.visitors.IpSpaceRepresentativeImpl;
 import org.batfish.main.Batfish.CompressDataPlaneResult;
 import org.batfish.question.ReachabilityParameters;
 import org.batfish.question.ResolvedReachabilityParameters;
+import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.specifier.IpSpaceAssignment.Entry;
-import org.batfish.specifier.SpecifierContext;
+import org.batfish.specifier.Location;
+import org.batfish.specifier.NodeSpecifier;
 import org.batfish.specifier.SpecifierContextImpl;
 
 /**
  * Resolve a {@link ReachabilityParameters} and return a {@link ResolvedReachabilityParameters}
  * object. This involves getting the right configs and dataplane, and resolving Location, Node, and
- * IpSpace specifiers.
+ * IpSpace specifiers. All validation of user input is done here.
  */
 final class ReachabilityParametersResolver {
   private final Batfish _batfish;
+
+  private final SpecifierContextImpl _context;
 
   private Map<String, Configuration> _configs;
 
@@ -35,12 +45,17 @@ final class ReachabilityParametersResolver {
 
   private final NetworkSnapshot _snapshot;
 
-  private ReachabilityParametersResolver(
+  private final IpSpaceRepresentativeImpl _ipSpaceRepresentative;
+
+  @VisibleForTesting
+  ReachabilityParametersResolver(
       Batfish batfish, ReachabilityParameters params, NetworkSnapshot snapshot) {
     _batfish = batfish;
     _params = params;
     _snapshot = snapshot;
     initConfigsAndDataPlane();
+    _context = new SpecifierContextImpl(batfish, _configs);
+    _ipSpaceRepresentative = new IpSpaceRepresentativeImpl();
   }
 
   public static ResolvedReachabilityParameters resolveReachabilityParameters(
@@ -50,19 +65,77 @@ final class ReachabilityParametersResolver {
     ReachabilityParametersResolver resolver =
         new ReachabilityParametersResolver(batfish, params, snapshot);
 
-    SpecifierContext context = new SpecifierContextImpl(batfish, resolver._configs);
+    // validate actions
+    SortedSet<ForwardingAction> actions = params.getActions();
+    if (actions.isEmpty()) {
+      throw new InvalidReachabilityParametersException("No actions");
+    }
 
-    /*
-     * From the resolver's perspective, all fields are independent. The one exception is that the
-     * source IpSpace may depend on the source locations (this will probably change in the future).
-     * Things like final nodes do not affect destination IPs. If that is desired, the question is
-     * responsible for using an IpSpaceSpecifier that uses the final node regex.
-     */
+    // resolve and validate final nodes
+    Set<String> finalNodes = resolver.resolveNodes("finalNodes", params.getFinalNodesSpecifier());
+    if (finalNodes.isEmpty()) {
+      throw new InvalidReachabilityParametersException("No final nodes");
+    }
+
+    // resolve and validate transit nodes
+    Set<String> forbiddenTransitNodes =
+        resolver.resolveNodes("forbiddenTransitNodes", params.getForbiddenTransitNodesSpecifier());
+    Set<String> requiredTransitNodes =
+        resolver.resolveNodes("requiredTransitNodes", params.getRequiredTransitNodesSpecifier());
+    if (!requiredTransitNodes.isEmpty()
+        && forbiddenTransitNodes.containsAll(requiredTransitNodes)) {
+      throw new InvalidReachabilityParametersException(
+          "All required transit nodes are also forbidden");
+    }
+    return ResolvedReachabilityParameters.builder()
+        .setActions(actions)
+        .setConfigurations(resolver._configs)
+        .setDataPlane(resolver._dataPlane)
+        .setFinalNodes(finalNodes)
+        .setForbiddenTransitNodes(forbiddenTransitNodes)
+        .setHeaderSpace(resolver.resolveHeaderSpace())
+        .setMaxChunkSize(params.getMaxChunkSize())
+        .setSourceIpSpaceAssignment(resolver.resolveSourceIpSpaceAssignment())
+        .setSrcNatted(params.getSrcNatted())
+        .setSpecialize(params.getSpecialize())
+        .setRequiredTransitNodes(requiredTransitNodes)
+        .setUseCompression(params.getUseCompression())
+        .build();
+  }
+
+  private HeaderSpace resolveHeaderSpace() throws InvalidReachabilityParametersException {
+    IpSpace destinationIpSpace = resolveDestinationIpSpace();
+
+    HeaderSpace headerSpace = _params.getHeaderSpace();
+    if (headerSpace == null) {
+      headerSpace = HeaderSpace.builder().setDstIps(destinationIpSpace).build();
+    } else {
+      headerSpace.setDstIps(destinationIpSpace);
+    }
+    return headerSpace;
+  }
+
+  @VisibleForTesting
+  Set<String> resolveNodes(@Nonnull String name, @Nullable NodeSpecifier spec)
+      throws InvalidReachabilityParametersException {
+    if (spec == null) {
+      return ImmutableSet.of();
+    }
+    Set<String> nodes = spec.resolve(_context);
+    if (nodes.isEmpty()) {
+      throw new InvalidReachabilityParametersException(
+          String.format("No nodes match %s specifier", name));
+    }
+    return nodes;
+  }
+
+  @VisibleForTesting
+  IpSpace resolveDestinationIpSpace() throws InvalidReachabilityParametersException {
     IpSpace destinationIpSpace =
         AclIpSpace.union(
-            params
+            _params
                 .getDestinationIpSpaceSpecifier()
-                .resolve(ImmutableSet.of(), context)
+                .resolve(ImmutableSet.of(), _context)
                 .getEntries()
                 .stream()
                 .map(Entry::getIpSpace)
@@ -72,34 +145,36 @@ final class ReachabilityParametersResolver {
      * Make sure the destinationIpSpace is non-empty. Otherwise, we'll get no results and no
      * explanation why.
      */
-    if (!new IpSpaceRepresentativeImpl().getRepresentative(destinationIpSpace).isPresent()) {
+    if (!_ipSpaceRepresentative.getRepresentative(destinationIpSpace).isPresent()) {
       throw new InvalidReachabilityParametersException("Empty destination IpSpace");
     }
+    return destinationIpSpace;
+  }
 
-    HeaderSpace headerSpace = params.getHeaderSpace();
-    if (headerSpace == null) {
-      headerSpace = HeaderSpace.builder().setDstIps(destinationIpSpace).build();
-    } else {
-      headerSpace.setDstIps(destinationIpSpace);
+  @VisibleForTesting
+  IpSpaceAssignment resolveSourceIpSpaceAssignment() throws InvalidReachabilityParametersException {
+    Set<Location> sourceLocations = _params.getSourceLocationSpecifier().resolve(_context);
+    if (sourceLocations.isEmpty()) {
+      throw new InvalidReachabilityParametersException("No matching source locations");
     }
 
-    return ResolvedReachabilityParameters.builder()
-        .setActions(params.getActions())
-        .setConfigurations(resolver._configs)
-        .setDataPlane(resolver._dataPlane)
-        .setFinalNodes(params.getFinalNodesSpecifier().resolve(context))
-        .setForbiddenTransitNodes(params.getForbiddenTransitNodesSpecifier().resolve(context))
-        .setHeaderSpace(headerSpace)
-        .setMaxChunkSize(params.getMaxChunkSize())
-        .setSourceIpSpaceAssignment(
-            params
+    // resolve the IpSpaceSpecifier, and filter out entries with empty IpSpaces
+    IpSpaceAssignment sourceIpSpaceAssignment =
+        new IpSpaceAssignment(
+            _params
                 .getSourceIpSpaceSpecifier()
-                .resolve(params.getSourceLocationSpecifier().resolve(context), context))
-        .setSrcNatted(params.getSrcNatted())
-        .setSpecialize(params.getSpecialize())
-        .setRequiredTransitNodes(params.getRequiredTransitNodesSpecifier().resolve(context))
-        .setUseCompression(params.getUseCompression())
-        .build();
+                .resolve(sourceLocations, _context)
+                .getEntries()
+                .stream()
+                .filter(
+                    entry ->
+                        _ipSpaceRepresentative.getRepresentative(entry.getIpSpace()).isPresent())
+                .collect(ImmutableList.toImmutableList()));
+
+    if (sourceIpSpaceAssignment.getEntries().isEmpty()) {
+      throw new InvalidReachabilityParametersException("All sources have empty source IpSpaces");
+    }
+    return sourceIpSpaceAssignment;
   }
 
   private void initConfigsAndDataPlane() {
