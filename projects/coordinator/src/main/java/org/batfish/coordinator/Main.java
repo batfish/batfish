@@ -105,17 +105,17 @@ public class Main {
         Question.InstanceData instanceData =
             BatfishObjectMapper.mapper().readValue(instanceDataStr, Question.InstanceData.class);
         String name = instanceData.getInstanceName();
-
-        if (templates.containsKey(name.toLowerCase()) && _logger != null) {
+        String key = name.toLowerCase();
+        if (templates.containsKey(key) && _logger != null) {
           _logger.warnf(
-              "Found duplicate template having instance name %s, only one of them will be loaded",
-              name);
+              "Found duplicate template having instance name %s, only %s will be loaded",
+              name, file);
         }
 
-        templates.put(name.toLowerCase(), questionText);
+        templates.put(key, questionText);
         return name;
       } else {
-        throw new BatfishException("Question in file: '" + file + "' has no instance name");
+        throw new BatfishException(String.format("Question in file:%s has no instance name", file));
       }
     } catch (JSONException | IOException e) {
       throw new BatfishException("Failed to process question", e);
