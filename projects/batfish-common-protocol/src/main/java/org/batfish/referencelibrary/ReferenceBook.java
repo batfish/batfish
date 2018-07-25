@@ -1,9 +1,7 @@
-package org.batfish.role.addressbook;
+package org.batfish.referencelibrary;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
-import static org.batfish.role.addressbook.AddressLibrary.checkDuplicates;
-import static org.batfish.role.addressbook.AddressLibrary.checkValidName;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
@@ -16,7 +14,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 
-public class AddressBook implements Comparable<AddressBook> {
+public class ReferenceBook implements Comparable<ReferenceBook> {
 
   private static final String PROP_ADDRESS_GROUPS = "addressGroups";
   private static final String PROP_NAME = "name";
@@ -30,14 +28,14 @@ public class AddressBook implements Comparable<AddressBook> {
   @Nonnull private SortedSet<ServiceObjectGroup> _serviceObjectGroups;
   @Nonnull private SortedSet<ServiceObject> _serviceObjects;
 
-  public AddressBook(
+  public ReferenceBook(
       @JsonProperty(PROP_ADDRESS_GROUPS) List<AddressGroup> addressGroups,
       @JsonProperty(PROP_NAME) String name,
       @JsonProperty(PROP_SERVICE_ENDPOINTS) List<ServiceEndpoint> serviceEndpoints,
       @JsonProperty(PROP_SERVICE_OBJECT_GROUPS) List<ServiceObjectGroup> serviceObjectGroups,
       @JsonProperty(PROP_SERVICE_OBJECTS) List<ServiceObject> serviceObjects) {
-    checkArgument(name != null, "Address book name cannot be null");
-    checkValidName(name, "book");
+    checkArgument(name != null, "Reference book name cannot be null");
+    ReferenceLibrary.checkValidName(name, "book");
 
     // non-null versions for easier follow on code
     List<AddressGroup> nnAddressGroups = firstNonNull(addressGroups, ImmutableList.of());
@@ -63,11 +61,11 @@ public class AddressBook implements Comparable<AddressBook> {
             .collect(Collectors.toList());
 
     // check for duplicate names
-    checkDuplicates("address group", addressGroupNames);
-    checkDuplicates("service endpoint", serviceEndpointNames);
-    checkDuplicates("service object group", serviceObjectGroupNames);
-    checkDuplicates("service objects", serviceObjectNames);
-    checkDuplicates("service object or group", allServiceNames);
+    ReferenceLibrary.checkDuplicates("address group", addressGroupNames);
+    ReferenceLibrary.checkDuplicates("service endpoint", serviceEndpointNames);
+    ReferenceLibrary.checkDuplicates("service object group", serviceObjectGroupNames);
+    ReferenceLibrary.checkDuplicates("service objects", serviceObjectNames);
+    ReferenceLibrary.checkDuplicates("service object or group", allServiceNames);
 
     // check that there are no dangling pointers to non-existent names
     nnServiceEndpoints.forEach(s -> s.checkUndefinedReferences(addressGroupNames, allServiceNames));
@@ -83,19 +81,19 @@ public class AddressBook implements Comparable<AddressBook> {
   }
 
   @Override
-  public int compareTo(AddressBook o) {
+  public int compareTo(ReferenceBook o) {
     return _name.compareTo(o._name);
   }
 
   @Override
   public boolean equals(Object o) {
-    if (!(o instanceof AddressBook)) {
+    if (!(o instanceof ReferenceBook)) {
       return false;
     }
-    return Objects.equals(_addressGroups, ((AddressBook) o)._addressGroups)
-        && Objects.equals(_serviceEndpoints, ((AddressBook) o)._serviceEndpoints)
-        && Objects.equals(_serviceObjectGroups, ((AddressBook) o)._serviceObjectGroups)
-        && Objects.equals(_serviceObjects, ((AddressBook) o)._serviceObjects);
+    return Objects.equals(_addressGroups, ((ReferenceBook) o)._addressGroups)
+        && Objects.equals(_serviceEndpoints, ((ReferenceBook) o)._serviceEndpoints)
+        && Objects.equals(_serviceObjectGroups, ((ReferenceBook) o)._serviceObjectGroups)
+        && Objects.equals(_serviceObjects, ((ReferenceBook) o)._serviceObjects);
   }
 
   /** Return the {@link AddressGroup} with name {@code groupName} */

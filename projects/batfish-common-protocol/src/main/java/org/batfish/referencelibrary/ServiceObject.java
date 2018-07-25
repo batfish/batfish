@@ -1,7 +1,6 @@
-package org.batfish.role.addressbook;
+package org.batfish.referencelibrary;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static org.batfish.role.addressbook.AddressLibrary.checkValidName;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nonnull;
@@ -25,7 +24,7 @@ public class ServiceObject implements Comparable<ServiceObject> {
     checkArgument(ipProtocol != null, "Service object ipProtocol not be null");
     checkArgument(name != null, "Service object name cannot be null");
     checkArgument(ports != null, "Service object ports cannot be null");
-    checkValidName(name, "service object");
+    ReferenceLibrary.checkValidName(name, "service object");
 
     _ipProtocol = ipProtocol;
     _name = name;

@@ -17,14 +17,14 @@ import org.batfish.common.Version;
 import org.batfish.coordinator.Main;
 import org.batfish.coordinator.WorkMgrServiceV2TestBase;
 import org.batfish.coordinator.WorkMgrTestUtils;
-import org.batfish.role.addressbook.AddressBook;
-import org.batfish.role.addressbook.AddressLibrary;
+import org.batfish.referencelibrary.ReferenceBook;
+import org.batfish.referencelibrary.ReferenceLibrary;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-public class AddressLibraryResourceTest extends WorkMgrServiceV2TestBase {
+public class ReferenceLibraryResourceTest extends WorkMgrServiceV2TestBase {
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
@@ -33,49 +33,50 @@ public class AddressLibraryResourceTest extends WorkMgrServiceV2TestBase {
     WorkMgrTestUtils.initWorkManager(_folder);
   }
 
-  private Builder getAddressLibraryTarget(String container) {
+  private Builder getReferenceLibraryTarget(String container) {
     return target(CoordConsts.SVC_CFG_WORK_MGR2)
         .path(CoordConstsV2.RSC_CONTAINERS)
         .path(container)
-        .path(CoordConstsV2.RSC_ADDRESS_LIBRARY)
+        .path(CoordConstsV2.RSC_REFERENCE_LIBRARY)
         .request()
         .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
         .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, Version.getVersion());
   }
 
   @Test
-  public void addAddressBook() throws IOException {
+  public void addReferenceBook() throws IOException {
     String container = "someContainer";
     Main.getWorkMgr().initContainer(container, null);
 
     // add book1
-    AddressBookBean book = new AddressBookBean(new AddressBook(null, "book1", null, null, null));
+    ReferenceBookBean book =
+        new ReferenceBookBean(new ReferenceBook(null, "book1", null, null, null));
     Response response =
-        getAddressLibraryTarget(container).post(Entity.entity(book, MediaType.APPLICATION_JSON));
+        getReferenceLibraryTarget(container).post(Entity.entity(book, MediaType.APPLICATION_JSON));
 
     // test: book1 should have been added
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-    AddressLibrary library = Main.getWorkMgr().getAddressLibrary(container);
-    assertThat(library.getAddressBook("book1").isPresent(), equalTo(true));
+    ReferenceLibrary library = Main.getWorkMgr().getReferenceLibrary(container);
+    assertThat(library.getReferenceBook("book1").isPresent(), equalTo(true));
 
     // test: another addition of book1 should fail
     Response response2 =
-        getAddressLibraryTarget(container).post(Entity.entity(book, MediaType.APPLICATION_JSON));
+        getReferenceLibraryTarget(container).post(Entity.entity(book, MediaType.APPLICATION_JSON));
     assertThat(response2.getStatus(), equalTo(BAD_REQUEST.getStatusCode()));
   }
 
-  /** Test that we get back the address library */
+  /** Test that we get back the reference library */
   @Test
-  public void getAddressLibrary() {
+  public void getReferenceLibrary() {
     String container = "someContainer";
     Main.getWorkMgr().initContainer(container, null);
 
     // we only check that the right type of object is returned at the expected URL target
-    // we rely on AddressLibraryBean to have created the object with the right content
-    Response response = getAddressLibraryTarget(container).get();
+    // we rely on ReferenceLibraryBean to have created the object with the right content
+    Response response = getReferenceLibraryTarget(container).get();
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
     assertThat(
-        response.readEntity(AddressLibraryBean.class),
-        equalTo(new AddressLibraryBean(new AddressLibrary(ImmutableList.of()))));
+        response.readEntity(ReferenceLibraryBean.class),
+        equalTo(new ReferenceLibraryBean(new ReferenceLibrary(ImmutableList.of()))));
   }
 }

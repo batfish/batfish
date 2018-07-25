@@ -5,7 +5,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.Objects;
 import java.util.Set;
-import org.batfish.role.addressbook.AddressGroup;
+import org.batfish.referencelibrary.AddressGroup;
 
 public class AddressGroupBean {
 

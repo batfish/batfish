@@ -2,7 +2,7 @@ package org.batfish.coordinator.resources;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import java.util.Objects;
-import org.batfish.role.addressbook.ServiceEndpoint;
+import org.batfish.referencelibrary.ServiceEndpoint;
 
 public class ServiceEndpointBean {
 

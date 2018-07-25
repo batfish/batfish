@@ -8,8 +8,8 @@ import javax.annotation.Nonnull;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.IpSpace;
+import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.role.NodeRole;
-import org.batfish.role.addressbook.AddressBook;
 
 /**
  * Collects all the information about the network that is needed by {@link NodeSpecifier}s, {@link
@@ -20,8 +20,8 @@ public interface SpecifierContext {
   @Nonnull
   Map<String, Configuration> getConfigs();
 
-  /** @return the set of {@link AddressBook} with name {@code bookName}. */
-  Optional<AddressBook> getAddressBook(String bookName);
+  /** @return the set of {@link ReferenceBook} with name {@code bookName}. */
+  Optional<ReferenceBook> getReferenceBook(String bookName);
 
   /** @return the set of {@link NodeRole}s in the network with the input dimension. */
   @Nonnull

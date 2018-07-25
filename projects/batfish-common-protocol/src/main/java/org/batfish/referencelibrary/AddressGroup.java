@@ -1,8 +1,7 @@
-package org.batfish.role.addressbook;
+package org.batfish.referencelibrary;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
-import static org.batfish.role.addressbook.AddressLibrary.checkValidName;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.SortedSet;
@@ -22,7 +21,7 @@ public class AddressGroup implements Comparable<AddressGroup> {
       @JsonProperty(PROP_ADDRESSES) SortedSet<String> addresses,
       @JsonProperty(PROP_NAME) String name) {
     checkArgument(name != null, "Address group name cannot not be null");
-    checkValidName(name, "address group");
+    ReferenceLibrary.checkValidName(name, "address group");
 
     _name = name;
     _addresses = firstNonNull(addresses, new TreeSet<String>());

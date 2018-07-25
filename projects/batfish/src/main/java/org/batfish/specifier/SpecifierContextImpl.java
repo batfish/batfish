@@ -9,9 +9,9 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.main.Batfish;
+import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.role.NodeRole;
 import org.batfish.role.NodeRoleDimension;
-import org.batfish.role.addressbook.AddressBook;
 
 public class SpecifierContextImpl implements SpecifierContext {
   private final @Nonnull Batfish _batfish;
@@ -41,8 +41,8 @@ public class SpecifierContextImpl implements SpecifierContext {
   }
 
   @Override
-  public Optional<AddressBook> getAddressBook(String bookName) {
-    return _batfish.getAddressLibraryData().getAddressBook(bookName);
+  public Optional<ReferenceBook> getReferenceBook(String bookName) {
+    return _batfish.getReferenceLibraryData().getReferenceBook(bookName);
   }
 
   @Nonnull
