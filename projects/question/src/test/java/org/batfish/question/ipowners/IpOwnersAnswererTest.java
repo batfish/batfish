@@ -1,6 +1,13 @@
 package org.batfish.question.ipowners;
 
+import static org.batfish.question.ipowners.IpOwnersAnswerer.COL_ACTIVE;
+import static org.batfish.question.ipowners.IpOwnersAnswerer.COL_INTERFACE_NAME;
+import static org.batfish.question.ipowners.IpOwnersAnswerer.COL_IP;
+import static org.batfish.question.ipowners.IpOwnersAnswerer.COL_MASK;
+import static org.batfish.question.ipowners.IpOwnersAnswerer.COL_NODE;
+import static org.batfish.question.ipowners.IpOwnersAnswerer.COL_VRFNAME;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
@@ -19,6 +26,7 @@ import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.junit.Before;
 import org.junit.Test;
@@ -74,7 +82,7 @@ public class IpOwnersAnswererTest {
     assertThat(rows, hasSize(3));
     Map<Ip, Long> counts =
         rows.stream()
-            .map(r -> r.getIp(IpOwnersAnswerer.COL_IP))
+            .map(r -> r.getIp(COL_IP))
             .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
     assertThat(counts, hasEntry(_uniqueIp, 1L));
     assertThat(counts, hasEntry(_duplicateIp, 2L));
@@ -87,7 +95,17 @@ public class IpOwnersAnswererTest {
     Multiset<Row> rows = IpOwnersAnswerer.generateRows(_ownersMap, _interfaceMap, true);
     assertThat(rows, hasSize(2));
     for (Row row : rows) {
-      assertThat(row.getIp(IpOwnersAnswerer.COL_IP), equalTo(_duplicateIp));
+      assertThat(row.getIp(COL_IP), equalTo(_duplicateIp));
     }
+  }
+
+  @Test
+  public void testColumnPresence() {
+    assertThat(
+        IpOwnersAnswerer.getColumnMetadata()
+            .stream()
+            .map(ColumnMetadata::getName)
+            .collect(Collectors.toList()),
+        contains(COL_NODE, COL_VRFNAME, COL_INTERFACE_NAME, COL_IP, COL_MASK, COL_ACTIVE));
   }
 }

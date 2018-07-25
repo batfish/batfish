@@ -25,11 +25,12 @@ import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
 
 class IpOwnersAnswerer extends Answerer {
-  private static final String COL_NODE = "Hostname";
-  private static final String COL_VRFNAME = "VRF";
+  static final String COL_ACTIVE = "Active";
+  static final String COL_INTERFACE_NAME = "Interface";
   static final String COL_IP = "IP";
-  private static final String COL_INTERFACE_NAME = "Interface";
-  private static final String COL_ACTIVE = "Active";
+  static final String COL_MASK = "Mask";
+  static final String COL_NODE = "Hostname";
+  static final String COL_VRFNAME = "VRF";
 
   IpOwnersAnswerer(Question question, IBatfish batfish) {
     super(question, batfish);
@@ -74,6 +75,7 @@ class IpOwnersAnswerer extends Answerer {
                             .put(COL_VRFNAME, iface.getVrfName())
                             .put(COL_INTERFACE_NAME, iface.getName())
                             .put(COL_IP, iface.getAddress().getIp())
+                            .put(COL_MASK, iface.getAddress().getNetworkBits())
                             .put(COL_ACTIVE, iface.getActive())
                             .build());
                   }
@@ -93,12 +95,14 @@ class IpOwnersAnswerer extends Answerer {
   }
 
   /** Create column metadata. */
-  private static List<ColumnMetadata> getColumnMetadata() {
+  @VisibleForTesting
+  static List<ColumnMetadata> getColumnMetadata() {
     return ImmutableList.of(
         new ColumnMetadata(COL_NODE, Schema.NODE, "Node hostname"),
         new ColumnMetadata(COL_VRFNAME, Schema.STRING, "VRF name"),
         new ColumnMetadata(COL_INTERFACE_NAME, Schema.STRING, "Interface name"),
         new ColumnMetadata(COL_IP, Schema.IP, "IP address"),
+        new ColumnMetadata(COL_MASK, Schema.INTEGER, "IP address"),
         new ColumnMetadata(
             COL_ACTIVE, Schema.BOOLEAN, "Whether the interface with given IP is active"));
   }
