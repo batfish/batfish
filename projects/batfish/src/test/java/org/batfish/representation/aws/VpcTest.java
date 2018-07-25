@@ -22,7 +22,7 @@ public class VpcTest {
     JSONObject jObj = new JSONObject(vpcs);
     JSONArray vpcArray = jObj.getJSONArray("Vpcs");
 
-    Vpc vpc = new Vpc(vpcArray.getJSONObject(0), null);
+    Vpc vpc = new Vpc(vpcArray.getJSONObject(0));
 
     Prefix p1 = Prefix.parse("10.100.0.0/16");
     Prefix p2 = Prefix.parse("10.200.0.0/16");

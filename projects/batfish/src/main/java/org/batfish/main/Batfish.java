@@ -172,13 +172,13 @@ import org.batfish.job.ParseEnvironmentRoutingTableJob;
 import org.batfish.job.ParseVendorConfigurationJob;
 import org.batfish.question.ReachabilityParameters;
 import org.batfish.question.ResolvedReachabilityParameters;
+import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.representation.aws.AwsConfiguration;
 import org.batfish.representation.host.HostConfiguration;
 import org.batfish.representation.iptables.IptablesVendorConfiguration;
 import org.batfish.role.InferRoles;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
-import org.batfish.role.addressbook.AddressLibrary;
 import org.batfish.specifier.AllInterfaceLinksLocationSpecifier;
 import org.batfish.specifier.AllInterfacesLocationSpecifier;
 import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
@@ -237,9 +237,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
         testrigDir.resolve(BfConsts.RELPATH_VENDOR_SPECIFIC_CONFIG_DIR));
     settings.setTestRigPath(testrigDir.resolve(BfConsts.RELPATH_TEST_RIG_DIR));
     settings.setParseAnswerPath(testrigDir.resolve(BfConsts.RELPATH_PARSE_ANSWER_PATH));
-    settings.setAddressBooksPath(
+    settings.setReferenceLibraryPath(
         testrigDir.resolve(
-            Paths.get(BfConsts.RELPATH_TEST_RIG_DIR, BfConsts.RELPATH_ADDRESS_LIBRARY_PATH)));
+            Paths.get(BfConsts.RELPATH_TEST_RIG_DIR, BfConsts.RELPATH_REFERENCE_LIBRARY_PATH)));
     settings.setNodeRolesPath(
         testrigDir.resolve(
             Paths.get(BfConsts.RELPATH_TEST_RIG_DIR, BfConsts.RELPATH_NODE_ROLES_PATH)));
@@ -647,7 +647,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     try (ActiveSpan initQuestionEnvSpan =
         GlobalTracer.get().buildSpan("Init question environment").startActive()) {
       assert initQuestionEnvSpan != null; // avoid not used warning
-      initQuestionEnvironments(question, diff, diffActive, dp);
+      initQuestionEnvironments(diff, diffActive, dp);
     }
 
     AnswerElement answerElement = null;
@@ -1418,6 +1418,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
+  @SuppressWarnings("unused")
   private void generateStubs(String inputRole, int stubAs, String interfaceDescriptionRegex) {
     // Map<String, Configuration> configs = loadConfigurations();
     // Pattern pattern = Pattern.compile(interfaceDescriptionRegex);
@@ -1588,26 +1589,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // // write stubs to disk
     // serializeIndependentConfigs(stubConfigurations,
     // _testrigSettings.getSerializeIndependentPath());
-  }
-
-  /**
-   * Gets the {@link NodeRolesData} for the testrig
-   *
-   * @return The {@link NodeRolesData} object.
-   */
-  @Override
-  public AddressLibrary getAddressLibraryData() {
-    Path addressBooksPath =
-        _settings
-            .getStorageBase()
-            .resolve(_settings.getContainer())
-            .resolve(BfConsts.RELPATH_ADDRESS_LIBRARY_PATH);
-    try {
-      return AddressLibrary.read(addressBooksPath);
-    } catch (IOException e) {
-      _logger.errorf("Could not read address books data from %s: %s", addressBooksPath, e);
-      return null;
-    }
   }
 
   @Override
@@ -1878,6 +1859,22 @@ public class Batfish extends PluginConsumer implements IBatfish {
       return templates;
     } catch (JSONException | IOException e) {
       throw new BatfishException("Could not cast response to Map: ", e);
+    }
+  }
+
+  /** Gets the {@link ReferenceLibrary} for the network */
+  @Override
+  public ReferenceLibrary getReferenceLibraryData() {
+    Path libraryPath =
+        _settings
+            .getStorageBase()
+            .resolve(_settings.getContainer())
+            .resolve(BfConsts.RELPATH_REFERENCE_LIBRARY_PATH);
+    try {
+      return ReferenceLibrary.read(libraryPath);
+    } catch (IOException e) {
+      _logger.errorf("Could not read reference library data from %s: %s", libraryPath, e);
+      return null;
     }
   }
 
@@ -2167,7 +2164,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return answerElement;
   }
 
-  private void initQuestionEnvironment(Question question, boolean dp, boolean differentialContext) {
+  private void initQuestionEnvironment(boolean dp, boolean differentialContext) {
     EnvironmentSettings envSettings = _testrigSettings.getEnvironmentSettings();
     if (!environmentExists(_testrigSettings)) {
       Path envPath = envSettings.getEnvPath();
@@ -2191,16 +2188,15 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
-  private void initQuestionEnvironments(
-      Question question, boolean diff, boolean diffActive, boolean dp) {
+  private void initQuestionEnvironments(boolean diff, boolean diffActive, boolean dp) {
     if (diff || !diffActive) {
       pushBaseEnvironment();
-      initQuestionEnvironment(question, dp, false);
+      initQuestionEnvironment(dp, false);
       popEnvironment();
     }
     if (diff || diffActive) {
       pushDeltaEnvironment();
-      initQuestionEnvironment(question, dp, true);
+      initQuestionEnvironment(dp, true);
       popEnvironment();
     }
   }

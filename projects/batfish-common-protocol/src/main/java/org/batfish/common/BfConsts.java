@@ -121,7 +121,6 @@ public class BfConsts {
   public static final String PROP_VALUE = "value";
   public static final String PROP_VARIABLES = "variables";
 
-  public static final String RELPATH_ADDRESS_LIBRARY_PATH = "address_library.json";
   public static final String RELPATH_ANALYSES_DIR = "analyses";
   public static final String RELPATH_ANALYSIS_FILE = "analysis";
   public static final String RELPATH_ANSWER_HTML = "answer.html";
@@ -155,6 +154,7 @@ public class BfConsts {
   public static final String RELPATH_NODE_ROLES_PATH = "node_roles.json";
   public static final String RELPATH_ORIGINAL_DIR = "original";
   public static final String RELPATH_PARSE_ANSWER_PATH = "parse_answer";
+  public static final String RELPATH_REFERENCE_LIBRARY_PATH = "address_library.json";
   public static final String RELPATH_TESTRIG_POJO_TOPOLOGY_PATH = "testrig_pojo_topology";
   public static final String RELPATH_TESTRIG_ZIP_FILE = "testrig.zip";
   public static final String RELPATH_PRECOMPUTED_ROUTES = "precomputedroutes";

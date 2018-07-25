@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
+import java.util.Objects;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -81,5 +82,26 @@ public class IpsecPhase2Proposal implements Serializable {
   @JsonProperty(PROP_PROTOCOLS)
   public void setProtocols(@Nullable SortedSet<IpsecProtocol> protocols) {
     _protocols = protocols == null ? ImmutableSortedSet.of() : ImmutableSortedSet.copyOf(protocols);
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof IpsecPhase2Proposal)) {
+      return false;
+    }
+    IpsecPhase2Proposal other = (IpsecPhase2Proposal) o;
+    return Objects.equals(_authenticationAlgorithm, other._authenticationAlgorithm)
+        && Objects.equals(_encryptionAlgorithm, other._encryptionAlgorithm)
+        && Objects.equals(_ipsecEncapsulationMode, other._ipsecEncapsulationMode)
+        && Objects.equals(_protocols, other._protocols);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(
+        _authenticationAlgorithm, _encryptionAlgorithm, _ipsecEncapsulationMode, _protocols);
   }
 }

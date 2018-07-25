@@ -2,8 +2,8 @@ package org.batfish.datamodel.matchers;
 
 import java.util.List;
 import javax.annotation.Nonnull;
+import org.batfish.datamodel.AaaAuthenticationLoginList;
 import org.batfish.datamodel.AuthenticationMethod;
-import org.batfish.datamodel.vendor_family.cisco.AaaAuthenticationLoginList;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 

@@ -3,7 +3,6 @@ package org.batfish.representation.aws;
 import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
-import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
@@ -25,7 +24,7 @@ public class NatGateway implements AwsVpcEntity, Serializable {
 
   private String _vpcId;
 
-  public NatGateway(JSONObject jObj, BatfishLogger logger) throws JSONException {
+  public NatGateway(JSONObject jObj) throws JSONException {
     _natGatewayId = jObj.getString(JSON_KEY_NAT_GATEWAY_ID);
     _subnetId = jObj.getString(JSON_KEY_SUBNET_ID);
     _vpcId = jObj.getString(JSON_KEY_VPC_ID);

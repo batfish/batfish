@@ -342,7 +342,7 @@ class CiscoConversions {
       Tunnel tunnel = iface.getTunnel();
       // resolve if tunnel's source interface name is not set
       if (tunnel != null
-          && tunnel.getSourceInterfaceName().equals(UNSET_LOCAL_INTERFACE)
+          && UNSET_LOCAL_INTERFACE.equals(tunnel.getSourceInterfaceName())
           && tunnel.getSourceAddress() != null) {
         tunnel.setSourceInterfaceName(
             firstNonNull(iptoIfaceName.get(tunnel.getSourceAddress()), INVALID_LOCAL_INTERFACE));
@@ -719,7 +719,7 @@ class CiscoConversions {
       IkePhase1Policy ikePhase1Policy = e.getValue();
       String ikePhase1PolicyLocalInterface = ikePhase1Policy.getLocalInterface();
       if (ikePhase1Policy.getRemoteIdentity().containsIp(remoteAddress, ImmutableMap.of())
-          && (ikePhase1PolicyLocalInterface == null
+          && (UNSET_LOCAL_INTERFACE.equals(ikePhase1PolicyLocalInterface)
               || ikePhase1PolicyLocalInterface.equals(localInterface))) {
         return e.getKey();
       }
@@ -733,7 +733,7 @@ class CiscoConversions {
     List<String> filteredIkePhase1Policies = new ArrayList<>();
     for (Entry<String, IkePhase1Policy> e : ikePhase1Policies.entrySet()) {
       String ikePhase1PolicyLocalInterface = e.getValue().getLocalInterface();
-      if ((ikePhase1PolicyLocalInterface == null
+      if ((UNSET_LOCAL_INTERFACE.equals(ikePhase1PolicyLocalInterface)
           || ikePhase1PolicyLocalInterface.equals(localInterface))) {
         filteredIkePhase1Policies.add(e.getKey());
       }
@@ -893,7 +893,7 @@ class CiscoConversions {
         org.batfish.datamodel.eigrp.EigrpProcess.builder();
     org.batfish.datamodel.Vrf vrf = c.getVrfs().get(vrfName);
 
-    newProcess.setAsNumber(proc.getAsNumber());
+    newProcess.setAsNumber(proc.getAsn());
     newProcess.setMode(proc.getMode());
     newProcess.setVrf(vrf);
 

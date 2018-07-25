@@ -1,30 +1,29 @@
 package org.batfish.representation.cisco;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Set;
 import java.util.TreeSet;
-import org.batfish.common.util.ComparableStructure;
-import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.eigrp.EigrpProcessMode;
 
-public class EigrpProcess extends ComparableStructure<Long> {
+public class EigrpProcess implements Serializable {
 
   private static final String DEFAULT_ADDRESS_FAMILY = "ipv4-unicast";
   private static final long serialVersionUID = 1L;
   private String _addressFamily;
+  private long _asn;
   private boolean _autoSummary;
   private EigrpProcessMode _mode;
   private Ip _routerId;
   private Set<IpWildcard> _wildcardNetworks;
   private Set<Prefix> _networks;
 
-  public EigrpProcess(Long asn, EigrpProcessMode mode, ConfigurationFormat format) {
-    super(asn);
-
+  public EigrpProcess(Long asn, EigrpProcessMode mode) {
+    _asn = asn;
     _addressFamily = DEFAULT_ADDRESS_FAMILY;
     _autoSummary = false;
     _mode = mode;
@@ -64,8 +63,8 @@ public class EigrpProcess extends ComparableStructure<Long> {
     _addressFamily = af;
   }
 
-  public long getAsNumber() {
-    return _key;
+  public long getAsn() {
+    return _asn;
   }
 
   public boolean getAutoSummary() {
@@ -97,6 +96,6 @@ public class EigrpProcess extends ComparableStructure<Long> {
   }
 
   public void setAsn(long asn) {
-    _key = asn;
+    _asn = asn;
   }
 }

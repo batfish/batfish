@@ -9007,6 +9007,13 @@ PREFIX_LENGTH
 PREFIX_LIST
 :
    'prefix-list'
+   {
+     if (lastTokenType == ADDRESS) {
+       pushMode(M_Words);
+     } else {
+       pushMode(M_Name);
+     }
+   }
 ;
 
 PREFIX_PEER_TIMEOUT
@@ -10897,6 +10904,16 @@ SNMP_AUTHFAIL
 SNMP
 :
    'snmp'
+;
+
+// must be kept above SNMP_SERVER
+SNMP_SERVER_COMMUNITY
+:
+   'snmp-server'
+   {(lastTokenType == NEWLINE || lastTokenType == -1)
+     && isWhitespace(_input.LA(1))
+     && lookAheadStringSkipWhitespace("community ".length()).equals("community ")}?
+   -> type ( SNMP_SERVER ) , pushMode ( M_SnmpServerCommunity )
 ;
 
 SNMP_SERVER
@@ -15102,6 +15119,28 @@ M_SHA1_WS
    F_Whitespace+ -> channel ( HIDDEN )
 ;
 
+mode M_SnmpServerCommunity;
+
+M_SnmpServerCommunity_COMMUNITY
+:
+  'community' -> type ( COMMUNITY )
+;
+
+M_SnmpServerCommunity_WS
+:
+   F_Whitespace+ -> channel ( HIDDEN )
+;
+
+M_SnmpServerCommunity_DOUBLE_QUOTE
+:
+   '"' -> type ( DOUBLE_QUOTE ), mode ( M_DoubleQuote )
+;
+
+M_SnmpServerCommunity_CHAR
+:
+   F_NonWhitespace -> mode ( M_Name ), more
+;
+
 mode M_SshKey;
 
 M_SshKey_DSA1024
@@ -15138,3 +15177,21 @@ M_VacantMessage_NEWLINE
 :
    F_Newline+ -> type ( NEWLINE ) , popMode
 ;
+
+mode M_Words;
+
+M_Words_WORD
+:
+   F_NonWhitespace+ -> type ( VARIABLE )
+;
+
+M_Words_NEWLINE
+:
+   F_Newline+ -> type ( NEWLINE ) , popMode
+;
+
+M_Words_WS
+:
+   F_Whitespace+ -> channel ( HIDDEN )
+;
+

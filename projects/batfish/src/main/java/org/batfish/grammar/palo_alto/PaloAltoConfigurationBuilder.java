@@ -300,7 +300,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     String name = ctx.name.getText();
     _currentInterface = _configuration.getInterfaces().computeIfAbsent(name, Interface::new);
     _currentInterface.setParent(_currentParentInterface);
-    _currentParentInterface.getUnits().add(_currentInterface);
+    _currentParentInterface.getUnits().put(name, _currentInterface);
     defineStructure(INTERFACE, name, ctx);
   }
 

@@ -1,0 +1,30 @@
+{
+    "class": "org.batfish.question.filtertable.FilterTableQuestion",
+    "differential": false,
+    "columns": "${columns}",
+    "filter": "${filter}",
+    "innerQuestion": "${innerQuestion}",
+    "instance": {
+        "description": "Filters rows or select columns of the answer of inner question",
+        "instanceName": "filterTable",
+        "tags": [
+        ],
+        "variables": {
+            "columns": {
+                "description": "The set of columns to fetch",
+                "type": "string",
+                "minElements": 1,
+                "optional": true
+            },
+            "filter": {
+                "description": "The filter to use",
+                "type": "string",
+                "optional": true
+            },
+            "innerQuestion": {
+                "description": "The inner question whose output should be filtered",
+                "type": "question"
+            }
+        }
+    }
+}

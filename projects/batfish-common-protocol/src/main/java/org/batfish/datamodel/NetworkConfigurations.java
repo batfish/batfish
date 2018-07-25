@@ -78,6 +78,14 @@ public final class NetworkConfigurations {
   }
 
   @Nullable
+  public IpsecPeerConfig getIpecPeerConfig(IpsecPeerConfigId ipsecPeerConfigId) {
+    Configuration c = get(ipsecPeerConfigId.getHostName());
+    return c == null
+        ? null
+        : c.getIpsecPeerconfigs().get(ipsecPeerConfigId.getIpsecPeerConfigName());
+  }
+
+  @Nullable
   public Vrf getVrf(@Nonnull String hostname, @Nonnull String vrfName) {
     Configuration c = _configurations.get(hostname);
     if (c == null) {

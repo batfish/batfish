@@ -8,7 +8,6 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
-import java.util.TreeMap;
 import java.util.TreeSet;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.AbstractRoute;
@@ -110,7 +109,12 @@ public abstract class AbstractRib<R extends AbstractRoute> implements GenericRib
 
   @Override
   public Set<R> longestPrefixMatch(Ip address) {
-    return _tree.getLongestPrefixMatch(address);
+    return longestPrefixMatch(address, Prefix.MAX_PREFIX_LENGTH);
+  }
+
+  @Override
+  public Set<R> longestPrefixMatch(Ip address, int maxPrefixLength) {
+    return _tree.getLongestPrefixMatch(address, maxPrefixLength);
   }
 
   /**
@@ -201,18 +205,6 @@ public abstract class AbstractRib<R extends AbstractRoute> implements GenericRib
       _allRoutes = null;
     }
     return d;
-  }
-
-  @Override
-  public final Map<Prefix, Set<Ip>> nextHopIpsByPrefix() {
-    Map<Prefix, Set<Ip>> map = new TreeMap<>();
-    for (AbstractRoute route : getRoutes()) {
-      Prefix prefix = route.getNetwork();
-      Ip nextHopIp = route.getNextHopIp();
-      Set<Ip> nextHopIps = map.computeIfAbsent(prefix, k -> new TreeSet<>());
-      nextHopIps.add(nextHopIp);
-    }
-    return map;
   }
 
   /**

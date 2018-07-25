@@ -1,15 +1,15 @@
 package org.batfish.representation.juniper;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import javax.annotation.Nullable;
 import org.batfish.common.Warnings;
-import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.IpWildcard;
 
-public final class AddressBook extends ComparableStructure<String> {
+public final class AddressBook implements Serializable {
 
   /** */
   private static final long serialVersionUID = 1L;
@@ -18,8 +18,10 @@ public final class AddressBook extends ComparableStructure<String> {
 
   private final Map<String, AddressBook> _globalBooks;
 
+  private final String _name;
+
   public AddressBook(String name, Map<String, AddressBook> globalBooks) {
-    super(name);
+    _name = name;
     _entries = new TreeMap<>();
     _globalBooks = globalBooks;
   }
@@ -60,11 +62,15 @@ public final class AddressBook extends ComparableStructure<String> {
           "Could not find entry: \""
               + entryName
               + "\" in address book: \""
-              + _key
+              + _name
               + "\" or any global address book");
       return Collections.emptySortedSet();
     } else {
       return entry.getIpWildcards(w);
     }
+  }
+
+  public String getName() {
+    return _name;
   }
 }

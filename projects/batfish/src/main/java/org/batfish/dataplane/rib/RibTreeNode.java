@@ -1,6 +1,5 @@
 package org.batfish.dataplane.rib;
 
-import static org.batfish.datamodel.Prefix.MAX_PREFIX_LENGTH;
 import static org.batfish.dataplane.rib.RouteAdvertisement.Reason.REPLACE;
 
 import com.google.common.collect.ImmutableCollection;
@@ -113,15 +112,16 @@ class RibTreeNode<R extends AbstractRoute> implements Serializable {
    * @param address IP address
    * @param bits IP address represented as a set of bits
    * @param index the position of the bit up to which the match has already been found
-   *     (tail-recursion way of keeping track how deep we are).
+   *     (tail-recursion way of keeping track how deep we are)
+   * @param maxPrefixLength only return routes with prefix length less than or equal to given value
    * @return a set of routes
    */
-  Set<R> getLongestPrefixMatch(Ip address, long bits, int index) {
+  Set<R> getLongestPrefixMatch(Ip address, long bits, int index, int maxPrefixLength) {
     // Get the list of routes stored in our node that contain the IP address
     Set<R> longestPrefixMatches = getLongestPrefixMatch(address);
     // If we reached the max prefix length (e.g., 32 for for IPv4) then return routes
     // from the current node
-    if (index == MAX_PREFIX_LENGTH) {
+    if (index >= maxPrefixLength) {
       return longestPrefixMatches;
     }
 
@@ -141,7 +141,8 @@ class RibTreeNode<R extends AbstractRoute> implements Serializable {
 
     // Represents any potentially longer route matches (than ones stored at this node)
     Set<R> longerMatches =
-        child.getLongestPrefixMatch(address, bits, child._prefix.getPrefixLength());
+        child.getLongestPrefixMatch(
+            address, bits, child._prefix.getPrefixLength(), maxPrefixLength);
 
     // If we found no better matches, return the ones from this node
     if (longerMatches == null || longerMatches.isEmpty()) {
