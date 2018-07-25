@@ -215,7 +215,7 @@
 
     <dependency>
       <groupId>net.sf.javabdd</groupId>
-      <artifactId>bdd</artifactId>
+      <artifactId>javabdd</artifactId>
     </dependency>
 
     <dependency>

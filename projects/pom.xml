@@ -62,6 +62,7 @@
     <guava.version>22.0</guava.version>
     <guava-eea.version>0.0.1</guava-eea.version>
     <jackson.version>2.9.6</jackson.version>
+    <javabdd.version>1.0b2-batfish-internal</javabdd.version>
     <java-hamcrest.version>2.0.0.0</java-hamcrest.version>
     <javax-annotation-api.version>1.2</javax-annotation-api.version>
     <jaeger.version>0.21.0</jaeger.version>
@@ -371,10 +372,11 @@
             <id>install-bdd</id>
             <configuration>
               <groupId>net.sf.javabdd</groupId>
-              <artifactId>bdd</artifactId>
-              <version>batfish-internal</version>
+              <artifactId>javabdd</artifactId>
+              <version>${javabdd.version}</version>
               <packaging>jar</packaging>
-              <file>${basedir}/lib/bdd/net.sf.javabdd.jar</file>
+              <file>${basedir}/lib/bdd/net.sf.javabdd-${javabdd.version}.jar</file>
+              <sources>${basedir}/lib/bdd/net.sf.javabdd-${javabdd.version}-sources.jar</sources>
             </configuration>
           </execution>
           <!-- Batfish includes a custom version of antlr4 that supports larger lexers. -->
@@ -757,8 +759,8 @@
 
       <dependency>
         <groupId>net.sf.javabdd</groupId>
-        <artifactId>bdd</artifactId>
-        <version>batfish-internal</version>
+        <artifactId>javabdd</artifactId>
+        <version>${javabdd.version}</version>
       </dependency>
 
       <dependency>
