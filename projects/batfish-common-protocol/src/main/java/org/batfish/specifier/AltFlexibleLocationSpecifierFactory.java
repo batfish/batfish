@@ -37,9 +37,11 @@ import com.google.auto.service.AutoService;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.apache.commons.lang3.StringUtils;
 
 @AutoService(LocationSpecifierFactory.class)
+@ParametersAreNonnullByDefault
 public class AltFlexibleLocationSpecifierFactory implements LocationSpecifierFactory {
   public static final String NAME = AltFlexibleLocationSpecifierFactory.class.getSimpleName();
 
