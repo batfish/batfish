@@ -10,7 +10,6 @@ import org.batfish.common.Warnings;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.answers.ParseStatus;
-import org.batfish.datamodel.table.Rows;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.ControlPlaneExtractor;
 import org.batfish.grammar.ParseTreePrettyPrinter;
@@ -73,8 +72,6 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
 
   private ConfigurationFormat _format;
 
-  private Rows _parseWarnings;
-
   private ParseTreeSentences _ptSentences;
 
   private Warnings _warnings;
@@ -88,7 +85,6 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
     super(settings);
     _fileText = fileText;
     _filename = filename;
-    _parseWarnings = new Rows();
     _ptSentences = new ParseTreeSentences();
     _warnings = warnings;
     _format = configurationFormat;
