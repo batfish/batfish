@@ -66,6 +66,13 @@ public enum CiscoStructureUsage implements StructureUsage {
   DEPI_TUNNEL_PROTECT_TUNNEL("depi-tunnel protect-tunnel"),
   DOCSIS_GROUP_DOCSIS_POLICY("cable load-balance docsis-group docsis-policy"),
   DOCSIS_POLICY_DOCSIS_POLICY_RULE("cable load-balance docsis-policy rule"),
+  EIGRP_REDISTRIBUTE_BGP_MAP("eigrp redistribute bgp route-map"),
+  EIGRP_REDISTRIBUTE_CONNECTED_MAP("eigrp redistribute connected route-map"),
+  EIGRP_REDISTRIBUTE_EIGRP_MAP("eigrp redistribute eigrp route-map"),
+  EIGRP_REDISTRIBUTE_ISIS_MAP("eigrp redistribute isis route-map"),
+  EIGRP_REDISTRIBUTE_OSPF_MAP("eigrp redistribute ospf route-map"),
+  EIGRP_REDISTRIBUTE_RIP_MAP("eigrp redistribute rip route-map"),
+  EIGRP_REDISTRIBUTE_STATIC_MAP("eigrp redistribute static route-map"),
   EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP("extended access-list network object-group"),
   EXTENDED_ACCESS_LIST_PROTOCOL_OBJECT_GROUP("extended access-list protocol object-group"),
   EXTENDED_ACCESS_LIST_PROTOCOL_OR_SERVICE_OBJECT_GROUP(

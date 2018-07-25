@@ -117,6 +117,13 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.DEPI_TUNNEL_L
 import static org.batfish.representation.cisco.CiscoStructureUsage.DEPI_TUNNEL_PROTECT_TUNNEL;
 import static org.batfish.representation.cisco.CiscoStructureUsage.DOCSIS_GROUP_DOCSIS_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureUsage.DOCSIS_POLICY_DOCSIS_POLICY_RULE;
+import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_REDISTRIBUTE_BGP_MAP;
+import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_REDISTRIBUTE_CONNECTED_MAP;
+import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_REDISTRIBUTE_EIGRP_MAP;
+import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_REDISTRIBUTE_ISIS_MAP;
+import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_REDISTRIBUTE_OSPF_MAP;
+import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_REDISTRIBUTE_RIP_MAP;
+import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_REDISTRIBUTE_STATIC_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OR_SERVICE_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INSPECT_CLASS_MAP_MATCH_ACCESS_GROUP;
@@ -760,6 +767,13 @@ import org.batfish.grammar.cisco.CiscoParser.Rbnx_v_local_asContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_vrfContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_classicContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_networkContext;
+import org.batfish.grammar.cisco.CiscoParser.Re_redistribute_bgpContext;
+import org.batfish.grammar.cisco.CiscoParser.Re_redistribute_connectedContext;
+import org.batfish.grammar.cisco.CiscoParser.Re_redistribute_eigrpContext;
+import org.batfish.grammar.cisco.CiscoParser.Re_redistribute_isisContext;
+import org.batfish.grammar.cisco.CiscoParser.Re_redistribute_ospfContext;
+import org.batfish.grammar.cisco.CiscoParser.Re_redistribute_ripContext;
+import org.batfish.grammar.cisco.CiscoParser.Re_redistribute_staticContext;
 import org.batfish.grammar.cisco.CiscoParser.Rec_address_familyContext;
 import org.batfish.grammar.cisco.CiscoParser.Redistribute_aggregate_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Redistribute_connected_bgp_tailContext;
@@ -6377,6 +6391,69 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     Ip address = toIp(ctx.address);
     Ip mask = (ctx.mask != null) ? toIp(ctx.mask) : address.getClassMask().inverted();
     _currentEigrpProcess.getWildcardNetworks().add(new IpWildcard(address, mask));
+  }
+
+  @Override
+  public void exitRe_redistribute_bgp(Re_redistribute_bgpContext ctx) {
+    if (ctx.map != null) {
+      String mapname = ctx.map.getText();
+      _configuration.referenceStructure(
+          ROUTE_MAP, mapname, EIGRP_REDISTRIBUTE_BGP_MAP, ctx.map.getStart().getLine());
+    }
+  }
+
+  @Override
+  public void exitRe_redistribute_connected(Re_redistribute_connectedContext ctx) {
+    if (ctx.map != null) {
+      String mapname = ctx.map.getText();
+      _configuration.referenceStructure(
+          ROUTE_MAP, mapname, EIGRP_REDISTRIBUTE_CONNECTED_MAP, ctx.map.getStart().getLine());
+    }
+  }
+
+  @Override
+  public void exitRe_redistribute_eigrp(Re_redistribute_eigrpContext ctx) {
+    if (ctx.map != null) {
+      String mapname = ctx.map.getText();
+      _configuration.referenceStructure(
+          ROUTE_MAP, mapname, EIGRP_REDISTRIBUTE_EIGRP_MAP, ctx.map.getStart().getLine());
+    }
+  }
+
+  @Override
+  public void exitRe_redistribute_isis(Re_redistribute_isisContext ctx) {
+    if (ctx.map != null) {
+      String mapname = ctx.map.getText();
+      _configuration.referenceStructure(
+          ROUTE_MAP, mapname, EIGRP_REDISTRIBUTE_ISIS_MAP, ctx.map.getStart().getLine());
+    }
+  }
+
+  @Override
+  public void exitRe_redistribute_ospf(Re_redistribute_ospfContext ctx) {
+    if (ctx.map != null) {
+      String mapname = ctx.map.getText();
+      _configuration.referenceStructure(
+          ROUTE_MAP, mapname, EIGRP_REDISTRIBUTE_OSPF_MAP, ctx.map.getStart().getLine());
+    }
+  }
+
+  @Override
+  public void exitRe_redistribute_rip(Re_redistribute_ripContext ctx) {
+    if (ctx.map != null) {
+      String mapname = ctx.map.getText();
+      _configuration.referenceStructure(
+          ROUTE_MAP, mapname, EIGRP_REDISTRIBUTE_RIP_MAP, ctx.map.getStart().getLine());
+    }
+  }
+
+  @Override
+  public void exitRe_redistribute_static(Re_redistribute_staticContext ctx) {
+    if (ctx.map != null) {
+      String mapname = ctx.map.getText();
+      _configuration.referenceStructure(
+          ROUTE_MAP, mapname, EIGRP_REDISTRIBUTE_STATIC_MAP, ctx.map.getStart().getLine());
+    }
   }
 
   @Override
