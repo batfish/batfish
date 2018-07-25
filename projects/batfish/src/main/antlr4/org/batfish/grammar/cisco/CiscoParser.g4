@@ -1193,6 +1193,7 @@ ip_sla_null
       | HISTORY
       | HOPS_OF_STATISTICS_KEPT
       | ICMP_ECHO
+      | OWNER
       | PATH_ECHO
       | PATHS_OF_STATISTICS_KEPT
       | REQUEST_DATA_SIZE
