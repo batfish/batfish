@@ -1,31 +1,51 @@
-# Questions and Templates
+# Batfish Questions and Templates
 
-Questions are used to query various information about a network using Batfish.
+## Introduction
 
-To ask a question to Batfish service(coordinator), the client should have the template(JSON file) for that question, unless the service is also running along with the client. The question template is populated by the client with the user supplied parameters and then sent over to Batfish service in the payload for the REST API request.
+Questions are used to query information about a network in Batfish.
 
-So if we are running Batfish Java client(or any other client) separate from the Batfish service, we need the template files for the questions that we want to ask Batfish.
+To ask a question to the Batfish service (coordinator), the client should have the template (JSON file) for that question. The question template is updated by the client with the user supplied parameters and then sent to the Batfish service in the payload for the REST API request.
 
-This directory contains the templates for two categories of questions
-1. Stable: These questions are permanent and the current plan is to support them for the future.
+So if a client is running separately from the Batfish service, corresponding template files are needed for any questions intended to be run through the client.
+
+## How to run questions in Batfish Java client
+
+This directory contains the templates for two categories of questions:
+1. Stable: These questions are permanent and the current plan is to support them in the future.
 2. Experimental: These questions are supported currently but in the future they may be replaced/deprecated or moved to the stable directory.
 
-To use a question template in the client, it needs to be loaded first using the `load-questions` command.
-`load-questions` can load the question templates from the Batfish service or from a local directory.
+### Loading questions
 
-To load question templates from the remote Batfish service run `load-questions` without any parameters:
-```java
-load-questions
+*Assumption*: Batfish service(coordinator) should have been started with the path of question templates directory passed in the `templatedirs` parameter (see [here](https://github.com/batfish/batfish/wiki/Building-and-running-Batfish-service#installation-steps) for details)
+
+To use a question template in the client, it needs to be loaded first. Batfish Java client provides the `load-questions` command to load the question templates.
+
+To load question templates in the Java client run:
 ```
-In this case the Batfish service(coordinator) should have been started with path of question templates directory passed in the `templatedirs` parameter(for details, see [here](https://github.com/batfish/batfish/wiki/Building-and-running-Batfish-service#installation-steps))
-
-To load question templates from a local directory, run `load-questions` with a local directory path:
-```java
-load-questions ../batfish/questions/stable
+batfish> load-questions
 ```
 
-To run a question using the loaded templates, Batfish Java client provides the `answer` command. For example:
-```java
-answer ipowners
+This will load the question templates in the client and will output information about the number of questions loaded, similar to:
 ```
-This command will run the `ipOwners` question on the current testrig and will fetch and print the answer on the Batfish Java client console. Please note that `answer <question-name>` command treats the question-name as case-insensitive.
+Loaded 191 questions
+Summary: 0 (non-assertion) results;
+```
+
+### Running a question
+
+To run a question using the loaded templates, Batfish Java client provides the `answer` command. Run the answer command with the question name, for example:
+```java
+batfish> answer ipowners
+```
+
+This command will run the `ipOwners` question on the current testrig and will fetch and print the answer on the Batfish Java client console. 
+
+Please note that `answer <question-name>` command treats the question-name as case-insensitive.
+
+### Loading local questions from the client
+
+If the client wants to load its own set of questions, `load-questions` command can be run with the directory path containing the question templates, for example:
+```java
+batfish> load-questions ../batfish/questions/experimental
+```
+Once the local questions are loaded in the client they can also be run similar to the questions loaded from the Batfish service (coordinator).
