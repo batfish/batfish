@@ -928,7 +928,7 @@ class CiscoConversions {
         iface.setEigrp(
             EigrpInterfaceSettings.builder()
                 .setEnabled(true)
-                .setAsn(proc.getAsNumber())
+                .setAsn(proc.getAsn())
                 .setMetric(metric)
                 .build());
       } else {

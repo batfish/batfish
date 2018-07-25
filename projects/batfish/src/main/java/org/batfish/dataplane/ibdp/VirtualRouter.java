@@ -2310,6 +2310,11 @@ public class VirtualRouter implements Serializable {
       Map<String, Node> nodes,
       Network<EigrpInterface, EigrpEdge> topology,
       NetworkConfigurations nc) {
+
+    if (topology.nodes().isEmpty()) {
+      return false;
+    }
+
     // Default EIGRP admin cost for constructing new routes
     int adminCost = RoutingProtocol.EIGRP.getDefaultAdministrativeCost(_c.getConfigurationFormat());
 
