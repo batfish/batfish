@@ -20195,17 +20195,71 @@
             "        asnum = DEC:'5'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "        (re_classic_tail",
-            "          (rec_null",
+            "          (re_redistribute_bgp",
             "            REDISTRIBUTE:'redistribute'  <== mode:DEFAULT_MODE",
-            "            (null_rest_of_line",
-            "              STATIC:'static'  <== mode:DEFAULT_MODE",
-            "              METRIC:'metric'  <== mode:DEFAULT_MODE",
-            "              DEC:'10000'  <== mode:DEFAULT_MODE",
-            "              DEC:'10'  <== mode:DEFAULT_MODE",
-            "              DEC:'255'  <== mode:DEFAULT_MODE",
-            "              DEC:'1'  <== mode:DEFAULT_MODE",
-            "              DEC:'1500'  <== mode:DEFAULT_MODE",
-            "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "            BGP:'bgp'  <== mode:DEFAULT_MODE",
+            "            asn = (bgp_asn",
+            "              asn4b = FLOAT:'1.2'  <== mode:DEFAULT_MODE)",
+            "            ROUTE_MAP:'route-map'  <== mode:DEFAULT_MODE",
+            "            map = (variable",
+            "              VARIABLE:'BGP_TO_EIGRP'  <== mode:M_RouteMap)",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "        (re_classic_tail",
+            "          (re_redistribute_connected",
+            "            REDISTRIBUTE:'redistribute'  <== mode:DEFAULT_MODE",
+            "            CONNECTED:'connected'  <== mode:DEFAULT_MODE",
+            "            ROUTE_MAP:'route-map'  <== mode:DEFAULT_MODE",
+            "            map = (variable",
+            "              VARIABLE:'CONNECTED_TO_EIGRP'  <== mode:M_RouteMap)",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "        (re_classic_tail",
+            "          (re_redistribute_eigrp",
+            "            REDISTRIBUTE:'redistribute'  <== mode:DEFAULT_MODE",
+            "            EIGRP:'eigrp'  <== mode:DEFAULT_MODE",
+            "            asn = DEC:'3'  <== mode:DEFAULT_MODE",
+            "            ROUTE_MAP:'route-map'  <== mode:DEFAULT_MODE",
+            "            map = (variable",
+            "              VARIABLE:'EIGRP_TO_EIGRP'  <== mode:M_RouteMap)",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "        (re_classic_tail",
+            "          (re_redistribute_isis",
+            "            REDISTRIBUTE:'redistribute'  <== mode:DEFAULT_MODE",
+            "            ISIS:'isis'  <== mode:DEFAULT_MODE",
+            "            ROUTE_MAP:'route-map'  <== mode:DEFAULT_MODE",
+            "            map = (variable",
+            "              VARIABLE:'ISIS_TO_EIGRP'  <== mode:M_RouteMap)",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "        (re_classic_tail",
+            "          (re_redistribute_ospf",
+            "            REDISTRIBUTE:'redistribute'  <== mode:DEFAULT_MODE",
+            "            OSPF:'ospf'  <== mode:DEFAULT_MODE",
+            "            proc = DEC:'4'  <== mode:DEFAULT_MODE",
+            "            ROUTE_MAP:'route-map'  <== mode:DEFAULT_MODE",
+            "            map = (variable",
+            "              VARIABLE:'OSPF_TO_EIGRP'  <== mode:M_RouteMap)",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "        (re_classic_tail",
+            "          (re_redistribute_rip",
+            "            REDISTRIBUTE:'redistribute'  <== mode:DEFAULT_MODE",
+            "            RIP:'rip'  <== mode:DEFAULT_MODE",
+            "            ROUTE_MAP:'route-map'  <== mode:DEFAULT_MODE",
+            "            map = (variable",
+            "              VARIABLE:'RIP_TO_EIGRP'  <== mode:M_RouteMap)",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "        (re_classic_tail",
+            "          (re_redistribute_static",
+            "            REDISTRIBUTE:'redistribute'  <== mode:DEFAULT_MODE",
+            "            STATIC:'static'  <== mode:DEFAULT_MODE",
+            "            METRIC:'metric'  <== mode:DEFAULT_MODE",
+            "            bw_kbps = DEC:'10000'  <== mode:DEFAULT_MODE",
+            "            delay_10us = DEC:'10'  <== mode:DEFAULT_MODE",
+            "            reliability = DEC:'255'  <== mode:DEFAULT_MODE",
+            "            eff_bw = DEC:'1'  <== mode:DEFAULT_MODE",
+            "            mtu = DEC:'1500'  <== mode:DEFAULT_MODE",
+            "            ROUTE_MAP:'route-map'  <== mode:DEFAULT_MODE",
+            "            map = (variable",
+            "              VARIABLE:'STATIC_TO_EIGRP'  <== mode:M_RouteMap)",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "        (re_classic_tail",
             "          (rec_null",
             "            PASSIVE_INTERFACE:'passive-interface'  <== mode:DEFAULT_MODE",
@@ -20880,17 +20934,16 @@
             "        asnum = DEC:'5'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "        (re_classic_tail",
-            "          (rec_null",
+            "          (re_redistribute_static",
             "            REDISTRIBUTE:'redistribute'  <== mode:DEFAULT_MODE",
-            "            (null_rest_of_line",
-            "              STATIC:'static'  <== mode:DEFAULT_MODE",
-            "              METRIC:'metric'  <== mode:DEFAULT_MODE",
-            "              DEC:'10000'  <== mode:DEFAULT_MODE",
-            "              DEC:'10'  <== mode:DEFAULT_MODE",
-            "              DEC:'255'  <== mode:DEFAULT_MODE",
-            "              DEC:'1'  <== mode:DEFAULT_MODE",
-            "              DEC:'1500'  <== mode:DEFAULT_MODE",
-            "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "            STATIC:'static'  <== mode:DEFAULT_MODE",
+            "            METRIC:'metric'  <== mode:DEFAULT_MODE",
+            "            bw_kbps = DEC:'10000'  <== mode:DEFAULT_MODE",
+            "            delay_10us = DEC:'10'  <== mode:DEFAULT_MODE",
+            "            reliability = DEC:'255'  <== mode:DEFAULT_MODE",
+            "            eff_bw = DEC:'1'  <== mode:DEFAULT_MODE",
+            "            mtu = DEC:'1500'  <== mode:DEFAULT_MODE",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "        (re_classic_tail",
             "          (rec_null",
             "            PASSIVE_INTERFACE:'passive-interface'  <== mode:DEFAULT_MODE",
@@ -56591,20 +56644,20 @@
           "extended ipv4 access-list" : {
             "bippety" : {
               "definitionLines" : [
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33
               ],
               "numReferrers" : 0
             },
             "bloop_blop" : {
               "definitionLines" : [
-                90,
-                91
+                96,
+                97
               ],
               "numReferrers" : 0
             }
@@ -59754,6 +59807,45 @@
             "someacl" : {
               "crypto map ipsec-isakmp acl" : [
                 219
+              ]
+            }
+          }
+        },
+        "cisco_eigrp" : {
+          "route-map" : {
+            "BGP_TO_EIGRP" : {
+              "eigrp redistribute bgp route-map" : [
+                11
+              ]
+            },
+            "CONNECTED_TO_EIGRP" : {
+              "eigrp redistribute connected route-map" : [
+                12
+              ]
+            },
+            "EIGRP_TO_EIGRP" : {
+              "eigrp redistribute eigrp route-map" : [
+                13
+              ]
+            },
+            "ISIS_TO_EIGRP" : {
+              "eigrp redistribute isis route-map" : [
+                14
+              ]
+            },
+            "OSPF_TO_EIGRP" : {
+              "eigrp redistribute ospf route-map" : [
+                15
+              ]
+            },
+            "RIP_TO_EIGRP" : {
+              "eigrp redistribute rip route-map" : [
+                16
+              ]
+            },
+            "STATIC_TO_EIGRP" : {
+              "eigrp redistribute static route-map" : [
+                17
               ]
             }
           }
