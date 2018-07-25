@@ -33,12 +33,6 @@ public class ContainerResource {
     _name = name;
   }
 
-  /** Relocate the request to {@link AddressLibraryResource}. */
-  @Path(CoordConstsV2.RSC_ADDRESS_LIBRARY)
-  public AddressLibraryResource getAddressBooksResource() {
-    return new AddressLibraryResource(_name);
-  }
-
   /** Returns information about the given {@link Container}, provided this user can access it. */
   @GET
   public Response getContainer() {
@@ -51,6 +45,12 @@ public class ContainerResource {
   @Path(CoordConstsV2.RSC_NODE_ROLES)
   public NodeRolesResource getNodeRolesResource() {
     return new NodeRolesResource(_name);
+  }
+
+  /** Relocate the request to {@link ReferenceLibraryResource}. */
+  @Path(CoordConstsV2.RSC_REFERENCE_LIBRARY)
+  public ReferenceLibraryResource getReferenceLibraryResource() {
+    return new ReferenceLibraryResource(_name);
   }
 
   /** Delete a specified container with name: {@link #_name}. */

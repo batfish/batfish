@@ -16,14 +16,14 @@ import org.batfish.common.Version;
 import org.batfish.coordinator.Main;
 import org.batfish.coordinator.WorkMgrServiceV2TestBase;
 import org.batfish.coordinator.WorkMgrTestUtils;
-import org.batfish.role.addressbook.AddressBook;
-import org.batfish.role.addressbook.AddressLibrary;
+import org.batfish.referencelibrary.ReferenceBook;
+import org.batfish.referencelibrary.ReferenceLibrary;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-public class AddressBookResourceTest extends WorkMgrServiceV2TestBase {
+public class ReferenceBookResourceTest extends WorkMgrServiceV2TestBase {
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
@@ -36,7 +36,7 @@ public class AddressBookResourceTest extends WorkMgrServiceV2TestBase {
     return target(CoordConsts.SVC_CFG_WORK_MGR2)
         .path(CoordConstsV2.RSC_CONTAINERS)
         .path(container)
-        .path(CoordConstsV2.RSC_ADDRESS_LIBRARY)
+        .path(CoordConstsV2.RSC_REFERENCE_LIBRARY)
         .path(bookName)
         .request()
         .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
@@ -49,16 +49,16 @@ public class AddressBookResourceTest extends WorkMgrServiceV2TestBase {
     Main.getWorkMgr().initContainer(container, null);
 
     // write a library to the right place
-    AddressLibrary.write(
-        new AddressLibrary(ImmutableList.of(new AddressBook(null, "book1", null, null, null))),
-        Main.getWorkMgr().getAddressLibraryPath(container));
+    ReferenceLibrary.write(
+        new ReferenceLibrary(ImmutableList.of(new ReferenceBook(null, "book1", null, null, null))),
+        Main.getWorkMgr().getReferenceLibraryPath(container));
 
     Response response = getAddressBookTarget(container, "book1").delete();
 
     // response should be OK and book1 should have disappeared
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
     assertThat(
-        Main.getWorkMgr().getAddressLibrary(container).getAddressBook("book1").isPresent(),
+        Main.getWorkMgr().getReferenceLibrary(container).getReferenceBook("book1").isPresent(),
         equalTo(false));
 
     // deleting again should fail
@@ -72,17 +72,17 @@ public class AddressBookResourceTest extends WorkMgrServiceV2TestBase {
     Main.getWorkMgr().initContainer(container, null);
 
     // write a library to the right place
-    AddressLibrary.write(
-        new AddressLibrary(ImmutableList.of(new AddressBook(null, "book1", null, null, null))),
-        Main.getWorkMgr().getAddressLibraryPath(container));
+    ReferenceLibrary.write(
+        new ReferenceLibrary(ImmutableList.of(new ReferenceBook(null, "book1", null, null, null))),
+        Main.getWorkMgr().getReferenceLibraryPath(container));
 
     // we only check that the right type of object is returned at the expected URL target
-    // we rely on AddressBookBean to have created the object with the right content
+    // we rely on ReferenceBookBean to have created the object with the right content
     Response response = getAddressBookTarget(container, "book1").get();
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
     assertThat(
-        response.readEntity(AddressBook.class),
-        equalTo(new AddressBook(null, "book1", null, null, null)));
+        response.readEntity(ReferenceBook.class),
+        equalTo(new ReferenceBook(null, "book1", null, null, null)));
 
     // should get 404 for non-existent dimension
     Response response2 = getAddressBookTarget(container, "book2").get();

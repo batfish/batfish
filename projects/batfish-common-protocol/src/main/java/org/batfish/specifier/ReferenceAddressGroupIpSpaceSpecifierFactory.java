@@ -5,10 +5,14 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.google.auto.service.AutoService;
 import javax.annotation.Nullable;
 
-/** A factory for {@link AddressBookIpSpaceSpecifier}. Takes input of the form bookName:groupName */
+/**
+ * A factory for {@link ReferenceAddressGroupIpSpaceSpecifier}. Takes input of the form
+ * bookName:groupName
+ */
 @AutoService(IpSpaceSpecifierFactory.class)
-public final class AddressBookIpSpaceSpecifierFactory implements IpSpaceSpecifierFactory {
-  public static final String NAME = AddressBookIpSpaceSpecifierFactory.class.getSimpleName();
+public final class ReferenceAddressGroupIpSpaceSpecifierFactory implements IpSpaceSpecifierFactory {
+  public static final String NAME =
+      ReferenceAddressGroupIpSpaceSpecifierFactory.class.getSimpleName();
 
   @Override
   public String getName() {
@@ -20,6 +24,6 @@ public final class AddressBookIpSpaceSpecifierFactory implements IpSpaceSpecifie
     checkArgument(input instanceof String, getName() + " requires input of type String");
     String[] words = ((String) input).split(":");
     checkArgument(words.length == 2, getName() + "requires two words separated by ':'");
-    return new AddressBookIpSpaceSpecifier(words[1], words[0]);
+    return new ReferenceAddressGroupIpSpaceSpecifier(words[1], words[0]);
   }
 }

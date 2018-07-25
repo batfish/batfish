@@ -5,11 +5,11 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.role.addressbook.AddressBook;
+import org.batfish.referencelibrary.ReferenceBook;
 
 @ParametersAreNonnullByDefault
-public class AddressBookBean {
-  /** The name of the address book */
+public class ReferenceBookBean {
+  /** The name of the reference book */
   public String name;
 
   /** The set of {@link AddressGroupBean}s in this book */
@@ -25,9 +25,9 @@ public class AddressBookBean {
   public Set<ServiceObjectBean> serviceObjects;
 
   @JsonCreator
-  private AddressBookBean() {}
+  private ReferenceBookBean() {}
 
-  public AddressBookBean(AddressBook book) {
+  public ReferenceBookBean(ReferenceBook book) {
     name = book.getName();
     addressGroups =
         book.getAddressGroups()
@@ -53,14 +53,14 @@ public class AddressBookBean {
 
   @Override
   public boolean equals(Object o) {
-    if (!(o instanceof AddressBookBean)) {
+    if (!(o instanceof ReferenceBookBean)) {
       return false;
     }
-    return Objects.equals(addressGroups, ((AddressBookBean) o).addressGroups)
-        && Objects.equals(name, ((AddressBookBean) o).name)
-        && Objects.equals(serviceEndpoints, ((AddressBookBean) o).serviceEndpoints)
-        && Objects.equals(serviceObjectGroups, ((AddressBookBean) o).serviceObjectGroups)
-        && Objects.equals(serviceObjects, ((AddressBookBean) o).serviceObjects);
+    return Objects.equals(addressGroups, ((ReferenceBookBean) o).addressGroups)
+        && Objects.equals(name, ((ReferenceBookBean) o).name)
+        && Objects.equals(serviceEndpoints, ((ReferenceBookBean) o).serviceEndpoints)
+        && Objects.equals(serviceObjectGroups, ((ReferenceBookBean) o).serviceObjectGroups)
+        && Objects.equals(serviceObjects, ((ReferenceBookBean) o).serviceObjects);
   }
 
   @Override
@@ -68,9 +68,9 @@ public class AddressBookBean {
     return Objects.hash(addressGroups, name, serviceEndpoints, serviceObjectGroups, serviceObjects);
   }
 
-  /** Creates {@link AddressBook} from this bean */
-  public AddressBook toAddressBook() {
-    return new AddressBook(
+  /** Creates {@link ReferenceBook} from this bean */
+  public ReferenceBook toAddressBook() {
+    return new ReferenceBook(
         addressGroups.stream().map(agb -> agb.toAddressGroup()).collect(Collectors.toList()),
         name,
         serviceEndpoints.stream().map(seb -> seb.toServiceEndpoint()).collect(Collectors.toList()),

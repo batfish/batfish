@@ -4,7 +4,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import com.google.common.collect.ImmutableSortedSet;
-import org.batfish.role.addressbook.ServiceObjectGroup;
+import org.batfish.referencelibrary.ServiceObjectGroup;
 import org.junit.Test;
 
 public class ServiceObjectGroupBeanTest {

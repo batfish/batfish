@@ -6,14 +6,14 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.IpWildcard;
-import org.batfish.role.addressbook.AddressGroup;
+import org.batfish.referencelibrary.AddressGroup;
 
-/** An {@link IpSpaceSpecifier} that is looks up the IpSpace from the address book. */
-public final class AddressBookIpSpaceSpecifier implements IpSpaceSpecifier {
+/** An {@link IpSpaceSpecifier} that is looks up the IpSpace from the reference book. */
+public final class ReferenceAddressGroupIpSpaceSpecifier implements IpSpaceSpecifier {
   private final String _addressGroupName;
   private final String _bookName;
 
-  public AddressBookIpSpaceSpecifier(String addressGroupname, String bookName) {
+  public ReferenceAddressGroupIpSpaceSpecifier(String addressGroupname, String bookName) {
     _addressGroupName = addressGroupname;
     _bookName = bookName;
   }
@@ -23,11 +23,12 @@ public final class AddressBookIpSpaceSpecifier implements IpSpaceSpecifier {
     if (this == o) {
       return true;
     }
-    if (!(o instanceof AddressBookIpSpaceSpecifier)) {
+    if (!(o instanceof ReferenceAddressGroupIpSpaceSpecifier)) {
       return false;
     }
-    return Objects.equals(_addressGroupName, ((AddressBookIpSpaceSpecifier) o)._addressGroupName)
-        && Objects.equals(_bookName, ((AddressBookIpSpaceSpecifier) o)._addressGroupName);
+    return Objects.equals(
+            _addressGroupName, ((ReferenceAddressGroupIpSpaceSpecifier) o)._addressGroupName)
+        && Objects.equals(_bookName, ((ReferenceAddressGroupIpSpaceSpecifier) o)._addressGroupName);
   }
 
   @Override
@@ -38,9 +39,9 @@ public final class AddressBookIpSpaceSpecifier implements IpSpaceSpecifier {
   @Override
   public IpSpaceAssignment resolve(Set<Location> locations, SpecifierContext ctxt) {
     AddressGroup addressGroup =
-        ctxt.getAddressBook(_bookName)
+        ctxt.getReferenceBook(_bookName)
             .orElseThrow(
-                () -> new NoSuchElementException("AddressBook '" + _bookName + "' not found"))
+                () -> new NoSuchElementException("ReferenceBook '" + _bookName + "' not found"))
             .getAddressGroup(_addressGroupName)
             .orElseThrow(
                 () -> new NoSuchElementException("AddressGroup '" + _addressGroupName + "' found"));

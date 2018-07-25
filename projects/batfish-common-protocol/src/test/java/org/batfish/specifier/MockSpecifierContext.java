@@ -9,8 +9,8 @@ import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IpSpace;
+import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.role.NodeRole;
-import org.batfish.role.addressbook.AddressBook;
 
 public class MockSpecifierContext implements SpecifierContext {
 
@@ -29,7 +29,7 @@ public class MockSpecifierContext implements SpecifierContext {
   }
 
   public static final class Builder {
-    private @Nonnull SortedSet<AddressBook> _addressBooks = ImmutableSortedSet.of();
+    private @Nonnull SortedSet<ReferenceBook> _referenceBooks = ImmutableSortedSet.of();
 
     private @Nonnull Map<String, Configuration> _configs = ImmutableMap.of();
 
@@ -40,11 +40,6 @@ public class MockSpecifierContext implements SpecifierContext {
     private @Nonnull Map<String, Map<String, IpSpace>> _vrfOwnedIps = ImmutableMap.of();
 
     private Builder() {}
-
-    public Builder setAddressBooks(SortedSet<AddressBook> addressBooks) {
-      _addressBooks = ImmutableSortedSet.copyOf(addressBooks);
-      return this;
-    }
 
     public Builder setConfigs(Map<String, Configuration> configs) {
       _configs = ImmutableMap.copyOf(configs);
@@ -61,6 +56,11 @@ public class MockSpecifierContext implements SpecifierContext {
       return this;
     }
 
+    public Builder setReferenceBooks(SortedSet<ReferenceBook> referenceBooks) {
+      _referenceBooks = ImmutableSortedSet.copyOf(referenceBooks);
+      return this;
+    }
+
     public Builder setVrfOwnedIps(Map<String, Map<String, IpSpace>> vrfOwnedIps) {
       _vrfOwnedIps = vrfOwnedIps;
       return this;
@@ -71,27 +71,22 @@ public class MockSpecifierContext implements SpecifierContext {
     }
   }
 
-  private final @Nonnull SortedSet<AddressBook> _addressBooks;
-
   private final @Nonnull Map<String, Configuration> _configs;
 
   private final @Nonnull Map<String, Map<String, IpSpace>> _interfaceOwnedIps;
 
   private final @Nonnull Map<String, Set<NodeRole>> _nodeRolesByDimension;
 
+  private final @Nonnull SortedSet<ReferenceBook> _referenceBooks;
+
   private final @Nonnull Map<String, Map<String, IpSpace>> _vrfOwnedIps;
 
   private MockSpecifierContext(Builder builder) {
-    _addressBooks = builder._addressBooks;
+    _referenceBooks = builder._referenceBooks;
     _configs = builder._configs;
     _interfaceOwnedIps = builder._interfaceOwnedIps;
     _nodeRolesByDimension = builder._nodeRolesByDimension;
     _vrfOwnedIps = builder._vrfOwnedIps;
-  }
-
-  @Override
-  public Optional<AddressBook> getAddressBook(String bookName) {
-    return _addressBooks.stream().filter(book -> book.getName().equals(bookName)).findAny();
   }
 
   @Override
@@ -110,6 +105,11 @@ public class MockSpecifierContext implements SpecifierContext {
   @Nonnull
   public Set<NodeRole> getNodeRolesByDimension(String dimension) {
     return _nodeRolesByDimension.get(dimension);
+  }
+
+  @Override
+  public Optional<ReferenceBook> getReferenceBook(String bookName) {
+    return _referenceBooks.stream().filter(book -> book.getName().equals(bookName)).findAny();
   }
 
   @Override

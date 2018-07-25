@@ -5,32 +5,32 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.role.addressbook.AddressLibrary;
+import org.batfish.referencelibrary.ReferenceLibrary;
 
 @ParametersAreNonnullByDefault
-public class AddressLibraryBean {
+public class ReferenceLibraryBean {
 
-  /** The set of {@link AddressBookBean}s in this library */
-  public Set<AddressBookBean> books;
+  /** The set of {@link ReferenceBookBean}s in this library */
+  public Set<ReferenceBookBean> books;
 
   @JsonCreator
-  private AddressLibraryBean() {}
+  private ReferenceLibraryBean() {}
 
-  public AddressLibraryBean(AddressLibrary library) {
+  public ReferenceLibraryBean(ReferenceLibrary library) {
     books =
         library
-            .getAddressBooks()
+            .getReferenceBooks()
             .stream()
-            .map(book -> new AddressBookBean(book))
+            .map(book -> new ReferenceBookBean(book))
             .collect(Collectors.toSet());
   }
 
   @Override
   public boolean equals(Object o) {
-    if (!(o instanceof AddressLibraryBean)) {
+    if (!(o instanceof ReferenceLibraryBean)) {
       return false;
     }
-    return Objects.equals(books, ((AddressLibraryBean) o).books);
+    return Objects.equals(books, ((ReferenceLibraryBean) o).books);
   }
 
   @Override

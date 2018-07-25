@@ -1,4 +1,4 @@
-package org.batfish.role.addressbook;
+package org.batfish.referencelibrary;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
@@ -25,8 +25,8 @@ import javax.annotation.Nonnull;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 
-/** Class that describes the address library information */
-public class AddressLibrary {
+/** Class that describes the reference library information */
+public class ReferenceLibrary {
 
   /**
    * Describes valid names for library objects. Must start with letters or underscore, and only
@@ -36,17 +36,17 @@ public class AddressLibrary {
 
   private static final Pattern _NAME_PATTERN = Pattern.compile(NAME_PATTERN);
 
-  @Nonnull private SortedSet<AddressBook> _books;
+  @Nonnull private SortedSet<ReferenceBook> _books;
 
   /**
    * The argument to this constructor is a List (not a SortedSet) to prevent Jackson from silently
    * removing duplicate entries.
    */
   @JsonCreator
-  public AddressLibrary(List<AddressBook> books) {
-    List<AddressBook> nnBooks = firstNonNull(books, ImmutableList.of());
+  public ReferenceLibrary(List<ReferenceBook> books) {
+    List<ReferenceBook> nnBooks = firstNonNull(books, ImmutableList.of());
     checkDuplicates(
-        "book", nnBooks.stream().map(AddressBook::getName).collect(Collectors.toList()));
+        "book", nnBooks.stream().map(ReferenceBook::getName).collect(Collectors.toList()));
 
     _books =
         nnBooks
@@ -75,13 +75,13 @@ public class AddressLibrary {
         "Invalid '%s' name '%s'. Valid names match '%s'",
         objectType,
         name,
-        AddressLibrary.NAME_PATTERN);
+        ReferenceLibrary.NAME_PATTERN);
   }
 
   /** Deletes the book */
   public void delAddressBook(String bookName) {
-    AddressBook book =
-        getAddressBook(bookName)
+    ReferenceBook book =
+        getReferenceBook(bookName)
             .orElseThrow(() -> new NoSuchElementException("Book not found: " + bookName));
     _books =
         _books
@@ -92,31 +92,31 @@ public class AddressLibrary {
 
   @Override
   public boolean equals(Object o) {
-    if (!(o instanceof AddressLibrary)) {
+    if (!(o instanceof ReferenceLibrary)) {
       return false;
     }
-    return Objects.equals(_books, ((AddressLibrary) o)._books);
+    return Objects.equals(_books, ((ReferenceLibrary) o)._books);
   }
 
-  /** Returns the specified dimension in this AddressLibrary object */
-  public Optional<AddressBook> getAddressBook(String bookName) {
+  /** Returns the specified dimension in this ReferenceLibrary object */
+  public Optional<ReferenceBook> getReferenceBook(String bookName) {
     return _books.stream().filter(d -> d.getName().equals(bookName)).findFirst();
   }
 
   /**
-   * From the {@link AddressLibrary} at {@code dataPath}, get the {@link AddressBook} with name
+   * From the {@link ReferenceLibrary} at {@code dataPath}, get the {@link ReferenceBook} with name
    * {@code bookName}.
    *
-   * @throws IOException If the contents of the file could not be cast to {@link AddressLibrary}
+   * @throws IOException If the contents of the file could not be cast to {@link ReferenceLibrary}
    */
-  public static Optional<AddressBook> getAddressBook(
+  public static Optional<ReferenceBook> getReferenceBook(
       @Nonnull Path dataPath, @Nonnull String bookName) throws IOException {
-    AddressLibrary data = read(dataPath);
-    return data.getAddressBook(bookName);
+    ReferenceLibrary data = read(dataPath);
+    return data.getReferenceBook(bookName);
   }
 
   @JsonValue
-  public SortedSet<AddressBook> getAddressBooks() {
+  public SortedSet<ReferenceBook> getReferenceBooks() {
     return _books;
   }
 
@@ -126,15 +126,15 @@ public class AddressLibrary {
   }
 
   /**
-   * Adds the address books in {@code newBooks} to the AddressLibrary at {@code path}. Books with
-   * the same name are overwritten
+   * Adds the reference books in {@code newBooks} to the ReferenceLibrary at {@code path}. Books
+   * with the same name are overwritten
    */
-  public static void mergeAddressBooks(@Nonnull Path path, @Nonnull SortedSet<AddressBook> newBooks)
-      throws IOException {
+  public static void mergeReferenceBooks(
+      @Nonnull Path path, @Nonnull SortedSet<ReferenceBook> newBooks) throws IOException {
 
-    AddressLibrary originalLibrary = read(path);
+    ReferenceLibrary originalLibrary = read(path);
 
-    List<AddressBook> booksToKeep =
+    List<ReferenceBook> booksToKeep =
         originalLibrary
             ._books
             .stream()
@@ -146,26 +146,27 @@ public class AddressLibrary {
             .collect(Collectors.toList());
 
     booksToKeep.addAll(newBooks);
-    AddressLibrary newLibrary = new AddressLibrary(booksToKeep);
+    ReferenceLibrary newLibrary = new ReferenceLibrary(booksToKeep);
 
     write(newLibrary, path);
   }
 
   /**
-   * Reads the {@link AddressLibrary} object from {@code dataPath}. If the path does not exist,
+   * Reads the {@link ReferenceLibrary} object from {@code dataPath}. If the path does not exist,
    * initializes a new object.
    *
-   * @throws IOException If file exists but its contents could not be cast to {@link AddressLibrary}
+   * @throws IOException If file exists but its contents could not be cast to {@link
+   *     ReferenceLibrary}
    */
-  public static AddressLibrary read(Path dataPath) throws IOException {
+  public static ReferenceLibrary read(Path dataPath) throws IOException {
     if (Files.exists(dataPath)) {
       return BatfishObjectMapper.mapper()
-          .readValue(CommonUtil.readFile(dataPath), AddressLibrary.class);
+          .readValue(CommonUtil.readFile(dataPath), ReferenceLibrary.class);
     }
-    return new AddressLibrary(null);
+    return new ReferenceLibrary(null);
   }
 
-  public static synchronized void write(AddressLibrary data, Path dataPath)
+  public static synchronized void write(ReferenceLibrary data, Path dataPath)
       throws JsonProcessingException {
     CommonUtil.writeFile(dataPath, BatfishObjectMapper.writePrettyString(data));
   }

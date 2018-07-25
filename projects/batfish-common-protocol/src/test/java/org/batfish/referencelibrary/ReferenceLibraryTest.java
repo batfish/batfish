@@ -1,6 +1,6 @@
-package org.batfish.role.addressbook;
+package org.batfish.referencelibrary;
 
-import static org.batfish.role.addressbook.AddressLibrary.checkDuplicates;
+import static org.batfish.referencelibrary.ReferenceLibrary.checkDuplicates;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
@@ -17,7 +17,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-public class AddressLibraryTest {
+public class ReferenceLibraryTest {
 
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
@@ -41,13 +41,13 @@ public class AddressLibraryTest {
   /** check that we deserialize successfully and into two books */
   @Test
   public void libraryDeserialization() throws IOException {
-    AddressLibrary library =
+    ReferenceLibrary library =
         BatfishObjectMapper.mapper()
             .readValue(
-                CommonUtil.readResource("org/batfish/role/addressbook/libraryTwoBooks.json"),
-                AddressLibrary.class);
+                CommonUtil.readResource("org/batfish/referencelibrary/libraryTwoBooks.json"),
+                ReferenceLibrary.class);
 
-    assertThat(library.getAddressBooks(), hasSize(2));
+    assertThat(library.getReferenceBooks(), hasSize(2));
   }
 
   /** check that we barf on duplicate book names */
@@ -58,44 +58,44 @@ public class AddressLibraryTest {
 
     BatfishObjectMapper.mapper()
         .readValue(
-            CommonUtil.readResource("org/batfish/role/addressbook/libraryDuplicateBooks.json"),
-            AddressLibrary.class);
+            CommonUtil.readResource("org/batfish/referencelibrary/libraryDuplicateBooks.json"),
+            ReferenceLibrary.class);
   }
 
   /** check that merger of address books is proper */
   @Test
   public void mergeAddressBooks() throws IOException {
-    Path tempPath = CommonUtil.createTempFile("addresslibrary", "tmp");
-    AddressLibrary library =
-        new AddressLibrary(
+    Path tempPath = CommonUtil.createTempFile("referencelibrary", "tmp");
+    ReferenceLibrary library =
+        new ReferenceLibrary(
             ImmutableList.of(
-                new AddressBook(null, "book1", null, null, null),
-                new AddressBook(null, "book2", null, null, null)));
-    AddressLibrary.write(library, tempPath);
+                new ReferenceBook(null, "book1", null, null, null),
+                new ReferenceBook(null, "book2", null, null, null)));
+    ReferenceLibrary.write(library, tempPath);
 
-    SortedSet<AddressBook> newBooks =
+    SortedSet<ReferenceBook> newBooks =
         ImmutableSortedSet.of(
-            new AddressBook(
+            new ReferenceBook(
                 ImmutableList.of(new AddressGroup(ImmutableSortedSet.of(), "add1")),
                 "book1",
                 null,
                 null,
                 null),
-            new AddressBook(null, "book3", null, null, null));
+            new ReferenceBook(null, "book3", null, null, null));
 
-    AddressLibrary.mergeAddressBooks(tempPath, newBooks);
+    ReferenceLibrary.mergeReferenceBooks(tempPath, newBooks);
 
     assertThat(
-        AddressLibrary.read(tempPath).getAddressBooks(),
+        ReferenceLibrary.read(tempPath).getReferenceBooks(),
         equalTo(
             ImmutableSortedSet.of(
-                new AddressBook(
+                new ReferenceBook(
                     ImmutableList.of(new AddressGroup(ImmutableSortedSet.of(), "add1")),
                     "book1",
                     null,
                     null,
                     null),
-                new AddressBook(null, "book2", null, null, null),
-                new AddressBook(null, "book3", null, null, null))));
+                new ReferenceBook(null, "book2", null, null, null),
+                new ReferenceBook(null, "book3", null, null, null))));
   }
 }

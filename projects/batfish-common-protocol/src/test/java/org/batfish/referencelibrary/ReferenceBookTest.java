@@ -1,4 +1,4 @@
-package org.batfish.role.addressbook;
+package org.batfish.referencelibrary;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
@@ -11,18 +11,18 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-public class AddressBookTest {
+public class ReferenceBookTest {
 
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
   /** check that we deserialize a basic object correctly */
   @Test
   public void bookDeserializationBasic() throws IOException {
-    AddressBook book =
+    ReferenceBook book =
         BatfishObjectMapper.mapper()
             .readValue(
-                CommonUtil.readResource("org/batfish/role/addressbook/bookBasic.json"),
-                AddressBook.class);
+                CommonUtil.readResource("org/batfish/referencelibrary/bookBasic.json"),
+                ReferenceBook.class);
 
     assertThat(book.getAddressGroups(), hasSize(2));
     assertThat(book.getServiceEndpoints(), hasSize(2));
@@ -38,8 +38,8 @@ public class AddressBookTest {
 
     BatfishObjectMapper.mapper()
         .readValue(
-            CommonUtil.readResource("org/batfish/role/addressbook/bookDupAddressGroup.json"),
-            AddressBook.class);
+            CommonUtil.readResource("org/batfish/referencelibrary/bookDupAddressGroup.json"),
+            ReferenceBook.class);
   }
 
   /** check that we throw an error when the same name is used in a service object and group */
@@ -50,8 +50,8 @@ public class AddressBookTest {
 
     BatfishObjectMapper.mapper()
         .readValue(
-            CommonUtil.readResource("org/batfish/role/addressbook/bookDupServiceName.json"),
-            AddressBook.class);
+            CommonUtil.readResource("org/batfish/referencelibrary/bookDupServiceName.json"),
+            ReferenceBook.class);
   }
 
   /** check that we throw an error for undefined address groups */
@@ -62,8 +62,8 @@ public class AddressBookTest {
 
     BatfishObjectMapper.mapper()
         .readValue(
-            CommonUtil.readResource("org/batfish/role/addressbook/bookUndefAddressGroup.json"),
-            AddressBook.class);
+            CommonUtil.readResource("org/batfish/referencelibrary/bookUndefAddressGroup.json"),
+            ReferenceBook.class);
   }
 
   /** check that we throw an error for undefined service name */
@@ -74,7 +74,7 @@ public class AddressBookTest {
 
     BatfishObjectMapper.mapper()
         .readValue(
-            CommonUtil.readResource("org/batfish/role/addressbook/bookUndefServiceName.json"),
-            AddressBook.class);
+            CommonUtil.readResource("org/batfish/referencelibrary/bookUndefServiceName.json"),
+            ReferenceBook.class);
   }
 }

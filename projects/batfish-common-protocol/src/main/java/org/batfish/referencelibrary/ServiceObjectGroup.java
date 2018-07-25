@@ -1,8 +1,7 @@
-package org.batfish.role.addressbook;
+package org.batfish.referencelibrary;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
-import static org.batfish.role.addressbook.AddressLibrary.checkValidName;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableSortedSet;
@@ -22,7 +21,7 @@ public class ServiceObjectGroup implements Comparable<ServiceObjectGroup> {
       @JsonProperty(PROP_NAME) String name,
       @JsonProperty(PROP_SERVICES) SortedSet<String> services) {
     checkArgument(name != null, "Service object group name cannot be null");
-    checkValidName(name, "service object group");
+    ReferenceLibrary.checkValidName(name, "service object group");
 
     _name = name;
     _services = firstNonNull(services, ImmutableSortedSet.of());
