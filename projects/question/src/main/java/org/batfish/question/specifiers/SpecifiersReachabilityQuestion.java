@@ -78,7 +78,7 @@ public final class SpecifiersReachabilityQuestion extends Question {
   private static final String PROP_REQUIRED_TRANSIT_NODES_SPECIFIER_INPUT =
       "requiredTransitNodesNodeSpecifierInput";
 
-  private static NodeSpecifier getNodeSpecifier(
+  private static @Nullable NodeSpecifier getNodeSpecifier(
       @Nullable String factoryName, @Nullable String input, @Nullable NodeSpecifier def) {
     if (factoryName == null && input == null) {
       return def;

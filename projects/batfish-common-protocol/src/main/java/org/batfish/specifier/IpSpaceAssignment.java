@@ -62,7 +62,7 @@ public final class IpSpaceAssignment {
 
   private final List<Entry> _entries;
 
-  public IpSpaceAssignment(List<Entry> entries) {
+  private IpSpaceAssignment(List<Entry> entries) {
     _entries = ImmutableList.copyOf(entries);
   }
 
@@ -76,5 +76,9 @@ public final class IpSpaceAssignment {
 
   public Collection<Entry> getEntries() {
     return _entries;
+  }
+
+  public static IpSpaceAssignment of(List<Entry> entries) {
+    return new IpSpaceAssignment(entries);
   }
 }

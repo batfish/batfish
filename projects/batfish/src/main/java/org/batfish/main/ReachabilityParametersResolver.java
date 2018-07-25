@@ -160,7 +160,7 @@ final class ReachabilityParametersResolver {
 
     // resolve the IpSpaceSpecifier, and filter out entries with empty IpSpaces
     IpSpaceAssignment sourceIpSpaceAssignment =
-        new IpSpaceAssignment(
+        IpSpaceAssignment.of(
             _params
                 .getSourceIpSpaceSpecifier()
                 .resolve(sourceLocations, _context)
