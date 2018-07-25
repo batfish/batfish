@@ -77,4 +77,8 @@ public final class IpSpaceAssignment {
   public Collection<Entry> getEntries() {
     return _entries;
   }
+
+  public static IpSpaceAssignment of(List<Entry> entries) {
+    return new IpSpaceAssignment(entries);
+  }
 }
