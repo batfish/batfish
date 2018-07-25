@@ -177,6 +177,7 @@ ip sla 10
  path-echo 1.2.3.4 source-ip 2.3.4.5
  request-data-size 64
  frequency 600
+ owner SOME_OWNER
  tos 184
  tag edfwrgth
  history hours-of-statistics-kept 4
