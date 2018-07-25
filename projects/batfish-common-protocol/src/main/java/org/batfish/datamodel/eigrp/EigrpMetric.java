@@ -47,7 +47,7 @@ public class EigrpMetric implements Serializable {
 
     _classicBandwidth = namedToClassicBandwidth(namedBandwidth);
     if (bandwidth >= 1E9) {
-      _classicDelay = 10L;
+      _classicDelay = 1L;
     } else {
       _classicDelay = namedToClassicDelay(namedDelay);
     }

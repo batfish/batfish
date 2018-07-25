@@ -211,36 +211,46 @@ public class EigrpTest {
     SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
         IncrementalBdpEngine.getRoutes(dp);
 
+    long scale = 256L;
+    // GigabitEthernet values
+    long bandwidth = 10L;
+    long delay = 1L;
+    // Loopback values
+    long lDelay = 1L;
+
+    bandwidth *= scale;
+    delay *= scale;
+    lDelay *= scale;
+
     // r1
     assertNoRoute(routes, R1, Prefix.ZERO);
-    assertRoute(routes, EIGRP, R1, R2_L0_ADDR, 7680L);
-    assertRoute(routes, EIGRP, R1, R2_L0_ADDR, 7680L);
-    assertRoute(routes, EIGRP, R1, R3_L0_ADDR, 10240L);
-    assertRoute(routes, EIGRP, R1, R4_L0_ADDR, 12800L);
-    assertRoute(routes, EIGRP, R1, R2_E2_3_ADDR, 7680L);
-    assertRoute(routes, EIGRP, R1, R3_E3_4_ADDR, 10240L);
+    assertRoute(routes, EIGRP, R1, R2_L0_ADDR, bandwidth + delay + lDelay);
+    assertRoute(routes, EIGRP, R1, R3_L0_ADDR, bandwidth + delay * 2 + lDelay);
+    assertRoute(routes, EIGRP, R1, R4_L0_ADDR, bandwidth + delay * 3 + lDelay);
+    assertRoute(routes, EIGRP, R1, R2_E2_3_ADDR, bandwidth + delay * 2);
+    assertRoute(routes, EIGRP, R1, R3_E3_4_ADDR, bandwidth + delay * 3);
 
     // r2
     assertNoRoute(routes, R2, Prefix.ZERO);
-    assertRoute(routes, EIGRP, R2, R1_L0_ADDR, 7680L);
-    assertRoute(routes, EIGRP, R2, R3_L0_ADDR, 7680L);
-    assertRoute(routes, EIGRP, R2, R4_L0_ADDR, 10240L);
-    assertRoute(routes, EIGRP, R2, R3_E3_4_ADDR, 7680L);
+    assertRoute(routes, EIGRP, R2, R1_L0_ADDR, bandwidth + delay + lDelay);
+    assertRoute(routes, EIGRP, R2, R3_L0_ADDR, bandwidth + delay + lDelay);
+    assertRoute(routes, EIGRP, R2, R4_L0_ADDR, bandwidth + delay * 2 + lDelay);
+    assertRoute(routes, EIGRP, R2, R3_E3_4_ADDR, bandwidth + delay * 2);
 
     // r3
     assertNoRoute(routes, R3, Prefix.ZERO);
-    assertRoute(routes, EIGRP, R3, R1_L0_ADDR, 10240L);
-    assertRoute(routes, EIGRP, R3, R2_L0_ADDR, 7680L);
-    assertRoute(routes, EIGRP, R3, R4_L0_ADDR, 7680L);
-    assertRoute(routes, EIGRP, R3, R1_E1_2_ADDR, 7680L);
+    assertRoute(routes, EIGRP, R3, R1_L0_ADDR, bandwidth + delay * 2 + lDelay);
+    assertRoute(routes, EIGRP, R3, R2_L0_ADDR, bandwidth + delay + lDelay);
+    assertRoute(routes, EIGRP, R3, R4_L0_ADDR, bandwidth + delay + lDelay);
+    assertRoute(routes, EIGRP, R3, R1_E1_2_ADDR, bandwidth + delay * 2);
 
     // r4
     assertNoRoute(routes, R4, Prefix.ZERO);
-    assertRoute(routes, EIGRP, R4, R1_L0_ADDR, 12800L);
-    assertRoute(routes, EIGRP, R4, R2_L0_ADDR, 10240L);
-    assertRoute(routes, EIGRP, R4, R3_L0_ADDR, 7680L);
-    assertRoute(routes, EIGRP, R4, R1_E1_2_ADDR, 10240L);
-    assertRoute(routes, EIGRP, R4, R2_E2_3_ADDR, 7680L);
+    assertRoute(routes, EIGRP, R4, R1_L0_ADDR, bandwidth + delay * 3 + lDelay);
+    assertRoute(routes, EIGRP, R4, R2_L0_ADDR, bandwidth + delay * 2 + lDelay);
+    assertRoute(routes, EIGRP, R4, R3_L0_ADDR, bandwidth + delay + lDelay);
+    assertRoute(routes, EIGRP, R4, R1_E1_2_ADDR, bandwidth + delay * 3);
+    assertRoute(routes, EIGRP, R4, R2_E2_3_ADDR, bandwidth + delay * 2);
   }
 
   /** Test route computation and propagation for EIGRP in named mode */
@@ -256,36 +266,46 @@ public class EigrpTest {
     SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
         IncrementalBdpEngine.getRoutes(dp);
 
+    long scale = 65536L;
+    // GigabitEthernet values
+    long bandwidth = 10L;
+    long delay = 10L;
+    // Loopback values
+    long lDelay = 5000L;
+
+    bandwidth *= scale;
+    delay *= scale;
+    lDelay *= scale;
+
     // r1
     assertNoRoute(routes, R1, Prefix.ZERO);
-    assertRoute(routes, EIGRP, R1, R2_L0_ADDR, 328990720L);
-    assertRoute(routes, EIGRP, R1, R3_L0_ADDR, 329646080L);
-    assertRoute(routes, EIGRP, R1, R4_L0_ADDR, 330301440L);
-    assertRoute(routes, EIGRP, R1, R2_E2_3_ADDR, 1966080L);
-    assertRoute(routes, EIGRP, R1, R3_E3_4_ADDR, 2621440L);
+    assertRoute(routes, EIGRP, R1, R2_L0_ADDR, bandwidth + delay + lDelay);
+    assertRoute(routes, EIGRP, R1, R3_L0_ADDR, bandwidth + delay * 2 + lDelay);
+    assertRoute(routes, EIGRP, R1, R4_L0_ADDR, bandwidth + delay * 3 + lDelay);
+    assertRoute(routes, EIGRP, R1, R2_E2_3_ADDR, bandwidth + delay * 2);
+    assertRoute(routes, EIGRP, R1, R3_E3_4_ADDR, bandwidth + delay * 3);
 
     // r2
     assertNoRoute(routes, R2, Prefix.ZERO);
-    assertRoute(routes, EIGRP, R2, R1_L0_ADDR, 328990720L);
-    assertRoute(routes, EIGRP, R2, R3_L0_ADDR, 328990720L);
-    assertRoute(routes, EIGRP, R2, R4_L0_ADDR, 329646080L);
-    assertRoute(routes, EIGRP, R2, R3_E3_4_ADDR, 1966080L);
-    assertRoute(routes, EIGRP, R2, R4_E4_3_ADDR, 1966080L);
+    assertRoute(routes, EIGRP, R2, R1_L0_ADDR, bandwidth + delay + lDelay);
+    assertRoute(routes, EIGRP, R2, R3_L0_ADDR, bandwidth + delay + lDelay);
+    assertRoute(routes, EIGRP, R2, R4_L0_ADDR, bandwidth + delay * 2 + lDelay);
+    assertRoute(routes, EIGRP, R2, R3_E3_4_ADDR, bandwidth + delay * 2);
 
     // r3
     assertNoRoute(routes, R3, Prefix.ZERO);
-    assertRoute(routes, EIGRP, R3, R1_L0_ADDR, 329646080L);
-    assertRoute(routes, EIGRP, R3, R2_L0_ADDR, 328990720L);
-    assertRoute(routes, EIGRP, R3, R4_L0_ADDR, 328990720L);
-    assertRoute(routes, EIGRP, R3, R2_E2_1_ADDR, 1966080L);
+    assertRoute(routes, EIGRP, R3, R1_L0_ADDR, bandwidth + delay * 2 + lDelay);
+    assertRoute(routes, EIGRP, R3, R2_L0_ADDR, bandwidth + delay + lDelay);
+    assertRoute(routes, EIGRP, R3, R4_L0_ADDR, bandwidth + delay + lDelay);
+    assertRoute(routes, EIGRP, R3, R1_E1_2_ADDR, bandwidth + delay * 2);
 
     // r4
     assertNoRoute(routes, R4, Prefix.ZERO);
-    assertRoute(routes, EIGRP, R4, R1_L0_ADDR, 330301440L);
-    assertRoute(routes, EIGRP, R4, R2_L0_ADDR, 329646080L);
-    assertRoute(routes, EIGRP, R4, R3_L0_ADDR, 328990720L);
-    assertRoute(routes, EIGRP, R4, R2_E2_1_ADDR, 2621440L);
-    assertRoute(routes, EIGRP, R4, R3_E3_2_ADDR, 1966080L);
+    assertRoute(routes, EIGRP, R4, R1_L0_ADDR, bandwidth + delay * 3 + lDelay);
+    assertRoute(routes, EIGRP, R4, R2_L0_ADDR, bandwidth + delay * 2 + lDelay);
+    assertRoute(routes, EIGRP, R4, R3_L0_ADDR, bandwidth + delay + lDelay);
+    assertRoute(routes, EIGRP, R4, R1_E1_2_ADDR, bandwidth + delay * 3);
+    assertRoute(routes, EIGRP, R4, R2_E2_3_ADDR, bandwidth + delay * 2);
   }
 
   /**
