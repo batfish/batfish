@@ -3,6 +3,7 @@ package org.batfish.coordinator;
 import static com.google.common.base.Preconditions.checkState;
 import static java.nio.file.FileVisitOption.FOLLOW_LINKS;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 import com.uber.jaeger.Configuration;
@@ -93,7 +94,8 @@ public class Main {
     return questionTemplates;
   }
 
-  private static String readQuestionTemplate(Path file, Map<String, String> templates) {
+  @VisibleForTesting
+  static String readQuestionTemplate(Path file, Map<String, String> templates) {
     String questionText = CommonUtil.readFile(file);
     try {
       JSONObject questionObj = new JSONObject(questionText);
@@ -104,8 +106,10 @@ public class Main {
             BatfishObjectMapper.mapper().readValue(instanceDataStr, Question.InstanceData.class);
         String name = instanceData.getInstanceName();
 
-        if (templates.containsKey(name)) {
-          throw new BatfishException("Duplicate template name " + name);
+        if (templates.containsKey(name.toLowerCase()) && _logger != null) {
+          _logger.warnf(
+              "Found duplicate template having instance name %s, only one of them will be loaded",
+              name);
         }
 
         templates.put(name.toLowerCase(), questionText);
