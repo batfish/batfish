@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.IpWildcard;
 
 public class AddressGroup implements Comparable<AddressGroup> {
@@ -18,16 +19,16 @@ public class AddressGroup implements Comparable<AddressGroup> {
   @Nonnull private String _name;
 
   public AddressGroup(
-      @JsonProperty(PROP_ADDRESSES) SortedSet<String> addresses,
-      @JsonProperty(PROP_NAME) String name) {
+      @Nullable @JsonProperty(PROP_ADDRESSES) SortedSet<String> addresses,
+      @Nullable @JsonProperty(PROP_NAME) String name) {
     checkArgument(name != null, "Address group name cannot not be null");
     ReferenceLibrary.checkValidName(name, "address group");
 
     _name = name;
-    _addresses = firstNonNull(addresses, new TreeSet<String>());
+    _addresses = firstNonNull(addresses, new TreeSet<>());
 
-    // check if all the input address strings can be mapped to an IpSpace
-    _addresses.stream().map(s -> new IpWildcard(s).toIpSpace());
+    // check if all the input address strings can be mapped to an IpWildCard
+    _addresses.forEach(IpWildcard::new);
   }
 
   @Override
@@ -36,11 +37,13 @@ public class AddressGroup implements Comparable<AddressGroup> {
   }
 
   @JsonProperty(PROP_ADDRESSES)
+  @Nonnull
   public SortedSet<String> getAddresses() {
     return _addresses;
   }
 
   @JsonProperty(PROP_NAME)
+  @Nonnull
   public String getName() {
     return _name;
   }
