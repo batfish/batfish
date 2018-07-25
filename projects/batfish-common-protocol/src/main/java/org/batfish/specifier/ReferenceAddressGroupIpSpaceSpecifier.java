@@ -1,14 +1,20 @@
 package org.batfish.specifier;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.batfish.datamodel.AclIpSpace;
+import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.referencelibrary.AddressGroup;
 
-/** An {@link IpSpaceSpecifier} that is looks up the IpSpace from the reference book. */
+/**
+ * An {@link IpSpaceSpecifier} that looks up an {@link AddressGroup} in a {@link
+ * org.batfish.referencelibrary.ReferenceBook}.
+ */
 public final class ReferenceAddressGroupIpSpaceSpecifier implements IpSpaceSpecifier {
   private final String _addressGroupName;
   private final String _bookName;
@@ -26,9 +32,9 @@ public final class ReferenceAddressGroupIpSpaceSpecifier implements IpSpaceSpeci
     if (!(o instanceof ReferenceAddressGroupIpSpaceSpecifier)) {
       return false;
     }
-    return Objects.equals(
-            _addressGroupName, ((ReferenceAddressGroupIpSpaceSpecifier) o)._addressGroupName)
-        && Objects.equals(_bookName, ((ReferenceAddressGroupIpSpaceSpecifier) o)._addressGroupName);
+    ReferenceAddressGroupIpSpaceSpecifier other = (ReferenceAddressGroupIpSpaceSpecifier) o;
+    return Objects.equals(_addressGroupName, other._addressGroupName)
+        && Objects.equals(_bookName, other._bookName);
   }
 
   @Override
@@ -44,17 +50,25 @@ public final class ReferenceAddressGroupIpSpaceSpecifier implements IpSpaceSpeci
                 () -> new NoSuchElementException("ReferenceBook '" + _bookName + "' not found"))
             .getAddressGroup(_addressGroupName)
             .orElseThrow(
-                () -> new NoSuchElementException("AddressGroup '" + _addressGroupName + "' found"));
+                () ->
+                    new NoSuchElementException(
+                        "AddressGroup '"
+                            + _addressGroupName
+                            + "' not found in ReferenceBook '"
+                            + _bookName
+                            + "'"));
 
     return IpSpaceAssignment.builder()
         .assign(
             locations,
-            AclIpSpace.union(
-                addressGroup
-                    .getAddresses()
-                    .stream()
-                    .map(add -> new IpWildcard(add).toIpSpace())
-                    .collect(Collectors.toList())))
+            firstNonNull(
+                AclIpSpace.union(
+                    addressGroup
+                        .getAddresses()
+                        .stream()
+                        .map(add -> new IpWildcard(add).toIpSpace())
+                        .collect(Collectors.toList())),
+                EmptyIpSpace.INSTANCE))
         .build();
   }
 }
