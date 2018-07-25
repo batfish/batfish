@@ -1,6 +1,7 @@
 package org.batfish.specifier;
 
 import com.google.common.collect.Sets;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -16,6 +17,24 @@ public final class DifferenceLocationSpecifier implements LocationSpecifier {
       LocationSpecifier locationSpecifier1, LocationSpecifier locationSpecifier2) {
     _locationSpecifier1 = locationSpecifier1;
     _locationSpecifier2 = locationSpecifier2;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof DifferenceLocationSpecifier)) {
+      return false;
+    }
+    DifferenceLocationSpecifier other = (DifferenceLocationSpecifier) o;
+    return _locationSpecifier1.equals(other._locationSpecifier1)
+        && _locationSpecifier2.equals(other._locationSpecifier2);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_locationSpecifier1, _locationSpecifier2);
   }
 
   @Override
