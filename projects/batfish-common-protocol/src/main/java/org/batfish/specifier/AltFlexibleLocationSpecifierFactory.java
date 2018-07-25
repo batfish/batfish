@@ -73,14 +73,14 @@ public class AltFlexibleLocationSpecifierFactory implements LocationSpecifierFac
         StringUtils.countMatches(input, '(') == StringUtils.countMatches(input, ')'),
         "Unbalanced parenthesis in input: " + input);
 
-    input = input.trim();
+    String trimmedInput = input.trim();
 
-    Matcher specifierMatcher = SPECIFIER_PATTERN.matcher(input);
+    Matcher specifierMatcher = SPECIFIER_PATTERN.matcher(trimmedInput);
     if (specifierMatcher.find()) {
       return parseSpecifier(specifierMatcher.group(1), specifierMatcher.group(2));
     }
 
-    Matcher combinationMatcher = COMBINATION_PATTERN.matcher(input);
+    Matcher combinationMatcher = COMBINATION_PATTERN.matcher(trimmedInput);
     if (combinationMatcher.find()) {
       String operator = combinationMatcher.group(2);
       if (operator.equals("+")) {
@@ -92,11 +92,11 @@ public class AltFlexibleLocationSpecifierFactory implements LocationSpecifierFac
       }
     }
 
-    if (!input.contains(":")) { // must be a node name (regex)
+    if (!trimmedInput.contains(":")) { // must be a node name (regex)
       return new NodeNameRegexInterfaceLocationSpecifier(
-          Pattern.compile(input, Pattern.CASE_INSENSITIVE));
+          Pattern.compile(trimmedInput, Pattern.CASE_INSENSITIVE));
     } else {
-      String[] words = input.split(":", 2);
+      String[] words = trimmedInput.split(":", 2);
       return new IntersectionLocationSpecifier(
           new NodeNameRegexInterfaceLocationSpecifier(
               Pattern.compile(words[0].trim(), Pattern.CASE_INSENSITIVE)),
