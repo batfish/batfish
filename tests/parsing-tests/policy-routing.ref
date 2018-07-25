@@ -3,12 +3,12 @@
     {
       "class" : "org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement",
       "fileMap" : {
-        "D1" : "D1.cfg",
-        "D2" : "D2.cfg",
-        "R" : "R.cfg",
-        "S" : "S.cfg",
-        "SL" : "SL.cfg",
-        "SR" : "SR.cfg"
+        "D1" : "configs/D1.cfg",
+        "D2" : "configs/D2.cfg",
+        "R" : "configs/R.cfg",
+        "S" : "configs/S.cfg",
+        "SL" : "configs/SL.cfg",
+        "SR" : "configs/SR.cfg"
       },
       "parseStatus" : {
         "D1" : "PASSED",
