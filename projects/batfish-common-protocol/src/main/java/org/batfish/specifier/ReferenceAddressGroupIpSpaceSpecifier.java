@@ -1,10 +1,13 @@
 package org.batfish.specifier;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.batfish.datamodel.AclIpSpace;
+import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.referencelibrary.AddressGroup;
 
@@ -49,12 +52,14 @@ public final class ReferenceAddressGroupIpSpaceSpecifier implements IpSpaceSpeci
     return IpSpaceAssignment.builder()
         .assign(
             locations,
-            AclIpSpace.union(
-                addressGroup
-                    .getAddresses()
-                    .stream()
-                    .map(add -> new IpWildcard(add).toIpSpace())
-                    .collect(Collectors.toList())))
+            firstNonNull(
+                AclIpSpace.union(
+                    addressGroup
+                        .getAddresses()
+                        .stream()
+                        .map(add -> new IpWildcard(add).toIpSpace())
+                        .collect(Collectors.toList())),
+                EmptyIpSpace.INSTANCE))
         .build();
   }
 }
