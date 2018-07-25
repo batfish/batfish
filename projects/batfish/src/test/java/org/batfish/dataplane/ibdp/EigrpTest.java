@@ -1,14 +1,10 @@
 package org.batfish.dataplane.ibdp;
 
 import static org.batfish.datamodel.RoutingProtocol.EIGRP;
-import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
-import static org.batfish.datamodel.matchers.EigrpInterfaceSettingsMatchers.hasCost;
-import static org.batfish.datamodel.matchers.InterfaceMatchers.hasEigrp;
 import static org.batfish.dataplane.ibdp.TestUtils.assertNoRoute;
 import static org.batfish.dataplane.ibdp.TestUtils.assertRoute;
 import static org.batfish.representation.cisco.Interface.getDefaultBandwidth;
 import static org.batfish.representation.cisco.Interface.getDefaultDelay;
-import static org.hamcrest.MatcherAssert.assertThat;
 
 import com.google.common.collect.ImmutableSortedMap;
 import java.util.Collections;
@@ -127,18 +123,11 @@ public class EigrpTest {
         .setDefaultDelay(getDefaultDelay(name, format));
     eib.setMetric(emb.build());
     ib.setName(name).setAddress(addr).setEigrp(eib.build()).build();
-    if (name.startsWith("Gigabit") && mode1 == EigrpProcessMode.NAMED) {
-      assertThat(c2, hasInterface(name, hasEigrp(hasCost(1310720L))));
-    }
-    if (name.startsWith("TenGigabit") && mode1 == EigrpProcessMode.NAMED) {
-      assertThat(c2, hasInterface(name, hasEigrp(hasCost(131072L))));
-    }
 
     name = c2E2To3Name;
     addr = R2_E2_3_ADDR;
     emb.setDefaultBandwidth(getDefaultBandwidth(name, format))
         .setDefaultDelay(getDefaultDelay(name, format));
-    // emb.setBandwidth(10e6).setDelay(1e9);
     eib.setMetric(emb.build());
     ib.setName(name).setAddress(addr).setEigrp(eib.build()).build();
     emb.setDelay(null).setBandwidth(null);
