@@ -55,6 +55,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.NavigableMap;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -1657,7 +1658,7 @@ public class CommonUtil {
         Comparator.naturalOrder(), keyFunction, valueFunction);
   }
 
-  public static <E, K extends Comparable<? super K>, V> SortedMap<K, V> toImmutableSortedMap(
+  public static <E, K extends Comparable<? super K>, V> NavigableMap<K, V> toImmutableSortedMap(
       Collection<E> set, Function<E, K> keyFunction, Function<E, V> valueFunction) {
     return set.stream()
         .collect(
