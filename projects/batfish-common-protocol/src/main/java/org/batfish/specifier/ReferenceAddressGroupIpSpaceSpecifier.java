@@ -29,9 +29,9 @@ public final class ReferenceAddressGroupIpSpaceSpecifier implements IpSpaceSpeci
     if (!(o instanceof ReferenceAddressGroupIpSpaceSpecifier)) {
       return false;
     }
-    return Objects.equals(
-            _addressGroupName, ((ReferenceAddressGroupIpSpaceSpecifier) o)._addressGroupName)
-        && Objects.equals(_bookName, ((ReferenceAddressGroupIpSpaceSpecifier) o)._addressGroupName);
+    ReferenceAddressGroupIpSpaceSpecifier other = (ReferenceAddressGroupIpSpaceSpecifier) o;
+    return Objects.equals(_addressGroupName, other._addressGroupName)
+        && Objects.equals(_bookName, other._bookName);
   }
 
   @Override
