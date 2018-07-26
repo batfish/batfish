@@ -49096,6 +49096,21 @@
             "                INET:'inet'  <== mode:DEFAULT_MODE",
             "                IP_ADDRESS:'1.2.3.4'  <== mode:DEFAULT_MODE))))))",
             "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "  (set_line",
+            "    SET:'set'  <== mode:DEFAULT_MODE",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_system",
+            "            SYSTEM:'system'  <== mode:DEFAULT_MODE",
+            "            (sy_ports",
+            "              PORTS:'ports'  <== mode:DEFAULT_MODE",
+            "              porttype = (sy_porttype",
+            "                CONSOLE:'console'  <== mode:DEFAULT_MODE)",
+            "              (syp_null",
+            "                LOG_OUT_ON_DISCONNECT:'log-out-on-disconnect'  <== mode:DEFAULT_MODE",
+            "                (null_filler)))))))",
+            "    NEWLINE:'\\n\\n'  <== mode:DEFAULT_MODE)",
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
           ]
         },
@@ -60935,8 +60950,7 @@
         },
         "cisco_interface" : {
           "Red flags" : {
-            "1" : "MISCELLANEOUS: Interface: 'Ethernet0' contains OSPF settings, but there is no OSPF process",
-            "2" : "MISCELLANEOUS: Interface: 'Ethernet0' contains EIGRP settings, but there is no EIGRP process"
+            "1" : "MISCELLANEOUS: Interface: 'Ethernet0' contains OSPF settings, but there is no OSPF process"
           }
         },
         "cisco_nxos_bgp" : {

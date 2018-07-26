@@ -1,14 +1,16 @@
-[
-  {
-    "name": "book1"
-  },
-  {
-    "name": "book1",
-    "addressGroups": [
-      {
-        "name": "a",
-        "addresses": []
-      }
-    ]
-  }
-]
+{
+  "books": [
+    {
+      "name": "book1"
+    },
+    {
+      "name": "book1",
+      "addressGroups": [
+        {
+          "name": "a",
+          "addresses": []
+        }
+      ]
+    }
+  ]
+}

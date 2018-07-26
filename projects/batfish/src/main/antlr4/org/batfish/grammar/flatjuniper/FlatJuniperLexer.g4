@@ -3134,6 +3134,11 @@ LOG
    'log'
 ;
 
+LOG_OUT_ON_DISCONNECT
+:
+   'log-out-on-disconnect'
+;
+
 LOG_PREFIX
 :
    'log-prefix'
