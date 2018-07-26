@@ -60935,8 +60935,7 @@
         },
         "cisco_interface" : {
           "Red flags" : {
-            "1" : "MISCELLANEOUS: Interface: 'Ethernet0' contains OSPF settings, but there is no OSPF process",
-            "2" : "MISCELLANEOUS: Interface: 'Ethernet0' contains EIGRP settings, but there is no EIGRP process"
+            "1" : "MISCELLANEOUS: Interface: 'Ethernet0' contains OSPF settings, but there is no OSPF process"
           }
         },
         "cisco_nxos_bgp" : {
