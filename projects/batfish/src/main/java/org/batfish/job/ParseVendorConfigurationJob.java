@@ -379,7 +379,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
     // at this point we should have a VendorConfiguration vc
     String hostname = vc.getHostname();
     if (hostname == null) {
-      _warnings.redFlag("No hostname set in file: '" + _filename + "'\n");
+      _warnings.redFlag("No hostname set in file: '" + _filename.replace("\\", "/") + "'\n");
       String guessedHostname =
           Paths.get(_filename).getFileName().toString().replaceAll("\\.(cfg|conf)$", "");
       _logger.redflag(
