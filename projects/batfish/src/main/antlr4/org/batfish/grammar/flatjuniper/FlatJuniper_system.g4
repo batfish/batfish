@@ -224,6 +224,7 @@ syp_null
    (
       INSECURE
       | TYPE
+      | LOG_OUT_ON_DISCONNECT
    ) null_filler
 ;
 
