@@ -2900,7 +2900,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
       Warnings warnings = buildWarnings(_settings);
       String filename =
-          _settings.getBaseTestrigSettings().getTestRigPath().relativize(currentFile).toString();
+          _settings.getActiveTestrigSettings().getTestRigPath().relativize(currentFile).toString();
       ParseVendorConfigurationJob job =
           new ParseVendorConfigurationJob(
               _settings, fileText, filename, warnings, configurationFormat);
