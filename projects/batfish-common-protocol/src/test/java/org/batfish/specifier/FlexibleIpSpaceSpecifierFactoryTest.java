@@ -25,11 +25,18 @@ public class FlexibleIpSpaceSpecifierFactoryTest {
   }
 
   @Test
-  public void testNonNull() {
+  public void testConstantIpSpace() {
     assertThat(
         new FlexibleIpSpaceSpecifierFactory().buildIpSpaceSpecifier("1.1.1.1"),
         equalTo(
             new ConstantIpSpaceSpecifier(
                 IpWildcardSetIpSpace.builder().including(new IpWildcard("1.1.1.1")).build())));
+  }
+
+  @Test
+  public void testRefAddressGroup() {
+    assertThat(
+        new FlexibleIpSpaceSpecifierFactory().buildIpSpaceSpecifier("rEf.AddressGroup(a, b)"),
+        equalTo(new ReferenceAddressGroupIpSpaceSpecifier("a", "b")));
   }
 }
