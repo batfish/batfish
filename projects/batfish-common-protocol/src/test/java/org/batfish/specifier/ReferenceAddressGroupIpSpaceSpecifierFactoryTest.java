@@ -23,7 +23,7 @@ public class ReferenceAddressGroupIpSpaceSpecifierFactoryTest {
   @Test
   public void buildValidString() {
     IpSpaceSpecifier specifier =
-        new ReferenceAddressGroupIpSpaceSpecifierFactory().buildIpSpaceSpecifier("book1:group1");
+        new ReferenceAddressGroupIpSpaceSpecifierFactory().buildIpSpaceSpecifier("group1, book1");
     assert specifier instanceof ReferenceAddressGroupIpSpaceSpecifier;
   }
 }
