@@ -1676,38 +1676,48 @@ public class WorkMgr extends AbstractCoordinator {
     return generateFileDateString(base, Instant.now());
   }
 
-  public void uploadTestrig(
-      String containerName, String testrigName, InputStream fileStream, boolean autoAnalyze) {
-    Path containerDir = getdirContainer(containerName);
+  /**
+   * Upload a new snapshot to the specified network.
+   *
+   * @param networkName Name of the network to upload the snapshot to.
+   * @param snapshotName Name of the new snapshot.
+   * @param fileStream Filestream of the snapshot zip.
+   * @param autoAnalyze Boolean determining if the snapshot analysis should be triggered on upload.
+   */
+  public void uploadSnapshot(
+      String networkName, String snapshotName, InputStream fileStream, boolean autoAnalyze) {
+    Path networkDir = getdirContainer(networkName);
 
-    // Fail early if the testrig already exists.
-    if (Files.exists(containerDir.resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR, testrigName)))) {
-      throw new BatfishException("Testrig with name: '" + testrigName + "' already exists");
+    // Fail early if the snapshot already exists
+    if (Files.exists(networkDir.resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR, snapshotName)))) {
+      throw new BatfishException("Snapshot with name: '" + snapshotName + "' already exists");
     }
 
-    // Persist the user's upload to a directory inside the container, named for the testrig,
-    // where we save the original upload for later analysis.
+    // Save uploaded zip for troubleshooting
     Path originalDir =
-        containerDir
+        networkDir
             .resolve(BfConsts.RELPATH_ORIGINAL_DIR)
-            .resolve(generateFileDateString(testrigName));
+            .resolve(generateFileDateString(snapshotName));
     if (!originalDir.toFile().mkdirs()) {
       throw new BatfishException("Failed to create directory: '" + originalDir + "'");
     }
-    Path zipFile = originalDir.resolve(BfConsts.RELPATH_TESTRIG_ZIP_FILE);
-    CommonUtil.writeStreamToFile(fileStream, zipFile);
-
-    // Now unzip the user's data to a temporary folder, from which we'll parse and copy it.
+    Path snapshotZipFile = originalDir.resolve(BfConsts.RELPATH_SNAPSHOT_ZIP_FILE);
+    CommonUtil.writeStreamToFile(fileStream, snapshotZipFile);
     Path unzipDir = CommonUtil.createTempDirectory("tr");
-    UnzipUtility.unzip(zipFile, unzipDir);
+    UnzipUtility.unzip(snapshotZipFile, unzipDir);
 
     try {
-      initTestrig(containerName, testrigName, unzipDir, autoAnalyze);
+      initTestrig(networkName, snapshotName, unzipDir, autoAnalyze);
     } catch (Exception e) {
-      throw new BatfishException("Error initializing testrig", e);
+      throw new BatfishException("Error initializing snapshot", e);
     } finally {
       CommonUtil.deleteDirectory(unzipDir);
     }
+  }
+
+  public void uploadTestrig(
+      String containerName, String testrigName, InputStream fileStream, boolean autoAnalyze) {
+    uploadSnapshot(containerName, testrigName, fileStream, autoAnalyze);
   }
 
   /** Returns true if the container {@code containerName} exists, false otherwise. */

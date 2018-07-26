@@ -70,6 +70,7 @@ public class CoordConsts {
   public static final String SVC_KEY_ANSWERS = "answers";
   public static final String SVC_KEY_API_KEY = "apikey";
   public static final String SVC_KEY_ASSERTION = "assertion";
+  public static final String SVC_KEY_AUTO_ANALYZE = "autoanalyze";
   public static final String SVC_KEY_AUTO_ANALYZE_TESTRIG = "autoanalyzetestrig";
   public static final String SVC_KEY_BASE_ENV_NAME = "baseenvname";
   public static final String SVC_KEY_COMPLETION_TYPE = "completiontype";
@@ -171,5 +172,6 @@ public class CoordConsts {
   public static final String SVC_RSC_SYNC_TESTRIGS_UPDATE_SETTINGS = "synctestrigsupdatesettings";
   public static final String SVC_RSC_UPLOAD_ENV = "uploadenvironment";
   public static final String SVC_RSC_UPLOAD_QUESTION = "uploadquestion";
+  public static final String SVC_RSC_UPLOAD_SNAPSHOT = "uploadsnapshot";
   public static final String SVC_RSC_UPLOAD_TESTRIG = "uploadtestrig";
 }
