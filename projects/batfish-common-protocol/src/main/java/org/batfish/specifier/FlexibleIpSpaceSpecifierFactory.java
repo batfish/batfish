@@ -19,7 +19,8 @@ import java.util.regex.Pattern;
 public class FlexibleIpSpaceSpecifierFactory implements IpSpaceSpecifierFactory {
   public static final String NAME = FlexibleIpSpaceSpecifierFactory.class.getSimpleName();
 
-  Pattern REF_PATTERN = Pattern.compile("ref\\.addressgroup\\((.*)\\)", Pattern.CASE_INSENSITIVE);
+  private static final Pattern REF_PATTERN =
+      Pattern.compile("ref\\.addressgroup\\((.*)\\)", Pattern.CASE_INSENSITIVE);
 
   @Override
   public String getName() {
