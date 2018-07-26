@@ -1,6 +1,9 @@
 package org.batfish.coordinator.resources;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
+import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -71,13 +74,22 @@ public class ReferenceBookBean {
   /** Creates {@link ReferenceBook} from this bean */
   public ReferenceBook toAddressBook() {
     return new ReferenceBook(
-        addressGroups.stream().map(agb -> agb.toAddressGroup()).collect(Collectors.toList()),
+        firstNonNull(addressGroups, Collections.<AddressGroupBean>emptySet())
+            .stream()
+            .map(agb -> agb.toAddressGroup())
+            .collect(Collectors.toList()),
         name,
-        serviceEndpoints.stream().map(seb -> seb.toServiceEndpoint()).collect(Collectors.toList()),
-        serviceObjectGroups
+        firstNonNull(serviceEndpoints, Collections.<ServiceEndpointBean>emptySet())
+            .stream()
+            .map(seb -> seb.toServiceEndpoint())
+            .collect(Collectors.toList()),
+        firstNonNull(serviceObjectGroups, Collections.<ServiceObjectGroupBean>emptySet())
             .stream()
             .map(sogb -> sogb.toServiceObjectGroup())
             .collect(Collectors.toList()),
-        serviceObjects.stream().map(seb -> seb.toServiceObject()).collect(Collectors.toList()));
+        firstNonNull(serviceObjects, Collections.<ServiceObjectBean>emptySet())
+            .stream()
+            .map(seb -> seb.toServiceObject())
+            .collect(Collectors.toList()));
   }
 }

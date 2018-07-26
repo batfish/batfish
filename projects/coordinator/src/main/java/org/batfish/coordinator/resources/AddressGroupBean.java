@@ -1,5 +1,7 @@
 package org.batfish.coordinator.resources;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
@@ -41,6 +43,7 @@ public class AddressGroupBean {
   }
 
   public AddressGroup toAddressGroup() {
-    return new AddressGroup(ImmutableSortedSet.copyOf(addresses), name);
+    return new AddressGroup(
+        ImmutableSortedSet.copyOf(firstNonNull(addresses, ImmutableSet.of())), name);
   }
 }
