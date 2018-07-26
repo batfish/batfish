@@ -2037,7 +2037,7 @@ public class WorkMgrService {
    * @param fileStream The stream from which the new testrig is read
    * @return TODO: document JSON response
    * @deprecated because testrigs were renamed to snapshots. Use {@link #uploadSnapshot(String,
-   *     String, String, String, InputStream, InputStream, String)} instead.
+   *     String, String, String, InputStream, String)} instead.
    */
   @POST
   @Path(CoordConsts.SVC_RSC_UPLOAD_TESTRIG)
@@ -2075,7 +2075,7 @@ public class WorkMgrService {
             .setTag("testrig-name", testrigName);
       }
 
-      Main.getWorkMgr().uploadTestrig(containerName, testrigName, fileStream, autoAnalyze);
+      Main.getWorkMgr().uploadSnapshot(containerName, testrigName, fileStream, autoAnalyze);
       _logger.infof(
           "Uploaded testrig:%s for container:%s using api-key:%s\n",
           testrigName, containerName, apiKey);
