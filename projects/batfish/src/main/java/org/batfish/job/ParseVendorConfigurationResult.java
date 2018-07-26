@@ -3,6 +3,7 @@ package org.batfish.job;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import java.util.Map;
+import javax.annotation.Nonnull;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BatfishLogger.BatfishLoggerHistory;
@@ -29,7 +30,10 @@ public class ParseVendorConfigurationResult
   private static Multimap<String, String> _duplicateHostnames = HashMultimap.create();
 
   public ParseVendorConfigurationResult(
-      long elapsedTime, BatfishLoggerHistory history, String filename, Throwable failureCause) {
+      long elapsedTime,
+      BatfishLoggerHistory history,
+      String filename,
+      @Nonnull Throwable failureCause) {
     super(elapsedTime, history, failureCause);
     _filename = filename;
     _status = ParseStatus.FAILED;
@@ -121,7 +125,7 @@ public class ParseVendorConfigurationResult
     } else {
       answerElement.getParseStatus().put(_filename, _status);
       if (_status == ParseStatus.FAILED) {
-        assert _failureCause != null;
+        assert _failureCause != null; // status == FAILED, failureCause must be non-null
         answerElement
             .getErrors()
             .put(_filename, ((BatfishException) _failureCause).getBatfishStackTrace());
