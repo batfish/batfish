@@ -36,3 +36,6 @@ org.eclipse.core.resources.prefs
 # Ignore jacoco coverage reports
 coverage*
 
+# Ignore python cache files
+__pycache__
+
