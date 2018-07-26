@@ -277,6 +277,8 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
     private Path _protocolDependencyGraphZipPath;
 
+    private Path _referenceLibraryPath;
+
     private Path _serializeVendorPath;
 
     private Path _testRigPath;
@@ -333,6 +335,10 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
     public Path getProtocolDependencyGraphZipPath() {
       return _protocolDependencyGraphZipPath;
+    }
+
+    public Path getReferenceLibraryPath() {
+      return _referenceLibraryPath;
     }
 
     public Path getSerializeVendorPath() {
@@ -392,6 +398,10 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
     public void setProtocolDependencyGraphZipPath(Path protocolDependencyGraphZipPath) {
       _protocolDependencyGraphZipPath = protocolDependencyGraphZipPath;
+    }
+
+    public void setReferenceLibraryPath(Path path) {
+      _referenceLibraryPath = path;
     }
 
     public void setSerializeVendorPath(Path path) {

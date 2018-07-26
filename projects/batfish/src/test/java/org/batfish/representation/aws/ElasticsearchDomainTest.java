@@ -145,7 +145,7 @@ public class ElasticsearchDomainTest {
     JSONArray esArray = jObj.getJSONArray(JSON_KEY_DOMAIN_STATUS_LIST);
     List<ElasticsearchDomain> esList = new LinkedList<>();
     for (int i = 0; i < esArray.length(); i++) {
-      esList.add(new ElasticsearchDomain(esArray.getJSONObject(i), null));
+      esList.add(new ElasticsearchDomain(esArray.getJSONObject(i)));
     }
 
     // checking the count of ES instance initialized

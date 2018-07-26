@@ -102,6 +102,10 @@ public class CoordConsts {
   public static final String SVC_KEY_QUESTION_NAME = "questionname";
   public static final String SVC_KEY_RESULT = "result";
   public static final String SVC_KEY_SETTINGS = "settings";
+  public static final String SVC_KEY_SNAPSHOT_INFO = "snapshotinfo";
+  public static final String SVC_KEY_SNAPSHOT_LIST = "snapshotlist";
+  public static final String SVC_KEY_SNAPSHOT_METADATA = "snapshotmetadata";
+  public static final String SVC_KEY_SNAPSHOT_NAME = "snapshotname";
   public static final String SVC_KEY_SUCCESS = "success";
   public static final String SVC_KEY_SUGGESTED = "suggested";
   public static final String SVC_KEY_SUGGESTIONS = "suggestions";
@@ -130,6 +134,7 @@ public class CoordConsts {
   public static final String SVC_RSC_DEL_ENVIRONMENT = "delenvironment";
   public static final String SVC_RSC_DEL_NETWORK = "delnetwork";
   public static final String SVC_RSC_DEL_QUESTION = "delquestion";
+  public static final String SVC_RSC_DEL_SNAPSHOT = "delsnapshot";
   public static final String SVC_RSC_DEL_TESTRIG = "deltestrig";
   public static final String SVC_RSC_CONFIGURE_QUESTION_TEMPLATE = "configurequestiontemplate";
   public static final String SVC_RSC_GET_ANALYSIS_ANSWERS = "getanalysisanswers";
@@ -153,12 +158,15 @@ public class CoordConsts {
   public static final String SVC_RSC_LIST_INCOMPLETE_WORK = "listincompletework";
   public static final String SVC_RSC_LIST_NETWORKS = "listnetworks";
   public static final String SVC_RSC_LIST_QUESTIONS = "listquestions";
+  public static final String SVC_RSC_LIST_SNAPSHOTS = "listsnapshots";
   public static final String SVC_RSC_LIST_TESTRIGS = "listtestrigs";
   public static final String SVC_RSC_POOL_GET_QUESTION_TEMPLATES = "getquestiontemplates";
   public static final String SVC_RSC_POOL_GETSTATUS = "getstatus";
   public static final String SVC_RSC_POOL_UPDATE = "updatepool";
   public static final String SVC_RSC_PUT_OBJECT = "putobject";
   public static final String SVC_RSC_QUEUE_WORK = "queuework";
+  public static final String SVC_RSC_SYNC_SNAPSHOTS_SYNC_NOW = "syncsnapshotssyncnow";
+  public static final String SVC_RSC_SYNC_SNAPSHOTS_UPDATE_SETTINGS = "syncsnapshotsupdatesettings";
   public static final String SVC_RSC_SYNC_TESTRIGS_SYNC_NOW = "synctestrigssyncnow";
   public static final String SVC_RSC_SYNC_TESTRIGS_UPDATE_SETTINGS = "synctestrigsupdatesettings";
   public static final String SVC_RSC_UPLOAD_ENV = "uploadenvironment";

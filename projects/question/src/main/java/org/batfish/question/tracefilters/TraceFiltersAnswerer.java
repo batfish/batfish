@@ -46,7 +46,7 @@ public class TraceFiltersAnswerer extends Answerer {
    *     DisplayHints}
    * @return The creates the answer element object.
    */
-  private static TableAnswerElement create(TraceFiltersQuestion question) {
+  public static TableAnswerElement create(TraceFiltersQuestion question) {
     List<ColumnMetadata> columnMetadata =
         ImmutableList.of(
             new ColumnMetadata(COLUMN_NODE, Schema.NODE, "Node", true, false),

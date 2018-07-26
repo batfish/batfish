@@ -44,6 +44,7 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVendorFami
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrfs;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasAclName;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasBandwidth;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructure;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasIpProtocols;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasMemberInterfaces;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasName;
@@ -102,6 +103,9 @@ import static org.batfish.datamodel.matchers.IpsecPeerConfigMatchers.isIpsecStat
 import static org.batfish.datamodel.matchers.IpsecPolicyMatchers.hasIpsecProposals;
 import static org.batfish.datamodel.matchers.IpsecPolicyMatchers.hasPfsKeyGroup;
 import static org.batfish.datamodel.matchers.IpsecProposalMatchers.hasProtocols;
+import static org.batfish.datamodel.matchers.IpsecSessionMatchers.hasNegotiatedIkeP1Key;
+import static org.batfish.datamodel.matchers.IpsecSessionMatchers.hasNegotiatedIkeP1Proposal;
+import static org.batfish.datamodel.matchers.IpsecSessionMatchers.hasNegotiatedIpsecP2Proposal;
 import static org.batfish.datamodel.matchers.IpsecVpnMatchers.hasBindInterface;
 import static org.batfish.datamodel.matchers.IpsecVpnMatchers.hasIkeGatewaay;
 import static org.batfish.datamodel.matchers.IpsecVpnMatchers.hasPolicy;
@@ -121,9 +125,11 @@ import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.hasMetric;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.isAdvertised;
 import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasArea;
 import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasAreas;
+import static org.batfish.datamodel.matchers.SnmpServerMatchers.hasCommunities;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasEigrpProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasOspfProcess;
+import static org.batfish.datamodel.matchers.VrfMatchers.hasSnmpServer;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.batfish.datamodel.vendor_family.VendorFamilyMatchers.hasCisco;
 import static org.batfish.datamodel.vendor_family.cisco.CiscoFamilyMatchers.hasAaa;
@@ -162,6 +168,7 @@ import static org.junit.Assert.assertTrue;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.graph.EndpointPair;
 import com.google.common.graph.ValueGraph;
 import java.io.IOException;
 import java.util.Arrays;
@@ -175,6 +182,7 @@ import java.util.stream.Collectors;
 import org.batfish.common.WellKnownCommunity;
 import org.batfish.common.plugin.DataPlanePlugin;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.common.util.IpsecUtil;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpAdvertisement;
@@ -201,7 +209,10 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
 import org.batfish.datamodel.IpsecEncapsulationMode;
+import org.batfish.datamodel.IpsecPeerConfigId;
 import org.batfish.datamodel.IpsecProtocol;
+import org.batfish.datamodel.IpsecSession;
+import org.batfish.datamodel.Line;
 import org.batfish.datamodel.LineType;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.NamedPort;
@@ -233,7 +244,6 @@ import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfDefaultOriginateType;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.ospf.StubType;
-import org.batfish.datamodel.vendor_family.cisco.Line;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
@@ -1285,6 +1295,25 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testIosSnmpCommunityString() throws IOException {
+    String hostname = "ios-snmp-community-string";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+    Configuration c = batfish.loadConfigurations().get(hostname);
+
+    /* Confirm community strings are correctly parsed */
+    assertThat(c, hasDefaultVrf(hasSnmpServer(hasCommunities(hasKey("test$#!@")))));
+    assertThat(c, hasDefaultVrf(hasSnmpServer(hasCommunities(hasKey("quoted$#!@")))));
+
+    /* Confirm ACL is referenced */
+    assertThat(
+        ccae, hasNumReferrers(hostname, CiscoStructureType.IPV4_ACCESS_LIST_STANDARD, "80", 1));
+    assertThat(
+        ccae, hasNumReferrers(hostname, CiscoStructureType.IPV4_ACCESS_LIST_STANDARD, "90", 1));
+  }
+
+  @Test
   public void testIosClassMapInspect() throws IOException {
     String hostname = "ios-class-map-inspect";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -1527,12 +1556,20 @@ public class CiscoGrammarTest {
     String classMapDropAclName = computeInspectClassMapAclName(classMapDropName);
 
     Flow flowPass =
-        Flow.builder().setIngressNode(c.getName()).setTag("").setIpProtocol(IpProtocol.TCP).build();
+        Flow.builder()
+            .setIngressNode(c.getHostname())
+            .setTag("")
+            .setIpProtocol(IpProtocol.TCP)
+            .build();
     Flow flowInspect =
-        Flow.builder().setIngressNode(c.getName()).setTag("").setIpProtocol(IpProtocol.UDP).build();
+        Flow.builder()
+            .setIngressNode(c.getHostname())
+            .setTag("")
+            .setIpProtocol(IpProtocol.UDP)
+            .build();
     Flow flowDrop =
         Flow.builder()
-            .setIngressNode(c.getName())
+            .setIngressNode(c.getHostname())
             .setTag("")
             .setIpProtocol(IpProtocol.ICMP)
             .build();
@@ -1565,7 +1602,7 @@ public class CiscoGrammarTest {
     /* Ethernet3 is in zone z3 */
     String e3Name = "Ethernet3";
 
-    Flow flow = Flow.builder().setIngressNode(c.getName()).setTag("").build();
+    Flow flow = Flow.builder().setIngressNode(c.getHostname()).setTag("").build();
 
     /* Traffic originating from device should not be subject to zone filtering */
     assertThat(c, hasInterface(e1Name, hasOutgoingFilter(accepts(flow, null, c))));
@@ -2589,6 +2626,39 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testIpsecTopology() throws IOException {
+    String testrigName = "ios-crypto-ipsec";
+    List<String> configurationNames = ImmutableList.of("r1", "r2", "r3");
+
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
+    Map<String, Configuration> configurations = batfish.loadConfigurations();
+    ValueGraph<IpsecPeerConfigId, IpsecSession> graph = IpsecUtil.initIpsecTopology(configurations);
+
+    Set<EndpointPair<IpsecPeerConfigId>> edges = graph.edges();
+
+    // there should be six edges in total, two for the static crypto map session between r1 and r2
+    // two for the dynamic crypto map session from r1->r3 and r2->r3 (unidirectional)
+    // two for the tunnel interface IPSec session between r2 and r3
+    assertThat(edges, hasSize(6));
+
+    // checking that the negotiated IKE and IPSec proposals are set in all the sessions
+    for (EndpointPair<IpsecPeerConfigId> edge : edges) {
+      IpsecSession ipsecSession = graph.edgeValueOrDefault(edge.nodeU(), edge.nodeV(), null);
+
+      assertThat(ipsecSession, notNullValue());
+
+      assertThat(ipsecSession, hasNegotiatedIkeP1Proposal(notNullValue()));
+      assertThat(ipsecSession, hasNegotiatedIkeP1Key(notNullValue()));
+      assertThat(ipsecSession, hasNegotiatedIpsecP2Proposal(notNullValue()));
+    }
+  }
+
+  @Test
   public void testNxosOspfAreaParameters() throws IOException {
     String testrigName = "nxos-ospf";
     String hostname = "nxos-ospf-area";
@@ -2813,6 +2883,21 @@ public class CiscoGrammarTest {
     String[] names =
         Arrays.stream(configurationNames).map(s -> TESTCONFIGS_PREFIX + s).toArray(String[]::new);
     return BatfishTestUtils.parseTextConfigs(_folder, names);
+  }
+
+  @Test
+  public void testPrefixListNameParsing() throws IOException {
+    String hostname = "prefix-list-name-parsing";
+    String prefixListName = "SET_COMMUNITY_65535:200";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    /* Confirm prefix-list with correct name was defined */
+    assertThat(ccae, hasDefinedStructure(hostname, CiscoStructureType.PREFIX_LIST, prefixListName));
+
+    /* Confirm prefix-list is referenced */
+    assertThat(ccae, hasNumReferrers(hostname, CiscoStructureType.PREFIX_LIST, prefixListName, 1));
   }
 
   @Test

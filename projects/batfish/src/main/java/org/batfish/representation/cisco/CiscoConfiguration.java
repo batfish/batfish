@@ -80,6 +80,7 @@ import org.batfish.datamodel.IpsecPhase2Proposal;
 import org.batfish.datamodel.IpsecPolicy;
 import org.batfish.datamodel.IpsecProposal;
 import org.batfish.datamodel.IpsecVpn;
+import org.batfish.datamodel.Line;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OriginType;
@@ -145,7 +146,6 @@ import org.batfish.datamodel.vendor_family.cisco.Aaa;
 import org.batfish.datamodel.vendor_family.cisco.AaaAuthentication;
 import org.batfish.datamodel.vendor_family.cisco.AaaAuthenticationLogin;
 import org.batfish.datamodel.vendor_family.cisco.CiscoFamily;
-import org.batfish.datamodel.vendor_family.cisco.Line;
 import org.batfish.representation.cisco.Tunnel.TunnelMode;
 import org.batfish.representation.cisco.nx.CiscoNxBgpGlobalConfiguration;
 import org.batfish.representation.cisco.nx.CiscoNxBgpRedistributionPolicy;
@@ -2512,7 +2512,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
   }
 
   private org.batfish.datamodel.RipProcess toRipProcess(
-      RipProcess proc, String vrfName, Configuration c, CiscoConfiguration oldConfig) {
+      RipProcess proc, String vrfName, Configuration c) {
     org.batfish.datamodel.RipProcess newProcess = new org.batfish.datamodel.RipProcess();
     org.batfish.datamodel.Vrf vrf = c.getVrfs().get(vrfName);
 
@@ -3203,8 +3203,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
           // convert rip process
           RipProcess ripProcess = vrf.getRipProcess();
           if (ripProcess != null) {
-            org.batfish.datamodel.RipProcess newRipProcess =
-                toRipProcess(ripProcess, vrfName, c, this);
+            org.batfish.datamodel.RipProcess newRipProcess = toRipProcess(ripProcess, vrfName, c);
             newVrf.setRipProcess(newRipProcess);
           }
 
@@ -3370,6 +3369,13 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.BGP_ROUTE_MAP_SUPPRESS,
         CiscoStructureUsage.BGP_ROUTE_MAP_UNSUPPRESS,
         CiscoStructureUsage.BGP_VRF_AGGREGATE_ROUTE_MAP,
+        CiscoStructureUsage.EIGRP_REDISTRIBUTE_BGP_MAP,
+        CiscoStructureUsage.EIGRP_REDISTRIBUTE_CONNECTED_MAP,
+        CiscoStructureUsage.EIGRP_REDISTRIBUTE_EIGRP_MAP,
+        CiscoStructureUsage.EIGRP_REDISTRIBUTE_ISIS_MAP,
+        CiscoStructureUsage.EIGRP_REDISTRIBUTE_OSPF_MAP,
+        CiscoStructureUsage.EIGRP_REDISTRIBUTE_RIP_MAP,
+        CiscoStructureUsage.EIGRP_REDISTRIBUTE_STATIC_MAP,
         CiscoStructureUsage.INTERFACE_POLICY_ROUTING_MAP,
         CiscoStructureUsage.INTERFACE_SUMMARY_ADDRESS_EIGRP_LEAK_MAP,
         CiscoStructureUsage.OSPF_DEFAULT_ORIGINATE_ROUTE_MAP,
@@ -3386,7 +3392,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
     markConcreteStructure(
         CiscoStructureType.ROUTE_POLICY,
         CiscoStructureUsage.BGP_ADDITIONAL_PATHS_SELECTION_ROUTE_POLICY,
-        CiscoStructureUsage.BGP_AGGREGATE_ROUTE_POLICY);
+        CiscoStructureUsage.BGP_AGGREGATE_ROUTE_POLICY,
+        CiscoStructureUsage.BGP_NEIGHBOR_ROUTE_POLICY_IN,
+        CiscoStructureUsage.BGP_NEIGHBOR_ROUTE_POLICY_OUT);
 
     markConcreteStructure(
         CiscoStructureType.BGP_TEMPLATE_PEER, CiscoStructureUsage.BGP_INHERITED_PEER);

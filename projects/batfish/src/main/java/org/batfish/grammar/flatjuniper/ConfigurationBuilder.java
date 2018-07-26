@@ -1,5 +1,6 @@
 package org.batfish.grammar.flatjuniper;
 
+import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_GLOBAL_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION;
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION_OR_APPLICATION_SET;
@@ -74,7 +75,9 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.JuniperUtils;
+import org.batfish.datamodel.AaaAuthenticationLoginList;
 import org.batfish.datamodel.AsPath;
+import org.batfish.datamodel.AuthenticationMethod;
 import org.batfish.datamodel.BgpAuthenticationAlgorithm;
 import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.EncryptionAlgorithm;
@@ -92,6 +95,7 @@ import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
 import org.batfish.datamodel.IpsecProtocol;
 import org.batfish.datamodel.IsoAddress;
+import org.batfish.datamodel.Line;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.OriginType;
@@ -415,12 +419,17 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Snmpc_client_list_nameC
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Snmptg_targetsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Standard_communityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.SubrangeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sy_authentication_methodContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sy_authentication_orderContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sy_default_address_selectionContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sy_domain_nameContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sy_host_nameContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sy_name_serverContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sy_portsContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sy_services_linetypeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sy_tacplus_serverContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syn_serverContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syp_disableContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syr_encrypted_passwordContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sys_hostContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syt_secretContext;
@@ -1620,6 +1629,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   private JuniperAuthenticationKeyChain _currentAuthenticationKeyChain;
 
+  private AaaAuthenticationLoginList _currentAuthenticationOrder;
+
   private BgpGroup _currentBgpGroup;
 
   private CommunityList _currentCommunityList;
@@ -1657,6 +1668,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   private IsisInterfaceLevelSettings _currentIsisInterfaceLevelSettings;
 
   private IsisLevelSettings _currentIsisLevelSettings;
+
+  private Line _currentLine;
 
   private Interface _currentMasterInterface;
 
@@ -1771,7 +1784,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void enterA_application_set(A_application_setContext ctx) {
     String name = ctx.name.getText();
     _currentApplicationSet =
-        _configuration.getApplicationSets().computeIfAbsent(name, ApplicationSet::new);
+        _configuration.getApplicationSets().computeIfAbsent(name, n -> new ApplicationSet());
     defineStructure(APPLICATION_SET, name, ctx);
   }
 
@@ -1843,7 +1856,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void enterAa_term(Aa_termContext ctx) {
     String name = ctx.name.getText();
-    _currentApplicationTerm = _currentApplication.getTerms().computeIfAbsent(name, Term::new);
+    _currentApplicationTerm = _currentApplication.getTerms().computeIfAbsent(name, n -> new Term());
   }
 
   @Override
@@ -1945,14 +1958,17 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     _currentDhcpRelayGroup =
         _currentRoutingInstance
             .getDhcpRelayGroups()
-            .computeIfAbsent(DhcpRelayGroup.MASTER_DHCP_RELAY_GROUP_NAME, DhcpRelayGroup::new);
+            .computeIfAbsent(
+                DhcpRelayGroup.MASTER_DHCP_RELAY_GROUP_NAME, n -> new DhcpRelayGroup());
   }
 
   @Override
   public void enterFod_group(Fod_groupContext ctx) {
     String name = ctx.name.getText();
     _currentDhcpRelayGroup =
-        _currentRoutingInstance.getDhcpRelayGroups().computeIfAbsent(name, DhcpRelayGroup::new);
+        _currentRoutingInstance
+            .getDhcpRelayGroups()
+            .computeIfAbsent(name, n -> new DhcpRelayGroup());
   }
 
   @Override
@@ -1961,7 +1977,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     DhcpRelayServerGroup serverGroup =
         _currentRoutingInstance
             .getDhcpRelayServerGroups()
-            .computeIfAbsent(name, DhcpRelayServerGroup::new);
+            .computeIfAbsent(name, n -> new DhcpRelayServerGroup());
     Ip ip = new Ip(ctx.address.getText());
     serverGroup.getServers().add(ip);
     defineStructure(DHCP_RELAY_SERVER_GROUP, name, ctx);
@@ -2034,7 +2050,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
         String nodeDeviceName = ctx.interface_id().node.getText();
         nodeDevicePrefix = nodeDeviceName + ":";
         NodeDevice nodeDevice =
-            _configuration.getNodeDevices().computeIfAbsent(nodeDeviceName, NodeDevice::new);
+            _configuration.getNodeDevices().computeIfAbsent(nodeDeviceName, n -> new NodeDevice());
         interfaces = nodeDevice.getInterfaces();
       }
       currentInterface = interfaces.get(ifaceName);
@@ -2282,7 +2298,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     _currentRouteFilter = _termRouteFilters.get(_currentPsTerm);
     if (_currentRouteFilter == null) {
       String rfName = _currentPolicyStatement.getName() + ":" + _currentPsTerm.getName();
-      _currentRouteFilter = new RouteFilter(rfName);
+      _currentRouteFilter = new RouteFilter();
       _termRouteFilters.put(_currentPsTerm, _currentRouteFilter);
       _configuration.getRouteFilters().put(rfName, _currentRouteFilter);
       PsFromRouteFilter from = new PsFromRouteFilter(rfName);
@@ -2547,7 +2563,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     String name = ctx.name.getText();
     _currentAddressSetAddressBookEntry
         .getEntries()
-        .add(new AddressSetEntry(name, _currentAddressBook));
+        .put(name, new AddressSetEntry(name, _currentAddressBook));
   }
 
   @Override
@@ -2555,7 +2571,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     String name = ctx.name.getText();
     _currentAddressSetAddressBookEntry
         .getEntries()
-        .add(new AddressSetEntry(name, _currentAddressBook));
+        .put(name, new AddressSetEntry(name, _currentAddressBook));
   }
 
   @Override
@@ -2734,7 +2750,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void enterSezs_host_inbound_traffic(Sezs_host_inbound_trafficContext ctx) {
     if (_currentZoneInterface != null) {
       _currentZoneInboundFilter =
-          _currentZone.getInboundInterfaceFilters().get(_currentZoneInterface);
+          _currentZone.getInboundInterfaceFilters().get(_currentZoneInterface.getName());
       if (_currentZoneInboundFilter == null) {
         String name =
             "~ZONE_INTERFACE_FILTER~"
@@ -2745,7 +2761,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
         _configuration.getFirewallFilters().put(name, _currentZoneInboundFilter);
         _currentZone
             .getInboundInterfaceFilters()
-            .put(_currentZoneInterface, _currentZoneInboundFilter);
+            .put(_currentZoneInterface.getName(), _currentZoneInboundFilter);
       }
     }
   }
@@ -2754,7 +2770,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void enterSezs_interfaces(Sezs_interfacesContext ctx) {
     _currentZoneInterface = initInterface(ctx.interface_id());
     _currentZone.getInterfaces().add(_currentZoneInterface);
-    _configuration.getInterfaceZones().put(_currentZoneInterface, _currentZone);
+    _configuration.getInterfaceZones().put(_currentZoneInterface.getName(), _currentZone);
   }
 
   @Override
@@ -2783,6 +2799,53 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   @Override
+  public void enterSy_authentication_order(Sy_authentication_orderContext ctx) {
+    if (_currentLine != null) {
+      // in system services/ports hierarchy
+      _currentAuthenticationOrder = _currentLine.getAaaAuthenticationLoginList();
+      if (_currentAuthenticationOrder == null || _currentAuthenticationOrder.isDefault()) {
+        // if the line already has a default authentication order, give it a new non-default one
+        _currentAuthenticationOrder = new AaaAuthenticationLoginList(new ArrayList<>(), false);
+        _currentLine.setAaaAuthenticationLoginList(_currentAuthenticationOrder);
+      }
+    } else {
+      // in system hierarchy
+      _currentAuthenticationOrder = _configuration.getJf().getSystemAuthenticationOrder();
+      if (_currentAuthenticationOrder == null || _currentAuthenticationOrder.isDefault()) {
+        // if system already has a default authentication order, give it a new non-default one
+        _currentAuthenticationOrder = new AaaAuthenticationLoginList(new ArrayList<>(), false);
+        _configuration.getJf().setSystemAuthenticationOrder(_currentAuthenticationOrder);
+      }
+    }
+
+    // _currentAuthenticationOrder = authenticationOrder.getMethods();
+  }
+
+  @Override
+  public void enterSy_ports(Sy_portsContext ctx) {
+    String name = ctx.porttype.getText();
+    // aux and console ports should already exist unless they've been disabled, if disabled don't
+    // add it to juniperFamily's lines
+    _currentLine = firstNonNull(_configuration.getJf().getLines().get(name), new Line(name));
+  }
+
+  @Override
+  public void enterSy_services_linetype(Sy_services_linetypeContext ctx) {
+    String name = ctx.linetype.getText();
+    _configuration.getJf().getLines().computeIfAbsent(name, Line::new);
+    _currentLine = _configuration.getJf().getLines().get(name);
+
+    // if system authentication order defined, set the current line's authentication login list to
+    // the system authentication order
+    if (_configuration.getJf().getSystemAuthenticationOrder() != null
+        && _currentLine.getAaaAuthenticationLoginList() == null) {
+      _currentLine.setAaaAuthenticationLoginList(
+          new AaaAuthenticationLoginList(
+              _configuration.getJf().getSystemAuthenticationOrder().getMethods(), true));
+    }
+  }
+
+  @Override
   public void enterSy_tacplus_server(Sy_tacplus_serverContext ctx) {
     String hostname = ctx.hostname.getText();
     _configuration.getTacplusServers().add(hostname);
@@ -2794,6 +2857,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void enterSyn_server(Syn_serverContext ctx) {
     String hostname = ctx.hostname.getText();
     _configuration.getNtpServers().add(hostname);
+  }
+
+  @Override
+  public void enterSyp_disable(Syp_disableContext ctx) {
+    // line is disabled so remove it from list of lines
+    _configuration.getJf().getLines().remove(_currentLine.getName());
   }
 
   @Override
@@ -4634,7 +4703,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     String name = ctx.name.getText();
     _currentAddressSetAddressBookEntry
         .getEntries()
-        .add(new AddressSetEntry(name, _currentAddressBook));
+        .put(name, new AddressSetEntry(name, _currentAddressBook));
   }
 
   @Override
@@ -4642,7 +4711,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     String name = ctx.name.getText();
     _currentAddressSetAddressBookEntry
         .getEntries()
-        .add(new AddressSetEntry(name, _currentAddressBook));
+        .put(name, new AddressSetEntry(name, _currentAddressBook));
   }
 
   @Override
@@ -4700,6 +4769,31 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   @Override
+  public void exitSy_authentication_method(Sy_authentication_methodContext ctx) {
+    if (_currentAuthenticationOrder != null) {
+      _currentAuthenticationOrder.addMethod(
+          AuthenticationMethod.toAuthenticationMethod(ctx.method.getText()));
+    }
+  }
+
+  @Override
+  public void exitSy_authentication_order(Sy_authentication_orderContext ctx) {
+    if (_currentLine == null) {
+      // in system hierarchy
+      for (Line line : _configuration.getJf().getLines().values()) {
+        if (line.getAaaAuthenticationLoginList() == null
+            || line.getAaaAuthenticationLoginList().isDefault()) {
+          // line has no login list or has default login list, give it the system's login list
+          line.setAaaAuthenticationLoginList(
+              new AaaAuthenticationLoginList(_currentAuthenticationOrder.getMethods(), true));
+        }
+      }
+    }
+
+    _currentAuthenticationOrder = null;
+  }
+
+  @Override
   public void exitSy_default_address_selection(Sy_default_address_selectionContext ctx) {
     _configuration.setDefaultAddressSelection(true);
   }
@@ -4721,6 +4815,16 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     Set<String> dnsServers = _configuration.getDnsServers();
     String hostname = ctx.hostname.getText();
     dnsServers.add(hostname);
+  }
+
+  @Override
+  public void exitSy_ports(Sy_portsContext ctx) {
+    _currentLine = null;
+  }
+
+  @Override
+  public void exitSy_services_linetype(Sy_services_linetypeContext ctx) {
+    _currentLine = null;
   }
 
   @Override
@@ -4758,7 +4862,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitVlt_vlan_id(Vlt_vlan_idContext ctx) {
-    Vlan vlan = new Vlan(_currentVlanName, toInt(ctx.id));
+    Vlan vlan = new Vlan(toInt(ctx.id));
     _configuration.getVlanNameToVlan().put(_currentVlanName, vlan);
   }
 
@@ -4883,7 +4987,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     if (id.node != null) {
       String nodeDeviceName = id.node.getText();
       NodeDevice nodeDevice =
-          _configuration.getNodeDevices().computeIfAbsent(nodeDeviceName, NodeDevice::new);
+          _configuration.getNodeDevices().computeIfAbsent(nodeDeviceName, n -> new NodeDevice());
       interfaces = nodeDevice.getInterfaces();
     } else {
       interfaces = _configuration.getInterfaces();

@@ -1,7 +1,6 @@
 package org.batfish.representation.aws;
 
 import java.io.Serializable;
-import org.batfish.common.BatfishLogger;
 import org.batfish.datamodel.Prefix;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -25,7 +24,7 @@ public class NetworkAclEntry implements Serializable {
 
   private final int _toPort;
 
-  public NetworkAclEntry(JSONObject jObj, BatfishLogger logger) throws JSONException {
+  public NetworkAclEntry(JSONObject jObj) throws JSONException {
     _cidrBlock = Prefix.parse(jObj.getString(AwsVpcEntity.JSON_KEY_CIDR_BLOCK));
 
     _isAllow = jObj.getString(AwsVpcEntity.JSON_KEY_RULE_ACTION).equals("allow");

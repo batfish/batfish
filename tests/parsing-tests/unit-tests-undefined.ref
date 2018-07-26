@@ -1490,6 +1490,62 @@
           ]
         }
       },
+      "undefined:route-map:usage:eigrp redistribute bgp route-map:BGP_TO_EIGRP" : {
+        "description" : "Undefined reference to structure of type: 'route-map' with usage: 'eigrp redistribute bgp route-map' named 'BGP_TO_EIGRP'",
+        "files" : {
+          "cisco_eigrp" : [
+            11
+          ]
+        }
+      },
+      "undefined:route-map:usage:eigrp redistribute connected route-map:CONNECTED_TO_EIGRP" : {
+        "description" : "Undefined reference to structure of type: 'route-map' with usage: 'eigrp redistribute connected route-map' named 'CONNECTED_TO_EIGRP'",
+        "files" : {
+          "cisco_eigrp" : [
+            12
+          ]
+        }
+      },
+      "undefined:route-map:usage:eigrp redistribute eigrp route-map:EIGRP_TO_EIGRP" : {
+        "description" : "Undefined reference to structure of type: 'route-map' with usage: 'eigrp redistribute eigrp route-map' named 'EIGRP_TO_EIGRP'",
+        "files" : {
+          "cisco_eigrp" : [
+            13
+          ]
+        }
+      },
+      "undefined:route-map:usage:eigrp redistribute isis route-map:ISIS_TO_EIGRP" : {
+        "description" : "Undefined reference to structure of type: 'route-map' with usage: 'eigrp redistribute isis route-map' named 'ISIS_TO_EIGRP'",
+        "files" : {
+          "cisco_eigrp" : [
+            14
+          ]
+        }
+      },
+      "undefined:route-map:usage:eigrp redistribute ospf route-map:OSPF_TO_EIGRP" : {
+        "description" : "Undefined reference to structure of type: 'route-map' with usage: 'eigrp redistribute ospf route-map' named 'OSPF_TO_EIGRP'",
+        "files" : {
+          "cisco_eigrp" : [
+            15
+          ]
+        }
+      },
+      "undefined:route-map:usage:eigrp redistribute rip route-map:RIP_TO_EIGRP" : {
+        "description" : "Undefined reference to structure of type: 'route-map' with usage: 'eigrp redistribute rip route-map' named 'RIP_TO_EIGRP'",
+        "files" : {
+          "cisco_eigrp" : [
+            16
+          ]
+        }
+      },
+      "undefined:route-map:usage:eigrp redistribute static route-map:STATIC_TO_EIGRP" : {
+        "description" : "Undefined reference to structure of type: 'route-map' with usage: 'eigrp redistribute static route-map' named 'STATIC_TO_EIGRP'",
+        "files" : {
+          "cisco_eigrp" : [
+            17
+          ]
+        }
+      },
       "undefined:route-map:usage:interface summary-address eigrp leak-map:eigrp-leak-map" : {
         "description" : "Undefined reference to structure of type: 'route-map' with usage: 'interface summary-address eigrp leak-map' named 'eigrp-leak-map'",
         "files" : {
@@ -1546,6 +1602,72 @@
           ]
         }
       },
+      "undefined:route-policy:usage:bgp neighbor route-policy in:EBGP-PEER-AS11164-SVL-PNI-IN" : {
+        "description" : "Undefined reference to structure of type: 'route-policy' with usage: 'bgp neighbor route-policy in' named 'EBGP-PEER-AS11164-SVL-PNI-IN'",
+        "files" : {
+          "bgp_route_policy" : [
+            24
+          ]
+        }
+      },
+      "undefined:route-policy:usage:bgp neighbor route-policy in:cust_v4_in" : {
+        "description" : "Undefined reference to structure of type: 'route-policy' with usage: 'bgp neighbor route-policy in' named 'cust_v4_in'",
+        "files" : {
+          "bgp_default_originate_policy" : [
+            11
+          ]
+        }
+      },
+      "undefined:route-policy:usage:bgp neighbor route-policy in:deny_bgp_routes" : {
+        "description" : "Undefined reference to structure of type: 'route-policy' with usage: 'bgp neighbor route-policy in' named 'deny_bgp_routes'",
+        "files" : {
+          "ios_xr_bgp_neighbor_group" : [
+            24,
+            28
+          ]
+        }
+      },
+      "undefined:route-policy:usage:bgp neighbor route-policy out:EBGP-PEER-AS11164-SVL-PNI-OUT" : {
+        "description" : "Undefined reference to structure of type: 'route-policy' with usage: 'bgp neighbor route-policy out' named 'EBGP-PEER-AS11164-SVL-PNI-OUT'",
+        "files" : {
+          "bgp_route_policy" : [
+            26
+          ]
+        }
+      },
+      "undefined:route-policy:usage:bgp neighbor route-policy out:EBGP_CUST_FULL_v4" : {
+        "description" : "Undefined reference to structure of type: 'route-policy' with usage: 'bgp neighbor route-policy out' named 'EBGP_CUST_FULL_v4'",
+        "files" : {
+          "bgp_default_originate_policy" : [
+            13
+          ]
+        }
+      },
+      "undefined:route-policy:usage:bgp neighbor route-policy out:advertise_fooey_dc_and_isp_routes_ipv4" : {
+        "description" : "Undefined reference to structure of type: 'route-policy' with usage: 'bgp neighbor route-policy out' named 'advertise_fooey_dc_and_isp_routes_ipv4'",
+        "files" : {
+          "ios_xr_bgp_neighbor_group" : [
+            25,
+            29
+          ]
+        }
+      },
+      "undefined:route-policy:usage:bgp neighbor route-policy out:advertise_fooey_routes_only" : {
+        "description" : "Undefined reference to structure of type: 'route-policy' with usage: 'bgp neighbor route-policy out' named 'advertise_fooey_routes_only'",
+        "files" : {
+          "ios_xr_bgp_neighbor_group" : [
+            39
+          ]
+        }
+      },
+      "undefined:route-policy:usage:bgp neighbor route-policy out:deny_default_network_ipv4" : {
+        "description" : "Undefined reference to structure of type: 'route-policy' with usage: 'bgp neighbor route-policy out' named 'deny_default_network_ipv4'",
+        "files" : {
+          "ios_xr_bgp_neighbor_group" : [
+            60
+          ]
+        }
+      },
       "undefined:service-template:usage:class-map activate-service-template:DEF" : {
         "description" : "Undefined reference to structure of type: 'service-template' with usage: 'class-map activate-service-template' named 'DEF'",
         "files" : {
@@ -1590,7 +1712,7 @@
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 196
+      "numResults" : 211
     },
     "undefinedReferences" : {
       "IosXrMultiCast" : {
@@ -1663,6 +1785,20 @@
           }
         }
       },
+      "bgp_default_originate_policy" : {
+        "route-policy" : {
+          "EBGP_CUST_FULL_v4" : {
+            "bgp neighbor route-policy out" : [
+              13
+            ]
+          },
+          "cust_v4_in" : {
+            "bgp neighbor route-policy in" : [
+              11
+            ]
+          }
+        }
+      },
       "bgp_foundry" : {
         "route-map" : {
           "from_ucr" : {
@@ -1682,6 +1818,18 @@
           "EBGP-PEER-SVL-PNI" : {
             "inherited BGP group" : [
               0
+            ]
+          }
+        },
+        "route-policy" : {
+          "EBGP-PEER-AS11164-SVL-PNI-IN" : {
+            "bgp neighbor route-policy in" : [
+              24
+            ]
+          },
+          "EBGP-PEER-AS11164-SVL-PNI-OUT" : {
+            "bgp neighbor route-policy out" : [
+              26
             ]
           }
         }
@@ -1888,6 +2036,45 @@
           "someacl" : {
             "crypto map ipsec-isakmp acl" : [
               219
+            ]
+          }
+        }
+      },
+      "cisco_eigrp" : {
+        "route-map" : {
+          "BGP_TO_EIGRP" : {
+            "eigrp redistribute bgp route-map" : [
+              11
+            ]
+          },
+          "CONNECTED_TO_EIGRP" : {
+            "eigrp redistribute connected route-map" : [
+              12
+            ]
+          },
+          "EIGRP_TO_EIGRP" : {
+            "eigrp redistribute eigrp route-map" : [
+              13
+            ]
+          },
+          "ISIS_TO_EIGRP" : {
+            "eigrp redistribute isis route-map" : [
+              14
+            ]
+          },
+          "OSPF_TO_EIGRP" : {
+            "eigrp redistribute ospf route-map" : [
+              15
+            ]
+          },
+          "RIP_TO_EIGRP" : {
+            "eigrp redistribute rip route-map" : [
+              16
+            ]
+          },
+          "STATIC_TO_EIGRP" : {
+            "eigrp redistribute static route-map" : [
+              17
             ]
           }
         }
@@ -2424,6 +2611,30 @@
               48,
               58,
               69
+            ]
+          }
+        },
+        "route-policy" : {
+          "advertise_fooey_dc_and_isp_routes_ipv4" : {
+            "bgp neighbor route-policy out" : [
+              25,
+              29
+            ]
+          },
+          "advertise_fooey_routes_only" : {
+            "bgp neighbor route-policy out" : [
+              39
+            ]
+          },
+          "deny_bgp_routes" : {
+            "bgp neighbor route-policy in" : [
+              24,
+              28
+            ]
+          },
+          "deny_default_network_ipv4" : {
+            "bgp neighbor route-policy out" : [
+              60
             ]
           }
         }

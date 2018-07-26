@@ -1,10 +1,10 @@
 package org.batfish.representation.palo_alto;
 
-import org.batfish.common.util.ComparableStructure;
+import java.io.Serializable;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 
-public class StaticRoute extends ComparableStructure<String> {
+public class StaticRoute implements Serializable {
 
   /** */
   private static final long serialVersionUID = 1L;
@@ -17,30 +17,36 @@ public class StaticRoute extends ComparableStructure<String> {
 
   private int _adminDistance;
 
+  private Prefix _destination;
+
   private int _metric;
+
+  private final String _name;
 
   private String _nextHopInterface;
 
   private Ip _nextHopIp;
 
-  private Prefix _destination;
-
   public StaticRoute(String name) {
-    super(name);
+    _name = name;
     _adminDistance = DEFAULT_ADMIN_DISTANCE;
     _metric = DEFAULT_METRIC;
-  }
-
-  public Prefix getDestination() {
-    return _destination;
   }
 
   public int getAdminDistance() {
     return _adminDistance;
   }
 
+  public Prefix getDestination() {
+    return _destination;
+  }
+
   public int getMetric() {
     return _metric;
+  }
+
+  public String getName() {
+    return _name;
   }
 
   public String getNextHopInterface() {

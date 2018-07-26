@@ -42,7 +42,7 @@ public enum JunosApplicationSet {
   }
 
   private ApplicationSet init() {
-    ApplicationSet applicationSet = new ApplicationSet(name());
+    ApplicationSet applicationSet = new ApplicationSet();
 
     List<JunosApplication> applications;
 

@@ -1,10 +1,10 @@
 package org.batfish.representation.vyos;
 
-import org.batfish.common.util.ComparableStructure;
+import java.io.Serializable;
 import org.batfish.datamodel.IkeAuthenticationMethod;
 import org.batfish.datamodel.Ip;
 
-public class IpsecPeer extends ComparableStructure<Ip> {
+public class IpsecPeer implements Serializable {
 
   /** */
   private static final long serialVersionUID = 1L;
@@ -29,8 +29,10 @@ public class IpsecPeer extends ComparableStructure<Ip> {
 
   private Ip _localAddress;
 
+  private final Ip _name;
+
   public IpsecPeer(Ip name) {
-    super(name);
+    _name = name;
   }
 
   public String getAuthenticationId() {
@@ -111,5 +113,9 @@ public class IpsecPeer extends ComparableStructure<Ip> {
 
   public void setLocalAddress(Ip localAddress) {
     _localAddress = localAddress;
+  }
+
+  public Ip getName() {
+    return _name;
   }
 }

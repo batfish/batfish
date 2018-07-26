@@ -17,6 +17,13 @@ re_classic_tail
    rec_address_family
    | rec_null
    | re_network
+   | re_redistribute_bgp
+   | re_redistribute_connected
+   | re_redistribute_eigrp
+   | re_redistribute_isis
+   | re_redistribute_ospf
+   | re_redistribute_rip
+   | re_redistribute_static
 ;
 
 re_named
@@ -35,6 +42,77 @@ re_named_tail
 re_network
 :
    NETWORK address = IP_ADDRESS mask = IP_ADDRESS? NEWLINE
+;
+
+re_redistribute_bgp
+:
+   REDISTRIBUTE BGP asn = bgp_asn
+   (
+      METRIC bw_kbps = DEC delay_10us = DEC reliability = DEC eff_bw = DEC mtu = DEC
+      | ROUTE_MAP map = variable
+   )* NEWLINE
+;
+
+re_redistribute_connected
+:
+   REDISTRIBUTE CONNECTED
+   (
+      METRIC bw_kbps = DEC delay_10us = DEC reliability = DEC eff_bw = DEC mtu = DEC
+      | ROUTE_MAP map = variable
+   )* NEWLINE
+;
+
+re_redistribute_eigrp
+:
+   REDISTRIBUTE EIGRP asn = DEC
+   (
+      METRIC bw_kbps = DEC delay_10us = DEC reliability = DEC eff_bw = DEC mtu = DEC
+      | ROUTE_MAP map = variable
+   )* NEWLINE
+;
+
+re_redistribute_isis
+:
+   REDISTRIBUTE ISIS (tag = variable)?
+   (
+      LEVEL_1
+      | LEVEL_1_2
+      | LEVEL_2
+      | METRIC bw_kbps = DEC delay_10us = DEC reliability = DEC eff_bw = DEC mtu = DEC
+      | ROUTE_MAP map = variable
+   )* NEWLINE
+;
+
+re_redistribute_ospf
+:
+   REDISTRIBUTE OSPF proc = DEC
+   (
+      MATCH (
+         EXTERNAL DEC?
+         | INTERNAL
+         | NSSA_EXTERNAL DEC?
+      )+
+      | METRIC bw_kbps = DEC delay_10us = DEC reliability = DEC eff_bw = DEC mtu = DEC
+      | ROUTE_MAP map = variable
+   )* NEWLINE
+;
+
+re_redistribute_rip
+:
+   REDISTRIBUTE RIP
+   (
+      METRIC bw_kbps = DEC delay_10us = DEC reliability = DEC eff_bw = DEC mtu = DEC
+      | ROUTE_MAP map = variable
+   )* NEWLINE
+;
+
+re_redistribute_static
+:
+   REDISTRIBUTE STATIC
+   (
+      METRIC bw_kbps = DEC delay_10us = DEC reliability = DEC eff_bw = DEC mtu = DEC
+      | ROUTE_MAP map = variable
+   )* NEWLINE
 ;
 
 re_topology_base
@@ -177,7 +255,6 @@ rec_null
       | NSF
       | OFFSET_LIST
       | PASSIVE_INTERFACE
-      | REDISTRIBUTE
       | SHUTDOWN
       | SPLIT_HORIZON
       | SUMMARY_METRIC

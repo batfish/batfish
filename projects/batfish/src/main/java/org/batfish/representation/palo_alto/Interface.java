@@ -1,14 +1,14 @@
 package org.batfish.representation.palo_alto;
 
+import java.io.Serializable;
 import java.util.LinkedHashSet;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
-import org.batfish.common.util.ComparableStructure;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import org.batfish.datamodel.InterfaceAddress;
 
 /** PAN datamodel component containing interface configuration */
-public final class Interface extends ComparableStructure<String> {
+public final class Interface implements Serializable {
   public static final int DEFAULT_INTERFACE_MTU = 1500;
 
   private static final long serialVersionUID = 1L;
@@ -23,18 +23,20 @@ public final class Interface extends ComparableStructure<String> {
 
   private Integer _mtu;
 
+  private final String _name;
+
   private Interface _parent;
 
   private Integer _tag;
 
-  private final SortedSet<Interface> _units;
+  private final SortedMap<String, Interface> _units;
 
   public Interface(String name) {
-    super(name);
     _active = true;
     _allAddresses = new LinkedHashSet<>();
-    _units = new TreeSet<>();
     _mtu = DEFAULT_INTERFACE_MTU;
+    _name = name;
+    _units = new TreeMap<>();
   }
 
   public boolean getActive() {
@@ -57,6 +59,10 @@ public final class Interface extends ComparableStructure<String> {
     return _mtu;
   }
 
+  public String getName() {
+    return _name;
+  }
+
   public Interface getParent() {
     return _parent;
   }
@@ -65,7 +71,7 @@ public final class Interface extends ComparableStructure<String> {
     return _tag;
   }
 
-  public SortedSet<Interface> getUnits() {
+  public SortedMap<String, Interface> getUnits() {
     return _units;
   }
 

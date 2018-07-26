@@ -1,8 +1,8 @@
 package org.batfish.representation.juniper;
 
-import org.batfish.common.util.ComparableStructure;
+import java.io.Serializable;
 
-public final class IpsecVpn extends ComparableStructure<String> {
+public final class IpsecVpn implements Serializable {
 
   /** */
   private static final long serialVersionUID = 1L;
@@ -13,8 +13,10 @@ public final class IpsecVpn extends ComparableStructure<String> {
 
   private String _ipsecPolicy;
 
+  private final String _name;
+
   public IpsecVpn(String name) {
-    super(name);
+    _name = name;
   }
 
   public Interface getBindInterface() {
@@ -27,6 +29,10 @@ public final class IpsecVpn extends ComparableStructure<String> {
 
   public String getIpsecPolicy() {
     return _ipsecPolicy;
+  }
+
+  public String getName() {
+    return _name;
   }
 
   public void setBindInterface(Interface iface) {

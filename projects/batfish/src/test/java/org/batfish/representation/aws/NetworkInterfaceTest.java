@@ -19,8 +19,8 @@ public class NetworkInterfaceTest {
     JSONObject jObj = new JSONObject(interfaces);
     JSONArray ifaceArray = jObj.getJSONArray("NetworkInterfaces");
 
-    NetworkInterface netIface1 = new NetworkInterface(ifaceArray.getJSONObject(0), null);
-    NetworkInterface netIface2 = new NetworkInterface(ifaceArray.getJSONObject(1), null);
+    NetworkInterface netIface1 = new NetworkInterface(ifaceArray.getJSONObject(0));
+    NetworkInterface netIface2 = new NetworkInterface(ifaceArray.getJSONObject(1));
 
     assertThat(netIface1.getAttachmentInstanceId(), equalTo("i-05f467abe21e9b883"));
     assertThat(netIface2.getAttachmentInstanceId(), equalTo(null));

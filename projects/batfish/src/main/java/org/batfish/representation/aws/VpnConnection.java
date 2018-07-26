@@ -182,7 +182,7 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
     JSONArray vgwTelemetry = jObj.getJSONArray(JSON_KEY_VGW_TELEMETRY);
     for (int index = 0; index < vgwTelemetry.length(); index++) {
       JSONObject childObject = vgwTelemetry.getJSONObject(index);
-      _vgwTelemetrys.add(new VgwTelemetry(childObject, logger));
+      _vgwTelemetrys.add(new VgwTelemetry(childObject));
     }
 
     if (jObj.has(JSON_KEY_OPTIONS)) {

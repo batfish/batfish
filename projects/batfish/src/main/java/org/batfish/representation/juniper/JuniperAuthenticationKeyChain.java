@@ -1,10 +1,10 @@
 package org.batfish.representation.juniper;
 
+import java.io.Serializable;
 import java.util.Map;
 import java.util.TreeMap;
-import org.batfish.common.util.ComparableStructure;
 
-public class JuniperAuthenticationKeyChain extends ComparableStructure<String> {
+public class JuniperAuthenticationKeyChain implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
@@ -14,10 +14,12 @@ public class JuniperAuthenticationKeyChain extends ComparableStructure<String> {
 
   private Map<String, JuniperAuthenticationKey> _keys;
 
+  private final String _name;
+
   private int _tolerance;
 
   public JuniperAuthenticationKeyChain(String name, int definitionLine) {
-    super(name);
+    _name = name;
     _definitionLine = definitionLine;
     _keys = new TreeMap<>();
   }
@@ -32,6 +34,10 @@ public class JuniperAuthenticationKeyChain extends ComparableStructure<String> {
 
   public Map<String, JuniperAuthenticationKey> getKeys() {
     return _keys;
+  }
+
+  public String getName() {
+    return _name;
   }
 
   public int getTolerance() {

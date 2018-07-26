@@ -7,8 +7,12 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.TreeMap;
+import java.util.stream.Collectors;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.IpAccessList;
@@ -48,7 +52,7 @@ public class AclLineIndependentSatisfiabilityTest {
     Batfish batfish = BatfishTestUtils.getBatfish(configurations, _folder);
 
     Set<Integer> unmatchable =
-        batfish.computeIndependentlyUnmatchableAclLines(_c, "acl", ImmutableSet.of(0, 1));
+        computeIndependentlyUnmatchableAclLines(batfish, _c, "acl", ImmutableSet.of(0, 1));
 
     assertThat(unmatchable, equalTo(ImmutableSet.of(0)));
   }
@@ -60,7 +64,7 @@ public class AclLineIndependentSatisfiabilityTest {
     Batfish batfish = BatfishTestUtils.getBatfish(configurations, _folder);
 
     Set<Integer> unmatchable =
-        batfish.computeIndependentlyUnmatchableAclLines(_c, "acl", ImmutableSet.of(0, 1));
+        computeIndependentlyUnmatchableAclLines(batfish, _c, "acl", ImmutableSet.of(0, 1));
 
     assertThat(unmatchable, equalTo(ImmutableSet.of(1)));
   }
@@ -72,7 +76,7 @@ public class AclLineIndependentSatisfiabilityTest {
     Batfish batfish = BatfishTestUtils.getBatfish(configurations, _folder);
 
     Set<Integer> unmatchable =
-        batfish.computeIndependentlyUnmatchableAclLines(_c, "acl", ImmutableSet.of(0, 1));
+        computeIndependentlyUnmatchableAclLines(batfish, _c, "acl", ImmutableSet.of(0, 1));
 
     assertThat(unmatchable, equalTo(ImmutableSet.of(0, 1)));
   }
@@ -84,8 +88,23 @@ public class AclLineIndependentSatisfiabilityTest {
     Batfish batfish = BatfishTestUtils.getBatfish(configurations, _folder);
 
     Set<Integer> unmatchable =
-        batfish.computeIndependentlyUnmatchableAclLines(_c, "acl", ImmutableSet.of(0, 1));
+        computeIndependentlyUnmatchableAclLines(batfish, _c, "acl", ImmutableSet.of(0, 1));
 
     assertThat(unmatchable, equalTo(ImmutableSet.of()));
+  }
+
+  private Set<Integer> computeIndependentlyUnmatchableAclLines(
+      Batfish batfish, Configuration c, String aclName, Set<Integer> linesToCheck) {
+    List<NodSatJob<AclLine>> jobs =
+        batfish.generateUnmatchableAclLineJobs(c, aclName, linesToCheck);
+    Map<AclLine, Boolean> satisfiabilityByLine = new TreeMap<>();
+    batfish.computeNodSatOutput(jobs, satisfiabilityByLine);
+
+    return satisfiabilityByLine
+        .entrySet()
+        .stream()
+        .filter(e -> !e.getValue())
+        .map(e -> e.getKey().getLine())
+        .collect(Collectors.toSet());
   }
 }
