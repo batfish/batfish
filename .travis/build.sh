@@ -21,7 +21,7 @@ exit_code=0
 echo -e "\n  ..... Running question formatting tests"
 pushd tests
 python3 -m pytest || exit_code=$?
-popd tests
+popd
 
 echo -e "\n  ..... Running parsing tests"
 allinone -cmdfile tests/parsing-tests/commands || exit_code=$?
