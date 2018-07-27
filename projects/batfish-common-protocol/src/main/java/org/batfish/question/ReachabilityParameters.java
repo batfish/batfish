@@ -67,13 +67,13 @@ public final class ReachabilityParameters {
       return this;
     }
 
-    public Builder setFinalNodesSpecifier(NodeSpecifier finalNodeSpecifier) {
+    public Builder setFinalNodesSpecifier(@Nullable NodeSpecifier finalNodeSpecifier) {
       _finalNodesSpecifier = finalNodeSpecifier;
       return this;
     }
 
     public Builder setForbiddenTransitNodesSpecifier(
-        @Nonnull NodeSpecifier forbiddenTransitNodesSpecifier) {
+        @Nullable NodeSpecifier forbiddenTransitNodesSpecifier) {
       _forbiddenTransitNodesSpecifier = forbiddenTransitNodesSpecifier;
       return this;
     }
@@ -88,7 +88,7 @@ public final class ReachabilityParameters {
       return this;
     }
 
-    public Builder setHeaderSpace(HeaderSpace headerSpace) {
+    public Builder setHeaderSpace(@Nonnull HeaderSpace headerSpace) {
       _headerSpace = headerSpace;
       return this;
     }
@@ -121,8 +121,7 @@ public final class ReachabilityParameters {
 
   private final SortedSet<ForwardingAction> _actions;
 
-  private @Nonnull IpSpaceSpecifier _destinationIpSpaceSpecifier =
-      new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE);
+  private final @Nonnull IpSpaceSpecifier _destinationIpSpaceSpecifier;
 
   private final @Nullable NodeSpecifier _finalNodesSpecifier;
 
@@ -172,10 +171,12 @@ public final class ReachabilityParameters {
     return _destinationIpSpaceSpecifier;
   }
 
+  @Nullable
   public NodeSpecifier getFinalNodesSpecifier() {
     return _finalNodesSpecifier;
   }
 
+  @Nullable
   public NodeSpecifier getForbiddenTransitNodesSpecifier() {
     return _forbiddenTransitNodesSpecifier;
   }
@@ -204,6 +205,7 @@ public final class ReachabilityParameters {
     return _specialize;
   }
 
+  @Nullable
   public NodeSpecifier getRequiredTransitNodesSpecifier() {
     return _requiredTransitNodesSpecifier;
   }
