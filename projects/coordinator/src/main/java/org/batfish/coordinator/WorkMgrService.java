@@ -2051,44 +2051,7 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_TESTRIG_NAME) String testrigName,
       @FormDataParam(CoordConsts.SVC_KEY_ZIPFILE) InputStream fileStream,
       @FormDataParam(CoordConsts.SVC_KEY_AUTO_ANALYZE_TESTRIG) String autoAnalyzeStr) {
-    try {
-      _logger.infof("WMS:uploadTestrig %s %s %s\n", apiKey, containerName, testrigName);
-
-      checkStringParam(apiKey, "API key");
-      checkStringParam(clientVersion, "Client version");
-      checkStringParam(containerName, "Container name");
-      checkStringParam(testrigName, "Testrig name");
-
-      checkApiKeyValidity(apiKey);
-      checkClientVersion(clientVersion);
-      checkNetworkAccessibility(apiKey, containerName);
-
-      boolean autoAnalyze = false;
-      if (!Strings.isNullOrEmpty(autoAnalyzeStr)) {
-        autoAnalyze = Boolean.parseBoolean(autoAnalyzeStr);
-      }
-
-      if (GlobalTracer.get().activeSpan() != null) {
-        GlobalTracer.get()
-            .activeSpan()
-            .setTag("container-name", containerName)
-            .setTag("testrig-name", testrigName);
-      }
-
-      Main.getWorkMgr().uploadSnapshot(containerName, testrigName, fileStream, autoAnalyze);
-      _logger.infof(
-          "Uploaded testrig:%s for container:%s using api-key:%s\n",
-          testrigName, containerName, apiKey);
-      return successResponse(new JSONObject().put("result", "successfully uploaded testrig"));
-    } catch (IllegalArgumentException | AccessControlException e) {
-      _logger.errorf("WMS:uploadTestrig exception: %s\n", e.getMessage());
-      return failureResponse(e.getMessage());
-    } catch (Exception e) {
-      String stackTrace = Throwables.getStackTraceAsString(e);
-      _logger.errorf(
-          "WMS:uploadTestrig exception for apikey:%s in container:%s, testrig:%s; exception:%s",
-          apiKey, containerName, testrigName, stackTrace);
-      return failureResponse(e.getMessage());
-    }
+    return uploadSnapshot(
+        apiKey, clientVersion, containerName, testrigName, fileStream, autoAnalyzeStr);
   }
 }
