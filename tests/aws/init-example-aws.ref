@@ -12,7 +12,7 @@
   {
     "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
     "definedStructures" : {
-      "lhr-border-02" : {
+      "configs/lhr-border-02.cfg" : {
         "bgp group" : {
           "FW" : {
             "definitionLines" : [

@@ -31,6 +31,7 @@ public class CiscoConfigurationTest {
     _config = new CiscoConfiguration(Collections.emptySet());
     _config.setVendor(ConfigurationFormat.ARISTA);
     _config.setHostname("host");
+    _config.setFilename("configs/host.cfg");
     _config.setAnswerElement(new ConvertConfigurationAnswerElement());
     _interface = new Interface("iface", _config);
   }
