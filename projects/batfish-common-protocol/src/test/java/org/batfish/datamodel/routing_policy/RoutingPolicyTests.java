@@ -37,8 +37,7 @@ public class RoutingPolicyTests {
     NetworkFactory nf = new NetworkFactory();
     _c = nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
     _rpb = nf.routingPolicyBuilder().setOwner(_c);
-    _w = new Warnings();
-    _w.setRedFlagRecord(true);
+    _w = new Warnings(true, true, true, false);
   }
 
   /** Policy with actual circular reference as statement */
