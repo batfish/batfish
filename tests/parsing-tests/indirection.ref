@@ -3,9 +3,9 @@
     {
       "class" : "org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement",
       "fileMap" : {
-        "n1" : "n1",
-        "n2" : "n2",
-        "n3" : "n3"
+        "n1" : "configs/n1",
+        "n2" : "configs/n2",
+        "n3" : "configs/n3"
       },
       "parseStatus" : {
         "n1" : "PASSED",

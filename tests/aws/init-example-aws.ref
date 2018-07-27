@@ -2,7 +2,7 @@
   {
     "class" : "org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement",
     "fileMap" : {
-      "lhr-border-02" : "lhr-border-02.cfg"
+      "lhr-border-02" : "configs/lhr-border-02.cfg"
     },
     "parseStatus" : {
       "lhr-border-02" : "PASSED"

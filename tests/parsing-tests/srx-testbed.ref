@@ -3,9 +3,9 @@
     {
       "class" : "org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement",
       "fileMap" : {
-        "junos-srx-1" : "junos-srx-1.cfg",
-        "junos-srx-2" : "junos-srx-2.cfg",
-        "junos-srx-3" : "junos-srx-3.cfg"
+        "junos-srx-1" : "configs/junos-srx-1.cfg",
+        "junos-srx-2" : "configs/junos-srx-2.cfg",
+        "junos-srx-3" : "configs/junos-srx-3.cfg"
       },
       "parseStatus" : {
         "junos-srx-1" : "PASSED",

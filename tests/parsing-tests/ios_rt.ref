@@ -3,16 +3,16 @@
     {
       "class" : "org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement",
       "fileMap" : {
-        "fra-border-01" : "fra-border-01.cfg",
-        "lhr-border-01" : "lhr-border-01.cfg",
-        "lhr-border-02" : "lhr-border-02.cfg",
-        "lhr-fw-01" : "lhr-fw-01.cfg",
-        "lhr-fw-02" : "lhr-fw-02.cfg",
-        "lhr-leaf-01" : "lhr-leaf-01.cfg",
-        "lhr-leaf-02" : "lhr-leaf-02.cfg",
-        "lhr-spine-01" : "lhr-spine-01.cfg",
-        "lhr-spine-02" : "lhr-spine-02.cfg",
-        "lix-peer-01" : "lix-peer-01.cfg"
+        "fra-border-01" : "configs/fra-border-01.cfg",
+        "lhr-border-01" : "configs/lhr-border-01.cfg",
+        "lhr-border-02" : "configs/lhr-border-02.cfg",
+        "lhr-fw-01" : "configs/lhr-fw-01.cfg",
+        "lhr-fw-02" : "configs/lhr-fw-02.cfg",
+        "lhr-leaf-01" : "configs/lhr-leaf-01.cfg",
+        "lhr-leaf-02" : "configs/lhr-leaf-02.cfg",
+        "lhr-spine-01" : "configs/lhr-spine-01.cfg",
+        "lhr-spine-02" : "configs/lhr-spine-02.cfg",
+        "lix-peer-01" : "configs/lix-peer-01.cfg"
       },
       "parseStatus" : {
         "fra-border-01" : "PASSED",

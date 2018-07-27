@@ -3,9 +3,9 @@
     {
       "class" : "org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement",
       "fileMap" : {
-        "as1r1" : "as1r1.cfg",
-        "as1r2" : "as1r2.cfg",
-        "as2r1" : "as2r1.cfg"
+        "as1r1" : "configs/as1r1.cfg",
+        "as1r2" : "configs/as1r2.cfg",
+        "as2r1" : "configs/as2r1.cfg"
       },
       "parseStatus" : {
         "as1r1" : "PASSED",
