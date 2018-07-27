@@ -7,7 +7,7 @@ import net.sf.javabdd.BDD;
 import org.batfish.z3.expr.StateExpr;
 
 final class Edge {
-  final @Nullable BDD _constraint;
+  final @Nonnull BDD _constraint;
   final @Nonnull StateExpr _postState;
   final @Nonnull StateExpr _preState;
   final @Nullable List<BDDSourceNat> _sourceNats;
@@ -22,14 +22,15 @@ final class Edge {
   Edge(
       @Nonnull StateExpr preState,
       @Nonnull StateExpr postState,
+      @Nonnull BDD constraint,
       @Nullable List<BDDSourceNat> sourceNats) {
-    _constraint = null;
+    _constraint = constraint;
     _postState = postState;
     _preState = preState;
     _sourceNats = sourceNats;
   }
 
-  public @Nullable BDD getConstraint() {
+  public @Nonnull BDD getConstraint() {
     return _constraint;
   }
 

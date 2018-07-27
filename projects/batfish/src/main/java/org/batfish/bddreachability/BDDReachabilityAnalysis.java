@@ -80,8 +80,10 @@ public class BDDReachabilityAnalysis {
   private Set<StateExpr> _leafStates;
 
   BDDReachabilityAnalysis(
-      Map<StateExpr, BDD> graphRoots, Map<StateExpr, Map<StateExpr, Edge>> transitions) {
-    _bddPacket = new BDDPacket();
+      BDDPacket packet,
+      Map<StateExpr, BDD> graphRoots,
+      Map<StateExpr, Map<StateExpr, Edge>> transitions) {
+    _bddPacket = packet;
     _edges = computeEdges(graphRoots, transitions);
     _reverseEdges = computeReverseEdges(_edges);
     _graphRoots = ImmutableMap.copyOf(graphRoots);

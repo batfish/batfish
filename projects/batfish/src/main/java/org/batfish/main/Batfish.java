@@ -194,6 +194,7 @@ import org.batfish.specifier.UnionLocationSpecifier;
 import org.batfish.symbolic.abstraction.BatfishCompressor;
 import org.batfish.symbolic.abstraction.Roles;
 import org.batfish.symbolic.bdd.BDDAcl;
+import org.batfish.symbolic.bdd.BDDPacket;
 import org.batfish.symbolic.smt.PropertyChecker;
 import org.batfish.vendor.VendorConfiguration;
 import org.batfish.z3.AclIdentifier;
@@ -1062,7 +1063,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
             .collect(toMap(Entry::getKey, entry -> SerializationUtils.clone(entry.getValue())));
 
     Map<String, Configuration> configs =
-        new BatfishCompressor(this, clonedConfigs).compress(headerSpace);
+        new BatfishCompressor(new BDDPacket(), this, clonedConfigs).compress(headerSpace);
     Topology topo = CommonUtil.synthesizeTopology(configs);
     DataPlanePlugin dataPlanePlugin = getDataPlanePlugin();
     ComputeDataPlaneResult result = dataPlanePlugin.computeDataPlane(false, configs, topo);
@@ -4287,7 +4288,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public Optional<Flow> reachFilter(String nodeName, IpAccessList acl) {
-    BDDAcl bddAcl = BDDAcl.create(acl);
+    BDDPacket bddPacket = new BDDPacket();
+    BDDAcl bddAcl = BDDAcl.create(bddPacket, acl);
     return bddAcl
         .getPkt()
         .getFlow(bddAcl.getBdd())
@@ -4296,7 +4298,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public AnswerElement smtBlackhole(HeaderQuestion q) {
-    PropertyChecker p = new PropertyChecker(this, _settings);
+    PropertyChecker p = new PropertyChecker(new BDDPacket(), this, _settings);
     return p.checkBlackHole(q);
   }
 
@@ -4305,49 +4307,49 @@ public class Batfish extends PluginConsumer implements IBatfish {
     if (bound == null) {
       throw new BatfishException("Missing parameter length bound: (e.g., bound=3)");
     }
-    PropertyChecker p = new PropertyChecker(this, _settings);
+    PropertyChecker p = new PropertyChecker(new BDDPacket(), this, _settings);
     return p.checkBoundedLength(q, bound);
   }
 
   @Override
   public AnswerElement smtDeterminism(HeaderQuestion q) {
-    PropertyChecker p = new PropertyChecker(this, _settings);
+    PropertyChecker p = new PropertyChecker(new BDDPacket(), this, _settings);
     return p.checkDeterminism(q);
   }
 
   @Override
   public AnswerElement smtEqualLength(HeaderLocationQuestion q) {
-    PropertyChecker p = new PropertyChecker(this, _settings);
+    PropertyChecker p = new PropertyChecker(new BDDPacket(), this, _settings);
     return p.checkEqualLength(q);
   }
 
   @Override
   public AnswerElement smtForwarding(HeaderQuestion q) {
-    PropertyChecker p = new PropertyChecker(this, _settings);
+    PropertyChecker p = new PropertyChecker(new BDDPacket(), this, _settings);
     return p.checkForwarding(q);
   }
 
   @Override
   public AnswerElement smtLoadBalance(HeaderLocationQuestion q, int threshold) {
-    PropertyChecker p = new PropertyChecker(this, _settings);
+    PropertyChecker p = new PropertyChecker(new BDDPacket(), this, _settings);
     return p.checkLoadBalancing(q, threshold);
   }
 
   @Override
   public AnswerElement smtLocalConsistency(Pattern routerRegex, boolean strict, boolean fullModel) {
-    PropertyChecker p = new PropertyChecker(this, _settings);
+    PropertyChecker p = new PropertyChecker(new BDDPacket(), this, _settings);
     return p.checkLocalEquivalence(routerRegex, strict, fullModel);
   }
 
   @Override
   public AnswerElement smtMultipathConsistency(HeaderLocationQuestion q) {
-    PropertyChecker p = new PropertyChecker(this, _settings);
+    PropertyChecker p = new PropertyChecker(new BDDPacket(), this, _settings);
     return p.checkMultipathConsistency(q);
   }
 
   @Override
   public AnswerElement smtReachability(HeaderLocationQuestion q) {
-    PropertyChecker p = new PropertyChecker(this, _settings);
+    PropertyChecker p = new PropertyChecker(new BDDPacket(), this, _settings);
     return p.checkReachability(q);
   }
 
@@ -4359,7 +4361,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public AnswerElement smtRoutingLoop(HeaderQuestion q) {
-    PropertyChecker p = new PropertyChecker(this, _settings);
+    PropertyChecker p = new PropertyChecker(new BDDPacket(), this, _settings);
     return p.checkRoutingLoop(q);
   }
 
@@ -4432,7 +4434,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         InferFromLocationIpSpaceSpecifier.INSTANCE.resolve(locations, specifierContext);
 
     BDDReachabilityAnalysisFactory analysisFactory =
-        new BDDReachabilityAnalysisFactory(configurations, forwardingAnalysis);
+        new BDDReachabilityAnalysisFactory(new BDDPacket(), configurations, forwardingAnalysis);
     BDDReachabilityAnalysis bddReachabilityAnalysis =
         analysisFactory.bddReachabilityAnalysis(sourceIpAssignment);
 

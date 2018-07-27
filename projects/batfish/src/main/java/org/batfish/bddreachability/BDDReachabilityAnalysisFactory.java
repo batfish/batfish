@@ -109,8 +109,8 @@ public final class BDDReachabilityAnalysisFactory {
   private final Map<String, Map<String, BDD>> _vrfNotAcceptBDDs;
 
   public BDDReachabilityAnalysisFactory(
-      Map<String, Configuration> configs, ForwardingAnalysis forwardingAnalysis) {
-    _bddPacket = new BDDPacket();
+      BDDPacket packet, Map<String, Configuration> configs, ForwardingAnalysis forwardingAnalysis) {
+    _bddPacket = packet;
     _configs = configs;
     _forwardingAnalysis = forwardingAnalysis;
     _dstIpSpaceToBDD = new IpSpaceToBDD(_bddPacket.getFactory(), _bddPacket.getDstIp());
@@ -137,8 +137,7 @@ public final class BDDReachabilityAnalysisFactory {
                     postStateEntry -> postStateEntry.getValue().getConstraint()));
   }
 
-  private static Map<String, Map<String, BDDAcl>> computeBDDAcls(
-      Map<String, Configuration> configs) {
+  private Map<String, Map<String, BDDAcl>> computeBDDAcls(Map<String, Configuration> configs) {
     return toImmutableMap(
         configs,
         Entry::getKey,
@@ -146,7 +145,7 @@ public final class BDDReachabilityAnalysisFactory {
             toImmutableMap(
                 nodeEntry.getValue().getIpAccessLists(),
                 Entry::getKey,
-                aclEntry -> BDDAcl.create(aclEntry.getValue())));
+                aclEntry -> BDDAcl.create(_bddPacket, aclEntry.getValue())));
   }
 
   private static Map<String, Map<String, BDD>> computeAclDenyBDDs(
@@ -490,7 +489,8 @@ public final class BDDReachabilityAnalysisFactory {
                 bddSourceNats = bddSourceNatBuilder.build();
               }
 
-              return new Edge(preOutEdge, preOutEdgePostNat, bddSourceNats);
+              return new Edge(
+                  preOutEdge, preOutEdgePostNat, _bddPacket.getFactory().one(), bddSourceNats);
             });
   }
 
@@ -662,9 +662,8 @@ public final class BDDReachabilityAnalysisFactory {
   public BDDReachabilityAnalysis bddReachabilityAnalysis(
       IpSpaceAssignment srcIpSpaceAssignment, IpSpace dstIpSpace) {
     Map<StateExpr, BDD> roots = new HashMap<>();
-    BDDPacket pkt = new BDDPacket();
-    IpSpaceToBDD srcIpSpaceToBDD = new IpSpaceToBDD(_bddPacket.getFactory(), pkt.getSrcIp());
-    IpSpaceToBDD dstIpSpaceToBDD = new IpSpaceToBDD(_bddPacket.getFactory(), pkt.getDstIp());
+    IpSpaceToBDD srcIpSpaceToBDD = new IpSpaceToBDD(_bddPacket.getFactory(), _bddPacket.getSrcIp());
+    IpSpaceToBDD dstIpSpaceToBDD = new IpSpaceToBDD(_bddPacket.getFactory(), _bddPacket.getDstIp());
     BDD dstIpSpaceBDD = dstIpSpace.accept(dstIpSpaceToBDD);
 
     for (IpSpaceAssignment.Entry entry : srcIpSpaceAssignment.getEntries()) {
@@ -676,7 +675,7 @@ public final class BDDReachabilityAnalysisFactory {
       }
     }
 
-    return new BDDReachabilityAnalysis(roots, _edges);
+    return new BDDReachabilityAnalysis(_bddPacket, roots, _edges);
   }
 
   private String ifaceVrf(String node, String iface) {

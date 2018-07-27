@@ -118,7 +118,7 @@ public final class BDDReachabilityAnalysisTest {
     _batfish.computeDataPlane(false);
     DataPlane dataPlane = _batfish.loadDataPlane();
     _graphFactory =
-        new BDDReachabilityAnalysisFactory(_net._configs, dataPlane.getForwardingAnalysis());
+        new BDDReachabilityAnalysisFactory(PKT, _net._configs, dataPlane.getForwardingAnalysis());
 
     IpSpaceAssignment assignment =
         IpSpaceAssignment.builder()
@@ -373,7 +373,7 @@ public final class BDDReachabilityAnalysisTest {
         _graphFactory.bddReachabilityAnalysis(assignment, _dstIface2Ip.toIpSpace());
 
     BDD natAclIpBDD = srcIpBDD(SOURCE_NAT_ACL_IP);
-    BDD srcNatAclBDD = BDDAcl.create(_net._link2SrcSourceNatAcl).getBdd();
+    BDD srcNatAclBDD = BDDAcl.create(PKT, _net._link2SrcSourceNatAcl).getBdd();
     assertThat(srcNatAclBDD, equalTo(natAclIpBDD));
 
     OriginateVrf originateVrf = new OriginateVrf(_srcName, Configuration.DEFAULT_VRF_NAME);

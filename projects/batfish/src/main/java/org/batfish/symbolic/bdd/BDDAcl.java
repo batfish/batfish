@@ -33,11 +33,14 @@ public class BDDAcl {
   private BDDPacket _pkt;
 
   private BDDAcl(
-      IpAccessList acl, Map<String, Supplier<BDD>> aclEnv, Map<String, IpSpace> ipSpaceEnv) {
+      BDDPacket pkt,
+      IpAccessList acl,
+      Map<String, Supplier<BDD>> aclEnv,
+      Map<String, IpSpace> ipSpaceEnv) {
     _bdd = null;
     _acl = acl;
     _aclEnv = ImmutableMap.copyOf(aclEnv);
-    _pkt = new BDDPacket();
+    _pkt = pkt;
     _factory = _pkt.getFactory();
     _ipSpaceEnv = ImmutableMap.copyOf(ipSpaceEnv);
   }
@@ -50,14 +53,17 @@ public class BDDAcl {
     _pkt = other._pkt;
   }
 
-  public static BDDAcl create(IpAccessList acl) {
-    BDDAcl abdd = new BDDAcl(acl, ImmutableMap.of(), ImmutableMap.of());
+  public static BDDAcl create(BDDPacket pkt, IpAccessList acl) {
+    BDDAcl abdd = new BDDAcl(pkt, acl, ImmutableMap.of(), ImmutableMap.of());
     abdd.computeACL();
     return abdd;
   }
 
   public static BDDAcl create(
-      IpAccessList acl, Map<String, IpAccessList> aclEnv, Map<String, IpSpace> ipSpaceEnv) {
+      BDDPacket pkt,
+      IpAccessList acl,
+      Map<String, IpAccessList> aclEnv,
+      Map<String, IpSpace> ipSpaceEnv) {
     // use laziness to tie the recursive knot.
     Map<String, Supplier<BDD>> bddAclEnv = new HashMap<>();
     aclEnv.forEach(
@@ -66,16 +72,19 @@ public class BDDAcl {
                 name,
                 Suppliers.memoize(
                     new NonRecursiveSupplier<>(
-                        () -> createWithBDDAclEnv(namedAcl, bddAclEnv, ipSpaceEnv)._bdd))));
+                        () -> createWithBDDAclEnv(pkt, namedAcl, bddAclEnv, ipSpaceEnv)._bdd))));
 
-    BDDAcl abdd = new BDDAcl(acl, bddAclEnv, ipSpaceEnv);
+    BDDAcl abdd = new BDDAcl(pkt, acl, bddAclEnv, ipSpaceEnv);
     abdd.computeACL();
     return abdd;
   }
 
   private static BDDAcl createWithBDDAclEnv(
-      IpAccessList acl, Map<String, Supplier<BDD>> aclEnv, Map<String, IpSpace> ipSpaceEnv) {
-    BDDAcl abdd = new BDDAcl(acl, aclEnv, ipSpaceEnv);
+      BDDPacket pkt,
+      IpAccessList acl,
+      Map<String, Supplier<BDD>> aclEnv,
+      Map<String, IpSpace> ipSpaceEnv) {
+    BDDAcl abdd = new BDDAcl(pkt, acl, aclEnv, ipSpaceEnv);
     abdd.computeACL();
     return abdd;
   }
