@@ -108,8 +108,8 @@ public class Main {
         String key = name.toLowerCase();
         if (templates.containsKey(key) && _logger != null) {
           _logger.warnf(
-              "Found duplicate template having instance name %s, only %s will be loaded",
-              name, file);
+              "Found duplicate template having instance name %s, only the last one in the list of templatedirs will be loaded",
+              name);
         }
 
         templates.put(key, questionText);

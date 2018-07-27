@@ -22,7 +22,6 @@ import org.junit.runners.JUnit4;
 public class MainTest {
 
   private static final String DUPLICATE_TEMPLATE_NAME = "duplicate_template";
-  private static final String DUPLICATE_TEMPLATE_NAME_CAPS = "DUPLICATE_TEMPLATE";
   private static final String NEW_TEMPLATE_NAME = "new_template";
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
@@ -62,7 +61,7 @@ public class MainTest {
     testQuestion.put(
         "instance",
         new JSONObject()
-            .put("instanceName", DUPLICATE_TEMPLATE_NAME_CAPS)
+            .put("instanceName", DUPLICATE_TEMPLATE_NAME.toUpperCase())
             .put("description", "test question description"));
     Path questionJsonPath = _folder.newFile("testquestion.json").toPath();
     CommonUtil.writeFile(questionJsonPath, testQuestion.toString());
