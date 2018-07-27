@@ -38,7 +38,7 @@ public class CiscoConversionsTest {
 
   @Before
   public void before() {
-    _warnings = new Warnings(false, true, false, true, false, true, false);
+    _warnings = new Warnings(true, true, true, false);
     _nf = new NetworkFactory();
   }
 

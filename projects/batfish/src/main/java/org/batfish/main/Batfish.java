@@ -923,11 +923,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   public static Warnings buildWarnings(Settings settings) {
     return new Warnings(
-        settings.getPedanticAsError(),
         settings.getPedanticRecord() && settings.getLogger().isActive(BatfishLogger.LEVEL_PEDANTIC),
-        settings.getRedFlagAsError(),
         settings.getRedFlagRecord() && settings.getLogger().isActive(BatfishLogger.LEVEL_REDFLAG),
-        settings.getUnimplementedAsError(),
         settings.getUnimplementedRecord()
             && settings.getLogger().isActive(BatfishLogger.LEVEL_UNIMPLEMENTED),
         settings.getPrintParseTree());
