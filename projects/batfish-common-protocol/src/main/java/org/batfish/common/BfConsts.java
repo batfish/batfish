@@ -152,6 +152,7 @@ public class BfConsts {
   public static final String RELPATH_ORIGINAL_DIR = "original";
   public static final String RELPATH_PARSE_ANSWER_PATH = "parse_answer";
   public static final String RELPATH_REFERENCE_LIBRARY_PATH = "address_library.json";
+  public static final String RELPATH_SNAPSHOT_ZIP_FILE = "snapshot.zip";
   public static final String RELPATH_TESTRIG_POJO_TOPOLOGY_PATH = "testrig_pojo_topology";
   public static final String RELPATH_TESTRIG_ZIP_FILE = "testrig.zip";
   public static final String RELPATH_PRECOMPUTED_ROUTES = "precomputedroutes";

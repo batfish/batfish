@@ -59,8 +59,7 @@ public class NodeRoleDimensionResourceTest extends WorkMgrServiceV2TestBase {
             ImmutableSortedSet.of(
                 new NodeRoleDimension("dimension1", ImmutableSortedSet.of(), null, null)));
     NodeRolesData.write(
-        data,
-        Main.getWorkMgr().getdirContainer(container).resolve(BfConsts.RELPATH_NODE_ROLES_PATH));
+        data, Main.getWorkMgr().getdirNetwork(container).resolve(BfConsts.RELPATH_NODE_ROLES_PATH));
 
     Response response = getNodeRoleDimensionTarget(container, "dimension1").delete();
 
@@ -88,7 +87,7 @@ public class NodeRoleDimensionResourceTest extends WorkMgrServiceV2TestBase {
         new NodeRoleDimension("dimension1", ImmutableSortedSet.of(), null, null);
     NodeRolesData.write(
         new NodeRolesData(null, null, ImmutableSortedSet.of(dimension1)),
-        Main.getWorkMgr().getdirContainer(container).resolve(BfConsts.RELPATH_NODE_ROLES_PATH));
+        Main.getWorkMgr().getdirNetwork(container).resolve(BfConsts.RELPATH_NODE_ROLES_PATH));
 
     // we only check that the right type of object is returned at the expected URL target
     // we rely on NodeRolesDataBean to have created the object with the right content
