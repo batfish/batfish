@@ -37,9 +37,9 @@ public class BDDAcl {
     _bdd = null;
     _acl = acl;
     _aclEnv = ImmutableMap.copyOf(aclEnv);
-    _factory = BDDPacket.factory;
-    _ipSpaceEnv = ImmutableMap.copyOf(ipSpaceEnv);
     _pkt = new BDDPacket();
+    _factory = _pkt.getFactory();
+    _ipSpaceEnv = ImmutableMap.copyOf(ipSpaceEnv);
   }
 
   private BDDAcl(BDDAcl other) {

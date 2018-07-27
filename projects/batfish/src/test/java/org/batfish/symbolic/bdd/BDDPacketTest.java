@@ -28,7 +28,7 @@ public class BDDPacketTest {
   @Test
   public void testGetFlow_empty() {
     BDDPacket pkt = new BDDPacket();
-    assertThat(pkt.getFlow(BDDPacket.factory.zero()), equalTo(Optional.empty()));
+    assertThat(pkt.getFlow(pkt.getFactory().zero()), equalTo(Optional.empty()));
   }
 
   @Test

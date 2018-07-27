@@ -61,6 +61,8 @@ import org.junit.rules.TemporaryFolder;
 public final class BDDReachabilityAnalysisTest {
   @Rule public TemporaryFolder temp = new TemporaryFolder();
 
+  private static final BDDPacket PKT = new BDDPacket();
+
   private static final String FLOW_TAG = "FLOW_TAG";
 
   private BDDReachabilityAnalysis _graph;
@@ -125,7 +127,7 @@ public final class BDDReachabilityAnalysisTest {
                 UniverseIpSpace.INSTANCE)
             .build();
     _graph = _graphFactory.bddReachabilityAnalysis(assignment);
-    _bddOps = new BDDOps(BDDPacket.factory);
+    _bddOps = new BDDOps(PKT.getFactory());
     _dstIface1Ip = DST_PREFIX_1.getStartIp();
     _dstIface1IpBDD = dstIpBDD(_dstIface1Ip);
     _dstIface2Ip = DST_PREFIX_2.getStartIp();
@@ -186,15 +188,15 @@ public final class BDDReachabilityAnalysisTest {
   }
 
   private static BDD dstIpBDD(Ip ip) {
-    return new IpSpaceToBDD(BDDPacket.factory, new BDDPacket().getDstIp()).toBDD(ip);
+    return new IpSpaceToBDD(PKT.getFactory(), PKT.getDstIp()).toBDD(ip);
   }
 
   private static BDD dstPortBDD(int destPort) {
-    return new BDDPacket().getDstPort().value(destPort);
+    return PKT.getDstPort().value(destPort);
   }
 
   private static BDD srcIpBDD(Ip ip) {
-    return new IpSpaceToBDD(BDDPacket.factory, new BDDPacket().getSrcIp()).toBDD(ip);
+    return new IpSpaceToBDD(PKT.getFactory(), PKT.getSrcIp()).toBDD(ip);
   }
 
   private BDD or(BDD... bdds) {

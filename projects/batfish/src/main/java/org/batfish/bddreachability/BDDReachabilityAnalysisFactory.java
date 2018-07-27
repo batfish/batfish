@@ -113,7 +113,7 @@ public final class BDDReachabilityAnalysisFactory {
     _bddPacket = new BDDPacket();
     _configs = configs;
     _forwardingAnalysis = forwardingAnalysis;
-    _dstIpSpaceToBDD = new IpSpaceToBDD(BDDPacket.factory, _bddPacket.getDstIp());
+    _dstIpSpaceToBDD = new IpSpaceToBDD(_bddPacket.getFactory(), _bddPacket.getDstIp());
 
     Map<String, Map<String, BDDAcl>> bddAcls = computeBDDAcls(configs);
     _aclDenyBDDs = computeAclDenyBDDs(bddAcls);
@@ -273,7 +273,8 @@ public final class BDDReachabilityAnalysisFactory {
     return _configs
         .keySet()
         .stream()
-        .map(node -> new Edge(new NodeAccept(node), Accept.INSTANCE, BDDPacket.factory.one()));
+        .map(
+            node -> new Edge(new NodeAccept(node), Accept.INSTANCE, _bddPacket.getFactory().one()));
   }
 
   private Stream<Edge> generateRules_NodeDropAclIn_NodeDrop() {
@@ -281,7 +282,9 @@ public final class BDDReachabilityAnalysisFactory {
         .keySet()
         .stream()
         .map(
-            node -> new Edge(new NodeDropAclIn(node), new NodeDrop(node), BDDPacket.factory.one()));
+            node ->
+                new Edge(
+                    new NodeDropAclIn(node), new NodeDrop(node), _bddPacket.getFactory().one()));
   }
 
   private Stream<Edge> generateRules_NodeDropAclOut_NodeDrop() {
@@ -290,7 +293,8 @@ public final class BDDReachabilityAnalysisFactory {
         .stream()
         .map(
             node ->
-                new Edge(new NodeDropAclOut(node), new NodeDrop(node), BDDPacket.factory.one()));
+                new Edge(
+                    new NodeDropAclOut(node), new NodeDrop(node), _bddPacket.getFactory().one()));
   }
 
   private Stream<Edge> generateRules_NodeDropNoRoute_NodeDrop() {
@@ -299,7 +303,8 @@ public final class BDDReachabilityAnalysisFactory {
         .stream()
         .map(
             node ->
-                new Edge(new NodeDropNoRoute(node), new NodeDrop(node), BDDPacket.factory.one()));
+                new Edge(
+                    new NodeDropNoRoute(node), new NodeDrop(node), _bddPacket.getFactory().one()));
   }
 
   private Stream<Edge> generateRules_NodeDropNullRoute_NodeDrop() {
@@ -308,14 +313,17 @@ public final class BDDReachabilityAnalysisFactory {
         .stream()
         .map(
             node ->
-                new Edge(new NodeDropNullRoute(node), new NodeDrop(node), BDDPacket.factory.one()));
+                new Edge(
+                    new NodeDropNullRoute(node),
+                    new NodeDrop(node),
+                    _bddPacket.getFactory().one()));
   }
 
   private Stream<Edge> generateRules_NodeDrop_Drop() {
     return _configs
         .keySet()
         .stream()
-        .map(node -> new Edge(new NodeDrop(node), Drop.INSTANCE, BDDPacket.factory.one()));
+        .map(node -> new Edge(new NodeDrop(node), Drop.INSTANCE, _bddPacket.getFactory().one()));
   }
 
   private Stream<Edge> generateRules_NodeInterfaceNeighborUnreachable_NeighborUnreachable() {
@@ -330,7 +338,7 @@ public final class BDDReachabilityAnalysisFactory {
               return new Edge(
                   new NodeInterfaceNeighborUnreachable(nodeNode, ifaceName),
                   NeighborUnreachable.INSTANCE,
-                  BDDPacket.factory.one());
+                  _bddPacket.getFactory().one());
             });
   }
 
@@ -438,7 +446,7 @@ public final class BDDReachabilityAnalysisFactory {
 
               BDD inAclBDD =
                   aclName == null
-                      ? BDDPacket.factory.one()
+                      ? _bddPacket.getFactory().one()
                       : _aclPermitBDDs.get(nodeName).get(aclName);
               return new Edge(
                   new PreInInterface(nodeName, ifaceName),
@@ -528,7 +536,7 @@ public final class BDDReachabilityAnalysisFactory {
                   _configs.get(node1).getInterfaces().get(iface1).getOutgoingFilterName();
               BDD aclPermitBDD =
                   aclName == null
-                      ? BDDPacket.factory.one()
+                      ? _bddPacket.getFactory().one()
                       : _aclPermitBDDs.get(node1).get(aclName);
               assert aclPermitBDD != null;
 
@@ -590,7 +598,7 @@ public final class BDDReachabilityAnalysisFactory {
                                           .getOutgoingFilterName();
                                   BDD outAclBDD =
                                       outAcl == null
-                                          ? BDDPacket.factory.one()
+                                          ? _bddPacket.getFactory().one()
                                           : _aclPermitBDDs.get(node).get(outAcl);
                                   return new Edge(
                                       new PreOutVrf(node, vrf),
@@ -655,8 +663,8 @@ public final class BDDReachabilityAnalysisFactory {
       IpSpaceAssignment srcIpSpaceAssignment, IpSpace dstIpSpace) {
     Map<StateExpr, BDD> roots = new HashMap<>();
     BDDPacket pkt = new BDDPacket();
-    IpSpaceToBDD srcIpSpaceToBDD = new IpSpaceToBDD(BDDPacket.factory, pkt.getSrcIp());
-    IpSpaceToBDD dstIpSpaceToBDD = new IpSpaceToBDD(BDDPacket.factory, pkt.getDstIp());
+    IpSpaceToBDD srcIpSpaceToBDD = new IpSpaceToBDD(_bddPacket.getFactory(), pkt.getSrcIp());
+    IpSpaceToBDD dstIpSpaceToBDD = new IpSpaceToBDD(_bddPacket.getFactory(), pkt.getDstIp());
     BDD dstIpSpaceBDD = dstIpSpace.accept(dstIpSpaceToBDD);
 
     for (IpSpaceAssignment.Entry entry : srcIpSpaceAssignment.getEntries()) {

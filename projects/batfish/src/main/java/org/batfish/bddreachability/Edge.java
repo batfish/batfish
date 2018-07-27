@@ -4,11 +4,10 @@ import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
-import org.batfish.symbolic.bdd.BDDPacket;
 import org.batfish.z3.expr.StateExpr;
 
 final class Edge {
-  final @Nonnull BDD _constraint;
+  final @Nullable BDD _constraint;
   final @Nonnull StateExpr _postState;
   final @Nonnull StateExpr _preState;
   final @Nullable List<BDDSourceNat> _sourceNats;
@@ -24,17 +23,17 @@ final class Edge {
       @Nonnull StateExpr preState,
       @Nonnull StateExpr postState,
       @Nullable List<BDDSourceNat> sourceNats) {
-    _constraint = BDDPacket.factory.one();
+    _constraint = null;
     _postState = postState;
     _preState = preState;
     _sourceNats = sourceNats;
   }
 
-  public BDD getConstraint() {
+  public @Nullable BDD getConstraint() {
     return _constraint;
   }
 
-  public List<BDDSourceNat> getSourceNats() {
+  public @Nullable List<BDDSourceNat> getSourceNats() {
     return _sourceNats;
   }
 }

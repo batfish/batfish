@@ -25,29 +25,6 @@ import org.batfish.datamodel.State;
  */
 public class BDDPacket {
 
-  public static BDDFactory factory;
-
-  private static BDDPairing pairing;
-
-  static {
-    factory = JFactory.init(10000, 1000);
-    factory.disableReorder();
-    factory.setCacheRatio(64);
-    // Disables printing
-    /*
-    try {
-      CallbackHandler handler = new CallbackHandler();
-      Method m = handler.getClass().getDeclaredMethod("handle", (Class<?>[]) null);
-      factory.registerGCCallback(handler, m);
-      factory.registerResizeCallback(handler, m);
-      factory.registerReorderCallback(handler, m);
-    } catch (NoSuchMethodException e) {
-      e.printStackTrace();
-    }
-    */
-    pairing = factory.makePair();
-  }
-
   private static final int DSCP_LENGTH = 6;
 
   private static final int ECN_LENGTH = 2;
@@ -78,6 +55,8 @@ public class BDDPacket {
 
   private BDDInteger _ecn;
 
+  private final BDDFactory _factory;
+
   private BDDInteger _fragmentOffset;
 
   private BDDInteger _icmpCode;
@@ -85,6 +64,8 @@ public class BDDPacket {
   private BDDInteger _icmpType;
 
   private BDDInteger _ipProtocol;
+
+  private final BDDPairing _pairing;
 
   private BDDInteger _srcIp;
 
@@ -113,9 +94,25 @@ public class BDDPacket {
    * various attributes of a control plane advertisement.
    */
   public BDDPacket() {
+    _factory = JFactory.init(10000, 1000);
+    _factory.disableReorder();
+    _factory.setCacheRatio(64);
+    // Disables printing
+    /*
+    try {
+      CallbackHandler handler = new CallbackHandler();
+      Method m = handler.getClass().getDeclaredMethod("handle", (Class<?>[]) null);
+      factory.registerGCCallback(handler, m);
+      factory.registerResizeCallback(handler, m);
+      factory.registerReorderCallback(handler, m);
+    } catch (NoSuchMethodException e) {
+      e.printStackTrace();
+    }
+    */
+    _pairing = _factory.makePair();
 
     // Make sure we have the right number of variables
-    int numVars = factory.varNum();
+    int numVars = _factory.varNum();
     int numNeeded =
         IP_LENGTH * 2
             + PORT_LENGTH * 2
@@ -128,96 +125,70 @@ public class BDDPacket {
             + FRAGMENT_OFFSET_LENGTH
             + STATE_LENGTH;
     if (numVars < numNeeded) {
-      factory.setVarNum(numNeeded);
+      _factory.setVarNum(numNeeded);
     }
 
     _bitNames = new HashMap<>();
 
     // Initialize integer values
     int idx = 0;
-    _ipProtocol = BDDInteger.makeFromIndex(factory, IP_PROTOCOL_LENGTH, idx, false);
+    _ipProtocol = BDDInteger.makeFromIndex(_factory, IP_PROTOCOL_LENGTH, idx, false);
     addBitNames("ipProtocol", IP_PROTOCOL_LENGTH, idx, false);
     idx += IP_PROTOCOL_LENGTH;
-    _dstIp = BDDInteger.makeFromIndex(factory, IP_LENGTH, idx, true);
+    _dstIp = BDDInteger.makeFromIndex(_factory, IP_LENGTH, idx, true);
     addBitNames("dstIp", IP_LENGTH, idx, true);
     idx += IP_LENGTH;
-    _srcIp = BDDInteger.makeFromIndex(factory, IP_LENGTH, idx, true);
+    _srcIp = BDDInteger.makeFromIndex(_factory, IP_LENGTH, idx, true);
     addBitNames("srcIp", IP_LENGTH, idx, true);
     idx += IP_LENGTH;
-    _dstPort = BDDInteger.makeFromIndex(factory, PORT_LENGTH, idx, false);
+    _dstPort = BDDInteger.makeFromIndex(_factory, PORT_LENGTH, idx, false);
     addBitNames("dstPort", PORT_LENGTH, idx, false);
     idx += PORT_LENGTH;
-    _srcPort = BDDInteger.makeFromIndex(factory, PORT_LENGTH, idx, false);
+    _srcPort = BDDInteger.makeFromIndex(_factory, PORT_LENGTH, idx, false);
     addBitNames("srcPort", PORT_LENGTH, idx, false);
     idx += PORT_LENGTH;
-    _icmpCode = BDDInteger.makeFromIndex(factory, ICMP_CODE_LENGTH, idx, false);
+    _icmpCode = BDDInteger.makeFromIndex(_factory, ICMP_CODE_LENGTH, idx, false);
     addBitNames("icmpCode", ICMP_CODE_LENGTH, idx, false);
     idx += ICMP_CODE_LENGTH;
-    _icmpType = BDDInteger.makeFromIndex(factory, ICMP_TYPE_LENGTH, idx, false);
+    _icmpType = BDDInteger.makeFromIndex(_factory, ICMP_TYPE_LENGTH, idx, false);
     addBitNames("icmpType", ICMP_TYPE_LENGTH, idx, false);
     idx += ICMP_TYPE_LENGTH;
-    _tcpAck = factory.ithVar(idx);
+    _tcpAck = _factory.ithVar(idx);
     _bitNames.put(idx, "tcpAck");
     idx += TCP_FLAG_LENGTH;
-    _tcpCwr = factory.ithVar(idx);
+    _tcpCwr = _factory.ithVar(idx);
     _bitNames.put(idx, "tcpCwr");
     idx += TCP_FLAG_LENGTH;
-    _tcpEce = factory.ithVar(idx);
+    _tcpEce = _factory.ithVar(idx);
     _bitNames.put(idx, "tcpEce");
     idx += TCP_FLAG_LENGTH;
-    _tcpFin = factory.ithVar(idx);
+    _tcpFin = _factory.ithVar(idx);
     _bitNames.put(idx, "tcpFin");
     idx += TCP_FLAG_LENGTH;
-    _tcpPsh = factory.ithVar(idx);
+    _tcpPsh = _factory.ithVar(idx);
     _bitNames.put(idx, "tcpPsh");
     idx += TCP_FLAG_LENGTH;
-    _tcpRst = factory.ithVar(idx);
+    _tcpRst = _factory.ithVar(idx);
     _bitNames.put(idx, "tcpRst");
     idx += TCP_FLAG_LENGTH;
-    _tcpSyn = factory.ithVar(idx);
+    _tcpSyn = _factory.ithVar(idx);
     _bitNames.put(idx, "tcpSyn");
     idx += TCP_FLAG_LENGTH;
-    _tcpUrg = factory.ithVar(idx);
+    _tcpUrg = _factory.ithVar(idx);
     _bitNames.put(idx, "tcpUrg");
     idx += TCP_FLAG_LENGTH;
-    _dscp = BDDInteger.makeFromIndex(factory, DSCP_LENGTH, idx, false);
+    _dscp = BDDInteger.makeFromIndex(_factory, DSCP_LENGTH, idx, false);
     addBitNames("dscp", DSCP_LENGTH, idx, false);
     idx += DSCP_LENGTH;
-    _ecn = BDDInteger.makeFromIndex(factory, ECN_LENGTH, idx, false);
+    _ecn = BDDInteger.makeFromIndex(_factory, ECN_LENGTH, idx, false);
     addBitNames("ecn", ECN_LENGTH, idx, false);
     idx += ECN_LENGTH;
-    _fragmentOffset = BDDInteger.makeFromIndex(factory, FRAGMENT_OFFSET_LENGTH, idx, false);
+    _fragmentOffset = BDDInteger.makeFromIndex(_factory, FRAGMENT_OFFSET_LENGTH, idx, false);
     addBitNames("fragmentOffset", FRAGMENT_OFFSET_LENGTH, idx, false);
     idx += FRAGMENT_OFFSET_LENGTH;
-    _state = BDDInteger.makeFromIndex(factory, STATE_LENGTH, idx, false);
+    _state = BDDInteger.makeFromIndex(_factory, STATE_LENGTH, idx, false);
     addBitNames("state", STATE_LENGTH, idx, false);
     idx += STATE_LENGTH;
-  }
-
-  /*
-   * Create a BDDRecord from another. Because BDDs are immutable,
-   * there is no need for a deep copy.
-   */
-  private BDDPacket(BDDPacket other) {
-    _srcIp = new BDDInteger(other._srcIp);
-    _dstIp = new BDDInteger(other._dstIp);
-    _srcPort = new BDDInteger(other._srcPort);
-    _dstPort = new BDDInteger(other._dstPort);
-    _icmpCode = new BDDInteger(other._icmpCode);
-    _icmpType = new BDDInteger(other._icmpType);
-    _ipProtocol = new BDDInteger(other._ipProtocol);
-    _tcpAck = other._tcpAck;
-    _tcpCwr = other._tcpCwr;
-    _tcpEce = other._tcpEce;
-    _tcpFin = other._tcpFin;
-    _tcpPsh = other._tcpPsh;
-    _tcpRst = other._tcpRst;
-    _tcpSyn = other._tcpSyn;
-    _tcpUrg = other._tcpUrg;
-    _dscp = new BDDInteger(other._dscp);
-    _ecn = new BDDInteger(other._ecn);
-    _fragmentOffset = new BDDInteger(other._fragmentOffset);
-    _state = new BDDInteger(other._state);
   }
 
   /*
@@ -232,13 +203,6 @@ public class BDDPacket {
         _bitNames.put(i, s + (i - index + 1));
       }
     }
-  }
-
-  /*
-   * Convenience method for the copy constructor
-   */
-  public BDDPacket copy() {
-    return new BDDPacket(this);
   }
 
   /*
@@ -288,6 +252,10 @@ public class BDDPacket {
     dotRec(sb, bdd.high(), visited);
   }
 
+  /** @return The {@link BDDFactory} used by this packet. */
+  public BDDFactory getFactory() {
+    return _factory;
+  }
   /**
    * @param bdd a BDD representing a set of packet headers
    * @return A Flow.Builder for a representative of the set, if it's non-empty
@@ -531,15 +499,15 @@ public class BDDPacket {
     long bits = pfx.getStartIp().asLong();
     int[] vars = new int[len];
     BDD[] vals = new BDD[len];
-    pairing.reset();
+    _pairing.reset();
     for (int i = 0; i < len; i++) {
       int var = _dstIp.getBitvec()[i].var(); // dstIpIndex + i;
-      BDD subst = Ip.getBitAtPosition(bits, i) ? factory.one() : factory.zero();
+      BDD subst = Ip.getBitAtPosition(bits, i) ? _factory.one() : _factory.zero();
       vars[i] = var;
       vals[i] = subst;
     }
-    pairing.set(vars, vals);
-    return bdd.veccompose(pairing);
+    _pairing.set(vars, vals);
+    return bdd.veccompose(_pairing);
   }
 
   public BDD restrict(BDD bdd, List<Prefix> prefixes) {
