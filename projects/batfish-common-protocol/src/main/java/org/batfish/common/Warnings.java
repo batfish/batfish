@@ -163,40 +163,12 @@ public class Warnings implements Serializable {
     _unimplementedRecord = unimplementedRecord;
   }
 
-  public boolean getPedanticAsError() {
-    return _pedanticAsError;
-  }
-
-  public boolean getPedanticRecord() {
-    return _pedanticRecord;
-  }
-
   public List<Warning> getPedanticWarnings() {
     return _pedanticWarnings;
   }
 
-  public boolean getPrintParseTree() {
-    return _printParseTree;
-  }
-
-  public boolean getRedFlagAsError() {
-    return _redFlagAsError;
-  }
-
-  public boolean getRedFlagRecord() {
-    return _redFlagRecord;
-  }
-
   public List<Warning> getRedFlagWarnings() {
     return _redFlagWarnings;
-  }
-
-  public boolean getUnimplementedAsError() {
-    return _unimplementedAsError;
-  }
-
-  public boolean getUnimplementedRecord() {
-    return _unimplementedRecord;
   }
 
   public List<Warning> getUnimplementedWarnings() {
@@ -232,34 +204,6 @@ public class Warnings implements Serializable {
     } else if (_redFlagRecord) {
       _redFlagWarnings.add(new Warning(msg, tag));
     }
-  }
-
-  public void setPedanticAsError(boolean pedanticAsError) {
-    _pedanticAsError = pedanticAsError;
-  }
-
-  public void setPedanticRecord(boolean pedanticRecord) {
-    _pedanticRecord = pedanticRecord;
-  }
-
-  public void setPrintParseTree(boolean printParseTree) {
-    _printParseTree = printParseTree;
-  }
-
-  public void setRedFlagAsError(boolean redFlagAsError) {
-    _redFlagAsError = redFlagAsError;
-  }
-
-  public void setRedFlagRecord(boolean redFlagRecord) {
-    _redFlagRecord = redFlagRecord;
-  }
-
-  public void setUnimplementedAsError(boolean unimplementedAsError) {
-    _unimplementedAsError = unimplementedAsError;
-  }
-
-  public void setUnimplementedRecord(boolean unimplementedRecord) {
-    _unimplementedRecord = unimplementedRecord;
   }
 
   public void todo(
