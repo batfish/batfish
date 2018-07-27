@@ -38,8 +38,7 @@ public class CiscoConversionsTest {
 
   @Before
   public void before() {
-    _warnings = new Warnings();
-    _warnings.setRedFlagRecord(true);
+    _warnings = new Warnings(true, true, true, false);
     _nf = new NetworkFactory();
   }
 
