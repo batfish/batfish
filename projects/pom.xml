@@ -200,60 +200,10 @@
             <notimestamp>true</notimestamp>
             <!-- TODO: Do a better job excluding generated files-->
             <sourceFileExcludes>
-              <sourceFileExclude>**/CiscoLexer.java</sourceFileExclude>
-              <sourceFileExclude>**/CiscoParser.java</sourceFileExclude>
-              <sourceFileExclude>**/CiscoParserBaseListener.java</sourceFileExclude>
-              <sourceFileExclude>**/CiscoParserListener.java</sourceFileExclude>
-
-              <sourceFileExclude>**/FlatJuniperLexer.java</sourceFileExclude>
-              <sourceFileExclude>**/FlatJuniperParser.java</sourceFileExclude>
-              <sourceFileExclude>**/FlatJuniperParserBaseListener.java</sourceFileExclude>
-              <sourceFileExclude>**/FlatJuniperParserListener.java</sourceFileExclude>
-
-              <sourceFileExclude>**/FlatVyosLexer.java</sourceFileExclude>
-              <sourceFileExclude>**/FlatVyosParser.java</sourceFileExclude>
-              <sourceFileExclude>**/FlatVyosParserBaseListener.java</sourceFileExclude>
-              <sourceFileExclude>**/FlatVyosParserListener.java</sourceFileExclude>
-
-              <sourceFileExclude>**/IptablesLexer.java</sourceFileExclude>
-              <sourceFileExclude>**/IptablesParser.java</sourceFileExclude>
-              <sourceFileExclude>**/IptablesParserBaseListener.java</sourceFileExclude>
-              <sourceFileExclude>**/IptablesParserListener.java</sourceFileExclude>
-
-              <sourceFileExclude>**/JuniperLexer.java</sourceFileExclude>
-              <sourceFileExclude>**/JuniperParser.java</sourceFileExclude>
-              <sourceFileExclude>**/JuniperParserBaseListener.java</sourceFileExclude>
-              <sourceFileExclude>**/JuniperParserListener.java</sourceFileExclude>
-
-              <sourceFileExclude>**/MrvLexer.java</sourceFileExclude>
-              <sourceFileExclude>**/MrvParser.java</sourceFileExclude>
-              <sourceFileExclude>**/MrvParserBaseListener.java</sourceFileExclude>
-              <sourceFileExclude>**/MrvParserListener.java</sourceFileExclude>
-
-              <sourceFileExclude>**/PaloAltoLexer.java</sourceFileExclude>
-              <sourceFileExclude>**/PaloAltoParser.java</sourceFileExclude>
-              <sourceFileExclude>**/PaloAltoParserBaseListener.java</sourceFileExclude>
-              <sourceFileExclude>**/PaloAltoParserListener.java</sourceFileExclude>
-
-              <sourceFileExclude>**/EosRoutingTableLexer.java</sourceFileExclude>
-              <sourceFileExclude>**/EosRoutingTableParser.java</sourceFileExclude>
-              <sourceFileExclude>**/EosRoutingTableParserBaseListener.java</sourceFileExclude>
-              <sourceFileExclude>**/EosRoutingTableParserListener.java</sourceFileExclude>
-
-              <sourceFileExclude>**/IosRoutingTableLexer.java</sourceFileExclude>
-              <sourceFileExclude>**/IosRoutingTableParser.java</sourceFileExclude>
-              <sourceFileExclude>**/IosRoutingTableParserBaseListener.java</sourceFileExclude>
-              <sourceFileExclude>**/IosRoutingTableParserListener.java</sourceFileExclude>
-
-              <sourceFileExclude>**/NxosRoutingTableLexer.java</sourceFileExclude>
-              <sourceFileExclude>**/NxosRoutingTableParser.java</sourceFileExclude>
-              <sourceFileExclude>**/NxosRoutingTableParserBaseListener.java</sourceFileExclude>
-              <sourceFileExclude>**/NxosRoutingTableParserListener.java</sourceFileExclude>
-
-              <sourceFileExclude>**/VyosLexer.java</sourceFileExclude>
-              <sourceFileExclude>**/VyosParser.java</sourceFileExclude>
-              <sourceFileExclude>**/VyosParserBaseListener.java</sourceFileExclude>
-              <sourceFileExclude>**/VyosParserListener.java</sourceFileExclude>
+              <sourceFileExclude>**/*Lexer.java</sourceFileExclude>
+              <sourceFileExclude>**/*Parser.java</sourceFileExclude>
+              <sourceFileExclude>**/*ParserBaseListener.java</sourceFileExclude>
+              <sourceFileExclude>**/*ParserListener.java</sourceFileExclude>
             </sourceFileExcludes>
           </configuration>
         </plugin>
