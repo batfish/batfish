@@ -1226,6 +1226,11 @@ AUTO_UPGRADE
    'auto-upgrade'
 ;
 
+AUTOCLASSIFY
+:
+   'autoclassify'
+;
+
 AUTOHANGUP
 :
    'autohangup'
@@ -10849,6 +10854,11 @@ SIPS
 SITE_ID
 :
    'site-id'
+;
+
+SITEMAP
+:
+   'sitemap'
 ;
 
 SIZE

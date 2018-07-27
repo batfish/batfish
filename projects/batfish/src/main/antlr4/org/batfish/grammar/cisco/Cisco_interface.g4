@@ -367,9 +367,29 @@ if_ip_virtual_router
    IP VIRTUAL_ROUTER ADDRESS address = IP_ADDRESS NEWLINE
 ;
 
+if_ip_vrf_autoclassify
+:
+   IP VRF AUTOCLASSIFY SOURCE NEWLINE
+;
+
 if_ip_vrf_forwarding
 :
-   IP? VRF FORWARDING name = variable NEWLINE
+   IP? VRF FORWARDING vrf = variable (DOWNSTREAM vrf_down = variable)? NEWLINE
+;
+
+if_ip_vrf_receive
+:
+   IP VRF RECEIVE vrf = variable NEWLINE
+;
+
+if_ip_vrf_select
+:
+   IP VRF SELECT SOURCE NEWLINE
+;
+
+if_ip_vrf_sitemap
+:
+   IP VRF SITEMAP map = variable NEWLINE
 ;
 
 if_isis_circuit_type
@@ -1374,7 +1394,11 @@ if_inner
    | if_ip_sticky_arp
    | if_ip_summary_address
    | if_ip_virtual_router
+   | if_ip_vrf_autoclassify
    | if_ip_vrf_forwarding
+   | if_ip_vrf_receive
+   | if_ip_vrf_select
+   | if_ip_vrf_sitemap
    | if_isis_circuit_type
    | if_isis_enable
    | if_isis_hello_interval
