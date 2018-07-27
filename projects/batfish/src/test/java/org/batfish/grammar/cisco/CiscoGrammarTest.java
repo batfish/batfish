@@ -18,6 +18,8 @@ import static org.batfish.datamodel.matchers.AaaMatchers.hasAuthentication;
 import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.hasConjuncts;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.isAndMatchExprThat;
+import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasAllowRemoteAsOut;
+import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasLocalAs;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasRemoteAs;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasActiveNeighbor;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathEbgp;
@@ -2292,6 +2294,14 @@ public class CiscoGrammarTest {
             containsString(
                 String.format(
                     "No remote-as set for peer: %s", neighborWithoutRemoteAs.getStartIp()))));
+
+    /*
+     * Also ensure that default value of allowRemoteAsOut is true.
+     */
+    assertThat(
+        c,
+        hasDefaultVrf(
+            hasBgpProcess(hasActiveNeighbor(neighborWithRemoteAs, hasAllowRemoteAsOut(true)))));
   }
 
   @Test
@@ -2926,7 +2936,21 @@ public class CiscoGrammarTest {
   @Test
   public void testNxosBgpVrf() throws IOException {
     Configuration c = parseConfig("nxosBgpVrf");
-    assertThat(c.getVrfs().get("bar").getBgpProcess().getActiveNeighbors().values(), hasSize(1));
+    assertThat(c.getVrfs().get("bar").getBgpProcess().getActiveNeighbors().values(), hasSize(2));
+    assertThat(
+        c,
+        ConfigurationMatchers.hasVrf(
+            "bar",
+            hasBgpProcess(
+                hasActiveNeighbor(
+                    Prefix.parse("2.2.2.2/32"),
+                    allOf(hasRemoteAs(2L), hasLocalAs(1L), hasAllowRemoteAsOut(true))))));
+    assertThat(
+        c,
+        ConfigurationMatchers.hasVrf(
+            "bar",
+            hasBgpProcess(
+                hasActiveNeighbor(Prefix.parse("3.3.3.3/32"), hasAllowRemoteAsOut(false)))));
   }
 
   @Test
