@@ -5,7 +5,7 @@
       "unused:application:APP" : {
         "description" : "Unused structure of type: 'application' with name: 'APP'",
         "files" : {
-          "juniper_application" : [
+          "configs/juniper_application" : [
             4
           ]
         }
@@ -13,7 +13,7 @@
       "unused:as-path access-list:30" : {
         "description" : "Unused structure of type: 'as-path access-list' with name: '30'",
         "files" : {
-          "cisco_bgp" : [
+          "configs/cisco_bgp" : [
             7
           ]
         }
@@ -21,7 +21,7 @@
       "unused:as-path access-list:AS_PATH_ACL_UNUSED" : {
         "description" : "Unused structure of type: 'as-path access-list' with name: 'AS_PATH_ACL_UNUSED'",
         "files" : {
-          "cisco_route_map" : [
+          "configs/cisco_route_map" : [
             7
           ]
         }
@@ -29,7 +29,7 @@
       "unused:as-path-set:ama-coe-as-path" : {
         "description" : "Unused structure of type: 'as-path-set' with name: 'ama-coe-as-path'",
         "files" : {
-          "route_policy_as_path" : [
+          "configs/route_policy_as_path" : [
             34,
             35,
             36
@@ -39,7 +39,7 @@
       "unused:as-path-set:ama-coe-as-path2" : {
         "description" : "Unused structure of type: 'as-path-set' with name: 'ama-coe-as-path2'",
         "files" : {
-          "route_policy_as_path" : [
+          "configs/route_policy_as_path" : [
             37,
             38
           ]
@@ -48,7 +48,7 @@
       "unused:as-path-set:ama-coe-as-path3" : {
         "description" : "Unused structure of type: 'as-path-set' with name: 'ama-coe-as-path3'",
         "files" : {
-          "route_policy_as_path" : [
+          "configs/route_policy_as_path" : [
             39,
             40,
             41,
@@ -60,10 +60,10 @@
       "unused:bgp group:1.2.3.4abc" : {
         "description" : "Unused structure of type: 'bgp group' with name: '1.2.3.4abc'",
         "files" : {
-          "neighbor" : [
+          "configs/neighbor" : [
             7
           ],
-          "neighbor_dos" : [
+          "configs/neighbor_dos" : [
             7
           ]
         }
@@ -71,10 +71,10 @@
       "unused:bgp group:123.123.123.abc" : {
         "description" : "Unused structure of type: 'bgp group' with name: '123.123.123.abc'",
         "files" : {
-          "neighbor" : [
+          "configs/neighbor" : [
             11
           ],
-          "neighbor_dos" : [
+          "configs/neighbor_dos" : [
             11
           ]
         }
@@ -82,10 +82,10 @@
       "unused:bgp group:1234-5" : {
         "description" : "Unused structure of type: 'bgp group' with name: '1234-5'",
         "files" : {
-          "neighbor" : [
+          "configs/neighbor" : [
             5
           ],
-          "neighbor_dos" : [
+          "configs/neighbor_dos" : [
             5
           ]
         }
@@ -93,7 +93,7 @@
       "unused:bgp group:8075-CORE" : {
         "description" : "Unused structure of type: 'bgp group' with name: '8075-CORE'",
         "files" : {
-          "neighbor_name_numbers" : [
+          "configs/neighbor_name_numbers" : [
             6
           ]
         }
@@ -101,7 +101,7 @@
       "unused:bgp group:NEIGH" : {
         "description" : "Unused structure of type: 'bgp group' with name: 'NEIGH'",
         "files" : {
-          "local_v6_addr" : [
+          "configs/local_v6_addr" : [
             5
           ]
         }
@@ -109,7 +109,7 @@
       "unused:bgp group:PEER_BLLF" : {
         "description" : "Unused structure of type: 'bgp group' with name: 'PEER_BLLF'",
         "files" : {
-          "nexus_bgp" : [
+          "configs/nexus_bgp" : [
             22
           ]
         }
@@ -117,7 +117,7 @@
       "unused:bgp group:UNDEFINED_PEER_GROUP" : {
         "description" : "Unused structure of type: 'bgp group' with name: 'UNDEFINED_PEER_GROUP'",
         "files" : {
-          "arista_bgp" : [
+          "configs/arista_bgp" : [
             11
           ]
         }
@@ -125,10 +125,10 @@
       "unused:bgp group:abc1.2.3.4" : {
         "description" : "Unused structure of type: 'bgp group' with name: 'abc1.2.3.4'",
         "files" : {
-          "neighbor" : [
+          "configs/neighbor" : [
             8
           ],
-          "neighbor_dos" : [
+          "configs/neighbor_dos" : [
             8
           ]
         }
@@ -136,10 +136,10 @@
       "unused:bgp group:abc1.2.3.4def" : {
         "description" : "Unused structure of type: 'bgp group' with name: 'abc1.2.3.4def'",
         "files" : {
-          "neighbor" : [
+          "configs/neighbor" : [
             9
           ],
-          "neighbor_dos" : [
+          "configs/neighbor_dos" : [
             9
           ]
         }
@@ -147,7 +147,7 @@
       "unused:bgp group:ama-coe" : {
         "description" : "Unused structure of type: 'bgp group' with name: 'ama-coe'",
         "files" : {
-          "bgp_default_originate_policy" : [
+          "configs/bgp_default_originate_policy" : [
             5
           ]
         }
@@ -155,7 +155,7 @@
       "unused:bgp group:as3" : {
         "description" : "Unused structure of type: 'bgp group' with name: 'as3'",
         "files" : {
-          "bgp_address_family" : [
+          "configs/bgp_address_family" : [
             11
           ]
         }
@@ -163,7 +163,7 @@
       "unused:bgp group:bippety" : {
         "description" : "Unused structure of type: 'bgp group' with name: 'bippety'",
         "files" : {
-          "foundry_bgp" : [
+          "configs/foundry_bgp" : [
             11
           ]
         }
@@ -171,7 +171,7 @@
       "unused:bgp group:blabbety" : {
         "description" : "Unused structure of type: 'bgp group' with name: 'blabbety'",
         "files" : {
-          "ios_xr_bgp_neighbor_group" : [
+          "configs/ios_xr_bgp_neighbor_group" : [
             10
           ]
         }
@@ -179,7 +179,7 @@
       "unused:bgp group:blappety" : {
         "description" : "Unused structure of type: 'bgp group' with name: 'blappety'",
         "files" : {
-          "ios_xr_bgp_neighbor_group" : [
+          "configs/ios_xr_bgp_neighbor_group" : [
             5
           ]
         }
@@ -187,7 +187,7 @@
       "unused:bgp group:boop" : {
         "description" : "Unused structure of type: 'bgp group' with name: 'boop'",
         "files" : {
-          "foundry_bgp" : [
+          "configs/foundry_bgp" : [
             18
           ]
         }
@@ -195,7 +195,7 @@
       "unused:bgp group:dcp-rrs" : {
         "description" : "Unused structure of type: 'bgp group' with name: 'dcp-rrs'",
         "files" : {
-          "bgp_address_family" : [
+          "configs/bgp_address_family" : [
             16
           ]
         }
@@ -203,7 +203,7 @@
       "unused:bgp group:foobar-iBGP_border_ipv6" : {
         "description" : "Unused structure of type: 'bgp group' with name: 'foobar-iBGP_border_ipv6'",
         "files" : {
-          "ios_xr_bgp_neighbor_group" : [
+          "configs/ios_xr_bgp_neighbor_group" : [
             67
           ]
         }
@@ -211,7 +211,7 @@
       "unused:bgp group:foobar-iBGP_ipv6" : {
         "description" : "Unused structure of type: 'bgp group' with name: 'foobar-iBGP_ipv6'",
         "files" : {
-          "ios_xr_bgp_neighbor_group" : [
+          "configs/ios_xr_bgp_neighbor_group" : [
             46
           ]
         }
@@ -219,7 +219,7 @@
       "unused:bgp group:p1" : {
         "description" : "Unused structure of type: 'bgp group' with name: 'p1'",
         "files" : {
-          "cisco_bgp" : [
+          "configs/cisco_bgp" : [
             32
           ]
         }
@@ -227,7 +227,7 @@
       "unused:bgp group:someipv4bgpgroup" : {
         "description" : "Unused structure of type: 'bgp group' with name: 'someipv4bgpgroup'",
         "files" : {
-          "juniper_bgp_remove_private_as" : [
+          "configs/juniper_bgp_remove_private_as" : [
             5,
             9,
             10,
@@ -239,7 +239,7 @@
       "unused:bgp group:someipv6bgpgroup" : {
         "description" : "Unused structure of type: 'bgp group' with name: 'someipv6bgpgroup'",
         "files" : {
-          "juniper_bgp_remove_private_as" : [
+          "configs/juniper_bgp_remove_private_as" : [
             7,
             13,
             14,
@@ -251,7 +251,7 @@
       "unused:bgp group:ucr" : {
         "description" : "Unused structure of type: 'bgp group' with name: 'ucr'",
         "files" : {
-          "bgp_foundry" : [
+          "configs/bgp_foundry" : [
             7
           ]
         }
@@ -259,7 +259,7 @@
       "unused:bgp session:OLA" : {
         "description" : "Unused structure of type: 'bgp session' with name: 'OLA'",
         "files" : {
-          "ios_xr_bgp_neighbor_group" : [
+          "configs/ios_xr_bgp_neighbor_group" : [
             92
           ]
         }
@@ -267,7 +267,7 @@
       "unused:bgp session:blibber" : {
         "description" : "Unused structure of type: 'bgp session' with name: 'blibber'",
         "files" : {
-          "ios_xr_bgp_neighbor_group" : [
+          "configs/ios_xr_bgp_neighbor_group" : [
             15
           ]
         }
@@ -275,7 +275,7 @@
       "unused:cable service-class:1" : {
         "description" : "Unused structure of type: 'cable service-class' with name: '1'",
         "files" : {
-          "cisco_cable" : [
+          "configs/cisco_cable" : [
             88,
             89,
             90,
@@ -294,7 +294,7 @@
       "unused:class-map:ABC" : {
         "description" : "Unused structure of type: 'class-map' with name: 'ABC'",
         "files" : {
-          "cisco_qos" : [
+          "configs/cisco_qos" : [
             5,
             6,
             7,
@@ -302,7 +302,7 @@
             9,
             10
           ],
-          "ios_xr_class_map" : [
+          "configs/ios_xr_class_map" : [
             5,
             6,
             7
@@ -312,7 +312,7 @@
       "unused:class-map:ABCD" : {
         "description" : "Unused structure of type: 'class-map' with name: 'ABCD'",
         "files" : {
-          "ios_xr_class_map" : [
+          "configs/ios_xr_class_map" : [
             9,
             10,
             11
@@ -322,7 +322,7 @@
       "unused:class-map:bippety" : {
         "description" : "Unused structure of type: 'class-map' with name: 'bippety'",
         "files" : {
-          "cisco_qos" : [
+          "configs/cisco_qos" : [
             11,
             12,
             13
@@ -332,7 +332,7 @@
       "unused:class-map:boop" : {
         "description" : "Unused structure of type: 'class-map' with name: 'boop'",
         "files" : {
-          "cisco_qos" : [
+          "configs/cisco_qos" : [
             19,
             20,
             21
@@ -342,7 +342,7 @@
       "unused:class-map:boppety" : {
         "description" : "Unused structure of type: 'class-map' with name: 'boppety'",
         "files" : {
-          "cisco_qos" : [
+          "configs/cisco_qos" : [
             14,
             15,
             16,
@@ -353,7 +353,7 @@
       "unused:class-map:copp-icmp" : {
         "description" : "Unused structure of type: 'class-map' with name: 'copp-icmp'",
         "files" : {
-          "cisco_nxos" : [
+          "configs/cisco_nxos" : [
             7,
             8
           ]
@@ -362,7 +362,7 @@
       "unused:class-map:cos_all" : {
         "description" : "Unused structure of type: 'class-map' with name: 'cos_all'",
         "files" : {
-          "cisco_qos" : [
+          "configs/cisco_qos" : [
             23,
             24,
             25
@@ -372,7 +372,7 @@
       "unused:community-set:190" : {
         "description" : "Unused structure of type: 'community-set' with name: '190'",
         "files" : {
-          "community_set" : [
+          "configs/community_set" : [
             9,
             10,
             11,
@@ -383,7 +383,7 @@
       "unused:community-set:EBGP-PEER" : {
         "description" : "Unused structure of type: 'community-set' with name: 'EBGP-PEER'",
         "files" : {
-          "ios_xr_community_set" : [
+          "configs/ios_xr_community_set" : [
             40,
             41,
             42,
@@ -394,7 +394,7 @@
       "unused:community-set:all_community" : {
         "description" : "Unused structure of type: 'community-set' with name: 'all_community'",
         "files" : {
-          "ios_xr_community_set" : [
+          "configs/ios_xr_community_set" : [
             7,
             8,
             9
@@ -404,7 +404,7 @@
       "unused:community-set:cenic_default_network_community" : {
         "description" : "Unused structure of type: 'community-set' with name: 'cenic_default_network_community'",
         "files" : {
-          "ios_xr_community_set" : [
+          "configs/ios_xr_community_set" : [
             31,
             32,
             33
@@ -414,7 +414,7 @@
       "unused:community-set:community_52" : {
         "description" : "Unused structure of type: 'community-set' with name: 'community_52'",
         "files" : {
-          "ios_xr_community_set" : [
+          "configs/ios_xr_community_set" : [
             4,
             5,
             6
@@ -424,7 +424,7 @@
       "unused:community-set:dc_and_isp_blackhole_community" : {
         "description" : "Unused structure of type: 'community-set' with name: 'dc_and_isp_blackhole_community'",
         "files" : {
-          "ios_xr_community_set" : [
+          "configs/ios_xr_community_set" : [
             28,
             29,
             30
@@ -434,7 +434,7 @@
       "unused:community-set:dc_and_isp_routes_community" : {
         "description" : "Unused structure of type: 'community-set' with name: 'dc_and_isp_routes_community'",
         "files" : {
-          "ios_xr_community_set" : [
+          "configs/ios_xr_community_set" : [
             25,
             26,
             27
@@ -444,7 +444,7 @@
       "unused:community-set:foo" : {
         "description" : "Unused structure of type: 'community-set' with name: 'foo'",
         "files" : {
-          "community_set" : [
+          "configs/community_set" : [
             5,
             6
           ]
@@ -453,7 +453,7 @@
       "unused:community-set:hpr_blackhole_community" : {
         "description" : "Unused structure of type: 'community-set' with name: 'hpr_blackhole_community'",
         "files" : {
-          "ios_xr_community_set" : [
+          "configs/ios_xr_community_set" : [
             13,
             14,
             15
@@ -463,7 +463,7 @@
       "unused:community-set:hpr_routes_community" : {
         "description" : "Unused structure of type: 'community-set' with name: 'hpr_routes_community'",
         "files" : {
-          "ios_xr_community_set" : [
+          "configs/ios_xr_community_set" : [
             10,
             11,
             12
@@ -473,7 +473,7 @@
       "unused:community-set:ucla_blackhole_community" : {
         "description" : "Unused structure of type: 'community-set' with name: 'ucla_blackhole_community'",
         "files" : {
-          "ios_xr_community_set" : [
+          "configs/ios_xr_community_set" : [
             16,
             17,
             18
@@ -483,7 +483,7 @@
       "unused:community-set:ucla_to_dc_and_isp_community_ipv4" : {
         "description" : "Unused structure of type: 'community-set' with name: 'ucla_to_dc_and_isp_community_ipv4'",
         "files" : {
-          "ios_xr_community_set" : [
+          "configs/ios_xr_community_set" : [
             34,
             35,
             36
@@ -493,7 +493,7 @@
       "unused:community-set:ucla_to_dc_and_isp_community_ipv6" : {
         "description" : "Unused structure of type: 'community-set' with name: 'ucla_to_dc_and_isp_community_ipv6'",
         "files" : {
-          "ios_xr_community_set" : [
+          "configs/ios_xr_community_set" : [
             37,
             38,
             39
@@ -503,7 +503,7 @@
       "unused:community-set:ucla_to_hpr_community_ipv4" : {
         "description" : "Unused structure of type: 'community-set' with name: 'ucla_to_hpr_community_ipv4'",
         "files" : {
-          "ios_xr_community_set" : [
+          "configs/ios_xr_community_set" : [
             19,
             20,
             21
@@ -513,7 +513,7 @@
       "unused:community-set:ucla_to_hpr_community_ipv6" : {
         "description" : "Unused structure of type: 'community-set' with name: 'ucla_to_hpr_community_ipv6'",
         "files" : {
-          "ios_xr_community_set" : [
+          "configs/ios_xr_community_set" : [
             22,
             23,
             24
@@ -523,7 +523,7 @@
       "unused:crypto ipsec profile:abcdefg" : {
         "description" : "Unused structure of type: 'crypto ipsec profile' with name: 'abcdefg'",
         "files" : {
-          "cisco_crypto" : [
+          "configs/cisco_crypto" : [
             158,
             159,
             160,
@@ -535,7 +535,7 @@
       "unused:crypto ipsec transform-set:ESP-3DES-MD5" : {
         "description" : "Unused structure of type: 'crypto ipsec transform-set' with name: 'ESP-3DES-MD5'",
         "files" : {
-          "cisco_crypto" : [
+          "configs/cisco_crypto" : [
             167,
             168,
             169
@@ -545,7 +545,7 @@
       "unused:crypto ipsec transform-set:IPSEC_AES_256" : {
         "description" : "Unused structure of type: 'crypto ipsec transform-set' with name: 'IPSEC_AES_256'",
         "files" : {
-          "cisco_crypto" : [
+          "configs/cisco_crypto" : [
             170
           ]
         }
@@ -553,7 +553,7 @@
       "unused:crypto ipsec transform-set:cipts1" : {
         "description" : "Unused structure of type: 'crypto ipsec transform-set' with name: 'cipts1'",
         "files" : {
-          "cisco_crypto" : [
+          "configs/cisco_crypto" : [
             171
           ]
         }
@@ -561,7 +561,7 @@
       "unused:crypto ipsec transform-set:cipts2" : {
         "description" : "Unused structure of type: 'crypto ipsec transform-set' with name: 'cipts2'",
         "files" : {
-          "cisco_crypto" : [
+          "configs/cisco_crypto" : [
             172
           ]
         }
@@ -569,7 +569,7 @@
       "unused:crypto ipsec transform-set:noAuthHeader" : {
         "description" : "Unused structure of type: 'crypto ipsec transform-set' with name: 'noAuthHeader'",
         "files" : {
-          "cisco_crypto" : [
+          "configs/cisco_crypto" : [
             173
           ]
         }
@@ -577,7 +577,7 @@
       "unused:crypto keyring:VRF:ABC:DEF:GHI:1234" : {
         "description" : "Unused structure of type: 'crypto keyring' with name: 'VRF:ABC:DEF:GHI:1234'",
         "files" : {
-          "cisco_crypto" : [
+          "configs/cisco_crypto" : [
             212,
             213
           ]
@@ -586,7 +586,7 @@
       "unused:crypto-dynamic-map-set:abcd" : {
         "description" : "Unused structure of type: 'crypto-dynamic-map-set' with name: 'abcd'",
         "files" : {
-          "aruba_crypto" : [
+          "configs/aruba_crypto" : [
             4,
             5,
             6
@@ -596,7 +596,7 @@
       "unused:crypto-dynamic-map-set:asadynamicmaps" : {
         "description" : "Unused structure of type: 'crypto-dynamic-map-set' with name: 'asadynamicmaps'",
         "files" : {
-          "cisco_crypto" : [
+          "configs/cisco_crypto" : [
             94
           ]
         }
@@ -604,7 +604,7 @@
       "unused:crypto-dynamic-map-set:mydynamicmap" : {
         "description" : "Unused structure of type: 'crypto-dynamic-map-set' with name: 'mydynamicmap'",
         "files" : {
-          "cisco_crypto" : [
+          "configs/cisco_crypto" : [
             110,
             111
           ]
@@ -613,7 +613,7 @@
       "unused:crypto-map-set:VPN" : {
         "description" : "Unused structure of type: 'crypto-map-set' with name: 'VPN'",
         "files" : {
-          "cisco_crypto" : [
+          "configs/cisco_crypto" : [
             218,
             219,
             220,
@@ -626,7 +626,7 @@
       "unused:crypto-map-set:VPNMAP" : {
         "description" : "Unused structure of type: 'crypto-map-set' with name: 'VPNMAP'",
         "files" : {
-          "cisco_crypto" : [
+          "configs/cisco_crypto" : [
             233,
             234,
             235,
@@ -642,7 +642,7 @@
       "unused:crypto-map-set:myothermap" : {
         "description" : "Unused structure of type: 'crypto-map-set' with name: 'myothermap'",
         "files" : {
-          "cisco_crypto" : [
+          "configs/cisco_crypto" : [
             215
           ]
         }
@@ -650,7 +650,7 @@
       "unused:depi-tunnel:bar1" : {
         "description" : "Unused structure of type: 'depi-tunnel' with name: 'bar1'",
         "files" : {
-          "cisco_cable" : [
+          "configs/cisco_cable" : [
             137,
             138,
             139,
@@ -662,7 +662,7 @@
       "unused:dhcp-relay server-group:dhcpgrp" : {
         "description" : "Unused structure of type: 'dhcp-relay server-group' with name: 'dhcpgrp'",
         "files" : {
-          "juniper_forwarding_options" : [
+          "configs/juniper_forwarding_options" : [
             24,
             25
           ]
@@ -671,7 +671,7 @@
       "unused:docsis-policy-rule:2" : {
         "description" : "Unused structure of type: 'docsis-policy-rule' with name: '2'",
         "files" : {
-          "cisco_cable" : [
+          "configs/cisco_cable" : [
             49
           ]
         }
@@ -679,7 +679,7 @@
       "unused:docsis-policy-rule:3" : {
         "description" : "Unused structure of type: 'docsis-policy-rule' with name: '3'",
         "files" : {
-          "cisco_cable" : [
+          "configs/cisco_cable" : [
             50
           ]
         }
@@ -687,7 +687,7 @@
       "unused:docsis-policy-rule:4" : {
         "description" : "Unused structure of type: 'docsis-policy-rule' with name: '4'",
         "files" : {
-          "cisco_cable" : [
+          "configs/cisco_cable" : [
             51
           ]
         }
@@ -695,7 +695,7 @@
       "unused:docsis-policy:1" : {
         "description" : "Unused structure of type: 'docsis-policy' with name: '1'",
         "files" : {
-          "cadant_cable" : [
+          "configs/cadant_cable" : [
             48
           ]
         }
@@ -703,7 +703,7 @@
       "unused:extended ipv4 access-list:100" : {
         "description" : "Unused structure of type: 'extended ipv4 access-list' with name: '100'",
         "files" : {
-          "tcpflags" : [
+          "configs/tcpflags" : [
             4,
             5,
             6,
@@ -716,7 +716,7 @@
       "unused:extended ipv4 access-list:BLAH-BLAH" : {
         "description" : "Unused structure of type: 'extended ipv4 access-list' with name: 'BLAH-BLAH'",
         "files" : {
-          "cisco_acl" : [
+          "configs/cisco_acl" : [
             4,
             5,
             6,
@@ -743,7 +743,7 @@
       "unused:extended ipv4 access-list:abcd" : {
         "description" : "Unused structure of type: 'extended ipv4 access-list' with name: 'abcd'",
         "files" : {
-          "arista_acl" : [
+          "configs/arista_acl" : [
             4,
             5,
             6
@@ -753,7 +753,7 @@
       "unused:extended ipv4 access-list:bippety" : {
         "description" : "Unused structure of type: 'extended ipv4 access-list' with name: 'bippety'",
         "files" : {
-          "cisco_eigrp" : [
+          "configs/cisco_eigrp" : [
             27,
             28,
             29,
@@ -767,15 +767,15 @@
       "unused:extended ipv4 access-list:blah" : {
         "description" : "Unused structure of type: 'extended ipv4 access-list' with name: 'blah'",
         "files" : {
-          "cisco_acl" : [
+          "configs/cisco_acl" : [
             30,
             31
           ],
-          "cisco_style_acl1" : [
+          "configs/cisco_style_acl1" : [
             1,
             2
           ],
-          "nxos_acl" : [
+          "configs/nxos_acl" : [
             9,
             10
           ]
@@ -784,7 +784,7 @@
       "unused:extended ipv4 access-list:bloop_blop" : {
         "description" : "Unused structure of type: 'extended ipv4 access-list' with name: 'bloop_blop'",
         "files" : {
-          "cisco_eigrp" : [
+          "configs/cisco_eigrp" : [
             96,
             97
           ]
@@ -793,10 +793,10 @@
       "unused:extended ipv4 access-list:extended" : {
         "description" : "Unused structure of type: 'extended ipv4 access-list' with name: 'extended'",
         "files" : {
-          "cisco_acl" : [
+          "configs/cisco_acl" : [
             26
           ],
-          "nxos_acl" : [
+          "configs/nxos_acl" : [
             5
           ]
         }
@@ -804,7 +804,7 @@
       "unused:extended ipv4 access-list:outside" : {
         "description" : "Unused structure of type: 'extended ipv4 access-list' with name: 'outside'",
         "files" : {
-          "asa_acl" : [
+          "configs/asa_acl" : [
             7
           ]
         }
@@ -812,7 +812,7 @@
       "unused:extended ipv4 access-list:outside_in" : {
         "description" : "Unused structure of type: 'extended ipv4 access-list' with name: 'outside_in'",
         "files" : {
-          "asa_acl" : [
+          "configs/asa_acl" : [
             4
           ]
         }
@@ -820,10 +820,10 @@
       "unused:extended ipv4 access-list:standard" : {
         "description" : "Unused structure of type: 'extended ipv4 access-list' with name: 'standard'",
         "files" : {
-          "cisco_acl" : [
+          "configs/cisco_acl" : [
             28
           ],
-          "nxos_acl" : [
+          "configs/nxos_acl" : [
             7
           ]
         }
@@ -831,7 +831,7 @@
       "unused:extended ipv6 access-list:RT404888-Caltech" : {
         "description" : "Unused structure of type: 'extended ipv6 access-list' with name: 'RT404888-Caltech'",
         "files" : {
-          "foundry_access_list" : [
+          "configs/foundry_access_list" : [
             8,
             9,
             10,
@@ -848,7 +848,7 @@
       "unused:extended ipv6 access-list:RT404888-XO" : {
         "description" : "Unused structure of type: 'extended ipv6 access-list' with name: 'RT404888-XO'",
         "files" : {
-          "cisco_ipv6_access_list" : [
+          "configs/cisco_ipv6_access_list" : [
             4,
             5,
             6,
@@ -868,7 +868,7 @@
       "unused:extended ipv6 access-list:abcdefg" : {
         "description" : "Unused structure of type: 'extended ipv6 access-list' with name: 'abcdefg'",
         "files" : {
-          "cisco_ipv6_access_list" : [
+          "configs/cisco_ipv6_access_list" : [
             19,
             20,
             21,
@@ -880,7 +880,7 @@
       "unused:extended ipv6 access-list:ipv6-acl-foo" : {
         "description" : "Unused structure of type: 'extended ipv6 access-list' with name: 'ipv6-acl-foo'",
         "files" : {
-          "cadant_acl" : [
+          "configs/cadant_acl" : [
             18,
             19,
             20,
@@ -899,7 +899,7 @@
       "unused:firewall filter:blah" : {
         "description" : "Unused structure of type: 'firewall filter' with name: 'blah'",
         "files" : {
-          "juniper_firewall" : [
+          "configs/juniper_firewall" : [
             5,
             6,
             7,
@@ -910,7 +910,7 @@
       "unused:firewall filter:f1" : {
         "description" : "Unused structure of type: 'firewall filter' with name: 'f1'",
         "files" : {
-          "juniper_firewall" : [
+          "configs/juniper_firewall" : [
             4
           ]
         }
@@ -918,7 +918,7 @@
       "unused:firewall filter:foo" : {
         "description" : "Unused structure of type: 'firewall filter' with name: 'foo'",
         "files" : {
-          "juniper-tcpflags" : [
+          "configs/juniper-tcpflags" : [
             4
           ]
         }
@@ -926,7 +926,7 @@
       "unused:ike policy:1.2.3.4" : {
         "description" : "Unused structure of type: 'ike policy' with name: '1.2.3.4'",
         "files" : {
-          "juniper_security" : [
+          "configs/juniper_security" : [
             9
           ]
         }
@@ -934,7 +934,7 @@
       "unused:ipv4 prefix-list:A+C" : {
         "description" : "Unused structure of type: 'ipv4 prefix-list' with name: 'A+C'",
         "files" : {
-          "cadant_prefix_list" : [
+          "configs/cadant_prefix_list" : [
             7
           ]
         }
@@ -942,7 +942,7 @@
       "unused:ipv4 prefix-list:DENY-IPV4-ANY-IN" : {
         "description" : "Unused structure of type: 'ipv4 prefix-list' with name: 'DENY-IPV4-ANY-IN'",
         "files" : {
-          "ip_prefix_list_single_line" : [
+          "configs/ip_prefix_list_single_line" : [
             4
           ]
         }
@@ -950,7 +950,7 @@
       "unused:ipv4 prefix-list:ScienceDMZ-networks" : {
         "description" : "Unused structure of type: 'ipv4 prefix-list' with name: 'ScienceDMZ-networks'",
         "files" : {
-          "ios_bgp_aggregate_address" : [
+          "configs/ios_bgp_aggregate_address" : [
             14
           ]
         }
@@ -958,7 +958,7 @@
       "unused:ipv4 prefix-list:allowprefix" : {
         "description" : "Unused structure of type: 'ipv4 prefix-list' with name: 'allowprefix'",
         "files" : {
-          "cisco_acl" : [
+          "configs/cisco_acl" : [
             33,
             34
           ]
@@ -967,7 +967,7 @@
       "unused:ipv4 prefix-list:allowprefix-asa" : {
         "description" : "Unused structure of type: 'ipv4 prefix-list' with name: 'allowprefix-asa'",
         "files" : {
-          "cisco_acl" : [
+          "configs/cisco_acl" : [
             36,
             37
           ]
@@ -976,7 +976,7 @@
       "unused:ipv4 prefix-list:foo" : {
         "description" : "Unused structure of type: 'ipv4 prefix-list' with name: 'foo'",
         "files" : {
-          "cadant_prefix_list" : [
+          "configs/cadant_prefix_list" : [
             5,
             6
           ]
@@ -985,7 +985,7 @@
       "unused:ipv4 prefix-list:test" : {
         "description" : "Unused structure of type: 'ipv4 prefix-list' with name: 'test'",
         "files" : {
-          "prefix_list_ipv4" : [
+          "configs/prefix_list_ipv4" : [
             4,
             5
           ]
@@ -994,7 +994,7 @@
       "unused:ipv6 prefix-list:ScienceDMZ-networks" : {
         "description" : "Unused structure of type: 'ipv6 prefix-list' with name: 'ScienceDMZ-networks'",
         "files" : {
-          "ios_bgp_aggregate_address" : [
+          "configs/ios_bgp_aggregate_address" : [
             16,
             17
           ]
@@ -1003,7 +1003,7 @@
       "unused:ipv6 prefix-list:bar" : {
         "description" : "Unused structure of type: 'ipv6 prefix-list' with name: 'bar'",
         "files" : {
-          "cadant_prefix_list" : [
+          "configs/cadant_prefix_list" : [
             8,
             9
           ]
@@ -1012,7 +1012,7 @@
       "unused:l2tp-class:foobar" : {
         "description" : "Unused structure of type: 'l2tp-class' with name: 'foobar'",
         "files" : {
-          "cisco_l2tp" : [
+          "configs/cisco_l2tp" : [
             4,
             5,
             6,
@@ -1036,7 +1036,7 @@
       "unused:mac acl:1199" : {
         "description" : "Unused structure of type: 'mac acl' with name: '1199'",
         "files" : {
-          "cisco_mac_acl" : [
+          "configs/cisco_mac_acl" : [
             5
           ]
         }
@@ -1044,7 +1044,7 @@
       "unused:mac acl:700" : {
         "description" : "Unused structure of type: 'mac acl' with name: '700'",
         "files" : {
-          "cisco_mac_acl" : [
+          "configs/cisco_mac_acl" : [
             4
           ]
         }
@@ -1052,7 +1052,7 @@
       "unused:mac acl:STPDENY" : {
         "description" : "Unused structure of type: 'mac acl' with name: 'STPDENY'",
         "files" : {
-          "mac_access_list" : [
+          "configs/mac_access_list" : [
             13,
             14,
             15,
@@ -1063,7 +1063,7 @@
       "unused:mac acl:copp-system-p-acl-mac-cdp-udld-vtp" : {
         "description" : "Unused structure of type: 'mac acl' with name: 'copp-system-p-acl-mac-cdp-udld-vtp'",
         "files" : {
-          "cisco_mac_acl" : [
+          "configs/cisco_mac_acl" : [
             6,
             7
           ]
@@ -1072,7 +1072,7 @@
       "unused:mac acl:filtermac" : {
         "description" : "Unused structure of type: 'mac acl' with name: 'filtermac'",
         "files" : {
-          "mac_access_list" : [
+          "configs/mac_access_list" : [
             8
           ]
         }
@@ -1080,7 +1080,7 @@
       "unused:mac acl:ipmi_test" : {
         "description" : "Unused structure of type: 'mac acl' with name: 'ipmi_test'",
         "files" : {
-          "mac_access_list" : [
+          "configs/mac_access_list" : [
             9,
             10,
             11
@@ -1090,7 +1090,7 @@
       "unused:mac acl:permitCDP" : {
         "description" : "Unused structure of type: 'mac acl' with name: 'permitCDP'",
         "files" : {
-          "mac_access_list" : [
+          "configs/mac_access_list" : [
             4,
             5,
             6,
@@ -1101,7 +1101,7 @@
       "unused:nat pool:abc" : {
         "description" : "Unused structure of type: 'nat pool' with name: 'abc'",
         "files" : {
-          "cisco_ip_nat" : [
+          "configs/cisco_ip_nat" : [
             4,
             5
           ]
@@ -1110,7 +1110,7 @@
       "unused:nat pool:dynamic-srcnat" : {
         "description" : "Unused structure of type: 'nat pool' with name: 'dynamic-srcnat'",
         "files" : {
-          "cisco_ip_nat" : [
+          "configs/cisco_ip_nat" : [
             12
           ]
         }
@@ -1118,7 +1118,7 @@
       "unused:nat pool:example-1-dynamic-nat-pool" : {
         "description" : "Unused structure of type: 'nat pool' with name: 'example-1-dynamic-nat-pool'",
         "files" : {
-          "cisco_ip_nat" : [
+          "configs/cisco_ip_nat" : [
             8
           ]
         }
@@ -1126,7 +1126,7 @@
       "unused:nat pool:example-2-dynamic-nat-pool" : {
         "description" : "Unused structure of type: 'nat pool' with name: 'example-2-dynamic-nat-pool'",
         "files" : {
-          "cisco_ip_nat" : [
+          "configs/cisco_ip_nat" : [
             10
           ]
         }
@@ -1134,7 +1134,7 @@
       "unused:object network:obj_any" : {
         "description" : "Unused structure of type: 'object network' with name: 'obj_any'",
         "files" : {
-          "cisco_qos" : [
+          "configs/cisco_qos" : [
             31,
             32
           ]
@@ -1143,7 +1143,7 @@
       "unused:object-group network:1.2.3.4-24" : {
         "description" : "Unused structure of type: 'object-group network' with name: '1.2.3.4-24'",
         "files" : {
-          "cisco_qos" : [
+          "configs/cisco_qos" : [
             33,
             34
           ]
@@ -1152,7 +1152,7 @@
       "unused:object-group network:dns_servers" : {
         "description" : "Unused structure of type: 'object-group network' with name: 'dns_servers'",
         "files" : {
-          "cisco_qos" : [
+          "configs/cisco_qos" : [
             35,
             36,
             37
@@ -1162,7 +1162,7 @@
       "unused:object-group network:ntp_servers" : {
         "description" : "Unused structure of type: 'object-group network' with name: 'ntp_servers'",
         "files" : {
-          "cisco_qos" : [
+          "configs/cisco_qos" : [
             38,
             39,
             40,
@@ -1173,7 +1173,7 @@
       "unused:object-group service:SVCGRP-ICMP" : {
         "description" : "Unused structure of type: 'object-group service' with name: 'SVCGRP-ICMP'",
         "files" : {
-          "cisco_misc" : [
+          "configs/cisco_misc" : [
             177,
             178
           ]
@@ -1182,7 +1182,7 @@
       "unused:policy-map type inspect:pminspect" : {
         "description" : "Unused structure of type: 'policy-map type inspect' with name: 'pminspect'",
         "files" : {
-          "cisco_qos" : [
+          "configs/cisco_qos" : [
             42,
             43,
             44,
@@ -1195,7 +1195,7 @@
       "unused:policy-map:limitarp" : {
         "description" : "Unused structure of type: 'policy-map' with name: 'limitarp'",
         "files" : {
-          "foundry_misc" : [
+          "configs/foundry_misc" : [
             41,
             42
           ]
@@ -1204,7 +1204,7 @@
       "unused:policy-statement:POLICY-NAME" : {
         "description" : "Unused structure of type: 'policy-statement' with name: 'POLICY-NAME'",
         "files" : {
-          "juniper_policy_statement" : [
+          "configs/juniper_policy_statement" : [
             4,
             5,
             6,
@@ -1227,7 +1227,7 @@
       "unused:policy-statement:route-filter-test-v4" : {
         "description" : "Unused structure of type: 'policy-statement' with name: 'route-filter-test-v4'",
         "files" : {
-          "juniper_route_filter" : [
+          "configs/juniper_route_filter" : [
             4,
             5,
             6,
@@ -1240,7 +1240,7 @@
       "unused:policy-statement:route-filter-test-v6" : {
         "description" : "Unused structure of type: 'policy-statement' with name: 'route-filter-test-v6'",
         "files" : {
-          "juniper_route_filter" : [
+          "configs/juniper_route_filter" : [
             11,
             12,
             13,
@@ -1253,7 +1253,7 @@
       "unused:prefix-set:default_route" : {
         "description" : "Unused structure of type: 'prefix-set' with name: 'default_route'",
         "files" : {
-          "ios_xr_prefix_set" : [
+          "configs/ios_xr_prefix_set" : [
             4,
             5,
             6
@@ -1263,7 +1263,7 @@
       "unused:prefix-set:ucla_networks" : {
         "description" : "Unused structure of type: 'prefix-set' with name: 'ucla_networks'",
         "files" : {
-          "ios_xr_prefix_set" : [
+          "configs/ios_xr_prefix_set" : [
             7,
             8,
             9,
@@ -1282,14 +1282,14 @@
       "unused:route-map:AAA1-BBB-CCC" : {
         "description" : "Unused structure of type: 'route-map' with name: 'AAA1-BBB-CCC'",
         "files" : {
-          "community_name_numbers" : [
+          "configs/community_name_numbers" : [
             6,
             7,
             8,
             9,
             10
           ],
-          "community_name_numbers_dos" : [
+          "configs/community_name_numbers_dos" : [
             6,
             7,
             8,
@@ -1301,7 +1301,7 @@
       "unused:route-map:JKL_MNO_PQR" : {
         "description" : "Unused structure of type: 'route-map' with name: 'JKL_MNO_PQR'",
         "files" : {
-          "underscore_variable" : [
+          "configs/underscore_variable" : [
             4,
             5
           ]
@@ -1310,7 +1310,7 @@
       "unused:route-map:MAP_NAME1" : {
         "description" : "Unused structure of type: 'route-map' with name: 'MAP_NAME1'",
         "files" : {
-          "cisco_route_map" : [
+          "configs/cisco_route_map" : [
             49,
             50
           ]
@@ -1319,7 +1319,7 @@
       "unused:route-map:MAP_NAME2" : {
         "description" : "Unused structure of type: 'route-map' with name: 'MAP_NAME2'",
         "files" : {
-          "cisco_route_map" : [
+          "configs/cisco_route_map" : [
             52,
             53,
             55,
@@ -1330,7 +1330,7 @@
       "unused:route-map:MSDP-SA-RP-FILTER" : {
         "description" : "Unused structure of type: 'route-map' with name: 'MSDP-SA-RP-FILTER'",
         "files" : {
-          "cisco_route_map" : [
+          "configs/cisco_route_map" : [
             24,
             25,
             26
@@ -1340,7 +1340,7 @@
       "unused:route-map:TO_NEIGHBOR" : {
         "description" : "Unused structure of type: 'route-map' with name: 'TO_NEIGHBOR'",
         "files" : {
-          "community_list_named" : [
+          "configs/community_list_named" : [
             8,
             9,
             10
@@ -1350,7 +1350,7 @@
       "unused:route-map:bar" : {
         "description" : "Unused structure of type: 'route-map' with name: 'bar'",
         "files" : {
-          "cadant_route_map" : [
+          "configs/cadant_route_map" : [
             9,
             10,
             11
@@ -1360,7 +1360,7 @@
       "unused:route-map:beeble" : {
         "description" : "Unused structure of type: 'route-map' with name: 'beeble'",
         "files" : {
-          "cisco_route_map" : [
+          "configs/cisco_route_map" : [
             35,
             36,
             37,
@@ -1376,7 +1376,7 @@
       "unused:route-map:connected-to-bgp" : {
         "description" : "Unused structure of type: 'route-map' with name: 'connected-to-bgp'",
         "files" : {
-          "cisco_route_map" : [
+          "configs/cisco_route_map" : [
             9,
             10,
             11,
@@ -1390,12 +1390,12 @@
       "unused:route-map:foo" : {
         "description" : "Unused structure of type: 'route-map' with name: 'foo'",
         "files" : {
-          "cadant_route_map" : [
+          "configs/cadant_route_map" : [
             5,
             6,
             7
           ],
-          "named_and_numbered_lists" : [
+          "configs/named_and_numbered_lists" : [
             4,
             5
           ]
@@ -1404,7 +1404,7 @@
       "unused:route-map:foobar" : {
         "description" : "Unused structure of type: 'route-map' with name: 'foobar'",
         "files" : {
-          "nxos_route_map_continue" : [
+          "configs/nxos_route_map_continue" : [
             6,
             7,
             8,
@@ -1520,7 +1520,7 @@
       "unused:route-map:ijfw$%^&****(((([]grr" : {
         "description" : "Unused structure of type: 'route-map' with name: 'ijfw$%^&****(((([]grr'",
         "files" : {
-          "cisco_route_map" : [
+          "configs/cisco_route_map" : [
             22
           ]
         }
@@ -1528,7 +1528,7 @@
       "unused:route-map:mgmt" : {
         "description" : "Unused structure of type: 'route-map' with name: 'mgmt'",
         "files" : {
-          "cisco_route_map" : [
+          "configs/cisco_route_map" : [
             31,
             32,
             33
@@ -1538,7 +1538,7 @@
       "unused:route-map:multicaststuff" : {
         "description" : "Unused structure of type: 'route-map' with name: 'multicaststuff'",
         "files" : {
-          "cisco_route_map" : [
+          "configs/cisco_route_map" : [
             46,
             47
           ]
@@ -1547,7 +1547,7 @@
       "unused:route-map:next-hop-null" : {
         "description" : "Unused structure of type: 'route-map' with name: 'next-hop-null'",
         "files" : {
-          "cisco_route_map" : [
+          "configs/cisco_route_map" : [
             28,
             29
           ]
@@ -1556,7 +1556,7 @@
       "unused:route-map:rmap" : {
         "description" : "Unused structure of type: 'route-map' with name: 'rmap'",
         "files" : {
-          "as_path_prepend" : [
+          "configs/as_path_prepend" : [
             4,
             5
           ]
@@ -1565,7 +1565,7 @@
       "unused:route-map:to_elacc" : {
         "description" : "Unused structure of type: 'route-map' with name: 'to_elacc'",
         "files" : {
-          "prefix_list_ipv4" : [
+          "configs/prefix_list_ipv4" : [
             9,
             10
           ]
@@ -1574,7 +1574,7 @@
       "unused:route-map:to_svl-hub-router" : {
         "description" : "Unused structure of type: 'route-map' with name: 'to_svl-hub-router'",
         "files" : {
-          "cisco_route_map" : [
+          "configs/cisco_route_map" : [
             17,
             18
           ]
@@ -1583,7 +1583,7 @@
       "unused:route-policy:EBGP-PEER" : {
         "description" : "Unused structure of type: 'route-policy' with name: 'EBGP-PEER'",
         "files" : {
-          "vlan_access_map2" : [
+          "configs/vlan_access_map2" : [
             27,
             28,
             29,
@@ -1594,7 +1594,7 @@
       "unused:route-policy:EBGP-PEER-AS2828-LAX-PNI-OUT" : {
         "description" : "Unused structure of type: 'route-policy' with name: 'EBGP-PEER-AS2828-LAX-PNI-OUT'",
         "files" : {
-          "ios_xr_route_policy" : [
+          "configs/ios_xr_route_policy" : [
             86,
             87,
             88,
@@ -1620,7 +1620,7 @@
       "unused:route-policy:EBGP-PEER-AS6461-LAX-PNI-IN" : {
         "description" : "Unused structure of type: 'route-policy' with name: 'EBGP-PEER-AS6461-LAX-PNI-IN'",
         "files" : {
-          "ios_xr_route_policy" : [
+          "configs/ios_xr_route_policy" : [
             56,
             57,
             58,
@@ -1636,7 +1636,7 @@
       "unused:route-policy:EBGP-PEER-SANITY-IN" : {
         "description" : "Unused structure of type: 'route-policy' with name: 'EBGP-PEER-SANITY-IN'",
         "files" : {
-          "ios_xr_route_policy" : [
+          "configs/ios_xr_route_policy" : [
             75,
             76,
             77,
@@ -1654,7 +1654,7 @@
       "unused:route-policy:EBGP_CUST_FULL_v4" : {
         "description" : "Unused structure of type: 'route-policy' with name: 'EBGP_CUST_FULL_v4'",
         "files" : {
-          "route_policy_igp_cost" : [
+          "configs/route_policy_igp_cost" : [
             4,
             5,
             6,
@@ -1670,7 +1670,7 @@
       "unused:route-policy:FOO" : {
         "description" : "Unused structure of type: 'route-policy' with name: 'FOO'",
         "files" : {
-          "if_tag_is" : [
+          "configs/if_tag_is" : [
             4,
             5,
             6,
@@ -1695,7 +1695,7 @@
       "unused:route-policy:FOOBAR" : {
         "description" : "Unused structure of type: 'route-policy' with name: 'FOOBAR'",
         "files" : {
-          "set_inline_community" : [
+          "configs/set_inline_community" : [
             4,
             5,
             6
@@ -1705,7 +1705,7 @@
       "unused:route-policy:aaaa" : {
         "description" : "Unused structure of type: 'route-policy' with name: 'aaaa'",
         "files" : {
-          "ios_xr_route_policy" : [
+          "configs/ios_xr_route_policy" : [
             27,
             28,
             29,
@@ -1717,7 +1717,7 @@
       "unused:route-policy:barbar_to_fooey_community_ipv4" : {
         "description" : "Unused structure of type: 'route-policy' with name: 'barbar_to_fooey_community_ipv4'",
         "files" : {
-          "ios_xr_route_policy" : [
+          "configs/ios_xr_route_policy" : [
             50,
             51,
             52,
@@ -1730,7 +1730,7 @@
       "unused:route-policy:cust_v4_in" : {
         "description" : "Unused structure of type: 'route-policy' with name: 'cust_v4_in'",
         "files" : {
-          "route_policy_param" : [
+          "configs/route_policy_param" : [
             4,
             5,
             6,
@@ -1744,7 +1744,7 @@
       "unused:route-policy:doodlepop" : {
         "description" : "Unused structure of type: 'route-policy' with name: 'doodlepop'",
         "files" : {
-          "ios_xr_route_policy" : [
+          "configs/ios_xr_route_policy" : [
             157,
             158,
             159,
@@ -1761,7 +1761,7 @@
       "unused:route-policy:drop_community_5555" : {
         "description" : "Unused structure of type: 'route-policy' with name: 'drop_community_5555'",
         "files" : {
-          "ios_xr_route_policy" : [
+          "configs/ios_xr_route_policy" : [
             32,
             33,
             34,
@@ -1774,7 +1774,7 @@
       "unused:route-policy:erick-test" : {
         "description" : "Unused structure of type: 'route-policy' with name: 'erick-test'",
         "files" : {
-          "route_policy_as_path" : [
+          "configs/route_policy_as_path" : [
             4,
             5,
             6,
@@ -1789,7 +1789,7 @@
       "unused:route-policy:fooey_blackhole" : {
         "description" : "Unused structure of type: 'route-policy' with name: 'fooey_blackhole'",
         "files" : {
-          "ios_xr_route_policy" : [
+          "configs/ios_xr_route_policy" : [
             4,
             5,
             6,
@@ -1804,7 +1804,7 @@
       "unused:route-policy:fooey_to_barbar_ipv4" : {
         "description" : "Unused structure of type: 'route-policy' with name: 'fooey_to_barbar_ipv4'",
         "files" : {
-          "ios_xr_route_policy" : [
+          "configs/ios_xr_route_policy" : [
             12,
             13,
             14,
@@ -1819,7 +1819,7 @@
       "unused:route-policy:fooey_to_barbar_ipv6" : {
         "description" : "Unused structure of type: 'route-policy' with name: 'fooey_to_barbar_ipv6'",
         "files" : {
-          "ios_xr_route_policy" : [
+          "configs/ios_xr_route_policy" : [
             20,
             21,
             22,
@@ -1833,7 +1833,7 @@
       "unused:route-policy:global_cust_v4" : {
         "description" : "Unused structure of type: 'route-policy' with name: 'global_cust_v4'",
         "files" : {
-          "route_policy_param" : [
+          "configs/route_policy_param" : [
             12,
             13,
             14,
@@ -1850,7 +1850,7 @@
       "unused:route-policy:ospf_default_ipv4" : {
         "description" : "Unused structure of type: 'route-policy' with name: 'ospf_default_ipv4'",
         "files" : {
-          "ios_xr_route_policy" : [
+          "configs/ios_xr_route_policy" : [
             38,
             39,
             40,
@@ -1862,7 +1862,7 @@
       "unused:route-policy:perfsonar_andsn_ipv4" : {
         "description" : "Unused structure of type: 'route-policy' with name: 'perfsonar_andsn_ipv4'",
         "files" : {
-          "ios_xr_route_policy" : [
+          "configs/ios_xr_route_policy" : [
             43,
             44,
             45,
@@ -1876,7 +1876,7 @@
       "unused:route-policy:redistribute-static-isis" : {
         "description" : "Unused structure of type: 'route-policy' with name: 'redistribute-static-isis'",
         "files" : {
-          "ios_xr_route_policy" : [
+          "configs/ios_xr_route_policy" : [
             65,
             66,
             67,
@@ -1893,7 +1893,7 @@
       "unused:route-policy:routetype" : {
         "description" : "Unused structure of type: 'route-policy' with name: 'routetype'",
         "files" : {
-          "ios_xr_route_policy" : [
+          "configs/ios_xr_route_policy" : [
             168,
             169,
             170,
@@ -1907,7 +1907,7 @@
       "unused:route-policy:to_chillmap" : {
         "description" : "Unused structure of type: 'route-policy' with name: 'to_chillmap'",
         "files" : {
-          "ios_xr_route_policy" : [
+          "configs/ios_xr_route_policy" : [
             106,
             107,
             108,
@@ -1964,7 +1964,7 @@
       "unused:route-policy:to_csuchico" : {
         "description" : "Unused structure of type: 'route-policy' with name: 'to_csuchico'",
         "files" : {
-          "route_policy_metric_type" : [
+          "configs/route_policy_metric_type" : [
             4,
             5,
             6,
@@ -1981,7 +1981,7 @@
       "unused:route-policy:to_fooey" : {
         "description" : "Unused structure of type: 'route-policy' with name: 'to_fooey'",
         "files" : {
-          "route_policy_as_path" : [
+          "configs/route_policy_as_path" : [
             13,
             14,
             15,
@@ -2008,7 +2008,7 @@
       "unused:service-template:template_name" : {
         "description" : "Unused structure of type: 'service-template' with name: 'template_name'",
         "files" : {
-          "cisco_qos" : [
+          "configs/cisco_qos" : [
             142,
             143,
             144,
@@ -2024,7 +2024,7 @@
       "unused:standard ipv4 access-list:1" : {
         "description" : "Unused structure of type: 'standard ipv4 access-list' with name: '1'",
         "files" : {
-          "cisco_style_acl2" : [
+          "configs/cisco_style_acl2" : [
             1
           ]
         }
@@ -2032,7 +2032,7 @@
       "unused:standard ipv4 access-list:50" : {
         "description" : "Unused structure of type: 'standard ipv4 access-list' with name: '50'",
         "files" : {
-          "cadant_acl" : [
+          "configs/cadant_acl" : [
             5,
             6,
             7,
@@ -2043,7 +2043,7 @@
       "unused:standard ipv4 access-list:51" : {
         "description" : "Unused structure of type: 'standard ipv4 access-list' with name: '51'",
         "files" : {
-          "cadant_acl" : [
+          "configs/cadant_acl" : [
             10,
             11,
             12
@@ -2053,7 +2053,7 @@
       "unused:standard ipv4 access-list:99" : {
         "description" : "Unused structure of type: 'standard ipv4 access-list' with name: '99'",
         "files" : {
-          "cadant_acl" : [
+          "configs/cadant_acl" : [
             14,
             15,
             16
@@ -2063,7 +2063,7 @@
       "unused:standard ipv4 access-list:Local_LAN_Access" : {
         "description" : "Unused structure of type: 'standard ipv4 access-list' with name: 'Local_LAN_Access'",
         "files" : {
-          "asa_acl" : [
+          "configs/asa_acl" : [
             5
           ]
         }
@@ -2071,7 +2071,7 @@
       "unused:vlan:unused-vlan" : {
         "description" : "Unused structure of type: 'vlan' with name: 'unused-vlan'",
         "files" : {
-          "juniper_interfaces" : [
+          "configs/juniper_interfaces" : [
             15,
             16
           ]
@@ -2080,7 +2080,7 @@
       "unused:zone-pair security:zp1" : {
         "description" : "Unused structure of type: 'zone-pair security' with name: 'zp1'",
         "files" : {
-          "cisco_zone" : [
+          "configs/cisco_zone" : [
             4,
             5
           ]

@@ -1,6 +1,6 @@
 package org.batfish.job;
 
-import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -65,7 +65,8 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
     }
   }
 
-  private Path _file;
+  /** The name of the parsed file, relative to the testrig base. */
+  private String _filename;
 
   private String _fileText;
 
@@ -78,12 +79,12 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
   public ParseVendorConfigurationJob(
       Settings settings,
       String fileText,
-      Path file,
+      String filename,
       Warnings warnings,
       ConfigurationFormat configurationFormat) {
     super(settings);
     _fileText = fileText;
-    _file = file;
+    _filename = filename;
     _ptSentences = new ParseTreeSentences();
     _warnings = warnings;
     _format = configurationFormat;
@@ -94,14 +95,13 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
   public ParseVendorConfigurationResult call() throws Exception {
     long startTime = System.currentTimeMillis();
     long elapsedTime;
-    String currentPath = _file.toAbsolutePath().toString();
     VendorConfiguration vc = null;
     BatfishCombinedParser<?, ?> combinedParser = null;
     ParserRuleContext tree = null;
     ControlPlaneExtractor extractor = null;
     ConfigurationFormat format = _format;
     FlattenerLineMap lineMap = null;
-    _logger.infof("Processing: '%s'\n", currentPath);
+    _logger.infof("Processing: '%s'\n", _filename);
 
     for (String s : _settings.ignoreFilesWithStrings()) {
       if (_fileText.contains(s)) {
@@ -110,24 +110,21 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
       }
     }
 
-    String relativePathStr =
-        _settings.getActiveTestrigSettings().getBasePath().relativize(_file).toString();
-
     if (format == ConfigurationFormat.UNKNOWN) {
       format = VendorConfigurationFormatDetector.identifyConfigurationFormat(_fileText);
     }
     switch (format) {
       case EMPTY:
-        _warnings.redFlag("Empty file: '" + currentPath + "'\n");
+        _warnings.redFlag("Empty file: '" + _filename + "'\n");
         elapsedTime = System.currentTimeMillis() - startTime;
         return new ParseVendorConfigurationResult(
-            elapsedTime, _logger.getHistory(), _file, _warnings, ParseStatus.EMPTY);
+            elapsedTime, _logger.getHistory(), _filename, _warnings, ParseStatus.EMPTY);
 
       case IGNORED:
-        _warnings.pedantic("Ignored file: '" + currentPath + "'\n");
+        _warnings.pedantic("Ignored file: '" + _filename + "'\n");
         elapsedTime = System.currentTimeMillis() - startTime;
         return new ParseVendorConfigurationResult(
-            elapsedTime, _logger.getHistory(), _file, _warnings, ParseStatus.IGNORED);
+            elapsedTime, _logger.getHistory(), _filename, _warnings, ParseStatus.IGNORED);
 
       case ARISTA:
       case ARUBAOS:
@@ -150,7 +147,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
             return new ParseVendorConfigurationResult(
                 elapsedTime,
                 _logger.getHistory(),
-                _file,
+                _filename,
                 new BatfishException("Error preprocessing banner", e));
           }
         } while (!newFileText.equals(fileText));
@@ -166,14 +163,14 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
         vc = HostConfiguration.fromJson(_fileText, _warnings);
         elapsedTime = System.currentTimeMillis() - startTime;
         return new ParseVendorConfigurationResult(
-            elapsedTime, _logger.getHistory(), _file, vc, _warnings, _ptSentences);
+            elapsedTime, _logger.getHistory(), _filename, vc, _warnings, _ptSentences);
 
       case VYOS:
         if (_settings.flattenOnTheFly()) {
           _warnings.pedantic(
               String.format(
                   "Flattening: '%s' on-the-fly; line-numbers reported for this file will be spurious\n",
-                  currentPath));
+                  _filename));
           _fileText =
               Batfish.flatten(
                       _fileText,
@@ -187,11 +184,11 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
           return new ParseVendorConfigurationResult(
               elapsedTime,
               _logger.getHistory(),
-              _file,
+              _filename,
               new BatfishException(
                   String.format(
                       "Vyos configurations must be flattened prior to this stage: '%s'",
-                      relativePathStr)));
+                      _filename)));
         }
         // fall through
       case FLAT_VYOS:
@@ -205,7 +202,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
           _warnings.pedantic(
               String.format(
                   "Flattening: '%s' on-the-fly; line-numbers reported for this file will be spurious\n",
-                  currentPath));
+                  _filename));
           try {
             Flattener flattener =
                 Batfish.flatten(
@@ -221,20 +218,20 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
             return new ParseVendorConfigurationResult(
                 elapsedTime,
                 _logger.getHistory(),
-                _file,
+                _filename,
                 new BatfishException(
-                    String.format("Error flattening configuration file: '%s'", currentPath), e));
+                    String.format("Error flattening configuration file: '%s'", _filename), e));
           }
         } else {
           elapsedTime = System.currentTimeMillis() - startTime;
           return new ParseVendorConfigurationResult(
               elapsedTime,
               _logger.getHistory(),
-              _file,
+              _filename,
               new BatfishException(
                   String.format(
                       "Juniper configurations must be flattened prior to this stage: '%s'",
-                      relativePathStr)));
+                      _filename)));
         }
         // fall through
       case FLAT_JUNIPER:
@@ -250,8 +247,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
         IptablesCombinedParser iptablesParser = new IptablesCombinedParser(_fileText, _settings);
         combinedParser = iptablesParser;
         extractor =
-            new IptablesControlPlaneExtractor(
-                _fileText, iptablesParser, _warnings, relativePathStr);
+            new IptablesControlPlaneExtractor(_fileText, iptablesParser, _warnings, _filename);
         break;
 
       case MRV:
@@ -265,7 +261,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
           _warnings.pedantic(
               String.format(
                   "Flattening: '%s' on-the-fly; line-numbers reported for this file will be spurious\n",
-                  currentPath));
+                  _filename));
           try {
             Flattener flattener =
                 Batfish.flatten(
@@ -281,20 +277,20 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
             return new ParseVendorConfigurationResult(
                 elapsedTime,
                 _logger.getHistory(),
-                _file,
+                _filename,
                 new BatfishException(
-                    String.format("Error flattening configuration file: '%s'", currentPath), e));
+                    String.format("Error flattening configuration file: '%s'", _filename), e));
           }
         } else {
           elapsedTime = System.currentTimeMillis() - startTime;
           return new ParseVendorConfigurationResult(
               elapsedTime,
               _logger.getHistory(),
-              _file,
+              _filename,
               new BatfishException(
                   String.format(
                       "Palo Alto nested configurations must be flattened prior to this stage: '%s'",
-                      relativePathStr)));
+                      _filename)));
         }
         // fall through
       case PALO_ALTO:
@@ -315,30 +311,30 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
       case MSS:
       case VXWORKS:
         String unsupportedError =
-            "Unsupported configuration format: '" + format + "' for file: '" + currentPath + "'\n";
+            "Unsupported configuration format: '" + format + "' for file: '" + _filename + "'\n";
         if (!_settings.ignoreUnsupported()) {
           elapsedTime = System.currentTimeMillis() - startTime;
           return new ParseVendorConfigurationResult(
-              elapsedTime, _logger.getHistory(), _file, new BatfishException(unsupportedError));
+              elapsedTime, _logger.getHistory(), _filename, new BatfishException(unsupportedError));
         } else {
           _warnings.unimplemented(unsupportedError);
           elapsedTime = System.currentTimeMillis() - startTime;
           return new ParseVendorConfigurationResult(
-              elapsedTime, _logger.getHistory(), _file, _warnings, ParseStatus.UNSUPPORTED);
+              elapsedTime, _logger.getHistory(), _filename, _warnings, ParseStatus.UNSUPPORTED);
         }
 
       case UNKNOWN:
       default:
-        String unknownError = "Unknown configuration format for file: '" + currentPath + "'\n";
+        String unknownError = "Unknown configuration format for file: '" + _filename + "'\n";
         if (!_settings.ignoreUnknown()) {
           elapsedTime = System.currentTimeMillis() - startTime;
           return new ParseVendorConfigurationResult(
-              elapsedTime, _logger.getHistory(), _file, new BatfishException(unknownError));
+              elapsedTime, _logger.getHistory(), _filename, new BatfishException(unknownError));
         } else {
           _warnings.unimplemented(unknownError);
           elapsedTime = System.currentTimeMillis() - startTime;
           return new ParseVendorConfigurationResult(
-              elapsedTime, _logger.getHistory(), _file, _warnings, ParseStatus.UNKNOWN);
+              elapsedTime, _logger.getHistory(), _filename, _warnings, ParseStatus.UNKNOWN);
         }
     }
 
@@ -357,46 +353,38 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
         return new ParseVendorConfigurationResult(
             elapsedTime,
             _logger.getHistory(),
-            _file,
+            _filename,
             new BatfishException(
                 String.format(
                     "Configuration file: '%s' contains unrecognized lines:\n%s",
-                    _file.getFileName().toString(),
-                    String.join("\n", combinedParser.getErrors()))));
+                    _filename, String.join("\n", combinedParser.getErrors()))));
       }
       _logger.info("OK\n");
     } catch (ParserBatfishException e) {
-      String error = "Error parsing configuration file: '" + currentPath + "'";
+      String error = "Error parsing configuration file: '" + _filename + "'";
       elapsedTime = System.currentTimeMillis() - startTime;
       return new ParseVendorConfigurationResult(
-          elapsedTime, _logger.getHistory(), _file, new BatfishException(error, e));
+          elapsedTime, _logger.getHistory(), _filename, new BatfishException(error, e));
     } catch (Exception e) {
-      String error =
-          "Error post-processing parse tree of configuration file: '" + currentPath + "'";
+      String error = "Error post-processing parse tree of configuration file: '" + _filename + "'";
       elapsedTime = System.currentTimeMillis() - startTime;
       return new ParseVendorConfigurationResult(
-          elapsedTime, _logger.getHistory(), _file, new BatfishException(error, e));
+          elapsedTime, _logger.getHistory(), _filename, new BatfishException(error, e));
     } finally {
       Batfish.logWarnings(_logger, _warnings);
     }
     vc = extractor.getVendorConfiguration();
     vc.setVendor(format);
-    vc.setFilename(_file.getFileName().toString());
+    vc.setFilename(_filename);
     // at this point we should have a VendorConfiguration vc
     String hostname = vc.getHostname();
     if (hostname == null) {
-      String error = "No hostname set in file: '" + relativePathStr.replace("\\", "/") + "'\n";
-      try {
-        _warnings.redFlag(error);
-      } catch (BatfishException e) {
-        elapsedTime = System.currentTimeMillis() - startTime;
-        return new ParseVendorConfigurationResult(elapsedTime, _logger.getHistory(), _file, e);
-      }
-      String filename = _file.getFileName().toString();
-      String guessedHostname = filename.replaceAll("\\.(cfg|conf)$", "");
+      _warnings.redFlag("No hostname set in file: '" + _filename.replace("\\", "/") + "'\n");
+      String guessedHostname =
+          Paths.get(_filename).getFileName().toString().replaceAll("\\.(cfg|conf)$", "");
       _logger.redflag(
           "\tNo hostname set! Guessing hostname from filename: '"
-              + filename
+              + _filename
               + "' ==> '"
               + guessedHostname
               + "'\n");
@@ -404,6 +392,6 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
     }
     elapsedTime = System.currentTimeMillis() - startTime;
     return new ParseVendorConfigurationResult(
-        elapsedTime, _logger.getHistory(), _file, vc, _warnings, _ptSentences);
+        elapsedTime, _logger.getHistory(), _filename, vc, _warnings, _ptSentences);
   }
 }

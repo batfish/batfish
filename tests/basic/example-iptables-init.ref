@@ -3,28 +3,28 @@
     {
       "class" : "org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement",
       "fileMap" : {
-        "internet-host" : "internet-host.json",
-        "r1" : "r1.cfg",
-        "r2" : "r2.cfg",
-        "r3" : "r3.cfg",
-        "testrig/iptables/z1-firewall.v4" : "z1-firewall.v4",
-        "testrig/iptables/z2-firewall.v4" : "z2-firewall.v4",
-        "testrig/iptables/z2-host2.v4" : "z2-host2.v4",
-        "z1-firewall" : "z1-firewall.cfg",
-        "z1-host1" : "z1-host1.json",
-        "z1-host2" : "z1-host2.json",
-        "z2-firewall" : "z2-firewall.cfg",
-        "z2-host1" : "z2-host1.json",
-        "z2-host2" : "z2-host2.json"
+        "internet-host" : "hosts/internet-host.json",
+        "iptables/z1-firewall.v4" : "iptables/z1-firewall.v4",
+        "iptables/z2-firewall.v4" : "iptables/z2-firewall.v4",
+        "iptables/z2-host2.v4" : "iptables/z2-host2.v4",
+        "r1" : "configs/r1.cfg",
+        "r2" : "configs/r2.cfg",
+        "r3" : "configs/r3.cfg",
+        "z1-firewall" : "configs/z1-firewall.cfg",
+        "z1-host1" : "hosts/z1-host1.json",
+        "z1-host2" : "hosts/z1-host2.json",
+        "z2-firewall" : "configs/z2-firewall.cfg",
+        "z2-host1" : "hosts/z2-host1.json",
+        "z2-host2" : "hosts/z2-host2.json"
       },
       "parseStatus" : {
         "internet-host" : "PASSED",
+        "iptables/z1-firewall.v4" : "PASSED",
+        "iptables/z2-firewall.v4" : "PASSED",
+        "iptables/z2-host2.v4" : "PASSED",
         "r1" : "PASSED",
         "r2" : "PASSED",
         "r3" : "PASSED",
-        "testrig/iptables/z1-firewall.v4" : "PASSED",
-        "testrig/iptables/z2-firewall.v4" : "PASSED",
-        "testrig/iptables/z2-host2.v4" : "PASSED",
         "z1-firewall" : "PASSED",
         "z1-host1" : "PASSED",
         "z1-host2" : "PASSED",
@@ -36,27 +36,27 @@
       "warnings" : {
         "r1" : {
           "Red flags" : {
-            "1" : "MISCELLANEOUS: No hostname set in file: 'testrig/configs/r1.cfg'\n"
+            "1" : "MISCELLANEOUS: No hostname set in file: 'configs/r1.cfg'\n"
           }
         },
         "r2" : {
           "Red flags" : {
-            "1" : "MISCELLANEOUS: No hostname set in file: 'testrig/configs/r2.cfg'\n"
+            "1" : "MISCELLANEOUS: No hostname set in file: 'configs/r2.cfg'\n"
           }
         },
         "r3" : {
           "Red flags" : {
-            "1" : "MISCELLANEOUS: No hostname set in file: 'testrig/configs/r3.cfg'\n"
+            "1" : "MISCELLANEOUS: No hostname set in file: 'configs/r3.cfg'\n"
           }
         },
         "z1-firewall" : {
           "Red flags" : {
-            "1" : "MISCELLANEOUS: No hostname set in file: 'testrig/configs/z1-firewall.cfg'\n"
+            "1" : "MISCELLANEOUS: No hostname set in file: 'configs/z1-firewall.cfg'\n"
           }
         },
         "z2-firewall" : {
           "Red flags" : {
-            "1" : "MISCELLANEOUS: No hostname set in file: 'testrig/configs/z2-firewall.cfg'\n"
+            "1" : "MISCELLANEOUS: No hostname set in file: 'configs/z2-firewall.cfg'\n"
           }
         }
       }
@@ -187,12 +187,12 @@
       "class" : "org.batfish.datamodel.answers.InitInfoAnswerElement",
       "parseStatus" : {
         "internet-host" : "PASSED",
+        "iptables/z1-firewall.v4" : "PASSED",
+        "iptables/z2-firewall.v4" : "PASSED",
+        "iptables/z2-host2.v4" : "PASSED",
         "r1" : "PASSED",
         "r2" : "PASSED",
         "r3" : "PASSED",
-        "testrig/iptables/z1-firewall.v4" : "PASSED",
-        "testrig/iptables/z2-firewall.v4" : "PASSED",
-        "testrig/iptables/z2-host2.v4" : "PASSED",
         "z1-firewall" : "PASSED",
         "z1-host1" : "PASSED",
         "z1-host2" : "PASSED",
