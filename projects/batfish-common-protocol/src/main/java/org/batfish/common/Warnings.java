@@ -226,7 +226,6 @@ public class Warnings implements Serializable {
         sb.append(parseTreePrefix + parseTreeLine + "\n");
       }
     }
-    String warning = sb.toString();
     _unimplementedWarnings.add(new Warning(sb.toString(), "UNIMPLEMENTED"));
   }
 
