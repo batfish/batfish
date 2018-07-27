@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
 import com.google.common.collect.Iterables;
+import java.util.Comparator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -121,7 +122,8 @@ public class BgpLoopbacksQuestionPlugin extends QuestionPlugin {
             continue;
           }
           BgpProcess proc = vrf.getBgpProcess();
-          Set<RoutingPolicy> exportPolicies = new TreeSet<>();
+          Set<RoutingPolicy> exportPolicies =
+              new TreeSet<>(Comparator.comparing(RoutingPolicy::getName));
           for (BgpPeerConfig neighbor :
               Iterables.concat(
                   proc.getActiveNeighbors().values(), proc.getPassiveNeighbors().values())) {
