@@ -1,0 +1,33 @@
+{
+    "class": "org.batfish.question.NodesQuestionPlugin$NodesQuestion",
+    "differential": false,
+    "instance": {
+        "description": "Outputs the configuration of nodes in the network.",
+        "instanceName": "nodes",
+        "longDescription": "This question may be used to extract the configuration of the node in the Batfish datamodel or a summary of it.",
+        "tags": [
+            "dataModel"
+        ],
+        "variables": {
+            "nodeRegex": {
+                "description": "Only include nodes whose name matches this regex",
+                "type": "javaRegex",
+                "value": ".*"
+            },
+            "nodeTypes": {
+                "description": "Only include nodes of the specified types",
+                "minElements": 0,
+                "optional": true,
+                "type": "string"
+            },
+            "summary": {
+                "description": "Whether to provide only summary information about each node rather than the full data model",
+                "type": "boolean",
+                "value": true
+            }
+        }
+    },
+    "nodeRegex": "${nodeRegex}",
+    "nodeTypes": "${nodeTypes}",
+    "summary": "${summary}"
+}

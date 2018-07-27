@@ -3,9 +3,9 @@
     {
       "class" : "org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement",
       "fileMap" : {
-        "host1" : "host1.json",
-        "us_border" : "us_border.cfg",
-        "us_switch" : "us_switch.cfg"
+        "host1" : "hosts/host1.json",
+        "us_border" : "configs/us_border.cfg",
+        "us_switch" : "configs/us_switch.cfg"
       },
       "parseStatus" : {
         "host1" : "PASSED",

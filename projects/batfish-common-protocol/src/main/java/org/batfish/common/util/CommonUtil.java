@@ -1423,18 +1423,6 @@ public class CommonUtil {
     return intersectionSet;
   }
 
-  public static int intWidth(int n) {
-    if (n == 0) {
-      return 1;
-    } else {
-      return 32 - Integer.numberOfLeadingZeros(n);
-    }
-  }
-
-  public static boolean isLoopback(String interfaceName) {
-    return interfaceName.toLowerCase().startsWith("lo");
-  }
-
   public static boolean isNullInterface(String ifaceName) {
     String lcIfaceName = ifaceName.toLowerCase();
     return lcIfaceName.startsWith("null");

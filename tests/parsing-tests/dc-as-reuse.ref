@@ -3,16 +3,16 @@
     {
       "class" : "org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement",
       "fileMap" : {
-        "plane_0_spine_0" : "plane_0_spine_0",
-        "plane_1_spine_0" : "plane_1_spine_0",
-        "pod_0_leaf_0" : "pod_0_leaf_0",
-        "pod_0_leaf_1" : "pod_0_leaf_1",
-        "pod_0_tor_0" : "pod_0_tor_0",
-        "pod_0_tor_1" : "pod_0_tor_1",
-        "pod_1_leaf_0" : "pod_1_leaf_0",
-        "pod_1_leaf_1" : "pod_1_leaf_1",
-        "pod_1_tor_0" : "pod_1_tor_0",
-        "pod_1_tor_1" : "pod_1_tor_1"
+        "plane_0_spine_0" : "configs/plane_0_spine_0",
+        "plane_1_spine_0" : "configs/plane_1_spine_0",
+        "pod_0_leaf_0" : "configs/pod_0_leaf_0",
+        "pod_0_leaf_1" : "configs/pod_0_leaf_1",
+        "pod_0_tor_0" : "configs/pod_0_tor_0",
+        "pod_0_tor_1" : "configs/pod_0_tor_1",
+        "pod_1_leaf_0" : "configs/pod_1_leaf_0",
+        "pod_1_leaf_1" : "configs/pod_1_leaf_1",
+        "pod_1_tor_0" : "configs/pod_1_tor_0",
+        "pod_1_tor_1" : "configs/pod_1_tor_1"
       },
       "parseStatus" : {
         "plane_0_spine_0" : "PASSED",

@@ -923,11 +923,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   public static Warnings buildWarnings(Settings settings) {
     return new Warnings(
-        settings.getPedanticAsError(),
         settings.getPedanticRecord() && settings.getLogger().isActive(BatfishLogger.LEVEL_PEDANTIC),
-        settings.getRedFlagAsError(),
         settings.getRedFlagRecord() && settings.getLogger().isActive(BatfishLogger.LEVEL_REDFLAG),
-        settings.getUnimplementedAsError(),
         settings.getUnimplementedRecord()
             && settings.getLogger().isActive(BatfishLogger.LEVEL_UNIMPLEMENTED),
         settings.getPrintParseTree());
@@ -2899,9 +2896,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
       String fileText = vendorFile.getValue();
 
       Warnings warnings = buildWarnings(_settings);
+      String filename =
+          _settings.getActiveTestrigSettings().getTestRigPath().relativize(currentFile).toString();
       ParseVendorConfigurationJob job =
           new ParseVendorConfigurationJob(
-              _settings, fileText, currentFile, warnings, configurationFormat);
+              _settings, fileText, filename, warnings, configurationFormat);
       jobs.add(job);
     }
     BatfishJobExecutor.runJobsInExecutor(
@@ -4003,7 +4002,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       HostConfiguration hostConfig = (HostConfiguration) vc;
       if (hostConfig.getIptablesFile() != null) {
         Path path = Paths.get(testRigPath.toString(), hostConfig.getIptablesFile());
-        String relativePathStr = _testrigSettings.getBasePath().relativize(path).toString();
+        String relativePathStr = _testrigSettings.getTestRigPath().relativize(path).toString();
         if (iptablesConfigurations.containsKey(relativePathStr)) {
           hostConfig.setIptablesVendorConfig(
               (IptablesVendorConfiguration) iptablesConfigurations.get(relativePathStr));
