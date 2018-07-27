@@ -59,8 +59,7 @@ public class NodeRoleDimensionResourceTest extends WorkMgrServiceV2TestBase {
             ImmutableSortedSet.of(
                 new NodeRoleDimension("dimension1", ImmutableSortedSet.of(), null, null)));
     NodeRolesData.write(
-        data,
-        Main.getWorkMgr().getdirNetwork(container).resolve(BfConsts.RELPATH_NODE_ROLES_PATH));
+        data, Main.getWorkMgr().getdirNetwork(container).resolve(BfConsts.RELPATH_NODE_ROLES_PATH));
 
     Response response = getNodeRoleDimensionTarget(container, "dimension1").delete();
 

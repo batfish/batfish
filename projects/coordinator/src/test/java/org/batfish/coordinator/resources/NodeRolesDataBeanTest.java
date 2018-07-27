@@ -47,8 +47,7 @@ public class NodeRolesDataBeanTest extends WorkMgrServiceV2TestBase {
                     null,
                     null)));
     NodeRolesData.write(
-        data,
-        Main.getWorkMgr().getdirNetwork(container).resolve(BfConsts.RELPATH_NODE_ROLES_PATH));
+        data, Main.getWorkMgr().getdirNetwork(container).resolve(BfConsts.RELPATH_NODE_ROLES_PATH));
 
     // we should get OK and the expected bean
     assertThat(
