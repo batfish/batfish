@@ -1681,7 +1681,7 @@ public class WorkMgr extends AbstractCoordinator {
    *
    * @param networkName Name of the network to upload the snapshot to.
    * @param snapshotName Name of the new snapshot.
-   * @param fileStream Filestream of the snapshot zip.
+   * @param fileStream {@link InputStream} of the snapshot zip.
    * @param autoAnalyze Boolean determining if the snapshot analysis should be triggered on upload.
    */
   public void uploadSnapshot(

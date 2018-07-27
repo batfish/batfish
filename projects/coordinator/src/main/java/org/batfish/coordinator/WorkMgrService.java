@@ -1972,7 +1972,7 @@ public class WorkMgrService {
    * @param clientVersion The version of the client
    * @param networkName The name of the network under which to upload the new snapshot
    * @param snapshotName The name of the new snapshot to create
-   * @param fileStream The stream from which the new snapshot is read
+   * @param fileStream The {@link InputStream} from which the new snapshot is read
    * @return TODO: document JSON response
    */
   @POST
