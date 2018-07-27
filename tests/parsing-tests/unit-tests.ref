@@ -2138,7 +2138,7 @@
             "        (if_ip_vrf_forwarding",
             "          VRF:'vrf'  <== mode:DEFAULT_MODE",
             "          FORWARDING:'forwarding'  <== mode:DEFAULT_MODE",
-            "          name = (variable",
+            "          vrf = (variable",
             "            MGMT:'mgmt'  <== mode:DEFAULT_MODE)",
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "      (if_inner",
@@ -10806,7 +10806,7 @@
             "          IP:'ip'  <== mode:DEFAULT_MODE",
             "          VRF:'vrf'  <== mode:DEFAULT_MODE",
             "          FORWARDING:'forwarding'  <== mode:DEFAULT_MODE",
-            "          name = (variable",
+            "          vrf = (variable",
             "            VARIABLE:'foovrf'  <== mode:DEFAULT_MODE)",
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "      (if_inner",
@@ -11193,7 +11193,7 @@
             "          IP:'ip'  <== mode:DEFAULT_MODE",
             "          VRF:'vrf'  <== mode:DEFAULT_MODE",
             "          FORWARDING:'forwarding'  <== mode:DEFAULT_MODE",
-            "          name = (variable",
+            "          vrf = (variable",
             "            VARIABLE:'bleepvrf'  <== mode:DEFAULT_MODE)",
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "      (if_inner",
@@ -22840,6 +22840,47 @@
             "          VIRTUAL_ROUTER:'virtual-router'  <== mode:DEFAULT_MODE",
             "          ADDRESS:'address'  <== mode:DEFAULT_MODE",
             "          address = IP_ADDRESS:'2.3.4.1'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "      (if_inner",
+            "        (if_ip_vrf_autoclassify",
+            "          IP:'ip'  <== mode:DEFAULT_MODE",
+            "          VRF:'vrf'  <== mode:DEFAULT_MODE",
+            "          AUTOCLASSIFY:'autoclassify'  <== mode:DEFAULT_MODE",
+            "          SOURCE:'source'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "      (if_inner",
+            "        (if_ip_vrf_forwarding",
+            "          IP:'ip'  <== mode:DEFAULT_MODE",
+            "          VRF:'vrf'  <== mode:DEFAULT_MODE",
+            "          FORWARDING:'forwarding'  <== mode:DEFAULT_MODE",
+            "          vrf = (variable",
+            "            VARIABLE:'U_VRF'  <== mode:DEFAULT_MODE)",
+            "          DOWNSTREAM:'downstream'  <== mode:DEFAULT_MODE",
+            "          vrf_down = (variable",
+            "            VARIABLE:'D_VRF'  <== mode:DEFAULT_MODE)",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "      (if_inner",
+            "        (if_ip_vrf_receive",
+            "          IP:'ip'  <== mode:DEFAULT_MODE",
+            "          VRF:'vrf'  <== mode:DEFAULT_MODE",
+            "          RECEIVE:'receive'  <== mode:DEFAULT_MODE",
+            "          vrf = (variable",
+            "            VARIABLE:'R_VRF'  <== mode:DEFAULT_MODE)",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "      (if_inner",
+            "        (if_ip_vrf_select",
+            "          IP:'ip'  <== mode:DEFAULT_MODE",
+            "          VRF:'vrf'  <== mode:DEFAULT_MODE",
+            "          SELECT:'select'  <== mode:DEFAULT_MODE",
+            "          SOURCE:'source'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "      (if_inner",
+            "        (if_ip_vrf_sitemap",
+            "          IP:'ip'  <== mode:DEFAULT_MODE",
+            "          VRF:'vrf'  <== mode:DEFAULT_MODE",
+            "          SITEMAP:'sitemap'  <== mode:DEFAULT_MODE",
+            "          map = (variable",
+            "            VARIABLE:'SITEMAP'  <== mode:DEFAULT_MODE)",
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "      (if_inner",
             "        (if_null_block",
@@ -56727,25 +56768,25 @@
           "interface" : {
             "Async1" : {
               "definitionLines" : [
-                287
+                292
               ],
               "numReferrers" : 1
             },
             "Cable1/2/3:4" : {
               "definitionLines" : [
-                289
+                294
               ],
               "numReferrers" : 1
             },
             "Crypto-Engine1/2/3" : {
               "definitionLines" : [
-                291
+                296
               ],
               "numReferrers" : 1
             },
             "Dot11Radio0" : {
               "definitionLines" : [
-                293
+                298
               ],
               "numReferrers" : 1
             },
@@ -57029,114 +57070,119 @@
                 282,
                 283,
                 284,
-                285
+                285,
+                286,
+                287,
+                288,
+                289,
+                290
               ],
               "numReferrers" : 1
             },
             "Ethernet1/11" : {
               "definitionLines" : [
-                295
+                300
               ],
               "numReferrers" : 1
             },
             "Ethernet1/12" : {
               "definitionLines" : [
-                332,
-                333
+                337,
+                338
               ],
               "numReferrers" : 1
             },
             "GigabitEthernet0/0" : {
               "definitionLines" : [
-                297,
-                298,
-                299,
-                300,
-                301
+                302,
+                303,
+                304,
+                305,
+                306
               ],
               "numReferrers" : 1
             },
             "Loopback0" : {
               "definitionLines" : [
-                303
+                308
               ],
               "numReferrers" : 1
             },
             "Modular-Cable1/2/3:4" : {
               "definitionLines" : [
-                305
+                310
               ],
               "numReferrers" : 1
             },
             "Null0" : {
               "definitionLines" : [
-                307
+                312
               ],
               "numReferrers" : 1
             },
             "Vlan1" : {
               "definitionLines" : [
-                316
+                321
               ],
               "numReferrers" : 1
             },
             "Vlan1005" : {
               "definitionLines" : [
-                322
+                327
               ],
               "numReferrers" : 1
             },
             "Vlan1006" : {
               "definitionLines" : [
-                324
+                329
               ],
               "numReferrers" : 1
             },
             "Vlan111" : {
               "definitionLines" : [
-                311
+                316
               ],
               "numReferrers" : 1
             },
             "Vlan1234" : {
               "definitionLines" : [
-                326
+                331
               ],
               "numReferrers" : 1
             },
             "Vlan2" : {
               "definitionLines" : [
-                318
+                323
               ],
               "numReferrers" : 1
             },
             "Vlan3" : {
               "definitionLines" : [
-                320
+                325
               ],
               "numReferrers" : 1
             },
             "Vlan4094" : {
               "definitionLines" : [
-                328
+                333
               ],
               "numReferrers" : 1
             },
             "Vxlan1" : {
               "definitionLines" : [
-                313
+                318
               ],
               "numReferrers" : 1
             },
             "Wideband-Cable1/2/3:4" : {
               "definitionLines" : [
-                330
+                335
               ],
               "numReferrers" : 1
             },
             "tunnel-ip6" : {
               "definitionLines" : [
-                309
+                314
               ],
               "numReferrers" : 1
             }
@@ -59874,7 +59920,7 @@
             },
             "310-systems" : {
               "interface outgoing ip access-list" : [
-                132
+                137
               ]
             },
             "ag1" : {
@@ -59913,6 +59959,11 @@
             }
           },
           "route-map" : {
+            "SITEMAP" : {
+              "interface ip vrf sitemap" : [
+                135
+              ]
+            },
             "eigrp-leak-map" : {
               "interface summary-address eigrp leak-map" : [
                 125
@@ -59922,7 +59973,7 @@
           "zone security" : {
             "z1" : {
               "interface zone-member" : [
-                285
+                290
               ]
             }
           }

@@ -6663,7 +6663,7 @@
             "switchportMode" : "TRUNK",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
-            "vrf" : "default"
+            "vrf" : "U_VRF"
           },
           "Ethernet1/11" : {
             "name" : "Ethernet1/11",
@@ -7143,6 +7143,12 @@
           }
         },
         "vrfs" : {
+          "U_VRF" : {
+            "name" : "U_VRF",
+            "interfaces" : [
+              "Ethernet0"
+            ]
+          },
           "default" : {
             "name" : "default",
             "interfaces" : [
@@ -7150,7 +7156,6 @@
               "Cable1/2/3:4",
               "Crypto-Engine1/2/3",
               "Dot11Radio0",
-              "Ethernet0",
               "Ethernet1/11",
               "Ethernet1/12",
               "GigabitEthernet0/0",
