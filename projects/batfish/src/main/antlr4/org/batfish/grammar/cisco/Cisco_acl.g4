@@ -145,13 +145,13 @@ community_set_elem_list
    (
       (
          (
-            community_set_elem COMMA
+            elems += community_set_elem COMMA
          )
          | hash_comment
       ) NEWLINE
    )*
    (
-      community_set_elem
+      elems += community_set_elem
       | hash_comment
    ) NEWLINE
 ;

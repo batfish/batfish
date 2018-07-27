@@ -453,6 +453,8 @@ import org.batfish.grammar.cisco.CiscoParser.Cmm_service_templateContext;
 import org.batfish.grammar.cisco.CiscoParser.Cntlr_rf_channelContext;
 import org.batfish.grammar.cisco.CiscoParser.Cntlrrfc_depi_tunnelContext;
 import org.batfish.grammar.cisco.CiscoParser.CommunityContext;
+import org.batfish.grammar.cisco.CiscoParser.Community_set_elemContext;
+import org.batfish.grammar.cisco.CiscoParser.Community_set_elem_halfContext;
 import org.batfish.grammar.cisco.CiscoParser.Community_set_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Compare_routerid_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Continue_rm_stanzaContext;
@@ -817,8 +819,6 @@ import org.batfish.grammar.cisco.CiscoParser.Router_bgp_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Router_id_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Router_isis_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Rp_community_setContext;
-import org.batfish.grammar.cisco.CiscoParser.Rp_community_set_elemContext;
-import org.batfish.grammar.cisco.CiscoParser.Rp_community_set_elem_halfContext;
 import org.batfish.grammar.cisco.CiscoParser.Rp_isis_metric_typeContext;
 import org.batfish.grammar.cisco.CiscoParser.Rp_metric_typeContext;
 import org.batfish.grammar.cisco.CiscoParser.Rp_ospf_metric_typeContext;
@@ -1986,8 +1986,17 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void enterCommunity_set_stanza(Community_set_stanzaContext ctx) {
     String name = ctx.name.getText();
     defineStructure(COMMUNITY_SET, name, ctx);
-    ctx.community_set_elem_list()
-    _currentCommunitySet = _configuration.getCommunitySets().computeIfAbsent(name, NamedCommunitySet::new);
+    _configuration
+        .getCommunitySets()
+        .computeIfAbsent(
+            name,
+            n ->
+                new NamedCommunitySet(
+                    n,
+                    ctx.community_set_elem_list()
+                        .elems
+                        .stream()
+                        .map(this::toCommunitySetElemExpr)));
   }
 
   @Override
@@ -8633,7 +8642,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
   }
 
-  private CommunitySetElem toCommunitySetElemExpr(Rp_community_set_elemContext ctx) {
+  private CommunitySetElem toCommunitySetElemExpr(Community_set_elemContext ctx) {
     if (ctx.prefix != null) {
       CommunitySetElemHalfExpr prefix = toCommunitySetElemHalfExpr(ctx.prefix);
       CommunitySetElemHalfExpr suffix = toCommunitySetElemHalfExpr(ctx.suffix);
@@ -8647,7 +8656,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   private CommunitySetElemHalfExpr toCommunitySetElemHalfExpr(
-      Rp_community_set_elem_halfContext ctx) {
+      Community_set_elem_halfContext ctx) {
     if (ctx.value != null) {
       int value = toInteger(ctx.value);
       return new LiteralCommunitySetElemHalf(value);

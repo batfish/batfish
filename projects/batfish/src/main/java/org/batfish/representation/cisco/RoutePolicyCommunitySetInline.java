@@ -9,18 +9,18 @@ public class RoutePolicyCommunitySetInline extends RoutePolicyCommunitySet {
 
   private static final long serialVersionUID = 1L;
 
-  private List<CommunitySetElem> _elems;
+  private List<CommunitySetElem> _elements;
 
   public RoutePolicyCommunitySetInline(List<CommunitySetElem> elems) {
-    _elems = elems;
+    _elements = elems;
   }
 
-  public List<CommunitySetElem> getNumbers() {
-    return _elems;
+  public List<CommunitySetElem> getElements() {
+    return _elements;
   }
 
   @Override
   public CommunitySetExpr toCommunitySetExpr(CiscoConfiguration cc, Configuration c, Warnings w) {
-    return new InlineCommunitySet(_elems);
+    return new InlineCommunitySet(_elements);
   }
 }

@@ -466,6 +466,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private final Map<String, SecurityZone> _securityZones;
 
+  private Map<String, RoutePolicyCommunitySetName> _communitySets;
+
   public CiscoConfiguration(Set<String> unimplementedFeatures) {
     _asPathAccessLists = new TreeMap<>();
     _asPathSets = new TreeMap<>();
@@ -4086,5 +4088,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public Map<String, SecurityZone> getSecurityZones() {
     return _securityZones;
+  }
+
+  public Map<String, RoutePolicyCommunitySetName> getCommunitySets() {
+    return _communitySets;
   }
 }
