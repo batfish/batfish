@@ -7,7 +7,6 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import org.batfish.common.BatfishLogger;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.InterfaceAddress;
@@ -34,7 +33,7 @@ public class SecurityGroup implements AwsVpcEntity, Serializable {
 
   private final Set<IpWildcard> _usersIpSpace = new HashSet<>();
 
-  public SecurityGroup(JSONObject jObj, BatfishLogger logger) throws JSONException {
+  public SecurityGroup(JSONObject jObj) throws JSONException {
     _ipPermsEgress = new LinkedList<>();
     _ipPermsIngress = new LinkedList<>();
     _groupId = jObj.getString(JSON_KEY_GROUP_ID);
@@ -43,10 +42,10 @@ public class SecurityGroup implements AwsVpcEntity, Serializable {
     // logger.debugf("doing security group %s\n", _groupId);
 
     JSONArray permsEgress = jObj.getJSONArray(JSON_KEY_IP_PERMISSIONS_EGRESS);
-    initIpPerms(_ipPermsEgress, permsEgress, logger);
+    initIpPerms(_ipPermsEgress, permsEgress);
 
     JSONArray permsIngress = jObj.getJSONArray(JSON_KEY_IP_PERMISSIONS);
-    initIpPerms(_ipPermsIngress, permsIngress, logger);
+    initIpPerms(_ipPermsIngress, permsIngress);
   }
 
   private void addEgressAccessLines(
@@ -165,13 +164,12 @@ public class SecurityGroup implements AwsVpcEntity, Serializable {
         .forEach(ipWildcard -> getUsersIpSpace().add(ipWildcard));
   }
 
-  private void initIpPerms(
-      List<IpPermissions> ipPermsList, JSONArray ipPermsJson, BatfishLogger logger)
+  private void initIpPerms(List<IpPermissions> ipPermsList, JSONArray ipPermsJson)
       throws JSONException {
 
     for (int index = 0; index < ipPermsJson.length(); index++) {
       JSONObject childObject = ipPermsJson.getJSONObject(index);
-      ipPermsList.add(new IpPermissions(childObject, logger));
+      ipPermsList.add(new IpPermissions(childObject));
     }
   }
 

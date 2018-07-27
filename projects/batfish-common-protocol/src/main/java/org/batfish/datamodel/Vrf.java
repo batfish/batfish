@@ -16,6 +16,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
+import org.batfish.datamodel.eigrp.EigrpProcess;
 import org.batfish.datamodel.isis.IsisProcess;
 import org.batfish.datamodel.ospf.OspfProcess;
 
@@ -63,6 +64,8 @@ public class Vrf extends ComparableStructure<String> {
 
   private static final String PROP_ISIS_PROCESS = "isisProcess";
 
+  private static final String PROP_EIGRP_PROCESS = "eigrpProcess";
+
   private static final String PROP_OSPF_PROCESS = "ospfProcess";
 
   private static final String PROP_RIP_PROCESS = "ripProcess";
@@ -85,6 +88,8 @@ public class Vrf extends ComparableStructure<String> {
   private transient SortedSet<String> _interfaceNames;
 
   private NavigableMap<String, Interface> _interfaces;
+
+  private EigrpProcess _eigrpProcess;
 
   private IsisProcess _isisProcess;
 
@@ -151,6 +156,12 @@ public class Vrf extends ComparableStructure<String> {
   @JsonPropertyDescription("Generated IPV4 routes for this VRF")
   public NavigableSet<GeneratedRoute> getGeneratedRoutes() {
     return _generatedRoutes;
+  }
+
+  @JsonProperty(PROP_EIGRP_PROCESS)
+  @JsonPropertyDescription("EIGRP routing process for this VRF")
+  public EigrpProcess getEigrpProcess() {
+    return _eigrpProcess;
   }
 
   @JsonProperty(PROP_INTERFACES)
@@ -302,6 +313,11 @@ public class Vrf extends ComparableStructure<String> {
   @JsonProperty(PROP_ISIS_PROCESS)
   public void setIsisProcess(IsisProcess process) {
     _isisProcess = process;
+  }
+
+  @JsonProperty(PROP_EIGRP_PROCESS)
+  public void setEigrpProcess(EigrpProcess process) {
+    _eigrpProcess = process;
   }
 
   @JsonProperty(PROP_OSPF_PROCESS)

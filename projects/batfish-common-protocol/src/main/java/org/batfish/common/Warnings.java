@@ -119,21 +119,15 @@ public class Warnings implements Serializable {
 
   private static final String UNIMPLEMENTED_VAR = "Unimplemented features";
 
-  private transient boolean _pedanticAsError;
-
   private transient boolean _pedanticRecord;
 
   protected final List<Warning> _pedanticWarnings;
 
   private transient boolean _printParseTree;
 
-  private transient boolean _redFlagAsError;
-
   private transient boolean _redFlagRecord;
 
   protected final List<Warning> _redFlagWarnings;
-
-  private transient boolean _unimplementedAsError;
 
   private transient boolean _unimplementedRecord;
 
@@ -146,57 +140,23 @@ public class Warnings implements Serializable {
   }
 
   public Warnings(
-      boolean pedanticAsError,
       boolean pedanticRecord,
-      boolean redFlagAsError,
       boolean redFlagRecord,
-      boolean unimplementedAsError,
       boolean unimplementedRecord,
       boolean printParseTree) {
     this();
-    _pedanticAsError = pedanticAsError;
     _pedanticRecord = pedanticRecord;
     _printParseTree = printParseTree;
-    _redFlagAsError = redFlagAsError;
     _redFlagRecord = redFlagRecord;
-    _unimplementedAsError = unimplementedAsError;
     _unimplementedRecord = unimplementedRecord;
-  }
-
-  public boolean getPedanticAsError() {
-    return _pedanticAsError;
-  }
-
-  public boolean getPedanticRecord() {
-    return _pedanticRecord;
   }
 
   public List<Warning> getPedanticWarnings() {
     return _pedanticWarnings;
   }
 
-  public boolean getPrintParseTree() {
-    return _printParseTree;
-  }
-
-  public boolean getRedFlagAsError() {
-    return _redFlagAsError;
-  }
-
-  public boolean getRedFlagRecord() {
-    return _redFlagRecord;
-  }
-
   public List<Warning> getRedFlagWarnings() {
     return _redFlagWarnings;
-  }
-
-  public boolean getUnimplementedAsError() {
-    return _unimplementedAsError;
-  }
-
-  public boolean getUnimplementedRecord() {
-    return _unimplementedRecord;
   }
 
   public List<Warning> getUnimplementedWarnings() {
@@ -211,15 +171,14 @@ public class Warnings implements Serializable {
   }
 
   public void pedantic(String msg) {
+    if (!_pedanticRecord) {
+      return;
+    }
     pedantic(msg, MISCELLANEOUS);
   }
 
   public void pedantic(String msg, String tag) {
-    if (_pedanticAsError) {
-      throw new PedanticBatfishException(msg);
-    } else if (_pedanticRecord) {
-      _pedanticWarnings.add(new Warning(msg, tag));
-    }
+    _pedanticWarnings.add(new Warning(msg, tag));
   }
 
   public void redFlag(String msg) {
@@ -227,44 +186,15 @@ public class Warnings implements Serializable {
   }
 
   public void redFlag(String msg, String tag) {
-    if (_redFlagAsError) {
-      throw new RedFlagBatfishException(msg);
-    } else if (_redFlagRecord) {
-      _redFlagWarnings.add(new Warning(msg, tag));
+    if (!_redFlagRecord) {
+      return;
     }
-  }
-
-  public void setPedanticAsError(boolean pedanticAsError) {
-    _pedanticAsError = pedanticAsError;
-  }
-
-  public void setPedanticRecord(boolean pedanticRecord) {
-    _pedanticRecord = pedanticRecord;
-  }
-
-  public void setPrintParseTree(boolean printParseTree) {
-    _printParseTree = printParseTree;
-  }
-
-  public void setRedFlagAsError(boolean redFlagAsError) {
-    _redFlagAsError = redFlagAsError;
-  }
-
-  public void setRedFlagRecord(boolean redFlagRecord) {
-    _redFlagRecord = redFlagRecord;
-  }
-
-  public void setUnimplementedAsError(boolean unimplementedAsError) {
-    _unimplementedAsError = unimplementedAsError;
-  }
-
-  public void setUnimplementedRecord(boolean unimplementedRecord) {
-    _unimplementedRecord = unimplementedRecord;
+    _redFlagWarnings.add(new Warning(msg, tag));
   }
 
   public void todo(
       ParserRuleContext ctx, String feature, BatfishCombinedParser<?, ?> parser, String text) {
-    if (!_unimplementedRecord && !_unimplementedAsError) {
+    if (!_unimplementedRecord) {
       return;
     }
     String prefix = "WARNING: UNIMPLEMENTED: " + (_unimplementedWarnings.size() + 1) + ": ";
@@ -296,12 +226,7 @@ public class Warnings implements Serializable {
         sb.append(parseTreePrefix + parseTreeLine + "\n");
       }
     }
-    String warning = sb.toString();
-    if (_unimplementedAsError) {
-      throw new UnimplementedBatfishException(warning);
-    } else {
-      _unimplementedWarnings.add(new Warning(sb.toString(), "UNIMPLEMENTED"));
-    }
+    _unimplementedWarnings.add(new Warning(sb.toString(), "UNIMPLEMENTED"));
   }
 
   public void unimplemented(String msg) {
@@ -309,10 +234,9 @@ public class Warnings implements Serializable {
   }
 
   public void unimplemented(String msg, String tag) {
-    if (_unimplementedAsError) {
-      throw new UnimplementedBatfishException(msg);
-    } else if (_unimplementedRecord) {
-      _unimplementedWarnings.add(new Warning(msg, tag));
+    if (!_unimplementedRecord) {
+      return;
     }
+    _unimplementedWarnings.add(new Warning(msg, tag));
   }
 }

@@ -1,0 +1,25 @@
+load-questions questions/experimental
+
+# validate aclReachability
+test -raw tests/questions/experimental/aclReachability.ref validate-template aclReachability aclNameRegex=".*", nodeRegex=".*"
+
+# validate bgpSessionStatus
+test -raw tests/questions/experimental/bgpSessionStatus.ref validate-template bgpSessionStatus foreignBgpGroups=["randomGroup"], includeEstablishedCount=true, node1Regex=".*", node2Regex=".*", status=".*", type=".*"
+
+# validate filterTable
+test -raw tests/questions/experimental/filterTable.ref validate-template filterTable filter = "mtu == 1500", innerQuestion={"class": "org.batfish.question.interfaceproperties.InterfacePropertiesQuestion"}, columns=["interface", "mtu"]
+
+# validate interfaceMtu
+test -raw tests/questions/experimental/interfaceMtu.ref validate-template interfaceMtu comparator='>', interfaceRegex='Gig.*', mtuBytes=0, nodeRegex='as1core2'
+
+# validate neighbors
+test -raw tests/questions/experimental/neighbors.ref validate-template neighbors neighborTypes=["ebgp"], node1Regex=".*", node2Regex=".*", style="summary", roleDimension="default" 
+
+# validate nodes
+test -raw tests/questions/experimental/nodes.ref validate-template nodes nodeRegex=".*", nodeTypes=["ospf"], summary=true
+
+# validate nodeProperties
+test -raw tests/questions/experimental/nodeProperties.ref validate-template nodeProperties nodeRegex=".*", propertySpec="ntp.*"
+
+# validate prefixTracer
+test -raw tests/questions/experimental/prefixTracer.ref validate-template prefixTracer nodeRegex=".*", prefix="0.0.0.0/0"

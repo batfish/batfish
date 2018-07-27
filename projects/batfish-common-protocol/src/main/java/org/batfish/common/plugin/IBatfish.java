@@ -43,6 +43,7 @@ import org.batfish.datamodel.questions.smt.RoleQuestion;
 import org.batfish.grammar.BgpTableFormat;
 import org.batfish.grammar.GrammarSettings;
 import org.batfish.question.ReachabilityParameters;
+import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
 import org.batfish.specifier.SpecifierContext;
@@ -58,6 +59,8 @@ public interface IBatfish extends IPluginConsumer {
   DataPlaneAnswerElement computeDataPlane(boolean differentialContext);
 
   boolean debugFlagEnabled(String flag);
+
+  ReferenceLibrary getReferenceLibraryData();
 
   Map<String, BiFunction<Question, IBatfish, Answerer>> getAnswererCreators();
 

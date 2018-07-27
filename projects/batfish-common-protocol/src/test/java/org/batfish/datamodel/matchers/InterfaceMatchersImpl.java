@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
@@ -12,6 +13,7 @@ import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.eigrp.EigrpInterfaceSettings;
 import org.batfish.datamodel.isis.IsisInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.hamcrest.FeatureMatcher;
@@ -93,6 +95,18 @@ final class InterfaceMatchersImpl {
     @Override
     protected String featureValueOf(Interface actual) {
       return actual.getDescription();
+    }
+  }
+
+  static final class HasEigrp extends FeatureMatcher<Interface, EigrpInterfaceSettings> {
+    HasEigrp(@Nonnull Matcher<? super EigrpInterfaceSettings> subMatcher) {
+      super(subMatcher, "An Interface with eigrp:", "eigrp");
+    }
+
+    @Override
+    @Nullable
+    protected EigrpInterfaceSettings featureValueOf(Interface actual) {
+      return actual.getEigrp();
     }
   }
 

@@ -6,12 +6,6 @@ options {
    tokenVocab = CiscoLexer;
 }
 
-bgp_asn
-:
-    asn = DEC
-    | asn4b = FLOAT // DEC.DEC , but this lexes as FLOAT
-;
-
 router_bgp_nxos_toplevel
 :
     rbnx_enforce_first_as

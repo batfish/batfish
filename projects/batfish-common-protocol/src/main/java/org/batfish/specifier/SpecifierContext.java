@@ -2,11 +2,13 @@ package org.batfish.specifier;
 
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.IpSpace;
+import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.role.NodeRole;
 
 /**
@@ -17,6 +19,9 @@ public interface SpecifierContext {
   /** @return The network configurations. */
   @Nonnull
   Map<String, Configuration> getConfigs();
+
+  /** @return the set of {@link ReferenceBook} with name {@code bookName}. */
+  Optional<ReferenceBook> getReferenceBook(String bookName);
 
   /** @return the set of {@link NodeRole}s in the network with the input dimension. */
   @Nonnull

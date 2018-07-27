@@ -58,6 +58,12 @@ banner_type
    | SLIP_PPP
 ;
 
+bgp_asn
+:
+    asn = DEC
+    | asn4b = FLOAT // DEC.DEC , but this lexes as FLOAT
+;
+
 community
 :
    com = ACCEPT_OWN

@@ -1,5 +1,6 @@
 language: java
 sudo: true
+dist: xenial
 
 jdk:
   - oraclejdk8

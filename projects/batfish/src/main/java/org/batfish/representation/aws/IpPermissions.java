@@ -10,7 +10,6 @@ import java.util.Objects;
 import java.util.SortedSet;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
-import org.batfish.common.BatfishLogger;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
@@ -59,7 +58,7 @@ public class IpPermissions implements Serializable {
 
   private int _toPort = 65535;
 
-  public IpPermissions(JSONObject jObj, BatfishLogger logger) throws JSONException {
+  public IpPermissions(JSONObject jObj) throws JSONException {
     _ipProtocol = jObj.getString(AwsVpcEntity.JSON_KEY_IP_PROTOCOL);
 
     _fromPort = Utils.tryGetInt(jObj, AwsVpcEntity.JSON_KEY_FROM_PORT, _fromPort);

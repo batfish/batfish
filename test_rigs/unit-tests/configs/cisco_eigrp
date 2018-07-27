@@ -8,7 +8,13 @@ object-group ip address _anonymized2_
  host-info 1.1.1.1
 !
 router eigrp 5
- redistribute static metric 10000 10 255 1 1500
+ redistribute bgp 1.2 route-map BGP_TO_EIGRP
+ redistribute connected route-map CONNECTED_TO_EIGRP
+ redistribute eigrp 3 route-map EIGRP_TO_EIGRP
+ redistribute isis route-map ISIS_TO_EIGRP
+ redistribute ospf 4 route-map OSPF_TO_EIGRP
+ redistribute rip route-map RIP_TO_EIGRP
+ redistribute static metric 10000 10 255 1 1500 route-map STATIC_TO_EIGRP
  passive-interface default
  no passive-interface Port-channel34
  no passive-interface Port-channel35
@@ -102,3 +108,46 @@ router eigrp 5
  network 1.1.1.1
 !
 
+router eigrp 5
+ address-family ipv4 unicast vrf default autonomous-system 55
+  autonomous-system 65500
+  network 1.1.2.1
+ network 5.5.5.5
+ network 1.1.1.1 255.255.255.255
+ no traffic-share balanced
+ offset-list 21 out 10
+ traffic-share balanced
+ variance 4
+
+router eigrp virtual
+ address-family ipv4 multicast vrf autonomous-system autonomous-system 4
+  af-interface Ethernet0
+   add-paths 4
+   bandwidth-percent 75
+   dampening-change 75
+   dampening-interval 45
+   hold-time 40
+  exit-af-interface
+  network 1.1.1.100
+  remote-neighbors source GigabitEthernet0/0/1 unicast-listen lisp-encap 2
+  topology base
+   offset-list 21 out 10
+   summary-metric 192.168.0.0/16 10000 10 255 1 1500 distance 20
+   traffic-share balanced
+   variance 4
+  exit-af-topology
+  topology VOICE tid 1000
+   no auto-summary
+  exit-af-topology
+ exit-address-family
+ service-family ipv4 vrf service-family autonomous-system 3
+  neighbor 1.1.1.100
+  sf-interface Ethernet0
+   bandwidth-percent 75
+   dampening-change 75
+   dampening-interval 45
+   hold-time 50
+  exit-sf-interface
+  topology base
+ exit-service-family
+!

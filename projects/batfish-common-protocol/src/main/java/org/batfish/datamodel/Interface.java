@@ -22,6 +22,7 @@ import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
+import org.batfish.datamodel.eigrp.EigrpInterfaceSettings;
 import org.batfish.datamodel.isis.IsisInterfaceMode;
 import org.batfish.datamodel.isis.IsisInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfArea;
@@ -43,6 +44,8 @@ public final class Interface extends ComparableStructure<String> {
     private boolean _blacklisted;
 
     private SortedSet<String> _declaredNames;
+
+    private EigrpInterfaceSettings _eigrp;
 
     private IpAccessList _incomingFilter;
 
@@ -100,6 +103,7 @@ public final class Interface extends ComparableStructure<String> {
       iface.setBandwidth(_bandwidth);
       iface.setBlacklisted(_blacklisted);
       iface.setDeclaredNames(_declaredNames);
+      iface.setEigrp(_eigrp);
       iface.setIncomingFilter(_incomingFilter);
       iface.setIsis(_isis);
       iface.setOspfArea(_ospfArea);
@@ -199,6 +203,11 @@ public final class Interface extends ComparableStructure<String> {
 
     public Builder setDeclaredNames(Iterable<String> declaredNames) {
       _declaredNames = ImmutableSortedSet.copyOf(declaredNames);
+      return this;
+    }
+
+    public Builder setEigrp(EigrpInterfaceSettings eigrp) {
+      _eigrp = eigrp;
       return this;
     }
 
@@ -323,6 +332,8 @@ public final class Interface extends ComparableStructure<String> {
   private static final String PROP_DESCRIPTION = "description";
 
   private static final String PROP_DHCP_RELAY_ADDRESSES = "dhcpRelayAddresses";
+
+  private static final String PROP_EIGRP = "eigrp";
 
   private static final String PROP_INBOUND_FILTER = "inboundFilter";
 
@@ -578,6 +589,8 @@ public final class Interface extends ComparableStructure<String> {
 
   private List<Ip> _dhcpRelayAddresses;
 
+  private EigrpInterfaceSettings _eigrp;
+
   private IpAccessList _inboundFilter;
 
   private transient String _inboundFilterName;
@@ -740,6 +753,11 @@ public final class Interface extends ComparableStructure<String> {
     if (!Objects.equals(_key, other._key)) {
       return false;
     }
+
+    if (!Objects.equals(_eigrp, other._eigrp)) {
+      return false;
+    }
+
     // TODO: check ISIS settings for equality.
     if (_mtu != other._mtu) {
       return false;
@@ -846,6 +864,11 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_DHCP_RELAY_ADDRESSES)
   public List<Ip> getDhcpRelayAddresses() {
     return _dhcpRelayAddresses;
+  }
+
+  @JsonProperty(PROP_EIGRP)
+  public @Nullable EigrpInterfaceSettings getEigrp() {
+    return _eigrp;
   }
 
   @JsonIgnore
@@ -1218,6 +1241,11 @@ public final class Interface extends ComparableStructure<String> {
     _dhcpRelayAddresses = dhcpRelayAddresses;
   }
 
+  @JsonProperty(PROP_EIGRP)
+  public void setEigrp(@Nullable EigrpInterfaceSettings eigrp) {
+    _eigrp = eigrp;
+  }
+
   @JsonIgnore
   public void setInboundFilter(IpAccessList inboundFilter) {
     _inboundFilter = inboundFilter;
@@ -1420,7 +1448,7 @@ public final class Interface extends ComparableStructure<String> {
 
   public JSONObject toJSONObject() throws JSONException {
     JSONObject iface = new JSONObject();
-    iface.put("node", _owner.getName());
+    iface.put("node", _owner.getHostname());
     iface.put("name", _key);
     iface.put(PROP_PREFIX, _address.toString());
     iface.put(PROP_INTERFACE_TYPE, _interfaceType.toString());

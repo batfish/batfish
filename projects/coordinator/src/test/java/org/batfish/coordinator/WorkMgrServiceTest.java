@@ -67,7 +67,7 @@ public class WorkMgrServiceTest {
   @Test
   public void getEmptyContainer() throws Exception {
     initContainerEnvironment();
-    Response response = _service.getContainer("100", "0.0.0", _containerName);
+    Response response = _service.getNetwork("100", "0.0.0", _containerName);
     String containerJson = response.getEntity().toString();
     assertThat(containerJson, equalTo("{\"name\":\"myContainer\"}"));
   }
@@ -76,16 +76,16 @@ public class WorkMgrServiceTest {
   public void getNonExistContainer() throws Exception {
     String containerName = "non-existing-folder";
     initContainerEnvironment();
-    Response response = _service.getContainer("100", "0.0.0", containerName);
+    Response response = _service.getNetwork("100", "0.0.0", containerName);
     String actualMessage = response.getEntity().toString();
-    String expected = "Container '" + containerName + "' not found";
+    String expected = "Network '" + containerName + "' not found";
     assertThat(actualMessage, equalTo(expected));
   }
 
   @Test
   public void getContainerWithBadVersion() throws Exception {
     initContainerEnvironment();
-    Response response = _service.getContainer("100", "invalid version", _containerName);
+    Response response = _service.getNetwork("100", "invalid version", _containerName);
     String actualMessage = response.getEntity().toString();
     String expected = "Illegal version 'invalid version' for Client";
     assertThat(actualMessage, equalTo(expected));
@@ -97,7 +97,7 @@ public class WorkMgrServiceTest {
     Path containerPath = _containersFolder.getRoot().toPath().resolve(_containerName);
     Path testrigPath = containerPath.resolve(BfConsts.RELPATH_TESTRIGS_DIR).resolve("testrig");
     assertThat(testrigPath.toFile().mkdirs(), is(true));
-    Response response = _service.getContainer("100", "0.0.0", _containerName);
+    Response response = _service.getNetwork("100", "0.0.0", _containerName);
     Container container =
         BatfishObjectMapper.mapper().readValue(response.getEntity().toString(), Container.class);
     Container expected =
@@ -169,7 +169,7 @@ public class WorkMgrServiceTest {
             "testrig",
             "config1.cfg");
     String actualMessage = response.getEntity().toString();
-    assertThat(actualMessage, equalTo("Container 'nonExistContainer' not found"));
+    assertThat(actualMessage, equalTo("Network 'nonExistContainer' not found"));
   }
 
   @Test

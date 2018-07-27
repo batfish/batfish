@@ -8,4 +8,4 @@ set system saved-core-files 10
 set system saved-core-context
 set system static-host-mapping host1 inet 1.2.3.4
 #
-
+set system ports console log-out-on-disconnect

@@ -10,10 +10,10 @@
               "unused:bgp group:as1" : {
                 "description" : "Unused structure of type: 'bgp group' with name: 'as1'",
                 "files" : {
-                  "as2border2.cfg" : [
+                  "configs/as2border2.cfg" : [
                     86
                   ],
-                  "as3border1.cfg" : [
+                  "configs/as3border1.cfg" : [
                     81
                   ]
                 }
@@ -21,10 +21,10 @@
               "unused:bgp group:as2" : {
                 "description" : "Unused structure of type: 'bgp group' with name: 'as2'",
                 "files" : {
-                  "as1border2.cfg" : [
+                  "configs/as1border2.cfg" : [
                     87
                   ],
-                  "as3border2.cfg" : [
+                  "configs/as3border2.cfg" : [
                     83
                   ]
                 }
@@ -32,10 +32,10 @@
               "unused:bgp group:as3" : {
                 "description" : "Unused structure of type: 'bgp group' with name: 'as3'",
                 "files" : {
-                  "as1border1.cfg" : [
+                  "configs/as1border1.cfg" : [
                     83
                   ],
-                  "as2border1.cfg" : [
+                  "configs/as2border1.cfg" : [
                     93
                   ]
                 }
@@ -43,10 +43,10 @@
               "unused:expanded community-list:as1_community" : {
                 "description" : "Unused structure of type: 'expanded community-list' with name: 'as1_community'",
                 "files" : {
-                  "as1border1.cfg" : [
+                  "configs/as1border1.cfg" : [
                     119
                   ],
-                  "as1border2.cfg" : [
+                  "configs/as1border2.cfg" : [
                     123
                   ]
                 }
@@ -54,10 +54,10 @@
               "unused:expanded community-list:as2_community" : {
                 "description" : "Unused structure of type: 'expanded community-list' with name: 'as2_community'",
                 "files" : {
-                  "as2border1.cfg" : [
+                  "configs/as2border1.cfg" : [
                     124
                   ],
-                  "as2border2.cfg" : [
+                  "configs/as2border2.cfg" : [
                     121
                   ]
                 }
@@ -65,10 +65,10 @@
               "unused:expanded community-list:as3_community" : {
                 "description" : "Unused structure of type: 'expanded community-list' with name: 'as3_community'",
                 "files" : {
-                  "as3border1.cfg" : [
+                  "configs/as3border1.cfg" : [
                     115
                   ],
-                  "as3border2.cfg" : [
+                  "configs/as3border2.cfg" : [
                     115
                   ]
                 }
@@ -76,10 +76,10 @@
               "unused:extended ipv4 access-list:102" : {
                 "description" : "Unused structure of type: 'extended ipv4 access-list' with name: '102'",
                 "files" : {
-                  "as2dist1.cfg" : [
+                  "configs/as2dist1.cfg" : [
                     116
                   ],
-                  "as2dist2.cfg" : [
+                  "configs/as2dist2.cfg" : [
                     116
                   ]
                 }
@@ -87,7 +87,7 @@
               "unused:extended ipv4 access-list:105" : {
                 "description" : "Unused structure of type: 'extended ipv4 access-list' with name: '105'",
                 "files" : {
-                  "as2dept1.cfg" : [
+                  "configs/as2dept1.cfg" : [
                     121,
                     122,
                     123,
@@ -98,7 +98,7 @@
               "unused:extended ipv4 access-list:RESTRICT_HOST_TRAFFIC_OUT" : {
                 "description" : "Unused structure of type: 'extended ipv4 access-list' with name: 'RESTRICT_HOST_TRAFFIC_OUT'",
                 "files" : {
-                  "as2dept1.cfg" : [
+                  "configs/as2dept1.cfg" : [
                     114,
                     115,
                     116,
@@ -109,27 +109,27 @@
               "unused:ipv4 prefix-list:inbound_route_filter" : {
                 "description" : "Unused structure of type: 'ipv4 prefix-list' with name: 'inbound_route_filter'",
                 "files" : {
-                  "as1border1.cfg" : [
+                  "configs/as1border1.cfg" : [
                     129,
                     130
                   ],
-                  "as1border2.cfg" : [
+                  "configs/as1border2.cfg" : [
                     134,
                     135
                   ],
-                  "as2border1.cfg" : [
+                  "configs/as2border1.cfg" : [
                     140,
                     141
                   ],
-                  "as2border2.cfg" : [
+                  "configs/as2border2.cfg" : [
                     136,
                     137
                   ],
-                  "as3border1.cfg" : [
+                  "configs/as3border1.cfg" : [
                     123,
                     124
                   ],
-                  "as3border2.cfg" : [
+                  "configs/as3border2.cfg" : [
                     121,
                     122
                   ]

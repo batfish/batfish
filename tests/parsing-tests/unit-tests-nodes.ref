@@ -253,7 +253,7 @@
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
-                  "allowRemoteAsOut" : false,
+                  "allowRemoteAsOut" : true,
                   "clusterId" : 0,
                   "defaultMetric" : 0,
                   "ebgpMultihop" : false,
@@ -2075,7 +2075,37 @@
           }
         },
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -2312,7 +2342,37 @@
           }
         },
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -2607,7 +2667,7 @@
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
-                  "allowRemoteAsOut" : false,
+                  "allowRemoteAsOut" : true,
                   "clusterId" : 16843009,
                   "defaultMetric" : 0,
                   "ebgpMultihop" : false,
@@ -2628,7 +2688,7 @@
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
-                  "allowRemoteAsOut" : false,
+                  "allowRemoteAsOut" : true,
                   "clusterId" : 16843009,
                   "defaultMetric" : 0,
                   "ebgpMultihop" : false,
@@ -3075,7 +3135,7 @@
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
-                  "allowRemoteAsOut" : false,
+                  "allowRemoteAsOut" : true,
                   "clusterId" : 0,
                   "defaultMetric" : 0,
                   "description" : "cps AS11164 - SVL-PNI",
@@ -5571,7 +5631,7 @@
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
-                  "allowRemoteAsOut" : false,
+                  "allowRemoteAsOut" : true,
                   "clusterId" : 0,
                   "defaultMetric" : 0,
                   "ebgpMultihop" : false,
@@ -6603,7 +6663,7 @@
             "switchportMode" : "TRUNK",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
-            "vrf" : "default"
+            "vrf" : "U_VRF"
           },
           "Ethernet1/11" : {
             "name" : "Ethernet1/11",
@@ -7083,6 +7143,12 @@
           }
         },
         "vrfs" : {
+          "U_VRF" : {
+            "name" : "U_VRF",
+            "interfaces" : [
+              "Ethernet0"
+            ]
+          },
           "default" : {
             "name" : "default",
             "interfaces" : [
@@ -7090,7 +7156,6 @@
               "Cable1/2/3:4",
               "Crypto-Engine1/2/3",
               "Dot11Radio0",
-              "Ethernet0",
               "Ethernet1/11",
               "Ethernet1/12",
               "GigabitEthernet0/0",
@@ -12478,7 +12543,7 @@
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
-                  "allowRemoteAsOut" : false,
+                  "allowRemoteAsOut" : true,
                   "clusterId" : 0,
                   "defaultMetric" : 0,
                   "description" : "htegiofnoirwejhg",
@@ -12500,7 +12565,7 @@
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
-                  "allowRemoteAsOut" : false,
+                  "allowRemoteAsOut" : true,
                   "clusterId" : 0,
                   "defaultMetric" : 0,
                   "description" : "hejtuignrfojfgner",
@@ -12522,7 +12587,7 @@
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
-                  "allowRemoteAsOut" : false,
+                  "allowRemoteAsOut" : true,
                   "clusterId" : 0,
                   "defaultMetric" : 0,
                   "description" : "bafjewoifj",
@@ -13348,6 +13413,18 @@
             "vrf" : "default"
           }
         },
+        "routeFilterLists" : {
+          "~SUMMARY1_2_0_0_16_RF~" : {
+            "name" : "~SUMMARY1_2_0_0_16_RF~",
+            "lines" : [
+              {
+                "action" : "ACCEPT",
+                "ipWildcard" : "1.2.0.0/16",
+                "lengthRange" : "17-32"
+              }
+            ]
+          }
+        },
         "routingPolicies" : {
           "~OSPF_EXPORT_POLICY:default~" : {
             "name" : "~OSPF_EXPORT_POLICY:default~",
@@ -13388,14 +13465,86 @@
                 ]
               }
             ]
+          },
+          "~SUMMARY1_2_0_0_16~" : {
+            "name" : "~SUMMARY1_2_0_0_16~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitReject"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                  "prefix" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                  },
+                  "prefixSet" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
+                    "name" : "~SUMMARY1_2_0_0_16_RF~"
+                  }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitAccept"
+                  }
+                ]
+              }
+            ]
           }
         },
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
             "name" : "default",
+            "aggregateRoutes" : [
+              {
+                "class" : "org.batfish.datamodel.GeneratedRoute",
+                "administrativeCost" : 10,
+                "asPath" : [ ],
+                "discard" : true,
+                "generationPolicy" : "~SUMMARY1_2_0_0_16~",
+                "metric" : 100,
+                "network" : "1.2.0.0/16",
+                "nextHopIp" : "AUTO/NONE(-1l)"
+              }
+            ],
             "interfaces" : [
               "xe-0/0/1.0",
               "xe-0/0/20:0.0",
@@ -13470,7 +13619,37 @@
           }
         },
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -13485,7 +13664,37 @@
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -13500,7 +13709,37 @@
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -13796,7 +14035,37 @@
           }
         },
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -14121,7 +14390,37 @@
           }
         },
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -14287,7 +14586,37 @@
           }
         },
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -14341,7 +14670,37 @@
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -14400,7 +14759,37 @@
           }
         },
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -14495,7 +14884,37 @@
           }
         },
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -14629,7 +15048,37 @@
           }
         },
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -14677,7 +15126,37 @@
           }
         },
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -14695,7 +15174,37 @@
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -14711,7 +15220,37 @@
         "deviceType" : "SWITCH",
         "domainName" : "my.domain.name",
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -14730,7 +15269,37 @@
           "2.3.4.5"
         ],
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -14787,7 +15356,37 @@
           }
         },
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -14827,7 +15426,36 @@
         ],
         "vendorFamily" : {
           "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
             "rootAuthenticationEncryptedPassword" : "afb9a6be03f8232c331c9b2a9537695acc8f4037591633ca55e81a2f8def821e",
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            },
             "tacplusServers" : {
               "1.2.3.4" : {
                 "name" : "1.2.3.4",
@@ -14973,7 +15601,37 @@
           }
         },
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -15046,7 +15704,37 @@
           }
         },
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -15096,6 +15784,61 @@
                 "action" : "ACCEPT",
                 "ipWildcard" : "2001:db8:1239:0:0:0:0:0/98",
                 "lengthRange" : "98-98"
+              },
+              {
+                "action" : "ACCEPT",
+                "ipWildcard" : "2001:db8:1239:0:0:0:0:0/99",
+                "lengthRange" : "99-99"
+              },
+              {
+                "action" : "ACCEPT",
+                "ipWildcard" : "2001:db8:1239:0:0:0:0:0/100",
+                "lengthRange" : "100-100"
+              },
+              {
+                "action" : "ACCEPT",
+                "ipWildcard" : "2001:db8:1239:0:0:0:0:0/101",
+                "lengthRange" : "101-101"
+              },
+              {
+                "action" : "ACCEPT",
+                "ipWildcard" : "2001:db8:1239:0:0:0:0:0/102",
+                "lengthRange" : "102-102"
+              },
+              {
+                "action" : "ACCEPT",
+                "ipWildcard" : "2001:db8:1239:0:0:0:0:0/103",
+                "lengthRange" : "103-103"
+              },
+              {
+                "action" : "ACCEPT",
+                "ipWildcard" : "2001:db8:1239:0:0:0:0:0/104",
+                "lengthRange" : "104-104"
+              },
+              {
+                "action" : "ACCEPT",
+                "ipWildcard" : "2001:db8:1239:0:0:0:0:0/105",
+                "lengthRange" : "105-105"
+              },
+              {
+                "action" : "ACCEPT",
+                "ipWildcard" : "2001:db8:1239:0:0:0:0:0/106",
+                "lengthRange" : "106-106"
+              },
+              {
+                "action" : "ACCEPT",
+                "ipWildcard" : "2001:db8:1239:0:0:0:0:0/107",
+                "lengthRange" : "107-107"
+              },
+              {
+                "action" : "ACCEPT",
+                "ipWildcard" : "2001:db8:1239:0:0:0:0:0/108",
+                "lengthRange" : "108-108"
+              },
+              {
+                "action" : "ACCEPT",
+                "ipWildcard" : "2001:db8:1239:0:0:0:0:0/109",
+                "lengthRange" : "109-109"
               }
             ],
             "name" : "route-filter-test-v6:t1"
@@ -15220,7 +15963,37 @@
           }
         },
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -15279,7 +16052,37 @@
           }
         },
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -15419,7 +16222,37 @@
           }
         },
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -15445,7 +16278,37 @@
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -15483,7 +16346,37 @@
           "1.2.3.4"
         ],
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -15498,7 +16391,37 @@
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
-          "juniper" : { }
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -15518,6 +16441,35 @@
         ],
         "vendorFamily" : {
           "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            },
             "tacplusServers" : {
               "1.2.3.4" : {
                 "name" : "1.2.3.4",
@@ -15961,7 +16913,7 @@
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
-                  "allowRemoteAsOut" : false,
+                  "allowRemoteAsOut" : true,
                   "clusterId" : 0,
                   "defaultMetric" : 0,
                   "ebgpMultihop" : false,
@@ -16128,7 +17080,7 @@
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
-                  "allowRemoteAsOut" : false,
+                  "allowRemoteAsOut" : true,
                   "clusterId" : 0,
                   "defaultMetric" : 0,
                   "ebgpMultihop" : false,
@@ -16355,7 +17307,7 @@
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
-                  "allowRemoteAsOut" : false,
+                  "allowRemoteAsOut" : true,
                   "clusterId" : 168430090,
                   "defaultMetric" : 0,
                   "description" : "neighbor-4-4-4-4-remote-as-4-af-ipv6-desc !nexus",
@@ -16376,7 +17328,7 @@
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
-                  "allowRemoteAsOut" : false,
+                  "allowRemoteAsOut" : true,
                   "clusterId" : 168430090,
                   "defaultMetric" : 0,
                   "description" : "neighbor-4-4-4-4-remote-as-4-af-ipv6-desc !nexus",
@@ -16397,7 +17349,7 @@
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
-                  "allowRemoteAsOut" : false,
+                  "allowRemoteAsOut" : true,
                   "clusterId" : 168430090,
                   "defaultMetric" : 0,
                   "description" : "neighbor-4-4-4-4-remote-as-4-af-ipv6-desc !nexus",
@@ -17143,7 +18095,7 @@
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
-                  "allowRemoteAsOut" : false,
+                  "allowRemoteAsOut" : true,
                   "clusterId" : 0,
                   "defaultMetric" : 0,
                   "ebgpMultihop" : false,
