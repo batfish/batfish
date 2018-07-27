@@ -1919,7 +1919,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
         newNeighborBuilder.setAdditionalPathsSend(lpg.getAdditionalPathsSend());
         newNeighborBuilder.setAdvertiseInactive(lpg.getAdvertiseInactive());
         newNeighborBuilder.setAllowLocalAsIn(lpg.getAllowAsIn());
-        newNeighborBuilder.setAllowRemoteAsOut(lpg.getDisablePeerAsCheck());
+        newNeighborBuilder.setAllowRemoteAsOut(
+            firstNonNull(lpg.getDisablePeerAsCheck(), Boolean.TRUE));
         newNeighborBuilder.setRouteReflectorClient(lpg.getRouteReflectorClient());
         newNeighborBuilder.setClusterId(clusterId.asLong());
         newNeighborBuilder.setDefaultMetric(defaultMetric);
