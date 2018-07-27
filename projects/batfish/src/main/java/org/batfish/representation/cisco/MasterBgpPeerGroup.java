@@ -19,7 +19,8 @@ public class MasterBgpPeerGroup extends BgpPeerGroup {
     _advertiseInactive = false;
     _allowAsIn = false;
     _defaultOriginate = false;
-    _disablePeerAsCheck = false;
+    // True for all but NXOS, which is handled in BgpProcess constructor
+    _disablePeerAsCheck = true;
     _ebgpMultihop = false;
     _routeReflectorClient = false;
     _sendCommunity = false;

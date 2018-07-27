@@ -738,6 +738,7 @@ import org.batfish.grammar.cisco.CiscoParser.Rbnx_n_af_advertise_mapContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_n_af_allowas_inContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_n_af_as_overrideContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_n_af_default_originateContext;
+import org.batfish.grammar.cisco.CiscoParser.Rbnx_n_af_disable_peer_as_checkContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_n_af_filter_listContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_n_af_inheritContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_n_af_next_hop_selfContext;
@@ -3000,6 +3001,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _configuration.referenceStructure(
           ROUTE_MAP, name, BGP_DEFAULT_ORIGINATE_ROUTE_MAP, ctx.getStart().getLine());
     }
+  }
+
+  @Override
+  public void exitRbnx_n_af_disable_peer_as_check(Rbnx_n_af_disable_peer_as_checkContext ctx) {
+    _currentBgpNxVrfNeighborAddressFamily.setDisablePeerAsCheck(true);
   }
 
   @Override
