@@ -1966,37 +1966,37 @@ public class WorkMgrService {
   }
 
   /**
-   * Uploads a new testrig under the specified container
+   * Uploads a new snapshot under the specified network
    *
    * @param apiKey The API key of the client
    * @param clientVersion The version of the client
-   * @param containerName The name of the container under which to upload the new testrig
-   * @param testrigName The name of the new testrig to create
-   * @param fileStream The stream from which the new testrig is read
+   * @param networkName The name of the network under which to upload the new snapshot
+   * @param snapshotName The name of the new snapshot to create
+   * @param fileStream The {@link InputStream} from which the new snapshot is read
    * @return TODO: document JSON response
    */
   @POST
-  @Path(CoordConsts.SVC_RSC_UPLOAD_TESTRIG)
+  @Path(CoordConsts.SVC_RSC_UPLOAD_SNAPSHOT)
   @Consumes(MediaType.MULTIPART_FORM_DATA)
   @Produces(MediaType.APPLICATION_JSON)
-  public JSONArray uploadTestrig(
+  public JSONArray uploadSnapshot(
       @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
       @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
-      @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName,
-      @FormDataParam(CoordConsts.SVC_KEY_TESTRIG_NAME) String testrigName,
+      @FormDataParam(CoordConsts.SVC_KEY_NETWORK_NAME) String networkName,
+      @FormDataParam(CoordConsts.SVC_KEY_SNAPSHOT_NAME) String snapshotName,
       @FormDataParam(CoordConsts.SVC_KEY_ZIPFILE) InputStream fileStream,
-      @FormDataParam(CoordConsts.SVC_KEY_AUTO_ANALYZE_TESTRIG) String autoAnalyzeStr) {
+      @FormDataParam(CoordConsts.SVC_KEY_AUTO_ANALYZE) String autoAnalyzeStr) {
     try {
-      _logger.infof("WMS:uploadTestrig %s %s %s\n", apiKey, containerName, testrigName);
+      _logger.infof("WMS:uploadSnapshot %s %s %s\n", apiKey, networkName, snapshotName);
 
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
-      checkStringParam(containerName, "Container name");
-      checkStringParam(testrigName, "Testrig name");
+      checkStringParam(networkName, "Network name");
+      checkStringParam(snapshotName, "Snapshot name");
 
       checkApiKeyValidity(apiKey);
       checkClientVersion(clientVersion);
-      checkNetworkAccessibility(apiKey, containerName);
+      checkNetworkAccessibility(apiKey, networkName);
 
       boolean autoAnalyze = false;
       if (!Strings.isNullOrEmpty(autoAnalyzeStr)) {
@@ -2006,24 +2006,52 @@ public class WorkMgrService {
       if (GlobalTracer.get().activeSpan() != null) {
         GlobalTracer.get()
             .activeSpan()
-            .setTag("container-name", containerName)
-            .setTag("testrig-name", testrigName);
+            .setTag("network-name", networkName)
+            .setTag("snapshot-name", snapshotName);
       }
 
-      Main.getWorkMgr().uploadTestrig(containerName, testrigName, fileStream, autoAnalyze);
+      Main.getWorkMgr().uploadSnapshot(networkName, snapshotName, fileStream, autoAnalyze);
       _logger.infof(
-          "Uploaded testrig:%s for container:%s using api-key:%s\n",
-          testrigName, containerName, apiKey);
-      return successResponse(new JSONObject().put("result", "successfully uploaded testrig"));
+          "Uploaded snapshot:%s for network:%s using api-key:%s\n",
+          snapshotName, networkName, apiKey);
+      return successResponse(new JSONObject().put("result", "successfully uploaded snapshot"));
     } catch (IllegalArgumentException | AccessControlException e) {
-      _logger.errorf("WMS:uploadTestrig exception: %s\n", e.getMessage());
+      _logger.errorf("WMS:uploadSnapshot exception: %s\n", e.getMessage());
       return failureResponse(e.getMessage());
     } catch (Exception e) {
       String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.errorf(
-          "WMS:uploadTestrig exception for apikey:%s in container:%s, testrig:%s; exception:%s",
-          apiKey, containerName, testrigName, stackTrace);
+          "WMS:uploadSnapshot exception for apikey:%s in network:%s, snapshot:%s; exception:%s",
+          apiKey, networkName, snapshotName, stackTrace);
       return failureResponse(e.getMessage());
     }
+  }
+
+  /**
+   * Uploads a new testrig under the specified container
+   *
+   * @param apiKey The API key of the client
+   * @param clientVersion The version of the client
+   * @param containerName The name of the container under which to upload the new testrig
+   * @param testrigName The name of the new testrig to create
+   * @param fileStream The stream from which the new testrig is read
+   * @return TODO: document JSON response
+   * @deprecated because testrigs were renamed to snapshots. Use {@link #uploadSnapshot(String,
+   *     String, String, String, InputStream, String)} instead.
+   */
+  @POST
+  @Path(CoordConsts.SVC_RSC_UPLOAD_TESTRIG)
+  @Consumes(MediaType.MULTIPART_FORM_DATA)
+  @Produces(MediaType.APPLICATION_JSON)
+  @Deprecated
+  public JSONArray uploadTestrig(
+      @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
+      @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
+      @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName,
+      @FormDataParam(CoordConsts.SVC_KEY_TESTRIG_NAME) String testrigName,
+      @FormDataParam(CoordConsts.SVC_KEY_ZIPFILE) InputStream fileStream,
+      @FormDataParam(CoordConsts.SVC_KEY_AUTO_ANALYZE_TESTRIG) String autoAnalyzeStr) {
+    return uploadSnapshot(
+        apiKey, clientVersion, containerName, testrigName, fileStream, autoAnalyzeStr);
   }
 }
