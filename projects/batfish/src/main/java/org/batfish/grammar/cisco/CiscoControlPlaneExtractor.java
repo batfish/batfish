@@ -1009,6 +1009,7 @@ import org.batfish.representation.cisco.MacAccessList;
 import org.batfish.representation.cisco.MasterBgpPeerGroup;
 import org.batfish.representation.cisco.MatchSemantics;
 import org.batfish.representation.cisco.NamedBgpPeerGroup;
+import org.batfish.representation.cisco.NamedCommunitySet;
 import org.batfish.representation.cisco.NatPool;
 import org.batfish.representation.cisco.NetworkObject;
 import org.batfish.representation.cisco.NetworkObjectGroup;
@@ -1996,7 +1997,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
                     ctx.community_set_elem_list()
                         .elems
                         .stream()
-                        .map(this::toCommunitySetElemExpr)));
+                        .map(this::toCommunitySetElemExpr)
+                        .collect(ImmutableList.toImmutableList())));
   }
 
   @Override
@@ -8655,8 +8657,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
   }
 
-  private CommunitySetElemHalfExpr toCommunitySetElemHalfExpr(
-      Community_set_elem_halfContext ctx) {
+  private CommunitySetElemHalfExpr toCommunitySetElemHalfExpr(Community_set_elem_halfContext ctx) {
     if (ctx.value != null) {
       int value = toInteger(ctx.value);
       return new LiteralCommunitySetElemHalf(value);

@@ -1,7 +1,5 @@
 package org.batfish.representation.cisco;
 
-import com.google.common.collect.ImmutableList;
-import java.util.List;
 import javax.annotation.Nonnull;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
@@ -12,18 +10,11 @@ public class RoutePolicyCommunitySetName extends RoutePolicyCommunitySet {
 
   private static final long serialVersionUID = 1L;
 
-  private final List<CommunitySetElem> _elements;
-
   private final String _name;
 
   public RoutePolicyCommunitySetName(
-      @Nonnull String name, @Nonnull List<CommunitySetElem> elements) {
+      @Nonnull String name) {
     _name = name;
-    _elements = ImmutableList.copyOf(elements);
-  }
-
-  public @Nonnull List<CommunitySetElem> getElements() {
-    return _elements;
   }
 
   public @Nonnull String getName() {
