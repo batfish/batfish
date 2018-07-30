@@ -17,12 +17,14 @@ import javax.annotation.Nonnull;
 public class ReferenceBook implements Comparable<ReferenceBook> {
 
   private static final String PROP_ADDRESS_GROUPS = "addressGroups";
+  private static final String PROP_FILTER_GROUPS = "filterGroups";
   private static final String PROP_NAME = "name";
   private static final String PROP_SERVICE_ENDPOINTS = "serviceEndpoints";
   private static final String PROP_SERVICE_OBJECT_GROUPS = "serviceObjectGroups";
   private static final String PROP_SERVICE_OBJECTS = "serviceObjects";
 
   @Nonnull private SortedSet<AddressGroup> _addressGroups;
+  @Nonnull private SortedSet<FilterGroup> _filterGroups;
   @Nonnull private String _name;
   @Nonnull private SortedSet<ServiceEndpoint> _serviceEndpoints;
   @Nonnull private SortedSet<ServiceObjectGroup> _serviceObjectGroups;
@@ -30,6 +32,7 @@ public class ReferenceBook implements Comparable<ReferenceBook> {
 
   public ReferenceBook(
       @JsonProperty(PROP_ADDRESS_GROUPS) List<AddressGroup> addressGroups,
+      @JsonProperty(PROP_FILTER_GROUPS) List<FilterGroup> filterGroups,
       @JsonProperty(PROP_NAME) String name,
       @JsonProperty(PROP_SERVICE_ENDPOINTS) List<ServiceEndpoint> serviceEndpoints,
       @JsonProperty(PROP_SERVICE_OBJECT_GROUPS) List<ServiceObjectGroup> serviceObjectGroups,
@@ -39,6 +42,7 @@ public class ReferenceBook implements Comparable<ReferenceBook> {
 
     // non-null versions for easier follow on code
     List<AddressGroup> nnAddressGroups = firstNonNull(addressGroups, ImmutableList.of());
+    List<FilterGroup> nnFilterGroups = firstNonNull(filterGroups, ImmutableList.of());
     List<ServiceEndpoint> nnServiceEndpoints = firstNonNull(serviceEndpoints, ImmutableList.of());
     List<ServiceObjectGroup> nnServiceObjectGroups =
         firstNonNull(serviceObjectGroups, ImmutableList.of());
@@ -47,6 +51,8 @@ public class ReferenceBook implements Comparable<ReferenceBook> {
     // collect names for sanity checking
     List<String> addressGroupNames =
         nnAddressGroups.stream().map(AddressGroup::getName).collect(Collectors.toList());
+    List<String> filterGroupNames =
+        nnFilterGroups.stream().map(FilterGroup::getName).collect(Collectors.toList());
     List<String> serviceEndpointNames =
         nnServiceEndpoints.stream().map(ServiceEndpoint::getName).collect(Collectors.toList());
     List<String> serviceObjectGroupNames =
@@ -62,6 +68,7 @@ public class ReferenceBook implements Comparable<ReferenceBook> {
 
     // check for duplicate names
     ReferenceLibrary.checkDuplicates("address group", addressGroupNames);
+    ReferenceLibrary.checkDuplicates("filter group", filterGroupNames);
     ReferenceLibrary.checkDuplicates("service endpoint", serviceEndpointNames);
     ReferenceLibrary.checkDuplicates("service object group", serviceObjectGroupNames);
     ReferenceLibrary.checkDuplicates("service objects", serviceObjectNames);
@@ -74,6 +81,7 @@ public class ReferenceBook implements Comparable<ReferenceBook> {
     // TODO: figure out what to do about circular pointers in service names
 
     _addressGroups = ImmutableSortedSet.copyOf(nnAddressGroups);
+    _filterGroups = ImmutableSortedSet.copyOf(nnFilterGroups);
     _name = name;
     _serviceEndpoints = ImmutableSortedSet.copyOf(nnServiceEndpoints);
     _serviceObjectGroups = ImmutableSortedSet.copyOf(nnServiceObjectGroups);
@@ -91,6 +99,8 @@ public class ReferenceBook implements Comparable<ReferenceBook> {
       return false;
     }
     return Objects.equals(_addressGroups, ((ReferenceBook) o)._addressGroups)
+        && Objects.equals(_filterGroups, ((ReferenceBook) o)._filterGroups)
+        && Objects.equals(_name, ((ReferenceBook) o)._name)
         && Objects.equals(_serviceEndpoints, ((ReferenceBook) o)._serviceEndpoints)
         && Objects.equals(_serviceObjectGroups, ((ReferenceBook) o)._serviceObjectGroups)
         && Objects.equals(_serviceObjects, ((ReferenceBook) o)._serviceObjects);
@@ -104,6 +114,11 @@ public class ReferenceBook implements Comparable<ReferenceBook> {
   @JsonProperty(PROP_ADDRESS_GROUPS)
   public SortedSet<AddressGroup> getAddressGroups() {
     return _addressGroups;
+  }
+
+  @JsonProperty(PROP_FILTER_GROUPS)
+  public SortedSet<FilterGroup> getFilterGroups() {
+    return _filterGroups;
   }
 
   @JsonProperty(PROP_NAME)
@@ -128,6 +143,12 @@ public class ReferenceBook implements Comparable<ReferenceBook> {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_addressGroups, _serviceEndpoints, _serviceObjectGroups, _serviceObjects);
+    return Objects.hash(
+        _addressGroups,
+        _filterGroups,
+        _name,
+        _serviceEndpoints,
+        _serviceObjectGroups,
+        _serviceObjects);
   }
 }
