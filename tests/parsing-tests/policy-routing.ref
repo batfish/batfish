@@ -1992,7 +1992,7 @@
     {
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
       "definedStructures" : {
-        "D1" : {
+        "configs/D1.cfg" : {
           "interface" : {
             "FastEthernet0/0" : {
               "definitionLines" : [
@@ -2015,7 +2015,7 @@
             }
           }
         },
-        "D2" : {
+        "configs/D2.cfg" : {
           "extended ipv4 access-list" : {
             "drop10" : {
               "definitionLines" : [
@@ -2049,7 +2049,7 @@
             }
           }
         },
-        "R" : {
+        "configs/R.cfg" : {
           "extended ipv4 access-list" : {
             "policy-filter" : {
               "definitionLines" : [
@@ -2109,7 +2109,7 @@
             }
           }
         },
-        "S" : {
+        "configs/S.cfg" : {
           "interface" : {
             "FastEthernet0/0" : {
               "definitionLines" : [
@@ -2138,7 +2138,7 @@
             }
           }
         },
-        "SL" : {
+        "configs/SL.cfg" : {
           "interface" : {
             "FastEthernet0/0" : {
               "definitionLines" : [
@@ -2160,7 +2160,7 @@
             }
           }
         },
-        "SR" : {
+        "configs/SR.cfg" : {
           "interface" : {
             "FastEthernet0/0" : {
               "definitionLines" : [

@@ -945,7 +945,7 @@
     {
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
       "definedStructures" : {
-        "n1" : {
+        "configs/n1" : {
           "bgp group" : {
             "physical" : {
               "definitionLines" : [
@@ -995,7 +995,7 @@
             }
           }
         },
-        "n2" : {
+        "configs/n2" : {
           "bgp group" : {
             "physical" : {
               "definitionLines" : [
@@ -1006,7 +1006,7 @@
             }
           }
         },
-        "n3" : {
+        "configs/n3" : {
           "community-set" : {
             "community_3" : {
               "definitionLines" : [
