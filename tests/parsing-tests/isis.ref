@@ -3,13 +3,13 @@
     {
       "class" : "org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement",
       "fileMap" : {
-        "A1Border" : "A1Border.cfg",
-        "A1Dist" : "A1Dist.cfg",
-        "A1Inter" : "A1Inter.cfg",
-        "A2Dist1" : "A2Dist1.cfg",
-        "A2Dist2" : "A2Dist2.cfg",
-        "A2Inter" : "A2Inter.cfg",
-        "ISP" : "ISP.cfg"
+        "A1Border" : "configs/A1Border.cfg",
+        "A1Dist" : "configs/A1Dist.cfg",
+        "A1Inter" : "configs/A1Inter.cfg",
+        "A2Dist1" : "configs/A2Dist1.cfg",
+        "A2Dist2" : "configs/A2Dist2.cfg",
+        "A2Inter" : "configs/A2Inter.cfg",
+        "ISP" : "configs/ISP.cfg"
       },
       "parseStatus" : {
         "A1Border" : "PASSED",

@@ -44,7 +44,7 @@ public class NodeRoleDimensionBeanTest extends WorkMgrServiceV2TestBase {
             "dimension2", ImmutableSortedSet.of(new NodeRole("role2", "a.*")), null, null);
     NodeRolesData.write(
         new NodeRolesData(null, null, ImmutableSortedSet.of(dimension1, dimension2)),
-        Main.getWorkMgr().getdirContainer(container).resolve(BfConsts.RELPATH_NODE_ROLES_PATH));
+        Main.getWorkMgr().getdirNetwork(container).resolve(BfConsts.RELPATH_NODE_ROLES_PATH));
 
     // we should the expected bean for dimension2
     assertThat(

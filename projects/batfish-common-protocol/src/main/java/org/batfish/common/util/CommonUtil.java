@@ -55,6 +55,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.NavigableMap;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -1422,18 +1423,6 @@ public class CommonUtil {
     return intersectionSet;
   }
 
-  public static int intWidth(int n) {
-    if (n == 0) {
-      return 1;
-    } else {
-      return 32 - Integer.numberOfLeadingZeros(n);
-    }
-  }
-
-  public static boolean isLoopback(String interfaceName) {
-    return interfaceName.toLowerCase().startsWith("lo");
-  }
-
   public static boolean isNullInterface(String ifaceName) {
     String lcIfaceName = ifaceName.toLowerCase();
     return lcIfaceName.startsWith("null");
@@ -1657,7 +1646,7 @@ public class CommonUtil {
         Comparator.naturalOrder(), keyFunction, valueFunction);
   }
 
-  public static <E, K extends Comparable<? super K>, V> SortedMap<K, V> toImmutableSortedMap(
+  public static <E, K extends Comparable<? super K>, V> NavigableMap<K, V> toImmutableSortedMap(
       Collection<E> set, Function<E, K> keyFunction, Function<E, V> valueFunction) {
     return set.stream()
         .collect(

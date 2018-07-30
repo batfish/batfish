@@ -8,7 +8,13 @@ object-group ip address _anonymized2_
  host-info 1.1.1.1
 !
 router eigrp 5
- redistribute static metric 10000 10 255 1 1500
+ redistribute bgp 1.2 route-map BGP_TO_EIGRP
+ redistribute connected route-map CONNECTED_TO_EIGRP
+ redistribute eigrp 3 route-map EIGRP_TO_EIGRP
+ redistribute isis route-map ISIS_TO_EIGRP
+ redistribute ospf 4 route-map OSPF_TO_EIGRP
+ redistribute rip route-map RIP_TO_EIGRP
+ redistribute static metric 10000 10 255 1 1500 route-map STATIC_TO_EIGRP
  passive-interface default
  no passive-interface Port-channel34
  no passive-interface Port-channel35

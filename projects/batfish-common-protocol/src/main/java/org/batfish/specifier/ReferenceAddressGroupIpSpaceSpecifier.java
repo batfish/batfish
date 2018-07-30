@@ -19,8 +19,8 @@ public final class ReferenceAddressGroupIpSpaceSpecifier implements IpSpaceSpeci
   private final String _addressGroupName;
   private final String _bookName;
 
-  public ReferenceAddressGroupIpSpaceSpecifier(String addressGroupname, String bookName) {
-    _addressGroupName = addressGroupname;
+  public ReferenceAddressGroupIpSpaceSpecifier(String addressGroupName, String bookName) {
+    _addressGroupName = addressGroupName;
     _bookName = bookName;
   }
 

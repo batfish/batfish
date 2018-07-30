@@ -3,9 +3,9 @@
     {
       "class" : "org.batfish.datamodel.answers.InitInfoAnswerElement",
       "parseStatus" : {
-        "as1r1.cfg" : "FAILED",
         "as1r2" : "PASSED",
-        "as2r1" : "PASSED"
+        "as2r1" : "PASSED",
+        "configs/as1r1.cfg" : "FAILED"
       }
     }
   ],

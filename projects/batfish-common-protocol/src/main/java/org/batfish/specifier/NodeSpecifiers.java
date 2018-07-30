@@ -7,7 +7,7 @@ import org.batfish.datamodel.questions.NodesSpecifier;
 public class NodeSpecifiers {
 
   public static NodeSpecifier difference(
-      NodeSpecifier nodeSpecifier, NodeSpecifier notNodeSpecifier) {
+      @Nullable NodeSpecifier nodeSpecifier, @Nullable NodeSpecifier notNodeSpecifier) {
     if (nodeSpecifier != null && notNodeSpecifier != null) {
       return new DifferenceNodeSpecifier(nodeSpecifier, notNodeSpecifier);
     } else if (nodeSpecifier != null) {
@@ -15,13 +15,13 @@ public class NodeSpecifiers {
     } else if (notNodeSpecifier != null) {
       return new DifferenceNodeSpecifier(AllNodesNodeSpecifier.INSTANCE, notNodeSpecifier);
     } else {
-      return AllNodesNodeSpecifier.INSTANCE;
+      return null;
     }
   }
 
   public static NodeSpecifier from(@Nullable NodesSpecifier nodesSpecifier) {
     if (nodesSpecifier == null) {
-      return NoNodesNodeSpecifier.INSTANCE;
+      return null;
     }
 
     switch (nodesSpecifier.getType()) {

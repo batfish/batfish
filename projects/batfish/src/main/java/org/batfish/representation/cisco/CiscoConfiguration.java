@@ -1919,7 +1919,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
         newNeighborBuilder.setAdditionalPathsSend(lpg.getAdditionalPathsSend());
         newNeighborBuilder.setAdvertiseInactive(lpg.getAdvertiseInactive());
         newNeighborBuilder.setAllowLocalAsIn(lpg.getAllowAsIn());
-        newNeighborBuilder.setAllowRemoteAsOut(lpg.getDisablePeerAsCheck());
+        newNeighborBuilder.setAllowRemoteAsOut(
+            firstNonNull(lpg.getDisablePeerAsCheck(), Boolean.TRUE));
         newNeighborBuilder.setRouteReflectorClient(lpg.getRouteReflectorClient());
         newNeighborBuilder.setClusterId(clusterId.asLong());
         newNeighborBuilder.setDefaultMetric(defaultMetric);
@@ -2103,13 +2104,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
               .setBandwidth(iface.getBandwidth())
               .setDelay(iface.getDelay())
               .build());
-    } else {
-      if (iface.getDelay() != null) {
-        _w.redFlag(
-            "Interface: '"
-                + iface.getName()
-                + "' contains EIGRP settings, but there is no EIGRP process");
-      }
     }
 
     boolean level1 = false;
@@ -3374,6 +3368,14 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.BGP_ROUTE_MAP_SUPPRESS,
         CiscoStructureUsage.BGP_ROUTE_MAP_UNSUPPRESS,
         CiscoStructureUsage.BGP_VRF_AGGREGATE_ROUTE_MAP,
+        CiscoStructureUsage.EIGRP_REDISTRIBUTE_BGP_MAP,
+        CiscoStructureUsage.EIGRP_REDISTRIBUTE_CONNECTED_MAP,
+        CiscoStructureUsage.EIGRP_REDISTRIBUTE_EIGRP_MAP,
+        CiscoStructureUsage.EIGRP_REDISTRIBUTE_ISIS_MAP,
+        CiscoStructureUsage.EIGRP_REDISTRIBUTE_OSPF_MAP,
+        CiscoStructureUsage.EIGRP_REDISTRIBUTE_RIP_MAP,
+        CiscoStructureUsage.EIGRP_REDISTRIBUTE_STATIC_MAP,
+        CiscoStructureUsage.INTERFACE_IP_VRF_SITEMAP,
         CiscoStructureUsage.INTERFACE_POLICY_ROUTING_MAP,
         CiscoStructureUsage.INTERFACE_SUMMARY_ADDRESS_EIGRP_LEAK_MAP,
         CiscoStructureUsage.OSPF_DEFAULT_ORIGINATE_ROUTE_MAP,

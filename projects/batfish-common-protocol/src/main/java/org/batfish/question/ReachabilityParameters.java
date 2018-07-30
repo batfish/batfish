@@ -3,6 +3,7 @@ package org.batfish.question;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.ForwardingAction;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.UniverseIpSpace;
@@ -11,12 +12,15 @@ import org.batfish.specifier.ConstantIpSpaceSpecifier;
 import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
 import org.batfish.specifier.IpSpaceSpecifier;
 import org.batfish.specifier.LocationSpecifier;
-import org.batfish.specifier.NoNodesNodeSpecifier;
 import org.batfish.specifier.NodeSpecifier;
 
 /**
  * A set of parameters for reachability analysis that uses high-level specifiers. It is a good
  * choice for questions because relatively little work is needed to map user input into it.
+ *
+ * <p>Nullable parameters are interpreted as "no constraint". If a (Nonnull) constraint is supplied,
+ * then it must be satisfiable. For example, if a no nodes match a {@link NodeSpecifier}, it is
+ * unsatisfiable. This requirement is enforced during resolution.
  */
 public final class ReachabilityParameters {
 
@@ -26,15 +30,15 @@ public final class ReachabilityParameters {
     private @Nonnull IpSpaceSpecifier _destinationIpSpaceSpecifier =
         new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE);
 
-    private @Nonnull NodeSpecifier _finalNodesSpecifier = NoNodesNodeSpecifier.INSTANCE;
+    private @Nullable NodeSpecifier _finalNodesSpecifier = null;
 
-    private @Nonnull NodeSpecifier _forbiddenTransitNodesSpecifier = NoNodesNodeSpecifier.INSTANCE;
+    private @Nullable NodeSpecifier _forbiddenTransitNodesSpecifier = null;
 
-    private HeaderSpace _headerSpace;
+    private @Nullable HeaderSpace _headerSpace;
 
     private int _maxChunkSize;
 
-    private @Nonnull NodeSpecifier _requiredTransitNodesSpecifier = NoNodesNodeSpecifier.INSTANCE;
+    private @Nullable NodeSpecifier _requiredTransitNodesSpecifier = null;
 
     private @Nonnull LocationSpecifier _sourceLocationSpecifier =
         AllInterfacesLocationSpecifier.INSTANCE;
@@ -63,13 +67,13 @@ public final class ReachabilityParameters {
       return this;
     }
 
-    public Builder setFinalNodesSpecifier(NodeSpecifier finalNodeSpecifier) {
+    public Builder setFinalNodesSpecifier(@Nullable NodeSpecifier finalNodeSpecifier) {
       _finalNodesSpecifier = finalNodeSpecifier;
       return this;
     }
 
     public Builder setForbiddenTransitNodesSpecifier(
-        @Nonnull NodeSpecifier forbiddenTransitNodesSpecifier) {
+        @Nullable NodeSpecifier forbiddenTransitNodesSpecifier) {
       _forbiddenTransitNodesSpecifier = forbiddenTransitNodesSpecifier;
       return this;
     }
@@ -84,7 +88,7 @@ public final class ReachabilityParameters {
       return this;
     }
 
-    public Builder setHeaderSpace(HeaderSpace headerSpace) {
+    public Builder setHeaderSpace(@Nonnull HeaderSpace headerSpace) {
       _headerSpace = headerSpace;
       return this;
     }
@@ -117,12 +121,11 @@ public final class ReachabilityParameters {
 
   private final SortedSet<ForwardingAction> _actions;
 
-  private @Nonnull IpSpaceSpecifier _destinationIpSpaceSpecifier =
-      new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE);
+  private final @Nonnull IpSpaceSpecifier _destinationIpSpaceSpecifier;
 
-  private final NodeSpecifier _finalNodesSpecifier;
+  private final @Nullable NodeSpecifier _finalNodesSpecifier;
 
-  private final @Nonnull NodeSpecifier _forbiddenTransitNodesSpecifier;
+  private final @Nullable NodeSpecifier _forbiddenTransitNodesSpecifier;
 
   private final HeaderSpace _headerSpace;
 
@@ -136,7 +139,7 @@ public final class ReachabilityParameters {
 
   private final boolean _specialize;
 
-  private final NodeSpecifier _requiredTransitNodesSpecifier;
+  private final @Nullable NodeSpecifier _requiredTransitNodesSpecifier;
 
   private final boolean _useCompression;
 
@@ -168,10 +171,12 @@ public final class ReachabilityParameters {
     return _destinationIpSpaceSpecifier;
   }
 
+  @Nullable
   public NodeSpecifier getFinalNodesSpecifier() {
     return _finalNodesSpecifier;
   }
 
+  @Nullable
   public NodeSpecifier getForbiddenTransitNodesSpecifier() {
     return _forbiddenTransitNodesSpecifier;
   }
@@ -200,6 +205,7 @@ public final class ReachabilityParameters {
     return _specialize;
   }
 
+  @Nullable
   public NodeSpecifier getRequiredTransitNodesSpecifier() {
     return _requiredTransitNodesSpecifier;
   }

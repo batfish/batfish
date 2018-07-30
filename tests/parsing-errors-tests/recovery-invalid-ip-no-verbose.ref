@@ -5,7 +5,7 @@
       "parseStatus" : {
         "as1r1" : "PASSED",
         "host1" : "PASSED",
-        "testrig/iptables/host1.iptables" : "PASSED"
+        "iptables/host1.iptables" : "PASSED"
       }
     }
   ],

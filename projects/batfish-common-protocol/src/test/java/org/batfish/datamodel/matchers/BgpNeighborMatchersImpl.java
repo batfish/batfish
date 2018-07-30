@@ -10,6 +10,17 @@ import org.hamcrest.Matcher;
 
 final class BgpNeighborMatchersImpl {
 
+  static final class HasAllowRemoteAsOut extends FeatureMatcher<BgpPeerConfig, Boolean> {
+    HasAllowRemoteAsOut(@Nonnull Matcher<? super Boolean> subMatcher) {
+      super(subMatcher, "A BgpPeerConfig with allowRemoteAsOut:", "allowRemoteAsOut");
+    }
+
+    @Override
+    protected Boolean featureValueOf(BgpPeerConfig actual) {
+      return actual.getAllowRemoteAsOut();
+    }
+  }
+
   static final class HasClusterId extends FeatureMatcher<BgpPeerConfig, Long> {
     HasClusterId(@Nonnull Matcher<? super Long> subMatcher) {
       super(subMatcher, "A BgpPeerConfig with clusterId:", "clusterId");
