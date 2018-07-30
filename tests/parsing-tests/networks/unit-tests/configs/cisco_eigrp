@@ -99,6 +99,7 @@ ip access-list extended bloop_blop
 
 !
 router eigrp 5
+ default-metric 1 2 3 4 5
  redistribute static metric 10000 10 255 1 1500
  passive-interface default
  no passive-interface Port-channel34
