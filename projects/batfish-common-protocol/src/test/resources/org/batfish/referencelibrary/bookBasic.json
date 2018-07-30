@@ -13,6 +13,19 @@
       "addresses": []
     }
   ],
+  "filterGroups": [
+    {
+      "name": "fg1",
+      "filters": [
+        "name:abc",
+        "ipv4:def"
+      ]
+    },
+    {
+      "name": "fg2",
+      "filters": []
+    }
+  ],
   "serviceEndpoints": [
     {
       "name": "se1",
