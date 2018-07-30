@@ -478,8 +478,7 @@
     {
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
       "definedStructures" : {
-        "host1" : { },
-        "us_border" : {
+        "configs/us_border.cfg" : {
           "extended ipv4 access-list" : {
             "acl-atlantis-nat" : {
               "definitionLines" : [
@@ -576,7 +575,7 @@
             }
           }
         },
-        "us_switch" : {
+        "configs/us_switch.cfg" : {
           "interface" : {
             "Ethernet1" : {
               "definitionLines" : [
@@ -595,7 +594,8 @@
               "numReferrers" : 1
             }
           }
-        }
+        },
+        "hosts/host1.json" : { }
       },
       "version" : "0.36.0"
     },

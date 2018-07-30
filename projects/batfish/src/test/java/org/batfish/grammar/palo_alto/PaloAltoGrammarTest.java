@@ -27,6 +27,12 @@ import static org.batfish.representation.palo_alto.PaloAltoConfiguration.DEFAULT
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.SHARED_VSYS_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.computeObjectName;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.computeServiceGroupMemberAclName;
+import static org.batfish.representation.palo_alto.PaloAltoStructureType.INTERFACE;
+import static org.batfish.representation.palo_alto.PaloAltoStructureType.SERVICE;
+import static org.batfish.representation.palo_alto.PaloAltoStructureType.SERVICE_GROUP;
+import static org.batfish.representation.palo_alto.PaloAltoStructureType.SERVICE_OR_SERVICE_GROUP;
+import static org.batfish.representation.palo_alto.PaloAltoStructureType.ZONE;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.VIRTUAL_ROUTER_INTERFACE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -58,8 +64,6 @@ import org.batfish.grammar.flattener.FlattenerLineMap;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.representation.palo_alto.Interface;
-import org.batfish.representation.palo_alto.PaloAltoStructureType;
-import org.batfish.representation.palo_alto.PaloAltoStructureUsage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -100,16 +104,13 @@ public class PaloAltoGrammarTest {
   @Test
   public void testDnsServerInvalid() throws IOException {
     _thrown.expect(BatfishException.class);
-    String hostname = "dns-server-invalid";
-
     // This should throw a BatfishException due to a malformed IP address
-    parseConfig(hostname);
+    parseConfig("dns-server-invalid");
   }
 
   @Test
   public void testDnsServers() throws IOException {
-    String hostname = "dns-server";
-    Configuration c = parseConfig(hostname);
+    Configuration c = parseConfig("dns-server");
 
     // Confirm both dns servers show up
     assertThat(c.getDnsServers(), containsInAnyOrder("1.9.10.99", "100.199.200.255"));
@@ -189,29 +190,25 @@ public class PaloAltoGrammarTest {
   @Test
   public void testInterfaceReference() throws IOException {
     String hostname = "interface-reference";
+    String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse();
 
     // Confirm reference counts are correct for both used and unused structures
-    assertThat(ccae, hasNumReferrers(hostname, PaloAltoStructureType.INTERFACE, "ethernet1/1", 1));
-    assertThat(
-        ccae, hasNumReferrers(hostname, PaloAltoStructureType.INTERFACE, "ethernet1/unused", 0));
+    assertThat(ccae, hasNumReferrers(filename, INTERFACE, "ethernet1/1", 1));
+    assertThat(ccae, hasNumReferrers(filename, INTERFACE, "ethernet1/unused", 0));
 
     // Confirm undefined reference is detected
     assertThat(
         ccae,
         hasUndefinedReference(
-            hostname,
-            PaloAltoStructureType.INTERFACE,
-            "ethernet1/undefined",
-            PaloAltoStructureUsage.VIRTUAL_ROUTER_INTERFACE));
+            filename, INTERFACE, "ethernet1/undefined", VIRTUAL_ROUTER_INTERFACE));
   }
 
   @Test
   public void testLogSettingsSyslog() throws IOException {
-    String hostname = "log-settings-syslog";
-    Configuration c = parseConfig(hostname);
+    Configuration c = parseConfig("log-settings-syslog");
 
     // Confirm all the defined syslog servers show up in VI model
     assertThat(
@@ -261,6 +258,7 @@ public class PaloAltoGrammarTest {
   @Test
   public void testNestedConfigStructureDef() throws IOException {
     String hostname = "nested-config-structure-def";
+    String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse();
@@ -269,17 +267,16 @@ public class PaloAltoGrammarTest {
     assertThat(
         ccae,
         hasDefinedStructureWithDefinitionLines(
-            hostname, PaloAltoStructureType.INTERFACE, "ethernet1/1", contains(8, 9, 10, 11, 12)));
+            filename, INTERFACE, "ethernet1/1", contains(8, 9, 10, 11, 12)));
     assertThat(
         ccae,
         hasDefinedStructureWithDefinitionLines(
-            hostname, PaloAltoStructureType.INTERFACE, "ethernet1/2", contains(8, 16, 17, 18, 19)));
+            filename, INTERFACE, "ethernet1/2", contains(8, 16, 17, 18, 19)));
   }
 
   @Test
   public void testNtpServers() throws IOException {
-    String hostname = "ntp-server";
-    Configuration c = parseConfig(hostname);
+    Configuration c = parseConfig("ntp-server");
 
     // Confirm both ntp servers show up
     assertThat(c.getNtpServers(), containsInAnyOrder("1.1.1.1", "ntpservername"));
@@ -287,9 +284,8 @@ public class PaloAltoGrammarTest {
 
   @Test
   public void testStaticRoute() throws IOException {
-    String hostname = "static-route";
     String vrName = "somename";
-    Configuration c = parseConfig(hostname);
+    Configuration c = parseConfig("static-route");
 
     // Confirm static route shows up with correct extractions
     assertThat(c, hasVrf(vrName, hasStaticRoutes(hasItem(hasAdministrativeCost(equalTo(123))))));
@@ -359,6 +355,7 @@ public class PaloAltoGrammarTest {
   @Test
   public void testServiceReference() throws IOException {
     String hostname = "service";
+    String filename = "configs/" + hostname;
 
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
@@ -372,32 +369,24 @@ public class PaloAltoGrammarTest {
     String serviceGroup2Name = computeObjectName(DEFAULT_VSYS_NAME, "SG2");
 
     // Confirm structure definitions are tracked
-    assertThat(ccae, hasDefinedStructure(hostname, PaloAltoStructureType.SERVICE, service1Name));
-    assertThat(ccae, hasDefinedStructure(hostname, PaloAltoStructureType.SERVICE, service2Name));
-    assertThat(ccae, hasDefinedStructure(hostname, PaloAltoStructureType.SERVICE, service3Name));
-    assertThat(ccae, hasDefinedStructure(hostname, PaloAltoStructureType.SERVICE, service4Name));
-    assertThat(
-        ccae,
-        hasDefinedStructure(hostname, PaloAltoStructureType.SERVICE_GROUP, serviceGroup1Name));
-    assertThat(
-        ccae,
-        hasDefinedStructure(hostname, PaloAltoStructureType.SERVICE_GROUP, serviceGroup2Name));
+    assertThat(ccae, hasDefinedStructure(filename, SERVICE, service1Name));
+    assertThat(ccae, hasDefinedStructure(filename, SERVICE, service2Name));
+    assertThat(ccae, hasDefinedStructure(filename, SERVICE, service3Name));
+    assertThat(ccae, hasDefinedStructure(filename, SERVICE, service4Name));
+    assertThat(ccae, hasDefinedStructure(filename, SERVICE_GROUP, serviceGroup1Name));
+    assertThat(ccae, hasDefinedStructure(filename, SERVICE_GROUP, serviceGroup2Name));
 
     // Confirm structure references are tracked
-    assertThat(ccae, hasNumReferrers(hostname, PaloAltoStructureType.SERVICE, service1Name, 1));
-    assertThat(ccae, hasNumReferrers(hostname, PaloAltoStructureType.SERVICE, service2Name, 1));
-    assertThat(ccae, hasNumReferrers(hostname, PaloAltoStructureType.SERVICE, service3Name, 0));
-    assertThat(ccae, hasNumReferrers(hostname, PaloAltoStructureType.SERVICE, service4Name, 0));
-    assertThat(
-        ccae, hasNumReferrers(hostname, PaloAltoStructureType.SERVICE_GROUP, serviceGroup1Name, 1));
-    assertThat(
-        ccae, hasNumReferrers(hostname, PaloAltoStructureType.SERVICE_GROUP, serviceGroup2Name, 0));
+    assertThat(ccae, hasNumReferrers(filename, SERVICE, service1Name, 1));
+    assertThat(ccae, hasNumReferrers(filename, SERVICE, service2Name, 1));
+    assertThat(ccae, hasNumReferrers(filename, SERVICE, service3Name, 0));
+    assertThat(ccae, hasNumReferrers(filename, SERVICE, service4Name, 0));
+    assertThat(ccae, hasNumReferrers(filename, SERVICE_GROUP, serviceGroup1Name, 1));
+    assertThat(ccae, hasNumReferrers(filename, SERVICE_GROUP, serviceGroup2Name, 0));
 
     // Confirm undefined reference shows up as such
     assertThat(
-        ccae,
-        hasUndefinedReference(
-            hostname, PaloAltoStructureType.SERVICE_OR_SERVICE_GROUP, "SERVICE_UNDEFINED"));
+        ccae, hasUndefinedReference(filename, SERVICE_OR_SERVICE_GROUP, "SERVICE_UNDEFINED"));
   }
 
   @Test
@@ -464,6 +453,7 @@ public class PaloAltoGrammarTest {
   @Test
   public void testVsysServiceReference() throws IOException {
     String hostname = "vsys-service";
+    String filename = "configs/" + hostname;
     String vsys1ServiceName = computeObjectName("vsys1", "SERVICE1");
     String vsys2ServiceName = computeObjectName("vsys2", "SERVICE1");
     String sharedServiceName = computeObjectName(SHARED_VSYS_NAME, "SERVICE1");
@@ -474,27 +464,22 @@ public class PaloAltoGrammarTest {
         batfish.loadConvertConfigurationAnswerElementOrReparse();
 
     // Confirm structure definitions are tracked separately for each vsys
-    assertThat(
-        ccae, hasDefinedStructure(hostname, PaloAltoStructureType.SERVICE, vsys1ServiceName));
-    assertThat(
-        ccae, hasDefinedStructure(hostname, PaloAltoStructureType.SERVICE, vsys2ServiceName));
-    assertThat(
-        ccae, hasDefinedStructure(hostname, PaloAltoStructureType.SERVICE, sharedServiceName));
-    assertThat(
-        ccae, hasDefinedStructure(hostname, PaloAltoStructureType.SERVICE, sharedOnlyServiceName));
+    assertThat(ccae, hasDefinedStructure(filename, SERVICE, vsys1ServiceName));
+    assertThat(ccae, hasDefinedStructure(filename, SERVICE, vsys2ServiceName));
+    assertThat(ccae, hasDefinedStructure(filename, SERVICE, sharedServiceName));
+    assertThat(ccae, hasDefinedStructure(filename, SERVICE, sharedOnlyServiceName));
 
     // Confirm structure references are tracked separately for each vsys
-    assertThat(ccae, hasNumReferrers(hostname, PaloAltoStructureType.SERVICE, vsys1ServiceName, 1));
-    assertThat(ccae, hasNumReferrers(hostname, PaloAltoStructureType.SERVICE, vsys2ServiceName, 1));
-    assertThat(
-        ccae, hasNumReferrers(hostname, PaloAltoStructureType.SERVICE, sharedServiceName, 1));
-    assertThat(
-        ccae, hasNumReferrers(hostname, PaloAltoStructureType.SERVICE, sharedOnlyServiceName, 3));
+    assertThat(ccae, hasNumReferrers(filename, SERVICE, vsys1ServiceName, 1));
+    assertThat(ccae, hasNumReferrers(filename, SERVICE, vsys2ServiceName, 1));
+    assertThat(ccae, hasNumReferrers(filename, SERVICE, sharedServiceName, 1));
+    assertThat(ccae, hasNumReferrers(filename, SERVICE, sharedOnlyServiceName, 3));
   }
 
   @Test
   public void testVsysZones() throws IOException {
     String hostname = "vsys-zones";
+    String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     Configuration c = batfish.loadConfigurations().get(hostname);
     ConvertConfigurationAnswerElement ccae =
@@ -504,12 +489,12 @@ public class PaloAltoGrammarTest {
     String zoneEmptyName = computeObjectName("vsys11", "z1");
 
     // Confirm zone definitions are recorded properly
-    assertThat(ccae, hasDefinedStructure(hostname, PaloAltoStructureType.ZONE, zoneName));
-    assertThat(ccae, hasDefinedStructure(hostname, PaloAltoStructureType.ZONE, zoneEmptyName));
+    assertThat(ccae, hasDefinedStructure(filename, ZONE, zoneName));
+    assertThat(ccae, hasDefinedStructure(filename, ZONE, zoneEmptyName));
 
     // Confirm interface references in zones are recorded properly
-    assertThat(ccae, hasNumReferrers(hostname, PaloAltoStructureType.INTERFACE, "ethernet1/1", 1));
-    assertThat(ccae, hasNumReferrers(hostname, PaloAltoStructureType.INTERFACE, "ethernet1/2", 1));
+    assertThat(ccae, hasNumReferrers(filename, INTERFACE, "ethernet1/1", 1));
+    assertThat(ccae, hasNumReferrers(filename, INTERFACE, "ethernet1/2", 1));
 
     // Confirm zones contain the correct interfaces
     assertThat(
@@ -521,6 +506,7 @@ public class PaloAltoGrammarTest {
   @Test
   public void testZones() throws IOException {
     String hostname = "zones";
+    String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     Configuration c = batfish.loadConfigurations().get(hostname);
     ConvertConfigurationAnswerElement ccae =
@@ -530,12 +516,12 @@ public class PaloAltoGrammarTest {
     String zEmptyName = computeObjectName(DEFAULT_VSYS_NAME, "zempty");
 
     // Confirm zone definitions are recorded properly
-    assertThat(ccae, hasDefinedStructure(hostname, PaloAltoStructureType.ZONE, z1Name));
-    assertThat(ccae, hasDefinedStructure(hostname, PaloAltoStructureType.ZONE, zEmptyName));
+    assertThat(ccae, hasDefinedStructure(filename, ZONE, z1Name));
+    assertThat(ccae, hasDefinedStructure(filename, ZONE, zEmptyName));
 
     // Confirm interface references in zones are recorded properly
-    assertThat(ccae, hasNumReferrers(hostname, PaloAltoStructureType.INTERFACE, "ethernet1/1", 1));
-    assertThat(ccae, hasNumReferrers(hostname, PaloAltoStructureType.INTERFACE, "ethernet1/2", 1));
+    assertThat(ccae, hasNumReferrers(filename, INTERFACE, "ethernet1/1", 1));
+    assertThat(ccae, hasNumReferrers(filename, INTERFACE, "ethernet1/2", 1));
 
     // Confirm zones contain the correct interfaces
     assertThat(
