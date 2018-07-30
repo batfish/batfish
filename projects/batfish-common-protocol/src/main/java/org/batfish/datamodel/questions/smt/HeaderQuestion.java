@@ -57,6 +57,8 @@ public class HeaderQuestion extends Question {
 
   private static final String PROP_FAILURES = "failures";
 
+  private static final String PROP_NODE_FAILURES = "nodeFailures";
+
   private static final String PROP_FULL_MODEL = "fullModel";
 
   private static final String PROP_MINIMIZE = "minimize";
@@ -80,6 +82,8 @@ public class HeaderQuestion extends Question {
   private HeaderSpace _headerSpace;
 
   private int _failures;
+
+  private int _nodeFailures;
 
   private boolean _fullModel;
 
@@ -107,6 +111,7 @@ public class HeaderQuestion extends Question {
     _actions = EnumSet.of(ForwardingAction.ACCEPT);
     _headerSpace = new HeaderSpace();
     _failures = 0;
+    _nodeFailures = 0;
     _fullModel = false;
     _noEnvironment = false;
     _minimize = false;
@@ -117,7 +122,6 @@ public class HeaderQuestion extends Question {
     _modelOverflow = false;
     _useAbstraction = false;
     _stats = false;
-    _useAbstraction = false;
     _benchmark = false;
   }
 
@@ -125,6 +129,7 @@ public class HeaderQuestion extends Question {
     _actions = q._actions;
     _headerSpace = q._headerSpace;
     _failures = q._failures;
+    _nodeFailures = q._nodeFailures;
     _fullModel = q._fullModel;
     _noEnvironment = q._noEnvironment;
     _minimize = q._minimize;
@@ -135,7 +140,6 @@ public class HeaderQuestion extends Question {
     _modelOverflow = q._modelOverflow;
     _useAbstraction = q._useAbstraction;
     _stats = q._stats;
-    _useAbstraction = q._useAbstraction;
     _benchmark = q._benchmark;
   }
 
@@ -252,6 +256,11 @@ public class HeaderQuestion extends Question {
   @JsonProperty(PROP_FAILURES)
   public int getFailures() {
     return _failures;
+  }
+
+  @JsonProperty(PROP_NODE_FAILURES)
+  public int getNodeFailures() {
+    return _nodeFailures;
   }
 
   @JsonProperty(PROP_FULL_MODEL)
@@ -451,6 +460,9 @@ public class HeaderQuestion extends Question {
   public void setFailures(int k) {
     _failures = k;
   }
+
+  @JsonProperty(PROP_NODE_FAILURES)
+  public void setNodeFailures(int k) { _nodeFailures= k; }
 
   @JsonProperty(PROP_FULL_MODEL)
   public void setFullModel(boolean b) {

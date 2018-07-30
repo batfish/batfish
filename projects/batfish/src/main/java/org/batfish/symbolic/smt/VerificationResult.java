@@ -122,7 +122,7 @@ public class VerificationResult {
     StringBuilder sb = new StringBuilder();
     if (_failures != null) {
       sb.append("\n");
-      sb.append("Link Failures:\n");
+      sb.append("Failures:\n");
       sb.append("----------------------\n");
       for (String s : _failures) {
         sb.append(s).append("\n");

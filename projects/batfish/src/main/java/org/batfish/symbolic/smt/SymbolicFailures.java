@@ -21,10 +21,13 @@ class SymbolicFailures {
 
   private Map<GraphEdge, ArithExpr> _failedEdgeLinks;
 
+  private Map<String, ArithExpr> _failedNodes;
+
   SymbolicFailures(Context ctx) {
     _zero = ctx.mkInt(0);
     _failedInternalLinks = new Table2<>();
     _failedEdgeLinks = new HashMap<>();
+    _failedNodes = new HashMap<>();
   }
 
   Table2<String, String, ArithExpr> getFailedInternalLinks() {
@@ -33,6 +36,10 @@ class SymbolicFailures {
 
   Map<GraphEdge, ArithExpr> getFailedEdgeLinks() {
     return _failedEdgeLinks;
+  }
+
+  Map<String, ArithExpr> getFailedNodes() {
+    return _failedNodes;
   }
 
   @Nullable
@@ -47,4 +54,24 @@ class SymbolicFailures {
     String peer = ge.getPeer();
     return _failedInternalLinks.get(router, peer);
   }
+
+  /* Takes an edge as an argument in order to check whether it's abstract or not */
+  @Nullable
+  ArithExpr getFailedStartVariable(GraphEdge ge) {
+    if (ge.isAbstract()) {
+      return _zero;
+    }
+    String router = ge.getRouter();
+    return _failedNodes.get(router);
+  }
+
+  @Nullable
+  ArithExpr getFailedPeerVariable(GraphEdge ge) {
+    if (ge.isAbstract()) {
+      return _zero;
+    }
+    String router = ge.getPeer();
+    return _failedNodes.get(router);
+  }
+
 }
