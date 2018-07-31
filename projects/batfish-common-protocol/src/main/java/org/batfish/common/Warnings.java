@@ -49,6 +49,10 @@ public class Warnings implements Serializable {
     _unimplementedWarnings = firstNonNull(unimplementedWarnings, new LinkedList<>());
   }
 
+  public Warnings() {
+    this(false, false, false, false);
+  }
+
   public Warnings(
       boolean pedanticRecord,
       boolean redFlagRecord,

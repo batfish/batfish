@@ -55572,108 +55572,228 @@
       "version" : "0.36.0",
       "warnings" : {
         "bgp_address_family" : {
-          "Red flags" : {
-            "1" : "MISCELLANEOUS: Ignoring reference to undeclared peer group: '13.16.3.16'"
-          }
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Ignoring reference to undeclared peer group: '13.16.3.16'"
+            }
+          ]
         },
         "bgp_default_originate_policy" : {
-          "Red flags" : {
-            "1" : "MISCELLANEOUS: Unimplemented: IOS-XR RPL functionsroute-policy cust_v4_in(ama-coe-v4, ama-coe-as-path, ama-coe-no-auth, ama-coe-need-auth, 65517, ama-coe-isp-authorized) in\n"
-          }
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Unimplemented: IOS-XR RPL functionsroute-policy cust_v4_in(ama-coe-v4, ama-coe-as-path, ama-coe-no-auth, ama-coe-need-auth, 65517, ama-coe-isp-authorized) in\n"
+            }
+          ]
         },
         "cadant_bgp" : {
-          "Red flags" : {
-            "1" : "MISCELLANEOUS: Ignoring reference to undeclared peer group: '1.2.3.4'",
-            "2" : "MISCELLANEOUS: Ignoring reference to undeclared peer group: '1.2.3.4'",
-            "3" : "MISCELLANEOUS: Ignoring reference to undeclared peer group: '1.2.3.4'",
-            "4" : "MISCELLANEOUS: Ignoring reference to undeclared peer group: 'dead:beef:0:0:0:0:0:1'",
-            "5" : "MISCELLANEOUS: Ignoring reference to undeclared peer group: 'dead:beef:0:0:0:0:0:1'",
-            "6" : "MISCELLANEOUS: Ignoring reference to undeclared peer group: 'dead:beef:0:0:0:0:0:1'",
-            "7" : "MISCELLANEOUS: Ignoring reference to undeclared peer group: '1.2.3.4'",
-            "8" : "MISCELLANEOUS: Ignoring reference to undeclared peer group: 'dead:beef:0:0:0:0:0:1'"
-          }
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Ignoring reference to undeclared peer group: '1.2.3.4'"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Ignoring reference to undeclared peer group: '1.2.3.4'"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Ignoring reference to undeclared peer group: '1.2.3.4'"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Ignoring reference to undeclared peer group: 'dead:beef:0:0:0:0:0:1'"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Ignoring reference to undeclared peer group: 'dead:beef:0:0:0:0:0:1'"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Ignoring reference to undeclared peer group: 'dead:beef:0:0:0:0:0:1'"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Ignoring reference to undeclared peer group: '1.2.3.4'"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Ignoring reference to undeclared peer group: 'dead:beef:0:0:0:0:0:1'"
+            }
+          ]
         },
         "cisco_additional_paths" : {
-          "Red flags" : {
-            "1" : "MISCELLANEOUS: Ignoring reference to undeclared peer group: '1.2.3.4'",
-            "2" : "MISCELLANEOUS: Ignoring reference to undeclared peer group: '1.2.3.4'"
-          }
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Ignoring reference to undeclared peer group: '1.2.3.4'"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Ignoring reference to undeclared peer group: '1.2.3.4'"
+            }
+          ]
         },
         "cisco_bgp" : {
-          "Red flags" : {
-            "1" : "MISCELLANEOUS: Ignoring reference to undeclared peer group: '10.20.2.2'",
-            "2" : "MISCELLANEOUS: Ignoring reference to undeclared peer group: '192.168.3.2'",
-            "3" : "MISCELLANEOUS: Ignoring reference to undeclared peer group: '192.168.4.2'",
-            "4" : "MISCELLANEOUS: Ignoring reference to undeclared peer group: '10.0.0.1'",
-            "5" : "MISCELLANEOUS: Ignoring reference to undeclared peer group: '10.0.0.1'"
-          }
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Ignoring reference to undeclared peer group: '10.20.2.2'"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Ignoring reference to undeclared peer group: '192.168.3.2'"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Ignoring reference to undeclared peer group: '192.168.4.2'"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Ignoring reference to undeclared peer group: '10.0.0.1'"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Ignoring reference to undeclared peer group: '10.0.0.1'"
+            }
+          ]
         },
         "cisco_route_map" : {
-          "Red flags" : {
-            "1" : "MISCELLANEOUS: Route map 'MAP_NAME2' already contains clause numbered '20'. Duplicate clause will be merged with original clause."
-          }
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Route map 'MAP_NAME2' already contains clause numbered '20'. Duplicate clause will be merged with original clause."
+            }
+          ]
         },
         "cisco_style_acl1" : {
-          "Red flags" : {
-            "1" : "MISCELLANEOUS: No hostname set in file: 'configs/cisco_style_acl1'\n"
-          }
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No hostname set in file: 'configs/cisco_style_acl1'\n"
+            }
+          ]
         },
         "cisco_style_acl2" : {
-          "Red flags" : {
-            "1" : "MISCELLANEOUS: No hostname set in file: 'configs/cisco_style_acl2'\n"
-          }
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No hostname set in file: 'configs/cisco_style_acl2'\n"
+            }
+          ]
         },
         "ios_bgp" : {
-          "Red flags" : {
-            "1" : "MISCELLANEOUS: Ignoring reference to undeclared peer group: '1.2.3.4'",
-            "2" : "MISCELLANEOUS: reference to undeclared peer group: 'UNDEFINED_PEER_GROUP'"
-          }
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Ignoring reference to undeclared peer group: '1.2.3.4'"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "reference to undeclared peer group: 'UNDEFINED_PEER_GROUP'"
+            }
+          ]
         },
         "ios_xr_ospf" : {
-          "Red flags" : {
-            "1" : "MISCELLANEOUS: OSPF: Interface: 'Bundle-Ether101' not declared before OSPF process",
-            "2" : "MISCELLANEOUS: OSPF: Interface: 'Bundle-Ether103' not declared before OSPF process",
-            "3" : "MISCELLANEOUS: OSPF: Interface: 'Bundle-Ether201' not declared before OSPF process",
-            "4" : "MISCELLANEOUS: OSPF: Interface: 'Loopback0' not declared before OSPF process",
-            "5" : "MISCELLANEOUS: OSPF: Interface: 'TenGigE0/0/0/4' not declared before OSPF process",
-            "6" : "MISCELLANEOUS: OSPF: Interface: 'TenGigE0/0/0/5' not declared before OSPF process",
-            "7" : "MISCELLANEOUS: OSPF: Interface: 'HundredGigE0/2/0/0.292' not declared before OSPF process",
-            "8" : "MISCELLANEOUS: OSPF: Interface: 'HundredGigE0/2/0/3' not declared before OSPF process",
-            "9" : "MISCELLANEOUS: OSPF: Interface: 'TenGigE0/0/0/2' not declared before OSPF process"
-          }
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "OSPF: Interface: 'Bundle-Ether101' not declared before OSPF process"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "OSPF: Interface: 'Bundle-Ether103' not declared before OSPF process"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "OSPF: Interface: 'Bundle-Ether201' not declared before OSPF process"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "OSPF: Interface: 'Loopback0' not declared before OSPF process"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "OSPF: Interface: 'TenGigE0/0/0/4' not declared before OSPF process"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "OSPF: Interface: 'TenGigE0/0/0/5' not declared before OSPF process"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "OSPF: Interface: 'HundredGigE0/2/0/0.292' not declared before OSPF process"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "OSPF: Interface: 'HundredGigE0/2/0/3' not declared before OSPF process"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "OSPF: Interface: 'TenGigE0/0/0/2' not declared before OSPF process"
+            }
+          ]
         },
         "juniper_forwarding_options" : {
-          "Red flags" : {
-            "1" : "MISCELLANEOUS: apply-groups statement at path: 'forwarding-options' refers to non-existent group: 'g1'\n"
-          }
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "apply-groups statement at path: 'forwarding-options' refers to non-existent group: 'g1'\n"
+            }
+          ]
         },
         "juniper_policy_statement" : {
-          "Red flags" : {
-            "1" : "MISCELLANEOUS: unimplemented 'policy-options policy-statement term' from clause: as-path-group AS_PATH_GROUP",
-            "2" : "MISCELLANEOUS: unimplemented 'policy-options policy-statement term' from clause: instance FORWARDING",
-            "3" : "MISCELLANEOUS: unimplemented 'policy-options policy-statement term' from clause: rib inet6.0"
-          }
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "unimplemented 'policy-options policy-statement term' from clause: as-path-group AS_PATH_GROUP"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "unimplemented 'policy-options policy-statement term' from clause: instance FORWARDING"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "unimplemented 'policy-options policy-statement term' from clause: rib inet6.0"
+            }
+          ]
         },
         "juniper_tacplus" : {
-          "Red flags" : {
-            "1" : "MISCELLANEOUS: apply-groups statement at path: 'system tacplus-server 1.2.3.4' refers to non-existent group: 'bippety'\n"
-          }
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "apply-groups statement at path: 'system tacplus-server 1.2.3.4' refers to non-existent group: 'bippety'\n"
+            }
+          ]
         },
         "nexus-arista-router-bgp" : {
-          "Red flags" : {
-            "1" : "MISCELLANEOUS: Ignoring reference to undeclared peer group: '1.2.3.4'",
-            "2" : "MISCELLANEOUS: Ignoring reference to undeclared peer group: '1a01:111:0:1000:a:0:0:1'"
-          }
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Ignoring reference to undeclared peer group: '1.2.3.4'"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Ignoring reference to undeclared peer group: '1a01:111:0:1000:a:0:0:1'"
+            }
+          ]
         },
         "rP" : {
-          "Red flags" : {
-            "1" : "MISCELLANEOUS: Could not convert to RoutePolicyStatement: set path-selection backup 1 install multipath-protect advertise\n"
-          }
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Could not convert to RoutePolicyStatement: set path-selection backup 1 install multipath-protect advertise\n"
+            }
+          ]
         },
         "vlan_access_map4" : {
-          "Red flags" : {
-            "1" : "MISCELLANEOUS: Ignoring reference to undeclared peer group: '10.10.212.233'"
-          }
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Ignoring reference to undeclared peer group: '10.10.212.233'"
+            }
+          ]
         }
       }
     },
@@ -61006,177 +61126,336 @@
       "version" : "0.36.0",
       "warnings" : {
         "address_family" : {
-          "Red flags" : {
-            "1" : "MISCELLANEOUS: Could not determine update source for BGP neighbor: '1.2.3.4'"
-          }
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Could not determine update source for BGP neighbor: '1.2.3.4'"
+            }
+          ]
         },
         "arista_ospf" : {
-          "Red flags" : {
-            "1" : "MISCELLANEOUS: No candidates for OSPF router-id"
-          }
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No candidates for OSPF router-id"
+            }
+          ]
         },
         "bgp-enforce-first-as" : {
-          "Red flags" : {
-            "1" : "MISCELLANEOUS: Could not determine local ip for bgp peering with neighbor ip: 1.1.1.1"
-          }
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Could not determine local ip for bgp peering with neighbor ip: 1.1.1.1"
+            }
+          ]
         },
         "bgp_address_family" : {
-          "Red flags" : {
-            "1" : "MISCELLANEOUS: Could not determine update source for BGP neighbor: '1.10.1.1'",
-            "2" : "MISCELLANEOUS: Could not determine update source for BGP neighbor: '10.12.11.2'"
-          }
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Could not determine update source for BGP neighbor: '1.10.1.1'"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Could not determine update source for BGP neighbor: '10.12.11.2'"
+            }
+          ]
         },
         "bgp_route_policy" : {
-          "Red flags" : {
-            "1" : "MISCELLANEOUS: Could not determine update source for BGP neighbor: '64.57.21.1'"
-          }
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Could not determine update source for BGP neighbor: '64.57.21.1'"
+            }
+          ]
         },
         "cisco_bgp" : {
-          "Red flags" : {
-            "1" : "MISCELLANEOUS: Could not determine update source for BGP neighbor: '10.0.1.2'"
-          }
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Could not determine update source for BGP neighbor: '10.0.1.2'"
+            }
+          ]
         },
         "cisco_crypto" : {
-          "Red flags" : {
-            "1" : "MISCELLANEOUS: Can't get IkeGateway: Local or remote address is not set for isakmpProfile myprofile",
-            "2" : "MISCELLANEOUS: Cannot find keyring VRF:MMS:RMT:UPM:1143 for ISAKMP profile myprofile"
-          }
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Can't get IkeGateway: Local or remote address is not set for isakmpProfile myprofile"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Cannot find keyring VRF:MMS:RMT:UPM:1143 for ISAKMP profile myprofile"
+            }
+          ]
         },
         "cisco_eigrp" : {
-          "Red flags" : {
-            "1" : "MISCELLANEOUS: No candidates for EIGRP router-id"
-          }
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No candidates for EIGRP router-id"
+            }
+          ]
         },
         "cisco_interface" : {
-          "Red flags" : {
-            "1" : "MISCELLANEOUS: Interface: 'Ethernet0' contains OSPF settings, but there is no OSPF process"
-          }
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Interface: 'Ethernet0' contains OSPF settings, but there is no OSPF process"
+            }
+          ]
         },
         "cisco_nxos_bgp" : {
-          "Red flags" : {
-            "1" : "MISCELLANEOUS: Router-id is not manually configured for BGP process in VRF default. Unable to infer default router-id as no interfaces have IP addresses",
-            "2" : "MISCELLANEOUS: No supported address-family configured for BGP neighbor 4.4.4.4 in vrf default",
-            "3" : "MISCELLANEOUS: No supported address-family configured for BGP neighbor 3.3.3.3 in vrf default",
-            "4" : "MISCELLANEOUS: BGP neighbor 2.2.2.2 in vrf default: could not determine update source",
-            "5" : "MISCELLANEOUS: No supported address-family configured for BGP neighbor 123.123.123.0/24 in vrf default"
-          }
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Router-id is not manually configured for BGP process in VRF default. Unable to infer default router-id as no interfaces have IP addresses"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No supported address-family configured for BGP neighbor 4.4.4.4 in vrf default"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No supported address-family configured for BGP neighbor 3.3.3.3 in vrf default"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "BGP neighbor 2.2.2.2 in vrf default: could not determine update source"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No supported address-family configured for BGP neighbor 123.123.123.0/24 in vrf default"
+            }
+          ]
         },
         "ios_xr_bgp_neighbor_group" : {
-          "Red flags" : {
-            "1" : "MISCELLANEOUS: Could not determine update source for BGP neighbor: '1.2.1.2'",
-            "2" : "MISCELLANEOUS: Could not determine update source for BGP neighbor: '1.2.1.3'",
-            "3" : "MISCELLANEOUS: Could not determine update source for BGP neighbor: '1.2.1.1'"
-          }
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Could not determine update source for BGP neighbor: '1.2.1.2'"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Could not determine update source for BGP neighbor: '1.2.1.3'"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Could not determine update source for BGP neighbor: '1.2.1.1'"
+            }
+          ]
         },
         "ios_xr_isis" : {
-          "Red flags" : {
-            "1" : "MISCELLANEOUS: Cannot create IS-IS process without specifying net-address"
-          }
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Cannot create IS-IS process without specifying net-address"
+            }
+          ]
         },
         "juniper-ospf" : {
-          "Red flags" : {
-            "1" : "MISCELLANEOUS: Cannot assign interface xe-0/0/1.0 to area 0.1.2.3 because it has no IP address.",
-            "2" : "MISCELLANEOUS: Cannot assign interface xe-0/0/20:0.0 to area 0.1.2.3 because it has no IP address.",
-            "3" : "MISCELLANEOUS: Cannot assign interface xe-0/0/21:0.0 to area 0.1.2.3 because it has no IP address.",
-            "4" : "MISCELLANEOUS: No candidates for OSPF router-id"
-          }
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Cannot assign interface xe-0/0/1.0 to area 0.1.2.3 because it has no IP address."
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Cannot assign interface xe-0/0/20:0.0 to area 0.1.2.3 because it has no IP address."
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Cannot assign interface xe-0/0/21:0.0 to area 0.1.2.3 because it has no IP address."
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No candidates for OSPF router-id"
+            }
+          ]
         },
         "juniper-tcpflags" : {
-          "Red flags" : {
-            "1" : "MISCELLANEOUS: missing action in firewall filter: 'foo', term: 'bar'"
-          }
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "missing action in firewall filter: 'foo', term: 'bar'"
+            }
+          ]
         },
         "juniper_bgp" : {
-          "Red flags" : {
-            "1" : "MISCELLANEOUS: BGP BROKEN FOR THIS ROUTER: Cannot determine local autonomous system",
-            "2" : "MISCELLANEOUS: Missing local-as for neighbor: 1.2.3.5/32",
-            "3" : "MISCELLANEOUS: Currently do not support mixed multipath-multiple-as/non-multipath-multiple-as bgpgroups on Juniper - FORCING NON-MULTIPATH-MULTIPLE-AS",
-            "4" : "MISCELLANEOUS: Missing local-as for neighbor: 3.4.5.6/32"
-          }
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "BGP BROKEN FOR THIS ROUTER: Cannot determine local autonomous system"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Missing local-as for neighbor: 1.2.3.5/32"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Currently do not support mixed multipath-multiple-as/non-multipath-multiple-as bgpgroups on Juniper - FORCING NON-MULTIPATH-MULTIPLE-AS"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Missing local-as for neighbor: 3.4.5.6/32"
+            }
+          ]
         },
         "juniper_bgp_authentication" : {
-          "Red flags" : {
-            "1" : "MISCELLANEOUS: Both authentication-key and authentication-key-chain specified for neighbor 172.16.2.1/32",
-            "2" : "MISCELLANEOUS: Could not determine local ip for bgp peering with neighbor ip: 172.16.2.1",
-            "3" : "MISCELLANEOUS: Could not determine local ip for bgp peering with neighbor ip: 172.16.2.2"
-          }
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Both authentication-key and authentication-key-chain specified for neighbor 172.16.2.1/32"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Could not determine local ip for bgp peering with neighbor ip: 172.16.2.1"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Could not determine local ip for bgp peering with neighbor ip: 172.16.2.2"
+            }
+          ]
         },
         "juniper_bgp_remove_private_as" : {
-          "Red flags" : {
-            "1" : "MISCELLANEOUS: BGP BROKEN FOR THIS ROUTER: Cannot determine local autonomous system"
-          }
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "BGP BROKEN FOR THIS ROUTER: Cannot determine local autonomous system"
+            }
+          ]
         },
         "juniper_firewall" : {
-          "Red flags" : {
-            "1" : "MISCELLANEOUS: missing action in firewall filter: 'blah', term: 'blorp'"
-          }
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "missing action in firewall filter: 'blah', term: 'blorp'"
+            }
+          ]
         },
         "juniper_ospf_stub_areas" : {
-          "Red flags" : {
-            "1" : "MISCELLANEOUS: No candidates for OSPF router-id"
-          }
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No candidates for OSPF router-id"
+            }
+          ]
         },
         "juniper_security" : {
-          "Red flags" : {
-            "1" : "MISCELLANEOUS: missing action in firewall filter: '~FROM_ZONE~A~TO_ZONE~B', term: '123-4'",
-            "2" : "MISCELLANEOUS: missing action in firewall filter: '~GLOBAL_SECURITY_POLICY~', term: 'p1'"
-          }
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "missing action in firewall filter: '~FROM_ZONE~A~TO_ZONE~B', term: '123-4'"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "missing action in firewall filter: '~GLOBAL_SECURITY_POLICY~', term: 'p1'"
+            }
+          ]
         },
         "nat-08c21704416f06046" : {
-          "Red flags" : {
-            "1" : "MISCELLANEOUS: NAT functionality not yet implemented for nat-08c21704416f06046"
-          }
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "NAT functionality not yet implemented for nat-08c21704416f06046"
+            }
+          ]
         },
         "nat-09fd8f73171d2d9a3" : {
-          "Red flags" : {
-            "1" : "MISCELLANEOUS: NAT functionality not yet implemented for nat-09fd8f73171d2d9a3"
-          }
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "NAT functionality not yet implemented for nat-09fd8f73171d2d9a3"
+            }
+          ]
         },
         "neighbor" : {
-          "Red flags" : {
-            "1" : "MISCELLANEOUS: Could not determine update source for BGP neighbor: '123.123.123.123'"
-          }
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Could not determine update source for BGP neighbor: '123.123.123.123'"
+            }
+          ]
         },
         "neighbor_dos" : {
-          "Red flags" : {
-            "1" : "MISCELLANEOUS: Could not determine update source for BGP neighbor: '123.123.123.123'"
-          }
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Could not determine update source for BGP neighbor: '123.123.123.123'"
+            }
+          ]
         },
         "neighbor_mix" : {
-          "Red flags" : {
-            "1" : "MISCELLANEOUS: Could not determine update source for BGP neighbor: '1.1.1.1'",
-            "2" : "MISCELLANEOUS: Could not determine update source for BGP neighbor: '3.3.3.3'",
-            "3" : "MISCELLANEOUS: Could not determine update source for BGP neighbor: '4.4.4.4'"
-          }
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Could not determine update source for BGP neighbor: '1.1.1.1'"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Could not determine update source for BGP neighbor: '3.3.3.3'"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Could not determine update source for BGP neighbor: '4.4.4.4'"
+            }
+          ]
         },
         "neighbor_nxos" : {
-          "Red flags" : {
-            "1" : "MISCELLANEOUS: Router-id is not manually configured for BGP process in VRF default. Unable to infer default router-id as no interfaces have IP addresses",
-            "2" : "MISCELLANEOUS: No supported address-family configured for BGP neighbor 10.1.1.0/25 in vrf default"
-          }
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Router-id is not manually configured for BGP process in VRF default. Unable to infer default router-id as no interfaces have IP addresses"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No supported address-family configured for BGP neighbor 10.1.1.0/25 in vrf default"
+            }
+          ]
         },
         "non_nexus_neighbor_af" : {
-          "Red flags" : {
-            "1" : "MISCELLANEOUS: Could not determine update source for BGP neighbor: '10.0.0.0'"
-          }
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Could not determine update source for BGP neighbor: '10.0.0.0'"
+            }
+          ]
         },
         "nxos_bgp" : {
-          "Red flags" : {
-            "1" : "MISCELLANEOUS: Router-id is not manually configured for BGP process in VRF default. Unable to infer default router-id as no interfaces have IP addresses"
-          }
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Router-id is not manually configured for BGP process in VRF default. Unable to infer default router-id as no interfaces have IP addresses"
+            }
+          ]
         },
         "peer_template" : {
-          "Red flags" : {
-            "1" : "MISCELLANEOUS: Router-id is not manually configured for BGP process in VRF default. Unable to infer default router-id as no interfaces have IP addresses",
-            "2" : "MISCELLANEOUS: BGP neighbor 100.93.100.16 in vrf default: could not determine update source",
-            "3" : "MISCELLANEOUS: BGP neighbor 10.98.25.0/25 in vrf default: configured update-source Loopback1 does not exist or is not associated with this vrf"
-          }
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Router-id is not manually configured for BGP process in VRF default. Unable to infer default router-id as no interfaces have IP addresses"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "BGP neighbor 100.93.100.16 in vrf default: could not determine update source"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "BGP neighbor 10.98.25.0/25 in vrf default: configured update-source Loopback1 does not exist or is not associated with this vrf"
+            }
+          ]
         },
         "route_maps_in_two_address_families" : {
-          "Red flags" : {
-            "1" : "MISCELLANEOUS: Router-id is not manually configured for BGP process in VRF default. Unable to infer default router-id as no interfaces have IP addresses",
-            "2" : "MISCELLANEOUS: BGP neighbor 1.1.1.1 in vrf default: could not determine update source"
-          }
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Router-id is not manually configured for BGP process in VRF default. Unable to infer default router-id as no interfaces have IP addresses"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "BGP neighbor 1.1.1.1 in vrf default: could not determine update source"
+            }
+          ]
         }
       }
     },

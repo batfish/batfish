@@ -2824,9 +2824,12 @@
       "version" : "0.36.0",
       "warnings" : {
         "lhr-border-02" : {
-          "Red flags" : {
-            "1" : "MISCELLANEOUS: Could not determine update source for BGP neighbor: '10.10.30.2'"
-          }
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Could not determine update source for BGP neighbor: '10.10.30.2'"
+            }
+          ]
         }
       }
     },
