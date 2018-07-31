@@ -63,12 +63,13 @@ public class EigrpMetric implements Serializable {
   }
 
   /** Called internally with pre-scaled values */
+  @JsonCreator
   private EigrpMetric(
-      long classicBandwidth,
-      long namedBandwidth,
-      long classicDelay,
-      long namedDelay,
-      EigrpProcessMode mode) {
+      @JsonProperty(PROP_CLASSIC_BANDWIDTH) long classicBandwidth,
+      @JsonProperty(PROP_NAMED_BANDWIDTH) long namedBandwidth,
+      @JsonProperty(PROP_CLASSIC_DELAY) long classicDelay,
+      @JsonProperty(PROP_NAMED_DELAY) long namedDelay,
+      @JsonProperty(PROP_MODE) EigrpProcessMode mode) {
     _classicBandwidth = classicBandwidth;
     _classicDelay = classicDelay;
     _k1 = K1_DEFAULT;
@@ -80,16 +81,6 @@ public class EigrpMetric implements Serializable {
 
   public static Builder builder() {
     return new Builder();
-  }
-
-  @JsonCreator
-  private static EigrpMetric create(
-      @JsonProperty(PROP_NAMED_BANDWIDTH) long namedBandwidth,
-      @JsonProperty(PROP_NAMED_DELAY) long namedDelay,
-      @JsonProperty(PROP_CLASSIC_BANDWIDTH) long classicBandwidth,
-      @JsonProperty(PROP_CLASSIC_DELAY) long classicDelay,
-      @JsonProperty(PROP_MODE) EigrpProcessMode mode) {
-    return new EigrpMetric(classicBandwidth, namedBandwidth, classicDelay, namedDelay, mode);
   }
 
   private static Long classicToNamedDelay(long classicDelay) {

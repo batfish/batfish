@@ -159,8 +159,7 @@ public class VirtualRouter implements Serializable {
   private transient ConnectedRib _connectedRib;
 
   /**
-   * Helper RIB containing all EIGRP paths internal to this router's ASN. Internal routes may not be
-   * propagated if they are covered by a summary route and not leaked.
+   * Helper RIB containing all EIGRP paths internal to this router's ASN.
    */
   private transient EigrpRib _eigrpInternalRib;
 
@@ -168,12 +167,6 @@ public class VirtualRouter implements Serializable {
    * Helper RIB containing paths obtained with EIGRP during current iteration. An Adj-RIB of sorts.
    */
   private transient EigrpRib _eigrpInternalStagingRib;
-
-  /**
-   * Helper RIB containing EIGRP manual summary routes. These routes are discard routes on this
-   * router and internal routes when propagated to other routers.
-   */
-  private transient EigrpRib _eigrpSummaryRib;
 
   /** Helper RIB containing EIGRP internal and external paths. */
   private transient EigrpRib _eigrpRib;
@@ -427,8 +420,8 @@ public class VirtualRouter implements Serializable {
       return; // nothing to do
     }
     /*
-     * Init internal routes and manual summary from connected routes. For each interface prefix,
-     * construct a new internal route.
+     * Init internal routes from connected routes. For each interface prefix, construct a new
+     * internal route.
      */
     for (String ifaceName : _vrf.getInterfaceNames()) {
       Interface iface = _c.getInterfaces().get(ifaceName);
@@ -446,13 +439,13 @@ public class VirtualRouter implements Serializable {
               .collect(Collectors.toSet());
       for (Prefix prefix : allNetworkPrefixes) {
         EigrpInternalRoute route =
-            new EigrpInternalRoute(
-                RoutingProtocol.EIGRP.getDefaultAdministrativeCost(_c.getConfigurationFormat()),
-                proc.getAsn(),
-                prefix,
-                ifaceName,
-                null,
-                iface.getEigrp().getMetric());
+            EigrpInternalRoute.builder()
+                .setAdmin(
+                    RoutingProtocol.EIGRP.getDefaultAdministrativeCost(_c.getConfigurationFormat()))
+                .setEigrpMetric(iface.getEigrp().getMetric())
+                .setNetwork(prefix)
+                .setNextHopInterface(ifaceName)
+                .build();
         _eigrpInternalRib.mergeRoute(route);
       }
     }
@@ -651,28 +644,6 @@ public class VirtualRouter implements Serializable {
   /** Compute the FIB from the main RIB */
   public void computeFib() {
     _fib = new FibImpl(_mainRib);
-  }
-
-  /**
-   * Compute (and recompute) EIGRP manual summary routes
-   *
-   * <p>Manual summary routes are enumerated in configuration, but they are not created unless there
-   * is an internal route to summarize. Therefore, this process is not dependent on external routes
-   * and summary routes will never need to be removed during internal dataplane convergence.
-   */
-  boolean computeEigrpManualSummaries() {
-    /*
-     * For all interfaces, check if this interface is active;
-     * has a manual summary or if there is a default;
-     *   For all manual summaries on this interface, check if there is an internal route in
-     *   _eigrpInternalStagingRib which matches.
-     *
-     *   Add a summary route to _eigrpSummaryRib
-     *
-     * may need to operate on _eigrpInternalRib on the first iteration, since that's where the
-     * initial routes go?
-     */
-    return false;
   }
 
   boolean computeInterAreaSummaries() {
@@ -1322,7 +1293,6 @@ public class VirtualRouter implements Serializable {
     _generatedRib = new Rib();
     _eigrpInternalRib = new EigrpRib();
     _eigrpInternalStagingRib = new EigrpRib();
-    _eigrpSummaryRib = new EigrpRib();
     _eigrpRib = new EigrpRib();
     _ibgpMultipathRib = new BgpMultipathRib(mpTieBreaker);
     _ibgpStagingRib = new BgpMultipathRib(mpTieBreaker);
@@ -2123,31 +2093,17 @@ public class VirtualRouter implements Serializable {
     VirtualRouter neighborVirtualRouter = neighbor.getVirtualRouters().get(neighborVrfName);
     boolean changed = false;
     for (EigrpRoute neighborRoute : neighborVirtualRouter._eigrpInternalRib.getRoutes()) {
-      // Check if this route is summarized
-      Set<EigrpRoute> summaries =
-          neighborVirtualRouter
-              ._eigrpSummaryRib
-              .getRoutes()
-              .stream()
-              .filter(r -> r.getNetwork().containsPrefix(neighborRoute.getNetwork()))
-              .collect(ImmutableSet.toImmutableSet());
-      if (!summaries.isEmpty()) {
-        // TODO check if any of summaries leaks
-        continue;
-      }
-
       EigrpMetric interfaceMetric = requireNonNull(settings.getMetric());
       EigrpMetric newMetric = interfaceMetric.accumulate(neighborRoute.getEigrpMetric());
       Ip nextHopIp = neighborInterface.getAddress().getIp();
-      long asn = requireNonNull(settings.getAsNumber());
       EigrpRoute newRoute =
-          new EigrpInternalRoute(
-              adminCost,
-              asn,
-              neighborRoute.getNetwork(),
-              neighborInterface.getName(),
-              nextHopIp,
-              newMetric);
+          EigrpInternalRoute.builder()
+              .setAdmin(adminCost)
+              .setEigrpMetric(newMetric)
+              .setNetwork(neighborRoute.getNetwork())
+              .setNextHopInterface(neighborInterface.getName())
+              .setNextHopIp(nextHopIp)
+              .build();
       changed |= _eigrpInternalStagingRib.mergeRoute(newRoute);
     }
     return changed;
@@ -2815,7 +2771,6 @@ public class VirtualRouter implements Serializable {
    */
   void importEigrpInternalRoutes() {
     importRib(_eigrpRib, _eigrpInternalRib);
-    importRib(_eigrpRib, _eigrpSummaryRib);
     importRib(_independentRib, _eigrpRib);
   }
 

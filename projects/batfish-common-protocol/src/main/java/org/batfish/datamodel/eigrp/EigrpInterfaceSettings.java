@@ -15,27 +15,19 @@ public class EigrpInterfaceSettings implements Serializable {
   private static final String PROP_ENABLED = "enabled";
   private static final String PROP_METRIC = "metric";
   private static final long serialVersionUID = 1L;
-  private final Long _asn;
-  private final Double _bandwidth;
-  private final Double _delay;
+  @Nullable private final Long _asn;
+  @Nullable private final Double _bandwidth;
+  @Nullable private final Double _delay;
   private final boolean _enabled;
-  private final EigrpMetric _metric;
-
-  private EigrpInterfaceSettings(Builder builder) {
-    _asn = builder._asn;
-    _bandwidth = builder._bandwidth;
-    _delay = builder._delay;
-    _enabled = builder._enabled;
-    _metric = builder._metric;
-  }
+  @Nullable private final EigrpMetric _metric;
 
   @JsonCreator
   private EigrpInterfaceSettings(
-      @JsonProperty(PROP_ASN) Long asn,
-      @JsonProperty(PROP_BANDWIDTH) Double bandwidth,
-      @JsonProperty(PROP_DELAY) Double delay,
+      @Nullable @JsonProperty(PROP_ASN) Long asn,
+      @Nullable @JsonProperty(PROP_BANDWIDTH) Double bandwidth,
+      @Nullable @JsonProperty(PROP_DELAY) Double delay,
       @JsonProperty(PROP_ENABLED) boolean enabled,
-      @JsonProperty(PROP_METRIC) EigrpMetric metric) {
+      @Nullable @JsonProperty(PROP_METRIC) EigrpMetric metric) {
     _asn = asn;
     _bandwidth = bandwidth;
     _delay = delay;
@@ -109,7 +101,7 @@ public class EigrpInterfaceSettings implements Serializable {
   }
 
   public static class Builder {
-    private Long _asn;
+    @Nullable private Long _asn;
 
     @Nullable private Double _bandwidth;
 
@@ -122,10 +114,10 @@ public class EigrpInterfaceSettings implements Serializable {
     private Builder() {}
 
     public EigrpInterfaceSettings build() {
-      return new EigrpInterfaceSettings(this);
+      return new EigrpInterfaceSettings(_asn, _bandwidth, _delay, _enabled, _metric);
     }
 
-    public Builder setAsn(Long asn) {
+    public Builder setAsn(@Nullable Long asn) {
       _asn = asn;
       return this;
     }

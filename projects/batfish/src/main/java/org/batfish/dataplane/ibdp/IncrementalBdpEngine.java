@@ -705,21 +705,6 @@ class IncrementalBdpEngine {
       eigrpInternalIterations++;
       eigrpInternalChanged.set(false);
 
-      AtomicInteger eigrpSummaryCompleted =
-          _newBatch.apply(
-              "Compute EIGRP summaries: iteration " + eigrpInternalIterations, nodes.size());
-      nodes
-          .values()
-          .parallelStream()
-          .forEach(
-              n -> {
-                for (VirtualRouter vr : n.getVirtualRouters().values()) {
-                  if (vr.computeEigrpManualSummaries()) {
-                    eigrpInternalChanged.set(true);
-                  }
-                }
-                eigrpSummaryCompleted.incrementAndGet();
-              });
       AtomicInteger eigrpInternalCompleted =
           _newBatch.apply(
               "Compute EIGRP Internal routes: iteration " + eigrpInternalIterations, nodes.size());

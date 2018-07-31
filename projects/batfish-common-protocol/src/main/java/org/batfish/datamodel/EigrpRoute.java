@@ -12,14 +12,11 @@ import org.batfish.datamodel.eigrp.EigrpMetric;
 /** Represents an EIGRP route, internal or external */
 public abstract class EigrpRoute extends AbstractRoute {
 
-  protected static final String PROP_ASN = "asn";
-  protected static final String PROP_EIGRP_METRIC = "eigrp-metric";
+  static final String PROP_EIGRP_METRIC = "eigrp-metric";
 
   private static final long serialVersionUID = 1L;
 
   protected final int _admin;
-
-  protected final long _asn;
 
   protected final EigrpMetric _metric;
 
@@ -28,16 +25,14 @@ public abstract class EigrpRoute extends AbstractRoute {
   protected final Ip _nextHopIp;
 
   @JsonCreator
-  public EigrpRoute(
+  protected EigrpRoute(
       @JsonProperty(PROP_ADMINISTRATIVE_COST) int admin,
-      @JsonProperty(PROP_ASN) long asn,
       @JsonProperty(PROP_NETWORK) Prefix network,
       @Nullable @JsonProperty(PROP_NEXT_HOP_INTERFACE) String nextHopInterface,
       @Nullable @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
       @JsonProperty(PROP_METRIC) EigrpMetric metric) {
     super(network);
     _admin = admin;
-    _asn = asn;
     _metric = metric;
     _nextHopInterface = firstNonNull(nextHopInterface, Route.UNSET_NEXT_HOP_INTERFACE);
     _nextHopIp = firstNonNull(nextHopIp, Route.UNSET_ROUTE_NEXT_HOP_IP);
@@ -53,7 +48,6 @@ public abstract class EigrpRoute extends AbstractRoute {
     }
     EigrpRoute rhs = (EigrpRoute) obj;
     return _admin == rhs._admin
-        && _asn == rhs._asn
         && Objects.equals(_network, rhs._network)
         && Objects.equals(_nextHopInterface, rhs._nextHopInterface)
         && Objects.equals(_nextHopIp, rhs._nextHopIp)
@@ -65,11 +59,6 @@ public abstract class EigrpRoute extends AbstractRoute {
   @Override
   public final int getAdministrativeCost() {
     return _admin;
-  }
-
-  @JsonProperty(PROP_ASN)
-  public final long getAsNumber() {
-    return _asn;
   }
 
   @JsonProperty(PROP_EIGRP_METRIC)
@@ -108,7 +97,7 @@ public abstract class EigrpRoute extends AbstractRoute {
 
   @Override
   public final int hashCode() {
-    return Objects.hash(_admin, _asn, _metric.hashCode(), _network, _nextHopIp, _nextHopInterface);
+    return Objects.hash(_admin, _metric.hashCode(), _network, _nextHopIp, _nextHopInterface);
   }
 
   @Override

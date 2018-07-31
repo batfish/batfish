@@ -1,10 +1,13 @@
 package org.batfish.datamodel.collections;
 
+import static java.util.Objects.requireNonNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 import java.util.Comparator;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.eigrp.EigrpEdge;
 
 /** Verbose description of EIGRP adjacency */
@@ -17,12 +20,16 @@ public final class VerboseEigrpEdge implements Serializable, Comparable<VerboseE
   @Nonnull private final IpEdge _edgeSummary;
   @Nonnull private final EigrpEdge _edge;
 
-  @JsonCreator
-  public VerboseEigrpEdge(
-      @Nonnull @JsonProperty(PROP_EDGE) EigrpEdge edge,
-      @Nonnull @JsonProperty(PROP_EDGE_SUMMARY) IpEdge edgeSummary) {
+  public VerboseEigrpEdge(@Nonnull EigrpEdge edge, @Nonnull IpEdge edgeSummary) {
     _edge = edge;
     _edgeSummary = edgeSummary;
+  }
+
+  @JsonCreator
+  private static VerboseEigrpEdge create(
+      @Nullable @JsonProperty(PROP_EDGE) EigrpEdge edge,
+      @Nullable @JsonProperty(PROP_EDGE_SUMMARY) IpEdge edgeSummary) {
+    return new VerboseEigrpEdge(requireNonNull(edge), requireNonNull(edgeSummary));
   }
 
   @JsonProperty(PROP_EDGE)
