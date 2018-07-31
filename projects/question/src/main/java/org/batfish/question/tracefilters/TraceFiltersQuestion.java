@@ -1,12 +1,13 @@
 package org.batfish.question.tracefilters;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.questions.FiltersSpecifier;
-import org.batfish.datamodel.questions.FiltersSpecifier.Type;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.questions.IPacketTraceQuestion;
 import org.batfish.datamodel.questions.NodesSpecifier;
+import org.batfish.specifier.FlexibleFilterSpecifierFactory;
 
 /**
  * Computes the fate of the flow at a filter. The set of filters to consider are controlled by node
@@ -14,23 +15,22 @@ import org.batfish.datamodel.questions.NodesSpecifier;
  */
 public class TraceFiltersQuestion extends IPacketTraceQuestion {
 
+  private static final String FILTER_SPECIFIER_FACTORY = FlexibleFilterSpecifierFactory.NAME;
+
   private static final String PROP_FILTER_REGEX = "filterRegex";
 
   private static final String PROP_NODE_REGEX = "nodeRegex";
 
-  @Nonnull private FiltersSpecifier _filterRegex;
+  @Nullable private String _filterRegex;
 
   @Nonnull private NodesSpecifier _nodeRegex;
 
   @JsonCreator
   public TraceFiltersQuestion(
       @JsonProperty(PROP_NODE_REGEX) NodesSpecifier nodeRegex,
-      @JsonProperty(PROP_FILTER_REGEX) FiltersSpecifier filterRegex) {
+      @JsonProperty(PROP_FILTER_REGEX) String filterRegex) {
     _nodeRegex = nodeRegex == null ? NodesSpecifier.ALL : nodeRegex;
-    _filterRegex = filterRegex == null ? FiltersSpecifier.ALL : filterRegex;
-    if (_filterRegex.getType() == Type.IPV6) {
-      throw new IllegalArgumentException("IPV6 filters are not currently supported");
-    }
+    _filterRegex = filterRegex;
   }
 
   @Override
@@ -39,8 +39,13 @@ public class TraceFiltersQuestion extends IPacketTraceQuestion {
   }
 
   @JsonProperty(PROP_FILTER_REGEX)
-  public FiltersSpecifier getFilterRegex() {
+  public String getFilterRegex() {
     return _filterRegex;
+  }
+
+  @JsonIgnore
+  public String getFilterSpecifierFactory() {
+    return FILTER_SPECIFIER_FACTORY;
   }
 
   @Override

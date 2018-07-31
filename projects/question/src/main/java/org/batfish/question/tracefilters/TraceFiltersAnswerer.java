@@ -24,6 +24,8 @@ import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.Row.RowBuilder;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
+import org.batfish.specifier.FilterSpecifier;
+import org.batfish.specifier.FilterSpecifierFactory;
 
 public class TraceFiltersAnswerer extends Answerer {
 
@@ -81,14 +83,15 @@ public class TraceFiltersAnswerer extends Answerer {
     Set<String> includeNodes = question.getNodeRegex().getMatchingNodes(_batfish);
 
     TableAnswerElement answer = create(question);
+    FilterSpecifier filterSpecifier =
+        FilterSpecifierFactory.load(question.getFilterSpecifierFactory())
+            .buildFilterSpecifier(question.getFilterRegex());
     for (Configuration c : configurations.values()) {
       if (!includeNodes.contains(c.getHostname())) {
         continue;
       }
-      for (IpAccessList filter : c.getIpAccessLists().values()) {
-        if (!question.getFilterRegex().matches(filter, c)) {
-          continue;
-        }
+      for (IpAccessList filter : filterSpecifier.resolve(c.getHostname(), context)) {
+
         Flow flow = getFlow(c.getHostname(), question, configurations);
         AclTrace trace =
             AclTracer.trace(
