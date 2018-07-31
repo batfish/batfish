@@ -28,28 +28,26 @@ import org.junit.Test;
 public class BDDPacketTest {
   @Test
   public void testAllocateBDDBit() {
-    BDDPacket.factory.reset();
     BDDPacket pkt = new BDDPacket();
-    int varNum = BDDPacket.factory.varNum();
+    int varNum = pkt.getFactory().varNum();
     BDD bdd = pkt.allocateBDDBit("foo");
     assertThat(bdd, notNullValue());
-    assertThat(BDDPacket.factory.varNum(), equalTo(varNum + 1));
+    assertThat(pkt.getFactory().varNum(), equalTo(varNum + 1));
   }
 
   @Test
   public void testAllocateBDDInteger() {
-    BDDPacket.factory.reset();
     BDDPacket pkt = new BDDPacket();
-    int varNum = BDDPacket.factory.varNum();
+    int varNum = pkt.getFactory().varNum();
     BDDInteger var = pkt.allocateBDDInteger("foo", 5, false);
     assertThat(var, notNullValue());
-    assertThat(BDDPacket.factory.varNum(), equalTo(varNum + 5));
+    assertThat(pkt.getFactory().varNum(), equalTo(varNum + 5));
   }
 
   @Test
   public void testGetFlow_empty() {
     BDDPacket pkt = new BDDPacket();
-    assertThat(pkt.getFlow(BDDPacket.factory.zero()), equalTo(Optional.empty()));
+    assertThat(pkt.getFlow(pkt.getFactory().zero()), equalTo(Optional.empty()));
   }
 
   @Test
