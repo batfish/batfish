@@ -195,11 +195,11 @@ public class BDDPacket {
    * @return A {@link BDD} representing the sentence "this variable is true" for the new variable.
    */
   public BDD allocateBDDBit(String name) {
-    if (factory.varNum() < _nextFreeBDDVarIdx + 1) {
-      factory.setVarNum(_nextFreeBDDVarIdx + 1);
+    if (_factory.varNum() < _nextFreeBDDVarIdx + 1) {
+      _factory.setVarNum(_nextFreeBDDVarIdx + 1);
     }
     _bitNames.put(_nextFreeBDDVarIdx, name);
-    BDD bdd = factory.ithVar(_nextFreeBDDVarIdx);
+    BDD bdd = _factory.ithVar(_nextFreeBDDVarIdx);
     _nextFreeBDDVarIdx++;
     return bdd;
   }
@@ -213,20 +213,13 @@ public class BDDPacket {
    * @return The new variable.
    */
   public BDDInteger allocateBDDInteger(String name, int bits, boolean reverse) {
-    if (factory.varNum() < _nextFreeBDDVarIdx + bits) {
-      factory.setVarNum(_nextFreeBDDVarIdx + bits);
+    if (_factory.varNum() < _nextFreeBDDVarIdx + bits) {
+      _factory.setVarNum(_nextFreeBDDVarIdx + bits);
     }
-    BDDInteger var = makeFromIndex(factory, bits, _nextFreeBDDVarIdx, reverse);
+    BDDInteger var = makeFromIndex(_factory, bits, _nextFreeBDDVarIdx, reverse);
     addBitNames(name, STATE_LENGTH, _nextFreeBDDVarIdx, false);
     _nextFreeBDDVarIdx += bits;
     return var;
-  }
-
-  /*
-   * Convenience method for the copy constructor
-   */
-  public BDDPacket copy() {
-    return new BDDPacket(this);
   }
 
   /*
