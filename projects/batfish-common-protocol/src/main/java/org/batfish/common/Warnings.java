@@ -1,142 +1,52 @@
 package org.batfish.common;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import java.io.IOException;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Map.Entry;
+import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.ParseTreePrettyPrinter;
 
-@JsonSerialize(using = Warnings.Serializer.class)
-@JsonDeserialize(using = Warnings.Deserializer.class)
 public class Warnings implements Serializable {
-
-  public static class Deserializer extends JsonDeserializer<Warnings> {
-
-    @Override
-    public Warnings deserialize(JsonParser parser, DeserializationContext ctx) throws IOException {
-      JsonNode node = parser.getCodec().readTree(parser);
-      Warnings warnings = new Warnings();
-      if (node.has(PEDANTIC_VAR)) {
-        JsonNode warningsNode = node.get(PEDANTIC_VAR);
-        fillWarningList(warnings._pedanticWarnings, warningsNode);
-      }
-      if (node.has(RED_FLAGS_VAR)) {
-        JsonNode warningsNode = node.get(RED_FLAGS_VAR);
-        fillWarningList(warnings._redFlagWarnings, warningsNode);
-      }
-      if (node.has(UNIMPLEMENTED_VAR)) {
-        JsonNode warningsNode = node.get(UNIMPLEMENTED_VAR);
-        fillWarningList(warnings._unimplementedWarnings, warningsNode);
-      }
-      return warnings;
-    }
-
-    private void fillWarningList(List<Warning> warnings, JsonNode node) {
-      for (Iterator<Entry<String, JsonNode>> iter = node.fields(); iter.hasNext(); ) {
-        Entry<String, JsonNode> e = iter.next();
-        String msg = e.getValue().asText();
-        int colonIndex = msg.indexOf(":");
-        String tag = msg.substring(0, colonIndex);
-        String text = msg.substring(colonIndex + 2, msg.length());
-        Warning warning = new Warning(text, tag);
-        warnings.add(warning);
-      }
-    }
-  }
-
-  public static class Serializer extends JsonSerializer<Warnings> {
-
-    @Override
-    public void serialize(Warnings value, JsonGenerator jgen, SerializerProvider provider)
-        throws IOException {
-      jgen.writeStartObject();
-      if (!value._pedanticWarnings.isEmpty()) {
-        jgen.writeFieldName(PEDANTIC_VAR);
-        jgen.writeStartObject();
-        for (int i = 0; i < value._pedanticWarnings.size(); i++) {
-          Warning taggedWarning = value._pedanticWarnings.get(i);
-          String text = taggedWarning.getFirst();
-          String tag = taggedWarning.getSecond();
-          String msg = tag + ": " + text;
-          jgen.writeFieldName(Integer.toString(i + 1));
-          jgen.writeString(msg);
-        }
-        jgen.writeEndObject();
-      }
-      if (!value._redFlagWarnings.isEmpty()) {
-        jgen.writeFieldName(RED_FLAGS_VAR);
-        jgen.writeStartObject();
-        for (int i = 0; i < value._redFlagWarnings.size(); i++) {
-          Warning taggedWarning = value._redFlagWarnings.get(i);
-          String text = taggedWarning.getFirst();
-          String tag = taggedWarning.getSecond();
-          String msg = tag + ": " + text;
-          jgen.writeFieldName(Integer.toString(i + 1));
-          jgen.writeString(msg);
-        }
-        jgen.writeEndObject();
-      }
-      if (!value._unimplementedWarnings.isEmpty()) {
-        jgen.writeFieldName(UNIMPLEMENTED_VAR);
-        jgen.writeStartObject();
-        for (int i = 0; i < value._unimplementedWarnings.size(); i++) {
-          Warning taggedWarning = value._unimplementedWarnings.get(i);
-          String text = taggedWarning.getFirst();
-          String tag = taggedWarning.getSecond();
-          String msg = tag + ": " + text;
-          jgen.writeFieldName(Integer.toString(i + 1));
-          jgen.writeString(msg);
-        }
-        jgen.writeEndObject();
-      }
-      jgen.writeEndObject();
-    }
-  }
+  private static final long serialVersionUID = 1L;
 
   private static final String MISCELLANEOUS = "MISCELLANEOUS";
 
-  private static final String PEDANTIC_VAR = "Pedantic complaints";
+  private static final String PROP_PEDANTIC = "Pedantic complaints";
 
-  private static final String RED_FLAGS_VAR = "Red flags";
+  private static final String PROP_RED_FLAGS = "Red flags";
 
-  /** */
-  private static final long serialVersionUID = 1L;
-
-  private static final String UNIMPLEMENTED_VAR = "Unimplemented features";
+  private static final String PROP_UNIMPLEMENTED = "Unimplemented features";
 
   private transient boolean _pedanticRecord;
 
-  protected final List<Warning> _pedanticWarnings;
+  private final List<Warning> _pedanticWarnings;
 
   private transient boolean _printParseTree;
 
   private transient boolean _redFlagRecord;
 
-  protected final List<Warning> _redFlagWarnings;
+  private final List<Warning> _redFlagWarnings;
 
   private transient boolean _unimplementedRecord;
 
-  protected final List<Warning> _unimplementedWarnings;
+  private final List<Warning> _unimplementedWarnings;
 
-  public Warnings() {
-    _pedanticWarnings = new ArrayList<>();
-    _redFlagWarnings = new ArrayList<>();
-    _unimplementedWarnings = new ArrayList<>();
+  @JsonCreator
+  public Warnings(
+      @Nullable @JsonProperty(PROP_PEDANTIC) List<Warning> pedanticWarnings,
+      @Nullable @JsonProperty(PROP_RED_FLAGS) List<Warning> redFlagWarnings,
+      @Nullable @JsonProperty(PROP_UNIMPLEMENTED) List<Warning> unimplementedWarnings) {
+    _pedanticWarnings = firstNonNull(pedanticWarnings, new LinkedList<>());
+    _redFlagWarnings = firstNonNull(redFlagWarnings, new LinkedList<>());
+    _unimplementedWarnings = firstNonNull(unimplementedWarnings, new LinkedList<>());
   }
 
   public Warnings(
@@ -144,21 +54,24 @@ public class Warnings implements Serializable {
       boolean redFlagRecord,
       boolean unimplementedRecord,
       boolean printParseTree) {
-    this();
+    this(null, null, null);
     _pedanticRecord = pedanticRecord;
     _printParseTree = printParseTree;
     _redFlagRecord = redFlagRecord;
     _unimplementedRecord = unimplementedRecord;
   }
 
+  @JsonProperty(PROP_PEDANTIC)
   public List<Warning> getPedanticWarnings() {
     return _pedanticWarnings;
   }
 
+  @JsonProperty(PROP_RED_FLAGS)
   public List<Warning> getRedFlagWarnings() {
     return _redFlagWarnings;
   }
 
+  @JsonProperty(PROP_UNIMPLEMENTED)
   public List<Warning> getUnimplementedWarnings() {
     return _unimplementedWarnings;
   }
