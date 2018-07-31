@@ -1,6 +1,8 @@
 package org.batfish.representation.cisco;
 
 import javax.annotation.Nonnull;
+import org.batfish.datamodel.routing_policy.expr.CommunityHalfExpr;
+import org.batfish.datamodel.routing_policy.expr.VarCommunityHalf;
 
 public class VarCommunitySetElemHalf implements CommunitySetElemHalfExpr {
 
@@ -14,5 +16,10 @@ public class VarCommunitySetElemHalf implements CommunitySetElemHalfExpr {
 
   public @Nonnull String getVar() {
     return _var;
+  }
+
+  @Override
+  public CommunityHalfExpr toCommunityHalfExpr() {
+    return new VarCommunityHalf(_var);
   }
 }

@@ -1,13 +1,11 @@
 package org.batfish.representation.juniper;
 
-import java.util.Collections;
 import java.util.List;
 import org.batfish.common.Warnings;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
 import org.batfish.datamodel.routing_policy.statement.SetCommunity;
 import org.batfish.datamodel.routing_policy.statement.Statement;
-import org.batfish.representation.cisco.InlineCommunitySet;
 
 public final class PsThenCommunitySet extends PsThen {
 
@@ -34,11 +32,10 @@ public final class PsThenCommunitySet extends PsThen {
       warnings.redFlag("Reference to undefined community: \"" + _name + "\"");
     } else {
       org.batfish.datamodel.CommunityList list = c.getCommunityLists().get(_name);
-      String regex = list.getLines().get(0).getRegex();
       // assuming this is a valid community list for setting, the regex value
       // just retrieved should just be an explicit community
-      long community = CommonUtil.communityStringToLong(regex);
-      statements.add(new SetCommunity(new InlineCommunitySet(Collections.singleton(community))));
+      long community = list.getLines().get(0).getMatchCondition().asLiteralCommunities(null).first();
+      statements.add(new SetCommunity(new LiteralCommunity(community)));
     }
   }
 

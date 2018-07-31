@@ -2,6 +2,9 @@ package org.batfish.representation.cisco;
 
 import java.io.Serializable;
 import javax.annotation.Nonnull;
+import org.batfish.datamodel.routing_policy.expr.CommunityHalvesExpr;
+import org.batfish.datamodel.routing_policy.expr.CommunitySetExpr;
+import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
 
 public class CommunitySetElem implements Serializable {
 
@@ -23,25 +26,25 @@ public class CommunitySetElem implements Serializable {
     int suffixInt = (int) (value & 0xFFFFL);
     _suffix = new LiteralCommunitySetElemHalf(suffixInt);
   }
-  /*
-    public long community() {
-      if (_prefix instanceof LiteralCommunitySetElemHalf
-          && _suffix instanceof LiteralCommunitySetElemHalf) {
-        LiteralCommunitySetElemHalf prefix = (LiteralCommunitySetElemHalf) _prefix;
-        LiteralCommunitySetElemHalf suffix = (LiteralCommunitySetElemHalf) _suffix;
-        int prefixInt = prefix.getValue();
-        int suffixInt = suffix.getValue();
-        return (((long) prefixInt) << 16) | suffixInt;
-      } else {
-        throw new UnsupportedOperationException("Does not represent a single community");
-      }
-    }
-  */
+
   public CommunitySetElemHalfExpr getPrefix() {
     return _prefix;
   }
 
   public CommunitySetElemHalfExpr getSuffix() {
     return _suffix;
+  }
+
+  public CommunitySetExpr toCommunitySetExpr() {
+    if (_prefix instanceof LiteralCommunitySetElemHalf
+        && _suffix instanceof LiteralCommunitySetElemHalf) {
+      LiteralCommunitySetElemHalf prefix = (LiteralCommunitySetElemHalf) _prefix;
+      LiteralCommunitySetElemHalf suffix = (LiteralCommunitySetElemHalf) _suffix;
+      int prefixInt = prefix.getValue();
+      int suffixInt = suffix.getValue();
+      return new LiteralCommunity((((long) prefixInt) << 16) | suffixInt);
+    } else {
+      return new CommunityHalvesExpr(_prefix.toCommunityHalfExpr(), _suffix.toCommunityHalfExpr());
+    }
   }
 }

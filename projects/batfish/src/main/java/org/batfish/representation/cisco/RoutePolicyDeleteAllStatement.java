@@ -1,6 +1,5 @@
 package org.batfish.representation.cisco;
 
-import java.util.Collections;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.routing_policy.statement.SetCommunity;
@@ -18,6 +17,6 @@ public class RoutePolicyDeleteAllStatement extends RoutePolicyDeleteStatement {
   @Override
   public Statement toSetStatement(CiscoConfiguration cc, Configuration c, Warnings w) {
     // TODO: this should actually just retain all well-known communities
-    return new SetCommunity(new InlineCommunitySet(Collections.emptySet()));
+    return SetCommunity.NONE;
   }
 }

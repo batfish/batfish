@@ -64,6 +64,7 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RegexCommunitySet;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterList;
@@ -1123,7 +1124,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       String regex = line.getRegex();
       String javaRegex = communityRegexToJavaRegex(regex);
       org.batfish.datamodel.CommunityListLine newLine =
-          new org.batfish.datamodel.CommunityListLine(LineAction.ACCEPT, javaRegex);
+          new org.batfish.datamodel.CommunityListLine(LineAction.ACCEPT, new RegexCommunitySet(javaRegex));
       newLines.add(newLine);
     }
     org.batfish.datamodel.CommunityList newCl =

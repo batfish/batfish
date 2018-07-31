@@ -1,5 +1,8 @@
 package org.batfish.representation.cisco;
 
+import org.batfish.datamodel.routing_policy.expr.CommunityHalfExpr;
+import org.batfish.datamodel.routing_policy.expr.LiteralCommunityHalf;
+
 public class LiteralCommunitySetElemHalf implements CommunitySetElemHalfExpr {
 
   private static final long serialVersionUID = 1L;
@@ -12,5 +15,10 @@ public class LiteralCommunitySetElemHalf implements CommunitySetElemHalfExpr {
 
   public int getValue() {
     return _value;
+  }
+
+  @Override
+  public CommunityHalfExpr toCommunityHalfExpr() {
+    return new LiteralCommunityHalf(_value);
   }
 }
