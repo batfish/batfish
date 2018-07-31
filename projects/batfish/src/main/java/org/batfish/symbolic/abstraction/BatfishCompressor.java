@@ -46,6 +46,7 @@ import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.symbolic.Graph;
 import org.batfish.symbolic.GraphEdge;
 import org.batfish.symbolic.Protocol;
+import org.batfish.symbolic.bdd.BDDPacket;
 import org.batfish.symbolic.collections.Table2;
 
 /*
@@ -53,6 +54,7 @@ import org.batfish.symbolic.collections.Table2;
  * Filters on interfaces that correspond to the abstract network
  */
 public class BatfishCompressor {
+  private BDDPacket _bddPacket;
 
   private IBatfish _batfish;
 
@@ -60,7 +62,9 @@ public class BatfishCompressor {
 
   private String _internalRegex;
 
-  public BatfishCompressor(IBatfish batfish, Map<String, Configuration> configs) {
+  public BatfishCompressor(
+      BDDPacket bddPacket, IBatfish batfish, Map<String, Configuration> configs) {
+    _bddPacket = bddPacket;
     _batfish = batfish;
     _graph = new Graph(batfish, configs);
     _internalRegex = internalRegex();
@@ -263,7 +267,7 @@ public class BatfishCompressor {
 
   public Map<String, Configuration> compress(HeaderSpace h) {
     DestinationClasses dcs = DestinationClasses.create(_batfish, _graph, h, true);
-    List<Supplier<NetworkSlice>> ecs = NetworkSlice.allSlices(dcs, 0);
+    List<Supplier<NetworkSlice>> ecs = NetworkSlice.allSlices(_bddPacket, dcs, 0);
     Optional<Map<GraphEdge, EquivalenceClassFilter>> opt =
         ecs.stream().map(Supplier::get).map(this::processSlice).reduce(this::mergeFilters);
     if (!opt.isPresent()) {
