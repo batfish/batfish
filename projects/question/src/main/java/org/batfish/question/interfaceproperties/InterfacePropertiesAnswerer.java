@@ -61,12 +61,12 @@ public class InterfacePropertiesAnswerer extends Answerer {
                     .collect(Collectors.toList()))
             .build();
 
+    String textDesc = String.format("Properties of interface ${%s}.", COL_INTERFACE);
     DisplayHints dhints = question.getDisplayHints();
-    if (dhints == null) {
-      dhints = new DisplayHints();
-      dhints.setTextDesc(String.format("Properties of interface ${%s}.", COL_INTERFACE));
+    if (dhints != null && dhints.getTextDesc() != null) {
+      textDesc = dhints.getTextDesc();
     }
-    return new TableMetadata(columnMetadata, dhints);
+    return new TableMetadata(columnMetadata, textDesc);
   }
 
   @Override

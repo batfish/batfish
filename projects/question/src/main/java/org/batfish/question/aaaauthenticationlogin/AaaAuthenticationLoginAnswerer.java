@@ -1,5 +1,7 @@
 package org.batfish.question.aaaauthenticationlogin;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
@@ -28,6 +30,11 @@ public class AaaAuthenticationLoginAnswerer extends Answerer {
   public static final String COLUMN_NODE = "node";
   public static final String COLUMN_LINE_NAMES = "lineNames";
 
+  private static final String TEXT_DESC =
+      String.format(
+          "Node ${%s} does not require authentication on line(s) ${%s}",
+          COLUMN_NODE, COLUMN_LINE_NAMES);
+
   public AaaAuthenticationLoginAnswerer(Question question, IBatfish batfish) {
     super(question, batfish);
   }
@@ -46,15 +53,13 @@ public class AaaAuthenticationLoginAnswerer extends Answerer {
             new ColumnMetadata(COLUMN_NODE, Schema.NODE, "Node", true, false),
             new ColumnMetadata(
                 COLUMN_LINE_NAMES, Schema.list(Schema.STRING), "Line names", false, true));
+    String textDesc = TEXT_DESC;
     DisplayHints dhints = question.getDisplayHints();
-    if (dhints == null) {
-      dhints = new DisplayHints();
-      dhints.setTextDesc(
-          String.format(
-              "Node ${%s} does not require authentication on line(s) ${%s}",
-              COLUMN_NODE, COLUMN_LINE_NAMES));
+    if (dhints != null) {
+      textDesc = firstNonNull(dhints.getTextDesc(), textDesc);
     }
-    TableMetadata metadata = new TableMetadata(columnMetadata, dhints);
+
+    TableMetadata metadata = new TableMetadata(columnMetadata, textDesc);
     return new TableAnswerElement(metadata);
   }
 

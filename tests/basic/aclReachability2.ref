@@ -46,9 +46,7 @@
           "schema" : "String"
         }
       ],
-      "displayHints" : {
-        "textDesc" : "${message}"
-      }
+      "textDesc" : "${message}"
     },
     "rows" : [
       {

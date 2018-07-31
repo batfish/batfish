@@ -92,19 +92,19 @@ public class DefinedStructuresAnswerer extends Answerer {
                 false,
                 true));
 
+    String textDesc =
+        String.format(
+            "On ${%s} struct ${%s}:${%s} on lines ${%s} has ${%s} references.",
+            COL_NODE_NAME,
+            COL_STRUCT_TYPE,
+            COL_STRUCT_NAME,
+            COL_DEFINITION_LINES,
+            COL_NUM_REFERENCES);
     DisplayHints dhints = question.getDisplayHints();
-    if (dhints == null) {
-      dhints = new DisplayHints();
-      dhints.setTextDesc(
-          String.format(
-              "On ${%s} struct ${%s}:${%s} on lines ${%s} has ${%s} references.",
-              COL_NODE_NAME,
-              COL_STRUCT_TYPE,
-              COL_STRUCT_NAME,
-              COL_DEFINITION_LINES,
-              COL_NUM_REFERENCES));
+    if (dhints != null && dhints.getTextDesc() != null) {
+      textDesc = dhints.getTextDesc();
     }
-    return new TableMetadata(columnMetadataMap, dhints);
+    return new TableMetadata(columnMetadataMap, textDesc);
   }
 
   private static Row toRow(DefinedStructureRow info) {
