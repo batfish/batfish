@@ -25,6 +25,25 @@ import org.batfish.datamodel.State;
  */
 public class BDDPacket {
 
+  /*
+   * Initial size of the BDD factory node table. Automatically resized as needed. Increasing this
+   * will reduce time spent garbage collecting for large computations, but will waste memory for
+   * smaller ones.
+   */
+  private static final int JFACTORY_INITIAL_NODE_TABLE_SIZE = 10000;
+
+  /*
+   * Initial size of the BDD factory node cache. Automatically resized when the node table is,
+   * to preserve the cache ratio.
+   */
+  private static final int JFACTORY_INITIAL_NODE_CACHE_SIZE = 1000;
+
+  /*
+   * The ratio of node table size to node cache size to preserve when resizing. The default
+   * value is 0, which means never resize the cache.
+   */
+  private static final int JFACTORY_CACHE_RATIO = 64;
+
   private static final int DSCP_LENGTH = 6;
 
   private static final int ECN_LENGTH = 2;
@@ -94,9 +113,9 @@ public class BDDPacket {
    * various attributes of a control plane advertisement.
    */
   public BDDPacket() {
-    _factory = JFactory.init(10000, 1000);
+    _factory = JFactory.init(JFACTORY_INITIAL_NODE_TABLE_SIZE, JFACTORY_INITIAL_NODE_CACHE_SIZE);
     _factory.disableReorder();
-    _factory.setCacheRatio(64);
+    _factory.setCacheRatio(JFACTORY_CACHE_RATIO);
     // Disables printing
     /*
     try {

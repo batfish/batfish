@@ -115,7 +115,7 @@ public final class BDDReachabilityAnalysisFactory {
     _forwardingAnalysis = forwardingAnalysis;
     _dstIpSpaceToBDD = new IpSpaceToBDD(_bddPacket.getFactory(), _bddPacket.getDstIp());
 
-    Map<String, Map<String, BDDAcl>> bddAcls = computeBDDAcls(configs);
+    Map<String, Map<String, BDDAcl>> bddAcls = computeBDDAcls(_bddPacket, configs);
     _aclDenyBDDs = computeAclDenyBDDs(bddAcls);
     _aclPermitBDDs = computeAclPermitBDDs(bddAcls);
 
@@ -137,7 +137,8 @@ public final class BDDReachabilityAnalysisFactory {
                     postStateEntry -> postStateEntry.getValue().getConstraint()));
   }
 
-  private Map<String, Map<String, BDDAcl>> computeBDDAcls(Map<String, Configuration> configs) {
+  private static Map<String, Map<String, BDDAcl>> computeBDDAcls(
+      BDDPacket bddPacket, Map<String, Configuration> configs) {
     return toImmutableMap(
         configs,
         Entry::getKey,
@@ -145,7 +146,7 @@ public final class BDDReachabilityAnalysisFactory {
             toImmutableMap(
                 nodeEntry.getValue().getIpAccessLists(),
                 Entry::getKey,
-                aclEntry -> BDDAcl.create(_bddPacket, aclEntry.getValue())));
+                aclEntry -> BDDAcl.create(bddPacket, aclEntry.getValue())));
   }
 
   private static Map<String, Map<String, BDD>> computeAclDenyBDDs(
