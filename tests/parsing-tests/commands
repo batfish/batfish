@@ -38,7 +38,7 @@ test -compareall tests/parsing-tests/snat.ref init-testrig test_rigs/snat
 test -compareall tests/parsing-tests/srx-testbed.ref init-testrig test_rigs/srx-testbed
 
 #unit-tests
-test -compareall tests/parsing-tests/unit-tests.ref init-testrig test_rigs/unit-tests
+test -compareall tests/parsing-tests/unit-tests.ref init-testrig tests/parsing-tests/networks/unit-tests
 test tests/parsing-tests/unit-tests-undefined.ref get undefinedreferences
 test tests/parsing-tests/unit-tests-unused.ref get unusedstructures
 test tests/parsing-tests/unit-tests-nodes.ref get nodes summary=false

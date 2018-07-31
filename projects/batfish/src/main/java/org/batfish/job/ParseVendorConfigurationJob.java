@@ -161,6 +161,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
 
       case HOST:
         vc = HostConfiguration.fromJson(_fileText, _warnings);
+        vc.setFilename(_filename);
         elapsedTime = System.currentTimeMillis() - startTime;
         return new ParseVendorConfigurationResult(
             elapsedTime, _logger.getHistory(), _filename, vc, _warnings, _ptSentences);

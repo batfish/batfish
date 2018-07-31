@@ -18,6 +18,8 @@ public class IncrementalBdpAnswerElement extends DataPlaneAnswerElement {
 
   private static final String PROP_DEPENDENT_ROUTES_ITERATIONS = "dependentRoutesIterations";
 
+  private static final String PROP_EIGRP_INTERNAL_ITERATIONS = "eigrpInternalIterations";
+
   private static final String PROP_OSPF_INTERNAL_ITERATIONS = "ospfInternalIterations";
 
   private static final String PROP_WARNINGS = "warnings";
@@ -29,6 +31,8 @@ public class IncrementalBdpAnswerElement extends DataPlaneAnswerElement {
   private SortedMap<Integer, Integer> _bgpMultipathRibRoutesByIteration;
 
   private int _dependentRoutesIterations;
+
+  private int _eigrpInternalIterations;
 
   private SortedMap<Integer, Integer> _mainRibRoutesByIteration;
 
@@ -60,6 +64,11 @@ public class IncrementalBdpAnswerElement extends DataPlaneAnswerElement {
     return _dependentRoutesIterations;
   }
 
+  @JsonProperty(PROP_EIGRP_INTERNAL_ITERATIONS)
+  public int getEigrpInternalIterations() {
+    return _eigrpInternalIterations;
+  }
+
   @JsonProperty(MAIN_RIB_ROUTES_BY_ITERATION)
   public SortedMap<Integer, Integer> getMainRibRoutesByIteration() {
     return _mainRibRoutesByIteration;
@@ -84,8 +93,11 @@ public class IncrementalBdpAnswerElement extends DataPlaneAnswerElement {
   @Override
   public String prettyPrint() {
     return "Computation summary:\n"
+        + "   EIGRP-internal iterations: "
+        + _eigrpInternalIterations
+        + "\n"
         + "   OSPF-internal iterations: "
-        + _dependentRoutesIterations
+        + _ospfInternalIterations
         + "\n"
         + "   Dependent-routes iterations: "
         + _dependentRoutesIterations
@@ -111,6 +123,11 @@ public class IncrementalBdpAnswerElement extends DataPlaneAnswerElement {
   public void setBgpMultipathRibRoutesByIteration(
       SortedMap<Integer, Integer> bgpMultipathRibRoutesByIteration) {
     _bgpMultipathRibRoutesByIteration = bgpMultipathRibRoutesByIteration;
+  }
+
+  @JsonProperty(PROP_EIGRP_INTERNAL_ITERATIONS)
+  public void setEigrpInternalIterations(int eigrpInternalIterations) {
+    _eigrpInternalIterations = eigrpInternalIterations;
   }
 
   @JsonProperty(PROP_DEPENDENT_ROUTES_ITERATIONS)

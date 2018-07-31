@@ -286,7 +286,7 @@
     {
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
       "definedStructures" : {
-        "as1r1" : {
+        "configs/as1r1.cfg" : {
           "interface" : {
             "FastEthernet0/0" : {
               "definitionLines" : [
@@ -304,7 +304,7 @@
             }
           }
         },
-        "as1r2" : {
+        "configs/as1r2.cfg" : {
           "interface" : {
             "FastEthernet0/0" : {
               "definitionLines" : [
@@ -322,7 +322,7 @@
             }
           }
         },
-        "as2r1" : {
+        "configs/as2r1.cfg" : {
           "interface" : {
             "FastEthernet0/0" : {
               "definitionLines" : [

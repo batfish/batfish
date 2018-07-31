@@ -64,8 +64,7 @@
     {
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
       "definedStructures" : {
-        "internet-host" : { },
-        "r1" : {
+        "configs/r1.cfg" : {
           "interface" : {
             "Ethernet0" : {
               "definitionLines" : [
@@ -90,7 +89,7 @@
             }
           }
         },
-        "r2" : {
+        "configs/r2.cfg" : {
           "interface" : {
             "Ethernet0" : {
               "definitionLines" : [
@@ -115,7 +114,7 @@
             }
           }
         },
-        "r3" : {
+        "configs/r3.cfg" : {
           "interface" : {
             "Ethernet0" : {
               "definitionLines" : [
@@ -140,7 +139,7 @@
             }
           }
         },
-        "z1-firewall" : {
+        "configs/z1-firewall.cfg" : {
           "interface" : {
             "Ethernet0" : {
               "definitionLines" : [
@@ -158,9 +157,7 @@
             }
           }
         },
-        "z1-host1" : { },
-        "z1-host2" : { },
-        "z2-firewall" : {
+        "configs/z2-firewall.cfg" : {
           "interface" : {
             "Ethernet0" : {
               "definitionLines" : [
@@ -178,8 +175,11 @@
             }
           }
         },
-        "z2-host1" : { },
-        "z2-host2" : { }
+        "hosts/internet-host.json" : { },
+        "hosts/z1-host1.json" : { },
+        "hosts/z1-host2.json" : { },
+        "hosts/z2-host1.json" : { },
+        "hosts/z2-host2.json" : { }
       },
       "version" : "0.36.0"
     },

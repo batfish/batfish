@@ -767,6 +767,8 @@ import org.batfish.grammar.cisco.CiscoParser.Rbnx_v_local_asContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_vrfContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_classicContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_networkContext;
+import org.batfish.grammar.cisco.CiscoParser.Re_passive_interfaceContext;
+import org.batfish.grammar.cisco.CiscoParser.Re_passive_interface_defaultContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_redistribute_bgpContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_redistribute_connectedContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_redistribute_eigrpContext;
@@ -774,6 +776,8 @@ import org.batfish.grammar.cisco.CiscoParser.Re_redistribute_isisContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_redistribute_ospfContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_redistribute_ripContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_redistribute_staticContext;
+import org.batfish.grammar.cisco.CiscoParser.Reaf_interfaceContext;
+import org.batfish.grammar.cisco.CiscoParser.Reafi_passive_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Rec_address_familyContext;
 import org.batfish.grammar.cisco.CiscoParser.Redistribute_aggregate_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Redistribute_connected_bgp_tailContext;
@@ -1344,6 +1348,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private DynamicIpv6BgpPeerGroup _currentDynamicIpv6PeerGroup;
 
+  @Nullable private Interface _currentEigrpInterface;
+
   @Nullable private EigrpProcess _currentEigrpProcess;
 
   private ExpandedCommunityList _currentExpandedCommunityList;
@@ -1505,6 +1511,15 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _currentInterfaces.add(newInterface);
     }
     return newInterface;
+  }
+
+  private Interface getOrAddInterface(Interface_nameContext ctx) {
+    String canonicalIfaceName = getCanonicalInterfaceName(ctx.getText());
+    Interface iface = _configuration.getInterfaces().get(canonicalIfaceName);
+    if (iface == null) {
+      iface = addInterface(canonicalIfaceName, ctx, false);
+    }
+    return iface;
   }
 
   private String convErrorMessage(Class<?> type, ParserRuleContext ctx) {
@@ -2154,12 +2169,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterInterface_is_stanza(Interface_is_stanzaContext ctx) {
-    String ifaceName = ctx.iname.getText();
-    String canonicalIfaceName = getCanonicalInterfaceName(ifaceName);
-    Interface iface = _configuration.getInterfaces().get(canonicalIfaceName);
-    if (iface == null) {
-      iface = addInterface(canonicalIfaceName, ctx.iname, false);
-    }
+    Interface iface = getOrAddInterface(ctx.iname);
     iface.setIsisInterfaceMode(IsisInterfaceMode.ACTIVE);
     _currentIsisInterface = iface;
   }
@@ -3346,6 +3356,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     EigrpProcess proc = new EigrpProcess(asn, EigrpProcessMode.CLASSIC);
     currentVrf().setEigrpProcess(proc);
     _currentEigrpProcess = proc;
+  }
+
+  @Override
+  public void enterReaf_interface(Reaf_interfaceContext ctx) {
+    _currentEigrpInterface = getOrAddInterface(ctx.iname);
   }
 
   @Override
@@ -5088,12 +5103,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitIf_bandwidth(If_bandwidthContext ctx) {
+    Double newBandwidthBps;
     if (ctx.NO() != null) {
-      _currentInterfaces.forEach(i -> i.setBandwidth(null));
+      newBandwidthBps = null;
     } else {
-      double bandwidthBps = toLong(ctx.DEC()) * 1000.0D;
-      _currentInterfaces.forEach(i -> i.setBandwidth(bandwidthBps));
+      newBandwidthBps = toLong(ctx.DEC()) * 1000.0D;
     }
+    _currentInterfaces.forEach(i -> i.setBandwidth(newBandwidthBps));
   }
 
   @Override
@@ -6422,6 +6438,22 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitRe_passive_interface(Re_passive_interfaceContext ctx) {
+    boolean passive = (ctx.NO() == null);
+    getOrAddInterface(ctx.i).setEigrpPassive(passive);
+  }
+
+  @Override
+  public void exitRe_passive_interface_default(Re_passive_interface_defaultContext ctx) {
+    if (_currentEigrpProcess == null) {
+      todo(ctx, "network not supported here until autonomous-system stanza supported");
+      return;
+    }
+    boolean passive = (ctx.NO() == null);
+    _currentEigrpProcess.setPassiveInterfaceDefault(passive);
+  }
+
+  @Override
   public void exitRe_redistribute_bgp(Re_redistribute_bgpContext ctx) {
     if (ctx.map != null) {
       String mapname = ctx.map.getText();
@@ -6481,6 +6513,22 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       String mapname = ctx.map.getText();
       _configuration.referenceStructure(
           ROUTE_MAP, mapname, EIGRP_REDISTRIBUTE_STATIC_MAP, ctx.map.getStart().getLine());
+    }
+  }
+
+  @Override
+  public void exitReaf_interface(Reaf_interfaceContext ctx) {
+    _currentEigrpInterface = null;
+  }
+
+  @Override
+  public void exitReafi_passive_interface(Reafi_passive_interfaceContext ctx) {
+    boolean passive = (ctx.NO() == null);
+    if (_currentEigrpInterface == null) {
+      // default interface
+      Objects.requireNonNull(_currentEigrpProcess).setPassiveInterfaceDefault(passive);
+    } else {
+      _currentEigrpInterface.setEigrpPassive(passive);
     }
   }
 
@@ -6646,12 +6694,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitPassive_interface_is_stanza(Passive_interface_is_stanzaContext ctx) {
-    String ifaceName = ctx.name.getText();
-    String canonicalIfaceName = getCanonicalInterfaceName(ifaceName);
-    Interface iface = _configuration.getInterfaces().get(canonicalIfaceName);
-    if (iface == null) {
-      iface = addInterface(canonicalIfaceName, ctx.name, false);
-    }
+    Interface iface = getOrAddInterface(ctx.name);
     if (ctx.NO() == null) {
       iface.setIsisInterfaceMode(IsisInterfaceMode.PASSIVE);
     } else {
@@ -8532,9 +8575,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         canonicalNamePrefix.equals(CiscoConfiguration.NXOS_MANAGEMENT_INTERFACE_PREFIX)
             ? CiscoConfiguration.MANAGEMENT_VRF_NAME
             : Configuration.DEFAULT_VRF_NAME;
-    double bandwidth = Interface.getDefaultBandwidth(canonicalNamePrefix, _format);
     int mtu = Interface.getDefaultMtu();
-    iface.setBandwidth(bandwidth);
     iface.setVrf(vrf);
     initVrf(vrf);
     iface.setMtu(mtu);

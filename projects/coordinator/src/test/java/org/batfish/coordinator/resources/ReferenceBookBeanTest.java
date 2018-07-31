@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.referencelibrary.AddressGroup;
+import org.batfish.referencelibrary.FilterGroup;
 import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.referencelibrary.ServiceEndpoint;
 import org.batfish.referencelibrary.ServiceObject;
@@ -51,7 +52,7 @@ public class ReferenceBookBeanTest {
 
   @Test
   public void constructorEmptyBook() {
-    ReferenceBook book1 = new ReferenceBook(null, "book1", null, null, null);
+    ReferenceBook book1 = new ReferenceBook(null, null, "book1", null, null, null);
 
     beanBookMatch(new ReferenceBookBean(book1), book1);
   }
@@ -61,6 +62,7 @@ public class ReferenceBookBeanTest {
     ReferenceBook book2 =
         new ReferenceBook(
             ImmutableList.of(new AddressGroup(ImmutableSortedSet.of(), "ag1")),
+            ImmutableList.of(new FilterGroup(ImmutableList.of(), "fg1")),
             "book2",
             ImmutableList.of(new ServiceEndpoint("ag1", "se1", "so1")),
             ImmutableList.of(new ServiceObjectGroup("sog1", ImmutableSortedSet.of())),
@@ -75,6 +77,7 @@ public class ReferenceBookBeanTest {
         new ReferenceBookBean(
             new ReferenceBook(
                 ImmutableList.of(new AddressGroup(ImmutableSortedSet.of(), "ag1")),
+                ImmutableList.of(new FilterGroup(ImmutableList.of(), "fg1")),
                 "book2",
                 ImmutableList.of(new ServiceEndpoint("ag1", "se1", "so1")),
                 ImmutableList.of(new ServiceObjectGroup("sog1", ImmutableSortedSet.of())),

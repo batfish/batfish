@@ -18,6 +18,9 @@ public class ReferenceBookBean {
   /** The set of {@link AddressGroupBean}s in this book */
   public Set<AddressGroupBean> addressGroups;
 
+  /** The set of {@link FilterGroupBean}s in this book */
+  public Set<FilterGroupBean> filterGroups;
+
   /** The set of {@link ServiceEndpointBean}s in this book */
   public Set<ServiceEndpointBean> serviceEndpoints;
 
@@ -36,6 +39,11 @@ public class ReferenceBookBean {
         book.getAddressGroups()
             .stream()
             .map(ag -> new AddressGroupBean(ag))
+            .collect(Collectors.toSet());
+    filterGroups =
+        book.getFilterGroups()
+            .stream()
+            .map(fg -> new FilterGroupBean(fg))
             .collect(Collectors.toSet());
     serviceEndpoints =
         book.getServiceEndpoints()
@@ -60,6 +68,7 @@ public class ReferenceBookBean {
       return false;
     }
     return Objects.equals(addressGroups, ((ReferenceBookBean) o).addressGroups)
+        && Objects.equals(filterGroups, ((ReferenceBookBean) o).filterGroups)
         && Objects.equals(name, ((ReferenceBookBean) o).name)
         && Objects.equals(serviceEndpoints, ((ReferenceBookBean) o).serviceEndpoints)
         && Objects.equals(serviceObjectGroups, ((ReferenceBookBean) o).serviceObjectGroups)
@@ -68,7 +77,8 @@ public class ReferenceBookBean {
 
   @Override
   public int hashCode() {
-    return Objects.hash(addressGroups, name, serviceEndpoints, serviceObjectGroups, serviceObjects);
+    return Objects.hash(
+        addressGroups, filterGroups, name, serviceEndpoints, serviceObjectGroups, serviceObjects);
   }
 
   /** Creates {@link ReferenceBook} from this bean */
@@ -77,6 +87,10 @@ public class ReferenceBookBean {
         firstNonNull(addressGroups, Collections.<AddressGroupBean>emptySet())
             .stream()
             .map(agb -> agb.toAddressGroup())
+            .collect(Collectors.toList()),
+        firstNonNull(filterGroups, Collections.<FilterGroupBean>emptySet())
+            .stream()
+            .map(fgb -> fgb.toFilterGroup())
             .collect(Collectors.toList()),
         name,
         firstNonNull(serviceEndpoints, Collections.<ServiceEndpointBean>emptySet())

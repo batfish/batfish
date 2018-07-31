@@ -23,7 +23,7 @@ import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
 import org.batfish.specifier.NameRegexNodeSpecifier;
 import org.batfish.specifier.NameRegexNodeSpecifierFactory;
 import org.batfish.specifier.NodeNameRegexConnectedHostsIpSpaceSpecifier;
-import org.batfish.specifier.NodeNameRegexInterfaceLinkLocationSpecifier;
+import org.batfish.specifier.NodeNameRegexInterfaceLocationSpecifier;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -161,7 +161,7 @@ public class SpecifiersReachabilityQuestionTest {
     question.setSourceLocationSpecifierInput("foo");
     assertThat(
         question.getSourceLocationSpecifier(),
-        equalTo(new NodeNameRegexInterfaceLinkLocationSpecifier(Pattern.compile("foo"))));
+        equalTo(new NodeNameRegexInterfaceLocationSpecifier(Pattern.compile("foo"))));
   }
 
   @Test

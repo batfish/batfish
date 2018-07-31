@@ -69,19 +69,20 @@ public class ReferenceLibraryTest {
     ReferenceLibrary library =
         new ReferenceLibrary(
             ImmutableList.of(
-                new ReferenceBook(null, "book1", null, null, null),
-                new ReferenceBook(null, "book2", null, null, null)));
+                new ReferenceBook(null, null, "book1", null, null, null),
+                new ReferenceBook(null, null, "book2", null, null, null)));
     ReferenceLibrary.write(library, tempPath);
 
     SortedSet<ReferenceBook> newBooks =
         ImmutableSortedSet.of(
             new ReferenceBook(
                 ImmutableList.of(new AddressGroup(ImmutableSortedSet.of(), "add1")),
+                null,
                 "book1",
                 null,
                 null,
                 null),
-            new ReferenceBook(null, "book3", null, null, null));
+            new ReferenceBook(null, null, "book3", null, null, null));
 
     ReferenceLibrary.mergeReferenceBooks(tempPath, newBooks);
 
@@ -91,11 +92,12 @@ public class ReferenceLibraryTest {
             ImmutableSortedSet.of(
                 new ReferenceBook(
                     ImmutableList.of(new AddressGroup(ImmutableSortedSet.of(), "add1")),
+                    null,
                     "book1",
                     null,
                     null,
                     null),
-                new ReferenceBook(null, "book2", null, null, null),
-                new ReferenceBook(null, "book3", null, null, null))));
+                new ReferenceBook(null, null, "book2", null, null, null),
+                new ReferenceBook(null, null, "book3", null, null, null))));
   }
 }
