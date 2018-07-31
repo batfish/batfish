@@ -33,8 +33,8 @@ public class Settings extends BaseSettings {
   public static final String ARG_SERVICE_NAME = "servicename";
   private static final String ARG_SERVICE_WORK_PORT = "coordinatorworkport";
   private static final String ARG_SERVICE_WORK_V2_PORT = "coordinatorworkv2port";
-  public static final String ARG_TESTRIG_DIR = "testrigdir";
-  public static final String ARG_TESTRIG_ID = "testrigid";
+  public static final String ARG_SNAPSHOT_DIR = "snapshotdir";
+  public static final String ARG_SNAPSHOT_ID = "snapshotid";
   private static final String ARG_TRACING_AGENT_HOST = "tracingagenthost";
   private static final String ARG_TRACING_AGENT_PORT = "tracingagentport";
   public static final String ARG_TRACING_ENABLE = "tracingenable";
@@ -57,14 +57,14 @@ public class Settings extends BaseSettings {
   private RunMode _runMode;
   private boolean _sanityCheck;
   private String _serviceName;
+  private String _snapshotDir;
+  private String _snapshotId;
   private boolean _sslDisable;
   private Path _sslKeystoreFile;
   private String _sslKeystorePassword;
   private boolean _sslTrustAllCerts;
   private Path _sslTruststoreFile;
   private String _sslTruststorePassword;
-  private String _testrigDir;
-  private String _testrigId;
   private String _tracingAgentHost;
   private Integer _tracingAgentPort;
   private boolean _tracingEnable;
@@ -146,6 +146,14 @@ public class Settings extends BaseSettings {
     return _serviceName;
   }
 
+  public String getSnapshotDir() {
+    return _snapshotDir;
+  }
+
+  public String getSnapshotId() {
+    return _snapshotId;
+  }
+
   public boolean getSslDisable() {
     return _sslDisable;
   }
@@ -168,14 +176,6 @@ public class Settings extends BaseSettings {
 
   public String getSslTruststorePassword() {
     return _sslTruststorePassword;
-  }
-
-  public String getTestrigDir() {
-    return _testrigDir;
-  }
-
-  public String getTestrigId() {
-    return _testrigId;
   }
 
   public Integer getTracingAgentPort() {
@@ -228,7 +228,7 @@ public class Settings extends BaseSettings {
 
     addOption(ARG_BATFISH_LOG_LEVEL, "log level for batfish", "batfish_loglevel");
 
-    addOption(ARG_CONTAINER_ID, "container to attach to", "container_id");
+    addOption(ARG_CONTAINER_ID, "network to attach to", "network_id");
 
     addOption(ARG_DATAMODEL_DIR, "directory where datamodel should be dumped", "datamodel_dir");
 
@@ -239,7 +239,7 @@ public class Settings extends BaseSettings {
     addOption(ARG_LOG_LEVEL, "log level", "loglevel");
 
     addBooleanOption(
-        ARG_NO_SANITY_CHECK, "do not check if container, testrig etc. are set. (helps debugging.)");
+        ARG_NO_SANITY_CHECK, "do not check if network, snapshot etc. are set. (helps debugging.)");
 
     addOption(
         ARG_PERIOD_CHECK_WORK, "period with which to check work (ms)", "period_check_work_ms");
@@ -255,16 +255,16 @@ public class Settings extends BaseSettings {
     addOption(
         ARG_SERVICE_WORK_PORT, "port for work management service", "port_number_work_service");
 
+    addOption(ARG_SNAPSHOT_DIR, "where the snapshot sits", "snapshot_dir");
+
+    addOption(ARG_SNAPSHOT_ID, "snapshot to attach to", "snapshot_id");
+
     addBooleanOption(
         BfConsts.ARG_SSL_DISABLE, "whether to disable SSL during communication with coordinator");
 
     addBooleanOption(
         BfConsts.ARG_SSL_TRUST_ALL_CERTS,
         "whether to trust all SSL certificates during communication with coordinator");
-
-    addOption(ARG_TESTRIG_DIR, "where the testrig sits", "testrig_dir");
-
-    addOption(ARG_TESTRIG_ID, "testrig to attach to", "testrig_id");
 
     addOption(ARG_TRACING_AGENT_HOST, "jaeger agent host", "jaeger_agent_host");
 
@@ -304,8 +304,8 @@ public class Settings extends BaseSettings {
     _tracingAgentPort = getIntegerOptionValue(ARG_TRACING_AGENT_PORT);
     _tracingEnable = getBooleanOptionValue(ARG_TRACING_ENABLE);
 
-    _testrigDir = getStringOptionValue(ARG_TESTRIG_DIR);
-    _testrigId = getStringOptionValue(ARG_TESTRIG_ID);
+    _snapshotDir = getStringOptionValue(ARG_SNAPSHOT_DIR);
+    _snapshotId = getStringOptionValue(ARG_SNAPSHOT_ID);
 
     _coordinatorHost = getStringOptionValue(ARG_COORDINATOR_HOST);
     _coordinatorWorkPort = getIntegerOptionValue(ARG_SERVICE_WORK_PORT);
