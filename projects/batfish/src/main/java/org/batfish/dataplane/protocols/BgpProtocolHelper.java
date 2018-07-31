@@ -41,6 +41,9 @@ public class BgpProtocolHelper {
 
     BgpRoute.Builder transformedOutgoingRouteBuilder = new BgpRoute.Builder();
 
+    // Set the tag
+    transformedOutgoingRouteBuilder.setTag(route.getTag());
+
     transformedOutgoingRouteBuilder.setReceivedFromIp(fromNeighbor.getLocalIp());
     RoutingProtocol remoteRouteProtocol = route.getProtocol();
 
