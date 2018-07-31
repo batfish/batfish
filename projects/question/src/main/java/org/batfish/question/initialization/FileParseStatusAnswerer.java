@@ -67,11 +67,15 @@ class FileParseStatusAnswerer extends Answerer {
 
   private static final List<ColumnMetadata> METADATA =
       ImmutableList.of(
-          new ColumnMetadata(COL_FILENAME, Schema.STRING, "The file that was parsed"),
+          new ColumnMetadata(COL_FILENAME, Schema.STRING, "The file that was parsed", true, false),
           new ColumnMetadata(
-              COL_PARSE_STATUS, Schema.STRING, "The status of the parsing operation"),
+              COL_PARSE_STATUS, Schema.STRING, "The status of the parsing operation", false, true),
           new ColumnMetadata(
-              COL_HOSTS, Schema.list(Schema.NODE), "Names of hosts produced from this file"));
+              COL_HOSTS,
+              Schema.list(Schema.NODE),
+              "Names of hosts produced from this file",
+              false,
+              true));
 
   private static final DisplayHints DISPLAY_HINTS =
       new DisplayHints()
