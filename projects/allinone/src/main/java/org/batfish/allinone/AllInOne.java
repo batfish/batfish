@@ -69,11 +69,11 @@ public class AllInOne {
               org.batfish.client.config.Settings.ARG_COMMAND_FILE, _settings.getCommandFile());
     }
 
-    if (_settings.getTestrigDir() != null) {
+    if (_settings.getSnapshotDir() != null) {
       argString +=
           String.format(
               " -%s %s",
-              org.batfish.client.config.Settings.ARG_TESTRIG_DIR, _settings.getTestrigDir());
+              org.batfish.client.config.Settings.ARG_SNAPSHOT_DIR, _settings.getSnapshotDir());
     }
 
     if (_settings.getTracingEnable() && !GlobalTracer.isRegistered()) {
