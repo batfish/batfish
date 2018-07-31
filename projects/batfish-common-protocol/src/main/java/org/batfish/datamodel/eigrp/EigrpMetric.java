@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 import java.util.Objects;
+import java.util.stream.LongStream;
 import javax.annotation.Nullable;
 
 /** Handles EIGRP metric information. */
@@ -99,19 +100,31 @@ public class EigrpMetric implements Serializable {
     return namedDelay / EIGRP_DELAY_PICO / 10L;
   }
 
-  public EigrpMetric accumulate(EigrpMetric routeMetric) {
+  public EigrpMetric accumulate(EigrpMetric neighborInterfaceMetric, EigrpMetric routeMetric) {
     long classicBandwidth;
     long classicDelay;
     long namedBandwidth;
     long namedDelay;
 
     if (_mode == CLASSIC) {
-      classicBandwidth = Math.max(_classicBandwidth, routeMetric._classicBandwidth);
+      classicBandwidth =
+          LongStream.of(
+                  _classicBandwidth,
+                  neighborInterfaceMetric._classicBandwidth,
+                  routeMetric._classicBandwidth)
+              .max()
+              .getAsLong();
       namedBandwidth = classicToNamedBandwidth(classicBandwidth);
       classicDelay = _classicDelay + routeMetric._classicDelay;
       namedDelay = classicToNamedDelay(classicDelay);
     } else {
-      namedBandwidth = Math.min(_namedBandwidth, routeMetric._namedBandwidth);
+      namedBandwidth =
+          LongStream.of(
+                  _namedBandwidth,
+                  neighborInterfaceMetric._namedBandwidth,
+                  routeMetric._namedBandwidth)
+              .min()
+              .getAsLong();
       classicBandwidth = namedToClassicBandwidth(namedBandwidth);
       namedDelay = _namedDelay + routeMetric._namedDelay;
       classicDelay = namedToClassicDelay(namedDelay);

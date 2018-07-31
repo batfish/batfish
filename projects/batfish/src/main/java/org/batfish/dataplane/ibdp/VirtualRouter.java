@@ -85,7 +85,6 @@ import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.eigrp.EigrpEdge;
 import org.batfish.datamodel.eigrp.EigrpInterface;
-import org.batfish.datamodel.eigrp.EigrpInterfaceSettings;
 import org.batfish.datamodel.eigrp.EigrpMetric;
 import org.batfish.datamodel.eigrp.EigrpProcess;
 import org.batfish.datamodel.isis.IsisEdge;
@@ -2072,14 +2071,20 @@ public class VirtualRouter implements Serializable {
    * Propagate EIGRP Internal routes from a single neighbor.
    *
    * @param neighbor the neighbor
-   * @param settings EIGRP interface settings of the interface on which we are connected to the
+   * @param connectingInterfaceMetric EIGRP Metric of the interface on which we are connected to the
    *     neighbor
    * @param neighborInterface interface that the neighbor uses to connect to us
    * @param adminCost route administrative distance
    * @return true if new routes have been added to our staging RIB
    */
   private boolean propagateEigrpInternalRoutesFromNeighbor(
-      Node neighbor, EigrpInterfaceSettings settings, Interface neighborInterface, int adminCost) {
+      Node neighbor,
+      EigrpMetric connectingInterfaceMetric,
+      Interface neighborInterface,
+      int adminCost) {
+
+    EigrpMetric neighborInterfaceMetric =
+        requireNonNull(requireNonNull(neighborInterface.getEigrp()).getMetric());
 
     /*
      * An EIGRP neighbor relationship exists on this edge. We will examine all internal routes
@@ -2091,8 +2096,9 @@ public class VirtualRouter implements Serializable {
     VirtualRouter neighborVirtualRouter = neighbor.getVirtualRouters().get(neighborVrfName);
     boolean changed = false;
     for (EigrpRoute neighborRoute : neighborVirtualRouter._eigrpInternalRib.getRoutes()) {
-      EigrpMetric interfaceMetric = requireNonNull(settings.getMetric());
-      EigrpMetric newMetric = interfaceMetric.accumulate(neighborRoute.getEigrpMetric());
+      EigrpMetric newMetric =
+          connectingInterfaceMetric.accumulate(
+              neighborInterfaceMetric, neighborRoute.getEigrpMetric());
       Ip nextHopIp = neighborInterface.getAddress().getIp();
       EigrpRoute newRoute =
           EigrpInternalRoute.builder()
@@ -2281,7 +2287,7 @@ public class VirtualRouter implements Serializable {
                 edge ->
                     propagateEigrpInternalRoutesFromNeighbor(
                             nodes.get(edge.getNode1().getHostname()),
-                            edge.getNode2().getInterfaceSettings(nc),
+                            requireNonNull(edge.getNode2().getInterfaceSettings(nc).getMetric()),
                             edge.getNode1().getInterface(nc),
                             adminCost)
                         ? 1
