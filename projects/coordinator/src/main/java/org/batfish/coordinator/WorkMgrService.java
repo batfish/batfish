@@ -564,6 +564,100 @@ public class WorkMgrService {
   }
 
   /**
+   * Get answer for a question in a previously run analysis
+   *
+   * @param apiKey The API key of the client
+   * @param clientVersion The version of the client
+   * @param networkName The name of the network in which the analysis resides
+   * @param snapshotName The name of the snapshot on which the analysis was run
+   * @param baseEnv The name of the base environment on which the analysis was run
+   * @param deltaSnapshot The name of the delta snapshot on which the analysis was run
+   * @param deltaEnv The name of the delta environment on which the analysis was run
+   * @param analysisName The name of the analysis
+   * @param questionName The name of the question
+   * @return TODO: document JSON response
+   */
+  @POST
+  @Path(CoordConsts.SVC_RSC_GET_ANALYSIS_ANSWER)
+  @Produces(MediaType.APPLICATION_JSON)
+  public JSONArray getAnalysisAnswer(
+      @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
+      @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
+      @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String networkName,
+      @FormDataParam(CoordConsts.SVC_KEY_TESTRIG_NAME) String snapshotName,
+      @FormDataParam(CoordConsts.SVC_KEY_ENV_NAME) String baseEnv,
+      @FormDataParam(CoordConsts.SVC_KEY_DELTA_TESTRIG_NAME) String deltaSnapshot,
+      @FormDataParam(CoordConsts.SVC_KEY_DELTA_ENV_NAME) String deltaEnv,
+      @FormDataParam(CoordConsts.SVC_KEY_ANALYSIS_NAME) String analysisName,
+      @FormDataParam(CoordConsts.SVC_KEY_QUESTION_NAME) String questionName,
+      @FormDataParam(CoordConsts.SVC_KEY_WORKITEM) String workItemStr /* optional */) {
+    try {
+      _logger.infof(
+          "WMS:getAnalysisAnswers %s %s %s %s\n", apiKey, networkName, snapshotName, analysisName);
+
+      checkStringParam(apiKey, "API key");
+      checkStringParam(clientVersion, "Client version");
+      checkStringParam(networkName, "Network name");
+      checkStringParam(snapshotName, "Base snapshot name");
+      checkStringParam(baseEnv, "Base environment name");
+      checkStringParam(analysisName, "Analysis name");
+      checkStringParam(questionName, "Question name");
+
+      checkApiKeyValidity(apiKey);
+      checkClientVersion(clientVersion);
+      checkNetworkAccessibility(apiKey, networkName);
+
+      JSONObject response = new JSONObject();
+
+      if (!Strings.isNullOrEmpty(workItemStr)) {
+        WorkItem workItem = BatfishObjectMapper.mapper().readValue(workItemStr, WorkItem.class);
+        if (!workItem.getContainerName().equals(networkName)
+            || !workItem.getTestrigName().equals(snapshotName)) {
+          return failureResponse(
+              "Mismatch in parameters: WorkItem is not for the supplied network or snapshot");
+        }
+        QueuedWork work = Main.getWorkMgr().getMatchingWork(workItem, QueueType.INCOMPLETE);
+        if (work != null) {
+          String taskStr = BatfishObjectMapper.writePrettyString(work.getLastTaskCheckResult());
+          response
+              .put(CoordConsts.SVC_KEY_WORKID, work.getWorkItem().getId())
+              .put(CoordConsts.SVC_KEY_WORKSTATUS, work.getStatus().toString())
+              .put(CoordConsts.SVC_KEY_TASKSTATUS, taskStr);
+        }
+      }
+
+      String answer =
+          Main.getWorkMgr()
+              .getAnalysisAnswer(
+                  networkName,
+                  snapshotName,
+                  baseEnv,
+                  deltaSnapshot,
+                  deltaEnv,
+                  analysisName,
+                  questionName);
+
+      String answerStr = BatfishObjectMapper.writePrettyString(answer);
+
+      return successResponse(response.put(CoordConsts.SVC_KEY_ANSWER, answerStr));
+    } catch (IllegalArgumentException | AccessControlException e) {
+      _logger.errorf("WMS:getAnalysisAnswer exception: %s\n", e.getMessage());
+      return failureResponse(e.getMessage());
+    } catch (Exception e) {
+      String stackTrace = Throwables.getStackTraceAsString(e);
+      _logger.errorf(
+          "WMS:getAnalysisAnswer exception for apikey:%s in network:%s, snapshot:%s, "
+              + "deltasnapshot:%s; exception:%s",
+          apiKey,
+          networkName,
+          snapshotName,
+          deltaSnapshot == null ? "" : deltaSnapshot,
+          stackTrace);
+      return failureResponse(e.getMessage());
+    }
+  }
+
+  /**
    * Get answers for a previously run analysis
    *
    * @param apiKey The API key of the client

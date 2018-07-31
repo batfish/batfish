@@ -617,6 +617,60 @@ public class WorkMgr extends AbstractCoordinator {
     CommonUtil.deleteDirectory(qDir);
   }
 
+  public String getAnalysisAnswer(
+      String containerName,
+      String baseTestrig,
+      String baseEnv,
+      String deltaTestrig,
+      String deltaEnv,
+      String analysisName,
+      String questionName)
+      throws JsonProcessingException {
+    Path analysisDir = getdirContainerAnalysis(containerName, analysisName);
+    Path testrigDir = getdirTestrig(containerName, baseTestrig);
+
+    String answer = "unknown";
+    Path questionFile =
+        analysisDir.resolve(
+            Paths.get(
+                BfConsts.RELPATH_QUESTIONS_DIR, questionName, BfConsts.RELPATH_QUESTION_FILE));
+    if (!Files.exists(questionFile)) {
+      throw new BatfishException("Question file for question " + questionName + "not found");
+    }
+    Path answerDir =
+        testrigDir.resolve(
+            Paths.get(
+                BfConsts.RELPATH_ANALYSES_DIR,
+                analysisName,
+                BfConsts.RELPATH_QUESTIONS_DIR,
+                questionName,
+                BfConsts.RELPATH_ENVIRONMENTS_DIR,
+                baseEnv));
+    if (deltaTestrig != null) {
+      answerDir = answerDir.resolve(Paths.get(BfConsts.RELPATH_DELTA, deltaTestrig, deltaEnv));
+    }
+    Path answerFile = answerDir.resolve(BfConsts.RELPATH_ANSWER_JSON);
+    if (!Files.exists(answerFile)) {
+      Answer ans = Answer.failureAnswer("Not answered", null);
+      ans.setStatus(AnswerStatus.NOTFOUND);
+      answer = BatfishObjectMapper.writePrettyString(ans);
+    } else {
+      boolean answerIsStale;
+      answerIsStale =
+          CommonUtil.getLastModifiedTime(questionFile)
+                  .compareTo(CommonUtil.getLastModifiedTime(answerFile))
+              > 0;
+      if (answerIsStale) {
+        Answer ans = Answer.failureAnswer("Not fresh", null);
+        ans.setStatus(AnswerStatus.STALE);
+        answer = BatfishObjectMapper.writePrettyString(ans);
+      } else {
+        answer = CommonUtil.readFile(answerFile);
+      }
+    }
+    return answer;
+  }
+
   public Map<String, String> getAnalysisAnswers(
       String containerName,
       String baseTestrig,
@@ -625,52 +679,65 @@ public class WorkMgr extends AbstractCoordinator {
       String deltaEnv,
       String analysisName)
       throws JsonProcessingException {
-    Path analysisDir = getdirContainerAnalysis(containerName, analysisName);
-    Path testrigDir = getdirTestrig(containerName, baseTestrig);
+    //    Path analysisDir = getdirContainerAnalysis(containerName, analysisName);
+    //    Path testrigDir = getdirTestrig(containerName, baseTestrig);
     SortedSet<String> questions = listAnalysisQuestions(containerName, analysisName);
     Map<String, String> retMap = new TreeMap<>();
     for (String questionName : questions) {
-      String answer = "unknown";
-      Path questionFile =
-          analysisDir.resolve(
-              Paths.get(
-                  BfConsts.RELPATH_QUESTIONS_DIR, questionName, BfConsts.RELPATH_QUESTION_FILE));
-      if (!Files.exists(questionFile)) {
-        throw new BatfishException("Question file for question " + questionName + "not found");
-      }
-      Path answerDir =
-          testrigDir.resolve(
-              Paths.get(
-                  BfConsts.RELPATH_ANALYSES_DIR,
-                  analysisName,
-                  BfConsts.RELPATH_QUESTIONS_DIR,
-                  questionName,
-                  BfConsts.RELPATH_ENVIRONMENTS_DIR,
-                  baseEnv));
-      if (deltaTestrig != null) {
-        answerDir = answerDir.resolve(Paths.get(BfConsts.RELPATH_DELTA, deltaTestrig, deltaEnv));
-      }
-      Path answerFile = answerDir.resolve(BfConsts.RELPATH_ANSWER_JSON);
-      if (!Files.exists(answerFile)) {
-        Answer ans = Answer.failureAnswer("Not answered", null);
-        ans.setStatus(AnswerStatus.NOTFOUND);
-        answer = BatfishObjectMapper.writePrettyString(ans);
-      } else {
-        boolean answerIsStale;
-        answerIsStale =
-            CommonUtil.getLastModifiedTime(questionFile)
-                    .compareTo(CommonUtil.getLastModifiedTime(answerFile))
-                > 0;
-        if (answerIsStale) {
-          Answer ans = Answer.failureAnswer("Not fresh", null);
-          ans.setStatus(AnswerStatus.STALE);
-          answer = BatfishObjectMapper.writePrettyString(ans);
-        } else {
-          answer = CommonUtil.readFile(answerFile);
-        }
-      }
+      //      String answer = "unknown";
+      //      Path questionFile =
+      //          analysisDir.resolve(
+      //              Paths.get(
+      //                  BfConsts.RELPATH_QUESTIONS_DIR, questionName,
+      // BfConsts.RELPATH_QUESTION_FILE));
+      //      if (!Files.exists(questionFile)) {
+      //        throw new BatfishException("Question file for question " + questionName + "not
+      // found");
+      //      }
+      //      Path answerDir =
+      //          testrigDir.resolve(
+      //              Paths.get(
+      //                  BfConsts.RELPATH_ANALYSES_DIR,
+      //                  analysisName,
+      //                  BfConsts.RELPATH_QUESTIONS_DIR,
+      //                  questionName,
+      //                  BfConsts.RELPATH_ENVIRONMENTS_DIR,
+      //                  baseEnv));
+      //      if (deltaTestrig != null) {
+      //        answerDir = answerDir.resolve(Paths.get(BfConsts.RELPATH_DELTA, deltaTestrig,
+      // deltaEnv));
+      //      }
+      //      Path answerFile = answerDir.resolve(BfConsts.RELPATH_ANSWER_JSON);
+      //      if (!Files.exists(answerFile)) {
+      //        Answer ans = Answer.failureAnswer("Not answered", null);
+      //        ans.setStatus(AnswerStatus.NOTFOUND);
+      //        answer = BatfishObjectMapper.writePrettyString(ans);
+      //      } else {
+      //        boolean answerIsStale;
+      //        answerIsStale =
+      //            CommonUtil.getLastModifiedTime(questionFile)
+      //                    .compareTo(CommonUtil.getLastModifiedTime(answerFile))
+      //                > 0;
+      //        if (answerIsStale) {
+      //          Answer ans = Answer.failureAnswer("Not fresh", null);
+      //          ans.setStatus(AnswerStatus.STALE);
+      //          answer = BatfishObjectMapper.writePrettyString(ans);
+      //        } else {
+      //          answer = CommonUtil.readFile(answerFile);
+      //        }
+      //      }
 
-      retMap.put(questionName, answer);
+      // retMap.put(questionName, answer);
+      retMap.put(
+          questionName,
+          getAnalysisAnswer(
+              containerName,
+              baseTestrig,
+              baseEnv,
+              deltaTestrig,
+              deltaEnv,
+              analysisName,
+              questionName));
     }
     return retMap;
   }
