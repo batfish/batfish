@@ -1,6 +1,7 @@
 package org.batfish.datamodel.matchers;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.eigrp.EigrpInterfaceSettings;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
@@ -12,6 +13,7 @@ final class EigrpInterfaceSettingsMatchersImpl {
     }
 
     @Override
+    @Nullable
     protected Long featureValueOf(EigrpInterfaceSettings actual) {
       return actual.getAsNumber();
     }
@@ -23,8 +25,21 @@ final class EigrpInterfaceSettingsMatchersImpl {
     }
 
     @Override
+    @Nullable
     protected Double featureValueOf(EigrpInterfaceSettings actual) {
       return actual.getDelay();
+    }
+  }
+
+  static final class HasCost extends FeatureMatcher<EigrpInterfaceSettings, Long> {
+    public HasCost(@Nonnull Matcher<? super Long> subMatcher) {
+      super(subMatcher, "An EigrpInterfaceSettings with delay:", "delay");
+    }
+
+    @Override
+    @Nullable
+    protected Long featureValueOf(EigrpInterfaceSettings actual) {
+      return actual.getMetric() != null ? actual.getMetric().getCost() : null;
     }
   }
 
@@ -36,6 +51,17 @@ final class EigrpInterfaceSettingsMatchersImpl {
     @Override
     protected Boolean featureValueOf(EigrpInterfaceSettings actual) {
       return actual.getEnabled();
+    }
+  }
+
+  static final class HasPassive extends FeatureMatcher<EigrpInterfaceSettings, Boolean> {
+    public HasPassive(@Nonnull Matcher<? super Boolean> subMatcher) {
+      super(subMatcher, "An EigrpInterfaceSettings with passive:", "passive");
+    }
+
+    @Override
+    protected Boolean featureValueOf(EigrpInterfaceSettings actual) {
+      return actual.getPassive();
     }
   }
 }

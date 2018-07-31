@@ -742,6 +742,20 @@ public class CiscoGrammarTest {
     assertThat(c, hasInterface("Ethernet3", hasEigrp(EigrpInterfaceSettingsMatchers.hasAsn(2L))));
     assertThat(c, hasInterface("Ethernet4", hasEigrp(EigrpInterfaceSettingsMatchers.hasAsn(2L))));
     assertThat(c, hasInterface("Ethernet5", hasEigrp(EigrpInterfaceSettingsMatchers.hasAsn(2L))));
+
+    /* Passive interfaces are configured correctly */
+    assertThat(
+        c, hasInterface("Ethernet0", hasEigrp(EigrpInterfaceSettingsMatchers.hasPassive(false))));
+    assertThat(
+        c, hasInterface("Ethernet1", hasEigrp(EigrpInterfaceSettingsMatchers.hasPassive(false))));
+    assertThat(
+        c, hasInterface("Ethernet2", hasEigrp(EigrpInterfaceSettingsMatchers.hasPassive(true))));
+    assertThat(
+        c, hasInterface("Ethernet3", hasEigrp(EigrpInterfaceSettingsMatchers.hasPassive(false))));
+    assertThat(
+        c, hasInterface("Ethernet4", hasEigrp(EigrpInterfaceSettingsMatchers.hasPassive(false))));
+    assertThat(
+        c, hasInterface("Ethernet5", hasEigrp(EigrpInterfaceSettingsMatchers.hasPassive(true))));
   }
 
   @Test
@@ -834,9 +848,9 @@ public class CiscoGrammarTest {
   public void testIosInterfaceDelay() throws IOException {
     Configuration c = parseConfig("ios-interface-delay");
 
-    assertThat(c, hasInterface("GigabitEthernet0/0", hasEigrp(hasDelay(1E4))));
+    assertThat(c, hasInterface("GigabitEthernet0/0", hasEigrp(hasDelay(1E7))));
     assertThat(c, hasInterface("GigabitEthernet0/1", hasEigrp(hasDelay(1E10))));
-    assertThat(c, hasInterface("FastEthernet0/1", hasEigrp(hasDelay(1E5))));
+    assertThat(c, hasInterface("FastEthernet0/1", hasEigrp(hasDelay(1E8))));
   }
 
   @Test

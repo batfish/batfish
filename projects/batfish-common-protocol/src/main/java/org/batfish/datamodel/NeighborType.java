@@ -8,6 +8,7 @@ import org.batfish.common.BatfishException;
 
 public enum NeighborType {
   EBGP("ebgp"),
+  EIGRP("eigrp"),
   IBGP("ibgp"),
   LAN("lan"),
   LAYER1("layer1"),
