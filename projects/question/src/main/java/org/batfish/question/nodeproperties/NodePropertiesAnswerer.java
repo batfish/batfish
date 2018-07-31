@@ -58,12 +58,12 @@ public class NodePropertiesAnswerer extends Answerer {
                     .collect(Collectors.toList()))
             .build();
 
+    String textDesc = String.format("Properties of node ${%s}.", COL_NODE);
     DisplayHints dhints = question.getDisplayHints();
-    if (dhints == null) {
-      dhints = new DisplayHints();
-      dhints.setTextDesc(String.format("Properties of node ${%s}.", COL_NODE));
+    if (dhints != null && dhints.getTextDesc() != null) {
+      textDesc = dhints.getTextDesc();
     }
-    return new TableMetadata(columnMetadata, dhints);
+    return new TableMetadata(columnMetadata, textDesc);
   }
 
   @Override
