@@ -10,6 +10,7 @@ import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Prefix;
 import org.batfish.symbolic.Graph;
 import org.batfish.symbolic.bdd.BDDNetwork;
+import org.batfish.symbolic.bdd.BDDPacket;
 import org.batfish.symbolic.utils.Tuple;
 
 public class NetworkSlice {
@@ -32,8 +33,9 @@ public class NetworkSlice {
     this._isDefaultCase = isDefaultCase;
   }
 
-  public static List<Supplier<NetworkSlice>> allSlices(DestinationClasses dcs, int fails) {
-    BDDNetwork network = BDDNetwork.create(dcs.getGraph());
+  public static List<Supplier<NetworkSlice>> allSlices(
+      BDDPacket packet, DestinationClasses dcs, int fails) {
+    BDDNetwork network = BDDNetwork.create(packet, dcs.getGraph());
     ArrayList<Supplier<NetworkSlice>> classes = new ArrayList<>();
     for (Entry<Set<String>, Tuple<HeaderSpace, Tuple<List<Prefix>, Boolean>>> entry :
         dcs.getHeaderspaceMap().entrySet()) {

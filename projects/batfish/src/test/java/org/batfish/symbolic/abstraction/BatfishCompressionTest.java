@@ -42,6 +42,7 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
+import org.batfish.symbolic.bdd.BDDPacket;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
@@ -110,7 +111,8 @@ public class BatfishCompressionTest {
     TemporaryFolder tmp = new TemporaryFolder();
     tmp.create();
     IBatfish batfish = BatfishTestUtils.getBatfish(new TreeMap<>(configs), tmp);
-    return new TreeMap<>(new BatfishCompressor(batfish, configs).compress(headerSpace));
+    return new TreeMap<>(
+        new BatfishCompressor(new BDDPacket(), batfish, configs).compress(headerSpace));
   }
 
   /**

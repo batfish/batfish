@@ -80,14 +80,16 @@ public class BDDReachabilityAnalysis {
   private Set<StateExpr> _leafStates;
 
   BDDReachabilityAnalysis(
-      Map<StateExpr, BDD> graphRoots, Map<StateExpr, Map<StateExpr, Edge>> transitions) {
-    _bddPacket = new BDDPacket();
+      BDDPacket packet,
+      Map<StateExpr, BDD> graphRoots,
+      Map<StateExpr, Map<StateExpr, Edge>> transitions) {
+    _bddPacket = packet;
     _edges = computeEdges(graphRoots, transitions);
     _reverseEdges = computeReverseEdges(_edges);
     _graphRoots = ImmutableMap.copyOf(graphRoots);
     _reverseReachableStates = Suppliers.memoize(this::computeReverseReachableStates);
     _leafStates = computeTerminalStates();
-    _srcIpVars = new BDDOps(BDDPacket.factory).and(_bddPacket.getSrcIp().getBitvec());
+    _srcIpVars = new BDDOps(_bddPacket.getFactory()).and(_bddPacket.getSrcIp().getBitvec());
   }
 
   private static Map<StateExpr, Map<StateExpr, Edge>> computeEdges(
@@ -141,7 +143,7 @@ public class BDDReachabilityAnalysis {
     List<StateExpr> leaves =
         ImmutableList.of(Accept.INSTANCE, Drop.INSTANCE, NeighborUnreachable.INSTANCE);
     for (StateExpr leaf : leaves) {
-      reverseReachableStates.put(leaf, ImmutableMap.of(leaf, BDDPacket.factory.one()));
+      reverseReachableStates.put(leaf, ImmutableMap.of(leaf, _bddPacket.getFactory().one()));
       dirty.put(leaf, leaf);
     }
 
@@ -163,7 +165,8 @@ public class BDDReachabilityAnalysis {
             BDD postStateBDD = reverseReachableStates.get(postState).get(leaf);
             postStateInEdges.forEach(
                 (preState, edge) -> {
-                  BDD result = postStateBDD.and(edge.getConstraint());
+                  BDD constraint = edge.getConstraint();
+                  BDD result = constraint == null ? postStateBDD : postStateBDD.and(constraint);
                   if (result.isZero()) {
                     return;
                   }

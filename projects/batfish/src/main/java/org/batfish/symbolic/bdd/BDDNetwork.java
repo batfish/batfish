@@ -21,6 +21,8 @@ import org.batfish.symbolic.abstraction.InterfacePolicy;
 
 public class BDDNetwork {
 
+  private final BDDPacket _pkt;
+
   private Graph _graph;
 
   private NodesSpecifier _nodeSpecifier;
@@ -39,20 +41,21 @@ public class BDDNetwork {
 
   private Map<GraphEdge, BDDAcl> _outAcls;
 
-  public static BDDNetwork create(Graph g) {
-    return create(g, NodesSpecifier.ALL);
+  public static BDDNetwork create(BDDPacket pkt, Graph g) {
+    return create(pkt, g, NodesSpecifier.ALL);
   }
 
-  public static BDDNetwork create(Graph g, NodesSpecifier nodesSpecifier) {
+  public static BDDNetwork create(BDDPacket pkt, Graph g, NodesSpecifier nodesSpecifier) {
     PolicyQuotient pq = new PolicyQuotient(g);
-    BDDNetwork network = new BDDNetwork(g, nodesSpecifier, pq);
+    BDDNetwork network = new BDDNetwork(pkt, g, nodesSpecifier, pq);
     network.computeInterfacePolicies();
     return network;
   }
 
-  private BDDNetwork(Graph graph, NodesSpecifier nodesSpecifier, PolicyQuotient pq) {
+  private BDDNetwork(BDDPacket pkt, Graph graph, NodesSpecifier nodesSpecifier, PolicyQuotient pq) {
     _graph = graph;
     _nodeSpecifier = nodesSpecifier;
+    _pkt = pkt;
     _policyQuotient = pq;
     _importPolicyMap = new HashMap<>();
     _exportPolicyMap = new HashMap<>();
@@ -107,12 +110,12 @@ public class BDDNetwork {
 
         // Incoming ACL
         if (in != null) {
-          BDDAcl x = BDDAcl.create(in, conf.getIpAccessLists(), conf.getIpSpaces());
+          BDDAcl x = BDDAcl.create(_pkt, in, conf.getIpAccessLists(), conf.getIpSpaces());
           _inAcls.put(ge, x);
         }
         // Outgoing ACL
         if (out != null) {
-          BDDAcl x = BDDAcl.create(out, conf.getIpAccessLists(), conf.getIpSpaces());
+          BDDAcl x = BDDAcl.create(_pkt, out, conf.getIpAccessLists(), conf.getIpSpaces());
           _outAcls.put(ge, x);
         }
       }

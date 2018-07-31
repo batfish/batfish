@@ -32,16 +32,16 @@ public class BDDIpAccessListSpecializerTest {
   private static final BDDPacket PKT = new BDDPacket();
 
   private static final IpSpaceToBDD DST_IP_SPACE_TO_BDD =
-      new IpSpaceToBDD(BDDPacket.factory, PKT.getDstIp());
+      new IpSpaceToBDD(PKT.getFactory(), PKT.getDstIp());
 
   private static final IpAccessListSpecializer EMPTY_HEADERSPACE_SPECIALIZER =
-      new BDDIpAccessListSpecializer(PKT, BDDPacket.factory.zero(), ImmutableMap.of());
+      new BDDIpAccessListSpecializer(PKT, PKT.getFactory().zero(), ImmutableMap.of());
 
   private static final IpAccessListSpecializer FULL_HEADERSPACE_SPECIALIZER =
-      new BDDIpAccessListSpecializer(PKT, BDDPacket.factory.one(), ImmutableMap.of());
+      new BDDIpAccessListSpecializer(PKT, PKT.getFactory().one(), ImmutableMap.of());
 
   private static final IpSpaceToBDD SRC_IP_SPACE_TO_BDD =
-      new IpSpaceToBDD(BDDPacket.factory, PKT.getSrcIp());
+      new IpSpaceToBDD(PKT.getFactory(), PKT.getSrcIp());
 
   private static final HeaderSpace UNCONSTRAINED = HeaderSpace.builder().build();
 
