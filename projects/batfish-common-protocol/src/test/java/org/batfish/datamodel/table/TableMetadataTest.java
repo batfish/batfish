@@ -22,6 +22,6 @@ public class TableMetadataTest {
     _thrown.expect(IllegalArgumentException.class);
     _thrown.expectMessage("Cannot have two columns with the same name");
 
-    new TableMetadata(columns, null);
+    new TableMetadata(columns, "desc");
   }
 }

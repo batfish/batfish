@@ -12,7 +12,6 @@ import org.batfish.datamodel.answers.ParseStatus;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
-import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.Rows;
@@ -77,12 +76,10 @@ class FileParseStatusAnswerer extends Answerer {
               false,
               true));
 
-  private static final DisplayHints DISPLAY_HINTS =
-      new DisplayHints()
-          .setTextDesc(
-              String.format(
-                  "File ${%s} parsed with status ${%s} and produced hosts ${%s}",
-                  COL_FILENAME, COL_PARSE_STATUS, COL_HOSTS));
+  private static final String TEXT_DESC =
+      String.format(
+          "File ${%s} parsed with status ${%s} and produced hosts ${%s}",
+          COL_FILENAME, COL_PARSE_STATUS, COL_HOSTS);
 
-  private static final TableMetadata TABLE_METADATA = new TableMetadata(METADATA, DISPLAY_HINTS);
+  private static final TableMetadata TABLE_METADATA = new TableMetadata(METADATA, TEXT_DESC);
 }

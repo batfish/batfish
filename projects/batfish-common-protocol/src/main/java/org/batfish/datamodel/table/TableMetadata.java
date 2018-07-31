@@ -21,20 +21,15 @@ public class TableMetadata {
 
   private static final String PROP_DISPLAY_HINTS = "displayHints";
 
+  private static final String PROP_TEXT_DESC = "textDesc";
+
   @Nonnull private List<ColumnMetadata> _columnMetadata;
 
-  @Nullable private DisplayHints _displayHints;
+  @Nullable private String _textDesc;
 
-  public TableMetadata() {
-    this(null, null);
-  }
-
-  @JsonCreator
-  public TableMetadata(
-      @Nullable @JsonProperty(PROP_COLUMN_METADATA) List<ColumnMetadata> columnMetadata,
-      @Nullable @JsonProperty(PROP_DISPLAY_HINTS) DisplayHints displayHints) {
+  public TableMetadata(@Nullable List<ColumnMetadata> columnMetadata, @Nullable String textDesc) {
     _columnMetadata = ImmutableList.copyOf(firstNonNull(columnMetadata, ImmutableList.of()));
-    _displayHints = displayHints;
+    _textDesc = textDesc;
 
     // check if there is a duplicate column name
     Set<String> duplicateCheckSet = new HashSet<>();
@@ -44,6 +39,25 @@ public class TableMetadata {
             "Cannot have two columns with the same name '" + cm.getName() + "'");
       }
     }
+  }
+
+  @Deprecated
+  public TableMetadata(
+      @Nullable List<ColumnMetadata> columnMetadata, @Nullable DisplayHints displayHints) {
+    this(columnMetadata, displayHints != null ? displayHints.getTextDesc() : null);
+  }
+
+  @JsonCreator
+  private static TableMetadata jsonCreator(
+      @Nullable @JsonProperty(PROP_COLUMN_METADATA) List<ColumnMetadata> columnMetadata,
+      @Nullable @JsonProperty(PROP_DISPLAY_HINTS) DisplayHints displayHints,
+      @Nullable @JsonProperty(PROP_TEXT_DESC) String textDesc) {
+    String usedTextDesc = textDesc;
+    if (usedTextDesc == null && displayHints != null) {
+      usedTextDesc = displayHints.getTextDesc();
+    }
+
+    return new TableMetadata(columnMetadata, usedTextDesc);
   }
 
   /**
@@ -65,7 +79,7 @@ public class TableMetadata {
       return false;
     }
     return Objects.equals(_columnMetadata, ((TableMetadata) o)._columnMetadata)
-        && Objects.equals(_displayHints, ((TableMetadata) o)._displayHints);
+        && Objects.equals(_textDesc, ((TableMetadata) o)._textDesc);
   }
 
   @JsonProperty(PROP_COLUMN_METADATA)
@@ -73,19 +87,19 @@ public class TableMetadata {
     return _columnMetadata;
   }
 
-  @JsonProperty(PROP_DISPLAY_HINTS)
-  public DisplayHints getDisplayHints() {
-    return _displayHints;
+  @JsonProperty(PROP_TEXT_DESC)
+  public String getTextDesc() {
+    return _textDesc;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_columnMetadata, _displayHints);
+    return Objects.hash(_columnMetadata, _textDesc);
   }
 
   @Override
   public String toString() {
-    return _columnMetadata.toString() + " " + Objects.toString(_displayHints);
+    return _columnMetadata.toString() + (_textDesc != null ? " " + _textDesc : "");
   }
 
   /** Returns a map from column name to {@link ColumnMetadata} */

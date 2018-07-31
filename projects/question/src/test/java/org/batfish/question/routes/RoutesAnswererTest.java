@@ -60,7 +60,6 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
-import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.question.routes.RoutesQuestion.RibProtocol;
@@ -308,12 +307,11 @@ public class RoutesAnswererTest {
   }
 
   @Test
-  public void testHasDisplayHints() {
-    DisplayHints dh = getTableMetadata(RibProtocol.ALL).getDisplayHints();
+  public void testHasTextDesc() {
+    String textDesc = getTableMetadata(RibProtocol.ALL).getTextDesc();
 
-    assert dh != null;
-    assertThat(dh.getTextDesc(), notNullValue());
-    assertThat(dh.getTextDesc(), not(emptyString()));
+    assertThat(textDesc, notNullValue());
+    assertThat(textDesc, not(emptyString()));
   }
 
   static class MockBatfish extends IBatfishTestAdapter {
