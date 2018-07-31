@@ -75,12 +75,14 @@ public class CommunityHalvesExpr extends CommunitySetExpr {
 
   @Override
   public boolean matchCommunities(Environment environment, Set<Long> communitySetCandidate) {
-    return communitySetCandidate.stream().anyMatch(communityCandidate -> matchCommunity(environment, communityCandidate));
+    return communitySetCandidate
+        .stream()
+        .anyMatch(communityCandidate -> matchCommunity(environment, communityCandidate));
   }
 
   @Override
   public boolean matchCommunity(Environment environment, long community) {
-    return _left.matches((int)(community >> 16)) && _right.matches((int)(community & 0xFFFFL));
+    return _left.matches((int) (community >> 16)) && _right.matches((int) (community & 0xFFFFL));
   }
 
   @Override

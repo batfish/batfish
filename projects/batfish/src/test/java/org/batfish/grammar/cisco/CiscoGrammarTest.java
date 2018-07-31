@@ -1773,7 +1773,7 @@ public class CiscoGrammarTest {
   @Test
   public void testCommunityListConversion() throws IOException {
     // TODO: https://github.com/batfish/batfish/issues/1993
-    
+
     String testrigName = "community-list-conversion";
     String iosName = "ios";
     String nxosName = "nxos";
@@ -1827,8 +1827,7 @@ public class CiscoGrammarTest {
     long nxosStdInternet = communityListToCommunity(nxosCommunityLists, "nxos_std_internet");
     long nxosStdLocalAs = communityListToCommunity(nxosCommunityLists, "nxos_std_local_AS");
     long nxosStdNoAdv = communityListToCommunity(nxosCommunityLists, "nxos_std_no_adv");
-    long nxosStdNoExport =
-        communityListToCommunity(nxosCommunityLists, "nxos_std_no_export");
+    long nxosStdNoExport = communityListToCommunity(nxosCommunityLists, "nxos_std_no_export");
     String nxosRegexExpMulti = communityListToRegex(nxosCommunityLists, "nxos_exp_multi");
 
     // check literal communities
@@ -2243,10 +2242,11 @@ public class CiscoGrammarTest {
                 hasIkePhase1Proposals(equalTo(ImmutableList.of("10", "20"))))));
   }
 
-  private static CommunitySetExpr communityListToMatchCondition(SortedMap<String, CommunityList> communityLists, String communityName) {
+  private static CommunitySetExpr communityListToMatchCondition(
+      SortedMap<String, CommunityList> communityLists, String communityName) {
     return communityLists.get(communityName).getLines().get(0).getMatchCondition();
   }
-  
+
   private static long communityListToCommunity(
       SortedMap<String, CommunityList> communityLists, String communityName) {
     return communityLists
@@ -2260,11 +2260,9 @@ public class CiscoGrammarTest {
 
   private static @Nonnull String communityListToRegex(
       SortedMap<String, CommunityList> communityLists, String communityName) {
-    return ((RegexCommunitySet)communityLists
-        .get(communityName)
-        .getLines()
-        .get(0)
-        .getMatchCondition()).getRegex();
+    return ((RegexCommunitySet)
+            communityLists.get(communityName).getLines().get(0).getMatchCondition())
+        .getRegex();
   }
 
   @Test

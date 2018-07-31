@@ -24,14 +24,14 @@ public class LiteralCommunityHalf implements CommunityHalfExpr {
     if (!(obj instanceof LiteralCommunityHalf)) {
       return false;
     }
-    return _value == ((LiteralCommunityHalf)obj)._value;
+    return _value == ((LiteralCommunityHalf) obj)._value;
   }
-  
+
   @Override
   public int hashCode() {
     return _value;
   }
-  
+
   private final int _value;
 
   public LiteralCommunityHalf(int value) {

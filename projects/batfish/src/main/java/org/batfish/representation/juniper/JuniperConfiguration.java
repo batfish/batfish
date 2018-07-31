@@ -1124,7 +1124,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
       String regex = line.getRegex();
       String javaRegex = communityRegexToJavaRegex(regex);
       org.batfish.datamodel.CommunityListLine newLine =
-          new org.batfish.datamodel.CommunityListLine(LineAction.ACCEPT, new RegexCommunitySet(javaRegex));
+          new org.batfish.datamodel.CommunityListLine(
+              LineAction.ACCEPT, new RegexCommunitySet(javaRegex));
       newLines.add(newLine);
     }
     org.batfish.datamodel.CommunityList newCl =

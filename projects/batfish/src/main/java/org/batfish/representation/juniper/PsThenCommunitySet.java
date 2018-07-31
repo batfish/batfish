@@ -34,7 +34,8 @@ public final class PsThenCommunitySet extends PsThen {
       org.batfish.datamodel.CommunityList list = c.getCommunityLists().get(_name);
       // assuming this is a valid community list for setting, the regex value
       // just retrieved should just be an explicit community
-      long community = list.getLines().get(0).getMatchCondition().asLiteralCommunities(null).first();
+      long community =
+          list.getLines().get(0).getMatchCondition().asLiteralCommunities(null).first();
       statements.add(new SetCommunity(new LiteralCommunity(community)));
     }
   }

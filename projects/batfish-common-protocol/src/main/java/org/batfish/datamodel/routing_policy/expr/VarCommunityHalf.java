@@ -12,9 +12,9 @@ public class VarCommunityHalf implements CommunityHalfExpr {
   private static final String PROP_VAR = "var";
 
   private static final long serialVersionUID = 1L;
-  
+
   @JsonCreator
-  private static @Nonnull VarCommunityHalf create(@JsonProperty(PROP_VAR)String var) {
+  private static @Nonnull VarCommunityHalf create(@JsonProperty(PROP_VAR) String var) {
     return new VarCommunityHalf(requireNonNull(var));
   }
 
@@ -37,12 +37,13 @@ public class VarCommunityHalf implements CommunityHalfExpr {
     if (!(obj instanceof VarCommunityHalf)) {
       return false;
     }
-    return _var.equals(((VarCommunityHalf)obj)._var);
+    return _var.equals(((VarCommunityHalf) obj)._var);
   }
 
   @JsonProperty(PROP_VAR)
   public @Nonnull String getVar() {
-  return _var;}
+    return _var;
+  }
 
   @Override
   public int hashCode() {

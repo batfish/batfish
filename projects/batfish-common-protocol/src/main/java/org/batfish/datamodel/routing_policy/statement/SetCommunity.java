@@ -13,7 +13,7 @@ public class SetCommunity extends Statement {
   private static final long serialVersionUID = 1L;
 
   public static final SetCommunity NONE = new SetCommunity(EmptyCommunitySetExpr.INSTANCE);
-  
+
   private CommunitySetExpr _expr;
 
   @JsonCreator

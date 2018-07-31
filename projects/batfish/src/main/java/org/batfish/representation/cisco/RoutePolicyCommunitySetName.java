@@ -12,8 +12,7 @@ public class RoutePolicyCommunitySetName extends RoutePolicyCommunitySet {
 
   private final String _name;
 
-  public RoutePolicyCommunitySetName(
-      @Nonnull String name) {
+  public RoutePolicyCommunitySetName(@Nonnull String name) {
     _name = name;
   }
 

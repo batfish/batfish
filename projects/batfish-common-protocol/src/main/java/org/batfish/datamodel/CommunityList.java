@@ -125,7 +125,7 @@ public class CommunityList extends CommunitySetExpr {
     _dynamic = Suppliers.memoize(new DynamicSupplier());
     _reducible = Suppliers.memoize(new ReducibleSupplier());
   }
-  
+
   @Override
   public @Nonnull SortedSet<Long> asLiteralCommunities(Environment environment)
       throws UnsupportedOperationException {
