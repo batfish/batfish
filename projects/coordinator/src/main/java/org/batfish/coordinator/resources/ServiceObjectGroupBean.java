@@ -1,5 +1,7 @@
 package org.batfish.coordinator.resources;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
@@ -38,6 +40,7 @@ public class ServiceObjectGroupBean {
   }
 
   public ServiceObjectGroup toServiceObjectGroup() {
-    return new ServiceObjectGroup(name, ImmutableSortedSet.copyOf(services));
+    return new ServiceObjectGroup(
+        name, ImmutableSortedSet.copyOf(firstNonNull(services, ImmutableSet.of())));
   }
 }

@@ -4,7 +4,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
@@ -36,6 +36,8 @@ public class ReferenceLibrary {
 
   private static final Pattern _NAME_PATTERN = Pattern.compile(NAME_PATTERN);
 
+  private static final String PROP_BOOKS = "books";
+
   @Nonnull private SortedSet<ReferenceBook> _books;
 
   /**
@@ -43,7 +45,7 @@ public class ReferenceLibrary {
    * removing duplicate entries.
    */
   @JsonCreator
-  public ReferenceLibrary(List<ReferenceBook> books) {
+  public ReferenceLibrary(@JsonProperty(PROP_BOOKS) List<ReferenceBook> books) {
     List<ReferenceBook> nnBooks = firstNonNull(books, ImmutableList.of());
     checkDuplicates(
         "book", nnBooks.stream().map(ReferenceBook::getName).collect(Collectors.toList()));
@@ -115,7 +117,7 @@ public class ReferenceLibrary {
     return data.getReferenceBook(bookName);
   }
 
-  @JsonValue
+  @JsonProperty(PROP_BOOKS)
   public SortedSet<ReferenceBook> getReferenceBooks() {
     return _books;
   }

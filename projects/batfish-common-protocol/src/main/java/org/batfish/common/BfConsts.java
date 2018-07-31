@@ -57,11 +57,9 @@ public class BfConsts {
   public static final String ARG_IGNORE_FILES_WITH_STRINGS = "ignorefileswithstrings";
   public static final String ARG_LOG_LEVEL = "loglevel";
   public static final String ARG_OUTPUT_ENV = "outputenv";
-  public static final String ARG_PEDANTIC_AS_ERROR = "pedanticerror";
   public static final String ARG_PEDANTIC_SUPPRESS = "pedanticsuppress";
   public static final String ARG_PRETTY_PRINT_ANSWER = "ppa";
   public static final String ARG_QUESTION_NAME = "questionname";
-  public static final String ARG_RED_FLAG_AS_ERROR = "redflagerror";
   public static final String ARG_RED_FLAG_SUPPRESS = "redflagsuppress";
   public static final String ARG_SSL_DISABLE = "ssldisable";
   public static final String ARG_SSL_KEYSTORE_FILE = "sslkeystorefile";
@@ -74,7 +72,6 @@ public class BfConsts {
   public static final String ARG_SYNTHESIZE_TOPOLOGY = "synthesizetopology";
   public static final String ARG_TASK_PLUGIN = "taskplugin";
   public static final String ARG_TESTRIG = "testrig";
-  public static final String ARG_UNIMPLEMENTED_AS_ERROR = "unimplementederror";
   public static final String ARG_UNIMPLEMENTED_SUPPRESS = "unimplementedsuppress";
   public static final String ARG_UNRECOGNIZED_AS_RED_FLAG = "urf";
   public static final String ARG_VERBOSE_PARSE = "verboseparse";
@@ -155,6 +152,7 @@ public class BfConsts {
   public static final String RELPATH_ORIGINAL_DIR = "original";
   public static final String RELPATH_PARSE_ANSWER_PATH = "parse_answer";
   public static final String RELPATH_REFERENCE_LIBRARY_PATH = "address_library.json";
+  public static final String RELPATH_SNAPSHOT_ZIP_FILE = "snapshot.zip";
   public static final String RELPATH_TESTRIG_POJO_TOPOLOGY_PATH = "testrig_pojo_topology";
   public static final String RELPATH_TESTRIG_ZIP_FILE = "testrig.zip";
   public static final String RELPATH_PRECOMPUTED_ROUTES = "precomputedroutes";

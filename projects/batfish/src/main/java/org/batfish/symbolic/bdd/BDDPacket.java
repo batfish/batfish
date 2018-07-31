@@ -1,5 +1,7 @@
 package org.batfish.symbolic.bdd;
 
+import static org.batfish.symbolic.bdd.BDDInteger.makeFromIndex;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -84,6 +86,8 @@ public class BDDPacket {
 
   private BDDInteger _ipProtocol;
 
+  private int _nextFreeBDDVarIdx = 0;
+
   private final BDDPairing _pairing;
 
   private BDDInteger _srcIp;
@@ -149,65 +153,25 @@ public class BDDPacket {
 
     _bitNames = new HashMap<>();
 
-    // Initialize integer values
-    int idx = 0;
-    _ipProtocol = BDDInteger.makeFromIndex(_factory, IP_PROTOCOL_LENGTH, idx, false);
-    addBitNames("ipProtocol", IP_PROTOCOL_LENGTH, idx, false);
-    idx += IP_PROTOCOL_LENGTH;
-    _dstIp = BDDInteger.makeFromIndex(_factory, IP_LENGTH, idx, true);
-    addBitNames("dstIp", IP_LENGTH, idx, true);
-    idx += IP_LENGTH;
-    _srcIp = BDDInteger.makeFromIndex(_factory, IP_LENGTH, idx, true);
-    addBitNames("srcIp", IP_LENGTH, idx, true);
-    idx += IP_LENGTH;
-    _dstPort = BDDInteger.makeFromIndex(_factory, PORT_LENGTH, idx, false);
-    addBitNames("dstPort", PORT_LENGTH, idx, false);
-    idx += PORT_LENGTH;
-    _srcPort = BDDInteger.makeFromIndex(_factory, PORT_LENGTH, idx, false);
-    addBitNames("srcPort", PORT_LENGTH, idx, false);
-    idx += PORT_LENGTH;
-    _icmpCode = BDDInteger.makeFromIndex(_factory, ICMP_CODE_LENGTH, idx, false);
-    addBitNames("icmpCode", ICMP_CODE_LENGTH, idx, false);
-    idx += ICMP_CODE_LENGTH;
-    _icmpType = BDDInteger.makeFromIndex(_factory, ICMP_TYPE_LENGTH, idx, false);
-    addBitNames("icmpType", ICMP_TYPE_LENGTH, idx, false);
-    idx += ICMP_TYPE_LENGTH;
-    _tcpAck = _factory.ithVar(idx);
-    _bitNames.put(idx, "tcpAck");
-    idx += TCP_FLAG_LENGTH;
-    _tcpCwr = _factory.ithVar(idx);
-    _bitNames.put(idx, "tcpCwr");
-    idx += TCP_FLAG_LENGTH;
-    _tcpEce = _factory.ithVar(idx);
-    _bitNames.put(idx, "tcpEce");
-    idx += TCP_FLAG_LENGTH;
-    _tcpFin = _factory.ithVar(idx);
-    _bitNames.put(idx, "tcpFin");
-    idx += TCP_FLAG_LENGTH;
-    _tcpPsh = _factory.ithVar(idx);
-    _bitNames.put(idx, "tcpPsh");
-    idx += TCP_FLAG_LENGTH;
-    _tcpRst = _factory.ithVar(idx);
-    _bitNames.put(idx, "tcpRst");
-    idx += TCP_FLAG_LENGTH;
-    _tcpSyn = _factory.ithVar(idx);
-    _bitNames.put(idx, "tcpSyn");
-    idx += TCP_FLAG_LENGTH;
-    _tcpUrg = _factory.ithVar(idx);
-    _bitNames.put(idx, "tcpUrg");
-    idx += TCP_FLAG_LENGTH;
-    _dscp = BDDInteger.makeFromIndex(_factory, DSCP_LENGTH, idx, false);
-    addBitNames("dscp", DSCP_LENGTH, idx, false);
-    idx += DSCP_LENGTH;
-    _ecn = BDDInteger.makeFromIndex(_factory, ECN_LENGTH, idx, false);
-    addBitNames("ecn", ECN_LENGTH, idx, false);
-    idx += ECN_LENGTH;
-    _fragmentOffset = BDDInteger.makeFromIndex(_factory, FRAGMENT_OFFSET_LENGTH, idx, false);
-    addBitNames("fragmentOffset", FRAGMENT_OFFSET_LENGTH, idx, false);
-    idx += FRAGMENT_OFFSET_LENGTH;
-    _state = BDDInteger.makeFromIndex(_factory, STATE_LENGTH, idx, false);
-    addBitNames("state", STATE_LENGTH, idx, false);
-    idx += STATE_LENGTH;
+    _ipProtocol = allocateBDDInteger("ipProtocol", IP_PROTOCOL_LENGTH, false);
+    _dstIp = allocateBDDInteger("dstIp", IP_LENGTH, true);
+    _srcIp = allocateBDDInteger("srcIp", IP_LENGTH, true);
+    _dstPort = allocateBDDInteger("dstPort", PORT_LENGTH, false);
+    _srcPort = allocateBDDInteger("srcPort", PORT_LENGTH, false);
+    _icmpCode = allocateBDDInteger("icmpCode", ICMP_CODE_LENGTH, false);
+    _icmpType = allocateBDDInteger("icmpType", ICMP_TYPE_LENGTH, false);
+    _tcpAck = allocateBDDBit("tcpAck");
+    _tcpCwr = allocateBDDBit("tcpCwr");
+    _tcpEce = allocateBDDBit("tcpEce");
+    _tcpFin = allocateBDDBit("tcpFin");
+    _tcpPsh = allocateBDDBit("tcpPsh");
+    _tcpRst = allocateBDDBit("tcpRst");
+    _tcpSyn = allocateBDDBit("tcpSyn");
+    _tcpUrg = allocateBDDBit("tcpUrg");
+    _dscp = allocateBDDInteger("dscp", DSCP_LENGTH, false);
+    _ecn = allocateBDDInteger("ecn", ECN_LENGTH, false);
+    _fragmentOffset = allocateBDDInteger("fragmentOffset", FRAGMENT_OFFSET_LENGTH, false);
+    _state = allocateBDDInteger("state", STATE_LENGTH, false);
   }
 
   /*
@@ -222,6 +186,47 @@ public class BDDPacket {
         _bitNames.put(i, s + (i - index + 1));
       }
     }
+  }
+
+  /**
+   * Allocate a new single-bit {@link BDD} variable.
+   *
+   * @param name Used for debugging.
+   * @return A {@link BDD} representing the sentence "this variable is true" for the new variable.
+   */
+  public BDD allocateBDDBit(String name) {
+    if (factory.varNum() < _nextFreeBDDVarIdx + 1) {
+      factory.setVarNum(_nextFreeBDDVarIdx + 1);
+    }
+    _bitNames.put(_nextFreeBDDVarIdx, name);
+    BDD bdd = factory.ithVar(_nextFreeBDDVarIdx);
+    _nextFreeBDDVarIdx++;
+    return bdd;
+  }
+
+  /**
+   * Allocate a new {@link BDDInteger} variable.
+   *
+   * @param name Used for debugging.
+   * @param bits The number of bits to allocate.
+   * @param reverse If true, reverse the BDD order of the bits.
+   * @return The new variable.
+   */
+  public BDDInteger allocateBDDInteger(String name, int bits, boolean reverse) {
+    if (factory.varNum() < _nextFreeBDDVarIdx + bits) {
+      factory.setVarNum(_nextFreeBDDVarIdx + bits);
+    }
+    BDDInteger var = makeFromIndex(factory, bits, _nextFreeBDDVarIdx, reverse);
+    addBitNames(name, STATE_LENGTH, _nextFreeBDDVarIdx, false);
+    _nextFreeBDDVarIdx += bits;
+    return var;
+  }
+
+  /*
+   * Convenience method for the copy constructor
+   */
+  public BDDPacket copy() {
+    return new BDDPacket(this);
   }
 
   /*

@@ -496,7 +496,7 @@ public class WorkMgr extends AbstractCoordinator {
       Map<String, String> questionsToAdd,
       List<String> questionsToDelete,
       @Nullable Boolean suggested) {
-    Path containerDir = getdirContainer(containerName);
+    Path containerDir = getdirNetwork(containerName);
     Path aDir = containerDir.resolve(BfConsts.RELPATH_ANALYSES_DIR).resolve(aName);
 
     this.configureAnalysisValidityCheck(
@@ -770,7 +770,7 @@ public class WorkMgr extends AbstractCoordinator {
 
   /** Return a {@link Container container} contains all testrigs directories inside it. */
   public Container getContainer(String containerName) {
-    return getContainer(getdirContainer(containerName));
+    return getContainer(getdirNetwork(containerName));
   }
 
   /** Return a {@link Container container} contains all testrigs directories inside it */
@@ -794,8 +794,8 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   @Override
-  public Path getdirContainer(String containerName) {
-    return getdirContainer(containerName, true);
+  public Path getdirNetwork(String networkName) {
+    return getdirContainer(networkName, true);
   }
 
   @Override
@@ -804,7 +804,7 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   @Override
-  public Set<String> getContainerNames() {
+  public Set<String> getNetworkNames() {
     Path containersDir = Main.getSettings().getContainersLocation();
     if (!Files.exists(containersDir)) {
       containersDir.toFile().mkdirs();
@@ -827,7 +827,7 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   private Path getdirContainerAnalysis(String containerName, String analysisName) {
-    Path containerDir = getdirContainer(containerName);
+    Path containerDir = getdirNetwork(containerName);
     Path aDir = containerDir.resolve(Paths.get(BfConsts.RELPATH_ANALYSES_DIR, analysisName));
     if (!Files.exists(aDir)) {
       throw new BatfishException(
@@ -837,7 +837,7 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   private Path getdirContainerQuestion(String containerName, String qName) {
-    Path containerDir = getdirContainer(containerName);
+    Path containerDir = getdirNetwork(containerName);
     Path qDir = containerDir.resolve(Paths.get(BfConsts.RELPATH_QUESTIONS_DIR, qName));
     if (!Files.exists(qDir)) {
       throw new BatfishException("Question '" + qName + "' does not exist");
@@ -855,16 +855,16 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   public Path getdirTestrig(String containerName, String testrigName) {
-    Path testrigDir = getdirTestrigs(containerName).resolve(Paths.get(testrigName));
-    if (!Files.exists(testrigDir)) {
+    Path snapshotDir = getdirSnapshots(containerName).resolve(Paths.get(testrigName));
+    if (!Files.exists(snapshotDir)) {
       throw new BatfishException("Testrig '" + testrigName + "' does not exist");
     }
-    return testrigDir;
+    return snapshotDir;
   }
 
   @Override
-  public Path getdirTestrigs(String containerName) {
-    return getdirContainer(containerName).resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR));
+  public Path getdirSnapshots(String networkName) {
+    return getdirNetwork(networkName).resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR));
   }
 
   /**
@@ -896,7 +896,7 @@ public class WorkMgr extends AbstractCoordinator {
 
   /** Gets the path of the node roles file */
   public Path getNodeRolesPath(String container) {
-    return getdirContainer(container).resolve(BfConsts.RELPATH_NODE_ROLES_PATH);
+    return getdirNetwork(container).resolve(BfConsts.RELPATH_NODE_ROLES_PATH);
   }
 
   /**
@@ -978,7 +978,7 @@ public class WorkMgr extends AbstractCoordinator {
 
   /** Gets the path of the reference library file */
   public Path getReferenceLibraryPath(String container) {
-    return getdirContainer(container).resolve(BfConsts.RELPATH_REFERENCE_LIBRARY_PATH);
+    return getdirNetwork(container).resolve(BfConsts.RELPATH_REFERENCE_LIBRARY_PATH);
   }
 
   public JSONObject getStatusJson() throws JSONException {
@@ -1104,8 +1104,8 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   @Override
-  public void initTestrig(
-      String containerName, String testrigName, Path srcDir, boolean autoAnalyze) {
+  public void initSnapshot(
+      String networkName, String snapshotName, Path srcDir, boolean autoAnalyze) {
     /*
      * Sanity check what we got:
      *    There should be just one top-level folder.
@@ -1119,8 +1119,8 @@ public class WorkMgr extends AbstractCoordinator {
     Path srcSubdir = srcDirEntries.iterator().next();
     SortedSet<Path> subFileList = CommonUtil.getEntries(srcSubdir);
 
-    Path containerDir = getdirContainer(containerName);
-    Path testrigDir = containerDir.resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR, testrigName));
+    Path containerDir = getdirNetwork(networkName);
+    Path testrigDir = containerDir.resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR, snapshotName));
 
     if (!testrigDir.toFile().mkdirs()) {
       throw new BatfishException("Failed to create directory: '" + testrigDir + "'");
@@ -1205,10 +1205,10 @@ public class WorkMgr extends AbstractCoordinator {
     }
     _logger.infof(
         "Environment data for testrig:%s; bgpTables:%s, routingTables:%s, nodeRoles:%s referenceBooks:%s\n",
-        testrigName, bgpTables, routingTables, roleData, referenceLibraryData);
+        snapshotName, bgpTables, routingTables, roleData, referenceLibraryData);
 
     if (autoAnalyze) {
-      for (WorkItem workItem : getAutoWorkQueue(containerName, testrigName)) {
+      for (WorkItem workItem : getAutoWorkQueue(networkName, snapshotName)) {
         boolean queued = queueWork(workItem);
         if (!queued) {
           _logger.errorf("Unable to queue work while auto processing: %s", workItem);
@@ -1347,7 +1347,7 @@ public class WorkMgr extends AbstractCoordinator {
    * @return {@link Set} of container names
    */
   public SortedSet<String> listAnalyses(String containerName, AnalysisType analysisType) {
-    Path containerDir = getdirContainer(containerName);
+    Path containerDir = getdirNetwork(containerName);
     Path analysesDir = containerDir.resolve(BfConsts.RELPATH_ANALYSES_DIR);
     if (!Files.exists(analysesDir)) {
       return ImmutableSortedSet.of();
@@ -1425,7 +1425,7 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   public SortedSet<String> listQuestions(String containerName, boolean verbose) {
-    Path containerDir = getdirContainer(containerName);
+    Path containerDir = getdirNetwork(containerName);
     Path questionsDir = containerDir.resolve(BfConsts.RELPATH_QUESTIONS_DIR);
     if (!Files.exists(questionsDir)) {
       return new TreeSet<>();
@@ -1442,7 +1442,7 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   public List<String> listTestrigs(String containerName) {
-    Path containerDir = getdirContainer(containerName);
+    Path containerDir = getdirNetwork(containerName);
     Path testrigsDir = containerDir.resolve(BfConsts.RELPATH_TESTRIGS_DIR);
     if (!Files.exists(testrigsDir)) {
       return new ArrayList<>();
@@ -1650,7 +1650,7 @@ public class WorkMgr extends AbstractCoordinator {
           String.format("Invalid question %s/%s: %s", containerName, qName, e.getMessage()), e);
     }
 
-    Path containerDir = getdirContainer(containerName);
+    Path containerDir = getdirNetwork(containerName);
     Path qDir = containerDir.resolve(Paths.get(BfConsts.RELPATH_QUESTIONS_DIR, qName));
     if (Files.exists(qDir)) {
       throw new BatfishException(
@@ -1676,35 +1676,40 @@ public class WorkMgr extends AbstractCoordinator {
     return generateFileDateString(base, Instant.now());
   }
 
-  public void uploadTestrig(
-      String containerName, String testrigName, InputStream fileStream, boolean autoAnalyze) {
-    Path containerDir = getdirContainer(containerName);
+  /**
+   * Upload a new snapshot to the specified network.
+   *
+   * @param networkName Name of the network to upload the snapshot to.
+   * @param snapshotName Name of the new snapshot.
+   * @param fileStream {@link InputStream} of the snapshot zip.
+   * @param autoAnalyze Boolean determining if the snapshot analysis should be triggered on upload.
+   */
+  public void uploadSnapshot(
+      String networkName, String snapshotName, InputStream fileStream, boolean autoAnalyze) {
+    Path networkDir = getdirNetwork(networkName);
 
-    // Fail early if the testrig already exists.
-    if (Files.exists(containerDir.resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR, testrigName)))) {
-      throw new BatfishException("Testrig with name: '" + testrigName + "' already exists");
+    // Fail early if the snapshot already exists
+    if (Files.exists(networkDir.resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR, snapshotName)))) {
+      throw new BatfishException("Snapshot with name: '" + snapshotName + "' already exists");
     }
 
-    // Persist the user's upload to a directory inside the container, named for the testrig,
-    // where we save the original upload for later analysis.
+    // Save uploaded zip for troubleshooting
     Path originalDir =
-        containerDir
+        networkDir
             .resolve(BfConsts.RELPATH_ORIGINAL_DIR)
-            .resolve(generateFileDateString(testrigName));
+            .resolve(generateFileDateString(snapshotName));
     if (!originalDir.toFile().mkdirs()) {
       throw new BatfishException("Failed to create directory: '" + originalDir + "'");
     }
-    Path zipFile = originalDir.resolve(BfConsts.RELPATH_TESTRIG_ZIP_FILE);
-    CommonUtil.writeStreamToFile(fileStream, zipFile);
-
-    // Now unzip the user's data to a temporary folder, from which we'll parse and copy it.
+    Path snapshotZipFile = originalDir.resolve(BfConsts.RELPATH_SNAPSHOT_ZIP_FILE);
+    CommonUtil.writeStreamToFile(fileStream, snapshotZipFile);
     Path unzipDir = CommonUtil.createTempDirectory("tr");
-    UnzipUtility.unzip(zipFile, unzipDir);
+    UnzipUtility.unzip(snapshotZipFile, unzipDir);
 
     try {
-      initTestrig(containerName, testrigName, unzipDir, autoAnalyze);
+      initSnapshot(networkName, snapshotName, unzipDir, autoAnalyze);
     } catch (Exception e) {
-      throw new BatfishException("Error initializing testrig", e);
+      throw new BatfishException("Error initializing snapshot", e);
     } finally {
       CommonUtil.deleteDirectory(unzipDir);
     }

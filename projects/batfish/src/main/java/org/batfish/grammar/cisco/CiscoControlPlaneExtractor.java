@@ -133,6 +133,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_IGM
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_INCOMING_FILTER;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_IP_INBAND_ACCESS_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_IP_VERIFY_ACCESS_LIST;
+import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_IP_VRF_SITEMAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_OUTGOING_FILTER;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_PIM_NEIGHBOR_FILTER;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_POLICY_ROUTING_MAP;
@@ -539,6 +540,7 @@ import org.batfish.grammar.cisco.CiscoParser.If_ip_router_ospf_areaContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_summary_addressContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_verifyContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_vrf_forwardingContext;
+import org.batfish.grammar.cisco.CiscoParser.If_ip_vrf_sitemapContext;
 import org.batfish.grammar.cisco.CiscoParser.If_isis_metricContext;
 import org.batfish.grammar.cisco.CiscoParser.If_mtuContext;
 import org.batfish.grammar.cisco.CiscoParser.If_rp_stanzaContext;
@@ -738,6 +740,7 @@ import org.batfish.grammar.cisco.CiscoParser.Rbnx_n_af_advertise_mapContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_n_af_allowas_inContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_n_af_as_overrideContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_n_af_default_originateContext;
+import org.batfish.grammar.cisco.CiscoParser.Rbnx_n_af_disable_peer_as_checkContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_n_af_filter_listContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_n_af_inheritContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_n_af_next_hop_selfContext;
@@ -3003,6 +3006,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitRbnx_n_af_disable_peer_as_check(Rbnx_n_af_disable_peer_as_checkContext ctx) {
+    _currentBgpNxVrfNeighborAddressFamily.setDisablePeerAsCheck(true);
+  }
+
+  @Override
   public void exitRbnx_n_af_filter_list(Rbnx_n_af_filter_listContext ctx) {
     String filterList = ctx.name.getText();
     CiscoStructureType type = _inIpv6BgpPeer ? IPV6_ACCESS_LIST : IPV4_ACCESS_LIST;
@@ -5067,12 +5075,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitIf_bandwidth(If_bandwidthContext ctx) {
+    Double newBandwidthBps;
     if (ctx.NO() != null) {
-      _currentInterfaces.forEach(i -> i.setBandwidth(null));
+      newBandwidthBps = null;
     } else {
-      double bandwidthBps = toLong(ctx.DEC()) * 1000.0D;
-      _currentInterfaces.forEach(i -> i.setBandwidth(bandwidthBps));
+      newBandwidthBps = toLong(ctx.DEC()) * 1000.0D;
     }
+    _currentInterfaces.forEach(i -> i.setBandwidth(newBandwidthBps));
   }
 
   @Override
@@ -5351,11 +5360,18 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitIf_ip_vrf_forwarding(If_ip_vrf_forwardingContext ctx) {
-    String name = ctx.name.getText();
+    String name = ctx.vrf.getText();
     for (Interface currentInterface : _currentInterfaces) {
       currentInterface.setVrf(name);
       initVrf(name);
     }
+  }
+
+  @Override
+  public void exitIf_ip_vrf_sitemap(If_ip_vrf_sitemapContext ctx) {
+    String map = ctx.map.getText();
+    _configuration.referenceStructure(
+        ROUTE_MAP, map, INTERFACE_IP_VRF_SITEMAP, ctx.map.getStart().getLine());
   }
 
   @Override
@@ -8504,9 +8520,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         canonicalNamePrefix.equals(CiscoConfiguration.NXOS_MANAGEMENT_INTERFACE_PREFIX)
             ? CiscoConfiguration.MANAGEMENT_VRF_NAME
             : Configuration.DEFAULT_VRF_NAME;
-    double bandwidth = Interface.getDefaultBandwidth(canonicalNamePrefix, _format);
     int mtu = Interface.getDefaultMtu();
-    iface.setBandwidth(bandwidth);
     iface.setVrf(vrf);
     initVrf(vrf);
     iface.setMtu(mtu);

@@ -1,6 +1,9 @@
 package org.batfish.coordinator.resources;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
+import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -14,6 +17,9 @@ public class ReferenceBookBean {
 
   /** The set of {@link AddressGroupBean}s in this book */
   public Set<AddressGroupBean> addressGroups;
+
+  /** The set of {@link FilterGroupBean}s in this book */
+  public Set<FilterGroupBean> filterGroups;
 
   /** The set of {@link ServiceEndpointBean}s in this book */
   public Set<ServiceEndpointBean> serviceEndpoints;
@@ -33,6 +39,11 @@ public class ReferenceBookBean {
         book.getAddressGroups()
             .stream()
             .map(ag -> new AddressGroupBean(ag))
+            .collect(Collectors.toSet());
+    filterGroups =
+        book.getFilterGroups()
+            .stream()
+            .map(fg -> new FilterGroupBean(fg))
             .collect(Collectors.toSet());
     serviceEndpoints =
         book.getServiceEndpoints()
@@ -57,6 +68,7 @@ public class ReferenceBookBean {
       return false;
     }
     return Objects.equals(addressGroups, ((ReferenceBookBean) o).addressGroups)
+        && Objects.equals(filterGroups, ((ReferenceBookBean) o).filterGroups)
         && Objects.equals(name, ((ReferenceBookBean) o).name)
         && Objects.equals(serviceEndpoints, ((ReferenceBookBean) o).serviceEndpoints)
         && Objects.equals(serviceObjectGroups, ((ReferenceBookBean) o).serviceObjectGroups)
@@ -65,19 +77,33 @@ public class ReferenceBookBean {
 
   @Override
   public int hashCode() {
-    return Objects.hash(addressGroups, name, serviceEndpoints, serviceObjectGroups, serviceObjects);
+    return Objects.hash(
+        addressGroups, filterGroups, name, serviceEndpoints, serviceObjectGroups, serviceObjects);
   }
 
   /** Creates {@link ReferenceBook} from this bean */
   public ReferenceBook toAddressBook() {
     return new ReferenceBook(
-        addressGroups.stream().map(agb -> agb.toAddressGroup()).collect(Collectors.toList()),
+        firstNonNull(addressGroups, Collections.<AddressGroupBean>emptySet())
+            .stream()
+            .map(agb -> agb.toAddressGroup())
+            .collect(Collectors.toList()),
+        firstNonNull(filterGroups, Collections.<FilterGroupBean>emptySet())
+            .stream()
+            .map(fgb -> fgb.toFilterGroup())
+            .collect(Collectors.toList()),
         name,
-        serviceEndpoints.stream().map(seb -> seb.toServiceEndpoint()).collect(Collectors.toList()),
-        serviceObjectGroups
+        firstNonNull(serviceEndpoints, Collections.<ServiceEndpointBean>emptySet())
+            .stream()
+            .map(seb -> seb.toServiceEndpoint())
+            .collect(Collectors.toList()),
+        firstNonNull(serviceObjectGroups, Collections.<ServiceObjectGroupBean>emptySet())
             .stream()
             .map(sogb -> sogb.toServiceObjectGroup())
             .collect(Collectors.toList()),
-        serviceObjects.stream().map(seb -> seb.toServiceObject()).collect(Collectors.toList()));
+        firstNonNull(serviceObjects, Collections.<ServiceObjectBean>emptySet())
+            .stream()
+            .map(seb -> seb.toServiceObject())
+            .collect(Collectors.toList()));
   }
 }

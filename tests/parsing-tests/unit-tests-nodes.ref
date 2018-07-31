@@ -253,7 +253,7 @@
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
-                  "allowRemoteAsOut" : false,
+                  "allowRemoteAsOut" : true,
                   "clusterId" : 0,
                   "defaultMetric" : 0,
                   "ebgpMultihop" : false,
@@ -2667,7 +2667,7 @@
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
-                  "allowRemoteAsOut" : false,
+                  "allowRemoteAsOut" : true,
                   "clusterId" : 16843009,
                   "defaultMetric" : 0,
                   "ebgpMultihop" : false,
@@ -2688,7 +2688,7 @@
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
-                  "allowRemoteAsOut" : false,
+                  "allowRemoteAsOut" : true,
                   "clusterId" : 16843009,
                   "defaultMetric" : 0,
                   "ebgpMultihop" : false,
@@ -3135,7 +3135,7 @@
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
-                  "allowRemoteAsOut" : false,
+                  "allowRemoteAsOut" : true,
                   "clusterId" : 0,
                   "defaultMetric" : 0,
                   "description" : "cps AS11164 - SVL-PNI",
@@ -5631,7 +5631,7 @@
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
-                  "allowRemoteAsOut" : false,
+                  "allowRemoteAsOut" : true,
                   "clusterId" : 0,
                   "defaultMetric" : 0,
                   "ebgpMultihop" : false,
@@ -6663,7 +6663,7 @@
             "switchportMode" : "TRUNK",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
-            "vrf" : "default"
+            "vrf" : "U_VRF"
           },
           "Ethernet1/11" : {
             "name" : "Ethernet1/11",
@@ -6750,7 +6750,7 @@
             "accessVlan" : 0,
             "active" : true,
             "autostate" : true,
-            "bandwidth" : 1.0E12,
+            "bandwidth" : 8.0E9,
             "declaredNames" : [
               "Loopback0"
             ],
@@ -7143,6 +7143,12 @@
           }
         },
         "vrfs" : {
+          "U_VRF" : {
+            "name" : "U_VRF",
+            "interfaces" : [
+              "Ethernet0"
+            ]
+          },
           "default" : {
             "name" : "default",
             "interfaces" : [
@@ -7150,7 +7156,6 @@
               "Cable1/2/3:4",
               "Crypto-Engine1/2/3",
               "Dot11Radio0",
-              "Ethernet0",
               "Ethernet1/11",
               "Ethernet1/12",
               "GigabitEthernet0/0",
@@ -7800,7 +7805,7 @@
             "accessVlan" : 0,
             "active" : true,
             "autostate" : true,
-            "bandwidth" : 1.0E12,
+            "bandwidth" : 8.0E9,
             "declaredNames" : [
               "Loopback0"
             ],
@@ -9024,7 +9029,7 @@
               "1.1.1.1/32"
             ],
             "autostate" : true,
-            "bandwidth" : 1.0E12,
+            "bandwidth" : 8.0E9,
             "declaredNames" : [
               "loopback0"
             ],
@@ -11988,7 +11993,7 @@
               "137.164.16.80/32"
             ],
             "autostate" : true,
-            "bandwidth" : 1.0E12,
+            "bandwidth" : 8.0E9,
             "declaredNames" : [
               "Loopback0"
             ],
@@ -12538,7 +12543,7 @@
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
-                  "allowRemoteAsOut" : false,
+                  "allowRemoteAsOut" : true,
                   "clusterId" : 0,
                   "defaultMetric" : 0,
                   "description" : "htegiofnoirwejhg",
@@ -12560,7 +12565,7 @@
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
-                  "allowRemoteAsOut" : false,
+                  "allowRemoteAsOut" : true,
                   "clusterId" : 0,
                   "defaultMetric" : 0,
                   "description" : "hejtuignrfojfgner",
@@ -12582,7 +12587,7 @@
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
-                  "allowRemoteAsOut" : false,
+                  "allowRemoteAsOut" : true,
                   "clusterId" : 0,
                   "defaultMetric" : 0,
                   "description" : "bafjewoifj",
@@ -12904,7 +12909,7 @@
             "accessVlan" : 0,
             "active" : true,
             "autostate" : true,
-            "bandwidth" : 1.0E12,
+            "bandwidth" : 8.0E9,
             "declaredNames" : [
               "Loopback0"
             ],
@@ -16908,7 +16913,7 @@
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
-                  "allowRemoteAsOut" : false,
+                  "allowRemoteAsOut" : true,
                   "clusterId" : 0,
                   "defaultMetric" : 0,
                   "ebgpMultihop" : false,
@@ -17075,7 +17080,7 @@
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
-                  "allowRemoteAsOut" : false,
+                  "allowRemoteAsOut" : true,
                   "clusterId" : 0,
                   "defaultMetric" : 0,
                   "ebgpMultihop" : false,
@@ -17302,7 +17307,7 @@
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
-                  "allowRemoteAsOut" : false,
+                  "allowRemoteAsOut" : true,
                   "clusterId" : 168430090,
                   "defaultMetric" : 0,
                   "description" : "neighbor-4-4-4-4-remote-as-4-af-ipv6-desc !nexus",
@@ -17323,7 +17328,7 @@
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
-                  "allowRemoteAsOut" : false,
+                  "allowRemoteAsOut" : true,
                   "clusterId" : 168430090,
                   "defaultMetric" : 0,
                   "description" : "neighbor-4-4-4-4-remote-as-4-af-ipv6-desc !nexus",
@@ -17344,7 +17349,7 @@
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
-                  "allowRemoteAsOut" : false,
+                  "allowRemoteAsOut" : true,
                   "clusterId" : 168430090,
                   "defaultMetric" : 0,
                   "description" : "neighbor-4-4-4-4-remote-as-4-af-ipv6-desc !nexus",
@@ -18090,7 +18095,7 @@
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
-                  "allowRemoteAsOut" : false,
+                  "allowRemoteAsOut" : true,
                   "clusterId" : 0,
                   "defaultMetric" : 0,
                   "ebgpMultihop" : false,
@@ -20257,7 +20262,7 @@
               "137.164.17.8/32"
             ],
             "autostate" : true,
-            "bandwidth" : 1.0E12,
+            "bandwidth" : 8.0E9,
             "declaredNames" : [
               "loopback1"
             ],

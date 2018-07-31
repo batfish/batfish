@@ -1,8 +1,10 @@
-[
-  {
-    "name": "book1"
-  },
-  {
-    "name": "book2"
-  }
-]
+{
+  "books": [
+    {
+      "name": "book1"
+    },
+    {
+      "name": "book2"
+    }
+  ]
+}

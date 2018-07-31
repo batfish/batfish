@@ -96,7 +96,6 @@ public class BgpProcess implements Serializable {
     switch (format) {
       case CISCO_IOS:
       case CISCO_IOS_XR:
-      case CISCO_NX:
         _masterBgpPeerGroup.setAdvertiseInactive(true);
         break;
 

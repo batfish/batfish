@@ -55,6 +55,8 @@ import org.batfish.datamodel.BgpTieBreaker;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.Edge;
+import org.batfish.datamodel.EigrpInternalRoute;
+import org.batfish.datamodel.EigrpRoute;
 import org.batfish.datamodel.Fib;
 import org.batfish.datamodel.FibImpl;
 import org.batfish.datamodel.GeneratedRoute;
@@ -81,6 +83,11 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.eigrp.EigrpEdge;
+import org.batfish.datamodel.eigrp.EigrpInterface;
+import org.batfish.datamodel.eigrp.EigrpInterfaceSettings;
+import org.batfish.datamodel.eigrp.EigrpMetric;
+import org.batfish.datamodel.eigrp.EigrpProcess;
 import org.batfish.datamodel.isis.IsisEdge;
 import org.batfish.datamodel.isis.IsisInterfaceLevelSettings;
 import org.batfish.datamodel.isis.IsisInterfaceMode;
@@ -103,6 +110,7 @@ import org.batfish.dataplane.protocols.OspfProtocolHelper;
 import org.batfish.dataplane.rib.BgpBestPathRib;
 import org.batfish.dataplane.rib.BgpMultipathRib;
 import org.batfish.dataplane.rib.ConnectedRib;
+import org.batfish.dataplane.rib.EigrpRib;
 import org.batfish.dataplane.rib.IsisLevelRib;
 import org.batfish.dataplane.rib.IsisRib;
 import org.batfish.dataplane.rib.LocalRib;
@@ -149,6 +157,17 @@ public class VirtualRouter implements Serializable {
 
   /** The RIB containing connected routes */
   private transient ConnectedRib _connectedRib;
+
+  /** Helper RIB containing all EIGRP paths internal to this router's ASN. */
+  private transient EigrpRib _eigrpInternalRib;
+
+  /**
+   * Helper RIB containing paths obtained with EIGRP during current iteration. An Adj-RIB of sorts.
+   */
+  private transient EigrpRib _eigrpInternalStagingRib;
+
+  /** Helper RIB containing EIGRP internal and external paths. */
+  private transient EigrpRib _eigrpRib;
 
   /** Helper RIB containing best paths obtained with external BGP */
   transient BgpBestPathRib _ebgpBestPathRib;
@@ -389,7 +408,45 @@ public class VirtualRouter implements Serializable {
     importRib(_independentRib, _staticInterfaceRib);
     importRib(_mainRib, _independentRib);
     initIntraAreaOspfRoutes();
+    initInternalEigrpRoutes();
     initBaseRipRoutes();
+  }
+
+  private void initInternalEigrpRoutes() {
+    EigrpProcess proc = _vrf.getEigrpProcess();
+    if (proc == null) {
+      return; // nothing to do
+    }
+    /*
+     * Init internal routes from connected routes. For each interface prefix, construct a new
+     * internal route.
+     */
+    for (String ifaceName : _vrf.getInterfaceNames()) {
+      Interface iface = _c.getInterfaces().get(ifaceName);
+      if (!iface.getActive()
+          || iface.getEigrp() == null
+          || !iface.getEigrp().getEnabled()
+          || iface.getEigrp().getMetric() == null) {
+        continue;
+      }
+      Set<Prefix> allNetworkPrefixes =
+          iface
+              .getAllAddresses()
+              .stream()
+              .map(InterfaceAddress::getPrefix)
+              .collect(Collectors.toSet());
+      for (Prefix prefix : allNetworkPrefixes) {
+        EigrpInternalRoute route =
+            EigrpInternalRoute.builder()
+                .setAdmin(
+                    RoutingProtocol.EIGRP.getDefaultAdministrativeCost(_c.getConfigurationFormat()))
+                .setEigrpMetric(iface.getEigrp().getMetric())
+                .setNetwork(prefix)
+                .setNextHopInterface(ifaceName)
+                .build();
+        _eigrpInternalRib.mergeRoute(route);
+      }
+    }
   }
 
   /**
@@ -1232,6 +1289,9 @@ public class VirtualRouter implements Serializable {
     _ebgpMultipathRib = new BgpMultipathRib(mpTieBreaker);
     _ebgpStagingRib = new BgpMultipathRib(mpTieBreaker);
     _generatedRib = new Rib();
+    _eigrpInternalRib = new EigrpRib();
+    _eigrpInternalStagingRib = new EigrpRib();
+    _eigrpRib = new EigrpRib();
     _ibgpMultipathRib = new BgpMultipathRib(mpTieBreaker);
     _ibgpStagingRib = new BgpMultipathRib(mpTieBreaker);
     _independentRib = new Rib();
@@ -2009,6 +2069,45 @@ public class VirtualRouter implements Serializable {
   }
 
   /**
+   * Propagate EIGRP Internal routes from a single neighbor.
+   *
+   * @param neighbor the neighbor
+   * @param settings EIGRP interface settings of the interface on which we are connected to the
+   *     neighbor
+   * @param neighborInterface interface that the neighbor uses to connect to us
+   * @param adminCost route administrative distance
+   * @return true if new routes have been added to our staging RIB
+   */
+  private boolean propagateEigrpInternalRoutesFromNeighbor(
+      Node neighbor, EigrpInterfaceSettings settings, Interface neighborInterface, int adminCost) {
+
+    /*
+     * An EIGRP neighbor relationship exists on this edge. We will examine all internal routes
+     * belonging to the neighbor to see what should be propagated to this router. We compute
+     * the new cost associated with our settings and the existing metrics and use the
+     * neighborInterface's address as the next hop ip.
+     */
+    String neighborVrfName = neighborInterface.getVrfName();
+    VirtualRouter neighborVirtualRouter = neighbor.getVirtualRouters().get(neighborVrfName);
+    boolean changed = false;
+    for (EigrpRoute neighborRoute : neighborVirtualRouter._eigrpInternalRib.getRoutes()) {
+      EigrpMetric interfaceMetric = requireNonNull(settings.getMetric());
+      EigrpMetric newMetric = interfaceMetric.accumulate(neighborRoute.getEigrpMetric());
+      Ip nextHopIp = neighborInterface.getAddress().getIp();
+      EigrpRoute newRoute =
+          EigrpInternalRoute.builder()
+              .setAdmin(adminCost)
+              .setEigrpMetric(newMetric)
+              .setNetwork(neighborRoute.getNetwork())
+              .setNextHopInterface(neighborInterface.getName())
+              .setNextHopIp(nextHopIp)
+              .build();
+      changed |= _eigrpInternalStagingRib.mergeRoute(newRoute);
+    }
+    return changed;
+  }
+
+  /**
    * Propagate OSPF Internal routes from a single neighbor.
    *
    * @param proc The receiving OSPF process
@@ -2151,6 +2250,44 @@ public class VirtualRouter implements Serializable {
             neighborRoute.getNetwork(), nextHopIp, adminCost, newCost, linkAreaNum);
     return neighborRoute.getArea() == linkAreaNum
         && (_ospfIntraAreaStagingRib.mergeRoute(newRoute));
+  }
+
+  /**
+   * Propagate EIGRP internal routes from every valid EIGRP neighbors
+   *
+   * @param nodes mapping of node names to instances.
+   * @param topology network topology
+   * @param nc All network configurations
+   * @return true if new routes have been added to the staging RIB
+   */
+  boolean propagateEigrpInternalRoutes(
+      Map<String, Node> nodes,
+      Network<EigrpInterface, EigrpEdge> topology,
+      NetworkConfigurations nc) {
+
+    if (topology.nodes().isEmpty()) {
+      return false;
+    }
+
+    // Default EIGRP admin cost for constructing new routes
+    int adminCost = RoutingProtocol.EIGRP.getDefaultAdministrativeCost(_c.getConfigurationFormat());
+
+    return _vrf.getInterfaceNames()
+            .stream()
+            .map(ifaceName -> new EigrpInterface(_c.getHostname(), ifaceName, _vrf.getName()))
+            .filter(topology.nodes()::contains)
+            .flatMap(n -> topology.inEdges(n).stream())
+            .mapToInt(
+                edge ->
+                    propagateEigrpInternalRoutesFromNeighbor(
+                            nodes.get(edge.getNode1().getHostname()),
+                            edge.getNode2().getInterfaceSettings(nc),
+                            edge.getNode1().getInterface(nc),
+                            adminCost)
+                        ? 1
+                        : 0)
+            .sum()
+        > 0; // Don't use any short-circuit operators
   }
 
   /**
@@ -2526,6 +2663,11 @@ public class VirtualRouter implements Serializable {
         networkConfigurations);
   }
 
+  /** Merges staged EIGRP internal routes into the "real" EIGRP-internal RIBs */
+  void unstageEigrpInternalRoutes() {
+    importRib(_eigrpInternalRib, _eigrpInternalStagingRib);
+  }
+
   /**
    * Move IS-IS routes from L1/L2 staging RIBs into their respective "proper" RIBs. Following that,
    * move any resulting deltas into the combined IS-IS RIB, and finally, main RIB.
@@ -2620,6 +2762,14 @@ public class VirtualRouter implements Serializable {
      * Re-add independent RIP routes to ripRib for tie-breaking
      */
     importRib(_ripRib, _ripInternalRib);
+  }
+
+  /**
+   * Merge internal EIGRP RIBs into a general EIGRP RIB, then merge that into the independent RIB
+   */
+  void importEigrpInternalRoutes() {
+    importRib(_eigrpRib, _eigrpInternalRib);
+    importRib(_independentRib, _eigrpRib);
   }
 
   /**

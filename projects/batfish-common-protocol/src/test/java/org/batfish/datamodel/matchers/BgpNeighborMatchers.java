@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.equalTo;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.BgpPeerConfig;
+import org.batfish.datamodel.matchers.BgpNeighborMatchersImpl.HasAllowRemoteAsOut;
 import org.batfish.datamodel.matchers.BgpNeighborMatchersImpl.HasClusterId;
 import org.batfish.datamodel.matchers.BgpNeighborMatchersImpl.HasEnforceFirstAs;
 import org.batfish.datamodel.matchers.BgpNeighborMatchersImpl.HasLocalAs;
@@ -12,6 +13,14 @@ import org.batfish.datamodel.matchers.BgpNeighborMatchersImpl.HasRemoteAs;
 import org.hamcrest.Matcher;
 
 public class BgpNeighborMatchers {
+
+  /**
+   * Provides a matcher that matches if the {@link BgpPeerConfig}'s allowRemoteAsOut is {@code
+   * value}.
+   */
+  public static HasAllowRemoteAsOut hasAllowRemoteAsOut(boolean value) {
+    return new HasAllowRemoteAsOut(equalTo(value));
+  }
 
   /**
    * Provides a matcher that matches if the {@link BgpPeerConfig}'s clusterId is {@code
