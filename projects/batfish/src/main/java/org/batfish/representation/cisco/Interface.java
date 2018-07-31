@@ -34,10 +34,11 @@ public class Interface implements Serializable {
 
   private static final double LONG_REACH_ETHERNET_BANDWIDTH = 10E6;
 
-  /** dirty hack: just chose a very large number */
-  private static final double LOOPBACK_BANDWIDTH = 1E12;
+  /** Loopback bandwidth */
+  private static final double LOOPBACK_BANDWIDTH = 8E9;
 
-  private static final double LOOPBACK_DELAY = 5E9;
+  /** Loopback delay for IOS */
+  private static final double LOOPBACK_IOS_DELAY = 5E9;
 
   /** NX-OS Ethernet 802.3z - may not apply for non-NX-OS */
   private static final double NXOS_ETHERNET_BANDWIDTH = 1E9;
@@ -119,7 +120,7 @@ public class Interface implements Serializable {
 
   private boolean _autoState;
 
-  private Double _bandwidth;
+  @Nullable private Double _bandwidth;
 
   private String _channelGroup;
 
@@ -200,21 +201,26 @@ public class Interface implements Serializable {
   private String _securityZone;
 
   public static double getDefaultDelay(String name, ConfigurationFormat format) {
-    if (name.startsWith("Loopback")) {
-      return LOOPBACK_DELAY;
+    if (format == ConfigurationFormat.CISCO_IOS && name.startsWith("Loopback")) {
+      // TODO Cisco NX whitepaper says to use the formula, not this value. Confirm?
+      // Enhanced Interior Gateway Routing Protocol (EIGRP) Wide Metrics White Paper
+      return LOOPBACK_IOS_DELAY;
     }
     double bandwidth = getDefaultBandwidth(name, format);
     if (bandwidth == 0D) {
+      // TODO EIGRP will not use this interface because cost is proportional to bandwidth^-1
       return 0D;
     }
 
     /*
-     * This is not true for all cases, but it is true for all of the cases that are defined above.
-     * See https://tools.ietf.org/html/draft-savage-eigrp-00#section-5.5.1.2
-     *
      * Delay is only relevant on routers that support EIGRP (Cisco).
+     *
+     * When bandwidth > 1Gb, this formula is used. The interface may report a different value.
+     * For bandwidths < 1Gb, the delay is interface type-specific. However, all of the specific cases
+     * handled in getDefaultBandwidth also match this formula.
+     * See https://tools.ietf.org/html/rfc7868#section-5.6.1.2
      */
-    return 1E13 / bandwidth;
+    return 1E16 / bandwidth;
   }
 
   public String getSecurityZone() {
@@ -388,6 +394,7 @@ public class Interface implements Serializable {
     return _address;
   }
 
+  @Nullable
   public Double getDelay() {
     return _delay;
   }
@@ -463,7 +470,7 @@ public class Interface implements Serializable {
     _autoState = autoState;
   }
 
-  public void setBandwidth(Double bandwidth) {
+  public void setBandwidth(@Nullable Double bandwidth) {
     _bandwidth = bandwidth;
   }
 
