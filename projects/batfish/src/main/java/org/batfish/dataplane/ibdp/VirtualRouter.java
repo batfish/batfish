@@ -158,9 +158,7 @@ public class VirtualRouter implements Serializable {
   /** The RIB containing connected routes */
   private transient ConnectedRib _connectedRib;
 
-  /**
-   * Helper RIB containing all EIGRP paths internal to this router's ASN.
-   */
+  /** Helper RIB containing all EIGRP paths internal to this router's ASN. */
   private transient EigrpRib _eigrpInternalRib;
 
   /**
