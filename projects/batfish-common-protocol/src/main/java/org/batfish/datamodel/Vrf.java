@@ -100,7 +100,7 @@ public class Vrf extends ComparableStructure<String> {
 
   private transient NavigableSet<BgpAdvertisement> _originatedIbgpAdvertisements;
 
-  private OspfProcess _ospfProcess;
+  @Nullable private OspfProcess _ospfProcess;
 
   private transient NavigableSet<BgpAdvertisement> _receivedAdvertisements;
 
