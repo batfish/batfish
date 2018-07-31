@@ -6750,7 +6750,7 @@
             "accessVlan" : 0,
             "active" : true,
             "autostate" : true,
-            "bandwidth" : 1.0E12,
+            "bandwidth" : 8.0E9,
             "declaredNames" : [
               "Loopback0"
             ],
@@ -7805,7 +7805,7 @@
             "accessVlan" : 0,
             "active" : true,
             "autostate" : true,
-            "bandwidth" : 1.0E12,
+            "bandwidth" : 8.0E9,
             "declaredNames" : [
               "Loopback0"
             ],
@@ -9029,7 +9029,7 @@
               "1.1.1.1/32"
             ],
             "autostate" : true,
-            "bandwidth" : 1.0E12,
+            "bandwidth" : 8.0E9,
             "declaredNames" : [
               "loopback0"
             ],
@@ -11993,7 +11993,7 @@
               "137.164.16.80/32"
             ],
             "autostate" : true,
-            "bandwidth" : 1.0E12,
+            "bandwidth" : 8.0E9,
             "declaredNames" : [
               "Loopback0"
             ],
@@ -12909,7 +12909,7 @@
             "accessVlan" : 0,
             "active" : true,
             "autostate" : true,
-            "bandwidth" : 1.0E12,
+            "bandwidth" : 8.0E9,
             "declaredNames" : [
               "Loopback0"
             ],
@@ -20262,7 +20262,7 @@
               "137.164.17.8/32"
             ],
             "autostate" : true,
-            "bandwidth" : 1.0E12,
+            "bandwidth" : 8.0E9,
             "declaredNames" : [
               "loopback1"
             ],

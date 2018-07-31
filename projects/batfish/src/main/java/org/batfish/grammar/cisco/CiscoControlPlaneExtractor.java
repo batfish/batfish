@@ -5075,12 +5075,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitIf_bandwidth(If_bandwidthContext ctx) {
+    Double newBandwidthBps;
     if (ctx.NO() != null) {
-      _currentInterfaces.forEach(i -> i.setBandwidth(null));
+      newBandwidthBps = null;
     } else {
-      double bandwidthBps = toLong(ctx.DEC()) * 1000.0D;
-      _currentInterfaces.forEach(i -> i.setBandwidth(bandwidthBps));
+      newBandwidthBps = toLong(ctx.DEC()) * 1000.0D;
     }
+    _currentInterfaces.forEach(i -> i.setBandwidth(newBandwidthBps));
   }
 
   @Override
@@ -8519,9 +8520,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         canonicalNamePrefix.equals(CiscoConfiguration.NXOS_MANAGEMENT_INTERFACE_PREFIX)
             ? CiscoConfiguration.MANAGEMENT_VRF_NAME
             : Configuration.DEFAULT_VRF_NAME;
-    double bandwidth = Interface.getDefaultBandwidth(canonicalNamePrefix, _format);
     int mtu = Interface.getDefaultMtu();
-    iface.setBandwidth(bandwidth);
     iface.setVrf(vrf);
     initVrf(vrf);
     iface.setMtu(mtu);

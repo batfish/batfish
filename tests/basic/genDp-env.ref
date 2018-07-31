@@ -23,6 +23,7 @@
         "8" : 124
       },
       "dependentRoutesIterations" : 8,
+      "eigrpInternalIterations" : 1,
       "mainRibRoutesByIteration" : {
         "1" : 206,
         "2" : 285,
