@@ -279,6 +279,8 @@ import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfDefaultOriginateType;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.ospf.StubType;
+import org.batfish.datamodel.routing_policy.expr.CommunitySetExpr;
+import org.batfish.datamodel.routing_policy.expr.LiteralCommunityConjunction;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
@@ -1770,6 +1772,8 @@ public class CiscoGrammarTest {
 
   @Test
   public void testCommunityListConversion() throws IOException {
+    // TODO: https://github.com/batfish/batfish/issues/1993
+    
     String testrigName = "community-list-conversion";
     String iosName = "ios";
     String nxosName = "nxos";
@@ -1796,8 +1800,6 @@ public class CiscoGrammarTest {
 
     long iosImpliedStd = communityListToCommunity(iosCommunityLists, "40");
     String iosRegexImpliedExp = communityListToRegex(iosCommunityLists, "400");
-    long iosStd = communityListToCommunity(iosCommunityLists, "std_community");
-    String iosRegexExp = communityListToRegex(iosCommunityLists, "exp_community");
     long iosStdAsnn = communityListToCommunity(iosCommunityLists, "std_as_nn");
     String iosRegexExpAsnn = communityListToRegex(iosCommunityLists, "exp_as_nn");
     long iosStdGshut = communityListToCommunity(iosCommunityLists, "std_gshut");
@@ -1818,7 +1820,6 @@ public class CiscoGrammarTest {
     long eosStdLocalAs = communityListToCommunity(eosCommunityLists, "eos_std_local_AS");
     long eosStdNoAdv = communityListToCommunity(eosCommunityLists, "eos_std_no_adv");
     long eosStdNoExport = communityListToCommunity(eosCommunityLists, "eos_std_no_export");
-    long eosStdMulti = communityListToCommunity(eosCommunityLists, "eos_std_multi");
     String eosRegexExpMulti = communityListToRegex(eosCommunityLists, "eos_exp_multi");
 
     long nxosStd = communityListToCommunity(nxosCommunityLists, "nxos_std");
@@ -1828,20 +1829,28 @@ public class CiscoGrammarTest {
     long nxosStdNoAdv = communityListToCommunity(nxosCommunityLists, "nxos_std_no_adv");
     long nxosStdNoExport =
         communityListToCommunity(nxosCommunityLists, "nxos_std_no_export");
-    long nxosStdMulti = communityListToCommunity(nxosCommunityLists, "nxos_std_multi");
     String nxosRegexExpMulti = communityListToRegex(nxosCommunityLists, "nxos_exp_multi");
 
+    // check literal communities
+    assertThat(iosImpliedStd, equalTo(4294967295L));
+    assertThat(iosStdAsnn, equalTo(CommonUtil.communityStringToLong("65535:65535")));
+    assertThat(eosStd, equalTo(CommonUtil.communityStringToLong("0:1")));
+    assertThat(nxosStd, equalTo(CommonUtil.communityStringToLong("65535:65535")));
+
+    // check regex communities
+    assertThat(iosRegexImpliedExp, equalTo("4294967295"));
+    assertThat(iosRegexExpAsnn, equalTo("65535:65535"));
+    assertThat(eosRegexExp, equalTo("1"));
+    // TODO: what is this?
+    assertThat(eosRegexExpMulti, equalTo("0:10:20:3"));
+    assertThat(nxosRegexExp, equalTo("65535:65535"));
+    // TODO: what is this?
+    assertThat(nxosRegexExpMulti, equalTo("0:10:20:3"));
+
     // Check well known community regexes are generated properly
-    String regexInternet = "^" + CommonUtil.longToCommunity(WellKnownCommunity.INTERNET) + "$";
-    String regexNoAdv = "^" + CommonUtil.longToCommunity(WellKnownCommunity.NO_ADVERTISE) + "$";
-    String regexNoExport = "^" + CommonUtil.longToCommunity(WellKnownCommunity.NO_EXPORT) + "$";
-    String regexGshut =
-        "^" + CommonUtil.longToCommunity(WellKnownCommunity.GRACEFUL_SHUTDOWN) + "$";
-    String regexLocalAs =
-        "^" + CommonUtil.longToCommunity(WellKnownCommunity.NO_EXPORT_SUBCONFED) + "$";
     assertThat(iosStdInternet, equalTo(WellKnownCommunity.INTERNET));
     assertThat(iosStdNoAdv, equalTo(WellKnownCommunity.NO_ADVERTISE));
-    assertThat(iosStdNoExport, equalTo(WellKnownCommunity.NO_EXPORT_SUBCONFED));
+    assertThat(iosStdNoExport, equalTo(WellKnownCommunity.NO_EXPORT));
     assertThat(iosStdGshut, equalTo(WellKnownCommunity.GRACEFUL_SHUTDOWN));
     assertThat(iosStdLocalAs, equalTo(WellKnownCommunity.NO_EXPORT_SUBCONFED));
     assertThat(eosStdInternet, equalTo(WellKnownCommunity.INTERNET));
@@ -1854,13 +1863,31 @@ public class CiscoGrammarTest {
     assertThat(nxosStdNoAdv, equalTo(WellKnownCommunity.NO_ADVERTISE));
     assertThat(nxosStdNoExport, equalTo(WellKnownCommunity.NO_EXPORT));
     assertThat(nxosStdLocalAs, equalTo(WellKnownCommunity.NO_EXPORT_SUBCONFED));
-    
-    // make sure well known communities in expanded lists are converted to proper regexes
-    assertThat(iosRegexExpGshut, equalTo(regexGshut));
-    assertThat(iosRegexExpInternet, equalTo(regexInternet));
-    assertThat(iosRegexExpLocalAs, equalTo(regexLocalAs));
-    assertThat(iosRegexExpNoAdv, equalTo(regexNoAdv));
-    assertThat(iosRegexExpNoExport, equalTo(regexNoExport));
+
+    // TODO: get rid of these altogether?
+    // make sure well known communities in expanded lists are not actually converted
+    assertThat(iosRegexExpGshut, equalTo("gshut"));
+    assertThat(iosRegexExpInternet, equalTo("internet"));
+    assertThat(iosRegexExpLocalAs, equalTo("local-AS"));
+    assertThat(iosRegexExpNoAdv, equalTo("no-advertise"));
+    assertThat(iosRegexExpNoExport, equalTo("no-export"));
+
+    // check conjunctions of communities are converted correctly
+    assertThat(
+        ((LiteralCommunityConjunction)
+                communityListToMatchCondition(iosCommunityLists, "std_community"))
+            .getRequiredCommunities(),
+        equalTo(ImmutableSet.of(1L, 2L, 3L)));
+    assertThat(
+        ((LiteralCommunityConjunction)
+                communityListToMatchCondition(eosCommunityLists, "eos_std_multi"))
+            .getRequiredCommunities(),
+        equalTo(ImmutableSet.of(1L, 2L, 3L)));
+    assertThat(
+        ((LiteralCommunityConjunction)
+                communityListToMatchCondition(nxosCommunityLists, "nxos_std_multi"))
+            .getRequiredCommunities(),
+        equalTo(ImmutableSet.of(1L, 2L, 3L)));
   }
 
   @Test
@@ -2216,6 +2243,10 @@ public class CiscoGrammarTest {
                 hasIkePhase1Proposals(equalTo(ImmutableList.of("10", "20"))))));
   }
 
+  private static CommunitySetExpr communityListToMatchCondition(SortedMap<String, CommunityList> communityLists, String communityName) {
+    return communityLists.get(communityName).getLines().get(0).getMatchCondition();
+  }
+  
   private static long communityListToCommunity(
       SortedMap<String, CommunityList> communityLists, String communityName) {
     return communityLists

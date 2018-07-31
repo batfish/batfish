@@ -10,6 +10,7 @@ import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import org.batfish.common.BatfishException;
+import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.Configuration;
@@ -17,6 +18,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
+import org.batfish.datamodel.RegexCommunitySet;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.SubRange;
@@ -38,6 +40,7 @@ import org.batfish.datamodel.routing_policy.expr.IncrementLocalPreference;
 import org.batfish.datamodel.routing_policy.expr.IncrementMetric;
 import org.batfish.datamodel.routing_policy.expr.IntExpr;
 import org.batfish.datamodel.routing_policy.expr.LiteralAsList;
+import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LongExpr;
@@ -68,7 +71,6 @@ import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements.StaticStatement;
-import org.batfish.representation.cisco.InlineCommunitySet;
 import org.batfish.symbolic.CommunityVar;
 import org.batfish.symbolic.CommunityVar.Type;
 import org.batfish.symbolic.Graph;
@@ -802,7 +804,20 @@ class TransferBDD {
     BDD acc = factory.zero();
     for (CommunityListLine line : lines) {
       boolean action = (line.getAction() == LineAction.ACCEPT);
-      CommunityVar cvar = new CommunityVar(CommunityVar.Type.REGEX, line.getRegex(), null);
+      // todo: support non-regex community list lines
+      CommunitySetExpr lineCondition = line.getMatchCondition();
+      CommunityVar cvar;
+      if (lineCondition instanceof RegexCommunitySet) {
+        cvar =
+            new CommunityVar(
+                CommunityVar.Type.REGEX, ((RegexCommunitySet) lineCondition).getRegex(), null);
+      } else if (lineCondition instanceof LiteralCommunity) {
+        long c = ((LiteralCommunity) lineCondition).getCommunity();
+        cvar = new CommunityVar(CommunityVar.Type.EXACT, CommonUtil.longToCommunity(c), c);
+      } else {
+        throw new BatfishException(
+            "Unsupported CommunityListLine match condition: " + lineCondition);
+      }
       p.debug("Match Line: " + cvar);
       p.debug("Action: " + line.getAction());
       // Skip this match if it is irrelevant
@@ -824,11 +839,11 @@ class TransferBDD {
    */
   private BDD matchCommunitySet(
       TransferParam<BDDRoute> p, Configuration conf, CommunitySetExpr e, BDDRoute other) {
-    if (e instanceof InlineCommunitySet) {
+    if (e instanceof CommunityList) {
       Set<CommunityVar> comms = _graph.findAllCommunities(conf, e);
       BDD acc = factory.one();
       for (CommunityVar comm : comms) {
-        p.debug("Inline Community Set: " + comm);
+        p.debug("CommunityList: " + comm);
         BDD c = other.getCommunities().get(comm);
         if (c == null) {
           throw new BatfishException("matchCommunitySet: should not be null");
