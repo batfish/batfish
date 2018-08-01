@@ -32,7 +32,7 @@ public class CommunityListLine implements Serializable {
   }
 
   @JsonCreator
-  private @Nonnull CommunityListLine create(
+  private static @Nonnull CommunityListLine create(
       @JsonProperty(PROP_ACTION) LineAction action,
       @JsonProperty(PROP_MATCH_CONDITION) CommunitySetExpr matchCondition) {
     return new CommunityListLine(requireNonNull(action), requireNonNull(matchCondition));

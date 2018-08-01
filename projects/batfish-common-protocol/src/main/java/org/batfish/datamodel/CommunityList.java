@@ -1,7 +1,6 @@
 package org.batfish.datamodel;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
-import static java.util.Objects.requireNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -91,7 +90,7 @@ public class CommunityList extends CommunitySetExpr {
       @JsonProperty(PROP_INVERT_MATCH) boolean invertMatch,
       @JsonProperty(PROP_NAME) String name) {
     return new CommunityList(
-        requireNonNull(name), firstNonNull(lines, ImmutableList.of()), invertMatch);
+        firstNonNull(name, ""), firstNonNull(lines, ImmutableList.of()), invertMatch);
   }
 
   private final Supplier<LoadingCache<Long, Boolean>> _communityCache;
