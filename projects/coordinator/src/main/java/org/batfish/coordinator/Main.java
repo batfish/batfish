@@ -23,6 +23,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -89,7 +90,11 @@ public class Main {
     }
 
     Map<String, String> questionTemplates = new HashMap<>();
-    questionTemplateDir.forEach((dir) -> readQuestionTemplates(dir, questionTemplates));
+    questionTemplateDir
+        .stream()
+        .filter(Objects::nonNull)
+        .filter(dir -> !dir.toString().isEmpty())
+        .forEach((dir) -> readQuestionTemplates(dir, questionTemplates));
 
     return questionTemplates;
   }
