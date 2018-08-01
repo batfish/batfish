@@ -35,29 +35,44 @@
       "version" : "0.36.0",
       "warnings" : {
         "r1" : {
-          "Red flags" : {
-            "1" : "MISCELLANEOUS: No hostname set in file: 'configs/r1.cfg'\n"
-          }
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No hostname set in file: 'configs/r1.cfg'\n"
+            }
+          ]
         },
         "r2" : {
-          "Red flags" : {
-            "1" : "MISCELLANEOUS: No hostname set in file: 'configs/r2.cfg'\n"
-          }
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No hostname set in file: 'configs/r2.cfg'\n"
+            }
+          ]
         },
         "r3" : {
-          "Red flags" : {
-            "1" : "MISCELLANEOUS: No hostname set in file: 'configs/r3.cfg'\n"
-          }
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No hostname set in file: 'configs/r3.cfg'\n"
+            }
+          ]
         },
         "z1-firewall" : {
-          "Red flags" : {
-            "1" : "MISCELLANEOUS: No hostname set in file: 'configs/z1-firewall.cfg'\n"
-          }
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No hostname set in file: 'configs/z1-firewall.cfg'\n"
+            }
+          ]
         },
         "z2-firewall" : {
-          "Red flags" : {
-            "1" : "MISCELLANEOUS: No hostname set in file: 'configs/z2-firewall.cfg'\n"
-          }
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No hostname set in file: 'configs/z2-firewall.cfg'\n"
+            }
+          ]
         }
       }
     },

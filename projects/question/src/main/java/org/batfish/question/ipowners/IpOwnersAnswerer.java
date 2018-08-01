@@ -17,7 +17,6 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
-import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
@@ -86,12 +85,11 @@ class IpOwnersAnswerer extends Answerer {
   /** Create table metadata for this answer. */
   private static TableMetadata getTableMetadata() {
     List<ColumnMetadata> columnMetadata = getColumnMetadata();
-    DisplayHints displayHints = new DisplayHints();
-    displayHints.setTextDesc(
+    return new TableMetadata(
+        columnMetadata,
         String.format(
             "On node ${%s} in VRF ${%s}, interface ${%s} has IP ${%s}.",
             COL_NODE, COL_VRFNAME, COL_INTERFACE_NAME, COL_IP));
-    return new TableMetadata(columnMetadata, displayHints);
   }
 
   /** Create column metadata. */
