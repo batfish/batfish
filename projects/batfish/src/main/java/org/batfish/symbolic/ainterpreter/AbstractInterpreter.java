@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Queue;
 import java.util.Set;
 import org.batfish.datamodel.BgpNeighbor;
@@ -126,9 +127,7 @@ public class AbstractInterpreter {
     long tempTime;
     long t = System.currentTimeMillis();
 
-    // int i = 0;
     while (!update.isEmpty()) {
-      // i++;
       String router = update.poll();
       assert (router != null);
       updateSet.remove(router);
@@ -251,7 +250,7 @@ public class AbstractInterpreter {
             } else {
               proto = RoutingProtocol.BGP;
               BgpNeighbor n = _graph.getEbgpNeighbors().get(ge);
-              doUpdate = (n != null && !n.getLocalAs().equals(n.getRemoteAs()));
+              doUpdate = (n != null && Objects.equals(n.getLocalAs(), n.getRemoteAs()));
             }
 
             if (doUpdate) {

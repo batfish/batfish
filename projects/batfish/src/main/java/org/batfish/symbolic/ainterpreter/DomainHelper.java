@@ -612,7 +612,7 @@ public class DomainHelper {
 
   public List<Route> toRoutes(BDD rib) {
     List<Route> ribEntries = new ArrayList<>();
-    List<SatAssignment> entries = BDDUtils.allSat(_netFactory, rib, false);
+    List<SatAssignment> entries = BDDUtils.allSat(_netFactory, rib, true);
     for (SatAssignment entry : entries) {
       Prefix p = new Prefix(entry.getDstIp(), entry.getPrefixLen());
       Route r =

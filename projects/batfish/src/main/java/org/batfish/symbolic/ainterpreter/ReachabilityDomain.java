@@ -27,7 +27,7 @@ public class ReachabilityDomain implements IAbstractDomain<RouteAclStateSetPair>
   protected BDDNetFactory _netFactory;
 
   // Reference to BDD Route variables
-  protected BDDRoute _variables;
+  private BDDRoute _variables;
 
   // Helper object to encapsulate common functionality
   protected DomainHelper _domainHelper;
@@ -39,6 +39,13 @@ public class ReachabilityDomain implements IAbstractDomain<RouteAclStateSetPair>
     _variables = _netFactory.routeVariables();
     _domainHelper = new DomainHelper(netFactory);
     _network = BDDNetwork.create(graph, netFactory, false);
+  }
+
+  public ReachabilityDomain(Graph graph, BDDNetFactory netFactory, BDDNetwork network) {
+    _netFactory = netFactory;
+    _variables = _netFactory.routeVariables();
+    _domainHelper = new DomainHelper(netFactory);
+    _network = network;
   }
 
   public BDDNetFactory getNetFactory() {
@@ -82,7 +89,7 @@ public class ReachabilityDomain implements IAbstractDomain<RouteAclStateSetPair>
     if (prefixes != null) {
       for (Prefix prefix : prefixes) {
         BDD pfx = BDDUtils.prefixToBdd(_netFactory.getFactory(), _variables, prefix);
-        acc.orWith(pfx);
+        acc = acc.orWith(pfx);
       }
     }
     BDD prot = _variables.getProtocolHistory().value(proto);

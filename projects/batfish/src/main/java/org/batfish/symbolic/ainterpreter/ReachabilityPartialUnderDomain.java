@@ -4,12 +4,17 @@ import net.sf.javabdd.BDD;
 import org.batfish.symbolic.Graph;
 import org.batfish.symbolic.bdd.BDDAcl;
 import org.batfish.symbolic.bdd.BDDNetFactory;
+import org.batfish.symbolic.bdd.BDDNetwork;
 import org.batfish.symbolic.bdd.BDDTransferFunction;
 
 public class ReachabilityPartialUnderDomain extends ReachabilityDomain {
 
   public ReachabilityPartialUnderDomain(Graph graph, BDDNetFactory netFactory) {
     super(graph, netFactory);
+  }
+
+  public ReachabilityPartialUnderDomain(Graph graph, BDDNetFactory netFactory, BDDNetwork network) {
+    super(graph, netFactory, network);
   }
 
   @Override

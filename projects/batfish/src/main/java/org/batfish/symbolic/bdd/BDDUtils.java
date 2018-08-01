@@ -243,25 +243,38 @@ public class BDDUtils {
    * will currently set them to false for each example, unless the
    * expand flag is true.
    */
-  public static List<SatAssignment> allSat(BDDNetFactory netFactory, BDD x, boolean expandPrefix) {
+  public static List<SatAssignment> allSat(
+      BDDNetFactory netFactory, BDD x, boolean expandPrefix) {
     List<SatAssignment> entries = new ArrayList<>();
     @SuppressWarnings("unchecked")
     List<byte[]> assignments = (List<byte[]>) x.allsat();
     for (byte[] variables : assignments) {
       List<byte[]> concreteAssignments = new ArrayList<>();
+      List<Integer> dontCare = new ArrayList<>();
 
-      if (expandPrefix) {
-        List<Integer> dontCare = new ArrayList<>();
-        int start = netFactory.getIndexDstIp();
-        int end = start + netFactory.getNumBitsDstIp();
-        for (int i = start; i < end; i++) {
-          byte b = variables[i];
-          if (b == -1) {
+      int startDstIp = netFactory.getIndexDstIp();
+      int endDstIp = startDstIp + netFactory.getNumBitsDstIp();
+      for (int i = startDstIp; i < endDstIp; i++) {
+        byte b = variables[i];
+        if (b == -1) {
+          if (expandPrefix) {
             dontCare.add(i);
           }
         }
-        expand(dontCare, 0, variables, concreteAssignments);
-      } else {
+      }
+      int startPfxLen = netFactory.getIndexPrefixLen();
+      int endPfxLen = startDstIp + netFactory.getNumBitsPrefixLen();
+      for (int i = startPfxLen; i < endPfxLen; i++) {
+        byte b = variables[i];
+        if (b == -1) {
+          if (expandPrefix) {
+            dontCare.add(i);
+          }
+        }
+      }
+      expand(dontCare, 0, variables, concreteAssignments);
+
+      if (dontCare.isEmpty()) {
         concreteAssignments.add(variables);
       }
 

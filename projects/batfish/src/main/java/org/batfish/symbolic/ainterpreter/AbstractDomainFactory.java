@@ -19,7 +19,8 @@ public class AbstractDomainFactory {
       case REACHABILITY:
         config = new BDDNetConfig(true);
         netFactory = new BDDNetFactory(graph, config);
-        return new ReachabilityUnderDomain(graph, netFactory);
+        // return ReachabilityUnderDomain.create(graph, netFactory);
+        return new ReachabilityOverDomain(graph, netFactory);
       default:
         throw new BatfishException("Invalid domain type: " + dtype);
     }
