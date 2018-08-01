@@ -116,6 +116,11 @@ public class ReferenceBook implements Comparable<ReferenceBook> {
     return _addressGroups;
   }
 
+  /** Return the {@link FilterGroup} with name {@code groupName} */
+  public Optional<FilterGroup> getFilterGroup(String groupName) {
+    return _filterGroups.stream().filter(group -> group.getName().equals(groupName)).findAny();
+  }
+
   @JsonProperty(PROP_FILTER_GROUPS)
   public SortedSet<FilterGroup> getFilterGroups() {
     return _filterGroups;
