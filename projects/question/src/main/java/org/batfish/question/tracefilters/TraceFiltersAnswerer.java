@@ -1,6 +1,8 @@
 package org.batfish.question.tracefilters;
 
+import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Multiset;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -17,13 +19,14 @@ import org.batfish.datamodel.acl.AclTracer;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.DisplayHints;
-import org.batfish.datamodel.questions.Exclusion;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.Row.RowBuilder;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
+import org.batfish.specifier.FilterSpecifier;
+import org.batfish.specifier.SpecifierContext;
 
 public class TraceFiltersAnswerer extends Answerer {
 
@@ -76,60 +79,14 @@ public class TraceFiltersAnswerer extends Answerer {
   @Override
   public TableAnswerElement answer() {
     TraceFiltersQuestion question = (TraceFiltersQuestion) _question;
-
     Map<String, Configuration> configurations = _batfish.loadConfigurations();
     Set<String> includeNodes = question.getNodeRegex().getMatchingNodes(_batfish);
+    SpecifierContext specifierContext = _batfish.specifierContext();
+
+    Multiset<Row> rows = rawAnswer(configurations, question, includeNodes, specifierContext);
 
     TableAnswerElement answer = create(question);
-    for (Configuration c : configurations.values()) {
-      if (!includeNodes.contains(c.getHostname())) {
-        continue;
-      }
-      for (IpAccessList filter : c.getIpAccessLists().values()) {
-        if (!question.getFilterRegex().matches(filter, c)) {
-          continue;
-        }
-        Flow flow = getFlow(c.getHostname(), question, configurations);
-        AclTrace trace =
-            AclTracer.trace(
-                filter,
-                flow,
-                question.getIngressInterface(),
-                c.getIpAccessLists(),
-                c.getIpSpaces(),
-                c.getIpSpaceMetadata());
-        FilterResult result =
-            filter.filter(
-                flow, question.getIngressInterface(), c.getIpAccessLists(), c.getIpSpaces());
-        Integer matchLine = result.getMatchLine();
-        String lineDesc = "no-match";
-        if (matchLine != null) {
-          lineDesc = filter.getLines().get(matchLine).getName();
-          if (lineDesc == null) {
-            lineDesc = "line:" + matchLine;
-          }
-        }
-        Row row =
-            getRow(
-                c.getHostname(),
-                filter.getName(),
-                flow,
-                result.getAction(),
-                matchLine,
-                lineDesc,
-                trace);
-
-        // exclude or not?
-        Exclusion exclusion = Exclusion.covered(row, question.getExclusions());
-        if (exclusion != null) {
-          answer.addExcludedRow(row, exclusion.getName());
-        } else {
-          answer.addRow(row);
-        }
-      }
-      // there should be another for loop for v6 filters when we add v6 support
-    }
-    answer.setSummary(answer.computeSummary(question.getAssertion()));
+    answer.postProcessAnswer(question, rows);
     return answer;
   }
 
@@ -163,5 +120,56 @@ public class TraceFiltersAnswerer extends Answerer {
         .put(TraceFiltersAnswerer.COLUMN_LINE_CONTENT, lineContent)
         .put(TraceFiltersAnswerer.COLUMN_TRACE, trace);
     return row.build();
+  }
+
+  Multiset<Row> rawAnswer(
+      Map<String, Configuration> configurations,
+      TraceFiltersQuestion question,
+      Set<String> includeNodes,
+      SpecifierContext specifierContext) {
+
+    FilterSpecifier filterSpecifier = question.getFilterSpecifier();
+
+    Multiset<Row> rows = HashMultiset.create();
+
+    for (Configuration c : configurations.values()) {
+      if (!includeNodes.contains(c.getHostname())) {
+        continue;
+      }
+      for (IpAccessList filter : filterSpecifier.resolve(c.getHostname(), specifierContext)) {
+
+        Flow flow = getFlow(c.getHostname(), question, configurations);
+        AclTrace trace =
+            AclTracer.trace(
+                filter,
+                flow,
+                question.getIngressInterface(),
+                c.getIpAccessLists(),
+                c.getIpSpaces(),
+                c.getIpSpaceMetadata());
+        FilterResult result =
+            filter.filter(
+                flow, question.getIngressInterface(), c.getIpAccessLists(), c.getIpSpaces());
+        Integer matchLine = result.getMatchLine();
+        String lineDesc = "no-match";
+        if (matchLine != null) {
+          lineDesc = filter.getLines().get(matchLine).getName();
+          if (lineDesc == null) {
+            lineDesc = "line:" + matchLine;
+          }
+        }
+        rows.add(
+            getRow(
+                c.getHostname(),
+                filter.getName(),
+                flow,
+                result.getAction(),
+                matchLine,
+                lineDesc,
+                trace));
+      }
+      // there should be another for loop for v6 filters when we add v6 support
+    }
+    return rows;
   }
 }

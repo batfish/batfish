@@ -10,14 +10,18 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
-import org.batfish.datamodel.questions.FiltersSpecifier;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
+import org.batfish.specifier.FilterSpecifier;
+import org.batfish.specifier.FilterSpecifierFactory;
+import org.batfish.specifier.FlexibleFilterSpecifierFactory;
 
 /** A question to check for multipath inconsistencies. */
 public class ReachFilterQuestion extends Question {
 
-  private static final String PROP_FILTERS_SPECIFIER_NAME = "filterRegex";
+  private static final String FILTER_SPECIFIER_FACTORY = FlexibleFilterSpecifierFactory.NAME;
+
+  private static final String PROP_FILTER_SPECIFIER_INPUT = "filterRegex";
 
   private static final String PROP_NODES_SPECIFIER_NAME = "nodeRegex";
 
@@ -32,7 +36,7 @@ public class ReachFilterQuestion extends Question {
   // Invariant: null unless _type == MATCH_LINE
   @Nullable private Integer _lineNumber;
 
-  @Nonnull private FiltersSpecifier _filtersSpecifier = FiltersSpecifier.ALL;
+  @Nullable private String _filterSpecifierInput;
 
   @Nonnull private NodesSpecifier _nodesSpecifier = NodesSpecifier.ALL;
 
@@ -49,9 +53,16 @@ public class ReachFilterQuestion extends Question {
   }
 
   @Nonnull
-  @JsonProperty(PROP_FILTERS_SPECIFIER_NAME)
-  public FiltersSpecifier getFiltersSpecifier() {
-    return _filtersSpecifier;
+  @JsonIgnore
+  public FilterSpecifier getFilterSpecifier() {
+    return FilterSpecifierFactory.load(FILTER_SPECIFIER_FACTORY)
+        .buildFilterSpecifier(_filterSpecifierInput);
+  }
+
+  @Nullable
+  @JsonProperty(PROP_FILTER_SPECIFIER_INPUT)
+  private String getFilterSpecifierInput() {
+    return _filterSpecifierInput;
   }
 
   @Nonnull
@@ -71,9 +82,9 @@ public class ReachFilterQuestion extends Question {
     return _type;
   }
 
-  @JsonProperty(PROP_FILTERS_SPECIFIER_NAME)
-  public void setFiltersSpecifier(@Nullable FiltersSpecifier filtersSpecifier) {
-    _filtersSpecifier = firstNonNull(filtersSpecifier, FiltersSpecifier.ALL);
+  @JsonProperty(PROP_FILTER_SPECIFIER_INPUT)
+  public void setFilterSpecifierInput(@Nullable String filterSpecifierInput) {
+    _filterSpecifierInput = filterSpecifierInput;
   }
 
   @JsonProperty(PROP_NODES_SPECIFIER_NAME)
