@@ -138,7 +138,7 @@ public class NodePropertySpecifier extends PropertySpecifier {
 
   @JsonCreator
   public NodePropertySpecifier(String expression) {
-    _expression = expression.trim().toLowerCase();
+    _expression = expression;
     _pattern = Pattern.compile(_expression.trim().toLowerCase()); // canonicalize
   }
 

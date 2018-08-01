@@ -70,7 +70,7 @@ public class OspfPropertySpecifier extends PropertySpecifier {
 
   @JsonCreator
   public OspfPropertySpecifier(String expression) {
-    _expression = expression.trim().toLowerCase();
+    _expression = expression;
     _pattern = Pattern.compile(_expression.trim().toLowerCase()); // canonicalize
   }
 
