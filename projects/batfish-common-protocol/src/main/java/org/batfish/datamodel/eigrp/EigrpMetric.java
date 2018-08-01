@@ -47,11 +47,8 @@ public class EigrpMetric implements Serializable {
      */
 
     _classicBandwidth = namedToClassicBandwidth(namedBandwidth);
-    if (bandwidth >= 1E9) {
-      _classicDelay = 1L;
-    } else {
-      _classicDelay = namedToClassicDelay(namedDelay);
-    }
+    long classicDelay = namedToClassicDelay(namedDelay);
+    _classicDelay = classicDelay == 0 ? 1 : classicDelay;
 
     // TODO set from arguments (from config)
     // https://github.com/batfish/batfish/issues/1946

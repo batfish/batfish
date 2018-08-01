@@ -216,7 +216,7 @@ public class EigrpTest {
     long bandwidth = 10L;
     long delay = 1L;
     // Loopback values
-    long lDelay = 1L;
+    long lDelay = 500L;
 
     bandwidth *= scale;
     delay *= scale;
