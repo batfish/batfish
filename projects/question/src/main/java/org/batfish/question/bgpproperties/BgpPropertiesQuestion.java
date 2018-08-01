@@ -9,7 +9,7 @@ import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 
 /**
- * A question that returns properties of OSPF routing processes. {@link #_nodeRegex} and {@link
+ * A question that returns properties of BGP routing processes. {@link #_nodeRegex} and {@link
  * #_propertySpec} determine which nodes and properties are included. The default is to include
  * everything.
  */
