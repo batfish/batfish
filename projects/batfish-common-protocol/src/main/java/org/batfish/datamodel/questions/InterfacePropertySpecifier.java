@@ -122,7 +122,7 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
 
   @JsonCreator
   public InterfacePropertySpecifier(String expression) {
-    _expression = expression.trim().toLowerCase();
+    _expression = expression;
     _pattern = Pattern.compile(_expression.trim().toLowerCase()); // canonicalize
   }
 
