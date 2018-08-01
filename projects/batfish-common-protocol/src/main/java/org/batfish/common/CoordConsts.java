@@ -138,6 +138,7 @@ public class CoordConsts {
   public static final String SVC_RSC_DEL_SNAPSHOT = "delsnapshot";
   public static final String SVC_RSC_DEL_TESTRIG = "deltestrig";
   public static final String SVC_RSC_CONFIGURE_QUESTION_TEMPLATE = "configurequestiontemplate";
+  public static final String SVC_RSC_GET_ANALYSIS_ANSWER = "getanalysisanswer";
   public static final String SVC_RSC_GET_ANALYSIS_ANSWERS = "getanalysisanswers";
   public static final String SVC_RSC_GET_ANSWER = "getanswer";
   public static final String SVC_RSC_GET_CONFIGURATION = "getconfiguration";
