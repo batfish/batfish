@@ -116,8 +116,8 @@ public class BatfishCompressionTest {
   }
 
   /**
-   * This network should be compressed from: A --> B --> D, A --> C --> D to A --> {B,C} --> D.
-   * i.e., B and C should be merged into one node.
+   * This network should be compressed from: A -&gt; B -&gt; D, A -&gt; C -&gt; D to A -&gt; {B,C}
+   * -&gt; D. i.e., B and C should be merged into one node.
    *
    * @return Configurations for the original (uncompressed) network.
    */

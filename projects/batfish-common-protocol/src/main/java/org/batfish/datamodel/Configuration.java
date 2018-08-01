@@ -231,7 +231,7 @@ public final class Configuration implements Serializable {
 
   private final String _name;
 
-  /** Normal => Excluding extended and reserved vlans that should not be modified or deleted. */
+  /** Normal =&gt; Excluding extended and reserved vlans that should not be modified or deleted. */
   private SubRange _normalVlanRange;
 
   private NavigableSet<String> _ntpServers;

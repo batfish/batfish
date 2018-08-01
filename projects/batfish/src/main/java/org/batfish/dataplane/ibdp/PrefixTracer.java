@@ -195,7 +195,7 @@ public class PrefixTracer implements Serializable {
     }
   }
 
-  /** Structure: prefix -> action -> set of hostnames */
+  /** Structure: prefix -&gt; action -&gt; set of hostnames */
   public Map<Prefix, Map<String, Set<String>>> summarize() {
     Map<Prefix, Map<String, Set<String>>> result = new HashMap<>();
     _sent.forEach(

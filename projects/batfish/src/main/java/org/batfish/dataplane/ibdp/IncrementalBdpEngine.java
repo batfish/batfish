@@ -671,7 +671,8 @@ class IncrementalBdpEngine {
   }
 
   /**
-   * Return the main RIB routes for each node. Map structure: Hostname -> VRF name -> Set of routes
+   * Return the main RIB routes for each node. Map structure: Hostname -&gt; VRF name -&gt; Set of
+   * routes
    */
   static SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes(
       IncrementalDataPlane dp) {
