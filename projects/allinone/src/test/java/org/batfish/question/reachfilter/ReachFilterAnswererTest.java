@@ -33,7 +33,6 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.answers.Schema;
-import org.batfish.datamodel.questions.FiltersSpecifier;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.main.Batfish;
@@ -164,7 +163,7 @@ public final class ReachFilterAnswererTest {
     ReachFilterQuestion question = new ReachFilterQuestion();
     question.setQuery("permit");
     question.setNodesSpecifier(new NodesSpecifier(".*"));
-    question.setFiltersSpecifier(new FiltersSpecifier(ACL.getName()));
+    question.setFilterSpecifierInput(ACL.getName());
     ReachFilterAnswerer answerer = new ReachFilterAnswerer(question, _batfish);
     List<Pair<String, IpAccessList>> queryAcls = answerer.getQueryAcls(question);
     assertThat(queryAcls, hasSize(1));
@@ -179,7 +178,7 @@ public final class ReachFilterAnswererTest {
     ReachFilterQuestion question = new ReachFilterQuestion();
     question.setQuery("deny");
     question.setNodesSpecifier(new NodesSpecifier(".*"));
-    question.setFiltersSpecifier(new FiltersSpecifier(ACL.getName()));
+    question.setFilterSpecifierInput(ACL.getName());
     ReachFilterAnswerer answerer = new ReachFilterAnswerer(question, _batfish);
     List<Pair<String, IpAccessList>> queryAcls = answerer.getQueryAcls(question);
     assertThat(queryAcls, hasSize(1));
@@ -194,7 +193,7 @@ public final class ReachFilterAnswererTest {
     ReachFilterQuestion question = new ReachFilterQuestion();
     question.setQuery("matchLine 2");
     question.setNodesSpecifier(new NodesSpecifier(".*"));
-    question.setFiltersSpecifier(new FiltersSpecifier(ACL.getName()));
+    question.setFilterSpecifierInput(ACL.getName());
     ReachFilterAnswerer answerer = new ReachFilterAnswerer(question, _batfish);
     List<Pair<String, IpAccessList>> queryAcls = answerer.getQueryAcls(question);
     assertThat(queryAcls, hasSize(1));
@@ -291,7 +290,7 @@ public final class ReachFilterAnswererTest {
     ReachFilterQuestion question = new ReachFilterQuestion();
     ReachFilterAnswerer answerer = new ReachFilterAnswerer(question, _batfish);
     question.setNodesSpecifier(new NodesSpecifier(".*"));
-    question.setFiltersSpecifier(new FiltersSpecifier(".*"));
+    question.setFilterSpecifierInput(null);
     TableAnswerElement ae = (TableAnswerElement) answerer.answer();
     assertThat(
         ae,

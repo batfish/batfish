@@ -7,6 +7,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.questions.IPacketTraceQuestion;
 import org.batfish.datamodel.questions.NodesSpecifier;
+import org.batfish.specifier.FilterSpecifier;
+import org.batfish.specifier.FilterSpecifierFactory;
 import org.batfish.specifier.FlexibleFilterSpecifierFactory;
 
 /**
@@ -43,9 +45,10 @@ public class TraceFiltersQuestion extends IPacketTraceQuestion {
     return _filterRegex;
   }
 
+  @Nonnull
   @JsonIgnore
-  public String getFilterSpecifierFactory() {
-    return FILTER_SPECIFIER_FACTORY;
+  public FilterSpecifier getFilterSpecifier() {
+    return FilterSpecifierFactory.load(FILTER_SPECIFIER_FACTORY).buildFilterSpecifier(_filterRegex);
   }
 
   @Override
