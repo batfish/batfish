@@ -1,4 +1,4 @@
-package org.batfish.question.ospfproperties;
+package org.batfish.question.bgpproperties;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashMultiset;
@@ -11,13 +11,13 @@ import java.util.stream.Collectors;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
+import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
-import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.pojo.Node;
+import org.batfish.datamodel.questions.BgpPropertySpecifier;
 import org.batfish.datamodel.questions.DisplayHints;
-import org.batfish.datamodel.questions.OspfPropertySpecifier;
 import org.batfish.datamodel.questions.PropertySpecifier;
 import org.batfish.datamodel.questions.PropertySpecifier.PropertyDescriptor;
 import org.batfish.datamodel.questions.Question;
@@ -27,23 +27,23 @@ import org.batfish.datamodel.table.Row.RowBuilder;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
 
-public class OspfPropertiesAnswerer extends Answerer {
+public class BgpPropertiesAnswerer extends Answerer {
 
   public static final String COL_NODE = "Node";
   public static final String COL_VRF = "VRF";
-  public static final String COL_PROCESS_ID = "ProcessId";
+  public static final String COL_ROUTER_ID = "RouterId";
 
-  public OspfPropertiesAnswerer(Question question, IBatfish batfish) {
+  public BgpPropertiesAnswerer(Question question, IBatfish batfish) {
     super(question, batfish);
   }
 
   /** Creates a {@link TableMetadata} object from the question. */
-  static TableMetadata createMetadata(OspfPropertiesQuestion question) {
+  static TableMetadata createMetadata(BgpPropertiesQuestion question) {
     List<ColumnMetadata> columnMetadata =
         ImmutableList.<ColumnMetadata>builder()
             .add(new ColumnMetadata(COL_NODE, Schema.NODE, "Node", true, false))
             .add(new ColumnMetadata(COL_VRF, Schema.STRING, "VRF", true, false))
-            .add(new ColumnMetadata(COL_PROCESS_ID, Schema.STRING, "ProcessId", true, false))
+            .add(new ColumnMetadata(COL_ROUTER_ID, Schema.IP, "RouterId", true, false))
             .addAll(
                 question
                     .getPropertySpec()
@@ -53,7 +53,7 @@ public class OspfPropertiesAnswerer extends Answerer {
                         prop ->
                             new ColumnMetadata(
                                 prop,
-                                OspfPropertySpecifier.JAVA_MAP.get(prop).getSchema(),
+                                BgpPropertySpecifier.JAVA_MAP.get(prop).getSchema(),
                                 "Property " + prop,
                                 false,
                                 true))
@@ -62,7 +62,7 @@ public class OspfPropertiesAnswerer extends Answerer {
 
     String textDesc =
         String.format(
-            "Properties of OSPF process ${%s}:${%s}:${%s}.", COL_NODE, COL_VRF, COL_PROCESS_ID);
+            "Properties of BGP process ${%s}:${%s}:${%s}.", COL_NODE, COL_VRF, COL_ROUTER_ID);
     DisplayHints dhints = question.getDisplayHints();
     if (dhints != null && dhints.getTextDesc() != null) {
       textDesc = dhints.getTextDesc();
@@ -73,7 +73,7 @@ public class OspfPropertiesAnswerer extends Answerer {
 
   @Override
   public AnswerElement answer() {
-    OspfPropertiesQuestion question = (OspfPropertiesQuestion) _question;
+    BgpPropertiesQuestion question = (BgpPropertiesQuestion) _question;
     Map<String, Configuration> configurations = _batfish.loadConfigurations();
     Set<String> nodes = question.getNodeRegex().getMatchingNodes(_batfish);
 
@@ -89,7 +89,7 @@ public class OspfPropertiesAnswerer extends Answerer {
 
   @VisibleForTesting
   static Multiset<Row> rawAnswer(
-      OspfPropertiesQuestion question,
+      BgpPropertiesQuestion question,
       Map<String, Configuration> configurations,
       Set<String> nodes,
       Map<String, ColumnMetadata> columnMetadata) {
@@ -104,32 +104,32 @@ public class OspfPropertiesAnswerer extends Answerer {
               .values()
               .forEach(
                   vrf -> {
-                    OspfProcess ospfProcess = vrf.getOspfProcess();
-                    if (ospfProcess == null) {
+                    BgpProcess bgpProcess = vrf.getBgpProcess();
+                    if (bgpProcess == null) {
                       return;
                     }
                     RowBuilder rowBuilder =
                         Row.builder(columnMetadata)
                             .put(COL_NODE, new Node(nodeName))
                             .put(COL_VRF, vrf.getName())
-                            .put(COL_PROCESS_ID, ospfProcess.getProcessId());
+                            .put(COL_ROUTER_ID, bgpProcess.getRouterId());
 
                     for (String property : question.getPropertySpec().getMatchingProperties()) {
-                      PropertyDescriptor<OspfProcess> propertyDescriptor =
-                          OspfPropertySpecifier.JAVA_MAP.get(property);
+                      PropertyDescriptor<BgpProcess> propertyDescriptor =
+                          BgpPropertySpecifier.JAVA_MAP.get(property);
                       try {
                         PropertySpecifier.fillProperty(
-                            propertyDescriptor, ospfProcess, property, rowBuilder);
+                            propertyDescriptor, bgpProcess, property, rowBuilder);
                       } catch (ClassCastException e) {
                         throw new BatfishException(
                             String.format(
-                                "Type mismatch between property value ('%s') and Schema ('%s') for property '%s' for OSPF process '%s->%s-%s': %s",
-                                propertyDescriptor.getGetter().apply(ospfProcess),
+                                "Type mismatch between property value ('%s') and Schema ('%s') for property '%s' for BGP process '%s->%s-%s': %s",
+                                propertyDescriptor.getGetter().apply(bgpProcess),
                                 propertyDescriptor.getSchema(),
                                 property,
                                 nodeName,
                                 vrf.getName(),
-                                ospfProcess,
+                                bgpProcess,
                                 e.getMessage()),
                             e);
                       }
