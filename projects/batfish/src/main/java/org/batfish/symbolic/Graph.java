@@ -19,7 +19,6 @@ import javax.annotation.Nullable;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpProcess;
@@ -33,7 +32,6 @@ import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
-import org.batfish.datamodel.RegexCommunitySet;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
@@ -43,12 +41,12 @@ import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
-import org.batfish.datamodel.routing_policy.expr.CommunityHalvesExpr;
+import org.batfish.datamodel.routing_policy.expr.CommunitySetElem;
 import org.batfish.datamodel.routing_policy.expr.CommunitySetExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
-import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
-import org.batfish.datamodel.routing_policy.expr.LiteralCommunityConjunction;
+import org.batfish.datamodel.routing_policy.expr.InlineCommunitySet;
+import org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf;
 import org.batfish.datamodel.routing_policy.expr.MatchCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
@@ -810,8 +808,7 @@ public class Graph {
         CommunityList cl = entry.getValue();
         if (cl != null && cl.getLines().size() == 1) {
           CommunityListLine line = cl.getLines().get(0);
-          // TODO: verify this form of the key doesn't break anything
-          _namedCommunities.put(line.getMatchCondition().toString(), name);
+          _namedCommunities.put(line.getRegex(), name);
         }
       }
     }
@@ -894,40 +891,36 @@ public class Graph {
    * router configuration and community set expression.
    */
   public Set<CommunityVar> findAllCommunities(Configuration conf, CommunitySetExpr ce) {
+    return CommunityVarCollector.collectCommunityVars(conf, ce);
     Set<CommunityVar> comms = new HashSet<>();
-    if (ce instanceof LiteralCommunity) {
-      long community = ((LiteralCommunity) ce).getCommunity();
-      comms.add(
-          new CommunityVar(
-              CommunityVar.Type.EXACT, CommonUtil.longToCommunity(community), community));
-    } else if (ce instanceof CommunityHalvesExpr) {
-      /*
-       * CommunityHalvesExpr with literal halves should have been optimized into a LiteralCommunity.
-       * Only other options are currently unsupported.
-       */
-      throw new BatfishException("TODO: community non literal: " + ce);
-    } else if (ce instanceof NamedCommunitySet) {
+    if (ce instanceof InlineCommunitySet) {
+      InlineCommunitySet c = (InlineCommunitySet) ce;
+      for (CommunitySetElem cse : c.getCommunities()) {
+        if (cse.getPrefix() instanceof LiteralCommunitySetElemHalf
+            && cse.getSuffix() instanceof LiteralCommunitySetElemHalf) {
+          LiteralCommunitySetElemHalf x = (LiteralCommunitySetElemHalf) cse.getPrefix();
+          LiteralCommunitySetElemHalf y = (LiteralCommunitySetElemHalf) cse.getSuffix();
+          int prefixInt = x.getValue();
+          int suffixInt = y.getValue();
+          String val = prefixInt + ":" + suffixInt;
+          Long l = (((long) prefixInt) << 16) | (suffixInt);
+          CommunityVar var = new CommunityVar(CommunityVar.Type.EXACT, val, l);
+          comms.add(var);
+        } else {
+          throw new BatfishException("TODO: community non literal: " + cse);
+        }
+      }
+    }
+    if (ce instanceof NamedCommunitySet) {
       NamedCommunitySet c = (NamedCommunitySet) ce;
       String cname = c.getName();
       CommunityList cl = conf.getCommunityLists().get(cname);
       if (cl != null) {
-        comms.addAll(findAllCommunities(conf, cl));
+        for (CommunityListLine line : cl.getLines()) {
+          CommunityVar var = new CommunityVar(CommunityVar.Type.REGEX, line.getRegex(), null);
+          comms.add(var);
+        }
       }
-    } else if (ce instanceof RegexCommunitySet) {
-      comms.add(
-          new CommunityVar(CommunityVar.Type.REGEX, ((RegexCommunitySet) ce).getRegex(), null));
-    } else if (ce instanceof LiteralCommunityConjunction) {
-      ((LiteralCommunityConjunction) ce)
-          .getRequiredCommunities()
-          .stream()
-          .map(l -> new CommunityVar(CommunityVar.Type.EXACT, CommonUtil.longToCommunity(l), l))
-          .forEach(comms::add);
-    } else if (ce instanceof CommunityList) {
-      ((CommunityList) ce)
-          .getLines()
-          .stream()
-          .map(CommunityListLine::getMatchCondition)
-          .forEach(lineCe -> comms.addAll(findAllCommunities(conf, lineCe)));
     }
     return comms;
   }
@@ -945,8 +938,7 @@ public class Graph {
         CommunityList cl = entry.getValue();
         if (cl != null && cl.getLines().size() == 1) {
           CommunityListLine line = cl.getLines().get(0);
-          // TODO: verify this form of the key doesn't break anything
-          comms.put(line.getMatchCondition().toString(), name);
+          comms.put(line.getRegex(), name);
         }
       }
     }

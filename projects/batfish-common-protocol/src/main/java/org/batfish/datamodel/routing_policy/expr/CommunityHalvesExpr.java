@@ -10,6 +10,8 @@ import java.util.Set;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.routing_policy.Environment;
+import org.batfish.datamodel.visitors.CommunitySetExprVisitor;
+import org.batfish.datamodel.visitors.VoidCommunitySetExprVisitor;
 
 public class CommunityHalvesExpr extends CommunitySetExpr {
 
@@ -33,6 +35,16 @@ public class CommunityHalvesExpr extends CommunitySetExpr {
   public CommunityHalvesExpr(@Nonnull CommunityHalfExpr left, @Nonnull CommunityHalfExpr right) {
     _left = left;
     _right = right;
+  }
+
+  @Override
+  public <T> T accept(CommunitySetExprVisitor<T> visitor) {
+    return visitor.visitCommunityHalvesExpr(this);
+  }
+
+  @Override
+  public void accept(VoidCommunitySetExprVisitor visitor) {
+    visitor.visitCommunityHalvesExpr(this);
   }
 
   @Override

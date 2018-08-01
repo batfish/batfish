@@ -8,6 +8,8 @@ import java.util.Set;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.routing_policy.Environment;
+import org.batfish.datamodel.visitors.CommunitySetExprVisitor;
+import org.batfish.datamodel.visitors.VoidCommunitySetExprVisitor;
 
 public class NamedCommunitySet extends CommunitySetExpr {
 
@@ -24,6 +26,16 @@ public class NamedCommunitySet extends CommunitySetExpr {
 
   public NamedCommunitySet(@Nonnull String name) {
     _name = name;
+  }
+
+  @Override
+  public <T> T accept(CommunitySetExprVisitor<T> visitor) {
+    return visitor.visitNamedCommunitySet(this);
+  }
+
+  @Override
+  public void accept(VoidCommunitySetExprVisitor visitor) {
+    visitor.visitNamedCommunitySet(this);
   }
 
   @Override

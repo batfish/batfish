@@ -24,6 +24,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.expr.CommunitySetExpr;
+import org.batfish.datamodel.visitors.CommunitySetExprVisitor;
+import org.batfish.datamodel.visitors.VoidCommunitySetExprVisitor;
 
 /**
  * Represents a named access-list whose matching criteria is restricted to regexes on community
@@ -123,6 +125,16 @@ public class CommunityList extends CommunitySetExpr {
     _communityCache = Suppliers.memoize(new CommunityCacheSupplier());
     _dynamic = Suppliers.memoize(new DynamicSupplier());
     _reducible = Suppliers.memoize(new ReducibleSupplier());
+  }
+
+  @Override
+  public <T> T accept(CommunitySetExprVisitor<T> visitor) {
+    return visitor.visitCommunityList(this);
+  }
+
+  @Override
+  public void accept(VoidCommunitySetExprVisitor visitor) {
+    visitor.visitCommunityList(this);
   }
 
   @Override

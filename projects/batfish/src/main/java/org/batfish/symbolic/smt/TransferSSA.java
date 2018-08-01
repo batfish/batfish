@@ -13,7 +13,6 @@ import java.util.Map;
 import java.util.Set;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Pair;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.CommunityListLine;
@@ -23,7 +22,6 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
-import org.batfish.datamodel.RegexCommunitySet;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.SubRange;
@@ -43,9 +41,9 @@ import org.batfish.datamodel.routing_policy.expr.DisjunctionChain;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.IncrementLocalPreference;
 import org.batfish.datamodel.routing_policy.expr.IncrementMetric;
+import org.batfish.datamodel.routing_policy.expr.InlineCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.IntExpr;
 import org.batfish.datamodel.routing_policy.expr.LiteralAsList;
-import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LongExpr;
@@ -314,20 +312,7 @@ class TransferSSA {
     BoolExpr acc = _enc.mkFalse();
     for (CommunityListLine line : lines) {
       boolean action = (line.getAction() == LineAction.ACCEPT);
-      // todo: support non-regex community list lines
-      CommunitySetExpr lineCondition = line.getMatchCondition();
-      CommunityVar cvar;
-      if (lineCondition instanceof RegexCommunitySet) {
-        cvar =
-            new CommunityVar(
-                CommunityVar.Type.REGEX, ((RegexCommunitySet) lineCondition).getRegex(), null);
-      } else if (lineCondition instanceof LiteralCommunity) {
-        long c = ((LiteralCommunity) lineCondition).getCommunity();
-        cvar = new CommunityVar(CommunityVar.Type.EXACT, CommonUtil.longToCommunity(c), c);
-      } else {
-        throw new BatfishException(
-            "Unsupported CommunityListLine match condition: " + lineCondition);
-      }
+      CommunityVar cvar = new CommunityVar(CommunityVar.Type.REGEX, line.getRegex(), null);
       BoolExpr c = other.getCommunities().get(cvar);
       acc = _enc.mkIf(c, _enc.mkBool(action), acc);
     }
@@ -338,7 +323,7 @@ class TransferSSA {
    * Converts a community set to a boolean expression
    */
   private BoolExpr matchCommunitySet(Configuration conf, CommunitySetExpr e, SymbolicRoute other) {
-    if (e instanceof CommunityList) {
+    if (e instanceof InlineCommunitySet) {
       Set<CommunityVar> comms = _enc.getGraph().findAllCommunities(conf, e);
       BoolExpr acc = _enc.mkTrue();
       for (CommunityVar comm : comms) {

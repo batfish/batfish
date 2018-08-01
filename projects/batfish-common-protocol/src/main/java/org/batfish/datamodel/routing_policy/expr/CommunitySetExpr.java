@@ -9,11 +9,17 @@ import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.routing_policy.Environment;
+import org.batfish.datamodel.visitors.CommunitySetExprVisitor;
+import org.batfish.datamodel.visitors.VoidCommunitySetExprVisitor;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
 public abstract class CommunitySetExpr implements Serializable {
 
   private static final long serialVersionUID = 1L;
+
+  public abstract <T> T accept(CommunitySetExprVisitor<T> visitor);
+
+  public abstract void accept(VoidCommunitySetExprVisitor visitor);
 
   /**
    * Returns the set of all literal communities represented by this {@link CommunitySetExpr}.<br>

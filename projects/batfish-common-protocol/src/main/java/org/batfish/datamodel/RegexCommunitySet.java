@@ -14,6 +14,8 @@ import javax.annotation.Nonnull;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.expr.CommunitySetExpr;
+import org.batfish.datamodel.visitors.CommunitySetExprVisitor;
+import org.batfish.datamodel.visitors.VoidCommunitySetExprVisitor;
 
 public final class RegexCommunitySet extends CommunitySetExpr {
 
@@ -42,6 +44,16 @@ public final class RegexCommunitySet extends CommunitySetExpr {
   public RegexCommunitySet(@Nonnull String regex) {
     _regex = regex;
     _pattern = Suppliers.memoize(new PatternSupplier());
+  }
+
+  @Override
+  public <T> T accept(CommunitySetExprVisitor<T> visitor) {
+    return visitor.visitRegexCommunitySet(this);
+  }
+
+  @Override
+  public void accept(VoidCommunitySetExprVisitor visitor) {
+    visitor.visitRegexCommunitySet(this);
   }
 
   @Override

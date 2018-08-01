@@ -11,6 +11,8 @@ import java.util.Set;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.routing_policy.Environment;
+import org.batfish.datamodel.visitors.CommunitySetExprVisitor;
+import org.batfish.datamodel.visitors.VoidCommunitySetExprVisitor;
 
 public final class LiteralCommunityConjunction extends CommunitySetExpr {
 
@@ -29,6 +31,16 @@ public final class LiteralCommunityConjunction extends CommunitySetExpr {
 
   public LiteralCommunityConjunction(@Nonnull Collection<Long> requiredCommunities) {
     _requiredCommunities = ImmutableSortedSet.copyOf(requiredCommunities);
+  }
+
+  @Override
+  public <T> T accept(CommunitySetExprVisitor<T> visitor) {
+    return visitor.visitLiteralCommunityConjunction(this);
+  }
+
+  @Override
+  public void accept(VoidCommunitySetExprVisitor visitor) {
+    visitor.visitLiteralCommunityConjunction(this);
   }
 
   @Override
