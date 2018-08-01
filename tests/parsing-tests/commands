@@ -12,4 +12,7 @@ test tests/parsing-tests/unit-tests-unused.ref get unusedstructures
 test tests/parsing-tests/unit-tests-nodes.ref get nodes summary=false
 
 # The srx-testbed currently has a bunch of stuff not in unit-tests. Keep testing it for now.
-test -compareall tests/parsing-tests/srx-testbed.ref init-testrig tests/parsing-tests/networks/srx-testbed
+test -compareall tests/parsing-tests/srx-testbed.ref init-snapshot tests/parsing-tests/networks/srx-testbed
+
+# The example-juniper currently has a bunch of stuff not in unit-tests. Keep testing it for now.
+test -compareall tests/parsing-tests/example-juniper.ref init-snapshot test_rigs/example-juniper
