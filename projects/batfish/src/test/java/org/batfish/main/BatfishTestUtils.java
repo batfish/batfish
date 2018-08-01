@@ -237,7 +237,7 @@ public class BatfishTestUtils {
    * Get a new Batfish instance with given configurations, tempFolder should be present for
    * non-empty configurations
    *
-   * @param configurations Map of all Configuration Name -> Configuration Object
+   * @param configurations Map of all Configuration Name -&gt; Configuration Object
    * @param tempFolder Temporary folder to be used to files required for Batfish
    * @return New Batfish instance
    */
@@ -251,8 +251,8 @@ public class BatfishTestUtils {
    * Get a new Batfish instance with given base and delta configurations, tempFolder should be
    * present for non-empty configurations
    *
-   * @param baseConfigs Map of all Configuration Name -> Configuration Object
-   * @param deltaConfigs Map of all Configuration Name -> Configuration Object
+   * @param baseConfigs Map of all Configuration Name -&gt; Configuration Object
+   * @param deltaConfigs Map of all Configuration Name -&gt; Configuration Object
    * @param tempFolder Temporary folder to be used to files required for Batfish
    * @return New Batfish instance
    */

@@ -177,7 +177,7 @@ public class NamedStructureEquivalenceSets<T> {
   }
 
   /**
-   * Mapping: hostname -> names of structures of this type for which named host is the
+   * Mapping: hostname -&gt; names of structures of this type for which named host is the
    * representative
    */
   @JsonIgnore

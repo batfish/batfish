@@ -22,7 +22,7 @@ public interface SynthesizerInput {
   int getNodeInterfaceId(String node, String iface);
 
   /**
-   * Mapping: hostname -> aclName -> lineNumber -> lineAction <br>
+   * Mapping: hostname -&gt; aclName -&gt; lineNumber -&gt; lineAction <br>
    * This mapping contains only the acls that are required for the operation this {@link
    * SynthesizerInput} is being used for. Specifically, for ACL-reachability this should contain all
    * ACLs, while for other reachability queries this will only contain ACLs that a packet could
@@ -31,47 +31,49 @@ public interface SynthesizerInput {
   Map<String, Map<String, List<LineAction>>> getAclActions();
 
   /**
-   * Mapping: hostname -> aclName -> lineNumber -> lineConditions <br>
+   * Mapping: hostname -&gt; aclName -&gt; lineNumber -&gt; lineConditions <br>
    * lineConditions is a boolean expression representing the constraints on a header necessary for
    * that line to be matched.
    */
   Map<String, Map<String, List<BooleanExpr>>> getAclConditions();
 
   /**
-   * Mapping: hostname -> vrfName -> outInterface -> recvNode -> recvInterface ->
+   * Mapping: hostname -&gt; vrfName -&gt; outInterface -&gt; recvNode -&gt; recvInterface -&gt;
    * dstIpConstraintForWhichArpReplySent
    */
   Map<String, Map<String, Map<String, Map<String, Map<String, BooleanExpr>>>>> getArpTrueEdge();
 
   Set<Edge> getEnabledEdges();
 
-  /** Mapping: hostname -> interfaces */
+  /** Mapping: hostname -&gt; interfaces */
   Map<String, Set<String>> getEnabledInterfaces();
 
-  /** Mapping: hostname -> vrf -> interfaces */
+  /** Mapping: hostname -&gt; vrf -&gt; interfaces */
   Map<String, Map<String, Set<String>>> getEnabledInterfacesByNodeVrf();
 
   Set<String> getEnabledNodes();
 
-  /** Mapping: hostname -> vrfs */
+  /** Mapping: hostname -&gt; vrfs */
   Map<String, Set<String>> getEnabledVrfs();
 
-  /** Mapping: hostname -> interface-> incomingAcl */
+  /** Mapping: hostname -&gt; interface-&gt; incomingAcl */
   Map<String, Map<String, String>> getIncomingAcls();
 
   /** Ingress locations grouped by the required constraint on src IP */
   Map<IngressLocation, BooleanExpr> getSrcIpConstraints();
 
-  /** Mapping: hostname -> ipsOwnedByHostname */
+  /** Mapping: hostname -&gt; ipsOwnedByHostname */
   Map<String, Set<Ip>> getIpsByHostname();
 
-  /** Mapping: hostname -> vrf -> ipsOwnedByVrf */
+  /** Mapping: hostname -&gt; vrf -&gt; ipsOwnedByVrf */
   Map<String, Map<String, Set<Ip>>> getIpsByNodeVrf();
 
-  /** Mapping: hostname -> IpSpace name -> IpSpace */
+  /** Mapping: hostname -&gt; IpSpace name -&gt; IpSpace */
   Map<String, Map<String, IpSpace>> getNamedIpSpaces();
 
-  /** Mapping: hostname -> vrfName -> outInterface -> dstIpConstraintForWhichNoArpReplySent */
+  /**
+   * Mapping: hostname -&gt; vrfName -&gt; outInterface -&gt; dstIpConstraintForWhichNoArpReplySent
+   */
   Map<String, Map<String, Map<String, BooleanExpr>>> getNeighborUnreachable();
 
   /** Set of hostnames of nodes that have a firewall with a MatchSrcInterface AclLineMatchExpr */
@@ -80,27 +82,28 @@ public interface SynthesizerInput {
   /** Set of nodes that should not be transited */
   Set<String> getNonTransitNodes();
 
-  /** Mapping: hostname -> vrfName -> nullRoutedIps */
+  /** Mapping: hostname -&gt; vrfName -&gt; nullRoutedIps */
   Map<String, Map<String, BooleanExpr>> getNullRoutedIps();
 
-  /** Mapping: hostname -> interface-> outgoingAcl */
+  /** Mapping: hostname -&gt; interface-&gt; outgoingAcl */
   Map<String, Map<String, String>> getOutgoingAcls();
 
-  /** Mapping: hostname -> vrfName -> routableIps */
+  /** Mapping: hostname -&gt; vrfName -&gt; routableIps */
   Map<String, Map<String, BooleanExpr>> getRoutableIps();
 
   /** Whether to run simplifier on AST after rule generation */
   boolean getSimplify();
 
   /**
-   * Mapping: hostname -> interface -> [(preconditionPreTransformationState, transformationToApply)]
+   * Mapping: hostname -&gt; interface -&gt; [(preconditionPreTransformationState,
+   * transformationToApply)]
    */
   Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> getSourceNats();
 
   /** The set of nodes for which we should track whether they are transited */
   Set<String> getTransitNodes();
 
-  /** Mapping: hostname -> interfacesAllowedToBelongToAnEdge */
+  /** Mapping: hostname -&gt; interfacesAllowedToBelongToAnEdge */
   Map<String, Set<String>> getTraversableInterfaces();
 
   /**
@@ -118,7 +121,7 @@ public interface SynthesizerInput {
    */
   Field getSourceInterfaceField();
 
-  /** Mapping: hostname -> interface -> constraint on transformed source interface field */
+  /** Mapping: hostname -&gt; interface -&gt; constraint on transformed source interface field */
   Map<String, Map<String, IntExpr>> getSourceInterfaceFieldValues();
 
   /** Whether it's synthesizing data plane rules */

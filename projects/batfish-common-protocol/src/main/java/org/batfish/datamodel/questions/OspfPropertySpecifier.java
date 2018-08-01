@@ -18,8 +18,8 @@ import org.batfish.datamodel.ospf.OspfProcess;
  * <p>Example specifiers:
  *
  * <ul>
- *   <li>max-metric-summary-links —> gets the process's corresponding value
- *   <li>max-metric-.* --> gets all properties that start with 'max-metric-'
+ *   <li>max-metric-summary-links -&gt; gets the process's corresponding value
+ *   <li>max-metric-.* -&gt; gets all properties that start with 'max-metric-'
  * </ul>
  */
 public class OspfPropertySpecifier extends PropertySpecifier {

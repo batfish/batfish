@@ -28,8 +28,8 @@ public interface SpecifierContext {
   Set<NodeRole> getNodeRolesByDimension(String dimension);
 
   /**
-   * @return the {@link IpSpace}s owned by each interface in the network. Mapping: hostname ->
-   *     interface name -> IpSpace.
+   * @return the {@link IpSpace}s owned by each interface in the network. Mapping: hostname -&gt;
+   *     interface name -&gt; IpSpace.
    */
   Map<String, Map<String, IpSpace>> getInterfaceOwnedIps();
 
@@ -47,8 +47,8 @@ public interface SpecifierContext {
   }
 
   /**
-   * @return the {@link IpSpace}s owned by each VRF in the network. Mapping: hostname -> VRF name ->
-   *     IpSpace.
+   * @return the {@link IpSpace}s owned by each VRF in the network. Mapping: hostname -&gt; VRF name
+   *     -&gt; IpSpace.
    */
   Map<String, Map<String, IpSpace>> getVrfOwnedIps();
 
