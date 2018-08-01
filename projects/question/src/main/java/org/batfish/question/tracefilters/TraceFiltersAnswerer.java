@@ -58,20 +58,20 @@ public class TraceFiltersAnswerer extends Answerer {
             new ColumnMetadata(COLUMN_LINE_NUMBER, Schema.INTEGER, "Line number", false, true),
             new ColumnMetadata(COLUMN_LINE_CONTENT, Schema.STRING, "Line content", false, true),
             new ColumnMetadata(COLUMN_TRACE, Schema.ACL_TRACE, "ACL trace", false, true));
+    String textDesc =
+        String.format(
+            "Filter ${%s} on node ${%s} will ${%s} flow ${%s} at line ${%s} ${%s}",
+            COLUMN_FILTER_NAME,
+            COLUMN_NODE,
+            COLUMN_ACTION,
+            COLUMN_FLOW,
+            COLUMN_LINE_NUMBER,
+            COLUMN_LINE_CONTENT);
     DisplayHints dhints = question.getDisplayHints();
-    if (dhints == null) {
-      dhints = new DisplayHints();
-      dhints.setTextDesc(
-          String.format(
-              "Filter ${%s} on node ${%s} will ${%s} flow ${%s} at line ${%s} ${%s}",
-              COLUMN_FILTER_NAME,
-              COLUMN_NODE,
-              COLUMN_ACTION,
-              COLUMN_FLOW,
-              COLUMN_LINE_NUMBER,
-              COLUMN_LINE_CONTENT));
+    if (dhints != null && dhints.getTextDesc() != null) {
+      textDesc = dhints.getTextDesc();
     }
-    TableMetadata metadata = new TableMetadata(columnMetadata, dhints);
+    TableMetadata metadata = new TableMetadata(columnMetadata, textDesc);
     return new TableAnswerElement(metadata);
   }
 

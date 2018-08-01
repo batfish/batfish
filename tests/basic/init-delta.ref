@@ -1715,10 +1715,16 @@
       "version" : "0.36.0",
       "warnings" : {
         "as1border1" : {
-          "Red flags" : {
-            "1" : "MISCELLANEOUS: Could not determine update source for BGP neighbor: '3.2.2.2'",
-            "2" : "MISCELLANEOUS: Could not determine update source for BGP neighbor: '5.6.7.8'"
-          }
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Could not determine update source for BGP neighbor: '3.2.2.2'"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Could not determine update source for BGP neighbor: '5.6.7.8'"
+            }
+          ]
         }
       }
     },

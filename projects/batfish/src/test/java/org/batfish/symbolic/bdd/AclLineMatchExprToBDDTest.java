@@ -37,7 +37,7 @@ public class AclLineMatchExprToBDDTest {
   public void setup() {
     _pkt = new BDDPacket();
     _toBDD =
-        new AclLineMatchExprToBDD(BDDPacket.factory, _pkt, ImmutableMap.of(), ImmutableMap.of());
+        new AclLineMatchExprToBDD(_pkt.getFactory(), _pkt, ImmutableMap.of(), ImmutableMap.of());
   }
 
   @Test
@@ -100,7 +100,7 @@ public class AclLineMatchExprToBDDTest {
     PermittedByAcl permittedByAcl = new PermittedByAcl("foo");
     Map<String, Supplier<BDD>> namedAclBDDs = ImmutableMap.of("foo", () -> fooIpBDD);
     AclLineMatchExprToBDD toBDD =
-        new AclLineMatchExprToBDD(BDDPacket.factory, _pkt, namedAclBDDs, ImmutableMap.of());
+        new AclLineMatchExprToBDD(_pkt.getFactory(), _pkt, namedAclBDDs, ImmutableMap.of());
     assertThat(permittedByAcl.accept(toBDD), equalTo(fooIpBDD));
   }
 
@@ -108,7 +108,7 @@ public class AclLineMatchExprToBDDTest {
   public void testPermittedByAcl_undefined() {
     PermittedByAcl permittedByAcl = new PermittedByAcl("foo");
     AclLineMatchExprToBDD toBDD =
-        new AclLineMatchExprToBDD(BDDPacket.factory, _pkt, ImmutableMap.of(), ImmutableMap.of());
+        new AclLineMatchExprToBDD(_pkt.getFactory(), _pkt, ImmutableMap.of(), ImmutableMap.of());
     exception.expect(IllegalArgumentException.class);
     exception.expectMessage("Undefined PermittedByAcl reference: foo");
     permittedByAcl.accept(toBDD);
@@ -120,7 +120,7 @@ public class AclLineMatchExprToBDDTest {
     Map<String, Supplier<BDD>> namedAclBDDs = new HashMap<>();
     namedAclBDDs.put("foo", new NonRecursiveSupplier<>(() -> namedAclBDDs.get("foo").get()));
     AclLineMatchExprToBDD toBDD =
-        new AclLineMatchExprToBDD(BDDPacket.factory, _pkt, namedAclBDDs, ImmutableMap.of());
+        new AclLineMatchExprToBDD(_pkt.getFactory(), _pkt, namedAclBDDs, ImmutableMap.of());
     exception.expect(BatfishException.class);
     exception.expectMessage("Circular PermittedByAcl reference: foo");
     permittedByAcl.accept(toBDD);

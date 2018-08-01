@@ -9,10 +9,16 @@
       },
       "warnings" : {
         "as1r1" : {
-          "Red flags" : {
-            "1" : "MISCELLANEOUS: Unrecognized Line: 5: ip address 10.12.11.1 255.255.255.0aaaaa:wq (Batfish parser context: [if_inner s_interface stanza cisco_configuration]) SUBSEQUENT LINES MAY NOT BE PROCESSED CORRECTLY",
-            "2" : "MISCELLANEOUS: Could not determine update source for BGP neighbor: '10.12.11.2'"
-          }
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Unrecognized Line: 5: ip address 10.12.11.1 255.255.255.0aaaaa:wq (Batfish parser context: [if_inner s_interface stanza cisco_configuration]) SUBSEQUENT LINES MAY NOT BE PROCESSED CORRECTLY"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Could not determine update source for BGP neighbor: '10.12.11.2'"
+            }
+          ]
         }
       }
     }

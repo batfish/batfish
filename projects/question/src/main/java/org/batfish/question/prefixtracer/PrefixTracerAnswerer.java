@@ -17,7 +17,6 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
-import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.ColumnMetadata;
@@ -100,12 +99,11 @@ class PrefixTracerAnswerer extends Answerer {
             new ColumnMetadata(COL_ACTION, Schema.STRING, "The action that takes place"),
             new ColumnMetadata(COL_PREFIX, Schema.PREFIX, "The prefix in question"));
 
-    DisplayHints dhints = new DisplayHints();
-    dhints.setTextDesc(
-        String.format(
-            "For prefix ${%s}, on node ${%s} action ${%s} was taken for peer {%s}",
-            COL_PREFIX, COL_NODE, COL_ACTION, COL_PEER));
-
-    return new TableMetadata(columnMetadata, dhints);
+    return new TableMetadata(columnMetadata, TEXT_DESC);
   }
+
+  private static final String TEXT_DESC =
+      String.format(
+          "For prefix ${%s}, on node ${%s} action ${%s} was taken for peer {%s}",
+          COL_PREFIX, COL_NODE, COL_ACTION, COL_PEER);
 }

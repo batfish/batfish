@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -41,7 +42,9 @@ import org.batfish.datamodel.questions.Exclusion;
  * key is the column name and the value (currently) is JsonNode.
  */
 @ParametersAreNonnullByDefault
-public class Row implements Comparable<Row> {
+public class Row implements Comparable<Row>, Serializable {
+
+  private static final long serialVersionUID = 1L;
 
   public abstract static class RowBuilder {
 
