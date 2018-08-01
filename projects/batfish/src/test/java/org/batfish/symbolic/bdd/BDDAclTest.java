@@ -54,7 +54,7 @@ public class BDDAclTest {
         aclWithLines(accepting(HeaderSpace.builder().setDstIps(fooIp.toIpSpace()).build()));
     Map<String, IpAccessList> namedAcls = ImmutableMap.of("foo", fooAcl);
     IpAccessList acl = aclWithLines(accepting(new PermittedByAcl("foo")));
-    BDD bdd = BDDAcl.create(acl, namedAcls, ImmutableMap.of()).getBdd();
+    BDD bdd = BDDAcl.create(_pkt, acl, namedAcls, ImmutableMap.of()).getBdd();
     assertThat(bdd, equalTo(fooIpBDD));
   }
 
@@ -63,7 +63,7 @@ public class BDDAclTest {
     IpAccessList acl = aclWithLines(accepting(new PermittedByAcl("foo")));
     exception.expect(IllegalArgumentException.class);
     exception.expectMessage("Undefined PermittedByAcl reference: foo");
-    BDDAcl.create(acl);
+    BDDAcl.create(_pkt, acl);
   }
 
   @Test
@@ -73,6 +73,6 @@ public class BDDAclTest {
     Map<String, IpAccessList> namedAcls = ImmutableMap.of("foo", fooAcl);
     exception.expect(BatfishException.class);
     exception.expectMessage("Circular PermittedByAcl reference: foo");
-    BDDAcl.create(fooAcl, namedAcls, ImmutableMap.of());
+    BDDAcl.create(_pkt, fooAcl, namedAcls, ImmutableMap.of());
   }
 }

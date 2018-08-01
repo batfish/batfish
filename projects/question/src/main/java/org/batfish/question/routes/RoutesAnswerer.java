@@ -29,7 +29,6 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
-import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
@@ -265,9 +264,7 @@ public class RoutesAnswerer extends Answerer {
             new ColumnMetadata(
                 COL_METRIC, Schema.INTEGER, "Route's metric", Boolean.FALSE, Boolean.TRUE));
     }
-    DisplayHints dh = new DisplayHints();
-    dh.setTextDesc("Display RIB routes");
-    return new TableMetadata(columnBuilder.build(), dh);
+    return new TableMetadata(columnBuilder.build(), "Display RIB routes");
   }
 
   /** Generate table columns that should be always present, at the start of table. */

@@ -6,143 +6,13 @@
         "answerElements" : [
           {
             "class" : "org.batfish.question.UnusedStructuresQuestionPlugin$UnusedStructuresAnswerElement",
-            "problems" : {
-              "unused:bgp group:as1" : {
-                "description" : "Unused structure of type: 'bgp group' with name: 'as1'",
-                "files" : {
-                  "configs/as2border2.cfg" : [
-                    86
-                  ],
-                  "configs/as3border1.cfg" : [
-                    81
-                  ]
-                }
-              },
-              "unused:bgp group:as2" : {
-                "description" : "Unused structure of type: 'bgp group' with name: 'as2'",
-                "files" : {
-                  "configs/as1border2.cfg" : [
-                    87
-                  ],
-                  "configs/as3border2.cfg" : [
-                    83
-                  ]
-                }
-              },
-              "unused:bgp group:as3" : {
-                "description" : "Unused structure of type: 'bgp group' with name: 'as3'",
-                "files" : {
-                  "configs/as1border1.cfg" : [
-                    83
-                  ],
-                  "configs/as2border1.cfg" : [
-                    93
-                  ]
-                }
-              },
-              "unused:expanded community-list:as1_community" : {
-                "description" : "Unused structure of type: 'expanded community-list' with name: 'as1_community'",
-                "files" : {
-                  "configs/as1border1.cfg" : [
-                    119
-                  ],
-                  "configs/as1border2.cfg" : [
-                    123
-                  ]
-                }
-              },
-              "unused:expanded community-list:as2_community" : {
-                "description" : "Unused structure of type: 'expanded community-list' with name: 'as2_community'",
-                "files" : {
-                  "configs/as2border1.cfg" : [
-                    124
-                  ],
-                  "configs/as2border2.cfg" : [
-                    121
-                  ]
-                }
-              },
-              "unused:expanded community-list:as3_community" : {
-                "description" : "Unused structure of type: 'expanded community-list' with name: 'as3_community'",
-                "files" : {
-                  "configs/as3border1.cfg" : [
-                    115
-                  ],
-                  "configs/as3border2.cfg" : [
-                    115
-                  ]
-                }
-              },
-              "unused:extended ipv4 access-list:102" : {
-                "description" : "Unused structure of type: 'extended ipv4 access-list' with name: '102'",
-                "files" : {
-                  "configs/as2dist1.cfg" : [
-                    116
-                  ],
-                  "configs/as2dist2.cfg" : [
-                    116
-                  ]
-                }
-              },
-              "unused:extended ipv4 access-list:105" : {
-                "description" : "Unused structure of type: 'extended ipv4 access-list' with name: '105'",
-                "files" : {
-                  "configs/as2dept1.cfg" : [
-                    121,
-                    122,
-                    123,
-                    124
-                  ]
-                }
-              },
-              "unused:extended ipv4 access-list:RESTRICT_HOST_TRAFFIC_OUT" : {
-                "description" : "Unused structure of type: 'extended ipv4 access-list' with name: 'RESTRICT_HOST_TRAFFIC_OUT'",
-                "files" : {
-                  "configs/as2dept1.cfg" : [
-                    114,
-                    115,
-                    116,
-                    117
-                  ]
-                }
-              },
-              "unused:ipv4 prefix-list:inbound_route_filter" : {
-                "description" : "Unused structure of type: 'ipv4 prefix-list' with name: 'inbound_route_filter'",
-                "files" : {
-                  "configs/as1border1.cfg" : [
-                    129,
-                    130
-                  ],
-                  "configs/as1border2.cfg" : [
-                    134,
-                    135
-                  ],
-                  "configs/as2border1.cfg" : [
-                    140,
-                    141
-                  ],
-                  "configs/as2border2.cfg" : [
-                    136,
-                    137
-                  ],
-                  "configs/as3border1.cfg" : [
-                    123,
-                    124
-                  ],
-                  "configs/as3border2.cfg" : [
-                    121,
-                    122
-                  ]
-                }
-              }
-            },
             "summary" : {
               "numFailed" : 0,
               "numPassed" : 0,
               "numResults" : 22
             },
             "unusedStructures" : {
-              "as1border1" : {
+              "configs/as1border1.cfg" : {
                 "bgp group" : {
                   "as3" : [
                     83
@@ -160,7 +30,7 @@
                   ]
                 }
               },
-              "as1border2" : {
+              "configs/as1border2.cfg" : {
                 "bgp group" : {
                   "as2" : [
                     87
@@ -178,7 +48,7 @@
                   ]
                 }
               },
-              "as2border1" : {
+              "configs/as2border1.cfg" : {
                 "bgp group" : {
                   "as3" : [
                     93
@@ -196,7 +66,7 @@
                   ]
                 }
               },
-              "as2border2" : {
+              "configs/as2border2.cfg" : {
                 "bgp group" : {
                   "as1" : [
                     86
@@ -214,7 +84,7 @@
                   ]
                 }
               },
-              "as2dept1" : {
+              "configs/as2dept1.cfg" : {
                 "extended ipv4 access-list" : {
                   "105" : [
                     121,
@@ -230,21 +100,21 @@
                   ]
                 }
               },
-              "as2dist1" : {
+              "configs/as2dist1.cfg" : {
                 "extended ipv4 access-list" : {
                   "102" : [
                     116
                   ]
                 }
               },
-              "as2dist2" : {
+              "configs/as2dist2.cfg" : {
                 "extended ipv4 access-list" : {
                   "102" : [
                     116
                   ]
                 }
               },
-              "as3border1" : {
+              "configs/as3border1.cfg" : {
                 "bgp group" : {
                   "as1" : [
                     81
@@ -262,7 +132,7 @@
                   ]
                 }
               },
-              "as3border2" : {
+              "configs/as3border2.cfg" : {
                 "bgp group" : {
                   "as2" : [
                     83

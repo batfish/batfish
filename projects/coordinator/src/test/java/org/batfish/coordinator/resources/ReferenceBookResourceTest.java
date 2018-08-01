@@ -50,7 +50,8 @@ public class ReferenceBookResourceTest extends WorkMgrServiceV2TestBase {
 
     // write a library to the right place
     ReferenceLibrary.write(
-        new ReferenceLibrary(ImmutableList.of(new ReferenceBook(null, "book1", null, null, null))),
+        new ReferenceLibrary(
+            ImmutableList.of(new ReferenceBook(null, null, "book1", null, null, null))),
         Main.getWorkMgr().getReferenceLibraryPath(container));
 
     Response response = getAddressBookTarget(container, "book1").delete();
@@ -73,7 +74,8 @@ public class ReferenceBookResourceTest extends WorkMgrServiceV2TestBase {
 
     // write a library to the right place
     ReferenceLibrary.write(
-        new ReferenceLibrary(ImmutableList.of(new ReferenceBook(null, "book1", null, null, null))),
+        new ReferenceLibrary(
+            ImmutableList.of(new ReferenceBook(null, null, "book1", null, null, null))),
         Main.getWorkMgr().getReferenceLibraryPath(container));
 
     // we only check that the right type of object is returned at the expected URL target
@@ -82,7 +84,7 @@ public class ReferenceBookResourceTest extends WorkMgrServiceV2TestBase {
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
     assertThat(
         response.readEntity(ReferenceBook.class),
-        equalTo(new ReferenceBook(null, "book1", null, null, null)));
+        equalTo(new ReferenceBook(null, null, "book1", null, null, null)));
 
     // should get 404 for non-existent dimension
     Response response2 = getAddressBookTarget(container, "book2").get();

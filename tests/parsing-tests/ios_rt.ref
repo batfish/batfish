@@ -2323,7 +2323,7 @@
     {
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
       "definedStructures" : {
-        "fra-border-01" : {
+        "configs/fra-border-01.cfg" : {
           "interface" : {
             "Ethernet1/0" : {
               "definitionLines" : [
@@ -2343,7 +2343,7 @@
             }
           }
         },
-        "lhr-border-01" : {
+        "configs/lhr-border-01.cfg" : {
           "bgp group" : {
             "FW" : {
               "definitionLines" : [
@@ -2391,7 +2391,7 @@
             }
           }
         },
-        "lhr-border-02" : {
+        "configs/lhr-border-02.cfg" : {
           "bgp group" : {
             "FW" : {
               "definitionLines" : [
@@ -2430,7 +2430,7 @@
             }
           }
         },
-        "lhr-fw-01" : {
+        "configs/lhr-fw-01.cfg" : {
           "bgp group" : {
             "BORDER" : {
               "definitionLines" : [
@@ -2495,7 +2495,7 @@
             }
           }
         },
-        "lhr-fw-02" : {
+        "configs/lhr-fw-02.cfg" : {
           "bgp group" : {
             "BORDER" : {
               "definitionLines" : [
@@ -2560,7 +2560,7 @@
             }
           }
         },
-        "lhr-leaf-01" : {
+        "configs/lhr-leaf-01.cfg" : {
           "bgp group" : {
             "SPINE" : {
               "definitionLines" : [
@@ -2615,7 +2615,7 @@
             }
           }
         },
-        "lhr-leaf-02" : {
+        "configs/lhr-leaf-02.cfg" : {
           "bgp group" : {
             "SPINE" : {
               "definitionLines" : [
@@ -2670,7 +2670,7 @@
             }
           }
         },
-        "lhr-spine-01" : {
+        "configs/lhr-spine-01.cfg" : {
           "bgp group" : {
             "FW" : {
               "definitionLines" : [
@@ -2735,7 +2735,7 @@
             }
           }
         },
-        "lhr-spine-02" : {
+        "configs/lhr-spine-02.cfg" : {
           "bgp group" : {
             "FW" : {
               "definitionLines" : [
@@ -2800,7 +2800,7 @@
             }
           }
         },
-        "lix-peer-01" : {
+        "configs/lix-peer-01.cfg" : {
           "interface" : {
             "Ethernet1/1" : {
               "definitionLines" : [
@@ -2824,9 +2824,12 @@
       "version" : "0.36.0",
       "warnings" : {
         "lhr-border-02" : {
-          "Red flags" : {
-            "1" : "MISCELLANEOUS: Could not determine update source for BGP neighbor: '10.10.30.2'"
-          }
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Could not determine update source for BGP neighbor: '10.10.30.2'"
+            }
+          ]
         }
       }
     },

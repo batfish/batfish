@@ -1,13 +1,20 @@
 package org.batfish.coordinator;
 
+import static org.batfish.coordinator.Main.getQuestionTemplates;
 import static org.batfish.coordinator.Main.readQuestionTemplate;
+import static org.batfish.coordinator.Main.readQuestionTemplates;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.notNullValue;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
+import java.io.File;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Map;
+import org.batfish.common.BatfishLogger;
 import org.batfish.common.util.CommonUtil;
 import org.codehaus.jettison.json.JSONObject;
 import org.hamcrest.collection.IsMapContaining;
@@ -103,5 +110,70 @@ public class MainTest {
             IsMapContaining.hasEntry(
                 NEW_TEMPLATE_NAME,
                 "{\"instance\":{\"instanceName\":\"new_template\",\"description\":\"test question description\"}}")));
+  }
+
+  @Test
+  public void testReadQuestionTemplatesRecursive() throws Exception {
+    JSONObject testQuestion1 = new JSONObject();
+    testQuestion1.put(
+        "instance",
+        new JSONObject()
+            .put("instanceName", "testQuestion1")
+            .put("description", "test question one description"));
+    Path question1JsonPath = _folder.newFile("testquestion1.json").toPath();
+    CommonUtil.writeFile(question1JsonPath, testQuestion1.toString());
+
+    JSONObject testQuestion2 = new JSONObject();
+    testQuestion2.put(
+        "instance",
+        new JSONObject()
+            .put("instanceName", "testQuestion2")
+            .put("description", "test question two description"));
+    File nestedFolder = _folder.newFolder("nestedFolder");
+    Path question2JsonPath = nestedFolder.toPath().resolve("testquestions2.json");
+    CommonUtil.writeFile(question2JsonPath, testQuestion2.toString());
+
+    Map<String, String> questionTemplates = Maps.newHashMap();
+
+    readQuestionTemplates(_folder.getRoot().toPath(), questionTemplates);
+    assertThat(questionTemplates.keySet(), hasSize(2));
+    // Both templates should be present
+    assertThat(
+        questionTemplates,
+        allOf(
+            IsMapContaining.hasEntry(
+                "testquestion1",
+                "{\"instance\":{\"instanceName\":\"testQuestion1\",\"description\":\"test question one description\"}}"),
+            IsMapContaining.hasEntry(
+                "testquestion2",
+                "{\"instance\":{\"instanceName\":\"testQuestion2\",\"description\":\"test question two description\"}}")));
+  }
+
+  @Test
+  public void testEmptyQuestionTemplateDir() throws Exception {
+    JSONObject testQuestion = new JSONObject();
+    testQuestion.put(
+        "instance",
+        new JSONObject()
+            .put("instanceName", "testQuestion")
+            .put("description", "test question description"));
+    Path questionJsonPath = _folder.newFile("testquestion.json").toPath();
+    CommonUtil.writeFile(questionJsonPath, testQuestion.toString());
+
+    Main.mainInit(new String[0]);
+    Main.setLogger(new BatfishLogger("debug", false));
+    Main.getSettings()
+        .setQuestionTemplatedDirs(ImmutableList.of(_folder.getRoot().toPath(), Paths.get("")));
+
+    Map<String, String> questionTemplates = getQuestionTemplates();
+
+    assertThat(questionTemplates, notNullValue());
+    assertThat(questionTemplates.keySet(), hasSize(1));
+    // Both templates should be present
+    assertThat(
+        questionTemplates,
+        IsMapContaining.hasEntry(
+            "testquestion",
+            "{\"instance\":{\"instanceName\":\"testQuestion\",\"description\":\"test question description\"}}"));
   }
 }

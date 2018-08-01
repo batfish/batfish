@@ -22,6 +22,7 @@ public class ReferenceAddressGroupIpSpaceSpecifierTest {
         new ReferenceBook(
             ImmutableList.of(
                 new AddressGroup(ImmutableSortedSet.of("1.1.1.1", "2.2.2.2:0.0.0.8"), "group1")),
+            null,
             "book1",
             null,
             null,

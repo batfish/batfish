@@ -54,9 +54,7 @@ public class FilterTableAnswerer extends Answerer {
               .filter(cm -> question.getColumns().contains(cm.getName()))
               .collect(Collectors.toList());
 
-      // this copying can create issues when displayHints mention columns we have removed
-      // leaving this alone as we are likely to get rid of displayHints altogether
-      return new TableMetadata(columnMetadata, innerMetadata.getDisplayHints());
+      return new TableMetadata(columnMetadata, innerMetadata.getTextDesc());
     }
   }
 

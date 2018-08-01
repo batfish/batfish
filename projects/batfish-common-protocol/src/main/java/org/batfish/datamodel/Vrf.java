@@ -14,6 +14,7 @@ import java.util.NavigableSet;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import javax.annotation.Nullable;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
 import org.batfish.datamodel.eigrp.EigrpProcess;
@@ -89,7 +90,7 @@ public class Vrf extends ComparableStructure<String> {
 
   private NavigableMap<String, Interface> _interfaces;
 
-  private EigrpProcess _eigrpProcess;
+  @Nullable private EigrpProcess _eigrpProcess;
 
   private IsisProcess _isisProcess;
 
@@ -99,7 +100,7 @@ public class Vrf extends ComparableStructure<String> {
 
   private transient NavigableSet<BgpAdvertisement> _originatedIbgpAdvertisements;
 
-  private OspfProcess _ospfProcess;
+  @Nullable private OspfProcess _ospfProcess;
 
   private transient NavigableSet<BgpAdvertisement> _receivedAdvertisements;
 
@@ -160,6 +161,7 @@ public class Vrf extends ComparableStructure<String> {
 
   @JsonProperty(PROP_EIGRP_PROCESS)
   @JsonPropertyDescription("EIGRP routing process for this VRF")
+  @Nullable
   public EigrpProcess getEigrpProcess() {
     return _eigrpProcess;
   }
@@ -316,7 +318,7 @@ public class Vrf extends ComparableStructure<String> {
   }
 
   @JsonProperty(PROP_EIGRP_PROCESS)
-  public void setEigrpProcess(EigrpProcess process) {
+  public void setEigrpProcess(@Nullable EigrpProcess process) {
     _eigrpProcess = process;
   }
 

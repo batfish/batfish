@@ -17,7 +17,6 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.answers.Schema.Type;
-import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.table.Row.RowBuilder;
 
 /** A utility class to diff two tables */
@@ -167,7 +166,7 @@ public final class TableDiff {
               deltaColumnName(cm.getName()), cm.getSchema(), cm.getDescription(), false, false));
     }
 
-    return new TableMetadata(diffColumnMetatadata.build(), new DisplayHints(null, null, dhintText));
+    return new TableMetadata(diffColumnMetatadata.build(), dhintText);
   }
 
   /**

@@ -12,6 +12,7 @@ public enum RoutingProtocol {
   CONNECTED("connected"),
   EGP("egp"),
   EIGRP("eigrp"),
+  EIGRP_EX("eigrpEX"),
   IBGP("ibgp"),
   IGP("igp"),
   ISIS("isis"),
@@ -147,6 +148,86 @@ public enum RoutingProtocol {
 
       case CONNECTED:
         return 0;
+
+      case EIGRP:
+        switch (vendor) {
+          case ALCATEL_AOS:
+          case ARISTA:
+          case ARUBAOS:
+          case AWS:
+          case BLADENETWORK:
+          case CADANT:
+            break;
+          case CISCO_ASA:
+          case CISCO_IOS:
+          case CISCO_IOS_XR:
+          case CISCO_NX:
+            return 90;
+          case EMPTY:
+          case F5:
+          case FLAT_JUNIPER:
+          case FLAT_VYOS:
+          case FORCE10:
+          case FOUNDRY:
+          case HOST:
+          case IGNORED:
+          case IPTABLES:
+          case JUNIPER:
+          case JUNIPER_SWITCH:
+          case METAMAKO:
+          case MRV:
+          case MRV_COMMANDS:
+          case MSS:
+          case PALO_ALTO:
+          case PALO_ALTO_NESTED:
+          case UNKNOWN:
+          case VXWORKS:
+          case VYOS:
+            break;
+          default:
+            break;
+        }
+        break;
+
+      case EIGRP_EX:
+        switch (vendor) {
+          case ALCATEL_AOS:
+          case ARISTA:
+          case ARUBAOS:
+          case AWS:
+          case BLADENETWORK:
+          case CADANT:
+            break;
+          case CISCO_ASA:
+          case CISCO_IOS:
+          case CISCO_IOS_XR:
+          case CISCO_NX:
+            return 170;
+          case EMPTY:
+          case F5:
+          case FLAT_JUNIPER:
+          case FLAT_VYOS:
+          case FORCE10:
+          case FOUNDRY:
+          case HOST:
+          case IGNORED:
+          case IPTABLES:
+          case JUNIPER:
+          case JUNIPER_SWITCH:
+          case METAMAKO:
+          case MRV:
+          case MRV_COMMANDS:
+          case MSS:
+          case PALO_ALTO:
+          case PALO_ALTO_NESTED:
+          case UNKNOWN:
+          case VXWORKS:
+          case VYOS:
+            break;
+          default:
+            break;
+        }
+        break;
 
       case IBGP:
         switch (vendor) {
@@ -633,7 +714,47 @@ public enum RoutingProtocol {
       case AGGREGATE:
       case BGP:
       case CONNECTED:
+      case EIGRP:
+        switch (vendor) {
+          case ALCATEL_AOS:
+          case ARISTA:
+          case ARUBAOS:
+          case AWS:
+          case BLADENETWORK:
+          case CADANT:
+            break;
+          case CISCO_ASA:
+          case CISCO_IOS:
+          case CISCO_IOS_XR:
+          case CISCO_NX:
+            return 5;
+          case EMPTY:
+          case F5:
+          case FLAT_JUNIPER:
+          case FLAT_VYOS:
+          case FORCE10:
+          case FOUNDRY:
+          case HOST:
+          case IGNORED:
+          case IPTABLES:
+          case JUNIPER:
+          case JUNIPER_SWITCH:
+          case METAMAKO:
+          case MRV:
+          case MRV_COMMANDS:
+          case MSS:
+          case PALO_ALTO:
+          case PALO_ALTO_NESTED:
+          case UNKNOWN:
+          case VXWORKS:
+          case VYOS:
+          default:
+            break;
+        }
+        throw new BatfishException(
+            "Unsupported vendor for EIGRP summary administrative cost: " + vendor);
       case EGP:
+      case EIGRP_EX:
       case IBGP:
       case IGP:
       case ISIS:

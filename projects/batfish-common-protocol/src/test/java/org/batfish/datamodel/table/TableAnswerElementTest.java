@@ -23,7 +23,7 @@ public class TableAnswerElementTest {
   @Test
   public void testComputeSummary() {
     // generate an answer with two rows
-    TableAnswerElement answer = new TableAnswerElement(new TableMetadata());
+    TableAnswerElement answer = new TableAnswerElement(new TableMetadata(null, "no desc"));
     answer.addRow(Row.builder().build());
     answer.addRow(Row.builder().build());
 
@@ -40,10 +40,10 @@ public class TableAnswerElementTest {
   public void testEvaluateAssertionCount() {
     Assertion twoCount = new Assertion(AssertionType.countequals, new IntNode(2));
 
-    TableAnswerElement oneRow = new TableAnswerElement(new TableMetadata());
+    TableAnswerElement oneRow = new TableAnswerElement(new TableMetadata(null, "no desc"));
     oneRow.addRow(Row.builder().build());
 
-    TableAnswerElement twoRows = new TableAnswerElement(new TableMetadata());
+    TableAnswerElement twoRows = new TableAnswerElement(new TableMetadata(null, "no desc"));
     twoRows.addRow(Row.builder().build());
     twoRows.addRow(Row.builder().build());
 
@@ -61,7 +61,7 @@ public class TableAnswerElementTest {
                 .readValue("[{\"key1\": \"value1\"}, {\"key2\": \"value2\"}]", JsonNode.class));
 
     // adding rows in different order shouldn't matter
-    TableAnswerElement otherRows = new TableAnswerElement(new TableMetadata());
+    TableAnswerElement otherRows = new TableAnswerElement(new TableMetadata(null, "no desc"));
     otherRows.addRow(Row.builder().put("key2", "value2").build());
     otherRows.addRow(Row.builder().put("key1", "value1").build());
 

@@ -2587,7 +2587,7 @@
     {
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
       "definedStructures" : {
-        "A1Border" : {
+        "configs/A1Border.cfg" : {
           "interface" : {
             "FastEthernet0/0" : {
               "definitionLines" : [
@@ -2627,7 +2627,7 @@
             }
           }
         },
-        "A1Dist" : {
+        "configs/A1Dist.cfg" : {
           "interface" : {
             "FastEthernet0/0" : {
               "definitionLines" : [
@@ -2658,7 +2658,7 @@
             }
           }
         },
-        "A1Inter" : {
+        "configs/A1Inter.cfg" : {
           "interface" : {
             "FastEthernet0/0" : {
               "definitionLines" : [
@@ -2699,7 +2699,7 @@
             }
           }
         },
-        "A2Dist1" : {
+        "configs/A2Dist1.cfg" : {
           "interface" : {
             "FastEthernet0/0" : {
               "definitionLines" : [
@@ -2738,7 +2738,7 @@
             }
           }
         },
-        "A2Dist2" : {
+        "configs/A2Dist2.cfg" : {
           "interface" : {
             "FastEthernet0/0" : {
               "definitionLines" : [
@@ -2777,7 +2777,7 @@
             }
           }
         },
-        "A2Inter" : {
+        "configs/A2Inter.cfg" : {
           "interface" : {
             "FastEthernet0/0" : {
               "definitionLines" : [
@@ -2819,7 +2819,7 @@
             }
           }
         },
-        "ISP" : {
+        "configs/ISP.cfg" : {
           "interface" : {
             "FastEthernet0/0" : {
               "definitionLines" : [

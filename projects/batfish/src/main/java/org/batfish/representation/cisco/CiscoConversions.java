@@ -75,6 +75,7 @@ import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.eigrp.EigrpInterfaceSettings;
+import org.batfish.datamodel.eigrp.EigrpMetric;
 import org.batfish.datamodel.isis.IsisLevelSettings;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.AsPathSetElem;
@@ -894,6 +895,7 @@ class CiscoConversions {
 
     newProcess.setAsNumber(proc.getAsn());
     newProcess.setMode(proc.getMode());
+    newProcess.setVrf(vrf);
 
     // Establish associated interfaces
     for (Entry<String, org.batfish.datamodel.Interface> e : vrf.getInterfaces().entrySet()) {
@@ -904,15 +906,34 @@ class CiscoConversions {
       }
       boolean match = proc.getNetworks().stream().anyMatch(interfaceAddress.getPrefix()::equals);
       if (match) {
-        EigrpInterfaceSettings.Builder builder = EigrpInterfaceSettings.builder();
-        builder.setAsn(proc.getAsn());
-        if (iface.getEigrp() != null && iface.getEigrp().getDelay() != null) {
-          builder.setDelay(iface.getEigrp().getDelay());
-        } else {
-          builder.setDelay(Interface.getDefaultDelay(iface.getName(), c.getConfigurationFormat()));
+        Double delay = null;
+        Double bandwidth = null;
+        boolean passive = proc.getPassiveInterfaceDefault();
+        if (iface.getEigrp() != null) {
+          delay = iface.getEigrp().getDelay();
+          bandwidth = iface.getEigrp().getBandwidth();
+          passive = iface.getEigrp().getPassive();
         }
-        builder.setEnabled(true);
-        iface.setEigrp(builder.build());
+
+        // For bandwidth/delay, defaults are separate from actuals to inform metric calculations
+        EigrpMetric metric =
+            EigrpMetric.builder()
+                .setBandwidth(bandwidth)
+                .setMode(proc.getMode())
+                .setDelay(delay)
+                .setDefaultBandwidth(
+                    Interface.getDefaultBandwidth(iface.getName(), c.getConfigurationFormat()))
+                .setDefaultDelay(
+                    Interface.getDefaultDelay(iface.getName(), c.getConfigurationFormat()))
+                .build();
+
+        iface.setEigrp(
+            EigrpInterfaceSettings.builder()
+                .setEnabled(true)
+                .setAsn(proc.getAsn())
+                .setMetric(metric)
+                .setPassive(passive)
+                .build());
       } else {
         if (iface.getEigrp() != null && iface.getEigrp().getDelay() != null) {
           oldConfig
