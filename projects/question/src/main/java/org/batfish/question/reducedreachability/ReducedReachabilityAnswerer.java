@@ -59,7 +59,7 @@ public class ReducedReachabilityAnswerer extends Answerer {
     return table;
   }
 
-  public static TableMetadata createMetadata() {
+  private static TableMetadata createMetadata() {
     List<ColumnMetadata> columnMetadata =
         ImmutableList.of(
             new ColumnMetadata(COL_ENVIRONMENT, Schema.STRING, "Environment", true, false),
@@ -73,6 +73,7 @@ public class ReducedReachabilityAnswerer extends Answerer {
 
     return new TableMetadata(columnMetadata, String.format("Paths for flow ${%s}", COL_FLOW));
   }
+
   /**
    * Converts a flowHistory object into a set of Rows. Expects that the traces correspond to only
    * one environment.
