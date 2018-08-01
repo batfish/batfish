@@ -1,5 +1,6 @@
 package org.batfish.datamodel.routing_policy.expr;
 
+import static com.google.common.base.MoreObjects.toStringHelper;
 import static java.util.Objects.requireNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -51,7 +52,7 @@ public class CommunityHalvesExpr extends CommunitySetExpr {
     if (this == obj) {
       return true;
     }
-    if (!(obj instanceof RegexCommunitySet)) {
+    if (!(obj instanceof CommunityHalvesExpr)) {
       return false;
     }
     CommunityHalvesExpr rhs = (CommunityHalvesExpr) obj;
@@ -88,5 +89,10 @@ public class CommunityHalvesExpr extends CommunitySetExpr {
   @Override
   public boolean reducible() {
     return true;
+  }
+
+  @Override
+  public String toString() {
+    return toStringHelper(getClass()).add(PROP_LEFT, _left).add(PROP_RIGHT, _right).toString();
   }
 }

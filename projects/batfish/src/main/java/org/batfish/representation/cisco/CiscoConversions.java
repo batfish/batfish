@@ -375,6 +375,17 @@ class CiscoConversions {
     return new AsPathAccessList(pathList.getName(), lines);
   }
 
+  static CommunityList toCommunityList(NamedCommunitySet communitySet) {
+    return new CommunityList(
+        communitySet.getName(),
+        communitySet
+            .getElements()
+            .stream()
+            .map(CiscoConversions::toCommunityListLine)
+            .collect(ImmutableList.toImmutableList()),
+        false);
+  }
+
   static CommunityList toCommunityList(ExpandedCommunityList ecList) {
     List<CommunityListLine> cllList =
         ecList
@@ -1131,6 +1142,10 @@ class CiscoConversions {
     return line;
   }
 
+  private static CommunityListLine toCommunityListLine(CommunitySetElem elem) {
+    return new CommunityListLine(LineAction.ACCEPT, elem.toCommunitySetExpr());
+  }
+  
   private static CommunityListLine toCommunityListLine(ExpandedCommunityListLine eclLine) {
     String javaRegex = CiscoConfiguration.toJavaRegex(eclLine.getRegex());
     return new CommunityListLine(eclLine.getAction(), new RegexCommunitySet(javaRegex));

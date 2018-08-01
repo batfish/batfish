@@ -127,6 +127,8 @@ import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.hasMetric;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.isAdvertised;
 import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasArea;
 import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasAreas;
+import static org.batfish.datamodel.matchers.RegexCommunitySetMatchers.hasRegex;
+import static org.batfish.datamodel.matchers.RegexCommunitySetMatchers.isRegexCommunitySet;
 import static org.batfish.datamodel.matchers.SnmpServerMatchers.hasCommunities;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasEigrpProcess;
@@ -260,6 +262,8 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.matchers.CommunityListLineMatchers;
+import org.batfish.datamodel.matchers.CommunityListMatchers;
 import org.batfish.datamodel.matchers.ConfigurationMatchers;
 import org.batfish.datamodel.matchers.EigrpInterfaceSettingsMatchers;
 import org.batfish.datamodel.matchers.EigrpProcessMatchers;
@@ -279,8 +283,12 @@ import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfDefaultOriginateType;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.ospf.StubType;
+import org.batfish.datamodel.routing_policy.expr.CommunityHalvesExpr;
 import org.batfish.datamodel.routing_policy.expr.CommunitySetExpr;
+import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunityConjunction;
+import org.batfish.datamodel.routing_policy.expr.LiteralCommunityHalf;
+import org.batfish.datamodel.routing_policy.expr.RangeCommunityHalf;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
@@ -1583,6 +1591,56 @@ public class CiscoGrammarTest {
     assertThat(c, hasInterface(e2Name, hasOutgoingFilter(rejects(flow, e3Name, c))));
     assertThat(c, hasInterface(e3Name, hasOutgoingFilter(rejects(flow, e1Name, c))));
     assertThat(c, hasInterface(e3Name, hasOutgoingFilter(rejects(flow, e2Name, c))));
+  }
+
+  @Test
+  public void testIosXrCommunitySet() throws IOException {
+    Configuration c = parseConfig("ios-xr-community-set");
+    CommunityList list = c.getCommunityLists().get("set1");
+
+    assertThat(
+        list,
+        CommunityListMatchers.hasLine(
+            0,
+            CommunityListLineMatchers.hasMatchCondition(
+                isRegexCommunitySet(hasRegex("^1234:.*")))));
+    assertThat(
+        list,
+        CommunityListMatchers.hasLine(
+            1,
+            CommunityListLineMatchers.hasMatchCondition(
+                equalTo(new CommunityHalvesExpr(RangeCommunityHalf.ALL, RangeCommunityHalf.ALL)))));
+    assertThat(
+        list,
+        CommunityListMatchers.hasLine(
+            2,
+            CommunityListLineMatchers.hasMatchCondition(
+                equalTo(new LiteralCommunity(CommonUtil.communityStringToLong("1:2"))))));
+    assertThat(
+        list,
+        CommunityListMatchers.hasLine(
+            3,
+            CommunityListLineMatchers.hasMatchCondition(
+                equalTo(
+                    new CommunityHalvesExpr(
+                        RangeCommunityHalf.ALL, new LiteralCommunityHalf(3))))));
+    assertThat(
+        list,
+        CommunityListMatchers.hasLine(
+            4,
+            CommunityListLineMatchers.hasMatchCondition(
+                equalTo(
+                    new CommunityHalvesExpr(
+                        new LiteralCommunityHalf(4), RangeCommunityHalf.ALL)))));
+    assertThat(
+        list,
+        CommunityListMatchers.hasLine(
+            5,
+            CommunityListLineMatchers.hasMatchCondition(
+                equalTo(
+                    new CommunityHalvesExpr(
+                        new LiteralCommunityHalf(6),
+                        new RangeCommunityHalf(new SubRange(100, 103)))))));
   }
 
   @Test

@@ -1,5 +1,6 @@
 package org.batfish.datamodel.routing_policy.expr;
 
+import static com.google.common.base.MoreObjects.toStringHelper;
 import static java.util.Objects.requireNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -9,6 +10,8 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.SubRange;
 
 public class RangeCommunityHalf implements CommunityHalfExpr {
+
+  public static final RangeCommunityHalf ALL = new RangeCommunityHalf(new SubRange(0, 65535));
 
   private static final String PROP_RANGE = "range";
 
@@ -54,5 +57,10 @@ public class RangeCommunityHalf implements CommunityHalfExpr {
   @Override
   public boolean matches(int communityHalf) {
     return _range.includes(communityHalf);
+  }
+
+  @Override
+  public String toString() {
+    return toStringHelper(getClass()).add(PROP_RANGE, _range).toString();
   }
 }

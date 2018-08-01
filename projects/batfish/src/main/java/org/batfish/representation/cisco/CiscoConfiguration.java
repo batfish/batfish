@@ -2933,7 +2933,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       c.getAsPathAccessLists().put(apList.getName(), apList);
     }
 
-    // convert standard/expanded community lists to community lists
+    // convert standard/expanded community lists and community-sets to community lists
     for (StandardCommunityList scList : _standardCommunityLists.values()) {
       CommunityList cList = CiscoConversions.toCommunityList(scList);
       c.getCommunityLists().put(cList.getName(), cList);
@@ -2942,6 +2942,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
       CommunityList cList = CiscoConversions.toCommunityList(ecList);
       c.getCommunityLists().put(cList.getName(), cList);
     }
+    _communitySets.forEach(
+        (name, communitySet) ->
+            c.getCommunityLists().put(name, CiscoConversions.toCommunityList(communitySet)));
 
     // convert prefix lists to route filter lists
     for (PrefixList prefixList : _prefixLists.values()) {

@@ -977,6 +977,8 @@ import org.batfish.representation.cisco.CiscoStructureType;
 import org.batfish.representation.cisco.CiscoStructureUsage;
 import org.batfish.representation.cisco.CommunitySetElem;
 import org.batfish.representation.cisco.CommunitySetElemHalfExpr;
+import org.batfish.representation.cisco.CommunitySetElemHalves;
+import org.batfish.representation.cisco.CommunitySetElemIosRegex;
 import org.batfish.representation.cisco.CryptoMapEntry;
 import org.batfish.representation.cisco.CryptoMapSet;
 import org.batfish.representation.cisco.DynamicIpBgpPeerGroup;
@@ -1307,12 +1309,15 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (text.length() == 0) {
       return text;
     }
-    if (text.charAt(0) != '"') {
+    char firstChar = text.charAt(0);
+    if (firstChar != '"' && firstChar != '\'') {
       return text;
-    } else if (text.charAt(text.length() - 1) != '"') {
-      throw new BatfishException("Improperly-quoted string");
-    } else {
+    }
+    char lastChar = text.charAt(text.length() - 1);
+    if ((firstChar == '"' && lastChar == '"') || (firstChar == '\'' && lastChar == '\'')) {
       return text.substring(1, text.length() - 1);
+    } else {
+      throw new BatfishException("Improperly-quoted string");
     }
   }
 
@@ -8689,10 +8694,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (ctx.prefix != null) {
       CommunitySetElemHalfExpr prefix = toCommunitySetElemHalfExpr(ctx.prefix);
       CommunitySetElemHalfExpr suffix = toCommunitySetElemHalfExpr(ctx.suffix);
-      return new CommunitySetElem(prefix, suffix);
+      return new CommunitySetElemHalves(prefix, suffix);
     } else if (ctx.community() != null) {
       long value = toLong(ctx.community());
-      return new CommunitySetElem(value);
+      return new CommunitySetElemHalves(value);
+    } else if (ctx.IOS_REGEX() != null) {
+      return new CommunitySetElemIosRegex(unquote(ctx.COMMUNITY_SET_REGEX().getText()));
     } else {
       throw convError(CommunitySetElem.class, ctx);
     }
