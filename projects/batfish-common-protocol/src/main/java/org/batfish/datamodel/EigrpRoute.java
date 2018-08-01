@@ -5,7 +5,6 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.Objects;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.eigrp.EigrpMetric;
 
@@ -36,22 +35,6 @@ public abstract class EigrpRoute extends AbstractRoute {
     _metric = metric;
     _nextHopInterface = firstNonNull(nextHopInterface, Route.UNSET_NEXT_HOP_INTERFACE);
     _nextHopIp = firstNonNull(nextHopIp, Route.UNSET_ROUTE_NEXT_HOP_IP);
-  }
-
-  @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
-      return true;
-    }
-    if (!(obj instanceof EigrpRoute)) {
-      return false;
-    }
-    EigrpRoute rhs = (EigrpRoute) obj;
-    return _admin == rhs._admin
-        && Objects.equals(_network, rhs._network)
-        && Objects.equals(_nextHopInterface, rhs._nextHopInterface)
-        && Objects.equals(_nextHopIp, rhs._nextHopIp)
-        && Objects.equals(_metric, rhs._metric);
   }
 
   @JsonIgnore(false)
@@ -93,11 +76,6 @@ public abstract class EigrpRoute extends AbstractRoute {
     // TODO support EIGRP route tags
     // https://github.com/batfish/batfish/issues/1945
     return NO_TAG;
-  }
-
-  @Override
-  public final int hashCode() {
-    return Objects.hash(_admin, _metric.hashCode(), _network, _nextHopIp, _nextHopInterface);
   }
 
   @Override
