@@ -1,6 +1,7 @@
 package org.batfish.z3;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.Arrays;
 import java.util.List;
@@ -41,6 +42,10 @@ public final class BDDIpAccessListSpecializer extends IpAccessListSpecializer {
             headerSpaceBDD,
             namedIpSpaces,
             new IpSpaceToBDD(pkt.getSrcIp().getFactory(), pkt.getSrcIp(), namedIpSpaces));
+  }
+
+  public BDDIpAccessListSpecializer(BDDPacket pkt, BDD headerSpaceBDD) {
+    this(pkt, headerSpaceBDD, ImmutableMap.of());
   }
 
   @Override

@@ -56,6 +56,11 @@ public class AclLineMatchExprToBDD implements GenericAclLineMatchExprVisitor<BDD
     _packet = packet;
   }
 
+  public AclLineMatchExprToBDD(
+      BDDFactory factory, BDDPacket packet, Map<String, Supplier<BDD>> aclEnv) {
+    this(factory, packet, aclEnv, ImmutableMap.of());
+  }
+
   private @Nullable BDD toBDD(Collection<Integer> ints, BDDInteger var) {
     if (ints == null || ints.isEmpty()) {
       return null;

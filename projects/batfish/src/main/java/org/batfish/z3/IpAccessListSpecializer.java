@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.SortedSet;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpAccessList;
@@ -55,17 +57,22 @@ public abstract class IpAccessListSpecializer
   abstract HeaderSpace specialize(HeaderSpace headerSpace);
 
   public final IpAccessList specialize(IpAccessList ipAccessList) {
+    return specializeUpToLine(ipAccessList, ipAccessList.getLines().size());
+  }
+
+  public final IpAccessList specializeUpToLine(IpAccessList ipAccessList, int lineNum) {
     if (!canSpecialize()) {
       return ipAccessList;
     }
 
     List<IpAccessListLine> specializedLines =
-        ipAccessList
-            .getLines()
-            .stream()
-            // replace unmatchable lines with FALSE_LINE to preserve line numbers
-            .map(line -> specialize(line).orElse(FALSE_LINE))
-            .collect(ImmutableList.toImmutableList());
+        IntStream.range(0, ipAccessList.getLines().size())
+            .mapToObj(
+                i -> {
+                  IpAccessListLine line = ipAccessList.getLines().get(i);
+                  return i < lineNum ? specialize(line).orElse(FALSE_LINE) : line;
+                })
+            .collect(Collectors.toList());
 
     return IpAccessList.builder()
         .setName(ipAccessList.getName())
