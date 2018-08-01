@@ -2651,20 +2651,12 @@ public class Client extends AbstractClient implements IClient {
         return prompt(options, parameters);
       case PWD:
         return pwd(options, parameters);
-      case REINIT_DELTA_SNAPSHOT:
-        return reinitTestrig(outWriter, options, parameters, true);
-      case REINIT_DELTA_TESTRIG:
-        return reinitTestrig(outWriter, options, parameters, true);
       case RUN_ANALYSIS:
         return runAnalysis(outWriter, options, parameters, false, false);
       case RUN_ANALYSIS_DELTA:
         return runAnalysis(outWriter, options, parameters, true, false);
       case RUN_ANALYSIS_DIFFERENTIAL:
         return runAnalysis(outWriter, options, parameters, false, true);
-      case REINIT_SNAPSHOT:
-        return reinitTestrig(outWriter, options, parameters, false);
-      case REINIT_TESTRIG:
-        return reinitTestrig(outWriter, options, parameters, false);
       case SET_BACKGROUND_EXECUCTION:
         return setBackgroundExecution(options, parameters);
       case SET_BATFISH_LOGLEVEL:
@@ -2782,29 +2774,6 @@ public class Client extends AbstractClient implements IClient {
       System.exit(1);
     }
     return commands;
-  }
-
-  private boolean reinitTestrig(
-      @Nullable FileWriter outWriter,
-      List<String> options,
-      List<String> parameters,
-      boolean delta) {
-    Command command = delta ? Command.REINIT_DELTA_SNAPSHOT : Command.REINIT_SNAPSHOT;
-    if (!isValidArgument(options, parameters, 0, 0, 0, command)) {
-      return false;
-    }
-    String testrig;
-    if (!delta) {
-      _logger.output("Reinitializing snapshot. Parsing now.\n");
-      testrig = _currTestrig;
-    } else {
-      _logger.output("Reinitializing delta snapshot. Parsing now.\n");
-      testrig = _currDeltaTestrig;
-    }
-
-    WorkItem wItemParse = WorkItemBuilder.getWorkItemParse(_currContainerName, testrig);
-
-    return execute(wItemParse, outWriter);
   }
 
   public void run(List<String> initialCommands) {

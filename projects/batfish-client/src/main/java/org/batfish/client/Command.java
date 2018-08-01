@@ -71,10 +71,6 @@ public enum Command {
   PROMPT("prompt"),
   PWD("pwd"),
   QUIT("quit"),
-  REINIT_DELTA_SNAPSHOT("reinit-delta-snapshot"),
-  REINIT_DELTA_TESTRIG("reinit-delta-testrig"),
-  REINIT_SNAPSHOT("reinit-snapshot"),
-  REINIT_TESTRIG("reinit-testrig"),
   RUN_ANALYSIS("run-analysis"),
   RUN_ANALYSIS_DELTA("run-analysis-delta"),
   RUN_ANALYSIS_DIFFERENTIAL("run-analysis-differential"),
@@ -148,8 +144,6 @@ public enum Command {
     map.put(INIT_TESTRIG, getDeprecatedMsg(testrigMsg, INIT_SNAPSHOT));
     map.put(LIST_CONTAINERS, getDeprecatedMsg(containerMsg, LIST_NETWORKS));
     map.put(LIST_TESTRIGS, getDeprecatedMsg(testrigMsg, LIST_SNAPSHOTS));
-    map.put(REINIT_DELTA_TESTRIG, getDeprecatedMsg(testrigMsg, REINIT_DELTA_SNAPSHOT));
-    map.put(REINIT_TESTRIG, getDeprecatedMsg(testrigMsg, REINIT_SNAPSHOT));
     map.put(SET_CONTAINER, getDeprecatedMsg(containerMsg, SET_NETWORK));
     map.put(SET_DELTA_TESTRIG, getDeprecatedMsg(testrigMsg, SET_DELTA_SNAPSHOT));
     map.put(SET_TESTRIG, getDeprecatedMsg(testrigMsg, SET_SNAPSHOT));
@@ -365,15 +359,6 @@ public enum Command {
     descs.put(PROMPT, new Pair<>("", "Prompts for user to press enter"));
     descs.put(PWD, new Pair<>("", "Prints the working directory"));
     descs.put(QUIT, new Pair<>("", "Terminate interactive client session"));
-    descs.put(
-        REINIT_DELTA_SNAPSHOT,
-        new Pair<>("", "Reinitialize the delta snapshot with default environment"));
-    descs.put(
-        REINIT_DELTA_TESTRIG,
-        new Pair<>("", "Reinitialize the delta snapshot with default environment"));
-    descs.put(
-        REINIT_SNAPSHOT, new Pair<>("", "Reinitialize the snapshot with default environment"));
-    descs.put(REINIT_TESTRIG, new Pair<>("", "Reinitialize the snapshot with default environment"));
     descs.put(
         RUN_ANALYSIS, new Pair<>("<analysis-name>", "Run the (previously configured) analysis"));
     descs.put(
