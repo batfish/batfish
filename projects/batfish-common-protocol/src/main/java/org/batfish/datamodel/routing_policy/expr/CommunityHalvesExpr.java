@@ -9,7 +9,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.RegexCommunitySet;
 import org.batfish.datamodel.routing_policy.Environment;
 
 public class CommunityHalvesExpr extends CommunitySetExpr {

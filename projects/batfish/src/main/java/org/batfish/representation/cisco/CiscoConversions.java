@@ -1145,7 +1145,7 @@ class CiscoConversions {
   private static CommunityListLine toCommunityListLine(CommunitySetElem elem) {
     return new CommunityListLine(LineAction.ACCEPT, elem.toCommunitySetExpr());
   }
-  
+
   private static CommunityListLine toCommunityListLine(ExpandedCommunityListLine eclLine) {
     String javaRegex = CiscoConfiguration.toJavaRegex(eclLine.getRegex());
     return new CommunityListLine(eclLine.getAction(), new RegexCommunitySet(javaRegex));
