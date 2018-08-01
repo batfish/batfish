@@ -771,6 +771,7 @@ import org.batfish.grammar.cisco.CiscoParser.Rbnx_v_local_asContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_vrfContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_classicContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_default_metricContext;
+import org.batfish.grammar.cisco.CiscoParser.Re_eigrp_router_idContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_networkContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_passive_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_passive_interface_defaultContext;
@@ -6413,6 +6414,17 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       proc.setDefaultMetric(metric);
     } else {
       proc.setDefaultMetric(null);
+    }
+  }
+
+  @Override
+  public void exitRe_eigrp_router_id(Re_eigrp_router_idContext ctx) {
+    EigrpProcess proc = requireNonNull(_currentEigrpProcess);
+    if (ctx.NO() == null) {
+      Ip routerId = toIp(ctx.id);
+      proc.setRouterId(routerId);
+    } else {
+      proc.setRouterId(null);
     }
   }
 

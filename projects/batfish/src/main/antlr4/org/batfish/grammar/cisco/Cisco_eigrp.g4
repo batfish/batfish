@@ -14,7 +14,9 @@ re_classic
 
 re_classic_tail
 :
-   rec_address_family
+   re_eigrp_null
+   | re_eigrp_router_id
+   | rec_address_family
    | rec_null
    | re_default_metric
    | re_network
@@ -26,6 +28,26 @@ re_classic_tail
 re_default_metric
 :
    NO? DEFAULT_METRIC bw_kbps = DEC delay_10us = DEC reliability = DEC eff_bw = DEC mtu = DEC NEWLINE
+;
+
+re_eigrp_null
+:
+   NO? EIGRP
+   (
+      DEFAULT_ROUTE_TAG
+      | EVENT_LOG_SIZE
+      | LOG_NEIGHBOR_CHANGES
+      | LOG_NEIGHBOR_WARNINGS
+      | STUB
+   ) null_rest_of_line
+;
+
+re_eigrp_router_id
+:
+   (
+      EIGRP ROUTER_ID id = IP_ADDRESS
+      | NO EIGRP ROUTER_ID
+   ) NEWLINE
 ;
 
 re_named
@@ -190,6 +212,7 @@ reaf_interface_tail
 reaf_topology_tail
 :
    re_default_metric
+   | re_eigrp_null
    | re_redistribute
    | reaf_topology_null
 ;
@@ -214,7 +237,6 @@ reaf_topology_null
       | DEFAULT_INFORMATION
       | DISTANCE
       | DISTRIBUTE_LIST
-      | EIGRP
       | FAST_REROUTE
       | MAXIMUM_PATHS
       | METRIC
@@ -251,7 +273,6 @@ rec_address_family_null
       | DEFAULT_INFORMATION
       | DISTANCE
       | DISTRIBUTE_LIST
-      | EIGRP
       | MAXIMUM_PATHS
       | MAXIMUM_PREFIX
       | METRIC
@@ -264,6 +285,8 @@ rec_address_family_null
 rec_address_family_tail
 :
    re_default_metric
+   | re_eigrp_null
+   | re_eigrp_router_id
    | re_network
    | re_passive_interface_default
    | re_passive_interface
@@ -280,7 +303,6 @@ rec_null
       | DEFAULT_INFORMATION
       | DISTANCE
       | DISTRIBUTE_LIST
-      | EIGRP
       | HELLO_INTERVAL
       | MAXIMUM_PATHS
       | METRIC
@@ -317,8 +339,7 @@ ren_address_family_null
 :
    NO?
    (
-      EIGRP
-      | MAXIMUM_PREFIX
+      MAXIMUM_PREFIX
       | METRIC
       | NEIGHBOR
       | NSF
@@ -330,7 +351,9 @@ ren_address_family_null
 
 ren_address_family_tail
 :
-   re_network
+   re_eigrp_null
+   | re_eigrp_router_id
+   | re_network
    | re_passive_interface_default
    | re_passive_interface
    | reaf_interface_default
@@ -360,16 +383,14 @@ ren_service_family
 
 ren_service_family_null
 :
-   NO?
-   (
-      EIGRP
-      | TIMERS
-   ) null_rest_of_line
+   NO? TIMERS null_rest_of_line
 ;
 
 ren_service_family_tail
 :
-   ren_service_family_null
+   re_eigrp_null
+   | re_eigrp_router_id
+   | ren_service_family_null
    | resf_interface_default
    | resf_interface
    | resf_topology
@@ -428,15 +449,15 @@ resf_null
 
 resf_topology_tail
 :
-   resf_topology_null
+   re_eigrp_null
+   | resf_topology_null
 ;
 
 resf_topology_null
 :
    NO?
    (
-      EIGRP
-      | METRIC
+      METRIC
       | TIMERS
    ) null_rest_of_line
 ;

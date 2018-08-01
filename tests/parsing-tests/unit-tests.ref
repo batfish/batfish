@@ -21056,6 +21056,32 @@
             "                address = IP_ADDRESS:'1.1.2.1'  <== mode:DEFAULT_MODE",
             "                NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "            (rec_address_family_tail",
+            "              (re_eigrp_null",
+            "                EIGRP:'eigrp'  <== mode:DEFAULT_MODE",
+            "                EVENT_LOG_SIZE:'event-log-size'  <== mode:DEFAULT_MODE",
+            "                (null_rest_of_line",
+            "                  DEC:'5000010'  <== mode:DEFAULT_MODE",
+            "                  NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "            (rec_address_family_tail",
+            "              (re_eigrp_null",
+            "                EIGRP:'eigrp'  <== mode:DEFAULT_MODE",
+            "                LOG_NEIGHBOR_CHANGES:'log-neighbor-changes'  <== mode:DEFAULT_MODE",
+            "                (null_rest_of_line",
+            "                  NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "            (rec_address_family_tail",
+            "              (re_eigrp_null",
+            "                EIGRP:'eigrp'  <== mode:DEFAULT_MODE",
+            "                LOG_NEIGHBOR_WARNINGS:'log-neighbor-warnings'  <== mode:DEFAULT_MODE",
+            "                (null_rest_of_line",
+            "                  DEC:'300'  <== mode:DEFAULT_MODE",
+            "                  NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "            (rec_address_family_tail",
+            "              (re_eigrp_router_id",
+            "                EIGRP:'eigrp'  <== mode:DEFAULT_MODE",
+            "                ROUTER_ID:'router-id'  <== mode:DEFAULT_MODE",
+            "                id = IP_ADDRESS:'100.1.1.1'  <== mode:DEFAULT_MODE",
+            "                NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "            (rec_address_family_tail",
             "              (re_network",
             "                NETWORK:'network'  <== mode:DEFAULT_MODE",
             "                address = IP_ADDRESS:'5.5.5.5'  <== mode:DEFAULT_MODE",
@@ -21158,6 +21184,13 @@
             "                    NEWLINE:'\\n'  <== mode:M_Interface))",
             "                EXIT_AF_INTERFACE:'exit-af-interface'  <== mode:DEFAULT_MODE",
             "                NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "            (ren_address_family_tail",
+            "              (re_eigrp_null",
+            "                EIGRP:'eigrp'  <== mode:DEFAULT_MODE",
+            "                DEFAULT_ROUTE_TAG:'default-route-tag'  <== mode:DEFAULT_MODE",
+            "                (null_rest_of_line",
+            "                  DEC:'2'  <== mode:DEFAULT_MODE",
+            "                  NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "            (ren_address_family_tail",
             "              (re_network",
             "                NETWORK:'network'  <== mode:DEFAULT_MODE",
@@ -61203,14 +61236,6 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "Cannot find keyring VRF:MMS:RMT:UPM:1143 for ISAKMP profile myprofile"
-            }
-          ]
-        },
-        "cisco_eigrp" : {
-          "Red flags" : [
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "No candidates for EIGRP router-id"
             }
           ]
         },

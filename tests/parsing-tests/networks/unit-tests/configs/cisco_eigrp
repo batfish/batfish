@@ -113,6 +113,10 @@ router eigrp 5
  address-family ipv4 unicast vrf default autonomous-system 55
   autonomous-system 65500
   network 1.1.2.1
+ eigrp event-log-size 5000010
+ eigrp log-neighbor-changes
+ eigrp log-neighbor-warnings 300
+ eigrp router-id 100.1.1.1
  network 5.5.5.5
  network 1.1.1.1 255.255.255.255
  no traffic-share balanced
@@ -130,6 +134,7 @@ router eigrp virtual
    hold-time 40
    passive-interface
   exit-af-interface
+  eigrp default-route-tag 2
   network 1.1.1.100
   remote-neighbors source GigabitEthernet0/0/1 unicast-listen lisp-encap 2
   topology base

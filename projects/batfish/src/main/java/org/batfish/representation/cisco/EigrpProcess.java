@@ -19,16 +19,16 @@ public class EigrpProcess implements Serializable {
 
   private static final String DEFAULT_ADDRESS_FAMILY = "ipv4-unicast";
   private static final long serialVersionUID = 1L;
+  private final EigrpProcessMode _mode;
+  private final Set<IpWildcard> _wildcardNetworks;
+  private final Set<Prefix> _networks;
+  private final Map<RoutingProtocol, EigrpRedistributionPolicy> _redistributionPolicies;
   private String _addressFamily;
   private long _asn;
   private boolean _autoSummary;
   private @Nullable EigrpMetric _defaultMetric;
-  private EigrpProcessMode _mode;
-  private Ip _routerId;
-  private Set<IpWildcard> _wildcardNetworks;
-  private Set<Prefix> _networks;
+  @Nullable private Ip _routerId;
   private boolean _passiveInterfaceDefault;
-  private Map<RoutingProtocol, EigrpRedistributionPolicy> _redistributionPolicies;
 
   public EigrpProcess(Long asn, EigrpProcessMode mode) {
     _asn = asn;
@@ -117,11 +117,12 @@ public class EigrpProcess implements Serializable {
     return _redistributionPolicies;
   }
 
+  @Nullable
   public Ip getRouterId() {
     return _routerId;
   }
 
-  public void setRouterId(Ip routerId) {
+  public void setRouterId(@Nullable Ip routerId) {
     _routerId = routerId;
   }
 
