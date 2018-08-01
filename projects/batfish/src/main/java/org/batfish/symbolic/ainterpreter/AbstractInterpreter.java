@@ -127,7 +127,11 @@ public class AbstractInterpreter {
     long tempTime;
     long t = System.currentTimeMillis();
 
+    int iterations = 0;
+
     while (!update.isEmpty()) {
+      iterations++;
+
       String router = update.poll();
       assert (router != null);
       updateSet.remove(router);
@@ -250,7 +254,7 @@ public class AbstractInterpreter {
             } else {
               proto = RoutingProtocol.BGP;
               BgpNeighbor n = _graph.getEbgpNeighbors().get(ge);
-              doUpdate = (n != null && Objects.equals(n.getLocalAs(), n.getRemoteAs()));
+              doUpdate = (n != null && !Objects.equals(n.getLocalAs(), n.getRemoteAs()));
             }
 
             if (doUpdate) {
@@ -329,6 +333,7 @@ public class AbstractInterpreter {
       }
     }
 
+    System.out.println("Number of iterations: " + iterations);
     System.out.println("Time to compute fixedpoint: " + (System.currentTimeMillis() - t));
     System.out.println("Time in select best: " + totalTimeSelectBest);
     System.out.println("Time in transfer: " + totalTimeTransfer);
