@@ -34,9 +34,7 @@ import org.junit.rules.TemporaryFolder;
 public class ReducedReachabilityQuestionTest {
   private static final String LOOPBACK = "Loopback0";
   private static final String NODE1 = "node1";
-  private static final Ip NODE1_LOOPBACK_IP = new Ip("1.1.1.1");
   private static final String NODE2 = "node2";
-  private static final Ip NODE2_ALTERNATE_IP = new Ip("2.2.2.2");
   private static final String PHYSICAL = "FastEthernet0/0";
 
   private Configuration.Builder _cb;
