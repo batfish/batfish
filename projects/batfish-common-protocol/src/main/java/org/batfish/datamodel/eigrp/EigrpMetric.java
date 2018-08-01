@@ -5,6 +5,7 @@ import static org.batfish.datamodel.eigrp.EigrpProcessMode.CLASSIC;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.annotations.VisibleForTesting;
 import java.io.Serializable;
 import java.util.Objects;
 import java.util.stream.LongStream;
@@ -89,11 +90,13 @@ public class EigrpMetric implements Serializable {
     return EIGRP_BANDWIDTH / classicBandwidth;
   }
 
-  private static Long namedToClassicBandwidth(long namedBandwidth) {
+  @VisibleForTesting
+  public static Long namedToClassicBandwidth(long namedBandwidth) {
     return EIGRP_BANDWIDTH / namedBandwidth;
   }
 
-  private static Long namedToClassicDelay(long namedDelay) {
+  @VisibleForTesting
+  public static Long namedToClassicDelay(long namedDelay) {
     return namedDelay / EIGRP_DELAY_PICO / 10L;
   }
 
