@@ -230,7 +230,7 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
 
   /**
    * Retrieve the {@link PrefixTracer} for each {@link VirtualRouter} after dataplane computation.
-   * Map structure: Hostname -> VRF name -> prefix tracer.
+   * Map structure: Hostname -&gt; VRF name -&gt; prefix tracer.
    */
   public SortedMap<String, SortedMap<String, PrefixTracer>> getPrefixTracingInfo() {
     /*

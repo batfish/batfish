@@ -25,9 +25,9 @@ import org.batfish.role.NodeRolesData;
  * <p>Currently supported example specifiers:
  *
  * <ul>
- *   <li>lhr-.* —> all nodes with matching names (old style)
- *   <li>name:lhr-.* -> same as above; name: is optional
- *   <li>role:auto0:a1.* —> all nodes with roles that match a1.* in role dimension auto0
+ *   <li>lhr-.* -&gt; all nodes with matching names (old style)
+ *   <li>name:lhr-.* -&gt; same as above; name: is optional
+ *   <li>role:auto0:a1.* -&gt; all nodes with roles that match a1.* in role dimension auto0
  * </ul>
  *
  * <p>In the future, we might need other tags (e.g., loc:) and boolean expressions (e.g.,
@@ -128,8 +128,9 @@ public class NodesSpecifier {
    * <p>What is produced for various queries:
    *
    * <ul>
-   *   <li>na --> all {@link Type}s whose names begin with srv and nodes whose name begins with srv
-   *   <li>NAME:srv --> all nodes whose names with srv
+   *   <li>na -&gt; all {@link Type}s whose names begin with srv and nodes whose name begins with
+   *       srv
+   *   <li>NAME:srv -&gt; all nodes whose names with srv
    *   <li>ROLE:d all role dimensions that begin with r
    *   <li>ROLE:dim:r all roles in dimension 'dim' that begin with r
    * </ul>

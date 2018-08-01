@@ -157,8 +157,8 @@ public class Filter {
    *
    * <ul>
    *   <li>colName LE 42
-   *   <li>colName GT "fourty two" ==> Strings must be double-quoted
-   *   <li>colName NE null ==> null literal
+   *   <li>colName GT "forty two" -&gt; Strings must be double-quoted
+   *   <li>colName NE null -&gt; null literal
    *   <li>colName EQ true
    * </ul>
    *

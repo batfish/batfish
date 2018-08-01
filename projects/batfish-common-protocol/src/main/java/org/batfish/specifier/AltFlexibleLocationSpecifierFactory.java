@@ -6,14 +6,14 @@ package org.batfish.specifier;
  * <p>Examples include:
  *
  * <pre>
- *   rtr-.*              --> nodes matching this regex
- *   rtr-.*:Eth.*        --> interfaces matching the second regex on nodes matching the first
- *   interface(Eth.*)    --> interfaces matching the regex
- *   enter(vrf(default)) --> inbound into all interfaces in VRF default
- *   vrf(default)        --> interfaces in VRF default
- *   ref.noderole(border.*, dim) -> nodes in roles matching the first parameter in dimension dim
- *   a + b               --> union of locations denoted by a and b
- *   a - b               --> difference of locations denoted a and b
+ *   rtr-.*              -&gt; nodes matching this regex
+ *   rtr-.*:Eth.*        -&gt; interfaces matching the second regex on nodes matching the first
+ *   interface(Eth.*)    -&gt; interfaces matching the regex
+ *   enter(vrf(default)) -&gt; inbound into all interfaces in VRF default
+ *   vrf(default)        -&gt; interfaces in VRF default
+ *   ref.noderole(border.*, dim) -&gt; nodes in roles matching the first parameter in dimension dim
+ *   a + b               -&gt; union of locations denoted by a and b
+ *   a - b               -&gt; difference of locations denoted a and b
  * </pre>
  *
  * <p>More formally, the grammar is:
