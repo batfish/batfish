@@ -4481,7 +4481,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
                   });
 
       // set flow parameters
-      flow.setTag(getFlowTag());
+      flow.setTag(getDifferentialFlowTag());
       flow.setIngressNode(source.getNode());
       switch (source.getType()) {
         case VRF:
