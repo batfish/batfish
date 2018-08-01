@@ -9,6 +9,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -35,6 +37,8 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.WorkItemBuilder;
 import org.batfish.coordinator.AnalysisMetadataMgr.AnalysisType;
 import org.batfish.datamodel.TestrigMetadata;
+import org.batfish.datamodel.answers.Answer;
+import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.pojo.Topology;
 import org.junit.Before;
@@ -361,6 +365,180 @@ public class WorkMgrTest {
     _manager.configureAnalysis(
         containerName, false, "analysis3", Maps.newHashMap(), Lists.newArrayList(), true);
     assertTrue(getMetadataSuggested(containerName, "analysis3"));
+  }
+
+  @Test
+  public void testGetAnalysisAnswer() throws JsonProcessingException {
+    String containerName = "container1";
+    String testrigName = "testrig1";
+    String analysisName = "analysis1";
+    String question1Name = "question1";
+    String question1Content = "question1Content";
+    String question2Name = "question2Name";
+    String question2Content = "question2Content";
+    String question3Name = "question3";
+    String question3Content = "question3Content";
+    String answer1 = "answer1";
+    String answer2 = "answer2";
+
+    _manager.initContainer(containerName, null);
+    Map<String, String> questionsToAdd =
+        Maps.newHashMap(Collections.singletonMap(question1Name, question1Content));
+    questionsToAdd.put(question2Name, question2Content);
+    questionsToAdd.put(question3Name, question3Content);
+
+    _manager.configureAnalysis(
+        containerName, true, analysisName, questionsToAdd, Lists.newArrayList(), null);
+
+    Path answer1Dir =
+        _folder
+            .getRoot()
+            .toPath()
+            .resolve(
+                Paths.get(
+                    containerName,
+                    BfConsts.RELPATH_TESTRIGS_DIR,
+                    testrigName,
+                    BfConsts.RELPATH_ANALYSES_DIR,
+                    analysisName,
+                    BfConsts.RELPATH_QUESTIONS_DIR,
+                    question1Name,
+                    BfConsts.RELPATH_ENVIRONMENTS_DIR,
+                    BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME));
+
+    Path answer2Dir =
+        _folder
+            .getRoot()
+            .toPath()
+            .resolve(
+                Paths.get(
+                    containerName,
+                    BfConsts.RELPATH_TESTRIGS_DIR,
+                    testrigName,
+                    BfConsts.RELPATH_ANALYSES_DIR,
+                    analysisName,
+                    BfConsts.RELPATH_QUESTIONS_DIR,
+                    question2Name,
+                    BfConsts.RELPATH_ENVIRONMENTS_DIR,
+                    BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME));
+
+    Path answer1Path = answer1Dir.resolve(BfConsts.RELPATH_ANSWER_JSON);
+    Path answer2Path = answer2Dir.resolve(BfConsts.RELPATH_ANSWER_JSON);
+
+    answer1Dir.toFile().mkdirs();
+    answer2Dir.toFile().mkdirs();
+
+    CommonUtil.writeFile(answer1Path, answer1);
+    CommonUtil.writeFile(answer2Path, answer2);
+
+    String answer1Output =
+        _manager.getAnalysisAnswer(
+            containerName,
+            testrigName,
+            BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
+            null,
+            null,
+            analysisName,
+            question1Name);
+    String answer2Output =
+        _manager.getAnalysisAnswer(
+            containerName,
+            testrigName,
+            BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
+            null,
+            null,
+            analysisName,
+            question2Name);
+    String answer3Output =
+        _manager.getAnalysisAnswer(
+            containerName,
+            testrigName,
+            BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
+            null,
+            null,
+            analysisName,
+            question3Name);
+
+    Answer failedAnswer = Answer.failureAnswer("Not answered", null);
+    failedAnswer.setStatus(AnswerStatus.NOTFOUND);
+    String failedAnswerString = BatfishObjectMapper.writePrettyString(failedAnswer);
+
+    assertThat(answer1Output, equalTo(answer1));
+    assertThat(answer2Output, equalTo(answer2));
+    assertThat(answer3Output, equalTo(failedAnswerString));
+  }
+
+  @Test
+  public void testGetAnalysisAnswers() throws JsonProcessingException {
+    String containerName = "container1";
+    String testrigName = "testrig1";
+    String analysisName = "analysis1";
+    String question1Name = "question1";
+    String question1Content = "question1Content";
+    String question2Name = "question2Name";
+    String question2Content = "question2Content";
+    String answer1 = "answer1";
+    String answer2 = "answer2";
+
+    _manager.initContainer(containerName, null);
+    Map<String, String> questionsToAdd =
+        Maps.newHashMap(Collections.singletonMap(question1Name, question1Content));
+    questionsToAdd.put(question2Name, question2Content);
+
+    _manager.configureAnalysis(
+        containerName, true, analysisName, questionsToAdd, Lists.newArrayList(), null);
+
+    Path answer1Dir =
+        _folder
+            .getRoot()
+            .toPath()
+            .resolve(
+                Paths.get(
+                    containerName,
+                    BfConsts.RELPATH_TESTRIGS_DIR,
+                    testrigName,
+                    BfConsts.RELPATH_ANALYSES_DIR,
+                    analysisName,
+                    BfConsts.RELPATH_QUESTIONS_DIR,
+                    question1Name,
+                    BfConsts.RELPATH_ENVIRONMENTS_DIR,
+                    BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME));
+
+    Path answer2Dir =
+        _folder
+            .getRoot()
+            .toPath()
+            .resolve(
+                Paths.get(
+                    containerName,
+                    BfConsts.RELPATH_TESTRIGS_DIR,
+                    testrigName,
+                    BfConsts.RELPATH_ANALYSES_DIR,
+                    analysisName,
+                    BfConsts.RELPATH_QUESTIONS_DIR,
+                    question2Name,
+                    BfConsts.RELPATH_ENVIRONMENTS_DIR,
+                    BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME));
+
+    Path answer1Path = answer1Dir.resolve(BfConsts.RELPATH_ANSWER_JSON);
+    Path answer2Path = answer2Dir.resolve(BfConsts.RELPATH_ANSWER_JSON);
+
+    answer1Dir.toFile().mkdirs();
+    answer2Dir.toFile().mkdirs();
+
+    CommonUtil.writeFile(answer1Path, answer1);
+    CommonUtil.writeFile(answer2Path, answer2);
+
+    Map<String, String> answers =
+        _manager.getAnalysisAnswers(
+            containerName,
+            testrigName,
+            BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
+            null,
+            null,
+            analysisName);
+
+    assertThat(answers, equalTo(ImmutableMap.of(question1Name, answer1, question2Name, answer2)));
   }
 
   @Test

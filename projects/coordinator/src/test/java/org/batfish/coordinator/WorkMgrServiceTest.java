@@ -25,6 +25,7 @@ import org.batfish.common.BfConsts;
 import org.batfish.common.Container;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.Version;
+import org.batfish.common.WorkItem;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.coordinator.config.Settings;
@@ -156,6 +157,91 @@ public class WorkMgrServiceTest {
             questionsToDelete,
             null);
     assertThat(result.getString(0), equalTo(CoordConsts.SVC_KEY_FAILURE));
+  }
+
+  @Test
+  public void testGetAnalysisAnswer() throws Exception {
+    String testrigName = "testrig1";
+    String analysisName = "analysis1";
+    String questionName = "question1";
+    String questionContent = "questionContent";
+    String question2Name = "question2Name";
+    String answer = "answerContent";
+
+    initContainerEnvironment();
+
+    String analysisJsonString =
+        String.format("{\"%s\":{\"question\":\"%s\"}}", questionName, questionContent);
+    File analysisFile = _containersFolder.newFile(analysisName);
+    FileUtils.writeStringToFile(analysisFile, analysisJsonString);
+
+    _service.configureAnalysis(
+        CoordConsts.DEFAULT_API_KEY,
+        Version.getVersion(),
+        _containerName,
+        "new",
+        analysisName,
+        new FileInputStream(analysisFile),
+        "",
+        null);
+
+    Path answerDir =
+        _containersFolder
+            .getRoot()
+            .toPath()
+            .resolve(
+                Paths.get(
+                    _containerName,
+                    BfConsts.RELPATH_TESTRIGS_DIR,
+                    testrigName,
+                    BfConsts.RELPATH_ANALYSES_DIR,
+                    analysisName,
+                    BfConsts.RELPATH_QUESTIONS_DIR,
+                    questionName,
+                    BfConsts.RELPATH_ENVIRONMENTS_DIR,
+                    BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME));
+
+    Path answer1Path = answerDir.resolve(BfConsts.RELPATH_ANSWER_JSON);
+    answerDir.toFile().mkdirs();
+    CommonUtil.writeFile(answer1Path, answer);
+
+    WorkItem workItem = new WorkItem(_containerName, testrigName);
+    String workItemString = BatfishObjectMapper.mapper().writeValueAsString(workItem);
+
+    JSONArray answer1Output =
+        _service.getAnalysisAnswer(
+            CoordConsts.DEFAULT_API_KEY,
+            Version.getVersion(),
+            _containerName,
+            testrigName,
+            BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
+            null,
+            null,
+            analysisName,
+            questionName,
+            workItemString);
+
+    JSONArray answer2Output =
+        _service.getAnalysisAnswer(
+            CoordConsts.DEFAULT_API_KEY,
+            Version.getVersion(),
+            _containerName,
+            testrigName,
+            BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
+            null,
+            null,
+            analysisName,
+            question2Name,
+            null);
+
+    assertThat(answer1Output.get(0), equalTo(CoordConsts.SVC_KEY_SUCCESS));
+    assertThat(answer2Output.get(0), equalTo(CoordConsts.SVC_KEY_FAILURE));
+
+    JSONObject answerJsonObject = (JSONObject) answer1Output.get(1);
+    String answerJsonString = answerJsonObject.getString(CoordConsts.SVC_KEY_ANSWER);
+    String answerString =
+        BatfishObjectMapper.mapper().readValue(answerJsonString, new TypeReference<String>() {});
+    assertThat(answerString, equalTo(answer));
   }
 
   @Test
