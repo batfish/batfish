@@ -68,7 +68,6 @@ public class EigrpExternalRoute extends EigrpRoute {
     return hash(_admin, _asn, _metric.hashCode(), _network, _nextHopIp, _nextHopInterface);
   }
 
-  /** Type-specific comparison after administrative distance and metric */
   @Override
   public int routeCompare(@Nonnull AbstractRoute rhs) {
     if (getClass() != rhs.getClass() || _asn == null) {

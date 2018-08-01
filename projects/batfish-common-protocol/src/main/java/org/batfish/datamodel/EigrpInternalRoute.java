@@ -54,7 +54,6 @@ public class EigrpInternalRoute extends EigrpRoute {
     return Objects.hash(_admin, _metric.hashCode(), _network, _nextHopIp, _nextHopInterface);
   }
 
-  /** Type-specific comparison after administrative distance and metric */
   @Override
   public int routeCompare(@Nonnull AbstractRoute rhs) {
     // TODO compare MTU
