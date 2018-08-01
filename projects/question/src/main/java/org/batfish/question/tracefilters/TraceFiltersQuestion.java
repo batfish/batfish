@@ -23,16 +23,16 @@ public class TraceFiltersQuestion extends IPacketTraceQuestion {
 
   private static final String PROP_NODE_REGEX = "nodeRegex";
 
-  @Nullable private String _filterRegex;
+  @Nullable private String _filterSpecifierInput;
 
   @Nonnull private NodesSpecifier _nodeRegex;
 
   @JsonCreator
   public TraceFiltersQuestion(
       @JsonProperty(PROP_NODE_REGEX) NodesSpecifier nodeRegex,
-      @JsonProperty(PROP_FILTER_REGEX) String filterRegex) {
+      @JsonProperty(PROP_FILTER_REGEX) String filterSpecifierInput) {
     _nodeRegex = nodeRegex == null ? NodesSpecifier.ALL : nodeRegex;
-    _filterRegex = filterRegex;
+    _filterSpecifierInput = filterSpecifierInput;
   }
 
   @Override
@@ -41,14 +41,15 @@ public class TraceFiltersQuestion extends IPacketTraceQuestion {
   }
 
   @JsonProperty(PROP_FILTER_REGEX)
-  public String getFilterRegex() {
-    return _filterRegex;
+  private String getFilterSpecifierInput() {
+    return _filterSpecifierInput;
   }
 
   @Nonnull
   @JsonIgnore
   public FilterSpecifier getFilterSpecifier() {
-    return FilterSpecifierFactory.load(FILTER_SPECIFIER_FACTORY).buildFilterSpecifier(_filterRegex);
+    return FilterSpecifierFactory.load(FILTER_SPECIFIER_FACTORY)
+        .buildFilterSpecifier(_filterSpecifierInput);
   }
 
   @Override

@@ -61,7 +61,7 @@ public class ReachFilterQuestion extends Question {
 
   @Nullable
   @JsonProperty(PROP_FILTER_SPECIFIER_INPUT)
-  public String getFilterSpecifierInput() {
+  private String getFilterSpecifierInput() {
     return _filterSpecifierInput;
   }
 
