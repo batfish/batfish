@@ -41,6 +41,7 @@ public abstract class Question implements IQuestion {
     public static class Variable {
 
       public enum Type {
+        BGP_PROPERTY_SPEC("bgpPropertySpec", true),
         BOOLEAN("boolean", false),
         COMPARATOR("comparator", true),
         DOUBLE("double", false),
@@ -56,6 +57,7 @@ public abstract class Question implements IQuestion {
         LONG("long", false),
         NODE_PROPERTY_SPEC("nodePropertySpec", true),
         NODE_SPEC("nodeSpec", true),
+        OSPF_PROPERTY_SPEC("ospfPropertySpec", true),
         PREFIX("prefix", true),
         PREFIX_RANGE("prefixRange", true),
         PROTOCOL("protocol", true),
