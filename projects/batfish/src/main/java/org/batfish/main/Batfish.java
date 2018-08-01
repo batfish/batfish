@@ -59,6 +59,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import net.sf.javabdd.BDD;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.apache.commons.configuration2.ImmutableConfiguration;
@@ -4421,11 +4422,16 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public Set<Flow> bddMultipathConsistency() {
+    BDDReachabilityAnalysis bddReachabilityAnalysis = getBddReachabilityAnalysis(new BDDPacket());
+    return bddReachabilityAnalysis.multipathInconsistencies(getFlowTag());
+  }
+
+  @Nonnull
+  private BDDReachabilityAnalysis getBddReachabilityAnalysis(BDDPacket pkt) {
     Map<String, Configuration> configurations = loadConfigurations();
     DataPlane dataPlane = loadDataPlane();
     ForwardingAnalysis forwardingAnalysis = dataPlane.getForwardingAnalysis();
     SpecifierContextImpl specifierContext = new SpecifierContextImpl(this, configurations);
-    String tag = getFlowTag();
     Set<Location> locations =
         new UnionLocationSpecifier(
                 AllInterfacesLocationSpecifier.INSTANCE,
@@ -4435,11 +4441,61 @@ public class Batfish extends PluginConsumer implements IBatfish {
         InferFromLocationIpSpaceSpecifier.INSTANCE.resolve(locations, specifierContext);
 
     BDDReachabilityAnalysisFactory analysisFactory =
-        new BDDReachabilityAnalysisFactory(new BDDPacket(), configurations, forwardingAnalysis);
-    BDDReachabilityAnalysis bddReachabilityAnalysis =
-        analysisFactory.bddReachabilityAnalysis(sourceIpAssignment);
+        new BDDReachabilityAnalysisFactory(pkt, configurations, forwardingAnalysis);
+    return analysisFactory.bddReachabilityAnalysis(sourceIpAssignment);
+  }
 
-    return bddReachabilityAnalysis.multipathInconsistencies(tag);
+  /**
+   * Return a set of flows (at most 1 per source {@link Location}) for which reachability has been
+   * reduced by the change from base to delta snapshot.
+   */
+  @Override
+  public Set<Flow> bddReducedReachability() {
+    BDDPacket pkt = new BDDPacket();
+
+    pushBaseEnvironment();
+    BDDReachabilityAnalysis baseReachabilityAnalysis = getBddReachabilityAnalysis(pkt);
+    Map<IngressLocation, BDD> baseAcceptBDDs =
+        baseReachabilityAnalysis.getIngressLocationAcceptBDDs();
+    popEnvironment();
+
+    pushDeltaEnvironment();
+    BDDReachabilityAnalysis deltaReachabilityAnalysis = getBddReachabilityAnalysis(pkt);
+    Map<IngressLocation, BDD> deltaAcceptBDDs =
+        deltaReachabilityAnalysis.getIngressLocationAcceptBDDs();
+    popEnvironment();
+
+    Set<IngressLocation> commonSources =
+        Sets.intersection(baseAcceptBDDs.keySet(), deltaAcceptBDDs.keySet());
+    ImmutableSet.Builder<Flow> flows = ImmutableSet.builder();
+    for (IngressLocation source : commonSources) {
+      BDD reduced = baseAcceptBDDs.get(source).and(deltaAcceptBDDs.get(source).not());
+      if (reduced.isZero()) {
+        continue;
+      }
+      Flow.Builder flow =
+          pkt.getFlow(reduced)
+              .orElseGet(
+                  () -> {
+                    throw new BatfishException("Error getting flow from BDD");
+                  });
+
+      // set flow parameters
+      flow.setTag(getFlowTag());
+      flow.setIngressNode(source.getNode());
+      switch (source.getType()) {
+        case VRF:
+          flow.setIngressVrf(source.getVrf());
+          break;
+        case INTERFACE_LINK:
+          flow.setIngressInterface(source.getInterface());
+          break;
+        default:
+          throw new BatfishException("Unexpected IngressLocationType: " + source.getType());
+      }
+      flows.add(flow.build());
+    }
+    return flows.build();
   }
 
   @Nonnull

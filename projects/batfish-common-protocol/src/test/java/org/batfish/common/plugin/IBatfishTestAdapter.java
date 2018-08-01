@@ -62,6 +62,11 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
+  public Set<Flow> bddReducedReachability() {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public void checkDataPlane() {
     throw new UnsupportedOperationException();
   }
