@@ -5,6 +5,7 @@ import static org.batfish.datamodel.AuthenticationMethod.GROUP_TACACS;
 import static org.batfish.datamodel.AuthenticationMethod.PASSWORD;
 import static org.batfish.datamodel.matchers.AaaAuthenticationLoginListMatchers.hasMethods;
 import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasPrefix;
+import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasAllowLocalAsIn;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasClusterId;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasEnforceFirstAs;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasLocalAs;
@@ -485,33 +486,6 @@ public class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testPredefinedJunosApplications() throws IOException {
-    Batfish batfish = getBatfishForConfigurationNames("pre-defined-junos-applications");
-    InitInfoAnswerElement answer = batfish.initInfo(false, true);
-    assertThat(
-        answer.prettyPrint(),
-        not(Matchers.containsString("unimplemented pre-defined junos application")));
-  }
-
-  @Test
-  public void testPredefinedJunosApplicationSets() throws IOException {
-    Batfish batfish = getBatfishForConfigurationNames("pre-defined-junos-application-sets");
-    InitInfoAnswerElement answer = batfish.initInfo(false, true);
-    assertThat(
-        answer.prettyPrint(),
-        not(Matchers.containsString("unimplemented pre-defined junos application-set")));
-  }
-
-  /** Tests support for dynamic bgp parsing using "bgp allow" command */
-  @Test
-  public void testBgpAllow() throws IOException {
-    Configuration c = parseConfig("bgp-allow");
-    assertThat(
-        c,
-        hasDefaultVrf(hasBgpProcess(hasPassiveNeighbor(Prefix.parse("10.1.1.0/24"), anything()))));
-  }
-
-  @Test
   public void testAutonomousSystem() throws IOException {
     String testrigName = "autonomous-system";
     String c1Name = "as1";
@@ -534,6 +508,26 @@ public class FlatJuniperGrammarTest {
     assertThat(c1, hasDefaultVrf(hasBgpProcess(hasActiveNeighbor(neighborPrefix, hasLocalAs(1L)))));
     assertThat(c2, hasDefaultVrf(hasBgpProcess(hasActiveNeighbor(neighborPrefix, hasLocalAs(1L)))));
     assertThat(c3, hasDefaultVrf(hasBgpProcess(hasActiveNeighbor(neighborPrefix, hasLocalAs(1L)))));
+  }
+
+  @Test
+  public void testAutonomousSystemLoops() throws IOException {
+    Configuration c = parseConfig("autonomous-system-loops");
+    assertThat(
+        c,
+        hasDefaultVrf(
+            hasBgpProcess(
+                hasActiveNeighbor(
+                    Prefix.parse("2.2.2.2/32"), allOf(hasAllowLocalAsIn(true), hasLocalAs(1L))))));
+  }
+
+  /** Tests support for dynamic bgp parsing using "bgp allow" command */
+  @Test
+  public void testBgpAllow() throws IOException {
+    Configuration c = parseConfig("bgp-allow");
+    assertThat(
+        c,
+        hasDefaultVrf(hasBgpProcess(hasPassiveNeighbor(Prefix.parse("10.1.1.0/24"), anything()))));
   }
 
   @Test
@@ -2293,6 +2287,24 @@ public class FlatJuniperGrammarTest {
 
     assertThat(extractor.getNumSets(), equalTo(8));
     assertThat(extractor.getNumErrorNodes(), equalTo(8));
+  }
+
+  @Test
+  public void testPredefinedJunosApplications() throws IOException {
+    Batfish batfish = getBatfishForConfigurationNames("pre-defined-junos-applications");
+    InitInfoAnswerElement answer = batfish.initInfo(false, true);
+    assertThat(
+        answer.prettyPrint(),
+        not(Matchers.containsString("unimplemented pre-defined junos application")));
+  }
+
+  @Test
+  public void testPredefinedJunosApplicationSets() throws IOException {
+    Batfish batfish = getBatfishForConfigurationNames("pre-defined-junos-application-sets");
+    InitInfoAnswerElement answer = batfish.initInfo(false, true);
+    assertThat(
+        answer.prettyPrint(),
+        not(Matchers.containsString("unimplemented pre-defined junos application-set")));
   }
 
   @Test
