@@ -23,7 +23,7 @@ public class ReachFilterQuestionTest {
     ReachFilterQuestion q =
         BatfishObjectMapper.mapper().readValue(serialized, ReachFilterQuestion.class);
 
-    assertThat(q.getFilterSpecifierInput(), notNullValue());
+    assertThat(q.getFilterSpecifier(), notNullValue());
     assertThat(q.getType(), is(Type.PERMIT));
     assertThat(q.getNodesSpecifier(), notNullValue());
   }
