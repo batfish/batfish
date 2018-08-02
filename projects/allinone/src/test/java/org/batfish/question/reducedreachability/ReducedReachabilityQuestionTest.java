@@ -1,13 +1,15 @@
 package org.batfish.question.reducedreachability;
 
 import static org.batfish.datamodel.ConfigurationFormat.CISCO_IOS;
+import static org.batfish.datamodel.matchers.FlowTraceMatchers.hasDisposition;
 import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
 import static org.batfish.datamodel.matchers.TableAnswerElementMatchers.hasRows;
 import static org.batfish.main.BatfishTestUtils.getBatfish;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.not;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
@@ -15,6 +17,7 @@ import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
 import java.util.SortedMap;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
@@ -22,7 +25,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.Schema;
-import org.batfish.datamodel.pojo.Node;
+import org.batfish.datamodel.matchers.FlowMatchers;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.main.Batfish;
@@ -110,7 +113,6 @@ public class ReducedReachabilityQuestionTest {
     Batfish batfish = initBatfish();
     TableAnswerElement answer =
         (TableAnswerElement) new ReducedReachabilityAnswerer(question, batfish).answer();
-    Node node = new Node("node1");
     Ip dstIp = new Ip("2.2.2.2");
     assertThat(
         answer,
@@ -119,27 +121,18 @@ public class ReducedReachabilityQuestionTest {
                 ImmutableList.of(
                     allOf(
                         hasColumn(
-                            ReducedReachabilityAnswerer.COL_ENVIRONMENT,
-                            equalTo("BASE"),
-                            Schema.STRING),
-                        hasColumn(ReducedReachabilityAnswerer.COL_NODE, equalTo(node), Schema.NODE),
+                            ReducedReachabilityAnswerer.COL_FLOW,
+                            FlowMatchers.hasDstIp(dstIp),
+                            Schema.FLOW),
+                        // at least one trace in base environment is accepted
                         hasColumn(
-                            ReducedReachabilityAnswerer.COL_DST_IP, equalTo(dstIp), Schema.IP),
+                            ReducedReachabilityAnswerer.COL_BASE_TRACES,
+                            hasItem(hasDisposition(FlowDisposition.ACCEPTED)),
+                            Schema.list(Schema.FLOW_TRACE)),
+                        // no trace in delta environment is accepted
                         hasColumn(
-                            ReducedReachabilityAnswerer.COL_RESULTS,
-                            equalTo(ImmutableList.of("ACCEPTED")),
-                            Schema.OBJECT)),
-                    allOf(
-                        hasColumn(
-                            ReducedReachabilityAnswerer.COL_ENVIRONMENT,
-                            equalTo("DELTA"),
-                            Schema.STRING),
-                        hasColumn(ReducedReachabilityAnswerer.COL_NODE, equalTo(node), Schema.NODE),
-                        hasColumn(
-                            ReducedReachabilityAnswerer.COL_DST_IP, equalTo(dstIp), Schema.IP),
-                        hasColumn(
-                            ReducedReachabilityAnswerer.COL_RESULTS,
-                            equalTo(ImmutableList.of("NO_ROUTE")),
-                            Schema.OBJECT))))));
+                            ReducedReachabilityAnswerer.COL_DELTA_TRACES,
+                            not(hasItem(hasDisposition(FlowDisposition.ACCEPTED))),
+                            Schema.list(Schema.FLOW_TRACE)))))));
   }
 }

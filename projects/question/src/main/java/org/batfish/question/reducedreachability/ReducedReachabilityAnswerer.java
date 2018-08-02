@@ -1,22 +1,16 @@
 package org.batfish.question.reducedreachability;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.LinkedHashMultiset;
 import com.google.common.collect.Multiset;
-import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowHistory;
 import org.batfish.datamodel.FlowHistory.FlowHistoryInfo;
-import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
-import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
@@ -25,13 +19,11 @@ import org.batfish.datamodel.table.TableMetadata;
 
 /** An {@link Answerer} for {@link ReducedReachabilityQuestion}. */
 public class ReducedReachabilityAnswerer extends Answerer {
-  static final String COL_ENVIRONMENT = "environment";
-  static final String COL_DST_IP = "dstIp";
   static final String COL_FLOW = "flow";
-  static final String COL_NODE = "node";
-  static final String COL_NUM_PATHS = "numPaths";
-  static final String COL_PATHS = "paths";
-  static final String COL_RESULTS = "results";
+
+  static final String COL_BASE_TRACES = "BASE_traces";
+
+  static final String COL_DELTA_TRACES = "DELTA_traces";
 
   public ReducedReachabilityAnswerer(Question question, IBatfish batfish) {
     super(question, batfish);
@@ -60,18 +52,22 @@ public class ReducedReachabilityAnswerer extends Answerer {
   }
 
   private static TableMetadata createMetadata() {
-    List<ColumnMetadata> columnMetadata =
+    ImmutableList<ColumnMetadata> columnMetadata =
         ImmutableList.of(
-            new ColumnMetadata(COL_ENVIRONMENT, Schema.STRING, "Environment", true, false),
-            new ColumnMetadata(COL_NODE, Schema.NODE, "Ingress node", true, false),
-            new ColumnMetadata(COL_DST_IP, Schema.IP, "Destination IP of the packet", true, false),
-            new ColumnMetadata(COL_FLOW, Schema.FLOW, "The flow", true, false),
-            new ColumnMetadata(COL_NUM_PATHS, Schema.INTEGER, "The number of paths", false, true),
+            new ColumnMetadata(COL_FLOW, Schema.FLOW, "The flow", true, true),
             new ColumnMetadata(
-                COL_RESULTS, Schema.set(Schema.STRING), "The set of outcomes", false, true),
-            new ColumnMetadata(COL_PATHS, Schema.set(Schema.FLOW_TRACE), "The paths", false, true));
-
-    return new TableMetadata(columnMetadata, String.format("Paths for flow ${%s}", COL_FLOW));
+                COL_BASE_TRACES,
+                Schema.set(Schema.FLOW_TRACE),
+                "The flow traces in the BASE environment",
+                false,
+                true),
+            new ColumnMetadata(
+                COL_DELTA_TRACES,
+                Schema.set(Schema.FLOW_TRACE),
+                "The flow traces in the DELTA environment",
+                false,
+                true));
+    return new TableMetadata(columnMetadata, "Flows with reduced reachability");
   }
 
   /**
@@ -81,39 +77,15 @@ public class ReducedReachabilityAnswerer extends Answerer {
   private static Multiset<Row> flowHistoryToRows(FlowHistory flowHistory) {
     Multiset<Row> rows = LinkedHashMultiset.create();
     for (FlowHistoryInfo historyInfo : flowHistory.getTraces().values()) {
-      for (String environment : historyInfo.getEnvironments().keySet()) {
-        rows.add(flowHistoryToRow(environment, historyInfo));
-      }
+      rows.add(
+          Row.of(
+              COL_FLOW,
+              historyInfo.getFlow(),
+              COL_BASE_TRACES,
+              historyInfo.getPaths().get("BASE"),
+              COL_DELTA_TRACES,
+              historyInfo.getPaths().get("DELTA")));
     }
     return rows;
-  }
-
-  /**
-   * Converts {@code FlowHistoryInfo} into {@link Row}. Expects that the history object contains
-   * traces for only one environment
-   */
-  private static Row flowHistoryToRow(String environment, FlowHistoryInfo historyInfo) {
-    // there should be only environment in this object
-    checkArgument(
-        historyInfo.getPaths().containsKey(environment),
-        String.format("Environments %s not in flow history info.", environment));
-    Set<FlowTrace> paths = historyInfo.getPaths().get(environment);
-    Set<String> results =
-        paths.stream().map(path -> path.getDisposition().toString()).collect(Collectors.toSet());
-    return Row.of(
-        COL_ENVIRONMENT,
-        environment,
-        COL_NODE,
-        new Node(historyInfo.getFlow().getIngressNode()),
-        COL_DST_IP,
-        historyInfo.getFlow().getDstIp(),
-        COL_FLOW,
-        historyInfo.getFlow(),
-        COL_NUM_PATHS,
-        paths.size(),
-        COL_RESULTS,
-        results,
-        COL_PATHS,
-        paths);
   }
 }

@@ -140,10 +140,15 @@ public class BDDReachabilityAnalysis {
    * node --> final --> set of headers that can reach final from node.
    */
   private Map<StateExpr, Map<StateExpr, BDD>> computeReverseReachableStates() {
-    Map<StateExpr, Map<StateExpr, BDD>> reverseReachableStates = new HashMap<>();
-    Multimap<StateExpr, StateExpr> dirty = HashMultimap.create();
     List<StateExpr> leaves =
         ImmutableList.of(Accept.INSTANCE, Drop.INSTANCE, NeighborUnreachable.INSTANCE);
+    return computeReverseReachableStates(leaves);
+  }
+
+  private Map<StateExpr, Map<StateExpr, BDD>> computeReverseReachableStates(
+      List<StateExpr> leaves) {
+    Map<StateExpr, Map<StateExpr, BDD>> reverseReachableStates = new HashMap<>();
+    Multimap<StateExpr, StateExpr> dirty = HashMultimap.create();
     for (StateExpr leaf : leaves) {
       reverseReachableStates.put(leaf, ImmutableMap.of(leaf, _bddPacket.getFactory().one()));
       dirty.put(leaf, leaf);
@@ -270,7 +275,8 @@ public class BDDReachabilityAnalysis {
   }
 
   public Map<IngressLocation, BDD> getIngressLocationAcceptBDDs() {
-    return _reverseReachableStates
+    return // computeReverseReachableStates(ImmutableList.of(Accept.INSTANCE))
+    _reverseReachableStates
         .get()
         .entrySet()
         .stream()
