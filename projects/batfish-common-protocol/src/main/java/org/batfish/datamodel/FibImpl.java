@@ -38,7 +38,7 @@ public class FibImpl implements Fib {
    *
    * @param rib {@link GenericRib} for which to do the resolution.
    * @param route {@link AbstractRoute} with a next hop IP to be resolved.
-   * @return A map (interface name -> last hop IP -> last taken route) for
+   * @return A map (interface name -&gt; last hop IP -&gt; last taken route) for
    * @throws BatfishException if resolution depth is exceeded (high likelihood of a routing loop) OR
    *     an invalid route in the RIB has been encountered.
    */
@@ -108,7 +108,7 @@ public class FibImpl implements Fib {
     }
   }
 
-  /** Mapping: route -> nextHopInterface -> nextHopIp -> interfaceRoutes */
+  /** Mapping: route -&gt; nextHopInterface -&gt; nextHopIp -&gt; interfaceRoutes */
   @Override
   public @Nonnull Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>>
       getNextHopInterfaces() {

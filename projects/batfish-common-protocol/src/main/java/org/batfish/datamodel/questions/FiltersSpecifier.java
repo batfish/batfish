@@ -19,8 +19,8 @@ import org.batfish.datamodel.IpAccessList;
  * <p>Currently supported example specifiers:
  *
  * <ul>
- *   <li>lhr-.* —> all filters with matching names
- *   <li>name:lhr-.* -> same as above; name: is optional
+ *   <li>lhr-.* -&gt; all filters with matching names
+ *   <li>name:lhr-.* -&gt; same as above; name: is optional
  *   <li>ipv4:lhr-.* all IPv4 access lists with matching names
  *   <li>ipv6:lhr-.* all IPv6 access lists with matching names
  * </ul>

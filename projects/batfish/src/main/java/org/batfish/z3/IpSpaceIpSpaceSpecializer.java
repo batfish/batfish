@@ -31,10 +31,10 @@ public class IpSpaceIpSpaceSpecializer extends IpSpaceSpecializer {
 
   /**
    * Specialize the whitelist using a refined specializer obtained by specializing _ipSpace to the
-   * blacklist. This helps situations like this: _ipSpace <= blacklist <= whitelist If _ipSpace is
-   * covered by the blacklist, then refinedIpSpace will be empty, and we will later infer that the
-   * input ipWildcardSetIpSpace should be specialized to empty as well. Without this, specialization
-   * would not be able to infer this, so we'd do less optimization.
+   * blacklist. This helps situations like this: _ipSpace &lt;= blacklist &lt;= whitelist If
+   * _ipSpace is covered by the blacklist, then refinedIpSpace will be empty, and we will later
+   * infer that the input ipWildcardSetIpSpace should be specialized to empty as well. Without this,
+   * specialization would not be able to infer this, so we'd do less optimization.
    */
   @Override
   protected Optional<IpSpaceSpecializer> restrictSpecializerToBlacklist(Set<IpWildcard> blacklist) {

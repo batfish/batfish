@@ -45,7 +45,7 @@ import org.batfish.symbolic.utils.Tuple;
 /**
  * A class responsible for building a symbolic encoding of the entire network. The encoder does this
  * by maintaining a collection of encoding slices, where each slice encodes the forwarding behavior
- * for a particular packet. >
+ * for a particular packet.
  *
  * <p>The encoder object is architected this way to allow for modeling of features such as iBGP or
  * non-local next-hop ip addresses in static routes, where the forwarding behavior of one packet
