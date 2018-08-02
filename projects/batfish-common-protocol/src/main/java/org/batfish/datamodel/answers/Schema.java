@@ -24,7 +24,10 @@ public class Schema {
   public enum Type {
     BASE,
     LIST,
-    SET
+    SET,
+    OBJECT,
+    TREESET,
+    TREEMAP
   }
 
   private static final Pattern LIST_PATTERN = Pattern.compile("List<(.+)>");

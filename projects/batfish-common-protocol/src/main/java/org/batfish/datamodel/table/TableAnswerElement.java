@@ -37,6 +37,12 @@ public final class TableAnswerElement extends AnswerElement {
     _excludedRows = new LinkedList<>();
   }
 
+  public TableAnswerElement() {
+    _tableMetadata = null;
+    _rows = new Rows();
+    _excludedRows = new LinkedList<>();
+  }
+
   /**
    * Adds a new row to data rows
    *
