@@ -11,7 +11,7 @@ import org.hamcrest.Matcher;
 final class BgpNeighborMatchersImpl {
   static final class HasAllowLocalAsIn extends FeatureMatcher<BgpPeerConfig, Boolean> {
     HasAllowLocalAsIn(@Nonnull Matcher<? super Boolean> subMatcher) {
-      super(subMatcher, "A BgpPeerConfig with allowRemoteAsOut:", "allowRemoteAsOut");
+      super(subMatcher, "A BgpPeerConfig with allowLocalAsIn:", "allowLocalAsIn");
     }
 
     @Override

@@ -521,6 +521,18 @@ public class FlatJuniperGrammarTest {
                     Prefix.parse("2.2.2.2/32"), allOf(hasAllowLocalAsIn(true), hasLocalAs(1L))))));
   }
 
+  @Test
+  public void testAutonomousSystemLoopsNonDefaultRoutingInstance() throws IOException {
+    Configuration c = parseConfig("autonomous-system-loops-routing-instance");
+    assertThat(
+        c,
+        hasVrf(
+            "FOO",
+            hasBgpProcess(
+                hasActiveNeighbor(
+                    Prefix.parse("2.2.2.2/32"), allOf(hasAllowLocalAsIn(true), hasLocalAs(1L))))));
+  }
+
   /** Tests support for dynamic bgp parsing using "bgp allow" command */
   @Test
   public void testBgpAllow() throws IOException {
