@@ -46,8 +46,9 @@ public class WorkMgrServiceTest {
   private WorkMgrService _service;
 
   private String _networkName = "myNetwork";
+  private String _snapshotName = "mySnapshot";
 
-  private void initContainerEnvironment() throws Exception {
+  private void initNetworkEnvironment() throws Exception {
     Settings settings = new Settings(new String[] {});
     BatfishLogger logger = new BatfishLogger("debug", false);
     Main.mainInit(
@@ -67,25 +68,25 @@ public class WorkMgrServiceTest {
 
   @Test
   public void getEmptyNetwork() throws Exception {
-    initContainerEnvironment();
+    initNetworkEnvironment();
     Response response = _service.getNetwork("100", "0.0.0", null, _networkName);
-    String containerJson = response.getEntity().toString();
-    assertThat(containerJson, equalTo("{\"name\":\"myNetwork\"}"));
+    String networkJson = response.getEntity().toString();
+    assertThat(networkJson, equalTo("{\"name\":\"myNetwork\"}"));
   }
 
   @Test
   public void getNonExistNetwork() throws Exception {
-    String containerName = "non-existing-folder";
-    initContainerEnvironment();
-    Response response = _service.getNetwork("100", "0.0.0", null, containerName);
+    String networkName = "non-existing-folder";
+    initNetworkEnvironment();
+    Response response = _service.getNetwork("100", "0.0.0", null, networkName);
     String actualMessage = response.getEntity().toString();
-    String expected = "Network '" + containerName + "' not found";
+    String expected = "Network '" + networkName + "' not found";
     assertThat(actualMessage, equalTo(expected));
   }
 
   @Test
   public void getNetworkWithBadVersion() throws Exception {
-    initContainerEnvironment();
+    initNetworkEnvironment();
     Response response = _service.getNetwork("100", "invalid version", null, _networkName);
     String actualMessage = response.getEntity().toString();
     String expected = "Illegal version 'invalid version' for Client";
@@ -94,21 +95,21 @@ public class WorkMgrServiceTest {
 
   @Test
   public void getNonEmptyNetwork() throws Exception {
-    initContainerEnvironment();
-    Path containerPath = _networksFolder.getRoot().toPath().resolve(_networkName);
-    Path testrigPath = containerPath.resolve(BfConsts.RELPATH_TESTRIGS_DIR).resolve("testrig");
-    assertThat(testrigPath.toFile().mkdirs(), is(true));
+    initNetworkEnvironment();
+    Path networkPath = _networksFolder.getRoot().toPath().resolve(_networkName);
+    Path snapshotPath = networkPath.resolve(BfConsts.RELPATH_TESTRIGS_DIR).resolve(_snapshotName);
+    assertThat(snapshotPath.toFile().mkdirs(), is(true));
     Response response = _service.getNetwork("100", "0.0.0", null, _networkName);
-    Container container =
+    Container network =
         BatfishObjectMapper.mapper().readValue(response.getEntity().toString(), Container.class);
     Container expected =
-        Container.of(_networkName, Sets.newTreeSet(Collections.singleton("testrig")));
-    assertThat(container, equalTo(expected));
+        Container.of(_networkName, Sets.newTreeSet(Collections.singleton(_snapshotName)));
+    assertThat(network, equalTo(expected));
   }
 
   @Test
   public void testConfigureAnalysis() throws Exception {
-    initContainerEnvironment();
+    initNetworkEnvironment();
     // test init and add questions to analysis
     String analysisJsonString = "{\"question\":{\"question\":\"questionContent\"}}";
     File analysisFile = _networksFolder.newFile("analysis");
@@ -164,14 +165,13 @@ public class WorkMgrServiceTest {
 
   @Test
   public void testGetAnalysisAnswer() throws Exception {
-    String testrigName = "testrig1";
     String analysisName = "analysis1";
     String questionName = "question1";
     String questionContent = "questionContent";
     String question2Name = "question2Name";
     String answer = "answerContent";
 
-    initContainerEnvironment();
+    initNetworkEnvironment();
 
     String analysisJsonString =
         String.format("{\"%s\":{\"question\":\"%s\"}}", questionName, questionContent);
@@ -197,7 +197,7 @@ public class WorkMgrServiceTest {
                 Paths.get(
                     _networkName,
                     BfConsts.RELPATH_TESTRIGS_DIR,
-                    testrigName,
+                    _snapshotName,
                     BfConsts.RELPATH_ANALYSES_DIR,
                     analysisName,
                     BfConsts.RELPATH_QUESTIONS_DIR,
@@ -209,7 +209,7 @@ public class WorkMgrServiceTest {
     answerDir.toFile().mkdirs();
     CommonUtil.writeFile(answer1Path, answer);
 
-    WorkItem workItem = new WorkItem(_networkName, testrigName);
+    WorkItem workItem = new WorkItem(_networkName, _snapshotName);
     String workItemString = BatfishObjectMapper.mapper().writeValueAsString(workItem);
 
     JSONArray answer1Output =
@@ -218,7 +218,8 @@ public class WorkMgrServiceTest {
             Version.getVersion(),
             null,
             _networkName,
-            testrigName,
+            null,
+            _snapshotName,
             BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
             null,
             null,
@@ -232,7 +233,8 @@ public class WorkMgrServiceTest {
             Version.getVersion(),
             null,
             _networkName,
-            testrigName,
+            null,
+            _snapshotName,
             BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
             null,
             null,
@@ -252,14 +254,15 @@ public class WorkMgrServiceTest {
 
   @Test
   public void getConfigNonExistNetwork() throws Exception {
-    initContainerEnvironment();
+    initNetworkEnvironment();
     Response response =
         _service.getConfiguration(
             CoordConsts.DEFAULT_API_KEY,
             Version.getVersion(),
             null,
             "nonExistNetwork",
-            "testrig",
+            null,
+            _snapshotName,
             "config1.cfg");
     String actualMessage = response.getEntity().toString();
     assertThat(actualMessage, equalTo("Network 'nonExistNetwork' not found"));
@@ -267,35 +270,38 @@ public class WorkMgrServiceTest {
 
   @Test
   public void getNonExistConfig() throws Exception {
-    initContainerEnvironment();
-    Path containerDir = _networksFolder.getRoot().toPath().resolve(_networkName);
-    Path testrigPath =
-        containerDir.resolve(
-            Paths.get(BfConsts.RELPATH_TESTRIGS_DIR, "testrig", BfConsts.RELPATH_TEST_RIG_DIR));
-    assertTrue(testrigPath.toFile().mkdirs());
+    initNetworkEnvironment();
+    Path networkDir = _networksFolder.getRoot().toPath().resolve(_networkName);
+    Path snapshotPath =
+        networkDir.resolve(
+            Paths.get(BfConsts.RELPATH_TESTRIGS_DIR, _snapshotName, BfConsts.RELPATH_TEST_RIG_DIR));
+    assertTrue(snapshotPath.toFile().mkdirs());
     Response response =
         _service.getConfiguration(
             CoordConsts.DEFAULT_API_KEY,
             Version.getVersion(),
             null,
             _networkName,
-            "testrig",
+            null,
+            _snapshotName,
             "config.cfg");
     String actualMessage = response.getEntity().toString();
     String expected =
-        "Configuration file config.cfg does not exist in snapshot testrig for network myNetwork";
+        String.format(
+            "Configuration file config.cfg does not exist in snapshot %s for network %s",
+            _snapshotName, _networkName);
     assertThat(actualMessage, equalTo(expected));
   }
 
   @Test
   public void getConfigContent() throws Exception {
-    initContainerEnvironment();
-    Path containerPath = _networksFolder.getRoot().toPath().resolve(_networkName);
+    initNetworkEnvironment();
+    Path networkPath = _networksFolder.getRoot().toPath().resolve(_networkName);
     Path configPath =
-        containerPath.resolve(
+        networkPath.resolve(
             Paths.get(
                 BfConsts.RELPATH_TESTRIGS_DIR,
-                "testrig",
+                _snapshotName,
                 BfConsts.RELPATH_TEST_RIG_DIR,
                 BfConsts.RELPATH_CONFIGURATIONS_DIR));
     assertTrue(configPath.toFile().mkdirs());
@@ -306,7 +312,8 @@ public class WorkMgrServiceTest {
             Version.getVersion(),
             null,
             _networkName,
-            "testrig",
+            null,
+            _snapshotName,
             "config.cfg");
     String actualMessage = response.getEntity().toString();
     assertThat(actualMessage, equalTo("config content"));
@@ -314,7 +321,7 @@ public class WorkMgrServiceTest {
 
   @Test
   public void getQuestionTemplates() throws Exception {
-    initContainerEnvironment();
+    initNetworkEnvironment();
     Question testQuestion = createTestQuestion("testquestion", "test description");
     ObjectMapper mapper = BatfishObjectMapper.mapper();
     // serializing the question in the temp questions folder
@@ -384,25 +391,25 @@ public class WorkMgrServiceTest {
 
   @Test
   public void getEmptyContainer() throws Exception {
-    initContainerEnvironment();
+    initNetworkEnvironment();
     Response response = _service.getNetwork("100", "0.0.0", _networkName, null);
-    String containerJson = response.getEntity().toString();
-    assertThat(containerJson, equalTo("{\"name\":\"myNetwork\"}"));
+    String networkJson = response.getEntity().toString();
+    assertThat(networkJson, equalTo("{\"name\":\"myNetwork\"}"));
   }
 
   @Test
   public void getNonExistContainer() throws Exception {
-    String containerName = "non-existing-folder";
-    initContainerEnvironment();
-    Response response = _service.getNetwork("100", "0.0.0", containerName, null);
+    String networkName = "non-existing-folder";
+    initNetworkEnvironment();
+    Response response = _service.getNetwork("100", "0.0.0", networkName, null);
     String actualMessage = response.getEntity().toString();
-    String expected = "Network '" + containerName + "' not found";
+    String expected = "Network '" + networkName + "' not found";
     assertThat(actualMessage, equalTo(expected));
   }
 
   @Test
   public void getContainerWithBadVersion() throws Exception {
-    initContainerEnvironment();
+    initNetworkEnvironment();
     Response response = _service.getNetwork("100", "invalid version", _networkName, null);
     String actualMessage = response.getEntity().toString();
     String expected = "Illegal version 'invalid version' for Client";
@@ -411,21 +418,21 @@ public class WorkMgrServiceTest {
 
   @Test
   public void getNonEmptyContainer() throws Exception {
-    initContainerEnvironment();
-    Path containerPath = _networksFolder.getRoot().toPath().resolve(_networkName);
-    Path testrigPath = containerPath.resolve(BfConsts.RELPATH_TESTRIGS_DIR).resolve("testrig");
-    assertThat(testrigPath.toFile().mkdirs(), is(true));
+    initNetworkEnvironment();
+    Path networkPath = _networksFolder.getRoot().toPath().resolve(_networkName);
+    Path snapshotPath = networkPath.resolve(BfConsts.RELPATH_TESTRIGS_DIR).resolve(_snapshotName);
+    assertThat(snapshotPath.toFile().mkdirs(), is(true));
     Response response = _service.getNetwork("100", "0.0.0", _networkName, null);
-    Container container =
+    Container network =
         BatfishObjectMapper.mapper().readValue(response.getEntity().toString(), Container.class);
     Container expected =
-        Container.of(_networkName, Sets.newTreeSet(Collections.singleton("testrig")));
-    assertThat(container, equalTo(expected));
+        Container.of(_networkName, Sets.newTreeSet(Collections.singleton(_snapshotName)));
+    assertThat(network, equalTo(expected));
   }
 
   @Test
   public void testConfigureAnalysisInContainer() throws Exception {
-    initContainerEnvironment();
+    initNetworkEnvironment();
     // test init and add questions to analysis
     String analysisJsonString = "{\"question\":{\"question\":\"questionContent\"}}";
     File analysisFile = _networksFolder.newFile("analysis");
@@ -481,14 +488,13 @@ public class WorkMgrServiceTest {
 
   @Test
   public void testGetAnalysisAnswerInContainer() throws Exception {
-    String testrigName = "testrig1";
     String analysisName = "analysis1";
     String questionName = "question1";
     String questionContent = "questionContent";
     String question2Name = "question2Name";
     String answer = "answerContent";
 
-    initContainerEnvironment();
+    initNetworkEnvironment();
 
     String analysisJsonString =
         String.format("{\"%s\":{\"question\":\"%s\"}}", questionName, questionContent);
@@ -514,7 +520,7 @@ public class WorkMgrServiceTest {
                 Paths.get(
                     _networkName,
                     BfConsts.RELPATH_TESTRIGS_DIR,
-                    testrigName,
+                    _snapshotName,
                     BfConsts.RELPATH_ANALYSES_DIR,
                     analysisName,
                     BfConsts.RELPATH_QUESTIONS_DIR,
@@ -526,7 +532,7 @@ public class WorkMgrServiceTest {
     answerDir.toFile().mkdirs();
     CommonUtil.writeFile(answer1Path, answer);
 
-    WorkItem workItem = new WorkItem(_networkName, testrigName);
+    WorkItem workItem = new WorkItem(_networkName, _snapshotName);
     String workItemString = BatfishObjectMapper.mapper().writeValueAsString(workItem);
 
     JSONArray answer1Output =
@@ -535,7 +541,8 @@ public class WorkMgrServiceTest {
             Version.getVersion(),
             _networkName,
             null,
-            testrigName,
+            _snapshotName,
+            null,
             BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
             null,
             null,
@@ -549,7 +556,8 @@ public class WorkMgrServiceTest {
             Version.getVersion(),
             _networkName,
             null,
-            testrigName,
+            _snapshotName,
+            null,
             BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
             null,
             null,
@@ -569,14 +577,15 @@ public class WorkMgrServiceTest {
 
   @Test
   public void getConfigNonExistContainer() throws Exception {
-    initContainerEnvironment();
+    initNetworkEnvironment();
     Response response =
         _service.getConfiguration(
             CoordConsts.DEFAULT_API_KEY,
             Version.getVersion(),
             "nonExistContainer",
             null,
-            "testrig",
+            _snapshotName,
+            null,
             "config1.cfg");
     String actualMessage = response.getEntity().toString();
     assertThat(actualMessage, equalTo("Network 'nonExistContainer' not found"));
@@ -584,35 +593,38 @@ public class WorkMgrServiceTest {
 
   @Test
   public void getNonExistConfigInContainer() throws Exception {
-    initContainerEnvironment();
-    Path containerDir = _networksFolder.getRoot().toPath().resolve(_networkName);
-    Path testrigPath =
-        containerDir.resolve(
-            Paths.get(BfConsts.RELPATH_TESTRIGS_DIR, "testrig", BfConsts.RELPATH_TEST_RIG_DIR));
-    assertTrue(testrigPath.toFile().mkdirs());
+    initNetworkEnvironment();
+    Path networkDir = _networksFolder.getRoot().toPath().resolve(_networkName);
+    Path snapshotPath =
+        networkDir.resolve(
+            Paths.get(BfConsts.RELPATH_TESTRIGS_DIR, _snapshotName, BfConsts.RELPATH_TEST_RIG_DIR));
+    assertTrue(snapshotPath.toFile().mkdirs());
     Response response =
         _service.getConfiguration(
             CoordConsts.DEFAULT_API_KEY,
             Version.getVersion(),
             _networkName,
             null,
-            "testrig",
+            _snapshotName,
+            null,
             "config.cfg");
     String actualMessage = response.getEntity().toString();
     String expected =
-        "Configuration file config.cfg does not exist in snapshot testrig for network myNetwork";
+        String.format(
+            "Configuration file config.cfg does not exist in snapshot %s for network %s",
+            _snapshotName, _networkName);
     assertThat(actualMessage, equalTo(expected));
   }
 
   @Test
   public void getConfigContentInContainer() throws Exception {
-    initContainerEnvironment();
-    Path containerPath = _networksFolder.getRoot().toPath().resolve(_networkName);
+    initNetworkEnvironment();
+    Path networkPath = _networksFolder.getRoot().toPath().resolve(_networkName);
     Path configPath =
-        containerPath.resolve(
+        networkPath.resolve(
             Paths.get(
                 BfConsts.RELPATH_TESTRIGS_DIR,
-                "testrig",
+                _snapshotName,
                 BfConsts.RELPATH_TEST_RIG_DIR,
                 BfConsts.RELPATH_CONFIGURATIONS_DIR));
     assertTrue(configPath.toFile().mkdirs());
@@ -623,7 +635,8 @@ public class WorkMgrServiceTest {
             Version.getVersion(),
             _networkName,
             null,
-            "testrig",
+            _snapshotName,
+            null,
             "config.cfg");
     String actualMessage = response.getEntity().toString();
     assertThat(actualMessage, equalTo("config content"));
