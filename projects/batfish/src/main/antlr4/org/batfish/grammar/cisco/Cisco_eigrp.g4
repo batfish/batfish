@@ -16,16 +16,16 @@ re_classic_tail
 :
    rec_address_family
    | rec_null
+   | re_default_metric
    | re_network
    | re_passive_interface_default
    | re_passive_interface
-   | re_redistribute_bgp
-   | re_redistribute_connected
-   | re_redistribute_eigrp
-   | re_redistribute_isis
-   | re_redistribute_ospf
-   | re_redistribute_rip
-   | re_redistribute_static
+   | re_redistribute
+;
+
+re_default_metric
+:
+   NO? DEFAULT_METRIC bw_kbps = DEC delay_10us = DEC reliability = DEC eff_bw = DEC mtu = DEC NEWLINE
 ;
 
 re_named
@@ -54,6 +54,17 @@ re_passive_interface
 re_passive_interface_default
 :
    NO? PASSIVE_INTERFACE DEFAULT NEWLINE
+;
+
+re_redistribute
+:
+   re_redistribute_bgp
+   | re_redistribute_connected
+   | re_redistribute_eigrp
+   | re_redistribute_isis
+   | re_redistribute_ospf
+   | re_redistribute_rip
+   | re_redistribute_static
 ;
 
 re_redistribute_bgp
@@ -99,11 +110,7 @@ re_redistribute_ospf
 :
    REDISTRIBUTE OSPF proc = DEC
    (
-      MATCH (
-         EXTERNAL DEC?
-         | INTERNAL
-         | NSSA_EXTERNAL DEC?
-      )+
+      MATCH ospf_route_type+
       | METRIC bw_kbps = DEC delay_10us = DEC reliability = DEC eff_bw = DEC mtu = DEC
       | ROUTE_MAP map = variable
    )* NEWLINE
@@ -182,7 +189,9 @@ reaf_interface_tail
 
 reaf_topology_tail
 :
-   reaf_topology_null
+   re_default_metric
+   | re_redistribute
+   | reaf_topology_null
 ;
 
 reaf_topology
@@ -203,7 +212,6 @@ reaf_topology_null
       AUTO_SUMMARY
       | CTS
       | DEFAULT_INFORMATION
-      | DEFAULT_METRIC
       | DISTANCE
       | DISTRIBUTE_LIST
       | EIGRP
@@ -211,7 +219,6 @@ reaf_topology_null
       | MAXIMUM_PATHS
       | METRIC
       | OFFSET_LIST
-      | REDISTRIBUTE
       | SNMP
       | SUMMARY_METRIC
       | TIMERS
@@ -242,7 +249,6 @@ rec_address_family_null
       | AUTONOMOUS_SYSTEM
       | BFD
       | DEFAULT_INFORMATION
-      | DEFAULT_METRIC
       | DISTANCE
       | DISTRIBUTE_LIST
       | EIGRP
@@ -252,15 +258,16 @@ rec_address_family_null
       | NEIGHBOR
       | NSF
       | OFFSET_LIST
-      | REDISTRIBUTE
    ) null_rest_of_line
 ;
 
 rec_address_family_tail
 :
-   re_network
+   re_default_metric
+   | re_network
    | re_passive_interface_default
    | re_passive_interface
+   | re_redistribute
    | rec_address_family_null
 ;
 
@@ -271,7 +278,6 @@ rec_null
       AUTO_SUMMARY
       | BFD
       | DEFAULT_INFORMATION
-      | DEFAULT_METRIC
       | DISTANCE
       | DISTRIBUTE_LIST
       | EIGRP

@@ -4,6 +4,7 @@ import static org.batfish.common.util.CommonUtil.computeIpNodeOwners;
 import static org.batfish.common.util.CommonUtil.initBgpTopology;
 import static org.batfish.common.util.CommonUtil.synthesizeTopology;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.datamodel.eigrp.EigrpTopology.initEigrpTopology;
 import static org.batfish.datamodel.isis.IsisTopology.initIsisTopology;
 import static org.batfish.datamodel.matchers.BgpAdvertisementMatchers.hasDestinationIp;
 import static org.batfish.datamodel.matchers.BgpAdvertisementMatchers.hasNetwork;
@@ -78,6 +79,8 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.eigrp.EigrpEdge;
+import org.batfish.datamodel.eigrp.EigrpInterface;
 import org.batfish.datamodel.isis.IsisEdge;
 import org.batfish.datamodel.isis.IsisInterfaceLevelSettings;
 import org.batfish.datamodel.isis.IsisInterfaceMode;
@@ -780,9 +783,13 @@ public class VirtualRouterTest {
                 ImmutableMap.toImmutableMap(
                     vr -> vr.getConfiguration().getHostname(), Function.identity()));
     Network<IsisNode, IsisEdge> initialIsisTopology = initIsisTopology(configs, topology);
+
+    Network<EigrpInterface, EigrpEdge> eigrpTopology = initEigrpTopology(configs, topology);
     vrs.values()
         .forEach(
-            vr -> vr.initQueuesAndDeltaBuilders(nodes, topology, bgpTopology, initialIsisTopology));
+            vr ->
+                vr.initQueuesAndDeltaBuilders(
+                    nodes, topology, bgpTopology, eigrpTopology, initialIsisTopology));
 
     // Assert that queues are empty as there are no OSPF, BGP, nor IS-IS processes
     vrs.values()
@@ -817,7 +824,7 @@ public class VirtualRouterTest {
     for (Node n : nodes.values()) {
       n.getVirtualRouters()
           .get(DEFAULT_VRF_NAME)
-          .initQueuesAndDeltaBuilders(nodes, topology, bgpTopology2, isisTopology);
+          .initQueuesAndDeltaBuilders(nodes, topology, bgpTopology2, eigrpTopology, isisTopology);
     }
     // Assert that queues are initialized
     vrs.values()
@@ -877,9 +884,12 @@ public class VirtualRouterTest {
                 ImmutableMap.toImmutableMap(
                     vr -> vr.getConfiguration().getHostname(), Function.identity()));
     Network<IsisNode, IsisEdge> initialIsisTopology = initIsisTopology(configs, topology);
+    Network<EigrpInterface, EigrpEdge> eigrpTopology = initEigrpTopology(configs, topology);
     vrs.values()
         .forEach(
-            vr -> vr.initQueuesAndDeltaBuilders(nodes, topology, bgpTopology, initialIsisTopology));
+            vr ->
+                vr.initQueuesAndDeltaBuilders(
+                    nodes, topology, bgpTopology, eigrpTopology, initialIsisTopology));
 
     // Assert that queues are empty as there are no OSPF, BGP, nor IS-IS processes
     vrs.values()
@@ -896,7 +906,9 @@ public class VirtualRouterTest {
     // Re-run
     vrs.values()
         .forEach(
-            vr -> vr.initQueuesAndDeltaBuilders(nodes, topology, bgpTopology, updatedIsisTopology));
+            vr ->
+                vr.initQueuesAndDeltaBuilders(
+                    nodes, topology, bgpTopology, eigrpTopology, updatedIsisTopology));
 
     // Assert that queues are initialized
     assertThat(

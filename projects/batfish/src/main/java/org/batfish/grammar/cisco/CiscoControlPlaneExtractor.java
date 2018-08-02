@@ -1,6 +1,7 @@
 package org.batfish.grammar.cisco;
 
 import static java.util.Comparator.naturalOrder;
+import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toCollection;
 import static org.batfish.datamodel.ConfigurationFormat.ARISTA;
 import static org.batfish.datamodel.ConfigurationFormat.ARUBAOS;
@@ -224,7 +225,6 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
@@ -291,6 +291,7 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.TcpFlags;
+import org.batfish.datamodel.eigrp.EigrpMetric;
 import org.batfish.datamodel.eigrp.EigrpProcessMode;
 import org.batfish.datamodel.isis.IsisInterfaceMode;
 import org.batfish.datamodel.isis.IsisLevel;
@@ -769,6 +770,7 @@ import org.batfish.grammar.cisco.CiscoParser.Rbnx_template_peer_sessionContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_v_local_asContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_vrfContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_classicContext;
+import org.batfish.grammar.cisco.CiscoParser.Re_default_metricContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_networkContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_passive_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_passive_interface_defaultContext;
@@ -985,6 +987,7 @@ import org.batfish.representation.cisco.CryptoMapSet;
 import org.batfish.representation.cisco.DynamicIpBgpPeerGroup;
 import org.batfish.representation.cisco.DynamicIpv6BgpPeerGroup;
 import org.batfish.representation.cisco.EigrpProcess;
+import org.batfish.representation.cisco.EigrpRedistributionPolicy;
 import org.batfish.representation.cisco.ExpandedCommunityList;
 import org.batfish.representation.cisco.ExpandedCommunityListLine;
 import org.batfish.representation.cisco.ExtendedAccessList;
@@ -1172,6 +1175,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private static final String F_CM_MATCH_NOT = "class-map - match not (criteria)";
 
+  // https://github.com/batfish/batfish/issues/1946
+  private static final String F_EIGRP_METRIC = "eigrp - metric";
+
+  private static final String F_EIGRP_REDISTRIBUTE_ISIS = "eigrp - redistribute isis";
+
   private static final String F_FRAGMENTS = "acl fragments";
 
   private static final String F_INTERFACE_MULTIPOINT = "interface multipoint";
@@ -1200,6 +1208,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private static final String F_ACL_INTERFACE = "acl match interface";
 
   private static final String F_ACL_OBJECT = "acl match object";
+
+  private static final String F_REDISTRIBUTE_OSPF_MATCH = "redistribute ospf match route-type";
 
   private static final String INLINE_SERVICE_OBJECT_NAME = "~INLINE_SERVICE_OBJECT~";
 
@@ -3974,25 +3984,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void exitRec_address_family(Rec_address_familyContext ctx) {
-    Objects.requireNonNull(_currentEigrpProcess)
-        .computeNetworks(_configuration.getInterfaces().values());
-    _currentEigrpProcess = _parentEigrpProcess;
-    _parentEigrpProcess = null;
-    _currentVrf = Configuration.DEFAULT_VRF_NAME;
-  }
-
-  @Override
-  public void exitRen_address_family(Ren_address_familyContext ctx) {
-    // Check if address family was supported
-    if (_currentEigrpProcess != null) {
-      _currentEigrpProcess.computeNetworks(_configuration.getInterfaces().values());
-    }
-    _currentEigrpProcess = null;
-    _currentVrf = Configuration.DEFAULT_VRF_NAME;
-  }
-
-  @Override
   public void exitAddress_family_rb_stanza(Address_family_rb_stanzaContext ctx) {
     popPeer();
   }
@@ -6414,6 +6405,18 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitRe_default_metric(Re_default_metricContext ctx) {
+    EigrpProcess proc = requireNonNull(_currentEigrpProcess);
+    if (ctx.NO() == null) {
+      EigrpMetric metric =
+          toEigrpMetric(ctx, ctx.bw_kbps, ctx.delay_10us, ctx.reliability, ctx.eff_bw, ctx.mtu);
+      proc.setDefaultMetric(metric);
+    } else {
+      proc.setDefaultMetric(null);
+    }
+  }
+
+  @Override
   public void exitRe_network(Re_networkContext ctx) {
     if (_currentEigrpProcess == null) {
       todo(ctx, "network not supported here");
@@ -6442,28 +6445,72 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitRe_redistribute_bgp(Re_redistribute_bgpContext ctx) {
+    EigrpProcess proc = requireNonNull(_currentEigrpProcess);
+    RoutingProtocol sourceProtocol = RoutingProtocol.BGP;
+    EigrpRedistributionPolicy r = new EigrpRedistributionPolicy(sourceProtocol);
+    proc.getRedistributionPolicies().put(sourceProtocol, r);
+    long as = toAsNum(ctx.asn);
+    r.getSpecialAttributes().put(EigrpRedistributionPolicy.BGP_AS, as);
+
+    if (!ctx.METRIC().isEmpty()) {
+      EigrpMetric metric =
+          toEigrpMetric(ctx, ctx.bw_kbps, ctx.delay_10us, ctx.reliability, ctx.eff_bw, ctx.mtu);
+      r.setMetric(metric);
+    }
+
     if (ctx.map != null) {
       String mapname = ctx.map.getText();
-      _configuration.referenceStructure(
-          ROUTE_MAP, mapname, EIGRP_REDISTRIBUTE_BGP_MAP, ctx.map.getStart().getLine());
+      int mapLine = ctx.map.getStart().getLine();
+      r.setRouteMap(mapname);
+      r.setRouteMapLine(mapLine);
+      _configuration.referenceStructure(ROUTE_MAP, mapname, EIGRP_REDISTRIBUTE_BGP_MAP, mapLine);
     }
   }
 
   @Override
   public void exitRe_redistribute_connected(Re_redistribute_connectedContext ctx) {
+    EigrpProcess proc = requireNonNull(_currentEigrpProcess);
+    RoutingProtocol sourceProtocol = RoutingProtocol.CONNECTED;
+    EigrpRedistributionPolicy r = new EigrpRedistributionPolicy(sourceProtocol);
+    proc.getRedistributionPolicies().put(sourceProtocol, r);
+
+    if (!ctx.METRIC().isEmpty()) {
+      EigrpMetric metric =
+          toEigrpMetric(ctx, ctx.bw_kbps, ctx.delay_10us, ctx.reliability, ctx.eff_bw, ctx.mtu);
+      r.setMetric(metric);
+    }
+
     if (ctx.map != null) {
       String mapname = ctx.map.getText();
+      int mapLine = ctx.map.getStart().getLine();
+      r.setRouteMap(mapname);
+      r.setRouteMapLine(mapLine);
       _configuration.referenceStructure(
-          ROUTE_MAP, mapname, EIGRP_REDISTRIBUTE_CONNECTED_MAP, ctx.map.getStart().getLine());
+          ROUTE_MAP, mapname, EIGRP_REDISTRIBUTE_CONNECTED_MAP, mapLine);
     }
   }
 
   @Override
   public void exitRe_redistribute_eigrp(Re_redistribute_eigrpContext ctx) {
+    EigrpProcess proc = requireNonNull(_currentEigrpProcess);
+    RoutingProtocol sourceProtocol = RoutingProtocol.EIGRP;
+    EigrpRedistributionPolicy r = new EigrpRedistributionPolicy(sourceProtocol);
+    proc.getRedistributionPolicies().put(sourceProtocol, r);
+    long asn = toLong(ctx.asn);
+    r.getSpecialAttributes().put(EigrpRedistributionPolicy.EIGRP_AS_NUMBER, asn);
+
+    if (!ctx.METRIC().isEmpty()) {
+      EigrpMetric metric =
+          toEigrpMetric(ctx, ctx.bw_kbps, ctx.delay_10us, ctx.reliability, ctx.eff_bw, ctx.mtu);
+      r.setMetric(metric);
+    }
+
     if (ctx.map != null) {
       String mapname = ctx.map.getText();
-      _configuration.referenceStructure(
-          ROUTE_MAP, mapname, EIGRP_REDISTRIBUTE_EIGRP_MAP, ctx.map.getStart().getLine());
+      int mapLine = ctx.map.getStart().getLine();
+      r.setRouteMap(mapname);
+      r.setRouteMapLine(mapLine);
+      _configuration.referenceStructure(ROUTE_MAP, mapname, EIGRP_REDISTRIBUTE_EIGRP_MAP, mapLine);
     }
   }
 
@@ -6474,32 +6521,78 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _configuration.referenceStructure(
           ROUTE_MAP, mapname, EIGRP_REDISTRIBUTE_ISIS_MAP, ctx.map.getStart().getLine());
     }
+    todo(ctx, F_EIGRP_REDISTRIBUTE_ISIS);
   }
 
   @Override
   public void exitRe_redistribute_ospf(Re_redistribute_ospfContext ctx) {
+    EigrpProcess proc = requireNonNull(_currentEigrpProcess);
+    RoutingProtocol sourceProtocol = RoutingProtocol.OSPF;
+    EigrpRedistributionPolicy r = new EigrpRedistributionPolicy(sourceProtocol);
+    proc.getRedistributionPolicies().put(sourceProtocol, r);
+    int procNum = toInteger(ctx.proc);
+    r.getSpecialAttributes().put(EigrpRedistributionPolicy.OSPF_PROCESS_NUMBER, procNum);
+
+    if (ctx.MATCH() != null) {
+      todo(ctx, F_REDISTRIBUTE_OSPF_MATCH);
+    }
+
+    if (!ctx.METRIC().isEmpty()) {
+      EigrpMetric metric =
+          toEigrpMetric(ctx, ctx.bw_kbps, ctx.delay_10us, ctx.reliability, ctx.eff_bw, ctx.mtu);
+      r.setMetric(metric);
+    }
+
     if (ctx.map != null) {
       String mapname = ctx.map.getText();
-      _configuration.referenceStructure(
-          ROUTE_MAP, mapname, EIGRP_REDISTRIBUTE_OSPF_MAP, ctx.map.getStart().getLine());
+      int mapLine = ctx.map.getStart().getLine();
+      r.setRouteMap(mapname);
+      r.setRouteMapLine(mapLine);
+      _configuration.referenceStructure(ROUTE_MAP, mapname, EIGRP_REDISTRIBUTE_OSPF_MAP, mapLine);
     }
   }
 
   @Override
   public void exitRe_redistribute_rip(Re_redistribute_ripContext ctx) {
+    EigrpProcess proc = requireNonNull(_currentEigrpProcess);
+    RoutingProtocol sourceProtocol = RoutingProtocol.RIP;
+    EigrpRedistributionPolicy r = new EigrpRedistributionPolicy(sourceProtocol);
+    proc.getRedistributionPolicies().put(sourceProtocol, r);
+
+    if (!ctx.METRIC().isEmpty()) {
+      EigrpMetric metric =
+          toEigrpMetric(ctx, ctx.bw_kbps, ctx.delay_10us, ctx.reliability, ctx.eff_bw, ctx.mtu);
+      r.setMetric(metric);
+    }
+
     if (ctx.map != null) {
       String mapname = ctx.map.getText();
-      _configuration.referenceStructure(
-          ROUTE_MAP, mapname, EIGRP_REDISTRIBUTE_RIP_MAP, ctx.map.getStart().getLine());
+      int mapLine = ctx.map.getStart().getLine();
+      r.setRouteMap(mapname);
+      r.setRouteMapLine(mapLine);
+      _configuration.referenceStructure(ROUTE_MAP, mapname, EIGRP_REDISTRIBUTE_RIP_MAP, mapLine);
     }
   }
 
   @Override
   public void exitRe_redistribute_static(Re_redistribute_staticContext ctx) {
+    EigrpProcess proc = requireNonNull(_currentEigrpProcess);
+    RoutingProtocol sourceProtocol = RoutingProtocol.STATIC;
+    EigrpRedistributionPolicy r = new EigrpRedistributionPolicy(sourceProtocol);
+    proc.getRedistributionPolicies().put(sourceProtocol, r);
+
+    if (!ctx.METRIC().isEmpty()) {
+      EigrpMetric metric =
+          toEigrpMetric(ctx, ctx.bw_kbps, ctx.delay_10us, ctx.reliability, ctx.eff_bw, ctx.mtu);
+      r.setMetric(metric);
+    }
+
     if (ctx.map != null) {
       String mapname = ctx.map.getText();
-      _configuration.referenceStructure(
-          ROUTE_MAP, mapname, EIGRP_REDISTRIBUTE_STATIC_MAP, ctx.map.getStart().getLine());
+      int mapLine = ctx.map.getStart().getLine();
+      r.setRouteMap(mapname);
+      r.setRouteMapLine(mapLine);
+      _configuration.referenceStructure(ROUTE_MAP, mapname, EIGRP_REDISTRIBUTE_STATIC_MAP, mapLine);
     }
   }
 
@@ -6513,10 +6606,28 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     boolean passive = (ctx.NO() == null);
     if (_currentEigrpInterface == null) {
       // default interface
-      Objects.requireNonNull(_currentEigrpProcess).setPassiveInterfaceDefault(passive);
+      requireNonNull(_currentEigrpProcess).setPassiveInterfaceDefault(passive);
     } else {
       _currentEigrpInterface.setEigrpPassive(passive);
     }
+  }
+
+  @Override
+  public void exitRec_address_family(Rec_address_familyContext ctx) {
+    requireNonNull(_currentEigrpProcess).computeNetworks(_configuration.getInterfaces().values());
+    _currentEigrpProcess = _parentEigrpProcess;
+    _parentEigrpProcess = null;
+    _currentVrf = Configuration.DEFAULT_VRF_NAME;
+  }
+
+  @Override
+  public void exitRen_address_family(Ren_address_familyContext ctx) {
+    // Check if address family was supported
+    if (_currentEigrpProcess != null) {
+      _currentEigrpProcess.computeNetworks(_configuration.getInterfaces().values());
+    }
+    _currentEigrpProcess = null;
+    _currentVrf = Configuration.DEFAULT_VRF_NAME;
   }
 
   @Override
@@ -7054,6 +7165,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         r.setRouteMapLine(mapLine);
         _configuration.referenceStructure(ROUTE_MAP, map, BGP_REDISTRIBUTE_OSPF_MAP, mapLine);
       }
+      if (ctx.MATCH() != null) {
+        todo(ctx, F_REDISTRIBUTE_OSPF_MATCH);
+      }
       if (ctx.procnum != null) {
         int procNum = toInteger(ctx.procnum);
         r.getSpecialAttributes().put(BgpRedistributionPolicy.OSPF_PROCESS_NUMBER, procNum);
@@ -7558,8 +7672,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitRe_classic(Re_classicContext ctx) {
-    Objects.requireNonNull(_currentEigrpProcess)
-        .computeNetworks(_configuration.getInterfaces().values());
+    requireNonNull(_currentEigrpProcess).computeNetworks(_configuration.getInterfaces().values());
     _currentEigrpProcess = null;
     _currentVrf = Configuration.DEFAULT_VRF_NAME;
   }
@@ -8625,6 +8738,35 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     List<AsPathSetElem> elems =
         ctx.elems.stream().map(this::toAsPathSetElem).collect(Collectors.toList());
     return new ExplicitAsPathSet(elems);
+  }
+
+  private EigrpMetric toEigrpMetric(
+      ParserRuleContext ctx,
+      Token ctxBw,
+      Token ctxDelay,
+      Token ctxReliability,
+      Token ctxEffBw,
+      Token ctxMtu) {
+    EigrpMetric.Builder builder = EigrpMetric.builder();
+    double bandwidth = toLong(ctxBw) * 1000.0D;
+    builder.setBandwidth(bandwidth);
+    double delay = toLong(ctxDelay) * 1E7;
+    builder.setDelay(delay);
+    int reliability = toInteger(ctxReliability);
+    if (reliability != 0) {
+      todo(ctx, F_EIGRP_METRIC);
+    }
+    int effBw = toInteger(ctxEffBw);
+    if (effBw != 0) {
+      todo(ctx, F_EIGRP_METRIC);
+    }
+    int mtu = toInteger(ctxMtu);
+    if (mtu != 0) {
+      todo(ctx, F_EIGRP_METRIC);
+    }
+
+    builder.setMode(requireNonNull(_currentEigrpProcess).getMode());
+    return requireNonNull(builder.build());
   }
 
   private IpsecAuthenticationAlgorithm toIpsecAuthenticationAlgorithm(

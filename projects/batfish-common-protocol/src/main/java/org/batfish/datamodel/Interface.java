@@ -45,7 +45,7 @@ public final class Interface extends ComparableStructure<String> {
 
     private SortedSet<String> _declaredNames;
 
-    private EigrpInterfaceSettings _eigrp;
+    @Nullable private EigrpInterfaceSettings _eigrp;
 
     private IpAccessList _incomingFilter;
 
@@ -206,7 +206,7 @@ public final class Interface extends ComparableStructure<String> {
       return this;
     }
 
-    public Builder setEigrp(EigrpInterfaceSettings eigrp) {
+    public Builder setEigrp(@Nullable EigrpInterfaceSettings eigrp) {
       _eigrp = eigrp;
       return this;
     }
@@ -589,7 +589,7 @@ public final class Interface extends ComparableStructure<String> {
 
   private List<Ip> _dhcpRelayAddresses;
 
-  private EigrpInterfaceSettings _eigrp;
+  @Nullable private EigrpInterfaceSettings _eigrp;
 
   private IpAccessList _inboundFilter;
 
