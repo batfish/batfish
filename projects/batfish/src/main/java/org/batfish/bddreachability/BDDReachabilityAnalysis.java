@@ -275,8 +275,7 @@ public class BDDReachabilityAnalysis {
   }
 
   public Map<IngressLocation, BDD> getIngressLocationAcceptBDDs() {
-    return // computeReverseReachableStates(ImmutableList.of(Accept.INSTANCE))
-    _reverseReachableStates
+    return _reverseReachableStates
         .get()
         .entrySet()
         .stream()
