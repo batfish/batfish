@@ -1258,7 +1258,7 @@ public class WorkMgrService {
    *     containerName} is not empty)
    * @return TODO: document JSON response
    * @deprecated because containers were renamed to networks. Use {@link #initNetwork(String,
-   *     String, String, String, String) initNetwork} instead.
+   *     String, String, String, String, String) initNetwork} instead.
    */
   @POST
   @Path(CoordConsts.SVC_RSC_INIT_CONTAINER)
@@ -1291,10 +1291,16 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
       @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName,
       @FormDataParam(CoordConsts.SVC_KEY_NETWORK_NAME) String networkName,
+      @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_PREFIX) String containerPrefix,
       @FormDataParam(CoordConsts.SVC_KEY_NETWORK_PREFIX) String networkPrefix) {
     String networkNameParam = networkName == null ? containerName : networkName;
+    String networkPrefixParam = networkPrefix == null ? containerPrefix : networkPrefix;
     return initNetworkHelper(
-        apiKey, clientVersion, networkNameParam, networkPrefix, CoordConsts.SVC_KEY_NETWORK_NAME);
+        apiKey,
+        clientVersion,
+        networkNameParam,
+        networkPrefixParam,
+        CoordConsts.SVC_KEY_NETWORK_NAME);
   }
 
   private JSONArray initNetworkHelper(
