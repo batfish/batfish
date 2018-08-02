@@ -604,7 +604,8 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_TESTRIG_NAME) String testrigName,
       @FormDataParam(CoordConsts.SVC_KEY_SNAPSHOT_NAME) String snapshotName,
       @FormDataParam(CoordConsts.SVC_KEY_ENV_NAME) String baseEnv,
-      @FormDataParam(CoordConsts.SVC_KEY_DELTA_TESTRIG_NAME) String deltaSnapshot,
+      @FormDataParam(CoordConsts.SVC_KEY_DELTA_TESTRIG_NAME) String deltaTestrig,
+      @FormDataParam(CoordConsts.SVC_KEY_DELTA_SNAPSHOT_NAME) String deltaSnapshot,
       @FormDataParam(CoordConsts.SVC_KEY_DELTA_ENV_NAME) String deltaEnv,
       @FormDataParam(CoordConsts.SVC_KEY_ANALYSIS_NAME) String analysisName,
       @FormDataParam(CoordConsts.SVC_KEY_QUESTION_NAME) String questionName,
@@ -612,6 +613,7 @@ public class WorkMgrService {
     try {
       networkName = networkName == null ? containerName : networkName;
       snapshotName = snapshotName == null ? testrigName : snapshotName;
+      deltaSnapshot = deltaSnapshot == null ? deltaTestrig : deltaSnapshot;
       _logger.infof(
           "WMS:getAnalysisAnswer %s %s %s %s\n", apiKey, networkName, snapshotName, analysisName);
 
@@ -701,13 +703,15 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_TESTRIG_NAME) String testrigName,
       @FormDataParam(CoordConsts.SVC_KEY_SNAPSHOT_NAME) String snapshotName,
       @FormDataParam(CoordConsts.SVC_KEY_ENV_NAME) String baseEnv,
-      @FormDataParam(CoordConsts.SVC_KEY_DELTA_TESTRIG_NAME) String deltaSnapshot,
+      @FormDataParam(CoordConsts.SVC_KEY_DELTA_TESTRIG_NAME) String deltaTestrig,
+      @FormDataParam(CoordConsts.SVC_KEY_DELTA_SNAPSHOT_NAME) String deltaSnapshot,
       @FormDataParam(CoordConsts.SVC_KEY_DELTA_ENV_NAME) String deltaEnv,
       @FormDataParam(CoordConsts.SVC_KEY_ANALYSIS_NAME) String analysisName,
       @FormDataParam(CoordConsts.SVC_KEY_WORKITEM) String workItemStr /* optional */) {
     try {
       networkName = networkName == null ? containerName : networkName;
       snapshotName = snapshotName == null ? testrigName : snapshotName;
+      deltaSnapshot = deltaSnapshot == null ? deltaTestrig : deltaSnapshot;
       _logger.infof(
           "WMS:getAnalysisAnswers %s %s %s %s\n", apiKey, networkName, snapshotName, analysisName);
 
@@ -790,13 +794,15 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_TESTRIG_NAME) String testrigName,
       @FormDataParam(CoordConsts.SVC_KEY_SNAPSHOT_NAME) String snapshotName,
       @FormDataParam(CoordConsts.SVC_KEY_ENV_NAME) String baseEnv,
-      @FormDataParam(CoordConsts.SVC_KEY_DELTA_TESTRIG_NAME) String deltaSnapshot,
+      @FormDataParam(CoordConsts.SVC_KEY_DELTA_TESTRIG_NAME) String deltaTestrig,
+      @FormDataParam(CoordConsts.SVC_KEY_DELTA_SNAPSHOT_NAME) String deltaSnapshot,
       @FormDataParam(CoordConsts.SVC_KEY_DELTA_ENV_NAME) String deltaEnv,
       @FormDataParam(CoordConsts.SVC_KEY_QUESTION_NAME) String questionName,
       @FormDataParam(CoordConsts.SVC_KEY_WORKITEM) String workItemStr /* optional */) {
     try {
       networkName = networkName == null ? containerName : networkName;
       snapshotName = snapshotName == null ? testrigName : snapshotName;
+      deltaSnapshot = deltaSnapshot == null ? deltaTestrig : deltaSnapshot;
       _logger.infof("WMS:getAnswer %s %s %s %s\n", apiKey, networkName, snapshotName, questionName);
 
       checkStringParam(apiKey, "API key");
@@ -2149,10 +2155,12 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_TESTRIG_NAME) String testrigName,
       @FormDataParam(CoordConsts.SVC_KEY_SNAPSHOT_NAME) String snapshotName,
       @FormDataParam(CoordConsts.SVC_KEY_ZIPFILE) InputStream fileStream,
+      @FormDataParam(CoordConsts.SVC_KEY_AUTO_ANALYZE_TESTRIG) String autoAnalyzeTestrigStr,
       @FormDataParam(CoordConsts.SVC_KEY_AUTO_ANALYZE) String autoAnalyzeStr) {
     try {
       networkName = networkName == null ? containerName : networkName;
       snapshotName = snapshotName == null ? testrigName : snapshotName;
+      autoAnalyzeStr = autoAnalyzeStr == null ? autoAnalyzeTestrigStr : autoAnalyzeStr;
       _logger.infof("WMS:uploadSnapshot %s %s %s\n", apiKey, networkName, snapshotName);
 
       checkStringParam(apiKey, "API key");
@@ -2203,7 +2211,7 @@ public class WorkMgrService {
    * @param fileStream The stream from which the new testrig is read
    * @return TODO: document JSON response
    * @deprecated because testrigs were renamed to snapshots. Use {@link #uploadSnapshot(String,
-   *     String, String, String, String, String, InputStream, String)} instead.
+   *     String, String, String, String, String, InputStream, String, String)} instead.
    */
   @POST
   @Path(CoordConsts.SVC_RSC_UPLOAD_TESTRIG)
@@ -2218,6 +2226,14 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_ZIPFILE) InputStream fileStream,
       @FormDataParam(CoordConsts.SVC_KEY_AUTO_ANALYZE_TESTRIG) String autoAnalyzeStr) {
     return uploadSnapshot(
-        apiKey, clientVersion, containerName, null, testrigName, null, fileStream, autoAnalyzeStr);
+        apiKey,
+        clientVersion,
+        containerName,
+        null,
+        testrigName,
+        null,
+        fileStream,
+        autoAnalyzeStr,
+        null);
   }
 }

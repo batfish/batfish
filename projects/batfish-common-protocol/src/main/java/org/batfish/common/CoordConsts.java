@@ -81,6 +81,7 @@ public class CoordConsts {
   public static final String SVC_KEY_DEL_ANALYSIS_QUESTIONS = "delanalysisquestions";
   public static final String SVC_KEY_DEL_WORKER = "delworker";
   public static final String SVC_KEY_DELTA_ENV_NAME = "deltaenvname";
+  public static final String SVC_KEY_DELTA_SNAPSHOT_NAME = "deltasnapshotname";
   public static final String SVC_KEY_DELTA_TESTRIG_NAME = "deltatestrigname";
   public static final String SVC_KEY_ENV_NAME = "envname";
   public static final String SVC_KEY_ENVIRONMENT_LIST = "environmentlist";

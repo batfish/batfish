@@ -223,6 +223,7 @@ public class WorkMgrServiceTest {
             BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
             null,
             null,
+            null,
             analysisName,
             questionName,
             workItemString);
@@ -236,6 +237,7 @@ public class WorkMgrServiceTest {
             null,
             _snapshotName,
             BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
+            null,
             null,
             null,
             analysisName,
@@ -546,6 +548,7 @@ public class WorkMgrServiceTest {
             BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
             null,
             null,
+            null,
             analysisName,
             questionName,
             workItemString);
@@ -559,6 +562,7 @@ public class WorkMgrServiceTest {
             _snapshotName,
             null,
             BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
+            null,
             null,
             null,
             analysisName,
