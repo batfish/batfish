@@ -239,6 +239,12 @@ public class EigrpTest {
   }
 
   /*
+   * Four routers, configured in a square. Each router has external interfaces as depicted and a
+   * single loopback interface. The names of the external interface between router RA and router RB is
+   * <interfacePrefix><A>/<B>. R1 is running OSPF, R3 is running EIGRP, and R2/R4 are running both
+   * EIGRP and OSPF with redistribution of OSPF routes into EIGRP.
+   *
+   *
    *           2/3   3/2
    *   R2.O,E <=========> R3.E
    *    2/1|              | 3/4
