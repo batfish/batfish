@@ -849,6 +849,7 @@ if_null_single
   NO?
   (
     BCMC_OPTIMIZATION
+    | (BFD INTERVAL)
     | DOT1X
     | IP TRAFFIC_EXPORT
     | JUMBO
