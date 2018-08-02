@@ -78,25 +78,25 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_QUERY) String query,
       /* Optional */
       @FormDataParam(CoordConsts.SVC_KEY_MAX_SUGGESTIONS) String maxSuggestions) {
+    String networkNameParam = networkName == null ? containerName : networkName;
+    String snapshotNameParam = snapshotName == null ? testrigName : snapshotName;
     try {
-      networkName = networkName == null ? containerName : networkName;
-      snapshotName = snapshotName == null ? testrigName : snapshotName;
       _logger.infof("WMS:autoComplete %s %s %s\n", completionType, query, maxSuggestions);
 
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
-      checkStringParam(networkName, "Network name");
+      checkStringParam(networkNameParam, "Network name");
       checkStringParam(completionType, "Completion type");
 
       checkApiKeyValidity(apiKey);
       checkClientVersion(clientVersion);
-      checkNetworkAccessibility(apiKey, networkName);
+      checkNetworkAccessibility(apiKey, networkNameParam);
 
       List<AutocompleteSuggestion> answer =
           Main.getWorkMgr()
               .autoComplete(
-                  networkName,
-                  snapshotName,
+                  networkNameParam,
+                  snapshotNameParam,
                   CompletionType.valueOf(completionType.toUpperCase()),
                   query,
                   Strings.isNullOrEmpty(maxSuggestions)
@@ -194,20 +194,20 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_FILE) InputStream addQuestionsStream,
       @FormDataParam(CoordConsts.SVC_KEY_DEL_ANALYSIS_QUESTIONS) String delQuestions,
       @Nullable @FormDataParam(CoordConsts.SVC_KEY_SUGGESTED) Boolean suggested) {
+    String networkNameParam = networkName == null ? containerName : networkName;
     try {
-      networkName = networkName == null ? containerName : networkName;
       _logger.infof(
           "WMS:configureAnalysis %s %s %s %s %s\n",
-          apiKey, networkName, newAnalysisStr, analysisName, delQuestions);
+          apiKey, networkNameParam, newAnalysisStr, analysisName, delQuestions);
 
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
-      checkStringParam(networkName, "Network name");
+      checkStringParam(networkNameParam, "Network name");
       checkStringParam(analysisName, "Analysis name");
 
       checkApiKeyValidity(apiKey);
       checkClientVersion(clientVersion);
-      checkNetworkAccessibility(apiKey, networkName);
+      checkNetworkAccessibility(apiKey, networkNameParam);
 
       Map<String, String> questionsToAdd = new HashMap<>();
       if (addQuestionsStream != null) {
@@ -235,7 +235,12 @@ public class WorkMgrService {
 
       Main.getWorkMgr()
           .configureAnalysis(
-              networkName, newAnalysis, analysisName, questionsToAdd, questionsToDelete, suggested);
+              networkNameParam,
+              newAnalysis,
+              analysisName,
+              questionsToAdd,
+              questionsToDelete,
+              suggested);
 
       return successResponse(new JSONObject().put("result", "successfully configured analysis"));
 
@@ -246,7 +251,7 @@ public class WorkMgrService {
       String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.errorf(
           "WMS:configureAnalysis exception for apikey:%s in network:%s; exception:%s",
-          apiKey, networkName, stackTrace);
+          apiKey, networkNameParam, stackTrace);
       return failureResponse(e.getMessage());
     }
   }
@@ -318,20 +323,20 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName,
       @FormDataParam(CoordConsts.SVC_KEY_NETWORK_NAME) String networkName,
       @FormDataParam(CoordConsts.SVC_KEY_ANALYSIS_NAME) String analysisName) {
+    String networkNameParam = networkName == null ? containerName : networkName;
     try {
-      networkName = networkName == null ? containerName : networkName;
-      _logger.infof("WMS:delAnalysis %s %s %s", apiKey, networkName, analysisName);
+      _logger.infof("WMS:delAnalysis %s %s %s", apiKey, networkNameParam, analysisName);
 
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
-      checkStringParam(networkName, "Network name");
+      checkStringParam(networkNameParam, "Network name");
       checkStringParam(analysisName, "Analysis name");
 
       checkApiKeyValidity(apiKey);
       checkClientVersion(clientVersion);
-      checkNetworkAccessibility(apiKey, networkName);
+      checkNetworkAccessibility(apiKey, networkNameParam);
 
-      Main.getWorkMgr().delAnalysis(networkName, analysisName);
+      Main.getWorkMgr().delAnalysis(networkNameParam, analysisName);
 
       return successResponse(new JSONObject().put("result", "successfully configured analysis"));
 
@@ -342,7 +347,7 @@ public class WorkMgrService {
       String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.errorf(
           "WMS:delAnalysis exception for apikey:%s in network:%s; exception:%s",
-          apiKey, networkName, stackTrace);
+          apiKey, networkNameParam, stackTrace);
       return failureResponse(e.getMessage());
     }
   }
@@ -384,19 +389,19 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
       @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName,
       @FormDataParam(CoordConsts.SVC_KEY_NETWORK_NAME) String networkName) {
-    networkName = networkName == null ? containerName : networkName;
+    String networkNameParam = networkName == null ? containerName : networkName;
     try {
-      _logger.infof("WMS:delNetwork %s\n", networkName);
+      _logger.infof("WMS:delNetwork %s\n", networkNameParam);
 
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
-      checkStringParam(networkName, "Network name");
+      checkStringParam(networkNameParam, "Network name");
 
       checkApiKeyValidity(apiKey);
       checkClientVersion(clientVersion);
-      checkNetworkAccessibility(apiKey, networkName);
+      checkNetworkAccessibility(apiKey, networkNameParam);
 
-      boolean status = Main.getWorkMgr().delContainer(networkName);
+      boolean status = Main.getWorkMgr().delContainer(networkNameParam);
 
       return successResponse(new JSONObject().put("result", status));
 
@@ -407,7 +412,7 @@ public class WorkMgrService {
       String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.errorf(
           "WMS:delNetwork exception for apikey:%s in network:%s; exception:%s",
-          apiKey, networkName, stackTrace);
+          apiKey, networkNameParam, stackTrace);
       return failureResponse(e.getMessage());
     }
   }
@@ -478,20 +483,20 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName,
       @FormDataParam(CoordConsts.SVC_KEY_NETWORK_NAME) String networkName,
       @FormDataParam(CoordConsts.SVC_KEY_QUESTION_NAME) String questionName) {
+    String networkNameParam = networkName == null ? containerName : networkName;
     try {
-      networkName = networkName == null ? containerName : networkName;
-      _logger.infof("WMS:delQuestion %s\n", networkName);
+      _logger.infof("WMS:delQuestion %s\n", networkNameParam);
 
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
-      checkStringParam(networkName, "Network name");
+      checkStringParam(networkNameParam, "Network name");
       checkStringParam(questionName, "Question name");
 
       checkApiKeyValidity(apiKey);
       checkClientVersion(clientVersion);
-      checkNetworkAccessibility(apiKey, networkName);
+      checkNetworkAccessibility(apiKey, networkNameParam);
 
-      Main.getWorkMgr().delQuestion(networkName, questionName);
+      Main.getWorkMgr().delQuestion(networkNameParam, questionName);
 
       return successResponse(new JSONObject().put("result", "true"));
 
@@ -502,7 +507,7 @@ public class WorkMgrService {
       String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.errorf(
           "WMS:delQuestion exception for apikey:%s in network:%s; exception:%s",
-          apiKey, networkName, stackTrace);
+          apiKey, networkNameParam, stackTrace);
       return failureResponse(e.getMessage());
     }
   }
@@ -549,21 +554,21 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_NETWORK_NAME) String networkName,
       @FormDataParam(CoordConsts.SVC_KEY_TESTRIG_NAME) String testrigName,
       @FormDataParam(CoordConsts.SVC_KEY_SNAPSHOT_NAME) String snapshotName) {
-    networkName = networkName == null ? containerName : networkName;
-    snapshotName = snapshotName == null ? testrigName : snapshotName;
+    String networkNameParam = networkName == null ? containerName : networkName;
+    String snapshotNameParam = snapshotName == null ? testrigName : snapshotName;
     try {
-      _logger.infof("WMS:delSnapshot %s\n", networkName);
+      _logger.infof("WMS:delSnapshot %s\n", networkNameParam);
 
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
-      checkStringParam(networkName, "Network name");
-      checkStringParam(snapshotName, "Snapshot name");
+      checkStringParam(networkNameParam, "Network name");
+      checkStringParam(snapshotNameParam, "Snapshot name");
 
       checkApiKeyValidity(apiKey);
       checkClientVersion(clientVersion);
-      checkNetworkAccessibility(apiKey, networkName);
+      checkNetworkAccessibility(apiKey, networkNameParam);
 
-      Main.getWorkMgr().delTestrig(networkName, snapshotName);
+      Main.getWorkMgr().delTestrig(networkNameParam, snapshotNameParam);
 
       return successResponse(new JSONObject().put("result", "true"));
 
@@ -574,7 +579,7 @@ public class WorkMgrService {
       String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.errorf(
           "WMS:delSnapshot exception for apikey:%s in network:%s, snapshot:%s; exception:%s",
-          apiKey, networkName, snapshotName, stackTrace);
+          apiKey, networkNameParam, snapshotNameParam, stackTrace);
       return failureResponse(e.getMessage());
     }
   }
@@ -610,31 +615,32 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_ANALYSIS_NAME) String analysisName,
       @FormDataParam(CoordConsts.SVC_KEY_QUESTION_NAME) String questionName,
       @FormDataParam(CoordConsts.SVC_KEY_WORKITEM) String workItemStr /* optional */) {
+    String networkNameParam = networkName == null ? containerName : networkName;
+    String snapshotNameParam = snapshotName == null ? testrigName : snapshotName;
+    String deltaSnapshotParam = deltaSnapshot == null ? deltaTestrig : deltaSnapshot;
     try {
-      networkName = networkName == null ? containerName : networkName;
-      snapshotName = snapshotName == null ? testrigName : snapshotName;
-      deltaSnapshot = deltaSnapshot == null ? deltaTestrig : deltaSnapshot;
       _logger.infof(
-          "WMS:getAnalysisAnswer %s %s %s %s\n", apiKey, networkName, snapshotName, analysisName);
+          "WMS:getAnalysisAnswer %s %s %s %s\n",
+          apiKey, networkNameParam, snapshotNameParam, analysisName);
 
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
-      checkStringParam(networkName, "Network name");
-      checkStringParam(snapshotName, "Base snapshot name");
+      checkStringParam(networkNameParam, "Network name");
+      checkStringParam(snapshotNameParam, "Base snapshot name");
       checkStringParam(baseEnv, "Base environment name");
       checkStringParam(analysisName, "Analysis name");
       checkStringParam(questionName, "Question name");
 
       checkApiKeyValidity(apiKey);
       checkClientVersion(clientVersion);
-      checkNetworkAccessibility(apiKey, networkName);
+      checkNetworkAccessibility(apiKey, networkNameParam);
 
       JSONObject response = new JSONObject();
 
       if (!Strings.isNullOrEmpty(workItemStr)) {
         WorkItem workItem = BatfishObjectMapper.mapper().readValue(workItemStr, WorkItem.class);
-        if (!workItem.getContainerName().equals(networkName)
-            || !workItem.getTestrigName().equals(snapshotName)) {
+        if (!workItem.getContainerName().equals(networkNameParam)
+            || !workItem.getTestrigName().equals(snapshotNameParam)) {
           return failureResponse(
               "Mismatch in parameters: WorkItem is not for the supplied network or snapshot");
         }
@@ -651,10 +657,10 @@ public class WorkMgrService {
       String answer =
           Main.getWorkMgr()
               .getAnalysisAnswer(
-                  networkName,
-                  snapshotName,
+                  networkNameParam,
+                  snapshotNameParam,
                   baseEnv,
-                  deltaSnapshot,
+                  deltaSnapshotParam,
                   deltaEnv,
                   analysisName,
                   questionName);
@@ -671,9 +677,9 @@ public class WorkMgrService {
           "WMS:getAnalysisAnswer exception for apikey:%s in network:%s, snapshot:%s, "
               + "deltasnapshot:%s; exception:%s",
           apiKey,
-          networkName,
-          snapshotName,
-          deltaSnapshot == null ? "" : deltaSnapshot,
+          networkNameParam,
+          snapshotNameParam,
+          deltaSnapshotParam == null ? "" : deltaSnapshotParam,
           stackTrace);
       return failureResponse(e.getMessage());
     }
@@ -708,30 +714,31 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_DELTA_ENV_NAME) String deltaEnv,
       @FormDataParam(CoordConsts.SVC_KEY_ANALYSIS_NAME) String analysisName,
       @FormDataParam(CoordConsts.SVC_KEY_WORKITEM) String workItemStr /* optional */) {
+    String networkNameParam = networkName == null ? containerName : networkName;
+    String snapshotNameParam = snapshotName == null ? testrigName : snapshotName;
+    String deltaSnapshotParam = deltaSnapshot == null ? deltaTestrig : deltaSnapshot;
     try {
-      networkName = networkName == null ? containerName : networkName;
-      snapshotName = snapshotName == null ? testrigName : snapshotName;
-      deltaSnapshot = deltaSnapshot == null ? deltaTestrig : deltaSnapshot;
       _logger.infof(
-          "WMS:getAnalysisAnswers %s %s %s %s\n", apiKey, networkName, snapshotName, analysisName);
+          "WMS:getAnalysisAnswers %s %s %s %s\n",
+          apiKey, networkNameParam, snapshotNameParam, analysisName);
 
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
-      checkStringParam(networkName, "Network name");
-      checkStringParam(snapshotName, "Base snapshot name");
+      checkStringParam(networkNameParam, "Network name");
+      checkStringParam(snapshotNameParam, "Base snapshot name");
       checkStringParam(baseEnv, "Base environment name");
       checkStringParam(analysisName, "Analysis name");
 
       checkApiKeyValidity(apiKey);
       checkClientVersion(clientVersion);
-      checkNetworkAccessibility(apiKey, networkName);
+      checkNetworkAccessibility(apiKey, networkNameParam);
 
       JSONObject response = new JSONObject();
 
       if (!Strings.isNullOrEmpty(workItemStr)) {
         WorkItem workItem = BatfishObjectMapper.mapper().readValue(workItemStr, WorkItem.class);
-        if (!workItem.getContainerName().equals(networkName)
-            || !workItem.getTestrigName().equals(snapshotName)) {
+        if (!workItem.getContainerName().equals(networkNameParam)
+            || !workItem.getTestrigName().equals(snapshotNameParam)) {
           return failureResponse(
               "Mismatch in parameters: WorkItem is not for the supplied network or snapshot");
         }
@@ -748,7 +755,12 @@ public class WorkMgrService {
       Map<String, String> answers =
           Main.getWorkMgr()
               .getAnalysisAnswers(
-                  networkName, snapshotName, baseEnv, deltaSnapshot, deltaEnv, analysisName);
+                  networkNameParam,
+                  snapshotNameParam,
+                  baseEnv,
+                  deltaSnapshotParam,
+                  deltaEnv,
+                  analysisName);
 
       String answersStr = BatfishObjectMapper.writePrettyString(answers);
 
@@ -762,9 +774,9 @@ public class WorkMgrService {
           "WMS:getAnalysisAnswers exception for apikey:%s in network:%s, snapshot:%s, "
               + "deltasnapshot:%s; exception:%s",
           apiKey,
-          networkName,
-          snapshotName,
-          deltaSnapshot == null ? "" : deltaSnapshot,
+          networkNameParam,
+          snapshotNameParam,
+          deltaSnapshotParam == null ? "" : deltaSnapshotParam,
           stackTrace);
       return failureResponse(e.getMessage());
     }
@@ -799,27 +811,28 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_DELTA_ENV_NAME) String deltaEnv,
       @FormDataParam(CoordConsts.SVC_KEY_QUESTION_NAME) String questionName,
       @FormDataParam(CoordConsts.SVC_KEY_WORKITEM) String workItemStr /* optional */) {
+    String networkNameParam = networkName == null ? containerName : networkName;
+    String snapshotNameParam = snapshotName == null ? testrigName : snapshotName;
+    String deltaSnapshotParam = deltaSnapshot == null ? deltaTestrig : deltaSnapshot;
     try {
-      networkName = networkName == null ? containerName : networkName;
-      snapshotName = snapshotName == null ? testrigName : snapshotName;
-      deltaSnapshot = deltaSnapshot == null ? deltaTestrig : deltaSnapshot;
-      _logger.infof("WMS:getAnswer %s %s %s %s\n", apiKey, networkName, snapshotName, questionName);
+      _logger.infof(
+          "WMS:getAnswer %s %s %s %s\n", apiKey, networkNameParam, snapshotNameParam, questionName);
 
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
-      checkStringParam(networkName, "Network name");
-      checkStringParam(snapshotName, "Base snapshot name");
+      checkStringParam(networkNameParam, "Network name");
+      checkStringParam(snapshotNameParam, "Base snapshot name");
       checkStringParam(baseEnv, "Base environment name");
       checkStringParam(questionName, "Question name");
 
       checkApiKeyValidity(apiKey);
       checkClientVersion(clientVersion);
-      checkNetworkAccessibility(apiKey, networkName);
+      checkNetworkAccessibility(apiKey, networkNameParam);
 
       if (!Strings.isNullOrEmpty(workItemStr)) {
         WorkItem workItem = BatfishObjectMapper.mapper().readValue(workItemStr, WorkItem.class);
-        if (!workItem.getContainerName().equals(networkName)
-            || !workItem.getTestrigName().equals(snapshotName)) {
+        if (!workItem.getContainerName().equals(networkNameParam)
+            || !workItem.getTestrigName().equals(snapshotNameParam)) {
           return failureResponse(
               "Mismatch in parameters: WorkItem is not for the supplied network or snapshot");
         }
@@ -836,7 +849,13 @@ public class WorkMgrService {
 
       String answer =
           Main.getWorkMgr()
-              .getAnswer(networkName, snapshotName, baseEnv, deltaSnapshot, deltaEnv, questionName);
+              .getAnswer(
+                  networkNameParam,
+                  snapshotNameParam,
+                  baseEnv,
+                  deltaSnapshotParam,
+                  deltaEnv,
+                  questionName);
 
       return successResponse(new JSONObject().put(CoordConsts.SVC_KEY_ANSWER, answer));
     } catch (IllegalArgumentException | AccessControlException e) {
@@ -848,9 +867,9 @@ public class WorkMgrService {
           "WMS:getAnswer exception for apikey:%s in network:%s, snapshot:%s, deltasnapshot:%s; "
               + "exception:%s",
           apiKey,
-          networkName,
-          snapshotName,
-          deltaSnapshot == null ? "" : deltaSnapshot,
+          networkNameParam,
+          snapshotNameParam,
+          deltaSnapshotParam == null ? "" : deltaSnapshotParam,
           stackTrace);
       return failureResponse(e.getMessage());
     }
@@ -880,31 +899,31 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_TESTRIG_NAME) String testrigName,
       @FormDataParam(CoordConsts.SVC_KEY_SNAPSHOT_NAME) String snapshotName,
       @FormDataParam(CoordConsts.SVC_KEY_CONFIGURATION_NAME) String configName) {
+    String networkNameParam = networkName == null ? containerName : networkName;
+    String snapshotNameParam = snapshotName == null ? testrigName : snapshotName;
     try {
-      networkName = networkName == null ? containerName : networkName;
-      snapshotName = snapshotName == null ? testrigName : snapshotName;
-      _logger.infof("WMS:getConfiguration %s\n", networkName);
+      _logger.infof("WMS:getConfiguration %s\n", networkNameParam);
 
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
-      checkStringParam(networkName, "Network name");
+      checkStringParam(networkNameParam, "Network name");
 
       checkApiKeyValidity(apiKey);
       checkClientVersion(clientVersion);
 
       java.nio.file.Path networkDir =
-          Main.getSettings().getContainersLocation().resolve(networkName).toAbsolutePath();
+          Main.getSettings().getContainersLocation().resolve(networkNameParam).toAbsolutePath();
       if (networkDir == null || !Files.exists(networkDir)) {
         return Response.status(Response.Status.NOT_FOUND)
-            .entity("Network '" + networkName + "' not found")
+            .entity("Network '" + networkNameParam + "' not found")
             .type(MediaType.TEXT_PLAIN)
             .build();
       }
 
-      checkNetworkAccessibility(apiKey, networkName);
+      checkNetworkAccessibility(apiKey, networkNameParam);
 
       String configContent =
-          Main.getWorkMgr().getConfiguration(networkName, snapshotName, configName);
+          Main.getWorkMgr().getConfiguration(networkNameParam, snapshotNameParam, configName);
 
       return Response.ok(configContent).build();
     } catch (AccessControlException e) {
@@ -968,27 +987,27 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
       @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName,
       @FormDataParam(CoordConsts.SVC_KEY_NETWORK_NAME) String networkName) {
-    networkName = networkName == null ? containerName : networkName;
+    String networkNameParam = networkName == null ? containerName : networkName;
     try {
-      _logger.infof("WMS:getNetwork %s\n", networkName);
+      _logger.infof("WMS:getNetwork %s\n", networkNameParam);
 
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
-      checkStringParam(networkName, "Network name");
+      checkStringParam(networkNameParam, "Network name");
 
       checkApiKeyValidity(apiKey);
       checkClientVersion(clientVersion);
 
       java.nio.file.Path networkDir =
-          Main.getSettings().getContainersLocation().resolve(networkName).toAbsolutePath();
+          Main.getSettings().getContainersLocation().resolve(networkNameParam).toAbsolutePath();
       if (networkDir == null || !Files.exists(networkDir)) {
         return Response.status(Response.Status.NOT_FOUND)
-            .entity("Network '" + networkName + "' not found")
+            .entity("Network '" + networkNameParam + "' not found")
             .type(MediaType.TEXT_PLAIN)
             .build();
       }
 
-      checkNetworkAccessibility(apiKey, networkName);
+      checkNetworkAccessibility(apiKey, networkNameParam);
 
       Container network = Main.getWorkMgr().getContainer(networkDir);
       String networkString = BatfishObjectMapper.writeString(network);
@@ -1008,7 +1027,7 @@ public class WorkMgrService {
       String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.errorf(
           "WMS:getNetwork exception for apikey:%s in network:%s; exception:%s",
-          apiKey, networkName, stackTrace);
+          apiKey, networkNameParam, stackTrace);
       return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
           .entity(e.getCause())
           .type(MediaType.TEXT_PLAIN)
@@ -1055,23 +1074,23 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_TESTRIG_NAME) String testrigName,
       @FormDataParam(CoordConsts.SVC_KEY_SNAPSHOT_NAME) String snapshotName,
       @FormDataParam(CoordConsts.SVC_KEY_OBJECT_NAME) String objectName) {
+    String networkNameParam = networkName == null ? containerName : networkName;
+    String snapshotNameParam = snapshotName == null ? testrigName : snapshotName;
     try {
-      networkName = networkName == null ? containerName : networkName;
-      snapshotName = snapshotName == null ? testrigName : snapshotName;
-      _logger.infof("WMS:getObject %s --> %s\n", snapshotName, objectName);
+      _logger.infof("WMS:getObject %s --> %s\n", snapshotNameParam, objectName);
 
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
-      checkStringParam(networkName, "Network name");
-      checkStringParam(snapshotName, "Snapshot name");
+      checkStringParam(networkNameParam, "Network name");
+      checkStringParam(snapshotNameParam, "Snapshot name");
       checkStringParam(objectName, "Object name");
 
       checkApiKeyValidity(apiKey);
       checkClientVersion(clientVersion);
-      checkNetworkAccessibility(apiKey, networkName);
+      checkNetworkAccessibility(apiKey, networkNameParam);
 
       java.nio.file.Path file =
-          Main.getWorkMgr().getTestrigObject(networkName, snapshotName, objectName);
+          Main.getWorkMgr().getTestrigObject(networkNameParam, snapshotNameParam, objectName);
 
       if (file == null || !Files.exists(file)) {
         return Response.status(Response.Status.NOT_FOUND)
@@ -1094,7 +1113,7 @@ public class WorkMgrService {
       String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.errorf(
           "WMS:getObject exception for apikey:%s in network:%s, snapshot:%s; exception:%s",
-          apiKey, networkName, snapshotName, stackTrace);
+          apiKey, networkNameParam, snapshotNameParam, stackTrace);
       return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
           .entity(e.getCause())
           .type(MediaType.TEXT_PLAIN)
@@ -1112,25 +1131,27 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_NETWORK_NAME) String networkName,
       @FormDataParam(CoordConsts.SVC_KEY_TESTRIG_NAME) String testrigName,
       @FormDataParam(CoordConsts.SVC_KEY_SNAPSHOT_NAME) String snapshotName) {
+    String networkNameParam = networkName == null ? containerName : networkName;
+    String snapshotNameParam = snapshotName == null ? testrigName : snapshotName;
     try {
-      networkName = networkName == null ? containerName : networkName;
-      snapshotName = snapshotName == null ? testrigName : snapshotName;
-      _logger.infof("WMS:getParsingResults %s %s %s\n", apiKey, networkName, snapshotName);
+      _logger.infof(
+          "WMS:getParsingResults %s %s %s\n", apiKey, networkNameParam, snapshotNameParam);
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
-      checkStringParam(networkName, "Network name");
-      checkStringParam(snapshotName, "Snapshot name");
+      checkStringParam(networkNameParam, "Network name");
+      checkStringParam(snapshotNameParam, "Snapshot name");
 
       checkApiKeyValidity(apiKey);
       checkClientVersion(clientVersion);
-      checkNetworkAccessibility(apiKey, networkName);
+      checkNetworkAccessibility(apiKey, networkNameParam);
 
-      return successResponse(Main.getWorkMgr().getParsingResults(networkName, snapshotName));
+      return successResponse(
+          Main.getWorkMgr().getParsingResults(networkNameParam, snapshotNameParam));
     } catch (Exception e) {
       String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.errorf(
           "WMS:getParsingResults exception for apikey:%s in network:%s, snapshot:%s; exception:%s",
-          apiKey, networkName, snapshotName, stackTrace);
+          apiKey, networkNameParam, snapshotNameParam, stackTrace);
       return failureResponse(e.getMessage());
     }
   }
@@ -1271,9 +1292,9 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName,
       @FormDataParam(CoordConsts.SVC_KEY_NETWORK_NAME) String networkName,
       @FormDataParam(CoordConsts.SVC_KEY_NETWORK_PREFIX) String networkPrefix) {
-    networkName = networkName == null ? containerName : networkName;
+    String networkNameParam = networkName == null ? containerName : networkName;
     return initNetworkHelper(
-        apiKey, clientVersion, networkName, networkPrefix, CoordConsts.SVC_KEY_NETWORK_NAME);
+        apiKey, clientVersion, networkNameParam, networkPrefix, CoordConsts.SVC_KEY_NETWORK_NAME);
   }
 
   private JSONArray initNetworkHelper(
@@ -1377,30 +1398,30 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName,
       @FormDataParam(CoordConsts.SVC_KEY_NETWORK_NAME) String networkName,
       @Nullable @FormDataParam(CoordConsts.SVC_KEY_ANALYSIS_TYPE) AnalysisType analysisType) {
+    String networkNameParam = networkName == null ? containerName : networkName;
     try {
-      networkName = networkName == null ? containerName : networkName;
-      _logger.infof("WMS:listAnalyses %s %s\n", apiKey, networkName);
+      _logger.infof("WMS:listAnalyses %s %s\n", apiKey, networkNameParam);
 
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
-      checkStringParam(networkName, "Network name");
+      checkStringParam(networkNameParam, "Network name");
 
       checkApiKeyValidity(apiKey);
       checkClientVersion(clientVersion);
-      checkNetworkAccessibility(apiKey, networkName);
+      checkNetworkAccessibility(apiKey, networkNameParam);
 
       JSONObject retObject = new JSONObject();
 
       for (String analysisName :
           Main.getWorkMgr()
-              .listAnalyses(networkName, firstNonNull(analysisType, AnalysisType.USER))) {
+              .listAnalyses(networkNameParam, firstNonNull(analysisType, AnalysisType.USER))) {
 
         JSONObject analysisJson = new JSONObject();
 
         for (String questionName :
-            Main.getWorkMgr().listAnalysisQuestions(networkName, analysisName)) {
+            Main.getWorkMgr().listAnalysisQuestions(networkNameParam, analysisName)) {
           String questionText =
-              Main.getWorkMgr().getAnalysisQuestion(networkName, analysisName, questionName);
+              Main.getWorkMgr().getAnalysisQuestion(networkNameParam, analysisName, questionName);
 
           analysisJson.put(questionName, new JSONObject(questionText));
         }
@@ -1416,7 +1437,7 @@ public class WorkMgrService {
       String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.errorf(
           "WMS:listAnalyses exception for apikey:%s in network:%s; exception:%s",
-          apiKey, networkName, stackTrace);
+          apiKey, networkNameParam, stackTrace);
       return failureResponse(e.getMessage());
     }
   }
@@ -1543,25 +1564,25 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_TESTRIG_NAME) String testrigName,
       @FormDataParam(CoordConsts.SVC_KEY_SNAPSHOT_NAME) String snapshotName, /* optional */
       @Nullable @FormDataParam(CoordConsts.SVC_KEY_WORK_TYPE) WorkType workType /* optional */) {
+    String networkNameParam = networkName == null ? containerName : networkName;
+    String snapshotNameParam = snapshotName == null ? testrigName : snapshotName;
     try {
-      networkName = networkName == null ? containerName : networkName;
-      snapshotName = snapshotName == null ? testrigName : snapshotName;
-      _logger.infof("WMS:listIncompleteWork %s %s\n", apiKey, networkName);
+      _logger.infof("WMS:listIncompleteWork %s %s\n", apiKey, networkNameParam);
 
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
-      checkStringParam(networkName, "Network name");
-      if (snapshotName != null) {
-        checkStringParam(snapshotName, "Snapshot name");
+      checkStringParam(networkNameParam, "Network name");
+      if (snapshotNameParam != null) {
+        checkStringParam(snapshotNameParam, "Snapshot name");
       }
 
       checkApiKeyValidity(apiKey);
       checkClientVersion(clientVersion);
-      checkNetworkAccessibility(apiKey, networkName);
+      checkNetworkAccessibility(apiKey, networkNameParam);
 
       List<WorkStatus> workList = new LinkedList<>();
       for (QueuedWork work :
-          Main.getWorkMgr().listIncompleteWork(networkName, snapshotName, workType)) {
+          Main.getWorkMgr().listIncompleteWork(networkNameParam, snapshotNameParam, workType)) {
         WorkStatus workStatus =
             new WorkStatus(work.getWorkItem(), work.getStatus(), work.getLastTaskCheckResult());
         workList.add(workStatus);
@@ -1598,22 +1619,22 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName,
       @FormDataParam(CoordConsts.SVC_KEY_NETWORK_NAME) String networkName,
       @FormDataParam(CoordConsts.SVC_KEY_VERBOSE) boolean verbose) {
+    String networkNameParam = networkName == null ? containerName : networkName;
     try {
-      networkName = networkName == null ? containerName : networkName;
-      _logger.infof("WMS:listQuestions %s %s\n", apiKey, networkName);
+      _logger.infof("WMS:listQuestions %s %s\n", apiKey, networkNameParam);
 
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
-      checkStringParam(networkName, "Network name");
+      checkStringParam(networkNameParam, "Network name");
 
       checkApiKeyValidity(apiKey);
       checkClientVersion(clientVersion);
-      checkNetworkAccessibility(apiKey, networkName);
+      checkNetworkAccessibility(apiKey, networkNameParam);
 
       JSONObject retObject = new JSONObject();
 
-      for (String questionName : Main.getWorkMgr().listQuestions(networkName, verbose)) {
-        String questionText = Main.getWorkMgr().getQuestion(networkName, questionName);
+      for (String questionName : Main.getWorkMgr().listQuestions(networkNameParam, verbose)) {
+        String questionText = Main.getWorkMgr().getQuestion(networkNameParam, questionName);
 
         retObject.put(questionName, new JSONObject(questionText));
       }
@@ -1626,7 +1647,7 @@ public class WorkMgrService {
       String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.errorf(
           "WMS:listQuestions exception for apikey:%s in network:%s; exception:%s",
-          apiKey, networkName, stackTrace);
+          apiKey, networkNameParam, stackTrace);
       return failureResponse(e.getMessage());
     }
   }
@@ -1675,11 +1696,11 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
       @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName,
       @FormDataParam(CoordConsts.SVC_KEY_NETWORK_NAME) String networkName) {
-    networkName = networkName == null ? containerName : networkName;
+    String networkNameParam = networkName == null ? containerName : networkName;
     return listSnapshotsHelper(
         apiKey,
         clientVersion,
-        networkName,
+        networkNameParam,
         CoordConsts.SVC_KEY_SNAPSHOT_NAME,
         CoordConsts.SVC_KEY_SNAPSHOT_INFO,
         CoordConsts.SVC_KEY_SNAPSHOT_METADATA,
@@ -1761,22 +1782,23 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_SNAPSHOT_NAME) String snapshotName,
       @FormDataParam(CoordConsts.SVC_KEY_OBJECT_NAME) String objectName,
       @FormDataParam(CoordConsts.SVC_KEY_FILE) InputStream fileStream) {
+    String networkNameParam = networkName == null ? containerName : networkName;
+    String snapshotNameParam = snapshotName == null ? testrigName : snapshotName;
     try {
-      networkName = networkName == null ? containerName : networkName;
-      snapshotName = snapshotName == null ? testrigName : snapshotName;
-      _logger.infof("WMS:putObject %s %s %s / %s\n", apiKey, networkName, snapshotName, objectName);
+      _logger.infof(
+          "WMS:putObject %s %s %s / %s\n", apiKey, networkNameParam, snapshotNameParam, objectName);
 
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
-      checkStringParam(networkName, "Network name");
-      checkStringParam(snapshotName, "Snapshot name");
+      checkStringParam(networkNameParam, "Network name");
+      checkStringParam(snapshotNameParam, "Snapshot name");
       checkStringParam(objectName, "Object name");
 
       checkApiKeyValidity(apiKey);
       checkClientVersion(clientVersion);
-      checkNetworkAccessibility(apiKey, networkName);
+      checkNetworkAccessibility(apiKey, networkNameParam);
 
-      Main.getWorkMgr().putObject(networkName, snapshotName, objectName, fileStream);
+      Main.getWorkMgr().putObject(networkNameParam, snapshotNameParam, objectName, fileStream);
 
       return successResponse(new JSONObject().put("result", "successfully uploaded custom object"));
 
@@ -1884,22 +1906,22 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_NETWORK_NAME) String networkName,
       @FormDataParam(CoordConsts.SVC_KEY_PLUGIN_ID) String pluginId,
       @FormDataParam(CoordConsts.SVC_KEY_FORCE) String forceStr) {
+    String networkNameParam = networkName == null ? containerName : networkName;
     try {
-      networkName = networkName == null ? containerName : networkName;
-      _logger.infof("WMS:syncSnapshotsSyncNow %s %s %s\n", apiKey, networkName, pluginId);
+      _logger.infof("WMS:syncSnapshotsSyncNow %s %s %s\n", apiKey, networkNameParam, pluginId);
 
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
-      checkStringParam(networkName, "Network name");
+      checkStringParam(networkNameParam, "Network name");
       checkStringParam(pluginId, "Plugin Id");
 
       checkApiKeyValidity(apiKey);
       checkClientVersion(clientVersion);
-      checkNetworkAccessibility(apiKey, networkName);
+      checkNetworkAccessibility(apiKey, networkNameParam);
 
       boolean force = !Strings.isNullOrEmpty(forceStr) && Boolean.parseBoolean(forceStr);
 
-      int numCommits = Main.getWorkMgr().syncTestrigsSyncNow(networkName, pluginId, force);
+      int numCommits = Main.getWorkMgr().syncTestrigsSyncNow(networkNameParam, pluginId, force);
 
       return successResponse(new JSONObject().put("numCommits", numCommits));
     } catch (IllegalArgumentException | AccessControlException e) {
@@ -1909,7 +1931,7 @@ public class WorkMgrService {
       String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.errorf(
           "WMS:syncSnapshotsSyncNow exception for apikey:%s in network:%s; exception:%s",
-          apiKey, networkName, stackTrace);
+          apiKey, networkNameParam, stackTrace);
       return failureResponse(e.getMessage());
     }
   }
@@ -1961,28 +1983,28 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_NETWORK_NAME) String networkName,
       @FormDataParam(CoordConsts.SVC_KEY_PLUGIN_ID) String pluginId,
       @FormDataParam(CoordConsts.SVC_KEY_SETTINGS) String settingsStr) {
+    String networkNameParam = networkName == null ? containerName : networkName;
     try {
-      networkName = networkName == null ? containerName : networkName;
       _logger.infof(
           "WMS:syncSnapshotsUpdateSettings %s %s %s %s\n",
-          apiKey, networkName, pluginId, settingsStr);
+          apiKey, networkNameParam, pluginId, settingsStr);
 
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
-      checkStringParam(networkName, "Network name");
+      checkStringParam(networkNameParam, "Network name");
       checkStringParam(pluginId, "Plugin Id");
       checkStringParam(settingsStr, "Settings");
 
       checkApiKeyValidity(apiKey);
       checkClientVersion(clientVersion);
-      checkNetworkAccessibility(apiKey, networkName);
+      checkNetworkAccessibility(apiKey, networkNameParam);
 
       Map<String, String> settings =
           BatfishObjectMapper.mapper()
               .readValue(settingsStr, new TypeReference<Map<String, String>>() {});
 
       boolean result =
-          Main.getWorkMgr().syncTestrigsUpdateSettings(networkName, pluginId, settings);
+          Main.getWorkMgr().syncTestrigsUpdateSettings(networkNameParam, pluginId, settings);
 
       return successResponse(new JSONObject().put("result", result));
     } catch (FileExistsException
@@ -1995,7 +2017,7 @@ public class WorkMgrService {
       String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.errorf(
           "WMS:syncSnapshotsUpdateSettings exception for apikey:%s in network:%s; exception:%s",
-          apiKey, networkName, stackTrace);
+          apiKey, networkNameParam, stackTrace);
       return failureResponse(e.getMessage());
     }
   }
@@ -2103,21 +2125,22 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_SNAPSHOT_NAME) String snapshotName,
       @FormDataParam(CoordConsts.SVC_KEY_QUESTION_NAME) String qName,
       @FormDataParam(CoordConsts.SVC_KEY_FILE) String questionJson) {
+    String networkNameParam = networkName == null ? containerName : networkName;
+    String snapshotNameParam = snapshotName == null ? testrigName : snapshotName;
     try {
-      networkName = networkName == null ? containerName : networkName;
-      snapshotName = snapshotName == null ? testrigName : snapshotName;
-      _logger.infof("WMS:uploadQuestion %s %s %s/%s\n", apiKey, networkName, snapshotName, qName);
+      _logger.infof(
+          "WMS:uploadQuestion %s %s %s/%s\n", apiKey, networkNameParam, snapshotNameParam, qName);
 
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
-      checkStringParam(networkName, "Network name");
+      checkStringParam(networkNameParam, "Network name");
       checkStringParam(qName, "Question name");
 
       checkApiKeyValidity(apiKey);
       checkClientVersion(clientVersion);
-      checkNetworkAccessibility(apiKey, networkName);
+      checkNetworkAccessibility(apiKey, networkNameParam);
 
-      Main.getWorkMgr().uploadQuestion(networkName, qName, questionJson);
+      Main.getWorkMgr().uploadQuestion(networkNameParam, qName, questionJson);
 
       return successResponse(new JSONObject().put("result", "successfully uploaded question"));
 
@@ -2128,7 +2151,7 @@ public class WorkMgrService {
       String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.errorf(
           "WMS:uploadQuestion exception for apikey:%s in network:%s; exception:%s",
-          apiKey, networkName, stackTrace);
+          apiKey, networkNameParam, stackTrace);
       return failureResponse(e.getMessage());
     }
   }
@@ -2157,20 +2180,20 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_ZIPFILE) InputStream fileStream,
       @FormDataParam(CoordConsts.SVC_KEY_AUTO_ANALYZE_TESTRIG) String autoAnalyzeTestrigStr,
       @FormDataParam(CoordConsts.SVC_KEY_AUTO_ANALYZE) String autoAnalyzeStr) {
+    String networkNameParam = networkName == null ? containerName : networkName;
+    String snapshotNameParam = snapshotName == null ? testrigName : snapshotName;
     try {
-      networkName = networkName == null ? containerName : networkName;
-      snapshotName = snapshotName == null ? testrigName : snapshotName;
       autoAnalyzeStr = autoAnalyzeStr == null ? autoAnalyzeTestrigStr : autoAnalyzeStr;
-      _logger.infof("WMS:uploadSnapshot %s %s %s\n", apiKey, networkName, snapshotName);
+      _logger.infof("WMS:uploadSnapshot %s %s %s\n", apiKey, networkNameParam, snapshotNameParam);
 
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
-      checkStringParam(networkName, "Network name");
-      checkStringParam(snapshotName, "Snapshot name");
+      checkStringParam(networkNameParam, "Network name");
+      checkStringParam(snapshotNameParam, "Snapshot name");
 
       checkApiKeyValidity(apiKey);
       checkClientVersion(clientVersion);
-      checkNetworkAccessibility(apiKey, networkName);
+      checkNetworkAccessibility(apiKey, networkNameParam);
 
       boolean autoAnalyze = false;
       if (!Strings.isNullOrEmpty(autoAnalyzeStr)) {
@@ -2180,14 +2203,15 @@ public class WorkMgrService {
       if (GlobalTracer.get().activeSpan() != null) {
         GlobalTracer.get()
             .activeSpan()
-            .setTag("network-name", networkName)
-            .setTag("snapshot-name", snapshotName);
+            .setTag("network-name", networkNameParam)
+            .setTag("snapshot-name", snapshotNameParam);
       }
 
-      Main.getWorkMgr().uploadSnapshot(networkName, snapshotName, fileStream, autoAnalyze);
+      Main.getWorkMgr()
+          .uploadSnapshot(networkNameParam, snapshotNameParam, fileStream, autoAnalyze);
       _logger.infof(
           "Uploaded snapshot:%s for network:%s using api-key:%s\n",
-          snapshotName, networkName, apiKey);
+          snapshotNameParam, networkNameParam, apiKey);
       return successResponse(new JSONObject().put("result", "successfully uploaded snapshot"));
     } catch (IllegalArgumentException | AccessControlException e) {
       _logger.errorf("WMS:uploadSnapshot exception: %s\n", e.getMessage());
@@ -2196,7 +2220,7 @@ public class WorkMgrService {
       String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.errorf(
           "WMS:uploadSnapshot exception for apikey:%s in network:%s, snapshot:%s; exception:%s",
-          apiKey, networkName, snapshotName, stackTrace);
+          apiKey, networkNameParam, snapshotNameParam, stackTrace);
       return failureResponse(e.getMessage());
     }
   }
