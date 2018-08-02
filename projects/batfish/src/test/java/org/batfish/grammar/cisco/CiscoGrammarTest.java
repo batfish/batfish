@@ -283,8 +283,6 @@ import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
 import org.batfish.representation.cisco.CiscoConfiguration;
-import org.batfish.representation.cisco.CiscoStructureType;
-import org.batfish.representation.cisco.CiscoStructureUsage;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
