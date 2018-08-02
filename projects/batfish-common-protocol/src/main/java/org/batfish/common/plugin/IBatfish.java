@@ -52,6 +52,8 @@ public interface IBatfish extends IPluginConsumer {
 
   void answerAclReachability(List<AclSpecs> aclSpecs, AclLinesAnswerElementInterface emptyAnswer);
 
+  Set<Flow> bddReducedReachability();
+
   void checkDataPlane();
 
   void checkEnvironmentExists();
