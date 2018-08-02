@@ -27,7 +27,7 @@ public class EigrpRib extends AbstractRib<EigrpRoute> {
   @Override
   public int comparePreference(EigrpRoute lhs, EigrpRoute rhs) {
     return Comparator.comparing(EigrpRib::getTypeCost)
-        .thenComparing(EigrpRoute::getMetric)
+        .thenComparing(EigrpRoute::getCompositeCost)
         /* Flipped rhs & lhs because lower values are more preferred. */
         .compare(rhs, lhs);
   }

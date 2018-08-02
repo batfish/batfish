@@ -55,9 +55,9 @@ public class EigrpInternalRoute extends EigrpRoute {
 
   public static class Builder extends AbstractRouteBuilder<Builder, EigrpInternalRoute> {
 
-    @Nullable private EigrpMetric _eigrpMetric;
-
     @Nullable String _nextHopInterface;
+
+    @Nullable private EigrpMetric _eigrpMetric;
 
     @Override
     public EigrpInternalRoute build() {

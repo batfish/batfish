@@ -524,7 +524,8 @@ public class EigrpTest {
     SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
         IncrementalBdpEngine.getRoutes(dp);
 
-    long scale = 65536L;
+    // named scale / rib scale
+    long scale = 65536L / 128L;
     // GigabitEthernet values
     long bandwidth = 10L;
     long delay = 10L;

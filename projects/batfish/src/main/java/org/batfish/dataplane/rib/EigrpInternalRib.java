@@ -14,7 +14,7 @@ public class EigrpInternalRib extends AbstractRib<EigrpInternalRoute> {
 
   @Override
   public int comparePreference(EigrpInternalRoute lhs, EigrpInternalRoute rhs) {
-    return Comparator.comparing(EigrpInternalRoute::getMetric)
+    return Comparator.comparing(EigrpInternalRoute::getCompositeCost)
         // TODO compare MTU
         // https://github.com/batfish/batfish/issues/1946
         .compare(rhs, lhs);

@@ -210,6 +210,14 @@ public class EigrpMetric implements Serializable {
     return _mode;
   }
 
+  /** The composite cost, after scaling for RIB */
+  @JsonIgnore
+  public long getRibMetric() {
+    // TODO make configurable using 'metric rib-scale'
+    int namedRibScale = 128;
+    return getCost() / ((_mode == EigrpProcessMode.NAMED) ? namedRibScale : 1);
+  }
+
   public String prettyPrint() {
     if (_mode == CLASSIC) {
       return "BW "

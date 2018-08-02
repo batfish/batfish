@@ -45,6 +45,11 @@ public abstract class EigrpRoute extends AbstractRoute {
     return _admin;
   }
 
+  @JsonIgnore
+  public final long getCompositeCost() {
+    return _metric.getCost();
+  }
+
   @JsonProperty(PROP_EIGRP_METRIC)
   public final EigrpMetric getEigrpMetric() {
     return _metric;
@@ -52,7 +57,7 @@ public abstract class EigrpRoute extends AbstractRoute {
 
   @Override
   public final Long getMetric() {
-    return _metric.getCost();
+    return _metric.getRibMetric();
   }
 
   @JsonIgnore(false)
