@@ -1466,8 +1466,8 @@ public class WorkMgrService {
    * @param apiKey The API key of the client
    * @param clientVersion The version of the client
    * @return On success, a JSON object with key {@link CoordConsts#SVC_KEY_NETWORK_LIST
-   *     "networklist"} and a list of the accessible networks as the value.
-   *     <p>TODO document failure response
+   *     "networklist"} and a list of the accessible networks as the value. TODO document failure
+   *     response
    */
   @POST
   @Path(CoordConsts.SVC_RSC_LIST_NETWORKS)
