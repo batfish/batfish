@@ -1,5 +1,6 @@
 package org.batfish.grammar.cisco;
 
+import static java.util.Objects.requireNonNull;
 import static org.batfish.datamodel.AuthenticationMethod.ENABLE;
 import static org.batfish.datamodel.AuthenticationMethod.GROUP_RADIUS;
 import static org.batfish.datamodel.AuthenticationMethod.GROUP_TACACS;
@@ -63,6 +64,7 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.isIpSpaceReferenc
 import static org.batfish.datamodel.matchers.DataModelMatchers.isPermittedByAclThat;
 import static org.batfish.datamodel.matchers.DataModelMatchers.permits;
 import static org.batfish.datamodel.matchers.EigrpInterfaceSettingsMatchers.hasDelay;
+import static org.batfish.datamodel.matchers.EigrpRouteMatchers.hasEigrpMetric;
 import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasDstIps;
 import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasSrcIps;
 import static org.batfish.datamodel.matchers.IkeGatewayMatchers.hasAddress;
@@ -224,8 +226,10 @@ import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.DiffieHellmanGroup;
+import org.batfish.datamodel.EigrpExternalRoute;
 import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.HeaderSpace;
@@ -249,15 +253,19 @@ import org.batfish.datamodel.Line;
 import org.batfish.datamodel.LineType;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.NamedPort;
+import org.batfish.datamodel.OspfIntraAreaRoute;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
+import org.batfish.datamodel.RipInternalRoute;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.eigrp.EigrpMetric;
+import org.batfish.datamodel.eigrp.EigrpProcessMode;
 import org.batfish.datamodel.matchers.ConfigurationMatchers;
 import org.batfish.datamodel.matchers.EigrpInterfaceSettingsMatchers;
 import org.batfish.datamodel.matchers.EigrpProcessMatchers;
@@ -277,6 +285,8 @@ import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfDefaultOriginateType;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.ospf.StubType;
+import org.batfish.datamodel.routing_policy.Environment.Direction;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
@@ -756,6 +766,54 @@ public class CiscoGrammarTest {
         c, hasInterface("Ethernet4", hasEigrp(EigrpInterfaceSettingsMatchers.hasPassive(false))));
     assertThat(
         c, hasInterface("Ethernet5", hasEigrp(EigrpInterfaceSettingsMatchers.hasPassive(true))));
+  }
+
+  @Test
+  public void testIosEigrpRedistribution() throws IOException {
+    Configuration c = parseConfig("ios-eigrp-redistribution");
+
+    assertThat(c, hasDefaultVrf(hasEigrpProcess(notNullValue())));
+    String exportPolicyName =
+        requireNonNull(c.getVrfs().get(DEFAULT_VRF_NAME).getEigrpProcess()).getExportPolicy();
+    RoutingPolicy routingPolicy = c.getRoutingPolicies().get(exportPolicyName);
+    assertThat(routingPolicy, notNullValue());
+
+    EigrpExternalRoute.Builder outputRouteBuilder = new EigrpExternalRoute.Builder();
+    outputRouteBuilder.setNetwork(Prefix.parse("1.0.0.0/32"));
+    EigrpMetric.Builder metricBuilder = EigrpMetric.builder().setMode(EigrpProcessMode.CLASSIC);
+
+    // Check if routingPolicy accepts connected route and sets correct metric
+    assertTrue(
+        routingPolicy.process(
+            new ConnectedRoute(Prefix.parse("1.1.1.1/32"), "Loopback0"),
+            outputRouteBuilder,
+            null,
+            DEFAULT_VRF_NAME,
+            Direction.OUT));
+    assertThat(
+        outputRouteBuilder.build(),
+        hasEigrpMetric(requireNonNull(metricBuilder.setBandwidth(1E5).setDelay(1E8).build())));
+
+    // Check if routingPolicy rejects RIP route
+    assertFalse(
+        routingPolicy.process(
+            new RipInternalRoute(Prefix.parse("2.2.2.2/32"), new Ip("3.3.3.3"), 1, 1),
+            outputRouteBuilder,
+            null,
+            DEFAULT_VRF_NAME,
+            Direction.OUT));
+
+    // Check if routingPolicy accepts OSPF route and sets correct default metric
+    assertTrue(
+        routingPolicy.process(
+            new OspfIntraAreaRoute(Prefix.parse("4.4.4.4/32"), null, 1, 1, 1),
+            outputRouteBuilder,
+            null,
+            DEFAULT_VRF_NAME,
+            Direction.OUT));
+    assertThat(
+        outputRouteBuilder.build(),
+        hasEigrpMetric(requireNonNull(metricBuilder.setBandwidth(2E5).setDelay(2E8).build())));
   }
 
   @Test

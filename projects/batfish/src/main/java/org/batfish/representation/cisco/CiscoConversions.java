@@ -68,6 +68,7 @@ import org.batfish.datamodel.Route6FilterLine;
 import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
+import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.State;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TcpFlags;
@@ -80,11 +81,16 @@ import org.batfish.datamodel.isis.IsisLevelSettings;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.AsPathSetElem;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
+import org.batfish.datamodel.routing_policy.expr.CallExpr;
+import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.LiteralEigrpMetric;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.SetEigrpMetric;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.visitors.HeaderSpaceConverter;
@@ -952,7 +958,7 @@ class CiscoConversions {
 
     // TODO create summary filters
 
-    // TODO apply redistribution policy
+    // TODO originate default route if configured
 
     Ip routerId = proc.getRouterId();
     if (routerId == null) {
@@ -963,7 +969,74 @@ class CiscoConversions {
       }
     }
     newProcess.setRouterId(routerId);
+
+    /*
+     * Route redistribution modifies the configuration structure, so do this last to avoid having to
+     * clean up configuration if another conversion step fails
+     */
+    String eigrpExportPolicyName = "~EIGRP_EXPORT_POLICY:" + vrfName + "~";
+    RoutingPolicy eigrpExportPolicy = new RoutingPolicy(eigrpExportPolicyName, c);
+    c.getRoutingPolicies().put(eigrpExportPolicyName, eigrpExportPolicy);
+    newProcess.setExportPolicy(eigrpExportPolicyName);
+
+    eigrpExportPolicy
+        .getStatements()
+        .addAll(
+            proc.getRedistributionPolicies()
+                .values()
+                .stream()
+                .map(policy -> convertEigrpRedistributionPolicy(policy, proc, oldConfig))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList()));
+
     return newProcess.build();
+  }
+
+  @Nullable
+  private static If convertEigrpRedistributionPolicy(
+      EigrpRedistributionPolicy policy, EigrpProcess proc, CiscoConfiguration oldConfig) {
+    RoutingProtocol protocol = policy.getSourceProtocol();
+    // All redistribution must match the specified protocol.
+    Conjunction eigrpExportConditions = new Conjunction();
+    eigrpExportConditions.getConjuncts().add(new MatchProtocol(protocol));
+
+    // Default routes can be redistributed into EIGRP. Don't filter them.
+
+    ImmutableList.Builder<Statement> eigrpExportStatements = ImmutableList.builder();
+
+    // Set the metric
+    // TODO prefer metric from route map
+    EigrpMetric metric = policy.getMetric() != null ? policy.getMetric() : proc.getDefaultMetric();
+    if (metric == null) {
+      /*
+       * TODO no default metric
+       * 1) connected can use the interface metric
+       * 2) static with next hop interface can use the interface metric
+       * 3) redistribution of eigrp into eigrp can directly use the 'external' route metric
+       * 4) If none of the above, bad configuration
+       */
+      oldConfig.getWarnings().redFlag("Unable to redistribute - no metric");
+      return null;
+    } else {
+      eigrpExportStatements.add(new SetEigrpMetric(new LiteralEigrpMetric(metric)));
+    }
+
+    String exportRouteMapName = policy.getRouteMap();
+    if (exportRouteMapName != null) {
+      RouteMap exportRouteMap = oldConfig.getRouteMaps().get(exportRouteMapName);
+      if (exportRouteMap != null) {
+        eigrpExportConditions.getConjuncts().add(new CallExpr(exportRouteMapName));
+      }
+    }
+
+    eigrpExportStatements.add(Statements.ExitAccept.toStaticStatement());
+
+    // Construct a new policy and add it before returning.
+    return new If(
+        "EIGRP export routes for " + protocol.protocolName(),
+        eigrpExportConditions,
+        eigrpExportStatements.build(),
+        ImmutableList.of());
   }
 
   static org.batfish.datamodel.isis.IsisProcess toIsisProcess(

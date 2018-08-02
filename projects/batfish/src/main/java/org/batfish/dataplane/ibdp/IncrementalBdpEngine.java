@@ -31,6 +31,7 @@ import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.EigrpExternalRoute;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IsisRoute;
 import org.batfish.datamodel.NetworkConfigurations;
@@ -123,6 +124,7 @@ class IncrementalBdpEngine {
             answerElement,
             true,
             bgpTopology,
+            eigrpTopology,
             isisTopology,
             networkConfigurations);
     if (isOscillating) {
@@ -156,6 +158,7 @@ class IncrementalBdpEngine {
           answerElement,
           false,
           bgpTopology,
+          eigrpTopology,
           isisTopology,
           networkConfigurations);
     }
@@ -226,6 +229,47 @@ class IncrementalBdpEngine {
               }
               recomputeAggregateCompleted.incrementAndGet();
             });
+
+    // EIGRP external routes
+    // recompute exports
+    nodes
+        .values()
+        .parallelStream()
+        .forEach(
+            n -> {
+              for (VirtualRouter vr : n.getVirtualRouters().values()) {
+                vr.initEigrpExports(allNodes);
+              }
+            });
+
+    // Re-propagate EIGRP exports
+    AtomicBoolean eigrpExternalChanged = new AtomicBoolean(true);
+    int eigrpExternalSubIterations = 0;
+    while (eigrpExternalChanged.get()) {
+      eigrpExternalSubIterations++;
+      AtomicInteger propagateEigrpExternalCompleted =
+          _newBatch.apply(
+              "Iteration "
+                  + iteration
+                  + ": Propagate EIGRP external routes: subIteration: "
+                  + eigrpExternalSubIterations,
+              nodes.size());
+      eigrpExternalChanged.set(false);
+      nodes
+          .values()
+          .parallelStream()
+          .forEach(
+              n -> {
+                for (VirtualRouter vr : n.getVirtualRouters().values()) {
+                  RibDelta<EigrpExternalRoute> p =
+                      vr.propagateEigrpExternalRoutes(networkConfigurations);
+                  if (p != null && vr.unstageEigrpExternalRoutes(allNodes, p)) {
+                    eigrpExternalChanged.set(true);
+                  }
+                }
+                propagateEigrpExternalCompleted.incrementAndGet();
+              });
+    }
 
     // Re-initialize IS-IS exports.
     nodes
@@ -454,6 +498,7 @@ class IncrementalBdpEngine {
    * @param externalAdverts the set of external BGP advertisements
    * @param ae The output answer element in which to store a report of the computation. Also
    *     contains the current recovery iteration.
+   * @param eigrpTopology The topology representing EIGRP adjacencies
    * @return true iff the computation is oscillating
    */
   private boolean computeNonMonotonicPortionOfDataPlane(
@@ -464,6 +509,7 @@ class IncrementalBdpEngine {
       IncrementalBdpAnswerElement ae,
       boolean firstPass,
       ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology,
+      Network<EigrpInterface, EigrpEdge> eigrpTopology,
       Network<IsisNode, IsisEdge> isisTopology,
       NetworkConfigurations networkConfigurations) {
 
@@ -479,7 +525,8 @@ class IncrementalBdpEngine {
           .forEach(
               n -> {
                 for (VirtualRouter vr : n.getVirtualRouters().values()) {
-                  vr.initForEgpComputation(nodes, topology, bgpTopology, isisTopology);
+                  vr.initForEgpComputation(
+                      nodes, topology, bgpTopology, eigrpTopology, isisTopology);
                 }
                 setupCompleted.incrementAndGet();
               });
@@ -692,7 +739,7 @@ class IncrementalBdpEngine {
    * Run the IGP EIGRP computation until convergence.
    *
    * @param nodes list of nodes for which to initialize the EIGRP routes
-   * @param eigrpTopology the EIGRP network topology
+   * @param eigrpTopology The topology representing EIGRP adjacencies
    * @param networkConfigurations All configurations in the network
    * @return the number of iterations it took for internal EIGRP routes to converge
    */

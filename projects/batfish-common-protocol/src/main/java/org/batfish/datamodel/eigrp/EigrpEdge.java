@@ -122,6 +122,11 @@ public final class EigrpEdge implements Serializable, Comparable<EigrpEdge> {
     return Objects.hash(_node1, _node2);
   }
 
+  @Nonnull
+  public EigrpEdge reverse() {
+    return new EigrpEdge(_node2, _node1);
+  }
+
   @Override
   public String toString() {
     return toStringHelper(getClass()).add("node1", _node1).add("node2", _node2).toString();
