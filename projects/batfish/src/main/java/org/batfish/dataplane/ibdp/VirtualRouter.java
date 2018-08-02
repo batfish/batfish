@@ -111,6 +111,7 @@ import org.batfish.dataplane.rib.BgpBestPathRib;
 import org.batfish.dataplane.rib.BgpMultipathRib;
 import org.batfish.dataplane.rib.ConnectedRib;
 import org.batfish.dataplane.rib.EigrpExternalRib;
+import org.batfish.dataplane.rib.EigrpInternalRib;
 import org.batfish.dataplane.rib.EigrpRib;
 import org.batfish.dataplane.rib.IsisLevelRib;
 import org.batfish.dataplane.rib.IsisRib;
@@ -169,12 +170,12 @@ public class VirtualRouter implements Serializable {
       _eigrpIncomingRoutes;
 
   /** Helper RIB containing all EIGRP paths internal to this router's ASN. */
-  private transient EigrpRib _eigrpInternalRib;
+  private transient EigrpInternalRib _eigrpInternalRib;
 
   /**
    * Helper RIB containing paths obtained with EIGRP during current iteration. An Adj-RIB of sorts.
    */
-  private transient EigrpRib _eigrpInternalStagingRib;
+  private transient EigrpInternalRib _eigrpInternalStagingRib;
 
   /** Helper RIB containing EIGRP internal and external paths. */
   private transient EigrpRib _eigrpRib;
@@ -1401,8 +1402,8 @@ public class VirtualRouter implements Serializable {
     _generatedRib = new Rib();
     _eigrpExternalRib = new EigrpExternalRib(_receivedEigrpExternalRoutes);
     _eigrpExternalStagingRib = new EigrpExternalRib(null);
-    _eigrpInternalRib = new EigrpRib();
-    _eigrpInternalStagingRib = new EigrpRib();
+    _eigrpInternalRib = new EigrpInternalRib();
+    _eigrpInternalStagingRib = new EigrpInternalRib();
     _eigrpRib = new EigrpRib();
     _ibgpMultipathRib = new BgpMultipathRib(mpTieBreaker);
     _ibgpStagingRib = new BgpMultipathRib(mpTieBreaker);
@@ -2208,12 +2209,12 @@ public class VirtualRouter implements Serializable {
     String neighborVrfName = neighborInterface.getVrfName();
     VirtualRouter neighborVirtualRouter = neighbor.getVirtualRouters().get(neighborVrfName);
     boolean changed = false;
-    for (EigrpRoute neighborRoute : neighborVirtualRouter._eigrpInternalRib.getRoutes()) {
+    for (EigrpInternalRoute neighborRoute : neighborVirtualRouter._eigrpInternalRib.getRoutes()) {
       EigrpMetric newMetric =
           connectingInterfaceMetric.accumulate(
               neighborInterfaceMetric, neighborRoute.getEigrpMetric());
       Ip nextHopIp = neighborInterface.getAddress().getIp();
-      EigrpRoute newRoute =
+      EigrpInternalRoute newRoute =
           EigrpInternalRoute.builder()
               .setAdmin(adminCost)
               .setEigrpMetric(newMetric)
