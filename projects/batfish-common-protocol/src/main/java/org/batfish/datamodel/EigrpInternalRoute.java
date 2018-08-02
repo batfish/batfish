@@ -5,7 +5,6 @@ import static java.util.Objects.requireNonNull;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.eigrp.EigrpMetric;
 
@@ -52,13 +51,6 @@ public class EigrpInternalRoute extends EigrpRoute {
   @Override
   public final int hashCode() {
     return Objects.hash(_admin, _metric.hashCode(), _network, _nextHopIp, _nextHopInterface);
-  }
-
-  @Override
-  public int routeCompare(@Nonnull AbstractRoute rhs) {
-    // TODO compare MTU
-    // https://github.com/batfish/batfish/issues/1946
-    return 0;
   }
 
   public static class Builder extends AbstractRouteBuilder<Builder, EigrpInternalRoute> {

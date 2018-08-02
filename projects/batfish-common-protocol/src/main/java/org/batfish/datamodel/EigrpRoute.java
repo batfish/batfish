@@ -5,6 +5,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.eigrp.EigrpMetric;
 
@@ -81,5 +82,10 @@ public abstract class EigrpRoute extends AbstractRoute {
   @Override
   protected String protocolRouteString() {
     return _metric.prettyPrint();
+  }
+
+  @Override
+  public int routeCompare(@Nonnull AbstractRoute rhs) {
+    return 0;
   }
 }

@@ -6,7 +6,6 @@ import static java.util.Objects.requireNonNull;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.eigrp.EigrpMetric;
 
@@ -66,18 +65,6 @@ public class EigrpExternalRoute extends EigrpRoute {
   @Override
   public final int hashCode() {
     return hash(_admin, _asn, _metric.hashCode(), _network, _nextHopIp, _nextHopInterface);
-  }
-
-  @Override
-  public int routeCompare(@Nonnull AbstractRoute rhs) {
-    if (getClass() != rhs.getClass() || _asn == null) {
-      return 0;
-    }
-    EigrpExternalRoute castRhs = (EigrpExternalRoute) rhs;
-    if (castRhs._asn == null) {
-      return 0;
-    }
-    return Long.compare(_asn, castRhs._asn);
   }
 
   public static class Builder extends AbstractRouteBuilder<Builder, EigrpExternalRoute> {

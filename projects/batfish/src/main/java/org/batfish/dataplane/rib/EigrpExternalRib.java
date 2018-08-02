@@ -7,6 +7,7 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.EigrpExternalRoute;
 import org.batfish.datamodel.Prefix;
 
+/** Rib that stores external EIGRP routes */
 public class EigrpExternalRib extends AbstractRib<EigrpExternalRoute> {
 
   private static final long serialVersionUID = 1L;
@@ -15,18 +16,10 @@ public class EigrpExternalRib extends AbstractRib<EigrpExternalRoute> {
     super(backupRoutes);
   }
 
-  /**
-   * Used to compare preferences within a single RIB.
-   *
-   * @param lhs 1st route with which to compare preference
-   * @param rhs 2nd route with which to compare preference
-   * @return -1 if lhs route is less preferable than rhs; 0 if lhs route and rhs are equally
-   *     preferable (i.e. for multipath routing); 1 if lhs route is strictly more preferred than rhs
-   */
   @Override
   public int comparePreference(EigrpExternalRoute lhs, EigrpExternalRoute rhs) {
     return Comparator.comparing(EigrpExternalRoute::getMetric)
-        .thenComparing(EigrpExternalRoute::routeCompare)
+        .thenComparing(EigrpExternalRoute::getAsn)
         .compare(rhs, lhs);
   }
 }

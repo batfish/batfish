@@ -148,14 +148,6 @@ public abstract class AbstractRoute implements Serializable, Comparable<Abstract
 
   protected abstract String protocolRouteString();
 
-  /**
-   * Type-specific comparison after administrative distance and metric
-   *
-   * @param rhs route with which to compare preference
-   * @return -1 if this {@link AbstractRoute} is less preferable than rhs; 0 if this {@link
-   *     AbstractRoute} and rhs are equally preferable (i.e. for multipath routing); 1 if this
-   *     {@link AbstractRoute} is strictly more preferable than rhs
-   */
   public abstract int routeCompare(@Nonnull AbstractRoute rhs);
 
   @JsonProperty(PROP_NEXT_HOP)
