@@ -3261,6 +3261,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
     }
 
     markConcreteStructure(
+        CiscoStructureType.BFD_TEMPLATE, CiscoStructureUsage.INTERFACE_BFD_TEMPLATE);
+
+    markConcreteStructure(
         CiscoStructureType.COMMUNITY_SET,
         CiscoStructureUsage.ROUTE_POLICY_COMMUNITY_MATCHES_ANY,
         CiscoStructureUsage.ROUTE_POLICY_COMMUNITY_MATCHES_EVERY,

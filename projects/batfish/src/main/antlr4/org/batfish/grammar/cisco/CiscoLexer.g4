@@ -1441,6 +1441,11 @@ BFD_ENABLE
    'bfd-enable'
 ;
 
+BFD_TEMPLATE
+:
+   'bfd-template'
+;
+
 BGP
 :
    'bgp'
@@ -10789,6 +10794,11 @@ SILENT
 SINGLE_CONNECTION
 :
    'single-connection'
+;
+
+SINGLE_HOP
+:
+   'single-hop'
 ;
 
 SINGLE_ROUTER_MODE
