@@ -1,9 +1,12 @@
 package org.batfish.symbolic;
 
+import static org.batfish.symbolic.bdd.CommunityVarConverter.toCommunityVar;
+
 import com.google.common.collect.ImmutableSet;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.CommunityList;
+import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.RegexCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.CommunityHalvesExpr;
@@ -14,6 +17,7 @@ import org.batfish.datamodel.routing_policy.expr.LiteralCommunityConjunction;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.NamedCommunitySet;
 import org.batfish.datamodel.visitors.VoidCommunitySetExprVisitor;
+import org.batfish.symbolic.bdd.CommunityVarConverter;
 
 public class CommunityVarCollector implements VoidCommunitySetExprVisitor {
 
@@ -41,20 +45,19 @@ public class CommunityVarCollector implements VoidCommunitySetExprVisitor {
 
   @Override
   public void visitCommunityList(CommunityList communityList) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    communityList
+        .getLines()
+        .stream()
+        .map(CommunityListLine::getMatchCondition)
+        .forEach(expr -> expr.accept(this));
   }
 
   @Override
-  public void visitEmptyCommunitySetExpr(EmptyCommunitySetExpr emptyCommunitySetExpr) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
-  }
+  public void visitEmptyCommunitySetExpr(EmptyCommunitySetExpr emptyCommunitySetExpr) {}
 
   @Override
   public void visitLiteralCommunity(LiteralCommunity literalCommunity) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    _builder.add(toCommunityVar(literalCommunity));
   }
 
   @Override
@@ -66,19 +69,20 @@ public class CommunityVarCollector implements VoidCommunitySetExprVisitor {
 
   @Override
   public void visitLiteralCommunitySet(LiteralCommunitySet literalCommunitySet) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    literalCommunitySet
+        .getCommunities()
+        .stream()
+        .map(CommunityVarConverter::toCommunityVar)
+        .forEach(_builder::add);
   }
 
   @Override
   public void visitNamedCommunitySet(NamedCommunitySet namedCommunitySet) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    visitCommunityList(_configuration.getCommunityLists().get(namedCommunitySet.getName()));
   }
 
   @Override
   public void visitRegexCommunitySet(RegexCommunitySet regexCommunitySet) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    _builder.add(toCommunityVar(regexCommunitySet));
   }
 }
