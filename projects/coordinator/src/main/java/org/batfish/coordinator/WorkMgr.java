@@ -1519,10 +1519,6 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   public boolean queueWork(WorkItem workItem) {
-    checkArgument(
-        workItem.getContainerName() != null, "container name missing in work item %s", workItem);
-    checkArgument(
-        workItem.getTestrigName() != null, "testrig name missing in work item %s", workItem);
     Path testrigDir = getdirTestrig(workItem.getContainerName(), workItem.getTestrigName());
     if (workItem.getTestrigName().isEmpty() || !Files.exists(testrigDir)) {
       throw new BatfishException("Non-existent testrig: '" + testrigDir.getFileName() + "'");
