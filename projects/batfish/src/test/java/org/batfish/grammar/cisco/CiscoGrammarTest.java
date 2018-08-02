@@ -731,7 +731,6 @@ public class CiscoGrammarTest {
   public void testIosBfdTemplate() throws IOException {
     String hostname = "ios-bfd-template";
     String filename = "configs/" + hostname;
-    Configuration c = parseConfig(hostname);
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse();
