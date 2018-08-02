@@ -75,20 +75,19 @@ public class CoordConsts {
   public static final String SVC_KEY_BASE_ENV_NAME = "baseenvname";
   public static final String SVC_KEY_COMPLETION_TYPE = "completiontype";
   public static final String SVC_KEY_CONFIGURATION_NAME = "configurationname";
-  public static final String SVC_KEY_CONTAINERS = "containers";
   public static final String SVC_KEY_CONTAINER_LIST = "containerlist";
   public static final String SVC_KEY_CONTAINER_NAME = "container";
   public static final String SVC_KEY_CONTAINER_PREFIX = "containerprefix";
   public static final String SVC_KEY_DEL_ANALYSIS_QUESTIONS = "delanalysisquestions";
   public static final String SVC_KEY_DEL_WORKER = "delworker";
   public static final String SVC_KEY_DELTA_ENV_NAME = "deltaenvname";
+  public static final String SVC_KEY_DELTA_SNAPSHOT_NAME = "deltasnapshotname";
   public static final String SVC_KEY_DELTA_TESTRIG_NAME = "deltatestrigname";
   public static final String SVC_KEY_ENV_NAME = "envname";
   public static final String SVC_KEY_ENVIRONMENT_LIST = "environmentlist";
   public static final String SVC_KEY_EXCEPTIONS = "exceptions";
   public static final String SVC_KEY_FAILURE = "failure";
   public static final String SVC_KEY_FILE = "file";
-  public static final String SVC_KEY_FILE2 = "file2";
   public static final String SVC_KEY_FORCE = "force";
   public static final String SVC_KEY_MAX_SUGGESTIONS = "maxsuggestions";
   public static final String SVC_KEY_NETWORK_LIST = "networklist";
@@ -121,7 +120,6 @@ public class CoordConsts {
   public static final String SVC_KEY_WORK_TYPE = "worktype";
   public static final String SVC_KEY_WORKID = "workid";
   public static final String SVC_KEY_WORKITEM = "workitem";
-  public static final String SVC_KEY_WORKSPACE_NAME = "workspace";
   public static final String SVC_KEY_WORKSTATUS = "workstatus";
   public static final String SVC_KEY_ZIPFILE = "zipfile";
 
@@ -143,11 +141,9 @@ public class CoordConsts {
   public static final String SVC_RSC_GET_ANSWER = "getanswer";
   public static final String SVC_RSC_GET_CONFIGURATION = "getconfiguration";
   public static final String SVC_RSC_GET_CONTAINER = "getcontainer";
-  public static final String SVC_RSC_GET_DATAPLANING_WORK = "getdataplaningwork";
   public static final String SVC_RSC_GET_NETWORK = "getnetwork";
   public static final String SVC_RSC_GET_OBJECT = "getobject";
   public static final String SVC_RSC_GET_PARSING_RESULTS = "getparsingresults";
-  public static final String SVC_RSC_GET_PARSING_WORK = "getparsingwork";
   public static final String SVC_RSC_GET_QUESTION_TEMPLATES = "getquestiontemplates";
   public static final String SVC_RSC_GET_WORKSTATUS = "getworkstatus";
   public static final String SVC_RSC_GETSTATUS = "getstatus";

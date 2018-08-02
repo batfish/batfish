@@ -229,8 +229,8 @@ public class WorkMgrTest {
     _thrown.expect(Exception.class);
     _thrown.expectMessage(
         equalTo(
-            "Configuration file config.cfg does not exist in testrig testrig "
-                + "for container container"));
+            "Configuration file config.cfg does not exist in snapshot testrig "
+                + "for network container"));
     _manager.getConfiguration("container", "testrig", "config.cfg");
   }
 
