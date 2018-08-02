@@ -14,12 +14,13 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.questions.InterfacePropertySpecifier;
 import org.batfish.datamodel.questions.InterfacesSpecifier;
 import org.batfish.datamodel.table.Row;
+import org.batfish.datamodel.table.TableMetadata;
 import org.junit.Test;
 
 public class InterfacePropertiesAnswererTest {
 
   @Test
-  public void rawAnswer() {
+  public void getProperties() {
     Configuration conf1 = new Configuration("node1", ConfigurationFormat.CISCO_IOS);
 
     Interface iface1 = new Interface("iface1", conf1);
@@ -33,16 +34,19 @@ public class InterfacePropertiesAnswererTest {
 
     String property1 = "description";
     String property2 = "active";
-
-    InterfacePropertiesQuestion question =
-        new InterfacePropertiesQuestion(
-            new InterfacesSpecifier("iface1"),
-            null,
-            new InterfacePropertySpecifier(property1 + "|" + property2));
+    InterfacePropertySpecifier propertySpecifier =
+        new InterfacePropertySpecifier(property1 + "|" + property2);
 
     Multiset<Row> propertyRows =
-        InterfacePropertiesAnswerer.rawAnswer(
-            question, ImmutableMap.of("node1", conf1), ImmutableSet.of("node1"));
+        InterfacePropertiesAnswerer.getProperties(
+            propertySpecifier,
+            ImmutableMap.of("node1", conf1),
+            ImmutableSet.of("node1"),
+            new InterfacesSpecifier("iface1"),
+            new TableMetadata(
+                    InterfacePropertiesAnswerer.createColumnMetadata(propertySpecifier),
+                    (String) null)
+                .toColumnMap());
 
     // we should have exactly one row1 with two properties; iface2 should have been filtered out
     Row expectedRow =

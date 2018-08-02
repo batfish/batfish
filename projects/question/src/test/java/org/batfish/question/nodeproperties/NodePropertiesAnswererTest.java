@@ -23,23 +23,23 @@ public class NodePropertiesAnswererTest {
 
   @Test
   @SuppressWarnings("deprecation") // includes test of deprecated functionality
-  public void rawAnswer() {
+  public void getProperties() {
     String property1 = "configuration-format";
     String property2 = "ntp-servers";
-    NodePropertiesQuestion question =
-        new NodePropertiesQuestion(null, new NodePropertySpecifier(property1 + "|" + property2));
+    NodePropertySpecifier propertySpec = new NodePropertySpecifier(property1 + "|" + property2);
 
     Configuration conf1 = new Configuration("node1", ConfigurationFormat.CISCO_IOS);
     Configuration conf2 = new Configuration("node2", ConfigurationFormat.HOST);
     conf2.setNtpServers(ImmutableSortedSet.of("sa"));
     Map<String, Configuration> configurations = ImmutableMap.of("node1", conf1, "node2", conf2);
     Map<String, ColumnMetadata> columns =
-        NodePropertiesAnswerer.createMetadata(question).toColumnMap();
+        NodePropertiesAnswerer.createTableMetadata(new NodePropertiesQuestion(null, propertySpec))
+            .toColumnMap();
 
     Set<String> nodes = ImmutableSet.of("node1", "node2");
 
     Multiset<Row> propertyRows =
-        NodePropertiesAnswerer.rawAnswer(question, configurations, nodes, columns);
+        NodePropertiesAnswerer.getProperties(propertySpec, configurations, nodes, columns);
 
     // we should have exactly these two rows
     Multiset<Row> expected =
@@ -60,7 +60,8 @@ public class NodePropertiesAnswererTest {
     // Using the legacy properties question
     NodePropertiesQuestion questionDeprecated = new NodePropertiesQuestion(null, null);
     questionDeprecated.setProperties(ImmutableList.of(property1, property2));
-    propertyRows = NodePropertiesAnswerer.rawAnswer(question, configurations, nodes, columns);
+    propertyRows =
+        NodePropertiesAnswerer.getProperties(propertySpec, configurations, nodes, columns);
     assertThat(propertyRows, equalTo(expected));
   }
 }

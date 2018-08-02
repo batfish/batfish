@@ -20,7 +20,7 @@ import org.junit.Test;
 public class OspfPropertiesAnswererTest {
 
   @Test
-  public void rawAnswer() {
+  public void getProperties() {
 
     OspfProcess ospf1 = new OspfProcess();
     ospf1.setExportPolicy("my-policy");
@@ -39,11 +39,11 @@ public class OspfPropertiesAnswererTest {
     OspfPropertiesQuestion question =
         new OspfPropertiesQuestion(null, new OspfPropertySpecifier(property1 + "|" + property2));
 
-    TableMetadata metadata = OspfPropertiesAnswerer.createMetadata(question);
+    TableMetadata metadata = OspfPropertiesAnswerer.createTableMetadata(question);
 
     Multiset<Row> propertyRows =
-        OspfPropertiesAnswerer.rawAnswer(
-            question,
+        OspfPropertiesAnswerer.getProperties(
+            question.getPropertySpec(),
             ImmutableMap.of("node1", conf1),
             ImmutableSet.of("node1"),
             metadata.toColumnMap());

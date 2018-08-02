@@ -25,7 +25,7 @@ public class TableDiffTest {
 
   private static ColumnMetadata colKeyStatus =
       new ColumnMetadata(
-          TableDiff.COL_KEY_STATUS, Schema.STRING, TableDiff.COL_KEY_STATUS_DESC, false, true);
+          TableDiff.COL_KEY_PRESENCE, Schema.STRING, TableDiff.COL_KEY_PRESENCE_DESC, false, true);
 
   private static ColumnMetadata colValue =
       new ColumnMetadata("value", Schema.STRING, "value", false, true);
@@ -149,7 +149,7 @@ public class TableDiffTest {
         diff.build(),
         equalTo(
             Row.of(
-                TableDiff.COL_KEY_STATUS,
+                TableDiff.COL_KEY_PRESENCE,
                 TableDiff.COL_KEY_STATUS_BOTH,
                 // value
                 TableDiff.diffColumnName("value"),
@@ -181,7 +181,7 @@ public class TableDiffTest {
         diff1.build(),
         equalTo(
             Row.of(
-                TableDiff.COL_KEY_STATUS,
+                TableDiff.COL_KEY_PRESENCE,
                 TableDiff.COL_KEY_STATUS_ONLY_BASE,
                 TableDiff.diffColumnName("key"),
                 TableDiff.resultDifferent(TableDiff.COL_KEY_STATUS_ONLY_BASE),
@@ -197,7 +197,7 @@ public class TableDiffTest {
         diff2.build(),
         equalTo(
             Row.of(
-                TableDiff.COL_KEY_STATUS,
+                TableDiff.COL_KEY_PRESENCE,
                 TableDiff.COL_KEY_STATUS_ONLY_DELTA,
                 TableDiff.diffColumnName("key"),
                 TableDiff.resultDifferent(TableDiff.COL_KEY_STATUS_ONLY_DELTA),
@@ -292,7 +292,7 @@ public class TableDiffTest {
                 Row.builder()
                     .put("key", "key1")
                     .put("both", "both1")
-                    .put(TableDiff.COL_KEY_STATUS, TableDiff.COL_KEY_STATUS_BOTH)
+                    .put(TableDiff.COL_KEY_PRESENCE, TableDiff.COL_KEY_STATUS_BOTH)
                     .put(TableDiff.diffColumnName("value"), TableDiff.RESULT_DIFFERENT)
                     .put(TableDiff.baseColumnName("value"), "value1")
                     .put(TableDiff.deltaColumnName("value"), "value2")
@@ -321,7 +321,7 @@ public class TableDiffTest {
         new Rows()
             .add(
                 Row.builder()
-                    .put(TableDiff.COL_KEY_STATUS, TableDiff.COL_KEY_STATUS_BOTH)
+                    .put(TableDiff.COL_KEY_PRESENCE, TableDiff.COL_KEY_STATUS_BOTH)
                     .put(TableDiff.diffColumnName("value"), TableDiff.RESULT_DIFFERENT)
                     .put(TableDiff.baseColumnName("value"), "value1")
                     .put(TableDiff.deltaColumnName("value"), "value2")
@@ -355,13 +355,13 @@ public class TableDiffTest {
                     Row.of(
                         "key",
                         "key1",
-                        TableDiff.COL_KEY_STATUS,
+                        TableDiff.COL_KEY_PRESENCE,
                         TableDiff.COL_KEY_STATUS_ONLY_BASE))
                 .add(
                     Row.of(
                         "key",
                         "key2",
-                        TableDiff.COL_KEY_STATUS,
+                        TableDiff.COL_KEY_PRESENCE,
                         TableDiff.COL_KEY_STATUS_ONLY_DELTA))));
   }
 }

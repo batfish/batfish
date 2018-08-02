@@ -22,7 +22,7 @@ import org.junit.Test;
 public class BgpPropertiesAnswererTest {
 
   @Test
-  public void rawAnswer() {
+  public void getProperties() {
 
     BgpProcess bgp1 = new BgpProcess();
     bgp1.setRouterId(new Ip("1.1.1.1"));
@@ -41,11 +41,11 @@ public class BgpPropertiesAnswererTest {
     BgpPropertiesQuestion question =
         new BgpPropertiesQuestion(null, new BgpPropertySpecifier(property1 + "|" + property2));
 
-    TableMetadata metadata = BgpPropertiesAnswerer.createMetadata(question);
+    TableMetadata metadata = BgpPropertiesAnswerer.createTableMetadata(question);
 
     Multiset<Row> propertyRows =
-        BgpPropertiesAnswerer.rawAnswer(
-            question,
+        BgpPropertiesAnswerer.getProperties(
+            question.getPropertySpec(),
             ImmutableMap.of("node1", conf1),
             ImmutableSet.of("node1"),
             metadata.toColumnMap());
