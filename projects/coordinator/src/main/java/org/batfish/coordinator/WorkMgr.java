@@ -775,12 +775,12 @@ public class WorkMgr extends AbstractCoordinator {
       if (configPaths.isEmpty()) {
         throw new BatfishException(
             String.format(
-                "Configuration file %s does not exist in testrig %s for container %s",
+                "Configuration file %s does not exist in snapshot %s for network %s",
                 configName, testrigName, containerName));
       } else if (configPaths.size() > 1) {
         throw new BatfishException(
             String.format(
-                "More than one configuration file with name %s in testrig %s for container %s",
+                "More than one configuration file with name %s in snapshot %s for network %s",
                 configName, testrigName, containerName));
       }
       String configContent = "";
@@ -789,7 +789,7 @@ public class WorkMgr extends AbstractCoordinator {
       } catch (IOException e) {
         throw new BatfishException(
             String.format(
-                "Failed to read configuration file %s in testrig %s for container %s",
+                "Failed to read configuration file %s in snapshot %s for network %s",
                 configName, testrigName, containerName),
             e);
       }
