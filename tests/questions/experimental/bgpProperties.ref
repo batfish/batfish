@@ -1,0 +1,28 @@
+{
+  "class" : "org.batfish.question.bgpproperties.BgpPropertiesQuestion",
+  "nodeRegex" : ".*",
+  "propertySpec" : "multipath-.*",
+  "differential" : false,
+  "includeOneTableKeys" : false,
+  "instance" : {
+    "description" : "Gets properties of BGP routing processes",
+    "instanceName" : "qname",
+    "tags" : [
+      "BGP"
+    ],
+    "variables" : {
+      "nodeRegex" : {
+        "description" : "Only include nodes that match this specification",
+        "optional" : true,
+        "type" : "nodeSpec",
+        "value" : ".*"
+      },
+      "propertySpec" : {
+        "description" : "Which properties to fetch; default is all of them",
+        "optional" : true,
+        "type" : "bgpPropertySpec",
+        "value" : "multipath-.*"
+      }
+    }
+  }
+}
