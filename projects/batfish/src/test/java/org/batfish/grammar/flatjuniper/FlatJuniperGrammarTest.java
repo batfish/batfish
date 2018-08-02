@@ -519,6 +519,13 @@ public class FlatJuniperGrammarTest {
             hasBgpProcess(
                 hasActiveNeighbor(
                     Prefix.parse("2.2.2.2/32"), allOf(hasAllowLocalAsIn(true), hasLocalAs(1L))))));
+    assertThat(
+        c,
+        hasVrf(
+            "FOO",
+            hasBgpProcess(
+                hasActiveNeighbor(
+                    Prefix.parse("3.3.3.3/32"), allOf(hasAllowLocalAsIn(true), hasLocalAs(1L))))));
   }
 
   @Test
