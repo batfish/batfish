@@ -7,6 +7,7 @@ import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultiset;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Multiset;
 import java.io.IOException;
@@ -19,10 +20,12 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
@@ -64,6 +67,86 @@ public class AclReachability2Test {
             "iface2",
             Interface.builder().setName("iface2").build()));
     _c2.setInterfaces(ImmutableSortedMap.of("iface", Interface.builder().setName("iface").build()));
+  }
+
+  @Test
+  public void testWithIcmpType() throws IOException {
+    // First line accepts IP 1.2.3.4
+    // Second line accepts same but only ICMP of type 8
+    List<IpAccessListLine> lines =
+        ImmutableList.of(
+            IpAccessListLine.acceptingHeaderSpace(
+                HeaderSpace.builder().setSrcIps(new Ip("1.2.3.4").toIpSpace()).build()),
+            IpAccessListLine.acceptingHeaderSpace(
+                HeaderSpace.builder()
+                    .setSrcIps(new Ip("1.2.3.4").toIpSpace())
+                    .setIpProtocols(ImmutableSet.of(IpProtocol.ICMP))
+                    .setIcmpTypes(ImmutableList.of(new SubRange(8)))
+                    .build()));
+    _aclb.setLines(lines).setName("acl").build();
+    List<String> lineNames = lines.stream().map(l -> l.toString()).collect(Collectors.toList());
+
+    TableAnswerElement answer = answer(new AclReachability2Question());
+
+    // Construct the expected result. First line should block second.
+    Multiset<Row> expected =
+        ImmutableMultiset.of(
+            Row.builder()
+                .put(AclLines2Rows.COL_SOURCES, ImmutableList.of(_c1.getHostname() + ": acl"))
+                .put(AclLines2Rows.COL_LINES, lineNames)
+                .put(AclLines2Rows.COL_BLOCKED_LINE_NUM, 1)
+                .put(AclLines2Rows.COL_BLOCKING_LINE_NUMS, ImmutableSet.of(0))
+                .put(AclLines2Rows.COL_DIFF_ACTION, false)
+                .put(
+                    AclLines2Rows.COL_MESSAGE,
+                    "ACLs { c1: acl } contain an unreachable line:\n  [index 1] "
+                        + lineNames.get(1)
+                        + "\nBlocking line(s):\n  [index 0] "
+                        + lineNames.get(0))
+                .build());
+    assertThat(answer.getRows().getData(), equalTo(expected));
+  }
+
+  @Test
+  public void testIpWildcards() throws IOException {
+    // First line accepts src IPs 1.2.3.4/30
+    // Second line accepts src IPs 1.2.3.4/32
+    List<IpAccessListLine> lines =
+        ImmutableList.of(
+            IpAccessListLine.acceptingHeaderSpace(
+                HeaderSpace.builder()
+                    .setSrcIps(new IpWildcard(new Prefix(new Ip("1.2.3.4"), 30)).toIpSpace())
+                    .build()),
+            IpAccessListLine.acceptingHeaderSpace(
+                HeaderSpace.builder()
+                    .setSrcIps(new IpWildcard(new Prefix(new Ip("1.2.3.4"), 32)).toIpSpace())
+                    .build()),
+            IpAccessListLine.acceptingHeaderSpace(
+                HeaderSpace.builder()
+                    .setSrcIps(new IpWildcard(new Prefix(new Ip("1.2.3.4"), 28)).toIpSpace())
+                    .build()));
+    _aclb.setLines(lines).setName("acl").build();
+    List<String> lineNames = lines.stream().map(l -> l.toString()).collect(Collectors.toList());
+
+    TableAnswerElement answer = answer(new AclReachability2Question());
+
+    // Construct the expected result. First line should block second.
+    Multiset<Row> expected =
+        ImmutableMultiset.of(
+            Row.builder()
+                .put(AclLines2Rows.COL_SOURCES, ImmutableList.of(_c1.getHostname() + ": acl"))
+                .put(AclLines2Rows.COL_LINES, lineNames)
+                .put(AclLines2Rows.COL_BLOCKED_LINE_NUM, 1)
+                .put(AclLines2Rows.COL_BLOCKING_LINE_NUMS, ImmutableSet.of(0))
+                .put(AclLines2Rows.COL_DIFF_ACTION, false)
+                .put(
+                    AclLines2Rows.COL_MESSAGE,
+                    "ACLs { c1: acl } contain an unreachable line:\n  [index 1] "
+                        + lineNames.get(1)
+                        + "\nBlocking line(s):\n  [index 0] "
+                        + lineNames.get(0))
+                .build());
+    assertThat(answer.getRows().getData(), equalTo(expected));
   }
 
   @Test
