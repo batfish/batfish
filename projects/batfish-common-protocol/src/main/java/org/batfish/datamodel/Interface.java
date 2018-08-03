@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
@@ -335,6 +336,10 @@ public final class Interface extends ComparableStructure<String> {
 
   private static final String PROP_EIGRP = "eigrp";
 
+  private static final String PROP_HSRP_GROUPS = "hsrpGroups";
+
+  private static final String PROP_HSRP_VERSION = "hsrpVersion";
+
   private static final String PROP_INBOUND_FILTER = "inboundFilter";
 
   private static final String PROP_INCOMING_FILTER = "incomingFilter";
@@ -591,6 +596,8 @@ public final class Interface extends ComparableStructure<String> {
 
   @Nullable private EigrpInterfaceSettings _eigrp;
 
+  private Map<Integer, HsrpGroup> _hsrpGroups;
+
   private IpAccessList _inboundFilter;
 
   private transient String _inboundFilterName;
@@ -663,6 +670,8 @@ public final class Interface extends ComparableStructure<String> {
 
   private transient String _zoneName;
 
+  private String _hsrpVersion;
+
   @SuppressWarnings("unused")
   private Interface() {
     this(null, null);
@@ -692,6 +701,7 @@ public final class Interface extends ComparableStructure<String> {
     _channelGroupMembers = ImmutableSortedSet.of();
     _declaredNames = ImmutableSortedSet.of();
     _dhcpRelayAddresses = new ArrayList<>();
+    _hsrpGroups = new TreeMap<>();
     _interfaceType = interfaceType;
     _mtu = DEFAULT_MTU;
     _nativeVlan = 1;
@@ -869,6 +879,18 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_EIGRP)
   public @Nullable EigrpInterfaceSettings getEigrp() {
     return _eigrp;
+  }
+
+  /** Mapping: hsrpGroupID -> HsrpGroup */
+  @JsonProperty(PROP_HSRP_GROUPS)
+  public Map<Integer, HsrpGroup> getHsrpGroups() {
+    return _hsrpGroups;
+  }
+
+  /** Version of the HSRP protocol to use */
+  @JsonProperty(PROP_HSRP_VERSION)
+  public @Nullable String getHsrpVersion() {
+    return _hsrpVersion;
   }
 
   @JsonIgnore
@@ -1244,6 +1266,16 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_EIGRP)
   public void setEigrp(@Nullable EigrpInterfaceSettings eigrp) {
     _eigrp = eigrp;
+  }
+
+  @JsonProperty(PROP_HSRP_GROUPS)
+  public void setHsrpGroups(@Nonnull Map<Integer, HsrpGroup> hsrpGroups) {
+    _hsrpGroups = hsrpGroups;
+  }
+
+  @JsonProperty(PROP_HSRP_VERSION)
+  public void setHsrpVersion(String hsrpVersion) {
+    _hsrpVersion = hsrpVersion;
   }
 
   @JsonIgnore

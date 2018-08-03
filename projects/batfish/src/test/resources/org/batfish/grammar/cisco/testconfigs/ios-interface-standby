@@ -1,0 +1,17 @@
+!
+hostname ios-interface-standby
+!
+interface Ethernet0
+ ip address 10.0.0.2 255.255.255.0
+ standby 1001 authentication 012345678901234567890123456789012345678
+ standby 1001 ip 10.0.0.1
+ standby 1001 preempt
+ standby 1001 priority 105
+ standby 1001 timers msec 500 2                                                                                                                                                                                   
+ standby 1001 track 1 decrement 20
+ standby version 2
+!
+interface Tunnel1
+!
+track 1 interface Tunnel1 line-protocol
+!

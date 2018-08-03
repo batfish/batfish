@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import org.batfish.datamodel.HsrpGroup;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
@@ -24,6 +26,8 @@ import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasAllowedVlans;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasDeclaredNames;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasDescription;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasEigrp;
+import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasHsrpGroup;
+import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasHsrpVersion;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasIsis;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasMtu;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasName;
@@ -132,6 +136,23 @@ public final class InterfaceMatchers {
   public static @Nonnull Matcher<Interface> hasEigrp(
       @Nonnull Matcher<? super EigrpInterfaceSettings> subMatcher) {
     return new HasEigrp(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@link subMatcher} matches the {@link
+   * Interface}'s hsrpGroup with the specified {@code number}.
+   */
+  public static @Nonnull Matcher<Interface> hasHsrpGroup(
+      int number, @Nonnull Matcher<? super HsrpGroup> subMatcher) {
+    return new HasHsrpGroup(number, subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the {@link Interface}'s hsrpVersion is equal to {@code
+   * expectedHsrpVersion}.
+   */
+  public static @Nonnull Matcher<Interface> hasHsrpVersion(@Nullable String expectedHsrpVersion) {
+    return new HasHsrpVersion(equalTo(expectedHsrpVersion));
   }
 
   /**

@@ -386,6 +386,19 @@ class CiscoConversions {
     return new CommunityList(ecList.getName(), cllList, false);
   }
 
+  static org.batfish.datamodel.HsrpGroup toHsrpGroup(HsrpGroup hsrpGroup) {
+    return org.batfish.datamodel.HsrpGroup.builder()
+        .setAuthentication(hsrpGroup.getAuthentication())
+        .setHelloTime(hsrpGroup.getHelloTime())
+        .setHoldTime(hsrpGroup.getHoldTime())
+        .setIp(hsrpGroup.getIp())
+        .setNumber(hsrpGroup.getNumber())
+        .setPreempt(hsrpGroup.getPreempt())
+        .setPriority(hsrpGroup.getPriority())
+        .setTrackActions(hsrpGroup.getTrackActions())
+        .build();
+  }
+
   static IkePhase1Key toIkePhase1Key(Keyring keyring) {
     IkePhase1Key ikePhase1Key = new IkePhase1Key();
     ikePhase1Key.setKeyHash(keyring.getKey());

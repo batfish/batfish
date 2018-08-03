@@ -3059,10 +3059,12 @@ s_time_range
 
 s_track
 :
-   TRACK null_rest_of_line
-   (
-      track_null
-   )*
+  TRACK name = variable
+  (
+    track_block
+    | track_interface
+    | track_list
+  )
 ;
 
 s_tunnel_group
@@ -3841,14 +3843,37 @@ tr_null
    ) null_rest_of_line
 ;
 
-track_null
+track_block
 :
-   NO?
-   (
-      DELAY
-      | OBJECT
-      | TYPE
-   ) null_rest_of_line
+  NEWLINE track_block_null*
+;
+
+track_block_null
+:
+  TYPE null_rest_of_line track_block_type_null*
+;
+
+track_block_type_null
+:
+  OBJECT null_rest_of_line
+;
+
+track_interface
+:
+  INTERFACE interface_name LINE_PROTOCOL NEWLINE
+;
+
+track_list
+:
+  LIST null_rest_of_line track_list_null*
+;
+
+track_list_null
+:
+  (
+    DELAY
+    | OBJECT
+  ) null_rest_of_line
 ;
 
 ts_common

@@ -759,7 +759,6 @@ if_null_block
       | SRR_QUEUE
       | SSID
       | STACK_MIB
-      | STANDBY
       | STATION_ROLE
       | STBC
       | STORM_CONTROL
@@ -1055,6 +1054,73 @@ if_shutdown
       DISABLE
       | SHUTDOWN
    ) FORCE? LAN? NEWLINE
+;
+
+if_standby
+:
+  NO? STANDBY
+  (
+    standby_group
+    | standby_version
+  ) NEWLINE
+;
+
+standby_group
+:
+  group = DEC
+  (
+    standby_group_authentication
+    | standby_group_ip
+    | standby_group_preempt
+    | standby_group_priority
+    | standby_group_timers
+    | standby_group_track
+  )
+;
+
+standby_group_authentication
+:
+  AUTHENTICATION auth = DEC
+;
+
+standby_group_ip
+:
+  IP ip = IP_ADDRESS
+;
+
+standby_group_preempt
+:
+  PREEMPT
+;
+
+standby_group_priority
+:
+  PRIORITY priority = DEC
+;
+
+standby_group_timers
+:
+  TIMERS MSEC hello_time = DEC hold_time = DEC
+;
+
+standby_group_track
+:
+  TRACK group = DEC track_action
+;
+
+track_action
+:
+  track_action_decrement
+;
+
+track_action_decrement
+:
+  DECREMENT subtrahend = DEC
+;
+
+standby_version
+:
+  VERSION version = variable_permissive
 ;
 
 if_switchport
@@ -1420,6 +1486,7 @@ if_inner
    | if_speed_eos
    | if_speed_ios
    | if_speed_ios_dot11radio
+   | if_standby
    | if_switchport
    | if_switchport_access
    | if_switchport_mode

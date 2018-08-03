@@ -161,6 +161,8 @@ public final class Configuration implements Serializable {
 
   private static final String PROP_TACACS_SOURCE_INTERFACE = "tacacsSourceInterface";
 
+  private static final String PROP_TRACKING_GROUPS = "trackingGroups";
+
   private static final String PROP_ZONES = "zones";
 
   private static final long serialVersionUID = 1L;
@@ -270,6 +272,8 @@ public final class Configuration implements Serializable {
 
   private String _tacacsSourceInterface;
 
+  private NavigableMap<String, TrackMethod> _trackingGroups;
+
   private VendorFamily _vendorFamily;
 
   private Map<String, Vrf> _vrfs;
@@ -319,6 +323,7 @@ public final class Configuration implements Serializable {
     _routingPolicies = new TreeMap<>();
     _snmpTrapServers = new TreeSet<>();
     _tacacsServers = new TreeSet<>();
+    _trackingGroups = new TreeMap<>();
     _vendorFamily = new VendorFamily();
     _vrfs = new TreeMap<>();
     _zones = new TreeMap<>();
@@ -668,6 +673,12 @@ public final class Configuration implements Serializable {
     return _tacacsSourceInterface;
   }
 
+  /** Mapping: trackingGroupID -> trackMethod */
+  @JsonProperty(PROP_TRACKING_GROUPS)
+  public @Nonnull NavigableMap<String, TrackMethod> getTrackingGroups() {
+    return _trackingGroups;
+  }
+
   @JsonPropertyDescription("Object containing vendor-specific information for this node.")
   public VendorFamily getVendorFamily() {
     return _vendorFamily;
@@ -889,6 +900,11 @@ public final class Configuration implements Serializable {
   @JsonProperty(PROP_TACACS_SOURCE_INTERFACE)
   public void setTacacsSourceInterface(String tacacsSourceInterface) {
     _tacacsSourceInterface = tacacsSourceInterface;
+  }
+
+  @JsonProperty(PROP_TRACKING_GROUPS)
+  public void setTrackingGroups(@Nonnull NavigableMap<String, TrackMethod> trackingGroups) {
+    _trackingGroups = trackingGroups;
   }
 
   public void setVendorFamily(VendorFamily vendorFamily) {

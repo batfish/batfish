@@ -57,7 +57,8 @@ public enum CiscoStructureType implements StructureType {
   SERVICE_CLASS("cable service-class"),
   SERVICE_OBJECT("object service"),
   SERVICE_OBJECT_GROUP("object-group service"),
-  SERVICE_TEMPLATE("service-template");
+  SERVICE_TEMPLATE("service-template"),
+  TRACK("track");
 
   private final String _description;
 

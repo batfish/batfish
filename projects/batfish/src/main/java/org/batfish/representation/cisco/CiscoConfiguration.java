@@ -99,6 +99,7 @@ import org.batfish.datamodel.SnmpServer;
 import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
+import org.batfish.datamodel.TrackMethod;
 import org.batfish.datamodel.Zone;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
@@ -466,6 +467,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private final Map<String, SecurityZone> _securityZones;
 
+  private final Map<String, TrackMethod> _trackingGroups;
+
   public CiscoConfiguration(Set<String> unimplementedFeatures) {
     _asPathAccessLists = new TreeMap<>();
     _asPathSets = new TreeMap<>();
@@ -506,6 +509,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _standardIpv6AccessLists = new TreeMap<>();
     _standardCommunityLists = new TreeMap<>();
     _tacacsServers = new TreeSet<>();
+    _trackingGroups = new TreeMap<>();
     _undefinedPeerGroups = new TreeMap<>();
     _unimplementedFeatures = unimplementedFeatures;
     _vrfs = new TreeMap<>();
@@ -2038,6 +2042,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
     newIface.setActive(iface.getActive());
     newIface.setChannelGroup(iface.getChannelGroup());
     newIface.setCryptoMap(iface.getCryptoMap());
+    newIface.setHsrpGroups(
+        CommonUtil.toImmutableMap(
+            iface.getHsrpGroups(), Entry::getKey, e -> CiscoConversions.toHsrpGroup(e.getValue())));
+    newIface.setHsrpVersion(iface.getHsrpVersion());
     newIface.setAutoState(iface.getAutoState());
     newIface.setVrf(c.getVrfs().get(vrfName));
     if (iface.getBandwidth() == null) {
@@ -3087,6 +3095,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
           c.getVrfs().get(vrfName).getInterfaces().put(ifaceName, newInterface);
         });
 
+    // copy tracking groups
+    c.getTrackingGroups().putAll(_trackingGroups);
+
     // apply vrrp settings to interfaces
     applyVrrp(c);
 
@@ -3476,7 +3487,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OR_SERVICE_OBJECT_GROUP,
         ImmutableList.of(
             CiscoStructureType.PROTOCOL_OBJECT_GROUP, CiscoStructureType.SERVICE_OBJECT_GROUP));
-
+    
     // objects
     markConcreteStructure(
         CiscoStructureType.NETWORK_OBJECT, CiscoStructureUsage.NETWORK_OBJECT_GROUP_NETWORK_OBJECT);
@@ -3489,6 +3500,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.CLASS_MAP_SERVICE_TEMPLATE,
         CiscoStructureUsage.CLASS_MAP_ACTIVATED_SERVICE_TEMPLATE,
         CiscoStructureUsage.POLICY_MAP_EVENT_CLASS_ACTIVATE);
+
+    // track
+    markConcreteStructure(CiscoStructureType.TRACK, CiscoStructureUsage.INTERFACE_STANDBY_TRACK);
 
     // zone
     markConcreteStructure(
@@ -4097,5 +4111,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public Map<String, SecurityZone> getSecurityZones() {
     return _securityZones;
+  }
+
+  public Map<String, TrackMethod> getTrackingGroups() {
+    return _trackingGroups;
   }
 }

@@ -5,6 +5,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.datamodel.HsrpGroup;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
@@ -107,6 +108,34 @@ final class InterfaceMatchersImpl {
     @Nullable
     protected EigrpInterfaceSettings featureValueOf(Interface actual) {
       return actual.getEigrp();
+    }
+  }
+
+  static final class HasHsrpGroup extends FeatureMatcher<Interface, HsrpGroup> {
+    private final int _number;
+
+    HasHsrpGroup(int number, @Nonnull Matcher<? super HsrpGroup> subMatcher) {
+      super(
+          subMatcher,
+          String.format("An Interface with hsrpGroup %d:", number),
+          String.format("hsrpGroup %d", number));
+      _number = number;
+    }
+
+    @Override
+    protected HsrpGroup featureValueOf(Interface actual) {
+      return actual.getHsrpGroups().get(_number);
+    }
+  }
+
+  static final class HasHsrpVersion extends FeatureMatcher<Interface, String> {
+    HasHsrpVersion(@Nonnull Matcher<? super String> subMatcher) {
+      super(subMatcher, "An Interface with hsrpVersion:", "hsrpVersion");
+    }
+
+    @Override
+    protected String featureValueOf(Interface actual) {
+      return actual.getHsrpVersion();
     }
   }
 

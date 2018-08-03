@@ -1,6 +1,7 @@
 package org.batfish.grammar.cisco;
 
 import static java.util.Objects.requireNonNull;
+import static org.batfish.common.util.CommonUtil.sha256Digest;
 import static org.batfish.datamodel.AuthenticationMethod.ENABLE;
 import static org.batfish.datamodel.AuthenticationMethod.GROUP_RADIUS;
 import static org.batfish.datamodel.AuthenticationMethod.GROUP_TACACS;
@@ -67,6 +68,7 @@ import static org.batfish.datamodel.matchers.EigrpInterfaceSettingsMatchers.hasD
 import static org.batfish.datamodel.matchers.EigrpRouteMatchers.hasEigrpMetric;
 import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasDstIps;
 import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasSrcIps;
+import static org.batfish.datamodel.matchers.HsrpGroupMatchers.hasTrackActions;
 import static org.batfish.datamodel.matchers.IkeGatewayMatchers.hasAddress;
 import static org.batfish.datamodel.matchers.IkeGatewayMatchers.hasExternalInterface;
 import static org.batfish.datamodel.matchers.IkeGatewayMatchers.hasIkePolicy;
@@ -85,6 +87,8 @@ import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasLifeTimeSeco
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDeclaredNames;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasEigrp;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasHsrpGroup;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasHsrpVersion;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfArea;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrf;
@@ -169,6 +173,7 @@ import static org.batfish.representation.cisco.CiscoStructureType.ROUTE_MAP;
 import static org.batfish.representation.cisco.CiscoStructureType.SECURITY_ZONE;
 import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_OBJECT;
 import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_OBJECT_GROUP;
+import static org.batfish.representation.cisco.CiscoStructureType.TRACK;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OR_SERVICE_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INSPECT_POLICY_MAP_INSPECT_CLASS;
@@ -201,6 +206,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.graph.EndpointPair;
@@ -228,6 +234,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.DataPlane;
+import org.batfish.datamodel.DecrementPriority;
 import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.EigrpExternalRoute;
 import org.batfish.datamodel.EncryptionAlgorithm;
@@ -261,6 +268,7 @@ import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.RipInternalRoute;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.TrackInterface;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
@@ -269,6 +277,7 @@ import org.batfish.datamodel.eigrp.EigrpProcessMode;
 import org.batfish.datamodel.matchers.ConfigurationMatchers;
 import org.batfish.datamodel.matchers.EigrpInterfaceSettingsMatchers;
 import org.batfish.datamodel.matchers.EigrpProcessMatchers;
+import org.batfish.datamodel.matchers.HsrpGroupMatchers;
 import org.batfish.datamodel.matchers.IkeGatewayMatchers;
 import org.batfish.datamodel.matchers.IkePhase1KeyMatchers;
 import org.batfish.datamodel.matchers.IkePhase1ProposalMatchers;
@@ -921,6 +930,33 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testIosInterfaceStandby() throws IOException {
+    Configuration c = parseConfig("ios-interface-standby");
+    Interface i = c.getInterfaces().get("Ethernet0");
+
+    assertThat(
+        c,
+        ConfigurationMatchers.hasTrackingGroups(
+            equalTo(ImmutableMap.of("1", new TrackInterface("Tunnel1")))));
+    assertThat(
+        i,
+        hasHsrpGroup(
+            1001,
+            HsrpGroupMatchers.hasAuthentication(
+                sha256Digest("012345678901234567890123456789012345678"))));
+    assertThat(i, hasHsrpGroup(1001, HsrpGroupMatchers.hasHelloTime(500)));
+    assertThat(i, hasHsrpGroup(1001, HsrpGroupMatchers.hasHoldTime(2)));
+    assertThat(i, hasHsrpGroup(1001, HsrpGroupMatchers.hasIp(new Ip("10.0.0.1"))));
+    assertThat(i, hasHsrpGroup(1001, HsrpGroupMatchers.hasPriority(105)));
+    assertThat(i, hasHsrpGroup(1001, HsrpGroupMatchers.hasPreempt()));
+    assertThat(
+        i,
+        hasHsrpGroup(
+            1001, hasTrackActions(equalTo(ImmutableMap.of("1", new DecrementPriority(20))))));
+    assertThat(i, hasHsrpVersion("2"));
+  }
+
+  @Test
   public void testIosHttpInspection() throws IOException {
     String hostname = "ios-http-inspection";
     String filename = "configs/" + hostname;
@@ -1447,6 +1483,19 @@ public class CiscoGrammarTest {
     assertThat(
         proxyArpOmitted,
         hasInterfaces(hasEntry(equalTo("Ethernet0/2"), isProxyArp(equalTo(false)))));
+  }
+
+  @Test
+  public void testIosTrack() throws IOException {
+    String hostname = "ios-track";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    assertThat(ccae, hasNumReferrers(filename, TRACK, "1", 1));
+    assertThat(ccae, hasNumReferrers(filename, TRACK, "2", 0));
+    assertThat(ccae, hasUndefinedReference(filename, TRACK, "3"));
   }
 
   @Test
