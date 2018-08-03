@@ -392,7 +392,7 @@ class CiscoConversions {
         .setHelloTime(hsrpGroup.getHelloTime())
         .setHoldTime(hsrpGroup.getHoldTime())
         .setIp(hsrpGroup.getIp())
-        .setNumber(hsrpGroup.getNumber())
+        .setGroupNumber(hsrpGroup.getGroupNumber())
         .setPreempt(hsrpGroup.getPreempt())
         .setPriority(hsrpGroup.getPriority())
         .setTrackActions(hsrpGroup.getTrackActions())

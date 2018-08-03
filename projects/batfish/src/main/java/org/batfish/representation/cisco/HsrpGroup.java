@@ -13,13 +13,13 @@ public class HsrpGroup implements Serializable {
 
   private String _authentication;
 
+  private final int _groupNumber;
+
   private int _helloTime;
 
   private int _holdTime;
 
   private Ip _ip;
-
-  private final int _number;
 
   private boolean _preempt;
 
@@ -27,16 +27,20 @@ public class HsrpGroup implements Serializable {
 
   private final SortedMap<String, TrackAction> _trackActions;
 
-  public HsrpGroup(int number) {
+  public HsrpGroup(int groupNumber) {
+    _groupNumber = groupNumber;
     _helloTime = org.batfish.datamodel.hsrp.HsrpGroup.DEFAULT_HELLO_TIME;
     _holdTime = org.batfish.datamodel.hsrp.HsrpGroup.DEFAULT_HOLD_TIME;
-    _number = number;
     _priority = org.batfish.datamodel.hsrp.HsrpGroup.DEFAULT_PRIORITY;
     _trackActions = new TreeMap<>();
   }
 
   public String getAuthentication() {
     return _authentication;
+  }
+
+  public int getGroupNumber() {
+    return _groupNumber;
   }
 
   public int getHelloTime() {
@@ -49,10 +53,6 @@ public class HsrpGroup implements Serializable {
 
   public Ip getIp() {
     return _ip;
-  }
-
-  public int getNumber() {
-    return _number;
   }
 
   public boolean getPreempt() {

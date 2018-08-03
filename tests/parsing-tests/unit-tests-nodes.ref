@@ -12356,10 +12356,10 @@
             "hsrpGroups" : {
               "1001" : {
                 "authentication" : "9d02ca801b026e21590248fb1578fe959b68a16cccdb0005917dce66a40c5f78",
+                "groupNumber" : 1001,
                 "helloTime" : 500,
                 "holdTime" : 2,
                 "ip" : "1.2.3.4",
-                "number" : 1001,
                 "preempt" : true,
                 "priority" : 105,
                 "trackActions" : {
