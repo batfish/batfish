@@ -899,6 +899,19 @@ class CiscoConversions {
         org.batfish.datamodel.eigrp.EigrpProcess.builder();
     org.batfish.datamodel.Vrf vrf = c.getVrfs().get(vrfName);
 
+    if (proc.getAsn() == null) {
+      /*
+       * This will happen with the following configuration:
+       *  address-family ... autonomous-system 1
+       *   autonomous-system 2
+       *   no autonomous-system
+       * The result should be a process with ASN 1, but instead the result is an invalid EIGRP process
+       * with null ASN.
+       */
+      oldConfig.getWarnings().redFlag("No candidates for EIGRP ASN");
+      return null;
+    }
+
     newProcess.setAsNumber(proc.getAsn());
     newProcess.setMode(proc.getMode());
     newProcess.setVrf(vrf);
@@ -964,7 +977,9 @@ class CiscoConversions {
     if (routerId == null) {
       routerId = getHighestIp(oldConfig.getInterfaces());
       if (routerId == Ip.ZERO) {
-        oldConfig.getWarnings().redFlag("No candidates for EIGRP router-id");
+        oldConfig
+            .getWarnings()
+            .redFlag("No candidates for EIGRP (AS " + proc.getAsn() + ") router-id");
         return null;
       }
     }

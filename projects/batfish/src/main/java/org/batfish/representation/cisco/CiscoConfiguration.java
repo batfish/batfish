@@ -2094,7 +2094,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
     }
 
     EigrpProcess eigrpProcess = vrf.getEigrpProcess();
-    if (eigrpProcess != null) {
+    // Let toEigrpProcess handle null asn failure
+    if (eigrpProcess != null && eigrpProcess.getAsn() != null) {
       /*
        * Some settings are here, others are set later when the EigrpProcess sets this
        * interface

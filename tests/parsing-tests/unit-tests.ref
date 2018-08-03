@@ -21045,11 +21045,10 @@
             "            asnum = DEC:'55'  <== mode:DEFAULT_MODE",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "            (rec_address_family_tail",
-            "              (rec_address_family_null",
+            "              (re_autonomous_system",
             "                AUTONOMOUS_SYSTEM:'autonomous-system'  <== mode:DEFAULT_MODE",
-            "                (null_rest_of_line",
-            "                  DEC:'65500'  <== mode:DEFAULT_MODE",
-            "                  NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "                asnum = DEC:'65500'  <== mode:DEFAULT_MODE",
+            "                NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "            (rec_address_family_tail",
             "              (re_network",
             "                NETWORK:'network'  <== mode:DEFAULT_MODE",
@@ -61236,6 +61235,14 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "Cannot find keyring VRF:MMS:RMT:UPM:1143 for ISAKMP profile myprofile"
+            }
+          ]
+        },
+        "cisco_eigrp" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No candidates for EIGRP (AS 4) router-id"
             }
           ]
         },

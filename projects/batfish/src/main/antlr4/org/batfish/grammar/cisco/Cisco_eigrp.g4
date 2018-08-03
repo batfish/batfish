@@ -263,12 +263,16 @@ rec_address_family
    rec_address_family_tail* address_family_footer
 ;
 
+re_autonomous_system
+:
+   NO? AUTONOMOUS_SYSTEM asnum = DEC NEWLINE
+;
+
 rec_address_family_null
 :
    NO?
    (
       AUTO_SUMMARY
-      | AUTONOMOUS_SYSTEM
       | BFD
       | DEFAULT_INFORMATION
       | DISTANCE
@@ -284,7 +288,8 @@ rec_address_family_null
 
 rec_address_family_tail
 :
-   re_default_metric
+   re_autonomous_system
+   | re_default_metric
    | re_eigrp_null
    | re_eigrp_router_id
    | re_network

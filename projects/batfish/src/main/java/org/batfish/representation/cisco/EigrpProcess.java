@@ -24,13 +24,13 @@ public class EigrpProcess implements Serializable {
   private final Set<Prefix> _networks;
   private final Map<RoutingProtocol, EigrpRedistributionPolicy> _redistributionPolicies;
   private String _addressFamily;
-  private long _asn;
+  private @Nullable Long _asn;
   private boolean _autoSummary;
   private @Nullable EigrpMetric _defaultMetric;
   @Nullable private Ip _routerId;
   private boolean _passiveInterfaceDefault;
 
-  public EigrpProcess(Long asn, EigrpProcessMode mode) {
+  public EigrpProcess(@Nullable Long asn, EigrpProcessMode mode) {
     _asn = asn;
     _addressFamily = DEFAULT_ADDRESS_FAMILY;
     _autoSummary = false;
@@ -72,11 +72,12 @@ public class EigrpProcess implements Serializable {
     _addressFamily = af;
   }
 
-  public long getAsn() {
+  @Nullable
+  public Long getAsn() {
     return _asn;
   }
 
-  public void setAsn(long asn) {
+  public void setAsn(@Nullable Long asn) {
     _asn = asn;
   }
 

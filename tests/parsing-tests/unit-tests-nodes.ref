@@ -6554,10 +6554,13 @@
           }
         },
         "vrfs" : {
+          "autonomous-system" : {
+            "name" : "autonomous-system"
+          },
           "default" : {
             "name" : "default",
             "eigrpProcess" : {
-              "asn" : 55,
+              "asn" : 65500,
               "eigrp-mode" : "CLASSIC",
               "export-policy" : "~EIGRP_EXPORT_POLICY:default~",
               "router-id" : "100.1.1.1"
