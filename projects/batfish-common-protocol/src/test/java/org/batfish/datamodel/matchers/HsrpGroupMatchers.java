@@ -6,8 +6,8 @@ import java.util.SortedMap;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.TrackAction;
 import org.batfish.datamodel.hsrp.HsrpGroup;
+import org.batfish.datamodel.tracking.TrackAction;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 

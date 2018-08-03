@@ -22,7 +22,6 @@ import org.batfish.datamodel.IpsecPhase2Proposal;
 import org.batfish.datamodel.IpsecPolicy;
 import org.batfish.datamodel.IpsecProposal;
 import org.batfish.datamodel.IpsecVpn;
-import org.batfish.datamodel.TrackMethod;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasConfigurationFormat;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasDefaultVrf;
@@ -47,6 +46,7 @@ import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasTrackingGroup
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasVendorFamily;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasVrf;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasVrfs;
+import org.batfish.datamodel.tracking.TrackMethod;
 import org.batfish.datamodel.vendor_family.VendorFamily;
 import org.hamcrest.Matcher;
 

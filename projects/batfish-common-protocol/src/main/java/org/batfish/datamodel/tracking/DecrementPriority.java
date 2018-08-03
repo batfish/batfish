@@ -1,4 +1,4 @@
-package org.batfish.datamodel;
+package org.batfish.datamodel.tracking;
 
 import static com.google.common.base.MoreObjects.toStringHelper;
 

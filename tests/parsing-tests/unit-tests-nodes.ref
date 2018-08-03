@@ -10205,11 +10205,11 @@
         "deviceType" : "SWITCH",
         "trackingGroups" : {
           "1" : {
-            "class" : "org.batfish.datamodel.TrackInterface",
+            "class" : "org.batfish.datamodel.tracking.TrackInterface",
             "trackedInterface" : "GigabitEthernet0/0"
           },
           "2" : {
-            "class" : "org.batfish.datamodel.TrackInterface",
+            "class" : "org.batfish.datamodel.tracking.TrackInterface",
             "trackedInterface" : "GigabitEthernet0/1"
           }
         },
@@ -12364,7 +12364,7 @@
                 "priority" : 105,
                 "trackActions" : {
                   "1" : {
-                    "class" : "org.batfish.datamodel.DecrementPriority",
+                    "class" : "org.batfish.datamodel.tracking.DecrementPriority",
                     "subtrahend" : 20
                   }
                 }
