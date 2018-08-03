@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.InterfaceAddress;
@@ -23,6 +24,7 @@ public class EigrpProcess implements Serializable {
   private final Set<IpWildcard> _wildcardNetworks;
   private final Set<Prefix> _networks;
   private final Map<RoutingProtocol, EigrpRedistributionPolicy> _redistributionPolicies;
+  private final Map<String, Boolean> _passiveList;
   private String _addressFamily;
   private @Nullable Long _asn;
   private boolean _autoSummary;
@@ -38,6 +40,7 @@ public class EigrpProcess implements Serializable {
     _networks = new TreeSet<>();
     _redistributionPolicies = new EnumMap<>(RoutingProtocol.class);
     _wildcardNetworks = new TreeSet<>();
+    _passiveList = new TreeMap<>();
   }
 
   public void computeNetworks(Collection<Interface> interfaces) {
@@ -112,6 +115,10 @@ public class EigrpProcess implements Serializable {
 
   public void setPassiveInterfaceDefault(boolean passiveInterfaceDefault) {
     _passiveInterfaceDefault = passiveInterfaceDefault;
+  }
+
+  public Map<String, Boolean> getPassiveList() {
+    return _passiveList;
   }
 
   public Map<RoutingProtocol, EigrpRedistributionPolicy> getRedistributionPolicies() {

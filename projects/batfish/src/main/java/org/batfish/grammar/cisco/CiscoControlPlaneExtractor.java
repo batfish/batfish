@@ -6447,7 +6447,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     // In process context
     requireNonNull(_currentEigrpProcess);
     boolean passive = (ctx.NO() == null);
-    getOrAddInterface(ctx.i).setEigrpPassive(passive);
+    String interfaceName = getCanonicalInterfaceName(ctx.i.getText());
+    _currentEigrpProcess.getPassiveList().put(interfaceName, passive);
   }
 
   @Override
@@ -6632,7 +6633,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       // default interface
       _currentEigrpProcess.setPassiveInterfaceDefault(passive);
     } else {
-      _currentEigrpInterface.setEigrpPassive(passive);
+      String interfaceName = getCanonicalInterfaceName(_currentEigrpInterface.getName());
+      _currentEigrpProcess.getPassiveList().put(interfaceName, passive);
     }
   }
 

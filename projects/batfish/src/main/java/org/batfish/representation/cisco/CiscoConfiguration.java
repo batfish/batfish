@@ -2101,9 +2101,16 @@ public final class CiscoConfiguration extends VendorConfiguration {
        * interface
        */
       boolean passive = eigrpProcess.getPassiveInterfaceDefault();
-      if (iface.getEigrpPassive() != null) {
-        passive = iface.getEigrpPassive();
-      }
+      passive =
+          eigrpProcess
+              .getPassiveList()
+              .entrySet()
+              .stream()
+              .filter(entry -> entry.getKey().equals(iface.getName()))
+              .map(Entry::getValue)
+              .findAny()
+              .orElse(passive);
+
       newIface.setEigrp(
           EigrpInterfaceSettings.builder()
               .setBandwidth(iface.getBandwidth())
