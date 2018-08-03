@@ -386,8 +386,8 @@ class CiscoConversions {
     return new CommunityList(ecList.getName(), cllList, false);
   }
 
-  static org.batfish.datamodel.HsrpGroup toHsrpGroup(HsrpGroup hsrpGroup) {
-    return org.batfish.datamodel.HsrpGroup.builder()
+  static org.batfish.datamodel.hsrp.HsrpGroup toHsrpGroup(HsrpGroup hsrpGroup) {
+    return org.batfish.datamodel.hsrp.HsrpGroup.builder()
         .setAuthentication(hsrpGroup.getAuthentication())
         .setHelloTime(hsrpGroup.getHelloTime())
         .setHoldTime(hsrpGroup.getHoldTime())

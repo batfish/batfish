@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nullable;
 
-/** Decrements HSRP priority by a given subtrahend when the tracked object is not available */
+/** Decrements HSRP/VRRP priority by a given subtrahend when the tracked object is not available */
 public class DecrementPriority implements TrackAction {
 
   private static final String PROP_SUBTRAHEND = "subtrahend";

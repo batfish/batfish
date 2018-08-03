@@ -28,10 +28,10 @@ public class HsrpGroup implements Serializable {
   private final SortedMap<String, TrackAction> _trackActions;
 
   public HsrpGroup(int number) {
-    _helloTime = org.batfish.datamodel.HsrpGroup.DEFAULT_HELLO_TIME;
-    _holdTime = org.batfish.datamodel.HsrpGroup.DEFAULT_HOLD_TIME;
+    _helloTime = org.batfish.datamodel.hsrp.HsrpGroup.DEFAULT_HELLO_TIME;
+    _holdTime = org.batfish.datamodel.hsrp.HsrpGroup.DEFAULT_HOLD_TIME;
     _number = number;
-    _priority = org.batfish.datamodel.HsrpGroup.DEFAULT_PRIORITY;
+    _priority = org.batfish.datamodel.hsrp.HsrpGroup.DEFAULT_PRIORITY;
     _trackActions = new TreeMap<>();
   }
 

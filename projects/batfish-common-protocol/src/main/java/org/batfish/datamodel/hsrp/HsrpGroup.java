@@ -1,4 +1,4 @@
-package org.batfish.datamodel;
+package org.batfish.datamodel.hsrp;
 
 import static com.google.common.base.MoreObjects.toStringHelper;
 import static java.util.Objects.requireNonNull;
@@ -11,6 +11,9 @@ import java.util.Objects;
 import java.util.SortedMap;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.TrackAction;
 
 /** An HSRP group defined on an {@link Interface} */
 public final class HsrpGroup implements Serializable {

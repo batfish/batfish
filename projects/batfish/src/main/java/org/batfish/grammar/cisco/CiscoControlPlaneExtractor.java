@@ -2235,16 +2235,17 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitStandby_group_priority(Standby_group_priorityContext ctx) {
-    int priority = _no ? org.batfish.datamodel.HsrpGroup.DEFAULT_PRIORITY : toInteger(ctx.priority);
+    int priority =
+        _no ? org.batfish.datamodel.hsrp.HsrpGroup.DEFAULT_PRIORITY : toInteger(ctx.priority);
     _currentInterfaces.forEach(i -> i.getHsrpGroups().get(_currentHsrpGroup).setPriority(priority));
   }
 
   @Override
   public void exitStandby_group_timers(Standby_group_timersContext ctx) {
     int helloTime =
-        _no ? org.batfish.datamodel.HsrpGroup.DEFAULT_HELLO_TIME : toInteger(ctx.hello_time);
+        _no ? org.batfish.datamodel.hsrp.HsrpGroup.DEFAULT_HELLO_TIME : toInteger(ctx.hello_time);
     int holdTime =
-        _no ? org.batfish.datamodel.HsrpGroup.DEFAULT_HOLD_TIME : toInteger(ctx.hold_time);
+        _no ? org.batfish.datamodel.hsrp.HsrpGroup.DEFAULT_HOLD_TIME : toInteger(ctx.hold_time);
     _currentInterfaces.forEach(
         i -> {
           HsrpGroup hsrpGroup = i.getHsrpGroups().get(_currentHsrpGroup);
