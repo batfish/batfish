@@ -159,7 +159,7 @@ public class AclLineMatchExprToBDD implements GenericAclLineMatchExprVisitor<BDD
         toBDD(headerSpace.getIcmpCodes(), _packet.getIcmpCode()),
         BDDOps.negateIfNonNull(toBDD(headerSpace.getNotIcmpCodes(), _packet.getIcmpCode())),
         toBDD(headerSpace.getIcmpTypes(), _packet.getIcmpType()),
-        BDDOps.negateIfNonNull(toBDD(headerSpace.getIcmpTypes(), _packet.getIcmpType())),
+        BDDOps.negateIfNonNull(toBDD(headerSpace.getNotIcmpTypes(), _packet.getIcmpType())),
         toBDD(headerSpace.getIpProtocols()),
         BDDOps.negateIfNonNull(toBDD(headerSpace.getNotIpProtocols())),
         toBDD(headerSpace.getDscps(), _packet.getDscp()),
