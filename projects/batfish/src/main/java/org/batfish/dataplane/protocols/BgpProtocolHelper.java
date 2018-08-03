@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.annotation.Nullable;
+import org.batfish.common.WellKnownCommunity;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
@@ -70,6 +71,12 @@ public class BgpProtocolHelper {
     // for bgp remote route)
     if (remoteRouteIsBgp) {
       BgpRoute bgpRemoteRoute = (BgpRoute) route;
+
+      if (bgpRemoteRoute.getCommunities().contains(WellKnownCommunity.NO_ADVERTISE)) {
+        // do not export
+        return null;
+      }
+
       transformedOutgoingRouteBuilder.setOriginType(bgpRemoteRoute.getOriginType());
       if (sessionProperties.isEbgp()
           && bgpRemoteRoute.getAsPath().containsAs(toNeighbor.getLocalAs())
