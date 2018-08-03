@@ -126,21 +126,22 @@ public final class HsrpGroup implements Serializable {
   @JsonCreator
   private static @Nonnull HsrpGroup create(
       @JsonProperty(PROP_AUTHENTICATION) String authentication,
-      @JsonProperty(PROP_GROUP_NUMBER) int groupNumber,
-      @JsonProperty(PROP_HELLO_TIME) int helloTime,
-      @JsonProperty(PROP_HOLD_TIME) int holdTime,
+      @JsonProperty(PROP_GROUP_NUMBER) Integer groupNumber,
+      @JsonProperty(PROP_HELLO_TIME) Integer helloTime,
+      @JsonProperty(PROP_HOLD_TIME) Integer holdTime,
       @JsonProperty(PROP_IP) Ip ip,
-      @JsonProperty(PROP_PREEMPT) boolean preempt,
-      @JsonProperty(PROP_PRIORITY) int priority,
+      @JsonProperty(PROP_PREEMPT) Boolean preempt,
+      @JsonProperty(PROP_PRIORITY) Integer priority,
       @JsonProperty(PROP_TRACK_ACTIONS) SortedMap<String, TrackAction> trackActions) {
     return new HsrpGroup(
         authentication,
-        groupNumber,
-        helloTime,
-        holdTime,
+        requireNonNull(
+            groupNumber, String.format("Missing required property: %s", PROP_GROUP_NUMBER)),
+        requireNonNull(helloTime, String.format("Missing required property: %s", PROP_HELLO_TIME)),
+        requireNonNull(holdTime, String.format("Missing required property: %s", PROP_HOLD_TIME)),
         ip,
-        preempt,
-        priority,
+        requireNonNull(preempt, String.format("Missing required property: %s", PROP_PREEMPT)),
+        requireNonNull(priority, String.format("Missing required property: %s", PROP_PRIORITY)),
         trackActions != null ? ImmutableSortedMap.copyOf(trackActions) : ImmutableSortedMap.of());
   }
 
@@ -206,13 +207,13 @@ public final class HsrpGroup implements Serializable {
 
   /** The shared number identifying the HSRP group in which this interface is a participant */
   @JsonProperty(PROP_GROUP_NUMBER)
-  public int getGroupNumber() {
+  public @Nonnull Integer getGroupNumber() {
     return _groupNumber;
   }
 
   /** The interval in milliseconds between hello messages */
   @JsonProperty(PROP_HELLO_TIME)
-  public int getHelloTime() {
+  public @Nonnull Integer getHelloTime() {
     return _helloTime;
   }
 
@@ -221,7 +222,7 @@ public final class HsrpGroup implements Serializable {
    * assumed to be down
    */
   @JsonProperty(PROP_HOLD_TIME)
-  public int getHoldTime() {
+  public @Nonnull Integer getHoldTime() {
     return _holdTime;
   }
 
@@ -233,13 +234,13 @@ public final class HsrpGroup implements Serializable {
 
   /** Whether this router should preempt the active router when its priority is higher */
   @JsonProperty(PROP_PREEMPT)
-  public boolean getPreempt() {
+  public @Nonnull Boolean getPreempt() {
     return _preempt;
   }
 
   /** The priority when electing the active HSRP router. Higher is more preferred. */
   @JsonProperty(PROP_PRIORITY)
-  public int getPriority() {
+  public @Nonnull Integer getPriority() {
     return _priority;
   }
 
