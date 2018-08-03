@@ -4,7 +4,7 @@
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 185
+      "numResults" : 189
     },
     "unusedStructures" : {
       "configs/arista_acl" : {
@@ -586,6 +586,29 @@
         "standard ipv4 access-list" : {
           "1" : [
             1
+          ]
+        }
+      },
+      "configs/cisco_track" : {
+        "track" : {
+          "1" : [
+            4
+          ],
+          "2" : [
+            5
+          ],
+          "3" : [
+            6,
+            7,
+            8,
+            9,
+            10
+          ],
+          "IPv6Loopback" : [
+            12,
+            13,
+            14,
+            15
           ]
         }
       },

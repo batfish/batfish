@@ -4,7 +4,7 @@
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 212
+      "numResults" : 213
     },
     "undefinedReferences" : {
       "configs/arista_bgp" : {
@@ -857,6 +857,15 @@
           "FOOBAR" : {
             "interface service-policy type control subscriber" : [
               5
+            ]
+          }
+        }
+      },
+      "configs/ios_standby" : {
+        "track" : {
+          "1" : {
+            "interface standby track" : [
+              12
             ]
           }
         }
