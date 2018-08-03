@@ -2237,7 +2237,17 @@ public final class CiscoConfiguration extends VendorConfiguration {
     RoutingProtocol protocol = policy.getSourceProtocol();
     // All redistribution must match the specified protocol.
     Conjunction ospfExportConditions = new Conjunction();
-    ospfExportConditions.getConjuncts().add(new MatchProtocol(protocol));
+    if (protocol == RoutingProtocol.EIGRP) {
+      ospfExportConditions
+          .getConjuncts()
+          .add(
+              new Disjunction(
+                  ImmutableList.of(
+                      new MatchProtocol(RoutingProtocol.EIGRP),
+                      new MatchProtocol(RoutingProtocol.EIGRP_EX))));
+    } else {
+      ospfExportConditions.getConjuncts().add(new MatchProtocol(protocol));
+    }
 
     // Do not redistribute the default route.
     ospfExportConditions.getConjuncts().add(NOT_DEFAULT_ROUTE);
