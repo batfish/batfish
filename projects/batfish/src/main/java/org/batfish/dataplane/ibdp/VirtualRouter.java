@@ -1594,7 +1594,7 @@ public class VirtualRouter implements Serializable {
         if (routeIsBgp) {
           BgpRoute bgpRoute = (BgpRoute) route;
 
-          if(bgpRoute.getCommunities().contains(WellKnownCommunity.NO_ADVERTISE)) {
+          if (bgpRoute.getCommunities().contains(WellKnownCommunity.NO_ADVERTISE)) {
             // don't advertise this route
             continue;
           }
