@@ -1134,6 +1134,7 @@ import org.batfish.representation.cisco.TcpServiceObjectGroupLine;
 import org.batfish.representation.cisco.Tunnel;
 import org.batfish.representation.cisco.Tunnel.TunnelMode;
 import org.batfish.representation.cisco.UdpServiceObjectGroupLine;
+import org.batfish.representation.cisco.UnimplementedAccessListServiceSpecifier;
 import org.batfish.representation.cisco.Vrf;
 import org.batfish.representation.cisco.VrrpGroup;
 import org.batfish.representation.cisco.VrrpInterface;
@@ -4700,7 +4701,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           tcpFlags.add(alt);
         }
         if (feature.FRAGMENTS() != null) {
-          todo(ctx, F_FRAGMENTS);
+          _w.unimplemented("matching fragments in extended access list: " + getFullText(ctx));
+          return UnimplementedAccessListServiceSpecifier.INSTANCE;
         }
         if (feature.HOST_UNKNOWN() != null) {
           icmpType = IcmpType.DESTINATION_UNREACHABLE;
@@ -4758,7 +4760,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           icmpType = IcmpType.TIME_EXCEEDED;
         }
         if (feature.TTL() != null) {
-          todo(ctx, F_TTL);
+          _w.unimplemented("matching ttl in extended access list: " + getFullText(ctx));
+          return UnimplementedAccessListServiceSpecifier.INSTANCE;
         }
         if (feature.TTL_EXCEEDED() != null) {
           icmpType = IcmpType.TIME_EXCEEDED;
@@ -4803,7 +4806,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           line);
       return new ProtocolOrServiceObjectGroupServiceSpecifier(name);
     } else {
-      throw convError(AccessListServiceSpecifier.class, ctx);
+      return convProblem(
+          AccessListServiceSpecifier.class, ctx, UnimplementedAccessListServiceSpecifier.INSTANCE);
     }
   }
 
