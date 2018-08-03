@@ -4,7 +4,7 @@
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 213
+      "numResults" : 215
     },
     "undefinedReferences" : {
       "configs/arista_bgp" : {
@@ -765,6 +765,20 @@
           "to-VTY" : {
             "snmp server community ipv6 acl" : [
               16
+            ]
+          }
+        }
+      },
+      "configs/cisco_track" : {
+        "interface" : {
+          "GigabitEthernet0/0" : {
+            "track interface" : [
+              4
+            ]
+          },
+          "GigabitEthernet0/1" : {
+            "track interface" : [
+              5
             ]
           }
         }

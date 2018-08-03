@@ -3286,7 +3286,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.BGP_UPDATE_SOURCE_INTERFACE,
         CiscoStructureUsage.INTERFACE_SELF_REF,
         CiscoStructureUsage.SERVICE_POLICY_INTERFACE,
-        CiscoStructureUsage.ROUTER_VRRP_INTERFACE);
+        CiscoStructureUsage.ROUTER_VRRP_INTERFACE,
+        CiscoStructureUsage.TRACK_INTERFACE);
 
     // mark references to ACLs that may not appear in data model
     markIpOrMacAcls(

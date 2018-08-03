@@ -166,6 +166,7 @@ public enum CiscoStructureUsage implements StructureUsage {
   SSH_ACL("ssh acl"),
   SSH_IPV4_ACL("ssh ipv4 access-list"),
   SSH_IPV6_ACL("ssh ipv6 access-list"),
+  TRACK_INTERFACE("track interface"),
   TUNNEL_PROTECTION_IPSEC_PROFILE("interface TunnelX tunnel protection ipsec profile"),
   TUNNEL_SOURCE("tunnel source"),
   WCCP_GROUP_LIST("ip wccp group-list"),

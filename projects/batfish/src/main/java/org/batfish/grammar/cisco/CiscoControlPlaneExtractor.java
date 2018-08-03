@@ -207,6 +207,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.SNMP_SERVER_F
 import static org.batfish.representation.cisco.CiscoStructureUsage.SNMP_SERVER_TFTP_SERVER_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.SSH_IPV4_ACL;
 import static org.batfish.representation.cisco.CiscoStructureUsage.SSH_IPV6_ACL;
+import static org.batfish.representation.cisco.CiscoStructureUsage.TRACK_INTERFACE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.TUNNEL_PROTECTION_IPSEC_PROFILE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.TUNNEL_SOURCE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.WCCP_GROUP_LIST;
@@ -3862,6 +3863,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitTrack_interface(Track_interfaceContext ctx) {
     String name = toInterfaceName(ctx.interface_name());
+    _configuration.referenceStructure(
+        INTERFACE, name, TRACK_INTERFACE, ctx.interface_name().getStart().getLine());
     _configuration.getTrackingGroups().put(_currentTrackingGroup, new TrackInterface(name));
   }
 

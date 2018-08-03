@@ -60645,6 +60645,20 @@
             }
           }
         },
+        "configs/cisco_track" : {
+          "interface" : {
+            "GigabitEthernet0/0" : {
+              "track interface" : [
+                4
+              ]
+            },
+            "GigabitEthernet0/1" : {
+              "track interface" : [
+                5
+              ]
+            }
+          }
+        },
         "configs/cisco_vrrp" : {
           "interface" : {
             "GigabitEthernet0/0/0/19" : {
