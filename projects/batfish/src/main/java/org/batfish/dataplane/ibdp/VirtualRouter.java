@@ -41,6 +41,7 @@ import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
+import org.batfish.common.WellKnownCommunity;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpActivePeerConfig;
@@ -1592,6 +1593,12 @@ public class VirtualRouter implements Serializable {
          */
         if (routeIsBgp) {
           BgpRoute bgpRoute = (BgpRoute) route;
+
+          if(bgpRoute.getCommunities().contains(WellKnownCommunity.NO_ADVERTISE)) {
+            // don't advertise this route
+            continue;
+          }
+
           transformedOutgoingRouteBuilder.setOriginType(bgpRoute.getOriginType());
           if (ebgpSession
               && bgpRoute.getAsPath().containsAs(neighbor.getRemoteAs())
