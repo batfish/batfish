@@ -3487,7 +3487,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OR_SERVICE_OBJECT_GROUP,
         ImmutableList.of(
             CiscoStructureType.PROTOCOL_OBJECT_GROUP, CiscoStructureType.SERVICE_OBJECT_GROUP));
-    
+
     // objects
     markConcreteStructure(
         CiscoStructureType.NETWORK_OBJECT, CiscoStructureUsage.NETWORK_OBJECT_GROUP_NETWORK_OBJECT);
