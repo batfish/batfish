@@ -4,6 +4,8 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import java.util.regex.Pattern;
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.questions.InterfacesSpecifier.Type;
@@ -54,6 +56,16 @@ public class InterfacesSpecifierTest {
 
     assertThat(specifier.matches(secretInterface), equalTo(true));
     assertThat(specifier.matches(nonSecretInterface), equalTo(false));
+  }
+
+  @Test
+  public void matchesType() {
+    InterfacesSpecifier specifier = new InterfacesSpecifier("type:physical");
+    Configuration c = new Configuration("c", ConfigurationFormat.CISCO_IOS);
+    Interface ifaceLoopback = Interface.builder().setName("Loopback0").setOwner(c).build();
+    Interface ifacePhysical = Interface.builder().setName("GigabitEthernet0").setOwner(c).build();
+    assertThat(specifier.matches(ifaceLoopback), equalTo(false));
+    assertThat(specifier.matches(ifacePhysical), equalTo(true));
   }
 
   @Test
