@@ -11,6 +11,7 @@ import static org.batfish.datamodel.ConfigurationFormat.CISCO_NX;
 import static org.batfish.representation.cisco.CiscoStructureType.ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureType.AS_PATH_ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureType.AS_PATH_SET;
+import static org.batfish.representation.cisco.CiscoStructureType.BFD_TEMPLATE;
 import static org.batfish.representation.cisco.CiscoStructureType.BGP_TEMPLATE_PEER;
 import static org.batfish.representation.cisco.CiscoStructureType.BGP_TEMPLATE_PEER_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureType.BGP_TEMPLATE_PEER_SESSION;
@@ -129,6 +130,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCE
 import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OR_SERVICE_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INSPECT_CLASS_MAP_MATCH_ACCESS_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INSPECT_POLICY_MAP_INSPECT_CLASS;
+import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_BFD_TEMPLATE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_IGMP_ACCESS_GROUP_ACL;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_IGMP_STATIC_GROUP_ACL;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_INCOMING_FILTER;
@@ -514,6 +516,7 @@ import org.batfish.grammar.cisco.CiscoParser.Hash_commentContext;
 import org.batfish.grammar.cisco.CiscoParser.Icmp_object_typeContext;
 import org.batfish.grammar.cisco.CiscoParser.If_autostateContext;
 import org.batfish.grammar.cisco.CiscoParser.If_bandwidthContext;
+import org.batfish.grammar.cisco.CiscoParser.If_bfd_templateContext;
 import org.batfish.grammar.cisco.CiscoParser.If_channel_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.If_crypto_mapContext;
 import org.batfish.grammar.cisco.CiscoParser.If_delayContext;
@@ -845,6 +848,7 @@ import org.batfish.grammar.cisco.CiscoParser.Rs_routeContext;
 import org.batfish.grammar.cisco.CiscoParser.Rs_vrfContext;
 import org.batfish.grammar.cisco.CiscoParser.S_aaaContext;
 import org.batfish.grammar.cisco.CiscoParser.S_access_lineContext;
+import org.batfish.grammar.cisco.CiscoParser.S_bfd_templateContext;
 import org.batfish.grammar.cisco.CiscoParser.S_cableContext;
 import org.batfish.grammar.cisco.CiscoParser.S_class_mapContext;
 import org.batfish.grammar.cisco.CiscoParser.S_depi_classContext;
@@ -3388,6 +3392,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void enterS_bfd_template(S_bfd_templateContext ctx) {
+    defineStructure(BFD_TEMPLATE, ctx.name.getText(), ctx);
+  }
+
+  @Override
   public void enterS_cable(S_cableContext ctx) {
     if (_configuration.getCf().getCable() == null) {
       _configuration.getCf().setCable(new Cable());
@@ -5088,6 +5097,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       newBandwidthBps = toLong(ctx.DEC()) * 1000.0D;
     }
     _currentInterfaces.forEach(i -> i.setBandwidth(newBandwidthBps));
+  }
+
+  @Override
+  public void exitIf_bfd_template(If_bfd_templateContext ctx) {
+    _configuration.referenceStructure(
+        BFD_TEMPLATE, ctx.name.getText(), INTERFACE_BFD_TEMPLATE, ctx.name.getStart().getLine());
   }
 
   @Override

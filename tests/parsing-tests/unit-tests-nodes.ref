@@ -12217,6 +12217,26 @@
           }
         }
       },
+      "ios_bfd" : {
+        "configurationFormat" : "CISCO_IOS",
+        "name" : "ios_bfd",
+        "defaultCrossZoneAction" : "ACCEPT",
+        "defaultInboundAction" : "ACCEPT",
+        "deviceType" : "SWITCH",
+        "vendorFamily" : {
+          "cisco" : {
+            "hostname" : "ios_bfd",
+            "logging" : {
+              "on" : true
+            }
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default"
+          }
+        }
+      },
       "ios_bgp" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "ios_bgp",

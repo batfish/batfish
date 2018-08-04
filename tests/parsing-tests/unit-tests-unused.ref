@@ -4,7 +4,7 @@
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 185
+      "numResults" : 186
     },
     "unusedStructures" : {
       "configs/arista_acl" : {
@@ -697,6 +697,15 @@
             19,
             20,
             21
+          ]
+        }
+      },
+      "configs/ios_bfd" : {
+        "bfd-template" : {
+          "GRE" : [
+            4,
+            5,
+            6
           ]
         }
       },
