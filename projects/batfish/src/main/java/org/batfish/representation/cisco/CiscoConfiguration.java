@@ -2103,7 +2103,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       boolean passive = eigrpProcess.getPassiveInterfaceDefault();
       passive =
           eigrpProcess
-              .getPassiveList()
+              .getInterfacePassiveStatus()
               .entrySet()
               .stream()
               .filter(entry -> entry.getKey().equals(iface.getName()))

@@ -20,11 +20,11 @@ public class EigrpProcess implements Serializable {
 
   private static final String DEFAULT_ADDRESS_FAMILY = "ipv4-unicast";
   private static final long serialVersionUID = 1L;
+  private final Map<String, Boolean> _interfacePassiveStatus;
   private final EigrpProcessMode _mode;
   private final Set<IpWildcard> _wildcardNetworks;
   private final Set<Prefix> _networks;
   private final Map<RoutingProtocol, EigrpRedistributionPolicy> _redistributionPolicies;
-  private final Map<String, Boolean> _passiveList;
   private String _addressFamily;
   private @Nullable Long _asn;
   private boolean _autoSummary;
@@ -36,11 +36,11 @@ public class EigrpProcess implements Serializable {
     _asn = asn;
     _addressFamily = DEFAULT_ADDRESS_FAMILY;
     _autoSummary = false;
+    _interfacePassiveStatus = new TreeMap<>();
     _mode = mode;
     _networks = new TreeSet<>();
     _redistributionPolicies = new EnumMap<>(RoutingProtocol.class);
     _wildcardNetworks = new TreeSet<>();
-    _passiveList = new TreeMap<>();
   }
 
   public void computeNetworks(Collection<Interface> interfaces) {
@@ -101,6 +101,10 @@ public class EigrpProcess implements Serializable {
     _defaultMetric = metric;
   }
 
+  public Map<String, Boolean> getInterfacePassiveStatus() {
+    return _interfacePassiveStatus;
+  }
+
   public EigrpProcessMode getMode() {
     return _mode;
   }
@@ -115,10 +119,6 @@ public class EigrpProcess implements Serializable {
 
   public void setPassiveInterfaceDefault(boolean passiveInterfaceDefault) {
     _passiveInterfaceDefault = passiveInterfaceDefault;
-  }
-
-  public Map<String, Boolean> getPassiveList() {
-    return _passiveList;
   }
 
   public Map<RoutingProtocol, EigrpRedistributionPolicy> getRedistributionPolicies() {
