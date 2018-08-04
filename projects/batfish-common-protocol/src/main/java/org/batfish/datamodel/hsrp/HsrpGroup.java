@@ -207,13 +207,13 @@ public final class HsrpGroup implements Serializable {
 
   /** The shared number identifying the HSRP group in which this interface is a participant */
   @JsonProperty(PROP_GROUP_NUMBER)
-  public @Nonnull Integer getGroupNumber() {
+  public int getGroupNumber() {
     return _groupNumber;
   }
 
   /** The interval in milliseconds between hello messages */
   @JsonProperty(PROP_HELLO_TIME)
-  public @Nonnull Integer getHelloTime() {
+  public int getHelloTime() {
     return _helloTime;
   }
 
@@ -222,7 +222,7 @@ public final class HsrpGroup implements Serializable {
    * assumed to be down
    */
   @JsonProperty(PROP_HOLD_TIME)
-  public @Nonnull Integer getHoldTime() {
+  public int getHoldTime() {
     return _holdTime;
   }
 
@@ -234,13 +234,13 @@ public final class HsrpGroup implements Serializable {
 
   /** Whether this router should preempt the active router when its priority is higher */
   @JsonProperty(PROP_PREEMPT)
-  public @Nonnull Boolean getPreempt() {
+  public boolean getPreempt() {
     return _preempt;
   }
 
   /** The priority when electing the active HSRP router. Higher is more preferred. */
   @JsonProperty(PROP_PRIORITY)
-  public @Nonnull Integer getPriority() {
+  public int getPriority() {
     return _priority;
   }
 
