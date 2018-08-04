@@ -25,6 +25,11 @@ if_bandwidth
    NO? BANDWIDTH DEC KBPS? NEWLINE
 ;
 
+if_bfd_template
+:
+  BFD TEMPLATE name = variable_permissive NEWLINE
+;
+
 if_channel_group
 :
    CHANNEL_GROUP num = DEC
@@ -472,7 +477,6 @@ if_null_block
       | BANDWIDTH INHERIT
       | BANDWIDTH PERCENT_LITERAL
       | BEACON
-      | BFD
       | BGP_POLICY
       | BRIDGE_GROUP
       | BUNDLE
@@ -845,6 +849,7 @@ if_null_single
   NO?
   (
     BCMC_OPTIMIZATION
+    | (BFD INTERVAL)
     | DOT1X
     | IP TRAFFIC_EXPORT
     | JUMBO
@@ -1356,6 +1361,7 @@ if_inner
 :
    if_autostate
    | if_bandwidth
+   | if_bfd_template
    | if_channel_group
    | if_crypto_map
    | if_default_gw
