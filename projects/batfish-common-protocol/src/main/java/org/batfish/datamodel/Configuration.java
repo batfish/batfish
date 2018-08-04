@@ -619,7 +619,7 @@ public final class Configuration implements Serializable {
     return _routingPolicies;
   }
 
-  private SortedSet<String> getRoutingPolicySources(String routingPolicyName) {
+  private SortedSet<String> getRoutingPolicySources(@Nullable String routingPolicyName) {
     if (routingPolicyName == null) {
       return Collections.emptySortedSet();
     }
