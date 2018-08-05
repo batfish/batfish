@@ -1,6 +1,5 @@
 package org.batfish.datamodel;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Predicates.not;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -288,8 +287,7 @@ public final class Configuration implements Serializable {
   }
 
   public Configuration(String hostname, @Nonnull ConfigurationFormat configurationFormat) {
-    checkArgument(hostname != null, "Cannot instantiate a Configuration with null hostname");
-    _name = hostname.toLowerCase(); // normalize the name to lower case
+    _name = hostname;
     _asPathAccessLists = new TreeMap<>();
     _authenticationKeyChains = new TreeMap<>();
     _communityLists = new TreeMap<>();

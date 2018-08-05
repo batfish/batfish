@@ -1,5 +1,6 @@
 package org.batfish.representation.palo_alto;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 
 import com.google.common.collect.ImmutableList;
@@ -118,6 +119,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
   @Override
   public void setHostname(String hostname) {
+    checkNotNull(hostname, "'hostname' cannot be null");
     _hostname = hostname;
   }
 

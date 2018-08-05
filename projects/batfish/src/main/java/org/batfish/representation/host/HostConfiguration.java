@@ -1,5 +1,7 @@
 package org.batfish.representation.host;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.IOException;
@@ -137,6 +139,7 @@ public class HostConfiguration extends VendorConfiguration {
 
   @Override
   public void setHostname(String hostname) {
+    checkNotNull(hostname, "'hostname' cannot be null");
     _hostname = hostname;
   }
 
