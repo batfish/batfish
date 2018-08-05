@@ -2,6 +2,7 @@ package org.batfish.datamodel.questions;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import java.util.regex.Pattern;
 import org.batfish.datamodel.Configuration;
@@ -32,6 +33,22 @@ public class InterfacesSpecifierTest {
     InterfacesSpecifier specifier = new InterfacesSpecifier("desc:secret.*");
     assertThat(specifier.getType(), equalTo(Type.DESC));
     assertThat(specifier.getRegex().pattern(), equalTo(Pattern.compile("secret.*").pattern()));
+  }
+
+  @Test
+  public void matchesCaseInsensitive() {
+    Interface iface =
+        Interface.builder()
+            .setName("Loopback0")
+            .setOwner(new Configuration("c", ConfigurationFormat.CISCO_IOS))
+            .setVrf(new Vrf("vrfA"))
+            .build();
+    iface.setDescription("secrets are never secrets for long");
+
+    assertTrue(new InterfacesSpecifier("name:LoopBAck.*").matches(iface));
+    assertTrue(new InterfacesSpecifier("desc:SECrets.*").matches(iface));
+    assertTrue(new InterfacesSpecifier("type:Loopback").matches(iface));
+    assertTrue(new InterfacesSpecifier("vrf:vrfa").matches(iface));
   }
 
   @Test
