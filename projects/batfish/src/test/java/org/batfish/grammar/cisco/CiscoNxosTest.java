@@ -38,7 +38,7 @@ public class CiscoNxosTest {
 
   private Configuration parseConfig(String hostname) {
     try {
-      return parseTextConfigs(hostname).get(hostname);
+      return parseTextConfigs(hostname).get(hostname.toLowerCase());
     } catch (IOException e) {
       throw new AssertionError("Failed to parse config " + hostname, e);
     }

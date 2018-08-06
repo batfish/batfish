@@ -2090,13 +2090,11 @@ public class WorkMgrService {
   }
 
   /**
-   * Upload a new question in the specified network and asks it in the specified snapshot. A file
-   * containing the question and a file containing the parameters must be provided.
+   * Upload a new question in the specified network.
    *
    * @param apiKey The API key of the client
    * @param clientVersion The version of the client
    * @param networkName The name of the network into which to put the question
-   * @param snapshotName The name of the snapshot about which to ask the question
    * @param qName The name of the question
    * @param questionJson The JSON form of the question
    * @return TODO: document JSON response
@@ -2110,15 +2108,11 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
       @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName,
       @FormDataParam(CoordConsts.SVC_KEY_NETWORK_NAME) String networkName,
-      @FormDataParam(CoordConsts.SVC_KEY_TESTRIG_NAME) String testrigName,
-      @FormDataParam(CoordConsts.SVC_KEY_SNAPSHOT_NAME) String snapshotName,
       @FormDataParam(CoordConsts.SVC_KEY_QUESTION_NAME) String qName,
       @FormDataParam(CoordConsts.SVC_KEY_FILE) String questionJson) {
     String networkNameParam = networkName == null ? containerName : networkName;
-    String snapshotNameParam = snapshotName == null ? testrigName : snapshotName;
     try {
-      _logger.infof(
-          "WMS:uploadQuestion %s %s %s/%s\n", apiKey, networkNameParam, snapshotNameParam, qName);
+      _logger.infof("WMS:uploadQuestion %s %s/%s\n", apiKey, networkNameParam, qName);
 
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");

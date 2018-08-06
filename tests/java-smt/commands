@@ -8,24 +8,24 @@ add-batfish-option initinfo false
 # all tests with BGP only
 init-snapshot test_rigs/smt-examples/BGP1 tr-smt-bgp1
 test tests/java-smt/bgp1-forwarding.ref get smt-forwarding dstIps=["42.42.42.0"], fullModel=True
-test tests/java-smt/bgp1-reachability.ref get smt-reachability finalNodeRegex="R1", finalIfaceRegex="Loopback.*", fullModel=True
-test tests/java-smt/bgp1-reachability-negate.ref get smt-reachability finalNodeRegex="R1", finalIfaceRegex="Loopback.*", negate=True
-test tests/java-smt/bgp1-bounded-len.ref get smt-bounded-length finalNodeRegex="R1", dstIps=[42.42.42.1], finalIfaceRegex="Loopback.*", bound=1, fullModel=True
-test tests/java-smt/bgp1-bounded-len-negate.ref get smt-bounded-length finalNodeRegex="R1", dstIps=[42.42.42.0], finalIfaceRegex="Loopback.*", bound=1, negate=True
-test tests/java-smt/bgp1-bounded-len2.ref get smt-bounded-length finalNodeRegex="R1", dstIps=[42.42.42.1], finalIfaceRegex="Loopback.*", bound=0, fullModel=True
+test tests/java-smt/bgp1-reachability.ref get smt-reachability finalNodeRegex="r1", finalIfaceRegex="Loopback.*", fullModel=True
+test tests/java-smt/bgp1-reachability-negate.ref get smt-reachability finalNodeRegex="r1", finalIfaceRegex="Loopback.*", negate=True
+test tests/java-smt/bgp1-bounded-len.ref get smt-bounded-length finalNodeRegex="r1", dstIps=[42.42.42.1], finalIfaceRegex="Loopback.*", bound=1, fullModel=True
+test tests/java-smt/bgp1-bounded-len-negate.ref get smt-bounded-length finalNodeRegex="r1", dstIps=[42.42.42.0], finalIfaceRegex="Loopback.*", bound=1, negate=True
+test tests/java-smt/bgp1-bounded-len2.ref get smt-bounded-length finalNodeRegex="r1", dstIps=[42.42.42.1], finalIfaceRegex="Loopback.*", bound=0, fullModel=True
 test tests/java-smt/bgp1-routing-loop.ref get smt-routing-loop fullModel=True
-test tests/java-smt/bgp1-multipath.ref get smt-multipath-consistency finalNodeRegex="R1", finalIfaceRegex="Loopback.*", fullModel=True
+test tests/java-smt/bgp1-multipath.ref get smt-multipath-consistency finalNodeRegex="r1", finalIfaceRegex="Loopback.*", fullModel=True
 
 # all tests with ospf only
 init-snapshot test_rigs/smt-examples/OSPF3 tr-smt-ospf3
 test tests/java-smt/ospf3-forward.ref get smt-forwarding dstIps=["70.70.70.70"], fullModel=True
-test tests/java-smt/ospf3-reachable.ref get smt-reachability finalNodeRegex="R3", finalIfaceRegex="Loopback.*", fullModel=True
-test tests/java-smt/ospf3-bounded-len.ref get smt-bounded-length finalNodeRegex="R3", finalIfaceRegex="Loopback.*", bound=2, fullModel=True
-test tests/java-smt/ospf3-bounded-len2.ref get smt-bounded-length finalNodeRegex="R3", finalIfaceRegex="Loopback.*", bound=1, fullModel=True
-test tests/java-smt/ospf3-equal-len.ref get smt-equal-length finalNodeRegex="R3", finalIfaceRegex="Loopback.*", ingressNodeRegex="R(1|2)", fullModel=True
-test tests/java-smt/ospf3-equal-len2.ref get smt-equal-length finalNodeRegex="R3", finalIfaceRegex="Loopback.*", ingressNodeRegex="R(1|0)", fullModel=True
+test tests/java-smt/ospf3-reachable.ref get smt-reachability finalNodeRegex="r3", finalIfaceRegex="Loopback.*", fullModel=True
+test tests/java-smt/ospf3-bounded-len.ref get smt-bounded-length finalNodeRegex="r3", finalIfaceRegex="Loopback.*", bound=2, fullModel=True
+test tests/java-smt/ospf3-bounded-len2.ref get smt-bounded-length finalNodeRegex="r3", finalIfaceRegex="Loopback.*", bound=1, fullModel=True
+test tests/java-smt/ospf3-equal-len.ref get smt-equal-length finalNodeRegex="r3", finalIfaceRegex="Loopback.*", ingressNodeRegex="r(1|2)", fullModel=True
+test tests/java-smt/ospf3-equal-len2.ref get smt-equal-length finalNodeRegex="r3", finalIfaceRegex="Loopback.*", ingressNodeRegex="r(1|0)", fullModel=True
 test tests/java-smt/ospf3-routing-loop.ref get smt-routing-loop fullModel=True
-test tests/java-smt/ospf3-multipath.ref get smt-multipath-consistency finalNodeRegex="R3", finalIfaceRegex="Loopback.*", fullModel=True
+test tests/java-smt/ospf3-multipath.ref get smt-multipath-consistency finalNodeRegex="r3", finalIfaceRegex="Loopback.*", fullModel=True
 test tests/java-smt/ospf3-deterministic.ref get smt-deterministic
 
 # ospf with different costs along different edges
@@ -100,9 +100,9 @@ test tests/java-smt/env3-local.ref get smt-local-consistency fullModel=True, min
 # Ensure ACLs are applied to data forwarding
 init-snapshot test_rigs/smt-examples/ACL1 tr-smt-acl1
 test tests/java-smt/acl1-forwarding.ref get smt-forwarding dstIps=["70.70.70.70"], fullModel=True
-test tests/java-smt/acl1-multipath.ref get smt-multipath-consistency dstIps=[70.70.70.70], finalNodeRegex="R3", finalIfaceRegex="Loopback.*", fullModel=True
-test tests/java-smt/acl1-differential1.ref get smt-reachability diffType=any, failures=1, failNode1Regex="R2", failNode2Regex="R3"
-test tests/java-smt/acl1-differential2.ref get smt-reachability diffType=reduced, failures=1, failNode1Regex="R0", failNode2Regex="R1"
+test tests/java-smt/acl1-multipath.ref get smt-multipath-consistency dstIps=[70.70.70.70], finalNodeRegex="r3", finalIfaceRegex="Loopback.*", fullModel=True
+test tests/java-smt/acl1-differential1.ref get smt-reachability diffType=any, failures=1, failNode1Regex="r2", failNode2Regex="r3"
+test tests/java-smt/acl1-differential2.ref get smt-reachability diffType=reduced, failures=1, failNode1Regex="r0", failNode2Regex="r1"
 test tests/java-smt/acl1-differential3.ref get smt-reachability dstIps=[70.70.70.70], diffType=increased, failures=1
 
 # Check correctness of iBGP encoding
@@ -133,8 +133,8 @@ test tests/java-smt/compressed-reachability1.ref get reachability ingressNodeReg
 
 # Test differential reachabililty 
 init-snapshot test_rigs/smt-examples/OSPF5 tr-smt-ospf5
-test tests/java-smt/differential1.ref get smt-reachability finalNodeRegex="R3", finalIfaceRegex="Loopback.*", failures=1, diffType=any, dstIps=["70.70.70.70"]
-test tests/java-smt/differential2.ref get smt-reachability finalNodeRegex="R3", finalIfaceRegex="Loopback.*", failures=2, diffType=any, ingressNodeRegex="R0", failNode1Regex="R0", dstIps=["70.70.70.70"]
+test tests/java-smt/differential1.ref get smt-reachability finalNodeRegex="r3", finalIfaceRegex="Loopback.*", failures=1, diffType=any, dstIps=["70.70.70.70"]
+test tests/java-smt/differential2.ref get smt-reachability finalNodeRegex="r3", finalIfaceRegex="Loopback.*", failures=2, diffType=any, ingressNodeRegex="r0", failNode1Regex="r0", dstIps=["70.70.70.70"]
 
 # Put everything together in example network
 #init-snapshot test_rigs/example tr-smt-example

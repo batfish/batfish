@@ -34,7 +34,7 @@ public class CiscoAclTest {
 
   private Configuration parseConfig(String hostname) throws IOException {
     String[] names = new String[] {TESTCONFIGS_PREFIX + hostname};
-    return BatfishTestUtils.parseTextConfigs(_folder, names).get(hostname);
+    return BatfishTestUtils.parseTextConfigs(_folder, names).get(hostname.toLowerCase());
   }
 
   @Test

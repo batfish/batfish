@@ -71,8 +71,8 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
           iptablesConfig.applyAsOverlay(configuration, warnings);
         }
 
-        configurations.put(_name, configuration);
-        warningsByHost.put(_name, warnings);
+        configurations.put(configuration.getHostname(), configuration);
+        warningsByHost.put(configuration.getHostname(), warnings);
       } else {
         configurations =
             ((AwsConfiguration) _configObject).toConfigurations(_settings, warningsByHost);

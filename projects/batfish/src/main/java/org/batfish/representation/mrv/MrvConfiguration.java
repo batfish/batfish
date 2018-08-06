@@ -1,5 +1,7 @@
 package org.batfish.representation.mrv;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.Set;
 import org.batfish.common.VendorConversionException;
 import org.batfish.datamodel.Configuration;
@@ -35,7 +37,8 @@ public class MrvConfiguration extends VendorConfiguration {
 
   @Override
   public void setHostname(String hostname) {
-    _hostname = hostname;
+    checkNotNull(hostname, "'hostname' cannot be null");
+    _hostname = hostname.toLowerCase();
   }
 
   @Override

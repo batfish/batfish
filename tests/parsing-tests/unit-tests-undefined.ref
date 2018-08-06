@@ -4,7 +4,7 @@
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 212
+      "numResults" : 215
     },
     "undefinedReferences" : {
       "configs/arista_bgp" : {
@@ -769,6 +769,20 @@
           }
         }
       },
+      "configs/cisco_track" : {
+        "interface" : {
+          "GigabitEthernet0/0" : {
+            "track interface" : [
+              4
+            ]
+          },
+          "GigabitEthernet0/1" : {
+            "track interface" : [
+              5
+            ]
+          }
+        }
+      },
       "configs/cisco_vrrp" : {
         "interface" : {
           "GigabitEthernet0/0/0/19" : {
@@ -857,6 +871,15 @@
           "FOOBAR" : {
             "interface service-policy type control subscriber" : [
               5
+            ]
+          }
+        }
+      },
+      "configs/ios_standby" : {
+        "track" : {
+          "1" : {
+            "interface standby track" : [
+              12
             ]
           }
         }

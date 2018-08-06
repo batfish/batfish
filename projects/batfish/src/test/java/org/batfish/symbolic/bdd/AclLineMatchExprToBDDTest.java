@@ -172,6 +172,16 @@ public class AclLineMatchExprToBDDTest {
   }
 
   @Test
+  public void testMatchHeaderSpace_icmpType() {
+    HeaderSpace headerSpace =
+        HeaderSpace.builder().setIcmpTypes(ImmutableList.of(new SubRange(8, 8))).build();
+    AclLineMatchExpr matchExpr = new MatchHeaderSpace(headerSpace);
+    BDD matchExprBDD = _toBDD.visit(matchExpr);
+    BDD icmpTypeBDD = _pkt.getIcmpType().value(8);
+    assertThat(matchExprBDD, equalTo(icmpTypeBDD));
+  }
+
+  @Test
   public void testMatchHeaderSpace_state() {
     HeaderSpace headerSpace =
         HeaderSpace.builder()

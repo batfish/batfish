@@ -11,6 +11,7 @@ import static org.batfish.datamodel.ConfigurationFormat.CISCO_NX;
 import static org.batfish.representation.cisco.CiscoStructureType.ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureType.AS_PATH_ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureType.AS_PATH_SET;
+import static org.batfish.representation.cisco.CiscoStructureType.BFD_TEMPLATE;
 import static org.batfish.representation.cisco.CiscoStructureType.BGP_TEMPLATE_PEER;
 import static org.batfish.representation.cisco.CiscoStructureType.BGP_TEMPLATE_PEER_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureType.BGP_TEMPLATE_PEER_SESSION;
@@ -57,6 +58,7 @@ import static org.batfish.representation.cisco.CiscoStructureType.SECURITY_ZONE;
 import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_CLASS;
 import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_TEMPLATE;
+import static org.batfish.representation.cisco.CiscoStructureType.TRACK;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_ADDITIONAL_PATHS_SELECTION_ROUTE_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_ADVERTISE_MAP_EXIST_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_AGGREGATE_ATTRIBUTE_MAP;
@@ -129,6 +131,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCE
 import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OR_SERVICE_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INSPECT_CLASS_MAP_MATCH_ACCESS_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INSPECT_POLICY_MAP_INSPECT_CLASS;
+import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_BFD_TEMPLATE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_IGMP_ACCESS_GROUP_ACL;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_IGMP_STATIC_GROUP_ACL;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_INCOMING_FILTER;
@@ -141,6 +144,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_POL
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_SELF_REF;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_SERVICE_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_SERVICE_POLICY_CONTROL_SUBSCRIBER;
+import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_STANDBY_TRACK;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_SUMMARY_ADDRESS_EIGRP_LEAK_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_ZONE_MEMBER;
 import static org.batfish.representation.cisco.CiscoStructureUsage.IPSEC_PROFILE_ISAKMP_PROFILE;
@@ -205,6 +209,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.SNMP_SERVER_F
 import static org.batfish.representation.cisco.CiscoStructureUsage.SNMP_SERVER_TFTP_SERVER_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.SSH_IPV4_ACL;
 import static org.batfish.representation.cisco.CiscoStructureUsage.SSH_IPV6_ACL;
+import static org.batfish.representation.cisco.CiscoStructureUsage.TRACK_INTERFACE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.TUNNEL_PROTECTION_IPSEC_PROFILE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.TUNNEL_SOURCE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.WCCP_GROUP_LIST;
@@ -336,6 +341,9 @@ import org.batfish.datamodel.routing_policy.expr.VarIsisLevel;
 import org.batfish.datamodel.routing_policy.expr.VarLong;
 import org.batfish.datamodel.routing_policy.expr.VarOrigin;
 import org.batfish.datamodel.routing_policy.expr.VarRouteType;
+import org.batfish.datamodel.tracking.DecrementPriority;
+import org.batfish.datamodel.tracking.TrackAction;
+import org.batfish.datamodel.tracking.TrackInterface;
 import org.batfish.datamodel.vendor_family.cisco.Aaa;
 import org.batfish.datamodel.vendor_family.cisco.AaaAccounting;
 import org.batfish.datamodel.vendor_family.cisco.AaaAccountingCommands;
@@ -514,6 +522,7 @@ import org.batfish.grammar.cisco.CiscoParser.Hash_commentContext;
 import org.batfish.grammar.cisco.CiscoParser.Icmp_object_typeContext;
 import org.batfish.grammar.cisco.CiscoParser.If_autostateContext;
 import org.batfish.grammar.cisco.CiscoParser.If_bandwidthContext;
+import org.batfish.grammar.cisco.CiscoParser.If_bfd_templateContext;
 import org.batfish.grammar.cisco.CiscoParser.If_channel_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.If_crypto_mapContext;
 import org.batfish.grammar.cisco.CiscoParser.If_delayContext;
@@ -552,6 +561,7 @@ import org.batfish.grammar.cisco.CiscoParser.If_spanning_treeContext;
 import org.batfish.grammar.cisco.CiscoParser.If_speed_eosContext;
 import org.batfish.grammar.cisco.CiscoParser.If_speed_iosContext;
 import org.batfish.grammar.cisco.CiscoParser.If_st_portfastContext;
+import org.batfish.grammar.cisco.CiscoParser.If_standbyContext;
 import org.batfish.grammar.cisco.CiscoParser.If_switchportContext;
 import org.batfish.grammar.cisco.CiscoParser.If_switchport_accessContext;
 import org.batfish.grammar.cisco.CiscoParser.If_switchport_modeContext;
@@ -847,6 +857,7 @@ import org.batfish.grammar.cisco.CiscoParser.Rs_routeContext;
 import org.batfish.grammar.cisco.CiscoParser.Rs_vrfContext;
 import org.batfish.grammar.cisco.CiscoParser.S_aaaContext;
 import org.batfish.grammar.cisco.CiscoParser.S_access_lineContext;
+import org.batfish.grammar.cisco.CiscoParser.S_bfd_templateContext;
 import org.batfish.grammar.cisco.CiscoParser.S_cableContext;
 import org.batfish.grammar.cisco.CiscoParser.S_class_mapContext;
 import org.batfish.grammar.cisco.CiscoParser.S_depi_classContext;
@@ -884,6 +895,7 @@ import org.batfish.grammar.cisco.CiscoParser.S_sntpContext;
 import org.batfish.grammar.cisco.CiscoParser.S_spanning_treeContext;
 import org.batfish.grammar.cisco.CiscoParser.S_switchportContext;
 import org.batfish.grammar.cisco.CiscoParser.S_tacacs_serverContext;
+import org.batfish.grammar.cisco.CiscoParser.S_trackContext;
 import org.batfish.grammar.cisco.CiscoParser.S_usernameContext;
 import org.batfish.grammar.cisco.CiscoParser.S_vrf_contextContext;
 import org.batfish.grammar.cisco.CiscoParser.S_vrf_definitionContext;
@@ -940,6 +952,14 @@ import org.batfish.grammar.cisco.CiscoParser.Standard_access_list_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Standard_access_list_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Standard_ipv6_access_list_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Standard_ipv6_access_list_tailContext;
+import org.batfish.grammar.cisco.CiscoParser.Standby_groupContext;
+import org.batfish.grammar.cisco.CiscoParser.Standby_group_authenticationContext;
+import org.batfish.grammar.cisco.CiscoParser.Standby_group_ipContext;
+import org.batfish.grammar.cisco.CiscoParser.Standby_group_preemptContext;
+import org.batfish.grammar.cisco.CiscoParser.Standby_group_priorityContext;
+import org.batfish.grammar.cisco.CiscoParser.Standby_group_timersContext;
+import org.batfish.grammar.cisco.CiscoParser.Standby_group_trackContext;
+import org.batfish.grammar.cisco.CiscoParser.Standby_versionContext;
 import org.batfish.grammar.cisco.CiscoParser.SubrangeContext;
 import org.batfish.grammar.cisco.CiscoParser.Summary_address_is_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Suppressed_iis_stanzaContext;
@@ -951,6 +971,8 @@ import org.batfish.grammar.cisco.CiscoParser.Template_peer_address_familyContext
 import org.batfish.grammar.cisco.CiscoParser.Template_peer_policy_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Template_peer_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Template_peer_session_rb_stanzaContext;
+import org.batfish.grammar.cisco.CiscoParser.Track_actionContext;
+import org.batfish.grammar.cisco.CiscoParser.Track_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Ts_hostContext;
 import org.batfish.grammar.cisco.CiscoParser.U_passwordContext;
 import org.batfish.grammar.cisco.CiscoParser.U_roleContext;
@@ -996,6 +1018,7 @@ import org.batfish.representation.cisco.ExtendedAccessList;
 import org.batfish.representation.cisco.ExtendedAccessListLine;
 import org.batfish.representation.cisco.ExtendedIpv6AccessList;
 import org.batfish.representation.cisco.ExtendedIpv6AccessListLine;
+import org.batfish.representation.cisco.HsrpGroup;
 import org.batfish.representation.cisco.IcmpServiceObjectGroupLine;
 import org.batfish.representation.cisco.InspectClassMap;
 import org.batfish.representation.cisco.InspectClassMapMatch;
@@ -1486,6 +1509,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private InspectPolicyMapInspectClass _currentInspectPolicyMapInspectClass;
 
   private SecurityZonePair _currentSecurityZonePair;
+
+  private Integer _currentHsrpGroup;
+
+  private String _currentTrackingGroup;
 
   public CiscoControlPlaneExtractor(
       String text,
@@ -2152,6 +2179,113 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void enterIf_spanning_tree(If_spanning_treeContext ctx) {
     _no = ctx.NO() != null;
+  }
+
+  @Override
+  public void enterIf_standby(If_standbyContext ctx) {
+    _no = ctx.NO() != null;
+  }
+
+  @Override
+  public void exitIf_standby(If_standbyContext ctx) {
+    _no = false;
+  }
+
+  @Override
+  public void enterStandby_group(Standby_groupContext ctx) {
+    int group = toInteger(ctx.group);
+    _currentHsrpGroup = group;
+    _currentInterfaces.forEach(i -> i.getHsrpGroups().computeIfAbsent(group, HsrpGroup::new));
+  }
+
+  @Override
+  public void exitStandby_group(Standby_groupContext ctx) {
+    _currentHsrpGroup = null;
+  }
+
+  @Override
+  public void exitStandby_version(Standby_versionContext ctx) {
+    if (!_no) {
+      _currentInterfaces.forEach(i -> i.setHsrpVersion(ctx.version.getText()));
+    } else {
+      _currentInterfaces.forEach(i -> i.setHsrpVersion(null));
+    }
+  }
+
+  @Override
+  public void exitStandby_group_authentication(Standby_group_authenticationContext ctx) {
+    String rawAuthenticationString = ctx.auth.getText();
+    _currentInterfaces.forEach(
+        i ->
+            i.getHsrpGroups()
+                .get(_currentHsrpGroup)
+                .setAuthentication(CommonUtil.sha256Digest(rawAuthenticationString)));
+  }
+
+  @Override
+  public void exitStandby_group_ip(Standby_group_ipContext ctx) {
+    Ip ip = toIp(ctx.ip);
+    _currentInterfaces.forEach(i -> i.getHsrpGroups().get(_currentHsrpGroup).setIp(ip));
+  }
+
+  @Override
+  public void exitStandby_group_preempt(Standby_group_preemptContext ctx) {
+    _currentInterfaces.forEach(i -> i.getHsrpGroups().get(_currentHsrpGroup).setPreempt(!_no));
+  }
+
+  @Override
+  public void exitStandby_group_priority(Standby_group_priorityContext ctx) {
+    int priority =
+        _no ? org.batfish.datamodel.hsrp.HsrpGroup.DEFAULT_PRIORITY : toInteger(ctx.priority);
+    _currentInterfaces.forEach(i -> i.getHsrpGroups().get(_currentHsrpGroup).setPriority(priority));
+  }
+
+  @Override
+  public void exitStandby_group_timers(Standby_group_timersContext ctx) {
+    int helloTime =
+        _no ? org.batfish.datamodel.hsrp.HsrpGroup.DEFAULT_HELLO_TIME : toInteger(ctx.hello_time);
+    int holdTime =
+        _no ? org.batfish.datamodel.hsrp.HsrpGroup.DEFAULT_HOLD_TIME : toInteger(ctx.hold_time);
+    _currentInterfaces.forEach(
+        i -> {
+          HsrpGroup hsrpGroup = i.getHsrpGroups().get(_currentHsrpGroup);
+          hsrpGroup.setHelloTime(helloTime);
+          hsrpGroup.setHoldTime(holdTime);
+        });
+  }
+
+  @Override
+  public void exitStandby_group_track(Standby_group_trackContext ctx) {
+    String trackingGroup = ctx.group.getText();
+    _configuration.referenceStructure(
+        TRACK, trackingGroup, INTERFACE_STANDBY_TRACK, ctx.group.getLine());
+    TrackAction trackAction = toTrackAction(ctx.track_action());
+    if (trackAction == null) {
+      return;
+    }
+    _currentInterfaces
+        .stream()
+        .map(i -> i.getHsrpGroups().get(_currentHsrpGroup).getTrackActions())
+        .forEach(
+            trackActions -> {
+              if (_no) {
+                // 'no' version of command only operates if rest of line matches existing setting
+                if (trackAction.equals(trackActions.get(trackingGroup))) {
+                  trackActions.remove(trackingGroup);
+                }
+              } else {
+                trackActions.put(trackingGroup, trackAction);
+              }
+            });
+  }
+
+  private @Nullable TrackAction toTrackAction(Track_actionContext ctx) {
+    if (ctx.track_action_decrement() != null) {
+      int subtrahend = toInteger(ctx.track_action_decrement().subtrahend);
+      return new DecrementPriority(subtrahend);
+    } else {
+      return convProblem(TrackAction.class, ctx, null);
+    }
   }
 
   @Override
@@ -3383,6 +3517,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void enterS_bfd_template(S_bfd_templateContext ctx) {
+    defineStructure(BFD_TEMPLATE, ctx.name.getText(), ctx);
+  }
+
+  @Override
   public void enterS_cable(S_cableContext ctx) {
     if (_configuration.getCf().getCable() == null) {
       _configuration.getCf().setCable(new Cable());
@@ -3711,6 +3850,26 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void enterS_tacacs_server(S_tacacs_serverContext ctx) {
     _no = ctx.NO() != null;
+  }
+
+  @Override
+  public void enterS_track(S_trackContext ctx) {
+    String name = ctx.name.getText();
+    _currentTrackingGroup = name;
+    defineStructure(TRACK, name, ctx);
+  }
+
+  @Override
+  public void exitS_track(S_trackContext ctx) {
+    _currentTrackingGroup = null;
+  }
+
+  @Override
+  public void exitTrack_interface(Track_interfaceContext ctx) {
+    String name = toInterfaceName(ctx.interface_name());
+    _configuration.referenceStructure(
+        INTERFACE, name, TRACK_INTERFACE, ctx.interface_name().getStart().getLine());
+    _configuration.getTrackingGroups().put(_currentTrackingGroup, new TrackInterface(name));
   }
 
   @Override
@@ -5083,6 +5242,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       newBandwidthBps = toLong(ctx.DEC()) * 1000.0D;
     }
     _currentInterfaces.forEach(i -> i.setBandwidth(newBandwidthBps));
+  }
+
+  @Override
+  public void exitIf_bfd_template(If_bfd_templateContext ctx) {
+    _configuration.referenceStructure(
+        BFD_TEMPLATE, ctx.name.getText(), INTERFACE_BFD_TEMPLATE, ctx.name.getStart().getLine());
   }
 
   @Override
