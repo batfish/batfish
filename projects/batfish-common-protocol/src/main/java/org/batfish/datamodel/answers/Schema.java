@@ -52,6 +52,7 @@ public class Schema {
           .put("Object", getClassString(Object.class))
           .put("Node", getClassString(Node.class))
           .put("Prefix", getClassString(Prefix.class))
+          .put("SelfDescribing", getClassString(SelfDescribingObject.class))
           .put("String", getClassString(String.class))
           .build();
 
@@ -70,6 +71,7 @@ public class Schema {
   public static final Schema OBJECT = new Schema("Object");
   public static final Schema NODE = new Schema("Node");
   public static final Schema PREFIX = new Schema("Prefix");
+  public static final Schema SELF_DESCRIBING = new Schema("SelfDescribing");
   public static final Schema STRING = new Schema("String");
 
   /** Generates a list Schema with the give base schema */
