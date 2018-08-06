@@ -1,6 +1,7 @@
 package org.batfish.representation.cisco;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.Objects.requireNonNull;
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import static org.batfish.common.util.CommonUtil.toImmutableMap;
 import static org.batfish.datamodel.Interface.UNSET_LOCAL_INTERFACE;
@@ -110,6 +111,7 @@ import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.eigrp.EigrpInterfaceSettings;
+import org.batfish.datamodel.eigrp.EigrpMetric;
 import org.batfish.datamodel.isis.IsisInterfaceLevelSettings;
 import org.batfish.datamodel.isis.IsisInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfArea;
@@ -2096,30 +2098,48 @@ public final class CiscoConfiguration extends VendorConfiguration {
       newIface.setOspfHelloMultiplier(iface.getOspfHelloMultiplier());
     }
 
-    EigrpProcess eigrpProcess = vrf.getEigrpProcess();
+    EigrpProcess eigrpProcess = null;
+    if (iface.getAddress() != null && vrf.getEigrpProcess() != null) {
+      for (Prefix prefix : vrf.getEigrpProcess().getNetworks()) {
+        if (prefix.equals(iface.getAddress().getPrefix())) {
+          eigrpProcess = vrf.getEigrpProcess();
+          break;
+        }
+      }
+    }
     // Let toEigrpProcess handle null asn failure
     if (eigrpProcess != null && eigrpProcess.getAsn() != null) {
-      /*
-       * Some settings are here, others are set later when the EigrpProcess sets this
-       * interface
-       */
-      boolean passive = eigrpProcess.getPassiveInterfaceDefault();
-      passive =
+      boolean passive =
           eigrpProcess
               .getInterfacePassiveStatus()
-              .entrySet()
-              .stream()
-              .filter(entry -> entry.getKey().equals(iface.getName()))
-              .map(Entry::getValue)
-              .findAny()
-              .orElse(passive);
+              .getOrDefault(iface.getName(), eigrpProcess.getPassiveInterfaceDefault());
+
+      // For bandwidth/delay, defaults are separate from actuals to inform metric calculations
+      EigrpMetric metric =
+          requireNonNull(
+              EigrpMetric.builder()
+                  .setBandwidth(iface.getBandwidth())
+                  .setMode(eigrpProcess.getMode())
+                  .setDefaultBandwidth(
+                      Interface.getDefaultBandwidth(iface.getName(), c.getConfigurationFormat()))
+                  .setDefaultDelay(
+                      Interface.getDefaultDelay(iface.getName(), c.getConfigurationFormat()))
+                  .setDelay(iface.getDelay())
+                  .build());
 
       newIface.setEigrp(
           EigrpInterfaceSettings.builder()
-              .setBandwidth(iface.getBandwidth())
-              .setDelay(iface.getDelay())
+              .setAsn(eigrpProcess.getAsn())
+              .setEnabled(true)
+              .setMetric(metric)
               .setPassive(passive)
               .build());
+    }
+    if (eigrpProcess == null && iface.getDelay() != null) {
+      _w.redFlag(
+          "Interface: '"
+              + iface.getName()
+              + "' contains EIGRP settings but is not part of an EIGRP process");
     }
 
     boolean level1 = false;

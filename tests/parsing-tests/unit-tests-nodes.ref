@@ -6161,10 +6161,6 @@
             "declaredNames" : [
               "Ethernet0"
             ],
-            "eigrp" : {
-              "enabled" : false,
-              "passive" : false
-            },
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,

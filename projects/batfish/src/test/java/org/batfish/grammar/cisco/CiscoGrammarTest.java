@@ -64,7 +64,7 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.hasZone;
 import static org.batfish.datamodel.matchers.DataModelMatchers.isIpSpaceReferenceThat;
 import static org.batfish.datamodel.matchers.DataModelMatchers.isPermittedByAclThat;
 import static org.batfish.datamodel.matchers.DataModelMatchers.permits;
-import static org.batfish.datamodel.matchers.EigrpInterfaceSettingsMatchers.hasDelay;
+import static org.batfish.datamodel.matchers.EigrpMetricMatchers.hasDelay;
 import static org.batfish.datamodel.matchers.EigrpRouteMatchers.hasEigrpMetric;
 import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasDstIps;
 import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasSrcIps;
@@ -939,9 +939,21 @@ public class CiscoGrammarTest {
   public void testIosInterfaceDelay() throws IOException {
     Configuration c = parseConfig("ios-interface-delay");
 
-    assertThat(c, hasInterface("GigabitEthernet0/0", hasEigrp(hasDelay(1E7))));
-    assertThat(c, hasInterface("GigabitEthernet0/1", hasEigrp(hasDelay(1E10))));
-    assertThat(c, hasInterface("FastEthernet0/1", hasEigrp(hasDelay(1E8))));
+    assertThat(
+        c,
+        hasInterface(
+            "GigabitEthernet0/0",
+            hasEigrp(EigrpInterfaceSettingsMatchers.hasEigrpMetric(hasDelay(1E7)))));
+    assertThat(
+        c,
+        hasInterface(
+            "GigabitEthernet0/1",
+            hasEigrp(EigrpInterfaceSettingsMatchers.hasEigrpMetric(hasDelay(1E10)))));
+    assertThat(
+        c,
+        hasInterface(
+            "FastEthernet0/1",
+            hasEigrp(EigrpInterfaceSettingsMatchers.hasEigrpMetric(hasDelay(1E8)))));
   }
 
   @Test

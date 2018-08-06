@@ -61822,6 +61822,10 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "Interface: 'Ethernet0' contains OSPF settings, but there is no OSPF process"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Interface: 'Ethernet0' contains EIGRP settings but is not part of an EIGRP process"
             }
           ]
         },
