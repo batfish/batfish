@@ -6150,7 +6150,7 @@
         "name" : "cisco_eigrp",
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
-        "deviceType" : "ROUTER",
+        "deviceType" : "SWITCH",
         "interfaces" : {
           "Ethernet0" : {
             "name" : "Ethernet0",
@@ -6342,11 +6342,6 @@
             "sourceType" : "extended ipv4 access-list"
           }
         },
-        "routingPolicies" : {
-          "~EIGRP_EXPORT_POLICY:default~" : {
-            "name" : "~EIGRP_EXPORT_POLICY:default~"
-          }
-        },
         "vendorFamily" : {
           "cisco" : {
             "hostname" : "cisco_eigrp",
@@ -6361,12 +6356,6 @@
           },
           "default" : {
             "name" : "default",
-            "eigrpProcess" : {
-              "asn" : 65500,
-              "eigrp-mode" : "CLASSIC",
-              "export-policy" : "~EIGRP_EXPORT_POLICY:default~",
-              "router-id" : "100.1.1.1"
-            },
             "interfaces" : [
               "Ethernet0"
             ]
