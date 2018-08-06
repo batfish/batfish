@@ -1,8 +1,12 @@
 package org.batfish.common;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableMap;
 import io.opentracing.ActiveSpan;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
@@ -13,6 +17,7 @@ import io.opentracing.util.GlobalTracer;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public class WorkItem {
@@ -25,13 +30,15 @@ public class WorkItem {
   // used for testing to force an UUID
   private static UUID FIXED_UUID = null;
 
-  private final String _containerName;
-  private final UUID _id;
-  private Map<String, String> _requestParams;
-  private final String _testrigName;
+  @Nonnull private final String _containerName;
+  @Nonnull private final UUID _id;
+  @Nonnull private Map<String, String> _requestParams;
+  @Nonnull private final String _testrigName;
+
+  @Nonnull
   private Map<String, String> _spanData; /* Map used by the TextMap carrier for SpanContext */
 
-  public WorkItem(String containerName, String testrigName) {
+  public WorkItem(@Nonnull String containerName, @Nonnull String testrigName) {
     this(
         (FIXED_UUID == null) ? UUID.randomUUID() : FIXED_UUID,
         containerName,
@@ -39,33 +46,47 @@ public class WorkItem {
         new HashMap<>());
   }
 
-  @JsonCreator
   public WorkItem(
-      @JsonProperty(PROP_ID) UUID id,
-      @JsonProperty(PROP_CONTAINER_NAME) String containerName,
-      @JsonProperty(PROP_TESTRIG_NAME) String testrigName,
-      @JsonProperty(PROP_REQUEST_PARAMS) Map<String, String> reqParams) {
+      @Nonnull UUID id,
+      @Nonnull String containerName,
+      @Nonnull String testrigName,
+      @Nullable Map<String, String> reqParams) {
     _id = id;
     _containerName = containerName;
     _testrigName = testrigName;
-    _requestParams = reqParams;
+    _requestParams = firstNonNull(reqParams, ImmutableMap.of());
     _spanData = new HashMap<>();
+  }
+
+  @JsonCreator
+  private static WorkItem jsonCreator(
+      @Nullable @JsonProperty(PROP_ID) UUID id,
+      @Nullable @JsonProperty(PROP_CONTAINER_NAME) String containerName,
+      @Nullable @JsonProperty(PROP_TESTRIG_NAME) String testrigName,
+      @Nullable @JsonProperty(PROP_REQUEST_PARAMS) Map<String, String> reqParams) {
+    checkArgument(id != null, "id cannot be null");
+    checkArgument(containerName != null, "containerName cannot be null");
+    checkArgument(testrigName != null, "testrigName cannot be null");
+    return new WorkItem(id, containerName, testrigName, reqParams);
   }
 
   public void addRequestParam(String key, String value) {
     _requestParams.put(key, value);
   }
 
+  @Nonnull
   @JsonProperty(PROP_CONTAINER_NAME)
   public String getContainerName() {
     return _containerName;
   }
 
+  @Nonnull
   @JsonProperty(PROP_ID)
   public UUID getId() {
     return _id;
   }
 
+  @Nonnull
   @JsonProperty(PROP_REQUEST_PARAMS)
   public Map<String, String> getRequestParams() {
     return _requestParams;
@@ -88,6 +109,7 @@ public class WorkItem {
     return tracer.extract(Builtin.TEXT_MAP, new TextMapExtractAdapter(_spanData));
   }
 
+  @Nonnull
   @JsonProperty(PROP_TESTRIG_NAME)
   public String getTestrigName() {
     return _testrigName;
