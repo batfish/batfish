@@ -61814,10 +61814,6 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "No candidates for EIGRP (AS 4) router-id"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "No candidates for EIGRP (AS 65500) router-id"
             }
           ]
         },
