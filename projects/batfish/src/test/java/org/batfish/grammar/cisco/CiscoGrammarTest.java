@@ -135,7 +135,7 @@ import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasArea;
 import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasAreas;
 import static org.batfish.datamodel.matchers.SnmpServerMatchers.hasCommunities;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
-import static org.batfish.datamodel.matchers.VrfMatchers.hasEigrpProcess;
+import static org.batfish.datamodel.matchers.VrfMatchers.hasEigrpProcesses;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasOspfProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasSnmpServer;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
@@ -273,6 +273,7 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.eigrp.EigrpMetric;
+import org.batfish.datamodel.eigrp.EigrpProcess;
 import org.batfish.datamodel.eigrp.EigrpProcessMode;
 import org.batfish.datamodel.matchers.ConfigurationMatchers;
 import org.batfish.datamodel.matchers.EigrpInterfaceSettingsMatchers;
@@ -767,7 +768,7 @@ public class CiscoGrammarTest {
     Configuration c = parseConfig("ios-eigrp-network");
 
     /* Confirm classic mode networks are configured correctly */
-    assertThat(c, hasDefaultVrf(hasEigrpProcess(EigrpProcessMatchers.hasAsn(1L))));
+    assertThat(c, hasDefaultVrf(hasEigrpProcesses(hasItem(EigrpProcessMatchers.hasAsn(1L)))));
     assertThat(c, hasInterface("Ethernet0", hasEigrp(EigrpInterfaceSettingsMatchers.hasAsn(1L))));
     assertThat(c, hasInterface("Ethernet1", hasEigrp(EigrpInterfaceSettingsMatchers.hasAsn(1L))));
     assertThat(c, hasInterface("Ethernet2", hasEigrp(EigrpInterfaceSettingsMatchers.hasAsn(1L))));
@@ -775,7 +776,8 @@ public class CiscoGrammarTest {
     /* Confirm named mode networks are configured correctly */
     assertThat(
         c,
-        ConfigurationMatchers.hasVrf("vrf-name", hasEigrpProcess(EigrpProcessMatchers.hasAsn(2L))));
+        ConfigurationMatchers.hasVrf(
+            "vrf-name", hasEigrpProcesses(hasItem(EigrpProcessMatchers.hasAsn(2L)))));
     assertThat(c, hasInterface("Ethernet3", hasEigrp(EigrpInterfaceSettingsMatchers.hasAsn(2L))));
     assertThat(c, hasInterface("Ethernet4", hasEigrp(EigrpInterfaceSettingsMatchers.hasAsn(2L))));
     assertThat(c, hasInterface("Ethernet5", hasEigrp(EigrpInterfaceSettingsMatchers.hasAsn(2L))));
@@ -798,16 +800,25 @@ public class CiscoGrammarTest {
     assertThat(
         c,
         ConfigurationMatchers.hasVrf(
-            "vrf-name2", hasEigrpProcess(EigrpProcessMatchers.hasAsn(3L))));
+            "vrf-name2", hasEigrpProcesses(hasItem(EigrpProcessMatchers.hasAsn(3L)))));
   }
 
   @Test
   public void testIosEigrpRedistribution() throws IOException {
     Configuration c = parseConfig("ios-eigrp-redistribution");
+    long asn = 1L;
 
-    assertThat(c, hasDefaultVrf(hasEigrpProcess(notNullValue())));
+    assertThat(c, hasDefaultVrf(hasEigrpProcesses(hasItem(EigrpProcessMatchers.hasAsn(asn)))));
+    SortedSet<EigrpProcess> eigrpProcesses =
+        requireNonNull(c.getVrfs().get(DEFAULT_VRF_NAME).getEigrpProcesses());
     String exportPolicyName =
-        requireNonNull(c.getVrfs().get(DEFAULT_VRF_NAME).getEigrpProcess()).getExportPolicy();
+        eigrpProcesses
+            .stream()
+            .filter(proc -> proc.getAsn() == asn)
+            .map(EigrpProcess::getExportPolicy)
+            .findAny()
+            .orElse(null);
+    assertThat(exportPolicyName, notNullValue());
     RoutingPolicy routingPolicy = c.getRoutingPolicies().get(exportPolicyName);
     assertThat(routingPolicy, notNullValue());
 

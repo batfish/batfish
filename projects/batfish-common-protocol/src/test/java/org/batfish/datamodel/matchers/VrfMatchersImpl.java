@@ -26,14 +26,14 @@ final class VrfMatchersImpl {
     }
   }
 
-  static final class HasEigrpProcess extends FeatureMatcher<Vrf, EigrpProcess> {
-    HasEigrpProcess(@Nonnull Matcher<? super EigrpProcess> subMatcher) {
-      super(subMatcher, "A Vrf with eigrpProcess:", "eigrpProcess");
+  static final class HasEigrpProcesses extends FeatureMatcher<Vrf, SortedSet<EigrpProcess>> {
+    HasEigrpProcesses(@Nonnull Matcher<? super SortedSet<EigrpProcess>> subMatcher) {
+      super(subMatcher, "A Vrf with eigrpProcesses:", "eigrpProcesses");
     }
 
     @Override
-    protected EigrpProcess featureValueOf(Vrf actual) {
-      return actual.getEigrpProcess();
+    protected SortedSet<EigrpProcess> featureValueOf(Vrf actual) {
+      return actual.getEigrpProcesses();
     }
   }
 

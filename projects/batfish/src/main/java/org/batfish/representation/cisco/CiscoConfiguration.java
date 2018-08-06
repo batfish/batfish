@@ -2099,11 +2099,17 @@ public final class CiscoConfiguration extends VendorConfiguration {
     }
 
     EigrpProcess eigrpProcess = null;
-    if (iface.getAddress() != null && vrf.getEigrpProcess() != null) {
-      for (Prefix prefix : vrf.getEigrpProcess().getNetworks()) {
-        if (prefix.equals(iface.getAddress().getPrefix())) {
-          eigrpProcess = vrf.getEigrpProcess();
-          break;
+    if (iface.getAddress() != null) {
+      for (EigrpProcess process : vrf.getEigrpProcesses().values()) {
+        if (process.getNetworks().contains(iface.getAddress().getPrefix())) {
+          // Found a process on interface
+          if (eigrpProcess != null) {
+            // Cisco does not recommend running multiple EIGRP autonomous systems on the same
+            // interface
+            _w.redFlag("Interface: '" + iface.getName() + "' matches multiple EIGRP processes");
+            break;
+          }
+          eigrpProcess = process;
         }
       }
     }
@@ -3233,13 +3239,13 @@ public final class CiscoConfiguration extends VendorConfiguration {
             newVrf.setOspfProcess(newOspfProcess);
           }
 
-          // convert eigrp process
-          EigrpProcess eigrpProcess = vrf.getEigrpProcess();
-          if (eigrpProcess != null) {
-            org.batfish.datamodel.eigrp.EigrpProcess newEigrpProcess =
-                CiscoConversions.toEigrpProcess(eigrpProcess, vrfName, c, this);
-            newVrf.setEigrpProcess(newEigrpProcess);
-          }
+          // convert eigrp processes
+          vrf.getEigrpProcesses()
+              .values()
+              .stream()
+              .map(proc -> CiscoConversions.toEigrpProcess(proc, vrfName, c, this))
+              .filter(Objects::nonNull)
+              .forEach(eigrpProcess -> newVrf.getEigrpProcesses().add(eigrpProcess));
 
           // convert isis process
           IsisProcess isisProcess = vrf.getIsisProcess();

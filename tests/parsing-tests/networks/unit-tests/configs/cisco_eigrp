@@ -8,6 +8,26 @@ object-group ip address _anonymized2_
  host-info 1.1.1.1
 !
 router eigrp 5
+ address-family ipv4 unicast vrf default autonomous-system 55
+  autonomous-system 65500
+  network 1.1.2.1
+ exit-address-family
+ default-metric 1 2 3 4 5
+ eigrp event-log-size 5000010
+ eigrp log-neighbor-changes
+ eigrp log-neighbor-warnings 300
+ eigrp router-id 100.1.1.1
+ network 1.1.1.1 255.255.255.255
+ network 5.5.5.5
+ no auto-summary
+ no passive-interface GigabitEthernet1/5/3
+ no passive-interface GigabitEthernet2/5/3
+ no passive-interface Port-channel34
+ no passive-interface Port-channel35
+ no traffic-share balanced
+ nsf
+ offset-list 21 out 10
+ passive-interface default
  redistribute bgp 1.2 route-map BGP_TO_EIGRP
  redistribute connected route-map CONNECTED_TO_EIGRP
  redistribute eigrp 3 route-map EIGRP_TO_EIGRP
@@ -15,14 +35,8 @@ router eigrp 5
  redistribute ospf 4 route-map OSPF_TO_EIGRP
  redistribute rip route-map RIP_TO_EIGRP
  redistribute static metric 10000 10 255 1 1500 route-map STATIC_TO_EIGRP
- passive-interface default
- no passive-interface Port-channel34
- no passive-interface Port-channel35
- no passive-interface GigabitEthernet1/5/3
- no passive-interface GigabitEthernet2/5/3
- network 1.1.1.1
- no auto-summary
- nsf
+ traffic-share balanced
+ variance 4
 !
 ip access-list extended bippety
  permit tcp 30.9.132.0 0.0.1.255 host 1.1.1.1 range 48000 48060
@@ -95,35 +109,6 @@ switch virtual domain 21
 !
 ip access-list extended bloop_blop
  permit tcp addrgroup bleep_blorp any eq 13000
-
-
-!
-router eigrp 5
- default-metric 1 2 3 4 5
- redistribute static metric 10000 10 255 1 1500
- passive-interface default
- no passive-interface Port-channel34
- no passive-interface Port-channel35
- no passive-interface GigabitEthernet1/5/3
- no passive-interface GigabitEthernet2/5/3
- network 1.1.1.1
-!
-
-router eigrp 5
- address-family ipv4 unicast vrf default autonomous-system 55
-  autonomous-system 65500
-  network 1.1.2.1
- exit-address-family
- eigrp event-log-size 5000010
- eigrp log-neighbor-changes
- eigrp log-neighbor-warnings 300
- eigrp router-id 100.1.1.1
- network 5.5.5.5
- network 1.1.1.1 255.255.255.255
- no traffic-share balanced
- offset-list 21 out 10
- traffic-share balanced
- variance 4
 
 router eigrp virtual
  address-family ipv4 multicast vrf autonomous-system autonomous-system 4

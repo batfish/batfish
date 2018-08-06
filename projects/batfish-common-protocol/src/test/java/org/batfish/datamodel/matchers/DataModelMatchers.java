@@ -53,7 +53,7 @@ import org.batfish.datamodel.matchers.OspfProcessMatchersImpl.HasReferenceBandwi
 import org.batfish.datamodel.matchers.PermittedByAclIpSpaceLineMatchersImpl.IsPermittedByAclIpSpaceLineThat;
 import org.batfish.datamodel.matchers.PermittedByIpAccessListLineMatchersImpl.IsPermittedByIpAccessListLineThat;
 import org.batfish.datamodel.matchers.PermittedByNamedIpSpaceMatchers.IsPermittedByNamedIpSpaceThat;
-import org.batfish.datamodel.matchers.VrfMatchersImpl.HasEigrpProcess;
+import org.batfish.datamodel.matchers.VrfMatchersImpl.HasEigrpProcesses;
 import org.batfish.datamodel.matchers.VrfMatchersImpl.HasIsisProcess;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.vendor.StructureType;
@@ -259,9 +259,9 @@ public final class DataModelMatchers {
    * Provides a matcher that matches if the provided {@code subMatcher} matches the {@link Vrf}'s
    * eigrpProcess.
    */
-  public static @Nonnull Matcher<Vrf> hasEigrpProcess(
-      @Nonnull Matcher<? super EigrpProcess> subMatcher) {
-    return new HasEigrpProcess(subMatcher);
+  public static @Nonnull Matcher<Vrf> hasEigrpProcesses(
+      @Nonnull Matcher<? super SortedSet<EigrpProcess>> subMatcher) {
+    return new HasEigrpProcesses(subMatcher);
   }
 
   /**

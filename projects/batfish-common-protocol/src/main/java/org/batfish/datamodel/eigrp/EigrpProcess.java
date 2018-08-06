@@ -3,13 +3,16 @@ package org.batfish.datamodel.eigrp;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
+import java.util.Comparator;
 import java.util.Objects;
+import java.util.Optional;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Vrf;
 
 /** Represents an EIGRP process on a router */
-public class EigrpProcess implements Serializable {
+public class EigrpProcess implements Comparable<EigrpProcess>, Serializable {
 
   private static final String PROP_ASN = "asn";
   private static final String PROP_EXPORT_POLICY = "export-policy";
@@ -35,6 +38,15 @@ public class EigrpProcess implements Serializable {
 
   public static Builder builder() {
     return new Builder();
+  }
+
+  @Override
+  public int compareTo(@Nonnull EigrpProcess rhs) {
+    return Comparator.comparing(EigrpProcess::getAsn)
+        .thenComparing(proc -> Optional.ofNullable(proc.getExportPolicy()).orElse(""))
+        .thenComparing(EigrpProcess::getMode)
+        .thenComparing(EigrpProcess::getRouterId)
+        .compare(this, rhs);
   }
 
   @Override
@@ -106,7 +118,7 @@ public class EigrpProcess implements Serializable {
       }
       EigrpProcess proc = new EigrpProcess(_asn, _exportPolicy, _mode, _routerId);
       if (_vrf != null) {
-        _vrf.setEigrpProcess(proc);
+        _vrf.getEigrpProcesses().add(proc);
       }
       return proc;
     }
