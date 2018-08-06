@@ -69,8 +69,6 @@ public class VyosConfiguration extends VendorConfiguration {
 
   private final Set<StaticNextHopRoute> _staticNextHopRoutes;
 
-  private transient Set<String> _unimplementedFeatures;
-
   public VyosConfiguration() {
     _espGroups = new TreeMap<>();
     _ikeGroups = new TreeMap<>();
@@ -285,11 +283,6 @@ public class VyosConfiguration extends VendorConfiguration {
 
   public Set<StaticNextHopRoute> getStaticNextHopRoutes() {
     return _staticNextHopRoutes;
-  }
-
-  @Override
-  public Set<String> getUnimplementedFeatures() {
-    return _unimplementedFeatures;
   }
 
   public void setBgpProcess(BgpProcess bgpProcess) {

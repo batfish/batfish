@@ -1,6 +1,7 @@
 package org.batfish.common;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Strings.isNullOrEmpty;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -9,10 +10,10 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.grammar.BatfishCombinedParser;
-import org.batfish.grammar.ParseTreePrettyPrinter;
 
 public class Warnings implements Serializable {
   private static final long serialVersionUID = 1L;
@@ -109,45 +110,33 @@ public class Warnings implements Serializable {
     _redFlagWarnings.add(new Warning(msg, tag));
   }
 
+  /**
+   * Adds a note that there is work to do to handle the given {@link ParserRuleContext}. The output
+   * will include the text of the given {@code line} and, for debugging/implementation, the current
+   * parser rule stack, and the given {@code comment} if present.
+   */
   public void todo(
-      ParserRuleContext ctx, String feature, BatfishCombinedParser<?, ?> parser, String text) {
-    if (!_unimplementedRecord) {
-      return;
-    }
-    String prefix = "WARNING: UNIMPLEMENTED: " + (_unimplementedWarnings.size() + 1) + ": ";
-    StringBuilder sb = new StringBuilder();
-    List<String> ruleNames = Arrays.asList(parser.getParser().getRuleNames());
-    String ruleStack = ctx.toString(ruleNames);
-    sb.append(
-        prefix
-            + "Missing implementation for top (leftmost) parser rule in stack: '"
-            + ruleStack
-            + "'.\n");
-    sb.append(prefix + "Unimplemented feature: " + feature + "\n");
-    sb.append(prefix + "Rule context follows:\n");
-    int start = ctx.start.getStartIndex();
-    int startLine = ctx.start.getLine();
-    int end = ctx.stop.getStopIndex();
-    String ruleText = text.substring(start, end + 1);
-    String[] ruleTextLines = ruleText.split("\\n", -1);
-    for (int line = startLine, i = 0; i < ruleTextLines.length; line++, i++) {
-      String contextPrefix = prefix + " line " + line + ": ";
-      sb.append(contextPrefix + ruleTextLines[i] + "\n");
-    }
-    if (_printParseTree) {
-      sb.append(prefix + "Parse tree follows:\n");
-      String parseTreePrefix = prefix + "PARSE TREE: ";
-      String parseTreeText = ParseTreePrettyPrinter.print(ctx, parser);
-      String[] parseTreeLines = parseTreeText.split("\n", -1);
-      for (String parseTreeLine : parseTreeLines) {
-        sb.append(parseTreePrefix + parseTreeLine + "\n");
-      }
-    }
-    _unimplementedWarnings.add(new Warning(sb.toString(), "UNIMPLEMENTED"));
+      @Nonnull ParserRuleContext ctx,
+      @Nonnull String line,
+      @Nonnull BatfishCombinedParser<?, ?> parser,
+      @Nullable String comment) {
+    String commentMsg = isNullOrEmpty(comment) ? "" : String.format("[comment: %s] ", comment);
+    String ruleStack = ctx.toString(Arrays.asList(parser.getParser().getRuleNames()));
+
+    unimplemented(
+        String.format("%s %s[Batfish parser context: %s]", line.trim(), commentMsg, ruleStack));
+  }
+
+  /** @see #todo(ParserRuleContext, String, BatfishCombinedParser, String) */
+  public void todo(
+      @Nonnull ParserRuleContext ctx,
+      @Nonnull String line,
+      @Nonnull BatfishCombinedParser<?, ?> parser) {
+    todo(ctx, line, parser, /* no comment */ null);
   }
 
   public void unimplemented(String msg) {
-    unimplemented(msg, MISCELLANEOUS);
+    unimplemented(msg, "UNIMPLEMENTED");
   }
 
   public void unimplemented(String msg, String tag) {

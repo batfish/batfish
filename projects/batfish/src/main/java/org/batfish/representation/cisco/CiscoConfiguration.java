@@ -450,8 +450,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private final SortedMap<String, Integer> _undefinedPeerGroups;
 
-  private transient Set<String> _unimplementedFeatures;
-
   private transient Set<NamedBgpPeerGroup> _unusedPeerGroups;
 
   private transient Set<NamedBgpPeerGroup> _unusedPeerSessions;
@@ -470,7 +468,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private final Map<String, TrackMethod> _trackingGroups;
 
-  public CiscoConfiguration(Set<String> unimplementedFeatures) {
+  public CiscoConfiguration() {
     _asPathAccessLists = new TreeMap<>();
     _asPathSets = new TreeMap<>();
     _cf = new CiscoFamily();
@@ -512,7 +510,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _tacacsServers = new TreeSet<>();
     _trackingGroups = new TreeMap<>();
     _undefinedPeerGroups = new TreeMap<>();
-    _unimplementedFeatures = unimplementedFeatures;
     _vrfs = new TreeMap<>();
     _vrfs.put(Configuration.DEFAULT_VRF_NAME, new Vrf(Configuration.DEFAULT_VRF_NAME));
     _vrrpGroups = new TreeMap<>();
@@ -932,11 +929,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public SortedMap<String, Integer> getUndefinedPeerGroups() {
     return _undefinedPeerGroups;
-  }
-
-  @Override
-  public Set<String> getUnimplementedFeatures() {
-    return _unimplementedFeatures;
   }
 
   private Ip getUpdateSource(

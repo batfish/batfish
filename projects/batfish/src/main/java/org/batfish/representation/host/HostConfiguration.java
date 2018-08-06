@@ -99,8 +99,6 @@ public class HostConfiguration extends VendorConfiguration {
 
   private transient VendorConfiguration _underlayConfiguration;
 
-  private transient Set<String> _unimplementedFeatures;
-
   public HostConfiguration() {
     _hostInterfaces = new TreeMap<>();
     _staticRoutes = new TreeSet<>();
@@ -129,12 +127,6 @@ public class HostConfiguration extends VendorConfiguration {
   @JsonProperty(PROP_OVERLAY)
   public boolean getOverlay() {
     return _overlay;
-  }
-
-  @JsonIgnore
-  @Override
-  public Set<String> getUnimplementedFeatures() {
-    return _unimplementedFeatures;
   }
 
   @Override

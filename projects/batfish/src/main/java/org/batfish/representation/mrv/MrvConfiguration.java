@@ -2,7 +2,6 @@ package org.batfish.representation.mrv;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.util.Set;
 import org.batfish.common.VendorConversionException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -23,12 +22,6 @@ public class MrvConfiguration extends VendorConfiguration {
   @Override
   public String getHostname() {
     return _hostname;
-  }
-
-  @Override
-  public Set<String> getUnimplementedFeatures() {
-    throw new UnsupportedOperationException("no implementation for generated method");
-    // TODO Auto-generated method stub
   }
 
   public ConfigurationFormat getVendor() {

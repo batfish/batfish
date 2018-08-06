@@ -44,17 +44,18 @@ public class MrvControlPlaneExtractor extends MrvParserBaseListener
     _configuration.setHostname(hostname);
   }
 
+  private String getFullText(ParserRuleContext ctx) {
+    int start = ctx.getStart().getStartIndex();
+    int end = ctx.getStop().getStopIndex();
+    return _text.substring(start, end + 1);
+  }
+
   private String getText(Quoted_stringContext ctx) {
     if (ctx.text != null) {
       return ctx.text.getText();
     } else {
       return "";
     }
-  }
-
-  @Override
-  public Set<String> getUnimplementedFeatures() {
-    return _unimplementedFeatures;
   }
 
   @Override
@@ -69,9 +70,8 @@ public class MrvControlPlaneExtractor extends MrvParserBaseListener
   }
 
   @SuppressWarnings("unused")
-  private void todo(ParserRuleContext ctx, String feature) {
-    _w.todo(ctx, feature, _parser, _text);
-    _unimplementedFeatures.add("Cisco: " + feature);
+  private void todo(ParserRuleContext ctx) {
+    _w.todo(ctx, getFullText(ctx), _parser);
   }
 
   private String toString(NsdeclContext ctx) {
