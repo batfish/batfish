@@ -1,8 +1,20 @@
 [
   {
-    "class" : "org.batfish.symbolic.answers.SmtOneAnswerElement",
-    "result" : {
-      "verified" : true
-    }
+    "class" : "org.batfish.common.BatfishException$BatfishStackTrace",
+    "answer" : [
+      "org.batfish.common.BatfishException: Failed to answer question",
+      "   at org.batfish.main.Batfish.answer(Batfish.java:674)",
+      "   at org.batfish.main.Batfish.run(Batfish.java:3844)",
+      "   at org.batfish.main.Driver.lambda$runBatfish$3(Driver.java:576)",
+      "   at java.lang.Thread.run(Thread.java:745)",
+      "Caused by: org.batfish.common.BatfishException: Set of valid destination interfaces is empty",
+      "   at org.batfish.symbolic.smt.PropertyChecker.checkProperty(PropertyChecker.java:352)",
+      "   at org.batfish.symbolic.smt.PropertyChecker.checkBoundedLength(PropertyChecker.java:580)",
+      "   at org.batfish.main.Batfish.smtBoundedLength(Batfish.java:4313)",
+      "   at org.batfish.question.SmtBoundedLengthQuestionPlugin$BoundedLengthAnswerer.answer(SmtBoundedLengthQuestionPlugin.java:25)",
+      "   at org.batfish.main.Batfish.answer(Batfish.java:671)",
+      "   ... 3 more",
+      ""
+    ]
   }
 ]
