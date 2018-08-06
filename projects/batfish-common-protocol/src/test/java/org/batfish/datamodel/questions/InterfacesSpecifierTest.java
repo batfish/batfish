@@ -2,8 +2,11 @@ package org.batfish.datamodel.questions;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import java.util.regex.Pattern;
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.questions.InterfacesSpecifier.Type;
@@ -33,6 +36,22 @@ public class InterfacesSpecifierTest {
   }
 
   @Test
+  public void matchesCaseInsensitive() {
+    Interface iface =
+        Interface.builder()
+            .setName("Loopback0")
+            .setOwner(new Configuration("c", ConfigurationFormat.CISCO_IOS))
+            .setVrf(new Vrf("vrfA"))
+            .build();
+    iface.setDescription("secrets are never secrets for long");
+
+    assertTrue(new InterfacesSpecifier("name:LoopBAck.*").matches(iface));
+    assertTrue(new InterfacesSpecifier("desc:SECrets.*").matches(iface));
+    assertTrue(new InterfacesSpecifier("type:Loopback").matches(iface));
+    assertTrue(new InterfacesSpecifier("vrf:vrfa").matches(iface));
+  }
+
+  @Test
   public void matchesName() {
     InterfacesSpecifier specifier = new InterfacesSpecifier("name:Loopback.*");
 
@@ -54,6 +73,16 @@ public class InterfacesSpecifierTest {
 
     assertThat(specifier.matches(secretInterface), equalTo(true));
     assertThat(specifier.matches(nonSecretInterface), equalTo(false));
+  }
+
+  @Test
+  public void matchesType() {
+    InterfacesSpecifier specifier = new InterfacesSpecifier("type:physical");
+    Configuration c = new Configuration("c", ConfigurationFormat.CISCO_IOS);
+    Interface ifaceLoopback = Interface.builder().setName("Loopback0").setOwner(c).build();
+    Interface ifacePhysical = Interface.builder().setName("GigabitEthernet0").setOwner(c).build();
+    assertThat(specifier.matches(ifaceLoopback), equalTo(false));
+    assertThat(specifier.matches(ifacePhysical), equalTo(true));
   }
 
   @Test
