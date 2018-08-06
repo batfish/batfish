@@ -2,10 +2,129 @@
   {
     "class" : "org.batfish.symbolic.answers.SmtReachabilityAnswerElement",
     "flowHistory" : {
-      "class" : "org.batfish.datamodel.FlowHistory"
+      "class" : "org.batfish.datamodel.FlowHistory",
+      "traces" : {
+        "Flow<ingressNode:r0 ingressVrf:default srcIp:0.0.0.0 dstIp:70.70.70.70 ipProtocol:HOPOPT dscp: 0 ecn:0 fragmentOffset:0 packetLength:0 state:NEW tag:SMT>" : {
+          "environments" : {
+            "BASE" : {
+              "envName" : "BASE",
+              "testrigName" : "tr-smt-acl1"
+            },
+            "DELTA" : {
+              "edgeBlacklist" : [
+                {
+                  "node1" : "r0",
+                  "node1interface" : "Serial0",
+                  "node2" : "r1",
+                  "node2interface" : "Serial0"
+                }
+              ],
+              "envName" : "DELTA",
+              "testrigName" : "tr-smt-acl1"
+            }
+          },
+          "flow" : {
+            "dscp" : 0,
+            "dstIp" : "70.70.70.70",
+            "dstPort" : 0,
+            "ecn" : 0,
+            "fragmentOffset" : 0,
+            "icmpCode" : 0,
+            "icmpVar" : 0,
+            "ingressNode" : "r0",
+            "ingressVrf" : "default",
+            "ipProtocol" : "HOPOPT",
+            "packetLength" : 0,
+            "srcIp" : "0.0.0.0",
+            "srcPort" : 0,
+            "state" : "NEW",
+            "tag" : "SMT",
+            "tcpFlagsAck" : 1,
+            "tcpFlagsCwr" : 1,
+            "tcpFlagsEce" : 1,
+            "tcpFlagsFin" : 1,
+            "tcpFlagsPsh" : 1,
+            "tcpFlagsRst" : 1,
+            "tcpFlagsSyn" : 1,
+            "tcpFlagsUrg" : 1
+          },
+          "paths" : {
+            "BASE" : [
+              {
+                "disposition" : "ACCEPTED",
+                "hops" : [
+                  {
+                    "edge" : {
+                      "node1" : "r0",
+                      "node1interface" : "Serial0",
+                      "node2" : "r1",
+                      "node2interface" : "Serial0"
+                    },
+                    "routes" : [
+                      "OspfRoute<70.70.70.70/32,nhip:192.3.64.1,nhint:dynamic>"
+                    ]
+                  },
+                  {
+                    "edge" : {
+                      "node1" : "r1",
+                      "node1interface" : "Serial1",
+                      "node2" : "r3",
+                      "node2interface" : "Serial0"
+                    },
+                    "routes" : [
+                      "OspfRoute<70.70.70.70/32,nhip:192.1.64.1,nhint:dynamic>"
+                    ]
+                  }
+                ],
+                "notes" : "ACCEPTED"
+              }
+            ],
+            "DELTA" : [
+              {
+                "disposition" : "DENIED_OUT",
+                "hops" : [
+                  {
+                    "edge" : {
+                      "node1" : "r0",
+                      "node1interface" : "Serial1",
+                      "node2" : "r2",
+                      "node2interface" : "Serial0"
+                    },
+                    "routes" : [
+                      "OspfRoute<70.70.70.70/32,nhip:192.4.64.1,nhint:dynamic>"
+                    ]
+                  },
+                  {
+                    "edge" : {
+                      "node1" : "r2",
+                      "node1interface" : "Serial1",
+                      "node2" : "r3",
+                      "node2interface" : "Serial1"
+                    },
+                    "routes" : [
+                      "OspfRoute<70.70.70.70/32,nhip:192.2.64.1,nhint:dynamic>"
+                    ]
+                  }
+                ],
+                "notes" : "DENIED_OUT{101}{deny ip any 70.70.70.70  0.0.0.255}"
+              }
+            ]
+          }
+        }
+      }
     },
     "result" : {
-      "verified" : true
+      "failuresModel" : [
+        "link(r0,r1)"
+      ],
+      "forwardingModel" : [
+        "r0,Serial1 --> r2,Serial0 (OSPF)",
+        "r1,Serial1 --> r3,Serial0 (OSPF)"
+      ],
+      "packetModel" : {
+        "dstIp" : "70.70.70.70"
+      },
+      "verified" : false
     }
   }
 ]
