@@ -30808,7 +30808,7 @@
             "        DISTRIBUTE_LIST:'distribute-list'  <== mode:DEFAULT_MODE",
             "        PREFIX:'prefix'  <== mode:DEFAULT_MODE",
             "        name = (variable_distribute_list",
-            "          VARIABLE:'plin'  <== mode:DEFAULT_MODE)",
+            "          VARIABLE:'plout'  <== mode:DEFAULT_MODE)",
             "        OUT:'out'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "      (ro_distribute_list",
@@ -60483,7 +60483,9 @@
             "plin" : {
               "router ospf distribute-list prefix in" : [
                 50
-              ],
+              ]
+            },
+            "plout" : {
               "router ospf distribute-list prefix out" : [
                 51
               ]

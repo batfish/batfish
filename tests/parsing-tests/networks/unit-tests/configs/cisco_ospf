@@ -48,7 +48,7 @@ router ospf 1
   distribute-list aclin in
   distribute-list aclout out
   distribute-list prefix plin in
-  distribute-list prefix plin out
+  distribute-list prefix plout out
   distribute-list route-map rmin in
   distribute-list route-map rmout out
   graceful-restart

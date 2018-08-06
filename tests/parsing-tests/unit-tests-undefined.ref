@@ -4,7 +4,7 @@
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 220
+      "numResults" : 221
     },
     "undefinedReferences" : {
       "configs/arista_bgp" : {
@@ -521,7 +521,9 @@
           "plin" : {
             "router ospf distribute-list prefix in" : [
               50
-            ],
+            ]
+          },
+          "plout" : {
             "router ospf distribute-list prefix out" : [
               51
             ]
