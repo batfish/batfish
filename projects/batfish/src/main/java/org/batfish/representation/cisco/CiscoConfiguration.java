@@ -142,6 +142,7 @@ import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
+import org.batfish.datamodel.tracking.TrackMethod;
 import org.batfish.datamodel.vendor_family.cisco.Aaa;
 import org.batfish.datamodel.vendor_family.cisco.AaaAuthentication;
 import org.batfish.datamodel.vendor_family.cisco.AaaAuthenticationLogin;
@@ -466,6 +467,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private final Map<String, SecurityZone> _securityZones;
 
+  private final Map<String, TrackMethod> _trackingGroups;
+
   public CiscoConfiguration(Set<String> unimplementedFeatures) {
     _asPathAccessLists = new TreeMap<>();
     _asPathSets = new TreeMap<>();
@@ -506,6 +509,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _standardIpv6AccessLists = new TreeMap<>();
     _standardCommunityLists = new TreeMap<>();
     _tacacsServers = new TreeSet<>();
+    _trackingGroups = new TreeMap<>();
     _undefinedPeerGroups = new TreeMap<>();
     _unimplementedFeatures = unimplementedFeatures;
     _vrfs = new TreeMap<>();
@@ -2038,6 +2042,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
     newIface.setActive(iface.getActive());
     newIface.setChannelGroup(iface.getChannelGroup());
     newIface.setCryptoMap(iface.getCryptoMap());
+    newIface.setHsrpGroups(
+        CommonUtil.toImmutableMap(
+            iface.getHsrpGroups(), Entry::getKey, e -> CiscoConversions.toHsrpGroup(e.getValue())));
+    newIface.setHsrpVersion(iface.getHsrpVersion());
     newIface.setAutoState(iface.getAutoState());
     newIface.setVrf(c.getVrfs().get(vrfName));
     if (iface.getBandwidth() == null) {
@@ -3087,6 +3095,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
           c.getVrfs().get(vrfName).getInterfaces().put(ifaceName, newInterface);
         });
 
+    // copy tracking groups
+    c.getTrackingGroups().putAll(_trackingGroups);
+
     // apply vrrp settings to interfaces
     applyVrrp(c);
 
@@ -3278,7 +3289,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.BGP_UPDATE_SOURCE_INTERFACE,
         CiscoStructureUsage.INTERFACE_SELF_REF,
         CiscoStructureUsage.SERVICE_POLICY_INTERFACE,
-        CiscoStructureUsage.ROUTER_VRRP_INTERFACE);
+        CiscoStructureUsage.ROUTER_VRRP_INTERFACE,
+        CiscoStructureUsage.TRACK_INTERFACE);
 
     // mark references to ACLs that may not appear in data model
     markIpOrMacAcls(
@@ -3492,6 +3504,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.CLASS_MAP_SERVICE_TEMPLATE,
         CiscoStructureUsage.CLASS_MAP_ACTIVATED_SERVICE_TEMPLATE,
         CiscoStructureUsage.POLICY_MAP_EVENT_CLASS_ACTIVATE);
+
+    // track
+    markConcreteStructure(CiscoStructureType.TRACK, CiscoStructureUsage.INTERFACE_STANDBY_TRACK);
 
     // zone
     markConcreteStructure(
@@ -4100,5 +4115,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public Map<String, SecurityZone> getSecurityZones() {
     return _securityZones;
+  }
+
+  public Map<String, TrackMethod> getTrackingGroups() {
+    return _trackingGroups;
   }
 }

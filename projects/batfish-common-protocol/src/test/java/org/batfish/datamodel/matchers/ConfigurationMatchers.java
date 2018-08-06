@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 
 import java.util.Map;
+import java.util.NavigableMap;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -41,9 +42,11 @@ import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasIpsecPhase2Pr
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasIpsecPolicy;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasIpsecProposal;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasIpsecVpn;
+import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasTrackingGroups;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasVendorFamily;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasVrf;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasVrfs;
+import org.batfish.datamodel.tracking.TrackMethod;
 import org.batfish.datamodel.vendor_family.VendorFamily;
 import org.hamcrest.Matcher;
 
@@ -224,6 +227,15 @@ public class ConfigurationMatchers {
   public static HasIpsecPolicy hasIpsecPolicy(
       @Nonnull String name, @Nonnull Matcher<? super IpsecPolicy> subMatcher) {
     return new HasIpsecPolicy(name, subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the {@link
+   * Configuration}'s trackingGroups.
+   */
+  public static Matcher<Configuration> hasTrackingGroups(
+      @Nonnull Matcher<? super NavigableMap<String, TrackMethod>> subMatcher) {
+    return new HasTrackingGroups(subMatcher);
   }
 
   /**

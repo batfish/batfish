@@ -10203,6 +10203,16 @@
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "SWITCH",
+        "trackingGroups" : {
+          "1" : {
+            "class" : "org.batfish.datamodel.tracking.TrackInterface",
+            "trackedInterface" : "GigabitEthernet0/0"
+          },
+          "2" : {
+            "class" : "org.batfish.datamodel.tracking.TrackInterface",
+            "trackedInterface" : "GigabitEthernet0/1"
+          }
+        },
         "vendorFamily" : {
           "cisco" : {
             "hostname" : "cisco_track",
@@ -12343,6 +12353,75 @@
             "name" : "default",
             "interfaces" : [
               "GigabitEthernet1/0/1"
+            ]
+          }
+        }
+      },
+      "ios_standby" : {
+        "configurationFormat" : "CISCO_IOS",
+        "name" : "ios_standby",
+        "defaultCrossZoneAction" : "ACCEPT",
+        "defaultInboundAction" : "ACCEPT",
+        "deviceType" : "SWITCH",
+        "interfaces" : {
+          "Vlan1000" : {
+            "name" : "Vlan1000",
+            "accessVlan" : 0,
+            "active" : false,
+            "autostate" : true,
+            "bandwidth" : 1.0E12,
+            "declaredNames" : [
+              "Vlan1000"
+            ],
+            "hsrpGroups" : {
+              "1001" : {
+                "authentication" : "9d02ca801b026e21590248fb1578fe959b68a16cccdb0005917dce66a40c5f78",
+                "groupNumber" : 1001,
+                "helloTime" : 500,
+                "holdTime" : 2,
+                "ip" : "1.2.3.4",
+                "preempt" : true,
+                "priority" : 105,
+                "trackActions" : {
+                  "1" : {
+                    "class" : "org.batfish.datamodel.tracking.DecrementPriority",
+                    "subtrahend" : 20
+                  }
+                }
+              }
+            },
+            "hsrpVersion" : "2",
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : true,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "VLAN",
+            "vlan" : 1000,
+            "vrf" : "default"
+          }
+        },
+        "vendorFamily" : {
+          "cisco" : {
+            "hostname" : "ios_standby",
+            "logging" : {
+              "on" : true
+            }
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default",
+            "interfaces" : [
+              "Vlan1000"
             ]
           }
         }
