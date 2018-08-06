@@ -158,6 +158,7 @@
         "interface_exit" : "configs/interface_exit",
         "interface_name" : "configs/interface_name",
         "interface_sdr" : "configs/interface_sdr",
+        "ios_bfd" : "configs/ios_bfd",
         "ios_bgp" : "configs/ios_bgp",
         "ios_interface" : "configs/ios_interface",
         "ios_standby" : "configs/ios_standby",
@@ -419,6 +420,7 @@
         "interface_exit" : "PASSED",
         "interface_name" : "PASSED",
         "interface_sdr" : "PASSED",
+        "ios_bfd" : "PASSED",
         "ios_bgp" : "PASSED",
         "ios_interface" : "PASSED",
         "ios_standby" : "PASSED",
@@ -25757,7 +25759,7 @@
             "          ROUTE_ONLY:'route-only'  <== mode:DEFAULT_MODE",
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "      (if_inner",
-            "        (if_null_block",
+            "        (if_null_single",
             "          BFD:'bfd'  <== mode:DEFAULT_MODE",
             "          INTERVAL:'interval'  <== mode:DEFAULT_MODE",
             "          DEC:'500'  <== mode:DEFAULT_MODE",
@@ -39800,6 +39802,38 @@
             "          IPV6:'ipv6'  <== mode:DEFAULT_MODE",
             "          ADDRESS:'address'  <== mode:DEFAULT_MODE",
             "          IPV6_PREFIX:'2607:F380::118:9A41:500/124'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
+            "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
+          ]
+        },
+        "ios_bfd" : {
+          "sentences" : [
+            "(cisco_configuration",
+            "  (stanza",
+            "    (s_hostname",
+            "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
+            "      VARIABLE:'ios_bfd'  <== mode:DEFAULT_MODE",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "  (stanza",
+            "    (s_bfd_template",
+            "      BFD_TEMPLATE:'bfd-template'  <== mode:DEFAULT_MODE",
+            "      SINGLE_HOP:'single-hop'  <== mode:DEFAULT_MODE",
+            "      name = (variable_permissive",
+            "        VARIABLE:'GRE'  <== mode:DEFAULT_MODE)",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
+            "      (bfd_template_null",
+            "        INTERVAL:'interval'  <== mode:DEFAULT_MODE",
+            "        (null_rest_of_line",
+            "          VARIABLE:'min-tx'  <== mode:DEFAULT_MODE",
+            "          DEC:'800'  <== mode:DEFAULT_MODE",
+            "          VARIABLE:'min-rx'  <== mode:DEFAULT_MODE",
+            "          DEC:'800'  <== mode:DEFAULT_MODE",
+            "          MULTIPLIER:'multiplier'  <== mode:DEFAULT_MODE",
+            "          DEC:'3'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "      (bfd_template_null",
+            "        ECHO:'echo'  <== mode:DEFAULT_MODE",
+            "        (null_rest_of_line",
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
           ]
@@ -58321,6 +58355,18 @@
             }
           }
         },
+        "configs/ios_bfd" : {
+          "bfd-template" : {
+            "GRE" : {
+              "definitionLines" : [
+                4,
+                5,
+                6
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
         "configs/ios_bgp" : { },
         "configs/ios_bgp_aggregate_address" : {
           "ipv4 prefix-list" : {
@@ -61809,6 +61855,7 @@
         "interface_exit" : "PASSED",
         "interface_name" : "PASSED",
         "interface_sdr" : "PASSED",
+        "ios_bfd" : "PASSED",
         "ios_bgp" : "PASSED",
         "ios_interface" : "PASSED",
         "ios_standby" : "PASSED",

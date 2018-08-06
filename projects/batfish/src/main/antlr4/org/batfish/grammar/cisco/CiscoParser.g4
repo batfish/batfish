@@ -238,6 +238,15 @@ bfd_null
    ) null_rest_of_line
 ;
 
+bfd_template_null
+:
+  NO?
+  (
+    ECHO
+    | INTERVAL
+  ) null_rest_of_line
+;
+
 cisco_configuration
 :
    NEWLINE?
@@ -2178,6 +2187,11 @@ s_bfd
    )*
 ;
 
+s_bfd_template
+:
+  BFD_TEMPLATE SINGLE_HOP name = variable_permissive NEWLINE bfd_template_null*
+;
+
 s_cluster
 :
    NO? CLUSTER
@@ -3500,6 +3514,7 @@ stanza
    | s_arp_access_list_extended
    | s_authentication
    | s_bfd
+   | s_bfd_template
    | s_cable
    | s_call_home
    | s_callhome
