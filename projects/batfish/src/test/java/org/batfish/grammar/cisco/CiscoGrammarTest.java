@@ -2966,7 +2966,7 @@ public class CiscoGrammarTest {
   }
 
   private Configuration parseConfig(String hostname) throws IOException {
-    return parseTextConfigs(hostname).get(hostname);
+    return parseTextConfigs(hostname).get(hostname.toLowerCase());
   }
 
   private Map<String, Configuration> parseTextConfigs(String... configurationNames)
@@ -3000,7 +3000,7 @@ public class CiscoGrammarTest {
 
     Boolean[] expectedResults = new Boolean[] {Boolean.TRUE, Boolean.FALSE, null};
     for (int i = 0; i < configurationNames.length; i++) {
-      Configuration configuration = configurations.get(configurationNames[i]);
+      Configuration configuration = configurations.get(configurationNames[i].toLowerCase());
       assertThat(configuration.getVrfs().size(), equalTo(1));
       for (Vrf vrf : configuration.getVrfs().values()) {
         assertThat(vrf.getOspfProcess().getRfc1583Compatible(), is(expectedResults[i]));

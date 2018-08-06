@@ -1,5 +1,7 @@
 package org.batfish.representation.juniper;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
@@ -225,7 +227,8 @@ public class RoutingInstance implements Serializable {
   }
 
   public void setHostname(String hostname) {
-    _hostname = hostname;
+    checkNotNull(hostname, "'hostname' cannot be null");
+    _hostname = hostname.toLowerCase();
   }
 
   public void setOspfReferenceBandwidth(double ospfReferenceBandwidth) {

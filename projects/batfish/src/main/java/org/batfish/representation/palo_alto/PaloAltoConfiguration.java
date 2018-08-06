@@ -1,5 +1,6 @@
 package org.batfish.representation.palo_alto;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 
 import com.google.common.collect.ImmutableList;
@@ -118,7 +119,8 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
   @Override
   public void setHostname(String hostname) {
-    _hostname = hostname;
+    checkNotNull(hostname, "'hostname' cannot be null");
+    _hostname = hostname.toLowerCase();
   }
 
   public void setNtpServerPrimary(String ntpServerPrimary) {
@@ -135,6 +137,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   }
 
   // Visible for testing
+
   /**
    * Generate unique object name (no collision across vsys namespaces) given a vsys name and
    * original object name
@@ -153,6 +156,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   }
 
   // Visible for testing
+
   /**
    * Generate IpAccessList name for the specified serviceGroupMemberName in the specified vsysName
    */

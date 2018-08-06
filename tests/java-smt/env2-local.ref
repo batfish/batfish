@@ -2,7 +2,7 @@
   {
     "class" : "org.batfish.symbolic.answers.SmtManyAnswerElement",
     "result" : {
-      "R1<-->R2" : {
+      "r1<-->r2" : {
         "verified" : true
       }
     }

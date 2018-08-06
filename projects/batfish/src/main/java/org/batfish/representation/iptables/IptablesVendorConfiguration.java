@@ -1,5 +1,7 @@
 package org.batfish.representation.iptables;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
@@ -153,7 +155,8 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
 
   @Override
   public void setHostname(String hostname) {
-    _hostname = hostname;
+    checkNotNull(hostname, "'hostname' cannot be null");
+    _hostname = hostname.toLowerCase();
   }
 
   @Override

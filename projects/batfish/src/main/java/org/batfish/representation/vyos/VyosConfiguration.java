@@ -1,5 +1,7 @@
 package org.batfish.representation.vyos;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.HashMap;
@@ -296,7 +298,8 @@ public class VyosConfiguration extends VendorConfiguration {
 
   @Override
   public void setHostname(String hostname) {
-    _hostname = hostname;
+    checkNotNull(hostname, "'hostname' cannot be null");
+    _hostname = hostname.toLowerCase();
   }
 
   @Override
