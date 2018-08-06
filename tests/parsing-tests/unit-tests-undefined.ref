@@ -4,7 +4,7 @@
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 215
+      "numResults" : 221
     },
     "undefinedReferences" : {
       "configs/arista_bgp" : {
@@ -517,15 +517,49 @@
         }
       },
       "configs/cisco_ospf" : {
+        "ipv4 prefix-list" : {
+          "plin" : {
+            "router ospf distribute-list prefix in" : [
+              50
+            ]
+          },
+          "plout" : {
+            "router ospf distribute-list prefix out" : [
+              51
+            ]
+          }
+        },
+        "ipv4/6 acl" : {
+          "aclin" : {
+            "router ospf distribute-list in" : [
+              48
+            ]
+          },
+          "aclout" : {
+            "router ospf distribute-list out" : [
+              49
+            ]
+          }
+        },
         "route-map" : {
           "DIRECT_OSPF" : {
             "ospf redistribute connected route-map" : [
-              55
+              61
             ]
           },
           "eigrp-ospf-route-map" : {
             "ospf redistribute eigrp route-map" : [
-              56
+              62
+            ]
+          },
+          "rmin" : {
+            "router ospf distribute-list route-map in" : [
+              52
+            ]
+          },
+          "rmout" : {
+            "router ospf distribute-list route-map out" : [
+              53
             ]
           }
         }
