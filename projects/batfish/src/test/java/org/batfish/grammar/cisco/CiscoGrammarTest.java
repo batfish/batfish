@@ -310,9 +310,8 @@ public class CiscoGrammarTest {
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
   private Batfish getBatfishForConfigurationNames(String... configurationNames) throws IOException {
-    String[] names = Arrays.stream(configurationNames)
-        .map(s -> TESTCONFIGS_PREFIX + s)
-        .toArray(String[]::new);
+    String[] names =
+        Arrays.stream(configurationNames).map(s -> TESTCONFIGS_PREFIX + s).toArray(String[]::new);
     return BatfishTestUtils.getBatfishForTextConfigs(_folder, names);
   }
 
@@ -335,7 +334,8 @@ public class CiscoGrammarTest {
         .build();
   }
 
-  @Test public void testAaaNewmodel() throws IOException {
+  @Test
+  public void testAaaNewmodel() throws IOException {
     Configuration newModelConfiguration = parseConfig("aaaNewmodel");
     boolean aaaNewmodel = newModelConfiguration.getVendorFamily().getCisco().getAaa().getNewModel();
     assertTrue(aaaNewmodel);
@@ -345,7 +345,8 @@ public class CiscoGrammarTest {
     assertFalse(aaaNewmodel);
   }
 
-  @Test public void testLineAuthenticationMethods() throws IOException {
+  @Test
+  public void testLineAuthenticationMethods() throws IOException {
     // test IOS
     Configuration iosConfiguration = parseConfig("aaaAuthenticationIos");
     SortedMap<String, Line> iosLines = iosConfiguration.getVendorFamily().getCisco().getLines();
@@ -378,12 +379,12 @@ public class CiscoGrammarTest {
     assertThat(asaLines.get("telnet"), hasAuthenticationLoginList(not(hasMethod(LOCAL_CASE))));
   }
 
-  @Test public void testAaaAuthenticationLogin() throws IOException {
+  @Test
+  public void testAaaAuthenticationLogin() throws IOException {
     // test ASA config
     Configuration aaaAuthAsaConfiguration = parseConfig("aaaAuthenticationAsa");
-    SortedMap<String, Line> asaLines = aaaAuthAsaConfiguration.getVendorFamily()
-        .getCisco()
-        .getLines();
+    SortedMap<String, Line> asaLines =
+        aaaAuthAsaConfiguration.getVendorFamily().getCisco().getLines();
     for (Line line : asaLines.values()) {
       if (line.getLineType() == LineType.HTTP || line.getLineType() == LineType.SERIAL) {
         assertThat(line, not(requiresAuthentication()));
@@ -392,37 +393,67 @@ public class CiscoGrammarTest {
       }
     }
 
-    assertThat(aaaAuthAsaConfiguration,
-        hasVendorFamily(hasCisco(hasAaa(hasAuthentication(hasLogin(hasListForKey(hasMethod(
-            LOCAL_CASE), "ssh")))))));
-    assertThat(aaaAuthAsaConfiguration,
-        hasVendorFamily(hasCisco(hasAaa(hasAuthentication(hasLogin(hasListForKey(hasMethod(
-            GROUP_USER_DEFINED), "ssh")))))));
-    assertThat(aaaAuthAsaConfiguration,
-        hasVendorFamily(hasCisco(hasAaa(hasAuthentication(hasLogin(not(hasListForKey(hasMethod(
-            LOCAL_CASE), "http"))))))));
-    assertThat(aaaAuthAsaConfiguration,
-        hasVendorFamily(hasCisco(hasAaa(hasAuthentication(hasLogin(not(hasListForKey(hasMethod(
-            GROUP_USER_DEFINED), "http"))))))));
-    assertThat(aaaAuthAsaConfiguration,
-        hasVendorFamily(hasCisco(hasAaa(hasAuthentication(hasLogin(not(hasListForKey(hasMethod(
-            LOCAL_CASE), SERIAL_LINE))))))));
-    assertThat(aaaAuthAsaConfiguration,
-        hasVendorFamily(hasCisco(hasAaa(hasAuthentication(hasLogin(not(hasListForKey(hasMethod(
-            GROUP_USER_DEFINED), SERIAL_LINE))))))));
-    assertThat(aaaAuthAsaConfiguration,
-        hasVendorFamily(hasCisco(hasAaa(hasAuthentication(hasLogin(hasListForKey(not(hasMethod(
-            LOCAL_CASE)), "telnet")))))));
-    assertThat(aaaAuthAsaConfiguration,
-        hasVendorFamily(hasCisco(hasAaa(hasAuthentication(hasLogin(hasListForKey(hasMethod(
-            GROUP_USER_DEFINED), "telnet")))))));
+    assertThat(
+        aaaAuthAsaConfiguration,
+        hasVendorFamily(
+            hasCisco(
+                hasAaa(hasAuthentication(hasLogin(hasListForKey(hasMethod(LOCAL_CASE), "ssh")))))));
+    assertThat(
+        aaaAuthAsaConfiguration,
+        hasVendorFamily(
+            hasCisco(
+                hasAaa(
+                    hasAuthentication(
+                        hasLogin(hasListForKey(hasMethod(GROUP_USER_DEFINED), "ssh")))))));
+    assertThat(
+        aaaAuthAsaConfiguration,
+        hasVendorFamily(
+            hasCisco(
+                hasAaa(
+                    hasAuthentication(
+                        hasLogin(not(hasListForKey(hasMethod(LOCAL_CASE), "http"))))))));
+    assertThat(
+        aaaAuthAsaConfiguration,
+        hasVendorFamily(
+            hasCisco(
+                hasAaa(
+                    hasAuthentication(
+                        hasLogin(not(hasListForKey(hasMethod(GROUP_USER_DEFINED), "http"))))))));
+    assertThat(
+        aaaAuthAsaConfiguration,
+        hasVendorFamily(
+            hasCisco(
+                hasAaa(
+                    hasAuthentication(
+                        hasLogin(not(hasListForKey(hasMethod(LOCAL_CASE), SERIAL_LINE))))))));
+    assertThat(
+        aaaAuthAsaConfiguration,
+        hasVendorFamily(
+            hasCisco(
+                hasAaa(
+                    hasAuthentication(
+                        hasLogin(
+                            not(hasListForKey(hasMethod(GROUP_USER_DEFINED), SERIAL_LINE))))))));
+    assertThat(
+        aaaAuthAsaConfiguration,
+        hasVendorFamily(
+            hasCisco(
+                hasAaa(
+                    hasAuthentication(
+                        hasLogin(hasListForKey(not(hasMethod(LOCAL_CASE)), "telnet")))))));
+    assertThat(
+        aaaAuthAsaConfiguration,
+        hasVendorFamily(
+            hasCisco(
+                hasAaa(
+                    hasAuthentication(
+                        hasLogin(hasListForKey(hasMethod(GROUP_USER_DEFINED), "telnet")))))));
 
     // test IOS config
     Configuration aaaAuthIosConfiguration = parseConfig("aaaAuthenticationIos");
 
-    SortedMap<String, Line> iosLines = aaaAuthIosConfiguration.getVendorFamily()
-        .getCisco()
-        .getLines();
+    SortedMap<String, Line> iosLines =
+        aaaAuthIosConfiguration.getVendorFamily().getCisco().getLines();
 
     for (Line line : iosLines.values()) {
       if (line.getLineType() == LineType.AUX) {
@@ -432,25 +463,38 @@ public class CiscoGrammarTest {
       }
     }
 
-    assertThat(aaaAuthIosConfiguration,
-        hasVendorFamily(hasCisco(hasAaa(hasAuthentication(hasLogin(hasListForKey(hasMethod(
-            GROUP_TACACS), "default")))))));
-    assertThat(aaaAuthIosConfiguration,
-        hasVendorFamily(hasCisco(hasAaa(hasAuthentication(hasLogin(hasListForKey(hasMethod(LOCAL),
-            "default")))))));
-    assertThat(aaaAuthIosConfiguration,
-        hasVendorFamily(hasCisco(hasAaa(hasAuthentication(hasLogin(hasListForKey(not(hasMethod(
-            GROUP_RADIUS)), "default")))))));
-    assertThat(aaaAuthIosConfiguration,
-        hasVendorFamily(hasCisco(hasAaa(hasAuthentication(hasLogin(not(hasListForKey(hasMethod(
-            GROUP_TACACS), "ssh"))))))));
+    assertThat(
+        aaaAuthIosConfiguration,
+        hasVendorFamily(
+            hasCisco(
+                hasAaa(
+                    hasAuthentication(
+                        hasLogin(hasListForKey(hasMethod(GROUP_TACACS), "default")))))));
+    assertThat(
+        aaaAuthIosConfiguration,
+        hasVendorFamily(
+            hasCisco(
+                hasAaa(hasAuthentication(hasLogin(hasListForKey(hasMethod(LOCAL), "default")))))));
+    assertThat(
+        aaaAuthIosConfiguration,
+        hasVendorFamily(
+            hasCisco(
+                hasAaa(
+                    hasAuthentication(
+                        hasLogin(hasListForKey(not(hasMethod(GROUP_RADIUS)), "default")))))));
+    assertThat(
+        aaaAuthIosConfiguration,
+        hasVendorFamily(
+            hasCisco(
+                hasAaa(
+                    hasAuthentication(
+                        hasLogin(not(hasListForKey(hasMethod(GROUP_TACACS), "ssh"))))))));
 
     // test IOS config with no default login list defined
     Configuration aaaAuthIosConfigNoDefault = parseConfig("aaaAuthenticationIosNoDefault");
 
-    SortedMap<String, Line> iosNoDefaultLines = aaaAuthIosConfigNoDefault.getVendorFamily()
-        .getCisco()
-        .getLines();
+    SortedMap<String, Line> iosNoDefaultLines =
+        aaaAuthIosConfigNoDefault.getVendorFamily().getCisco().getLines();
 
     for (Line line : iosNoDefaultLines.values()) {
       if (line.getLineType() == LineType.AUX || line.getLineType() == LineType.CON) {
@@ -461,16 +505,21 @@ public class CiscoGrammarTest {
     }
   }
 
-  @Test public void testAGAclReferrers() throws IOException {
+  @Test
+  public void testAGAclReferrers() throws IOException {
     String filename = "configs/iosAccessGroupAcl";
     String testrigName = "access-group-acl";
     List<String> configurationNames = ImmutableList.of("iosAccessGroupAcl");
 
-    Batfish batfish = BatfishTestUtils.getBatfishFromTestrigText(TestrigText.builder()
-        .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
-        .build(), _folder);
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
 
-    ConvertConfigurationAnswerElement ccae = batfish.loadConvertConfigurationAnswerElementOrReparse();
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
 
     // check expected references for {mac,ip}_acl{_unused,}
     assertThat(ccae, hasNumReferrers(filename, MAC_ACCESS_LIST, "mac_acl_unused", 0));
@@ -479,61 +528,73 @@ public class CiscoGrammarTest {
     assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_EXTENDED, "ip_acl", 1));
   }
 
-  @Test public void testAGAclUndefined() throws IOException {
+  @Test
+  public void testAGAclUndefined() throws IOException {
     String filename = "configs/iosAccessGroupAcl";
     String testrigName = "access-group-acl";
     List<String> configurationNames = ImmutableList.of("iosAccessGroupAcl");
 
-    Batfish batfish = BatfishTestUtils.getBatfishFromTestrigText(TestrigText.builder()
-        .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
-        .build(), _folder);
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
 
-    SortedMap<String, SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>> undefinedReferences = batfish
-        .loadConvertConfigurationAnswerElementOrReparse()
-        .getUndefinedReferences();
+    SortedMap<String, SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>>
+        undefinedReferences =
+            batfish.loadConvertConfigurationAnswerElementOrReparse().getUndefinedReferences();
 
     // only mac_acl_udef and ip_acl_udef should be undefined references
     assertThat(undefinedReferences, hasKey(filename));
-    SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>> byHost = undefinedReferences
-        .get(filename);
+    SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>> byHost =
+        undefinedReferences.get(filename);
     assertThat(byHost, hasKey(ACCESS_LIST.getDescription()));
-    SortedMap<String, SortedMap<String, SortedSet<Integer>>> byType = byHost.get(ACCESS_LIST.getDescription());
+    SortedMap<String, SortedMap<String, SortedSet<Integer>>> byType =
+        byHost.get(ACCESS_LIST.getDescription());
 
     assertThat(byType.keySet(), hasSize(2));
     assertThat(byType, hasKey("ip_acl_udef"));
     assertThat(byType, hasKey("mac_acl_udef"));
   }
 
-  @Test public void testAristaOspfReferenceBandwidth() throws IOException {
+  @Test
+  public void testAristaOspfReferenceBandwidth() throws IOException {
     Configuration manual = parseConfig("aristaOspfCost");
     assertThat(manual.getDefaultVrf().getOspfProcess().getReferenceBandwidth(), equalTo(3e6d));
 
     Configuration defaults = parseConfig("aristaOspfCostDefaults");
-    assertThat(defaults.getDefaultVrf().getOspfProcess().getReferenceBandwidth(),
+    assertThat(
+        defaults.getDefaultVrf().getOspfProcess().getReferenceBandwidth(),
         equalTo(getReferenceOspfBandwidth(ConfigurationFormat.ARISTA)));
   }
 
-  @Test public void testArubaConfigurationFormat() throws IOException {
+  @Test
+  public void testArubaConfigurationFormat() throws IOException {
     Configuration arubaConfig = parseConfig("arubaConfiguration");
 
     assertThat(arubaConfig, hasConfigurationFormat(equalTo(ConfigurationFormat.ARUBAOS)));
   }
 
-  @Test public void testAsaOspfReferenceBandwidth() throws IOException {
+  @Test
+  public void testAsaOspfReferenceBandwidth() throws IOException {
     Configuration manual = parseConfig("asaOspfCost");
     assertThat(manual.getDefaultVrf().getOspfProcess().getReferenceBandwidth(), equalTo(3e6d));
 
     Configuration defaults = parseConfig("asaOspfCostDefaults");
-    assertThat(defaults.getDefaultVrf().getOspfProcess().getReferenceBandwidth(),
+    assertThat(
+        defaults.getDefaultVrf().getOspfProcess().getReferenceBandwidth(),
         equalTo(getReferenceOspfBandwidth(ConfigurationFormat.CISCO_ASA)));
   }
 
-  @Test public void testAsaServiceObject() throws IOException {
+  @Test
+  public void testAsaServiceObject() throws IOException {
     String hostname = "asa-service-object";
     String filename = "configs/" + hostname;
     Configuration c = parseConfig(hostname);
     Batfish batfish = getBatfishForConfigurationNames(hostname);
-    ConvertConfigurationAnswerElement ccae = batfish.loadConvertConfigurationAnswerElementOrReparse();
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
 
     String osIcmpAclName = computeServiceObjectAclName("OS_ICMP");
     String osTcpAclName = computeServiceObjectAclName("OS_TCPUDP");
@@ -565,28 +626,46 @@ public class CiscoGrammarTest {
     assertThat(c, hasIpAccessList(ogsAclName, accepts(flowInlinePass, null, c)));
   }
 
-  @Test public void testIosLoggingOnDefault() throws IOException {
+  @Test
+  public void testIosLoggingOnDefault() throws IOException {
     Configuration loggingOnOmitted = parseConfig("iosLoggingOnOmitted");
     assertThat(loggingOnOmitted, hasVendorFamily(hasCisco(hasLogging(isOn()))));
   }
 
-  @Test public void testIosAclObjectGroup() throws IOException {
+  @Test
+  public void testIosAclObjectGroup() throws IOException {
     String hostname = "ios-acl-object-group";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     Configuration c = batfish.loadConfigurations().get(hostname);
-    ConvertConfigurationAnswerElement ccae = batfish.loadConvertConfigurationAnswerElementOrReparse();
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
 
     /*
      * The produced ACL should permit if source matchers object-group ogn1, destination matches
      * ogn2, and service matches ogs1.
      */
-    assertThat(c, hasIpAccessList("acl1",
-        hasLines(hasItem(hasMatchCondition(isAndMatchExprThat(hasConjuncts(containsInAnyOrder(
-            ImmutableList.of(isMatchHeaderSpaceThat(hasHeaderSpace(allOf(hasDstIps(
-                isIpSpaceReferenceThat(hasName("ogn2"))),
-                hasSrcIps(isIpSpaceReferenceThat(hasName("ogn1")))))),
-                isPermittedByAclThat(hasAclName(computeServiceObjectGroupAclName("ogs1"))))))))))));
+    assertThat(
+        c,
+        hasIpAccessList(
+            "acl1",
+            hasLines(
+                hasItem(
+                    hasMatchCondition(
+                        isAndMatchExprThat(
+                            hasConjuncts(
+                                containsInAnyOrder(
+                                    ImmutableList.of(
+                                        isMatchHeaderSpaceThat(
+                                            hasHeaderSpace(
+                                                allOf(
+                                                    hasDstIps(
+                                                        isIpSpaceReferenceThat(hasName("ogn2"))),
+                                                    hasSrcIps(
+                                                        isIpSpaceReferenceThat(hasName("ogn1")))))),
+                                        isPermittedByAclThat(
+                                            hasAclName(
+                                                computeServiceObjectGroupAclName("ogs1"))))))))))));
 
     /*
      * We expect only object-groups ogsunused1, ognunused1 to have zero referrers
@@ -603,27 +682,30 @@ public class CiscoGrammarTest {
     assertThat(ccae, not(hasUndefinedReference(filename, SERVICE_OBJECT_GROUP, "ogs1")));
     assertThat(ccae, not(hasUndefinedReference(filename, NETWORK_OBJECT_GROUP, "ogn1")));
     assertThat(ccae, not(hasUndefinedReference(filename, NETWORK_OBJECT_GROUP, "ogn2")));
-    assertThat(ccae, hasUndefinedReference(filename,
-        PROTOCOL_OR_SERVICE_OBJECT_GROUP,
-        "ogsfake",
-        EXTENDED_ACCESS_LIST_PROTOCOL_OR_SERVICE_OBJECT_GROUP));
-    assertThat(ccae,
-        hasUndefinedReference(filename,
-            NETWORK_OBJECT_GROUP,
-            "ognfake2",
-            EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP));
-    assertThat(ccae,
-        hasUndefinedReference(filename,
-            NETWORK_OBJECT_GROUP,
-            "ognfake1",
-            EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP));
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            filename,
+            PROTOCOL_OR_SERVICE_OBJECT_GROUP,
+            "ogsfake",
+            EXTENDED_ACCESS_LIST_PROTOCOL_OR_SERVICE_OBJECT_GROUP));
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            filename, NETWORK_OBJECT_GROUP, "ognfake2", EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP));
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            filename, NETWORK_OBJECT_GROUP, "ognfake1", EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP));
   }
 
-  @Test public void testIosAclReferences() throws IOException {
+  @Test
+  public void testIosAclReferences() throws IOException {
     String hostname = "ios-acl";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
-    ConvertConfigurationAnswerElement ccae = batfish.loadConvertConfigurationAnswerElementOrReparse();
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
 
     // Confirm reference counts are correct for ACLs
     assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_EXTENDED, "AL", 2));
@@ -633,49 +715,46 @@ public class CiscoGrammarTest {
     assertThat(ccae, hasNumReferrers(filename, IPV6_ACCESS_LIST_STANDARD, "AL6_UNUSED", 0));
 
     // Confirm undefined references are detected
-    assertThat(ccae,
-        hasUndefinedReference(filename,
-            IPV4_ACCESS_LIST,
-            "AL_UNDEF",
-            ROUTE_MAP_MATCH_IPV4_ACCESS_LIST));
-    assertThat(ccae,
-        hasUndefinedReference(filename,
-            IPV6_ACCESS_LIST,
-            "AL6_UNDEF",
-            ROUTE_MAP_MATCH_IPV6_ACCESS_LIST));
-    assertThat(ccae,
-        hasUndefinedReference(filename,
-            IPV4_ACCESS_LIST,
-            "AL_IF_UNDEF",
-            IP_NAT_DESTINATION_ACCESS_LIST));
-    assertThat(ccae,
-        hasUndefinedReference(filename,
-            IPV4_ACCESS_LIST,
-            "AL_IF_UNDEF",
-            INTERFACE_INCOMING_FILTER));
-    assertThat(ccae,
-        hasUndefinedReference(filename,
-            IPV4_ACCESS_LIST,
-            "AL_IF_UNDEF",
-            INTERFACE_OUTGOING_FILTER));
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            filename, IPV4_ACCESS_LIST, "AL_UNDEF", ROUTE_MAP_MATCH_IPV4_ACCESS_LIST));
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            filename, IPV6_ACCESS_LIST, "AL6_UNDEF", ROUTE_MAP_MATCH_IPV6_ACCESS_LIST));
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            filename, IPV4_ACCESS_LIST, "AL_IF_UNDEF", IP_NAT_DESTINATION_ACCESS_LIST));
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            filename, IPV4_ACCESS_LIST, "AL_IF_UNDEF", INTERFACE_INCOMING_FILTER));
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            filename, IPV4_ACCESS_LIST, "AL_IF_UNDEF", INTERFACE_OUTGOING_FILTER));
   }
 
-  @Test public void testIosBfdTemplate() throws IOException {
+  @Test
+  public void testIosBfdTemplate() throws IOException {
     String hostname = "ios-bfd-template";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
-    ConvertConfigurationAnswerElement ccae = batfish.loadConvertConfigurationAnswerElementOrReparse();
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
 
     assertThat(ccae, hasNumReferrers(filename, BFD_TEMPLATE, "bfd-template-unused", 0));
     assertThat(ccae, hasNumReferrers(filename, BFD_TEMPLATE, "bfd-template-used", 1));
-    assertThat(ccae,
-        hasUndefinedReference(filename,
-            BFD_TEMPLATE,
-            "bfd-template-undefined",
-            INTERFACE_BFD_TEMPLATE));
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            filename, BFD_TEMPLATE, "bfd-template-undefined", INTERFACE_BFD_TEMPLATE));
   }
 
-  @Test public void testIosEigrpNetwork() throws IOException {
+  @Test
+  public void testIosEigrpNetwork() throws IOException {
     Configuration c = parseConfig("ios-eigrp-network");
 
     /* Confirm classic mode networks are configured correctly */
@@ -685,34 +764,35 @@ public class CiscoGrammarTest {
     assertThat(c, hasInterface("Ethernet2", hasEigrp(EigrpInterfaceSettingsMatchers.hasAsn(1L))));
 
     /* Confirm named mode networks are configured correctly */
-    assertThat(c,
+    assertThat(
+        c,
         ConfigurationMatchers.hasVrf("vrf-name", hasEigrpProcess(EigrpProcessMatchers.hasAsn(2L))));
     assertThat(c, hasInterface("Ethernet3", hasEigrp(EigrpInterfaceSettingsMatchers.hasAsn(2L))));
     assertThat(c, hasInterface("Ethernet4", hasEigrp(EigrpInterfaceSettingsMatchers.hasAsn(2L))));
     assertThat(c, hasInterface("Ethernet5", hasEigrp(EigrpInterfaceSettingsMatchers.hasAsn(2L))));
 
     /* Passive interfaces are configured correctly */
-    assertThat(c,
-        hasInterface("Ethernet0", hasEigrp(EigrpInterfaceSettingsMatchers.hasPassive(false))));
-    assertThat(c,
-        hasInterface("Ethernet1", hasEigrp(EigrpInterfaceSettingsMatchers.hasPassive(false))));
-    assertThat(c,
-        hasInterface("Ethernet2", hasEigrp(EigrpInterfaceSettingsMatchers.hasPassive(true))));
-    assertThat(c,
-        hasInterface("Ethernet3", hasEigrp(EigrpInterfaceSettingsMatchers.hasPassive(false))));
-    assertThat(c,
-        hasInterface("Ethernet4", hasEigrp(EigrpInterfaceSettingsMatchers.hasPassive(false))));
-    assertThat(c,
-        hasInterface("Ethernet5", hasEigrp(EigrpInterfaceSettingsMatchers.hasPassive(true))));
+    assertThat(
+        c, hasInterface("Ethernet0", hasEigrp(EigrpInterfaceSettingsMatchers.hasPassive(false))));
+    assertThat(
+        c, hasInterface("Ethernet1", hasEigrp(EigrpInterfaceSettingsMatchers.hasPassive(false))));
+    assertThat(
+        c, hasInterface("Ethernet2", hasEigrp(EigrpInterfaceSettingsMatchers.hasPassive(true))));
+    assertThat(
+        c, hasInterface("Ethernet3", hasEigrp(EigrpInterfaceSettingsMatchers.hasPassive(false))));
+    assertThat(
+        c, hasInterface("Ethernet4", hasEigrp(EigrpInterfaceSettingsMatchers.hasPassive(false))));
+    assertThat(
+        c, hasInterface("Ethernet5", hasEigrp(EigrpInterfaceSettingsMatchers.hasPassive(true))));
   }
 
-  @Test public void testIosEigrpRedistribution() throws IOException {
+  @Test
+  public void testIosEigrpRedistribution() throws IOException {
     Configuration c = parseConfig("ios-eigrp-redistribution");
 
     assertThat(c, hasDefaultVrf(hasEigrpProcess(notNullValue())));
-    String exportPolicyName = requireNonNull(c.getVrfs()
-        .get(DEFAULT_VRF_NAME)
-        .getEigrpProcess()).getExportPolicy();
+    String exportPolicyName =
+        requireNonNull(c.getVrfs().get(DEFAULT_VRF_NAME).getEigrpProcess()).getExportPolicy();
     RoutingPolicy routingPolicy = c.getRoutingPolicies().get(exportPolicyName);
     assertThat(routingPolicy, notNullValue());
 
@@ -721,37 +801,41 @@ public class CiscoGrammarTest {
     EigrpMetric.Builder metricBuilder = EigrpMetric.builder().setMode(EigrpProcessMode.CLASSIC);
 
     // Check if routingPolicy accepts connected route and sets correct metric
-    assertTrue(routingPolicy.process(new ConnectedRoute(Prefix.parse("1.1.1.1/32"), "Loopback0"),
-        outputRouteBuilder,
-        null,
-        DEFAULT_VRF_NAME,
-        Direction.OUT));
-    assertThat(outputRouteBuilder.build(),
+    assertTrue(
+        routingPolicy.process(
+            new ConnectedRoute(Prefix.parse("1.1.1.1/32"), "Loopback0"),
+            outputRouteBuilder,
+            null,
+            DEFAULT_VRF_NAME,
+            Direction.OUT));
+    assertThat(
+        outputRouteBuilder.build(),
         hasEigrpMetric(requireNonNull(metricBuilder.setBandwidth(1E5).setDelay(1E8).build())));
 
     // Check if routingPolicy rejects RIP route
-    assertFalse(routingPolicy.process(
-        new RipInternalRoute(Prefix.parse("2.2.2.2/32"), new Ip("3.3.3.3"), 1, 1),
-        outputRouteBuilder,
-        null,
-        DEFAULT_VRF_NAME,
-        Direction.OUT));
+    assertFalse(
+        routingPolicy.process(
+            new RipInternalRoute(Prefix.parse("2.2.2.2/32"), new Ip("3.3.3.3"), 1, 1),
+            outputRouteBuilder,
+            null,
+            DEFAULT_VRF_NAME,
+            Direction.OUT));
 
     // Check if routingPolicy accepts OSPF route and sets correct default metric
-    assertTrue(routingPolicy.process(new OspfIntraAreaRoute(Prefix.parse("4.4.4.4/32"),
+    assertTrue(
+        routingPolicy.process(
+            new OspfIntraAreaRoute(Prefix.parse("4.4.4.4/32"), null, 1, 1, 1),
+            outputRouteBuilder,
             null,
-            1,
-            1,
-            1),
-        outputRouteBuilder,
-        null,
-        DEFAULT_VRF_NAME,
-        Direction.OUT));
-    assertThat(outputRouteBuilder.build(),
+            DEFAULT_VRF_NAME,
+            Direction.OUT));
+    assertThat(
+        outputRouteBuilder.build(),
         hasEigrpMetric(requireNonNull(metricBuilder.setBandwidth(2E5).setDelay(2E8).build())));
   }
 
-  @Test public void testIosInspection() throws IOException {
+  @Test
+  public void testIosInspection() throws IOException {
     Configuration c = parseConfig("ios-inspection");
 
     String zone1Name = "z1";
@@ -785,51 +869,59 @@ public class CiscoGrammarTest {
     IpAccessList eth3Acl = c.getInterfaces().get(eth3Name).getOutgoingFilter();
 
     /* Check that expected traffic is permitted/denied */
-    Flow permittedByBoth = Flow.builder()
-        .setSrcIp(new Ip("1.1.1.1"))
-        .setDstIp(new Ip("2.2.2.2"))
-        .setIpProtocol(IpProtocol.TCP)
-        .setDstPort(80)
-        .setIngressNode("internet")
-        .setTag("none")
-        .build();
+    Flow permittedByBoth =
+        Flow.builder()
+            .setSrcIp(new Ip("1.1.1.1"))
+            .setDstIp(new Ip("2.2.2.2"))
+            .setIpProtocol(IpProtocol.TCP)
+            .setDstPort(80)
+            .setIngressNode("internet")
+            .setTag("none")
+            .build();
     assertThat(eth2Acl, accepts(permittedByBoth, eth0Name, c.getIpAccessLists(), c.getIpSpaces()));
     assertThat(eth2Acl, accepts(permittedByBoth, eth1Name, c.getIpAccessLists(), c.getIpSpaces()));
     assertThat(eth3Acl, accepts(permittedByBoth, eth0Name, c.getIpAccessLists(), c.getIpSpaces()));
     assertThat(eth3Acl, accepts(permittedByBoth, eth1Name, c.getIpAccessLists(), c.getIpSpaces()));
 
-    Flow permittedThroughEth2Only = Flow.builder()
-        .setSrcIp(new Ip("1.1.1.2"))
-        .setDstIp(new Ip("2.2.2.2"))
-        .setIpProtocol(IpProtocol.TCP)
-        .setDstPort(80)
-        .setIngressNode("internet")
-        .setTag("none")
-        .build();
-    assertThat(eth2Acl,
+    Flow permittedThroughEth2Only =
+        Flow.builder()
+            .setSrcIp(new Ip("1.1.1.2"))
+            .setDstIp(new Ip("2.2.2.2"))
+            .setIpProtocol(IpProtocol.TCP)
+            .setDstPort(80)
+            .setIngressNode("internet")
+            .setTag("none")
+            .build();
+    assertThat(
+        eth2Acl,
         accepts(permittedThroughEth2Only, eth0Name, c.getIpAccessLists(), c.getIpSpaces()));
-    assertThat(eth2Acl,
+    assertThat(
+        eth2Acl,
         accepts(permittedThroughEth2Only, eth1Name, c.getIpAccessLists(), c.getIpSpaces()));
-    assertThat(eth3Acl,
+    assertThat(
+        eth3Acl,
         rejects(permittedThroughEth2Only, eth0Name, c.getIpAccessLists(), c.getIpSpaces()));
-    assertThat(eth3Acl,
+    assertThat(
+        eth3Acl,
         rejects(permittedThroughEth2Only, eth1Name, c.getIpAccessLists(), c.getIpSpaces()));
 
-    Flow deniedByBoth = Flow.builder()
-        .setSrcIp(new Ip("1.1.1.1"))
-        .setDstIp(new Ip("2.2.2.2"))
-        .setIpProtocol(IpProtocol.TCP)
-        .setDstPort(81)
-        .setIngressNode("internet")
-        .setTag("none")
-        .build();
+    Flow deniedByBoth =
+        Flow.builder()
+            .setSrcIp(new Ip("1.1.1.1"))
+            .setDstIp(new Ip("2.2.2.2"))
+            .setIpProtocol(IpProtocol.TCP)
+            .setDstPort(81)
+            .setIngressNode("internet")
+            .setTag("none")
+            .build();
     assertThat(eth2Acl, rejects(deniedByBoth, eth0Name, c.getIpAccessLists(), c.getIpSpaces()));
     assertThat(eth2Acl, rejects(deniedByBoth, eth1Name, c.getIpAccessLists(), c.getIpSpaces()));
     assertThat(eth3Acl, rejects(deniedByBoth, eth0Name, c.getIpAccessLists(), c.getIpSpaces()));
     assertThat(eth3Acl, rejects(deniedByBoth, eth1Name, c.getIpAccessLists(), c.getIpSpaces()));
   }
 
-  @Test public void testIosInterfaceDelay() throws IOException {
+  @Test
+  public void testIosInterfaceDelay() throws IOException {
     Configuration c = parseConfig("ios-interface-delay");
 
     assertThat(c, hasInterface("GigabitEthernet0/0", hasEigrp(hasDelay(1E7))));
@@ -837,7 +929,8 @@ public class CiscoGrammarTest {
     assertThat(c, hasInterface("FastEthernet0/1", hasEigrp(hasDelay(1E8))));
   }
 
-  @Test public void testIosInterfaceSpeed() throws IOException {
+  @Test
+  public void testIosInterfaceSpeed() throws IOException {
     Configuration c = parseConfig("ios-interface-speed");
 
     assertThat(c, hasInterface("GigabitEthernet0/0", hasBandwidth(1E9D)));
@@ -845,57 +938,64 @@ public class CiscoGrammarTest {
     assertThat(c, hasInterface("GigabitEthernet0/2", hasBandwidth(100E6D)));
   }
 
-  @Test public void testIosHttpInspection() throws IOException {
+  @Test
+  public void testIosHttpInspection() throws IOException {
     String hostname = "ios-http-inspection";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
-    ConvertConfigurationAnswerElement ccae = batfish.loadConvertConfigurationAnswerElementOrReparse();
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
 
     assertThat(ccae, hasNumReferrers(filename, INSPECT_CLASS_MAP, "ci", 1));
     assertThat(ccae, hasNumReferrers(filename, INSPECT_CLASS_MAP, "ciunused", 0));
-    assertThat(ccae,
-        hasUndefinedReference(filename,
-            INSPECT_CLASS_MAP,
-            "ciundefined",
-            INSPECT_POLICY_MAP_INSPECT_CLASS));
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            filename, INSPECT_CLASS_MAP, "ciundefined", INSPECT_POLICY_MAP_INSPECT_CLASS));
   }
 
-  @Test public void testIosKeyring() throws IOException {
+  @Test
+  public void testIosKeyring() throws IOException {
     String hostname = "ios-keyrings";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
-    ConvertConfigurationAnswerElement ccae = batfish.loadConvertConfigurationAnswerElementOrReparse();
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
 
     assertThat(ccae, hasNumReferrers(filename, KEYRING, "kused", 1));
     assertThat(ccae, hasNumReferrers(filename, KEYRING, "kunused", 0));
-    assertThat(ccae,
-        hasUndefinedReference(filename, KEYRING, "kundefined", ISAKMP_PROFILE_KEYRING));
+    assertThat(
+        ccae, hasUndefinedReference(filename, KEYRING, "kundefined", ISAKMP_PROFILE_KEYRING));
   }
 
-  @Test public void testIosNeighborDefaultOriginate() throws IOException {
+  @Test
+  public void testIosNeighborDefaultOriginate() throws IOException {
     String testrigName = "ios-default-originate";
-    Batfish batfish = BatfishTestUtils.getBatfishFromTestrigText(TestrigText.builder()
-        .setConfigurationText(TESTRIGS_PREFIX + testrigName,
-            ImmutableList.of("originator", "listener"))
-        .build(), _folder);
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(
+                    TESTRIGS_PREFIX + testrigName, ImmutableList.of("originator", "listener"))
+                .build(),
+            _folder);
 
     batfish.computeDataPlane(false);
     DataPlane dp = batfish.loadDataPlane();
-    Set<AbstractRoute> routesOnListener = dp.getRibs()
-        .get("listener")
-        .get(DEFAULT_VRF_NAME)
-        .getRoutes();
+    Set<AbstractRoute> routesOnListener =
+        dp.getRibs().get("listener").get(DEFAULT_VRF_NAME).getRoutes();
 
     // Ensure that default route is advertised to and installed on listener
     assertThat(routesOnListener, hasItem(hasPrefix(Prefix.ZERO)));
   }
 
-  @Test public void testIosObjectGroupNetwork() throws IOException {
+  @Test
+  public void testIosObjectGroupNetwork() throws IOException {
     String hostname = "ios-object-group-network";
     String filename = "configs/" + hostname;
     Configuration c = parseConfig(hostname);
     Batfish batfish = getBatfishForConfigurationNames(hostname);
-    ConvertConfigurationAnswerElement ccae = batfish.loadConvertConfigurationAnswerElementOrReparse();
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
     Ip ognWildcardIp = new Ip("1.128.0.0");
     Ip ognHostIp = new Ip("2.0.0.1");
     Ip ognUnmatchedIp = new Ip("2.0.0.0");
@@ -917,9 +1017,10 @@ public class CiscoGrammarTest {
     assertThat(c, hasIpSpace(ognNameNetworkObject, containsIp(ognWildcardIp)));
     assertThat(c, hasIpSpace(ognNameNetworkObject, not(containsIp(ognUnmatchedIp))));
     assertThat(c, hasIpSpace(ognNameNetworkObjectIndirect, containsIp(ognHostIp, c.getIpSpaces())));
-    assertThat(c,
-        hasIpSpace(ognNameNetworkObjectIndirect, containsIp(ognWildcardIp, c.getIpSpaces())));
-    assertThat(c,
+    assertThat(
+        c, hasIpSpace(ognNameNetworkObjectIndirect, containsIp(ognWildcardIp, c.getIpSpaces())));
+    assertThat(
+        c,
         hasIpSpace(ognNameNetworkObjectIndirect, not(containsIp(ognUnmatchedIp, c.getIpSpaces()))));
     assertThat(c, hasIpSpace(ognNameUnused, not(containsIp(ognUnmatchedIp))));
     assertThat(c, hasIpSpace(ognNameWildcard, containsIp(ognWildcardIp)));
@@ -935,12 +1036,14 @@ public class CiscoGrammarTest {
     assertThat(ccae, hasUndefinedReference(filename, NETWORK_OBJECT_GROUP, ognNameUndef));
   }
 
-  @Test public void testIosObjectGroupProtocol() throws IOException {
+  @Test
+  public void testIosObjectGroupProtocol() throws IOException {
     String hostname = "ios-object-group-protocol";
     String filename = "configs/" + hostname;
     Configuration c = parseConfig(hostname);
     Batfish batfish = getBatfishForConfigurationNames(hostname);
-    ConvertConfigurationAnswerElement ccae = batfish.loadConvertConfigurationAnswerElementOrReparse();
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
     String ogpIcmpName = "ogp1";
     String ogpTcpUdpName = "ogp2";
     String ogpEmptyName = "ogp3";
@@ -956,16 +1059,10 @@ public class CiscoGrammarTest {
     String ogpAclTcpUdpName = computeProtocolObjectGroupAclName(ogpTcpUdpName);
     String ogpAclEmptyName = computeProtocolObjectGroupAclName(ogpEmptyName);
     String ogpAclDuplicateName = computeProtocolObjectGroupAclName(ogpDuplicateName);
-    Flow icmpFlow = Flow.builder()
-        .setTag("")
-        .setIngressNode("")
-        .setIpProtocol(IpProtocol.ICMP)
-        .build();
-    Flow tcpFlow = Flow.builder()
-        .setTag("")
-        .setIngressNode("")
-        .setIpProtocol(IpProtocol.TCP)
-        .build();
+    Flow icmpFlow =
+        Flow.builder().setTag("").setIngressNode("").setIpProtocol(IpProtocol.ICMP).build();
+    Flow tcpFlow =
+        Flow.builder().setTag("").setIngressNode("").setIpProtocol(IpProtocol.TCP).build();
 
     /* Confirm the used object groups have referrers */
     assertThat(ccae, hasNumReferrers(filename, PROTOCOL_OBJECT_GROUP, ogpIcmpName, 1));
@@ -974,8 +1071,8 @@ public class CiscoGrammarTest {
     /* Confirm the unused object group has no referrers */
     assertThat(ccae, hasNumReferrers(filename, PROTOCOL_OBJECT_GROUP, ogpUnusedName, 0));
     /* Confirm the undefined reference shows up as such */
-    assertThat(ccae,
-        hasUndefinedReference(filename, PROTOCOL_OR_SERVICE_OBJECT_GROUP, ogpUndefName));
+    assertThat(
+        ccae, hasUndefinedReference(filename, PROTOCOL_OR_SERVICE_OBJECT_GROUP, ogpUndefName));
 
     /*
      * Icmp protocol object group and the acl referencing it should only accept Icmp and reject Tcp
@@ -1016,12 +1113,14 @@ public class CiscoGrammarTest {
     assertThat(c, hasIpAccessList(aclUndefName, rejects(tcpFlow, null, c)));
   }
 
-  @Test public void testIosObjectGroupService() throws IOException {
+  @Test
+  public void testIosObjectGroupService() throws IOException {
     String hostname = "ios-object-group-service";
     String filename = "configs/" + hostname;
     Configuration c = parseConfig(hostname);
     Batfish batfish = getBatfishForConfigurationNames(hostname);
-    ConvertConfigurationAnswerElement ccae = batfish.loadConvertConfigurationAnswerElementOrReparse();
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
 
     /* Confirm the used object groups have referrers */
     assertThat(ccae, hasNumReferrers(filename, SERVICE_OBJECT_GROUP, "og-icmp", 2));
@@ -1032,39 +1131,124 @@ public class CiscoGrammarTest {
     assertThat(ccae, hasUndefinedReference(filename, PROTOCOL_OR_SERVICE_OBJECT_GROUP, "og-undef"));
 
     /* og-icmp */
-    assertThat(c, hasIpAccessList(computeServiceObjectGroupAclName("og-icmp"),
-        hasLines(containsInAnyOrder(ImmutableList.of(hasMatchCondition(isOrMatchExprThat(
-            hasDisjuncts(contains(isMatchHeaderSpaceThat(hasHeaderSpace(hasIpProtocols(contains(
-                IpProtocol.ICMP)))))))))))));
+    assertThat(
+        c,
+        hasIpAccessList(
+            computeServiceObjectGroupAclName("og-icmp"),
+            hasLines(
+                containsInAnyOrder(
+                    ImmutableList.of(
+                        hasMatchCondition(
+                            isOrMatchExprThat(
+                                hasDisjuncts(
+                                    contains(
+                                        isMatchHeaderSpaceThat(
+                                            hasHeaderSpace(
+                                                hasIpProtocols(
+                                                    contains(IpProtocol.ICMP)))))))))))));
     /* og-tcp */
-    assertThat(c, hasIpAccessList(computeServiceObjectGroupAclName("og-tcp"),
-        hasLines(containsInAnyOrder(ImmutableList.of(hasMatchCondition(isOrMatchExprThat(
-            hasDisjuncts(containsInAnyOrder(ImmutableList.of(isMatchHeaderSpaceThat(hasHeaderSpace(
-                allOf(hasIpProtocols(contains(IpProtocol.TCP)),
-                    hasSrcOrDstPorts(hasItem(new SubRange(65500)))))),
-                isMatchHeaderSpaceThat(hasHeaderSpace(allOf(hasIpProtocols(contains(IpProtocol.TCP)),
-                    hasSrcOrDstPorts(hasItem(new SubRange(NamedPort.DOMAIN.number())))))),
-                isMatchHeaderSpaceThat(hasHeaderSpace(allOf(hasIpProtocols(contains(IpProtocol.TCP)),
-                    hasSrcOrDstPorts(hasItem(new SubRange(NamedPort.CMDtcp_OR_SYSLOGudp.number())))))),
-                isMatchHeaderSpaceThat(hasHeaderSpace(allOf(hasIpProtocols(contains(IpProtocol.TCP)),
-                    hasSrcOrDstPorts(hasItem(new SubRange(NamedPort.HTTP.number()))))))))))))))));
+    assertThat(
+        c,
+        hasIpAccessList(
+            computeServiceObjectGroupAclName("og-tcp"),
+            hasLines(
+                containsInAnyOrder(
+                    ImmutableList.of(
+                        hasMatchCondition(
+                            isOrMatchExprThat(
+                                hasDisjuncts(
+                                    containsInAnyOrder(
+                                        ImmutableList.of(
+                                            isMatchHeaderSpaceThat(
+                                                hasHeaderSpace(
+                                                    allOf(
+                                                        hasIpProtocols(contains(IpProtocol.TCP)),
+                                                        hasSrcOrDstPorts(
+                                                            hasItem(new SubRange(65500)))))),
+                                            isMatchHeaderSpaceThat(
+                                                hasHeaderSpace(
+                                                    allOf(
+                                                        hasIpProtocols(contains(IpProtocol.TCP)),
+                                                        hasSrcOrDstPorts(
+                                                            hasItem(
+                                                                new SubRange(
+                                                                    NamedPort.DOMAIN.number())))))),
+                                            isMatchHeaderSpaceThat(
+                                                hasHeaderSpace(
+                                                    allOf(
+                                                        hasIpProtocols(contains(IpProtocol.TCP)),
+                                                        hasSrcOrDstPorts(
+                                                            hasItem(
+                                                                new SubRange(
+                                                                    NamedPort.CMDtcp_OR_SYSLOGudp
+                                                                        .number())))))),
+                                            isMatchHeaderSpaceThat(
+                                                hasHeaderSpace(
+                                                    allOf(
+                                                        hasIpProtocols(contains(IpProtocol.TCP)),
+                                                        hasSrcOrDstPorts(
+                                                            hasItem(
+                                                                new SubRange(
+                                                                    NamedPort.HTTP
+                                                                        .number()))))))))))))))));
     /* og-udp */
-    assertThat(c, hasIpAccessList(computeServiceObjectGroupAclName("og-udp"),
-        hasLines(containsInAnyOrder(ImmutableList.of(hasMatchCondition(isOrMatchExprThat(
-            hasDisjuncts(containsInAnyOrder(ImmutableList.of(isMatchHeaderSpaceThat(hasHeaderSpace(
-                allOf(hasIpProtocols(contains(IpProtocol.UDP)),
-                    hasSrcOrDstPorts(hasItem(new SubRange(65501)))))),
-                isMatchHeaderSpaceThat(hasHeaderSpace(allOf(hasIpProtocols(contains(IpProtocol.UDP)),
-                    hasSrcOrDstPorts(hasItem(new SubRange(NamedPort.NTP.number())))))),
-                isMatchHeaderSpaceThat(hasHeaderSpace(allOf(hasIpProtocols(contains(IpProtocol.UDP)),
-                    hasSrcOrDstPorts(hasItem(new SubRange(NamedPort.SNMPTRAP.number())))))),
-                isMatchHeaderSpaceThat(hasHeaderSpace(allOf(hasIpProtocols(contains(IpProtocol.UDP)),
-                    hasSrcOrDstPorts(hasItem(new SubRange(NamedPort.CMDtcp_OR_SYSLOGudp.number())))))),
-                isMatchHeaderSpaceThat(hasHeaderSpace(allOf(hasIpProtocols(contains(IpProtocol.UDP)),
-                    hasSrcOrDstPorts(hasItem(new SubRange(NamedPort.TFTP.number()))))))))))))))));
+    assertThat(
+        c,
+        hasIpAccessList(
+            computeServiceObjectGroupAclName("og-udp"),
+            hasLines(
+                containsInAnyOrder(
+                    ImmutableList.of(
+                        hasMatchCondition(
+                            isOrMatchExprThat(
+                                hasDisjuncts(
+                                    containsInAnyOrder(
+                                        ImmutableList.of(
+                                            isMatchHeaderSpaceThat(
+                                                hasHeaderSpace(
+                                                    allOf(
+                                                        hasIpProtocols(contains(IpProtocol.UDP)),
+                                                        hasSrcOrDstPorts(
+                                                            hasItem(new SubRange(65501)))))),
+                                            isMatchHeaderSpaceThat(
+                                                hasHeaderSpace(
+                                                    allOf(
+                                                        hasIpProtocols(contains(IpProtocol.UDP)),
+                                                        hasSrcOrDstPorts(
+                                                            hasItem(
+                                                                new SubRange(
+                                                                    NamedPort.NTP.number())))))),
+                                            isMatchHeaderSpaceThat(
+                                                hasHeaderSpace(
+                                                    allOf(
+                                                        hasIpProtocols(contains(IpProtocol.UDP)),
+                                                        hasSrcOrDstPorts(
+                                                            hasItem(
+                                                                new SubRange(
+                                                                    NamedPort.SNMPTRAP
+                                                                        .number())))))),
+                                            isMatchHeaderSpaceThat(
+                                                hasHeaderSpace(
+                                                    allOf(
+                                                        hasIpProtocols(contains(IpProtocol.UDP)),
+                                                        hasSrcOrDstPorts(
+                                                            hasItem(
+                                                                new SubRange(
+                                                                    NamedPort.CMDtcp_OR_SYSLOGudp
+                                                                        .number())))))),
+                                            isMatchHeaderSpaceThat(
+                                                hasHeaderSpace(
+                                                    allOf(
+                                                        hasIpProtocols(contains(IpProtocol.UDP)),
+                                                        hasSrcOrDstPorts(
+                                                            hasItem(
+                                                                new SubRange(
+                                                                    NamedPort.TFTP
+                                                                        .number()))))))))))))))));
   }
 
-  @Test public void testIosOspfNetwork() throws IOException {
+  @Test
+  public void testIosOspfNetwork() throws IOException {
     Configuration c = parseConfig("ios-interface-ospf-network");
 
     /*
@@ -1080,16 +1264,19 @@ public class CiscoGrammarTest {
     assertThat(c, hasInterface("Ethernet0/1", isOspfPointToPoint()));
   }
 
-  @Test public void testIosOspfReferenceBandwidth() throws IOException {
+  @Test
+  public void testIosOspfReferenceBandwidth() throws IOException {
     Configuration manual = parseConfig("iosOspfCost");
     assertThat(manual.getDefaultVrf().getOspfProcess().getReferenceBandwidth(), equalTo(10e6d));
 
     Configuration defaults = parseConfig("iosOspfCostDefaults");
-    assertThat(defaults.getDefaultVrf().getOspfProcess().getReferenceBandwidth(),
+    assertThat(
+        defaults.getDefaultVrf().getOspfProcess().getReferenceBandwidth(),
         equalTo(getReferenceOspfBandwidth(ConfigurationFormat.CISCO_IOS)));
   }
 
-  @Test public void testIosOspfStubSettings() throws IOException {
+  @Test
+  public void testIosOspfStubSettings() throws IOException {
     Configuration c = parseConfig("ios-ospf-stub-settings");
 
     // Check correct stub types are assigned
@@ -1101,27 +1288,36 @@ public class CiscoGrammarTest {
     assertThat(c, hasDefaultVrf(hasOspfProcess(hasArea(5L, hasStubType(StubType.NONE)))));
 
     // Check for stub subtype settings
-    assertThat(c,
-        hasDefaultVrf(hasOspfProcess(hasArea(1L,
-            hasNssa(hasDefaultOriginateType(OspfDefaultOriginateType.INTER_AREA))))));
+    assertThat(
+        c,
+        hasDefaultVrf(
+            hasOspfProcess(
+                hasArea(
+                    1L, hasNssa(hasDefaultOriginateType(OspfDefaultOriginateType.INTER_AREA))))));
     assertThat(c, hasDefaultVrf(hasOspfProcess(hasArea(1L, hasNssa(hasSuppressType3(false))))));
-    assertThat(c,
-        hasDefaultVrf(hasOspfProcess(hasArea(2L,
-            hasNssa(hasDefaultOriginateType(OspfDefaultOriginateType.NONE))))));
+    assertThat(
+        c,
+        hasDefaultVrf(
+            hasOspfProcess(
+                hasArea(2L, hasNssa(hasDefaultOriginateType(OspfDefaultOriginateType.NONE))))));
     assertThat(c, hasDefaultVrf(hasOspfProcess(hasArea(2L, hasNssa(hasSuppressType3())))));
-    assertThat(c,
-        hasDefaultVrf(hasOspfProcess(hasArea(3L,
-            hasStub(StubSettingsMatchers.hasSuppressType3(false))))));
-    assertThat(c,
-        hasDefaultVrf(hasOspfProcess(hasArea(4L,
-            hasStub(StubSettingsMatchers.hasSuppressType3())))));
+    assertThat(
+        c,
+        hasDefaultVrf(
+            hasOspfProcess(hasArea(3L, hasStub(StubSettingsMatchers.hasSuppressType3(false))))));
+    assertThat(
+        c,
+        hasDefaultVrf(
+            hasOspfProcess(hasArea(4L, hasStub(StubSettingsMatchers.hasSuppressType3())))));
   }
 
-  @Test public void testIosPrefixList() throws IOException {
+  @Test
+  public void testIosPrefixList() throws IOException {
     String hostname = "ios-prefix-list";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
-    ConvertConfigurationAnswerElement ccae = batfish.loadConvertConfigurationAnswerElementOrReparse();
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
 
     /* Confirm prefix list uses are counted correctly */
     assertThat(ccae, hasNumReferrers(filename, PREFIX_LIST, "pre_list", 2));
@@ -1134,11 +1330,13 @@ public class CiscoGrammarTest {
     assertThat(ccae, hasUndefinedReference(filename, PREFIX_LIST, "pre_list_undef2"));
   }
 
-  @Test public void testIosRouteMap() throws IOException {
+  @Test
+  public void testIosRouteMap() throws IOException {
     String hostname = "ios-route-map";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
-    ConvertConfigurationAnswerElement ccae = batfish.loadConvertConfigurationAnswerElementOrReparse();
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
 
     /* Confirm route map uses are counted correctly */
     assertThat(ccae, hasNumReferrers(filename, ROUTE_MAP, "rm_if", 1));
@@ -1150,11 +1348,13 @@ public class CiscoGrammarTest {
     assertThat(ccae, hasUndefinedReference(filename, ROUTE_MAP, "rm_undef"));
   }
 
-  @Test public void testIosSnmpCommunityString() throws IOException {
+  @Test
+  public void testIosSnmpCommunityString() throws IOException {
     String hostname = "ios-snmp-community-string";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
-    ConvertConfigurationAnswerElement ccae = batfish.loadConvertConfigurationAnswerElementOrReparse();
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
     Configuration c = batfish.loadConfigurations().get(hostname);
 
     /* Confirm community strings are correctly parsed */
@@ -1166,11 +1366,13 @@ public class CiscoGrammarTest {
     assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_STANDARD, "90", 1));
   }
 
-  @Test public void testIosClassMapInspect() throws IOException {
+  @Test
+  public void testIosClassMapInspect() throws IOException {
     String hostname = "ios-class-map-inspect";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
-    ConvertConfigurationAnswerElement ccae = batfish.loadConvertConfigurationAnswerElementOrReparse();
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
 
     /*
      * We expected the only unused acl to be aclunused
@@ -1185,11 +1387,13 @@ public class CiscoGrammarTest {
     assertThat(ccae, hasUndefinedReference(filename, IP_ACCESS_LIST, "aclundefined"));
   }
 
-  @Test public void testIosPolicyMapInspect() throws IOException {
+  @Test
+  public void testIosPolicyMapInspect() throws IOException {
     String hostname = "ios-policy-map-inspect";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
-    ConvertConfigurationAnswerElement ccae = batfish.loadConvertConfigurationAnswerElementOrReparse();
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
 
     /*
      * We expected the only unused class-map to be cmunused
@@ -1212,12 +1416,14 @@ public class CiscoGrammarTest {
     assertThat(ccae, hasUndefinedReference(filename, INSPECT_POLICY_MAP, "pmiundefined"));
   }
 
-  @Test public void testIosPrefixSet() throws IOException {
+  @Test
+  public void testIosPrefixSet() throws IOException {
     String hostname = "ios-prefix-set";
     String filename = "configs/" + hostname;
     Configuration c = parseConfig(hostname);
     Batfish batfish = getBatfishForConfigurationNames(hostname);
-    ConvertConfigurationAnswerElement ccae = batfish.loadConvertConfigurationAnswerElementOrReparse();
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
 
     Prefix permittedPrefix = Prefix.parse("1.2.3.4/30");
     Prefix6 permittedPrefix6 = new Prefix6("2001::ffff:0/124");
@@ -1251,20 +1457,24 @@ public class CiscoGrammarTest {
     assertThat(c, hasRoute6FilterList("pre_combo", not(permits(rejectedPrefix6))));
   }
 
-  @Test public void testIosProxyArp() throws IOException {
+  @Test
+  public void testIosProxyArp() throws IOException {
     Configuration proxyArpOmitted = parseConfig("iosProxyArp");
     assertThat(proxyArpOmitted, hasInterfaces(hasEntry(equalTo("Ethernet0/0"), isProxyArp())));
     assertThat(proxyArpOmitted, hasInterfaces(hasEntry(equalTo("Ethernet0/1"), isProxyArp())));
-    assertThat(proxyArpOmitted,
+    assertThat(
+        proxyArpOmitted,
         hasInterfaces(hasEntry(equalTo("Ethernet0/2"), isProxyArp(equalTo(false)))));
   }
 
-  @Test public void testIosZoneSecurity() throws IOException {
+  @Test
+  public void testIosZoneSecurity() throws IOException {
     String hostname = "ios-zone-security";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     Configuration c = batfish.loadConfigurations().get(hostname);
-    ConvertConfigurationAnswerElement ccae = batfish.loadConvertConfigurationAnswerElementOrReparse();
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
 
     /*
      * We expected the only unused zone to be zunreferenced
@@ -1290,12 +1500,14 @@ public class CiscoGrammarTest {
     assertThat(c, hasZone("zempty", hasMemberInterfaces(empty())));
   }
 
-  @Test public void testNetworkObject() throws IOException {
+  @Test
+  public void testNetworkObject() throws IOException {
     String hostname = "network-object";
     String filename = "configs/" + hostname;
     Configuration c = parseConfig(hostname);
     Batfish batfish = getBatfishForConfigurationNames(hostname);
-    ConvertConfigurationAnswerElement ccae = batfish.loadConvertConfigurationAnswerElementOrReparse();
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
     Ip on1Ip = new Ip("1.2.3.4");
     Ip on2IpStart = new Ip("2.2.2.0");
     Ip on2IpEnd = new Ip("2.2.2.255");
@@ -1320,27 +1532,36 @@ public class CiscoGrammarTest {
     assertThat(ccae, hasUndefinedReference(filename, NETWORK_OBJECT, "ON_UNDEFINED"));
   }
 
-  @Test public void testOspfSummaryRouteMetric() throws IOException {
+  @Test
+  public void testOspfSummaryRouteMetric() throws IOException {
     Configuration manual = parseConfig("iosOspfCost");
 
-    assertThat(manual,
-        hasDefaultVrf(hasOspfProcess(hasArea(1L,
-            hasSummary(Prefix.parse("10.0.0.0/16"), isAdvertised(equalTo(false)))))));
-    assertThat(manual,
-        hasDefaultVrf(hasOspfProcess(hasArea(1L,
-            hasSummary(Prefix.parse("10.0.0.0/16"), hasMetric(100L))))));
+    assertThat(
+        manual,
+        hasDefaultVrf(
+            hasOspfProcess(
+                hasArea(
+                    1L, hasSummary(Prefix.parse("10.0.0.0/16"), isAdvertised(equalTo(false)))))));
+    assertThat(
+        manual,
+        hasDefaultVrf(
+            hasOspfProcess(hasArea(1L, hasSummary(Prefix.parse("10.0.0.0/16"), hasMetric(100L))))));
 
     Configuration defaults = parseConfig("iosOspfCostDefaults");
 
-    assertThat(defaults,
-        hasDefaultVrf(hasOspfProcess(hasArea(1L,
-            hasSummary(Prefix.parse("10.0.0.0/16"), isAdvertised())))));
-    assertThat(defaults,
-        hasDefaultVrf(hasOspfProcess(hasArea(1L,
-            hasSummary(Prefix.parse("10.0.0.0/16"), hasMetric(nullValue()))))));
+    assertThat(
+        defaults,
+        hasDefaultVrf(
+            hasOspfProcess(hasArea(1L, hasSummary(Prefix.parse("10.0.0.0/16"), isAdvertised())))));
+    assertThat(
+        defaults,
+        hasDefaultVrf(
+            hasOspfProcess(
+                hasArea(1L, hasSummary(Prefix.parse("10.0.0.0/16"), hasMetric(nullValue()))))));
   }
 
-  @Test public void testIosXePolicyMapClassDefault() throws IOException {
+  @Test
+  public void testIosXePolicyMapClassDefault() throws IOException {
     Configuration c = parseConfig("ios-xe-policy-map-class-default");
 
     String dropPolicyMapAclName = computeInspectPolicyMapAclName("pdrop");
@@ -1354,7 +1575,8 @@ public class CiscoGrammarTest {
     assertThat(c, hasIpAccessList(unspecifiedPolicyMapAclName, rejects(flow, null, c)));
   }
 
-  @Test public void testIosXePolicyMapInspectClassInspectActions() throws IOException {
+  @Test
+  public void testIosXePolicyMapInspectClassInspectActions() throws IOException {
     Configuration c = parseConfig("ios-xe-policy-map-inspect-class-inspect-actions");
 
     String policyMapName = "pm";
@@ -1367,21 +1589,24 @@ public class CiscoGrammarTest {
     String classMapDropName = "cdrop";
     String classMapDropAclName = computeInspectClassMapAclName(classMapDropName);
 
-    Flow flowPass = Flow.builder()
-        .setIngressNode(c.getHostname())
-        .setTag("")
-        .setIpProtocol(IpProtocol.TCP)
-        .build();
-    Flow flowInspect = Flow.builder()
-        .setIngressNode(c.getHostname())
-        .setTag("")
-        .setIpProtocol(IpProtocol.UDP)
-        .build();
-    Flow flowDrop = Flow.builder()
-        .setIngressNode(c.getHostname())
-        .setTag("")
-        .setIpProtocol(IpProtocol.ICMP)
-        .build();
+    Flow flowPass =
+        Flow.builder()
+            .setIngressNode(c.getHostname())
+            .setTag("")
+            .setIpProtocol(IpProtocol.TCP)
+            .build();
+    Flow flowInspect =
+        Flow.builder()
+            .setIngressNode(c.getHostname())
+            .setTag("")
+            .setIpProtocol(IpProtocol.UDP)
+            .build();
+    Flow flowDrop =
+        Flow.builder()
+            .setIngressNode(c.getHostname())
+            .setTag("")
+            .setIpProtocol(IpProtocol.ICMP)
+            .build();
 
     assertThat(c, hasIpAccessList(policyMapAclName, accepts(flowPass, null, c)));
     assertThat(c, hasIpAccessList(policyMapAclName, accepts(flowInspect, null, c)));
@@ -1400,7 +1625,8 @@ public class CiscoGrammarTest {
     assertThat(c, hasIpAccessList(classMapDropAclName, accepts(flowDrop, null, c)));
   }
 
-  @Test public void testIosXeZoneDefaultBehavior() throws IOException {
+  @Test
+  public void testIosXeZoneDefaultBehavior() throws IOException {
     Configuration c = parseConfig("ios-xe-zone-default-behavior");
 
     /* Ethernet1 and Ethernet2 are in zone z12 */
@@ -1431,95 +1657,115 @@ public class CiscoGrammarTest {
     assertThat(c, hasInterface(e3Name, hasOutgoingFilter(rejects(flow, e2Name, c))));
   }
 
-  @Test public void testIosXrOspfReferenceBandwidth() throws IOException {
+  @Test
+  public void testIosXrOspfReferenceBandwidth() throws IOException {
     Configuration manual = parseConfig("iosxrOspfCost");
     assertThat(manual.getDefaultVrf().getOspfProcess().getReferenceBandwidth(), equalTo(10e6d));
 
     Configuration defaults = parseConfig("iosxrOspfCostDefaults");
-    assertThat(defaults.getDefaultVrf().getOspfProcess().getReferenceBandwidth(),
+    assertThat(
+        defaults.getDefaultVrf().getOspfProcess().getReferenceBandwidth(),
         equalTo(getReferenceOspfBandwidth(ConfigurationFormat.CISCO_IOS_XR)));
   }
 
-  @Test public void testNxosOspfReferenceBandwidth() throws IOException {
+  @Test
+  public void testNxosOspfReferenceBandwidth() throws IOException {
     Configuration manual = parseConfig("nxosOspfCost");
     assertThat(manual.getDefaultVrf().getOspfProcess().getReferenceBandwidth(), equalTo(10e9d));
 
     Configuration defaults = parseConfig("nxosOspfCostDefaults");
-    assertThat(defaults.getDefaultVrf().getOspfProcess().getReferenceBandwidth(),
+    assertThat(
+        defaults.getDefaultVrf().getOspfProcess().getReferenceBandwidth(),
         equalTo(getReferenceOspfBandwidth(ConfigurationFormat.CISCO_NX)));
   }
 
-  @Test public void testNxosVrfContext() throws IOException {
+  @Test
+  public void testNxosVrfContext() throws IOException {
     Configuration vrfC = parseConfig("nxos-vrf-context");
-    assertThat(vrfC, ConfigurationMatchers.hasVrf("management",
-        hasStaticRoutes(equalTo(ImmutableSet.of(StaticRoute.builder()
-            .setNetwork(Prefix.ZERO)
-            .setNextHopInterface(Interface.NULL_INTERFACE_NAME)
-            .setAdministrativeCost(1)
-            .build())))));
+    assertThat(
+        vrfC,
+        ConfigurationMatchers.hasVrf(
+            "management",
+            hasStaticRoutes(
+                equalTo(
+                    ImmutableSet.of(
+                        StaticRoute.builder()
+                            .setNetwork(Prefix.ZERO)
+                            .setNextHopInterface(Interface.NULL_INTERFACE_NAME)
+                            .setAdministrativeCost(1)
+                            .build())))));
   }
 
-  @Test public void testBgpLocalAs() throws IOException {
+  @Test
+  public void testBgpLocalAs() throws IOException {
     String testrigName = "bgp-local-as";
     List<String> configurationNames = ImmutableList.of("r1", "r2");
 
-    Batfish batfish = BatfishTestUtils.getBatfishFromTestrigText(TestrigText.builder()
-        .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
-        .build(), _folder);
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations();
     Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpNodeOwners(configurations, true);
-    ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology = CommonUtil.initBgpTopology(configurations,
-        ipOwners,
-        false);
+    ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
+        CommonUtil.initBgpTopology(configurations, ipOwners, false);
 
     // Edge one direction
-    assertThat(bgpTopology.adjacentNodes(new BgpPeerConfigId("r1",
-            DEFAULT_VRF_NAME,
-            Prefix.parse("1.2.0.2/32"),
-            false)).iterator().next(),
+    assertThat(
+        bgpTopology
+            .adjacentNodes(
+                new BgpPeerConfigId("r1", DEFAULT_VRF_NAME, Prefix.parse("1.2.0.2/32"), false))
+            .iterator()
+            .next(),
         equalTo(new BgpPeerConfigId("r2", DEFAULT_VRF_NAME, Prefix.parse("1.2.0.1/32"), false)));
 
     // Edge the other direction
-    assertThat(bgpTopology.adjacentNodes(new BgpPeerConfigId("r2",
-            DEFAULT_VRF_NAME,
-            Prefix.parse("1.2.0.1/32"),
-            false)).iterator().next(),
+    assertThat(
+        bgpTopology
+            .adjacentNodes(
+                new BgpPeerConfigId("r2", DEFAULT_VRF_NAME, Prefix.parse("1.2.0.1/32"), false))
+            .iterator()
+            .next(),
         equalTo(new BgpPeerConfigId("r1", DEFAULT_VRF_NAME, Prefix.parse("1.2.0.2/32"), false)));
   }
 
-  @Test public void testBgpMultipathRelax() throws IOException {
+  @Test
+  public void testBgpMultipathRelax() throws IOException {
     String testrigName = "bgp-multipath-relax";
-    List<String> configurationNames = ImmutableList.of("arista_disabled",
-        "arista_enabled",
-        "nxos_disabled",
-        "nxos_enabled");
+    List<String> configurationNames =
+        ImmutableList.of("arista_disabled", "arista_enabled", "nxos_disabled", "nxos_enabled");
 
-    Batfish batfish = BatfishTestUtils.getBatfishFromTestrigText(TestrigText.builder()
-        .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
-        .build(), _folder);
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations();
     Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpNodeOwners(configurations, true);
     CommonUtil.initBgpTopology(configurations, ipOwners, false);
-    org.batfish.datamodel.BgpProcess aristaDisabled = configurations.get("arista_disabled")
-        .getDefaultVrf()
-        .getBgpProcess();
-    org.batfish.datamodel.BgpProcess aristaEnabled = configurations.get("arista_enabled")
-        .getDefaultVrf()
-        .getBgpProcess();
-    org.batfish.datamodel.BgpProcess nxosDisabled = configurations.get("nxos_disabled")
-        .getDefaultVrf()
-        .getBgpProcess();
-    org.batfish.datamodel.BgpProcess nxosEnabled = configurations.get("nxos_enabled")
-        .getDefaultVrf()
-        .getBgpProcess();
+    org.batfish.datamodel.BgpProcess aristaDisabled =
+        configurations.get("arista_disabled").getDefaultVrf().getBgpProcess();
+    org.batfish.datamodel.BgpProcess aristaEnabled =
+        configurations.get("arista_enabled").getDefaultVrf().getBgpProcess();
+    org.batfish.datamodel.BgpProcess nxosDisabled =
+        configurations.get("nxos_disabled").getDefaultVrf().getBgpProcess();
+    org.batfish.datamodel.BgpProcess nxosEnabled =
+        configurations.get("nxos_enabled").getDefaultVrf().getBgpProcess();
 
-    assertThat(aristaDisabled,
+    assertThat(
+        aristaDisabled,
         hasMultipathEquivalentAsPathMatchMode(MultipathEquivalentAsPathMatchMode.EXACT_PATH));
-    assertThat(aristaEnabled,
+    assertThat(
+        aristaEnabled,
         hasMultipathEquivalentAsPathMatchMode(MultipathEquivalentAsPathMatchMode.PATH_LENGTH));
-    assertThat(nxosDisabled,
+    assertThat(
+        nxosDisabled,
         hasMultipathEquivalentAsPathMatchMode(MultipathEquivalentAsPathMatchMode.EXACT_PATH));
-    assertThat(nxosEnabled,
+    assertThat(
+        nxosEnabled,
         hasMultipathEquivalentAsPathMatchMode(MultipathEquivalentAsPathMatchMode.PATH_LENGTH));
 
     assertThat(aristaDisabled, hasMultipathEbgp(false));
@@ -1528,21 +1774,29 @@ public class CiscoGrammarTest {
     assertThat(nxosEnabled, hasMultipathEbgp(true));
   }
 
-  @Test public void testBgpOriginationSpace() throws IOException {
+  @Test
+  public void testBgpOriginationSpace() throws IOException {
     Configuration c = parseConfig("ios-bgp-origination-space");
 
-    assertThat(c.getVrfs().get(DEFAULT_VRF_NAME).getBgpProcess().getOriginationSpace(),
-        equalTo(new PrefixSpace(PrefixRange.fromPrefix(Prefix.parse("1.1.1.1/32")),
-            PrefixRange.fromPrefix(Prefix.parse("1.1.2.0/24")))));
+    assertThat(
+        c.getVrfs().get(DEFAULT_VRF_NAME).getBgpProcess().getOriginationSpace(),
+        equalTo(
+            new PrefixSpace(
+                PrefixRange.fromPrefix(Prefix.parse("1.1.1.1/32")),
+                PrefixRange.fromPrefix(Prefix.parse("1.1.2.0/24")))));
   }
 
-  @Test public void testBgpRemovePrivateAs() throws IOException {
+  @Test
+  public void testBgpRemovePrivateAs() throws IOException {
     String testrigName = "bgp-remove-private-as";
     List<String> configurationNames = ImmutableList.of("r1", "r2", "r3");
 
-    Batfish batfish = BatfishTestUtils.getBatfishFromTestrigText(TestrigText.builder()
-        .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
-        .build(), _folder);
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations();
     Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpNodeOwners(configurations, true);
     CommonUtil.initBgpTopology(configurations, ipOwners, false);
@@ -1550,51 +1804,58 @@ public class CiscoGrammarTest {
     batfish.computeDataPlane(false); // compute and cache the dataPlane
 
     // Check that 1.1.1.1/32 appears on r3
-    SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes = dataPlanePlugin.getRoutes(
-        batfish.loadDataPlane());
+    SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
+        dataPlanePlugin.getRoutes(batfish.loadDataPlane());
     SortedSet<AbstractRoute> r3Routes = routes.get("r3").get(DEFAULT_VRF_NAME);
-    Set<Prefix> r3Prefixes = r3Routes.stream()
-        .map(AbstractRoute::getNetwork)
-        .collect(Collectors.toSet());
+    Set<Prefix> r3Prefixes =
+        r3Routes.stream().map(AbstractRoute::getNetwork).collect(Collectors.toSet());
     Prefix r1Loopback = Prefix.parse("1.1.1.1/32");
     assertTrue(r3Prefixes.contains(r1Loopback));
 
     // check that private AS is present in path in received 1.1.1.1/32 advert on r2
     batfish.initBgpAdvertisements(configurations);
     Configuration r2 = configurations.get("r2");
-    boolean r2HasPrivate = r2.getReceivedEbgpAdvertisements()
-        .stream()
-        .filter(a -> a.getNetwork().equals(r1Loopback))
-        .toArray(BgpAdvertisement[]::new)[0].getAsPath()
-        .getAsSets()
-        .stream()
-        .flatMap(Collection::stream)
-        .anyMatch(AsPath::isPrivateAs);
+    boolean r2HasPrivate =
+        r2.getReceivedEbgpAdvertisements()
+            .stream()
+            .filter(a -> a.getNetwork().equals(r1Loopback))
+            .toArray(BgpAdvertisement[]::new)[0]
+            .getAsPath()
+            .getAsSets()
+            .stream()
+            .flatMap(Collection::stream)
+            .anyMatch(AsPath::isPrivateAs);
     assertTrue(r2HasPrivate);
 
     // check that private AS is absent from path in received 1.1.1.1/32 advert on r3
     Configuration r3 = configurations.get("r3");
-    boolean r3HasPrivate = r3.getReceivedEbgpAdvertisements()
-        .stream()
-        .filter(a -> a.getNetwork().equals(r1Loopback))
-        .toArray(BgpAdvertisement[]::new)[0].getAsPath()
-        .getAsSets()
-        .stream()
-        .flatMap(Collection::stream)
-        .anyMatch(AsPath::isPrivateAs);
+    boolean r3HasPrivate =
+        r3.getReceivedEbgpAdvertisements()
+            .stream()
+            .filter(a -> a.getNetwork().equals(r1Loopback))
+            .toArray(BgpAdvertisement[]::new)[0]
+            .getAsPath()
+            .getAsSets()
+            .stream()
+            .flatMap(Collection::stream)
+            .anyMatch(AsPath::isPrivateAs);
     assertFalse(r3HasPrivate);
   }
 
-  @Test public void testCommunityListConversion() throws IOException {
+  @Test
+  public void testCommunityListConversion() throws IOException {
     String testrigName = "community-list-conversion";
     String iosName = "ios";
     String nxosName = "nxos";
     String eosName = "eos";
     List<String> configurationNames = ImmutableList.of(iosName, nxosName, eosName);
 
-    Batfish batfish = BatfishTestUtils.getBatfishFromTestrigText(TestrigText.builder()
-        .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
-        .build(), _folder);
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations();
 
     Configuration iosCommunityListConfig = configurations.get(iosName);
@@ -1604,7 +1865,8 @@ public class CiscoGrammarTest {
     SortedMap<String, CommunityList> eosCommunityLists = eosCommunityListConfig.getCommunityLists();
 
     Configuration nxosCommunityListConfig = configurations.get(nxosName);
-    SortedMap<String, CommunityList> nxosCommunityLists = nxosCommunityListConfig.getCommunityLists();
+    SortedMap<String, CommunityList> nxosCommunityLists =
+        nxosCommunityListConfig.getCommunityLists();
 
     String iosRegexImpliedStd = getCLRegex(iosCommunityLists, "40");
     String iosRegexImpliedExp = getCLRegex(iosCommunityLists, "400");
@@ -1681,272 +1943,401 @@ public class CiscoGrammarTest {
     assertThat(nxosRegexStdMulti, not(equalTo(nxosRegexExpMulti)));
   }
 
-  @Test public void testToIpsecPolicies() throws IOException {
+  @Test
+  public void testToIpsecPolicies() throws IOException {
     Configuration c = parseConfig("ios-crypto-map");
 
-    assertThat(c, hasIpsecPolicy("mymap:10", allOf(
-        IpsecPolicyMatchers.hasIkeGateway(IkeGatewayMatchers.hasName("ISAKMP-PROFILE")),
-        hasPfsKeyGroup(DiffieHellmanGroup.GROUP14),
-        hasIpsecProposals(contains(ImmutableList.of(IpsecProposalMatchers.hasName("ts1")))))));
+    assertThat(
+        c,
+        hasIpsecPolicy(
+            "mymap:10",
+            allOf(
+                IpsecPolicyMatchers.hasIkeGateway(IkeGatewayMatchers.hasName("ISAKMP-PROFILE")),
+                hasPfsKeyGroup(DiffieHellmanGroup.GROUP14),
+                hasIpsecProposals(
+                    contains(ImmutableList.of(IpsecProposalMatchers.hasName("ts1")))))));
 
-    assertThat(c, hasIpsecPolicy("mymap:30:5",
-        hasIpsecProposals(contains(ImmutableList.of(IpsecProposalMatchers.hasName("ts1"))))));
+    assertThat(
+        c,
+        hasIpsecPolicy(
+            "mymap:30:5",
+            hasIpsecProposals(contains(ImmutableList.of(IpsecProposalMatchers.hasName("ts1"))))));
 
-    assertThat(c, hasIpsecPolicy("mymap:30:15",
-        hasIpsecProposals(contains(ImmutableList.of(IpsecProposalMatchers.hasName("ts2"))))));
+    assertThat(
+        c,
+        hasIpsecPolicy(
+            "mymap:30:15",
+            hasIpsecProposals(contains(ImmutableList.of(IpsecProposalMatchers.hasName("ts2"))))));
 
     // tests for IPSec phase 2 policies conversion
-    assertThat(c,
-        hasIpsecPhase2Policy("IPSEC-PROFILE1",
-            allOf(IpsecPhase2PolicyMatchers.hasIpsecProposals(equalTo(ImmutableList.of("ts1",
-                "ts2"))),
+    assertThat(
+        c,
+        hasIpsecPhase2Policy(
+            "IPSEC-PROFILE1",
+            allOf(
+                IpsecPhase2PolicyMatchers.hasIpsecProposals(
+                    equalTo(ImmutableList.of("ts1", "ts2"))),
                 IpsecPhase2PolicyMatchers.hasPfsKeyGroup(equalTo(DiffieHellmanGroup.GROUP14)))));
 
-    assertThat(c, hasIpsecPhase2Policy("~IPSEC_PHASE2_POLICY:mymap:10~", allOf(
-        IpsecPhase2PolicyMatchers.hasIpsecProposals(equalTo(ImmutableList.of("ts1"))),
-        IpsecPhase2PolicyMatchers.hasPfsKeyGroup(equalTo(DiffieHellmanGroup.GROUP14)))));
+    assertThat(
+        c,
+        hasIpsecPhase2Policy(
+            "~IPSEC_PHASE2_POLICY:mymap:10~",
+            allOf(
+                IpsecPhase2PolicyMatchers.hasIpsecProposals(equalTo(ImmutableList.of("ts1"))),
+                IpsecPhase2PolicyMatchers.hasPfsKeyGroup(equalTo(DiffieHellmanGroup.GROUP14)))));
 
-    assertThat(c, hasIpsecPhase2Policy("~IPSEC_PHASE2_POLICY:mymap:30:15~", allOf(
-        IpsecPhase2PolicyMatchers.hasIpsecProposals(equalTo(ImmutableList.of("ts2"))),
-        IpsecPhase2PolicyMatchers.hasPfsKeyGroup(nullValue()))));
+    assertThat(
+        c,
+        hasIpsecPhase2Policy(
+            "~IPSEC_PHASE2_POLICY:mymap:30:15~",
+            allOf(
+                IpsecPhase2PolicyMatchers.hasIpsecProposals(equalTo(ImmutableList.of("ts2"))),
+                IpsecPhase2PolicyMatchers.hasPfsKeyGroup(nullValue()))));
 
-    assertThat(c, hasIpsecPhase2Policy("~IPSEC_PHASE2_POLICY:mymap:30:5~", allOf(
-        IpsecPhase2PolicyMatchers.hasIpsecProposals(equalTo(ImmutableList.of("ts1"))),
-        IpsecPhase2PolicyMatchers.hasPfsKeyGroup(equalTo(DiffieHellmanGroup.GROUP2)))));
+    assertThat(
+        c,
+        hasIpsecPhase2Policy(
+            "~IPSEC_PHASE2_POLICY:mymap:30:5~",
+            allOf(
+                IpsecPhase2PolicyMatchers.hasIpsecProposals(equalTo(ImmutableList.of("ts1"))),
+                IpsecPhase2PolicyMatchers.hasPfsKeyGroup(equalTo(DiffieHellmanGroup.GROUP2)))));
   }
 
-  @Test public void testCryptoMapsAndTunnelsToIpsecPeerConfigs() throws IOException {
+  @Test
+  public void testCryptoMapsAndTunnelsToIpsecPeerConfigs() throws IOException {
     Configuration c = parseConfig("ios-crypto-map");
 
-    List<IpAccessListLine> expectedAclLines = ImmutableList.of(IpAccessListLine.accepting()
-            .setName("permit ip 1.1.1.1 0.0.0.0 2.2.2.2 0.0.0.0")
-            .setMatchCondition(new MatchHeaderSpace(HeaderSpace.builder()
-                .setSrcIps(new IpWildcard("1.1.1.1").toIpSpace())
-                .setDstIps(new IpWildcard("2.2.2.2").toIpSpace())
-                .build()))
-            .build(),
-        IpAccessListLine.accepting()
-            .setMatchCondition(new MatchHeaderSpace(HeaderSpace.builder()
-                .setSrcIps(new IpWildcard("2.2.2.2").toIpSpace())
-                .setDstIps(new IpWildcard("1.1.1.1").toIpSpace())
-                .build()))
-            .build());
+    List<IpAccessListLine> expectedAclLines =
+        ImmutableList.of(
+            IpAccessListLine.accepting()
+                .setName("permit ip 1.1.1.1 0.0.0.0 2.2.2.2 0.0.0.0")
+                .setMatchCondition(
+                    new MatchHeaderSpace(
+                        HeaderSpace.builder()
+                            .setSrcIps(new IpWildcard("1.1.1.1").toIpSpace())
+                            .setDstIps(new IpWildcard("2.2.2.2").toIpSpace())
+                            .build()))
+                .build(),
+            IpAccessListLine.accepting()
+                .setMatchCondition(
+                    new MatchHeaderSpace(
+                        HeaderSpace.builder()
+                            .setSrcIps(new IpWildcard("2.2.2.2").toIpSpace())
+                            .setDstIps(new IpWildcard("1.1.1.1").toIpSpace())
+                            .build()))
+                .build());
 
-    assertThat(c,
-        hasIpsecPeerConfig("~IPSEC_PEER_CONFIG:mymap:20_TenGigabitEthernet0/0~",
-            isIpsecStaticPeerConfigThat(allOf(hasDestinationAddress(new Ip("3.4.5.6")),
-                IpsecPeerConfigMatchers.hasIkePhase1Policy("ISAKMP-PROFILE-MATCHED"),
-                IpsecPeerConfigMatchers.hasIpsecPolicy("~IPSEC_PHASE2_POLICY:mymap:20~"),
-                hasPhysicalInterface("TenGigabitEthernet0/0"),
-                hasPolicyAccessList(hasLines(equalTo(expectedAclLines))),
-                hasLocalAddress(new Ip("2.3.4.6"))))));
-    assertThat(c,
-        hasIpsecPeerConfig("~IPSEC_PEER_CONFIG:mymap:10_TenGigabitEthernet0/0~",
-            isIpsecStaticPeerConfigThat(allOf(hasDestinationAddress(new Ip("1.2.3.4")),
-                IpsecPeerConfigMatchers.hasIkePhase1Policy("ISAKMP-PROFILE"),
-                IpsecPeerConfigMatchers.hasIpsecPolicy("~IPSEC_PHASE2_POLICY:mymap:10~"),
-                hasPhysicalInterface("TenGigabitEthernet0/0"),
-                hasPolicyAccessList(hasLines(equalTo(expectedAclLines))),
-                hasLocalAddress(new Ip("2.3.4.6"))))));
+    assertThat(
+        c,
+        hasIpsecPeerConfig(
+            "~IPSEC_PEER_CONFIG:mymap:20_TenGigabitEthernet0/0~",
+            isIpsecStaticPeerConfigThat(
+                allOf(
+                    hasDestinationAddress(new Ip("3.4.5.6")),
+                    IpsecPeerConfigMatchers.hasIkePhase1Policy("ISAKMP-PROFILE-MATCHED"),
+                    IpsecPeerConfigMatchers.hasIpsecPolicy("~IPSEC_PHASE2_POLICY:mymap:20~"),
+                    hasPhysicalInterface("TenGigabitEthernet0/0"),
+                    hasPolicyAccessList(hasLines(equalTo(expectedAclLines))),
+                    hasLocalAddress(new Ip("2.3.4.6"))))));
+    assertThat(
+        c,
+        hasIpsecPeerConfig(
+            "~IPSEC_PEER_CONFIG:mymap:10_TenGigabitEthernet0/0~",
+            isIpsecStaticPeerConfigThat(
+                allOf(
+                    hasDestinationAddress(new Ip("1.2.3.4")),
+                    IpsecPeerConfigMatchers.hasIkePhase1Policy("ISAKMP-PROFILE"),
+                    IpsecPeerConfigMatchers.hasIpsecPolicy("~IPSEC_PHASE2_POLICY:mymap:10~"),
+                    hasPhysicalInterface("TenGigabitEthernet0/0"),
+                    hasPolicyAccessList(hasLines(equalTo(expectedAclLines))),
+                    hasLocalAddress(new Ip("2.3.4.6"))))));
 
-    assertThat(c,
-        hasIpsecPeerConfig("~IPSEC_PEER_CONFIG:mymap:30:15_TenGigabitEthernet0/0~",
-            isIpsecDynamicPeerConfigThat(allOf(IpsecPeerConfigMatchers.hasIkePhase1Policies(equalTo(
-                ImmutableList.of("ISAKMP-PROFILE", "ISAKMP-PROFILE-MATCHED"))),
-                IpsecPeerConfigMatchers.hasIpsecPolicy("~IPSEC_PHASE2_POLICY:mymap:30:15~"),
-                hasPhysicalInterface("TenGigabitEthernet0/0"),
-                hasPolicyAccessList(hasLines(equalTo(expectedAclLines))),
-                hasLocalAddress(new Ip("2.3.4.6")),
-                hasTunnelInterface(nullValue())))));
+    assertThat(
+        c,
+        hasIpsecPeerConfig(
+            "~IPSEC_PEER_CONFIG:mymap:30:15_TenGigabitEthernet0/0~",
+            isIpsecDynamicPeerConfigThat(
+                allOf(
+                    IpsecPeerConfigMatchers.hasIkePhase1Policies(
+                        equalTo(ImmutableList.of("ISAKMP-PROFILE", "ISAKMP-PROFILE-MATCHED"))),
+                    IpsecPeerConfigMatchers.hasIpsecPolicy("~IPSEC_PHASE2_POLICY:mymap:30:15~"),
+                    hasPhysicalInterface("TenGigabitEthernet0/0"),
+                    hasPolicyAccessList(hasLines(equalTo(expectedAclLines))),
+                    hasLocalAddress(new Ip("2.3.4.6")),
+                    hasTunnelInterface(nullValue())))));
 
-    assertThat(c,
-        hasIpsecPeerConfig("~IPSEC_PEER_CONFIG:mymap:30:5_TenGigabitEthernet0/0~",
-            isIpsecDynamicPeerConfigThat(allOf(IpsecPeerConfigMatchers.hasIkePhase1Policies(equalTo(
-                ImmutableList.of("ISAKMP-PROFILE", "ISAKMP-PROFILE-MATCHED"))),
-                IpsecPeerConfigMatchers.hasIpsecPolicy("~IPSEC_PHASE2_POLICY:mymap:30:5~"),
-                hasPhysicalInterface("TenGigabitEthernet0/0"),
-                hasPolicyAccessList(hasLines(equalTo(expectedAclLines))),
-                hasLocalAddress(new Ip("2.3.4.6")),
-                hasTunnelInterface(nullValue())))));
+    assertThat(
+        c,
+        hasIpsecPeerConfig(
+            "~IPSEC_PEER_CONFIG:mymap:30:5_TenGigabitEthernet0/0~",
+            isIpsecDynamicPeerConfigThat(
+                allOf(
+                    IpsecPeerConfigMatchers.hasIkePhase1Policies(
+                        equalTo(ImmutableList.of("ISAKMP-PROFILE", "ISAKMP-PROFILE-MATCHED"))),
+                    IpsecPeerConfigMatchers.hasIpsecPolicy("~IPSEC_PHASE2_POLICY:mymap:30:5~"),
+                    hasPhysicalInterface("TenGigabitEthernet0/0"),
+                    hasPolicyAccessList(hasLines(equalTo(expectedAclLines))),
+                    hasLocalAddress(new Ip("2.3.4.6")),
+                    hasTunnelInterface(nullValue())))));
 
-    assertThat(c, hasIpsecPeerConfig("Tunnel1", isIpsecStaticPeerConfigThat(allOf(
-        hasDestinationAddress(new Ip("1.2.3.4")),
-        IpsecPeerConfigMatchers.hasIkePhase1Policy("ISAKMP-PROFILE"),
-        IpsecPeerConfigMatchers.hasIpsecPolicy("IPSEC-PROFILE1"),
-        hasPhysicalInterface("TenGigabitEthernet0/0"),
-        hasLocalAddress(new Ip("2.3.4.6")),
-        hasTunnelInterface(equalTo("Tunnel1"))))));
+    assertThat(
+        c,
+        hasIpsecPeerConfig(
+            "Tunnel1",
+            isIpsecStaticPeerConfigThat(
+                allOf(
+                    hasDestinationAddress(new Ip("1.2.3.4")),
+                    IpsecPeerConfigMatchers.hasIkePhase1Policy("ISAKMP-PROFILE"),
+                    IpsecPeerConfigMatchers.hasIpsecPolicy("IPSEC-PROFILE1"),
+                    hasPhysicalInterface("TenGigabitEthernet0/0"),
+                    hasLocalAddress(new Ip("2.3.4.6")),
+                    hasTunnelInterface(equalTo("Tunnel1"))))));
   }
 
-  @Test public void testCryptoMapsToIpsecVpns() throws IOException {
+  @Test
+  public void testCryptoMapsToIpsecVpns() throws IOException {
     Configuration c = parseConfig("ios-crypto-map");
 
-    List<IpAccessListLine> expectedAclLines = ImmutableList.of(IpAccessListLine.accepting()
-            .setName("permit ip 1.1.1.1 0.0.0.0 2.2.2.2 0.0.0.0")
-            .setMatchCondition(new MatchHeaderSpace(HeaderSpace.builder()
-                .setSrcIps(new IpWildcard("1.1.1.1").toIpSpace())
-                .setDstIps(new IpWildcard("2.2.2.2").toIpSpace())
-                .build()))
-            .build(),
-        IpAccessListLine.accepting()
-            .setMatchCondition(new MatchHeaderSpace(HeaderSpace.builder()
-                .setSrcIps(new IpWildcard("2.2.2.2").toIpSpace())
-                .setDstIps(new IpWildcard("1.1.1.1").toIpSpace())
-                .build()))
-            .build());
-    assertThat(c,
+    List<IpAccessListLine> expectedAclLines =
+        ImmutableList.of(
+            IpAccessListLine.accepting()
+                .setName("permit ip 1.1.1.1 0.0.0.0 2.2.2.2 0.0.0.0")
+                .setMatchCondition(
+                    new MatchHeaderSpace(
+                        HeaderSpace.builder()
+                            .setSrcIps(new IpWildcard("1.1.1.1").toIpSpace())
+                            .setDstIps(new IpWildcard("2.2.2.2").toIpSpace())
+                            .build()))
+                .build(),
+            IpAccessListLine.accepting()
+                .setMatchCondition(
+                    new MatchHeaderSpace(
+                        HeaderSpace.builder()
+                            .setSrcIps(new IpWildcard("2.2.2.2").toIpSpace())
+                            .setDstIps(new IpWildcard("1.1.1.1").toIpSpace())
+                            .build()))
+                .build());
+    assertThat(
+        c,
         hasIpsecVpn(
             "mymap:10:TenGigabitEthernet0/0",
-            allOf(hasBindInterface(InterfaceMatchers.hasName("TenGigabitEthernet0/0")),
+            allOf(
+                hasBindInterface(InterfaceMatchers.hasName("TenGigabitEthernet0/0")),
                 IpsecVpnMatchers.hasIpsecPolicy(IpsecPolicyMatchers.hasName("mymap:10")),
                 hasIkeGatewaay(IkeGatewayMatchers.hasName("ISAKMP-PROFILE")),
                 hasPolicy(hasLines(equalTo(expectedAclLines))))));
-    assertThat(c,
+    assertThat(
+        c,
         hasIpsecVpn(
             "mymap:30:5:TenGigabitEthernet0/0",
-            allOf(hasBindInterface(InterfaceMatchers.hasName("TenGigabitEthernet0/0")),
+            allOf(
+                hasBindInterface(InterfaceMatchers.hasName("TenGigabitEthernet0/0")),
                 IpsecVpnMatchers.hasIpsecPolicy(IpsecPolicyMatchers.hasName("mymap:30:5")),
                 hasPolicy(hasLines(equalTo(expectedAclLines))))));
-    assertThat(c,
+    assertThat(
+        c,
         hasIpsecVpn(
             "mymap:30:15:TenGigabitEthernet0/0",
-            allOf(hasBindInterface(InterfaceMatchers.hasName("TenGigabitEthernet0/0")),
+            allOf(
+                hasBindInterface(InterfaceMatchers.hasName("TenGigabitEthernet0/0")),
                 IpsecVpnMatchers.hasIpsecPolicy(IpsecPolicyMatchers.hasName("mymap:30:15")),
                 hasPolicy(hasLines(equalTo(expectedAclLines))))));
 
     assertThat(c, hasInterface("TenGigabitEthernet0/0", isActive()));
   }
 
-  @Test public void testInvalidCryptoMapDef() throws IOException {
+  @Test
+  public void testInvalidCryptoMapDef() throws IOException {
     String hostname = "ios-crypto-map";
 
     Batfish batfish = getBatfishForConfigurationNames(hostname);
-    ConvertConfigurationAnswerElement ccae = batfish.loadConvertConfigurationAnswerElementOrReparse();
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
 
-    assertThat(ccae, hasRedFlagWarning(hostname,
-        containsString(
-            "Interface TenGigabitEthernet0/1 with declared crypto-map mymap has no ip-address")));
+    assertThat(
+        ccae,
+        hasRedFlagWarning(
+            hostname,
+            containsString(
+                "Interface TenGigabitEthernet0/1 with declared crypto-map mymap has no ip-address")));
   }
 
-  @Test public void testIsakmpPolicyAruba() throws IOException {
+  @Test
+  public void testIsakmpPolicyAruba() throws IOException {
     Configuration c = parseConfig("arubaCrypto");
-    assertThat(c,
-        hasIkeProposal("20", allOf(hasEncryptionAlgorithm(EncryptionAlgorithm.AES_128_CBC),
-            hasAuthenticationMethod(IkeAuthenticationMethod.RSA_SIGNATURES),
-            hasAuthenticationAlgorithm(IkeHashingAlgorithm.SHA_256),
-            hasDiffieHellmanGroup(DiffieHellmanGroup.GROUP19),
-            hasLifeTimeSeconds(86400))));
+    assertThat(
+        c,
+        hasIkeProposal(
+            "20",
+            allOf(
+                hasEncryptionAlgorithm(EncryptionAlgorithm.AES_128_CBC),
+                hasAuthenticationMethod(IkeAuthenticationMethod.RSA_SIGNATURES),
+                hasAuthenticationAlgorithm(IkeHashingAlgorithm.SHA_256),
+                hasDiffieHellmanGroup(DiffieHellmanGroup.GROUP19),
+                hasLifeTimeSeconds(86400))));
     // asserting the default values being set
-    assertThat(c,
-        hasIkeProposal("30", allOf(hasEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC),
-            hasAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS),
-            hasAuthenticationAlgorithm(IkeHashingAlgorithm.SHA1),
-            hasDiffieHellmanGroup(DiffieHellmanGroup.GROUP1),
-            hasLifeTimeSeconds(86400))));
+    assertThat(
+        c,
+        hasIkeProposal(
+            "30",
+            allOf(
+                hasEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC),
+                hasAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS),
+                hasAuthenticationAlgorithm(IkeHashingAlgorithm.SHA1),
+                hasDiffieHellmanGroup(DiffieHellmanGroup.GROUP1),
+                hasLifeTimeSeconds(86400))));
   }
 
-  @Test public void testIsakmpPolicyIos() throws IOException {
+  @Test
+  public void testIsakmpPolicyIos() throws IOException {
     Configuration c = parseConfig("ios-crypto");
 
-    assertThat(c,
-        hasIkeProposal("10", allOf(hasEncryptionAlgorithm(EncryptionAlgorithm.AES_128_CBC),
-            hasAuthenticationMethod(IkeAuthenticationMethod.RSA_SIGNATURES),
-            hasAuthenticationAlgorithm(IkeHashingAlgorithm.MD5),
-            hasDiffieHellmanGroup(DiffieHellmanGroup.GROUP1),
-            hasLifeTimeSeconds(14400))));
+    assertThat(
+        c,
+        hasIkeProposal(
+            "10",
+            allOf(
+                hasEncryptionAlgorithm(EncryptionAlgorithm.AES_128_CBC),
+                hasAuthenticationMethod(IkeAuthenticationMethod.RSA_SIGNATURES),
+                hasAuthenticationAlgorithm(IkeHashingAlgorithm.MD5),
+                hasDiffieHellmanGroup(DiffieHellmanGroup.GROUP1),
+                hasLifeTimeSeconds(14400))));
 
     // asserting the default values being set
-    assertThat(c,
-        hasIkeProposal("20", allOf(hasEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC),
-            hasAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS),
-            hasAuthenticationAlgorithm(IkeHashingAlgorithm.SHA1),
-            hasDiffieHellmanGroup(DiffieHellmanGroup.GROUP2),
-            hasLifeTimeSeconds(86400))));
+    assertThat(
+        c,
+        hasIkeProposal(
+            "20",
+            allOf(
+                hasEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC),
+                hasAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS),
+                hasAuthenticationAlgorithm(IkeHashingAlgorithm.SHA1),
+                hasDiffieHellmanGroup(DiffieHellmanGroup.GROUP2),
+                hasLifeTimeSeconds(86400))));
 
     // test for IKE phase1 proposals
-    assertThat(c, hasIkePhase1Proposal("10", allOf(
-        IkePhase1ProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_128_CBC),
-        IkePhase1ProposalMatchers.hasAuthenticationMethod(IkeAuthenticationMethod.RSA_SIGNATURES),
-        IkePhase1ProposalMatchers.hasHashingAlgorithm(IkeHashingAlgorithm.MD5),
-        IkePhase1ProposalMatchers.hasDiffieHellmanGroup(DiffieHellmanGroup.GROUP1),
-        IkePhase1ProposalMatchers.hasLifeTimeSeconds(14400))));
+    assertThat(
+        c,
+        hasIkePhase1Proposal(
+            "10",
+            allOf(
+                IkePhase1ProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_128_CBC),
+                IkePhase1ProposalMatchers.hasAuthenticationMethod(
+                    IkeAuthenticationMethod.RSA_SIGNATURES),
+                IkePhase1ProposalMatchers.hasHashingAlgorithm(IkeHashingAlgorithm.MD5),
+                IkePhase1ProposalMatchers.hasDiffieHellmanGroup(DiffieHellmanGroup.GROUP1),
+                IkePhase1ProposalMatchers.hasLifeTimeSeconds(14400))));
 
-    assertThat(c, hasIkePhase1Proposal("20", allOf(
-        IkePhase1ProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC),
-        IkePhase1ProposalMatchers.hasAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS),
-        IkePhase1ProposalMatchers.hasHashingAlgorithm(IkeHashingAlgorithm.SHA1),
-        IkePhase1ProposalMatchers.hasDiffieHellmanGroup(DiffieHellmanGroup.GROUP2),
-        IkePhase1ProposalMatchers.hasLifeTimeSeconds(86400))));
+    assertThat(
+        c,
+        hasIkePhase1Proposal(
+            "20",
+            allOf(
+                IkePhase1ProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC),
+                IkePhase1ProposalMatchers.hasAuthenticationMethod(
+                    IkeAuthenticationMethod.PRE_SHARED_KEYS),
+                IkePhase1ProposalMatchers.hasHashingAlgorithm(IkeHashingAlgorithm.SHA1),
+                IkePhase1ProposalMatchers.hasDiffieHellmanGroup(DiffieHellmanGroup.GROUP2),
+                IkePhase1ProposalMatchers.hasLifeTimeSeconds(86400))));
   }
 
-  @Test public void testIsakmpProfile() throws IOException {
+  @Test
+  public void testIsakmpProfile() throws IOException {
     Configuration c = parseConfig("ios-crypto");
-    assertThat(c, hasIkeGateway("ISAKMP-PROFILE-ADDRESS", allOf(hasAddress(new Ip("1.2.3.4")),
-        hasExternalInterface(InterfaceMatchers.hasName("TenGigabitEthernet0/0")),
-        hasLocalIp(new Ip("2.3.4.6")),
-        hasIkePolicy(hasPresharedKeyHash(CommonUtil.sha256Digest("psk1" + CommonUtil.salt()))))));
+    assertThat(
+        c,
+        hasIkeGateway(
+            "ISAKMP-PROFILE-ADDRESS",
+            allOf(
+                hasAddress(new Ip("1.2.3.4")),
+                hasExternalInterface(InterfaceMatchers.hasName("TenGigabitEthernet0/0")),
+                hasLocalIp(new Ip("2.3.4.6")),
+                hasIkePolicy(
+                    hasPresharedKeyHash(CommonUtil.sha256Digest("psk1" + CommonUtil.salt()))))));
 
     // The interface in the local-address should also be mapped with the same local ip
-    assertThat(c, hasIkeGateway("ISAKMP-PROFILE-INTERFACE", allOf(hasAddress(new Ip("1.2.3.4")),
-        hasExternalInterface(InterfaceMatchers.hasName("TenGigabitEthernet0/0")),
-        hasLocalIp(new Ip("2.3.4.6")),
-        hasIkePolicy(hasPresharedKeyHash(CommonUtil.sha256Digest("psk1" + CommonUtil.salt()))))));
+    assertThat(
+        c,
+        hasIkeGateway(
+            "ISAKMP-PROFILE-INTERFACE",
+            allOf(
+                hasAddress(new Ip("1.2.3.4")),
+                hasExternalInterface(InterfaceMatchers.hasName("TenGigabitEthernet0/0")),
+                hasLocalIp(new Ip("2.3.4.6")),
+                hasIkePolicy(
+                    hasPresharedKeyHash(CommonUtil.sha256Digest("psk1" + CommonUtil.salt()))))));
 
     // test for IKE phase 1 policy
-    assertThat(c,
-        hasIkePhase1Policy("ISAKMP-PROFILE-ADDRESS",
-            allOf(hasIkePhase1Key(IkePhase1KeyMatchers.hasKeyHash(CommonUtil.sha256Digest(
-                "psk1" + CommonUtil.salt()))),
+    assertThat(
+        c,
+        hasIkePhase1Policy(
+            "ISAKMP-PROFILE-ADDRESS",
+            allOf(
+                hasIkePhase1Key(
+                    IkePhase1KeyMatchers.hasKeyHash(
+                        CommonUtil.sha256Digest("psk1" + CommonUtil.salt()))),
                 hasRemoteIdentity(containsIp(new Ip("1.2.3.4"))),
                 hasSelfIdentity(equalTo(new Ip("2.3.4.6"))),
                 hasLocalInterface(equalTo("TenGigabitEthernet0/0")),
                 hasIkePhase1Proposals(equalTo(ImmutableList.of("10", "20"))))));
 
-    assertThat(c,
-        hasIkePhase1Policy("ISAKMP-PROFILE-INTERFACE",
-            allOf(hasIkePhase1Key(IkePhase1KeyMatchers.hasKeyHash(CommonUtil.sha256Digest(
-                "psk1" + CommonUtil.salt()))),
+    assertThat(
+        c,
+        hasIkePhase1Policy(
+            "ISAKMP-PROFILE-INTERFACE",
+            allOf(
+                hasIkePhase1Key(
+                    IkePhase1KeyMatchers.hasKeyHash(
+                        CommonUtil.sha256Digest("psk1" + CommonUtil.salt()))),
                 hasRemoteIdentity(containsIp(new Ip("1.2.3.4"))),
                 hasSelfIdentity(equalTo(new Ip("2.3.4.6"))),
                 hasLocalInterface(equalTo("TenGigabitEthernet0/0")),
                 hasIkePhase1Proposals(equalTo(ImmutableList.of("10", "20"))))));
   }
 
-  private static String getCLRegex(SortedMap<String, CommunityList> communityLists,
-      String communityName) {
+  private static String getCLRegex(
+      SortedMap<String, CommunityList> communityLists, String communityName) {
     return communityLists.get(communityName).getLines().get(0).getRegex();
   }
 
-  @Test public void testEosBgpPeers() throws IOException {
+  @Test
+  public void testEosBgpPeers() throws IOException {
     String hostname = "eos-bgp-peers";
     Prefix neighborWithRemoteAs = Prefix.parse("1.1.1.1/32");
     Prefix neighborWithoutRemoteAs = Prefix.parse("2.2.2.2/32");
 
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     Configuration c = batfish.loadConfigurations().get(hostname);
-    ConvertConfigurationAnswerElement ccae = batfish.loadConvertConfigurationAnswerElementOrReparse();
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
 
     /*
      * The peer with a remote-as should appear in the datamodel. The peer without a remote-as
      * should not appear, and there should be a warning about the missing remote-as.
      */
-    assertThat(c,
-        hasDefaultVrf(hasBgpProcess(hasActiveNeighbor(neighborWithRemoteAs, hasRemoteAs(1L)))));
+    assertThat(
+        c, hasDefaultVrf(hasBgpProcess(hasActiveNeighbor(neighborWithRemoteAs, hasRemoteAs(1L)))));
     assertThat(c, hasDefaultVrf(hasBgpProcess(hasNeighbors(not(hasKey(neighborWithoutRemoteAs))))));
-    assertThat(ccae,
-        hasRedFlagWarning(hostname,
-            containsString(String.format("No remote-as set for peer: %s",
-                neighborWithoutRemoteAs.getStartIp()))));
+    assertThat(
+        ccae,
+        hasRedFlagWarning(
+            hostname,
+            containsString(
+                String.format(
+                    "No remote-as set for peer: %s", neighborWithoutRemoteAs.getStartIp()))));
 
     /*
      * Also ensure that default value of allowRemoteAsOut is true.
      */
-    assertThat(c,
-        hasDefaultVrf(hasBgpProcess(hasActiveNeighbor(neighborWithRemoteAs,
-            hasAllowRemoteAsOut(true)))));
+    assertThat(
+        c,
+        hasDefaultVrf(
+            hasBgpProcess(hasActiveNeighbor(neighborWithRemoteAs, hasAllowRemoteAsOut(true)))));
   }
 
-  @Test public void testEosPortChannel() throws IOException {
+  @Test
+  public void testEosPortChannel() throws IOException {
     String hostname = "eos-port-channel";
 
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -1959,39 +2350,50 @@ public class CiscoGrammarTest {
     assertThat(c, hasInterface("Port-Channel2", isActive(false)));
   }
 
-  @Test public void testInterfaceNames() throws IOException {
+  @Test
+  public void testInterfaceNames() throws IOException {
     String testrigName = "interface-names";
     String iosHostname = "ios";
     String i1Name = "Ethernet0/0";
 
     List<String> configurationNames = ImmutableList.of(iosHostname);
 
-    Batfish batfish = BatfishTestUtils.getBatfishFromTestrigText(TestrigText.builder()
-        .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
-        .build(), _folder);
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations();
 
     Interface i1 = configurations.get(iosHostname).getInterfaces().get(i1Name);
     assertThat(i1, hasDeclaredNames("Ethernet0/0", "e0/0", "Eth0/0", "ether0/0-1"));
   }
 
-  @Test public void testIpsecProfile() throws IOException {
+  @Test
+  public void testIpsecProfile() throws IOException {
     Configuration c = parseConfig("ios-crypto-ipsec-profile");
 
-    assertThat(c,
+    assertThat(
+        c,
         hasIpsecPolicy(
             "IPSEC-PROFILE1",
-            allOf(IpsecPolicyMatchers.hasIkeGateway(allOf(hasAddress(new Ip("1.2.3.4")),
-                hasLocalIp(new Ip("2.3.4.6")))),
-                hasIpsecProposals(contains(ImmutableList.of(
-                    allOf(
-                        IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_256_CBC),
-                        IpsecProposalMatchers.hasAuthenticationAlgorithm(
-                            IpsecAuthenticationAlgorithm.HMAC_MD5_96)),
-                    allOf(
-                        IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_256_CBC),
-                        IpsecProposalMatchers.hasAuthenticationAlgorithm(
-                            IpsecAuthenticationAlgorithm.HMAC_SHA1_96))))),
+            allOf(
+                IpsecPolicyMatchers.hasIkeGateway(
+                    allOf(hasAddress(new Ip("1.2.3.4")), hasLocalIp(new Ip("2.3.4.6")))),
+                hasIpsecProposals(
+                    contains(
+                        ImmutableList.of(
+                            allOf(
+                                IpsecProposalMatchers.hasEncryptionAlgorithm(
+                                    EncryptionAlgorithm.AES_256_CBC),
+                                IpsecProposalMatchers.hasAuthenticationAlgorithm(
+                                    IpsecAuthenticationAlgorithm.HMAC_MD5_96)),
+                            allOf(
+                                IpsecProposalMatchers.hasEncryptionAlgorithm(
+                                    EncryptionAlgorithm.AES_256_CBC),
+                                IpsecProposalMatchers.hasAuthenticationAlgorithm(
+                                    IpsecAuthenticationAlgorithm.HMAC_SHA1_96))))),
                 hasPfsKeyGroup(DiffieHellmanGroup.GROUP14))));
 
     // testing the Diffie Hellman groups
@@ -2002,147 +2404,280 @@ public class CiscoGrammarTest {
     assertThat(c, hasIpsecPolicy("IPSEC-PROFILE6", hasPfsKeyGroup(DiffieHellmanGroup.GROUP5)));
   }
 
-  @Test public void testArubaIpsecTransformset() throws IOException {
+  @Test
+  public void testArubaIpsecTransformset() throws IOException {
     Configuration c = parseConfig("arubaCryptoTransformSet");
-    assertThat(c, hasIpsecProposal("ts1", allOf(
-        IpsecProposalMatchers.hasAuthenticationAlgorithm(IpsecAuthenticationAlgorithm.HMAC_MD5_96),
-        IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_128_CBC),
-        hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
-    assertThat(c, hasIpsecProposal("ts2", allOf(
-        IpsecProposalMatchers.hasAuthenticationAlgorithm(IpsecAuthenticationAlgorithm.HMAC_SHA1_96),
-        IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_192_CBC),
-        hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
-    assertThat(c, hasIpsecProposal("ts3", allOf(
-        IpsecProposalMatchers.hasAuthenticationAlgorithm(IpsecAuthenticationAlgorithm.HMAC_MD5_96),
-        IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_256_CBC),
-        hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
-    assertThat(c, hasIpsecProposal("ts4", allOf(
-        IpsecProposalMatchers.hasAuthenticationAlgorithm(IpsecAuthenticationAlgorithm.HMAC_SHA1_96),
-        IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.DES_CBC),
-        hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
-    assertThat(c, hasIpsecProposal("ts5", allOf(
-        IpsecProposalMatchers.hasAuthenticationAlgorithm(IpsecAuthenticationAlgorithm.HMAC_MD5_96),
-        IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC),
-        hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
-    assertThat(c, hasIpsecProposal("ts6", allOf(
-        IpsecProposalMatchers.hasAuthenticationAlgorithm(IpsecAuthenticationAlgorithm.HMAC_MD5_96),
-        IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_128_GCM),
-        hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
-    assertThat(c, hasIpsecProposal("ts7", allOf(
-        IpsecProposalMatchers.hasAuthenticationAlgorithm(IpsecAuthenticationAlgorithm.HMAC_MD5_96),
-        IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_256_GCM),
-        hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
+    assertThat(
+        c,
+        hasIpsecProposal(
+            "ts1",
+            allOf(
+                IpsecProposalMatchers.hasAuthenticationAlgorithm(
+                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
+                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_128_CBC),
+                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
+    assertThat(
+        c,
+        hasIpsecProposal(
+            "ts2",
+            allOf(
+                IpsecProposalMatchers.hasAuthenticationAlgorithm(
+                    IpsecAuthenticationAlgorithm.HMAC_SHA1_96),
+                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_192_CBC),
+                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
+    assertThat(
+        c,
+        hasIpsecProposal(
+            "ts3",
+            allOf(
+                IpsecProposalMatchers.hasAuthenticationAlgorithm(
+                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
+                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_256_CBC),
+                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
+    assertThat(
+        c,
+        hasIpsecProposal(
+            "ts4",
+            allOf(
+                IpsecProposalMatchers.hasAuthenticationAlgorithm(
+                    IpsecAuthenticationAlgorithm.HMAC_SHA1_96),
+                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.DES_CBC),
+                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
+    assertThat(
+        c,
+        hasIpsecProposal(
+            "ts5",
+            allOf(
+                IpsecProposalMatchers.hasAuthenticationAlgorithm(
+                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
+                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC),
+                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
+    assertThat(
+        c,
+        hasIpsecProposal(
+            "ts6",
+            allOf(
+                IpsecProposalMatchers.hasAuthenticationAlgorithm(
+                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
+                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_128_GCM),
+                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
+    assertThat(
+        c,
+        hasIpsecProposal(
+            "ts7",
+            allOf(
+                IpsecProposalMatchers.hasAuthenticationAlgorithm(
+                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
+                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_256_GCM),
+                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
   }
 
-  @Test public void testIpsecTransformset() throws IOException {
+  @Test
+  public void testIpsecTransformset() throws IOException {
     Configuration c = parseConfig("ios-crypto-transform-set");
-    assertThat(c, hasIpsecProposal("ts1", allOf(
-        IpsecProposalMatchers.hasAuthenticationAlgorithm(IpsecAuthenticationAlgorithm.HMAC_MD5_96),
-        IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_256_CBC),
-        hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
-    assertThat(c, hasIpsecProposal("ts2", allOf(
-        IpsecProposalMatchers.hasAuthenticationAlgorithm(IpsecAuthenticationAlgorithm.HMAC_SHA1_96),
-        IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC),
-        hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP, IpsecProtocol.AH)))));
-    assertThat(c, hasIpsecProposal("ts3", allOf(
-        IpsecProposalMatchers.hasAuthenticationAlgorithm(IpsecAuthenticationAlgorithm.HMAC_MD5_96),
-        IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_192_CBC),
-        hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP, IpsecProtocol.AH)))));
-    assertThat(c, hasIpsecProposal("ts4", allOf(
-        IpsecProposalMatchers.hasAuthenticationAlgorithm(IpsecAuthenticationAlgorithm.HMAC_MD5_96),
-        IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_128_GCM),
-        hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
-    assertThat(c, hasIpsecProposal("ts5", allOf(
-        IpsecProposalMatchers.hasAuthenticationAlgorithm(IpsecAuthenticationAlgorithm.HMAC_MD5_96),
-        IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_256_GCM),
-        hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
-    assertThat(c, hasIpsecProposal("ts6", allOf(
-        IpsecProposalMatchers.hasAuthenticationAlgorithm(IpsecAuthenticationAlgorithm.HMAC_MD5_96),
-        IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_128_GMAC),
-        hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
-    assertThat(c, hasIpsecProposal("ts7", allOf(
-        IpsecProposalMatchers.hasAuthenticationAlgorithm(IpsecAuthenticationAlgorithm.HMAC_MD5_96),
-        IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_256_GMAC),
-        hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
-    assertThat(c, hasIpsecProposal("ts8", allOf(
-        IpsecProposalMatchers.hasAuthenticationAlgorithm(IpsecAuthenticationAlgorithm.HMAC_MD5_96),
-        IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.SEAL_160),
-        hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
-    assertThat(c, hasIpsecProposal("ts9", allOf(
-        IpsecProposalMatchers.hasAuthenticationAlgorithm(IpsecAuthenticationAlgorithm.HMAC_MD5_96),
-        IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.NULL),
-        hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
+    assertThat(
+        c,
+        hasIpsecProposal(
+            "ts1",
+            allOf(
+                IpsecProposalMatchers.hasAuthenticationAlgorithm(
+                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
+                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_256_CBC),
+                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
+    assertThat(
+        c,
+        hasIpsecProposal(
+            "ts2",
+            allOf(
+                IpsecProposalMatchers.hasAuthenticationAlgorithm(
+                    IpsecAuthenticationAlgorithm.HMAC_SHA1_96),
+                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC),
+                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP, IpsecProtocol.AH)))));
+    assertThat(
+        c,
+        hasIpsecProposal(
+            "ts3",
+            allOf(
+                IpsecProposalMatchers.hasAuthenticationAlgorithm(
+                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
+                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_192_CBC),
+                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP, IpsecProtocol.AH)))));
+    assertThat(
+        c,
+        hasIpsecProposal(
+            "ts4",
+            allOf(
+                IpsecProposalMatchers.hasAuthenticationAlgorithm(
+                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
+                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_128_GCM),
+                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
+    assertThat(
+        c,
+        hasIpsecProposal(
+            "ts5",
+            allOf(
+                IpsecProposalMatchers.hasAuthenticationAlgorithm(
+                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
+                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_256_GCM),
+                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
+    assertThat(
+        c,
+        hasIpsecProposal(
+            "ts6",
+            allOf(
+                IpsecProposalMatchers.hasAuthenticationAlgorithm(
+                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
+                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_128_GMAC),
+                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
+    assertThat(
+        c,
+        hasIpsecProposal(
+            "ts7",
+            allOf(
+                IpsecProposalMatchers.hasAuthenticationAlgorithm(
+                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
+                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_256_GMAC),
+                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
+    assertThat(
+        c,
+        hasIpsecProposal(
+            "ts8",
+            allOf(
+                IpsecProposalMatchers.hasAuthenticationAlgorithm(
+                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
+                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.SEAL_160),
+                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
+    assertThat(
+        c,
+        hasIpsecProposal(
+            "ts9",
+            allOf(
+                IpsecProposalMatchers.hasAuthenticationAlgorithm(
+                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
+                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.NULL),
+                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
   }
 
-  @Test public void testTransformsetToIpsecphase2Proposal() throws IOException {
+  @Test
+  public void testTransformsetToIpsecphase2Proposal() throws IOException {
     Configuration c = parseConfig("ios-crypto-transform-set");
-    assertThat(c, hasIpsecPhase2Proposal("ts1", allOf(
-        IpsecPhase2ProposalMatchers.hasAuthenticationAlgorithm(IpsecAuthenticationAlgorithm.HMAC_MD5_96),
-        IpsecPhase2ProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_256_CBC),
-        IpsecPhase2ProposalMatchers.hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)),
-        IpsecPhase2ProposalMatchers.hasIpsecEncapsulationMode(IpsecEncapsulationMode.TUNNEL))));
-    assertThat(c, hasIpsecPhase2Proposal("ts2", allOf(
-        IpsecPhase2ProposalMatchers.hasAuthenticationAlgorithm(IpsecAuthenticationAlgorithm.HMAC_SHA1_96),
-        IpsecPhase2ProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC),
-        IpsecPhase2ProposalMatchers.hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP,
-            IpsecProtocol.AH)),
-        IpsecPhase2ProposalMatchers.hasIpsecEncapsulationMode(IpsecEncapsulationMode.TUNNEL))));
-    assertThat(c, hasIpsecPhase2Proposal("ts3", allOf(
-        IpsecPhase2ProposalMatchers.hasAuthenticationAlgorithm(IpsecAuthenticationAlgorithm.HMAC_MD5_96),
-        IpsecPhase2ProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_192_CBC),
-        IpsecPhase2ProposalMatchers.hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP,
-            IpsecProtocol.AH)),
-        IpsecPhase2ProposalMatchers.hasIpsecEncapsulationMode(IpsecEncapsulationMode.TUNNEL))));
-    assertThat(c, hasIpsecPhase2Proposal("ts4", allOf(
-        IpsecPhase2ProposalMatchers.hasAuthenticationAlgorithm(IpsecAuthenticationAlgorithm.HMAC_MD5_96),
-        IpsecPhase2ProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_128_GCM),
-        IpsecPhase2ProposalMatchers.hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)),
-        IpsecPhase2ProposalMatchers.hasIpsecEncapsulationMode(IpsecEncapsulationMode.TUNNEL))));
+    assertThat(
+        c,
+        hasIpsecPhase2Proposal(
+            "ts1",
+            allOf(
+                IpsecPhase2ProposalMatchers.hasAuthenticationAlgorithm(
+                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
+                IpsecPhase2ProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_256_CBC),
+                IpsecPhase2ProposalMatchers.hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)),
+                IpsecPhase2ProposalMatchers.hasIpsecEncapsulationMode(
+                    IpsecEncapsulationMode.TUNNEL))));
+    assertThat(
+        c,
+        hasIpsecPhase2Proposal(
+            "ts2",
+            allOf(
+                IpsecPhase2ProposalMatchers.hasAuthenticationAlgorithm(
+                    IpsecAuthenticationAlgorithm.HMAC_SHA1_96),
+                IpsecPhase2ProposalMatchers.hasEncryptionAlgorithm(
+                    EncryptionAlgorithm.THREEDES_CBC),
+                IpsecPhase2ProposalMatchers.hasProtocols(
+                    ImmutableSortedSet.of(IpsecProtocol.ESP, IpsecProtocol.AH)),
+                IpsecPhase2ProposalMatchers.hasIpsecEncapsulationMode(
+                    IpsecEncapsulationMode.TUNNEL))));
+    assertThat(
+        c,
+        hasIpsecPhase2Proposal(
+            "ts3",
+            allOf(
+                IpsecPhase2ProposalMatchers.hasAuthenticationAlgorithm(
+                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
+                IpsecPhase2ProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_192_CBC),
+                IpsecPhase2ProposalMatchers.hasProtocols(
+                    ImmutableSortedSet.of(IpsecProtocol.ESP, IpsecProtocol.AH)),
+                IpsecPhase2ProposalMatchers.hasIpsecEncapsulationMode(
+                    IpsecEncapsulationMode.TUNNEL))));
+    assertThat(
+        c,
+        hasIpsecPhase2Proposal(
+            "ts4",
+            allOf(
+                IpsecPhase2ProposalMatchers.hasAuthenticationAlgorithm(
+                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
+                IpsecPhase2ProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_128_GCM),
+                IpsecPhase2ProposalMatchers.hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)),
+                IpsecPhase2ProposalMatchers.hasIpsecEncapsulationMode(
+                    IpsecEncapsulationMode.TUNNEL))));
 
-    assertThat(c, hasIpsecPhase2Proposal("ts5", allOf(
-        IpsecPhase2ProposalMatchers.hasAuthenticationAlgorithm(IpsecAuthenticationAlgorithm.HMAC_MD5_96),
-        IpsecPhase2ProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_256_GCM),
-        IpsecPhase2ProposalMatchers.hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)),
-        IpsecPhase2ProposalMatchers.hasIpsecEncapsulationMode(IpsecEncapsulationMode.TUNNEL))));
+    assertThat(
+        c,
+        hasIpsecPhase2Proposal(
+            "ts5",
+            allOf(
+                IpsecPhase2ProposalMatchers.hasAuthenticationAlgorithm(
+                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
+                IpsecPhase2ProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_256_GCM),
+                IpsecPhase2ProposalMatchers.hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)),
+                IpsecPhase2ProposalMatchers.hasIpsecEncapsulationMode(
+                    IpsecEncapsulationMode.TUNNEL))));
 
-    assertThat(c, hasIpsecPhase2Proposal("ts6", allOf(
-        IpsecPhase2ProposalMatchers.hasAuthenticationAlgorithm(IpsecAuthenticationAlgorithm.HMAC_MD5_96),
-        IpsecPhase2ProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_128_GMAC),
-        IpsecPhase2ProposalMatchers.hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)),
-        IpsecPhase2ProposalMatchers.hasIpsecEncapsulationMode(IpsecEncapsulationMode.TUNNEL))));
+    assertThat(
+        c,
+        hasIpsecPhase2Proposal(
+            "ts6",
+            allOf(
+                IpsecPhase2ProposalMatchers.hasAuthenticationAlgorithm(
+                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
+                IpsecPhase2ProposalMatchers.hasEncryptionAlgorithm(
+                    EncryptionAlgorithm.AES_128_GMAC),
+                IpsecPhase2ProposalMatchers.hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)),
+                IpsecPhase2ProposalMatchers.hasIpsecEncapsulationMode(
+                    IpsecEncapsulationMode.TUNNEL))));
   }
 
-  @Test public void testIpsecVpnIos() throws IOException {
+  @Test
+  public void testIpsecVpnIos() throws IOException {
     String testrigName = "ipsec-vpn-ios";
     List<String> configurationNames = ImmutableList.of("r1", "r2", "r3");
 
-    Batfish batfish = BatfishTestUtils.getBatfishFromTestrigText(TestrigText.builder()
-        .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
-        .build(), _folder);
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations();
 
     assertThat(
         configurations.values().stream().mapToLong(c -> c.getIpsecVpns().values().size()).sum(),
         equalTo(6L));
-    configurations.values()
+    configurations
+        .values()
         .stream()
         .flatMap(c -> c.getIpsecVpns().values().stream())
         .forEach(iv -> assertThat(iv.getRemoteIpsecVpn(), not(nullValue())));
     /* Two tunnels should not be established because of a password mismatch between r1 and r3 */
-    assertThat(configurations.values()
-        .stream()
-        .flatMap(c -> c.getInterfaces().values().stream())
-        .filter(i -> i.getInterfaceType().equals(InterfaceType.TUNNEL) && i.getActive())
-        .count(), equalTo(4L));
+    assertThat(
+        configurations
+            .values()
+            .stream()
+            .flatMap(c -> c.getInterfaces().values().stream())
+            .filter(i -> i.getInterfaceType().equals(InterfaceType.TUNNEL) && i.getActive())
+            .count(),
+        equalTo(4L));
   }
 
-  @Test public void testIpsecTopology() throws IOException {
+  @Test
+  public void testIpsecTopology() throws IOException {
     String testrigName = "ios-crypto-ipsec";
     List<String> configurationNames = ImmutableList.of("r1", "r2", "r3");
 
-    Batfish batfish = BatfishTestUtils.getBatfishFromTestrigText(TestrigText.builder()
-        .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
-        .build(), _folder);
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations();
     ValueGraph<IpsecPeerConfigId, IpsecSession> graph = IpsecUtil.initIpsecTopology(configurations);
 
@@ -2165,16 +2700,20 @@ public class CiscoGrammarTest {
     }
   }
 
-  @Test public void testNxosOspfAreaParameters() throws IOException {
+  @Test
+  public void testNxosOspfAreaParameters() throws IOException {
     String testrigName = "nxos-ospf";
     String hostname = "nxos-ospf-area";
     String ifaceName = "Ethernet1";
     long areaNum = 1L;
     List<String> configurationNames = ImmutableList.of(hostname);
 
-    Batfish batfish = BatfishTestUtils.getBatfishFromTestrigText(TestrigText.builder()
-        .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
-        .build(), _folder);
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations();
 
     /* Ensure bidirectional references between OSPF area and interface */
@@ -2188,7 +2727,8 @@ public class CiscoGrammarTest {
     assertThat(c, hasInterface(ifaceName, isOspfPointToPoint()));
   }
 
-  @Test public void testNxosOspfNonDefaultVrf() throws IOException {
+  @Test
+  public void testNxosOspfNonDefaultVrf() throws IOException {
     String testrigName = "nxos-ospf";
     String hostname = "nxos-ospf-iface-in-vrf";
     String ifaceName = "Ethernet1";
@@ -2196,9 +2736,12 @@ public class CiscoGrammarTest {
     long areaNum = 1L;
     List<String> configurationNames = ImmutableList.of(hostname);
 
-    Batfish batfish = BatfishTestUtils.getBatfishFromTestrigText(TestrigText.builder()
-        .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
-        .build(), _folder);
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations();
 
     /* Ensure bidirectional references between OSPF area and interface */
@@ -2215,18 +2758,21 @@ public class CiscoGrammarTest {
     assertThat(c, hasInterface(ifaceName, isOspfPointToPoint()));
   }
 
-  @Test public void testOspfMaxMetric() throws IOException {
+  @Test
+  public void testOspfMaxMetric() throws IOException {
     String testrigName = "ospf-max-metric";
     String iosMaxMetricName = "ios-max-metric";
     String iosMaxMetricCustomName = "ios-max-metric-custom";
     String iosMaxMetricOnStartupName = "ios-max-metric-on-startup";
-    List<String> configurationNames = ImmutableList.of(iosMaxMetricName,
-        iosMaxMetricCustomName,
-        iosMaxMetricOnStartupName);
+    List<String> configurationNames =
+        ImmutableList.of(iosMaxMetricName, iosMaxMetricCustomName, iosMaxMetricOnStartupName);
 
-    Batfish batfish = BatfishTestUtils.getBatfishFromTestrigText(TestrigText.builder()
-        .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
-        .build(), _folder);
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations();
 
     Configuration iosMaxMetric = configurations.get(iosMaxMetricName);
@@ -2235,10 +2781,13 @@ public class CiscoGrammarTest {
     OspfProcess proc = iosMaxMetric.getDefaultVrf().getOspfProcess();
     OspfProcess procCustom = iosMaxMetricCustom.getDefaultVrf().getOspfProcess();
     OspfProcess procOnStartup = iosMaxMetricOnStartup.getDefaultVrf().getOspfProcess();
-    long expectedMaxMetricRouterLsa = org.batfish.representation.cisco.OspfProcess.MAX_METRIC_ROUTER_LSA;
+    long expectedMaxMetricRouterLsa =
+        org.batfish.representation.cisco.OspfProcess.MAX_METRIC_ROUTER_LSA;
     long expectedMaxMetricStub = org.batfish.representation.cisco.OspfProcess.MAX_METRIC_ROUTER_LSA;
-    long expectedMaxMetricExternal = org.batfish.representation.cisco.OspfProcess.DEFAULT_MAX_METRIC_EXTERNAL_LSA;
-    long expectedMaxMetricSummary = org.batfish.representation.cisco.OspfProcess.DEFAULT_MAX_METRIC_SUMMARY_LSA;
+    long expectedMaxMetricExternal =
+        org.batfish.representation.cisco.OspfProcess.DEFAULT_MAX_METRIC_EXTERNAL_LSA;
+    long expectedMaxMetricSummary =
+        org.batfish.representation.cisco.OspfProcess.DEFAULT_MAX_METRIC_SUMMARY_LSA;
     long expectedCustomMaxMetricExternal = 12345L;
     long expectedCustomMaxMetricSummary = 23456L;
 
@@ -2256,14 +2805,18 @@ public class CiscoGrammarTest {
     assertThat(procOnStartup.getMaxMetricSummaryNetworks(), is(nullValue()));
   }
 
-  @Test public void testOspfPointToPoint() throws IOException {
+  @Test
+  public void testOspfPointToPoint() throws IOException {
     String testrigName = "ospf-point-to-point";
     String iosOspfPointToPoint = "ios-ospf-point-to-point";
     List<String> configurationNames = ImmutableList.of(iosOspfPointToPoint);
 
-    Batfish batfish = BatfishTestUtils.getBatfishFromTestrigText(TestrigText.builder()
-        .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
-        .build(), _folder);
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations();
 
     Configuration iosMaxMetric = configurations.get(iosOspfPointToPoint);
@@ -2274,14 +2827,18 @@ public class CiscoGrammarTest {
     assertFalse(e0Sub1.getOspfPointToPoint());
   }
 
-  @Test public void testParsingRecovery() throws IOException {
+  @Test
+  public void testParsingRecovery() throws IOException {
     String testrigName = "parsing-recovery";
     String hostname = "ios-recovery";
     List<String> configurationNames = ImmutableList.of(hostname);
 
-    Batfish batfish = BatfishTestUtils.getBatfishFromTestrigText(TestrigText.builder()
-        .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
-        .build(), _folder);
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
     batfish.getSettings().setDisableUnrecognized(false);
     Map<String, Configuration> configurations = batfish.loadConfigurations();
 
@@ -2302,15 +2859,19 @@ public class CiscoGrammarTest {
     assertThat(new InterfaceAddress("10.0.0.4/32"), in(l4Prefixes));
   }
 
-  @Test public void testParsingRecovery1141() throws IOException {
+  @Test
+  public void testParsingRecovery1141() throws IOException {
     // Test for https://github.com/batfish/batfish/issues/1141
     String testrigName = "parsing-recovery";
     String hostname = "ios-recovery-1141";
     List<String> configurationNames = ImmutableList.of(hostname);
 
-    Batfish batfish = BatfishTestUtils.getBatfishFromTestrigText(TestrigText.builder()
-        .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
-        .build(), _folder);
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
     batfish.getSettings().setDisableUnrecognized(false);
     Map<String, Configuration> configurations = batfish.loadConfigurations();
 
@@ -2318,15 +2879,18 @@ public class CiscoGrammarTest {
     assertThat(iosRecovery, allOf(Matchers.notNullValue(), hasInterface("Loopback0", anything())));
   }
 
-  @Test public void testParsingRecoveryNoInfiniteLoopDuringAdaptivePredictionAtEof()
-      throws IOException {
+  @Test
+  public void testParsingRecoveryNoInfiniteLoopDuringAdaptivePredictionAtEof() throws IOException {
     String testrigName = "parsing-recovery";
     String hostname = "ios-blankish-file";
     List<String> configurationNames = ImmutableList.of(hostname);
 
-    Batfish batfish = BatfishTestUtils.getBatfishFromTestrigText(TestrigText.builder()
-        .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
-        .build(), _folder);
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
     batfish.getSettings().setDisableUnrecognized(false);
     Map<String, Configuration> configurations = batfish.loadConfigurations();
 
@@ -2334,14 +2898,18 @@ public class CiscoGrammarTest {
     assertThat(configurations.entrySet(), hasSize(1));
   }
 
-  @Test public void testParsingUnrecognizedInterfaceName() throws IOException {
+  @Test
+  public void testParsingUnrecognizedInterfaceName() throws IOException {
     String testrigName = "parsing-recovery";
     String hostname = "ios-bad-interface-name";
     List<String> configurationNames = ImmutableList.of(hostname);
 
-    Batfish batfish = BatfishTestUtils.getBatfishFromTestrigText(TestrigText.builder()
-        .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
-        .build(), _folder);
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations();
 
     /* Parser should not crash, and configuration with hostname from file should be generated */
@@ -2354,18 +2922,19 @@ public class CiscoGrammarTest {
 
   private Map<String, Configuration> parseTextConfigs(String... configurationNames)
       throws IOException {
-    String[] names = Arrays.stream(configurationNames)
-        .map(s -> TESTCONFIGS_PREFIX + s)
-        .toArray(String[]::new);
+    String[] names =
+        Arrays.stream(configurationNames).map(s -> TESTCONFIGS_PREFIX + s).toArray(String[]::new);
     return BatfishTestUtils.parseTextConfigs(_folder, names);
   }
 
-  @Test public void testPrefixListNameParsing() throws IOException {
+  @Test
+  public void testPrefixListNameParsing() throws IOException {
     String hostname = "prefix-list-name-parsing";
     String filename = "configs/" + hostname;
     String prefixListName = "SET_COMMUNITY_65535:200";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
-    ConvertConfigurationAnswerElement ccae = batfish.loadConvertConfigurationAnswerElementOrReparse();
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
 
     /* Confirm prefix-list with correct name was defined */
     assertThat(ccae, hasDefinedStructure(filename, PREFIX_LIST, prefixListName));
@@ -2374,12 +2943,13 @@ public class CiscoGrammarTest {
     assertThat(ccae, hasNumReferrers(filename, PREFIX_LIST, prefixListName, 1));
   }
 
-  @Test public void testRfc1583Compatible() throws IOException {
-    String[] configurationNames = new String[] { "rfc1583Compatible", "rfc1583NoCompatible",
-        "rfc1583Unconfigured" };
+  @Test
+  public void testRfc1583Compatible() throws IOException {
+    String[] configurationNames =
+        new String[] {"rfc1583Compatible", "rfc1583NoCompatible", "rfc1583Unconfigured"};
     Map<String, Configuration> configurations = parseTextConfigs(configurationNames);
 
-    Boolean[] expectedResults = new Boolean[] { Boolean.TRUE, Boolean.FALSE, null };
+    Boolean[] expectedResults = new Boolean[] {Boolean.TRUE, Boolean.FALSE, null};
     for (int i = 0; i < configurationNames.length; i++) {
       Configuration configuration = configurations.get(configurationNames[i].toLowerCase());
       assertThat(configuration.getVrfs().size(), equalTo(1));
@@ -2389,29 +2959,40 @@ public class CiscoGrammarTest {
     }
   }
 
-  @Test public void testAristaSubinterfaceMtu() throws IOException {
+  @Test
+  public void testAristaSubinterfaceMtu() throws IOException {
     Configuration c = parseConfig("aristaInterface");
 
     assertThat(c, hasInterface("Ethernet3/2/1.4", hasMtu(9000)));
   }
 
-  @Test public void testNxosBgpVrf() throws IOException {
+  @Test
+  public void testNxosBgpVrf() throws IOException {
     Configuration c = parseConfig("nxosBgpVrf");
     assertThat(c.getVrfs().get("bar").getBgpProcess().getActiveNeighbors().values(), hasSize(2));
-    assertThat(c,
-        ConfigurationMatchers.hasVrf("bar",
-            hasBgpProcess(hasActiveNeighbor(Prefix.parse("2.2.2.2/32"),
-                allOf(hasRemoteAs(2L), hasLocalAs(1L), hasAllowRemoteAsOut(true))))));
-    assertThat(c,
-        ConfigurationMatchers.hasVrf("bar",
-            hasBgpProcess(hasActiveNeighbor(Prefix.parse("3.3.3.3/32"),
-                hasAllowRemoteAsOut(false)))));
+    assertThat(
+        c,
+        ConfigurationMatchers.hasVrf(
+            "bar",
+            hasBgpProcess(
+                hasActiveNeighbor(
+                    Prefix.parse("2.2.2.2/32"),
+                    allOf(hasRemoteAs(2L), hasLocalAs(1L), hasAllowRemoteAsOut(true))))));
+    assertThat(
+        c,
+        ConfigurationMatchers.hasVrf(
+            "bar",
+            hasBgpProcess(
+                hasActiveNeighbor(Prefix.parse("3.3.3.3/32"), hasAllowRemoteAsOut(false)))));
   }
 
-  @Test public void testArista100gfullInterface() throws IOException {
+  @Test
+  public void testArista100gfullInterface() throws IOException {
     Configuration c = parseConfig("arista100gfull");
-    assertThat(c,
-        hasInterface("Ethernet1/1",
+    assertThat(
+        c,
+        hasInterface(
+            "Ethernet1/1",
             hasAllAddresses(containsInAnyOrder(new InterfaceAddress("10.20.0.3/31")))));
   }
 }

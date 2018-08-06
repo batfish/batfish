@@ -66,8 +66,10 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
     IpAccessList postrouting = configuration.getIpAccessLists().remove("mangle::POSTROUTING");
 
     if (!configuration.getIpAccessLists().isEmpty()) {
-      throw new BatfishException("Merging iptables rules for " + configuration.getHostname()
-          + ": only mangle tables are supported");
+      throw new BatfishException(
+          "Merging iptables rules for "
+              + configuration.getHostname()
+              + ": only mangle tables are supported");
     }
 
     if (prerouting != null) {
@@ -75,10 +77,16 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
 
         String dbgName = configuration.getHostname() + ":" + i.getName();
 
-        List<IpAccessListLine> newRules = prerouting.getLines().stream().filter(l -> {
-          String iface = _lineInInterfaces.get(l);
-          return iface == null || i.getName().equals(iface);
-        }).collect(Collectors.toList());
+        List<IpAccessListLine> newRules =
+            prerouting
+                .getLines()
+                .stream()
+                .filter(
+                    l -> {
+                      String iface = _lineInInterfaces.get(l);
+                      return iface == null || i.getName().equals(iface);
+                    })
+                .collect(Collectors.toList());
 
         // TODO: ipv6
 
@@ -102,10 +110,16 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
 
         String dbgName = configuration.getHostname() + ":" + i.getName();
 
-        List<IpAccessListLine> newRules = postrouting.getLines().stream().filter(l -> {
-          String iface = _lineOutInterfaces.get(l);
-          return iface == null || i.getName().equals(iface);
-        }).collect(Collectors.toList());
+        List<IpAccessListLine> newRules =
+            postrouting
+                .getLines()
+                .stream()
+                .filter(
+                    l -> {
+                      String iface = _lineOutInterfaces.get(l);
+                      return iface == null || i.getName().equals(iface);
+                    })
+                .collect(Collectors.toList());
 
         // TODO: ipv6
 
@@ -125,11 +139,13 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
     }
   }
 
-  @Override public String getHostname() {
+  @Override
+  public String getHostname() {
     return _hostname;
   }
 
-  @Override public Set<String> getUnimplementedFeatures() {
+  @Override
+  public Set<String> getUnimplementedFeatures() {
     return _unimplementedFeatures;
   }
 
@@ -137,12 +153,14 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
     return _vendor;
   }
 
-  @Override public void setHostname(String hostname) {
+  @Override
+  public void setHostname(String hostname) {
     checkNotNull(hostname, "'hostname' cannot be null");
     _hostname = hostname.toLowerCase();
   }
 
-  @Override public void setVendor(ConfigurationFormat format) {
+  @Override
+  public void setVendor(ConfigurationFormat format) {
     _vendor = format;
   }
 
@@ -157,48 +175,54 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
 
       for (IptablesMatch match : rule.getMatchList()) {
         switch (match.getMatchType()) {
-        case DESTINATION:
-          headerSpaceBuilder.setDstIps(AclIpSpace.union(headerSpaceBuilder.getDstIps(),
-              match.toIpWildcard().toIpSpace()));
-          break;
-        case DESTINATION_PORT:
-          headerSpaceBuilder.setDstPorts(Iterables.concat(headerSpaceBuilder.getDstPorts(),
-              match.toPortRanges()));
-          break;
-        case IN_INTERFACE:
-          inInterfaceMatches.add(match);
-          anyInterface = false;
-          break;
-        case OUT_INTERFACE:
-          outInterfaceMatches.add(match);
-          anyInterface = false;
-          break;
-        case PROTOCOL:
-          headerSpaceBuilder.setIpProtocols(Iterables.concat(headerSpaceBuilder.getIpProtocols(),
-              ImmutableSet.of(match.toIpProtocol())));
-          break;
-        case SOURCE:
-          headerSpaceBuilder.setSrcIps(AclIpSpace.union(headerSpaceBuilder.getSrcIps(),
-              match.toIpWildcard().toIpSpace()));
-          break;
-        case SOURCE_PORT:
-          headerSpaceBuilder.setSrcPorts(Iterables.concat(headerSpaceBuilder.getSrcPorts(),
-              match.toPortRanges()));
-          break;
-        default:
-          throw new BatfishException("Unknown match type: " + match.getMatchType());
+          case DESTINATION:
+            headerSpaceBuilder.setDstIps(
+                AclIpSpace.union(headerSpaceBuilder.getDstIps(), match.toIpWildcard().toIpSpace()));
+            break;
+          case DESTINATION_PORT:
+            headerSpaceBuilder.setDstPorts(
+                Iterables.concat(headerSpaceBuilder.getDstPorts(), match.toPortRanges()));
+            break;
+          case IN_INTERFACE:
+            inInterfaceMatches.add(match);
+            anyInterface = false;
+            break;
+          case OUT_INTERFACE:
+            outInterfaceMatches.add(match);
+            anyInterface = false;
+            break;
+          case PROTOCOL:
+            headerSpaceBuilder.setIpProtocols(
+                Iterables.concat(
+                    headerSpaceBuilder.getIpProtocols(), ImmutableSet.of(match.toIpProtocol())));
+            break;
+          case SOURCE:
+            headerSpaceBuilder.setSrcIps(
+                AclIpSpace.union(headerSpaceBuilder.getSrcIps(), match.toIpWildcard().toIpSpace()));
+            break;
+          case SOURCE_PORT:
+            headerSpaceBuilder.setSrcPorts(
+                Iterables.concat(headerSpaceBuilder.getSrcPorts(), match.toPortRanges()));
+            break;
+          default:
+            throw new BatfishException("Unknown match type: " + match.getMatchType());
         }
       }
-      IpAccessListLine aclLine = IpAccessListLine.builder()
-          .setAction(rule.getIpAccessListLineAction())
-          .setMatchCondition(new MatchHeaderSpace(headerSpaceBuilder.build()))
-          .setName(rule.getName())
-          .build();
+      IpAccessListLine aclLine =
+          IpAccessListLine.builder()
+              .setAction(rule.getIpAccessListLineAction())
+              .setMatchCondition(new MatchHeaderSpace(headerSpaceBuilder.build()))
+              .setName(rule.getName())
+              .build();
 
-      inInterfaceMatches.forEach(match -> _lineInInterfaces.put(aclLine,
-          vc.canonicalizeInterfaceName(match.toInterfaceName())));
-      outInterfaceMatches.forEach(match -> _lineOutInterfaces.put(aclLine,
-          vc.canonicalizeInterfaceName(match.toInterfaceName())));
+      inInterfaceMatches.forEach(
+          match ->
+              _lineInInterfaces.put(
+                  aclLine, vc.canonicalizeInterfaceName(match.toInterfaceName())));
+      outInterfaceMatches.forEach(
+          match ->
+              _lineOutInterfaces.put(
+                  aclLine, vc.canonicalizeInterfaceName(match.toInterfaceName())));
 
       if (anyInterface) {
         _lineInInterfaces.put(aclLine, null);
@@ -210,11 +234,12 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
 
     // add a final line corresponding to default chain policy
     LineAction chainAction = chain.getIpAccessListLineAction();
-    IpAccessListLine defaultLine = IpAccessListLine.builder()
-        .setAction(chainAction)
-        .setMatchCondition(TrueExpr.INSTANCE)
-        .setName("default")
-        .build();
+    IpAccessListLine defaultLine =
+        IpAccessListLine.builder()
+            .setAction(chainAction)
+            .setMatchCondition(TrueExpr.INSTANCE)
+            .setName("default")
+            .build();
     lines.add(defaultLine);
 
     return IpAccessList.builder().setName(aclName).setLines(lines.build()).build();
@@ -224,8 +249,8 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
     return tableName + "::" + chainName;
   }
 
-  @Override public Configuration toVendorIndependentConfiguration()
-      throws VendorConversionException {
+  @Override
+  public Configuration toVendorIndependentConfiguration() throws VendorConversionException {
     throw new BatfishException("Not meant to be converted to vendor-independent format");
   }
 }
