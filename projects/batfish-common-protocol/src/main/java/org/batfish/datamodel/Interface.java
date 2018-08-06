@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
@@ -49,6 +50,10 @@ public final class Interface extends ComparableStructure<String> {
 
     @Nullable private EigrpInterfaceSettings _eigrp;
 
+    private Map<Integer, HsrpGroup> _hsrpGroups;
+
+    private String _hsrpVersion;
+
     private IpAccessList _incomingFilter;
 
     private IsisInterfaceSettings _isis;
@@ -85,6 +90,7 @@ public final class Interface extends ComparableStructure<String> {
       super(networkFactory, Interface.class);
       _additionalArpIps = ImmutableSortedSet.of();
       _declaredNames = ImmutableSortedSet.of();
+      _hsrpGroups = ImmutableMap.of();
       _secondaryAddresses = ImmutableSet.of();
       _sourceNats = ImmutableList.of();
       _vrrpGroups = ImmutableSortedMap.of();
@@ -106,6 +112,8 @@ public final class Interface extends ComparableStructure<String> {
       iface.setBlacklisted(_blacklisted);
       iface.setDeclaredNames(_declaredNames);
       iface.setEigrp(_eigrp);
+      iface.setHsrpGroups(_hsrpGroups);
+      iface.setHsrpVersion(_hsrpVersion);
       iface.setIncomingFilter(_incomingFilter);
       iface.setIsis(_isis);
       iface.setOspfArea(_ospfArea);
@@ -210,6 +218,16 @@ public final class Interface extends ComparableStructure<String> {
 
     public Builder setEigrp(@Nullable EigrpInterfaceSettings eigrp) {
       _eigrp = eigrp;
+      return this;
+    }
+
+    public @Nonnull Builder setHsrpGroups(@Nonnull Map<Integer, HsrpGroup> hsrpGroups) {
+      _hsrpGroups = ImmutableMap.copyOf(hsrpGroups);
+      return this;
+    }
+
+    public @Nonnull Builder setHsrpVersion(@Nullable String hsrpVersion) {
+      _hsrpVersion = hsrpVersion;
       return this;
     }
 
