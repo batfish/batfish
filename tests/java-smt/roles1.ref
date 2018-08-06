@@ -10,7 +10,9 @@
       ],
       [
         "R1,Serial10 --> _,_",
-        "R1,Serial11 --> _,_"
+        "R1,Serial11 --> _,_",
+        "R1,Serial8 --> _,_",
+        "R1,Serial9 --> _,_"
       ],
       [
         "R1,Serial12 --> _,_",
@@ -26,10 +28,6 @@
       ],
       [
         "R1,Serial7 --> _,_"
-      ],
-      [
-        "R1,Serial8 --> _,_",
-        "R1,Serial9 --> _,_"
       ]
     ],
     "importBgpEcs" : [
@@ -41,7 +39,9 @@
       ],
       [
         "R1,Serial10 --> _,_",
-        "R1,Serial11 --> _,_"
+        "R1,Serial11 --> _,_",
+        "R1,Serial8 --> _,_",
+        "R1,Serial9 --> _,_"
       ],
       [
         "R1,Serial12 --> _,_",
@@ -57,10 +57,6 @@
       ],
       [
         "R1,Serial7 --> _,_"
-      ],
-      [
-        "R1,Serial8 --> _,_",
-        "R1,Serial9 --> _,_"
       ]
     ],
     "incomingAclEcs" : [
