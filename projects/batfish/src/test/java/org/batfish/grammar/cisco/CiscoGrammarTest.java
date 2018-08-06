@@ -1284,6 +1284,22 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testIosOspfDistributeList() throws IOException {
+    String hostname = "ios-ospf-distribute-list";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_EXTENDED, "aclin", 1));
+    assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_EXTENDED, "aclout", 1));
+    assertThat(ccae, hasNumReferrers(filename, PREFIX_LIST, "plin", 1));
+    assertThat(ccae, hasNumReferrers(filename, PREFIX_LIST, "plout", 1));
+    assertThat(ccae, hasNumReferrers(filename, ROUTE_MAP, "rmin", 1));
+    assertThat(ccae, hasNumReferrers(filename, ROUTE_MAP, "rmout", 1));
+  }
+
+  @Test
   public void testIosOspfNetwork() throws IOException {
     Configuration c = parseConfig("ios-interface-ospf-network");
 

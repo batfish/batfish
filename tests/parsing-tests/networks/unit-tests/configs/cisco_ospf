@@ -45,6 +45,12 @@ router ospf 1
   discard-route external
   discard-route internal
   distance 110
+  distribute-list aclin in
+  distribute-list aclout out
+  distribute-list prefix plin in
+  distribute-list prefix plin out
+  distribute-list route-map rmin in
+  distribute-list route-map rmout out
   graceful-restart
   graceful-restart grace-period 180
   ip ospf event-history hello size small

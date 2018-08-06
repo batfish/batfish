@@ -30785,6 +30785,46 @@
             "        DISTANCE:'distance'  <== mode:DEFAULT_MODE",
             "        value = DEC:'110'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (ro_distribute_list",
+            "        DISTRIBUTE_LIST:'distribute-list'  <== mode:DEFAULT_MODE",
+            "        name = (variable_distribute_list",
+            "          VARIABLE:'aclin'  <== mode:DEFAULT_MODE)",
+            "        IN:'in'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (ro_distribute_list",
+            "        DISTRIBUTE_LIST:'distribute-list'  <== mode:DEFAULT_MODE",
+            "        name = (variable_distribute_list",
+            "          VARIABLE:'aclout'  <== mode:DEFAULT_MODE)",
+            "        OUT:'out'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (ro_distribute_list",
+            "        DISTRIBUTE_LIST:'distribute-list'  <== mode:DEFAULT_MODE",
+            "        PREFIX:'prefix'  <== mode:DEFAULT_MODE",
+            "        name = (variable_distribute_list",
+            "          VARIABLE:'plin'  <== mode:DEFAULT_MODE)",
+            "        IN:'in'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (ro_distribute_list",
+            "        DISTRIBUTE_LIST:'distribute-list'  <== mode:DEFAULT_MODE",
+            "        PREFIX:'prefix'  <== mode:DEFAULT_MODE",
+            "        name = (variable_distribute_list",
+            "          VARIABLE:'plin'  <== mode:DEFAULT_MODE)",
+            "        OUT:'out'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (ro_distribute_list",
+            "        DISTRIBUTE_LIST:'distribute-list'  <== mode:DEFAULT_MODE",
+            "        ROUTE_MAP:'route-map'  <== mode:DEFAULT_MODE",
+            "        name = (variable_distribute_list",
+            "          VARIABLE:'rmin'  <== mode:M_RouteMap)",
+            "        IN:'in'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (ro_distribute_list",
+            "        DISTRIBUTE_LIST:'distribute-list'  <== mode:DEFAULT_MODE",
+            "        ROUTE_MAP:'route-map'  <== mode:DEFAULT_MODE",
+            "        name = (variable_distribute_list",
+            "          VARIABLE:'rmout'  <== mode:M_RouteMap)",
+            "        OUT:'out'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "      (ro_common",
             "        (ro_null",
             "          GRACEFUL_RESTART:'graceful-restart'  <== mode:DEFAULT_MODE",
@@ -60439,15 +60479,47 @@
           }
         },
         "configs/cisco_ospf" : {
+          "ipv4 prefix-list" : {
+            "plin" : {
+              "router ospf distribute-list prefix in" : [
+                50
+              ],
+              "router ospf distribute-list prefix out" : [
+                51
+              ]
+            }
+          },
+          "ipv4/6 acl" : {
+            "aclin" : {
+              "router ospf distribute-list in" : [
+                48
+              ]
+            },
+            "aclout" : {
+              "router ospf distribute-list out" : [
+                49
+              ]
+            }
+          },
           "route-map" : {
             "DIRECT_OSPF" : {
               "ospf redistribute connected route-map" : [
-                55
+                61
               ]
             },
             "eigrp-ospf-route-map" : {
               "ospf redistribute eigrp route-map" : [
-                56
+                62
+              ]
+            },
+            "rmin" : {
+              "router ospf distribute-list route-map in" : [
+                52
+              ]
+            },
+            "rmout" : {
+              "router ospf distribute-list route-map out" : [
+                53
               ]
             }
           }
