@@ -799,6 +799,7 @@ import org.batfish.grammar.cisco.CiscoParser.Re_redistribute_ospfContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_redistribute_ripContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_redistribute_staticContext;
 import org.batfish.grammar.cisco.CiscoParser.Reaf_interfaceContext;
+import org.batfish.grammar.cisco.CiscoParser.Reaf_interface_defaultContext;
 import org.batfish.grammar.cisco.CiscoParser.Reafi_passive_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Rec_address_familyContext;
 import org.batfish.grammar.cisco.CiscoParser.Redistribute_aggregate_bgp_tailContext;
@@ -1332,7 +1333,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private DynamicIpv6BgpPeerGroup _currentDynamicIpv6PeerGroup;
 
-  @Nullable private Interface _currentEigrpInterface;
+  @Nullable private String _currentEigrpInterface;
 
   @Nullable private EigrpProcess _currentEigrpProcess;
 
@@ -3433,7 +3434,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterReaf_interface(Reaf_interfaceContext ctx) {
-    _currentEigrpInterface = getOrAddInterface(ctx.iname);
+    _currentEigrpInterface = getCanonicalInterfaceName(ctx.iname.getText());
+  }
+
+  @Override
+  public void enterReaf_interface_default(Reaf_interface_defaultContext ctx) {
+    _currentEigrpInterface = "default";
   }
 
   @Override
@@ -6777,14 +6783,17 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _w.todo(ctx, getFullText(ctx), _parser, "No eigrp process available");
       return;
     }
+    // In interface context
+    if (_currentEigrpInterface == null) {
+      _w.todo(ctx, getFullText(ctx), _parser, "No eigrp interface available");
+      return;
+    }
 
     boolean passive = (ctx.NO() == null);
-    if (_currentEigrpInterface == null) {
-      // default interface
+    if (_currentEigrpInterface.equals("default")) {
       _currentEigrpProcess.setPassiveInterfaceDefault(passive);
     } else {
-      String interfaceName = getCanonicalInterfaceName(_currentEigrpInterface.getName());
-      _currentEigrpProcess.getInterfacePassiveStatus().put(interfaceName, passive);
+      _currentEigrpProcess.getInterfacePassiveStatus().put(_currentEigrpInterface, passive);
     }
   }
 

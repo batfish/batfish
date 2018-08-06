@@ -20337,6 +20337,15 @@
             "            (resf_footer",
             "              EXIT_SERVICE_FAMILY:'exit-service-family'  <== mode:DEFAULT_MODE",
             "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))))",
+            "  (stanza",
+            "    (s_interface",
+            "      INTERFACE:'interface'  <== mode:DEFAULT_MODE",
+            "      iname = (interface_name",
+            "        name_prefix_alpha = M_Interface_PREFIX:'Ethernet'  <== mode:M_Interface",
+            "        (range",
+            "          (subrange",
+            "            low = DEC:'0'  <== mode:M_Interface)))",
+            "      NEWLINE:'\\n'  <== mode:M_Interface))",
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
           ]
         },
@@ -57293,6 +57302,14 @@
                 97
               ],
               "numReferrers" : 0
+            }
+          },
+          "interface" : {
+            "Ethernet0" : {
+              "definitionLines" : [
+                165
+              ],
+              "numReferrers" : 1
             }
           }
         },

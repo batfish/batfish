@@ -162,3 +162,5 @@ router eigrp virtual
   topology base
  exit-service-family
 !
+interface Ethernet0
+!
