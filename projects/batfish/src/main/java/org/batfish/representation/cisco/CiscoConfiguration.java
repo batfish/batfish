@@ -1321,7 +1321,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
           .stream()
           .map(p6 -> new Route6FilterLine(LineAction.ACCEPT, Prefix6Range.fromPrefix6(p6)))
           .collect(ImmutableList.toImmutableList());
-      Route6FilterList localFilter6 = new Route6FilterList("~BGP_NETWORK6_NETWORKS_FILTER:" + vrfName + "~",
+      Route6FilterList localFilter6 = new Route6FilterList(
+          "~BGP_NETWORK6_NETWORKS_FILTER:" + vrfName + "~",
           lines);
       c.getRoute6FilterLists().put(localFilter6.getName(), localFilter6);
     }
@@ -1765,7 +1766,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
               ? MATCH_DEFAULT_ROUTE
               : MATCH_DEFAULT_ROUTE6,
               ImmutableList.of(Statements.ReturnTrue.toStaticStatement()));
-          RoutingPolicy defaultRouteGenerationPolicy = new RoutingPolicy("~BGP_DEFAULT_ROUTE_GENERATION_POLICY:" + vrfName + ":" + lpg.getName() + "~",
+          RoutingPolicy defaultRouteGenerationPolicy = new RoutingPolicy(
+              "~BGP_DEFAULT_ROUTE_GENERATION_POLICY:" + vrfName + ":" + lpg.getName() + "~",
               c);
           defaultRouteGenerationPolicy.getStatements().add(defaultRouteGenerationConditional);
           if (lpg.getActive() && !lpg.getShutdown()) {
@@ -2221,7 +2223,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
           // we have a longest prefix match
           long areaNum = network.getArea();
           OspfArea newArea = areas.computeIfAbsent(areaNum, OspfArea::new);
-          ImmutableSortedSet.Builder<String> newAreaInterfacesBuilder = areaInterfacesBuilders.computeIfAbsent(areaNum,
+          ImmutableSortedSet.Builder<String> newAreaInterfacesBuilder = areaInterfacesBuilders.computeIfAbsent(
+              areaNum,
               n -> ImmutableSortedSet.naturalOrder());
           newAreaInterfacesBuilder.add(ifaceName);
           iface.setOspfArea(newArea);
@@ -3050,7 +3053,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
       // convert eigrp process
       EigrpProcess eigrpProcess = vrf.getEigrpProcess();
       if (eigrpProcess != null) {
-        org.batfish.datamodel.eigrp.EigrpProcess newEigrpProcess = CiscoConversions.toEigrpProcess(eigrpProcess,
+        org.batfish.datamodel.eigrp.EigrpProcess newEigrpProcess = CiscoConversions.toEigrpProcess(
+            eigrpProcess,
             vrfName,
             c,
             this);
@@ -3060,7 +3064,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
       // convert isis process
       IsisProcess isisProcess = vrf.getIsisProcess();
       if (isisProcess != null) {
-        org.batfish.datamodel.isis.IsisProcess newIsisProcess = CiscoConversions.toIsisProcess(isisProcess,
+        org.batfish.datamodel.isis.IsisProcess newIsisProcess = CiscoConversions.toIsisProcess(
+            isisProcess,
             c,
             this);
         newVrf.setIsisProcess(newIsisProcess);
@@ -3575,13 +3580,15 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
       String keyringName = isakmpProfile.getKeyring();
       if (keyringName == null) {
-        _w.redFlag(String.format("Cannot get PSK hash since keyring not configured for isakmpProfile %s",
+        _w.redFlag(String.format(
+            "Cannot get PSK hash since keyring not configured for isakmpProfile %s",
             name));
       } else if (_keyrings.containsKey(keyringName)) {
         Keyring keyring = _keyrings.get(keyringName);
         // LocalAddress can only be Ip.AUTO if LocalInterfaceName contains an invalid interface
         if (Objects.equals(isakmpProfile.getLocalAddress(), Ip.AUTO)) {
-          _w.redFlag(String.format("Invalid local address interface configured for ISAKMP profile %s",
+          _w.redFlag(String.format(
+              "Invalid local address interface configured for ISAKMP profile %s",
               name));
         } else if (keyring.match(isakmpProfile.getLocalAddress(),
             isakmpProfile.getMatchIdentity())) {
@@ -3596,7 +3603,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
       Ip localAddress = isakmpProfile.getLocalAddress();
       IpWildcard remoteIdentity = isakmpProfile.getMatchIdentity();
       if (localAddress == null || remoteIdentity == null) {
-        _w.redFlag(String.format("Can't get IkeGateway: Local or remote address is not set for isakmpProfile %s",
+        _w.redFlag(String.format(
+            "Can't get IkeGateway: Local or remote address is not set for isakmpProfile %s",
             name));
       } else {
         IkeGateway ikeGateway = new IkeGateway(e.getKey());
@@ -3606,7 +3614,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
         if (oldIface != null) {
           ikeGateway.setExternalInterface(c.getInterfaces().get(oldIface.getName()));
         } else {
-          _w.redFlag(String.format("External interface not found for ikeGateway for isakmpProfile %s",
+          _w.redFlag(String.format(
+              "External interface not found for ikeGateway for isakmpProfile %s",
               name));
         }
         ikeGateway.setIkePolicy(ikePolicy);
@@ -3736,9 +3745,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private void markCommunityLists(CiscoStructureUsage... usages) {
     for (CiscoStructureUsage usage : usages) {
-      markAbstractStructure(CiscoStructureType.COMMUNITY_LIST, usage, ImmutableList.of(
-          CiscoStructureType.COMMUNITY_LIST_EXPANDED,
-          CiscoStructureType.COMMUNITY_LIST_STANDARD));
+      markAbstractStructure(
+          CiscoStructureType.COMMUNITY_LIST,
+          usage,
+          ImmutableList.of(CiscoStructureType.COMMUNITY_LIST_EXPANDED,
+              CiscoStructureType.COMMUNITY_LIST_STANDARD));
     }
   }
 

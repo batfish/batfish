@@ -70,8 +70,8 @@ public class HostConfiguration extends VendorConfiguration {
   private static final long serialVersionUID = 1L;
 
   public static HostConfiguration fromJson(String text, Warnings warnings) throws IOException {
-    HostConfiguration hostConfiguration = BatfishObjectMapper.mapper()
-        .readValue(text, HostConfiguration.class);
+    HostConfiguration hostConfiguration =
+        BatfishObjectMapper.mapper().readValue(text, HostConfiguration.class);
     hostConfiguration._w = warnings;
     return hostConfiguration;
   }
@@ -106,15 +106,19 @@ public class HostConfiguration extends VendorConfiguration {
     _staticRoutes = new TreeSet<>();
   }
 
-  @JsonProperty(PROP_HOST_INTERFACES) public Map<String, HostInterface> getHostInterfaces() {
+  @JsonProperty(PROP_HOST_INTERFACES)
+  public Map<String, HostInterface> getHostInterfaces() {
     return _hostInterfaces;
   }
 
-  @JsonProperty(PROP_HOSTNAME) @Override public String getHostname() {
+  @JsonProperty(PROP_HOSTNAME)
+  @Override
+  public String getHostname() {
     return _hostname;
   }
 
-  @JsonProperty(PROP_IPTABLES_FILE) public String getIptablesFile() {
+  @JsonProperty(PROP_IPTABLES_FILE)
+  public String getIptablesFile() {
     return _iptablesFile;
   }
 
@@ -122,15 +126,19 @@ public class HostConfiguration extends VendorConfiguration {
     return _iptablesVendorConfig;
   }
 
-  @JsonProperty(PROP_OVERLAY) public boolean getOverlay() {
+  @JsonProperty(PROP_OVERLAY)
+  public boolean getOverlay() {
     return _overlay;
   }
 
-  @JsonIgnore @Override public Set<String> getUnimplementedFeatures() {
+  @JsonIgnore
+  @Override
+  public Set<String> getUnimplementedFeatures() {
     return _unimplementedFeatures;
   }
 
-  @Override public void setHostname(String hostname) {
+  @Override
+  public void setHostname(String hostname) {
     checkNotNull(hostname, "'hostname' cannot be null");
     _hostname = hostname.toLowerCase();
   }
@@ -143,18 +151,31 @@ public class HostConfiguration extends VendorConfiguration {
     _iptablesVendorConfig = config;
   }
 
-  @JsonProperty(PROP_OVERLAY) public void setOverlay(boolean overlay) {
+  @JsonProperty(PROP_OVERLAY)
+  public void setOverlay(boolean overlay) {
     _overlay = overlay;
   }
 
-  @JsonIgnore @Override public void setVendor(ConfigurationFormat format) {
+  @JsonIgnore
+  @Override
+  public void setVendor(ConfigurationFormat format) {
     throw new UnsupportedOperationException("Cannot set vendor for host configuration");
   }
 
   private boolean simple() {
-    String[] aclsToCheck = new String[] { RAW_PREROUTING, MANGLE_PREROUTING, NAT_PREROUTING,
-        MANGLE_INPUT, RAW_OUTPUT, MANGLE_OUTPUT, NAT_OUTPUT, MANGLE_FORWARD, FILTER_FORWARD,
-        MANGLE_POSTROUTING };
+    String[] aclsToCheck =
+        new String[] {
+          RAW_PREROUTING,
+          MANGLE_PREROUTING,
+          NAT_PREROUTING,
+          MANGLE_INPUT,
+          RAW_OUTPUT,
+          MANGLE_OUTPUT,
+          NAT_OUTPUT,
+          MANGLE_FORWARD,
+          FILTER_FORWARD,
+          MANGLE_POSTROUTING
+        };
     for (String aclName : aclsToCheck) {
       IpAccessList acl = _c.getIpAccessLists().get(aclName);
       if (acl != null) {
@@ -167,8 +188,9 @@ public class HostConfiguration extends VendorConfiguration {
            * For now, a simple line is either TrueExpr, FalseExpr, or unrestricted MatchHeaderSpace.
            */
           AclLineMatchExpr matchCondition = line.getMatchCondition();
-          if (!(matchCondition instanceof TrueExpr || matchCondition instanceof FalseExpr || (
-              matchCondition instanceof MatchHeaderSpace
+          if (!(matchCondition instanceof TrueExpr
+              || matchCondition instanceof FalseExpr
+              || (matchCondition instanceof MatchHeaderSpace
                   && ((MatchHeaderSpace) matchCondition).getHeaderspace().unrestricted()))) {
             /* At least one line is complicated, so the whole ACL is complicated */
             return false;
@@ -179,11 +201,12 @@ public class HostConfiguration extends VendorConfiguration {
     return true;
   }
 
-  @Override public Configuration toVendorIndependentConfiguration()
-      throws VendorConversionException {
+  @Override
+  public Configuration toVendorIndependentConfiguration() throws VendorConversionException {
     if (_underlayConfiguration != null) {
-      _hostInterfaces.forEach((name, iface) -> iface.setCanonicalName(_underlayConfiguration.canonicalizeInterfaceName(
-          name)));
+      _hostInterfaces.forEach(
+          (name, iface) ->
+              iface.setCanonicalName(_underlayConfiguration.canonicalizeInterfaceName(name)));
     } else {
       _hostInterfaces.forEach((name, iface) -> iface.setCanonicalName(name));
     }
@@ -194,12 +217,15 @@ public class HostConfiguration extends VendorConfiguration {
     _c.getVrfs().put(Configuration.DEFAULT_VRF_NAME, new Vrf(Configuration.DEFAULT_VRF_NAME));
 
     // add interfaces
-    _hostInterfaces.values().forEach(hostInterface -> {
-      String canonicalName = hostInterface.getCanonicalName();
-      Interface newIface = hostInterface.toInterface(_c, _w);
-      _c.getInterfaces().put(canonicalName, newIface);
-      _c.getDefaultVrf().getInterfaces().put(canonicalName, newIface);
-    });
+    _hostInterfaces
+        .values()
+        .forEach(
+            hostInterface -> {
+              String canonicalName = hostInterface.getCanonicalName();
+              Interface newIface = hostInterface.toInterface(_c, _w);
+              _c.getInterfaces().put(canonicalName, newIface);
+              _c.getDefaultVrf().getInterfaces().put(canonicalName, newIface);
+            });
 
     // add iptables
     if (_iptablesVendorConfig != null) {
@@ -218,20 +244,20 @@ public class HostConfiguration extends VendorConfiguration {
 
     _c.getDefaultVrf()
         .getStaticRoutes()
-        .addAll(_staticRoutes.stream()
-            .map(HostStaticRoute::toStaticRoute)
-            .collect(Collectors.toSet()));
+        .addAll(
+            _staticRoutes.stream().map(HostStaticRoute::toStaticRoute).collect(Collectors.toSet()));
     Set<StaticRoute> staticRoutes = _c.getDefaultVrf().getStaticRoutes();
     for (HostInterface iface : _hostInterfaces.values()) {
       Ip gateway = iface.getGateway();
       if (gateway != null) {
-        staticRoutes.add(StaticRoute.builder()
-            .setNetwork(Prefix.ZERO)
-            .setNextHopIp(gateway)
-            .setNextHopInterface(iface.getName())
-            .setAdministrativeCost(HostStaticRoute.DEFAULT_ADMINISTRATIVE_COST)
-            .setTag(AbstractRoute.NO_TAG)
-            .build());
+        staticRoutes.add(
+            StaticRoute.builder()
+                .setNetwork(Prefix.ZERO)
+                .setNextHopIp(gateway)
+                .setNextHopInterface(iface.getName())
+                .setAdministrativeCost(HostStaticRoute.DEFAULT_ADMINISTRATIVE_COST)
+                .setTag(AbstractRoute.NO_TAG)
+                .build());
         break;
       }
     }
@@ -239,12 +265,13 @@ public class HostConfiguration extends VendorConfiguration {
       String ifaceName = _c.getInterfaces().values().iterator().next().getName();
       _c.getDefaultVrf()
           .getStaticRoutes()
-          .add(StaticRoute.builder()
-              .setNetwork(Prefix.ZERO)
-              .setNextHopInterface(ifaceName)
-              .setAdministrativeCost(HostStaticRoute.DEFAULT_ADMINISTRATIVE_COST)
-              .setTag(AbstractRoute.NO_TAG)
-              .build());
+          .add(
+              StaticRoute.builder()
+                  .setNetwork(Prefix.ZERO)
+                  .setNextHopInterface(ifaceName)
+                  .setAdministrativeCost(HostStaticRoute.DEFAULT_ADMINISTRATIVE_COST)
+                  .setTag(AbstractRoute.NO_TAG)
+                  .build());
     }
     return _c;
   }
