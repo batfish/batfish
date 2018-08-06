@@ -779,8 +779,10 @@ import org.batfish.grammar.cisco.CiscoParser.Rbnx_template_peer_policyContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_template_peer_sessionContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_v_local_asContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_vrfContext;
+import org.batfish.grammar.cisco.CiscoParser.Re_autonomous_systemContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_classicContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_default_metricContext;
+import org.batfish.grammar.cisco.CiscoParser.Re_eigrp_router_idContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_networkContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_passive_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_passive_interface_defaultContext;
@@ -1697,12 +1699,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     // AS number
 
     // There may not be an ASN specified here, but it will be specified in this AF context
-    long asn = ctx.asnum == null ? -1 : toLong(ctx.asnum);
-    if (asn == -1) {
-      todo(ctx, "add support for 'autonomous-system' configured inside address-family");
-      _parentEigrpProcess = _currentEigrpProcess;
-      return;
-    }
+    Long asn = ctx.asnum == null ? null : toLong(ctx.asnum);
 
     EigrpProcess proc = new EigrpProcess(asn, EigrpProcessMode.CLASSIC);
 
@@ -1722,11 +1719,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
     if (ctx.IPV6() != null) {
       todo(ctx, "add support for ipv6 address family in eigrp");
-      return;
     }
     if (ctx.MULTICAST() != null) {
       todo(ctx, "add support for multicast address family in eigrp");
-      return;
     }
 
     EigrpProcess proc = new EigrpProcess(asn, EigrpProcessMode.NAMED);
@@ -6570,7 +6565,17 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitRe_autonomous_system(Re_autonomous_systemContext ctx) {
+    // In process context
+    requireNonNull(_currentEigrpProcess);
+
+    Long asn = (ctx.NO() == null) ? toLong(ctx.asnum) : null;
+    _currentEigrpProcess.setAsn(asn);
+  }
+
+  @Override
   public void exitRe_default_metric(Re_default_metricContext ctx) {
+    // In process context
     EigrpProcess proc = requireNonNull(_currentEigrpProcess);
     if (ctx.NO() == null) {
       EigrpMetric metric =
@@ -6582,11 +6587,21 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void exitRe_network(Re_networkContext ctx) {
-    if (_currentEigrpProcess == null) {
-      todo(ctx, "network not supported here");
-      return;
+  public void exitRe_eigrp_router_id(Re_eigrp_router_idContext ctx) {
+    // In process context
+    EigrpProcess proc = requireNonNull(_currentEigrpProcess);
+    if (ctx.NO() == null) {
+      Ip routerId = toIp(ctx.id);
+      proc.setRouterId(routerId);
+    } else {
+      proc.setRouterId(null);
     }
+  }
+
+  @Override
+  public void exitRe_network(Re_networkContext ctx) {
+    // In process context
+    requireNonNull(_currentEigrpProcess);
     Ip address = toIp(ctx.address);
     Ip mask = (ctx.mask != null) ? toIp(ctx.mask) : address.getClassMask().inverted();
     _currentEigrpProcess.getWildcardNetworks().add(new IpWildcard(address, mask));
@@ -6594,22 +6609,24 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitRe_passive_interface(Re_passive_interfaceContext ctx) {
+    // In process context
+    requireNonNull(_currentEigrpProcess);
     boolean passive = (ctx.NO() == null);
-    getOrAddInterface(ctx.i).setEigrpPassive(passive);
+    String interfaceName = getCanonicalInterfaceName(ctx.i.getText());
+    _currentEigrpProcess.getInterfacePassiveStatus().put(interfaceName, passive);
   }
 
   @Override
   public void exitRe_passive_interface_default(Re_passive_interface_defaultContext ctx) {
-    if (_currentEigrpProcess == null) {
-      todo(ctx, "network not supported here until autonomous-system stanza supported");
-      return;
-    }
+    // In process context
+    requireNonNull(_currentEigrpProcess);
     boolean passive = (ctx.NO() == null);
     _currentEigrpProcess.setPassiveInterfaceDefault(passive);
   }
 
   @Override
   public void exitRe_redistribute_bgp(Re_redistribute_bgpContext ctx) {
+    // In process context
     EigrpProcess proc = requireNonNull(_currentEigrpProcess);
     RoutingProtocol sourceProtocol = RoutingProtocol.BGP;
     EigrpRedistributionPolicy r = new EigrpRedistributionPolicy(sourceProtocol);
@@ -6634,6 +6651,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitRe_redistribute_connected(Re_redistribute_connectedContext ctx) {
+    // In process context
     EigrpProcess proc = requireNonNull(_currentEigrpProcess);
     RoutingProtocol sourceProtocol = RoutingProtocol.CONNECTED;
     EigrpRedistributionPolicy r = new EigrpRedistributionPolicy(sourceProtocol);
@@ -6657,6 +6675,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitRe_redistribute_eigrp(Re_redistribute_eigrpContext ctx) {
+    // In process context
     EigrpProcess proc = requireNonNull(_currentEigrpProcess);
     RoutingProtocol sourceProtocol = RoutingProtocol.EIGRP;
     EigrpRedistributionPolicy r = new EigrpRedistributionPolicy(sourceProtocol);
@@ -6691,6 +6710,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitRe_redistribute_ospf(Re_redistribute_ospfContext ctx) {
+    // In process context
     EigrpProcess proc = requireNonNull(_currentEigrpProcess);
     RoutingProtocol sourceProtocol = RoutingProtocol.OSPF;
     EigrpRedistributionPolicy r = new EigrpRedistributionPolicy(sourceProtocol);
@@ -6719,6 +6739,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitRe_redistribute_rip(Re_redistribute_ripContext ctx) {
+    // In process context
     EigrpProcess proc = requireNonNull(_currentEigrpProcess);
     RoutingProtocol sourceProtocol = RoutingProtocol.RIP;
     EigrpRedistributionPolicy r = new EigrpRedistributionPolicy(sourceProtocol);
@@ -6741,6 +6762,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitRe_redistribute_static(Re_redistribute_staticContext ctx) {
+    // In process context
     EigrpProcess proc = requireNonNull(_currentEigrpProcess);
     RoutingProtocol sourceProtocol = RoutingProtocol.STATIC;
     EigrpRedistributionPolicy r = new EigrpRedistributionPolicy(sourceProtocol);
@@ -6768,18 +6790,24 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitReafi_passive_interface(Reafi_passive_interfaceContext ctx) {
+    // In process context
+    requireNonNull(_currentEigrpProcess);
+
     boolean passive = (ctx.NO() == null);
     if (_currentEigrpInterface == null) {
       // default interface
-      requireNonNull(_currentEigrpProcess).setPassiveInterfaceDefault(passive);
+      _currentEigrpProcess.setPassiveInterfaceDefault(passive);
     } else {
-      _currentEigrpInterface.setEigrpPassive(passive);
+      String interfaceName = getCanonicalInterfaceName(_currentEigrpInterface.getName());
+      _currentEigrpProcess.getInterfacePassiveStatus().put(interfaceName, passive);
     }
   }
 
   @Override
   public void exitRec_address_family(Rec_address_familyContext ctx) {
-    requireNonNull(_currentEigrpProcess).computeNetworks(_configuration.getInterfaces().values());
+    // In process context
+    requireNonNull(_currentEigrpProcess);
+    _currentEigrpProcess.computeNetworks(_configuration.getInterfaces().values());
     _currentEigrpProcess = _parentEigrpProcess;
     _parentEigrpProcess = null;
     _currentVrf = Configuration.DEFAULT_VRF_NAME;
@@ -6787,10 +6815,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitRen_address_family(Ren_address_familyContext ctx) {
-    // Check if address family was supported
-    if (_currentEigrpProcess != null) {
-      _currentEigrpProcess.computeNetworks(_configuration.getInterfaces().values());
-    }
+    // In process context
+    requireNonNull(_currentEigrpProcess);
+    _currentEigrpProcess.computeNetworks(_configuration.getInterfaces().values());
     _currentEigrpProcess = null;
     _currentVrf = Configuration.DEFAULT_VRF_NAME;
   }
@@ -7837,7 +7864,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitRe_classic(Re_classicContext ctx) {
-    requireNonNull(_currentEigrpProcess).computeNetworks(_configuration.getInterfaces().values());
+    // In process context
+    requireNonNull(_currentEigrpProcess);
+    _currentEigrpProcess.computeNetworks(_configuration.getInterfaces().values());
     _currentEigrpProcess = null;
     _currentVrf = Configuration.DEFAULT_VRF_NAME;
   }
@@ -8930,7 +8959,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       todo(ctx, F_EIGRP_METRIC);
     }
 
-    builder.setMode(requireNonNull(_currentEigrpProcess).getMode());
+    EigrpProcess proc =
+        requireNonNull(
+            _currentEigrpProcess, "toEigrpMetric can only be called in a process context");
+    builder.setMode(proc.getMode());
     return requireNonNull(builder.build());
   }
 

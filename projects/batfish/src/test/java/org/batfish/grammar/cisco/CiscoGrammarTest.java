@@ -793,6 +793,12 @@ public class CiscoGrammarTest {
         c, hasInterface("Ethernet4", hasEigrp(EigrpInterfaceSettingsMatchers.hasPassive(false))));
     assertThat(
         c, hasInterface("Ethernet5", hasEigrp(EigrpInterfaceSettingsMatchers.hasPassive(true))));
+
+    /* Autonomous-system configured inside address-family */
+    assertThat(
+        c,
+        ConfigurationMatchers.hasVrf(
+            "vrf-name2", hasEigrpProcess(EigrpProcessMatchers.hasAsn(3L))));
   }
 
   @Test

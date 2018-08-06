@@ -14,6 +14,7 @@ interface Ethernet2
  no shutdown
 !
 ip vrf vrf-name
+ip vrf vrf-name2
 interface Ethernet3
  ip address 10.0.3.1 255.255.255.0
  ip vrf forwarding vrf-name
@@ -36,6 +37,9 @@ router eigrp 1
  passive-interface default
  no passive-interface Ethernet0
  no passive-interface Ethernet1
+ address-family ipv4 vrf vrf-name2
+  autonomous-system 3
+ exit-address-family
 !
 router eigrp virtual-name
  address-family ipv4 vrf vrf-name autonomous-system 2

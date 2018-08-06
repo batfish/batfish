@@ -2,6 +2,7 @@ package org.batfish.representation.cisco;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.util.Collections.singletonList;
+import static java.util.Objects.requireNonNull;
 import static org.batfish.datamodel.Interface.INVALID_LOCAL_INTERFACE;
 import static org.batfish.datamodel.Interface.UNSET_LOCAL_INTERFACE;
 
@@ -912,6 +913,19 @@ class CiscoConversions {
         org.batfish.datamodel.eigrp.EigrpProcess.builder();
     org.batfish.datamodel.Vrf vrf = c.getVrfs().get(vrfName);
 
+    if (proc.getAsn() == null) {
+      /*
+       * This will happen with the following configuration:
+       *  address-family ... autonomous-system 1
+       *   autonomous-system 2
+       *   no autonomous-system
+       * The result should be a process with ASN 1, but instead the result is an invalid EIGRP process
+       * with null ASN.
+       */
+      oldConfig.getWarnings().redFlag("No candidates for EIGRP ASN");
+      return null;
+    }
+
     newProcess.setAsNumber(proc.getAsn());
     newProcess.setMode(proc.getMode());
     newProcess.setVrf(vrf);
@@ -923,23 +937,16 @@ class CiscoConversions {
       if (interfaceAddress == null) {
         continue;
       }
+      // Set by CiscoConfiguration.toInterface
+      EigrpInterfaceSettings eigrp = requireNonNull(iface.getEigrp());
       boolean match = proc.getNetworks().stream().anyMatch(interfaceAddress.getPrefix()::equals);
       if (match) {
-        Double delay = null;
-        Double bandwidth = null;
-        boolean passive = proc.getPassiveInterfaceDefault();
-        if (iface.getEigrp() != null) {
-          delay = iface.getEigrp().getDelay();
-          bandwidth = iface.getEigrp().getBandwidth();
-          passive = iface.getEigrp().getPassive();
-        }
-
         // For bandwidth/delay, defaults are separate from actuals to inform metric calculations
         EigrpMetric metric =
             EigrpMetric.builder()
-                .setBandwidth(bandwidth)
+                .setBandwidth(eigrp.getBandwidth())
                 .setMode(proc.getMode())
-                .setDelay(delay)
+                .setDelay(eigrp.getDelay())
                 .setDefaultBandwidth(
                     Interface.getDefaultBandwidth(iface.getName(), c.getConfigurationFormat()))
                 .setDefaultDelay(
@@ -951,10 +958,10 @@ class CiscoConversions {
                 .setEnabled(true)
                 .setAsn(proc.getAsn())
                 .setMetric(metric)
-                .setPassive(passive)
+                .setPassive(eigrp.getPassive())
                 .build());
       } else {
-        if (iface.getEigrp() != null && iface.getEigrp().getDelay() != null) {
+        if (eigrp.getDelay() != null) {
           oldConfig
               .getWarnings()
               .redFlag(
@@ -977,7 +984,9 @@ class CiscoConversions {
     if (routerId == null) {
       routerId = getHighestIp(oldConfig.getInterfaces());
       if (routerId == Ip.ZERO) {
-        oldConfig.getWarnings().redFlag("No candidates for EIGRP router-id");
+        oldConfig
+            .getWarnings()
+            .redFlag("No candidates for EIGRP (AS " + proc.getAsn() + ") router-id");
         return null;
       }
     }

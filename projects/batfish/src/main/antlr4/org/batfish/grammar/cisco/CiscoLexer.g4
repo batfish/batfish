@@ -2802,6 +2802,11 @@ DEFAULT_ROUTER
    'default-router'
 ;
 
+DEFAULT_ROUTE_TAG
+:
+   'default-route-tag'
+;
+
 DEFAULT_TASKGROUP
 :
    'default-taskgroup'
@@ -4141,6 +4146,11 @@ EVENT_HANDLER
 EVENT_HISTORY
 :
    'event-history'
+;
+
+EVENT_LOG_SIZE
+:
+   'event-log-size'
 ;
 
 EVENT_THRESHOLDS_PROFILE
@@ -6497,6 +6507,11 @@ LOG_INTERNAL_SYNC
 LOG_NEIGHBOR_CHANGES
 :
    'log-neighbor-changes'
+;
+
+LOG_NEIGHBOR_WARNINGS
+:
+   'log-neighbor-warnings'
 ;
 
 LOGFILE
