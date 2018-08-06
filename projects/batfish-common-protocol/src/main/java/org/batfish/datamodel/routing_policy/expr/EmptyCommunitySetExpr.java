@@ -9,6 +9,7 @@ import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.visitors.CommunitySetExprVisitor;
 import org.batfish.datamodel.visitors.VoidCommunitySetExprVisitor;
 
+/** A {@CommunitySetExpr} matching all community-sets. */
 public class EmptyCommunitySetExpr extends CommunitySetExpr {
 
   public static final EmptyCommunitySetExpr INSTANCE = new EmptyCommunitySetExpr();
@@ -32,6 +33,10 @@ public class EmptyCommunitySetExpr extends CommunitySetExpr {
     visitor.visitEmptyCommunitySetExpr(this);
   }
 
+  /**
+   * When treated as a literal set of communities, {@link EmptyCommunitySetExpr} represents the
+   * empty-set.
+   */
   @Override
   public SortedSet<Long> asLiteralCommunities(Environment environment) {
     return ImmutableSortedSet.of();

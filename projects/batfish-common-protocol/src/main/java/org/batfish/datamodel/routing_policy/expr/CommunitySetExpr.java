@@ -78,8 +78,10 @@ public abstract class CommunitySetExpr implements Serializable {
   }
 
   /**
-   * Whether membership of a candidate set of candidate in this {@link CommunitySetExpr} can be
-   * reduced to checking membership of any community from the candidate set.
+   * Whether checking membership of a candidate set of communities as a whole in this {@link
+   * CommunitySetExpr} can be reduced to checking individual membership of any community from the
+   * candidate set in. This must be {@code false} e.g. if this {@link CommunitySetExpr} only matches
+   * community-sets with at least two elements.
    */
   public abstract boolean reducible();
 }

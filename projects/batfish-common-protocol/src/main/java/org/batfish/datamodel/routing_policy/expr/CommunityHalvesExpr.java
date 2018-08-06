@@ -13,6 +13,11 @@ import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.visitors.CommunitySetExprVisitor;
 import org.batfish.datamodel.visitors.VoidCommunitySetExprVisitor;
 
+/**
+ * A {@link CommunitySetExpr} that matches 32-bit community values via two separate {@link
+ * CommunityHalfExpr} matchers for the value's upper and lower 16-bits, retrievable via {@link
+ * #getLeft()} and {@link #getRight()} respectively.
+ */
 public class CommunityHalvesExpr extends CommunitySetExpr {
 
   private static final String PROP_LEFT = "left";

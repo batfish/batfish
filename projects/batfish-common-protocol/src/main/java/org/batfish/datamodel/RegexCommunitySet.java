@@ -17,6 +17,11 @@ import org.batfish.datamodel.routing_policy.expr.CommunitySetExpr;
 import org.batfish.datamodel.visitors.CommunitySetExprVisitor;
 import org.batfish.datamodel.visitors.VoidCommunitySetExprVisitor;
 
+/**
+ * A {@link CommunitySetExpr} that matches communities via a regular expression applied to the
+ * string representation of the community's 32-bit value. This string comprises two unsigned 16-bit
+ * numbers written in decimal separated by a colon, e.g. '1234:65535'.
+ */
 public final class RegexCommunitySet extends CommunitySetExpr {
 
   private final class PatternSupplier implements Supplier<Pattern>, Serializable {

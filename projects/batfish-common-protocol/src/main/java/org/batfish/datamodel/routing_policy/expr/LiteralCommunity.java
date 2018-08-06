@@ -12,6 +12,10 @@ import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.visitors.CommunitySetExprVisitor;
 import org.batfish.datamodel.visitors.VoidCommunitySetExprVisitor;
 
+/**
+ * A {@link CommunitySetExpr} matching community-sets that contain at least the community returned
+ * by {@link #getCommunity()}.
+ */
 public class LiteralCommunity extends CommunitySetExpr {
 
   private static final String PROP_COMMUNITY = "community";
@@ -39,6 +43,10 @@ public class LiteralCommunity extends CommunitySetExpr {
     visitor.visitLiteralCommunity(this);
   }
 
+  /**
+   * When treated as a literal set of communities, {@link LiteralCommunity} represents the singleton
+   * set of the community returned by {@link #getCommunity}.
+   */
   @Override
   public SortedSet<Long> asLiteralCommunities(Environment environment) {
     return ImmutableSortedSet.of(_community);

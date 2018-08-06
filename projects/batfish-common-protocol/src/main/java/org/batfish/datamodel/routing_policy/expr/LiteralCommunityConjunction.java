@@ -14,6 +14,10 @@ import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.visitors.CommunitySetExprVisitor;
 import org.batfish.datamodel.visitors.VoidCommunitySetExprVisitor;
 
+/**
+ * A {@link CommunitySetExpr} matching only community-sets that contain ALL of the communities
+ * returned by {@link #getRequiredCommunities()}.
+ */
 public final class LiteralCommunityConjunction extends CommunitySetExpr {
 
   private static final String PROP_REQUIRED_COMMUNITIES = "requiredCommunities";
