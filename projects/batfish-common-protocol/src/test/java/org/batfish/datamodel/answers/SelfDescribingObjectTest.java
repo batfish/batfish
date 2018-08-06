@@ -15,13 +15,13 @@ public class SelfDescribingObjectTest {
     ObjectNode json = BatfishObjectMapper.mapper().createObjectNode();
     json.set(
         SelfDescribingObject.PROP_SCHEMA, BatfishObjectMapper.mapper().valueToTree(Schema.INTEGER));
-    json.put(SelfDescribingObject.PROP_OBJECT, 42);
+    json.put(SelfDescribingObject.PROP_VALUE, 42);
     String strObject = json.toString();
 
     SelfDescribingObject sdObject =
         BatfishObjectMapper.mapper().readValue(strObject, SelfDescribingObject.class);
 
     assertThat(sdObject.getSchema(), equalTo(Schema.INTEGER));
-    assertThat(sdObject.getObject(), equalTo(42));
+    assertThat(sdObject.getValue(), equalTo(42));
   }
 }

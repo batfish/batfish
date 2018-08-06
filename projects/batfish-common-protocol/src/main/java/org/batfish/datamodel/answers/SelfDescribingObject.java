@@ -10,28 +10,28 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public class SelfDescribingObject {
 
-  static final String PROP_OBJECT = "object";
   static final String PROP_SCHEMA = "schema";
+  static final String PROP_VALUE = "value";
 
-  @Nullable private Object _object;
   @Nonnull private Schema _schema;
+  @Nullable private Object _value;
 
   public SelfDescribingObject(
-      @JsonProperty(PROP_SCHEMA) Schema schema, @JsonProperty(PROP_OBJECT) Object object) {
+      @JsonProperty(PROP_SCHEMA) Schema schema, @JsonProperty(PROP_VALUE) Object value) {
     checkArgument(schema != null, "'schema' cannot be null");
     checkArgument(
-        SchemaUtils.isValidObject(object, schema), "'object' is not consistent with 'schema'");
+        SchemaUtils.isValidObject(value, schema), "'object' is not consistent with 'schema'");
     _schema = schema;
-    _object = object;
-  }
-
-  @JsonProperty(PROP_OBJECT)
-  public Object getObject() {
-    return _object;
+    _value = value;
   }
 
   @JsonProperty(PROP_SCHEMA)
   public Schema getSchema() {
     return _schema;
+  }
+
+  @JsonProperty(PROP_VALUE)
+  public Object getValue() {
+    return _value;
   }
 }
