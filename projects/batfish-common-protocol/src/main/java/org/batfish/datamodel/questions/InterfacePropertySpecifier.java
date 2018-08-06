@@ -56,7 +56,7 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
               new PropertyDescriptor<>(Interface::getDhcpRelayAddresses, Schema.list(Schema.IP)))
           .put(
               "hsrp-groups",
-              new PropertyDescriptor<>(i -> i.getHsrpGroups().keySet(), Schema.set(Schema.STRING)))
+              new PropertyDescriptor<>(Interface::getHsrpGroups, Schema.set(Schema.STRING)))
           .put("hsrp-version", new PropertyDescriptor<>(Interface::getHsrpVersion, Schema.STRING))
           // skip inbound-filter
           .put(
