@@ -99,7 +99,11 @@ public class EigrpProcess implements Serializable {
 
     private Builder() {}
 
+    @Nullable
     public EigrpProcess build() {
+      if (_asn == null || _mode == null || _routerId == null) {
+        return null;
+      }
       EigrpProcess proc = new EigrpProcess(_asn, _exportPolicy, _mode, _routerId);
       if (_vrf != null) {
         _vrf.setEigrpProcess(proc);
