@@ -1,7 +1,6 @@
 package org.batfish.symbolic.bdd;
 
 import static org.batfish.symbolic.CommunityVarCollector.collectCommunityVars;
-import static org.batfish.symbolic.bdd.CommunityVarConverter.toCommunityVar;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -13,8 +12,6 @@ import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import org.batfish.common.BatfishException;
-import org.batfish.datamodel.CommunityList;
-import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
@@ -29,7 +26,6 @@ import org.batfish.datamodel.routing_policy.expr.AsPathListExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
-import org.batfish.datamodel.routing_policy.expr.CommunitySetExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.ConjunctionChain;
 import org.batfish.datamodel.routing_policy.expr.DecrementLocalPreference;
@@ -52,7 +48,6 @@ import org.batfish.datamodel.routing_policy.expr.MatchPrefix6Set;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.MultipliedAs;
-import org.batfish.datamodel.routing_policy.expr.NamedCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.PrefixSetExpr;
@@ -88,7 +83,7 @@ class TransferBDD {
 
   private static Table2<String, String, TransferResult<TransferReturn, BDD>> CACHE = new Table2<>();
 
-  private SortedMap<CommunityVar, List<CommunityVar>> _commDeps;
+  SortedMap<CommunityVar, List<CommunityVar>> _commDeps;
 
   private Set<CommunityVar> _comms;
 
@@ -96,7 +91,7 @@ class TransferBDD {
 
   private Graph _graph;
 
-  private PolicyQuotient _policyQuotient;
+  PolicyQuotient _policyQuotient;
 
   private Set<Prefix> _ignoredNetworks;
 
@@ -351,7 +346,7 @@ class TransferBDD {
     } else if (expr instanceof MatchCommunitySet) {
       p.debug("MatchCommunitySet");
       MatchCommunitySet mcs = (MatchCommunitySet) expr;
-      BDD c = matchCommunitySet(p.indent(), _conf, mcs.getExpr(), p.getData());
+      BDD c = CommunitySetToBdd.convert(p.indent(), _conf, mcs.getExpr(), p.getData(), this);
       TransferReturn ret = new TransferReturn(p.getData(), c);
       return fromExpr(ret);
 
@@ -729,7 +724,7 @@ class TransferBDD {
   /*
    * If-then-else statement
    */
-  private BDD ite(BDD b, BDD x, BDD y) {
+  BDD ite(BDD b, BDD x, BDD y) {
     return b.ite(x, y);
   }
 
@@ -796,62 +791,6 @@ class TransferBDD {
   }
 
   /*
-   * Converts a community list to a boolean expression.
-   */
-  private BDD matchCommunityList(TransferParam<BDDRoute> p, CommunityList cl, BDDRoute other) {
-    List<CommunityListLine> lines = new ArrayList<>(cl.getLines());
-    Collections.reverse(lines);
-    BDD acc = factory.zero();
-    for (CommunityListLine line : lines) {
-      boolean action = (line.getAction() == LineAction.ACCEPT);
-      CommunityVar cvar = toCommunityVar(line.getMatchCondition());
-      p.debug("Match Line: " + cvar);
-      p.debug("Action: " + line.getAction());
-      // Skip this match if it is irrelevant
-      if (_policyQuotient.getCommsMatchedButNotAssigned().contains(cvar)) {
-        continue;
-      }
-      List<CommunityVar> deps = _commDeps.get(cvar);
-      for (CommunityVar dep : deps) {
-        p.debug("Test for: " + dep);
-        BDD c = other.getCommunities().get(dep);
-        acc = ite(c, mkBDD(action), acc);
-      }
-    }
-    return acc;
-  }
-
-  /*
-   * Converts a community set to a boolean expression
-   */
-  private BDD matchCommunitySet(
-      TransferParam<BDDRoute> p, Configuration conf, CommunitySetExpr e, BDDRoute other) {
-    if (e instanceof CommunityList) {
-      Set<CommunityVar> comms = collectCommunityVars(conf, e);
-      BDD acc = factory.one();
-      for (CommunityVar comm : comms) {
-        p.debug("Inline Community Set: " + comm);
-        BDD c = other.getCommunities().get(comm);
-        if (c == null) {
-          throw new BatfishException("matchCommunitySet: should not be null");
-        }
-        acc = acc.and(c);
-      }
-      return acc;
-    }
-
-    if (e instanceof NamedCommunitySet) {
-      p.debug("Named");
-      NamedCommunitySet x = (NamedCommunitySet) e;
-      CommunityList cl = conf.getCommunityLists().get(x.getName());
-      p.debug("Named Community Set: " + cl.getName());
-      return matchCommunityList(p, cl, other);
-    }
-
-    throw new BatfishException("TODO: match community set");
-  }
-
-  /*
    * Converts a route filter list to a boolean expression.
    */
   private BDD matchFilterList(TransferParam<BDDRoute> p, RouteFilterList x, BDDRoute other) {
@@ -914,7 +853,7 @@ class TransferBDD {
   /*
    * Return a BDD from a boolean
    */
-  private BDD mkBDD(boolean b) {
+  BDD mkBDD(boolean b) {
     return b ? factory.one() : factory.zero();
   }
 
