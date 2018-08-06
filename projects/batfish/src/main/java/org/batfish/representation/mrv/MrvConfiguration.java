@@ -20,13 +20,11 @@ public class MrvConfiguration extends VendorConfiguration {
 
   private ConfigurationFormat _vendor;
 
-  @Override
-  public String getHostname() {
+  @Override public String getHostname() {
     return _hostname;
   }
 
-  @Override
-  public Set<String> getUnimplementedFeatures() {
+  @Override public Set<String> getUnimplementedFeatures() {
     throw new UnsupportedOperationException("no implementation for generated method");
     // TODO Auto-generated method stub
   }
@@ -35,19 +33,17 @@ public class MrvConfiguration extends VendorConfiguration {
     return _vendor;
   }
 
-  @Override
-  public void setHostname(String hostname) {
+  @Override public void setHostname(String hostname) {
     checkNotNull(hostname, "'hostname' cannot be null");
-    _hostname = hostname;
+    _hostname = hostname.toLowerCase();
   }
 
-  @Override
-  public void setVendor(ConfigurationFormat format) {
+  @Override public void setVendor(ConfigurationFormat format) {
     _vendor = format;
   }
 
-  @Override
-  public Configuration toVendorIndependentConfiguration() throws VendorConversionException {
+  @Override public Configuration toVendorIndependentConfiguration()
+      throws VendorConversionException {
     _c = new Configuration(_hostname, _vendor);
     _c.setDefaultCrossZoneAction(LineAction.ACCEPT);
     _c.setDefaultInboundAction(LineAction.ACCEPT);

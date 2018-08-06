@@ -76,8 +76,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     return servers;
   }
 
-  @Override
-  public String getHostname() {
+  @Override public String getHostname() {
     return _hostname;
   }
 
@@ -96,8 +95,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     return servers;
   }
 
-  @Override
-  public Set<String> getUnimplementedFeatures() {
+  @Override public Set<String> getUnimplementedFeatures() {
     return _unimplementedFeatures;
   }
 
@@ -117,10 +115,9 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     _dnsServerSecondary = dnsServerSecondary;
   }
 
-  @Override
-  public void setHostname(String hostname) {
+  @Override public void setHostname(String hostname) {
     checkNotNull(hostname, "'hostname' cannot be null");
-    _hostname = hostname;
+    _hostname = hostname.toLowerCase();
   }
 
   public void setNtpServerPrimary(String ntpServerPrimary) {
@@ -131,12 +128,12 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     _ntpServerSecondary = ntpServerSecondary;
   }
 
-  @Override
-  public void setVendor(ConfigurationFormat format) {
+  @Override public void setVendor(ConfigurationFormat format) {
     _vendor = format;
   }
 
   // Visible for testing
+
   /**
    * Generate unique object name (no collision across vsys namespaces) given a vsys name and
    * original object name
@@ -155,11 +152,12 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   }
 
   // Visible for testing
+
   /**
    * Generate IpAccessList name for the specified serviceGroupMemberName in the specified vsysName
    */
-  public static String computeServiceGroupMemberAclName(
-      String vsysName, String serviceGroupMemberName) {
+  public static String computeServiceGroupMemberAclName(String vsysName,
+      String serviceGroupMemberName) {
     return String.format("~%s~SERVICE_GROUP_MEMBER~%s~", vsysName, serviceGroupMemberName);
   }
 
@@ -187,8 +185,8 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
       // Service groups
       for (ServiceGroup serviceGroup : vsys.getServiceGroups().values()) {
-        String serviceGroupAclName =
-            computeServiceGroupMemberAclName(vsysName, serviceGroup.getName());
+        String serviceGroupAclName = computeServiceGroupMemberAclName(vsysName,
+            serviceGroup.getName());
         _c.getIpAccessLists()
             .put(serviceGroupAclName, serviceGroup.toIpAccessList(LineAction.ACCEPT, this, vsys));
       }
@@ -199,8 +197,9 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   /** Convert Palo Alto specific interface into vendor independent model interface */
   private org.batfish.datamodel.Interface toInterface(Interface iface) {
     String name = iface.getName();
-    org.batfish.datamodel.Interface newIface =
-        new org.batfish.datamodel.Interface(name, _c, InterfaceType.PHYSICAL);
+    org.batfish.datamodel.Interface newIface = new org.batfish.datamodel.Interface(name,
+        _c,
+        InterfaceType.PHYSICAL);
     Integer mtu = iface.getMtu();
     if (mtu != null) {
       newIface.setMtu(mtu);
@@ -223,18 +222,16 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
       // Can only construct a static route if it has a destination
       if (sr.getDestination() != null) {
         vrf.getStaticRoutes()
-            .add(
-                org.batfish.datamodel.StaticRoute.builder()
-                    .setNextHopInterface(sr.getNextHopInterface())
-                    .setNextHopIp(sr.getNextHopIp())
-                    .setAdministrativeCost(sr.getAdminDistance())
-                    .setMetric(sr.getMetric())
-                    .setNetwork(sr.getDestination())
-                    .build());
+            .add(org.batfish.datamodel.StaticRoute.builder()
+                .setNextHopInterface(sr.getNextHopInterface())
+                .setNextHopIp(sr.getNextHopIp())
+                .setAdministrativeCost(sr.getAdminDistance())
+                .setMetric(sr.getMetric())
+                .setNetwork(sr.getDestination())
+                .build());
       } else {
-        _w.redFlag(
-            String.format(
-                "Cannot convert static route %s, as it does not have a destination.", e.getKey()));
+        _w.redFlag(String.format("Cannot convert static route %s, as it does not have a destination.",
+            e.getKey()));
       }
     }
 
@@ -258,8 +255,8 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     return newZone;
   }
 
-  @Override
-  public Configuration toVendorIndependentConfiguration() throws VendorConversionException {
+  @Override public Configuration toVendorIndependentConfiguration()
+      throws VendorConversionException {
     String hostname = getHostname();
     _c = new Configuration(hostname, _vendor);
     _c.setDefaultCrossZoneAction(LineAction.REJECT);
@@ -279,14 +276,12 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     convertVirtualSystems();
 
     // Count and mark simple structure usages and identify undefined references
-    markConcreteStructure(
-        PaloAltoStructureType.INTERFACE,
+    markConcreteStructure(PaloAltoStructureType.INTERFACE,
         PaloAltoStructureUsage.VIRTUAL_ROUTER_INTERFACE,
         PaloAltoStructureUsage.ZONE_INTERFACE);
 
     // Handle marking for structures that may exist in one of a couple namespaces
-    markAbstractStructureFromUnknownNamespace(
-        PaloAltoStructureType.SERVICE_OR_SERVICE_GROUP,
+    markAbstractStructureFromUnknownNamespace(PaloAltoStructureType.SERVICE_OR_SERVICE_GROUP,
         ImmutableList.of(PaloAltoStructureType.SERVICE, PaloAltoStructureType.SERVICE_GROUP),
         PaloAltoStructureUsage.SERVICE_GROUP_MEMBER);
     return _c;
@@ -296,11 +291,10 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
    * Helper method to return DefinedStructureInfo for the structure with the specified name that
    * could be any of the specified structureTypesToCheck, return null if no match is found
    */
-  private @Nullable DefinedStructureInfo findDefinedStructure(
-      String name, Collection<PaloAltoStructureType> structureTypesToCheck) {
+  private @Nullable DefinedStructureInfo findDefinedStructure(String name,
+      Collection<PaloAltoStructureType> structureTypesToCheck) {
     for (PaloAltoStructureType typeToCheck : structureTypesToCheck) {
-      Map<String, DefinedStructureInfo> matchingDefinitions =
-          _structureDefinitions.get(typeToCheck.getDescription());
+      Map<String, DefinedStructureInfo> matchingDefinitions = _structureDefinitions.get(typeToCheck.getDescription());
       if (!matchingDefinitions.isEmpty()) {
         DefinedStructureInfo definition = matchingDefinitions.get(name);
         if (definition != null) {
@@ -315,37 +309,31 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
    * Update referrers and/or warn for undefined structures based on references to an abstract
    * structure type existing in either the reference's namespace or shared namespace
    */
-  private void markAbstractStructureFromUnknownNamespace(
-      PaloAltoStructureType type,
-      Collection<PaloAltoStructureType> structureTypesToCheck,
-      PaloAltoStructureUsage usage) {
-    Map<String, SortedMap<StructureUsage, SortedMultiset<Integer>>> references =
-        firstNonNull(_structureReferences.get(type), Collections.emptyMap());
-    references.forEach(
-        (nameWithNamespace, byUsage) -> {
-          String name = extractObjectName(nameWithNamespace);
-          Multiset<Integer> lines = firstNonNull(byUsage.get(usage), TreeMultiset.create());
-          // Check this namespace first
-          DefinedStructureInfo info =
-              findDefinedStructure(nameWithNamespace, structureTypesToCheck);
-          // Check shared namespace if there was no match
-          if (info == null) {
-            info =
-                findDefinedStructure(
-                    computeObjectName(SHARED_VSYS_NAME, name), structureTypesToCheck);
-          }
+  private void markAbstractStructureFromUnknownNamespace(PaloAltoStructureType type,
+      Collection<PaloAltoStructureType> structureTypesToCheck, PaloAltoStructureUsage usage) {
+    Map<String, SortedMap<StructureUsage, SortedMultiset<Integer>>> references = firstNonNull(_structureReferences.get(type),
+        Collections.emptyMap());
+    references.forEach((nameWithNamespace, byUsage) -> {
+      String name = extractObjectName(nameWithNamespace);
+      Multiset<Integer> lines = firstNonNull(byUsage.get(usage), TreeMultiset.create());
+      // Check this namespace first
+      DefinedStructureInfo info = findDefinedStructure(nameWithNamespace, structureTypesToCheck);
+      // Check shared namespace if there was no match
+      if (info == null) {
+        info = findDefinedStructure(computeObjectName(SHARED_VSYS_NAME, name),
+            structureTypesToCheck);
+      }
 
-          // Now update reference count if applicable
-          if (info != null) {
-            info.setNumReferrers(
-                info.getNumReferrers() == DefinedStructureInfo.UNKNOWN_NUM_REFERRERS
-                    ? DefinedStructureInfo.UNKNOWN_NUM_REFERRERS
-                    : info.getNumReferrers() + lines.size());
-          } else {
-            for (int line : lines) {
-              undefined(type, name, usage, line);
-            }
-          }
-        });
+      // Now update reference count if applicable
+      if (info != null) {
+        info.setNumReferrers(info.getNumReferrers() == DefinedStructureInfo.UNKNOWN_NUM_REFERRERS
+            ? DefinedStructureInfo.UNKNOWN_NUM_REFERRERS
+            : info.getNumReferrers() + lines.size());
+      } else {
+        for (int line : lines) {
+          undefined(type, name, usage, line);
+        }
+      }
+    });
   }
 }
