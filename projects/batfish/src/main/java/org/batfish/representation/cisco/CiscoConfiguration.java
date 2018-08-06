@@ -1,5 +1,6 @@
 package org.batfish.representation.cisco;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import static org.batfish.common.util.CommonUtil.toImmutableMap;
 import static org.batfish.datamodel.Interface.UNSET_LOCAL_INTERFACE;
@@ -142,6 +143,7 @@ import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
+import org.batfish.datamodel.tracking.TrackMethod;
 import org.batfish.datamodel.vendor_family.cisco.Aaa;
 import org.batfish.datamodel.vendor_family.cisco.AaaAuthentication;
 import org.batfish.datamodel.vendor_family.cisco.AaaAuthenticationLogin;
@@ -466,6 +468,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private final Map<String, SecurityZone> _securityZones;
 
+  private final Map<String, TrackMethod> _trackingGroups;
+
   private Map<String, NamedCommunitySet> _communitySets;
 
   public CiscoConfiguration(Set<String> unimplementedFeatures) {
@@ -509,6 +513,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _standardIpv6AccessLists = new TreeMap<>();
     _standardCommunityLists = new TreeMap<>();
     _tacacsServers = new TreeSet<>();
+    _trackingGroups = new TreeMap<>();
     _undefinedPeerGroups = new TreeMap<>();
     _unimplementedFeatures = unimplementedFeatures;
     _vrfs = new TreeMap<>();
@@ -1125,7 +1130,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   @Override
   public void setHostname(String hostname) {
-    _hostname = hostname;
+    checkNotNull(hostname, "'hostname' cannot be null");
+    _hostname = hostname.toLowerCase();
   }
 
   public void setNtpSourceInterface(String ntpSourceInterface) {
@@ -2041,6 +2047,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
     newIface.setActive(iface.getActive());
     newIface.setChannelGroup(iface.getChannelGroup());
     newIface.setCryptoMap(iface.getCryptoMap());
+    newIface.setHsrpGroups(
+        CommonUtil.toImmutableMap(
+            iface.getHsrpGroups(), Entry::getKey, e -> CiscoConversions.toHsrpGroup(e.getValue())));
+    newIface.setHsrpVersion(iface.getHsrpVersion());
     newIface.setAutoState(iface.getAutoState());
     newIface.setVrf(c.getVrfs().get(vrfName));
     if (iface.getBandwidth() == null) {
@@ -2097,15 +2107,23 @@ public final class CiscoConfiguration extends VendorConfiguration {
     }
 
     EigrpProcess eigrpProcess = vrf.getEigrpProcess();
-    if (eigrpProcess != null) {
+    // Let toEigrpProcess handle null asn failure
+    if (eigrpProcess != null && eigrpProcess.getAsn() != null) {
       /*
        * Some settings are here, others are set later when the EigrpProcess sets this
        * interface
        */
       boolean passive = eigrpProcess.getPassiveInterfaceDefault();
-      if (iface.getEigrpPassive() != null) {
-        passive = iface.getEigrpPassive();
-      }
+      passive =
+          eigrpProcess
+              .getInterfacePassiveStatus()
+              .entrySet()
+              .stream()
+              .filter(entry -> entry.getKey().equals(iface.getName()))
+              .map(Entry::getValue)
+              .findAny()
+              .orElse(passive);
+
       newIface.setEigrp(
           EigrpInterfaceSettings.builder()
               .setBandwidth(iface.getBandwidth())
@@ -3092,6 +3110,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
           c.getVrfs().get(vrfName).getInterfaces().put(ifaceName, newInterface);
         });
 
+    // copy tracking groups
+    c.getTrackingGroups().putAll(_trackingGroups);
+
     // apply vrrp settings to interfaces
     applyVrrp(c);
 
@@ -3266,6 +3287,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
     }
 
     markConcreteStructure(
+        CiscoStructureType.BFD_TEMPLATE, CiscoStructureUsage.INTERFACE_BFD_TEMPLATE);
+
+    markConcreteStructure(
         CiscoStructureType.COMMUNITY_SET,
         CiscoStructureUsage.ROUTE_POLICY_COMMUNITY_MATCHES_ANY,
         CiscoStructureUsage.ROUTE_POLICY_COMMUNITY_MATCHES_EVERY,
@@ -3280,7 +3304,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.BGP_UPDATE_SOURCE_INTERFACE,
         CiscoStructureUsage.INTERFACE_SELF_REF,
         CiscoStructureUsage.SERVICE_POLICY_INTERFACE,
-        CiscoStructureUsage.ROUTER_VRRP_INTERFACE);
+        CiscoStructureUsage.ROUTER_VRRP_INTERFACE,
+        CiscoStructureUsage.TRACK_INTERFACE);
 
     // mark references to ACLs that may not appear in data model
     markIpOrMacAcls(
@@ -3321,6 +3346,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.INSPECT_CLASS_MAP_MATCH_ACCESS_GROUP,
         CiscoStructureUsage.INTERFACE_IGMP_ACCESS_GROUP_ACL,
         CiscoStructureUsage.INTERFACE_IP_INBAND_ACCESS_GROUP,
+        CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_ACCESS_LIST_IN,
+        CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_ACCESS_LIST_OUT,
         CiscoStructureUsage.RIP_DISTRIBUTE_LIST,
         CiscoStructureUsage.ROUTER_ISIS_DISTRIBUTE_LIST_ACL,
         CiscoStructureUsage.SNMP_SERVER_FILE_TRANSFER_ACL,
@@ -3341,6 +3368,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureType.PREFIX_LIST,
         CiscoStructureUsage.BGP_INBOUND_PREFIX_LIST,
         CiscoStructureUsage.BGP_OUTBOUND_PREFIX_LIST,
+        CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_PREFIX_LIST_IN,
+        CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_PREFIX_LIST_OUT,
         CiscoStructureUsage.ROUTE_MAP_MATCH_IPV4_PREFIX_LIST);
     markConcreteStructure(
         CiscoStructureType.PREFIX6_LIST,
@@ -3389,6 +3418,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.INTERFACE_POLICY_ROUTING_MAP,
         CiscoStructureUsage.INTERFACE_SUMMARY_ADDRESS_EIGRP_LEAK_MAP,
         CiscoStructureUsage.OSPF_DEFAULT_ORIGINATE_ROUTE_MAP,
+        CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_ROUTE_MAP_IN,
+        CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_ROUTE_MAP_OUT,
         CiscoStructureUsage.OSPF_REDISTRIBUTE_BGP_MAP,
         CiscoStructureUsage.OSPF_REDISTRIBUTE_CONNECTED_MAP,
         CiscoStructureUsage.OSPF_REDISTRIBUTE_EIGRP_MAP,
@@ -3494,6 +3525,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.CLASS_MAP_SERVICE_TEMPLATE,
         CiscoStructureUsage.CLASS_MAP_ACTIVATED_SERVICE_TEMPLATE,
         CiscoStructureUsage.POLICY_MAP_EVENT_CLASS_ACTIVATE);
+
+    // track
+    markConcreteStructure(CiscoStructureType.TRACK, CiscoStructureUsage.INTERFACE_STANDBY_TRACK);
 
     // zone
     markConcreteStructure(
@@ -4102,6 +4136,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public Map<String, SecurityZone> getSecurityZones() {
     return _securityZones;
+  }
+
+  public Map<String, TrackMethod> getTrackingGroups() {
+    return _trackingGroups;
   }
 
   public Map<String, NamedCommunitySet> getCommunitySets() {

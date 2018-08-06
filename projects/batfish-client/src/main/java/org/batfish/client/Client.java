@@ -96,9 +96,11 @@ import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.AutocompleteSuggestion.CompletionType;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.pojo.WorkStatus;
+import org.batfish.datamodel.questions.BgpPropertySpecifier;
 import org.batfish.datamodel.questions.InterfacePropertySpecifier;
 import org.batfish.datamodel.questions.NodePropertySpecifier;
 import org.batfish.datamodel.questions.NodesSpecifier;
+import org.batfish.datamodel.questions.OspfPropertySpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.Question.InstanceData;
 import org.batfish.datamodel.questions.Question.InstanceData.Variable;
@@ -316,6 +318,13 @@ public class Client extends AbstractClient implements IClient {
     }
     Variable.Type expectedType = variable.getType();
     switch (expectedType) {
+      case BGP_PROPERTY_SPEC:
+        if (!(value.isTextual())) {
+          throw new BatfishException(
+              String.format("A Batfish %s must be a JSON string", expectedType.getName()));
+        }
+        new BgpPropertySpecifier(value.textValue());
+        break;
       case BOOLEAN:
         if (!value.isBoolean()) {
           throw new BatfishException(
@@ -419,6 +428,13 @@ public class Client extends AbstractClient implements IClient {
               String.format("A Batfish %s must be a JSON string", expectedType.getName()));
         }
         new NodesSpecifier(value.textValue());
+        break;
+      case OSPF_PROPERTY_SPEC:
+        if (!(value.isTextual())) {
+          throw new BatfishException(
+              String.format("A Batfish %s must be a JSON string", expectedType.getName()));
+        }
+        new OspfPropertySpecifier(value.textValue());
         break;
       case PREFIX:
         if (!value.isTextual()) {
@@ -2651,20 +2667,12 @@ public class Client extends AbstractClient implements IClient {
         return prompt(options, parameters);
       case PWD:
         return pwd(options, parameters);
-      case REINIT_DELTA_SNAPSHOT:
-        return reinitTestrig(outWriter, options, parameters, true);
-      case REINIT_DELTA_TESTRIG:
-        return reinitTestrig(outWriter, options, parameters, true);
       case RUN_ANALYSIS:
         return runAnalysis(outWriter, options, parameters, false, false);
       case RUN_ANALYSIS_DELTA:
         return runAnalysis(outWriter, options, parameters, true, false);
       case RUN_ANALYSIS_DIFFERENTIAL:
         return runAnalysis(outWriter, options, parameters, false, true);
-      case REINIT_SNAPSHOT:
-        return reinitTestrig(outWriter, options, parameters, false);
-      case REINIT_TESTRIG:
-        return reinitTestrig(outWriter, options, parameters, false);
       case SET_BACKGROUND_EXECUCTION:
         return setBackgroundExecution(options, parameters);
       case SET_BATFISH_LOGLEVEL:
@@ -2782,29 +2790,6 @@ public class Client extends AbstractClient implements IClient {
       System.exit(1);
     }
     return commands;
-  }
-
-  private boolean reinitTestrig(
-      @Nullable FileWriter outWriter,
-      List<String> options,
-      List<String> parameters,
-      boolean delta) {
-    Command command = delta ? Command.REINIT_DELTA_SNAPSHOT : Command.REINIT_SNAPSHOT;
-    if (!isValidArgument(options, parameters, 0, 0, 0, command)) {
-      return false;
-    }
-    String testrig;
-    if (!delta) {
-      _logger.output("Reinitializing snapshot. Parsing now.\n");
-      testrig = _currTestrig;
-    } else {
-      _logger.output("Reinitializing delta snapshot. Parsing now.\n");
-      testrig = _currDeltaTestrig;
-    }
-
-    WorkItem wItemParse = WorkItemBuilder.getWorkItemParse(_currContainerName, testrig);
-
-    return execute(wItemParse, outWriter);
   }
 
   public void run(List<String> initialCommands) {

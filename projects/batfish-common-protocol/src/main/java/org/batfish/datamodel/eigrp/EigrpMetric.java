@@ -5,8 +5,10 @@ import static org.batfish.datamodel.eigrp.EigrpProcessMode.CLASSIC;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.annotations.VisibleForTesting;
 import java.io.Serializable;
 import java.util.Objects;
+import java.util.stream.LongStream;
 import javax.annotation.Nullable;
 
 /** Handles EIGRP metric information. */
@@ -46,11 +48,8 @@ public class EigrpMetric implements Serializable {
      */
 
     _classicBandwidth = namedToClassicBandwidth(namedBandwidth);
-    if (bandwidth >= 1E9) {
-      _classicDelay = 1L;
-    } else {
-      _classicDelay = namedToClassicDelay(namedDelay);
-    }
+    long classicDelay = namedToClassicDelay(namedDelay);
+    _classicDelay = classicDelay == 0 ? 1 : classicDelay;
 
     // TODO set from arguments (from config)
     // https://github.com/batfish/batfish/issues/1946
@@ -91,27 +90,41 @@ public class EigrpMetric implements Serializable {
     return EIGRP_BANDWIDTH / classicBandwidth;
   }
 
-  private static Long namedToClassicBandwidth(long namedBandwidth) {
+  @VisibleForTesting
+  public static Long namedToClassicBandwidth(long namedBandwidth) {
     return EIGRP_BANDWIDTH / namedBandwidth;
   }
 
-  private static Long namedToClassicDelay(long namedDelay) {
+  @VisibleForTesting
+  public static Long namedToClassicDelay(long namedDelay) {
     return namedDelay / EIGRP_DELAY_PICO / 10L;
   }
 
-  public EigrpMetric accumulate(EigrpMetric routeMetric) {
+  public EigrpMetric accumulate(EigrpMetric neighborInterfaceMetric, EigrpMetric routeMetric) {
     long classicBandwidth;
     long classicDelay;
     long namedBandwidth;
     long namedDelay;
 
     if (_mode == CLASSIC) {
-      classicBandwidth = Math.max(_classicBandwidth, routeMetric._classicBandwidth);
+      classicBandwidth =
+          LongStream.of(
+                  _classicBandwidth,
+                  neighborInterfaceMetric._classicBandwidth,
+                  routeMetric._classicBandwidth)
+              .max()
+              .getAsLong();
       namedBandwidth = classicToNamedBandwidth(classicBandwidth);
       classicDelay = _classicDelay + routeMetric._classicDelay;
       namedDelay = classicToNamedDelay(classicDelay);
     } else {
-      namedBandwidth = Math.min(_namedBandwidth, routeMetric._namedBandwidth);
+      namedBandwidth =
+          LongStream.of(
+                  _namedBandwidth,
+                  neighborInterfaceMetric._namedBandwidth,
+                  routeMetric._namedBandwidth)
+              .min()
+              .getAsLong();
       classicBandwidth = namedToClassicBandwidth(namedBandwidth);
       namedDelay = _namedDelay + routeMetric._namedDelay;
       classicDelay = namedToClassicDelay(namedDelay);
@@ -195,6 +208,14 @@ public class EigrpMetric implements Serializable {
   @JsonProperty(PROP_MODE)
   private EigrpProcessMode getMode() {
     return _mode;
+  }
+
+  /** The composite cost, after scaling for RIB */
+  @JsonIgnore
+  public long getRibMetric() {
+    // TODO make configurable using 'metric rib-scale'
+    int namedRibScale = 128;
+    return getCost() / ((_mode == EigrpProcessMode.NAMED) ? namedRibScale : 1);
   }
 
   public String prettyPrint() {

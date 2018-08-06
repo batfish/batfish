@@ -60,24 +60,24 @@ class IpOwnersAnswerer extends Answerer {
         (hostname, interfaceSet) ->
             interfaceSet.forEach(
                 iface -> {
-                  if (iface.getAddress() == null) {
-                    return;
-                  }
-                  if (ipNodeOwners
-                              .getOrDefault(iface.getAddress().getIp(), ImmutableSet.of())
-                              .size()
-                          > 1
-                      || !duplicatesOnly) {
-                    rows.add(
-                        Row.builder()
-                            .put(COL_NODE, new Node(hostname))
-                            .put(COL_VRFNAME, iface.getVrfName())
-                            .put(COL_INTERFACE_NAME, iface.getName())
-                            .put(COL_IP, iface.getAddress().getIp())
-                            .put(COL_MASK, iface.getAddress().getNetworkBits())
-                            .put(COL_ACTIVE, iface.getActive())
-                            .build());
-                  }
+                  iface
+                      .getAllAddresses()
+                      .forEach(
+                          address -> {
+                            if (ipNodeOwners.getOrDefault(address.getIp(), ImmutableSet.of()).size()
+                                    > 1
+                                || !duplicatesOnly) {
+                              rows.add(
+                                  Row.builder()
+                                      .put(COL_NODE, new Node(hostname))
+                                      .put(COL_VRFNAME, iface.getVrfName())
+                                      .put(COL_INTERFACE_NAME, iface.getName())
+                                      .put(COL_IP, address.getIp())
+                                      .put(COL_MASK, address.getNetworkBits())
+                                      .put(COL_ACTIVE, iface.getActive())
+                                      .build());
+                            }
+                          });
                 }));
     return rows;
   }

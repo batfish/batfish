@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
@@ -12,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
@@ -23,6 +25,7 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
 import org.batfish.datamodel.eigrp.EigrpInterfaceSettings;
+import org.batfish.datamodel.hsrp.HsrpGroup;
 import org.batfish.datamodel.isis.IsisInterfaceMode;
 import org.batfish.datamodel.isis.IsisInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfArea;
@@ -45,7 +48,11 @@ public final class Interface extends ComparableStructure<String> {
 
     private SortedSet<String> _declaredNames;
 
-    private EigrpInterfaceSettings _eigrp;
+    @Nullable private EigrpInterfaceSettings _eigrp;
+
+    private Map<Integer, HsrpGroup> _hsrpGroups;
+
+    private String _hsrpVersion;
 
     private IpAccessList _incomingFilter;
 
@@ -83,6 +90,7 @@ public final class Interface extends ComparableStructure<String> {
       super(networkFactory, Interface.class);
       _additionalArpIps = ImmutableSortedSet.of();
       _declaredNames = ImmutableSortedSet.of();
+      _hsrpGroups = ImmutableMap.of();
       _secondaryAddresses = ImmutableSet.of();
       _sourceNats = ImmutableList.of();
       _vrrpGroups = ImmutableSortedMap.of();
@@ -104,6 +112,8 @@ public final class Interface extends ComparableStructure<String> {
       iface.setBlacklisted(_blacklisted);
       iface.setDeclaredNames(_declaredNames);
       iface.setEigrp(_eigrp);
+      iface.setHsrpGroups(_hsrpGroups);
+      iface.setHsrpVersion(_hsrpVersion);
       iface.setIncomingFilter(_incomingFilter);
       iface.setIsis(_isis);
       iface.setOspfArea(_ospfArea);
@@ -206,8 +216,18 @@ public final class Interface extends ComparableStructure<String> {
       return this;
     }
 
-    public Builder setEigrp(EigrpInterfaceSettings eigrp) {
+    public Builder setEigrp(@Nullable EigrpInterfaceSettings eigrp) {
       _eigrp = eigrp;
+      return this;
+    }
+
+    public @Nonnull Builder setHsrpGroups(@Nonnull Map<Integer, HsrpGroup> hsrpGroups) {
+      _hsrpGroups = ImmutableMap.copyOf(hsrpGroups);
+      return this;
+    }
+
+    public @Nonnull Builder setHsrpVersion(@Nullable String hsrpVersion) {
+      _hsrpVersion = hsrpVersion;
       return this;
     }
 
@@ -334,6 +354,10 @@ public final class Interface extends ComparableStructure<String> {
   private static final String PROP_DHCP_RELAY_ADDRESSES = "dhcpRelayAddresses";
 
   private static final String PROP_EIGRP = "eigrp";
+
+  private static final String PROP_HSRP_GROUPS = "hsrpGroups";
+
+  private static final String PROP_HSRP_VERSION = "hsrpVersion";
 
   private static final String PROP_INBOUND_FILTER = "inboundFilter";
 
@@ -589,7 +613,9 @@ public final class Interface extends ComparableStructure<String> {
 
   private List<Ip> _dhcpRelayAddresses;
 
-  private EigrpInterfaceSettings _eigrp;
+  @Nullable private EigrpInterfaceSettings _eigrp;
+
+  private Map<Integer, HsrpGroup> _hsrpGroups;
 
   private IpAccessList _inboundFilter;
 
@@ -663,6 +689,8 @@ public final class Interface extends ComparableStructure<String> {
 
   private transient String _zoneName;
 
+  private String _hsrpVersion;
+
   @SuppressWarnings("unused")
   private Interface() {
     this(null, null);
@@ -692,6 +720,7 @@ public final class Interface extends ComparableStructure<String> {
     _channelGroupMembers = ImmutableSortedSet.of();
     _declaredNames = ImmutableSortedSet.of();
     _dhcpRelayAddresses = new ArrayList<>();
+    _hsrpGroups = new TreeMap<>();
     _interfaceType = interfaceType;
     _mtu = DEFAULT_MTU;
     _nativeVlan = 1;
@@ -869,6 +898,18 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_EIGRP)
   public @Nullable EigrpInterfaceSettings getEigrp() {
     return _eigrp;
+  }
+
+  /** Mapping: hsrpGroupID -> HsrpGroup */
+  @JsonProperty(PROP_HSRP_GROUPS)
+  public Map<Integer, HsrpGroup> getHsrpGroups() {
+    return _hsrpGroups;
+  }
+
+  /** Version of the HSRP protocol to use */
+  @JsonProperty(PROP_HSRP_VERSION)
+  public @Nullable String getHsrpVersion() {
+    return _hsrpVersion;
   }
 
   @JsonIgnore
@@ -1244,6 +1285,16 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_EIGRP)
   public void setEigrp(@Nullable EigrpInterfaceSettings eigrp) {
     _eigrp = eigrp;
+  }
+
+  @JsonProperty(PROP_HSRP_GROUPS)
+  public void setHsrpGroups(@Nonnull Map<Integer, HsrpGroup> hsrpGroups) {
+    _hsrpGroups = hsrpGroups;
+  }
+
+  @JsonProperty(PROP_HSRP_VERSION)
+  public void setHsrpVersion(String hsrpVersion) {
+    _hsrpVersion = hsrpVersion;
   }
 
   @JsonIgnore

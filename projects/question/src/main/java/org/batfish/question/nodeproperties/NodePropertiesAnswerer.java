@@ -1,6 +1,5 @@
 package org.batfish.question.nodeproperties;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multiset;
@@ -8,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
@@ -33,37 +33,38 @@ public class NodePropertiesAnswerer extends Answerer {
   }
 
   /**
-   * Creates a {@link TableMetadata} object from the question.
+   * Creates {@link ColumnMetadata}s that the answer should have based on the {@code
+   * propertySpecifier}.
    *
-   * @param question The question
-   * @return The resulting {@link TableMetadata} object
+   * @param propertySpecifier The {@link NodePropertySpecifier} that describes the set of properties
+   * @return The {@link List} of {@link ColumnMetadata}s
    */
-  static TableMetadata createMetadata(NodePropertiesQuestion question) {
-    List<ColumnMetadata> columnMetadata =
-        new ImmutableList.Builder<ColumnMetadata>()
-            .add(new ColumnMetadata(COL_NODE, Schema.NODE, "Node", true, false))
-            .addAll(
-                question
-                    .getPropertySpec()
-                    .getMatchingProperties()
-                    .stream()
-                    .map(
-                        prop ->
-                            new ColumnMetadata(
-                                prop,
-                                NodePropertySpecifier.JAVA_MAP.get(prop).getSchema(),
-                                "Property " + prop,
-                                false,
-                                true))
-                    .collect(Collectors.toList()))
-            .build();
+  public static List<ColumnMetadata> createColumnMetadata(NodePropertySpecifier propertySpecifier) {
+    return new ImmutableList.Builder<ColumnMetadata>()
+        .add(new ColumnMetadata(COL_NODE, Schema.NODE, "Node", true, false))
+        .addAll(
+            propertySpecifier
+                .getMatchingProperties()
+                .stream()
+                .map(
+                    prop ->
+                        new ColumnMetadata(
+                            getColumnName(prop),
+                            NodePropertySpecifier.JAVA_MAP.get(prop).getSchema(),
+                            "Property " + prop,
+                            false,
+                            true))
+                .collect(Collectors.toList()))
+        .build();
+  }
 
+  static TableMetadata createTableMetadata(@Nonnull NodePropertiesQuestion question) {
     String textDesc = String.format("Properties of node ${%s}.", COL_NODE);
     DisplayHints dhints = question.getDisplayHints();
     if (dhints != null && dhints.getTextDesc() != null) {
       textDesc = dhints.getTextDesc();
     }
-    return new TableMetadata(columnMetadata, textDesc);
+    return new TableMetadata(createColumnMetadata(question.getPropertySpec()), textDesc);
   }
 
   @Override
@@ -72,19 +73,29 @@ public class NodePropertiesAnswerer extends Answerer {
     Map<String, Configuration> configurations = _batfish.loadConfigurations();
     Set<String> nodes = question.getNodeRegex().getMatchingNodes(_batfish);
 
-    TableMetadata tableMetadata = createMetadata(question);
-    TableAnswerElement answer = new TableAnswerElement(tableMetadata);
+    TableMetadata tableMetadata = createTableMetadata(question);
 
     Multiset<Row> propertyRows =
-        rawAnswer(question, configurations, nodes, tableMetadata.toColumnMap());
+        getProperties(
+            question.getPropertySpec(), configurations, nodes, tableMetadata.toColumnMap());
 
+    TableAnswerElement answer = new TableAnswerElement(tableMetadata);
     answer.postProcessAnswer(question, propertyRows);
     return answer;
   }
 
-  @VisibleForTesting
-  static Multiset<Row> rawAnswer(
-      NodePropertiesQuestion question,
+  /**
+   * Gets properties of nodes.
+   *
+   * @param propertySpecifier Specifies which properties to get
+   * @param configurations configuration to use in extractions
+   * @param nodes the set of nodes to focus on
+   * @param columns a map from column name to {@link ColumnMetadata}
+   * @return A multiset of {@link Row}s where each row corresponds to a node and columns correspond
+   *     to property values.
+   */
+  public static Multiset<Row> getProperties(
+      NodePropertySpecifier propertySpecifier,
       Map<String, Configuration> configurations,
       Set<String> nodes,
       Map<String, ColumnMetadata> columns) {
@@ -93,7 +104,7 @@ public class NodePropertiesAnswerer extends Answerer {
     for (String nodeName : nodes) {
       RowBuilder row = Row.builder(columns).put(COL_NODE, new Node(nodeName));
 
-      for (String property : question.getPropertySpec().getMatchingProperties()) {
+      for (String property : propertySpecifier.getMatchingProperties()) {
         PropertySpecifier.fillProperty(
             NodePropertySpecifier.JAVA_MAP.get(property),
             configurations.get(nodeName),
@@ -105,5 +116,10 @@ public class NodePropertiesAnswerer extends Answerer {
     }
 
     return rows;
+  }
+
+  /** Returns the name of the column that contains the value of property {@code property} */
+  public static String getColumnName(String property) {
+    return property;
   }
 }

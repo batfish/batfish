@@ -14,10 +14,12 @@ import static org.hamcrest.Matchers.instanceOf;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.regex.Pattern;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Configuration.Builder;
+import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowHistory;
 import org.batfish.datamodel.ForwardingAction;
 import org.batfish.datamodel.HeaderSpace;
@@ -135,5 +137,13 @@ public class ReducedReachabilityTest {
     assertThat(
         flowHistory.getTraces().values(),
         contains(hasFlow(allOf(hasSrcIp(NODE1_LOOPBACK_IP), hasDstIp(NODE2_ALTERNATE_IP)))));
+  }
+
+  @Test
+  public void testBDDReducedReachability() throws IOException {
+    Batfish batfish = initBatfish();
+    Set<Flow> flows = batfish.bddReducedReachability();
+    assertThat(flows, hasSize(1));
+    assertThat(flows, contains(allOf(hasSrcIp(NODE1_LOOPBACK_IP), hasDstIp(NODE2_ALTERNATE_IP))));
   }
 }

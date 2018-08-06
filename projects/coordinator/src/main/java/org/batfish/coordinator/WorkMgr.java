@@ -76,9 +76,11 @@ import org.batfish.datamodel.answers.AutocompleteSuggestion.CompletionType;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.pojo.Topology;
+import org.batfish.datamodel.questions.BgpPropertySpecifier;
 import org.batfish.datamodel.questions.InterfacePropertySpecifier;
 import org.batfish.datamodel.questions.NodePropertySpecifier;
 import org.batfish.datamodel.questions.NodesSpecifier;
+import org.batfish.datamodel.questions.OspfPropertySpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
@@ -298,6 +300,11 @@ public class WorkMgr extends AbstractCoordinator {
       int maxSuggestions)
       throws IOException {
     switch (completionType) {
+      case BGP_PROPERTY:
+        {
+          List<AutocompleteSuggestion> suggestions = BgpPropertySpecifier.autoComplete(query);
+          return suggestions.subList(0, Integer.min(suggestions.size(), maxSuggestions));
+        }
       case INTERFACE_PROPERTY:
         {
           List<AutocompleteSuggestion> suggestions = InterfacePropertySpecifier.autoComplete(query);
@@ -306,7 +313,8 @@ public class WorkMgr extends AbstractCoordinator {
       case NODE:
         {
           checkArgument(
-              !isNullOrEmpty(testrig), "Testrig name should be supplied for 'NODE' autoCompletion");
+              !isNullOrEmpty(testrig),
+              "Snapshot name should be supplied for 'NODE' autoCompletion");
           List<AutocompleteSuggestion> suggestions =
               NodesSpecifier.autoComplete(
                   query, getNodes(container, testrig), getNodeRolesData(container));
@@ -315,6 +323,11 @@ public class WorkMgr extends AbstractCoordinator {
       case NODE_PROPERTY:
         {
           List<AutocompleteSuggestion> suggestions = NodePropertySpecifier.autoComplete(query);
+          return suggestions.subList(0, Integer.min(suggestions.size(), maxSuggestions));
+        }
+      case OSPF_PROPERTY:
+        {
+          List<AutocompleteSuggestion> suggestions = OspfPropertySpecifier.autoComplete(query);
           return suggestions.subList(0, Integer.min(suggestions.size(), maxSuggestions));
         }
       default:
@@ -763,12 +776,12 @@ public class WorkMgr extends AbstractCoordinator {
       if (configPaths.isEmpty()) {
         throw new BatfishException(
             String.format(
-                "Configuration file %s does not exist in testrig %s for container %s",
+                "Configuration file %s does not exist in snapshot %s for network %s",
                 configName, testrigName, containerName));
       } else if (configPaths.size() > 1) {
         throw new BatfishException(
             String.format(
-                "More than one configuration file with name %s in testrig %s for container %s",
+                "More than one configuration file with name %s in snapshot %s for network %s",
                 configName, testrigName, containerName));
       }
       String configContent = "";
@@ -777,7 +790,7 @@ public class WorkMgr extends AbstractCoordinator {
       } catch (IOException e) {
         throw new BatfishException(
             String.format(
-                "Failed to read configuration file %s in testrig %s for container %s",
+                "Failed to read configuration file %s in snapshot %s for network %s",
                 configName, testrigName, containerName),
             e);
       }
@@ -878,7 +891,7 @@ public class WorkMgr extends AbstractCoordinator {
   public Path getdirTestrig(String containerName, String testrigName) {
     Path snapshotDir = getdirSnapshots(containerName).resolve(Paths.get(testrigName));
     if (!Files.exists(snapshotDir)) {
-      throw new BatfishException("Testrig '" + testrigName + "' does not exist");
+      throw new BatfishException("Snapshot '" + testrigName + "' does not exist");
     }
     return snapshotDir;
   }
@@ -1012,7 +1025,7 @@ public class WorkMgr extends AbstractCoordinator {
     if (!Files.exists(submittedTestrigDir)) {
       return "Missing folder '"
           + BfConsts.RELPATH_TEST_RIG_DIR
-          + "' for testrig '"
+          + "' for snapshot '"
           + testrigName
           + "'\n";
     }
@@ -1134,7 +1147,7 @@ public class WorkMgr extends AbstractCoordinator {
     SortedSet<Path> srcDirEntries = CommonUtil.getEntries(srcDir);
     if (srcDirEntries.size() != 1 || !Files.isDirectory(srcDirEntries.iterator().next())) {
       throw new BatfishException(
-          "Unexpected packaging of testrig. There should be just one top-level folder");
+          "Unexpected packaging of snapshot. There should be just one top-level folder");
     }
 
     Path srcSubdir = srcDirEntries.iterator().next();
@@ -1225,7 +1238,7 @@ public class WorkMgr extends AbstractCoordinator {
       }
     }
     _logger.infof(
-        "Environment data for testrig:%s; bgpTables:%s, routingTables:%s, nodeRoles:%s referenceBooks:%s\n",
+        "Environment data for snapshot:%s; bgpTables:%s, routingTables:%s, nodeRoles:%s referenceBooks:%s\n",
         snapshotName, bgpTables, routingTables, roleData, referenceLibraryData);
 
     if (autoAnalyze) {
@@ -1509,7 +1522,7 @@ public class WorkMgr extends AbstractCoordinator {
   public boolean queueWork(WorkItem workItem) {
     Path testrigDir = getdirTestrig(workItem.getContainerName(), workItem.getTestrigName());
     if (workItem.getTestrigName().isEmpty() || !Files.exists(testrigDir)) {
-      throw new BatfishException("Non-existent testrig: '" + testrigDir.getFileName() + "'");
+      throw new BatfishException("Non-existent snapshot: '" + testrigDir.getFileName() + "'");
     }
     boolean success;
     try {
@@ -1526,7 +1539,7 @@ public class WorkMgr extends AbstractCoordinator {
           throw new BatfishException("Environment metadata not found");
         }
       } catch (Exception e) {
-        throw new BatfishException("Testrig/environment metadata not found.");
+        throw new BatfishException("Snapshot/environment metadata not found.");
       }
       success = _workQueueMgr.queueUnassignedWork(new QueuedWork(workItem, workDetails));
     } catch (Exception e) {
@@ -1600,7 +1613,7 @@ public class WorkMgr extends AbstractCoordinator {
     Path dstDir = newEnvDir.resolve(BfConsts.RELPATH_ENV_DIR);
     if (Files.exists(newEnvDir)) {
       throw new BatfishException(
-          "Environment: '" + newEnvName + "' already exists for testrig: '" + testrigName + "'");
+          "Environment: '" + newEnvName + "' already exists for snapshot: '" + testrigName + "'");
     }
     if (!dstDir.toFile().mkdirs()) {
       throw new BatfishException("Failed to create directory: '" + dstDir + "'");

@@ -25,6 +25,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.apache.commons.collections4.list.TreeList;
@@ -39,7 +40,7 @@ import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpAuthenticationAlgorithm;
 import org.batfish.datamodel.BgpAuthenticationSettings;
 import org.batfish.datamodel.BgpPassivePeerConfig;
-import org.batfish.datamodel.BgpPeerConfig;
+import org.batfish.datamodel.BgpPeerConfig.Builder;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -338,7 +339,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     for (Entry<Prefix, IpBgpGroup> e : routingInstance.getIpBgpGroups().entrySet()) {
       Prefix prefix = e.getKey();
       IpBgpGroup ig = e.getValue();
-      BgpPeerConfig.Builder<?, ?> neighbor;
+      Builder<?, ?> neighbor;
       Long remoteAs = ig.getType() == BgpGroupType.INTERNAL ? ig.getLocalAs() : ig.getPeerAs();
       if (ig.getDynamic()) {
         neighbor =
@@ -392,8 +393,16 @@ public final class JuniperConfiguration extends VendorConfiguration {
       }
       neighbor.setEbgpMultihop(ebgpMultihop);
       neighbor.setEnforceFirstAs(firstNonNull(ig.getEnforceFirstAs(), Boolean.FALSE));
-      Integer loops = ig.getLoops();
-      boolean allowLocalAsIn = loops != null && loops > 0;
+
+      // Check for loops in the following order:
+      Integer loops =
+          Stream.of(
+                  ig.getLoops(), routingInstance.getLoops(), _defaultRoutingInstance.getLoops(), 0)
+              .filter(Objects::nonNull)
+              .findFirst()
+              .get();
+
+      boolean allowLocalAsIn = loops > 0;
       neighbor.setAllowLocalAsIn(allowLocalAsIn);
       Boolean advertisePeerAs = ig.getAdvertisePeerAs();
       if (advertisePeerAs == null) {

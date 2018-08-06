@@ -9,9 +9,11 @@ import org.batfish.common.util.BatfishObjectMapper;
 public class AutocompleteSuggestion {
 
   public enum CompletionType {
+    BGP_PROPERTY,
     INTERFACE_PROPERTY,
     NODE,
-    NODE_PROPERTY
+    NODE_PROPERTY,
+    OSPF_PROPERTY
   }
 
   @Nullable private final String _description;

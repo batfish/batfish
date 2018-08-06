@@ -14,18 +14,40 @@ re_classic
 
 re_classic_tail
 :
-   rec_address_family
+   re_eigrp_null
+   | re_eigrp_router_id
+   | rec_address_family
    | rec_null
+   | re_default_metric
    | re_network
    | re_passive_interface_default
    | re_passive_interface
-   | re_redistribute_bgp
-   | re_redistribute_connected
-   | re_redistribute_eigrp
-   | re_redistribute_isis
-   | re_redistribute_ospf
-   | re_redistribute_rip
-   | re_redistribute_static
+   | re_redistribute
+;
+
+re_default_metric
+:
+   NO? DEFAULT_METRIC bw_kbps = DEC delay_10us = DEC reliability = DEC eff_bw = DEC mtu = DEC NEWLINE
+;
+
+re_eigrp_null
+:
+   NO? EIGRP
+   (
+      DEFAULT_ROUTE_TAG
+      | EVENT_LOG_SIZE
+      | LOG_NEIGHBOR_CHANGES
+      | LOG_NEIGHBOR_WARNINGS
+      | STUB
+   ) null_rest_of_line
+;
+
+re_eigrp_router_id
+:
+   (
+      EIGRP ROUTER_ID id = IP_ADDRESS
+      | NO EIGRP ROUTER_ID
+   ) NEWLINE
 ;
 
 re_named
@@ -54,6 +76,17 @@ re_passive_interface
 re_passive_interface_default
 :
    NO? PASSIVE_INTERFACE DEFAULT NEWLINE
+;
+
+re_redistribute
+:
+   re_redistribute_bgp
+   | re_redistribute_connected
+   | re_redistribute_eigrp
+   | re_redistribute_isis
+   | re_redistribute_ospf
+   | re_redistribute_rip
+   | re_redistribute_static
 ;
 
 re_redistribute_bgp
@@ -99,11 +132,7 @@ re_redistribute_ospf
 :
    REDISTRIBUTE OSPF proc = DEC
    (
-      MATCH (
-         EXTERNAL DEC?
-         | INTERNAL
-         | NSSA_EXTERNAL DEC?
-      )+
+      MATCH ospf_route_type+
       | METRIC bw_kbps = DEC delay_10us = DEC reliability = DEC eff_bw = DEC mtu = DEC
       | ROUTE_MAP map = variable
    )* NEWLINE
@@ -182,7 +211,10 @@ reaf_interface_tail
 
 reaf_topology_tail
 :
-   reaf_topology_null
+   re_default_metric
+   | re_eigrp_null
+   | re_redistribute
+   | reaf_topology_null
 ;
 
 reaf_topology
@@ -203,15 +235,12 @@ reaf_topology_null
       AUTO_SUMMARY
       | CTS
       | DEFAULT_INFORMATION
-      | DEFAULT_METRIC
       | DISTANCE
       | DISTRIBUTE_LIST
-      | EIGRP
       | FAST_REROUTE
       | MAXIMUM_PATHS
       | METRIC
       | OFFSET_LIST
-      | REDISTRIBUTE
       | SNMP
       | SUMMARY_METRIC
       | TIMERS
@@ -234,33 +263,39 @@ rec_address_family
    rec_address_family_tail* address_family_footer
 ;
 
+re_autonomous_system
+:
+   NO? AUTONOMOUS_SYSTEM asnum = DEC NEWLINE
+;
+
 rec_address_family_null
 :
    NO?
    (
       AUTO_SUMMARY
-      | AUTONOMOUS_SYSTEM
       | BFD
       | DEFAULT_INFORMATION
-      | DEFAULT_METRIC
       | DISTANCE
       | DISTRIBUTE_LIST
-      | EIGRP
       | MAXIMUM_PATHS
       | MAXIMUM_PREFIX
       | METRIC
       | NEIGHBOR
       | NSF
       | OFFSET_LIST
-      | REDISTRIBUTE
    ) null_rest_of_line
 ;
 
 rec_address_family_tail
 :
-   re_network
+   re_autonomous_system
+   | re_default_metric
+   | re_eigrp_null
+   | re_eigrp_router_id
+   | re_network
    | re_passive_interface_default
    | re_passive_interface
+   | re_redistribute
    | rec_address_family_null
 ;
 
@@ -271,10 +306,8 @@ rec_null
       AUTO_SUMMARY
       | BFD
       | DEFAULT_INFORMATION
-      | DEFAULT_METRIC
       | DISTANCE
       | DISTRIBUTE_LIST
-      | EIGRP
       | HELLO_INTERVAL
       | MAXIMUM_PATHS
       | METRIC
@@ -311,8 +344,7 @@ ren_address_family_null
 :
    NO?
    (
-      EIGRP
-      | MAXIMUM_PREFIX
+      MAXIMUM_PREFIX
       | METRIC
       | NEIGHBOR
       | NSF
@@ -324,7 +356,9 @@ ren_address_family_null
 
 ren_address_family_tail
 :
-   re_network
+   re_eigrp_null
+   | re_eigrp_router_id
+   | re_network
    | re_passive_interface_default
    | re_passive_interface
    | reaf_interface_default
@@ -354,16 +388,14 @@ ren_service_family
 
 ren_service_family_null
 :
-   NO?
-   (
-      EIGRP
-      | TIMERS
-   ) null_rest_of_line
+   NO? TIMERS null_rest_of_line
 ;
 
 ren_service_family_tail
 :
-   ren_service_family_null
+   re_eigrp_null
+   | re_eigrp_router_id
+   | ren_service_family_null
    | resf_interface_default
    | resf_interface
    | resf_topology
@@ -422,15 +454,15 @@ resf_null
 
 resf_topology_tail
 :
-   resf_topology_null
+   re_eigrp_null
+   | resf_topology_null
 ;
 
 resf_topology_null
 :
    NO?
    (
-      EIGRP
-      | METRIC
+      METRIC
       | TIMERS
    ) null_rest_of_line
 ;

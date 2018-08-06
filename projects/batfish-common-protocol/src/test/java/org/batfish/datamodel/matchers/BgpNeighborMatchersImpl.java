@@ -9,6 +9,16 @@ import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 
 final class BgpNeighborMatchersImpl {
+  static final class HasAllowLocalAsIn extends FeatureMatcher<BgpPeerConfig, Boolean> {
+    HasAllowLocalAsIn(@Nonnull Matcher<? super Boolean> subMatcher) {
+      super(subMatcher, "A BgpPeerConfig with allowLocalAsIn:", "allowLocalAsIn");
+    }
+
+    @Override
+    protected Boolean featureValueOf(BgpPeerConfig actual) {
+      return actual.getAllowLocalAsIn();
+    }
+  }
 
   static final class HasAllowRemoteAsOut extends FeatureMatcher<BgpPeerConfig, Boolean> {
     HasAllowRemoteAsOut(@Nonnull Matcher<? super Boolean> subMatcher) {

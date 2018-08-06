@@ -1,8 +1,10 @@
 package org.batfish.datamodel;
 
+import static java.util.Objects.requireNonNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import javax.annotation.Nonnull;
+import java.util.Objects;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.eigrp.EigrpMetric;
 
@@ -26,25 +28,46 @@ public class EigrpInternalRoute extends EigrpRoute {
   }
 
   @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (!(obj instanceof EigrpInternalRoute)) {
+      return false;
+    }
+    EigrpInternalRoute rhs = (EigrpInternalRoute) obj;
+    return _admin == rhs._admin
+        && Objects.equals(_network, rhs._network)
+        && Objects.equals(_nextHopInterface, rhs._nextHopInterface)
+        && Objects.equals(_nextHopIp, rhs._nextHopIp)
+        && Objects.equals(_metric, rhs._metric);
+  }
+
+  @Override
   public RoutingProtocol getProtocol() {
     return RoutingProtocol.EIGRP;
   }
 
   @Override
-  public int routeCompare(@Nonnull AbstractRoute rhs) {
-    return 0;
+  public final int hashCode() {
+    return Objects.hash(_admin, _metric.hashCode(), _network, _nextHopIp, _nextHopInterface);
   }
 
   public static class Builder extends AbstractRouteBuilder<Builder, EigrpInternalRoute> {
 
-    private EigrpMetric _eigrpMetric;
+    @Nullable String _nextHopInterface;
 
-    private String _nextHopInterface;
+    @Nullable private EigrpMetric _eigrpMetric;
 
     @Override
     public EigrpInternalRoute build() {
       return new EigrpInternalRoute(
-          getAdmin(), getNetwork(), _nextHopInterface, getNextHopIp(), _eigrpMetric);
+          getAdmin(),
+          getNetwork(),
+          _nextHopInterface,
+          getNextHopIp(),
+          // Metric required to build route
+          requireNonNull(_eigrpMetric));
     }
 
     @Override

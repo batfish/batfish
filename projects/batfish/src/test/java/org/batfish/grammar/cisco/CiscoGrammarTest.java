@@ -1,5 +1,7 @@
 package org.batfish.grammar.cisco;
 
+import static java.util.Objects.requireNonNull;
+import static org.batfish.common.util.CommonUtil.sha256Digest;
 import static org.batfish.datamodel.AuthenticationMethod.ENABLE;
 import static org.batfish.datamodel.AuthenticationMethod.GROUP_RADIUS;
 import static org.batfish.datamodel.AuthenticationMethod.GROUP_TACACS;
@@ -63,8 +65,10 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.isIpSpaceReferenc
 import static org.batfish.datamodel.matchers.DataModelMatchers.isPermittedByAclThat;
 import static org.batfish.datamodel.matchers.DataModelMatchers.permits;
 import static org.batfish.datamodel.matchers.EigrpInterfaceSettingsMatchers.hasDelay;
+import static org.batfish.datamodel.matchers.EigrpRouteMatchers.hasEigrpMetric;
 import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasDstIps;
 import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasSrcIps;
+import static org.batfish.datamodel.matchers.HsrpGroupMatchers.hasTrackActions;
 import static org.batfish.datamodel.matchers.IkeGatewayMatchers.hasAddress;
 import static org.batfish.datamodel.matchers.IkeGatewayMatchers.hasExternalInterface;
 import static org.batfish.datamodel.matchers.IkeGatewayMatchers.hasIkePolicy;
@@ -83,6 +87,8 @@ import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasLifeTimeSeco
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDeclaredNames;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasEigrp;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasHsrpGroup;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasHsrpVersion;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfArea;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrf;
@@ -148,6 +154,7 @@ import static org.batfish.representation.cisco.CiscoConfiguration.computeService
 import static org.batfish.representation.cisco.CiscoConfiguration.computeServiceObjectGroupAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeZonePairAclName;
 import static org.batfish.representation.cisco.CiscoStructureType.ACCESS_LIST;
+import static org.batfish.representation.cisco.CiscoStructureType.BFD_TEMPLATE;
 import static org.batfish.representation.cisco.CiscoStructureType.INSPECT_CLASS_MAP;
 import static org.batfish.representation.cisco.CiscoStructureType.INSPECT_POLICY_MAP;
 import static org.batfish.representation.cisco.CiscoStructureType.IPV4_ACCESS_LIST;
@@ -169,9 +176,11 @@ import static org.batfish.representation.cisco.CiscoStructureType.ROUTE_MAP;
 import static org.batfish.representation.cisco.CiscoStructureType.SECURITY_ZONE;
 import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_OBJECT;
 import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_OBJECT_GROUP;
+import static org.batfish.representation.cisco.CiscoStructureType.TRACK;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OR_SERVICE_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INSPECT_POLICY_MAP_INSPECT_CLASS;
+import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_BFD_TEMPLATE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_INCOMING_FILTER;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_OUTGOING_FILTER;
 import static org.batfish.representation.cisco.CiscoStructureUsage.IP_NAT_DESTINATION_ACCESS_LIST;
@@ -201,6 +210,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.graph.EndpointPair;
@@ -227,8 +237,10 @@ import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.DiffieHellmanGroup;
+import org.batfish.datamodel.EigrpExternalRoute;
 import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.HeaderSpace;
@@ -252,21 +264,26 @@ import org.batfish.datamodel.Line;
 import org.batfish.datamodel.LineType;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.NamedPort;
+import org.batfish.datamodel.OspfIntraAreaRoute;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.RegexCommunitySet;
+import org.batfish.datamodel.RipInternalRoute;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.eigrp.EigrpMetric;
+import org.batfish.datamodel.eigrp.EigrpProcessMode;
 import org.batfish.datamodel.matchers.CommunityListLineMatchers;
 import org.batfish.datamodel.matchers.CommunityListMatchers;
 import org.batfish.datamodel.matchers.ConfigurationMatchers;
 import org.batfish.datamodel.matchers.EigrpInterfaceSettingsMatchers;
 import org.batfish.datamodel.matchers.EigrpProcessMatchers;
+import org.batfish.datamodel.matchers.HsrpGroupMatchers;
 import org.batfish.datamodel.matchers.IkeGatewayMatchers;
 import org.batfish.datamodel.matchers.IkePhase1KeyMatchers;
 import org.batfish.datamodel.matchers.IkePhase1ProposalMatchers;
@@ -283,12 +300,16 @@ import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfDefaultOriginateType;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.ospf.StubType;
+import org.batfish.datamodel.routing_policy.Environment.Direction;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.CommunityHalvesExpr;
 import org.batfish.datamodel.routing_policy.expr.CommunitySetExpr;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunityConjunction;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunityHalf;
 import org.batfish.datamodel.routing_policy.expr.RangeCommunityHalf;
+import org.batfish.datamodel.tracking.DecrementPriority;
+import org.batfish.datamodel.tracking.TrackInterface;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
@@ -738,6 +759,22 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testIosBfdTemplate() throws IOException {
+    String hostname = "ios-bfd-template";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    assertThat(ccae, hasNumReferrers(filename, BFD_TEMPLATE, "bfd-template-unused", 0));
+    assertThat(ccae, hasNumReferrers(filename, BFD_TEMPLATE, "bfd-template-used", 1));
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            filename, BFD_TEMPLATE, "bfd-template-undefined", INTERFACE_BFD_TEMPLATE));
+  }
+
+  @Test
   public void testIosEigrpNetwork() throws IOException {
     Configuration c = parseConfig("ios-eigrp-network");
 
@@ -768,6 +805,60 @@ public class CiscoGrammarTest {
         c, hasInterface("Ethernet4", hasEigrp(EigrpInterfaceSettingsMatchers.hasPassive(false))));
     assertThat(
         c, hasInterface("Ethernet5", hasEigrp(EigrpInterfaceSettingsMatchers.hasPassive(true))));
+
+    /* Autonomous-system configured inside address-family */
+    assertThat(
+        c,
+        ConfigurationMatchers.hasVrf(
+            "vrf-name2", hasEigrpProcess(EigrpProcessMatchers.hasAsn(3L))));
+  }
+
+  @Test
+  public void testIosEigrpRedistribution() throws IOException {
+    Configuration c = parseConfig("ios-eigrp-redistribution");
+
+    assertThat(c, hasDefaultVrf(hasEigrpProcess(notNullValue())));
+    String exportPolicyName =
+        requireNonNull(c.getVrfs().get(DEFAULT_VRF_NAME).getEigrpProcess()).getExportPolicy();
+    RoutingPolicy routingPolicy = c.getRoutingPolicies().get(exportPolicyName);
+    assertThat(routingPolicy, notNullValue());
+
+    EigrpExternalRoute.Builder outputRouteBuilder = new EigrpExternalRoute.Builder();
+    outputRouteBuilder.setNetwork(Prefix.parse("1.0.0.0/32"));
+    EigrpMetric.Builder metricBuilder = EigrpMetric.builder().setMode(EigrpProcessMode.CLASSIC);
+
+    // Check if routingPolicy accepts connected route and sets correct metric
+    assertTrue(
+        routingPolicy.process(
+            new ConnectedRoute(Prefix.parse("1.1.1.1/32"), "Loopback0"),
+            outputRouteBuilder,
+            null,
+            DEFAULT_VRF_NAME,
+            Direction.OUT));
+    assertThat(
+        outputRouteBuilder.build(),
+        hasEigrpMetric(requireNonNull(metricBuilder.setBandwidth(1E5).setDelay(1E8).build())));
+
+    // Check if routingPolicy rejects RIP route
+    assertFalse(
+        routingPolicy.process(
+            new RipInternalRoute(Prefix.parse("2.2.2.2/32"), new Ip("3.3.3.3"), 1, 1),
+            outputRouteBuilder,
+            null,
+            DEFAULT_VRF_NAME,
+            Direction.OUT));
+
+    // Check if routingPolicy accepts OSPF route and sets correct default metric
+    assertTrue(
+        routingPolicy.process(
+            new OspfIntraAreaRoute(Prefix.parse("4.4.4.4/32"), null, 1, 1, 1),
+            outputRouteBuilder,
+            null,
+            DEFAULT_VRF_NAME,
+            Direction.OUT));
+    assertThat(
+        outputRouteBuilder.build(),
+        hasEigrpMetric(requireNonNull(metricBuilder.setBandwidth(2E5).setDelay(2E8).build())));
   }
 
   @Test
@@ -872,6 +963,33 @@ public class CiscoGrammarTest {
     assertThat(c, hasInterface("GigabitEthernet0/0", hasBandwidth(1E9D)));
     assertThat(c, hasInterface("GigabitEthernet0/1", hasBandwidth(1E9D)));
     assertThat(c, hasInterface("GigabitEthernet0/2", hasBandwidth(100E6D)));
+  }
+
+  @Test
+  public void testIosInterfaceStandby() throws IOException {
+    Configuration c = parseConfig("ios-interface-standby");
+    Interface i = c.getInterfaces().get("Ethernet0");
+
+    assertThat(
+        c,
+        ConfigurationMatchers.hasTrackingGroups(
+            equalTo(ImmutableMap.of("1", new TrackInterface("Tunnel1")))));
+    assertThat(
+        i,
+        hasHsrpGroup(
+            1001,
+            HsrpGroupMatchers.hasAuthentication(
+                sha256Digest("012345678901234567890123456789012345678"))));
+    assertThat(i, hasHsrpGroup(1001, HsrpGroupMatchers.hasHelloTime(500)));
+    assertThat(i, hasHsrpGroup(1001, HsrpGroupMatchers.hasHoldTime(2)));
+    assertThat(i, hasHsrpGroup(1001, HsrpGroupMatchers.hasIp(new Ip("10.0.0.1"))));
+    assertThat(i, hasHsrpGroup(1001, HsrpGroupMatchers.hasPriority(105)));
+    assertThat(i, hasHsrpGroup(1001, HsrpGroupMatchers.hasPreempt()));
+    assertThat(
+        i,
+        hasHsrpGroup(
+            1001, hasTrackActions(equalTo(ImmutableMap.of("1", new DecrementPriority(20))))));
+    assertThat(i, hasHsrpVersion("2"));
   }
 
   @Test
@@ -1184,6 +1302,22 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testIosOspfDistributeList() throws IOException {
+    String hostname = "ios-ospf-distribute-list";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_EXTENDED, "aclin", 1));
+    assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_EXTENDED, "aclout", 1));
+    assertThat(ccae, hasNumReferrers(filename, PREFIX_LIST, "plin", 1));
+    assertThat(ccae, hasNumReferrers(filename, PREFIX_LIST, "plout", 1));
+    assertThat(ccae, hasNumReferrers(filename, ROUTE_MAP, "rmin", 1));
+    assertThat(ccae, hasNumReferrers(filename, ROUTE_MAP, "rmout", 1));
+  }
+
+  @Test
   public void testIosOspfNetwork() throws IOException {
     Configuration c = parseConfig("ios-interface-ospf-network");
 
@@ -1401,6 +1535,19 @@ public class CiscoGrammarTest {
     assertThat(
         proxyArpOmitted,
         hasInterfaces(hasEntry(equalTo("Ethernet0/2"), isProxyArp(equalTo(false)))));
+  }
+
+  @Test
+  public void testIosTrack() throws IOException {
+    String hostname = "ios-track";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    assertThat(ccae, hasNumReferrers(filename, TRACK, "1", 1));
+    assertThat(ccae, hasNumReferrers(filename, TRACK, "2", 0));
+    assertThat(ccae, hasUndefinedReference(filename, TRACK, "3"));
   }
 
   @Test
@@ -2939,7 +3086,7 @@ public class CiscoGrammarTest {
   }
 
   private Configuration parseConfig(String hostname) throws IOException {
-    return parseTextConfigs(hostname).get(hostname);
+    return parseTextConfigs(hostname).get(hostname.toLowerCase());
   }
 
   private Map<String, Configuration> parseTextConfigs(String... configurationNames)
@@ -2973,7 +3120,7 @@ public class CiscoGrammarTest {
 
     Boolean[] expectedResults = new Boolean[] {Boolean.TRUE, Boolean.FALSE, null};
     for (int i = 0; i < configurationNames.length; i++) {
-      Configuration configuration = configurations.get(configurationNames[i]);
+      Configuration configuration = configurations.get(configurationNames[i].toLowerCase());
       assertThat(configuration.getVrfs().size(), equalTo(1));
       for (Vrf vrf : configuration.getVrfs().values()) {
         assertThat(vrf.getOspfProcess().getRfc1583Compatible(), is(expectedResults[i]));

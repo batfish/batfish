@@ -332,6 +332,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roa_communityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roa_preferenceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roa_tagContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roaa_pathContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roas_loopsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rof_exportContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rog_metricContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rog_policyContext;
@@ -613,6 +614,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   private static final String F_POLICY_TERM_THEN_NEXT_HOP =
       "policy-statement - term - then - next-hop";
+
+  private static final String F_ROUTING_OPTIONS_LOOPS =
+      "routing-options autonomous-system loops - currently we allow infinite occurences of local as";
 
   private static final String GLOBAL_ADDRESS_BOOK_NAME = "global";
 
@@ -4199,6 +4203,14 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void exitRoaa_path(Roaa_pathContext ctx) {
     AsPath asPath = toAsPath(ctx.path);
     _currentAggregateRoute.setAsPath(asPath);
+  }
+
+  @Override
+  public void exitRoas_loops(Roas_loopsContext ctx) {
+    if (ctx.DEC() != null) {
+      _currentRoutingInstance.setLoops(toInt(ctx.DEC()));
+      todo(ctx, F_ROUTING_OPTIONS_LOOPS);
+    }
   }
 
   @Override

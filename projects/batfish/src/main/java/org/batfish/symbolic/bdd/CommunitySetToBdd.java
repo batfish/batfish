@@ -120,8 +120,7 @@ public final class CommunitySetToBdd implements CommunitySetExprVisitor<BDD> {
   @Override
   public BDD visitNamedCommunitySet(NamedCommunitySet namedCommunitySet) {
     _p.debug("Named");
-    NamedCommunitySet x = (NamedCommunitySet) namedCommunitySet;
-    CommunityList cl = _conf.getCommunityLists().get(x.getName());
+    CommunityList cl = _conf.getCommunityLists().get(namedCommunitySet.getName());
     _p.debug("Named Community Set: " + cl.getName());
     return visitCommunityList(cl);
   }

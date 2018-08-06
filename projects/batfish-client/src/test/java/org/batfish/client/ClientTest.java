@@ -42,8 +42,6 @@ import static org.batfish.client.Command.LIST_SNAPSHOTS;
 import static org.batfish.client.Command.LOAD_QUESTIONS;
 import static org.batfish.client.Command.PROMPT;
 import static org.batfish.client.Command.PWD;
-import static org.batfish.client.Command.REINIT_DELTA_SNAPSHOT;
-import static org.batfish.client.Command.REINIT_SNAPSHOT;
 import static org.batfish.client.Command.RUN_ANALYSIS;
 import static org.batfish.client.Command.RUN_ANALYSIS_DELTA;
 import static org.batfish.client.Command.RUN_ANALYSIS_DIFFERENTIAL;
@@ -1187,18 +1185,6 @@ public class ClientTest {
         PWD,
         new String[] {},
         String.format("working directory = %s\n", System.getProperty("user.dir")));
-  }
-
-  @Test
-  public void testReinitSnapshotDeltaInvalidParas() throws Exception {
-    String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(REINIT_DELTA_SNAPSHOT, new String[] {}, parameters);
-  }
-
-  @Test
-  public void testReinitSnapshotInvalidParas() throws Exception {
-    String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(REINIT_SNAPSHOT, new String[] {}, parameters);
   }
 
   @Test

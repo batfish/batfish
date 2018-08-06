@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 import java.util.Objects;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Vrf;
 
@@ -11,29 +12,29 @@ import org.batfish.datamodel.Vrf;
 public class EigrpProcess implements Serializable {
 
   private static final String PROP_ASN = "asn";
+  private static final String PROP_EXPORT_POLICY = "export-policy";
   private static final String PROP_MODE = "eigrp-mode";
   private static final String PROP_ROUTER_ID = "router-id";
   private static final long serialVersionUID = 1L;
   private final Long _asn;
+  private final String _exportPolicy;
   private final EigrpProcessMode _mode;
   private final Ip _routerId;
 
-  public EigrpProcess(Long asn, EigrpProcessMode mode, Ip routerId) {
+  @JsonCreator
+  public EigrpProcess(
+      @JsonProperty(PROP_ASN) Long asn,
+      @Nullable @JsonProperty(PROP_EXPORT_POLICY) String exportPolicy,
+      @JsonProperty(PROP_MODE) EigrpProcessMode mode,
+      @JsonProperty(PROP_ROUTER_ID) Ip routerId) {
     _asn = asn;
+    _exportPolicy = exportPolicy;
     _mode = mode;
     _routerId = routerId;
   }
 
   public static Builder builder() {
     return new Builder();
-  }
-
-  @JsonCreator
-  private static EigrpProcess create(
-      @JsonProperty(PROP_ASN) Long asn,
-      @JsonProperty(PROP_MODE) EigrpProcessMode mode,
-      @JsonProperty(PROP_ROUTER_ID) Ip routerId) {
-    return new EigrpProcess(asn, mode, routerId);
   }
 
   @Override
@@ -50,21 +51,31 @@ public class EigrpProcess implements Serializable {
         && Objects.equals(_routerId, rhs._routerId);
   }
 
-  /** @return The router-id of this EIGRP process */
-  @JsonProperty(PROP_ROUTER_ID)
-  public Ip getRouterId() {
-    return _routerId;
-  }
-
   /** @return The AS number for this process */
   @JsonProperty(PROP_ASN)
   public Long getAsn() {
     return _asn;
   }
 
+  /**
+   * @return The routing policy applied to routes in the main RIB to determine which ones are
+   *     exported into EIGRP and how
+   */
+  @JsonProperty(PROP_EXPORT_POLICY)
+  @Nullable
+  public String getExportPolicy() {
+    return _exportPolicy;
+  }
+
+  /** @return The router-id of this EIGRP process */
+  @JsonProperty(PROP_ROUTER_ID)
+  public Ip getRouterId() {
+    return _routerId;
+  }
+
   @Override
   public int hashCode() {
-    return Objects.hash(_asn, _mode.ordinal(), _routerId);
+    return Objects.hash(_asn, _exportPolicy, _mode.ordinal(), _routerId);
   }
 
   /** @return The EIGRP mode for this process */
@@ -77,6 +88,8 @@ public class EigrpProcess implements Serializable {
 
     private Long _asn;
 
+    @Nullable private String _exportPolicy;
+
     private EigrpProcessMode _mode;
 
     private Ip _routerId;
@@ -86,7 +99,7 @@ public class EigrpProcess implements Serializable {
     private Builder() {}
 
     public EigrpProcess build() {
-      EigrpProcess proc = new EigrpProcess(_asn, _mode, _routerId);
+      EigrpProcess proc = new EigrpProcess(_asn, _exportPolicy, _mode, _routerId);
       if (_vrf != null) {
         _vrf.setEigrpProcess(proc);
       }
@@ -98,18 +111,23 @@ public class EigrpProcess implements Serializable {
       return this;
     }
 
+    public Builder setExportPolicy(@Nullable String exportPolicy) {
+      _exportPolicy = exportPolicy;
+      return this;
+    }
+
     public Builder setRouterId(Ip routerId) {
       _routerId = routerId;
       return this;
     }
 
-    public Builder setVrf(Vrf vrf) {
-      _vrf = vrf;
+    public Builder setMode(EigrpProcessMode mode) {
+      _mode = mode;
       return this;
     }
 
-    public Builder setMode(EigrpProcessMode mode) {
-      _mode = mode;
+    public Builder setVrf(Vrf vrf) {
+      _vrf = vrf;
       return this;
     }
   }
