@@ -21,40 +21,41 @@ public final class SchemaUtils {
    * @return The converted object
    * @throws ClassCastException if the conversion fails
    */
-  @Nullable public static Object convertType(JsonNode jsonNode, Schema schema) {
+  @Nullable
+  public static Object convertType(JsonNode jsonNode, Schema schema) {
     if (jsonNode == null || jsonNode.isNull()) {
       return null;
     }
     try {
       switch (schema.getType()) {
-      case BASE:
-        return convertType(jsonNode, schema.getBaseType());
-      case LIST:
-        List<JsonNode> list = BatfishObjectMapper.mapper().readValue(
-            BatfishObjectMapper.mapper().treeAsTokens(jsonNode),
-            new TypeReference<List<JsonNode>>() {
-            });
-        return list.stream()
-            .map(in -> convertType(in, schema.getBaseType()))
-            .collect(Collectors.toList());
-      case SET:
-        Set<JsonNode> set = BatfishObjectMapper.mapper().readValue(
-            BatfishObjectMapper.mapper().treeAsTokens(jsonNode),
-            new TypeReference<Set<JsonNode>>() {
-            });
-        return set.stream()
-            .map(in -> convertType(in, schema.getBaseType()))
-            .collect(Collectors.toSet());
-      default:
-        throw new IllegalArgumentException("Cannot handle Schema of type: " + schema.getType());
+        case BASE:
+          return convertType(jsonNode, schema.getBaseType());
+        case LIST:
+          List<JsonNode> list =
+              BatfishObjectMapper.mapper()
+                  .readValue(
+                      BatfishObjectMapper.mapper().treeAsTokens(jsonNode),
+                      new TypeReference<List<JsonNode>>() {});
+          return list.stream()
+              .map(in -> convertType(in, schema.getBaseType()))
+              .collect(Collectors.toList());
+        case SET:
+          Set<JsonNode> set =
+              BatfishObjectMapper.mapper()
+                  .readValue(
+                      BatfishObjectMapper.mapper().treeAsTokens(jsonNode),
+                      new TypeReference<Set<JsonNode>>() {});
+          return set.stream()
+              .map(in -> convertType(in, schema.getBaseType()))
+              .collect(Collectors.toSet());
+        default:
+          throw new IllegalArgumentException("Cannot handle Schema of type: " + schema.getType());
       }
     } catch (IOException e) {
-      throw new ClassCastException(String.format(
-          "Cannot recover object of schema %s from json %s: %s\n%s",
-          schema,
-          jsonNode,
-          e.getMessage(),
-          Throwables.getStackTraceAsString(e)));
+      throw new ClassCastException(
+          String.format(
+              "Cannot recover object of schema %s from json %s: %s\n%s",
+              schema, jsonNode, e.getMessage(), Throwables.getStackTraceAsString(e)));
     }
   }
 
@@ -68,12 +69,10 @@ public final class SchemaUtils {
     try {
       return BatfishObjectMapper.mapper().treeToValue(jsonNode, valueType);
     } catch (JsonProcessingException e) {
-      throw new ClassCastException(String.format(
-          "Cannot recover object of type '%s' from json %s: %s\n%s",
-          valueType.getName(),
-          jsonNode,
-          e.getMessage(),
-          Throwables.getStackTraceAsString(e)));
+      throw new ClassCastException(
+          String.format(
+              "Cannot recover object of type '%s' from json %s: %s\n%s",
+              valueType.getName(), jsonNode, e.getMessage(), Throwables.getStackTraceAsString(e)));
     }
   }
 
