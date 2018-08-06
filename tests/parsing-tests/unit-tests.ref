@@ -161,6 +161,7 @@
         "ios_bfd" : "configs/ios_bfd",
         "ios_bgp" : "configs/ios_bgp",
         "ios_interface" : "configs/ios_interface",
+        "ios_standby" : "configs/ios_standby",
         "ios_template" : "configs/ios_template",
         "ios_xr_acl" : "configs/ios_xr_acl",
         "ios_xr_bgp" : "configs/ios_xr_bgp",
@@ -422,6 +423,7 @@
         "ios_bfd" : "PASSED",
         "ios_bgp" : "PASSED",
         "ios_interface" : "PASSED",
+        "ios_standby" : "PASSED",
         "ios_template" : "PASSED",
         "ios_xr_acl" : "PASSED",
         "ios_xr_bgp" : "PASSED",
@@ -22118,7 +22120,7 @@
             "      (if_inner",
             "        (if_null_block",
             "          CARRIER_DELAY:'carrier-delay'  <== mode:DEFAULT_MODE",
-            "          VARIABLE:'msec'  <== mode:DEFAULT_MODE",
+            "          MSEC:'msec'  <== mode:DEFAULT_MODE",
             "          DEC:'100'  <== mode:DEFAULT_MODE",
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "      (if_inner",
@@ -35728,81 +35730,92 @@
             "  (stanza",
             "    (s_track",
             "      TRACK:'track'  <== mode:DEFAULT_MODE",
-            "      (null_rest_of_line",
-            "        DEC:'1'  <== mode:DEFAULT_MODE",
+            "      name = (variable",
+            "        DEC:'1'  <== mode:DEFAULT_MODE)",
+            "      (track_interface",
             "        INTERFACE:'interface'  <== mode:DEFAULT_MODE",
-            "        M_Interface_PREFIX:'GigabitEthernet'  <== mode:M_Interface",
-            "        DEC:'0'  <== mode:M_Interface",
-            "        FORWARD_SLASH:'/'  <== mode:M_Interface",
-            "        DEC:'0'  <== mode:M_Interface",
-            "        M_Interface_PREFIX:'line-protocol'  <== mode:M_Interface",
-            "        NEWLINE:'\\n'  <== mode:M_Interface)))",
+            "        (interface_name",
+            "          name_prefix_alpha = M_Interface_PREFIX:'GigabitEthernet'  <== mode:M_Interface",
+            "          DEC:'0'  <== mode:M_Interface",
+            "          FORWARD_SLASH:'/'  <== mode:M_Interface",
+            "          (range",
+            "            (subrange",
+            "              low = DEC:'0'  <== mode:M_Interface)))",
+            "        LINE_PROTOCOL:'line-protocol'  <== mode:M_Interface",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "  (stanza",
             "    (s_track",
             "      TRACK:'track'  <== mode:DEFAULT_MODE",
-            "      (null_rest_of_line",
-            "        DEC:'2'  <== mode:DEFAULT_MODE",
+            "      name = (variable",
+            "        DEC:'2'  <== mode:DEFAULT_MODE)",
+            "      (track_interface",
             "        INTERFACE:'interface'  <== mode:DEFAULT_MODE",
-            "        M_Interface_PREFIX:'GigabitEthernet'  <== mode:M_Interface",
-            "        DEC:'0'  <== mode:M_Interface",
-            "        FORWARD_SLASH:'/'  <== mode:M_Interface",
-            "        DEC:'1'  <== mode:M_Interface",
-            "        M_Interface_PREFIX:'line-protocol'  <== mode:M_Interface",
-            "        NEWLINE:'\\n'  <== mode:M_Interface)))",
+            "        (interface_name",
+            "          name_prefix_alpha = M_Interface_PREFIX:'GigabitEthernet'  <== mode:M_Interface",
+            "          DEC:'0'  <== mode:M_Interface",
+            "          FORWARD_SLASH:'/'  <== mode:M_Interface",
+            "          (range",
+            "            (subrange",
+            "              low = DEC:'1'  <== mode:M_Interface)))",
+            "        LINE_PROTOCOL:'line-protocol'  <== mode:M_Interface",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "  (stanza",
             "    (s_track",
             "      TRACK:'track'  <== mode:DEFAULT_MODE",
-            "      (null_rest_of_line",
-            "        DEC:'3'  <== mode:DEFAULT_MODE",
+            "      name = (variable",
+            "        DEC:'3'  <== mode:DEFAULT_MODE)",
+            "      (track_list",
             "        LIST:'list'  <== mode:DEFAULT_MODE",
-            "        VARIABLE:'boolean'  <== mode:DEFAULT_MODE",
-            "        AND:'and'  <== mode:DEFAULT_MODE",
-            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "      (track_null",
-            "        OBJECT:'object'  <== mode:DEFAULT_MODE",
             "        (null_rest_of_line",
-            "          DEC:'1'  <== mode:DEFAULT_MODE",
-            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
-            "      (track_null",
-            "        OBJECT:'object'  <== mode:DEFAULT_MODE",
-            "        (null_rest_of_line",
-            "          DEC:'2'  <== mode:DEFAULT_MODE",
-            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
-            "      (track_null",
-            "        DELAY:'delay'  <== mode:DEFAULT_MODE",
-            "        (null_rest_of_line",
-            "          VARIABLE:'up'  <== mode:DEFAULT_MODE",
-            "          DEC:'10'  <== mode:DEFAULT_MODE",
-            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
-            "      (track_null",
-            "        DELAY:'delay'  <== mode:DEFAULT_MODE",
-            "        (null_rest_of_line",
-            "          VARIABLE:'down'  <== mode:DEFAULT_MODE",
-            "          DEC:'10'  <== mode:DEFAULT_MODE",
-            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
+            "          VARIABLE:'boolean'  <== mode:DEFAULT_MODE",
+            "          AND:'and'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "        (track_list_null",
+            "          OBJECT:'object'  <== mode:DEFAULT_MODE",
+            "          (null_rest_of_line",
+            "            DEC:'1'  <== mode:DEFAULT_MODE",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "        (track_list_null",
+            "          OBJECT:'object'  <== mode:DEFAULT_MODE",
+            "          (null_rest_of_line",
+            "            DEC:'2'  <== mode:DEFAULT_MODE",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "        (track_list_null",
+            "          DELAY:'delay'  <== mode:DEFAULT_MODE",
+            "          (null_rest_of_line",
+            "            VARIABLE:'up'  <== mode:DEFAULT_MODE",
+            "            DEC:'10'  <== mode:DEFAULT_MODE",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "        (track_list_null",
+            "          DELAY:'delay'  <== mode:DEFAULT_MODE",
+            "          (null_rest_of_line",
+            "            VARIABLE:'down'  <== mode:DEFAULT_MODE",
+            "            DEC:'10'  <== mode:DEFAULT_MODE",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))))",
             "  (stanza",
             "    (s_track",
             "      TRACK:'track'  <== mode:DEFAULT_MODE",
-            "      (null_rest_of_line",
-            "        VARIABLE:'IPv6Loopback'  <== mode:DEFAULT_MODE",
-            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "      (track_null",
-            "        TYPE:'type'  <== mode:DEFAULT_MODE",
-            "        (null_rest_of_line",
-            "          LIST:'list'  <== mode:DEFAULT_MODE",
-            "          VARIABLE:'boolean'  <== mode:DEFAULT_MODE",
-            "          OR:'or'  <== mode:DEFAULT_MODE",
-            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
-            "      (track_null",
-            "        OBJECT:'object'  <== mode:DEFAULT_MODE",
-            "        (null_rest_of_line",
-            "          VARIABLE:'PrimaryRouter'  <== mode:DEFAULT_MODE",
-            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
-            "      (track_null",
-            "        OBJECT:'object'  <== mode:DEFAULT_MODE",
-            "        (null_rest_of_line",
-            "          VARIABLE:'SecondaryRouter'  <== mode:DEFAULT_MODE",
-            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
+            "      name = (variable",
+            "        VARIABLE:'IPv6Loopback'  <== mode:DEFAULT_MODE)",
+            "      (track_block",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
+            "        (track_block_null",
+            "          TYPE:'type'  <== mode:DEFAULT_MODE",
+            "          (null_rest_of_line",
+            "            LIST:'list'  <== mode:DEFAULT_MODE",
+            "            VARIABLE:'boolean'  <== mode:DEFAULT_MODE",
+            "            OR:'or'  <== mode:DEFAULT_MODE",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "          (track_block_type_null",
+            "            OBJECT:'object'  <== mode:DEFAULT_MODE",
+            "            (null_rest_of_line",
+            "              VARIABLE:'PrimaryRouter'  <== mode:DEFAULT_MODE",
+            "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "          (track_block_type_null",
+            "            OBJECT:'object'  <== mode:DEFAULT_MODE",
+            "            (null_rest_of_line",
+            "              VARIABLE:'SecondaryRouter'  <== mode:DEFAULT_MODE",
+            "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))))",
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
           ]
         },
@@ -39904,6 +39917,93 @@
             "        (if_null_single",
             "          SPEED:'speed'  <== mode:DEFAULT_MODE",
             "          NONEGOTIATE:'nonegotiate'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
+            "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
+          ]
+        },
+        "ios_standby" : {
+          "sentences" : [
+            "(cisco_configuration",
+            "  (stanza",
+            "    (s_hostname",
+            "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
+            "      VARIABLE:'ios_standby'  <== mode:DEFAULT_MODE",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "  (stanza",
+            "    (s_interface",
+            "      INTERFACE:'interface'  <== mode:DEFAULT_MODE",
+            "      iname = (interface_name",
+            "        name_prefix_alpha = M_Interface_PREFIX:'Vlan'  <== mode:M_Interface",
+            "        (range",
+            "          (subrange",
+            "            low = DEC:'1000'  <== mode:M_Interface)))",
+            "      NEWLINE:'\\n'  <== mode:M_Interface",
+            "      (if_inner",
+            "        (if_standby",
+            "          STANDBY:'standby'  <== mode:DEFAULT_MODE",
+            "          (standby_version",
+            "            VERSION:'version'  <== mode:DEFAULT_MODE",
+            "            version = (variable_permissive",
+            "              DEC:'2'  <== mode:DEFAULT_MODE))",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "      (if_inner",
+            "        (if_standby",
+            "          STANDBY:'standby'  <== mode:DEFAULT_MODE",
+            "          (standby_group",
+            "            group = DEC:'1001'  <== mode:DEFAULT_MODE",
+            "            (standby_group_authentication",
+            "              AUTHENTICATION:'authentication'  <== mode:DEFAULT_MODE",
+            "              auth = DEC:'012345678901234567890123456789012345678'  <== mode:M_Authentication))",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "      (if_inner",
+            "        (if_standby",
+            "          STANDBY:'standby'  <== mode:DEFAULT_MODE",
+            "          (standby_group",
+            "            group = DEC:'1001'  <== mode:DEFAULT_MODE",
+            "            (standby_group_ip",
+            "              IP:'ip'  <== mode:DEFAULT_MODE",
+            "              ip = IP_ADDRESS:'1.2.3.4'  <== mode:DEFAULT_MODE))",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "      (if_inner",
+            "        (if_standby",
+            "          STANDBY:'standby'  <== mode:DEFAULT_MODE",
+            "          (standby_group",
+            "            group = DEC:'1001'  <== mode:DEFAULT_MODE",
+            "            (standby_group_preempt",
+            "              PREEMPT:'preempt'  <== mode:DEFAULT_MODE))",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "      (if_inner",
+            "        (if_standby",
+            "          STANDBY:'standby'  <== mode:DEFAULT_MODE",
+            "          (standby_group",
+            "            group = DEC:'1001'  <== mode:DEFAULT_MODE",
+            "            (standby_group_priority",
+            "              PRIORITY:'priority'  <== mode:DEFAULT_MODE",
+            "              priority = DEC:'105'  <== mode:DEFAULT_MODE))",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "      (if_inner",
+            "        (if_standby",
+            "          STANDBY:'standby'  <== mode:DEFAULT_MODE",
+            "          (standby_group",
+            "            group = DEC:'1001'  <== mode:DEFAULT_MODE",
+            "            (standby_group_timers",
+            "              TIMERS:'timers'  <== mode:DEFAULT_MODE",
+            "              MSEC:'msec'  <== mode:DEFAULT_MODE",
+            "              hello_time = DEC:'500'  <== mode:DEFAULT_MODE",
+            "              hold_time = DEC:'2'  <== mode:DEFAULT_MODE))",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "      (if_inner",
+            "        (if_standby",
+            "          STANDBY:'standby'  <== mode:DEFAULT_MODE",
+            "          (standby_group",
+            "            group = DEC:'1001'  <== mode:DEFAULT_MODE",
+            "            (standby_group_track",
+            "              TRACK:'track'  <== mode:DEFAULT_MODE",
+            "              group = DEC:'1'  <== mode:DEFAULT_MODE",
+            "              (track_action",
+            "                (track_action_decrement",
+            "                  DECREMENT:'decrement'  <== mode:DEFAULT_MODE",
+            "                  subtrahend = DEC:'20'  <== mode:DEFAULT_MODE))))",
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
           ]
@@ -57879,7 +57979,41 @@
         },
         "configs/cisco_system" : { },
         "configs/cisco_tacacs" : { },
-        "configs/cisco_track" : { },
+        "configs/cisco_track" : {
+          "track" : {
+            "1" : {
+              "definitionLines" : [
+                4
+              ],
+              "numReferrers" : 0
+            },
+            "2" : {
+              "definitionLines" : [
+                5
+              ],
+              "numReferrers" : 0
+            },
+            "3" : {
+              "definitionLines" : [
+                6,
+                7,
+                8,
+                9,
+                10
+              ],
+              "numReferrers" : 0
+            },
+            "IPv6Loopback" : {
+              "definitionLines" : [
+                12,
+                13,
+                14,
+                15
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
         "configs/cisco_username" : { },
         "configs/cisco_username_without_password" : { },
         "configs/cisco_vdc" : { },
@@ -58260,6 +58394,23 @@
                 4,
                 5,
                 6
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
+        "configs/ios_standby" : {
+          "interface" : {
+            "Vlan1000" : {
+              "definitionLines" : [
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12
               ],
               "numReferrers" : 1
             }
@@ -60540,6 +60691,20 @@
             }
           }
         },
+        "configs/cisco_track" : {
+          "interface" : {
+            "GigabitEthernet0/0" : {
+              "track interface" : [
+                4
+              ]
+            },
+            "GigabitEthernet0/1" : {
+              "track interface" : [
+                5
+              ]
+            }
+          }
+        },
         "configs/cisco_vrrp" : {
           "interface" : {
             "GigabitEthernet0/0/0/19" : {
@@ -60628,6 +60793,15 @@
             "FOOBAR" : {
               "interface service-policy type control subscriber" : [
                 5
+              ]
+            }
+          }
+        },
+        "configs/ios_standby" : {
+          "track" : {
+            "1" : {
+              "interface standby track" : [
+                12
               ]
             }
           }
@@ -61684,6 +61858,7 @@
         "ios_bfd" : "PASSED",
         "ios_bgp" : "PASSED",
         "ios_interface" : "PASSED",
+        "ios_standby" : "PASSED",
         "ios_template" : "PASSED",
         "ios_xr_acl" : "PASSED",
         "ios_xr_bgp" : "PASSED",

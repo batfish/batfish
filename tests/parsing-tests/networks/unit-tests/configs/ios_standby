@@ -1,0 +1,14 @@
+!
+hostname ios_standby
+!
+!
+interface Vlan 1000
+ standby version 2
+ standby 1001 authentication 012345678901234567890123456789012345678
+ standby 1001 ip 1.2.3.4
+ standby 1001 preempt
+ standby 1001 priority 105
+ standby 1001 timers msec 500 2                                                                                                                                                                                   
+ standby 1001 track 1 decrement 20
+!
+

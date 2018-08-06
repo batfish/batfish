@@ -2707,6 +2707,11 @@ DECAP_GROUP
    'decap-group'
 ;
 
+DECREMENT
+:
+  'decrement'
+;
+
 DEFAULT
 :
    'default'
@@ -6269,6 +6274,11 @@ LINE
    'line'
 ;
 
+LINE_PROTOCOL
+:
+   'line-protocol'
+;
+
 LINE_TERMINATION
 :
    'line-termination'
@@ -7437,6 +7447,11 @@ MSCHAP
 MSCHAPV2
 :
    'mschapv2'
+;
+
+MSEC
+:
+  'msec'
 ;
 
 MSIE_PROXY
@@ -14071,6 +14086,11 @@ M_Authentication_CONTROL_DIRECTION
    'control-direction' -> type ( CONTROL_DIRECTION ) , popMode
 ;
 
+M_Authentication_DEC
+:
+  F_Digit+ -> type ( DEC ) , popMode
+;
+
 M_Authentication_DOT1X
 :
    'dot1x' -> type ( DOT1X ) , popMode
@@ -14684,6 +14704,11 @@ M_Interface_MODULE
 M_Interface_NO
 :
    'no' -> type ( NO ) , popMode
+;
+
+M_Interface_LINE_PROTOCOL
+:
+   'line-protocol' -> type ( LINE_PROTOCOL ) , popMode
 ;
 
 M_Interface_MULTIPOINT
