@@ -47,6 +47,7 @@ public class EigrpProcess implements Serializable {
     }
     EigrpProcess rhs = (EigrpProcess) obj;
     return Objects.equals(_asn, rhs._asn)
+        && Objects.equals(_exportPolicy, rhs._exportPolicy)
         && Objects.equals(_mode, rhs._mode)
         && Objects.equals(_routerId, rhs._routerId);
   }
