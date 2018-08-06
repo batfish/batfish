@@ -2104,15 +2104,23 @@ public final class CiscoConfiguration extends VendorConfiguration {
     }
 
     EigrpProcess eigrpProcess = vrf.getEigrpProcess();
-    if (eigrpProcess != null) {
+    // Let toEigrpProcess handle null asn failure
+    if (eigrpProcess != null && eigrpProcess.getAsn() != null) {
       /*
        * Some settings are here, others are set later when the EigrpProcess sets this
        * interface
        */
       boolean passive = eigrpProcess.getPassiveInterfaceDefault();
-      if (iface.getEigrpPassive() != null) {
-        passive = iface.getEigrpPassive();
-      }
+      passive =
+          eigrpProcess
+              .getInterfacePassiveStatus()
+              .entrySet()
+              .stream()
+              .filter(entry -> entry.getKey().equals(iface.getName()))
+              .map(Entry::getValue)
+              .findAny()
+              .orElse(passive);
+
       newIface.setEigrp(
           EigrpInterfaceSettings.builder()
               .setBandwidth(iface.getBandwidth())

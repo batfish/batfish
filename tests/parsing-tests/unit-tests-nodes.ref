@@ -6146,7 +6146,7 @@
         "name" : "cisco_eigrp",
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
-        "deviceType" : "SWITCH",
+        "deviceType" : "ROUTER",
         "interfaces" : {
           "Ethernet0" : {
             "name" : "Ethernet0",
@@ -6159,35 +6159,6 @@
             ],
             "eigrp" : {
               "enabled" : false,
-              "passive" : true
-            },
-            "mtu" : 1500,
-            "nativeVlan" : 1,
-            "ospfDeadInterval" : 0,
-            "ospfEnabled" : false,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
-            "ospfPointToPoint" : false,
-            "proxyArp" : true,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "default"
-          },
-          "FastEthernet0/1" : {
-            "name" : "FastEthernet0/1",
-            "accessVlan" : 0,
-            "active" : true,
-            "autostate" : true,
-            "bandwidth" : 1.0E8,
-            "declaredNames" : [
-              "FastEthernet0/1"
-            ],
-            "eigrp" : {
-              "enabled" : false,
               "passive" : false
             },
             "mtu" : 1500,
@@ -6204,122 +6175,6 @@
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
-            "vrf" : "default"
-          },
-          "GigabitEthernet1/5/3" : {
-            "name" : "GigabitEthernet1/5/3",
-            "accessVlan" : 0,
-            "active" : true,
-            "autostate" : true,
-            "bandwidth" : 1.0E9,
-            "declaredNames" : [
-              "GigabitEthernet1/5/3"
-            ],
-            "eigrp" : {
-              "enabled" : false,
-              "passive" : false
-            },
-            "mtu" : 1500,
-            "nativeVlan" : 1,
-            "ospfDeadInterval" : 0,
-            "ospfEnabled" : false,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
-            "ospfPointToPoint" : false,
-            "proxyArp" : true,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "default"
-          },
-          "GigabitEthernet2/5/3" : {
-            "name" : "GigabitEthernet2/5/3",
-            "accessVlan" : 0,
-            "active" : true,
-            "autostate" : true,
-            "bandwidth" : 1.0E9,
-            "declaredNames" : [
-              "GigabitEthernet2/5/3"
-            ],
-            "eigrp" : {
-              "enabled" : false,
-              "passive" : false
-            },
-            "mtu" : 1500,
-            "nativeVlan" : 1,
-            "ospfDeadInterval" : 0,
-            "ospfEnabled" : false,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
-            "ospfPointToPoint" : false,
-            "proxyArp" : true,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "default"
-          },
-          "Port-Channel34" : {
-            "name" : "Port-Channel34",
-            "accessVlan" : 0,
-            "active" : false,
-            "autostate" : true,
-            "bandwidth" : 0.0,
-            "declaredNames" : [
-              "Port-channel34"
-            ],
-            "eigrp" : {
-              "enabled" : false,
-              "passive" : false
-            },
-            "mtu" : 1500,
-            "nativeVlan" : 1,
-            "ospfDeadInterval" : 0,
-            "ospfEnabled" : false,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
-            "ospfPointToPoint" : false,
-            "proxyArp" : true,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "AGGREGATED",
-            "vrf" : "default"
-          },
-          "Port-Channel35" : {
-            "name" : "Port-Channel35",
-            "accessVlan" : 0,
-            "active" : false,
-            "autostate" : true,
-            "bandwidth" : 0.0,
-            "declaredNames" : [
-              "Port-channel35"
-            ],
-            "eigrp" : {
-              "enabled" : false,
-              "passive" : false
-            },
-            "mtu" : 1500,
-            "nativeVlan" : 1,
-            "ospfDeadInterval" : 0,
-            "ospfEnabled" : false,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
-            "ospfPointToPoint" : false,
-            "proxyArp" : true,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "AGGREGATED",
             "vrf" : "default"
           }
         },
@@ -6483,6 +6338,11 @@
             "sourceType" : "extended ipv4 access-list"
           }
         },
+        "routingPolicies" : {
+          "~EIGRP_EXPORT_POLICY:default~" : {
+            "name" : "~EIGRP_EXPORT_POLICY:default~"
+          }
+        },
         "vendorFamily" : {
           "cisco" : {
             "hostname" : "cisco_eigrp",
@@ -6492,15 +6352,19 @@
           }
         },
         "vrfs" : {
+          "autonomous-system" : {
+            "name" : "autonomous-system"
+          },
           "default" : {
             "name" : "default",
+            "eigrpProcess" : {
+              "asn" : 65500,
+              "eigrp-mode" : "CLASSIC",
+              "export-policy" : "~EIGRP_EXPORT_POLICY:default~",
+              "router-id" : "100.1.1.1"
+            },
             "interfaces" : [
-              "Ethernet0",
-              "FastEthernet0/1",
-              "GigabitEthernet1/5/3",
-              "GigabitEthernet2/5/3",
-              "Port-Channel34",
-              "Port-Channel35"
+              "Ethernet0"
             ]
           }
         }
