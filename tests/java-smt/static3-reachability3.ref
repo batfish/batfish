@@ -45,7 +45,7 @@
                     "edge" : {
                       "node1" : "host1",
                       "node1interface" : "eth0",
-                      "node2" : "R1",
+                      "node2" : "r1",
                       "node2interface" : "Ethernet0/0"
                     },
                     "routes" : [
@@ -54,9 +54,9 @@
                   },
                   {
                     "edge" : {
-                      "node1" : "R1",
+                      "node1" : "r1",
                       "node1interface" : "Ethernet0/1",
-                      "node2" : "R2",
+                      "node2" : "r2",
                       "node2interface" : "Ethernet0/0"
                     },
                     "routes" : [
@@ -65,9 +65,9 @@
                   },
                   {
                     "edge" : {
-                      "node1" : "R2",
+                      "node1" : "r2",
                       "node1interface" : "Ethernet0/1",
-                      "node2" : "R3",
+                      "node2" : "r3",
                       "node2interface" : "Ethernet0/0"
                     },
                     "routes" : [
@@ -84,10 +84,10 @@
     },
     "result" : {
       "forwardingModel" : [
-        "R1,Ethernet0/1 --> R2,Ethernet0/0 (STATIC)",
-        "R2,Ethernet0/1 --> R3,Ethernet0/0 (STATIC)",
-        "host1,eth0 --> R1,Ethernet0/0 (STATIC)",
-        "host3,eth0 --> R3,Ethernet0/1 (CONNECTED)"
+        "host1,eth0 --> r1,Ethernet0/0 (STATIC)",
+        "host3,eth0 --> r3,Ethernet0/1 (CONNECTED)",
+        "r1,Ethernet0/1 --> r2,Ethernet0/0 (STATIC)",
+        "r2,Ethernet0/1 --> r3,Ethernet0/0 (STATIC)"
       ],
       "packetModel" : {
         "dstIp" : "192.168.8.1"

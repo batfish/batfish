@@ -164,6 +164,19 @@ ro_distance
    DISTANCE value = DEC NEWLINE
 ;
 
+ro_distribute_list
+:
+  DISTRIBUTE_LIST
+  (
+    PREFIX
+    | ROUTE_MAP
+  )? name = variable_distribute_list
+  (
+    IN
+    | OUT
+  ) NEWLINE
+;
+
 ro_max_metric
 :
    MAX_METRIC ROUTER_LSA
@@ -246,7 +259,6 @@ ro_null
       | CAPABILITY
       | DEAD_INTERVAL
       | DISCARD_ROUTE
-      | DISTRIBUTE_LIST
       | FAST_REROUTE
       | GRACEFUL_RESTART
       | HELLO_INTERVAL
@@ -644,6 +656,7 @@ s_router_ospf
       | ro_default_information
       | ro_default_metric
       | ro_distance
+      | ro_distribute_list
       | ro_max_metric
       | ro_maximum_paths
       | ro_network

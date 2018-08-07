@@ -1,6 +1,7 @@
 package org.batfish.datamodel.questions;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.annotations.VisibleForTesting;
 import java.util.LinkedList;
@@ -12,6 +13,7 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.answers.AutocompleteSuggestion;
@@ -46,7 +48,8 @@ public abstract class PropertySpecifier {
    * @param query The query that came to the concrete child class
    * @return The list of suggestions
    */
-  static List<AutocompleteSuggestion> baseAutoComplete(String query, Set<String> allProperties) {
+  static List<AutocompleteSuggestion> baseAutoComplete(
+      @Nullable String query, Set<String> allProperties) {
 
     String finalQuery = firstNonNull(query, "").toLowerCase();
     List<AutocompleteSuggestion> suggestions = new LinkedList<>();
@@ -85,7 +88,7 @@ public abstract class PropertySpecifier {
 
     Object outputPropertyValue = propertyValue;
 
-    // for Maps (e.g., routing policies) we use the list of keys
+    // for Maps (e.g., routing policies) we use the set of keys
     if (outputPropertyValue instanceof Map<?, ?>) {
       outputPropertyValue =
           ((Map<?, ?>) outputPropertyValue)
@@ -118,6 +121,11 @@ public abstract class PropertySpecifier {
    */
   public static <T> void fillProperty(
       PropertyDescriptor<T> propertyDescriptor, T object, String columnName, RowBuilder row) {
+    checkArgument(propertyDescriptor != null, "'propertyDescriptor' cannot be null");
+    checkArgument(object != null, "'object' cannot be null");
+    checkArgument(columnName != null, "'columnName' cannot be null");
+    checkArgument(row != null, "'row' cannot be null");
+
     Object propertyValue = propertyDescriptor.getGetter().apply(object);
     propertyValue = PropertySpecifier.convertTypeIfNeeded(propertyValue, propertyDescriptor);
     fillProperty(columnName, propertyValue, row, propertyDescriptor); // separate for testing

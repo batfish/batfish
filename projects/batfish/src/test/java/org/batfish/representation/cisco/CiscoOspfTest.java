@@ -7,7 +7,6 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasItem;
 import static org.junit.Assert.assertThat;
 
-import java.util.Collections;
 import java.util.List;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ospf.OspfMetricType;
@@ -28,7 +27,7 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class CiscoOspfTest {
   private static CiscoConfiguration makeConfig() {
-    CiscoConfiguration config = new CiscoConfiguration(Collections.emptySet());
+    CiscoConfiguration config = new CiscoConfiguration();
     config.setVendor(ConfigurationFormat.CISCO_IOS);
     return config;
   }

@@ -13,7 +13,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
@@ -70,8 +69,6 @@ public abstract class VendorConfiguration implements Serializable, GenericConfig
   public VendorConfiguration getOverlayConfiguration() {
     return _overlayConfiguration;
   }
-
-  public abstract Set<String> getUnimplementedFeatures();
 
   public boolean getUnrecognized() {
     return _unrecognized;

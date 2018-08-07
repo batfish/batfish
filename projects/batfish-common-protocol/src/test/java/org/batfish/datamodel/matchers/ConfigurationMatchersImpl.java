@@ -22,6 +22,7 @@ import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.Zone;
+import org.batfish.datamodel.tracking.TrackMethod;
 import org.batfish.datamodel.vendor_family.VendorFamily;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
@@ -343,6 +344,18 @@ final class ConfigurationMatchersImpl {
     @Override
     protected NavigableMap<String, RouteFilterList> featureValueOf(Configuration actual) {
       return actual.getRouteFilterLists();
+    }
+  }
+
+  static final class HasTrackingGroups
+      extends FeatureMatcher<Configuration, NavigableMap<String, TrackMethod>> {
+    HasTrackingGroups(@Nonnull Matcher<? super NavigableMap<String, TrackMethod>> subMatcher) {
+      super(subMatcher, "A Configuration with trackingGroups:", "trackingGroups");
+    }
+
+    @Override
+    protected NavigableMap<String, TrackMethod> featureValueOf(Configuration actual) {
+      return actual.getTrackingGroups();
     }
   }
 

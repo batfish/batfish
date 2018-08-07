@@ -1,5 +1,7 @@
 package org.batfish.representation.vyos;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.HashMap;
@@ -66,8 +68,6 @@ public class VyosConfiguration extends VendorConfiguration {
   private final Map<String, RouteMap> _routeMaps;
 
   private final Set<StaticNextHopRoute> _staticNextHopRoutes;
-
-  private transient Set<String> _unimplementedFeatures;
 
   public VyosConfiguration() {
     _espGroups = new TreeMap<>();
@@ -285,18 +285,14 @@ public class VyosConfiguration extends VendorConfiguration {
     return _staticNextHopRoutes;
   }
 
-  @Override
-  public Set<String> getUnimplementedFeatures() {
-    return _unimplementedFeatures;
-  }
-
   public void setBgpProcess(BgpProcess bgpProcess) {
     _bgpProcess = bgpProcess;
   }
 
   @Override
   public void setHostname(String hostname) {
-    _hostname = hostname;
+    checkNotNull(hostname, "'hostname' cannot be null");
+    _hostname = hostname.toLowerCase();
   }
 
   @Override

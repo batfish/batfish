@@ -2707,6 +2707,11 @@ DECAP_GROUP
    'decap-group'
 ;
 
+DECREMENT
+:
+  'decrement'
+;
+
 DEFAULT
 :
    'default'
@@ -2795,6 +2800,11 @@ DEFAULT_ROLE
 DEFAULT_ROUTER
 :
    'default-router'
+;
+
+DEFAULT_ROUTE_TAG
+:
+   'default-route-tag'
 ;
 
 DEFAULT_TASKGROUP
@@ -4136,6 +4146,11 @@ EVENT_HANDLER
 EVENT_HISTORY
 :
    'event-history'
+;
+
+EVENT_LOG_SIZE
+:
+   'event-log-size'
 ;
 
 EVENT_THRESHOLDS_PROFILE
@@ -6269,6 +6284,11 @@ LINE
    'line'
 ;
 
+LINE_PROTOCOL
+:
+   'line-protocol'
+;
+
 LINE_TERMINATION
 :
    'line-termination'
@@ -6487,6 +6507,11 @@ LOG_INTERNAL_SYNC
 LOG_NEIGHBOR_CHANGES
 :
    'log-neighbor-changes'
+;
+
+LOG_NEIGHBOR_WARNINGS
+:
+   'log-neighbor-warnings'
 ;
 
 LOGFILE
@@ -7437,6 +7462,11 @@ MSCHAP
 MSCHAPV2
 :
    'mschapv2'
+;
+
+MSEC
+:
+  'msec'
 ;
 
 MSIE_PROXY
@@ -14071,6 +14101,11 @@ M_Authentication_CONTROL_DIRECTION
    'control-direction' -> type ( CONTROL_DIRECTION ) , popMode
 ;
 
+M_Authentication_DEC
+:
+  F_Digit+ -> type ( DEC ) , popMode
+;
+
 M_Authentication_DOT1X
 :
    'dot1x' -> type ( DOT1X ) , popMode
@@ -14684,6 +14719,11 @@ M_Interface_MODULE
 M_Interface_NO
 :
    'no' -> type ( NO ) , popMode
+;
+
+M_Interface_LINE_PROTOCOL
+:
+   'line-protocol' -> type ( LINE_PROTOCOL ) , popMode
 ;
 
 M_Interface_MULTIPOINT
