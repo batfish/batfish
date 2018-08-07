@@ -65,6 +65,7 @@ Batfish supports configurations for a large and growing set of (physical and vir
   - iptables (on hosts)
   - Juniper (JunOS, SRX)
   - MRV
+  - Palo Alto Networks
   - Quagga
   - Quanta
   - VyOS
