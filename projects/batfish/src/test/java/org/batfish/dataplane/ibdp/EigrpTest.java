@@ -43,6 +43,7 @@ import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.LiteralEigrpMetric;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
+import org.batfish.datamodel.routing_policy.expr.RouteEigrpMetric;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetEigrpMetric;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
@@ -148,7 +149,9 @@ public class EigrpTest {
 
     ImmutableList.Builder<Statement> exportStatements = ImmutableList.builder();
 
-    if (destProtocol == EIGRP) {
+    if (sourceProtocol == EIGRP && destProtocol == EIGRP) {
+      exportStatements.add(new SetEigrpMetric(new RouteEigrpMetric()));
+    } else if (destProtocol == EIGRP) {
       EigrpMetric metric =
           requireNonNull(
               EigrpMetric.builder()
@@ -224,7 +227,9 @@ public class EigrpTest {
     NetworkFactory nf = new NetworkFactory();
     RoutingPolicy.Builder exportConnected =
         nf.routingPolicyBuilder().setStatements(getExportPolicyStatements(CONNECTED, EIGRP));
-    RoutingPolicy.Builder exportEigrp =
+    RoutingPolicy.Builder exportEigrpintoEigrp =
+        nf.routingPolicyBuilder().setStatements(getExportPolicyStatements(EIGRP, EIGRP));
+    RoutingPolicy.Builder exportEigrpintoOspf =
         nf.routingPolicyBuilder().setStatements(getExportPolicyStatements(EIGRP, OSPF));
     RoutingPolicy.Builder exportOspf =
         nf.routingPolicyBuilder().setStatements(getExportPolicyStatements(OSPF, EIGRP));
@@ -263,15 +268,17 @@ public class EigrpTest {
 
     /* Configuration 2 */
     Configuration c2 = buildConfiguration(R2, eib, epb, oib, opb, nib);
-    // Build EIGRP (with redistribute other process only for OSPF)
+    // Build EIGRP (with redistribute other process)
     if (otherProcess == OSPF) {
       epb.setExportPolicy(exportOspf.setOwner(c2).build().getName());
+    } else if (otherProcess == EIGRP) {
+      epb.setExportPolicy(exportEigrpintoEigrp.setOwner(c2).build().getName());
     }
     epb.setMode(mode2).build();
     buildEigrpExternalInterface(eib, asn, mode2, R2_E2_3_ADDR, c2E2To3Name, c2E2To3DelayMult);
     if (otherProcess == OSPF) {
       // Build OSPF (with redistribute EIGRP)
-      opb.setExportPolicy(exportEigrp.setOwner(c2).build());
+      opb.setExportPolicy(exportEigrpintoOspf.setOwner(c2).build());
       oib.setOspfArea(oab.setOspfProcess(opb.build()).build());
       buildOspfLoopbackInterface(oib, R2_L0_ADDR);
       buildOspfExternalInterface(oib, c2E2To1Name, R2_E2_1_ADDR);
@@ -297,8 +304,12 @@ public class EigrpTest {
 
     /* Configuration 4 */
     Configuration c4 = buildConfiguration(R4, eib, epb, oib, opb, nib);
-    // Build EIGRP with redistribute OSPF
-    epb.setExportPolicy(exportOspf.setOwner(c4).build().getName());
+    // Build EIGRP (with redistribute other process)
+    if (otherProcess == OSPF) {
+      epb.setExportPolicy(exportOspf.setOwner(c4).build().getName());
+    } else if (otherProcess == EIGRP) {
+      epb.setExportPolicy(exportEigrpintoEigrp.setOwner(c4).build().getName());
+    }
     epb.setMode(mode4).build();
     buildEigrpLoopbackInterface(eib, asn, mode4, R4_L0_ADDR);
     buildEigrpExternalInterface(eib, asn, mode4, R4_E4_3_ADDR, c4E4To3Name, c4E4To3DelayMult);
@@ -588,7 +599,9 @@ public class EigrpTest {
     assertRoute(routes, OSPF_E2, R4, R3_L0_ADDR, 100L);
   }
 
-  /** Test route computation, propagation, and one-way redistribution for EIGRP in classic mode */
+  /**
+   * Test route computation, propagation, and two-way redistribution for multiple EIGRP instances
+   */
   @Test
   public void testDoubleEigrp() {
     IncrementalDataPlane dp =
@@ -633,7 +646,7 @@ public class EigrpTest {
     assertNoRoute(routes, R4, Prefix.ZERO);
     assertRoute(routes, EIGRP, R4, R1_L0_ADDR, bandwidth + 70000000L * scale + lDelay);
     assertRoute(routes, EIGRP, R4, R2_L0_ADDR, bandwidth + (70000000L + 10L) * scale + lDelay);
-    assertRoute(routes, EIGRP_EX, R4, R3_L0_ADDR, exMetric + 800000000L * scale);
+    assertRoute(routes, EIGRP_EX, R4, R3_L0_ADDR, exMetric + (70000000L + 40000L + 10L) * scale);
   }
 
   /** Test route computation and propagation for EIGRP in named mode */

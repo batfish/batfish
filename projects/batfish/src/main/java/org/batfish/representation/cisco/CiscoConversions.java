@@ -86,6 +86,7 @@ import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.CommunitySetExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
+import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunityConjunction;
@@ -93,6 +94,7 @@ import org.batfish.datamodel.routing_policy.expr.LiteralEigrpMetric;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.RouteEigrpMetric;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetEigrpMetric;
 import org.batfish.datamodel.routing_policy.statement.Statement;
@@ -993,7 +995,17 @@ class CiscoConversions {
     RoutingProtocol protocol = policy.getSourceProtocol();
     // All redistribution must match the specified protocol.
     Conjunction eigrpExportConditions = new Conjunction();
-    eigrpExportConditions.getConjuncts().add(new MatchProtocol(protocol));
+    BooleanExpr matchExpr;
+    if (protocol == RoutingProtocol.EIGRP) {
+      matchExpr =
+          new Disjunction(
+              ImmutableList.of(
+                  new MatchProtocol(RoutingProtocol.EIGRP),
+                  new MatchProtocol(RoutingProtocol.EIGRP_EX)));
+    } else {
+      matchExpr = new MatchProtocol(protocol);
+    }
+    eigrpExportConditions.getConjuncts().add(matchExpr);
 
     // Default routes can be redistributed into EIGRP. Don't filter them.
 
@@ -1002,13 +1014,14 @@ class CiscoConversions {
     // Set the metric
     // TODO prefer metric from route map
     EigrpMetric metric = policy.getMetric() != null ? policy.getMetric() : proc.getDefaultMetric();
-    if (metric == null) {
+    if (metric == null && protocol == RoutingProtocol.EIGRP) {
+      eigrpExportStatements.add(new SetEigrpMetric(new RouteEigrpMetric()));
+    } else if (metric == null) {
       /*
        * TODO no default metric
        * 1) connected can use the interface metric
        * 2) static with next hop interface can use the interface metric
-       * 3) redistribution of eigrp into eigrp can directly use the 'external' route metric
-       * 4) If none of the above, bad configuration
+       * 3) If none of the above, bad configuration
        */
       oldConfig.getWarnings().redFlag("Unable to redistribute - no metric");
       return null;

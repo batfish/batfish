@@ -6402,8 +6402,17 @@
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
                 "comment" : "EIGRP export routes for eigrp",
                 "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                  "protocol" : "eigrp"
+                  "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
+                  "disjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                      "protocol" : "eigrp"
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                      "protocol" : "eigrpEX"
+                    }
+                  ]
                 },
                 "trueStatements" : [
                   {
