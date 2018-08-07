@@ -118,8 +118,10 @@ public class BDDPacket {
    */
   public BDDPacket() {
     _factory = JFactory.init(JFACTORY_INITIAL_NODE_TABLE_SIZE, JFACTORY_INITIAL_NODE_CACHE_SIZE);
-    _factory.disableReorder();
+    _factory.enableReorder();
     _factory.setCacheRatio(JFACTORY_CACHE_RATIO);
+    // Do not impose a maximum node table increase
+    _factory.setMaxIncrease(0);
     // Disables printing
     /*
     try {
@@ -153,11 +155,11 @@ public class BDDPacket {
 
     _bitNames = new HashMap<>();
 
-    _ipProtocol = allocateBDDInteger("ipProtocol", IP_PROTOCOL_LENGTH, false);
     _dstIp = allocateBDDInteger("dstIp", IP_LENGTH, true);
     _srcIp = allocateBDDInteger("srcIp", IP_LENGTH, true);
     _dstPort = allocateBDDInteger("dstPort", PORT_LENGTH, false);
     _srcPort = allocateBDDInteger("srcPort", PORT_LENGTH, false);
+    _ipProtocol = allocateBDDInteger("ipProtocol", IP_PROTOCOL_LENGTH, false);
     _icmpCode = allocateBDDInteger("icmpCode", ICMP_CODE_LENGTH, false);
     _icmpType = allocateBDDInteger("icmpType", ICMP_TYPE_LENGTH, false);
     _tcpAck = allocateBDDBit("tcpAck");
