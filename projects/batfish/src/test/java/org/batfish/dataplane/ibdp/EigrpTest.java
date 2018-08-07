@@ -136,6 +136,13 @@ public class EigrpTest {
     return buildDataPlane(c1, c2, c3, c4);
   }
 
+  /**
+   * Partially-generic helper to create an export policy for redistributing one process into another
+   *
+   * @param sourceProtocol Protocol of routes that are being redistributed
+   * @param destProtocol Protocol of process that is receiving redistributed routes
+   * @return {@link List} of {@link Statement}s to create a {@link RoutingPolicy}
+   */
   private static List<Statement> getExportPolicyStatements(
       RoutingProtocol sourceProtocol, RoutingProtocol destProtocol) {
 
@@ -311,6 +318,18 @@ public class EigrpTest {
     return buildDataPlane(c1, c2, c3, c4);
   }
 
+  /**
+   * Build a {@link Configuration} and set process/interface builders to be owned by it. Also resets
+   * process export policies.
+   *
+   * @param hostname Hostname of the new configuration.
+   * @param eib EIGRP interface builder
+   * @param epb EIGRP process builder
+   * @param oib OSPF interface builder
+   * @param opb OSPF process builder
+   * @param nib Interface builder without an associated process
+   * @return A new {@link Configuration} with the desired hostname
+   */
   private static Configuration buildConfiguration(
       String hostname,
       Interface.Builder eib,
@@ -338,6 +357,15 @@ public class EigrpTest {
     return c;
   }
 
+  /**
+   * Builds a {@link IncrementalDataPlane} that consists of four hosts for testing.
+   *
+   * @param c1 Configuration of host 1
+   * @param c2 Configuration of host 2
+   * @param c3 Configuration of host 3
+   * @param c4 Configuration of host 4
+   * @return A new {@link IncrementalDataPlane} for the network consisting of the four hosts.
+   */
   private static IncrementalDataPlane buildDataPlane(
       Configuration c1, Configuration c2, Configuration c3, Configuration c4) {
     SortedMap<String, Configuration> configurations =
@@ -357,6 +385,17 @@ public class EigrpTest {
         engine.computeDataPlane(false, configurations, topology, Collections.emptySet())._dataPlane;
   }
 
+  /**
+   * Builds an {@link Interface} using the provided {@link Interface.Builder} with the desired
+   * properties and active EIGRP configuration.
+   *
+   * @param eib Partially pre-configured {@link Interface.Builder}
+   * @param asn ASN of the {@link EigrpProcess}
+   * @param mode Mode of the {@link EigrpProcess}
+   * @param addr Address of the {@link Interface}
+   * @param name Name of the {@link Interface}
+   * @param delayMult Scaling factor for converting default interface delay for this interface
+   */
   private static void buildEigrpExternalInterface(
       Interface.Builder eib,
       long asn,
@@ -377,6 +416,15 @@ public class EigrpTest {
     eib.setName(name).setAddress(addr).setEigrp(esb.build()).build();
   }
 
+  /**
+   * Builds an {@link Interface} using the provided {@link Interface.Builder} with the desired
+   * properties and passive EIGRP configuration.
+   *
+   * @param eib Partially pre-configured {@link Interface.Builder}
+   * @param asn ASN of the {@link EigrpProcess}
+   * @param mode Mode of the {@link EigrpProcess}
+   * @param addr Address of the {@link Interface}
+   */
   private static void buildEigrpLoopbackInterface(
       Interface.Builder eib, long asn, EigrpProcessMode mode, InterfaceAddress addr) {
     ConfigurationFormat format = ConfigurationFormat.CISCO_IOS;
@@ -392,15 +440,37 @@ public class EigrpTest {
     eib.setName("Loopback0").setAddress(addr).setEigrp(esb.build()).build();
   }
 
+  /**
+   * Builds an {@link Interface} using the provided {@link Interface.Builder} with the desired
+   * properties.
+   *
+   * @param nib Partially pre-configured {@link Interface.Builder}
+   * @param addr Address of the {@link Interface}
+   */
   private static void buildNoneInterface(Interface.Builder nib, InterfaceAddress addr) {
     nib.setName("Loopback0").setAddress(addr).build();
   }
 
+  /**
+   * Builds an {@link Interface} using the provided {@link Interface.Builder} with the desired
+   * properties and active OSPF configuration.
+   *
+   * @param oib Partially pre-configured {@link Interface.Builder}
+   * @param name Name of the {@link Interface}
+   * @param addr Address of the {@link Interface}
+   */
   private static void buildOspfExternalInterface(
       Interface.Builder oib, String name, InterfaceAddress addr) {
     oib.setAddress(addr).setName(name).setOspfPassive(false).build();
   }
 
+  /**
+   * Builds an {@link Interface} using the provided {@link Interface.Builder} with the desired
+   * properties and passive OSPF configuration.
+   *
+   * @param oib Partially pre-configured {@link Interface.Builder}
+   * @param addr Address of the {@link Interface}
+   */
   private static void buildOspfLoopbackInterface(Interface.Builder oib, InterfaceAddress addr) {
     String name = "Loopback0";
     oib.setAddress(addr).setName(name).setOspfPassive(true).build();
