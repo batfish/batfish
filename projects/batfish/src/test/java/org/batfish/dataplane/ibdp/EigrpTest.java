@@ -1,9 +1,11 @@
 package org.batfish.dataplane.ibdp;
 
 import static java.util.Objects.requireNonNull;
+import static org.batfish.datamodel.RoutingProtocol.CONNECTED;
 import static org.batfish.datamodel.RoutingProtocol.EIGRP;
 import static org.batfish.datamodel.RoutingProtocol.EIGRP_EX;
 import static org.batfish.datamodel.RoutingProtocol.OSPF;
+import static org.batfish.datamodel.RoutingProtocol.OSPF_E2;
 import static org.batfish.dataplane.ibdp.TestUtils.assertNoRoute;
 import static org.batfish.dataplane.ibdp.TestUtils.assertRoute;
 import static org.batfish.representation.cisco.Interface.getDefaultBandwidth;
@@ -24,6 +26,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
@@ -36,12 +39,17 @@ import org.batfish.datamodel.eigrp.EigrpProcessMode;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.LiteralEigrpMetric;
+import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetEigrpMetric;
+import org.batfish.datamodel.routing_policy.statement.SetMetric;
+import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
+import org.batfish.representation.cisco.OspfRedistributionPolicy;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -128,21 +136,37 @@ public class EigrpTest {
     return buildDataPlane(c1, c2, c3, c4);
   }
 
-  private static List<Statement> getExportPolicyStatements(RoutingProtocol protocol) {
-    EigrpMetric metric =
-        requireNonNull(
-            EigrpMetric.builder()
-                .setBandwidth(externalBandwidth)
-                .setDelay(externalDelay)
-                .setMode(EigrpProcessMode.CLASSIC)
-                .build());
+  private static List<Statement> getExportPolicyStatements(
+      RoutingProtocol sourceProtocol, RoutingProtocol destProtocol) {
+
+    ImmutableList.Builder<Statement> exportStatements = ImmutableList.builder();
+
+    if (destProtocol == EIGRP) {
+      EigrpMetric metric =
+          requireNonNull(
+              EigrpMetric.builder()
+                  .setBandwidth(externalBandwidth)
+                  .setDelay(externalDelay)
+                  .setMode(EigrpProcessMode.CLASSIC)
+                  .build());
+      exportStatements.add(new SetEigrpMetric(new LiteralEigrpMetric(metric)));
+    } else if (destProtocol == OSPF) {
+      exportStatements.add(new SetMetric(new LiteralLong(100L)));
+      exportStatements.add(new SetOspfMetricType(OspfRedistributionPolicy.DEFAULT_METRIC_TYPE));
+    }
+    exportStatements.add(Statements.ExitAccept.toStaticStatement());
 
     If exportIfMatchProtocol = new If();
-    exportIfMatchProtocol.setGuard(new MatchProtocol(protocol));
-    exportIfMatchProtocol.setTrueStatements(
-        ImmutableList.of(
-            new SetEigrpMetric(new LiteralEigrpMetric(metric)),
-            Statements.ExitAccept.toStaticStatement()));
+    if (sourceProtocol == EIGRP) {
+      exportIfMatchProtocol.setGuard(
+          new Disjunction(
+              ImmutableList.of(
+                  new MatchProtocol(EIGRP),
+                  new MatchProtocol(RoutingProtocol.EIGRP_EX))));
+    } else {
+      exportIfMatchProtocol.setGuard(new MatchProtocol(sourceProtocol));
+    }
+    exportIfMatchProtocol.setTrueStatements(exportStatements.build());
     exportIfMatchProtocol.setFalseStatements(
         ImmutableList.of(Statements.ExitReject.toStaticStatement()));
     return ImmutableList.of(exportIfMatchProtocol);
@@ -150,10 +174,9 @@ public class EigrpTest {
 
   /*
    * Four routers, configured in a square. Each router has external interfaces as depicted and a
-   * single loopback interface. The names of the external interface between router RA and router RB is
-   * <interfacePrefix><A>/<B>. R1 is running OSPF, R3 is running EIGRP, and R2/R4 are running both
-   * EIGRP and OSPF with redistribution of OSPF routes into EIGRP.
-   *
+   * single loopback interface. The names of the external interface between router RA and router RB
+   * is <interfacePrefix><A>/<B>. R1 is running OSPF, R3 is running EIGRP, and R2/R4 are running
+   * both EIGRP and OSPF. On R2, there is mutual redistribution. On R4,
    *
    *           2/3   3/2
    *   R2.O,E <=========> R3.E
@@ -192,11 +215,13 @@ public class EigrpTest {
     double c4E4To3DelayMult = 800000000.0;
 
     NetworkFactory nf = new NetworkFactory();
-    RoutingPolicy.Builder exportOspf =
-        nf.routingPolicyBuilder().setStatements(getExportPolicyStatements(RoutingProtocol.OSPF));
     RoutingPolicy.Builder exportConnected =
         nf.routingPolicyBuilder()
-            .setStatements(getExportPolicyStatements(RoutingProtocol.CONNECTED));
+            .setStatements(getExportPolicyStatements(CONNECTED, EIGRP));
+    RoutingPolicy.Builder exportEigrp =
+        nf.routingPolicyBuilder().setStatements(getExportPolicyStatements(EIGRP, OSPF));
+    RoutingPolicy.Builder exportOspf =
+        nf.routingPolicyBuilder().setStatements(getExportPolicyStatements(OSPF, EIGRP));
 
     EigrpProcess.Builder epb =
         EigrpProcess.builder().setAsNumber(asn).setRouterId(new Ip("100.100.100.100"));
@@ -239,7 +264,8 @@ public class EigrpTest {
     epb.setMode(mode2).build();
     buildEigrpExternalInterface(eib, asn, mode2, R2_E2_3_ADDR, c2E2To3Name, c2E2To3DelayMult);
     if (otherProcess == OSPF) {
-      // Build OSPF
+      // Build OSPF (with redistribute EIGRP)
+      opb.setExportPolicy(exportEigrp.setOwner(c2).build());
       oib.setOspfArea(oab.setOspfProcess(opb.build()).build());
       buildOspfLoopbackInterface(oib, R2_L0_ADDR);
       buildOspfExternalInterface(oib, c2E2To1Name, R2_E2_1_ADDR);
@@ -271,7 +297,8 @@ public class EigrpTest {
     buildEigrpLoopbackInterface(eib, asn, mode4, R4_L0_ADDR);
     buildEigrpExternalInterface(eib, asn, mode4, R4_E4_3_ADDR, c4E4To3Name, c4E4To3DelayMult);
     if (otherProcess == OSPF) {
-      // Build OSPF
+      // Build OSPF (with redistribute EIGRP)
+      // opb.setExportPolicy(exportEigrp.setOwner(c4).build());
       oib.setOspfArea(oab.setOspfProcess(opb.build()).build());
       buildOspfExternalInterface(oib, c4E4To1Name, R4_E4_1_ADDR);
     } else if (otherProcess == EIGRP) {
@@ -307,7 +334,7 @@ public class EigrpTest {
       nib.setOwner(c).setVrf(v);
     }
     if (opb != null && oib != null) {
-      opb.setVrf(v);
+      opb.setExportPolicy(null).setVrf(v);
       oib.setOwner(c).setVrf(v);
     }
     return c;
@@ -446,7 +473,7 @@ public class EigrpTest {
             EigrpProcessMode.CLASSIC,
             EigrpProcessMode.CLASSIC,
             "GigabitEthernet",
-            RoutingProtocol.OSPF);
+            OSPF);
     SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
         IncrementalBdpEngine.getRoutes(dp);
 
@@ -463,9 +490,26 @@ public class EigrpTest {
     lDelay *= scale;
     exMetric *= scale;
 
+    /*
+     * Four routers, configured in a square. Each router has external interfaces as depicted and a
+     * single loopback interface. The names of the external interface between router RA and router RB
+     * is <interfacePrefix><A>/<B>. R1 is running OSPF, R3 is running EIGRP, and R2/R4 are running
+     * both EIGRP and OSPF. On R2, there is mutual redistribution. On R4,
+     *
+     *           2/3   3/2
+     *   R2.O,E <=========> R3.E
+     *    2/1|              | 3/4
+     *       |              |
+     *       |              |
+     *    1/2|   1/4   4/1  | 4/3
+     *     R1.O <=========> R4.O,E
+     */
+
     // r1
     assertNoRoute(routes, R1, Prefix.ZERO);
     assertRoute(routes, OSPF, R1, R2_L0_ADDR, 2L);
+    assertRoute(routes, OSPF_E2, R1, R3_L0_ADDR, 100L);
+    assertRoute(routes, OSPF_E2, R1, R4_L0_ADDR, 100L);
 
     // r2
     assertNoRoute(routes, R2, Prefix.ZERO);
@@ -476,6 +520,11 @@ public class EigrpTest {
     // r3
     assertNoRoute(routes, R3, Prefix.ZERO);
     assertRoute(routes, EIGRP_EX, R3, R1_L0_ADDR, exMetric + 500000L * scale);
+    /*
+     * Since routes are redistributed from the main RIB and not the OSPF process RIB, and the main
+     * RIB on R2 has a local route to R2_L0, R2 does not redistribute a route to R2_L0 to the EIGRP
+     * process. Therefore, the only route available to R2_L0 on R3 is via R4.
+     */
     assertRoute(routes, EIGRP_EX, R3, R2_L0_ADDR, exMetric + 6000000L * scale);
     assertRoute(routes, EIGRP, R3, R4_L0_ADDR, bandwidth + 6000000L * scale + lDelay);
 
@@ -483,7 +532,7 @@ public class EigrpTest {
     assertNoRoute(routes, R4, Prefix.ZERO);
     assertRoute(routes, OSPF, R4, R1_L0_ADDR, 2L);
     assertRoute(routes, OSPF, R4, R2_L0_ADDR, 3L);
-    assertRoute(routes, EIGRP_EX, R4, R3_L0_ADDR, exMetric + 800000000L * scale);
+    assertRoute(routes, OSPF_E2, R4, R3_L0_ADDR, 100L);
   }
 
   /** Test route computation and propagation for EIGRP in named mode */
