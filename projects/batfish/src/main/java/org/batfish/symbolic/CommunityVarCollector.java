@@ -45,10 +45,18 @@ public class CommunityVarCollector implements VoidCommunitySetExprVisitor {
 
   @Override
   public void visitCommunityList(CommunityList communityList) {
+    /*
+     * The following implementation should be considered deprecated, but exists to recreate old behavior for existing tests.
+     * The old behavior only supported regexes as match conditions. For relevant tests, those regexes were actually created
+     * from IOS standard community-lists, i.e. literal communities. So the temporary implementation below expects all match
+     * conditions here to be literal communities, which it then converts to regexes as expected by the old implementation.
+     * Actual regexes are unmodified.
+     */
     communityList
         .getLines()
         .stream()
         .map(CommunityListLine::getMatchCondition)
+        .map(CommunitySetExprToRegex::convert)
         .forEach(expr -> expr.accept(this));
   }
 

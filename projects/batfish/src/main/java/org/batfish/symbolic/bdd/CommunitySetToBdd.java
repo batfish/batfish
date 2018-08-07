@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.List;
 import net.sf.javabdd.BDD;
 import org.batfish.common.BatfishException;
+import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.Configuration;
@@ -60,6 +61,13 @@ public final class CommunitySetToBdd implements CommunitySetExprVisitor<BDD> {
 
   @Override
   public BDD visitCommunityList(CommunityList communityList) {
+    /*
+     * The following implementation should be considered deprecated, but exists to recreate old behavior for existing tests.
+     * The old behavior only supported regexes as match conditions. For relevant tests, those regexes were actually created
+     * from IOS standard community-lists, i.e. literal communities. So the temporary implementation below expects all match
+     * conditions here to be literal communities, which it then converts to regexes as expected by the old implementation.
+     * Actual regexes are unmodified.
+     */
     List<CommunityListLine> lines = new ArrayList<>(communityList.getLines());
     Collections.reverse(lines);
     BDD acc = factory.zero();
@@ -80,11 +88,20 @@ public final class CommunitySetToBdd implements CommunitySetExprVisitor<BDD> {
           acc = _caller.ite(c, _caller.mkBDD(action), acc);
         }
       } else if (cvar.getType() == Type.EXACT) {
-        BDD c = _other.getCommunities().get(cvar);
-        if (c == null) {
-          throw new BatfishException("matchCommunitySet: should not be null");
+        CommunityVar cvarAsRegex =
+            new CommunityVar(
+                Type.REGEX, String.format("^%s$", CommonUtil.longToCommunity(cvar.asLong())), null);
+        List<CommunityVar> deps = _caller._commDeps.get(cvarAsRegex);
+        for (CommunityVar dep : deps) {
+          _p.debug("Test for: " + dep);
+          BDD c = _other.getCommunities().get(dep);
+          acc = _caller.ite(c, _caller.mkBDD(action), acc);
         }
-        acc = _caller.ite(c, _caller.mkBDD(action), acc);
+        //        BDD c = _other.getCommunities().get(cvar);
+        //        if (c == null) {
+        //          throw new BatfishException("matchCommunitySet: should not be null");
+        //        }
+        //        acc = _caller.ite(c, _caller.mkBDD(action), acc);
       } else {
         throw new BatfishException("Unhandled cvar type: " + cvar.getType());
       }
