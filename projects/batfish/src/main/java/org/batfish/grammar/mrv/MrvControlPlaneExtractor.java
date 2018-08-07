@@ -1,7 +1,5 @@
 package org.batfish.grammar.mrv;
 
-import java.util.Set;
-import java.util.TreeSet;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.common.Warnings;
@@ -22,15 +20,12 @@ public class MrvControlPlaneExtractor extends MrvParserBaseListener
 
   private String _text;
 
-  private final Set<String> _unimplementedFeatures;
-
   private Warnings _w;
 
   public MrvControlPlaneExtractor(String fileText, MrvCombinedParser mrvParser, Warnings warnings) {
     _text = fileText;
     _parser = mrvParser;
     _w = warnings;
-    _unimplementedFeatures = new TreeSet<>();
   }
 
   @Override

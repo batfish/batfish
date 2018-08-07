@@ -30,8 +30,6 @@ public class Warnings implements Serializable {
 
   private final List<Warning> _pedanticWarnings;
 
-  private transient boolean _printParseTree;
-
   private transient boolean _redFlagRecord;
 
   private final List<Warning> _redFlagWarnings;
@@ -51,17 +49,12 @@ public class Warnings implements Serializable {
   }
 
   public Warnings() {
-    this(false, false, false, false);
+    this(false, false, false);
   }
 
-  public Warnings(
-      boolean pedanticRecord,
-      boolean redFlagRecord,
-      boolean unimplementedRecord,
-      boolean printParseTree) {
+  public Warnings(boolean pedanticRecord, boolean redFlagRecord, boolean unimplementedRecord) {
     this(null, null, null);
     _pedanticRecord = pedanticRecord;
-    _printParseTree = printParseTree;
     _redFlagRecord = redFlagRecord;
     _unimplementedRecord = unimplementedRecord;
   }

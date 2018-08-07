@@ -926,8 +926,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         settings.getPedanticRecord() && settings.getLogger().isActive(BatfishLogger.LEVEL_PEDANTIC),
         settings.getRedFlagRecord() && settings.getLogger().isActive(BatfishLogger.LEVEL_REDFLAG),
         settings.getUnimplementedRecord()
-            && settings.getLogger().isActive(BatfishLogger.LEVEL_UNIMPLEMENTED),
-        settings.getPrintParseTree());
+            && settings.getLogger().isActive(BatfishLogger.LEVEL_UNIMPLEMENTED));
   }
 
   private void checkBaseDirExists() {
