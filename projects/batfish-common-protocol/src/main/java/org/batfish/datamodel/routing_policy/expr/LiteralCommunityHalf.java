@@ -5,6 +5,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+/**
+ * A match expression for a 16-bit half of a community that matches when the half is equal to the
+ * contained value
+ */
 public class LiteralCommunityHalf implements CommunityHalfExpr {
 
   private static final String PROP_VALUE = "value";

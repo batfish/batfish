@@ -1,11 +1,11 @@
 package org.batfish.datamodel.routing_policy.expr;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.MoreObjects.toStringHelper;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Sets;
 import java.util.Collection;
 import java.util.Set;
 import java.util.SortedSet;
@@ -82,8 +82,7 @@ public class LiteralCommunitySet extends CommunitySetExpr {
 
   @Override
   public boolean matchCommunities(Environment environment, Set<Long> communitySetCandidate) {
-    return Sets.intersection(_communities, communitySetCandidate).size()
-        == communitySetCandidate.size();
+    return communitySetCandidate.stream().anyMatch(_communities::contains);
   }
 
   @Override
@@ -94,5 +93,10 @@ public class LiteralCommunitySet extends CommunitySetExpr {
   @Override
   public boolean reducible() {
     return true;
+  }
+
+  @Override
+  public String toString() {
+    return toStringHelper(getClass()).add(PROP_COMMUNITIES, _communities).toString();
   }
 }

@@ -1,6 +1,7 @@
 package org.batfish.datamodel;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.MoreObjects.toStringHelper;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -12,6 +13,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.util.concurrent.UncheckedExecutionException;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Comparator;
@@ -20,6 +22,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.concurrent.ExecutionException;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.routing_policy.Environment;
@@ -172,8 +175,8 @@ public class CommunityList extends CommunitySetExpr {
     } else if (!(o instanceof CommunityList)) {
       return false;
     }
-    CommunityList other = (CommunityList) o;
-    return _invertMatch == other._invertMatch && Objects.equals(_lines, other._lines);
+    CommunityList rhs = (CommunityList) o;
+    return _invertMatch == rhs._invertMatch && _lines.equals(rhs._lines) && _name.equals(rhs._name);
   }
 
   /**
@@ -203,7 +206,7 @@ public class CommunityList extends CommunitySetExpr {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_invertMatch, _lines);
+    return Objects.hash(_invertMatch, _lines, _name);
   }
 
   public boolean initDynamic() {
@@ -267,11 +270,26 @@ public class CommunityList extends CommunitySetExpr {
       }
       return computeIfMatches(community, environment);
     }
-    return _communityCache.get().getUnchecked(community);
+    try {
+      return _communityCache.get().get(community);
+    } catch (ExecutionException | UncheckedExecutionException e) {
+      throw new UnsupportedOperationException(
+          "At least one line of this CommunityList has a match expression not supporting matchCommunity",
+          e);
+    }
   }
 
   @Override
   public boolean reducible() {
     return _reducible.get();
+  }
+
+  @Override
+  public String toString() {
+    return toStringHelper(getClass())
+        .add(PROP_INVERT_MATCH, _invertMatch)
+        .add(PROP_NAME, _name)
+        .add(PROP_LINES, _lines)
+        .toString();
   }
 }

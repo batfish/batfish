@@ -1,5 +1,6 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.MoreObjects.toStringHelper;
 import static java.util.Objects.requireNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -63,5 +64,13 @@ public class CommunityListLine implements Serializable {
   @Override
   public int hashCode() {
     return Objects.hash(_action.ordinal(), _matchCondition);
+  }
+
+  @Override
+  public String toString() {
+    return toStringHelper(getClass())
+        .add(PROP_ACTION, _action)
+        .add(PROP_MATCH_CONDITION, _matchCondition)
+        .toString();
   }
 }

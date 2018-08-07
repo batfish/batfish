@@ -51,6 +51,39 @@ public final class CommunitySetExprMatchers {
     }
   }
 
+  private static final class MatchAnyCommunity extends TypeSafeDiagnosingMatcher<CommunitySetExpr> {
+
+    private final Set<Long> _communityCandidates;
+
+    private final Environment _environment;
+
+    private MatchAnyCommunity(
+        @Nullable Environment environment, @Nonnull Set<Long> communityCandidates) {
+      _environment = environment;
+      _communityCandidates = communityCandidates;
+    }
+
+    @Override
+    public void describeTo(Description description) {
+      description.appendText(
+          String.format(
+              "A CommunitySetExpr matching any community in the candidate set: '%s'",
+              CommunitySetExprMatchers.toString(_communityCandidates)));
+    }
+
+    @Override
+    protected boolean matchesSafely(CommunitySetExpr item, Description mismatchDescription) {
+      if (!item.matchAnyCommunity(_environment, _communityCandidates)) {
+        mismatchDescription.appendText(
+            String.format(
+                "CommunitySetExpr: '%s' did not match any community in: %s",
+                item, CommunitySetExprMatchers.toString(_communityCandidates)));
+        return false;
+      }
+      return true;
+    }
+  }
+
   private static final class MatchCommunities extends TypeSafeDiagnosingMatcher<CommunitySetExpr> {
 
     private final Set<Long> _communitySetCandidate;
@@ -160,21 +193,48 @@ public final class CommunitySetExprMatchers {
     }
   }
 
+  /**
+   * Provides a matcher that matches when the provided {@code subMatcher} matches the {@link
+   * CommunitySetExpr}'s representation as a set of literal communities under the provided {@code
+   * environment}.
+   */
   public static @Nonnull Matcher<CommunitySetExpr> asLiteralCommunities(
       @Nullable Environment environment, @Nonnull Matcher<? super Set<Long>> subMatcher) {
     return new AsLiteralCommunities(environment, subMatcher);
   }
 
+  /**
+   * Provides a matcher that matches when any of the provided {@code communityCandidates} is matched
+   * by the {link CommunitySetExpr} under the provided {@code environment}.
+   */
+  public static @Nonnull Matcher<CommunitySetExpr> matchAnyCommunity(
+      @Nullable Environment environment, @Nonnull Set<Long> communityCandidates) {
+    return new MatchAnyCommunity(environment, communityCandidates);
+  }
+
+  /**
+   * Provides a matcher that matches when the provided {@code communitySetCandidate} as a whole is
+   * matched by the {link CommunitySetExpr} under the provided {@code environment}.
+   */
   public static @Nonnull Matcher<CommunitySetExpr> matchCommunities(
       @Nullable Environment environment, @Nonnull Set<Long> communitySetCandidate) {
     return new MatchCommunities(environment, communitySetCandidate);
   }
 
+  /**
+   * Provides a matcher that matches when the provided {@code community} is matched by the {link
+   * CommunitySetExpr} under the provided {@code environment}.
+   */
   public static @Nonnull Matcher<CommunitySetExpr> matchCommunity(
       @Nullable Environment environment, long community) {
     return new MatchCommunity(environment, community);
   }
 
+  /**
+   * Provides a matcher that matches when the subset of the given {@code communityCandidates}
+   * matched by the {@link CommunitySetExpr} is equal to the {@code exprectedMatchedCommunities}
+   * under the provided {@code environment}.
+   */
   public static @Nonnull Matcher<CommunitySetExpr> matchedCommunities(
       @Nullable Environment environment,
       @Nonnull Set<Long> communityCandidates,

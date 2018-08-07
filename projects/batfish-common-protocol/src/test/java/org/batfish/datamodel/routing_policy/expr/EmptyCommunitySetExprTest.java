@@ -10,34 +10,21 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 
 import com.google.common.collect.ImmutableSet;
-import com.google.common.testing.EqualsTester;
 import java.util.Set;
 import org.junit.Test;
 
-public final class LiteralCommunityTest {
+public final class EmptyCommunitySetExprTest {
 
   @Test
   public void testAsLiteralCommunities() {
-    long val = 1L;
-    LiteralCommunity l = new LiteralCommunity(val);
-
-    assertThat(l, asLiteralCommunities(null, equalTo(ImmutableSet.of(val))));
-  }
-
-  @Test
-  public void testEquals() {
-    new EqualsTester()
-        .addEqualityGroup(new LiteralCommunity(1L), new LiteralCommunity(1L))
-        .addEqualityGroup(new LiteralCommunity(2L))
-        .testEquals();
+    assertThat(
+        EmptyCommunitySetExpr.INSTANCE, asLiteralCommunities(null, equalTo(ImmutableSet.of())));
   }
 
   @Test
   public void testMatchAnyCommunity() {
-    LiteralCommunity l = new LiteralCommunity(1L);
-    Set<Long> communityCandidates = ImmutableSet.of(1L, 2L);
-
-    assertThat(l, matchAnyCommunity(null, communityCandidates));
+    assertThat(EmptyCommunitySetExpr.INSTANCE, not(matchAnyCommunity(null, ImmutableSet.of())));
+    assertThat(EmptyCommunitySetExpr.INSTANCE, not(matchAnyCommunity(null, ImmutableSet.of(1L))));
   }
 
   @Test
@@ -54,17 +41,15 @@ public final class LiteralCommunityTest {
 
   @Test
   public void testMatchCommunity() {
-    LiteralCommunity l = new LiteralCommunity(1L);
-
-    assertThat(l, matchCommunity(null, 1L));
-    assertThat(l, not(matchCommunity(null, 2L)));
+    assertThat(EmptyCommunitySetExpr.INSTANCE, not(matchCommunity(null, 1L)));
   }
 
   @Test
   public void testMatchedCommunities() {
-    LiteralCommunity l = new LiteralCommunity(1L);
     Set<Long> communityCandidates = ImmutableSet.of(1L, 2L);
 
-    assertThat(l, matchedCommunities(null, communityCandidates, ImmutableSet.of(1L)));
+    assertThat(
+        EmptyCommunitySetExpr.INSTANCE,
+        matchedCommunities(null, communityCandidates, ImmutableSet.of()));
   }
 }

@@ -9,6 +9,10 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.SubRange;
 
+/**
+ * A match expression for a 16-bit half of a community that matches when the half is in the
+ * contained interval
+ */
 public class RangeCommunityHalf implements CommunityHalfExpr {
 
   public static final RangeCommunityHalf ALL = new RangeCommunityHalf(new SubRange(0, 65535));

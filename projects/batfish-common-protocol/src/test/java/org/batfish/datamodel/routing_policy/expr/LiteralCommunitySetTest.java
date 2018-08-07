@@ -14,27 +14,28 @@ import com.google.common.testing.EqualsTester;
 import java.util.Set;
 import org.junit.Test;
 
-public final class LiteralCommunityTest {
+public final class LiteralCommunitySetTest {
 
   @Test
   public void testAsLiteralCommunities() {
-    long val = 1L;
-    LiteralCommunity l = new LiteralCommunity(val);
+    LiteralCommunitySet l = new LiteralCommunitySet(ImmutableSet.of(1L, 2L));
 
-    assertThat(l, asLiteralCommunities(null, equalTo(ImmutableSet.of(val))));
+    assertThat(l, asLiteralCommunities(null, equalTo(ImmutableSet.of(1L, 2L))));
   }
 
   @Test
   public void testEquals() {
     new EqualsTester()
-        .addEqualityGroup(new LiteralCommunity(1L), new LiteralCommunity(1L))
-        .addEqualityGroup(new LiteralCommunity(2L))
+        .addEqualityGroup(
+            new LiteralCommunitySet(ImmutableSet.of(1L, 2L)),
+            new LiteralCommunitySet(ImmutableSet.of(2L, 1L)))
+        .addEqualityGroup(new LiteralCommunitySet(ImmutableSet.of(2L)))
         .testEquals();
   }
 
   @Test
   public void testMatchAnyCommunity() {
-    LiteralCommunity l = new LiteralCommunity(1L);
+    LiteralCommunitySet l = new LiteralCommunitySet(ImmutableSet.of(1L, 3L));
     Set<Long> communityCandidates = ImmutableSet.of(1L, 2L);
 
     assertThat(l, matchAnyCommunity(null, communityCandidates));
@@ -45,7 +46,7 @@ public final class LiteralCommunityTest {
     Set<Long> matchingCommunitySetCandidate1 = ImmutableSet.of(1L, 2L);
     Set<Long> matchingCommunitySetCandidate2 = ImmutableSet.of(1L);
     Set<Long> nonMatchingCommunitySetCandidate = ImmutableSet.of(2L);
-    LiteralCommunity l = new LiteralCommunity(1L);
+    LiteralCommunitySet l = new LiteralCommunitySet(ImmutableSet.of(1L, 3L));
 
     assertThat(l, matchCommunities(null, matchingCommunitySetCandidate1));
     assertThat(l, matchCommunities(null, matchingCommunitySetCandidate2));
@@ -54,7 +55,7 @@ public final class LiteralCommunityTest {
 
   @Test
   public void testMatchCommunity() {
-    LiteralCommunity l = new LiteralCommunity(1L);
+    LiteralCommunitySet l = new LiteralCommunitySet(ImmutableSet.of(1L, 3L));
 
     assertThat(l, matchCommunity(null, 1L));
     assertThat(l, not(matchCommunity(null, 2L)));
@@ -62,7 +63,7 @@ public final class LiteralCommunityTest {
 
   @Test
   public void testMatchedCommunities() {
-    LiteralCommunity l = new LiteralCommunity(1L);
+    LiteralCommunitySet l = new LiteralCommunitySet(ImmutableSet.of(1L, 3L));
     Set<Long> communityCandidates = ImmutableSet.of(1L, 2L);
 
     assertThat(l, matchedCommunities(null, communityCandidates, ImmutableSet.of(1L)));

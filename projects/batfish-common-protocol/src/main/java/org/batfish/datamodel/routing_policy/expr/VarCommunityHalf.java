@@ -7,6 +7,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+/**
+ * A match expression for a 16-bit half of a community that matches when the half is matched by the
+ * contained variable match expression resolved under a provided {@link Environment}
+ */
 public class VarCommunityHalf implements CommunityHalfExpr {
 
   private static final String PROP_VAR = "var";

@@ -1,6 +1,7 @@
 package org.batfish.datamodel.routing_policy.expr;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.MoreObjects.toStringHelper;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -82,7 +83,7 @@ public final class LiteralCommunityConjunction extends CommunitySetExpr {
   @Override
   public boolean matchCommunities(Environment environment, Set<Long> communitySetCandidate) {
     return Sets.intersection(_requiredCommunities, communitySetCandidate).size()
-        == communitySetCandidate.size();
+        == _requiredCommunities.size();
   }
 
   @Override
@@ -93,5 +94,12 @@ public final class LiteralCommunityConjunction extends CommunitySetExpr {
   @Override
   public boolean reducible() {
     return false;
+  }
+
+  @Override
+  public String toString() {
+    return toStringHelper(getClass())
+        .add(PROP_REQUIRED_COMMUNITIES, _requiredCommunities)
+        .toString();
   }
 }
