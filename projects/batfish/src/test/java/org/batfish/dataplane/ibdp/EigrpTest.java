@@ -176,7 +176,8 @@ public class EigrpTest {
    * Four routers, configured in a square. Each router has external interfaces as depicted and a
    * single loopback interface. The names of the external interface between router RA and router RB
    * is <interfacePrefix><A>/<B>. R1 is running OSPF, R3 is running EIGRP, and R2/R4 are running
-   * both EIGRP and OSPF. On R2, there is mutual redistribution. On R4,
+   * both EIGRP and OSPF. On R2, there is mutual redistribution. On R4, OSPF is redistributed into
+   * EIGRP.
    *
    *           2/3   3/2
    *   R2.O,E <=========> R3.E
@@ -297,8 +298,7 @@ public class EigrpTest {
     buildEigrpLoopbackInterface(eib, asn, mode4, R4_L0_ADDR);
     buildEigrpExternalInterface(eib, asn, mode4, R4_E4_3_ADDR, c4E4To3Name, c4E4To3DelayMult);
     if (otherProcess == OSPF) {
-      // Build OSPF (with redistribute EIGRP)
-      // opb.setExportPolicy(exportEigrp.setOwner(c4).build());
+      // Build OSPF
       oib.setOspfArea(oab.setOspfProcess(opb.build()).build());
       buildOspfExternalInterface(oib, c4E4To1Name, R4_E4_1_ADDR);
     } else if (otherProcess == EIGRP) {
@@ -489,21 +489,6 @@ public class EigrpTest {
     bandwidth *= scale;
     lDelay *= scale;
     exMetric *= scale;
-
-    /*
-     * Four routers, configured in a square. Each router has external interfaces as depicted and a
-     * single loopback interface. The names of the external interface between router RA and router RB
-     * is <interfacePrefix><A>/<B>. R1 is running OSPF, R3 is running EIGRP, and R2/R4 are running
-     * both EIGRP and OSPF. On R2, there is mutual redistribution. On R4,
-     *
-     *           2/3   3/2
-     *   R2.O,E <=========> R3.E
-     *    2/1|              | 3/4
-     *       |              |
-     *       |              |
-     *    1/2|   1/4   4/1  | 4/3
-     *     R1.O <=========> R4.O,E
-     */
 
     // r1
     assertNoRoute(routes, R1, Prefix.ZERO);
