@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.concurrent.atomic.AtomicInteger;
+import javax.annotation.Nullable;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AbstractRoute;
@@ -81,8 +82,6 @@ public class EigrpTest {
       String interfacePrefix) {
 
     long asn = 1L;
-    ConfigurationFormat format = ConfigurationFormat.CISCO_IOS;
-    String l0Name = "Loopback0";
     String c1E1To2Name = interfacePrefix + "1/2";
     String c2E2To1Name = interfacePrefix + "2/1";
     String c2E2To3Name = interfacePrefix + "2/3";
@@ -91,131 +90,42 @@ public class EigrpTest {
     String c4E4To3Name = interfacePrefix + "4/3";
 
     NetworkFactory nf = new NetworkFactory();
-    Vrf.Builder vb = nf.vrfBuilder().setName(Configuration.DEFAULT_VRF_NAME);
-    Configuration.Builder cb = nf.configurationBuilder().setConfigurationFormat(format);
-    String name;
-    InterfaceAddress addr;
 
-    EigrpProcess.Builder epb = EigrpProcess.builder().setAsNumber(asn);
-    EigrpMetric.Builder emb = EigrpMetric.builder();
-    EigrpInterfaceSettings.Builder eib =
-        EigrpInterfaceSettings.builder().setAsn(asn).setEnabled(true);
-    Interface.Builder ib = nf.interfaceBuilder().setActive(true);
+    EigrpProcess.Builder epb =
+        EigrpProcess.builder().setAsNumber(asn).setRouterId(new Ip("100.100.100.100"));
+    Interface.Builder eib = nf.interfaceBuilder().setActive(true).setOspfCost(1);
 
     /* Configuration 1 */
-    Configuration c1 = cb.setHostname(R1).build();
-    Vrf v1 = vb.setOwner(c1).build();
-    epb.setMode(mode1).setVrf(v1).build();
-    emb.setMode(mode1);
-    ib.setOwner(c1).setVrf(v1);
-
-    name = l0Name;
-    addr = R1_L0_ADDR;
-    emb.setDefaultBandwidth(getDefaultBandwidth(name, format))
-        .setDefaultDelay(getDefaultDelay(name, format));
-    eib.setMetric(emb.build());
-    ib.setName(name).setAddress(addr).setEigrp(eib.build()).build();
-
-    name = c1E1To2Name;
-    addr = R1_E1_2_ADDR;
-    emb.setDefaultBandwidth(getDefaultBandwidth(name, format))
-        .setDefaultDelay(getDefaultDelay(name, format));
-    eib.setMetric(emb.build());
-    ib.setName(name).setAddress(addr).setEigrp(eib.build()).build();
+    Configuration c1 = buildConfiguration(R1, eib, epb, null, null, null);
+    // Build EIGRP
+    epb.setMode(mode1).build();
+    buildEigrpLoopbackInterface(eib, asn, mode1, R1_L0_ADDR);
+    buildEigrpExternalInterface(eib, asn, mode1, R1_E1_2_ADDR, c1E1To2Name, 1.0);
 
     /* Configuration 2 */
-    Configuration c2 = cb.setHostname(R2).build();
-    Vrf v2 = vb.setOwner(c2).build();
-    epb.setMode(mode2).setVrf(v2).build();
-    emb.setMode(mode2);
-    ib.setOwner(c2).setVrf(v2);
-
-    name = l0Name;
-    addr = R2_L0_ADDR;
-    emb.setDefaultBandwidth(getDefaultBandwidth(name, format))
-        .setDefaultDelay(getDefaultDelay(name, format));
-    eib.setMetric(emb.build());
-    ib.setName(name).setAddress(addr).setEigrp(eib.build()).build();
-
-    name = c2E2To1Name;
-    addr = R2_E2_1_ADDR;
-    emb.setDefaultBandwidth(getDefaultBandwidth(name, format))
-        .setDefaultDelay(getDefaultDelay(name, format));
-    eib.setMetric(emb.build());
-    ib.setName(name).setAddress(addr).setEigrp(eib.build()).build();
-
-    name = c2E2To3Name;
-    addr = R2_E2_3_ADDR;
-    emb.setDefaultBandwidth(getDefaultBandwidth(name, format))
-        .setDefaultDelay(getDefaultDelay(name, format));
-    eib.setMetric(emb.build());
-    ib.setName(name).setAddress(addr).setEigrp(eib.build()).build();
-    emb.setDelay(null).setBandwidth(null);
+    Configuration c2 = buildConfiguration(R2, eib, epb, null, null, null);
+    // Build EIGRP
+    epb.setMode(mode2).build();
+    buildEigrpLoopbackInterface(eib, asn, mode2, R2_L0_ADDR);
+    buildEigrpExternalInterface(eib, asn, mode2, R2_E2_1_ADDR, c2E2To1Name, 1.0);
+    buildEigrpExternalInterface(eib, asn, mode2, R2_E2_3_ADDR, c2E2To3Name, 1.0);
 
     /* Configuration 3 */
-    Configuration c3 = cb.setHostname(R3).build();
-    Vrf v3 = vb.setOwner(c3).build();
-    epb.setMode(mode3).setVrf(v3).build();
-    emb.setMode(mode3);
-    ib.setOwner(c3).setVrf(v3);
-
-    name = l0Name;
-    addr = R3_L0_ADDR;
-    emb.setDefaultBandwidth(getDefaultBandwidth(name, format))
-        .setDefaultDelay(getDefaultDelay(name, format));
-    eib.setMetric(emb.build());
-    ib.setName(name).setAddress(addr).setEigrp(eib.build()).build();
-
-    name = c3E3To2Name;
-    addr = R3_E3_2_ADDR;
-    emb.setDefaultBandwidth(getDefaultBandwidth(name, format))
-        .setDefaultDelay(getDefaultDelay(name, format));
-    eib.setMetric(emb.build());
-    ib.setName(name).setAddress(addr).setEigrp(eib.build()).build();
-
-    name = c3E3To4Name;
-    addr = R3_E3_4_ADDR;
-    emb.setDefaultBandwidth(getDefaultBandwidth(name, format))
-        .setDefaultDelay(getDefaultDelay(name, format));
-    eib.setMetric(emb.build());
-    ib.setName(name).setAddress(addr).setEigrp(eib.build()).build();
+    Configuration c3 = buildConfiguration(R3, eib, epb, null, null, null);
+    // Build EIGRP
+    epb.setMode(mode3).build();
+    buildEigrpLoopbackInterface(eib, asn, mode3, R3_L0_ADDR);
+    buildEigrpExternalInterface(eib, asn, mode3, R3_E3_2_ADDR, c3E3To2Name, 1.0);
+    buildEigrpExternalInterface(eib, asn, mode3, R3_E3_4_ADDR, c3E3To4Name, 1.0);
 
     /* Configuration 4 */
-    Configuration c4 = cb.setHostname(R4).build();
-    Vrf v4 = vb.setOwner(c4).build();
-    epb.setMode(mode4).setVrf(v4).build();
-    emb.setMode(mode4);
-    ib.setOwner(c4).setVrf(v4);
+    Configuration c4 = buildConfiguration(R4, eib, epb, null, null, null);
+    // Build EIGRP
+    epb.setMode(mode4).build();
+    buildEigrpLoopbackInterface(eib, asn, mode4, R4_L0_ADDR);
+    buildEigrpExternalInterface(eib, asn, mode4, R4_E4_3_ADDR, c4E4To3Name, 1.0);
 
-    name = l0Name;
-    addr = R4_L0_ADDR;
-    emb.setDefaultBandwidth(getDefaultBandwidth(name, format))
-        .setDefaultDelay(getDefaultDelay(name, format));
-    eib.setMetric(emb.build());
-    ib.setName(name).setAddress(addr).setEigrp(eib.build()).build();
-
-    name = c4E4To3Name;
-    addr = R4_E4_3_ADDR;
-    emb.setDefaultBandwidth(getDefaultBandwidth(name, format))
-        .setDefaultDelay(getDefaultDelay(name, format));
-    eib.setMetric(emb.build());
-    ib.setName(name).setAddress(addr).setEigrp(eib.build()).build();
-
-    SortedMap<String, Configuration> configurations =
-        new ImmutableSortedMap.Builder<String, Configuration>(String::compareTo)
-            .put(c1.getHostname(), c1)
-            .put(c2.getHostname(), c2)
-            .put(c3.getHostname(), c3)
-            .put(c4.getHostname(), c4)
-            .build();
-    IncrementalBdpEngine engine =
-        new IncrementalBdpEngine(
-            new IncrementalDataPlaneSettings(),
-            new BatfishLogger(BatfishLogger.LEVELSTR_OUTPUT, false),
-            (s, i) -> new AtomicInteger());
-    Topology topology = CommonUtil.synthesizeTopology(configurations);
-    return (IncrementalDataPlane)
-        engine.computeDataPlane(false, configurations, topology, Collections.emptySet())._dataPlane;
+    return buildDataPlane(c1, c2, c3, c4);
   }
 
   private static List<Statement> getExportPolicyStatements(RoutingProtocol protocol) {
@@ -254,17 +164,22 @@ public class EigrpTest {
    *     R1.O <=========> R4.O,E
    */
   private static IncrementalDataPlane computeMultipathDataPlaneWithRedistribution(
+      EigrpProcessMode mode1,
       EigrpProcessMode mode2,
       EigrpProcessMode mode3,
       EigrpProcessMode mode4,
-      String interfacePrefix) {
+      String interfacePrefix,
+      RoutingProtocol otherProcess) {
 
     long asn = 1L;
-    ConfigurationFormat format = ConfigurationFormat.CISCO_IOS;
-    String l0Name = "Loopback0";
+    long otherAsn = 2L;
+    long area = 1L;
     String c1E1To2Name = interfacePrefix + "1/2";
+    double c1E1To2DelayMult = 10.0;
     String c1E1To4Name = interfacePrefix + "1/4";
+    double c1E1To4DelayMult = 200.0;
     String c2E2To1Name = interfacePrefix + "2/1";
+    double c2E2To1DelayMult = 3000.0;
     String c2E2To3Name = interfacePrefix + "2/3";
     double c2E2To3DelayMult = 40000.0;
     String c3E3To2Name = interfacePrefix + "3/2";
@@ -272,131 +187,134 @@ public class EigrpTest {
     String c3E3To4Name = interfacePrefix + "3/4";
     double c3E3To4DelayMult = 6000000.0;
     String c4E4To1Name = interfacePrefix + "4/1";
+    double c4E4To1DelayMult = 70000000.0;
     String c4E4To3Name = interfacePrefix + "4/3";
     double c4E4To3DelayMult = 800000000.0;
 
     NetworkFactory nf = new NetworkFactory();
-    Vrf.Builder vb = nf.vrfBuilder().setName(Configuration.DEFAULT_VRF_NAME);
-    Configuration.Builder cb = nf.configurationBuilder().setConfigurationFormat(format);
-    String name;
-    InterfaceAddress addr;
+    RoutingPolicy.Builder exportOspf =
+        nf.routingPolicyBuilder().setStatements(getExportPolicyStatements(RoutingProtocol.OSPF));
+    RoutingPolicy.Builder exportConnected =
+        nf.routingPolicyBuilder()
+            .setStatements(getExportPolicyStatements(RoutingProtocol.CONNECTED));
 
-    EigrpProcess.Builder epb = EigrpProcess.builder().setAsNumber(asn);
-    EigrpMetric.Builder emb = EigrpMetric.builder();
-    EigrpInterfaceSettings.Builder esb =
-        EigrpInterfaceSettings.builder().setAsn(asn).setEnabled(true);
+    EigrpProcess.Builder epb =
+        EigrpProcess.builder().setAsNumber(asn).setRouterId(new Ip("100.100.100.100"));
     Interface.Builder eib = nf.interfaceBuilder().setActive(true).setOspfCost(1);
 
+    Interface.Builder nib = nf.interfaceBuilder().setActive(true).setOspfCost(1);
+
     OspfProcess.Builder opb = nf.ospfProcessBuilder();
-    OspfArea.Builder oab = nf.ospfAreaBuilder().setNumber(1L);
+    OspfArea.Builder oab = nf.ospfAreaBuilder().setNumber(area);
     Interface.Builder oib =
         nf.interfaceBuilder().setActive(true).setOspfCost(1).setOspfEnabled(true);
-    RoutingPolicy.Builder rpb = nf.routingPolicyBuilder();
 
     /* Configuration 1 */
-    Configuration c1 = cb.setHostname(R1).build();
-    Vrf v1 = vb.setOwner(c1).build();
-    oib.setOwner(c1).setVrf(v1).setOspfArea(oab.setOspfProcess(opb.setVrf(v1).build()).build());
-
-    name = l0Name;
-    addr = R1_L0_ADDR;
-    oib.setAddress(addr).setName(name).setOspfPassive(true).build();
-
-    name = c1E1To2Name;
-    addr = R1_E1_2_ADDR;
-    oib.setAddress(addr).setName(name).setOspfPassive(false).build();
-
-    name = c1E1To4Name;
-    addr = R1_E1_4_ADDR;
-    oib.setAddress(addr).setName(name).setOspfPassive(false).build();
+    Configuration c1 = buildConfiguration(R1, eib, epb, oib, opb, nib);
+    if (otherProcess == OSPF) {
+      // Build OSPF
+      oib.setOspfArea(oab.setOspfProcess(opb.build()).build());
+      buildOspfLoopbackInterface(oib, R1_L0_ADDR);
+      buildOspfExternalInterface(oib, c1E1To2Name, R1_E1_2_ADDR);
+      buildOspfExternalInterface(oib, c1E1To4Name, R1_E1_4_ADDR);
+    } else if (otherProcess == EIGRP) {
+      // Build other EIGRP
+      epb.setAsNumber(otherAsn).setRouterId(new Ip("200.200.200.200")).build();
+      epb.setMode(mode1).build();
+      buildEigrpLoopbackInterface(eib, otherAsn, mode1, R1_L0_ADDR);
+      buildEigrpExternalInterface(
+          eib, otherAsn, mode1, R1_E1_2_ADDR, c1E1To2Name, c1E1To2DelayMult);
+      buildEigrpExternalInterface(
+          eib, otherAsn, mode1, R1_E1_4_ADDR, c1E1To4Name, c1E1To4DelayMult);
+      // reset builder
+      epb.setAsNumber(asn).setRouterId(new Ip("100.100.100.100"));
+    }
 
     /* Configuration 2 */
-    Configuration c2 = cb.setHostname(R2).build();
-    Vrf v2 = vb.setOwner(c2).build();
-    RoutingPolicy c2ExportOspf =
-        rpb.setOwner(c2).setStatements(getExportPolicyStatements(RoutingProtocol.OSPF)).build();
-    epb.setExportPolicy(c2ExportOspf.getName()).setMode(mode2).setVrf(v2).build();
-    emb.setMode(mode2);
-    eib.setOwner(c2).setVrf(v2);
-    oib.setOwner(c2).setVrf(v2).setOspfArea(oab.setOspfProcess(opb.setVrf(v2).build()).build());
-
-    name = l0Name;
-    addr = R2_L0_ADDR;
-    oib.setAddress(addr).setName(name).setOspfPassive(true).build();
-
-    name = c2E2To1Name;
-    addr = R2_E2_1_ADDR;
-    oib.setAddress(addr).setName(name).setOspfPassive(false).build();
-
-    name = c2E2To3Name;
-    addr = R2_E2_3_ADDR;
-    emb.setDefaultBandwidth(getDefaultBandwidth(name, format))
-        .setDefaultDelay(getDefaultDelay(name, format))
-        .setDelay(getDefaultDelay(name, format) * c2E2To3DelayMult);
-    esb.setPassive(false).setMetric(emb.build());
-    eib.setName(name).setAddress(addr).setEigrp(esb.build()).build();
+    Configuration c2 = buildConfiguration(R2, eib, epb, oib, opb, nib);
+    // Build EIGRP (with redistribute other process only for OSPF)
+    if (otherProcess == OSPF) {
+      epb.setExportPolicy(exportOspf.setOwner(c2).build().getName());
+    }
+    epb.setMode(mode2).build();
+    buildEigrpExternalInterface(eib, asn, mode2, R2_E2_3_ADDR, c2E2To3Name, c2E2To3DelayMult);
+    if (otherProcess == OSPF) {
+      // Build OSPF
+      oib.setOspfArea(oab.setOspfProcess(opb.build()).build());
+      buildOspfLoopbackInterface(oib, R2_L0_ADDR);
+      buildOspfExternalInterface(oib, c2E2To1Name, R2_E2_1_ADDR);
+    } else if (otherProcess == EIGRP) {
+      // Build other EIGRP
+      epb.setAsNumber(otherAsn).setRouterId(new Ip("200.200.200.200")).build();
+      buildEigrpLoopbackInterface(eib, otherAsn, mode2, R2_L0_ADDR);
+      buildEigrpExternalInterface(
+          eib, otherAsn, mode2, R2_E2_1_ADDR, c2E2To1Name, c2E2To1DelayMult);
+      // reset builder
+      epb.setAsNumber(asn).setRouterId(new Ip("100.100.100.100"));
+    }
 
     /* Configuration 3 */
-    Configuration c3 = cb.setHostname(R3).build();
-    Vrf v3 = vb.setOwner(c3).build();
-    RoutingPolicy c3ExportConnected =
-        rpb.setOwner(c3)
-            .setStatements(getExportPolicyStatements(RoutingProtocol.CONNECTED))
-            .build();
-    epb.setExportPolicy(c3ExportConnected.getName()).setMode(mode3).setVrf(v3).build();
-    emb.setMode(mode3);
-    eib.setOwner(c3).setVrf(v3);
-
-    name = l0Name;
-    addr = R3_L0_ADDR;
-    eib.setName(name).setAddress(addr).setEigrp(null).build();
-
-    name = c3E3To2Name;
-    addr = R3_E3_2_ADDR;
-    emb.setDefaultBandwidth(getDefaultBandwidth(name, format))
-        .setDefaultDelay(getDefaultDelay(name, format))
-        .setDelay(getDefaultDelay(name, format) * c3E3To2DelayMult);
-    esb.setPassive(false).setMetric(emb.build());
-    eib.setName(name).setAddress(addr).setEigrp(esb.build()).build();
-
-    name = c3E3To4Name;
-    addr = R3_E3_4_ADDR;
-    emb.setDefaultBandwidth(getDefaultBandwidth(name, format))
-        .setDefaultDelay(getDefaultDelay(name, format))
-        .setDelay(getDefaultDelay(name, format) * c3E3To4DelayMult);
-    esb.setPassive(false).setMetric(emb.build());
-    eib.setName(name).setAddress(addr).setEigrp(esb.build()).build();
+    Configuration c3 = buildConfiguration(R3, eib, epb, oib, opb, nib);
+    // No process
+    buildNoneInterface(nib, R3_L0_ADDR);
+    // Build EIGRP with redistribute connected
+    epb.setExportPolicy(exportConnected.setOwner(c3).build().getName());
+    epb.setMode(mode3).build();
+    buildEigrpExternalInterface(eib, asn, mode3, R3_E3_2_ADDR, c3E3To2Name, c3E3To2DelayMult);
+    buildEigrpExternalInterface(eib, asn, mode3, R3_E3_4_ADDR, c3E3To4Name, c3E3To4DelayMult);
 
     /* Configuration 4 */
-    Configuration c4 = cb.setHostname(R4).build();
-    Vrf v4 = vb.setOwner(c4).build();
-    RoutingPolicy c4ExportOspf =
-        rpb.setOwner(c4).setStatements(getExportPolicyStatements(RoutingProtocol.OSPF)).build();
-    epb.setExportPolicy(c4ExportOspf.getName()).setMode(mode4).setVrf(v4).build();
-    emb.setMode(mode4);
-    eib.setOwner(c4).setVrf(v4);
-    oib.setOwner(c4).setVrf(v4).setOspfArea(oab.setOspfProcess(opb.setVrf(v4).build()).build());
+    Configuration c4 = buildConfiguration(R4, eib, epb, oib, opb, nib);
+    // Build EIGRP with redistribute OSPF
+    epb.setExportPolicy(exportOspf.setOwner(c4).build().getName());
+    epb.setMode(mode4).build();
+    buildEigrpLoopbackInterface(eib, asn, mode4, R4_L0_ADDR);
+    buildEigrpExternalInterface(eib, asn, mode4, R4_E4_3_ADDR, c4E4To3Name, c4E4To3DelayMult);
+    if (otherProcess == OSPF) {
+      // Build OSPF
+      oib.setOspfArea(oab.setOspfProcess(opb.build()).build());
+      buildOspfExternalInterface(oib, c4E4To1Name, R4_E4_1_ADDR);
+    } else if (otherProcess == EIGRP) {
+      // Build other EIGRP
+      epb.setAsNumber(otherAsn).setRouterId(new Ip("200.200.200.200")).build();
+      buildEigrpExternalInterface(
+          eib, otherAsn, mode4, R4_E4_1_ADDR, c4E4To1Name, c4E4To1DelayMult);
+      // reset builder
+      epb.setAsNumber(asn).setRouterId(new Ip("100.100.100.100"));
+    }
 
-    name = l0Name;
-    addr = R4_L0_ADDR;
-    emb.setDefaultBandwidth(getDefaultBandwidth(name, format))
-        .setDefaultDelay(getDefaultDelay(name, format))
-        .setDelay(null);
-    esb.setPassive(true).setMetric(emb.build());
-    eib.setName(name).setAddress(addr).setEigrp(esb.build()).build();
+    return buildDataPlane(c1, c2, c3, c4);
+  }
 
-    name = c4E4To1Name;
-    addr = R4_E4_1_ADDR;
-    oib.setAddress(addr).setName(name).setOspfPassive(false).build();
+  private static Configuration buildConfiguration(
+      String hostname,
+      Interface.Builder eib,
+      EigrpProcess.Builder epb,
+      @Nullable Interface.Builder oib,
+      @Nullable OspfProcess.Builder opb,
+      @Nullable Interface.Builder nib) {
+    ConfigurationFormat format = ConfigurationFormat.CISCO_IOS;
+    NetworkFactory nf = new NetworkFactory();
+    Vrf.Builder vb = nf.vrfBuilder().setName(Configuration.DEFAULT_VRF_NAME);
+    Configuration.Builder cb = nf.configurationBuilder().setConfigurationFormat(format);
+    Configuration c = cb.setHostname(hostname).build();
+    Vrf v = vb.setOwner(c).build();
+    if (epb != null && eib != null) {
+      epb.setExportPolicy(null).setVrf(v);
+      eib.setOwner(c).setVrf(v);
+    }
+    if (nib != null) {
+      nib.setOwner(c).setVrf(v);
+    }
+    if (opb != null && oib != null) {
+      opb.setVrf(v);
+      oib.setOwner(c).setVrf(v);
+    }
+    return c;
+  }
 
-    name = c4E4To3Name;
-    addr = R4_E4_3_ADDR;
-    emb.setDefaultBandwidth(getDefaultBandwidth(name, format))
-        .setDefaultDelay(getDefaultDelay(name, format))
-        .setDelay(getDefaultDelay(name, format) * c4E4To3DelayMult);
-    esb.setPassive(false).setMetric(emb.build());
-    eib.setName(name).setAddress(addr).setEigrp(esb.build()).build();
-
+  private static IncrementalDataPlane buildDataPlane(
+      Configuration c1, Configuration c2, Configuration c3, Configuration c4) {
     SortedMap<String, Configuration> configurations =
         new ImmutableSortedMap.Builder<String, Configuration>(String::compareTo)
             .put(c1.getHostname(), c1)
@@ -412,6 +330,55 @@ public class EigrpTest {
     Topology topology = CommonUtil.synthesizeTopology(configurations);
     return (IncrementalDataPlane)
         engine.computeDataPlane(false, configurations, topology, Collections.emptySet())._dataPlane;
+  }
+
+  private static void buildEigrpExternalInterface(
+      Interface.Builder eib,
+      long asn,
+      EigrpProcessMode mode,
+      InterfaceAddress addr,
+      String name,
+      double delayMult) {
+    ConfigurationFormat format = ConfigurationFormat.CISCO_IOS;
+    EigrpInterfaceSettings.Builder esb =
+        EigrpInterfaceSettings.builder().setAsn(asn).setEnabled(true);
+    EigrpMetric.Builder emb = EigrpMetric.builder();
+    emb.setBandwidth(null)
+        .setDefaultBandwidth(getDefaultBandwidth(name, format))
+        .setDefaultDelay(getDefaultDelay(name, format))
+        .setDelay(getDefaultDelay(name, format) * delayMult)
+        .setMode(mode);
+    esb.setPassive(false).setMetric(emb.build());
+    eib.setName(name).setAddress(addr).setEigrp(esb.build()).build();
+  }
+
+  private static void buildEigrpLoopbackInterface(
+      Interface.Builder eib, long asn, EigrpProcessMode mode, InterfaceAddress addr) {
+    ConfigurationFormat format = ConfigurationFormat.CISCO_IOS;
+    EigrpInterfaceSettings.Builder esb =
+        EigrpInterfaceSettings.builder().setAsn(asn).setEnabled(true);
+    EigrpMetric.Builder emb = EigrpMetric.builder();
+    emb.setBandwidth(null)
+        .setDefaultBandwidth(getDefaultBandwidth("Loopback0", format))
+        .setDefaultDelay(getDefaultDelay("Loopback0", format))
+        .setDelay(null)
+        .setMode(mode);
+    esb.setPassive(true).setMetric(emb.build());
+    eib.setName("Loopback0").setAddress(addr).setEigrp(esb.build()).build();
+  }
+
+  private static void buildNoneInterface(Interface.Builder nib, InterfaceAddress addr) {
+    nib.setName("Loopback0").setAddress(addr).build();
+  }
+
+  private static void buildOspfExternalInterface(
+      Interface.Builder oib, String name, InterfaceAddress addr) {
+    oib.setAddress(addr).setName(name).setOspfPassive(false).build();
+  }
+
+  private static void buildOspfLoopbackInterface(Interface.Builder oib, InterfaceAddress addr) {
+    String name = "Loopback0";
+    oib.setAddress(addr).setName(name).setOspfPassive(true).build();
   }
 
   /** Test route computation and propagation for EIGRP in classic mode */
@@ -477,7 +444,9 @@ public class EigrpTest {
             EigrpProcessMode.CLASSIC,
             EigrpProcessMode.CLASSIC,
             EigrpProcessMode.CLASSIC,
-            "GigabitEthernet");
+            EigrpProcessMode.CLASSIC,
+            "GigabitEthernet",
+            RoutingProtocol.OSPF);
     SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
         IncrementalBdpEngine.getRoutes(dp);
 
