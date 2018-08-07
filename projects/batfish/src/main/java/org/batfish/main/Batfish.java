@@ -147,10 +147,8 @@ import org.batfish.datamodel.answers.ReportAnswerElement;
 import org.batfish.datamodel.answers.RunAnalysisAnswerElement;
 import org.batfish.datamodel.answers.ValidateEnvironmentAnswerElement;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
-import org.batfish.datamodel.collections.MultiSet;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.collections.RoutesByVrf;
-import org.batfish.datamodel.collections.TreeMultiSet;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.questions.InvalidReachabilityParametersException;
@@ -928,8 +926,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         settings.getPedanticRecord() && settings.getLogger().isActive(BatfishLogger.LEVEL_PEDANTIC),
         settings.getRedFlagRecord() && settings.getLogger().isActive(BatfishLogger.LEVEL_REDFLAG),
         settings.getUnimplementedRecord()
-            && settings.getLogger().isActive(BatfishLogger.LEVEL_UNIMPLEMENTED),
-        settings.getPrintParseTree());
+            && settings.getLogger().isActive(BatfishLogger.LEVEL_UNIMPLEMENTED));
   }
 
   private void checkBaseDirExists() {
@@ -2011,29 +2008,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Override
   public PluginClientType getType() {
     return PluginClientType.BATFISH;
-  }
-
-  private void histogram(Path testRigPath) {
-    Map<Path, String> configurationData =
-        readConfigurationFiles(testRigPath, BfConsts.RELPATH_CONFIGURATIONS_DIR);
-    // todo: either remove histogram function or do something userful with
-    // answer
-    Map<String, VendorConfiguration> vendorConfigurations =
-        parseVendorConfigurations(
-            configurationData,
-            new ParseVendorConfigurationAnswerElement(),
-            ConfigurationFormat.UNKNOWN);
-    _logger.info("Building feature histogram...");
-    MultiSet<String> histogram = new TreeMultiSet<>();
-    for (VendorConfiguration vc : vendorConfigurations.values()) {
-      Set<String> unimplementedFeatures = vc.getUnimplementedFeatures();
-      histogram.add(unimplementedFeatures);
-    }
-    _logger.info("OK\n");
-    for (String feature : histogram.elements()) {
-      int count = histogram.count(feature);
-      _logger.outputf("%s: %s\n", feature, count);
-    }
   }
 
   private void initAnalysisQuestionPath(String analysisName, String questionName) {
@@ -3771,11 +3745,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     if (_settings.getSynthesizeJsonTopology()) {
       writeJsonTopology();
-      return answer;
-    }
-
-    if (_settings.getHistogram()) {
-      histogram(_testrigSettings.getTestRigPath());
       return answer;
     }
 

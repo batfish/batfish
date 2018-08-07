@@ -12,7 +12,6 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.SERVIC
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.VIRTUAL_ROUTER_INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.ZONE_INTERFACE;
 
-import java.util.Set;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.Token;
@@ -107,8 +106,6 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   private final String _text;
 
-  private final Set<String> _unimplementedFeatures;
-
   private final boolean _unrecognizedAsRedFlag;
 
   private final Warnings _w;
@@ -117,12 +114,10 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
       PaloAltoCombinedParser parser,
       String text,
       Warnings warnings,
-      Set<String> unimplementedFeatures,
       boolean unrecognizedAsRedFlag) {
-    _configuration = new PaloAltoConfiguration(unimplementedFeatures);
+    _configuration = new PaloAltoConfiguration();
     _parser = parser;
     _text = text;
-    _unimplementedFeatures = unimplementedFeatures;
     _unrecognizedAsRedFlag = unrecognizedAsRedFlag;
     _w = warnings;
   }
@@ -186,7 +181,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void enterPalo_alto_configuration(Palo_alto_configurationContext ctx) {
-    _configuration = new PaloAltoConfiguration(_unimplementedFeatures);
+    _configuration = new PaloAltoConfiguration();
     _configuration.getVirtualSystems().computeIfAbsent(SHARED_VSYS_NAME, Vsys::new);
     _defaultVsys = _configuration.getVirtualSystems().computeIfAbsent(DEFAULT_VSYS_NAME, Vsys::new);
     _currentVsys = _defaultVsys;

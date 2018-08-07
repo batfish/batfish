@@ -1,7 +1,5 @@
 package org.batfish.grammar.flatjuniper;
 
-import java.util.Set;
-import java.util.TreeSet;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.common.Warnings;
@@ -17,8 +15,6 @@ public class FlatJuniperControlPlaneExtractor implements ControlPlaneExtractor {
 
   private final String _text;
 
-  private final Set<String> _unimplementedFeatures;
-
   private final boolean _unrecognizedAsRedFlag;
 
   private final Warnings _w;
@@ -29,15 +25,9 @@ public class FlatJuniperControlPlaneExtractor implements ControlPlaneExtractor {
       Warnings warnings,
       boolean unrecognizedAsRedFlag) {
     _text = fileText;
-    _unimplementedFeatures = new TreeSet<>();
     _unrecognizedAsRedFlag = unrecognizedAsRedFlag;
     _parser = combinedParser;
     _w = warnings;
-  }
-
-  @Override
-  public Set<String> getUnimplementedFeatures() {
-    return _unimplementedFeatures;
   }
 
   @Override
@@ -73,9 +63,7 @@ public class FlatJuniperControlPlaneExtractor implements ControlPlaneExtractor {
     walker.walk(dlp, tree);
     ApplyPathApplicator ap = new ApplyPathApplicator(hierarchy, _w);
     walker.walk(ap, tree);
-    ConfigurationBuilder cb =
-        new ConfigurationBuilder(
-            _parser, _text, _w, _unimplementedFeatures, _unrecognizedAsRedFlag);
+    ConfigurationBuilder cb = new ConfigurationBuilder(_parser, _text, _w, _unrecognizedAsRedFlag);
     walker.walk(cb, tree);
     _configuration = cb.getConfiguration();
   }
