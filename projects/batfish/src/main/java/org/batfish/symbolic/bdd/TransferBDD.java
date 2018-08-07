@@ -922,8 +922,8 @@ class TransferBDD {
     return result.getReturnValue().getFirst();
   }
 
-  public PolicyQuotient getPolicyQuotient() {
-    return _policyQuotient;
+  public boolean isMatchedButNotAssigned(CommunityVar cvar) {
+    return _policyQuotient.getCommsMatchedButNotAssigned().contains(cvar);
   }
 
   public SortedMap<CommunityVar, List<CommunityVar>> getCommDeps() {

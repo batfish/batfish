@@ -77,7 +77,7 @@ public final class CommunitySetToBdd implements CommunitySetExprVisitor<BDD> {
       _p.debug("Match Line: " + cvar);
       _p.debug("Action: " + line.getAction());
       // Skip this match if it is irrelevant
-      if (_caller.getPolicyQuotient().getCommsMatchedButNotAssigned().contains(cvar)) {
+      if (_caller.isMatchedButNotAssigned(cvar)) {
         continue;
       }
       if (cvar.getType() == Type.REGEX) {
