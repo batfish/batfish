@@ -77,25 +77,25 @@ public final class CommunitySetToBdd implements CommunitySetExprVisitor<BDD> {
       _p.debug("Match Line: " + cvar);
       _p.debug("Action: " + line.getAction());
       // Skip this match if it is irrelevant
-      if (_caller._policyQuotient.getCommsMatchedButNotAssigned().contains(cvar)) {
+      if (_caller.getPolicyQuotient().getCommsMatchedButNotAssigned().contains(cvar)) {
         continue;
       }
       if (cvar.getType() == Type.REGEX) {
-        List<CommunityVar> deps = _caller._commDeps.get(cvar);
+        List<CommunityVar> deps = _caller.getCommDeps().get(cvar);
         for (CommunityVar dep : deps) {
           _p.debug("Test for: " + dep);
           BDD c = _other.getCommunities().get(dep);
-          acc = _caller.ite(c, _caller.mkBDD(action), acc);
+          acc = c.ite(_caller.mkBDD(action), acc);
         }
       } else if (cvar.getType() == Type.EXACT) {
         CommunityVar cvarAsRegex =
             new CommunityVar(
                 Type.REGEX, String.format("^%s$", CommonUtil.longToCommunity(cvar.asLong())), null);
-        List<CommunityVar> deps = _caller._commDeps.get(cvarAsRegex);
+        List<CommunityVar> deps = _caller.getCommDeps().get(cvarAsRegex);
         for (CommunityVar dep : deps) {
           _p.debug("Test for: " + dep);
           BDD c = _other.getCommunities().get(dep);
-          acc = _caller.ite(c, _caller.mkBDD(action), acc);
+          acc = c.ite(_caller.mkBDD(action), acc);
         }
         //        BDD c = _other.getCommunities().get(cvar);
         //        if (c == null) {

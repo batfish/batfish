@@ -83,7 +83,7 @@ class TransferBDD {
 
   private static Table2<String, String, TransferResult<TransferReturn, BDD>> CACHE = new Table2<>();
 
-  SortedMap<CommunityVar, List<CommunityVar>> _commDeps;
+  private SortedMap<CommunityVar, List<CommunityVar>> _commDeps;
 
   private Set<CommunityVar> _comms;
 
@@ -91,7 +91,7 @@ class TransferBDD {
 
   private Graph _graph;
 
-  PolicyQuotient _policyQuotient;
+  private PolicyQuotient _policyQuotient;
 
   private Set<Prefix> _ignoredNetworks;
 
@@ -244,7 +244,7 @@ class TransferBDD {
                   .indent();
           TransferResult<TransferReturn, BDD> r = compute(conjunct, param);
           record = record.setData(r.getReturnValue().getFirst());
-          acc = ite(r.getFallthroughValue(), acc, r.getReturnValue().getSecond());
+          acc = r.getFallthroughValue().ite(acc, r.getReturnValue().getSecond());
         }
         TransferReturn ret = new TransferReturn(record.getData(), acc);
         return result.setReturnValue(ret);
@@ -275,7 +275,7 @@ class TransferBDD {
                   .indent();
           TransferResult<TransferReturn, BDD> r = compute(disjunct, param);
           record = record.setData(r.getReturnValue().getFirst());
-          acc = ite(r.getFallthroughValue(), acc, r.getReturnValue().getSecond());
+          acc = r.getFallthroughValue().ite(acc, r.getReturnValue().getSecond());
         }
         TransferReturn ret = new TransferReturn(record.getData(), acc);
         return result.setReturnValue(ret);
@@ -509,20 +509,18 @@ class TransferBDD {
 
         // update return values
         BDD returnVal =
-            ite(
-                guard,
-                trueBranch.getReturnValue().getSecond(),
-                falseBranch.getReturnValue().getSecond());
+            guard.ite(
+                trueBranch.getReturnValue().getSecond(), falseBranch.getReturnValue().getSecond());
 
         // p.debug("New Return Value (neg): " + returnVal.not());
 
         BDD returnAss =
-            ite(guard, trueBranch.getReturnAssignedValue(), falseBranch.getReturnAssignedValue());
+            guard.ite(trueBranch.getReturnAssignedValue(), falseBranch.getReturnAssignedValue());
 
         // p.debug("New Return Assigned: " + returnAss);
 
         BDD fallThrough =
-            ite(guard, trueBranch.getFallthroughValue(), falseBranch.getFallthroughValue());
+            guard.ite(trueBranch.getFallthroughValue(), falseBranch.getFallthroughValue());
 
         // p.debug("New fallthrough: " + fallThrough);
 
@@ -585,7 +583,7 @@ class TransferBDD {
           if (!_policyQuotient.getCommsAssignedButNotMatched().contains(cvar)) {
             curP.indent().debug("Value: " + cvar);
             BDD comm = curP.getData().getCommunities().get(cvar);
-            BDD newValue = ite(result.getReturnAssignedValue(), comm, factory.one());
+            BDD newValue = result.getReturnAssignedValue().ite(comm, factory.one());
             curP.indent().debug("New Value: " + newValue);
             curP.getData().getCommunities().put(cvar, newValue);
           }
@@ -599,7 +597,7 @@ class TransferBDD {
           if (!_policyQuotient.getCommsAssignedButNotMatched().contains(cvar)) {
             curP.indent().debug("Value: " + cvar);
             BDD comm = curP.getData().getCommunities().get(cvar);
-            BDD newValue = ite(result.getReturnAssignedValue(), comm, factory.one());
+            BDD newValue = result.getReturnAssignedValue().ite(comm, factory.one());
             curP.indent().debug("New Value: " + newValue);
             curP.getData().getCommunities().put(cvar, newValue);
           }
@@ -623,7 +621,7 @@ class TransferBDD {
           if (!_policyQuotient.getCommsAssignedButNotMatched().contains(cvar)) {
             curP.indent().debug("Value: " + cvar.getValue() + ", " + cvar.getType());
             BDD comm = curP.getData().getCommunities().get(cvar);
-            BDD newValue = ite(result.getReturnAssignedValue(), comm, factory.zero());
+            BDD newValue = result.getReturnAssignedValue().ite(comm, factory.zero());
             curP.indent().debug("New Value: " + newValue);
             curP.getData().getCommunities().put(cvar, newValue);
           }
@@ -680,7 +678,7 @@ class TransferBDD {
   }
 
   private TransferResult<TransferReturn, BDD> fallthrough(TransferResult<TransferReturn, BDD> r) {
-    BDD b = ite(r.getReturnAssignedValue(), r.getFallthroughValue(), factory.one());
+    BDD b = r.getReturnAssignedValue().ite(r.getFallthroughValue(), factory.one());
     return r.setFallthroughValue(b).setReturnAssignedValue(factory.one());
   }
 
@@ -719,13 +717,6 @@ class TransferBDD {
       }
     }
     return acc.and(lowerBitsMatch);
-  }
-
-  /*
-   * If-then-else statement
-   */
-  BDD ite(BDD b, BDD x, BDD y) {
-    return b.ite(x, y);
   }
 
   /*
@@ -780,7 +771,7 @@ class TransferBDD {
         .forEach(
             (c, var1) -> {
               BDD var2 = r2.getCommunities().get(c);
-              ret.getCommunities().put(c, ite(guard, var1, var2));
+              ret.getCommunities().put(c, guard.ite(var1, var2));
             });
 
     // BDDInteger i =
@@ -809,7 +800,7 @@ class TransferBDD {
         p.debug("Action: " + line.getAction());
         BDD matches = isRelevantFor(other, range);
         BDD action = mkBDD(line.getAction() == LineAction.ACCEPT);
-        acc = ite(matches, action, acc);
+        acc = matches.ite(action, acc);
       }
     }
     return acc;
@@ -879,7 +870,7 @@ class TransferBDD {
    */
   private TransferResult<TransferReturn, BDD> returnValue(
       TransferResult<TransferReturn, BDD> r, boolean val) {
-    BDD b = ite(r.getReturnAssignedValue(), r.getReturnValue().getSecond(), mkBDD(val));
+    BDD b = r.getReturnAssignedValue().ite(r.getReturnValue().getSecond(), mkBDD(val));
     TransferReturn ret = new TransferReturn(r.getReturnValue().getFirst(), b);
     return r.setReturnValue(ret).setReturnAssignedValue(factory.one());
   }
@@ -929,5 +920,13 @@ class TransferBDD {
     // BDDRoute route = result.getReturnValue().getFirst();
     // System.out.println("DOT: \n" + route.dot(route.getLocalPref().getBitvec()[31]));
     return result.getReturnValue().getFirst();
+  }
+
+  public PolicyQuotient getPolicyQuotient() {
+    return _policyQuotient;
+  }
+
+  public SortedMap<CommunityVar, List<CommunityVar>> getCommDeps() {
+    return _commDeps;
   }
 }
