@@ -7,7 +7,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.core.IsEqual.equalTo;
 
-import com.google.common.collect.ImmutableSet;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.AclIpSpaceLine;
 import org.batfish.datamodel.Configuration;
@@ -34,7 +33,7 @@ public class FwFromDestinationPrefixListTest {
 
   @Before
   public void setup() {
-    _jc = new JuniperConfiguration(ImmutableSet.of());
+    _jc = new JuniperConfiguration();
     _jc.getPrefixLists().put(BASE_PREFIX_LIST_NAME, new PrefixList(BASE_PREFIX_LIST_NAME));
     _w = new Warnings();
     _c = new Configuration("test", ConfigurationFormat.FLAT_JUNIPER);

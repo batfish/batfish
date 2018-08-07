@@ -225,15 +225,13 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   private NavigableSet<String> _tacplusServers;
 
-  private transient Set<String> _unimplementedFeatures;
-
   private ConfigurationFormat _vendor;
 
   private final Map<String, Vlan> _vlanNameToVlan;
 
   private final Map<String, Zone> _zones;
 
-  public JuniperConfiguration(Set<String> unimplementedFeatures) {
+  public JuniperConfiguration() {
     _allStandardCommunities = new HashSet<>();
     _applications = new TreeMap<>();
     _applicationSets = new TreeMap<>();
@@ -263,7 +261,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
     _routingInstances.put(Configuration.DEFAULT_VRF_NAME, _defaultRoutingInstance);
     _syslogHosts = new TreeSet<>();
     _tacplusServers = new TreeSet<>();
-    _unimplementedFeatures = unimplementedFeatures;
     _vlanNameToVlan = new TreeMap<>();
     _zones = new TreeMap<>();
   }
@@ -901,11 +898,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   public NavigableSet<String> getTacplusServers() {
     return _tacplusServers;
-  }
-
-  @Override
-  public Set<String> getUnimplementedFeatures() {
-    return _unimplementedFeatures;
   }
 
   public Map<String, Vlan> getVlanNameToVlan() {

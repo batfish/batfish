@@ -64,7 +64,6 @@ public class WorkItemBuilder {
     wItem.addRequestParam(BfConsts.COMMAND_PARSE_VENDOR_INDEPENDENT, "");
     wItem.addRequestParam(BfConsts.COMMAND_PARSE_VENDOR_SPECIFIC, "");
     wItem.addRequestParam(BfConsts.COMMAND_INIT_INFO, "");
-    wItem.addRequestParam(BfConsts.ARG_UNIMPLEMENTED_SUPPRESS, "");
     return wItem;
   }
 
