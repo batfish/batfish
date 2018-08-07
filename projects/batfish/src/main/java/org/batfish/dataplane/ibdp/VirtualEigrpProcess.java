@@ -113,7 +113,9 @@ class VirtualEigrpProcess {
                   .setEigrpMetric(iface.getEigrp().getMetric())
                   .setNetwork(prefix)
                   .setNextHopInterface(iface.getName())
+                  .setProcessAsn(_asn)
                   .build();
+          requireNonNull(route);
           _internalRib.mergeRoute(route);
         }
       }
@@ -148,12 +150,12 @@ class VirtualEigrpProcess {
     outputRouteBuilder.setAdmin(_defaultExternalAdminCost);
     if (potentialExportRoute instanceof EigrpExternalRoute) {
       EigrpExternalRoute externalRoute = (EigrpExternalRoute) potentialExportRoute;
-      outputRouteBuilder.setAsn(externalRoute.getAsn());
+      outputRouteBuilder.setDestinationAsn(externalRoute.getDestinationAsn());
     } else {
-      outputRouteBuilder.setAsn(_asn);
+      outputRouteBuilder.setDestinationAsn(_asn);
     }
     outputRouteBuilder.setNetwork(potentialExportRoute.getNetwork());
-    EigrpExternalRoute outputRoute = outputRouteBuilder.build();
+    EigrpExternalRoute outputRoute = requireNonNull(outputRouteBuilder.build());
     outputRoute.setNonRouting(true);
     return outputRoute;
   }
@@ -255,7 +257,7 @@ class VirtualEigrpProcess {
             EigrpMetric metric =
                 connectingIntfMetric.accumulate(nextHopIntfMetric, neighborRoute.getEigrpMetric());
             routeBuilder
-                .setAsn(neighborRoute.getAsn())
+                .setDestinationAsn(neighborRoute.getDestinationAsn())
                 .setEigrpMetric(metric)
                 .setNetwork(neighborRoute.getNetwork());
             EigrpExternalRoute newRoute = routeBuilder.build();
@@ -345,7 +347,9 @@ class VirtualEigrpProcess {
               .setNetwork(neighborRoute.getNetwork())
               .setNextHopInterface(neighborInterface.getName())
               .setNextHopIp(nextHopIp)
+              .setProcessAsn(_asn)
               .build();
+      requireNonNull(newRoute);
       changed |= _internalStagingRib.mergeRoute(newRoute);
     }
     return changed;

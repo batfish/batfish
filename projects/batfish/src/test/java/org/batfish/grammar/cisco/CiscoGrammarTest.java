@@ -823,7 +823,7 @@ public class CiscoGrammarTest {
     assertThat(routingPolicy, notNullValue());
 
     EigrpExternalRoute.Builder outputRouteBuilder = new EigrpExternalRoute.Builder();
-    outputRouteBuilder.setNetwork(Prefix.parse("1.0.0.0/32"));
+    outputRouteBuilder.setDestinationAsn(asn).setNetwork(Prefix.parse("1.0.0.0/32"));
     EigrpMetric.Builder metricBuilder = EigrpMetric.builder().setMode(EigrpProcessMode.CLASSIC);
 
     // Check if routingPolicy accepts connected route and sets correct metric

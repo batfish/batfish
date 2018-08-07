@@ -22,7 +22,7 @@ public class EigrpExternalRib extends AbstractRib<EigrpExternalRoute> {
   @Override
   public int comparePreference(EigrpExternalRoute lhs, EigrpExternalRoute rhs) {
     return Comparator.comparing(EigrpExternalRoute::getCompositeCost)
-        .thenComparing(EigrpExternalRoute::getAsn)
+        .thenComparing(EigrpExternalRoute::getDestinationAsn)
         .compare(rhs, lhs);
   }
 
