@@ -88,9 +88,9 @@
         "value" : 12
       },
       "srcIpSpace" : {
-        "description" : "Source IP address in IP header",
+        "description" : "Specification of source IP address in IP header",
         "optional" : true,
-        "type" : "ip",
+        "type" : "string",
         "value" : "1.1.1.1"
       },
       "srcPort" : {

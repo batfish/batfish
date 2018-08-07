@@ -90,9 +90,9 @@
         "type": "integer"
       },
       "srcIpSpace": {
-        "description": "Source IP address in IP header",
+        "description": "Specification of source IP address in IP header",
         "optional": true,
-        "type": "ip"
+        "type": "string"
       },
       "srcPort": {
         "description": "Source port in TCP/UDP header",
