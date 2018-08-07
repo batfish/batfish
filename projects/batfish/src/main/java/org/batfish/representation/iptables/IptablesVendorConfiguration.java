@@ -10,7 +10,6 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.stream.Collectors;
 import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
@@ -37,8 +36,6 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
   private transient Map<IpAccessListLine, String> _lineInInterfaces;
 
   private transient Map<IpAccessListLine, String> _lineOutInterfaces;
-
-  private transient Set<String> _unimplementedFeatures;
 
   private ConfigurationFormat _vendor;
 
@@ -142,11 +139,6 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
   @Override
   public String getHostname() {
     return _hostname;
-  }
-
-  @Override
-  public Set<String> getUnimplementedFeatures() {
-    return _unimplementedFeatures;
   }
 
   public ConfigurationFormat getVendor() {

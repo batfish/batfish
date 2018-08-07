@@ -55782,6 +55782,26 @@
       },
       "version" : "0.36.0",
       "warnings" : {
+        "aruba_misc" : {
+          "Unimplemented features" : [
+            {
+              "tag" : "UNIMPLEMENTED",
+              "text" : "no ip default-gateway import cell [Batfish parser context: [s_ip_default_gateway stanza cisco_configuration]]"
+            },
+            {
+              "tag" : "UNIMPLEMENTED",
+              "text" : "no ip default-gateway import pppoe [Batfish parser context: [s_ip_default_gateway stanza cisco_configuration]]"
+            }
+          ]
+        },
+        "asa_acl" : {
+          "Unimplemented features" : [
+            {
+              "tag" : "UNIMPLEMENTED",
+              "text" : "interface outside [Batfish parser context: [access_list_ip_range extended_access_list_tail extended_access_list_stanza stanza cisco_configuration]]"
+            }
+          ]
+        },
         "bgp_address_family" : {
           "Red flags" : [
             {
@@ -55834,6 +55854,18 @@
             }
           ]
         },
+        "cisco_acl" : {
+          "Unimplemented features" : [
+            {
+              "tag" : "UNIMPLEMENTED",
+              "text" : "60 permit tcp any any eq mlag ttl eq 255 [comment: matching ttl in extended access list] [Batfish parser context: [extended_access_list_tail extended_access_list_stanza stanza cisco_configuration]]"
+            },
+            {
+              "tag" : "UNIMPLEMENTED",
+              "text" : "70 permit udp any any eq mlag ttl eq 255 [comment: matching ttl in extended access list] [Batfish parser context: [extended_access_list_tail extended_access_list_stanza stanza cisco_configuration]]"
+            }
+          ]
+        },
         "cisco_additional_paths" : {
           "Red flags" : [
             {
@@ -55868,6 +55900,132 @@
               "tag" : "MISCELLANEOUS",
               "text" : "Ignoring reference to undeclared peer group: '10.0.0.1'"
             }
+          ],
+          "Unimplemented features" : [
+            {
+              "tag" : "UNIMPLEMENTED",
+              "text" : "redistribute ospf 2 [Batfish parser context: [redistribute_ospf_bgp_tail bgp_tail router_bgp_stanza_tail router_bgp_stanza stanza cisco_configuration]]"
+            },
+            {
+              "tag" : "UNIMPLEMENTED",
+              "text" : "redistribute ospf 2 vrf vrf1 [Batfish parser context: [redistribute_ospf_bgp_tail bgp_tail router_bgp_stanza_tail router_bgp_stanza stanza cisco_configuration]]"
+            }
+          ]
+        },
+        "cisco_bgp_confederation" : {
+          "Unimplemented features" : [
+            {
+              "tag" : "UNIMPLEMENTED",
+              "text" : "bgp confederation identifier 100 [Batfish parser context: [bgp_confederation_rb_stanza router_bgp_stanza_tail router_bgp_stanza stanza cisco_configuration]]"
+            },
+            {
+              "tag" : "UNIMPLEMENTED",
+              "text" : "bgp confederation peers 10 11 [Batfish parser context: [bgp_confederation_rb_stanza router_bgp_stanza_tail router_bgp_stanza stanza cisco_configuration]]"
+            }
+          ]
+        },
+        "cisco_eigrp" : {
+          "Unimplemented features" : [
+            {
+              "tag" : "UNIMPLEMENTED",
+              "text" : "redistribute isis route-map ISIS_TO_EIGRP [Batfish parser context: [re_redistribute_isis re_redistribute re_classic_tail re_classic s_router_eigrp stanza cisco_configuration]]"
+            },
+            {
+              "tag" : "UNIMPLEMENTED",
+              "text" : "redistribute ospf 4 route-map OSPF_TO_EIGRP [Batfish parser context: [re_redistribute_ospf re_redistribute re_classic_tail re_classic s_router_eigrp stanza cisco_configuration]]"
+            },
+            {
+              "tag" : "UNIMPLEMENTED",
+              "text" : "redistribute static metric 10000 10 255 1 1500 route-map STATIC_TO_EIGRP [Batfish parser context: [re_redistribute_static re_redistribute re_classic_tail re_classic s_router_eigrp stanza cisco_configuration]]"
+            },
+            {
+              "tag" : "UNIMPLEMENTED",
+              "text" : "redistribute static metric 10000 10 255 1 1500 route-map STATIC_TO_EIGRP [Batfish parser context: [re_redistribute_static re_redistribute re_classic_tail re_classic s_router_eigrp stanza cisco_configuration]]"
+            },
+            {
+              "tag" : "UNIMPLEMENTED",
+              "text" : "redistribute static metric 10000 10 255 1 1500 route-map STATIC_TO_EIGRP [Batfish parser context: [re_redistribute_static re_redistribute re_classic_tail re_classic s_router_eigrp stanza cisco_configuration]]"
+            },
+            {
+              "tag" : "UNIMPLEMENTED",
+              "text" : "addrgroup bleep_blorp [Batfish parser context: [access_list_ip_range extended_access_list_tail extended_access_list_stanza stanza cisco_configuration]]"
+            },
+            {
+              "tag" : "UNIMPLEMENTED",
+              "text" : "default-metric 1 2 3 4 5 [Batfish parser context: [re_default_metric re_classic_tail re_classic s_router_eigrp stanza cisco_configuration]]"
+            },
+            {
+              "tag" : "UNIMPLEMENTED",
+              "text" : "default-metric 1 2 3 4 5 [Batfish parser context: [re_default_metric re_classic_tail re_classic s_router_eigrp stanza cisco_configuration]]"
+            },
+            {
+              "tag" : "UNIMPLEMENTED",
+              "text" : "default-metric 1 2 3 4 5 [Batfish parser context: [re_default_metric re_classic_tail re_classic s_router_eigrp stanza cisco_configuration]]"
+            },
+            {
+              "tag" : "UNIMPLEMENTED",
+              "text" : "redistribute static metric 10000 10 255 1 1500 [Batfish parser context: [re_redistribute_static re_redistribute re_classic_tail re_classic s_router_eigrp stanza cisco_configuration]]"
+            },
+            {
+              "tag" : "UNIMPLEMENTED",
+              "text" : "redistribute static metric 10000 10 255 1 1500 [Batfish parser context: [re_redistribute_static re_redistribute re_classic_tail re_classic s_router_eigrp stanza cisco_configuration]]"
+            },
+            {
+              "tag" : "UNIMPLEMENTED",
+              "text" : "redistribute static metric 10000 10 255 1 1500 [Batfish parser context: [re_redistribute_static re_redistribute re_classic_tail re_classic s_router_eigrp stanza cisco_configuration]]"
+            },
+            {
+              "tag" : "UNIMPLEMENTED",
+              "text" : "address-family ipv4 multicast vrf autonomous-system autonomous-system 4\n  af-interface Ethernet0\n   add-paths 4\n   bandwidth-percent 75\n   dampening-change 75\n   dampening-interval 45\n   hold-time 40\n   passive-interface\n  exit-af-interface\n  eigrp default-route-tag 2\n  network 1.1.1.100\n  remote-neighbors source GigabitEthernet0/0/1 unicast-listen lisp-encap 2\n  topology base\n   offset-list 21 out 10\n   summary-metric 192.168.0.0/16 10000 10 255 1 1500 distance 20\n   traffic-share balanced\n   variance 4\n  exit-af-topology\n  topology VOICE tid 1000\n   no auto-summary\n  exit-af-topology\n  passive-interface default\n  no passive-interface FastEthernet0/1\n exit-address-family [Batfish parser context: [ren_address_family re_named_tail re_named s_router_eigrp stanza cisco_configuration]]"
+            }
+          ]
+        },
+        "cisco_interface" : {
+          "Unimplemented features" : [
+            {
+              "tag" : "UNIMPLEMENTED",
+              "text" : "mode gre multipoint [Batfish parser context: [iftunnel_mode if_tunnel if_inner s_interface stanza cisco_configuration]]"
+            }
+          ]
+        },
+        "cisco_ospf" : {
+          "Unimplemented features" : [
+            {
+              "tag" : "UNIMPLEMENTED",
+              "text" : "area 0.0.0.0 filter-list prefix filterName in [Batfish parser context: [ro_area_filterlist s_router_ospf stanza cisco_configuration]]"
+            },
+            {
+              "tag" : "UNIMPLEMENTED",
+              "text" : "area 0.0.0.0 filter-list prefix filterName out [Batfish parser context: [ro_area_filterlist s_router_ospf stanza cisco_configuration]]"
+            },
+            {
+              "tag" : "UNIMPLEMENTED",
+              "text" : "area 0.0.0.0 nssa no-redistribution [Batfish parser context: [ro_area_nssa s_router_ospf stanza cisco_configuration]]"
+            },
+            {
+              "tag" : "UNIMPLEMENTED",
+              "text" : "area 0.0.0.0 nssa no-redistribution no-summary [Batfish parser context: [ro_area_nssa s_router_ospf stanza cisco_configuration]]"
+            },
+            {
+              "tag" : "UNIMPLEMENTED",
+              "text" : "area 0.0.0.0 nssa no-redistribution default-information-originate no-summary [Batfish parser context: [ro_area_nssa s_router_ospf stanza cisco_configuration]]"
+            },
+            {
+              "tag" : "UNIMPLEMENTED",
+              "text" : "maximum-paths 32 [Batfish parser context: [ro_maximum_paths s_router_ospf stanza cisco_configuration]]"
+            },
+            {
+              "tag" : "UNIMPLEMENTED",
+              "text" : "redistribute eigrp 5 metric 6 route-map eigrp-ospf-route-map [Batfish parser context: [ro_redistribute_eigrp s_router_ospf stanza cisco_configuration]]"
+            },
+            {
+              "tag" : "UNIMPLEMENTED",
+              "text" : "area 0 filter-list prefix INFILTER in [Batfish parser context: [ro_area_filterlist s_router_ospf stanza cisco_configuration]]"
+            },
+            {
+              "tag" : "UNIMPLEMENTED",
+              "text" : "area 0 filter-list prefix OUTFILTER out [Batfish parser context: [ro_area_filterlist s_router_ospf stanza cisco_configuration]]"
+            }
           ]
         },
         "cisco_route_map" : {
@@ -55875,6 +56033,16 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "Route map 'MAP_NAME2' already contains clause numbered '20'. Duplicate clause will be merged with original clause."
+            }
+          ],
+          "Unimplemented features" : [
+            {
+              "tag" : "UNIMPLEMENTED",
+              "text" : "match source-protocol ospf 1 [Batfish parser context: [match_source_protocol_rm_stanza match_rm_stanza rm_stanza route_map_stanza stanza cisco_configuration]]"
+            },
+            {
+              "tag" : "UNIMPLEMENTED",
+              "text" : "match source-protocol static [Batfish parser context: [match_source_protocol_rm_stanza match_rm_stanza rm_stanza route_map_stanza stanza cisco_configuration]]"
             }
           ]
         },
@@ -55894,6 +56062,14 @@
             }
           ]
         },
+        "cisco_vrf" : {
+          "Unimplemented features" : [
+            {
+              "tag" : "UNIMPLEMENTED",
+              "text" : "ip route 0.0.0.0/0 1.2.3.4 [Batfish parser context: [vrfc_ip_route s_vrf_context stanza cisco_configuration]]"
+            }
+          ]
+        },
         "ios_bgp" : {
           "Red flags" : [
             {
@@ -55903,6 +56079,26 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "reference to undeclared peer group: 'UNDEFINED_PEER_GROUP'"
+            }
+          ]
+        },
+        "ios_xr_bgp_neighbor_group" : {
+          "Unimplemented features" : [
+            {
+              "tag" : "UNIMPLEMENTED",
+              "text" : "use session-group blabber [Batfish parser context: [use_session_group_bgp_tail session_group_rb_stanza router_bgp_stanza_tail router_bgp_stanza stanza cisco_configuration]]"
+            },
+            {
+              "tag" : "UNIMPLEMENTED",
+              "text" : "use session-group CIAO [Batfish parser context: [use_session_group_bgp_tail session_group_rb_stanza router_bgp_stanza_tail router_bgp_stanza stanza cisco_configuration]]"
+            }
+          ]
+        },
+        "ios_xr_class_map" : {
+          "Unimplemented features" : [
+            {
+              "tag" : "UNIMPLEMENTED",
+              "text" : "match not dscp ipv4 cs2 cs3 cs4 [Batfish parser context: [cm_match s_class_map stanza cisco_configuration]]"
             }
           ]
         },
@@ -55943,6 +56139,48 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "OSPF: Interface: 'TenGigE0/0/0/2' not declared before OSPF process"
+            }
+          ],
+          "Unimplemented features" : [
+            {
+              "tag" : "UNIMPLEMENTED",
+              "text" : "maximum paths 16 [Batfish parser context: [ro_maximum_paths s_router_ospf stanza cisco_configuration]]"
+            }
+          ]
+        },
+        "iptables/host1.iptables" : {
+          "Unimplemented features" : [
+            {
+              "tag" : "UNIMPLEMENTED",
+              "text" : "-s 1.2.3.4/32 -p tcp -m tcp --dport 22 -j ACCEPT [Batfish parser context: [rule_spec command_append command_tail command iptables_configuration]]"
+            },
+            {
+              "tag" : "UNIMPLEMENTED",
+              "text" : "-s 11.22.33.44/32 -p tcp -m tcp --dport 25 -j ACCEPT [Batfish parser context: [rule_spec command_append command_tail command iptables_configuration]]"
+            },
+            {
+              "tag" : "UNIMPLEMENTED",
+              "text" : "-s 111.222.111.222/32 -p tcp -m tcp --dport 80 -j ACCEPT [Batfish parser context: [rule_spec command_append command_tail command iptables_configuration]]"
+            },
+            {
+              "tag" : "UNIMPLEMENTED",
+              "text" : "-s 4.3.2.1/32 -p tcp -m tcp --dport 110 -j ACCEPT [Batfish parser context: [rule_spec command_append command_tail command iptables_configuration]]"
+            },
+            {
+              "tag" : "UNIMPLEMENTED",
+              "text" : "-s 44.22.33.11/32 -p tcp -m tcp --dport 143 -j ACCEPT [Batfish parser context: [rule_spec command_append command_tail command iptables_configuration]]"
+            }
+          ]
+        },
+        "juniper-ospf" : {
+          "Unimplemented features" : [
+            {
+              "tag" : "UNIMPLEMENTED",
+              "text" : "area-range dead:beef::/56 override-metric 100 [Batfish parser context: [oa_area_range o_area o_common p_ospf3 s_protocols s_common statement set_line_tail set_line flat_juniper_configuration]]"
+            },
+            {
+              "tag" : "UNIMPLEMENTED",
+              "text" : "area-range dead:beef::/56 override-metric 100 [Batfish parser context: [oa_area_range o_area o_common p_ospf3 s_protocols s_common statement set_line_tail set_line flat_juniper_configuration]]"
             }
           ]
         },
@@ -55990,6 +56228,14 @@
             }
           ]
         },
+        "peer_template" : {
+          "Unimplemented features" : [
+            {
+              "tag" : "UNIMPLEMENTED",
+              "text" : "allowas-in 1 [Batfish parser context: [rbnx_n_af_allowas_in rbnx_n_af_inner rbnx_n_address_family rbnx_n_inner rbnx_template_peer router_bgp_nxos_toplevel router_bgp_stanza stanza cisco_configuration]]"
+            }
+          ]
+        },
         "rp" : {
           "Red flags" : [
             {
@@ -55998,11 +56244,27 @@
             }
           ]
         },
+        "test" : {
+          "Unimplemented features" : [
+            {
+              "tag" : "UNIMPLEMENTED",
+              "text" : "ip default-gateway 128.125.253.254 [Batfish parser context: [s_ip_default_gateway stanza cisco_configuration]]"
+            }
+          ]
+        },
         "vlan_access_map4" : {
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
               "text" : "Ignoring reference to undeclared peer group: '10.10.212.233'"
+            }
+          ]
+        },
+        "vrf_context" : {
+          "Unimplemented features" : [
+            {
+              "tag" : "UNIMPLEMENTED",
+              "text" : "ip route 0.0.0.0/0 1.2.3.4 [Batfish parser context: [vrfc_ip_route s_vrf_context stanza cisco_configuration]]"
             }
           ]
         }

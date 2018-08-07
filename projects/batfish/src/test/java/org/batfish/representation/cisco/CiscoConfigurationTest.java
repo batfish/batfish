@@ -28,7 +28,7 @@ public class CiscoConfigurationTest {
   // crash.
   @Before
   public void before() {
-    _config = new CiscoConfiguration(Collections.emptySet());
+    _config = new CiscoConfiguration();
     _config.setVendor(ConfigurationFormat.ARISTA);
     _config.setHostname("host");
     _config.setFilename("configs/host.cfg");

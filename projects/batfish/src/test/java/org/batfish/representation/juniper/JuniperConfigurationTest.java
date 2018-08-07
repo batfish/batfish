@@ -13,7 +13,6 @@ import static org.hamcrest.Matchers.iterableWithSize;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
-import java.util.Collections;
 import java.util.TreeMap;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -30,7 +29,7 @@ import org.junit.Test;
 public class JuniperConfigurationTest {
 
   private static JuniperConfiguration createConfig() {
-    JuniperConfiguration config = new JuniperConfiguration(Collections.emptySet());
+    JuniperConfiguration config = new JuniperConfiguration();
     config._c = new Configuration("host", ConfigurationFormat.JUNIPER);
     return config;
   }
