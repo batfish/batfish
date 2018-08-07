@@ -161,8 +161,7 @@ public class EigrpTest {
       exportIfMatchProtocol.setGuard(
           new Disjunction(
               ImmutableList.of(
-                  new MatchProtocol(EIGRP),
-                  new MatchProtocol(RoutingProtocol.EIGRP_EX))));
+                  new MatchProtocol(EIGRP), new MatchProtocol(RoutingProtocol.EIGRP_EX))));
     } else {
       exportIfMatchProtocol.setGuard(new MatchProtocol(sourceProtocol));
     }
@@ -217,8 +216,7 @@ public class EigrpTest {
 
     NetworkFactory nf = new NetworkFactory();
     RoutingPolicy.Builder exportConnected =
-        nf.routingPolicyBuilder()
-            .setStatements(getExportPolicyStatements(CONNECTED, EIGRP));
+        nf.routingPolicyBuilder().setStatements(getExportPolicyStatements(CONNECTED, EIGRP));
     RoutingPolicy.Builder exportEigrp =
         nf.routingPolicyBuilder().setStatements(getExportPolicyStatements(EIGRP, OSPF));
     RoutingPolicy.Builder exportOspf =
