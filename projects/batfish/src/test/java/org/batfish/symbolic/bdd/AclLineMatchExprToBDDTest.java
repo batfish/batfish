@@ -19,7 +19,11 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.State;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.MatchSrcInterface;
+import org.batfish.datamodel.acl.NotMatchExpr;
+import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.junit.Before;
 import org.junit.Rule;
@@ -29,15 +33,32 @@ import org.junit.rules.ExpectedException;
 public class AclLineMatchExprToBDDTest {
   @Rule public ExpectedException exception = ExpectedException.none();
 
-  private AclLineMatchExprToBDD _toBDD;
+  private static final String IFACE1 = "iface1";
+
+  private static final String IFACE2 = "iface2";
+
+  private BDD _originatingFromDevice;
 
   private BDDPacket _pkt;
+
+  private BDDInteger _srcInterfaceVar;
+
+  private AclLineMatchExprToBDD _toBDD;
 
   @Before
   public void setup() {
     _pkt = new BDDPacket();
+    _originatingFromDevice = _pkt.allocateBDDBit("originatingFromDevice");
+    _srcInterfaceVar = _pkt.allocateBDDInteger("srcInterface", 2, false);
     _toBDD =
-        new AclLineMatchExprToBDD(_pkt.getFactory(), _pkt, ImmutableMap.of(), ImmutableMap.of());
+        new AclLineMatchExprToBDD(
+            _pkt.getFactory(),
+            _pkt,
+            ImmutableMap.of(),
+            ImmutableMap.of(),
+            _originatingFromDevice,
+            _srcInterfaceVar,
+            ImmutableList.of(IFACE1, IFACE2));
   }
 
   @Test
@@ -193,5 +214,30 @@ public class AclLineMatchExprToBDDTest {
     BDDInteger state = _pkt.getState();
     BDD stateBDD = state.value(0).or(state.value(1));
     assertThat(bdd, equalTo(stateBDD));
+  }
+
+  @Test
+  public void testMatchSrcInterface() {
+    MatchSrcInterface matchSrcInterface1 = new MatchSrcInterface(ImmutableList.of(IFACE1));
+    assertThat(_toBDD.visit(matchSrcInterface1), equalTo(_srcInterfaceVar.value(1)));
+
+    MatchSrcInterface matchSrcInterface2 = new MatchSrcInterface(ImmutableList.of(IFACE2));
+    assertThat(_toBDD.visit(matchSrcInterface2), equalTo(_srcInterfaceVar.value(2)));
+
+    MatchSrcInterface matchSrcInterface1Or2 =
+        new MatchSrcInterface(ImmutableList.of(IFACE1, IFACE2));
+    assertThat(
+        _toBDD.visit(matchSrcInterface1Or2),
+        equalTo(_srcInterfaceVar.value(1).or(_srcInterfaceVar.value(2))));
+
+    AclLineMatchExpr expr =
+        new AndMatchExpr(
+            ImmutableList.of(matchSrcInterface1Or2, new NotMatchExpr(matchSrcInterface1)));
+    assertThat(_toBDD.visit(expr), equalTo(_srcInterfaceVar.value(2)));
+  }
+
+  @Test
+  public void testOriginateFromInterface() {
+    assertThat(_toBDD.visit(OriginatingFromDevice.INSTANCE), equalTo(_originatingFromDevice));
   }
 }
