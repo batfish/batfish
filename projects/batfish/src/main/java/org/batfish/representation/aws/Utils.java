@@ -1,7 +1,5 @@
 package org.batfish.representation.aws;
 
-import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
-
 import java.util.List;
 import javax.annotation.Nullable;
 import org.batfish.common.Warnings;
@@ -29,7 +27,7 @@ public class Utils {
             .setDefaultInboundAction(LineAction.ACCEPT)
             .setDefaultCrossZoneAction(LineAction.ACCEPT)
             .build();
-    FACTORY.vrfBuilder().setName(DEFAULT_VRF_NAME).setOwner(c).build();
+    FACTORY.vrfBuilder().setName(Configuration.DEFAULT_VRF_NAME).setOwner(c).build();
     c.getVendorFamily().setAws(new AwsFamily());
     return c;
   }
@@ -40,7 +38,7 @@ public class Utils {
         .interfaceBuilder()
         .setName(name)
         .setOwner(c)
-        .setVrfName(DEFAULT_VRF_NAME)
+        .setVrfName(Configuration.DEFAULT_VRF_NAME)
         .setActive(true)
         .setAddress(primaryAddress)
         .build();
