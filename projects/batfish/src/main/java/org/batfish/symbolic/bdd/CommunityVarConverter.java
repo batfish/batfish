@@ -15,7 +15,11 @@ import org.batfish.datamodel.visitors.CommunitySetExprVisitor;
 import org.batfish.symbolic.CommunityVar;
 import org.batfish.symbolic.CommunityVar.Type;
 
-public class CommunityVarConverter implements CommunitySetExprVisitor<CommunityVar> {
+/**
+ * Visitor for converting a non-recursive {@link CommunitySetExpr} to a {@link CommunityVar} for
+ * symbolic analysis.
+ */
+public final class CommunityVarConverter implements CommunitySetExprVisitor<CommunityVar> {
 
   private static final CommunityVarConverter INSTANCE = new CommunityVarConverter();
 
