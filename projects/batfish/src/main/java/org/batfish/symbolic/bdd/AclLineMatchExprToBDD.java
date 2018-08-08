@@ -48,10 +48,6 @@ public class AclLineMatchExprToBDD implements GenericAclLineMatchExprVisitor<BDD
 
   private final BDDPacket _packet;
 
-  /**
-   * This constructor does not support MatchSrcInterface or OriginatingFromDevice. Consider it
-   * "soft-deprecated".
-   */
   public AclLineMatchExprToBDD(
       BDDFactory factory,
       BDDPacket packet,
@@ -65,7 +61,6 @@ public class AclLineMatchExprToBDD implements GenericAclLineMatchExprVisitor<BDD
     _packet = packet;
   }
 
-  /** This constructor supports all {@link AclLineMatchExpr AclLineMatchExprs}. */
   public AclLineMatchExprToBDD(
       BDDFactory factory,
       BDDPacket packet,
