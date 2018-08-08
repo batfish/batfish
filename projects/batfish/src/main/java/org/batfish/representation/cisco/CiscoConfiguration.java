@@ -1,7 +1,6 @@
 package org.batfish.representation.cisco;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static java.util.Objects.requireNonNull;
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import static org.batfish.common.util.CommonUtil.toImmutableMap;
 import static org.batfish.datamodel.Interface.UNSET_LOCAL_INTERFACE;
@@ -2122,16 +2121,15 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
       // For bandwidth/delay, defaults are separate from actuals to inform metric calculations
       EigrpMetric metric =
-          requireNonNull(
-              EigrpMetric.builder()
-                  .setBandwidth(iface.getBandwidth())
-                  .setMode(eigrpProcess.getMode())
-                  .setDefaultBandwidth(
-                      Interface.getDefaultBandwidth(iface.getName(), c.getConfigurationFormat()))
-                  .setDefaultDelay(
-                      Interface.getDefaultDelay(iface.getName(), c.getConfigurationFormat()))
-                  .setDelay(iface.getDelay())
-                  .build());
+          EigrpMetric.builder()
+              .setBandwidth(iface.getBandwidth())
+              .setMode(eigrpProcess.getMode())
+              .setDefaultBandwidth(
+                  Interface.getDefaultBandwidth(iface.getName(), c.getConfigurationFormat()))
+              .setDefaultDelay(
+                  Interface.getDefaultDelay(iface.getName(), c.getConfigurationFormat()))
+              .setDelay(iface.getDelay())
+              .build();
 
       newIface.setEigrp(
           EigrpInterfaceSettings.builder()
@@ -2140,6 +2138,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
               .setMetric(metric)
               .setPassive(passive)
               .build());
+      if (newIface.getEigrp() == null) {
+        _w.redFlag("Interface: '" + iface.getName() + "' failed to set EIGRP settings");
+      }
     }
     if (eigrpProcess == null && iface.getDelay() != null) {
       _w.redFlag(
