@@ -55940,7 +55940,7 @@
           "Unimplemented features" : [
             {
               "tag" : "UNIMPLEMENTED",
-              "text" : "redistribute isis route-map ISIS_TO_EIGRP [Batfish parser context: [re_redistribute_isis re_redistribute re_classic_tail re_classic s_router_eigrp stanza cisco_configuration]]"
+              "text" : "redistribute isis route-map ISIS_TO_EIGRP [comment: ISIS redistirution in EIGRP is not implemented] [Batfish parser context: [re_redistribute_isis re_redistribute re_classic_tail re_classic s_router_eigrp stanza cisco_configuration]]"
             },
             {
               "tag" : "UNIMPLEMENTED",
