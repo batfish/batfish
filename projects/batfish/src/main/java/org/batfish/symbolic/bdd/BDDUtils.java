@@ -15,7 +15,14 @@ public class BDDUtils {
     return factory;
   }
 
-  public static boolean isAssignment(BDD bdd) {
+  /**
+   * Check if this BDD represents a single assignment, i.e. if each node has only 1 path to the leaf
+   * node "one" in the DAG. If this is true, either the high or low child node will be the leaf node
+   * "zero", due to reduction. Specifically, one of the children must only lead to zero, and
+   * reduction recursively removes nodes whose high and low children are the same node.
+   */
+  public static boolean isAssignment(BDD orig) {
+    BDD bdd = orig;
     if (bdd.isZero()) {
       return false;
     }
