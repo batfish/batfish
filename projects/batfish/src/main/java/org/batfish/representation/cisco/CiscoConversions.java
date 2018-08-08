@@ -912,15 +912,7 @@ class CiscoConversions {
     org.batfish.datamodel.Vrf vrf = c.getVrfs().get(vrfName);
 
     if (proc.getAsn() == null) {
-      /*
-       * This will happen with the following configuration:
-       *  address-family ... autonomous-system 1
-       *   autonomous-system 2
-       *   no autonomous-system
-       * The result should be a process with ASN 1, but instead the result is an invalid EIGRP process
-       * with null ASN.
-       */
-      oldConfig.getWarnings().redFlag("No candidates for EIGRP ASN");
+      oldConfig.getWarnings().redFlag("Invalid EIGRP process");
       return null;
     }
 

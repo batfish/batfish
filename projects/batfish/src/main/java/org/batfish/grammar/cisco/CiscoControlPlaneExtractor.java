@@ -4703,6 +4703,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
     EigrpProcess proc = _currentEigrpProcess;
     if (proc.getAsn() == null) {
+      /*
+       * This will happen with the following configuration:
+       *  address-family ... autonomous-system 1
+       *   autonomous-system 2
+       *   no autonomous-system
+       * The result should be a process with ASN 1, but instead the result is an invalid EIGRP
+       * process with null ASN.
+       */
       _w.todo(ctx, getFullText(ctx), _parser, "No eigrp ASN configured");
       return;
     }
