@@ -143,7 +143,7 @@ public class HostInterface implements Serializable {
             .setBandwidth(_bandwidth)
             .setDeclaredNames(ImmutableSortedSet.of(_name))
             .setProxyArp(false)
-            .setVrf(configuration.getDefaultVrf());
+            .setVrfName(Configuration.DEFAULT_VRF_NAME);
     if (_shared) {
       SourceNat sourceNat = new SourceNat();
       Ip publicIp = _address.getIp();

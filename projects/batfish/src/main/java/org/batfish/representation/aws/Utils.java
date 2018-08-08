@@ -38,7 +38,7 @@ public class Utils {
         .interfaceBuilder()
         .setName(name)
         .setOwner(c)
-        .setVrf(c.getDefaultVrf())
+        .setVrfName(Configuration.DEFAULT_VRF_NAME)
         .setActive(true)
         .setAddress(primaryAddress)
         .build();
