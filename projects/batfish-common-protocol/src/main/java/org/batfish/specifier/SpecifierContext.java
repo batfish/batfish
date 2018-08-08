@@ -23,7 +23,10 @@ public interface SpecifierContext {
   /** @return the set of {@link ReferenceBook} with name {@code bookName}. */
   Optional<ReferenceBook> getReferenceBook(String bookName);
 
-  /** @return the {@link NodeRoleDimension} */
+  /**
+   * @return the {@link NodeRoleDimension} if one exists by the provided name {@code dimension}. If
+   *     {@code dimension} is null, looks for the default dimension.
+   */
   @Nonnull
   Optional<NodeRoleDimension> getNodeRoleDimension(@Nullable String dimension);
 
