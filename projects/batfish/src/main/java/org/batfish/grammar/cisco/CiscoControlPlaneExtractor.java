@@ -7660,11 +7660,31 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitRo_redistribute_eigrp(Ro_redistribute_eigrpContext ctx) {
-    if (ctx.map != null) {
-      _configuration.referenceStructure(
-          ROUTE_MAP, ctx.map.getText(), OSPF_REDISTRIBUTE_EIGRP_MAP, ctx.map.getStart().getLine());
+    OspfProcess proc = _currentOspfProcess;
+    RoutingProtocol sourceProtocol = RoutingProtocol.EIGRP;
+    OspfRedistributionPolicy r = new OspfRedistributionPolicy(sourceProtocol);
+    proc.getRedistributionPolicies().put(sourceProtocol, r);
+    long asn = toLong(ctx.tag);
+    r.getSpecialAttributes().put(OspfRedistributionPolicy.EIGRP_AS_NUMBER, asn);
+    if (ctx.metric != null) {
+      int metric = toInteger(ctx.metric);
+      r.setMetric(metric);
     }
-    todo(ctx);
+    if (ctx.type != null) {
+      int typeInt = toInteger(ctx.type);
+      OspfMetricType type = OspfMetricType.fromInteger(typeInt);
+      r.setOspfMetricType(type);
+    } else {
+      r.setOspfMetricType(OspfRedistributionPolicy.DEFAULT_METRIC_TYPE);
+    }
+    if (ctx.map != null) {
+      String map = ctx.map.getText();
+      int mapLine = ctx.map.getStart().getLine();
+      r.setRouteMap(map);
+      r.setRouteMapLine(mapLine);
+      _configuration.referenceStructure(ROUTE_MAP, map, OSPF_REDISTRIBUTE_EIGRP_MAP, mapLine);
+    }
+    r.setOnlyClassfulRoutes(ctx.SUBNETS().isEmpty() && !ospfRedistributeSubnetsByDefault(_format));
   }
 
   @Override
