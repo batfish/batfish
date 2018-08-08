@@ -56028,10 +56028,6 @@
             },
             {
               "tag" : "UNIMPLEMENTED",
-              "text" : "redistribute eigrp 5 metric 6 route-map eigrp-ospf-route-map [Batfish parser context: [ro_redistribute_eigrp s_router_ospf stanza cisco_configuration]]"
-            },
-            {
-              "tag" : "UNIMPLEMENTED",
               "text" : "area 0 filter-list prefix INFILTER in [Batfish parser context: [ro_area_filterlist s_router_ospf stanza cisco_configuration]]"
             },
             {
