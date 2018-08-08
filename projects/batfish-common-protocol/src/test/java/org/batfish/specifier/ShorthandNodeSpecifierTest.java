@@ -15,16 +15,16 @@ public class ShorthandNodeSpecifierTest {
   @Test
   public void resolve() {
 
-    Configuration _node1 = new Configuration("node1", ConfigurationFormat.CISCO_IOS);
-    Configuration _node2 = new Configuration("node2", ConfigurationFormat.CISCO_IOS);
+    Configuration node1 = new Configuration("node1", ConfigurationFormat.CISCO_IOS);
+    Configuration node2 = new Configuration("node2", ConfigurationFormat.CISCO_IOS);
 
-    MockSpecifierContext _ctxt =
+    MockSpecifierContext ctxt =
         MockSpecifierContext.builder()
-            .setConfigs(ImmutableMap.of("node1", _node1, "node2", _node2))
+            .setConfigs(ImmutableMap.of("node1", node1, "node2", node2))
             .build();
 
     assertThat(
-        new ShorthandNodeSpecifier(new NodesSpecifier(_node1.getHostname())).resolve(_ctxt),
+        new ShorthandNodeSpecifier(new NodesSpecifier("node1")).resolve(ctxt),
         equalTo(ImmutableSet.of("node1")));
   }
 }
