@@ -311,8 +311,12 @@ public final class Interface extends ComparableStructure<String> {
       return this;
     }
 
+    public Builder setVrf(@Nonnull Vrf vrf) {
+      return setVrfName(requireNonNull(vrf, "vrf").getName());
+    }
+
     public Builder setVrfName(@Nonnull String vrfName) {
-      _vrfName = vrfName;
+      _vrfName = requireNonNull(vrfName, "vrfName");
       return this;
     }
 
