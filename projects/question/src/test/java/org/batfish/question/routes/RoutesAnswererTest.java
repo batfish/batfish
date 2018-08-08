@@ -63,6 +63,8 @@ import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.question.routes.RoutesQuestion.RibProtocol;
+import org.batfish.specifier.MockSpecifierContext;
+import org.batfish.specifier.SpecifierContext;
 import org.junit.Test;
 
 /** Tests of {@link RoutesAnswerer}. */
@@ -341,6 +343,11 @@ public class RoutesAnswererTest {
     @Override
     public BatfishLogger getLogger() {
       return null;
+    }
+
+    @Override
+    public SpecifierContext specifierContext() {
+      return MockSpecifierContext.builder().setConfigs(loadConfigurations()).build();
     }
   }
 

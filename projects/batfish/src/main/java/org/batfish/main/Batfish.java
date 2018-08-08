@@ -1880,13 +1880,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   /**
-   * Gets the {@link NodeRoleDimension} object give dimension name
+   * Gets the {@link NodeRoleDimension} object given dimension name. If {@code dimension} is null,
+   * returns the default dimension.
    *
    * @param dimension The dimension name
    * @return An {@link Optional} that has the requested NodeRoleDimension or empty otherwise.
    */
   @Override
-  public Optional<NodeRoleDimension> getNodeRoleDimension(String dimension) {
+  public Optional<NodeRoleDimension> getNodeRoleDimension(@Nullable String dimension) {
     Path nodeRoleDataPath =
         _settings
             .getStorageBase()

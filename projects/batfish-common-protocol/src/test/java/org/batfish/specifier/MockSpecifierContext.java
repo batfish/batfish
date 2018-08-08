@@ -10,7 +10,7 @@ import javax.annotation.Nonnull;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.referencelibrary.ReferenceBook;
-import org.batfish.role.NodeRole;
+import org.batfish.role.NodeRoleDimension;
 
 public class MockSpecifierContext implements SpecifierContext {
 
@@ -35,7 +35,7 @@ public class MockSpecifierContext implements SpecifierContext {
 
     private @Nonnull Map<String, Map<String, IpSpace>> _interfaceOwnedIps = ImmutableMap.of();
 
-    private @Nonnull Map<String, Set<NodeRole>> _nodeRolesByDimension = ImmutableMap.of();
+    private @Nonnull SortedSet<NodeRoleDimension> _nodeRoleDimensions = ImmutableSortedSet.of();
 
     private @Nonnull Map<String, Map<String, IpSpace>> _vrfOwnedIps = ImmutableMap.of();
 
@@ -51,8 +51,8 @@ public class MockSpecifierContext implements SpecifierContext {
       return this;
     }
 
-    public Builder setNodeRolesByDimension(Map<String, Set<NodeRole>> nodeRolesByDimension) {
-      _nodeRolesByDimension = ImmutableMap.copyOf(nodeRolesByDimension);
+    public Builder setNodeRoleDimensions(Set<NodeRoleDimension> nodeRoleDimensions) {
+      _nodeRoleDimensions = ImmutableSortedSet.copyOf(nodeRoleDimensions);
       return this;
     }
 
@@ -75,7 +75,7 @@ public class MockSpecifierContext implements SpecifierContext {
 
   private final @Nonnull Map<String, Map<String, IpSpace>> _interfaceOwnedIps;
 
-  private final @Nonnull Map<String, Set<NodeRole>> _nodeRolesByDimension;
+  private final @Nonnull SortedSet<NodeRoleDimension> _nodeRoleDimensions;
 
   private final @Nonnull SortedSet<ReferenceBook> _referenceBooks;
 
@@ -85,7 +85,7 @@ public class MockSpecifierContext implements SpecifierContext {
     _referenceBooks = builder._referenceBooks;
     _configs = builder._configs;
     _interfaceOwnedIps = builder._interfaceOwnedIps;
-    _nodeRolesByDimension = builder._nodeRolesByDimension;
+    _nodeRoleDimensions = builder._nodeRoleDimensions;
     _vrfOwnedIps = builder._vrfOwnedIps;
   }
 
@@ -103,8 +103,8 @@ public class MockSpecifierContext implements SpecifierContext {
 
   @Override
   @Nonnull
-  public Set<NodeRole> getNodeRolesByDimension(String dimension) {
-    return _nodeRolesByDimension.get(dimension);
+  public Optional<NodeRoleDimension> getNodeRoleDimension(String dimension) {
+    return _nodeRoleDimensions.stream().filter(dim -> dim.getName().equals(dimension)).findAny();
   }
 
   @Override
