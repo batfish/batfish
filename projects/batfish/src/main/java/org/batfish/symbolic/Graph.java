@@ -105,6 +105,7 @@ public class Graph {
 
   private Set<CommunityVar> _allCommunities;
 
+  /** Keys are all REGEX vars, and values are lists of EXACT or OTHER vars. */
   private SortedMap<CommunityVar, List<CommunityVar>> _communityDependencies;
 
   private Map<String, String> _namedCommunities;

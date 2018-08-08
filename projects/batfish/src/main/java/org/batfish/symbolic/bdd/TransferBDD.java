@@ -1,6 +1,7 @@
 package org.batfish.symbolic.bdd;
 
 import static org.batfish.symbolic.CommunityVarCollector.collectCommunityVars;
+import static org.batfish.symbolic.bdd.CommunityVarConverter.toCommunityVar;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -8,10 +9,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import org.batfish.common.BatfishException;
+import org.batfish.common.util.CommonUtil;
+import org.batfish.datamodel.CommunityList;
+import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
@@ -26,6 +31,7 @@ import org.batfish.datamodel.routing_policy.expr.AsPathListExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
+import org.batfish.datamodel.routing_policy.expr.CommunitySetExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.ConjunctionChain;
 import org.batfish.datamodel.routing_policy.expr.DecrementLocalPreference;
@@ -48,6 +54,7 @@ import org.batfish.datamodel.routing_policy.expr.MatchPrefix6Set;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.MultipliedAs;
+import org.batfish.datamodel.routing_policy.expr.NamedCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.PrefixSetExpr;
@@ -244,7 +251,7 @@ class TransferBDD {
                   .indent();
           TransferResult<TransferReturn, BDD> r = compute(conjunct, param);
           record = record.setData(r.getReturnValue().getFirst());
-          acc = r.getFallthroughValue().ite(acc, r.getReturnValue().getSecond());
+          acc = ite(r.getFallthroughValue(), acc, r.getReturnValue().getSecond());
         }
         TransferReturn ret = new TransferReturn(record.getData(), acc);
         return result.setReturnValue(ret);
@@ -275,7 +282,7 @@ class TransferBDD {
                   .indent();
           TransferResult<TransferReturn, BDD> r = compute(disjunct, param);
           record = record.setData(r.getReturnValue().getFirst());
-          acc = r.getFallthroughValue().ite(acc, r.getReturnValue().getSecond());
+          acc = ite(r.getFallthroughValue(), acc, r.getReturnValue().getSecond());
         }
         TransferReturn ret = new TransferReturn(record.getData(), acc);
         return result.setReturnValue(ret);
@@ -346,7 +353,7 @@ class TransferBDD {
     } else if (expr instanceof MatchCommunitySet) {
       p.debug("MatchCommunitySet");
       MatchCommunitySet mcs = (MatchCommunitySet) expr;
-      BDD c = CommunitySetToBdd.convert(p.indent(), _conf, mcs.getExpr(), p.getData(), this);
+      BDD c = matchCommunitySet(p.indent(), _conf, mcs.getExpr(), p.getData());
       TransferReturn ret = new TransferReturn(p.getData(), c);
       return fromExpr(ret);
 
@@ -509,18 +516,20 @@ class TransferBDD {
 
         // update return values
         BDD returnVal =
-            guard.ite(
-                trueBranch.getReturnValue().getSecond(), falseBranch.getReturnValue().getSecond());
+            ite(
+                guard,
+                trueBranch.getReturnValue().getSecond(),
+                falseBranch.getReturnValue().getSecond());
 
         // p.debug("New Return Value (neg): " + returnVal.not());
 
         BDD returnAss =
-            guard.ite(trueBranch.getReturnAssignedValue(), falseBranch.getReturnAssignedValue());
+            ite(guard, trueBranch.getReturnAssignedValue(), falseBranch.getReturnAssignedValue());
 
         // p.debug("New Return Assigned: " + returnAss);
 
         BDD fallThrough =
-            guard.ite(trueBranch.getFallthroughValue(), falseBranch.getFallthroughValue());
+            ite(guard, trueBranch.getFallthroughValue(), falseBranch.getFallthroughValue());
 
         // p.debug("New fallthrough: " + fallThrough);
 
@@ -583,7 +592,7 @@ class TransferBDD {
           if (!_policyQuotient.getCommsAssignedButNotMatched().contains(cvar)) {
             curP.indent().debug("Value: " + cvar);
             BDD comm = curP.getData().getCommunities().get(cvar);
-            BDD newValue = result.getReturnAssignedValue().ite(comm, factory.one());
+            BDD newValue = ite(result.getReturnAssignedValue(), comm, factory.one());
             curP.indent().debug("New Value: " + newValue);
             curP.getData().getCommunities().put(cvar, newValue);
           }
@@ -597,7 +606,7 @@ class TransferBDD {
           if (!_policyQuotient.getCommsAssignedButNotMatched().contains(cvar)) {
             curP.indent().debug("Value: " + cvar);
             BDD comm = curP.getData().getCommunities().get(cvar);
-            BDD newValue = result.getReturnAssignedValue().ite(comm, factory.one());
+            BDD newValue = ite(result.getReturnAssignedValue(), comm, factory.one());
             curP.indent().debug("New Value: " + newValue);
             curP.getData().getCommunities().put(cvar, newValue);
           }
@@ -621,7 +630,7 @@ class TransferBDD {
           if (!_policyQuotient.getCommsAssignedButNotMatched().contains(cvar)) {
             curP.indent().debug("Value: " + cvar.getValue() + ", " + cvar.getType());
             BDD comm = curP.getData().getCommunities().get(cvar);
-            BDD newValue = result.getReturnAssignedValue().ite(comm, factory.zero());
+            BDD newValue = ite(result.getReturnAssignedValue(), comm, factory.zero());
             curP.indent().debug("New Value: " + newValue);
             curP.getData().getCommunities().put(cvar, newValue);
           }
@@ -678,7 +687,7 @@ class TransferBDD {
   }
 
   private TransferResult<TransferReturn, BDD> fallthrough(TransferResult<TransferReturn, BDD> r) {
-    BDD b = r.getReturnAssignedValue().ite(r.getFallthroughValue(), factory.one());
+    BDD b = ite(r.getReturnAssignedValue(), r.getFallthroughValue(), factory.one());
     return r.setFallthroughValue(b).setReturnAssignedValue(factory.one());
   }
 
@@ -717,6 +726,13 @@ class TransferBDD {
       }
     }
     return acc.and(lowerBitsMatch);
+  }
+
+  /*
+   * If-then-else statement
+   */
+  private BDD ite(BDD b, BDD x, BDD y) {
+    return b.ite(x, y);
   }
 
   /*
@@ -771,7 +787,7 @@ class TransferBDD {
         .forEach(
             (c, var1) -> {
               BDD var2 = r2.getCommunities().get(c);
-              ret.getCommunities().put(c, guard.ite(var1, var2));
+              ret.getCommunities().put(c, ite(guard, var1, var2));
             });
 
     // BDDInteger i =
@@ -779,6 +795,68 @@ class TransferBDD {
     // ret.getProtocolHistory().setInteger(i);
 
     return ret;
+  }
+
+  /*
+   * Converts a community list to a boolean expression.
+   */
+  private BDD matchCommunityList(TransferParam<BDDRoute> p, CommunityList cl, BDDRoute other) {
+    List<CommunityListLine> lines = new ArrayList<>(cl.getLines());
+    Collections.reverse(lines);
+    BDD acc = factory.zero();
+    for (CommunityListLine line : lines) {
+      boolean action = (line.getAction() == LineAction.ACCEPT);
+      CommunityVar cvar = toRegexCommunityVar(toCommunityVar(line.getMatchCondition()));
+      p.debug("Match Line: " + cvar);
+      p.debug("Action: " + line.getAction());
+      // Skip this match if it is irrelevant
+      if (_policyQuotient.getCommsMatchedButNotAssigned().contains(cvar)) {
+        continue;
+      }
+      List<CommunityVar> deps = _commDeps.get(cvar);
+      for (CommunityVar dep : deps) {
+        p.debug("Test for: " + dep);
+        BDD c = other.getCommunities().get(dep);
+        acc = ite(c, mkBDD(action), acc);
+      }
+    }
+    return acc;
+  }
+
+  /*
+   * Converts a community set to a boolean expression
+   */
+  private BDD matchCommunitySet(
+      TransferParam<BDDRoute> p, Configuration conf, CommunitySetExpr e, BDDRoute other) {
+
+    if (e instanceof CommunityList) {
+      Set<CommunityVar> comms =
+          ((CommunityList) e)
+              .getLines()
+              .stream()
+              .map(line -> toCommunityVar(line.getMatchCondition()))
+              .collect(Collectors.toSet());
+      BDD acc = factory.one();
+      for (CommunityVar comm : comms) {
+        p.debug("Inline Community Set: " + comm);
+        BDD c = other.getCommunities().get(comm);
+        if (c == null) {
+          throw new BatfishException("matchCommunitySet: should not be null");
+        }
+        acc = acc.and(c);
+      }
+      return acc;
+    }
+
+    if (e instanceof NamedCommunitySet) {
+      p.debug("Named");
+      NamedCommunitySet x = (NamedCommunitySet) e;
+      CommunityList cl = conf.getCommunityLists().get(x.getName());
+      p.debug("Named Community Set: " + cl.getName());
+      return matchCommunityList(p, cl, other);
+    }
+
+    throw new BatfishException("TODO: match community set");
   }
 
   /*
@@ -800,7 +878,7 @@ class TransferBDD {
         p.debug("Action: " + line.getAction());
         BDD matches = isRelevantFor(other, range);
         BDD action = mkBDD(line.getAction() == LineAction.ACCEPT);
-        acc = matches.ite(action, acc);
+        acc = ite(matches, action, acc);
       }
     }
     return acc;
@@ -844,7 +922,7 @@ class TransferBDD {
   /*
    * Return a BDD from a boolean
    */
-  BDD mkBDD(boolean b) {
+  private BDD mkBDD(boolean b) {
     return b ? factory.one() : factory.zero();
   }
 
@@ -870,7 +948,7 @@ class TransferBDD {
    */
   private TransferResult<TransferReturn, BDD> returnValue(
       TransferResult<TransferReturn, BDD> r, boolean val) {
-    BDD b = r.getReturnAssignedValue().ite(r.getReturnValue().getSecond(), mkBDD(val));
+    BDD b = ite(r.getReturnAssignedValue(), r.getReturnValue().getSecond(), mkBDD(val));
     TransferReturn ret = new TransferReturn(r.getReturnValue().getFirst(), b);
     return r.setReturnValue(ret).setReturnAssignedValue(factory.one());
   }
@@ -922,11 +1000,18 @@ class TransferBDD {
     return result.getReturnValue().getFirst();
   }
 
-  public boolean isMatchedButNotAssigned(CommunityVar cvar) {
-    return _policyQuotient.getCommsMatchedButNotAssigned().contains(cvar);
-  }
-
-  public SortedMap<CommunityVar, List<CommunityVar>> getCommDeps() {
-    return _commDeps;
+  /*
+   * Convert EXACT community vars to their REGEX equivalents.
+   */
+  private static CommunityVar toRegexCommunityVar(CommunityVar cvar) {
+    switch (cvar.getType()) {
+      case REGEX:
+        return cvar;
+      case EXACT:
+        return new CommunityVar(
+            Type.REGEX, String.format("^%s$", CommonUtil.longToCommunity(cvar.asLong())), null);
+      default:
+        throw new BatfishException("Unexpected CommunityVar type: " + cvar.getType());
+    }
   }
 }
