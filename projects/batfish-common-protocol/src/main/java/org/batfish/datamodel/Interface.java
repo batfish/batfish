@@ -1,5 +1,8 @@
 package org.batfish.datamodel;
 
+import static java.util.Objects.requireNonNull;
+import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -82,7 +85,7 @@ public final class Interface extends ComparableStructure<String> {
 
     private SortedSet<Ip> _additionalArpIps;
 
-    private Vrf _vrf;
+    private String _vrfName;
 
     private SortedMap<Integer, VrrpGroup> _vrrpGroups;
 
@@ -93,6 +96,7 @@ public final class Interface extends ComparableStructure<String> {
       _hsrpGroups = ImmutableMap.of();
       _secondaryAddresses = ImmutableSet.of();
       _sourceNats = ImmutableList.of();
+      _vrfName = DEFAULT_VRF_NAME;
       _vrrpGroups = ImmutableSortedMap.of();
     }
 
@@ -132,10 +136,11 @@ public final class Interface extends ComparableStructure<String> {
       }
       iface.setProxyArp(_proxyArp);
       iface.setSourceNats(_sourceNats);
-      iface.setVrf(_vrf);
-      if (_vrf != null) {
-        _vrf.getInterfaces().put(name, iface);
-        OspfProcess proc = _vrf.getOspfProcess();
+      iface.setVrfName(_vrfName);
+      if (_owner != null) {
+        Vrf vrf = _owner.getVrfs().get(_vrfName);
+        vrf.getInterfaces().put(name, iface);
+        OspfProcess proc = vrf.getOspfProcess();
         if (proc != null && _active) {
           iface.setOspfCost(proc.computeInterfaceCost(iface));
         }
@@ -306,8 +311,8 @@ public final class Interface extends ComparableStructure<String> {
       return this;
     }
 
-    public Builder setVrf(Vrf vrf) {
-      _vrf = vrf;
+    public Builder setVrfName(@Nonnull String vrfName) {
+      _vrfName = vrfName;
       return this;
     }
 
@@ -679,9 +684,7 @@ public final class Interface extends ComparableStructure<String> {
 
   private Integer _vlan;
 
-  private Vrf _vrf;
-
-  private transient String _vrfName;
+  @Nonnull private String _vrfName;
 
   private SortedMap<Integer, VrrpGroup> _vrrpGroups;
 
@@ -728,7 +731,7 @@ public final class Interface extends ComparableStructure<String> {
     _switchportMode = SwitchportMode.NONE;
     _switchportTrunkEncapsulation = SwitchportEncapsulationType.DOT1Q;
     _sourceNats = Collections.emptyList();
-    _vrfName = Configuration.DEFAULT_VRF_NAME;
+    _vrfName = DEFAULT_VRF_NAME;
     _vrrpGroups = new TreeMap<>();
   }
 
@@ -1147,17 +1150,14 @@ public final class Interface extends ComparableStructure<String> {
 
   @JsonIgnore
   public Vrf getVrf() {
-    return _vrf;
+    return _owner.getVrfs().get(_vrfName);
   }
 
   @JsonProperty(PROP_VRF)
   @JsonPropertyDescription("The name of the VRF to which this interface belongs")
+  @Nonnull
   public String getVrfName() {
-    if (_vrf != null) {
-      return _vrf.getName();
-    } else {
-      return _vrfName;
-    }
+    return _vrfName;
   }
 
   @JsonProperty(PROP_VRRP_GROUPS)
@@ -1190,26 +1190,6 @@ public final class Interface extends ComparableStructure<String> {
       return false;
     }
     return name.startsWith("lo");
-  }
-
-  public void resolveReferences(Configuration owner) {
-    _owner = owner;
-    _vrf = owner.getVrfs().get(_vrfName);
-    if (_inboundFilterName != null) {
-      _inboundFilter = owner.getIpAccessLists().get(_inboundFilterName);
-    }
-    if (_incomingFilterName != null) {
-      _incomingFilter = owner.getIpAccessLists().get(_incomingFilterName);
-    }
-    if (_outgoingFilterName != null) {
-      _outgoingFilter = owner.getIpAccessLists().get(_outgoingFilterName);
-    }
-    if (_ospfAreaName != null) {
-      OspfProcess ospfProc = _vrf.getOspfProcess();
-      if (ospfProc != null) {
-        _ospfArea = ospfProc.getAreas().get(_ospfAreaName);
-      }
-    }
   }
 
   @JsonProperty(PROP_ACCESS_VLAN)
@@ -1470,16 +1450,13 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   @JsonIgnore
-  public void setVrf(Vrf vrf) {
-    _vrf = vrf;
-    if (vrf != null) {
-      _vrfName = vrf.getName();
-    }
+  public void setVrf(@Nonnull Vrf vrf) {
+    setVrfName(requireNonNull(vrf, "vrf").getName());
   }
 
   @JsonProperty(PROP_VRF)
-  public void setVrfName(String vrfName) {
-    _vrfName = vrfName;
+  public void setVrfName(@Nonnull String vrfName) {
+    _vrfName = requireNonNull(vrfName, "vrfName");
   }
 
   @JsonProperty(PROP_VRRP_GROUPS)
