@@ -55862,6 +55862,18 @@
           "Unimplemented features" : [
             {
               "tag" : "UNIMPLEMENTED",
+              "text" : "default-metric 1 2 3 4 5 [Batfish parser context: [re_default_metric re_classic_tail re_classic s_router_eigrp stanza cisco_configuration]]"
+            },
+            {
+              "tag" : "UNIMPLEMENTED",
+              "text" : "default-metric 1 2 3 4 5 [Batfish parser context: [re_default_metric re_classic_tail re_classic s_router_eigrp stanza cisco_configuration]]"
+            },
+            {
+              "tag" : "UNIMPLEMENTED",
+              "text" : "default-metric 1 2 3 4 5 [Batfish parser context: [re_default_metric re_classic_tail re_classic s_router_eigrp stanza cisco_configuration]]"
+            },
+            {
+              "tag" : "UNIMPLEMENTED",
               "text" : "redistribute isis route-map ISIS_TO_EIGRP [comment: ISIS redistirution in EIGRP is not implemented] [Batfish parser context: [re_redistribute_isis re_redistribute re_classic_tail re_classic s_router_eigrp stanza cisco_configuration]]"
             },
             {
@@ -55883,30 +55895,6 @@
             {
               "tag" : "UNIMPLEMENTED",
               "text" : "addrgroup bleep_blorp [Batfish parser context: [access_list_ip_range extended_access_list_tail extended_access_list_stanza stanza cisco_configuration]]"
-            },
-            {
-              "tag" : "UNIMPLEMENTED",
-              "text" : "default-metric 1 2 3 4 5 [Batfish parser context: [re_default_metric re_classic_tail re_classic s_router_eigrp stanza cisco_configuration]]"
-            },
-            {
-              "tag" : "UNIMPLEMENTED",
-              "text" : "default-metric 1 2 3 4 5 [Batfish parser context: [re_default_metric re_classic_tail re_classic s_router_eigrp stanza cisco_configuration]]"
-            },
-            {
-              "tag" : "UNIMPLEMENTED",
-              "text" : "default-metric 1 2 3 4 5 [Batfish parser context: [re_default_metric re_classic_tail re_classic s_router_eigrp stanza cisco_configuration]]"
-            },
-            {
-              "tag" : "UNIMPLEMENTED",
-              "text" : "redistribute static metric 10000 10 255 1 1500 [Batfish parser context: [re_redistribute_static re_redistribute re_classic_tail re_classic s_router_eigrp stanza cisco_configuration]]"
-            },
-            {
-              "tag" : "UNIMPLEMENTED",
-              "text" : "redistribute static metric 10000 10 255 1 1500 [Batfish parser context: [re_redistribute_static re_redistribute re_classic_tail re_classic s_router_eigrp stanza cisco_configuration]]"
-            },
-            {
-              "tag" : "UNIMPLEMENTED",
-              "text" : "redistribute static metric 10000 10 255 1 1500 [Batfish parser context: [re_redistribute_static re_redistribute re_classic_tail re_classic s_router_eigrp stanza cisco_configuration]]"
             },
             {
               "tag" : "UNIMPLEMENTED",
