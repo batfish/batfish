@@ -214,20 +214,20 @@ public class AclLineMatchExprToBDDTest {
 
   @Test
   public void testMatchSrcInterface() {
-    BDDInteger _srcInterfaceVar = _srcInterfaceManager.getSrcInterfaceVar();
+    BDDInteger srcInterfaceVar = _srcInterfaceManager.getSrcInterfaceVar();
 
     MatchSrcInterface matchSrcInterface1 = new MatchSrcInterface(ImmutableList.of(IFACE1));
     BDD bdd1 = _toBDD.visit(matchSrcInterface1);
-    assertThat(bdd1, equalTo(_srcInterfaceVar.value(1)));
+    assertThat(bdd1, equalTo(srcInterfaceVar.value(1)));
     assertThat(_srcInterfaceManager.getInterfaceFromAssignment(bdd1), equalTo(Optional.of(IFACE1)));
 
     MatchSrcInterface matchSrcInterface2 = new MatchSrcInterface(ImmutableList.of(IFACE2));
-    assertThat(_toBDD.visit(matchSrcInterface2), equalTo(_srcInterfaceVar.value(2)));
+    assertThat(_toBDD.visit(matchSrcInterface2), equalTo(srcInterfaceVar.value(2)));
 
     MatchSrcInterface matchSrcInterface1Or2 =
         new MatchSrcInterface(ImmutableList.of(IFACE1, IFACE2));
     BDD bdd1Or2 = _toBDD.visit(matchSrcInterface1Or2);
-    assertThat(bdd1Or2, equalTo(_srcInterfaceVar.value(1).or(_srcInterfaceVar.value(2))));
+    assertThat(bdd1Or2, equalTo(srcInterfaceVar.value(1).or(srcInterfaceVar.value(2))));
     assertThat(
         _srcInterfaceManager.getInterfaceFromAssignment(bdd1Or2.fullSatOne()).get(),
         oneOf(IFACE1, IFACE2));
@@ -235,7 +235,7 @@ public class AclLineMatchExprToBDDTest {
     AclLineMatchExpr expr =
         new AndMatchExpr(
             ImmutableList.of(matchSrcInterface1Or2, new NotMatchExpr(matchSrcInterface1)));
-    assertThat(_toBDD.visit(expr), equalTo(_srcInterfaceVar.value(2)));
+    assertThat(_toBDD.visit(expr), equalTo(srcInterfaceVar.value(2)));
   }
 
   @Test
