@@ -1977,8 +1977,6 @@ public class CiscoGrammarTest {
 
   @Test
   public void testCommunityListConversion() throws IOException {
-    // TODO: https://github.com/batfish/batfish/issues/1993
-
     String testrigName = "community-list-conversion";
     String iosName = "ios";
     String nxosName = "nxos";
@@ -2045,10 +2043,16 @@ public class CiscoGrammarTest {
     assertThat(iosRegexImpliedExp, equalTo("4294967295"));
     assertThat(iosRegexExpAsnn, equalTo("65535:65535"));
     assertThat(eosRegexExp, equalTo("1"));
-    // TODO: what is this?
+    /*
+     *  TODO: https://github.com/batfish/batfish/issues/1993
+     *  (Should be three regexes: '0:1', '0:2, '0:3')
+     */
     assertThat(eosRegexExpMulti, equalTo("0:10:20:3"));
     assertThat(nxosRegexExp, equalTo("65535:65535"));
-    // TODO: what is this?
+    /*
+     *  TODO: https://github.com/batfish/batfish/issues/1993
+     *  (Should be three regexes: '0:1', '0:2, '0:3')
+     */
     assertThat(nxosRegexExpMulti, equalTo("0:10:20:3"));
 
     // Check well known community regexes are generated properly
@@ -2068,7 +2072,6 @@ public class CiscoGrammarTest {
     assertThat(nxosStdNoExport, equalTo(WellKnownCommunity.NO_EXPORT));
     assertThat(nxosStdLocalAs, equalTo(WellKnownCommunity.NO_EXPORT_SUBCONFED));
 
-    // TODO: get rid of these altogether?
     // make sure well known communities in expanded lists are not actually converted
     assertThat(iosRegexExpGshut, equalTo("gshut"));
     assertThat(iosRegexExpInternet, equalTo("internet"));
