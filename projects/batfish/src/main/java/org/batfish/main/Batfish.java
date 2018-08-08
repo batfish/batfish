@@ -600,7 +600,15 @@ public class Batfish extends PluginConsumer implements IBatfish {
               }
             }
             initAnalysisQuestionPath(analysisName, questionName);
-            outputAnswer(currentAnswer);
+            try {
+              outputAnswer(currentAnswer);
+              ae.getAnswers().put(questionName, currentAnswer);
+            } catch (Exception e) {
+              Answer errorAnswer = new Answer();
+              errorAnswer.addAnswerElement(
+                  new BatfishStackTrace(new BatfishException("Failed to output answer", e)));
+              ae.getAnswers().put(questionName, errorAnswer);
+            }
             ae.getAnswers().put(questionName, currentAnswer);
             _settings.setQuestionPath(null);
             summary.combine(currentAnswer.getSummary());
