@@ -571,6 +571,15 @@ public class Batfish extends PluginConsumer implements IBatfish {
             Path analysisQuestionPath = analysisQuestionDir.resolve(BfConsts.RELPATH_QUESTION_FILE);
             _settings.setQuestionPath(analysisQuestionPath);
             Answer currentAnswer;
+
+            Question question = Question.parseQuestion(_settings.getQuestionPath());
+            if ((question.getDifferential() && question.getNonDifferentialOnly())
+                || (!question.getDifferential() && question.getDifferentialOnly())) {
+              // don't run any nonDifferentialOnly questions in differential mode or any
+              // differentialOnly questions in nonDifferential mode
+              return;
+            }
+
             try (ActiveSpan analysisQuestionSpan =
                 GlobalTracer.get().buildSpan("Getting answer to analysis question").startActive()) {
               assert analysisQuestionSpan != null; // make span not show up as unused

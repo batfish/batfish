@@ -100,6 +100,7 @@ public class BfConsts {
   public static final String PROP_COORDINATOR_PROPERTIES_PATH = "batfishCoordinatorPropertiesPath";
   public static final String PROP_DESCRIPTION = "description";
   public static final String PROP_DIFFERENTIAL = "differential";
+  public static final String PROP_DIFFERENTIAL_ONLY = "differentialOnly";
   public static final String PROP_DISPLAY_HINTS = "displayHints";
   public static final String PROP_EXCLUSIONS = "exclusions";
   public static final String PROP_INCLUDE_ONE_TABLE_KEYS = "includeOneTableKeys";
@@ -109,6 +110,7 @@ public class BfConsts {
   public static final String PROP_LONG_DESCRIPTION = "longDescription";
   public static final String PROP_MIN_ELEMENTS = "minElements";
   public static final String PROP_MIN_LENGTH = "minLength";
+  public static final String PROP_NON_DIFFERENTIAL_ONLY = "nonDifferentialOnly";
   public static final String PROP_OPTIONAL = "optional";
   public static final String PROP_QUESTION = "question";
   public static final String PROP_STATUS = "status";

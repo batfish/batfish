@@ -288,6 +288,12 @@ public abstract class Question implements IQuestion {
   /** When diffing tables, whether to ignore keys present in only one table */
   private boolean _includeOneTableKeys;
 
+  /** if true this question should only be run as a differential */
+  private boolean _differentialOnly;
+
+  /** if true this question should not be run as a differential */
+  private boolean _nonDifferentialOnly;
+
   private InstanceData _instance;
 
   public Question() {
@@ -311,6 +317,11 @@ public abstract class Question implements IQuestion {
   @JsonProperty(BfConsts.PROP_DIFFERENTIAL)
   public boolean getDifferential() {
     return _differential;
+  }
+
+  @JsonProperty(BfConsts.PROP_DIFFERENTIAL_ONLY)
+  public boolean getDifferentialOnly() {
+    return _differentialOnly;
   }
 
   @JsonProperty(BfConsts.PROP_DISPLAY_HINTS)
@@ -337,6 +348,11 @@ public abstract class Question implements IQuestion {
   @JsonProperty(BfConsts.PROP_INSTANCE)
   public InstanceData getInstance() {
     return _instance;
+  }
+
+  @JsonProperty(BfConsts.PROP_NON_DIFFERENTIAL_ONLY)
+  public boolean getNonDifferentialOnly() {
+    return _nonDifferentialOnly;
   }
 
   /**
@@ -508,6 +524,11 @@ public abstract class Question implements IQuestion {
     _differential = differential;
   }
 
+  @JsonProperty(BfConsts.PROP_DIFFERENTIAL_ONLY)
+  public void setDifferentialOnly(boolean differentialOnly) {
+    _differentialOnly = differentialOnly;
+  }
+
   @JsonProperty(BfConsts.PROP_DISPLAY_HINTS)
   public void setDisplayHints(DisplayHints displayHints) {
     _displayHints = displayHints;
@@ -526,6 +547,11 @@ public abstract class Question implements IQuestion {
   @JsonProperty(BfConsts.PROP_INSTANCE)
   public void setInstance(InstanceData instance) {
     _instance = instance;
+  }
+
+  @JsonProperty(BfConsts.PROP_NON_DIFFERENTIAL_ONLY)
+  public void setNonDifferentialOnly(boolean nonDifferentialOnly) {
+    _nonDifferentialOnly = nonDifferentialOnly;
   }
 
   @Override
