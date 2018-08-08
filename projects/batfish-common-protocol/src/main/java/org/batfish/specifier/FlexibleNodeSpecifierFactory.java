@@ -43,8 +43,10 @@ public class FlexibleNodeSpecifierFactory implements NodeSpecifierFactory {
     if (matcher.find()) {
       String[] words = matcher.group(1).trim().split(",");
       checkArgument(
-          words.length != 1 && words.length != 2,
-          "Parameter(s) to ref.noderole should be a role regex and optionally, a dimension followed by ','");
+          words.length == 1 || words.length == 2,
+          "Parameter(s) to ref.noderole should be (roleRegex) or (roleRegex, roleDimension). Got ("
+              + matcher.group(1)
+              + ")");
       Pattern rolePattern = Pattern.compile(words[0].trim(), Pattern.CASE_INSENSITIVE);
       String roleDimension = words.length == 1 ? null : words[1].trim();
       return new RoleRegexNodeSpecifier(rolePattern, roleDimension);
