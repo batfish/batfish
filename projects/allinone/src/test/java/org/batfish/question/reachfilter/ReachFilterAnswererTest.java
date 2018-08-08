@@ -91,7 +91,7 @@ public final class ReachFilterAnswererTest {
 
   private static final IpAccessList DENY_ACL =
       IpAccessList.builder()
-          .setName("foo")
+          .setName("denyAcl")
           .setLines(
               ImmutableList.of(
                   IpAccessListLine.rejecting().setMatchCondition(matchDst(IP0)).build(),
@@ -103,7 +103,7 @@ public final class ReachFilterAnswererTest {
 
   private static final IpAccessList MATCH_LINE2_ACL =
       IpAccessList.builder()
-          .setName("foo")
+          .setName("matchLine2Acl")
           .setLines(
               ImmutableList.of(
                   IpAccessListLine.rejecting().setMatchCondition(matchDst(IP0)).build(),
@@ -113,7 +113,7 @@ public final class ReachFilterAnswererTest {
 
   private static final IpAccessList SRC_ACL =
       IpAccessList.builder()
-          .setName("foo")
+          .setName("srcAcl")
           .setLines(
               ImmutableList.of(
                   accepting()
@@ -317,7 +317,11 @@ public final class ReachFilterAnswererTest {
                     allOf(
                         hasColumn("action", equalTo("ACCEPT"), Schema.STRING),
                         hasColumn("filterName", equalTo(BLOCKED_LINE_ACL.getName()), Schema.STRING),
-                        hasColumn("lineNumber", equalTo(0), Schema.INTEGER))))));
+                        hasColumn("lineNumber", equalTo(0), Schema.INTEGER)),
+                    allOf(
+                        hasColumn("action", equalTo("ACCEPT"), Schema.STRING),
+                        hasColumn("filterName", equalTo(SRC_ACL.getName()), Schema.STRING),
+                        hasColumn("lineNumber", oneOf(0, 1, 2), Schema.INTEGER))))));
   }
 
   @Test
