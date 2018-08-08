@@ -806,14 +806,14 @@ class TransferBDD {
     BDD acc = factory.zero();
     for (CommunityListLine line : lines) {
       boolean action = (line.getAction() == LineAction.ACCEPT);
-      CommunityVar cvar = toCommunityVar(line.getMatchCondition());
+      CommunityVar cvar = toRegexCommunityVar(toCommunityVar(line.getMatchCondition()));
       p.debug("Match Line: " + cvar);
       p.debug("Action: " + line.getAction());
       // Skip this match if it is irrelevant
       if (_policyQuotient.getCommsMatchedButNotAssigned().contains(cvar)) {
         continue;
       }
-      List<CommunityVar> deps = _commDeps.get(toRegexCommunityVar(cvar));
+      List<CommunityVar> deps = _commDeps.get(cvar);
       for (CommunityVar dep : deps) {
         p.debug("Test for: " + dep);
         BDD c = other.getCommunities().get(dep);
