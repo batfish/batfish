@@ -45,6 +45,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -2241,32 +2242,22 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return String.format("~COMBINED_OUTGOING_ACL~%s~", interfaceName);
   }
 
-  /**
-   * For a given protocol, processes any redistribution policy that exists and adds any new policy
-   * statements to {@code allOspfExportStatements}.
-   */
-  private void applyOspfRedistributionPolicy(
-      OspfProcess proc,
-      RoutingProtocol protocol,
-      CiscoStructureUsage structureType,
-      List<Statement> allOspfExportStatements) {
-    OspfRedistributionPolicy policy = proc.getRedistributionPolicies().get(protocol);
-    if (policy == null) {
-      // There is no redistribution policy for this protocol.
-      return;
-    }
-
-    If redistributionPolicy = convertOspfRedistributionPolicy(policy, proc, structureType);
-    allOspfExportStatements.add(redistributionPolicy);
-  }
-
   // For testing.
-  If convertOspfRedistributionPolicy(
-      OspfRedistributionPolicy policy, OspfProcess proc, CiscoStructureUsage structureType) {
+  If convertOspfRedistributionPolicy(OspfRedistributionPolicy policy, OspfProcess proc) {
     RoutingProtocol protocol = policy.getSourceProtocol();
     // All redistribution must match the specified protocol.
     Conjunction ospfExportConditions = new Conjunction();
-    ospfExportConditions.getConjuncts().add(new MatchProtocol(protocol));
+    if (protocol == RoutingProtocol.EIGRP) {
+      ospfExportConditions
+          .getConjuncts()
+          .add(
+              new Disjunction(
+                  ImmutableList.of(
+                      new MatchProtocol(RoutingProtocol.EIGRP),
+                      new MatchProtocol(RoutingProtocol.EIGRP_EX))));
+    } else {
+      ospfExportConditions.getConjuncts().add(new MatchProtocol(protocol));
+    }
 
     // Do not redistribute the default route.
     ospfExportConditions.getConjuncts().add(NOT_DEFAULT_ROUTE);
@@ -2477,25 +2468,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
       ospfExportDefault.setGuard(ospfExportDefaultConditions);
     }
 
-    // policy for redistributing connected routes
-    applyOspfRedistributionPolicy(
-        proc,
-        RoutingProtocol.CONNECTED,
-        CiscoStructureUsage.OSPF_REDISTRIBUTE_CONNECTED_MAP,
-        ospfExportStatements);
-    // ... for static routes
-    applyOspfRedistributionPolicy(
-        proc,
-        RoutingProtocol.STATIC,
-        CiscoStructureUsage.OSPF_REDISTRIBUTE_STATIC_MAP,
-        ospfExportStatements);
-    // ... for BGP routes
-    applyOspfRedistributionPolicy(
-        proc,
-        RoutingProtocol.BGP,
-        CiscoStructureUsage.OSPF_REDISTRIBUTE_BGP_MAP,
-        ospfExportStatements);
-
     newProcess.setReferenceBandwidth(proc.getReferenceBandwidth());
     Ip routerId = proc.getRouterId();
     if (routerId == null) {
@@ -2506,6 +2478,15 @@ public final class CiscoConfiguration extends VendorConfiguration {
       }
     }
     newProcess.setRouterId(routerId);
+
+    // policies for redistributing routes
+    ospfExportStatements.addAll(
+        proc.getRedistributionPolicies()
+            .values()
+            .stream()
+            .map(policy -> convertOspfRedistributionPolicy(policy, proc))
+            .collect(Collectors.toList()));
+
     return newProcess;
   }
 
