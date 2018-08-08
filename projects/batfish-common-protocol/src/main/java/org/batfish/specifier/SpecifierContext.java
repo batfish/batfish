@@ -3,13 +3,13 @@ package org.batfish.specifier;
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.referencelibrary.ReferenceBook;
-import org.batfish.role.NodeRole;
+import org.batfish.role.NodeRoleDimension;
 
 /**
  * Collects all the information about the network that is needed by {@link NodeSpecifier}s, {@link
@@ -23,9 +23,9 @@ public interface SpecifierContext {
   /** @return the set of {@link ReferenceBook} with name {@code bookName}. */
   Optional<ReferenceBook> getReferenceBook(String bookName);
 
-  /** @return the set of {@link NodeRole}s in the network with the input dimension. */
+  /** @return the {@link NodeRoleDimension} */
   @Nonnull
-  Set<NodeRole> getNodeRolesByDimension(String dimension);
+  Optional<NodeRoleDimension> getNodeRoleDimension(@Nullable String dimension);
 
   /**
    * @return the {@link IpSpace}s owned by each interface in the network. Mapping: hostname -&gt;

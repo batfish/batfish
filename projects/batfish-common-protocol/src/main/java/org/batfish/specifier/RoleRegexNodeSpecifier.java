@@ -1,31 +1,41 @@
 package org.batfish.specifier;
 
 import com.google.common.collect.ImmutableSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.role.NodeRole;
+import org.batfish.role.NodeRoleDimension;
 
 /**
  * A {@link NodeSpecifier} that specifies the set of nodes with a role with the input dimension and
  * a name matching the input regex.
  */
+@ParametersAreNonnullByDefault
 public final class RoleRegexNodeSpecifier implements NodeSpecifier {
-  private final Pattern _rolePattern;
-  private final String _roleDimension;
+  @Nonnull private final Pattern _rolePattern;
+  @Nullable private final String _roleDimension;
 
-  public RoleRegexNodeSpecifier(Pattern rolePattern, String roleDimension) {
+  public RoleRegexNodeSpecifier(Pattern rolePattern, @Nullable String roleDimension) {
     _rolePattern = rolePattern;
     _roleDimension = roleDimension;
   }
 
   @Override
   public Set<String> resolve(SpecifierContext ctxt) {
+    Optional<NodeRoleDimension> dimension = ctxt.getNodeRoleDimension(_roleDimension);
     Set<NodeRole> roles =
-        ctxt.getNodeRolesByDimension(_roleDimension)
-            .stream()
-            .filter(role -> _rolePattern.matcher(role.getName()).matches())
-            .collect(Collectors.toSet());
+        dimension.isPresent()
+            ? dimension
+                .get()
+                .getRoles()
+                .stream()
+                .filter(role -> _rolePattern.matcher(role.getName()).matches())
+                .collect(ImmutableSet.toImmutableSet())
+            : ImmutableSet.of();
 
     return ctxt.getConfigs()
         .keySet()
