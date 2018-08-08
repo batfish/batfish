@@ -1,15 +1,20 @@
 package org.batfish.symbolic.bdd;
 
+import static org.batfish.symbolic.CommunityVarCollector.collectCommunityVars;
+import static org.batfish.symbolic.bdd.CommunityVarConverter.toCommunityVar;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import org.batfish.common.BatfishException;
+import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.Configuration;
@@ -36,7 +41,6 @@ import org.batfish.datamodel.routing_policy.expr.DisjunctionChain;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.IncrementLocalPreference;
 import org.batfish.datamodel.routing_policy.expr.IncrementMetric;
-import org.batfish.datamodel.routing_policy.expr.InlineCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.IntExpr;
 import org.batfish.datamodel.routing_policy.expr.LiteralAsList;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
@@ -583,7 +587,7 @@ class TransferBDD {
       } else if (stmt instanceof AddCommunity) {
         curP.debug("AddCommunity");
         AddCommunity ac = (AddCommunity) stmt;
-        Set<CommunityVar> comms = _graph.findAllCommunities(_conf, ac.getExpr());
+        Set<CommunityVar> comms = collectCommunityVars(_conf, ac.getExpr());
         for (CommunityVar cvar : comms) {
           if (!_policyQuotient.getCommsAssignedButNotMatched().contains(cvar)) {
             curP.indent().debug("Value: " + cvar);
@@ -597,7 +601,7 @@ class TransferBDD {
       } else if (stmt instanceof SetCommunity) {
         curP.debug("SetCommunity");
         SetCommunity sc = (SetCommunity) stmt;
-        Set<CommunityVar> comms = _graph.findAllCommunities(_conf, sc.getExpr());
+        Set<CommunityVar> comms = collectCommunityVars(_conf, sc.getExpr());
         for (CommunityVar cvar : comms) {
           if (!_policyQuotient.getCommsAssignedButNotMatched().contains(cvar)) {
             curP.indent().debug("Value: " + cvar);
@@ -611,7 +615,7 @@ class TransferBDD {
       } else if (stmt instanceof DeleteCommunity) {
         curP.debug("DeleteCommunity");
         DeleteCommunity ac = (DeleteCommunity) stmt;
-        Set<CommunityVar> comms = _graph.findAllCommunities(_conf, ac.getExpr());
+        Set<CommunityVar> comms = collectCommunityVars(_conf, ac.getExpr());
         Set<CommunityVar> toDelete = new HashSet<>();
         // Find comms to delete
         for (CommunityVar cvar : comms) {
@@ -802,7 +806,7 @@ class TransferBDD {
     BDD acc = factory.zero();
     for (CommunityListLine line : lines) {
       boolean action = (line.getAction() == LineAction.ACCEPT);
-      CommunityVar cvar = new CommunityVar(CommunityVar.Type.REGEX, line.getRegex(), null);
+      CommunityVar cvar = toRegexCommunityVar(toCommunityVar(line.getMatchCondition()));
       p.debug("Match Line: " + cvar);
       p.debug("Action: " + line.getAction());
       // Skip this match if it is irrelevant
@@ -824,8 +828,14 @@ class TransferBDD {
    */
   private BDD matchCommunitySet(
       TransferParam<BDDRoute> p, Configuration conf, CommunitySetExpr e, BDDRoute other) {
-    if (e instanceof InlineCommunitySet) {
-      Set<CommunityVar> comms = _graph.findAllCommunities(conf, e);
+
+    if (e instanceof CommunityList) {
+      Set<CommunityVar> comms =
+          ((CommunityList) e)
+              .getLines()
+              .stream()
+              .map(line -> toCommunityVar(line.getMatchCondition()))
+              .collect(Collectors.toSet());
       BDD acc = factory.one();
       for (CommunityVar comm : comms) {
         p.debug("Inline Community Set: " + comm);
@@ -988,5 +998,20 @@ class TransferBDD {
     // BDDRoute route = result.getReturnValue().getFirst();
     // System.out.println("DOT: \n" + route.dot(route.getLocalPref().getBitvec()[31]));
     return result.getReturnValue().getFirst();
+  }
+
+  /*
+   * Convert EXACT community vars to their REGEX equivalents.
+   */
+  private static CommunityVar toRegexCommunityVar(CommunityVar cvar) {
+    switch (cvar.getType()) {
+      case REGEX:
+        return cvar;
+      case EXACT:
+        return new CommunityVar(
+            Type.REGEX, String.format("^%s$", CommonUtil.longToCommunity(cvar.asLong())), null);
+      default:
+        throw new BatfishException("Unexpected CommunityVar type: " + cvar.getType());
+    }
   }
 }

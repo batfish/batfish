@@ -312,8 +312,6 @@ import org.batfish.datamodel.routing_policy.expr.AsExpr;
 import org.batfish.datamodel.routing_policy.expr.AsPathSetElem;
 import org.batfish.datamodel.routing_policy.expr.AsPathSetExpr;
 import org.batfish.datamodel.routing_policy.expr.AutoAs;
-import org.batfish.datamodel.routing_policy.expr.CommunitySetElem;
-import org.batfish.datamodel.routing_policy.expr.CommunitySetElemHalfExpr;
 import org.batfish.datamodel.routing_policy.expr.DecrementLocalPreference;
 import org.batfish.datamodel.routing_policy.expr.DecrementMetric;
 import org.batfish.datamodel.routing_policy.expr.ExplicitAs;
@@ -324,7 +322,6 @@ import org.batfish.datamodel.routing_policy.expr.IncrementMetric;
 import org.batfish.datamodel.routing_policy.expr.IntComparator;
 import org.batfish.datamodel.routing_policy.expr.IntExpr;
 import org.batfish.datamodel.routing_policy.expr.IsisLevelExpr;
-import org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.LiteralIsisLevel;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
@@ -333,14 +330,12 @@ import org.batfish.datamodel.routing_policy.expr.LiteralRouteType;
 import org.batfish.datamodel.routing_policy.expr.LongExpr;
 import org.batfish.datamodel.routing_policy.expr.NamedAsPathSet;
 import org.batfish.datamodel.routing_policy.expr.OriginExpr;
-import org.batfish.datamodel.routing_policy.expr.RangeCommunitySetElemHalf;
 import org.batfish.datamodel.routing_policy.expr.RegexAsPathSetElem;
 import org.batfish.datamodel.routing_policy.expr.RouteType;
 import org.batfish.datamodel.routing_policy.expr.RouteTypeExpr;
 import org.batfish.datamodel.routing_policy.expr.SubRangeExpr;
 import org.batfish.datamodel.routing_policy.expr.VarAs;
 import org.batfish.datamodel.routing_policy.expr.VarAsPathSet;
-import org.batfish.datamodel.routing_policy.expr.VarCommunitySetElemHalf;
 import org.batfish.datamodel.routing_policy.expr.VarInt;
 import org.batfish.datamodel.routing_policy.expr.VarIsisLevel;
 import org.batfish.datamodel.routing_policy.expr.VarLong;
@@ -472,6 +467,8 @@ import org.batfish.grammar.cisco.CiscoParser.Cmm_service_templateContext;
 import org.batfish.grammar.cisco.CiscoParser.Cntlr_rf_channelContext;
 import org.batfish.grammar.cisco.CiscoParser.Cntlrrfc_depi_tunnelContext;
 import org.batfish.grammar.cisco.CiscoParser.CommunityContext;
+import org.batfish.grammar.cisco.CiscoParser.Community_set_elemContext;
+import org.batfish.grammar.cisco.CiscoParser.Community_set_elem_halfContext;
 import org.batfish.grammar.cisco.CiscoParser.Community_set_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Compare_routerid_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Continue_rm_stanzaContext;
@@ -846,8 +843,6 @@ import org.batfish.grammar.cisco.CiscoParser.Router_bgp_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Router_id_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Router_isis_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Rp_community_setContext;
-import org.batfish.grammar.cisco.CiscoParser.Rp_community_set_elemContext;
-import org.batfish.grammar.cisco.CiscoParser.Rp_community_set_elem_halfContext;
 import org.batfish.grammar.cisco.CiscoParser.Rp_isis_metric_typeContext;
 import org.batfish.grammar.cisco.CiscoParser.Rp_metric_typeContext;
 import org.batfish.grammar.cisco.CiscoParser.Rp_ospf_metric_typeContext;
@@ -1012,6 +1007,10 @@ import org.batfish.representation.cisco.CiscoConfiguration;
 import org.batfish.representation.cisco.CiscoSourceNat;
 import org.batfish.representation.cisco.CiscoStructureType;
 import org.batfish.representation.cisco.CiscoStructureUsage;
+import org.batfish.representation.cisco.CommunitySetElem;
+import org.batfish.representation.cisco.CommunitySetElemHalfExpr;
+import org.batfish.representation.cisco.CommunitySetElemHalves;
+import org.batfish.representation.cisco.CommunitySetElemIosRegex;
 import org.batfish.representation.cisco.CryptoMapEntry;
 import org.batfish.representation.cisco.CryptoMapSet;
 import org.batfish.representation.cisco.DynamicIpBgpPeerGroup;
@@ -1045,10 +1044,12 @@ import org.batfish.representation.cisco.IsakmpProfile;
 import org.batfish.representation.cisco.IsisProcess;
 import org.batfish.representation.cisco.IsisRedistributionPolicy;
 import org.batfish.representation.cisco.Keyring;
+import org.batfish.representation.cisco.LiteralCommunitySetElemHalf;
 import org.batfish.representation.cisco.MacAccessList;
 import org.batfish.representation.cisco.MasterBgpPeerGroup;
 import org.batfish.representation.cisco.MatchSemantics;
 import org.batfish.representation.cisco.NamedBgpPeerGroup;
+import org.batfish.representation.cisco.NamedCommunitySet;
 import org.batfish.representation.cisco.NatPool;
 import org.batfish.representation.cisco.NetworkObject;
 import org.batfish.representation.cisco.NetworkObjectGroup;
@@ -1066,6 +1067,7 @@ import org.batfish.representation.cisco.PrefixListLine;
 import org.batfish.representation.cisco.ProtocolObjectGroup;
 import org.batfish.representation.cisco.ProtocolObjectGroupProtocolLine;
 import org.batfish.representation.cisco.ProtocolOrServiceObjectGroupServiceSpecifier;
+import org.batfish.representation.cisco.RangeCommunitySetElemHalf;
 import org.batfish.representation.cisco.RipProcess;
 import org.batfish.representation.cisco.RouteMap;
 import org.batfish.representation.cisco.RouteMapClause;
@@ -1166,6 +1168,7 @@ import org.batfish.representation.cisco.Tunnel;
 import org.batfish.representation.cisco.Tunnel.TunnelMode;
 import org.batfish.representation.cisco.UdpServiceObjectGroupLine;
 import org.batfish.representation.cisco.UnimplementedAccessListServiceSpecifier;
+import org.batfish.representation.cisco.VarCommunitySetElemHalf;
 import org.batfish.representation.cisco.Vrf;
 import org.batfish.representation.cisco.VrrpGroup;
 import org.batfish.representation.cisco.VrrpInterface;
@@ -1291,12 +1294,15 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (text.length() == 0) {
       return text;
     }
-    if (text.charAt(0) != '"') {
+    char firstChar = text.charAt(0);
+    if (firstChar != '"' && firstChar != '\'') {
       return text;
-    } else if (text.charAt(text.length() - 1) != '"') {
-      throw new BatfishException("Improperly-quoted string");
-    } else {
+    }
+    char lastChar = text.charAt(text.length() - 1);
+    if ((firstChar == '"' && lastChar == '"') || (firstChar == '\'' && lastChar == '\'')) {
       return text.substring(1, text.length() - 1);
+    } else {
+      throw new BatfishException("Improperly-quoted string");
     }
   }
 
@@ -1980,6 +1986,18 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void enterCommunity_set_stanza(Community_set_stanzaContext ctx) {
     String name = ctx.name.getText();
     defineStructure(COMMUNITY_SET, name, ctx);
+    _configuration
+        .getCommunitySets()
+        .computeIfAbsent(
+            name,
+            n ->
+                new NamedCommunitySet(
+                    n,
+                    ctx.community_set_elem_list()
+                        .elems
+                        .stream()
+                        .map(this::toCommunitySetElemExpr)
+                        .collect(ImmutableList.toImmutableList())));
   }
 
   @Override
@@ -9040,21 +9058,22 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
   }
 
-  private CommunitySetElem toCommunitySetElemExpr(Rp_community_set_elemContext ctx) {
+  private CommunitySetElem toCommunitySetElemExpr(Community_set_elemContext ctx) {
     if (ctx.prefix != null) {
       CommunitySetElemHalfExpr prefix = toCommunitySetElemHalfExpr(ctx.prefix);
       CommunitySetElemHalfExpr suffix = toCommunitySetElemHalfExpr(ctx.suffix);
-      return new CommunitySetElem(prefix, suffix);
+      return new CommunitySetElemHalves(prefix, suffix);
     } else if (ctx.community() != null) {
       long value = toLong(ctx.community());
-      return new CommunitySetElem(value);
+      return new CommunitySetElemHalves(value);
+    } else if (ctx.IOS_REGEX() != null) {
+      return new CommunitySetElemIosRegex(unquote(ctx.COMMUNITY_SET_REGEX().getText()));
     } else {
       throw convError(CommunitySetElem.class, ctx);
     }
   }
 
-  private CommunitySetElemHalfExpr toCommunitySetElemHalfExpr(
-      Rp_community_set_elem_halfContext ctx) {
+  private CommunitySetElemHalfExpr toCommunitySetElemHalfExpr(Community_set_elem_halfContext ctx) {
     if (ctx.value != null) {
       int value = toInteger(ctx.value);
       return new LiteralCommunitySetElemHalf(value);
@@ -9498,7 +9517,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   public long toLong(CommunityContext ctx) {
-    if (ctx.COMMUNITY_NUMBER() != null) {
+    if (ctx.ACCEPT_OWN() != null) {
+      return WellKnownCommunity.ACCEPT_OWN;
+    } else if (ctx.COMMUNITY_NUMBER() != null) {
       String numberText = ctx.com.getText();
       String[] parts = numberText.split(":");
       String leftStr = parts[0];

@@ -66,7 +66,8 @@ bgp_asn
 
 community
 :
-   com = COMMUNITY_NUMBER
+   com = ACCEPT_OWN
+   | com = COMMUNITY_NUMBER
    | com = DEC
    | com = GSHUT
    | com = INTERNET
@@ -450,16 +451,18 @@ route_policy_params_list
    )*
 ;
 
-rp_community_set_elem
+community_set_elem
 :
+   community
+   |
    (
-      prefix = rp_community_set_elem_half COLON suffix =
-      rp_community_set_elem_half
+     prefix = community_set_elem_half COLON suffix = community_set_elem_half
    )
-   | community
+   | DFA_REGEX COMMUNITY_SET_REGEX
+   | IOS_REGEX COMMUNITY_SET_REGEX
 ;
 
-rp_community_set_elem_half
+community_set_elem_half
 :
    value = DEC
    | var = RP_VARIABLE
@@ -468,6 +471,7 @@ rp_community_set_elem_half
       BRACKET_LEFT first = DEC PERIOD PERIOD last = DEC BRACKET_RIGHT
    )
    | ASTERISK
+   | PRIVATE_AS
 ;
 
 rp_subrange

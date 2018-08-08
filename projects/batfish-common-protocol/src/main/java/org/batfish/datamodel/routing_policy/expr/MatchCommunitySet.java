@@ -58,7 +58,7 @@ public class MatchCommunitySet extends BooleanExpr {
       inputCommunities = bgpRoute.getCommunities();
     }
     if (inputCommunities != null) {
-      match = _expr.matchSingleCommunity(environment, inputCommunities);
+      match = _expr.matchAnyCommunity(environment, inputCommunities);
     }
     result.setBooleanValue(match);
     return result;

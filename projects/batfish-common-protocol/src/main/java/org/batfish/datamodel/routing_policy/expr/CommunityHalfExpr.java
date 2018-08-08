@@ -4,4 +4,9 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import java.io.Serializable;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
-public interface CommunitySetElemHalfExpr extends Serializable {}
+public interface CommunityHalfExpr extends Serializable {
+
+  boolean dynamicMatchCommunity();
+
+  boolean matches(int communityHalf);
+}

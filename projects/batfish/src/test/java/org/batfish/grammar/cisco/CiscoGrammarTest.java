@@ -133,6 +133,8 @@ import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.hasMetric;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.isAdvertised;
 import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasArea;
 import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasAreas;
+import static org.batfish.datamodel.matchers.RegexCommunitySetMatchers.hasRegex;
+import static org.batfish.datamodel.matchers.RegexCommunitySetMatchers.isRegexCommunitySet;
 import static org.batfish.datamodel.matchers.SnmpServerMatchers.hasCommunities;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasEigrpProcess;
@@ -222,6 +224,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
 import org.batfish.common.WellKnownCommunity;
 import org.batfish.common.plugin.DataPlanePlugin;
 import org.batfish.common.util.CommonUtil;
@@ -266,6 +269,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
+import org.batfish.datamodel.RegexCommunitySet;
 import org.batfish.datamodel.RipInternalRoute;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
@@ -274,6 +278,8 @@ import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.eigrp.EigrpMetric;
 import org.batfish.datamodel.eigrp.EigrpProcessMode;
+import org.batfish.datamodel.matchers.CommunityListLineMatchers;
+import org.batfish.datamodel.matchers.CommunityListMatchers;
 import org.batfish.datamodel.matchers.ConfigurationMatchers;
 import org.batfish.datamodel.matchers.EigrpInterfaceSettingsMatchers;
 import org.batfish.datamodel.matchers.EigrpProcessMatchers;
@@ -296,6 +302,12 @@ import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.ospf.StubType;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.expr.CommunityHalvesExpr;
+import org.batfish.datamodel.routing_policy.expr.CommunitySetExpr;
+import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
+import org.batfish.datamodel.routing_policy.expr.LiteralCommunityConjunction;
+import org.batfish.datamodel.routing_policy.expr.LiteralCommunityHalf;
+import org.batfish.datamodel.routing_policy.expr.RangeCommunityHalf;
 import org.batfish.datamodel.tracking.DecrementPriority;
 import org.batfish.datamodel.tracking.TrackInterface;
 import org.batfish.main.Batfish;
@@ -1729,6 +1741,56 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testIosXrCommunitySet() throws IOException {
+    Configuration c = parseConfig("ios-xr-community-set");
+    CommunityList list = c.getCommunityLists().get("set1");
+
+    assertThat(
+        list,
+        CommunityListMatchers.hasLine(
+            0,
+            CommunityListLineMatchers.hasMatchCondition(
+                isRegexCommunitySet(hasRegex("^1234:.*")))));
+    assertThat(
+        list,
+        CommunityListMatchers.hasLine(
+            1,
+            CommunityListLineMatchers.hasMatchCondition(
+                equalTo(new CommunityHalvesExpr(RangeCommunityHalf.ALL, RangeCommunityHalf.ALL)))));
+    assertThat(
+        list,
+        CommunityListMatchers.hasLine(
+            2,
+            CommunityListLineMatchers.hasMatchCondition(
+                equalTo(new LiteralCommunity(CommonUtil.communityStringToLong("1:2"))))));
+    assertThat(
+        list,
+        CommunityListMatchers.hasLine(
+            3,
+            CommunityListLineMatchers.hasMatchCondition(
+                equalTo(
+                    new CommunityHalvesExpr(
+                        RangeCommunityHalf.ALL, new LiteralCommunityHalf(3))))));
+    assertThat(
+        list,
+        CommunityListMatchers.hasLine(
+            4,
+            CommunityListLineMatchers.hasMatchCondition(
+                equalTo(
+                    new CommunityHalvesExpr(
+                        new LiteralCommunityHalf(4), RangeCommunityHalf.ALL)))));
+    assertThat(
+        list,
+        CommunityListMatchers.hasLine(
+            5,
+            CommunityListLineMatchers.hasMatchCondition(
+                equalTo(
+                    new CommunityHalvesExpr(
+                        new LiteralCommunityHalf(6),
+                        new RangeCommunityHalf(new SubRange(100, 103)))))));
+  }
+
+  @Test
   public void testIosXrOspfReferenceBandwidth() throws IOException {
     Configuration manual = parseConfig("iosxrOspfCost");
     assertThat(manual.getDefaultVrf().getOspfProcess().getReferenceBandwidth(), equalTo(10e6d));
@@ -1939,79 +2001,100 @@ public class CiscoGrammarTest {
     SortedMap<String, CommunityList> nxosCommunityLists =
         nxosCommunityListConfig.getCommunityLists();
 
-    String iosRegexImpliedStd = getCLRegex(iosCommunityLists, "40");
-    String iosRegexImpliedExp = getCLRegex(iosCommunityLists, "400");
-    String iosRegexStd = getCLRegex(iosCommunityLists, "std_community");
-    String iosRegexExp = getCLRegex(iosCommunityLists, "exp_community");
-    String iosRegexStdAsnn = getCLRegex(iosCommunityLists, "std_as_nn");
-    String iosRegexExpAsnn = getCLRegex(iosCommunityLists, "exp_as_nn");
-    String iosRegexStdGshut = getCLRegex(iosCommunityLists, "std_gshut");
-    String iosRegexExpGshut = getCLRegex(iosCommunityLists, "exp_gshut");
-    String iosRegexStdInternet = getCLRegex(iosCommunityLists, "std_internet");
-    String iosRegexExpInternet = getCLRegex(iosCommunityLists, "exp_internet");
-    String iosRegexStdLocalAs = getCLRegex(iosCommunityLists, "std_local_AS");
-    String iosRegexExpLocalAs = getCLRegex(iosCommunityLists, "exp_local_AS");
-    String iosRegexStdNoAdv = getCLRegex(iosCommunityLists, "std_no_advertise");
-    String iosRegexExpNoAdv = getCLRegex(iosCommunityLists, "exp_no_advertise");
-    String iosRegexStdNoExport = getCLRegex(iosCommunityLists, "std_no_export");
-    String iosRegexExpNoExport = getCLRegex(iosCommunityLists, "exp_no_export");
+    long iosImpliedStd = communityListToCommunity(iosCommunityLists, "40");
+    String iosRegexImpliedExp = communityListToRegex(iosCommunityLists, "400");
+    long iosStdAsnn = communityListToCommunity(iosCommunityLists, "std_as_nn");
+    String iosRegexExpAsnn = communityListToRegex(iosCommunityLists, "exp_as_nn");
+    long iosStdGshut = communityListToCommunity(iosCommunityLists, "std_gshut");
+    String iosRegexExpGshut = communityListToRegex(iosCommunityLists, "exp_gshut");
+    long iosStdInternet = communityListToCommunity(iosCommunityLists, "std_internet");
+    String iosRegexExpInternet = communityListToRegex(iosCommunityLists, "exp_internet");
+    long iosStdLocalAs = communityListToCommunity(iosCommunityLists, "std_local_AS");
+    String iosRegexExpLocalAs = communityListToRegex(iosCommunityLists, "exp_local_AS");
+    long iosStdNoAdv = communityListToCommunity(iosCommunityLists, "std_no_advertise");
+    String iosRegexExpNoAdv = communityListToRegex(iosCommunityLists, "exp_no_advertise");
+    long iosStdNoExport = communityListToCommunity(iosCommunityLists, "std_no_export");
+    String iosRegexExpNoExport = communityListToRegex(iosCommunityLists, "exp_no_export");
 
-    String eosRegexStd = getCLRegex(eosCommunityLists, "eos_std");
-    String eosRegexExp = getCLRegex(eosCommunityLists, "eos_exp");
-    String eosRegexStdGshut = getCLRegex(eosCommunityLists, "eos_std_gshut");
-    String eosRegexStdInternet = getCLRegex(eosCommunityLists, "eos_std_internet");
-    String eosRegexStdLocalAs = getCLRegex(eosCommunityLists, "eos_std_local_AS");
-    String eosRegexStdNoAdv = getCLRegex(eosCommunityLists, "eos_std_no_adv");
-    String eosRegexStdNoExport = getCLRegex(eosCommunityLists, "eos_std_no_export");
-    String eosRegexStdMulti = getCLRegex(eosCommunityLists, "eos_std_multi");
-    String eosRegexExpMulti = getCLRegex(eosCommunityLists, "eos_exp_multi");
+    long eosStd = communityListToCommunity(eosCommunityLists, "eos_std");
+    String eosRegexExp = communityListToRegex(eosCommunityLists, "eos_exp");
+    long eosStdGshut = communityListToCommunity(eosCommunityLists, "eos_std_gshut");
+    long eosStdInternet = communityListToCommunity(eosCommunityLists, "eos_std_internet");
+    long eosStdLocalAs = communityListToCommunity(eosCommunityLists, "eos_std_local_AS");
+    long eosStdNoAdv = communityListToCommunity(eosCommunityLists, "eos_std_no_adv");
+    long eosStdNoExport = communityListToCommunity(eosCommunityLists, "eos_std_no_export");
+    String eosRegexExpMulti = communityListToRegex(eosCommunityLists, "eos_exp_multi");
 
-    String nxosRegexStd = getCLRegex(nxosCommunityLists, "nxos_std");
-    String nxosRegexExp = getCLRegex(nxosCommunityLists, "nxos_exp");
-    String nxosRegexStdInternet = getCLRegex(nxosCommunityLists, "nxos_std_internet");
-    String nxosRegexStdLocalAs = getCLRegex(nxosCommunityLists, "nxos_std_local_AS");
-    String nxosRegexStdNoAdv = getCLRegex(nxosCommunityLists, "nxos_std_no_adv");
-    String nxosRegexStdNoExport = getCLRegex(nxosCommunityLists, "nxos_std_no_export");
-    String nxosRegexStdMulti = getCLRegex(nxosCommunityLists, "nxos_std_multi");
-    String nxosRegexExpMulti = getCLRegex(nxosCommunityLists, "nxos_exp_multi");
+    long nxosStd = communityListToCommunity(nxosCommunityLists, "nxos_std");
+    String nxosRegexExp = communityListToRegex(nxosCommunityLists, "nxos_exp");
+    long nxosStdInternet = communityListToCommunity(nxosCommunityLists, "nxos_std_internet");
+    long nxosStdLocalAs = communityListToCommunity(nxosCommunityLists, "nxos_std_local_AS");
+    long nxosStdNoAdv = communityListToCommunity(nxosCommunityLists, "nxos_std_no_adv");
+    long nxosStdNoExport = communityListToCommunity(nxosCommunityLists, "nxos_std_no_export");
+    String nxosRegexExpMulti = communityListToRegex(nxosCommunityLists, "nxos_exp_multi");
+
+    // check literal communities
+    assertThat(iosImpliedStd, equalTo(4294967295L));
+    assertThat(iosStdAsnn, equalTo(CommonUtil.communityStringToLong("65535:65535")));
+    assertThat(eosStd, equalTo(CommonUtil.communityStringToLong("0:1")));
+    assertThat(nxosStd, equalTo(CommonUtil.communityStringToLong("65535:65535")));
+
+    // check regex communities
+    assertThat(iosRegexImpliedExp, equalTo("4294967295"));
+    assertThat(iosRegexExpAsnn, equalTo("65535:65535"));
+    assertThat(eosRegexExp, equalTo("1"));
+    /*
+     *  TODO: https://github.com/batfish/batfish/issues/1993
+     *  (Should be three regexes: '0:1', '0:2, '0:3')
+     */
+    assertThat(eosRegexExpMulti, equalTo("0:10:20:3"));
+    assertThat(nxosRegexExp, equalTo("65535:65535"));
+    /*
+     *  TODO: https://github.com/batfish/batfish/issues/1993
+     *  (Should be three regexes: '0:1', '0:2, '0:3')
+     */
+    assertThat(nxosRegexExpMulti, equalTo("0:10:20:3"));
 
     // Check well known community regexes are generated properly
-    String regexInternet = "^" + CommonUtil.longToCommunity(WellKnownCommunity.INTERNET) + "$";
-    String regexNoAdv = "^" + CommonUtil.longToCommunity(WellKnownCommunity.NO_ADVERTISE) + "$";
-    String regexNoExport = "^" + CommonUtil.longToCommunity(WellKnownCommunity.NO_EXPORT) + "$";
-    String regexGshut =
-        "^" + CommonUtil.longToCommunity(WellKnownCommunity.GRACEFUL_SHUTDOWN) + "$";
-    String regexLocalAs =
-        "^" + CommonUtil.longToCommunity(WellKnownCommunity.NO_EXPORT_SUBCONFED) + "$";
-    assertThat(iosRegexStdInternet, equalTo(regexInternet));
-    assertThat(iosRegexStdNoAdv, equalTo(regexNoAdv));
-    assertThat(iosRegexStdNoExport, equalTo(regexNoExport));
-    assertThat(iosRegexStdGshut, equalTo(regexGshut));
-    assertThat(iosRegexStdLocalAs, equalTo(regexLocalAs));
-    assertThat(eosRegexStdInternet, equalTo(regexInternet));
-    assertThat(eosRegexStdNoAdv, equalTo(regexNoAdv));
-    assertThat(eosRegexStdNoExport, equalTo(regexNoExport));
-    assertThat(eosRegexStdGshut, equalTo(regexGshut));
-    assertThat(eosRegexStdLocalAs, equalTo(regexLocalAs));
+    assertThat(iosStdInternet, equalTo(WellKnownCommunity.INTERNET));
+    assertThat(iosStdNoAdv, equalTo(WellKnownCommunity.NO_ADVERTISE));
+    assertThat(iosStdNoExport, equalTo(WellKnownCommunity.NO_EXPORT));
+    assertThat(iosStdGshut, equalTo(WellKnownCommunity.GRACEFUL_SHUTDOWN));
+    assertThat(iosStdLocalAs, equalTo(WellKnownCommunity.NO_EXPORT_SUBCONFED));
+    assertThat(eosStdInternet, equalTo(WellKnownCommunity.INTERNET));
+    assertThat(eosStdNoAdv, equalTo(WellKnownCommunity.NO_ADVERTISE));
+    assertThat(eosStdNoExport, equalTo(WellKnownCommunity.NO_EXPORT));
+    assertThat(eosStdGshut, equalTo(WellKnownCommunity.GRACEFUL_SHUTDOWN));
+    assertThat(eosStdLocalAs, equalTo(WellKnownCommunity.NO_EXPORT_SUBCONFED));
     // NX-OS does not support gshut
-    assertThat(nxosRegexStdInternet, equalTo(regexInternet));
-    assertThat(nxosRegexStdNoAdv, equalTo(regexNoAdv));
-    assertThat(nxosRegexStdNoExport, equalTo(regexNoExport));
-    assertThat(nxosRegexStdLocalAs, equalTo(regexLocalAs));
+    assertThat(nxosStdInternet, equalTo(WellKnownCommunity.INTERNET));
+    assertThat(nxosStdNoAdv, equalTo(WellKnownCommunity.NO_ADVERTISE));
+    assertThat(nxosStdNoExport, equalTo(WellKnownCommunity.NO_EXPORT));
+    assertThat(nxosStdLocalAs, equalTo(WellKnownCommunity.NO_EXPORT_SUBCONFED));
 
-    // Confirm for the same literal communities, standard and expanded regexs are different
-    assertThat(iosRegexImpliedStd, not(equalTo(iosRegexImpliedExp)));
-    assertThat(iosRegexStd, not(equalTo(iosRegexExp)));
-    assertThat(iosRegexStdAsnn, not(equalTo(iosRegexExpAsnn)));
-    assertThat(iosRegexStdInternet, not(equalTo(iosRegexExpInternet)));
-    assertThat(iosRegexStdNoAdv, not(equalTo(iosRegexExpNoAdv)));
-    assertThat(iosRegexStdNoExport, not(equalTo(iosRegexExpNoExport)));
-    assertThat(iosRegexStdGshut, not(equalTo(iosRegexExpGshut)));
-    assertThat(iosRegexStdLocalAs, not(equalTo(iosRegexExpLocalAs)));
-    assertThat(eosRegexStd, not(equalTo(eosRegexExp)));
-    assertThat(eosRegexStdMulti, not(equalTo(eosRegexExpMulti)));
-    assertThat(nxosRegexStd, not(equalTo(nxosRegexExp)));
-    assertThat(nxosRegexStdMulti, not(equalTo(nxosRegexExpMulti)));
+    // make sure well known communities in expanded lists are not actually converted
+    assertThat(iosRegexExpGshut, equalTo("gshut"));
+    assertThat(iosRegexExpInternet, equalTo("internet"));
+    assertThat(iosRegexExpLocalAs, equalTo("local-AS"));
+    assertThat(iosRegexExpNoAdv, equalTo("no-advertise"));
+    assertThat(iosRegexExpNoExport, equalTo("no-export"));
+
+    // check conjunctions of communities are converted correctly
+    assertThat(
+        ((LiteralCommunityConjunction)
+                communityListToMatchCondition(iosCommunityLists, "std_community"))
+            .getRequiredCommunities(),
+        equalTo(ImmutableSet.of(1L, 2L, 3L)));
+    assertThat(
+        ((LiteralCommunityConjunction)
+                communityListToMatchCondition(eosCommunityLists, "eos_std_multi"))
+            .getRequiredCommunities(),
+        equalTo(ImmutableSet.of(1L, 2L, 3L)));
+    assertThat(
+        ((LiteralCommunityConjunction)
+                communityListToMatchCondition(nxosCommunityLists, "nxos_std_multi"))
+            .getRequiredCommunities(),
+        equalTo(ImmutableSet.of(1L, 2L, 3L)));
   }
 
   @Test
@@ -2367,9 +2450,27 @@ public class CiscoGrammarTest {
                 hasIkePhase1Proposals(equalTo(ImmutableList.of("10", "20"))))));
   }
 
-  private static String getCLRegex(
+  private static CommunitySetExpr communityListToMatchCondition(
       SortedMap<String, CommunityList> communityLists, String communityName) {
-    return communityLists.get(communityName).getLines().get(0).getRegex();
+    return communityLists.get(communityName).getLines().get(0).getMatchCondition();
+  }
+
+  private static long communityListToCommunity(
+      SortedMap<String, CommunityList> communityLists, String communityName) {
+    return communityLists
+        .get(communityName)
+        .getLines()
+        .get(0)
+        .getMatchCondition()
+        .asLiteralCommunities(null)
+        .first();
+  }
+
+  private static @Nonnull String communityListToRegex(
+      SortedMap<String, CommunityList> communityLists, String communityName) {
+    return ((RegexCommunitySet)
+            communityLists.get(communityName).getLines().get(0).getMatchCondition())
+        .getRegex();
   }
 
   @Test
