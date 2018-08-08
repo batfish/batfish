@@ -3,8 +3,6 @@ package org.batfish.symbolic.bdd;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.math.LongMath;
-import java.math.RoundingMode;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -16,7 +14,6 @@ import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import org.batfish.common.BatfishException;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.NonRecursiveSupplier.NonRecursiveSupplierException;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpProtocol;
@@ -45,11 +42,9 @@ public class AclLineMatchExprToBDD implements GenericAclLineMatchExprVisitor<BDD
 
   private final BDDFactory _factory;
 
-  private final @Nullable Map<String, BDD> _matchSrcInterfaceBDDs;
+  private final BDDSrcManager _bddSrcManager;
 
   private Map<String, IpSpace> _namedIpSpaces;
-
-  private final @Nullable BDD _originatingFromDevice;
 
   private final BDDPacket _packet;
 
@@ -65,64 +60,24 @@ public class AclLineMatchExprToBDD implements GenericAclLineMatchExprVisitor<BDD
     _aclEnv = ImmutableMap.copyOf(aclEnv);
     _factory = factory;
     _bddOps = new BDDOps(factory);
-    _matchSrcInterfaceBDDs = null;
+    _bddSrcManager = new BDDSrcManager(packet, ImmutableList.of());
     _namedIpSpaces = ImmutableMap.copyOf(namedIpSpaces);
-    _originatingFromDevice = null;
     _packet = packet;
   }
 
-  /**
-   * This constructor supports all {@link AclLineMatchExpr AclLineMatchExprs}.
-   *
-   * @param factory
-   * @param packet
-   * @param aclEnv
-   * @param namedIpSpaces
-   * @param originatingFromDevice
-   * @param srcInterfaceVar A {@link BDDInteger} of length at least
-   *     ceiling(Log_2(srcInterfaces.length() + 1)). This is used to identify the source interface
-   *     of the packet. The +1 is required to reserve an extra value (0) for "no source interface"
-   *     (i.e. the packet originated from the device).
-   * @param srcInterfaces A list of the known interface names. {@link MatchSrcInterface} expressions
-   *     can match any name in this list (and only those names).
-   */
+  /** This constructor supports all {@link AclLineMatchExpr AclLineMatchExprs}. */
   public AclLineMatchExprToBDD(
       BDDFactory factory,
       BDDPacket packet,
       Map<String, Supplier<BDD>> aclEnv,
       Map<String, IpSpace> namedIpSpaces,
-      @Nonnull BDD originatingFromDevice,
-      BDDInteger srcInterfaceVar,
-      List<String> srcInterfaces) {
+      @Nonnull BDDSrcManager bddSrcManager) {
     _aclEnv = ImmutableMap.copyOf(aclEnv);
+    _bddSrcManager = bddSrcManager;
     _factory = factory;
     _bddOps = new BDDOps(factory);
-    _matchSrcInterfaceBDDs = computeMatchSrcInterfaceBDDs(srcInterfaceVar, srcInterfaces);
     _namedIpSpaces = ImmutableMap.copyOf(namedIpSpaces);
-    _originatingFromDevice = originatingFromDevice;
     _packet = packet;
-  }
-
-  /**
-   * A packet can enter a router from at most 1 interface, possibly none (if the packet originated
-   * at the router). So for N srcInterfaces, we need N+1 distinct values: one for each interface,
-   * and one for "none of them". We use 0 for "none of them".
-   */
-  private static Map<String, BDD> computeMatchSrcInterfaceBDDs(
-      BDDInteger srcInterfaceVar, List<String> srcInterfaces) {
-    int bitsAllocated = srcInterfaceVar.getBitvec().length;
-    int bitsRequired = LongMath.log2(srcInterfaces.size() + 1, RoundingMode.CEILING);
-    if (bitsAllocated < bitsRequired) {
-      throw new IllegalArgumentException(
-          String.format(
-              "Not enough bits in srcInterfaceVar (%d) for %d srcIntefaces. Need %d",
-              bitsAllocated, srcInterfaces.size(), bitsRequired));
-    }
-    ImmutableMap.Builder<String, BDD> matchSrcInterfaceBDDs = ImmutableMap.builder();
-    CommonUtil.forEachWithIndex(
-        srcInterfaces,
-        (idx, iface) -> matchSrcInterfaceBDDs.put(iface, srcInterfaceVar.value(idx + 1)));
-    return matchSrcInterfaceBDDs.build();
   }
 
   private @Nullable BDD toBDD(Collection<Integer> ints, BDDInteger var) {
@@ -245,21 +200,11 @@ public class AclLineMatchExprToBDD implements GenericAclLineMatchExprVisitor<BDD
 
   @Override
   public BDD visitMatchSrcInterface(MatchSrcInterface matchSrcInterface) {
-    if (_matchSrcInterfaceBDDs == null) {
-      throw new BatfishException("MatchSrcInterface is unsupported");
-    }
-    matchSrcInterface
-        .getSrcInterfaces()
-        .forEach(
-            iface ->
-                Preconditions.checkArgument(
-                    _matchSrcInterfaceBDDs.containsKey(iface),
-                    "MatchSrcInterface: unknown interface " + iface));
     return _bddOps.or(
         matchSrcInterface
             .getSrcInterfaces()
             .stream()
-            .map(_matchSrcInterfaceBDDs::get)
+            .map(_bddSrcManager::getSrcInterfaceBDD)
             .collect(Collectors.toList()));
   }
 
@@ -270,10 +215,7 @@ public class AclLineMatchExprToBDD implements GenericAclLineMatchExprVisitor<BDD
 
   @Override
   public BDD visitOriginatingFromDevice(OriginatingFromDevice originatingFromDevice) {
-    if (_originatingFromDevice == null) {
-      throw new BatfishException("OriginatingFromDevice is unsupported");
-    }
-    return _originatingFromDevice;
+    return _bddSrcManager.getOriginatingFromDeviceBDD();
   }
 
   @Override
