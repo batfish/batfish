@@ -6,11 +6,13 @@ import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.expr.CommunitySetExpr;
+import org.batfish.datamodel.routing_policy.expr.EmptyCommunitySetExpr;
 
 public class SetCommunity extends Statement {
 
-  /** */
   private static final long serialVersionUID = 1L;
+
+  public static final SetCommunity NONE = new SetCommunity(EmptyCommunitySetExpr.INSTANCE);
 
   private CommunitySetExpr _expr;
 
@@ -47,7 +49,7 @@ public class SetCommunity extends Statement {
   public Result execute(Environment environment) {
     Result result = new Result();
     BgpRoute.Builder bgpRoute = (BgpRoute.Builder) environment.getOutputRoute();
-    SortedSet<Long> communities = _expr.allCommunities(environment);
+    SortedSet<Long> communities = _expr.asLiteralCommunities(environment);
     bgpRoute.getCommunities().clear();
     bgpRoute.getCommunities().addAll(communities);
     if (environment.getWriteToIntermediateBgpAttributes()) {

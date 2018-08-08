@@ -469,10 +469,13 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private final Map<String, TrackMethod> _trackingGroups;
 
+  private Map<String, NamedCommunitySet> _communitySets;
+
   public CiscoConfiguration() {
     _asPathAccessLists = new TreeMap<>();
     _asPathSets = new TreeMap<>();
     _cf = new CiscoFamily();
+    _communitySets = new TreeMap<>();
     _cryptoMapSets = new HashMap<>();
     _dhcpRelayServers = new ArrayList<>();
     _dnsServers = new TreeSet<>();
@@ -2921,16 +2924,18 @@ public final class CiscoConfiguration extends VendorConfiguration {
       c.getAsPathAccessLists().put(apList.getName(), apList);
     }
 
-    // convert standard/expanded community lists to community lists
+    // convert standard/expanded community lists and community-sets to community lists
     for (StandardCommunityList scList : _standardCommunityLists.values()) {
-      ExpandedCommunityList ecList = scList.toExpandedCommunityList();
-      CommunityList cList = CiscoConversions.toCommunityList(ecList);
+      CommunityList cList = CiscoConversions.toCommunityList(scList);
       c.getCommunityLists().put(cList.getName(), cList);
     }
     for (ExpandedCommunityList ecList : _expandedCommunityLists.values()) {
       CommunityList cList = CiscoConversions.toCommunityList(ecList);
       c.getCommunityLists().put(cList.getName(), cList);
     }
+    _communitySets.forEach(
+        (name, communitySet) ->
+            c.getCommunityLists().put(name, CiscoConversions.toCommunityList(communitySet)));
 
     // convert prefix lists to route filter lists
     for (PrefixList prefixList : _prefixLists.values()) {
@@ -4108,5 +4113,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public Map<String, TrackMethod> getTrackingGroups() {
     return _trackingGroups;
+  }
+
+  public Map<String, NamedCommunitySet> getCommunitySets() {
+    return _communitySets;
   }
 }

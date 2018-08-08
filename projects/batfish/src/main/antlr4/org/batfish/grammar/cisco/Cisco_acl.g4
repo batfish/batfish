@@ -145,28 +145,15 @@ community_set_elem_list
    (
       (
          (
-            community_set_elem COMMA
+            elems += community_set_elem COMMA
          )
          | hash_comment
       ) NEWLINE
    )*
    (
-      community_set_elem
+      elems += community_set_elem
       | hash_comment
    ) NEWLINE
-;
-
-community_set_elem
-:
-   rp_community_set_elem
-   | ACCEPT_OWN
-   | DFA_REGEX COMMUNITY_SET_REGEX
-   | INTERNET
-   | IOS_REGEX COMMUNITY_SET_REGEX
-   | LOCAL_AS
-   | NO_ADVERTISE
-   | NO_EXPORT
-   | PRIVATE_AS
 ;
 
 etype
