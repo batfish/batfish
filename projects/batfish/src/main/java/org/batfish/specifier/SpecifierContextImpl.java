@@ -10,7 +10,6 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.main.Batfish;
 import org.batfish.referencelibrary.ReferenceBook;
-import org.batfish.role.NodeRole;
 import org.batfish.role.NodeRoleDimension;
 
 public class SpecifierContextImpl implements SpecifierContext {
@@ -47,11 +46,8 @@ public class SpecifierContextImpl implements SpecifierContext {
 
   @Nonnull
   @Override
-  public Set<NodeRole> getNodeRolesByDimension(String dimension) {
-    return _batfish
-        .getNodeRoleDimension(dimension)
-        .map(NodeRoleDimension::getRoles)
-        .orElseThrow(() -> new IllegalArgumentException("unknown role dimension: " + dimension));
+  public Optional<NodeRoleDimension> getNodeRoleDimension(String dimension) {
+    return _batfish.getNodeRoleDimension(dimension);
   }
 
   @Override
