@@ -4264,7 +4264,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     List<String> interfaces = ImmutableList.copyOf(node.getInterfaces().keySet());
     BDDSrcManager mgr = new BDDSrcManager(bddPacket, interfaces);
     BDDAcl bddAcl = BDDAcl.create(bddPacket, acl, node.getIpAccessLists(), node.getIpSpaces(), mgr);
-    BDD satAssignment = bddAcl.getBdd().fullSatOne();
+    BDD satAssignment = bddAcl.getBdd().and(mgr.isSane()).fullSatOne();
     if (satAssignment.isZero()) {
       return Optional.empty();
     }

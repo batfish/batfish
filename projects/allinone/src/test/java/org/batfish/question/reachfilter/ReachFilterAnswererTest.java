@@ -1,6 +1,8 @@
 package org.batfish.question.reachfilter;
 
+import static org.batfish.datamodel.IpAccessListLine.ACCEPT_ALL;
 import static org.batfish.datamodel.IpAccessListLine.accepting;
+import static org.batfish.datamodel.IpAccessListLine.rejecting;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.ORIGINATING_FROM_DEVICE;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
@@ -74,10 +76,7 @@ public final class ReachFilterAnswererTest {
           .build();
 
   private static final IpAccessList ACCEPT_ALL_ACL =
-      IpAccessList.builder()
-          .setName("ACCEPT_ALL")
-          .setLines(ImmutableList.of(IpAccessListLine.ACCEPT_ALL))
-          .build();
+      IpAccessList.builder().setName("ACCEPT_ALL").setLines(ImmutableList.of(ACCEPT_ALL)).build();
 
   private static final IpAccessList BLOCKED_LINE_ACL =
       IpAccessList.builder()
@@ -98,7 +97,7 @@ public final class ReachFilterAnswererTest {
                   accepting().setMatchCondition(matchDst(IP1)).build(),
                   accepting().setMatchCondition(matchDst(IP2)).build(),
                   IpAccessListLine.rejecting().setMatchCondition(matchDst(IP3)).build(),
-                  IpAccessListLine.ACCEPT_ALL))
+                  ACCEPT_ALL))
           .build();
 
   private static final IpAccessList MATCH_LINE2_ACL =
@@ -341,6 +340,23 @@ public final class ReachFilterAnswererTest {
 
     // cannot have originate from device and have a source interface
     flow = _batfish.reachFilter(_config, toMatchLineAcl(4, SRC_ACL));
+    assertThat(flow, equalTo(Optional.empty()));
+  }
+
+  @Test
+  public void testSane() {
+    // an ACL that can only match with an insane interface
+    IpAccessList insaneAcl =
+        IpAccessList.builder()
+            .setName("srcAcl")
+            .setLines(
+                ImmutableList.of(
+                    rejecting().setMatchCondition(ORIGINATING_FROM_DEVICE).build(),
+                    rejecting().setMatchCondition(matchSrcInterface(IFACE1)).build(),
+                    rejecting().setMatchCondition(matchSrcInterface(IFACE2)).build(),
+                    ACCEPT_ALL))
+            .build();
+    Optional<Flow> flow = _batfish.reachFilter(_config, toMatchLineAcl(0, SRC_ACL));
     assertThat(flow, equalTo(Optional.empty()));
   }
 }
