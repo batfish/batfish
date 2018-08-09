@@ -9,8 +9,8 @@ import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Flow.Builder;
 import org.batfish.datamodel.questions.IPacketTraceQuestion;
-import org.batfish.specifier.FlexibleLocationSpecifierFactory;
 import org.batfish.specifier.FlexibleIpSpaceSpecifierFactory;
+import org.batfish.specifier.FlexibleLocationSpecifierFactory;
 
 /**
  * A question to perform a traceroute.
