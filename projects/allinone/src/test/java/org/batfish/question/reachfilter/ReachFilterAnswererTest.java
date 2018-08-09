@@ -346,7 +346,7 @@ public final class ReachFilterAnswererTest {
   @Test
   public void testSane() {
     // an ACL that can only match with an insane interface
-    IpAccessList insaneAcl =
+    IpAccessList denyAllSourcesAcl =
         IpAccessList.builder()
             .setName("srcAcl")
             .setLines(
@@ -356,7 +356,7 @@ public final class ReachFilterAnswererTest {
                     rejecting().setMatchCondition(matchSrcInterface(IFACE2)).build(),
                     ACCEPT_ALL))
             .build();
-    Optional<Flow> flow = _batfish.reachFilter(_config, toMatchLineAcl(0, SRC_ACL));
+    Optional<Flow> flow = _batfish.reachFilter(_config, denyAllSourcesAcl);
     assertThat(flow, equalTo(Optional.empty()));
   }
 }
