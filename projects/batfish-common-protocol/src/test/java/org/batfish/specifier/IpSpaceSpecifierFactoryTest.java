@@ -35,18 +35,6 @@ public class IpSpaceSpecifierFactoryTest {
   }
 
   @Test
-  public void testFlexibleLocationIpSpaceSpecifierFactory() {
-    assertThat(
-        load(FlexibleLocationIpSpaceSpecifierFactory.NAME),
-        instanceOf(FlexibleLocationIpSpaceSpecifierFactory.class));
-    assertThat(
-        new FlexibleLocationIpSpaceSpecifierFactory().buildIpSpaceSpecifier("vrf=foo"),
-        equalTo(
-            new LocationIpSpaceSpecifier(
-                new VrfNameRegexInterfaceLinkLocationSpecifier(Pattern.compile("foo")))));
-  }
-
-  @Test
   public void testNodeNameRegexConnecgtedHostsIpSpaceSpecifierFactory() {
     assertThat(
         load(NodeNameRegexConnectedHostsIpSpaceSpecifierFactory.NAME),
