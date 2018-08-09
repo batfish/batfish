@@ -27,6 +27,12 @@ public class OspfArea extends ComparableStructure<Long> implements Serializable 
 
     private StubType _stubType;
 
+    /** For CISCO, we inject the default route by default. For Juniper, we don't. */
+    private boolean _injectDefaultRoute = DEFAULT_INJECT_DEFAULT_ROUTE;
+
+    /** The metric to use when injecting the default route. */
+    private int _metricOfDefaultRoute = DEFAULT_METRIC_OF_DEFAULT_ROUTE;
+
     Builder(NetworkFactory networkFactory) {
       super(networkFactory, OspfArea.class);
       _stubType = StubType.NONE;
@@ -42,6 +48,8 @@ public class OspfArea extends ComparableStructure<Long> implements Serializable 
       ospfArea._nssa = _nssa;
       ospfArea._stub = _stub;
       ospfArea._stubType = _stubType;
+      ospfArea._injectDefaultRoute = _injectDefaultRoute;
+      ospfArea._metricOfDefaultRoute = _metricOfDefaultRoute;
       return ospfArea;
     }
 
@@ -82,7 +90,15 @@ public class OspfArea extends ComparableStructure<Long> implements Serializable 
     }
   }
 
+  private static final boolean DEFAULT_INJECT_DEFAULT_ROUTE = true;
+
+  private static final int DEFAULT_METRIC_OF_DEFAULT_ROUTE = 0;
+
+  private static final String PROP_INJECT_DEFAULT_ROUTE = "injectDefaultRoute";
+
   private static final String PROP_INTERFACES = "interfaces";
+
+  private static final String PROP_METRIC_OF_DEFAULT_ROUTE = "metricOfDefaultRoute";
 
   private static final String PROP_NSSA = "nssa";
 
@@ -100,7 +116,11 @@ public class OspfArea extends ComparableStructure<Long> implements Serializable 
     return new Builder(networkFactory);
   }
 
+  private boolean _injectDefaultRoute = DEFAULT_INJECT_DEFAULT_ROUTE;
+
   private SortedSet<String> _interfaces;
+
+  private int _metricOfDefaultRoute = DEFAULT_METRIC_OF_DEFAULT_ROUTE;
 
   private NssaSettings _nssa;
 
@@ -120,10 +140,22 @@ public class OspfArea extends ComparableStructure<Long> implements Serializable 
     _summaries = new TreeMap<>();
   }
 
+  @JsonProperty(PROP_INJECT_DEFAULT_ROUTE)
+  @JsonPropertyDescription("Whether the default route should be injected")
+  public boolean getInjectDefaultRoute() {
+    return _injectDefaultRoute;
+  }
+
   @JsonProperty(PROP_INTERFACES)
   @JsonPropertyDescription("The interfaces assigned to this OSPF area")
   public SortedSet<String> getInterfaces() {
     return _interfaces;
+  }
+
+  @JsonProperty(PROP_METRIC_OF_DEFAULT_ROUTE)
+  @JsonPropertyDescription("The metric to use for the injected default route")
+  public int getMetricOfDefaultRoute() {
+    return _metricOfDefaultRoute;
   }
 
   @JsonProperty(PROP_NSSA)
@@ -149,6 +181,11 @@ public class OspfArea extends ComparableStructure<Long> implements Serializable 
   @JsonProperty(PROP_SUMMARY_FILTER)
   public String getSummaryFilter() {
     return _summaryFilter;
+  }
+
+  @JsonProperty(PROP_INJECT_DEFAULT_ROUTE)
+  public void setInjectDefaultRoute(boolean injectDefaultRoute) {
+    _injectDefaultRoute = injectDefaultRoute;
   }
 
   @JsonProperty(PROP_INTERFACES)
