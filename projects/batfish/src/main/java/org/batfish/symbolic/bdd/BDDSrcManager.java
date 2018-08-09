@@ -22,6 +22,8 @@ import org.batfish.common.util.CommonUtil;
 public final class BDDSrcManager {
   private static final String VAR_NAME = "SrcInterface";
 
+  private BDD _isSane;
+
   private final BDD _originatingFromDeviceBDD;
 
   private final Map<String, BDD> _srcInterfaceBDDs;
@@ -32,6 +34,7 @@ public final class BDDSrcManager {
     int bitsRequired = LongMath.log2(srcInterfaces.size() + 1, RoundingMode.CEILING);
     _var = pkt.allocateBDDInteger(VAR_NAME, bitsRequired, false);
     _originatingFromDeviceBDD = _var.value(0);
+    _isSane = _var.leq(srcInterfaces.size());
     _srcInterfaceBDDs = computeMatchSrcInterfaceBDDs(_var, srcInterfaces);
   }
 
@@ -64,6 +67,7 @@ public final class BDDSrcManager {
    */
   public Optional<String> getInterfaceFromAssignment(BDD bdd) {
     checkArgument(isAssignment(bdd));
+    checkArgument(bdd.imp(_isSane).isOne());
     List<String> interfaces =
         _srcInterfaceBDDs
             .entrySet()
@@ -73,12 +77,9 @@ public final class BDDSrcManager {
             .collect(Collectors.toList());
     if (interfaces.isEmpty()) {
       /*
-       * Either "originating from device" or "don't care".
-       *
-       * Since our allocated may contain more values than we actually use, the assigned value may
-       * be meaningless (i.e. not the identify for any interface, and not the dedicated value for
-       * originating from device). This is only possible if the variable is unconstrained.
+       * If it's not any interface, it must have originated from device.
        */
+      assert bdd.imp(_originatingFromDeviceBDD).isOne();
       return Optional.empty();
     }
     return Optional.of(interfaces.get(0));
@@ -87,5 +88,13 @@ public final class BDDSrcManager {
   @VisibleForTesting
   BDDInteger getSrcInterfaceVar() {
     return _var;
+  }
+
+  /**
+   * @return A sanity constraint that the packet source must be a valid value (originating from
+   *     device, or one of the source interfaces).
+   */
+  public BDD isSane() {
+    return _isSane;
   }
 }
