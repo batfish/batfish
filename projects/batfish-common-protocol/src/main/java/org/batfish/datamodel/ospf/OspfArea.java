@@ -193,6 +193,11 @@ public class OspfArea extends ComparableStructure<Long> implements Serializable 
     _interfaces = interfaces;
   }
 
+  @JsonProperty(PROP_METRIC_OF_DEFAULT_ROUTE)
+  public void setMetricOfDefaultRoute(int metricOfDefaultRoute) {
+    _metricOfDefaultRoute = metricOfDefaultRoute;
+  }
+
   @JsonProperty(PROP_NSSA)
   public void setNssa(NssaSettings nssa) {
     _nssa = nssa;
