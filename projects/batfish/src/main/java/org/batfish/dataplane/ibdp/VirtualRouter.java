@@ -2308,7 +2308,7 @@ public class VirtualRouter implements Serializable {
     }
     changed |=
         originateOspfStubAreaDefaultRoute(
-            neighborProc, incrementalCost, neighborInterface, adminCost, linkAreaNum);
+            neighborProc, incrementalCost, neighborInterface, adminCost, area);
     return changed;
   }
 
@@ -2319,7 +2319,7 @@ public class VirtualRouter implements Serializable {
    * @param incrementalCost The cost to reach the propagator
    * @param neighborInterface The propagator's interface on the link
    * @param adminCost The administrative cost of the route to be installed
-   * @param linkAreaNum The area ID of the link
+   * @param area The area of the link
    * @return whether this route changed the RIB into which we merged it
    */
   private boolean originateOspfStubAreaDefaultRoute(
@@ -2327,16 +2327,19 @@ public class VirtualRouter implements Serializable {
       long incrementalCost,
       Interface neighborInterface,
       int adminCost,
-      long linkAreaNum) {
-    return OspfProtocolHelper.isOspfInterAreaDefaultOriginationAllowed(
-            _vrf.getOspfProcess(), neighborProc, neighborInterface.getOspfArea())
-        && _ospfInterAreaStagingRib.mergeRoute(
-            new OspfInterAreaRoute(
-                Prefix.ZERO,
-                neighborInterface.getAddress().getIp(),
-                adminCost,
-                incrementalCost,
-                linkAreaNum));
+      OspfArea area) {
+    if (!OspfProtocolHelper.isOspfInterAreaDefaultOriginationAllowed(
+        _vrf.getOspfProcess(), neighborProc, area, neighborInterface.getOspfArea())) {
+      return false;
+    }
+    long metric = incrementalCost + area.getMetricOfDefaultRoute();
+    return _ospfInterAreaStagingRib.mergeRoute(
+        new OspfInterAreaRoute(
+            Prefix.ZERO,
+            neighborInterface.getAddress().getIp(),
+            adminCost,
+            metric,
+            area.getName()));
   }
 
   boolean propagateOspfInterAreaRouteFromInterAreaRoute(
