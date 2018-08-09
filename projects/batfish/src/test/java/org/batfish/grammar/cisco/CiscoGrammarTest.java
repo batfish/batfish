@@ -64,7 +64,7 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.hasZone;
 import static org.batfish.datamodel.matchers.DataModelMatchers.isIpSpaceReferenceThat;
 import static org.batfish.datamodel.matchers.DataModelMatchers.isPermittedByAclThat;
 import static org.batfish.datamodel.matchers.DataModelMatchers.permits;
-import static org.batfish.datamodel.matchers.EigrpInterfaceSettingsMatchers.hasDelay;
+import static org.batfish.datamodel.matchers.EigrpMetricMatchers.hasDelay;
 import static org.batfish.datamodel.matchers.EigrpRouteMatchers.hasEigrpMetric;
 import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasDstIps;
 import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasSrcIps;
@@ -137,7 +137,7 @@ import static org.batfish.datamodel.matchers.RegexCommunitySetMatchers.hasRegex;
 import static org.batfish.datamodel.matchers.RegexCommunitySetMatchers.isRegexCommunitySet;
 import static org.batfish.datamodel.matchers.SnmpServerMatchers.hasCommunities;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
-import static org.batfish.datamodel.matchers.VrfMatchers.hasEigrpProcess;
+import static org.batfish.datamodel.matchers.VrfMatchers.hasEigrpProcesses;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasOspfProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasSnmpServer;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
@@ -282,7 +282,6 @@ import org.batfish.datamodel.matchers.CommunityListLineMatchers;
 import org.batfish.datamodel.matchers.CommunityListMatchers;
 import org.batfish.datamodel.matchers.ConfigurationMatchers;
 import org.batfish.datamodel.matchers.EigrpInterfaceSettingsMatchers;
-import org.batfish.datamodel.matchers.EigrpProcessMatchers;
 import org.batfish.datamodel.matchers.HsrpGroupMatchers;
 import org.batfish.datamodel.matchers.IkeGatewayMatchers;
 import org.batfish.datamodel.matchers.IkePhase1KeyMatchers;
@@ -774,23 +773,53 @@ public class CiscoGrammarTest {
             filename, BFD_TEMPLATE, "bfd-template-undefined", INTERFACE_BFD_TEMPLATE));
   }
 
+  /**
+   * Test EIGRP address family configured within another process EIGRP configuration can declare a
+   * process that is nested in the configuration of another process. The processes are not connected
+   * in any way. The nesting is only one layer.
+   */
   @Test
-  public void testIosEigrpNetwork() throws IOException {
-    Configuration c = parseConfig("ios-eigrp-network");
+  public void testIosEigrpAddressFamily() throws IOException {
+    Configuration c = parseConfig("ios-eigrp-address-family");
 
-    /* Confirm classic mode networks are configured correctly */
-    assertThat(c, hasDefaultVrf(hasEigrpProcess(EigrpProcessMatchers.hasAsn(1L))));
+    /* Confirm both processes are present */
+    assertThat(c, hasDefaultVrf(hasEigrpProcesses(hasKey(1L))));
+    assertThat(c, ConfigurationMatchers.hasVrf("vrf-name", hasEigrpProcesses(hasKey(2L))));
+
+    /* Confirm interfaces were matched */
+    assertThat(c, hasInterface("Ethernet0", hasEigrp(EigrpInterfaceSettingsMatchers.hasAsn(1L))));
+    assertThat(c, hasInterface("Ethernet1", hasEigrp(EigrpInterfaceSettingsMatchers.hasAsn(2L))));
+  }
+
+  /**
+   * Test EIGRP autonomous-system stanza Cisco does not recommend configuring the autonomous system
+   * number this way, but it is possible.
+   */
+  @Test
+  public void testIosEigrpAsn() throws IOException {
+    Configuration c = parseConfig("ios-eigrp-asn");
+
+    /* Confirm both processes are present */
+    assertThat(c, hasDefaultVrf(hasEigrpProcesses(hasKey(1L))));
+    assertThat(c, ConfigurationMatchers.hasVrf("vrf-name", hasEigrpProcesses(hasKey(2L))));
+
+    /* Confirm interfaces were matched */
+    assertThat(c, hasInterface("Ethernet0", hasEigrp(EigrpInterfaceSettingsMatchers.hasAsn(1L))));
+    assertThat(c, hasInterface("Ethernet1", hasEigrp(EigrpInterfaceSettingsMatchers.hasAsn(2L))));
+  }
+
+  /** Test classic EIGRP process with passive interfaces */
+  @Test
+  public void testIosEigrpClassic() throws IOException {
+    Configuration c = parseConfig("ios-eigrp-classic");
+
+    /* Confirm process is present */
+    assertThat(c, hasDefaultVrf(hasEigrpProcesses(hasKey(1L))));
+
+    /* Confirm interfaces were matched */
     assertThat(c, hasInterface("Ethernet0", hasEigrp(EigrpInterfaceSettingsMatchers.hasAsn(1L))));
     assertThat(c, hasInterface("Ethernet1", hasEigrp(EigrpInterfaceSettingsMatchers.hasAsn(1L))));
     assertThat(c, hasInterface("Ethernet2", hasEigrp(EigrpInterfaceSettingsMatchers.hasAsn(1L))));
-
-    /* Confirm named mode networks are configured correctly */
-    assertThat(
-        c,
-        ConfigurationMatchers.hasVrf("vrf-name", hasEigrpProcess(EigrpProcessMatchers.hasAsn(2L))));
-    assertThat(c, hasInterface("Ethernet3", hasEigrp(EigrpInterfaceSettingsMatchers.hasAsn(2L))));
-    assertThat(c, hasInterface("Ethernet4", hasEigrp(EigrpInterfaceSettingsMatchers.hasAsn(2L))));
-    assertThat(c, hasInterface("Ethernet5", hasEigrp(EigrpInterfaceSettingsMatchers.hasAsn(2L))));
 
     /* Passive interfaces are configured correctly */
     assertThat(
@@ -799,32 +828,71 @@ public class CiscoGrammarTest {
         c, hasInterface("Ethernet1", hasEigrp(EigrpInterfaceSettingsMatchers.hasPassive(false))));
     assertThat(
         c, hasInterface("Ethernet2", hasEigrp(EigrpInterfaceSettingsMatchers.hasPassive(true))));
+  }
+
+  /** Test mixing named and classic EIGRP processes in separate VRFs */
+  @Test
+  public void testIosEigrpMixed() throws IOException {
+    Configuration c = parseConfig("ios-eigrp-mixed");
+
+    /* Confirm classic mode networks are configured correctly */
+    assertThat(c, hasDefaultVrf(hasEigrpProcesses(hasKey(1L))));
+    assertThat(c, hasInterface("Ethernet0", hasEigrp(EigrpInterfaceSettingsMatchers.hasAsn(1L))));
+
+    /* Confirm named mode networks are configured correctly */
+    assertThat(c, ConfigurationMatchers.hasVrf("vrf-name", hasEigrpProcesses(hasKey(2L))));
+    assertThat(c, hasInterface("Ethernet1", hasEigrp(EigrpInterfaceSettingsMatchers.hasAsn(2L))));
+  }
+
+  /** Test multiple classic EIGRP processes in the same VRF */
+  @Test
+  public void testIosEigrpMultiple() throws IOException {
+    Configuration c = parseConfig("ios-eigrp-multiple");
+
+    /* Confirm both processes are present */
+    assertThat(c, hasDefaultVrf(hasEigrpProcesses(hasKey(1L))));
+    assertThat(c, hasDefaultVrf(hasEigrpProcesses(hasKey(2L))));
+
+    /* Confirm interfaces were matched */
+    assertThat(c, hasInterface("Ethernet0", hasEigrp(EigrpInterfaceSettingsMatchers.hasAsn(1L))));
+    assertThat(c, hasInterface("Ethernet1", hasEigrp(EigrpInterfaceSettingsMatchers.hasAsn(2L))));
+  }
+
+  /** Test named EIGRP process with passive interfaces */
+  @Test
+  public void testIosEigrpNamed() throws IOException {
+    Configuration c = parseConfig("ios-eigrp-named");
+
+    /* Confirm process is present */
+    assertThat(c, hasDefaultVrf(hasEigrpProcesses(hasKey(2L))));
+
+    /* Passive interfaces are configured correctly */
     assertThat(
         c, hasInterface("Ethernet3", hasEigrp(EigrpInterfaceSettingsMatchers.hasPassive(false))));
     assertThat(
         c, hasInterface("Ethernet4", hasEigrp(EigrpInterfaceSettingsMatchers.hasPassive(false))));
     assertThat(
         c, hasInterface("Ethernet5", hasEigrp(EigrpInterfaceSettingsMatchers.hasPassive(true))));
-
-    /* Autonomous-system configured inside address-family */
-    assertThat(
-        c,
-        ConfigurationMatchers.hasVrf(
-            "vrf-name2", hasEigrpProcess(EigrpProcessMatchers.hasAsn(3L))));
   }
 
+  /**
+   * Test EIGRP route redistribution. Redistributes a connected route and checks if routing policy
+   * accepts OSPF routes given "redistribute ospf 1"
+   */
   @Test
   public void testIosEigrpRedistribution() throws IOException {
     Configuration c = parseConfig("ios-eigrp-redistribution");
+    long asn = 1L;
 
-    assertThat(c, hasDefaultVrf(hasEigrpProcess(notNullValue())));
+    assertThat(c, hasDefaultVrf(hasEigrpProcesses(hasKey(asn))));
     String exportPolicyName =
-        requireNonNull(c.getVrfs().get(DEFAULT_VRF_NAME).getEigrpProcess()).getExportPolicy();
+        c.getVrfs().get(DEFAULT_VRF_NAME).getEigrpProcesses().get(asn).getExportPolicy();
+    assertThat(exportPolicyName, notNullValue());
     RoutingPolicy routingPolicy = c.getRoutingPolicies().get(exportPolicyName);
     assertThat(routingPolicy, notNullValue());
 
     EigrpExternalRoute.Builder outputRouteBuilder = new EigrpExternalRoute.Builder();
-    outputRouteBuilder.setNetwork(Prefix.parse("1.0.0.0/32"));
+    outputRouteBuilder.setDestinationAsn(asn).setNetwork(Prefix.parse("1.0.0.0/32"));
     EigrpMetric.Builder metricBuilder = EigrpMetric.builder().setMode(EigrpProcessMode.CLASSIC);
 
     // Check if routingPolicy accepts connected route and sets correct metric
@@ -951,9 +1019,21 @@ public class CiscoGrammarTest {
   public void testIosInterfaceDelay() throws IOException {
     Configuration c = parseConfig("ios-interface-delay");
 
-    assertThat(c, hasInterface("GigabitEthernet0/0", hasEigrp(hasDelay(1E7))));
-    assertThat(c, hasInterface("GigabitEthernet0/1", hasEigrp(hasDelay(1E10))));
-    assertThat(c, hasInterface("FastEthernet0/1", hasEigrp(hasDelay(1E8))));
+    assertThat(
+        c,
+        hasInterface(
+            "GigabitEthernet0/0",
+            hasEigrp(EigrpInterfaceSettingsMatchers.hasEigrpMetric(hasDelay(1E7)))));
+    assertThat(
+        c,
+        hasInterface(
+            "GigabitEthernet0/1",
+            hasEigrp(EigrpInterfaceSettingsMatchers.hasEigrpMetric(hasDelay(1E10)))));
+    assertThat(
+        c,
+        hasInterface(
+            "FastEthernet0/1",
+            hasEigrp(EigrpInterfaceSettingsMatchers.hasEigrpMetric(hasDelay(1E8)))));
   }
 
   @Test

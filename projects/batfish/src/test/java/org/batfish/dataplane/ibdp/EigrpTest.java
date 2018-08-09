@@ -588,6 +588,54 @@ public class EigrpTest {
     assertRoute(routes, OSPF_E2, R4, R3_L0_ADDR, 100L);
   }
 
+  /** Test route computation, propagation, and one-way redistribution for EIGRP in classic mode */
+  @Test
+  public void testDoubleEigrp() {
+    IncrementalDataPlane dp =
+        computeMultipathDataPlaneWithRedistribution(
+            EigrpProcessMode.CLASSIC,
+            EigrpProcessMode.CLASSIC,
+            EigrpProcessMode.CLASSIC,
+            EigrpProcessMode.CLASSIC,
+            "GigabitEthernet",
+            RoutingProtocol.EIGRP);
+    SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
+        IncrementalBdpEngine.getRoutes(dp);
+
+    long scale = 256L;
+    // GigabitEthernet values
+    long bandwidth = 10L;
+    // Loopback values
+    long lDelay = 500L;
+    long exMetric =
+        EigrpMetric.namedToClassicBandwidth((long) (externalBandwidth / 1000.0))
+            + EigrpMetric.namedToClassicDelay((long) externalDelay);
+
+    bandwidth *= scale;
+    lDelay *= scale;
+    exMetric *= scale;
+
+    // r1
+    assertNoRoute(routes, R1, Prefix.ZERO);
+    assertRoute(routes, EIGRP, R1, R2_L0_ADDR, bandwidth + 10L * scale + lDelay);
+
+    // r2
+    assertNoRoute(routes, R2, Prefix.ZERO);
+    assertRoute(routes, EIGRP, R2, R1_L0_ADDR, bandwidth + 3000L * scale + lDelay);
+    assertRoute(routes, EIGRP_EX, R2, R3_L0_ADDR, exMetric + 40000L * scale);
+    assertRoute(routes, EIGRP, R2, R4_L0_ADDR, bandwidth + (6000000L + 40000L) * scale + lDelay);
+
+    // r3
+    assertNoRoute(routes, R3, Prefix.ZERO);
+    assertRoute(routes, EIGRP, R3, R4_L0_ADDR, bandwidth + 6000000L * scale + lDelay);
+
+    // r4
+    assertNoRoute(routes, R4, Prefix.ZERO);
+    assertRoute(routes, EIGRP, R4, R1_L0_ADDR, bandwidth + 70000000L * scale + lDelay);
+    assertRoute(routes, EIGRP, R4, R2_L0_ADDR, bandwidth + (70000000L + 10L) * scale + lDelay);
+    assertRoute(routes, EIGRP_EX, R4, R3_L0_ADDR, exMetric + 800000000L * scale);
+  }
+
   /** Test route computation and propagation for EIGRP in named mode */
   @Test
   public void testEigrpNamedRoutes() {

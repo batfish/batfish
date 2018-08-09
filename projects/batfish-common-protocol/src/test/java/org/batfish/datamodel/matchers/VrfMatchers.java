@@ -1,5 +1,6 @@
 package org.batfish.datamodel.matchers;
 
+import java.util.Map;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.BgpProcess;
@@ -9,7 +10,7 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.eigrp.EigrpProcess;
 import org.batfish.datamodel.matchers.VrfMatchersImpl.HasBgpProcess;
-import org.batfish.datamodel.matchers.VrfMatchersImpl.HasEigrpProcess;
+import org.batfish.datamodel.matchers.VrfMatchersImpl.HasEigrpProcesses;
 import org.batfish.datamodel.matchers.VrfMatchersImpl.HasGeneratedRoutes;
 import org.batfish.datamodel.matchers.VrfMatchersImpl.HasInterfaces;
 import org.batfish.datamodel.matchers.VrfMatchersImpl.HasOspfProcess;
@@ -32,8 +33,9 @@ public class VrfMatchers {
    * Provides a matcher that matches if the provided {@code subMatcher} matches the VRF's EIGRP
    * process.
    */
-  public static HasEigrpProcess hasEigrpProcess(Matcher<? super EigrpProcess> subMatcher) {
-    return new HasEigrpProcess(subMatcher);
+  public static HasEigrpProcesses hasEigrpProcesses(
+      Matcher<? super Map<Long, EigrpProcess>> subMatcher) {
+    return new HasEigrpProcesses(subMatcher);
   }
 
   /**

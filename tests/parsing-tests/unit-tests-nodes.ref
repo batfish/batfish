@@ -6163,10 +6163,6 @@
             "declaredNames" : [
               "Ethernet0"
             ],
-            "eigrp" : {
-              "enabled" : false,
-              "passive" : false
-            },
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -6345,8 +6341,172 @@
           }
         },
         "routingPolicies" : {
-          "~EIGRP_EXPORT_POLICY:default~" : {
-            "name" : "~EIGRP_EXPORT_POLICY:default~"
+          "~EIGRP_EXPORT_POLICY:default:5~" : {
+            "name" : "~EIGRP_EXPORT_POLICY:default:5~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "comment" : "EIGRP export routes for bgp",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                  "protocol" : "bgp"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.SetEigrpMetric",
+                    "metric" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralEigrpMetric",
+                      "metric" : {
+                        "classic-bandwidth" : 10000000,
+                        "classic-delay" : 2,
+                        "mode" : "CLASSIC",
+                        "named-bandwidth" : 1,
+                        "named-delay" : 20000000
+                      }
+                    }
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitAccept"
+                  }
+                ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "comment" : "EIGRP export routes for connected",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                  "protocol" : "connected"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.SetEigrpMetric",
+                    "metric" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralEigrpMetric",
+                      "metric" : {
+                        "classic-bandwidth" : 10000000,
+                        "classic-delay" : 2,
+                        "mode" : "CLASSIC",
+                        "named-bandwidth" : 1,
+                        "named-delay" : 20000000
+                      }
+                    }
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitAccept"
+                  }
+                ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "comment" : "EIGRP export routes for eigrp",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                  "protocol" : "eigrp"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.SetEigrpMetric",
+                    "metric" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralEigrpMetric",
+                      "metric" : {
+                        "classic-bandwidth" : 10000000,
+                        "classic-delay" : 2,
+                        "mode" : "CLASSIC",
+                        "named-bandwidth" : 1,
+                        "named-delay" : 20000000
+                      }
+                    }
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitAccept"
+                  }
+                ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "comment" : "EIGRP export routes for ospf",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                  "protocol" : "ospf"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.SetEigrpMetric",
+                    "metric" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralEigrpMetric",
+                      "metric" : {
+                        "classic-bandwidth" : 10000000,
+                        "classic-delay" : 2,
+                        "mode" : "CLASSIC",
+                        "named-bandwidth" : 1,
+                        "named-delay" : 20000000
+                      }
+                    }
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitAccept"
+                  }
+                ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "comment" : "EIGRP export routes for rip",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                  "protocol" : "rip"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.SetEigrpMetric",
+                    "metric" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralEigrpMetric",
+                      "metric" : {
+                        "classic-bandwidth" : 10000000,
+                        "classic-delay" : 2,
+                        "mode" : "CLASSIC",
+                        "named-bandwidth" : 1,
+                        "named-delay" : 20000000
+                      }
+                    }
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitAccept"
+                  }
+                ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "comment" : "EIGRP export routes for static",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                  "protocol" : "static"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.SetEigrpMetric",
+                    "metric" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralEigrpMetric",
+                      "metric" : {
+                        "classic-bandwidth" : 1000,
+                        "classic-delay" : 10,
+                        "mode" : "CLASSIC",
+                        "named-bandwidth" : 10000,
+                        "named-delay" : 100000000
+                      }
+                    }
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitAccept"
+                  }
+                ]
+              }
+            ]
           }
         },
         "vendorFamily" : {
@@ -6363,11 +6523,13 @@
           },
           "default" : {
             "name" : "default",
-            "eigrpProcess" : {
-              "asn" : 65500,
-              "eigrp-mode" : "CLASSIC",
-              "export-policy" : "~EIGRP_EXPORT_POLICY:default~",
-              "router-id" : "100.1.1.1"
+            "eigrpProcesses" : {
+              "5" : {
+                "asn" : 5,
+                "eigrp-mode" : "CLASSIC",
+                "export-policy" : "~EIGRP_EXPORT_POLICY:default:5~",
+                "router-id" : "100.1.1.1"
+              }
             },
             "interfaces" : [
               "Ethernet0"

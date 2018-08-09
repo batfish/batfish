@@ -15,7 +15,6 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.NetworkConfigurations;
-import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.collections.IpEdge;
 
 public final class EigrpEdge implements Serializable, Comparable<EigrpEdge> {
@@ -41,40 +40,26 @@ public final class EigrpEdge implements Serializable, Comparable<EigrpEdge> {
     // vertex1
     Configuration c1 = configurations.get(edge.getNode1());
     Interface iface1 = c1.getInterfaces().get(edge.getInt1());
-    Vrf vrf1 = iface1.getVrf();
-    EigrpProcess proc1 = vrf1.getEigrpProcess();
-    if (proc1 == null) {
-      return empty();
-    }
     EigrpInterfaceSettings eigrp1 = iface1.getEigrp();
-    if (eigrp1 == null) {
-      return empty();
-    }
 
     // vertex2
     Configuration c2 = configurations.get(edge.getNode2());
     Interface iface2 = c2.getInterfaces().get(edge.getInt2());
-    Vrf vrf2 = iface2.getVrf();
-    EigrpProcess proc2 = vrf2.getEigrpProcess();
-    if (proc2 == null) {
-      return empty();
-    }
     EigrpInterfaceSettings eigrp2 = iface2.getEigrp();
-    if (eigrp2 == null) {
-      return empty();
-    }
 
-    if (!eigrp1.getEnabled()
+    if (eigrp1 == null
+        || eigrp2 == null
+        || !eigrp1.getEnabled()
         || !eigrp2.getEnabled()
-        || !Objects.equals(eigrp1.getAsNumber(), eigrp2.getAsNumber())
+        || eigrp1.getAsn() != eigrp2.getAsn()
         || eigrp1.getPassive()
         || eigrp2.getPassive()) {
       return empty();
     }
     return Optional.of(
         new EigrpEdge(
-            new EigrpInterface(c1.getHostname(), iface1.getName(), vrf1.getName()),
-            new EigrpInterface(c2.getHostname(), iface2.getName(), vrf2.getName())));
+            new EigrpInterface(c1.getHostname(), iface1),
+            new EigrpInterface(c2.getHostname(), iface2)));
   }
 
   @Override

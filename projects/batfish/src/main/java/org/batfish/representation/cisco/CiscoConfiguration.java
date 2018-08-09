@@ -110,6 +110,7 @@ import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.eigrp.EigrpInterfaceSettings;
+import org.batfish.datamodel.eigrp.EigrpMetric;
 import org.batfish.datamodel.isis.IsisInterfaceLevelSettings;
 import org.batfish.datamodel.isis.IsisInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfArea;
@@ -2099,30 +2100,56 @@ public final class CiscoConfiguration extends VendorConfiguration {
       newIface.setOspfHelloMultiplier(iface.getOspfHelloMultiplier());
     }
 
-    EigrpProcess eigrpProcess = vrf.getEigrpProcess();
+    EigrpProcess eigrpProcess = null;
+    if (iface.getAddress() != null) {
+      for (EigrpProcess process : vrf.getEigrpProcesses().values()) {
+        if (process.getNetworks().contains(iface.getAddress().getPrefix())) {
+          // Found a process on interface
+          if (eigrpProcess != null) {
+            // Cisco does not recommend running multiple EIGRP autonomous systems on the same
+            // interface
+            _w.redFlag("Interface: '" + iface.getName() + "' matches multiple EIGRP processes");
+            break;
+          }
+          eigrpProcess = process;
+        }
+      }
+    }
     // Let toEigrpProcess handle null asn failure
     if (eigrpProcess != null && eigrpProcess.getAsn() != null) {
-      /*
-       * Some settings are here, others are set later when the EigrpProcess sets this
-       * interface
-       */
-      boolean passive = eigrpProcess.getPassiveInterfaceDefault();
-      passive =
+      boolean passive =
           eigrpProcess
               .getInterfacePassiveStatus()
-              .entrySet()
-              .stream()
-              .filter(entry -> entry.getKey().equals(iface.getName()))
-              .map(Entry::getValue)
-              .findAny()
-              .orElse(passive);
+              .getOrDefault(iface.getName(), eigrpProcess.getPassiveInterfaceDefault());
+
+      // For bandwidth/delay, defaults are separate from actuals to inform metric calculations
+      EigrpMetric metric =
+          EigrpMetric.builder()
+              .setBandwidth(iface.getBandwidth())
+              .setMode(eigrpProcess.getMode())
+              .setDefaultBandwidth(
+                  Interface.getDefaultBandwidth(iface.getName(), c.getConfigurationFormat()))
+              .setDefaultDelay(
+                  Interface.getDefaultDelay(iface.getName(), c.getConfigurationFormat()))
+              .setDelay(iface.getDelay())
+              .build();
 
       newIface.setEigrp(
           EigrpInterfaceSettings.builder()
-              .setBandwidth(iface.getBandwidth())
-              .setDelay(iface.getDelay())
+              .setAsn(eigrpProcess.getAsn())
+              .setEnabled(true)
+              .setMetric(metric)
               .setPassive(passive)
               .build());
+      if (newIface.getEigrp() == null) {
+        _w.redFlag("Interface: '" + iface.getName() + "' failed to set EIGRP settings");
+      }
+    }
+    if (eigrpProcess == null && iface.getDelay() != null) {
+      _w.redFlag(
+          "Interface: '"
+              + iface.getName()
+              + "' contains EIGRP settings but is not part of an EIGRP process");
     }
 
     boolean level1 = false;
@@ -3218,13 +3245,15 @@ public final class CiscoConfiguration extends VendorConfiguration {
             newVrf.setOspfProcess(newOspfProcess);
           }
 
-          // convert eigrp process
-          EigrpProcess eigrpProcess = vrf.getEigrpProcess();
-          if (eigrpProcess != null) {
-            org.batfish.datamodel.eigrp.EigrpProcess newEigrpProcess =
-                CiscoConversions.toEigrpProcess(eigrpProcess, vrfName, c, this);
-            newVrf.setEigrpProcess(newEigrpProcess);
-          }
+          // convert eigrp processes
+          vrf.getEigrpProcesses()
+              .values()
+              .stream()
+              .map(proc -> CiscoConversions.toEigrpProcess(proc, vrfName, c, this))
+              .filter(Objects::nonNull)
+              .forEach(
+                  eigrpProcess ->
+                      newVrf.getEigrpProcesses().put(eigrpProcess.getAsn(), eigrpProcess));
 
           // convert isis process
           IsisProcess isisProcess = vrf.getIsisProcess();

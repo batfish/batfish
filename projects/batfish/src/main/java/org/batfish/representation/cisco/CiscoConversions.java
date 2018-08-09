@@ -2,7 +2,6 @@ package org.batfish.representation.cisco;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.util.Collections.singletonList;
-import static java.util.Objects.requireNonNull;
 import static org.batfish.datamodel.Interface.INVALID_LOCAL_INTERFACE;
 import static org.batfish.datamodel.Interface.UNSET_LOCAL_INTERFACE;
 
@@ -78,7 +77,6 @@ import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
-import org.batfish.datamodel.eigrp.EigrpInterfaceSettings;
 import org.batfish.datamodel.eigrp.EigrpMetric;
 import org.batfish.datamodel.isis.IsisLevelSettings;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -940,64 +938,13 @@ class CiscoConversions {
     org.batfish.datamodel.Vrf vrf = c.getVrfs().get(vrfName);
 
     if (proc.getAsn() == null) {
-      /*
-       * This will happen with the following configuration:
-       *  address-family ... autonomous-system 1
-       *   autonomous-system 2
-       *   no autonomous-system
-       * The result should be a process with ASN 1, but instead the result is an invalid EIGRP process
-       * with null ASN.
-       */
-      oldConfig.getWarnings().redFlag("No candidates for EIGRP ASN");
+      oldConfig.getWarnings().redFlag("Invalid EIGRP process");
       return null;
     }
 
     newProcess.setAsNumber(proc.getAsn());
     newProcess.setMode(proc.getMode());
     newProcess.setVrf(vrf);
-
-    // Establish associated interfaces
-    for (Entry<String, org.batfish.datamodel.Interface> e : vrf.getInterfaces().entrySet()) {
-      org.batfish.datamodel.Interface iface = e.getValue();
-      InterfaceAddress interfaceAddress = iface.getAddress();
-      if (interfaceAddress == null) {
-        continue;
-      }
-      // Set by CiscoConfiguration.toInterface
-      EigrpInterfaceSettings eigrp = requireNonNull(iface.getEigrp());
-      boolean match = proc.getNetworks().stream().anyMatch(interfaceAddress.getPrefix()::equals);
-      if (match) {
-        // For bandwidth/delay, defaults are separate from actuals to inform metric calculations
-        EigrpMetric metric =
-            EigrpMetric.builder()
-                .setBandwidth(eigrp.getBandwidth())
-                .setMode(proc.getMode())
-                .setDelay(eigrp.getDelay())
-                .setDefaultBandwidth(
-                    Interface.getDefaultBandwidth(iface.getName(), c.getConfigurationFormat()))
-                .setDefaultDelay(
-                    Interface.getDefaultDelay(iface.getName(), c.getConfigurationFormat()))
-                .build();
-
-        iface.setEigrp(
-            EigrpInterfaceSettings.builder()
-                .setEnabled(true)
-                .setAsn(proc.getAsn())
-                .setMetric(metric)
-                .setPassive(eigrp.getPassive())
-                .build());
-      } else {
-        if (eigrp.getDelay() != null) {
-          oldConfig
-              .getWarnings()
-              .redFlag(
-                  "Interface: '"
-                      + iface.getName()
-                      + "' contains EIGRP settings but is not part of the EIGRP process");
-        }
-        iface.setEigrp(null);
-      }
-    }
 
     // TODO set stub process
     // newProcess.setStub(proc.isStub())
@@ -1022,7 +969,7 @@ class CiscoConversions {
      * Route redistribution modifies the configuration structure, so do this last to avoid having to
      * clean up configuration if another conversion step fails
      */
-    String eigrpExportPolicyName = "~EIGRP_EXPORT_POLICY:" + vrfName + "~";
+    String eigrpExportPolicyName = "~EIGRP_EXPORT_POLICY:" + vrfName + ":" + proc.getAsn() + "~";
     RoutingPolicy eigrpExportPolicy = new RoutingPolicy(eigrpExportPolicyName, c);
     c.getRoutingPolicies().put(eigrpExportPolicyName, eigrpExportPolicy);
     newProcess.setExportPolicy(eigrpExportPolicyName);

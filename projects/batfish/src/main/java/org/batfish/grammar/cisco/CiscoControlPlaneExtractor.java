@@ -796,6 +796,7 @@ import org.batfish.grammar.cisco.CiscoParser.Re_redistribute_ospfContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_redistribute_ripContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_redistribute_staticContext;
 import org.batfish.grammar.cisco.CiscoParser.Reaf_interfaceContext;
+import org.batfish.grammar.cisco.CiscoParser.Reaf_interface_defaultContext;
 import org.batfish.grammar.cisco.CiscoParser.Reafi_passive_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Rec_address_familyContext;
 import org.batfish.grammar.cisco.CiscoParser.Redistribute_aggregate_bgp_tailContext;
@@ -1338,7 +1339,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private DynamicIpv6BgpPeerGroup _currentDynamicIpv6PeerGroup;
 
-  @Nullable private Interface _currentEigrpInterface;
+  @Nullable private String _currentEigrpInterface;
 
   @Nullable private EigrpProcess _currentEigrpProcess;
 
@@ -1654,10 +1655,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     // There may not be an ASN specified here, but it will be specified in this AF context
     Long asn = ctx.asnum == null ? null : toLong(ctx.asnum);
 
-    EigrpProcess proc = new EigrpProcess(asn, EigrpProcessMode.CLASSIC);
-
-    _currentVrf = ctx.vrf.getText();
-    currentVrf().setEigrpProcess(proc);
+    EigrpProcess proc = new EigrpProcess(asn, EigrpProcessMode.CLASSIC, ctx.vrf.getText());
 
     _parentEigrpProcess = _currentEigrpProcess;
     _currentEigrpProcess = proc;
@@ -1677,14 +1675,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       todo(ctx);
     }
 
-    EigrpProcess proc = new EigrpProcess(asn, EigrpProcessMode.NAMED);
-
-    if (ctx.vrf != null) {
-      _currentVrf = ctx.vrf.getText();
-    }
-    currentVrf().setEigrpProcess(proc);
-
-    _currentEigrpProcess = proc;
+    String vrfName = ctx.vrf == null ? _currentVrf : ctx.vrf.getText();
+    _currentEigrpProcess = new EigrpProcess(asn, EigrpProcessMode.NAMED, vrfName);
   }
 
   @Override
@@ -3444,14 +3436,18 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void enterRe_classic(Re_classicContext ctx) {
     // Create a classic EIGRP process with ASN
     long asn = toLong(ctx.asnum);
-    EigrpProcess proc = new EigrpProcess(asn, EigrpProcessMode.CLASSIC);
-    currentVrf().setEigrpProcess(proc);
-    _currentEigrpProcess = proc;
+    _currentEigrpProcess =
+        new EigrpProcess(asn, EigrpProcessMode.CLASSIC, Configuration.DEFAULT_VRF_NAME);
   }
 
   @Override
   public void enterReaf_interface(Reaf_interfaceContext ctx) {
-    _currentEigrpInterface = getOrAddInterface(ctx.iname);
+    _currentEigrpInterface = getCanonicalInterfaceName(ctx.iname.getText());
+  }
+
+  @Override
+  public void enterReaf_interface_default(Reaf_interface_defaultContext ctx) {
+    _currentEigrpInterface = "default";
   }
 
   @Override
@@ -4715,6 +4711,46 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitEbgp_multihop_bgp_tail(Ebgp_multihop_bgp_tailContext ctx) {
     _currentPeerGroup.setEbgpMultihop(true);
+  }
+
+  private void exitEigrpProcess(ParserRuleContext ctx) {
+    // In process context
+    if (_currentEigrpProcess == null) {
+      _w.todo(ctx, getFullText(ctx), _parser, "No eigrp process available");
+      return;
+    }
+    EigrpProcess proc = _currentEigrpProcess;
+    if (proc.getAsn() == null) {
+      /*
+       * This will happen with the following configuration:
+       *  address-family ... autonomous-system 1
+       *   autonomous-system 2
+       *   no autonomous-system
+       * The result should be a process with ASN 1, but instead the result is an invalid EIGRP
+       * process with null ASN.
+       */
+      _w.todo(ctx, getFullText(ctx), _parser, "No eigrp ASN configured");
+      return;
+    }
+    proc.computeNetworks(_configuration.getInterfaces().values());
+
+    // Check for duplicates in this VRF
+    _currentVrf = proc.getVrf();
+    Map<Long, EigrpProcess> eigrpProcesses = currentVrf().getEigrpProcesses();
+    boolean duplicate = eigrpProcesses.containsKey(proc.getAsn());
+    if (duplicate) {
+      _w.redFlag("Duplicate EIGRP router ASN");
+    } else {
+      eigrpProcesses.put(proc.getAsn(), proc);
+    }
+
+    // Pop process if nested
+    _currentEigrpProcess = _parentEigrpProcess;
+    _parentEigrpProcess = null;
+    _currentVrf =
+        _currentEigrpProcess != null
+            ? _currentEigrpProcess.getVrf()
+            : Configuration.DEFAULT_VRF_NAME;
   }
 
   @Override
@@ -6795,40 +6831,28 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _w.todo(ctx, getFullText(ctx), _parser, "No eigrp process available");
       return;
     }
+    // In interface context
+    if (_currentEigrpInterface == null) {
+      _w.todo(ctx, getFullText(ctx), _parser, "No eigrp interface available");
+      return;
+    }
 
     boolean passive = (ctx.NO() == null);
-    if (_currentEigrpInterface == null) {
-      // default interface
+    if (_currentEigrpInterface.equals("default")) {
       _currentEigrpProcess.setPassiveInterfaceDefault(passive);
     } else {
-      String interfaceName = getCanonicalInterfaceName(_currentEigrpInterface.getName());
-      _currentEigrpProcess.getInterfacePassiveStatus().put(interfaceName, passive);
+      _currentEigrpProcess.getInterfacePassiveStatus().put(_currentEigrpInterface, passive);
     }
   }
 
   @Override
   public void exitRec_address_family(Rec_address_familyContext ctx) {
-    // In process context
-    if (_currentEigrpProcess == null) {
-      _w.todo(ctx, getFullText(ctx), _parser, "No eigrp process available");
-      return;
-    }
-    _currentEigrpProcess.computeNetworks(_configuration.getInterfaces().values());
-    _currentEigrpProcess = _parentEigrpProcess;
-    _parentEigrpProcess = null;
-    _currentVrf = Configuration.DEFAULT_VRF_NAME;
+    exitEigrpProcess(ctx);
   }
 
   @Override
   public void exitRen_address_family(Ren_address_familyContext ctx) {
-    // In process context
-    if (_currentEigrpProcess == null) {
-      _w.todo(ctx, getFullText(ctx), _parser, "No eigrp process available");
-      return;
-    }
-    _currentEigrpProcess.computeNetworks(_configuration.getInterfaces().values());
-    _currentEigrpProcess = null;
-    _currentVrf = Configuration.DEFAULT_VRF_NAME;
+    exitEigrpProcess(ctx);
   }
 
   @Override
@@ -7913,14 +7937,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitRe_classic(Re_classicContext ctx) {
-    // In process context
-    if (_currentEigrpProcess == null) {
-      _w.todo(ctx, getFullText(ctx), _parser, "No eigrp process available");
-      return;
-    }
-    _currentEigrpProcess.computeNetworks(_configuration.getInterfaces().values());
-    _currentEigrpProcess = null;
-    _currentVrf = Configuration.DEFAULT_VRF_NAME;
+    exitEigrpProcess(ctx);
   }
 
   @Override

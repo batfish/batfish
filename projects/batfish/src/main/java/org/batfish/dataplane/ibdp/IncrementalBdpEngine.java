@@ -31,7 +31,6 @@ import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.EigrpExternalRoute;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IsisRoute;
 import org.batfish.datamodel.NetworkConfigurations;
@@ -261,9 +260,7 @@ class IncrementalBdpEngine {
           .forEach(
               n -> {
                 for (VirtualRouter vr : n.getVirtualRouters().values()) {
-                  RibDelta<EigrpExternalRoute> p =
-                      vr.propagateEigrpExternalRoutes(networkConfigurations);
-                  if (p != null && vr.unstageEigrpExternalRoutes(allNodes, p)) {
+                  if (vr.propagateEigrpExternalRoutes(allNodes, networkConfigurations)) {
                     eigrpExternalChanged.set(true);
                   }
                 }

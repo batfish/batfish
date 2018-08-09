@@ -74,6 +74,17 @@ public abstract class AbstractRib<R extends AbstractRoute> implements GenericRib
     return builder.build();
   }
 
+  /**
+   * Add route to backup route map if the route map is not null
+   *
+   * @param route Route to add
+   */
+  public final void addBackupRoute(R route) {
+    if (_backupRoutes != null) {
+      _backupRoutes.computeIfAbsent(route.getNetwork(), k -> new TreeSet<>()).add(route);
+    }
+  }
+
   public final boolean containsRoute(R route) {
     return _tree.containsRoute(route);
   }
@@ -102,6 +113,20 @@ public abstract class AbstractRib<R extends AbstractRoute> implements GenericRib
         .stream()
         .filter(r -> r.getNetwork().equals(p))
         .collect(ImmutableSet.toImmutableSet());
+  }
+
+  /**
+   * Remove a route from backup route map if it was present and backup route map exists
+   *
+   * @param route Route to remove
+   */
+  public final void removeBackupRoute(R route) {
+    if (_backupRoutes != null) {
+      SortedSet<R> routes = _backupRoutes.get(route.getNetwork());
+      if (routes != null) {
+        routes.remove(route);
+      }
+    }
   }
 
   @Override
