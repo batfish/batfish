@@ -1,6 +1,6 @@
 package org.batfish.specifier;
 
-import static org.batfish.specifier.AltFlexibleLocationSpecifierFactory.parse;
+import static org.batfish.specifier.FlexibleLocationSpecifierFactory.parse;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -8,7 +8,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-public class AltFlexibleLocationSpecifierFactoryTest {
+public class FlexibleLocationSpecifierFactoryTest {
   @Rule public ExpectedException exception = ExpectedException.none();
 
   @Test

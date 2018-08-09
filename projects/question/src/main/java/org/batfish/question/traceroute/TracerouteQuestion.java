@@ -9,7 +9,7 @@ import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Flow.Builder;
 import org.batfish.datamodel.questions.IPacketTraceQuestion;
-import org.batfish.specifier.AltFlexibleLocationSpecifierFactory;
+import org.batfish.specifier.FlexibleLocationSpecifierFactory;
 import org.batfish.specifier.FlexibleIpSpaceSpecifierFactory;
 
 /**
@@ -25,7 +25,7 @@ import org.batfish.specifier.FlexibleIpSpaceSpecifierFactory;
  */
 public final class TracerouteQuestion extends IPacketTraceQuestion {
   private static final String DEFAULT_SOURCE_LOCATION_SPECIFIER_FACTORY =
-      AltFlexibleLocationSpecifierFactory.NAME;
+      FlexibleLocationSpecifierFactory.NAME;
 
   private static final String DEFAULT_SOURCE_IP_SPACE_SPECIFIER_FACTORY =
       FlexibleIpSpaceSpecifierFactory.NAME;

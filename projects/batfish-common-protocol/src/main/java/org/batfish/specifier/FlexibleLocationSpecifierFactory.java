@@ -44,8 +44,8 @@ import org.apache.commons.lang3.StringUtils;
 
 @AutoService(LocationSpecifierFactory.class)
 @ParametersAreNonnullByDefault
-public class AltFlexibleLocationSpecifierFactory implements LocationSpecifierFactory {
-  public static final String NAME = AltFlexibleLocationSpecifierFactory.class.getSimpleName();
+public class FlexibleLocationSpecifierFactory implements LocationSpecifierFactory {
+  public static final String NAME = FlexibleLocationSpecifierFactory.class.getSimpleName();
 
   private static final Pattern ATOMIC_PATTERN = Pattern.compile("^([^\\[]*)\\s*(\\[.*\\])?$");
   private static final Pattern COMBINATION_PATTERN = Pattern.compile("^(.*)\\s+([-+])\\s+(.*)$");

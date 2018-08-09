@@ -15,7 +15,7 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.question.ReachabilityParameters;
 import org.batfish.specifier.AllNodesNodeSpecifier;
-import org.batfish.specifier.AltFlexibleLocationSpecifierFactory;
+import org.batfish.specifier.FlexibleLocationSpecifierFactory;
 import org.batfish.specifier.FlexibleIpSpaceSpecifierFactory;
 import org.batfish.specifier.IpSpaceSpecifier;
 import org.batfish.specifier.IpSpaceSpecifierFactory;
@@ -38,7 +38,7 @@ public final class SpecifiersReachabilityQuestion extends Question {
       FlexibleIpSpaceSpecifierFactory.NAME;
 
   private static final String DEFAULT_SOURCE_LOCATION_SPECIFIER_FACTORY =
-      AltFlexibleLocationSpecifierFactory.NAME;
+      FlexibleLocationSpecifierFactory.NAME;
 
   private static final String PROP_ACTIONS = "actions";
 
