@@ -39,8 +39,6 @@ public final class VrfNameRegexInterfaceSpecifier implements InterfaceSpecifier 
   public Set<Interface> resolve(Set<String> nodes, SpecifierContext ctxt) {
     return nodes
         .stream()
-        .filter(n -> ctxt.getConfigs().containsKey(n))
-        // we have a stream of node names present in configs now
         .map(n -> ctxt.getConfigs().get(n).getVrfs().values())
         .flatMap(Collection::stream)
         // we have a stream of VRFs now
