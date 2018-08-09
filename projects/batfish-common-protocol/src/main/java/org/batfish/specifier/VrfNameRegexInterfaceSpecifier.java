@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 import org.batfish.datamodel.Interface;
 
 /**
- * A {@link LocationSpecifier} specifying interfaces that belong to VRFs with names matching the
+ * An {@link InterfaceSpecifier} specifying interfaces that belong to VRFs with names matching the
  * input regex.
  */
 public final class VrfNameRegexInterfaceSpecifier implements InterfaceSpecifier {

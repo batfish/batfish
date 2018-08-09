@@ -3,27 +3,28 @@ package org.batfish.specifier;
 /**
  * A {@link LocationSpecifierFactory} that parses a specification from a string.
  *
- * <p>Examples include:
+ * <p>Example values:
  *
  * <pre>
- *   rtr-.*              -&gt; nodes matching this regex
- *   rtr-.*:Eth.*        -&gt; interfaces matching the second regex on nodes matching the first
- *   interface(Eth.*)    -&gt; interfaces matching the regex
- *   enter(vrf(default)) -&gt; inbound into all interfaces in VRF default
- *   vrf(default)        -&gt; interfaces in VRF default
- *   ref.noderole(border.*, dim) -&gt; nodes in roles matching the first parameter in dimension dim
- *   a + b               -&gt; union of locations denoted by a and b
- *   a - b               -&gt; difference of locations denoted a and b
+ * rtr-.*[Eth.*] --> at interfaces matching the second regex on nodes matching the first
+ * rtr-.* --> equivalent to rtr-.*[.*]
+ * [Eth.*] --> equivalent to .*[Eth.*]
+ * [vrf(default)] --> at all interface in the default VRF
+ * enter(.....) --> …. Can be any of the above; enter changes the meaning to inbound
+ * ref.noderole(border.*, dim) -> border nodes in dimension dim
+ * a + b --> union of locations denoted by a and b
+ * a - b --> difference of locations denoted a and b
  * </pre>
  *
- * <p>More formally, the grammar is:
+ * <p>Grammar
  *
  * <pre>
- *  VALUE ::= CONSTANT | SPECIFIER | COMBINATION
- *  CONSTANT ::= [a-zA-Z0-9/:.+*_-]+
- *  COMBINATION ::= VALUE [+-] VALUE
- *  NAME ::= [a-zA-Z.]+
- *  SPECIFIER ::= NAME ‘(‘ VALUE (‘,’ VALUE)* ‘)’
+ * VALUE ::= ATOMIC_VALUE | COMBINATION | FUNC
+ * ATOMIC_VALUE ::= NS?([IS])?
+ * COMBINATION ::= VALUE [+-] VALUE
+ * FUNC ::= enter(VALUE) | exit(VALUE)
+ * NS ::= <Grammar of FlexibleNodesSpecifier>
+ * IS ::= <Grammar of FlexibleInterfaceSpecifier>
  * </pre>
  *
  * <p>NB: The space around '+' and '-' is mandatory and is used to split the string properly.
@@ -34,6 +35,7 @@ package org.batfish.specifier;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.auto.service.AutoService;
+import com.google.common.base.Strings;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
@@ -45,15 +47,13 @@ import org.apache.commons.lang3.StringUtils;
 public class AltFlexibleLocationSpecifierFactory implements LocationSpecifierFactory {
   public static final String NAME = AltFlexibleLocationSpecifierFactory.class.getSimpleName();
 
-  private static final Pattern SPECIFIER_PATTERN =
-      Pattern.compile("^([a-z\\.]+)\\s*\\(\\s*(.*)\\)$");
-  private static final Pattern COMBINATION_PATTERN =
-      Pattern.compile("^\\s*(.*)\\s+([-+])\\s+(.*)\\s*$");
+  private static final Pattern ATOMIC_PATTERN = Pattern.compile("^([^\\[]*)\\s*(\\[.*\\])?$");
+  private static final Pattern COMBINATION_PATTERN = Pattern.compile("^(.*)\\s+([-+])\\s+(.*)$");
+  private static final Pattern FUNC_PATTERN =
+      Pattern.compile("^([a-z\\.]+)\\s*\\(\\s*(.*)\\s*\\)$");
 
-  private static final String SPECIFIER_ENTER = "enter";
-  private static final String SPECIFIER_INTERFACE = "interface";
-  private static final String SPECIFIER_NODE_ROLE = "ref.noderole";
-  private static final String SPECIFIER_VRF = "vrf";
+  private static final String FUNC_ENTER = "enter";
+  private static final String FUNC_EXIT = "exit";
 
   @Override
   public LocationSpecifier buildLocationSpecifier(@Nullable Object input) {
@@ -74,12 +74,15 @@ public class AltFlexibleLocationSpecifierFactory implements LocationSpecifierFac
     checkArgument(
         StringUtils.countMatches(input, '(') == StringUtils.countMatches(input, ')'),
         "Unbalanced parenthesis in input: " + input);
+    checkArgument(
+        StringUtils.countMatches(input, '[') == StringUtils.countMatches(input, ']'),
+        "Unbalanced brackets in input: " + input);
 
     String trimmedInput = input.trim();
 
-    Matcher specifierMatcher = SPECIFIER_PATTERN.matcher(trimmedInput);
-    if (specifierMatcher.find()) {
-      return parseSpecifier(specifierMatcher.group(1), specifierMatcher.group(2));
+    Matcher funcMatcher = FUNC_PATTERN.matcher(trimmedInput);
+    if (funcMatcher.find()) {
+      return parseFunc(funcMatcher.group(1), funcMatcher.group(2));
     }
 
     Matcher combinationMatcher = COMBINATION_PATTERN.matcher(trimmedInput);
@@ -94,40 +97,43 @@ public class AltFlexibleLocationSpecifierFactory implements LocationSpecifierFac
       }
     }
 
-    if (!trimmedInput.contains(":")) { // must be a node name (regex)
-      return new NodeNameRegexInterfaceLocationSpecifier(
-          Pattern.compile(trimmedInput, Pattern.CASE_INSENSITIVE));
-    } else {
-      String[] words = trimmedInput.split(":", 2);
+    Matcher atomicMatcher = ATOMIC_PATTERN.matcher(trimmedInput);
+    if (atomicMatcher.find()) {
+      String nodesInput = atomicMatcher.group(1).trim();
+      String interfacesInput = atomicMatcher.group(2);
+      if (Strings.isNullOrEmpty(interfacesInput)) {
+        checkArgument(
+            !nodesInput.isEmpty(),
+            "Both nodes and interfaces part of the flexible location specifier cannot be empty");
+        return new NodeSpecifierInterfaceLocationSpecifier(
+            new FlexibleNodeSpecifierFactory().buildNodeSpecifier(nodesInput));
+      }
+      // remove '[' and ']'
+      interfacesInput = interfacesInput.trim();
+      interfacesInput = interfacesInput.substring(1, interfacesInput.length() - 1);
+      if (nodesInput.isEmpty()) {
+        return new InterfaceSpecifierInterfaceLocationSpecifier(
+            new FlexibleInterfaceSpecifierFactory().buildInterfaceSpecifier(interfacesInput));
+      }
+
       return new IntersectionLocationSpecifier(
-          new NodeNameRegexInterfaceLocationSpecifier(
-              Pattern.compile(words[0].trim(), Pattern.CASE_INSENSITIVE)),
-          new NameRegexInterfaceLocationSpecifier(
-              Pattern.compile(words[1].trim(), Pattern.CASE_INSENSITIVE)));
+          new NodeSpecifierInterfaceLocationSpecifier(
+              new FlexibleNodeSpecifierFactory().buildNodeSpecifier(nodesInput)),
+          new InterfaceSpecifierInterfaceLocationSpecifier(
+              new FlexibleInterfaceSpecifierFactory().buildInterfaceSpecifier(interfacesInput)));
     }
+
+    throw new IllegalArgumentException("Could not process input: " + trimmedInput);
   }
 
-  private static LocationSpecifier parseSpecifier(String specifierName, String specifierInput) {
+  private static LocationSpecifier parseFunc(String funcName, String specifierInput) {
 
-    if (specifierName.equalsIgnoreCase(SPECIFIER_ENTER)) {
+    if (funcName.equalsIgnoreCase(FUNC_ENTER)) {
       return new ToInterfaceLinkLocationSpecifier(parse(specifierInput));
     }
-    if (specifierName.equalsIgnoreCase(SPECIFIER_INTERFACE)) {
-      return new NameRegexInterfaceLocationSpecifier(
-          Pattern.compile(specifierInput, Pattern.CASE_INSENSITIVE));
+    if (funcName.equalsIgnoreCase(FUNC_EXIT)) {
+      throw new UnsupportedOperationException(FUNC_EXIT + "() is not currently supported");
     }
-    if (specifierName.equalsIgnoreCase(SPECIFIER_VRF)) {
-      return new VrfNameRegexInterfaceLocationSpecifier(
-          Pattern.compile(specifierInput, Pattern.CASE_INSENSITIVE));
-    }
-    if (specifierName.equalsIgnoreCase(SPECIFIER_NODE_ROLE)) {
-      String[] words = specifierInput.split(",");
-      checkArgument(
-          words.length == 2,
-          "Input to ref.noderole must have two strings. Yours was " + specifierInput);
-      return new NodeRoleRegexInterfaceLocationSpecifier(
-          words[1].trim(), Pattern.compile(words[0], Pattern.CASE_INSENSITIVE));
-    }
-    throw new IllegalArgumentException("Unknown specifier type: " + specifierName);
+    throw new IllegalArgumentException("Unknown function type: " + funcName);
   }
 }
