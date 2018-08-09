@@ -8,8 +8,7 @@ import java.util.regex.Pattern;
 import org.batfish.datamodel.questions.NodesSpecifier;
 
 /**
- * A {@link NodeSpecifierFactory} that mostly delegates to ShorthandNodeSpecifier. It accepts three
- * forms of input
+ * A {@link NodeSpecifierFactory} that accepts three forms of input
  *
  * <ul>
  *   <li>null: returns AllNodesNodeSpecifier

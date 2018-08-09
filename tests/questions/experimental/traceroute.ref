@@ -190,5 +190,5 @@
   "tcpSyn" : true,
   "tcpUrg" : false,
   "traceStart" : "location",
-  "traceStartLocationSpecifierFactory" : "AltFlexibleLocationSpecifierFactory"
+  "traceStartLocationSpecifierFactory" : "FlexibleLocationSpecifierFactory"
 }
