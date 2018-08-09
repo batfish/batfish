@@ -23,14 +23,18 @@ public class VrfNameRegexInterfaceSpecifierTest {
 
     Vrf vrf1 = new Vrf("vrf1");
     Vrf vrf2 = new Vrf("vrf2");
+    Vrf vrf3 = new Vrf("vrf2");
 
     Interface iface11 = Interface.builder().setName("iface11").setOwner(node1).setVrf(vrf1).build();
     Interface iface12 = Interface.builder().setName("iface12").setOwner(node1).setVrf(vrf2).build();
-    Interface iface2 = Interface.builder().setName("iface2").setOwner(node2).build();
+    Interface iface2 = Interface.builder().setName("iface2").setOwner(node2).setVrf(vrf3).build();
 
     node1.setVrfs(ImmutableSortedMap.of("vrf1", vrf1, "vrf2", vrf2));
     vrf1.setInterfaces(ImmutableSortedMap.of("iface11", iface11));
     vrf2.setInterfaces(ImmutableSortedMap.of("iface12", iface12));
+
+    node2.setVrfs(ImmutableSortedMap.of("vrf3", vrf3));
+    vrf3.setInterfaces(ImmutableSortedMap.of("iface2", iface2));
 
     MockSpecifierContext ctxt =
         MockSpecifierContext.builder()
