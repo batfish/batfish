@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.batfish.common.BatfishException;
@@ -75,6 +76,20 @@ public class InterfacesSpecifier {
     _regex = regex;
   }
 
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (!(obj instanceof InterfacesSpecifier)) {
+      return false;
+    }
+    InterfacesSpecifier that = (InterfacesSpecifier) obj;
+    return Objects.equals(_expression, that._expression)
+        && Objects.equals(_regex.pattern(), that._regex.pattern())
+        && Objects.equals(_type, that._type);
+  }
+
   @JsonIgnore
   public Pattern getRegex() {
     return _regex;
@@ -98,6 +113,11 @@ public class InterfacesSpecifier {
       default:
         throw new BatfishException("Unhandled InterfacesSpecifier type: " + _type);
     }
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_expression, _regex.pattern(), _type.ordinal());
   }
 
   @Override
