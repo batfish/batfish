@@ -85,16 +85,25 @@ public class OspfProtocolHelperTest {
     Builder b = nf.ospfProcessBuilder();
     OspfProcess proc = b.build();
     OspfProcess neighborProc = b.build();
+    OspfArea area0 = new OspfArea(0L);
     OspfArea area1 = new OspfArea(1L);
     area1.setStubType(StubType.STUB);
-    neighborProc.setAreas(ImmutableSortedMap.of(0L, new OspfArea(0L), 1L, area1));
+    neighborProc.setAreas(ImmutableSortedMap.of(0L, area0, 1L, area1));
 
     // Receiving process is NOT an ABR
     proc.setAreas(ImmutableSortedMap.of(1L, area1));
-    assertThat(isOspfInterAreaDefaultOriginationAllowed(proc, neighborProc, area1), equalTo(true));
+    assertThat(
+        isOspfInterAreaDefaultOriginationAllowed(proc, neighborProc, area0, area1), equalTo(true));
 
-    // Receiving process IS an ABR
-    proc.setAreas(ImmutableSortedMap.of(0L, new OspfArea(0L), 1L, area1));
-    assertThat(isOspfInterAreaDefaultOriginationAllowed(proc, neighborProc, area1), equalTo(false));
+    // Area does not inject the default route
+    area0.setInjectDefaultRoute(false);
+    assertThat(
+        isOspfInterAreaDefaultOriginationAllowed(proc, neighborProc, area0, area1), equalTo(false));
+
+    // Area injects the default route, but the receiving process IS an ABR
+    area0.setInjectDefaultRoute(true);
+    proc.setAreas(ImmutableSortedMap.of(0L, area0, 1L, area1));
+    assertThat(
+        isOspfInterAreaDefaultOriginationAllowed(proc, neighborProc, area0, area1), equalTo(false));
   }
 }

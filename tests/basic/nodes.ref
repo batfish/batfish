@@ -1188,10 +1188,12 @@
               "areas" : {
                 "1" : {
                   "name" : 1,
+                  "injectDefaultRoute" : true,
                   "interfaces" : [
                     "GigabitEthernet0/0",
                     "Loopback0"
                   ],
+                  "metricOfDefaultRoute" : 0,
                   "stubType" : "NONE"
                 }
               },
@@ -2432,10 +2434,12 @@
               "areas" : {
                 "1" : {
                   "name" : 1,
+                  "injectDefaultRoute" : true,
                   "interfaces" : [
                     "GigabitEthernet1/0",
                     "Loopback0"
                   ],
+                  "metricOfDefaultRoute" : 0,
                   "stubType" : "NONE"
                 }
               },
@@ -2826,11 +2830,13 @@
               "areas" : {
                 "1" : {
                   "name" : 1,
+                  "injectDefaultRoute" : true,
                   "interfaces" : [
                     "GigabitEthernet0/0",
                     "GigabitEthernet1/0",
                     "Loopback0"
                   ],
+                  "metricOfDefaultRoute" : 0,
                   "stubType" : "NONE"
                 }
               },
@@ -4091,11 +4097,13 @@
               "areas" : {
                 "1" : {
                   "name" : 1,
+                  "injectDefaultRoute" : true,
                   "interfaces" : [
                     "GigabitEthernet1/0",
                     "GigabitEthernet2/0",
                     "Loopback0"
                   ],
+                  "metricOfDefaultRoute" : 0,
                   "stubType" : "NONE"
                 }
               },
@@ -5299,11 +5307,13 @@
               "areas" : {
                 "1" : {
                   "name" : 1,
+                  "injectDefaultRoute" : true,
                   "interfaces" : [
                     "GigabitEthernet1/0",
                     "GigabitEthernet2/0",
                     "Loopback0"
                   ],
+                  "metricOfDefaultRoute" : 0,
                   "stubType" : "NONE"
                 }
               },
@@ -5905,6 +5915,7 @@
               "areas" : {
                 "1" : {
                   "name" : 1,
+                  "injectDefaultRoute" : true,
                   "interfaces" : [
                     "GigabitEthernet0/0",
                     "GigabitEthernet1/0",
@@ -5912,6 +5923,7 @@
                     "GigabitEthernet3/0",
                     "Loopback0"
                   ],
+                  "metricOfDefaultRoute" : 0,
                   "stubType" : "NONE"
                 }
               },
@@ -6460,6 +6472,7 @@
               "areas" : {
                 "1" : {
                   "name" : 1,
+                  "injectDefaultRoute" : true,
                   "interfaces" : [
                     "GigabitEthernet0/0",
                     "GigabitEthernet1/0",
@@ -6467,6 +6480,7 @@
                     "GigabitEthernet3/0",
                     "Loopback0"
                   ],
+                  "metricOfDefaultRoute" : 0,
                   "stubType" : "NONE"
                 }
               },
@@ -8172,11 +8186,13 @@
               "areas" : {
                 "1" : {
                   "name" : 1,
+                  "injectDefaultRoute" : true,
                   "interfaces" : [
                     "GigabitEthernet0/0",
                     "GigabitEthernet1/0",
                     "Loopback0"
                   ],
+                  "metricOfDefaultRoute" : 0,
                   "stubType" : "NONE"
                 }
               },
@@ -8927,11 +8943,13 @@
               "areas" : {
                 "1" : {
                   "name" : 1,
+                  "injectDefaultRoute" : true,
                   "interfaces" : [
                     "GigabitEthernet0/0",
                     "GigabitEthernet1/0",
                     "Loopback0"
                   ],
+                  "metricOfDefaultRoute" : 0,
                   "stubType" : "NONE"
                 }
               },
@@ -10051,10 +10069,12 @@
               "areas" : {
                 "1" : {
                   "name" : 1,
+                  "injectDefaultRoute" : true,
                   "interfaces" : [
                     "GigabitEthernet0/0",
                     "Loopback0"
                   ],
+                  "metricOfDefaultRoute" : 0,
                   "stubType" : "NONE"
                 }
               },
@@ -11126,10 +11146,12 @@
               "areas" : {
                 "1" : {
                   "name" : 1,
+                  "injectDefaultRoute" : true,
                   "interfaces" : [
                     "GigabitEthernet1/0",
                     "Loopback0"
                   ],
+                  "metricOfDefaultRoute" : 0,
                   "stubType" : "NONE"
                 }
               },
@@ -11720,11 +11742,13 @@
               "areas" : {
                 "1" : {
                   "name" : 1,
+                  "injectDefaultRoute" : true,
                   "interfaces" : [
                     "GigabitEthernet0/0",
                     "GigabitEthernet1/0",
                     "Loopback0"
                   ],
+                  "metricOfDefaultRoute" : 0,
                   "stubType" : "NONE"
                 }
               },

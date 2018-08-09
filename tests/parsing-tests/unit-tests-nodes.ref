@@ -1732,9 +1732,11 @@
               "areas" : {
                 "0" : {
                   "name" : 0,
+                  "injectDefaultRoute" : true,
                   "interfaces" : [
                     "Ethernet0/0"
                   ],
+                  "metricOfDefaultRoute" : 0,
                   "stubType" : "NONE"
                 }
               },
@@ -9211,6 +9213,8 @@
               "areas" : {
                 "0" : {
                   "name" : 0,
+                  "injectDefaultRoute" : true,
+                  "metricOfDefaultRoute" : 0,
                   "stubType" : "NONE",
                   "summaries" : {
                     "1.2.3.0/24" : {
@@ -9222,6 +9226,8 @@
                 },
                 "16909056" : {
                   "name" : 16909056,
+                  "injectDefaultRoute" : true,
+                  "metricOfDefaultRoute" : 0,
                   "stubType" : "NONE",
                   "summaries" : {
                     "1.2.3.0/24" : {
@@ -11755,10 +11761,12 @@
               "areas" : {
                 "0" : {
                   "name" : 0,
+                  "injectDefaultRoute" : true,
                   "interfaces" : [
                     "Ethernet0",
                     "Ethernet1"
                   ],
+                  "metricOfDefaultRoute" : 0,
                   "stubType" : "NONE"
                 }
               },
@@ -13457,6 +13465,8 @@
               "areas" : {
                 "0" : {
                   "name" : 0,
+                  "injectDefaultRoute" : true,
+                  "metricOfDefaultRoute" : 0,
                   "stubType" : "NONE",
                   "summaries" : {
                     "10.0.0.0/15" : {
@@ -13939,6 +13949,8 @@
               "areas" : {
                 "66051" : {
                   "name" : 66051,
+                  "injectDefaultRoute" : true,
+                  "metricOfDefaultRoute" : 0,
                   "nssa" : {
                     "defaultOriginateType" : "INTER_AREA",
                     "suppressType3" : true
@@ -15792,6 +15804,8 @@
               "areas" : {
                 "7" : {
                   "name" : 7,
+                  "injectDefaultRoute" : true,
+                  "metricOfDefaultRoute" : 0,
                   "stub" : {
                     "suppressType3" : false
                   },
@@ -15799,6 +15813,8 @@
                 },
                 "46" : {
                   "name" : 46,
+                  "injectDefaultRoute" : true,
+                  "metricOfDefaultRoute" : 0,
                   "stub" : {
                     "suppressType3" : true
                   },

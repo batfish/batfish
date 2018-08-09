@@ -2435,10 +2435,12 @@
             "areas" : {
               "1" : {
                 "name" : 1,
+                "injectDefaultRoute" : true,
                 "interfaces" : [
                   "GigabitEthernet0/0",
                   "Loopback0"
                 ],
+                "metricOfDefaultRoute" : 0,
                 "stubType" : "NONE"
               }
             },
