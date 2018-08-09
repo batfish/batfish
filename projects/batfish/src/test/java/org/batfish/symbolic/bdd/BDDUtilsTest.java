@@ -9,6 +9,13 @@ import org.junit.Test;
 
 public class BDDUtilsTest {
   @Test
+  public void testIsAssignment_trivial() {
+    BDDFactory factory = BDDUtils.bddFactory(1);
+    assertThat("one is an assignment (that assigns nothing)", isAssignment(factory.one()));
+    assertThat("zero is not an assignment", !isAssignment(factory.zero()));
+  }
+
+  @Test
   public void testIsAssignment() {
     BDDFactory factory = BDDUtils.bddFactory(2);
     BDD v0 = factory.ithVar(0);
