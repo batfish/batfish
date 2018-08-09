@@ -4,6 +4,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import java.util.regex.Pattern;
 import org.batfish.datamodel.questions.InterfacesSpecifier;
 import org.junit.Rule;
 import org.junit.Test;
@@ -34,9 +35,16 @@ public class FlexibleInterfaceSpecifierFactoryTest {
   }
 
   @Test
-  public void testShorthandInterfaceSpecifier() {
+  public void testShorthand() {
     assertThat(
         new FlexibleInterfaceSpecifierFactory().buildInterfaceSpecifier("name:.*"),
         equalTo(new ShorthandInterfaceSpecifier(new InterfacesSpecifier("name:.*"))));
+  }
+
+  @Test
+  public void testVrf() {
+    assertThat(
+        new FlexibleInterfaceSpecifierFactory().buildInterfaceSpecifier("vrf(.*)"),
+        equalTo(new VrfNameRegexInterfaceSpecifier(Pattern.compile(".*"))));
   }
 }

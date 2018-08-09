@@ -27,7 +27,7 @@ public final class NameRegexNodeSpecifier implements NodeSpecifier {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_namePattern);
+    return Objects.hash(_namePattern.pattern());
   }
 
   @Override
