@@ -118,7 +118,7 @@ public class EigrpProcess implements Comparable<EigrpProcess>, Serializable {
       }
       EigrpProcess proc = new EigrpProcess(_asn, _exportPolicy, _mode, _routerId);
       if (_vrf != null) {
-        _vrf.getEigrpProcesses().add(proc);
+        _vrf.getEigrpProcesses().put(_asn, proc);
       }
       return proc;
     }

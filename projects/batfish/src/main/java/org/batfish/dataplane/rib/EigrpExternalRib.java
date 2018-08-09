@@ -1,14 +1,8 @@
 package org.batfish.dataplane.rib;
 
-import static java.util.Objects.requireNonNull;
-
 import java.util.Comparator;
-import java.util.Map;
-import java.util.SortedSet;
 import java.util.TreeMap;
-import javax.annotation.Nonnull;
 import org.batfish.datamodel.EigrpExternalRoute;
-import org.batfish.datamodel.Prefix;
 
 /** Rib that stores external EIGRP routes */
 public class EigrpExternalRib extends AbstractRib<EigrpExternalRoute> {
@@ -24,11 +18,5 @@ public class EigrpExternalRib extends AbstractRib<EigrpExternalRoute> {
     return Comparator.comparing(EigrpExternalRoute::getCompositeCost)
         .thenComparing(EigrpExternalRoute::getDestinationAsn)
         .compare(rhs, lhs);
-  }
-
-  @Nonnull
-  public Map<Prefix, SortedSet<EigrpExternalRoute>> getBackupRoutes() {
-    // Created in constructor
-    return requireNonNull(_backupRoutes);
   }
 }

@@ -3,6 +3,7 @@ package org.batfish.datamodel.matchers;
 import static org.hamcrest.Matchers.equalTo;
 
 import java.util.List;
+import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Set;
 import java.util.SortedSet;
@@ -260,7 +261,7 @@ public final class DataModelMatchers {
    * eigrpProcess.
    */
   public static @Nonnull Matcher<Vrf> hasEigrpProcesses(
-      @Nonnull Matcher<? super SortedSet<EigrpProcess>> subMatcher) {
+      @Nonnull Matcher<? super Map<Long, EigrpProcess>> subMatcher) {
     return new HasEigrpProcesses(subMatcher);
   }
 

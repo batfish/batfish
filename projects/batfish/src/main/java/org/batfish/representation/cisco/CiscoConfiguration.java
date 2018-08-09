@@ -3246,7 +3246,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
               .stream()
               .map(proc -> CiscoConversions.toEigrpProcess(proc, vrfName, c, this))
               .filter(Objects::nonNull)
-              .forEach(eigrpProcess -> newVrf.getEigrpProcesses().add(eigrpProcess));
+              .forEach(
+                  eigrpProcess ->
+                      newVrf.getEigrpProcesses().put(eigrpProcess.getAsn(), eigrpProcess));
 
           // convert isis process
           IsisProcess isisProcess = vrf.getIsisProcess();

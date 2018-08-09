@@ -6339,8 +6339,8 @@
           }
         },
         "routingPolicies" : {
-          "~EIGRP_EXPORT_POLICY:default,5~" : {
-            "name" : "~EIGRP_EXPORT_POLICY:default,5~",
+          "~EIGRP_EXPORT_POLICY:default:5~" : {
+            "name" : "~EIGRP_EXPORT_POLICY:default:5~",
             "statements" : [
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -6521,14 +6521,14 @@
           },
           "default" : {
             "name" : "default",
-            "eigrpProcesses" : [
-              {
+            "eigrpProcesses" : {
+              "5" : {
                 "asn" : 5,
                 "eigrp-mode" : "CLASSIC",
-                "export-policy" : "~EIGRP_EXPORT_POLICY:default,5~",
+                "export-policy" : "~EIGRP_EXPORT_POLICY:default:5~",
                 "router-id" : "100.1.1.1"
               }
-            ],
+            },
             "interfaces" : [
               "Ethernet0"
             ]

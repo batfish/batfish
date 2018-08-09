@@ -791,11 +791,14 @@ public class VirtualRouterTest {
                 vr.initQueuesAndDeltaBuilders(
                     nodes, topology, bgpTopology, eigrpTopology, initialIsisTopology));
 
-    // Assert that queues are empty as there are no OSPF, BGP, nor IS-IS processes
+    // Assert that queues are empty as there are no OSPF, BGP, EIGRP, nor IS-IS processes
     vrs.values()
         .forEach(
             vr -> {
               assertThat(vr._bgpIncomingRoutes, anEmptyMap());
+              vr._virtualEigrpProcesses
+                  .values()
+                  .forEach(process -> assertThat(process._incomingRoutes, anEmptyMap()));
               assertThat(vr._isisIncomingRoutes, anEmptyMap());
               assertThat(vr._ospfExternalIncomingRoutes, anEmptyMap());
             });

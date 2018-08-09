@@ -76,8 +76,6 @@ public class Vrf extends ComparableStructure<String> {
 
   private static final String PROP_STATIC_ROUTES = "staticRoutes";
 
-  private final SortedSet<EigrpProcess> _eigrpProcesses;
-
   private transient NavigableSet<BgpAdvertisement> _bgpAdvertisements;
 
   private BgpProcess _bgpProcess;
@@ -87,6 +85,8 @@ public class Vrf extends ComparableStructure<String> {
   private NavigableSet<GeneratedRoute6> _generatedIpv6Routes;
 
   private NavigableSet<GeneratedRoute> _generatedRoutes;
+
+  private Map<Long, EigrpProcess> _eigrpProcesses;
 
   private transient SortedSet<String> _interfaceNames;
 
@@ -125,7 +125,7 @@ public class Vrf extends ComparableStructure<String> {
   @JsonCreator
   public Vrf(@JsonProperty(PROP_NAME) String name) {
     super(name);
-    _eigrpProcesses = new TreeSet<>();
+    _eigrpProcesses = new TreeMap<>();
     _generatedRoutes = new TreeSet<>();
     _generatedIpv6Routes = new TreeSet<>();
     _interfaces = new TreeMap<>();
@@ -162,7 +162,7 @@ public class Vrf extends ComparableStructure<String> {
 
   /** @return EIGRP routing processes for this VRF */
   @JsonProperty(PROP_EIGRP_PROCESSES)
-  public SortedSet<EigrpProcess> getEigrpProcesses() {
+  public Map<Long, EigrpProcess> getEigrpProcesses() {
     return _eigrpProcesses;
   }
 
@@ -300,6 +300,11 @@ public class Vrf extends ComparableStructure<String> {
   @JsonProperty(PROP_GENERATED_ROUTES)
   public void setGeneratedRoutes(NavigableSet<GeneratedRoute> generatedRoutes) {
     _generatedRoutes = generatedRoutes;
+  }
+
+  @JsonProperty(PROP_EIGRP_PROCESSES)
+  public void setEigrpProcesses(Map<Long, EigrpProcess> eigrpProcesses) {
+    _eigrpProcesses = eigrpProcesses;
   }
 
   @JsonProperty(PROP_INTERFACES)

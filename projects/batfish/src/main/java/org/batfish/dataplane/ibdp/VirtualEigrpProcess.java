@@ -5,6 +5,7 @@ import static org.batfish.common.util.CommonUtil.toImmutableSortedMap;
 import static org.batfish.dataplane.rib.AbstractRib.importRib;
 import static org.batfish.dataplane.rib.RibDelta.importRibDelta;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.graph.Network;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,8 +13,6 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.SortedSet;
-import java.util.TreeSet;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -55,22 +54,28 @@ class VirtualEigrpProcess {
   private final EigrpExternalRib _externalRib;
 
   private final List<EigrpInterface> _interfaces;
+
   /** Helper RIB containing all EIGRP paths internal to this router's ASN. */
   private final EigrpInternalRib _internalRib;
+
   /**
    * Helper RIBs containing paths obtained with EIGRP during current iteration. An Adj-RIB of sorts.
    */
   private final EigrpInternalRib _internalStagingRib;
 
   private final String _vrfName;
+
   /** Helper RIBs containing EIGRP internal and external paths. */
   private final EigrpRib _rib;
+
   /** Routing policy to determine whether and how to export */
   @Nullable private final RoutingPolicy _exportPolicy;
 
-  private EigrpExternalRib _externalStagingRib;
   /** Incoming messages into this router from each EIGRP adjacency */
-  private SortedMap<EigrpEdge, Queue<RouteAdvertisement<EigrpExternalRoute>>> _incomingRoutes;
+  @VisibleForTesting
+  SortedMap<EigrpEdge, Queue<RouteAdvertisement<EigrpExternalRoute>>> _incomingRoutes;
+
+  private EigrpExternalRib _externalStagingRib;
 
   VirtualEigrpProcess(final EigrpProcess process, final String vrfName, final Configuration c) {
     _asn = process.getAsn();
@@ -239,10 +244,9 @@ class VirtualEigrpProcess {
           Interface connectingIntf = edge.getNode2().getInterface(nc);
 
           // Edge nodes must have EIGRP configuration
-          requireNonNull(nextHopIntf.getEigrp());
-          requireNonNull(nextHopIntf.getEigrp().getMetric());
-          requireNonNull(connectingIntf.getEigrp());
-          requireNonNull(connectingIntf.getEigrp().getMetric());
+          if (nextHopIntf.getEigrp() == null || connectingIntf.getEigrp() == null) {
+            return;
+          }
 
           EigrpMetric nextHopIntfMetric = nextHopIntf.getEigrp().getMetric();
           EigrpMetric connectingIntfMetric = connectingIntf.getEigrp().getMetric();
@@ -261,20 +265,16 @@ class VirtualEigrpProcess {
                 .setEigrpMetric(metric)
                 .setNetwork(neighborRoute.getNetwork());
             EigrpExternalRoute newRoute = routeBuilder.build();
-            Map<Prefix, SortedSet<EigrpExternalRoute>> backupRoutes =
-                _externalRib.getBackupRoutes();
+            if (newRoute == null) {
+              continue;
+            }
 
             if (routeAdvert.isWithdrawn()) {
               deltaBuilder.remove(newRoute, Reason.WITHDRAW);
-              SortedSet<EigrpExternalRoute> backups = backupRoutes.get(newRoute.getNetwork());
-              if (backups != null) {
-                backups.remove(newRoute);
-              }
+              _externalRib.removeBackupRoute(newRoute);
             } else {
               deltaBuilder.from(_externalStagingRib.mergeRouteGetDelta(newRoute));
-              backupRoutes
-                  .computeIfAbsent(newRoute.getNetwork(), k -> new TreeSet<>())
-                  .add(newRoute);
+              _externalRib.addBackupRoute(newRoute);
             }
           }
         });

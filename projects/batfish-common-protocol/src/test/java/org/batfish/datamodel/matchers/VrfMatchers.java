@@ -1,5 +1,6 @@
 package org.batfish.datamodel.matchers;
 
+import java.util.Map;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.BgpProcess;
@@ -33,7 +34,7 @@ public class VrfMatchers {
    * process.
    */
   public static HasEigrpProcesses hasEigrpProcesses(
-      Matcher<? super SortedSet<EigrpProcess>> subMatcher) {
+      Matcher<? super Map<Long, EigrpProcess>> subMatcher) {
     return new HasEigrpProcesses(subMatcher);
   }
 

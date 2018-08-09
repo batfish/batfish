@@ -11,6 +11,7 @@ import static org.batfish.dataplane.rib.AbstractRib.importRib;
 import static org.batfish.dataplane.rib.RibDelta.importRibDelta;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
@@ -19,7 +20,6 @@ import com.google.common.graph.ValueGraph;
 import java.io.Serializable;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.AbstractMap.SimpleImmutableEntry;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashSet;
@@ -227,26 +227,8 @@ public class VirtualRouter implements Serializable {
 
   transient OspfRib _ospfRib;
 
-  /**
-   * Set of all valid BGP routes we have received during the DP computation. Used to fill gaps in
-   * BGP RIBs when routes are withdrawn.
-   */
-  private Map<Prefix, SortedSet<BgpRoute>> _receivedBgpRoutes;
-
   /** Set of all received BGP advertisements in {@link BgpAdvertisement} form */
   private Set<BgpAdvertisement> _receivedBgpAdvertisements;
-
-  /** Set of all valid IS-IS level-1 routes that we know about */
-  private Map<Prefix, SortedSet<IsisRoute>> _receivedIsisL1Routes;
-
-  /** Set of all valid IS-IS level-2 routes that we know about */
-  private Map<Prefix, SortedSet<IsisRoute>> _receivedIsisL2Routes;
-
-  /** Set of all valid OSPF external Type 1 routes that we know about */
-  private Map<Prefix, SortedSet<OspfExternalType1Route>> _receivedOspExternalType1Routes;
-
-  /** Set of all valid OSPF external Type 2 routes that we know about */
-  private Map<Prefix, SortedSet<OspfExternalType2Route>> _receivedOspExternalType2Routes;
 
   transient RipInternalRib _ripInternalRib;
 
@@ -276,7 +258,8 @@ public class VirtualRouter implements Serializable {
   private transient PrefixTracer _prefixTracer;
 
   /** List of all EIGRP processes in this VRF */
-  private final transient List<VirtualEigrpProcess> _virtualEigrpProcesses;
+  @VisibleForTesting
+  transient ImmutableMap<Long, VirtualEigrpProcess> _virtualEigrpProcesses;
 
   /** A {@link Vrf} that this virtual router represents */
   final Vrf _vrf;
@@ -289,14 +272,9 @@ public class VirtualRouter implements Serializable {
     // Keep track of sent and received advertisements
     _receivedBgpAdvertisements = new LinkedHashSet<>();
     _sentBgpAdvertisements = new LinkedHashSet<>();
-    _receivedIsisL1Routes = new TreeMap<>();
-    _receivedIsisL2Routes = new TreeMap<>();
-    _receivedOspExternalType1Routes = new TreeMap<>();
-    _receivedOspExternalType2Routes = new TreeMap<>();
-    _receivedBgpRoutes = new TreeMap<>();
     _bgpIncomingRoutes = new TreeMap<BgpEdgeId, Queue<RouteAdvertisement<BgpRoute>>>();
     _prefixTracer = new PrefixTracer();
-    _virtualEigrpProcesses = new ArrayList<>();
+    _virtualEigrpProcesses = ImmutableMap.of();
   }
 
   /**
@@ -402,11 +380,12 @@ public class VirtualRouter implements Serializable {
 
   /** Initialize EIGRP processes */
   private void initEigrp() {
-    _virtualEigrpProcesses.addAll(
+    _virtualEigrpProcesses =
         _vrf.getEigrpProcesses()
+            .values()
             .stream()
             .map(eigrpProcess -> new VirtualEigrpProcess(eigrpProcess, _name, _c))
-            .collect(Collectors.toList()));
+            .collect(ImmutableMap.toImmutableMap(VirtualEigrpProcess::getAsn, Function.identity()));
   }
 
   /**
@@ -511,7 +490,7 @@ public class VirtualRouter implements Serializable {
    * @param eigrpTopology The topology representing EIGRP adjacencies
    */
   private void initEigrpQueues(Network<EigrpInterface, EigrpEdge> eigrpTopology) {
-    _virtualEigrpProcesses.forEach(proc -> proc.initQueues(eigrpTopology));
+    _virtualEigrpProcesses.values().forEach(proc -> proc.initQueues(eigrpTopology));
   }
 
   private void initIsisQueues(Network<IsisNode, IsisEdge> isisTopology) {
@@ -1120,7 +1099,9 @@ public class VirtualRouter implements Serializable {
    * @param allNodes map of all nodes, keyed by hostname
    */
   void initEigrpExports(Map<String, Node> allNodes) {
-    _virtualEigrpProcesses.forEach(proc -> proc.initExports(allNodes, _mainRib.getRoutes()));
+    _virtualEigrpProcesses
+        .values()
+        .forEach(proc -> proc.initExports(allNodes, _mainRib.getRoutes()));
   }
 
   void initIsisExports(Map<String, Node> allNodes, NetworkConfigurations nc) {
@@ -1227,11 +1208,7 @@ public class VirtualRouter implements Serializable {
 
   @Nullable
   VirtualEigrpProcess getEigrpProcess(long asn) {
-    return _virtualEigrpProcesses
-        .stream()
-        .filter(proc -> proc.getAsn() == asn)
-        .findFirst()
-        .orElse(null);
+    return _virtualEigrpProcesses.get(asn);
   }
 
   void initOspfExports() {
@@ -1287,15 +1264,13 @@ public class VirtualRouter implements Serializable {
     _ibgpStagingRib = new BgpMultipathRib(mpTieBreaker);
     _independentRib = new Rib();
     _isisRib = new IsisRib(isL1Only());
-    _isisL1Rib = new IsisLevelRib(_receivedIsisL1Routes);
-    _isisL2Rib = new IsisLevelRib(_receivedIsisL2Routes);
+    _isisL1Rib = new IsisLevelRib(new TreeMap<>());
+    _isisL2Rib = new IsisLevelRib(new TreeMap<>());
     _isisL1StagingRib = new IsisLevelRib(null);
     _isisL2StagingRib = new IsisLevelRib(null);
     _mainRib = new Rib();
-    _ospfExternalType1Rib =
-        new OspfExternalType1Rib(getHostname(), _receivedOspExternalType1Routes);
-    _ospfExternalType2Rib =
-        new OspfExternalType2Rib(getHostname(), _receivedOspExternalType2Routes);
+    _ospfExternalType1Rib = new OspfExternalType1Rib(getHostname(), new TreeMap<>());
+    _ospfExternalType2Rib = new OspfExternalType2Rib(getHostname(), new TreeMap<>());
     _ospfExternalType1StagingRib = new OspfExternalType1Rib(getHostname(), null);
     _ospfExternalType2StagingRib = new OspfExternalType2Rib(getHostname(), null);
     _ospfInterAreaRib = new OspfInterAreaRib();
@@ -1318,7 +1293,7 @@ public class VirtualRouter implements Serializable {
             : _vrf.getBgpProcess().getTieBreaker();
     _ebgpBestPathRib = new BgpBestPathRib(tieBreaker, null, _mainRib);
     _ibgpBestPathRib = new BgpBestPathRib(tieBreaker, null, _mainRib);
-    _bgpBestPathRib = new BgpBestPathRib(tieBreaker, _receivedBgpRoutes, _mainRib);
+    _bgpBestPathRib = new BgpBestPathRib(tieBreaker, new TreeMap<>(), _mainRib);
 
     _mainRibRouteDeltaBuiler = new RibDelta.Builder<>(_mainRib);
     _bgpBestPathDeltaBuilder = new RibDelta.Builder<>(_bgpBestPathRib);
@@ -1730,10 +1705,7 @@ public class VirtualRouter implements Serializable {
         if (remoteRouteAdvert.isWithdrawn()) {
           // Note this route was removed
           ribDeltas.get(targetRib).remove(transformedIncomingRoute, Reason.WITHDRAW);
-          SortedSet<BgpRoute> b = _receivedBgpRoutes.get(transformedIncomingRoute.getNetwork());
-          if (b != null) {
-            b.remove(transformedIncomingRoute);
-          }
+          _bgpBestPathRib.removeBackupRoute(transformedIncomingRoute);
         } else {
           // Merge into staging rib, note delta
           ribDeltas.get(targetRib).from(targetRib.mergeRouteGetDelta(transformedIncomingRoute));
@@ -1745,9 +1717,7 @@ public class VirtualRouter implements Serializable {
                 remoteBgpConfig,
                 sessionProperties,
                 transformedIncomingRoute);
-            _receivedBgpRoutes
-                .computeIfAbsent(transformedIncomingRoute.getNetwork(), k -> new TreeSet<>())
-                .add(transformedIncomingRoute);
+            _bgpBestPathRib.addBackupRoute(transformedIncomingRoute);
             _prefixTracer.installed(
                 transformedIncomingRoute.getNetwork(),
                 remoteConfigId.getHostname(),
@@ -1808,15 +1778,10 @@ public class VirtualRouter implements Serializable {
                       .build();
               if (withdraw) {
                 l1DeltaBuilder.remove(newL1Route, Reason.WITHDRAW);
-                SortedSet<IsisRoute> backups = _receivedIsisL1Routes.get(newL1Route.getNetwork());
-                if (backups != null) {
-                  backups.remove(newL1Route);
-                }
+                _isisL1Rib.removeBackupRoute(newL1Route);
               } else {
                 l1DeltaBuilder.from(_isisL1StagingRib.mergeRouteGetDelta(newL1Route));
-                _receivedIsisL1Routes
-                    .computeIfAbsent(newL1Route.getNetwork(), k -> new TreeSet<>())
-                    .add(newL1Route);
+                _isisL1Rib.removeBackupRoute(newL1Route);
               }
             } else { // neighborRoute is level2
               long incrementalMetric =
@@ -1830,15 +1795,10 @@ public class VirtualRouter implements Serializable {
                       .build();
               if (withdraw) {
                 l2DeltaBuilder.remove(newL2Route, Reason.WITHDRAW);
-                SortedSet<IsisRoute> backups = _receivedIsisL2Routes.get(newL2Route.getNetwork());
-                if (backups != null) {
-                  backups.remove(newL2Route);
-                }
+                _isisL2Rib.removeBackupRoute(newL2Route);
               } else {
                 l2DeltaBuilder.from(_isisL2StagingRib.mergeRouteGetDelta(newL2Route));
-                _receivedIsisL2Routes
-                    .computeIfAbsent(newL2Route.getNetwork(), k -> new TreeSet<>())
-                    .add(newL2Route);
+                _isisL2Rib.addBackupRoute(newL2Route);
               }
             }
           }
@@ -1956,16 +1916,10 @@ public class VirtualRouter implements Serializable {
                     neighborRoute.getAdvertiser());
             if (withdraw) {
               builderType1.remove(newRoute, Reason.WITHDRAW);
-              SortedSet<OspfExternalType1Route> backups =
-                  _receivedOspExternalType1Routes.get(newRoute.getNetwork());
-              if (backups != null) {
-                backups.remove(newRoute);
-              }
+              _ospfExternalType1Rib.removeBackupRoute(newRoute);
             } else {
               builderType1.from(_ospfExternalType1StagingRib.mergeRouteGetDelta(newRoute));
-              _receivedOspExternalType1Routes
-                  .computeIfAbsent(newRoute.getNetwork(), k -> new TreeSet<>())
-                  .add(newRoute);
+              _ospfExternalType1Rib.addBackupRoute(newRoute);
             }
 
           } else if (neighborRoute instanceof OspfExternalType2Route) {
@@ -1996,16 +1950,10 @@ public class VirtualRouter implements Serializable {
                     neighborRoute.getAdvertiser());
             if (withdraw) {
               builderType2.remove(newRoute, Reason.WITHDRAW);
-              SortedSet<OspfExternalType2Route> backups =
-                  _receivedOspExternalType2Routes.get(newRoute.getNetwork());
-              if (backups != null) {
-                backups.remove(newRoute);
-              }
+              _ospfExternalType2Rib.addBackupRoute(newRoute);
             } else {
               builderType2.from(_ospfExternalType2StagingRib.mergeRouteGetDelta(newRoute));
-              _receivedOspExternalType2Routes
-                  .computeIfAbsent(newRoute.getNetwork(), k -> new TreeSet<>())
-                  .add(newRoute);
+              _ospfExternalType2Rib.addBackupRoute(newRoute);
             }
           }
         }
@@ -2220,6 +2168,7 @@ public class VirtualRouter implements Serializable {
    */
   boolean propagateEigrpExternalRoutes(Map<String, Node> allNodes, NetworkConfigurations nc) {
     return _virtualEigrpProcesses
+        .values()
         .stream()
         .map(
             proc ->
@@ -2242,6 +2191,7 @@ public class VirtualRouter implements Serializable {
       NetworkConfigurations nc) {
 
     return _virtualEigrpProcesses
+        .values()
         .stream()
         .map(proc -> proc.propagateInternalRoutes(nodes, topology, nc))
         .reduce(false, (a, b) -> a || b);
@@ -2622,7 +2572,7 @@ public class VirtualRouter implements Serializable {
 
   /** Merges staged EIGRP internal routes into the "real" EIGRP-internal RIBs */
   void unstageEigrpInternalRoutes() {
-    _virtualEigrpProcesses.forEach(VirtualEigrpProcess::unstageInternalRoutes);
+    _virtualEigrpProcesses.values().forEach(VirtualEigrpProcess::unstageInternalRoutes);
   }
 
   /**
@@ -2723,14 +2673,16 @@ public class VirtualRouter implements Serializable {
     /*
      * Re-init/re-add routes for all EIGRP processes
      */
-    _virtualEigrpProcesses.forEach(VirtualEigrpProcess::reInitForNewIteration);
+    _virtualEigrpProcesses.values().forEach(VirtualEigrpProcess::reInitForNewIteration);
   }
 
   /**
    * Merge internal EIGRP RIBs into a general EIGRP RIB, then merge that into the independent RIB
    */
   void importEigrpInternalRoutes() {
-    _virtualEigrpProcesses.forEach(process -> process.importInternalRoutes(_independentRib));
+    _virtualEigrpProcesses
+        .values()
+        .forEach(process -> process.importInternalRoutes(_independentRib));
   }
 
   /**
@@ -3114,6 +3066,7 @@ public class VirtualRouter implements Serializable {
             .mapToInt(RouteAdvertisement::hashCode)
             .sum()
         + _virtualEigrpProcesses
+            .values()
             .stream()
             .mapToInt(VirtualEigrpProcess::computeIterationHashCode)
             .sum();

@@ -1,5 +1,6 @@
 package org.batfish.datamodel.matchers;
 
+import java.util.Map;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.BgpProcess;
@@ -26,13 +27,13 @@ final class VrfMatchersImpl {
     }
   }
 
-  static final class HasEigrpProcesses extends FeatureMatcher<Vrf, SortedSet<EigrpProcess>> {
-    HasEigrpProcesses(@Nonnull Matcher<? super SortedSet<EigrpProcess>> subMatcher) {
+  static final class HasEigrpProcesses extends FeatureMatcher<Vrf, Map<Long, EigrpProcess>> {
+    HasEigrpProcesses(@Nonnull Matcher<? super Map<Long, EigrpProcess>> subMatcher) {
       super(subMatcher, "A Vrf with eigrpProcesses:", "eigrpProcesses");
     }
 
     @Override
-    protected SortedSet<EigrpProcess> featureValueOf(Vrf actual) {
+    protected Map<Long, EigrpProcess> featureValueOf(Vrf actual) {
       return actual.getEigrpProcesses();
     }
   }

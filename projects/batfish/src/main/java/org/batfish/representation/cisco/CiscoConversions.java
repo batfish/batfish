@@ -943,7 +943,7 @@ class CiscoConversions {
      * Route redistribution modifies the configuration structure, so do this last to avoid having to
      * clean up configuration if another conversion step fails
      */
-    String eigrpExportPolicyName = "~EIGRP_EXPORT_POLICY:" + vrfName + "," + proc.getAsn() + "~";
+    String eigrpExportPolicyName = "~EIGRP_EXPORT_POLICY:" + vrfName + ":" + proc.getAsn() + "~";
     RoutingPolicy eigrpExportPolicy = new RoutingPolicy(eigrpExportPolicyName, c);
     c.getRoutingPolicies().put(eigrpExportPolicyName, eigrpExportPolicy);
     newProcess.setExportPolicy(eigrpExportPolicyName);
