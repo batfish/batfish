@@ -27,10 +27,8 @@ public class OspfArea extends ComparableStructure<Long> implements Serializable 
 
     private StubType _stubType;
 
-    /** For CISCO, we inject the default route by default. For Juniper, we don't. */
     private boolean _injectDefaultRoute = DEFAULT_INJECT_DEFAULT_ROUTE;
 
-    /** The metric to use when injecting the default route. */
     private int _metricOfDefaultRoute = DEFAULT_METRIC_OF_DEFAULT_ROUTE;
 
     Builder(NetworkFactory networkFactory) {
@@ -90,8 +88,17 @@ public class OspfArea extends ComparableStructure<Long> implements Serializable 
     }
   }
 
+  /*
+   * Whether this OSPF Area should inject the default route. Some systems (like IOS) inject the
+   * default route into OSPF by default, others don't (like JunOS). The default encodes the IOS
+   * behavior; other implementations must override the default.
+   */
   private static final boolean DEFAULT_INJECT_DEFAULT_ROUTE = true;
 
+  /*
+   * The metric of the default route injected by the OSPF Area (if it does inject the default
+   * route). The default encodes the IOS behavior; other implementations must override the default.
+   */
   private static final int DEFAULT_METRIC_OF_DEFAULT_ROUTE = 0;
 
   private static final String PROP_INJECT_DEFAULT_ROUTE = "injectDefaultRoute";
