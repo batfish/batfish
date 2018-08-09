@@ -11,6 +11,10 @@ public class OspfArea implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
+  private boolean _injectDefaultRoute = false;
+
+  private int _metricOfDefaultRoute = 0;
+
   private NssaSettings _nssaSettings;
 
   private StubSettings _stubSettings;
@@ -27,6 +31,14 @@ public class OspfArea implements Serializable {
     _summaries = new TreeMap<>();
   }
 
+  public boolean getInjectDefaultRoute() {
+    return _injectDefaultRoute;
+  }
+
+  public int getMetricOfDefaultRoute() {
+    return _metricOfDefaultRoute;
+  }
+
   public NssaSettings getNssaSettings() {
     return _nssaSettings;
   }
@@ -41,6 +53,14 @@ public class OspfArea implements Serializable {
 
   public SortedMap<Prefix, OspfAreaSummary> getSummaries() {
     return _summaries;
+  }
+
+  public void setInjectDefaultRoute(boolean injectDefaultRoute) {
+    _injectDefaultRoute = injectDefaultRoute;
+  }
+
+  public void setMetricOfDefaultRoute(int metricOfDefaultRoute) {
+    _metricOfDefaultRoute = metricOfDefaultRoute;
   }
 
   public void setNssaSettings(NssaSettings nssaSettings) {
