@@ -258,8 +258,7 @@ public class VirtualRouter implements Serializable {
   private transient PrefixTracer _prefixTracer;
 
   /** List of all EIGRP processes in this VRF */
-  @VisibleForTesting
-  transient ImmutableMap<Long, VirtualEigrpProcess> _virtualEigrpProcesses;
+  @VisibleForTesting transient ImmutableMap<Long, VirtualEigrpProcess> _virtualEigrpProcesses;
 
   /** A {@link Vrf} that this virtual router represents */
   final Vrf _vrf;
