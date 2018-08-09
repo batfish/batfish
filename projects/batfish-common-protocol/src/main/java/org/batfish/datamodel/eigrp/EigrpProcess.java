@@ -3,13 +3,16 @@ package org.batfish.datamodel.eigrp;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
+import java.util.Comparator;
 import java.util.Objects;
+import java.util.Optional;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Vrf;
 
 /** Represents an EIGRP process on a router */
-public class EigrpProcess implements Serializable {
+public class EigrpProcess implements Comparable<EigrpProcess>, Serializable {
 
   private static final String PROP_ASN = "asn";
   private static final String PROP_EXPORT_POLICY = "export-policy";
@@ -38,6 +41,15 @@ public class EigrpProcess implements Serializable {
   }
 
   @Override
+  public int compareTo(@Nonnull EigrpProcess rhs) {
+    return Comparator.comparing(EigrpProcess::getAsn)
+        .thenComparing(proc -> Optional.ofNullable(proc.getExportPolicy()).orElse(""))
+        .thenComparing(EigrpProcess::getMode)
+        .thenComparing(EigrpProcess::getRouterId)
+        .compare(this, rhs);
+  }
+
+  @Override
   public boolean equals(Object obj) {
     if (this == obj) {
       return true;
@@ -47,6 +59,7 @@ public class EigrpProcess implements Serializable {
     }
     EigrpProcess rhs = (EigrpProcess) obj;
     return Objects.equals(_asn, rhs._asn)
+        && Objects.equals(_exportPolicy, rhs._exportPolicy)
         && Objects.equals(_mode, rhs._mode)
         && Objects.equals(_routerId, rhs._routerId);
   }
@@ -98,10 +111,14 @@ public class EigrpProcess implements Serializable {
 
     private Builder() {}
 
+    @Nullable
     public EigrpProcess build() {
+      if (_asn == null || _mode == null || _routerId == null) {
+        return null;
+      }
       EigrpProcess proc = new EigrpProcess(_asn, _exportPolicy, _mode, _routerId);
       if (_vrf != null) {
-        _vrf.setEigrpProcess(proc);
+        _vrf.getEigrpProcesses().put(_asn, proc);
       }
       return proc;
     }

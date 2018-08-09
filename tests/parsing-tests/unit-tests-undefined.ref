@@ -315,37 +315,37 @@
         "route-map" : {
           "BGP_TO_EIGRP" : {
             "eigrp redistribute bgp route-map" : [
-              11
+              31
             ]
           },
           "CONNECTED_TO_EIGRP" : {
             "eigrp redistribute connected route-map" : [
-              12
+              32
             ]
           },
           "EIGRP_TO_EIGRP" : {
             "eigrp redistribute eigrp route-map" : [
-              13
+              33
             ]
           },
           "ISIS_TO_EIGRP" : {
             "eigrp redistribute isis route-map" : [
-              14
+              34
             ]
           },
           "OSPF_TO_EIGRP" : {
             "eigrp redistribute ospf route-map" : [
-              15
+              35
             ]
           },
           "RIP_TO_EIGRP" : {
             "eigrp redistribute rip route-map" : [
-              16
+              36
             ]
           },
           "STATIC_TO_EIGRP" : {
             "eigrp redistribute static route-map" : [
-              17
+              37
             ]
           }
         }

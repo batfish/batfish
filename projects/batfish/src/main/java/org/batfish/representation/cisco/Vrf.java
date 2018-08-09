@@ -2,7 +2,9 @@ package org.batfish.representation.cisco;
 
 import java.io.Serializable;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import org.batfish.representation.cisco.nx.CiscoNxBgpVrfConfiguration;
 
 public final class Vrf implements Serializable {
@@ -10,13 +12,13 @@ public final class Vrf implements Serializable {
   /** */
   private static final long serialVersionUID = 1L;
 
+  private final Map<Long, EigrpProcess> _eigrpProcesses;
+
   private CiscoNxBgpVrfConfiguration _bgpNxConfig;
 
   private BgpProcess _bgpProcess;
 
   private String _description;
-
-  private EigrpProcess _eigrpProcess;
 
   private IsisProcess _isisProcess;
 
@@ -29,6 +31,7 @@ public final class Vrf implements Serializable {
   private final Set<StaticRoute> _staticRoutes;
 
   public Vrf(String name) {
+    _eigrpProcesses = new TreeMap<>();
     _name = name;
     _staticRoutes = new HashSet<>();
   }
@@ -45,8 +48,8 @@ public final class Vrf implements Serializable {
     return _description;
   }
 
-  public EigrpProcess getEigrpProcess() {
-    return _eigrpProcess;
+  public Map<Long, EigrpProcess> getEigrpProcesses() {
+    return _eigrpProcesses;
   }
 
   public IsisProcess getIsisProcess() {
@@ -79,10 +82,6 @@ public final class Vrf implements Serializable {
 
   public void setDescription(String description) {
     _description = description;
-  }
-
-  public void setEigrpProcess(EigrpProcess eigrpProcess) {
-    _eigrpProcess = eigrpProcess;
   }
 
   public void setIsisProcess(IsisProcess isisProcess) {

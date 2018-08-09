@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
@@ -25,6 +26,7 @@ public class EigrpProcess implements Serializable {
   private final Set<IpWildcard> _wildcardNetworks;
   private final Set<Prefix> _networks;
   private final Map<RoutingProtocol, EigrpRedistributionPolicy> _redistributionPolicies;
+  private final @Nonnull String _vrfName;
   private String _addressFamily;
   private @Nullable Long _asn;
   private boolean _autoSummary;
@@ -32,7 +34,7 @@ public class EigrpProcess implements Serializable {
   @Nullable private Ip _routerId;
   private boolean _passiveInterfaceDefault;
 
-  public EigrpProcess(@Nullable Long asn, EigrpProcessMode mode) {
+  public EigrpProcess(@Nullable Long asn, EigrpProcessMode mode, @Nonnull String vrfName) {
     _asn = asn;
     _addressFamily = DEFAULT_ADDRESS_FAMILY;
     _autoSummary = false;
@@ -40,6 +42,7 @@ public class EigrpProcess implements Serializable {
     _mode = mode;
     _networks = new TreeSet<>();
     _redistributionPolicies = new EnumMap<>(RoutingProtocol.class);
+    _vrfName = vrfName;
     _wildcardNetworks = new TreeSet<>();
   }
 
@@ -136,5 +139,9 @@ public class EigrpProcess implements Serializable {
 
   public Set<IpWildcard> getWildcardNetworks() {
     return _wildcardNetworks;
+  }
+
+  public String getVrf() {
+    return _vrfName;
   }
 }
