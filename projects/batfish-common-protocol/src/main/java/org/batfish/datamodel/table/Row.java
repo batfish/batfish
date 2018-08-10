@@ -1,6 +1,5 @@
 package org.batfish.datamodel.table;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -156,7 +155,8 @@ public class Row implements Comparable<Row>, Serializable {
 
   @JsonCreator
   private Row(ObjectNode data) {
-    _data = firstNonNull(data, BatfishObjectMapper.mapper().createObjectNode());
+    //noinspection ConstantConditions
+    _data = data == null ? BatfishObjectMapper.mapper().createObjectNode() : data.deepCopy();
   }
 
   /** Returns an {@link UntypedRowBuilder} object for Row */

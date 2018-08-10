@@ -27,6 +27,10 @@ public class TableMetadata {
 
   @Nullable private String _textDesc;
 
+  public TableMetadata(@Nullable List<ColumnMetadata> columnMetadata) {
+    this(columnMetadata, (String) null);
+  }
+
   public TableMetadata(@Nullable List<ColumnMetadata> columnMetadata, @Nullable String textDesc) {
     _columnMetadata = ImmutableList.copyOf(firstNonNull(columnMetadata, ImmutableList.of()));
     _textDesc = textDesc;
