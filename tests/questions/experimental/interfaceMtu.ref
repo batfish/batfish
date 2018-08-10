@@ -9,6 +9,7 @@
     "class" : "org.batfish.question.interfaceproperties.InterfacePropertiesQuestion",
     "interfaceRegex" : "Gig.*",
     "nodeRegex" : "as1core2",
+    "onlyActive" : false,
     "propertySpec" : ".*",
     "differential" : false,
     "displayHints" : {
