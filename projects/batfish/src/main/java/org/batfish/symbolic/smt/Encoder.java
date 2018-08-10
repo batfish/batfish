@@ -192,6 +192,7 @@ public class Encoder {
     _unsatCore = new UnsatCore(ENABLE_UNSAT_CORE);
 
     initFailedLinkVariables();
+    initFailedNodeVariables();
     initSlices(_question.getHeaderSpace(), graph);
   }
 
@@ -223,7 +224,12 @@ public class Encoder {
         _allVariables.put(var.toString(), var);
       }
     }
+  }
 
+  /*
+   * Initialize symbolic variables to represent node failures.
+   */
+  private void initFailedNodeVariables() {
     for (String router : _graph.getRouters()) {
       String name = getId() + "_FAILED-NODE_" + router;
       ArithExpr var = _ctx.mkIntConst(name);
@@ -412,15 +418,16 @@ public class Encoder {
   }
 
   /*
-   * Adds the constraint that at most k links have failed.
-   * This is done in two steps. First we ensure that each link
-   * variable is constrained to take on a value between 0 and 1:
+   * Adds the constraint that at most k links/nodes have failed.
+   * This is done in two steps. First we ensure that each
+   * variable that represents a failure is constrained to
+   * take on a value between 0 and 1:
    *
-   * 0 <= link_i <= 1
+   * 0 <= failVar_i <= 1
    *
-   * Then we ensure that the sum of all links is never more than k:
+   * Then we ensure that the sum of all fail variables is never more than k:
    *
-   * link_1 + link_2 + ... + link_n <= k
+   * failVar_1 + failVar_2 + ... + failVar_n <= k
    */
   private void addFailedConstraints(int k, Set<ArithExpr> vars) {
     ArithExpr sum = mkInt(0);
@@ -438,6 +445,7 @@ public class Encoder {
     }
   }
 
+  /* Generate constraints for link failures */
   private void addFailedLinkConstraints(int k) {
     Set<ArithExpr> vars = new HashSet<>();
     getSymbolicFailures().getFailedInternalLinks().forEach((router, peer, var) -> vars.add(var));
@@ -445,6 +453,7 @@ public class Encoder {
     addFailedConstraints(k, vars);
   }
 
+  /* Generate constraints for node failures */
   private void addFailedNodeConstraints(int k) {
     Set<ArithExpr> vars = new HashSet<>();
     getSymbolicFailures().getFailedNodes().forEach((router, var) -> vars.add(var));

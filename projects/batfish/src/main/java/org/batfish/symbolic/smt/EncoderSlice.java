@@ -1944,11 +1944,11 @@ class EncoderSlice {
     assert (failed != null);
     BoolExpr notFailed = mkEq(failed, mkInt(0));
 
-    ArithExpr failedNode = getSymbolicFailures().getFailedPeerVariable(e.getEdge());
-    BoolExpr notFailedNode = mkTrue();
-    if (failedNode != null) {
-      notFailedNode = mkEq(failedNode, mkInt(0));
-    }
+    BoolExpr notFailedNode =
+        getSymbolicFailures()
+            .getFailedPeerVariable(e.getEdge())
+            .map((ArithExpr failedNode) -> mkEq(failedNode, mkInt(0)))
+            .orElse(mkTrue());
 
     // only add constraints once when using a single copy of export variables
     if (!_optimizations.getSliceCanKeepSingleExportVar().get(router).get(proto) || !usedExport) {

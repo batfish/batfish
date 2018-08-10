@@ -120,6 +120,7 @@ public class HeaderQuestion extends Question {
     _baseEnvType = EnvironmentType.ANY;
     _deltaEnvType = EnvironmentType.ANY;
     _modelOverflow = false;
+    _useAbstraction = false;
     _stats = false;
     _benchmark = false;
   }
@@ -137,6 +138,7 @@ public class HeaderQuestion extends Question {
     _baseEnvType = q._baseEnvType;
     _deltaEnvType = q._deltaEnvType;
     _modelOverflow = q._modelOverflow;
+    _useAbstraction = q._useAbstraction;
     _stats = q._stats;
     _benchmark = q._benchmark;
   }

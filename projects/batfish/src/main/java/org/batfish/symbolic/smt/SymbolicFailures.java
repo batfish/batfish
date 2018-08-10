@@ -4,6 +4,7 @@ import com.microsoft.z3.ArithExpr;
 import com.microsoft.z3.Context;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import javax.annotation.Nullable;
 import org.batfish.symbolic.GraphEdge;
 import org.batfish.symbolic.collections.Table2;
@@ -55,19 +56,16 @@ class SymbolicFailures {
     return _failedInternalLinks.get(router, peer);
   }
 
-  /* Takes an edge as an argument in order to check whether it's abstract or not */
-  @Nullable
   ArithExpr getFailedStartVariable(GraphEdge ge) {
     String router = ge.getRouter();
     return _failedNodes.get(router);
   }
 
-  @Nullable
-  ArithExpr getFailedPeerVariable(GraphEdge ge) {
+  Optional<ArithExpr> getFailedPeerVariable(GraphEdge ge) {
     if (ge.getPeer() == null) {
-      return null;
+      return Optional.empty();
     }
     String router = ge.getPeer();
-    return _failedNodes.get(router);
+    return Optional.of(_failedNodes.get(router));
   }
 }

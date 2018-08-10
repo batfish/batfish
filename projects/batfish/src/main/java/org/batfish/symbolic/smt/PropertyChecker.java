@@ -204,8 +204,8 @@ public class PropertyChecker {
     return p1.mkEqual(p2);
   }
 
-  private void addFailureConstraints(
-      Encoder enc, Set<GraphEdge> dstPorts, Set<GraphEdge> failSet, Set<String> failNodesSet) {
+  private void addLinkFailureConstraints(
+      Encoder enc, Set<GraphEdge> dstPorts, Set<GraphEdge> failSet) {
     Graph graph = enc.getMainSlice().getGraph();
     for (List<GraphEdge> edges : graph.getEdgeMap().values()) {
       for (GraphEdge ge : edges) {
@@ -224,6 +224,10 @@ public class PropertyChecker {
         }
       }
     }
+  }
+
+  private void addNodeFailureConstraints(Encoder enc, Set<String> failNodesSet) {
+    Graph graph = enc.getMainSlice().getGraph();
     for (String router : graph.getRouters()) {
       ArithExpr f = enc.getSymbolicFailures().getFailedNodes().get(router);
       assert f != null;
@@ -488,7 +492,8 @@ public class PropertyChecker {
                   enc.add(enc.mkNot(allProp));
                 }
 
-                addFailureConstraints(enc, destPorts, failOptions, failNodeOptions);
+                addLinkFailureConstraints(enc, destPorts, failOptions);
+                addNodeFailureConstraints(enc, failNodeOptions);
 
                 Tuple<VerificationResult, Model> tup = enc.verify();
                 VerificationResult res = tup.getFirst();
