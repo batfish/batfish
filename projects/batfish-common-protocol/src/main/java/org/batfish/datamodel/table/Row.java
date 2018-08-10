@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishException;
@@ -48,14 +49,14 @@ public class Row implements Comparable<Row>, Serializable {
 
   public abstract static class RowBuilder {
 
-    private final ObjectNode _data;
+    @Nonnull private final ObjectNode _data;
 
     private RowBuilder() {
       _data = BatfishObjectMapper.mapper().createObjectNode();
     }
 
     public Row build() {
-      return new Row(_data);
+      return new Row(_data.deepCopy());
     }
 
     @VisibleForTesting
@@ -131,7 +132,7 @@ public class Row implements Comparable<Row>, Serializable {
     private UntypedRowBuilder() {}
   }
 
-  private final ObjectNode _data;
+  @Nonnull private final ObjectNode _data;
 
   /**
    * Returns a new {@link Row} with the given entries.
