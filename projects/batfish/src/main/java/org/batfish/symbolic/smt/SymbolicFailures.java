@@ -5,7 +5,6 @@ import com.microsoft.z3.Context;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nullable;
-import javax.validation.constraints.Null;
 import org.batfish.symbolic.GraphEdge;
 import org.batfish.symbolic.collections.Table2;
 
