@@ -261,6 +261,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oan_default_lsaContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oan_no_summariesContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oand_metric_typeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oand_type_7Context;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oas_default_metricContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oas_no_summariesContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.P_bgpContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Po_communityContext;
@@ -2230,6 +2231,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitOas_no_summaries(Oas_no_summariesContext ctx) {
     _currentStubSettings.setNoSummaries(true);
+  }
+
+  @Override
+  public void exitOas_default_metric(Oas_default_metricContext ctx) {
+    _currentArea.setInjectDefaultRoute(true);
+    _currentArea.setMetricOfDefaultRoute(Integer.parseInt(ctx.DEC().getText()));
   }
 
   @Override

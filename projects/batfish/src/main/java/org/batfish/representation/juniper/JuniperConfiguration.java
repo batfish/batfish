@@ -758,6 +758,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
     newArea.setStub(toStubSettings(area.getStubSettings()));
     newArea.setStubType(area.getStubType());
     newArea.setSummaries(area.getSummaries());
+    newArea.setInjectDefaultRoute(area.getInjectDefaultRoute());
+    newArea.setMetricOfDefaultRoute(area.getMetricOfDefaultRoute());
     return newArea;
   }
 
