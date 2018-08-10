@@ -178,7 +178,7 @@ public interface IBatfish extends IPluginConsumer {
   void registerExternalBgpAdvertisementPlugin(
       ExternalBgpAdvertisementPlugin externalBgpAdvertisementPlugin);
 
-  Optional<Flow> reachFilter(String nodeName, IpAccessList acl);
+  Optional<Flow> reachFilter(Configuration node, IpAccessList acl);
 
   AnswerElement smtBlackhole(HeaderQuestion q);
 

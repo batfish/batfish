@@ -51,7 +51,7 @@ public class ReachFilterAnswerer extends Answerer {
     for (Pair<String, IpAccessList> pair : acls) {
       Optional<Flow> result = null;
       try {
-        result = _batfish.reachFilter(pair.getFirst(), pair.getSecond());
+        result = _batfish.reachFilter(configurations.get(pair.getFirst()), pair.getSecond());
       } catch (Throwable t) {
         _batfish.getLogger().warn(t.getMessage());
         continue;
