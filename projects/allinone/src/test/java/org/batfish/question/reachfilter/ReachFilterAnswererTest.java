@@ -46,8 +46,8 @@ import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
-import org.junit.Before;
-import org.junit.Rule;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
@@ -138,14 +138,14 @@ public final class ReachFilterAnswererTest {
           .setLines(ImmutableList.of(IpAccessListLine.REJECT_ALL))
           .build();
 
-  @Rule public TemporaryFolder _tmp = new TemporaryFolder();
+  @ClassRule public static TemporaryFolder _tmp = new TemporaryFolder();
 
-  private Batfish _batfish;
+  private static Batfish _batfish;
 
-  private Configuration _config;
+  private static Configuration _config;
 
-  @Before
-  public void setup() throws IOException {
+  @BeforeClass
+  public static void setup() throws IOException {
     NetworkFactory nf = new NetworkFactory();
     _config =
         nf.configurationBuilder()
