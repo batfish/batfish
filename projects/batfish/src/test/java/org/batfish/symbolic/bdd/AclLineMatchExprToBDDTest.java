@@ -43,14 +43,14 @@ public class AclLineMatchExprToBDDTest {
 
   private BDDPacket _pkt;
 
-  private BDDSrcManager _srcInterfaceManager;
+  private BDDSourceManager _srcInterfaceManager;
 
   private AclLineMatchExprToBDD _toBDD;
 
   @Before
   public void setup() {
     _pkt = new BDDPacket();
-    _srcInterfaceManager = new BDDSrcManager(_pkt, ImmutableList.of(IFACE1, IFACE2));
+    _srcInterfaceManager = new BDDSourceManager(_pkt, ImmutableList.of(IFACE1, IFACE2));
     _originatingFromDevice = _srcInterfaceManager.getOriginatingFromDeviceBDD();
     _toBDD =
         new AclLineMatchExprToBDD(

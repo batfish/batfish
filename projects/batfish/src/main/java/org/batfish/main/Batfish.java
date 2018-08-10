@@ -194,7 +194,7 @@ import org.batfish.symbolic.abstraction.BatfishCompressor;
 import org.batfish.symbolic.abstraction.Roles;
 import org.batfish.symbolic.bdd.BDDAcl;
 import org.batfish.symbolic.bdd.BDDPacket;
-import org.batfish.symbolic.bdd.BDDSrcManager;
+import org.batfish.symbolic.bdd.BDDSourceManager;
 import org.batfish.symbolic.smt.PropertyChecker;
 import org.batfish.vendor.VendorConfiguration;
 import org.batfish.z3.AclIdentifier;
@@ -4271,7 +4271,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public Optional<Flow> reachFilter(Configuration node, IpAccessList acl) {
     BDDPacket bddPacket = new BDDPacket();
     List<String> interfaces = ImmutableList.copyOf(node.getInterfaces().keySet());
-    BDDSrcManager mgr = new BDDSrcManager(bddPacket, interfaces);
+    BDDSourceManager mgr = new BDDSourceManager(bddPacket, interfaces);
     BDDAcl bddAcl = BDDAcl.create(bddPacket, acl, node.getIpAccessLists(), node.getIpSpaces(), mgr);
     BDD satAssignment = bddAcl.getBdd().and(mgr.isSane()).fullSatOne();
     if (satAssignment.isZero()) {

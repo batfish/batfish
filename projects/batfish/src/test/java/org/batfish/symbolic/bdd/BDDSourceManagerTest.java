@@ -11,7 +11,7 @@ import java.util.Optional;
 import net.sf.javabdd.BDD;
 import org.junit.Test;
 
-public class BDDSrcManagerTest {
+public class BDDSourceManagerTest {
   private static final String IFACE1 = "iface1";
 
   private static final String IFACE2 = "iface2";
@@ -20,7 +20,7 @@ public class BDDSrcManagerTest {
 
   BDDPacket _pkt = new BDDPacket();
 
-  BDDSrcManager _mgr = new BDDSrcManager(_pkt, IFACES);
+  BDDSourceManager _mgr = new BDDSourceManager(_pkt, IFACES);
 
   @Test
   public void test() {
