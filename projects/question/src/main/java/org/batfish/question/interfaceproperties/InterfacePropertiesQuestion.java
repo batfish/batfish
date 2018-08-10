@@ -16,20 +16,26 @@ import org.batfish.datamodel.questions.Question;
  */
 public class InterfacePropertiesQuestion extends Question {
 
+  static final boolean DEFAULT_ONLY_ACTIVE = false;
+
   private static final String PROP_NODE_REGEX = "nodeRegex";
   private static final String PROP_INTERFACE_REGEX = "interfaceRegex";
+  private static final String PROP_ONLY_ACTIVE = "onlyActive";
   private static final String PROP_PROPERTY_SPEC = "propertySpec";
 
   @Nonnull private InterfacesSpecifier _interfaceRegex;
   @Nonnull private NodesSpecifier _nodeRegex;
+  @Nonnull private boolean _onlyActive;
   @Nonnull private InterfacePropertySpecifier _propertySpec;
 
   public InterfacePropertiesQuestion(
       @JsonProperty(PROP_INTERFACE_REGEX) InterfacesSpecifier interfaceRegex,
       @JsonProperty(PROP_NODE_REGEX) NodesSpecifier nodeRegex,
+      @JsonProperty(PROP_ONLY_ACTIVE) Boolean onlyActive,
       @JsonProperty(PROP_PROPERTY_SPEC) InterfacePropertySpecifier propertySpec) {
     _interfaceRegex = firstNonNull(interfaceRegex, InterfacesSpecifier.ALL);
     _nodeRegex = firstNonNull(nodeRegex, NodesSpecifier.ALL);
+    _onlyActive = firstNonNull(onlyActive, DEFAULT_ONLY_ACTIVE);
     _propertySpec = firstNonNull(propertySpec, InterfacePropertySpecifier.ALL);
   }
 
@@ -51,6 +57,11 @@ public class InterfacePropertiesQuestion extends Question {
   @JsonProperty(PROP_NODE_REGEX)
   public NodesSpecifier getNodeRegex() {
     return _nodeRegex;
+  }
+
+  @JsonProperty(PROP_ONLY_ACTIVE)
+  public boolean getOnlyActive() {
+    return _onlyActive;
   }
 
   @JsonProperty(PROP_PROPERTY_SPEC)
