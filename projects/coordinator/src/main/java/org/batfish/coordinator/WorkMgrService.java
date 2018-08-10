@@ -882,7 +882,7 @@ public class WorkMgrService {
 
       String answerStr = BatfishObjectMapper.writePrettyString(answer);
 
-      return successResponse(response.put(CoordConsts.SVC_KEY_ANSWERS, answerStr));
+      return successResponse(response.put(CoordConsts.SVC_KEY_ANSWER, answerStr));
     } catch (IllegalArgumentException | AccessControlException e) {
       _logger.errorf("WMS:getAnalysisAnswers exception: %s\n", e.getMessage());
       return failureResponse(e.getMessage());
