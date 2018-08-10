@@ -5,7 +5,6 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import io.opentracing.util.GlobalTracer;
 import java.io.FileNotFoundException;
@@ -15,17 +14,14 @@ import java.nio.file.Files;
 import java.security.AccessControlException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.UUID;
-import java.util.function.Function;
 import javax.annotation.Nullable;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -44,26 +40,17 @@ import org.batfish.common.CoordConsts;
 import org.batfish.common.Version;
 import org.batfish.common.WorkItem;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.coordinator.AnalysisMetadataMgr.AnalysisType;
 import org.batfish.coordinator.WorkDetails.WorkType;
 import org.batfish.coordinator.WorkQueueMgr.QueueType;
 import org.batfish.datamodel.TestrigMetadata;
-import org.batfish.datamodel.answers.ColumnAggregationResult;
 import org.batfish.datamodel.answers.GetAnalysisAnswerMetricsAnswer;
-import org.batfish.datamodel.answers.Metrics;
-import org.batfish.datamodel.answers.Schema;
-import org.batfish.datamodel.answers.Aggregation;
 import org.batfish.datamodel.answers.AnalysisAnswerMetricsResult;
-import org.batfish.datamodel.answers.Answer;
-import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.AutocompleteSuggestion;
 import org.batfish.datamodel.answers.AutocompleteSuggestion.CompletionType;
 import org.batfish.datamodel.answers.ColumnAggregation;
 import org.batfish.datamodel.pojo.WorkStatus;
 import org.batfish.datamodel.questions.Question;
-import org.batfish.datamodel.table.Row;
-import org.batfish.datamodel.table.TableAnswerElement;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -888,11 +875,7 @@ public class WorkMgrService {
                   analysisQuestions);
 
       Map<String, AnalysisAnswerMetricsResult> analysisAnswerMetricsResults =
-          CommonUtil.toImmutableMap(
-              answers,
-              Entry::getKey,
-              rawAnswerByNameEntry ->
-                  toAnalysisAnswerMetricsResult(rawAnswerByNameEntry.getValue(), aggregations));
+          Main.getWorkMgr().getAnalysisAnswersMetrics(answers, aggregations);
 
       GetAnalysisAnswerMetricsAnswer answer =
           new GetAnalysisAnswerMetricsAnswer(analysisAnswerMetricsResults);
@@ -915,67 +898,6 @@ public class WorkMgrService {
           stackTrace);
       return failureResponse(e.getMessage());
     }
-  }
-
-  private AnalysisAnswerMetricsResult toAnalysisAnswerMetricsResult(
-      String rawAnswer, List<ColumnAggregation> aggregations) {
-    AnswerStatus status;
-    Answer answer;
-    try {
-      answer = BatfishObjectMapper.mapper().readValue(rawAnswer, new TypeReference<Answer>() {});
-      status = answer.getStatus();
-      TableAnswerElement table = (TableAnswerElement) answer.getAnswerElements().get(0);
-      int numRows = table.getRows().size();
-      List<ColumnAggregationResult> aggregationResults =
-          computeColumnAggregations(table, aggregations);
-      return new AnalysisAnswerMetricsResult(new Metrics(aggregationResults, numRows), status);
-    } catch (Exception e) {
-      _logger.errorf(
-          "Failed to convert answer string to AnalysisAnswerMetricsResult: %s", e.getMessage());
-      return new AnalysisAnswerMetricsResult(null, AnswerStatus.FAILURE);
-    }
-  }
-
-  private List<ColumnAggregationResult> computeColumnAggregations(
-      TableAnswerElement table, List<ColumnAggregation> aggregations) {
-    return aggregations
-        .stream()
-        .map(
-            columnAggregation -> {
-              Object value;
-              String column = columnAggregation.getColumn();
-              Aggregation aggregation = columnAggregation.getAggregation();
-              switch (aggregation) {
-                case MAX:
-                  value = computeColumnMax(table, column);
-                  break;
-                default:
-                  _logger.errorf("Unhandled aggregation type: %s", aggregation);
-                  value = null;
-                  break;
-              }
-              return new ColumnAggregationResult(aggregation, column, value);
-            })
-        .collect(ImmutableList.toImmutableList());
-  }
-
-  private @Nullable Integer computeColumnMax(TableAnswerElement table, String column) {
-    Schema schema = table.getMetadata().toColumnMap().get(column).getSchema();
-    Function<Row, Integer> rowToInteger;
-    if (schema.equals(Schema.INTEGER)) {
-      rowToInteger = r -> r.getInteger(column);
-    } else if (schema.equals(Schema.ISSUE)) {
-      rowToInteger = r -> r.getIssue(column).getSeverity();
-    } else {
-      return null;
-    }
-    return table
-        .getRows()
-        .getData()
-        .stream()
-        .map(rowToInteger)
-        .max(Comparator.naturalOrder())
-        .orElse(null);
   }
 
   /**
