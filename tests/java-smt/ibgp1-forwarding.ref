@@ -8,6 +8,8 @@
         "|0_FAILED-EDGE_r1_r2|" : "0",
         "|0_FAILED-EDGE_r2_Loopback0|" : "0",
         "|0_FAILED-EDGE_r2_Serial1|" : "0",
+        "|0_FAILED-NODE_r1|" : "0",
+        "|0_FAILED-NODE_r2|" : "0",
         "|0_SLICE-MAIN_CONTROL-FORWARDING_r1_Loopback0|" : "false",
         "|0_SLICE-MAIN_CONTROL-FORWARDING_r1_Serial0|" : "false",
         "|0_SLICE-MAIN_CONTROL-FORWARDING_r1_Serial1|" : "false",

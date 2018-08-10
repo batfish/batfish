@@ -152,6 +152,12 @@ public class PropertyChecker {
     return failChoices;
   }
 
+  private Set<String> failNodeSet(Graph g, HeaderLocationQuestion q) {
+    Pattern p1 = Pattern.compile(q.getFailNodeRegex());
+    Pattern p2 = Pattern.compile(q.getNotFailNodeRegex());
+    return new HashSet<>(PatternUtils.findMatchingNodes(g, p1, p2));
+  }
+
   private BoolExpr relateEnvironments(Encoder enc1, Encoder enc2) {
     // create a map for enc2 to lookup a related environment variable from enc
     Table2<GraphEdge, EdgeType, SymbolicRoute> relatedEnv = new Table2<>();
@@ -198,7 +204,8 @@ public class PropertyChecker {
     return p1.mkEqual(p2);
   }
 
-  private void addFailureConstraints(Encoder enc, Set<GraphEdge> dstPorts, Set<GraphEdge> failSet) {
+  private void addLinkFailureConstraints(
+      Encoder enc, Set<GraphEdge> dstPorts, Set<GraphEdge> failSet) {
     Graph graph = enc.getMainSlice().getGraph();
     for (List<GraphEdge> edges : graph.getEdgeMap().values()) {
       for (GraphEdge ge : edges) {
@@ -215,6 +222,17 @@ public class PropertyChecker {
           BoolExpr notFailed = enc.mkEq(f, enc.mkInt(0));
           enc.add(enc.mkImplies(relevant, notFailed));
         }
+      }
+    }
+  }
+
+  private void addNodeFailureConstraints(Encoder enc, Set<String> failNodesSet) {
+    Graph graph = enc.getMainSlice().getGraph();
+    for (String router : graph.getRouters()) {
+      ArithExpr f = enc.getSymbolicFailures().getFailedNodes().get(router);
+      assert f != null;
+      if (!failNodesSet.contains(router)) {
+        enc.add(enc.mkEq(f, enc.mkInt(0)));
       }
     }
   }
@@ -361,6 +379,7 @@ public class PropertyChecker {
     inferDestinationHeaderSpace(graph, destPorts, q);
 
     Set<GraphEdge> failOptions = failLinkSet(graph, q);
+    Set<String> failNodeOptions = failNodeSet(graph, q);
     Tuple<Stream<Supplier<NetworkSlice>>, Long> ecs = findAllNetworkSlices(q, graph, true);
     Stream<Supplier<NetworkSlice>> stream = ecs.getFirst();
     Long timeAbstraction = ecs.getSecond();
@@ -473,7 +492,8 @@ public class PropertyChecker {
                   enc.add(enc.mkNot(allProp));
                 }
 
-                addFailureConstraints(enc, destPorts, failOptions);
+                addLinkFailureConstraints(enc, destPorts, failOptions);
+                addNodeFailureConstraints(enc, failNodeOptions);
 
                 Tuple<VerificationResult, Model> tup = enc.verify();
                 VerificationResult res = tup.getFirst();
