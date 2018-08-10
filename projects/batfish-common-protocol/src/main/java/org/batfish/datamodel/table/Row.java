@@ -1,5 +1,6 @@
 package org.batfish.datamodel.table;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -21,6 +22,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishException;
@@ -47,14 +49,14 @@ public class Row implements Comparable<Row>, Serializable {
 
   public abstract static class RowBuilder {
 
-    private final ObjectNode _data;
+    @Nonnull private final ObjectNode _data;
 
     private RowBuilder() {
       _data = BatfishObjectMapper.mapper().createObjectNode();
     }
 
     public Row build() {
-      return new Row(_data);
+      return new Row(_data.deepCopy());
     }
 
     @VisibleForTesting
@@ -130,7 +132,7 @@ public class Row implements Comparable<Row>, Serializable {
     private UntypedRowBuilder() {}
   }
 
-  private final ObjectNode _data;
+  @Nonnull private final ObjectNode _data;
 
   /**
    * Returns a new {@link Row} with the given entries.
@@ -155,8 +157,7 @@ public class Row implements Comparable<Row>, Serializable {
 
   @JsonCreator
   private Row(ObjectNode data) {
-    //noinspection ConstantConditions
-    _data = data == null ? BatfishObjectMapper.mapper().createObjectNode() : data.deepCopy();
+    _data = firstNonNull(data, BatfishObjectMapper.mapper().createObjectNode());
   }
 
   /** Returns an {@link UntypedRowBuilder} object for Row */
