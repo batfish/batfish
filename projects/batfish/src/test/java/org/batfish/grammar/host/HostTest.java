@@ -25,7 +25,7 @@ public class HostTest {
 
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
-  public Map<String, Configuration> testNatIpsecVpnsHelper(String hostFilename) throws IOException {
+  public Map<String, Configuration> natIpsecVpnsTestHelper(String hostFilename) throws IOException {
     String testrigResourcePrefix = TESTRIG_PREFIX + "ipsec-vpn-host-aws-cisco";
     List<String> awsFilenames =
         ImmutableList.of(
@@ -57,7 +57,7 @@ public class HostTest {
 
   @Test
   public void testNatIpsecVpnsNotShared() throws IOException {
-    Map<String, Configuration> configurations = testNatIpsecVpnsHelper("host1-not-shared.json");
+    Map<String, Configuration> configurations = natIpsecVpnsTestHelper("host1-not-shared.json");
 
     /*
      * NAT settings on host1 (not-shared version) should result in tunnel interfaces being down
@@ -70,7 +70,7 @@ public class HostTest {
 
   @Test
   public void testNatIpsecVpnsShared() throws IOException {
-    Map<String, Configuration> configurations = testNatIpsecVpnsHelper("host1-shared.json");
+    Map<String, Configuration> configurations = natIpsecVpnsTestHelper("host1-shared.json");
 
     /*
      * NAT settings on host1 (shared version) should result in tunnel interfaces being up

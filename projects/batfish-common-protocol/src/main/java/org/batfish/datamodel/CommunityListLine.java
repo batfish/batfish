@@ -1,34 +1,42 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.MoreObjects.toStringHelper;
+import static java.util.Objects.requireNonNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
-import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 import java.io.Serializable;
-import java.util.LinkedHashSet;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import org.batfish.common.util.CommonUtil;
+import java.util.Objects;
+import javax.annotation.Nonnull;
+import org.batfish.datamodel.routing_policy.expr.CommunitySetExpr;
 
-@JsonSchemaDescription("A line in a CommunityList")
+/** A line in a CommunityList */
 public class CommunityListLine implements Serializable {
 
   private static final String PROP_ACTION = "action";
 
-  private static final String PROP_REGEX = "regex";
+  private static final String PROP_MATCH_CONDITION = "matchCondition";
 
   private static final long serialVersionUID = 1L;
 
+  public static @Nonnull CommunityListLine accepting(CommunitySetExpr matchCondition) {
+    return new CommunityListLine(LineAction.ACCEPT, matchCondition);
+  }
+
   private final LineAction _action;
 
-  private final String _regex;
+  private final CommunitySetExpr _matchCondition;
+
+  public CommunityListLine(@Nonnull LineAction action, @Nonnull CommunitySetExpr matchCondition) {
+    _action = action;
+    _matchCondition = matchCondition;
+  }
 
   @JsonCreator
-  public CommunityListLine(
-      @JsonProperty(PROP_ACTION) LineAction action, @JsonProperty(PROP_REGEX) String regex) {
-    _action = action;
-    _regex = regex;
+  private static @Nonnull CommunityListLine create(
+      @JsonProperty(PROP_ACTION) LineAction action,
+      @JsonProperty(PROP_MATCH_CONDITION) CommunitySetExpr matchCondition) {
+    return new CommunityListLine(requireNonNull(action), requireNonNull(matchCondition));
   }
 
   @Override
@@ -39,65 +47,30 @@ public class CommunityListLine implements Serializable {
       return false;
     }
     CommunityListLine other = (CommunityListLine) o;
-    if (_action != other._action) {
-      return false;
-    }
-    if (!_regex.equals(other._regex)) {
-      return false;
-    }
-    return true;
+    return _action == other._action && _matchCondition.equals(other._matchCondition);
   }
 
+  /** The action the underlying access-list will take when this line matches a route. */
   @JsonProperty(PROP_ACTION)
-  @JsonPropertyDescription(
-      "The action the underlying access-list will take when this line matches a route.")
-  public LineAction getAction() {
+  public @Nonnull LineAction getAction() {
     return _action;
   }
 
-  public Set<Long> getExactMatchingCommunities(Set<Long> allCommunities) {
-    Pattern p = Pattern.compile(_regex);
-    Set<Long> matchingCommunitites = new LinkedHashSet<>();
-    for (long candidateCommunity : allCommunities) {
-      String candidateCommunityStr = CommonUtil.longToCommunity(candidateCommunity);
-      Matcher matcher = p.matcher(candidateCommunityStr);
-      if (matcher.matches()) {
-        matchingCommunitites.add(candidateCommunity);
-      }
-    }
-    return matchingCommunitites;
-  }
-
-  public Set<Long> getMatchingCommunities(Set<Long> allCommunities, boolean invertMatch) {
-    Pattern p = Pattern.compile(_regex);
-    Set<Long> matchingCommunitites = new LinkedHashSet<>();
-    for (long candidateCommunity : allCommunities) {
-      String candidateCommunityStr = CommonUtil.longToCommunity(candidateCommunity);
-      Matcher matcher = p.matcher(candidateCommunityStr);
-      if (matcher.find() ^ invertMatch) {
-        matchingCommunitites.add(candidateCommunity);
-      }
-    }
-    return matchingCommunitites;
-  }
-
-  @JsonProperty(PROP_REGEX)
-  @JsonPropertyDescription("The regex against which a route's communities will be compared")
-  public String getRegex() {
-    return _regex;
+  @JsonProperty(PROP_MATCH_CONDITION)
+  public @Nonnull CommunitySetExpr getMatchCondition() {
+    return _matchCondition;
   }
 
   @Override
   public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + _action.ordinal();
-    result = prime * result + _regex.hashCode();
-    return result;
+    return Objects.hash(_action.ordinal(), _matchCondition);
   }
 
-  public Long toLiteralCommunity() {
-    throw new UnsupportedOperationException("no implementation for generated method");
-    // TODO Auto-generated method stub
+  @Override
+  public String toString() {
+    return toStringHelper(getClass())
+        .add(PROP_ACTION, _action)
+        .add(PROP_MATCH_CONDITION, _matchCondition)
+        .toString();
   }
 }

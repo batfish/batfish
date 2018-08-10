@@ -2,7 +2,7 @@
   {
     "class" : "org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement",
     "fileMap" : {
-      "lhr-border-02" : "lhr-border-02.cfg"
+      "lhr-border-02" : "configs/lhr-border-02.cfg"
     },
     "parseStatus" : {
       "lhr-border-02" : "PASSED"
@@ -12,7 +12,7 @@
   {
     "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
     "definedStructures" : {
-      "lhr-border-02" : {
+      "configs/lhr-border-02.cfg" : {
         "bgp group" : {
           "FW" : {
             "definitionLines" : [
@@ -24,13 +24,17 @@
         "crypto ipsec profile" : {
           "ipsec-vpn-ba2e34a8-0" : {
             "definitionLines" : [
-              92
+              92,
+              93,
+              94
             ],
             "numReferrers" : 1
           },
           "ipsec-vpn-ba2e34a8-1" : {
             "definitionLines" : [
-              96
+              96,
+              97,
+              98
             ],
             "numReferrers" : 1
           }
@@ -38,13 +42,57 @@
         "crypto ipsec transform-set" : {
           "ipsec-prop-vpn-ba2e34a8-0" : {
             "definitionLines" : [
-              85
+              85,
+              86
             ],
             "numReferrers" : 1
           },
           "ipsec-prop-vpn-ba2e34a8-1" : {
             "definitionLines" : [
-              87
+              87,
+              88
+            ],
+            "numReferrers" : 1
+          }
+        },
+        "crypto isakmp policy" : {
+          "200" : {
+            "definitionLines" : [
+              62,
+              63,
+              64,
+              65,
+              66
+            ],
+            "numReferrers" : 1
+          },
+          "201" : {
+            "definitionLines" : [
+              68,
+              69,
+              70,
+              71,
+              72
+            ],
+            "numReferrers" : 1
+          }
+        },
+        "crypto isakmp profile" : {
+          "isakmp-vpn-ba2e34a8-0" : {
+            "definitionLines" : [
+              74,
+              75,
+              76,
+              77
+            ],
+            "numReferrers" : 1
+          },
+          "isakmp-vpn-ba2e34a8-1" : {
+            "definitionLines" : [
+              78,
+              79,
+              80,
+              81
             ],
             "numReferrers" : 1
           }
@@ -52,41 +100,188 @@
         "crypto keyring" : {
           "keyring-vpn-ba2e34a8-0" : {
             "definitionLines" : [
-              52
+              52,
+              53,
+              54
             ],
             "numReferrers" : 1
           },
           "keyring-vpn-ba2e34a8-1" : {
             "definitionLines" : [
-              55
+              55,
+              56,
+              57
             ],
             "numReferrers" : 1
           }
         },
-        "extended ip access-list" : {
+        "extended ipv4 access-list" : {
           "2001" : {
             "definitionLines" : [
-              248
+              248,
+              249
             ],
             "numReferrers" : 0
           },
           "LIMIT_PEER" : {
             "definitionLines" : [
-              239
+              239,
+              240,
+              241
             ],
             "numReferrers" : 1
           },
           "MATCH_ALL_BGP" : {
             "definitionLines" : [
-              242
+              242,
+              243
+            ],
+            "numReferrers" : 1
+          }
+        },
+        "interface" : {
+          "Ethernet0/0" : {
+            "definitionLines" : [
+              124,
+              125,
+              126,
+              127
+            ],
+            "numReferrers" : 1
+          },
+          "Ethernet1/0" : {
+            "definitionLines" : [
+              136,
+              137,
+              138,
+              139,
+              140
+            ],
+            "numReferrers" : 1
+          },
+          "Ethernet1/1" : {
+            "definitionLines" : [
+              142,
+              143,
+              144,
+              145,
+              146
+            ],
+            "numReferrers" : 1
+          },
+          "Ethernet1/2" : {
+            "definitionLines" : [
+              148,
+              149,
+              150
+            ],
+            "numReferrers" : 1
+          },
+          "Ethernet1/3" : {
+            "definitionLines" : [
+              152,
+              153,
+              154,
+              155,
+              156,
+              157
+            ],
+            "numReferrers" : 1
+          },
+          "Ethernet1/4" : {
+            "definitionLines" : [
+              159,
+              160,
+              161,
+              162
+            ],
+            "numReferrers" : 1
+          },
+          "Ethernet1/5" : {
+            "definitionLines" : [
+              164,
+              165,
+              166,
+              167
+            ],
+            "numReferrers" : 1
+          },
+          "Ethernet1/6" : {
+            "definitionLines" : [
+              169,
+              170,
+              171,
+              172
+            ],
+            "numReferrers" : 1
+          },
+          "Ethernet1/7" : {
+            "definitionLines" : [
+              174,
+              175,
+              176,
+              177
+            ],
+            "numReferrers" : 1
+          },
+          "GigabitEthernet0/0" : {
+            "definitionLines" : [
+              129,
+              130,
+              131,
+              132,
+              133,
+              134
+            ],
+            "numReferrers" : 1
+          },
+          "GigabitEthernet2/0" : {
+            "definitionLines" : [
+              179,
+              180,
+              181,
+              182,
+              183
+            ],
+            "numReferrers" : 1
+          },
+          "Loopback0" : {
+            "definitionLines" : [
+              105,
+              106
             ],
             "numReferrers" : 2
+          },
+          "Tunnel1" : {
+            "definitionLines" : [
+              108,
+              109,
+              110,
+              111,
+              112,
+              113,
+              114
+            ],
+            "numReferrers" : 1
+          },
+          "Tunnel2" : {
+            "definitionLines" : [
+              116,
+              117,
+              118,
+              119,
+              120,
+              121,
+              122
+            ],
+            "numReferrers" : 1
           }
         },
         "ipv4 prefix-list" : {
           "PROTECT_LOOPBACK" : {
             "definitionLines" : [
-              246
+              246,
+              247
             ],
             "numReferrers" : 1
           }
@@ -94,13 +289,17 @@
         "route-map" : {
           "PROTECT_LOOPBACK" : {
             "definitionLines" : [
-              251
+              251,
+              252
             ],
             "numReferrers" : 3
           },
           "SET_LOCAL_PREF" : {
             "definitionLines" : [
-              254
+              254,
+              255,
+              257,
+              258
             ],
             "numReferrers" : 1
           }

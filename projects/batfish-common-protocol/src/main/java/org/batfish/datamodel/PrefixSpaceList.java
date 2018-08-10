@@ -2,6 +2,7 @@ package org.batfish.datamodel;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.batfish.common.BatfishException;
 
 public class PrefixSpaceList {
 
@@ -12,6 +13,12 @@ public class PrefixSpaceList {
     PrefixSpaceLine currentLine = null;
     PrefixSpace currentPrefixSpace = new PrefixSpace();
     for (RouteFilterLine rfLine : rf.getLines()) {
+      if (!rfLine.getIpWildcard().isPrefix()) {
+        throw new BatfishException(
+            String.format(
+                "Cannot convert RouteFilterLine with IP Wildcard %s to PrefixSpaceLine",
+                rfLine.getIpWildcard()));
+      }
       LineAction rflAction = rfLine.getAction();
       if (currentAction != rflAction) {
         currentAction = rflAction;
@@ -19,7 +26,8 @@ public class PrefixSpaceList {
         currentLine = new PrefixSpaceLine(currentPrefixSpace, currentAction);
         lines.add(currentLine);
       }
-      PrefixRange rflRange = new PrefixRange(rfLine.getPrefix(), rfLine.getLengthRange());
+      PrefixRange rflRange =
+          new PrefixRange(rfLine.getIpWildcard().toPrefix(), rfLine.getLengthRange());
       currentPrefixSpace.addPrefixRange(rflRange);
     }
     return list;

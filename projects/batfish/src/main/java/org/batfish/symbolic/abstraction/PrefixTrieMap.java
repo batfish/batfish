@@ -109,28 +109,28 @@ public class PrefixTrieMap implements Serializable {
         Map<Set<String>, List<Prefix>> map,
         @Nullable Prefix prefix,
         @Nullable Set<String> devices) {
-      devices = (_devices == null ? devices : _devices);
-      prefix = (_prefix == null ? prefix : _prefix);
+      Set<String> effectiveDevices = _devices != null ? _devices : devices;
+      Prefix effectivePrefix = _prefix != null ? _prefix : prefix;
       if (_left == null && _right == null) {
-        addEntry(map, devices, prefix);
+        addEntry(map, effectiveDevices, effectivePrefix);
       } else {
         // PolicyQuotient to avoid creating huge numbers of prefixes:
         // Check if at least one of the branches has a different device in the leaf
-        if (hasUniqueDevice(devices)) {
-          Prefix left = prefix == null ? null : extendPrefixWith(prefix, false);
-          Prefix right = prefix == null ? null : extendPrefixWith(prefix, true);
+        if (hasUniqueDevice(effectiveDevices)) {
+          Prefix left = effectivePrefix == null ? null : extendPrefixWith(effectivePrefix, false);
+          Prefix right = effectivePrefix == null ? null : extendPrefixWith(effectivePrefix, true);
           if (_left != null) {
-            _left.createDestinationMap(map, left, devices);
+            _left.createDestinationMap(map, left, effectiveDevices);
           } else {
-            addEntry(map, devices, left);
+            addEntry(map, effectiveDevices, left);
           }
           if (_right != null) {
             _right.createDestinationMap(map, right, _devices);
           } else {
-            addEntry(map, devices, right);
+            addEntry(map, effectiveDevices, right);
           }
         } else {
-          addEntry(map, devices, prefix);
+          addEntry(map, effectiveDevices, effectivePrefix);
         }
       }
     }

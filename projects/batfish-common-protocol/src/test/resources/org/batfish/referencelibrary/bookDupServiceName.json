@@ -1,0 +1,18 @@
+{
+  "name": "book",
+  "serviceObjectGroups": [
+    {
+      "name": "s1",
+      "services": [
+        "so1"
+      ]
+    }
+  ],
+  "serviceObjects": [
+    {
+      "name": "s1",
+      "ipProtocol": "tcp",
+      "ports": "2-3"
+    }
+  ]
+}

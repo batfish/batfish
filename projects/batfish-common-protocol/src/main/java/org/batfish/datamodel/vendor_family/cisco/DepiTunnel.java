@@ -2,19 +2,24 @@ package org.batfish.datamodel.vendor_family.cisco;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.batfish.common.util.DefinedStructure;
+import java.io.Serializable;
 
-public class DepiTunnel extends DefinedStructure<String> {
+public class DepiTunnel implements Serializable {
 
   /** */
   private static final long serialVersionUID = 1L;
 
+  private static final String PROP_NAME = "name";
+
+  private final String _name;
+
   @JsonCreator
-  private DepiTunnel(@JsonProperty(PROP_NAME) String name) {
-    super(name, -1);
+  public DepiTunnel(@JsonProperty(PROP_NAME) String name) {
+    _name = name;
   }
 
-  public DepiTunnel(String number, int definitionLine) {
-    super(number, definitionLine);
+  @JsonProperty(PROP_NAME)
+  public String getName() {
+    return _name;
   }
 }

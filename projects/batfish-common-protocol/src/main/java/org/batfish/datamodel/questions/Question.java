@@ -33,7 +33,7 @@ import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "class")
+@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
 public abstract class Question implements IQuestion {
 
   public static class InstanceData {
@@ -41,11 +41,13 @@ public abstract class Question implements IQuestion {
     public static class Variable {
 
       public enum Type {
+        BGP_PROPERTY_SPEC("bgpPropertySpec", true),
         BOOLEAN("boolean", false),
         COMPARATOR("comparator", true),
         DOUBLE("double", false),
         FLOAT("float", false),
         INTEGER("integer", false),
+        INTERFACE_PROPERTY_SPEC("interfacePropertySpec", true),
         IP("ip", true),
         IP_PROTOCOL("ipProtocol", true),
         IP_WILDCARD("ipWildcard", true),
@@ -53,6 +55,9 @@ public abstract class Question implements IQuestion {
         JSON_PATH("jsonPath", true),
         JSON_PATH_REGEX("jsonPathRegex", true),
         LONG("long", false),
+        NODE_PROPERTY_SPEC("nodePropertySpec", true),
+        NODE_SPEC("nodeSpec", true),
+        OSPF_PROPERTY_SPEC("ospfPropertySpec", true),
         PREFIX("prefix", true),
         PREFIX_RANGE("prefixRange", true),
         PROTOCOL("protocol", true),
@@ -104,6 +109,8 @@ public abstract class Question implements IQuestion {
 
       private String _description;
 
+      private String _longDescription;
+
       private Integer _minElements;
 
       private Integer _minLength;
@@ -126,6 +133,11 @@ public abstract class Question implements IQuestion {
       @JsonProperty(BfConsts.PROP_DESCRIPTION)
       public String getDescription() {
         return _description;
+      }
+
+      @JsonProperty(BfConsts.PROP_LONG_DESCRIPTION)
+      public String getLongDescription() {
+        return _longDescription;
       }
 
       @JsonProperty(BfConsts.PROP_MIN_ELEMENTS)
@@ -162,6 +174,11 @@ public abstract class Question implements IQuestion {
       @JsonProperty(BfConsts.PROP_DESCRIPTION)
       public void setDescription(String description) {
         _description = description;
+      }
+
+      @JsonProperty(BfConsts.PROP_LONG_DESCRIPTION)
+      public void setLongDescription(String longDescription) {
+        _longDescription = longDescription;
       }
 
       @JsonProperty(BfConsts.PROP_MIN_ELEMENTS)
@@ -268,6 +285,9 @@ public abstract class Question implements IQuestion {
 
   private List<Exclusion> _exclusions;
 
+  /** When diffing tables, whether to ignore keys present in only one table */
+  private boolean _includeOneTableKeys;
+
   private InstanceData _instance;
 
   public Question() {
@@ -303,6 +323,11 @@ public abstract class Question implements IQuestion {
     return _exclusions;
   }
 
+  @JsonProperty(BfConsts.PROP_INCLUDE_ONE_TABLE_KEYS)
+  public boolean getIncludeOneTableKeys() {
+    return _includeOneTableKeys;
+  }
+
   /** Returns {@code true} iff this question does not need the testrig to be properly parsed */
   @JsonIgnore
   public boolean getIndependent() {
@@ -320,6 +345,21 @@ public abstract class Question implements IQuestion {
    */
   @JsonIgnore
   public abstract String getName();
+
+  /**
+   * Does this class name belong to a question?
+   *
+   * @param className Full name of the class
+   * @return The result
+   */
+  public static boolean isQuestionClass(String className) {
+    try {
+      Class<?> clazz = Class.forName(className);
+      return Question.class.isAssignableFrom(clazz);
+    } catch (ClassNotFoundException e) {
+      throw new BatfishException("'" + className + "' is not a valid Question class");
+    }
+  }
 
   // by default, pretty printing is Json
   // override this function in derived classes to do something more meaningful
@@ -354,7 +394,7 @@ public abstract class Question implements IQuestion {
       Question question = BatfishObjectMapper.mapper().readValue(questionText, Question.class);
       return question;
     } catch (IOException e) {
-      throw new BatfishException("Could not parse JSON question", e);
+      throw new BatfishException("Could not parse JSON question: " + e.getMessage(), e);
     }
   }
 
@@ -372,11 +412,10 @@ public abstract class Question implements IQuestion {
           JsonNode value = variable.getValue();
           if (value == null) {
             if (variable.getOptional()) {
-              /*
-               * Recursively look for all key, value pairs and remove keys
-               * whose value is "${varName}." Is this fragile?
-               * To be doubly sure, we do only for keys whole parent object is a questions, which
-               * we judge by it having a key "class" whose value starts with "org.batfish.question"
+              /**
+               * Recursively look for all key, value pairs and remove keys whose value is
+               * "${varName}." Is this fragile? To be doubly sure, we do this only for keys with a
+               * sibling key "class" that is a Question class
                */
               recursivelyRemoveOptionalVar(jobj, varName);
             } else {
@@ -451,8 +490,7 @@ public abstract class Question implements IQuestion {
         JSONObject childObject = (JSONObject) value;
         if (childObject.has("class")) {
           Object classValue = childObject.get("class");
-          if (classValue instanceof String
-              && ((String) classValue).startsWith("org.batfish.question")) {
+          if (classValue instanceof String && isQuestionClass((String) classValue)) {
             recursivelyRemoveOptionalVar(childObject, varName);
           }
         }
@@ -478,6 +516,11 @@ public abstract class Question implements IQuestion {
   @JsonProperty(BfConsts.PROP_EXCLUSIONS)
   public void setExclusions(List<Exclusion> exclusions) {
     _exclusions = exclusions;
+  }
+
+  @JsonProperty(BfConsts.PROP_INCLUDE_ONE_TABLE_KEYS)
+  public void setIncludeOneTableKeys(boolean includeOneTableKeys) {
+    _includeOneTableKeys = includeOneTableKeys;
   }
 
   @JsonProperty(BfConsts.PROP_INSTANCE)

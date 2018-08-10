@@ -1,5 +1,7 @@
 package org.batfish.representation.iptables;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
@@ -8,7 +10,6 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.stream.Collectors;
 import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
@@ -35,8 +36,6 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
   private transient Map<IpAccessListLine, String> _lineInInterfaces;
 
   private transient Map<IpAccessListLine, String> _lineOutInterfaces;
-
-  private transient Set<String> _unimplementedFeatures;
 
   private ConfigurationFormat _vendor;
 
@@ -66,7 +65,7 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
     if (!configuration.getIpAccessLists().isEmpty()) {
       throw new BatfishException(
           "Merging iptables rules for "
-              + configuration.getName()
+              + configuration.getHostname()
               + ": only mangle tables are supported");
     }
 
@@ -94,7 +93,7 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
         }
 
         String aclName = "iptables_" + i.getName() + "_ingress";
-        IpAccessList acl = new IpAccessList(aclName, newRules);
+        IpAccessList acl = IpAccessList.builder().setName(aclName).setLines(newRules).build();
         if (configuration.getIpAccessLists().putIfAbsent(aclName, acl) != null) {
           throw new BatfishException(dbgName + " acl " + aclName + " already exists");
         }
@@ -127,7 +126,7 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
         }
 
         String aclName = "iptables_" + i.getName() + "_egress";
-        IpAccessList acl = new IpAccessList(aclName, newRules);
+        IpAccessList acl = IpAccessList.builder().setName(aclName).setLines(newRules).build();
         if (configuration.getIpAccessLists().putIfAbsent(aclName, acl) != null) {
           throw new BatfishException(dbgName + " acl " + aclName + " already exists");
         }
@@ -142,18 +141,14 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
     return _hostname;
   }
 
-  @Override
-  public Set<String> getUnimplementedFeatures() {
-    return _unimplementedFeatures;
-  }
-
   public ConfigurationFormat getVendor() {
     return _vendor;
   }
 
   @Override
   public void setHostname(String hostname) {
-    _hostname = hostname;
+    checkNotNull(hostname, "'hostname' cannot be null");
+    _hostname = hostname.toLowerCase();
   }
 
   @Override
@@ -239,8 +234,7 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
             .build();
     lines.add(defaultLine);
 
-    IpAccessList acl = new IpAccessList(aclName, lines.build());
-    return acl;
+    return IpAccessList.builder().setName(aclName).setLines(lines.build()).build();
   }
 
   private String toIpAccessListName(String tableName, String chainName) {

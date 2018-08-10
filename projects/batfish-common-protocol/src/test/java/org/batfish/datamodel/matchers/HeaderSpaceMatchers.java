@@ -8,6 +8,7 @@ import org.batfish.datamodel.matchers.HeaderSpaceMatchersImpl.HasDstIps;
 import org.batfish.datamodel.matchers.HeaderSpaceMatchersImpl.HasNotDstIps;
 import org.batfish.datamodel.matchers.HeaderSpaceMatchersImpl.HasNotSrcIps;
 import org.batfish.datamodel.matchers.HeaderSpaceMatchersImpl.HasSrcIps;
+import org.batfish.datamodel.matchers.HeaderSpaceMatchersImpl.HasSrcOrDstIps;
 import org.batfish.datamodel.matchers.HeaderSpaceMatchersImpl.HasStates;
 import org.hamcrest.Matcher;
 
@@ -43,6 +44,14 @@ public class HeaderSpaceMatchers {
    */
   public static HasSrcIps hasSrcIps(@Nonnull Matcher<? super IpSpace> subMatcher) {
     return new HasSrcIps(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the HeaderSpace's
+   * srcOrDstIps.
+   */
+  public static HasSrcOrDstIps hasSrcOrDstIps(@Nonnull Matcher<? super IpSpace> subMatcher) {
+    return new HasSrcOrDstIps(subMatcher);
   }
 
   /**

@@ -27,7 +27,9 @@ public enum Statements {
   SetLocalDefaultActionReject,
   SetReadIntermediateBgpAttributes,
   SetWriteIntermediateBgpAttributes,
-  UnsetWriteIntermediateBgpAttributes;
+  Suppress,
+  UnsetWriteIntermediateBgpAttributes,
+  Unsuppress;
 
   public static class StaticStatement extends Statement {
 
@@ -81,12 +83,11 @@ public enum Statements {
         case RemovePrivateAs:
           {
             BgpRoute.Builder bgpRouteBuilder = (BgpRoute.Builder) environment.getOutputRoute();
-            List<SortedSet<Integer>> newAsPath =
-                AsPath.removePrivateAs(bgpRouteBuilder.getAsPath());
+            List<SortedSet<Long>> newAsPath = AsPath.removePrivateAs(bgpRouteBuilder.getAsPath());
             bgpRouteBuilder.setAsPath(newAsPath);
             if (environment.getWriteToIntermediateBgpAttributes()) {
               BgpRoute.Builder ir = environment.getIntermediateBgpAttributes();
-              List<SortedSet<Integer>> iAsPath = AsPath.removePrivateAs(ir.getAsPath());
+              List<SortedSet<Long>> iAsPath = AsPath.removePrivateAs(ir.getAsPath());
               ir.setAsPath(iAsPath);
             }
             break;
@@ -142,8 +143,16 @@ public enum Statements {
           environment.setWriteToIntermediateBgpAttributes(true);
           break;
 
+        case Suppress:
+          environment.setSuppressed(true);
+          break;
+
         case UnsetWriteIntermediateBgpAttributes:
           environment.setWriteToIntermediateBgpAttributes(false);
+          break;
+
+        case Unsuppress:
+          environment.setSuppressed(false);
           break;
 
         default:

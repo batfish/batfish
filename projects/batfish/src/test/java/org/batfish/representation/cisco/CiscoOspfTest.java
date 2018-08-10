@@ -3,15 +3,13 @@ package org.batfish.representation.cisco;
 import static org.batfish.datamodel.RoutingProtocol.BGP;
 import static org.batfish.datamodel.routing_policy.statement.Statements.ExitAccept;
 import static org.batfish.representation.cisco.CiscoConfiguration.NOT_DEFAULT_ROUTE;
-import static org.batfish.representation.cisco.CiscoStructureUsage.OSPF_REDISTRIBUTE_BGP_MAP;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasItem;
 import static org.junit.Assert.assertThat;
 
-import java.util.Collections;
 import java.util.List;
 import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.datamodel.OspfMetricType;
+import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
@@ -29,7 +27,7 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class CiscoOspfTest {
   private static CiscoConfiguration makeConfig() {
-    CiscoConfiguration config = new CiscoConfiguration(Collections.emptySet());
+    CiscoConfiguration config = new CiscoConfiguration();
     config.setVendor(ConfigurationFormat.CISCO_IOS);
     return config;
   }
@@ -49,9 +47,9 @@ public class CiscoOspfTest {
     rp.setOnlyClassfulRoutes(true);
     rp.setOspfMetricType(OspfMetricType.E2);
     rp.setRouteMap("some-map");
-    _config.getRouteMaps().put("some-map", new RouteMap("some-map", 10));
+    _config.getRouteMaps().put("some-map", new RouteMap("some-map"));
 
-    If policy = _config.convertOspfRedistributionPolicy(rp, _proc, OSPF_REDISTRIBUTE_BGP_MAP);
+    If policy = _config.convertOspfRedistributionPolicy(rp, _proc);
     List<BooleanExpr> guard = ((Conjunction) policy.getGuard()).getConjuncts();
     assertThat(
         guard,
@@ -74,17 +72,17 @@ public class CiscoOspfTest {
     rp.setOspfMetricType(OspfMetricType.E2);
 
     // Vendor default BGP metric is 1 for IOS.
-    If policy = _config.convertOspfRedistributionPolicy(rp, _proc, OSPF_REDISTRIBUTE_BGP_MAP);
+    If policy = _config.convertOspfRedistributionPolicy(rp, _proc);
     assertThat(policy.getTrueStatements(), hasItem(new SetMetric(new LiteralLong(1L))));
 
     // Vendor default overridden by process default.
     _proc.setDefaultMetric(3L);
-    policy = _config.convertOspfRedistributionPolicy(rp, _proc, OSPF_REDISTRIBUTE_BGP_MAP);
+    policy = _config.convertOspfRedistributionPolicy(rp, _proc);
     assertThat(policy.getTrueStatements(), hasItem(new SetMetric(new LiteralLong(3L))));
 
     // RedistributionPolicy metric configured wins.
     rp.setMetric(5L);
-    policy = _config.convertOspfRedistributionPolicy(rp, _proc, OSPF_REDISTRIBUTE_BGP_MAP);
+    policy = _config.convertOspfRedistributionPolicy(rp, _proc);
     assertThat(policy.getTrueStatements(), hasItem(new SetMetric(new LiteralLong(5L))));
   }
 }

@@ -1,0 +1,16 @@
+#
+set system host-name prefix-lists
+#
+set policy-options prefix-list PL 1.2.3.4/31
+set policy-options prefix-list PL_UNUSED 2.3.4.5/32
+
+set policy-options policy-statement PNAME from prefix-list PL
+set policy-options policy-statement PNAME from prefix-list-filter PL exact
+
+set firewall family inet filter FILTER_PL term TEST_TERM from source-prefix-list PL
+set firewall family inet filter FILTER_PL term TEST_TERM then accept
+
+set firewall family inet filter FILTER_MISC term TEST_TERM from prefix-list PL_UNDEF
+set firewall family inet filter FILTER_MISC term TEST_TERM from destination-prefix-list PL
+set firewall family inet filter FILTER_MISC term TEST_TERM from prefix-list PL
+set firewall family inet filter FILTER_MISC term TEST_TERM then accept

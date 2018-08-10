@@ -1,0 +1,7 @@
+#
+set system host-name juniper_ospf_stub_areas
+#
+set protocols ospf area 0.0.0.46 stub
+set protocols ospf area 0.0.0.46 stub no-summaries
+set protocols ospf area 0.0.0.7 stub default-metric 10
+#

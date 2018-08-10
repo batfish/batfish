@@ -9,7 +9,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.ImmutableSortedSet.Builder;
 import com.google.common.collect.Sets;
-import com.google.common.graph.Network;
+import com.google.common.graph.ValueGraph;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -24,24 +24,31 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
 import org.batfish.common.util.CommonUtil;
-import org.batfish.datamodel.BgpNeighbor;
-import org.batfish.datamodel.BgpSession;
+import org.batfish.datamodel.BgpActivePeerConfig;
+import org.batfish.datamodel.BgpPeerConfig;
+import org.batfish.datamodel.BgpPeerConfigId;
+import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
+import org.batfish.question.bgpsessionstatus.BgpSessionStatusPlugin;
 
+/** @deprecated in favor of {@link BgpSessionStatusPlugin} */
 @AutoService(Plugin.class)
+@Deprecated
 public class BgpSessionStatusQuestionPlugin extends QuestionPlugin {
 
   public enum SessionType {
     IBGP,
     EBGP_SINGLEHOP,
-    EBGP_MULTIHOP
+    EBGP_MULTIHOP,
+    UNKNOWN
   }
 
   public enum SessionStatus {
@@ -218,13 +225,15 @@ public class BgpSessionStatusQuestionPlugin extends QuestionPlugin {
         }
       }
 
-      Network<BgpNeighbor, BgpSession> bgpTopology =
+      ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
           CommonUtil.initBgpTopology(configurations, ipOwners, true);
 
       Builder<BgpSessionInfo> bgpSessionInfoBuilder = new Builder<>(Comparator.naturalOrder());
-      for (BgpNeighbor bgpNeighbor : bgpTopology.nodes()) {
-        String hostname = bgpNeighbor.getOwner().getHostname();
-        String vrfName = bgpNeighbor.getVrf();
+      NetworkConfigurations nc = NetworkConfigurations.of(configurations);
+      for (BgpPeerConfigId bgpPeerConfigId : bgpTopology.nodes()) {
+        BgpPeerConfig bgpPeerConfig = nc.getBgpPeerConfig(bgpPeerConfigId);
+        String hostname = bgpPeerConfigId.getHostname();
+        String vrfName = bgpPeerConfigId.getVrfName();
         // Only match nodes we care about
         if (!includeNodes1.contains(hostname)) {
           continue;
@@ -232,52 +241,63 @@ public class BgpSessionStatusQuestionPlugin extends QuestionPlugin {
 
         // Match foreign group
         boolean foreign =
-            bgpNeighbor.getGroup() != null && question.matchesForeignGroup(bgpNeighbor.getGroup());
+            bgpPeerConfig.getGroup() != null
+                && question.matchesForeignGroup(bgpPeerConfig.getGroup());
         if (foreign) {
           continue;
         }
 
-        // Setup session info
-        boolean ebgp = !bgpNeighbor.getRemoteAs().equals(bgpNeighbor.getLocalAs());
-        boolean ebgpMultihop = bgpNeighbor.getEbgpMultihop();
-        Prefix remotePrefix = bgpNeighbor.getPrefix();
+        boolean ebgpMultihop = bgpPeerConfig.getEbgpMultihop();
+        Prefix remotePrefix = bgpPeerConfigId.getRemotePeerPrefix();
         BgpSessionInfo bgpSessionInfo = new BgpSessionInfo(hostname, vrfName, remotePrefix);
-        bgpSessionInfo._sessionType =
-            ebgp
-                ? ebgpMultihop ? SessionType.EBGP_MULTIHOP : SessionType.EBGP_SINGLEHOP
-                : SessionType.IBGP;
+        // Setup session info
+        // TODO(https://github.com/batfish/batfish/issues/1331): Handle list of remote ASes. Until
+        // then, we can't assume remote AS will always be a single integer that is present and
+        // non-null.
+        bgpSessionInfo._sessionType = SessionType.UNKNOWN;
+        if (!bgpPeerConfigId.isDynamic()) {
+          Long remoteAs = ((BgpActivePeerConfig) bgpPeerConfig).getRemoteAs();
+          if (remoteAs != null && !remoteAs.equals(bgpPeerConfig.getLocalAs())) {
+            bgpSessionInfo._sessionType =
+                ebgpMultihop ? SessionType.EBGP_MULTIHOP : SessionType.EBGP_SINGLEHOP;
+          } else if (remoteAs != null) {
+            bgpSessionInfo._sessionType = SessionType.IBGP;
+          }
+        }
+
         // Skip session types we don't care about
         if (!question.matchesType(bgpSessionInfo._sessionType)) {
           continue;
         }
 
-        Ip localIp = bgpNeighbor.getLocalIp();
-        if (bgpNeighbor.getDynamic()) {
+        Ip localIp = bgpPeerConfig.getLocalIp();
+        if (bgpPeerConfigId.isDynamic()) {
           bgpSessionInfo._status = SessionStatus.PASSIVE;
         } else if (localIp == null) {
           bgpSessionInfo._status = SessionStatus.MISSING_LOCAL_IP;
         } else {
           bgpSessionInfo._localIp = localIp;
           bgpSessionInfo._onLoopback = loopbackIps.contains(localIp);
-          Ip remoteIp = bgpNeighbor.getAddress();
+          Ip remoteIp = ((BgpActivePeerConfig) bgpPeerConfig).getPeerAddress();
 
           if (!allInterfaceIps.contains(localIp)) {
             bgpSessionInfo._status = SessionStatus.UNKNOWN_LOCAL_IP;
           } else if (remoteIp == null || !allInterfaceIps.contains(remoteIp)) {
             bgpSessionInfo._status = SessionStatus.UNKNOWN_REMOTE_IP;
           } else {
-            if (node2RegexMatchesIp(remoteIp, ipOwners, includeNodes2)) {
-              if (bgpTopology.adjacentNodes(bgpNeighbor).isEmpty()) {
-                bgpSessionInfo._status = SessionStatus.HALF_OPEN;
-                // degree > 2 because of directed edges. 1 edge in, 1 edge out == single connection
-              } else if (bgpTopology.degree(bgpNeighbor) > 2) {
-                bgpSessionInfo._status = SessionStatus.MULTIPLE_REMOTES;
-              } else {
-                BgpNeighbor remoteNeighbor =
-                    bgpTopology.adjacentNodes(bgpNeighbor).iterator().next();
-                bgpSessionInfo._remoteNode = remoteNeighbor.getOwner().getHostname();
-                bgpSessionInfo._status = SessionStatus.UNIQUE_MATCH;
-              }
+            if (!node2RegexMatchesIp(remoteIp, ipOwners, includeNodes2)) {
+              continue;
+            }
+            if (bgpTopology.adjacentNodes(bgpPeerConfigId).isEmpty()) {
+              bgpSessionInfo._status = SessionStatus.HALF_OPEN;
+              // degree > 2 because of directed edges. 1 edge in, 1 edge out == single connection
+            } else if (bgpTopology.degree(bgpPeerConfigId) > 2) {
+              bgpSessionInfo._status = SessionStatus.MULTIPLE_REMOTES;
+            } else {
+              BgpPeerConfigId remoteNeighborId =
+                  bgpTopology.adjacentNodes(bgpPeerConfigId).iterator().next();
+              bgpSessionInfo._remoteNode = remoteNeighborId.getHostname();
+              bgpSessionInfo._status = SessionStatus.UNIQUE_MATCH;
             }
           }
         }

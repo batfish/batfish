@@ -17,7 +17,7 @@ public class IpsecTunnel implements Serializable {
     return getText((Element) element.getElementsByTagName(outerTag).item(0), innerTag);
   }
 
-  private int _cgwBgpAsn = -1;
+  private long _cgwBgpAsn = -1L;
 
   private Ip _cgwInsideAddress;
 
@@ -49,7 +49,7 @@ public class IpsecTunnel implements Serializable {
 
   private String _ipsecProtocol;
 
-  private int _vgwBgpAsn = -1;
+  private long _vgwBgpAsn = -1L;
 
   private Ip _vgwInsideAddress;
 
@@ -153,7 +153,7 @@ public class IpsecTunnel implements Serializable {
     _ipsecMode = getText(ipsecElement, AwsVpcEntity.XML_KEY_MODE);
   }
 
-  public int getCgwBgpAsn() {
+  public long getCgwBgpAsn() {
     return _cgwBgpAsn;
   }
 
@@ -217,7 +217,7 @@ public class IpsecTunnel implements Serializable {
     return _ipsecProtocol;
   }
 
-  public int getVgwBgpAsn() {
+  public long getVgwBgpAsn() {
     return _vgwBgpAsn;
   }
 

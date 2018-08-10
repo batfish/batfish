@@ -20,7 +20,7 @@ public class LinkTest {
   @Test
   public void constructorFail() throws IOException {
     String linkStr = "{\"nofield\" : \"test\"}";
-    _thrown.expect(com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException.class);
+    _thrown.expect(com.fasterxml.jackson.databind.exc.InvalidDefinitionException.class);
     BatfishObjectMapper.mapper().readValue(linkStr, Link.class);
   }
 

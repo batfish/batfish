@@ -42,7 +42,7 @@ public class LiteralAsList extends AsPathListExpr {
   }
 
   @Override
-  public List<Integer> evaluate(Environment environment) {
+  public List<Long> evaluate(Environment environment) {
     return _list
         .stream()
         .map(expr -> expr.evaluate(environment))
@@ -62,6 +62,6 @@ public class LiteralAsList extends AsPathListExpr {
   }
 
   public void setList(List<AsExpr> list) {
-    _list = list;
+    _list = ImmutableList.copyOf(list);
   }
 }

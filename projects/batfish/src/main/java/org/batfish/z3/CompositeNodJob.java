@@ -6,9 +6,9 @@ import com.microsoft.z3.Context;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedSet;
 import org.batfish.common.BatfishException;
 import org.batfish.config.Settings;
+import org.batfish.z3.expr.BooleanExpr;
 
 public class CompositeNodJob extends AbstractNodJob {
 
@@ -16,15 +16,19 @@ public class CompositeNodJob extends AbstractNodJob {
 
   private int _numPrograms;
 
+  private final boolean _optimize;
+
   private List<QuerySynthesizer> _querySynthesizers;
 
   public CompositeNodJob(
       Settings settings,
       List<Synthesizer> dataPlaneSynthesizer,
       List<QuerySynthesizer> querySynthesizer,
-      SortedSet<IngressPoint> ingressPoints,
+      Map<IngressLocation, BooleanExpr> srcIpConstraints,
+      boolean optimize,
       String tag) {
-    super(settings, ingressPoints, tag);
+    super(settings, srcIpConstraints, tag);
+    _optimize = optimize;
     _numPrograms = dataPlaneSynthesizer.size();
     if (_numPrograms != querySynthesizer.size()) {
       throw new BatfishException("mismatch between number of programs and number of queries");
@@ -41,14 +45,17 @@ public class CompositeNodJob extends AbstractNodJob {
       Synthesizer dataPlaneSynthesizer = _dataPlaneSynthesizers.get(i);
       QuerySynthesizer querySynthesizer = _querySynthesizers.get(i);
       ReachabilityProgram baseProgram =
-          instrumentReachabilityProgram(dataPlaneSynthesizer.synthesizeNodDataPlaneProgram());
+          instrumentReachabilityProgram(dataPlaneSynthesizer.synthesizeNodProgram());
       ReachabilityProgram queryProgram =
           instrumentReachabilityProgram(
               querySynthesizer.getReachabilityProgram(dataPlaneSynthesizer.getInput()));
 
-      NodProgram program = new NodProgram(ctx, baseProgram, queryProgram);
+      NodProgram program =
+          _optimize
+              ? optimizedProgram(ctx, baseProgram, queryProgram)
+              : new NodProgram(ctx, baseProgram, queryProgram);
       variablesAsConsts.putAll(program.getNodContext().getVariablesAsConsts());
-      answers[i] = computeSmtConstraintsViaNod(program, _querySynthesizers.get(i).getNegate());
+      answers[i] = computeSmtConstraintsViaNod(program, querySynthesizer.getNegate());
     }
     return new SmtInput(ctx.mkAnd(answers), variablesAsConsts);
   }

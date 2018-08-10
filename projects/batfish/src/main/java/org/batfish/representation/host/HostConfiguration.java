@@ -1,5 +1,7 @@
 package org.batfish.representation.host;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.IOException;
@@ -97,8 +99,6 @@ public class HostConfiguration extends VendorConfiguration {
 
   private transient VendorConfiguration _underlayConfiguration;
 
-  private transient Set<String> _unimplementedFeatures;
-
   public HostConfiguration() {
     _hostInterfaces = new TreeMap<>();
     _staticRoutes = new TreeSet<>();
@@ -129,15 +129,10 @@ public class HostConfiguration extends VendorConfiguration {
     return _overlay;
   }
 
-  @JsonIgnore
-  @Override
-  public Set<String> getUnimplementedFeatures() {
-    return _unimplementedFeatures;
-  }
-
   @Override
   public void setHostname(String hostname) {
-    _hostname = hostname;
+    checkNotNull(hostname, "'hostname' cannot be null");
+    _hostname = hostname.toLowerCase();
   }
 
   public void setIptablesFile(String file) {
@@ -241,7 +236,8 @@ public class HostConfiguration extends VendorConfiguration {
 
     _c.getDefaultVrf()
         .getStaticRoutes()
-        .addAll(_staticRoutes.stream().map(hsr -> hsr.toStaticRoute()).collect(Collectors.toSet()));
+        .addAll(
+            _staticRoutes.stream().map(HostStaticRoute::toStaticRoute).collect(Collectors.toSet()));
     Set<StaticRoute> staticRoutes = _c.getDefaultVrf().getStaticRoutes();
     for (HostInterface iface : _hostInterfaces.values()) {
       Ip gateway = iface.getGateway();

@@ -1,0 +1,176 @@
+!
+hostname rP
+!
+route-policy fooey_blackhole
+  if destination in barbar_blackhole_routes and community matches-any fooey_blackhole_community and local-preference is 123 then
+    set next-hop 1.2.3.4
+    set origin igp
+    set weight 0
+    pass
+  endif
+end-policy
+route-policy fooey_to_barbar_ipv4
+  apply default_route_filter
+  apply inbound_route_filter
+  apply drop_community_5555
+  if community matches-any fooey_routes_community then
+    set local-preference 350
+  endif
+end-policy
+route-policy fooey_to_barbar_ipv6
+  if destination in barbar_networks_ipv6 or destination in (::/0) then
+    drop
+  else
+    set local-preference 350
+  endif
+end-policy
+route-policy aaaa
+ if apply bbbb then
+  apply cccc
+ endif
+end-policy
+route-policy drop_community_5555
+  if community matches-any community_5555 then
+    delete community in community_5555
+    pass
+  endif
+end-policy
+route-policy ospf_default_ipv4
+  if rib-has-route in (2.3.4.0/24) then
+    pass
+  endif
+end-policy
+route-policy perfsonar_andsn_ipv4
+  if destination in bippetyboppety_ipv4 then
+    set med 25
+    done
+  endif
+  set level level-2
+end-policy
+route-policy barbar_to_fooey_community_ipv4
+  if destination in barbar_networks_ipv4 or destination in barbar_blackhole_routes or destination in bippetyboppety_ipv4 then
+    set community barbar_to_fooey_community_ipv4 additive
+    pass
+  endif
+end-policy
+route-policy EBGP-PEER-AS6461-LAX-PNI-IN
+ apply EBGP_PEER_LAX-PNI_IN
+ if med eq 0 then
+  pass
+ else
+  set med +874
+  pass
+ endif
+end-policy
+route-policy redistribute-static-isis
+ if destination in remote-router-loopbacks then
+  pass
+ elseif destination in local-peer-aggregates then
+  set isis-metric 9101
+  pass
+ else
+  drop
+ endif
+end-policy
+route-policy EBGP-PEER-SANITY-IN
+ if (as-path passes-through '[65412..65535]' ) then
+  drop
+ elseif ((destination in EBGP-PEER-BOGONS) or (destination in EBGP-PEER-OTHER-UNDESIRABLES)) then
+  drop
+ elseif (not destination in EBGP-PEER-TOO-SPECIFIC) then
+  pass
+ else
+  drop
+ endif
+end-policy
+route-policy EBGP-PEER-AS2828-LAX-PNI-OUT
+ apply EBGP_PEER_LAX-PNI_OUT
+ if (community matches-any EBGP-CUST-NOEXP-PEER-NA) then
+  drop
+ elseif (as-path in xo-deny-as) then
+  drop
+  #elseif (community matches-any (2152:65517, 2152:65502, 2152:65511, 2152:65513, 2152:65514, 2152:65512)) then
+  # prepend as-path 2152
+  # pass
+  #elseif (as-path in xo-aapl-shift) then
+  # prepend as-path most-recent
+  #  pass
+ elseif (community matches-any EBGP-CUST-EXT) then
+  pass
+ elseif (as-path neighbor-is '17369' ) then
+  prepend as-path 2152 3
+ endif
+ pass
+end-policy
+!
+route-policy to_chillmap
+  if (community matches-any blackhole-all) then
+    drop
+    # Begin blackhole matching
+  elseif (community matches-any blackhole-isp) then
+    drop
+  elseif next-hop in (137.164.16.255) then
+    drop
+  elseif (next-hop in null) then
+    drop
+    # End blackhole matching
+  elseif community matches-any (40027:65535, *:12345) then
+    drop
+    # Intent is to not advertise if prefix is tagged with Chills ASN & 65535
+  elseif (community matches-any scenes_No_Export) then
+    drop
+    # Intent is to not advertise if tagged with scenes ASNs & 65535
+  elseif (as-path in chill-as-path) then
+    drop
+    # Intent is to not advertise if AS path matches the above path-set
+  elseif (community matches-any wrn-squelch-40027) then
+    drop
+    # Intent is to not advertise prefixes tagged with WRN related ASNs & 65535
+  elseif ((community matches-any wrn-expanded) and (as-path in chill_aspath_141_deny)) then
+    drop
+    # Intent is to not advertise prefixes tagged with WRN related ASNs & 65535
+  elseif (as-path neighbor-is '17369'  and community matches-any (2152:65298, 2152:65498)) then
+    prepend as-path 2152 3
+    set med 100000
+    pass
+    # Routes from chippy should be advertised with a high MED if they are tagged with 65298 or 65498
+  elseif (community matches-any to-peers-backbone) then
+    pass
+  elseif (community matches-any (2152:2152) and community matches-any (2152:65298)) then
+    pass
+  elseif (community matches-any chillmap) then
+    pass
+  elseif ((community matches-any wrn-expanded) and (as-path in chill_aspath_141_permit)) then
+    pass
+  elseif ((community matches-any CF_fooey_Associates-chillmap) and (as-path in chill_aspath_142_permit)) then
+    pass
+  elseif (community matches-any (12345:65418) and community matches-any (12345:65437) and as-path neighbor-is '12345  6360'  and as-path in (ios-regex '_6360$')) then
+    pass
+    #UUUU specific matching                                                                                                                
+  elseif (community matches-any DC_AT_CHILL) then
+    pass
+  elseif (as-path in (ios-regex '_14041$', ios-regex '_104$', ios-regex '_2902$', ios-regex '_13555$', ios-regex '_14041_')) then
+    pass
+  endif
+end-policy
+!
+route-policy doodlepop
+  if (community matches-any blackhole-all) then
+    apply bgp_standard
+    set community (1234:666, 1234:65498, 1234:$hub_comm) additive
+    set next-hop 1234:1234::118:9a41:ff0
+    set next-hop discard
+    set path-selection backup 1 install multipath-protect advertise
+    unsuppress-route
+  endif
+end-policy
+!
+route-policy routetype
+  if route-type is ospf-intra-area then
+    pass
+  else
+    drop
+  endif
+end-policy
+!
+end

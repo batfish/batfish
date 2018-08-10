@@ -32,7 +32,6 @@ import org.junit.Test;
 public class SecurityGroupsTest {
 
   private JSONArray _securityGroups;
-  private IpAccessListLine _rejectSynOnly;
   private IpAccessListLine _allowAllReverseOutboundRule;
   private Flow.Builder _flowBuilder;
   private Region _region;
@@ -45,12 +44,12 @@ public class SecurityGroupsTest {
         new JSONObject(
                 CommonUtil.readResource("org/batfish/representation/aws/SecurityGroupTest.json"))
             .getJSONArray(JSON_KEY_SECURITY_GROUPS);
-    _rejectSynOnly =
-        IpAccessListLine.rejectingHeaderSpace(
-            HeaderSpace.builder().setTcpFlags(ImmutableSet.of(TcpFlags.SYN_ONLY)).build());
     _allowAllReverseOutboundRule =
         IpAccessListLine.acceptingHeaderSpace(
-            HeaderSpace.builder().setSrcIps(Sets.newHashSet(new IpWildcard("0.0.0.0/0"))).build());
+            HeaderSpace.builder()
+                .setSrcIps(Sets.newHashSet(new IpWildcard("0.0.0.0/0")))
+                .setTcpFlags(ImmutableSet.of(TcpFlags.ACK_TCP_FLAG))
+                .build());
     _region = new Region("test");
     _flowBuilder = new Builder();
     _flowBuilder.setIngressNode("foo");
@@ -60,7 +59,7 @@ public class SecurityGroupsTest {
 
   @Test
   public void testSinglePort() throws JSONException {
-    SecurityGroup sg = new SecurityGroup(_securityGroups.getJSONObject(0), null);
+    SecurityGroup sg = new SecurityGroup(_securityGroups.getJSONObject(0));
 
     List<IpAccessListLine> inboundRules = new LinkedList<>();
     List<IpAccessListLine> outboundRules = new LinkedList<>();
@@ -71,19 +70,18 @@ public class SecurityGroupsTest {
         inboundRules,
         equalTo(
             ImmutableList.of(
+                _allowAllReverseOutboundRule,
                 IpAccessListLine.acceptingHeaderSpace(
                     HeaderSpace.builder()
                         .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
                         .setSrcIps(Sets.newHashSet(new IpWildcard("1.2.3.4/32")))
                         .setDstPorts(Sets.newHashSet(new SubRange(22, 22)))
-                        .build()),
-                _rejectSynOnly,
-                _allowAllReverseOutboundRule)));
+                        .build()))));
   }
 
   @Test
   public void testBeginningHalfOpenInterval() throws JSONException {
-    SecurityGroup sg = new SecurityGroup(_securityGroups.getJSONObject(1), null);
+    SecurityGroup sg = new SecurityGroup(_securityGroups.getJSONObject(1));
 
     List<IpAccessListLine> inboundRules = new LinkedList<>();
     List<IpAccessListLine> outboundRules = new LinkedList<>();
@@ -94,19 +92,18 @@ public class SecurityGroupsTest {
         inboundRules,
         equalTo(
             ImmutableList.of(
+                _allowAllReverseOutboundRule,
                 IpAccessListLine.acceptingHeaderSpace(
                     HeaderSpace.builder()
                         .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
                         .setSrcIps(Sets.newHashSet(new IpWildcard("1.2.3.4/32")))
                         .setDstPorts(Sets.newHashSet(new SubRange(0, 22)))
-                        .build()),
-                _rejectSynOnly,
-                _allowAllReverseOutboundRule)));
+                        .build()))));
   }
 
   @Test
   public void testEndHalfOpenInterval() throws JSONException {
-    SecurityGroup sg = new SecurityGroup(_securityGroups.getJSONObject(2), null);
+    SecurityGroup sg = new SecurityGroup(_securityGroups.getJSONObject(2));
 
     List<IpAccessListLine> inboundRules = new LinkedList<>();
     List<IpAccessListLine> outboundRules = new LinkedList<>();
@@ -117,19 +114,18 @@ public class SecurityGroupsTest {
         inboundRules,
         equalTo(
             ImmutableList.of(
+                _allowAllReverseOutboundRule,
                 IpAccessListLine.acceptingHeaderSpace(
                     HeaderSpace.builder()
                         .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
                         .setSrcIps(Sets.newHashSet(new IpWildcard("1.2.3.4/32")))
                         .setDstPorts(Sets.newHashSet(new SubRange(65530, 65535)))
-                        .build()),
-                _rejectSynOnly,
-                _allowAllReverseOutboundRule)));
+                        .build()))));
   }
 
   @Test
   public void testFullInterval() throws JSONException {
-    SecurityGroup sg = new SecurityGroup(_securityGroups.getJSONObject(3), null);
+    SecurityGroup sg = new SecurityGroup(_securityGroups.getJSONObject(3));
 
     List<IpAccessListLine> inboundRules = new LinkedList<>();
     List<IpAccessListLine> outboundRules = new LinkedList<>();
@@ -140,18 +136,17 @@ public class SecurityGroupsTest {
         inboundRules,
         equalTo(
             ImmutableList.of(
+                _allowAllReverseOutboundRule,
                 IpAccessListLine.acceptingHeaderSpace(
                     HeaderSpace.builder()
                         .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
                         .setSrcIps(Sets.newHashSet(new IpWildcard("1.2.3.4/32")))
-                        .build()),
-                _rejectSynOnly,
-                _allowAllReverseOutboundRule)));
+                        .build()))));
   }
 
   @Test
   public void testAllTrafficAllowed() throws JSONException {
-    SecurityGroup sg = new SecurityGroup(_securityGroups.getJSONObject(4), null);
+    SecurityGroup sg = new SecurityGroup(_securityGroups.getJSONObject(4));
 
     List<IpAccessListLine> inboundRules = new LinkedList<>();
     List<IpAccessListLine> outboundRules = new LinkedList<>();
@@ -162,18 +157,17 @@ public class SecurityGroupsTest {
         inboundRules,
         equalTo(
             ImmutableList.of(
+                _allowAllReverseOutboundRule,
                 IpAccessListLine.acceptingHeaderSpace(
                     HeaderSpace.builder()
                         .setSrcIps(Sets.newHashSet(new IpWildcard("0.0.0.0/0")))
                         .setDstPorts(Sets.newHashSet())
-                        .build()),
-                _rejectSynOnly,
-                _allowAllReverseOutboundRule)));
+                        .build()))));
   }
 
   @Test
   public void testClosedInterval() throws JSONException {
-    SecurityGroup sg = new SecurityGroup(_securityGroups.getJSONObject(5), null);
+    SecurityGroup sg = new SecurityGroup(_securityGroups.getJSONObject(5));
 
     List<IpAccessListLine> inboundRules = new LinkedList<>();
     List<IpAccessListLine> outboundRules = new LinkedList<>();
@@ -184,19 +178,18 @@ public class SecurityGroupsTest {
         inboundRules,
         equalTo(
             ImmutableList.of(
+                _allowAllReverseOutboundRule,
                 IpAccessListLine.acceptingHeaderSpace(
                     HeaderSpace.builder()
                         .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
                         .setSrcIps(Sets.newHashSet(new IpWildcard("1.2.3.4/32")))
                         .setDstPorts(Sets.newHashSet(new SubRange(45, 50)))
-                        .build()),
-                _rejectSynOnly,
-                _allowAllReverseOutboundRule)));
+                        .build()))));
   }
 
   @Test
   public void testInvalidStartInterval() throws JSONException {
-    SecurityGroup sg = new SecurityGroup(_securityGroups.getJSONObject(6), null);
+    SecurityGroup sg = new SecurityGroup(_securityGroups.getJSONObject(6));
 
     List<IpAccessListLine> inboundRules = new LinkedList<>();
     List<IpAccessListLine> outboundRules = new LinkedList<>();
@@ -207,19 +200,18 @@ public class SecurityGroupsTest {
         inboundRules,
         equalTo(
             ImmutableList.of(
+                _allowAllReverseOutboundRule,
                 IpAccessListLine.acceptingHeaderSpace(
                     HeaderSpace.builder()
                         .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
                         .setSrcIps(Sets.newHashSet(new IpWildcard("1.2.3.4/32")))
                         .setDstPorts(Sets.newHashSet(new SubRange(0, 50)))
-                        .build()),
-                _rejectSynOnly,
-                _allowAllReverseOutboundRule)));
+                        .build()))));
   }
 
   @Test
   public void testInvalidEndInterval() throws JSONException {
-    SecurityGroup sg = new SecurityGroup(_securityGroups.getJSONObject(7), null);
+    SecurityGroup sg = new SecurityGroup(_securityGroups.getJSONObject(7));
 
     List<IpAccessListLine> inboundRules = new LinkedList<>();
     List<IpAccessListLine> outboundRules = new LinkedList<>();
@@ -230,19 +222,18 @@ public class SecurityGroupsTest {
         inboundRules,
         equalTo(
             ImmutableList.of(
+                _allowAllReverseOutboundRule,
                 IpAccessListLine.acceptingHeaderSpace(
                     HeaderSpace.builder()
                         .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
                         .setSrcIps(Sets.newHashSet(new IpWildcard("1.2.3.4/32")))
                         .setDstPorts(Sets.newHashSet(new SubRange(30, 65535)))
-                        .build()),
-                _rejectSynOnly,
-                _allowAllReverseOutboundRule)));
+                        .build()))));
   }
 
   @Test
   public void testStatefulTcpRules() throws JSONException {
-    SecurityGroup sg = new SecurityGroup(_securityGroups.getJSONObject(8), null);
+    SecurityGroup sg = new SecurityGroup(_securityGroups.getJSONObject(8));
 
     List<IpAccessListLine> inboundRules = new LinkedList<>();
     List<IpAccessListLine> outboundRules = new LinkedList<>();
@@ -253,50 +244,51 @@ public class SecurityGroupsTest {
         inboundRules,
         equalTo(
             ImmutableList.of(
-                IpAccessListLine.acceptingHeaderSpace(
-                    HeaderSpace.builder()
-                        .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
-                        .setSrcIps(Sets.newHashSet(new IpWildcard("1.2.3.4/32")))
-                        .setDstPorts(Sets.newHashSet(new SubRange(22, 22)))
-                        .build()),
-                _rejectSynOnly,
                 // reverse of outbound rule
                 IpAccessListLine.acceptingHeaderSpace(
                     HeaderSpace.builder()
                         .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
                         .setSrcIps(Sets.newHashSet(new IpWildcard("5.6.7.8/32")))
                         .setSrcPorts(Sets.newHashSet(new SubRange(80, 80)))
+                        .setTcpFlags(ImmutableSet.of(TcpFlags.ACK_TCP_FLAG))
+                        .build()),
+                IpAccessListLine.acceptingHeaderSpace(
+                    HeaderSpace.builder()
+                        .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
+                        .setSrcIps(Sets.newHashSet(new IpWildcard("1.2.3.4/32")))
+                        .setDstPorts(Sets.newHashSet(new SubRange(22, 22)))
                         .build()))));
     assertThat(
         outboundRules,
         equalTo(
             ImmutableList.of(
-                IpAccessListLine.acceptingHeaderSpace(
-                    HeaderSpace.builder()
-                        .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
-                        .setDstIps(Sets.newHashSet(new IpWildcard("5.6.7.8/32")))
-                        .setDstPorts(Sets.newHashSet(new SubRange(80, 80)))
-                        .build()),
-                _rejectSynOnly,
                 // reverse of inbound rule
                 IpAccessListLine.acceptingHeaderSpace(
                     HeaderSpace.builder()
                         .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
                         .setDstIps(Sets.newHashSet(new IpWildcard("1.2.3.4/32")))
                         .setSrcPorts(Sets.newHashSet(new SubRange(22, 22)))
+                        .setTcpFlags(ImmutableSet.of(TcpFlags.ACK_TCP_FLAG))
+                        .build()),
+                IpAccessListLine.acceptingHeaderSpace(
+                    HeaderSpace.builder()
+                        .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
+                        .setDstIps(Sets.newHashSet(new IpWildcard("5.6.7.8/32")))
+                        .setDstPorts(Sets.newHashSet(new SubRange(80, 80)))
                         .build()))));
   }
 
   @Test
   public void testDeniedSynOnlyResponse() throws JSONException {
-    SecurityGroup sg = new SecurityGroup(_securityGroups.getJSONObject(8), null);
+    SecurityGroup sg = new SecurityGroup(_securityGroups.getJSONObject(8));
 
     List<IpAccessListLine> inboundRules = new LinkedList<>();
     List<IpAccessListLine> outboundRules = new LinkedList<>();
 
     sg.addInOutAccessLines(inboundRules, outboundRules, _region);
 
-    IpAccessList outFilter = new IpAccessList(TEST_ACL, outboundRules);
+    IpAccessList outFilter =
+        IpAccessList.builder().setName(TEST_ACL).setLines(outboundRules).build();
 
     // flow containing SYN and ~ACK should be rejected
     _flowBuilder.setDstIp(new Ip("1.2.3.4"));
@@ -313,14 +305,15 @@ public class SecurityGroupsTest {
 
   @Test
   public void testAllowedSynAckResponse() throws JSONException {
-    SecurityGroup sg = new SecurityGroup(_securityGroups.getJSONObject(8), null);
+    SecurityGroup sg = new SecurityGroup(_securityGroups.getJSONObject(8));
 
     List<IpAccessListLine> inboundRules = new LinkedList<>();
     List<IpAccessListLine> outboundRules = new LinkedList<>();
 
     sg.addInOutAccessLines(inboundRules, outboundRules, _region);
 
-    IpAccessList outFilter = new IpAccessList(TEST_ACL, outboundRules);
+    IpAccessList outFilter =
+        IpAccessList.builder().setName(TEST_ACL).setLines(outboundRules).build();
 
     // flow containing SYN and ACK should be accepted
     _flowBuilder.setDstIp(new Ip("1.2.3.4"));
@@ -337,14 +330,15 @@ public class SecurityGroupsTest {
 
   @Test
   public void testDeniedWrongIpResponse() throws JSONException {
-    SecurityGroup sg = new SecurityGroup(_securityGroups.getJSONObject(8), null);
+    SecurityGroup sg = new SecurityGroup(_securityGroups.getJSONObject(8));
 
     List<IpAccessListLine> inboundRules = new LinkedList<>();
     List<IpAccessListLine> outboundRules = new LinkedList<>();
 
     sg.addInOutAccessLines(inboundRules, outboundRules, _region);
 
-    IpAccessList outFilter = new IpAccessList(TEST_ACL, outboundRules);
+    IpAccessList outFilter =
+        IpAccessList.builder().setName(TEST_ACL).setLines(outboundRules).build();
 
     // flow containing wrong destination IP should be rejected
     _flowBuilder.setDstIp(new Ip("1.2.3.5"));

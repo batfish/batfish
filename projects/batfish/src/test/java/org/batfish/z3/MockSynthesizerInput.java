@@ -27,6 +27,8 @@ public class MockSynthesizerInput implements SynthesizerInput {
     private Map<String, Map<String, Map<String, Map<String, Map<String, BooleanExpr>>>>>
         _arpTrueEdge;
 
+    private boolean _dataPlane;
+
     private Set<Edge> _enabledEdges;
 
     private Map<String, Set<String>> _enabledInterfaces;
@@ -39,7 +41,11 @@ public class MockSynthesizerInput implements SynthesizerInput {
 
     private Map<String, Map<String, String>> _incomingAcls;
 
+    private Map<IngressLocation, BooleanExpr> _srcIpConstraints;
+
     private Map<String, Set<Ip>> _ipsByHostname;
+
+    private Map<String, Map<String, Set<Ip>>> _ipsByNodeVrf;
 
     private Map<String, Map<String, IpSpace>> _namedIpSpaces;
 
@@ -81,7 +87,9 @@ public class MockSynthesizerInput implements SynthesizerInput {
       _enabledNodes = ImmutableSet.of();
       _enabledVrfs = ImmutableMap.of();
       _incomingAcls = ImmutableMap.of();
+      _srcIpConstraints = ImmutableMap.of();
       _ipsByHostname = ImmutableMap.of();
+      _ipsByNodeVrf = ImmutableMap.of();
       _namedIpSpaces = ImmutableMap.of();
       _neighborUnreachable = ImmutableMap.of();
       _nodeInterfaces = ImmutableMap.of();
@@ -149,8 +157,18 @@ public class MockSynthesizerInput implements SynthesizerInput {
       return this;
     }
 
+    public Builder setSrcIpConstraints(Map<IngressLocation, BooleanExpr> srcIpConstraints) {
+      _srcIpConstraints = ImmutableMap.copyOf(srcIpConstraints);
+      return this;
+    }
+
     public Builder setIpsByHostname(Map<String, Set<Ip>> ipsByHostname) {
       _ipsByHostname = ipsByHostname;
+      return this;
+    }
+
+    public Builder setDataPlane(boolean dataPlane) {
+      _dataPlane = dataPlane;
       return this;
     }
 
@@ -232,6 +250,11 @@ public class MockSynthesizerInput implements SynthesizerInput {
       _transitNodes = transitNodes;
       return this;
     }
+
+    public Builder setIpsByNodeVrf(Map<String, Map<String, Set<Ip>>> ipsByNodeVrf) {
+      _ipsByNodeVrf = ipsByNodeVrf;
+      return this;
+    }
   }
 
   public static Builder builder() {
@@ -245,6 +268,8 @@ public class MockSynthesizerInput implements SynthesizerInput {
   private final Map<String, Map<String, Map<String, Map<String, Map<String, BooleanExpr>>>>>
       _arpTrueEdge;
 
+  private final boolean _dataPlane;
+
   private final Set<Edge> _enabledEdges;
 
   private final Map<String, Set<String>> _enabledInterfaces;
@@ -257,7 +282,11 @@ public class MockSynthesizerInput implements SynthesizerInput {
 
   private final Map<String, Map<String, String>> _incomingAcls;
 
+  private final Map<IngressLocation, BooleanExpr> _srcIpConstraints;
+
   private final Map<String, Set<Ip>> _ipsByHostname;
+
+  private final Map<String, Map<String, Set<Ip>>> _ipsByNodeVrf;
 
   private final Map<String, Map<String, IpSpace>> _namedIpSpaces;
 
@@ -293,13 +322,16 @@ public class MockSynthesizerInput implements SynthesizerInput {
     _aclActions = builder._aclActions;
     _aclConditions = builder._aclConditions;
     _arpTrueEdge = builder._arpTrueEdge;
+    _dataPlane = builder._dataPlane;
     _enabledEdges = builder._enabledEdges;
     _enabledInterfaces = builder._enabledInterfaces;
     _enabledInterfacesByNodeVrf = builder._enabledInterfacesByNodeVrf;
     _enabledNodes = builder._enabledNodes;
     _enabledVrfs = builder._enabledVrfs;
     _incomingAcls = builder._incomingAcls;
+    _srcIpConstraints = builder._srcIpConstraints;
     _ipsByHostname = builder._ipsByHostname;
+    _ipsByNodeVrf = builder._ipsByNodeVrf;
     _neighborUnreachable = builder._neighborUnreachable;
     _nodeInterfaces = builder._nodeInterfaces;
     _nodesWithSrcInterfaceConstraints = builder._nodesWithSrcInterfaceConstraints;
@@ -369,8 +401,18 @@ public class MockSynthesizerInput implements SynthesizerInput {
   }
 
   @Override
+  public Map<IngressLocation, BooleanExpr> getSrcIpConstraints() {
+    return _srcIpConstraints;
+  }
+
+  @Override
   public Map<String, Set<Ip>> getIpsByHostname() {
     return _ipsByHostname;
+  }
+
+  @Override
+  public Map<String, Map<String, Set<Ip>>> getIpsByNodeVrf() {
+    return _ipsByNodeVrf;
   }
 
   @Override
@@ -446,5 +488,10 @@ public class MockSynthesizerInput implements SynthesizerInput {
   @Override
   public Set<Type> getVectorizedParameters() {
     return _vectorizedParameters;
+  }
+
+  @Override
+  public boolean isDataPlane() {
+    return _dataPlane;
   }
 }

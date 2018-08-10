@@ -1,37 +1,67 @@
 package org.batfish.representation.cisco;
 
-import org.batfish.common.util.DefinedStructure;
-import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.Prefix;
+import static org.batfish.datamodel.Interface.UNSET_LOCAL_INTERFACE;
 
-public class Keyring extends DefinedStructure<String> {
+import java.io.Serializable;
+import java.util.Objects;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpWildcard;
+
+public class Keyring implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
-  private Ip _localAddress;
+  @Nullable private Ip _localAddress;
 
-  private Ip _remoteAddress;
+  @Nonnull private String _localInterfaceName;
+
+  private IpWildcard _remoteIdentity;
 
   private String _key;
 
-  public Keyring(String name, int definitionLine) {
-    super(name, definitionLine);
+  private final String _name;
+
+  public Keyring(String name) {
+    _name = name;
+    _localInterfaceName = UNSET_LOCAL_INTERFACE;
   }
 
   public String getKey() {
     return _key;
   }
 
+  @Nullable
   public Ip getLocalAddress() {
     return _localAddress;
   }
 
-  public Ip getRemoteAddress() {
-    return _remoteAddress;
+  public String getLocalInterfaceName() {
+    return _localInterfaceName;
   }
 
-  public boolean match(Ip localAddress, Prefix matchIdentity) {
-    return localAddress.equals(_localAddress) && matchIdentity.containsIp(_remoteAddress);
+  public String getName() {
+    return _name;
+  }
+
+  public IpWildcard getRemoteIdentity() {
+    return _remoteIdentity;
+  }
+
+  /**
+   * Returns true if this {@link Keyring} can be used with the given localInterface and
+   * matchIdentity
+   *
+   * @param localAddress {@link org.batfish.datamodel.Interface} {@link Ip} on which this {@link
+   *     Keyring} is intended to be used
+   * @param matchIdentity {@link IpWildcard} for the remote peers with which this {@link Keyring} is
+   *     intended to be used
+   * @return true if this {@link Keyring} can be used with the given localAddress and matchIdentity
+   */
+  public boolean match(Ip localAddress, IpWildcard matchIdentity) {
+    return _remoteIdentity.supersetOf(matchIdentity)
+        && (_localAddress == null || Objects.equals(localAddress, _localAddress));
   }
 
   public void setKey(String key) {
@@ -42,7 +72,11 @@ public class Keyring extends DefinedStructure<String> {
     _localAddress = address;
   }
 
-  public void setRemoteAddress(Ip address) {
-    _remoteAddress = address;
+  public void setLocalInterfaceName(@Nonnull String localInterfaceName) {
+    _localInterfaceName = localInterfaceName;
+  }
+
+  public void setRemoteIdentity(IpWildcard remoteIdentity) {
+    _remoteIdentity = remoteIdentity;
   }
 }

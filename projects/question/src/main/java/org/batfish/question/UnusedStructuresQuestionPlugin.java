@@ -2,25 +2,27 @@ package org.batfish.question;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
+import org.batfish.datamodel.DefinedStructureInfo;
+import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.AnswerSummary;
-import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
-import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
-import org.batfish.datamodel.answers.Problem;
-import org.batfish.datamodel.answers.ProblemsAnswerElement;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 
 @AutoService(Plugin.class)
 public class UnusedStructuresQuestionPlugin extends QuestionPlugin {
 
-  public static class UnusedStructuresAnswerElement extends ProblemsAnswerElement {
+  public static class UnusedStructuresAnswerElement extends AnswerElement {
+
+    private static final String PROP_UNUSED_STRUCTURES = "unusedStructures";
 
     private SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>
         _unusedStructures;
@@ -30,6 +32,7 @@ public class UnusedStructuresQuestionPlugin extends QuestionPlugin {
       setSummary(new AnswerSummary());
     }
 
+    @JsonProperty(PROP_UNUSED_STRUCTURES)
     public SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>
         getUnusedStructures() {
       return _unusedStructures;
@@ -45,14 +48,13 @@ public class UnusedStructuresQuestionPlugin extends QuestionPlugin {
                 (type, members) -> {
                   sb.append("  " + type + ":\n");
                   members.forEach(
-                      (member, lines) -> {
-                        sb.append("    " + member + " lines " + lines + "\n");
-                      });
+                      (member, lines) -> sb.append("    " + member + " lines " + lines + "\n"));
                 });
           });
       return sb.toString();
     }
 
+    @JsonProperty(PROP_UNUSED_STRUCTURES)
     public void setUnusedStructures(
         SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>
             undefinedReferences) {
@@ -80,66 +82,49 @@ public class UnusedStructuresQuestionPlugin extends QuestionPlugin {
     @Override
     public UnusedStructuresAnswerElement answer() {
       UnusedStructuresQuestion question = (UnusedStructuresQuestion) _question;
-      UnusedStructuresAnswerElement answerElement = new UnusedStructuresAnswerElement();
-      ConvertConfigurationAnswerElement ccae =
-          _batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+      // Find all the filenames that produced the queried nodes. This might have false positives if
+      // a file produced multiple nodes, but that was already mis-handled before. Need to rewrite
+      // this question as a TableAnswerElement.
       Set<String> includeNodes = question.getNodeRegex().getMatchingNodes(_batfish);
+      SortedMap<String, String> hostnameFilenameMap =
+          _batfish.loadParseVendorConfigurationAnswerElement().getFileMap();
+      Set<String> includeFiles =
+          hostnameFilenameMap
+              .entrySet()
+              .stream()
+              .filter(e -> includeNodes.contains(e.getKey()))
+              .map(Entry::getValue)
+              .collect(Collectors.toSet());
 
-      // this is an ugly hack to convert defined structures into unused structures of the old type
-      ccae.getDefinedStructures()
+      UnusedStructuresAnswerElement answerElement = new UnusedStructuresAnswerElement();
+      SortedMap<String, SortedMap<String, SortedMap<String, DefinedStructureInfo>>>
+          definedStructures =
+              _batfish.loadConvertConfigurationAnswerElementOrReparse().getDefinedStructures();
+      definedStructures
+          .entrySet()
+          .stream()
+          .filter(e -> includeFiles.contains(e.getKey()))
           .forEach(
-              (hostname, byType) -> {
-                if (!includeNodes.contains(hostname)) {
-                  return;
-                }
+              e -> {
+                String filename = e.getKey();
+                SortedMap<String, SortedMap<String, DefinedStructureInfo>> byType = e.getValue();
                 byType.forEach(
-                    (structType, byName) -> {
-                      byName.forEach(
-                          (structName, info) -> {
-                            if (info.getNumReferrers() == 0) {
-                              SortedMap<String, SortedMap<String, SortedSet<Integer>>> newByType =
-                                  answerElement
-                                      .getUnusedStructures()
-                                      .computeIfAbsent(hostname, e -> new TreeMap<>());
-                              SortedMap<String, SortedSet<Integer>> newByName =
-                                  newByType.computeIfAbsent(structType, e -> new TreeMap<>());
-                              newByName.put(structName, info.getDefinitionLines());
-                            }
-                          });
-                    });
+                    (structType, byName) ->
+                        byName.forEach(
+                            (structName, info) -> {
+                              if (info.getNumReferrers() == 0) {
+                                SortedMap<String, SortedMap<String, SortedSet<Integer>>> newByType =
+                                    answerElement
+                                        .getUnusedStructures()
+                                        .computeIfAbsent(filename, t -> new TreeMap<>());
+                                SortedMap<String, SortedSet<Integer>> newByName =
+                                    newByType.computeIfAbsent(structType, t -> new TreeMap<>());
+                                newByName.put(structName, info.getDefinitionLines());
+                              }
+                            }));
               });
 
-      ParseVendorConfigurationAnswerElement pvcae =
-          _batfish.loadParseVendorConfigurationAnswerElement();
-      SortedMap<String, String> hostnameFilenameMap = pvcae.getFileMap();
-      answerElement
-          .getUnusedStructures()
-          .forEach(
-              (hostname, byType) -> {
-                String filename = hostnameFilenameMap.get(hostname);
-                if (filename != null) {
-                  byType.forEach(
-                      (type, byName) -> {
-                        byName.forEach(
-                            (name, lines) -> {
-                              String problemShort = "unused:" + type + ":" + name;
-                              Problem problem = answerElement.getProblems().get(problemShort);
-                              if (problem == null) {
-                                problem = new Problem();
-                                String problemLong =
-                                    "Unused structure of type: '"
-                                        + type
-                                        + "' with name: '"
-                                        + name
-                                        + "'";
-                                problem.setDescription(problemLong);
-                                answerElement.getProblems().put(problemShort, problem);
-                              }
-                              problem.getFiles().put(filename, lines);
-                            });
-                      });
-                }
-              });
       answerElement.updateSummary();
       return answerElement;
     }

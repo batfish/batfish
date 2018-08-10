@@ -1,9 +1,0 @@
-!
-hostname ios_bgp
-!
-router bgp 1
- address-family ipv4
-  neighbor UNDEFINED_PEER_GROUP activate
-!
-!
-

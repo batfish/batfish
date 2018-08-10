@@ -12,9 +12,10 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.function.Function;
+import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 
-public class ForwardingAnalysisImpl implements ForwardingAnalysis {
+public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
 
   private final Map<String, Map<String, IpSpace>> _arpReplies;
 
@@ -23,6 +24,8 @@ public class ForwardingAnalysisImpl implements ForwardingAnalysis {
   private final Map<Edge, IpSpace> _arpTrueEdgeDestIp;
 
   private final Map<Edge, IpSpace> _arpTrueEdgeNextHopIp;
+
+  private final Map<String, Map<String, Set<Ip>>> _interfaceOwnedIps;
 
   private final Map<String, Map<String, IpSpace>> _ipsRoutedOutInterfaces;
 
@@ -55,6 +58,7 @@ public class ForwardingAnalysisImpl implements ForwardingAnalysis {
       SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs,
       Map<String, Map<String, Fib>> fibs,
       Topology topology) {
+    _interfaceOwnedIps = CommonUtil.computeInterfaceOwnedIps(configurations, false);
     _nullRoutedIps = computeNullRoutedIps(ribs, fibs);
     _routableIps = computeRoutableIps(ribs);
     _routesWithNextHop = computeRoutesWithNextHop(fibs);
@@ -79,6 +83,7 @@ public class ForwardingAnalysisImpl implements ForwardingAnalysis {
       Map<Edge, IpSpace> arpTrueEdge,
       Map<Edge, IpSpace> arpTrueEdgeDestIp,
       Map<Edge, IpSpace> arpTrueEdgeNextHopIp,
+      Map<String, Map<String, Set<Ip>>> interfaceOwnedIps,
       Map<String, Map<String, IpSpace>> ipsRoutedOutInterfaces,
       Map<String, Map<String, Map<String, IpSpace>>> neighborUnreachable,
       Map<String, Map<String, Map<String, IpSpace>>> neighborUnreachableArpDestIp,
@@ -94,6 +99,7 @@ public class ForwardingAnalysisImpl implements ForwardingAnalysis {
     _nullRoutedIps = nullRoutedIps;
     _routableIps = routableIps;
     _routesWithNextHop = routesWithNextHop;
+    _interfaceOwnedIps = interfaceOwnedIps;
     _ipsRoutedOutInterfaces = ipsRoutedOutInterfaces;
     _arpReplies = arpReplies;
     _someoneReplies = someoneReplies;
@@ -229,6 +235,10 @@ public class ForwardingAnalysisImpl implements ForwardingAnalysis {
   IpSpace computeInterfaceArpReplies(
       Interface iface, IpSpace routableIpsForThisVrf, IpSpace ipsRoutedThroughInterface) {
     IpSpace ipsAssignedToThisInterface = computeIpsAssignedToThisInterface(iface);
+    if (ipsAssignedToThisInterface == EmptyIpSpace.INSTANCE) {
+      // if no IPs are assigned to this interface, it replies to no ARP requests.
+      return EmptyIpSpace.INSTANCE;
+    }
     /* Accept IPs assigned to this interface */
     AclIpSpace.Builder interfaceArpReplies = AclIpSpace.permitting(ipsAssignedToThisInterface);
     if (iface.getProxyArp()) {
@@ -243,12 +253,12 @@ public class ForwardingAnalysisImpl implements ForwardingAnalysis {
 
   @VisibleForTesting
   IpSpace computeIpsAssignedToThisInterface(Interface iface) {
+    Set<Ip> ips = _interfaceOwnedIps.get(iface.getOwner().getHostname()).get(iface.getName());
+    if (ips == null || ips.isEmpty()) {
+      return EmptyIpSpace.INSTANCE;
+    }
     IpWildcardSetIpSpace.Builder ipsAssignedToThisInterfaceBuilder = IpWildcardSetIpSpace.builder();
-    iface
-        .getAllAddresses()
-        .stream()
-        .map(InterfaceAddress::getIp)
-        .forEach(ip -> ipsAssignedToThisInterfaceBuilder.including(new IpWildcard(ip)));
+    ips.forEach(ip -> ipsAssignedToThisInterfaceBuilder.including(new IpWildcard(ip)));
     IpWildcardSetIpSpace ipsAssignedToThisInterface = ipsAssignedToThisInterfaceBuilder.build();
     return ipsAssignedToThisInterface;
   }

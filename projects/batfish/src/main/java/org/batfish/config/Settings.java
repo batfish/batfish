@@ -11,16 +11,13 @@ import org.batfish.common.BaseSettings;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.CoordConsts;
-import org.batfish.common.PedanticBatfishException;
-import org.batfish.common.RedFlagBatfishException;
-import org.batfish.common.UnimplementedBatfishException;
+import org.batfish.common.Version;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Ip;
-import org.batfish.dataplane.bdp.BdpSettings;
 import org.batfish.grammar.GrammarSettings;
 import org.batfish.main.Driver.RunMode;
 
-public final class Settings extends BaseSettings implements BdpSettings, GrammarSettings {
+public final class Settings extends BaseSettings implements GrammarSettings {
 
   public static final class EnvironmentSettings {
 
@@ -277,6 +274,8 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
     private Path _protocolDependencyGraphZipPath;
 
+    private Path _referenceLibraryPath;
+
     private Path _serializeVendorPath;
 
     private Path _testRigPath;
@@ -333,6 +332,10 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
     public Path getProtocolDependencyGraphZipPath() {
       return _protocolDependencyGraphZipPath;
+    }
+
+    public Path getReferenceLibraryPath() {
+      return _referenceLibraryPath;
     }
 
     public Path getSerializeVendorPath() {
@@ -394,6 +397,10 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
       _protocolDependencyGraphZipPath = protocolDependencyGraphZipPath;
     }
 
+    public void setReferenceLibraryPath(Path path) {
+      _referenceLibraryPath = path;
+    }
+
     public void setSerializeVendorPath(Path path) {
       _serializeVendorPath = path;
     }
@@ -411,7 +418,7 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
   public static final String ARG_COORDINATOR_HOST = "coordinatorhost";
 
-  private static final String ARG_COORDINATOR_POOL_PORT = "coordinatorpoolport";
+  public static final String ARG_COORDINATOR_POOL_PORT = "coordinatorpoolport";
 
   public static final String ARG_COORDINATOR_REGISTER = "register";
 
@@ -463,6 +470,8 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
   private static final String ARG_PRINT_PARSE_TREES = "ppt";
 
+  private static final String ARG_PRINT_PARSE_TREE_LINE_NUMS = "printparsetreelinenums";
+
   private static final String ARG_PRINT_SYMMETRIC_EDGES = "printsymmetricedges";
 
   public static final String ARG_RUN_MODE = "runmode";
@@ -477,7 +486,7 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
   public static final String ARG_SERVICE_NAME = "servicename";
 
-  private static final String ARG_SERVICE_PORT = "serviceport";
+  public static final String ARG_SERVICE_PORT = "serviceport";
 
   private static final String ARG_TRACING_AGENT_HOST = "tracingagenthost";
 
@@ -490,6 +499,8 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
   private static final String ARG_THROW_ON_PARSER_ERROR = "throwparser";
 
   private static final String ARG_TIMESTAMP = "timestamp";
+
+  private static final String ARG_VERSION = "version";
 
   private static final String ARG_Z3_TIMEOUT = "z3timeout";
 
@@ -602,11 +613,6 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     return _config.getBoolean(BfConsts.COMMAND_ANSWER);
   }
 
-  @Nullable
-  public Path getAnswerJsonPath() {
-    return nullablePath(_config.getString(BfConsts.ARG_ANSWER_JSON_PATH));
-  }
-
   public int getAvailableThreads() {
     return Math.min(Runtime.getRuntime().availableProcessors(), getJobs());
   }
@@ -615,42 +621,12 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     return _baseTestrigSettings;
   }
 
-  @Override
-  public boolean getBdpDetail() {
-    return _config.getBoolean(BfConsts.ARG_BDP_DETAIL);
-  }
-
-  @Override
-  public int getBdpMaxOscillationRecoveryAttempts() {
-    return _config.getInt(BfConsts.ARG_BDP_MAX_OSCILLATION_RECOVERY_ATTEMPTS);
-  }
-
-  @Override
-  public int getBdpMaxRecordedIterations() {
-    return _config.getInt(BfConsts.ARG_BDP_MAX_RECORDED_ITERATIONS);
-  }
-
-  @Override
-  public boolean getBdpPrintAllIterations() {
-    return _config.getBoolean(BfConsts.ARG_BDP_PRINT_ALL_ITERATIONS);
-  }
-
-  @Override
-  public boolean getBdpPrintOscillatingIterations() {
-    return _config.getBoolean(BfConsts.ARG_BDP_PRINT_OSCILLATING_ITERATIONS);
-  }
-
-  @Override
-  public boolean getBdpRecordAllIterations() {
-    return _config.getBoolean(BfConsts.ARG_BDP_RECORD_ALL_ITERATIONS);
-  }
-
   public boolean getCompileEnvironment() {
     return _config.getBoolean(BfConsts.COMMAND_COMPILE_DIFF_ENVIRONMENT);
   }
 
-  public Path getContainerDir() {
-    return Paths.get(_config.getString(BfConsts.ARG_CONTAINER_DIR));
+  public String getContainer() {
+    return _config.getString(BfConsts.ARG_CONTAINER);
   }
 
   public String getCoordinatorHost() {
@@ -758,8 +734,21 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     return _config.getInt(ARG_JOBS);
   }
 
+  @Nullable
   public String getLogFile() {
-    return _config.getString(BfConsts.ARG_LOG_FILE);
+    if (getTaskId() == null) {
+      return null;
+    }
+    String tr = getTestrig();
+    if (getDeltaTestrig() != null && !getDifferential()) {
+      tr = getDeltaTestrig();
+    }
+    return getStorageBase()
+        .resolve(getContainer())
+        .resolve(BfConsts.RELPATH_TESTRIGS_DIR)
+        .resolve(tr)
+        .resolve(getTaskId() + BfConsts.SUFFIX_LOG_FILE)
+        .toString();
   }
 
   public BatfishLogger getLogger() {
@@ -801,10 +790,6 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     return _config.getString(BfConsts.ARG_OUTPUT_ENV);
   }
 
-  public boolean getPedanticAsError() {
-    return _config.getBoolean(BfConsts.ARG_PEDANTIC_AS_ERROR);
-  }
-
   public boolean getPedanticRecord() {
     return !_config.getBoolean(BfConsts.ARG_PEDANTIC_SUPPRESS);
   }
@@ -818,6 +803,11 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     return _config.getBoolean(ARG_PRINT_PARSE_TREES);
   }
 
+  @Override
+  public boolean getPrintParseTreeLineNums() {
+    return _config.getBoolean(ARG_PRINT_PARSE_TREE_LINE_NUMS);
+  }
+
   public boolean getPrintSymmetricEdgePairs() {
     return _config.getBoolean(ARG_PRINT_SYMMETRIC_EDGES);
   }
@@ -829,10 +819,6 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
   @Nullable
   public Path getQuestionPath() {
     return nullablePath(_config.getString(QUESTION_PATH));
-  }
-
-  public boolean getRedFlagAsError() {
-    return _config.getBoolean(BfConsts.ARG_RED_FLAG_AS_ERROR);
   }
 
   public boolean getRedFlagRecord() {
@@ -912,10 +898,15 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     return _config.getString(BfConsts.ARG_SSL_TRUSTSTORE_PASSWORD);
   }
 
+  public Path getStorageBase() {
+    return Paths.get(_config.getString(BfConsts.ARG_STORAGE_BASE));
+  }
+
   public boolean getSynthesizeJsonTopology() {
     return _config.getBoolean(BfConsts.ARG_SYNTHESIZE_JSON_TOPOLOGY);
   }
 
+  @Nullable
   public String getTaskId() {
     return _config.getString(TASK_ID);
   }
@@ -952,10 +943,6 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
   public boolean getTracingEnable() {
     return _config.getBoolean(ARG_TRACING_ENABLE);
-  }
-
-  public boolean getUnimplementedAsError() {
-    return _config.getBoolean(BfConsts.ARG_UNIMPLEMENTED_AS_ERROR);
   }
 
   public boolean getUnimplementedRecord() {
@@ -997,7 +984,6 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
   private void initConfigDefaults() {
     setDefaultProperty(BfConsts.ARG_ANALYSIS_NAME, null);
-    setDefaultProperty(BfConsts.ARG_ANSWER_JSON_PATH, null);
     setDefaultProperty(BfConsts.ARG_BDP_DETAIL, false);
     setDefaultProperty(BfConsts.ARG_BDP_MAX_OSCILLATION_RECOVERY_ATTEMPTS, 0);
     setDefaultProperty(BfConsts.ARG_BDP_MAX_RECORDED_ITERATIONS, 5);
@@ -1005,7 +991,7 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     setDefaultProperty(BfConsts.ARG_BDP_PRINT_OSCILLATING_ITERATIONS, false);
     setDefaultProperty(BfConsts.ARG_BDP_RECORD_ALL_ITERATIONS, false);
     setDefaultProperty(CAN_EXECUTE, true);
-    setDefaultProperty(BfConsts.ARG_CONTAINER_DIR, null);
+    setDefaultProperty(BfConsts.ARG_CONTAINER, null);
     setDefaultProperty(ARG_COORDINATOR_REGISTER, false);
     setDefaultProperty(ARG_COORDINATOR_HOST, "localhost");
     setDefaultProperty(ARG_COORDINATOR_POOL_PORT, CoordConsts.SVC_CFG_POOL_PORT);
@@ -1017,7 +1003,7 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     setDefaultProperty(BfConsts.ARG_DISABLE_UNRECOGNIZED, false);
     setDefaultProperty(
         BfConsts.ARG_ENABLE_CISCO_NX_PARSER,
-        false); // TODO: enable CiscoNxParser by default and remove this flag.
+        true); // TODO: enable CiscoNxParser by default and remove this flag.
     setDefaultProperty(ARG_DISABLE_Z3_SIMPLIFICATION, false);
     setDefaultProperty(BfConsts.ARG_ENVIRONMENT_NAME, BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME);
     setDefaultProperty(ARG_EXIT_ON_FIRST_ERROR, false);
@@ -1036,7 +1022,6 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     setDefaultProperty(ARG_IGNORE_UNSUPPORTED, true);
     setDefaultProperty(ARG_IGNORE_UNKNOWN, true);
     setDefaultProperty(ARG_JOBS, Integer.MAX_VALUE);
-    setDefaultProperty(BfConsts.ARG_LOG_FILE, null);
     setDefaultProperty(ARG_LOG_TEE, false);
     setDefaultProperty(BfConsts.ARG_LOG_LEVEL, "debug");
     setDefaultProperty(ARG_MAX_PARSER_CONTEXT_LINES, 10);
@@ -1046,14 +1031,13 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     setDefaultProperty(ARG_CHECK_BGP_REACHABILITY, true);
     setDefaultProperty(ARG_NO_SHUFFLE, false);
     setDefaultProperty(BfConsts.ARG_OUTPUT_ENV, null);
-    setDefaultProperty(BfConsts.ARG_PEDANTIC_AS_ERROR, false);
     setDefaultProperty(BfConsts.ARG_PEDANTIC_SUPPRESS, false);
     setDefaultProperty(BfConsts.ARG_PRETTY_PRINT_ANSWER, false);
     setDefaultProperty(ARG_PARENT_PID, -1);
     setDefaultProperty(ARG_PRINT_PARSE_TREES, false);
+    setDefaultProperty(ARG_PRINT_PARSE_TREE_LINE_NUMS, false);
     setDefaultProperty(ARG_PRINT_SYMMETRIC_EDGES, false);
     setDefaultProperty(BfConsts.ARG_QUESTION_NAME, null);
-    setDefaultProperty(BfConsts.ARG_RED_FLAG_AS_ERROR, false);
     setDefaultProperty(BfConsts.ARG_RED_FLAG_SUPPRESS, false);
     setDefaultProperty(ARG_RUN_MODE, RunMode.WORKER.toString());
     setDefaultProperty(ARG_SEQUENTIAL, false);
@@ -1068,6 +1052,7 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     setDefaultProperty(BfConsts.ARG_SSL_TRUST_ALL_CERTS, false);
     setDefaultProperty(BfConsts.ARG_SSL_TRUSTSTORE_FILE, null);
     setDefaultProperty(BfConsts.ARG_SSL_TRUSTSTORE_PASSWORD, null);
+    setDefaultProperty(BfConsts.ARG_STORAGE_BASE, null);
     setDefaultProperty(BfConsts.ARG_SYNTHESIZE_JSON_TOPOLOGY, false);
     setDefaultProperty(BfConsts.ARG_TASK_PLUGIN, null);
     setDefaultProperty(ARG_THROW_ON_LEXER_ERROR, true);
@@ -1077,9 +1062,9 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     setDefaultProperty(ARG_TRACING_AGENT_PORT, 5775);
     setDefaultProperty(ARG_TRACING_ENABLE, false);
     setDefaultProperty(BfConsts.ARG_UNRECOGNIZED_AS_RED_FLAG, true);
-    setDefaultProperty(BfConsts.ARG_UNIMPLEMENTED_AS_ERROR, false);
-    setDefaultProperty(BfConsts.ARG_UNIMPLEMENTED_SUPPRESS, true);
+    setDefaultProperty(BfConsts.ARG_UNIMPLEMENTED_SUPPRESS, false);
     setDefaultProperty(BfConsts.ARG_VERBOSE_PARSE, false);
+    setDefaultProperty(ARG_VERSION, false);
     setDefaultProperty(BfConsts.COMMAND_ANALYZE, false);
     setDefaultProperty(BfConsts.COMMAND_ANSWER, false);
     setDefaultProperty(BfConsts.COMMAND_COMPILE_DIFF_ENVIRONMENT, false);
@@ -1090,15 +1075,12 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     setDefaultProperty(BfConsts.COMMAND_REPORT, false);
     setDefaultProperty(BfConsts.COMMAND_VALIDATE_ENVIRONMENT, false);
     setDefaultProperty(ARG_Z3_TIMEOUT, 0);
-    setDefaultProperty(ARG_DATAPLANE_ENGINE_NAME, "bdp");
+    setDefaultProperty(ARG_DATAPLANE_ENGINE_NAME, "ibdp");
   }
 
   private void initOptions() {
 
     addOption(BfConsts.ARG_ANALYSIS_NAME, "name of analysis", ARGNAME_NAME);
-
-    addOption(
-        BfConsts.ARG_ANSWER_JSON_PATH, "save query json output to specified file", ARGNAME_PATH);
 
     addBooleanOption(
         BfConsts.ARG_BDP_DETAIL,
@@ -1136,7 +1118,7 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
         ARG_CHECK_BGP_REACHABILITY,
         "whether to check BGP session reachability during data plane computation");
 
-    addOption(BfConsts.ARG_CONTAINER_DIR, "path to container directory", ARGNAME_PATH);
+    addOption(BfConsts.ARG_CONTAINER, "name of container", ARGNAME_NAME);
 
     addOption(
         ARG_COORDINATOR_HOST,
@@ -1165,6 +1147,10 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
         BfConsts.ARG_DISABLE_UNRECOGNIZED, "disable parser recognition of unrecognized stanzas");
 
     addBooleanOption(ARG_DISABLE_Z3_SIMPLIFICATION, "disable z3 simplification");
+
+    addBooleanOption(
+        BfConsts.ARG_ENABLE_CISCO_NX_PARSER,
+        "use the rewritten BGP parser for Cisco NX-OS devices");
 
     addOption(BfConsts.ARG_ENVIRONMENT_NAME, "name of environment to use", "name");
 
@@ -1231,8 +1217,6 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
     addBooleanOption(ARG_HISTOGRAM, "build histogram of unimplemented features");
 
-    addOption(BfConsts.ARG_LOG_FILE, "path to main log file", ARGNAME_PATH);
-
     addBooleanOption(ARG_LOG_TEE, "print output to both logfile and standard out");
 
     addOption(
@@ -1259,13 +1243,6 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
     addOption(ARG_PARENT_PID, "name of parent PID", ARGNAME_NUMBER);
 
-    addBooleanOption(
-        BfConsts.ARG_PEDANTIC_AS_ERROR,
-        "throws "
-            + PedanticBatfishException.class.getSimpleName()
-            + " for likely harmless warnings (e.g. deviation from good configuration style), "
-            + "instead of emitting warning and continuing");
-
     addBooleanOption(BfConsts.ARG_PEDANTIC_SUPPRESS, "suppresses pedantic warnings");
 
     addBooleanOption(BfConsts.ARG_PRETTY_PRINT_ANSWER, "pretty print answer");
@@ -1273,23 +1250,19 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     addBooleanOption(ARG_PRINT_PARSE_TREES, "print parse trees");
 
     addBooleanOption(
+        ARG_PRINT_PARSE_TREE_LINE_NUMS, "print line numbers when printing parse trees");
+
+    addBooleanOption(
         ARG_PRINT_SYMMETRIC_EDGES, "print topology with symmetric edges adjacent in listing");
 
     addOption(BfConsts.ARG_QUESTION_NAME, "name of question", ARGNAME_NAME);
-
-    addBooleanOption(
-        BfConsts.ARG_RED_FLAG_AS_ERROR,
-        "throws "
-            + RedFlagBatfishException.class.getSimpleName()
-            + " on some recoverable errors (e.g. bad config lines), instead of emitting warning "
-            + "and attempting to recover");
 
     addBooleanOption(BfConsts.ARG_RED_FLAG_SUPPRESS, "suppresses red-flag warnings");
 
     addOption(
         ARG_RUN_MODE,
         "mode to run in",
-        Arrays.stream(RunMode.values()).map(v -> v.toString()).collect(Collectors.joining("|")));
+        Arrays.stream(RunMode.values()).map(Object::toString).collect(Collectors.joining("|")));
 
     addBooleanOption(ARG_SEQUENTIAL, "force sequential operation");
 
@@ -1312,6 +1285,8 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     addBooleanOption(
         BfConsts.ARG_SSL_TRUST_ALL_CERTS,
         "whether to trust all SSL certificates during communication with coordinator");
+
+    addOption(BfConsts.ARG_STORAGE_BASE, "path to the storage base", ARGNAME_PATH);
 
     addBooleanOption(
         BfConsts.ARG_SYNTHESIZE_JSON_TOPOLOGY,
@@ -1336,13 +1311,6 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     addOption(ARG_TRACING_AGENT_PORT, "jaeger agent port", "jaeger_agent_port");
 
     addBooleanOption(ARG_TRACING_ENABLE, "enable tracing");
-
-    addBooleanOption(
-        BfConsts.ARG_UNIMPLEMENTED_AS_ERROR,
-        "throws "
-            + UnimplementedBatfishException.class.getSimpleName()
-            + " when encountering unimplemented configuration directives, instead of emitting "
-            + "warning and ignoring");
 
     addBooleanOption(
         BfConsts.ARG_UNIMPLEMENTED_SUPPRESS,
@@ -1376,6 +1344,8 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     addBooleanOption(
         BfConsts.COMMAND_VALIDATE_ENVIRONMENT, "validate an environment that has been initialized");
 
+    addBooleanOption(ARG_VERSION, "print the version number of the code and exit");
+
     addOption(ARG_Z3_TIMEOUT, "set a timeout (in milliseconds) for Z3 queries", "z3timeout");
 
     addOption(
@@ -1389,7 +1359,6 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     _config.setProperty(CAN_EXECUTE, true);
 
     // SPECIAL OPTIONS
-    getStringOptionValue(BfConsts.ARG_LOG_FILE);
     getStringOptionValue(BfConsts.ARG_LOG_LEVEL);
     if (getBooleanOptionValue(ARG_HELP)) {
       _config.setProperty(CAN_EXECUTE, false);
@@ -1397,11 +1366,16 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
       return;
     }
 
+    if (getBooleanOptionValue(ARG_VERSION)) {
+      _config.setProperty(CAN_EXECUTE, false);
+      System.out.print(Version.getCompleteVersionString());
+      return;
+    }
+
     // REGULAR OPTIONS
     getStringOptionValue(BfConsts.ARG_ANALYSIS_NAME);
     getBooleanOptionValue(BfConsts.COMMAND_ANALYZE);
     getBooleanOptionValue(BfConsts.COMMAND_ANSWER);
-    getPathOptionValue(BfConsts.ARG_ANSWER_JSON_PATH);
     getBooleanOptionValue(BfConsts.ARG_BDP_RECORD_ALL_ITERATIONS);
     getBooleanOptionValue(BfConsts.ARG_BDP_DETAIL);
     getIntOptionValue(BfConsts.ARG_BDP_MAX_OSCILLATION_RECOVERY_ATTEMPTS);
@@ -1410,7 +1384,7 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     getBooleanOptionValue(BfConsts.ARG_BDP_PRINT_OSCILLATING_ITERATIONS);
     getBooleanOptionValue(ARG_CHECK_BGP_REACHABILITY);
     getBooleanOptionValue(BfConsts.COMMAND_COMPILE_DIFF_ENVIRONMENT);
-    getPathOptionValue(BfConsts.ARG_CONTAINER_DIR);
+    getStringOptionValue(BfConsts.ARG_CONTAINER);
     getStringOptionValue(ARG_COORDINATOR_HOST);
     getIntOptionValue(ARG_COORDINATOR_POOL_PORT);
     getBooleanOptionValue(ARG_COORDINATOR_REGISTER);
@@ -1445,13 +1419,12 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     getIntOptionValue(ARG_MAX_RUNTIME_MS);
     getStringOptionValue(BfConsts.ARG_OUTPUT_ENV);
     getIntOptionValue(ARG_PARENT_PID);
-    getBooleanOptionValue(BfConsts.ARG_PEDANTIC_AS_ERROR);
     getBooleanOptionValue(BfConsts.ARG_PEDANTIC_SUPPRESS);
     getBooleanOptionValue(BfConsts.ARG_PRETTY_PRINT_ANSWER);
     getBooleanOptionValue(ARG_PRINT_PARSE_TREES);
+    getBooleanOptionValue(ARG_PRINT_PARSE_TREE_LINE_NUMS);
     getBooleanOptionValue(ARG_PRINT_SYMMETRIC_EDGES);
     getStringOptionValue(BfConsts.ARG_QUESTION_NAME);
-    getBooleanOptionValue(BfConsts.ARG_RED_FLAG_AS_ERROR);
     getBooleanOptionValue(BfConsts.ARG_RED_FLAG_SUPPRESS);
     getBooleanOptionValue(BfConsts.COMMAND_REPORT);
     getStringOptionValue(ARG_RUN_MODE);
@@ -1471,6 +1444,7 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     getBooleanOptionValue(BfConsts.ARG_SSL_TRUST_ALL_CERTS);
     getPathOptionValue(BfConsts.ARG_SSL_TRUSTSTORE_FILE);
     getStringOptionValue(BfConsts.ARG_SSL_TRUSTSTORE_PASSWORD);
+    getPathOptionValue(BfConsts.ARG_STORAGE_BASE);
     getBooleanOptionValue(BfConsts.ARG_SYNTHESIZE_JSON_TOPOLOGY);
     getStringOptionValue(BfConsts.ARG_TASK_PLUGIN);
     getStringOptionValue(BfConsts.ARG_TESTRIG);
@@ -1480,7 +1454,6 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     getStringOptionValue(ARG_TRACING_AGENT_HOST);
     getIntegerOptionValue(ARG_TRACING_AGENT_PORT);
     getBooleanOptionValue(ARG_TRACING_ENABLE);
-    getBooleanOptionValue(BfConsts.ARG_UNIMPLEMENTED_AS_ERROR);
     getBooleanOptionValue(BfConsts.ARG_UNIMPLEMENTED_SUPPRESS);
     getBooleanOptionValue(BfConsts.ARG_UNRECOGNIZED_AS_RED_FLAG);
     getBooleanOptionValue(BfConsts.COMMAND_VALIDATE_ENVIRONMENT);
@@ -1493,44 +1466,16 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     _activeTestrigSettings = activeTestrigSettings;
   }
 
-  @Override
-  public void setBdpDetail(boolean bdpDetail) {
-    _config.setProperty(BfConsts.ARG_BDP_DETAIL, bdpDetail);
-  }
-
-  @Override
-  public void setBdpMaxOscillationRecoveryAttempts(int bdpMaxOscillationRecoveryAttempts) {
-    _config.setProperty(
-        BfConsts.ARG_BDP_MAX_OSCILLATION_RECOVERY_ATTEMPTS, bdpMaxOscillationRecoveryAttempts);
-  }
-
-  @Override
-  public void setBdpMaxRecordedIterations(int bdpMaxRecordedIterations) {
-    _config.setProperty(BfConsts.ARG_BDP_MAX_RECORDED_ITERATIONS, bdpMaxRecordedIterations);
-  }
-
-  @Override
-  public void setBdpPrintAllIterations(boolean bdpPrintAllIterations) {
-    _config.setProperty(BfConsts.ARG_BDP_PRINT_ALL_ITERATIONS, bdpPrintAllIterations);
-  }
-
-  @Override
-  public void setBdpPrintOscillatingIterations(boolean bdpPrintOscillatingIterations) {
-    _config.setProperty(
-        BfConsts.ARG_BDP_PRINT_OSCILLATING_ITERATIONS, bdpPrintOscillatingIterations);
-  }
-
-  @Override
-  public void setBdpRecordAllIterations(boolean bdpRecordAllIterations) {
-    _config.setProperty(BfConsts.ARG_BDP_RECORD_ALL_ITERATIONS, bdpRecordAllIterations);
-  }
-
   public void setCanExecute(boolean canExecute) {
     _config.setProperty(CAN_EXECUTE, canExecute);
   }
 
-  public void setContainerDir(Path containerDir) {
-    _config.setProperty(BfConsts.ARG_CONTAINER_DIR, containerDir.toString());
+  public void setContainer(String container) {
+    _config.setProperty(BfConsts.ARG_CONTAINER, container);
+  }
+
+  public void setDebugFlags(List<String> debugFlags) {
+    _config.setProperty(ARG_DEBUG_FLAGS, debugFlags);
   }
 
   public void setDeltaEnvironmentName(String diffEnvironmentName) {
@@ -1599,6 +1544,11 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     _config.setProperty(ARG_PRINT_PARSE_TREES, printParseTree);
   }
 
+  @Override
+  public void setPrintParseTreeLineNums(boolean printParseTreeLineNums) {
+    _config.setProperty(ARG_PRINT_PARSE_TREE_LINE_NUMS, printParseTreeLineNums);
+  }
+
   public void setQuestionPath(@Nullable Path questionPath) {
     if (questionPath != null) {
       _config.setProperty(QUESTION_PATH, questionPath.toString());
@@ -1641,6 +1591,10 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
   public void setSslTruststorePassword(String sslTruststorePassword) {
     _config.setProperty(BfConsts.ARG_SSL_TRUSTSTORE_PASSWORD, sslTruststorePassword);
+  }
+
+  public void setStorageBase(Path storageBase) {
+    _config.setProperty(BfConsts.ARG_STORAGE_BASE, storageBase.toString());
   }
 
   public void setTaskId(String taskId) {

@@ -14,7 +14,7 @@ set applications application-set appset2 application a3
 set applications application-set appset3 application a1
 set applications application-set appset3 application a4
 set applications application-set appset3 application-set appset4
-set security policies from-zone z1 to-zone z2 policy p1 match application appset2
-set security policies from-zone z1 to-zone z2 policy p1 then permit
-set security policies from-zone z3 to-zone z4 policy p1 match application appset4
 #
+set security policies global policy p1 match application appset2
+set security policies global policy p1 then permit
+set security policies from-zone z1 to-zone z4 policy p1 match application appset4

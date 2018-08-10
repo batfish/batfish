@@ -2,6 +2,8 @@ package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import javax.annotation.Nonnull;
+import org.batfish.datamodel.ospf.OspfMetricType;
 
 public class OspfExternalType2Route extends OspfExternalRoute {
 
@@ -55,7 +57,7 @@ public class OspfExternalType2Route extends OspfExternalRoute {
   }
 
   @Override
-  public int routeCompare(AbstractRoute rhs) {
+  public int routeCompare(@Nonnull AbstractRoute rhs) {
     if (getClass() != rhs.getClass()) {
       return 0;
     }

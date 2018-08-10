@@ -7,7 +7,6 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import org.batfish.common.BatfishLogger;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.InterfaceAddress;
@@ -34,7 +33,7 @@ public class SecurityGroup implements AwsVpcEntity, Serializable {
 
   private final Set<IpWildcard> _usersIpSpace = new HashSet<>();
 
-  public SecurityGroup(JSONObject jObj, BatfishLogger logger) throws JSONException {
+  public SecurityGroup(JSONObject jObj) throws JSONException {
     _ipPermsEgress = new LinkedList<>();
     _ipPermsIngress = new LinkedList<>();
     _groupId = jObj.getString(JSON_KEY_GROUP_ID);
@@ -43,10 +42,10 @@ public class SecurityGroup implements AwsVpcEntity, Serializable {
     // logger.debugf("doing security group %s\n", _groupId);
 
     JSONArray permsEgress = jObj.getJSONArray(JSON_KEY_IP_PERMISSIONS_EGRESS);
-    initIpPerms(_ipPermsEgress, permsEgress, logger);
+    initIpPerms(_ipPermsEgress, permsEgress);
 
     JSONArray permsIngress = jObj.getJSONArray(JSON_KEY_IP_PERMISSIONS);
-    initIpPerms(_ipPermsIngress, permsIngress, logger);
+    initIpPerms(_ipPermsIngress, permsIngress);
   }
 
   private void addEgressAccessLines(
@@ -90,6 +89,7 @@ public class SecurityGroup implements AwsVpcEntity, Serializable {
                                   .setIpProtocols(srcHeaderSpace.getIpProtocols())
                                   .setDstIps(srcHeaderSpace.getSrcIps())
                                   .setSrcPorts(srcHeaderSpace.getDstPorts())
+                                  .setTcpFlags(ImmutableSet.of(TcpFlags.ACK_TCP_FLAG))
                                   .build()))
                       .setAction(ipAccessListLine.getAction())
                       .build();
@@ -110,22 +110,15 @@ public class SecurityGroup implements AwsVpcEntity, Serializable {
                                   .setIpProtocols(srcHeaderSpace.getIpProtocols())
                                   .setSrcIps(srcHeaderSpace.getDstIps())
                                   .setSrcPorts(srcHeaderSpace.getDstPorts())
+                                  .setTcpFlags(ImmutableSet.of(TcpFlags.ACK_TCP_FLAG))
                                   .build()))
                       .setAction(ipAccessListLine.getAction())
                       .build();
                 })
             .collect(ImmutableList.toImmutableList());
 
-    // denying SYN-only packets to prevent new TCP connections
-    IpAccessListLine rejectSynOnly =
-        IpAccessListLine.rejectingHeaderSpace(
-            HeaderSpace.builder().setTcpFlags(ImmutableSet.of(TcpFlags.SYN_ONLY)).build());
-    inboundRules.add(rejectSynOnly);
-    outboundRules.add(rejectSynOnly);
-
-    // adding reverse inbound/outbound rules for stateful allowance of packets
-    inboundRules.addAll(reverseOutboundRules);
-    outboundRules.addAll(reverseInboundRules);
+    addToBeginning(inboundRules, reverseOutboundRules);
+    addToBeginning(outboundRules, reverseInboundRules);
   }
 
   public void addInOutAccessLines(
@@ -171,13 +164,19 @@ public class SecurityGroup implements AwsVpcEntity, Serializable {
         .forEach(ipWildcard -> getUsersIpSpace().add(ipWildcard));
   }
 
-  private void initIpPerms(
-      List<IpPermissions> ipPermsList, JSONArray ipPermsJson, BatfishLogger logger)
+  private void initIpPerms(List<IpPermissions> ipPermsList, JSONArray ipPermsJson)
       throws JSONException {
 
     for (int index = 0; index < ipPermsJson.length(); index++) {
       JSONObject childObject = ipPermsJson.getJSONObject(index);
-      ipPermsList.add(new IpPermissions(childObject, logger));
+      ipPermsList.add(new IpPermissions(childObject));
+    }
+  }
+
+  private static void addToBeginning(
+      List<IpAccessListLine> ipAccessListLines, List<IpAccessListLine> toBeAdded) {
+    for (int i = toBeAdded.size() - 1; i >= 0; i--) {
+      ipAccessListLines.add(0, toBeAdded.get(i));
     }
   }
 }

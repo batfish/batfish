@@ -18,7 +18,6 @@ import org.batfish.z3.expr.LitIntExpr;
 import org.batfish.z3.expr.NotExpr;
 import org.batfish.z3.expr.QueryStatement;
 import org.batfish.z3.expr.RuleStatement;
-import org.batfish.z3.expr.SaneExpr;
 import org.batfish.z3.state.NumberedQuery;
 
 /**
@@ -29,11 +28,7 @@ import org.batfish.z3.state.NumberedQuery;
 public class EarliestMoreGeneralReachableLineQuerySynthesizer
     extends FirstUnsatQuerySynthesizer<AclLine, Integer> {
 
-  private String _aclName;
-
   private List<AclLine> _earlierReachableLines;
-
-  private String _hostname;
 
   private IpAccessList _list;
 
@@ -57,8 +52,6 @@ public class EarliestMoreGeneralReachableLineQuerySynthesizer
     super(unreachableLine);
     _unreachableLine = unreachableLine;
     _earlierReachableLines = earlierReachableLines;
-    _hostname = _unreachableLine.getHostname();
-    _aclName = _unreachableLine.getAclName();
     _list = list;
     _namedIpSpaces = ImmutableMap.copyOf(namedIpSpaces);
     _nodeAcls = ImmutableMap.copyOf(nodeAcls);
@@ -98,9 +91,7 @@ public class EarliestMoreGeneralReachableLineQuerySynthesizer
           new BasicRuleStatement(
               new AndExpr(
                   ImmutableList.of(
-                      new NotExpr(matchEarlierLineHeaderSpace),
-                      matchUnreachableLineHeaderSpace,
-                      SaneExpr.INSTANCE)),
+                      new NotExpr(matchEarlierLineHeaderSpace), matchUnreachableLineHeaderSpace)),
               queryRel));
       QueryStatement query = new QueryStatement(queryRel);
       queries.add(query);
@@ -111,10 +102,5 @@ public class EarliestMoreGeneralReachableLineQuerySynthesizer
         .setQueries(queries.build())
         .setRules(rules.build())
         .build();
-  }
-
-  @Override
-  public ReachabilityProgram synthesizeBaseProgram(Synthesizer synthesizer) {
-    return synthesizer.synthesizeNodAclProgram(_hostname, _aclName);
   }
 }

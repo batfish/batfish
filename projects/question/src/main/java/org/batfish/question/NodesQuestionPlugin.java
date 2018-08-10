@@ -117,6 +117,12 @@ public class NodesQuestionPlugin extends QuestionPlugin {
           }
         }
         for (Vrf vrf : node.getVrfs().values()) {
+          if (!vrf.getEigrpProcesses().isEmpty()) {
+            _routingProtocols.add(RoutingProtocol.EIGRP);
+            break;
+          }
+        }
+        for (Vrf vrf : node.getVrfs().values()) {
           if (vrf.getIsisProcess() != null) {
             _routingProtocols.add(RoutingProtocol.ISIS);
             break;
@@ -472,8 +478,8 @@ public class NodesQuestionPlugin extends QuestionPlugin {
    * @type Nodes onefile
    * @param nodeRegex Regular expression for names of nodes to include. Default value is '.*' (all
    *     nodes).
-   * @param nodeType Set of nodes to focus on among (BGP, ISIS, OSPF). Default is empty set ('[]')
-   *     which indicates all types.
+   * @param nodeType Set of nodes to focus on among (BGP, EIGRP, ISIS, OSPF). Default is empty set
+   *     ('[]') which indicates all types.
    * @param summary (True|False) which indicates if the full configuration or a summarized view
    *     should be output. Default is True.
    * @example bf_answer("Nodes", nodeType=["bgp"], nodeRegex="as1.*", summary=False) Outputs the

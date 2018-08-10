@@ -1,206 +1,75 @@
 package org.batfish.common;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Strings.isNullOrEmpty;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import java.io.IOException;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Map.Entry;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.grammar.BatfishCombinedParser;
-import org.batfish.grammar.ParseTreePrettyPrinter;
 
-@JsonSerialize(using = Warnings.Serializer.class)
-@JsonDeserialize(using = Warnings.Deserializer.class)
 public class Warnings implements Serializable {
-
-  public static class Deserializer extends JsonDeserializer<Warnings> {
-
-    @Override
-    public Warnings deserialize(JsonParser parser, DeserializationContext ctx)
-        throws IOException, JsonProcessingException {
-      JsonNode node = parser.getCodec().readTree(parser);
-      Warnings warnings = new Warnings();
-      if (node.has(PEDANTIC_VAR)) {
-        JsonNode warningsNode = node.get(PEDANTIC_VAR);
-        fillWarningList(warnings._pedanticWarnings, warningsNode);
-      }
-      if (node.has(RED_FLAGS_VAR)) {
-        JsonNode warningsNode = node.get(RED_FLAGS_VAR);
-        fillWarningList(warnings._redFlagWarnings, warningsNode);
-      }
-      if (node.has(UNIMPLEMENTED_VAR)) {
-        JsonNode warningsNode = node.get(UNIMPLEMENTED_VAR);
-        fillWarningList(warnings._unimplementedWarnings, warningsNode);
-      }
-      return warnings;
-    }
-
-    private void fillWarningList(List<Warning> warnings, JsonNode node) {
-      for (Iterator<Entry<String, JsonNode>> iter = node.fields(); iter.hasNext(); ) {
-        Entry<String, JsonNode> e = iter.next();
-        String msg = e.getValue().asText();
-        int colonIndex = msg.indexOf(":");
-        String tag = msg.substring(0, colonIndex);
-        String text = msg.substring(colonIndex + 2, msg.length());
-        Warning warning = new Warning(text, tag);
-        warnings.add(warning);
-      }
-    }
-  }
-
-  public static class Serializer extends JsonSerializer<Warnings> {
-
-    @Override
-    public void serialize(Warnings value, JsonGenerator jgen, SerializerProvider provider)
-        throws IOException, JsonProcessingException {
-      jgen.writeStartObject();
-      if (!value._pedanticWarnings.isEmpty()) {
-        jgen.writeFieldName(PEDANTIC_VAR);
-        jgen.writeStartObject();
-        for (int i = 0; i < value._pedanticWarnings.size(); i++) {
-          Warning taggedWarning = value._pedanticWarnings.get(i);
-          String text = taggedWarning.getFirst();
-          String tag = taggedWarning.getSecond();
-          String msg = tag + ": " + text;
-          jgen.writeFieldName(Integer.toString(i + 1));
-          jgen.writeString(msg);
-        }
-        jgen.writeEndObject();
-      }
-      if (!value._redFlagWarnings.isEmpty()) {
-        jgen.writeFieldName(RED_FLAGS_VAR);
-        jgen.writeStartObject();
-        for (int i = 0; i < value._redFlagWarnings.size(); i++) {
-          Warning taggedWarning = value._redFlagWarnings.get(i);
-          String text = taggedWarning.getFirst();
-          String tag = taggedWarning.getSecond();
-          String msg = tag + ": " + text;
-          jgen.writeFieldName(Integer.toString(i + 1));
-          jgen.writeString(msg);
-        }
-        jgen.writeEndObject();
-      }
-      if (!value._unimplementedWarnings.isEmpty()) {
-        jgen.writeFieldName(UNIMPLEMENTED_VAR);
-        jgen.writeStartObject();
-        for (int i = 0; i < value._unimplementedWarnings.size(); i++) {
-          Warning taggedWarning = value._unimplementedWarnings.get(i);
-          String text = taggedWarning.getFirst();
-          String tag = taggedWarning.getSecond();
-          String msg = tag + ": " + text;
-          jgen.writeFieldName(Integer.toString(i + 1));
-          jgen.writeString(msg);
-        }
-        jgen.writeEndObject();
-      }
-      jgen.writeEndObject();
-    }
-  }
+  private static final long serialVersionUID = 1L;
 
   private static final String MISCELLANEOUS = "MISCELLANEOUS";
 
-  private static final String PEDANTIC_VAR = "Pedantic complaints";
+  private static final String PROP_PEDANTIC = "Pedantic complaints";
 
-  private static final String RED_FLAGS_VAR = "Red flags";
+  private static final String PROP_RED_FLAGS = "Red flags";
 
-  /** */
-  private static final long serialVersionUID = 1L;
-
-  private static final String UNIMPLEMENTED_VAR = "Unimplemented features";
-
-  private transient boolean _pedanticAsError;
+  private static final String PROP_UNIMPLEMENTED = "Unimplemented features";
 
   private transient boolean _pedanticRecord;
 
-  protected final List<Warning> _pedanticWarnings;
-
-  private transient boolean _printParseTree;
-
-  private transient boolean _redFlagAsError;
+  private final List<Warning> _pedanticWarnings;
 
   private transient boolean _redFlagRecord;
 
-  protected final List<Warning> _redFlagWarnings;
-
-  private transient boolean _unimplementedAsError;
+  private final List<Warning> _redFlagWarnings;
 
   private transient boolean _unimplementedRecord;
 
-  protected final List<Warning> _unimplementedWarnings;
+  private final List<Warning> _unimplementedWarnings;
 
-  public Warnings() {
-    _pedanticWarnings = new ArrayList<>();
-    _redFlagWarnings = new ArrayList<>();
-    _unimplementedWarnings = new ArrayList<>();
+  @JsonCreator
+  public Warnings(
+      @Nullable @JsonProperty(PROP_PEDANTIC) List<Warning> pedanticWarnings,
+      @Nullable @JsonProperty(PROP_RED_FLAGS) List<Warning> redFlagWarnings,
+      @Nullable @JsonProperty(PROP_UNIMPLEMENTED) List<Warning> unimplementedWarnings) {
+    _pedanticWarnings = firstNonNull(pedanticWarnings, new LinkedList<>());
+    _redFlagWarnings = firstNonNull(redFlagWarnings, new LinkedList<>());
+    _unimplementedWarnings = firstNonNull(unimplementedWarnings, new LinkedList<>());
   }
 
-  public Warnings(
-      boolean pedanticAsError,
-      boolean pedanticRecord,
-      boolean redFlagAsError,
-      boolean redFlagRecord,
-      boolean unimplementedAsError,
-      boolean unimplementedRecord,
-      boolean printParseTree) {
-    this();
-    _pedanticAsError = pedanticAsError;
+  public Warnings() {
+    this(false, false, false);
+  }
+
+  public Warnings(boolean pedanticRecord, boolean redFlagRecord, boolean unimplementedRecord) {
+    this(null, null, null);
     _pedanticRecord = pedanticRecord;
-    _printParseTree = printParseTree;
-    _redFlagAsError = redFlagAsError;
     _redFlagRecord = redFlagRecord;
-    _unimplementedAsError = unimplementedAsError;
     _unimplementedRecord = unimplementedRecord;
   }
 
-  public boolean getPedanticAsError() {
-    return _pedanticAsError;
-  }
-
-  public boolean getPedanticRecord() {
-    return _pedanticRecord;
-  }
-
+  @JsonProperty(PROP_PEDANTIC)
   public List<Warning> getPedanticWarnings() {
     return _pedanticWarnings;
   }
 
-  public boolean getPrintParseTree() {
-    return _printParseTree;
-  }
-
-  public boolean getRedFlagAsError() {
-    return _redFlagAsError;
-  }
-
-  public boolean getRedFlagRecord() {
-    return _redFlagRecord;
-  }
-
+  @JsonProperty(PROP_RED_FLAGS)
   public List<Warning> getRedFlagWarnings() {
     return _redFlagWarnings;
   }
 
-  public boolean getUnimplementedAsError() {
-    return _unimplementedAsError;
-  }
-
-  public boolean getUnimplementedRecord() {
-    return _unimplementedRecord;
-  }
-
+  @JsonProperty(PROP_UNIMPLEMENTED)
   public List<Warning> getUnimplementedWarnings() {
     return _unimplementedWarnings;
   }
@@ -213,15 +82,14 @@ public class Warnings implements Serializable {
   }
 
   public void pedantic(String msg) {
+    if (!_pedanticRecord) {
+      return;
+    }
     pedantic(msg, MISCELLANEOUS);
   }
 
   public void pedantic(String msg, String tag) {
-    if (_pedanticAsError) {
-      throw new PedanticBatfishException(msg);
-    } else if (_pedanticRecord) {
-      _pedanticWarnings.add(new Warning(msg, tag));
-    }
+    _pedanticWarnings.add(new Warning(msg, tag));
   }
 
   public void redFlag(String msg) {
@@ -229,92 +97,45 @@ public class Warnings implements Serializable {
   }
 
   public void redFlag(String msg, String tag) {
-    if (_redFlagAsError) {
-      throw new RedFlagBatfishException(msg);
-    } else if (_redFlagRecord) {
-      _redFlagWarnings.add(new Warning(msg, tag));
-    }
-  }
-
-  public void setPedanticAsError(boolean pedanticAsError) {
-    _pedanticAsError = pedanticAsError;
-  }
-
-  public void setPedanticRecord(boolean pedanticRecord) {
-    _pedanticRecord = pedanticRecord;
-  }
-
-  public void setPrintParseTree(boolean printParseTree) {
-    _printParseTree = printParseTree;
-  }
-
-  public void setRedFlagAsError(boolean redFlagAsError) {
-    _redFlagAsError = redFlagAsError;
-  }
-
-  public void setRedFlagRecord(boolean redFlagRecord) {
-    _redFlagRecord = redFlagRecord;
-  }
-
-  public void setUnimplementedAsError(boolean unimplementedAsError) {
-    _unimplementedAsError = unimplementedAsError;
-  }
-
-  public void setUnimplementedRecord(boolean unimplementedRecord) {
-    _unimplementedRecord = unimplementedRecord;
-  }
-
-  public void todo(
-      ParserRuleContext ctx, String feature, BatfishCombinedParser<?, ?> parser, String text) {
-    if (!_unimplementedRecord && !_unimplementedAsError) {
+    if (!_redFlagRecord) {
       return;
     }
-    String prefix = "WARNING: UNIMPLEMENTED: " + (_unimplementedWarnings.size() + 1) + ": ";
-    StringBuilder sb = new StringBuilder();
-    List<String> ruleNames = Arrays.asList(parser.getParser().getRuleNames());
-    String ruleStack = ctx.toString(ruleNames);
-    sb.append(
-        prefix
-            + "Missing implementation for top (leftmost) parser rule in stack: '"
-            + ruleStack
-            + "'.\n");
-    sb.append(prefix + "Unimplemented feature: " + feature + "\n");
-    sb.append(prefix + "Rule context follows:\n");
-    int start = ctx.start.getStartIndex();
-    int startLine = ctx.start.getLine();
-    int end = ctx.stop.getStopIndex();
-    String ruleText = text.substring(start, end + 1);
-    String[] ruleTextLines = ruleText.split("\\n", -1);
-    for (int line = startLine, i = 0; i < ruleTextLines.length; line++, i++) {
-      String contextPrefix = prefix + " line " + line + ": ";
-      sb.append(contextPrefix + ruleTextLines[i] + "\n");
-    }
-    if (_printParseTree) {
-      sb.append(prefix + "Parse tree follows:\n");
-      String parseTreePrefix = prefix + "PARSE TREE: ";
-      String parseTreeText = ParseTreePrettyPrinter.print(ctx, parser);
-      String[] parseTreeLines = parseTreeText.split("\n", -1);
-      for (String parseTreeLine : parseTreeLines) {
-        sb.append(parseTreePrefix + parseTreeLine + "\n");
-      }
-    }
-    String warning = sb.toString();
-    if (_unimplementedAsError) {
-      throw new UnimplementedBatfishException(warning);
-    } else {
-      _unimplementedWarnings.add(new Warning(sb.toString(), "UNIMPLEMENTED"));
-    }
+    _redFlagWarnings.add(new Warning(msg, tag));
+  }
+
+  /**
+   * Adds a note that there is work to do to handle the given {@link ParserRuleContext}. The output
+   * will include the text of the given {@code line} and, for debugging/implementation, the current
+   * parser rule stack, and the given {@code comment} if present.
+   */
+  public void todo(
+      @Nonnull ParserRuleContext ctx,
+      @Nonnull String line,
+      @Nonnull BatfishCombinedParser<?, ?> parser,
+      @Nullable String comment) {
+    String commentMsg = isNullOrEmpty(comment) ? "" : String.format("[comment: %s] ", comment);
+    String ruleStack = ctx.toString(Arrays.asList(parser.getParser().getRuleNames()));
+
+    unimplemented(
+        String.format("%s %s[Batfish parser context: %s]", line.trim(), commentMsg, ruleStack));
+  }
+
+  /** @see #todo(ParserRuleContext, String, BatfishCombinedParser, String) */
+  public void todo(
+      @Nonnull ParserRuleContext ctx,
+      @Nonnull String line,
+      @Nonnull BatfishCombinedParser<?, ?> parser) {
+    todo(ctx, line, parser, /* no comment */ null);
   }
 
   public void unimplemented(String msg) {
-    unimplemented(msg, MISCELLANEOUS);
+    unimplemented(msg, "UNIMPLEMENTED");
   }
 
   public void unimplemented(String msg, String tag) {
-    if (_unimplementedAsError) {
-      throw new UnimplementedBatfishException(msg);
-    } else if (_unimplementedRecord) {
-      _unimplementedWarnings.add(new Warning(msg, tag));
+    if (!_unimplementedRecord) {
+      return;
     }
+    _unimplementedWarnings.add(new Warning(msg, tag));
   }
 }

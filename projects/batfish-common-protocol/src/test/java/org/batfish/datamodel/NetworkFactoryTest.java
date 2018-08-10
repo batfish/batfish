@@ -2,14 +2,16 @@ package org.batfish.datamodel;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.isIn;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
 
 import org.batfish.datamodel.matchers.OspfAreaMatchers;
+import org.batfish.datamodel.ospf.OspfArea;
+import org.batfish.datamodel.ospf.OspfProcess;
 import org.junit.Test;
 
 public class NetworkFactoryTest {
@@ -26,9 +28,9 @@ public class NetworkFactoryTest {
     Configuration c1 = cb.build();
     Configuration c2 = cb.build();
 
-    assertThat(c1.getName(), is(notNullValue()));
-    assertThat(c2.getName(), is(notNullValue()));
-    assertThat(c1.getName(), not(equalTo(c2.getName())));
+    assertThat(c1.getHostname(), is(notNullValue()));
+    assertThat(c2.getHostname(), is(notNullValue()));
+    assertThat(c1.getHostname(), not(equalTo(c2.getHostname())));
   }
 
   @Test
@@ -44,9 +46,9 @@ public class NetworkFactoryTest {
     assertThat(v1.getName(), is(notNullValue()));
     assertThat(v2.getName(), is(notNullValue()));
     assertThat(v1.getName(), not(equalTo(v2.getName())));
-    assertThat(v1.getName(), not(isIn(c.getVrfs().keySet())));
-    assertThat(v2.getName(), not(isIn(c.getVrfs().keySet())));
-    assertThat(v3.getName(), isIn(c.getVrfs().keySet()));
+    assertThat(c.getVrfs(), not(hasKey(v1.getName())));
+    assertThat(c.getVrfs(), not(hasKey(v2.getName())));
+    assertThat(c.getVrfs(), hasKey(v3.getName()));
   }
 
   @Test
@@ -64,14 +66,14 @@ public class NetworkFactoryTest {
 
     assertThat(i1.getName(), is(notNullValue()));
     assertThat(i1.getName(), not(equalTo(i2.getName())));
-    assertThat(i1.getName(), not(isIn(c.getInterfaces().keySet())));
+    assertThat(c.getInterfaces(), not(hasKey(i1.getName())));
     assertThat(i2.getName(), is(notNullValue()));
-    assertThat(i2.getName(), not(isIn(c.getInterfaces().keySet())));
-    assertThat(i3.getName(), isIn(c.getInterfaces().keySet()));
+    assertThat(c.getInterfaces(), not(hasKey(i2.getName())));
+    assertThat(c.getInterfaces(), hasKey(i3.getName()));
     assertThat(i3.getOwner(), sameInstance(c));
-    assertThat(i3.getName(), not(isIn(vrf.getInterfaces().keySet())));
-    assertThat(i4.getName(), isIn(c.getInterfaces().keySet()));
-    assertThat(i4.getName(), isIn(vrf.getInterfaces().keySet()));
+    assertThat(vrf.getInterfaces(), not(hasKey(i3.getName())));
+    assertThat(c.getInterfaces(), hasKey(i4.getName()));
+    assertThat(vrf.getInterfaces(), hasKey(i4.getName()));
     assertThat(i4.getVrf(), sameInstance(vrf));
   }
 

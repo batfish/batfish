@@ -52,9 +52,9 @@ public class MultipliedAs extends AsPathListExpr {
   }
 
   @Override
-  public List<Integer> evaluate(Environment environment) {
-    ImmutableList.Builder<Integer> listBuilder = ImmutableList.builder();
-    int as = _expr.evaluate(environment);
+  public List<Long> evaluate(Environment environment) {
+    ImmutableList.Builder<Long> listBuilder = ImmutableList.builder();
+    long as = _expr.evaluate(environment);
     int number = _number.evaluate(environment);
     for (int i = 0; i < number; i++) {
       listBuilder.add(as);

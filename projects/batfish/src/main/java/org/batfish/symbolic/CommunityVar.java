@@ -8,7 +8,7 @@ import javax.annotation.Nullable;
  * Representation of a community variable for the symbolic encoding. Configuration languages allow
  * users match community values using either <b>exact matches</b> or <b>regular expression</b>
  * matches. For example, a regular expression match such as .*:65001 will match any community string
- * that ends with 65001. >
+ * that ends with 65001.
  *
  * <p>To encode community semantics, the model introduces a single new boolean variable for every
  * exact match, and two new boolean variables for every regex match. The first variable says whether

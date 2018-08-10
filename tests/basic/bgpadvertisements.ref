@@ -146,12 +146,78 @@
               2
             ],
             [
+              3
+            ],
+            [
+              1
+            ]
+          ],
+          "communities" : [
+            65539,
+            131075,
+            196610
+          ],
+          "dstIp" : "10.23.21.3",
+          "dstNode" : "as3border1",
+          "dstVrf" : "default",
+          "localPreference" : 100,
+          "med" : 50,
+          "network" : "1.0.1.0/24",
+          "nextHopIp" : "10.23.21.2",
+          "originType" : "igp",
+          "originatorIp" : "2.1.1.2",
+          "srcIp" : "10.23.21.2",
+          "srcNode" : "as2border2",
+          "srcProtocol" : "bgp",
+          "srcVrf" : "default",
+          "type" : "ebgp_sent",
+          "weight" : -1
+        },
+        {
+          "asPath" : [
+            [
+              2
+            ],
+            [
               1
             ]
           ],
           "communities" : [
             65538,
             131075
+          ],
+          "dstIp" : "10.23.21.3",
+          "dstNode" : "as3border1",
+          "dstVrf" : "default",
+          "localPreference" : 100,
+          "med" : 50,
+          "network" : "1.0.2.0/24",
+          "nextHopIp" : "10.23.21.2",
+          "originType" : "igp",
+          "originatorIp" : "2.1.1.2",
+          "srcIp" : "10.23.21.2",
+          "srcNode" : "as2border2",
+          "srcProtocol" : "bgp",
+          "srcVrf" : "default",
+          "type" : "ebgp_sent",
+          "weight" : -1
+        },
+        {
+          "asPath" : [
+            [
+              2
+            ],
+            [
+              3
+            ],
+            [
+              1
+            ]
+          ],
+          "communities" : [
+            65539,
+            131075,
+            196610
           ],
           "dstIp" : "10.23.21.3",
           "dstNode" : "as3border1",

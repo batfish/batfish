@@ -1,16 +1,23 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
+import java.util.Collections;
+import java.util.Objects;
 import java.util.SortedMap;
 import java.util.SortedSet;
-import java.util.TreeMap;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.util.ComparableStructure;
 
+@ParametersAreNonnullByDefault
 @JsonSchemaDescription("An IPV4 firewall zone")
 public final class Zone extends ComparableStructure<String> {
 
@@ -29,45 +36,24 @@ public final class Zone extends ComparableStructure<String> {
   /** */
   private static final long serialVersionUID = 1L;
 
-  private IpAccessList _fromHostFilter;
+  @Nullable private String _fromHostFilterName;
 
-  private transient String _fromHostFilterName;
+  @Nullable private String _inboundFilterName;
 
-  private IpAccessList _inboundFilter;
+  @Nonnull private SortedMap<String, String> _inboundInterfaceFiltersNames;
 
-  private transient String _inboundFilterName;
+  @Nonnull private SortedSet<String> _interfaces;
 
-  private SortedMap<String, IpAccessList> _inboundInterfaceFilters;
+  @Nullable private String _toHostFilterName;
 
-  private transient SortedMap<String, String> _inboundInterfaceFiltersNames;
-
-  private SortedSet<String> _interfaces;
-
-  private IpAccessList _toHostFilter;
-
-  private transient String _toHostFilterName;
-
-  private SortedMap<String, IpAccessList> _toZonePolicies;
-
-  private transient SortedMap<String, String> _toZonePoliciesNames;
+  @Nonnull private SortedMap<String, String> _toZonePoliciesNames;
 
   @JsonCreator
   public Zone(@JsonProperty(PROP_NAME) String name) {
     super(name);
+    _inboundInterfaceFiltersNames = ImmutableSortedMap.of();
     _interfaces = ImmutableSortedSet.of();
-  }
-
-  public Zone(
-      String name,
-      IpAccessList inboundFilter,
-      IpAccessList fromHostFilter,
-      IpAccessList toHostFilter) {
-    super(name);
-    _inboundFilter = inboundFilter;
-    _inboundInterfaceFilters = new TreeMap<>();
-    _fromHostFilter = fromHostFilter;
-    _toHostFilter = toHostFilter;
-    _toZonePolicies = new TreeMap<>();
+    _toZonePoliciesNames = ImmutableSortedMap.of();
   }
 
   @Override
@@ -78,60 +64,28 @@ public final class Zone extends ComparableStructure<String> {
       return false;
     }
     Zone other = (Zone) o;
-    if (!this._fromHostFilter.equals(other._fromHostFilter)) {
-      return false;
-    }
-    if (!this._inboundFilter.equals(other._inboundFilter)) {
-      return false;
-    }
-    if (!this._inboundInterfaceFilters.equals(other._inboundInterfaceFilters)) {
-      return false;
-    }
-    if (!this._toHostFilter.equals(other._toHostFilter)) {
-      return false;
-    }
-    if (!this._toZonePolicies.equals(other._toZonePolicies)) {
-      return false;
-    }
-    return true;
-  }
-
-  @JsonIgnore
-  public IpAccessList getFromHostFilter() {
-    return _fromHostFilter;
+    return Objects.equals(_fromHostFilterName, other._fromHostFilterName)
+        && Objects.equals(_inboundFilterName, other._inboundFilterName)
+        && Objects.equals(_interfaces, other._interfaces)
+        && Objects.equals(_toHostFilterName, other._toHostFilterName)
+        && Objects.equals(_toZonePoliciesNames, other._toZonePoliciesNames);
   }
 
   @JsonProperty(PROP_FROM_HOST_FILTER)
   @JsonPropertyDescription(
       "Filter applied against packets originating from an interface in this zone on this node")
+  @Nullable
   public String getFromHostFilterName() {
-    if (_fromHostFilter != null) {
-      return _fromHostFilter.getName();
-    } else {
-      return _fromHostFilterName;
-    }
-  }
-
-  @JsonIgnore
-  public IpAccessList getInboundFilter() {
-    return _inboundFilter;
+    return _fromHostFilterName;
   }
 
   @JsonProperty(PROP_INBOUND_FILTER)
   @JsonPropertyDescription(
       "Filter applied against packets whose final destination is an interface in this zone that "
           + "does not have its own inbound filter")
+  @Nullable
   public String getInboundFilterName() {
-    if (_inboundFilter != null) {
-      return _inboundFilter.getName();
-    } else {
-      return _inboundFilterName;
-    }
-  }
-
-  @JsonIgnore
-  public SortedMap<String, IpAccessList> getInboundInterfaceFilters() {
-    return _inboundInterfaceFilters;
+    return _inboundFilterName;
   }
 
   @JsonProperty(PROP_INBOUND_INTERFACE_FILTERS)
@@ -139,27 +93,15 @@ public final class Zone extends ComparableStructure<String> {
       "Mapping of interfaces in this zone to their corresponding inbound filters: the filter "
           + "applied against packets whose final destination is the interface whose name is the "
           + "key in this mapping")
+  @Nonnull
   public SortedMap<String, String> getInboundInterfaceFiltersNames() {
-    if (_inboundInterfaceFilters != null && !_inboundInterfaceFilters.isEmpty()) {
-      SortedMap<String, String> map = new TreeMap<>();
-      _inboundInterfaceFilters.forEach(
-          (ifaceName, filter) -> {
-            map.put(ifaceName, filter.getName());
-          });
-      return map;
-    } else {
-      return _inboundInterfaceFiltersNames;
-    }
+    return _inboundInterfaceFiltersNames;
   }
 
   @JsonProperty(PROP_INTERFACES)
+  @Nonnull
   public SortedSet<String> getInterfaces() {
     return _interfaces;
-  }
-
-  @JsonIgnore
-  public IpAccessList getToHostFilter() {
-    return _toHostFilter;
   }
 
   @JsonProperty(PROP_TO_HOST_FILTER)
@@ -167,128 +109,49 @@ public final class Zone extends ComparableStructure<String> {
       "Filter applied against packets whose final destination is an interface in this zone. If "
           + "this filter exists, it is applied IN ADDITION to the interface-specific or default "
           + "inbound filter.")
+  @Nullable
   public String getToHostFilterName() {
-    if (_toHostFilter != null) {
-      return _toHostFilter.getName();
-    } else {
-      return _toHostFilterName;
-    }
-  }
-
-  @JsonIgnore
-  public SortedMap<String, IpAccessList> getToZonePolicies() {
-    return _toZonePolicies;
+    return _toHostFilterName;
   }
 
   @JsonProperty(PROP_TO_ZONE_POLICIES)
   @JsonPropertyDescription(
       "Maps names of destination zones to the corresponding filter applied against packets which "
           + "are received on this zone and routed to the named zone")
+  @Nonnull
   public SortedMap<String, String> getToZonePoliciesNames() {
-    if (_toZonePolicies != null && !_toZonePolicies.isEmpty()) {
-      SortedMap<String, String> map = new TreeMap<>();
-      _toZonePolicies.forEach(
-          (zoneName, filter) -> {
-            map.put(zoneName, filter.getName());
-          });
-      return map;
-    } else {
-      return _toZonePoliciesNames;
-    }
-  }
-
-  @JsonIgnore
-  public void setFromHostFilter(IpAccessList fromHostFilter) {
-    _fromHostFilter = fromHostFilter;
+    return _toZonePoliciesNames;
   }
 
   @JsonProperty(PROP_FROM_HOST_FILTER)
-  public void setFromHostFilterName(String fromHostFilterName) {
+  public void setFromHostFilterName(@Nullable String fromHostFilterName) {
     _fromHostFilterName = fromHostFilterName;
   }
 
-  @JsonIgnore
-  public void setInboundFilter(IpAccessList inboundFilter) {
-    _inboundFilter = inboundFilter;
-  }
-
   @JsonProperty(PROP_INBOUND_FILTER)
-  public void setInboundFilterName(String inboundFilterName) {
+  public void setInboundFilterName(@Nullable String inboundFilterName) {
     _inboundFilterName = inboundFilterName;
-  }
-
-  @JsonIgnore
-  public void setInboundInterfaceFilters(SortedMap<String, IpAccessList> inboundInterfaceFilters) {
-    _inboundInterfaceFilters = inboundInterfaceFilters;
   }
 
   @JsonProperty(PROP_INBOUND_INTERFACE_FILTERS)
   public void setInboundInterfaceFiltersNames(
-      SortedMap<String, String> inboundInterfaceFiltersNames) {
-    _inboundInterfaceFiltersNames = inboundInterfaceFiltersNames;
+      @Nullable SortedMap<String, String> inboundInterfaceFiltersNames) {
+    _inboundInterfaceFiltersNames =
+        firstNonNull(inboundInterfaceFiltersNames, ImmutableSortedMap.of());
   }
 
   @JsonProperty(PROP_INTERFACES)
-  public void setInterfaces(Iterable<String> interfaces) {
-    _interfaces = ImmutableSortedSet.copyOf(interfaces);
-  }
-
-  @JsonIgnore
-  public void setToHostFilter(IpAccessList toHostFilter) {
-    _toHostFilter = toHostFilter;
+  public void setInterfaces(@Nullable Iterable<String> interfaces) {
+    _interfaces = ImmutableSortedSet.copyOf(firstNonNull(interfaces, Collections.emptyList()));
   }
 
   @JsonProperty(PROP_TO_HOST_FILTER)
-  public void setToHostFilterName(String toHostFilterName) {
+  public void setToHostFilterName(@Nullable String toHostFilterName) {
     _toHostFilterName = toHostFilterName;
   }
 
-  @JsonIgnore
-  public void setToZonePolicies(SortedMap<String, IpAccessList> toZonePolicies) {
-    _toZonePolicies = toZonePolicies;
-  }
-
   @JsonProperty(PROP_TO_ZONE_POLICIES)
-  public void setToZonePoliciesNames(SortedMap<String, String> toZonePoliciesNames) {
-    _toZonePoliciesNames = toZonePoliciesNames;
-  }
-
-  public boolean unorderedEqual(Object object) {
-    if (this == object) {
-      return true;
-    }
-    Zone other = (Zone) object;
-    if (this.equals(other)) {
-      return true;
-    }
-    if (!this._fromHostFilter.unorderedEqual(other._fromHostFilter)) {
-      return false;
-    }
-    if (!this._inboundFilter.unorderedEqual(other._inboundFilter)) {
-      return false;
-    }
-    if (unorderedEqualSortedMap(this._inboundInterfaceFilters, other._inboundInterfaceFilters)) {
-      return false;
-    }
-    if (!this._toHostFilter.unorderedEqual(other._toHostFilter)) {
-      return false;
-    }
-    if (unorderedEqualSortedMap(this._toZonePolicies, other._toZonePolicies)) {
-      return false;
-    }
-    return true;
-  }
-
-  private boolean unorderedEqualSortedMap(
-      SortedMap<String, IpAccessList> a, SortedMap<String, IpAccessList> b) {
-    if (!a.keySet().equals(b.keySet())) {
-      return false;
-    }
-    for (String s : a.keySet()) {
-      if (!a.get(s).unorderedEqual(b.get(s))) {
-        return false;
-      }
-    }
-    return true;
+  public void setToZonePoliciesNames(@Nullable SortedMap<String, String> toZonePoliciesNames) {
+    _toZonePoliciesNames = firstNonNull(toZonePoliciesNames, ImmutableSortedMap.of());
   }
 }

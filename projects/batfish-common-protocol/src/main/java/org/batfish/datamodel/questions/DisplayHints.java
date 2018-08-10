@@ -1,5 +1,7 @@
 package org.batfish.datamodel.questions;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -10,6 +12,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.answers.Schema;
@@ -56,8 +59,8 @@ public class DisplayHints {
     }
 
     @JsonProperty(PROP_SCHEMA)
-    public void setSchema(String schema) {
-      _schema = new Schema(schema);
+    public void setSchema(Schema schema) {
+      _schema = schema;
     }
 
     public void validate(String varName) {
@@ -97,8 +100,8 @@ public class DisplayHints {
     }
 
     @JsonProperty(PROP_SCHEMA)
-    public void setSchema(String schema) {
-      _schema = new Schema(schema);
+    public void setSchema(Schema schema) {
+      _schema = schema;
     }
 
     public void validate(String varName) {
@@ -127,29 +130,22 @@ public class DisplayHints {
       @JsonProperty(PROP_COMPOSITIONS) Map<String, Composition> compositions,
       @JsonProperty(PROP_EXTRACTIONS) Map<String, Extraction> extractions,
       @JsonProperty(PROP_TEXT_DESC) String textDesc) {
-
-    if (compositions == null) {
-      compositions = new HashMap<>();
-    }
-    if (extractions == null) {
-      extractions = new HashMap<>();
-    }
-    if (textDesc == null) {
-      textDesc = "";
-    }
+    _compositions = firstNonNull(compositions, new HashMap<>());
+    _extractions = firstNonNull(extractions, new HashMap<>());
+    _textDesc = firstNonNull(textDesc, "");
 
     Set<String> varsInEntities = new HashSet<>();
-    for (Entry<String, Composition> entry : compositions.entrySet()) {
+    for (Entry<String, Composition> entry : _compositions.entrySet()) {
       entry.getValue().validate(entry.getKey());
       varsInEntities.addAll(entry.getValue().getVars());
     }
 
-    for (Entry<String, Extraction> entry : extractions.entrySet()) {
+    for (Entry<String, Extraction> entry : _extractions.entrySet()) {
       entry.getValue().validate(entry.getKey());
     }
 
     // all extraction vars mentioned in entity configuration should have extraction hints
-    Set<String> varsInExtractionHints = extractions.keySet();
+    Set<String> varsInExtractionHints = _extractions.keySet();
     SetView<String> missingExtractionVars = Sets.difference(varsInEntities, varsInExtractionHints);
     if (!missingExtractionVars.isEmpty()) {
       throw new BatfishException(
@@ -157,15 +153,11 @@ public class DisplayHints {
     }
 
     // the names of entities and extraction vars should have no overlap
-    Set<String> commonNames = Sets.intersection(varsInExtractionHints, compositions.keySet());
+    Set<String> commonNames = Sets.intersection(varsInExtractionHints, _compositions.keySet());
     if (!commonNames.isEmpty()) {
       throw new BatfishException(
           "entities and extraction vars should not have common names: " + commonNames);
     }
-
-    _compositions = compositions;
-    _extractions = extractions;
-    _textDesc = textDesc;
   }
 
   @JsonProperty(PROP_COMPOSITIONS)
@@ -183,6 +175,21 @@ public class DisplayHints {
     return _textDesc;
   }
 
+  @Override
+  public boolean equals(Object o) {
+    if (!(o instanceof DisplayHints)) {
+      return false;
+    }
+    // ignore extactions and compositions -- we will remove those soon from this class
+    return Objects.equals(_textDesc, ((DisplayHints) o)._textDesc);
+  }
+
+  @Override
+  public int hashCode() {
+    // ignore extactions and compositions -- we will remove those soon from this class
+    return Objects.hash(_textDesc);
+  }
+
   @JsonProperty(PROP_COMPOSITIONS)
   public void setCompositions(Map<String, Composition> compositions) {
     _compositions = compositions;
@@ -194,7 +201,8 @@ public class DisplayHints {
   }
 
   @JsonProperty(PROP_TEXT_DESC)
-  public void setTextDesc(String textDesc) {
+  public DisplayHints setTextDesc(String textDesc) {
     _textDesc = textDesc;
+    return this;
   }
 }

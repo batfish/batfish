@@ -1,0 +1,172 @@
+!
+hostname cisco_voice
+!
+application
+ service dsapp
+ param disc-toggle-time 15
+ param callWaiting TRUE
+ param callConference TRUE
+ param blind-xfer-wait-time 10
+ param callTransfer TRUE
+!
+application
+ service something http://some.url/some.page
+ !
+ global
+  service alternate Default
+ !
+!
+call-manager-fallback
+ limit-dn 7960 2
+ ip source-address 10.48.80.9 port 2000
+ max-ephones 10
+ max-dn 32
+ dialplan-pattern 1 704.... extension-length 4
+ keepalive 20
+ default-destination 5002
+ alias 1 5003 to 5002
+ call-forward busy 5002
+ call-forward noan 5002 timeout 12
+ time-format 24
+!
+dial-control-mib retain-timer 1440
+dial-control-mib max-size 1200
+dial-peer voice 1 voip
+ call-block translation-profile incoming blocked
+ codec g711ulaw
+ codec transparent
+ description oigjaiowfjiofjweiofjowe
+ destination-pattern .T
+ direct-inward-dial
+ dtmf-relay rtp-nte
+ fax protocol t38 version 0 ls-redundancy 0 hs-redundancy 0 fallback none
+ forward-digits all
+ incoming called-number +12223334444.T
+ incoming from-vide
+ ip qos dscp cs3 signaling
+ media flow-around
+ preference 1
+ prefix 08
+ progress_ind setup enable 3
+ session protocol sipv2
+ session target ipv4:1.2.3.4
+ session target ras
+ session transport udp
+ shutdown
+ signaling forward unconditional
+ translation-profile
+ translation-profile incoming from-vide
+ no vad
+ voice-class codec 2
+ voice-class sip options-keepalive
+ voice-class sip bind control source-interface GigabitEthernet0/1
+ voice-class sip bind media source-interface GigabitEthernet0/1
+!
+sip-ua
+ connection-reuse
+ retry bye 2
+ retry cancel 2
+ retry invite 2
+ set pstn-cause 1 sip-status 503
+ set pstn-cause 102 sip-status 503
+ sip-server dns:abc.example.com
+ timers trying 150
+!
+voice call convert-discpi-to-prog
+voice call disc-pi-off
+voice call send-alert
+voice class codec 1
+ codec preference 1 g729r8
+ codec preference 2 g711alaw
+!
+voice class dpg 181
+ description Boston Destination
+ dial-peer 123 preference 1
+!
+voice class e164-pattern-map 1111
+ description It has 1 entry
+ e164 5557123
+!
+voice class server-group 171
+ description It has 1 entry
+ ipv4 10.1.1.1 preference 3
+!
+voice class uri ab200 sip
+ host ipv4:10.0.0.0
+!
+voice class uri ab201 sip
+ host server1
+! 
+voice class h323 10
+ call preserve
+ h225 timeout tcp establish 2
+ telephony-service ccm-compatible
+!
+voice class sip-profiles 1
+ request ANY sip-header From modify "aaa" "bbb"
+ request ANY sip-header P-Asserted-Identity modify "aaa" "bbb"
+ request ANY sip-header Remote-Party-ID modify "aaa" "bbb"
+!
+no voice hunt invalid-number
+no voice hunt unassigned-number
+voice iec syslog
+voice rtp send-recv
+voice service voip
+ address-hiding
+ allow-connections h323 to h323
+ allow-connections sip to sip
+ fax protocol cisco
+ fax protocol t38 version 0 ls-redundancy 0 hs-redundancy 0 fallback none
+ h323
+  call preserve
+  h225 id-passthru
+ ip address trusted list
+  ipv4 1.2.3.4 255.255.255.255
+  ipv4 2.3.4.5 255.255.255.255
+ media bulk-stats
+ mode border-element license capacity 200
+ modem passthrough nse codec g711ulaw
+ redundancy-group 1
+ rtp-port range 16384 32768
+ shutdown
+ sip
+  bind control source-interface Loopback0
+  bind media source-interface Loopback0
+  early-offer forced
+  error-passthru
+  g729 annexb-all
+  header-passing
+  listen-port secure 5678
+  listen-port non-secure 1234
+  midcall-signaling block
+  sip-profiles 1
+  transport switch udp tcp
+ supplementary-service h450.12
+!
+voice translation-profile foobarbaz
+ translate called 12
+ translate calling 11
+!
+voice translation-rule 1
+ rule 1 /^0011649\(.*\)/ /\100/
+!
+voice-card 0/2
+ codec complexity high
+ dsp services dspfarm
+ dspfarm
+ no watchdog
+!
+voice-port 0/0/0:23
+ caller-id enable
+ connection plar 1601
+ cptone GB
+ description giuahwefuiowjh
+ echo-cancel coverage 64
+ shutdown
+ signal cama KP-0-NXX-XXXX-ST
+ timeouts ringing infinity
+ timing hookflash-out 50
+ timing guard-out 1000
+!
+!
+

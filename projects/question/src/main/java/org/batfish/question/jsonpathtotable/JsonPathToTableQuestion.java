@@ -4,18 +4,13 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Sets.SetView;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BfConsts;
-import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.questions.Question;
-import org.batfish.datamodel.table.TableMetadata;
 
 public class JsonPathToTableQuestion extends Question {
 
@@ -38,7 +33,7 @@ public class JsonPathToTableQuestion extends Question {
       @JsonProperty(PROP_DEBUG) Boolean debug) {
     _innerQuestion = innerQuestion;
     _pathQuery = pathQuery;
-    _debug = debug != null && debug.booleanValue();
+    _debug = debug != null && debug;
 
     // names in text description should correspond to those of entities or extraction vars
     if (_displayHints != null && _displayHints.getTextDesc() != null) {
@@ -57,18 +52,6 @@ public class JsonPathToTableQuestion extends Question {
             "textDesc has names that are neither entities nor extractions: " + missingVars);
       }
     }
-  }
-
-  public TableMetadata computeTableMetadata() {
-    Map<String, Schema> schemas = new HashMap<>();
-    for (Entry<String, JsonPathToTableExtraction> entry : _pathQuery.getExtractions().entrySet()) {
-      schemas.put(entry.getKey(), entry.getValue().getSchema());
-    }
-    for (Entry<String, JsonPathToTableComposition> entry :
-        _pathQuery.getCompositions().entrySet()) {
-      schemas.put(entry.getKey(), entry.getValue().getSchema());
-    }
-    return new TableMetadata(schemas, null, null, _displayHints);
   }
 
   @Override

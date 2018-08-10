@@ -42,6 +42,7 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
+import org.batfish.symbolic.bdd.BDDPacket;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
@@ -97,11 +98,11 @@ public class BatfishCompressionTest {
 
     return new TreeMap<>(
         ImmutableSortedMap.of(
-            _compressedNode1.getName(),
+            _compressedNode1.getHostname(),
             _compressedNode1,
-            _compressedNode2.getName(),
+            _compressedNode2.getHostname(),
             _compressedNode2,
-            _compressedNode3.getName(),
+            _compressedNode3.getHostname(),
             _compressedNode3));
   }
 
@@ -110,12 +111,13 @@ public class BatfishCompressionTest {
     TemporaryFolder tmp = new TemporaryFolder();
     tmp.create();
     IBatfish batfish = BatfishTestUtils.getBatfish(new TreeMap<>(configs), tmp);
-    return new TreeMap<>(new BatfishCompressor(batfish, configs).compress(headerSpace));
+    return new TreeMap<>(
+        new BatfishCompressor(new BDDPacket(), batfish, configs).compress(headerSpace));
   }
 
   /**
-   * This network should be compressed from: A --> B --> D, A --> C --> D to A --> {B,C} --> D.
-   * i.e., B and C should be merged into one node.
+   * This network should be compressed from: A -&gt; B -&gt; D, A -&gt; C -&gt; D to A -&gt; {B,C}
+   * -&gt; D. i.e., B and C should be merged into one node.
    *
    * @return Configurations for the original (uncompressed) network.
    */
@@ -146,7 +148,7 @@ public class BatfishCompressionTest {
         .build();
     // Interface iBA
     ib.setOwner(cB)
-        .setVrf(vA)
+        .setVrf(vB)
         .setAddress(new InterfaceAddress(pAB.getEndIp(), pAB.getPrefixLength()))
         .build();
     // Interface iAC
@@ -196,10 +198,10 @@ public class BatfishCompressionTest {
 
     return new TreeMap<>(
         ImmutableSortedMap.of(
-            cA.getName(), cA,
-            cB.getName(), cB,
-            cC.getName(), cC,
-            cD.getName(), cD));
+            cA.getHostname(), cA,
+            cB.getHostname(), cB,
+            cC.getHostname(), cC,
+            cD.getHostname(), cD));
   }
 
   private DataPlane getDataPlane(SortedMap<String, Configuration> configs) throws IOException {
@@ -244,7 +246,7 @@ public class BatfishCompressionTest {
     v3.getStaticRoutes().add(s31);
 
     return new TreeMap<>(
-        ImmutableSortedMap.of(c1.getName(), c1, c2.getName(), c2, c3.getName(), c3));
+        ImmutableSortedMap.of(c1.getHostname(), c1, c2.getHostname(), c2, c3.getHostname(), c3));
   }
 
   /**

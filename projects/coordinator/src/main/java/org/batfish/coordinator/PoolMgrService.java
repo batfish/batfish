@@ -1,7 +1,7 @@
 package org.batfish.coordinator;
 
+import com.google.common.base.Throwables;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -12,7 +12,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriInfo;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.Version;
@@ -55,7 +54,8 @@ public class PoolMgrService {
                 new JSONObject().put(CoordConsts.SVC_KEY_QUESTION_LIST, questionTemplates)));
       }
     } catch (Exception e) {
-      _logger.errorf("WMS:getQuestionTemplates exception: %s\n", ExceptionUtils.getStackTrace(e));
+      _logger.errorf(
+          "WMS:getQuestionTemplates exception: %s\n", Throwables.getStackTraceAsString(e));
       return new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_FAILURE, e.getMessage()));
     }
   }
@@ -66,11 +66,11 @@ public class PoolMgrService {
   public JSONArray getStatus() {
     try {
       _logger.info("PMS:getStatus\n");
-      HashMap<String, String> poolStatus = Main.getPoolMgr().getPoolStatus();
+      Map<String, String> poolStatus = Main.getPoolMgr().getPoolStatus();
       JSONObject obj = new JSONObject(poolStatus);
       return new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_SUCCESS, obj.toString()));
     } catch (Exception e) {
-      _logger.errorf("PMS:getStatus exception: %s\n", ExceptionUtils.getStackTrace(e));
+      _logger.errorf("PMS:getStatus exception: %s\n", Throwables.getStackTraceAsString(e));
       return new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_FAILURE, e.getMessage()));
     }
   }
@@ -127,7 +127,7 @@ public class PoolMgrService {
         Main.getPoolMgr().deleteFromPool(worker);
       }
 
-      if (workersToAdd.size() > 0) {
+      if (!workersToAdd.isEmpty()) {
         if (workerVersion == null) {
           return new JSONArray(
               Arrays.asList(CoordConsts.SVC_KEY_FAILURE, "Worker version not specified"));
@@ -147,7 +147,7 @@ public class PoolMgrService {
         }
       }
     } catch (Exception e) {
-      _logger.errorf("PMS:updatePool exception: %s\n", ExceptionUtils.getStackTrace(e));
+      _logger.errorf("PMS:updatePool exception: %s\n", Throwables.getStackTraceAsString(e));
       return new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_FAILURE, e.getMessage()));
     }
 

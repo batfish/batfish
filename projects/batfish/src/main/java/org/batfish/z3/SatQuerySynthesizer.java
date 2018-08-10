@@ -14,6 +14,4 @@ public abstract class SatQuerySynthesizer<KeyT> extends BaseQuerySynthesizer {
   public List<KeyT> getKeys() {
     return _keys;
   }
-
-  public abstract ReachabilityProgram synthesizeBaseProgram(Synthesizer synthesizer);
 }

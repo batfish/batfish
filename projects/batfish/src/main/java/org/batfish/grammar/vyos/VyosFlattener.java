@@ -2,12 +2,14 @@ package org.batfish.grammar.vyos;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.batfish.grammar.flattener.Flattener;
+import org.batfish.grammar.flattener.FlattenerLineMap;
 import org.batfish.grammar.vyos.VyosParser.StatementContext;
 import org.batfish.grammar.vyos.VyosParser.TerminatorContext;
 import org.batfish.grammar.vyos.VyosParser.Vyos_configurationContext;
 import org.batfish.grammar.vyos.VyosParser.WordContext;
 
-public class VyosFlattener extends VyosParserBaseListener {
+public class VyosFlattener extends VyosParserBaseListener implements Flattener {
 
   private List<String> _currentBracketedWords;
 
@@ -81,7 +83,13 @@ public class VyosFlattener extends VyosParserBaseListener {
     }
   }
 
+  @Override
   public String getFlattenedConfigurationText() {
     return _flattenedConfigurationText;
+  }
+
+  @Override
+  public FlattenerLineMap getOriginalLineMap() {
+    throw new UnsupportedOperationException("getOriginalLines is not supported for VyosFlattener");
   }
 }

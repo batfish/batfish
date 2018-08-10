@@ -6,7 +6,7 @@ import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
@@ -14,13 +14,11 @@ import com.microsoft.z3.Context;
 import java.io.IOException;
 import java.util.Map;
 import java.util.SortedMap;
-import java.util.SortedSet;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.ForwardingAction;
-import org.batfish.datamodel.ForwardingAnalysisImpl;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
@@ -31,10 +29,12 @@ import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
-import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
+import org.batfish.specifier.IpSpaceAssignment;
+import org.batfish.z3.expr.BooleanExpr;
+import org.batfish.z3.expr.TrueExpr;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -53,9 +53,9 @@ public class NodJobChunkingTest {
   private Vrf _srcVrf1;
   private Vrf _srcVrf2;
   private Synthesizer _synthesizer;
-  private IngressPoint _ingressPoint1;
-  private IngressPoint _ingressPoint2;
-  private IngressPoint _ingressPoint3;
+  private IngressLocation _ingressLocation1;
+  private IngressLocation _ingressLocation2;
+  private IngressLocation _ingressLocation3;
   private String _ifaceName;
 
   @Before
@@ -88,8 +88,8 @@ public class NodJobChunkingTest {
     _srcNode2 = cb.build();
     _srcVrf1 = vb.setOwner(_srcNode1).build();
     _srcVrf2 = vb.setOwner(_srcNode2).build();
-    _ingressPoint1 = IngressPoint.ingressVrf(_srcNode1.getHostname(), _srcVrf1.getName());
-    _ingressPoint2 = IngressPoint.ingressVrf(_srcNode2.getHostname(), _srcVrf2.getName());
+    _ingressLocation1 = IngressLocation.vrf(_srcNode1.getHostname(), _srcVrf1.getName());
+    _ingressLocation2 = IngressLocation.vrf(_srcNode2.getHostname(), _srcVrf2.getName());
     _dstNode = cb.build();
     Vrf dstVrf = vb.setOwner(_dstNode).build();
 
@@ -103,7 +103,7 @@ public class NodJobChunkingTest {
             .build();
 
     _ifaceName = iface.getName();
-    _ingressPoint3 = IngressPoint.ingressInterface(_srcNode1.getHostname(), _ifaceName);
+    _ingressLocation3 = IngressLocation.interfaceLink(_srcNode1.getHostname(), _ifaceName);
 
     ib.setOwner(_dstNode)
         .setVrf(dstVrf)
@@ -137,9 +137,9 @@ public class NodJobChunkingTest {
 
     _configs =
         ImmutableSortedMap.of(
-            _srcNode1.getName(), _srcNode1,
-            _srcNode2.getName(), _srcNode2,
-            _dstNode.getName(), _dstNode);
+            _srcNode1.getHostname(), _srcNode1,
+            _srcNode2.getHostname(), _srcNode2,
+            _dstNode.getHostname(), _dstNode);
   }
 
   private void setupDataPlane() throws IOException {
@@ -156,39 +156,33 @@ public class NodJobChunkingTest {
             Batfish.computeSynthesizerInput(
                 _configs,
                 _dataPlane,
-                new ForwardingAnalysisImpl(
-                    _configs,
-                    _dataPlane.getRibs(),
-                    _dataPlane.getFibs(),
-                    new Topology(_dataPlane.getTopologyEdges())),
                 new HeaderSpace(),
+                IpSpaceAssignment.empty(),
+                ImmutableSortedSet.of(),
                 ImmutableSortedSet.of(),
                 true,
-                false,
-                ImmutableSortedSet.of()));
+                false));
   }
 
   private NodJob getNodJob() {
+    Map<IngressLocation, BooleanExpr> srcIpConstraints =
+        ImmutableMap.of(
+            IngressLocation.interfaceLink(_srcNode1.getHostname(), _ifaceName),
+            TrueExpr.INSTANCE,
+            IngressLocation.vrf(_srcNode1.getHostname(), _srcVrf1.getName()),
+            TrueExpr.INSTANCE,
+            IngressLocation.vrf(_srcNode2.getHostname(), _srcVrf2.getName()),
+            TrueExpr.INSTANCE);
     StandardReachabilityQuerySynthesizer querySynthesizer =
         StandardReachabilityQuerySynthesizer.builder()
             .setActions(ImmutableSet.of(ForwardingAction.ACCEPT))
             .setHeaderSpace(new HeaderSpace())
+            .setSrcIpConstraints(srcIpConstraints)
             .setFinalNodes(ImmutableSet.of(_dstNode.getHostname()))
-            .setIngressNodeInterfaces(
-                ImmutableMultimap.of(_ingressPoint3.getNode(), _ingressPoint3.getInterface()))
-            .setIngressNodeVrfs(
-                ImmutableMultimap.of(
-                    _ingressPoint1.getNode(), _ingressPoint1.getVrf(),
-                    _ingressPoint2.getNode(), _ingressPoint2.getVrf()))
-            .setTransitNodes(ImmutableSet.of())
-            .setNonTransitNodes(ImmutableSet.of())
             .build();
-    SortedSet<IngressPoint> ingressPoints =
-        ImmutableSortedSet.of(
-            IngressPoint.ingressInterface(_srcNode1.getHostname(), _ifaceName),
-            IngressPoint.ingressVrf(_srcNode1.getHostname(), _srcVrf1.getName()),
-            IngressPoint.ingressVrf(_srcNode2.getHostname(), _srcVrf2.getName()));
-    return new NodJob(new Settings(), _synthesizer, querySynthesizer, ingressPoints, "tag", true);
+
+    return new NodJob(
+        new Settings(), _synthesizer, querySynthesizer, srcIpConstraints, "tag", true);
   }
 
   @Test
@@ -198,27 +192,27 @@ public class NodJobChunkingTest {
     Context z3Context = new Context();
     SmtInput smtInput = nodJob.computeSmtInput(System.currentTimeMillis(), z3Context);
 
-    Map<IngressPoint, Map<String, Long>> fieldConstraintsByIngressPoint =
-        nodJob.getIngressPointConstraints(z3Context, smtInput);
+    Map<IngressLocation, Map<String, Long>> fieldConstraintsByIngressPoint =
+        nodJob.getSolutionPerIngressLocation(z3Context, smtInput);
     assertThat(fieldConstraintsByIngressPoint.entrySet(), hasSize(3));
-    assertThat(fieldConstraintsByIngressPoint, hasKey(_ingressPoint1));
-    assertThat(fieldConstraintsByIngressPoint, hasKey(_ingressPoint2));
-    assertThat(fieldConstraintsByIngressPoint, hasKey(_ingressPoint3));
-    Map<String, Long> fieldConstraints1 = fieldConstraintsByIngressPoint.get(_ingressPoint1);
-    Map<String, Long> fieldConstraints2 = fieldConstraintsByIngressPoint.get(_ingressPoint2);
-    Map<String, Long> fieldConstraints3 = fieldConstraintsByIngressPoint.get(_ingressPoint3);
+    assertThat(fieldConstraintsByIngressPoint, hasKey(_ingressLocation1));
+    assertThat(fieldConstraintsByIngressPoint, hasKey(_ingressLocation2));
+    assertThat(fieldConstraintsByIngressPoint, hasKey(_ingressLocation3));
+    Map<String, Long> fieldConstraints1 = fieldConstraintsByIngressPoint.get(_ingressLocation1);
+    Map<String, Long> fieldConstraints2 = fieldConstraintsByIngressPoint.get(_ingressLocation2);
+    Map<String, Long> fieldConstraints3 = fieldConstraintsByIngressPoint.get(_ingressLocation3);
 
     assertThat(
         fieldConstraints1,
-        hasEntry(IngressPointInstrumentation.INGRESS_POINT_FIELD_NAME, new Long(1)));
+        hasEntry(IngressLocationInstrumentation.INGRESS_LOCATION_FIELD_NAME, 1L));
     assertThat(fieldConstraints1, hasEntry(Field.SRC_IP.getName(), new Ip("1.0.0.0").asLong()));
     assertThat(
         fieldConstraints2,
-        hasEntry(IngressPointInstrumentation.INGRESS_POINT_FIELD_NAME, new Long(2)));
+        hasEntry(IngressLocationInstrumentation.INGRESS_LOCATION_FIELD_NAME, 2L));
     assertThat(fieldConstraints2, hasEntry(Field.SRC_IP.getName(), new Ip("2.0.0.0").asLong()));
     assertThat(
         fieldConstraints3,
-        hasEntry(IngressPointInstrumentation.INGRESS_POINT_FIELD_NAME, new Long(0)));
+        hasEntry(IngressLocationInstrumentation.INGRESS_LOCATION_FIELD_NAME, 0L));
     assertThat(fieldConstraints3, hasEntry(Field.SRC_IP.getName(), new Ip("1.0.0.0").asLong()));
   }
 }

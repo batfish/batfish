@@ -1,0 +1,22 @@
+!
+hostname ios-xe-zone-default-behavior
+!
+zone security z12
+zone security z3
+!
+interface Ethernet1
+ ip address 1.0.0.1 255.255.255.0
+ no shutdown
+ zone-member security z12
+!
+interface Ethernet2
+ ip address 2.0.0.1 255.255.255.0
+ no shutdown
+ zone-member security z12
+!
+interface Ethernet3
+ ip address 3.0.0.1 255.255.255.0
+ no shutdown
+ zone-member security z3
+!
+!

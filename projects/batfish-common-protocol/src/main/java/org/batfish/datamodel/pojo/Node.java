@@ -1,5 +1,7 @@
 package org.batfish.datamodel.pojo;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nonnull;
@@ -8,18 +10,24 @@ import org.batfish.datamodel.DeviceType;
 
 public class Node extends BfObject {
 
+  private static final String PROP_NAME = "name";
+  private static final String PROP_TYPE = "type";
+
   @Nonnull private final String _name;
 
   @Nullable private DeviceType _type;
 
   @JsonCreator
   public Node(
-      @JsonProperty("name") String name,
-      @JsonProperty("id") String id,
-      @JsonProperty("type") DeviceType type) {
-    super(id);
+      @JsonProperty(PROP_NAME) String name,
+      @JsonProperty(PROP_ID) String id,
+      @JsonProperty(PROP_TYPE) DeviceType type) {
+    super(firstNonNull(id, getId(name)));
     _name = name;
     _type = type;
+    if (name == null) {
+      throw new IllegalArgumentException("Cannot build Node: name is null");
+    }
   }
 
   public Node(String name) {
@@ -34,10 +42,12 @@ public class Node extends BfObject {
     return "node-" + name;
   }
 
+  @JsonProperty(PROP_NAME)
   public String getName() {
     return _name;
   }
 
+  @JsonProperty(PROP_TYPE)
   public DeviceType getType() {
     return _type;
   }

@@ -1,0 +1,6 @@
+#
+set system host-name ospf-area-default-metric
+#
+set protocols ospf area 0.0.0.1 stub default-metric 10
+set protocols ospf area 0.0.0.2
+#

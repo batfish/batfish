@@ -109,10 +109,8 @@ public class ClusterNodesQuestionPlugin extends QuestionPlugin {
 
       // first get the results of compareSameName
       CompareSameNameQuestionPlugin.CompareSameNameQuestion inner =
-          new CompareSameNameQuestionPlugin.CompareSameNameQuestion();
-      inner.setNodeRegex(question.getNodeRegex());
-      inner.setNamedStructTypes(question.getNamedStructTypes());
-      inner.setSingletons(true);
+          new CompareSameNameQuestionPlugin.CompareSameNameQuestion(
+              null, null, null, question.getNamedStructTypes(), question.getNodeRegex(), true);
       CompareSameNameQuestionPlugin.CompareSameNameAnswerer innerAnswerer =
           new CompareSameNameQuestionPlugin().createAnswerer(inner, _batfish);
       CompareSameNameQuestionPlugin.CompareSameNameAnswerElement innerAnswer =

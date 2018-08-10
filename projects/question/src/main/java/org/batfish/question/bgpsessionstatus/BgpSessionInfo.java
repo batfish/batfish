@@ -1,25 +1,27 @@
 package org.batfish.question.bgpsessionstatus;
 
+import static java.util.Objects.requireNonNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Comparator;
 import java.util.Objects;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import org.batfish.datamodel.BgpSessionProperties.SessionType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 
+/** Captures the configuration state of a BGP session. */
 public class BgpSessionInfo implements Comparable<BgpSessionInfo> {
-
-  public enum SessionType {
-    IBGP,
-    EBGP_SINGLEHOP,
-    EBGP_MULTIHOP
-  }
 
   public enum SessionStatus {
     // ordered by how we evaluate status
     DYNAMIC_LISTEN,
+    LOCAL_IP_UNKNOWN_STATICALLY,
     NO_LOCAL_IP,
+    NO_REMOTE_AS,
     INVALID_LOCAL_IP,
     UNKNOWN_REMOTE,
     HALF_OPEN,
@@ -30,8 +32,8 @@ public class BgpSessionInfo implements Comparable<BgpSessionInfo> {
   private static final String PROP_CONFIGURED_STATUS = "configuredStatus";
   private static final String PROP_ESTABLISHED_NEIGHBORS = "establishedNeighbors";
   private static final String PROP_LOCAL_IP = "localIp";
+  private static final String PROP_LOCAL_INTERFACE = "localInterface";
   private static final String PROP_NODE_NAME = "nodeName";
-  private static final String PROP_ON_LOOPBACK = "onLoopback";
   private static final String PROP_REMOTE_PREFIX = "remotePrefix";
   private static final String PROP_REMOTE_NODE = "remoteNode";
   private static final String PROP_SESSION_TYPE = "sessionType";
@@ -41,60 +43,86 @@ public class BgpSessionInfo implements Comparable<BgpSessionInfo> {
 
   private final Integer _establishedNeighbors;
 
-  private final String _nodeName;
+  @Nonnull private final String _nodeName;
+
+  private final NodeInterfacePair _localInterface;
 
   private final Ip _localIp;
 
-  private final Boolean _onLoopback;
-
   private final String _remoteNode;
 
-  private final Prefix _remotePrefix;
+  @Nonnull private final Prefix _remotePrefix;
 
-  private final SessionType _sessionType;
+  @Nonnull private final SessionType _sessionType;
 
-  private final String _vrfName;
+  @Nonnull private final String _vrfName;
 
   @JsonCreator
-  public BgpSessionInfo(
-      @JsonProperty(PROP_CONFIGURED_STATUS) SessionStatus staticStatus,
+  private static BgpSessionInfo createBgpSessionInfo(
+      @JsonProperty(PROP_CONFIGURED_STATUS) SessionStatus configuredStatus,
       @JsonProperty(PROP_ESTABLISHED_NEIGHBORS) Integer dynamicNeighbors,
       @JsonProperty(PROP_NODE_NAME) String nodeName,
+      @JsonProperty(PROP_LOCAL_INTERFACE) NodeInterfacePair localInterface,
       @JsonProperty(PROP_LOCAL_IP) Ip localIp,
-      @JsonProperty(PROP_ON_LOOPBACK) Boolean onLoopback,
       @JsonProperty(PROP_REMOTE_NODE) String remoteNode,
       @JsonProperty(PROP_REMOTE_PREFIX) Prefix remotePrefix,
       @JsonProperty(PROP_SESSION_TYPE) SessionType sessionType,
       @JsonProperty(PROP_VRF_NAME) String vrfName) {
+    return new BgpSessionInfo(
+        configuredStatus,
+        dynamicNeighbors,
+        requireNonNull(nodeName, PROP_NODE_NAME + "must not be null"),
+        localInterface,
+        localIp,
+        remoteNode,
+        requireNonNull(remotePrefix, PROP_REMOTE_PREFIX + " must not be null"),
+        requireNonNull(sessionType, PROP_SESSION_TYPE + " must not be null"),
+        requireNonNull(vrfName, PROP_VRF_NAME + " must not be null"));
+  }
+
+  private BgpSessionInfo(
+      SessionStatus configuredStatus,
+      Integer dynamicNeighbors,
+      @Nonnull String nodeName,
+      NodeInterfacePair localInterface,
+      Ip localIp,
+      String remoteNode,
+      @Nonnull Prefix remotePrefix,
+      @Nonnull SessionType sessionType,
+      @Nonnull String vrfName) {
     _nodeName = nodeName;
     _vrfName = vrfName;
     _remotePrefix = remotePrefix;
+    _localInterface = localInterface;
     _localIp = localIp;
-    _onLoopback = onLoopback;
     _remoteNode = remoteNode;
-    _configuredStatus = staticStatus;
+    _configuredStatus = configuredStatus;
     _establishedNeighbors = dynamicNeighbors;
     _sessionType = sessionType;
   }
 
+  @Nullable
   @JsonProperty(PROP_CONFIGURED_STATUS)
   public SessionStatus getConfiguredStatus() {
     return _configuredStatus;
   }
 
+  @Nullable
   @JsonProperty(PROP_ESTABLISHED_NEIGHBORS)
   public Integer getEstablishedNeighbors() {
     return _establishedNeighbors;
   }
 
+  @Nullable
+  @JsonProperty(PROP_LOCAL_INTERFACE)
+  public NodeInterfacePair getLocalInterface() {
+    return _localInterface;
+  }
+
+  @Nullable
   @JsonProperty(PROP_LOCAL_IP)
   public Ip getLocalIp() {
     return _localIp;
-  }
-
-  @JsonProperty(PROP_ON_LOOPBACK)
-  public Boolean getOnLoopback() {
-    return _onLoopback;
   }
 
   @JsonProperty(PROP_NODE_NAME)
@@ -102,6 +130,7 @@ public class BgpSessionInfo implements Comparable<BgpSessionInfo> {
     return _nodeName;
   }
 
+  @Nullable
   @JsonProperty(PROP_REMOTE_NODE)
   public String getRemoteNode() {
     return _remoteNode;
@@ -132,7 +161,7 @@ public class BgpSessionInfo implements Comparable<BgpSessionInfo> {
 
   @Override
   public boolean equals(Object o) {
-    if (o == null || !(o instanceof BgpSessionInfo)) {
+    if (!(o instanceof BgpSessionInfo)) {
       return false;
     }
     BgpSessionInfo other = (BgpSessionInfo) o;
@@ -140,7 +169,7 @@ public class BgpSessionInfo implements Comparable<BgpSessionInfo> {
         && Objects.equals(_vrfName, other._vrfName)
         && Objects.equals(_remotePrefix, other._remotePrefix)
         && Objects.equals(_sessionType, other._sessionType)
-        && Objects.equals(_onLoopback, other._onLoopback)
+        && Objects.equals(_localInterface, other._localInterface)
         && Objects.equals(_configuredStatus, other._configuredStatus)
         && Objects.equals(_establishedNeighbors, other._establishedNeighbors)
         && Objects.equals(_localIp, other._localIp)
@@ -154,7 +183,7 @@ public class BgpSessionInfo implements Comparable<BgpSessionInfo> {
         _vrfName,
         _remotePrefix,
         _sessionType,
-        _onLoopback,
+        _localInterface,
         _configuredStatus,
         _establishedNeighbors,
         _localIp,
@@ -164,63 +193,67 @@ public class BgpSessionInfo implements Comparable<BgpSessionInfo> {
   @Override
   public String toString() {
     return String.format(
-        "%s vrf=%s remote=%s type=%s loopback=%s staticStatus=%s "
+        "%s vrf=%s remote=%s type=%s localInterface=%s staticStatus=%s "
             + "dynamicNeighbors=%s localIp=%s remoteNode=%s",
         _nodeName,
         _vrfName,
         _remotePrefix,
         _sessionType,
-        _onLoopback,
+        _localInterface,
         _configuredStatus,
         _establishedNeighbors,
         _localIp,
         _remoteNode);
   }
 
-  public static final class BgpSessionInfoBuilder {
+  public static Builder builder(
+      @Nonnull String nodeName,
+      @Nonnull String vrfName,
+      @Nonnull Prefix remotePrefix,
+      @Nonnull SessionType sessionType) {
+    return new Builder(nodeName, vrfName, remotePrefix, sessionType);
+  }
+
+  public static final class Builder {
     private SessionStatus _configuredStatus;
     private Integer _establishedNeighbors;
-    private String _nodeName;
+    private final String _nodeName;
+    private NodeInterfacePair _localInterface;
     private Ip _localIp;
-    private Boolean _onLoopback;
     private String _remoteNode;
-    private Prefix _remotePrefix;
-    private SessionType _sessionType;
-    private String _vrfName;
+    private final Prefix _remotePrefix;
+    private final SessionType _sessionType;
+    private final String _vrfName;
 
-    public BgpSessionInfoBuilder(String nodeName, String vfrName, Prefix remotePrefix) {
+    private Builder(String nodeName, String vfrName, Prefix remotePrefix, SessionType sessionType) {
       _nodeName = nodeName;
       _vrfName = vfrName;
       _remotePrefix = remotePrefix;
+      _sessionType = sessionType;
     }
 
-    public BgpSessionInfoBuilder withConfiguredStatus(SessionStatus configuredStatus) {
+    public Builder withConfiguredStatus(SessionStatus configuredStatus) {
       _configuredStatus = configuredStatus;
       return this;
     }
 
-    public BgpSessionInfoBuilder withEstablishedNeighbors(Integer establishedNeighbors) {
+    public Builder withEstablishedNeighbors(Integer establishedNeighbors) {
       _establishedNeighbors = establishedNeighbors;
       return this;
     }
 
-    public BgpSessionInfoBuilder withLocalIp(Ip localIp) {
+    public Builder withLocalIp(Ip localIp) {
       _localIp = localIp;
       return this;
     }
 
-    public BgpSessionInfoBuilder withOnLoopback(Boolean onLoopback) {
-      _onLoopback = onLoopback;
+    public Builder withLocalInterface(NodeInterfacePair localInterface) {
+      _localInterface = localInterface;
       return this;
     }
 
-    public BgpSessionInfoBuilder withRemoteNode(String remoteNode) {
+    public Builder withRemoteNode(String remoteNode) {
       _remoteNode = remoteNode;
-      return this;
-    }
-
-    public BgpSessionInfoBuilder withSessionType(SessionType sessionType) {
-      _sessionType = sessionType;
       return this;
     }
 
@@ -229,8 +262,8 @@ public class BgpSessionInfo implements Comparable<BgpSessionInfo> {
           _configuredStatus,
           _establishedNeighbors,
           _nodeName,
+          _localInterface,
           _localIp,
-          _onLoopback,
           _remoteNode,
           _remotePrefix,
           _sessionType,

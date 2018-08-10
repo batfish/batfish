@@ -1,6 +1,7 @@
 package org.batfish.allinone;
 
 import com.google.common.base.Strings;
+import com.google.common.base.Throwables;
 import com.uber.jaeger.Configuration;
 import com.uber.jaeger.Configuration.ReporterConfiguration;
 import com.uber.jaeger.Configuration.SamplerConfiguration;
@@ -10,10 +11,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import org.apache.commons.lang3.exception.ExceptionUtils;
+import java.util.concurrent.ExecutionException;
 import org.batfish.allinone.config.Settings;
 import org.batfish.client.Client;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.util.BindPortFutures;
 
 public class AllInOne {
 
@@ -67,11 +69,11 @@ public class AllInOne {
               org.batfish.client.config.Settings.ARG_COMMAND_FILE, _settings.getCommandFile());
     }
 
-    if (_settings.getTestrigDir() != null) {
+    if (_settings.getSnapshotDir() != null) {
       argString +=
           String.format(
               " -%s %s",
-              org.batfish.client.config.Settings.ARG_TESTRIG_DIR, _settings.getTestrigDir());
+              org.batfish.client.config.Settings.ARG_SNAPSHOT_DIR, _settings.getSnapshotDir());
     }
 
     if (_settings.getTracingEnable() && !GlobalTracer.isRegistered()) {
@@ -106,12 +108,26 @@ public class AllInOne {
       System.exit(1);
     }
 
-    runCoordinator();
+    BindPortFutures bindPortFutures = runCoordinator();
 
-    runBatfish();
+    try {
+      runBatfish(bindPortFutures);
+    } catch (ExecutionException | InterruptedException e) {
+      System.err.println("org.batfish.allinone: Worker initialization failed: " + e.getMessage());
+      e.printStackTrace();
+      System.exit(1);
+    }
 
     if (_settings.getRunClient()) {
-      _client.run(new LinkedList<String>());
+      try {
+        _client.getSettings().setCoordinatorWorkPort(bindPortFutures.getWorkPort().get());
+        _client.getSettings().setCoordinatorWorkV2Port(bindPortFutures.getWorkV2Port().get());
+      } catch (ExecutionException | InterruptedException e) {
+        System.err.println("org.batfish.allinone: Worker initialization failed: " + e.getMessage());
+        e.printStackTrace();
+        System.exit(1);
+      }
+      _client.run(new LinkedList<>());
       // The program does not terminate without it if the user misses the
       // quit command
       System.exit(0);
@@ -124,7 +140,7 @@ public class AllInOne {
           _logger.info("allinone: still alive ....\n");
         }
       } catch (Exception ex) {
-        String stackTrace = ExceptionUtils.getStackTrace(ex);
+        String stackTrace = Throwables.getStackTraceAsString(ex);
         System.err.println(stackTrace);
       }
     }
@@ -144,18 +160,26 @@ public class AllInOne {
             .getTracer());
   }
 
-  private void runBatfish() {
+  private void runBatfish(BindPortFutures bindPortFutures)
+      throws ExecutionException, InterruptedException {
 
     String batfishArgs =
         String.format(
-            "%s -%s %s -%s %s -%s %s",
+            "%s -%s %s -%s %s -%s %s -%s %s",
             _settings.getBatfishArgs(),
             org.batfish.config.Settings.ARG_RUN_MODE,
             _settings.getBatfishRunMode(),
             org.batfish.config.Settings.ARG_COORDINATOR_REGISTER,
             "true",
+            org.batfish.config.Settings.ARG_COORDINATOR_POOL_PORT,
+            bindPortFutures.getPoolPort().get(),
             org.batfish.config.Settings.ARG_TRACING_ENABLE,
             _settings.getTracingEnable());
+    // If we are running a command file, just use an ephemeral port for worker
+    if (_settings.getCommandFile() != null) {
+      batfishArgs += String.format(" -%s %s", org.batfish.config.Settings.ARG_SERVICE_PORT, 0);
+    }
+
     String[] initialArgArray = getArgArrayFromString(batfishArgs);
     List<String> args = new ArrayList<>(Arrays.asList(initialArgArray));
     final String[] argArray = args.toArray(new String[] {});
@@ -176,24 +200,37 @@ public class AllInOne {
     thread.start();
   }
 
-  private void runCoordinator() {
+  private BindPortFutures runCoordinator() {
     String coordinatorArgs =
         String.format(
             "%s -%s %s",
             _settings.getCoordinatorArgs(),
             org.batfish.coordinator.config.Settings.ARG_TRACING_ENABLE,
             _settings.getTracingEnable());
+    // If we are using a command file, just pick ephemeral ports to listen on
+    if (_settings.getCommandFile() != null) {
+      coordinatorArgs +=
+          String.format(
+              " -%s %s -%s %s -%s %s",
+              org.batfish.coordinator.config.Settings.ARG_SERVICE_POOL_PORT,
+              0,
+              org.batfish.coordinator.config.Settings.ARG_SERVICE_WORK_PORT,
+              0,
+              org.batfish.coordinator.config.Settings.ARG_SERVICE_WORK_V2_PORT,
+              0);
+    }
     String[] initialArgArray = getArgArrayFromString(coordinatorArgs);
     List<String> args = new ArrayList<>(Arrays.asList(initialArgArray));
     final String[] argArray = args.toArray(new String[] {});
     _logger.debugf("Starting coordinator with args: %s\n", Arrays.toString(argArray));
 
+    BindPortFutures bindPortFutures = new BindPortFutures();
     Thread thread =
         new Thread("coordinatorThread") {
           @Override
           public void run() {
             try {
-              org.batfish.coordinator.Main.main(argArray, _logger);
+              org.batfish.coordinator.Main.main(argArray, _logger, bindPortFutures);
             } catch (Exception e) {
               _logger.errorf(
                   "Initialization of coordinator failed with args: %s\nExceptionMessage: %s\n",
@@ -203,5 +240,6 @@ public class AllInOne {
         };
 
     thread.start();
+    return bindPortFutures;
   }
 }

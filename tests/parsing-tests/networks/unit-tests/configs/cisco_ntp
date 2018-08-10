@@ -1,0 +1,9 @@
+!
+hostname cisco_ntp
+!
+ntp access-group peer ntp-peer-group kod
+ntp server vrf some-vrf 1.2.3.4 source loopback 0
+ntp server vrf some-vrf 2.3.4.5 source loopback1
+ntp source-interface loopback0
+!
+

@@ -15,7 +15,7 @@ public final class Route4FilterLineThrough extends Route4FilterLine {
 
   public Route4FilterLineThrough(Prefix prefix, Prefix throughPrefix) {
     super(prefix);
-    _throughPrefix = prefix;
+    _throughPrefix = throughPrefix;
   }
 
   @Override

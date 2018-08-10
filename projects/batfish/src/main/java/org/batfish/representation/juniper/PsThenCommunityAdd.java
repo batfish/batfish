@@ -6,7 +6,7 @@ import java.util.TreeSet;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.routing_policy.expr.InlineCommunitySet;
+import org.batfish.datamodel.routing_policy.expr.LiteralCommunitySet;
 import org.batfish.datamodel.routing_policy.statement.AddCommunity;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 
@@ -42,7 +42,7 @@ public final class PsThenCommunityAdd extends PsThen {
         long communityLong = CommonUtil.communityStringToLong(communityStr);
         communities.add(communityLong);
       }
-      statements.add(new AddCommunity(new InlineCommunitySet(communities)));
+      statements.add(new AddCommunity(new LiteralCommunitySet(communities)));
     }
   }
 

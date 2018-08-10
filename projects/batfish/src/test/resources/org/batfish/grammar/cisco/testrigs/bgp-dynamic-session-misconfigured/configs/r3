@@ -1,4 +1,3 @@
-! boot system flash:EOS.swi
 hostname r3
 no ip domain-lookup
 !

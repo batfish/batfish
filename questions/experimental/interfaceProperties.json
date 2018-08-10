@@ -1,0 +1,30 @@
+{
+    "class": "org.batfish.question.interfaceproperties.InterfacePropertiesQuestion",
+    "differential": false,
+    "interfaceRegex": "${interfaceRegex}",
+    "nodeRegex": "${nodeRegex}",
+    "propertySpec": "${propertySpec}",
+    "instance": {
+        "description": "Gets properties of interfaces",
+        "instanceName": "interfaceProperties",
+        "tags": [
+        ],
+        "variables": {
+            "interfaceRegex": {
+                "description": "Only include interfaces that match this specification",
+                "type": "javaRegex",
+                "optional": true
+            },
+            "nodeRegex": {
+                "description": "Only include nodes that match this specification",
+                "type": "nodeSpec",
+                "optional": true
+            },
+            "propertySpec": {
+                "description": "Only include properties that match this specification",
+                "type": "interfacePropertySpec",
+                "optional": "true"             
+            }
+        }
+    }
+}

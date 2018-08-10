@@ -2,31 +2,35 @@ package org.batfish.datamodel.table;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.collect.HashMultiset;
+import com.google.common.collect.ImmutableMultiset;
+import com.google.common.collect.Multiset;
+import com.google.common.collect.TreeMultiset;
 import java.io.Serializable;
+import java.util.Iterator;
+import java.util.Objects;
 
 /** Represents data rows insider {@link TableAnswerElement} */
 public class Rows implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
-  private HashMultiset<ObjectNode> _data;
+  private Multiset<Row> _data;
 
   public Rows() {
     this(null);
   }
 
   @JsonCreator
-  public Rows(HashMultiset<ObjectNode> data) {
-    _data = data == null ? HashMultiset.create() : data;
+  public Rows(Multiset<Row> data) {
+    _data = data == null ? TreeMultiset.create() : data;
   }
 
-  public void add(ObjectNode row) {
+  public Rows add(Row row) {
     _data.add(row);
+    return this;
   }
 
-  public boolean contains(ObjectNode row) {
+  public boolean contains(Row row) {
     return _data.contains(row);
   }
 
@@ -38,9 +42,18 @@ public class Rows implements Serializable {
     return _data.equals(((Rows) o)._data);
   }
 
+  /**
+   * Returns an immutable copy of the rows in this object
+   *
+   * @return An ImmutableMultiset
+   */
   @JsonValue
-  private HashMultiset<ObjectNode> getData() {
-    return _data;
+  public Multiset<Row> getData() {
+    return ImmutableMultiset.copyOf(_data);
+  }
+
+  public Iterator<Row> iterator() {
+    return _data.iterator();
   }
 
   @Override
@@ -50,5 +63,10 @@ public class Rows implements Serializable {
 
   public int size() {
     return _data.size();
+  }
+
+  @Override
+  public String toString() {
+    return Objects.toString(_data);
   }
 }

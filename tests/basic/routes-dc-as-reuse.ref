@@ -15,9 +15,27 @@
             "vrf" : "default"
           },
           {
+            "class" : "org.batfish.datamodel.LocalRoute",
+            "network" : "2.0.0.1/32",
+            "nextHopInterface" : "Ethernet1",
+            "sourcePrefixLength" : 31,
+            "nextHop" : "(none)",
+            "node" : "plane_0_spine_0",
+            "vrf" : "default"
+          },
+          {
             "class" : "org.batfish.datamodel.ConnectedRoute",
             "network" : "2.1.0.0/31",
             "nextHopInterface" : "Ethernet2",
+            "nextHop" : "(none)",
+            "node" : "plane_0_spine_0",
+            "vrf" : "default"
+          },
+          {
+            "class" : "org.batfish.datamodel.LocalRoute",
+            "network" : "2.1.0.1/32",
+            "nextHopInterface" : "Ethernet2",
+            "sourcePrefixLength" : 31,
             "nextHop" : "(none)",
             "node" : "plane_0_spine_0",
             "vrf" : "default"
@@ -33,6 +51,7 @@
                 10000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.0.0.0/31",
@@ -59,6 +78,7 @@
                 10001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.0.1.0/31",
@@ -85,6 +105,7 @@
                 10100
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.1.0.0/31",
@@ -111,6 +132,7 @@
                 10101
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.1.1.0/31",
@@ -137,6 +159,7 @@
                 10000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.0.0.1/32",
@@ -163,6 +186,7 @@
                 10001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.0.1.1/32",
@@ -189,6 +213,7 @@
                 10100
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.1.0.1/32",
@@ -215,6 +240,7 @@
                 10101
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.1.1.1/32",
@@ -238,6 +264,7 @@
                 50000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "5.0.0.1/32",
@@ -261,6 +288,7 @@
                 50001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "5.1.0.1/32",
@@ -297,9 +325,27 @@
             "vrf" : "default"
           },
           {
+            "class" : "org.batfish.datamodel.LocalRoute",
+            "network" : "2.0.1.1/32",
+            "nextHopInterface" : "Ethernet1",
+            "sourcePrefixLength" : 31,
+            "nextHop" : "(none)",
+            "node" : "plane_1_spine_0",
+            "vrf" : "default"
+          },
+          {
             "class" : "org.batfish.datamodel.ConnectedRoute",
             "network" : "2.1.1.0/31",
             "nextHopInterface" : "Ethernet2",
+            "nextHop" : "(none)",
+            "node" : "plane_1_spine_0",
+            "vrf" : "default"
+          },
+          {
+            "class" : "org.batfish.datamodel.LocalRoute",
+            "network" : "2.1.1.1/32",
+            "nextHopInterface" : "Ethernet2",
+            "sourcePrefixLength" : 31,
             "nextHop" : "(none)",
             "node" : "plane_1_spine_0",
             "vrf" : "default"
@@ -315,6 +361,7 @@
                 10000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.0.0.0/31",
@@ -341,6 +388,7 @@
                 10001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.0.1.0/31",
@@ -367,6 +415,7 @@
                 10100
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.1.0.0/31",
@@ -393,6 +442,7 @@
                 10101
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.1.1.0/31",
@@ -419,6 +469,7 @@
                 10000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.0.0.1/32",
@@ -445,6 +496,7 @@
                 10001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.0.1.1/32",
@@ -471,6 +523,7 @@
                 10100
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.1.0.1/32",
@@ -497,6 +550,7 @@
                 10101
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.1.1.1/32",
@@ -520,6 +574,7 @@
                 50000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "5.0.1.1/32",
@@ -543,6 +598,7 @@
                 50001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "5.1.1.1/32",
@@ -579,9 +635,27 @@
             "vrf" : "default"
           },
           {
+            "class" : "org.batfish.datamodel.LocalRoute",
+            "network" : "1.0.0.1/32",
+            "nextHopInterface" : "Ethernet1",
+            "sourcePrefixLength" : 31,
+            "nextHop" : "(none)",
+            "node" : "pod_0_leaf_0",
+            "vrf" : "default"
+          },
+          {
             "class" : "org.batfish.datamodel.ConnectedRoute",
             "network" : "1.0.1.0/31",
             "nextHopInterface" : "Ethernet2",
+            "nextHop" : "(none)",
+            "node" : "pod_0_leaf_0",
+            "vrf" : "default"
+          },
+          {
+            "class" : "org.batfish.datamodel.LocalRoute",
+            "network" : "1.0.1.1/32",
+            "nextHopInterface" : "Ethernet2",
+            "sourcePrefixLength" : 31,
             "nextHop" : "(none)",
             "node" : "pod_0_leaf_0",
             "vrf" : "default"
@@ -595,6 +669,15 @@
             "vrf" : "default"
           },
           {
+            "class" : "org.batfish.datamodel.LocalRoute",
+            "network" : "2.0.0.0/32",
+            "nextHopInterface" : "Ethernet3",
+            "sourcePrefixLength" : 31,
+            "nextHop" : "(none)",
+            "node" : "pod_0_leaf_0",
+            "vrf" : "default"
+          },
+          {
             "class" : "org.batfish.datamodel.BgpRoute",
             "administrativeCost" : 20,
             "asPath" : [
@@ -602,6 +685,7 @@
                 10000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.0.0.0/31",
@@ -625,6 +709,7 @@
                 10001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.0.1.0/31",
@@ -654,6 +739,7 @@
                 10100
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.1.0.0/31",
@@ -683,6 +769,7 @@
                 10101
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.1.1.0/31",
@@ -706,6 +793,7 @@
                 10000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.0.0.1/32",
@@ -729,6 +817,7 @@
                 10001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.0.1.1/32",
@@ -758,6 +847,7 @@
                 10100
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.1.0.1/32",
@@ -787,6 +877,7 @@
                 10101
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.1.1.1/32",
@@ -821,6 +912,7 @@
                 50001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "5.1.0.1/32",
@@ -844,6 +936,7 @@
                 60000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "6.0.0.1/32",
@@ -872,9 +965,27 @@
             "vrf" : "default"
           },
           {
+            "class" : "org.batfish.datamodel.LocalRoute",
+            "network" : "1.0.0.3/32",
+            "nextHopInterface" : "Ethernet1",
+            "sourcePrefixLength" : 31,
+            "nextHop" : "(none)",
+            "node" : "pod_0_leaf_1",
+            "vrf" : "default"
+          },
+          {
             "class" : "org.batfish.datamodel.ConnectedRoute",
             "network" : "1.0.1.2/31",
             "nextHopInterface" : "Ethernet2",
+            "nextHop" : "(none)",
+            "node" : "pod_0_leaf_1",
+            "vrf" : "default"
+          },
+          {
+            "class" : "org.batfish.datamodel.LocalRoute",
+            "network" : "1.0.1.3/32",
+            "nextHopInterface" : "Ethernet2",
+            "sourcePrefixLength" : 31,
             "nextHop" : "(none)",
             "node" : "pod_0_leaf_1",
             "vrf" : "default"
@@ -888,6 +999,15 @@
             "vrf" : "default"
           },
           {
+            "class" : "org.batfish.datamodel.LocalRoute",
+            "network" : "2.0.1.0/32",
+            "nextHopInterface" : "Ethernet3",
+            "sourcePrefixLength" : 31,
+            "nextHop" : "(none)",
+            "node" : "pod_0_leaf_1",
+            "vrf" : "default"
+          },
+          {
             "class" : "org.batfish.datamodel.BgpRoute",
             "administrativeCost" : 20,
             "asPath" : [
@@ -895,6 +1015,7 @@
                 10000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.0.0.0/31",
@@ -918,6 +1039,7 @@
                 10001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.0.1.0/31",
@@ -947,6 +1069,7 @@
                 10100
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.1.0.0/31",
@@ -976,6 +1099,7 @@
                 10101
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.1.1.0/31",
@@ -999,6 +1123,7 @@
                 10000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.0.0.1/32",
@@ -1022,6 +1147,7 @@
                 10001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.0.1.1/32",
@@ -1051,6 +1177,7 @@
                 10100
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.1.0.1/32",
@@ -1080,6 +1207,7 @@
                 10101
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.1.1.1/32",
@@ -1114,6 +1242,7 @@
                 50001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "5.1.1.1/32",
@@ -1137,6 +1266,7 @@
                 60001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "6.1.0.1/32",
@@ -1165,6 +1295,15 @@
             "vrf" : "default"
           },
           {
+            "class" : "org.batfish.datamodel.LocalRoute",
+            "network" : "1.0.0.0/32",
+            "nextHopInterface" : "Ethernet1",
+            "sourcePrefixLength" : 31,
+            "nextHop" : "(none)",
+            "node" : "pod_0_tor_0",
+            "vrf" : "default"
+          },
+          {
             "class" : "org.batfish.datamodel.ConnectedRoute",
             "network" : "1.0.0.2/31",
             "nextHopInterface" : "Ethernet2",
@@ -1173,9 +1312,27 @@
             "vrf" : "default"
           },
           {
+            "class" : "org.batfish.datamodel.LocalRoute",
+            "network" : "1.0.0.2/32",
+            "nextHopInterface" : "Ethernet2",
+            "sourcePrefixLength" : 31,
+            "nextHop" : "(none)",
+            "node" : "pod_0_tor_0",
+            "vrf" : "default"
+          },
+          {
             "class" : "org.batfish.datamodel.ConnectedRoute",
             "network" : "3.0.0.0/31",
             "nextHopInterface" : "Ethernet3",
+            "nextHop" : "(none)",
+            "node" : "pod_0_tor_0",
+            "vrf" : "default"
+          },
+          {
+            "class" : "org.batfish.datamodel.LocalRoute",
+            "network" : "3.0.0.0/32",
+            "nextHopInterface" : "Ethernet3",
+            "sourcePrefixLength" : 31,
             "nextHop" : "(none)",
             "node" : "pod_0_tor_0",
             "vrf" : "default"
@@ -1191,6 +1348,7 @@
                 10001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.0.1.0/31",
@@ -1217,6 +1375,7 @@
                 10001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.0.1.0/31",
@@ -1249,6 +1408,7 @@
                 10100
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.1.0.0/31",
@@ -1281,6 +1441,7 @@
                 10100
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.1.0.0/31",
@@ -1313,6 +1474,7 @@
                 10101
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.1.1.0/31",
@@ -1345,6 +1507,7 @@
                 10101
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.1.1.0/31",
@@ -1379,6 +1542,7 @@
                 10001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.0.1.1/32",
@@ -1405,6 +1569,7 @@
                 10001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.0.1.1/32",
@@ -1437,6 +1602,7 @@
                 10100
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.1.0.1/32",
@@ -1469,6 +1635,7 @@
                 10100
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.1.0.1/32",
@@ -1501,6 +1668,7 @@
                 10101
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.1.1.1/32",
@@ -1533,6 +1701,7 @@
                 10101
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.1.1.1/32",
@@ -1556,6 +1725,7 @@
                 50000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "5.0.0.1/32",
@@ -1579,6 +1749,7 @@
                 50000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "5.0.1.1/32",
@@ -1608,6 +1779,7 @@
                 50001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "5.1.0.1/32",
@@ -1637,6 +1809,7 @@
                 50001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "5.1.1.1/32",
@@ -1663,6 +1836,7 @@
                 60000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "6.0.0.1/32",
@@ -1689,6 +1863,7 @@
                 60001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "6.1.0.1/32",
@@ -1717,9 +1892,27 @@
             "vrf" : "default"
           },
           {
+            "class" : "org.batfish.datamodel.LocalRoute",
+            "network" : "1.0.1.0/32",
+            "nextHopInterface" : "Ethernet1",
+            "sourcePrefixLength" : 31,
+            "nextHop" : "(none)",
+            "node" : "pod_0_tor_1",
+            "vrf" : "default"
+          },
+          {
             "class" : "org.batfish.datamodel.ConnectedRoute",
             "network" : "1.0.1.2/31",
             "nextHopInterface" : "Ethernet2",
+            "nextHop" : "(none)",
+            "node" : "pod_0_tor_1",
+            "vrf" : "default"
+          },
+          {
+            "class" : "org.batfish.datamodel.LocalRoute",
+            "network" : "1.0.1.2/32",
+            "nextHopInterface" : "Ethernet2",
+            "sourcePrefixLength" : 31,
             "nextHop" : "(none)",
             "node" : "pod_0_tor_1",
             "vrf" : "default"
@@ -1735,6 +1928,7 @@
                 10000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.0.0.0/31",
@@ -1761,6 +1955,7 @@
                 10000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.0.0.0/31",
@@ -1785,6 +1980,15 @@
             "vrf" : "default"
           },
           {
+            "class" : "org.batfish.datamodel.LocalRoute",
+            "network" : "3.0.1.0/32",
+            "nextHopInterface" : "Ethernet3",
+            "sourcePrefixLength" : 31,
+            "nextHop" : "(none)",
+            "node" : "pod_0_tor_1",
+            "vrf" : "default"
+          },
+          {
             "class" : "org.batfish.datamodel.BgpRoute",
             "administrativeCost" : 20,
             "asPath" : [
@@ -1801,6 +2005,7 @@
                 10100
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.1.0.0/31",
@@ -1833,6 +2038,7 @@
                 10100
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.1.0.0/31",
@@ -1865,6 +2071,7 @@
                 10101
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.1.1.0/31",
@@ -1897,6 +2104,7 @@
                 10101
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.1.1.0/31",
@@ -1923,6 +2131,7 @@
                 10000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.0.0.1/32",
@@ -1949,6 +2158,7 @@
                 10000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.0.0.1/32",
@@ -1989,6 +2199,7 @@
                 10100
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.1.0.1/32",
@@ -2021,6 +2232,7 @@
                 10100
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.1.0.1/32",
@@ -2053,6 +2265,7 @@
                 10101
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.1.1.1/32",
@@ -2085,6 +2298,7 @@
                 10101
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.1.1.1/32",
@@ -2108,6 +2322,7 @@
                 50000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "5.0.0.1/32",
@@ -2131,6 +2346,7 @@
                 50000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "5.0.1.1/32",
@@ -2160,6 +2376,7 @@
                 50001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "5.1.0.1/32",
@@ -2189,6 +2406,7 @@
                 50001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "5.1.1.1/32",
@@ -2215,6 +2433,7 @@
                 60000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "6.0.0.1/32",
@@ -2241,6 +2460,7 @@
                 60001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "6.1.0.1/32",
@@ -2269,6 +2489,15 @@
             "vrf" : "default"
           },
           {
+            "class" : "org.batfish.datamodel.LocalRoute",
+            "network" : "1.1.0.1/32",
+            "nextHopInterface" : "Ethernet1",
+            "sourcePrefixLength" : 31,
+            "nextHop" : "(none)",
+            "node" : "pod_1_leaf_0",
+            "vrf" : "default"
+          },
+          {
             "class" : "org.batfish.datamodel.ConnectedRoute",
             "network" : "1.1.1.0/31",
             "nextHopInterface" : "Ethernet2",
@@ -2277,9 +2506,27 @@
             "vrf" : "default"
           },
           {
+            "class" : "org.batfish.datamodel.LocalRoute",
+            "network" : "1.1.1.1/32",
+            "nextHopInterface" : "Ethernet2",
+            "sourcePrefixLength" : 31,
+            "nextHop" : "(none)",
+            "node" : "pod_1_leaf_0",
+            "vrf" : "default"
+          },
+          {
             "class" : "org.batfish.datamodel.ConnectedRoute",
             "network" : "2.1.0.0/31",
             "nextHopInterface" : "Ethernet3",
+            "nextHop" : "(none)",
+            "node" : "pod_1_leaf_0",
+            "vrf" : "default"
+          },
+          {
+            "class" : "org.batfish.datamodel.LocalRoute",
+            "network" : "2.1.0.0/32",
+            "nextHopInterface" : "Ethernet3",
+            "sourcePrefixLength" : 31,
             "nextHop" : "(none)",
             "node" : "pod_1_leaf_0",
             "vrf" : "default"
@@ -2298,6 +2545,7 @@
                 10000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.0.0.0/31",
@@ -2327,6 +2575,7 @@
                 10001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.0.1.0/31",
@@ -2350,6 +2599,7 @@
                 10100
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.1.0.0/31",
@@ -2373,6 +2623,7 @@
                 10101
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.1.1.0/31",
@@ -2402,6 +2653,7 @@
                 10000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.0.0.1/32",
@@ -2431,6 +2683,7 @@
                 10001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.0.1.1/32",
@@ -2454,6 +2707,7 @@
                 10100
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.1.0.1/32",
@@ -2477,6 +2731,7 @@
                 10101
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.1.1.1/32",
@@ -2503,6 +2758,7 @@
                 50000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "5.0.0.1/32",
@@ -2534,6 +2790,7 @@
                 60000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "6.0.0.1/32",
@@ -2562,6 +2819,15 @@
             "vrf" : "default"
           },
           {
+            "class" : "org.batfish.datamodel.LocalRoute",
+            "network" : "1.1.0.3/32",
+            "nextHopInterface" : "Ethernet1",
+            "sourcePrefixLength" : 31,
+            "nextHop" : "(none)",
+            "node" : "pod_1_leaf_1",
+            "vrf" : "default"
+          },
+          {
             "class" : "org.batfish.datamodel.ConnectedRoute",
             "network" : "1.1.1.2/31",
             "nextHopInterface" : "Ethernet2",
@@ -2570,9 +2836,27 @@
             "vrf" : "default"
           },
           {
+            "class" : "org.batfish.datamodel.LocalRoute",
+            "network" : "1.1.1.3/32",
+            "nextHopInterface" : "Ethernet2",
+            "sourcePrefixLength" : 31,
+            "nextHop" : "(none)",
+            "node" : "pod_1_leaf_1",
+            "vrf" : "default"
+          },
+          {
             "class" : "org.batfish.datamodel.ConnectedRoute",
             "network" : "2.1.1.0/31",
             "nextHopInterface" : "Ethernet3",
+            "nextHop" : "(none)",
+            "node" : "pod_1_leaf_1",
+            "vrf" : "default"
+          },
+          {
+            "class" : "org.batfish.datamodel.LocalRoute",
+            "network" : "2.1.1.0/32",
+            "nextHopInterface" : "Ethernet3",
+            "sourcePrefixLength" : 31,
             "nextHop" : "(none)",
             "node" : "pod_1_leaf_1",
             "vrf" : "default"
@@ -2591,6 +2875,7 @@
                 10000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.0.0.0/31",
@@ -2620,6 +2905,7 @@
                 10001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.0.1.0/31",
@@ -2643,6 +2929,7 @@
                 10100
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.1.0.0/31",
@@ -2666,6 +2953,7 @@
                 10101
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.1.1.0/31",
@@ -2695,6 +2983,7 @@
                 10000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.0.0.1/32",
@@ -2724,6 +3013,7 @@
                 10001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.0.1.1/32",
@@ -2747,6 +3037,7 @@
                 10100
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.1.0.1/32",
@@ -2770,6 +3061,7 @@
                 10101
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.1.1.1/32",
@@ -2796,6 +3088,7 @@
                 50000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "5.0.1.1/32",
@@ -2827,6 +3120,7 @@
                 60001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "6.1.0.1/32",
@@ -2855,9 +3149,27 @@
             "vrf" : "default"
           },
           {
+            "class" : "org.batfish.datamodel.LocalRoute",
+            "network" : "1.1.0.0/32",
+            "nextHopInterface" : "Ethernet1",
+            "sourcePrefixLength" : 31,
+            "nextHop" : "(none)",
+            "node" : "pod_1_tor_0",
+            "vrf" : "default"
+          },
+          {
             "class" : "org.batfish.datamodel.ConnectedRoute",
             "network" : "1.1.0.2/31",
             "nextHopInterface" : "Ethernet2",
+            "nextHop" : "(none)",
+            "node" : "pod_1_tor_0",
+            "vrf" : "default"
+          },
+          {
+            "class" : "org.batfish.datamodel.LocalRoute",
+            "network" : "1.1.0.2/32",
+            "nextHopInterface" : "Ethernet2",
+            "sourcePrefixLength" : 31,
             "nextHop" : "(none)",
             "node" : "pod_1_tor_0",
             "vrf" : "default"
@@ -2879,6 +3191,7 @@
                 10000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.0.0.0/31",
@@ -2911,6 +3224,7 @@
                 10000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.0.0.0/31",
@@ -2943,6 +3257,7 @@
                 10001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.0.1.0/31",
@@ -2975,6 +3290,7 @@
                 10001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.0.1.0/31",
@@ -2999,6 +3315,15 @@
             "vrf" : "default"
           },
           {
+            "class" : "org.batfish.datamodel.LocalRoute",
+            "network" : "3.1.0.0/32",
+            "nextHopInterface" : "Ethernet3",
+            "sourcePrefixLength" : 31,
+            "nextHop" : "(none)",
+            "node" : "pod_1_tor_0",
+            "vrf" : "default"
+          },
+          {
             "class" : "org.batfish.datamodel.BgpRoute",
             "administrativeCost" : 20,
             "asPath" : [
@@ -3009,6 +3334,7 @@
                 10101
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.1.1.0/31",
@@ -3035,6 +3361,7 @@
                 10101
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.1.1.0/31",
@@ -3067,6 +3394,7 @@
                 10000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.0.0.1/32",
@@ -3099,6 +3427,7 @@
                 10000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.0.0.1/32",
@@ -3131,6 +3460,7 @@
                 10001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.0.1.1/32",
@@ -3163,6 +3493,7 @@
                 10001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.0.1.1/32",
@@ -3197,6 +3528,7 @@
                 10101
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.1.1.1/32",
@@ -3223,6 +3555,7 @@
                 10101
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.1.1.1/32",
@@ -3252,6 +3585,7 @@
                 50000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "5.0.0.1/32",
@@ -3281,6 +3615,7 @@
                 50000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "5.0.1.1/32",
@@ -3304,6 +3639,7 @@
                 50001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "5.1.0.1/32",
@@ -3327,6 +3663,7 @@
                 50001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "5.1.1.1/32",
@@ -3353,6 +3690,7 @@
                 60000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "6.0.0.1/32",
@@ -3379,6 +3717,7 @@
                 60001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "6.1.0.1/32",
@@ -3407,9 +3746,27 @@
             "vrf" : "default"
           },
           {
+            "class" : "org.batfish.datamodel.LocalRoute",
+            "network" : "1.1.1.0/32",
+            "nextHopInterface" : "Ethernet1",
+            "sourcePrefixLength" : 31,
+            "nextHop" : "(none)",
+            "node" : "pod_1_tor_1",
+            "vrf" : "default"
+          },
+          {
             "class" : "org.batfish.datamodel.ConnectedRoute",
             "network" : "1.1.1.2/31",
             "nextHopInterface" : "Ethernet2",
+            "nextHop" : "(none)",
+            "node" : "pod_1_tor_1",
+            "vrf" : "default"
+          },
+          {
+            "class" : "org.batfish.datamodel.LocalRoute",
+            "network" : "1.1.1.2/32",
+            "nextHopInterface" : "Ethernet2",
+            "sourcePrefixLength" : 31,
             "nextHop" : "(none)",
             "node" : "pod_1_tor_1",
             "vrf" : "default"
@@ -3431,6 +3788,7 @@
                 10000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.0.0.0/31",
@@ -3463,6 +3821,7 @@
                 10000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.0.0.0/31",
@@ -3495,6 +3854,7 @@
                 10001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.0.1.0/31",
@@ -3527,6 +3887,7 @@
                 10001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.0.1.0/31",
@@ -3553,6 +3914,7 @@
                 10100
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.1.0.0/31",
@@ -3579,6 +3941,7 @@
                 10100
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "3.1.0.0/31",
@@ -3603,6 +3966,15 @@
             "vrf" : "default"
           },
           {
+            "class" : "org.batfish.datamodel.LocalRoute",
+            "network" : "3.1.1.0/32",
+            "nextHopInterface" : "Ethernet3",
+            "sourcePrefixLength" : 31,
+            "nextHop" : "(none)",
+            "node" : "pod_1_tor_1",
+            "vrf" : "default"
+          },
+          {
             "class" : "org.batfish.datamodel.BgpRoute",
             "administrativeCost" : 20,
             "asPath" : [
@@ -3619,6 +3991,7 @@
                 10000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.0.0.1/32",
@@ -3651,6 +4024,7 @@
                 10000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.0.0.1/32",
@@ -3683,6 +4057,7 @@
                 10001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.0.1.1/32",
@@ -3715,6 +4090,7 @@
                 10001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.0.1.1/32",
@@ -3741,6 +4117,7 @@
                 10100
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.1.0.1/32",
@@ -3767,6 +4144,7 @@
                 10100
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "4.1.0.1/32",
@@ -3804,6 +4182,7 @@
                 50000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "5.0.0.1/32",
@@ -3833,6 +4212,7 @@
                 50000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "5.0.1.1/32",
@@ -3856,6 +4236,7 @@
                 50001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "5.1.0.1/32",
@@ -3879,6 +4260,7 @@
                 50001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "5.1.1.1/32",
@@ -3905,6 +4287,7 @@
                 60000
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "6.0.0.1/32",
@@ -3931,6 +4314,7 @@
                 60001
               ]
             ],
+            "discard" : false,
             "localPreference" : 100,
             "metric" : 0,
             "network" : "6.1.0.1/32",
@@ -3967,12 +4351,36 @@
           {
             "administrativeCost" : 0,
             "metric" : 0,
+            "network" : "2.0.0.1/32",
+            "nextHop" : "(none)",
+            "nextHopInterface" : "Ethernet1",
+            "nextHopIp" : "AUTO/NONE(-1l)",
+            "node" : "plane_0_spine_0",
+            "protocol" : "local",
+            "tag" : -1,
+            "vrf" : "default"
+          },
+          {
+            "administrativeCost" : 0,
+            "metric" : 0,
             "network" : "2.1.0.0/31",
             "nextHop" : "(none)",
             "nextHopInterface" : "Ethernet2",
             "nextHopIp" : "AUTO/NONE(-1l)",
             "node" : "plane_0_spine_0",
             "protocol" : "connected",
+            "tag" : -1,
+            "vrf" : "default"
+          },
+          {
+            "administrativeCost" : 0,
+            "metric" : 0,
+            "network" : "2.1.0.1/32",
+            "nextHop" : "(none)",
+            "nextHopInterface" : "Ethernet2",
+            "nextHopIp" : "AUTO/NONE(-1l)",
+            "node" : "plane_0_spine_0",
+            "protocol" : "local",
             "tag" : -1,
             "vrf" : "default"
           },
@@ -4127,12 +4535,36 @@
           {
             "administrativeCost" : 0,
             "metric" : 0,
+            "network" : "2.0.1.1/32",
+            "nextHop" : "(none)",
+            "nextHopInterface" : "Ethernet1",
+            "nextHopIp" : "AUTO/NONE(-1l)",
+            "node" : "plane_1_spine_0",
+            "protocol" : "local",
+            "tag" : -1,
+            "vrf" : "default"
+          },
+          {
+            "administrativeCost" : 0,
+            "metric" : 0,
             "network" : "2.1.1.0/31",
             "nextHop" : "(none)",
             "nextHopInterface" : "Ethernet2",
             "nextHopIp" : "AUTO/NONE(-1l)",
             "node" : "plane_1_spine_0",
             "protocol" : "connected",
+            "tag" : -1,
+            "vrf" : "default"
+          },
+          {
+            "administrativeCost" : 0,
+            "metric" : 0,
+            "network" : "2.1.1.1/32",
+            "nextHop" : "(none)",
+            "nextHopInterface" : "Ethernet2",
+            "nextHopIp" : "AUTO/NONE(-1l)",
+            "node" : "plane_1_spine_0",
+            "protocol" : "local",
             "tag" : -1,
             "vrf" : "default"
           },
@@ -4287,6 +4719,18 @@
           {
             "administrativeCost" : 0,
             "metric" : 0,
+            "network" : "1.0.0.1/32",
+            "nextHop" : "(none)",
+            "nextHopInterface" : "Ethernet1",
+            "nextHopIp" : "AUTO/NONE(-1l)",
+            "node" : "pod_0_leaf_0",
+            "protocol" : "local",
+            "tag" : -1,
+            "vrf" : "default"
+          },
+          {
+            "administrativeCost" : 0,
+            "metric" : 0,
             "network" : "1.0.1.0/31",
             "nextHop" : "(none)",
             "nextHopInterface" : "Ethernet2",
@@ -4299,12 +4743,36 @@
           {
             "administrativeCost" : 0,
             "metric" : 0,
+            "network" : "1.0.1.1/32",
+            "nextHop" : "(none)",
+            "nextHopInterface" : "Ethernet2",
+            "nextHopIp" : "AUTO/NONE(-1l)",
+            "node" : "pod_0_leaf_0",
+            "protocol" : "local",
+            "tag" : -1,
+            "vrf" : "default"
+          },
+          {
+            "administrativeCost" : 0,
+            "metric" : 0,
             "network" : "2.0.0.0/31",
             "nextHop" : "(none)",
             "nextHopInterface" : "Ethernet3",
             "nextHopIp" : "AUTO/NONE(-1l)",
             "node" : "pod_0_leaf_0",
             "protocol" : "connected",
+            "tag" : -1,
+            "vrf" : "default"
+          },
+          {
+            "administrativeCost" : 0,
+            "metric" : 0,
+            "network" : "2.0.0.0/32",
+            "nextHop" : "(none)",
+            "nextHopInterface" : "Ethernet3",
+            "nextHopIp" : "AUTO/NONE(-1l)",
+            "node" : "pod_0_leaf_0",
+            "protocol" : "local",
             "tag" : -1,
             "vrf" : "default"
           },
@@ -4459,6 +4927,18 @@
           {
             "administrativeCost" : 0,
             "metric" : 0,
+            "network" : "1.0.0.3/32",
+            "nextHop" : "(none)",
+            "nextHopInterface" : "Ethernet1",
+            "nextHopIp" : "AUTO/NONE(-1l)",
+            "node" : "pod_0_leaf_1",
+            "protocol" : "local",
+            "tag" : -1,
+            "vrf" : "default"
+          },
+          {
+            "administrativeCost" : 0,
+            "metric" : 0,
             "network" : "1.0.1.2/31",
             "nextHop" : "(none)",
             "nextHopInterface" : "Ethernet2",
@@ -4471,12 +4951,36 @@
           {
             "administrativeCost" : 0,
             "metric" : 0,
+            "network" : "1.0.1.3/32",
+            "nextHop" : "(none)",
+            "nextHopInterface" : "Ethernet2",
+            "nextHopIp" : "AUTO/NONE(-1l)",
+            "node" : "pod_0_leaf_1",
+            "protocol" : "local",
+            "tag" : -1,
+            "vrf" : "default"
+          },
+          {
+            "administrativeCost" : 0,
+            "metric" : 0,
             "network" : "2.0.1.0/31",
             "nextHop" : "(none)",
             "nextHopInterface" : "Ethernet3",
             "nextHopIp" : "AUTO/NONE(-1l)",
             "node" : "pod_0_leaf_1",
             "protocol" : "connected",
+            "tag" : -1,
+            "vrf" : "default"
+          },
+          {
+            "administrativeCost" : 0,
+            "metric" : 0,
+            "network" : "2.0.1.0/32",
+            "nextHop" : "(none)",
+            "nextHopInterface" : "Ethernet3",
+            "nextHopIp" : "AUTO/NONE(-1l)",
+            "node" : "pod_0_leaf_1",
+            "protocol" : "local",
             "tag" : -1,
             "vrf" : "default"
           },
@@ -4631,6 +5135,18 @@
           {
             "administrativeCost" : 0,
             "metric" : 0,
+            "network" : "1.0.0.0/32",
+            "nextHop" : "(none)",
+            "nextHopInterface" : "Ethernet1",
+            "nextHopIp" : "AUTO/NONE(-1l)",
+            "node" : "pod_0_tor_0",
+            "protocol" : "local",
+            "tag" : -1,
+            "vrf" : "default"
+          },
+          {
+            "administrativeCost" : 0,
+            "metric" : 0,
             "network" : "1.0.0.2/31",
             "nextHop" : "(none)",
             "nextHopInterface" : "Ethernet2",
@@ -4643,12 +5159,36 @@
           {
             "administrativeCost" : 0,
             "metric" : 0,
+            "network" : "1.0.0.2/32",
+            "nextHop" : "(none)",
+            "nextHopInterface" : "Ethernet2",
+            "nextHopIp" : "AUTO/NONE(-1l)",
+            "node" : "pod_0_tor_0",
+            "protocol" : "local",
+            "tag" : -1,
+            "vrf" : "default"
+          },
+          {
+            "administrativeCost" : 0,
+            "metric" : 0,
             "network" : "3.0.0.0/31",
             "nextHop" : "(none)",
             "nextHopInterface" : "Ethernet3",
             "nextHopIp" : "AUTO/NONE(-1l)",
             "node" : "pod_0_tor_0",
             "protocol" : "connected",
+            "tag" : -1,
+            "vrf" : "default"
+          },
+          {
+            "administrativeCost" : 0,
+            "metric" : 0,
+            "network" : "3.0.0.0/32",
+            "nextHop" : "(none)",
+            "nextHopInterface" : "Ethernet3",
+            "nextHopIp" : "AUTO/NONE(-1l)",
+            "node" : "pod_0_tor_0",
+            "protocol" : "local",
             "tag" : -1,
             "vrf" : "default"
           },
@@ -4899,12 +5439,36 @@
           {
             "administrativeCost" : 0,
             "metric" : 0,
+            "network" : "1.0.1.0/32",
+            "nextHop" : "(none)",
+            "nextHopInterface" : "Ethernet1",
+            "nextHopIp" : "AUTO/NONE(-1l)",
+            "node" : "pod_0_tor_1",
+            "protocol" : "local",
+            "tag" : -1,
+            "vrf" : "default"
+          },
+          {
+            "administrativeCost" : 0,
+            "metric" : 0,
             "network" : "1.0.1.2/31",
             "nextHop" : "(none)",
             "nextHopInterface" : "Ethernet2",
             "nextHopIp" : "AUTO/NONE(-1l)",
             "node" : "pod_0_tor_1",
             "protocol" : "connected",
+            "tag" : -1,
+            "vrf" : "default"
+          },
+          {
+            "administrativeCost" : 0,
+            "metric" : 0,
+            "network" : "1.0.1.2/32",
+            "nextHop" : "(none)",
+            "nextHopInterface" : "Ethernet2",
+            "nextHopIp" : "AUTO/NONE(-1l)",
+            "node" : "pod_0_tor_1",
+            "protocol" : "local",
             "tag" : -1,
             "vrf" : "default"
           },
@@ -4941,6 +5505,18 @@
             "nextHopIp" : "AUTO/NONE(-1l)",
             "node" : "pod_0_tor_1",
             "protocol" : "connected",
+            "tag" : -1,
+            "vrf" : "default"
+          },
+          {
+            "administrativeCost" : 0,
+            "metric" : 0,
+            "network" : "3.0.1.0/32",
+            "nextHop" : "(none)",
+            "nextHopInterface" : "Ethernet3",
+            "nextHopIp" : "AUTO/NONE(-1l)",
+            "node" : "pod_0_tor_1",
+            "protocol" : "local",
             "tag" : -1,
             "vrf" : "default"
           },
@@ -5167,6 +5743,18 @@
           {
             "administrativeCost" : 0,
             "metric" : 0,
+            "network" : "1.1.0.1/32",
+            "nextHop" : "(none)",
+            "nextHopInterface" : "Ethernet1",
+            "nextHopIp" : "AUTO/NONE(-1l)",
+            "node" : "pod_1_leaf_0",
+            "protocol" : "local",
+            "tag" : -1,
+            "vrf" : "default"
+          },
+          {
+            "administrativeCost" : 0,
+            "metric" : 0,
             "network" : "1.1.1.0/31",
             "nextHop" : "(none)",
             "nextHopInterface" : "Ethernet2",
@@ -5179,12 +5767,36 @@
           {
             "administrativeCost" : 0,
             "metric" : 0,
+            "network" : "1.1.1.1/32",
+            "nextHop" : "(none)",
+            "nextHopInterface" : "Ethernet2",
+            "nextHopIp" : "AUTO/NONE(-1l)",
+            "node" : "pod_1_leaf_0",
+            "protocol" : "local",
+            "tag" : -1,
+            "vrf" : "default"
+          },
+          {
+            "administrativeCost" : 0,
+            "metric" : 0,
             "network" : "2.1.0.0/31",
             "nextHop" : "(none)",
             "nextHopInterface" : "Ethernet3",
             "nextHopIp" : "AUTO/NONE(-1l)",
             "node" : "pod_1_leaf_0",
             "protocol" : "connected",
+            "tag" : -1,
+            "vrf" : "default"
+          },
+          {
+            "administrativeCost" : 0,
+            "metric" : 0,
+            "network" : "2.1.0.0/32",
+            "nextHop" : "(none)",
+            "nextHopInterface" : "Ethernet3",
+            "nextHopIp" : "AUTO/NONE(-1l)",
+            "node" : "pod_1_leaf_0",
+            "protocol" : "local",
             "tag" : -1,
             "vrf" : "default"
           },
@@ -5339,6 +5951,18 @@
           {
             "administrativeCost" : 0,
             "metric" : 0,
+            "network" : "1.1.0.3/32",
+            "nextHop" : "(none)",
+            "nextHopInterface" : "Ethernet1",
+            "nextHopIp" : "AUTO/NONE(-1l)",
+            "node" : "pod_1_leaf_1",
+            "protocol" : "local",
+            "tag" : -1,
+            "vrf" : "default"
+          },
+          {
+            "administrativeCost" : 0,
+            "metric" : 0,
             "network" : "1.1.1.2/31",
             "nextHop" : "(none)",
             "nextHopInterface" : "Ethernet2",
@@ -5351,12 +5975,36 @@
           {
             "administrativeCost" : 0,
             "metric" : 0,
+            "network" : "1.1.1.3/32",
+            "nextHop" : "(none)",
+            "nextHopInterface" : "Ethernet2",
+            "nextHopIp" : "AUTO/NONE(-1l)",
+            "node" : "pod_1_leaf_1",
+            "protocol" : "local",
+            "tag" : -1,
+            "vrf" : "default"
+          },
+          {
+            "administrativeCost" : 0,
+            "metric" : 0,
             "network" : "2.1.1.0/31",
             "nextHop" : "(none)",
             "nextHopInterface" : "Ethernet3",
             "nextHopIp" : "AUTO/NONE(-1l)",
             "node" : "pod_1_leaf_1",
             "protocol" : "connected",
+            "tag" : -1,
+            "vrf" : "default"
+          },
+          {
+            "administrativeCost" : 0,
+            "metric" : 0,
+            "network" : "2.1.1.0/32",
+            "nextHop" : "(none)",
+            "nextHopInterface" : "Ethernet3",
+            "nextHopIp" : "AUTO/NONE(-1l)",
+            "node" : "pod_1_leaf_1",
+            "protocol" : "local",
             "tag" : -1,
             "vrf" : "default"
           },
@@ -5511,12 +6159,36 @@
           {
             "administrativeCost" : 0,
             "metric" : 0,
+            "network" : "1.1.0.0/32",
+            "nextHop" : "(none)",
+            "nextHopInterface" : "Ethernet1",
+            "nextHopIp" : "AUTO/NONE(-1l)",
+            "node" : "pod_1_tor_0",
+            "protocol" : "local",
+            "tag" : -1,
+            "vrf" : "default"
+          },
+          {
+            "administrativeCost" : 0,
+            "metric" : 0,
             "network" : "1.1.0.2/31",
             "nextHop" : "(none)",
             "nextHopInterface" : "Ethernet2",
             "nextHopIp" : "AUTO/NONE(-1l)",
             "node" : "pod_1_tor_0",
             "protocol" : "connected",
+            "tag" : -1,
+            "vrf" : "default"
+          },
+          {
+            "administrativeCost" : 0,
+            "metric" : 0,
+            "network" : "1.1.0.2/32",
+            "nextHop" : "(none)",
+            "nextHopInterface" : "Ethernet2",
+            "nextHopIp" : "AUTO/NONE(-1l)",
+            "node" : "pod_1_tor_0",
+            "protocol" : "local",
             "tag" : -1,
             "vrf" : "default"
           },
@@ -5577,6 +6249,18 @@
             "nextHopIp" : "AUTO/NONE(-1l)",
             "node" : "pod_1_tor_0",
             "protocol" : "connected",
+            "tag" : -1,
+            "vrf" : "default"
+          },
+          {
+            "administrativeCost" : 0,
+            "metric" : 0,
+            "network" : "3.1.0.0/32",
+            "nextHop" : "(none)",
+            "nextHopInterface" : "Ethernet3",
+            "nextHopIp" : "AUTO/NONE(-1l)",
+            "node" : "pod_1_tor_0",
+            "protocol" : "local",
             "tag" : -1,
             "vrf" : "default"
           },
@@ -5779,12 +6463,36 @@
           {
             "administrativeCost" : 0,
             "metric" : 0,
+            "network" : "1.1.1.0/32",
+            "nextHop" : "(none)",
+            "nextHopInterface" : "Ethernet1",
+            "nextHopIp" : "AUTO/NONE(-1l)",
+            "node" : "pod_1_tor_1",
+            "protocol" : "local",
+            "tag" : -1,
+            "vrf" : "default"
+          },
+          {
+            "administrativeCost" : 0,
+            "metric" : 0,
             "network" : "1.1.1.2/31",
             "nextHop" : "(none)",
             "nextHopInterface" : "Ethernet2",
             "nextHopIp" : "AUTO/NONE(-1l)",
             "node" : "pod_1_tor_1",
             "protocol" : "connected",
+            "tag" : -1,
+            "vrf" : "default"
+          },
+          {
+            "administrativeCost" : 0,
+            "metric" : 0,
+            "network" : "1.1.1.2/32",
+            "nextHop" : "(none)",
+            "nextHopInterface" : "Ethernet2",
+            "nextHopIp" : "AUTO/NONE(-1l)",
+            "node" : "pod_1_tor_1",
+            "protocol" : "local",
             "tag" : -1,
             "vrf" : "default"
           },
@@ -5869,6 +6577,18 @@
             "nextHopIp" : "AUTO/NONE(-1l)",
             "node" : "pod_1_tor_1",
             "protocol" : "connected",
+            "tag" : -1,
+            "vrf" : "default"
+          },
+          {
+            "administrativeCost" : 0,
+            "metric" : 0,
+            "network" : "3.1.1.0/32",
+            "nextHop" : "(none)",
+            "nextHopInterface" : "Ethernet3",
+            "nextHopIp" : "AUTO/NONE(-1l)",
+            "node" : "pod_1_tor_1",
+            "protocol" : "local",
             "tag" : -1,
             "vrf" : "default"
           },

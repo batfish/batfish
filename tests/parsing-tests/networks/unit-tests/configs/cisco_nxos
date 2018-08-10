@@ -1,0 +1,10 @@
+hostname cisco_nxos
+!
+feature bgp
+!
+ip access-list copp-system-acl-icmp
+  10 permit icmp any any 
+class-map type control-plane match-any copp-icmp
+  match access-group name copp-system-acl-icmp
+!
+

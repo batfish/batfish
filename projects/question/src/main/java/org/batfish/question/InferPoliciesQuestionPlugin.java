@@ -17,13 +17,14 @@ import java.util.Map;
 import java.util.NavigableSet;
 import java.util.SortedMap;
 import java.util.function.Function;
-import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.answers.AnswerElement;
+import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.collections.NamedStructureOutlierSet;
 import org.batfish.datamodel.collections.OutlierSet;
 import org.batfish.datamodel.collections.RoleBasedOutlierSet;
@@ -43,7 +44,6 @@ import org.batfish.question.jsonpath.JsonPathExtractionHint;
 import org.batfish.question.jsonpath.JsonPathExtractionHint.UseType;
 import org.batfish.question.jsonpath.JsonPathQuery;
 import org.batfish.question.jsonpath.JsonPathQuestionPlugin.JsonPathQuestion;
-import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.OutliersHypothesis;
 
 @AutoService(Plugin.class)
@@ -83,7 +83,7 @@ public class InferPoliciesQuestionPlugin extends QuestionPlugin {
     } catch (IOException e) {
       throw new BatfishException("Error creating extraction", e);
     }
-    outliersEx.setSchema("List<String>");
+    outliersEx.setSchema(Schema.list(Schema.STRING));
     extractions.put("outlierNames", outliersEx);
 
     /////// All role consistency questions have a role in the answer.
@@ -97,7 +97,7 @@ public class InferPoliciesQuestionPlugin extends QuestionPlugin {
     } catch (IOException e) {
       throw new BatfishException("Error creating extraction", e);
     }
-    roleEx.setSchema("String");
+    roleEx.setSchema(Schema.STRING);
     extractions.put("role", roleEx);
 
     String hypothesisSpecificDesc;
@@ -115,7 +115,7 @@ public class InferPoliciesQuestionPlugin extends QuestionPlugin {
           } catch (IOException e) {
             throw new BatfishException("Error creating extraction", e);
           }
-          nameEx.setSchema("String");
+          nameEx.setSchema(Schema.STRING);
           extractions.put("name", nameEx);
 
           JsonPathExtractionHint struct = new JsonPathExtractionHint();
@@ -128,7 +128,7 @@ public class InferPoliciesQuestionPlugin extends QuestionPlugin {
           } catch (IOException e) {
             throw new BatfishException("Error creating extraction", e);
           }
-          structEx.setSchema("String");
+          structEx.setSchema(Schema.STRING);
           extractions.put("structType", structEx);
 
           hypothesisSpecificDesc = "define a ${structType} named ${name}";
@@ -147,7 +147,7 @@ public class InferPoliciesQuestionPlugin extends QuestionPlugin {
           } catch (IOException e) {
             throw new BatfishException("Error creating extraction", e);
           }
-          nameEx.setSchema("String");
+          nameEx.setSchema(Schema.STRING);
           extractions.put("name", nameEx);
 
           JsonPathExtractionHint definition = new JsonPathExtractionHint();
@@ -161,7 +161,7 @@ public class InferPoliciesQuestionPlugin extends QuestionPlugin {
           } catch (IOException e) {
             throw new BatfishException("Error creating extraction", e);
           }
-          definitionEx.setSchema("List<Ip>");
+          definitionEx.setSchema(Schema.list(Schema.IP));
           extractions.put("definition", definitionEx);
           hypothesisSpecificDesc = "have ${name} equal to ${definition}";
           break;
@@ -179,7 +179,7 @@ public class InferPoliciesQuestionPlugin extends QuestionPlugin {
           } catch (IOException e) {
             throw new BatfishException("Error creating extraction", e);
           }
-          nameEx.setSchema("String");
+          nameEx.setSchema(Schema.STRING);
           extractions.put("name", nameEx);
 
           JsonPathExtractionHint struct = new JsonPathExtractionHint();
@@ -192,7 +192,7 @@ public class InferPoliciesQuestionPlugin extends QuestionPlugin {
           } catch (IOException e) {
             throw new BatfishException("Error creating extraction", e);
           }
-          structEx.setSchema("String");
+          structEx.setSchema(Schema.STRING);
           extractions.put("structType", structEx);
 
           JsonPathExtractionHint definition = new JsonPathExtractionHint();
@@ -206,7 +206,7 @@ public class InferPoliciesQuestionPlugin extends QuestionPlugin {
           } catch (IOException e) {
             throw new BatfishException("Error creating extraction", e);
           }
-          definitionEx.setSchema("Object");
+          definitionEx.setSchema(Schema.OBJECT);
           extractions.put("structDefinition", definitionEx);
 
           hypothesisSpecificDesc =
@@ -219,7 +219,7 @@ public class InferPoliciesQuestionPlugin extends QuestionPlugin {
     }
 
     Composition nodeComp = new Composition();
-    nodeComp.setSchema("List<Node>");
+    nodeComp.setSchema(Schema.list(Schema.NODE));
     nodeComp.setDictionary(ImmutableMap.of("name", "outlierNames"));
 
     return new DisplayHints(
@@ -425,12 +425,11 @@ public class InferPoliciesQuestionPlugin extends QuestionPlugin {
 
     private static final String PROP_ROLE_DIMENSION = "roleDimension";
 
-    @Nonnull private String _roleDimension;
+    @Nullable private String _roleDimension;
 
     @JsonCreator
     public InferPoliciesQuestion(@JsonProperty(PROP_ROLE_DIMENSION) String roleDimension) {
-      _roleDimension =
-          roleDimension == null ? NodeRoleDimension.AUTO_DIMENSION_PRIMARY : roleDimension;
+      _roleDimension = roleDimension;
     }
 
     @Override

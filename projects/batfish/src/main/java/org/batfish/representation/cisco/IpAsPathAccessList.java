@@ -1,17 +1,19 @@
 package org.batfish.representation.cisco;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import org.batfish.common.util.DefinedStructure;
 
-public class IpAsPathAccessList extends DefinedStructure<String> {
+public class IpAsPathAccessList implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
   private List<IpAsPathAccessListLine> _lines;
 
-  public IpAsPathAccessList(String name, int definitionLine) {
-    super(name, definitionLine);
+  private final String _name;
+
+  public IpAsPathAccessList(String name) {
+    _name = name;
     _lines = new ArrayList<>();
   }
 
@@ -21,5 +23,9 @@ public class IpAsPathAccessList extends DefinedStructure<String> {
 
   public List<IpAsPathAccessListLine> getLines() {
     return _lines;
+  }
+
+  public String getName() {
+    return _name;
   }
 }

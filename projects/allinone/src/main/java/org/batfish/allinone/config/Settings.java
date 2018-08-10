@@ -24,7 +24,8 @@ public class Settings extends BaseSettings {
   private static final String ARG_RUN_CLIENT = "runclient";
   private static final String ARG_RUN_MODE = org.batfish.client.config.Settings.ARG_RUN_MODE;
   public static final String ARG_SERVICE_NAME = "servicename";
-  private static final String ARG_TESTRIG_DIR = org.batfish.client.config.Settings.ARG_TESTRIG_DIR;
+  private static final String ARG_SNAPSHOT_DIR =
+      org.batfish.client.config.Settings.ARG_SNAPSHOT_DIR;
   private static final String ARG_TRACING_AGENT_HOST = "tracingagenthost";
   private static final String ARG_TRACING_AGENT_PORT = "tracingagentport";
   private static final String ARG_TRACING_ENABLE = "tracingenable";
@@ -42,7 +43,7 @@ public class Settings extends BaseSettings {
   private boolean _runClient;
   private String _runMode;
   private String _serviceName;
-  private String _testrigDir;
+  private String _snapshotDir;
   private String _tracingAgentHost;
   private Integer _tracingAgentPort;
   private boolean _tracingEnable;
@@ -100,8 +101,8 @@ public class Settings extends BaseSettings {
     return _serviceName;
   }
 
-  public String getTestrigDir() {
-    return _testrigDir;
+  public String getSnapshotDir() {
+    return _snapshotDir;
   }
 
   public Integer getTracingAgentPort() {
@@ -153,7 +154,7 @@ public class Settings extends BaseSettings {
         "mode in which to start batfish",
         Arrays.stream(RunMode.values())
             .filter(v -> v != RunMode.WORKER)
-            .map(v -> v.toString())
+            .map(Object::toString)
             .collect(Collectors.joining("|")));
 
     addOption(ARG_CLIENT_ARGS, "arguments for the client process", "client_args");
@@ -168,7 +169,7 @@ public class Settings extends BaseSettings {
 
     addOption(ARG_SERVICE_NAME, "service name", "service_name");
 
-    addOption(ARG_TESTRIG_DIR, "where the testrig sits", "testrig_dir");
+    addOption(ARG_SNAPSHOT_DIR, "where the snapshot sits", "snapshot_dir");
 
     addOption(ARG_TRACING_AGENT_HOST, "jaeger agent host", "jaeger_agent_host");
 
@@ -188,7 +189,7 @@ public class Settings extends BaseSettings {
     }
 
     if (getBooleanOptionValue(ARG_VERSION)) {
-      System.out.printf("Batfish version: %s\n", Version.getVersion());
+      System.out.print(Version.getCompleteVersionString());
       System.exit(0);
     }
 
@@ -205,7 +206,7 @@ public class Settings extends BaseSettings {
     _runClient = getBooleanOptionValue(ARG_RUN_CLIENT);
     _runMode = getStringOptionValue(ARG_RUN_MODE);
     _serviceName = getStringOptionValue(ARG_SERVICE_NAME);
-    _testrigDir = getStringOptionValue(ARG_TESTRIG_DIR);
+    _snapshotDir = getStringOptionValue(ARG_SNAPSHOT_DIR);
     _tracingAgentHost = getStringOptionValue(ARG_TRACING_AGENT_HOST);
     _tracingAgentPort = getIntegerOptionValue(ARG_TRACING_AGENT_PORT);
     _tracingEnable = getBooleanOptionValue(ARG_TRACING_ENABLE);

@@ -1,5 +1,6 @@
 package org.batfish.z3;
 
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.microsoft.z3.BitVecExpr;
@@ -10,8 +11,14 @@ import com.microsoft.z3.Fixedpoint;
 import com.microsoft.z3.FuncDecl;
 import com.microsoft.z3.Params;
 import com.microsoft.z3.Status;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 import org.batfish.common.BatfishException;
@@ -23,6 +30,9 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.State;
 import org.batfish.job.BatfishJob;
 import org.batfish.job.BatfishJobResult;
+import org.batfish.z3.expr.QueryStatement;
+import org.batfish.z3.expr.ReachabilityProgramOptimizer;
+import org.batfish.z3.expr.RuleStatement;
 
 public abstract class Z3ContextJob<R extends BatfishJobResult<?, ?>> extends BatfishJob<R> {
 
@@ -92,18 +102,21 @@ public abstract class Z3ContextJob<R extends BatfishJobResult<?, ?>> extends Bat
           .build();
 
   protected static Flow createFlow(
-      IngressPoint ingressPoint, Map<String, Long> constraints, String tag) {
+      IngressLocation ingressLocation, Map<String, Long> constraints, String tag) {
     Flow.Builder flowBuilder = new Flow.Builder();
-    flowBuilder.setIngressNode(ingressPoint.getNode());
-    switch (ingressPoint.getType()) {
-      case INTERFACE:
-        flowBuilder.setIngressInterface(ingressPoint.getInterface());
+    switch (ingressLocation.getType()) {
+      case INTERFACE_LINK:
+        flowBuilder
+            .setIngressNode(ingressLocation.getNode())
+            .setIngressInterface(ingressLocation.getInterface());
         break;
       case VRF:
-        flowBuilder.setIngressVrf(ingressPoint.getVrf());
+        flowBuilder
+            .setIngressNode(ingressLocation.getNode())
+            .setIngressVrf(ingressLocation.getVrf());
         break;
       default:
-        throw new BatfishException("Unexpected IngressPoint type");
+        throw new BatfishException("Unexpected IngressLocation Type: " + ingressLocation.getType());
     }
     flowBuilder.setTag(tag);
     constraints.forEach(
@@ -140,38 +153,60 @@ public abstract class Z3ContextJob<R extends BatfishJobResult<?, ?>> extends Bat
   protected BoolExpr computeSmtConstraintsViaNod(NodProgram program, boolean negate) {
     Fixedpoint fix = mkFixedpoint(program, true);
     Expr answer = answerFixedPoint(fix, program);
-    return getSolverInput(answer, program, negate);
+    BoolExpr solverInput = getSolverInput(answer, program, negate);
+    if (_settings.debugFlagEnabled("saveSolverInput")) {
+      saveSolverInput(solverInput.simplify());
+    }
+    return solverInput;
+  }
+
+  private void saveSolverInput(Expr expr) {
+    // synchronize to avoid z3 concurrency bugs.
+    // use NodJob to synchronize with any other similar writers.
+    synchronized (NodJob.class) {
+      Path nodPath =
+          _settings
+              .getActiveTestrigSettings()
+              .getBasePath()
+              .resolve(
+                  String.format(
+                      "solverInput-%s-%d.smt2", Instant.now(), Thread.currentThread().getId()));
+      try (FileWriter writer = new FileWriter(nodPath.toFile())) {
+        writer.write(expr.toString());
+      } catch (IOException e) {
+        _logger.warnf("Error saving Nod program to file: %s", Throwables.getStackTraceAsString(e));
+      }
+    }
   }
 
   protected BoolExpr getSolverInput(Expr answer, NodProgram program, boolean negate) {
-    BoolExpr solverInput;
-    if (answer.getArgs().length > 0) {
+    Map<String, BitVecExpr> variablesAsConsts = program.getNodContext().getVariablesAsConsts();
+    List<BitVecExpr> vars =
+        program
+            .getNodContext()
+            .getVariableNames()
+            .stream()
+            .map(variablesAsConsts::get)
+            .collect(Collectors.toList());
 
-      Map<String, BitVecExpr> variablesAsConsts = program.getNodContext().getVariablesAsConsts();
-      List<BitVecExpr> vars =
-          program
-              .getNodContext()
-              .getVariableNames()
-              .stream()
-              .map(variablesAsConsts::get)
-              .collect(Collectors.toList());
-      List<BitVecExpr> reversedVars = Lists.reverse(vars);
+    Expr substitutedSmtConstraint =
+        program.getSmtConstraint().substituteVars(vars.toArray(new Expr[] {}));
 
-      Expr substitutedSmtConstraint =
-          program.getSmtConstraint().substituteVars(vars.toArray(new Expr[] {}));
-      Expr substitutedAnswer = answer.substituteVars(reversedVars.toArray(new Expr[] {}));
-      solverInput =
-          program
-              .getNodContext()
-              .getContext()
-              .mkAnd((BoolExpr) substitutedAnswer, (BoolExpr) substitutedSmtConstraint);
-    } else {
-      solverInput = (BoolExpr) answer;
-    }
-    if (negate) {
-      solverInput = program.getNodContext().getContext().mkNot(solverInput);
-    }
-    return solverInput;
+    List<BitVecExpr> reversedVars = Lists.reverse(vars);
+    Expr substitutedAnswer =
+        answer.getArgs().length == 0
+            ? answer
+            : answer.substituteVars(reversedVars.toArray(new Expr[] {}));
+
+    BoolExpr answerAndSmtConstraint =
+        program
+            .getNodContext()
+            .getContext()
+            .mkAnd((BoolExpr) substitutedAnswer, (BoolExpr) substitutedSmtConstraint);
+
+    return negate
+        ? program.getNodContext().getContext().mkNot(answerAndSmtConstraint)
+        : answerAndSmtConstraint;
   }
 
   protected Fixedpoint mkFixedpoint(NodProgram program, boolean printAnswer) {
@@ -191,5 +226,44 @@ public abstract class Z3ContextJob<R extends BatfishJobResult<?, ?>> extends Bat
       fix.addRule(rule, null);
     }
     return fix;
+  }
+
+  protected NodProgram optimizedProgram(
+      Context ctx, ReachabilityProgram baseProgram, ReachabilityProgram queryProgram) {
+    List<RuleStatement> allRules = new ArrayList<>(baseProgram.getRules());
+    allRules.addAll(queryProgram.getRules());
+
+    List<QueryStatement> allQueries = new ArrayList<>(baseProgram.getQueries());
+    allQueries.addAll(queryProgram.getQueries());
+
+    Set<RuleStatement> optimizedRules = ReachabilityProgramOptimizer.optimize(allRules, allQueries);
+
+    ReachabilityProgram optimizedBaseProgram =
+        ReachabilityProgram.builder()
+            .setInput(baseProgram.getInput())
+            .setRules(
+                baseProgram
+                    .getRules()
+                    .stream()
+                    .filter(optimizedRules::contains)
+                    .collect(Collectors.toList()))
+            .setQueries(baseProgram.getQueries())
+            .setSmtConstraint(baseProgram.getSmtConstraint())
+            .build();
+
+    ReachabilityProgram optimizedQueryProgram =
+        ReachabilityProgram.builder()
+            .setInput(queryProgram.getInput())
+            .setRules(
+                queryProgram
+                    .getRules()
+                    .stream()
+                    .filter(optimizedRules::contains)
+                    .collect(Collectors.toList()))
+            .setQueries(queryProgram.getQueries())
+            .setSmtConstraint(queryProgram.getSmtConstraint())
+            .build();
+
+    return new NodProgram(ctx, optimizedBaseProgram, optimizedQueryProgram);
   }
 }

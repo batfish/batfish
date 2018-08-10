@@ -21,11 +21,8 @@ public class RouteMapMatchIpAccessListLine extends RouteMapMatchLine {
 
   private boolean _routing;
 
-  private final int _statementLine;
-
-  public RouteMapMatchIpAccessListLine(Set<String> listNames, int statementLine) {
+  public RouteMapMatchIpAccessListLine(Set<String> listNames) {
     _listNames = listNames;
-    _statementLine = statementLine;
   }
 
   public Set<String> getListNames() {
@@ -55,22 +52,7 @@ public class RouteMapMatchIpAccessListLine extends RouteMapMatchLine {
         ipAccessList = c.getIpAccessLists().get(listName);
         list = ipAccessList;
       }
-      if (list == null) {
-        cc.undefined(
-            CiscoStructureType.IP_ACCESS_LIST,
-            listName,
-            CiscoStructureUsage.ROUTE_MAP_MATCH_IP_ACCESS_LIST,
-            _statementLine);
-      } else {
-        String msg = "route-map match ip access-list line";
-        ExtendedAccessList extendedAccessList = cc.getExtendedAcls().get(listName);
-        if (extendedAccessList != null) {
-          extendedAccessList.getReferers().put(this, msg);
-        }
-        StandardAccessList standardAccessList = cc.getStandardAcls().get(listName);
-        if (standardAccessList != null) {
-          standardAccessList.getReferers().put(this, msg);
-        }
+      if (list != null) {
         if (_routing) {
           disjuncts.add(new MatchPrefixSet(new DestinationNetwork(), new NamedPrefixSet(listName)));
         } else {

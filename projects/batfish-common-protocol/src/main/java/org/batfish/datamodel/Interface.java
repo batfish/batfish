@@ -5,21 +5,31 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
+import org.batfish.datamodel.eigrp.EigrpInterfaceSettings;
+import org.batfish.datamodel.hsrp.HsrpGroup;
+import org.batfish.datamodel.isis.IsisInterfaceMode;
+import org.batfish.datamodel.isis.IsisInterfaceSettings;
+import org.batfish.datamodel.ospf.OspfArea;
+import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -38,7 +48,15 @@ public final class Interface extends ComparableStructure<String> {
 
     private SortedSet<String> _declaredNames;
 
+    @Nullable private EigrpInterfaceSettings _eigrp;
+
+    private Map<Integer, HsrpGroup> _hsrpGroups;
+
+    private String _hsrpVersion;
+
     private IpAccessList _incomingFilter;
+
+    private IsisInterfaceSettings _isis;
 
     private String _name;
 
@@ -66,12 +84,16 @@ public final class Interface extends ComparableStructure<String> {
 
     private Vrf _vrf;
 
+    private SortedMap<Integer, VrrpGroup> _vrrpGroups;
+
     Builder(NetworkFactory networkFactory) {
       super(networkFactory, Interface.class);
       _additionalArpIps = ImmutableSortedSet.of();
       _declaredNames = ImmutableSortedSet.of();
+      _hsrpGroups = ImmutableMap.of();
       _secondaryAddresses = ImmutableSet.of();
       _sourceNats = ImmutableList.of();
+      _vrrpGroups = ImmutableSortedMap.of();
     }
 
     @Override
@@ -89,7 +111,11 @@ public final class Interface extends ComparableStructure<String> {
       iface.setBandwidth(_bandwidth);
       iface.setBlacklisted(_blacklisted);
       iface.setDeclaredNames(_declaredNames);
+      iface.setEigrp(_eigrp);
+      iface.setHsrpGroups(_hsrpGroups);
+      iface.setHsrpVersion(_hsrpVersion);
       iface.setIncomingFilter(_incomingFilter);
+      iface.setIsis(_isis);
       iface.setOspfArea(_ospfArea);
       if (_ospfArea != null) {
         _ospfArea.getInterfaces().add(name);
@@ -114,6 +140,7 @@ public final class Interface extends ComparableStructure<String> {
           iface.setOspfCost(proc.computeInterfaceCost(iface));
         }
       }
+      iface.setVrrpGroups(_vrrpGroups);
       return iface;
     }
 
@@ -146,11 +173,11 @@ public final class Interface extends ComparableStructure<String> {
      * Set the primary address and secondary addresses of the interface. <br>
      * The {@link Interface#getAllAddresses()} method of the built {@link Interface} will return a
      * set containing the primary address and secondary addresses.<br>
-     * The node will accept traffic whose destination IP belongs is among any of the addresses of
-     * any of the interfaces. The primary address is the one used by default as the source IP for
-     * traffic sent out the interface. A secondary address is another address potentially associated
-     * with a different subnet living on the interface. The interface will reply to ARP for the
-     * primary or any secondary IP.
+     * The node will accept traffic whose destination IP is among any of the addresses of any of the
+     * interfaces. The primary address is the one used by default as the source IP for traffic sent
+     * out the interface. A secondary address is another address potentially associated with a
+     * different subnet living on the interface. The interface will reply to ARP for the primary or
+     * any secondary IP.
      */
     public Builder setAddresses(
         InterfaceAddress primaryAddress, InterfaceAddress... secondaryAddresses) {
@@ -189,8 +216,28 @@ public final class Interface extends ComparableStructure<String> {
       return this;
     }
 
+    public Builder setEigrp(@Nullable EigrpInterfaceSettings eigrp) {
+      _eigrp = eigrp;
+      return this;
+    }
+
+    public @Nonnull Builder setHsrpGroups(@Nonnull Map<Integer, HsrpGroup> hsrpGroups) {
+      _hsrpGroups = ImmutableMap.copyOf(hsrpGroups);
+      return this;
+    }
+
+    public @Nonnull Builder setHsrpVersion(@Nullable String hsrpVersion) {
+      _hsrpVersion = hsrpVersion;
+      return this;
+    }
+
     public Builder setIncomingFilter(IpAccessList incomingFilter) {
       _incomingFilter = incomingFilter;
+      return this;
+    }
+
+    public Builder setIsis(IsisInterfaceSettings isis) {
+      _isis = isis;
       return this;
     }
 
@@ -263,6 +310,11 @@ public final class Interface extends ComparableStructure<String> {
       _vrf = vrf;
       return this;
     }
+
+    public Builder setVrrpGroups(SortedMap<Integer, VrrpGroup> vrrpGroups) {
+      _vrrpGroups = ImmutableSortedMap.copyOf(vrrpGroups);
+      return this;
+    }
   }
 
   private static final int DEFAULT_MTU = 1500;
@@ -270,6 +322,10 @@ public final class Interface extends ComparableStructure<String> {
   public static final String FLOW_SINK_TERMINATION_NAME = "flow_sink_termination";
 
   public static final String NULL_INTERFACE_NAME = "null_interface";
+
+  public static final String UNSET_LOCAL_INTERFACE = "unset_local_interface";
+
+  public static final String INVALID_LOCAL_INTERFACE = "invalid_local_interface";
 
   private static final String PROP_ACCESS_VLAN = "accessVlan";
 
@@ -285,17 +341,31 @@ public final class Interface extends ComparableStructure<String> {
 
   private static final String PROP_BANDWIDTH = "bandwidth";
 
+  private static final String PROP_CHANNEL_GROUP = "channelGroup";
+
+  private static final String PROP_CHANNEL_GROUP_MEMBERS = "channelGroupMembers";
+
+  private static final String PROP_CRYPTO_MAP = "cryptoMap";
+
   private static final String PROP_DECLARED_NAMES = "declaredNames";
 
   private static final String PROP_DESCRIPTION = "description";
 
   private static final String PROP_DHCP_RELAY_ADDRESSES = "dhcpRelayAddresses";
 
+  private static final String PROP_EIGRP = "eigrp";
+
+  private static final String PROP_HSRP_GROUPS = "hsrpGroups";
+
+  private static final String PROP_HSRP_VERSION = "hsrpVersion";
+
   private static final String PROP_INBOUND_FILTER = "inboundFilter";
 
   private static final String PROP_INCOMING_FILTER = "incomingFilter";
 
   private static final String PROP_INTERFACE_TYPE = "type";
+
+  private static final String PROP_ISIS = "isis";
 
   private static final String PROP_ISIS_COST = "isisCost";
 
@@ -340,6 +410,8 @@ public final class Interface extends ComparableStructure<String> {
   private static final String PROP_SWITCHPORT_MODE = "switchportMode";
 
   private static final String PROP_SWITCHPORT_TRUNK_ENCAPSULATION = "switchportTrunkEncapsulation";
+
+  private static final String PROP_VLAN = "vlan";
 
   private static final String PROP_VRF = "vrf";
 
@@ -401,7 +473,7 @@ public final class Interface extends ComparableStructure<String> {
     } else if (name.startsWith("HundredGigabitEthernet")) {
       return InterfaceType.PHYSICAL;
     } else if (name.startsWith("Group-Async")) {
-      return InterfaceType.AGGREGATED;
+      return InterfaceType.PHYSICAL;
     } else if (name.startsWith("Loopback")) {
       return InterfaceType.LOOPBACK;
     } else if (name.startsWith("Management")) {
@@ -454,6 +526,7 @@ public final class Interface extends ComparableStructure<String> {
         return computeAwsInterfaceType(name);
 
       case ARISTA:
+      case ARUBAOS:
       case CADANT:
       case CISCO_ASA:
       case CISCO_IOS:
@@ -528,11 +601,21 @@ public final class Interface extends ComparableStructure<String> {
 
   private transient boolean _blacklisted;
 
+  private String _channelGroup;
+
+  private SortedSet<String> _channelGroupMembers;
+
+  private String _cryptoMap;
+
   private SortedSet<String> _declaredNames;
 
   private String _description;
 
   private List<Ip> _dhcpRelayAddresses;
+
+  @Nullable private EigrpInterfaceSettings _eigrp;
+
+  private Map<Integer, HsrpGroup> _hsrpGroups;
 
   private IpAccessList _inboundFilter;
 
@@ -544,11 +627,7 @@ public final class Interface extends ComparableStructure<String> {
 
   private InterfaceType _interfaceType;
 
-  private Integer _isisCost;
-
-  private IsisInterfaceMode _isisL1InterfaceMode;
-
-  private IsisInterfaceMode _isisL2InterfaceMode;
+  private IsisInterfaceSettings _isis;
 
   private int _mtu;
 
@@ -598,6 +677,8 @@ public final class Interface extends ComparableStructure<String> {
 
   private SwitchportEncapsulationType _switchportTrunkEncapsulation;
 
+  private Integer _vlan;
+
   private Vrf _vrf;
 
   private transient String _vrfName;
@@ -607,6 +688,8 @@ public final class Interface extends ComparableStructure<String> {
   private Zone _zone;
 
   private transient String _zoneName;
+
+  private String _hsrpVersion;
 
   @SuppressWarnings("unused")
   private Interface() {
@@ -619,36 +702,38 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   public Interface(String name, Configuration owner) {
+    this(name, owner, InterfaceType.UNKNOWN);
+
+    // Determine interface type after setting owner
+    _interfaceType =
+        ((_key == null) || (_owner == null))
+            ? InterfaceType.UNKNOWN
+            : computeInterfaceType(_key, _owner.getConfigurationFormat());
+  }
+
+  public Interface(String name, Configuration owner, @Nonnull InterfaceType interfaceType) {
     super(name);
     _active = true;
     _autoState = true;
     _allowedVlans = new ArrayList<>();
     _allAddresses = ImmutableSortedSet.of();
+    _channelGroupMembers = ImmutableSortedSet.of();
     _declaredNames = ImmutableSortedSet.of();
     _dhcpRelayAddresses = new ArrayList<>();
-    _interfaceType = InterfaceType.UNKNOWN;
+    _hsrpGroups = new TreeMap<>();
+    _interfaceType = interfaceType;
     _mtu = DEFAULT_MTU;
     _nativeVlan = 1;
     _owner = owner;
     _switchportMode = SwitchportMode.NONE;
     _switchportTrunkEncapsulation = SwitchportEncapsulationType.DOT1Q;
-    _isisL1InterfaceMode = IsisInterfaceMode.UNSET;
-    _isisL2InterfaceMode = IsisInterfaceMode.UNSET;
     _sourceNats = Collections.emptyList();
     _vrfName = Configuration.DEFAULT_VRF_NAME;
     _vrrpGroups = new TreeMap<>();
-
-    computeInterfaceType();
   }
 
   public void addAllowedRanges(List<SubRange> ranges) {
     _allowedVlans.addAll(ranges);
-  }
-
-  private void computeInterfaceType() {
-    if ((_key != null) && (_owner != null)) {
-      _interfaceType = computeInterfaceType(_key, _owner.getConfigurationFormat());
-    }
   }
 
   @Override
@@ -659,22 +744,28 @@ public final class Interface extends ComparableStructure<String> {
       return false;
     }
     Interface other = (Interface) o;
-    if (this._accessVlan != other._accessVlan) {
+    if (_accessVlan != other._accessVlan) {
       return false;
     }
-    if (this._active != other._active) {
+    if (_active != other._active) {
       return false;
     }
-    if (!this._allowedVlans.equals(other._allowedVlans)) {
+    if (!Objects.equals(_address, other._address)) {
       return false;
     }
-    if (!this._allAddresses.equals(other._allAddresses)) {
+    if (!Objects.equals(_allowedVlans, other._allowedVlans)) {
       return false;
     }
-    if (this._autoState != other._autoState) {
+    if (!Objects.equals(_allAddresses, other._allAddresses)) {
+      return false;
+    }
+    if (_autoState != other._autoState) {
       return false;
     }
     if (!Objects.equals(_bandwidth, other._bandwidth)) {
+      return false;
+    }
+    if (!Objects.equals(_cryptoMap, other._cryptoMap)) {
       return false;
     }
     // we check ACLs for name match only -- full ACL diff can be done
@@ -682,40 +773,40 @@ public final class Interface extends ComparableStructure<String> {
     if (!IpAccessList.bothNullOrSameName(this.getInboundFilter(), other.getInboundFilter())) {
       return false;
     }
-
     if (!IpAccessList.bothNullOrSameName(this.getIncomingFilter(), other.getIncomingFilter())) {
       return false;
     }
-
     if (this._interfaceType != other._interfaceType) {
+      return false;
+    }
+    if (!Objects.equals(_key, other._key)) {
+      return false;
+    }
+
+    if (!Objects.equals(_eigrp, other._eigrp)) {
       return false;
     }
 
     // TODO: check ISIS settings for equality.
-    if (this._mtu != other._mtu) {
+    if (_mtu != other._mtu) {
       return false;
     }
-    if (this._nativeVlan != other._nativeVlan) {
+    if (_nativeVlan != other._nativeVlan) {
       return false;
     }
     // TODO: check OSPF settings for equality.
-
     if (!IpAccessList.bothNullOrSameName(this._outgoingFilter, other._outgoingFilter)) {
       return false;
     }
-
-    if (!Objects.equals(this._address, other._address)) {
+    if (!_proxyArp == other._proxyArp) {
       return false;
     }
-
     if (!Objects.equals(this._routingPolicy, other._routingPolicy)) {
       return false;
     }
-
     if (!Objects.equals(this._switchportMode, other._switchportMode)) {
       return false;
     }
-
     if (!Objects.equals(this._zone, other._zone)) {
       return false;
     }
@@ -773,6 +864,21 @@ public final class Interface extends ComparableStructure<String> {
     return _blacklisted;
   }
 
+  @JsonProperty(PROP_CHANNEL_GROUP)
+  public String getChannelGroup() {
+    return _channelGroup;
+  }
+
+  @JsonProperty(PROP_CHANNEL_GROUP_MEMBERS)
+  public SortedSet<String> getChannelGroupMembers() {
+    return _channelGroupMembers;
+  }
+
+  @JsonProperty(PROP_CRYPTO_MAP)
+  public String getCryptoMap() {
+    return _cryptoMap;
+  }
+
   @JsonProperty(PROP_DECLARED_NAMES)
   public SortedSet<String> getDeclaredNames() {
     return _declaredNames;
@@ -787,6 +893,23 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_DHCP_RELAY_ADDRESSES)
   public List<Ip> getDhcpRelayAddresses() {
     return _dhcpRelayAddresses;
+  }
+
+  @JsonProperty(PROP_EIGRP)
+  public @Nullable EigrpInterfaceSettings getEigrp() {
+    return _eigrp;
+  }
+
+  /** Mapping: hsrpGroupID -> HsrpGroup */
+  @JsonProperty(PROP_HSRP_GROUPS)
+  public Map<Integer, HsrpGroup> getHsrpGroups() {
+    return _hsrpGroups;
+  }
+
+  /** Version of the HSRP protocol to use */
+  @JsonProperty(PROP_HSRP_VERSION)
+  public @Nullable String getHsrpVersion() {
+    return _hsrpVersion;
   }
 
   @JsonIgnore
@@ -827,26 +950,35 @@ public final class Interface extends ComparableStructure<String> {
     return _interfaceType;
   }
 
+  @JsonProperty(PROP_ISIS)
+  public @Nullable IsisInterfaceSettings getIsis() {
+    return _isis;
+  }
+
   @JsonProperty(PROP_ISIS_COST)
   @JsonPropertyDescription("The IS-IS cost of this interface")
+  @Deprecated
   public Integer getIsisCost() {
-    return _isisCost;
+    return null;
   }
 
   @JsonProperty(PROP_ISIS_L1_INTERFACE_MODE)
   @JsonPropertyDescription(
       "Specifies whether this interface is active, passive, or unconfigured with respect to IS-IS "
           + "level 1")
+  @Deprecated
   public IsisInterfaceMode getIsisL1InterfaceMode() {
-    return _isisL1InterfaceMode;
+    return null;
   }
 
   @JsonProperty(PROP_ISIS_L2_INTERFACE_MODE)
   @JsonPropertyDescription(
       "Specifies whether this interface is active, passive, or unconfigured with respect to IS-IS "
           + "level 2")
+  @Deprecated
   public IsisInterfaceMode getIsisL2InterfaceMode() {
-    return _isisL2InterfaceMode;
+    // TODO: deprecate properly
+    return null;
   }
 
   @JsonProperty(PROP_MTU)
@@ -1008,6 +1140,11 @@ public final class Interface extends ComparableStructure<String> {
     return _switchportTrunkEncapsulation;
   }
 
+  @JsonProperty(PROP_VLAN)
+  public @Nullable Integer getVlan() {
+    return _vlan;
+  }
+
   @JsonIgnore
   public Vrf getVrf() {
     return _vrf;
@@ -1115,6 +1252,21 @@ public final class Interface extends ComparableStructure<String> {
     _blacklisted = blacklisted;
   }
 
+  @JsonProperty(PROP_CHANNEL_GROUP)
+  public void setChannelGroup(String channelGroup) {
+    _channelGroup = channelGroup;
+  }
+
+  @JsonProperty(PROP_CHANNEL_GROUP_MEMBERS)
+  public void setChannelGroupMembers(Iterable<String> channelGroupMembers) {
+    _channelGroupMembers = ImmutableSortedSet.copyOf(channelGroupMembers);
+  }
+
+  @JsonProperty(PROP_CRYPTO_MAP)
+  public void setCryptoMap(String cryptoMap) {
+    _cryptoMap = cryptoMap;
+  }
+
   @JsonProperty(PROP_DECLARED_NAMES)
   public void setDeclaredNames(SortedSet<String> declaredNames) {
     _declaredNames = ImmutableSortedSet.copyOf(declaredNames);
@@ -1128,6 +1280,21 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_DHCP_RELAY_ADDRESSES)
   public void setDhcpRelayAddresses(List<Ip> dhcpRelayAddresses) {
     _dhcpRelayAddresses = dhcpRelayAddresses;
+  }
+
+  @JsonProperty(PROP_EIGRP)
+  public void setEigrp(@Nullable EigrpInterfaceSettings eigrp) {
+    _eigrp = eigrp;
+  }
+
+  @JsonProperty(PROP_HSRP_GROUPS)
+  public void setHsrpGroups(@Nonnull Map<Integer, HsrpGroup> hsrpGroups) {
+    _hsrpGroups = hsrpGroups;
+  }
+
+  @JsonProperty(PROP_HSRP_VERSION)
+  public void setHsrpVersion(String hsrpVersion) {
+    _hsrpVersion = hsrpVersion;
   }
 
   @JsonIgnore
@@ -1155,19 +1322,27 @@ public final class Interface extends ComparableStructure<String> {
     _interfaceType = it;
   }
 
+  @JsonProperty(PROP_ISIS)
+  public void setIsis(@Nullable IsisInterfaceSettings isis) {
+    _isis = isis;
+  }
+
   @JsonProperty(PROP_ISIS_COST)
+  @Deprecated
   public void setIsisCost(Integer isisCost) {
-    _isisCost = isisCost;
+    // TODO: deprecate properly
   }
 
   @JsonProperty(PROP_ISIS_L1_INTERFACE_MODE)
+  @Deprecated
   public void setIsisL1InterfaceMode(IsisInterfaceMode mode) {
-    _isisL1InterfaceMode = mode;
+    // TODO: deprecate properly
   }
 
   @JsonProperty(PROP_ISIS_L2_INTERFACE_MODE)
+  @Deprecated
   public void setIsisL2InterfaceMode(IsisInterfaceMode mode) {
-    _isisL2InterfaceMode = mode;
+    // TODO: deprecate properly
   }
 
   @JsonProperty(PROP_MTU)
@@ -1289,6 +1464,11 @@ public final class Interface extends ComparableStructure<String> {
     _switchportTrunkEncapsulation = encapsulation;
   }
 
+  @JsonProperty(PROP_VLAN)
+  public void setVlan(@Nullable Integer vlan) {
+    _vlan = vlan;
+  }
+
   @JsonIgnore
   public void setVrf(Vrf vrf) {
     _vrf = vrf;
@@ -1319,7 +1499,7 @@ public final class Interface extends ComparableStructure<String> {
 
   public JSONObject toJSONObject() throws JSONException {
     JSONObject iface = new JSONObject();
-    iface.put("node", _owner.getName());
+    iface.put("node", _owner.getHostname());
     iface.put("name", _key);
     iface.put(PROP_PREFIX, _address.toString());
     iface.put(PROP_INTERFACE_TYPE, _interfaceType.toString());

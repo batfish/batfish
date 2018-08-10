@@ -3,6 +3,7 @@ package org.batfish.datamodel;
 import static java.util.Comparator.naturalOrder;
 import static java.util.Comparator.nullsFirst;
 import static org.batfish.common.util.CommonUtil.nullIfEmpty;
+import static org.batfish.common.util.CommonUtil.rangesContain;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
@@ -10,13 +11,13 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.SortedSet;
+import javax.annotation.Nullable;
 import org.batfish.common.util.CommonUtil;
 
 public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
@@ -25,7 +26,7 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
 
     private SortedSet<Integer> _dscps;
 
-    private IpSpace _dstIps;
+    private @Nullable IpSpace _dstIps;
 
     private SortedSet<SubRange> _dstPorts;
 
@@ -45,7 +46,7 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
 
     private SortedSet<Integer> _notDscps;
 
-    private IpSpace _notDstIps;
+    private @Nullable IpSpace _notDstIps;
 
     private SortedSet<SubRange> _notDstPorts;
 
@@ -63,7 +64,7 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
 
     private SortedSet<SubRange> _notPacketLengths;
 
-    private IpSpace _notSrcIps;
+    private @Nullable IpSpace _notSrcIps;
 
     private SortedSet<SubRange> _notSrcPorts;
 
@@ -71,9 +72,9 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
 
     private SortedSet<SubRange> _packetLengths;
 
-    private IpSpace _srcIps;
+    private @Nullable IpSpace _srcIps;
 
-    private IpSpace _srcOrDstIps;
+    private @Nullable IpSpace _srcOrDstIps;
 
     private SortedSet<SubRange> _srcOrDstPorts;
 
@@ -101,8 +102,6 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
       _srcOrDstProtocols = ImmutableSortedSet.of();
       _srcPorts = ImmutableSortedSet.of();
       _srcProtocols = ImmutableSortedSet.of();
-      _icmpTypes = ImmutableSortedSet.of();
-      _icmpCodes = ImmutableSortedSet.of();
       _states = ImmutableSortedSet.of();
       _tcpFlags = ImmutableList.of();
       _notDscps = ImmutableSortedSet.of();
@@ -118,6 +117,26 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
       _notSrcProtocols = ImmutableSortedSet.of();
     }
 
+    public void addDstIp(IpSpace dstIp) {
+      _dstIps = AclIpSpace.union(_dstIps, dstIp);
+    }
+
+    public void addSrcIp(IpSpace srcIp) {
+      _srcIps = AclIpSpace.union(_srcIps, srcIp);
+    }
+
+    public void addNotDstIp(IpSpace notDstIp) {
+      _notDstIps = AclIpSpace.union(_notDstIps, notDstIp);
+    }
+
+    public void addNotSrcIp(IpSpace notSrcIp) {
+      _notSrcIps = AclIpSpace.union(_notSrcIps, notSrcIp);
+    }
+
+    public void addSrcOrDstIp(IpSpace srcOrDstIp) {
+      _srcOrDstIps = AclIpSpace.union(_srcOrDstIps, srcOrDstIp);
+    }
+
     public HeaderSpace build() {
       return new HeaderSpace(this);
     }
@@ -126,7 +145,7 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
       return _dscps;
     }
 
-    public IpSpace getDstIps() {
+    public @Nullable IpSpace getDstIps() {
       return _dstIps;
     }
 
@@ -166,7 +185,7 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
       return _notDscps;
     }
 
-    public IpSpace getNotDstIps() {
+    public @Nullable IpSpace getNotDstIps() {
       return _notDstIps;
     }
 
@@ -202,7 +221,7 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
       return _notPacketLengths;
     }
 
-    public IpSpace getNotSrcIps() {
+    public @Nullable IpSpace getNotSrcIps() {
       return _notSrcIps;
     }
 
@@ -218,11 +237,11 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
       return _packetLengths;
     }
 
-    public IpSpace getSrcIps() {
+    public @Nullable IpSpace getSrcIps() {
       return _srcIps;
     }
 
-    public IpSpace getSrcOrDstIps() {
+    public @Nullable IpSpace getSrcOrDstIps() {
       return _srcOrDstIps;
     }
 
@@ -539,15 +558,6 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
 
   public static Builder builder() {
     return new Builder();
-  }
-
-  private static boolean rangesContain(Collection<SubRange> ranges, int num) {
-    for (SubRange range : ranges) {
-      if (range.getStart() <= num && num <= range.getEnd()) {
-        return true;
-      }
-    }
-    return false;
   }
 
   private SortedSet<Integer> _dscps;
@@ -1112,46 +1122,10 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
     if (!_states.isEmpty() && !_states.contains(flow.getState())) {
       return false;
     }
-    if (!_tcpFlags.isEmpty() && !_tcpFlags.stream().anyMatch(tcpFlags -> tcpFlags.match(flow))) {
+    if (!_tcpFlags.isEmpty() && _tcpFlags.stream().noneMatch(tcpFlags -> tcpFlags.match(flow))) {
       return false;
     }
     return true;
-  }
-
-  public Builder rebuild() {
-    return builder()
-        .setDscps(_dscps)
-        .setDstIps(_dstIps)
-        .setDstPorts(_dstPorts)
-        .setDstProtocols(_dstProtocols)
-        .setEcns(_ecns)
-        .setFragmentOffsets(_fragmentOffsets)
-        .setIcmpCodes(_icmpCodes)
-        .setIcmpTypes(_icmpTypes)
-        .setIpProtocols(_ipProtocols)
-        .setNegate(_negate)
-        .setNotDscps(_notDscps)
-        .setNotDstIps(_notDstIps)
-        .setNotDstPorts(_notDstPorts)
-        .setNotDstProtocols(_notDstProtocols)
-        .setNotEcns(_notEcns)
-        .setNotFragmentOffsets(_notFragmentOffsets)
-        .setNotIcmpCodes(_notIcmpCodes)
-        .setNotIcmpTypes(_notIcmpTypes)
-        .setNotIpProtocols(_notIpProtocols)
-        .setNotPacketLengths(_notPacketLengths)
-        .setNotSrcIps(_notSrcIps)
-        .setNotSrcPorts(_notSrcPorts)
-        .setNotSrcProtocols(_notSrcProtocols)
-        .setPacketLengths(_packetLengths)
-        .setSrcIps(_srcIps)
-        .setSrcOrDstIps(_srcOrDstIps)
-        .setSrcOrDstPorts(_srcOrDstPorts)
-        .setSrcOrDstProtocols(_srcOrDstProtocols)
-        .setSrcPorts(_srcPorts)
-        .setSrcProtocols(_srcProtocols)
-        .setStates(_states)
-        .setTcpFlags(_tcpFlags);
   }
 
   @JsonProperty(PROP_DSCPS)
@@ -1332,6 +1306,42 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
   @JsonProperty(PROP_TCP_FLAGS)
   public void setTcpFlags(Iterable<TcpFlags> tcpFlags) {
     _tcpFlags = ImmutableList.copyOf(tcpFlags);
+  }
+
+  public Builder toBuilder() {
+    return builder()
+        .setDscps(_dscps)
+        .setDstIps(_dstIps)
+        .setDstPorts(_dstPorts)
+        .setDstProtocols(_dstProtocols)
+        .setEcns(_ecns)
+        .setFragmentOffsets(_fragmentOffsets)
+        .setIcmpCodes(_icmpCodes)
+        .setIcmpTypes(_icmpTypes)
+        .setIpProtocols(_ipProtocols)
+        .setNegate(_negate)
+        .setNotDscps(_notDscps)
+        .setNotDstIps(_notDstIps)
+        .setNotDstPorts(_notDstPorts)
+        .setNotDstProtocols(_notDstProtocols)
+        .setNotEcns(_notEcns)
+        .setNotFragmentOffsets(_notFragmentOffsets)
+        .setNotIcmpCodes(_notIcmpCodes)
+        .setNotIcmpTypes(_notIcmpTypes)
+        .setNotIpProtocols(_notIpProtocols)
+        .setNotPacketLengths(_notPacketLengths)
+        .setNotSrcIps(_notSrcIps)
+        .setNotSrcPorts(_notSrcPorts)
+        .setNotSrcProtocols(_notSrcProtocols)
+        .setPacketLengths(_packetLengths)
+        .setSrcIps(_srcIps)
+        .setSrcOrDstIps(_srcOrDstIps)
+        .setSrcOrDstPorts(_srcOrDstPorts)
+        .setSrcOrDstProtocols(_srcOrDstProtocols)
+        .setSrcPorts(_srcPorts)
+        .setSrcProtocols(_srcProtocols)
+        .setStates(_states)
+        .setTcpFlags(_tcpFlags);
   }
 
   @Override

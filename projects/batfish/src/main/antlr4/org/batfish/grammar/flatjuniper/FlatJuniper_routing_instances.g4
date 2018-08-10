@@ -39,10 +39,7 @@ ri_interface
 
 ri_named_routing_instance
 :
-   (
-      WILDCARD
-      | name = variable
-   )
+   name = variable
    (
       ri_common
       | ri_instance_type
@@ -226,11 +223,7 @@ ro_null
 
 ro_rib
 :
-   RIB
-   (
-      name = VARIABLE
-      | WILDCARD
-   )
+   RIB name = VARIABLE
    (
       apply
       | ro_aggregate
@@ -400,9 +393,19 @@ roifi_export
 :
    EXPORT
    (
-      LAN
-      | POINT_TO_POINT
+      roifie_lan
+      | roifie_point_to_point
    )
+;
+
+roifie_lan
+:
+   LAN
+;
+
+roifie_point_to_point
+:
+   POINT_TO_POINT
 ;
 
 roir_inet

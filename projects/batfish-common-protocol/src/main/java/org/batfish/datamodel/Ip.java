@@ -116,7 +116,7 @@ public class Ip implements Comparable<Ip>, Serializable {
   }
 
   @Override
-  public int compareTo(@Nullable Ip rhs) {
+  public int compareTo(Ip rhs) {
     return Long.compare(_ip, rhs._ip);
   }
 

@@ -228,10 +228,10 @@ public abstract class PluginConsumer implements IPluginConsumer {
     // This is a hack:
     //   XStream requires that its streams be closed to properly finish serialization,
     //   but we do not actually want to close the passed-in output stream.
-    out = new CloseIgnoringOutputStream(out);
+    OutputStream closeIgnoringOut = new CloseIgnoringOutputStream(out);
 
     try (Closer closer = Closer.create()) {
-      OutputStream los = closer.register(new LZ4FrameOutputStream(out));
+      OutputStream los = closer.register(new LZ4FrameOutputStream(closeIgnoringOut));
       ObjectOutputStream oos;
       if (_serializeToText) {
         XStream xstream = new XStream(new DomDriver("UTF-8"));

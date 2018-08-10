@@ -18,7 +18,7 @@ public final class GeneratedRoute extends AbstractRoute {
 
   public static class Builder extends AbstractRouteBuilder<Builder, GeneratedRoute> {
 
-    private List<SortedSet<Integer>> _asPath;
+    private List<SortedSet<Long>> _asPath;
 
     private String _attributePolicy;
 
@@ -34,18 +34,16 @@ public final class GeneratedRoute extends AbstractRoute {
 
     @Override
     public GeneratedRoute build() {
-      GeneratedRoute gr =
-          new GeneratedRoute(
-              getNetwork(),
-              getAdmin(),
-              getNextHopIp(),
-              new AsPath(_asPath),
-              _attributePolicy,
-              _discard,
-              _generationPolicy,
-              getMetric(),
-              _nextHopInterface);
-      return gr;
+      return new GeneratedRoute(
+          getNetwork(),
+          getAdmin(),
+          getNextHopIp(),
+          new AsPath(_asPath),
+          _attributePolicy,
+          _discard,
+          _generationPolicy,
+          getMetric(),
+          _nextHopInterface);
     }
 
     @Override
@@ -53,7 +51,21 @@ public final class GeneratedRoute extends AbstractRoute {
       return this;
     }
 
-    public Builder setAsPath(List<SortedSet<Integer>> asPath) {
+    public static Builder fromRoute(GeneratedRoute route) {
+      return new Builder()
+          // General route properties
+          .setNetwork(route.getNetwork())
+          .setMetric(firstNonNull(route.getMetric(), 0L))
+          .setAdmin(route.getAdministrativeCost())
+          // GeneratedRoute properties
+          .setAsPath(route.getAsPath().getAsSets())
+          .setAttributePolicy(route.getAttributePolicy())
+          .setDiscard(route.getDiscard())
+          .setGenerationPolicy(route.getGenerationPolicy())
+          .setNextHopInterface(route.getNextHopInterface());
+    }
+
+    public Builder setAsPath(List<SortedSet<Long>> asPath) {
       _asPath = asPath;
       return this;
     }
@@ -241,7 +253,7 @@ public final class GeneratedRoute extends AbstractRoute {
   }
 
   @Override
-  public int routeCompare(AbstractRoute rhs) {
+  public int routeCompare(@Nonnull AbstractRoute rhs) {
     if (getClass() != rhs.getClass()) {
       return 0;
     }

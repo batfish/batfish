@@ -25,6 +25,8 @@ public abstract class IPacketTraceQuestion extends Question implements IQuestion
 
   private static final String PROP_ECN = "ecn";
 
+  private static final String PROP_FRAGMENT_OFFSET = "fragmentOffset";
+
   private static final String PROP_ICMP_CODE = "icmpCode";
 
   private static final String PROP_ICMP_TYPE = "icmpType";
@@ -68,6 +70,8 @@ public abstract class IPacketTraceQuestion extends Question implements IQuestion
   private Protocol _dstProtocol;
 
   private Integer _ecn;
+
+  private Integer _fragmentOffset;
 
   private Integer _icmpCode;
 
@@ -126,6 +130,9 @@ public abstract class IPacketTraceQuestion extends Question implements IQuestion
     }
     if (_ecn != null) {
       flowBuilder.setEcn(_ecn);
+    }
+    if (_fragmentOffset != null) {
+      flowBuilder.setFragmentOffset(_fragmentOffset);
     }
     if (_icmpCode != null) {
       flowBuilder.setIcmpCode(_icmpCode);
@@ -245,6 +252,11 @@ public abstract class IPacketTraceQuestion extends Question implements IQuestion
   @JsonProperty(PROP_ECN)
   public Integer getEcn() {
     return _ecn;
+  }
+
+  @JsonProperty(PROP_FRAGMENT_OFFSET)
+  public Integer getFragmentOffset() {
+    return _fragmentOffset;
   }
 
   @JsonProperty(PROP_ICMP_CODE)
@@ -384,6 +396,11 @@ public abstract class IPacketTraceQuestion extends Question implements IQuestion
   @JsonProperty(PROP_ECN)
   public void setEcn(Integer ecn) {
     _ecn = ecn;
+  }
+
+  @JsonProperty(PROP_FRAGMENT_OFFSET)
+  public void setFragmentOffset(Integer fragmentOffset) {
+    _fragmentOffset = fragmentOffset;
   }
 
   @JsonProperty(PROP_ICMP_CODE)

@@ -2,6 +2,7 @@ package org.batfish.z3.state.visitors;
 
 import org.batfish.z3.state.Accept;
 import org.batfish.z3.state.AclDeny;
+import org.batfish.z3.state.AclLineIndependentMatch;
 import org.batfish.z3.state.AclLineMatch;
 import org.batfish.z3.state.AclLineNoMatch;
 import org.batfish.z3.state.AclPermit;
@@ -23,17 +24,15 @@ import org.batfish.z3.state.NodeDropNullRoute;
 import org.batfish.z3.state.NodeInterfaceNeighborUnreachable;
 import org.batfish.z3.state.NodeNeighborUnreachable;
 import org.batfish.z3.state.NumberedQuery;
-import org.batfish.z3.state.Originate;
-import org.batfish.z3.state.OriginateInterface;
+import org.batfish.z3.state.OriginateInterfaceLink;
 import org.batfish.z3.state.OriginateVrf;
-import org.batfish.z3.state.PostIn;
 import org.batfish.z3.state.PostInInterface;
 import org.batfish.z3.state.PostInVrf;
 import org.batfish.z3.state.PostOutEdge;
 import org.batfish.z3.state.PreInInterface;
-import org.batfish.z3.state.PreOut;
 import org.batfish.z3.state.PreOutEdge;
 import org.batfish.z3.state.PreOutEdgePostNat;
+import org.batfish.z3.state.PreOutVrf;
 import org.batfish.z3.state.Query;
 
 public interface GenericStateExprVisitor<R> {
@@ -43,6 +42,8 @@ public interface GenericStateExprVisitor<R> {
   R visitAccept(Accept accept);
 
   R visitAclDeny(AclDeny aclDeny);
+
+  R visitAclLineIndependentMatch(AclLineIndependentMatch aclLineIndependentMatch);
 
   R visitAclLineMatch(AclLineMatch aclLineMatch);
 
@@ -86,13 +87,9 @@ public interface GenericStateExprVisitor<R> {
 
   R visitNumberedQuery(NumberedQuery numberedQuery);
 
-  R visitOriginate(Originate originate);
-
-  R visitOriginateInterface(OriginateInterface originateInterface);
+  R visitOriginateInterfaceLink(OriginateInterfaceLink originateInterfaceLink);
 
   R visitOriginateVrf(OriginateVrf originateVrf);
-
-  R visitPostIn(PostIn postIn);
 
   R visitPostInInterface(PostInInterface postInInterface);
 
@@ -102,7 +99,7 @@ public interface GenericStateExprVisitor<R> {
 
   R visitPreInInterface(PreInInterface preInInterface);
 
-  R visitPreOut(PreOut preOut);
+  R visitPreOutVrf(PreOutVrf preOutVrf);
 
   R visitPreOutEdge(PreOutEdge preOutEdge);
 

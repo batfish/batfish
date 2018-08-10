@@ -1,18 +1,20 @@
 package org.batfish.representation.cisco;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import org.batfish.common.util.DefinedStructure;
 
-public class PrefixList extends DefinedStructure<String> {
+public class PrefixList implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
   private List<PrefixListLine> _lines;
 
-  public PrefixList(String name, int definitionLine) {
-    super(name, definitionLine);
+  private final String _name;
+
+  public PrefixList(String name) {
     _lines = new ArrayList<>();
+    _name = name;
   }
 
   public void addLine(PrefixListLine r) {
@@ -25,5 +27,9 @@ public class PrefixList extends DefinedStructure<String> {
 
   public List<PrefixListLine> getLines() {
     return _lines;
+  }
+
+  public String getName() {
+    return _name;
   }
 }

@@ -6,6 +6,8 @@ import javax.annotation.Nullable;
 
 public abstract class BfObject {
 
+  protected static final String PROP_ID = "id";
+
   @Nullable private final String _id;
 
   private Map<String, String> _properties;

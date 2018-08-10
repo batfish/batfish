@@ -2,6 +2,7 @@ package org.batfish.z3.state.visitors;
 
 import org.batfish.z3.state.Accept;
 import org.batfish.z3.state.AclDeny;
+import org.batfish.z3.state.AclLineIndependentMatch;
 import org.batfish.z3.state.AclLineMatch;
 import org.batfish.z3.state.AclLineNoMatch;
 import org.batfish.z3.state.AclPermit;
@@ -23,17 +24,15 @@ import org.batfish.z3.state.NodeDropNullRoute;
 import org.batfish.z3.state.NodeInterfaceNeighborUnreachable;
 import org.batfish.z3.state.NodeNeighborUnreachable.State;
 import org.batfish.z3.state.NumberedQuery;
-import org.batfish.z3.state.Originate;
-import org.batfish.z3.state.OriginateInterface;
+import org.batfish.z3.state.OriginateInterfaceLink;
 import org.batfish.z3.state.OriginateVrf;
-import org.batfish.z3.state.PostIn;
 import org.batfish.z3.state.PostInInterface;
 import org.batfish.z3.state.PostInVrf;
 import org.batfish.z3.state.PostOutEdge;
 import org.batfish.z3.state.PreInInterface;
-import org.batfish.z3.state.PreOut;
 import org.batfish.z3.state.PreOutEdge;
 import org.batfish.z3.state.PreOutEdgePostNat;
+import org.batfish.z3.state.PreOutVrf;
 import org.batfish.z3.state.Query;
 
 public interface StateVisitor {
@@ -41,6 +40,8 @@ public interface StateVisitor {
   void visitAccept(Accept.State accept);
 
   void visitAclDeny(AclDeny.State aclDeny);
+
+  void visitAclLineIndependentMatch(AclLineIndependentMatch.State state);
 
   void visitAclLineMatch(AclLineMatch.State aclLineMatch);
 
@@ -84,13 +85,9 @@ public interface StateVisitor {
 
   void visitNumberedQuery(NumberedQuery.State numberedQuery);
 
-  void visitOriginate(Originate.State originate);
-
-  void visitOriginateInterface(OriginateInterface.State state);
+  void visitOriginateInterfaceLink(OriginateInterfaceLink.State state);
 
   void visitOriginateVrf(OriginateVrf.State originateVrf);
-
-  void visitPostIn(PostIn.State postIn);
 
   void visitPostInInterface(PostInInterface.State postInInterface);
 
@@ -100,7 +97,7 @@ public interface StateVisitor {
 
   void visitPreInInterface(PreInInterface.State preInInterface);
 
-  void visitPreOut(PreOut.State preOut);
+  void visitPreOutVrf(PreOutVrf.State preOut);
 
   void visitPreOutEdge(PreOutEdge.State preOutEdge);
 

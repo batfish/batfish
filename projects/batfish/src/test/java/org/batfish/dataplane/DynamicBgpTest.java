@@ -7,14 +7,12 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.graph.Network;
+import com.google.common.graph.ValueGraph;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import org.batfish.datamodel.AbstractRoute;
-import org.batfish.datamodel.BgpNeighbor;
-import org.batfish.datamodel.BgpSession;
+import org.batfish.datamodel.BgpPeerConfigId;
+import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.GenericRib;
@@ -25,23 +23,11 @@ import org.batfish.main.TestrigText;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
 
-@RunWith(Parameterized.class)
 public class DynamicBgpTest {
   private static final String TESTRIGS_PREFIX = "org/batfish/grammar/cisco/testrigs/";
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
-
-  @Parameters
-  public static Collection<Object[]> data() {
-    return Arrays.asList(new Object[][] {{"bdp"}, {"ibdp"}});
-  }
-
-  @Parameter public String dpEngine;
 
   /** Test correct handling of dynamic BGP sessions */
   @Test
@@ -67,10 +53,9 @@ public class DynamicBgpTest {
                 .build(),
             _folder);
 
-    batfish.getSettings().setDataplaneEngineName(dpEngine);
     batfish.computeDataPlane(false); // compute and cache the dataPlane
     DataPlane dp = batfish.loadDataPlane();
-    Network<BgpNeighbor, BgpSession> bgpTopology = dp.getBgpTopology();
+    ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology = dp.getBgpTopology();
 
     /*
      * Check peering edges. r1 <---> r2 has two edges, one in each direction. r2<--r3 and r2<--r4
@@ -99,11 +84,10 @@ public class DynamicBgpTest {
                 .build(),
             _folder);
 
-    batfish.getSettings().setDataplaneEngineName(dpEngine);
     batfish.computeDataPlane(false); // compute and cache the dataPlane
 
     DataPlane dp = batfish.loadDataPlane();
-    Network<BgpNeighbor, BgpSession> bgpTopology = dp.getBgpTopology();
+    ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology = dp.getBgpTopology();
 
     /*
      * Check peering edges. r1 <---> r2 has two edges, one in each direction. r2<--r3 and r2<--r4
@@ -143,11 +127,10 @@ public class DynamicBgpTest {
                 .build(),
             _folder);
 
-    batfish.getSettings().setDataplaneEngineName(dpEngine);
     batfish.computeDataPlane(false); // compute and cache the dataPlane
 
     DataPlane dp = batfish.loadDataPlane();
-    Network<BgpNeighbor, BgpSession> bgpTopology = dp.getBgpTopology();
+    ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology = dp.getBgpTopology();
 
     /*
      * Check peering edges. r1 <---> r2 has two edges, one in each direction. r2<--r3 valid

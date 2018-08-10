@@ -1,0 +1,20 @@
+!
+hostname eos-port-channel
+boot system flash fake.swi
+!
+interface Ethernet0
+ channel-group 1 mode active
+ speed forced 40gfull
+!
+interface Ethernet1
+ channel-group 1 mode active
+ speed forced 40gfull
+!
+interface Ethernet2
+ channel-group 3 mode active
+ speed forced 40gfull
+!
+interface Port-Channel1
+!
+interface Port-Channel2
+!

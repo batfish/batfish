@@ -8,7 +8,6 @@ import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.Recognizer;
 import org.antlr.v4.runtime.Token;
 import org.batfish.common.DebugBatfishException;
-import org.batfish.common.util.CommonUtil;
 
 public class BatfishParserErrorListener extends BatfishGrammarErrorListener {
 
@@ -20,7 +19,7 @@ public class BatfishParserErrorListener extends BatfishGrammarErrorListener {
     int modeAsInt = _combinedParser.getTokenMode(token);
     String mode = _combinedParser.getLexer().getModeNames()[modeAsInt];
     String rawTokenText = token.getText();
-    String tokenText = CommonUtil.escape(rawTokenText);
+    String tokenText = BatfishCombinedParser.escape(rawTokenText);
     int tokenType = token.getType();
     String channel = token.getChannel() == Lexer.HIDDEN ? "(HIDDEN) " : "";
     String tokenName;
@@ -71,7 +70,8 @@ public class BatfishParserErrorListener extends BatfishGrammarErrorListener {
     String offendingTokenText = printToken(offendingToken);
     sb.append("Offending Token: " + offendingTokenText + "\n");
     sb.append("Error parsing top (leftmost) parser rule in stack: '" + ruleStack + "'.\n");
-    String ctxParseTree = ParseTreePrettyPrinter.print(ctx, _combinedParser);
+    String ctxParseTree =
+        ParseTreePrettyPrinter.print(ctx, _combinedParser, _settings.getPrintParseTreeLineNums());
 
     sb.append("Parse tree of current rule:\n");
     sb.append(ctxParseTree);

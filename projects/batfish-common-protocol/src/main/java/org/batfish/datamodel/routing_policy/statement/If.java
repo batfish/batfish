@@ -7,7 +7,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import javax.annotation.Nullable;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
@@ -28,8 +30,26 @@ public class If extends Statement {
 
   @JsonCreator
   public If() {
-    _falseStatements = new ArrayList<>();
-    _trueStatements = new ArrayList<>();
+    this(null, null, new ArrayList<>(), new ArrayList<>());
+  }
+
+  public If(BooleanExpr guard, List<Statement> trueStatements) {
+    this(null, guard, trueStatements, new ArrayList<>());
+  }
+
+  public If(BooleanExpr guard, List<Statement> trueStatements, List<Statement> falseStatements) {
+    this(null, guard, trueStatements, falseStatements);
+  }
+
+  public If(
+      @Nullable String comment,
+      @Nullable BooleanExpr guard,
+      List<Statement> trueStatements,
+      List<Statement> falseStatements) {
+    setComment(comment);
+    _guard = guard;
+    _trueStatements = trueStatements;
+    _falseStatements = falseStatements;
   }
 
   @Override
@@ -53,35 +73,13 @@ public class If extends Statement {
     if (this == obj) {
       return true;
     }
-    if (obj == null) {
-      return false;
-    }
-    if (getClass() != obj.getClass()) {
+    if (!(obj instanceof If)) {
       return false;
     }
     If other = (If) obj;
-    if (_falseStatements == null) {
-      if (other._falseStatements != null) {
-        return false;
-      }
-    } else if (!_falseStatements.equals(other._falseStatements)) {
-      return false;
-    }
-    if (_guard == null) {
-      if (other._guard != null) {
-        return false;
-      }
-    } else if (!_guard.equals(other._guard)) {
-      return false;
-    }
-    if (_trueStatements == null) {
-      if (other._trueStatements != null) {
-        return false;
-      }
-    } else if (!_trueStatements.equals(other._trueStatements)) {
-      return false;
-    }
-    return true;
+    return Objects.equals(_guard, other._guard)
+        && Objects.equals(_trueStatements, other._trueStatements)
+        && Objects.equals(_falseStatements, other._falseStatements);
   }
 
   @Override
@@ -153,18 +151,14 @@ public class If extends Statement {
       simpleFalseStatementsBuilder.addAll(falseStatement.simplify());
     }
     List<Statement> simpleFalseStatements = simpleFalseStatementsBuilder.build();
-    if (simpleGuard.equals(BooleanExprs.True.toStaticBooleanExpr())) {
+    if (simpleGuard.equals(BooleanExprs.TRUE)) {
       _simplified = simpleTrueStatements;
-    } else if (simpleGuard.equals(BooleanExprs.False.toStaticBooleanExpr())) {
+    } else if (simpleGuard.equals(BooleanExprs.FALSE)) {
       _simplified = simpleFalseStatements;
-    } else if (simpleTrueStatements.size() == 0 && simpleFalseStatements.size() == 0) {
+    } else if (simpleTrueStatements.isEmpty() && simpleFalseStatements.isEmpty()) {
       _simplified = Collections.emptyList();
     } else {
-      If simple = new If();
-      simple.setGuard(simpleGuard);
-      simple.setTrueStatements(simpleTrueStatements);
-      simple.setFalseStatements(simpleFalseStatements);
-      simple.setComment(getComment());
+      If simple = new If(getComment(), simpleGuard, simpleTrueStatements, simpleFalseStatements);
       _simplified = ImmutableList.of(simple);
       simple._simplified = _simplified;
     }

@@ -80,11 +80,7 @@ s_groups_tail
 
 s_logical_systems
 :
-   LOGICAL_SYSTEMS
-   (
-      name = variable
-      | WILDCARD
-   ) s_logical_systems_tail
+   LOGICAL_SYSTEMS name = variable s_logical_systems_tail
 ;
 
 s_logical_systems_tail
@@ -172,5 +168,5 @@ vlt_l3_interface
 
 vlt_vlan_id
 :
-   VLAN_ID name = variable
+   VLAN_ID id = DEC
 ;

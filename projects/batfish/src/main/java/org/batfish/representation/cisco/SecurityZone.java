@@ -1,13 +1,19 @@
 package org.batfish.representation.cisco;
 
-import org.batfish.common.util.DefinedStructure;
+import java.io.Serializable;
 
-public class SecurityZone extends DefinedStructure<String> {
+public class SecurityZone implements Serializable {
 
   /** */
   private static final long serialVersionUID = 1L;
 
-  public SecurityZone(String name, int definitionLine) {
-    super(name, definitionLine);
+  private final String _name;
+
+  public SecurityZone(String name) {
+    _name = name;
+  }
+
+  public String getName() {
+    return _name;
   }
 }

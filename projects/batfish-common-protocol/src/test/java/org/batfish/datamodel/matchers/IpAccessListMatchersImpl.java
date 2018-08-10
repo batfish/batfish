@@ -68,6 +68,17 @@ final class IpAccessListMatchersImpl {
     }
   }
 
+  static final class HasName extends FeatureMatcher<IpAccessList, String> {
+    HasName(@Nonnull Matcher<? super String> subMatcher) {
+      super(subMatcher, "An IpAccessList with Name:", "Name");
+    }
+
+    @Override
+    protected String featureValueOf(IpAccessList actual) {
+      return actual.getName();
+    }
+  }
+
   static class Rejects extends TypeSafeDiagnosingMatcher<IpAccessList> {
 
     private final Map<String, IpAccessList> _availableAcls;

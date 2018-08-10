@@ -1,12 +1,12 @@
 package org.batfish.representation.juniper;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
-import java.util.TreeSet;
-import org.batfish.common.util.ComparableStructure;
 
-public final class Zone extends ComparableStructure<String> {
+public final class Zone implements Serializable {
 
   /** */
   private static final long serialVersionUID = 1L;
@@ -19,20 +19,22 @@ public final class Zone extends ComparableStructure<String> {
 
   private final FirewallFilter _inboundFilter;
 
-  private final Map<Interface, FirewallFilter> _inboundInterfaceFilters;
+  private final Map<String, FirewallFilter> _inboundInterfaceFilters;
 
-  private final Set<Interface> _interfaces;
+  private final List<Interface> _interfaces;
+
+  private final String _name;
 
   private FirewallFilter _toHostFilter;
 
   private final Map<String, FirewallFilter> _toZonePolicies;
 
   public Zone(String name, Map<String, AddressBook> globalAddressBooks) {
-    super(name);
+    _name = name;
     _addressBook = new AddressBook(name, globalAddressBooks);
-    _inboundFilter = new FirewallFilter("~INBOUND_ZONE_FILTER~" + name, Family.INET, -1);
+    _inboundFilter = new FirewallFilter("~INBOUND_ZONE_FILTER~" + name, Family.INET);
     _inboundInterfaceFilters = new TreeMap<>();
-    _interfaces = new TreeSet<>();
+    _interfaces = new ArrayList<>();
     _fromZonePolicies = new TreeMap<>();
     _toZonePolicies = new TreeMap<>();
   }
@@ -53,12 +55,16 @@ public final class Zone extends ComparableStructure<String> {
     return _inboundFilter;
   }
 
-  public Map<Interface, FirewallFilter> getInboundInterfaceFilters() {
+  public Map<String, FirewallFilter> getInboundInterfaceFilters() {
     return _inboundInterfaceFilters;
   }
 
-  public Set<Interface> getInterfaces() {
+  public List<Interface> getInterfaces() {
     return _interfaces;
+  }
+
+  public String getName() {
+    return _name;
   }
 
   public FirewallFilter getToHostFilter() {

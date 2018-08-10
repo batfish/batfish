@@ -1,12 +1,15 @@
 package org.batfish.datamodel.questions;
 
+import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
-import java.util.Arrays;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import org.batfish.common.BatfishException;
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip6AccessList;
 import org.batfish.datamodel.IpAccessList;
 
@@ -16,8 +19,8 @@ import org.batfish.datamodel.IpAccessList;
  * <p>Currently supported example specifiers:
  *
  * <ul>
- *   <li>lhr-.* —> all filters with matching names
- *   <li>name:lhr-.* -> same as above; name: is optional
+ *   <li>lhr-.* -&gt; all filters with matching names
+ *   <li>name:lhr-.* -&gt; same as above; name: is optional
  *   <li>ipv4:lhr-.* all IPv4 access lists with matching names
  *   <li>ipv6:lhr-.* all IPv6 access lists with matching names
  * </ul>
@@ -28,9 +31,11 @@ import org.batfish.datamodel.IpAccessList;
 public class FiltersSpecifier {
 
   public enum Type {
+    INPUTFILTERON,
     IPV4,
     IPV6,
-    NAME
+    NAME,
+    OUTPUTFILTERON
   }
 
   public static final FiltersSpecifier ALL = new FiltersSpecifier(".*");
@@ -48,24 +53,20 @@ public class FiltersSpecifier {
 
     String[] parts = expression.split(":");
 
-    if (parts.length == 1) {
-      _type = Type.NAME;
-      _regex = Pattern.compile(_expression);
-    } else if (parts.length == 2) {
-      try {
-        _type = Type.valueOf(parts[0].toUpperCase());
-        _regex = Pattern.compile(parts[1]);
-      } catch (IllegalArgumentException e) {
-        throw new IllegalArgumentException(
-            "Illegal FiltersSpecifier filter "
-                + parts[0]
-                + ".  Should be one of "
-                + Arrays.stream(Type.values())
-                    .map(v -> v.toString())
-                    .collect(Collectors.joining(", ")));
+    String upperExpression = expression.toUpperCase();
+    Type parsedType = null;
+    for (Type type : Type.values()) {
+      if (upperExpression.startsWith(type.name() + ":")) {
+        parsedType = type;
+        break;
       }
+    }
+    _type = firstNonNull(parsedType, Type.NAME);
+
+    if (parsedType == null) {
+      _regex = Pattern.compile(_expression);
     } else {
-      throw new IllegalArgumentException("Cannot parse FiltersSpecifier " + expression);
+      _regex = Pattern.compile(_expression.substring(_type.name().length() + 1));
     }
   }
 
@@ -98,23 +99,15 @@ public class FiltersSpecifier {
     return Objects.hash(_expression, _regex.pattern(), _type.ordinal());
   }
 
-  /**
-   * Evaluates if the given IPv4 filter matches this specifier
-   *
-   * @param filter The filter to evaluate
-   * @return Results of the match
-   */
-  public boolean matches(IpAccessList filter) {
-    switch (_type) {
-      case IPV4:
-        return _regex.matcher(filter.getName()).matches();
-      case IPV6:
-        return false;
-      case NAME:
-        return _regex.matcher(filter.getName()).matches();
-      default:
-        throw new BatfishException("Unhandled FiltersSpecifier type: " + _type);
-    }
+  private boolean isFilterOnInterface(
+      Configuration c, Function<Interface, IpAccessList> filterGetter, IpAccessList filter) {
+    InterfacesSpecifier interfaceSpecifiers = new InterfacesSpecifier(_regex);
+    return c.getInterfaces()
+        .values()
+        .stream()
+        .filter(interfaceSpecifiers::matches)
+        .map(filterGetter)
+        .anyMatch(o -> o == filter);
   }
 
   /**
@@ -136,7 +129,32 @@ public class FiltersSpecifier {
     }
   }
 
+  /**
+   * Evaluates if the given IPv4 filter matches this specifier
+   *
+   * @param filter The filter to evaluate
+   * @param c The configuration providing context in which to evaluate
+   * @return Results of the match
+   */
+  public boolean matches(IpAccessList filter, Configuration c) {
+    switch (_type) {
+      case INPUTFILTERON:
+        return isFilterOnInterface(c, Interface::getIncomingFilter, filter);
+      case IPV4:
+        return _regex.matcher(filter.getName()).matches();
+      case IPV6:
+        return false;
+      case NAME:
+        return _regex.matcher(filter.getName()).matches();
+      case OUTPUTFILTERON:
+        return isFilterOnInterface(c, Interface::getOutgoingFilter, filter);
+      default:
+        throw new BatfishException("Unhandled FiltersSpecifier type: " + _type);
+    }
+  }
+
   @JsonValue
+  @Override
   public String toString() {
     return _expression;
   }

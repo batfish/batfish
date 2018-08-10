@@ -64,6 +64,23 @@ public final class Version {
   }
 
   /**
+   * Returns the version of the current build of Z3, or {@link #UNKNOWN_VERSION} if the version
+   * could not be detected.
+   */
+  public static String getZ3Version() {
+    try {
+      return com.microsoft.z3.Version.getString();
+    } catch (Throwable e) {
+      return "unknown, unable to load library";
+    }
+  }
+
+  /** Returns string indicating the current build of Batfish and Z3. */
+  public static String getCompleteVersionString() {
+    return String.format("Batfish version: %s\nZ3 version: %s\n", getVersion(), getZ3Version());
+  }
+
+  /**
    * Returns {@code true} if the given version of some other endpoint is compatible with the Batfish
    * version of this process.
    *
@@ -78,19 +95,20 @@ public final class Version {
   // Visible for testing.
   static boolean isCompatibleVersion(
       String myName, String myVersion, String otherName, @Nullable String otherVersion) {
-    otherVersion = firstNonNull(otherVersion, UNKNOWN_VERSION);
+    String effectiveOtherVersion = firstNonNull(otherVersion, UNKNOWN_VERSION);
 
-    if (otherVersion.equals(INCOMPATIBLE_VERSION) || myVersion.equals(INCOMPATIBLE_VERSION)) {
+    if (effectiveOtherVersion.equals(INCOMPATIBLE_VERSION)
+        || myVersion.equals(INCOMPATIBLE_VERSION)) {
       return false;
     }
 
-    if (otherVersion.equals(UNKNOWN_VERSION) || myVersion.equals(UNKNOWN_VERSION)) {
+    if (effectiveOtherVersion.equals(UNKNOWN_VERSION) || myVersion.equals(UNKNOWN_VERSION)) {
       // Either version is unknown, assume compatible.
       return true;
     }
 
     DefaultArtifactVersion myArtifactVersion = parseVersion(myVersion, myName);
-    DefaultArtifactVersion otherArtifactVersion = parseVersion(otherVersion, otherName);
+    DefaultArtifactVersion otherArtifactVersion = parseVersion(effectiveOtherVersion, otherName);
     return myArtifactVersion.getMajorVersion() == otherArtifactVersion.getMajorVersion()
         && myArtifactVersion.getMinorVersion() == otherArtifactVersion.getMinorVersion();
   }

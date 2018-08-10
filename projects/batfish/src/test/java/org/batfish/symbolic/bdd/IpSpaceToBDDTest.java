@@ -4,19 +4,26 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Streams;
 import java.util.Arrays;
+import java.util.Map;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
-import net.sf.javabdd.JFactory;
+import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 public class IpSpaceToBDDTest {
+  @Rule public ExpectedException exception = ExpectedException.none();
+
   private BDDFactory _factory;
   private BDDOps _bddOps;
   private BDDInteger _ipAddrBdd;
@@ -24,10 +31,7 @@ public class IpSpaceToBDDTest {
 
   @Before
   public void init() {
-    _factory = JFactory.init(10000, 1000);
-    _factory.disableReorder();
-    _factory.setCacheRatio(64);
-    _factory.setVarNum(32); // reserve 32 1-bit variables
+    _factory = BDDUtils.bddFactory(32);
     _bddOps = new BDDOps(_factory);
     _ipAddrBdd = BDDInteger.makeFromIndex(_factory, 32, 0, true);
     _ipSpaceToBdd = new IpSpaceToBDD(_factory, _ipAddrBdd);
@@ -126,5 +130,35 @@ public class IpSpaceToBDDTest {
     BDD bdd1 = ipWildcardIpSpace.accept(_ipSpaceToBdd);
     BDD bdd2 = prefixIpSpace.accept(_ipSpaceToBdd);
     assertThat(bdd1, equalTo(bdd2));
+  }
+
+  @Test
+  public void testIpSpaceReference() {
+    Ip ip = new Ip("1.1.1.1");
+    Map<String, IpSpace> namedIpSpaces = ImmutableMap.of("foo", ip.toIpSpace());
+    IpSpace reference = new IpSpaceReference("foo");
+    IpSpaceToBDD ipSpaceToBDD = new IpSpaceToBDD(_factory, _ipAddrBdd, namedIpSpaces);
+    BDD ipBDD = ip.toIpSpace().accept(ipSpaceToBDD);
+    BDD referenceBDD = reference.accept(ipSpaceToBDD);
+    assertThat(referenceBDD, equalTo(ipBDD));
+  }
+
+  @Test
+  public void testUndefinedIpSpaceReference() {
+    IpSpace reference = new IpSpaceReference("foo");
+    exception.expect(IllegalArgumentException.class);
+    exception.expectMessage("Undefined IpSpace reference: foo");
+    reference.accept(_ipSpaceToBdd);
+  }
+
+  @Test
+  public void testCircularIpSpaceReference() {
+    IpSpace foo = new IpSpaceReference("foo");
+    IpSpace bar = new IpSpaceReference("bar");
+    Map<String, IpSpace> namedIpSpaces = ImmutableMap.of("foo", bar, "bar", foo);
+    IpSpaceToBDD ipSpaceToBDD = new IpSpaceToBDD(_factory, _ipAddrBdd, namedIpSpaces);
+    exception.expect(BatfishException.class);
+    exception.expectMessage("Circular IpSpaceReference: foo");
+    foo.accept(ipSpaceToBDD);
   }
 }

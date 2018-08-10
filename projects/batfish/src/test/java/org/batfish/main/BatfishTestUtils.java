@@ -2,6 +2,7 @@ package org.batfish.main;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.collect.ImmutableMap;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -14,42 +15,35 @@ import javax.annotation.Nullable;
 import org.apache.commons.collections4.map.LRUMap;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Snapshot;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.config.Settings.EnvironmentSettings;
-import org.batfish.config.Settings.TestrigSettings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
-import org.batfish.datamodel.ForwardingAnalysis;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.RoutesByVrf;
-import org.batfish.dataplane.bdp.BdpDataPlanePlugin;
 import org.batfish.dataplane.ibdp.IncrementalDataPlanePlugin;
 import org.junit.rules.TemporaryFolder;
 
 public class BatfishTestUtils {
 
-  private static Cache<Snapshot, SortedMap<String, Configuration>> makeTestrigCache() {
-    return CacheBuilder.newBuilder().maximumSize(5).weakValues().build();
+  private static Cache<NetworkSnapshot, SortedMap<String, Configuration>> makeTestrigCache() {
+    return CacheBuilder.newBuilder().maximumSize(5).build();
   }
 
-  private static Map<EnvironmentSettings, SortedMap<String, BgpAdvertisementsByVrf>>
-      makeEnvBgpCache() {
+  private static Map<NetworkSnapshot, SortedMap<String, BgpAdvertisementsByVrf>> makeEnvBgpCache() {
     return Collections.synchronizedMap(new LRUMap<>(4));
   }
 
-  private static Map<EnvironmentSettings, SortedMap<String, RoutesByVrf>> makeEnvRouteCache() {
+  private static Map<NetworkSnapshot, SortedMap<String, RoutesByVrf>> makeEnvRouteCache() {
     return Collections.synchronizedMap(new LRUMap<>(4));
   }
 
-  private static Cache<TestrigSettings, DataPlane> makeDataPlaneCache() {
-    return CacheBuilder.newBuilder().maximumSize(2).weakValues().build();
-  }
-
-  private static Cache<TestrigSettings, ForwardingAnalysis> makeForwardingAnalysisCache() {
+  private static Cache<NetworkSnapshot, DataPlane> makeDataPlaneCache() {
     return CacheBuilder.newBuilder().maximumSize(2).build();
   }
 
@@ -58,17 +52,20 @@ public class BatfishTestUtils {
       throws IOException {
     Settings settings = new Settings(new String[] {});
     settings.setLogger(new BatfishLogger("debug", false));
-    final Cache<Snapshot, SortedMap<String, Configuration>> testrigs = makeTestrigCache();
-    final Cache<Snapshot, SortedMap<String, Configuration>> compressedTestrigs = makeTestrigCache();
+    final Cache<NetworkSnapshot, SortedMap<String, Configuration>> testrigs = makeTestrigCache();
+    final Cache<NetworkSnapshot, SortedMap<String, Configuration>> compressedTestrigs =
+        makeTestrigCache();
 
-    Path containerDir = tempFolder.newFolder().toPath();
-    settings.setContainerDir(containerDir);
+    settings.setStorageBase(tempFolder.newFolder().toPath());
+    settings.setContainer("tempContainer");
     if (!configurations.isEmpty()) {
       settings.setTestrig("tempTestrig");
       settings.setEnvironmentName("tempEnvironment");
       Batfish.initTestrigSettings(settings);
       settings.getBaseTestrigSettings().getEnvironmentSettings().getEnvPath().toFile().mkdirs();
-      testrigs.put(new Snapshot("tempTestrig", "tempEnvironment"), configurations);
+      testrigs.put(
+          new NetworkSnapshot("tempContainer", new Snapshot("tempTestrig", "tempEnvironment")),
+          configurations);
       settings.setActiveTestrigSettings(settings.getBaseTestrigSettings());
     }
     Batfish batfish =
@@ -79,8 +76,7 @@ public class BatfishTestUtils {
             makeDataPlaneCache(),
             makeDataPlaneCache(),
             makeEnvBgpCache(),
-            makeEnvRouteCache(),
-            makeForwardingAnalysisCache());
+            makeEnvRouteCache());
     if (!configurations.isEmpty()) {
       Batfish.serializeAsJson(
           settings.getBaseTestrigSettings().getEnvironmentSettings().getSerializedTopologyPath(),
@@ -91,9 +87,65 @@ public class BatfishTestUtils {
     return batfish;
   }
 
+  private static Batfish initBatfish(
+      @Nonnull SortedMap<String, Configuration> baseConfigs,
+      @Nonnull SortedMap<String, Configuration> deltaConfigs,
+      @Nonnull TemporaryFolder tempFolder)
+      throws IOException {
+    Settings settings = new Settings(new String[] {});
+    settings.setLogger(new BatfishLogger("debug", false));
+    final Cache<NetworkSnapshot, SortedMap<String, Configuration>> testrigs = makeTestrigCache();
+    final Cache<NetworkSnapshot, SortedMap<String, Configuration>> compressedTestrigs =
+        makeTestrigCache();
+
+    settings.setStorageBase(tempFolder.newFolder().toPath());
+    settings.setContainer("tempContainer");
+    if (!baseConfigs.isEmpty()) {
+      settings.setTestrig("tempTestrig");
+      settings.setEnvironmentName("tempEnvironment");
+      settings.setDeltaTestrig("tempDeltaTestrig");
+      settings.setDeltaEnvironmentName("tempDeltaEnvironment");
+      Batfish.initTestrigSettings(settings);
+      settings.getBaseTestrigSettings().getEnvironmentSettings().getEnvPath().toFile().mkdirs();
+      settings.getDeltaTestrigSettings().getEnvironmentSettings().getEnvPath().toFile().mkdirs();
+      testrigs.put(
+          new NetworkSnapshot("tempContainer", new Snapshot("tempTestrig", "tempEnvironment")),
+          baseConfigs);
+      testrigs.put(
+          new NetworkSnapshot(
+              "tempContainer", new Snapshot("tempDeltaTestrig", "tempDeltaEnvironment")),
+          deltaConfigs);
+      settings.setActiveTestrigSettings(settings.getBaseTestrigSettings());
+    }
+    Batfish batfish =
+        new Batfish(
+            settings,
+            compressedTestrigs,
+            testrigs,
+            makeDataPlaneCache(),
+            makeDataPlaneCache(),
+            makeEnvBgpCache(),
+            makeEnvRouteCache());
+    batfish.getSettings().setDiffQuestion(true);
+    if (!baseConfigs.isEmpty()) {
+      Batfish.serializeAsJson(
+          settings.getBaseTestrigSettings().getEnvironmentSettings().getSerializedTopologyPath(),
+          batfish.computeEnvironmentTopology(baseConfigs),
+          "environment topology");
+    }
+    if (!deltaConfigs.isEmpty()) {
+      batfish.pushDeltaEnvironment();
+      Batfish.serializeAsJson(
+          settings.getDeltaTestrigSettings().getEnvironmentSettings().getSerializedTopologyPath(),
+          batfish.computeEnvironmentTopology(deltaConfigs),
+          "environment topology");
+      batfish.popEnvironment();
+    }
+    registerDataPlanePlugins(batfish);
+    return batfish;
+  }
+
   private static void registerDataPlanePlugins(Batfish batfish) {
-    BdpDataPlanePlugin bdpPlugin = new BdpDataPlanePlugin();
-    bdpPlugin.initialize(batfish);
     IncrementalDataPlanePlugin ibdpPlugin = new IncrementalDataPlanePlugin();
     ibdpPlugin.initialize(batfish);
   }
@@ -113,6 +165,8 @@ public class BatfishTestUtils {
     Map<String, String> configurationText = testrigText.getConfigurationText();
     Map<String, String> hostsText = testrigText.getHostsText();
     Map<String, String> iptablesFilesText = testrigText.getIptablesFilesText();
+    String layer1TopologyText = testrigText.getLayer1TopologyText();
+    String legacyTopologyText = testrigText.getLegacyTopologyText();
     Map<String, String> routingTablesText = testrigText.getRoutingTablesText();
 
     Settings settings = new Settings(new String[] {});
@@ -123,8 +177,8 @@ public class BatfishTestUtils {
     settings.setThrowOnLexerError(true);
     settings.setThrowOnParserError(true);
     settings.setVerboseParse(true);
-    Path containerDir = tempFolder.newFolder().toPath();
-    settings.setContainerDir(containerDir);
+    settings.setStorageBase(tempFolder.newFolder().toPath());
+    settings.setContainer("tempContainer");
     settings.setTestrig("tempTestrig");
     settings.setEnvironmentName("tempEnvironment");
     Batfish.initTestrigSettings(settings);
@@ -138,6 +192,16 @@ public class BatfishTestUtils {
     writeTemporaryTestrigFiles(bgpTablesText, envSettings.getEnvironmentBgpTablesPath());
     writeTemporaryTestrigFiles(hostsText, testrigPath.resolve(BfConsts.RELPATH_HOST_CONFIGS_DIR));
     writeTemporaryTestrigFiles(iptablesFilesText, testrigPath.resolve("iptables"));
+    if (layer1TopologyText != null) {
+      writeTemporaryTestrigFiles(
+          ImmutableMap.of(BfConsts.RELPATH_TESTRIG_L1_TOPOLOGY_PATH, layer1TopologyText),
+          testrigPath);
+    }
+    if (legacyTopologyText != null) {
+      writeTemporaryTestrigFiles(
+          ImmutableMap.of(BfConsts.RELPATH_TESTRIG_LEGACY_TOPOLOGY_PATH, legacyTopologyText),
+          testrigPath);
+    }
     writeTemporaryTestrigFiles(routingTablesText, envSettings.getEnvironmentRoutingTablesPath());
     Batfish batfish =
         new Batfish(
@@ -147,8 +211,7 @@ public class BatfishTestUtils {
             makeDataPlaneCache(),
             makeDataPlaneCache(),
             makeEnvBgpCache(),
-            makeEnvRouteCache(),
-            makeForwardingAnalysisCache());
+            makeEnvRouteCache());
     registerDataPlanePlugins(batfish);
     return batfish;
   }
@@ -174,7 +237,7 @@ public class BatfishTestUtils {
    * Get a new Batfish instance with given configurations, tempFolder should be present for
    * non-empty configurations
    *
-   * @param configurations Map of all Configuration Name -> Configuration Object
+   * @param configurations Map of all Configuration Name -&gt; Configuration Object
    * @param tempFolder Temporary folder to be used to files required for Batfish
    * @return New Batfish instance
    */
@@ -182,6 +245,23 @@ public class BatfishTestUtils {
       SortedMap<String, Configuration> configurations, @Nonnull TemporaryFolder tempFolder)
       throws IOException {
     return initBatfish(configurations, tempFolder);
+  }
+
+  /**
+   * Get a new Batfish instance with given base and delta configurations, tempFolder should be
+   * present for non-empty configurations
+   *
+   * @param baseConfigs Map of all Configuration Name -&gt; Configuration Object
+   * @param deltaConfigs Map of all Configuration Name -&gt; Configuration Object
+   * @param tempFolder Temporary folder to be used to files required for Batfish
+   * @return New Batfish instance
+   */
+  public static Batfish getBatfish(
+      @Nonnull SortedMap<String, Configuration> baseConfigs,
+      @Nonnull SortedMap<String, Configuration> deltaConfigs,
+      @Nonnull TemporaryFolder tempFolder)
+      throws IOException {
+    return initBatfish(baseConfigs, deltaConfigs, tempFolder);
   }
 
   public static Batfish getBatfishForTextConfigs(
@@ -195,7 +275,7 @@ public class BatfishTestUtils {
         TestrigText.builder().setConfigurationText(configurationTextMap).build(), folder);
   }
 
-  public static Map<String, Configuration> parseTextConfigs(
+  public static SortedMap<String, Configuration> parseTextConfigs(
       TemporaryFolder folder, String... configurationNames) throws IOException {
     return getBatfishForTextConfigs(folder, configurationNames).loadConfigurations();
   }

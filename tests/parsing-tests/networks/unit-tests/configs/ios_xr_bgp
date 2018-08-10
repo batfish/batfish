@@ -1,0 +1,14 @@
+!
+hostname ios_xr_bgp
+!
+router bgp 1
+ bgp bestpath compare-routerid
+ address-family ipv4 unicast
+  additional-paths receive
+  additional-paths selection route-policy ADDITIONAL_PATHS_POLICY
+  additional-paths send
+  aggregate-address 1.0.0.0/8 as-set summary-only route-policy AGGREGATE_POLICY
+  redistribute static route-policy REDISTRIBUTE_STATIC_POLICY
+ !
+!
+

@@ -10,7 +10,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.regex.Matcher;
 import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import org.batfish.common.plugin.IBatfish;
@@ -23,6 +22,7 @@ import org.batfish.symbolic.GraphEdge;
 import org.batfish.symbolic.answers.RoleAnswerElement;
 import org.batfish.symbolic.bdd.BDDAcl;
 import org.batfish.symbolic.bdd.BDDNetwork;
+import org.batfish.symbolic.bdd.BDDPacket;
 import org.batfish.symbolic.bdd.BDDRoute;
 import org.batfish.symbolic.utils.Tuple;
 
@@ -55,7 +55,7 @@ public class Roles {
 
   private Roles(IBatfish batfish, NodesSpecifier nodesSpecifier) {
     _graph = new Graph(batfish);
-    _network = BDDNetwork.create(_graph, nodesSpecifier);
+    _network = BDDNetwork.create(new BDDPacket(), _graph, nodesSpecifier);
     _nodeSpecifier = nodesSpecifier;
     _bgpInEcs = null;
     _bgpOutEcs = null;
@@ -99,11 +99,11 @@ public class Roles {
     SortedSet<String> incomingAclNull = new TreeSet<>();
     SortedSet<String> outgoingAclNull = new TreeSet<>();
 
+    Set<String> includeNodes = _nodeSpecifier.getMatchingNodes(_graph.getBatfish());
     for (Entry<String, List<GraphEdge>> entry : _graph.getEdgeMap().entrySet()) {
       String router = entry.getKey();
 
-      Matcher m = _nodeSpecifier.getRegex().matcher(router);
-      if (!m.matches()) {
+      if (!includeNodes.contains(router)) {
         continue;
       }
 

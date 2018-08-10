@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import javax.annotation.Nonnull;
 
 public class DefinedStructureInfo implements Serializable {
 
@@ -18,7 +19,7 @@ public class DefinedStructureInfo implements Serializable {
   private static final String PROP_DEFINITION_LINES = "definitionLines";
   private static final String PROP_NUM_REFERRERS = "numReferrers";
 
-  private SortedSet<Integer> _definitionLines;
+  @Nonnull private SortedSet<Integer> _definitionLines;
   private int _numReferrers;
 
   @JsonCreator
@@ -37,5 +38,9 @@ public class DefinedStructureInfo implements Serializable {
   @JsonProperty(PROP_NUM_REFERRERS)
   public int getNumReferrers() {
     return _numReferrers;
+  }
+
+  public void setNumReferrers(int numReferrers) {
+    _numReferrers = numReferrers;
   }
 }

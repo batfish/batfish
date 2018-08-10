@@ -1,6 +1,6 @@
 package org.batfish.representation.cisco;
 
-import java.util.Collections;
+import com.google.common.collect.ImmutableList;
 import java.util.List;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
@@ -26,12 +26,11 @@ public class RoutePolicyDispositionStatement extends RoutePolicyStatement {
     switch (_dispositionType) {
       case DONE:
         {
-          If ifStatement = new If();
-          ifStatement.setGuard(BooleanExprs.CallExprContext.toStaticBooleanExpr());
-          ifStatement.setTrueStatements(
-              Collections.singletonList(Statements.ReturnFalse.toStaticStatement()));
-          ifStatement.setFalseStatements(
-              Collections.singletonList(Statements.ExitAccept.toStaticStatement()));
+          If ifStatement =
+              new If(
+                  BooleanExprs.CALL_EXPR_CONTEXT,
+                  ImmutableList.of(Statements.ReturnFalse.toStaticStatement()),
+                  ImmutableList.of(Statements.ExitAccept.toStaticStatement()));
           statements.add(ifStatement);
           break;
         }
@@ -42,16 +41,18 @@ public class RoutePolicyDispositionStatement extends RoutePolicyStatement {
 
       case PASS:
         {
-          If ifStatement = new If();
-          ifStatement.setGuard(BooleanExprs.CallExprContext.toStaticBooleanExpr());
-          ifStatement.setTrueStatements(
-              Collections.singletonList(
-                  Statements.SetLocalDefaultActionAccept.toStaticStatement()));
-          ifStatement.setFalseStatements(
-              Collections.singletonList(Statements.SetDefaultActionAccept.toStaticStatement()));
+          If ifStatement =
+              new If(
+                  BooleanExprs.CALL_EXPR_CONTEXT,
+                  ImmutableList.of(Statements.SetLocalDefaultActionAccept.toStaticStatement()),
+                  ImmutableList.of(Statements.SetDefaultActionAccept.toStaticStatement()));
           statements.add(ifStatement);
           break;
         }
+
+      case UNSUPPRESS_ROUTE:
+        statements.add(Statements.Unsuppress.toStaticStatement());
+        break;
 
       default:
         throw new BatfishException("Invalid disposition type");

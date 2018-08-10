@@ -1,7 +1,10 @@
 package org.batfish.datamodel.pojo;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import javax.annotation.Nonnull;
 
 public class Interface extends BfObject {
 
@@ -17,23 +20,36 @@ public class Interface extends BfObject {
 
   private static final String PROP_TYPE = "type";
 
-  private final String _name;
+  @Nonnull private final String _name;
 
-  private final String _nodeId;
+  @Nonnull private final String _nodeId;
 
-  private InterfaceType _type;
+  @Nonnull private InterfaceType _type;
+
+  public Interface(String nodeId, String name) {
+    this(nodeId, name, InterfaceType.UNKNOWN);
+  }
 
   public Interface(String nodeId, String name, InterfaceType type) {
-    super(getId(nodeId, name));
-    _nodeId = nodeId;
-    _name = name;
-    _type = type;
+    this(getId(nodeId, name), nodeId, name, type);
   }
 
   @JsonCreator
   public Interface(
-      @JsonProperty(PROP_NODE_ID) String nodeId, @JsonProperty(PROP_NAME) String name) {
-    this(nodeId, name, InterfaceType.UNKNOWN);
+      @JsonProperty(PROP_ID) String id,
+      @Nonnull @JsonProperty(PROP_NODE_ID) String nodeId,
+      @Nonnull @JsonProperty(PROP_NAME) String name,
+      @JsonProperty(PROP_TYPE) InterfaceType type) {
+    super(firstNonNull(id, getId(nodeId, name)));
+    _nodeId = nodeId;
+    _name = name;
+    _type = firstNonNull(type, InterfaceType.UNKNOWN);
+    if (nodeId == null) {
+      throw new IllegalArgumentException("Cannot build interface: nodeId is null");
+    }
+    if (name == null) {
+      throw new IllegalArgumentException("Cannot build interface: name is null");
+    }
   }
 
   public static String getId(String nodeId, String name) {

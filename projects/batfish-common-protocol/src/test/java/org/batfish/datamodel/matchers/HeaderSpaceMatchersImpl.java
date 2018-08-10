@@ -67,6 +67,17 @@ public class HeaderSpaceMatchersImpl {
     }
   }
 
+  static class HasSrcOrDstIps extends FeatureMatcher<HeaderSpace, IpSpace> {
+    HasSrcOrDstIps(@Nonnull Matcher<? super IpSpace> subMatcher) {
+      super(subMatcher, "A HeaderSpace with srcOrDstIps:", "srcOrDstIps");
+    }
+
+    @Override
+    protected IpSpace featureValueOf(HeaderSpace actual) {
+      return actual.getSrcOrDstIps();
+    }
+  }
+
   static class HasSrcOrDstPorts extends FeatureMatcher<HeaderSpace, SortedSet<SubRange>> {
     HasSrcOrDstPorts(@Nonnull Matcher<? super SortedSet<SubRange>> subMatcher) {
       super(subMatcher, "A HeaderSpace with srcOrDstPorts:", "srcOrDstPorts");

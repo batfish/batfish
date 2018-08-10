@@ -61,7 +61,9 @@ public class Environment {
 
   private boolean _writeToIntermediateBgpAttributes;
 
-  public Environment(
+  private Boolean _suppressed;
+
+  private Environment(
       boolean buffered,
       boolean callExprContext,
       boolean callStatementContext,
@@ -78,7 +80,6 @@ public class Environment {
       @Nullable Ip peerAddress,
       @Nullable Prefix peerPrefix,
       boolean readFromIntermediateBgpAttributes,
-      boolean useOutputAttributes,
       Vrf vrf,
       boolean writeToIntermediateBgpAttributes) {
     this._buffered = buffered;
@@ -242,7 +243,6 @@ public class Environment {
     @Nullable private Ip _peerAddress;
     @Nullable private Prefix _peerPrefix;
     private boolean _readFromIntermediateBgpAttributes;
-    private boolean _useOutputAttributes;
     private String _vrf;
     private boolean _writeToIntermediateBgpAttributes;
 
@@ -330,11 +330,6 @@ public class Environment {
       return this;
     }
 
-    public Builder setUseOutputAttributes(boolean useOutputAttributes) {
-      this._useOutputAttributes = useOutputAttributes;
-      return this;
-    }
-
     public Builder setVrf(String vrf) {
       this._vrf = vrf;
       return this;
@@ -364,9 +359,16 @@ public class Environment {
           _peerAddress,
           _peerPrefix,
           _readFromIntermediateBgpAttributes,
-          _useOutputAttributes,
           vrf,
           _writeToIntermediateBgpAttributes);
     }
+  }
+
+  public @Nullable Boolean getSuppressed() {
+    return _suppressed;
+  }
+
+  public void setSuppressed(@Nullable Boolean suppressed) {
+    _suppressed = suppressed;
   }
 }

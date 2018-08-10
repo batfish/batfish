@@ -1,12 +1,15 @@
 package org.batfish.representation.juniper;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.io.Serializable;
-import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.OspfArea;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SnmpServer;
 
@@ -27,9 +30,11 @@ public class RoutingInstance implements Serializable {
 
   private String _domainName;
 
-  private String _forwardingTableExportPolicy;
+  private boolean _exportLocalRoutesLan;
 
-  private int _forwardingTableExportPolicyLine;
+  private boolean _exportLocalRoutesPointToPoint;
+
+  private String _forwardingTableExportPolicy;
 
   private final Interface _globalMasterInterface;
 
@@ -41,6 +46,8 @@ public class RoutingInstance implements Serializable {
 
   private final IsisSettings _isisSettings;
 
+  @Nullable private Integer _loops;
+
   private BgpGroup _masterBgpGroup;
 
   private String _name;
@@ -51,7 +58,7 @@ public class RoutingInstance implements Serializable {
 
   private Map<Long, OspfArea> _ospfAreas;
 
-  private Map<String, Integer> _ospfExportPolicies;
+  private List<String> _ospfExportPolicies;
 
   private double _ospfReferenceBandwidth;
 
@@ -78,7 +85,7 @@ public class RoutingInstance implements Serializable {
     _namedBgpGroups = new TreeMap<>();
     _nodeDevices = new TreeMap<>();
     _ospfAreas = new TreeMap<>();
-    _ospfExportPolicies = new LinkedHashMap<>();
+    _ospfExportPolicies = new LinkedList<>();
     _ospfReferenceBandwidth = DEFAULT_OSPF_REFERENCE_BANDWIDTH;
     _ribs = new TreeMap<>();
     _ribs.put(
@@ -118,12 +125,16 @@ public class RoutingInstance implements Serializable {
     return _domainName;
   }
 
-  public String getForwardingTableExportPolicy() {
-    return _forwardingTableExportPolicy;
+  public boolean getExportLocalRoutesLan() {
+    return _exportLocalRoutesLan;
   }
 
-  public int getForwardingTableExportPolicyLine() {
-    return _forwardingTableExportPolicyLine;
+  public boolean getExportLocalRoutesPointToPoint() {
+    return _exportLocalRoutesPointToPoint;
+  }
+
+  public String getForwardingTableExportPolicy() {
+    return _forwardingTableExportPolicy;
   }
 
   public Interface getGlobalMasterInterface() {
@@ -146,6 +157,11 @@ public class RoutingInstance implements Serializable {
     return _isisSettings;
   }
 
+  @Nullable
+  public Integer getLoops() {
+    return _loops;
+  }
+
   public BgpGroup getMasterBgpGroup() {
     return _masterBgpGroup;
   }
@@ -166,7 +182,7 @@ public class RoutingInstance implements Serializable {
     return _ospfAreas;
   }
 
-  public Map<String, Integer> getOspfExportPolicies() {
+  public List<String> getOspfExportPolicies() {
     return _ospfExportPolicies;
   }
 
@@ -198,20 +214,29 @@ public class RoutingInstance implements Serializable {
     _domainName = domainName;
   }
 
+  public void setExportLocalRoutesLan(boolean exportLocalRoutesLan) {
+    _exportLocalRoutesLan = exportLocalRoutesLan;
+  }
+
+  public void setExportLocalRoutesPointToPoint(boolean exportLocalRoutesPointToPoint) {
+    _exportLocalRoutesPointToPoint = exportLocalRoutesPointToPoint;
+  }
+
   public void setForwardingTableExportPolicy(String forwardingTableExportPolicy) {
     _forwardingTableExportPolicy = forwardingTableExportPolicy;
   }
 
-  public void setForwardingTableExportPolicyLine(int forwardingTableExportPolicyLine) {
-    _forwardingTableExportPolicyLine = forwardingTableExportPolicyLine;
-  }
-
   public void setHostname(String hostname) {
-    _hostname = hostname;
+    checkNotNull(hostname, "'hostname' cannot be null");
+    _hostname = hostname.toLowerCase();
   }
 
   public void setOspfReferenceBandwidth(double ospfReferenceBandwidth) {
     _ospfReferenceBandwidth = ospfReferenceBandwidth;
+  }
+
+  public void setLoops(@Nullable Integer loops) {
+    _loops = loops;
   }
 
   public void setRouterId(Ip routerId) {

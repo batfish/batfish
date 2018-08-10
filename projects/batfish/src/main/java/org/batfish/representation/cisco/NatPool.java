@@ -1,9 +1,9 @@
 package org.batfish.representation.cisco;
 
-import org.batfish.common.util.DefinedStructure;
+import java.io.Serializable;
 import org.batfish.datamodel.Ip;
 
-public class NatPool extends DefinedStructure<String> {
+public class NatPool implements Serializable {
 
   /** */
   private static final long serialVersionUID = 1L;
@@ -11,10 +11,6 @@ public class NatPool extends DefinedStructure<String> {
   private Ip _first;
 
   private Ip _last;
-
-  public NatPool(String name, int definitionLine) {
-    super(name, definitionLine);
-  }
 
   public Ip getFirst() {
     return _first;

@@ -1,23 +1,28 @@
 package org.batfish.representation.cisco;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import org.batfish.common.util.DefinedStructure;
 import org.batfish.datamodel.routing_policy.expr.AsPathSetElem;
 
-public class AsPathSet extends DefinedStructure<String> {
+public class AsPathSet implements Serializable {
 
   /** */
   private static final long serialVersionUID = 1L;
 
   private final List<AsPathSetElem> _elements;
+  private final String _name;
 
-  public AsPathSet(String name, int definitionLine) {
-    super(name, definitionLine);
+  public AsPathSet(String name) {
+    _name = name;
     _elements = new ArrayList<>();
   }
 
   public List<AsPathSetElem> getElements() {
     return _elements;
+  }
+
+  public String getName() {
+    return _name;
   }
 }

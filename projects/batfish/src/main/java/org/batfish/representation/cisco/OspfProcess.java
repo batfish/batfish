@@ -1,5 +1,6 @@
 package org.batfish.representation.cisco;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -10,16 +11,15 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
-import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.OspfAreaSummary;
-import org.batfish.datamodel.OspfMetricType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.ospf.OspfAreaSummary;
+import org.batfish.datamodel.ospf.OspfMetricType;
 
-public class OspfProcess extends ComparableStructure<String> {
+public class OspfProcess implements Serializable {
 
   private static final long DEFAULT_DEFAULT_INFORMATION_METRIC = 1L;
 
@@ -65,9 +65,13 @@ public class OspfProcess extends ComparableStructure<String> {
 
   private Long _maxMetricSummaryLsa;
 
+  private final String _name;
+
   private Set<OspfNetwork> _networks;
 
-  private Map<Long, Boolean> _nssas;
+  private Map<Long, NssaSettings> _nssas;
+
+  private Map<Long, StubSettings> _stubs;
 
   private boolean _passiveInterfaceDefault;
 
@@ -88,6 +92,7 @@ public class OspfProcess extends ComparableStructure<String> {
       case ARISTA: // EOS manual, Chapter 27, "auto-cost reference-bandwidth (OSPFv2)"
         return DEFAULT_REFERENCE_BANDWIDTH_10_MBPS;
 
+      case ARUBAOS: // TODO: verify https://github.com/batfish/batfish/issues/1548
       case CADANT: // Internet claims they use the Cisco defaults.
       case CISCO_ASA: // ASA uses 100 Mbps, switches to 40 Gbps for OSPF v3
       case CISCO_IOS: // https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/iproute_ospf/command/iro-cr-book/ospf-a1.html#wp3271966058
@@ -114,6 +119,7 @@ public class OspfProcess extends ComparableStructure<String> {
         // Inferred from Arista manual OSPF v3 default-metric comment.
         return 10;
 
+      case ARUBAOS: // TODO: verify https://github.com/batfish/batfish/issues/1548
       case CADANT: // Vetted IOS and NXOS; assuming the rest use IOS defaults.
       case CISCO_ASA:
       case CISCO_IOS:
@@ -136,7 +142,7 @@ public class OspfProcess extends ComparableStructure<String> {
   }
 
   public OspfProcess(String name, ConfigurationFormat format) {
-    super(name);
+    _name = name;
     _referenceBandwidth = getReferenceOspfBandwidth(format);
     _networks = new TreeSet<>();
     _defaultInformationMetric = DEFAULT_DEFAULT_INFORMATION_METRIC;
@@ -144,6 +150,7 @@ public class OspfProcess extends ComparableStructure<String> {
     _nssas = new HashMap<>();
     _interfaceBlacklist = new HashSet<>();
     _interfaceWhitelist = new HashSet<>();
+    _stubs = new HashMap<>();
     _wildcardNetworks = new TreeSet<>();
     _redistributionPolicies = new EnumMap<>(RoutingProtocol.class);
     _summaries = new TreeMap<>();
@@ -222,11 +229,15 @@ public class OspfProcess extends ComparableStructure<String> {
     return _maxMetricSummaryLsa;
   }
 
+  public String getName() {
+    return _name;
+  }
+
   public Set<OspfNetwork> getNetworks() {
     return _networks;
   }
 
-  public Map<Long, Boolean> getNssas() {
+  public Map<Long, NssaSettings> getNssas() {
     return _nssas;
   }
 
@@ -252,6 +263,10 @@ public class OspfProcess extends ComparableStructure<String> {
 
   public Ip getRouterId() {
     return _routerId;
+  }
+
+  public Map<Long, StubSettings> getStubs() {
+    return _stubs;
   }
 
   public Map<Long, Map<Prefix, OspfAreaSummary>> getSummaries() {

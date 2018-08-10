@@ -5,7 +5,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.auto.service.AutoService;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.graph.EndpointPair;
 import com.google.common.graph.Network;
+import com.google.common.graph.ValueGraph;
+import java.util.Comparator;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
@@ -17,16 +21,20 @@ import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
+import org.batfish.common.topology.Layer1Topology;
+import org.batfish.common.topology.Layer2Topology;
+import org.batfish.common.topology.TopologyUtil;
 import org.batfish.common.util.CommonUtil;
-import org.batfish.datamodel.BgpNeighbor;
-import org.batfish.datamodel.BgpSession;
+import org.batfish.datamodel.BgpPeerConfig;
+import org.batfish.datamodel.BgpPeerConfigId;
+import org.batfish.datamodel.BgpSessionProperties;
+import org.batfish.datamodel.BgpSessionProperties.SessionType;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NeighborType;
-import org.batfish.datamodel.OspfNeighbor;
-import org.batfish.datamodel.OspfProcess;
+import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.RipNeighbor;
 import org.batfish.datamodel.RipProcess;
 import org.batfish.datamodel.RoleEdge;
@@ -36,14 +44,26 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.collections.IpEdge;
 import org.batfish.datamodel.collections.VerboseBgpEdge;
+import org.batfish.datamodel.collections.VerboseEigrpEdge;
 import org.batfish.datamodel.collections.VerboseOspfEdge;
 import org.batfish.datamodel.collections.VerboseRipEdge;
+import org.batfish.datamodel.eigrp.EigrpEdge;
+import org.batfish.datamodel.eigrp.EigrpInterface;
+import org.batfish.datamodel.eigrp.EigrpTopology;
+import org.batfish.datamodel.ospf.OspfNeighbor;
+import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.role.NodeRoleDimension;
 
 @AutoService(Plugin.class)
 public class NeighborsQuestionPlugin extends QuestionPlugin {
+
+  private static final Comparator<VerboseBgpEdge> VERBOSE_BGP_EDGE_COMPARATOR =
+      Comparator.nullsFirst(
+          Comparator.comparing(VerboseBgpEdge::getEdgeSummary)
+              .thenComparing(VerboseBgpEdge::getSession1Id)
+              .thenComparing(VerboseBgpEdge::getSession2Id));
 
   public enum EdgeStyle {
     ROLE("role"),
@@ -91,11 +111,19 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
 
     private static final String PROP_LAN_NEIGHBORS = "lanNeighbors";
 
+    private static final String PROP_LAYER1_NEIGHBORS = "layer1Neighbors";
+
+    private static final String PROP_LAYER2_NEIGHBORS = "layer2Neighbors";
+
+    private static final String PROP_EIGRP_NEIGHBORS = "eigrpNeighbors";
+
     private static final String PROP_OSPF_NEIGHBORS = "ospfNeighbors";
 
     private static final String PROP_RIP_NEIGHBORS = "ripNeighbors";
 
     private static final String PROP_ROLE_EBGP_NEIGHBORS = "roleEbgpNeighbors";
+
+    private static final String PROP_ROLE_EIGRP_NEIGHBORS = "roleEigrpNeighbors";
 
     private static final String PROP_ROLE_IBGP_NEIGHBORS = "roleIbgpNeighbors";
 
@@ -106,6 +134,8 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
     private static final String PROP_ROLE_RIP_NEIGHBORS = "roleRipNeighbors";
 
     private static final String PROP_VERBOSE_EBGP_NEIGHBORS = "verboseEbgpNeighbors";
+
+    private static final String PROP_VERBOSE_EIGRP_NEIGHBORS = "verboseEigrpNeighbors";
 
     private static final String PROP_VERBOSE_IBGP_NEIGHBORS = "verboseIbgpNeighbors";
 
@@ -121,11 +151,19 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
 
     private SortedSet<Edge> _lanNeighbors;
 
+    private Layer1Topology _layer1Neighbors;
+
+    private Layer2Topology _layer2Neighbors;
+
+    private SortedSet<IpEdge> _eigrpNeighbors;
+
     private SortedSet<IpEdge> _ospfNeighbors;
 
     private SortedSet<IpEdge> _ripNeighbors;
 
     private SortedSet<RoleEdge> _roleEbgpNeighbors;
+
+    private SortedSet<RoleEdge> _roleEigrpNeighbors;
 
     private SortedSet<RoleEdge> _roleIbgpNeighbors;
 
@@ -136,6 +174,8 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
     private SortedSet<RoleEdge> _roleRipNeighbors;
 
     private SortedSet<VerboseBgpEdge> _verboseEbgpNeighbors;
+
+    private SortedSet<VerboseEigrpEdge> _verboseEigrpNeighbors;
 
     private SortedSet<VerboseBgpEdge> _verboseIbgpNeighbors;
 
@@ -154,6 +194,11 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       return _ebgpNeighbors;
     }
 
+    @JsonProperty(PROP_EIGRP_NEIGHBORS)
+    public SortedSet<IpEdge> getEigrpNeighbors() {
+      return _eigrpNeighbors;
+    }
+
     @JsonProperty(PROP_IBGP_NEIGHBORS)
     public SortedSet<IpEdge> getIbgpNeighbors() {
       return _ibgpNeighbors;
@@ -162,6 +207,16 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
     @JsonProperty(PROP_LAN_NEIGHBORS)
     public SortedSet<Edge> getLanNeighbors() {
       return _lanNeighbors;
+    }
+
+    @JsonProperty(PROP_LAYER1_NEIGHBORS)
+    public Layer1Topology getLayer1Neighbors() {
+      return _layer1Neighbors;
+    }
+
+    @JsonProperty(PROP_LAYER2_NEIGHBORS)
+    public Layer2Topology getLayer2Neighbors() {
+      return _layer2Neighbors;
     }
 
     @JsonProperty(PROP_OSPF_NEIGHBORS)
@@ -177,6 +232,11 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
     @JsonProperty(PROP_ROLE_EBGP_NEIGHBORS)
     public SortedSet<RoleEdge> getRoleEbgpNeighbors() {
       return _roleEbgpNeighbors;
+    }
+
+    @JsonProperty(PROP_ROLE_EIGRP_NEIGHBORS)
+    public SortedSet<RoleEdge> getRoleEigrpNeighbors() {
+      return _roleEigrpNeighbors;
     }
 
     @JsonProperty(PROP_ROLE_IBGP_NEIGHBORS)
@@ -204,6 +264,11 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       return _verboseEbgpNeighbors;
     }
 
+    @JsonProperty(PROP_VERBOSE_EIGRP_NEIGHBORS)
+    public SortedSet<VerboseEigrpEdge> getVerboseEigrpNeighbors() {
+      return _verboseEigrpNeighbors;
+    }
+
     @JsonProperty(PROP_VERBOSE_IBGP_NEIGHBORS)
     public SortedSet<VerboseBgpEdge> getVerboseIbgpNeighbors() {
       return _verboseIbgpNeighbors;
@@ -226,6 +291,10 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
 
     public void initEbgpNeighbors() {
       _ebgpNeighbors = new TreeSet<>();
+    }
+
+    public void initEigrpNeighbors() {
+      _eigrpNeighbors = new TreeSet<>();
     }
 
     public void initIbgpNeighbors() {
@@ -294,6 +363,27 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
         }
       }
 
+      if (_eigrpNeighbors != null) {
+        sb.append("  EIGRP Neighbors\n");
+        for (IpEdge ipEdge : _eigrpNeighbors) {
+          sb.append("    " + ipEdge + "\n");
+        }
+      }
+
+      if (_verboseEigrpNeighbors != null) {
+        sb.append("  EIGRP neighbors\n");
+        for (VerboseEigrpEdge edge : _verboseEigrpNeighbors) {
+          sb.append("    " + edge + "\n");
+        }
+      }
+
+      if (_roleEigrpNeighbors != null) {
+        sb.append("  EIGRP neighbors\n");
+        for (RoleEdge edge : _roleEigrpNeighbors) {
+          sb.append("    " + edge + "\n");
+        }
+      }
+
       if (_ibgpNeighbors != null) {
         sb.append("  iBGP Neighbors\n");
         for (IpEdge ipEdge : _ibgpNeighbors) {
@@ -344,6 +434,11 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       _ebgpNeighbors = ebgpNeighbors;
     }
 
+    @JsonProperty(PROP_EIGRP_NEIGHBORS)
+    public void setEigrpNeighbors(SortedSet<IpEdge> eigrpNeighbors) {
+      _eigrpNeighbors = eigrpNeighbors;
+    }
+
     @JsonProperty(PROP_IBGP_NEIGHBORS)
     public void setIbgpNeighbors(SortedSet<IpEdge> ibgpNeighbors) {
       _ibgpNeighbors = ibgpNeighbors;
@@ -352,6 +447,16 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
     @JsonProperty(PROP_LAN_NEIGHBORS)
     public void setLanNeighbors(SortedSet<Edge> lanNeighbors) {
       _lanNeighbors = lanNeighbors;
+    }
+
+    @JsonProperty(PROP_LAYER1_NEIGHBORS)
+    public void setLayer1Neighbors(Layer1Topology layer1Neighbors) {
+      _layer1Neighbors = layer1Neighbors;
+    }
+
+    @JsonProperty(PROP_LAYER2_NEIGHBORS)
+    public void setLayer2Neighbors(Layer2Topology layer2Neighbors) {
+      _layer2Neighbors = layer2Neighbors;
     }
 
     @JsonProperty(PROP_OSPF_NEIGHBORS)
@@ -367,6 +472,11 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
     @JsonProperty(PROP_ROLE_EBGP_NEIGHBORS)
     public void setRoleEbgpNeighbors(SortedSet<RoleEdge> roleEbgpNeighbors) {
       _roleEbgpNeighbors = roleEbgpNeighbors;
+    }
+
+    @JsonProperty(PROP_ROLE_EIGRP_NEIGHBORS)
+    public void setRoleEigrpNeighbors(SortedSet<RoleEdge> roleEigrpNeighbors) {
+      _roleEigrpNeighbors = roleEigrpNeighbors;
     }
 
     @JsonProperty(PROP_ROLE_IBGP_NEIGHBORS)
@@ -390,13 +500,20 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
     }
 
     @JsonProperty(PROP_VERBOSE_EBGP_NEIGHBORS)
-    public void setVerboseEbgpNeighbors(SortedSet<VerboseBgpEdge> verboseEbgpNeighbors) {
-      _verboseEbgpNeighbors = verboseEbgpNeighbors;
+    public void setVerboseEbgpNeighbors(Set<VerboseBgpEdge> verboseEbgpNeighbors) {
+      _verboseEbgpNeighbors = new TreeSet<>(VERBOSE_BGP_EDGE_COMPARATOR);
+      _verboseEbgpNeighbors.addAll(verboseEbgpNeighbors);
+    }
+
+    @JsonProperty(PROP_VERBOSE_EIGRP_NEIGHBORS)
+    public void setVerboseEigrpNeighbors(SortedSet<VerboseEigrpEdge> verboseEigrpNeighbors) {
+      _verboseEigrpNeighbors = verboseEigrpNeighbors;
     }
 
     @JsonProperty(PROP_VERBOSE_IBGP_NEIGHBORS)
-    public void setVerboseIbgpNeighbors(SortedSet<VerboseBgpEdge> verboseIbgpNeighbors) {
-      _verboseIbgpNeighbors = verboseIbgpNeighbors;
+    public void setVerboseIbgpNeighbors(Set<VerboseBgpEdge> verboseIbgpNeighbors) {
+      _verboseIbgpNeighbors = new TreeSet<>(VERBOSE_BGP_EDGE_COMPARATOR);
+      _verboseIbgpNeighbors.addAll(verboseIbgpNeighbors);
     }
 
     @JsonProperty(PROP_VERBOSE_LAN_NEIGHBORS)
@@ -417,11 +534,15 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
 
   public static class NeighborsAnswerer extends Answerer {
 
-    private Network<BgpNeighbor, BgpSession> _bgpTopology;
+    private ValueGraph<BgpPeerConfigId, BgpSessionProperties> _bgpTopology;
+
+    private Network<EigrpInterface, EigrpEdge> _eigrpTopology;
 
     private SortedMap<String, SortedSet<String>> _nodeRolesMap;
 
     private boolean _remoteBgpNeighborsInitialized;
+
+    private boolean _remoteEigrpNeighborsInitialized;
 
     private boolean _remoteOspfNeighborsInitialized;
 
@@ -444,19 +565,69 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
 
       if (question.getStyle() == EdgeStyle.ROLE) {
         NodeRoleDimension roleDimension =
-            _batfish.getNodeRoleDimension(question.getRoleDimension());
-        if (roleDimension != null) {
-          _nodeRolesMap = roleDimension.createNodeRolesMap(configurations.keySet());
-        } else {
-          throw new IllegalArgumentException(
-              "Role dimension not found: " + question.getRoleDimension());
+            _batfish
+                .getNodeRoleDimension(question.getRoleDimension())
+                .orElseThrow(
+                    () ->
+                        new BatfishException(
+                            "No role dimension found for " + question.getRoleDimension()));
+        _nodeRolesMap = roleDimension.createNodeRolesMap(configurations.keySet());
+      }
+
+      if (question.getNeighborTypes().contains(NeighborType.EIGRP)) {
+        NetworkConfigurations nc = NetworkConfigurations.of(configurations);
+        SortedSet<VerboseEigrpEdge> vedges = new TreeSet<>();
+        initTopology();
+        initRemoteEigrpNeighbors(configurations, _topology);
+        for (Configuration c : configurations.values()) {
+          String hostname = c.getHostname();
+          for (Vrf vrf : c.getVrfs().values()) {
+            vedges.addAll(
+                vrf.getInterfaceNames()
+                    .stream()
+                    .map(ifaceName -> new EigrpInterface(hostname, ifaceName, vrf.getName()))
+                    .filter(_eigrpTopology.nodes()::contains)
+                    .flatMap(n -> _eigrpTopology.inEdges(n).stream())
+                    .map(edge -> new VerboseEigrpEdge(edge, edge.toIpEdge(nc)))
+                    .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder())));
+          }
+        }
+
+        switch (question.getStyle()) {
+          case SUMMARY:
+            answerElement.initEigrpNeighbors();
+            for (VerboseEigrpEdge vedge : vedges) {
+              answerElement.getEigrpNeighbors().add(vedge.getEdgeSummary());
+            }
+            break;
+          case VERBOSE:
+            answerElement.setVerboseEigrpNeighbors(vedges);
+            break;
+          case ROLE:
+            SortedSet<RoleEdge> redges = new TreeSet<>();
+            for (VerboseEigrpEdge vedge : vedges) {
+              SortedSet<String> roles1 =
+                  _nodeRolesMap.getOrDefault(vedge.getEdgeSummary().getNode1(), new TreeSet<>());
+              SortedSet<String> roles2 =
+                  _nodeRolesMap.getOrDefault(vedge.getEdgeSummary().getNode2(), new TreeSet<>());
+              for (String r1 : roles1) {
+                for (String r2 : roles2) {
+                  redges.add(new RoleEdge(r1, r2));
+                }
+              }
+            }
+            answerElement.setRoleEigrpNeighbors(redges);
+            break;
+          default:
+            throw new BatfishException(
+                "Unsupported " + EdgeStyle.class.getCanonicalName() + ": " + question.getStyle());
         }
       }
 
       if (question.getNeighborTypes().contains(NeighborType.OSPF)) {
         SortedSet<VerboseOspfEdge> vedges = new TreeSet<>();
         initTopology();
-        initRemoteOspfNeighbors(_batfish, configurations, _topology);
+        initRemoteOspfNeighbors(configurations, _topology);
         for (Configuration c : configurations.values()) {
           String hostname = c.getHostname();
           for (Vrf vrf : c.getVrfs().values()) {
@@ -569,15 +740,19 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
 
       if (question.getNeighborTypes().contains(NeighborType.EBGP)) {
         initRemoteBgpNeighbors(configurations);
-        SortedSet<VerboseBgpEdge> vedges = new TreeSet<>();
-        for (BgpSession session : _bgpTopology.edges()) {
-          BgpNeighbor bgpNeighbor = session.getSrc();
-          BgpNeighbor remoteBgpNeighbor = session.getDst();
-          boolean ebgp = session.isEbgp();
+        SortedSet<VerboseBgpEdge> vedges = new TreeSet<>(VERBOSE_BGP_EDGE_COMPARATOR);
+        for (EndpointPair<BgpPeerConfigId> session : _bgpTopology.edges()) {
+          BgpPeerConfigId bgpPeerConfigId = session.source();
+          BgpPeerConfigId remoteBgpPeerConfigId = session.target();
+          boolean ebgp = _bgpTopology.edgeValue(bgpPeerConfigId, remoteBgpPeerConfigId).isEbgp();
           if (ebgp) {
             VerboseBgpEdge edge =
                 constructVerboseBgpEdge(
-                    includeNodes1, includeNodes2, bgpNeighbor, remoteBgpNeighbor);
+                    includeNodes1,
+                    includeNodes2,
+                    bgpPeerConfigId,
+                    remoteBgpPeerConfigId,
+                    NetworkConfigurations.of(configurations));
             if (edge != null) {
               vedges.add(edge);
             }
@@ -604,20 +779,24 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       }
 
       if (question.getNeighborTypes().contains(NeighborType.IBGP)) {
-        SortedSet<VerboseBgpEdge> vedges = new TreeSet<>();
+        SortedSet<VerboseBgpEdge> vedges = new TreeSet<>(VERBOSE_BGP_EDGE_COMPARATOR);
         initRemoteBgpNeighbors(configurations);
-        for (BgpSession session : _bgpTopology.edges()) {
-          BgpNeighbor bgpNeighbor = session.getSrc();
-          BgpNeighbor remoteBgpNeighbor = session.getDst();
-          if (remoteBgpNeighbor != null) {
-            boolean ibgp = !session.isEbgp();
-            if (ibgp) {
-              VerboseBgpEdge edge =
-                  constructVerboseBgpEdge(
-                      includeNodes1, includeNodes2, bgpNeighbor, remoteBgpNeighbor);
-              if (edge != null) {
-                vedges.add(edge);
-              }
+        for (EndpointPair<BgpPeerConfigId> session : _bgpTopology.edges()) {
+          BgpPeerConfigId bgpPeerConfigId = session.source();
+          BgpPeerConfigId remoteBgpPeerConfigId = session.target();
+          BgpSessionProperties sessionProp =
+              _bgpTopology.edgeValue(bgpPeerConfigId, remoteBgpPeerConfigId);
+          boolean ibgp = sessionProp.getSessionType() == SessionType.IBGP;
+          if (ibgp) {
+            VerboseBgpEdge edge =
+                constructVerboseBgpEdge(
+                    includeNodes1,
+                    includeNodes2,
+                    bgpPeerConfigId,
+                    remoteBgpPeerConfigId,
+                    NetworkConfigurations.of(configurations));
+            if (edge != null) {
+              vedges.add(edge);
             }
           }
         }
@@ -685,6 +864,19 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
         }
       }
 
+      Layer1Topology layer1Topology;
+      boolean layer1 = question.getNeighborTypes().contains(NeighborType.LAYER1);
+      boolean layer2 = question.getNeighborTypes().contains(NeighborType.LAYER2);
+      if (layer1 || layer2) {
+        layer1Topology = _batfish.getLayer1Topology();
+        if (layer1) {
+          answerElement.setLayer1Neighbors(layer1Topology);
+        }
+        if (layer2) {
+          answerElement.setLayer2Neighbors(
+              TopologyUtil.computeLayer2Topology(layer1Topology, configurations));
+        }
+      }
       return answerElement;
     }
 
@@ -693,8 +885,9 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
      *
      * @param includeNodes1 Allowed src hostnames
      * @param includeNodes2 Allowed dst hostnames
-     * @param bgpNeighbor node1 bgp neighbor
-     * @param remoteBgpNeighbor node2 bgp neighbor
+     * @param bgpPeerConfigId The id of node1 bgp neighbor
+     * @param remoteBgpPeerConfigId The id of node2 bgp neighbor
+     * @param nc {@link NetworkConfigurations} to get {@link BgpPeerConfig}s
      * @return a new {@link VerboseBgpEdge} describing the BGP peering or {@code null} if hostname
      *     filters are not satisfied.
      */
@@ -702,32 +895,47 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
     private static VerboseBgpEdge constructVerboseBgpEdge(
         Set<String> includeNodes1,
         Set<String> includeNodes2,
-        BgpNeighbor bgpNeighbor,
-        BgpNeighbor remoteBgpNeighbor) {
-      String hostname = bgpNeighbor.getOwner().getHostname();
-      String remoteHostname = remoteBgpNeighbor.getOwner().getHostname();
+        BgpPeerConfigId bgpPeerConfigId,
+        BgpPeerConfigId remoteBgpPeerConfigId,
+        NetworkConfigurations nc) {
+      String hostname = bgpPeerConfigId.getHostname();
+      String remoteHostname = remoteBgpPeerConfigId.getHostname();
+      BgpPeerConfig bgpPeerConfig = nc.getBgpPeerConfig(bgpPeerConfigId);
+      BgpPeerConfig remoteBgpPeerConfig = nc.getBgpPeerConfig(remoteBgpPeerConfigId);
+      if (bgpPeerConfig == null || remoteBgpPeerConfig == null) {
+        return null;
+      }
       if (includeNodes1.contains(hostname) && includeNodes2.contains(remoteHostname)) {
-        Ip localIp = bgpNeighbor.getLocalIp();
-        Ip remoteIp = remoteBgpNeighbor.getLocalIp();
+        Ip localIp = bgpPeerConfig.getLocalIp();
+        Ip remoteIp = remoteBgpPeerConfig.getLocalIp();
         IpEdge edge = new IpEdge(hostname, localIp, remoteHostname, remoteIp);
-        return new VerboseBgpEdge(bgpNeighbor, remoteBgpNeighbor, edge);
+        return new VerboseBgpEdge(
+            bgpPeerConfig, remoteBgpPeerConfig, bgpPeerConfigId, remoteBgpPeerConfigId, edge);
       }
       return null;
     }
 
     private void initRemoteBgpNeighbors(Map<String, Configuration> configurations) {
       if (!_remoteBgpNeighborsInitialized) {
-        Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpOwners(configurations, true);
+        Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpNodeOwners(configurations, true);
         _bgpTopology =
             CommonUtil.initBgpTopology(configurations, ipOwners, false, false, null, null);
         _remoteBgpNeighborsInitialized = true;
       }
     }
 
+    private void initRemoteEigrpNeighbors(
+        Map<String, Configuration> configurations, Topology topology) {
+      if (!_remoteEigrpNeighborsInitialized) {
+        _eigrpTopology = EigrpTopology.initEigrpTopology(configurations, topology);
+        _remoteEigrpNeighborsInitialized = true;
+      }
+    }
+
     private void initRemoteOspfNeighbors(
-        IBatfish batfish, Map<String, Configuration> configurations, Topology topology) {
+        Map<String, Configuration> configurations, Topology topology) {
       if (!_remoteOspfNeighborsInitialized) {
-        Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpOwners(configurations, true);
+        Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpNodeOwners(configurations, true);
         CommonUtil.initRemoteOspfNeighbors(configurations, ipOwners, topology);
         _remoteOspfNeighborsInitialized = true;
       }
@@ -736,7 +944,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
     private void initRemoteRipNeighbors(
         IBatfish batfish, Map<String, Configuration> configurations, Topology topology) {
       if (!_remoteRipNeighborsInitialized) {
-        Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpOwners(configurations, true);
+        Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpNodeOwners(configurations, true);
         batfish.initRemoteRipNeighbors(configurations, ipOwners, topology);
         _remoteRipNeighborsInitialized = true;
       }
@@ -824,8 +1032,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       _node2Regex = nodes2 == null ? NodesSpecifier.ALL : nodes2;
       _neighborTypes = neighborTypes == null ? new TreeSet<>() : neighborTypes;
       _style = style == null ? EdgeStyle.SUMMARY : style;
-      _roleDimension =
-          roleDimension == null ? NodeRoleDimension.AUTO_DIMENSION_PRIMARY : roleDimension;
+      _roleDimension = roleDimension;
     }
 
     @Override

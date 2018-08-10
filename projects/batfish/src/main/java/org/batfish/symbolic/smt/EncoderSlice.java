@@ -1,5 +1,6 @@
 package org.batfish.symbolic.smt;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.microsoft.z3.ArithExpr;
 import com.microsoft.z3.BitVecExpr;
@@ -16,7 +17,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.BgpNeighbor;
+import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
@@ -30,7 +31,6 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
-import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.Statement;
@@ -688,7 +688,7 @@ class EncoderSlice {
               Interface i = e.getStart();
               Prefix p = i.getAddress().getPrefix();
 
-              boolean doModel = !(proto.isConnected() && p != null && !relevantPrefix(p));
+              boolean doModel = !(proto.isConnected() && !relevantPrefix(p));
               // PolicyQuotient: Don't model the connected interfaces that aren't relevant
               if (doModel) {
                 if (notNeeded) {
@@ -820,7 +820,7 @@ class EncoderSlice {
             for (LogicalEdge e : eList) {
               if (e.getEdgeType() == EdgeType.IMPORT) {
                 GraphEdge ge = e.getEdge();
-                BgpNeighbor n = getGraph().getEbgpNeighbors().get(ge);
+                BgpActivePeerConfig n = getGraph().getEbgpNeighbors().get(ge);
                 if (n != null && ge.getEnd() == null) {
 
                   if (!isMainSlice()) {
@@ -829,10 +829,10 @@ class EncoderSlice {
                     _logicalGraph.getEnvironmentVars().put(e, r);
                   } else {
                     String address;
-                    if (n.getAddress() == null) {
+                    if (n.getPeerAddress() == null) {
                       address = "null";
                     } else {
-                      address = n.getAddress().toString();
+                      address = n.getPeerAddress().toString();
                     }
                     String ifaceName = "ENV-" + address;
                     String name =
@@ -1244,7 +1244,7 @@ class EncoderSlice {
     equalId = equalIds(best, vars, proto, e);
     equalHistory = equalHistories(best, vars);
     equalBgpInternal = equalBgpInternal(best, vars);
-    equalClientIds = equalClientIds(conf.getName(), best, vars);
+    equalClientIds = equalClientIds(conf.getHostname(), best, vars);
     equalCommunities = (compareCommunities ? equalCommunities(best, vars) : mkTrue());
 
     return mkAnd(
@@ -2007,19 +2007,20 @@ class EncoderSlice {
 
         // We have to wrap this with the right thing for some reason
         List<Statement> statements;
-        Statements.StaticStatement s1 = new Statements.StaticStatement(Statements.ExitAccept);
-        Statements.StaticStatement s2 = new Statements.StaticStatement(Statements.ExitReject);
         if (proto.isOspf()) {
-          If i = new If();
-          List<Statement> stmts =
-              (pol == null ? Collections.singletonList(s2) : pol.getStatements());
-          i.setTrueStatements(Collections.singletonList(s1));
-          i.setFalseStatements(stmts);
-          BooleanExpr expr = new MatchProtocol(RoutingProtocol.OSPF);
-          i.setGuard(expr);
+          If i =
+              new If(
+                  new MatchProtocol(RoutingProtocol.OSPF),
+                  ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+                  pol != null
+                      ? pol.getStatements()
+                      : ImmutableList.of(new Statements.StaticStatement(Statements.ExitReject)));
           statements = Collections.singletonList(i);
         } else {
-          statements = (pol == null ? Collections.singletonList(s1) : pol.getStatements());
+          statements =
+              (pol == null
+                  ? Collections.singletonList(new Statements.StaticStatement(Statements.ExitAccept))
+                  : pol.getStatements());
         }
 
         TransferSSA f =

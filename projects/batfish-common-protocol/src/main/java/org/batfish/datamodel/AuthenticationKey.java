@@ -2,15 +2,19 @@ package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.batfish.common.util.ComparableStructure;
+import java.io.Serializable;
+import org.batfish.datamodel.isis.IsisAuthenticationAlgorithm;
+import org.batfish.datamodel.isis.IsisOption;
 
-public class AuthenticationKey extends ComparableStructure<String> {
+public class AuthenticationKey implements Serializable {
 
   private static final String PROP_BGP_AUTHENTICATION_ALGORITHM = "bgpAuthenticationAlgorithm";
 
   private static final String PROP_ISIS_AUTHENTICATION_ALGORITHM = "isisAuthenticationAlgorithm";
 
   private static final String PROP_ISIS_OPTION = "isisOption";
+
+  private static final String PROP_NAME = "name";
 
   private static final String PROP_SECRET = "secret";
 
@@ -29,13 +33,15 @@ public class AuthenticationKey extends ComparableStructure<String> {
 
   private IsisOption _isisOption;
 
+  private final String _name;
+
   private String _secret;
 
   private String _startTime;
 
   @JsonCreator
   public AuthenticationKey(@JsonProperty(PROP_NAME) String name) {
-    super(name);
+    _name = name;
     _isisAuthenticationAlgorithm = DEFAULT_ISIS_AUTHENTICATION_ALGORITHM;
     _isisOption = DEFAULT_ISIS_OPTION;
   }
@@ -53,6 +59,11 @@ public class AuthenticationKey extends ComparableStructure<String> {
   @JsonProperty(PROP_ISIS_OPTION)
   public IsisOption getIsisOption() {
     return _isisOption;
+  }
+
+  @JsonProperty(PROP_NAME)
+  public String getName() {
+    return _name;
   }
 
   @JsonProperty(PROP_SECRET)

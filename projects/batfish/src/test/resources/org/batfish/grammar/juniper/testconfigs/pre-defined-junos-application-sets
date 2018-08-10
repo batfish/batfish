@@ -1,0 +1,31 @@
+#
+set system host-name pre-defined-junos-applications
+#
+set security policies global policy policy-name match application junos-mgcp
+set security policies global policy policy-name match application junos-ms-rpc
+set security policies global policy policy-name match application junos-ms-rpc-any
+set security policies global policy policy-name match application junos-ms-rpc-iis-com
+set security policies global policy policy-name match application junos-ms-rpc-msexchange
+set security policies global policy policy-name match application junos-ms-rpc-wmic
+set security policies global policy policy-name match application junos-routing-inbound
+set security policies global policy policy-name match application junos-sun-rpc
+set security policies global policy policy-name match application junos-sun-rpc-any
+set security policies global policy policy-name match application junos-sun-rpc-mountd
+set security policies global policy policy-name match application junos-sun-rpc-nfs
+set security policies global policy policy-name match application junos-sun-rpc-nfs-access
+set security policies global policy policy-name match application junos-sun-rpc-nlockmgr
+set security policies global policy policy-name match application junos-sun-rpc-portmap
+set security policies global policy policy-name match application junos-sun-rpc-rquotad
+set security policies global policy policy-name match application junos-sun-rpc-ruserd
+set security policies global policy policy-name match application junos-sun-rpc-sadmind
+set security policies global policy policy-name match application junos-sun-rpc-sprayd
+set security policies global policy policy-name match application junos-sun-rpc-status
+set security policies global policy policy-name match application junos-sun-rpc-walld
+set security policies global policy policy-name match application junos-sun-rpc-ypbind
+set security policies global policy policy-name match application junos-sun-rpc-ypserv
+set applications application-set my-set application-set junos-cifs
+set applications application-set my-set application-set junos-ms-rpc
+set applications application-set my-set application junos-aol
+set applications application-set my-set2 application-set my-set
+set applications application-set my-set2 application junos-biff
+set security policies global policy policy-name match application my-set2

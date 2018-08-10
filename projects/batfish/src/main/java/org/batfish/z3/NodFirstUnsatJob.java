@@ -5,6 +5,7 @@ import com.microsoft.z3.Context;
 import com.microsoft.z3.Fixedpoint;
 import com.microsoft.z3.Status;
 import com.microsoft.z3.Z3Exception;
+import javax.annotation.Nonnull;
 import org.batfish.common.BatfishException;
 import org.batfish.config.Settings;
 
@@ -15,20 +16,24 @@ public class NodFirstUnsatJob<KeyT, ResultT>
 
   private final Synthesizer _synthesizer;
 
+  private final boolean _optimize;
+
   public NodFirstUnsatJob(
-      Settings settings, Synthesizer synthesizer, FirstUnsatQuerySynthesizer<KeyT, ResultT> query) {
+      Settings settings,
+      Synthesizer synthesizer,
+      FirstUnsatQuerySynthesizer<KeyT, ResultT> query,
+      boolean optimize) {
     super(settings);
     _synthesizer = synthesizer;
     _query = query;
+    _optimize = optimize;
   }
 
   @Override
   public NodFirstUnsatResult<KeyT, ResultT> call() {
     long startTime = System.currentTimeMillis();
     try (Context ctx = new Context()) {
-      ReachabilityProgram baseProgram = _query.synthesizeBaseProgram(_synthesizer);
-      ReachabilityProgram queryProgram = _query.getReachabilityProgram(_synthesizer.getInput());
-      NodProgram program = new NodProgram(ctx, baseProgram, queryProgram);
+      NodProgram program = getNodProgram(ctx);
       Fixedpoint fix = mkFixedpoint(program, false);
       KeyT key = _query.getKey();
       for (int queryNum = 0; queryNum < program.getQueries().size(); queryNum++) {
@@ -61,5 +66,15 @@ public class NodFirstUnsatJob<KeyT, ResultT>
           _logger.getHistory(),
           new BatfishException("Error running NoD on concatenated data plane", e));
     }
+  }
+
+  @Nonnull
+  private NodProgram getNodProgram(Context ctx) {
+    ReachabilityProgram baseProgram = _synthesizer.synthesizeNodProgram();
+    ReachabilityProgram queryProgram = _query.getReachabilityProgram(_synthesizer.getInput());
+
+    return _optimize
+        ? optimizedProgram(ctx, baseProgram, queryProgram)
+        : new NodProgram(ctx, baseProgram, queryProgram);
   }
 }

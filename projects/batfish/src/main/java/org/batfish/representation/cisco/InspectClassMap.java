@@ -1,10 +1,10 @@
 package org.batfish.representation.cisco;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import org.batfish.common.util.DefinedStructure;
 
-public class InspectClassMap extends DefinedStructure<String> {
+public class InspectClassMap implements Serializable {
 
   /** */
   private static final long serialVersionUID = 1L;
@@ -13,9 +13,11 @@ public class InspectClassMap extends DefinedStructure<String> {
 
   private MatchSemantics _matchSemantics;
 
-  public InspectClassMap(String name, int definitionLine) {
-    super(name, definitionLine);
+  private final String _name;
+
+  public InspectClassMap(String name) {
     _matches = new ArrayList<>();
+    _name = name;
   }
 
   public List<InspectClassMapMatch> getMatches() {
@@ -24,6 +26,10 @@ public class InspectClassMap extends DefinedStructure<String> {
 
   public MatchSemantics getMatchSemantics() {
     return _matchSemantics;
+  }
+
+  public String getName() {
+    return _name;
   }
 
   public void setMatchSemantics(MatchSemantics matchSemantics) {

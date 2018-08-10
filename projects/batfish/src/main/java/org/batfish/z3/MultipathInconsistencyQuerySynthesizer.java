@@ -3,17 +3,18 @@ package org.batfish.z3;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Multimap;
+import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.ForwardingAction;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.question.SrcNattedConstraint;
 import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BasicRuleStatement;
+import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.QueryStatement;
 import org.batfish.z3.expr.RuleStatement;
-import org.batfish.z3.expr.SaneExpr;
 import org.batfish.z3.state.Accept;
 import org.batfish.z3.state.Drop;
 import org.batfish.z3.state.NeighborUnreachable;
@@ -29,11 +30,10 @@ public class MultipathInconsistencyQuerySynthesizer extends ReachabilityQuerySyn
     public MultipathInconsistencyQuerySynthesizer build() {
       return new MultipathInconsistencyQuerySynthesizer(
           _headerSpace,
-          _ingressNodeInterfaces,
-          _ingressNodeVrfs,
+          _srcIpConstraints,
           _srcNatted,
-          _transitNodes,
-          _nonTransitNodes);
+          _requiredTransitNodes,
+          _forbiddenTransitNodes);
     }
 
     @Override
@@ -58,18 +58,11 @@ public class MultipathInconsistencyQuerySynthesizer extends ReachabilityQuerySyn
 
   private MultipathInconsistencyQuerySynthesizer(
       @Nonnull HeaderSpace headerSpace,
-      @Nonnull Multimap<String, String> ingressNodeInterfaces,
-      @Nonnull Multimap<String, String> ingressNodeVrfs,
-      Boolean srcNatted,
+      @Nonnull Map<IngressLocation, BooleanExpr> ingressLocations,
+      @Nonnull SrcNattedConstraint srcNatted,
       @Nonnull Set<String> transitNodes,
       @Nonnull Set<String> nonTransitNodes) {
-    super(
-        headerSpace,
-        ingressNodeInterfaces,
-        ingressNodeVrfs,
-        srcNatted,
-        transitNodes,
-        nonTransitNodes);
+    super(headerSpace, ingressLocations, srcNatted, transitNodes, nonTransitNodes);
   }
 
   @Override
@@ -92,8 +85,7 @@ public class MultipathInconsistencyQuerySynthesizer extends ReachabilityQuerySyn
             new AndExpr(
                 ImmutableList.of(
                     new HeaderSpaceMatchExpr(_headerSpace, ImmutableMap.of(), true),
-                    getSrcNattedConstraint(),
-                    SaneExpr.INSTANCE)))
+                    getSrcNattedConstraint())))
         .build();
   }
 }

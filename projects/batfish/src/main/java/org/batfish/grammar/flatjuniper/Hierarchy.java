@@ -11,6 +11,7 @@ import java.util.Set;
 import javax.annotation.Nullable;
 import org.antlr.v4.runtime.CommonToken;
 import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.antlr.v4.runtime.tree.TerminalNodeImpl;
 import org.batfish.common.BatfishException;
@@ -24,11 +25,29 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Flat_juniper_configurat
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Set_lineContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Set_line_tailContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.StatementContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sy_host_nameContext;
 import org.batfish.grammar.flatjuniper.Hierarchy.HierarchyTree.HierarchyPath;
 import org.batfish.main.PartialGroupMatchException;
 import org.batfish.main.UndefinedGroupBatfishException;
 
 public class Hierarchy {
+
+  private static class IsHostnameStatement extends FlatJuniperParserBaseListener {
+
+    private boolean _isHostname;
+
+    @Override
+    public void enterSy_host_name(Sy_host_nameContext ctx) {
+      _isHostname = true;
+    }
+
+    private static boolean isHostnameStatement(StatementContext ctx) {
+      IsHostnameStatement listener = new IsHostnameStatement();
+      ParseTreeWalker walker = new ParseTreeWalker();
+      walker.walk(listener, ctx);
+      return listener._isHostname;
+    }
+  }
 
   public static class HierarchyTree {
 
@@ -253,7 +272,8 @@ public class Hierarchy {
         HierarchyTree masterTree,
         HierarchyPath path,
         List<ParseTree> lines,
-        Flat_juniper_configurationContext configurationContext) {
+        Flat_juniper_configurationContext configurationContext,
+        boolean clusterGroup) {
       if (groupLine != null) {
         Set_lineContext setLine = new Set_lineContext(configurationContext, -1);
         if (masterTree.addPath(path, setLine, _groupName) == AddPathResult.BLACKLISTED) {
@@ -272,22 +292,26 @@ public class Hierarchy {
         Set_line_tailContext setLineTail = new Set_line_tailContext(setLine, -1);
         TerminalNode newline =
             new TerminalNodeImpl(new CommonToken(FlatJuniperLexer.NEWLINE, "\n"));
-        setLine.children = new ArrayList<ParseTree>();
+        setLine.children = new ArrayList<>();
         setLine.children.add(set);
         setLine.children.add(setLineTail);
         setLine.children.add(newline);
         Settings settings = parserSettings();
         FlatJuniperCombinedParser parser =
             new FlatJuniperCombinedParser(newStatementText, settings);
+        parser.setMarkWildcards(true);
         Flat_juniper_configurationContext newConfiguration =
             parser.getParser().flat_juniper_configuration();
+        parser.setMarkWildcards(false);
         // StatementContext newStatement = parser.getParser().statement();
         StatementContext newStatement = newConfiguration.set_line(0).set_line_tail().statement();
         newStatement.parent = setLineTail;
 
-        setLineTail.children = new ArrayList<ParseTree>();
-        setLineTail.children.add(newStatement);
-        lines.add(setLine);
+        setLineTail.children = new ArrayList<>();
+        if (!clusterGroup || !IsHostnameStatement.isHostnameStatement(newStatement)) {
+          setLineTail.children.add(newStatement);
+          lines.add(setLine);
+        }
       }
       for (HierarchyChildNode childNode : currentGroupChildren) {
         HierarchyChildNode newPathNode = childNode.copy();
@@ -298,7 +322,8 @@ public class Hierarchy {
             masterTree,
             path,
             lines,
-            configurationContext);
+            configurationContext,
+            clusterGroup);
         path._nodes.remove(path._nodes.size() - 1);
       }
     }
@@ -465,7 +490,7 @@ public class Hierarchy {
       TerminalNode set = new TerminalNodeImpl(new CommonToken(FlatJuniperLexer.SET, "set"));
       Set_line_tailContext setLineTail = new Set_line_tailContext(setLine, -1);
       TerminalNode newline = new TerminalNodeImpl(new CommonToken(FlatJuniperLexer.NEWLINE, "\n"));
-      setLine.children = new ArrayList<ParseTree>();
+      setLine.children = new ArrayList<>();
       setLine.children.add(set);
       setLine.children.add(setLineTail);
       setLine.children.add(newline);
@@ -476,7 +501,7 @@ public class Hierarchy {
       StatementContext newStatement = newConfiguration.set_line(0).set_line_tail().statement();
       newStatement.parent = setLineTail;
 
-      setLineTail.children = new ArrayList<ParseTree>();
+      setLineTail.children = new ArrayList<>();
       setLineTail.children.add(newStatement);
 
       return setLine;
@@ -485,20 +510,27 @@ public class Hierarchy {
     public List<ParseTree> getApplyGroupsLines(
         HierarchyPath path,
         Flat_juniper_configurationContext configurationContext,
-        HierarchyTree masterTree) {
+        HierarchyTree masterTree,
+        boolean clusterGroup) {
       List<ParseTree> lines = new ArrayList<>();
       HierarchyNode currentGroupNode = _root;
       HierarchyChildNode matchNode = null;
       HierarchyPath partialMatch = new HierarchyPath();
-      if (path._nodes.size() == 0) {
+      if (path._nodes.isEmpty()) {
         addGroupPaths(
-            null, _root.getChildren().values(), masterTree, path, lines, configurationContext);
+            null,
+            _root.getChildren().values(),
+            masterTree,
+            path,
+            lines,
+            configurationContext,
+            clusterGroup);
       } else {
         for (HierarchyChildNode currentPathNode : path._nodes) {
           matchNode = currentGroupNode.getFirstMatchingChildNode(currentPathNode);
           if (matchNode == null) {
             String message = "No matching path";
-            if (partialMatch._nodes.size() > 0) {
+            if (!partialMatch._nodes.isEmpty()) {
               message +=
                   ": Partial path match within applied group: \""
                       + partialMatch.pathString()
@@ -520,7 +552,8 @@ public class Hierarchy {
             masterTree,
             path,
             lines,
-            configurationContext);
+            configurationContext,
+            clusterGroup);
       }
       return lines;
     }
@@ -631,12 +664,13 @@ public class Hierarchy {
   public List<ParseTree> getApplyGroupsLines(
       String groupName,
       HierarchyPath path,
-      Flat_juniper_configurationContext configurationContext) {
+      Flat_juniper_configurationContext configurationContext,
+      boolean clusterGroup) {
     HierarchyTree tree = _trees.get(groupName);
     if (tree == null) {
       throw new UndefinedGroupBatfishException("No such group: \"" + groupName + "\"");
     }
-    return tree.getApplyGroupsLines(path, configurationContext, _masterTree);
+    return tree.getApplyGroupsLines(path, configurationContext, _masterTree, clusterGroup);
   }
 
   public List<ParseTree> getApplyPathLines(

@@ -3,13 +3,14 @@ package org.batfish.z3;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Multimap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.ForwardingAction;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.question.SrcNattedConstraint;
 import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BasicRuleStatement;
 import org.batfish.z3.expr.BooleanExpr;
@@ -17,7 +18,6 @@ import org.batfish.z3.expr.EqExpr;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.QueryStatement;
 import org.batfish.z3.expr.RuleStatement;
-import org.batfish.z3.expr.SaneExpr;
 import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.expr.TrueExpr;
 import org.batfish.z3.expr.VarIntExpr;
@@ -62,11 +62,10 @@ public class StandardReachabilityQuerySynthesizer extends ReachabilityQuerySynth
           _actions,
           _headerSpace,
           _finalNodes,
-          _ingressNodeInterfaces,
-          _ingressNodeVrfs,
+          _srcIpConstraints,
           _srcNatted,
-          _transitNodes,
-          _nonTransitNodes);
+          _requiredTransitNodes,
+          _forbiddenTransitNodes);
     }
 
     @Override
@@ -99,18 +98,11 @@ public class StandardReachabilityQuerySynthesizer extends ReachabilityQuerySynth
       @Nonnull Set<ForwardingAction> actions,
       @Nonnull HeaderSpace headerSpace,
       @Nonnull Set<String> finalNodes,
-      @Nonnull Multimap<String, String> ingressNodeInterfaces,
-      @Nonnull Multimap<String, String> ingressNodeVrfs,
-      Boolean srcNatted,
+      @Nonnull Map<IngressLocation, BooleanExpr> srcIpConstraints,
+      @Nonnull SrcNattedConstraint srcNatted,
       @Nonnull Set<String> transitNodes,
       @Nonnull Set<String> nonTransitNodes) {
-    super(
-        headerSpace,
-        ingressNodeInterfaces,
-        ingressNodeVrfs,
-        srcNatted,
-        transitNodes,
-        nonTransitNodes);
+    super(headerSpace, srcIpConstraints, srcNatted, transitNodes, nonTransitNodes);
     _actions = actions;
     _finalNodes = finalNodes;
   }
@@ -121,7 +113,7 @@ public class StandardReachabilityQuerySynthesizer extends ReachabilityQuerySynth
     for (ForwardingAction action : _actions) {
       switch (action) {
         case ACCEPT:
-          if (_finalNodes.size() > 0) {
+          if (!_finalNodes.isEmpty()) {
             for (String finalNode : _finalNodes) {
               StateExpr accept = new NodeAccept(finalNode);
               finalActionsBuilder.add(accept);
@@ -136,7 +128,7 @@ public class StandardReachabilityQuerySynthesizer extends ReachabilityQuerySynth
           break;
 
         case DROP:
-          if (_finalNodes.size() > 0) {
+          if (!_finalNodes.isEmpty()) {
             for (String finalNode : _finalNodes) {
               StateExpr drop = new NodeDrop(finalNode);
               finalActionsBuilder.add(drop);
@@ -147,7 +139,7 @@ public class StandardReachabilityQuerySynthesizer extends ReachabilityQuerySynth
           break;
 
         case DROP_ACL:
-          if (_finalNodes.size() > 0) {
+          if (!_finalNodes.isEmpty()) {
             for (String finalNode : _finalNodes) {
               StateExpr drop = new NodeDropAcl(finalNode);
               finalActionsBuilder.add(drop);
@@ -158,7 +150,7 @@ public class StandardReachabilityQuerySynthesizer extends ReachabilityQuerySynth
           break;
 
         case DROP_ACL_IN:
-          if (_finalNodes.size() > 0) {
+          if (!_finalNodes.isEmpty()) {
             for (String finalNode : _finalNodes) {
               StateExpr drop = new NodeDropAclIn(finalNode);
               finalActionsBuilder.add(drop);
@@ -169,7 +161,7 @@ public class StandardReachabilityQuerySynthesizer extends ReachabilityQuerySynth
           break;
 
         case DROP_ACL_OUT:
-          if (_finalNodes.size() > 0) {
+          if (!_finalNodes.isEmpty()) {
             for (String finalNode : _finalNodes) {
               StateExpr drop = new NodeDropAclOut(finalNode);
               finalActionsBuilder.add(drop);
@@ -180,7 +172,7 @@ public class StandardReachabilityQuerySynthesizer extends ReachabilityQuerySynth
           break;
 
         case DROP_NO_ROUTE:
-          if (_finalNodes.size() > 0) {
+          if (!_finalNodes.isEmpty()) {
             for (String finalNode : _finalNodes) {
               StateExpr drop = new NodeDropNoRoute(finalNode);
               finalActionsBuilder.add(drop);
@@ -191,7 +183,7 @@ public class StandardReachabilityQuerySynthesizer extends ReachabilityQuerySynth
           break;
 
         case DROP_NULL_ROUTE:
-          if (_finalNodes.size() > 0) {
+          if (!_finalNodes.isEmpty()) {
             for (String finalNode : _finalNodes) {
               StateExpr drop = new NodeDropNullRoute(finalNode);
               finalActionsBuilder.add(drop);
@@ -202,7 +194,7 @@ public class StandardReachabilityQuerySynthesizer extends ReachabilityQuerySynth
           break;
 
         case NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK:
-          if (_finalNodes.size() > 0) {
+          if (!_finalNodes.isEmpty()) {
             for (String finalNode : _finalNodes) {
               StateExpr drop = new NodeNeighborUnreachable(finalNode);
               finalActionsBuilder.add(drop);
@@ -249,7 +241,6 @@ public class StandardReachabilityQuerySynthesizer extends ReachabilityQuerySynth
                 ImmutableList.of(
                     new HeaderSpaceMatchExpr(_headerSpace, ImmutableMap.of(), true),
                     getSrcNattedConstraint(),
-                    SaneExpr.INSTANCE,
                     transitNodesConstraint)))
         .build();
   }

@@ -193,11 +193,15 @@ public class Prefix6Space implements Serializable {
   }
 
   @JsonCreator
-  public Prefix6Space(Set<Prefix6Range> prefix6Ranges) {
+  public Prefix6Space(Iterable<Prefix6Range> prefix6Ranges) {
     _trie = new BitTrie();
     for (Prefix6Range prefix6Range : prefix6Ranges) {
       _trie.addPrefix6Range(prefix6Range);
     }
+  }
+
+  public Prefix6Space(Prefix6Range... prefix6Ranges) {
+    this(Arrays.asList(prefix6Ranges));
   }
 
   public void addPrefix6(Prefix6 prefix6) {

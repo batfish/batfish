@@ -2,6 +2,7 @@ package org.batfish.symbolic.abstraction;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -15,17 +16,17 @@ import java.util.Stack;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.datamodel.BgpNeighbor;
+import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpLink;
-import org.batfish.datamodel.OspfNeighbor;
-import org.batfish.datamodel.OspfProcess;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.ospf.OspfNeighbor;
+import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.symbolic.Graph;
 import org.batfish.symbolic.GraphEdge;
 import org.batfish.symbolic.bdd.BDDNetwork;
@@ -470,9 +471,10 @@ class AbstractionBuilder {
 
     SortedSet<Interface> toRetain = new TreeSet<>();
     SortedSet<IpLink> ipNeighbors = new TreeSet<>();
-    SortedSet<BgpNeighbor> bgpNeighbors = new TreeSet<>();
+    SortedSet<BgpActivePeerConfig> bgpPeerConfigs =
+        new TreeSet<>(Comparator.comparing(BgpActivePeerConfig::getPeerAddress));
 
-    List<GraphEdge> edges = _graph.getEdgeMap().get(conf.getName());
+    List<GraphEdge> edges = _graph.getEdgeMap().get(conf.getHostname());
     for (GraphEdge ge : edges) {
       boolean leavesNetwork = (ge.getPeer() == null);
       if (leavesNetwork
@@ -483,9 +485,9 @@ class AbstractionBuilder {
           Ip end = ge.getEnd().getAddress().getIp();
           ipNeighbors.add(new IpLink(start, end));
         }
-        BgpNeighbor n = _graph.getEbgpNeighbors().get(ge);
+        BgpActivePeerConfig n = _graph.getEbgpNeighbors().get(ge);
         if (n != null) {
-          bgpNeighbors.add(n);
+          bgpPeerConfigs.add(n);
         }
       }
     }
@@ -552,16 +554,14 @@ class AbstractionBuilder {
         abstractBgp.setMultipathIbgp(bgp.getMultipathIbgp());
         abstractBgp.setRouterId(bgp.getRouterId());
         abstractBgp.setOriginationSpace(bgp.getOriginationSpace());
-        // TODO: set bgp neighbors accordingly
+        // TODO: set bgp neighbors accordingly, support dynamic neighbors
         // Copy over neighbors
-        SortedMap<Prefix, BgpNeighbor> abstractBgpNeighbors = new TreeMap<>();
-        if (bgp.getNeighbors() != null) {
-          for (Entry<Prefix, BgpNeighbor> entry2 : bgp.getNeighbors().entrySet()) {
-            Prefix prefix = entry2.getKey();
-            BgpNeighbor neighbor = entry2.getValue();
-            if (bgpNeighbors.contains(neighbor)) {
-              abstractBgpNeighbors.put(prefix, neighbor);
-            }
+        SortedMap<Prefix, BgpActivePeerConfig> abstractBgpNeighbors = new TreeMap<>();
+        for (Entry<Prefix, BgpActivePeerConfig> entry2 : bgp.getActiveNeighbors().entrySet()) {
+          Prefix prefix = entry2.getKey();
+          BgpActivePeerConfig neighbor = entry2.getValue();
+          if (bgpPeerConfigs.contains(neighbor)) {
+            abstractBgpNeighbors.put(prefix, neighbor);
           }
         }
         abstractBgp.setNeighbors(abstractBgpNeighbors);

@@ -7,7 +7,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.regex.Matcher;
 import org.batfish.common.Pair;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IpAccessList;
@@ -21,6 +20,8 @@ import org.batfish.symbolic.Protocol;
 import org.batfish.symbolic.abstraction.InterfacePolicy;
 
 public class BDDNetwork {
+
+  private final BDDPacket _pkt;
 
   private Graph _graph;
 
@@ -40,20 +41,21 @@ public class BDDNetwork {
 
   private Map<GraphEdge, BDDAcl> _outAcls;
 
-  public static BDDNetwork create(Graph g) {
-    return create(g, NodesSpecifier.ALL);
+  public static BDDNetwork create(BDDPacket pkt, Graph g) {
+    return create(pkt, g, NodesSpecifier.ALL);
   }
 
-  public static BDDNetwork create(Graph g, NodesSpecifier nodesSpecifier) {
+  public static BDDNetwork create(BDDPacket pkt, Graph g, NodesSpecifier nodesSpecifier) {
     PolicyQuotient pq = new PolicyQuotient(g);
-    BDDNetwork network = new BDDNetwork(g, nodesSpecifier, pq);
+    BDDNetwork network = new BDDNetwork(pkt, g, nodesSpecifier, pq);
     network.computeInterfacePolicies();
     return network;
   }
 
-  private BDDNetwork(Graph graph, NodesSpecifier nodesSpecifier, PolicyQuotient pq) {
+  private BDDNetwork(BDDPacket pkt, Graph graph, NodesSpecifier nodesSpecifier, PolicyQuotient pq) {
     _graph = graph;
     _nodeSpecifier = nodesSpecifier;
+    _pkt = pkt;
     _policyQuotient = pq;
     _importPolicyMap = new HashMap<>();
     _exportPolicyMap = new HashMap<>();
@@ -81,11 +83,10 @@ public class BDDNetwork {
    * representation of the import and export policies on this interface.
    */
   private void computeInterfacePolicies() {
+    Set<String> includeNodes = _nodeSpecifier.getMatchingNodes(_graph.getBatfish());
     for (Entry<String, Configuration> entry : _graph.getConfigurations().entrySet()) {
       String router = entry.getKey();
-      // Skip if doesn't match the node regex
-      Matcher m = _nodeSpecifier.getRegex().matcher(router);
-      if (!m.matches()) {
+      if (!includeNodes.contains(router)) { // skip if we don't care about this node
         continue;
       }
       Configuration conf = entry.getValue();
@@ -109,12 +110,12 @@ public class BDDNetwork {
 
         // Incoming ACL
         if (in != null) {
-          BDDAcl x = BDDAcl.create(in);
+          BDDAcl x = BDDAcl.create(_pkt, in, conf.getIpAccessLists(), conf.getIpSpaces());
           _inAcls.put(ge, x);
         }
         // Outgoing ACL
         if (out != null) {
-          BDDAcl x = BDDAcl.create(out);
+          BDDAcl x = BDDAcl.create(_pkt, out, conf.getIpAccessLists(), conf.getIpSpaces());
           _outAcls.put(ge, x);
         }
       }
@@ -122,9 +123,7 @@ public class BDDNetwork {
 
     for (Entry<String, List<GraphEdge>> entry : _graph.getEdgeMap().entrySet()) {
       String router = entry.getKey();
-      // Skip if doesn't match the node regex
-      Matcher m = _nodeSpecifier.getRegex().matcher(router);
-      if (!m.matches()) {
+      if (!includeNodes.contains(router)) { // skip if we don't care about this node
         continue;
       }
       List<GraphEdge> edges = entry.getValue();

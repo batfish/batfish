@@ -13,7 +13,6 @@ import static org.hamcrest.Matchers.iterableWithSize;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
-import java.util.Collections;
 import java.util.TreeMap;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -30,7 +29,7 @@ import org.junit.Test;
 public class JuniperConfigurationTest {
 
   private static JuniperConfiguration createConfig() {
-    JuniperConfiguration config = new JuniperConfiguration(Collections.emptySet());
+    JuniperConfiguration config = new JuniperConfiguration();
     config._c = new Configuration("host", ConfigurationFormat.JUNIPER);
     return config;
   }
@@ -38,12 +37,12 @@ public class JuniperConfigurationTest {
   @Test
   public void testToIpAccessList() {
     JuniperConfiguration config = createConfig();
-    FirewallFilter filter = new FirewallFilter("filter", Family.INET, -1);
+    FirewallFilter filter = new FirewallFilter("filter", Family.INET);
     IpAccessList emptyAcl = config.toIpAccessList(filter);
 
     FwTerm term = new FwTerm("term");
     String ipAddrPrefix = "1.2.3.0/24";
-    term.getFroms().add(new FwFromSourceAddress(Prefix.parse(ipAddrPrefix)));
+    term.getFroms().add(new FwFromSourceAddress(new IpWildcard(Prefix.parse(ipAddrPrefix))));
     term.getThens().add(FwThenAccept.INSTANCE);
     filter.getTerms().put("term", term);
     IpAccessList headerSpaceAcl = config.toIpAccessList(filter);

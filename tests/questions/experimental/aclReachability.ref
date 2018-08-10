@@ -1,0 +1,30 @@
+{
+  "class" : "org.batfish.question.aclreachability2.AclReachability2Question",
+  "aclNameRegex" : ".*",
+  "nodeRegex" : ".*",
+  "differential" : false,
+  "includeOneTableKeys" : false,
+  "instance" : {
+    "description" : "Identifies unreachable lines in ACLs",
+    "instanceName" : "qname",
+    "longDescription" : "Report ACLs with unreachable lines, as well as reachability of each line within the ACL. Unreachable lines can indicate erroneous configuration.",
+    "tags" : [
+      "acl",
+      "default"
+    ],
+    "variables" : {
+      "aclNameRegex" : {
+        "description" : "Only include ACLs whose name matches this regex",
+        "optional" : false,
+        "type" : "javaRegex",
+        "value" : ".*"
+      },
+      "nodeRegex" : {
+        "description" : "Only include ACLs on nodes whose name matches this regex",
+        "optional" : false,
+        "type" : "nodeSpec",
+        "value" : ".*"
+      }
+    }
+  }
+}

@@ -1,0 +1,10 @@
+!
+hostname ios_bgp
+!
+router bgp 1
+ neighbor 1.2.3.4 advertise-map ADVERTISE_MAP exist-map EXIST_MAP
+ address-family ipv4
+  neighbor UNDEFINED_PEER_GROUP activate
+!
+!
+

@@ -1,7 +1,7 @@
 package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import java.util.Map;
+import java.util.SortedMap;
 import java.util.TreeSet;
 
 public class NeighborsDiff extends ConfigDiffElement {
@@ -9,17 +9,19 @@ public class NeighborsDiff extends ConfigDiffElement {
   @JsonCreator
   private NeighborsDiff() {}
 
-  public NeighborsDiff(Map<Prefix, BgpNeighbor> before, Map<Prefix, BgpNeighbor> after) {
+  public NeighborsDiff(
+      SortedMap<Prefix, ? extends BgpPeerConfig> before,
+      SortedMap<Prefix, ? extends BgpPeerConfig> after) {
     super(new TreeSet<>(), new TreeSet<>());
 
     for (Prefix beforePrefix : before.keySet()) {
-      BgpNeighbor beforeNeighbor = before.get(beforePrefix);
+      BgpPeerConfig beforeNeighbor = before.get(beforePrefix);
       String beforeDescription = beforeNeighbor.getDescription();
       if (beforeDescription == null) {
         beforeDescription = beforePrefix.toString();
       }
       if (after.containsKey(beforePrefix)) {
-        BgpNeighbor bNeighbor = after.get(beforePrefix);
+        BgpPeerConfig bNeighbor = after.get(beforePrefix);
         if (beforeNeighbor.equals(bNeighbor)) {
           super._identical.add(beforeDescription);
         } else {
@@ -31,7 +33,7 @@ public class NeighborsDiff extends ConfigDiffElement {
     }
 
     for (Prefix afterPrefix : after.keySet()) {
-      BgpNeighbor afterNeighbor = after.get(afterPrefix);
+      BgpPeerConfig afterNeighbor = after.get(afterPrefix);
       if (!before.containsKey(afterPrefix)) {
         String afterDescription = afterNeighbor.getDescription();
         if (afterDescription == null) {

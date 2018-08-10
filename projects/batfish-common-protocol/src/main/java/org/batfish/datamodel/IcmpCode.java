@@ -24,6 +24,8 @@ public final class IcmpCode {
 
   public static final int TTL_EXCEEDED = 0x0;
 
+  public static final int TTL_EQ_ZERO_DURING_TRANSIT = 0x0;
+
   public static final int UNSET = 0xff;
 
   private IcmpCode() {}

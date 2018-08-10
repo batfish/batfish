@@ -6,6 +6,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.Objects;
 import java.util.SortedSet;
+import javax.annotation.Nullable;
 import org.batfish.common.util.CommonUtil;
 
 public class OrMatchExpr extends AclLineMatchExpr {
@@ -14,8 +15,15 @@ public class OrMatchExpr extends AclLineMatchExpr {
 
   private final SortedSet<AclLineMatchExpr> _disjuncts;
 
+  public OrMatchExpr(Iterable<AclLineMatchExpr> disjuncts) {
+    this(disjuncts, null);
+  }
+
   @JsonCreator
-  public OrMatchExpr(@JsonProperty(PROP_DISJUNCTS) Iterable<AclLineMatchExpr> disjuncts) {
+  public OrMatchExpr(
+      @JsonProperty(PROP_DISJUNCTS) Iterable<AclLineMatchExpr> disjuncts,
+      @JsonProperty(PROP_DESCRIPTION) @Nullable String description) {
+    super(description);
     _disjuncts = disjuncts != null ? ImmutableSortedSet.copyOf(disjuncts) : ImmutableSortedSet.of();
   }
 
@@ -46,6 +54,10 @@ public class OrMatchExpr extends AclLineMatchExpr {
 
   @Override
   public String toString() {
-    return MoreObjects.toStringHelper(getClass()).add(PROP_DISJUNCTS, _disjuncts).toString();
+    return MoreObjects.toStringHelper(getClass())
+        .omitNullValues()
+        .add(PROP_DESCRIPTION, _description)
+        .add(PROP_DISJUNCTS, _disjuncts)
+        .toString();
   }
 }

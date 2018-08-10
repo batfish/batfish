@@ -23,7 +23,6 @@ import org.batfish.datamodel.questions.IReachabilityQuestion;
 import org.batfish.datamodel.questions.InterfacesSpecifier;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
-import org.batfish.datamodel.questions.ReachabilitySettings;
 
 @AutoService(Plugin.class)
 public class ReachabilityQuestionPlugin extends QuestionPlugin {
@@ -73,19 +72,20 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
     }
 
     private AnswerElement multipath(ReachabilityQuestion question) {
-      return _batfish.multipath(question._reachabilitySettings.build());
+      return _batfish.multipath(question._reachabilitySettings.build().toReachabilityParameters());
     }
 
     private AnswerElement pathDiff(ReachabilityQuestion question) {
-      return _batfish.pathDiff(question._reachabilitySettings.build());
+      return _batfish.pathDiff(question._reachabilitySettings.build().toReachabilityParameters());
     }
 
     private AnswerElement reducedReachability(ReachabilityQuestion question) {
-      return _batfish.reducedReachability(question._reachabilitySettings.build());
+      return _batfish.reducedReachability(
+          question._reachabilitySettings.build().toReachabilityParameters());
     }
 
     private AnswerElement standard(ReachabilityQuestion question) {
-      return _batfish.standard(question._reachabilitySettings.build());
+      return _batfish.standard(question._reachabilitySettings.build().toReachabilityParameters());
     }
   }
 
@@ -116,19 +116,19 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
 
     private static final NodesSpecifier DEFAULT_INGRESS_NODES = NodesSpecifier.ALL;
 
-    private static final InterfacesSpecifier DEFAULT_INGRESS_INTERFACES = InterfacesSpecifier.NONE;
+    private static final InterfacesSpecifier DEFAULT_INGRESS_INTERFACES = InterfacesSpecifier.ALL;
 
     private static final int DEFAULT_MAX_CHUNK_SIZE = 1;
 
-    private static final NodesSpecifier DEFAULT_NON_TRANSIT_NODES = NodesSpecifier.NONE;
+    private static final NodesSpecifier DEFAULT_NON_TRANSIT_NODES = null;
 
-    private static final NodesSpecifier DEFAULT_NOT_FINAL_NODE_REGEX = NodesSpecifier.NONE;
+    private static final NodesSpecifier DEFAULT_NOT_FINAL_NODE_REGEX = null;
 
-    private static final NodesSpecifier DEFAULT_NOT_INGRESS_NODE_REGEX = NodesSpecifier.NONE;
+    private static final NodesSpecifier DEFAULT_NOT_INGRESS_NODE_REGEX = null;
 
-    private static final boolean DEFAULT_SPECIALIZE = false;
+    private static final boolean DEFAULT_SPECIALIZE = true;
 
-    private static final NodesSpecifier DEFAULT_TRANSIT_NODES = NodesSpecifier.NONE;
+    private static final NodesSpecifier DEFAULT_TRANSIT_NODES = null;
 
     private static final boolean DEFAULT_USE_COMPRESSION = false;
 

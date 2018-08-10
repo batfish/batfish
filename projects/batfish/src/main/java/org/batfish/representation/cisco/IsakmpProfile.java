@@ -1,34 +1,59 @@
 package org.batfish.representation.cisco;
 
-import org.batfish.common.util.DefinedStructure;
-import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.Prefix;
+import static org.batfish.datamodel.Interface.UNSET_LOCAL_INTERFACE;
 
-public class IsakmpProfile extends DefinedStructure<String> {
+import java.io.Serializable;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpWildcard;
+
+public class IsakmpProfile implements Serializable {
 
   /** */
   private static final long serialVersionUID = 1L;
 
   private String _keyring;
 
-  private Ip _localAddress;
+  @Nullable private Ip _localAddress;
 
-  private Prefix _matchIdentity;
+  @Nonnull private String _localInterfaceName;
 
-  public IsakmpProfile(String name, int definitionLine) {
-    super(name, definitionLine);
+  private IpWildcard _matchIdentity;
+
+  private final String _name;
+
+  @Nullable private Ip _selfIdentity;
+
+  public IsakmpProfile(String name) {
+    _name = name;
+    _localInterfaceName = UNSET_LOCAL_INTERFACE;
   }
 
   public String getKeyring() {
     return _keyring;
   }
 
+  @Nullable
   public Ip getLocalAddress() {
     return _localAddress;
   }
 
-  public Prefix getMatchIdentity() {
+  @Nonnull
+  public String getLocalInterfaceName() {
+    return _localInterfaceName;
+  }
+
+  public IpWildcard getMatchIdentity() {
     return _matchIdentity;
+  }
+
+  public String getName() {
+    return _name;
+  }
+
+  public Ip getSelfIdentity() {
+    return _selfIdentity;
   }
 
   public void setKeyring(String keyring) {
@@ -39,7 +64,15 @@ public class IsakmpProfile extends DefinedStructure<String> {
     _localAddress = address;
   }
 
-  public void setMatchIdentity(Ip address, Ip mask) {
-    _matchIdentity = new Prefix(address, mask);
+  public void setLocalInterfaceName(@Nonnull String localInterfaceName) {
+    _localInterfaceName = localInterfaceName;
+  }
+
+  public void setMatchIdentity(IpWildcard matchIdentity) {
+    _matchIdentity = matchIdentity;
+  }
+
+  public void setSelfIdentity(Ip selfIdentity) {
+    _selfIdentity = selfIdentity;
   }
 }

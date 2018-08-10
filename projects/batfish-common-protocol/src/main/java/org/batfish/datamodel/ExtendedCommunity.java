@@ -3,7 +3,7 @@ package org.batfish.datamodel;
 import java.io.Serializable;
 import org.batfish.common.BatfishException;
 
-public class ExtendedCommunity implements Serializable {
+public final class ExtendedCommunity implements Serializable {
 
   /** */
   private static final long serialVersionUID = 1L;

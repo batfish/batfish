@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.IntStream;
 import org.batfish.common.BatfishException;
 
 public final class SubRange implements Serializable, Comparable<SubRange> {
@@ -50,13 +51,17 @@ public final class SubRange implements Serializable, Comparable<SubRange> {
         throw new BatfishException("Invalid subrange end: \"" + parts[1] + "\"", e);
       }
     } else if (o instanceof Integer) {
-      int i = ((Integer) o).intValue();
+      int i = (Integer) o;
       _start = i;
       _end = i;
     } else {
       throw new BatfishException(
           "Cannot create SubRange from input object of type: " + o.getClass().getCanonicalName());
     }
+  }
+
+  public IntStream asStream() {
+    return IntStream.range(_start, _end + 1);
   }
 
   @Override
@@ -100,6 +105,10 @@ public final class SubRange implements Serializable, Comparable<SubRange> {
     result = prime * result + _end;
     result = prime * result + _start;
     return result;
+  }
+
+  public boolean includes(int integer) {
+    return _start <= integer && integer <= _end;
   }
 
   @JsonValue

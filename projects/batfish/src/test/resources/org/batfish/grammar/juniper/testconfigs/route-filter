@@ -1,0 +1,7 @@
+#
+set system host-name route-filter
+#
+set policy-options policy-statement route-filter-test term t1 from route-filter 1.2.0.0/16 exact
+set policy-options policy-statement route-filter-test term t1 from route-filter 1.2.0.0/16 longer
+set policy-options policy-statement route-filter-test term t1 from route-filter 1.7.0.0/16 through 1.7.0.0/17
+set policy-options policy-statement route-filter-test term t1 from route-filter 1.2.3.4/16 address-mask 255.0.255.0

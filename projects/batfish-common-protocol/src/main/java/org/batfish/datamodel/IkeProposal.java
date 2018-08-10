@@ -1,7 +1,6 @@
 package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import org.batfish.common.util.ComparableStructure;
@@ -30,7 +29,7 @@ public final class IkeProposal extends ComparableStructure<String> {
     p.setAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS);
     p.setEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC);
     p.setDiffieHellmanGroup(DiffieHellmanGroup.GROUP2);
-    p.setAuthenticationAlgorithm(IkeAuthenticationAlgorithm.MD5);
+    p.setAuthenticationAlgorithm(IkeHashingAlgorithm.MD5);
     return p;
   }
 
@@ -39,7 +38,7 @@ public final class IkeProposal extends ComparableStructure<String> {
     p.setAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS);
     p.setEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC);
     p.setDiffieHellmanGroup(DiffieHellmanGroup.GROUP2);
-    p.setAuthenticationAlgorithm(IkeAuthenticationAlgorithm.SHA1);
+    p.setAuthenticationAlgorithm(IkeHashingAlgorithm.SHA1);
     return p;
   }
 
@@ -48,7 +47,7 @@ public final class IkeProposal extends ComparableStructure<String> {
     p.setAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS);
     p.setEncryptionAlgorithm(EncryptionAlgorithm.AES_128_CBC);
     p.setDiffieHellmanGroup(DiffieHellmanGroup.GROUP2);
-    p.setAuthenticationAlgorithm(IkeAuthenticationAlgorithm.SHA1);
+    p.setAuthenticationAlgorithm(IkeHashingAlgorithm.SHA1);
     return p;
   }
 
@@ -57,7 +56,7 @@ public final class IkeProposal extends ComparableStructure<String> {
     p.setAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS);
     p.setEncryptionAlgorithm(EncryptionAlgorithm.DES_CBC);
     p.setDiffieHellmanGroup(DiffieHellmanGroup.GROUP1);
-    p.setAuthenticationAlgorithm(IkeAuthenticationAlgorithm.MD5);
+    p.setAuthenticationAlgorithm(IkeHashingAlgorithm.MD5);
     return p;
   }
 
@@ -66,7 +65,7 @@ public final class IkeProposal extends ComparableStructure<String> {
     p.setAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS);
     p.setEncryptionAlgorithm(EncryptionAlgorithm.DES_CBC);
     p.setDiffieHellmanGroup(DiffieHellmanGroup.GROUP1);
-    p.setAuthenticationAlgorithm(IkeAuthenticationAlgorithm.SHA1);
+    p.setAuthenticationAlgorithm(IkeHashingAlgorithm.SHA1);
     return p;
   }
 
@@ -75,7 +74,7 @@ public final class IkeProposal extends ComparableStructure<String> {
     p.setAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS);
     p.setEncryptionAlgorithm(EncryptionAlgorithm.DES_CBC);
     p.setDiffieHellmanGroup(DiffieHellmanGroup.GROUP2);
-    p.setAuthenticationAlgorithm(IkeAuthenticationAlgorithm.MD5);
+    p.setAuthenticationAlgorithm(IkeHashingAlgorithm.MD5);
     return p;
   }
 
@@ -84,15 +83,13 @@ public final class IkeProposal extends ComparableStructure<String> {
     p.setAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS);
     p.setEncryptionAlgorithm(EncryptionAlgorithm.DES_CBC);
     p.setDiffieHellmanGroup(DiffieHellmanGroup.GROUP2);
-    p.setAuthenticationAlgorithm(IkeAuthenticationAlgorithm.SHA1);
+    p.setAuthenticationAlgorithm(IkeHashingAlgorithm.SHA1);
     return p;
   }
 
-  private IkeAuthenticationAlgorithm _authenticationAlgorithm;
+  private IkeHashingAlgorithm _authenticationAlgorithm;
 
   private IkeAuthenticationMethod _authenticationMethod;
-
-  private final int _definitionLine;
 
   private DiffieHellmanGroup _diffieHellmanGroup;
 
@@ -101,14 +98,8 @@ public final class IkeProposal extends ComparableStructure<String> {
   private Integer _lifetimeSeconds;
 
   @JsonCreator
-  private IkeProposal(@JsonProperty(PROP_NAME) String name) {
+  public IkeProposal(@JsonProperty(PROP_NAME) String name) {
     super(name);
-    _definitionLine = -1;
-  }
-
-  public IkeProposal(String name, int definitionLine) {
-    super(name);
-    _definitionLine = definitionLine;
   }
 
   public boolean compatibleWith(IkeProposal rhs) {
@@ -119,18 +110,13 @@ public final class IkeProposal extends ComparableStructure<String> {
   }
 
   @JsonPropertyDescription("Authentication algorithm to use for connection to IKE gateway")
-  public IkeAuthenticationAlgorithm getAuthenticationAlgorithm() {
+  public IkeHashingAlgorithm getAuthenticationAlgorithm() {
     return _authenticationAlgorithm;
   }
 
   @JsonPropertyDescription("Authentication method to use for connection to IKE gateway")
   public IkeAuthenticationMethod getAuthenticationMethod() {
     return _authenticationMethod;
-  }
-
-  @JsonIgnore
-  public int getDefinitionLine() {
-    return _definitionLine;
   }
 
   @JsonPropertyDescription("Diffie-Hellman group to use for key exchange")
@@ -148,7 +134,7 @@ public final class IkeProposal extends ComparableStructure<String> {
     return _lifetimeSeconds;
   }
 
-  public void setAuthenticationAlgorithm(IkeAuthenticationAlgorithm authenticationAlgorithm) {
+  public void setAuthenticationAlgorithm(IkeHashingAlgorithm authenticationAlgorithm) {
     _authenticationAlgorithm = authenticationAlgorithm;
   }
 

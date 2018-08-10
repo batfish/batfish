@@ -1,33 +1,48 @@
 package org.batfish.representation.cisco;
 
-import org.batfish.common.util.DefinedStructure;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import org.batfish.datamodel.DiffieHellmanGroup;
 
-public class IpsecProfile extends DefinedStructure<String> {
+public class IpsecProfile implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
+  private String _isakmpProfile;
+
+  private final String _name;
+
   private DiffieHellmanGroup _pfsGroup;
 
-  private String _transformSet;
+  private List<String> _transformSets;
 
-  public IpsecProfile(String name, int definitionLine) {
-    super(name, definitionLine);
+  public IpsecProfile(String name) {
+    _name = name;
+    _transformSets = new ArrayList<>();
+  }
+
+  public String getIsakmpProfile() {
+    return _isakmpProfile;
+  }
+
+  public String getName() {
+    return _name;
   }
 
   public DiffieHellmanGroup getPfsGroup() {
     return _pfsGroup;
   }
 
-  public String getTransformSet() {
-    return _transformSet;
+  public List<String> getTransformSets() {
+    return _transformSets;
+  }
+
+  public void setIsakmpProfile(String isakmpProfile) {
+    _isakmpProfile = isakmpProfile;
   }
 
   public void setPfsGroup(DiffieHellmanGroup pfsGroup) {
     _pfsGroup = pfsGroup;
-  }
-
-  public void setTransformSet(String transformSet) {
-    _transformSet = transformSet;
   }
 }

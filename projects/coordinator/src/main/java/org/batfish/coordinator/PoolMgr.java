@@ -1,5 +1,6 @@
 package org.batfish.coordinator;
 
+import com.google.common.base.Throwables;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -14,7 +15,6 @@ import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.util.CommonUtil;
@@ -48,21 +48,13 @@ public class PoolMgr {
     // start out as unknown and trigger refresh in the background
     _workerPool.put(worker, new WorkerStatus(WorkerStatus.StatusCode.UNKNOWN));
 
-    Thread thread =
-        new Thread() {
-          @Override
-          public void run() {
-            refreshWorkerStatus(worker);
-          }
-        };
+    Thread thread = new Thread(() -> refreshWorkerStatus(worker));
 
     thread.start();
   }
 
   public synchronized void deleteFromPool(String worker) {
-    if (_workerPool.containsKey(worker)) {
-      _workerPool.remove(worker);
-    }
+    _workerPool.remove(worker);
   }
 
   private synchronized List<String> getAllWorkers() {
@@ -75,7 +67,7 @@ public class PoolMgr {
     return _workerPool.size();
   }
 
-  public synchronized HashMap<String, String> getPoolStatus() {
+  public synchronized Map<String, String> getPoolStatus() {
     HashMap<String, String> copy = new HashMap<>();
 
     for (Entry<String, WorkerStatus> entry : _workerPool.entrySet()) {
@@ -129,7 +121,8 @@ public class PoolMgr {
                   _settings.getSslPoolKeystoreFile(),
                   _settings.getSslPoolKeystorePassword(),
                   _settings.getSslPoolTruststoreFile(),
-                  _settings.getSslPoolTruststorePassword())
+                  _settings.getSslPoolTruststorePassword(),
+                  false)
               .build();
       String protocol = _settings.getSslPoolDisable() ? "http" : "https";
       WebTarget webTarget =
@@ -162,7 +155,7 @@ public class PoolMgr {
         JSONObject jObj = new JSONObject(array.get(1).toString());
 
         if (!jObj.has("idle")) {
-          _logger.error(String.format("did not see idle key in json response\n"));
+          _logger.error("did not see idle key in json response\n");
           updateWorkerStatus(worker, WorkerStatus.StatusCode.UNKNOWN);
           return;
         }
@@ -180,7 +173,7 @@ public class PoolMgr {
       _logger.error(String.format("unable to connect to %s: %s\n", worker, e.getMessage()));
       updateWorkerStatus(worker, WorkerStatus.StatusCode.UNREACHABLE);
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getStackTrace(e);
+      String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.error(String.format("exception: %s\n", stackTrace));
       updateWorkerStatus(worker, WorkerStatus.StatusCode.UNKNOWN);
     } finally {

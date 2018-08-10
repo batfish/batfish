@@ -26,6 +26,10 @@
               </goals>
               <configuration>
                 <ignoredUnusedDeclaredDependencies>
+                  <ignoredUnusedDeclaredDependency>org.lastnpe.eea:guava-eea
+                  </ignoredUnusedDeclaredDependency>
+                  <ignoredUnusedDeclaredDependency>org.lastnpe.eea:jdk-eea
+                  </ignoredUnusedDeclaredDependency>
                   <ignoredUnusedDeclaredDependency>org.slf4j:slf4j-jdk14
                   </ignoredUnusedDeclaredDependency>
                   <ignoredUnusedDeclaredDependency>com.google.auto.service:auto-service
@@ -47,6 +51,11 @@
     </pluginManagement>
 
     <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-pmd-plugin</artifactId>
+      </plugin>
+
       <plugin>
         <groupId>org.antlr</groupId>
         <artifactId>antlr4-maven-plugin</artifactId>
@@ -104,6 +113,20 @@
               <statusDirectory>${project.build.directory}/maven-status/antlr4-mrv</statusDirectory>
             </configuration>
           </execution>
+          <execution>
+            <id>antlr4-palo-alto</id>
+            <goals>
+              <goal>antlr4</goal>
+            </goals>
+            <configuration>
+              <includes>**/PaloAltoLexer.g4,**/PaloAltoParser.g4</includes>
+              <libDirectory>${basedir}/src/main/antlr4/org/batfish/grammar/palo_alto
+              </libDirectory>
+              <statusDirectory>${project.build.directory}/maven-status/antlr4-palo-alto
+              </statusDirectory>
+            </configuration>
+          </execution>
+
 
           <!-- All the rest that do not have imports. Note that we exclude all the g4 files from above. -->
           <execution>
@@ -113,33 +136,9 @@
             </goals>
             <configuration>
               <includes>**/*.g4</includes>
-              <excludes>**/cisco/*.g4,**/flatjuniper/*.g4,**/flatvyos/*.g4,**/mrv/*.g4</excludes>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-pmd-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>check</id>
-            <goals>
-              <goal>check</goal>
-            </goals>
-            <configuration>
-              <failOnViolation>true</failOnViolation>
-            </configuration>
-          </execution>
-
-          <execution>
-            <id>cpd-check</id>
-            <goals>
-              <goal>cpd-check</goal>
-            </goals>
-            <configuration>
-              <failOnViolation>false</failOnViolation>
+              <excludes>
+                **/cisco/*.g4,**/flatjuniper/*.g4,**/flatvyos/*.g4,**/mrv/*.g4,**/palo_alto/*.g4
+              </excludes>
             </configuration>
           </execution>
         </executions>
@@ -216,7 +215,7 @@
 
     <dependency>
       <groupId>net.sf.javabdd</groupId>
-      <artifactId>bdd</artifactId>
+      <artifactId>javabdd</artifactId>
     </dependency>
 
     <dependency>
@@ -281,6 +280,19 @@
       <scope>runtime</scope>
     </dependency>
 
+    <!-- Provided dependencies to be available at compile time only -->
+    <dependency>
+      <groupId>org.lastnpe.eea</groupId>
+      <artifactId>guava-eea</artifactId>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.lastnpe.eea</groupId>
+      <artifactId>jdk-eea</artifactId>
+      <scope>provided</scope>
+    </dependency>
+
     <!-- Test scope dependencies. -->
     <dependency>
       <groupId>org.batfish</groupId>
@@ -297,13 +309,7 @@
 
     <dependency>
       <groupId>org.hamcrest</groupId>
-      <artifactId>hamcrest-core</artifactId>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.hamcrest</groupId>
-      <artifactId>hamcrest-library</artifactId>
+      <artifactId>java-hamcrest</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>

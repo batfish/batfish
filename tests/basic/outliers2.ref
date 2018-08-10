@@ -33,8 +33,6 @@
           "declaredNames" : [
             "Ethernet0/0"
           ],
-          "isisL1InterfaceMode" : "unset",
-          "isisL2InterfaceMode" : "unset",
           "mtu" : 1500,
           "nativeVlan" : 1,
           "ospfDeadInterval" : 0,
@@ -87,8 +85,6 @@
           "declaredNames" : [
             "GigabitEthernet0/0"
           ],
-          "isisL1InterfaceMode" : "unset",
-          "isisL2InterfaceMode" : "unset",
           "mtu" : 1500,
           "nativeVlan" : 1,
           "ospfArea" : 1,
@@ -144,8 +140,6 @@
           "declaredNames" : [
             "GigabitEthernet1/0"
           ],
-          "isisL1InterfaceMode" : "unset",
-          "isisL2InterfaceMode" : "unset",
           "mtu" : 1500,
           "nativeVlan" : 1,
           "ospfDeadInterval" : 0,
@@ -195,12 +189,10 @@
             "1.1.1.1/32"
           ],
           "autostate" : true,
-          "bandwidth" : 1.0E12,
+          "bandwidth" : 8.0E9,
           "declaredNames" : [
             "Loopback0"
           ],
-          "isisL1InterfaceMode" : "unset",
-          "isisL2InterfaceMode" : "unset",
           "mtu" : 1500,
           "nativeVlan" : 1,
           "ospfArea" : 1,

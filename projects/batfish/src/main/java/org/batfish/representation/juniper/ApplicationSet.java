@@ -2,22 +2,21 @@ package org.batfish.representation.juniper;
 
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
+import java.io.Serializable;
 import java.util.List;
 import org.batfish.common.Warnings;
-import org.batfish.common.util.DefinedStructure;
 import org.batfish.datamodel.HeaderSpace.Builder;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.LineAction;
 
-public class ApplicationSet extends DefinedStructure<String> implements ApplicationSetMember {
+public class ApplicationSet implements ApplicationSetMember, Serializable {
 
   /** */
   private static final long serialVersionUID = 1L;
 
   private List<ApplicationSetMemberReference> _members;
 
-  public ApplicationSet(String name, int definitionLine) {
-    super(name, definitionLine);
+  public ApplicationSet() {
     _members = ImmutableList.of();
   }
 

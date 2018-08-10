@@ -2,22 +2,21 @@ package org.batfish.representation.cisco;
 
 import java.util.LinkedList;
 import java.util.List;
-import org.batfish.common.util.DefinedStructure;
-import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.IpSpace;
 
-public class NetworkObjectGroup extends DefinedStructure<String> {
+public class NetworkObjectGroup extends ObjectGroup {
 
   /** */
   private static final long serialVersionUID = 1L;
 
-  private List<IpWildcard> _lines;
+  private List<IpSpace> _lines;
 
-  public NetworkObjectGroup(String name, int definitionLine) {
-    super(name, definitionLine);
+  public NetworkObjectGroup(String name) {
+    super(name);
     _lines = new LinkedList<>();
   }
 
-  public List<IpWildcard> getLines() {
+  public List<IpSpace> getLines() {
     return _lines;
   }
 }

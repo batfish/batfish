@@ -1,0 +1,19 @@
+{
+    "class": "org.batfish.question.ipowners.IpOwnersQuestion",
+    "differential": false,
+    "duplicatesOnly": "${duplicatesOnly}",
+    "instance": {
+        "description": "Outputs the mapping from IPs to node, VRF, and interface combination.",
+        "instanceName": "ipOwners",
+        "tags": [
+            "ip", "configuration"
+        ],
+        "variables": {
+            "duplicatesOnly": {
+                "description": "Whether to return duplicate IPs only (owned by different node/VRF)",
+                "type": "boolean",
+                "value": false
+            }
+        }
+    }
+}

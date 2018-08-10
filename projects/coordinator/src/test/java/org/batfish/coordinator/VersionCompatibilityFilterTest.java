@@ -27,15 +27,28 @@ public class VersionCompatibilityFilterTest extends JerseyTest {
     }
   }
 
+  @Path("/crash")
+  public static class CrashService {
+    public CrashService() {
+      throw new IllegalStateException("CrashService should never be instantiated");
+    }
+
+    @GET
+    public Response get() {
+      return Response.ok().build();
+    }
+  }
+
   @Override
   protected Application configure() {
     forceSet(TestProperties.CONTAINER_PORT, "0");
-    return new ResourceConfig(TestService.class).register(VersionCompatibilityFilter.class);
+    return new ResourceConfig(TestService.class, CrashService.class)
+        .register(VersionCompatibilityFilter.class);
   }
 
   @Test
-  public void testMissingVersion() {
-    Response response = target("/test").request().get();
+  public void testMissingVersionPreMatch() {
+    Response response = target("/crash").request().get();
     assertThat(response.getStatus(), equalTo(BAD_REQUEST.getStatusCode()));
     String expectMessage =
         String.format(
@@ -44,8 +57,8 @@ public class VersionCompatibilityFilterTest extends JerseyTest {
   }
 
   @Test
-  public void testEmptyVersion() {
-    Response response = target("/test").request().header(HTTP_HEADER_BATFISH_VERSION, "").get();
+  public void testEmptyVersionPreMatch() {
+    Response response = target("/crash").request().header(HTTP_HEADER_BATFISH_VERSION, "").get();
     assertThat(response.getStatus(), equalTo(BAD_REQUEST.getStatusCode()));
     String expectMessage =
         String.format(
@@ -54,9 +67,9 @@ public class VersionCompatibilityFilterTest extends JerseyTest {
   }
 
   @Test
-  public void testBadVersion() {
+  public void testBadVersionPreMatch() {
     Response response =
-        target("/test").request().header(HTTP_HEADER_BATFISH_VERSION, "1.0.1").get();
+        target("/crash").request().header(HTTP_HEADER_BATFISH_VERSION, "1.0.1").get();
     assertThat(response.getStatus(), equalTo(BAD_REQUEST.getStatusCode()));
     assertThat(
         response.readEntity(String.class),

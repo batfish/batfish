@@ -58,9 +58,16 @@ banner_type
    | SLIP_PPP
 ;
 
+bgp_asn
+:
+    asn = DEC
+    | asn4b = FLOAT // DEC.DEC , but this lexes as FLOAT
+;
+
 community
 :
-   com = COMMUNITY_NUMBER
+   com = ACCEPT_OWN
+   | com = COMMUNITY_NUMBER
    | com = DEC
    | com = GSHUT
    | com = INTERNET
@@ -396,7 +403,8 @@ prefix_set_elem
 
 protocol
 :
-   AHP
+   AH
+   | AHP
    | DEC
    | EIGRP
    | ESP
@@ -443,16 +451,18 @@ route_policy_params_list
    )*
 ;
 
-rp_community_set_elem
+community_set_elem
 :
+   community
+   |
    (
-      prefix = rp_community_set_elem_half COLON suffix =
-      rp_community_set_elem_half
+     prefix = community_set_elem_half COLON suffix = community_set_elem_half
    )
-   | community
+   | DFA_REGEX COMMUNITY_SET_REGEX
+   | IOS_REGEX COMMUNITY_SET_REGEX
 ;
 
-rp_community_set_elem_half
+community_set_elem_half
 :
    value = DEC
    | var = RP_VARIABLE
@@ -461,6 +471,7 @@ rp_community_set_elem_half
       BRACKET_LEFT first = DEC PERIOD PERIOD last = DEC BRACKET_RIGHT
    )
    | ASTERISK
+   | PRIVATE_AS
 ;
 
 rp_subrange
@@ -470,6 +481,33 @@ rp_subrange
    (
       BRACKET_LEFT first = int_expr PERIOD PERIOD last = int_expr BRACKET_RIGHT
    )
+;
+
+service_specifier
+:
+   service_specifier_icmp
+   | service_specifier_tcp_udp
+   | service_specifier_protocol
+;
+
+service_specifier_icmp
+:
+   ICMP icmp_object_type?
+;
+
+service_specifier_protocol
+:
+   protocol
+;
+
+service_specifier_tcp_udp
+:
+   (
+      TCP
+      | TCP_UDP
+      | UDP
+   )
+   (SOURCE src_ps = port_specifier)? (DESTINATION dst_ps = port_specifier)?
 ;
 
 subrange
@@ -495,7 +533,7 @@ variable
 variable_aclname
 :
    (
-      ~( ETH | EXTENDED | NEWLINE | STANDARD | SESSION | WS )
+      ~( ETH | EXTENDED | NEWLINE | REMARK | STANDARD | SESSION | WS )
    )+
 ;
 
@@ -503,6 +541,11 @@ variable_community_name
 :
    ~( NEWLINE | DOUBLE_QUOTE | GROUP | IPV4 | IPV6 | RO | RW | SDROWNER |
    SYSTEMOWNER | USE_ACL | USE_IPV4_ACL | USE_IPV6_ACL | VIEW )
+;
+
+variable_distribute_list
+:
+  ~( NEWLINE | IN | OUT )+
 ;
 
 variable_hostname

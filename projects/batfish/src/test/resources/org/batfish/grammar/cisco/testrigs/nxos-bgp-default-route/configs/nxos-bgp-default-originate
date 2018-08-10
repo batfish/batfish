@@ -1,0 +1,25 @@
+!Command: show running-config
+!Time: Wed Apr 25 23:55:08 2018
+
+! Real config from NX-OS emulator in GNS3, edited heavily to remove unrelated bits.
+! All commands that matter are below, enter them after `configure terminal` / `conf t`.
+!
+! Relevant NX-OS command to confirm route is advertised:
+!    `show ip bgp neighbors 1.2.3.0 advertised-routes`
+
+license grace-period
+hostname nxos-bgp-default-originate
+feature bgp
+
+route-map block-everything deny 5
+
+interface Ethernet2/1
+  ip address 1.2.3.1/31
+  no shutdown
+
+router bgp 65000
+  address-family ipv4 unicast
+  neighbor 1.2.3.0 remote-as 65001
+    address-family ipv4 unicast
+      route-map block-everything out
+      default-originate

@@ -2,6 +2,7 @@ package org.batfish.question;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.SortedSetMultimap;
 import com.google.common.collect.TreeMultimap;
 import java.util.Map;
@@ -10,7 +11,7 @@ import java.util.Set;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
-import org.batfish.datamodel.BgpNeighbor;
+import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Vrf;
@@ -25,14 +26,14 @@ public class BgpAsnUseQuestionPlugin extends QuestionPlugin {
 
     public static final String PROP_ASNS = "asns";
 
-    private SortedSetMultimap<Integer, String> _asns;
+    private SortedSetMultimap<Long, String> _asns;
 
-    public BgpAsnUseAnswerElement(@JsonProperty(PROP_ASNS) TreeMultimap<Integer, String> asns) {
+    public BgpAsnUseAnswerElement(@JsonProperty(PROP_ASNS) TreeMultimap<Long, String> asns) {
       _asns = (asns == null) ? TreeMultimap.create() : asns;
     }
 
     @JsonProperty(PROP_ASNS)
-    public SortedSetMultimap<Integer, String> getAsns() {
+    public SortedSetMultimap<Long, String> getAsns() {
       return _asns;
     }
 
@@ -40,7 +41,7 @@ public class BgpAsnUseQuestionPlugin extends QuestionPlugin {
     public String prettyPrint() {
       StringBuilder sb = new StringBuilder("Results for BGP ASN use\n");
       if (_asns != null) {
-        for (Integer asn : _asns.keySet()) {
+        for (Long asn : _asns.keySet()) {
           sb.append("  " + asn + "\n");
           for (String node : _asns.get(asn)) {
             sb.append("    " + node + "\n");
@@ -63,7 +64,7 @@ public class BgpAsnUseQuestionPlugin extends QuestionPlugin {
       BgpAsnUseQuestion question = (BgpAsnUseQuestion) _question;
 
       BgpAsnUseAnswerElement answerElement = new BgpAsnUseAnswerElement(null);
-      SortedSetMultimap<Integer, String> asns = TreeMultimap.create();
+      SortedSetMultimap<Long, String> asns = TreeMultimap.create();
       Map<String, Configuration> configurations = _batfish.loadConfigurations();
       Set<String> nodes = question.getNodeRegex().getMatchingNodes(_batfish);
       for (Entry<String, Configuration> e : configurations.entrySet()) {
@@ -75,14 +76,17 @@ public class BgpAsnUseQuestionPlugin extends QuestionPlugin {
         for (Vrf vrf : c.getVrfs().values()) {
           BgpProcess bgpProc = vrf.getBgpProcess();
           if (bgpProc != null) {
-            for (BgpNeighbor neighbor : bgpProc.getNeighbors().values()) {
+            for (BgpPeerConfig neighbor :
+                Iterables.concat(
+                    bgpProc.getActiveNeighbors().values(),
+                    bgpProc.getPassiveNeighbors().values())) {
               asns.put(neighbor.getLocalAs(), hostname);
             }
           }
         }
       }
       // is there streams way of multimap to multimap conversion with a filter?
-      for (Integer asn : asns.keySet()) {
+      for (Long asn : asns.keySet()) {
         if (asns.get(asn).size() >= question.getMinCount()) {
           answerElement.getAsns().putAll(asn, asns.get(asn));
         }

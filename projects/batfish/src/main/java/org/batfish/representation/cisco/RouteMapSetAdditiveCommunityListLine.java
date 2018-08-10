@@ -8,7 +8,6 @@ import org.batfish.common.Warnings;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.routing_policy.expr.InlineCommunitySet;
 import org.batfish.datamodel.routing_policy.statement.AddCommunity;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 
@@ -19,11 +18,8 @@ public final class RouteMapSetAdditiveCommunityListLine extends RouteMapSetLine 
 
   private final Set<String> _communityLists;
 
-  private final int _statementLine;
-
-  public RouteMapSetAdditiveCommunityListLine(Set<String> communityLists, int statementLine) {
+  public RouteMapSetAdditiveCommunityListLine(Set<String> communityLists) {
     _communityLists = communityLists;
-    _statementLine = statementLine;
   }
 
   @Override
@@ -53,15 +49,14 @@ public final class RouteMapSetAdditiveCommunityListLine extends RouteMapSetLine 
                   + communityListName
                   + "\"");
         }
-      } else {
-        cc.undefined(
-            CiscoStructureType.COMMUNITY_LIST,
-            communityListName,
-            CiscoStructureUsage.ROUTE_MAP_ADD_COMMUNITY,
-            _statementLine);
       }
     }
-    statements.add(new AddCommunity(new InlineCommunitySet(communities)));
+    _communityLists.forEach(
+        communityListName ->
+            statements.add(
+                new AddCommunity(
+                    new org.batfish.datamodel.routing_policy.expr.NamedCommunitySet(
+                        communityListName))));
   }
 
   @Override

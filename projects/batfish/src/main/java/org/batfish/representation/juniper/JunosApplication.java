@@ -5,9 +5,10 @@ import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
+import javax.annotation.Nullable;
 import org.batfish.common.Warnings;
-import org.batfish.common.util.DefinedStructure;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.LineAction;
@@ -16,13 +17,17 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.representation.juniper.BaseApplication.Term;
 
 public enum JunosApplication implements Application {
+  /**
+   * TODO(https://github.com/batfish/batfish/issues/1325): separate applications from
+   * application-sets
+   */
+  ANY,
   JUNOS_AOL,
   JUNOS_BGP,
   JUNOS_BIFF,
   JUNOS_BOOTPC,
   JUNOS_BOOTPS,
   JUNOS_CHARGEN,
-  JUNOS_CIFS,
   JUNOS_CVSPSERVER,
   JUNOS_DHCP_CLIENT,
   JUNOS_DHCP_RELAY,
@@ -33,8 +38,13 @@ public enum JunosApplication implements Application {
   JUNOS_ECHO,
   JUNOS_FINGER,
   JUNOS_FTP,
+  JUNOS_FTP_DATA,
   JUNOS_GNUTELLA,
   JUNOS_GOPHER,
+  JUNOS_GPRS_GTP_C,
+  JUNOS_GPRS_GTP_U,
+  JUNOS_GPRS_GTP_V0,
+  JUNOS_GPRS_SCTP,
   JUNOS_GRE,
   JUNOS_GTP,
   JUNOS_H323,
@@ -51,7 +61,7 @@ public enum JunosApplication implements Application {
   JUNOS_ICMP6_DST_UNREACH_ROUTE,
   JUNOS_ICMP6_ECHO_REPLY,
   JUNOS_ICMP6_ECHO_REQUEST,
-  JUNOS_ICMP6_PACKET_TO_BIG,
+  JUNOS_ICMP6_PACKET_TOO_BIG,
   JUNOS_ICMP6_PARAM_PROB_HEADER,
   JUNOS_ICMP6_PARAM_PROB_NEXTHDR,
   JUNOS_ICMP6_PARAM_PROB_OPTION,
@@ -70,16 +80,11 @@ public enum JunosApplication implements Application {
   JUNOS_LDP_UDP,
   JUNOS_LPR,
   JUNOS_MAIL,
-  JUNOS_MGCP,
   JUNOS_MGCP_CA,
   JUNOS_MGCP_UA,
-  JUNOS_MS_RPC,
-  JUNOS_MS_RPC_ANY,
   JUNOS_MS_RPC_EPM,
-  JUNOS_MS_RPC_IIS_COM,
   JUNOS_MS_RPC_IIS_COM_1,
   JUNOS_MS_RPC_IIS_COM_ADMINBASE,
-  JUNOS_MS_RPC_MSEXCHANGE,
   JUNOS_MS_RPC_MSEXCHANGE_DIRECTORY_NSP,
   JUNOS_MS_RPC_MSEXCHANGE_DIRECTORY_RFR,
   JUNOS_MS_RPC_MSEXCHANGE_INFO_STORE,
@@ -87,7 +92,6 @@ public enum JunosApplication implements Application {
   JUNOS_MS_RPC_UDP,
   JUNOS_MS_RPC_UUID_ANY_TCP,
   JUNOS_MS_RPC_UUID_ANY_UDP,
-  JUNOS_MS_RPC_WMIC,
   JUNOS_MS_RPC_WMIC_ADMIN,
   JUNOS_MS_RPC_WMIC_ADMIN2,
   JUNOS_MS_RPC_WMIC_MGMT,
@@ -128,7 +132,6 @@ public enum JunosApplication implements Application {
   JUNOS_RADIUS,
   JUNOS_REALAUDIO,
   JUNOS_RIP,
-  JUNOS_ROUTING_INBOUND,
   JUNOS_RSH,
   JUNOS_RTSP,
   JUNOS_SCCP,
@@ -137,6 +140,7 @@ public enum JunosApplication implements Application {
   JUNOS_SMB,
   JUNOS_SMB_SESSION,
   JUNOS_SMTP,
+  JUNOS_SMTPS,
   JUNOS_SNMP_AGENTX,
   JUNOS_SNPP,
   JUNOS_SQL_MONITOR,
@@ -144,47 +148,32 @@ public enum JunosApplication implements Application {
   JUNOS_SQLNET_V2,
   JUNOS_SSH,
   JUNOS_STUN,
-  JUNOS_SUN_RPC,
-  JUNOS_SUN_RPC_ANY,
   JUNOS_SUN_RPC_ANY_TCP,
   JUNOS_SUN_RPC_ANY_UDP,
-  JUNOS_SUN_RPC_MOUNTD,
   JUNOS_SUN_RPC_MOUNTD_TCP,
   JUNOS_SUN_RPC_MOUNTD_UDP,
-  JUNOS_SUN_RPC_NFS,
-  JUNOS_SUN_RPC_NFS_ACCESS,
   JUNOS_SUN_RPC_NFS_TCP,
   JUNOS_SUN_RPC_NFS_UDP,
-  JUNOS_SUN_RPC_NLOCKMGR,
   JUNOS_SUN_RPC_NLOCKMGR_TCP,
   JUNOS_SUN_RPC_NLOCKMGR_UDP,
-  JUNOS_SUN_RPC_PORTMAP,
   JUNOS_SUN_RPC_PORTMAP_TCP,
   JUNOS_SUN_RPC_PORTMAP_UDP,
-  JUNOS_SUN_RPC_RQUOTAD,
   JUNOS_SUN_RPC_RQUOTAD_TCP,
   JUNOS_SUN_RPC_RQUOTAD_UDP,
-  JUNOS_SUN_RPC_RUSERD,
   JUNOS_SUN_RPC_RUSERD_TCP,
   JUNOS_SUN_RPC_RUSERD_UDP,
-  JUNOS_SUN_RPC_SADMIND,
   JUNOS_SUN_RPC_SADMIND_TCP,
   JUNOS_SUN_RPC_SADMIND_UDP,
-  JUNOS_SUN_RPC_SPRAYD,
   JUNOS_SUN_RPC_SPRAYD_TCP,
   JUNOS_SUN_RPC_SPRAYD_UDP,
-  JUNOS_SUN_RPC_STATUS,
   JUNOS_SUN_RPC_STATUS_TCP,
   JUNOS_SUN_RPC_STATUS_UDP,
   JUNOS_SUN_RPC_TCP,
   JUNOS_SUN_RPC_UDP,
-  JUNOS_SUN_RPC_WALLD,
   JUNOS_SUN_RPC_WALLD_TCP,
   JUNOS_SUN_RPC_WALLD_UDP,
-  JUNOS_SUN_RPC_YPBIND,
   JUNOS_SUN_RPC_YPBIND_TCP,
   JUNOS_SUN_RPC_YPBIND_UDP,
-  JUNOS_SUN_RPC_YPSERV,
   JUNOS_SUN_RPC_YPSERV_TCP,
   JUNOS_SUN_RPC_YPSERV_UDP,
   JUNOS_SYSLOG,
@@ -210,7 +199,7 @@ public enum JunosApplication implements Application {
 
   private final Supplier<BaseApplication> _baseApplication;
 
-  private JunosApplication() {
+  JunosApplication() {
     _baseApplication = Suppliers.memoize(this::init);
   }
 
@@ -224,122 +213,820 @@ public enum JunosApplication implements Application {
     _baseApplication.get().applyTo(jc, srcHeaderSpaceBuilder, action, lines, w);
   }
 
+  public BaseApplication getBaseApplication() {
+    return _baseApplication.get();
+  }
+
   @Override
   public boolean getIpv6() {
     return _baseApplication.get().getIpv6();
   }
 
+  private void setHeaderSpaceInfo(
+      HeaderSpace.Builder hb,
+      @Nullable IpProtocol ipProtocol,
+      @Nullable Integer portRangeStart,
+      @Nullable Integer portRangeEnd) {
+    if (ipProtocol != null) {
+      hb.setIpProtocols(ImmutableSet.of(ipProtocol));
+    }
+    if (portRangeStart != null) {
+      hb.setDstPorts(
+          ImmutableSet.of(
+              new SubRange(portRangeStart, portRangeEnd == null ? portRangeStart : portRangeEnd)));
+    }
+  }
+
   private BaseApplication init() {
-    BaseApplication baseApplication =
-        new BaseApplication(name(), DefinedStructure.IGNORED_DEFINITION_LINE);
+    BaseApplication baseApplication = new BaseApplication(name());
     Map<String, Term> terms = baseApplication.getTerms();
+
+    Integer portRangeStart = null;
+    Integer portRangeEnd = null;
+    IpProtocol ipProtocol = null;
+    Integer icmpType = null;
+
     switch (this) {
+      case ANY:
+        {
+          break;
+        }
+
+      case JUNOS_AOL:
+        {
+          portRangeStart = NamedPort.AOL.number();
+          portRangeEnd = portRangeStart + 3;
+          ipProtocol = IpProtocol.TCP;
+          break;
+        }
+
+      case JUNOS_BGP:
+        {
+          portRangeStart = NamedPort.BGP.number();
+          ipProtocol = IpProtocol.TCP;
+          break;
+        }
+
+      case JUNOS_BIFF:
+        {
+          portRangeStart = NamedPort.BIFFudp_OR_EXECtcp.number();
+          ipProtocol = IpProtocol.UDP;
+          break;
+        }
+
+      case JUNOS_BOOTPC:
+        {
+          portRangeStart = NamedPort.BOOTPC.number();
+          ipProtocol = IpProtocol.UDP;
+          break;
+        }
+
+      case JUNOS_BOOTPS:
+        {
+          portRangeStart = NamedPort.BOOTPS_OR_DHCP.number();
+          ipProtocol = IpProtocol.UDP;
+          break;
+        }
+
+      case JUNOS_CHARGEN:
+        {
+          portRangeStart = NamedPort.CHARGEN.number();
+          ipProtocol = IpProtocol.UDP;
+          break;
+        }
+
+      case JUNOS_CVSPSERVER:
+        {
+          portRangeStart = NamedPort.CVSPSERVER.number();
+          ipProtocol = IpProtocol.TCP;
+          break;
+        }
+
+      case JUNOS_DHCP_CLIENT:
+        {
+          portRangeStart =
+              NamedPort.BOOTPC.number(); // TODO: rename BOOTPC to BOOTPC_OR_DHCP_CLIENT
+          ipProtocol = IpProtocol.UDP;
+          break;
+        }
+
+      case JUNOS_DHCP_RELAY:
+        {
+          portRangeStart = NamedPort.BOOTPS_OR_DHCP.number();
+          ipProtocol = IpProtocol.UDP;
+          break;
+        }
+
+      case JUNOS_DHCP_SERVER:
+        {
+          portRangeStart = NamedPort.BOOTPS_OR_DHCP.number();
+          ipProtocol = IpProtocol.UDP;
+          break;
+        }
+
+      case JUNOS_DISCARD:
+        {
+          portRangeStart = NamedPort.DISCARD.number();
+          ipProtocol = IpProtocol.UDP;
+          break;
+        }
+
+      case JUNOS_DNS_TCP:
+        {
+          portRangeStart = NamedPort.DOMAIN.number();
+          ipProtocol = IpProtocol.TCP;
+          // TODO: alg
+          break;
+        }
+
+      case JUNOS_DNS_UDP:
+        {
+          portRangeStart = NamedPort.DOMAIN.number();
+          ipProtocol = IpProtocol.UDP;
+          // TODO: alg
+          break;
+        }
+
+      case JUNOS_ECHO:
+        {
+          portRangeStart = NamedPort.ECHO.number();
+          ipProtocol = IpProtocol.UDP;
+          break;
+        }
+
+      case JUNOS_FINGER:
+        {
+          portRangeStart = NamedPort.FINGER.number();
+          ipProtocol = IpProtocol.TCP;
+          break;
+        }
+
       case JUNOS_FTP:
         {
-          String t1Name = "t1";
-          Term t1 = new Term(t1Name);
-          HeaderSpace.Builder l1 = t1.getHeaderSpace().rebuild();
-          l1.setIpProtocols(ImmutableSet.of(IpProtocol.TCP));
-          int portNum = NamedPort.FTP.number();
-          l1.setDstPorts(ImmutableSet.of(new SubRange(portNum, portNum)));
-          t1.setHeaderSpace(l1.build());
-          terms.put(t1Name, t1);
+          portRangeStart = NamedPort.FTP.number();
+          ipProtocol = IpProtocol.TCP;
+          break;
+        }
+
+      case JUNOS_FTP_DATA:
+        {
+          portRangeStart = NamedPort.FTP_DATA.number();
+          ipProtocol = IpProtocol.TCP;
+          break;
+        }
+
+      case JUNOS_GNUTELLA:
+        {
+          portRangeStart = NamedPort.GNUTELLA.number();
+          portRangeEnd = portRangeStart + 1;
+          ipProtocol = IpProtocol.UDP;
+          break;
+        }
+
+      case JUNOS_GOPHER:
+        {
+          portRangeStart = NamedPort.GOPHER.number();
+          ipProtocol = IpProtocol.TCP;
+          break;
+        }
+
+      case JUNOS_GPRS_GTP_C:
+        {
+          portRangeStart = NamedPort.GPRS_GTP_C.number();
+          ipProtocol = IpProtocol.UDP;
+          // TODO: alg
+          break;
+        }
+
+      case JUNOS_GPRS_GTP_U:
+        {
+          portRangeStart = NamedPort.GPRS_GTP_U.number();
+          ipProtocol = IpProtocol.UDP;
+          // TODO: alg
+          break;
+        }
+
+      case JUNOS_GPRS_GTP_V0:
+        {
+          portRangeStart = NamedPort.GPRS_GTP_V0.number();
+          ipProtocol = IpProtocol.UDP;
+          // TODO: alg
+          break;
+        }
+
+      case JUNOS_GRE:
+        {
+          ipProtocol = IpProtocol.GRE;
+          break;
+        }
+
+      case JUNOS_GTP:
+        {
+          portRangeStart = NamedPort.GPRS_GTP_C.number();
+          ipProtocol = IpProtocol.UDP;
+          break;
+        }
+
+      case JUNOS_H323:
+        {
+          portRangeStart = NamedPort.H323.number();
+          ipProtocol = IpProtocol.TCP;
+          // TODO: alg
+
+          String t2Name = "t2";
+          Term t2 = new Term();
+          HeaderSpace.Builder l2 = t2.getHeaderSpace().toBuilder();
+          // TODO: alg
+          setHeaderSpaceInfo(l2, IpProtocol.UDP, NamedPort.H323_T2.number(), null);
+          t2.setHeaderSpace(l2.build());
+
+          String t3Name = "t3";
+          Term t3 = new Term();
+          HeaderSpace.Builder l3 = t3.getHeaderSpace().toBuilder();
+          setHeaderSpaceInfo(l3, IpProtocol.TCP, NamedPort.H323_T3.number(), null);
+          t3.setHeaderSpace(l3.build());
+
+          String t4Name = "t4";
+          Term t4 = new Term();
+          HeaderSpace.Builder l4 = t4.getHeaderSpace().toBuilder();
+          setHeaderSpaceInfo(
+              l4,
+              IpProtocol.TCP,
+              NamedPort.LDAP.number(),
+              null); // TODO: rename LDAP to LDAP_OR_H323_T4
+          t4.setHeaderSpace(l4.build());
+
+          String t5Name = "t5";
+          Term t5 = new Term();
+          HeaderSpace.Builder l5 = t5.getHeaderSpace().toBuilder();
+          setHeaderSpaceInfo(l5, IpProtocol.TCP, NamedPort.H323_T5.number(), null);
+          t5.setHeaderSpace(l5.build());
+
+          String t6Name = "t6";
+          Term t6 = new Term();
+          HeaderSpace.Builder l6 = t6.getHeaderSpace().toBuilder();
+          setHeaderSpaceInfo(l6, IpProtocol.TCP, NamedPort.H323_T6.number(), null);
+          t6.setHeaderSpace(l6.build());
+
+          terms.put(t2Name, t2);
+          terms.put(t3Name, t3);
+          terms.put(t4Name, t4);
+          terms.put(t5Name, t5);
+          terms.put(t6Name, t6);
           break;
         }
 
       case JUNOS_HTTP:
         {
-          String t1Name = "t1";
-          Term t1 = new Term(t1Name);
-          HeaderSpace.Builder l1 = t1.getHeaderSpace().rebuild();
-          l1.setIpProtocols(ImmutableSet.of(IpProtocol.TCP));
-          int portNum = NamedPort.HTTP.number();
-          l1.setDstPorts(ImmutableSet.of(new SubRange(portNum, portNum)));
-          t1.setHeaderSpace(l1.build());
-          terms.put(t1Name, t1);
+          portRangeStart = NamedPort.HTTP.number();
+          ipProtocol = IpProtocol.TCP;
+          break;
+        }
+
+      case JUNOS_HTTP_EXT:
+        {
+          portRangeStart = NamedPort.HTTP_EXT.number();
+          ipProtocol = IpProtocol.TCP;
           break;
         }
 
       case JUNOS_HTTPS:
         {
-          String t1Name = "t1";
-          Term t1 = new Term(t1Name);
-          HeaderSpace.Builder l1 = t1.getHeaderSpace().rebuild();
-          l1.setIpProtocols(ImmutableSet.of(IpProtocol.TCP));
-          int portNum = NamedPort.HTTPS.number();
-          l1.setDstPorts(ImmutableSet.of(new SubRange(portNum, portNum)));
-          t1.setHeaderSpace(l1.build());
-          terms.put(t1Name, t1);
+          portRangeStart = NamedPort.HTTPS.number();
+          ipProtocol = IpProtocol.TCP;
           break;
         }
 
       case JUNOS_ICMP_ALL:
         {
-          String t1Name = "t1";
-          Term t1 = new Term(t1Name);
-          HeaderSpace.Builder l1 = t1.getHeaderSpace().rebuild();
-          l1.setIpProtocols(ImmutableSet.of(IpProtocol.ICMP));
-          t1.setHeaderSpace(l1.build());
-          terms.put(t1Name, t1);
+          ipProtocol = IpProtocol.ICMP;
+          break;
+        }
+
+      case JUNOS_ICMP_PING:
+        {
+          ipProtocol = IpProtocol.ICMP;
+          icmpType = IcmpType.ECHO_REQUEST;
           break;
         }
 
       case JUNOS_ICMP6_ALL:
         {
           baseApplication.setIpv6(true);
-          // TODO
+          ipProtocol = IpProtocol.IPV6_ICMP;
+          break;
+        }
+
+      case JUNOS_IKE:
+        {
+          portRangeStart = NamedPort.ISAKMP.number(); // TODO: change this to ISAKMP_OR_IKE
+          ipProtocol = IpProtocol.UDP;
+          break;
+        }
+
+      case JUNOS_IKE_NAT:
+        {
+          portRangeStart =
+              NamedPort.NON500_ISAKMP.number(); // TODO: change this to NON500_ISAKMP_OR_IKE_NAT
+          ipProtocol = IpProtocol.UDP;
+          break;
+        }
+
+      case JUNOS_LDAP:
+        {
+          portRangeStart = NamedPort.LDAP.number();
+          ipProtocol = IpProtocol.TCP;
+          break;
+        }
+
+      case JUNOS_LDP_TCP:
+        {
+          portRangeStart = NamedPort.LDP.number();
+          ipProtocol = IpProtocol.TCP;
+          break;
+        }
+
+      case JUNOS_LDP_UDP:
+        {
+          portRangeStart = NamedPort.LDP.number();
+          ipProtocol = IpProtocol.UDP;
+          break;
+        }
+
+      case JUNOS_MGCP_CA:
+        {
+          portRangeStart = NamedPort.MGCP_CA.number();
+          ipProtocol = IpProtocol.UDP;
+          // TODO: alg
+          break;
+        }
+
+      case JUNOS_MGCP_UA:
+        {
+          portRangeStart = NamedPort.MGCP_UA.number();
+          ipProtocol = IpProtocol.UDP;
+          // TODO: alg
+          break;
+        }
+
+      case JUNOS_MS_RPC_EPM:
+        {
+          ipProtocol = IpProtocol.TCP;
+          portRangeStart = NamedPort.MSRPC.number();
+          // TODO: uuid
+          break;
+        }
+
+      case JUNOS_MS_RPC_IIS_COM_1:
+        {
+          ipProtocol = IpProtocol.TCP;
+          portRangeStart = NamedPort.MSRPC.number();
+          // TODO: uuid
+          break;
+        }
+
+      case JUNOS_MS_RPC_IIS_COM_ADMINBASE:
+        {
+          ipProtocol = IpProtocol.TCP;
+          portRangeStart = NamedPort.MSRPC.number();
+          // TODO: uuid
+          break;
+        }
+
+      case JUNOS_MS_RPC_MSEXCHANGE_DIRECTORY_NSP:
+        {
+          ipProtocol = IpProtocol.TCP;
+          portRangeStart = NamedPort.MSRPC.number();
+          // TODO: uuid
+          break;
+        }
+
+      case JUNOS_MS_RPC_MSEXCHANGE_DIRECTORY_RFR:
+        {
+          ipProtocol = IpProtocol.TCP;
+          portRangeStart = NamedPort.MSRPC.number();
+          // TODO: uuid
+          break;
+        }
+
+      case JUNOS_MS_RPC_MSEXCHANGE_INFO_STORE:
+        {
+          ipProtocol = IpProtocol.TCP;
+          portRangeStart = NamedPort.MSRPC.number();
+          // TODO: uuid
+          break;
+        }
+
+      case JUNOS_MS_RPC_TCP:
+        {
+          portRangeStart = NamedPort.MSRPC.number();
+          ipProtocol = IpProtocol.TCP;
+          // TODO: alg
+          break;
+        }
+
+      case JUNOS_MS_RPC_UDP:
+        {
+          portRangeStart = NamedPort.MSRPC.number();
+          ipProtocol = IpProtocol.UDP;
+          // TODO: alg
+          break;
+        }
+
+      case JUNOS_MS_RPC_UUID_ANY_TCP:
+        {
+          ipProtocol = IpProtocol.TCP;
+          portRangeStart = NamedPort.MSRPC.number();
+          // TODO: uuid
+          break;
+        }
+
+      case JUNOS_MS_RPC_UUID_ANY_UDP:
+        {
+          ipProtocol = IpProtocol.UDP;
+          portRangeStart = NamedPort.MSRPC.number();
+          // TODO: uuid
+          break;
+        }
+
+      case JUNOS_MS_RPC_WMIC_ADMIN:
+        {
+          ipProtocol = IpProtocol.TCP;
+          portRangeStart = NamedPort.MSRPC.number();
+          // TODO: uuid
+          break;
+        }
+
+      case JUNOS_MS_RPC_WMIC_ADMIN2:
+        {
+          ipProtocol = IpProtocol.TCP;
+          portRangeStart = NamedPort.MSRPC.number();
+          // TODO: uuid
+          break;
+        }
+
+      case JUNOS_MS_RPC_WMIC_MGMT:
+        {
+          ipProtocol = IpProtocol.TCP;
+          portRangeStart = NamedPort.MSRPC.number();
+          // TODO: uuid
+          break;
+        }
+
+      case JUNOS_MS_RPC_WMIC_WEBM_LEVEL1LOGIN:
+        {
+          ipProtocol = IpProtocol.TCP;
+          portRangeStart = NamedPort.MSRPC.number();
+          // TODO: uuid
+          break;
+        }
+
+      case JUNOS_MS_SQL:
+        {
+          portRangeStart = NamedPort.MS_SQL.number();
+          ipProtocol = IpProtocol.TCP;
+          break;
+        }
+
+      case JUNOS_MSN:
+        {
+          portRangeStart = NamedPort.MSN.number();
+          ipProtocol = IpProtocol.TCP;
+          break;
+        }
+
+      case JUNOS_NETBIOS_SESSION:
+        {
+          portRangeStart = NamedPort.NETBIOS_SSN.number();
+          ipProtocol = IpProtocol.TCP;
           break;
         }
 
       case JUNOS_NNTP:
         {
-          String t1Name = "t1";
-          Term t1 = new Term(t1Name);
-          HeaderSpace.Builder l1 = t1.getHeaderSpace().rebuild();
-          l1.setIpProtocols(ImmutableSet.of(IpProtocol.TCP));
-          int portNum = NamedPort.NNTP.number();
-          l1.setDstPorts(ImmutableSet.of(new SubRange(portNum, portNum)));
-          t1.setHeaderSpace(l1.build());
-          terms.put(t1Name, t1);
+          portRangeStart = NamedPort.NNTP.number();
+          ipProtocol = IpProtocol.TCP;
           break;
         }
 
       case JUNOS_NTP:
         {
-          String t1Name = "t1";
-          Term t1 = new Term(t1Name);
-          HeaderSpace.Builder l1 = t1.getHeaderSpace().rebuild();
-          l1.setIpProtocols(ImmutableSet.of(IpProtocol.UDP));
-          int portNum = NamedPort.NTP.number();
-          l1.setDstPorts(ImmutableSet.of(new SubRange(portNum, portNum)));
-          t1.setHeaderSpace(l1.build());
-          terms.put(t1Name, t1);
+          portRangeStart = NamedPort.NTP.number();
+          ipProtocol = IpProtocol.UDP;
+          break;
+        }
+
+      case JUNOS_PING:
+        {
+          ipProtocol = IpProtocol.ICMP;
+          break;
+        }
+
+      case JUNOS_PC_ANYWHERE:
+        {
+          portRangeStart = NamedPort.PCANYWHERE_STATUS.number();
+          ipProtocol = IpProtocol.UDP;
           break;
         }
 
       case JUNOS_PPTP:
         {
-          String t1Name = "t1";
-          Term t1 = new Term(t1Name);
-          HeaderSpace.Builder l1 = t1.getHeaderSpace().rebuild();
-          l1.setIpProtocols(ImmutableSet.of(IpProtocol.TCP));
-          int portNum = NamedPort.PPTP.number();
-          l1.setDstPorts(ImmutableSet.of(new SubRange(portNum, portNum)));
-          t1.setHeaderSpace(l1.build());
-          terms.put(t1Name, t1);
+          portRangeStart = NamedPort.PPTP.number();
+          ipProtocol = IpProtocol.TCP;
+          // TODO: alg
+          break;
+        }
+
+      case JUNOS_PRINTER:
+        {
+          portRangeStart = NamedPort.LPD.number(); // TODO: rename LPD to LPD_OR_PRINTER
+          ipProtocol = IpProtocol.TCP;
+          break;
+        }
+
+      case JUNOS_RADIUS:
+        {
+          portRangeStart = NamedPort.RADIUS_JUNIPER.number();
+          ipProtocol = IpProtocol.UDP;
+          break;
+        }
+
+      case JUNOS_RIP:
+        {
+          portRangeStart = NamedPort.RIP.number();
+          ipProtocol = IpProtocol.UDP;
+          break;
+        }
+
+      case JUNOS_SMB:
+        {
+          portRangeStart =
+              NamedPort.NETBIOS_SSN.number(); // TODO: rename NETBIOS_SSN to NETBIOS_SSN_OR_SMB
+          ipProtocol = IpProtocol.TCP;
+
+          String t2Name = "t2";
+          Term t2 = new Term();
+          HeaderSpace.Builder l2 = t2.getHeaderSpace().toBuilder();
+          setHeaderSpaceInfo(
+              l2,
+              IpProtocol.TCP,
+              NamedPort.MICROSOFT_DS.number(),
+              null); // TODO: rename MICROSOFT_DS to MICROSOFT_DS_OR_SMB
+          t2.setHeaderSpace(l2.build());
+
+          terms.put(t2Name, t2);
+          break;
+        }
+
+      case JUNOS_SMB_SESSION:
+        {
+          portRangeStart = NamedPort.MICROSOFT_DS.number(); // TODO: rename MICROSOFT_DS_OR_SMB
+          ipProtocol = IpProtocol.TCP;
+          break;
+        }
+
+      case JUNOS_SMTP:
+        {
+          portRangeStart = NamedPort.SMTP.number();
+          ipProtocol = IpProtocol.TCP;
           break;
         }
 
       case JUNOS_SSH:
         {
-          String t1Name = "t1";
-          Term t1 = new Term(t1Name);
-          HeaderSpace.Builder l1 = t1.getHeaderSpace().rebuild();
-          l1.setIpProtocols(ImmutableSet.of(IpProtocol.TCP));
-          int portNum = NamedPort.SSH.number();
-          l1.setDstPorts(ImmutableSet.of(new SubRange(portNum, portNum)));
-          t1.setHeaderSpace(l1.build());
-          terms.put(t1Name, t1);
+          portRangeStart = NamedPort.SSH.number();
+          ipProtocol = IpProtocol.TCP;
+          break;
+        }
+
+      case JUNOS_SYSLOG:
+        {
+          portRangeStart = NamedPort.CMDtcp_OR_SYSLOGudp.number();
+          ipProtocol = IpProtocol.UDP;
+          break;
+        }
+
+      case JUNOS_SUN_RPC_ANY_TCP:
+        {
+          ipProtocol = IpProtocol.TCP;
+          portRangeStart = NamedPort.SUNRPC.number();
+          // TODO: rpc-program-number
+          break;
+        }
+
+      case JUNOS_SUN_RPC_ANY_UDP:
+        {
+          ipProtocol = IpProtocol.UDP;
+          portRangeStart = NamedPort.SUNRPC.number();
+          // TODO: rpc-program-number
+          break;
+        }
+
+      case JUNOS_SUN_RPC_MOUNTD_TCP:
+        {
+          ipProtocol = IpProtocol.TCP;
+          portRangeStart = NamedPort.SUNRPC.number();
+          // TODO: rpc-program-number
+          break;
+        }
+
+      case JUNOS_SUN_RPC_MOUNTD_UDP:
+        {
+          ipProtocol = IpProtocol.UDP;
+          portRangeStart = NamedPort.SUNRPC.number();
+          // TODO: rpc-program-number
+          break;
+        }
+
+      case JUNOS_SUN_RPC_NFS_TCP:
+        {
+          ipProtocol = IpProtocol.TCP;
+          portRangeStart = NamedPort.SUNRPC.number();
+          // TODO: rpc-program-number
+          break;
+        }
+
+      case JUNOS_SUN_RPC_NFS_UDP:
+        {
+          ipProtocol = IpProtocol.UDP;
+          portRangeStart = NamedPort.SUNRPC.number();
+          // TODO: rpc-program-number
+          break;
+        }
+
+      case JUNOS_SUN_RPC_NLOCKMGR_TCP:
+        {
+          ipProtocol = IpProtocol.TCP;
+          portRangeStart = NamedPort.SUNRPC.number();
+          // TODO: rpc-program-number
+          break;
+        }
+
+      case JUNOS_SUN_RPC_NLOCKMGR_UDP:
+        {
+          ipProtocol = IpProtocol.UDP;
+          portRangeStart = NamedPort.SUNRPC.number();
+          // TODO: rpc-program-number
+          break;
+        }
+
+      case JUNOS_SUN_RPC_PORTMAP_TCP:
+        {
+          ipProtocol = IpProtocol.TCP;
+          portRangeStart = NamedPort.SUNRPC.number();
+          // TODO: rpc-program-number
+          break;
+        }
+
+      case JUNOS_SUN_RPC_PORTMAP_UDP:
+        {
+          ipProtocol = IpProtocol.UDP;
+          portRangeStart = NamedPort.SUNRPC.number();
+          // TODO: rpc-program-number
+          break;
+        }
+
+      case JUNOS_SUN_RPC_TCP:
+        {
+          portRangeStart = NamedPort.SUNRPC.number();
+          ipProtocol = IpProtocol.TCP;
+          // TODO: alg
+          break;
+        }
+
+      case JUNOS_SUN_RPC_UDP:
+        {
+          portRangeStart = NamedPort.SUNRPC.number();
+          ipProtocol = IpProtocol.UDP;
+          // TODO: alg
+          break;
+        }
+
+      case JUNOS_SUN_RPC_RQUOTAD_TCP:
+        {
+          ipProtocol = IpProtocol.TCP;
+          portRangeStart = NamedPort.SUNRPC.number();
+          // TODO: rpc-program-number
+          break;
+        }
+
+      case JUNOS_SUN_RPC_RQUOTAD_UDP:
+        {
+          ipProtocol = IpProtocol.UDP;
+          portRangeStart = NamedPort.SUNRPC.number();
+          // TODO: rpc-program-number
+          break;
+        }
+
+      case JUNOS_SUN_RPC_RUSERD_TCP:
+        {
+          ipProtocol = IpProtocol.TCP;
+          portRangeStart = NamedPort.SUNRPC.number();
+          // TODO: rpc-program-number
+          break;
+        }
+
+      case JUNOS_SUN_RPC_RUSERD_UDP:
+        {
+          ipProtocol = IpProtocol.UDP;
+          portRangeStart = NamedPort.SUNRPC.number();
+          // TODO: rpc-program-number
+          break;
+        }
+
+      case JUNOS_SUN_RPC_SADMIND_TCP:
+        {
+          ipProtocol = IpProtocol.TCP;
+          portRangeStart = NamedPort.SUNRPC.number();
+          // TODO: rpc-program-number
+          break;
+        }
+
+      case JUNOS_SUN_RPC_SADMIND_UDP:
+        {
+          ipProtocol = IpProtocol.UDP;
+          portRangeStart = NamedPort.SUNRPC.number();
+          // TODO: rpc-program-number
+          break;
+        }
+
+      case JUNOS_SUN_RPC_SPRAYD_TCP:
+        {
+          ipProtocol = IpProtocol.TCP;
+          portRangeStart = NamedPort.SUNRPC.number();
+          // TODO: rpc-program-number
+          break;
+        }
+
+      case JUNOS_SUN_RPC_SPRAYD_UDP:
+        {
+          ipProtocol = IpProtocol.UDP;
+          portRangeStart = NamedPort.SUNRPC.number();
+          // TODO: rpc-program-number
+          break;
+        }
+
+      case JUNOS_SUN_RPC_STATUS_TCP:
+        {
+          ipProtocol = IpProtocol.TCP;
+          portRangeStart = NamedPort.SUNRPC.number();
+          // TODO: rpc-program-number
+          break;
+        }
+
+      case JUNOS_SUN_RPC_STATUS_UDP:
+        {
+          ipProtocol = IpProtocol.UDP;
+          portRangeStart = NamedPort.SUNRPC.number();
+          // TODO: rpc-program-number
+          break;
+        }
+
+      case JUNOS_SUN_RPC_WALLD_TCP:
+        {
+          ipProtocol = IpProtocol.TCP;
+          portRangeStart = NamedPort.SUNRPC.number();
+          // TODO: rpc-program-number
+          break;
+        }
+
+      case JUNOS_SUN_RPC_WALLD_UDP:
+        {
+          ipProtocol = IpProtocol.UDP;
+          portRangeStart = NamedPort.SUNRPC.number();
+          // TODO: rpc-program-number
+          break;
+        }
+
+      case JUNOS_SUN_RPC_YPBIND_TCP:
+        {
+          ipProtocol = IpProtocol.TCP;
+          portRangeStart = NamedPort.SUNRPC.number();
+          // TODO: rpc-program-number
+          break;
+        }
+
+      case JUNOS_SUN_RPC_YPBIND_UDP:
+        {
+          ipProtocol = IpProtocol.UDP;
+          portRangeStart = NamedPort.SUNRPC.number();
+          // TODO: rpc-program-number
+          break;
+        }
+
+      case JUNOS_SUN_RPC_YPSERV_TCP:
+        {
+          ipProtocol = IpProtocol.TCP;
+          portRangeStart = NamedPort.SUNRPC.number();
+          // TODO: rpc-program-number
+          break;
+        }
+
+      case JUNOS_SUN_RPC_YPSERV_UDP:
+        {
+          ipProtocol = IpProtocol.UDP;
+          portRangeStart = NamedPort.SUNRPC.number();
+          // TODO: rpc-program-number
           break;
         }
 
@@ -347,6 +1034,18 @@ public enum JunosApplication implements Application {
       default:
         return null;
     }
+
+    String t1Name = "t1";
+    Term t1 = new Term();
+    HeaderSpace.Builder l1 = t1.getHeaderSpace().toBuilder();
+
+    setHeaderSpaceInfo(l1, ipProtocol, portRangeStart, portRangeEnd);
+    if (icmpType != null) {
+      l1.setIcmpTypes(ImmutableSet.of(new SubRange(icmpType)));
+    }
+    t1.setHeaderSpace(l1.build());
+    terms.put(t1Name, t1);
+
     return baseApplication;
   }
 

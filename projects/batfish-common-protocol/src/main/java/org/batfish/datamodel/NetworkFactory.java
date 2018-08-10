@@ -3,6 +3,8 @@ package org.batfish.datamodel;
 import java.util.HashMap;
 import java.util.Map;
 import org.batfish.common.BatfishException;
+import org.batfish.datamodel.ospf.OspfArea;
+import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 
 public class NetworkFactory {
@@ -29,7 +31,7 @@ public class NetworkFactory {
       }
     }
 
-    long generateLong() {
+    protected long generateLong() {
       checkNetworkFactory("long");
       return _networkFactory.generateLong(_outputClass);
     }
@@ -53,8 +55,12 @@ public class NetworkFactory {
     return new IpAccessList.Builder(this);
   }
 
-  public BgpNeighbor.Builder bgpNeighborBuilder() {
-    return new BgpNeighbor.Builder(this);
+  public BgpActivePeerConfig.Builder bgpNeighborBuilder() {
+    return BgpActivePeerConfig.builder();
+  }
+
+  public BgpPassivePeerConfig.Builder bgpDynamicNeighborBuilder() {
+    return BgpPassivePeerConfig.builder();
   }
 
   public BgpProcess.Builder bgpProcessBuilder() {
@@ -83,11 +89,11 @@ public class NetworkFactory {
   }
 
   public OspfArea.Builder ospfAreaBuilder() {
-    return new OspfArea.Builder(this);
+    return OspfArea.builder(this);
   }
 
   public OspfProcess.Builder ospfProcessBuilder() {
-    return new OspfProcess.Builder(this);
+    return OspfProcess.builder(this);
   }
 
   public RipProcess.Builder ripProcessBuilder() {

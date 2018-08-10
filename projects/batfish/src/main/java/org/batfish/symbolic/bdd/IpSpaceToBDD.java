@@ -1,35 +1,76 @@
 package org.batfish.symbolic.bdd;
 
+import static org.batfish.common.util.CommonUtil.toImmutableMap;
+
+import com.google.common.base.Preconditions;
+import com.google.common.base.Suppliers;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import org.batfish.common.BatfishException;
+import org.batfish.common.util.NonRecursiveSupplier;
+import org.batfish.common.util.NonRecursiveSupplier.NonRecursiveSupplierException;
 import org.batfish.datamodel.AclIpSpace;
+import org.batfish.datamodel.AclIpSpaceLine;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpIpSpace;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpWildcardIpSpace;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
+import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixIpSpace;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 
-public class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
+/**
+ * Visitor that converts an {@link IpSpace} to a {@link BDD}. Its constructor takes a {@link
+ * BDDInteger} that should will be constrained to be in the space.
+ */
+public final class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
+
+  private final BDDInteger _bddInteger;
+
+  private final BDDOps _bddOps;
 
   private final BDDFactory _factory;
 
-  private final BDD[] _bitBDDs;
+  private final Map<String, Supplier<BDD>> _namedIpSpaceBDDs;
 
   public IpSpaceToBDD(BDDFactory factory, BDDInteger var) {
+    _bddInteger = var;
+    _bddOps = new BDDOps(factory);
     _factory = factory;
-    _bitBDDs = var.getBitvec();
+    _namedIpSpaceBDDs = ImmutableMap.of();
+  }
+
+  public IpSpaceToBDD(BDDFactory factory, BDDInteger var, Map<String, IpSpace> namedIpSpaces) {
+    _bddInteger = var;
+    _bddOps = new BDDOps(factory);
+    _factory = factory;
+    _namedIpSpaceBDDs =
+        toImmutableMap(
+            namedIpSpaces,
+            Entry::getKey,
+            entry ->
+                Suppliers.memoize(new NonRecursiveSupplier<>(() -> this.visit(entry.getValue()))));
   }
 
   @Override
   public BDD castToGenericIpSpaceVisitorReturnType(Object o) {
     return (BDD) o;
+  }
+
+  public BDDInteger getBDDInteger() {
+    return _bddInteger;
   }
 
   /*
@@ -43,12 +84,13 @@ public class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
   private BDD firstBitsEqual(Ip ip, int length) {
     long b = ip.asLong();
     BDD acc = _factory.one();
+    BDD[] bitBDDs = _bddInteger.getBitvec();
     for (int i = 0; i < length; i++) {
       boolean bitValue = Ip.getBitAtPosition(b, i);
       if (bitValue) {
-        acc = acc.and(_bitBDDs[i]);
+        acc = acc.and(bitBDDs[i]);
       } else {
-        acc = acc.and(_bitBDDs[i].not());
+        acc = acc.and(bitBDDs[i].not());
       }
     }
     return acc;
@@ -69,14 +111,15 @@ public class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
     long ip = ipWildcard.getIp().asLong();
     long wildcard = ipWildcard.getWildcard().asLong();
     BDD acc = _factory.one();
+    BDD[] bitBDDs = _bddInteger.getBitvec();
     for (int i = 0; i < Prefix.MAX_PREFIX_LENGTH; i++) {
       boolean significant = !Ip.getBitAtPosition(wildcard, i);
       if (significant) {
         boolean bitValue = Ip.getBitAtPosition(ip, i);
         if (bitValue) {
-          acc = acc.and(_bitBDDs[i]);
+          acc = acc.and(bitBDDs[i]);
         } else {
-          acc = acc.and(_bitBDDs[i].not());
+          acc = acc.and(bitBDDs[i].not());
         }
       }
     }
@@ -85,12 +128,22 @@ public class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
 
   @Override
   public BDD visitAclIpSpace(AclIpSpace aclIpSpace) {
-    throw new BatfishException("AclIpSpace is unsupported");
+    BDD bdd = _factory.zero();
+    for (AclIpSpaceLine aclIpSpaceLine : Lists.reverse(aclIpSpace.getLines())) {
+      bdd =
+          visit(aclIpSpaceLine.getIpSpace())
+              .ite(
+                  aclIpSpaceLine.getAction() == LineAction.ACCEPT
+                      ? _factory.one()
+                      : _factory.zero(),
+                  bdd);
+    }
+    return bdd;
   }
 
   @Override
   public BDD visitEmptyIpSpace(EmptyIpSpace emptyIpSpace) {
-    throw new BatfishException("EmptyIpSpace is unsupported");
+    return _factory.zero();
   }
 
   @Override
@@ -105,12 +158,35 @@ public class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
 
   @Override
   public BDD visitIpSpaceReference(IpSpaceReference ipSpaceReference) {
-    throw new BatfishException("IpSpaceReference is unsupported");
+    String name = ipSpaceReference.getName();
+    Preconditions.checkArgument(
+        _namedIpSpaceBDDs.containsKey(name), "Undefined IpSpace reference: %s", name);
+    try {
+      return _namedIpSpaceBDDs.get(name).get();
+    } catch (NonRecursiveSupplierException e) {
+      throw new BatfishException("Circular IpSpaceReference: " + name);
+    }
   }
 
   @Override
   public BDD visitIpWildcardSetIpSpace(IpWildcardSetIpSpace ipWildcardSetIpSpace) {
-    throw new BatfishException("IpWildcardSetIpSpace is unsupported");
+    BDD whitelist =
+        _bddOps.or(
+            ipWildcardSetIpSpace
+                .getWhitelist()
+                .stream()
+                .map(this::toBDD)
+                .collect(Collectors.toList()));
+
+    BDD blacklist =
+        _bddOps.or(
+            ipWildcardSetIpSpace
+                .getBlacklist()
+                .stream()
+                .map(this::toBDD)
+                .collect(Collectors.toList()));
+
+    return whitelist.and(blacklist.not());
   }
 
   @Override

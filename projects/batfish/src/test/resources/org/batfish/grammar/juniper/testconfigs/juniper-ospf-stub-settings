@@ -1,0 +1,21 @@
+#
+set system host-name juniper-ospf-stub-settings
+#
+set interfaces ge-0/0/0 unit 0 family inet address 10.0.0.1/24
+set interfaces ge-0/0/1 unit 0 family inet address 10.0.1.1/24
+set interfaces ge-0/0/2 unit 0 family inet address 10.0.2.1/24
+set interfaces ge-0/0/3 unit 0 family inet address 10.0.3.1/24
+set interfaces ge-0/0/4 unit 0 family inet address 10.0.4.1/24
+set interfaces ge-0/0/5 unit 0 family inet address 10.0.5.1/24
+#
+set protocols ospf area 0.0.0.0 interface ge-0/0/0.0
+set protocols ospf area 0.0.0.1 nssa default-lsa
+set protocols ospf area 0.0.0.2 interface ge-0/0/2.0
+set protocols ospf area 0.0.0.2 nssa no-summaries
+set protocols ospf area 0.0.0.3 interface ge-0/0/3.0
+set protocols ospf area 0.0.0.3 stub
+set protocols ospf area 0.0.0.4 interface ge-0/0/4.0
+set protocols ospf area 0.0.0.4 stub no-summaries
+set protocols ospf area 0.0.0.5 interface ge-0/0/5.0
+set protocols ospf area 0.0.0.6 stub default-metric 10 no-summaries
+#

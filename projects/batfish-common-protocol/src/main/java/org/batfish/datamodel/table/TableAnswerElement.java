@@ -2,7 +2,6 @@ package org.batfish.datamodel.table;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Multiset;
 import java.io.IOException;
 import java.util.LinkedList;
@@ -16,20 +15,20 @@ import org.batfish.datamodel.questions.Assertion;
 import org.batfish.datamodel.questions.Exclusion;
 import org.batfish.datamodel.questions.Question;
 
-/** A base class for tabular answers */
-public abstract class TableAnswerElement extends AnswerElement {
+/** Holds tabular answers. */
+public final class TableAnswerElement extends AnswerElement {
 
-  protected static final String PROP_EXCLUDED_ROWS = "excludedRows";
+  private static final String PROP_EXCLUDED_ROWS = "excludedRows";
 
-  protected static final String PROP_METADATA = "metadata";
+  private static final String PROP_METADATA = "metadata";
 
-  protected static final String PROP_ROWS = "rows";
+  private static final String PROP_ROWS = "rows";
 
-  List<ExcludedRows> _excludedRows;
+  private List<ExcludedRows> _excludedRows;
 
-  Rows _rows;
+  private Rows _rows;
 
-  TableMetadata _tableMetadata;
+  private TableMetadata _tableMetadata;
 
   @JsonCreator
   public TableAnswerElement(@Nonnull @JsonProperty(PROP_METADATA) TableMetadata tableMetadata) {
@@ -43,8 +42,9 @@ public abstract class TableAnswerElement extends AnswerElement {
    *
    * @param row The row to add
    */
-  public void addRow(ObjectNode row) {
+  public TableAnswerElement addRow(Row row) {
     _rows.add(row);
+    return this;
   }
 
   /**
@@ -52,7 +52,7 @@ public abstract class TableAnswerElement extends AnswerElement {
    *
    * @param row The row to add
    */
-  public void addExcludedRow(ObjectNode row, String exclusionName) {
+  public void addExcludedRow(Row row, String exclusionName) {
     for (ExcludedRows exRows : _excludedRows) {
       if (exRows.getExclusionName().equals(exclusionName)) {
         exRows.addRow(row);
@@ -65,6 +65,13 @@ public abstract class TableAnswerElement extends AnswerElement {
     _excludedRows.add(rows);
   }
 
+  /** Computes the summary of this table, given the assertion */
+  public AnswerSummary computeSummary(Assertion assertion) {
+    String notes = "Found " + _rows.size() + " results";
+    return computeSummary(assertion, notes);
+  }
+
+  /** Computes the summary of this table, given the assertion and notes */
   public AnswerSummary computeSummary(Assertion assertion, String notes) {
     int numPassed = 0;
     int numFailed = 0;
@@ -75,20 +82,6 @@ public abstract class TableAnswerElement extends AnswerElement {
         numFailed = 1;
       }
     }
-    return new AnswerSummary(notes, numFailed, numPassed, _rows.size());
-  }
-
-  public AnswerSummary computeSummary(Assertion assertion) {
-    int numPassed = 0;
-    int numFailed = 0;
-    if (assertion != null) {
-      if (evaluateAssertion(assertion)) {
-        numPassed = 1;
-      } else {
-        numFailed = 1;
-      }
-    }
-    String notes = "Found " + _rows.size() + " results";
     return new AnswerSummary(notes, numFailed, numPassed, _rows.size());
   }
 
@@ -122,8 +115,6 @@ public abstract class TableAnswerElement extends AnswerElement {
     }
   }
 
-  public abstract Object fromRow(ObjectNode o) throws IOException;
-
   @JsonProperty(PROP_EXCLUDED_ROWS)
   public List<ExcludedRows> getExcludedRows() {
     return _excludedRows;
@@ -139,17 +130,22 @@ public abstract class TableAnswerElement extends AnswerElement {
     return _rows;
   }
 
-  public void postProcessAnswer(Question question, Multiset<?> objects) {
-    objects.forEach(
-        object -> {
-          ObjectNode row = toRow(object);
-
+  /**
+   * Given an initial set of rows produced by an {@link org.batfish.common.Answerer}, this procedure
+   * processes exclusions, assertions, and summary to update this object.
+   *
+   * @param question The question that generated the initial set of rows
+   * @param initialSet The initial set of rows
+   */
+  public void postProcessAnswer(Question question, Multiset<Row> initialSet) {
+    initialSet.forEach(
+        initialRow -> {
           // exclude or not?
-          Exclusion exclusion = Exclusion.covered(row, question.getExclusions());
+          Exclusion exclusion = Exclusion.covered(initialRow, question.getExclusions());
           if (exclusion != null) {
-            addExcludedRow(row, exclusion.getName());
+            addExcludedRow(initialRow, exclusion.getName());
           } else {
-            addRow(row);
+            addRow(initialRow);
           }
         });
 
@@ -165,6 +161,4 @@ public abstract class TableAnswerElement extends AnswerElement {
   private void setRows(Rows rows) {
     _rows = rows == null ? new Rows() : rows;
   }
-
-  public abstract ObjectNode toRow(Object object);
 }

@@ -1,22 +1,24 @@
 package org.batfish.vendor;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Multiset;
+import com.google.common.collect.SortedMultiset;
+import com.google.common.collect.TreeMultiset;
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
+import java.util.Objects;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.Warnings;
-import org.batfish.common.util.DefinedStructure;
-import org.batfish.common.util.ReferenceCountedStructure;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DefinedStructureInfo;
@@ -34,8 +36,10 @@ public abstract class VendorConfiguration implements Serializable, GenericConfig
 
   private VendorConfiguration _overlayConfiguration;
 
+  protected final SortedMap<String, SortedMap<String, DefinedStructureInfo>> _structureDefinitions;
+
   protected final SortedMap<
-          StructureType, SortedMap<String, SortedMap<StructureUsage, SortedSet<Integer>>>>
+          StructureType, SortedMap<String, SortedMap<StructureUsage, SortedMultiset<Integer>>>>
       _structureReferences;
 
   private transient boolean _unrecognized;
@@ -43,6 +47,7 @@ public abstract class VendorConfiguration implements Serializable, GenericConfig
   protected transient Warnings _w;
 
   public VendorConfiguration() {
+    _structureDefinitions = new TreeMap<>();
     _structureReferences = new TreeMap<>();
   }
 
@@ -65,8 +70,6 @@ public abstract class VendorConfiguration implements Serializable, GenericConfig
     return _overlayConfiguration;
   }
 
-  public abstract Set<String> getUnimplementedFeatures();
-
   public boolean getUnrecognized() {
     return _unrecognized;
   }
@@ -77,65 +80,66 @@ public abstract class VendorConfiguration implements Serializable, GenericConfig
   }
 
   /**
-   * Mark all structures of a particular type with its recorded usages. This function should
-   * typically be called prior to warning about unused structures of that type.
+   * Updates referrers and/or warns for undefined structures based on references to an abstract
+   * {@link StructureType}: a reference type that may refer to one of a number of defined structure
+   * types passed in {@code structureTypesToCheck}.
    *
-   * @param type The type of the structure to which a reference will be added
-   * @param usage The usage mode of the structure that was pre-recorded
-   * @param maps A list of maps to check for the structure to be updated. Each map could be null.
-   *     There must be at least one element. The structure may exist in more than one map.
+   * <p>For example using Cisco devices, see {@code CiscoStructureType.ACCESS_LIST} and how it
+   * expands to a list containing many types of IPv4 and IPv6 access lists.
    */
-  protected void markStructure(
-      StructureType type,
-      StructureUsage usage,
-      List<Map<String, ? extends ReferenceCountedStructure>> maps) {
-    if (maps.isEmpty()) {
-      throw new BatfishException("List of maps must contain at least one element");
-    }
-    SortedMap<String, SortedMap<StructureUsage, SortedSet<Integer>>> byName =
-        _structureReferences.get(type);
-    if (byName != null) {
-      byName.forEach(
-          (name, byUsage) -> {
-            SortedSet<Integer> lines = byUsage.get(usage);
-            if (lines != null) {
-              List<Map<String, ? extends ReferenceCountedStructure>> matchingMaps =
-                  maps.stream()
-                      .filter(map -> map != null && map.containsKey(name))
-                      .collect(ImmutableList.toImmutableList());
-              if (matchingMaps.isEmpty()) {
-                for (int line : lines) {
-                  undefined(type, name, usage, line);
-                }
-              } else {
-                String msg = usage.getDescription();
-                for (Map<String, ? extends ReferenceCountedStructure> matchingMap : matchingMaps) {
-                  matchingMap.get(name).getReferers().put(this, msg);
-                }
-              }
+  protected void markAbstractStructure(
+      StructureType type, StructureUsage usage, Collection<StructureType> structureTypesToCheck) {
+    Map<String, SortedMap<StructureUsage, SortedMultiset<Integer>>> references =
+        firstNonNull(_structureReferences.get(type), Collections.emptyMap());
+    references.forEach(
+        (name, byUsage) -> {
+          Multiset<Integer> lines = firstNonNull(byUsage.get(usage), TreeMultiset.create());
+          List<DefinedStructureInfo> matchingStructures =
+              structureTypesToCheck
+                  .stream()
+                  .map(t -> _structureDefinitions.get(t.getDescription()))
+                  .filter(Objects::nonNull)
+                  .map(m -> m.get(name))
+                  .filter(Objects::nonNull)
+                  .collect(ImmutableList.toImmutableList());
+          if (matchingStructures.isEmpty()) {
+            for (int line : lines) {
+              undefined(type, name, usage, line);
             }
-          });
-    }
+          } else {
+            matchingStructures.forEach(
+                info ->
+                    info.setNumReferrers(
+                        info.getNumReferrers() == DefinedStructureInfo.UNKNOWN_NUM_REFERRERS
+                            ? DefinedStructureInfo.UNKNOWN_NUM_REFERRERS
+                            : info.getNumReferrers() + lines.size()));
+          }
+        });
   }
 
-  protected void markStructure(
-      StructureType type,
-      StructureUsage usage,
-      Map<String, ? extends ReferenceCountedStructure> map) {
-    markStructure(type, usage, Collections.singletonList(map));
+  /**
+   * Updates referrers and/or warns for undefined structures based on references to then given
+   * {@link StructureType}. Compared to {@link #markAbstractStructure}, this function is used when
+   * the reference type and the structure type are guaranteed to match.
+   */
+  protected void markConcreteStructure(StructureType type, StructureUsage... usages) {
+    for (StructureUsage usage : usages) {
+      markAbstractStructure(type, usage, ImmutableList.of(type));
+    }
   }
 
   public void referenceStructure(StructureType type, String name, StructureUsage usage, int line) {
-    SortedMap<String, SortedMap<StructureUsage, SortedSet<Integer>>> byName =
+    SortedMap<String, SortedMap<StructureUsage, SortedMultiset<Integer>>> byName =
         _structureReferences.computeIfAbsent(type, k -> new TreeMap<>());
-    SortedMap<StructureUsage, SortedSet<Integer>> byUsage =
+    SortedMap<StructureUsage, SortedMultiset<Integer>> byUsage =
         byName.computeIfAbsent(name, k -> new TreeMap<>());
-    SortedSet<Integer> lines = byUsage.computeIfAbsent(usage, k -> new TreeSet<>());
+    SortedMultiset<Integer> lines = byUsage.computeIfAbsent(usage, k -> TreeMultiset.create());
     lines.add(line);
   }
 
   public final void setAnswerElement(ConvertConfigurationAnswerElement answerElement) {
     _answerElement = answerElement;
+    _answerElement.getDefinedStructures().put(getFilename(), _structureDefinitions);
   }
 
   public void setFilename(String filename) {
@@ -161,9 +165,9 @@ public abstract class VendorConfiguration implements Serializable, GenericConfig
   public abstract Configuration toVendorIndependentConfiguration() throws VendorConversionException;
 
   public void undefined(StructureType structureType, String name, StructureUsage usage, int line) {
-    String hostname = getHostname();
+    String filename = getFilename();
     SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>> byType =
-        _answerElement.getUndefinedReferences().computeIfAbsent(hostname, k -> new TreeMap<>());
+        _answerElement.getUndefinedReferences().computeIfAbsent(filename, k -> new TreeMap<>());
     String type = structureType.getDescription();
     SortedMap<String, SortedMap<String, SortedSet<Integer>>> byName =
         byType.computeIfAbsent(type, k -> new TreeMap<>());
@@ -174,34 +178,27 @@ public abstract class VendorConfiguration implements Serializable, GenericConfig
     lines.add(line);
   }
 
+  /**
+   * Updates structure definitions to include the specified structure {@code name} and {@code
+   * structureType} and initializes the number of referrers.
+   */
+  public void defineStructure(StructureType structureType, String name, int line) {
+    recordStructure(structureType, name, 0, line);
+  }
+
   public void recordStructure(
       StructureType structureType, String name, int numReferrers, int line) {
-    String hostname = getHostname();
     String type = structureType.getDescription();
-    SortedMap<String, SortedMap<String, DefinedStructureInfo>> byType =
-        _answerElement.getDefinedStructures().computeIfAbsent(hostname, k -> new TreeMap<>());
     SortedMap<String, DefinedStructureInfo> byName =
-        byType.computeIfAbsent(type, k -> new TreeMap<>());
+        _structureDefinitions.computeIfAbsent(type, k -> new TreeMap<>());
     DefinedStructureInfo info =
-        byName.computeIfAbsent(name, k -> new DefinedStructureInfo(new TreeSet<>(), numReferrers));
+        byName.computeIfAbsent(name, k -> new DefinedStructureInfo(new TreeSet<>(), 0));
     info.getDefinitionLines().add(line);
-  }
-
-  public void recordStructure(
-      ReferenceCountedStructure structure, StructureType structureType, String name, int line) {
-    recordStructure(structureType, name, structure.getReferers().size(), line);
-  }
-
-  protected <T extends DefinedStructure<String>> void recordStructure(
-      Map<String, T> map, StructureType type) {
-    for (Entry<String, T> e : map.entrySet()) {
-      String name = e.getKey();
-      if (name.startsWith("~")
-          || e.getValue().getDefinitionLine() == DefinedStructure.IGNORED_DEFINITION_LINE) {
-        continue;
-      }
-      T t = e.getValue();
-      recordStructure(t, type, name, t.getDefinitionLine());
+    if (info.getNumReferrers() == DefinedStructureInfo.UNKNOWN_NUM_REFERRERS
+        || numReferrers == DefinedStructureInfo.UNKNOWN_NUM_REFERRERS) {
+      info.setNumReferrers(DefinedStructureInfo.UNKNOWN_NUM_REFERRERS);
+    } else {
+      info.setNumReferrers(info.getNumReferrers() + numReferrers);
     }
   }
 }

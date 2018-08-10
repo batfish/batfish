@@ -6,8 +6,11 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Iterables;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Map;
@@ -22,15 +25,16 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
-import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
+import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.tracking.TrackMethod;
 import org.batfish.datamodel.vendor_family.VendorFamily;
 
 @JsonSchemaDescription(
     "A Configuration represents an autonomous network device, such as a router, host, switch, or "
         + "firewall.")
-public final class Configuration extends ComparableStructure<String> {
+public final class Configuration implements Serializable {
 
   public static class Builder extends NetworkFactoryBuilder<Configuration> {
 
@@ -116,9 +120,23 @@ public final class Configuration extends ComparableStructure<String> {
 
   private static final String PROP_IKE_PROPOSALS = "ikeProposals";
 
+  private static final String PROP_IKE_PHASE1_KEYS = "ikePhase1Keys";
+
+  private static final String PROP_IKE_PHASE1_POLICIES = "ikePhase1Policies";
+
+  private static final String PROP_IKE_PHASE1_PROPOSALS = "ikePhase1Proposals";
+
   private static final String PROP_IP_ACCESS_LISTS = "ipAccessLists";
 
   private static final String PROP_IP_SPACES = "ipSpaces";
+
+  private static final String PROP_IP_SPACE_METADATA = "ipSpaceMetadata";
+
+  private static final String PROP_IPSEC_PEER_CONFIGS = "ipsecPeerConfigs";
+
+  private static final String PROP_IPSEC_PHASE2_POLICIES = "ipsecPhase2Policies";
+
+  private static final String PROP_IPSEC_PHASE2_PROPOSALS = "ipsecPhase2Proposals";
 
   private static final String PROP_IPSEC_POLICIES = "ipsecPolicies";
 
@@ -127,6 +145,8 @@ public final class Configuration extends ComparableStructure<String> {
   private static final String PROP_IPSEC_VPNS = "ipsecVpns";
 
   private static final String PROP_LOGGING_SOURCE_INTERFACE = "loggingSourceInterface";
+
+  private static final String PROP_NAME = "name";
 
   private static final String PROP_NTP_SOURCE_INTERFACE = "ntpSourceInterface";
 
@@ -141,6 +161,8 @@ public final class Configuration extends ComparableStructure<String> {
   private static final String PROP_TACACS_SERVERS = "tacacsServers";
 
   private static final String PROP_TACACS_SOURCE_INTERFACE = "tacacsSourceInterface";
+
+  private static final String PROP_TRACKING_GROUPS = "trackingGroups";
 
   private static final String PROP_ZONES = "zones";
 
@@ -178,6 +200,12 @@ public final class Configuration extends ComparableStructure<String> {
 
   private NavigableMap<String, IkeProposal> _ikeProposals;
 
+  private @Nonnull NavigableMap<String, IkePhase1Key> _ikePhase1keys;
+
+  private NavigableMap<String, IkePhase1Proposal> _ikePhase1Proposals;
+
+  private NavigableMap<String, IkePhase1Policy> _ikePhase1Policies;
+
   private NavigableMap<String, Interface> _interfaces;
 
   private NavigableMap<String, Ip6AccessList> _ip6AccessLists;
@@ -185,6 +213,14 @@ public final class Configuration extends ComparableStructure<String> {
   private NavigableMap<String, IpAccessList> _ipAccessLists;
 
   private NavigableMap<String, IpSpace> _ipSpaces;
+
+  private NavigableMap<String, IpSpaceMetadata> _ipSpaceMetadata;
+
+  private NavigableMap<String, IpsecPeerConfig> _ipsecPeerConfigs;
+
+  private NavigableMap<String, IpsecPhase2Policy> _ipsecPhase2Policies;
+
+  private NavigableMap<String, IpsecPhase2Proposal> _ipsecPhase2Proposals;
 
   private NavigableMap<String, IpsecPolicy> _ipsecPolicies;
 
@@ -196,7 +232,9 @@ public final class Configuration extends ComparableStructure<String> {
 
   private String _loggingSourceInterface;
 
-  /** Normal => Excluding extended and reserved vlans that should not be modified or deleted. */
+  private final String _name;
+
+  /** Normal =&gt; Excluding extended and reserved vlans that should not be modified or deleted. */
   private SubRange _normalVlanRange;
 
   private NavigableSet<String> _ntpServers;
@@ -219,8 +257,6 @@ public final class Configuration extends ComparableStructure<String> {
 
   private NavigableMap<String, RouteFilterList> _routeFilterLists;
 
-  private transient NavigableSet<Route> _routes;
-
   private NavigableMap<String, RoutingPolicy> _routingPolicies;
 
   private transient NavigableSet<BgpAdvertisement> _sentAdvertisements;
@@ -237,6 +273,8 @@ public final class Configuration extends ComparableStructure<String> {
 
   private String _tacacsSourceInterface;
 
+  private NavigableMap<String, TrackMethod> _trackingGroups;
+
   private VendorFamily _vendorFamily;
 
   private Map<String, Vrf> _vrfs;
@@ -244,26 +282,37 @@ public final class Configuration extends ComparableStructure<String> {
   private NavigableMap<String, Zone> _zones;
 
   @JsonCreator
-  public Configuration(
+  private static Configuration makeConfiguration(
       @JsonProperty(PROP_NAME) String hostname,
-      @Nonnull @JsonProperty(PROP_CONFIGURATION_FORMAT) ConfigurationFormat configurationFormat) {
-    super(hostname);
-    _asPathAccessLists = new TreeMap<>();
-    _authenticationKeyChains = new TreeMap<>();
-    _communityLists = new TreeMap<>();
+      @Nullable @JsonProperty(PROP_CONFIGURATION_FORMAT) ConfigurationFormat configurationFormat) {
     if (configurationFormat == null) {
       throw new BatfishException("Configuration format cannot be null");
     }
+    return new Configuration(hostname, configurationFormat);
+  }
+
+  public Configuration(String hostname, @Nonnull ConfigurationFormat configurationFormat) {
+    _name = hostname;
+    _asPathAccessLists = new TreeMap<>();
+    _authenticationKeyChains = new TreeMap<>();
+    _communityLists = new TreeMap<>();
     _configurationFormat = configurationFormat;
     _dnsServers = new TreeSet<>();
     _domainName = null;
     _ikeGateways = new TreeMap<>();
     _ikePolicies = new TreeMap<>();
     _ikeProposals = new TreeMap<>();
+    _ikePhase1keys = ImmutableSortedMap.of();
+    _ikePhase1Policies = new TreeMap<>();
+    _ikePhase1Proposals = new TreeMap<>();
     _interfaces = new TreeMap<>();
     _ipAccessLists = new TreeMap<>();
     _ip6AccessLists = new TreeMap<>();
     _ipSpaces = new TreeMap<>();
+    _ipSpaceMetadata = new TreeMap<>();
+    _ipsecPeerConfigs = ImmutableSortedMap.of();
+    _ipsecPhase2Policies = ImmutableSortedMap.of();
+    _ipsecPhase2Proposals = ImmutableSortedMap.of();
     _ipsecPolicies = new TreeMap<>();
     _ipsecProposals = new TreeMap<>();
     _ipsecVpns = new TreeMap<>();
@@ -275,6 +324,7 @@ public final class Configuration extends ComparableStructure<String> {
     _routingPolicies = new TreeMap<>();
     _snmpTrapServers = new TreeSet<>();
     _tacacsServers = new TreeSet<>();
+    _trackingGroups = new TreeMap<>();
     _vendorFamily = new VendorFamily();
     _vrfs = new TreeMap<>();
     _zones = new TreeMap<>();
@@ -298,7 +348,10 @@ public final class Configuration extends ComparableStructure<String> {
     for (Vrf vrf : _vrfs.values()) {
       BgpProcess bgpProcess = vrf.getBgpProcess();
       if (bgpProcess != null) {
-        for (BgpNeighbor neighbor : bgpProcess.getNeighbors().values()) {
+        for (BgpPeerConfig neighbor :
+            Iterables.concat(
+                bgpProcess.getActiveNeighbors().values(),
+                bgpProcess.getPassiveNeighbors().values())) {
           neighbor.setExportPolicySources(getRoutingPolicySources(neighbor.getExportPolicy()));
           neighbor.setImportPolicySources(getRoutingPolicySources(neighbor.getImportPolicy()));
         }
@@ -401,7 +454,7 @@ public final class Configuration extends ComparableStructure<String> {
   @JsonProperty(PROP_NAME)
   @JsonPropertyDescription("Hostname of this node.")
   public String getHostname() {
-    return _key;
+    return _name;
   }
 
   @JsonProperty(PROP_IKE_GATEWAYS)
@@ -422,6 +475,24 @@ public final class Configuration extends ComparableStructure<String> {
     return _ikeProposals;
   }
 
+  @JsonProperty(PROP_IKE_PHASE1_KEYS)
+  @JsonPropertyDescription("Dictionary of all IKE phase1 keys for this node.")
+  public NavigableMap<String, IkePhase1Key> getIkePhase1Keys() {
+    return _ikePhase1keys;
+  }
+
+  @JsonProperty(PROP_IKE_PHASE1_POLICIES)
+  @JsonPropertyDescription("Dictionary of all IKE phase1 policies for this node.")
+  public NavigableMap<String, IkePhase1Policy> getIkePhase1Policies() {
+    return _ikePhase1Policies;
+  }
+
+  @JsonProperty(PROP_IKE_PHASE1_PROPOSALS)
+  @JsonPropertyDescription("Dictionary of all IKE phase1 proposals for this node.")
+  public NavigableMap<String, IkePhase1Proposal> getIkePhase1Proposals() {
+    return _ikePhase1Proposals;
+  }
+
   @JsonPropertyDescription("Dictionary of all interfaces across all VRFs for this node.")
   public NavigableMap<String, Interface> getInterfaces() {
     return _interfaces;
@@ -438,9 +509,32 @@ public final class Configuration extends ComparableStructure<String> {
     return _ipAccessLists;
   }
 
+  @JsonPropertyDescription("Dictionary of all IPSec peer configs for this node")
+  @JsonProperty(PROP_IPSEC_PEER_CONFIGS)
+  public NavigableMap<String, IpsecPeerConfig> getIpsecPeerconfigs() {
+    return _ipsecPeerConfigs;
+  }
+
   @JsonProperty(PROP_IP_SPACES)
   public NavigableMap<String, IpSpace> getIpSpaces() {
     return _ipSpaces;
+  }
+
+  @JsonProperty(PROP_IP_SPACE_METADATA)
+  public NavigableMap<String, IpSpaceMetadata> getIpSpaceMetadata() {
+    return _ipSpaceMetadata;
+  }
+
+  @JsonProperty(PROP_IPSEC_PHASE2_POLICIES)
+  @JsonPropertyDescription("Dictionary of all IPSec phase 2 policies for this node.")
+  public NavigableMap<String, IpsecPhase2Policy> getIpsecPhase2Policies() {
+    return _ipsecPhase2Policies;
+  }
+
+  @JsonProperty(PROP_IPSEC_PHASE2_PROPOSALS)
+  @JsonPropertyDescription("Dictionary of all IPSec phase 2 proposals for this node.")
+  public NavigableMap<String, IpsecPhase2Proposal> getIpsecPhase2Proposals() {
+    return _ipsecPhase2Proposals;
   }
 
   @JsonProperty(PROP_IPSEC_POLICIES)
@@ -525,18 +619,13 @@ public final class Configuration extends ComparableStructure<String> {
     return _routeFilterLists;
   }
 
-  @JsonIgnore
-  public NavigableSet<Route> getRoutes() {
-    return _routes;
-  }
-
   @JsonProperty(PROP_ROUTING_POLICIES)
   @JsonPropertyDescription("Dictionary of all routing policies for this node.")
   public NavigableMap<String, RoutingPolicy> getRoutingPolicies() {
     return _routingPolicies;
   }
 
-  private SortedSet<String> getRoutingPolicySources(String routingPolicyName) {
+  private SortedSet<String> getRoutingPolicySources(@Nullable String routingPolicyName) {
     if (routingPolicyName == null) {
       return Collections.emptySortedSet();
     }
@@ -583,6 +672,12 @@ public final class Configuration extends ComparableStructure<String> {
   @JsonProperty(PROP_TACACS_SOURCE_INTERFACE)
   public String getTacacsSourceInterface() {
     return _tacacsSourceInterface;
+  }
+
+  /** Mapping: trackingGroupID -> trackMethod */
+  @JsonProperty(PROP_TRACKING_GROUPS)
+  public @Nonnull NavigableMap<String, TrackMethod> getTrackingGroups() {
+    return _trackingGroups;
   }
 
   @JsonPropertyDescription("Object containing vendor-specific information for this node.")
@@ -670,6 +765,22 @@ public final class Configuration extends ComparableStructure<String> {
     _ikePolicies = ikePolicies;
   }
 
+  @JsonProperty(PROP_IKE_PHASE1_KEYS)
+  public void setIkePhase1Keys(@Nullable NavigableMap<String, IkePhase1Key> ikePhase1Keys) {
+    _ikePhase1keys =
+        ikePhase1Keys == null ? ImmutableSortedMap.of() : ImmutableSortedMap.copyOf(ikePhase1Keys);
+  }
+
+  @JsonProperty(PROP_IKE_PHASE1_POLICIES)
+  public void setIkePhase1Policies(NavigableMap<String, IkePhase1Policy> ikePhase1Policies) {
+    _ikePhase1Policies = ikePhase1Policies;
+  }
+
+  @JsonProperty(PROP_IKE_PHASE1_PROPOSALS)
+  public void setIkePhase1Proposals(NavigableMap<String, IkePhase1Proposal> ikePhase1Proposals) {
+    _ikePhase1Proposals = ikePhase1Proposals;
+  }
+
   @JsonProperty(PROP_IKE_PROPOSALS)
   public void setIkeProposals(NavigableMap<String, IkeProposal> ikeProposals) {
     _ikeProposals = ikeProposals;
@@ -691,6 +802,33 @@ public final class Configuration extends ComparableStructure<String> {
   @JsonProperty(PROP_IP_SPACES)
   public void setIpSpaces(NavigableMap<String, IpSpace> ipSpaces) {
     _ipSpaces = ipSpaces;
+  }
+
+  @JsonProperty(PROP_IPSEC_PEER_CONFIGS)
+  public void setIpsecPeerConfigs(
+      @Nullable NavigableMap<String, IpsecPeerConfig> ipsecPeerConfigs) {
+    _ipsecPeerConfigs =
+        ipsecPeerConfigs == null
+            ? ImmutableSortedMap.of()
+            : ImmutableSortedMap.copyOf(ipsecPeerConfigs);
+  }
+
+  @JsonProperty(PROP_IPSEC_PHASE2_POLICIES)
+  public void setIpsecPhase2Policies(
+      @Nullable NavigableMap<String, IpsecPhase2Policy> ipsecPhase2Policies) {
+    _ipsecPhase2Policies =
+        ipsecPhase2Policies == null
+            ? ImmutableSortedMap.of()
+            : ImmutableSortedMap.copyOf(ipsecPhase2Policies);
+  }
+
+  @JsonProperty(PROP_IPSEC_PHASE2_PROPOSALS)
+  public void setIpsecPhase2Proposals(
+      @Nullable NavigableMap<String, IpsecPhase2Proposal> ipsecPhase2Proposals) {
+    _ipsecPhase2Proposals =
+        ipsecPhase2Proposals == null
+            ? ImmutableSortedMap.of()
+            : ImmutableSortedMap.copyOf(ipsecPhase2Proposals);
   }
 
   @JsonProperty(PROP_IPSEC_POLICIES)
@@ -765,6 +903,11 @@ public final class Configuration extends ComparableStructure<String> {
     _tacacsSourceInterface = tacacsSourceInterface;
   }
 
+  @JsonProperty(PROP_TRACKING_GROUPS)
+  public void setTrackingGroups(@Nonnull NavigableMap<String, TrackMethod> trackingGroups) {
+    _trackingGroups = trackingGroups;
+  }
+
   public void setVendorFamily(VendorFamily vendorFamily) {
     _vendorFamily = vendorFamily;
   }
@@ -786,5 +929,10 @@ public final class Configuration extends ComparableStructure<String> {
                 .stream()
                 .collect(Collectors.toMap(Entry::getKey, e -> e.getValue().simplify())));
     _routingPolicies = simpleRoutingPolicies;
+  }
+
+  @Override
+  public String toString() {
+    return _name;
   }
 }

@@ -37,7 +37,6 @@ public class BfConsts {
   public static final String ABSPATH_DEFAULT_SALT = "org/batfish/common/util/salt";
 
   public static final String ARG_ANALYSIS_NAME = "analysisname";
-  public static final String ARG_ANSWER_JSON_PATH = "answerjsonpath";
   public static final String ARG_BDP_DETAIL = "bdpdetail";
   public static final String ARG_BDP_MAX_OSCILLATION_RECOVERY_ATTEMPTS =
       "bdpmaxoscillationrecoveryattempts";
@@ -45,7 +44,7 @@ public class BfConsts {
   public static final String ARG_BDP_PRINT_ALL_ITERATIONS = "bdpprintalliterations";
   public static final String ARG_BDP_PRINT_OSCILLATING_ITERATIONS = "bdpprintoscillatingiterations";
   public static final String ARG_BDP_RECORD_ALL_ITERATIONS = "bdprecordalliterations";
-  public static final String ARG_CONTAINER_DIR = "containerdir";
+  public static final String ARG_CONTAINER = "container";
   public static final String ARG_DELTA_ENVIRONMENT_NAME = "deltaenv";
   public static final String ARG_DELTA_TESTRIG = "deltatestrig";
   public static final String ARG_DIFF_ACTIVE = "diffactive";
@@ -56,14 +55,11 @@ public class BfConsts {
   public static final String ARG_HALT_ON_CONVERT_ERROR = "haltonconverterror";
   public static final String ARG_HALT_ON_PARSE_ERROR = "haltonparseerror";
   public static final String ARG_IGNORE_FILES_WITH_STRINGS = "ignorefileswithstrings";
-  public static final String ARG_LOG_FILE = "logfile";
   public static final String ARG_LOG_LEVEL = "loglevel";
   public static final String ARG_OUTPUT_ENV = "outputenv";
-  public static final String ARG_PEDANTIC_AS_ERROR = "pedanticerror";
   public static final String ARG_PEDANTIC_SUPPRESS = "pedanticsuppress";
   public static final String ARG_PRETTY_PRINT_ANSWER = "ppa";
   public static final String ARG_QUESTION_NAME = "questionname";
-  public static final String ARG_RED_FLAG_AS_ERROR = "redflagerror";
   public static final String ARG_RED_FLAG_SUPPRESS = "redflagsuppress";
   public static final String ARG_SSL_DISABLE = "ssldisable";
   public static final String ARG_SSL_KEYSTORE_FILE = "sslkeystorefile";
@@ -71,11 +67,11 @@ public class BfConsts {
   public static final String ARG_SSL_TRUST_ALL_CERTS = "ssltrustallcerts";
   public static final String ARG_SSL_TRUSTSTORE_FILE = "ssltruststorefile";
   public static final String ARG_SSL_TRUSTSTORE_PASSWORD = "ssltruststorepassword";
+  public static final String ARG_STORAGE_BASE = "storagebase";
   public static final String ARG_SYNTHESIZE_JSON_TOPOLOGY = "synthesizejsontopology";
   public static final String ARG_SYNTHESIZE_TOPOLOGY = "synthesizetopology";
   public static final String ARG_TASK_PLUGIN = "taskplugin";
   public static final String ARG_TESTRIG = "testrig";
-  public static final String ARG_UNIMPLEMENTED_AS_ERROR = "unimplementederror";
   public static final String ARG_UNIMPLEMENTED_SUPPRESS = "unimplementedsuppress";
   public static final String ARG_UNRECOGNIZED_AS_RED_FLAG = "urf";
   public static final String ARG_VERBOSE_PARSE = "verboseparse";
@@ -106,6 +102,7 @@ public class BfConsts {
   public static final String PROP_DIFFERENTIAL = "differential";
   public static final String PROP_DISPLAY_HINTS = "displayHints";
   public static final String PROP_EXCLUSIONS = "exclusions";
+  public static final String PROP_INCLUDE_ONE_TABLE_KEYS = "includeOneTableKeys";
   public static final String PROP_INNER_QUESTION = "innerQuestion";
   public static final String PROP_INSTANCE = "instance";
   public static final String PROP_INSTANCE_NAME = "instanceName";
@@ -154,6 +151,8 @@ public class BfConsts {
   public static final String RELPATH_NODE_ROLES_PATH = "node_roles.json";
   public static final String RELPATH_ORIGINAL_DIR = "original";
   public static final String RELPATH_PARSE_ANSWER_PATH = "parse_answer";
+  public static final String RELPATH_REFERENCE_LIBRARY_PATH = "address_library.json";
+  public static final String RELPATH_SNAPSHOT_ZIP_FILE = "snapshot.zip";
   public static final String RELPATH_TESTRIG_POJO_TOPOLOGY_PATH = "testrig_pojo_topology";
   public static final String RELPATH_TESTRIG_ZIP_FILE = "testrig.zip";
   public static final String RELPATH_PRECOMPUTED_ROUTES = "precomputedroutes";
@@ -164,6 +163,8 @@ public class BfConsts {
   public static final String RELPATH_STANDARD_DIR = "standard";
   public static final String RELPATH_SYNC_TESTRIGS_DIR = "testrig_sync";
   public static final String RELPATH_TEST_RIG_DIR = "testrig";
+  public static final String RELPATH_TESTRIG_L1_TOPOLOGY_PATH = "testrig_layer1_topology";
+  public static final String RELPATH_TESTRIG_LEGACY_TOPOLOGY_PATH = "topology.net";
   public static final String RELPATH_TESTRIG_TOPOLOGY_PATH = "testrig_topology";
   public static final String RELPATH_TESTRIGS_DIR = "testrigs";
   public static final String RELPATH_VALIDATE_ENVIRONMENT_ANSWER = "venv_answer";

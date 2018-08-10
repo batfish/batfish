@@ -9,6 +9,9 @@ public final class VendorConfigurationFormatDetector {
   public static final String BATFISH_FLATTENED_JUNIPER_HEADER =
       "####BATFISH FLATTENED JUNIPER CONFIG####\n";
 
+  public static final String BATFISH_FLATTENED_PALO_ALTO_HEADER =
+      "####BATFISH FLATTENED PALO ALTO CONFIG####\n";
+
   public static final String BATFISH_FLATTENED_VYOS_HEADER =
       "####BATFISH FLATTENED VYOS CONFIG####\n";
 
@@ -19,6 +22,7 @@ public final class VendorConfigurationFormatDetector {
   private static final Pattern BANNER_PATTERN = Pattern.compile("(?m)^banner ");
   private static final Pattern ALCATEL_AOS_PATTERN = Pattern.compile("(?m)^system name");
   private static final Pattern ARISTA_PATTERN = Pattern.compile("(?m)^.*boot system flash.*\\.swi");
+  private static final Pattern ARUBAOS_PATTERN = Pattern.compile("(?m)^netservice.*$");
   private static final Pattern BLADE_NETWORK_PATTERN = Pattern.compile("(?m)^switch-type");
   private static final Pattern CADANT_NETWORK_PATTERN = Pattern.compile("(?m)^shelfname");
   private static final Pattern F5_HOSTNAME_PATTERN = Pattern.compile("(?m)^tmsh .*$");
@@ -39,6 +43,8 @@ public final class VendorConfigurationFormatDetector {
       Pattern.compile("(?m)^!RANCID-CONTENT-TYPE: juniper$");
   private static final Pattern RANCID_MRV_PATTERN =
       Pattern.compile("(?m)^!RANCID-CONTENT-TYPE: mrv$");
+  private static final Pattern RANCID_PALO_ALTO_PATTERN =
+      Pattern.compile("(?m)^!RANCID-CONTENT-TYPE: paloalto");
 
   // checkCisco patterns
   private static final Pattern ASA_VERSION_LINE_PATTERN = Pattern.compile("(?m)(^ASA Version.*$)");
@@ -61,6 +67,13 @@ public final class VendorConfigurationFormatDetector {
       Pattern.compile("(?m)^policy-options *\\{");
   private static final Pattern JUNIPER_SNMP_PATTERN = Pattern.compile("(?m)^snmp *\\{");
   private static final Pattern SET_PATTERN = Pattern.compile("(?m)^set ");
+
+  // checkPaloAlto patterns
+  private static final Pattern FLAT_PALO_ALTO_PATTERN =
+      Pattern.compile(Pattern.quote(BATFISH_FLATTENED_PALO_ALTO_HEADER));
+  private static final Pattern PALO_ALTO_DEVICECONFIG_PATTERN = Pattern.compile("(?m)deviceconfig");
+  private static final Pattern PALO_ALTO_PANORAMA_PATTERN =
+      Pattern.compile("(?m)(send-to-panorama|panorama-server)");
 
   private String _fileText;
 
@@ -99,6 +112,14 @@ public final class VendorConfigurationFormatDetector {
   }
 
   @Nullable
+  private ConfigurationFormat checkArubaOS() {
+    if (fileTextMatches(ARUBAOS_PATTERN)) {
+      return ConfigurationFormat.ARUBAOS;
+    }
+    return null;
+  }
+
+  @Nullable
   private ConfigurationFormat checkBlade() {
     if (fileTextMatches(BLADE_NETWORK_PATTERN)) {
       return ConfigurationFormat.BLADENETWORK;
@@ -118,6 +139,9 @@ public final class VendorConfigurationFormatDetector {
   private ConfigurationFormat checkCisco() {
     if (fileTextMatches(ASA_VERSION_LINE_PATTERN)) {
       return ConfigurationFormat.CISCO_ASA;
+    }
+    if (checkCiscoXr() == ConfigurationFormat.CISCO_IOS_XR) {
+      return ConfigurationFormat.CISCO_IOS_XR;
     }
     if (fileTextMatches(NEXUS_FEATURE_LINE_PATTERN) || fileTextMatches(NEXUS_BOOTFLASH_PATTERN)) {
       return ConfigurationFormat.CISCO_NX;
@@ -197,6 +221,10 @@ public final class VendorConfigurationFormatDetector {
         || fileTextMatches(JUNIPER_POLICY_OPTIONS_PATTERN)
         || fileTextMatches(JUNIPER_SNMP_PATTERN)) {
       return ConfigurationFormat.JUNIPER;
+    } else if (fileTextMatches(RANCID_JUNIPER_PATTERN)) {
+      return (_fileText.contains("{"))
+          ? ConfigurationFormat.JUNIPER
+          : ConfigurationFormat.FLAT_JUNIPER;
     }
     return null;
   }
@@ -236,6 +264,21 @@ public final class VendorConfigurationFormatDetector {
   }
 
   @Nullable
+  private ConfigurationFormat checkPaloAlto() {
+    if (fileTextMatches(FLAT_PALO_ALTO_PATTERN)) {
+      return ConfigurationFormat.PALO_ALTO;
+    } else if (fileTextMatches(PALO_ALTO_DEVICECONFIG_PATTERN)
+        || fileTextMatches(PALO_ALTO_PANORAMA_PATTERN)
+        || fileTextMatches(RANCID_PALO_ALTO_PATTERN)) {
+      if (_fileText.contains("{")) {
+        return ConfigurationFormat.PALO_ALTO_NESTED;
+      }
+      return ConfigurationFormat.PALO_ALTO;
+    }
+    return null;
+  }
+
+  @Nullable
   private ConfigurationFormat checkRancid() {
     if (fileTextMatches(RANCID_CISCO_PATTERN)) {
       return checkCisco(); // unfortunately, old RANCID cannot distinguish
@@ -250,6 +293,8 @@ public final class VendorConfigurationFormatDetector {
       return checkJuniper();
     } else if (fileTextMatches(RANCID_MRV_PATTERN)) {
       return ConfigurationFormat.MRV;
+    } else if (fileTextMatches(RANCID_PALO_ALTO_PATTERN)) {
+      return checkPaloAlto();
     }
     return null;
   }
@@ -321,6 +366,10 @@ public final class VendorConfigurationFormatDetector {
     if (format != null) {
       return format;
     }
+    format = checkPaloAlto();
+    if (format != null) {
+      return format;
+    }
     format = checkVyos();
     if (format != null) {
       return format;
@@ -346,6 +395,10 @@ public final class VendorConfigurationFormatDetector {
       return format;
     }
     format = checkMss();
+    if (format != null) {
+      return format;
+    }
+    format = checkArubaOS();
     if (format != null) {
       return format;
     }

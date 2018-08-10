@@ -1,7 +1,11 @@
 package org.batfish.role;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableSortedSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -48,12 +52,13 @@ public class NodeRoleDimension implements Comparable<NodeRoleDimension> {
   @JsonCreator
   public NodeRoleDimension(
       @Nonnull @JsonProperty(PROP_NAME) String name,
-      @Nonnull @JsonProperty(PROP_ROLES) SortedSet<NodeRole> roles,
+      @Nullable @JsonProperty(PROP_ROLES) SortedSet<NodeRole> roles,
       @Nullable @JsonProperty(PROP_TYPE) Type type,
       @Nullable @JsonProperty(PROP_ROLE_REGEXES) List<String> roleRegexes) {
+    checkArgument(name != null, "Name of node role cannot be null");
     _name = name;
-    _roles = roles;
-    _type = type == null ? Type.CUSTOM : type;
+    _roles = firstNonNull(roles, ImmutableSortedSet.of());
+    _type = firstNonNull(type, Type.CUSTOM);
     _roleRegexes = roleRegexes;
     if (_type == Type.CUSTOM && _name.startsWith(AUTO_DIMENSION_PREFIX)) {
       throw new IllegalArgumentException(
@@ -73,7 +78,7 @@ public class NodeRoleDimension implements Comparable<NodeRoleDimension> {
   /** If names are equal the NodeRoleDimension objects are considered equal */
   @Override
   public boolean equals(Object o) {
-    if (o == null || !(o instanceof NodeRoleDimension)) {
+    if (!(o instanceof NodeRoleDimension)) {
       return false;
     }
     NodeRoleDimension other = (NodeRoleDimension) o;

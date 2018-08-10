@@ -26,7 +26,6 @@ import org.batfish.z3.expr.OrExpr;
 import org.batfish.z3.expr.PrefixMatchExpr;
 import org.batfish.z3.expr.QueryStatement;
 import org.batfish.z3.expr.RangeMatchExpr;
-import org.batfish.z3.expr.SaneExpr;
 import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.expr.Statement;
 import org.batfish.z3.expr.TrueExpr;
@@ -142,7 +141,7 @@ public class BoolExprTransformer
         .map(preconditionState -> transformStateExpr(preconditionState, ImmutableSet.of()))
         .forEach(preconditions::add);
     return ctx.mkImplies(
-        ctx.mkAnd(preconditions.build().stream().toArray(BoolExpr[]::new)),
+        ctx.mkAnd(preconditions.build().toArray(new BoolExpr[0])),
         transformStateExpr(basicRuleStatement.getPostconditionState(), transformedVars));
   }
 
@@ -225,11 +224,6 @@ public class BoolExprTransformer
   @Override
   public BoolExpr visitRangeMatchExpr(RangeMatchExpr rangeMatchExpr) {
     return rangeMatchExpr.getExpr().accept(this);
-  }
-
-  @Override
-  public BoolExpr visitSaneExpr(SaneExpr saneExpr) {
-    return saneExpr.getExpr().accept(this);
   }
 
   @Override

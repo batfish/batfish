@@ -25,7 +25,8 @@ import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Pair;
 import org.batfish.config.Settings;
-import org.batfish.datamodel.BgpNeighbor;
+import org.batfish.datamodel.BgpActivePeerConfig;
+import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
@@ -44,7 +45,7 @@ import org.batfish.symbolic.utils.Tuple;
 /**
  * A class responsible for building a symbolic encoding of the entire network. The encoder does this
  * by maintaining a collection of encoding slices, where each slice encodes the forwarding behavior
- * for a particular packet. >
+ * for a particular packet.
  *
  * <p>The encoder object is architected this way to allow for modeling of features such as iBGP or
  * non-local next-hop ip addresses in static routes, where the forwarding behavior of one packet
@@ -246,9 +247,9 @@ public class Encoder {
     if (_modelIgp) {
       SortedSet<Pair<String, Ip>> ibgpRouters = new TreeSet<>();
 
-      for (Entry<GraphEdge, BgpNeighbor> entry : g.getIbgpNeighbors().entrySet()) {
+      for (Entry<GraphEdge, BgpActivePeerConfig> entry : g.getIbgpNeighbors().entrySet()) {
         GraphEdge ge = entry.getKey();
-        BgpNeighbor n = entry.getValue();
+        BgpPeerConfig n = entry.getValue();
         String router = ge.getRouter();
         Ip ip = n.getLocalIp();
         Pair<String, Ip> pair = new Pair<>(router, ip);
@@ -732,8 +733,8 @@ public class Encoder {
   }
 
   /**
-   * Checks that a property is always true by seeing if the encoding is unsatisfiable. mkIf the
-   * model is satisfiable, then there is a counter example to the property.
+   * Checks that a property is always true by seeing if the encoding is unsatisfiable. If the model
+   * is satisfiable, then there is a counter example to the property.
    *
    * @return A VerificationResult indicating the status of the check.
    */

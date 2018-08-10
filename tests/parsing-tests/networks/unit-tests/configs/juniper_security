@@ -1,0 +1,14 @@
+#
+set system host-name juniper_security
+#
+set security address-book global address ADDRESS description "ADDRESS description"
+#
+set security address-book global address-set ASET description "ASET description"
+#
+set security ike proposal PROPOSAL description "IKE proposal"
+set security ike policy 1.2.3.4 proposals [ PROPOSAL ]
+#
+set security policies global policy p1 match destination-address-excluded
+#
+set security policies from-zone A to-zone B policy 123-4 description "123-4 description"
+#

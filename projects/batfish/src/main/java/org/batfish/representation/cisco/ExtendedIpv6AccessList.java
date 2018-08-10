@@ -1,19 +1,21 @@
 package org.batfish.representation.cisco;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import org.batfish.common.util.DefinedStructure;
 
-public class ExtendedIpv6AccessList extends DefinedStructure<String> {
+public class ExtendedIpv6AccessList implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
   private List<ExtendedIpv6AccessListLine> _lines;
 
+  private final String _name;
+
   private StandardIpv6AccessList _parent;
 
-  public ExtendedIpv6AccessList(String id, int definitionLine) {
-    super(id, definitionLine);
+  public ExtendedIpv6AccessList(String id) {
+    _name = id;
     _lines = new ArrayList<>();
   }
 
@@ -23,6 +25,10 @@ public class ExtendedIpv6AccessList extends DefinedStructure<String> {
 
   public List<ExtendedIpv6AccessListLine> getLines() {
     return _lines;
+  }
+
+  public String getName() {
+    return _name;
   }
 
   public StandardIpv6AccessList getParent() {
@@ -35,10 +41,10 @@ public class ExtendedIpv6AccessList extends DefinedStructure<String> {
 
   @Override
   public String toString() {
-    String output = super.toString() + "\n" + "Identifier: " + _key;
+    StringBuilder output = new StringBuilder(super.toString() + "\n" + "Identifier: " + _name);
     for (ExtendedIpv6AccessListLine line : _lines) {
-      output += "\n" + line;
+      output.append("\n").append(line);
     }
-    return output;
+    return output.toString();
   }
 }

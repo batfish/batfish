@@ -28,7 +28,7 @@ public class InstanceTest {
       JSONArray instanceArray =
           reservationArray.getJSONObject(index).getJSONArray(JSON_KEY_INSTANCES);
       for (int instIndex = 0; instIndex < instanceArray.length(); instIndex++) {
-        instances.add(new Instance(instanceArray.getJSONObject(instIndex), null));
+        instances.add(new Instance(instanceArray.getJSONObject(instIndex)));
       }
     }
 

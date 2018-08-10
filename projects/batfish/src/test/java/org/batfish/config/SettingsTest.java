@@ -14,11 +14,11 @@ import org.junit.Test;
 /** Test for {@link org.batfish.config.Settings} */
 public class SettingsTest {
 
+  /** Test default dataplane engine is ibdp */
   @Test
-  /** Test default dataplane engine is bdp */
   public void testDefaultDPEngine() {
     Settings settings = new Settings(new String[] {});
-    assertThat(settings.getDataPlaneEngineName(), equalTo("bdp"));
+    assertThat(settings.getDataPlaneEngineName(), equalTo("ibdp"));
   }
 
   /** Test that settings copy is deep */
@@ -77,5 +77,39 @@ public class SettingsTest {
     // Update to null
     settings.setQuestionPath(null);
     assertThat(settings.getQuestionPath(), is(nullValue()));
+  }
+
+  @Test
+  public void testLogfileWithDeltaTestrig() {
+    // Only main testrig
+    Settings settings =
+        new Settings(new String[] {"-storagebase=/path", "-container=foo", "-testrig=main"});
+    settings.setTaskId("tid");
+
+    assertThat(settings.getLogFile(), equalTo("/path/foo/testrigs/main/tid.log"));
+
+    // Delta testrig present
+    settings =
+        new Settings(
+            new String[] {
+              "-storagebase=/path", "-container=foo", "-testrig=main", "-deltatestrig=delta"
+            });
+    settings.setTaskId("tid");
+
+    assertThat(settings.getLogFile(), equalTo("/path/foo/testrigs/delta/tid.log"));
+
+    // Delta testrig present, but the question is differential
+    settings =
+        new Settings(
+            new String[] {
+              "-storagebase=/path",
+              "-container=foo",
+              "-testrig=main",
+              "-deltatestrig=delta",
+              "-differential=true"
+            });
+    settings.setTaskId("tid");
+
+    assertThat(settings.getLogFile(), equalTo("/path/foo/testrigs/main/tid.log"));
   }
 }

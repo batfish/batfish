@@ -1,14 +1,18 @@
 package org.batfish.datamodel.collections;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -17,6 +21,7 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.common.util.CommonUtil;
 import org.skyscreamer.jsonassert.JSONAssert;
 
 public class NamedStructureEquivalenceSets<T> {
@@ -44,14 +49,15 @@ public class NamedStructureEquivalenceSets<T> {
       _structureClassName = structureClassName;
     }
 
-    public void addEntry(String structureName, String hostname, T structure) {
+    public void addEntry(
+        String structureName, String hostname, T structure, boolean assumeAllUnique) {
       Map<Integer, Set<NamedStructureEquivalenceSet<T>>> sameNamedStructuresByHash =
           _sameNamedStructuresByNameAndHash.computeIfAbsent(structureName, s -> new HashMap<>());
       String structureJson = writeObject(structure);
       int hash = structureJson.hashCode();
       Set<NamedStructureEquivalenceSet<T>> eqSetsWithSameHash =
           sameNamedStructuresByHash.computeIfAbsent(hash, h -> new HashSet<>());
-      if (eqSetsWithSameHash.isEmpty()) {
+      if (assumeAllUnique || eqSetsWithSameHash.isEmpty()) {
         eqSetsWithSameHash.add(new NamedStructureEquivalenceSet<>(hostname, structure));
       } else {
         Optional<NamedStructureEquivalenceSet<T>> potentialMatchingSet =
@@ -168,5 +174,24 @@ public class NamedStructureEquivalenceSets<T> {
   @Override
   public String toString() {
     return "<" + _structureClassName + ", " + _sameNamedStructures + ">";
+  }
+
+  /**
+   * Mapping: hostname -&gt; names of structures of this type for which named host is the
+   * representative
+   */
+  @JsonIgnore
+  public Map<String, Set<String>> getRepresentatives() {
+    Map<String, Set<String>> representativesByHostname = new LinkedHashMap<>();
+    _sameNamedStructures.forEach(
+        (aclName, equivalenceSets) ->
+            equivalenceSets.forEach(
+                equivalenceSet ->
+                    representativesByHostname
+                        .computeIfAbsent(
+                            equivalenceSet.getRepresentativeElement(), n -> new LinkedHashSet<>())
+                        .add(aclName)));
+    return CommonUtil.toImmutableMap(
+        representativesByHostname, Entry::getKey, e -> ImmutableSet.copyOf(e.getValue()));
   }
 }

@@ -1,18 +1,20 @@
 package org.batfish.representation.cisco;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import org.batfish.common.util.CommonUtil;
-import org.batfish.common.util.DefinedStructure;
+import javax.annotation.Nonnull;
 
-public final class StandardCommunityList extends DefinedStructure<String> {
+public final class StandardCommunityList implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
   private final List<StandardCommunityListLine> _lines;
 
-  public StandardCommunityList(String name, int definitionLine) {
-    super(name, definitionLine);
+  private final String _name;
+
+  public StandardCommunityList(@Nonnull String name) {
+    this._name = name;
     _lines = new ArrayList<>();
   }
 
@@ -20,23 +22,7 @@ public final class StandardCommunityList extends DefinedStructure<String> {
     return _lines;
   }
 
-  public ExpandedCommunityList toExpandedCommunityList() {
-    ExpandedCommunityList newList = new ExpandedCommunityList(_key, getDefinitionLine());
-    for (StandardCommunityListLine line : _lines) {
-      List<Long> standardCommunities = line.getCommunities();
-      String regex;
-      if (standardCommunities.size() == 1) {
-        regex = "^" + CommonUtil.longToCommunity(standardCommunities.get(0)) + "$";
-      } else {
-        regex = "(";
-        for (Long l : standardCommunities) {
-          regex += "^" + CommonUtil.longToCommunity(l) + "$|";
-        }
-        regex = regex.substring(0, regex.length() - 1) + ")";
-      }
-      ExpandedCommunityListLine newLine = new ExpandedCommunityListLine(line.getAction(), regex);
-      newList.addLine(newLine);
-    }
-    return newList;
+  public String getName() {
+    return _name;
   }
 }

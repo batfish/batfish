@@ -11,7 +11,7 @@ o_area
    AREA
    (
       area = IP_ADDRESS
-      | WILDCARD
+      | wildcard
    )
    (
       apply
@@ -33,6 +33,7 @@ o_common
    | o_import
    | o_no_active_backbone
    | o_null
+   | o_reference_bandwidth
    | o_rib_group
    | o_traffic_engineering
 ;
@@ -62,10 +63,14 @@ o_null
    (
       NO_RFC_1583
       | OVERLOAD
-      | REFERENCE_BANDWIDTH
       | SPF_OPTIONS
       | TRACEOPTIONS
    ) null_filler
+;
+
+o_reference_bandwidth
+:
+   REFERENCE_BANDWIDTH reference_bandwidth
 ;
 
 o_rib_group
@@ -92,7 +97,11 @@ oa_area_range
    )
    (
       apply
-      | (oaa_override_metric | oaa_restrict)+
+      |
+      (
+         oaa_override_metric
+         | oaa_restrict
+      )+
    )
 ;
 
@@ -103,7 +112,7 @@ oa_interface
       ALL
       | id = interface_id
       | ip = IP_ADDRESS
-      | WILDCARD
+      | wildcard
    )
    (
       apply
@@ -123,11 +132,7 @@ oa_interface
 
 oa_label_switched_path
 :
-   LABEL_SWITCHED_PATH
-   (
-      name = variable
-      | WILDCARD
-   )
+   LABEL_SWITCHED_PATH name = variable
    (
       apply
       | oal_metric
@@ -157,7 +162,8 @@ oa_stub
    STUB
    (
       oas_no_summaries
-   )
+      | oas_default_metric
+   )*
 ;
 
 oaa_override_metric
@@ -244,7 +250,8 @@ oan_default_lsa
 :
    DEFAULT_LSA
    (
-      oand_default_metric
+      apply
+      | oand_default_metric
       | oand_metric_type
       | oand_type_7
    )
@@ -277,6 +284,11 @@ oand_type_7
 oas_no_summaries
 :
    NO_SUMMARIES
+;
+
+oas_default_metric
+:
+   DEFAULT_METRIC DEC
 ;
 
 ot_credibility_protocol_preference

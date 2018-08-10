@@ -17,9 +17,9 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import org.apache.commons.lang3.StringUtils;
 import org.batfish.datamodel.AsPath;
+import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.BgpAdvertisement.BgpAdvertisementType;
-import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.FilterResult;
 import org.batfish.datamodel.Flow;
@@ -171,16 +171,16 @@ class CounterExample {
           int pathLength = intVal(r.getMetric());
 
           // Create dummy information
-          BgpNeighbor n = slice.getGraph().getEbgpNeighbors().get(lge.getEdge());
+          BgpActivePeerConfig n = slice.getGraph().getEbgpNeighbors().get(lge.getEdge());
           String srcNode = "as" + n.getRemoteAs();
           Ip zeroIp = new Ip(0);
           Ip dstIp = n.getLocalIp();
 
           // Recover AS path
-          List<SortedSet<Integer>> asSets = new ArrayList<>();
+          List<SortedSet<Long>> asSets = new ArrayList<>();
           for (int i = 0; i < pathLength; i++) {
-            SortedSet<Integer> asSet = new TreeSet<>();
-            asSet.add(-1);
+            SortedSet<Long> asSet = new TreeSet<>();
+            asSet.add(-1L);
             asSets.add(asSet);
           }
           AsPath path = new AsPath(asSets);

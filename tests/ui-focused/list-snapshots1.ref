@@ -1,0 +1,23 @@
+Testrig: snapshot1
+configs/
+  as1border1.cfg
+  as1border2.cfg
+  as1core1.cfg
+  as2border1.cfg
+  as2border2.cfg
+  as2core1.cfg
+  as2core2.cfg
+  as2dept1.cfg
+  as2dist1.cfg
+  as2dist2.cfg
+  ...... 3 more entries
+example-network.png
+example-topology.json
+hosts/
+  host1.json
+  host2.json
+iptables/
+  host1.iptables
+  host2.iptables
+testrig_positions
+

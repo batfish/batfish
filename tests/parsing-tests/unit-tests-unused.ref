@@ -1,0 +1,1583 @@
+[
+  {
+    "class" : "org.batfish.question.UnusedStructuresQuestionPlugin$UnusedStructuresAnswerElement",
+    "summary" : {
+      "numFailed" : 0,
+      "numPassed" : 0,
+      "numResults" : 190
+    },
+    "unusedStructures" : {
+      "configs/arista_acl" : {
+        "extended ipv4 access-list" : {
+          "abcd" : [
+            4,
+            5,
+            6
+          ]
+        }
+      },
+      "configs/arista_bgp" : {
+        "bgp group" : {
+          "UNDEFINED_PEER_GROUP" : [
+            11
+          ]
+        }
+      },
+      "configs/aruba_crypto" : {
+        "crypto-dynamic-map-set" : {
+          "abcd" : [
+            4,
+            5,
+            6
+          ]
+        }
+      },
+      "configs/as_path_prepend" : {
+        "route-map" : {
+          "rmap" : [
+            4,
+            5
+          ]
+        }
+      },
+      "configs/asa_acl" : {
+        "extended ipv4 access-list" : {
+          "outside" : [
+            7
+          ],
+          "outside_in" : [
+            4
+          ]
+        },
+        "standard ipv4 access-list" : {
+          "Local_LAN_Access" : [
+            5
+          ]
+        }
+      },
+      "configs/bgp_address_family" : {
+        "bgp group" : {
+          "as3" : [
+            11
+          ],
+          "dcp-rrs" : [
+            16
+          ]
+        }
+      },
+      "configs/bgp_default_originate_policy" : {
+        "bgp group" : {
+          "ama-coe" : [
+            5
+          ]
+        }
+      },
+      "configs/bgp_foundry" : {
+        "bgp group" : {
+          "ucr" : [
+            7
+          ]
+        }
+      },
+      "configs/cadant_acl" : {
+        "extended ipv6 access-list" : {
+          "ipv6-acl-foo" : [
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            29
+          ]
+        },
+        "standard ipv4 access-list" : {
+          "50" : [
+            5,
+            6,
+            7,
+            8
+          ],
+          "51" : [
+            10,
+            11,
+            12
+          ],
+          "99" : [
+            14,
+            15,
+            16
+          ]
+        }
+      },
+      "configs/cadant_cable" : {
+        "docsis-policy" : {
+          "1" : [
+            48
+          ]
+        }
+      },
+      "configs/cadant_prefix_list" : {
+        "ipv4 prefix-list" : {
+          "A+C" : [
+            7
+          ],
+          "foo" : [
+            5,
+            6
+          ]
+        },
+        "ipv6 prefix-list" : {
+          "bar" : [
+            8,
+            9
+          ]
+        }
+      },
+      "configs/cadant_route_map" : {
+        "route-map" : {
+          "bar" : [
+            9,
+            10,
+            11
+          ],
+          "foo" : [
+            5,
+            6,
+            7
+          ]
+        }
+      },
+      "configs/cisco_acl" : {
+        "extended ipv4 access-list" : {
+          "BLAH-BLAH" : [
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23
+          ],
+          "blah" : [
+            30,
+            31
+          ],
+          "extended" : [
+            26
+          ],
+          "standard" : [
+            28
+          ]
+        },
+        "ipv4 prefix-list" : {
+          "allowprefix" : [
+            33,
+            34
+          ],
+          "allowprefix-asa" : [
+            36,
+            37
+          ]
+        }
+      },
+      "configs/cisco_bgp" : {
+        "as-path access-list" : {
+          "30" : [
+            7
+          ]
+        },
+        "bgp group" : {
+          "p1" : [
+            32
+          ]
+        }
+      },
+      "configs/cisco_cable" : {
+        "cable service-class" : {
+          "1" : [
+            88,
+            89,
+            90,
+            91,
+            92,
+            93,
+            94,
+            95,
+            96,
+            97,
+            98,
+            99
+          ]
+        },
+        "depi-tunnel" : {
+          "bar1" : [
+            137,
+            138,
+            139,
+            140,
+            141
+          ]
+        },
+        "docsis-policy-rule" : {
+          "2" : [
+            49
+          ],
+          "3" : [
+            50
+          ],
+          "4" : [
+            51
+          ]
+        }
+      },
+      "configs/cisco_crypto" : {
+        "crypto ipsec profile" : {
+          "abcdefg" : [
+            158,
+            159,
+            160,
+            161,
+            162
+          ]
+        },
+        "crypto ipsec transform-set" : {
+          "ESP-3DES-MD5" : [
+            167,
+            168,
+            169
+          ],
+          "IPSEC_AES_256" : [
+            170
+          ],
+          "cipts1" : [
+            171
+          ],
+          "cipts2" : [
+            172
+          ],
+          "noAuthHeader" : [
+            173
+          ]
+        },
+        "crypto keyring" : {
+          "VRF:ABC:DEF:GHI:1234" : [
+            212,
+            213
+          ]
+        },
+        "crypto-dynamic-map-set" : {
+          "asadynamicmaps" : [
+            94
+          ],
+          "mydynamicmap" : [
+            110,
+            111
+          ]
+        },
+        "crypto-map-set" : {
+          "VPN" : [
+            218,
+            219,
+            220,
+            221,
+            222,
+            223
+          ],
+          "VPNMAP" : [
+            233,
+            234,
+            235,
+            236,
+            237,
+            238,
+            239,
+            240,
+            241
+          ],
+          "myothermap" : [
+            215
+          ]
+        }
+      },
+      "configs/cisco_eigrp" : {
+        "extended ipv4 access-list" : {
+          "bippety" : [
+            41,
+            42,
+            43,
+            44,
+            45,
+            46,
+            47
+          ],
+          "bloop_blop" : [
+            110,
+            111
+          ]
+        }
+      },
+      "configs/cisco_ip_nat" : {
+        "nat pool" : {
+          "abc" : [
+            4,
+            5
+          ],
+          "dynamic-srcnat" : [
+            12
+          ],
+          "example-1-dynamic-nat-pool" : [
+            8
+          ],
+          "example-2-dynamic-nat-pool" : [
+            10
+          ]
+        }
+      },
+      "configs/cisco_ipv6_access_list" : {
+        "extended ipv6 access-list" : {
+          "RT404888-XO" : [
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16
+          ],
+          "abcdefg" : [
+            19,
+            20,
+            21,
+            22,
+            23
+          ]
+        }
+      },
+      "configs/cisco_l2tp" : {
+        "l2tp-class" : {
+          "foobar" : [
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20
+          ]
+        }
+      },
+      "configs/cisco_mac_acl" : {
+        "mac acl" : {
+          "1199" : [
+            5
+          ],
+          "700" : [
+            4
+          ],
+          "copp-system-p-acl-mac-cdp-udld-vtp" : [
+            6,
+            7
+          ]
+        }
+      },
+      "configs/cisco_misc" : {
+        "object-group service" : {
+          "SVCGRP-ICMP" : [
+            177,
+            178
+          ]
+        }
+      },
+      "configs/cisco_nxos" : {
+        "class-map" : {
+          "copp-icmp" : [
+            7,
+            8
+          ]
+        }
+      },
+      "configs/cisco_qos" : {
+        "class-map" : {
+          "ABC" : [
+            5,
+            6,
+            7,
+            8,
+            9,
+            10
+          ],
+          "bippety" : [
+            11,
+            12,
+            13
+          ],
+          "boop" : [
+            19,
+            20,
+            21
+          ],
+          "boppety" : [
+            14,
+            15,
+            16,
+            17
+          ],
+          "cos_all" : [
+            23,
+            24,
+            25
+          ]
+        },
+        "object network" : {
+          "obj_any" : [
+            31,
+            32
+          ]
+        },
+        "object-group network" : {
+          "1.2.3.4-24" : [
+            33,
+            34
+          ],
+          "dns_servers" : [
+            35,
+            36,
+            37
+          ],
+          "ntp_servers" : [
+            38,
+            39,
+            40,
+            41
+          ]
+        },
+        "policy-map type inspect" : {
+          "pminspect" : [
+            42,
+            43,
+            44,
+            45,
+            46,
+            47
+          ]
+        },
+        "service-template" : {
+          "template_name" : [
+            142,
+            143,
+            144,
+            145,
+            146,
+            147,
+            148,
+            149,
+            150
+          ]
+        }
+      },
+      "configs/cisco_route_map" : {
+        "as-path access-list" : {
+          "AS_PATH_ACL_UNUSED" : [
+            7
+          ]
+        },
+        "route-map" : {
+          "MAP_NAME1" : [
+            49,
+            50
+          ],
+          "MAP_NAME2" : [
+            52,
+            53,
+            55,
+            56
+          ],
+          "MSDP-SA-RP-FILTER" : [
+            24,
+            25,
+            26
+          ],
+          "beeble" : [
+            35,
+            36,
+            37,
+            38,
+            40,
+            41,
+            42,
+            43,
+            44
+          ],
+          "connected-to-bgp" : [
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15
+          ],
+          "ijfw$%^&****(((([]grr" : [
+            22
+          ],
+          "mgmt" : [
+            31,
+            32,
+            33
+          ],
+          "multicaststuff" : [
+            46,
+            47
+          ],
+          "next-hop-null" : [
+            28,
+            29
+          ],
+          "to_svl-hub-router" : [
+            17,
+            18
+          ]
+        }
+      },
+      "configs/cisco_style_acl1" : {
+        "extended ipv4 access-list" : {
+          "blah" : [
+            1,
+            2
+          ]
+        }
+      },
+      "configs/cisco_style_acl2" : {
+        "standard ipv4 access-list" : {
+          "1" : [
+            1
+          ]
+        }
+      },
+      "configs/cisco_track" : {
+        "track" : {
+          "1" : [
+            4
+          ],
+          "2" : [
+            5
+          ],
+          "3" : [
+            6,
+            7,
+            8,
+            9,
+            10
+          ],
+          "IPv6Loopback" : [
+            12,
+            13,
+            14,
+            15
+          ]
+        }
+      },
+      "configs/cisco_zone" : {
+        "zone-pair security" : {
+          "zp1" : [
+            4,
+            5
+          ]
+        }
+      },
+      "configs/community_list_named" : {
+        "route-map" : {
+          "TO_NEIGHBOR" : [
+            8,
+            9,
+            10
+          ]
+        }
+      },
+      "configs/community_name_numbers" : {
+        "route-map" : {
+          "AAA1-BBB-CCC" : [
+            6,
+            7,
+            8,
+            9,
+            10
+          ]
+        }
+      },
+      "configs/community_name_numbers_dos" : {
+        "route-map" : {
+          "AAA1-BBB-CCC" : [
+            6,
+            7,
+            8,
+            9,
+            10
+          ]
+        }
+      },
+      "configs/community_set" : {
+        "community-set" : {
+          "190" : [
+            9,
+            10,
+            11,
+            12
+          ],
+          "foo" : [
+            5,
+            6
+          ]
+        }
+      },
+      "configs/foundry_access_list" : {
+        "extended ipv6 access-list" : {
+          "RT404888-Caltech" : [
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17
+          ]
+        }
+      },
+      "configs/foundry_bgp" : {
+        "bgp group" : {
+          "bippety" : [
+            11
+          ],
+          "boop" : [
+            18
+          ]
+        }
+      },
+      "configs/foundry_misc" : {
+        "policy-map" : {
+          "limitarp" : [
+            41,
+            42
+          ]
+        }
+      },
+      "configs/if_tag_is" : {
+        "route-policy" : {
+          "FOO" : [
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21
+          ]
+        }
+      },
+      "configs/ios_bfd" : {
+        "bfd-template" : {
+          "GRE" : [
+            4,
+            5,
+            6
+          ]
+        }
+      },
+      "configs/ios_bgp_aggregate_address" : {
+        "ipv4 prefix-list" : {
+          "ScienceDMZ-networks" : [
+            14
+          ]
+        },
+        "ipv6 prefix-list" : {
+          "ScienceDMZ-networks" : [
+            16,
+            17
+          ]
+        }
+      },
+      "configs/ios_xr_bgp_neighbor_group" : {
+        "bgp group" : {
+          "blabbety" : [
+            10
+          ],
+          "blappety" : [
+            5
+          ],
+          "foobar-iBGP_border_ipv6" : [
+            67
+          ],
+          "foobar-iBGP_ipv6" : [
+            46
+          ]
+        },
+        "bgp session" : {
+          "OLA" : [
+            92
+          ],
+          "blibber" : [
+            15
+          ]
+        }
+      },
+      "configs/ios_xr_class_map" : {
+        "class-map" : {
+          "ABC" : [
+            5,
+            6,
+            7
+          ],
+          "ABCD" : [
+            9,
+            10,
+            11
+          ]
+        }
+      },
+      "configs/ios_xr_community_set" : {
+        "community-set" : {
+          "EBGP-PEER" : [
+            40,
+            41,
+            42,
+            43
+          ],
+          "all_community" : [
+            7,
+            8,
+            9
+          ],
+          "cenic_default_network_community" : [
+            31,
+            32,
+            33
+          ],
+          "community_52" : [
+            4,
+            5,
+            6
+          ],
+          "dc_and_isp_blackhole_community" : [
+            28,
+            29,
+            30
+          ],
+          "dc_and_isp_routes_community" : [
+            25,
+            26,
+            27
+          ],
+          "hpr_blackhole_community" : [
+            13,
+            14,
+            15
+          ],
+          "hpr_routes_community" : [
+            10,
+            11,
+            12
+          ],
+          "ucla_blackhole_community" : [
+            16,
+            17,
+            18
+          ],
+          "ucla_to_dc_and_isp_community_ipv4" : [
+            34,
+            35,
+            36
+          ],
+          "ucla_to_dc_and_isp_community_ipv6" : [
+            37,
+            38,
+            39
+          ],
+          "ucla_to_hpr_community_ipv4" : [
+            19,
+            20,
+            21
+          ],
+          "ucla_to_hpr_community_ipv6" : [
+            22,
+            23,
+            24
+          ]
+        }
+      },
+      "configs/ios_xr_prefix_set" : {
+        "prefix-set" : {
+          "default_route" : [
+            4,
+            5,
+            6
+          ],
+          "ucla_networks" : [
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18
+          ]
+        }
+      },
+      "configs/ios_xr_route_policy" : {
+        "route-policy" : {
+          "EBGP-PEER-AS2828-LAX-PNI-OUT" : [
+            86,
+            87,
+            88,
+            89,
+            90,
+            91,
+            92,
+            93,
+            94,
+            95,
+            96,
+            97,
+            98,
+            99,
+            100,
+            101,
+            102,
+            103,
+            104
+          ],
+          "EBGP-PEER-AS6461-LAX-PNI-IN" : [
+            56,
+            57,
+            58,
+            59,
+            60,
+            61,
+            62,
+            63,
+            64
+          ],
+          "EBGP-PEER-SANITY-IN" : [
+            75,
+            76,
+            77,
+            78,
+            79,
+            80,
+            81,
+            82,
+            83,
+            84,
+            85
+          ],
+          "aaaa" : [
+            27,
+            28,
+            29,
+            30,
+            31
+          ],
+          "barbar_to_fooey_community_ipv4" : [
+            50,
+            51,
+            52,
+            53,
+            54,
+            55
+          ],
+          "doodlepop" : [
+            157,
+            158,
+            159,
+            160,
+            161,
+            162,
+            163,
+            164,
+            165,
+            166
+          ],
+          "drop_community_5555" : [
+            32,
+            33,
+            34,
+            35,
+            36,
+            37
+          ],
+          "fooey_blackhole" : [
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11
+          ],
+          "fooey_to_barbar_ipv4" : [
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19
+          ],
+          "fooey_to_barbar_ipv6" : [
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26
+          ],
+          "ospf_default_ipv4" : [
+            38,
+            39,
+            40,
+            41,
+            42
+          ],
+          "perfsonar_andsn_ipv4" : [
+            43,
+            44,
+            45,
+            46,
+            47,
+            48,
+            49
+          ],
+          "redistribute-static-isis" : [
+            65,
+            66,
+            67,
+            68,
+            69,
+            70,
+            71,
+            72,
+            73,
+            74
+          ],
+          "routetype" : [
+            168,
+            169,
+            170,
+            171,
+            172,
+            173,
+            174
+          ],
+          "to_chillmap" : [
+            106,
+            107,
+            108,
+            109,
+            110,
+            111,
+            112,
+            113,
+            114,
+            115,
+            116,
+            117,
+            118,
+            119,
+            120,
+            121,
+            122,
+            123,
+            124,
+            125,
+            126,
+            127,
+            128,
+            129,
+            130,
+            131,
+            132,
+            133,
+            134,
+            135,
+            136,
+            137,
+            138,
+            139,
+            140,
+            141,
+            142,
+            143,
+            144,
+            145,
+            146,
+            147,
+            148,
+            149,
+            150,
+            151,
+            152,
+            153,
+            154,
+            155
+          ]
+        }
+      },
+      "configs/ip_prefix_list_single_line" : {
+        "ipv4 prefix-list" : {
+          "DENY-IPV4-ANY-IN" : [
+            4
+          ]
+        }
+      },
+      "configs/juniper-tcpflags" : {
+        "firewall filter" : {
+          "foo" : [
+            4
+          ]
+        }
+      },
+      "configs/juniper_application" : {
+        "application" : {
+          "APP" : [
+            4
+          ]
+        }
+      },
+      "configs/juniper_bgp_remove_private_as" : {
+        "bgp group" : {
+          "someipv4bgpgroup" : [
+            5,
+            9,
+            10,
+            11,
+            12
+          ],
+          "someipv6bgpgroup" : [
+            7,
+            13,
+            14,
+            15,
+            16
+          ]
+        }
+      },
+      "configs/juniper_firewall" : {
+        "firewall filter" : {
+          "blah" : [
+            5,
+            6,
+            7,
+            8
+          ],
+          "f1" : [
+            4
+          ]
+        }
+      },
+      "configs/juniper_forwarding_options" : {
+        "dhcp-relay server-group" : {
+          "dhcpgrp" : [
+            24,
+            25
+          ]
+        }
+      },
+      "configs/juniper_interfaces" : {
+        "vlan" : {
+          "unused-vlan" : [
+            15,
+            16
+          ]
+        }
+      },
+      "configs/juniper_policy_statement" : {
+        "policy-statement" : {
+          "POLICY-NAME" : [
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19
+          ]
+        }
+      },
+      "configs/juniper_route_filter" : {
+        "policy-statement" : {
+          "route-filter-test-v4" : [
+            4,
+            5,
+            6,
+            7,
+            8,
+            9
+          ],
+          "route-filter-test-v6" : [
+            11,
+            12,
+            13,
+            14,
+            15,
+            16
+          ]
+        }
+      },
+      "configs/juniper_security" : {
+        "ike policy" : {
+          "1.2.3.4" : [
+            9
+          ]
+        }
+      },
+      "configs/local_v6_addr" : {
+        "bgp group" : {
+          "NEIGH" : [
+            5
+          ]
+        }
+      },
+      "configs/mac_access_list" : {
+        "mac acl" : {
+          "STPDENY" : [
+            13,
+            14,
+            15,
+            16
+          ],
+          "filtermac" : [
+            8
+          ],
+          "ipmi_test" : [
+            9,
+            10,
+            11
+          ],
+          "permitCDP" : [
+            4,
+            5,
+            6,
+            7
+          ]
+        }
+      },
+      "configs/named_and_numbered_lists" : {
+        "route-map" : {
+          "foo" : [
+            4,
+            5
+          ]
+        }
+      },
+      "configs/neighbor" : {
+        "bgp group" : {
+          "1.2.3.4abc" : [
+            7
+          ],
+          "123.123.123.abc" : [
+            11
+          ],
+          "1234-5" : [
+            5
+          ],
+          "abc1.2.3.4" : [
+            8
+          ],
+          "abc1.2.3.4def" : [
+            9
+          ]
+        }
+      },
+      "configs/neighbor_dos" : {
+        "bgp group" : {
+          "1.2.3.4abc" : [
+            7
+          ],
+          "123.123.123.abc" : [
+            11
+          ],
+          "1234-5" : [
+            5
+          ],
+          "abc1.2.3.4" : [
+            8
+          ],
+          "abc1.2.3.4def" : [
+            9
+          ]
+        }
+      },
+      "configs/neighbor_name_numbers" : {
+        "bgp group" : {
+          "8075-CORE" : [
+            6
+          ]
+        }
+      },
+      "configs/nexus_bgp" : {
+        "bgp group" : {
+          "PEER_BLLF" : [
+            22
+          ]
+        }
+      },
+      "configs/nxos_acl" : {
+        "extended ipv4 access-list" : {
+          "blah" : [
+            9,
+            10
+          ],
+          "extended" : [
+            5
+          ],
+          "standard" : [
+            7
+          ]
+        }
+      },
+      "configs/nxos_route_map_continue" : {
+        "route-map" : {
+          "foobar" : [
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            30,
+            31,
+            32,
+            33,
+            34,
+            35,
+            36,
+            37,
+            38,
+            39,
+            40,
+            41,
+            42,
+            43,
+            44,
+            45,
+            46,
+            47,
+            48,
+            49,
+            50,
+            51,
+            52,
+            53,
+            54,
+            55,
+            56,
+            57,
+            58,
+            59,
+            60,
+            61,
+            62,
+            63,
+            64,
+            65,
+            66,
+            67,
+            68,
+            69,
+            70,
+            71,
+            72,
+            73,
+            74,
+            75,
+            76,
+            77,
+            78,
+            79,
+            80,
+            81,
+            82,
+            83,
+            84,
+            85,
+            86,
+            87,
+            88,
+            89,
+            90,
+            91,
+            92,
+            93,
+            94,
+            95,
+            96,
+            97,
+            98,
+            99,
+            100,
+            101,
+            102,
+            103,
+            104,
+            105,
+            106,
+            107,
+            108,
+            109,
+            110,
+            111,
+            112,
+            113,
+            114
+          ]
+        }
+      },
+      "configs/prefix_list_ipv4" : {
+        "ipv4 prefix-list" : {
+          "test" : [
+            4,
+            5
+          ]
+        },
+        "route-map" : {
+          "to_elacc" : [
+            9,
+            10
+          ]
+        }
+      },
+      "configs/route_policy_as_path" : {
+        "as-path-set" : {
+          "ama-coe-as-path" : [
+            34,
+            35,
+            36
+          ],
+          "ama-coe-as-path2" : [
+            37,
+            38
+          ],
+          "ama-coe-as-path3" : [
+            39,
+            40,
+            41,
+            42,
+            43
+          ]
+        },
+        "route-policy" : {
+          "erick-test" : [
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11
+          ],
+          "to_fooey" : [
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            30,
+            31,
+            32
+          ]
+        }
+      },
+      "configs/route_policy_igp_cost" : {
+        "route-policy" : {
+          "EBGP_CUST_FULL_v4" : [
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12
+          ]
+        }
+      },
+      "configs/route_policy_metric_type" : {
+        "route-policy" : {
+          "to_csuchico" : [
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13
+          ]
+        }
+      },
+      "configs/route_policy_param" : {
+        "route-policy" : {
+          "cust_v4_in" : [
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10
+          ],
+          "global_cust_v4" : [
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21
+          ]
+        }
+      },
+      "configs/set_inline_community" : {
+        "route-policy" : {
+          "FOOBAR" : [
+            4,
+            5,
+            6
+          ]
+        }
+      },
+      "configs/tcpflags" : {
+        "extended ipv4 access-list" : {
+          "100" : [
+            4,
+            5,
+            6,
+            7,
+            8,
+            9
+          ]
+        }
+      },
+      "configs/underscore_variable" : {
+        "route-map" : {
+          "JKL_MNO_PQR" : [
+            4,
+            5
+          ]
+        }
+      },
+      "configs/vlan_access_map2" : {
+        "route-policy" : {
+          "EBGP-PEER" : [
+            27,
+            28,
+            29,
+            30
+          ]
+        }
+      }
+    }
+  }
+]

@@ -146,9 +146,8 @@ public class ConvertConfigurationAnswerElement extends InitStepAnswerElement
                     (name, byUsage) -> {
                       sb.append("    " + name + ":\n");
                       byUsage.forEach(
-                          (usage, lines) -> {
-                            sb.append("      " + usage + ": lines " + lines + "\n");
-                          });
+                          (usage, lines) ->
+                              sb.append("      " + usage + ": lines " + lines + "\n"));
                     });
               });
         });
@@ -156,21 +155,20 @@ public class ConvertConfigurationAnswerElement extends InitStepAnswerElement
         (hostname, byType) -> {
           sb.append("\n  " + hostname + "[Defined structures]\n");
           byType.forEach(
-              (structureType, byName) -> {
-                byName.forEach(
-                    (name, info) -> {
-                      if (info.getNumReferrers() == 0) {
-                        sb.append(
-                            "    "
-                                + structureType
-                                + ": "
-                                + name
-                                + ":"
-                                + info.getDefinitionLines()
-                                + "\n");
-                      }
-                    });
-              });
+              (structureType, byName) ->
+                  byName.forEach(
+                      (name, info) -> {
+                        if (info.getNumReferrers() == 0) {
+                          sb.append(
+                              "    "
+                                  + structureType
+                                  + ": "
+                                  + name
+                                  + ":"
+                                  + info.getDefinitionLines()
+                                  + "\n");
+                        }
+                      }));
         });
     return sb.toString();
   }

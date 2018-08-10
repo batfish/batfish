@@ -8,6 +8,15 @@ options {
 boolean enableIPV6_ADDRESS = true;
 boolean enableIP_ADDRESS = true;
 boolean enableDEC = true;
+boolean _markWildcards = false;
+
+public boolean isPrefix() {
+   char nextChar = (char)this.getInputStream().LA(1);
+   if(Character.isDigit(nextChar) || nextChar == '.'){
+      return false;
+    }
+    return true;
+}
 
 @Override
 public String printStateVariables() {
@@ -15,7 +24,16 @@ public String printStateVariables() {
    sb.append("enableIPV6_ADDRESS: " + enableIPV6_ADDRESS + "\n");
    sb.append("enableIP_ADDRESS: " + enableIP_ADDRESS + "\n");
    sb.append("enableDEC: " + enableDEC + "\n");
+   sb.append("markWildcards: " + _markWildcards + "\n");
    return sb.toString();
+}
+
+public void setMarkWildcards(boolean markWildcards) {
+   _markWildcards = markWildcards;
+}
+
+private void setWildcard() {
+  setType(_markWildcards? WILDCARD_ARTIFACT : WILDCARD);
 }
 
 }
@@ -28,7 +46,8 @@ tokens {
    PIPE,
    RST,
    SYN,
-   VERSION_STRING
+   VERSION_STRING,
+   WILDCARD_ARTIFACT
 }
 
 // Juniper Keywords
@@ -158,14 +177,30 @@ AES_128_CMAC_96
    'aes-128-cmac-96'
 ;
 
+AES_128_GCM
+:
+   'aes-128-gcm'
+;
+
+
 AES_192_CBC
 :
    'aes-192-cbc'
 ;
 
+AES_192_GCM
+:
+   'aes-192-gcm'
+;
+
 AES_256_CBC
 :
    'aes-256-cbc'
+;
+
+AES_256_GCM
+:
+   'aes-256-gcm'
 ;
 
 AH
@@ -343,6 +378,11 @@ AS_PATH_EXPAND
    'as-path-expand'
 ;
 
+AS_PATH_GROUP
+:
+   'as-path-group'
+;
+
 AS_PATH_PREPEND
 :
    'as-path-prepend'
@@ -403,6 +443,16 @@ AUTHORIZATION
    'authorization'
 ;
 
+AUTHORIZED_KEYS_COMMAND
+:
+   'authorized-keys-command'
+;
+
+AUTHORIZED_KEYS_COMMAND_USER
+:
+   'authorized-keys-command-user'
+;
+
 AUTO_EXPORT
 :
    'auto-export'
@@ -421,6 +471,11 @@ AUTO_SNAPSHOT
 AUTONOMOUS_SYSTEM
 :
    'autonomous-system'
+;
+
+AUXILIARY
+:
+   'auxiliary'
 ;
 
 BACKUP_ROUTER
@@ -508,6 +563,11 @@ BROADCAST_CLIENT
    'broadcast-client'
 ;
 
+BUNDLE
+:
+   'bundle'
+;
+
 CATEGORIES
 :
    'categories'
@@ -528,6 +588,11 @@ CHASSIS
    'chassis'
 ;
 
+CIPHERS
+:
+   'ciphers'
+;
+
 CLASS
 :
    'class'
@@ -541,6 +606,21 @@ CLASS_OF_SERVICE
 CLEAR
 :
    'clear'
+;
+
+CLIENT_ALIVE_COUNT_MAX
+:
+   'client-alive-count-max'
+;
+
+CLIENT_ALIVE_INTERVAL
+:
+   'client-alive-interval'
+;
+
+CLIENT_LIST
+:
+   'client-list'
 ;
 
 CLIENT_LIST_NAME
@@ -578,6 +658,11 @@ COMMIT
    'commit'
 ;
 
+COMMUNICATION_PROHIBITED_BY_FILTERING
+:
+   'communication-prohibited-by-filtering'
+;
+
 COMMUNITY
 :
    'community'
@@ -605,6 +690,11 @@ CONDITION
 CONNECTIONS
 :
    'connections'
+;
+
+CONNECTION_LIMIT
+:
+   'connection-limit'
 ;
 
 CONNECTIONS_LIMIT
@@ -655,6 +745,11 @@ DAEMON
 DAMPING
 :
    'damping'
+;
+
+DATABASE_REPLICATION
+:
+   'database-replication'
 ;
 
 DCBX
@@ -752,6 +847,11 @@ DESTINATION_ADDRESS_EXCLUDED
    'destination-address-excluded'
 ;
 
+DESTINATION_HOST_PROHIBITED
+:
+   'destination-host-prohibited'
+;
+
 DESTINATION_HOST_UNKNOWN
 :
    'destination-host-unknown'
@@ -760,6 +860,11 @@ DESTINATION_HOST_UNKNOWN
 DESTINATION_IP
 :
    'destination-ip'
+;
+
+DESTINATION_NETWORK_PROHIBITED
+:
+   'destination-network-prohibited'
 ;
 
 DESTINATION_NETWORK_UNKNOWN
@@ -800,6 +905,11 @@ DH_GROUP
 DHCP
 :
    'dhcp'
+;
+
+DHCP_LOCAL_SERVER
+:
+   'dhcp-local-server'
 ;
 
 DHCP_RELAY
@@ -862,6 +972,11 @@ DSTOPTS
    'dstopts'
 ;
 
+DTCP_ONLY
+:
+   'dtcp-only'
+;
+
 DUMPONPANIC
 :
    'dump-on-panic'
@@ -875,6 +990,11 @@ DVMRP
 DYNAMIC
 :
    'dynamic'
+;
+
+DYNAMIC_DNS
+:
+   'dynamic-dns'
 ;
 
 ECE
@@ -1017,6 +1137,16 @@ EXPRESSION
    'expression'
 ;
 
+EXTENSIBLE_SUBSCRIBER
+:
+   'extensible-subscriber'
+;
+
+EXTENSION_SERVICE
+:
+   'extension-service'
+;
+
 EXTERNAL
 :
    'external'
@@ -1085,6 +1215,11 @@ FILTER
 FINGER
 :
    'finger'
+;
+
+FINGERPRINT_HASH
+:
+   'fingerprint-hash'
 ;
 
 FIREWALL
@@ -1257,9 +1392,34 @@ GROUP14
    'group14'
 ;
 
+GROUP15
+:
+   'group15'
+;
+
+GROUP16
+:
+   'group16'
+;
+
+GROUP19
+:
+   'group19'
+;
+
 GROUP2
 :
    'group2'
+;
+
+GROUP20
+:
+   'group20'
+;
+
+GROUP24
+:
+   'group24'
 ;
 
 GROUP5
@@ -1352,9 +1512,24 @@ HOST_NAME
    'host-name'
 ;
 
+HOST_PRECEDENCE_VIOLATION
+:
+   'host-precedence-violation'
+;
+
 HOST_UNREACHABLE
 :
    'host-unreachable'
+;
+
+HOST_UNREACHABLE_FOR_TOS
+:
+   'host-unreachable-for-tos'
+;
+
+HOSTKEY_ALGORITHM
+:
+   'hostkey-algorithm'
 ;
 
 HOSTNAME
@@ -1582,6 +1757,11 @@ INPUT_VLAN_MAP
    'input-vlan-map'
 ;
 
+INSECURE
+:
+   'insecure'
+;
+
 INSTALL
 :
    'install'
@@ -1677,9 +1857,19 @@ IP
    'ip'
 ;
 
+IP_HEADER_BAD
+:
+   'ip-header-bad'
+;
+
 IP_OPTIONS
 :
    'ip-options'
+;
+
+IP_PROTOCOL
+:
+   'ip-protocol'
 ;
 
 IPIP
@@ -1812,6 +2002,11 @@ JUNOS_FTP
    'junos-ftp'
 ;
 
+JUNOS_FTP_DATA
+:
+    'junos-ftp-data'
+;
+
 JUNOS_GNUTELLA
 :
    'junos-gnutella'
@@ -1820,6 +2015,28 @@ JUNOS_GNUTELLA
 JUNOS_GOPHER
 :
    'junos-gopher'
+;
+
+JUNOS_GPRS_GTP_C
+:
+    'junos-gprs-gtp-c'
+;
+
+
+JUNOS_GPRS_GTP_U
+:
+    'junos-gprs-gtp-u'
+;
+
+
+JUNOS_GPRS_GTP_V0
+:
+    'junos-gprs-gtp-v0'
+;
+
+JUNOS_GPRS_SCTP
+:
+    'junos-gprs-sctp'
 ;
 
 JUNOS_GRE
@@ -1907,9 +2124,9 @@ JUNOS_ICMP6_ECHO_REQUEST
    'junos-icmp6-echo-request'
 ;
 
-JUNOS_ICMP6_PACKET_TO_BIG
+JUNOS_ICMP6_PACKET_TOO_BIG
 :
-   'junos-icmp6-packet-to-big'
+   'junos-icmp6-packet-too-big'
 ;
 
 JUNOS_ICMP6_PARAM_PROB_HEADER
@@ -2337,6 +2554,11 @@ JUNOS_SMTP
    'junos-smtp'
 ;
 
+JUNOS_SMTPS
+:
+    'junos-smtps'
+;
+
 JUNOS_SNMP_AGENTX
 :
    'junos-snmp-agentx'
@@ -2687,6 +2909,11 @@ JUNOS_YMSG
    'junos-ymsg'
 ;
 
+K
+:
+  'k'
+;
+
 KEEP
 :
    'keep'
@@ -2715,6 +2942,11 @@ KEYS
 KEY_CHAIN
 :
    'key-chain'
+;
+
+KEY_EXCHANGE
+:
+   'key-exchange'
 ;
 
 KLOGIN
@@ -2902,6 +3134,11 @@ LOG
    'log'
 ;
 
+LOG_OUT_ON_DISCONNECT
+:
+   'log-out-on-disconnect'
+;
+
 LOG_PREFIX
 :
    'log-prefix'
@@ -2982,6 +3219,11 @@ MAC
    'mac' -> pushMode ( M_MacAddress )
 ;
 
+MACS
+:
+   'macs'
+;
+
 MAIN
 :
    'main'
@@ -3017,9 +3259,19 @@ MAX_CONFIGURATION_ROLLBACKS
    'max-configuration-rollbacks'
 ;
 
+MAX_PRE_AUTHENTICATION_PACKETS
+:
+   'max-pre-authentication-packets'
+;
+
 MAX_SESSION_NUMBER
 :
    'max-session-number'
+;
+
+MAX_SESSIONS_PER_CONNECTION
+:
+   'max-sessions-per-connection'
 ;
 
 MAXIMUM
@@ -3085,6 +3337,11 @@ MGCP_CA
 MGCP_UA
 :
    'mgcp-ua'
+;
+
+MINIMUM_INTERVAL
+:
+  'minimum-interval'
 ;
 
 MS_RPC
@@ -3202,6 +3459,11 @@ NATIVE_VLAN_ID
    'native-vlan-id'
 ;
 
+NEAREST
+:
+   'nearest'
+;
+
 NEIGHBOR
 :
    'neighbor'
@@ -3250,6 +3512,11 @@ NETWORK_DOMAIN
 NETWORK_SUMMARY_EXPORT
 :
    'network-summary-export'
+;
+
+NETWORK_UNREACHABLE_FOR_TOS
+:
+   'network-unreachable-for-tos'
 ;
 
 NETWORK_UNREACHABLE
@@ -3322,6 +3589,11 @@ NO_ADJACENCY_DOWN_NOTIFICATION
    'no-adjacency-down-notification'
 ;
 
+NO_ADVERTISE
+:
+   'no-advertise'
+;
+
 NO_ANTI_REPLAY
 :
    'no-anti-replay'
@@ -3382,6 +3654,16 @@ NO_NEXTHOP_CHANGE
    'no-nexthop-change'
 ;
 
+NO_PASSWORDS
+:
+   'no-passwords'
+;
+
+NO_PEER_LOOP_CHECK
+:
+   'no-peer-loop-check'
+;
+
 NO_READVERTISE
 :
    'no-readvertise'
@@ -3415,6 +3697,11 @@ NO_NEIGHBOR_LEARN
 NO_SUMMARIES
 :
    'no-summaries'
+;
+
+NO_TCP_FORWARDING
+:
+   'no-tcp-forwarding'
 ;
 
 NO_TRAPS
@@ -3492,6 +3779,11 @@ OUT_DELAY
    'out-delay'
 ;
 
+OUTBOUND_SSH
+:
+   'outbound-ssh'
+;
+
 OUTPUT
 :
    'output'
@@ -3555,6 +3847,11 @@ PARAMETER_PROBLEM
 PASSIVE
 :
    'passive'
+;
+
+PASSWORD
+:
+   'password'
 ;
 
 PATH
@@ -3757,6 +4054,11 @@ PRECEDENCE
    'precedence'
 ;
 
+PRECEDENCE_CUTOFF_IN_EFFECT
+:
+   'precedence-cutoff-in-effect'
+;
+
 PRECISION_TIMERS
 :
    'precision-timers'
@@ -3872,6 +4174,16 @@ PROTOCOL
    'protocol'
 ;
 
+PROTOCOL_UNREACHABLE
+:
+   'protocol-unreachable'
+;
+
+PROTOCOL_VERSION
+:
+   'protocol-version'
+;
+
 PROTOCOLS
 :
    'protocols'
@@ -3937,6 +4249,11 @@ RAS
    'ras'
 ;
 
+RATE_LIMIT
+:
+   'rate-limit'
+;
+
 REALAUDIO
 :
    'realaudio'
@@ -3967,6 +4284,26 @@ REDIRECT
    'redirect'
 ;
 
+REDIRECT_FOR_HOST
+:
+   'redirect-for-host'
+;
+
+REDIRECT_FOR_NETWORK
+:
+   'redirect-for-network'
+;
+
+REDIRECT_FOR_TOS_AND_HOST
+:
+   'redirect-for-tos-and-host'
+;
+
+REDIRECT_FOR_TOS_AND_NET
+:
+   'redirect-for-tos-and-net'
+;
+
 REDUNDANCY_GROUP
 :
    'redundancy-group'
@@ -3984,12 +4321,17 @@ REDUNDANT_PARENT
 
 REFERENCE_BANDWIDTH
 :
-   'reference-bandwidth'
+   'reference-bandwidth' -> pushMode ( M_ReferenceBandwidth )
 ;
 
 REJECT
 :
    'reject'
+;
+
+REKEY
+:
+   'rekey'
 ;
 
 RELAY_AGENT_OPTION
@@ -4012,6 +4354,16 @@ REMOVED
    'Removed'
 ;
 
+REPLACE
+:
+   'replace'
+;
+
+REQUIRED_OPTION_MISSING
+:
+   'required-option-missing'
+;
+
 RESOLUTION
 :
    'resolution'
@@ -4027,6 +4379,11 @@ RESOURCES
    'resources'
 ;
 
+REST
+:
+   'rest'
+;
+
 RESTRICT
 :
    'restrict'
@@ -4035,6 +4392,11 @@ RESTRICT
 RETAIN
 :
    'retain'
+;
+
+REVERSE
+:
+   'reverse'
 ;
 
 REVERSE_SSH
@@ -4085,6 +4447,11 @@ RLOGIN
 ROOT_AUTHENTICATION
 :
    'root-authentication'
+;
+
+ROOT_LOGIN
+:
+   'root-login'
 ;
 
 ROUTE
@@ -4267,6 +4634,11 @@ SERVICE
    'service'
 ;
 
+SERVICE_DEPLOYMENT
+:
+   'service-deployment'
+;
+
 SERVICE_FILTER
 :
    'service-filter'
@@ -4357,11 +4729,6 @@ SRLG_VALUE
    'srlg-value'
 ;
 
-START_TIME
-:
-   'start-time'
-;
-
 SMTP
 :
    'smtp'
@@ -4412,6 +4779,11 @@ SOURCE_ADDRESS_FILTER
    'source-address-filter'
 ;
 
+SOURCE_HOST_ISOLATED
+:
+   'source-host-isolated'
+;
+
 SOURCE_IDENTITY
 :
    'source-identity'
@@ -4442,6 +4814,11 @@ SOURCE_PREFIX_LIST
    'source-prefix-list'
 ;
 
+SOURCE_ROUTE_FAILED
+:
+   'source-route-failed'
+;
+
 SOURCE_QUENCH
 :
    'source-quench'
@@ -4465,6 +4842,11 @@ SSH
 STANDARD
 :
    'standard'
+;
+
+START_TIME
+:
+   'start-time'
 ;
 
 STATIC
@@ -4492,6 +4874,11 @@ STATION_PORT
    'station-port'
 ;
 
+STORM_CONTROL
+:
+   'storm-control'
+;
+
 STORM_CONTROL_PROFILES
 :
    'storm-control-profiles'
@@ -4502,9 +4889,19 @@ STP
    'stp'
 ;
 
+STRUCTURED_DATA
+:
+   'structured-data'
+;
+
 STUB
 :
    'stub'
+;
+
+SUBSCRIBER_MANAGEMENT
+:
+   'subscriber-management'
 ;
 
 SUBTRACT
@@ -4555,6 +4952,11 @@ TACACS
 TACACS_DS
 :
    'tacacs-ds'
+;
+
+TACPLUS
+:
+   'tacplus'
 ;
 
 TACPLUS_SERVER
@@ -4612,6 +5014,11 @@ TCP_FLAGS
    'tcp-flags' -> pushMode ( M_TcpFlags )
 ;
 
+TCP_FORWARDING
+:
+   'tcp-forwarding'
+;
+
 TCP_INITIAL
 :
    'tcp-initial'
@@ -4650,6 +5057,11 @@ TERM
 TFTP
 :
    'tftp'
+;
+
+TFTP_SERVER
+:
+   'tftp-server'
 ;
 
 THEN
@@ -4759,6 +5171,16 @@ TRUST
 TTL
 :
    'ttl'
+;
+
+TTL_EQ_ZERO_DURING_REASSEMBLY
+:
+   'ttl-eq-zero-during-reassembly'
+;
+
+TTL_EQ_ZERO_DURING_TRANSIT
+:
+   'ttl-eq-zero-during-transit'
 ;
 
 TUNNEL
@@ -4951,6 +5373,16 @@ VSTP
    'vstp'
 ;
 
+WEB_MANAGEMENT
+:
+   'web-management'
+;
+
+WEBAPI
+:
+   'webapi'
+;
+
 WHO
 :
    'who'
@@ -5054,6 +5486,11 @@ ASTERISK
    '*'
 ;
 
+BACKSLASH
+:
+   '\\'
+;
+
 CARAT
 :
    '^'
@@ -5124,6 +5561,7 @@ FLOAT
    )
 ;
 */
+
 FORWARD_SLASH
 :
    '/'
@@ -5148,6 +5586,8 @@ IP_PREFIX
    {enableIP_ADDRESS}?
 
    F_DecByte '.' F_DecByte '.' F_DecByte '/' F_Digit F_Digit?
+
+   {isPrefix()}?
 ;
 
 IPV6_ADDRESS
@@ -5260,6 +5700,11 @@ PLUS
    '+'
 ;
 
+QUESTION_MARK
+:
+   '?'
+;
+
 SEMICOLON
 :
    ';'
@@ -5277,7 +5722,7 @@ UNDERSCORE
 
 WILDCARD
 :
-   '<' ~'>'* '>'
+   '<' ~'>'* '>' {setWildcard();}
 ;
 
 WS
@@ -5610,7 +6055,7 @@ M_Interface_VARIABLE
 
 M_Interface_WILDCARD
 :
-   '<' ~'>'* '>' -> type ( WILDCARD ) , popMode
+   '<' ~'>'* '>' {setType(_markWildcards?WILDCARD_ARTIFACT:WILDCARD);} -> popMode
 ;
 
 M_Interface_IP_ADDRESS
@@ -5638,7 +6083,7 @@ M_InterfaceQuote_VARIABLE
 
 M_InterfaceQuote_WILDCARD
 :
-   '<' ~'>'* '>' -> type ( WILDCARD )
+   '<' ~'>'* '>' {setType(_markWildcards?WILDCARD_ARTIFACT:WILDCARD);}
 ;
 
 mode M_ISO;
@@ -5700,6 +6145,11 @@ mode M_Members;
 M_Members_ASTERISK
 :
    '*' -> type ( ASTERISK )
+;
+
+M_Members_BACKSLASH
+:
+   '\\' -> type (BACKSLASH)
 ;
 
 M_Members_CARAT
@@ -5765,9 +6215,9 @@ M_Members_NEWLINE
    -> type ( NEWLINE ) , popMode
 ;
 
-NO_ADVERTISE
+M_Members_NO_ADVERTISE
 :
-   'no-advertise'
+   'no-advertise' -> type ( NO_ADVERTISE )
 ;
 
 M_Members_NO_EXPORT
@@ -5800,14 +6250,29 @@ M_Members_PERIOD
    '.' -> type ( PERIOD )
 ;
 
+M_Members_PLUS
+:
+   '+' -> type ( PLUS )
+;
+
 M_Members_PIPE
 :
    '|' -> type ( PIPE )
 ;
 
+M_Members_QUESTION_MARK
+:
+   '?' -> type ( QUESTION_MARK )
+;
+
 M_Members_TARGET
 :
    'target' -> type ( TARGET )
+;
+
+M_Members_UNDERSCORE
+:
+   '_' -> type ( UNDERSCORE )
 ;
 
 M_Members_WS
@@ -5817,12 +6282,49 @@ M_Members_WS
 
 mode M_PrefixListName;
 
-M_PrefixLsitName_VARIABLE
+M_PrefixListName_WILDCARD
+:
+   '<' ~'>'* '>' {setType(_markWildcards?WILDCARD_ARTIFACT:WILDCARD);} -> popMode
+;
+
+M_PrefixListName_VARIABLE
 :
    ~[ \t\n\r&|()"]+ -> type ( VARIABLE ) , popMode
 ;
 
 M_PrefixListName_WS
+:
+   F_WhitespaceChar+ -> channel ( HIDDEN )
+;
+
+mode M_ReferenceBandwidth;
+
+M_ReferenceBandwidth_DEC
+:
+  F_Digit+ -> type ( DEC )
+;
+
+M_ReferenceBandwidth_G
+:
+  'g' -> type ( G )
+;
+
+M_ReferenceBandwidth_K
+:
+  'k' -> type ( K )
+;
+
+M_ReferenceBandwidth_M
+:
+  'm' -> type ( M )
+;
+
+M_ReferenceBandwidth_NEWLINE
+:
+  F_NewlineChar+ -> type ( NEWLINE ) , popMode
+;
+
+M_ReferenceBandwidth_WS
 :
    F_WhitespaceChar+ -> channel ( HIDDEN )
 ;
@@ -6029,7 +6531,7 @@ M_VarOrWildcard_VARIABLE
 
 M_VarOrWildcard_WILDCARD
 :
-   '<' ~'>'* '>' -> type ( WILDCARD ) , popMode
+   '<' ~'>'* '>' {setType(_markWildcards?WILDCARD_ARTIFACT:WILDCARD);}-> popMode
 ;
 
 M_VarOrWildcard_WS

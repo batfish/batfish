@@ -1,0 +1,36 @@
+!
+hostname ios-object-group-protocol
+!
+!
+object-group protocol ogp1
+ protocol-object icmp
+!
+object-group protocol ogp2
+ protocol-object tcp
+ protocol-object udp
+!
+object-group protocol ogp3
+!
+object-group protocol ogp4
+! Redefining this object group with a new protocol-object should have no effect
+object-group protocol ogp4
+ protocol-object icmp
+!
+object-group protocol ogp5
+!
+!
+ip access-list extended aclicmp
+ permit object-group ogp1 any any
+!
+ip access-list extended acltcpudp
+ permit object-group ogp2 any any
+!
+ip access-list extended aclempty
+ permit object-group ogp3 any any
+!
+ip access-list extended aclduplicate
+ permit object-group ogp4 any any
+!
+ip access-list extended aclundef
+ permit object-group ogpundef any any
+!

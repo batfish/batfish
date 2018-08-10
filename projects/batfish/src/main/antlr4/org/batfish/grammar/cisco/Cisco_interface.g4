@@ -6,6 +6,15 @@ options {
    tokenVocab = CiscoLexer;
 }
 
+eos_bandwidth_specifier
+:
+   FORTYG_FULL
+   | ONE_HUNDREDG_FULL
+   | TEN_THOUSAND_FULL
+   | ONE_HUNDRED_FULL
+   | ONE_THOUSAND_FULL
+;
+
 if_autostate
 :
    NO? AUTOSTATE NEWLINE
@@ -14,6 +23,11 @@ if_autostate
 if_bandwidth
 :
    NO? BANDWIDTH DEC KBPS? NEWLINE
+;
+
+if_bfd_template
+:
+  BFD TEMPLATE name = variable_permissive NEWLINE
 ;
 
 if_channel_group
@@ -28,7 +42,16 @@ if_channel_group
          | ON
          | PASSIVE
       )
+      (
+        NON_SILENT
+        | SILENT
+      )?
    )? NEWLINE
+;
+
+if_crypto_map
+:
+   CRYPTO MAP name = variable NEWLINE
 ;
 
 if_default_gw
@@ -39,6 +62,11 @@ if_default_gw
 if_description
 :
    description_line
+;
+
+if_delay
+:
+   NO? DELAY DEC NEWLINE
 ;
 
 if_flow_sampler
@@ -160,6 +188,15 @@ if_ip_dhcp
    )
 ;
 
+if_ip_flow_monitor
+:
+   IP FLOW MONITOR name = variable
+   (
+      INPUT
+      | OUTPUT
+   ) NEWLINE
+;
+
 if_ip_helper_address
 :
    IP HELPER_ADDRESS address = IP_ADDRESS NEWLINE
@@ -199,6 +236,11 @@ if_ip_nat_source
    )* NEWLINE
 ;
 
+if_ip_nbar
+:
+   IP NBAR PROTOCOL_DISCOVERY (IPV4 | IPV6)? NEWLINE
+;
+
 if_ip_ospf_area
 :
    IP OSPF procnum = DEC AREA area = DEC NEWLINE
@@ -226,12 +268,31 @@ if_ip_ospf_hello_interval
 
 if_ip_ospf_network
 :
-   IP OSPF NETWORK POINT_TO_POINT NEWLINE
+   IP OSPF NETWORK
+   (
+      BROADCAST
+      | NON_BROADCAST
+      |
+      (
+         POINT_TO_MULTIPOINT NON_BROADCAST?
+      )
+      | POINT_TO_POINT
+   ) NEWLINE
 ;
 
 if_ip_ospf_passive_interface
 :
    NO? IP OSPF PASSIVE_INTERFACE NEWLINE
+;
+
+if_ip_ospf_shutdown
+:
+   NO? IP OSPF SHUTDOWN NEWLINE
+;
+
+if_ip_passive_interface_eigrp
+:
+   NO? IP PASSIVE_INTERFACE EIGRP tag = DEC NEWLINE
 ;
 
 if_ip_pim_neighbor_filter
@@ -271,6 +332,14 @@ if_ip_sticky_arp
    (IP STICKY_ARP IGNORE NEWLINE)
 ;
 
+if_ip_summary_address
+:
+   IP SUMMARY_ADDRESS EIGRP asn = DEC (
+      addr = IP_ADDRESS netmask = IP_ADDRESS
+      | prefix = IP_PREFIX
+   ) (LEAK_MAP mapname = variable)? NEWLINE
+;
+
 if_ip_verify
 :
    IP VERIFY UNICAST
@@ -303,9 +372,29 @@ if_ip_virtual_router
    IP VIRTUAL_ROUTER ADDRESS address = IP_ADDRESS NEWLINE
 ;
 
+if_ip_vrf_autoclassify
+:
+   IP VRF AUTOCLASSIFY SOURCE NEWLINE
+;
+
 if_ip_vrf_forwarding
 :
-   IP? VRF FORWARDING name = variable NEWLINE
+   IP? VRF FORWARDING vrf = variable (DOWNSTREAM vrf_down = variable)? NEWLINE
+;
+
+if_ip_vrf_receive
+:
+   IP VRF RECEIVE vrf = variable NEWLINE
+;
+
+if_ip_vrf_select
+:
+   IP VRF SELECT SOURCE NEWLINE
+;
+
+if_ip_vrf_sitemap
+:
+   IP VRF SITEMAP map = variable NEWLINE
 ;
 
 if_isis_circuit_type
@@ -388,7 +477,6 @@ if_null_block
       | BANDWIDTH INHERIT
       | BANDWIDTH PERCENT_LITERAL
       | BEACON
-      | BFD
       | BGP_POLICY
       | BRIDGE_GROUP
       | BUNDLE
@@ -477,6 +565,7 @@ if_null_block
             | IP_ADDRESS
             | IRDP
             | LOAD_SHARING
+            | MASK_REPLY
             | MROUTE_CACHE
             | MTU
             | MULTICAST
@@ -662,22 +751,18 @@ if_null_block
       | SCRAMBLE
       | SECURITY_LEVEL
       | SERIAL
-      | SERVICE
       | SERVICE_MODULE
-      | SERVICE_POLICY
       | SFLOW
       | SHAPE
       | SIGNALLED_BANDWIDTH
       | SIGNALLED_NAME
       | SONET
       | SOURCE
-      | SPEED
       | SPEED_DUPLEX
       | SNMP
       | SRR_QUEUE
       | SSID
       | STACK_MIB
-      | STANDBY
       | STATION_ROLE
       | STBC
       | STORM_CONTROL
@@ -753,24 +838,34 @@ if_null_inner
       | REMOTE_PORTS
       | REWRITE
       | SATELLITE_FABRIC_LINK
-      | SERVICE_POLICY
       | TRANSMIT
       | VIRTUAL_ADDRESS
-   ) ~NEWLINE* NEWLINE
+   ) ~NEWLINE* NEWLINE  // do not change to null_rest_of_line
 ;
 
 if_null_single
 :
-   NO?
-   (
-      BCMC_OPTIMIZATION
-      | JUMBO
-      | LINKDEBOUNCE
-      | PHY
-      | SUPPRESS_ARP
-      | TRIMODE
-      | TRUSTED
-   ) ~NEWLINE* NEWLINE
+  NO?
+  (
+    BCMC_OPTIMIZATION
+    | (BFD INTERVAL)
+    | DOT1X
+    | IP TRAFFIC_EXPORT
+    | JUMBO
+    | LINKDEBOUNCE
+    | MAB
+    | PHY
+    | REDUNDANCY
+    |
+    (
+      SPEED NONEGOTIATE
+    )
+    | SWITCHPORT CAPTURE
+    | SUPPRESS_ARP
+    | TRIMODE
+    | TRUSTED
+  ) ~NEWLINE* NEWLINE // do not change to null_rest_of_line
+
 ;
 
 if_port_security
@@ -786,6 +881,52 @@ if_private_vlan
    PRIVATE_VLAN MAPPING (ADD | REMOVE)? null_rest_of_line
 ;
 
+if_service_instance
+:
+   SERVICE INSTANCE id = DEC ETHERNET NEWLINE
+   if_si_inner*
+;
+
+if_si_inner
+:
+    if_si_bridge_domain
+    | if_si_encapsulation
+    | if_si_l2protocol
+    | if_si_no_bridge_domain
+    | if_si_rewrite
+    | if_si_service_policy
+;
+
+if_si_bridge_domain
+:
+    BRIDGE_DOMAIN id = DEC SPLIT_HORIZON? NEWLINE
+;
+
+if_si_encapsulation
+:
+    NO? ENCAPSULATION null_rest_of_line
+;
+
+if_si_l2protocol
+:
+    L2PROTOCOL TUNNEL? (DROP | FORWARD | PEER)? (CDP | DOT1X | DTP | LACP | PAGP | STP | VTP)? NEWLINE
+;
+
+if_si_no_bridge_domain
+:
+    NO BRIDGE_DOMAIN id = DEC NEWLINE
+;
+
+if_si_rewrite
+:
+    REWRITE null_rest_of_line
+;
+
+if_si_service_policy
+:
+    SERVICE_POLICY (INPUT | OUTPUT) policy_map = variable NEWLINE
+;
+
 if_spanning_tree
 :
    NO? SPANNING_TREE
@@ -794,6 +935,70 @@ if_spanning_tree
       | if_st_portfast
       | NEWLINE
    )
+;
+
+if_speed_auto
+:
+   SPEED AUTO NEWLINE
+;
+
+if_speed_eos
+:
+   SPEED
+   (
+      AUTO
+      | FORCED
+   )? eos_bandwidth_specifier NEWLINE
+;
+
+if_speed_ios
+:
+   SPEED mbits = DEC NEWLINE
+;
+
+if_speed_ios_dot11radio
+:
+// https://www.cisco.com/en/US/docs/routers/access/800/880/software/configuration/guide/880_radio_config.html
+   SPEED
+   (
+      BASIC_1_0
+      | BASIC_2_0
+      | BASIC_5_5
+      | BASIC_6_0
+      | BASIC_9_0
+      | BASIC_11_0
+      | BASIC_12_0
+      | BASIC_18_0
+      | BASIC_24_0
+      | BASIC_36_0
+      | BASIC_48_0
+      | BASIC_54_0
+      | DEFAULT
+      | FLOAT
+      | M0_7
+      | M0_DOT
+      | M1_DOT
+      | M2_DOT
+      | M3_DOT
+      | M4_DOT
+      | M5_DOT
+      | M6_DOT
+      | M7_DOT
+      | M8_15
+      | M8_DOT
+      | M9_DOT
+      | M10_DOT
+      | M11_DOT
+      | M12_DOT
+      | M13_DOT
+      | M14_DOT
+      | M15_DOT
+      | OFDM
+      | OFDM_THROUGHPUT
+      | ONLY_OFDM
+      | RANGE
+      | THROUGHPUT
+   )* NEWLINE
 ;
 
 if_st_null
@@ -837,6 +1042,16 @@ if_port_security_null
    ) null_rest_of_line
 ;
 
+if_service_policy
+:
+   SERVICE_POLICY (INPUT | OUTPUT) policy_map = variable NEWLINE
+;
+
+if_service_policy_control_subscriber
+:
+   SERVICE_POLICY TYPE CONTROL SUBSCRIBER policy_map = variable NEWLINE
+;
+
 if_shutdown
 :
    NO?
@@ -844,6 +1059,73 @@ if_shutdown
       DISABLE
       | SHUTDOWN
    ) FORCE? LAN? NEWLINE
+;
+
+if_standby
+:
+  NO? STANDBY
+  (
+    standby_group
+    | standby_version
+  ) NEWLINE
+;
+
+standby_group
+:
+  group = DEC
+  (
+    standby_group_authentication
+    | standby_group_ip
+    | standby_group_preempt
+    | standby_group_priority
+    | standby_group_timers
+    | standby_group_track
+  )
+;
+
+standby_group_authentication
+:
+  AUTHENTICATION auth = DEC
+;
+
+standby_group_ip
+:
+  IP ip = IP_ADDRESS
+;
+
+standby_group_preempt
+:
+  PREEMPT
+;
+
+standby_group_priority
+:
+  PRIORITY priority = DEC
+;
+
+standby_group_timers
+:
+  TIMERS MSEC hello_time = DEC hold_time = DEC
+;
+
+standby_group_track
+:
+  TRACK group = DEC track_action
+;
+
+track_action
+:
+  track_action_decrement
+;
+
+track_action_decrement
+:
+  DECREMENT subtrahend = DEC
+;
+
+standby_version
+:
+  VERSION version = variable_permissive
 ;
 
 if_switchport
@@ -1138,72 +1420,95 @@ s_interface
 
       NEWLINE?
    )
-   (
-      if_autostate
-      | if_bandwidth
-      | if_channel_group
-      | if_default_gw
-      | if_description
-      | if_flow_sampler
-      | if_hsrp
-      | if_ip_proxy_arp
-      | if_ip_verify
-      | if_ip_access_group
-      | if_ip_address
-      | if_ip_address_dhcp
-      | if_ip_address_secondary
-      | if_ip_dhcp
-      | if_ip_helper_address
-      | if_ip_inband_access_group
-      | if_ip_igmp
-      | if_ip_nat_destination
-      | if_ip_nat_source
-      | if_ip_ospf_area
-      | if_ip_ospf_cost
-      | if_ip_ospf_dead_interval
-      | if_ip_ospf_dead_interval_minimal
-      | if_ip_ospf_hello_interval
-      | if_ip_ospf_network
-      | if_ip_ospf_passive_interface
-      | if_ip_pim_neighbor_filter
-      | if_ip_policy
-      | if_ip_router_isis
-      | if_ip_router_ospf_area
-      | if_ip_rtp
-      | if_ip_sticky_arp
-      | if_ip_virtual_router
-      | if_ip_vrf_forwarding
-      | if_isis_circuit_type
-      | if_isis_enable
-      | if_isis_hello_interval
-      | if_isis_metric
-      | if_isis_network
-      | if_isis_passive
-      | if_isis_tag
-      | if_load_interval
-      | if_mtu
-      | if_no_ip_address
-      | if_port_security
-      | if_private_vlan
-      | if_shutdown
-      | if_spanning_tree
-      | if_switchport
-      | if_switchport_access
-      | if_switchport_mode
-      | if_switchport_private_vlan_association
-      | if_switchport_private_vlan_host_association
-      | if_switchport_private_vlan_mapping
-      | if_switchport_trunk_allowed
-      | if_switchport_trunk_encapsulation
-      | if_switchport_trunk_native
-      | if_tunnel
-      | if_vrf
-      | if_vrf_member
-      | if_vrrp
-      | if_zone_member
-      // do not rearrange items below
+   if_inner*
+;
 
-      | if_null_single
-      | if_null_block
-   )*
+if_inner
+:
+   if_autostate
+   | if_bandwidth
+   | if_bfd_template
+   | if_channel_group
+   | if_crypto_map
+   | if_default_gw
+   | if_delay
+   | if_description
+   | if_flow_sampler
+   | if_hsrp
+   | if_ip_proxy_arp
+   | if_ip_verify
+   | if_ip_access_group
+   | if_ip_address
+   | if_ip_address_dhcp
+   | if_ip_address_secondary
+   | if_ip_dhcp
+   | if_ip_flow_monitor
+   | if_ip_helper_address
+   | if_ip_inband_access_group
+   | if_ip_igmp
+   | if_ip_nat_destination
+   | if_ip_nat_source
+   | if_ip_nbar
+   | if_ip_ospf_area
+   | if_ip_ospf_cost
+   | if_ip_ospf_dead_interval
+   | if_ip_ospf_dead_interval_minimal
+   | if_ip_ospf_hello_interval
+   | if_ip_ospf_network
+   | if_ip_ospf_passive_interface
+   | if_ip_ospf_shutdown
+   | if_ip_passive_interface_eigrp
+   | if_ip_pim_neighbor_filter
+   | if_ip_policy
+   | if_ip_router_isis
+   | if_ip_router_ospf_area
+   | if_ip_rtp
+   | if_ip_sticky_arp
+   | if_ip_summary_address
+   | if_ip_virtual_router
+   | if_ip_vrf_autoclassify
+   | if_ip_vrf_forwarding
+   | if_ip_vrf_receive
+   | if_ip_vrf_select
+   | if_ip_vrf_sitemap
+   | if_isis_circuit_type
+   | if_isis_enable
+   | if_isis_hello_interval
+   | if_isis_metric
+   | if_isis_network
+   | if_isis_passive
+   | if_isis_tag
+   | if_load_interval
+   | if_mtu
+   | if_no_ip_address
+   | if_port_security
+   | if_private_vlan
+   | if_service_instance
+   | if_service_policy
+   | if_service_policy_control_subscriber
+   | if_shutdown
+   | if_spanning_tree
+   | if_speed_auto
+   | if_speed_eos
+   | if_speed_ios
+   | if_speed_ios_dot11radio
+   | if_standby
+   | if_switchport
+   | if_switchport_access
+   | if_switchport_mode
+   | if_switchport_private_vlan_association
+   | if_switchport_private_vlan_host_association
+   | if_switchport_private_vlan_mapping
+   | if_switchport_trunk_allowed
+   | if_switchport_trunk_encapsulation
+   | if_switchport_trunk_native
+   | if_tunnel
+   | if_vrf
+   | if_vrf_member
+   | if_vrrp
+   | if_zone_member
+   // do not rearrange items below
+ 
+   | if_null_single
+   | if_null_block
 ;

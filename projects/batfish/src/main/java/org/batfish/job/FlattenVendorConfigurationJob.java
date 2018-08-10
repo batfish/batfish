@@ -36,10 +36,15 @@ public class FlattenVendorConfigurationJob extends BatfishJob<FlattenVendorConfi
     ConfigurationFormat format =
         VendorConfigurationFormatDetector.identifyConfigurationFormat(_fileText);
 
-    if (format == ConfigurationFormat.JUNIPER || format == ConfigurationFormat.VYOS) {
+    if (format == ConfigurationFormat.JUNIPER
+        || format == ConfigurationFormat.PALO_ALTO_NESTED
+        || format == ConfigurationFormat.VYOS) {
       String header = null;
       if (format == ConfigurationFormat.JUNIPER) {
         header = VendorConfigurationFormatDetector.BATFISH_FLATTENED_JUNIPER_HEADER;
+      }
+      if (format == ConfigurationFormat.PALO_ALTO_NESTED) {
+        header = VendorConfigurationFormatDetector.BATFISH_FLATTENED_PALO_ALTO_HEADER;
       }
       if (format == ConfigurationFormat.VYOS) {
         header = VendorConfigurationFormatDetector.BATFISH_FLATTENED_VYOS_HEADER;
@@ -47,7 +52,9 @@ public class FlattenVendorConfigurationJob extends BatfishJob<FlattenVendorConfi
       _logger.debugf("Flattening config: \"%s\"...", _inputFile);
       String flatConfigText;
       try {
-        flatConfigText = Batfish.flatten(_fileText, _logger, _settings, format, header);
+        flatConfigText =
+            Batfish.flatten(_fileText, _logger, _settings, format, header)
+                .getFlattenedConfigurationText();
       } catch (ParserBatfishException e) {
         String error = "Error parsing configuration file: \"" + inputFileAsString + "\"";
         elapsedTime = System.currentTimeMillis() - startTime;

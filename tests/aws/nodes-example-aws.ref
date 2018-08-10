@@ -20,8 +20,6 @@
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "incomingFilter" : "~SECURITY_GROUP_INGRESS_ACL~",
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -50,8 +48,6 @@
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "incomingFilter" : "~SECURITY_GROUP_INGRESS_ACL~",
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -83,28 +79,19 @@
                     "dstIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardSetIpSpace",
                       "whitelist" : [
-                        "0.0.0.0/0"
+                        "192.168.1.3"
                       ]
                     },
-                    "negate" : false
-                  }
-                }
-              },
-              {
-                "action" : "REJECT",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
-                  "headerSpace" : {
                     "negate" : false,
                     "tcpFlags" : [
                       {
-                        "ack" : false,
+                        "ack" : true,
                         "cwr" : false,
                         "ece" : false,
                         "fin" : false,
                         "psh" : false,
                         "rst" : false,
-                        "syn" : true,
+                        "syn" : false,
                         "urg" : false,
                         "useAck" : true,
                         "useCwr" : false,
@@ -112,7 +99,7 @@
                         "useFin" : false,
                         "usePsh" : false,
                         "useRst" : false,
-                        "useSyn" : true,
+                        "useSyn" : false,
                         "useUrg" : false
                       }
                     ]
@@ -127,7 +114,7 @@
                     "dstIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardSetIpSpace",
                       "whitelist" : [
-                        "192.168.1.3"
+                        "0.0.0.0/0"
                       ]
                     },
                     "negate" : false
@@ -148,27 +135,18 @@
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardSetIpSpace",
                       "whitelist" : [
-                        "192.168.1.3"
+                        "0.0.0.0/0"
                       ]
-                    }
-                  }
-                }
-              },
-              {
-                "action" : "REJECT",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
-                  "headerSpace" : {
-                    "negate" : false,
+                    },
                     "tcpFlags" : [
                       {
-                        "ack" : false,
+                        "ack" : true,
                         "cwr" : false,
                         "ece" : false,
                         "fin" : false,
                         "psh" : false,
                         "rst" : false,
-                        "syn" : true,
+                        "syn" : false,
                         "urg" : false,
                         "useAck" : true,
                         "useCwr" : false,
@@ -176,7 +154,7 @@
                         "useFin" : false,
                         "usePsh" : false,
                         "useRst" : false,
-                        "useSyn" : true,
+                        "useSyn" : false,
                         "useUrg" : false
                       }
                     ]
@@ -192,7 +170,7 @@
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardSetIpSpace",
                       "whitelist" : [
-                        "0.0.0.0/0"
+                        "192.168.1.3"
                       ]
                     }
                   }
@@ -218,6 +196,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "0.0.0.0/0",
                 "nextHopInterface" : "dynamic",
                 "nextHopIp" : "192.168.1.1",
@@ -226,6 +205,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "0.0.0.0/0",
                 "nextHopInterface" : "dynamic",
                 "nextHopIp" : "192.168.2.1",
@@ -252,8 +232,6 @@
             ],
             "autostate" : true,
             "bandwidth" : 1.0E12,
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -287,6 +265,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "172.31.0.0/16",
                 "nextHopInterface" : "dynamic",
                 "nextHopIp" : "240.0.0.3",
@@ -313,8 +292,6 @@
             ],
             "autostate" : true,
             "bandwidth" : 1.0E12,
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -348,6 +325,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "192.168.0.0/16",
                 "nextHopInterface" : "dynamic",
                 "nextHopIp" : "240.0.0.5",
@@ -374,8 +352,6 @@
             ],
             "autostate" : true,
             "bandwidth" : 1.0E12,
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -409,6 +385,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "10.0.0.0/16",
                 "nextHopInterface" : "dynamic",
                 "nextHopIp" : "240.0.0.1",
@@ -439,6 +416,88 @@
             "externalInterface" : "GigabitEthernet2/0",
             "ikePolicy" : "isakmp-vpn-ba2e34a8-1",
             "localAddress" : "172.16.1.2"
+          }
+        },
+        "ikePhase1Keys" : {
+          "keyring-vpn-ba2e34a8-0" : {
+            "keyHash" : "7db2fd6e9dcffcf826743b57bc0518cfcbca8f4db0b80a7a2c3f0c3b09deb49a",
+            "keyType" : "PRE_SHARED_KEY",
+            "localInterface" : "GigabitEthernet2/0",
+            "remoteIdentity" : {
+              "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+              "ipWildcard" : "52.27.166.152"
+            }
+          },
+          "keyring-vpn-ba2e34a8-1" : {
+            "keyHash" : "84d71e5f49cce153c80a1f13b47989d25f2aa29d9bbc75624ab73435db792f87",
+            "keyType" : "PRE_SHARED_KEY",
+            "localInterface" : "GigabitEthernet2/0",
+            "remoteIdentity" : {
+              "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+              "ipWildcard" : "52.39.121.126"
+            }
+          }
+        },
+        "ikePhase1Policies" : {
+          "isakmp-vpn-ba2e34a8-0" : {
+            "name" : "isakmp-vpn-ba2e34a8-0",
+            "ikePhase1Key" : {
+              "keyHash" : "7db2fd6e9dcffcf826743b57bc0518cfcbca8f4db0b80a7a2c3f0c3b09deb49a",
+              "keyType" : "PRE_SHARED_KEY",
+              "localInterface" : "GigabitEthernet2/0",
+              "remoteIdentity" : {
+                "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                "ipWildcard" : "52.27.166.152"
+              }
+            },
+            "ikePhase1Proposals" : [
+              "200",
+              "201"
+            ],
+            "localInterface" : "GigabitEthernet2/0",
+            "remoteIdentity" : {
+              "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+              "ipWildcard" : "52.27.166.152"
+            }
+          },
+          "isakmp-vpn-ba2e34a8-1" : {
+            "name" : "isakmp-vpn-ba2e34a8-1",
+            "ikePhase1Key" : {
+              "keyHash" : "84d71e5f49cce153c80a1f13b47989d25f2aa29d9bbc75624ab73435db792f87",
+              "keyType" : "PRE_SHARED_KEY",
+              "localInterface" : "GigabitEthernet2/0",
+              "remoteIdentity" : {
+                "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                "ipWildcard" : "52.39.121.126"
+              }
+            },
+            "ikePhase1Proposals" : [
+              "200",
+              "201"
+            ],
+            "localInterface" : "GigabitEthernet2/0",
+            "remoteIdentity" : {
+              "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+              "ipWildcard" : "52.39.121.126"
+            }
+          }
+        },
+        "ikePhase1Proposals" : {
+          "200" : {
+            "name" : "200",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP2",
+            "encryptionAlgorithm" : "AES_128_CBC",
+            "hashingAlgorithm" : "SHA1",
+            "lifetimeSeconds" : 28800
+          },
+          "201" : {
+            "name" : "201",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP2",
+            "encryptionAlgorithm" : "AES_128_CBC",
+            "hashingAlgorithm" : "SHA1",
+            "lifetimeSeconds" : 28800
           }
         },
         "ikePolicies" : {
@@ -487,8 +546,6 @@
             "declaredNames" : [
               "Ethernet0/0"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -518,8 +575,6 @@
               "Ethernet1/0"
             ],
             "description" : "link to lhr-fw-01 e1/3",
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfArea" : 0,
@@ -552,8 +607,6 @@
               "Ethernet1/1"
             ],
             "description" : "link to lhr-fw-02 e1/3",
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfArea" : 0,
@@ -582,8 +635,6 @@
             "declaredNames" : [
               "Ethernet1/2"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -614,8 +665,6 @@
             ],
             "description" : "link to lix-peer-01 e1/1",
             "incomingFilter" : "LIMIT_PEER",
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -642,8 +691,6 @@
             "declaredNames" : [
               "Ethernet1/4"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -669,8 +716,6 @@
             "declaredNames" : [
               "Ethernet1/5"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -696,8 +741,6 @@
             "declaredNames" : [
               "Ethernet1/6"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -723,8 +766,6 @@
             "declaredNames" : [
               "Ethernet1/7"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -753,8 +794,6 @@
             "declaredNames" : [
               "GigabitEthernet0/0"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -785,8 +824,6 @@
               "GigabitEthernet2/0"
             ],
             "description" : "Border Interface",
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -812,12 +849,10 @@
               "10.10.255.8/32"
             ],
             "autostate" : true,
-            "bandwidth" : 1.0E12,
+            "bandwidth" : 8.0E9,
             "declaredNames" : [
               "Loopback0"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfArea" : 0,
@@ -849,8 +884,6 @@
             "declaredNames" : [
               "Tunnel1"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -880,8 +913,6 @@
             "declaredNames" : [
               "Tunnel2"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -946,7 +977,9 @@
                 },
                 "name" : "permit icmp any 10.100.0.0 0.0.255.255"
               }
-            ]
+            ],
+            "sourceName" : "2001",
+            "sourceType" : "extended ipv4 access-list"
           },
           "LIMIT_PEER" : {
             "name" : "LIMIT_PEER",
@@ -987,7 +1020,9 @@
                 },
                 "name" : "permit ip host 10.10.30.2 host 10.10.30.1"
               }
-            ]
+            ],
+            "sourceName" : "LIMIT_PEER",
+            "sourceType" : "extended ipv4 access-list"
           },
           "MATCH_ALL_BGP" : {
             "name" : "MATCH_ALL_BGP",
@@ -1010,6 +1045,60 @@
                 },
                 "name" : "permit ip any any"
               }
+            ],
+            "sourceName" : "MATCH_ALL_BGP",
+            "sourceType" : "extended ipv4 access-list"
+          }
+        },
+        "ipsecPeerConfigs" : {
+          "Tunnel1" : {
+            "class" : "org.batfish.datamodel.IpsecStaticPeerConfig",
+            "destinationAddress" : "52.27.166.152",
+            "ikePhase1Policy" : "isakmp-vpn-ba2e34a8-0",
+            "ipsecPolicy" : "ipsec-vpn-ba2e34a8-0",
+            "localAddress" : "172.16.1.2",
+            "physicalInterface" : "GigabitEthernet2/0",
+            "tunnelInterface" : "Tunnel1"
+          },
+          "Tunnel2" : {
+            "class" : "org.batfish.datamodel.IpsecStaticPeerConfig",
+            "destinationAddress" : "52.39.121.126",
+            "ikePhase1Policy" : "isakmp-vpn-ba2e34a8-1",
+            "ipsecPolicy" : "ipsec-vpn-ba2e34a8-1",
+            "localAddress" : "172.16.1.2",
+            "physicalInterface" : "GigabitEthernet2/0",
+            "tunnelInterface" : "Tunnel2"
+          }
+        },
+        "ipsecPhase2Policies" : {
+          "ipsec-vpn-ba2e34a8-0" : {
+            "pfsKeyGroup" : "GROUP2",
+            "proposals" : [
+              "ipsec-prop-vpn-ba2e34a8-0"
+            ]
+          },
+          "ipsec-vpn-ba2e34a8-1" : {
+            "pfsKeyGroup" : "GROUP2",
+            "proposals" : [
+              "ipsec-prop-vpn-ba2e34a8-1"
+            ]
+          }
+        },
+        "ipsecPhase2Proposals" : {
+          "ipsec-prop-vpn-ba2e34a8-0" : {
+            "authenticationAlgorithm" : "HMAC_SHA1_96",
+            "encryptionAlgorithm" : "AES_128_CBC",
+            "ipsecEncapsulationMode" : "TUNNEL",
+            "protocols" : [
+              "ESP"
+            ]
+          },
+          "ipsec-prop-vpn-ba2e34a8-1" : {
+            "authenticationAlgorithm" : "HMAC_SHA1_96",
+            "encryptionAlgorithm" : "AES_128_CBC",
+            "ipsecEncapsulationMode" : "TUNNEL",
+            "protocols" : [
+              "ESP"
             ]
           }
         },
@@ -1036,13 +1125,17 @@
             "name" : "ipsec-prop-vpn-ba2e34a8-0",
             "authenticationAlgorithm" : "HMAC_SHA1_96",
             "encryptionAlgorithm" : "AES_128_CBC",
-            "protocol" : "ESP"
+            "protocols" : [
+              "ESP"
+            ]
           },
           "ipsec-prop-vpn-ba2e34a8-1" : {
             "name" : "ipsec-prop-vpn-ba2e34a8-1",
             "authenticationAlgorithm" : "HMAC_SHA1_96",
             "encryptionAlgorithm" : "AES_128_CBC",
-            "protocol" : "ESP"
+            "protocols" : [
+              "ESP"
+            ]
           }
         },
         "ipsecVpns" : {
@@ -1059,19 +1152,14 @@
             "ipsecPolicy" : "ipsec-vpn-ba2e34a8-1"
           }
         },
-        "route6FilterLists" : {
-          "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-            "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
-          }
-        },
         "routeFilterLists" : {
           "MATCH_ALL_BGP" : {
             "name" : "MATCH_ALL_BGP",
             "lines" : [
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "0-32",
-                "prefix" : "0.0.0.0/0"
+                "ipWildcard" : "0.0.0.0/0",
+                "lengthRange" : "0-32"
               }
             ]
           },
@@ -1080,13 +1168,13 @@
             "lines" : [
               {
                 "action" : "REJECT",
-                "lengthRange" : "28-32",
-                "prefix" : "10.10.255.0/28"
+                "ipWildcard" : "10.10.255.0/28",
+                "lengthRange" : "28-32"
               },
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "0-32",
-                "prefix" : "0.0.0.0/0"
+                "ipWildcard" : "0.0.0.0/0",
+                "lengthRange" : "0-32"
               }
             ]
           }
@@ -1294,6 +1382,82 @@
               }
             ]
           },
+          "~BGP_DEFAULT_ROUTE_PEER_EXPORT_POLICY:default:169.254.13.237~" : {
+            "name" : "~BGP_DEFAULT_ROUTE_PEER_EXPORT_POLICY:default:169.254.13.237~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                  "comment" : "match default route",
+                  "prefix" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                  },
+                  "prefixSet" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                    "prefixSpace" : [
+                      "0.0.0.0/0"
+                    ]
+                  }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
+                    "originType" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralOrigin",
+                      "originType" : "igp"
+                    }
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "ReturnFalse"
+              }
+            ]
+          },
+          "~BGP_DEFAULT_ROUTE_PEER_EXPORT_POLICY:default:169.254.15.193~" : {
+            "name" : "~BGP_DEFAULT_ROUTE_PEER_EXPORT_POLICY:default:169.254.15.193~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                  "comment" : "match default route",
+                  "prefix" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                  },
+                  "prefixSet" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                    "prefixSpace" : [
+                      "0.0.0.0/0"
+                    ]
+                  }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
+                    "originType" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralOrigin",
+                      "originType" : "igp"
+                    }
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "ReturnFalse"
+              }
+            ]
+          },
           "~BGP_PEER_EXPORT_POLICY:default:10.10.10.37~" : {
             "name" : "~BGP_PEER_EXPORT_POLICY:default:10.10.10.37~",
             "statements" : [
@@ -1421,17 +1585,8 @@
                       "calledPolicyName" : "~BGP_COMMON_EXPORT_POLICY:default~"
                     },
                     {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                      "comment" : "match default route",
-                      "prefix" : {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
-                      },
-                      "prefixSet" : {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
-                        "prefixSpace" : [
-                          "0.0.0.0/0"
-                        ]
-                      }
+                      "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
+                      "calledPolicyName" : "~BGP_DEFAULT_ROUTE_PEER_EXPORT_POLICY:default:169.254.13.237~"
                     }
                   ]
                 },
@@ -1464,17 +1619,8 @@
                       "calledPolicyName" : "~BGP_COMMON_EXPORT_POLICY:default~"
                     },
                     {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                      "comment" : "match default route",
-                      "prefix" : {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
-                      },
-                      "prefixSet" : {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
-                        "prefixSpace" : [
-                          "0.0.0.0/0"
-                        ]
-                      }
+                      "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
+                      "calledPolicyName" : "~BGP_DEFAULT_ROUTE_PEER_EXPORT_POLICY:default:169.254.15.193~"
                     }
                   ]
                 },
@@ -1500,58 +1646,101 @@
             "lines" : {
               "aux0" : {
                 "name" : "aux0",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "LOCAL"
+                  ]
+                },
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
               },
               "con0" : {
                 "name" : "con0",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
               },
               "vty0" : {
                 "name" : "vty0",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "LOCAL"
+                  ]
+                },
                 "execTimeoutMinutes" : 0,
                 "execTimeoutSeconds" : 0,
+                "lineType" : "VTY",
                 "transportInput" : [
                   "telnet"
                 ]
               },
               "vty1" : {
                 "name" : "vty1",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "LOCAL"
+                  ]
+                },
                 "execTimeoutMinutes" : 0,
                 "execTimeoutSeconds" : 0,
+                "lineType" : "VTY",
                 "transportInput" : [
                   "telnet"
                 ]
               },
               "vty2" : {
                 "name" : "vty2",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "LOCAL"
+                  ]
+                },
                 "execTimeoutMinutes" : 0,
                 "execTimeoutSeconds" : 0,
+                "lineType" : "VTY",
                 "transportInput" : [
                   "telnet"
                 ]
               },
               "vty3" : {
                 "name" : "vty3",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "LOCAL"
+                  ]
+                },
                 "execTimeoutMinutes" : 0,
                 "execTimeoutSeconds" : 0,
+                "lineType" : "VTY",
                 "transportInput" : [
                   "ssh"
                 ]
               },
               "vty4" : {
                 "name" : "vty4",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "LOCAL"
+                  ]
+                },
                 "execTimeoutMinutes" : 0,
                 "execTimeoutSeconds" : 0,
+                "lineType" : "VTY",
                 "transportInput" : [
                   "ssh"
                 ]
               },
               "vty5" : {
                 "name" : "vty5",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "LOCAL"
+                  ]
+                },
                 "execTimeoutMinutes" : 0,
                 "execTimeoutSeconds" : 0,
+                "lineType" : "VTY",
                 "transportInput" : [
                   "ssh"
                 ]
@@ -1613,18 +1802,16 @@
               "multipathIbgp" : false,
               "neighbors" : {
                 "10.10.10.37/32" : {
-                  "name" : "10.10.10.37/32",
+                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
-                  "address" : "10.10.10.37",
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
-                  "allowRemoteAsOut" : false,
+                  "allowRemoteAsOut" : true,
                   "clusterId" : 168492808,
                   "defaultMetric" : 0,
-                  "dynamic" : false,
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:10.10.10.37~",
@@ -1635,50 +1822,44 @@
                   ],
                   "localAs" : 65301,
                   "localIp" : "10.10.10.38",
+                  "peerAddress" : "10.10.10.37",
                   "remoteAs" : 65201,
-                  "remotePrefix" : "10.10.10.37/32",
                   "routeReflectorClient" : false,
-                  "sendCommunity" : false,
-                  "vrf" : "default"
+                  "sendCommunity" : false
                 },
                 "10.10.10.45/32" : {
-                  "name" : "10.10.10.45/32",
+                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
-                  "address" : "10.10.10.45",
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
-                  "allowRemoteAsOut" : false,
+                  "allowRemoteAsOut" : true,
                   "clusterId" : 168492808,
                   "defaultMetric" : 0,
-                  "dynamic" : false,
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:10.10.10.45~",
                   "group" : "FW",
                   "localAs" : 65301,
                   "localIp" : "10.10.10.46",
+                  "peerAddress" : "10.10.10.45",
                   "remoteAs" : 65202,
-                  "remotePrefix" : "10.10.10.45/32",
                   "routeReflectorClient" : false,
-                  "sendCommunity" : false,
-                  "vrf" : "default"
+                  "sendCommunity" : false
                 },
                 "10.10.30.2/32" : {
-                  "name" : "10.10.30.2/32",
+                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
-                  "address" : "10.10.30.2",
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
-                  "allowRemoteAsOut" : false,
+                  "allowRemoteAsOut" : true,
                   "clusterId" : 168492808,
                   "defaultMetric" : 0,
-                  "dynamic" : false,
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:10.10.30.2~",
@@ -1688,49 +1869,43 @@
                   ],
                   "localAs" : 65301,
                   "localIp" : "10.10.30.1",
+                  "peerAddress" : "10.10.30.2",
                   "remoteAs" : 65331,
-                  "remotePrefix" : "10.10.30.2/32",
                   "routeReflectorClient" : false,
-                  "sendCommunity" : false,
-                  "vrf" : "default"
+                  "sendCommunity" : false
                 },
                 "10.10.255.7/32" : {
-                  "name" : "10.10.255.7/32",
+                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
-                  "address" : "10.10.255.7",
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
-                  "allowRemoteAsOut" : false,
+                  "allowRemoteAsOut" : true,
                   "clusterId" : 168492808,
                   "defaultMetric" : 0,
-                  "dynamic" : false,
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:10.10.255.7~",
                   "localAs" : 65301,
                   "localIp" : "10.10.255.8",
+                  "peerAddress" : "10.10.255.7",
                   "remoteAs" : 65301,
-                  "remotePrefix" : "10.10.255.7/32",
                   "routeReflectorClient" : false,
-                  "sendCommunity" : false,
-                  "vrf" : "default"
+                  "sendCommunity" : false
                 },
                 "169.254.13.237/32" : {
-                  "name" : "169.254.13.237/32",
+                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
-                  "address" : "169.254.13.237",
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
-                  "allowRemoteAsOut" : false,
+                  "allowRemoteAsOut" : true,
                   "clusterId" : 168492808,
                   "defaultMetric" : 0,
-                  "dynamic" : false,
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:169.254.13.237~",
@@ -1752,25 +1927,22 @@
                   ],
                   "localAs" : 65301,
                   "localIp" : "169.254.13.238",
+                  "peerAddress" : "169.254.13.237",
                   "remoteAs" : 65401,
-                  "remotePrefix" : "169.254.13.237/32",
                   "routeReflectorClient" : false,
-                  "sendCommunity" : false,
-                  "vrf" : "default"
+                  "sendCommunity" : false
                 },
                 "169.254.15.193/32" : {
-                  "name" : "169.254.15.193/32",
+                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
-                  "address" : "169.254.15.193",
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
-                  "allowRemoteAsOut" : false,
+                  "allowRemoteAsOut" : true,
                   "clusterId" : 168492808,
                   "defaultMetric" : 0,
-                  "dynamic" : false,
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:169.254.15.193~",
@@ -1792,11 +1964,10 @@
                   ],
                   "localAs" : 65301,
                   "localIp" : "169.254.15.194",
+                  "peerAddress" : "169.254.15.193",
                   "remoteAs" : 65401,
-                  "remotePrefix" : "169.254.15.193/32",
                   "routeReflectorClient" : false,
-                  "sendCommunity" : false,
-                  "vrf" : "default"
+                  "sendCommunity" : false
                 }
               },
               "routerId" : "10.10.255.8",
@@ -1822,11 +1993,14 @@
               "areas" : {
                 "0" : {
                   "name" : 0,
+                  "injectDefaultRoute" : true,
                   "interfaces" : [
                     "Ethernet1/0",
                     "Ethernet1/1",
                     "Loopback0"
-                  ]
+                  ],
+                  "metricOfDefaultRoute" : 0,
+                  "stubType" : "NONE"
                 }
               },
               "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
@@ -1838,6 +2012,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "8.8.0.0/16",
                 "nextHopInterface" : "dynamic",
                 "nextHopIp" : "172.16.1.1",
@@ -1846,6 +2021,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "10.10.0.0/16",
                 "nextHopInterface" : "null_interface",
                 "nextHopIp" : "AUTO/NONE(-1l)",
@@ -1854,6 +2030,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "52.0.0.0/8",
                 "nextHopInterface" : "dynamic",
                 "nextHopIp" : "172.16.1.1",
@@ -1880,8 +2057,6 @@
             ],
             "autostate" : true,
             "bandwidth" : 1.0E12,
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -1909,8 +2084,6 @@
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "incomingFilter" : "acl-7b78771d_ingress",
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -1954,7 +2127,9 @@
                 },
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
-            ]
+            ],
+            "sourceName" : "acl-7b78771d",
+            "sourceType" : "Network ACL"
           },
           "acl-7b78771d_ingress" : {
             "name" : "acl-7b78771d_ingress",
@@ -1979,7 +2154,9 @@
                 },
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
-            ]
+            ],
+            "sourceName" : "acl-7b78771d",
+            "sourceType" : "Network ACL"
           }
         },
         "vendorFamily" : {
@@ -2000,6 +2177,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "0.0.0.0/0",
                 "nextHopInterface" : "dynamic",
                 "nextHopIp" : "240.0.0.11",
@@ -2026,8 +2204,6 @@
             ],
             "autostate" : true,
             "bandwidth" : 1.0E12,
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -2055,8 +2231,6 @@
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "incomingFilter" : "acl-7b78771d_ingress",
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -2100,7 +2274,9 @@
                 },
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
-            ]
+            ],
+            "sourceName" : "acl-7b78771d",
+            "sourceType" : "Network ACL"
           },
           "acl-7b78771d_ingress" : {
             "name" : "acl-7b78771d_ingress",
@@ -2125,7 +2301,9 @@
                 },
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
-            ]
+            ],
+            "sourceName" : "acl-7b78771d",
+            "sourceType" : "Network ACL"
           }
         },
         "vendorFamily" : {
@@ -2146,6 +2324,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "0.0.0.0/0",
                 "nextHopInterface" : "dynamic",
                 "nextHopIp" : "240.0.0.19",
@@ -2172,8 +2351,6 @@
             ],
             "autostate" : true,
             "bandwidth" : 1.0E12,
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -2201,8 +2378,6 @@
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "incomingFilter" : "acl-4db39c28_ingress",
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -2246,7 +2421,9 @@
                 },
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
-            ]
+            ],
+            "sourceName" : "acl-4db39c28",
+            "sourceType" : "Network ACL"
           },
           "acl-4db39c28_ingress" : {
             "name" : "acl-4db39c28_ingress",
@@ -2283,7 +2460,9 @@
                 },
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
-            ]
+            ],
+            "sourceName" : "acl-4db39c28",
+            "sourceType" : "Network ACL"
           }
         },
         "vendorFamily" : {
@@ -2304,6 +2483,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "0.0.0.0/0",
                 "nextHopInterface" : "dynamic",
                 "nextHopIp" : "240.0.0.13",
@@ -2330,8 +2510,6 @@
             ],
             "autostate" : true,
             "bandwidth" : 1.0E12,
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -2359,8 +2537,6 @@
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "incomingFilter" : "acl-7b78771d_ingress",
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -2404,7 +2580,9 @@
                 },
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
-            ]
+            ],
+            "sourceName" : "acl-7b78771d",
+            "sourceType" : "Network ACL"
           },
           "acl-7b78771d_ingress" : {
             "name" : "acl-7b78771d_ingress",
@@ -2429,7 +2607,9 @@
                 },
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
-            ]
+            ],
+            "sourceName" : "acl-7b78771d",
+            "sourceType" : "Network ACL"
           }
         },
         "vendorFamily" : {
@@ -2450,6 +2630,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "0.0.0.0/0",
                 "nextHopInterface" : "dynamic",
                 "nextHopIp" : "240.0.0.27",
@@ -2476,8 +2657,6 @@
             ],
             "autostate" : true,
             "bandwidth" : 1.0E12,
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -2505,8 +2684,6 @@
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "incomingFilter" : "acl-3d4f745b_ingress",
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -2550,7 +2727,9 @@
                 },
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
-            ]
+            ],
+            "sourceName" : "acl-3d4f745b",
+            "sourceType" : "Network ACL"
           },
           "acl-3d4f745b_ingress" : {
             "name" : "acl-3d4f745b_ingress",
@@ -2575,7 +2754,9 @@
                 },
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
-            ]
+            ],
+            "sourceName" : "acl-3d4f745b",
+            "sourceType" : "Network ACL"
           }
         },
         "vendorFamily" : {
@@ -2596,6 +2777,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "0.0.0.0/0",
                 "nextHopInterface" : "dynamic",
                 "nextHopIp" : "240.0.0.23",
@@ -2622,8 +2804,6 @@
             ],
             "autostate" : true,
             "bandwidth" : 1.0E12,
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -2651,8 +2831,6 @@
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "incomingFilter" : "acl-7b78771d_ingress",
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -2696,7 +2874,9 @@
                 },
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
-            ]
+            ],
+            "sourceName" : "acl-7b78771d",
+            "sourceType" : "Network ACL"
           },
           "acl-7b78771d_ingress" : {
             "name" : "acl-7b78771d_ingress",
@@ -2721,7 +2901,9 @@
                 },
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
-            ]
+            ],
+            "sourceName" : "acl-7b78771d",
+            "sourceType" : "Network ACL"
           }
         },
         "vendorFamily" : {
@@ -2742,6 +2924,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "0.0.0.0/0",
                 "nextHopInterface" : "dynamic",
                 "nextHopIp" : "240.0.0.15",
@@ -2768,8 +2951,6 @@
             ],
             "autostate" : true,
             "bandwidth" : 1.0E12,
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -2797,8 +2978,6 @@
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "incomingFilter" : "acl-3d4f745b_ingress",
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -2842,7 +3021,9 @@
                 },
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
-            ]
+            ],
+            "sourceName" : "acl-3d4f745b",
+            "sourceType" : "Network ACL"
           },
           "acl-3d4f745b_ingress" : {
             "name" : "acl-3d4f745b_ingress",
@@ -2867,7 +3048,9 @@
                 },
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
-            ]
+            ],
+            "sourceName" : "acl-3d4f745b",
+            "sourceType" : "Network ACL"
           }
         },
         "vendorFamily" : {
@@ -2888,6 +3071,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "0.0.0.0/0",
                 "nextHopInterface" : "dynamic",
                 "nextHopIp" : "240.0.0.9",
@@ -2914,8 +3098,6 @@
             ],
             "autostate" : true,
             "bandwidth" : 1.0E12,
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -2943,8 +3125,6 @@
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "incomingFilter" : "acl-4db39c28_ingress",
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -2988,7 +3168,9 @@
                 },
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
-            ]
+            ],
+            "sourceName" : "acl-4db39c28",
+            "sourceType" : "Network ACL"
           },
           "acl-4db39c28_ingress" : {
             "name" : "acl-4db39c28_ingress",
@@ -3025,7 +3207,9 @@
                 },
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
-            ]
+            ],
+            "sourceName" : "acl-4db39c28",
+            "sourceType" : "Network ACL"
           }
         },
         "vendorFamily" : {
@@ -3046,6 +3230,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "0.0.0.0/0",
                 "nextHopInterface" : "dynamic",
                 "nextHopIp" : "240.0.0.17",
@@ -3072,8 +3257,6 @@
             ],
             "autostate" : true,
             "bandwidth" : 1.0E12,
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -3101,8 +3284,6 @@
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "incomingFilter" : "acl-4db39c28_ingress",
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -3146,7 +3327,9 @@
                 },
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
-            ]
+            ],
+            "sourceName" : "acl-4db39c28",
+            "sourceType" : "Network ACL"
           },
           "acl-4db39c28_ingress" : {
             "name" : "acl-4db39c28_ingress",
@@ -3183,7 +3366,9 @@
                 },
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
-            ]
+            ],
+            "sourceName" : "acl-4db39c28",
+            "sourceType" : "Network ACL"
           }
         },
         "vendorFamily" : {
@@ -3204,6 +3389,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "0.0.0.0/0",
                 "nextHopInterface" : "dynamic",
                 "nextHopIp" : "240.0.0.25",
@@ -3230,8 +3416,6 @@
             ],
             "autostate" : true,
             "bandwidth" : 1.0E12,
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -3259,8 +3443,6 @@
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "incomingFilter" : "acl-7b78771d_ingress",
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -3304,7 +3486,9 @@
                 },
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
-            ]
+            ],
+            "sourceName" : "acl-7b78771d",
+            "sourceType" : "Network ACL"
           },
           "acl-7b78771d_ingress" : {
             "name" : "acl-7b78771d_ingress",
@@ -3329,7 +3513,9 @@
                 },
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
-            ]
+            ],
+            "sourceName" : "acl-7b78771d",
+            "sourceType" : "Network ACL"
           }
         },
         "vendorFamily" : {
@@ -3350,6 +3536,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "0.0.0.0/0",
                 "nextHopInterface" : "dynamic",
                 "nextHopIp" : "240.0.0.21",
@@ -3377,8 +3564,6 @@
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "incomingFilter" : "~SECURITY_GROUP_INGRESS_ACL~",
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -3410,28 +3595,29 @@
                     "dstIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardSetIpSpace",
                       "whitelist" : [
-                        "0.0.0.0/0"
+                        "10.193.0.0/16",
+                        "67.170.86.87",
+                        "104.236.156.171",
+                        "107.170.243.58",
+                        "162.243.144.192"
                       ]
                     },
-                    "negate" : false
-                  }
-                }
-              },
-              {
-                "action" : "REJECT",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
-                  "headerSpace" : {
+                    "ipProtocols" : [
+                      "TCP"
+                    ],
                     "negate" : false,
+                    "srcPorts" : [
+                      "3306-3306"
+                    ],
                     "tcpFlags" : [
                       {
-                        "ack" : false,
+                        "ack" : true,
                         "cwr" : false,
                         "ece" : false,
                         "fin" : false,
                         "psh" : false,
                         "rst" : false,
-                        "syn" : true,
+                        "syn" : false,
                         "urg" : false,
                         "useAck" : true,
                         "useCwr" : false,
@@ -3439,7 +3625,7 @@
                         "useFin" : false,
                         "usePsh" : false,
                         "useRst" : false,
-                        "useSyn" : true,
+                        "useSyn" : false,
                         "useUrg" : false
                       }
                     ]
@@ -3454,20 +3640,10 @@
                     "dstIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardSetIpSpace",
                       "whitelist" : [
-                        "10.193.0.0/16",
-                        "67.170.86.87",
-                        "104.236.156.171",
-                        "107.170.243.58",
-                        "162.243.144.192"
+                        "0.0.0.0/0"
                       ]
                     },
-                    "ipProtocols" : [
-                      "TCP"
-                    ],
-                    "negate" : false,
-                    "srcPorts" : [
-                      "3306-3306"
-                    ]
+                    "negate" : false
                   }
                 }
               }
@@ -3476,6 +3652,41 @@
           "~SECURITY_GROUP_INGRESS_ACL~" : {
             "name" : "~SECURITY_GROUP_INGRESS_ACL~",
             "lines" : [
+              {
+                "action" : "ACCEPT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "negate" : false,
+                    "srcIps" : {
+                      "class" : "org.batfish.datamodel.IpWildcardSetIpSpace",
+                      "whitelist" : [
+                        "0.0.0.0/0"
+                      ]
+                    },
+                    "tcpFlags" : [
+                      {
+                        "ack" : true,
+                        "cwr" : false,
+                        "ece" : false,
+                        "fin" : false,
+                        "psh" : false,
+                        "rst" : false,
+                        "syn" : false,
+                        "urg" : false,
+                        "useAck" : true,
+                        "useCwr" : false,
+                        "useEce" : false,
+                        "useFin" : false,
+                        "usePsh" : false,
+                        "useRst" : false,
+                        "useSyn" : false,
+                        "useUrg" : false
+                      }
+                    ]
+                  }
+                }
+              },
               {
                 "action" : "ACCEPT",
                 "matchCondition" : {
@@ -3500,50 +3711,6 @@
                     }
                   }
                 }
-              },
-              {
-                "action" : "REJECT",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
-                  "headerSpace" : {
-                    "negate" : false,
-                    "tcpFlags" : [
-                      {
-                        "ack" : false,
-                        "cwr" : false,
-                        "ece" : false,
-                        "fin" : false,
-                        "psh" : false,
-                        "rst" : false,
-                        "syn" : true,
-                        "urg" : false,
-                        "useAck" : true,
-                        "useCwr" : false,
-                        "useEce" : false,
-                        "useFin" : false,
-                        "usePsh" : false,
-                        "useRst" : false,
-                        "useSyn" : true,
-                        "useUrg" : false
-                      }
-                    ]
-                  }
-                }
-              },
-              {
-                "action" : "ACCEPT",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
-                  "headerSpace" : {
-                    "negate" : false,
-                    "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardSetIpSpace",
-                      "whitelist" : [
-                        "0.0.0.0/0"
-                      ]
-                    }
-                  }
-                }
               }
             ]
           }
@@ -3564,6 +3731,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "0.0.0.0/0",
                 "nextHopInterface" : "dynamic",
                 "nextHopIp" : "192.168.1.1",
@@ -3640,8 +3808,6 @@
             ],
             "autostate" : true,
             "bandwidth" : 1.0E12,
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -3668,8 +3834,6 @@
             ],
             "autostate" : true,
             "bandwidth" : 1.0E12,
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -3696,8 +3860,6 @@
             ],
             "autostate" : true,
             "bandwidth" : 1.0E12,
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -3724,8 +3886,6 @@
             ],
             "autostate" : true,
             "bandwidth" : 1.0E12,
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -3752,8 +3912,6 @@
             ],
             "autostate" : true,
             "bandwidth" : 1.0E12,
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -3796,14 +3954,18 @@
             "authenticationAlgorithm" : "HMAC_SHA1_96",
             "encryptionAlgorithm" : "AES_128_CBC",
             "lifetimeSeconds" : 3600,
-            "protocol" : "ESP"
+            "protocols" : [
+              "ESP"
+            ]
           },
           "vpn-ba2e34a8-2" : {
             "name" : "vpn-ba2e34a8-2",
             "authenticationAlgorithm" : "HMAC_SHA1_96",
             "encryptionAlgorithm" : "AES_128_CBC",
             "lifetimeSeconds" : 3600,
-            "protocol" : "ESP"
+            "protocols" : [
+              "ESP"
+            ]
           }
         },
         "ipsecVpns" : {
@@ -3826,8 +3988,8 @@
             "lines" : [
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "16-16",
-                "prefix" : "10.100.0.0/16"
+                "ipWildcard" : "10.100.0.0/16",
+                "lengthRange" : "16-16"
               }
             ]
           },
@@ -3836,8 +3998,8 @@
             "lines" : [
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "16-16",
-                "prefix" : "10.100.0.0/16"
+                "ipWildcard" : "10.100.0.0/16",
+                "lengthRange" : "16-16"
               }
             ]
           }
@@ -3980,74 +4142,65 @@
               "multipathIbgp" : false,
               "neighbors" : {
                 "169.254.13.238/32" : {
-                  "name" : "169.254.13.238/32",
+                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
-                  "address" : "169.254.13.238",
                   "advertiseExternal" : false,
                   "advertiseInactive" : false,
                   "allowLocalAsIn" : false,
                   "allowRemoteAsOut" : false,
                   "defaultMetric" : 0,
-                  "dynamic" : false,
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
                   "exportPolicy" : "vpn-ba2e34a8-2_origination",
                   "localAs" : 65401,
                   "localIp" : "169.254.13.237",
+                  "peerAddress" : "169.254.13.238",
                   "remoteAs" : 65301,
-                  "remotePrefix" : "169.254.13.238/32",
                   "routeReflectorClient" : false,
-                  "sendCommunity" : false,
-                  "vrf" : "default"
+                  "sendCommunity" : false
                 },
                 "169.254.15.194/32" : {
-                  "name" : "169.254.15.194/32",
+                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
-                  "address" : "169.254.15.194",
                   "advertiseExternal" : false,
                   "advertiseInactive" : false,
                   "allowLocalAsIn" : false,
                   "allowRemoteAsOut" : false,
                   "defaultMetric" : 0,
-                  "dynamic" : false,
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
                   "exportPolicy" : "vpn-ba2e34a8-1_origination",
                   "localAs" : 65401,
                   "localIp" : "169.254.15.193",
+                  "peerAddress" : "169.254.15.194",
                   "remoteAs" : 65301,
-                  "remotePrefix" : "169.254.15.194/32",
                   "routeReflectorClient" : false,
-                  "sendCommunity" : false,
-                  "vrf" : "default"
+                  "sendCommunity" : false
                 },
                 "240.0.0.7/32" : {
-                  "name" : "240.0.0.7/32",
+                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
-                  "address" : "240.0.0.7",
                   "advertiseExternal" : false,
                   "advertiseInactive" : false,
                   "allowLocalAsIn" : false,
                   "allowRemoteAsOut" : false,
                   "defaultMetric" : 0,
-                  "dynamic" : false,
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~ACCEPT_ALL_EBGP_AND_SET_NEXT_HOP_SELF~",
                   "importPolicy" : "~REJECT_ALL~",
                   "localAs" : 65401,
                   "localIp" : "240.0.0.6",
+                  "peerAddress" : "240.0.0.7",
                   "remoteAs" : 65401,
-                  "remotePrefix" : "240.0.0.7/32",
                   "routeReflectorClient" : false,
-                  "sendCommunity" : true,
-                  "vrf" : "default"
+                  "sendCommunity" : true
                 }
               },
               "routerId" : "169.254.15.193",
@@ -4064,6 +4217,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "10.100.0.0/16",
                 "nextHopInterface" : "dynamic",
                 "nextHopIp" : "240.0.0.7",
@@ -4090,8 +4244,6 @@
             ],
             "autostate" : true,
             "bandwidth" : 1.0E12,
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -4139,28 +4291,25 @@
               "multipathIbgp" : false,
               "neighbors" : {
                 "240.0.0.6/32" : {
-                  "name" : "240.0.0.6/32",
+                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
-                  "address" : "240.0.0.6",
                   "advertiseExternal" : false,
                   "advertiseInactive" : false,
                   "allowLocalAsIn" : false,
                   "allowRemoteAsOut" : false,
                   "defaultMetric" : 0,
-                  "dynamic" : false,
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~REJECT_ALL~",
                   "importPolicy" : "~ACCEPT_ALL~",
                   "localAs" : 65401,
                   "localIp" : "240.0.0.7",
+                  "peerAddress" : "240.0.0.6",
                   "remoteAs" : 65401,
-                  "remotePrefix" : "240.0.0.6/32",
                   "routeReflectorClient" : false,
-                  "sendCommunity" : true,
-                  "vrf" : "default"
+                  "sendCommunity" : true
                 }
               },
               "routerId" : "240.0.0.7",
@@ -4173,6 +4322,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "10.100.0.0/16",
                 "nextHopInterface" : "null_interface",
                 "nextHopIp" : "AUTO/NONE(-1l)",
@@ -4199,8 +4349,6 @@
             ],
             "autostate" : true,
             "bandwidth" : 1.0E12,
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -4227,8 +4375,6 @@
             ],
             "autostate" : true,
             "bandwidth" : 1.0E12,
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -4255,8 +4401,6 @@
             ],
             "autostate" : true,
             "bandwidth" : 1.0E12,
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -4293,6 +4437,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "10.0.0.0/16",
                 "nextHopInterface" : "null_interface",
                 "nextHopIp" : "AUTO/NONE(-1l)",
@@ -4301,6 +4446,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "10.0.0.0/24",
                 "nextHopInterface" : "dynamic",
                 "nextHopIp" : "240.0.0.22",
@@ -4309,6 +4455,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "10.0.1.0/24",
                 "nextHopInterface" : "dynamic",
                 "nextHopIp" : "240.0.0.8",
@@ -4335,8 +4482,6 @@
             ],
             "autostate" : true,
             "bandwidth" : 1.0E12,
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -4363,8 +4508,6 @@
             ],
             "autostate" : true,
             "bandwidth" : 1.0E12,
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -4391,8 +4534,6 @@
             ],
             "autostate" : true,
             "bandwidth" : 1.0E12,
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -4419,8 +4560,6 @@
             ],
             "autostate" : true,
             "bandwidth" : 1.0E12,
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -4447,8 +4586,6 @@
             ],
             "autostate" : true,
             "bandwidth" : 1.0E12,
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -4475,8 +4612,6 @@
             ],
             "autostate" : true,
             "bandwidth" : 1.0E12,
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -4516,6 +4651,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "192.168.0.0/16",
                 "nextHopInterface" : "null_interface",
                 "nextHopIp" : "AUTO/NONE(-1l)",
@@ -4524,6 +4660,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "192.168.1.0/24",
                 "nextHopInterface" : "dynamic",
                 "nextHopIp" : "240.0.0.18",
@@ -4532,6 +4669,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "192.168.2.0/28",
                 "nextHopInterface" : "dynamic",
                 "nextHopIp" : "240.0.0.14",
@@ -4540,6 +4678,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "192.168.2.16/28",
                 "nextHopInterface" : "dynamic",
                 "nextHopIp" : "240.0.0.10",
@@ -4548,6 +4687,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "192.168.2.32/28",
                 "nextHopInterface" : "dynamic",
                 "nextHopIp" : "240.0.0.26",
@@ -4556,6 +4696,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "192.168.2.48/28",
                 "nextHopInterface" : "dynamic",
                 "nextHopIp" : "240.0.0.20",
@@ -4582,8 +4723,6 @@
             ],
             "autostate" : true,
             "bandwidth" : 1.0E12,
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -4610,8 +4749,6 @@
             ],
             "autostate" : true,
             "bandwidth" : 1.0E12,
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -4638,8 +4775,6 @@
             ],
             "autostate" : true,
             "bandwidth" : 1.0E12,
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -4666,8 +4801,6 @@
             ],
             "autostate" : true,
             "bandwidth" : 1.0E12,
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -4705,6 +4838,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "172.31.0.0/16",
                 "nextHopInterface" : "null_interface",
                 "nextHopIp" : "AUTO/NONE(-1l)",
@@ -4713,6 +4847,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "172.31.0.0/20",
                 "nextHopInterface" : "dynamic",
                 "nextHopIp" : "240.0.0.12",
@@ -4721,6 +4856,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "172.31.16.0/20",
                 "nextHopInterface" : "dynamic",
                 "nextHopIp" : "240.0.0.24",
@@ -4729,6 +4865,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "172.31.32.0/20",
                 "nextHopInterface" : "dynamic",
                 "nextHopIp" : "240.0.0.16",

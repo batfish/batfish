@@ -1,5 +1,6 @@
 package org.batfish.grammar;
 
+import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ListIterator;
@@ -13,7 +14,6 @@ import org.antlr.v4.runtime.tree.ParseTreeListener;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.common.ParseTreeSentences;
-import org.batfish.common.util.CommonUtil;
 
 public class ParseTreePrettyPrinter implements ParseTreeListener {
 
@@ -21,11 +21,12 @@ public class ParseTreePrettyPrinter implements ParseTreeListener {
   private ParserRuleContext _ctx;
   private int _indent;
   private ParseTreeSentences _ptSentences;
+  private boolean _printLineNumbers;
   private List<String> _ruleNames;
   private Vocabulary _vocabulary;
 
   private ParseTreePrettyPrinter(
-      ParserRuleContext ctx, BatfishCombinedParser<?, ?> combinedParser) {
+      ParserRuleContext ctx, BatfishCombinedParser<?, ?> combinedParser, boolean printLineNumbers) {
     Parser grammar = combinedParser.getParser();
     List<String> ruleNames = Arrays.asList(grammar.getRuleNames());
     _vocabulary = grammar.getVocabulary();
@@ -33,13 +34,15 @@ public class ParseTreePrettyPrinter implements ParseTreeListener {
     _ruleNames = ruleNames;
     _ctx = ctx;
     _ptSentences = new ParseTreeSentences();
+    _printLineNumbers = printLineNumbers;
     _indent = 0;
   }
 
   public static ParseTreeSentences getParseTreeSentences(
-      ParserRuleContext ctx, BatfishCombinedParser<?, ?> combinedParser) {
+      ParserRuleContext ctx, BatfishCombinedParser<?, ?> combinedParser, boolean printLineNumbers) {
     ParseTreeWalker walker = new ParseTreeWalker();
-    ParseTreePrettyPrinter printer = new ParseTreePrettyPrinter(ctx, combinedParser);
+    ParseTreePrettyPrinter printer =
+        new ParseTreePrettyPrinter(ctx, combinedParser, printLineNumbers);
     walker.walk(printer, ctx);
     return printer._ptSentences;
   }
@@ -49,12 +52,10 @@ public class ParseTreePrettyPrinter implements ParseTreeListener {
     StringBuilder sb = new StringBuilder();
 
     // A limit of <= 0 is treated as effectively no limit
-    if (maxStringLength <= 0) {
-      maxStringLength = Integer.MAX_VALUE;
-    }
+    int effectiveMaxStringLength = maxStringLength <= 0 ? Integer.MAX_VALUE : maxStringLength;
 
     ListIterator<String> iter = strings.listIterator();
-    while (maxStringLength > sb.length() && iter.hasNext()) {
+    while (effectiveMaxStringLength > sb.length() && iter.hasNext()) {
       String string = iter.next();
 
       // Assume we're okay adding the whole string even if it pushes us over the maxStringLength
@@ -73,8 +74,14 @@ public class ParseTreePrettyPrinter implements ParseTreeListener {
   }
 
   public static String print(ParserRuleContext ctx, BatfishCombinedParser<?, ?> combinedParser) {
+    return print(ctx, combinedParser, false);
+  }
+
+  public static String print(
+      ParserRuleContext ctx, BatfishCombinedParser<?, ?> combinedParser, boolean printLineNumbers) {
     int maxStringLength = combinedParser.getSettings().getMaxParseTreePrintLength();
-    List<String> strings = getParseTreeSentences(ctx, combinedParser).getSentences();
+    List<String> strings =
+        getParseTreeSentences(ctx, combinedParser, printLineNumbers).getSentences();
     return printWithCharacterLimit(strings, maxStringLength);
   }
 
@@ -86,20 +93,32 @@ public class ParseTreePrettyPrinter implements ParseTreeListener {
     for (int i = 0; i < _indent; i++) {
       _ptSentences.appendToLastSentence("  ");
     }
-    _indent++;
     String ruleName = _ruleNames.get(ctx.getRuleIndex());
+
+    if (ctx.getParent() != null) {
+      for (Field f : ctx.getParent().getClass().getFields()) {
+        try {
+          if (!f.getName().equals(ruleName) && f.get(ctx.getParent()) == ctx) {
+            _ptSentences.appendToLastSentence(f.getName() + " = ");
+          }
+        } catch (Throwable t) {
+          // Ignore the error and continue.
+        }
+      }
+    }
     _ptSentences.appendToLastSentence("(" + ruleName);
+    _indent++;
   }
 
   @Override
   public void exitEveryRule(ParserRuleContext ctx) {
-    _ptSentences.appendToLastSentence(")");
     _indent--;
+    _ptSentences.appendToLastSentence(")");
   }
 
   @Override
   public void visitErrorNode(ErrorNode ctx) {
-    String nodeText = CommonUtil.escape(ctx.getText());
+    String nodeText = BatfishCombinedParser.escape(ctx.getText());
     // _sb.append("\n");
     _ptSentences.getSentences().add("");
     for (int i = 0; i < _indent; i++) {
@@ -120,7 +139,7 @@ public class ParseTreePrettyPrinter implements ParseTreeListener {
 
   @Override
   public void visitTerminal(TerminalNode ctx) {
-    String nodeText = CommonUtil.escape(ctx.getText());
+    String nodeText = BatfishCombinedParser.escape(ctx.getText());
     _ptSentences.getSentences().add("");
     for (int i = 0; i < _indent; i++) {
       _ptSentences.appendToLastSentence("  ");
@@ -134,14 +153,36 @@ public class ParseTreePrettyPrinter implements ParseTreeListener {
     } else {
       mode = _combinedParser.getLexer().getModeNames()[modeAsInt];
     }
-    String tokenName;
-    if (tokenType == -1) {
-      tokenName = "EOF";
+
+    String tokenName = (tokenType == Token.EOF) ? "EOF" : _vocabulary.getSymbolicName(tokenType);
+
+    // If the parent context has a named field pointing to the token, it is because the user
+    // has a defined name. Add it to the output message.
+    for (Field f : ctx.getParent().getClass().getFields()) {
+      if (f.getName().equals("start")
+          || f.getName().equals("stop")
+          || f.getName().startsWith("_t")
+          || f.getName().equals(tokenName)) {
+        continue;
+      }
+      try {
+        if (f.get(ctx.getParent()) == ctx.getSymbol()) {
+          _ptSentences.appendToLastSentence(f.getName() + " = ");
+        }
+      } catch (Throwable thrown) {
+        // Ignore the error and continue.
+      }
+    }
+
+    if (tokenType == Token.EOF) {
       _ptSentences.appendToLastSentence(tokenName + ":" + nodeText);
     } else {
-      tokenName = _vocabulary.getSymbolicName(tokenType);
       _ptSentences.appendToLastSentence(tokenName + ":'" + nodeText + "'");
     }
     _ptSentences.appendToLastSentence("  <== mode:" + mode);
+
+    if (_printLineNumbers) {
+      _ptSentences.appendToLastSentence(String.format(" line:%s", _combinedParser.getLine(t)));
+    }
   }
 }

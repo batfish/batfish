@@ -26,7 +26,6 @@ import org.batfish.z3.expr.NotExpr;
 import org.batfish.z3.expr.OrExpr;
 import org.batfish.z3.expr.PrefixMatchExpr;
 import org.batfish.z3.expr.RangeMatchExpr;
-import org.batfish.z3.expr.SaneExpr;
 import org.batfish.z3.expr.TrueExpr;
 import org.batfish.z3.expr.VarIntExpr;
 import org.junit.Test;
@@ -66,7 +65,7 @@ public class SimplifierTest {
     assertThat(simplifyBooleanExpr(and), equalTo(p1));
   }
 
-  /** Test simplifications: false AND E --> false E AND false --> false. */
+  /** Test simplifications: false AND E -&gt; false E AND false -&gt; false. */
   @Test
   public void testSimplifyAndExprFalseConjunct() {
     BooleanExpr p1 = newAtom();
@@ -218,7 +217,7 @@ public class SimplifierTest {
     assertThat(simplifyBooleanExpr(ifExpr), sameInstance(ifExpr));
   }
 
-  /** IfThenElse(A,True,B) --> Or(A,B) */
+  /** IfThenElse(A,True,B) -&gt; Or(A,B) */
   @Test
   public void testIfThenElse_thenTrue() {
     BooleanExpr a = newAtom();
@@ -228,7 +227,7 @@ public class SimplifierTest {
         equalTo(new OrExpr(of(a, b))));
   }
 
-  /** IfThenElse(A,False,B) --> And(Not(A),B) */
+  /** IfThenElse(A,False,B) -&gt; And(Not(A),B) */
   @Test
   public void testIfThenElse_thenFalse() {
     BooleanExpr a = newAtom();
@@ -238,7 +237,7 @@ public class SimplifierTest {
         equalTo(new AndExpr(of(new NotExpr(a), b))));
   }
 
-  /** IfThenElse(A,B,False) --> And(A,B) */
+  /** IfThenElse(A,B,False) -&gt; And(A,B) */
   @Test
   public void testIfThenElse_elseFalse() {
     BooleanExpr a = newAtom();
@@ -248,7 +247,7 @@ public class SimplifierTest {
         equalTo(new AndExpr(of(a, b))));
   }
 
-  /** IfThenElse(A,B,True) --> Or(Not(A),B) */
+  /** IfThenElse(A,B,True) -&gt; Or(Not(A),B) */
   @Test
   public void testIfThenElse_elseTrue() {
     BooleanExpr a = newAtom();
@@ -319,6 +318,5 @@ public class SimplifierTest {
     assertThat(simplifyBooleanExpr(headerSpaceMatchExpr), not(equalTo(headerSpaceMatchExpr)));
     assertThat(simplifyBooleanExpr(prefixMatchExpr), not(equalTo(prefixMatchExpr)));
     assertThat(simplifyBooleanExpr(rangeMatchExpr), not(equalTo(rangeMatchExpr)));
-    assertThat(simplifyBooleanExpr(SaneExpr.INSTANCE), not(equalTo(SaneExpr.INSTANCE)));
   }
 }

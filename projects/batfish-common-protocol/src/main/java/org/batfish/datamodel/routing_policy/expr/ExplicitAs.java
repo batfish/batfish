@@ -8,12 +8,12 @@ public class ExplicitAs extends AsExpr {
   /** */
   private static final long serialVersionUID = 1L;
 
-  private int _as;
+  private long _as;
 
   @JsonCreator
   private ExplicitAs() {}
 
-  public ExplicitAs(int as) {
+  public ExplicitAs(long as) {
     _as = as;
   }
 
@@ -36,20 +36,17 @@ public class ExplicitAs extends AsExpr {
   }
 
   @Override
-  public int evaluate(Environment environment) {
+  public long evaluate(Environment environment) {
     return _as;
   }
 
-  public int getAs() {
+  public long getAs() {
     return _as;
   }
 
   @Override
   public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + _as;
-    return result;
+    return Long.hashCode(_as);
   }
 
   public void setAs(int as) {

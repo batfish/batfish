@@ -1,6 +1,0 @@
-#
-set system host-name juniper_security
-#
-set security policies global policy p1 match destination-address-excluded
-#
-

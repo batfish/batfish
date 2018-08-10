@@ -1,6 +1,6 @@
 package org.batfish.dataplane.ibdp.schedule;
 
-import static org.batfish.common.util.CommonUtil.computeIpOwners;
+import static org.batfish.common.util.CommonUtil.computeIpNodeOwners;
 import static org.batfish.common.util.CommonUtil.initBgpTopology;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -12,14 +12,15 @@ import static org.hamcrest.core.AllOf.allOf;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
-import com.google.common.graph.Network;
+import com.google.common.graph.ValueGraph;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.SortedMap;
-import org.batfish.datamodel.BgpNeighbor;
+import org.batfish.datamodel.BgpActivePeerConfig;
+import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpProcess;
-import org.batfish.datamodel.BgpSession;
+import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
@@ -53,8 +54,8 @@ public class NodeColoredScheduleTest {
     Node n = TestUtils.makeIosRouter("r1");
     Map<String, Node> nodes = ImmutableMap.of("r1", n);
     Map<String, Configuration> configs = ImmutableMap.of("r1", n.getConfiguration());
-    Network<BgpNeighbor, BgpSession> bgpTopology =
-        initBgpTopology(configs, computeIpOwners(configs, false), false);
+    ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
+        initBgpTopology(configs, computeIpNodeOwners(configs, false), false);
     NodeColoredSchedule schedule = new NodeColoredSchedule(nodes, _coloring, bgpTopology);
 
     assertThat(schedule.hasNext(), is(true));
@@ -73,8 +74,8 @@ public class NodeColoredScheduleTest {
             .stream()
             .collect(
                 ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().getConfiguration()));
-    Network<BgpNeighbor, BgpSession> bgpTopology =
-        initBgpTopology(configs, computeIpOwners(configs, false), false);
+    ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
+        initBgpTopology(configs, computeIpNodeOwners(configs, false), false);
     NodeColoredSchedule schedule = new NodeColoredSchedule(nodes, _coloring, bgpTopology);
 
     // Expect both nodes to have the same color because there is no edge between them
@@ -92,20 +93,18 @@ public class NodeColoredScheduleTest {
     Vrf.Builder vb = nf.vrfBuilder();
     Interface.Builder ib = nf.interfaceBuilder();
     BgpProcess.Builder pb = nf.bgpProcessBuilder();
-    BgpNeighbor.Builder nb = nf.bgpNeighborBuilder();
+    BgpActivePeerConfig.Builder nb = nf.bgpNeighborBuilder();
 
     Configuration r1 = cb.setHostname("r1").build();
     Vrf vEdge1 = vb.setOwner(r1).build();
     ib.setOwner(r1).setVrf(vEdge1).setActive(true);
     ib.setAddress(new InterfaceAddress(new Ip("1.1.1.1"), 32)).build();
     BgpProcess r1Proc = pb.setRouterId(new Ip("1.1.1.1")).setVrf(vEdge1).build();
-    nb.setOwner(r1)
-        .setVrf(vEdge1)
-        .setBgpProcess(r1Proc)
-        .setLocalAs(1)
-        .setRemoteAs(2)
-        .setLocalIp(new Ip("1.1.1.1"))
+    nb.setRemoteAs(2L)
         .setPeerAddress(new Ip("2.2.2.2"))
+        .setBgpProcess(r1Proc)
+        .setLocalAs(1L)
+        .setLocalIp(new Ip("1.1.1.1"))
         .build();
 
     Configuration r2 = cb.setHostname("r2").build();
@@ -113,24 +112,22 @@ public class NodeColoredScheduleTest {
     ib.setOwner(r2).setVrf(vrf2);
     ib.setAddress(new InterfaceAddress(new Ip("2.2.2.2"), 32)).build();
     BgpProcess r2Proc = pb.setRouterId(new Ip("2.2.2.2")).setVrf(vrf2).build();
-    nb.setOwner(r2)
-        .setVrf(vrf2)
-        .setBgpProcess(r2Proc)
-        .setRemoteAs(1)
-        .setLocalAs(2)
-        .setRouteReflectorClient(true)
+    nb.setRemoteAs(1L)
         .setPeerAddress(new Ip("1.1.1.1"))
+        .setBgpProcess(r2Proc)
+        .setLocalAs(2L)
+        .setRouteReflectorClient(true)
         .setLocalIp(new Ip("2.2.2.2"))
         .build();
 
     SortedMap<String, Configuration> configurations =
         new ImmutableSortedMap.Builder<String, Configuration>(String::compareTo)
-            .put(r1.getName(), r1)
-            .put(r2.getName(), r2)
+            .put(r1.getHostname(), r1)
+            .put(r2.getHostname(), r2)
             .build();
 
-    Network<BgpNeighbor, BgpSession> bgpTopology =
-        initBgpTopology(configurations, computeIpOwners(configurations, false), false);
+    ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
+        initBgpTopology(configurations, computeIpNodeOwners(configurations, false), false);
     ImmutableMap<String, Node> nodes = ImmutableMap.of("r1", new Node(r1), "r2", new Node(r2));
 
     NodeColoredSchedule schedule = new NodeColoredSchedule(nodes, _coloring, bgpTopology);

@@ -1,0 +1,44 @@
+#
+set system host-name local-route-export-bgp
+#
+set routing-options autonomous-system 100
+#
+set interfaces xe-0/0/1 unit 0 family inet address 1.0.0.0/31
+set interfaces xe-0/0/2 unit 0 family inet address 2.0.0.0/31
+set interfaces xe-0/0/3 unit 0 family inet address 3.0.0.0/31
+set interfaces xe-0/0/4 unit 0 family inet address 4.0.0.0/31
+#
+set routing-instances peer1Vrf instance-type virtual-router
+set routing-instances peer1Vrf interface xe-0/0/1.0
+set routing-instances peer1Vrf protocols bgp group g1 neighbor 1.0.0.1 export allowall
+set routing-instances peer1Vrf protocols bgp group g1 neighbor 1.0.0.1 local-address 1.0.0.0
+set routing-instances peer1Vrf protocols bgp group g1 neighbor 1.0.0.1 peer-as 1
+set routing-instances peer1Vrf protocols bgp group g1 neighbor 1.0.0.1 type external
+#
+set routing-instances peer2Vrf instance-type virtual-router
+set routing-instances peer2Vrf interface xe-0/0/2.0
+set routing-instances peer2Vrf routing-options interface-routes family inet export lan
+set routing-instances peer2Vrf protocols bgp group g2 neighbor 2.0.0.1 export allowall
+set routing-instances peer2Vrf protocols bgp group g2 neighbor 2.0.0.1 local-address 2.0.0.0
+set routing-instances peer2Vrf protocols bgp group g2 neighbor 2.0.0.1 peer-as 2
+set routing-instances peer2Vrf protocols bgp group g2 neighbor 2.0.0.1 type external
+#
+set routing-instances peer3Vrf instance-type virtual-router
+set routing-instances peer3Vrf interface xe-0/0/3.0
+set routing-instances peer3Vrf routing-options interface-routes family inet export point-to-point
+set routing-instances peer3Vrf protocols bgp group g3 neighbor 3.0.0.1 export allowall
+set routing-instances peer3Vrf protocols bgp group g3 neighbor 3.0.0.1 local-address 3.0.0.0
+set routing-instances peer3Vrf protocols bgp group g3 neighbor 3.0.0.1 peer-as 3
+set routing-instances peer3Vrf protocols bgp group g3 neighbor 3.0.0.1 type external
+#
+set routing-instances peer4Vrf instance-type virtual-router
+set routing-instances peer4Vrf interface xe-0/0/4.0
+set routing-instances peer4Vrf routing-options interface-routes family inet export lan
+set routing-instances peer4Vrf routing-options interface-routes family inet export point-to-point
+set routing-instances peer4Vrf protocols bgp group g4 neighbor 4.0.0.1 export allowall
+set routing-instances peer4Vrf protocols bgp group g4 neighbor 4.0.0.1 local-address 4.0.0.0
+set routing-instances peer4Vrf protocols bgp group g4 neighbor 4.0.0.1 peer-as 4
+set routing-instances peer4Vrf protocols bgp group g4 neighbor 4.0.0.1 type external
+#
+set policy-options policy-statement allowall term t1 then accept
+#

@@ -1,41 +1,87 @@
 [
   {
-    "class" : "org.batfish.question.bgpsessionstatus.BgpSessionStatusAnswerElement",
+    "class" : "org.batfish.datamodel.table.TableAnswerElement",
     "metadata" : {
-      "columnSchemas" : {
-        "configuredStatus" : "String",
-        "node" : "Node",
-        "onLoopback" : "Boolean",
-        "remoteNode" : "Node",
-        "remotePrefix" : "Prefix",
-        "localIp" : "Ip",
-        "sessionType" : "String",
-        "establishedNeighbors" : "Integer",
-        "vrfName" : "String"
-      },
-      "displayHints" : {
-        "textDesc" : "On ${node} session ${vrfName}:${remotePrefix} has configured status ${configuredStatus}."
-      },
-      "primaryKey" : [
-        "node",
-        "remotePrefix",
-        "vrfName"
+      "columnMetadata" : [
+        {
+          "description" : "The node where this session is configured",
+          "isKey" : true,
+          "isValue" : false,
+          "name" : "node",
+          "schema" : "Node"
+        },
+        {
+          "description" : "The local IP of the session",
+          "isKey" : false,
+          "isValue" : false,
+          "name" : "localIp",
+          "schema" : "Ip"
+        },
+        {
+          "description" : "The VRF in which this session is configured",
+          "isKey" : true,
+          "isValue" : false,
+          "name" : "vrfName",
+          "schema" : "String"
+        },
+        {
+          "description" : "Local interface of the session",
+          "isKey" : false,
+          "isValue" : true,
+          "name" : "localInterface",
+          "schema" : "Interface"
+        },
+        {
+          "description" : "Remote node for this session",
+          "isKey" : false,
+          "isValue" : false,
+          "name" : "remoteNode",
+          "schema" : "Node"
+        },
+        {
+          "description" : "Remote prefix for this session",
+          "isKey" : true,
+          "isValue" : false,
+          "name" : "remotePrefix",
+          "schema" : "Prefix"
+        },
+        {
+          "description" : "The type of this session",
+          "isKey" : false,
+          "isValue" : false,
+          "name" : "sessionType",
+          "schema" : "String"
+        },
+        {
+          "description" : "Configured status",
+          "isKey" : false,
+          "isValue" : true,
+          "name" : "configuredStatus",
+          "schema" : "String"
+        },
+        {
+          "description" : "Number of neighbors with whom BGP session was established",
+          "isKey" : false,
+          "isValue" : true,
+          "name" : "establishedNeighbors",
+          "schema" : "Integer"
+        }
       ],
-      "primaryValue" : [
-        "configuredStatus",
-        "establishedNeighbors"
-      ]
+      "textDesc" : "On ${node} session ${vrfName}:${remotePrefix} has configured status ${configuredStatus}."
     },
     "rows" : [
       {
         "configuredStatus" : "UNIQUE_MATCH",
         "establishedNeighbors" : 1,
+        "localInterface" : {
+          "hostname" : "as2border2",
+          "interface" : "GigabitEthernet0/0"
+        },
         "localIp" : "10.23.21.2",
         "node" : {
           "id" : "node-as2border2",
           "name" : "as2border2"
         },
-        "onLoopback" : false,
         "remoteNode" : {
           "id" : "node-as3border1",
           "name" : "as3border1"

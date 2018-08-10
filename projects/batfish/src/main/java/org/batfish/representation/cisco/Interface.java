@@ -1,23 +1,26 @@
 package org.batfish.representation.cisco;
 
 import com.google.common.collect.ImmutableSortedSet;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.TreeMap;
 import java.util.TreeSet;
+import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
-import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IsisInterfaceMode;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.SwitchportMode;
+import org.batfish.datamodel.isis.IsisInterfaceMode;
 
-public class Interface extends ComparableStructure<String> {
+public class Interface implements Serializable {
 
   private static final double ARISTA_ETHERNET_BANDWIDTH = 1E9;
 
@@ -33,8 +36,11 @@ public class Interface extends ComparableStructure<String> {
 
   private static final double LONG_REACH_ETHERNET_BANDWIDTH = 10E6;
 
-  /** dirty hack: just chose a very large number */
-  private static final double LOOPBACK_BANDWIDTH = 1E12;
+  /** Loopback bandwidth */
+  private static final double LOOPBACK_BANDWIDTH = 8E9;
+
+  /** Loopback delay for IOS */
+  private static final double LOOPBACK_IOS_DELAY = 5E9;
 
   /** NX-OS Ethernet 802.3z - may not apply for non-NX-OS */
   private static final double NXOS_ETHERNET_BANDWIDTH = 1E9;
@@ -51,6 +57,7 @@ public class Interface extends ComparableStructure<String> {
           return ARISTA_ETHERNET_BANDWIDTH;
 
         case ALCATEL_AOS:
+        case ARUBAOS: // TODO: verify https://github.com/batfish/batfish/issues/1548
         case CADANT:
         case CISCO_ASA:
         case CISCO_IOS:
@@ -94,6 +101,8 @@ public class Interface extends ComparableStructure<String> {
       bandwidth = null;
     } else if (name.startsWith("Loopback")) {
       bandwidth = LOOPBACK_BANDWIDTH;
+    } else if (name.startsWith("Bundle-Ethernet") || name.startsWith("Port-Channel")) {
+      bandwidth = 0D;
     }
     if (bandwidth == null) {
       bandwidth = DEFAULT_INTERFACE_BANDWIDTH;
@@ -109,11 +118,17 @@ public class Interface extends ComparableStructure<String> {
 
   private boolean _active;
 
-  private ArrayList<SubRange> _allowedVlans;
+  private List<SubRange> _allowedVlans;
 
   private boolean _autoState;
 
-  private Double _bandwidth;
+  @Nullable private Double _bandwidth;
+
+  private String _channelGroup;
+
+  private String _cryptoMap;
+
+  @Nullable private Double _delay;
 
   private String _description;
 
@@ -121,15 +136,21 @@ public class Interface extends ComparableStructure<String> {
 
   private boolean _dhcpRelayClient;
 
+  private Map<Integer, HsrpGroup> _hsrpGroups;
+
+  private String _hsrpVersion;
+
   private String _incomingFilter;
 
   private int _incomingFilterLine;
 
-  private Integer _isisCost;
+  @Nullable private Long _isisCost;
 
-  private IsisInterfaceMode _isisInterfaceMode;
+  @Nullable private IsisInterfaceMode _isisInterfaceMode;
 
   private int _mtu;
+
+  private final String _name;
 
   private int _nativeVlan;
 
@@ -146,6 +167,8 @@ public class Interface extends ComparableStructure<String> {
   private boolean _ospfPassive;
 
   private boolean _ospfPointToPoint;
+
+  private boolean _ospfShutdown;
 
   private String _outgoingFilter;
 
@@ -183,18 +206,42 @@ public class Interface extends ComparableStructure<String> {
 
   private String _securityZone;
 
+  public static double getDefaultDelay(String name, ConfigurationFormat format) {
+    if (format == ConfigurationFormat.CISCO_IOS && name.startsWith("Loopback")) {
+      // TODO Cisco NX whitepaper says to use the formula, not this value. Confirm?
+      // Enhanced Interior Gateway Routing Protocol (EIGRP) Wide Metrics White Paper
+      return LOOPBACK_IOS_DELAY;
+    }
+    double bandwidth = getDefaultBandwidth(name, format);
+    if (bandwidth == 0D) {
+      // TODO EIGRP will not use this interface because cost is proportional to bandwidth^-1
+      return 0D;
+    }
+
+    /*
+     * Delay is only relevant on routers that support EIGRP (Cisco).
+     *
+     * When bandwidth > 1Gb, this formula is used. The interface may report a different value.
+     * For bandwidths < 1Gb, the delay is interface type-specific. However, all of the specific cases
+     * handled in getDefaultBandwidth also match this formula.
+     * See https://tools.ietf.org/html/rfc7868#section-5.6.1.2
+     */
+    return 1E16 / bandwidth;
+  }
+
   public String getSecurityZone() {
     return _securityZone;
   }
 
   public Interface(String name, CiscoConfiguration c) {
-    super(name);
     _active = true;
     _autoState = true;
     _allowedVlans = new ArrayList<>();
     _declaredNames = ImmutableSortedSet.of();
     _dhcpRelayAddresses = new TreeSet<>();
+    _hsrpGroups = new TreeMap<>();
     _isisInterfaceMode = IsisInterfaceMode.UNSET;
+    _name = name;
     _nativeVlan = 1;
     _secondaryAddresses = new LinkedHashSet<>();
     SwitchportMode defaultSwitchportMode = c.getCf().getDefaultSwitchportMode();
@@ -206,6 +253,7 @@ public class Interface extends ComparableStructure<String> {
           break;
 
         case ALCATEL_AOS:
+        case ARUBAOS: // TODO: verify https://github.com/batfish/batfish/issues/1548
         case AWS:
         case CADANT:
         case CISCO_ASA:
@@ -261,6 +309,14 @@ public class Interface extends ComparableStructure<String> {
     return _bandwidth;
   }
 
+  public String getChannelGroup() {
+    return _channelGroup;
+  }
+
+  public String getCryptoMap() {
+    return _cryptoMap;
+  }
+
   public String getDescription() {
     return _description;
   }
@@ -273,6 +329,14 @@ public class Interface extends ComparableStructure<String> {
     return _dhcpRelayClient;
   }
 
+  public Map<Integer, HsrpGroup> getHsrpGroups() {
+    return _hsrpGroups;
+  }
+
+  public String getHsrpVersion() {
+    return _hsrpVersion;
+  }
+
   public String getIncomingFilter() {
     return _incomingFilter;
   }
@@ -281,7 +345,7 @@ public class Interface extends ComparableStructure<String> {
     return _incomingFilterLine;
   }
 
-  public Integer getIsisCost() {
+  public Long getIsisCost() {
     return _isisCost;
   }
 
@@ -291,6 +355,10 @@ public class Interface extends ComparableStructure<String> {
 
   public int getMtu() {
     return _mtu;
+  }
+
+  public String getName() {
+    return _name;
   }
 
   public int getNativeVlan() {
@@ -325,6 +393,10 @@ public class Interface extends ComparableStructure<String> {
     return _ospfPointToPoint;
   }
 
+  public boolean getOspfShutdown() {
+    return _ospfShutdown;
+  }
+
   public String getOutgoingFilter() {
     return _outgoingFilter;
   }
@@ -335,6 +407,11 @@ public class Interface extends ComparableStructure<String> {
 
   public InterfaceAddress getAddress() {
     return _address;
+  }
+
+  @Nullable
+  public Double getDelay() {
+    return _delay;
   }
 
   public boolean getProxyArp() {
@@ -408,8 +485,16 @@ public class Interface extends ComparableStructure<String> {
     _autoState = autoState;
   }
 
-  public void setBandwidth(Double bandwidth) {
+  public void setBandwidth(@Nullable Double bandwidth) {
     _bandwidth = bandwidth;
+  }
+
+  public void setChannelGroup(String channelGroup) {
+    _channelGroup = channelGroup;
+  }
+
+  public void setCryptoMap(String cryptoMap) {
+    _cryptoMap = cryptoMap;
   }
 
   public void setDescription(String description) {
@@ -432,7 +517,7 @@ public class Interface extends ComparableStructure<String> {
     _incomingFilterLine = incomingFilterLine;
   }
 
-  public void setIsisCost(Integer isisCost) {
+  public void setIsisCost(Long isisCost) {
     _isisCost = isisCost;
   }
 
@@ -476,6 +561,10 @@ public class Interface extends ComparableStructure<String> {
     _ospfPointToPoint = ospfPointToPoint;
   }
 
+  public void setOspfShutdown(boolean ospfShutdown) {
+    _ospfShutdown = ospfShutdown;
+  }
+
   public void setOutgoingFilter(String accessListName) {
     _outgoingFilter = accessListName;
   }
@@ -486,6 +575,10 @@ public class Interface extends ComparableStructure<String> {
 
   public void setAddress(InterfaceAddress address) {
     _address = address;
+  }
+
+  public void setDelay(@Nullable Double delayPs) {
+    _delay = delayPs;
   }
 
   public void setProxyArp(boolean proxyArp) {
@@ -550,5 +643,9 @@ public class Interface extends ComparableStructure<String> {
 
   public void setSecurityZone(String securityZone) {
     _securityZone = securityZone;
+  }
+
+  public void setHsrpVersion(String hsrpVersion) {
+    _hsrpVersion = hsrpVersion;
   }
 }

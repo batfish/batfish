@@ -1,7 +1,12 @@
 package org.batfish.coordinator;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Strings.isNullOrEmpty;
+import static java.util.stream.Collectors.toCollection;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import io.opentracing.ActiveSpan;
@@ -24,6 +29,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -32,6 +38,7 @@ import java.util.TreeSet;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
@@ -40,7 +47,6 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
@@ -65,8 +71,18 @@ import org.batfish.datamodel.AnalysisMetadata;
 import org.batfish.datamodel.TestrigMetadata;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerStatus;
+import org.batfish.datamodel.answers.AutocompleteSuggestion;
+import org.batfish.datamodel.answers.AutocompleteSuggestion.CompletionType;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
+import org.batfish.datamodel.pojo.Node;
+import org.batfish.datamodel.pojo.Topology;
+import org.batfish.datamodel.questions.BgpPropertySpecifier;
+import org.batfish.datamodel.questions.InterfacePropertySpecifier;
+import org.batfish.datamodel.questions.NodePropertySpecifier;
+import org.batfish.datamodel.questions.NodesSpecifier;
+import org.batfish.datamodel.questions.OspfPropertySpecifier;
 import org.batfish.datamodel.questions.Question;
+import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
@@ -90,9 +106,8 @@ public class WorkMgr extends AbstractCoordinator {
   private static final int MAX_SHOWN_TESTRIG_INFO_SUBDIR_ENTRIES = 10;
 
   private static Set<String> initContainerFilenames() {
-    Set<String> envFilenames =
-        new ImmutableSet.Builder<String>().add(BfConsts.RELPATH_NODE_ROLES_PATH).build();
-    return envFilenames;
+    return ImmutableSet.of(
+        BfConsts.RELPATH_REFERENCE_LIBRARY_PATH, BfConsts.RELPATH_NODE_ROLES_PATH);
   }
 
   private static Set<String> initEnvFilenames() {
@@ -143,7 +158,7 @@ public class WorkMgr extends AbstractCoordinator {
 
       assignWork(work, idleWorker);
     } catch (Exception e) {
-      _logger.errorf("Got exception in assignWork: %s\n", ExceptionUtils.getStackTrace(e));
+      _logger.errorf("Got exception in assignWork: %s\n", Throwables.getStackTraceAsString(e));
     }
   }
 
@@ -164,21 +179,11 @@ public class WorkMgr extends AbstractCoordinator {
       assert assignWorkSpan != null; // avoid unused warning
       // get the task and add other standard stuff
       JSONObject task = new JSONObject(work.getWorkItem().getRequestParams());
-      Path containerDir =
-          Main.getSettings().getContainersLocation().resolve(work.getWorkItem().getContainerName());
-      String testrigName = work.getWorkItem().getTestrigName();
-      Path testrigBaseDir =
-          containerDir
-              .resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR, testrigName))
-              .toAbsolutePath();
-      task.put(BfConsts.ARG_CONTAINER_DIR, containerDir.toAbsolutePath().toString());
-      task.put(BfConsts.ARG_TESTRIG, testrigName);
+      task.put(BfConsts.ARG_CONTAINER, work.getWorkItem().getContainerName());
       task.put(
-          BfConsts.ARG_LOG_FILE,
-          testrigBaseDir.resolve(work.getId() + BfConsts.SUFFIX_LOG_FILE).toString());
-      task.put(
-          BfConsts.ARG_ANSWER_JSON_PATH,
-          testrigBaseDir.resolve(work.getId() + BfConsts.SUFFIX_ANSWER_JSON_FILE).toString());
+          BfConsts.ARG_STORAGE_BASE,
+          Main.getSettings().getContainersLocation().toAbsolutePath().toString());
+      task.put(BfConsts.ARG_TESTRIG, work.getWorkItem().getTestrigName());
 
       client =
           CommonUtil.createHttpClientBuilder(
@@ -187,7 +192,8 @@ public class WorkMgr extends AbstractCoordinator {
                   _settings.getSslPoolKeystoreFile(),
                   _settings.getSslPoolKeystorePassword(),
                   _settings.getSslPoolTruststoreFile(),
-                  _settings.getSslPoolTruststorePassword())
+                  _settings.getSslPoolTruststorePassword(),
+                  true)
               .build();
 
       String protocol = _settings.getSslPoolDisable() ? "http" : "https";
@@ -228,10 +234,10 @@ public class WorkMgr extends AbstractCoordinator {
         }
       }
     } catch (ProcessingException e) {
-      String stackTrace = ExceptionUtils.getStackTrace(e);
+      String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.error(String.format("Unable to connect to worker at %s: %s\n", worker, stackTrace));
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getStackTrace(e);
+      String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.error(String.format("Exception assigning work: %s\n", stackTrace));
     } finally {
       if (client != null) {
@@ -251,14 +257,14 @@ public class WorkMgr extends AbstractCoordinator {
       try {
         _workQueueMgr.markAssignmentError(work);
       } catch (Exception e) {
-        String stackTrace = ExceptionUtils.getStackTrace(e);
+        String stackTrace = Throwables.getStackTraceAsString(e);
         _logger.errorf("Unable to markAssignmentError for work %s: %s\n", work, stackTrace);
       }
     } else if (assigned) {
       try {
         _workQueueMgr.markAssignmentSuccess(work, worker);
       } catch (Exception e) {
-        String stackTrace = ExceptionUtils.getStackTrace(e);
+        String stackTrace = Throwables.getStackTraceAsString(e);
         _logger.errorf("Unable to markAssignmentSuccess for work %s: %s\n", work, stackTrace);
       }
 
@@ -282,7 +288,50 @@ public class WorkMgr extends AbstractCoordinator {
         checkTask(work, assignedWorker);
       }
     } catch (Exception e) {
-      _logger.errorf("Got exception in checkTasks: %s\n", ExceptionUtils.getStackTrace(e));
+      _logger.errorf("Got exception in checkTasks: %s\n", Throwables.getStackTraceAsString(e));
+    }
+  }
+
+  public List<AutocompleteSuggestion> autoComplete(
+      String container,
+      String testrig,
+      CompletionType completionType,
+      String query,
+      int maxSuggestions)
+      throws IOException {
+    switch (completionType) {
+      case BGP_PROPERTY:
+        {
+          List<AutocompleteSuggestion> suggestions = BgpPropertySpecifier.autoComplete(query);
+          return suggestions.subList(0, Integer.min(suggestions.size(), maxSuggestions));
+        }
+      case INTERFACE_PROPERTY:
+        {
+          List<AutocompleteSuggestion> suggestions = InterfacePropertySpecifier.autoComplete(query);
+          return suggestions.subList(0, Integer.min(suggestions.size(), maxSuggestions));
+        }
+      case NODE:
+        {
+          checkArgument(
+              !isNullOrEmpty(testrig),
+              "Snapshot name should be supplied for 'NODE' autoCompletion");
+          List<AutocompleteSuggestion> suggestions =
+              NodesSpecifier.autoComplete(
+                  query, getNodes(container, testrig), getNodeRolesData(container));
+          return suggestions.subList(0, Integer.min(suggestions.size(), maxSuggestions));
+        }
+      case NODE_PROPERTY:
+        {
+          List<AutocompleteSuggestion> suggestions = NodePropertySpecifier.autoComplete(query);
+          return suggestions.subList(0, Integer.min(suggestions.size(), maxSuggestions));
+        }
+      case OSPF_PROPERTY:
+        {
+          List<AutocompleteSuggestion> suggestions = OspfPropertySpecifier.autoComplete(query);
+          return suggestions.subList(0, Integer.min(suggestions.size(), maxSuggestions));
+        }
+      default:
+        throw new UnsupportedOperationException("Unsupported completion type: " + completionType);
     }
   }
 
@@ -306,7 +355,8 @@ public class WorkMgr extends AbstractCoordinator {
                   _settings.getSslPoolKeystoreFile(),
                   _settings.getSslPoolKeystorePassword(),
                   _settings.getSslPoolTruststoreFile(),
-                  _settings.getSslPoolTruststorePassword())
+                  _settings.getSslPoolTruststorePassword(),
+                  true)
               .build();
 
       String protocol = _settings.getSslPoolDisable() ? "http" : "https";
@@ -342,10 +392,10 @@ public class WorkMgr extends AbstractCoordinator {
         }
       }
     } catch (ProcessingException e) {
-      String stackTrace = ExceptionUtils.getStackTrace(e);
+      String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.error(String.format("unable to connect to %s: %s\n", worker, stackTrace));
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getStackTrace(e);
+      String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.error(String.format("exception: %s\n", stackTrace));
     } finally {
       if (client != null) {
@@ -360,7 +410,7 @@ public class WorkMgr extends AbstractCoordinator {
     try {
       _workQueueMgr.processTaskCheckResult(work, task);
     } catch (Exception e) {
-      _logger.errorf("exception: %s\n", ExceptionUtils.getStackTrace(e));
+      _logger.errorf("exception: %s\n", Throwables.getStackTraceAsString(e));
     }
 
     // if the task ended, send a hint to the pool manager to look up worker status
@@ -459,8 +509,8 @@ public class WorkMgr extends AbstractCoordinator {
       Map<String, String> questionsToAdd,
       List<String> questionsToDelete,
       @Nullable Boolean suggested) {
-    Path containerDir = getdirContainer(containerName);
-    Path aDir = containerDir.resolve(Paths.get(BfConsts.RELPATH_ANALYSES_DIR, aName));
+    Path containerDir = getdirNetwork(containerName);
+    Path aDir = containerDir.resolve(BfConsts.RELPATH_ANALYSES_DIR).resolve(aName);
 
     this.configureAnalysisValidityCheck(
         containerName, newAnalysis, aName, questionsToAdd, questionsToDelete, aDir);
@@ -494,7 +544,7 @@ public class WorkMgr extends AbstractCoordinator {
       }
     }
 
-    /** Delete questionsToDelete and add questionsToAdd */
+    /* Delete questionsToDelete and add questionsToAdd */
     Path questionsDir = aDir.resolve(BfConsts.RELPATH_QUESTIONS_DIR);
     for (String qName : questionsToDelete) {
       CommonUtil.deleteDirectory(questionsDir.resolve(qName));
@@ -580,6 +630,60 @@ public class WorkMgr extends AbstractCoordinator {
     CommonUtil.deleteDirectory(qDir);
   }
 
+  public String getAnalysisAnswer(
+      String containerName,
+      String baseTestrig,
+      String baseEnv,
+      String deltaTestrig,
+      String deltaEnv,
+      String analysisName,
+      String questionName)
+      throws JsonProcessingException {
+    Path analysisDir = getdirContainerAnalysis(containerName, analysisName);
+    Path testrigDir = getdirTestrig(containerName, baseTestrig);
+
+    String answer = "unknown";
+    Path questionFile =
+        analysisDir.resolve(
+            Paths.get(
+                BfConsts.RELPATH_QUESTIONS_DIR, questionName, BfConsts.RELPATH_QUESTION_FILE));
+    if (!Files.exists(questionFile)) {
+      throw new BatfishException("Question file for question " + questionName + "not found");
+    }
+    Path answerDir =
+        testrigDir.resolve(
+            Paths.get(
+                BfConsts.RELPATH_ANALYSES_DIR,
+                analysisName,
+                BfConsts.RELPATH_QUESTIONS_DIR,
+                questionName,
+                BfConsts.RELPATH_ENVIRONMENTS_DIR,
+                baseEnv));
+    if (deltaTestrig != null) {
+      answerDir = answerDir.resolve(Paths.get(BfConsts.RELPATH_DELTA, deltaTestrig, deltaEnv));
+    }
+    Path answerFile = answerDir.resolve(BfConsts.RELPATH_ANSWER_JSON);
+    if (!Files.exists(answerFile)) {
+      Answer ans = Answer.failureAnswer("Not answered", null);
+      ans.setStatus(AnswerStatus.NOTFOUND);
+      answer = BatfishObjectMapper.writePrettyString(ans);
+    } else {
+      boolean answerIsStale;
+      answerIsStale =
+          CommonUtil.getLastModifiedTime(questionFile)
+                  .compareTo(CommonUtil.getLastModifiedTime(answerFile))
+              > 0;
+      if (answerIsStale) {
+        Answer ans = Answer.failureAnswer("Not fresh", null);
+        ans.setStatus(AnswerStatus.STALE);
+        answer = BatfishObjectMapper.writePrettyString(ans);
+      } else {
+        answer = CommonUtil.readFile(answerFile);
+      }
+    }
+    return answer;
+  }
+
   public Map<String, String> getAnalysisAnswers(
       String containerName,
       String baseTestrig,
@@ -588,52 +692,19 @@ public class WorkMgr extends AbstractCoordinator {
       String deltaEnv,
       String analysisName)
       throws JsonProcessingException {
-    Path analysisDir = getdirContainerAnalysis(containerName, analysisName);
-    Path testrigDir = getdirTestrig(containerName, baseTestrig);
     SortedSet<String> questions = listAnalysisQuestions(containerName, analysisName);
     Map<String, String> retMap = new TreeMap<>();
     for (String questionName : questions) {
-      String answer = "unknown";
-      Path questionFile =
-          analysisDir.resolve(
-              Paths.get(
-                  BfConsts.RELPATH_QUESTIONS_DIR, questionName, BfConsts.RELPATH_QUESTION_FILE));
-      if (!Files.exists(questionFile)) {
-        throw new BatfishException("Question file for question " + questionName + "not found");
-      }
-      Path answerDir =
-          testrigDir.resolve(
-              Paths.get(
-                  BfConsts.RELPATH_ANALYSES_DIR,
-                  analysisName,
-                  BfConsts.RELPATH_QUESTIONS_DIR,
-                  questionName,
-                  BfConsts.RELPATH_ENVIRONMENTS_DIR,
-                  baseEnv));
-      if (deltaTestrig != null) {
-        answerDir = answerDir.resolve(Paths.get(BfConsts.RELPATH_DELTA, deltaTestrig, deltaEnv));
-      }
-      Path answerFile = answerDir.resolve(BfConsts.RELPATH_ANSWER_JSON);
-      if (!Files.exists(answerFile)) {
-        Answer ans = Answer.failureAnswer("Not answered", null);
-        ans.setStatus(AnswerStatus.NOTFOUND);
-        answer = BatfishObjectMapper.writePrettyString(ans);
-      } else {
-        boolean answerIsStale;
-        answerIsStale =
-            CommonUtil.getLastModifiedTime(questionFile)
-                    .compareTo(CommonUtil.getLastModifiedTime(answerFile))
-                > 0;
-        if (answerIsStale) {
-          Answer ans = Answer.failureAnswer("Not fresh", null);
-          ans.setStatus(AnswerStatus.STALE);
-          answer = BatfishObjectMapper.writePrettyString(ans);
-        } else {
-          answer = CommonUtil.readFile(answerFile);
-        }
-      }
-
-      retMap.put(questionName, answer);
+      retMap.put(
+          questionName,
+          getAnalysisAnswer(
+              containerName,
+              baseTestrig,
+              baseEnv,
+              deltaTestrig,
+              deltaEnv,
+              analysisName,
+              questionName));
     }
     return retMap;
   }
@@ -705,12 +776,12 @@ public class WorkMgr extends AbstractCoordinator {
       if (configPaths.isEmpty()) {
         throw new BatfishException(
             String.format(
-                "Configuration file %s does not exist in testrig %s for container %s",
+                "Configuration file %s does not exist in snapshot %s for network %s",
                 configName, testrigName, containerName));
       } else if (configPaths.size() > 1) {
         throw new BatfishException(
             String.format(
-                "More than one configuration file with name %s in testrig %s for container %s",
+                "More than one configuration file with name %s in snapshot %s for network %s",
                 configName, testrigName, containerName));
       }
       String configContent = "";
@@ -719,7 +790,7 @@ public class WorkMgr extends AbstractCoordinator {
       } catch (IOException e) {
         throw new BatfishException(
             String.format(
-                "Failed to read configuration file %s in testrig %s for container %s",
+                "Failed to read configuration file %s in snapshot %s for network %s",
                 configName, testrigName, containerName),
             e);
       }
@@ -733,17 +804,16 @@ public class WorkMgr extends AbstractCoordinator {
 
   /** Return a {@link Container container} contains all testrigs directories inside it. */
   public Container getContainer(String containerName) {
-    return getContainer(getdirContainer(containerName));
+    return getContainer(getdirNetwork(containerName));
   }
 
   /** Return a {@link Container container} contains all testrigs directories inside it */
   public Container getContainer(Path containerDir) {
     SortedSet<String> testrigs =
-        new TreeSet<>(
-            CommonUtil.getSubdirectories(containerDir.resolve(BfConsts.RELPATH_TESTRIGS_DIR))
-                .stream()
-                .map(dir -> dir.getFileName().toString())
-                .collect(Collectors.toSet()));
+        CommonUtil.getSubdirectories(containerDir.resolve(BfConsts.RELPATH_TESTRIGS_DIR))
+            .stream()
+            .map(dir -> dir.getFileName().toString())
+            .collect(toCollection(TreeSet::new));
 
     return Container.of(containerDir.toFile().getName(), testrigs);
   }
@@ -758,8 +828,8 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   @Override
-  public Path getdirContainer(String containerName) {
-    return getdirContainer(containerName, true);
+  public Path getdirNetwork(String networkName) {
+    return getdirContainer(networkName, true);
   }
 
   @Override
@@ -768,17 +838,16 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   @Override
-  public Set<String> getContainerNames() {
+  public Set<String> getNetworkNames() {
     Path containersDir = Main.getSettings().getContainersLocation();
     if (!Files.exists(containersDir)) {
       containersDir.toFile().mkdirs();
     }
     SortedSet<String> containers =
-        new TreeSet<>(
-            CommonUtil.getSubdirectories(containersDir)
-                .stream()
-                .map(dir -> dir.getFileName().toString())
-                .collect(Collectors.toSet()));
+        CommonUtil.getSubdirectories(containersDir)
+            .stream()
+            .map(dir -> dir.getFileName().toString())
+            .collect(toCollection(TreeSet::new));
     return containers;
   }
 
@@ -792,7 +861,7 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   private Path getdirContainerAnalysis(String containerName, String analysisName) {
-    Path containerDir = getdirContainer(containerName);
+    Path containerDir = getdirNetwork(containerName);
     Path aDir = containerDir.resolve(Paths.get(BfConsts.RELPATH_ANALYSES_DIR, analysisName));
     if (!Files.exists(aDir)) {
       throw new BatfishException(
@@ -802,7 +871,7 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   private Path getdirContainerQuestion(String containerName, String qName) {
-    Path containerDir = getdirContainer(containerName);
+    Path containerDir = getdirNetwork(containerName);
     Path qDir = containerDir.resolve(Paths.get(BfConsts.RELPATH_QUESTIONS_DIR, qName));
     if (!Files.exists(qDir)) {
       throw new BatfishException("Question '" + qName + "' does not exist");
@@ -820,16 +889,66 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   public Path getdirTestrig(String containerName, String testrigName) {
-    Path testrigDir = getdirTestrigs(containerName).resolve(Paths.get(testrigName));
-    if (!Files.exists(testrigDir)) {
-      throw new BatfishException("Testrig '" + testrigName + "' does not exist");
+    Path snapshotDir = getdirSnapshots(containerName).resolve(Paths.get(testrigName));
+    if (!Files.exists(snapshotDir)) {
+      throw new BatfishException("Snapshot '" + testrigName + "' does not exist");
     }
-    return testrigDir;
+    return snapshotDir;
   }
 
   @Override
-  public Path getdirTestrigs(String containerName) {
-    return getdirContainer(containerName).resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR));
+  public Path getdirSnapshots(String networkName) {
+    return getdirNetwork(networkName).resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR));
+  }
+
+  /**
+   * Returns the latest testrig in the container.
+   *
+   * @return An {@link Optional} object with the latest testrig or empty if no testrigs exist
+   */
+  public Optional<String> getLatestTestrig(String container) {
+    Function<String, Instant> toTestrigTimestamp =
+        t -> TestrigMetadataMgr.getTestrigCreationTimeOrMin(container, t);
+    return listTestrigs(container)
+        .stream()
+        .max(
+            Comparator.comparing(
+                toTestrigTimestamp, Comparator.nullsFirst(Comparator.naturalOrder())));
+  }
+
+  /**
+   * Gets the {@link NodeRolesData} for the {@code container}.
+   *
+   * @param container The container for which we should fetch the node roles
+   * @return The node roles
+   * @throws IOException The contents of node roles file cannot be converted to {@link
+   *     NodeRolesData}
+   */
+  public NodeRolesData getNodeRolesData(String container) throws IOException {
+    return NodeRolesData.read(getNodeRolesPath(container));
+  }
+
+  /** Gets the path of the node roles file */
+  public Path getNodeRolesPath(String container) {
+    return getdirNetwork(container).resolve(BfConsts.RELPATH_NODE_ROLES_PATH);
+  }
+
+  /**
+   * Gets the set of nodes in this container and testrig. Extracts the set based on the topology
+   * file that is generated as part of the testrig initialization.
+   *
+   * @param container The container
+   * @param testrig The testrig
+   * @return The set of nodes
+   * @throws IOException If the contents of the topology file cannot be mapped to the topology
+   *     object
+   */
+  public Set<String> getNodes(String container, String testrig) throws IOException {
+    Path pojoTopologyPath =
+        getdirTestrig(container, testrig).resolve(BfConsts.RELPATH_TESTRIG_POJO_TOPOLOGY_PATH);
+    Topology topology =
+        BatfishObjectMapper.mapper().readValue(pojoTopologyPath.toFile(), Topology.class);
+    return topology.getNodes().stream().map(Node::getName).collect(Collectors.toSet());
   }
 
   public JSONObject getParsingResults(String containerName, String testrigName)
@@ -881,6 +1000,21 @@ public class WorkMgr extends AbstractCoordinator {
         .resolve(BfConsts.RELPATH_METADATA_FILE);
   }
 
+  /**
+   * Gets the {@link ReferenceLibrary} for the {@code container}.
+   *
+   * @throws IOException The contents of reference library file cannot be converted to {@link
+   *     ReferenceLibrary}
+   */
+  public ReferenceLibrary getReferenceLibrary(String container) throws IOException {
+    return ReferenceLibrary.read(getReferenceLibraryPath(container));
+  }
+
+  /** Gets the path of the reference library file */
+  public Path getReferenceLibraryPath(String container) {
+    return getdirNetwork(container).resolve(BfConsts.RELPATH_REFERENCE_LIBRARY_PATH);
+  }
+
   public JSONObject getStatusJson() throws JSONException {
     return _workQueueMgr.getStatusJson();
   }
@@ -891,7 +1025,7 @@ public class WorkMgr extends AbstractCoordinator {
     if (!Files.exists(submittedTestrigDir)) {
       return "Missing folder '"
           + BfConsts.RELPATH_TEST_RIG_DIR
-          + "' for testrig '"
+          + "' for snapshot '"
           + testrigName
           + "'\n";
     }
@@ -935,7 +1069,7 @@ public class WorkMgr extends AbstractCoordinator {
   public Path getTestrigObject(String containerName, String testrigName, String objectName) {
     Path testrigDir = getdirTestrig(containerName, testrigName);
     Path file = testrigDir.resolve(objectName);
-    /**
+    /*
      * Check if we got an object name outside of the testrig folder, perhaps because of ".." in the
      * name; disallow it
      */
@@ -979,12 +1113,11 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   public String initContainer(@Nullable String containerName, @Nullable String containerPrefix) {
-    if (containerName == null || containerName.equals("")) {
-      containerName = containerPrefix + "_" + UUID.randomUUID();
-    }
-    Path containerDir = Main.getSettings().getContainersLocation().resolve(containerName);
+    String newContainerName =
+        isNullOrEmpty(containerName) ? containerPrefix + "_" + UUID.randomUUID() : containerName;
+    Path containerDir = Main.getSettings().getContainersLocation().resolve(newContainerName);
     if (Files.exists(containerDir)) {
-      throw new BatfishException("Container '" + containerName + "' already exists!");
+      throw new BatfishException("Container '" + newContainerName + "' already exists!");
     }
     if (!containerDir.toFile().mkdirs()) {
       throw new BatfishException("failed to create directory '" + containerDir + "'");
@@ -1001,12 +1134,12 @@ public class WorkMgr extends AbstractCoordinator {
     if (!questionsDir.toFile().mkdir()) {
       throw new BatfishException("failed to create directory '" + questionsDir + "'");
     }
-    return containerName;
+    return newContainerName;
   }
 
   @Override
-  public void initTestrig(
-      String containerName, String testrigName, Path srcDir, boolean autoAnalyze) {
+  public void initSnapshot(
+      String networkName, String snapshotName, Path srcDir, boolean autoAnalyze) {
     /*
      * Sanity check what we got:
      *    There should be just one top-level folder.
@@ -1014,14 +1147,14 @@ public class WorkMgr extends AbstractCoordinator {
     SortedSet<Path> srcDirEntries = CommonUtil.getEntries(srcDir);
     if (srcDirEntries.size() != 1 || !Files.isDirectory(srcDirEntries.iterator().next())) {
       throw new BatfishException(
-          "Unexpected packaging of testrig. There should be just one top-level folder");
+          "Unexpected packaging of snapshot. There should be just one top-level folder");
     }
 
     Path srcSubdir = srcDirEntries.iterator().next();
     SortedSet<Path> subFileList = CommonUtil.getEntries(srcSubdir);
 
-    Path containerDir = getdirContainer(containerName);
-    Path testrigDir = containerDir.resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR, testrigName));
+    Path containerDir = getdirNetwork(networkName);
+    Path testrigDir = containerDir.resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR, snapshotName));
 
     if (!testrigDir.toFile().mkdirs()) {
       throw new BatfishException("Failed to create directory: '" + testrigDir + "'");
@@ -1057,6 +1190,7 @@ public class WorkMgr extends AbstractCoordinator {
     boolean routingTables = false;
     boolean bgpTables = false;
     boolean roleData = false;
+    boolean referenceLibraryData = false;
     for (Path subFile : subFileList) {
       String name = subFile.getFileName().toString();
       if (isEnvFile(subFile)) {
@@ -1076,11 +1210,26 @@ public class WorkMgr extends AbstractCoordinator {
             NodeRolesData testrigData = NodeRolesData.read(subFile);
             Path nodeRolesPath = containerDir.resolve(BfConsts.RELPATH_NODE_ROLES_PATH);
             NodeRolesData.mergeNodeRoleDimensions(
-                nodeRolesPath, testrigData.getNodeRoleDimensions(), false);
+                nodeRolesPath,
+                testrigData.getNodeRoleDimensions(),
+                testrigData.getDefaultDimension(),
+                false);
           } catch (IOException e) {
             // lets not stop the upload because that file is busted.
             // TODO: figure out a way to surface this error to the user
             _logger.errorf("Could not process node role data: %s", e);
+          }
+        }
+        if (name.equals(BfConsts.RELPATH_REFERENCE_LIBRARY_PATH)) {
+          referenceLibraryData = true;
+          try {
+            ReferenceLibrary testrigData = ReferenceLibrary.read(subFile);
+            Path path = containerDir.resolve(BfConsts.RELPATH_REFERENCE_LIBRARY_PATH);
+            ReferenceLibrary.mergeReferenceBooks(path, testrigData.getReferenceBooks());
+          } catch (IOException e) {
+            // lets not stop the upload because that file is busted.
+            // TODO: figure out a way to surface this error to the user
+            _logger.errorf("Could not process reference library data: %s", e);
           }
         }
       } else {
@@ -1089,11 +1238,11 @@ public class WorkMgr extends AbstractCoordinator {
       }
     }
     _logger.infof(
-        "Environment data for testrig:%s; bgpTables:%s, routingTables:%s, roleData:%s\n",
-        testrigName, bgpTables, routingTables, roleData);
+        "Environment data for snapshot:%s; bgpTables:%s, routingTables:%s, nodeRoles:%s referenceBooks:%s\n",
+        snapshotName, bgpTables, routingTables, roleData, referenceLibraryData);
 
     if (autoAnalyze) {
-      for (WorkItem workItem : getAutoWorkQueue(containerName, testrigName)) {
+      for (WorkItem workItem : getAutoWorkQueue(networkName, snapshotName)) {
         boolean queued = queueWork(workItem);
         if (!queued) {
           _logger.errorf("Unable to queue work while auto processing: %s", workItem);
@@ -1149,7 +1298,7 @@ public class WorkMgr extends AbstractCoordinator {
       _workQueueMgr.processTaskCheckResult(work, fakeTask);
       killed = true;
     } catch (Exception e) {
-      _logger.errorf("exception: %s\n", ExceptionUtils.getStackTrace(e));
+      _logger.errorf("exception: %s\n", Throwables.getStackTraceAsString(e));
     }
     return killed;
   }
@@ -1172,7 +1321,8 @@ public class WorkMgr extends AbstractCoordinator {
                   _settings.getSslPoolKeystoreFile(),
                   _settings.getSslPoolKeystorePassword(),
                   _settings.getSslPoolTruststoreFile(),
-                  _settings.getSslPoolTruststorePassword())
+                  _settings.getSslPoolTruststorePassword(),
+                  true)
               .build();
 
       String protocol = _settings.getSslPoolDisable() ? "http" : "https";
@@ -1212,9 +1362,9 @@ public class WorkMgr extends AbstractCoordinator {
         }
       }
     } catch (ProcessingException e) {
-      _logger.errorf("unable to connect to %s: %s\n", worker, ExceptionUtils.getStackTrace(e));
+      _logger.errorf("unable to connect to %s: %s\n", worker, Throwables.getStackTraceAsString(e));
     } catch (Exception e) {
-      _logger.errorf("exception: %s\n", ExceptionUtils.getStackTrace(e));
+      _logger.errorf("exception: %s\n", Throwables.getStackTraceAsString(e));
     } finally {
       if (client != null) {
         client.close();
@@ -1231,7 +1381,7 @@ public class WorkMgr extends AbstractCoordinator {
    * @return {@link Set} of container names
    */
   public SortedSet<String> listAnalyses(String containerName, AnalysisType analysisType) {
-    Path containerDir = getdirContainer(containerName);
+    Path containerDir = getdirNetwork(containerName);
     Path analysesDir = containerDir.resolve(BfConsts.RELPATH_ANALYSES_DIR);
     if (!Files.exists(analysesDir)) {
       return ImmutableSortedSet.of();
@@ -1250,27 +1400,23 @@ public class WorkMgr extends AbstractCoordinator {
       return true;
     }
     boolean suggested = AnalysisMetadataMgr.getAnalysisSuggestedOrFalse(containerName, aName);
-    if (analysisType == AnalysisType.SUGGESTED && suggested
-        || analysisType == AnalysisType.USER && !suggested) {
-      return true;
-    }
-    return false;
+    return (analysisType == AnalysisType.SUGGESTED && suggested
+        || analysisType == AnalysisType.USER && !suggested);
   }
 
   public SortedSet<String> listAnalysisQuestions(String containerName, String analysisName) {
     Path analysisDir = getdirContainerAnalysis(containerName, analysisName);
     Path questionsDir = analysisDir.resolve(BfConsts.RELPATH_QUESTIONS_DIR);
     if (!Files.exists(questionsDir)) {
-      /** TODO: Something better than returning empty set? */
+      /* TODO: Something better than returning empty set? */
       return new TreeSet<>();
     }
     SortedSet<Path> subdirectories = CommonUtil.getSubdirectories(questionsDir);
     SortedSet<String> subdirectoryNames =
-        new TreeSet<>(
-            subdirectories
-                .stream()
-                .map(path -> path.getFileName().toString())
-                .collect(Collectors.toSet()));
+        subdirectories
+            .stream()
+            .map(path -> path.getFileName().toString())
+            .collect(toCollection(TreeSet::new));
     return subdirectoryNames;
   }
 
@@ -1280,14 +1426,12 @@ public class WorkMgr extends AbstractCoordinator {
       containersDir.toFile().mkdirs();
     }
     SortedSet<String> authorizedContainers =
-        new TreeSet<>(
-            CommonUtil.getSubdirectories(containersDir)
-                .stream()
-                .map(dir -> dir.getFileName().toString())
-                .filter(
-                    container ->
-                        Main.getAuthorizer().isAccessibleContainer(apiKey, container, false))
-                .collect(Collectors.toSet()));
+        CommonUtil.getSubdirectories(containersDir)
+            .stream()
+            .map(dir -> dir.getFileName().toString())
+            .filter(
+                container -> Main.getAuthorizer().isAccessibleContainer(apiKey, container, false))
+            .collect(toCollection(TreeSet::new));
     return authorizedContainers;
   }
 
@@ -1302,11 +1446,10 @@ public class WorkMgr extends AbstractCoordinator {
       return new TreeSet<>();
     }
     SortedSet<String> environments =
-        new TreeSet<>(
-            CommonUtil.getSubdirectories(environmentsDir)
-                .stream()
-                .map(dir -> dir.getFileName().toString())
-                .collect(Collectors.toSet()));
+        CommonUtil.getSubdirectories(environmentsDir)
+            .stream()
+            .map(dir -> dir.getFileName().toString())
+            .collect(toCollection(TreeSet::new));
     return environments;
   }
 
@@ -1316,25 +1459,24 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   public SortedSet<String> listQuestions(String containerName, boolean verbose) {
-    Path containerDir = getdirContainer(containerName);
+    Path containerDir = getdirNetwork(containerName);
     Path questionsDir = containerDir.resolve(BfConsts.RELPATH_QUESTIONS_DIR);
     if (!Files.exists(questionsDir)) {
       return new TreeSet<>();
     }
     SortedSet<String> questions =
-        new TreeSet<>(
-            CommonUtil.getSubdirectories(questionsDir)
-                .stream()
-                .map(dir -> dir.getFileName().toString())
-                // Question dirs starting with __ are internal questions
-                // and should not show up in listQuestions
-                .filter(dir -> verbose || !dir.startsWith("__"))
-                .collect(Collectors.toSet()));
+        CommonUtil.getSubdirectories(questionsDir)
+            .stream()
+            .map(dir -> dir.getFileName().toString())
+            // Question dirs starting with __ are internal questions
+            // and should not show up in listQuestions
+            .filter(dir -> verbose || !dir.startsWith("__"))
+            .collect(toCollection(TreeSet::new));
     return questions;
   }
 
   public List<String> listTestrigs(String containerName) {
-    Path containerDir = getdirContainer(containerName);
+    Path containerDir = getdirNetwork(containerName);
     Path testrigsDir = containerDir.resolve(BfConsts.RELPATH_TESTRIGS_DIR);
     if (!Files.exists(testrigsDir)) {
       return new ArrayList<>();
@@ -1380,7 +1522,7 @@ public class WorkMgr extends AbstractCoordinator {
   public boolean queueWork(WorkItem workItem) {
     Path testrigDir = getdirTestrig(workItem.getContainerName(), workItem.getTestrigName());
     if (workItem.getTestrigName().isEmpty() || !Files.exists(testrigDir)) {
-      throw new BatfishException("Non-existent testrig: '" + testrigDir.getFileName() + "'");
+      throw new BatfishException("Non-existent snapshot: '" + testrigDir.getFileName() + "'");
     }
     boolean success;
     try {
@@ -1397,7 +1539,7 @@ public class WorkMgr extends AbstractCoordinator {
           throw new BatfishException("Environment metadata not found");
         }
       } catch (Exception e) {
-        throw new BatfishException("Testrig/environment metadata not found.");
+        throw new BatfishException("Snapshot/environment metadata not found.");
       }
       success = _workQueueMgr.queueUnassignedWork(new QueuedWork(workItem, workDetails));
     } catch (Exception e) {
@@ -1405,13 +1547,7 @@ public class WorkMgr extends AbstractCoordinator {
     }
     // as an optimization trigger AssignWork to see if we can schedule this (or another) work
     if (success) {
-      Thread thread =
-          new Thread() {
-            @Override
-            public void run() {
-              assignWork();
-            }
-          };
+      Thread thread = new Thread(this::assignWork);
       thread.start();
     }
     return success;
@@ -1477,7 +1613,7 @@ public class WorkMgr extends AbstractCoordinator {
     Path dstDir = newEnvDir.resolve(BfConsts.RELPATH_ENV_DIR);
     if (Files.exists(newEnvDir)) {
       throw new BatfishException(
-          "Environment: '" + newEnvName + "' already exists for testrig: '" + testrigName + "'");
+          "Environment: '" + newEnvName + "' already exists for snapshot: '" + testrigName + "'");
     }
     if (!dstDir.toFile().mkdirs()) {
       throw new BatfishException("Failed to create directory: '" + dstDir + "'");
@@ -1485,7 +1621,7 @@ public class WorkMgr extends AbstractCoordinator {
     Path zipFile = CommonUtil.createTempFile("coord_up_env_", ".zip");
     CommonUtil.writeStreamToFile(fileStream, zipFile);
 
-    /** First copy base environment if it is set */
+    /* First copy base environment if it is set */
     if (baseEnvName.length() > 0) {
       Path baseEnvPath = environmentsDir.resolve(Paths.get(baseEnvName, BfConsts.RELPATH_ENV_DIR));
       if (!Files.exists(baseEnvPath)) {
@@ -1544,10 +1680,11 @@ public class WorkMgr extends AbstractCoordinator {
     try {
       Question.parseQuestion(questionJson);
     } catch (Exception e) {
-      throw new BatfishException(String.format("Invalid question %s/%s", containerName, qName), e);
+      throw new BatfishException(
+          String.format("Invalid question %s/%s: %s", containerName, qName, e.getMessage()), e);
     }
 
-    Path containerDir = getdirContainer(containerName);
+    Path containerDir = getdirNetwork(containerName);
     Path qDir = containerDir.resolve(Paths.get(BfConsts.RELPATH_QUESTIONS_DIR, qName));
     if (Files.exists(qDir)) {
       throw new BatfishException(
@@ -1573,35 +1710,40 @@ public class WorkMgr extends AbstractCoordinator {
     return generateFileDateString(base, Instant.now());
   }
 
-  public void uploadTestrig(
-      String containerName, String testrigName, InputStream fileStream, boolean autoAnalyze) {
-    Path containerDir = getdirContainer(containerName);
+  /**
+   * Upload a new snapshot to the specified network.
+   *
+   * @param networkName Name of the network to upload the snapshot to.
+   * @param snapshotName Name of the new snapshot.
+   * @param fileStream {@link InputStream} of the snapshot zip.
+   * @param autoAnalyze Boolean determining if the snapshot analysis should be triggered on upload.
+   */
+  public void uploadSnapshot(
+      String networkName, String snapshotName, InputStream fileStream, boolean autoAnalyze) {
+    Path networkDir = getdirNetwork(networkName);
 
-    // Fail early if the testrig already exists.
-    if (Files.exists(containerDir.resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR, testrigName)))) {
-      throw new BatfishException("Testrig with name: '" + testrigName + "' already exists");
+    // Fail early if the snapshot already exists
+    if (Files.exists(networkDir.resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR, snapshotName)))) {
+      throw new BatfishException("Snapshot with name: '" + snapshotName + "' already exists");
     }
 
-    // Persist the user's upload to a directory inside the container, named for the testrig,
-    // where we save the original upload for later analysis.
+    // Save uploaded zip for troubleshooting
     Path originalDir =
-        containerDir
+        networkDir
             .resolve(BfConsts.RELPATH_ORIGINAL_DIR)
-            .resolve(generateFileDateString(testrigName));
+            .resolve(generateFileDateString(snapshotName));
     if (!originalDir.toFile().mkdirs()) {
       throw new BatfishException("Failed to create directory: '" + originalDir + "'");
     }
-    Path zipFile = originalDir.resolve(BfConsts.RELPATH_TESTRIG_ZIP_FILE);
-    CommonUtil.writeStreamToFile(fileStream, zipFile);
-
-    // Now unzip the user's data to a temporary folder, from which we'll parse and copy it.
+    Path snapshotZipFile = originalDir.resolve(BfConsts.RELPATH_SNAPSHOT_ZIP_FILE);
+    CommonUtil.writeStreamToFile(fileStream, snapshotZipFile);
     Path unzipDir = CommonUtil.createTempDirectory("tr");
-    UnzipUtility.unzip(zipFile, unzipDir);
+    UnzipUtility.unzip(snapshotZipFile, unzipDir);
 
     try {
-      initTestrig(containerName, testrigName, unzipDir, autoAnalyze);
+      initSnapshot(networkName, snapshotName, unzipDir, autoAnalyze);
     } catch (Exception e) {
-      throw new BatfishException("Error initializing testrig", e);
+      throw new BatfishException("Error initializing snapshot", e);
     } finally {
       CommonUtil.deleteDirectory(unzipDir);
     }

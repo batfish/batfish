@@ -14,14 +14,17 @@
         "hypothesis" : "sameName",
         "name" : "as1_community",
         "structDefinition" : {
+          "invertMatch" : false,
           "lines" : [
             {
               "action" : "ACCEPT",
-              "regex" : "(,|\\{|\\}|^|$| )1:"
+              "matchCondition" : {
+                "class" : "org.batfish.datamodel.RegexCommunitySet",
+                "regex" : "(,|\\{|\\}|^|$| )1:"
+              }
             }
           ],
-          "name" : "as1_community",
-          "invertMatch" : false
+          "name" : "as1_community"
         },
         "structType" : "CommunityList",
         "role" : "border"
@@ -38,14 +41,17 @@
         "hypothesis" : "sameName",
         "name" : "as2_community",
         "structDefinition" : {
+          "invertMatch" : false,
           "lines" : [
             {
               "action" : "ACCEPT",
-              "regex" : "(,|\\{|\\}|^|$| )2:"
+              "matchCondition" : {
+                "class" : "org.batfish.datamodel.RegexCommunitySet",
+                "regex" : "(,|\\{|\\}|^|$| )2:"
+              }
             }
           ],
-          "name" : "as2_community",
-          "invertMatch" : false
+          "name" : "as2_community"
         },
         "structType" : "CommunityList",
         "role" : "border"
@@ -62,14 +68,17 @@
         "hypothesis" : "sameName",
         "name" : "as3_community",
         "structDefinition" : {
+          "invertMatch" : false,
           "lines" : [
             {
               "action" : "ACCEPT",
-              "regex" : "(,|\\{|\\}|^|$| )3:"
+              "matchCondition" : {
+                "class" : "org.batfish.datamodel.RegexCommunitySet",
+                "regex" : "(,|\\{|\\}|^|$| )3:"
+              }
             }
           ],
-          "name" : "as3_community",
-          "invertMatch" : false
+          "name" : "as3_community"
         },
         "structType" : "CommunityList",
         "role" : "border"
@@ -97,14 +106,17 @@
         "hypothesis" : "sameName",
         "name" : "as2_community",
         "structDefinition" : {
+          "invertMatch" : false,
           "lines" : [
             {
               "action" : "ACCEPT",
-              "regex" : "(,|\\{|\\}|^|$| )2:"
+              "matchCondition" : {
+                "class" : "org.batfish.datamodel.RegexCommunitySet",
+                "regex" : "(,|\\{|\\}|^|$| )2:"
+              }
             }
           ],
-          "name" : "as2_community",
-          "invertMatch" : false
+          "name" : "as2_community"
         },
         "structType" : "CommunityList",
         "role" : "dept"
@@ -117,14 +129,17 @@
         "hypothesis" : "sameName",
         "name" : "dept_community",
         "structDefinition" : {
+          "invertMatch" : false,
           "lines" : [
             {
               "action" : "ACCEPT",
-              "regex" : "(,|\\{|\\}|^|$| )65001:"
+              "matchCondition" : {
+                "class" : "org.batfish.datamodel.RegexCommunitySet",
+                "regex" : "(,|\\{|\\}|^|$| )65001:"
+              }
             }
           ],
-          "name" : "dept_community",
-          "invertMatch" : false
+          "name" : "dept_community"
         },
         "structType" : "CommunityList",
         "role" : "dist"

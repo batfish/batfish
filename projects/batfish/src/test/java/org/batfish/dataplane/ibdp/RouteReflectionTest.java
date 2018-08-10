@@ -15,12 +15,13 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.plugin.DataPlanePlugin.ComputeDataPlaneResult;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
+import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.BgpAdvertisement.BgpAdvertisementType;
-import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -34,7 +35,6 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
-import org.batfish.datamodel.answers.BdpAnswerElement;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
@@ -94,7 +94,7 @@ public class RouteReflectionTest {
 
   private Interface.Builder _ib;
 
-  private BgpNeighbor.Builder _nb;
+  private BgpActivePeerConfig.Builder _nb;
 
   private NetworkFactory _nf;
 
@@ -135,17 +135,15 @@ public class RouteReflectionTest {
                 .build()));
     BgpProcess edge1Proc = _pb.setRouterId(edge1LoopbackIp).setVrf(vEdge1).build();
     RoutingPolicy edge1EbgpExportPolicy = _nullExportPolicyBuilder.setOwner(edge1).build();
-    _nb.setOwner(edge1)
-        .setVrf(vEdge1)
-        .setBgpProcess(edge1Proc)
+    _nb.setBgpProcess(edge1Proc)
         .setClusterId(edge1LoopbackIp.asLong())
-        .setRemoteAs(1)
+        .setRemoteAs(1L)
         .setLocalIp(edge1EbgpIfaceIp)
         .setPeerAddress(as1PeeringIp)
         .setExportPolicy(edge1EbgpExportPolicy.getName())
         .build();
     RoutingPolicy edge1IbgpExportPolicy = _defaultExportPolicyBuilder.setOwner(edge1).build();
-    _nb.setRemoteAs(2)
+    _nb.setRemoteAs(2L)
         .setLocalIp(edge1LoopbackIp)
         .setPeerAddress(rrLoopbackIp)
         .setExportPolicy(edge1IbgpExportPolicy.getName())
@@ -167,11 +165,9 @@ public class RouteReflectionTest {
                 .build()));
     BgpProcess rrProc = _pb.setRouterId(rrLoopbackIp).setVrf(vRr).build();
     RoutingPolicy rrExportPolicy = _defaultExportPolicyBuilder.setOwner(rr).build();
-    _nb.setOwner(rr)
-        .setVrf(vRr)
-        .setBgpProcess(rrProc)
+    _nb.setBgpProcess(rrProc)
         .setClusterId(rrLoopbackIp.asLong())
-        .setRemoteAs(2)
+        .setRemoteAs(2L)
         .setLocalIp(rrLoopbackIp)
         .setExportPolicy(rrExportPolicy.getName());
     if (edge1RouteReflectorClient) {
@@ -198,17 +194,15 @@ public class RouteReflectionTest {
                 .build()));
     BgpProcess edge2Proc = _pb.setRouterId(edge2LoopbackIp).setVrf(vEdge2).build();
     RoutingPolicy edge2EbgpExportPolicy = _nullExportPolicyBuilder.setOwner(edge2).build();
-    _nb.setOwner(edge2)
-        .setVrf(vEdge2)
-        .setBgpProcess(edge2Proc)
+    _nb.setBgpProcess(edge2Proc)
         .setClusterId(edge2LoopbackIp.asLong())
-        .setRemoteAs(3)
+        .setRemoteAs(3L)
         .setLocalIp(edge2EbgpIfaceIp)
         .setPeerAddress(as3PeeringIp)
         .setExportPolicy(edge2EbgpExportPolicy.getName())
         .build();
     RoutingPolicy edge2IbgpExportPolicy = _defaultExportPolicyBuilder.setOwner(edge2).build();
-    _nb.setRemoteAs(2)
+    _nb.setRemoteAs(2L)
         .setLocalIp(edge2LoopbackIp)
         .setPeerAddress(rrLoopbackIp)
         .setExportPolicy(edge2IbgpExportPolicy.getName())
@@ -216,9 +210,9 @@ public class RouteReflectionTest {
 
     SortedMap<String, Configuration> configurations =
         new ImmutableSortedMap.Builder<String, Configuration>(String::compareTo)
-            .put(edge1.getName(), edge1)
-            .put(rr.getName(), rr)
-            .put(edge2.getName(), edge2)
+            .put(edge1.getHostname(), edge1)
+            .put(rr.getHostname(), rr)
+            .put(edge2.getHostname(), edge2)
             .build();
     IncrementalBdpEngine engine =
         new IncrementalBdpEngine(
@@ -226,32 +220,31 @@ public class RouteReflectionTest {
             new BatfishLogger(BatfishLogger.LEVELSTR_OUTPUT, false),
             (s, i) -> new AtomicInteger());
     Topology topology = CommonUtil.synthesizeTopology(configurations);
-    IncrementalDataPlane dp =
+    ComputeDataPlaneResult dpResult =
         engine.computeDataPlane(
             false,
             configurations,
             topology,
             ImmutableSet.of(
-                _ab.setAsPath(AsPath.ofSingletonAsSets(1))
+                _ab.setAsPath(AsPath.ofSingletonAsSets(1L))
                     .setDstIp(edge1EbgpIfaceIp)
-                    .setDstNode(edge1.getName())
+                    .setDstNode(edge1.getHostname())
                     .setNetwork(AS1_PREFIX)
                     .setNextHopIp(as1PeeringIp)
                     .setOriginatorIp(as1PeeringIp)
                     .setSrcIp(as1PeeringIp)
                     .setSrcNode("as1Edge")
                     .build(),
-                _ab.setAsPath(AsPath.ofSingletonAsSets(3))
+                _ab.setAsPath(AsPath.ofSingletonAsSets(3L))
                     .setDstIp(edge2EbgpIfaceIp)
-                    .setDstNode(edge2.getName())
+                    .setDstNode(edge2.getHostname())
                     .setNetwork(AS3_PREFIX)
                     .setNextHopIp(as3PeeringIp)
                     .setOriginatorIp(as3PeeringIp)
                     .setSrcIp(as3PeeringIp)
                     .setSrcNode("as3Edge")
-                    .build()),
-            new BdpAnswerElement());
-    return engine.getRoutes(dp);
+                    .build()));
+    return IncrementalBdpEngine.getRoutes((IncrementalDataPlane) dpResult._dataPlane);
   }
 
   private SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>>
@@ -280,17 +273,15 @@ public class RouteReflectionTest {
                 .build()));
     BgpProcess edge1Proc = _pb.setRouterId(edge1LoopbackIp).setVrf(vEdge1).build();
     RoutingPolicy edge1EbgpExportPolicy = _nullExportPolicyBuilder.setOwner(edge1).build();
-    _nb.setOwner(edge1)
-        .setVrf(vEdge1)
-        .setBgpProcess(edge1Proc)
+    _nb.setBgpProcess(edge1Proc)
         .setClusterId(edge1LoopbackIp.asLong())
-        .setRemoteAs(1)
+        .setRemoteAs(1L)
         .setLocalIp(edge1EbgpIfaceIp)
         .setPeerAddress(as1PeeringIp)
         .setExportPolicy(edge1EbgpExportPolicy.getName())
         .build();
     RoutingPolicy edge1IbgpExportPolicy = _defaultExportPolicyBuilder.setOwner(edge1).build();
-    _nb.setRemoteAs(2)
+    _nb.setRemoteAs(2L)
         .setLocalIp(edge1LoopbackIp)
         .setPeerAddress(rr1LoopbackIp)
         .setExportPolicy(edge1IbgpExportPolicy.getName())
@@ -312,11 +303,9 @@ public class RouteReflectionTest {
                 .build()));
     BgpProcess rr1Proc = _pb.setRouterId(rr1LoopbackIp).setVrf(vRr1).build();
     RoutingPolicy rr1ExportPolicy = _defaultExportPolicyBuilder.setOwner(rr1).build();
-    _nb.setOwner(rr1)
-        .setVrf(vRr1)
-        .setBgpProcess(rr1Proc)
+    _nb.setBgpProcess(rr1Proc)
         .setClusterId(rr1LoopbackIp.asLong())
-        .setRemoteAs(2)
+        .setRemoteAs(2L)
         .setLocalIp(rr1LoopbackIp)
         .setExportPolicy(rr1ExportPolicy.getName())
         .setRouteReflectorClient(true)
@@ -338,9 +327,7 @@ public class RouteReflectionTest {
     RoutingPolicy edge2IbgpExportPolicy = _defaultExportPolicyBuilder.setOwner(rr2).build();
 
     Ip rr2ClusterIdForRr1 = useSameClusterIds ? rr1LoopbackIp : rr2LoopbackIp;
-    _nb.setOwner(rr2)
-        .setVrf(vRr2)
-        .setBgpProcess(rr2Proc)
+    _nb.setBgpProcess(rr2Proc)
         .setClusterId(rr2ClusterIdForRr1.asLong())
         .setLocalIp(rr2LoopbackIp)
         .setPeerAddress(rr1LoopbackIp)
@@ -350,9 +337,9 @@ public class RouteReflectionTest {
 
     SortedMap<String, Configuration> configurations =
         new ImmutableSortedMap.Builder<String, Configuration>(String::compareTo)
-            .put(edge1.getName(), edge1)
-            .put(rr1.getName(), rr1)
-            .put(rr2.getName(), rr2)
+            .put(edge1.getHostname(), edge1)
+            .put(rr1.getHostname(), rr1)
+            .put(rr2.getHostname(), rr2)
             .build();
     IncrementalBdpEngine engine =
         new IncrementalBdpEngine(
@@ -361,22 +348,23 @@ public class RouteReflectionTest {
             (s, i) -> new AtomicInteger());
     Topology topology = CommonUtil.synthesizeTopology(configurations);
     IncrementalDataPlane dp =
-        engine.computeDataPlane(
-            false,
-            configurations,
-            topology,
-            ImmutableSet.of(
-                _ab.setAsPath(AsPath.ofSingletonAsSets(1))
-                    .setDstIp(edge1EbgpIfaceIp)
-                    .setDstNode(edge1.getName())
-                    .setNetwork(AS1_PREFIX)
-                    .setNextHopIp(as1PeeringIp)
-                    .setOriginatorIp(as1PeeringIp)
-                    .setSrcIp(as1PeeringIp)
-                    .setSrcNode("as1Edge")
-                    .build()),
-            new BdpAnswerElement());
-    return engine.getRoutes(dp);
+        (IncrementalDataPlane)
+            engine.computeDataPlane(
+                    false,
+                    configurations,
+                    topology,
+                    ImmutableSet.of(
+                        _ab.setAsPath(AsPath.ofSingletonAsSets(1L))
+                            .setDstIp(edge1EbgpIfaceIp)
+                            .setDstNode(edge1.getHostname())
+                            .setNetwork(AS1_PREFIX)
+                            .setNextHopIp(as1PeeringIp)
+                            .setOriginatorIp(as1PeeringIp)
+                            .setSrcIp(as1PeeringIp)
+                            .setSrcNode("as1Edge")
+                            .build()))
+                ._dataPlane;
+    return IncrementalBdpEngine.getRoutes(dp);
   }
 
   /** Initialize builders with values common to all tests */
@@ -394,7 +382,7 @@ public class RouteReflectionTest {
     _nf = new NetworkFactory();
     _cb = _nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
     _ib = _nf.interfaceBuilder().setActive(true);
-    _nb = _nf.bgpNeighborBuilder().setLocalAs(2);
+    _nb = _nf.bgpNeighborBuilder().setLocalAs(2L);
     _pb = _nf.bgpProcessBuilder();
     _vb = _nf.vrfBuilder().setName(Configuration.DEFAULT_VRF_NAME);
     If acceptIffBgp = new If();

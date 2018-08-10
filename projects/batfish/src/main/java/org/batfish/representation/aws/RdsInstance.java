@@ -6,7 +6,6 @@ import com.google.common.collect.Multimap;
 import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
-import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.InterfaceAddress;
@@ -21,7 +20,7 @@ public class RdsInstance implements AwsVpcEntity, Serializable {
 
   public enum Status {
     AVAILABLE,
-    UNAVAILABLE;
+    UNAVAILABLE
   }
 
   private static final long serialVersionUID = 1L;
@@ -40,19 +39,18 @@ public class RdsInstance implements AwsVpcEntity, Serializable {
 
   private List<String> _securityGroups;
 
-  public RdsInstance(JSONObject jObj, BatfishLogger logger) throws JSONException {
+  public RdsInstance(JSONObject jObj) throws JSONException {
     _azsSubnetIds = ArrayListMultimap.create();
     _securityGroups = new LinkedList<>();
     _dbInstanceIdentifier = jObj.getString(JSON_KEY_DB_INSTANCE_IDENTIFIER);
     _availabilityZone = jObj.getString("AvailabilityZone");
     _vpcId = jObj.getJSONObject(JSON_KEY_DB_SUBNET_GROUP).getString(JSON_KEY_VPC_ID);
     _multiAz = jObj.getBoolean(JSON_KEY_MULTI_AZ);
-    if (jObj.getString(JSON_KEY_DB_INSTANCE_STATUS).toLowerCase().equals("available")) {
+    if (jObj.getString(JSON_KEY_DB_INSTANCE_STATUS).equalsIgnoreCase("available")) {
       _dbInstanceStatus = Status.AVAILABLE;
     }
-    initSubnets(
-        jObj.getJSONObject(JSON_KEY_DB_SUBNET_GROUP).getJSONArray(JSON_KEY_SUBNETS), logger);
-    initSecurityGroups(jObj.getJSONArray(JSON_KEY_VPC_SECURITY_GROUPS), logger);
+    initSubnets(jObj.getJSONObject(JSON_KEY_DB_SUBNET_GROUP).getJSONArray(JSON_KEY_SUBNETS));
+    initSecurityGroups(jObj.getJSONArray(JSON_KEY_VPC_SECURITY_GROUPS));
   }
 
   public static long getSerialVersionUID() {
@@ -88,20 +86,19 @@ public class RdsInstance implements AwsVpcEntity, Serializable {
     return _dbInstanceStatus;
   }
 
-  private void initSecurityGroups(JSONArray securityGroupsArray, BatfishLogger logger)
-      throws JSONException {
+  private void initSecurityGroups(JSONArray securityGroupsArray) throws JSONException {
     for (int index = 0; index < securityGroupsArray.length(); index++) {
       JSONObject securityGroup = securityGroupsArray.getJSONObject(index);
-      if (securityGroup.getString(JSON_KEY_STATUS).toLowerCase().equals("active")) {
+      if (securityGroup.getString(JSON_KEY_STATUS).equalsIgnoreCase("active")) {
         _securityGroups.add(securityGroup.getString(JSON_KEY_VPC_SECURITY_GROUP_ID));
       }
     }
   }
 
-  private void initSubnets(JSONArray subnetsArray, BatfishLogger logger) throws JSONException {
+  private void initSubnets(JSONArray subnetsArray) throws JSONException {
     for (int i = 0; i < subnetsArray.length(); i++) {
       JSONObject subnet = subnetsArray.getJSONObject(i);
-      if (subnet.getString(JSON_KEY_SUBNET_STATUS).toLowerCase().equals("active")) {
+      if (subnet.getString(JSON_KEY_SUBNET_STATUS).equalsIgnoreCase("active")) {
         _azsSubnetIds.put(
             subnet.getJSONObject(JSON_KEY_SUBNET_AVAILABILITY_ZONE).getString("Name"),
             subnet.getString(JSON_KEY_SUBNET_IDENTIFIER));

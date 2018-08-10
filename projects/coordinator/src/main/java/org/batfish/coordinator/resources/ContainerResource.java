@@ -4,12 +4,13 @@ import javax.ws.rs.DELETE;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
+import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Container;
+import org.batfish.common.CoordConstsV2;
 import org.batfish.coordinator.Main;
 
 /**
@@ -26,27 +27,36 @@ public class ContainerResource {
   private BatfishLogger _logger = Main.getLogger();
 
   private String _name;
-  private String _apiKey;
 
-  public ContainerResource(UriInfo uriInfo, String apiKey, String name) {
-    _apiKey = apiKey;
+  public ContainerResource(String apiKey, String name) {
+    checkAccessToContainer(apiKey, name);
     _name = name;
   }
 
   /** Returns information about the given {@link Container}, provided this user can access it. */
   @GET
   public Response getContainer() {
-    _logger.infof("WMS2: getContainer '%s'\n", _name);
-    checkAccessToContainer();
+    _logger.infof("WMS2: getNetwork '%s'\n", _name);
     Container container = Main.getWorkMgr().getContainer(_name);
     return Response.ok(container).build();
+  }
+
+  /** Relocate the request to {@link NodeRolesResource}. */
+  @Path(CoordConstsV2.RSC_NODE_ROLES)
+  public NodeRolesResource getNodeRolesResource() {
+    return new NodeRolesResource(_name);
+  }
+
+  /** Relocate the request to {@link ReferenceLibraryResource}. */
+  @Path(CoordConstsV2.RSC_REFERENCE_LIBRARY)
+  public ReferenceLibraryResource getReferenceLibraryResource() {
+    return new ReferenceLibraryResource(_name);
   }
 
   /** Delete a specified container with name: {@link #_name}. */
   @DELETE
   public Response deleteContainer() {
-    _logger.infof("WMS2: delContainer '%s'\n", _name);
-    checkAccessToContainer();
+    _logger.infof("WMS2: delNetwork '%s'\n", _name);
     if (Main.getWorkMgr().delContainer(_name)) {
       return Response.noContent().build();
     } else {
@@ -54,15 +64,15 @@ public class ContainerResource {
     }
   }
 
-  /** Check the container {@link #_name} exists and {@link #_apiKey} has accessibility to it. */
-  private void checkAccessToContainer() {
-    if (!Main.getWorkMgr().checkContainerExists(_name)) {
-      throw new NotFoundException(String.format("Container '%s' does not exist", _name));
+  /** Check if {@code container} exists and {@code apiKey} has access to it. */
+  private static void checkAccessToContainer(String apiKey, String container) {
+    if (!Main.getWorkMgr().checkContainerExists(container)) {
+      throw new NotFoundException(String.format("Network '%s' does not exist", container));
     }
 
-    if (!Main.getAuthorizer().isAccessibleContainer(_apiKey, _name, false)) {
+    if (!Main.getAuthorizer().isAccessibleContainer(apiKey, container, false)) {
       throw new ForbiddenException(
-          String.format("container '%s' is not accessible by the api key: %s", _name, _apiKey));
+          String.format("network '%s' is not accessible by the api key: %s", container, apiKey));
     }
   }
 }

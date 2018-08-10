@@ -39,8 +39,7 @@ public class DbAuthorizerTest {
     // Setup a test database using SQLite
     String connString =
         String.format("jdbc:sqlite:%s", Paths.get(tmpFolder.getRoot().getAbsolutePath(), DB_NAME));
-    Connection conn = DriverManager.getConnection(connString);
-    try {
+    try (Connection conn = DriverManager.getConnection(connString)) {
       PreparedStatement ps =
           conn.prepareStatement(
               String.format(
@@ -83,8 +82,6 @@ public class DbAuthorizerTest {
       st.setString(2, KEY2);
       st.execute();
       st.close();
-    } finally {
-      conn.close();
     }
 
     // Set logger, otherwise exceptions are thrown

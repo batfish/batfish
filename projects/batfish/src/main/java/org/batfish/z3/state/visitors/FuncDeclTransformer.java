@@ -16,7 +16,7 @@ public class FuncDeclTransformer {
 
   public FuncDeclTransformer(Context ctx, List<BitVecSort> basicStateVariableSorts) {
     _ctx = ctx;
-    _basicStateVariableSorts = basicStateVariableSorts.stream().toArray(BitVecSort[]::new);
+    _basicStateVariableSorts = basicStateVariableSorts.toArray(new BitVecSort[0]);
   }
 
   public FuncDecl toFuncDecl(String name, State state) {

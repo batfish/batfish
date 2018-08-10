@@ -34,15 +34,18 @@
     <maven-enforcer-plugin.version>3.0.0-M1</maven-enforcer-plugin.version>
     <maven-findbugs-plugin.version>3.0.5</maven-findbugs-plugin.version>
     <maven-install-plugin.version>2.5.2</maven-install-plugin.version>
+    <maven-jacoco-plugin.version>0.8.1</maven-jacoco-plugin.version>
     <maven-jar-plugin.version>3.0.2</maven-jar-plugin.version>
+    <maven-javadoc-plugin.version>3.0.1</maven-javadoc-plugin.version>
     <maven-jxr-plugin.version>2.5</maven-jxr-plugin.version>
     <maven-license-plugin.version>1.13</maven-license-plugin.version>
-    <maven-pmd-plugin.version>3.8</maven-pmd-plugin.version>
+    <maven-pmd-plugin.version>3.10.0</maven-pmd-plugin.version>
     <maven-project-info-reports-plugin.version>2.9</maven-project-info-reports-plugin.version>
     <maven-shade-plugin.version>3.0.0</maven-shade-plugin.version>
 
     <!-- The versions of Java libraries used. Please keep alphabetical. -->
-    <antlr.version>4.7.1</antlr.version>
+    <antlr4.version>4.7.1-batfish-internal</antlr4.version>
+    <antlr4-runtime.version>4.7.1</antlr4-runtime.version>
     <autoservice.version>1.0-rc3</autoservice.version>
     <azure.version>2.0.0</azure.version>
     <beanutils.version>1.9.3</beanutils.version>
@@ -52,15 +55,19 @@
     <commons-configuration2.version>2.2</commons-configuration2.version>
     <commons-exec.version>1.3</commons-exec.version>
     <commons-io.version>2.4</commons-io.version>
-    <commons-lang3.version>3.6</commons-lang3.version>
+    <commons-lang3.version>3.7</commons-lang3.version>
+    <diffutils.version>2.2</diffutils.version>
     <errorprone.version>2.0.18</errorprone.version>
     <grizzly.version>2.3.18</grizzly.version>
     <guava.version>22.0</guava.version>
-    <hamcrest.version>1.3</hamcrest.version>
-    <jackson.version>2.9.0</jackson.version>
+    <guava-eea.version>0.0.1</guava-eea.version>
+    <jackson.version>2.9.6</jackson.version>
+    <javabdd.version>2018-07-26-36d0ed6-batfish-internal</javabdd.version>
+    <java-hamcrest.version>2.0.0.0</java-hamcrest.version>
     <javax-annotation-api.version>1.2</javax-annotation-api.version>
     <jaeger.version>0.21.0</jaeger.version>
     <jaxrs.version>2.0.1</jaxrs.version>
+    <jdk-eea.version>0.0.1</jdk-eea.version>
     <jersey.version>2.25.1</jersey.version>
     <jettison.version>1.3.8</jettison.version>
     <jgrapht-core.version>1.1.0</jgrapht-core.version>
@@ -73,11 +80,26 @@
     <lz4.version>1.4.1</lz4.version>
     <opentracing-jaxrs2.version>0.0.9</opentracing-jaxrs2.version>
     <opentracing.version>0.30.0</opentracing.version>
+    <pmd.version>6.4.0</pmd.version>
     <puppycrawl.version>8.0</puppycrawl.version>
     <slf4j.version>1.7.25</slf4j.version>
     <sqlite-jdbc.version>3.21.0</sqlite-jdbc.version>
     <xstream.version>1.4.7</xstream.version>
     <z3.version>2018-01-12-450f3c9b459d128135abb5bbd4fa0508fe26bfae</z3.version>
+
+    <!--
+      Annotation paths for Eclipse. The Eclipse workspace must first have the M2_REPO classpath variable configured.
+      This can be done via:
+      mvn -Declipse.workspace="/path/to/eclipse/workspace" eclipse:configure-workspace
+    -->
+    <m2e.eea.annotationpath.jre>
+      M2_REPO/org/lastnpe/eea/jdk-eea/${jdk-eea.version}/jdk-eea-${jdk-eea.version}.jar
+    </m2e.eea.annotationpath.jre>
+    <!-- For now we only use guava annotations. Only one jar can be specified, so this is all that is possible
+         until resolution of https://github.com/lastnpe/eclipse-null-eea-augments/issues/51 -->
+    <m2e.eea.annotationpath.maven>
+      M2_REPO/org/lastnpe/eea/guava-eea/${guava-eea.version}/guava-eea-${guava-eea.version}.jar
+    </m2e.eea.annotationpath.maven>
   </properties>
 
 
@@ -88,7 +110,6 @@
         <activeByDefault>true</activeByDefault>
       </activation>
       <properties>
-        <cpd.skip>true</cpd.skip>
         <checkstyle.skip>true</checkstyle.skip>
         <findbugs.skip>true</findbugs.skip>
         <mdep.analyze.skip>true</mdep.analyze.skip>
@@ -169,6 +190,76 @@
 
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <version>${maven-javadoc-plugin.version}</version>
+          <configuration>
+            <doclint>all,-missing</doclint>
+            <failOnError>false</failOnError>
+            <failOnWarnings>false</failOnWarnings>
+            <quiet>true</quiet>
+            <notimestamp>true</notimestamp>
+            <!-- TODO: Do a better job excluding generated files-->
+            <sourceFileExcludes>
+              <sourceFileExclude>**/CiscoLexer.java</sourceFileExclude>
+              <sourceFileExclude>**/CiscoParser.java</sourceFileExclude>
+              <sourceFileExclude>**/CiscoParserBaseListener.java</sourceFileExclude>
+              <sourceFileExclude>**/CiscoParserListener.java</sourceFileExclude>
+
+              <sourceFileExclude>**/FlatJuniperLexer.java</sourceFileExclude>
+              <sourceFileExclude>**/FlatJuniperParser.java</sourceFileExclude>
+              <sourceFileExclude>**/FlatJuniperParserBaseListener.java</sourceFileExclude>
+              <sourceFileExclude>**/FlatJuniperParserListener.java</sourceFileExclude>
+
+              <sourceFileExclude>**/FlatVyosLexer.java</sourceFileExclude>
+              <sourceFileExclude>**/FlatVyosParser.java</sourceFileExclude>
+              <sourceFileExclude>**/FlatVyosParserBaseListener.java</sourceFileExclude>
+              <sourceFileExclude>**/FlatVyosParserListener.java</sourceFileExclude>
+
+              <sourceFileExclude>**/IptablesLexer.java</sourceFileExclude>
+              <sourceFileExclude>**/IptablesParser.java</sourceFileExclude>
+              <sourceFileExclude>**/IptablesParserBaseListener.java</sourceFileExclude>
+              <sourceFileExclude>**/IptablesParserListener.java</sourceFileExclude>
+
+              <sourceFileExclude>**/JuniperLexer.java</sourceFileExclude>
+              <sourceFileExclude>**/JuniperParser.java</sourceFileExclude>
+              <sourceFileExclude>**/JuniperParserBaseListener.java</sourceFileExclude>
+              <sourceFileExclude>**/JuniperParserListener.java</sourceFileExclude>
+
+              <sourceFileExclude>**/MrvLexer.java</sourceFileExclude>
+              <sourceFileExclude>**/MrvParser.java</sourceFileExclude>
+              <sourceFileExclude>**/MrvParserBaseListener.java</sourceFileExclude>
+              <sourceFileExclude>**/MrvParserListener.java</sourceFileExclude>
+
+              <sourceFileExclude>**/PaloAltoLexer.java</sourceFileExclude>
+              <sourceFileExclude>**/PaloAltoParser.java</sourceFileExclude>
+              <sourceFileExclude>**/PaloAltoParserBaseListener.java</sourceFileExclude>
+              <sourceFileExclude>**/PaloAltoParserListener.java</sourceFileExclude>
+
+              <sourceFileExclude>**/EosRoutingTableLexer.java</sourceFileExclude>
+              <sourceFileExclude>**/EosRoutingTableParser.java</sourceFileExclude>
+              <sourceFileExclude>**/EosRoutingTableParserBaseListener.java</sourceFileExclude>
+              <sourceFileExclude>**/EosRoutingTableParserListener.java</sourceFileExclude>
+
+              <sourceFileExclude>**/IosRoutingTableLexer.java</sourceFileExclude>
+              <sourceFileExclude>**/IosRoutingTableParser.java</sourceFileExclude>
+              <sourceFileExclude>**/IosRoutingTableParserBaseListener.java</sourceFileExclude>
+              <sourceFileExclude>**/IosRoutingTableParserListener.java</sourceFileExclude>
+
+              <sourceFileExclude>**/NxosRoutingTableLexer.java</sourceFileExclude>
+              <sourceFileExclude>**/NxosRoutingTableParser.java</sourceFileExclude>
+              <sourceFileExclude>**/NxosRoutingTableParserBaseListener.java</sourceFileExclude>
+              <sourceFileExclude>**/NxosRoutingTableParserListener.java</sourceFileExclude>
+
+              <sourceFileExclude>**/VyosLexer.java</sourceFileExclude>
+              <sourceFileExclude>**/VyosParser.java</sourceFileExclude>
+              <sourceFileExclude>**/VyosParserBaseListener.java</sourceFileExclude>
+              <sourceFileExclude>**/VyosParserListener.java</sourceFileExclude>
+            </sourceFileExcludes>
+          </configuration>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-jxr-plugin</artifactId>
           <version>${maven-jxr-plugin.version}</version>
         </plugin>
@@ -198,22 +289,22 @@
                 <failOnViolation>true</failOnViolation>
               </configuration>
             </execution>
-
-            <execution>
-              <id>cpd-check</id>
-              <goals>
-                <goal>cpd-check</goal>
-              </goals>
-              <configuration>
-                <failOnViolation>true</failOnViolation>
-              </configuration>
-            </execution>
           </executions>
           <dependencies>
             <dependency>
               <groupId>org.batfish</groupId>
               <artifactId>build-tools</artifactId>
               <version>${project.version}</version>
+            </dependency>
+            <dependency>
+              <groupId>net.sourceforge.pmd</groupId>
+              <artifactId>pmd-core</artifactId>
+              <version>${pmd.version}</version>
+            </dependency>
+            <dependency>
+              <groupId>net.sourceforge.pmd</groupId>
+              <artifactId>pmd-java</artifactId>
+              <version>${pmd.version}</version>
             </dependency>
           </dependencies>
         </plugin>
@@ -237,6 +328,13 @@
           <configuration>
             <treatWarningsAsErrors>true</treatWarningsAsErrors>
           </configuration>
+          <dependencies>
+            <dependency>
+              <groupId>org.antlr</groupId>
+              <artifactId>antlr4</artifactId>
+              <version>${antlr4.version}</version>
+            </dependency>
+          </dependencies>
         </plugin>
 
         <plugin>
@@ -280,6 +378,12 @@
               <licenseMerge>MIT License|MIT|MIT license</licenseMerge>
             </licenseMerges>
           </configuration>
+        </plugin>
+
+        <plugin>
+          <groupId>org.jacoco</groupId>
+          <artifactId>jacoco-maven-plugin</artifactId>
+          <version>${maven-jacoco-plugin.version}</version>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -326,10 +430,26 @@
             <id>install-bdd</id>
             <configuration>
               <groupId>net.sf.javabdd</groupId>
-              <artifactId>bdd</artifactId>
-              <version>batfish-internal</version>
+              <artifactId>javabdd</artifactId>
+              <version>${javabdd.version}</version>
               <packaging>jar</packaging>
-              <file>${basedir}/lib/bdd/net.sf.javabdd.jar</file>
+              <file>${basedir}/lib/bdd/net.sf.javabdd-${javabdd.version}.jar</file>
+              <sources>${basedir}/lib/bdd/net.sf.javabdd-${javabdd.version}-sources.jar</sources>
+            </configuration>
+          </execution>
+          <!-- Batfish includes a custom version of antlr4 that supports larger lexers. -->
+          <execution>
+            <phase>initialize</phase>
+            <goals>
+              <goal>install-file</goal>
+            </goals>
+            <id>install-antlr4</id>
+            <configuration>
+              <groupId>org.antlr</groupId>
+              <artifactId>antlr4</artifactId>
+              <packaging>jar</packaging>
+              <pomFile>${basedir}/lib/antlr4/antlr4-${antlr4.version}.pom</pomFile>
+              <file>${basedir}/lib/antlr4/antlr4-${antlr4.version}.jar</file>
             </configuration>
           </execution>
           <!-- Batfish includes a custom version of JsonPath with bugfixes to array handling. -->
@@ -424,6 +544,19 @@
           </execution>
         </executions>
       </plugin>
+
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>prepare-agent</id>
+            <goals>
+              <goal>prepare-agent</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
 
@@ -451,6 +584,12 @@
       <!-- Batfish modules. -->
       <dependency>
         <groupId>org.batfish</groupId>
+        <artifactId>allinone</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.batfish</groupId>
         <artifactId>batfish</artifactId>
         <version>${project.version}</version>
       </dependency>
@@ -470,6 +609,13 @@
       <dependency>
         <groupId>org.batfish</groupId>
         <artifactId>batfish-common-protocol</artifactId>
+        <classifier>tests</classifier>
+        <version>${project.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.batfish</groupId>
+        <artifactId>batfish</artifactId>
         <classifier>tests</classifier>
         <version>${project.version}</version>
       </dependency>
@@ -499,6 +645,12 @@
         <version>${jackson.version}</version>
         <scope>import</scope>
         <type>pom</type>
+      </dependency>
+
+      <dependency>
+        <groupId>com.github.wumpz</groupId>
+        <artifactId>diffutils</artifactId>
+        <version>${diffutils.version}</version>
       </dependency>
 
       <dependency>
@@ -655,24 +807,30 @@
         <groupId>junit</groupId>
         <artifactId>junit</artifactId>
         <version>${junit.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest-core</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
 
       <dependency>
         <groupId>net.sf.javabdd</groupId>
-        <artifactId>bdd</artifactId>
-        <version>batfish-internal</version>
+        <artifactId>javabdd</artifactId>
+        <version>${javabdd.version}</version>
       </dependency>
 
       <dependency>
         <groupId>org.antlr</groupId>
         <artifactId>antlr4</artifactId>
-        <version>${antlr.version}</version>
+        <version>${antlr4.version}</version>
       </dependency>
 
       <dependency>
         <groupId>org.antlr</groupId>
         <artifactId>antlr4-runtime</artifactId>
-        <version>${antlr.version}</version>
+        <version>${antlr4-runtime.version}</version>
       </dependency>
 
       <dependency>
@@ -779,14 +937,20 @@
 
       <dependency>
         <groupId>org.hamcrest</groupId>
-        <artifactId>hamcrest-core</artifactId>
-        <version>${hamcrest.version}</version>
+        <artifactId>java-hamcrest</artifactId>
+        <version>${java-hamcrest.version}</version>
       </dependency>
 
       <dependency>
-        <groupId>org.hamcrest</groupId>
-        <artifactId>hamcrest-library</artifactId>
-        <version>${hamcrest.version}</version>
+        <groupId>org.lastnpe.eea</groupId>
+        <artifactId>guava-eea</artifactId>
+        <version>${guava-eea.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.lastnpe.eea</groupId>
+        <artifactId>jdk-eea</artifactId>
+        <version>${jdk-eea.version}</version>
       </dependency>
 
       <dependency>

@@ -24,7 +24,6 @@ import org.batfish.question.OutliersQuestionPlugin.OutliersAnswerElement;
 import org.batfish.question.OutliersQuestionPlugin.OutliersQuestion;
 import org.batfish.question.PerRoleQuestionPlugin.PerRoleAnswerElement;
 import org.batfish.question.PerRoleQuestionPlugin.PerRoleQuestion;
-import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.OutliersHypothesis;
 
 @AutoService(Plugin.class)
@@ -66,9 +65,7 @@ public class PerRoleOutliersQuestionPlugin extends QuestionPlugin {
       for (OutlierSet<?> outlier : _serverOutliers) {
         sb.append("  Hypothesis");
         Optional<String> role = outlier.getRole();
-        if (role.isPresent()) {
-          sb.append(" for role " + role.get());
-        }
+        role.ifPresent(s -> sb.append(" for role " + s));
         sb.append(":\n");
         sb.append("    every node should have the following set of ");
         sb.append(outlier.getName() + ": " + outlier.getDefinition() + "\n");
@@ -81,9 +78,7 @@ public class PerRoleOutliersQuestionPlugin extends QuestionPlugin {
       for (NamedStructureOutlierSet<?> outlier : _namedStructureOutliers) {
         sb.append("  Hypothesis");
         Optional<String> role = outlier.getRole();
-        if (role.isPresent()) {
-          sb.append(" for role " + role.get());
-        }
+        role.ifPresent(s -> sb.append(" for role " + s));
         sb.append(":\n");
         switch (outlier.getHypothesis()) {
           case SAME_DEFINITION:
@@ -210,7 +205,7 @@ public class PerRoleOutliersQuestionPlugin extends QuestionPlugin {
 
     @Nonnull private SortedSet<String> _namedStructTypes;
 
-    @Nonnull private String _roleDimension;
+    @Nullable private String _roleDimension;
 
     @Nullable private List<String> _roles;
 
@@ -222,8 +217,7 @@ public class PerRoleOutliersQuestionPlugin extends QuestionPlugin {
         @JsonProperty(PROP_ROLES) List<String> roles) {
       _namedStructTypes = namedStructTypes == null ? new TreeSet<>() : namedStructTypes;
       _hypothesis = hypothesis == null ? OutliersHypothesis.SAME_DEFINITION : hypothesis;
-      _roleDimension =
-          roleDimension == null ? NodeRoleDimension.AUTO_DIMENSION_PRIMARY : roleDimension;
+      _roleDimension = roleDimension;
       _roles = roles;
     }
 

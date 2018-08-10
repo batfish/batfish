@@ -1,5 +1,6 @@
 package org.batfish.coordinator;
 
+import com.google.common.base.Throwables;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -9,7 +10,6 @@ import java.util.Set;
 import java.util.UUID;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts.TaskStatus;
@@ -369,7 +369,7 @@ public class WorkQueueMgr {
   }
 
   // when assignment attempt ends in error, we do not try to reassign
-  public synchronized void markAssignmentError(QueuedWork work) throws Exception {
+  public synchronized void markAssignmentError(QueuedWork work) {
     _queueIncompleteWork.delete(work);
     _queueCompletedWork.enque(work);
     work.setStatus(WorkStatusCode.ASSIGNMENTERROR);
@@ -481,7 +481,7 @@ public class WorkQueueMgr {
                       "Failed to requeue previously blocked work " + requeueWork.getId());
                 }
               } catch (Exception e) {
-                String stackTrace = ExceptionUtils.getStackTrace(e);
+                String stackTrace = Throwables.getStackTraceAsString(e);
                 _logger.errorf("exception: %s\n", stackTrace);
                 // put this work back on incomplete queue and process as if it terminatedabnormally
                 // people may be checking its status and this work may be blocking others
@@ -578,7 +578,7 @@ public class WorkQueueMgr {
     return _queueIncompleteWork.enque(work);
   }
 
-  private boolean queueBlockedWork(QueuedWork work, QueuedWork blocker) throws Exception {
+  private boolean queueBlockedWork(QueuedWork work, QueuedWork blocker) {
     _blockingWork.add(blocker.getId());
     work.setStatus(WorkStatusCode.BLOCKED);
     return _queueIncompleteWork.enque(work);

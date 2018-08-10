@@ -1,0 +1,17 @@
+!
+hostname ios-http-inspection
+!
+policy-map type inspect pmi
+ class type inspect ci
+  inspect
+ class type inspect ciundefined
+  inspect
+!
+class-map type inspect http match-any ci
+ match request method put
+ match not request body length gt 12345
+!
+class-map type inspect http match-any ciunused
+ match response header length gt 1234
+ match req-resp content-type mismatch
+!

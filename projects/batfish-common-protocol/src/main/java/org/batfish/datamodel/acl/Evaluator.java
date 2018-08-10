@@ -17,11 +17,13 @@ public class Evaluator implements GenericAclLineMatchExprVisitor<Boolean> {
     return item.accept(new Evaluator(flow, srcInterface, availableAcls, namedIpSpaces));
   }
 
-  private final Map<String, IpAccessList> _availableAcls;
-  private final Flow _flow;
+  protected final Map<String, IpAccessList> _availableAcls;
 
-  private final String _srcInterface;
-  private final Map<String, IpSpace> _namedIpSpaces;
+  protected final Flow _flow;
+
+  protected final Map<String, IpSpace> _namedIpSpaces;
+
+  protected final String _srcInterface;
 
   public Evaluator(
       Flow flow,
@@ -60,6 +62,11 @@ public class Evaluator implements GenericAclLineMatchExprVisitor<Boolean> {
   }
 
   @Override
+  public Boolean visitOriginatingFromDevice(OriginatingFromDevice originatingFromDevice) {
+    return _srcInterface == null;
+  }
+
+  @Override
   public Boolean visitOrMatchExpr(OrMatchExpr orMatchExpr) {
     return orMatchExpr.getDisjuncts().stream().anyMatch(d -> d.accept(this));
   }
@@ -68,7 +75,12 @@ public class Evaluator implements GenericAclLineMatchExprVisitor<Boolean> {
   public Boolean visitPermittedByAcl(PermittedByAcl permittedByAcl) {
     return _availableAcls
             .get(permittedByAcl.getAclName())
-            .filter(_flow, _srcInterface, _availableAcls, _namedIpSpaces)
+            .filter(
+                _flow,
+                _srcInterface,
+                _availableAcls,
+                _namedIpSpaces,
+                permittedByAcl.getDefaultAccept() ? LineAction.ACCEPT : LineAction.REJECT)
             .getAction()
         == LineAction.ACCEPT;
   }

@@ -32,6 +32,7 @@ public class InspectClassMapMatchAccessGroup implements InspectClassMapMatch {
     if (!c.getIpAccessLists().containsKey(_name)) {
       return FalseExpr.INSTANCE;
     }
-    return new PermittedByAcl(_name);
+    return new PermittedByAcl(
+        _name, String.format("Match if permitted by ip access-group '%s'", _name));
   }
 }

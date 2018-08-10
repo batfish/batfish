@@ -1,35 +1,35 @@
 package org.batfish.representation.juniper;
 
-import java.util.Map;
-import java.util.TreeMap;
-import org.batfish.common.util.ComparableStructure;
+import java.io.Serializable;
+import java.util.LinkedList;
+import java.util.List;
 
-public final class IkePolicy extends ComparableStructure<String> {
+public final class IkePolicy implements Serializable {
 
   /** */
   private static final long serialVersionUID = 1L;
 
-  private final int _definitionLine;
+  private final String _name;
 
   private String _preSharedKeyHash;
 
-  private final Map<String, Integer> _proposals;
+  // In priority order
+  private final List<String> _proposals;
 
-  public IkePolicy(String name, int definitionLine) {
-    super(name);
-    _definitionLine = definitionLine;
-    _proposals = new TreeMap<>();
+  public IkePolicy(String name) {
+    _name = name;
+    _proposals = new LinkedList<>();
   }
 
-  public int getDefinitionLine() {
-    return _definitionLine;
+  public String getName() {
+    return _name;
   }
 
   public String getPreSharedKeyHash() {
     return _preSharedKeyHash;
   }
 
-  public Map<String, Integer> getProposals() {
+  public List<String> getProposals() {
     return _proposals;
   }
 
