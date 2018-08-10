@@ -5,7 +5,9 @@ import static org.batfish.common.util.CommonUtil.asPositiveIpWildcards;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -65,6 +67,8 @@ public class HeaderQuestion extends Question {
 
   private static final String PROP_DIFF_TYPE = "diffType";
 
+  private static final String PROP_BGP_RANKING = "bgpRanking";
+
   private static final String PROP_ENV_DIFF = "envDiff";
 
   private static final String PROP_BASE_ENV_TYPE = "baseEnvType";
@@ -93,6 +97,8 @@ public class HeaderQuestion extends Question {
 
   private DiffType _diffType;
 
+  private List<BgpDecisionVariable> _bgpRanking;
+
   private boolean _envDiff;
 
   private EnvironmentType _baseEnvType;
@@ -116,6 +122,7 @@ public class HeaderQuestion extends Question {
     _noEnvironment = false;
     _minimize = false;
     _diffType = null;
+    _bgpRanking = new ArrayList<>();
     _envDiff = false;
     _baseEnvType = EnvironmentType.ANY;
     _deltaEnvType = EnvironmentType.ANY;
@@ -123,6 +130,11 @@ public class HeaderQuestion extends Question {
     _useAbstraction = false;
     _stats = false;
     _benchmark = false;
+    _bgpRanking.add(BgpDecisionVariable.LOCALPREF);
+    _bgpRanking.add(BgpDecisionVariable.PATHLEN);
+    _bgpRanking.add(BgpDecisionVariable.MED);
+    _bgpRanking.add(BgpDecisionVariable.EBGP_PREF_IBGP);
+    _bgpRanking.add(BgpDecisionVariable.IGPCOST);
   }
 
   public HeaderQuestion(HeaderQuestion q) {
@@ -134,6 +146,7 @@ public class HeaderQuestion extends Question {
     _noEnvironment = q._noEnvironment;
     _minimize = q._minimize;
     _diffType = q._diffType;
+    _bgpRanking = new ArrayList<>(q._bgpRanking);
     _envDiff = q._envDiff;
     _baseEnvType = q._baseEnvType;
     _deltaEnvType = q._deltaEnvType;
@@ -276,6 +289,11 @@ public class HeaderQuestion extends Question {
   @JsonProperty(PROP_DIFF_TYPE)
   public DiffType getDiffType() {
     return _diffType;
+  }
+
+  @JsonProperty(PROP_BGP_RANKING)
+  public List<BgpDecisionVariable> getBgpRanking() {
+    return _bgpRanking;
   }
 
   @JsonProperty(PROP_ENV_DIFF)
@@ -479,6 +497,17 @@ public class HeaderQuestion extends Question {
   @JsonProperty(PROP_DIFF_TYPE)
   public void setDiffType(DiffType d) {
     _diffType = d;
+  }
+
+  @JsonProperty(PROP_BGP_RANKING)
+  public void setBgpRanking(List<BgpDecisionVariable> r) {
+
+    EnumSet<BgpDecisionVariable> rset = EnumSet.noneOf(BgpDecisionVariable.class);
+    rset.addAll(r);
+    if (rset.size() != r.size()) {
+      throw new BatfishException("Duplicate BGP decision variable in question");
+    }
+    _bgpRanking = r;
   }
 
   @JsonProperty(PROP_ENV_DIFF)
