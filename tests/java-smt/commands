@@ -27,6 +27,9 @@ test tests/java-smt/ospf3-equal-len2.ref get smt-equal-length finalNodeRegex="r3
 test tests/java-smt/ospf3-routing-loop.ref get smt-routing-loop fullModel=True
 test tests/java-smt/ospf3-multipath.ref get smt-multipath-consistency finalNodeRegex="r3", finalIfaceRegex="Loopback.*", fullModel=True
 test tests/java-smt/ospf3-deterministic.ref get smt-deterministic
+test tests/java-smt/ospf3-node-failures1.ref get smt-reachability finalNodeRegex="r3", ingressNodeRegex="r0", notFailNodeRegex="r3|r0", finalIfaceRegex="Loopback.*", fullModel=True, nodeFailures=1
+test tests/java-smt/ospf3-node-failures2.ref get smt-reachability finalNodeRegex="r3", ingressNodeRegex="r0", notFailNodeRegex="r3|r0", finalIfaceRegex="Loopback.*", fullModel=True, nodeFailures=2
+
 
 # ospf with different costs along different edges
 init-snapshot test_rigs/smt-examples/OSPF-COST tr-smt-ospf-cost
