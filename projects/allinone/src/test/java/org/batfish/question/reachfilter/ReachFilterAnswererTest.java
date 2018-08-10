@@ -359,4 +359,21 @@ public final class ReachFilterAnswererTest {
     Optional<Flow> flow = _batfish.reachFilter(_config, denyAllSourcesAcl);
     assertThat(flow, equalTo(Optional.empty()));
   }
+
+  @Test
+  public void testSane2() {
+    // An ACL that can only match with ingress interface IFACE2.
+    IpAccessList denyAllSourcesAcl =
+        IpAccessList.builder()
+            .setName("srcAcl")
+            .setLines(
+                ImmutableList.of(
+                    rejecting().setMatchCondition(ORIGINATING_FROM_DEVICE).build(),
+                    rejecting().setMatchCondition(matchSrcInterface(IFACE1)).build(),
+                    ACCEPT_ALL))
+            .build();
+    Optional<Flow> flow = _batfish.reachFilter(_config, denyAllSourcesAcl);
+    assertThat("Should find a flow", flow.isPresent());
+    assertThat(flow.get(), hasIngressInterface(IFACE2));
+  }
 }

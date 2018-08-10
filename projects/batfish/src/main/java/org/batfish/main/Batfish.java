@@ -4270,8 +4270,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Override
   public Optional<Flow> reachFilter(Configuration node, IpAccessList acl) {
     BDDPacket bddPacket = new BDDPacket();
-    List<String> interfaces = ImmutableList.copyOf(node.getInterfaces().keySet());
-    BDDSourceManager mgr = new BDDSourceManager(bddPacket, interfaces);
+    BDDSourceManager mgr = BDDSourceManager.forIpAccessList(bddPacket, node, acl);
     BDDAcl bddAcl = BDDAcl.create(bddPacket, acl, node.getIpAccessLists(), node.getIpSpaces(), mgr);
     BDD satAssignment = bddAcl.getBdd().and(mgr.isSane()).fullSatOne();
     if (satAssignment.isZero()) {

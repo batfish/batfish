@@ -1,23 +1,29 @@
 package org.batfish.symbolic.bdd;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.datamodel.acl.InterfacesReferencedByIpAccessLists.referencedInterfaces;
 import static org.batfish.symbolic.bdd.BDDUtils.isAssignment;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Sets;
 import com.google.common.math.LongMath;
 import java.math.RoundingMode;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import net.sf.javabdd.BDD;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.IpAccessList;
 
 /**
  * Manages BDD variables to track a packet's source: which interface it entered the node through, if
- * any (in which case it originated from the device).
+ * any. If it didn't enter through any node, it originated from the device itself.
  */
 public final class BDDSourceManager {
   private static final String VAR_NAME = "SrcInterface";
@@ -30,12 +36,45 @@ public final class BDDSourceManager {
 
   private final BDDInteger _var;
 
-  public BDDSourceManager(BDDPacket pkt, List<String> srcInterfaces) {
+  private BDDSourceManager(BDDPacket pkt, List<String> srcInterfaces) {
     int bitsRequired = LongMath.log2(srcInterfaces.size() + 1, RoundingMode.CEILING);
     _var = pkt.allocateBDDInteger(VAR_NAME, bitsRequired, false);
     _originatingFromDeviceBDD = _var.value(0);
     _isSane = _var.leq(srcInterfaces.size());
     _srcInterfaceBDDs = computeMatchSrcInterfaceBDDs(_var, srcInterfaces);
+  }
+
+  /** Create a {@link BDDSourceManager} for a specified set of possible source interfaces. */
+  public static BDDSourceManager forInterfaces(BDDPacket pkt, List<String> srcInterfaces) {
+    return new BDDSourceManager(pkt, srcInterfaces);
+  }
+
+  /**
+   * Create a {@link BDDSourceManager} for a specified {@link IpAccessList}. To minimize the number
+   * of {@link BDD} bits used, it will only track interfaces referenced by the ACL.
+   */
+  public static BDDSourceManager forIpAccessList(
+      BDDPacket pkt, Configuration config, IpAccessList acl) {
+    List<String> interfaces = interfacesForIpAccessList(config, acl);
+    return new BDDSourceManager(pkt, interfaces);
+  }
+
+  @VisibleForTesting
+  static List<String> interfacesForIpAccessList(Configuration config, IpAccessList acl) {
+    Set<String> allInterfaces = config.getInterfaces().keySet();
+    Set<String> referencedInterfaces = referencedInterfaces(acl);
+    Set<String> unReferencedInterfaces = Sets.difference(allInterfaces, referencedInterfaces);
+    /*
+     * If only some interfaces are referenced, we only need to track the referenced ones, plus one
+     * more (as a representative of the set of unreferenced interfaces). This is in case the
+     * BDD is true only when the source is not the device itself or any referenced interface.
+     */
+    return unReferencedInterfaces.isEmpty()
+        ? ImmutableList.copyOf(allInterfaces)
+        : ImmutableList.<String>builder()
+            .addAll(referencedInterfaces)
+            .add(unReferencedInterfaces.iterator().next())
+            .build();
   }
 
   /**

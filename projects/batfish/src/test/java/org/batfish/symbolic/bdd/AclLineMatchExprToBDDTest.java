@@ -50,7 +50,7 @@ public class AclLineMatchExprToBDDTest {
   @Before
   public void setup() {
     _pkt = new BDDPacket();
-    _srcInterfaceManager = new BDDSourceManager(_pkt, ImmutableList.of(IFACE1, IFACE2));
+    _srcInterfaceManager = BDDSourceManager.forInterfaces(_pkt, ImmutableList.of(IFACE1, IFACE2));
     _originatingFromDevice = _srcInterfaceManager.getOriginatingFromDeviceBDD();
     _toBDD =
         new AclLineMatchExprToBDD(

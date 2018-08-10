@@ -61,4 +61,8 @@ public final class AclLineMatchExprs {
   public static OrMatchExpr or(List<AclLineMatchExpr> exprs) {
     return new OrMatchExpr(exprs);
   }
+
+  public static PermittedByAcl permittedByAcl(String aclName) {
+    return new PermittedByAcl(aclName);
+  }
 }

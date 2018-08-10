@@ -66,7 +66,7 @@ public class BDDAcl {
         acl,
         ImmutableMap.of(),
         ImmutableMap.of(),
-        new BDDSourceManager(pkt, ImmutableList.of()));
+        BDDSourceManager.forInterfaces(pkt, ImmutableList.of()));
   }
 
   public static BDDAcl create(
@@ -74,7 +74,8 @@ public class BDDAcl {
       IpAccessList acl,
       Map<String, IpAccessList> aclEnv,
       Map<String, IpSpace> ipSpaceEnv) {
-    return create(pkt, acl, aclEnv, ipSpaceEnv, new BDDSourceManager(pkt, ImmutableList.of()));
+    return create(
+        pkt, acl, aclEnv, ipSpaceEnv, BDDSourceManager.forInterfaces(pkt, ImmutableList.of()));
   }
 
   public static BDDAcl create(

@@ -1,14 +1,25 @@
 package org.batfish.symbolic.bdd;
 
+import static org.batfish.datamodel.IpAccessListLine.ACCEPT_ALL;
+import static org.batfish.datamodel.IpAccessListLine.rejecting;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.symbolic.bdd.BDDMatchers.isZero;
 import static org.batfish.symbolic.bdd.BDDOps.orNull;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasSize;
 
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import java.util.Optional;
 import net.sf.javabdd.BDD;
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.NetworkFactory;
 import org.junit.Test;
 
 public class BDDSourceManagerTest {
@@ -20,7 +31,7 @@ public class BDDSourceManagerTest {
 
   BDDPacket _pkt = new BDDPacket();
 
-  BDDSourceManager _mgr = new BDDSourceManager(_pkt, IFACES);
+  BDDSourceManager _mgr = BDDSourceManager.forInterfaces(_pkt, IFACES);
 
   @Test
   public void test() {
@@ -42,5 +53,31 @@ public class BDDSourceManagerTest {
                 _mgr.getSrcInterfaceBDD(IFACE2))
             .not();
     assertThat(_mgr.isSane().and(noSource), isZero());
+  }
+
+  @Test
+  public void testForIpAccessList() {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration config =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
+    Interface.Builder ib = nf.interfaceBuilder().setOwner(config);
+    ib.setName(IFACE1).build();
+    ib.setName(IFACE2).build();
+    String iface3 = "iface3";
+    ib.setName(iface3).build();
+
+    // an ACL that can only match with an IFACE2 or iface3
+    IpAccessList acl =
+        IpAccessList.builder()
+            .setName("acl")
+            .setLines(
+                ImmutableList.of(
+                    rejecting().setMatchCondition(matchSrcInterface(IFACE1)).build(), ACCEPT_ALL))
+            .build();
+
+    List<String> trackedIfaces = BDDSourceManager.interfacesForIpAccessList(config, acl);
+    assertThat(trackedIfaces, hasSize(2));
+    assertThat(trackedIfaces, hasItem(IFACE1));
+    assertThat(trackedIfaces, anyOf(hasItem(IFACE2), hasItem(iface3)));
   }
 }

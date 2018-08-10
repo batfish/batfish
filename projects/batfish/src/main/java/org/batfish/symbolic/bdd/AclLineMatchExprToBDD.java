@@ -56,7 +56,7 @@ public class AclLineMatchExprToBDD implements GenericAclLineMatchExprVisitor<BDD
     _aclEnv = ImmutableMap.copyOf(aclEnv);
     _factory = factory;
     _bddOps = new BDDOps(factory);
-    _bddSrcManager = new BDDSourceManager(packet, ImmutableList.of());
+    _bddSrcManager = BDDSourceManager.forInterfaces(packet, ImmutableList.of());
     _namedIpSpaces = ImmutableMap.copyOf(namedIpSpaces);
     _packet = packet;
   }
