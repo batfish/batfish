@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Sets;
 import io.opentracing.ActiveSpan;
 import io.opentracing.References;
 import io.opentracing.SpanContext;
@@ -693,6 +694,37 @@ public class WorkMgr extends AbstractCoordinator {
       String analysisName)
       throws JsonProcessingException {
     SortedSet<String> questions = listAnalysisQuestions(containerName, analysisName);
+    Map<String, String> retMap = new TreeMap<>();
+    for (String questionName : questions) {
+      retMap.put(
+          questionName,
+          getAnalysisAnswer(
+              containerName,
+              baseTestrig,
+              baseEnv,
+              deltaTestrig,
+              deltaEnv,
+              analysisName,
+              questionName));
+    }
+    return retMap;
+  }
+
+  public Map<String, String> getAnalysisAnswers(
+      String containerName,
+      String baseTestrig,
+      String baseEnv,
+      String deltaTestrig,
+      String deltaEnv,
+      String analysisName,
+      Set<String> analysisQuestions)
+      throws JsonProcessingException {
+    SortedSet<String> allQuestions = listAnalysisQuestions(containerName, analysisName);
+    SortedSet<String> questions =
+        analysisQuestions.isEmpty()
+            ? allQuestions
+            : ImmutableSortedSet.copyOf(
+                Sets.intersection(allQuestions, analysisQuestions));
     Map<String, String> retMap = new TreeMap<>();
     for (String questionName : questions) {
       retMap.put(
