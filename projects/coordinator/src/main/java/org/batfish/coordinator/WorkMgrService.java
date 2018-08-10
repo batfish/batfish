@@ -795,9 +795,7 @@ public class WorkMgrService {
    * @param clientVersion The version of the client
    * @param networkName The name of the network in which the analysis resides
    * @param snapshotName The name of the snapshot on which the analysis was run
-   * @param baseEnv The name of the base environment on which the analysis was run
    * @param deltaSnapshot The name of the delta snapshot on which the analysis was run
-   * @param deltaEnv The name of the delta environment on which the analysis was run
    * @param aggregationsStr A list of aggregations to be computed and returned for each table
    * @param analysisName The name of the analysis
    * @param analysisQuestionsStr The names of the questions for which to retrieve metrics
