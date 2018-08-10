@@ -805,6 +805,9 @@ public final class Interface extends ComparableStructure<String> {
     if (!Objects.equals(this._switchportMode, other._switchportMode)) {
       return false;
     }
+    if (!Objects.equals(this._zoneName, other._zoneName)) {
+      return false;
+    }
     return true;
   }
 
@@ -1484,6 +1487,7 @@ public final class Interface extends ComparableStructure<String> {
     iface.put("name", _key);
     iface.put(PROP_PREFIX, _address.toString());
     iface.put(PROP_INTERFACE_TYPE, _interfaceType.toString());
+    iface.put(PROP_ZONE, _zoneName);
     return iface;
   }
 }
