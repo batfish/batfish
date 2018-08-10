@@ -206,6 +206,7 @@ import static org.hamcrest.Matchers.in;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -241,6 +242,7 @@ import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.EigrpExternalRoute;
+import org.batfish.datamodel.EigrpInternalRoute;
 import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.HeaderSpace;
@@ -873,6 +875,48 @@ public class CiscoGrammarTest {
         c, hasInterface("Ethernet4", hasEigrp(EigrpInterfaceSettingsMatchers.hasPassive(false))));
     assertThat(
         c, hasInterface("Ethernet5", hasEigrp(EigrpInterfaceSettingsMatchers.hasPassive(true))));
+  }
+
+  /**
+   * Test EIGRP into EIGRP route redistribution. Checks if routing policy accepts EIGRP routes and
+   * sets metric correctly.
+   */
+  @Test
+  public void testIosEigrpRedistributeEigrp() throws IOException {
+    Configuration c = parseConfig("ios-eigrp-redistribute-eigrp");
+
+    assertThat(c, hasDefaultVrf(hasEigrpProcesses(hasKey(1L))));
+    assertThat(c, hasDefaultVrf(hasEigrpProcesses(hasKey(2L))));
+    String exportPolicyName =
+        c.getVrfs().get(DEFAULT_VRF_NAME).getEigrpProcesses().get(2L).getExportPolicy();
+    assertThat(exportPolicyName, notNullValue());
+    RoutingPolicy routingPolicy = c.getRoutingPolicies().get(exportPolicyName);
+    assertThat(routingPolicy, notNullValue());
+
+    EigrpExternalRoute.Builder outputRouteBuilder = new EigrpExternalRoute.Builder();
+    outputRouteBuilder.setDestinationAsn(1L).setNetwork(Prefix.parse("1.0.0.0/32"));
+
+    EigrpMetric originalMetric =
+        EigrpMetric.builder()
+            .setBandwidth(2e9)
+            .setDelay(4e5)
+            .setMode(EigrpProcessMode.CLASSIC)
+            .build();
+    assertNotNull(originalMetric);
+    EigrpInternalRoute originalRoute =
+        EigrpInternalRoute.builder()
+            .setAdmin(90)
+            .setEigrpMetric(originalMetric)
+            .setNetwork(outputRouteBuilder.getNetwork())
+            .setProcessAsn(1L)
+            .build();
+    assertNotNull(originalRoute);
+
+    // Check if routingPolicy accepts EIGRP route and sets correct metric from original route
+    assertTrue(
+        routingPolicy.process(
+            originalRoute, outputRouteBuilder, null, DEFAULT_VRF_NAME, Direction.OUT));
+    assertThat(outputRouteBuilder.build(), hasEigrpMetric(originalRoute.getEigrpMetric()));
   }
 
   /**
