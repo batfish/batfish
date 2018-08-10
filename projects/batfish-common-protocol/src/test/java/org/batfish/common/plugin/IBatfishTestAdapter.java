@@ -308,7 +308,7 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public Optional<Flow> reachFilter(String nodeName, IpAccessList acl) {
+  public Optional<Flow> reachFilter(Configuration node, IpAccessList acl) {
     throw new UnsupportedOperationException();
   }
 
