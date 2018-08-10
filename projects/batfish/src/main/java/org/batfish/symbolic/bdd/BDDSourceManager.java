@@ -19,7 +19,7 @@ import org.batfish.common.util.CommonUtil;
  * Manages BDD variables to track a packet's source: which interface it entered the node through, if
  * any (in which case it originated from the device).
  */
-public final class BDDSrcManager {
+public final class BDDSourceManager {
   private static final String VAR_NAME = "SrcInterface";
 
   private BDD _isSane;
@@ -30,7 +30,7 @@ public final class BDDSrcManager {
 
   private final BDDInteger _var;
 
-  public BDDSrcManager(BDDPacket pkt, List<String> srcInterfaces) {
+  public BDDSourceManager(BDDPacket pkt, List<String> srcInterfaces) {
     int bitsRequired = LongMath.log2(srcInterfaces.size() + 1, RoundingMode.CEILING);
     _var = pkt.allocateBDDInteger(VAR_NAME, bitsRequired, false);
     _originatingFromDeviceBDD = _var.value(0);
