@@ -25,6 +25,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.UUID;
+import java.util.function.Function;
 import javax.annotation.Nullable;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -51,6 +52,7 @@ import org.batfish.datamodel.TestrigMetadata;
 import org.batfish.datamodel.answers.ColumnAggregationResult;
 import org.batfish.datamodel.answers.GetAnalysisAnswerMetricsAnswer;
 import org.batfish.datamodel.answers.Metrics;
+import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.answers.Aggregation;
 import org.batfish.datamodel.answers.AnalysisAnswerMetricsResult;
 import org.batfish.datamodel.answers.Answer;
@@ -60,6 +62,7 @@ import org.batfish.datamodel.answers.AutocompleteSuggestion.CompletionType;
 import org.batfish.datamodel.answers.ColumnAggregation;
 import org.batfish.datamodel.pojo.WorkStatus;
 import org.batfish.datamodel.questions.Question;
+import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
@@ -808,9 +811,9 @@ public class WorkMgrService {
    * @param baseEnv The name of the base environment on which the analysis was run
    * @param deltaSnapshot The name of the delta snapshot on which the analysis was run
    * @param deltaEnv The name of the delta environment on which the analysis was run
-   * @param aggregations A list of aggregations to be computed and returned for each table
+   * @param aggregationsStr A list of aggregations to be computed and returned for each table
    * @param analysisName The name of the analysis
-   * @param analysisQuestions The names of the questions for which to retrieve metrics
+   * @param analysisQuestionsStr The names of the questions for which to retrieve metrics
    * @return TODO: document JSON response
    */
   @POST
@@ -822,10 +825,10 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_NETWORK_NAME) String networkName,
       @FormDataParam(CoordConsts.SVC_KEY_SNAPSHOT_NAME) String snapshotName,
       @FormDataParam(CoordConsts.SVC_KEY_DELTA_SNAPSHOT_NAME) String deltaSnapshot,
-      @FormDataParam(CoordConsts.SVC_KEY_AGGREGATIONS) String aggregations,
+      @FormDataParam(CoordConsts.SVC_KEY_AGGREGATIONS) String aggregationsStr,
       @FormDataParam(CoordConsts.SVC_KEY_ANALYSIS_NAME) String analysisName,
       @FormDataParam(CoordConsts.SVC_KEY_ANALYSIS_QUESTIONS)
-          String analysisQuestions /* optional */,
+          String analysisQuestionsStr /* optional */,
       @FormDataParam(CoordConsts.SVC_KEY_WORKITEM) String workItemStr /* optional */) {
     String networkNameParam = networkName;
     String snapshotNameParam = snapshotName;
@@ -833,18 +836,18 @@ public class WorkMgrService {
     try {
       _logger.infof(
           "WMS:getAnalysisAnswersMetrics %s %s %s %s %s\n",
-          apiKey, networkNameParam, snapshotNameParam, analysisName, analysisQuestions);
+          apiKey, networkNameParam, snapshotNameParam, analysisName, analysisQuestionsStr);
 
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
       checkStringParam(networkNameParam, "Network name");
       checkStringParam(snapshotNameParam, "Base snapshot name");
       checkStringParam(analysisName, "Analysis name");
-      Set<String> analysisQuestionsSet =
-          Strings.isNullOrEmpty(analysisQuestions)
+      Set<String> analysisQuestions =
+          Strings.isNullOrEmpty(analysisQuestionsStr)
               ? ImmutableSet.of()
               : BatfishObjectMapper.mapper()
-                  .readValue(analysisQuestions, new TypeReference<Set<String>>() {});
+                  .readValue(analysisQuestionsStr, new TypeReference<Set<String>>() {});
 
       checkApiKeyValidity(apiKey);
       checkClientVersion(clientVersion);
@@ -869,9 +872,9 @@ public class WorkMgrService {
         }
       }
 
-      List<ColumnAggregation> columnAggregations =
+      List<ColumnAggregation> aggregations =
           BatfishObjectMapper.mapper()
-              .readValue(aggregations, new TypeReference<List<ColumnAggregation>>() {});
+              .readValue(aggregationsStr, new TypeReference<List<ColumnAggregation>>() {});
 
       Map<String, String> answers =
           Main.getWorkMgr()
@@ -882,15 +885,14 @@ public class WorkMgrService {
                   deltaSnapshotParam,
                   BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
                   analysisName,
-                  analysisQuestionsSet);
+                  analysisQuestions);
 
       Map<String, AnalysisAnswerMetricsResult> analysisAnswerMetricsResults =
           CommonUtil.toImmutableMap(
               answers,
               Entry::getKey,
               rawAnswerByNameEntry ->
-                  toAnalysisAnswerMetricsResult(
-                      rawAnswerByNameEntry.getValue(), columnAggregations));
+                  toAnalysisAnswerMetricsResult(rawAnswerByNameEntry.getValue(), aggregations));
 
       GetAnalysisAnswerMetricsAnswer answer =
           new GetAnalysisAnswerMetricsAnswer(analysisAnswerMetricsResults);
@@ -958,14 +960,22 @@ public class WorkMgrService {
   }
 
   private @Nullable Integer computeColumnMax(TableAnswerElement table, String column) {
-    Optional<Integer> max =
-        table
-            .getRows()
-            .getData()
-            .stream()
-            .map(r -> r.getInteger(column))
-            .max(Comparator.naturalOrder());
-    return max.orElse(null);
+    Schema schema = table.getMetadata().toColumnMap().get(column).getSchema();
+    Function<Row, Integer> rowToInteger;
+    if (schema.equals(Schema.INTEGER)) {
+      rowToInteger = r -> r.getInteger(column);
+    } else if (schema.equals(Schema.ISSUE)) {
+      rowToInteger = r -> r.getIssue(column).getSeverity();
+    } else {
+      return null;
+    }
+    return table
+        .getRows()
+        .getData()
+        .stream()
+        .map(rowToInteger)
+        .max(Comparator.naturalOrder())
+        .orElse(null);
   }
 
   /**
