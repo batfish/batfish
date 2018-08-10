@@ -543,7 +543,7 @@ public class WorkMgrTest {
     CommonUtil.writeFile(answer1Path, answer1);
     CommonUtil.writeFile(answer2Path, answer2);
 
-    Map<String, String> answers =
+    Map<String, String> answers1 =
         _manager.getAnalysisAnswers(
             containerName,
             testrigName,
@@ -551,8 +551,28 @@ public class WorkMgrTest {
             null,
             null,
             analysisName);
+    Map<String, String> answers2 =
+        _manager.getAnalysisAnswers(
+            containerName,
+            testrigName,
+            BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
+            null,
+            null,
+            analysisName,
+            ImmutableSet.of(question1Name));
+    Map<String, String> answers3 =
+        _manager.getAnalysisAnswers(
+            containerName,
+            testrigName,
+            BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
+            null,
+            null,
+            analysisName,
+            ImmutableSet.of());
 
-    assertThat(answers, equalTo(ImmutableMap.of(question1Name, answer1, question2Name, answer2)));
+    assertThat(answers1, equalTo(ImmutableMap.of(question1Name, answer1, question2Name, answer2)));
+    assertThat(answers2, equalTo(ImmutableMap.of(question1Name, answer1)));
+    assertThat(answers3, equalTo(ImmutableMap.of(question1Name, answer1, question2Name, answer2)));
   }
 
   @Test

@@ -668,6 +668,8 @@ public class WorkMgrServiceTest {
     String analysisName = "analysis1";
     String questionName = "question1";
     String questionContent = "questionContent";
+    String analysisQuestionsStr =
+        BatfishObjectMapper.writePrettyString(ImmutableList.of(questionName));
 
     initNetworkEnvironment();
 
@@ -732,7 +734,7 @@ public class WorkMgrServiceTest {
             null,
             aggregationsStr,
             analysisName,
-            null,
+            analysisQuestionsStr,
             null);
 
     assertThat(answerOutput.get(0), equalTo(CoordConsts.SVC_KEY_SUCCESS));

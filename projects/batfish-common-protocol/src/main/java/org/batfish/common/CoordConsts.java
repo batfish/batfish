@@ -64,7 +64,7 @@ public class CoordConsts {
   public static final String SVC_KEY_ADD_WORKER = "addworker";
 
   public static final String SVC_KEY_AGGREGATIONS = "aggregations";
-  public static final String SVC_KEY_ANALYSIS_QUESTIONS = "analysisanswers";
+  public static final String SVC_KEY_ANALYSIS_QUESTIONS = "analysisquestions";
   public static final String SVC_KEY_ANALYSIS_LIST = "analysislist";
   public static final String SVC_KEY_ANALYSIS_NAME = "analysisname";
   public static final String SVC_KEY_ANALYSIS_TYPE = "analysistype";
