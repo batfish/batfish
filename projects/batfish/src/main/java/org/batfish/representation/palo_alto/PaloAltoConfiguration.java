@@ -1,5 +1,6 @@
 package org.batfish.representation.palo_alto;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 
 import com.google.common.collect.ImmutableList;
@@ -12,7 +13,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.NavigableSet;
-import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -49,17 +49,14 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
   private String _ntpServerSecondary;
 
-  private transient Set<String> _unimplementedFeatures;
-
   private ConfigurationFormat _vendor;
 
   private final SortedMap<String, VirtualRouter> _virtualRouters;
 
   private final SortedMap<String, Vsys> _virtualSystems;
 
-  public PaloAltoConfiguration(Set<String> unimplementedFeatures) {
+  public PaloAltoConfiguration() {
     _interfaces = new TreeMap<>();
-    _unimplementedFeatures = unimplementedFeatures;
     _virtualRouters = new TreeMap<>();
     _virtualSystems = new TreeMap<>();
   }
@@ -95,11 +92,6 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     return servers;
   }
 
-  @Override
-  public Set<String> getUnimplementedFeatures() {
-    return _unimplementedFeatures;
-  }
-
   public SortedMap<String, VirtualRouter> getVirtualRouters() {
     return _virtualRouters;
   }
@@ -118,7 +110,8 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
   @Override
   public void setHostname(String hostname) {
-    _hostname = hostname;
+    checkNotNull(hostname, "'hostname' cannot be null");
+    _hostname = hostname.toLowerCase();
   }
 
   public void setNtpServerPrimary(String ntpServerPrimary) {
@@ -135,6 +128,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   }
 
   // Visible for testing
+
   /**
    * Generate unique object name (no collision across vsys namespaces) given a vsys name and
    * original object name
@@ -153,6 +147,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   }
 
   // Visible for testing
+
   /**
    * Generate IpAccessList name for the specified serviceGroupMemberName in the specified vsysName
    */

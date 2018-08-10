@@ -1,43 +1,46 @@
 package org.batfish.datamodel;
 
-import static org.batfish.common.util.CommonUtil.communityStringToLong;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableList;
+import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
 import org.junit.Test;
 
-/** Tests of {@link CommunityList} */
 public class CommunityListTest {
 
-  @Test
-  public void testEmptyMatch() {
-    CommunityList cl = new CommunityList("name", ImmutableList.of(), false);
+  private static final long COMMUNITY1 = 1L;
 
-    assertThat(cl.permits(communityStringToLong("65111:34")), equalTo(false));
+  private static final String NAME = "cl";
+
+  @Test
+  public void testDefaultReject() {
+    CommunityList cl = new CommunityList(NAME, ImmutableList.of(), false);
+
+    assertThat(cl.matchCommunity(null, COMMUNITY1), equalTo(false));
   }
 
   @Test
-  public void testMatch() {
+  public void testPermit() {
     CommunityList cl =
         new CommunityList(
-            "name",
-            ImmutableList.of(new CommunityListLine(LineAction.ACCEPT, "65[0-9][0-9][0-9]:*")),
+            NAME,
+            ImmutableList.of(
+                new CommunityListLine(LineAction.ACCEPT, new LiteralCommunity(COMMUNITY1))),
             false);
 
-    assertThat(cl.permits(communityStringToLong("65111:34")), equalTo(true));
-    assertThat(cl.permits(communityStringToLong("64111:34")), equalTo(false));
+    assertThat(cl.matchCommunity(null, COMMUNITY1), equalTo(true));
   }
 
   @Test
-  public void testInvertMatch() {
+  public void testReject() {
     CommunityList cl =
         new CommunityList(
-            "name",
-            ImmutableList.of(new CommunityListLine(LineAction.REJECT, "65[0-9][0-9][0-9]:*")),
+            NAME,
+            ImmutableList.of(
+                new CommunityListLine(LineAction.REJECT, new LiteralCommunity(COMMUNITY1))),
             false);
 
-    assertThat(cl.permits(communityStringToLong("65111:34")), equalTo(false));
-    assertThat(cl.permits(communityStringToLong("64111:34")), equalTo(false));
+    assertThat(cl.matchCommunity(null, COMMUNITY1), equalTo(false));
   }
 }

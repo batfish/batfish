@@ -60,7 +60,7 @@ public class AaaAuthenticationTest {
         hasRows(
             contains(
                 allOf(
-                    hasColumn(COLUMN_NODE, equalTo(new Node(hostname2)), Schema.NODE),
+                    hasColumn(COLUMN_NODE, equalTo(new Node(hostname2.toLowerCase())), Schema.NODE),
                     hasColumn(
                         COLUMN_LINE_NAMES,
                         equalTo(Collections.singletonList("aux0")),
@@ -68,10 +68,18 @@ public class AaaAuthenticationTest {
 
     assertThat(
         answer,
-        hasRows(not(contains(hasColumn(COLUMN_NODE, equalTo(new Node(hostname1)), Schema.NODE)))));
+        hasRows(
+            not(
+                contains(
+                    hasColumn(
+                        COLUMN_NODE, equalTo(new Node(hostname1.toLowerCase())), Schema.NODE)))));
 
     assertThat(
         answer,
-        hasRows(not(contains(hasColumn(COLUMN_NODE, equalTo(new Node(hostname3)), Schema.NODE)))));
+        hasRows(
+            not(
+                contains(
+                    hasColumn(
+                        COLUMN_NODE, equalTo(new Node(hostname3.toLowerCase())), Schema.NODE)))));
   }
 }

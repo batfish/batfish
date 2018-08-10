@@ -65,7 +65,7 @@ public class Vrf extends ComparableStructure<String> {
 
   private static final String PROP_ISIS_PROCESS = "isisProcess";
 
-  private static final String PROP_EIGRP_PROCESS = "eigrpProcess";
+  private static final String PROP_EIGRP_PROCESSES = "eigrpProcesses";
 
   private static final String PROP_OSPF_PROCESS = "ospfProcess";
 
@@ -86,11 +86,11 @@ public class Vrf extends ComparableStructure<String> {
 
   private NavigableSet<GeneratedRoute> _generatedRoutes;
 
+  private Map<Long, EigrpProcess> _eigrpProcesses;
+
   private transient SortedSet<String> _interfaceNames;
 
   private NavigableMap<String, Interface> _interfaces;
-
-  @Nullable private EigrpProcess _eigrpProcess;
 
   private IsisProcess _isisProcess;
 
@@ -125,6 +125,7 @@ public class Vrf extends ComparableStructure<String> {
   @JsonCreator
   public Vrf(@JsonProperty(PROP_NAME) String name) {
     super(name);
+    _eigrpProcesses = new TreeMap<>();
     _generatedRoutes = new TreeSet<>();
     _generatedIpv6Routes = new TreeSet<>();
     _interfaces = new TreeMap<>();
@@ -159,11 +160,10 @@ public class Vrf extends ComparableStructure<String> {
     return _generatedRoutes;
   }
 
-  @JsonProperty(PROP_EIGRP_PROCESS)
-  @JsonPropertyDescription("EIGRP routing process for this VRF")
-  @Nullable
-  public EigrpProcess getEigrpProcess() {
-    return _eigrpProcess;
+  /** @return EIGRP routing processes for this VRF */
+  @JsonProperty(PROP_EIGRP_PROCESSES)
+  public Map<Long, EigrpProcess> getEigrpProcesses() {
+    return _eigrpProcesses;
   }
 
   @JsonProperty(PROP_INTERFACES)
@@ -302,6 +302,11 @@ public class Vrf extends ComparableStructure<String> {
     _generatedRoutes = generatedRoutes;
   }
 
+  @JsonProperty(PROP_EIGRP_PROCESSES)
+  public void setEigrpProcesses(Map<Long, EigrpProcess> eigrpProcesses) {
+    _eigrpProcesses = eigrpProcesses;
+  }
+
   @JsonProperty(PROP_INTERFACES)
   public void setInterfaceNames(SortedSet<String> interfaceNames) {
     _interfaceNames = interfaceNames;
@@ -315,11 +320,6 @@ public class Vrf extends ComparableStructure<String> {
   @JsonProperty(PROP_ISIS_PROCESS)
   public void setIsisProcess(IsisProcess process) {
     _isisProcess = process;
-  }
-
-  @JsonProperty(PROP_EIGRP_PROCESS)
-  public void setEigrpProcess(@Nullable EigrpProcess process) {
-    _eigrpProcess = process;
   }
 
   @JsonProperty(PROP_OSPF_PROCESS)

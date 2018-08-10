@@ -31,15 +31,15 @@ public final class TableDiff {
 
   public static final String COL_KEY_PRESENCE = "KeyPresence";
   public static final String COL_KEY_PRESENCE_DESC = "In which table(s) is the key present";
-  static final String COL_KEY_STATUS_BOTH = "In both";
-  static final String COL_KEY_STATUS_ONLY_BASE = "Only in Base";
-  static final String COL_KEY_STATUS_ONLY_DELTA = "Only in Delta";
+  public static final String COL_KEY_STATUS_BOTH = "In both";
+  public static final String COL_KEY_STATUS_ONLY_BASE = "Only in Base";
+  public static final String COL_KEY_STATUS_ONLY_DELTA = "Only in Delta";
 
   static final String NULL_VALUE_BASE = "Base value is null";
   private static final String NULL_VALUE_DELTA = "Delta value is null";
 
-  static final String RESULT_DIFFERENT = "<Different>";
-  static final String RESULT_SAME = "<Same>";
+  public static final String RESULT_DIFFERENT = "<Different>";
+  public static final String RESULT_SAME = "<Same>";
 
   /** Returns the modified column name to represent the delta value of the original column */
   public static String baseColumnName(String originalColumnName) {

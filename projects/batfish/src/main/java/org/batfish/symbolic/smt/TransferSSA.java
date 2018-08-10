@@ -1,5 +1,8 @@
 package org.batfish.symbolic.smt;
 
+import static org.batfish.symbolic.CommunityVarCollector.collectCommunityVars;
+import static org.batfish.symbolic.bdd.CommunityVarConverter.toCommunityVar;
+
 import com.microsoft.z3.ArithExpr;
 import com.microsoft.z3.BitVecExpr;
 import com.microsoft.z3.BoolExpr;
@@ -41,7 +44,6 @@ import org.batfish.datamodel.routing_policy.expr.DisjunctionChain;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.IncrementLocalPreference;
 import org.batfish.datamodel.routing_policy.expr.IncrementMetric;
-import org.batfish.datamodel.routing_policy.expr.InlineCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.IntExpr;
 import org.batfish.datamodel.routing_policy.expr.LiteralAsList;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
@@ -312,7 +314,7 @@ class TransferSSA {
     BoolExpr acc = _enc.mkFalse();
     for (CommunityListLine line : lines) {
       boolean action = (line.getAction() == LineAction.ACCEPT);
-      CommunityVar cvar = new CommunityVar(CommunityVar.Type.REGEX, line.getRegex(), null);
+      CommunityVar cvar = toCommunityVar(line.getMatchCondition());
       BoolExpr c = other.getCommunities().get(cvar);
       acc = _enc.mkIf(c, _enc.mkBool(action), acc);
     }
@@ -323,8 +325,8 @@ class TransferSSA {
    * Converts a community set to a boolean expression
    */
   private BoolExpr matchCommunitySet(Configuration conf, CommunitySetExpr e, SymbolicRoute other) {
-    if (e instanceof InlineCommunitySet) {
-      Set<CommunityVar> comms = _enc.getGraph().findAllCommunities(conf, e);
+    if (e instanceof CommunityList) {
+      Set<CommunityVar> comms = collectCommunityVars(conf, e);
       BoolExpr acc = _enc.mkTrue();
       for (CommunityVar comm : comms) {
         BoolExpr c = other.getCommunities().get(comm);
@@ -1197,7 +1199,7 @@ class TransferSSA {
       } else if (stmt instanceof AddCommunity) {
         curP.debug("AddCommunity");
         AddCommunity ac = (AddCommunity) stmt;
-        Set<CommunityVar> comms = _enc.getGraph().findAllCommunities(_conf, ac.getExpr());
+        Set<CommunityVar> comms = collectCommunityVars(_conf, ac.getExpr());
         for (CommunityVar cvar : comms) {
           BoolExpr newValue =
               _enc.mkIf(
@@ -1212,7 +1214,7 @@ class TransferSSA {
       } else if (stmt instanceof SetCommunity) {
         curP.debug("SetCommunity");
         SetCommunity sc = (SetCommunity) stmt;
-        Set<CommunityVar> comms = _enc.getGraph().findAllCommunities(_conf, sc.getExpr());
+        Set<CommunityVar> comms = collectCommunityVars(_conf, sc.getExpr());
         for (CommunityVar cvar : comms) {
           BoolExpr newValue =
               _enc.mkIf(
@@ -1227,7 +1229,7 @@ class TransferSSA {
       } else if (stmt instanceof DeleteCommunity) {
         curP.debug("DeleteCommunity");
         DeleteCommunity ac = (DeleteCommunity) stmt;
-        Set<CommunityVar> comms = _enc.getGraph().findAllCommunities(_conf, ac.getExpr());
+        Set<CommunityVar> comms = collectCommunityVars(_conf, ac.getExpr());
         Set<CommunityVar> toDelete = new HashSet<>();
         // Find comms to delete
         for (CommunityVar cvar : comms) {

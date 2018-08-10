@@ -4,9 +4,9 @@ import static org.hamcrest.Matchers.equalTo;
 
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.eigrp.EigrpInterfaceSettings;
+import org.batfish.datamodel.eigrp.EigrpMetric;
 import org.batfish.datamodel.matchers.EigrpInterfaceSettingsMatchersImpl.HasAsn;
-import org.batfish.datamodel.matchers.EigrpInterfaceSettingsMatchersImpl.HasCost;
-import org.batfish.datamodel.matchers.EigrpInterfaceSettingsMatchersImpl.HasDelay;
+import org.batfish.datamodel.matchers.EigrpInterfaceSettingsMatchersImpl.HasEigrpMetric;
 import org.batfish.datamodel.matchers.EigrpInterfaceSettingsMatchersImpl.HasEnabled;
 import org.batfish.datamodel.matchers.EigrpInterfaceSettingsMatchersImpl.HasPassive;
 import org.hamcrest.Matcher;
@@ -33,40 +33,6 @@ public class EigrpInterfaceSettingsMatchers {
   }
 
   /**
-   * Provides a matcher that matches if the {@link EigrpInterfaceSettings}'s cost is {@code
-   * expectedCost}.
-   */
-  public static @Nonnull Matcher<EigrpInterfaceSettings> hasCost(long expectedCost) {
-    return new HasCost(equalTo(expectedCost));
-  }
-
-  /**
-   * Provides a matcher that matches if the provided {@code subMatcher} matches the {@link
-   * EigrpInterfaceSettings}'s cost.
-   */
-  public static @Nonnull Matcher<EigrpInterfaceSettings> hasCost(
-      @Nonnull Matcher<? super Long> subMatcher) {
-    return new HasCost(subMatcher);
-  }
-
-  /**
-   * Provides a matcher that matches if the {@link EigrpInterfaceSettings}'s delay is {@code
-   * expectedDelay}.
-   */
-  public static @Nonnull Matcher<EigrpInterfaceSettings> hasDelay(double expectedDelay) {
-    return new HasDelay(equalTo(expectedDelay));
-  }
-
-  /**
-   * Provides a matcher that matches if the provided {@code subMatcher} matches the {@link
-   * EigrpInterfaceSettings}'s delay.
-   */
-  public static @Nonnull Matcher<EigrpInterfaceSettings> hasDelay(
-      @Nonnull Matcher<? super Double> subMatcher) {
-    return new HasDelay(subMatcher);
-  }
-
-  /**
    * Provides a matcher that matches if the {@link EigrpInterfaceSettings}'s enabled is {@code
    * expectedEnabled}.
    */
@@ -81,6 +47,24 @@ public class EigrpInterfaceSettingsMatchers {
   public static @Nonnull Matcher<EigrpInterfaceSettings> hasEnabled(
       @Nonnull Matcher<? super Boolean> subMatcher) {
     return new HasEnabled(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the {@link EigrpInterfaceSettings}'s metric is {@code
+   * expectedMetric}.
+   */
+  public static @Nonnull Matcher<EigrpInterfaceSettings> hasEigrpMetric(
+      EigrpMetric expectedMetric) {
+    return new HasEigrpMetric(equalTo(expectedMetric));
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the {@link
+   * EigrpInterfaceSettings}'s metric.
+   */
+  public static @Nonnull Matcher<EigrpInterfaceSettings> hasEigrpMetric(
+      @Nonnull Matcher<? super EigrpMetric> subMatcher) {
+    return new HasEigrpMetric(subMatcher);
   }
 
   /**

@@ -5,8 +5,10 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
@@ -134,11 +136,9 @@ public class Interface implements Serializable {
 
   private boolean _dhcpRelayClient;
 
-  /**
-   * True (or false) means interface was explicitly configured as (not) passive. Null means not
-   * explicit
-   */
-  @Nullable private Boolean _eigrpPassive;
+  private Map<Integer, HsrpGroup> _hsrpGroups;
+
+  private String _hsrpVersion;
 
   private String _incomingFilter;
 
@@ -239,6 +239,7 @@ public class Interface implements Serializable {
     _allowedVlans = new ArrayList<>();
     _declaredNames = ImmutableSortedSet.of();
     _dhcpRelayAddresses = new TreeSet<>();
+    _hsrpGroups = new TreeMap<>();
     _isisInterfaceMode = IsisInterfaceMode.UNSET;
     _name = name;
     _nativeVlan = 1;
@@ -328,9 +329,12 @@ public class Interface implements Serializable {
     return _dhcpRelayClient;
   }
 
-  @Nullable
-  public Boolean getEigrpPassive() {
-    return _eigrpPassive;
+  public Map<Integer, HsrpGroup> getHsrpGroups() {
+    return _hsrpGroups;
+  }
+
+  public String getHsrpVersion() {
+    return _hsrpVersion;
   }
 
   public String getIncomingFilter() {
@@ -577,10 +581,6 @@ public class Interface implements Serializable {
     _delay = delayPs;
   }
 
-  public void setEigrpPassive(boolean eigrpPassive) {
-    _eigrpPassive = eigrpPassive;
-  }
-
   public void setProxyArp(boolean proxyArp) {
     _proxyArp = proxyArp;
   }
@@ -643,5 +643,9 @@ public class Interface implements Serializable {
 
   public void setSecurityZone(String securityZone) {
     _securityZone = securityZone;
+  }
+
+  public void setHsrpVersion(String hsrpVersion) {
+    _hsrpVersion = hsrpVersion;
   }
 }

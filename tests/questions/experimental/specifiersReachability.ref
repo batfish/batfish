@@ -1,0 +1,106 @@
+{
+  "class" : "org.batfish.question.jsonpath.JsonPathQuestionPlugin$JsonPathQuestion",
+  "debug" : false,
+  "differential" : false,
+  "includeOneTableKeys" : false,
+  "innerQuestion" : {
+    "class" : "org.batfish.question.specifiers.SpecifiersReachabilityQuestion",
+    "actions" : [
+      "ACCEPT"
+    ],
+    "destinationIpSpaceSpecifierFactory" : "destFactory",
+    "destinationIpSpaceSpecifierInput" : "destination.*",
+    "differential" : false,
+    "finalNodesSpecifierFactory" : "finalNodeFactory",
+    "finalNodesSpecifierInput" : "finalNode",
+    "includeOneTableKeys" : false,
+    "sourceLocationSpecifierFactory" : "sourceFactory",
+    "sourceLocationSpecifierInput" : "sourceNode"
+  },
+  "instance" : {
+    "description" : "Find (headers of) packets that match specified reachability, ingress, and disposition constraints.",
+    "instanceName" : "qname",
+    "tags" : [
+      "dataPlane",
+      "reachability"
+    ],
+    "variables" : {
+      "actions" : {
+        "description" : "Only return headers of packets whose final node performs an action from this set on them",
+        "minElements" : 1,
+        "optional" : true,
+        "type" : "string",
+        "value" : [
+          "accept"
+        ]
+      },
+      "debug" : {
+        "description" : "Whether to embed debug information in the answer",
+        "optional" : false,
+        "type" : "boolean",
+        "value" : false
+      },
+      "destinationIpSpaceSpecifierFactory" : {
+        "description" : "Name of the IpSpaceSpecifierFactory to use for the destination IpSpace",
+        "optional" : true,
+        "type" : "string",
+        "value" : "destFactory"
+      },
+      "dst" : {
+        "description" : "Specify destination nodes by regex",
+        "optional" : false,
+        "type" : "string",
+        "value" : "destination.*"
+      },
+      "finalNodesSpecifierFactory" : {
+        "description" : "Name of the NodeSpecifierFactory to use for finalNodes.",
+        "optional" : true,
+        "type" : "string",
+        "value" : "finalNodeFactory"
+      },
+      "finalNodesSpecifierInput" : {
+        "description" : "Input to specify the set of nodes at which traces should end.",
+        "optional" : true,
+        "type" : "string",
+        "value" : "finalNode"
+      },
+      "sourceLocationSpecifierFactory" : {
+        "description" : "Name of the LocationSpecifierFactory to use for the src location",
+        "optional" : true,
+        "type" : "string",
+        "value" : "sourceFactory"
+      },
+      "src" : {
+        "description" : "Flexible specification of source locations",
+        "optional" : false,
+        "type" : "string",
+        "value" : "sourceNode"
+      }
+    }
+  },
+  "paths" : [
+    {
+      "displayHints" : {
+        "extractions" : {
+          "flow" : {
+            "method" : {
+              "use" : "suffixofsuffix",
+              "filter" : "$.flow"
+            },
+            "schema" : "Flow"
+          },
+          "flowTraces" : {
+            "method" : {
+              "use" : "suffixofsuffix",
+              "filter" : "$.paths.BASE[*]"
+            },
+            "schema" : "List<FlowTrace>"
+          }
+        },
+        "textDesc" : "Path of ${flow} is ${flowTraces}"
+      },
+      "path" : "$.traces.*",
+      "suffix" : true
+    }
+  ]
+}

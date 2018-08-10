@@ -26,13 +26,16 @@ public class PolicyQuotient {
 
   private Set<CommunityVar> _commsAssignedButNotMatched;
 
+  /**
+   * Set of REGEX community vars that are matched but not assigned (i.e. they have only OTHER
+   * dependencies.
+   */
   private Set<CommunityVar> _commsMatchedButNotAssigned;
 
   private Set<CommunityVar> _commsUsedOnlyLocally;
 
   public PolicyQuotient(Graph graph) {
     _commsAssignedButNotMatched = new HashSet<>();
-    _commsMatchedButNotAssigned = new HashSet<>();
 
     // Compute the communities assigned but never matched
     Set<CommunityVar> usedComms = new HashSet<>();
@@ -50,7 +53,10 @@ public class PolicyQuotient {
       }
     }
 
-    // Compute the communities that are matched but not assigned
+    /*
+     * Compute the communities that are matched but not assigned, i.e. their dependencies are
+     * all OTHERs
+     */
     _commsMatchedButNotAssigned = new HashSet<>();
     for (Entry<CommunityVar, List<CommunityVar>> entry :
         graph.getCommunityDependencies().entrySet()) {

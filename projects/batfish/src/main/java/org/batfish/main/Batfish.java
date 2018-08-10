@@ -153,10 +153,8 @@ import org.batfish.datamodel.answers.ReportAnswerElement;
 import org.batfish.datamodel.answers.RunAnalysisAnswerElement;
 import org.batfish.datamodel.answers.ValidateEnvironmentAnswerElement;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
-import org.batfish.datamodel.collections.MultiSet;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.collections.RoutesByVrf;
-import org.batfish.datamodel.collections.TreeMultiSet;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.questions.InvalidReachabilityParametersException;
@@ -203,6 +201,7 @@ import org.batfish.symbolic.abstraction.Roles;
 import org.batfish.symbolic.bdd.AclLineMatchExprToBDD;
 import org.batfish.symbolic.bdd.BDDAcl;
 import org.batfish.symbolic.bdd.BDDPacket;
+import org.batfish.symbolic.bdd.BDDSrcManager;
 import org.batfish.symbolic.smt.PropertyChecker;
 import org.batfish.vendor.VendorConfiguration;
 import org.batfish.z3.AclIdentifier;
@@ -610,7 +609,15 @@ public class Batfish extends PluginConsumer implements IBatfish {
               }
             }
             initAnalysisQuestionPath(analysisName, questionName);
-            outputAnswer(currentAnswer);
+            try {
+              outputAnswer(currentAnswer);
+              ae.getAnswers().put(questionName, currentAnswer);
+            } catch (Exception e) {
+              Answer errorAnswer = new Answer();
+              errorAnswer.addAnswerElement(
+                  new BatfishStackTrace(new BatfishException("Failed to output answer", e)));
+              ae.getAnswers().put(questionName, errorAnswer);
+            }
             ae.getAnswers().put(questionName, currentAnswer);
             _settings.setQuestionPath(null);
             summary.combine(currentAnswer.getSummary());
@@ -998,8 +1005,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         settings.getPedanticRecord() && settings.getLogger().isActive(BatfishLogger.LEVEL_PEDANTIC),
         settings.getRedFlagRecord() && settings.getLogger().isActive(BatfishLogger.LEVEL_REDFLAG),
         settings.getUnimplementedRecord()
-            && settings.getLogger().isActive(BatfishLogger.LEVEL_UNIMPLEMENTED),
-        settings.getPrintParseTree());
+            && settings.getLogger().isActive(BatfishLogger.LEVEL_UNIMPLEMENTED));
   }
 
   private void checkBaseDirExists() {
@@ -1945,13 +1951,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   /**
-   * Gets the {@link NodeRoleDimension} object give dimension name
+   * Gets the {@link NodeRoleDimension} object given dimension name. If {@code dimension} is null,
+   * returns the default dimension.
    *
    * @param dimension The dimension name
    * @return An {@link Optional} that has the requested NodeRoleDimension or empty otherwise.
    */
   @Override
-  public Optional<NodeRoleDimension> getNodeRoleDimension(String dimension) {
+  public Optional<NodeRoleDimension> getNodeRoleDimension(@Nullable String dimension) {
     Path nodeRoleDataPath =
         _settings
             .getStorageBase()
@@ -2081,29 +2088,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Override
   public PluginClientType getType() {
     return PluginClientType.BATFISH;
-  }
-
-  private void histogram(Path testRigPath) {
-    Map<Path, String> configurationData =
-        readConfigurationFiles(testRigPath, BfConsts.RELPATH_CONFIGURATIONS_DIR);
-    // todo: either remove histogram function or do something userful with
-    // answer
-    Map<String, VendorConfiguration> vendorConfigurations =
-        parseVendorConfigurations(
-            configurationData,
-            new ParseVendorConfigurationAnswerElement(),
-            ConfigurationFormat.UNKNOWN);
-    _logger.info("Building feature histogram...");
-    MultiSet<String> histogram = new TreeMultiSet<>();
-    for (VendorConfiguration vc : vendorConfigurations.values()) {
-      Set<String> unimplementedFeatures = vc.getUnimplementedFeatures();
-      histogram.add(unimplementedFeatures);
-    }
-    _logger.info("OK\n");
-    for (String feature : histogram.elements()) {
-      int count = histogram.count(feature);
-      _logger.outputf("%s: %s\n", feature, count);
-    }
   }
 
   private void initAnalysisQuestionPath(String analysisName, String questionName) {
@@ -3221,7 +3205,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         // router
         if (c.getDeviceType() == null
             && (vrf.getBgpProcess() != null
-                || vrf.getEigrpProcess() != null
+                || !vrf.getEigrpProcesses().isEmpty()
                 || vrf.getOspfProcess() != null
                 || vrf.getRipProcess() != null)) {
           c.setDeviceType(DeviceType.ROUTER);
@@ -3844,11 +3828,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
       return answer;
     }
 
-    if (_settings.getHistogram()) {
-      histogram(_testrigSettings.getTestRigPath());
-      return answer;
-    }
-
     if (_settings.getFlatten()) {
       Path flattenSource = _testrigSettings.getTestRigPath();
       Path flattenDestination = _settings.getFlattenDestination();
@@ -4359,13 +4338,20 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public Optional<Flow> reachFilter(String nodeName, IpAccessList acl) {
+  public Optional<Flow> reachFilter(Configuration node, IpAccessList acl) {
     BDDPacket bddPacket = new BDDPacket();
-    BDDAcl bddAcl = BDDAcl.create(bddPacket, acl);
-    return bddAcl
-        .getPkt()
-        .getFlow(bddAcl.getBdd())
-        .map(flowBuilder -> flowBuilder.setTag(getFlowTag()).setIngressNode(nodeName).build());
+    List<String> interfaces = ImmutableList.copyOf(node.getInterfaces().keySet());
+    BDDSrcManager mgr = new BDDSrcManager(bddPacket, interfaces);
+    BDDAcl bddAcl = BDDAcl.create(bddPacket, acl, node.getIpAccessLists(), node.getIpSpaces(), mgr);
+    BDD satAssignment = bddAcl.getBdd().and(mgr.isSane()).fullSatOne();
+    if (satAssignment.isZero()) {
+      return Optional.empty();
+    }
+
+    Flow.Builder flowBuilder = bddAcl.getPkt().getFlowFromAssignment(satAssignment);
+    flowBuilder.setTag(getFlowTag()).setIngressNode(node.getHostname());
+    mgr.getInterfaceFromAssignment(satAssignment).ifPresent(flowBuilder::setIngressInterface);
+    return Optional.of(flowBuilder.build());
   }
 
   @Override

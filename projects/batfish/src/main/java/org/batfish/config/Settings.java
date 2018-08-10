@@ -1062,7 +1062,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     setDefaultProperty(ARG_TRACING_AGENT_PORT, 5775);
     setDefaultProperty(ARG_TRACING_ENABLE, false);
     setDefaultProperty(BfConsts.ARG_UNRECOGNIZED_AS_RED_FLAG, true);
-    setDefaultProperty(BfConsts.ARG_UNIMPLEMENTED_SUPPRESS, true);
+    setDefaultProperty(BfConsts.ARG_UNIMPLEMENTED_SUPPRESS, false);
     setDefaultProperty(BfConsts.ARG_VERBOSE_PARSE, false);
     setDefaultProperty(ARG_VERSION, false);
     setDefaultProperty(BfConsts.COMMAND_ANALYZE, false);

@@ -4,7 +4,7 @@
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 212
+      "numResults" : 221
     },
     "undefinedReferences" : {
       "configs/arista_bgp" : {
@@ -315,37 +315,37 @@
         "route-map" : {
           "BGP_TO_EIGRP" : {
             "eigrp redistribute bgp route-map" : [
-              11
+              31
             ]
           },
           "CONNECTED_TO_EIGRP" : {
             "eigrp redistribute connected route-map" : [
-              12
+              32
             ]
           },
           "EIGRP_TO_EIGRP" : {
             "eigrp redistribute eigrp route-map" : [
-              13
+              33
             ]
           },
           "ISIS_TO_EIGRP" : {
             "eigrp redistribute isis route-map" : [
-              14
+              34
             ]
           },
           "OSPF_TO_EIGRP" : {
             "eigrp redistribute ospf route-map" : [
-              15
+              35
             ]
           },
           "RIP_TO_EIGRP" : {
             "eigrp redistribute rip route-map" : [
-              16
+              36
             ]
           },
           "STATIC_TO_EIGRP" : {
             "eigrp redistribute static route-map" : [
-              17
+              37
             ]
           }
         }
@@ -517,15 +517,49 @@
         }
       },
       "configs/cisco_ospf" : {
+        "ipv4 prefix-list" : {
+          "plin" : {
+            "router ospf distribute-list prefix in" : [
+              50
+            ]
+          },
+          "plout" : {
+            "router ospf distribute-list prefix out" : [
+              51
+            ]
+          }
+        },
+        "ipv4/6 acl" : {
+          "aclin" : {
+            "router ospf distribute-list in" : [
+              48
+            ]
+          },
+          "aclout" : {
+            "router ospf distribute-list out" : [
+              49
+            ]
+          }
+        },
         "route-map" : {
           "DIRECT_OSPF" : {
             "ospf redistribute connected route-map" : [
-              55
+              61
             ]
           },
           "eigrp-ospf-route-map" : {
             "ospf redistribute eigrp route-map" : [
-              56
+              62
+            ]
+          },
+          "rmin" : {
+            "router ospf distribute-list route-map in" : [
+              52
+            ]
+          },
+          "rmout" : {
+            "router ospf distribute-list route-map out" : [
+              53
             ]
           }
         }
@@ -769,6 +803,20 @@
           }
         }
       },
+      "configs/cisco_track" : {
+        "interface" : {
+          "GigabitEthernet0/0" : {
+            "track interface" : [
+              4
+            ]
+          },
+          "GigabitEthernet0/1" : {
+            "track interface" : [
+              5
+            ]
+          }
+        }
+      },
       "configs/cisco_vrrp" : {
         "interface" : {
           "GigabitEthernet0/0/0/19" : {
@@ -857,6 +905,15 @@
           "FOOBAR" : {
             "interface service-policy type control subscriber" : [
               5
+            ]
+          }
+        }
+      },
+      "configs/ios_standby" : {
+        "track" : {
+          "1" : {
+            "interface standby track" : [
+              12
             ]
           }
         }

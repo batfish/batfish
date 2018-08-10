@@ -27,12 +27,12 @@
       "tcpFlagsUrg" : 1
     },
     "forwardingCase1" : [
-      "R2,Serial0 --> R1,Serial0 -- BgpRoute<42.42.42.0/32,nhip:192.168.42.2,nhint:dynamic>",
-      "R3,Serial0 --> R2,Serial1 -- BgpRoute<42.42.42.0/32,nhip:192.168.43.2,nhint:dynamic>"
+      "r2,Serial0 --> r1,Serial0 -- BgpRoute<42.42.42.0/32,nhip:192.168.42.2,nhint:dynamic>",
+      "r3,Serial0 --> r2,Serial1 -- BgpRoute<42.42.42.0/32,nhip:192.168.43.2,nhint:dynamic>"
     ],
     "forwardingCase2" : [
-      "R2,Serial1 --> R3,Serial0 -- BgpRoute<42.42.42.0/32,nhip:192.168.43.1,nhint:dynamic>",
-      "R3,Serial1 --> R1,Serial1 -- BgpRoute<42.42.42.0/32,nhip:192.168.44.2,nhint:dynamic>"
+      "r2,Serial1 --> r3,Serial0 -- BgpRoute<42.42.42.0/32,nhip:192.168.43.1,nhint:dynamic>",
+      "r3,Serial1 --> r1,Serial1 -- BgpRoute<42.42.42.0/32,nhip:192.168.44.2,nhint:dynamic>"
     ]
   }
 ]

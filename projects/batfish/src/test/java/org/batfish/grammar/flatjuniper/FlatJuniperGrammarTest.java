@@ -79,6 +79,8 @@ import static org.batfish.datamodel.matchers.LiteralIntMatcher.hasVal;
 import static org.batfish.datamodel.matchers.LiteralIntMatcher.isLiteralIntThat;
 import static org.batfish.datamodel.matchers.NssaSettingsMatchers.hasDefaultOriginateType;
 import static org.batfish.datamodel.matchers.NssaSettingsMatchers.hasSuppressType3;
+import static org.batfish.datamodel.matchers.OspfAreaMatchers.hasInjectDefaultRoute;
+import static org.batfish.datamodel.matchers.OspfAreaMatchers.hasMetricOfDefaultRoute;
 import static org.batfish.datamodel.matchers.OspfAreaMatchers.hasNssa;
 import static org.batfish.datamodel.matchers.OspfAreaMatchers.hasStub;
 import static org.batfish.datamodel.matchers.OspfAreaMatchers.hasStubType;
@@ -197,6 +199,7 @@ import org.batfish.datamodel.matchers.IsisProcessMatchers;
 import org.batfish.datamodel.matchers.OspfAreaMatchers;
 import org.batfish.datamodel.matchers.RouteFilterListMatchers;
 import org.batfish.datamodel.matchers.StubSettingsMatchers;
+import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfAreaSummary;
 import org.batfish.datamodel.ospf.OspfDefaultOriginateType;
 import org.batfish.datamodel.ospf.StubType;
@@ -261,7 +264,7 @@ public class FlatJuniperGrammarTest {
   }
 
   private Configuration parseConfig(String hostname) throws IOException {
-    return parseTextConfigs(hostname).get(hostname);
+    return parseTextConfigs(hostname).get(hostname.toLowerCase());
   }
 
   private Map<String, Configuration> parseTextConfigs(String... configurationNames)
@@ -1175,6 +1178,20 @@ public class FlatJuniperGrammarTest {
     assertThat(lineMap.getOriginalLine(2, flatText.indexOf("system")), equalTo(2));
     assertThat(lineMap.getOriginalLine(2, flatText.indexOf("host-name")), equalTo(3));
     assertThat(lineMap.getOriginalLine(2, flatText.indexOf("nested-config")), equalTo(3));
+  }
+
+  @Test
+  public void testOspfAreaDefaultMetric() throws IOException {
+    Configuration config =
+        BatfishTestUtils.parseTextConfigs(
+                _folder, "org/batfish/grammar/juniper/testconfigs/ospf-area-default-metric")
+            .get("ospf-area-default-metric");
+    OspfArea area1 = config.getDefaultVrf().getOspfProcess().getAreas().get(1L);
+    assertThat(area1, hasInjectDefaultRoute());
+    assertThat(area1, hasMetricOfDefaultRoute(equalTo(10)));
+
+    OspfArea area2 = config.getDefaultVrf().getOspfProcess().getAreas().get(2L);
+    assertThat(area2, not(hasInjectDefaultRoute()));
   }
 
   @Test

@@ -7,6 +7,8 @@ public class OspfRedistributionPolicy extends RedistributionPolicy {
 
   public static final String BGP_AS = "BGP_AS";
 
+  public static final String EIGRP_AS_NUMBER = "EIGRP_AS_NUMBER";
+
   public static final OspfMetricType DEFAULT_METRIC_TYPE = OspfMetricType.E2;
 
   private static final long serialVersionUID = 1L;

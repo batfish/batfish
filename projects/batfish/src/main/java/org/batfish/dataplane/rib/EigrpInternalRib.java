@@ -17,6 +17,7 @@ public class EigrpInternalRib extends AbstractRib<EigrpInternalRoute> {
     return Comparator.comparing(EigrpInternalRoute::getCompositeCost)
         // TODO compare MTU
         // https://github.com/batfish/batfish/issues/1946
+        .thenComparing(EigrpInternalRoute::getProcessAsn)
         .compare(rhs, lhs);
   }
 }

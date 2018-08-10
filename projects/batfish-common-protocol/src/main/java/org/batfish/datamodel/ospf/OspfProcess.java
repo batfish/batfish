@@ -28,7 +28,7 @@ public class OspfProcess implements Serializable {
 
   public static class Builder extends NetworkFactoryBuilder<OspfProcess> {
 
-    private String _exportPolicy;
+    @Nullable private String _exportPolicy;
 
     private Long _maxMetricExternalNetworks;
 
@@ -61,7 +61,7 @@ public class OspfProcess implements Serializable {
       return ospfProcess;
     }
 
-    public Builder setExportPolicy(RoutingPolicy exportPolicy) {
+    public Builder setExportPolicy(@Nullable RoutingPolicy exportPolicy) {
       _exportPolicy = exportPolicy != null ? exportPolicy.getName() : null;
       return this;
     }
@@ -123,7 +123,7 @@ public class OspfProcess implements Serializable {
 
   private SortedMap<Long, OspfArea> _areas;
 
-  private String _exportPolicy;
+  @Nullable private String _exportPolicy;
 
   private SortedSet<String> _exportPolicySources;
 
@@ -186,6 +186,7 @@ public class OspfProcess implements Serializable {
   @JsonPropertyDescription(
       "The routing policy applied to routes in the main RIB to determine which ones are to be "
           + "exported into OSPF and how")
+  @Nullable
   public String getExportPolicy() {
     return _exportPolicy;
   }
@@ -276,7 +277,7 @@ public class OspfProcess implements Serializable {
   }
 
   @JsonProperty(PROP_EXPORT_POLICY)
-  public void setExportPolicy(String exportPolicy) {
+  public void setExportPolicy(@Nullable String exportPolicy) {
     _exportPolicy = exportPolicy;
   }
 

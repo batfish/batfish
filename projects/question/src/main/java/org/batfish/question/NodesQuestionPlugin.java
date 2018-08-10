@@ -117,7 +117,7 @@ public class NodesQuestionPlugin extends QuestionPlugin {
           }
         }
         for (Vrf vrf : node.getVrfs().values()) {
-          if (vrf.getEigrpProcess() != null) {
+          if (!vrf.getEigrpProcesses().isEmpty()) {
             _routingProtocols.add(RoutingProtocol.EIGRP);
             break;
           }

@@ -444,9 +444,9 @@ route_policy_params_list
 rp_community_set
 :
    name = variable
-   | PAREN_LEFT elems += rp_community_set_elem
+   | PAREN_LEFT elems += community_set_elem
    (
-      COMMA elems += rp_community_set_elem
+      COMMA elems += community_set_elem
    )* PAREN_RIGHT
 ;
 

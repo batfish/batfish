@@ -261,6 +261,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oan_default_lsaContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oan_no_summariesContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oand_metric_typeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oand_type_7Context;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oas_default_metricContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oas_no_summariesContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.P_bgpContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Po_communityContext;
@@ -594,29 +595,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   private static final BgpGroup DUMMY_BGP_GROUP = new BgpGroup();
 
   private static final StaticRoute DUMMY_STATIC_ROUTE = new StaticRoute(Prefix.ZERO);
-
-  private static final String F_BGP_LOCAL_AS_LOOPS =
-      "protocols - bgp - group? - local-as - loops - currently we allow infinite occurences of "
-          + "local as";
-
-  private static final String F_BGP_LOCAL_AS_PRIVATE =
-      "protocols - bgp - group? - local-as - private";
-
-  private static final String F_FIREWALL_TERM_THEN_ROUTING_INSTANCE =
-      "firewall - filter - term - then - routing-instance";
-
-  private static final String F_IPV6 = "ipv6 - other";
-
-  private static final String F_ISIS_EXPORT = "protocols - isis - export";
-
-  private static final String F_PERMIT_TUNNEL =
-      "security - policies - from-zone - to-zone - policy - then - permit - tunnel";
-
-  private static final String F_POLICY_TERM_THEN_NEXT_HOP =
-      "policy-statement - term - then - next-hop";
-
-  private static final String F_ROUTING_OPTIONS_LOOPS =
-      "routing-options autonomous-system loops - currently we allow infinite occurences of local as";
 
   private static final String GLOBAL_ADDRESS_BOOK_NAME = "global";
 
@@ -1735,8 +1713,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   private final String _text;
 
-  private final Set<String> _unimplementedFeatures;
-
   private final boolean _unrecognizedAsRedFlag;
 
   private final Warnings _w;
@@ -1751,14 +1727,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       FlatJuniperCombinedParser parser,
       String text,
       Warnings warnings,
-      Set<String> unimplementedFeatures,
       boolean unrecognizedAsRedFlag) {
     _parser = parser;
     _text = text;
-    _configuration = new JuniperConfiguration(unimplementedFeatures);
+    _configuration = new JuniperConfiguration();
     _currentRoutingInstance = _configuration.getDefaultRoutingInstance();
     _termRouteFilters = new HashMap<>();
-    _unimplementedFeatures = unimplementedFeatures;
     _unrecognizedAsRedFlag = unrecognizedAsRedFlag;
     _w = warnings;
     _conjunctionPolicyIndex = 0;
@@ -2154,7 +2128,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       Prefix range = Prefix.parse(ctx.IP_PREFIX().getText());
       _currentAreaRangePrefix = range;
     } else {
-      todo(ctx, F_IPV6);
+      todo(ctx);
     }
   }
 
@@ -2257,6 +2231,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitOas_no_summaries(Oas_no_summariesContext ctx) {
     _currentStubSettings.setNoSummaries(true);
+  }
+
+  @Override
+  public void exitOas_default_metric(Oas_default_metricContext ctx) {
+    _currentArea.setInjectDefaultRoute(true);
+    _currentArea.setMetricOfDefaultRoute(Integer.parseInt(ctx.DEC().getText()));
   }
 
   @Override
@@ -2461,7 +2441,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     } else if (ctx.IPV6_PREFIX() != null) {
       // dummy generated route not added to configuration
       _currentGeneratedRoute = new GeneratedRoute(null);
-      todo(ctx, F_IPV6);
+      todo(ctx);
     }
   }
 
@@ -3041,7 +3021,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitBl_loops(Bl_loopsContext ctx) {
-    todo(ctx, F_BGP_LOCAL_AS_LOOPS);
+    todo(ctx);
     int loops = toInt(ctx.DEC());
     _currentBgpGroup.setLoops(loops);
   }
@@ -3054,7 +3034,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitBl_private(Bl_privateContext ctx) {
-    todo(ctx, F_BGP_LOCAL_AS_PRIVATE);
+    todo(ctx);
   }
 
   @Override
@@ -3371,8 +3351,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitFftt_routing_instance(Fftt_routing_instanceContext ctx) {
-    // TODO: implement
-    _w.unimplemented(ConfigurationBuilder.F_FIREWALL_TERM_THEN_ROUTING_INSTANCE);
+    todo(ctx);
     _currentFwTerm.getThens().add(FwThenDiscard.INSTANCE);
   }
 
@@ -3563,7 +3542,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     }
     _currentRoutingInstance.getIsisSettings().getExportPolicies().addAll(policies);
     // Needs data plane implementation
-    todo(ctx, F_ISIS_EXPORT);
+    todo(ctx);
   }
 
   @Override
@@ -3680,7 +3659,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitIst_family_shortcuts(Ist_family_shortcutsContext ctx) {
     if (ctx.INET6() != null) {
-      todo(ctx, F_IPV6);
+      todo(ctx);
     } else { // ipv4
       _currentRoutingInstance.getIsisSettings().setTrafficEngineeringShortcuts(true);
     }
@@ -3713,7 +3692,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       Map<Prefix, OspfAreaSummary> summaries = _currentArea.getSummaries();
       summaries.put(_currentAreaRangePrefix, summary);
     } else {
-      todo(ctx, F_IPV6);
+      todo(ctx);
     }
   }
 
@@ -3807,7 +3786,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitPoplt_ip6(Poplt_ip6Context ctx) {
     _currentPrefixList.setIpv6(true);
-    todo(ctx, F_IPV6);
+    todo(ctx);
   }
 
   @Override
@@ -3819,7 +3798,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitPoplt_network6(Poplt_network6Context ctx) {
     _currentPrefixList.setIpv6(true);
-    todo(ctx, F_IPV6);
+    todo(ctx);
   }
 
   @Override
@@ -4087,7 +4066,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       Ip nextHopIp = new Ip(ctx.IP_ADDRESS().getText());
       then = new PsThenNextHopIp(nextHopIp);
     } else {
-      todo(ctx, F_POLICY_TERM_THEN_NEXT_HOP);
+      todo(ctx);
       return;
     }
     _currentPsThens.add(then);
@@ -4209,7 +4188,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void exitRoas_loops(Roas_loopsContext ctx) {
     if (ctx.DEC() != null) {
       _currentRoutingInstance.setLoops(toInt(ctx.DEC()));
-      todo(ctx, F_ROUTING_OPTIONS_LOOPS);
+      todo(ctx);
     }
   }
 
@@ -4658,7 +4637,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     if (ctx.sepctxptp_tunnel() != null) {
       // Used for dynamic VPNs (no bind interface tied to a zone)
       // TODO: change from deny to appropriate action when implemented
-      todo(ctx, F_PERMIT_TUNNEL);
+      todo(ctx);
       _currentFwTerm.getThens().add(FwThenDiscard.INSTANCE);
     } else {
       _currentFwTerm.getThens().add(FwThenAccept.INSTANCE);
@@ -5212,9 +5191,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     }
   }
 
-  private void todo(ParserRuleContext ctx, String feature) {
-    _w.todo(ctx, feature, _parser, _text);
-    _unimplementedFeatures.add("Juniper: " + feature);
+  private void todo(ParserRuleContext ctx) {
+    _w.todo(ctx, getFullText(ctx), _parser);
   }
 
   private Family toFamily(F_familyContext ctx) {
