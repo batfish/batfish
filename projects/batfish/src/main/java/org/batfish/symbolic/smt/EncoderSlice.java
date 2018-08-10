@@ -1388,7 +1388,8 @@ class EncoderSlice {
       tiebreak = mkTrue();
     }
 
-    EnumMap<BgpDecisionVariable, BoolExpr> bgpRankingBetter = new EnumMap<>(BgpDecisionVariable.class);
+    EnumMap<BgpDecisionVariable, BoolExpr> bgpRankingBetter =
+        new EnumMap<>(BgpDecisionVariable.class);
     EnumMap<BgpDecisionVariable, BoolExpr> bgpRankingEq = new EnumMap<>(BgpDecisionVariable.class);
     bgpRankingBetter.put(BgpDecisionVariable.LOCALPREF, betterLp);
     bgpRankingEq.put(BgpDecisionVariable.LOCALPREF, equalLp);
