@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -64,25 +65,36 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
+import org.batfish.datamodel.RegexCommunitySet;
 import org.batfish.datamodel.Route6FilterLine;
 import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
+import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.State;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.eigrp.EigrpMetric;
 import org.batfish.datamodel.isis.IsisLevelSettings;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.AsPathSetElem;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
+import org.batfish.datamodel.routing_policy.expr.CallExpr;
+import org.batfish.datamodel.routing_policy.expr.CommunitySetExpr;
+import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
+import org.batfish.datamodel.routing_policy.expr.LiteralCommunityConjunction;
+import org.batfish.datamodel.routing_policy.expr.LiteralEigrpMetric;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.SetEigrpMetric;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.visitors.HeaderSpaceConverter;
@@ -90,6 +102,38 @@ import org.batfish.datamodel.visitors.HeaderSpaceConverter;
 /** Utilities that convert Cisco-specific representations to vendor-independent model. */
 @ParametersAreNonnullByDefault
 class CiscoConversions {
+
+  static Ip getHighestIp(Map<String, Interface> allInterfaces) {
+    Map<String, Interface> interfacesToCheck;
+    Map<String, Interface> loopbackInterfaces = new HashMap<>();
+    for (Entry<String, Interface> e : allInterfaces.entrySet()) {
+      String ifaceName = e.getKey();
+      Interface iface = e.getValue();
+      if (ifaceName.toLowerCase().startsWith("loopback")
+          && iface.getActive()
+          && iface.getAddress() != null) {
+        loopbackInterfaces.put(ifaceName, iface);
+      }
+    }
+    if (loopbackInterfaces.isEmpty()) {
+      interfacesToCheck = allInterfaces;
+    } else {
+      interfacesToCheck = loopbackInterfaces;
+    }
+    Ip highestIp = Ip.ZERO;
+    for (Interface iface : interfacesToCheck.values()) {
+      if (!iface.getActive()) {
+        continue;
+      }
+      for (InterfaceAddress address : iface.getAllAddresses()) {
+        Ip ip = address.getIp();
+        if (highestIp.asLong() < ip.asLong()) {
+          highestIp = ip;
+        }
+      }
+    }
+    return highestIp;
+  }
 
   /**
    * Converts a {@link CryptoMapEntry} to an {@link IpsecPolicy}, a list of {@link IpsecVpn}. Also
@@ -308,7 +352,7 @@ class CiscoConversions {
       Tunnel tunnel = iface.getTunnel();
       // resolve if tunnel's source interface name is not set
       if (tunnel != null
-          && tunnel.getSourceInterfaceName().equals(UNSET_LOCAL_INTERFACE)
+          && UNSET_LOCAL_INTERFACE.equals(tunnel.getSourceInterfaceName())
           && tunnel.getSourceAddress() != null) {
         tunnel.setSourceInterfaceName(
             firstNonNull(iptoIfaceName.get(tunnel.getSourceAddress()), INVALID_LOCAL_INTERFACE));
@@ -336,6 +380,17 @@ class CiscoConversions {
     return new AsPathAccessList(pathList.getName(), lines);
   }
 
+  static CommunityList toCommunityList(NamedCommunitySet communitySet) {
+    return new CommunityList(
+        communitySet.getName(),
+        communitySet
+            .getElements()
+            .stream()
+            .map(CiscoConversions::toCommunityListLine)
+            .collect(ImmutableList.toImmutableList()),
+        false);
+  }
+
   static CommunityList toCommunityList(ExpandedCommunityList ecList) {
     List<CommunityListLine> cllList =
         ecList
@@ -344,6 +399,29 @@ class CiscoConversions {
             .map(CiscoConversions::toCommunityListLine)
             .collect(ImmutableList.toImmutableList());
     return new CommunityList(ecList.getName(), cllList, false);
+  }
+
+  public static CommunityList toCommunityList(StandardCommunityList scList) {
+    List<CommunityListLine> cllList =
+        scList
+            .getLines()
+            .stream()
+            .map(CiscoConversions::toCommunityListLine)
+            .collect(ImmutableList.toImmutableList());
+    return new CommunityList(scList.getName(), cllList, false);
+  }
+
+  static org.batfish.datamodel.hsrp.HsrpGroup toHsrpGroup(HsrpGroup hsrpGroup) {
+    return org.batfish.datamodel.hsrp.HsrpGroup.builder()
+        .setAuthentication(hsrpGroup.getAuthentication())
+        .setHelloTime(hsrpGroup.getHelloTime())
+        .setHoldTime(hsrpGroup.getHoldTime())
+        .setIp(hsrpGroup.getIp())
+        .setGroupNumber(hsrpGroup.getGroupNumber())
+        .setPreempt(hsrpGroup.getPreempt())
+        .setPriority(hsrpGroup.getPriority())
+        .setTrackActions(hsrpGroup.getTrackActions())
+        .build();
   }
 
   static IkePhase1Key toIkePhase1Key(Keyring keyring) {
@@ -685,7 +763,7 @@ class CiscoConversions {
       IkePhase1Policy ikePhase1Policy = e.getValue();
       String ikePhase1PolicyLocalInterface = ikePhase1Policy.getLocalInterface();
       if (ikePhase1Policy.getRemoteIdentity().containsIp(remoteAddress, ImmutableMap.of())
-          && (ikePhase1PolicyLocalInterface == null
+          && (UNSET_LOCAL_INTERFACE.equals(ikePhase1PolicyLocalInterface)
               || ikePhase1PolicyLocalInterface.equals(localInterface))) {
         return e.getKey();
       }
@@ -699,7 +777,7 @@ class CiscoConversions {
     List<String> filteredIkePhase1Policies = new ArrayList<>();
     for (Entry<String, IkePhase1Policy> e : ikePhase1Policies.entrySet()) {
       String ikePhase1PolicyLocalInterface = e.getValue().getLocalInterface();
-      if ((ikePhase1PolicyLocalInterface == null
+      if ((UNSET_LOCAL_INTERFACE.equals(ikePhase1PolicyLocalInterface)
           || ikePhase1PolicyLocalInterface.equals(localInterface))) {
         filteredIkePhase1Policies.add(e.getKey());
       }
@@ -852,6 +930,110 @@ class CiscoConversions {
     return ipsecVpns;
   }
 
+  @Nullable
+  static org.batfish.datamodel.eigrp.EigrpProcess toEigrpProcess(
+      EigrpProcess proc, String vrfName, Configuration c, CiscoConfiguration oldConfig) {
+    org.batfish.datamodel.eigrp.EigrpProcess.Builder newProcess =
+        org.batfish.datamodel.eigrp.EigrpProcess.builder();
+    org.batfish.datamodel.Vrf vrf = c.getVrfs().get(vrfName);
+
+    if (proc.getAsn() == null) {
+      oldConfig.getWarnings().redFlag("Invalid EIGRP process");
+      return null;
+    }
+
+    newProcess.setAsNumber(proc.getAsn());
+    newProcess.setMode(proc.getMode());
+    newProcess.setVrf(vrf);
+
+    // TODO set stub process
+    // newProcess.setStub(proc.isStub())
+
+    // TODO create summary filters
+
+    // TODO originate default route if configured
+
+    Ip routerId = proc.getRouterId();
+    if (routerId == null) {
+      routerId = getHighestIp(oldConfig.getInterfaces());
+      if (routerId == Ip.ZERO) {
+        oldConfig
+            .getWarnings()
+            .redFlag("No candidates for EIGRP (AS " + proc.getAsn() + ") router-id");
+        return null;
+      }
+    }
+    newProcess.setRouterId(routerId);
+
+    /*
+     * Route redistribution modifies the configuration structure, so do this last to avoid having to
+     * clean up configuration if another conversion step fails
+     */
+    String eigrpExportPolicyName = "~EIGRP_EXPORT_POLICY:" + vrfName + ":" + proc.getAsn() + "~";
+    RoutingPolicy eigrpExportPolicy = new RoutingPolicy(eigrpExportPolicyName, c);
+    c.getRoutingPolicies().put(eigrpExportPolicyName, eigrpExportPolicy);
+    newProcess.setExportPolicy(eigrpExportPolicyName);
+
+    eigrpExportPolicy
+        .getStatements()
+        .addAll(
+            proc.getRedistributionPolicies()
+                .values()
+                .stream()
+                .map(policy -> convertEigrpRedistributionPolicy(policy, proc, oldConfig))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList()));
+
+    return newProcess.build();
+  }
+
+  @Nullable
+  private static If convertEigrpRedistributionPolicy(
+      EigrpRedistributionPolicy policy, EigrpProcess proc, CiscoConfiguration oldConfig) {
+    RoutingProtocol protocol = policy.getSourceProtocol();
+    // All redistribution must match the specified protocol.
+    Conjunction eigrpExportConditions = new Conjunction();
+    eigrpExportConditions.getConjuncts().add(new MatchProtocol(protocol));
+
+    // Default routes can be redistributed into EIGRP. Don't filter them.
+
+    ImmutableList.Builder<Statement> eigrpExportStatements = ImmutableList.builder();
+
+    // Set the metric
+    // TODO prefer metric from route map
+    EigrpMetric metric = policy.getMetric() != null ? policy.getMetric() : proc.getDefaultMetric();
+    if (metric == null) {
+      /*
+       * TODO no default metric
+       * 1) connected can use the interface metric
+       * 2) static with next hop interface can use the interface metric
+       * 3) redistribution of eigrp into eigrp can directly use the 'external' route metric
+       * 4) If none of the above, bad configuration
+       */
+      oldConfig.getWarnings().redFlag("Unable to redistribute - no metric");
+      return null;
+    } else {
+      eigrpExportStatements.add(new SetEigrpMetric(new LiteralEigrpMetric(metric)));
+    }
+
+    String exportRouteMapName = policy.getRouteMap();
+    if (exportRouteMapName != null) {
+      RouteMap exportRouteMap = oldConfig.getRouteMaps().get(exportRouteMapName);
+      if (exportRouteMap != null) {
+        eigrpExportConditions.getConjuncts().add(new CallExpr(exportRouteMapName));
+      }
+    }
+
+    eigrpExportStatements.add(Statements.ExitAccept.toStaticStatement());
+
+    // Construct a new policy and add it before returning.
+    return new If(
+        "EIGRP export routes for " + protocol.protocolName(),
+        eigrpExportConditions,
+        eigrpExportStatements.build(),
+        ImmutableList.of());
+  }
+
   static org.batfish.datamodel.isis.IsisProcess toIsisProcess(
       IsisProcess proc, Configuration c, CiscoConfiguration oldConfig) {
     org.batfish.datamodel.isis.IsisProcess.Builder newProcess =
@@ -1002,9 +1184,22 @@ class CiscoConversions {
     return line;
   }
 
+  private static CommunityListLine toCommunityListLine(CommunitySetElem elem) {
+    return new CommunityListLine(LineAction.ACCEPT, elem.toCommunitySetExpr());
+  }
+
   private static CommunityListLine toCommunityListLine(ExpandedCommunityListLine eclLine) {
     String javaRegex = CiscoConfiguration.toJavaRegex(eclLine.getRegex());
-    return new CommunityListLine(eclLine.getAction(), javaRegex);
+    return new CommunityListLine(eclLine.getAction(), new RegexCommunitySet(javaRegex));
+  }
+
+  private static CommunityListLine toCommunityListLine(StandardCommunityListLine sclLine) {
+    Collection<Long> lineCommunities = sclLine.getCommunities();
+    CommunitySetExpr expr =
+        lineCommunities.size() == 1
+            ? new LiteralCommunity(lineCommunities.iterator().next())
+            : new LiteralCommunityConjunction(lineCommunities);
+    return new CommunityListLine(sclLine.getAction(), expr);
   }
 
   private static Route6FilterLine toRoute6FilterLine(ExtendedIpv6AccessListLine fromLine) {

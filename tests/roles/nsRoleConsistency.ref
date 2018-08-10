@@ -18,7 +18,10 @@
           "lines" : [
             {
               "action" : "ACCEPT",
-              "regex" : "(,|\\{|\\}|^|$| )1:"
+              "matchCondition" : {
+                "class" : "org.batfish.datamodel.RegexCommunitySet",
+                "regex" : "(,|\\{|\\}|^|$| )1:"
+              }
             }
           ],
           "name" : "as1_community"
@@ -42,7 +45,10 @@
           "lines" : [
             {
               "action" : "ACCEPT",
-              "regex" : "(,|\\{|\\}|^|$| )2:"
+              "matchCondition" : {
+                "class" : "org.batfish.datamodel.RegexCommunitySet",
+                "regex" : "(,|\\{|\\}|^|$| )2:"
+              }
             }
           ],
           "name" : "as2_community"
@@ -66,7 +72,10 @@
           "lines" : [
             {
               "action" : "ACCEPT",
-              "regex" : "(,|\\{|\\}|^|$| )3:"
+              "matchCondition" : {
+                "class" : "org.batfish.datamodel.RegexCommunitySet",
+                "regex" : "(,|\\{|\\}|^|$| )3:"
+              }
             }
           ],
           "name" : "as3_community"
@@ -101,7 +110,10 @@
           "lines" : [
             {
               "action" : "ACCEPT",
-              "regex" : "(,|\\{|\\}|^|$| )2:"
+              "matchCondition" : {
+                "class" : "org.batfish.datamodel.RegexCommunitySet",
+                "regex" : "(,|\\{|\\}|^|$| )2:"
+              }
             }
           ],
           "name" : "as2_community"
@@ -121,7 +133,10 @@
           "lines" : [
             {
               "action" : "ACCEPT",
-              "regex" : "(,|\\{|\\}|^|$| )65001:"
+              "matchCondition" : {
+                "class" : "org.batfish.datamodel.RegexCommunitySet",
+                "regex" : "(,|\\{|\\}|^|$| )65001:"
+              }
             }
           ],
           "name" : "dept_community"

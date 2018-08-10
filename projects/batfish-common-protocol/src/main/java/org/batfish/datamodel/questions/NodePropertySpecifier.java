@@ -18,7 +18,7 @@ import org.batfish.datamodel.answers.Schema;
  * <p>Currently supported example specifier:
  *
  * <ul>
- *   <li>ntp-servers —> gets NTP servers using a configured Java function
+ *   <li>ntp-servers -&gt; gets NTP servers using a configured Java function
  *   <li>ntp.* gets all properties that start with 'ntp'
  * </ul>
  *
@@ -138,7 +138,7 @@ public class NodePropertySpecifier extends PropertySpecifier {
 
   @JsonCreator
   public NodePropertySpecifier(String expression) {
-    _expression = expression.trim().toLowerCase();
+    _expression = expression;
     _pattern = Pattern.compile(_expression.trim().toLowerCase()); // canonicalize
   }
 

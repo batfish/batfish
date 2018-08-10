@@ -238,6 +238,15 @@ bfd_null
    ) null_rest_of_line
 ;
 
+bfd_template_null
+:
+  NO?
+  (
+    ECHO
+    | INTERVAL
+  ) null_rest_of_line
+;
+
 cisco_configuration
 :
    NEWLINE?
@@ -1193,6 +1202,7 @@ ip_sla_null
       | HISTORY
       | HOPS_OF_STATISTICS_KEPT
       | ICMP_ECHO
+      | OWNER
       | PATH_ECHO
       | PATHS_OF_STATISTICS_KEPT
       | REQUEST_DATA_SIZE
@@ -2177,6 +2187,11 @@ s_bfd
    )*
 ;
 
+s_bfd_template
+:
+  BFD_TEMPLATE SINGLE_HOP name = variable_permissive NEWLINE bfd_template_null*
+;
+
 s_cluster
 :
    NO? CLUSTER
@@ -3058,10 +3073,12 @@ s_time_range
 
 s_track
 :
-   TRACK null_rest_of_line
-   (
-      track_null
-   )*
+  TRACK name = variable
+  (
+    track_block
+    | track_interface
+    | track_list
+  )
 ;
 
 s_tunnel_group
@@ -3497,6 +3514,7 @@ stanza
    | s_arp_access_list_extended
    | s_authentication
    | s_bfd
+   | s_bfd_template
    | s_cable
    | s_call_home
    | s_callhome
@@ -3840,14 +3858,37 @@ tr_null
    ) null_rest_of_line
 ;
 
-track_null
+track_block
 :
-   NO?
-   (
-      DELAY
-      | OBJECT
-      | TYPE
-   ) null_rest_of_line
+  NEWLINE track_block_null*
+;
+
+track_block_null
+:
+  TYPE null_rest_of_line track_block_type_null*
+;
+
+track_block_type_null
+:
+  OBJECT null_rest_of_line
+;
+
+track_interface
+:
+  INTERFACE interface_name LINE_PROTOCOL NEWLINE
+;
+
+track_list
+:
+  LIST null_rest_of_line track_list_null*
+;
+
+track_list_null
+:
+  (
+    DELAY
+    | OBJECT
+  ) null_rest_of_line
 ;
 
 ts_common

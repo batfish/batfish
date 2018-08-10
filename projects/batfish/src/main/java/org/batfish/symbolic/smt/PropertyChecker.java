@@ -55,6 +55,7 @@ import org.batfish.symbolic.answers.SmtDeterminismAnswerElement;
 import org.batfish.symbolic.answers.SmtManyAnswerElement;
 import org.batfish.symbolic.answers.SmtOneAnswerElement;
 import org.batfish.symbolic.answers.SmtReachabilityAnswerElement;
+import org.batfish.symbolic.bdd.BDDPacket;
 import org.batfish.symbolic.collections.Table2;
 import org.batfish.symbolic.utils.PathRegexes;
 import org.batfish.symbolic.utils.PatternUtils;
@@ -70,11 +71,13 @@ import org.batfish.symbolic.utils.Tuple;
  */
 public class PropertyChecker {
 
+  private BDDPacket _bddPacket;
   private IBatfish _batfish;
   private final Settings _settings;
   private final Object _lock;
 
-  public PropertyChecker(IBatfish batfish, Settings settings) {
+  public PropertyChecker(BDDPacket bddPacket, IBatfish batfish, Settings settings) {
+    this._bddPacket = bddPacket;
     this._batfish = batfish;
     this._settings = settings;
     this._lock = new Object();
@@ -149,6 +152,12 @@ public class PropertyChecker {
     return failChoices;
   }
 
+  private Set<String> failNodeSet(Graph g, HeaderLocationQuestion q) {
+    Pattern p1 = Pattern.compile(q.getFailNodeRegex());
+    Pattern p2 = Pattern.compile(q.getNotFailNodeRegex());
+    return new HashSet<>(PatternUtils.findMatchingNodes(g, p1, p2));
+  }
+
   private BoolExpr relateEnvironments(Encoder enc1, Encoder enc2) {
     // create a map for enc2 to lookup a related environment variable from enc
     Table2<GraphEdge, EdgeType, SymbolicRoute> relatedEnv = new Table2<>();
@@ -195,7 +204,8 @@ public class PropertyChecker {
     return p1.mkEqual(p2);
   }
 
-  private void addFailureConstraints(Encoder enc, Set<GraphEdge> dstPorts, Set<GraphEdge> failSet) {
+  private void addLinkFailureConstraints(
+      Encoder enc, Set<GraphEdge> dstPorts, Set<GraphEdge> failSet) {
     Graph graph = enc.getMainSlice().getGraph();
     for (List<GraphEdge> edges : graph.getEdgeMap().values()) {
       for (GraphEdge ge : edges) {
@@ -212,6 +222,17 @@ public class PropertyChecker {
           BoolExpr notFailed = enc.mkEq(f, enc.mkInt(0));
           enc.add(enc.mkImplies(relevant, notFailed));
         }
+      }
+    }
+  }
+
+  private void addNodeFailureConstraints(Encoder enc, Set<String> failNodesSet) {
+    Graph graph = enc.getMainSlice().getGraph();
+    for (String router : graph.getRouters()) {
+      ArithExpr f = enc.getSymbolicFailures().getFailedNodes().get(router);
+      assert f != null;
+      if (!failNodesSet.contains(router)) {
+        enc.add(enc.mkEq(f, enc.mkInt(0)));
       }
     }
   }
@@ -249,7 +270,7 @@ public class PropertyChecker {
       System.out.println("Created destination classes");
       System.out.println("Num Classes: " + dcs.getHeaderspaceMap().size());
       long l = System.currentTimeMillis();
-      List<Supplier<NetworkSlice>> ecs = NetworkSlice.allSlices(dcs, numFailures);
+      List<Supplier<NetworkSlice>> ecs = NetworkSlice.allSlices(_bddPacket, dcs, numFailures);
       l = System.currentTimeMillis() - l;
       System.out.println("Created BDDs");
       return new Tuple<>(ecs.parallelStream(), l);
@@ -358,6 +379,7 @@ public class PropertyChecker {
     inferDestinationHeaderSpace(graph, destPorts, q);
 
     Set<GraphEdge> failOptions = failLinkSet(graph, q);
+    Set<String> failNodeOptions = failNodeSet(graph, q);
     Tuple<Stream<Supplier<NetworkSlice>>, Long> ecs = findAllNetworkSlices(q, graph, true);
     Stream<Supplier<NetworkSlice>> stream = ecs.getFirst();
     Long timeAbstraction = ecs.getSecond();
@@ -470,7 +492,8 @@ public class PropertyChecker {
                   enc.add(enc.mkNot(allProp));
                 }
 
-                addFailureConstraints(enc, destPorts, failOptions);
+                addLinkFailureConstraints(enc, destPorts, failOptions);
+                addNodeFailureConstraints(enc, failNodeOptions);
 
                 Tuple<VerificationResult, Model> tup = enc.verify();
                 VerificationResult res = tup.getFirst();
@@ -1078,9 +1101,9 @@ public class PropertyChecker {
       BoolExpr required;
       if (strict) {
         SymbolicRoute best1 =
-            e1.getMainSlice().getSymbolicDecisions().getBestNeighbor().get(conf1.getName());
+            e1.getMainSlice().getSymbolicDecisions().getBestNeighbor().get(conf1.getHostname());
         SymbolicRoute best2 =
-            e2.getMainSlice().getSymbolicDecisions().getBestNeighbor().get(conf2.getName());
+            e2.getMainSlice().getSymbolicDecisions().getBestNeighbor().get(conf2.getHostname());
         // Just pick some protocol for defaults, shouldn't matter for best choice
         required = equal(e2, conf2, best1, best2);
       } else {

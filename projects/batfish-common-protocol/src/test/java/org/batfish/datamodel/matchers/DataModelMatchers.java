@@ -3,6 +3,7 @@ package org.batfish.datamodel.matchers;
 import static org.hamcrest.Matchers.equalTo;
 
 import java.util.List;
+import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Set;
 import java.util.SortedSet;
@@ -33,6 +34,7 @@ import org.batfish.datamodel.acl.PermittedByAclIpSpaceLine;
 import org.batfish.datamodel.acl.PermittedByIpAccessListLine;
 import org.batfish.datamodel.acl.TraceEvent;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.eigrp.EigrpProcess;
 import org.batfish.datamodel.isis.IsisProcess;
 import org.batfish.datamodel.matchers.AclTraceMatchers.HasEvents;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasRoute6FilterList;
@@ -52,6 +54,7 @@ import org.batfish.datamodel.matchers.OspfProcessMatchersImpl.HasReferenceBandwi
 import org.batfish.datamodel.matchers.PermittedByAclIpSpaceLineMatchersImpl.IsPermittedByAclIpSpaceLineThat;
 import org.batfish.datamodel.matchers.PermittedByIpAccessListLineMatchersImpl.IsPermittedByIpAccessListLineThat;
 import org.batfish.datamodel.matchers.PermittedByNamedIpSpaceMatchers.IsPermittedByNamedIpSpaceThat;
+import org.batfish.datamodel.matchers.VrfMatchersImpl.HasEigrpProcesses;
 import org.batfish.datamodel.matchers.VrfMatchersImpl.HasIsisProcess;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.vendor.StructureType;
@@ -251,6 +254,15 @@ public final class DataModelMatchers {
   public static @Nonnull Matcher<Zone> hasMemberInterfaces(
       @Nonnull Matcher<? super SortedSet<String>> subMatcher) {
     return new ZoneMatchers.HasInterfaces(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the {@link Vrf}'s
+   * eigrpProcess.
+   */
+  public static @Nonnull Matcher<Vrf> hasEigrpProcesses(
+      @Nonnull Matcher<? super Map<Long, EigrpProcess>> subMatcher) {
+    return new HasEigrpProcesses(subMatcher);
   }
 
   /**

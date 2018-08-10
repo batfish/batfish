@@ -23,7 +23,7 @@ public final class SchemaUtils {
    */
   @Nullable
   public static Object convertType(JsonNode jsonNode, Schema schema) {
-    if (jsonNode == null) {
+    if (jsonNode == null || jsonNode.isNull()) {
       return null;
     }
     try {

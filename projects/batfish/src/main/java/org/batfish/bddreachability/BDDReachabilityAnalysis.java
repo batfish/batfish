@@ -3,6 +3,7 @@ package org.batfish.bddreachability;
 import static org.batfish.common.util.CommonUtil.toImmutableMap;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
@@ -25,6 +26,7 @@ import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Flow.Builder;
 import org.batfish.symbolic.bdd.BDDOps;
 import org.batfish.symbolic.bdd.BDDPacket;
+import org.batfish.z3.IngressLocation;
 import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.state.Accept;
 import org.batfish.z3.state.Drop;
@@ -80,14 +82,16 @@ public class BDDReachabilityAnalysis {
   private Set<StateExpr> _leafStates;
 
   BDDReachabilityAnalysis(
-      Map<StateExpr, BDD> graphRoots, Map<StateExpr, Map<StateExpr, Edge>> transitions) {
-    _bddPacket = new BDDPacket();
+      BDDPacket packet,
+      Map<StateExpr, BDD> graphRoots,
+      Map<StateExpr, Map<StateExpr, Edge>> transitions) {
+    _bddPacket = packet;
     _edges = computeEdges(graphRoots, transitions);
     _reverseEdges = computeReverseEdges(_edges);
     _graphRoots = ImmutableMap.copyOf(graphRoots);
     _reverseReachableStates = Suppliers.memoize(this::computeReverseReachableStates);
     _leafStates = computeTerminalStates();
-    _srcIpVars = new BDDOps(BDDPacket.factory).and(_bddPacket.getSrcIp().getBitvec());
+    _srcIpVars = new BDDOps(_bddPacket.getFactory()).and(_bddPacket.getSrcIp().getBitvec());
   }
 
   private static Map<StateExpr, Map<StateExpr, Edge>> computeEdges(
@@ -136,12 +140,17 @@ public class BDDReachabilityAnalysis {
    * node --> final --> set of headers that can reach final from node.
    */
   private Map<StateExpr, Map<StateExpr, BDD>> computeReverseReachableStates() {
-    Map<StateExpr, Map<StateExpr, BDD>> reverseReachableStates = new HashMap<>();
-    Multimap<StateExpr, StateExpr> dirty = HashMultimap.create();
     List<StateExpr> leaves =
         ImmutableList.of(Accept.INSTANCE, Drop.INSTANCE, NeighborUnreachable.INSTANCE);
+    return computeReverseReachableStates(leaves);
+  }
+
+  private Map<StateExpr, Map<StateExpr, BDD>> computeReverseReachableStates(
+      List<StateExpr> leaves) {
+    Map<StateExpr, Map<StateExpr, BDD>> reverseReachableStates = new HashMap<>();
+    Multimap<StateExpr, StateExpr> dirty = HashMultimap.create();
     for (StateExpr leaf : leaves) {
-      reverseReachableStates.put(leaf, ImmutableMap.of(leaf, BDDPacket.factory.one()));
+      reverseReachableStates.put(leaf, ImmutableMap.of(leaf, _bddPacket.getFactory().one()));
       dirty.put(leaf, leaf);
     }
 
@@ -163,7 +172,8 @@ public class BDDReachabilityAnalysis {
             BDD postStateBDD = reverseReachableStates.get(postState).get(leaf);
             postStateInEdges.forEach(
                 (preState, edge) -> {
-                  BDD result = postStateBDD.and(edge.getConstraint());
+                  BDD constraint = edge.getConstraint();
+                  BDD result = constraint == null ? postStateBDD : postStateBDD.and(constraint);
                   if (result.isZero()) {
                     return;
                   }
@@ -262,6 +272,35 @@ public class BDDReachabilityAnalysis {
                       });
             })
         .collect(ImmutableList.toImmutableList());
+  }
+
+  public Map<IngressLocation, BDD> getIngressLocationAcceptBDDs() {
+    return _reverseReachableStates
+        .get()
+        .entrySet()
+        .stream()
+        .filter(
+            entry ->
+                entry.getKey() instanceof OriginateInterfaceLink
+                    || entry.getKey() instanceof OriginateVrf)
+        .collect(
+            ImmutableMap.toImmutableMap(
+                entry -> toIngressLocation(entry.getKey()),
+                entry -> entry.getValue().get(Accept.INSTANCE)));
+  }
+
+  private static IngressLocation toIngressLocation(StateExpr stateExpr) {
+    Preconditions.checkArgument(
+        stateExpr instanceof OriginateVrf || stateExpr instanceof OriginateInterfaceLink);
+
+    if (stateExpr instanceof OriginateVrf) {
+      OriginateVrf originateVrf = (OriginateVrf) stateExpr;
+      return IngressLocation.vrf(originateVrf.getHostname(), originateVrf.getVrf());
+    } else {
+      OriginateInterfaceLink originateInterfaceLink = (OriginateInterfaceLink) stateExpr;
+      return IngressLocation.interfaceLink(
+          originateInterfaceLink.getHostname(), originateInterfaceLink.getIface());
+    }
   }
 
   Set<StateExpr> getLeafStates() {

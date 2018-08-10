@@ -1,6 +1,7 @@
 package org.batfish.symbolic;
 
 import static java.util.stream.Collectors.toMap;
+import static org.batfish.symbolic.CommunityVarCollector.collectCommunityVars;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -23,7 +24,6 @@ import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.CommunityList;
-import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Edge;
@@ -32,6 +32,7 @@ import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
+import org.batfish.datamodel.RegexCommunitySet;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
@@ -41,16 +42,12 @@ import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
-import org.batfish.datamodel.routing_policy.expr.CommunitySetElem;
 import org.batfish.datamodel.routing_policy.expr.CommunitySetExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
-import org.batfish.datamodel.routing_policy.expr.InlineCommunitySet;
-import org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf;
 import org.batfish.datamodel.routing_policy.expr.MatchCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
-import org.batfish.datamodel.routing_policy.expr.NamedCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.PrefixSetExpr;
 import org.batfish.datamodel.routing_policy.statement.AddCommunity;
@@ -108,6 +105,7 @@ public class Graph {
 
   private Set<CommunityVar> _allCommunities;
 
+  /** Keys are all REGEX vars, and values are lists of EXACT or OTHER vars. */
   private SortedMap<CommunityVar, List<CommunityVar>> _communityDependencies;
 
   private Map<String, String> _namedCommunities;
@@ -807,8 +805,10 @@ public class Graph {
         String name = entry.getKey();
         CommunityList cl = entry.getValue();
         if (cl != null && cl.getLines().size() == 1) {
-          CommunityListLine line = cl.getLines().get(0);
-          _namedCommunities.put(line.getRegex(), name);
+          CommunitySetExpr matchCondition = cl.getLines().get(0).getMatchCondition();
+          if (matchCondition instanceof RegexCommunitySet) {
+            _namedCommunities.put(((RegexCommunitySet) matchCondition).getRegex(), name);
+          }
         }
       }
     }
@@ -859,68 +859,30 @@ public class Graph {
           stmt -> {
             if (stmt instanceof SetCommunity) {
               SetCommunity sc = (SetCommunity) stmt;
-              comms.addAll(findAllCommunities(conf, sc.getExpr()));
+              comms.addAll(collectCommunityVars(conf, sc.getExpr()));
             }
             if (stmt instanceof AddCommunity) {
               AddCommunity ac = (AddCommunity) stmt;
-              comms.addAll(findAllCommunities(conf, ac.getExpr()));
+              comms.addAll(collectCommunityVars(conf, ac.getExpr()));
             }
             if (stmt instanceof DeleteCommunity) {
               DeleteCommunity dc = (DeleteCommunity) stmt;
-              comms.addAll(findAllCommunities(conf, dc.getExpr()));
+              comms.addAll(collectCommunityVars(conf, dc.getExpr()));
             }
             if (stmt instanceof RetainCommunity) {
               RetainCommunity rc = (RetainCommunity) stmt;
-              comms.addAll(findAllCommunities(conf, rc.getExpr()));
+              comms.addAll(collectCommunityVars(conf, rc.getExpr()));
             }
           },
           expr -> {
             if (expr instanceof MatchCommunitySet) {
               MatchCommunitySet m = (MatchCommunitySet) expr;
               CommunitySetExpr ce = m.getExpr();
-              comms.addAll(findAllCommunities(conf, ce));
+              comms.addAll(collectCommunityVars(conf, ce));
             }
           });
     }
 
-    return comms;
-  }
-
-  /*
-   * Final all uniquely mentioned community values for a particular
-   * router configuration and community set expression.
-   */
-  public Set<CommunityVar> findAllCommunities(Configuration conf, CommunitySetExpr ce) {
-    Set<CommunityVar> comms = new HashSet<>();
-    if (ce instanceof InlineCommunitySet) {
-      InlineCommunitySet c = (InlineCommunitySet) ce;
-      for (CommunitySetElem cse : c.getCommunities()) {
-        if (cse.getPrefix() instanceof LiteralCommunitySetElemHalf
-            && cse.getSuffix() instanceof LiteralCommunitySetElemHalf) {
-          LiteralCommunitySetElemHalf x = (LiteralCommunitySetElemHalf) cse.getPrefix();
-          LiteralCommunitySetElemHalf y = (LiteralCommunitySetElemHalf) cse.getSuffix();
-          int prefixInt = x.getValue();
-          int suffixInt = y.getValue();
-          String val = prefixInt + ":" + suffixInt;
-          Long l = (((long) prefixInt) << 16) | (suffixInt);
-          CommunityVar var = new CommunityVar(CommunityVar.Type.EXACT, val, l);
-          comms.add(var);
-        } else {
-          throw new BatfishException("TODO: community non literal: " + cse);
-        }
-      }
-    }
-    if (ce instanceof NamedCommunitySet) {
-      NamedCommunitySet c = (NamedCommunitySet) ce;
-      String cname = c.getName();
-      CommunityList cl = conf.getCommunityLists().get(cname);
-      if (cl != null) {
-        for (CommunityListLine line : cl.getLines()) {
-          CommunityVar var = new CommunityVar(CommunityVar.Type.REGEX, line.getRegex(), null);
-          comms.add(var);
-        }
-      }
-    }
     return comms;
   }
 
@@ -936,8 +898,10 @@ public class Graph {
         String name = entry.getKey();
         CommunityList cl = entry.getValue();
         if (cl != null && cl.getLines().size() == 1) {
-          CommunityListLine line = cl.getLines().get(0);
-          comms.put(line.getRegex(), name);
+          CommunitySetExpr matchCondition = cl.getLines().get(0).getMatchCondition();
+          if (matchCondition instanceof RegexCommunitySet) {
+            comms.put(((RegexCommunitySet) matchCondition).getRegex(), name);
+          }
         }
       }
     }
@@ -1066,7 +1030,7 @@ public class Graph {
 
     // Only use specified edges from static routes
     if (proto.isStatic()) {
-      List<StaticRoute> srs = getStaticRoutes().get(conf.getName(), iface.getName());
+      List<StaticRoute> srs = getStaticRoutes().get(conf.getHostname(), iface.getName());
       return iface.getActive() && srs != null && !srs.isEmpty();
     }
 

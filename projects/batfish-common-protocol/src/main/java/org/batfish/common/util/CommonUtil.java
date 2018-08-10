@@ -55,6 +55,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.NavigableMap;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -315,7 +316,10 @@ public class CommonUtil {
     return 0;
   }
 
-  /** Compute the {@link Ip}s owned by each interface. hostname -> interface name -> {@link Ip}s. */
+  /**
+   * Compute the {@link Ip}s owned by each interface. hostname -&gt; interface name -&gt; {@link
+   * Ip}s.
+   */
   public static Map<String, Map<String, Set<Ip>>> computeInterfaceOwnedIps(
       Map<String, Configuration> configurations, boolean excludeInactive) {
     return computeInterfaceOwnedIps(
@@ -323,8 +327,8 @@ public class CommonUtil {
   }
 
   /**
-   * Invert a mapping from {@link Ip} to owner interfaces (Ip -> hostname -> interface name) to
-   * (hostname -> interface name -> Ip).
+   * Invert a mapping from {@link Ip} to owner interfaces (Ip -&gt; hostname -&gt; interface name)
+   * to (hostname -&gt; interface name -&gt; Ip).
    */
   public static Map<String, Map<String, Set<Ip>>> computeInterfaceOwnedIps(
       Map<Ip, Map<String, Set<String>>> ipInterfaceOwners) {
@@ -353,8 +357,8 @@ public class CommonUtil {
   }
 
   /**
-   * Invert a mapping from {@link Ip} to owner interfaces (Ip -> hostname -> interface name) and
-   * convert the set of owned Ips into an IpSpace.
+   * Invert a mapping from {@link Ip} to owner interfaces (Ip -&gt; hostname -&gt; interface name)
+   * and convert the set of owned Ips into an IpSpace.
    */
   public static Map<String, Map<String, IpSpace>> computeInterfaceOwnedIpSpaces(
       Map<Ip, Map<String, Set<String>>> ipInterfaceOwners) {
@@ -396,8 +400,8 @@ public class CommonUtil {
    * Compute a mapping from IP address to the interfaces that "own" that IP (e.g., as an network
    * interface address)
    *
-   * @param enabledInterfaces A mapping of enabled interfaces hostname -> interface name -> {@link
-   *     Interface}
+   * @param enabledInterfaces A mapping of enabled interfaces hostname -&gt; interface name -&gt;
+   *     {@link Interface}
    * @param excludeInactive whether to ignore inactive interfaces
    * @return A map from {@link Ip}s to the {@link Interface}s that own them
    */
@@ -477,8 +481,8 @@ public class CommonUtil {
    * address).
    *
    * @param excludeInactive whether to ignore inactive interfaces
-   * @param enabledInterfaces A mapping of enabled interfaces hostname -> interface name -> {@link
-   *     Interface}
+   * @param enabledInterfaces A mapping of enabled interfaces hostname -&gt; interface name -&gt;
+   *     {@link Interface}
    * @return A map of {@link Ip}s to a map of hostnames to vrfs that own the Ip.
    */
   public static Map<Ip, Map<String, Set<String>>> computeIpVrfOwners(
@@ -510,7 +514,10 @@ public class CommonUtil {
                         .collect(ImmutableSet.toImmutableSet())));
   }
 
-  /** Aggregate a mapping (Ip -> host name -> interface name) to (Ip -> host name -> vrf name) */
+  /**
+   * Aggregate a mapping (Ip -&gt; host name -&gt; interface name) to (Ip -&gt; host name -&gt; vrf
+   * name)
+   */
   public static Map<Ip, Map<String, Set<String>>> computeIpVrfOwners(
       Map<Ip, Map<String, Set<String>>> ipInterfaceOwners, Map<String, Configuration> configs) {
     return toImmutableMap(
@@ -536,8 +543,8 @@ public class CommonUtil {
   }
 
   /**
-   * Invert a mapping from Ip to VRF owners (Ip -> host name -> VRF name) and combine all IPs owned
-   * by each VRF into an IpSpace.
+   * Invert a mapping from Ip to VRF owners (Ip -&gt; host name -&gt; VRF name) and combine all IPs
+   * owned by each VRF into an IpSpace.
    */
   public static Map<String, Map<String, IpSpace>> computeVrfOwnedIpSpaces(
       Map<Ip, Map<String, Set<String>>> ipVrfOwners) {
@@ -1422,18 +1429,6 @@ public class CommonUtil {
     return intersectionSet;
   }
 
-  public static int intWidth(int n) {
-    if (n == 0) {
-      return 1;
-    } else {
-      return 32 - Integer.numberOfLeadingZeros(n);
-    }
-  }
-
-  public static boolean isLoopback(String interfaceName) {
-    return interfaceName.toLowerCase().startsWith("lo");
-  }
-
   public static boolean isNullInterface(String ifaceName) {
     String lcIfaceName = ifaceName.toLowerCase();
     return lcIfaceName.startsWith("null");
@@ -1657,7 +1652,7 @@ public class CommonUtil {
         Comparator.naturalOrder(), keyFunction, valueFunction);
   }
 
-  public static <E, K extends Comparable<? super K>, V> SortedMap<K, V> toImmutableSortedMap(
+  public static <E, K extends Comparable<? super K>, V> NavigableMap<K, V> toImmutableSortedMap(
       Collection<E> set, Function<E, K> keyFunction, Function<E, V> valueFunction) {
     return set.stream()
         .collect(

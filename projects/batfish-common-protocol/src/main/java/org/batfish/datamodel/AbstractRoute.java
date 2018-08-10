@@ -148,7 +148,7 @@ public abstract class AbstractRoute implements Serializable, Comparable<Abstract
 
   protected abstract String protocolRouteString();
 
-  public abstract int routeCompare(AbstractRoute rhs);
+  public abstract int routeCompare(@Nonnull AbstractRoute rhs);
 
   @JsonProperty(PROP_NEXT_HOP)
   public void setNextHop(String nextHop) {

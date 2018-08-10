@@ -8,7 +8,6 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
-import java.util.TreeMap;
 import java.util.TreeSet;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.AbstractRoute;
@@ -75,6 +74,17 @@ public abstract class AbstractRib<R extends AbstractRoute> implements GenericRib
     return builder.build();
   }
 
+  /**
+   * Add route to backup route map if the route map is not null
+   *
+   * @param route Route to add
+   */
+  public final void addBackupRoute(R route) {
+    if (_backupRoutes != null) {
+      _backupRoutes.computeIfAbsent(route.getNetwork(), k -> new TreeSet<>()).add(route);
+    }
+  }
+
   public final boolean containsRoute(R route) {
     return _tree.containsRoute(route);
   }
@@ -105,12 +115,31 @@ public abstract class AbstractRib<R extends AbstractRoute> implements GenericRib
         .collect(ImmutableSet.toImmutableSet());
   }
 
+  /**
+   * Remove a route from backup route map if it was present and backup route map exists
+   *
+   * @param route Route to remove
+   */
+  public final void removeBackupRoute(R route) {
+    if (_backupRoutes != null) {
+      SortedSet<R> routes = _backupRoutes.get(route.getNetwork());
+      if (routes != null) {
+        routes.remove(route);
+      }
+    }
+  }
+
   @Override
   public abstract int comparePreference(R lhs, R rhs);
 
   @Override
   public Set<R> longestPrefixMatch(Ip address) {
-    return _tree.getLongestPrefixMatch(address);
+    return longestPrefixMatch(address, Prefix.MAX_PREFIX_LENGTH);
+  }
+
+  @Override
+  public Set<R> longestPrefixMatch(Ip address, int maxPrefixLength) {
+    return _tree.getLongestPrefixMatch(address, maxPrefixLength);
   }
 
   /**
@@ -201,18 +230,6 @@ public abstract class AbstractRib<R extends AbstractRoute> implements GenericRib
       _allRoutes = null;
     }
     return d;
-  }
-
-  @Override
-  public final Map<Prefix, Set<Ip>> nextHopIpsByPrefix() {
-    Map<Prefix, Set<Ip>> map = new TreeMap<>();
-    for (AbstractRoute route : getRoutes()) {
-      Prefix prefix = route.getNetwork();
-      Ip nextHopIp = route.getNextHopIp();
-      Set<Ip> nextHopIps = map.computeIfAbsent(prefix, k -> new TreeSet<>());
-      nextHopIps.add(nextHopIp);
-    }
-    return map;
   }
 
   /**

@@ -38,6 +38,9 @@ import org.batfish.datamodel.OspfExternalType1Route;
 import org.batfish.datamodel.OspfExternalType2Route;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.IncrementalBdpAnswerElement;
+import org.batfish.datamodel.eigrp.EigrpEdge;
+import org.batfish.datamodel.eigrp.EigrpInterface;
+import org.batfish.datamodel.eigrp.EigrpTopology;
 import org.batfish.datamodel.isis.IsisEdge;
 import org.batfish.datamodel.isis.IsisNode;
 import org.batfish.datamodel.isis.IsisTopology;
@@ -88,6 +91,9 @@ class IncrementalBdpEngine {
     dpBuilder.setNodes(nodes);
     dpBuilder.setTopology(topology);
 
+    Network<EigrpInterface, EigrpEdge> eigrpTopology =
+        EigrpTopology.initEigrpTopology(configurations, topology);
+
     /*
      * Run the data plane computation here:
      * - First, let the IGP routes converge
@@ -96,7 +102,7 @@ class IncrementalBdpEngine {
      * - Finally, compute FIBs, return answer
      */
     IncrementalBdpAnswerElement answerElement = new IncrementalBdpAnswerElement();
-    computeIgpDataPlane(nodes, topology, answerElement);
+    computeIgpDataPlane(nodes, topology, eigrpTopology, answerElement, networkConfigurations);
     computeFibs(nodes);
 
     IncrementalDataPlane dp = dpBuilder.build();
@@ -117,6 +123,7 @@ class IncrementalBdpEngine {
             answerElement,
             true,
             bgpTopology,
+            eigrpTopology,
             isisTopology,
             networkConfigurations);
     if (isOscillating) {
@@ -150,6 +157,7 @@ class IncrementalBdpEngine {
           answerElement,
           false,
           bgpTopology,
+          eigrpTopology,
           isisTopology,
           networkConfigurations);
     }
@@ -220,6 +228,45 @@ class IncrementalBdpEngine {
               }
               recomputeAggregateCompleted.incrementAndGet();
             });
+
+    // EIGRP external routes
+    // recompute exports
+    nodes
+        .values()
+        .parallelStream()
+        .forEach(
+            n -> {
+              for (VirtualRouter vr : n.getVirtualRouters().values()) {
+                vr.initEigrpExports(allNodes);
+              }
+            });
+
+    // Re-propagate EIGRP exports
+    AtomicBoolean eigrpExternalChanged = new AtomicBoolean(true);
+    int eigrpExternalSubIterations = 0;
+    while (eigrpExternalChanged.get()) {
+      eigrpExternalSubIterations++;
+      AtomicInteger propagateEigrpExternalCompleted =
+          _newBatch.apply(
+              "Iteration "
+                  + iteration
+                  + ": Propagate EIGRP external routes: subIteration: "
+                  + eigrpExternalSubIterations,
+              nodes.size());
+      eigrpExternalChanged.set(false);
+      nodes
+          .values()
+          .parallelStream()
+          .forEach(
+              n -> {
+                for (VirtualRouter vr : n.getVirtualRouters().values()) {
+                  if (vr.propagateEigrpExternalRoutes(allNodes, networkConfigurations)) {
+                    eigrpExternalChanged.set(true);
+                  }
+                }
+                propagateEigrpExternalCompleted.incrementAndGet();
+              });
+    }
 
     // Re-initialize IS-IS exports.
     nodes
@@ -375,13 +422,20 @@ class IncrementalBdpEngine {
    *
    * @param nodes A dictionary of configuration-wrapping Bdp nodes keyed by name
    * @param topology The topology representing Layer 3 adjacencies between interface of the nodes
+   * @param eigrpTopology The topology representing EIGRP adjacencies
    * @param ae The output answer element in which to store a report of the computation. Also
    *     contains the current recovery iteration.
+   * @param networkConfigurations All configurations in the network
    */
   private void computeIgpDataPlane(
-      SortedMap<String, Node> nodes, Topology topology, IncrementalBdpAnswerElement ae) {
+      SortedMap<String, Node> nodes,
+      Topology topology,
+      Network<EigrpInterface, EigrpEdge> eigrpTopology,
+      IncrementalBdpAnswerElement ae,
+      NetworkConfigurations networkConfigurations) {
 
     int numOspfInternalIterations;
+    int numEigrpInternalIterations;
 
     /*
      * For each virtual router, setup the initial easy-to-do routes, init protocol-based RIBs,
@@ -389,7 +443,8 @@ class IncrementalBdpEngine {
      */
     AtomicInteger initialCompleted =
         _newBatch.apply(
-            "Compute initial connected and static routes, ospf setup, bgp setup", nodes.size());
+            "Compute initial connected and static routes, eigrp setup, ospf setup, bgp setup",
+            nodes.size());
     nodes
         .values()
         .parallelStream()
@@ -400,6 +455,10 @@ class IncrementalBdpEngine {
               }
               initialCompleted.incrementAndGet();
             });
+
+    // EIGRP internal routes
+    numEigrpInternalIterations =
+        initEigrpInternalRoutes(nodes, eigrpTopology, networkConfigurations);
 
     // OSPF internal routes
     numOspfInternalIterations = initOspfInternalRoutes(nodes, topology);
@@ -424,6 +483,7 @@ class IncrementalBdpEngine {
 
     // Set iteration stats in the answer
     ae.setOspfInternalIterations(numOspfInternalIterations);
+    ae.setEigrpInternalIterations(numEigrpInternalIterations);
   }
 
   /**
@@ -435,6 +495,7 @@ class IncrementalBdpEngine {
    * @param externalAdverts the set of external BGP advertisements
    * @param ae The output answer element in which to store a report of the computation. Also
    *     contains the current recovery iteration.
+   * @param eigrpTopology The topology representing EIGRP adjacencies
    * @return true iff the computation is oscillating
    */
   private boolean computeNonMonotonicPortionOfDataPlane(
@@ -445,6 +506,7 @@ class IncrementalBdpEngine {
       IncrementalBdpAnswerElement ae,
       boolean firstPass,
       ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology,
+      Network<EigrpInterface, EigrpEdge> eigrpTopology,
       Network<IsisNode, IsisEdge> isisTopology,
       NetworkConfigurations networkConfigurations) {
 
@@ -460,7 +522,8 @@ class IncrementalBdpEngine {
           .forEach(
               n -> {
                 for (VirtualRouter vr : n.getVirtualRouters().values()) {
-                  vr.initForEgpComputation(nodes, topology, bgpTopology, isisTopology);
+                  vr.initForEgpComputation(
+                      nodes, topology, bgpTopology, eigrpTopology, isisTopology);
                 }
                 setupCompleted.incrementAndGet();
               });
@@ -652,7 +715,8 @@ class IncrementalBdpEngine {
   }
 
   /**
-   * Return the main RIB routes for each node. Map structure: Hostname -> VRF name -> Set of routes
+   * Return the main RIB routes for each node. Map structure: Hostname -&gt; VRF name -&gt; Set of
+   * routes
    */
   static SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes(
       IncrementalDataPlane dp) {
@@ -666,6 +730,69 @@ class IncrementalBdpEngine {
                 Entry::getKey,
                 vrfEntry ->
                     ImmutableSortedSet.copyOf(vrfEntry.getValue().getMainRib().getRoutes())));
+  }
+
+  /**
+   * Run the IGP EIGRP computation until convergence.
+   *
+   * @param nodes list of nodes for which to initialize the EIGRP routes
+   * @param eigrpTopology The topology representing EIGRP adjacencies
+   * @param networkConfigurations All configurations in the network
+   * @return the number of iterations it took for internal EIGRP routes to converge
+   */
+  private int initEigrpInternalRoutes(
+      Map<String, Node> nodes,
+      Network<EigrpInterface, EigrpEdge> eigrpTopology,
+      NetworkConfigurations networkConfigurations) {
+    AtomicBoolean eigrpInternalChanged = new AtomicBoolean(true);
+    int eigrpInternalIterations = 0;
+    while (eigrpInternalChanged.get()) {
+      eigrpInternalIterations++;
+      eigrpInternalChanged.set(false);
+
+      AtomicInteger eigrpInternalCompleted =
+          _newBatch.apply(
+              "Compute EIGRP Internal routes: iteration " + eigrpInternalIterations, nodes.size());
+      nodes
+          .values()
+          .parallelStream()
+          .forEach(
+              n -> {
+                for (VirtualRouter vr : n.getVirtualRouters().values()) {
+                  if (vr.propagateEigrpInternalRoutes(
+                      nodes, eigrpTopology, networkConfigurations)) {
+                    eigrpInternalChanged.set(true);
+                  }
+                }
+                eigrpInternalCompleted.incrementAndGet();
+              });
+      AtomicInteger eigrpInternalUnstageCompleted =
+          _newBatch.apply(
+              "Unstage EIGRP Internal routes: iteration " + eigrpInternalIterations, nodes.size());
+      nodes
+          .values()
+          .parallelStream()
+          .forEach(
+              n -> {
+                for (VirtualRouter vr : n.getVirtualRouters().values()) {
+                  vr.unstageEigrpInternalRoutes();
+                }
+                eigrpInternalUnstageCompleted.incrementAndGet();
+              });
+    }
+    AtomicInteger eigrpInternalImportCompleted =
+        _newBatch.apply("Import EIGRP Internal routes", nodes.size());
+    nodes
+        .values()
+        .parallelStream()
+        .forEach(
+            n -> {
+              for (VirtualRouter vr : n.getVirtualRouters().values()) {
+                vr.importEigrpInternalRoutes();
+              }
+              eigrpInternalImportCompleted.incrementAndGet();
+            });
+    return eigrpInternalIterations;
   }
 
   /**

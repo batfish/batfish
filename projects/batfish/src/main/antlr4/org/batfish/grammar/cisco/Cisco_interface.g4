@@ -25,6 +25,11 @@ if_bandwidth
    NO? BANDWIDTH DEC KBPS? NEWLINE
 ;
 
+if_bfd_template
+:
+  BFD TEMPLATE name = variable_permissive NEWLINE
+;
+
 if_channel_group
 :
    CHANNEL_GROUP num = DEC
@@ -57,6 +62,11 @@ if_default_gw
 if_description
 :
    description_line
+;
+
+if_delay
+:
+   NO? DELAY DEC NEWLINE
 ;
 
 if_flow_sampler
@@ -362,9 +372,29 @@ if_ip_virtual_router
    IP VIRTUAL_ROUTER ADDRESS address = IP_ADDRESS NEWLINE
 ;
 
+if_ip_vrf_autoclassify
+:
+   IP VRF AUTOCLASSIFY SOURCE NEWLINE
+;
+
 if_ip_vrf_forwarding
 :
-   IP? VRF FORWARDING name = variable NEWLINE
+   IP? VRF FORWARDING vrf = variable (DOWNSTREAM vrf_down = variable)? NEWLINE
+;
+
+if_ip_vrf_receive
+:
+   IP VRF RECEIVE vrf = variable NEWLINE
+;
+
+if_ip_vrf_select
+:
+   IP VRF SELECT SOURCE NEWLINE
+;
+
+if_ip_vrf_sitemap
+:
+   IP VRF SITEMAP map = variable NEWLINE
 ;
 
 if_isis_circuit_type
@@ -447,7 +477,6 @@ if_null_block
       | BANDWIDTH INHERIT
       | BANDWIDTH PERCENT_LITERAL
       | BEACON
-      | BFD
       | BGP_POLICY
       | BRIDGE_GROUP
       | BUNDLE
@@ -734,7 +763,6 @@ if_null_block
       | SRR_QUEUE
       | SSID
       | STACK_MIB
-      | STANDBY
       | STATION_ROLE
       | STBC
       | STORM_CONTROL
@@ -820,6 +848,7 @@ if_null_single
   NO?
   (
     BCMC_OPTIMIZATION
+    | (BFD INTERVAL)
     | DOT1X
     | IP TRAFFIC_EXPORT
     | JUMBO
@@ -1030,6 +1059,73 @@ if_shutdown
       DISABLE
       | SHUTDOWN
    ) FORCE? LAN? NEWLINE
+;
+
+if_standby
+:
+  NO? STANDBY
+  (
+    standby_group
+    | standby_version
+  ) NEWLINE
+;
+
+standby_group
+:
+  group = DEC
+  (
+    standby_group_authentication
+    | standby_group_ip
+    | standby_group_preempt
+    | standby_group_priority
+    | standby_group_timers
+    | standby_group_track
+  )
+;
+
+standby_group_authentication
+:
+  AUTHENTICATION auth = DEC
+;
+
+standby_group_ip
+:
+  IP ip = IP_ADDRESS
+;
+
+standby_group_preempt
+:
+  PREEMPT
+;
+
+standby_group_priority
+:
+  PRIORITY priority = DEC
+;
+
+standby_group_timers
+:
+  TIMERS MSEC hello_time = DEC hold_time = DEC
+;
+
+standby_group_track
+:
+  TRACK group = DEC track_action
+;
+
+track_action
+:
+  track_action_decrement
+;
+
+track_action_decrement
+:
+  DECREMENT subtrahend = DEC
+;
+
+standby_version
+:
+  VERSION version = variable_permissive
 ;
 
 if_switchport
@@ -1331,9 +1427,11 @@ if_inner
 :
    if_autostate
    | if_bandwidth
+   | if_bfd_template
    | if_channel_group
    | if_crypto_map
    | if_default_gw
+   | if_delay
    | if_description
    | if_flow_sampler
    | if_hsrp
@@ -1368,7 +1466,11 @@ if_inner
    | if_ip_sticky_arp
    | if_ip_summary_address
    | if_ip_virtual_router
+   | if_ip_vrf_autoclassify
    | if_ip_vrf_forwarding
+   | if_ip_vrf_receive
+   | if_ip_vrf_select
+   | if_ip_vrf_sitemap
    | if_isis_circuit_type
    | if_isis_enable
    | if_isis_hello_interval
@@ -1390,6 +1492,7 @@ if_inner
    | if_speed_eos
    | if_speed_ios
    | if_speed_ios_dot11radio
+   | if_standby
    | if_switchport
    | if_switchport_access
    | if_switchport_mode

@@ -3,6 +3,7 @@ package org.batfish.datamodel;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import java.util.Objects;
 import org.batfish.common.util.ComparableStructure;
 
 /** Represents the IKE proposal used for IKE phase 1 negotiation */
@@ -89,5 +90,12 @@ public class IkePhase1Proposal extends ComparableStructure<String> {
   @JsonProperty(PROP_LIFETIME_SECONDS)
   public void setLifetimeSeconds(Integer lifetimeSeconds) {
     _lifetimeSeconds = lifetimeSeconds;
+  }
+
+  public boolean isCompatibleWith(IkePhase1Proposal ikePhase1Proposal) {
+    return Objects.equals(_authenticationMethod, ikePhase1Proposal._authenticationMethod)
+        && Objects.equals(_diffieHellmanGroup, ikePhase1Proposal._diffieHellmanGroup)
+        && Objects.equals(_encryptionAlgorithm, ikePhase1Proposal._encryptionAlgorithm)
+        && Objects.equals(_hashingAlgorithm, ikePhase1Proposal._hashingAlgorithm);
   }
 }

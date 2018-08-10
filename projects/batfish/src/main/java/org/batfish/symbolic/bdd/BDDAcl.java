@@ -1,6 +1,7 @@
 package org.batfish.symbolic.bdd;
 
 import com.google.common.base.Suppliers;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,6 +27,8 @@ public class BDDAcl {
 
   private BDD _bdd;
 
+  private BDDSourceManager _bddSrcManager;
+
   private BDDFactory _factory;
 
   private Map<String, IpSpace> _ipSpaceEnv;
@@ -33,31 +36,53 @@ public class BDDAcl {
   private BDDPacket _pkt;
 
   private BDDAcl(
-      IpAccessList acl, Map<String, Supplier<BDD>> aclEnv, Map<String, IpSpace> ipSpaceEnv) {
+      BDDPacket pkt,
+      IpAccessList acl,
+      Map<String, Supplier<BDD>> aclEnv,
+      Map<String, IpSpace> ipSpaceEnv,
+      BDDSourceManager bddSrcManager) {
     _bdd = null;
     _acl = acl;
     _aclEnv = ImmutableMap.copyOf(aclEnv);
-    _factory = BDDPacket.factory;
+    _bddSrcManager = bddSrcManager;
+    _pkt = pkt;
+    _factory = _pkt.getFactory();
     _ipSpaceEnv = ImmutableMap.copyOf(ipSpaceEnv);
-    _pkt = new BDDPacket();
   }
 
   private BDDAcl(BDDAcl other) {
     _bdd = other._bdd;
     _acl = other._acl;
     _aclEnv = other._aclEnv;
+    _bddSrcManager = other._bddSrcManager;
     _factory = other._factory;
+    _ipSpaceEnv = ImmutableMap.copyOf(_ipSpaceEnv);
     _pkt = other._pkt;
   }
 
-  public static BDDAcl create(IpAccessList acl) {
-    BDDAcl abdd = new BDDAcl(acl, ImmutableMap.of(), ImmutableMap.of());
-    abdd.computeACL();
-    return abdd;
+  public static BDDAcl create(BDDPacket pkt, IpAccessList acl) {
+    return create(
+        pkt,
+        acl,
+        ImmutableMap.of(),
+        ImmutableMap.of(),
+        new BDDSourceManager(pkt, ImmutableList.of()));
   }
 
   public static BDDAcl create(
-      IpAccessList acl, Map<String, IpAccessList> aclEnv, Map<String, IpSpace> ipSpaceEnv) {
+      BDDPacket pkt,
+      IpAccessList acl,
+      Map<String, IpAccessList> aclEnv,
+      Map<String, IpSpace> ipSpaceEnv) {
+    return create(pkt, acl, aclEnv, ipSpaceEnv, new BDDSourceManager(pkt, ImmutableList.of()));
+  }
+
+  public static BDDAcl create(
+      BDDPacket pkt,
+      IpAccessList acl,
+      Map<String, IpAccessList> aclEnv,
+      Map<String, IpSpace> ipSpaceEnv,
+      BDDSourceManager bddSrcManager) {
     // use laziness to tie the recursive knot.
     Map<String, Supplier<BDD>> bddAclEnv = new HashMap<>();
     aclEnv.forEach(
@@ -66,16 +91,22 @@ public class BDDAcl {
                 name,
                 Suppliers.memoize(
                     new NonRecursiveSupplier<>(
-                        () -> createWithBDDAclEnv(namedAcl, bddAclEnv, ipSpaceEnv)._bdd))));
+                        () ->
+                            createWithBDDAclEnv(pkt, namedAcl, bddAclEnv, ipSpaceEnv, bddSrcManager)
+                                ._bdd))));
 
-    BDDAcl abdd = new BDDAcl(acl, bddAclEnv, ipSpaceEnv);
+    BDDAcl abdd = new BDDAcl(pkt, acl, bddAclEnv, ipSpaceEnv, bddSrcManager);
     abdd.computeACL();
     return abdd;
   }
 
   private static BDDAcl createWithBDDAclEnv(
-      IpAccessList acl, Map<String, Supplier<BDD>> aclEnv, Map<String, IpSpace> ipSpaceEnv) {
-    BDDAcl abdd = new BDDAcl(acl, aclEnv, ipSpaceEnv);
+      BDDPacket pkt,
+      IpAccessList acl,
+      Map<String, Supplier<BDD>> aclEnv,
+      Map<String, IpSpace> ipSpaceEnv,
+      BDDSourceManager bddSrcManager) {
+    BDDAcl abdd = new BDDAcl(pkt, acl, aclEnv, ipSpaceEnv, bddSrcManager);
     abdd.computeACL();
     return abdd;
   }
@@ -94,7 +125,7 @@ public class BDDAcl {
     _bdd = _factory.zero();
 
     AclLineMatchExprToBDD aclLineMatchExprToBDD =
-        new AclLineMatchExprToBDD(_factory, _pkt, _aclEnv, _ipSpaceEnv);
+        new AclLineMatchExprToBDD(_factory, _pkt, _aclEnv, _ipSpaceEnv, _bddSrcManager);
 
     List<IpAccessListLine> lines = new ArrayList<>(_acl.getLines());
     Collections.reverse(lines);

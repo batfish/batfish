@@ -246,13 +246,13 @@ public class BfCoordWorkHelper {
               .delete();
 
       if (response.getStatus() != Status.NO_CONTENT.getStatusCode()) {
-        _logger.errorf("delContainer: Did not get OK response. Got: %s\n", response.getStatus());
+        _logger.errorf("delNetwork: Did not get OK response. Got: %s\n", response.getStatus());
         _logger.error(response.readEntity(String.class) + "\n");
         return false;
       }
       return true;
     } catch (Exception e) {
-      _logger.errorf("Exception in delContainer from %s for %s\n", _coordWorkMgrV2, containerName);
+      _logger.errorf("Exception in delNetwork from %s for %s\n", _coordWorkMgrV2, containerName);
       _logger.error(Throwables.getStackTraceAsString(e) + "\n");
       return false;
     }
@@ -314,7 +314,7 @@ public class BfCoordWorkHelper {
       JSONObject jObj = postData(webTarget, multiPart);
       return jObj != null;
     } catch (Exception e) {
-      _logger.errorf("exception: ");
+      _logger.errorf("Exception in delSnapshot for network %s:\n", containerName);
       _logger.error(Throwables.getStackTraceAsString(e) + "\n");
       return false;
     }
@@ -505,7 +505,7 @@ public class BfCoordWorkHelper {
       return response.readEntity(String.class);
     } catch (Exception e) {
       _logger.errorf(
-          "Exception in getConfiguration from %s for container %s, testrig %s, configuration %s\n",
+          "Exception in getConfiguration from %s for network %s, snapshot %s, configuration %s\n",
           _coordWorkMgr, containerName, testrigName, configName);
       _logger.error(Throwables.getStackTraceAsString(e) + "\n");
       return null;
@@ -513,15 +513,15 @@ public class BfCoordWorkHelper {
   }
 
   /**
-   * Returns a {@link Container Container} that contains information of '{@code containerName}',
-   * returns null if container '{@code containerName}' does not exist or the api key that is using
-   * has no access to the container
+   * Returns a {@link Container Container} that contains information of '{@code networkName}',
+   * returns null if network '{@code networkName}' does not exist or the api key that is using has
+   * no access to the network
    */
   @Nullable
-  Container getContainer(String containerName) {
+  Container getNetwork(String networkName) {
     try {
       WebTarget webTarget =
-          getTargetV2(Lists.newArrayList(CoordConstsV2.RSC_CONTAINERS, containerName));
+          getTargetV2(Lists.newArrayList(CoordConstsV2.RSC_CONTAINERS, networkName));
 
       Response response =
           webTarget
@@ -533,7 +533,7 @@ public class BfCoordWorkHelper {
       _logger.debug(response.getStatus() + " " + response.getStatusInfo() + " " + response + "\n");
 
       if (response.getStatus() != Response.Status.OK.getStatusCode()) {
-        _logger.errorf("GetContainer: Did not get OK response. Got: %s\n", response.getStatus());
+        _logger.errorf("getNetwork: Did not get OK response. Got: %s\n", response.getStatus());
         _logger.error(response.readEntity(String.class) + "\n");
         return null;
       }
@@ -541,7 +541,7 @@ public class BfCoordWorkHelper {
       String containerStr = response.readEntity(String.class);
       return BatfishObjectMapper.mapper().readValue(containerStr, Container.class);
     } catch (Exception e) {
-      _logger.errorf("Exception in getContainer from %s for %s\n", _coordWorkMgrV2, containerName);
+      _logger.errorf("Exception in getNetwork from %s for %s\n", _coordWorkMgrV2, networkName);
       _logger.error(Throwables.getStackTraceAsString(e) + "\n");
       return null;
     }
@@ -1039,7 +1039,7 @@ public class BfCoordWorkHelper {
 
       return jObj.getJSONArray(CoordConsts.SVC_KEY_TESTRIG_LIST);
     } catch (Exception e) {
-      _logger.errorf("exception: ");
+      _logger.errorf("Exception in listSnapshots for network %s:\n", containerName);
       _logger.error(Throwables.getStackTraceAsString(e) + "\n");
       return null;
     }
@@ -1129,7 +1129,7 @@ public class BfCoordWorkHelper {
       JSONObject jObj = postData(webTarget, multiPart);
       return jObj != null;
     } catch (Exception e) {
-      _logger.errorf("exception: ");
+      _logger.errorf("Exception syncing snapshots in network %s:\n", containerName);
       _logger.error(Throwables.getStackTraceAsString(e) + "\n");
       return false;
     }
@@ -1154,7 +1154,7 @@ public class BfCoordWorkHelper {
       JSONObject jObj = postData(webTarget, multiPart);
       return jObj != null;
     } catch (Exception e) {
-      _logger.errorf("exception: ");
+      _logger.errorf("Exception syncing snapshots in network %s:\n", containerName);
       _logger.error(Throwables.getStackTraceAsString(e) + "\n");
       return false;
     }
@@ -1263,7 +1263,7 @@ public class BfCoordWorkHelper {
         _logger.errorf("File not found: %s\n", zipfileName);
       } else {
         _logger.errorf(
-            "Exception when uploading test rig to %s using (%s, %s, %s): %s\n",
+            "Exception when uploading snapshot to %s using (%s, %s, %s): %s\n",
             _coordWorkMgr,
             containerName,
             testrigName,

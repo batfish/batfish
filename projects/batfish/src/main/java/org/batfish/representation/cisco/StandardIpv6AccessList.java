@@ -1,17 +1,19 @@
 package org.batfish.representation.cisco;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import org.batfish.common.util.ComparableStructure;
 
-public class StandardIpv6AccessList extends ComparableStructure<String> {
+public class StandardIpv6AccessList implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
   private List<StandardIpv6AccessListLine> _lines;
 
+  private final String _name;
+
   public StandardIpv6AccessList(String id) {
-    super(id);
+    _name = id;
     _lines = new ArrayList<>();
   }
 
@@ -24,7 +26,7 @@ public class StandardIpv6AccessList extends ComparableStructure<String> {
   }
 
   public ExtendedIpv6AccessList toExtendedIpv6AccessList() {
-    ExtendedIpv6AccessList eal = new ExtendedIpv6AccessList(_key);
+    ExtendedIpv6AccessList eal = new ExtendedIpv6AccessList(_name);
     eal.setParent(this);
     eal.getLines().clear();
     for (StandardIpv6AccessListLine sall : _lines) {

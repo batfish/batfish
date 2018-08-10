@@ -269,6 +269,11 @@ ADD
    'add'
 ;
 
+ADD_PATHS
+:
+   'add-paths'
+;
+
 ADD_VLAN
 :
    'add-vlan'
@@ -447,6 +452,11 @@ AESA
 AF_GROUP
 :
    'af-group'
+;
+
+AF_INTERFACE
+:
+   'af-interface' -> pushMode ( M_Interface )
 ;
 
 AF11
@@ -1216,9 +1226,19 @@ AUTO_UPGRADE
    'auto-upgrade'
 ;
 
+AUTOCLASSIFY
+:
+   'autoclassify'
+;
+
 AUTOHANGUP
 :
    'autohangup'
+;
+
+AUTONOMOUS_SYSTEM
+:
+   'autonomous-system'
 ;
 
 AUTORECOVERY
@@ -1296,6 +1316,11 @@ BANDWIDTH_CONTRACT
    'bandwidth-contract'
 ;
 
+BANDWIDTH_PERCENT
+:
+   'bandwidth-percent'
+;
+
 BANDWIDTH_PERCENTAGE
 :
    'bandwidth-percentage'
@@ -1304,6 +1329,11 @@ BANDWIDTH_PERCENTAGE
 BANNER
 :
    'banner' -> pushMode ( M_Banner )
+;
+
+BASE
+:
+   'base'
 ;
 
 BASH
@@ -1409,6 +1439,11 @@ BFD
 BFD_ENABLE
 :
    'bfd-enable'
+;
+
+BFD_TEMPLATE
+:
+   'bfd-template'
 ;
 
 BGP
@@ -2582,6 +2617,16 @@ DAMPENING
    'dampening'
 ;
 
+DAMPENING_CHANGE
+:
+   'dampening-change'
+;
+
+DAMPENING_INTERVAL
+:
+   'dampening-interval'
+;
+
 DATA_PRIVACY
 :
    'data-privacy'
@@ -2660,6 +2705,11 @@ DEBUGGING
 DECAP_GROUP
 :
    'decap-group'
+;
+
+DECREMENT
+:
+  'decrement'
 ;
 
 DEFAULT
@@ -2750,6 +2800,11 @@ DEFAULT_ROLE
 DEFAULT_ROUTER
 :
    'default-router'
+;
+
+DEFAULT_ROUTE_TAG
+:
+   'default-route-tag'
 ;
 
 DEFAULT_TASKGROUP
@@ -4093,6 +4148,11 @@ EVENT_HISTORY
    'event-history'
 ;
 
+EVENT_LOG_SIZE
+:
+   'event-log-size'
+;
+
 EVENT_THRESHOLDS_PROFILE
 :
    'event-thresholds-profile'
@@ -4173,6 +4233,16 @@ EXIT_ADDRESS_FAMILY
    'exit-address-family'
 ;
 
+EXIT_AF_INTERFACE
+:
+   'exit-af-interface'
+;
+
+EXIT_AF_TOPOLOGY
+:
+   'exit-af-topology'
+;
+
 EXIT_PEER_POLICY
 :
    'exit-peer-policy'
@@ -4181,6 +4251,21 @@ EXIT_PEER_POLICY
 EXIT_PEER_SESSION
 :
    'exit-peer-session'
+;
+
+EXIT_SERVICE_FAMILY
+:
+   'exit-service-family'
+;
+
+EXIT_SF_INTERFACE
+:
+   'exit-sf-interface'
+;
+
+EXIT_SF_TOPOLOGY
+:
+   'exit-sf-topology'
 ;
 
 EXIT_VRF
@@ -5110,6 +5195,11 @@ HIGH_RESOLUTION
 HISTORY
 :
    'history'
+;
+
+HOLD_TIME
+:
+   'hold-time'
 ;
 
 HOLD_QUEUE
@@ -6194,6 +6284,11 @@ LINE
    'line'
 ;
 
+LINE_PROTOCOL
+:
+   'line-protocol'
+;
+
 LINE_TERMINATION
 :
    'line-termination'
@@ -6412,6 +6507,11 @@ LOG_INTERNAL_SYNC
 LOG_NEIGHBOR_CHANGES
 :
    'log-neighbor-changes'
+;
+
+LOG_NEIGHBOR_WARNINGS
+:
+   'log-neighbor-warnings'
 ;
 
 LOGFILE
@@ -7364,6 +7464,11 @@ MSCHAPV2
    'mschapv2'
 ;
 
+MSEC
+:
+  'msec'
+;
+
 MSIE_PROXY
 :
    'msie-proxy'
@@ -8012,6 +8117,11 @@ OFDM
 OFDM_THROUGHPUT
 :
   'ofdm-throughput'
+;
+
+OFFSET_LIST
+:
+   'offset-list'
 ;
 
 ON
@@ -8937,6 +9047,13 @@ PREFIX_LENGTH
 PREFIX_LIST
 :
    'prefix-list'
+   {
+     if (lastTokenType == ADDRESS) {
+       pushMode(M_Words);
+     } else {
+       pushMode(M_Name);
+     }
+   }
 ;
 
 PREFIX_PEER_TIMEOUT
@@ -9602,6 +9719,11 @@ REMOTE_AS
 REMOTE_IP
 :
    'remote-ip'
+;
+
+REMOTE_NEIGHBORS
+:
+   'remote-neighbors'
 ;
 
 REMOTE_PORT
@@ -10439,6 +10561,11 @@ SERVICE_CLASS
    'service-class'
 ;
 
+SERVICE_FAMILY
+:
+   'service-family'
+;
+
 SERVICE_LIST
 :
    'service-list'
@@ -10547,6 +10674,11 @@ SETUP
 SEVERITY
 :
    'severity'
+;
+
+SF_INTERFACE
+:
+   'sf-interface' -> pushMode ( M_Interface )
 ;
 
 SFLOW
@@ -10694,6 +10826,11 @@ SINGLE_CONNECTION
    'single-connection'
 ;
 
+SINGLE_HOP
+:
+   'single-hop'
+;
+
 SINGLE_ROUTER_MODE
 :
    'single-router-mode'
@@ -10759,6 +10896,11 @@ SITE_ID
    'site-id'
 ;
 
+SITEMAP
+:
+   'sitemap'
+;
+
 SIZE
 :
    'size'
@@ -10812,6 +10954,16 @@ SNMP_AUTHFAIL
 SNMP
 :
    'snmp'
+;
+
+// must be kept above SNMP_SERVER
+SNMP_SERVER_COMMUNITY
+:
+   'snmp-server'
+   {(lastTokenType == NEWLINE || lastTokenType == -1)
+     && isWhitespace(_input.LA(1))
+     && lookAheadStringSkipWhitespace("community ".length()).equals("community ")}?
+   -> type ( SNMP_SERVER ) , pushMode ( M_SnmpServerCommunity )
 ;
 
 SNMP_SERVER
@@ -11326,6 +11478,11 @@ SUMMARY_LSA
    'summary-lsa'
 ;
 
+SUMMARY_METRIC
+:
+   'summary-metric'
+;
+
 SUMMARY_ONLY
 :
    'summary-only'
@@ -11771,6 +11928,11 @@ THU
    'Thu'
 ;
 
+TID
+:
+   'tid'
+;
+
 TIME
 :
    'time'
@@ -11871,6 +12033,11 @@ TOP
    'top'
 ;
 
+TOPOLOGY
+:
+   'topology'
+;
+
 TOS
 :
    'tos'
@@ -11924,6 +12091,11 @@ TRAFFIC_EXPORT
 TRAFFIC_INDEX
 :
    'traffic-index'
+;
+
+TRAFFIC_SHARE
+:
+   'traffic-share'
 ;
 
 TRANSFER_SYSTEM
@@ -12509,6 +12681,11 @@ VALIDATION_USAGE
 VAP_ENABLE
 :
    'vap-enable'
+;
+
+VARIANCE
+:
+   'variance'
 ;
 
 VDC
@@ -13924,6 +14101,11 @@ M_Authentication_CONTROL_DIRECTION
    'control-direction' -> type ( CONTROL_DIRECTION ) , popMode
 ;
 
+M_Authentication_DEC
+:
+  F_Digit+ -> type ( DEC ) , popMode
+;
+
 M_Authentication_DOT1X
 :
    'dot1x' -> type ( DOT1X ) , popMode
@@ -14539,6 +14721,11 @@ M_Interface_NO
    'no' -> type ( NO ) , popMode
 ;
 
+M_Interface_LINE_PROTOCOL
+:
+   'line-protocol' -> type ( LINE_PROTOCOL ) , popMode
+;
+
 M_Interface_MULTIPOINT
 :
    'multipoint' -> type ( MULTIPOINT ) , popMode
@@ -14992,6 +15179,28 @@ M_SHA1_WS
    F_Whitespace+ -> channel ( HIDDEN )
 ;
 
+mode M_SnmpServerCommunity;
+
+M_SnmpServerCommunity_COMMUNITY
+:
+  'community' -> type ( COMMUNITY )
+;
+
+M_SnmpServerCommunity_WS
+:
+   F_Whitespace+ -> channel ( HIDDEN )
+;
+
+M_SnmpServerCommunity_DOUBLE_QUOTE
+:
+   '"' -> type ( DOUBLE_QUOTE ), mode ( M_DoubleQuote )
+;
+
+M_SnmpServerCommunity_CHAR
+:
+   F_NonWhitespace -> mode ( M_Name ), more
+;
+
 mode M_SshKey;
 
 M_SshKey_DSA1024
@@ -15028,3 +15237,21 @@ M_VacantMessage_NEWLINE
 :
    F_Newline+ -> type ( NEWLINE ) , popMode
 ;
+
+mode M_Words;
+
+M_Words_WORD
+:
+   F_NonWhitespace+ -> type ( VARIABLE )
+;
+
+M_Words_NEWLINE
+:
+   F_Newline+ -> type ( NEWLINE ) , popMode
+;
+
+M_Words_WS
+:
+   F_Whitespace+ -> channel ( HIDDEN )
+;
+

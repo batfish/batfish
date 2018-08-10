@@ -4,7 +4,7 @@
     "flowHistory" : {
       "class" : "org.batfish.datamodel.FlowHistory",
       "traces" : {
-        "Flow<ingressNode:R0 ingressVrf:default srcIp:0.0.0.0 dstIp:70.70.70.70 ipProtocol:HOPOPT dscp: 0 ecn:0 fragmentOffset:0 packetLength:0 state:NEW tag:SMT>" : {
+        "Flow<ingressNode:r0 ingressVrf:default srcIp:0.0.0.0 dstIp:70.70.70.70 ipProtocol:HOPOPT dscp: 0 ecn:0 fragmentOffset:0 packetLength:0 state:NEW tag:SMT>" : {
           "environments" : {
             "BASE" : {
               "envName" : "BASE",
@@ -13,9 +13,9 @@
             "DELTA" : {
               "edgeBlacklist" : [
                 {
-                  "node1" : "R0",
+                  "node1" : "r0",
                   "node1interface" : "Serial0",
-                  "node2" : "R1",
+                  "node2" : "r1",
                   "node2interface" : "Serial0"
                 }
               ],
@@ -31,7 +31,7 @@
             "fragmentOffset" : 0,
             "icmpCode" : 0,
             "icmpVar" : 0,
-            "ingressNode" : "R0",
+            "ingressNode" : "r0",
             "ingressVrf" : "default",
             "ipProtocol" : "HOPOPT",
             "packetLength" : 0,
@@ -55,9 +55,9 @@
                 "hops" : [
                   {
                     "edge" : {
-                      "node1" : "R0",
+                      "node1" : "r0",
                       "node1interface" : "Serial0",
-                      "node2" : "R1",
+                      "node2" : "r1",
                       "node2interface" : "Serial0"
                     },
                     "routes" : [
@@ -66,9 +66,9 @@
                   },
                   {
                     "edge" : {
-                      "node1" : "R1",
+                      "node1" : "r1",
                       "node1interface" : "Serial1",
-                      "node2" : "R3",
+                      "node2" : "r3",
                       "node2interface" : "Serial0"
                     },
                     "routes" : [
@@ -85,9 +85,9 @@
                 "hops" : [
                   {
                     "edge" : {
-                      "node1" : "R0",
+                      "node1" : "r0",
                       "node1interface" : "Serial1",
-                      "node2" : "R2",
+                      "node2" : "r2",
                       "node2interface" : "Serial0"
                     },
                     "routes" : [
@@ -96,9 +96,9 @@
                   },
                   {
                     "edge" : {
-                      "node1" : "R2",
+                      "node1" : "r2",
                       "node1interface" : "Serial1",
-                      "node2" : "R3",
+                      "node2" : "r3",
                       "node2interface" : "Serial1"
                     },
                     "routes" : [
@@ -115,11 +115,11 @@
     },
     "result" : {
       "failuresModel" : [
-        "link(R0,R1)"
+        "link(r0,r1)"
       ],
       "forwardingModel" : [
-        "R0,Serial1 --> R2,Serial0 (OSPF)",
-        "R1,Serial1 --> R3,Serial0 (OSPF)"
+        "r0,Serial1 --> r2,Serial0 (OSPF)",
+        "r1,Serial1 --> r3,Serial0 (OSPF)"
       ],
       "packetModel" : {
         "dstIp" : "70.70.70.70"

@@ -14,8 +14,10 @@ import java.util.NavigableSet;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import javax.annotation.Nullable;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
+import org.batfish.datamodel.eigrp.EigrpProcess;
 import org.batfish.datamodel.isis.IsisProcess;
 import org.batfish.datamodel.ospf.OspfProcess;
 
@@ -63,6 +65,8 @@ public class Vrf extends ComparableStructure<String> {
 
   private static final String PROP_ISIS_PROCESS = "isisProcess";
 
+  private static final String PROP_EIGRP_PROCESSES = "eigrpProcesses";
+
   private static final String PROP_OSPF_PROCESS = "ospfProcess";
 
   private static final String PROP_RIP_PROCESS = "ripProcess";
@@ -82,6 +86,8 @@ public class Vrf extends ComparableStructure<String> {
 
   private NavigableSet<GeneratedRoute> _generatedRoutes;
 
+  private Map<Long, EigrpProcess> _eigrpProcesses;
+
   private transient SortedSet<String> _interfaceNames;
 
   private NavigableMap<String, Interface> _interfaces;
@@ -94,7 +100,7 @@ public class Vrf extends ComparableStructure<String> {
 
   private transient NavigableSet<BgpAdvertisement> _originatedIbgpAdvertisements;
 
-  private OspfProcess _ospfProcess;
+  @Nullable private OspfProcess _ospfProcess;
 
   private transient NavigableSet<BgpAdvertisement> _receivedAdvertisements;
 
@@ -119,6 +125,7 @@ public class Vrf extends ComparableStructure<String> {
   @JsonCreator
   public Vrf(@JsonProperty(PROP_NAME) String name) {
     super(name);
+    _eigrpProcesses = new TreeMap<>();
     _generatedRoutes = new TreeSet<>();
     _generatedIpv6Routes = new TreeSet<>();
     _interfaces = new TreeMap<>();
@@ -151,6 +158,12 @@ public class Vrf extends ComparableStructure<String> {
   @JsonPropertyDescription("Generated IPV4 routes for this VRF")
   public NavigableSet<GeneratedRoute> getGeneratedRoutes() {
     return _generatedRoutes;
+  }
+
+  /** @return EIGRP routing processes for this VRF */
+  @JsonProperty(PROP_EIGRP_PROCESSES)
+  public Map<Long, EigrpProcess> getEigrpProcesses() {
+    return _eigrpProcesses;
   }
 
   @JsonProperty(PROP_INTERFACES)
@@ -287,6 +300,11 @@ public class Vrf extends ComparableStructure<String> {
   @JsonProperty(PROP_GENERATED_ROUTES)
   public void setGeneratedRoutes(NavigableSet<GeneratedRoute> generatedRoutes) {
     _generatedRoutes = generatedRoutes;
+  }
+
+  @JsonProperty(PROP_EIGRP_PROCESSES)
+  public void setEigrpProcesses(Map<Long, EigrpProcess> eigrpProcesses) {
+    _eigrpProcesses = eigrpProcesses;
   }
 
   @JsonProperty(PROP_INTERFACES)

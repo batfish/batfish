@@ -1,9 +1,9 @@
 package org.batfish.representation.vyos;
 
-import org.batfish.common.util.ComparableStructure;
+import java.io.Serializable;
 import org.batfish.datamodel.Ip;
 
-public class BgpNeighbor extends ComparableStructure<Ip> {
+public class BgpNeighbor implements Serializable {
 
   /** */
   private static final long serialVersionUID = 1L;
@@ -16,8 +16,10 @@ public class BgpNeighbor extends ComparableStructure<Ip> {
 
   private int _remoteAs;
 
+  private final Ip _remoteIp;
+
   public BgpNeighbor(Ip neighborIp) {
-    super(neighborIp);
+    _remoteIp = neighborIp;
   }
 
   public String getExportRouteMap() {
@@ -37,7 +39,7 @@ public class BgpNeighbor extends ComparableStructure<Ip> {
   }
 
   public Ip getRemoteIp() {
-    return _key;
+    return _remoteIp;
   }
 
   public void setExportRouteMap(String exportRouteMap) {

@@ -10,6 +10,7 @@ import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Map;
@@ -24,16 +25,16 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
-import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.tracking.TrackMethod;
 import org.batfish.datamodel.vendor_family.VendorFamily;
 
 @JsonSchemaDescription(
     "A Configuration represents an autonomous network device, such as a router, host, switch, or "
         + "firewall.")
-public final class Configuration extends ComparableStructure<String> {
+public final class Configuration implements Serializable {
 
   public static class Builder extends NetworkFactoryBuilder<Configuration> {
 
@@ -145,6 +146,8 @@ public final class Configuration extends ComparableStructure<String> {
 
   private static final String PROP_LOGGING_SOURCE_INTERFACE = "loggingSourceInterface";
 
+  private static final String PROP_NAME = "name";
+
   private static final String PROP_NTP_SOURCE_INTERFACE = "ntpSourceInterface";
 
   private static final String PROP_ROUTE_FILTER_LISTS = "routeFilterLists";
@@ -158,6 +161,8 @@ public final class Configuration extends ComparableStructure<String> {
   private static final String PROP_TACACS_SERVERS = "tacacsServers";
 
   private static final String PROP_TACACS_SOURCE_INTERFACE = "tacacsSourceInterface";
+
+  private static final String PROP_TRACKING_GROUPS = "trackingGroups";
 
   private static final String PROP_ZONES = "zones";
 
@@ -227,7 +232,9 @@ public final class Configuration extends ComparableStructure<String> {
 
   private String _loggingSourceInterface;
 
-  /** Normal => Excluding extended and reserved vlans that should not be modified or deleted. */
+  private final String _name;
+
+  /** Normal =&gt; Excluding extended and reserved vlans that should not be modified or deleted. */
   private SubRange _normalVlanRange;
 
   private NavigableSet<String> _ntpServers;
@@ -250,8 +257,6 @@ public final class Configuration extends ComparableStructure<String> {
 
   private NavigableMap<String, RouteFilterList> _routeFilterLists;
 
-  private transient NavigableSet<Route> _routes;
-
   private NavigableMap<String, RoutingPolicy> _routingPolicies;
 
   private transient NavigableSet<BgpAdvertisement> _sentAdvertisements;
@@ -268,6 +273,8 @@ public final class Configuration extends ComparableStructure<String> {
 
   private String _tacacsSourceInterface;
 
+  private NavigableMap<String, TrackMethod> _trackingGroups;
+
   private VendorFamily _vendorFamily;
 
   private Map<String, Vrf> _vrfs;
@@ -275,16 +282,20 @@ public final class Configuration extends ComparableStructure<String> {
   private NavigableMap<String, Zone> _zones;
 
   @JsonCreator
-  public Configuration(
+  private static Configuration makeConfiguration(
       @JsonProperty(PROP_NAME) String hostname,
-      @Nonnull @JsonProperty(PROP_CONFIGURATION_FORMAT) ConfigurationFormat configurationFormat) {
-    super(hostname);
-    _asPathAccessLists = new TreeMap<>();
-    _authenticationKeyChains = new TreeMap<>();
-    _communityLists = new TreeMap<>();
+      @Nullable @JsonProperty(PROP_CONFIGURATION_FORMAT) ConfigurationFormat configurationFormat) {
     if (configurationFormat == null) {
       throw new BatfishException("Configuration format cannot be null");
     }
+    return new Configuration(hostname, configurationFormat);
+  }
+
+  public Configuration(String hostname, @Nonnull ConfigurationFormat configurationFormat) {
+    _name = hostname;
+    _asPathAccessLists = new TreeMap<>();
+    _authenticationKeyChains = new TreeMap<>();
+    _communityLists = new TreeMap<>();
     _configurationFormat = configurationFormat;
     _dnsServers = new TreeSet<>();
     _domainName = null;
@@ -313,6 +324,7 @@ public final class Configuration extends ComparableStructure<String> {
     _routingPolicies = new TreeMap<>();
     _snmpTrapServers = new TreeSet<>();
     _tacacsServers = new TreeSet<>();
+    _trackingGroups = new TreeMap<>();
     _vendorFamily = new VendorFamily();
     _vrfs = new TreeMap<>();
     _zones = new TreeMap<>();
@@ -442,7 +454,7 @@ public final class Configuration extends ComparableStructure<String> {
   @JsonProperty(PROP_NAME)
   @JsonPropertyDescription("Hostname of this node.")
   public String getHostname() {
-    return _key;
+    return _name;
   }
 
   @JsonProperty(PROP_IKE_GATEWAYS)
@@ -607,18 +619,13 @@ public final class Configuration extends ComparableStructure<String> {
     return _routeFilterLists;
   }
 
-  @JsonIgnore
-  public NavigableSet<Route> getRoutes() {
-    return _routes;
-  }
-
   @JsonProperty(PROP_ROUTING_POLICIES)
   @JsonPropertyDescription("Dictionary of all routing policies for this node.")
   public NavigableMap<String, RoutingPolicy> getRoutingPolicies() {
     return _routingPolicies;
   }
 
-  private SortedSet<String> getRoutingPolicySources(String routingPolicyName) {
+  private SortedSet<String> getRoutingPolicySources(@Nullable String routingPolicyName) {
     if (routingPolicyName == null) {
       return Collections.emptySortedSet();
     }
@@ -665,6 +672,12 @@ public final class Configuration extends ComparableStructure<String> {
   @JsonProperty(PROP_TACACS_SOURCE_INTERFACE)
   public String getTacacsSourceInterface() {
     return _tacacsSourceInterface;
+  }
+
+  /** Mapping: trackingGroupID -> trackMethod */
+  @JsonProperty(PROP_TRACKING_GROUPS)
+  public @Nonnull NavigableMap<String, TrackMethod> getTrackingGroups() {
+    return _trackingGroups;
   }
 
   @JsonPropertyDescription("Object containing vendor-specific information for this node.")
@@ -890,6 +903,11 @@ public final class Configuration extends ComparableStructure<String> {
     _tacacsSourceInterface = tacacsSourceInterface;
   }
 
+  @JsonProperty(PROP_TRACKING_GROUPS)
+  public void setTrackingGroups(@Nonnull NavigableMap<String, TrackMethod> trackingGroups) {
+    _trackingGroups = trackingGroups;
+  }
+
   public void setVendorFamily(VendorFamily vendorFamily) {
     _vendorFamily = vendorFamily;
   }
@@ -911,5 +929,10 @@ public final class Configuration extends ComparableStructure<String> {
                 .stream()
                 .collect(Collectors.toMap(Entry::getKey, e -> e.getValue().simplify())));
     _routingPolicies = simpleRoutingPolicies;
+  }
+
+  @Override
+  public String toString() {
+    return _name;
   }
 }

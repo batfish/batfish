@@ -11,11 +11,13 @@ import static org.batfish.dataplane.rib.AbstractRib.importRib;
 import static org.batfish.dataplane.rib.RibDelta.importRibDelta;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.graph.Network;
 import com.google.common.graph.ValueGraph;
+import java.io.Serializable;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Collections;
@@ -40,7 +42,7 @@ import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
-import org.batfish.common.util.ComparableStructure;
+import org.batfish.common.WellKnownCommunity;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpActivePeerConfig;
@@ -81,6 +83,8 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.eigrp.EigrpEdge;
+import org.batfish.datamodel.eigrp.EigrpInterface;
 import org.batfish.datamodel.isis.IsisEdge;
 import org.batfish.datamodel.isis.IsisInterfaceLevelSettings;
 import org.batfish.datamodel.isis.IsisInterfaceMode;
@@ -121,7 +125,7 @@ import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 import org.batfish.dataplane.rib.StaticRib;
 import org.batfish.dataplane.topology.BgpEdgeId;
 
-public class VirtualRouter extends ComparableStructure<String> {
+public class VirtualRouter implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
@@ -199,6 +203,8 @@ public class VirtualRouter extends ComparableStructure<String> {
   /** Keeps track of changes to the main RIB */
   private transient RibDelta.Builder<AbstractRoute> _mainRibRouteDeltaBuiler;
 
+  private final String _name;
+
   transient OspfExternalType1Rib _ospfExternalType1Rib;
 
   transient OspfExternalType1Rib _ospfExternalType1StagingRib;
@@ -221,26 +227,8 @@ public class VirtualRouter extends ComparableStructure<String> {
 
   transient OspfRib _ospfRib;
 
-  /**
-   * Set of all valid BGP routes we have received during the DP computation. Used to fill gaps in
-   * BGP RIBs when routes are withdrawn.
-   */
-  private Map<Prefix, SortedSet<BgpRoute>> _receivedBgpRoutes;
-
   /** Set of all received BGP advertisements in {@link BgpAdvertisement} form */
   private Set<BgpAdvertisement> _receivedBgpAdvertisements;
-
-  /** Set of all valid IS-IS level-1 routes that we know about */
-  private Map<Prefix, SortedSet<IsisRoute>> _receivedIsisL1Routes;
-
-  /** Set of all valid IS-IS level-2 routes that we know about */
-  private Map<Prefix, SortedSet<IsisRoute>> _receivedIsisL2Routes;
-
-  /** Set of all valid OSPF external Type 1 routes that we know about */
-  private Map<Prefix, SortedSet<OspfExternalType1Route>> _receivedOspExternalType1Routes;
-
-  /** Set of all valid OSPF external Type 2 routes that we know about */
-  private Map<Prefix, SortedSet<OspfExternalType2Route>> _receivedOspExternalType2Routes;
 
   transient RipInternalRib _ripInternalRib;
 
@@ -269,24 +257,23 @@ public class VirtualRouter extends ComparableStructure<String> {
   /** Metadata about propagated prefixes to/from neighbors */
   private transient PrefixTracer _prefixTracer;
 
+  /** List of all EIGRP processes in this VRF */
+  @VisibleForTesting transient ImmutableMap<Long, VirtualEigrpProcess> _virtualEigrpProcesses;
+
   /** A {@link Vrf} that this virtual router represents */
   final Vrf _vrf;
 
   VirtualRouter(final String name, final Configuration c) {
-    super(name);
     _c = c;
+    _name = name;
     _vrf = c.getVrfs().get(name);
     initRibs();
     // Keep track of sent and received advertisements
     _receivedBgpAdvertisements = new LinkedHashSet<>();
     _sentBgpAdvertisements = new LinkedHashSet<>();
-    _receivedIsisL1Routes = new TreeMap<>();
-    _receivedIsisL2Routes = new TreeMap<>();
-    _receivedOspExternalType1Routes = new TreeMap<>();
-    _receivedOspExternalType2Routes = new TreeMap<>();
-    _receivedBgpRoutes = new TreeMap<>();
     _bgpIncomingRoutes = new TreeMap<BgpEdgeId, Queue<RouteAdvertisement<BgpRoute>>>();
     _prefixTracer = new PrefixTracer();
+    _virtualEigrpProcesses = ImmutableMap.of();
   }
 
   /**
@@ -296,7 +283,6 @@ public class VirtualRouter extends ComparableStructure<String> {
    * @param queue the message queue
    * @param delta {@link RibDelta} representing changes.
    */
-  @VisibleForTesting
   static <R extends AbstractRoute, D extends R> void queueDelta(
       Queue<RouteAdvertisement<R>> queue, @Nullable RibDelta<D> delta) {
     if (delta == null) {
@@ -387,7 +373,18 @@ public class VirtualRouter extends ComparableStructure<String> {
     importRib(_independentRib, _staticInterfaceRib);
     importRib(_mainRib, _independentRib);
     initIntraAreaOspfRoutes();
+    initEigrp();
     initBaseRipRoutes();
+  }
+
+  /** Initialize EIGRP processes */
+  private void initEigrp() {
+    _virtualEigrpProcesses =
+        _vrf.getEigrpProcesses()
+            .values()
+            .stream()
+            .map(eigrpProcess -> new VirtualEigrpProcess(eigrpProcess, _name, _c))
+            .collect(ImmutableMap.toImmutableMap(VirtualEigrpProcess::getAsn, Function.identity()));
   }
 
   /**
@@ -395,13 +392,15 @@ public class VirtualRouter extends ComparableStructure<String> {
    *
    * @param allNodes map of all network nodes, keyed by hostname
    * @param bgpTopology the bgp peering relationships
+   * @param eigrpTopology The topology representing EIGRP adjacencies
    */
   void initForEgpComputation(
       final Map<String, Node> allNodes,
       Topology topology,
       ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology,
+      Network<EigrpInterface, EigrpEdge> eigrpTopology,
       Network<IsisNode, IsisEdge> isisTopology) {
-    initQueuesAndDeltaBuilders(allNodes, topology, bgpTopology, isisTopology);
+    initQueuesAndDeltaBuilders(allNodes, topology, bgpTopology, eigrpTopology, isisTopology);
   }
 
   /**
@@ -410,16 +409,21 @@ public class VirtualRouter extends ComparableStructure<String> {
    * @param allNodes map of all network nodes, keyed by hostname
    * @param topology Layer 3 network topology
    * @param bgpTopology the bgp peering relationships
+   * @param eigrpTopology The topology representing EIGRP adjacencies
    */
   @VisibleForTesting
   void initQueuesAndDeltaBuilders(
       final Map<String, Node> allNodes,
       final Topology topology,
       ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology,
+      Network<EigrpInterface, EigrpEdge> eigrpTopology,
       Network<IsisNode, IsisEdge> isisTopology) {
 
     // Initialize message queues for each BGP neighbor
     initBgpQueues(bgpTopology);
+
+    // Initialize message queues for each EIGRP neighbor
+    initEigrpQueues(eigrpTopology);
 
     initIsisQueues(isisTopology);
 
@@ -477,6 +481,15 @@ public class VirtualRouter extends ComparableStructure<String> {
               .collect(
                   toImmutableSortedMap(Function.identity(), e -> new ConcurrentLinkedQueue<>()));
     }
+  }
+
+  /**
+   * Initialize incoming EIGRP message queues for each adjacency
+   *
+   * @param eigrpTopology The topology representing EIGRP adjacencies
+   */
+  private void initEigrpQueues(Network<EigrpInterface, EigrpEdge> eigrpTopology) {
+    _virtualEigrpProcesses.values().forEach(proc -> proc.initQueues(eigrpTopology));
   }
 
   private void initIsisQueues(Network<IsisNode, IsisEdge> isisTopology) {
@@ -636,6 +649,7 @@ public class VirtualRouter extends ComparableStructure<String> {
         // Non-null metric means we generate a new summary and put it in the RIB
         OspfInterAreaRoute summaryRoute =
             new OspfInterAreaRoute(prefix, Ip.ZERO, admin, metric, areaNum);
+        summaryRoute.setNonRouting(true);
         if (_ospfInterAreaStagingRib.mergeRouteGetDelta(summaryRoute) != null) {
           changed = true;
         }
@@ -861,7 +875,7 @@ public class VirtualRouter extends ComparableStructure<String> {
                     transformedOutgoingRoute,
                     transformedIncomingRouteBuilder,
                     advert.getSrcIp(),
-                    _key,
+                    _name,
                     Direction.IN);
           }
         }
@@ -1048,7 +1062,7 @@ public class VirtualRouter extends ComparableStructure<String> {
     OspfExternalRoute.Builder outputRouteBuilder = new OspfExternalRoute.Builder();
     // Export based on the policy result of processing the potentialExportRoute
     boolean accept =
-        exportPolicy.process(potentialExportRoute, outputRouteBuilder, null, _key, Direction.OUT);
+        exportPolicy.process(potentialExportRoute, outputRouteBuilder, null, _name, Direction.OUT);
     if (!accept) {
       return null;
     }
@@ -1076,6 +1090,17 @@ public class VirtualRouter extends ComparableStructure<String> {
     OspfExternalRoute outputRoute = outputRouteBuilder.build();
     outputRoute.setNonRouting(true);
     return outputRoute;
+  }
+
+  /**
+   * Initial computation of all exportable EIGRP routes for all EIGRP processes on this router
+   *
+   * @param allNodes map of all nodes, keyed by hostname
+   */
+  void initEigrpExports(Map<String, Node> allNodes) {
+    _virtualEigrpProcesses
+        .values()
+        .forEach(proc -> proc.initExports(allNodes, _mainRib.getRoutes()));
   }
 
   void initIsisExports(Map<String, Node> allNodes, NetworkConfigurations nc) {
@@ -1180,6 +1205,11 @@ public class VirtualRouter extends ComparableStructure<String> {
         .collect(ImmutableSet.toImmutableSet());
   }
 
+  @Nullable
+  VirtualEigrpProcess getEigrpProcess(long asn) {
+    return _virtualEigrpProcesses.get(asn);
+  }
+
   void initOspfExports() {
     OspfProcess proc = _vrf.getOspfProcess();
     // Nothing to do
@@ -1233,21 +1263,19 @@ public class VirtualRouter extends ComparableStructure<String> {
     _ibgpStagingRib = new BgpMultipathRib(mpTieBreaker);
     _independentRib = new Rib();
     _isisRib = new IsisRib(isL1Only());
-    _isisL1Rib = new IsisLevelRib(_receivedIsisL1Routes);
-    _isisL2Rib = new IsisLevelRib(_receivedIsisL2Routes);
+    _isisL1Rib = new IsisLevelRib(new TreeMap<>());
+    _isisL2Rib = new IsisLevelRib(new TreeMap<>());
     _isisL1StagingRib = new IsisLevelRib(null);
     _isisL2StagingRib = new IsisLevelRib(null);
     _mainRib = new Rib();
-    _ospfExternalType1Rib =
-        new OspfExternalType1Rib(getHostname(), _receivedOspExternalType1Routes);
-    _ospfExternalType2Rib =
-        new OspfExternalType2Rib(getHostname(), _receivedOspExternalType2Routes);
+    _ospfExternalType1Rib = new OspfExternalType1Rib(getHostname(), new TreeMap<>());
+    _ospfExternalType2Rib = new OspfExternalType2Rib(getHostname(), new TreeMap<>());
     _ospfExternalType1StagingRib = new OspfExternalType1Rib(getHostname(), null);
     _ospfExternalType2StagingRib = new OspfExternalType2Rib(getHostname(), null);
     _ospfInterAreaRib = new OspfInterAreaRib();
     _ospfInterAreaStagingRib = new OspfInterAreaRib();
-    _ospfIntraAreaRib = new OspfIntraAreaRib(this);
-    _ospfIntraAreaStagingRib = new OspfIntraAreaRib(this);
+    _ospfIntraAreaRib = new OspfIntraAreaRib();
+    _ospfIntraAreaStagingRib = new OspfIntraAreaRib();
     _ospfRib = new OspfRib();
     _ripInternalRib = new RipInternalRib();
     _ripInternalStagingRib = new RipInternalRib();
@@ -1264,7 +1292,7 @@ public class VirtualRouter extends ComparableStructure<String> {
             : _vrf.getBgpProcess().getTieBreaker();
     _ebgpBestPathRib = new BgpBestPathRib(tieBreaker, null, _mainRib);
     _ibgpBestPathRib = new BgpBestPathRib(tieBreaker, null, _mainRib);
-    _bgpBestPathRib = new BgpBestPathRib(tieBreaker, _receivedBgpRoutes, _mainRib);
+    _bgpBestPathRib = new BgpBestPathRib(tieBreaker, new TreeMap<>(), _mainRib);
 
     _mainRibRouteDeltaBuiler = new RibDelta.Builder<>(_mainRib);
     _bgpBestPathDeltaBuilder = new RibDelta.Builder<>(_bgpBestPathRib);
@@ -1416,6 +1444,12 @@ public class VirtualRouter extends ComparableStructure<String> {
          */
         if (routeIsBgp) {
           BgpRoute bgpRoute = (BgpRoute) route;
+
+          if (bgpRoute.getCommunities().contains(WellKnownCommunity.NO_ADVERTISE)) {
+            // don't advertise this route
+            continue;
+          }
+
           transformedOutgoingRouteBuilder.setOriginType(bgpRoute.getOriginType());
           if (ebgpSession
               && bgpRoute.getAsPath().containsAs(neighbor.getRemoteAs())
@@ -1650,7 +1684,7 @@ public class VirtualRouter extends ComparableStructure<String> {
                     transformedIncomingRouteBuilder,
                     remoteBgpConfig.getLocalIp(),
                     ourConfigId.getRemotePeerPrefix(),
-                    _key,
+                    _name,
                     Direction.IN);
           }
         }
@@ -1670,10 +1704,7 @@ public class VirtualRouter extends ComparableStructure<String> {
         if (remoteRouteAdvert.isWithdrawn()) {
           // Note this route was removed
           ribDeltas.get(targetRib).remove(transformedIncomingRoute, Reason.WITHDRAW);
-          SortedSet<BgpRoute> b = _receivedBgpRoutes.get(transformedIncomingRoute.getNetwork());
-          if (b != null) {
-            b.remove(transformedIncomingRoute);
-          }
+          _bgpBestPathRib.removeBackupRoute(transformedIncomingRoute);
         } else {
           // Merge into staging rib, note delta
           ribDeltas.get(targetRib).from(targetRib.mergeRouteGetDelta(transformedIncomingRoute));
@@ -1685,9 +1716,7 @@ public class VirtualRouter extends ComparableStructure<String> {
                 remoteBgpConfig,
                 sessionProperties,
                 transformedIncomingRoute);
-            _receivedBgpRoutes
-                .computeIfAbsent(transformedIncomingRoute.getNetwork(), k -> new TreeSet<>())
-                .add(transformedIncomingRoute);
+            _bgpBestPathRib.addBackupRoute(transformedIncomingRoute);
             _prefixTracer.installed(
                 transformedIncomingRoute.getNetwork(),
                 remoteConfigId.getHostname(),
@@ -1748,15 +1777,10 @@ public class VirtualRouter extends ComparableStructure<String> {
                       .build();
               if (withdraw) {
                 l1DeltaBuilder.remove(newL1Route, Reason.WITHDRAW);
-                SortedSet<IsisRoute> backups = _receivedIsisL1Routes.get(newL1Route.getNetwork());
-                if (backups != null) {
-                  backups.remove(newL1Route);
-                }
+                _isisL1Rib.removeBackupRoute(newL1Route);
               } else {
                 l1DeltaBuilder.from(_isisL1StagingRib.mergeRouteGetDelta(newL1Route));
-                _receivedIsisL1Routes
-                    .computeIfAbsent(newL1Route.getNetwork(), k -> new TreeSet<>())
-                    .add(newL1Route);
+                _isisL1Rib.removeBackupRoute(newL1Route);
               }
             } else { // neighborRoute is level2
               long incrementalMetric =
@@ -1770,15 +1794,10 @@ public class VirtualRouter extends ComparableStructure<String> {
                       .build();
               if (withdraw) {
                 l2DeltaBuilder.remove(newL2Route, Reason.WITHDRAW);
-                SortedSet<IsisRoute> backups = _receivedIsisL2Routes.get(newL2Route.getNetwork());
-                if (backups != null) {
-                  backups.remove(newL2Route);
-                }
+                _isisL2Rib.removeBackupRoute(newL2Route);
               } else {
                 l2DeltaBuilder.from(_isisL2StagingRib.mergeRouteGetDelta(newL2Route));
-                _receivedIsisL2Routes
-                    .computeIfAbsent(newL2Route.getNetwork(), k -> new TreeSet<>())
-                    .add(newL2Route);
+                _isisL2Rib.addBackupRoute(newL2Route);
               }
             }
           }
@@ -1896,16 +1915,10 @@ public class VirtualRouter extends ComparableStructure<String> {
                     neighborRoute.getAdvertiser());
             if (withdraw) {
               builderType1.remove(newRoute, Reason.WITHDRAW);
-              SortedSet<OspfExternalType1Route> backups =
-                  _receivedOspExternalType1Routes.get(newRoute.getNetwork());
-              if (backups != null) {
-                backups.remove(newRoute);
-              }
+              _ospfExternalType1Rib.removeBackupRoute(newRoute);
             } else {
               builderType1.from(_ospfExternalType1StagingRib.mergeRouteGetDelta(newRoute));
-              _receivedOspExternalType1Routes
-                  .computeIfAbsent(newRoute.getNetwork(), k -> new TreeSet<>())
-                  .add(newRoute);
+              _ospfExternalType1Rib.addBackupRoute(newRoute);
             }
 
           } else if (neighborRoute instanceof OspfExternalType2Route) {
@@ -1936,16 +1949,10 @@ public class VirtualRouter extends ComparableStructure<String> {
                     neighborRoute.getAdvertiser());
             if (withdraw) {
               builderType2.remove(newRoute, Reason.WITHDRAW);
-              SortedSet<OspfExternalType2Route> backups =
-                  _receivedOspExternalType2Routes.get(newRoute.getNetwork());
-              if (backups != null) {
-                backups.remove(newRoute);
-              }
+              _ospfExternalType2Rib.addBackupRoute(newRoute);
             } else {
               builderType2.from(_ospfExternalType2StagingRib.mergeRouteGetDelta(newRoute));
-              _receivedOspExternalType2Routes
-                  .computeIfAbsent(newRoute.getNetwork(), k -> new TreeSet<>())
-                  .add(newRoute);
+              _ospfExternalType2Rib.addBackupRoute(newRoute);
             }
           }
         }
@@ -2079,7 +2086,7 @@ public class VirtualRouter extends ComparableStructure<String> {
     }
     changed |=
         originateOspfStubAreaDefaultRoute(
-            neighborProc, incrementalCost, neighborInterface, adminCost, linkAreaNum);
+            neighborProc, incrementalCost, neighborInterface, adminCost, area);
     return changed;
   }
 
@@ -2090,7 +2097,7 @@ public class VirtualRouter extends ComparableStructure<String> {
    * @param incrementalCost The cost to reach the propagator
    * @param neighborInterface The propagator's interface on the link
    * @param adminCost The administrative cost of the route to be installed
-   * @param linkAreaNum The area ID of the link
+   * @param area The area of the link
    * @return whether this route changed the RIB into which we merged it
    */
   private boolean originateOspfStubAreaDefaultRoute(
@@ -2098,16 +2105,19 @@ public class VirtualRouter extends ComparableStructure<String> {
       long incrementalCost,
       Interface neighborInterface,
       int adminCost,
-      long linkAreaNum) {
-    return OspfProtocolHelper.isOspfInterAreaDefaultOriginationAllowed(
-            _vrf.getOspfProcess(), neighborProc, neighborInterface.getOspfArea())
-        && _ospfInterAreaStagingRib.mergeRoute(
-            new OspfInterAreaRoute(
-                Prefix.ZERO,
-                neighborInterface.getAddress().getIp(),
-                adminCost,
-                incrementalCost,
-                linkAreaNum));
+      OspfArea area) {
+    if (!OspfProtocolHelper.isOspfInterAreaDefaultOriginationAllowed(
+        _vrf.getOspfProcess(), neighborProc, area, neighborInterface.getOspfArea())) {
+      return false;
+    }
+    long metric = incrementalCost + area.getMetricOfDefaultRoute();
+    return _ospfInterAreaStagingRib.mergeRoute(
+        new OspfInterAreaRoute(
+            Prefix.ZERO,
+            neighborInterface.getAddress().getIp(),
+            adminCost,
+            metric,
+            area.getName()));
   }
 
   boolean propagateOspfInterAreaRouteFromInterAreaRoute(
@@ -2148,6 +2158,45 @@ public class VirtualRouter extends ComparableStructure<String> {
             neighborRoute.getNetwork(), nextHopIp, adminCost, newCost, linkAreaNum);
     return neighborRoute.getArea() == linkAreaNum
         && (_ospfIntraAreaStagingRib.mergeRoute(newRoute));
+  }
+
+  /**
+   * Propagate EIGRP external routes from our neighbors by reading EIGRP route "advertisements" from
+   * our queues.
+   *
+   * @param allNodes mapping of node names to instances.
+   * @param nc All network configurations
+   * @return true if external routes changed
+   */
+  boolean propagateEigrpExternalRoutes(Map<String, Node> allNodes, NetworkConfigurations nc) {
+    return _virtualEigrpProcesses
+        .values()
+        .stream()
+        .map(
+            proc ->
+                proc.unstageExternalRoutes(
+                    allNodes, proc.propagateExternalRoutes(nc), _mainRibRouteDeltaBuiler, _mainRib))
+        .reduce(false, (a, b) -> a || b);
+  }
+
+  /**
+   * Propagate EIGRP internal routes from every valid EIGRP neighbors
+   *
+   * @param nodes mapping of node names to instances.
+   * @param topology network topology
+   * @param nc All network configurations
+   * @return true if new routes have been added to the staging RIB
+   */
+  boolean propagateEigrpInternalRoutes(
+      Map<String, Node> nodes,
+      Network<EigrpInterface, EigrpEdge> topology,
+      NetworkConfigurations nc) {
+
+    return _virtualEigrpProcesses
+        .values()
+        .stream()
+        .map(proc -> proc.propagateInternalRoutes(nodes, topology, nc))
+        .reduce(false, (a, b) -> a || b);
   }
 
   /**
@@ -2523,6 +2572,11 @@ public class VirtualRouter extends ComparableStructure<String> {
         networkConfigurations);
   }
 
+  /** Merges staged EIGRP internal routes into the "real" EIGRP-internal RIBs */
+  void unstageEigrpInternalRoutes() {
+    _virtualEigrpProcesses.values().forEach(VirtualEigrpProcess::unstageInternalRoutes);
+  }
+
   /**
    * Move IS-IS routes from L1/L2 staging RIBs into their respective "proper" RIBs. Following that,
    * move any resulting deltas into the combined IS-IS RIB, and finally, main RIB.
@@ -2617,6 +2671,20 @@ public class VirtualRouter extends ComparableStructure<String> {
      * Re-add independent RIP routes to ripRib for tie-breaking
      */
     importRib(_ripRib, _ripInternalRib);
+
+    /*
+     * Re-init/re-add routes for all EIGRP processes
+     */
+    _virtualEigrpProcesses.values().forEach(VirtualEigrpProcess::reInitForNewIteration);
+  }
+
+  /**
+   * Merge internal EIGRP RIBs into a general EIGRP RIB, then merge that into the independent RIB
+   */
+  void importEigrpInternalRoutes() {
+    _virtualEigrpProcesses
+        .values()
+        .forEach(process -> process.importInternalRoutes(_independentRib));
   }
 
   /**
@@ -2998,6 +3066,11 @@ public class VirtualRouter extends ComparableStructure<String> {
             .stream()
             .flatMap(Queue::stream)
             .mapToInt(RouteAdvertisement::hashCode)
+            .sum()
+        + _virtualEigrpProcesses
+            .values()
+            .stream()
+            .mapToInt(VirtualEigrpProcess::computeIterationHashCode)
             .sum();
   }
 

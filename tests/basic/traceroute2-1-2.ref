@@ -46,9 +46,7 @@
           "schema" : "Set<FlowTrace>"
         }
       ],
-      "displayHints" : {
-        "textDesc" : "Paths for flow ${flow}"
-      }
+      "textDesc" : "Paths for flow ${flow}"
     },
     "rows" : [
       {

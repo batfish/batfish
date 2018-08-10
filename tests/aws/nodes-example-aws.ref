@@ -849,7 +849,7 @@
               "10.10.255.8/32"
             ],
             "autostate" : true,
-            "bandwidth" : 1.0E12,
+            "bandwidth" : 8.0E9,
             "declaredNames" : [
               "Loopback0"
             ],
@@ -1809,7 +1809,7 @@
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
-                  "allowRemoteAsOut" : false,
+                  "allowRemoteAsOut" : true,
                   "clusterId" : 168492808,
                   "defaultMetric" : 0,
                   "ebgpMultihop" : false,
@@ -1835,7 +1835,7 @@
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
-                  "allowRemoteAsOut" : false,
+                  "allowRemoteAsOut" : true,
                   "clusterId" : 168492808,
                   "defaultMetric" : 0,
                   "ebgpMultihop" : false,
@@ -1857,7 +1857,7 @@
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
-                  "allowRemoteAsOut" : false,
+                  "allowRemoteAsOut" : true,
                   "clusterId" : 168492808,
                   "defaultMetric" : 0,
                   "ebgpMultihop" : false,
@@ -1882,7 +1882,7 @@
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
-                  "allowRemoteAsOut" : false,
+                  "allowRemoteAsOut" : true,
                   "clusterId" : 168492808,
                   "defaultMetric" : 0,
                   "ebgpMultihop" : false,
@@ -1903,7 +1903,7 @@
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
-                  "allowRemoteAsOut" : false,
+                  "allowRemoteAsOut" : true,
                   "clusterId" : 168492808,
                   "defaultMetric" : 0,
                   "ebgpMultihop" : false,
@@ -1940,7 +1940,7 @@
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
-                  "allowRemoteAsOut" : false,
+                  "allowRemoteAsOut" : true,
                   "clusterId" : 168492808,
                   "defaultMetric" : 0,
                   "ebgpMultihop" : false,
@@ -1993,11 +1993,13 @@
               "areas" : {
                 "0" : {
                   "name" : 0,
+                  "injectDefaultRoute" : true,
                   "interfaces" : [
                     "Ethernet1/0",
                     "Ethernet1/1",
                     "Loopback0"
                   ],
+                  "metricOfDefaultRoute" : 0,
                   "stubType" : "NONE"
                 }
               },

@@ -3,6 +3,7 @@ package org.batfish.coordinator;
 import static com.google.common.base.Preconditions.checkState;
 import static java.nio.file.FileVisitOption.FOLLOW_LINKS;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 import com.uber.jaeger.Configuration;
@@ -22,6 +23,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -88,12 +90,17 @@ public class Main {
     }
 
     Map<String, String> questionTemplates = new HashMap<>();
-    questionTemplateDir.forEach((dir) -> readQuestionTemplates(dir, questionTemplates));
+    questionTemplateDir
+        .stream()
+        .filter(Objects::nonNull)
+        .filter(dir -> !dir.toString().isEmpty())
+        .forEach((dir) -> readQuestionTemplates(dir, questionTemplates));
 
     return questionTemplates;
   }
 
-  private static String readQuestionTemplate(Path file, Map<String, String> templates) {
+  @VisibleForTesting
+  static String readQuestionTemplate(Path file, Map<String, String> templates) {
     String questionText = CommonUtil.readFile(file);
     try {
       JSONObject questionObj = new JSONObject(questionText);
@@ -103,27 +110,30 @@ public class Main {
         Question.InstanceData instanceData =
             BatfishObjectMapper.mapper().readValue(instanceDataStr, Question.InstanceData.class);
         String name = instanceData.getInstanceName();
-
-        if (templates.containsKey(name)) {
-          throw new BatfishException("Duplicate template name " + name);
+        String key = name.toLowerCase();
+        if (templates.containsKey(key) && _logger != null) {
+          _logger.warnf(
+              "Found duplicate template having instance name %s, only the last one in the list of templatedirs will be loaded",
+              name);
         }
 
-        templates.put(name.toLowerCase(), questionText);
+        templates.put(key, questionText);
         return name;
       } else {
-        throw new BatfishException("Question in file: '" + file + "' has no instance name");
+        throw new BatfishException(String.format("Question in file:%s has no instance name", file));
       }
     } catch (JSONException | IOException e) {
       throw new BatfishException("Failed to process question", e);
     }
   }
 
-  private static void readQuestionTemplates(Path questionsPath, Map<String, String> templates) {
+  @VisibleForTesting
+  static void readQuestionTemplates(Path questionsPath, Map<String, String> templates) {
     try {
       Files.walkFileTree(
           questionsPath,
           EnumSet.of(FOLLOW_LINKS),
-          1,
+          Integer.MAX_VALUE,
           new SimpleFileVisitor<Path>() {
             @Override
             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {

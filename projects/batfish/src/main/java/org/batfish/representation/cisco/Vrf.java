@@ -1,14 +1,18 @@
 package org.batfish.representation.cisco;
 
+import java.io.Serializable;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
-import org.batfish.common.util.ComparableStructure;
+import java.util.TreeMap;
 import org.batfish.representation.cisco.nx.CiscoNxBgpVrfConfiguration;
 
-public final class Vrf extends ComparableStructure<String> {
+public final class Vrf implements Serializable {
 
   /** */
   private static final long serialVersionUID = 1L;
+
+  private final Map<Long, EigrpProcess> _eigrpProcesses;
 
   private CiscoNxBgpVrfConfiguration _bgpNxConfig;
 
@@ -18,6 +22,8 @@ public final class Vrf extends ComparableStructure<String> {
 
   private IsisProcess _isisProcess;
 
+  private final String _name;
+
   private OspfProcess _ospfProcess;
 
   private RipProcess _ripProcess;
@@ -25,7 +31,8 @@ public final class Vrf extends ComparableStructure<String> {
   private final Set<StaticRoute> _staticRoutes;
 
   public Vrf(String name) {
-    super(name);
+    _eigrpProcesses = new TreeMap<>();
+    _name = name;
     _staticRoutes = new HashSet<>();
   }
 
@@ -41,8 +48,16 @@ public final class Vrf extends ComparableStructure<String> {
     return _description;
   }
 
+  public Map<Long, EigrpProcess> getEigrpProcesses() {
+    return _eigrpProcesses;
+  }
+
   public IsisProcess getIsisProcess() {
     return _isisProcess;
+  }
+
+  public String getName() {
+    return _name;
   }
 
   public OspfProcess getOspfProcess() {

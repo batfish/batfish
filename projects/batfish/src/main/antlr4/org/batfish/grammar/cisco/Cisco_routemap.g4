@@ -426,7 +426,11 @@ route_policy_stanza
    ROUTE_POLICY name = variable
    (
       PAREN_LEFT varlist = route_policy_params_list PAREN_RIGHT
-   )? NEWLINE route_policy_tail
+   )? NEWLINE
+   (
+         stanzas += rp_stanza
+   )*
+   END_POLICY NEWLINE
 ;
 
 route_policy_params_list
@@ -437,19 +441,12 @@ route_policy_params_list
    )*
 ;
 
-route_policy_tail
-:
-   (
-      stanzas += rp_stanza
-   )* END_POLICY NEWLINE
-;
-
 rp_community_set
 :
    name = variable
-   | PAREN_LEFT elems += rp_community_set_elem
+   | PAREN_LEFT elems += community_set_elem
    (
-      COMMA elems += rp_community_set_elem
+      COMMA elems += community_set_elem
    )* PAREN_RIGHT
 ;
 

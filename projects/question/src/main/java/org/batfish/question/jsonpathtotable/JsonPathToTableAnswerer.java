@@ -31,12 +31,11 @@ import org.batfish.question.jsonpathtotable.JsonPathToTableExtraction.Method;
 
 public class JsonPathToTableAnswerer extends Answerer {
 
-  static final String PROP_DEBUG = "debug";
-
   public JsonPathToTableAnswerer(Question question, IBatfish batfish) {
     super(question, batfish);
   }
 
+  @SuppressWarnings("deprecation")
   public static TableMetadata create(JsonPathToTableQuestion question) {
     List<ColumnMetadata> columnMetadata = new LinkedList<>();
     for (Entry<String, JsonPathToTableExtraction> entry :

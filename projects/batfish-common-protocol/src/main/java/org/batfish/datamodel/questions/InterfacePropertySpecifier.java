@@ -18,7 +18,7 @@ import org.batfish.datamodel.answers.Schema;
  * <p>Currently supported example specifiers:
  *
  * <ul>
- *   <li>channel-group —> gets the interface's channel groups using a configured Java function
+ *   <li>channel-group -&gt; gets the interface's channel groups using a configured Java function
  *   <li>channel.* gets all properties that start with 'channel'
  * </ul>
  *
@@ -54,6 +54,10 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
           .put(
               "dhcp-relay-addresses",
               new PropertyDescriptor<>(Interface::getDhcpRelayAddresses, Schema.list(Schema.IP)))
+          .put(
+              "hsrp-groups",
+              new PropertyDescriptor<>(Interface::getHsrpGroups, Schema.set(Schema.STRING)))
+          .put("hsrp-version", new PropertyDescriptor<>(Interface::getHsrpVersion, Schema.STRING))
           // skip inbound-filter
           .put(
               "inbound-filter-name",
@@ -122,7 +126,7 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
 
   @JsonCreator
   public InterfacePropertySpecifier(String expression) {
-    _expression = expression.trim().toLowerCase();
+    _expression = expression;
     _pattern = Pattern.compile(_expression.trim().toLowerCase()); // canonicalize
   }
 

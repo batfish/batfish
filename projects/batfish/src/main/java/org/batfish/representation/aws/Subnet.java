@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.batfish.common.BatfishException;
-import org.batfish.common.BatfishLogger;
 import org.batfish.common.Pair;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
@@ -38,7 +37,7 @@ public class Subnet implements AwsVpcEntity, Serializable {
 
   private transient String _vpnGatewayId;
 
-  public Subnet(JSONObject jObj, BatfishLogger logger) throws JSONException {
+  public Subnet(JSONObject jObj) throws JSONException {
     _cidrBlock = Prefix.parse(jObj.getString(JSON_KEY_CIDR_BLOCK));
     _subnetId = jObj.getString(JSON_KEY_SUBNET_ID);
     _vpcId = jObj.getString(JSON_KEY_VPC_ID);

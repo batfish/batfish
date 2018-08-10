@@ -3,7 +3,6 @@ package org.batfish.representation.aws;
 import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
-import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.InterfaceAddress;
@@ -49,7 +48,7 @@ public class ElasticsearchDomain implements AwsVpcEntity, Serializable {
     return _vpcId;
   }
 
-  public ElasticsearchDomain(JSONObject jObj, BatfishLogger logger) throws JSONException {
+  public ElasticsearchDomain(JSONObject jObj) throws JSONException {
     _securityGroups = new LinkedList<>();
     _subnets = new LinkedList<>();
     _domainName = jObj.getString(JSON_KEY_DOMAIN_NAME);

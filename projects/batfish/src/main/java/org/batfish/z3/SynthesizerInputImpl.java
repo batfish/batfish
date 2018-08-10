@@ -815,7 +815,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
   }
 
   /**
-   * Mapping: hostname -> aclName -> lineNumber -> lineConditions <br>
+   * Mapping: hostname -&gt; aclName -&gt; lineNumber -&gt; lineConditions <br>
    * lineConditions is a boolean expression representing the constraints on a header necessary for
    * that line to be matched.
    */

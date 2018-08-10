@@ -43,11 +43,12 @@ public class AaaAuthenticationTest {
     String hostname1 = "asaNode";
     String hostname2 = "iosNoAuthentication";
     String hostname3 = "iosRequiresAuthentication";
+    String hostname4 = "juniperAuthenticationOrder";
 
-    Batfish batfish = getBatfishForConfigurationNames(hostname1, hostname2, hostname3);
+    Batfish batfish = getBatfishForConfigurationNames(hostname1, hostname2, hostname3, hostname4);
 
     AaaAuthenticationLoginQuestion question = new AaaAuthenticationLoginQuestion();
-    question.setNodeRegex(new NodesSpecifier("ios.*", true));
+    question.setNodeRegex(new NodesSpecifier("((ios)|(juniper)).*", true));
     AaaAuthenticationLoginAnswerer answerer = new AaaAuthenticationLoginAnswerer(question, batfish);
     TableAnswerElement answer = answerer.answer();
 
@@ -59,7 +60,7 @@ public class AaaAuthenticationTest {
         hasRows(
             contains(
                 allOf(
-                    hasColumn(COLUMN_NODE, equalTo(new Node(hostname2)), Schema.NODE),
+                    hasColumn(COLUMN_NODE, equalTo(new Node(hostname2.toLowerCase())), Schema.NODE),
                     hasColumn(
                         COLUMN_LINE_NAMES,
                         equalTo(Collections.singletonList("aux0")),
@@ -67,10 +68,18 @@ public class AaaAuthenticationTest {
 
     assertThat(
         answer,
-        hasRows(not(contains(hasColumn(COLUMN_NODE, equalTo(new Node(hostname1)), Schema.NODE)))));
+        hasRows(
+            not(
+                contains(
+                    hasColumn(
+                        COLUMN_NODE, equalTo(new Node(hostname1.toLowerCase())), Schema.NODE)))));
 
     assertThat(
         answer,
-        hasRows(not(contains(hasColumn(COLUMN_NODE, equalTo(new Node(hostname3)), Schema.NODE)))));
+        hasRows(
+            not(
+                contains(
+                    hasColumn(
+                        COLUMN_NODE, equalTo(new Node(hostname3.toLowerCase())), Schema.NODE)))));
   }
 }

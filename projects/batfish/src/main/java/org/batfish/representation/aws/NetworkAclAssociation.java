@@ -1,7 +1,6 @@
 package org.batfish.representation.aws;
 
 import java.io.Serializable;
-import org.batfish.common.BatfishLogger;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
@@ -12,7 +11,7 @@ public class NetworkAclAssociation implements Serializable {
 
   private String _subnetId = null;
 
-  public NetworkAclAssociation(JSONObject jObj, BatfishLogger logger) throws JSONException {
+  public NetworkAclAssociation(JSONObject jObj) throws JSONException {
     _subnetId = jObj.getString(AwsVpcEntity.JSON_KEY_SUBNET_ID);
   }
 

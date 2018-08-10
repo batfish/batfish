@@ -1,0 +1,47 @@
+{
+    "class": "org.batfish.question.filtertable.FilterTableQuestion",
+    "differential": false,
+    "columns": ["mtu", "interface"],
+    "filter": "mtu ${comparator} ${mtuBytes}",
+    "innerQuestion": {
+        "class": "org.batfish.question.interfaceproperties.InterfacePropertiesQuestion",
+        "differential": false,
+        "interfaceRegex": "${interfaceRegex}",
+        "nodeRegex": "${nodeRegex}",
+        "displayHints": {
+            "textDesc": "${interface} has MTU ${mtu}"
+        }
+    },
+    "instance": {
+        "description": "Find interfaces where the configured MTU is <comparator> <mtuBytes>. E.g. if <comparator> is '<' and <mtuBytes> is 1500, then find interfaces where the configured MTU is less than 1500 bytes",
+        "instanceName": "interfaceMtu",
+        "tags": [
+            "dataPlane",
+            "reachability",
+            "isolation"
+        ],
+        "variables": {
+            "comparator": {
+              "description": "Returned devices will satisfy <comparator> <mtuBytes>. Use '<' to find devices that do not have MTU smaller than the specified <mtuBytes> MTU",
+              "optional": true,
+              "type": "comparator",
+              "value": "<"
+            },
+            "interfaceRegex": {
+              "description": "Only include interfaces whose name matches this regex",
+              "type": "javaRegex",
+              "value": ".*"
+            },
+            "mtuBytes": {
+              "description": "The reference MTU in bytes against which to check the configured MTU",
+              "type": "integer",
+              "value": 1500
+            },
+            "nodeRegex": {
+              "description": "Only include nodes whose name matches this regex",
+              "type": "javaRegex",
+              "value": ".*"
+            }
+        }
+    }
+}

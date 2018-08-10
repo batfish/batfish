@@ -1,6 +1,11 @@
 package org.batfish.grammar.flatjuniper;
 
+import static org.batfish.datamodel.AuthenticationMethod.GROUP_RADIUS;
+import static org.batfish.datamodel.AuthenticationMethod.GROUP_TACACS;
+import static org.batfish.datamodel.AuthenticationMethod.PASSWORD;
+import static org.batfish.datamodel.matchers.AaaAuthenticationLoginListMatchers.hasMethods;
 import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasPrefix;
+import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasAllowLocalAsIn;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasClusterId;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasEnforceFirstAs;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasLocalAs;
@@ -30,6 +35,7 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.hasReferenceBandw
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRouteFilterList;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRouteFilterLists;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
+import static org.batfish.datamodel.matchers.GeneratedRouteMatchers.isDiscard;
 import static org.batfish.datamodel.matchers.IkePhase1PolicyMatchers.hasIkePhase1Key;
 import static org.batfish.datamodel.matchers.IkePhase1PolicyMatchers.hasIkePhase1Proposals;
 import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasAuthenticationAlgorithm;
@@ -68,10 +74,13 @@ import static org.batfish.datamodel.matchers.IsisInterfaceSettingsMatchers.hasLe
 import static org.batfish.datamodel.matchers.IsisLevelSettingsMatchers.hasWideMetricsOnly;
 import static org.batfish.datamodel.matchers.IsisProcessMatchers.hasNetAddress;
 import static org.batfish.datamodel.matchers.IsisProcessMatchers.hasOverloadTimeout;
+import static org.batfish.datamodel.matchers.LineMatchers.hasAuthenticationLoginList;
 import static org.batfish.datamodel.matchers.LiteralIntMatcher.hasVal;
 import static org.batfish.datamodel.matchers.LiteralIntMatcher.isLiteralIntThat;
 import static org.batfish.datamodel.matchers.NssaSettingsMatchers.hasDefaultOriginateType;
 import static org.batfish.datamodel.matchers.NssaSettingsMatchers.hasSuppressType3;
+import static org.batfish.datamodel.matchers.OspfAreaMatchers.hasInjectDefaultRoute;
+import static org.batfish.datamodel.matchers.OspfAreaMatchers.hasMetricOfDefaultRoute;
 import static org.batfish.datamodel.matchers.OspfAreaMatchers.hasNssa;
 import static org.batfish.datamodel.matchers.OspfAreaMatchers.hasStub;
 import static org.batfish.datamodel.matchers.OspfAreaMatchers.hasStubType;
@@ -83,13 +92,27 @@ import static org.batfish.datamodel.matchers.RouteFilterListMatchers.permits;
 import static org.batfish.datamodel.matchers.SetAdministrativeCostMatchers.hasAdmin;
 import static org.batfish.datamodel.matchers.SetAdministrativeCostMatchers.isSetAdministrativeCostThat;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
+import static org.batfish.datamodel.matchers.VrfMatchers.hasGeneratedRoutes;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasOspfProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
+import static org.batfish.datamodel.vendor_family.juniper.JuniperFamily.AUXILIARY_LINE_NAME;
+import static org.batfish.datamodel.vendor_family.juniper.JuniperFamily.CONSOLE_LINE_NAME;
 import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_EXISTING_CONNECTION;
 import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_GLOBAL_POLICY;
 import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_SECURITY_POLICY;
 import static org.batfish.representation.juniper.JuniperConfiguration.computeOspfExportPolicyName;
 import static org.batfish.representation.juniper.JuniperConfiguration.computePeerExportPolicyName;
+import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION;
+import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION_OR_APPLICATION_SET;
+import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION_SET;
+import static org.batfish.representation.juniper.JuniperStructureType.AUTHENTICATION_KEY_CHAIN;
+import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_FILTER;
+import static org.batfish.representation.juniper.JuniperStructureType.PREFIX_LIST;
+import static org.batfish.representation.juniper.JuniperStructureType.VLAN;
+import static org.batfish.representation.juniper.JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION;
+import static org.batfish.representation.juniper.JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION_SET;
+import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_VLAN;
+import static org.batfish.representation.juniper.JuniperStructureUsage.SECURITY_POLICY_MATCH_APPLICATION;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anything;
@@ -145,6 +168,7 @@ import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
 import org.batfish.datamodel.IpsecEncapsulationMode;
 import org.batfish.datamodel.IpsecProtocol;
 import org.batfish.datamodel.IsoAddress;
+import org.batfish.datamodel.Line;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LocalRoute;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
@@ -175,6 +199,7 @@ import org.batfish.datamodel.matchers.IsisProcessMatchers;
 import org.batfish.datamodel.matchers.OspfAreaMatchers;
 import org.batfish.datamodel.matchers.RouteFilterListMatchers;
 import org.batfish.datamodel.matchers.StubSettingsMatchers;
+import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfAreaSummary;
 import org.batfish.datamodel.ospf.OspfDefaultOriginateType;
 import org.batfish.datamodel.ospf.StubType;
@@ -190,8 +215,6 @@ import org.batfish.grammar.flattener.FlattenerLineMap;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
-import org.batfish.representation.juniper.JuniperStructureType;
-import org.batfish.representation.juniper.JuniperStructureUsage;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
@@ -199,10 +222,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 
-/**
- * Tests for {@link FlatJuniperParser}flat Junpier parser and {@link
- * FlatJuniperControlPlaneExtractor}.
- */
+/** Tests for {@link FlatJuniperParser} and {@link FlatJuniperControlPlaneExtractor}. */
 public class FlatJuniperGrammarTest {
 
   private static final String TESTCONFIGS_PREFIX = "org/batfish/grammar/juniper/testconfigs/";
@@ -244,7 +264,7 @@ public class FlatJuniperGrammarTest {
   }
 
   private Configuration parseConfig(String hostname) throws IOException {
-    return parseTextConfigs(hostname).get(hostname);
+    return parseTextConfigs(hostname).get(hostname.toLowerCase());
   }
 
   private Map<String, Configuration> parseTextConfigs(String... configurationNames)
@@ -255,26 +275,25 @@ public class FlatJuniperGrammarTest {
   @Test
   public void testApplications() throws IOException {
     String hostname = "applications";
+    String filename = "configs/" + hostname;
 
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse();
 
     /* Confirm application usage is tracked properly */
-    assertThat(ccae, hasNumReferrers(hostname, JuniperStructureType.APPLICATION, "a2", 0));
-    assertThat(ccae, hasNumReferrers(hostname, JuniperStructureType.APPLICATION, "a1", 1));
-    assertThat(ccae, hasNumReferrers(hostname, JuniperStructureType.APPLICATION, "a3", 1));
+    assertThat(ccae, hasNumReferrers(filename, APPLICATION, "a2", 0));
+    assertThat(ccae, hasNumReferrers(filename, APPLICATION, "a1", 1));
+    assertThat(ccae, hasNumReferrers(filename, APPLICATION, "a3", 1));
 
     /* Confirm undefined reference is identified */
-    assertThat(
-        ccae,
-        hasUndefinedReference(
-            hostname, JuniperStructureType.APPLICATION_OR_APPLICATION_SET, "a_undef"));
+    assertThat(ccae, hasUndefinedReference(filename, APPLICATION_OR_APPLICATION_SET, "a_undef"));
   }
 
   @Test
   public void testApplicationSet() throws IOException {
     String hostname = "application-set";
+    String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse();
@@ -305,9 +324,9 @@ public class FlatJuniperGrammarTest {
                                 .build()))))));
 
     /* Check that appset1 and appset2 are referenced, but appset3 is not */
-    assertThat(ccae, hasNumReferrers(hostname, JuniperStructureType.APPLICATION_SET, "appset1", 1));
-    assertThat(ccae, hasNumReferrers(hostname, JuniperStructureType.APPLICATION_SET, "appset2", 1));
-    assertThat(ccae, hasNumReferrers(hostname, JuniperStructureType.APPLICATION_SET, "appset3", 0));
+    assertThat(ccae, hasNumReferrers(filename, APPLICATION_SET, "appset1", 1));
+    assertThat(ccae, hasNumReferrers(filename, APPLICATION_SET, "appset2", 1));
+    assertThat(ccae, hasNumReferrers(filename, APPLICATION_SET, "appset3", 0));
 
     /*
      * Check that there is an undefined reference to appset4, but not to appset1-3
@@ -316,25 +335,16 @@ public class FlatJuniperGrammarTest {
     assertThat(
         ccae,
         hasUndefinedReference(
-            hostname,
-            JuniperStructureType.APPLICATION_OR_APPLICATION_SET,
+            filename,
+            APPLICATION_OR_APPLICATION_SET,
             "appset4",
-            JuniperStructureUsage.SECURITY_POLICY_MATCH_APPLICATION));
+            SECURITY_POLICY_MATCH_APPLICATION));
     assertThat(
-        ccae,
-        not(
-            hasUndefinedReference(
-                hostname, JuniperStructureType.APPLICATION_OR_APPLICATION_SET, "appset1")));
+        ccae, not(hasUndefinedReference(hostname, APPLICATION_OR_APPLICATION_SET, "appset1")));
     assertThat(
-        ccae,
-        not(
-            hasUndefinedReference(
-                hostname, JuniperStructureType.APPLICATION_OR_APPLICATION_SET, "appset2")));
+        ccae, not(hasUndefinedReference(hostname, APPLICATION_OR_APPLICATION_SET, "appset2")));
     assertThat(
-        ccae,
-        not(
-            hasUndefinedReference(
-                hostname, JuniperStructureType.APPLICATION_OR_APPLICATION_SET, "appset3")));
+        ccae, not(hasUndefinedReference(hostname, APPLICATION_OR_APPLICATION_SET, "appset3")));
 
     /*
      * Check that there is an undefined reference to application-set appset4, but not to appset1-3
@@ -343,19 +353,10 @@ public class FlatJuniperGrammarTest {
     assertThat(
         ccae,
         hasUndefinedReference(
-            hostname,
-            JuniperStructureType.APPLICATION_SET,
-            "appset4",
-            JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION_SET));
-    assertThat(
-        ccae,
-        not(hasUndefinedReference(hostname, JuniperStructureType.APPLICATION_SET, "appset1")));
-    assertThat(
-        ccae,
-        not(hasUndefinedReference(hostname, JuniperStructureType.APPLICATION_SET, "appset2")));
-    assertThat(
-        ccae,
-        not(hasUndefinedReference(hostname, JuniperStructureType.APPLICATION_SET, "appset3")));
+            filename, APPLICATION_SET, "appset4", APPLICATION_SET_MEMBER_APPLICATION_SET));
+    assertThat(ccae, not(hasUndefinedReference(filename, APPLICATION_SET, "appset1")));
+    assertThat(ccae, not(hasUndefinedReference(filename, APPLICATION_SET, "appset2")));
+    assertThat(ccae, not(hasUndefinedReference(filename, APPLICATION_SET, "appset3")));
 
     /*
      * Check that there is an undefined reference to application a4 but not a1-3
@@ -364,25 +365,10 @@ public class FlatJuniperGrammarTest {
     assertThat(
         ccae,
         hasUndefinedReference(
-            hostname,
-            JuniperStructureType.APPLICATION_OR_APPLICATION_SET,
-            "a4",
-            JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION));
-    assertThat(
-        ccae,
-        not(
-            hasUndefinedReference(
-                hostname, JuniperStructureType.APPLICATION_OR_APPLICATION_SET, "a1")));
-    assertThat(
-        ccae,
-        not(
-            hasUndefinedReference(
-                hostname, JuniperStructureType.APPLICATION_OR_APPLICATION_SET, "a2")));
-    assertThat(
-        ccae,
-        not(
-            hasUndefinedReference(
-                hostname, JuniperStructureType.APPLICATION_OR_APPLICATION_SET, "a3")));
+            filename, APPLICATION_OR_APPLICATION_SET, "a4", APPLICATION_SET_MEMBER_APPLICATION));
+    assertThat(ccae, not(hasUndefinedReference(filename, APPLICATION_OR_APPLICATION_SET, "a1")));
+    assertThat(ccae, not(hasUndefinedReference(filename, APPLICATION_OR_APPLICATION_SET, "a2")));
+    assertThat(ccae, not(hasUndefinedReference(filename, APPLICATION_OR_APPLICATION_SET, "a3")));
   }
 
   @Test
@@ -462,49 +448,44 @@ public class FlatJuniperGrammarTest {
   @Test
   public void testAuthenticationKeyChain() throws IOException {
     String hostname = "authentication-key-chain";
+    String filename = "configs/" + hostname;
 
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse();
 
     /* Confirm filter usage is tracked properly */
-    assertThat(
-        ccae, hasNumReferrers(hostname, JuniperStructureType.AUTHENTICATION_KEY_CHAIN, "KC", 1));
-    assertThat(
-        ccae,
-        hasNumReferrers(hostname, JuniperStructureType.AUTHENTICATION_KEY_CHAIN, "KC_UNUSED", 0));
+    assertThat(ccae, hasNumReferrers(filename, AUTHENTICATION_KEY_CHAIN, "KC", 1));
+    assertThat(ccae, hasNumReferrers(filename, AUTHENTICATION_KEY_CHAIN, "KC_UNUSED", 0));
 
     /* Confirm undefined reference is identified */
-    assertThat(
-        ccae,
-        hasUndefinedReference(hostname, JuniperStructureType.AUTHENTICATION_KEY_CHAIN, "KC_UNDEF"));
+    assertThat(ccae, hasUndefinedReference(filename, AUTHENTICATION_KEY_CHAIN, "KC_UNDEF"));
   }
 
   @Test
-  public void testPredefinedJunosApplications() throws IOException {
-    Batfish batfish = getBatfishForConfigurationNames("pre-defined-junos-applications");
-    InitInfoAnswerElement answer = batfish.initInfo(false, true);
-    assertThat(
-        answer.prettyPrint(),
-        not(Matchers.containsString("unimplemented pre-defined junos application")));
-  }
+  public void testAuthenticationOrder() throws IOException {
+    String hostname = "authentication-order";
 
-  @Test
-  public void testPredefinedJunosApplicationSets() throws IOException {
-    Batfish batfish = getBatfishForConfigurationNames("pre-defined-junos-application-sets");
-    InitInfoAnswerElement answer = batfish.initInfo(false, true);
-    assertThat(
-        answer.prettyPrint(),
-        not(Matchers.containsString("unimplemented pre-defined junos application-set")));
-  }
+    Configuration configuration = parseConfig(hostname);
+    SortedMap<String, Line> lines = configuration.getVendorFamily().getJuniper().getLines();
 
-  /** Tests support for dynamic bgp parsing using "bgp allow" command */
-  @Test
-  public void testBgpAllow() throws IOException {
-    Configuration c = parseConfig("bgp-allow");
+    assertThat(lines.get(AUXILIARY_LINE_NAME), nullValue());
+
     assertThat(
-        c,
-        hasDefaultVrf(hasBgpProcess(hasPassiveNeighbor(Prefix.parse("10.1.1.0/24"), anything()))));
+        lines.get(CONSOLE_LINE_NAME),
+        hasAuthenticationLoginList(hasMethods(equalTo(Collections.singletonList(GROUP_TACACS)))));
+
+    assertThat(
+        lines.get("telnet"),
+        hasAuthenticationLoginList(hasMethods(equalTo(Arrays.asList(GROUP_TACACS, PASSWORD)))));
+
+    assertThat(
+        lines.get("ssh"),
+        hasAuthenticationLoginList(hasMethods(equalTo(Arrays.asList(GROUP_RADIUS, GROUP_TACACS)))));
+
+    assertThat(
+        lines.get("ftp"),
+        hasAuthenticationLoginList(hasMethods(equalTo(Collections.singletonList(GROUP_RADIUS)))));
   }
 
   @Test
@@ -530,6 +511,45 @@ public class FlatJuniperGrammarTest {
     assertThat(c1, hasDefaultVrf(hasBgpProcess(hasActiveNeighbor(neighborPrefix, hasLocalAs(1L)))));
     assertThat(c2, hasDefaultVrf(hasBgpProcess(hasActiveNeighbor(neighborPrefix, hasLocalAs(1L)))));
     assertThat(c3, hasDefaultVrf(hasBgpProcess(hasActiveNeighbor(neighborPrefix, hasLocalAs(1L)))));
+  }
+
+  @Test
+  public void testAutonomousSystemLoops() throws IOException {
+    Configuration c = parseConfig("autonomous-system-loops");
+    assertThat(
+        c,
+        hasDefaultVrf(
+            hasBgpProcess(
+                hasActiveNeighbor(
+                    Prefix.parse("2.2.2.2/32"), allOf(hasAllowLocalAsIn(true), hasLocalAs(1L))))));
+    assertThat(
+        c,
+        hasVrf(
+            "FOO",
+            hasBgpProcess(
+                hasActiveNeighbor(
+                    Prefix.parse("3.3.3.3/32"), allOf(hasAllowLocalAsIn(true), hasLocalAs(1L))))));
+  }
+
+  @Test
+  public void testAutonomousSystemLoopsNonDefaultRoutingInstance() throws IOException {
+    Configuration c = parseConfig("autonomous-system-loops-routing-instance");
+    assertThat(
+        c,
+        hasVrf(
+            "FOO",
+            hasBgpProcess(
+                hasActiveNeighbor(
+                    Prefix.parse("2.2.2.2/32"), allOf(hasAllowLocalAsIn(true), hasLocalAs(1L))))));
+  }
+
+  /** Tests support for dynamic bgp parsing using "bgp allow" command */
+  @Test
+  public void testBgpAllow() throws IOException {
+    Configuration c = parseConfig("bgp-allow");
+    assertThat(
+        c,
+        hasDefaultVrf(hasBgpProcess(hasPassiveNeighbor(Prefix.parse("10.1.1.0/24"), anything()))));
   }
 
   @Test
@@ -700,35 +720,32 @@ public class FlatJuniperGrammarTest {
   @Test
   public void testEthernetSwitchingFilterReference() throws IOException {
     String hostname = "ethernet-switching-filter";
+    String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse();
 
     /* esfilter should be referred, while esfilter2 should be unreferred */
-    assertThat(
-        ccae, hasNumReferrers(hostname, JuniperStructureType.FIREWALL_FILTER, "esfilter", 1));
-    assertThat(
-        ccae, hasNumReferrers(hostname, JuniperStructureType.FIREWALL_FILTER, "esfilter2", 0));
+    assertThat(ccae, hasNumReferrers(filename, FIREWALL_FILTER, "esfilter", 1));
+    assertThat(ccae, hasNumReferrers(filename, FIREWALL_FILTER, "esfilter2", 0));
   }
 
   @Test
   public void testFirewallFilters() throws IOException {
     String hostname = "firewall-filters";
+    String filename = "configs/" + hostname;
 
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse();
 
     /* Confirm filter usage is tracked properly */
-    assertThat(ccae, hasNumReferrers(hostname, JuniperStructureType.FIREWALL_FILTER, "FILTER1", 1));
-    assertThat(ccae, hasNumReferrers(hostname, JuniperStructureType.FIREWALL_FILTER, "FILTER2", 2));
-    assertThat(
-        ccae, hasNumReferrers(hostname, JuniperStructureType.FIREWALL_FILTER, "FILTER_UNUSED", 0));
+    assertThat(ccae, hasNumReferrers(filename, FIREWALL_FILTER, "FILTER1", 1));
+    assertThat(ccae, hasNumReferrers(filename, FIREWALL_FILTER, "FILTER2", 2));
+    assertThat(ccae, hasNumReferrers(filename, FIREWALL_FILTER, "FILTER_UNUSED", 0));
 
     /* Confirm undefined reference is identified */
-    assertThat(
-        ccae,
-        hasUndefinedReference(hostname, JuniperStructureType.FIREWALL_FILTER, "FILTER_UNDEF"));
+    assertThat(ccae, hasUndefinedReference(filename, FIREWALL_FILTER, "FILTER_UNDEF"));
   }
 
   @Test
@@ -1124,6 +1141,7 @@ public class FlatJuniperGrammarTest {
   @Test
   public void testNestedConfigStructureDef() throws IOException {
     String hostname = "nested-config-structure-def";
+    String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse();
@@ -1132,14 +1150,11 @@ public class FlatJuniperGrammarTest {
     assertThat(
         ccae,
         hasDefinedStructureWithDefinitionLines(
-            hostname,
-            JuniperStructureType.FIREWALL_FILTER,
-            "FILTER1",
-            contains(6, 7, 8, 9, 11, 12)));
+            filename, FIREWALL_FILTER, "FILTER1", contains(6, 7, 8, 9, 11, 12)));
     assertThat(
         ccae,
         hasDefinedStructureWithDefinitionLines(
-            hostname, JuniperStructureType.FIREWALL_FILTER, "FILTER2", contains(16, 17, 18, 19)));
+            filename, FIREWALL_FILTER, "FILTER2", contains(16, 17, 18, 19)));
   }
 
   @Test
@@ -1163,6 +1178,20 @@ public class FlatJuniperGrammarTest {
     assertThat(lineMap.getOriginalLine(2, flatText.indexOf("system")), equalTo(2));
     assertThat(lineMap.getOriginalLine(2, flatText.indexOf("host-name")), equalTo(3));
     assertThat(lineMap.getOriginalLine(2, flatText.indexOf("nested-config")), equalTo(3));
+  }
+
+  @Test
+  public void testOspfAreaDefaultMetric() throws IOException {
+    Configuration config =
+        BatfishTestUtils.parseTextConfigs(
+                _folder, "org/batfish/grammar/juniper/testconfigs/ospf-area-default-metric")
+            .get("ospf-area-default-metric");
+    OspfArea area1 = config.getDefaultVrf().getOspfProcess().getAreas().get(1L);
+    assertThat(area1, hasInjectDefaultRoute());
+    assertThat(area1, hasMetricOfDefaultRoute(equalTo(10)));
+
+    OspfArea area2 = config.getDefaultVrf().getOspfProcess().getAreas().get(2L);
+    assertThat(area2, not(hasInjectDefaultRoute()));
   }
 
   @Test
@@ -1405,6 +1434,7 @@ public class FlatJuniperGrammarTest {
   @Test
   public void testInterfaceVlanReferences() throws IOException {
     String hostname = "interface-vlan";
+    String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse();
@@ -1412,21 +1442,15 @@ public class FlatJuniperGrammarTest {
     /*
      * We expect an undefined reference for VLAN_TEST_UNDEFINED
      */
-    assertThat(
-        ccae,
-        hasUndefinedReference(
-            hostname,
-            JuniperStructureType.VLAN,
-            "VLAN_TEST_UNDEFINED",
-            JuniperStructureUsage.INTERFACE_VLAN));
+    assertThat(ccae, hasUndefinedReference(filename, VLAN, "VLAN_TEST_UNDEFINED", INTERFACE_VLAN));
 
     /*
      * Named VLANs
      */
     assertThat(
         ccae.getDefinedStructures()
-            .get(hostname)
-            .getOrDefault(JuniperStructureType.VLAN.getDescription(), Collections.emptySortedMap()),
+            .get(filename)
+            .getOrDefault(VLAN.getDescription(), Collections.emptySortedMap()),
         allOf(hasKey("VLAN_TEST"), hasKey("VLAN_TEST_UNUSED")));
   }
 
@@ -2276,6 +2300,17 @@ public class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testOspfSummaries() throws IOException {
+    Configuration c = parseConfig(("ospf-abr-with-summaries"));
+
+    assertThat(
+        c,
+        hasDefaultVrf(
+            hasGeneratedRoutes(
+                hasItem(allOf(hasPrefix(Prefix.parse("10.0.1.0/24")), isDiscard())))));
+  }
+
+  @Test
   public void testParsingRecovery() {
     String recoveryText =
         CommonUtil.readResource("org/batfish/grammar/juniper/testconfigs/recovery");
@@ -2291,8 +2326,27 @@ public class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testPredefinedJunosApplications() throws IOException {
+    Batfish batfish = getBatfishForConfigurationNames("pre-defined-junos-applications");
+    InitInfoAnswerElement answer = batfish.initInfo(false, true);
+    assertThat(
+        answer.prettyPrint(),
+        not(Matchers.containsString("unimplemented pre-defined junos application")));
+  }
+
+  @Test
+  public void testPredefinedJunosApplicationSets() throws IOException {
+    Batfish batfish = getBatfishForConfigurationNames("pre-defined-junos-application-sets");
+    InitInfoAnswerElement answer = batfish.initInfo(false, true);
+    assertThat(
+        answer.prettyPrint(),
+        not(Matchers.containsString("unimplemented pre-defined junos application-set")));
+  }
+
+  @Test
   public void testPrefixList() throws IOException {
     String hostname = "prefix-lists";
+    String filename = "configs/" + hostname;
     Configuration c = parseConfig(hostname);
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
@@ -2305,11 +2359,11 @@ public class FlatJuniperGrammarTest {
     IpAccessList filterPrefixList = c.getIpAccessLists().get("FILTER_PL");
 
     // Confirm referrers are tracked properly
-    assertThat(ccae, hasNumReferrers(hostname, JuniperStructureType.PREFIX_LIST, "PL", 5));
-    assertThat(ccae, hasNumReferrers(hostname, JuniperStructureType.PREFIX_LIST, "PL_UNUSED", 0));
+    assertThat(ccae, hasNumReferrers(filename, PREFIX_LIST, "PL", 5));
+    assertThat(ccae, hasNumReferrers(filename, PREFIX_LIST, "PL_UNUSED", 0));
 
     // Confirm undefined reference is detected
-    assertThat(ccae, hasUndefinedReference(hostname, JuniperStructureType.PREFIX_LIST, "PL_UNDEF"));
+    assertThat(ccae, hasUndefinedReference(filename, PREFIX_LIST, "PL_UNDEF"));
 
     // Only flow from accepted source-prefixes should be accepted
     assertThat(filterPrefixList, rejects(flowDenied, null, c));

@@ -56,6 +56,15 @@ public class CiscoNxBgpVrfNeighborAddressFamilyConfiguration implements Serializ
   }
 
   @Nullable
+  public Boolean getDisablePeerAsCheck() {
+    return _disablePeerAsCheck;
+  }
+
+  public void setDisablePeerAsCheck(@Nullable Boolean disablePeerAsCheck) {
+    _disablePeerAsCheck = disablePeerAsCheck;
+  }
+
+  @Nullable
   public String getInboundRouteMap() {
     return _inboundRouteMap;
   }
@@ -135,6 +144,7 @@ public class CiscoNxBgpVrfNeighborAddressFamilyConfiguration implements Serializ
   private @Nullable Boolean _asOverride;
   private @Nullable Boolean _defaultOriginate;
   private @Nullable String _defaultOriginateMap;
+  private @Nullable Boolean _disablePeerAsCheck;
   private boolean _doneInheriting;
   private @Nullable String _inboundRouteMap;
   private final SortedMap<Integer, String> _inheritPeerPolicies;
@@ -178,6 +188,9 @@ public class CiscoNxBgpVrfNeighborAddressFamilyConfiguration implements Serializ
     }
     if (_defaultOriginateMap == null) {
       _defaultOriginateMap = policy._defaultOriginateMap;
+    }
+    if (_disablePeerAsCheck == null) {
+      _disablePeerAsCheck = policy._disablePeerAsCheck;
     }
     if (_inboundRouteMap == null) {
       _inboundRouteMap = policy._inboundRouteMap;

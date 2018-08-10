@@ -2,6 +2,7 @@ package org.batfish.question.specifiers;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.nullValue;
 
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.regex.Pattern;
@@ -18,12 +19,12 @@ import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.batfish.specifier.ConstantIpSpaceSpecifier;
 import org.batfish.specifier.ConstantUniverseIpSpaceSpecifierFactory;
 import org.batfish.specifier.ConstantWildcardSetIpSpaceSpecifierFactory;
+import org.batfish.specifier.FlexibleNodeSpecifierFactory;
 import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
 import org.batfish.specifier.NameRegexNodeSpecifier;
 import org.batfish.specifier.NameRegexNodeSpecifierFactory;
-import org.batfish.specifier.NoNodesNodeSpecifier;
 import org.batfish.specifier.NodeNameRegexConnectedHostsIpSpaceSpecifier;
-import org.batfish.specifier.NodeNameRegexInterfaceLinkLocationSpecifier;
+import org.batfish.specifier.NodeSpecifierInterfaceLocationSpecifier;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -161,7 +162,9 @@ public class SpecifiersReachabilityQuestionTest {
     question.setSourceLocationSpecifierInput("foo");
     assertThat(
         question.getSourceLocationSpecifier(),
-        equalTo(new NodeNameRegexInterfaceLinkLocationSpecifier(Pattern.compile("foo"))));
+        equalTo(
+            new NodeSpecifierInterfaceLocationSpecifier(
+                new FlexibleNodeSpecifierFactory().buildNodeSpecifier("foo"))));
   }
 
   @Test
@@ -176,9 +179,8 @@ public class SpecifiersReachabilityQuestionTest {
   @Test
   public void getTransitNodes_bothNull() {
     SpecifiersReachabilityQuestion question = new SpecifiersReachabilityQuestion();
-    assertThat(
-        question.getForbiddenTransitNodesSpecifier(), equalTo(NoNodesNodeSpecifier.INSTANCE));
-    assertThat(question.getRequiredTransitNodesSpecifier(), equalTo(NoNodesNodeSpecifier.INSTANCE));
+    assertThat(question.getForbiddenTransitNodesSpecifier(), nullValue());
+    assertThat(question.getRequiredTransitNodesSpecifier(), nullValue());
   }
 
   @Test

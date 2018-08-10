@@ -36,6 +36,7 @@
     <maven-install-plugin.version>2.5.2</maven-install-plugin.version>
     <maven-jacoco-plugin.version>0.8.1</maven-jacoco-plugin.version>
     <maven-jar-plugin.version>3.0.2</maven-jar-plugin.version>
+    <maven-javadoc-plugin.version>3.0.1</maven-javadoc-plugin.version>
     <maven-jxr-plugin.version>2.5</maven-jxr-plugin.version>
     <maven-license-plugin.version>1.13</maven-license-plugin.version>
     <maven-pmd-plugin.version>3.10.0</maven-pmd-plugin.version>
@@ -61,6 +62,7 @@
     <guava.version>22.0</guava.version>
     <guava-eea.version>0.0.1</guava-eea.version>
     <jackson.version>2.9.6</jackson.version>
+    <javabdd.version>2018-07-26-36d0ed6-batfish-internal</javabdd.version>
     <java-hamcrest.version>2.0.0.0</java-hamcrest.version>
     <javax-annotation-api.version>1.2</javax-annotation-api.version>
     <jaeger.version>0.21.0</jaeger.version>
@@ -184,6 +186,76 @@
               </goals>
             </execution>
           </executions>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <version>${maven-javadoc-plugin.version}</version>
+          <configuration>
+            <doclint>all,-missing</doclint>
+            <failOnError>false</failOnError>
+            <failOnWarnings>false</failOnWarnings>
+            <quiet>true</quiet>
+            <notimestamp>true</notimestamp>
+            <!-- TODO: Do a better job excluding generated files-->
+            <sourceFileExcludes>
+              <sourceFileExclude>**/CiscoLexer.java</sourceFileExclude>
+              <sourceFileExclude>**/CiscoParser.java</sourceFileExclude>
+              <sourceFileExclude>**/CiscoParserBaseListener.java</sourceFileExclude>
+              <sourceFileExclude>**/CiscoParserListener.java</sourceFileExclude>
+
+              <sourceFileExclude>**/FlatJuniperLexer.java</sourceFileExclude>
+              <sourceFileExclude>**/FlatJuniperParser.java</sourceFileExclude>
+              <sourceFileExclude>**/FlatJuniperParserBaseListener.java</sourceFileExclude>
+              <sourceFileExclude>**/FlatJuniperParserListener.java</sourceFileExclude>
+
+              <sourceFileExclude>**/FlatVyosLexer.java</sourceFileExclude>
+              <sourceFileExclude>**/FlatVyosParser.java</sourceFileExclude>
+              <sourceFileExclude>**/FlatVyosParserBaseListener.java</sourceFileExclude>
+              <sourceFileExclude>**/FlatVyosParserListener.java</sourceFileExclude>
+
+              <sourceFileExclude>**/IptablesLexer.java</sourceFileExclude>
+              <sourceFileExclude>**/IptablesParser.java</sourceFileExclude>
+              <sourceFileExclude>**/IptablesParserBaseListener.java</sourceFileExclude>
+              <sourceFileExclude>**/IptablesParserListener.java</sourceFileExclude>
+
+              <sourceFileExclude>**/JuniperLexer.java</sourceFileExclude>
+              <sourceFileExclude>**/JuniperParser.java</sourceFileExclude>
+              <sourceFileExclude>**/JuniperParserBaseListener.java</sourceFileExclude>
+              <sourceFileExclude>**/JuniperParserListener.java</sourceFileExclude>
+
+              <sourceFileExclude>**/MrvLexer.java</sourceFileExclude>
+              <sourceFileExclude>**/MrvParser.java</sourceFileExclude>
+              <sourceFileExclude>**/MrvParserBaseListener.java</sourceFileExclude>
+              <sourceFileExclude>**/MrvParserListener.java</sourceFileExclude>
+
+              <sourceFileExclude>**/PaloAltoLexer.java</sourceFileExclude>
+              <sourceFileExclude>**/PaloAltoParser.java</sourceFileExclude>
+              <sourceFileExclude>**/PaloAltoParserBaseListener.java</sourceFileExclude>
+              <sourceFileExclude>**/PaloAltoParserListener.java</sourceFileExclude>
+
+              <sourceFileExclude>**/EosRoutingTableLexer.java</sourceFileExclude>
+              <sourceFileExclude>**/EosRoutingTableParser.java</sourceFileExclude>
+              <sourceFileExclude>**/EosRoutingTableParserBaseListener.java</sourceFileExclude>
+              <sourceFileExclude>**/EosRoutingTableParserListener.java</sourceFileExclude>
+
+              <sourceFileExclude>**/IosRoutingTableLexer.java</sourceFileExclude>
+              <sourceFileExclude>**/IosRoutingTableParser.java</sourceFileExclude>
+              <sourceFileExclude>**/IosRoutingTableParserBaseListener.java</sourceFileExclude>
+              <sourceFileExclude>**/IosRoutingTableParserListener.java</sourceFileExclude>
+
+              <sourceFileExclude>**/NxosRoutingTableLexer.java</sourceFileExclude>
+              <sourceFileExclude>**/NxosRoutingTableParser.java</sourceFileExclude>
+              <sourceFileExclude>**/NxosRoutingTableParserBaseListener.java</sourceFileExclude>
+              <sourceFileExclude>**/NxosRoutingTableParserListener.java</sourceFileExclude>
+
+              <sourceFileExclude>**/VyosLexer.java</sourceFileExclude>
+              <sourceFileExclude>**/VyosParser.java</sourceFileExclude>
+              <sourceFileExclude>**/VyosParserBaseListener.java</sourceFileExclude>
+              <sourceFileExclude>**/VyosParserListener.java</sourceFileExclude>
+            </sourceFileExcludes>
+          </configuration>
         </plugin>
 
         <plugin>
@@ -358,10 +430,11 @@
             <id>install-bdd</id>
             <configuration>
               <groupId>net.sf.javabdd</groupId>
-              <artifactId>bdd</artifactId>
-              <version>batfish-internal</version>
+              <artifactId>javabdd</artifactId>
+              <version>${javabdd.version}</version>
               <packaging>jar</packaging>
-              <file>${basedir}/lib/bdd/net.sf.javabdd.jar</file>
+              <file>${basedir}/lib/bdd/net.sf.javabdd-${javabdd.version}.jar</file>
+              <sources>${basedir}/lib/bdd/net.sf.javabdd-${javabdd.version}-sources.jar</sources>
             </configuration>
           </execution>
           <!-- Batfish includes a custom version of antlr4 that supports larger lexers. -->
@@ -744,8 +817,8 @@
 
       <dependency>
         <groupId>net.sf.javabdd</groupId>
-        <artifactId>bdd</artifactId>
-        <version>batfish-internal</version>
+        <artifactId>javabdd</artifactId>
+        <version>${javabdd.version}</version>
       </dependency>
 
       <dependency>

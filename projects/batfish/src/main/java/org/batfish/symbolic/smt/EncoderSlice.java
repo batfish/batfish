@@ -1244,7 +1244,7 @@ class EncoderSlice {
     equalId = equalIds(best, vars, proto, e);
     equalHistory = equalHistories(best, vars);
     equalBgpInternal = equalBgpInternal(best, vars);
-    equalClientIds = equalClientIds(conf.getName(), best, vars);
+    equalClientIds = equalClientIds(conf.getHostname(), best, vars);
     equalCommunities = (compareCommunities ? equalCommunities(best, vars) : mkTrue());
 
     return mkAnd(
@@ -1748,6 +1748,10 @@ class EncoderSlice {
     assert (failed != null);
     BoolExpr notFailed = mkEq(failed, mkInt(0));
 
+    ArithExpr failedNode = getSymbolicFailures().getFailedStartVariable(e.getEdge());
+    assert (failed != null);
+    BoolExpr notFailedNode = mkEq(failedNode, mkInt(0));
+
     if (vars.getIsUsed()) {
 
       if (proto.isConnected()) {
@@ -1756,7 +1760,8 @@ class EncoderSlice {
             mkAnd(
                 interfaceActive(iface, proto),
                 isRelevantFor(p, _symbolicPacket.getDstIp()),
-                notFailed);
+                notFailed,
+                notFailedNode);
         BoolExpr per = vars.getPermitted();
         BoolExpr len = safeEq(vars.getPrefixLength(), mkInt(p.getPrefixLength()));
         BoolExpr ad = safeEq(vars.getAdminDist(), mkInt(1));
@@ -1776,7 +1781,8 @@ class EncoderSlice {
               mkAnd(
                   interfaceActive(iface, proto),
                   isRelevantFor(p, _symbolicPacket.getDstIp()),
-                  notFailed);
+                  notFailed,
+                  notFailedNode);
           BoolExpr per = vars.getPermitted();
           BoolExpr len = safeEq(vars.getPrefixLength(), mkInt(p.getPrefixLength()));
           BoolExpr ad = safeEq(vars.getAdminDist(), mkInt(sr.getAdministrativeCost()));
@@ -1871,7 +1877,8 @@ class EncoderSlice {
           }
           assert (loop != null);
 
-          BoolExpr usable = mkAnd(mkNot(loop), active, varsOther.getPermitted(), receiveMessage);
+          BoolExpr usable =
+              mkAnd(mkNot(loop), active, varsOther.getPermitted(), receiveMessage, notFailedNode);
 
           BoolExpr importFunction;
           RoutingPolicy pol = getGraph().findImportRoutingPolicy(router, proto, e.getEdge());
@@ -1936,6 +1943,12 @@ class EncoderSlice {
     ArithExpr failed = getSymbolicFailures().getFailedVariable(e.getEdge());
     assert (failed != null);
     BoolExpr notFailed = mkEq(failed, mkInt(0));
+
+    BoolExpr notFailedNode =
+        getSymbolicFailures()
+            .getFailedPeerVariable(e.getEdge())
+            .map((ArithExpr failedNode) -> mkEq(failedNode, mkInt(0)))
+            .orElse(mkTrue());
 
     // only add constraints once when using a single copy of export variables
     if (!_optimizations.getSliceCanKeepSingleExportVar().get(router).get(proto) || !usedExport) {
@@ -2014,7 +2027,8 @@ class EncoderSlice {
             new TransferSSA(this, conf, varsOther, vars, proto, statements, cost, ge, true);
         acc = f.compute();
 
-        BoolExpr usable = mkAnd(active, doExport, varsOther.getPermitted(), notFailed);
+        BoolExpr usable =
+            mkAnd(active, doExport, varsOther.getPermitted(), notFailed, notFailedNode);
 
         // OSPF is complicated because it can have routes redistributed into it
         // from the FIB, but also needs to know about other routes in OSPF as well.
@@ -2029,7 +2043,8 @@ class EncoderSlice {
           BoolExpr acc2 = f.compute();
           // System.out.println("ADDING: \n" + acc2.simplify());
           add(acc2);
-          BoolExpr usable2 = mkAnd(active, doExport, ospfRedistribVars.getPermitted(), notFailed);
+          BoolExpr usable2 =
+              mkAnd(active, doExport, ospfRedistribVars.getPermitted(), notFailed, notFailedNode);
           BoolExpr geq = greaterOrEqual(conf, proto, ospfRedistribVars, varsOther, e);
           BoolExpr isBetter = mkNot(mkAnd(ospfRedistribVars.getPermitted(), geq));
           BoolExpr usesOspf = mkAnd(varsOther.getPermitted(), isBetter);

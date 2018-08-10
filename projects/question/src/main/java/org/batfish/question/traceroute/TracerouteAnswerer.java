@@ -24,7 +24,6 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
-import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
@@ -103,10 +102,7 @@ public final class TracerouteAnswerer extends Answerer {
                 COL_RESULTS, Schema.set(Schema.STRING), "The set of outcomes", false, true),
             new ColumnMetadata(COL_PATHS, Schema.set(Schema.FLOW_TRACE), "The paths", false, true));
 
-    DisplayHints dhints = new DisplayHints();
-    dhints.setTextDesc(String.format("Paths for flow ${%s}", COL_FLOW));
-
-    return new TableMetadata(columnMetadata, dhints);
+    return new TableMetadata(columnMetadata, String.format("Paths for flow ${%s}", COL_FLOW));
   }
 
   /**

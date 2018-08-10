@@ -60,10 +60,11 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
-import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.question.routes.RoutesQuestion.RibProtocol;
+import org.batfish.specifier.MockSpecifierContext;
+import org.batfish.specifier.SpecifierContext;
 import org.junit.Test;
 
 /** Tests of {@link RoutesAnswerer}. */
@@ -276,7 +277,7 @@ public class RoutesAnswererTest {
     Vrf vrf = nf.vrfBuilder().setOwner(c).build();
     SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs =
         ImmutableSortedMap.of(
-            c.getName(),
+            c.getHostname(),
             ImmutableSortedMap.of(
                 vrf.getName(),
                 new MockRib<>(
@@ -285,7 +286,7 @@ public class RoutesAnswererTest {
                             .setNetwork(Prefix.parse("1.1.1.1/32"))
                             .setNextHopInterface("Null")
                             .build()))));
-    NetworkConfigurations nc = NetworkConfigurations.of(ImmutableMap.of(c.getName(), c));
+    NetworkConfigurations nc = NetworkConfigurations.of(ImmutableMap.of(c.getHostname(), c));
 
     AnswerElement el =
         new RoutesAnswerer(
@@ -308,12 +309,11 @@ public class RoutesAnswererTest {
   }
 
   @Test
-  public void testHasDisplayHints() {
-    DisplayHints dh = getTableMetadata(RibProtocol.ALL).getDisplayHints();
+  public void testHasTextDesc() {
+    String textDesc = getTableMetadata(RibProtocol.ALL).getTextDesc();
 
-    assert dh != null;
-    assertThat(dh.getTextDesc(), notNullValue());
-    assertThat(dh.getTextDesc(), not(emptyString()));
+    assertThat(textDesc, notNullValue());
+    assertThat(textDesc, not(emptyString()));
   }
 
   static class MockBatfish extends IBatfishTestAdapter {
@@ -343,6 +343,11 @@ public class RoutesAnswererTest {
     @Override
     public BatfishLogger getLogger() {
       return null;
+    }
+
+    @Override
+    public SpecifierContext specifierContext() {
+      return MockSpecifierContext.builder().setConfigs(loadConfigurations()).build();
     }
   }
 
@@ -392,12 +397,12 @@ public class RoutesAnswererTest {
     }
 
     @Override
-    public boolean mergeRoute(R route) {
+    public Set<R> longestPrefixMatch(Ip address, int maxPrefixLength) {
       throw new UnsupportedOperationException();
     }
 
     @Override
-    public Map<Prefix, Set<Ip>> nextHopIpsByPrefix() {
+    public boolean mergeRoute(R route) {
       throw new UnsupportedOperationException();
     }
   }

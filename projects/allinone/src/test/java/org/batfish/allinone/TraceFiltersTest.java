@@ -29,8 +29,6 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.matchers.PermittedByIpAccessListLineMatchers;
-import org.batfish.datamodel.questions.FiltersSpecifier;
-import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -91,13 +89,13 @@ public class TraceFiltersTest {
             .setName("acl2")
             .build();
 
-    Batfish batfish = BatfishTestUtils.getBatfish(ImmutableSortedMap.of(_c.getName(), _c), _folder);
+    Batfish batfish =
+        BatfishTestUtils.getBatfish(ImmutableSortedMap.of(_c.getHostname(), _c), _folder);
 
     assertThat(_c, hasIpAccessLists(hasEntry(referencedAcl.getName(), referencedAcl)));
     assertThat(_c, hasIpAccessLists(hasEntry(acl.getName(), acl)));
 
-    TraceFiltersQuestion question =
-        new TraceFiltersQuestion(NodesSpecifier.ALL, FiltersSpecifier.ALL);
+    TraceFiltersQuestion question = new TraceFiltersQuestion(null, null);
     question.setSrcIp(new Ip("1.0.0.4"));
     TraceFiltersAnswerer answerer = new TraceFiltersAnswerer(question, batfish);
     TableAnswerElement answer = answerer.answer();
@@ -147,9 +145,9 @@ public class TraceFiltersTest {
 
     Batfish batfish =
         BatfishTestUtils.getBatfish(
-            ImmutableSortedMap.of(c1.getName(), c1, c2.getName(), c2, c3.getName(), c3), _folder);
-    TraceFiltersQuestion question =
-        new TraceFiltersQuestion(NodesSpecifier.ALL, FiltersSpecifier.ALL);
+            ImmutableSortedMap.of(c1.getHostname(), c1, c2.getHostname(), c2, c3.getHostname(), c3),
+            _folder);
+    TraceFiltersQuestion question = new TraceFiltersQuestion(null, null);
     TraceFiltersAnswerer answerer = new TraceFiltersAnswerer(question, batfish);
     TableAnswerElement answer = answerer.answer();
 

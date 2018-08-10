@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
@@ -17,6 +18,7 @@ import org.batfish.common.util.NonRecursiveSupplier.NonRecursiveSupplierExceptio
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.State;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
@@ -40,6 +42,8 @@ public class AclLineMatchExprToBDD implements GenericAclLineMatchExprVisitor<BDD
 
   private final BDDFactory _factory;
 
+  private final BDDSourceManager _bddSrcManager;
+
   private Map<String, IpSpace> _namedIpSpaces;
 
   private final BDDPacket _packet;
@@ -50,6 +54,21 @@ public class AclLineMatchExprToBDD implements GenericAclLineMatchExprVisitor<BDD
       Map<String, Supplier<BDD>> aclEnv,
       Map<String, IpSpace> namedIpSpaces) {
     _aclEnv = ImmutableMap.copyOf(aclEnv);
+    _factory = factory;
+    _bddOps = new BDDOps(factory);
+    _bddSrcManager = new BDDSourceManager(packet, ImmutableList.of());
+    _namedIpSpaces = ImmutableMap.copyOf(namedIpSpaces);
+    _packet = packet;
+  }
+
+  public AclLineMatchExprToBDD(
+      BDDFactory factory,
+      BDDPacket packet,
+      Map<String, Supplier<BDD>> aclEnv,
+      Map<String, IpSpace> namedIpSpaces,
+      @Nonnull BDDSourceManager bddSrcManager) {
+    _aclEnv = ImmutableMap.copyOf(aclEnv);
+    _bddSrcManager = bddSrcManager;
     _factory = factory;
     _bddOps = new BDDOps(factory);
     _namedIpSpaces = ImmutableMap.copyOf(namedIpSpaces);
@@ -159,7 +178,7 @@ public class AclLineMatchExprToBDD implements GenericAclLineMatchExprVisitor<BDD
         toBDD(headerSpace.getIcmpCodes(), _packet.getIcmpCode()),
         BDDOps.negateIfNonNull(toBDD(headerSpace.getNotIcmpCodes(), _packet.getIcmpCode())),
         toBDD(headerSpace.getIcmpTypes(), _packet.getIcmpType()),
-        BDDOps.negateIfNonNull(toBDD(headerSpace.getIcmpTypes(), _packet.getIcmpType())),
+        BDDOps.negateIfNonNull(toBDD(headerSpace.getNotIcmpTypes(), _packet.getIcmpType())),
         toBDD(headerSpace.getIpProtocols()),
         BDDOps.negateIfNonNull(toBDD(headerSpace.getNotIpProtocols())),
         toBDD(headerSpace.getDscps(), _packet.getDscp()),
@@ -170,13 +189,18 @@ public class AclLineMatchExprToBDD implements GenericAclLineMatchExprVisitor<BDD
         BDDOps.negateIfNonNull(
             toBDD(headerSpace.getNotFragmentOffsets(), _packet.getFragmentOffset())),
         toBDD(
-            headerSpace.getStates().stream().map(s -> s.number()).collect(Collectors.toList()),
+            headerSpace.getStates().stream().map(State::number).collect(Collectors.toList()),
             _packet.getState()));
   }
 
   @Override
   public BDD visitMatchSrcInterface(MatchSrcInterface matchSrcInterface) {
-    throw new BatfishException("MatchSrcInterface is unsupported");
+    return _bddOps.or(
+        matchSrcInterface
+            .getSrcInterfaces()
+            .stream()
+            .map(_bddSrcManager::getSrcInterfaceBDD)
+            .collect(Collectors.toList()));
   }
 
   @Override
@@ -186,7 +210,7 @@ public class AclLineMatchExprToBDD implements GenericAclLineMatchExprVisitor<BDD
 
   @Override
   public BDD visitOriginatingFromDevice(OriginatingFromDevice originatingFromDevice) {
-    throw new BatfishException("OriginatingFromDevice is unsupported");
+    return _bddSrcManager.getOriginatingFromDeviceBDD();
   }
 
   @Override

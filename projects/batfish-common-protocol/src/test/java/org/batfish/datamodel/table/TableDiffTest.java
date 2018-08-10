@@ -12,7 +12,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import org.batfish.datamodel.answers.Schema;
-import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.table.Row.RowBuilder;
 import org.junit.Test;
 
@@ -26,7 +25,7 @@ public class TableDiffTest {
 
   private static ColumnMetadata colKeyStatus =
       new ColumnMetadata(
-          TableDiff.COL_KEY_STATUS, Schema.STRING, TableDiff.COL_KEY_STATUS_DESC, false, true);
+          TableDiff.COL_KEY_PRESENCE, Schema.STRING, TableDiff.COL_KEY_PRESENCE_DESC, false, true);
 
   private static ColumnMetadata colValue =
       new ColumnMetadata("value", Schema.STRING, "value", false, true);
@@ -133,10 +132,10 @@ public class TableDiffTest {
                     TableDiff.baseColumnName("neither"), Schema.STRING, "neither", false, false),
                 new ColumnMetadata(
                     TableDiff.deltaColumnName("neither"), Schema.STRING, "neither", false, false)),
-            new DisplayHints(null, null, "[key, both]"));
+            "[key, both]");
 
     assertThat(
-        TableDiff.diffMetadata(new TableMetadata(inputColumns, null)), equalTo(expectedMetadata));
+        TableDiff.diffMetadata(new TableMetadata(inputColumns, "desc")), equalTo(expectedMetadata));
   }
 
   @Test
@@ -145,12 +144,12 @@ public class TableDiffTest {
     Row deltaRow = mixRow(null, null, null, "neither2");
 
     RowBuilder diff = Row.builder();
-    TableDiff.diffRowValues(diff, baseRow, deltaRow, new TableMetadata(mixColumns(), null));
+    TableDiff.diffRowValues(diff, baseRow, deltaRow, new TableMetadata(mixColumns(), "desc"));
     assertThat(
         diff.build(),
         equalTo(
             Row.of(
-                TableDiff.COL_KEY_STATUS,
+                TableDiff.COL_KEY_PRESENCE,
                 TableDiff.COL_KEY_STATUS_BOTH,
                 // value
                 TableDiff.diffColumnName("value"),
@@ -172,7 +171,8 @@ public class TableDiffTest {
     Row row = Row.of("key", "value");
     TableMetadata metadata =
         new TableMetadata(
-            ImmutableList.of(new ColumnMetadata("key", Schema.STRING, "desc", false, true)), null);
+            ImmutableList.of(new ColumnMetadata("key", Schema.STRING, "desc", false, true)),
+            "desc");
 
     // delta is null
     RowBuilder diff1 = Row.builder();
@@ -181,7 +181,7 @@ public class TableDiffTest {
         diff1.build(),
         equalTo(
             Row.of(
-                TableDiff.COL_KEY_STATUS,
+                TableDiff.COL_KEY_PRESENCE,
                 TableDiff.COL_KEY_STATUS_ONLY_BASE,
                 TableDiff.diffColumnName("key"),
                 TableDiff.resultDifferent(TableDiff.COL_KEY_STATUS_ONLY_BASE),
@@ -197,7 +197,7 @@ public class TableDiffTest {
         diff2.build(),
         equalTo(
             Row.of(
-                TableDiff.COL_KEY_STATUS,
+                TableDiff.COL_KEY_PRESENCE,
                 TableDiff.COL_KEY_STATUS_ONLY_DELTA,
                 TableDiff.diffColumnName("key"),
                 TableDiff.resultDifferent(TableDiff.COL_KEY_STATUS_ONLY_DELTA),
@@ -214,7 +214,7 @@ public class TableDiffTest {
         ImmutableList.of(
             new ColumnMetadata("key", Schema.STRING, "key", true, false),
             new ColumnMetadata("value", Schema.STRING, "value", false, true));
-    TableMetadata metadata = new TableMetadata(columns, null);
+    TableMetadata metadata = new TableMetadata(columns, "desc");
 
     Row row1 = Row.of("key", "sameKey", "value", "value1");
     Row row2 = Row.of("key", "sameKey", "value", "value2");
@@ -248,7 +248,7 @@ public class TableDiffTest {
         ImmutableList.of(
             new ColumnMetadata("key", Schema.STRING, "key", true, false),
             new ColumnMetadata("value", Schema.STRING, "value", false, true));
-    TableMetadata metadata = new TableMetadata(columns, null);
+    TableMetadata metadata = new TableMetadata(columns, "desc");
 
     Row row1 = Row.of("key", "sameKey", "value", "value1");
     Row row2 = Row.of("key", "sameKey", "value", "value2");
@@ -278,7 +278,7 @@ public class TableDiffTest {
   @Test
   public void diffTablesTestRowContent() {
     List<ColumnMetadata> columns = mixColumns();
-    TableMetadata metadata = new TableMetadata(columns, null);
+    TableMetadata metadata = new TableMetadata(columns, "desc");
 
     Row row1 = mixRow("key1", "both1", "value1", "neither1");
     Row row2 = mixRow("key1", "both1", "value2", "neither2");
@@ -292,7 +292,7 @@ public class TableDiffTest {
                 Row.builder()
                     .put("key", "key1")
                     .put("both", "both1")
-                    .put(TableDiff.COL_KEY_STATUS, TableDiff.COL_KEY_STATUS_BOTH)
+                    .put(TableDiff.COL_KEY_PRESENCE, TableDiff.COL_KEY_STATUS_BOTH)
                     .put(TableDiff.diffColumnName("value"), TableDiff.RESULT_DIFFERENT)
                     .put(TableDiff.baseColumnName("value"), "value1")
                     .put(TableDiff.deltaColumnName("value"), "value2")
@@ -309,7 +309,7 @@ public class TableDiffTest {
     TableMetadata noKeys =
         new TableMetadata(
             ImmutableList.of(new ColumnMetadata("value", Schema.STRING, "value", false, true)),
-            null);
+            "desc");
 
     Row row1 = Row.of("value", "value1");
     Row row2 = Row.of("value", "value2");
@@ -321,7 +321,7 @@ public class TableDiffTest {
         new Rows()
             .add(
                 Row.builder()
-                    .put(TableDiff.COL_KEY_STATUS, TableDiff.COL_KEY_STATUS_BOTH)
+                    .put(TableDiff.COL_KEY_PRESENCE, TableDiff.COL_KEY_STATUS_BOTH)
                     .put(TableDiff.diffColumnName("value"), TableDiff.RESULT_DIFFERENT)
                     .put(TableDiff.baseColumnName("value"), "value1")
                     .put(TableDiff.deltaColumnName("value"), "value2")
@@ -335,7 +335,7 @@ public class TableDiffTest {
   public void diffTablesTestAllKeys() {
     TableMetadata noKeys =
         new TableMetadata(
-            ImmutableList.of(new ColumnMetadata("key", Schema.STRING, "key", true, false)), null);
+            ImmutableList.of(new ColumnMetadata("key", Schema.STRING, "key", true, false)), "desc");
 
     Row row1 = Row.of("key", "key1");
     Row row2 = Row.of("key", "key2");
@@ -355,13 +355,13 @@ public class TableDiffTest {
                     Row.of(
                         "key",
                         "key1",
-                        TableDiff.COL_KEY_STATUS,
+                        TableDiff.COL_KEY_PRESENCE,
                         TableDiff.COL_KEY_STATUS_ONLY_BASE))
                 .add(
                     Row.of(
                         "key",
                         "key2",
-                        TableDiff.COL_KEY_STATUS,
+                        TableDiff.COL_KEY_PRESENCE,
                         TableDiff.COL_KEY_STATUS_ONLY_DELTA))));
   }
 }

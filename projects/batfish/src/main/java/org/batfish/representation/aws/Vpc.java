@@ -3,7 +3,6 @@ package org.batfish.representation.aws;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
-import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
@@ -27,7 +26,7 @@ public class Vpc implements AwsVpcEntity, Serializable {
 
   private transient String _vpnGatewayId;
 
-  public Vpc(JSONObject jObj, BatfishLogger logger) throws JSONException {
+  public Vpc(JSONObject jObj) throws JSONException {
     _vpcId = jObj.getString(JSON_KEY_VPC_ID);
     _cidrBlock = Prefix.parse(jObj.getString(JSON_KEY_CIDR_BLOCK));
     _cidrBlockAssociations = new HashSet<>();

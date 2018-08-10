@@ -62,9 +62,10 @@ public class OspfProtocolHelper {
    * @return {@code true} iff the route should be considered for installation into the OSPF RIB
    */
   public static boolean isOspfInterAreaDefaultOriginationAllowed(
-      OspfProcess process, OspfProcess neighborProc, OspfArea neighborArea) {
+      OspfProcess process, OspfProcess neighborProc, OspfArea area, OspfArea neighborArea) {
     return neighborProc.isAreaBorderRouter()
         && !process.isAreaBorderRouter()
+        && area.getInjectDefaultRoute()
         && (neighborArea.getStubType() == StubType.STUB
             || (neighborArea.getStubType() == StubType.NSSA
                 && neighborArea.getNssa().getDefaultOriginateType()

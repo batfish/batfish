@@ -10,6 +10,15 @@ import org.junit.Test;
 
 public class FlexibleIpSpaceSpecifierFactoryTest {
   @Test
+  public void testConstantIpSpace() {
+    assertThat(
+        new FlexibleIpSpaceSpecifierFactory().buildIpSpaceSpecifier("1.1.1.1"),
+        equalTo(
+            new ConstantIpSpaceSpecifier(
+                IpWildcardSetIpSpace.builder().including(new IpWildcard("1.1.1.1")).build())));
+  }
+
+  @Test
   public void testLoad() {
     assertThat(
         IpSpaceSpecifierFactory.load(FlexibleIpSpaceSpecifierFactory.NAME)
@@ -25,11 +34,9 @@ public class FlexibleIpSpaceSpecifierFactoryTest {
   }
 
   @Test
-  public void testNonNull() {
+  public void testRefAddressGroup() {
     assertThat(
-        new FlexibleIpSpaceSpecifierFactory().buildIpSpaceSpecifier("1.1.1.1"),
-        equalTo(
-            new ConstantIpSpaceSpecifier(
-                IpWildcardSetIpSpace.builder().including(new IpWildcard("1.1.1.1")).build())));
+        new FlexibleIpSpaceSpecifierFactory().buildIpSpaceSpecifier("rEf.AddressGroup(a, b)"),
+        equalTo(new ReferenceAddressGroupIpSpaceSpecifier("a", "b")));
   }
 }

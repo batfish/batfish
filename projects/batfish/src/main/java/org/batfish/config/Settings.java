@@ -11,9 +11,6 @@ import org.batfish.common.BaseSettings;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.CoordConsts;
-import org.batfish.common.PedanticBatfishException;
-import org.batfish.common.RedFlagBatfishException;
-import org.batfish.common.UnimplementedBatfishException;
 import org.batfish.common.Version;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Ip;
@@ -277,6 +274,8 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
     private Path _protocolDependencyGraphZipPath;
 
+    private Path _referenceLibraryPath;
+
     private Path _serializeVendorPath;
 
     private Path _testRigPath;
@@ -333,6 +332,10 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
     public Path getProtocolDependencyGraphZipPath() {
       return _protocolDependencyGraphZipPath;
+    }
+
+    public Path getReferenceLibraryPath() {
+      return _referenceLibraryPath;
     }
 
     public Path getSerializeVendorPath() {
@@ -392,6 +395,10 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
     public void setProtocolDependencyGraphZipPath(Path protocolDependencyGraphZipPath) {
       _protocolDependencyGraphZipPath = protocolDependencyGraphZipPath;
+    }
+
+    public void setReferenceLibraryPath(Path path) {
+      _referenceLibraryPath = path;
     }
 
     public void setSerializeVendorPath(Path path) {
@@ -732,10 +739,14 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     if (getTaskId() == null) {
       return null;
     }
+    String tr = getTestrig();
+    if (getDeltaTestrig() != null && !getDifferential()) {
+      tr = getDeltaTestrig();
+    }
     return getStorageBase()
         .resolve(getContainer())
         .resolve(BfConsts.RELPATH_TESTRIGS_DIR)
-        .resolve(getTestrig())
+        .resolve(tr)
         .resolve(getTaskId() + BfConsts.SUFFIX_LOG_FILE)
         .toString();
   }
@@ -779,10 +790,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     return _config.getString(BfConsts.ARG_OUTPUT_ENV);
   }
 
-  public boolean getPedanticAsError() {
-    return _config.getBoolean(BfConsts.ARG_PEDANTIC_AS_ERROR);
-  }
-
   public boolean getPedanticRecord() {
     return !_config.getBoolean(BfConsts.ARG_PEDANTIC_SUPPRESS);
   }
@@ -812,10 +819,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
   @Nullable
   public Path getQuestionPath() {
     return nullablePath(_config.getString(QUESTION_PATH));
-  }
-
-  public boolean getRedFlagAsError() {
-    return _config.getBoolean(BfConsts.ARG_RED_FLAG_AS_ERROR);
   }
 
   public boolean getRedFlagRecord() {
@@ -942,10 +945,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     return _config.getBoolean(ARG_TRACING_ENABLE);
   }
 
-  public boolean getUnimplementedAsError() {
-    return _config.getBoolean(BfConsts.ARG_UNIMPLEMENTED_AS_ERROR);
-  }
-
   public boolean getUnimplementedRecord() {
     return !_config.getBoolean(BfConsts.ARG_UNIMPLEMENTED_SUPPRESS);
   }
@@ -1032,7 +1031,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     setDefaultProperty(ARG_CHECK_BGP_REACHABILITY, true);
     setDefaultProperty(ARG_NO_SHUFFLE, false);
     setDefaultProperty(BfConsts.ARG_OUTPUT_ENV, null);
-    setDefaultProperty(BfConsts.ARG_PEDANTIC_AS_ERROR, false);
     setDefaultProperty(BfConsts.ARG_PEDANTIC_SUPPRESS, false);
     setDefaultProperty(BfConsts.ARG_PRETTY_PRINT_ANSWER, false);
     setDefaultProperty(ARG_PARENT_PID, -1);
@@ -1040,7 +1038,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     setDefaultProperty(ARG_PRINT_PARSE_TREE_LINE_NUMS, false);
     setDefaultProperty(ARG_PRINT_SYMMETRIC_EDGES, false);
     setDefaultProperty(BfConsts.ARG_QUESTION_NAME, null);
-    setDefaultProperty(BfConsts.ARG_RED_FLAG_AS_ERROR, false);
     setDefaultProperty(BfConsts.ARG_RED_FLAG_SUPPRESS, false);
     setDefaultProperty(ARG_RUN_MODE, RunMode.WORKER.toString());
     setDefaultProperty(ARG_SEQUENTIAL, false);
@@ -1065,8 +1062,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     setDefaultProperty(ARG_TRACING_AGENT_PORT, 5775);
     setDefaultProperty(ARG_TRACING_ENABLE, false);
     setDefaultProperty(BfConsts.ARG_UNRECOGNIZED_AS_RED_FLAG, true);
-    setDefaultProperty(BfConsts.ARG_UNIMPLEMENTED_AS_ERROR, false);
-    setDefaultProperty(BfConsts.ARG_UNIMPLEMENTED_SUPPRESS, true);
+    setDefaultProperty(BfConsts.ARG_UNIMPLEMENTED_SUPPRESS, false);
     setDefaultProperty(BfConsts.ARG_VERBOSE_PARSE, false);
     setDefaultProperty(ARG_VERSION, false);
     setDefaultProperty(BfConsts.COMMAND_ANALYZE, false);
@@ -1247,13 +1243,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
     addOption(ARG_PARENT_PID, "name of parent PID", ARGNAME_NUMBER);
 
-    addBooleanOption(
-        BfConsts.ARG_PEDANTIC_AS_ERROR,
-        "throws "
-            + PedanticBatfishException.class.getSimpleName()
-            + " for likely harmless warnings (e.g. deviation from good configuration style), "
-            + "instead of emitting warning and continuing");
-
     addBooleanOption(BfConsts.ARG_PEDANTIC_SUPPRESS, "suppresses pedantic warnings");
 
     addBooleanOption(BfConsts.ARG_PRETTY_PRINT_ANSWER, "pretty print answer");
@@ -1267,13 +1256,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
         ARG_PRINT_SYMMETRIC_EDGES, "print topology with symmetric edges adjacent in listing");
 
     addOption(BfConsts.ARG_QUESTION_NAME, "name of question", ARGNAME_NAME);
-
-    addBooleanOption(
-        BfConsts.ARG_RED_FLAG_AS_ERROR,
-        "throws "
-            + RedFlagBatfishException.class.getSimpleName()
-            + " on some recoverable errors (e.g. bad config lines), instead of emitting warning "
-            + "and attempting to recover");
 
     addBooleanOption(BfConsts.ARG_RED_FLAG_SUPPRESS, "suppresses red-flag warnings");
 
@@ -1329,13 +1311,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     addOption(ARG_TRACING_AGENT_PORT, "jaeger agent port", "jaeger_agent_port");
 
     addBooleanOption(ARG_TRACING_ENABLE, "enable tracing");
-
-    addBooleanOption(
-        BfConsts.ARG_UNIMPLEMENTED_AS_ERROR,
-        "throws "
-            + UnimplementedBatfishException.class.getSimpleName()
-            + " when encountering unimplemented configuration directives, instead of emitting "
-            + "warning and ignoring");
 
     addBooleanOption(
         BfConsts.ARG_UNIMPLEMENTED_SUPPRESS,
@@ -1444,14 +1419,12 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     getIntOptionValue(ARG_MAX_RUNTIME_MS);
     getStringOptionValue(BfConsts.ARG_OUTPUT_ENV);
     getIntOptionValue(ARG_PARENT_PID);
-    getBooleanOptionValue(BfConsts.ARG_PEDANTIC_AS_ERROR);
     getBooleanOptionValue(BfConsts.ARG_PEDANTIC_SUPPRESS);
     getBooleanOptionValue(BfConsts.ARG_PRETTY_PRINT_ANSWER);
     getBooleanOptionValue(ARG_PRINT_PARSE_TREES);
     getBooleanOptionValue(ARG_PRINT_PARSE_TREE_LINE_NUMS);
     getBooleanOptionValue(ARG_PRINT_SYMMETRIC_EDGES);
     getStringOptionValue(BfConsts.ARG_QUESTION_NAME);
-    getBooleanOptionValue(BfConsts.ARG_RED_FLAG_AS_ERROR);
     getBooleanOptionValue(BfConsts.ARG_RED_FLAG_SUPPRESS);
     getBooleanOptionValue(BfConsts.COMMAND_REPORT);
     getStringOptionValue(ARG_RUN_MODE);
@@ -1481,7 +1454,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     getStringOptionValue(ARG_TRACING_AGENT_HOST);
     getIntegerOptionValue(ARG_TRACING_AGENT_PORT);
     getBooleanOptionValue(ARG_TRACING_ENABLE);
-    getBooleanOptionValue(BfConsts.ARG_UNIMPLEMENTED_AS_ERROR);
     getBooleanOptionValue(BfConsts.ARG_UNIMPLEMENTED_SUPPRESS);
     getBooleanOptionValue(BfConsts.ARG_UNRECOGNIZED_AS_RED_FLAG);
     getBooleanOptionValue(BfConsts.COMMAND_VALIDATE_ENVIRONMENT);

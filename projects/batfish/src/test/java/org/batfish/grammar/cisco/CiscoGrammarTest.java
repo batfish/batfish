@@ -1,5 +1,7 @@
 package org.batfish.grammar.cisco;
 
+import static java.util.Objects.requireNonNull;
+import static org.batfish.common.util.CommonUtil.sha256Digest;
 import static org.batfish.datamodel.AuthenticationMethod.ENABLE;
 import static org.batfish.datamodel.AuthenticationMethod.GROUP_RADIUS;
 import static org.batfish.datamodel.AuthenticationMethod.GROUP_TACACS;
@@ -18,6 +20,8 @@ import static org.batfish.datamodel.matchers.AaaMatchers.hasAuthentication;
 import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.hasConjuncts;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.isAndMatchExprThat;
+import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasAllowRemoteAsOut;
+import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasLocalAs;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasRemoteAs;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasActiveNeighbor;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathEbgp;
@@ -44,6 +48,7 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVendorFami
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrfs;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasAclName;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasBandwidth;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructure;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasIpProtocols;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasMemberInterfaces;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasName;
@@ -59,8 +64,11 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.hasZone;
 import static org.batfish.datamodel.matchers.DataModelMatchers.isIpSpaceReferenceThat;
 import static org.batfish.datamodel.matchers.DataModelMatchers.isPermittedByAclThat;
 import static org.batfish.datamodel.matchers.DataModelMatchers.permits;
+import static org.batfish.datamodel.matchers.EigrpMetricMatchers.hasDelay;
+import static org.batfish.datamodel.matchers.EigrpRouteMatchers.hasEigrpMetric;
 import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasDstIps;
 import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasSrcIps;
+import static org.batfish.datamodel.matchers.HsrpGroupMatchers.hasTrackActions;
 import static org.batfish.datamodel.matchers.IkeGatewayMatchers.hasAddress;
 import static org.batfish.datamodel.matchers.IkeGatewayMatchers.hasExternalInterface;
 import static org.batfish.datamodel.matchers.IkeGatewayMatchers.hasIkePolicy;
@@ -78,6 +86,9 @@ import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasEncryptionAl
 import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasLifeTimeSeconds;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDeclaredNames;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasEigrp;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasHsrpGroup;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasHsrpVersion;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfArea;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrf;
@@ -100,6 +111,9 @@ import static org.batfish.datamodel.matchers.IpsecPeerConfigMatchers.isIpsecStat
 import static org.batfish.datamodel.matchers.IpsecPolicyMatchers.hasIpsecProposals;
 import static org.batfish.datamodel.matchers.IpsecPolicyMatchers.hasPfsKeyGroup;
 import static org.batfish.datamodel.matchers.IpsecProposalMatchers.hasProtocols;
+import static org.batfish.datamodel.matchers.IpsecSessionMatchers.hasNegotiatedIkeP1Key;
+import static org.batfish.datamodel.matchers.IpsecSessionMatchers.hasNegotiatedIkeP1Proposal;
+import static org.batfish.datamodel.matchers.IpsecSessionMatchers.hasNegotiatedIpsecP2Proposal;
 import static org.batfish.datamodel.matchers.IpsecVpnMatchers.hasBindInterface;
 import static org.batfish.datamodel.matchers.IpsecVpnMatchers.hasIkeGatewaay;
 import static org.batfish.datamodel.matchers.IpsecVpnMatchers.hasPolicy;
@@ -119,8 +133,13 @@ import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.hasMetric;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.isAdvertised;
 import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasArea;
 import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasAreas;
+import static org.batfish.datamodel.matchers.RegexCommunitySetMatchers.hasRegex;
+import static org.batfish.datamodel.matchers.RegexCommunitySetMatchers.isRegexCommunitySet;
+import static org.batfish.datamodel.matchers.SnmpServerMatchers.hasCommunities;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
+import static org.batfish.datamodel.matchers.VrfMatchers.hasEigrpProcesses;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasOspfProcess;
+import static org.batfish.datamodel.matchers.VrfMatchers.hasSnmpServer;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.batfish.datamodel.vendor_family.VendorFamilyMatchers.hasCisco;
 import static org.batfish.datamodel.vendor_family.cisco.CiscoFamilyMatchers.hasAaa;
@@ -134,6 +153,40 @@ import static org.batfish.representation.cisco.CiscoConfiguration.computeProtoco
 import static org.batfish.representation.cisco.CiscoConfiguration.computeServiceObjectAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeServiceObjectGroupAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeZonePairAclName;
+import static org.batfish.representation.cisco.CiscoStructureType.ACCESS_LIST;
+import static org.batfish.representation.cisco.CiscoStructureType.BFD_TEMPLATE;
+import static org.batfish.representation.cisco.CiscoStructureType.INSPECT_CLASS_MAP;
+import static org.batfish.representation.cisco.CiscoStructureType.INSPECT_POLICY_MAP;
+import static org.batfish.representation.cisco.CiscoStructureType.IPV4_ACCESS_LIST;
+import static org.batfish.representation.cisco.CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED;
+import static org.batfish.representation.cisco.CiscoStructureType.IPV4_ACCESS_LIST_STANDARD;
+import static org.batfish.representation.cisco.CiscoStructureType.IPV6_ACCESS_LIST;
+import static org.batfish.representation.cisco.CiscoStructureType.IPV6_ACCESS_LIST_EXTENDED;
+import static org.batfish.representation.cisco.CiscoStructureType.IPV6_ACCESS_LIST_STANDARD;
+import static org.batfish.representation.cisco.CiscoStructureType.IP_ACCESS_LIST;
+import static org.batfish.representation.cisco.CiscoStructureType.KEYRING;
+import static org.batfish.representation.cisco.CiscoStructureType.MAC_ACCESS_LIST;
+import static org.batfish.representation.cisco.CiscoStructureType.NETWORK_OBJECT;
+import static org.batfish.representation.cisco.CiscoStructureType.NETWORK_OBJECT_GROUP;
+import static org.batfish.representation.cisco.CiscoStructureType.PREFIX_LIST;
+import static org.batfish.representation.cisco.CiscoStructureType.PREFIX_SET;
+import static org.batfish.representation.cisco.CiscoStructureType.PROTOCOL_OBJECT_GROUP;
+import static org.batfish.representation.cisco.CiscoStructureType.PROTOCOL_OR_SERVICE_OBJECT_GROUP;
+import static org.batfish.representation.cisco.CiscoStructureType.ROUTE_MAP;
+import static org.batfish.representation.cisco.CiscoStructureType.SECURITY_ZONE;
+import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_OBJECT;
+import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_OBJECT_GROUP;
+import static org.batfish.representation.cisco.CiscoStructureType.TRACK;
+import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP;
+import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OR_SERVICE_OBJECT_GROUP;
+import static org.batfish.representation.cisco.CiscoStructureUsage.INSPECT_POLICY_MAP_INSPECT_CLASS;
+import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_BFD_TEMPLATE;
+import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_INCOMING_FILTER;
+import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_OUTGOING_FILTER;
+import static org.batfish.representation.cisco.CiscoStructureUsage.IP_NAT_DESTINATION_ACCESS_LIST;
+import static org.batfish.representation.cisco.CiscoStructureUsage.ISAKMP_PROFILE_KEYRING;
+import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_MATCH_IPV4_ACCESS_LIST;
+import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_MATCH_IPV6_ACCESS_LIST;
 import static org.batfish.representation.cisco.OspfProcess.getReferenceOspfBandwidth;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
@@ -157,8 +210,10 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.graph.EndpointPair;
 import com.google.common.graph.ValueGraph;
 import java.io.IOException;
 import java.util.Arrays;
@@ -169,9 +224,11 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
 import org.batfish.common.WellKnownCommunity;
 import org.batfish.common.plugin.DataPlanePlugin;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.common.util.IpsecUtil;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpAdvertisement;
@@ -180,8 +237,10 @@ import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.DiffieHellmanGroup;
+import org.batfish.datamodel.EigrpExternalRoute;
 import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.HeaderSpace;
@@ -198,20 +257,32 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
 import org.batfish.datamodel.IpsecEncapsulationMode;
+import org.batfish.datamodel.IpsecPeerConfigId;
 import org.batfish.datamodel.IpsecProtocol;
+import org.batfish.datamodel.IpsecSession;
+import org.batfish.datamodel.Line;
 import org.batfish.datamodel.LineType;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.NamedPort;
+import org.batfish.datamodel.OspfIntraAreaRoute;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
+import org.batfish.datamodel.RegexCommunitySet;
+import org.batfish.datamodel.RipInternalRoute;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.eigrp.EigrpMetric;
+import org.batfish.datamodel.eigrp.EigrpProcessMode;
+import org.batfish.datamodel.matchers.CommunityListLineMatchers;
+import org.batfish.datamodel.matchers.CommunityListMatchers;
 import org.batfish.datamodel.matchers.ConfigurationMatchers;
+import org.batfish.datamodel.matchers.EigrpInterfaceSettingsMatchers;
+import org.batfish.datamodel.matchers.HsrpGroupMatchers;
 import org.batfish.datamodel.matchers.IkeGatewayMatchers;
 import org.batfish.datamodel.matchers.IkePhase1KeyMatchers;
 import org.batfish.datamodel.matchers.IkePhase1ProposalMatchers;
@@ -228,13 +299,20 @@ import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfDefaultOriginateType;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.ospf.StubType;
-import org.batfish.datamodel.vendor_family.cisco.Line;
+import org.batfish.datamodel.routing_policy.Environment.Direction;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.expr.CommunityHalvesExpr;
+import org.batfish.datamodel.routing_policy.expr.CommunitySetExpr;
+import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
+import org.batfish.datamodel.routing_policy.expr.LiteralCommunityConjunction;
+import org.batfish.datamodel.routing_policy.expr.LiteralCommunityHalf;
+import org.batfish.datamodel.routing_policy.expr.RangeCommunityHalf;
+import org.batfish.datamodel.tracking.DecrementPriority;
+import org.batfish.datamodel.tracking.TrackInterface;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
 import org.batfish.representation.cisco.CiscoConfiguration;
-import org.batfish.representation.cisco.CiscoStructureType;
-import org.batfish.representation.cisco.CiscoStructureUsage;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
@@ -449,7 +527,7 @@ public class CiscoGrammarTest {
 
   @Test
   public void testAGAclReferrers() throws IOException {
-    String hostName = "iosAccessGroupAcl";
+    String filename = "configs/iosAccessGroupAcl";
     String testrigName = "access-group-acl";
     List<String> configurationNames = ImmutableList.of("iosAccessGroupAcl");
 
@@ -464,20 +542,15 @@ public class CiscoGrammarTest {
         batfish.loadConvertConfigurationAnswerElementOrReparse();
 
     // check expected references for {mac,ip}_acl{_unused,}
-    assertThat(
-        ccae, hasNumReferrers(hostName, CiscoStructureType.MAC_ACCESS_LIST, "mac_acl_unused", 0));
-    assertThat(ccae, hasNumReferrers(hostName, CiscoStructureType.MAC_ACCESS_LIST, "mac_acl", 1));
-    assertThat(
-        ccae,
-        hasNumReferrers(
-            hostName, CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED, "ip_acl_unused", 0));
-    assertThat(
-        ccae, hasNumReferrers(hostName, CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED, "ip_acl", 1));
+    assertThat(ccae, hasNumReferrers(filename, MAC_ACCESS_LIST, "mac_acl_unused", 0));
+    assertThat(ccae, hasNumReferrers(filename, MAC_ACCESS_LIST, "mac_acl", 1));
+    assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_EXTENDED, "ip_acl_unused", 0));
+    assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_EXTENDED, "ip_acl", 1));
   }
 
   @Test
   public void testAGAclUndefined() throws IOException {
-    String hostName = "iosAccessGroupAcl";
+    String filename = "configs/iosAccessGroupAcl";
     String testrigName = "access-group-acl";
     List<String> configurationNames = ImmutableList.of("iosAccessGroupAcl");
 
@@ -493,12 +566,12 @@ public class CiscoGrammarTest {
             batfish.loadConvertConfigurationAnswerElementOrReparse().getUndefinedReferences();
 
     // only mac_acl_udef and ip_acl_udef should be undefined references
-    assertThat(undefinedReferences, hasKey(hostName));
+    assertThat(undefinedReferences, hasKey(filename));
     SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>> byHost =
-        undefinedReferences.get(hostName);
-    assertThat(byHost, hasKey(CiscoStructureType.ACCESS_LIST.getDescription()));
+        undefinedReferences.get(filename);
+    assertThat(byHost, hasKey(ACCESS_LIST.getDescription()));
     SortedMap<String, SortedMap<String, SortedSet<Integer>>> byType =
-        byHost.get(CiscoStructureType.ACCESS_LIST.getDescription());
+        byHost.get(ACCESS_LIST.getDescription());
 
     assertThat(byType.keySet(), hasSize(2));
     assertThat(byType, hasKey("ip_acl_udef"));
@@ -537,6 +610,7 @@ public class CiscoGrammarTest {
   @Test
   public void testAsaServiceObject() throws IOException {
     String hostname = "asa-service-object";
+    String filename = "configs/" + hostname;
     Configuration c = parseConfig(hostname);
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
@@ -554,11 +628,10 @@ public class CiscoGrammarTest {
     Flow flowTcpFail = createFlow(IpProtocol.TCP, 65534, 1);
 
     /* Confirm service objects have the correct number of referrers */
-    assertThat(ccae, hasNumReferrers(hostname, CiscoStructureType.SERVICE_OBJECT, "OS_TCPUDP", 1));
-    assertThat(ccae, hasNumReferrers(hostname, CiscoStructureType.SERVICE_OBJECT, "OS_ICMP", 0));
+    assertThat(ccae, hasNumReferrers(filename, SERVICE_OBJECT, "OS_TCPUDP", 1));
+    assertThat(ccae, hasNumReferrers(filename, SERVICE_OBJECT, "OS_ICMP", 0));
     /* Confirm undefined reference shows up as such */
-    assertThat(
-        ccae, hasUndefinedReference(hostname, CiscoStructureType.SERVICE_OBJECT, "OS_UNDEFINED"));
+    assertThat(ccae, hasUndefinedReference(filename, SERVICE_OBJECT, "OS_UNDEFINED"));
 
     /* Confirm IpAcls created from service objects permit and reject the correct flows */
     assertThat(c, hasIpAccessList(osTcpAclName, accepts(flowTcpPass, null, c)));
@@ -582,6 +655,7 @@ public class CiscoGrammarTest {
   @Test
   public void testIosAclObjectGroup() throws IOException {
     String hostname = "ios-acl-object-group";
+    String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     Configuration c = batfish.loadConfigurations().get(hostname);
     ConvertConfigurationAnswerElement ccae =
@@ -616,105 +690,243 @@ public class CiscoGrammarTest {
     /*
      * We expect only object-groups ogsunused1, ognunused1 to have zero referrers
      */
-    assertThat(ccae, hasNumReferrers(hostname, CiscoStructureType.SERVICE_OBJECT_GROUP, "ogs1", 1));
-    assertThat(ccae, hasNumReferrers(hostname, CiscoStructureType.NETWORK_OBJECT_GROUP, "ogn1", 1));
-    assertThat(ccae, hasNumReferrers(hostname, CiscoStructureType.NETWORK_OBJECT_GROUP, "ogn2", 1));
-    assertThat(
-        ccae, hasNumReferrers(hostname, CiscoStructureType.SERVICE_OBJECT_GROUP, "ogsunused1", 0));
-    assertThat(
-        ccae, hasNumReferrers(hostname, CiscoStructureType.NETWORK_OBJECT_GROUP, "ognunused1", 0));
+    assertThat(ccae, hasNumReferrers(filename, SERVICE_OBJECT_GROUP, "ogs1", 1));
+    assertThat(ccae, hasNumReferrers(filename, NETWORK_OBJECT_GROUP, "ogn1", 1));
+    assertThat(ccae, hasNumReferrers(filename, NETWORK_OBJECT_GROUP, "ogn2", 1));
+    assertThat(ccae, hasNumReferrers(filename, SERVICE_OBJECT_GROUP, "ogsunused1", 0));
+    assertThat(ccae, hasNumReferrers(filename, NETWORK_OBJECT_GROUP, "ognunused1", 0));
 
     /*
      * We expect undefined references only to object-groups ogsfake, ognfake1, ognfake2
      */
-    assertThat(
-        ccae,
-        not(hasUndefinedReference(hostname, CiscoStructureType.SERVICE_OBJECT_GROUP, "ogs1")));
-    assertThat(
-        ccae,
-        not(hasUndefinedReference(hostname, CiscoStructureType.NETWORK_OBJECT_GROUP, "ogn1")));
-    assertThat(
-        ccae,
-        not(hasUndefinedReference(hostname, CiscoStructureType.NETWORK_OBJECT_GROUP, "ogn2")));
+    assertThat(ccae, not(hasUndefinedReference(filename, SERVICE_OBJECT_GROUP, "ogs1")));
+    assertThat(ccae, not(hasUndefinedReference(filename, NETWORK_OBJECT_GROUP, "ogn1")));
+    assertThat(ccae, not(hasUndefinedReference(filename, NETWORK_OBJECT_GROUP, "ogn2")));
     assertThat(
         ccae,
         hasUndefinedReference(
-            hostname,
-            CiscoStructureType.PROTOCOL_OR_SERVICE_OBJECT_GROUP,
+            filename,
+            PROTOCOL_OR_SERVICE_OBJECT_GROUP,
             "ogsfake",
-            CiscoStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OR_SERVICE_OBJECT_GROUP));
+            EXTENDED_ACCESS_LIST_PROTOCOL_OR_SERVICE_OBJECT_GROUP));
     assertThat(
         ccae,
         hasUndefinedReference(
-            hostname,
-            CiscoStructureType.NETWORK_OBJECT_GROUP,
-            "ognfake2",
-            CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP));
+            filename, NETWORK_OBJECT_GROUP, "ognfake2", EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP));
     assertThat(
         ccae,
         hasUndefinedReference(
-            hostname,
-            CiscoStructureType.NETWORK_OBJECT_GROUP,
-            "ognfake1",
-            CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP));
+            filename, NETWORK_OBJECT_GROUP, "ognfake1", EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP));
   }
 
   @Test
   public void testIosAclReferences() throws IOException {
     String hostname = "ios-acl";
+    String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse();
 
     // Confirm reference counts are correct for ACLs
-    assertThat(
-        ccae, hasNumReferrers(hostname, CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED, "AL", 2));
-    assertThat(
-        ccae, hasNumReferrers(hostname, CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED, "AL_IF", 3));
-    assertThat(
-        ccae, hasNumReferrers(hostname, CiscoStructureType.IPV4_ACCESS_LIST_STANDARD, "10", 0));
-    assertThat(
-        ccae, hasNumReferrers(hostname, CiscoStructureType.IPV6_ACCESS_LIST_EXTENDED, "AL6", 1));
-    assertThat(
-        ccae,
-        hasNumReferrers(hostname, CiscoStructureType.IPV6_ACCESS_LIST_STANDARD, "AL6_UNUSED", 0));
+    assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_EXTENDED, "AL", 2));
+    assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_EXTENDED, "AL_IF", 3));
+    assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_STANDARD, "10", 0));
+    assertThat(ccae, hasNumReferrers(filename, IPV6_ACCESS_LIST_EXTENDED, "AL6", 1));
+    assertThat(ccae, hasNumReferrers(filename, IPV6_ACCESS_LIST_STANDARD, "AL6_UNUSED", 0));
 
     // Confirm undefined references are detected
     assertThat(
         ccae,
         hasUndefinedReference(
-            hostname,
-            CiscoStructureType.IPV4_ACCESS_LIST,
-            "AL_UNDEF",
-            CiscoStructureUsage.ROUTE_MAP_MATCH_IPV4_ACCESS_LIST));
+            filename, IPV4_ACCESS_LIST, "AL_UNDEF", ROUTE_MAP_MATCH_IPV4_ACCESS_LIST));
     assertThat(
         ccae,
         hasUndefinedReference(
-            hostname,
-            CiscoStructureType.IPV6_ACCESS_LIST,
-            "AL6_UNDEF",
-            CiscoStructureUsage.ROUTE_MAP_MATCH_IPV6_ACCESS_LIST));
+            filename, IPV6_ACCESS_LIST, "AL6_UNDEF", ROUTE_MAP_MATCH_IPV6_ACCESS_LIST));
     assertThat(
         ccae,
         hasUndefinedReference(
-            hostname,
-            CiscoStructureType.IPV4_ACCESS_LIST,
-            "AL_IF_UNDEF",
-            CiscoStructureUsage.IP_NAT_DESTINATION_ACCESS_LIST));
+            filename, IPV4_ACCESS_LIST, "AL_IF_UNDEF", IP_NAT_DESTINATION_ACCESS_LIST));
     assertThat(
         ccae,
         hasUndefinedReference(
-            hostname,
-            CiscoStructureType.IPV4_ACCESS_LIST,
-            "AL_IF_UNDEF",
-            CiscoStructureUsage.INTERFACE_INCOMING_FILTER));
+            filename, IPV4_ACCESS_LIST, "AL_IF_UNDEF", INTERFACE_INCOMING_FILTER));
     assertThat(
         ccae,
         hasUndefinedReference(
-            hostname,
-            CiscoStructureType.IPV4_ACCESS_LIST,
-            "AL_IF_UNDEF",
-            CiscoStructureUsage.INTERFACE_OUTGOING_FILTER));
+            filename, IPV4_ACCESS_LIST, "AL_IF_UNDEF", INTERFACE_OUTGOING_FILTER));
+  }
+
+  @Test
+  public void testIosBfdTemplate() throws IOException {
+    String hostname = "ios-bfd-template";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    assertThat(ccae, hasNumReferrers(filename, BFD_TEMPLATE, "bfd-template-unused", 0));
+    assertThat(ccae, hasNumReferrers(filename, BFD_TEMPLATE, "bfd-template-used", 1));
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            filename, BFD_TEMPLATE, "bfd-template-undefined", INTERFACE_BFD_TEMPLATE));
+  }
+
+  /**
+   * Test EIGRP address family configured within another process EIGRP configuration can declare a
+   * process that is nested in the configuration of another process. The processes are not connected
+   * in any way. The nesting is only one layer.
+   */
+  @Test
+  public void testIosEigrpAddressFamily() throws IOException {
+    Configuration c = parseConfig("ios-eigrp-address-family");
+
+    /* Confirm both processes are present */
+    assertThat(c, hasDefaultVrf(hasEigrpProcesses(hasKey(1L))));
+    assertThat(c, ConfigurationMatchers.hasVrf("vrf-name", hasEigrpProcesses(hasKey(2L))));
+
+    /* Confirm interfaces were matched */
+    assertThat(c, hasInterface("Ethernet0", hasEigrp(EigrpInterfaceSettingsMatchers.hasAsn(1L))));
+    assertThat(c, hasInterface("Ethernet1", hasEigrp(EigrpInterfaceSettingsMatchers.hasAsn(2L))));
+  }
+
+  /**
+   * Test EIGRP autonomous-system stanza Cisco does not recommend configuring the autonomous system
+   * number this way, but it is possible.
+   */
+  @Test
+  public void testIosEigrpAsn() throws IOException {
+    Configuration c = parseConfig("ios-eigrp-asn");
+
+    /* Confirm both processes are present */
+    assertThat(c, hasDefaultVrf(hasEigrpProcesses(hasKey(1L))));
+    assertThat(c, ConfigurationMatchers.hasVrf("vrf-name", hasEigrpProcesses(hasKey(2L))));
+
+    /* Confirm interfaces were matched */
+    assertThat(c, hasInterface("Ethernet0", hasEigrp(EigrpInterfaceSettingsMatchers.hasAsn(1L))));
+    assertThat(c, hasInterface("Ethernet1", hasEigrp(EigrpInterfaceSettingsMatchers.hasAsn(2L))));
+  }
+
+  /** Test classic EIGRP process with passive interfaces */
+  @Test
+  public void testIosEigrpClassic() throws IOException {
+    Configuration c = parseConfig("ios-eigrp-classic");
+
+    /* Confirm process is present */
+    assertThat(c, hasDefaultVrf(hasEigrpProcesses(hasKey(1L))));
+
+    /* Confirm interfaces were matched */
+    assertThat(c, hasInterface("Ethernet0", hasEigrp(EigrpInterfaceSettingsMatchers.hasAsn(1L))));
+    assertThat(c, hasInterface("Ethernet1", hasEigrp(EigrpInterfaceSettingsMatchers.hasAsn(1L))));
+    assertThat(c, hasInterface("Ethernet2", hasEigrp(EigrpInterfaceSettingsMatchers.hasAsn(1L))));
+
+    /* Passive interfaces are configured correctly */
+    assertThat(
+        c, hasInterface("Ethernet0", hasEigrp(EigrpInterfaceSettingsMatchers.hasPassive(false))));
+    assertThat(
+        c, hasInterface("Ethernet1", hasEigrp(EigrpInterfaceSettingsMatchers.hasPassive(false))));
+    assertThat(
+        c, hasInterface("Ethernet2", hasEigrp(EigrpInterfaceSettingsMatchers.hasPassive(true))));
+  }
+
+  /** Test mixing named and classic EIGRP processes in separate VRFs */
+  @Test
+  public void testIosEigrpMixed() throws IOException {
+    Configuration c = parseConfig("ios-eigrp-mixed");
+
+    /* Confirm classic mode networks are configured correctly */
+    assertThat(c, hasDefaultVrf(hasEigrpProcesses(hasKey(1L))));
+    assertThat(c, hasInterface("Ethernet0", hasEigrp(EigrpInterfaceSettingsMatchers.hasAsn(1L))));
+
+    /* Confirm named mode networks are configured correctly */
+    assertThat(c, ConfigurationMatchers.hasVrf("vrf-name", hasEigrpProcesses(hasKey(2L))));
+    assertThat(c, hasInterface("Ethernet1", hasEigrp(EigrpInterfaceSettingsMatchers.hasAsn(2L))));
+  }
+
+  /** Test multiple classic EIGRP processes in the same VRF */
+  @Test
+  public void testIosEigrpMultiple() throws IOException {
+    Configuration c = parseConfig("ios-eigrp-multiple");
+
+    /* Confirm both processes are present */
+    assertThat(c, hasDefaultVrf(hasEigrpProcesses(hasKey(1L))));
+    assertThat(c, hasDefaultVrf(hasEigrpProcesses(hasKey(2L))));
+
+    /* Confirm interfaces were matched */
+    assertThat(c, hasInterface("Ethernet0", hasEigrp(EigrpInterfaceSettingsMatchers.hasAsn(1L))));
+    assertThat(c, hasInterface("Ethernet1", hasEigrp(EigrpInterfaceSettingsMatchers.hasAsn(2L))));
+  }
+
+  /** Test named EIGRP process with passive interfaces */
+  @Test
+  public void testIosEigrpNamed() throws IOException {
+    Configuration c = parseConfig("ios-eigrp-named");
+
+    /* Confirm process is present */
+    assertThat(c, hasDefaultVrf(hasEigrpProcesses(hasKey(2L))));
+
+    /* Passive interfaces are configured correctly */
+    assertThat(
+        c, hasInterface("Ethernet3", hasEigrp(EigrpInterfaceSettingsMatchers.hasPassive(false))));
+    assertThat(
+        c, hasInterface("Ethernet4", hasEigrp(EigrpInterfaceSettingsMatchers.hasPassive(false))));
+    assertThat(
+        c, hasInterface("Ethernet5", hasEigrp(EigrpInterfaceSettingsMatchers.hasPassive(true))));
+  }
+
+  /**
+   * Test EIGRP route redistribution. Redistributes a connected route and checks if routing policy
+   * accepts OSPF routes given "redistribute ospf 1"
+   */
+  @Test
+  public void testIosEigrpRedistribution() throws IOException {
+    Configuration c = parseConfig("ios-eigrp-redistribution");
+    long asn = 1L;
+
+    assertThat(c, hasDefaultVrf(hasEigrpProcesses(hasKey(asn))));
+    String exportPolicyName =
+        c.getVrfs().get(DEFAULT_VRF_NAME).getEigrpProcesses().get(asn).getExportPolicy();
+    assertThat(exportPolicyName, notNullValue());
+    RoutingPolicy routingPolicy = c.getRoutingPolicies().get(exportPolicyName);
+    assertThat(routingPolicy, notNullValue());
+
+    EigrpExternalRoute.Builder outputRouteBuilder = new EigrpExternalRoute.Builder();
+    outputRouteBuilder.setDestinationAsn(asn).setNetwork(Prefix.parse("1.0.0.0/32"));
+    EigrpMetric.Builder metricBuilder = EigrpMetric.builder().setMode(EigrpProcessMode.CLASSIC);
+
+    // Check if routingPolicy accepts connected route and sets correct metric
+    assertTrue(
+        routingPolicy.process(
+            new ConnectedRoute(Prefix.parse("1.1.1.1/32"), "Loopback0"),
+            outputRouteBuilder,
+            null,
+            DEFAULT_VRF_NAME,
+            Direction.OUT));
+    assertThat(
+        outputRouteBuilder.build(),
+        hasEigrpMetric(requireNonNull(metricBuilder.setBandwidth(1E5).setDelay(1E8).build())));
+
+    // Check if routingPolicy rejects RIP route
+    assertFalse(
+        routingPolicy.process(
+            new RipInternalRoute(Prefix.parse("2.2.2.2/32"), new Ip("3.3.3.3"), 1, 1),
+            outputRouteBuilder,
+            null,
+            DEFAULT_VRF_NAME,
+            Direction.OUT));
+
+    // Check if routingPolicy accepts OSPF route and sets correct default metric
+    assertTrue(
+        routingPolicy.process(
+            new OspfIntraAreaRoute(Prefix.parse("4.4.4.4/32"), null, 1, 1, 1),
+            outputRouteBuilder,
+            null,
+            DEFAULT_VRF_NAME,
+            Direction.OUT));
+    assertThat(
+        outputRouteBuilder.build(),
+        hasEigrpMetric(requireNonNull(metricBuilder.setBandwidth(2E5).setDelay(2E8).build())));
   }
 
   @Test
@@ -804,9 +1016,29 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testIosInterfaceDelay() throws IOException {
+    Configuration c = parseConfig("ios-interface-delay");
+
+    assertThat(
+        c,
+        hasInterface(
+            "GigabitEthernet0/0",
+            hasEigrp(EigrpInterfaceSettingsMatchers.hasEigrpMetric(hasDelay(1E7)))));
+    assertThat(
+        c,
+        hasInterface(
+            "GigabitEthernet0/1",
+            hasEigrp(EigrpInterfaceSettingsMatchers.hasEigrpMetric(hasDelay(1E10)))));
+    assertThat(
+        c,
+        hasInterface(
+            "FastEthernet0/1",
+            hasEigrp(EigrpInterfaceSettingsMatchers.hasEigrpMetric(hasDelay(1E8)))));
+  }
+
+  @Test
   public void testIosInterfaceSpeed() throws IOException {
-    String hostname = "ios-interface-speed";
-    Configuration c = parseConfig(hostname);
+    Configuration c = parseConfig("ios-interface-speed");
 
     assertThat(c, hasInterface("GigabitEthernet0/0", hasBandwidth(1E9D)));
     assertThat(c, hasInterface("GigabitEthernet0/1", hasBandwidth(1E9D)));
@@ -814,40 +1046,60 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testIosInterfaceStandby() throws IOException {
+    Configuration c = parseConfig("ios-interface-standby");
+    Interface i = c.getInterfaces().get("Ethernet0");
+
+    assertThat(
+        c,
+        ConfigurationMatchers.hasTrackingGroups(
+            equalTo(ImmutableMap.of("1", new TrackInterface("Tunnel1")))));
+    assertThat(
+        i,
+        hasHsrpGroup(
+            1001,
+            HsrpGroupMatchers.hasAuthentication(
+                sha256Digest("012345678901234567890123456789012345678"))));
+    assertThat(i, hasHsrpGroup(1001, HsrpGroupMatchers.hasHelloTime(500)));
+    assertThat(i, hasHsrpGroup(1001, HsrpGroupMatchers.hasHoldTime(2)));
+    assertThat(i, hasHsrpGroup(1001, HsrpGroupMatchers.hasIp(new Ip("10.0.0.1"))));
+    assertThat(i, hasHsrpGroup(1001, HsrpGroupMatchers.hasPriority(105)));
+    assertThat(i, hasHsrpGroup(1001, HsrpGroupMatchers.hasPreempt()));
+    assertThat(
+        i,
+        hasHsrpGroup(
+            1001, hasTrackActions(equalTo(ImmutableMap.of("1", new DecrementPriority(20))))));
+    assertThat(i, hasHsrpVersion("2"));
+  }
+
+  @Test
   public void testIosHttpInspection() throws IOException {
     String hostname = "ios-http-inspection";
+    String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse();
 
-    assertThat(ccae, hasNumReferrers(hostname, CiscoStructureType.INSPECT_CLASS_MAP, "ci", 1));
-    assertThat(
-        ccae, hasNumReferrers(hostname, CiscoStructureType.INSPECT_CLASS_MAP, "ciunused", 0));
+    assertThat(ccae, hasNumReferrers(filename, INSPECT_CLASS_MAP, "ci", 1));
+    assertThat(ccae, hasNumReferrers(filename, INSPECT_CLASS_MAP, "ciunused", 0));
     assertThat(
         ccae,
         hasUndefinedReference(
-            hostname,
-            CiscoStructureType.INSPECT_CLASS_MAP,
-            "ciundefined",
-            CiscoStructureUsage.INSPECT_POLICY_MAP_INSPECT_CLASS));
+            filename, INSPECT_CLASS_MAP, "ciundefined", INSPECT_POLICY_MAP_INSPECT_CLASS));
   }
 
   @Test
   public void testIosKeyring() throws IOException {
     String hostname = "ios-keyrings";
+    String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse();
 
-    assertThat(ccae, hasNumReferrers(hostname, CiscoStructureType.KEYRING, "kused", 1));
-    assertThat(ccae, hasNumReferrers(hostname, CiscoStructureType.KEYRING, "kunused", 0));
+    assertThat(ccae, hasNumReferrers(filename, KEYRING, "kused", 1));
+    assertThat(ccae, hasNumReferrers(filename, KEYRING, "kunused", 0));
     assertThat(
-        ccae,
-        hasUndefinedReference(
-            hostname,
-            CiscoStructureType.KEYRING,
-            "kundefined",
-            CiscoStructureUsage.ISAKMP_PROFILE_KEYRING));
+        ccae, hasUndefinedReference(filename, KEYRING, "kundefined", ISAKMP_PROFILE_KEYRING));
   }
 
   @Test
@@ -873,6 +1125,7 @@ public class CiscoGrammarTest {
   @Test
   public void testIosObjectGroupNetwork() throws IOException {
     String hostname = "ios-object-group-network";
+    String filename = "configs/" + hostname;
     Configuration c = parseConfig(hostname);
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
@@ -908,26 +1161,19 @@ public class CiscoGrammarTest {
     assertThat(c, hasIpSpace(ognNameWildcard, not(containsIp(ognUnmatchedIp))));
 
     /* Confirm the used object groups have the correct number of referrers */
-    assertThat(
-        ccae,
-        hasNumReferrers(hostname, CiscoStructureType.NETWORK_OBJECT_GROUP, ognNameWildcard, 2));
-    assertThat(
-        ccae, hasNumReferrers(hostname, CiscoStructureType.NETWORK_OBJECT_GROUP, ognNameHost, 1));
-    assertThat(
-        ccae,
-        hasNumReferrers(hostname, CiscoStructureType.NETWORK_OBJECT_GROUP, ognNameIndirect, 1));
+    assertThat(ccae, hasNumReferrers(filename, NETWORK_OBJECT_GROUP, ognNameWildcard, 2));
+    assertThat(ccae, hasNumReferrers(filename, NETWORK_OBJECT_GROUP, ognNameHost, 1));
+    assertThat(ccae, hasNumReferrers(filename, NETWORK_OBJECT_GROUP, ognNameIndirect, 1));
     /* Confirm the unused object group has no referrers */
-    assertThat(
-        ccae, hasNumReferrers(hostname, CiscoStructureType.NETWORK_OBJECT_GROUP, ognNameUnused, 0));
+    assertThat(ccae, hasNumReferrers(filename, NETWORK_OBJECT_GROUP, ognNameUnused, 0));
     /* Confirm the undefined reference shows up as such */
-    assertThat(
-        ccae,
-        hasUndefinedReference(hostname, CiscoStructureType.NETWORK_OBJECT_GROUP, ognNameUndef));
+    assertThat(ccae, hasUndefinedReference(filename, NETWORK_OBJECT_GROUP, ognNameUndef));
   }
 
   @Test
   public void testIosObjectGroupProtocol() throws IOException {
     String hostname = "ios-object-group-protocol";
+    String filename = "configs/" + hostname;
     Configuration c = parseConfig(hostname);
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
@@ -953,22 +1199,14 @@ public class CiscoGrammarTest {
         Flow.builder().setTag("").setIngressNode("").setIpProtocol(IpProtocol.TCP).build();
 
     /* Confirm the used object groups have referrers */
-    assertThat(
-        ccae, hasNumReferrers(hostname, CiscoStructureType.PROTOCOL_OBJECT_GROUP, ogpIcmpName, 1));
-    assertThat(
-        ccae,
-        hasNumReferrers(hostname, CiscoStructureType.PROTOCOL_OBJECT_GROUP, ogpTcpUdpName, 1));
-    assertThat(
-        ccae, hasNumReferrers(hostname, CiscoStructureType.PROTOCOL_OBJECT_GROUP, ogpEmptyName, 1));
+    assertThat(ccae, hasNumReferrers(filename, PROTOCOL_OBJECT_GROUP, ogpIcmpName, 1));
+    assertThat(ccae, hasNumReferrers(filename, PROTOCOL_OBJECT_GROUP, ogpTcpUdpName, 1));
+    assertThat(ccae, hasNumReferrers(filename, PROTOCOL_OBJECT_GROUP, ogpEmptyName, 1));
     /* Confirm the unused object group has no referrers */
-    assertThat(
-        ccae,
-        hasNumReferrers(hostname, CiscoStructureType.PROTOCOL_OBJECT_GROUP, ogpUnusedName, 0));
+    assertThat(ccae, hasNumReferrers(filename, PROTOCOL_OBJECT_GROUP, ogpUnusedName, 0));
     /* Confirm the undefined reference shows up as such */
     assertThat(
-        ccae,
-        hasUndefinedReference(
-            hostname, CiscoStructureType.PROTOCOL_OR_SERVICE_OBJECT_GROUP, ogpUndefName));
+        ccae, hasUndefinedReference(filename, PROTOCOL_OR_SERVICE_OBJECT_GROUP, ogpUndefName));
 
     /*
      * Icmp protocol object group and the acl referencing it should only accept Icmp and reject Tcp
@@ -1012,24 +1250,19 @@ public class CiscoGrammarTest {
   @Test
   public void testIosObjectGroupService() throws IOException {
     String hostname = "ios-object-group-service";
+    String filename = "configs/" + hostname;
     Configuration c = parseConfig(hostname);
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse();
 
     /* Confirm the used object groups have referrers */
-    assertThat(
-        ccae, hasNumReferrers(hostname, CiscoStructureType.SERVICE_OBJECT_GROUP, "og-icmp", 2));
-    assertThat(
-        ccae, hasNumReferrers(hostname, CiscoStructureType.SERVICE_OBJECT_GROUP, "og-tcp", 1));
+    assertThat(ccae, hasNumReferrers(filename, SERVICE_OBJECT_GROUP, "og-icmp", 2));
+    assertThat(ccae, hasNumReferrers(filename, SERVICE_OBJECT_GROUP, "og-tcp", 1));
     /* Confirm the unused object group has no referrers */
-    assertThat(
-        ccae, hasNumReferrers(hostname, CiscoStructureType.SERVICE_OBJECT_GROUP, "og-udp", 0));
+    assertThat(ccae, hasNumReferrers(filename, SERVICE_OBJECT_GROUP, "og-udp", 0));
     /* Confirm the undefined reference shows up as such */
-    assertThat(
-        ccae,
-        hasUndefinedReference(
-            hostname, CiscoStructureType.PROTOCOL_OR_SERVICE_OBJECT_GROUP, "og-undef"));
+    assertThat(ccae, hasUndefinedReference(filename, PROTOCOL_OR_SERVICE_OBJECT_GROUP, "og-undef"));
 
     /* og-icmp */
     assertThat(
@@ -1149,6 +1382,22 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testIosOspfDistributeList() throws IOException {
+    String hostname = "ios-ospf-distribute-list";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_EXTENDED, "aclin", 1));
+    assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_EXTENDED, "aclout", 1));
+    assertThat(ccae, hasNumReferrers(filename, PREFIX_LIST, "plin", 1));
+    assertThat(ccae, hasNumReferrers(filename, PREFIX_LIST, "plout", 1));
+    assertThat(ccae, hasNumReferrers(filename, ROUTE_MAP, "rmin", 1));
+    assertThat(ccae, hasNumReferrers(filename, ROUTE_MAP, "rmout", 1));
+  }
+
+  @Test
   public void testIosOspfNetwork() throws IOException {
     Configuration c = parseConfig("ios-interface-ospf-network");
 
@@ -1215,44 +1464,62 @@ public class CiscoGrammarTest {
   @Test
   public void testIosPrefixList() throws IOException {
     String hostname = "ios-prefix-list";
+    String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse();
 
     /* Confirm prefix list uses are counted correctly */
-    assertThat(ccae, hasNumReferrers(hostname, CiscoStructureType.PREFIX_LIST, "pre_list", 2));
-    assertThat(
-        ccae, hasNumReferrers(hostname, CiscoStructureType.PREFIX_LIST, "pre_list_unused", 0));
+    assertThat(ccae, hasNumReferrers(filename, PREFIX_LIST, "pre_list", 2));
+    assertThat(ccae, hasNumReferrers(filename, PREFIX_LIST, "pre_list_unused", 0));
 
     /* Confirm undefined prefix lists are detected in different contexts */
     /* Bgp neighbor context */
-    assertThat(
-        ccae, hasUndefinedReference(hostname, CiscoStructureType.PREFIX_LIST, "pre_list_undef1"));
+    assertThat(ccae, hasUndefinedReference(filename, PREFIX_LIST, "pre_list_undef1"));
     /* Route-map match context */
-    assertThat(
-        ccae, hasUndefinedReference(hostname, CiscoStructureType.PREFIX_LIST, "pre_list_undef2"));
+    assertThat(ccae, hasUndefinedReference(filename, PREFIX_LIST, "pre_list_undef2"));
   }
 
   @Test
   public void testIosRouteMap() throws IOException {
     String hostname = "ios-route-map";
+    String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse();
 
     /* Confirm route map uses are counted correctly */
-    assertThat(ccae, hasNumReferrers(hostname, CiscoStructureType.ROUTE_MAP, "rm_if", 1));
-    assertThat(ccae, hasNumReferrers(hostname, CiscoStructureType.ROUTE_MAP, "rm_ospf", 4));
-    assertThat(ccae, hasNumReferrers(hostname, CiscoStructureType.ROUTE_MAP, "rm_bgp", 9));
-    assertThat(ccae, hasNumReferrers(hostname, CiscoStructureType.ROUTE_MAP, "rm_unused", 0));
+    assertThat(ccae, hasNumReferrers(filename, ROUTE_MAP, "rm_if", 1));
+    assertThat(ccae, hasNumReferrers(filename, ROUTE_MAP, "rm_ospf", 4));
+    assertThat(ccae, hasNumReferrers(filename, ROUTE_MAP, "rm_bgp", 9));
+    assertThat(ccae, hasNumReferrers(filename, ROUTE_MAP, "rm_unused", 0));
 
     /* Confirm undefined route-map is detected */
-    assertThat(ccae, hasUndefinedReference(hostname, CiscoStructureType.ROUTE_MAP, "rm_undef"));
+    assertThat(ccae, hasUndefinedReference(filename, ROUTE_MAP, "rm_undef"));
+  }
+
+  @Test
+  public void testIosSnmpCommunityString() throws IOException {
+    String hostname = "ios-snmp-community-string";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+    Configuration c = batfish.loadConfigurations().get(hostname);
+
+    /* Confirm community strings are correctly parsed */
+    assertThat(c, hasDefaultVrf(hasSnmpServer(hasCommunities(hasKey("test$#!@")))));
+    assertThat(c, hasDefaultVrf(hasSnmpServer(hasCommunities(hasKey("quoted$#!@")))));
+
+    /* Confirm ACL is referenced */
+    assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_STANDARD, "80", 1));
+    assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_STANDARD, "90", 1));
   }
 
   @Test
   public void testIosClassMapInspect() throws IOException {
     String hostname = "ios-class-map-inspect";
+    String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse();
@@ -1260,26 +1527,20 @@ public class CiscoGrammarTest {
     /*
      * We expected the only unused acl to be aclunused
      */
-    assertThat(
-        ccae,
-        hasNumReferrers(hostname, CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED, "acldefined", 1));
-    assertThat(
-        ccae,
-        hasNumReferrers(hostname, CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED, "aclunused", 0));
+    assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_EXTENDED, "acldefined", 1));
+    assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_EXTENDED, "aclunused", 0));
 
     /*
      * We expect an undefined reference only to aclundefined
      */
-    assertThat(
-        ccae,
-        not(hasUndefinedReference(hostname, CiscoStructureType.IP_ACCESS_LIST, "acldefined")));
-    assertThat(
-        ccae, hasUndefinedReference(hostname, CiscoStructureType.IP_ACCESS_LIST, "aclundefined"));
+    assertThat(ccae, not(hasUndefinedReference(filename, IP_ACCESS_LIST, "acldefined")));
+    assertThat(ccae, hasUndefinedReference(filename, IP_ACCESS_LIST, "aclundefined"));
   }
 
   @Test
   public void testIosPolicyMapInspect() throws IOException {
     String hostname = "ios-policy-map-inspect";
+    String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse();
@@ -1287,38 +1548,28 @@ public class CiscoGrammarTest {
     /*
      * We expected the only unused class-map to be cmunused
      */
-    assertThat(
-        ccae, hasNumReferrers(hostname, CiscoStructureType.INSPECT_CLASS_MAP, "cmdefined", 1));
-    assertThat(
-        ccae, hasNumReferrers(hostname, CiscoStructureType.INSPECT_CLASS_MAP, "cmunused", 0));
+    assertThat(ccae, hasNumReferrers(filename, INSPECT_CLASS_MAP, "cmdefined", 1));
+    assertThat(ccae, hasNumReferrers(filename, INSPECT_CLASS_MAP, "cmunused", 0));
 
     /*
      * We expect the only unused policy-map to be pmiunused
      */
-    assertThat(
-        ccae, hasNumReferrers(hostname, CiscoStructureType.INSPECT_POLICY_MAP, "pmidefined", 1));
-    assertThat(
-        ccae, hasNumReferrers(hostname, CiscoStructureType.INSPECT_POLICY_MAP, "pmiunused", 0));
+    assertThat(ccae, hasNumReferrers(filename, INSPECT_POLICY_MAP, "pmidefined", 1));
+    assertThat(ccae, hasNumReferrers(filename, INSPECT_POLICY_MAP, "pmiunused", 0));
 
     /*
      * We expect undefined references only to cmundefined and pmmiundefined
      */
-    assertThat(
-        ccae,
-        not(hasUndefinedReference(hostname, CiscoStructureType.INSPECT_CLASS_MAP, "cmdefined")));
-    assertThat(
-        ccae, hasUndefinedReference(hostname, CiscoStructureType.INSPECT_CLASS_MAP, "cmundefined"));
-    assertThat(
-        ccae,
-        not(hasUndefinedReference(hostname, CiscoStructureType.INSPECT_POLICY_MAP, "pmidefined")));
-    assertThat(
-        ccae,
-        hasUndefinedReference(hostname, CiscoStructureType.INSPECT_POLICY_MAP, "pmiundefined"));
+    assertThat(ccae, not(hasUndefinedReference(filename, INSPECT_CLASS_MAP, "cmdefined")));
+    assertThat(ccae, hasUndefinedReference(filename, INSPECT_CLASS_MAP, "cmundefined"));
+    assertThat(ccae, not(hasUndefinedReference(filename, INSPECT_POLICY_MAP, "pmidefined")));
+    assertThat(ccae, hasUndefinedReference(filename, INSPECT_POLICY_MAP, "pmiundefined"));
   }
 
   @Test
   public void testIosPrefixSet() throws IOException {
     String hostname = "ios-prefix-set";
+    String filename = "configs/" + hostname;
     Configuration c = parseConfig(hostname);
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
@@ -1332,18 +1583,16 @@ public class CiscoGrammarTest {
     /*
      * pre_combo should be the only prefix set without a referrer
      */
-    assertThat(ccae, hasNumReferrers(hostname, CiscoStructureType.PREFIX_SET, "pre_ipv4", 1));
-    assertThat(ccae, hasNumReferrers(hostname, CiscoStructureType.PREFIX_SET, "pre_ipv6", 1));
-    assertThat(ccae, hasNumReferrers(hostname, CiscoStructureType.PREFIX_SET, "pre_combo", 0));
+    assertThat(ccae, hasNumReferrers(filename, PREFIX_SET, "pre_ipv4", 1));
+    assertThat(ccae, hasNumReferrers(filename, PREFIX_SET, "pre_ipv6", 1));
+    assertThat(ccae, hasNumReferrers(filename, PREFIX_SET, "pre_combo", 0));
 
     /*
      * pre_undef should be the only undefined reference
      */
-    assertThat(
-        ccae, not(hasUndefinedReference(hostname, CiscoStructureType.PREFIX_SET, "pre_ipv4")));
-    assertThat(
-        ccae, not(hasUndefinedReference(hostname, CiscoStructureType.PREFIX_SET, "pre_ipv6")));
-    assertThat(ccae, hasUndefinedReference(hostname, CiscoStructureType.PREFIX_SET, "pre_undef"));
+    assertThat(ccae, not(hasUndefinedReference(filename, PREFIX_SET, "pre_ipv4")));
+    assertThat(ccae, not(hasUndefinedReference(filename, PREFIX_SET, "pre_ipv6")));
+    assertThat(ccae, hasUndefinedReference(filename, PREFIX_SET, "pre_undef"));
 
     /*
      * Confirm the generated route filter lists permit correct prefixes and do not permit others
@@ -1369,8 +1618,22 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testIosTrack() throws IOException {
+    String hostname = "ios-track";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    assertThat(ccae, hasNumReferrers(filename, TRACK, "1", 1));
+    assertThat(ccae, hasNumReferrers(filename, TRACK, "2", 0));
+    assertThat(ccae, hasUndefinedReference(filename, TRACK, "3"));
+  }
+
+  @Test
   public void testIosZoneSecurity() throws IOException {
     String hostname = "ios-zone-security";
+    String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     Configuration c = batfish.loadConfigurations().get(hostname);
     ConvertConfigurationAnswerElement ccae =
@@ -1379,21 +1642,18 @@ public class CiscoGrammarTest {
     /*
      * We expected the only unused zone to be zunreferenced
      */
-    assertThat(ccae, hasNumReferrers(hostname, CiscoStructureType.SECURITY_ZONE, "z1", 4));
-    assertThat(ccae, hasNumReferrers(hostname, CiscoStructureType.SECURITY_ZONE, "z2", 2));
-    assertThat(ccae, hasNumReferrers(hostname, CiscoStructureType.SECURITY_ZONE, "zempty", 1));
-    assertThat(
-        ccae, hasNumReferrers(hostname, CiscoStructureType.SECURITY_ZONE, "zunreferenced", 0));
+    assertThat(ccae, hasNumReferrers(filename, SECURITY_ZONE, "z1", 4));
+    assertThat(ccae, hasNumReferrers(filename, SECURITY_ZONE, "z2", 2));
+    assertThat(ccae, hasNumReferrers(filename, SECURITY_ZONE, "zempty", 1));
+    assertThat(ccae, hasNumReferrers(filename, SECURITY_ZONE, "zunreferenced", 0));
 
     /*
      * We expect an undefined reference only to zundefined
      */
-    assertThat(ccae, not(hasUndefinedReference(hostname, CiscoStructureType.SECURITY_ZONE, "z1")));
-    assertThat(ccae, not(hasUndefinedReference(hostname, CiscoStructureType.SECURITY_ZONE, "z2")));
-    assertThat(
-        ccae, not(hasUndefinedReference(hostname, CiscoStructureType.SECURITY_ZONE, "zempty")));
-    assertThat(
-        ccae, hasUndefinedReference(hostname, CiscoStructureType.SECURITY_ZONE, "zundefined"));
+    assertThat(ccae, not(hasUndefinedReference(filename, SECURITY_ZONE, "z1")));
+    assertThat(ccae, not(hasUndefinedReference(filename, SECURITY_ZONE, "z2")));
+    assertThat(ccae, not(hasUndefinedReference(filename, SECURITY_ZONE, "zempty")));
+    assertThat(ccae, hasUndefinedReference(filename, SECURITY_ZONE, "zundefined"));
 
     /*
      * We only expect zempty to be empty (have no interfaces)
@@ -1406,6 +1666,7 @@ public class CiscoGrammarTest {
   @Test
   public void testNetworkObject() throws IOException {
     String hostname = "network-object";
+    String filename = "configs/" + hostname;
     Configuration c = parseConfig(hostname);
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
@@ -1428,11 +1689,10 @@ public class CiscoGrammarTest {
     assertThat(c, hasIpSpace("OGN", not(containsIp(on2IpStart, c.getIpSpaces()))));
 
     /* Confirm network objects have the correct number of referrers */
-    assertThat(ccae, hasNumReferrers(hostname, CiscoStructureType.NETWORK_OBJECT, "ON1", 1));
-    assertThat(ccae, hasNumReferrers(hostname, CiscoStructureType.NETWORK_OBJECT, "ON2", 0));
+    assertThat(ccae, hasNumReferrers(filename, NETWORK_OBJECT, "ON1", 1));
+    assertThat(ccae, hasNumReferrers(filename, NETWORK_OBJECT, "ON2", 0));
     /* Confirm undefined reference shows up as such */
-    assertThat(
-        ccae, hasUndefinedReference(hostname, CiscoStructureType.NETWORK_OBJECT, "ON_UNDEFINED"));
+    assertThat(ccae, hasUndefinedReference(filename, NETWORK_OBJECT, "ON_UNDEFINED"));
   }
 
   @Test
@@ -1493,12 +1753,20 @@ public class CiscoGrammarTest {
     String classMapDropAclName = computeInspectClassMapAclName(classMapDropName);
 
     Flow flowPass =
-        Flow.builder().setIngressNode(c.getName()).setTag("").setIpProtocol(IpProtocol.TCP).build();
+        Flow.builder()
+            .setIngressNode(c.getHostname())
+            .setTag("")
+            .setIpProtocol(IpProtocol.TCP)
+            .build();
     Flow flowInspect =
-        Flow.builder().setIngressNode(c.getName()).setTag("").setIpProtocol(IpProtocol.UDP).build();
+        Flow.builder()
+            .setIngressNode(c.getHostname())
+            .setTag("")
+            .setIpProtocol(IpProtocol.UDP)
+            .build();
     Flow flowDrop =
         Flow.builder()
-            .setIngressNode(c.getName())
+            .setIngressNode(c.getHostname())
             .setTag("")
             .setIpProtocol(IpProtocol.ICMP)
             .build();
@@ -1531,7 +1799,7 @@ public class CiscoGrammarTest {
     /* Ethernet3 is in zone z3 */
     String e3Name = "Ethernet3";
 
-    Flow flow = Flow.builder().setIngressNode(c.getName()).setTag("").build();
+    Flow flow = Flow.builder().setIngressNode(c.getHostname()).setTag("").build();
 
     /* Traffic originating from device should not be subject to zone filtering */
     assertThat(c, hasInterface(e1Name, hasOutgoingFilter(accepts(flow, null, c))));
@@ -1550,6 +1818,56 @@ public class CiscoGrammarTest {
     assertThat(c, hasInterface(e2Name, hasOutgoingFilter(rejects(flow, e3Name, c))));
     assertThat(c, hasInterface(e3Name, hasOutgoingFilter(rejects(flow, e1Name, c))));
     assertThat(c, hasInterface(e3Name, hasOutgoingFilter(rejects(flow, e2Name, c))));
+  }
+
+  @Test
+  public void testIosXrCommunitySet() throws IOException {
+    Configuration c = parseConfig("ios-xr-community-set");
+    CommunityList list = c.getCommunityLists().get("set1");
+
+    assertThat(
+        list,
+        CommunityListMatchers.hasLine(
+            0,
+            CommunityListLineMatchers.hasMatchCondition(
+                isRegexCommunitySet(hasRegex("^1234:.*")))));
+    assertThat(
+        list,
+        CommunityListMatchers.hasLine(
+            1,
+            CommunityListLineMatchers.hasMatchCondition(
+                equalTo(new CommunityHalvesExpr(RangeCommunityHalf.ALL, RangeCommunityHalf.ALL)))));
+    assertThat(
+        list,
+        CommunityListMatchers.hasLine(
+            2,
+            CommunityListLineMatchers.hasMatchCondition(
+                equalTo(new LiteralCommunity(CommonUtil.communityStringToLong("1:2"))))));
+    assertThat(
+        list,
+        CommunityListMatchers.hasLine(
+            3,
+            CommunityListLineMatchers.hasMatchCondition(
+                equalTo(
+                    new CommunityHalvesExpr(
+                        RangeCommunityHalf.ALL, new LiteralCommunityHalf(3))))));
+    assertThat(
+        list,
+        CommunityListMatchers.hasLine(
+            4,
+            CommunityListLineMatchers.hasMatchCondition(
+                equalTo(
+                    new CommunityHalvesExpr(
+                        new LiteralCommunityHalf(4), RangeCommunityHalf.ALL)))));
+    assertThat(
+        list,
+        CommunityListMatchers.hasLine(
+            5,
+            CommunityListLineMatchers.hasMatchCondition(
+                equalTo(
+                    new CommunityHalvesExpr(
+                        new LiteralCommunityHalf(6),
+                        new RangeCommunityHalf(new SubRange(100, 103)))))));
   }
 
   @Test
@@ -1763,79 +2081,100 @@ public class CiscoGrammarTest {
     SortedMap<String, CommunityList> nxosCommunityLists =
         nxosCommunityListConfig.getCommunityLists();
 
-    String iosRegexImpliedStd = getCLRegex(iosCommunityLists, "40");
-    String iosRegexImpliedExp = getCLRegex(iosCommunityLists, "400");
-    String iosRegexStd = getCLRegex(iosCommunityLists, "std_community");
-    String iosRegexExp = getCLRegex(iosCommunityLists, "exp_community");
-    String iosRegexStdAsnn = getCLRegex(iosCommunityLists, "std_as_nn");
-    String iosRegexExpAsnn = getCLRegex(iosCommunityLists, "exp_as_nn");
-    String iosRegexStdGshut = getCLRegex(iosCommunityLists, "std_gshut");
-    String iosRegexExpGshut = getCLRegex(iosCommunityLists, "exp_gshut");
-    String iosRegexStdInternet = getCLRegex(iosCommunityLists, "std_internet");
-    String iosRegexExpInternet = getCLRegex(iosCommunityLists, "exp_internet");
-    String iosRegexStdLocalAs = getCLRegex(iosCommunityLists, "std_local_AS");
-    String iosRegexExpLocalAs = getCLRegex(iosCommunityLists, "exp_local_AS");
-    String iosRegexStdNoAdv = getCLRegex(iosCommunityLists, "std_no_advertise");
-    String iosRegexExpNoAdv = getCLRegex(iosCommunityLists, "exp_no_advertise");
-    String iosRegexStdNoExport = getCLRegex(iosCommunityLists, "std_no_export");
-    String iosRegexExpNoExport = getCLRegex(iosCommunityLists, "exp_no_export");
+    long iosImpliedStd = communityListToCommunity(iosCommunityLists, "40");
+    String iosRegexImpliedExp = communityListToRegex(iosCommunityLists, "400");
+    long iosStdAsnn = communityListToCommunity(iosCommunityLists, "std_as_nn");
+    String iosRegexExpAsnn = communityListToRegex(iosCommunityLists, "exp_as_nn");
+    long iosStdGshut = communityListToCommunity(iosCommunityLists, "std_gshut");
+    String iosRegexExpGshut = communityListToRegex(iosCommunityLists, "exp_gshut");
+    long iosStdInternet = communityListToCommunity(iosCommunityLists, "std_internet");
+    String iosRegexExpInternet = communityListToRegex(iosCommunityLists, "exp_internet");
+    long iosStdLocalAs = communityListToCommunity(iosCommunityLists, "std_local_AS");
+    String iosRegexExpLocalAs = communityListToRegex(iosCommunityLists, "exp_local_AS");
+    long iosStdNoAdv = communityListToCommunity(iosCommunityLists, "std_no_advertise");
+    String iosRegexExpNoAdv = communityListToRegex(iosCommunityLists, "exp_no_advertise");
+    long iosStdNoExport = communityListToCommunity(iosCommunityLists, "std_no_export");
+    String iosRegexExpNoExport = communityListToRegex(iosCommunityLists, "exp_no_export");
 
-    String eosRegexStd = getCLRegex(eosCommunityLists, "eos_std");
-    String eosRegexExp = getCLRegex(eosCommunityLists, "eos_exp");
-    String eosRegexStdGshut = getCLRegex(eosCommunityLists, "eos_std_gshut");
-    String eosRegexStdInternet = getCLRegex(eosCommunityLists, "eos_std_internet");
-    String eosRegexStdLocalAs = getCLRegex(eosCommunityLists, "eos_std_local_AS");
-    String eosRegexStdNoAdv = getCLRegex(eosCommunityLists, "eos_std_no_adv");
-    String eosRegexStdNoExport = getCLRegex(eosCommunityLists, "eos_std_no_export");
-    String eosRegexStdMulti = getCLRegex(eosCommunityLists, "eos_std_multi");
-    String eosRegexExpMulti = getCLRegex(eosCommunityLists, "eos_exp_multi");
+    long eosStd = communityListToCommunity(eosCommunityLists, "eos_std");
+    String eosRegexExp = communityListToRegex(eosCommunityLists, "eos_exp");
+    long eosStdGshut = communityListToCommunity(eosCommunityLists, "eos_std_gshut");
+    long eosStdInternet = communityListToCommunity(eosCommunityLists, "eos_std_internet");
+    long eosStdLocalAs = communityListToCommunity(eosCommunityLists, "eos_std_local_AS");
+    long eosStdNoAdv = communityListToCommunity(eosCommunityLists, "eos_std_no_adv");
+    long eosStdNoExport = communityListToCommunity(eosCommunityLists, "eos_std_no_export");
+    String eosRegexExpMulti = communityListToRegex(eosCommunityLists, "eos_exp_multi");
 
-    String nxosRegexStd = getCLRegex(nxosCommunityLists, "nxos_std");
-    String nxosRegexExp = getCLRegex(nxosCommunityLists, "nxos_exp");
-    String nxosRegexStdInternet = getCLRegex(nxosCommunityLists, "nxos_std_internet");
-    String nxosRegexStdLocalAs = getCLRegex(nxosCommunityLists, "nxos_std_local_AS");
-    String nxosRegexStdNoAdv = getCLRegex(nxosCommunityLists, "nxos_std_no_adv");
-    String nxosRegexStdNoExport = getCLRegex(nxosCommunityLists, "nxos_std_no_export");
-    String nxosRegexStdMulti = getCLRegex(nxosCommunityLists, "nxos_std_multi");
-    String nxosRegexExpMulti = getCLRegex(nxosCommunityLists, "nxos_exp_multi");
+    long nxosStd = communityListToCommunity(nxosCommunityLists, "nxos_std");
+    String nxosRegexExp = communityListToRegex(nxosCommunityLists, "nxos_exp");
+    long nxosStdInternet = communityListToCommunity(nxosCommunityLists, "nxos_std_internet");
+    long nxosStdLocalAs = communityListToCommunity(nxosCommunityLists, "nxos_std_local_AS");
+    long nxosStdNoAdv = communityListToCommunity(nxosCommunityLists, "nxos_std_no_adv");
+    long nxosStdNoExport = communityListToCommunity(nxosCommunityLists, "nxos_std_no_export");
+    String nxosRegexExpMulti = communityListToRegex(nxosCommunityLists, "nxos_exp_multi");
+
+    // check literal communities
+    assertThat(iosImpliedStd, equalTo(4294967295L));
+    assertThat(iosStdAsnn, equalTo(CommonUtil.communityStringToLong("65535:65535")));
+    assertThat(eosStd, equalTo(CommonUtil.communityStringToLong("0:1")));
+    assertThat(nxosStd, equalTo(CommonUtil.communityStringToLong("65535:65535")));
+
+    // check regex communities
+    assertThat(iosRegexImpliedExp, equalTo("4294967295"));
+    assertThat(iosRegexExpAsnn, equalTo("65535:65535"));
+    assertThat(eosRegexExp, equalTo("1"));
+    /*
+     *  TODO: https://github.com/batfish/batfish/issues/1993
+     *  (Should be three regexes: '0:1', '0:2, '0:3')
+     */
+    assertThat(eosRegexExpMulti, equalTo("0:10:20:3"));
+    assertThat(nxosRegexExp, equalTo("65535:65535"));
+    /*
+     *  TODO: https://github.com/batfish/batfish/issues/1993
+     *  (Should be three regexes: '0:1', '0:2, '0:3')
+     */
+    assertThat(nxosRegexExpMulti, equalTo("0:10:20:3"));
 
     // Check well known community regexes are generated properly
-    String regexInternet = "^" + CommonUtil.longToCommunity(WellKnownCommunity.INTERNET) + "$";
-    String regexNoAdv = "^" + CommonUtil.longToCommunity(WellKnownCommunity.NO_ADVERTISE) + "$";
-    String regexNoExport = "^" + CommonUtil.longToCommunity(WellKnownCommunity.NO_EXPORT) + "$";
-    String regexGshut =
-        "^" + CommonUtil.longToCommunity(WellKnownCommunity.GRACEFUL_SHUTDOWN) + "$";
-    String regexLocalAs =
-        "^" + CommonUtil.longToCommunity(WellKnownCommunity.NO_EXPORT_SUBCONFED) + "$";
-    assertThat(iosRegexStdInternet, equalTo(regexInternet));
-    assertThat(iosRegexStdNoAdv, equalTo(regexNoAdv));
-    assertThat(iosRegexStdNoExport, equalTo(regexNoExport));
-    assertThat(iosRegexStdGshut, equalTo(regexGshut));
-    assertThat(iosRegexStdLocalAs, equalTo(regexLocalAs));
-    assertThat(eosRegexStdInternet, equalTo(regexInternet));
-    assertThat(eosRegexStdNoAdv, equalTo(regexNoAdv));
-    assertThat(eosRegexStdNoExport, equalTo(regexNoExport));
-    assertThat(eosRegexStdGshut, equalTo(regexGshut));
-    assertThat(eosRegexStdLocalAs, equalTo(regexLocalAs));
+    assertThat(iosStdInternet, equalTo(WellKnownCommunity.INTERNET));
+    assertThat(iosStdNoAdv, equalTo(WellKnownCommunity.NO_ADVERTISE));
+    assertThat(iosStdNoExport, equalTo(WellKnownCommunity.NO_EXPORT));
+    assertThat(iosStdGshut, equalTo(WellKnownCommunity.GRACEFUL_SHUTDOWN));
+    assertThat(iosStdLocalAs, equalTo(WellKnownCommunity.NO_EXPORT_SUBCONFED));
+    assertThat(eosStdInternet, equalTo(WellKnownCommunity.INTERNET));
+    assertThat(eosStdNoAdv, equalTo(WellKnownCommunity.NO_ADVERTISE));
+    assertThat(eosStdNoExport, equalTo(WellKnownCommunity.NO_EXPORT));
+    assertThat(eosStdGshut, equalTo(WellKnownCommunity.GRACEFUL_SHUTDOWN));
+    assertThat(eosStdLocalAs, equalTo(WellKnownCommunity.NO_EXPORT_SUBCONFED));
     // NX-OS does not support gshut
-    assertThat(nxosRegexStdInternet, equalTo(regexInternet));
-    assertThat(nxosRegexStdNoAdv, equalTo(regexNoAdv));
-    assertThat(nxosRegexStdNoExport, equalTo(regexNoExport));
-    assertThat(nxosRegexStdLocalAs, equalTo(regexLocalAs));
+    assertThat(nxosStdInternet, equalTo(WellKnownCommunity.INTERNET));
+    assertThat(nxosStdNoAdv, equalTo(WellKnownCommunity.NO_ADVERTISE));
+    assertThat(nxosStdNoExport, equalTo(WellKnownCommunity.NO_EXPORT));
+    assertThat(nxosStdLocalAs, equalTo(WellKnownCommunity.NO_EXPORT_SUBCONFED));
 
-    // Confirm for the same literal communities, standard and expanded regexs are different
-    assertThat(iosRegexImpliedStd, not(equalTo(iosRegexImpliedExp)));
-    assertThat(iosRegexStd, not(equalTo(iosRegexExp)));
-    assertThat(iosRegexStdAsnn, not(equalTo(iosRegexExpAsnn)));
-    assertThat(iosRegexStdInternet, not(equalTo(iosRegexExpInternet)));
-    assertThat(iosRegexStdNoAdv, not(equalTo(iosRegexExpNoAdv)));
-    assertThat(iosRegexStdNoExport, not(equalTo(iosRegexExpNoExport)));
-    assertThat(iosRegexStdGshut, not(equalTo(iosRegexExpGshut)));
-    assertThat(iosRegexStdLocalAs, not(equalTo(iosRegexExpLocalAs)));
-    assertThat(eosRegexStd, not(equalTo(eosRegexExp)));
-    assertThat(eosRegexStdMulti, not(equalTo(eosRegexExpMulti)));
-    assertThat(nxosRegexStd, not(equalTo(nxosRegexExp)));
-    assertThat(nxosRegexStdMulti, not(equalTo(nxosRegexExpMulti)));
+    // make sure well known communities in expanded lists are not actually converted
+    assertThat(iosRegexExpGshut, equalTo("gshut"));
+    assertThat(iosRegexExpInternet, equalTo("internet"));
+    assertThat(iosRegexExpLocalAs, equalTo("local-AS"));
+    assertThat(iosRegexExpNoAdv, equalTo("no-advertise"));
+    assertThat(iosRegexExpNoExport, equalTo("no-export"));
+
+    // check conjunctions of communities are converted correctly
+    assertThat(
+        ((LiteralCommunityConjunction)
+                communityListToMatchCondition(iosCommunityLists, "std_community"))
+            .getRequiredCommunities(),
+        equalTo(ImmutableSet.of(1L, 2L, 3L)));
+    assertThat(
+        ((LiteralCommunityConjunction)
+                communityListToMatchCondition(eosCommunityLists, "eos_std_multi"))
+            .getRequiredCommunities(),
+        equalTo(ImmutableSet.of(1L, 2L, 3L)));
+    assertThat(
+        ((LiteralCommunityConjunction)
+                communityListToMatchCondition(nxosCommunityLists, "nxos_std_multi"))
+            .getRequiredCommunities(),
+        equalTo(ImmutableSet.of(1L, 2L, 3L)));
   }
 
   @Test
@@ -2191,9 +2530,27 @@ public class CiscoGrammarTest {
                 hasIkePhase1Proposals(equalTo(ImmutableList.of("10", "20"))))));
   }
 
-  private static String getCLRegex(
+  private static CommunitySetExpr communityListToMatchCondition(
       SortedMap<String, CommunityList> communityLists, String communityName) {
-    return communityLists.get(communityName).getLines().get(0).getRegex();
+    return communityLists.get(communityName).getLines().get(0).getMatchCondition();
+  }
+
+  private static long communityListToCommunity(
+      SortedMap<String, CommunityList> communityLists, String communityName) {
+    return communityLists
+        .get(communityName)
+        .getLines()
+        .get(0)
+        .getMatchCondition()
+        .asLiteralCommunities(null)
+        .first();
+  }
+
+  private static @Nonnull String communityListToRegex(
+      SortedMap<String, CommunityList> communityLists, String communityName) {
+    return ((RegexCommunitySet)
+            communityLists.get(communityName).getLines().get(0).getMatchCondition())
+        .getRegex();
   }
 
   @Test
@@ -2221,6 +2578,14 @@ public class CiscoGrammarTest {
             containsString(
                 String.format(
                     "No remote-as set for peer: %s", neighborWithoutRemoteAs.getStartIp()))));
+
+    /*
+     * Also ensure that default value of allowRemoteAsOut is true.
+     */
+    assertThat(
+        c,
+        hasDefaultVrf(
+            hasBgpProcess(hasActiveNeighbor(neighborWithRemoteAs, hasAllowRemoteAsOut(true)))));
   }
 
   @Test
@@ -2555,6 +2920,39 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testIpsecTopology() throws IOException {
+    String testrigName = "ios-crypto-ipsec";
+    List<String> configurationNames = ImmutableList.of("r1", "r2", "r3");
+
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
+    Map<String, Configuration> configurations = batfish.loadConfigurations();
+    ValueGraph<IpsecPeerConfigId, IpsecSession> graph = IpsecUtil.initIpsecTopology(configurations);
+
+    Set<EndpointPair<IpsecPeerConfigId>> edges = graph.edges();
+
+    // there should be six edges in total, two for the static crypto map session between r1 and r2
+    // two for the dynamic crypto map session from r1->r3 and r2->r3 (unidirectional)
+    // two for the tunnel interface IPSec session between r2 and r3
+    assertThat(edges, hasSize(6));
+
+    // checking that the negotiated IKE and IPSec proposals are set in all the sessions
+    for (EndpointPair<IpsecPeerConfigId> edge : edges) {
+      IpsecSession ipsecSession = graph.edgeValueOrDefault(edge.nodeU(), edge.nodeV(), null);
+
+      assertThat(ipsecSession, notNullValue());
+
+      assertThat(ipsecSession, hasNegotiatedIkeP1Proposal(notNullValue()));
+      assertThat(ipsecSession, hasNegotiatedIkeP1Key(notNullValue()));
+      assertThat(ipsecSession, hasNegotiatedIpsecP2Proposal(notNullValue()));
+    }
+  }
+
+  @Test
   public void testNxosOspfAreaParameters() throws IOException {
     String testrigName = "nxos-ospf";
     String hostname = "nxos-ospf-area";
@@ -2771,7 +3169,7 @@ public class CiscoGrammarTest {
   }
 
   private Configuration parseConfig(String hostname) throws IOException {
-    return parseTextConfigs(hostname).get(hostname);
+    return parseTextConfigs(hostname).get(hostname.toLowerCase());
   }
 
   private Map<String, Configuration> parseTextConfigs(String... configurationNames)
@@ -2782,6 +3180,22 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testPrefixListNameParsing() throws IOException {
+    String hostname = "prefix-list-name-parsing";
+    String filename = "configs/" + hostname;
+    String prefixListName = "SET_COMMUNITY_65535:200";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    /* Confirm prefix-list with correct name was defined */
+    assertThat(ccae, hasDefinedStructure(filename, PREFIX_LIST, prefixListName));
+
+    /* Confirm prefix-list is referenced */
+    assertThat(ccae, hasNumReferrers(filename, PREFIX_LIST, prefixListName, 1));
+  }
+
+  @Test
   public void testRfc1583Compatible() throws IOException {
     String[] configurationNames =
         new String[] {"rfc1583Compatible", "rfc1583NoCompatible", "rfc1583Unconfigured"};
@@ -2789,7 +3203,7 @@ public class CiscoGrammarTest {
 
     Boolean[] expectedResults = new Boolean[] {Boolean.TRUE, Boolean.FALSE, null};
     for (int i = 0; i < configurationNames.length; i++) {
-      Configuration configuration = configurations.get(configurationNames[i]);
+      Configuration configuration = configurations.get(configurationNames[i].toLowerCase());
       assertThat(configuration.getVrfs().size(), equalTo(1));
       for (Vrf vrf : configuration.getVrfs().values()) {
         assertThat(vrf.getOspfProcess().getRfc1583Compatible(), is(expectedResults[i]));
@@ -2807,7 +3221,21 @@ public class CiscoGrammarTest {
   @Test
   public void testNxosBgpVrf() throws IOException {
     Configuration c = parseConfig("nxosBgpVrf");
-    assertThat(c.getVrfs().get("bar").getBgpProcess().getActiveNeighbors().values(), hasSize(1));
+    assertThat(c.getVrfs().get("bar").getBgpProcess().getActiveNeighbors().values(), hasSize(2));
+    assertThat(
+        c,
+        ConfigurationMatchers.hasVrf(
+            "bar",
+            hasBgpProcess(
+                hasActiveNeighbor(
+                    Prefix.parse("2.2.2.2/32"),
+                    allOf(hasRemoteAs(2L), hasLocalAs(1L), hasAllowRemoteAsOut(true))))));
+    assertThat(
+        c,
+        ConfigurationMatchers.hasVrf(
+            "bar",
+            hasBgpProcess(
+                hasActiveNeighbor(Prefix.parse("3.3.3.3/32"), hasAllowRemoteAsOut(false)))));
   }
 
   @Test

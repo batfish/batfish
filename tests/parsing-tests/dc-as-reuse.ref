@@ -3,16 +3,16 @@
     {
       "class" : "org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement",
       "fileMap" : {
-        "plane_0_spine_0" : "plane_0_spine_0",
-        "plane_1_spine_0" : "plane_1_spine_0",
-        "pod_0_leaf_0" : "pod_0_leaf_0",
-        "pod_0_leaf_1" : "pod_0_leaf_1",
-        "pod_0_tor_0" : "pod_0_tor_0",
-        "pod_0_tor_1" : "pod_0_tor_1",
-        "pod_1_leaf_0" : "pod_1_leaf_0",
-        "pod_1_leaf_1" : "pod_1_leaf_1",
-        "pod_1_tor_0" : "pod_1_tor_0",
-        "pod_1_tor_1" : "pod_1_tor_1"
+        "plane_0_spine_0" : "configs/plane_0_spine_0",
+        "plane_1_spine_0" : "configs/plane_1_spine_0",
+        "pod_0_leaf_0" : "configs/pod_0_leaf_0",
+        "pod_0_leaf_1" : "configs/pod_0_leaf_1",
+        "pod_0_tor_0" : "configs/pod_0_tor_0",
+        "pod_0_tor_1" : "configs/pod_0_tor_1",
+        "pod_1_leaf_0" : "configs/pod_1_leaf_0",
+        "pod_1_leaf_1" : "configs/pod_1_leaf_1",
+        "pod_1_tor_0" : "configs/pod_1_tor_0",
+        "pod_1_tor_1" : "configs/pod_1_tor_1"
       },
       "parseStatus" : {
         "plane_0_spine_0" : "PASSED",
@@ -256,7 +256,7 @@
             "      IP:'ip'  <== mode:DEFAULT_MODE",
             "      PREFIX_LIST:'prefix-list'  <== mode:DEFAULT_MODE",
             "      name = (variable",
-            "        VARIABLE:'DEFAULT_IPV4'  <== mode:DEFAULT_MODE)",
+            "        VARIABLE:'DEFAULT_IPV4'  <== mode:M_Name)",
             "      (ip_prefix_list_tail",
             "        SEQ:'seq'  <== mode:DEFAULT_MODE",
             "        seqnum = DEC:'5'  <== mode:DEFAULT_MODE",
@@ -269,7 +269,7 @@
             "      IP:'ip'  <== mode:DEFAULT_MODE",
             "      PREFIX_LIST:'prefix-list'  <== mode:DEFAULT_MODE",
             "      name = (variable",
-            "        VARIABLE:'IPV4_18_OR_LONGER'  <== mode:DEFAULT_MODE)",
+            "        VARIABLE:'IPV4_18_OR_LONGER'  <== mode:M_Name)",
             "      (ip_prefix_list_tail",
             "        SEQ:'seq'  <== mode:DEFAULT_MODE",
             "        seqnum = DEC:'5'  <== mode:DEFAULT_MODE",
@@ -706,7 +706,7 @@
             "      IP:'ip'  <== mode:DEFAULT_MODE",
             "      PREFIX_LIST:'prefix-list'  <== mode:DEFAULT_MODE",
             "      name = (variable",
-            "        VARIABLE:'DEFAULT_IPV4'  <== mode:DEFAULT_MODE)",
+            "        VARIABLE:'DEFAULT_IPV4'  <== mode:M_Name)",
             "      (ip_prefix_list_tail",
             "        SEQ:'seq'  <== mode:DEFAULT_MODE",
             "        seqnum = DEC:'5'  <== mode:DEFAULT_MODE",
@@ -719,7 +719,7 @@
             "      IP:'ip'  <== mode:DEFAULT_MODE",
             "      PREFIX_LIST:'prefix-list'  <== mode:DEFAULT_MODE",
             "      name = (variable",
-            "        VARIABLE:'IPV4_18_OR_LONGER'  <== mode:DEFAULT_MODE)",
+            "        VARIABLE:'IPV4_18_OR_LONGER'  <== mode:M_Name)",
             "      (ip_prefix_list_tail",
             "        SEQ:'seq'  <== mode:DEFAULT_MODE",
             "        seqnum = DEC:'5'  <== mode:DEFAULT_MODE",
@@ -1194,7 +1194,7 @@
             "      IP:'ip'  <== mode:DEFAULT_MODE",
             "      PREFIX_LIST:'prefix-list'  <== mode:DEFAULT_MODE",
             "      name = (variable",
-            "        VARIABLE:'DEFAULT_IPV4'  <== mode:DEFAULT_MODE)",
+            "        VARIABLE:'DEFAULT_IPV4'  <== mode:M_Name)",
             "      (ip_prefix_list_tail",
             "        SEQ:'seq'  <== mode:DEFAULT_MODE",
             "        seqnum = DEC:'5'  <== mode:DEFAULT_MODE",
@@ -1207,7 +1207,7 @@
             "      IP:'ip'  <== mode:DEFAULT_MODE",
             "      PREFIX_LIST:'prefix-list'  <== mode:DEFAULT_MODE",
             "      name = (variable",
-            "        VARIABLE:'IPV4_18_OR_LONGER'  <== mode:DEFAULT_MODE)",
+            "        VARIABLE:'IPV4_18_OR_LONGER'  <== mode:M_Name)",
             "      (ip_prefix_list_tail",
             "        SEQ:'seq'  <== mode:DEFAULT_MODE",
             "        seqnum = DEC:'5'  <== mode:DEFAULT_MODE",
@@ -1715,7 +1715,7 @@
             "      IP:'ip'  <== mode:DEFAULT_MODE",
             "      PREFIX_LIST:'prefix-list'  <== mode:DEFAULT_MODE",
             "      name = (variable",
-            "        VARIABLE:'DEFAULT_IPV4'  <== mode:DEFAULT_MODE)",
+            "        VARIABLE:'DEFAULT_IPV4'  <== mode:M_Name)",
             "      (ip_prefix_list_tail",
             "        SEQ:'seq'  <== mode:DEFAULT_MODE",
             "        seqnum = DEC:'5'  <== mode:DEFAULT_MODE",
@@ -1728,7 +1728,7 @@
             "      IP:'ip'  <== mode:DEFAULT_MODE",
             "      PREFIX_LIST:'prefix-list'  <== mode:DEFAULT_MODE",
             "      name = (variable",
-            "        VARIABLE:'IPV4_18_OR_LONGER'  <== mode:DEFAULT_MODE)",
+            "        VARIABLE:'IPV4_18_OR_LONGER'  <== mode:M_Name)",
             "      (ip_prefix_list_tail",
             "        SEQ:'seq'  <== mode:DEFAULT_MODE",
             "        seqnum = DEC:'5'  <== mode:DEFAULT_MODE",
@@ -2236,7 +2236,7 @@
             "      IP:'ip'  <== mode:DEFAULT_MODE",
             "      PREFIX_LIST:'prefix-list'  <== mode:DEFAULT_MODE",
             "      name = (variable",
-            "        VARIABLE:'DEFAULT_IPV4'  <== mode:DEFAULT_MODE)",
+            "        VARIABLE:'DEFAULT_IPV4'  <== mode:M_Name)",
             "      (ip_prefix_list_tail",
             "        SEQ:'seq'  <== mode:DEFAULT_MODE",
             "        seqnum = DEC:'5'  <== mode:DEFAULT_MODE",
@@ -2249,7 +2249,7 @@
             "      IP:'ip'  <== mode:DEFAULT_MODE",
             "      PREFIX_LIST:'prefix-list'  <== mode:DEFAULT_MODE",
             "      name = (variable",
-            "        VARIABLE:'IPV4_18_OR_LONGER'  <== mode:DEFAULT_MODE)",
+            "        VARIABLE:'IPV4_18_OR_LONGER'  <== mode:M_Name)",
             "      (ip_prefix_list_tail",
             "        SEQ:'seq'  <== mode:DEFAULT_MODE",
             "        seqnum = DEC:'5'  <== mode:DEFAULT_MODE",
@@ -2731,7 +2731,7 @@
             "      IP:'ip'  <== mode:DEFAULT_MODE",
             "      PREFIX_LIST:'prefix-list'  <== mode:DEFAULT_MODE",
             "      name = (variable",
-            "        VARIABLE:'DEFAULT_IPV4'  <== mode:DEFAULT_MODE)",
+            "        VARIABLE:'DEFAULT_IPV4'  <== mode:M_Name)",
             "      (ip_prefix_list_tail",
             "        SEQ:'seq'  <== mode:DEFAULT_MODE",
             "        seqnum = DEC:'5'  <== mode:DEFAULT_MODE",
@@ -2744,7 +2744,7 @@
             "      IP:'ip'  <== mode:DEFAULT_MODE",
             "      PREFIX_LIST:'prefix-list'  <== mode:DEFAULT_MODE",
             "      name = (variable",
-            "        VARIABLE:'IPV4_18_OR_LONGER'  <== mode:DEFAULT_MODE)",
+            "        VARIABLE:'IPV4_18_OR_LONGER'  <== mode:M_Name)",
             "      (ip_prefix_list_tail",
             "        SEQ:'seq'  <== mode:DEFAULT_MODE",
             "        seqnum = DEC:'5'  <== mode:DEFAULT_MODE",
@@ -3226,7 +3226,7 @@
             "      IP:'ip'  <== mode:DEFAULT_MODE",
             "      PREFIX_LIST:'prefix-list'  <== mode:DEFAULT_MODE",
             "      name = (variable",
-            "        VARIABLE:'DEFAULT_IPV4'  <== mode:DEFAULT_MODE)",
+            "        VARIABLE:'DEFAULT_IPV4'  <== mode:M_Name)",
             "      (ip_prefix_list_tail",
             "        SEQ:'seq'  <== mode:DEFAULT_MODE",
             "        seqnum = DEC:'5'  <== mode:DEFAULT_MODE",
@@ -3239,7 +3239,7 @@
             "      IP:'ip'  <== mode:DEFAULT_MODE",
             "      PREFIX_LIST:'prefix-list'  <== mode:DEFAULT_MODE",
             "      name = (variable",
-            "        VARIABLE:'IPV4_18_OR_LONGER'  <== mode:DEFAULT_MODE)",
+            "        VARIABLE:'IPV4_18_OR_LONGER'  <== mode:M_Name)",
             "      (ip_prefix_list_tail",
             "        SEQ:'seq'  <== mode:DEFAULT_MODE",
             "        seqnum = DEC:'5'  <== mode:DEFAULT_MODE",
@@ -3747,7 +3747,7 @@
             "      IP:'ip'  <== mode:DEFAULT_MODE",
             "      PREFIX_LIST:'prefix-list'  <== mode:DEFAULT_MODE",
             "      name = (variable",
-            "        VARIABLE:'DEFAULT_IPV4'  <== mode:DEFAULT_MODE)",
+            "        VARIABLE:'DEFAULT_IPV4'  <== mode:M_Name)",
             "      (ip_prefix_list_tail",
             "        SEQ:'seq'  <== mode:DEFAULT_MODE",
             "        seqnum = DEC:'5'  <== mode:DEFAULT_MODE",
@@ -3760,7 +3760,7 @@
             "      IP:'ip'  <== mode:DEFAULT_MODE",
             "      PREFIX_LIST:'prefix-list'  <== mode:DEFAULT_MODE",
             "      name = (variable",
-            "        VARIABLE:'IPV4_18_OR_LONGER'  <== mode:DEFAULT_MODE)",
+            "        VARIABLE:'IPV4_18_OR_LONGER'  <== mode:M_Name)",
             "      (ip_prefix_list_tail",
             "        SEQ:'seq'  <== mode:DEFAULT_MODE",
             "        seqnum = DEC:'5'  <== mode:DEFAULT_MODE",
@@ -4268,7 +4268,7 @@
             "      IP:'ip'  <== mode:DEFAULT_MODE",
             "      PREFIX_LIST:'prefix-list'  <== mode:DEFAULT_MODE",
             "      name = (variable",
-            "        VARIABLE:'DEFAULT_IPV4'  <== mode:DEFAULT_MODE)",
+            "        VARIABLE:'DEFAULT_IPV4'  <== mode:M_Name)",
             "      (ip_prefix_list_tail",
             "        SEQ:'seq'  <== mode:DEFAULT_MODE",
             "        seqnum = DEC:'5'  <== mode:DEFAULT_MODE",
@@ -4281,7 +4281,7 @@
             "      IP:'ip'  <== mode:DEFAULT_MODE",
             "      PREFIX_LIST:'prefix-list'  <== mode:DEFAULT_MODE",
             "      name = (variable",
-            "        VARIABLE:'IPV4_18_OR_LONGER'  <== mode:DEFAULT_MODE)",
+            "        VARIABLE:'IPV4_18_OR_LONGER'  <== mode:M_Name)",
             "      (ip_prefix_list_tail",
             "        SEQ:'seq'  <== mode:DEFAULT_MODE",
             "        seqnum = DEC:'5'  <== mode:DEFAULT_MODE",
@@ -4763,7 +4763,7 @@
             "      IP:'ip'  <== mode:DEFAULT_MODE",
             "      PREFIX_LIST:'prefix-list'  <== mode:DEFAULT_MODE",
             "      name = (variable",
-            "        VARIABLE:'DEFAULT_IPV4'  <== mode:DEFAULT_MODE)",
+            "        VARIABLE:'DEFAULT_IPV4'  <== mode:M_Name)",
             "      (ip_prefix_list_tail",
             "        SEQ:'seq'  <== mode:DEFAULT_MODE",
             "        seqnum = DEC:'5'  <== mode:DEFAULT_MODE",
@@ -4776,7 +4776,7 @@
             "      IP:'ip'  <== mode:DEFAULT_MODE",
             "      PREFIX_LIST:'prefix-list'  <== mode:DEFAULT_MODE",
             "      name = (variable",
-            "        VARIABLE:'IPV4_18_OR_LONGER'  <== mode:DEFAULT_MODE)",
+            "        VARIABLE:'IPV4_18_OR_LONGER'  <== mode:M_Name)",
             "      (ip_prefix_list_tail",
             "        SEQ:'seq'  <== mode:DEFAULT_MODE",
             "        seqnum = DEC:'5'  <== mode:DEFAULT_MODE",
@@ -4997,7 +4997,7 @@
     {
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
       "definedStructures" : {
-        "plane_0_spine_0" : {
+        "configs/plane_0_spine_0" : {
           "interface" : {
             "Ethernet1" : {
               "definitionLines" : [
@@ -5053,7 +5053,7 @@
             }
           }
         },
-        "plane_1_spine_0" : {
+        "configs/plane_1_spine_0" : {
           "interface" : {
             "Ethernet1" : {
               "definitionLines" : [
@@ -5109,7 +5109,7 @@
             }
           }
         },
-        "pod_0_leaf_0" : {
+        "configs/pod_0_leaf_0" : {
           "interface" : {
             "Ethernet1" : {
               "definitionLines" : [
@@ -5176,7 +5176,7 @@
             }
           }
         },
-        "pod_0_leaf_1" : {
+        "configs/pod_0_leaf_1" : {
           "interface" : {
             "Ethernet1" : {
               "definitionLines" : [
@@ -5243,7 +5243,7 @@
             }
           }
         },
-        "pod_0_tor_0" : {
+        "configs/pod_0_tor_0" : {
           "interface" : {
             "Ethernet1" : {
               "definitionLines" : [
@@ -5310,7 +5310,7 @@
             }
           }
         },
-        "pod_0_tor_1" : {
+        "configs/pod_0_tor_1" : {
           "interface" : {
             "Ethernet1" : {
               "definitionLines" : [
@@ -5377,7 +5377,7 @@
             }
           }
         },
-        "pod_1_leaf_0" : {
+        "configs/pod_1_leaf_0" : {
           "interface" : {
             "Ethernet1" : {
               "definitionLines" : [
@@ -5444,7 +5444,7 @@
             }
           }
         },
-        "pod_1_leaf_1" : {
+        "configs/pod_1_leaf_1" : {
           "interface" : {
             "Ethernet1" : {
               "definitionLines" : [
@@ -5511,7 +5511,7 @@
             }
           }
         },
-        "pod_1_tor_0" : {
+        "configs/pod_1_tor_0" : {
           "interface" : {
             "Ethernet1" : {
               "definitionLines" : [
@@ -5578,7 +5578,7 @@
             }
           }
         },
-        "pod_1_tor_1" : {
+        "configs/pod_1_tor_1" : {
           "interface" : {
             "Ethernet1" : {
               "definitionLines" : [

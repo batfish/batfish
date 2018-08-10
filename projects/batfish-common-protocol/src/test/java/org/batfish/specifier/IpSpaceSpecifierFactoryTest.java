@@ -28,6 +28,21 @@ public class IpSpaceSpecifierFactoryTest {
   }
 
   @Test
+  public void testFlexibleLocationIpSpaceSpecifierFactory() {
+    assertThat(
+        load(FlexibleLocationIpSpaceSpecifierFactory.NAME),
+        instanceOf(FlexibleLocationIpSpaceSpecifierFactory.class));
+    IpSpaceSpecifier actual =
+        new FlexibleLocationIpSpaceSpecifierFactory().buildIpSpaceSpecifier("[vrf(foo)]");
+    assertThat(
+        actual,
+        equalTo(
+            new LocationIpSpaceSpecifier(
+                new InterfaceSpecifierInterfaceLocationSpecifier(
+                    new VrfNameRegexInterfaceSpecifier(Pattern.compile("foo"))))));
+  }
+
+  @Test
   public void testInferFromLocationIpSpaceSpecifierFactory() {
     assertThat(
         new InferFromLocationIpSpaceSpecifierFactory().buildIpSpaceSpecifier(null),

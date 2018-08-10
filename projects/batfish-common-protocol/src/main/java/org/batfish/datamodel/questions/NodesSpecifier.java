@@ -18,6 +18,7 @@ import org.batfish.datamodel.answers.AutocompleteSuggestion;
 import org.batfish.role.NodeRole;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
+import org.batfish.specifier.SpecifierContext;
 
 /**
  * Enables specification of groups of nodes in various questions.
@@ -25,9 +26,9 @@ import org.batfish.role.NodeRolesData;
  * <p>Currently supported example specifiers:
  *
  * <ul>
- *   <li>lhr-.* —> all nodes with matching names (old style)
- *   <li>name:lhr-.* -> same as above; name: is optional
- *   <li>role:auto0:a1.* —> all nodes with roles that match a1.* in role dimension auto0
+ *   <li>lhr-.* -&gt; all nodes with matching names (old style)
+ *   <li>name:lhr-.* -&gt; same as above; name: is optional
+ *   <li>role:auto0:a1.* -&gt; all nodes with roles that match a1.* in role dimension auto0
  * </ul>
  *
  * <p>In the future, we might need other tags (e.g., loc:) and boolean expressions (e.g.,
@@ -128,8 +129,9 @@ public class NodesSpecifier {
    * <p>What is produced for various queries:
    *
    * <ul>
-   *   <li>na --> all {@link Type}s whose names begin with srv and nodes whose name begins with srv
-   *   <li>NAME:srv --> all nodes whose names with srv
+   *   <li>na -&gt; all {@link Type}s whose names begin with srv and nodes whose name begins with
+   *       srv
+   *   <li>NAME:srv -&gt; all nodes whose names with srv
    *   <li>ROLE:d all role dimensions that begin with r
    *   <li>ROLE:dim:r all roles in dimension 'dim' that begin with r
    * </ul>
@@ -233,19 +235,21 @@ public class NodesSpecifier {
     return suggestions;
   }
 
+  /** Return the set of nodes that match this specifier */
   public Set<String> getMatchingNodes(IBatfish batfish) {
-    return getMatchingNodes(batfish, batfish.loadConfigurations().keySet());
+    return getMatchingNodes(batfish.specifierContext());
   }
 
   @JsonIgnore
-  private Set<String> getMatchingNodes(IBatfish batfish, Set<String> nodes) {
+  /** Return the set of nodes that match this specifier */
+  public Set<String> getMatchingNodes(SpecifierContext ctxt) {
     switch (_type) {
       case NAME:
-        return getMatchingNodesByName(nodes);
+        return getMatchingNodesByName(ctxt.getConfigs().keySet());
       case ROLE:
-        Optional<NodeRoleDimension> roleDimension = batfish.getNodeRoleDimension(_roleDimension);
+        Optional<NodeRoleDimension> roleDimension = ctxt.getNodeRoleDimension(_roleDimension);
         if (roleDimension.isPresent()) {
-          return getMatchingNodesByRole(roleDimension.get(), nodes);
+          return getMatchingNodesByRole(roleDimension.get(), ctxt.getConfigs().keySet());
         } else {
           return Collections.emptySet();
         }

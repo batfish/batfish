@@ -1,11 +1,14 @@
 package org.batfish.representation.juniper;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SnmpServer;
@@ -42,6 +45,8 @@ public class RoutingInstance implements Serializable {
   private Map<Prefix, IpBgpGroup> _ipBgpGroups;
 
   private final IsisSettings _isisSettings;
+
+  @Nullable private Integer _loops;
 
   private BgpGroup _masterBgpGroup;
 
@@ -152,6 +157,11 @@ public class RoutingInstance implements Serializable {
     return _isisSettings;
   }
 
+  @Nullable
+  public Integer getLoops() {
+    return _loops;
+  }
+
   public BgpGroup getMasterBgpGroup() {
     return _masterBgpGroup;
   }
@@ -217,11 +227,16 @@ public class RoutingInstance implements Serializable {
   }
 
   public void setHostname(String hostname) {
-    _hostname = hostname;
+    checkNotNull(hostname, "'hostname' cannot be null");
+    _hostname = hostname.toLowerCase();
   }
 
   public void setOspfReferenceBandwidth(double ospfReferenceBandwidth) {
     _ospfReferenceBandwidth = ospfReferenceBandwidth;
+  }
+
+  public void setLoops(@Nullable Integer loops) {
+    _loops = loops;
   }
 
   public void setRouterId(Ip routerId) {

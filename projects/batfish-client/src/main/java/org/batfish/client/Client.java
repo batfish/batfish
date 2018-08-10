@@ -96,9 +96,11 @@ import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.AutocompleteSuggestion.CompletionType;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.pojo.WorkStatus;
+import org.batfish.datamodel.questions.BgpPropertySpecifier;
 import org.batfish.datamodel.questions.InterfacePropertySpecifier;
 import org.batfish.datamodel.questions.NodePropertySpecifier;
 import org.batfish.datamodel.questions.NodesSpecifier;
+import org.batfish.datamodel.questions.OspfPropertySpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.Question.InstanceData;
 import org.batfish.datamodel.questions.Question.InstanceData.Variable;
@@ -125,7 +127,7 @@ public class Client extends AbstractClient implements IClient {
   private static final Set<String> COMPARATORS =
       new HashSet<>(Arrays.asList(">", ">=", "==", "!=", "<", "<="));
 
-  private static final String DEFAULT_CONTAINER_PREFIX = "cp";
+  private static final String DEFAULT_NETWORK_PREFIX = "np";
 
   private static final String DEFAULT_DELTA_ENV_PREFIX = "env_";
 
@@ -133,7 +135,7 @@ public class Client extends AbstractClient implements IClient {
 
   private static final String DEFAULT_QUESTION_PREFIX = "q";
 
-  private static final String DEFAULT_TESTRIG_PREFIX = "tr_";
+  private static final String DEFAULT_SNAPSHOT_PREFIX = "ss_";
 
   private static final String DIFF_NOT_READY_MSG =
       "Cannot ask differential question without first setting delta testrig/environment\n";
@@ -316,6 +318,13 @@ public class Client extends AbstractClient implements IClient {
     }
     Variable.Type expectedType = variable.getType();
     switch (expectedType) {
+      case BGP_PROPERTY_SPEC:
+        if (!(value.isTextual())) {
+          throw new BatfishException(
+              String.format("A Batfish %s must be a JSON string", expectedType.getName()));
+        }
+        new BgpPropertySpecifier(value.textValue());
+        break;
       case BOOLEAN:
         if (!value.isBoolean()) {
           throw new BatfishException(
@@ -419,6 +428,13 @@ public class Client extends AbstractClient implements IClient {
               String.format("A Batfish %s must be a JSON string", expectedType.getName()));
         }
         new NodesSpecifier(value.textValue());
+        break;
+      case OSPF_PROPERTY_SPEC:
+        if (!(value.isTextual())) {
+          throw new BatfishException(
+              String.format("A Batfish %s must be a JSON string", expectedType.getName()));
+        }
+        new OspfPropertySpecifier(value.textValue());
         break;
       case PREFIX:
         if (!value.isTextual()) {
@@ -934,13 +950,13 @@ public class Client extends AbstractClient implements IClient {
     return true;
   }
 
-  private boolean delContainer(List<String> options, List<String> parameters) {
-    if (!isValidArgument(options, parameters, 0, 1, 1, Command.DEL_CONTAINER)) {
+  private boolean delNetwork(List<String> options, List<String> parameters) {
+    if (!isValidArgument(options, parameters, 0, 1, 1, Command.DEL_NETWORK)) {
       return false;
     }
     String containerName = parameters.get(0);
     boolean result = _workHelper.delContainer(containerName);
-    _logger.outputf("Result of deleting container: %s\n", result);
+    _logger.outputf("Result of deleting network: %s\n", result);
     return true;
   }
 
@@ -972,9 +988,9 @@ public class Client extends AbstractClient implements IClient {
     return true;
   }
 
-  private boolean delTestrig(
+  private boolean delSnapshot(
       @Nullable FileWriter outWriter, List<String> options, List<String> parameters) {
-    if (!isValidArgument(options, parameters, 0, 1, 1, Command.DEL_TESTRIG)) {
+    if (!isValidArgument(options, parameters, 0, 1, 1, Command.DEL_SNAPSHOT)) {
       return false;
     }
     if (!isSetContainer(true)) {
@@ -983,7 +999,7 @@ public class Client extends AbstractClient implements IClient {
 
     String testrigName = parameters.get(0);
     boolean result = _workHelper.delTestrig(_currContainerName, testrigName);
-    logOutput(outWriter, "Result of deleting testrig: " + result + "\n");
+    logOutput(outWriter, "Result of deleting snapshot: " + result + "\n");
     return true;
   }
 
@@ -1333,12 +1349,12 @@ public class Client extends AbstractClient implements IClient {
    *
    * <p>Returns {@code true} if successfully get container information, {@code false} otherwise
    */
-  private boolean getContainer(List<String> options, List<String> parameters) {
-    if (!isValidArgument(options, parameters, 0, 1, 1, Command.GET_CONTAINER)) {
+  private boolean getNetwork(List<String> options, List<String> parameters) {
+    if (!isValidArgument(options, parameters, 0, 1, 1, Command.GET_NETWORK)) {
       return false;
     }
     String containerName = parameters.get(0);
-    Container container = _workHelper.getContainer(containerName);
+    Container container = _workHelper.getNetwork(containerName);
     if (container != null) {
       _logger.output(container.getTestrigs() + "\n");
       return true;
@@ -1522,24 +1538,24 @@ public class Client extends AbstractClient implements IClient {
     return true;
   }
 
-  private boolean initContainer(List<String> options, List<String> parameters) {
+  private boolean initNetwork(List<String> options, List<String> parameters) {
     if (options.contains("-setname")) {
-      if (!isValidArgument(options, parameters, 1, 1, 1, Command.INIT_CONTAINER)) {
+      if (!isValidArgument(options, parameters, 1, 1, 1, Command.INIT_NETWORK)) {
         return false;
       }
       _currContainerName = _workHelper.initContainer(parameters.get(0), null);
     } else {
-      if (!isValidArgument(options, parameters, 0, 0, 1, Command.INIT_CONTAINER)) {
+      if (!isValidArgument(options, parameters, 0, 0, 1, Command.INIT_NETWORK)) {
         return false;
       }
-      String containerPrefix = parameters.isEmpty() ? DEFAULT_CONTAINER_PREFIX : parameters.get(0);
+      String containerPrefix = parameters.isEmpty() ? DEFAULT_NETWORK_PREFIX : parameters.get(0);
       _currContainerName = _workHelper.initContainer(null, containerPrefix);
     }
     if (_currContainerName == null) {
-      _logger.errorf("Could not init container\n");
+      _logger.errorf("Could not init network\n");
       return false;
     }
-    _logger.output("Active container is set");
+    _logger.output("Active network is set");
     _logger.infof(" to  %s\n", _currContainerName);
     _logger.output("\n");
     return true;
@@ -1638,7 +1654,7 @@ public class Client extends AbstractClient implements IClient {
     _currDeltaEnv = newEnvName;
     _currDeltaTestrig = _currTestrig;
 
-    _logger.output("Active delta testrig->environment is set");
+    _logger.output("Active delta snapshot->environment is set");
     _logger.infof("to %s->%s\n", _currDeltaTestrig, _currDeltaEnv);
     _logger.output("\n");
 
@@ -1772,12 +1788,12 @@ public class Client extends AbstractClient implements IClient {
     return result;
   }
 
-  private boolean initTestrig(
+  private boolean initSnapshot(
       @Nullable FileWriter outWriter,
       List<String> options,
       List<String> parameters,
       boolean delta) {
-    Command command = delta ? Command.INIT_DELTA_TESTRIG : Command.INIT_TESTRIG;
+    Command command = delta ? Command.INIT_DELTA_SNAPSHOT : Command.INIT_SNAPSHOT;
     if (!isValidArgument(options, parameters, 1, 1, 2, command)) {
       return false;
     }
@@ -1795,16 +1811,16 @@ public class Client extends AbstractClient implements IClient {
 
     String testrigLocation = parameters.get(0);
     String testrigName =
-        (parameters.size() > 1) ? parameters.get(1) : DEFAULT_TESTRIG_PREFIX + UUID.randomUUID();
+        (parameters.size() > 1) ? parameters.get(1) : DEFAULT_SNAPSHOT_PREFIX + UUID.randomUUID();
 
     // initialize the container if it hasn't been init'd before
     if (!isSetContainer(false)) {
-      _currContainerName = _workHelper.initContainer(null, DEFAULT_CONTAINER_PREFIX);
+      _currContainerName = _workHelper.initContainer(null, DEFAULT_NETWORK_PREFIX);
       if (_currContainerName == null) {
-        _logger.errorf("Could not init container\n");
+        _logger.errorf("Could not init network\n");
         return false;
       }
-      _logger.output("Init'ed and set active container");
+      _logger.output("Init'ed and set active network");
       _logger.infof(" to %s\n", _currContainerName);
       _logger.output("\n");
     }
@@ -1813,7 +1829,7 @@ public class Client extends AbstractClient implements IClient {
       unsetTestrig(delta);
       return false;
     }
-    _logger.output("Uploaded testrig.\n");
+    _logger.output("Uploaded snapshot.\n");
 
     if (!autoAnalyze) {
       _logger.output("Parsing now.\n");
@@ -1828,11 +1844,11 @@ public class Client extends AbstractClient implements IClient {
     if (!delta) {
       _currTestrig = testrigName;
       _currEnv = DEFAULT_ENV_NAME;
-      _logger.infof("Base testrig is now %s\n", _currTestrig);
+      _logger.infof("Base snapshot is now %s\n", _currTestrig);
     } else {
       _currDeltaTestrig = testrigName;
       _currDeltaEnv = DEFAULT_ENV_NAME;
-      _logger.infof("Delta testrig is now %s\n", _currDeltaTestrig);
+      _logger.infof("Delta snapshot is now %s\n", _currDeltaTestrig);
     }
 
     return true;
@@ -1859,7 +1875,7 @@ public class Client extends AbstractClient implements IClient {
 
     if (_currContainerName == null) {
       if (printError) {
-        _logger.errorf("Active container is not set\n");
+        _logger.errorf("Active network is not set\n");
       }
       return false;
     }
@@ -1873,7 +1889,7 @@ public class Client extends AbstractClient implements IClient {
     }
 
     if (_currDeltaTestrig == null) {
-      _logger.errorf("Active delta testrig is not set\n");
+      _logger.errorf("Active delta snapshot is not set\n");
       return false;
     }
 
@@ -1890,10 +1906,10 @@ public class Client extends AbstractClient implements IClient {
     }
 
     if (_currTestrig == null) {
-      _logger.errorf("Active testrig is not set.\n");
+      _logger.errorf("Active snapshot is not set.\n");
       _logger.errorf(
-          "Specify testrig on command line (-%s <testrigdir>) or use command (%s <testrigdir>)\n",
-          Settings.ARG_TESTRIG_DIR, Command.INIT_TESTRIG);
+          "Specify snapshot on command line (-%s <snapshotdir>) or use command (%s <snapshotdir>)\n",
+          Settings.ARG_SNAPSHOT_DIR, Command.INIT_SNAPSHOT.commandName());
       return false;
     }
     return true;
@@ -1973,12 +1989,12 @@ public class Client extends AbstractClient implements IClient {
     return true;
   }
 
-  private boolean listContainers(List<String> options, List<String> parameters) {
-    if (!isValidArgument(options, parameters, 0, 0, 0, Command.LIST_CONTAINERS)) {
+  private boolean listNetworks(List<String> options, List<String> parameters) {
+    if (!isValidArgument(options, parameters, 0, 0, 0, Command.LIST_NETWORKS)) {
       return false;
     }
     String[] containerList = _workHelper.listContainers();
-    _logger.outputf("Containers: %s\n", Arrays.toString(containerList));
+    _logger.outputf("Networks: %s\n", Arrays.toString(containerList));
     return true;
   }
 
@@ -2020,9 +2036,9 @@ public class Client extends AbstractClient implements IClient {
     return true;
   }
 
-  private boolean listTestrigs(
+  private boolean listSnapshots(
       @Nullable FileWriter outWriter, List<String> options, List<String> parameters) {
-    if (!isValidArgument(options, parameters, 1, 0, 0, Command.LIST_TESTRIGS)) {
+    if (!isValidArgument(options, parameters, 1, 0, 0, Command.LIST_SNAPSHOTS)) {
       return false;
     }
 
@@ -2032,7 +2048,7 @@ public class Client extends AbstractClient implements IClient {
         showMetadata = false;
       } else {
         _logger.errorf("Unknown option: %s\n", options.get(0));
-        printUsage(Command.LIST_TESTRIGS);
+        printUsage(Command.LIST_SNAPSHOTS);
         return false;
       }
     }
@@ -2317,16 +2333,15 @@ public class Client extends AbstractClient implements IClient {
     }
   }
 
-  private boolean pollWork(
-      @Nullable FileWriter outWriter, List<String> options, List<String> parameters) {
+  private boolean pollWork(List<String> options, List<String> parameters) {
     if (!isValidArgument(options, parameters, 0, 1, 1, Command.POLL_WORK)) {
       return false;
     }
     UUID workId = UUID.fromString(parameters.get(0));
-    return pollWork(workId, outWriter);
+    return pollWork(workId);
   }
 
-  private boolean pollWork(UUID wItemId, @Nullable FileWriter outWriter) {
+  private boolean pollWork(UUID wItemId) {
 
     Pair<WorkStatusCode, String> response;
     try (ActiveSpan workStatusSpan =
@@ -2360,7 +2375,7 @@ public class Client extends AbstractClient implements IClient {
 
   private boolean pollWorkAndGetAnswer(WorkItem wItem, @Nullable FileWriter outWriter) {
 
-    boolean pollResult = pollWork(wItem.getId(), outWriter);
+    boolean pollResult = pollWork(wItem.getId());
     if (!pollResult) {
       return false;
     }
@@ -2437,7 +2452,15 @@ public class Client extends AbstractClient implements IClient {
 
   private void printUsage(Command command) {
     Pair<String, String> usage = Command.getUsageMap().get(command);
-    _logger.outputf("%s %s\n\t%s\n\n", command.commandName(), usage.getFirst(), usage.getSecond());
+    String deprecationReason = Command.getDeprecatedMap().get(command);
+    if (deprecationReason == null) {
+      _logger.outputf(
+          "%s %s\n\t%s\n\n", command.commandName(), usage.getFirst(), usage.getSecond());
+    } else {
+      _logger.outputf(
+          "(deprecated) %s %s\n\t%s\n\t%s\n\n",
+          command.commandName(), usage.getFirst(), usage.getSecond(), deprecationReason);
+    }
   }
 
   private void printWorkStatusResponse(
@@ -2484,9 +2507,6 @@ public class Client extends AbstractClient implements IClient {
     }
     _logger.debugf("Doing command: %s\n", line);
     String[] words = line.split("\\s+");
-    if (words.length > 0 && !validCommandUsage(words)) {
-      return false;
-    }
     return processCommand(words, null);
   }
 
@@ -2497,6 +2517,14 @@ public class Client extends AbstractClient implements IClient {
     } catch (BatfishException e) {
       _logger.errorf("Command failed: %s\n", e.getMessage());
       return false;
+    }
+
+    // If command is deprecated, encourage user to use alternative.
+    String deprecationReason = Command.getDeprecatedMap().get(command);
+    if (deprecationReason != null) {
+      _logger.outputf(
+          "WARNING: Command %s has been deprecated and may be removed. %s\n",
+          command.commandName(), deprecationReason);
     }
 
     List<String> options = getCommandOptions(words);
@@ -2544,13 +2572,17 @@ public class Client extends AbstractClient implements IClient {
       case DEL_BATFISH_OPTION:
         return delBatfishOption(options, parameters);
       case DEL_CONTAINER:
-        return delContainer(options, parameters);
+        return delNetwork(options, parameters);
       case DEL_ENVIRONMENT:
         return delEnvironment(options, parameters);
+      case DEL_NETWORK:
+        return delNetwork(options, parameters);
       case DEL_QUESTION:
         return delQuestion(options, parameters);
+      case DEL_SNAPSHOT:
+        return delSnapshot(outWriter, options, parameters);
       case DEL_TESTRIG:
-        return delTestrig(outWriter, options, parameters);
+        return delSnapshot(outWriter, options, parameters);
       case DIR:
         return dir(options, parameters);
       case ECHO:
@@ -2564,7 +2596,7 @@ public class Client extends AbstractClient implements IClient {
       case GET_CONFIGURATION:
         return getConfiguration(options, parameters);
       case GET_CONTAINER:
-        return getContainer(options, parameters);
+        return getNetwork(options, parameters);
       case GET_DELTA:
         return get(words, outWriter, options, parameters, true);
       case GET_ANALYSIS_ANSWERS:
@@ -2579,6 +2611,8 @@ public class Client extends AbstractClient implements IClient {
         return getAnswer(outWriter, options, parameters, true, false);
       case GET_ANSWER_DIFFERENTIAL:
         return getAnswer(outWriter, options, parameters, false, true);
+      case GET_NETWORK:
+        return getNetwork(options, parameters);
       case GET_OBJECT:
         return getObject(outWriter, options, parameters, false);
       case GET_OBJECT_DELTA:
@@ -2594,65 +2628,77 @@ public class Client extends AbstractClient implements IClient {
       case INIT_ANALYSIS:
         return initOrAddAnalysis(outWriter, options, parameters, true);
       case INIT_CONTAINER:
-        return initContainer(options, parameters);
+        return initNetwork(options, parameters);
+      case INIT_DELTA_SNAPSHOT:
+        return initSnapshot(outWriter, options, parameters, true);
       case INIT_DELTA_TESTRIG:
-        return initTestrig(outWriter, options, parameters, true);
+        return initSnapshot(outWriter, options, parameters, true);
       case INIT_ENVIRONMENT:
         return initEnvironment(words, outWriter, options, parameters);
+      case INIT_NETWORK:
+        return initNetwork(options, parameters);
+      case INIT_SNAPSHOT:
+        return initSnapshot(outWriter, options, parameters, false);
       case INIT_TESTRIG:
-        return initTestrig(outWriter, options, parameters, false);
+        return initSnapshot(outWriter, options, parameters, false);
       case KILL_WORK:
         return killWork(options, parameters);
       case LIST_ANALYSES:
         return listAnalyses(outWriter, options, parameters);
       case LIST_CONTAINERS:
-        return listContainers(options, parameters);
+        return listNetworks(options, parameters);
       case LIST_ENVIRONMENTS:
         return listEnvironments(options, parameters);
       case LIST_INCOMPLETE_WORK:
         return listIncompleteWork(options, parameters);
+      case LIST_NETWORKS:
+        return listNetworks(options, parameters);
       case LIST_QUESTIONS:
         return listQuestions(options, parameters);
+      case LIST_SNAPSHOTS:
+        return listSnapshots(outWriter, options, parameters);
       case LIST_TESTRIGS:
-        return listTestrigs(outWriter, options, parameters);
+        return listSnapshots(outWriter, options, parameters);
       case LOAD_QUESTIONS:
         return loadQuestions(outWriter, options, parameters, _bfq);
       case POLL_WORK:
-        return pollWork(outWriter, options, parameters);
+        return pollWork(options, parameters);
       case PROMPT:
         return prompt(options, parameters);
       case PWD:
         return pwd(options, parameters);
-      case REINIT_DELTA_TESTRIG:
-        return reinitTestrig(outWriter, options, parameters, true);
       case RUN_ANALYSIS:
         return runAnalysis(outWriter, options, parameters, false, false);
       case RUN_ANALYSIS_DELTA:
         return runAnalysis(outWriter, options, parameters, true, false);
       case RUN_ANALYSIS_DIFFERENTIAL:
         return runAnalysis(outWriter, options, parameters, false, true);
-      case REINIT_TESTRIG:
-        return reinitTestrig(outWriter, options, parameters, false);
       case SET_BACKGROUND_EXECUCTION:
         return setBackgroundExecution(options, parameters);
       case SET_BATFISH_LOGLEVEL:
         return setBatfishLogLevel(options, parameters);
       case SET_CONTAINER:
-        return setContainer(options, parameters);
+        return setNetwork(options, parameters);
       case SET_DELTA_ENV:
         return setDeltaEnv(options, parameters);
       case SET_ENV:
         return setEnv(options, parameters);
       case SET_FIXED_WORKITEM_ID:
         return setFixedWorkItemId(options, parameters);
+      case SET_DELTA_SNAPSHOT:
+        return setDeltaSnapshot(options, parameters);
       case SET_DELTA_TESTRIG:
-        return setDeltaTestrig(options, parameters);
+        return setDeltaSnapshot(options, parameters);
       case SET_LOGLEVEL:
         return setLogLevel(options, parameters);
+      case SET_NETWORK:
+        return setNetwork(options, parameters);
       case SET_PRETTY_PRINT:
         return setPrettyPrint(options, parameters);
+      case SET_SNAPSHOT:
+        return setSnapshot(options, parameters);
       case SET_TESTRIG:
-        return setTestrig(options, parameters);
+        return setSnapshot(options, parameters);
       case SHOW_API_KEY:
         return showApiKey(options, parameters);
       case SHOW_BATFISH_LOGLEVEL:
@@ -2660,21 +2706,31 @@ public class Client extends AbstractClient implements IClient {
       case SHOW_BATFISH_OPTIONS:
         return showBatfishOptions(options, parameters);
       case SHOW_CONTAINER:
-        return showContainer(options, parameters);
+        return showNetwork(options, parameters);
       case SHOW_COORDINATOR_HOST:
         return showCoordinatorHost(options, parameters);
+      case SHOW_DELTA_SNAPSHOT:
+        return showDeltaSnapshot(options, parameters);
       case SHOW_DELTA_TESTRIG:
-        return showDeltaTestrig(options, parameters);
+        return showDeltaSnapshot(options, parameters);
       case SHOW_LOGLEVEL:
         return showLogLevel(options, parameters);
+      case SHOW_NETWORK:
+        return showNetwork(options, parameters);
+      case SHOW_SNAPSHOT:
+        return showSnapshot(options, parameters);
       case SHOW_TESTRIG:
-        return showTestrig(options, parameters);
+        return showSnapshot(options, parameters);
       case SHOW_VERSION:
         return showVersion(options, parameters);
+      case SYNC_SNAPSHOTS_SYNC_NOW:
+        return syncSnapshotsSyncNow(options, parameters);
       case SYNC_TESTRIGS_SYNC_NOW:
-        return syncTestrigsSyncNow(options, parameters);
+        return syncSnapshotsSyncNow(options, parameters);
+      case SYNC_SNAPSHOTS_UPDATE_SETTINGS:
+        return syncSnapshotsUpdateSettings(words, options, parameters);
       case SYNC_TESTRIGS_UPDATE_SETTINGS:
-        return syncTestrigsUpdateSettings(words, options, parameters);
+        return syncSnapshotsUpdateSettings(words, options, parameters);
       case TEST:
         return test(options, parameters);
       case UPLOAD_CUSTOM_OBJECT:
@@ -2736,29 +2792,6 @@ public class Client extends AbstractClient implements IClient {
     return commands;
   }
 
-  private boolean reinitTestrig(
-      @Nullable FileWriter outWriter,
-      List<String> options,
-      List<String> parameters,
-      boolean delta) {
-    Command command = delta ? Command.REINIT_DELTA_TESTRIG : Command.REINIT_TESTRIG;
-    if (!isValidArgument(options, parameters, 0, 0, 0, command)) {
-      return false;
-    }
-    String testrig;
-    if (!delta) {
-      _logger.output("Reinitializing testrig. Parsing now.\n");
-      testrig = _currTestrig;
-    } else {
-      _logger.output("Reinitializing delta testrig. Parsing now.\n");
-      testrig = _currDeltaTestrig;
-    }
-
-    WorkItem wItemParse = WorkItemBuilder.getWorkItemParse(_currContainerName, testrig);
-
-    return execute(wItemParse, outWriter);
-  }
-
   public void run(List<String> initialCommands) {
     if (_settings.getTracingEnable() && !GlobalTracer.isRegistered()) {
       initTracer();
@@ -2775,23 +2808,22 @@ public class Client extends AbstractClient implements IClient {
 
     // set container if specified
     if (_settings.getContainerId() != null
-        && !processCommand(
-            Command.SET_CONTAINER.commandName() + "  " + _settings.getContainerId())) {
+        && !processCommand(Command.SET_NETWORK.commandName() + "  " + _settings.getContainerId())) {
       return;
     }
 
     // set testrig if dir or id is specified
-    if (_settings.getTestrigDir() != null) {
-      if (_settings.getTestrigId() != null) {
-        System.err.println("org.batfish.client: Cannot supply both testrigDir and testrigId.");
+    if (_settings.getSnapshotDir() != null) {
+      if (_settings.getSnapshotId() != null) {
+        System.err.println("org.batfish.client: Cannot supply both snapshotDir and snapshotId.");
         System.exit(1);
       }
-      if (!processCommand(Command.INIT_TESTRIG.commandName() + " " + _settings.getTestrigDir())) {
+      if (!processCommand(Command.INIT_TESTRIG.commandName() + " " + _settings.getSnapshotDir())) {
         return;
       }
     }
-    if (_settings.getTestrigId() != null
-        && !processCommand(Command.SET_TESTRIG.commandName() + "  " + _settings.getTestrigId())) {
+    if (_settings.getSnapshotId() != null
+        && !processCommand(Command.SET_TESTRIG.commandName() + "  " + _settings.getSnapshotId())) {
       return;
     }
 
@@ -2928,12 +2960,12 @@ public class Client extends AbstractClient implements IClient {
     return true;
   }
 
-  private boolean setContainer(List<String> options, List<String> parameters) {
-    if (!isValidArgument(options, parameters, 0, 1, 1, Command.SET_CONTAINER)) {
+  private boolean setNetwork(List<String> options, List<String> parameters) {
+    if (!isValidArgument(options, parameters, 0, 1, 1, Command.SET_NETWORK)) {
       return false;
     }
     _currContainerName = parameters.get(0);
-    _logger.outputf("Active container is now set to %s\n", _currContainerName);
+    _logger.outputf("Active network is now set to %s\n", _currContainerName);
     return true;
   }
 
@@ -2946,17 +2978,17 @@ public class Client extends AbstractClient implements IClient {
       _currDeltaTestrig = _currTestrig;
     }
     _logger.outputf(
-        "Active delta testrig->environment is now %s->%s\n", _currDeltaTestrig, _currDeltaEnv);
+        "Active delta snapshot->environment is now %s->%s\n", _currDeltaTestrig, _currDeltaEnv);
     return true;
   }
 
-  private boolean setDeltaTestrig(List<String> options, List<String> parameters) {
-    if (!isValidArgument(options, parameters, 0, 1, 2, Command.SET_DELTA_TESTRIG)) {
+  private boolean setDeltaSnapshot(List<String> options, List<String> parameters) {
+    if (!isValidArgument(options, parameters, 0, 1, 2, Command.SET_DELTA_SNAPSHOT)) {
       return false;
     }
     _currDeltaTestrig = parameters.get(0);
     _currDeltaEnv = (parameters.size() > 1) ? parameters.get(1) : DEFAULT_ENV_NAME;
-    _logger.outputf("Delta testrig->env is now %s->%s\n", _currDeltaTestrig, _currDeltaEnv);
+    _logger.outputf("Delta snapshot->env is now %s->%s\n", _currDeltaTestrig, _currDeltaEnv);
     return true;
   }
 
@@ -2968,7 +3000,7 @@ public class Client extends AbstractClient implements IClient {
       return false;
     }
     _currEnv = parameters.get(0);
-    _logger.outputf("Base testrig->env is now %s->%s\n", _currTestrig, _currEnv);
+    _logger.outputf("Base snapshot->env is now %s->%s\n", _currTestrig, _currEnv);
     return true;
   }
 
@@ -3008,8 +3040,8 @@ public class Client extends AbstractClient implements IClient {
     return true;
   }
 
-  private boolean setTestrig(List<String> options, List<String> parameters) {
-    if (!isValidArgument(options, parameters, 0, 1, 2, Command.SET_TESTRIG)) {
+  private boolean setSnapshot(List<String> options, List<String> parameters) {
+    if (!isValidArgument(options, parameters, 0, 1, 2, Command.SET_SNAPSHOT)) {
       return false;
     }
     if (!isSetContainer(true)) {
@@ -3018,7 +3050,7 @@ public class Client extends AbstractClient implements IClient {
 
     _currTestrig = parameters.get(0);
     _currEnv = (parameters.size() > 1) ? parameters.get(1) : DEFAULT_ENV_NAME;
-    _logger.outputf("Base testrig->env is now %s->%s\n", _currTestrig, _currEnv);
+    _logger.outputf("Base snapshot->env is now %s->%s\n", _currTestrig, _currEnv);
     return true;
   }
 
@@ -3049,11 +3081,11 @@ public class Client extends AbstractClient implements IClient {
     return true;
   }
 
-  private boolean showContainer(List<String> options, List<String> parameters) {
-    if (!isValidArgument(options, parameters, 0, 0, 0, Command.SHOW_CONTAINER)) {
+  private boolean showNetwork(List<String> options, List<String> parameters) {
+    if (!isValidArgument(options, parameters, 0, 0, 0, Command.SHOW_NETWORK)) {
       return false;
     }
-    _logger.outputf("Current container is %s\n", _currContainerName);
+    _logger.outputf("Current network is %s\n", _currContainerName);
     return true;
   }
 
@@ -3065,14 +3097,14 @@ public class Client extends AbstractClient implements IClient {
     return true;
   }
 
-  private boolean showDeltaTestrig(List<String> options, List<String> parameters) {
-    if (!isValidArgument(options, parameters, 0, 0, 0, Command.SHOW_DELTA_TESTRIG)) {
+  private boolean showDeltaSnapshot(List<String> options, List<String> parameters) {
+    if (!isValidArgument(options, parameters, 0, 0, 0, Command.SHOW_DELTA_SNAPSHOT)) {
       return false;
     }
     if (!isSetDeltaEnvironment()) {
       return false;
     }
-    _logger.outputf("Delta testrig->environment is %s->%s\n", _currDeltaTestrig, _currDeltaEnv);
+    _logger.outputf("Delta snapshot->environment is %s->%s\n", _currDeltaTestrig, _currDeltaEnv);
     return true;
   }
 
@@ -3084,14 +3116,14 @@ public class Client extends AbstractClient implements IClient {
     return true;
   }
 
-  private boolean showTestrig(List<String> options, List<String> parameters) {
-    if (!isValidArgument(options, parameters, 0, 0, 0, Command.SHOW_TESTRIG)) {
+  private boolean showSnapshot(List<String> options, List<String> parameters) {
+    if (!isValidArgument(options, parameters, 0, 0, 0, Command.SHOW_SNAPSHOT)) {
       return false;
     }
     if (!isSetTestrig()) {
       return false;
     }
-    _logger.outputf("Base testrig->environment is %s->%s\n", _currTestrig, _currEnv);
+    _logger.outputf("Base snapshot->environment is %s->%s\n", _currTestrig, _currEnv);
     return true;
   }
 
@@ -3113,8 +3145,8 @@ public class Client extends AbstractClient implements IClient {
     return true;
   }
 
-  private boolean syncTestrigsSyncNow(List<String> options, List<String> parameters) {
-    if (!isValidArgument(options, parameters, 1, 1, 1, Command.SYNC_TESTRIGS_SYNC_NOW)) {
+  private boolean syncSnapshotsSyncNow(List<String> options, List<String> parameters) {
+    if (!isValidArgument(options, parameters, 1, 1, 1, Command.SYNC_SNAPSHOTS_SYNC_NOW)) {
       return false;
     }
     if (!isSetContainer(true)) {
@@ -3128,7 +3160,7 @@ public class Client extends AbstractClient implements IClient {
         force = true;
       } else {
         _logger.errorf("Unknown option: %s\n", options.get(0));
-        printUsage(Command.SYNC_TESTRIGS_SYNC_NOW);
+        printUsage(Command.SYNC_SNAPSHOTS_SYNC_NOW);
         return false;
       }
     }
@@ -3138,10 +3170,10 @@ public class Client extends AbstractClient implements IClient {
     return _workHelper.syncTestrigsSyncNow(pluginId, _currContainerName, force);
   }
 
-  private boolean syncTestrigsUpdateSettings(
+  private boolean syncSnapshotsUpdateSettings(
       String[] words, List<String> options, List<String> parameters) {
     if (!isValidArgument(
-        options, parameters, 0, 1, Integer.MAX_VALUE, Command.SYNC_TESTRIGS_UPDATE_SETTINGS)) {
+        options, parameters, 0, 1, Integer.MAX_VALUE, Command.SYNC_SNAPSHOTS_UPDATE_SETTINGS)) {
       return false;
     }
     if (!isSetContainer(true)) {
@@ -3416,10 +3448,6 @@ public class Client extends AbstractClient implements IClient {
           "Could not create or write question template: " + e.getMessage(), e);
     }
 
-    return true;
-  }
-
-  private boolean validCommandUsage(String[] words) {
     return true;
   }
 }

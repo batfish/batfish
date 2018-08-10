@@ -28,9 +28,10 @@ public class CiscoConfigurationTest {
   // crash.
   @Before
   public void before() {
-    _config = new CiscoConfiguration(Collections.emptySet());
+    _config = new CiscoConfiguration();
     _config.setVendor(ConfigurationFormat.ARISTA);
     _config.setHostname("host");
+    _config.setFilename("configs/host.cfg");
     _config.setAnswerElement(new ConvertConfigurationAnswerElement());
     _interface = new Interface("iface", _config);
   }
@@ -40,7 +41,7 @@ public class CiscoConfigurationTest {
     CiscoSourceNat nat = new CiscoSourceNat();
     nat.setAclName(ACL);
     nat.setNatPool(POOL);
-    NatPool pool = new NatPool(POOL);
+    NatPool pool = new NatPool();
     pool.setFirst(IP);
     pool.setLast(IP);
     _config.getNatPools().put(POOL, pool);

@@ -1,0 +1,37 @@
+{
+  "class" : "org.batfish.question.reachfilter.ReachFilterQuestion",
+  "differential" : false,
+  "filterRegex" : ".*",
+  "includeOneTableKeys" : false,
+  "instance" : {
+    "description" : "Find headers for which a filter takes a particular behavior.",
+    "instanceName" : "qname",
+    "longDescription" : "This question searches for headers for which a filter (access control list) has a particular behavior. The behaviors can be: that the filter permits the header (permit), that it denies the header (deny), or that the header is matched by a particular line (matchLine <lineNumber>). Filters are selected using node and filter specifiers, which might match multiple filters. In this case, a (possibly different) header will be found for each filter.",
+    "tags" : [
+      "dataPlane",
+      "reachability",
+      "traceroute"
+    ],
+    "variables" : {
+      "filterRegex" : {
+        "description" : "Only consider filters that match this specification",
+        "optional" : true,
+        "type" : "javaRegex",
+        "value" : ".*"
+      },
+      "nodeRegex" : {
+        "description" : "Only consider filters present on these nodes",
+        "optional" : true,
+        "type" : "javaRegex",
+        "value" : ".*"
+      },
+      "query" : {
+        "description" : "permit|deny|matchLine <line number>",
+        "optional" : true,
+        "type" : "string",
+        "value" : "matchLine 0"
+      }
+    }
+  },
+  "nodeRegex" : ".*"
+}

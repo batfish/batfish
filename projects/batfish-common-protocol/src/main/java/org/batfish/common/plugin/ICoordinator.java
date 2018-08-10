@@ -6,15 +6,15 @@ import org.batfish.common.BatfishLogger;
 
 public interface ICoordinator {
 
-  Path getdirContainer(String containerName);
+  Path getdirNetwork(String networkName);
 
-  Path getdirTestrigs(String containerName);
+  Path getdirSnapshots(String networkName);
 
   BatfishLogger getLogger();
 
-  Set<String> getContainerNames();
+  Set<String> getNetworkNames();
 
-  void initTestrig(String containerName, String testrigName, Path srcDir, boolean autoAnalyze);
+  void initSnapshot(String networkName, String snapshotName, Path srcDir, boolean autoAnalyze);
 
   void registerTestrigSyncer(String name, SyncTestrigsPlugin plugin);
 }

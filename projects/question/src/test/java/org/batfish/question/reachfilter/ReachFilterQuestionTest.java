@@ -2,9 +2,12 @@ package org.batfish.question.reachfilter;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 
+import java.io.IOException;
 import org.batfish.common.BatfishException;
+import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.question.reachfilter.ReachFilterQuestion.Type;
 import org.junit.Rule;
 import org.junit.Test;
@@ -12,6 +15,18 @@ import org.junit.rules.ExpectedException;
 
 public class ReachFilterQuestionTest {
   @Rule public ExpectedException exception = ExpectedException.none();
+
+  @Test
+  public void testDeserializationDefaultValues() throws IOException {
+    String serialized =
+        String.format("{\"class\":\"%s\"}", ReachFilterQuestion.class.getCanonicalName());
+    ReachFilterQuestion q =
+        BatfishObjectMapper.mapper().readValue(serialized, ReachFilterQuestion.class);
+
+    assertThat(q.getFilterSpecifier(), notNullValue());
+    assertThat(q.getType(), is(Type.PERMIT));
+    assertThat(q.getNodesSpecifier(), notNullValue());
+  }
 
   @Test
   public void testSetQuery() {

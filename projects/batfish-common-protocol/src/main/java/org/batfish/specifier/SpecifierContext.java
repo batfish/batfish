@@ -2,12 +2,14 @@ package org.batfish.specifier;
 
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
-import java.util.Set;
+import java.util.Optional;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.IpSpace;
-import org.batfish.role.NodeRole;
+import org.batfish.referencelibrary.ReferenceBook;
+import org.batfish.role.NodeRoleDimension;
 
 /**
  * Collects all the information about the network that is needed by {@link NodeSpecifier}s, {@link
@@ -18,13 +20,19 @@ public interface SpecifierContext {
   @Nonnull
   Map<String, Configuration> getConfigs();
 
-  /** @return the set of {@link NodeRole}s in the network with the input dimension. */
-  @Nonnull
-  Set<NodeRole> getNodeRolesByDimension(String dimension);
+  /** @return the set of {@link ReferenceBook} with name {@code bookName}. */
+  Optional<ReferenceBook> getReferenceBook(String bookName);
 
   /**
-   * @return the {@link IpSpace}s owned by each interface in the network. Mapping: hostname ->
-   *     interface name -> IpSpace.
+   * @return the {@link NodeRoleDimension} if one exists by the provided name {@code dimension}. If
+   *     {@code dimension} is null, looks for the default dimension.
+   */
+  @Nonnull
+  Optional<NodeRoleDimension> getNodeRoleDimension(@Nullable String dimension);
+
+  /**
+   * @return the {@link IpSpace}s owned by each interface in the network. Mapping: hostname -&gt;
+   *     interface name -&gt; IpSpace.
    */
   Map<String, Map<String, IpSpace>> getInterfaceOwnedIps();
 
@@ -42,8 +50,8 @@ public interface SpecifierContext {
   }
 
   /**
-   * @return the {@link IpSpace}s owned by each VRF in the network. Mapping: hostname -> VRF name ->
-   *     IpSpace.
+   * @return the {@link IpSpace}s owned by each VRF in the network. Mapping: hostname -&gt; VRF name
+   *     -&gt; IpSpace.
    */
   Map<String, Map<String, IpSpace>> getVrfOwnedIps();
 

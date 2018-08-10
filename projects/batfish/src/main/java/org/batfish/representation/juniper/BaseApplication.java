@@ -2,28 +2,27 @@ package org.batfish.representation.juniper;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.batfish.common.Warnings;
-import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 
-public class BaseApplication extends ComparableStructure<String> implements Application {
+public final class BaseApplication implements Application, Serializable {
 
-  public static class Term extends ComparableStructure<String> {
+  public static final class Term implements Serializable {
 
     /** */
     private static final long serialVersionUID = 1L;
 
     private HeaderSpace _headerSpace;
 
-    public Term(String name) {
-      super(name);
+    public Term() {
       _headerSpace = HeaderSpace.builder().build();
     }
 
@@ -52,11 +51,13 @@ public class BaseApplication extends ComparableStructure<String> implements Appl
 
   private Term _mainTerm;
 
+  private final String _name;
+
   private final Map<String, Term> _terms;
 
   public BaseApplication(String name) {
-    super(name);
-    _mainTerm = new Term(getMainTermName());
+    _name = name;
+    _mainTerm = new Term();
     _terms = new LinkedHashMap<>();
   }
 
@@ -99,7 +100,7 @@ public class BaseApplication extends ComparableStructure<String> implements Appl
   }
 
   private String getMainTermName() {
-    return "~MAIN_TERM~" + _key;
+    return "~MAIN_TERM~" + _name;
   }
 
   public Map<String, Term> getTerms() {

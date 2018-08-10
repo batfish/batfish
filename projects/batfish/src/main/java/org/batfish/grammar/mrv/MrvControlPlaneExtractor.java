@@ -1,7 +1,5 @@
 package org.batfish.grammar.mrv;
 
-import java.util.Set;
-import java.util.TreeSet;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.common.Warnings;
@@ -22,15 +20,12 @@ public class MrvControlPlaneExtractor extends MrvParserBaseListener
 
   private String _text;
 
-  private final Set<String> _unimplementedFeatures;
-
   private Warnings _w;
 
   public MrvControlPlaneExtractor(String fileText, MrvCombinedParser mrvParser, Warnings warnings) {
     _text = fileText;
     _parser = mrvParser;
     _w = warnings;
-    _unimplementedFeatures = new TreeSet<>();
   }
 
   @Override
@@ -44,17 +39,18 @@ public class MrvControlPlaneExtractor extends MrvParserBaseListener
     _configuration.setHostname(hostname);
   }
 
+  private String getFullText(ParserRuleContext ctx) {
+    int start = ctx.getStart().getStartIndex();
+    int end = ctx.getStop().getStopIndex();
+    return _text.substring(start, end + 1);
+  }
+
   private String getText(Quoted_stringContext ctx) {
     if (ctx.text != null) {
       return ctx.text.getText();
     } else {
       return "";
     }
-  }
-
-  @Override
-  public Set<String> getUnimplementedFeatures() {
-    return _unimplementedFeatures;
   }
 
   @Override
@@ -69,9 +65,8 @@ public class MrvControlPlaneExtractor extends MrvParserBaseListener
   }
 
   @SuppressWarnings("unused")
-  private void todo(ParserRuleContext ctx, String feature) {
-    _w.todo(ctx, feature, _parser, _text);
-    _unimplementedFeatures.add("Cisco: " + feature);
+  private void todo(ParserRuleContext ctx) {
+    _w.todo(ctx, getFullText(ctx), _parser);
   }
 
   private String toString(NsdeclContext ctx) {

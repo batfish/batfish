@@ -3,9 +3,7 @@ package org.batfish.representation.aws;
 import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
-import org.batfish.common.BatfishLogger;
 import org.batfish.common.Pair;
-import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.StaticRoute;
@@ -21,7 +19,7 @@ public class InternetGateway implements AwsVpcEntity, Serializable {
 
   private String _internetGatewayId;
 
-  public InternetGateway(JSONObject jObj, BatfishLogger logger) throws JSONException {
+  public InternetGateway(JSONObject jObj) throws JSONException {
     _internetGatewayId = jObj.getString(JSON_KEY_INTERNET_GATEWAY_ID);
 
     JSONArray attachments = jObj.getJSONArray(JSON_KEY_ATTACHMENTS);
@@ -36,8 +34,7 @@ public class InternetGateway implements AwsVpcEntity, Serializable {
     return _internetGatewayId;
   }
 
-  public Configuration toConfigurationNode(
-      AwsConfiguration awsConfiguration, Region region, Warnings warnings) {
+  public Configuration toConfigurationNode(AwsConfiguration awsConfiguration, Region region) {
     Configuration cfgNode = Utils.newAwsConfiguration(_internetGatewayId, "aws");
     cfgNode.getVendorFamily().getAws().setRegion(region.getName());
 
