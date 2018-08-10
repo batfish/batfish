@@ -1,12 +1,14 @@
 package org.batfish.symbolic.bdd;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static org.batfish.datamodel.acl.InterfacesReferencedByIpAccessLists.referencedInterfaces;
+import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.DEVICE_IS_THE_SOURCE;
+import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.referencedSources;
 import static org.batfish.symbolic.bdd.BDDUtils.isAssignment;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.google.common.math.LongMath;
 import java.math.RoundingMode;
@@ -15,7 +17,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 import net.sf.javabdd.BDD;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
@@ -26,27 +27,37 @@ import org.batfish.datamodel.IpAccessList;
  * any. If it didn't enter through any node, it originated from the device itself.
  */
 public final class BDDSourceManager {
-  private static final String VAR_NAME = "SrcInterface";
+  private static final String VAR_NAME = "PacketSource";
 
   private BDD _isSane;
 
-  private final BDD _originatingFromDeviceBDD;
+  private final Map<String, BDD> _sourceBDDs;
 
-  private final Map<String, BDD> _srcInterfaceBDDs;
-
-  private final BDDInteger _var;
-
-  private BDDSourceManager(BDDPacket pkt, List<String> srcInterfaces) {
-    int bitsRequired = LongMath.log2(srcInterfaces.size() + 1, RoundingMode.CEILING);
-    _var = pkt.allocateBDDInteger(VAR_NAME, bitsRequired, false);
-    _originatingFromDeviceBDD = _var.value(0);
-    _isSane = _var.leq(srcInterfaces.size());
-    _srcInterfaceBDDs = computeMatchSrcInterfaceBDDs(_var, srcInterfaces);
+  /**
+   * Create a {@link BDDSourceManager} for a specified set of possible sources. To include the
+   * device as a source, use {@link
+   * org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists#DEVICE_IS_THE_SOURCE}.
+   */
+  @VisibleForTesting
+  BDDSourceManager(BDDPacket pkt, List<String> sources) {
+    if (sources.size() == 0) {
+      _isSane = pkt.getFactory().one();
+      _sourceBDDs = ImmutableMap.of();
+    } else {
+      int bitsRequired = LongMath.log2(sources.size(), RoundingMode.CEILING);
+      BDDInteger var = pkt.allocateBDDInteger(VAR_NAME, bitsRequired, false);
+      _isSane = var.leq(sources.size());
+      _sourceBDDs = computeMatchSourceBDDs(var, sources);
+    }
   }
 
-  /** Create a {@link BDDSourceManager} for a specified set of possible source interfaces. */
-  public static BDDSourceManager forInterfaces(BDDPacket pkt, List<String> srcInterfaces) {
-    return new BDDSourceManager(pkt, srcInterfaces);
+  /**
+   * Create a {@link BDDSourceManager} that tracks the specified interfaces as sources, plus the
+   * device itself.
+   */
+  public static BDDSourceManager forInterfaces(BDDPacket pkt, List<String> interfaces) {
+    return new BDDSourceManager(
+        pkt, ImmutableList.<String>builder().addAll(interfaces).add(DEVICE_IS_THE_SOURCE).build());
   }
 
   /**
@@ -55,24 +66,32 @@ public final class BDDSourceManager {
    */
   public static BDDSourceManager forIpAccessList(
       BDDPacket pkt, Configuration config, IpAccessList acl) {
-    List<String> interfaces = interfacesForIpAccessList(config, acl);
+    List<String> interfaces = sourcesForIpAccessList(config, acl);
     return new BDDSourceManager(pkt, interfaces);
   }
 
   @VisibleForTesting
-  static List<String> interfacesForIpAccessList(Configuration config, IpAccessList acl) {
-    Set<String> allInterfaces = config.getInterfaces().keySet();
-    Set<String> referencedInterfaces = referencedInterfaces(acl);
-    Set<String> unReferencedInterfaces = Sets.difference(allInterfaces, referencedInterfaces);
+  static List<String> sourcesForIpAccessList(Configuration config, IpAccessList acl) {
+    Set<String> referencedSources = referencedSources(acl);
+    if (referencedSources.isEmpty()) {
+      return ImmutableList.of();
+    }
+
+    Set<String> allSources =
+        ImmutableSet.<String>builder()
+            .add(DEVICE_IS_THE_SOURCE)
+            .addAll(config.getInterfaces().keySet())
+            .build();
+    Set<String> unReferencedInterfaces = Sets.difference(allSources, referencedSources);
     /*
      * If only some interfaces are referenced, we only need to track the referenced ones, plus one
      * more (as a representative of the set of unreferenced interfaces). This is in case the
      * BDD is true only when the source is not the device itself or any referenced interface.
      */
     return unReferencedInterfaces.isEmpty()
-        ? ImmutableList.copyOf(allInterfaces)
+        ? ImmutableList.copyOf(allSources)
         : ImmutableList.<String>builder()
-            .addAll(referencedInterfaces)
+            .addAll(referencedSources)
             .add(unReferencedInterfaces.iterator().next())
             .build();
   }
@@ -82,7 +101,7 @@ public final class BDDSourceManager {
    * at the router). So for N srcInterfaces, we need N+1 distinct values: one for each interface,
    * and one for "none of them". We use 0 for "none of them".
    */
-  private static Map<String, BDD> computeMatchSrcInterfaceBDDs(
+  private static Map<String, BDD> computeMatchSourceBDDs(
       BDDInteger srcInterfaceVar, List<String> srcInterfaces) {
     ImmutableMap.Builder<String, BDD> matchSrcInterfaceBDDs = ImmutableMap.builder();
     CommonUtil.forEachWithIndex(
@@ -92,41 +111,41 @@ public final class BDDSourceManager {
   }
 
   public BDD getOriginatingFromDeviceBDD() {
-    return _originatingFromDeviceBDD;
+    return getSourceBDD(DEVICE_IS_THE_SOURCE);
   }
 
-  public BDD getSrcInterfaceBDD(String iface) {
-    checkArgument(_srcInterfaceBDDs.containsKey(iface), "Unknown source interface: " + iface);
-    return _srcInterfaceBDDs.get(iface);
+  public BDD getSourceInterfaceBDD(String iface) {
+    return getSourceBDD(iface);
+  }
+
+  private BDD getSourceBDD(String iface) {
+    checkArgument(_sourceBDDs.containsKey(iface), "Missing BDD for source: " + iface);
+    return _sourceBDDs.get(iface);
   }
 
   /**
    * @param bdd An assignment (i.e. only 1 possible value for each variable mentioned).
-   * @return The interface of identified by the assigned value.
+   * @return The interface of identified by the assigned value, or none if the device itself is the
+   *     source.
    */
-  public Optional<String> getInterfaceFromAssignment(BDD bdd) {
+  public Optional<String> getSourceFromAssignment(BDD bdd) {
     checkArgument(isAssignment(bdd));
     checkArgument(bdd.imp(_isSane).isOne());
-    List<String> interfaces =
-        _srcInterfaceBDDs
+
+    // not tracking any sources, so we can the arbitrarily choose the device
+    if (_sourceBDDs.isEmpty()) {
+      return Optional.empty();
+    }
+
+    String source =
+        _sourceBDDs
             .entrySet()
             .stream()
             .filter(entry -> bdd.imp(entry.getValue()).isOne())
             .map(Entry::getKey)
-            .collect(Collectors.toList());
-    if (interfaces.isEmpty()) {
-      /*
-       * If it's not any interface, it must have originated from device.
-       */
-      assert bdd.imp(_originatingFromDeviceBDD).isOne();
-      return Optional.empty();
-    }
-    return Optional.of(interfaces.get(0));
-  }
-
-  @VisibleForTesting
-  BDDInteger getSrcInterfaceVar() {
-    return _var;
+            .findFirst()
+            .get();
+    return source.equals(DEVICE_IS_THE_SOURCE) ? Optional.empty() : Optional.of(source);
   }
 
   /**

@@ -11,7 +11,7 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.not;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.permittedByAcl;
-import static org.batfish.datamodel.acl.InterfacesReferencedByIpAccessLists.referencedInterfaces;
+import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.referencedSources;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
@@ -22,26 +22,36 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.junit.Test;
 
-public class InterfacesReferencedByIpAccessListsTest {
+public class SourcesReferencedByIpAccessListsTest {
   @Test
   public void testExprs() {
-    assertThat(referencedInterfaces(TRUE), equalTo(ImmutableSet.of()));
-    assertThat(referencedInterfaces(FALSE), equalTo(ImmutableSet.of()));
-    assertThat(referencedInterfaces(ORIGINATING_FROM_DEVICE), equalTo(ImmutableSet.of()));
-    assertThat(referencedInterfaces(matchDst(Ip.AUTO)), equalTo(ImmutableSet.of()));
-    assertThat(referencedInterfaces(permittedByAcl("foo")), equalTo(ImmutableSet.of()));
+    assertThat(
+        SourcesReferencedByIpAccessLists.referencedSources(TRUE), equalTo(ImmutableSet.of()));
+    assertThat(
+        SourcesReferencedByIpAccessLists.referencedSources(FALSE), equalTo(ImmutableSet.of()));
+    assertThat(
+        SourcesReferencedByIpAccessLists.referencedSources(ORIGINATING_FROM_DEVICE),
+        equalTo(ImmutableSet.of()));
+    assertThat(
+        SourcesReferencedByIpAccessLists.referencedSources(matchDst(Ip.AUTO)),
+        equalTo(ImmutableSet.of()));
+    assertThat(
+        SourcesReferencedByIpAccessLists.referencedSources(permittedByAcl("foo")),
+        equalTo(ImmutableSet.of()));
 
     assertThat(
-        referencedInterfaces(matchSrcInterface("a", "b", "c")),
+        SourcesReferencedByIpAccessLists.referencedSources(matchSrcInterface("a", "b", "c")),
         equalTo(ImmutableSet.of("a", "b", "c")));
     assertThat(
-        referencedInterfaces(and(matchSrcInterface("a"), matchSrcInterface("b", "c"))),
+        SourcesReferencedByIpAccessLists.referencedSources(
+            and(matchSrcInterface("a"), matchSrcInterface("b", "c"))),
         equalTo(ImmutableSet.of("a", "b", "c")));
     assertThat(
-        referencedInterfaces(not(matchSrcInterface("a", "b", "c"))),
+        SourcesReferencedByIpAccessLists.referencedSources(not(matchSrcInterface("a", "b", "c"))),
         equalTo(ImmutableSet.of("a", "b", "c")));
     assertThat(
-        referencedInterfaces(or(matchSrcInterface("a"), matchSrcInterface("b", "c"))),
+        SourcesReferencedByIpAccessLists.referencedSources(
+            or(matchSrcInterface("a"), matchSrcInterface("b", "c"))),
         equalTo(ImmutableSet.of("a", "b", "c")));
   }
 
@@ -49,7 +59,7 @@ public class InterfacesReferencedByIpAccessListsTest {
   public void testAcl() {
     IpAccessList.Builder aclBuilder = IpAccessList.builder().setName("foo");
     IpAccessList acl = aclBuilder.setLines(ImmutableList.of(IpAccessListLine.ACCEPT_ALL)).build();
-    assertThat(referencedInterfaces(acl), equalTo(ImmutableSet.of()));
+    assertThat(referencedSources(acl), equalTo(ImmutableSet.of()));
 
     acl =
         aclBuilder
@@ -59,6 +69,6 @@ public class InterfacesReferencedByIpAccessListsTest {
                     rejecting().setMatchCondition(matchSrcInterface("b")).build(),
                     accepting().setMatchCondition(matchSrcInterface("c")).build()))
             .build();
-    assertThat(referencedInterfaces(acl), equalTo(ImmutableSet.of("a", "b", "c")));
+    assertThat(referencedSources(acl), equalTo(ImmutableSet.of("a", "b", "c")));
   }
 }

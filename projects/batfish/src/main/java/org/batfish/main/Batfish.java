@@ -4279,7 +4279,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     Flow.Builder flowBuilder = bddAcl.getPkt().getFlowFromAssignment(satAssignment);
     flowBuilder.setTag(getFlowTag()).setIngressNode(node.getHostname());
-    mgr.getInterfaceFromAssignment(satAssignment).ifPresent(flowBuilder::setIngressInterface);
+    mgr.getSourceFromAssignment(satAssignment).ifPresent(flowBuilder::setIngressInterface);
     return Optional.of(flowBuilder.build());
   }
 

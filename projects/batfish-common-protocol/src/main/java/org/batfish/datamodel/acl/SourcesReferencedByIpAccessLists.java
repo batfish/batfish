@@ -6,17 +6,19 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 
 /** Find all the ACLs referenced by an IpAccessList or a collection of IpAccessLists. */
-public final class InterfacesReferencedByIpAccessLists {
-  private static final class ReferencedInterfacesVisitor
-      implements GenericAclLineMatchExprVisitor<Void> {
-    private final ImmutableSet.Builder<String> _referencedInterfaces;
+public final class SourcesReferencedByIpAccessLists {
+  public static final String DEVICE_IS_THE_SOURCE = "DEVICE IS THE SOURCE";
 
-    ReferencedInterfacesVisitor() {
-      _referencedInterfaces = ImmutableSet.builder();
+  private static final class ReferenceSourcesVisitor
+      implements GenericAclLineMatchExprVisitor<Void> {
+    private final ImmutableSet.Builder<String> _referencedSources;
+
+    ReferenceSourcesVisitor() {
+      _referencedSources = ImmutableSet.builder();
     }
 
     Set<String> referencedInterfaces() {
-      return _referencedInterfaces.build();
+      return _referencedSources.build();
     }
 
     void visit(IpAccessList acl) {
@@ -45,7 +47,7 @@ public final class InterfacesReferencedByIpAccessLists {
 
     @Override
     public Void visitMatchSrcInterface(MatchSrcInterface matchSrcInterface) {
-      _referencedInterfaces.addAll(matchSrcInterface.getSrcInterfaces());
+      _referencedSources.addAll(matchSrcInterface.getSrcInterfaces());
       return null;
     }
 
@@ -57,6 +59,7 @@ public final class InterfacesReferencedByIpAccessLists {
 
     @Override
     public Void visitOriginatingFromDevice(OriginatingFromDevice originatingFromDevice) {
+      _referencedSources.add(DEVICE_IS_THE_SOURCE);
       return null;
     }
 
@@ -77,14 +80,14 @@ public final class InterfacesReferencedByIpAccessLists {
     }
   }
 
-  public static Set<String> referencedInterfaces(AclLineMatchExpr expr) {
-    ReferencedInterfacesVisitor visitor = new ReferencedInterfacesVisitor();
+  public static Set<String> referencedSources(AclLineMatchExpr expr) {
+    ReferenceSourcesVisitor visitor = new ReferenceSourcesVisitor();
     visitor.visit(expr);
     return visitor.referencedInterfaces();
   }
 
-  public static Set<String> referencedInterfaces(IpAccessList acl) {
-    ReferencedInterfacesVisitor visitor = new ReferencedInterfacesVisitor();
+  public static Set<String> referencedSources(IpAccessList acl) {
+    ReferenceSourcesVisitor visitor = new ReferenceSourcesVisitor();
     visitor.visit(acl);
     return visitor.referencedInterfaces();
   }

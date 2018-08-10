@@ -39,22 +39,19 @@ public class AclLineMatchExprToBDDTest {
 
   private static final String IFACE2 = "iface2";
 
-  private BDD _originatingFromDevice;
-
   private BDDPacket _pkt;
 
-  private BDDSourceManager _srcInterfaceManager;
+  private BDDSourceManager _sourceMgr;
 
   private AclLineMatchExprToBDD _toBDD;
 
   @Before
   public void setup() {
     _pkt = new BDDPacket();
-    _srcInterfaceManager = BDDSourceManager.forInterfaces(_pkt, ImmutableList.of(IFACE1, IFACE2));
-    _originatingFromDevice = _srcInterfaceManager.getOriginatingFromDeviceBDD();
+    _sourceMgr = BDDSourceManager.forInterfaces(_pkt, ImmutableList.of(IFACE1, IFACE2));
     _toBDD =
         new AclLineMatchExprToBDD(
-            _pkt.getFactory(), _pkt, ImmutableMap.of(), ImmutableMap.of(), _srcInterfaceManager);
+            _pkt.getFactory(), _pkt, ImmutableMap.of(), ImmutableMap.of(), _sourceMgr);
   }
 
   @Test
@@ -214,32 +211,34 @@ public class AclLineMatchExprToBDDTest {
 
   @Test
   public void testMatchSrcInterface() {
-    BDDInteger srcInterfaceVar = _srcInterfaceManager.getSrcInterfaceVar();
-
     MatchSrcInterface matchSrcInterface1 = new MatchSrcInterface(ImmutableList.of(IFACE1));
+    BDD iface1BDD = _sourceMgr.getSourceInterfaceBDD(IFACE1);
+    BDD iface2BDD = _sourceMgr.getSourceInterfaceBDD(IFACE2);
+
     BDD bdd1 = _toBDD.visit(matchSrcInterface1);
-    assertThat(bdd1, equalTo(srcInterfaceVar.value(1)));
-    assertThat(_srcInterfaceManager.getInterfaceFromAssignment(bdd1), equalTo(Optional.of(IFACE1)));
+    assertThat(bdd1, equalTo(iface1BDD));
+    assertThat(_sourceMgr.getSourceFromAssignment(bdd1), equalTo(Optional.of(IFACE1)));
 
     MatchSrcInterface matchSrcInterface2 = new MatchSrcInterface(ImmutableList.of(IFACE2));
-    assertThat(_toBDD.visit(matchSrcInterface2), equalTo(srcInterfaceVar.value(2)));
+    assertThat(_toBDD.visit(matchSrcInterface2), equalTo(iface2BDD));
 
     MatchSrcInterface matchSrcInterface1Or2 =
         new MatchSrcInterface(ImmutableList.of(IFACE1, IFACE2));
     BDD bdd1Or2 = _toBDD.visit(matchSrcInterface1Or2);
-    assertThat(bdd1Or2, equalTo(srcInterfaceVar.value(1).or(srcInterfaceVar.value(2))));
+    assertThat(bdd1Or2, equalTo(iface1BDD.or(iface2BDD)));
     assertThat(
-        _srcInterfaceManager.getInterfaceFromAssignment(bdd1Or2.fullSatOne()).get(),
-        oneOf(IFACE1, IFACE2));
+        _sourceMgr.getSourceFromAssignment(bdd1Or2.fullSatOne()).get(), oneOf(IFACE1, IFACE2));
 
     AclLineMatchExpr expr =
         new AndMatchExpr(
             ImmutableList.of(matchSrcInterface1Or2, new NotMatchExpr(matchSrcInterface1)));
-    assertThat(_toBDD.visit(expr), equalTo(srcInterfaceVar.value(2)));
+    assertThat(_toBDD.visit(expr), equalTo(iface2BDD));
   }
 
   @Test
   public void testOriginateFromInterface() {
-    assertThat(_toBDD.visit(OriginatingFromDevice.INSTANCE), equalTo(_originatingFromDevice));
+    assertThat(
+        _toBDD.visit(OriginatingFromDevice.INSTANCE),
+        equalTo(_sourceMgr.getOriginatingFromDeviceBDD()));
   }
 }

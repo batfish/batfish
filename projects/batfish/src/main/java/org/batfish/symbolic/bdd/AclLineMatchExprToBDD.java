@@ -199,7 +199,7 @@ public class AclLineMatchExprToBDD implements GenericAclLineMatchExprVisitor<BDD
         matchSrcInterface
             .getSrcInterfaces()
             .stream()
-            .map(_bddSrcManager::getSrcInterfaceBDD)
+            .map(_bddSrcManager::getSourceInterfaceBDD)
             .collect(Collectors.toList()));
   }
 

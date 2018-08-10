@@ -35,13 +35,12 @@ public class BDDSourceManagerTest {
 
   @Test
   public void test() {
-    BDD bdd1 = _mgr.getSrcInterfaceBDD(IFACE1);
-    BDD bdd2 = _mgr.getSrcInterfaceBDD(IFACE2);
-    assertThat(_mgr.getInterfaceFromAssignment(bdd1), equalTo(Optional.of(IFACE1)));
-    assertThat(_mgr.getInterfaceFromAssignment(bdd2), equalTo(Optional.of(IFACE2)));
-    assertThat(
-        _mgr.getInterfaceFromAssignment(_mgr.getSrcInterfaceVar().value(0)),
-        equalTo(Optional.empty()));
+    BDD deviceBDD = _mgr.getOriginatingFromDeviceBDD();
+    BDD bdd1 = _mgr.getSourceInterfaceBDD(IFACE1);
+    BDD bdd2 = _mgr.getSourceInterfaceBDD(IFACE2);
+    assertThat(_mgr.getSourceFromAssignment(bdd1), equalTo(Optional.of(IFACE1)));
+    assertThat(_mgr.getSourceFromAssignment(bdd2), equalTo(Optional.of(IFACE2)));
+    assertThat(_mgr.getSourceFromAssignment(deviceBDD), equalTo(Optional.empty()));
   }
 
   @Test
@@ -49,8 +48,8 @@ public class BDDSourceManagerTest {
     BDD noSource =
         orNull(
                 _mgr.getOriginatingFromDeviceBDD(),
-                _mgr.getSrcInterfaceBDD(IFACE1),
-                _mgr.getSrcInterfaceBDD(IFACE2))
+                _mgr.getSourceInterfaceBDD(IFACE1),
+                _mgr.getSourceInterfaceBDD(IFACE2))
             .not();
     assertThat(_mgr.isSane().and(noSource), isZero());
   }
@@ -75,7 +74,7 @@ public class BDDSourceManagerTest {
                     rejecting().setMatchCondition(matchSrcInterface(IFACE1)).build(), ACCEPT_ALL))
             .build();
 
-    List<String> trackedIfaces = BDDSourceManager.interfacesForIpAccessList(config, acl);
+    List<String> trackedIfaces = BDDSourceManager.sourcesForIpAccessList(config, acl);
     assertThat(trackedIfaces, hasSize(2));
     assertThat(trackedIfaces, hasItem(IFACE1));
     assertThat(trackedIfaces, anyOf(hasItem(IFACE2), hasItem(iface3)));
