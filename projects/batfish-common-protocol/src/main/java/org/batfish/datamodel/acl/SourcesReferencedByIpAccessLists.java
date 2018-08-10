@@ -1,19 +1,43 @@
 package org.batfish.datamodel.acl;
 
+import static org.batfish.common.util.CommonUtil.toImmutableMap;
+
 import com.google.common.collect.ImmutableSet;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
+import java.util.function.Supplier;
+import org.batfish.common.BatfishException;
+import org.batfish.common.util.NonRecursiveSupplier;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 
 /** Find all the ACLs referenced by an IpAccessList or a collection of IpAccessLists. */
 public final class SourcesReferencedByIpAccessLists {
-  public static final String DEVICE_IS_THE_SOURCE = "DEVICE IS THE SOURCE";
+  public static final String SOURCE_ORIGINATING_FROM_DEVICE = "DEVICE IS THE SOURCE";
 
   private static final class ReferenceSourcesVisitor
       implements GenericAclLineMatchExprVisitor<Void> {
     private final ImmutableSet.Builder<String> _referencedSources;
 
-    ReferenceSourcesVisitor() {
+    private final Map<String, Supplier<Void>> _namedAclThunks;
+
+    ReferenceSourcesVisitor(Map<String, IpAccessList> namedAcls) {
+      /**
+       * Thunks used to include sources (on demand) referenced by ACLs referenced by PermittedByAcl
+       * match exprs. NonRecursiveSupplier detects cyclic references and throws an exception rather
+       * than going into an infinite loop.
+       */
+      _namedAclThunks =
+          toImmutableMap(
+              namedAcls,
+              Entry::getKey,
+              entry ->
+                  new NonRecursiveSupplier<>(
+                      () -> {
+                        visit(entry.getValue());
+                        return null;
+                      }));
       _referencedSources = ImmutableSet.builder();
     }
 
@@ -59,7 +83,7 @@ public final class SourcesReferencedByIpAccessLists {
 
     @Override
     public Void visitOriginatingFromDevice(OriginatingFromDevice originatingFromDevice) {
-      _referencedSources.add(DEVICE_IS_THE_SOURCE);
+      _referencedSources.add(SOURCE_ORIGINATING_FROM_DEVICE);
       return null;
     }
 
@@ -71,7 +95,12 @@ public final class SourcesReferencedByIpAccessLists {
 
     @Override
     public Void visitPermittedByAcl(PermittedByAcl permittedByAcl) {
-      return null;
+      String aclName = permittedByAcl.getAclName();
+      Supplier<Void> thunk = _namedAclThunks.get(aclName);
+      if (thunk == null) {
+        throw new BatfishException("Unknown IpAccessList " + aclName);
+      }
+      return thunk.get();
     }
 
     @Override
@@ -80,14 +109,16 @@ public final class SourcesReferencedByIpAccessLists {
     }
   }
 
-  public static Set<String> referencedSources(AclLineMatchExpr expr) {
-    ReferenceSourcesVisitor visitor = new ReferenceSourcesVisitor();
+  public static Set<String> referencedSources(
+      Map<String, IpAccessList> namedAcls, AclLineMatchExpr expr) {
+    ReferenceSourcesVisitor visitor = new ReferenceSourcesVisitor(namedAcls);
     visitor.visit(expr);
     return visitor.referencedInterfaces();
   }
 
-  public static Set<String> referencedSources(IpAccessList acl) {
-    ReferenceSourcesVisitor visitor = new ReferenceSourcesVisitor();
+  public static Set<String> referencedSources(
+      Map<String, IpAccessList> namedAcls, IpAccessList acl) {
+    ReferenceSourcesVisitor visitor = new ReferenceSourcesVisitor(namedAcls);
     visitor.visit(acl);
     return visitor.referencedInterfaces();
   }

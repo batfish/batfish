@@ -1,7 +1,7 @@
 package org.batfish.symbolic.bdd;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.DEVICE_IS_THE_SOURCE;
+import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.SOURCE_ORIGINATING_FROM_DEVICE;
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.referencedSources;
 import static org.batfish.symbolic.bdd.BDDUtils.isAssignment;
 
@@ -36,7 +36,7 @@ public final class BDDSourceManager {
   /**
    * Create a {@link BDDSourceManager} for a specified set of possible sources. To include the
    * device as a source, use {@link
-   * org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists#DEVICE_IS_THE_SOURCE}.
+   * org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists#SOURCE_ORIGINATING_FROM_DEVICE}.
    */
   @VisibleForTesting
   BDDSourceManager(BDDPacket pkt, List<String> sources) {
@@ -57,7 +57,11 @@ public final class BDDSourceManager {
    */
   public static BDDSourceManager forInterfaces(BDDPacket pkt, List<String> interfaces) {
     return new BDDSourceManager(
-        pkt, ImmutableList.<String>builder().addAll(interfaces).add(DEVICE_IS_THE_SOURCE).build());
+        pkt,
+        ImmutableList.<String>builder()
+            .addAll(interfaces)
+            .add(SOURCE_ORIGINATING_FROM_DEVICE)
+            .build());
   }
 
   /**
@@ -72,14 +76,14 @@ public final class BDDSourceManager {
 
   @VisibleForTesting
   static List<String> sourcesForIpAccessList(Configuration config, IpAccessList acl) {
-    Set<String> referencedSources = referencedSources(acl);
+    Set<String> referencedSources = referencedSources(config.getIpAccessLists(), acl);
     if (referencedSources.isEmpty()) {
       return ImmutableList.of();
     }
 
     Set<String> allSources =
         ImmutableSet.<String>builder()
-            .add(DEVICE_IS_THE_SOURCE)
+            .add(SOURCE_ORIGINATING_FROM_DEVICE)
             .addAll(config.getInterfaces().keySet())
             .build();
     Set<String> unReferencedInterfaces = Sets.difference(allSources, referencedSources);
@@ -111,7 +115,7 @@ public final class BDDSourceManager {
   }
 
   public BDD getOriginatingFromDeviceBDD() {
-    return getSourceBDD(DEVICE_IS_THE_SOURCE);
+    return getSourceBDD(SOURCE_ORIGINATING_FROM_DEVICE);
   }
 
   public BDD getSourceInterfaceBDD(String iface) {
@@ -145,7 +149,7 @@ public final class BDDSourceManager {
             .map(Entry::getKey)
             .findFirst()
             .get();
-    return source.equals(DEVICE_IS_THE_SOURCE) ? Optional.empty() : Optional.of(source);
+    return source.equals(SOURCE_ORIGINATING_FROM_DEVICE) ? Optional.empty() : Optional.of(source);
   }
 
   /**

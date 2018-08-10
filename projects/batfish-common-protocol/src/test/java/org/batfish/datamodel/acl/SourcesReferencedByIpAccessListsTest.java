@@ -10,13 +10,15 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.not;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
-import static org.batfish.datamodel.acl.AclLineMatchExprs.permittedByAcl;
+import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.SOURCE_ORIGINATING_FROM_DEVICE;
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.referencedSources;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import java.util.Map;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
@@ -25,33 +27,26 @@ import org.junit.Test;
 public class SourcesReferencedByIpAccessListsTest {
   @Test
   public void testExprs() {
+    Map<String, IpAccessList> namedAcls = ImmutableMap.of();
+
+    assertThat(referencedSources(namedAcls, TRUE), equalTo(ImmutableSet.of()));
+    assertThat(referencedSources(namedAcls, FALSE), equalTo(ImmutableSet.of()));
     assertThat(
-        SourcesReferencedByIpAccessLists.referencedSources(TRUE), equalTo(ImmutableSet.of()));
-    assertThat(
-        SourcesReferencedByIpAccessLists.referencedSources(FALSE), equalTo(ImmutableSet.of()));
-    assertThat(
-        SourcesReferencedByIpAccessLists.referencedSources(ORIGINATING_FROM_DEVICE),
-        equalTo(ImmutableSet.of()));
-    assertThat(
-        SourcesReferencedByIpAccessLists.referencedSources(matchDst(Ip.AUTO)),
-        equalTo(ImmutableSet.of()));
-    assertThat(
-        SourcesReferencedByIpAccessLists.referencedSources(permittedByAcl("foo")),
-        equalTo(ImmutableSet.of()));
+        referencedSources(namedAcls, ORIGINATING_FROM_DEVICE),
+        equalTo(ImmutableSet.of(SOURCE_ORIGINATING_FROM_DEVICE)));
+    assertThat(referencedSources(namedAcls, matchDst(Ip.AUTO)), equalTo(ImmutableSet.of()));
 
     assertThat(
-        SourcesReferencedByIpAccessLists.referencedSources(matchSrcInterface("a", "b", "c")),
+        referencedSources(namedAcls, matchSrcInterface("a", "b", "c")),
         equalTo(ImmutableSet.of("a", "b", "c")));
     assertThat(
-        SourcesReferencedByIpAccessLists.referencedSources(
-            and(matchSrcInterface("a"), matchSrcInterface("b", "c"))),
+        referencedSources(namedAcls, and(matchSrcInterface("a"), matchSrcInterface("b", "c"))),
         equalTo(ImmutableSet.of("a", "b", "c")));
     assertThat(
-        SourcesReferencedByIpAccessLists.referencedSources(not(matchSrcInterface("a", "b", "c"))),
+        referencedSources(namedAcls, not(matchSrcInterface("a", "b", "c"))),
         equalTo(ImmutableSet.of("a", "b", "c")));
     assertThat(
-        SourcesReferencedByIpAccessLists.referencedSources(
-            or(matchSrcInterface("a"), matchSrcInterface("b", "c"))),
+        referencedSources(namedAcls, or(matchSrcInterface("a"), matchSrcInterface("b", "c"))),
         equalTo(ImmutableSet.of("a", "b", "c")));
   }
 
@@ -59,7 +54,8 @@ public class SourcesReferencedByIpAccessListsTest {
   public void testAcl() {
     IpAccessList.Builder aclBuilder = IpAccessList.builder().setName("foo");
     IpAccessList acl = aclBuilder.setLines(ImmutableList.of(IpAccessListLine.ACCEPT_ALL)).build();
-    assertThat(referencedSources(acl), equalTo(ImmutableSet.of()));
+    Map<String, IpAccessList> namedAcls = ImmutableMap.of();
+    assertThat(referencedSources(namedAcls, acl), equalTo(ImmutableSet.of()));
 
     acl =
         aclBuilder
@@ -69,6 +65,21 @@ public class SourcesReferencedByIpAccessListsTest {
                     rejecting().setMatchCondition(matchSrcInterface("b")).build(),
                     accepting().setMatchCondition(matchSrcInterface("c")).build()))
             .build();
-    assertThat(referencedSources(acl), equalTo(ImmutableSet.of("a", "b", "c")));
+    assertThat(referencedSources(namedAcls, acl), equalTo(ImmutableSet.of("a", "b", "c")));
+  }
+
+  @Test
+  public void testPermittedByAcl() {
+    IpAccessList.Builder aclBuilder = IpAccessList.builder().setName("foo");
+    IpAccessList acl =
+        aclBuilder
+            .setLines(
+                ImmutableList.of(
+                    IpAccessListLine.accepting().setMatchCondition(matchSrcInterface("a")).build()))
+            .build();
+    Map<String, IpAccessList> namedAcls = ImmutableMap.of(acl.getName(), acl);
+    assertThat(
+        referencedSources(namedAcls, new PermittedByAcl(acl.getName())),
+        equalTo(ImmutableSet.of("a")));
   }
 }
