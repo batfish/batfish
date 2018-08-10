@@ -12,6 +12,8 @@
         "|0_DATA-FORWARDING_R1_Serial0|" : "true",
         "|0_DATA-FORWARDING_R2_Serial0|" : "true",
         "|0_FAILED-EDGE_R1_R2|" : "0",
+        "|0_FAILED-NODE_R1|" : "0",
+        "|0_FAILED-NODE_R2|" : "0",
         "|0_R1_OVERALL_BEST_None_metric|" : "0",
         "|0_R1_OVERALL_BEST_None_permitted|" : "true",
         "|0_R1_OVERALL_BEST_None_prefixLength|" : "8",

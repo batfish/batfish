@@ -462,7 +462,9 @@ public class HeaderQuestion extends Question {
   }
 
   @JsonProperty(PROP_NODE_FAILURES)
-  public void setNodeFailures(int k) { _nodeFailures= k; }
+  public void setNodeFailures(int k) {
+    _nodeFailures = k;
+  }
 
   @JsonProperty(PROP_FULL_MODEL)
   public void setFullModel(boolean b) {

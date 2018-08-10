@@ -5,6 +5,7 @@ import com.microsoft.z3.Context;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nullable;
+import javax.validation.constraints.Null;
 import org.batfish.symbolic.GraphEdge;
 import org.batfish.symbolic.collections.Table2;
 
@@ -58,20 +59,16 @@ class SymbolicFailures {
   /* Takes an edge as an argument in order to check whether it's abstract or not */
   @Nullable
   ArithExpr getFailedStartVariable(GraphEdge ge) {
-    if (ge.isAbstract()) {
-      return _zero;
-    }
     String router = ge.getRouter();
     return _failedNodes.get(router);
   }
 
   @Nullable
   ArithExpr getFailedPeerVariable(GraphEdge ge) {
-    if (ge.isAbstract()) {
-      return _zero;
+    if (ge.getPeer() == null) {
+      return null;
     }
     String router = ge.getPeer();
     return _failedNodes.get(router);
   }
-
 }

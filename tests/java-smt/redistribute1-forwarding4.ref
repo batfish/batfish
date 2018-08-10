@@ -21,6 +21,8 @@
         "|0_FAILED-EDGE_R1_R2|" : "0",
         "|0_FAILED-EDGE_R2_Loopback0|" : "0",
         "|0_FAILED-EDGE_R2_Serial1|" : "0",
+        "|0_FAILED-NODE_R1|" : "0",
+        "|0_FAILED-NODE_R2|" : "0",
         "|0_R1_OSPF_IMPORT_Serial0_adminDist|" : "1",
         "|0_R1_OSPF_IMPORT_Serial0_choice|" : "true",
         "|0_R1_OSPF_IMPORT_Serial0_metric|" : "21",

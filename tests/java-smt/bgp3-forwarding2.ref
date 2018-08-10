@@ -23,6 +23,8 @@
         "|0_FAILED-EDGE_R2_Loopback0|" : "0",
         "|0_FAILED-EDGE_R2_Serial1|" : "0",
         "|0_FAILED-EDGE_R2_null_interface|" : "0",
+        "|0_FAILED-NODE_R1|" : "0",
+        "|0_FAILED-NODE_R2|" : "0",
         "|0_R1_BGP_BEST_None_metric|" : "0",
         "|0_R1_BGP_BEST_None_permitted|" : "false",
         "|0_R1_BGP_BEST_None_prefixLength|" : "0",

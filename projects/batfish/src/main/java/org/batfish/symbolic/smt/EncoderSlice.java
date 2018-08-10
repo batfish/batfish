@@ -1877,8 +1877,8 @@ class EncoderSlice {
           }
           assert (loop != null);
 
-          BoolExpr usable = mkAnd(mkNot(loop), active, varsOther.getPermitted(),
-                                    receiveMessage, notFailedNode);
+          BoolExpr usable =
+              mkAnd(mkNot(loop), active, varsOther.getPermitted(), receiveMessage, notFailedNode);
 
           BoolExpr importFunction;
           RoutingPolicy pol = getGraph().findImportRoutingPolicy(router, proto, e.getEdge());
@@ -1945,8 +1945,10 @@ class EncoderSlice {
     BoolExpr notFailed = mkEq(failed, mkInt(0));
 
     ArithExpr failedNode = getSymbolicFailures().getFailedPeerVariable(e.getEdge());
-    assert (failed != null);
-    BoolExpr notFailedNode = mkEq(failedNode, mkInt(0));
+    BoolExpr notFailedNode = mkTrue();
+    if (failedNode != null) {
+      notFailedNode = mkEq(failedNode, mkInt(0));
+    }
 
     // only add constraints once when using a single copy of export variables
     if (!_optimizations.getSliceCanKeepSingleExportVar().get(router).get(proto) || !usedExport) {
@@ -2024,7 +2026,8 @@ class EncoderSlice {
             new TransferSSA(this, conf, varsOther, vars, proto, statements, cost, ge, true);
         acc = f.compute();
 
-        BoolExpr usable = mkAnd(active, doExport, varsOther.getPermitted(), notFailed, notFailedNode);
+        BoolExpr usable =
+            mkAnd(active, doExport, varsOther.getPermitted(), notFailed, notFailedNode);
 
         // OSPF is complicated because it can have routes redistributed into it
         // from the FIB, but also needs to know about other routes in OSPF as well.
@@ -2039,7 +2042,8 @@ class EncoderSlice {
           BoolExpr acc2 = f.compute();
           // System.out.println("ADDING: \n" + acc2.simplify());
           add(acc2);
-          BoolExpr usable2 = mkAnd(active, doExport, ospfRedistribVars.getPermitted(), notFailed, notFailedNode);
+          BoolExpr usable2 =
+              mkAnd(active, doExport, ospfRedistribVars.getPermitted(), notFailed, notFailedNode);
           BoolExpr geq = greaterOrEqual(conf, proto, ospfRedistribVars, varsOther, e);
           BoolExpr isBetter = mkNot(mkAnd(ospfRedistribVars.getPermitted(), geq));
           BoolExpr usesOspf = mkAnd(varsOther.getPermitted(), isBetter);
