@@ -685,9 +685,7 @@ public final class Interface extends ComparableStructure<String> {
 
   private SortedMap<Integer, VrrpGroup> _vrrpGroups;
 
-  private Zone _zone;
-
-  private transient String _zoneName;
+  private String _zoneName;
 
   private String _hsrpVersion;
 
@@ -805,9 +803,6 @@ public final class Interface extends ComparableStructure<String> {
       return false;
     }
     if (!Objects.equals(this._switchportMode, other._switchportMode)) {
-      return false;
-    }
-    if (!Objects.equals(this._zone, other._zone)) {
       return false;
     }
     return true;
@@ -1165,19 +1160,10 @@ public final class Interface extends ComparableStructure<String> {
     return _vrrpGroups;
   }
 
-  @JsonIgnore
-  public Zone getZone() {
-    return _zone;
-  }
-
   @JsonProperty(PROP_ZONE)
   @JsonPropertyDescription("The firewall zone to which this interface belongs.")
   public String getZoneName() {
-    if (_zone != null) {
-      return _zone.getName();
-    } else {
-      return _zoneName;
-    }
+    return _zoneName;
   }
 
   public boolean isLoopback(ConfigurationFormat vendor) {
@@ -1485,11 +1471,6 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_VRRP_GROUPS)
   public void setVrrpGroups(SortedMap<Integer, VrrpGroup> vrrpGroups) {
     _vrrpGroups = vrrpGroups;
-  }
-
-  @JsonIgnore
-  public void setZone(Zone zone) {
-    _zone = zone;
   }
 
   @JsonProperty(PROP_ZONE)
