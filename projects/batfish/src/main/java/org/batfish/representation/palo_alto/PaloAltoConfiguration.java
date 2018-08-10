@@ -203,6 +203,12 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     newIface.setActive(iface.getActive());
     newIface.setDescription(iface.getComment());
 
+    Zone zone = iface.getZone();
+    if (zone != null) {
+      newIface.setZoneName(zone.getName());
+      // newIface.setZone(new org.batfish.datamodel.Zone(zone.getName()));
+    }
+
     return newIface;
   }
 

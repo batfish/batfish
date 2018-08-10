@@ -18,6 +18,7 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.hasZone;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDescription;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasZoneName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
@@ -41,7 +42,9 @@ import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -527,5 +530,10 @@ public class PaloAltoGrammarTest {
     assertThat(
         c, hasZone(z1Name, hasMemberInterfaces(containsInAnyOrder("ethernet1/1", "ethernet1/2"))));
     assertThat(c, hasZone(zEmptyName, hasMemberInterfaces(empty())));
+
+    // Confirm interfaces are associated with the correct zones
+    assertThat(c, hasInterface("ethernet1/1", hasZoneName(equalTo("z1"))));
+    assertThat(c, hasInterface("ethernet1/2", hasZoneName(equalTo("z1"))));
+    assertThat(c, hasInterface("ethernet1/3", hasZoneName(is(nullValue()))));
   }
 }
