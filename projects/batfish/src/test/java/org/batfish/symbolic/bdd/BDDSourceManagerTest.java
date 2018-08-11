@@ -3,6 +3,7 @@ package org.batfish.symbolic.bdd;
 import static org.batfish.datamodel.IpAccessListLine.ACCEPT_ALL;
 import static org.batfish.datamodel.IpAccessListLine.rejecting;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
+import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.SOURCE_ORIGINATING_FROM_DEVICE;
 import static org.batfish.symbolic.bdd.BDDMatchers.isZero;
 import static org.batfish.symbolic.bdd.BDDOps.orNull;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -77,6 +78,8 @@ public class BDDSourceManagerTest {
     List<String> trackedIfaces = BDDSourceManager.sourcesForIpAccessList(config, acl);
     assertThat(trackedIfaces, hasSize(2));
     assertThat(trackedIfaces, hasItem(IFACE1));
-    assertThat(trackedIfaces, anyOf(hasItem(IFACE2), hasItem(iface3)));
+    assertThat(
+        trackedIfaces,
+        anyOf(hasItem(SOURCE_ORIGINATING_FROM_DEVICE), hasItem(IFACE2), hasItem(iface3)));
   }
 }

@@ -46,7 +46,7 @@ public final class BDDSourceManager {
     } else {
       int bitsRequired = LongMath.log2(sources.size(), RoundingMode.CEILING);
       BDDInteger var = pkt.allocateBDDInteger(VAR_NAME, bitsRequired, false);
-      _isSane = var.leq(sources.size());
+      _isSane = var.leq(sources.size() - 1);
       _sourceBDDs = computeMatchSourceBDDs(var, sources);
     }
   }
@@ -110,7 +110,7 @@ public final class BDDSourceManager {
     ImmutableMap.Builder<String, BDD> matchSrcInterfaceBDDs = ImmutableMap.builder();
     CommonUtil.forEachWithIndex(
         srcInterfaces,
-        (idx, iface) -> matchSrcInterfaceBDDs.put(iface, srcInterfaceVar.value(idx + 1)));
+        (idx, iface) -> matchSrcInterfaceBDDs.put(iface, srcInterfaceVar.value(idx)));
     return matchSrcInterfaceBDDs.build();
   }
 
