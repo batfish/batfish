@@ -8,6 +8,7 @@ import com.google.common.collect.Sets;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -47,16 +48,16 @@ public final class TableDiff {
   }
 
   /**
-   * Returns a map over Rows, where the key is the key of the Row and the value is a Row with that
-   * key. If multiple {@link Row}s with the same key exist, (any) one is returned.
+   * Returns a map over {@code rows}, where the key is the key of the {@link Row} and the value is a
+   * list of {@link Row}s with that key.
    */
   @VisibleForTesting
-  static Map<List<Object>, Row> buildMap(Rows rows, List<ColumnMetadata> metadata) {
-    Map<List<Object>, Row> map = new HashMap<>();
+  static Map<List<Object>, List<Row>> buildMap(Rows rows, List<ColumnMetadata> metadata) {
+    Map<List<Object>, List<Row>> map = new HashMap<>();
     Iterator<Row> iterator = rows.iterator();
     while (iterator.hasNext()) {
       Row row = iterator.next();
-      map.put(row.getKey(metadata), row);
+      map.computeIfAbsent(row.getKey(metadata), k -> new LinkedList<>()).add(row);
     }
     return map;
   }
@@ -219,7 +220,10 @@ public final class TableDiff {
   }
 
   /**
-   * Computes the difference table of the two tables
+   * Computes the difference table of the two tables by taking a "join" on the key columns. If
+   * includeOneTableKeys is true, then an "inner join" is done, that is, only keys that are present
+   * in both tables are in the output. Otherwise, a "full outer join" is done and any key that is in
+   * either table makes it to the output.
    *
    * @throws IllegalArgumentException if the input column metadatas are not equal.
    */
@@ -250,27 +254,32 @@ public final class TableDiff {
             .filter(cm -> (!cm.getIsKey() && cm.getIsValue()))
             .collect(Collectors.toList());
 
-    Set<Object> processedKeys = new HashSet<>();
+    Set<Object> baseKeys = new HashSet<>();
 
     Iterator<Row> baseRows = baseTable.getRows().iterator();
-    Map<List<Object>, Row> deltaMap =
+    Map<List<Object>, List<Row>> deltaMap =
         buildMap(deltaTable.getRows(), inputMetadata.getColumnMetadata());
     while (baseRows.hasNext()) {
       Row baseRow = baseRows.next();
       Object baseKey = baseRow.getKey(inputMetadata.getColumnMetadata());
-      if (processedKeys.contains(baseKey)) {
-        continue;
+      baseKeys.add(baseKey);
+      List<Row> deltaRows = deltaMap.get(baseKey);
+      if (deltaRows == null) { // no matching keys in delta table
+        if (includeOneTableKeys) {
+          RowBuilder diffRowBuilder = Row.builder().putAll(baseRow, keyColumns);
+          diffRowValues(diffRowBuilder, baseRow, null, inputMetadata);
+          diffTable.addRow(diffRowBuilder.build());
+        }
+      } else {
+        for (Row deltaRow : deltaRows) {
+          // insert delta rows that are unequal
+          if (!baseRow.getValue(valueColumns).equals(deltaRow.getValue(valueColumns))) {
+            RowBuilder diffRowBuilder = Row.builder().putAll(baseRow, keyColumns);
+            diffRowValues(diffRowBuilder, baseRow, deltaRow, inputMetadata);
+            diffTable.addRow(diffRowBuilder.build());
+          }
+        }
       }
-      processedKeys.add(baseKey);
-      Row deltaRow = deltaMap.get(baseKey);
-      if ((deltaRow == null && !includeOneTableKeys)
-          || (deltaRow != null /* skip if values are equal */
-              && baseRow.getValue(valueColumns).equals(deltaRow.getValue(valueColumns)))) {
-        continue;
-      }
-      RowBuilder diffRowBuilder = Row.builder().putAll(baseRow, keyColumns);
-      diffRowValues(diffRowBuilder, baseRow, deltaRow, inputMetadata);
-      diffTable.addRow(diffRowBuilder.build());
     }
     if (includeOneTableKeys) {
       // process keys that are present only in delta
@@ -278,10 +287,9 @@ public final class TableDiff {
       while (deltaRows.hasNext()) {
         Row deltaRow = deltaRows.next();
         Object deltaKey = deltaRow.getKey(inputMetadata.getColumnMetadata());
-        if (processedKeys.contains(deltaKey)) {
+        if (baseKeys.contains(deltaKey)) {
           continue;
         }
-        processedKeys.add(deltaKey);
         RowBuilder diffRowBuilder = Row.builder().putAll(deltaRow, keyColumns);
         diffRowValues(diffRowBuilder, null, deltaRow, inputMetadata);
         diffTable.addRow(diffRowBuilder.build());
