@@ -416,11 +416,6 @@ SINGLE_QUOTED_STRING
     '\'' ~'\''* '\''
 ;
 
-US
-:
-    'US'
-;
-
 VARIABLE
 :
     F_Variable_VarChar+
