@@ -116,7 +116,7 @@ public class InterfacePropertiesAnswerer extends Answerer {
         configurations,
         nodes,
         interfacesSpecifier,
-        InterfacePropertiesQuestion.DEFAULT_ONLY_ACTIVE,
+        InterfacePropertiesQuestion.DEFAULT_EXCLUDE_SHUT_INTERFACES,
         columns);
   }
 

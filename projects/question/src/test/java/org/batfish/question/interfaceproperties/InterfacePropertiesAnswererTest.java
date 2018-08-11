@@ -84,10 +84,10 @@ public class InterfacePropertiesAnswererTest {
   }
 
   @Test
-  public void getPropertiesOnlyActive() {
+  public void getPropertiesExcludeShutInterfaces() {
     Configuration conf = new Configuration("node", ConfigurationFormat.CISCO_IOS);
     Interface active = Interface.builder().setName("active").setOwner(conf).setActive(true).build();
-    Interface shut = Interface.builder().setName("iface2").setOwner(conf).setActive(false).build();
+    Interface shut = Interface.builder().setName("shut").setOwner(conf).setActive(false).build();
     conf.getInterfaces().putAll(ImmutableMap.of("active", active, "shut", shut));
 
     String property = "description";
