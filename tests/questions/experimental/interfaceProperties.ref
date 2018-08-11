@@ -1,5 +1,6 @@
 {
   "class" : "org.batfish.question.interfaceproperties.InterfacePropertiesQuestion",
+  "excludeShutInterfaces" : false,
   "interfaceRegex" : ".*",
   "nodeRegex" : ".*",
   "propertySpec" : ".*",
