@@ -28,6 +28,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
@@ -52,10 +53,12 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import org.batfish.common.AnalysisAnswerOptions;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.BfConsts.TaskStatus;
+import org.batfish.common.ColumnSortOption;
 import org.batfish.common.Container;
 import org.batfish.common.CoordConsts.WorkStatusCode;
 import org.batfish.common.Pair;
@@ -96,6 +99,7 @@ import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
+import org.batfish.datamodel.table.TableMetadata;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
 import org.codehaus.jettison.json.JSONArray;
@@ -1822,9 +1826,9 @@ public class WorkMgr extends AbstractCoordinator {
   AnalysisAnswerMetricsResult toAnalysisAnswerMetricsResult(
       @Nonnull String rawAnswer, @Nonnull List<ColumnAggregation> aggregations) {
     AnswerStatus status;
-    Answer answer;
     try {
-      answer = BatfishObjectMapper.mapper().readValue(rawAnswer, new TypeReference<Answer>() {});
+      Answer answer =
+          BatfishObjectMapper.mapper().readValue(rawAnswer, new TypeReference<Answer>() {});
       status = answer.getStatus();
       TableAnswerElement table = (TableAnswerElement) answer.getAnswerElements().get(0);
       int numRows = table.getRows().size();
@@ -1892,5 +1896,107 @@ public class WorkMgr extends AbstractCoordinator {
         .map(rowToInteger)
         .max(Comparator.naturalOrder())
         .orElse(null);
+  }
+
+  /**
+   * Filter and sort {@code rawAnswers} according to options specified in {@code
+   * analysisAnswersOptions}
+   */
+  public Map<String, Answer> processAnalysisAnswers(
+      Map<String, String> rawAnswers, Map<String, AnalysisAnswerOptions> analysisAnswersOptions) {
+    return CommonUtil.toImmutableMap(
+        rawAnswers,
+        Entry::getKey,
+        rawAnswersEntry ->
+            processAnalysisAnswer(
+                rawAnswersEntry.getValue(), analysisAnswersOptions.get(rawAnswersEntry.getKey())));
+  }
+
+  private @Nonnull Answer processAnalysisAnswer(
+      String rawAnswerStr, AnalysisAnswerOptions options) {
+    if (rawAnswerStr == null) {
+      Answer answer = Answer.failureAnswer("Not found", null);
+      answer.setStatus(AnswerStatus.NOTFOUND);
+      return answer;
+    }
+    try {
+      Answer rawAnswer =
+          BatfishObjectMapper.mapper().readValue(rawAnswerStr, new TypeReference<Answer>() {});
+      TableAnswerElement rawTable = (TableAnswerElement) rawAnswer.getAnswerElements().get(0);
+      Answer answer = new Answer();
+      answer.setStatus(rawAnswer.getStatus());
+      answer.addAnswerElement(processAnalysisAnswerTable(rawTable, options));
+      return answer;
+    } catch (Exception e) {
+      _logger.errorf(
+          "Failed to convert answer string to ProcessAnalysisAnswerResult: %s", e.getMessage());
+      return Answer.failureAnswer(e.getMessage(), null);
+    }
+  }
+
+  @SuppressWarnings("resource")
+  private @Nonnull TableAnswerElement processAnalysisAnswerTable(
+      TableAnswerElement rawTable, AnalysisAnswerOptions options) {
+    Map<String, ColumnMetadata> rawColumnMap = rawTable.getMetadata().toColumnMap();
+    Stream<Row> rawStream = rawTable.getRowsList().stream();
+    Stream<Row> sortedStream =
+        options.getSortOrder().isEmpty()
+            ? rawStream
+            : rawStream.sorted(buildComparator(rawColumnMap, options.getSortOrder()));
+    List<Row> sortedRows = sortedStream.collect(ImmutableList.toImmutableList());
+    Stream<Row> truncatedStream =
+        sortedRows.stream().skip(options.getRowOffset()).limit(options.getMaxRows());
+    List<Row> truncatedRows = truncatedStream.collect(ImmutableList.toImmutableList());
+    Stream<Row> filteredStream;
+    TableAnswerElement table;
+    if (options.getColumns().isEmpty()) {
+      filteredStream = truncatedRows.stream();
+      table = new TableAnswerElement(rawTable.getMetadata());
+    } else {
+      filteredStream =
+          truncatedRows
+              .stream()
+              .map(rawRow -> Row.builder().putAll(rawRow, options.getColumns()).build());
+      Map<String, ColumnMetadata> columnMap = new LinkedHashMap<>(rawColumnMap);
+      columnMap.keySet().retainAll(options.getColumns());
+      List<ColumnMetadata> columnMetadata =
+          columnMap.values().stream().collect(ImmutableList.toImmutableList());
+      table =
+          new TableAnswerElement(
+              new TableMetadata(columnMetadata, rawTable.getMetadata().getTextDesc()));
+    }
+    filteredStream.forEach(table::addRow);
+    return table;
+  }
+
+  private @Nonnull Comparator<Row> buildComparator(
+      Map<String, ColumnMetadata> rawColumnMap, List<ColumnSortOption> sortOrder) {
+    ColumnSortOption firstColumnSortOption = sortOrder.get(0);
+    ColumnMetadata firstMetadata = rawColumnMap.get(firstColumnSortOption.getColumn());
+    Comparator<Row> comparator = columnComparator(firstMetadata);
+    for (int i = 1; i < sortOrder.size(); i++) {
+      ColumnSortOption columnSortOption = sortOrder.get(i);
+      Comparator<Row> nextComparator =
+          columnComparator(rawColumnMap.get(columnSortOption.getColumn()));
+      if (columnSortOption.getReversed()) {
+        nextComparator = nextComparator.reversed();
+      }
+      comparator = comparator.thenComparing(nextComparator);
+    }
+    return comparator;
+  }
+
+  private Comparator<Row> columnComparator(ColumnMetadata columnMetadata) {
+    Schema schema = columnMetadata.getSchema();
+    String column = columnMetadata.getName();
+    if (schema.equals(Schema.ISSUE)) {
+      return (lhs, rhs) ->
+          Integer.compare(lhs.getIssue(column).getSeverity(), rhs.getIssue(column).getSeverity());
+    } else if (schema.equals(Schema.STRING)) {
+      return (lhs, rhs) -> lhs.getString(column).compareTo(rhs.getString(column));
+    } else {
+      throw new UnsupportedOperationException(
+          String.format("Unsupported Schema for sorting: %s", schema));
+    }
   }
 }
