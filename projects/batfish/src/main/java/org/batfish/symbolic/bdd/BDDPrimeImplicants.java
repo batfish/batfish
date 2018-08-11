@@ -60,9 +60,6 @@ public class BDDPrimeImplicants implements Iterable<BDD> {
     return (svar - _numVars) / 2;
   }
 
-  // TODO: The resulting BDD includes all prime implicants but also non-prime ones.
-  // Try some examples by hand (e.g. x or y has this problem) to understand it, and
-  // see if it really is inevitable due to the metaproduct encoding.
   private BDD computePrimeImplicantBDD(BDD bdd, Map<BDD, BDD> memoTable) {
 
     if (bdd.isOne() || bdd.isZero()) {
