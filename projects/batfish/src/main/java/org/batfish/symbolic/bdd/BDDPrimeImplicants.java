@@ -22,9 +22,21 @@ public class BDDPrimeImplicants implements Iterable<BDD> {
     _bdd = bdd;
     _factory = bdd.getFactory();
     _numVars = _factory.varNum();
-    _factory.setVarNum(_numVars * 3);
-    /* TODO: The variable order for the new variables should be made the same as the variable order
-    for the corresponding original vars */
+    int[] oldOrder = _factory.getVarOrder();
+    int newSize = _numVars * 3;
+    _factory.setVarNum(newSize);
+    // each variable has an associated "occurrence" variable and "sign" variable;
+    // each such pair of metavariables occurs in the same order as the corresponding
+    // original variables
+    int[] newOrder = new int[newSize];
+    for (int i = 0; i < _numVars; i++) {
+      int var = oldOrder[i];
+      newOrder[i] = var;
+      newOrder[var2OccurrenceVar(i)] = var2OccurrenceVar(var);
+      newOrder[var2SignVar(i)] = var2SignVar(var);
+    }
+    _factory.setVarOrder(newOrder);
+    _factory.disableReorder();
     _primeImplicants = computePrimeImplicantBDD(bdd, new HashMap<BDD, BDD>());
   }
 
@@ -44,14 +56,13 @@ public class BDDPrimeImplicants implements Iterable<BDD> {
     return (var - _numVars) % 2 == 1;
   }
 
-  private int occurrenceVar2Var(int ovar) {
-    return (ovar - _numVars) / 2;
-  }
-
   private int signVar2Var(int svar) {
     return (svar - _numVars) / 2;
   }
 
+  // TODO: The resulting BDD includes all prime implicants but also non-prime ones.
+  // Try some examples by hand (e.g. x or y has this problem) to understand it, and
+  // see if it really is inevitable due to the metaproduct encoding.
   private BDD computePrimeImplicantBDD(BDD bdd, Map<BDD, BDD> memoTable) {
 
     if (bdd.isOne() || bdd.isZero()) {
@@ -69,8 +80,8 @@ public class BDDPrimeImplicants implements Iterable<BDD> {
     BDD commonPI = highPI.and(lowPI);
     BDD highPIOnly = highPI.and(lowPI.not());
     BDD lowPIOnly = lowPI.and(highPI.not());
-    int occurrenceVar = _numVars + 2 * currVar;
-    int signVar = occurrenceVar + 1;
+    int occurrenceVar = var2OccurrenceVar(currVar);
+    int signVar = var2SignVar(currVar);
     BDD signPI =
         highPIOnly
             .andWith(_factory.ithVar(signVar))
