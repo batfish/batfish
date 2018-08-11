@@ -3,7 +3,7 @@
   "nodeRegex" : ".*",
   "propertySpec" : "ntp.*",
   "differential" : false,
-  "includeOneTableKeys" : false,
+  "includeOneTableKeys" : true,
   "instance" : {
     "description" : "Gets properties of nodes",
     "instanceName" : "qname",

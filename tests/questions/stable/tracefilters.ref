@@ -11,7 +11,7 @@
   "fragmentOffset" : 12,
   "icmpCode" : 12,
   "icmpType" : 23,
-  "includeOneTableKeys" : false,
+  "includeOneTableKeys" : true,
   "ingressInterface" : "randomInterface",
   "instance" : {
     "description" : "Perform a traceroute.",

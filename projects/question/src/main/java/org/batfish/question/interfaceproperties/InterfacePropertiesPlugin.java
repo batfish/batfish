@@ -17,6 +17,6 @@ public class InterfacePropertiesPlugin extends QuestionPlugin {
 
   @Override
   protected Question createQuestion() {
-    return new InterfacePropertiesQuestion(null, null, null);
+    return new InterfacePropertiesQuestion(null, null, null, null);
   }
 }

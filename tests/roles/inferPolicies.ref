@@ -6,13 +6,13 @@
         "class" : "org.batfish.question.jsonpath.JsonPathQuestionPlugin$JsonPathQuestion",
         "debug" : false,
         "differential" : false,
-        "includeOneTableKeys" : false,
+        "includeOneTableKeys" : true,
         "innerQuestion" : {
           "class" : "org.batfish.question.RoleConsistencyQuestionPlugin$RoleConsistencyQuestion",
           "propertyName" : "LoggingServers",
           "roleDimension" : "default",
           "differential" : false,
-          "includeOneTableKeys" : false
+          "includeOneTableKeys" : true
         },
         "instance" : {
           "instanceName" : "sameServers LoggingServers"
@@ -69,13 +69,13 @@
         "class" : "org.batfish.question.jsonpath.JsonPathQuestionPlugin$JsonPathQuestion",
         "debug" : false,
         "differential" : false,
-        "includeOneTableKeys" : false,
+        "includeOneTableKeys" : true,
         "innerQuestion" : {
           "class" : "org.batfish.question.RoleConsistencyQuestionPlugin$RoleConsistencyQuestion",
           "propertyName" : "NtpServers",
           "roleDimension" : "default",
           "differential" : false,
-          "includeOneTableKeys" : false
+          "includeOneTableKeys" : true
         },
         "instance" : {
           "instanceName" : "sameServers NtpServers"
@@ -132,14 +132,14 @@
         "class" : "org.batfish.question.jsonpath.JsonPathQuestionPlugin$JsonPathQuestion",
         "debug" : false,
         "differential" : false,
-        "includeOneTableKeys" : false,
+        "includeOneTableKeys" : true,
         "innerQuestion" : {
           "class" : "org.batfish.question.NamedStructureRoleConsistencyQuestionPlugin$NamedStructureRoleConsistencyQuestion",
           "hypothesis" : "sameName",
           "roleDimension" : "default",
           "structType" : "CommunityList",
           "differential" : false,
-          "includeOneTableKeys" : false
+          "includeOneTableKeys" : true
         },
         "instance" : {
           "instanceName" : "sameName CommunityList"
@@ -196,14 +196,14 @@
         "class" : "org.batfish.question.jsonpath.JsonPathQuestionPlugin$JsonPathQuestion",
         "debug" : false,
         "differential" : false,
-        "includeOneTableKeys" : false,
+        "includeOneTableKeys" : true,
         "innerQuestion" : {
           "class" : "org.batfish.question.NamedStructureRoleConsistencyQuestionPlugin$NamedStructureRoleConsistencyQuestion",
           "hypothesis" : "sameName",
           "roleDimension" : "default",
           "structType" : "Interface",
           "differential" : false,
-          "includeOneTableKeys" : false
+          "includeOneTableKeys" : true
         },
         "instance" : {
           "instanceName" : "sameName Interface"
@@ -260,14 +260,14 @@
         "class" : "org.batfish.question.jsonpath.JsonPathQuestionPlugin$JsonPathQuestion",
         "debug" : false,
         "differential" : false,
-        "includeOneTableKeys" : false,
+        "includeOneTableKeys" : true,
         "innerQuestion" : {
           "class" : "org.batfish.question.NamedStructureRoleConsistencyQuestionPlugin$NamedStructureRoleConsistencyQuestion",
           "hypothesis" : "sameName",
           "roleDimension" : "default",
           "structType" : "IpAccessList",
           "differential" : false,
-          "includeOneTableKeys" : false
+          "includeOneTableKeys" : true
         },
         "instance" : {
           "instanceName" : "sameName IpAccessList"
@@ -324,14 +324,14 @@
         "class" : "org.batfish.question.jsonpath.JsonPathQuestionPlugin$JsonPathQuestion",
         "debug" : false,
         "differential" : false,
-        "includeOneTableKeys" : false,
+        "includeOneTableKeys" : true,
         "innerQuestion" : {
           "class" : "org.batfish.question.NamedStructureRoleConsistencyQuestionPlugin$NamedStructureRoleConsistencyQuestion",
           "hypothesis" : "sameName",
           "roleDimension" : "default",
           "structType" : "RouteFilterList",
           "differential" : false,
-          "includeOneTableKeys" : false
+          "includeOneTableKeys" : true
         },
         "instance" : {
           "instanceName" : "sameName RouteFilterList"
@@ -388,14 +388,14 @@
         "class" : "org.batfish.question.jsonpath.JsonPathQuestionPlugin$JsonPathQuestion",
         "debug" : false,
         "differential" : false,
-        "includeOneTableKeys" : false,
+        "includeOneTableKeys" : true,
         "innerQuestion" : {
           "class" : "org.batfish.question.NamedStructureRoleConsistencyQuestionPlugin$NamedStructureRoleConsistencyQuestion",
           "hypothesis" : "sameName",
           "roleDimension" : "default",
           "structType" : "Vrf",
           "differential" : false,
-          "includeOneTableKeys" : false
+          "includeOneTableKeys" : true
         },
         "instance" : {
           "instanceName" : "sameName Vrf"
@@ -452,14 +452,14 @@
         "class" : "org.batfish.question.jsonpath.JsonPathQuestionPlugin$JsonPathQuestion",
         "debug" : false,
         "differential" : false,
-        "includeOneTableKeys" : false,
+        "includeOneTableKeys" : true,
         "innerQuestion" : {
           "class" : "org.batfish.question.NamedStructureRoleConsistencyQuestionPlugin$NamedStructureRoleConsistencyQuestion",
           "hypothesis" : "sameDefinition",
           "roleDimension" : "default",
           "structType" : "CommunityList",
           "differential" : false,
-          "includeOneTableKeys" : false
+          "includeOneTableKeys" : true
         },
         "instance" : {
           "instanceName" : "sameDefinition CommunityList"
@@ -523,14 +523,14 @@
         "class" : "org.batfish.question.jsonpath.JsonPathQuestionPlugin$JsonPathQuestion",
         "debug" : false,
         "differential" : false,
-        "includeOneTableKeys" : false,
+        "includeOneTableKeys" : true,
         "innerQuestion" : {
           "class" : "org.batfish.question.NamedStructureRoleConsistencyQuestionPlugin$NamedStructureRoleConsistencyQuestion",
           "hypothesis" : "sameDefinition",
           "roleDimension" : "default",
           "structType" : "IpAccessList",
           "differential" : false,
-          "includeOneTableKeys" : false
+          "includeOneTableKeys" : true
         },
         "instance" : {
           "instanceName" : "sameDefinition IpAccessList"
@@ -594,14 +594,14 @@
         "class" : "org.batfish.question.jsonpath.JsonPathQuestionPlugin$JsonPathQuestion",
         "debug" : false,
         "differential" : false,
-        "includeOneTableKeys" : false,
+        "includeOneTableKeys" : true,
         "innerQuestion" : {
           "class" : "org.batfish.question.NamedStructureRoleConsistencyQuestionPlugin$NamedStructureRoleConsistencyQuestion",
           "hypothesis" : "sameDefinition",
           "roleDimension" : "default",
           "structType" : "RouteFilterList",
           "differential" : false,
-          "includeOneTableKeys" : false
+          "includeOneTableKeys" : true
         },
         "instance" : {
           "instanceName" : "sameDefinition RouteFilterList"
