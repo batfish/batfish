@@ -7,6 +7,7 @@
   "filter" : "mtu > 0",
   "innerQuestion" : {
     "class" : "org.batfish.question.interfaceproperties.InterfacePropertiesQuestion",
+    "excludeShutInterfaces" : false,
     "interfaceRegex" : "Gig.*",
     "nodeRegex" : "as1core2",
     "propertySpec" : ".*",
