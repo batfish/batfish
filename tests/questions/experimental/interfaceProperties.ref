@@ -2,10 +2,9 @@
   "class" : "org.batfish.question.interfaceproperties.InterfacePropertiesQuestion",
   "interfaceRegex" : ".*",
   "nodeRegex" : ".*",
-  "onlyActive" : false,
   "propertySpec" : ".*",
   "differential" : false,
-  "includeOneTableKeys" : false,
+  "includeOneTableKeys" : true,
   "instance" : {
     "description" : "Gets properties of interfaces",
     "instanceName" : "qname",
