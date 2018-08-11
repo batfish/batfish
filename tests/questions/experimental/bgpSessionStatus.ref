@@ -9,7 +9,7 @@
   "status" : ".*",
   "type" : ".*",
   "differential" : false,
-  "includeOneTableKeys" : false,
+  "includeOneTableKeys" : true,
   "instance" : {
     "description" : "Lists the status of configured BGP sessions",
     "instanceName" : "qname",

@@ -1,7 +1,7 @@
 {
   "class" : "org.batfish.question.initialization.FileParseStatusQuestion",
   "differential" : false,
-  "includeOneTableKeys" : false,
+  "includeOneTableKeys" : true,
   "instance" : {
     "description" : "Shows file parse status.",
     "instanceName" : "qname",

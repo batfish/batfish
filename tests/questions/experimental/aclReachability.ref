@@ -3,7 +3,7 @@
   "aclNameRegex" : ".*",
   "nodeRegex" : ".*",
   "differential" : false,
-  "includeOneTableKeys" : false,
+  "includeOneTableKeys" : true,
   "instance" : {
     "description" : "Identifies unreachable lines in ACLs",
     "instanceName" : "qname",
