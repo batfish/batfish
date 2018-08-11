@@ -14,16 +14,18 @@ public class BDDPrimeImplicantsTest {
   @Test
   public void testPrimeImplicants() {
     BDDFactory factory = JFactory.init(10000, 1000);
-    factory.setVarNum(3);
+    factory.setVarNum(5);
     BDD x = factory.ithVar(0);
     BDD y = factory.ithVar(1);
     BDD z = factory.ithVar(2);
+    BDD u = factory.ithVar(3);
+    BDD v = factory.ithVar(4);
 
     BDD bdd1 = x.or(y);
     List<BDD> pis1 = allPIs(bdd1);
     List<BDD> oracle1 = new LinkedList<>();
-    oracle1.add(x);
     oracle1.add(y);
+    oracle1.add(x);
     assertThat(pis1, equalTo(oracle1));
 
     BDD bdd2 = x.or(y).and(x.not().or(z));
@@ -33,6 +35,14 @@ public class BDDPrimeImplicantsTest {
     oracle2.add(x.not().and(y));
     oracle2.add(y.and(z));
     assertThat(pis2, equalTo(oracle2));
+
+    BDD bdd3 = x.and(y).or(z.and(u)).or(v);
+    List<BDD> pis3 = allPIs(bdd3);
+    List<BDD> oracle3 = new LinkedList<>();
+    oracle3.add(v);
+    oracle3.add(z.and(u));
+    oracle3.add(x.and(y));
+    assertThat(pis3, equalTo(oracle3));
   }
 
   private static List<BDD> allPIs(BDD bdd) {
