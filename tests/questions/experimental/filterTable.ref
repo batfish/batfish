@@ -11,10 +11,10 @@
     "nodeRegex" : ".*",
     "propertySpec" : ".*",
     "differential" : false,
-    "includeOneTableKeys" : false
+    "includeOneTableKeys" : true
   },
   "differential" : false,
-  "includeOneTableKeys" : false,
+  "includeOneTableKeys" : true,
   "instance" : {
     "description" : "Filters rows or select columns of the answer of inner question",
     "instanceName" : "qname",

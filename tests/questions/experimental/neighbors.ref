@@ -8,7 +8,7 @@
   "roleDimension" : "default",
   "style" : "summary",
   "differential" : false,
-  "includeOneTableKeys" : false,
+  "includeOneTableKeys" : true,
   "instance" : {
     "description" : "Lists neighbor relationships in the testrig.",
     "instanceName" : "qname",
