@@ -9,6 +9,7 @@
     "class" : "org.batfish.question.interfaceproperties.InterfacePropertiesQuestion",
     "interfaceRegex" : ".*",
     "nodeRegex" : ".*",
+    "onlyActive" : false,
     "propertySpec" : ".*",
     "differential" : false,
     "includeOneTableKeys" : false
