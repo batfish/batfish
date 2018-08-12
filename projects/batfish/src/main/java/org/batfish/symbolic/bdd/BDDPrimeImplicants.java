@@ -195,7 +195,6 @@ public class BDDPrimeImplicants implements Iterable<BDD> {
         } else {
           _workQueue.offer(
               new SearchState(low, partialPI.id().andWith(_factory.nithVar(var)), size));
-
           _workQueue.offer(
               new SearchState(high, partialPI.id().andWith(_factory.ithVar(var)), size));
         }
