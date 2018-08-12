@@ -190,8 +190,8 @@ public class BDDPrimeImplicants implements Iterable<BDD> {
         int size = curr._size;
 
         if (isOccurrenceVar(metaVar)) {
-          _workQueue.offer(new SearchState(low, partialPI.id(), size));
-          _workQueue.offer(new SearchState(high, partialPI.id(), size + 1));
+          _workQueue.offer(new SearchState(low, partialPI, size));
+          _workQueue.offer(new SearchState(high, partialPI, size + 1));
         } else {
           _workQueue.offer(
               new SearchState(low, partialPI.id().andWith(_factory.nithVar(var)), size));
