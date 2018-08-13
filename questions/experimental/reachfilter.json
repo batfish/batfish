@@ -14,6 +14,16 @@
       "traceroute"
     ],
     "variables": {
+      "destinationIpSpaceSpecifierFactory": {
+        "description": "Name of the IpSpaceSpecifierFactory to use for the destination IpSpace",
+        "optional": true,
+        "type": "string"
+      },
+      "dst": {
+        "description": "Specify destination nodes by regex",
+        "optional": false,
+        "type": "string"
+      },
       "filterRegex": {
         "description": "Only consider filters that match this specification",
         "optional": true,
@@ -23,6 +33,16 @@
         "description": "Only consider filters present on these nodes",
         "optional": true,
         "type": "javaRegex"
+      },
+      "sourceLocationSpecifierFactory": {
+        "description": "Name of the LocationSpecifierFactory to use for the src location",
+        "optional": true,
+        "type": "string"
+      },
+      "src": {
+        "description": "Flexible specification of source locations",
+        "optional": false,
+        "type": "string"
       },
       "query": {
         "description": "permit|deny|matchLine <line number>",

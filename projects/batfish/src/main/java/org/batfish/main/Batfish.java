@@ -172,6 +172,7 @@ import org.batfish.job.FlattenVendorConfigurationJob;
 import org.batfish.job.ParseEnvironmentBgpTableJob;
 import org.batfish.job.ParseEnvironmentRoutingTableJob;
 import org.batfish.job.ParseVendorConfigurationJob;
+import org.batfish.question.ReachFilterParameters;
 import org.batfish.question.ReachabilityParameters;
 import org.batfish.question.ResolvedReachabilityParameters;
 import org.batfish.referencelibrary.ReferenceLibrary;
@@ -4268,7 +4269,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public Optional<Flow> reachFilter(Configuration node, IpAccessList acl) {
+  public Optional<Flow> reachFilter(
+      Configuration node, IpAccessList acl, ReachFilterParameters parameters) {
     BDDPacket bddPacket = new BDDPacket();
     BDDSourceManager mgr = BDDSourceManager.forIpAccessList(bddPacket, node, acl);
     BDDAcl bddAcl = BDDAcl.create(bddPacket, acl, node.getIpAccessLists(), node.getIpSpaces(), mgr);
