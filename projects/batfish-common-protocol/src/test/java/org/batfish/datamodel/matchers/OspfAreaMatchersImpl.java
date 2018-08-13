@@ -1,5 +1,7 @@
 package org.batfish.datamodel.matchers;
 
+import static org.hamcrest.Matchers.is;
+
 import java.util.Set;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Prefix;
@@ -13,6 +15,17 @@ import org.hamcrest.Matcher;
 
 final class OspfAreaMatchersImpl {
 
+  static final class HasInjectDefaultRoute extends FeatureMatcher<OspfArea, Boolean> {
+    HasInjectDefaultRoute() {
+      super(is(true), "an OspfArea with injectDefaultRoute", "injectDefaultRoute");
+    }
+
+    @Override
+    protected Boolean featureValueOf(OspfArea actual) {
+      return actual.getInjectDefaultRoute();
+    }
+  }
+
   static final class HasInterfaces extends FeatureMatcher<OspfArea, Set<String>> {
     HasInterfaces(@Nonnull Matcher<? super Set<String>> subMatcher) {
       super(subMatcher, "an OspfArea with interfaces:", "interfaces");
@@ -21,6 +34,17 @@ final class OspfAreaMatchersImpl {
     @Override
     protected Set<String> featureValueOf(OspfArea actual) {
       return actual.getInterfaces();
+    }
+  }
+
+  static final class HasMetricOfDefaultRoute extends FeatureMatcher<OspfArea, Integer> {
+    HasMetricOfDefaultRoute(@Nonnull Matcher<? super Integer> subMatcher) {
+      super(subMatcher, "an OspfArea with metricOfDefaultRoute:", "metricOfDefaultRoute");
+    }
+
+    @Override
+    protected Integer featureValueOf(OspfArea actual) {
+      return actual.getMetricOfDefaultRoute();
     }
   }
 

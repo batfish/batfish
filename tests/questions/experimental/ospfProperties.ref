@@ -3,7 +3,7 @@
   "nodeRegex" : ".*",
   "propertySpec" : "maximum-.*",
   "differential" : false,
-  "includeOneTableKeys" : false,
+  "includeOneTableKeys" : true,
   "instance" : {
     "description" : "Gets properties of OSPF routing processes",
     "instanceName" : "qname",

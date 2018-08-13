@@ -4,6 +4,7 @@ import com.microsoft.z3.ArithExpr;
 import com.microsoft.z3.Context;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import javax.annotation.Nullable;
 import org.batfish.symbolic.GraphEdge;
 import org.batfish.symbolic.collections.Table2;
@@ -21,10 +22,13 @@ class SymbolicFailures {
 
   private Map<GraphEdge, ArithExpr> _failedEdgeLinks;
 
+  private Map<String, ArithExpr> _failedNodes;
+
   SymbolicFailures(Context ctx) {
     _zero = ctx.mkInt(0);
     _failedInternalLinks = new Table2<>();
     _failedEdgeLinks = new HashMap<>();
+    _failedNodes = new HashMap<>();
   }
 
   Table2<String, String, ArithExpr> getFailedInternalLinks() {
@@ -33,6 +37,10 @@ class SymbolicFailures {
 
   Map<GraphEdge, ArithExpr> getFailedEdgeLinks() {
     return _failedEdgeLinks;
+  }
+
+  Map<String, ArithExpr> getFailedNodes() {
+    return _failedNodes;
   }
 
   @Nullable
@@ -46,5 +54,18 @@ class SymbolicFailures {
     String router = ge.getRouter();
     String peer = ge.getPeer();
     return _failedInternalLinks.get(router, peer);
+  }
+
+  ArithExpr getFailedStartVariable(GraphEdge ge) {
+    String router = ge.getRouter();
+    return _failedNodes.get(router);
+  }
+
+  Optional<ArithExpr> getFailedPeerVariable(GraphEdge ge) {
+    if (ge.getPeer() == null) {
+      return Optional.empty();
+    }
+    String router = ge.getPeer();
+    return Optional.of(_failedNodes.get(router));
   }
 }

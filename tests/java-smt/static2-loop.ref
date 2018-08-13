@@ -12,6 +12,8 @@
         "|0_DATA-FORWARDING_r1_Serial0|" : "true",
         "|0_DATA-FORWARDING_r2_Serial0|" : "true",
         "|0_FAILED-EDGE_r1_r2|" : "0",
+        "|0_FAILED-NODE_r1|" : "0",
+        "|0_FAILED-NODE_r2|" : "0",
         "|0__on-loop_r1_r1|" : "true",
         "|0__on-loop_r1_r2|" : "true",
         "|0__on-loop_r2_r1|" : "true",

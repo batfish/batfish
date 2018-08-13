@@ -10,7 +10,7 @@
   "icmpCode" : 12,
   "icmpType" : 23,
   "ignoreAcls" : false,
-  "includeOneTableKeys" : false,
+  "includeOneTableKeys" : true,
   "instance" : {
     "description" : "Perform a traceroute.",
     "instanceName" : "qname",

@@ -18,6 +18,8 @@
         "|0_FAILED-EDGE_r1_Loopback0|" : "0",
         "|0_FAILED-EDGE_r1_r2|" : "0",
         "|0_FAILED-EDGE_r2_Loopback0|" : "0",
+        "|0_FAILED-NODE_r1|" : "0",
+        "|0_FAILED-NODE_r2|" : "0",
         "|0_dst-ip|" : "707406336",
         "|0_dst-port|" : "0",
         "|0_icmp-code|" : "0",

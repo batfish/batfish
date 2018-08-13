@@ -13,6 +13,7 @@ import org.batfish.datamodel.matchers.VrfMatchersImpl.HasBgpProcess;
 import org.batfish.datamodel.matchers.VrfMatchersImpl.HasEigrpProcesses;
 import org.batfish.datamodel.matchers.VrfMatchersImpl.HasGeneratedRoutes;
 import org.batfish.datamodel.matchers.VrfMatchersImpl.HasInterfaces;
+import org.batfish.datamodel.matchers.VrfMatchersImpl.HasName;
 import org.batfish.datamodel.matchers.VrfMatchersImpl.HasOspfProcess;
 import org.batfish.datamodel.matchers.VrfMatchersImpl.HasSnmpServer;
 import org.batfish.datamodel.matchers.VrfMatchersImpl.HasStaticRoutes;
@@ -61,6 +62,11 @@ public class VrfMatchers {
    */
   public static HasOspfProcess hasOspfProcess(Matcher<? super OspfProcess> subMatcher) {
     return new HasOspfProcess(subMatcher);
+  }
+
+  /** Provides a matcher that matches if the provided {@code subMatcher} matches the VRF's name. */
+  public static HasName hasName(Matcher<? super String> subMatcher) {
+    return new HasName(subMatcher);
   }
 
   public static @Nonnull Matcher<Vrf> hasSnmpServer(

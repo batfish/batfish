@@ -192,6 +192,7 @@ public class Encoder {
     _unsatCore = new UnsatCore(ENABLE_UNSAT_CORE);
 
     initFailedLinkVariables();
+    initFailedNodeVariables();
     initSlices(_question.getHeaderSpace(), graph);
   }
 
@@ -222,6 +223,18 @@ public class Encoder {
         _symbolicFailures.getFailedInternalLinks().put(router, peer, var);
         _allVariables.put(var.toString(), var);
       }
+    }
+  }
+
+  /*
+   * Initialize symbolic variables to represent node failures.
+   */
+  private void initFailedNodeVariables() {
+    for (String router : _graph.getRouters()) {
+      String name = getId() + "_FAILED-NODE_" + router;
+      ArithExpr var = _ctx.mkIntConst(name);
+      _symbolicFailures.getFailedNodes().put(router, var);
+      _allVariables.put(var.toString(), var);
     }
   }
 
@@ -405,21 +418,18 @@ public class Encoder {
   }
 
   /*
-   * Adds the constraint that at most k links have failed.
-   * This is done in two steps. First we ensure that each link
-   * variable is constrained to take on a value between 0 and 1:
+   * Adds the constraint that at most k links/nodes have failed.
+   * This is done in two steps. First we ensure that each
+   * variable that represents a failure is constrained to
+   * take on a value between 0 and 1:
    *
-   * 0 <= link_i <= 1
+   * 0 <= failVar_i <= 1
    *
-   * Then we ensure that the sum of all links is never more than k:
+   * Then we ensure that the sum of all fail variables is never more than k:
    *
-   * link_1 + link_2 + ... + link_n <= k
+   * failVar_1 + failVar_2 + ... + failVar_n <= k
    */
-  private void addFailedConstraints(int k) {
-    Set<ArithExpr> vars = new HashSet<>();
-    getSymbolicFailures().getFailedInternalLinks().forEach((router, peer, var) -> vars.add(var));
-    getSymbolicFailures().getFailedEdgeLinks().forEach((ge, var) -> vars.add(var));
-
+  private void addFailedConstraints(int k, Set<ArithExpr> vars) {
     ArithExpr sum = mkInt(0);
     for (ArithExpr var : vars) {
       sum = mkSum(sum, var);
@@ -433,6 +443,21 @@ public class Encoder {
     } else {
       add(mkLe(sum, mkInt(k)));
     }
+  }
+
+  /* Generate constraints for link failures */
+  private void addFailedLinkConstraints(int k) {
+    Set<ArithExpr> vars = new HashSet<>();
+    getSymbolicFailures().getFailedInternalLinks().forEach((router, peer, var) -> vars.add(var));
+    getSymbolicFailures().getFailedEdgeLinks().forEach((ge, var) -> vars.add(var));
+    addFailedConstraints(k, vars);
+  }
+
+  /* Generate constraints for node failures */
+  private void addFailedNodeConstraints(int k) {
+    Set<ArithExpr> vars = new HashSet<>();
+    getSymbolicFailures().getFailedNodes().forEach((router, var) -> vars.add(var));
+    addFailedConstraints(k, vars);
   }
 
   /*
@@ -666,6 +691,16 @@ public class Encoder {
                 failures.add("link(" + ge.getRouter() + "," + ge.getStart().getName() + ")");
               }
             });
+
+    _symbolicFailures
+        .getFailedNodes()
+        .forEach(
+            (x, e) -> {
+              String s = valuation.get(e);
+              if ("1".equals(s)) {
+                failures.add("node(" + x + ")");
+              }
+            });
   }
 
   /*
@@ -802,7 +837,8 @@ public class Encoder {
       throw new BatfishException(
           "Cannot encode a network that has a static route with a dynamic next hop");
     }
-    addFailedConstraints(_question.getFailures());
+    addFailedLinkConstraints(_question.getFailures());
+    addFailedNodeConstraints(_question.getNodeFailures());
     getMainSlice().computeEncoding();
     for (Entry<String, EncoderSlice> entry : _slices.entrySet()) {
       String name = entry.getKey();

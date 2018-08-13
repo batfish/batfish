@@ -14111,7 +14111,7 @@
               "areas" : {
                 "66051" : {
                   "name" : 66051,
-                  "injectDefaultRoute" : true,
+                  "injectDefaultRoute" : false,
                   "metricOfDefaultRoute" : 0,
                   "nssa" : {
                     "defaultOriginateType" : "INTER_AREA",
@@ -15967,7 +15967,7 @@
                 "7" : {
                   "name" : 7,
                   "injectDefaultRoute" : true,
-                  "metricOfDefaultRoute" : 0,
+                  "metricOfDefaultRoute" : 10,
                   "stub" : {
                     "suppressType3" : false
                   },
@@ -15975,7 +15975,7 @@
                 },
                 "46" : {
                   "name" : 46,
-                  "injectDefaultRoute" : true,
+                  "injectDefaultRoute" : false,
                   "metricOfDefaultRoute" : 0,
                   "stub" : {
                     "suppressType3" : true

@@ -5,7 +5,9 @@ import static org.hamcrest.Matchers.equalTo;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.matchers.OspfAreaMatchersImpl.HasInjectDefaultRoute;
 import org.batfish.datamodel.matchers.OspfAreaMatchersImpl.HasInterfaces;
+import org.batfish.datamodel.matchers.OspfAreaMatchersImpl.HasMetricOfDefaultRoute;
 import org.batfish.datamodel.matchers.OspfAreaMatchersImpl.HasNssa;
 import org.batfish.datamodel.matchers.OspfAreaMatchersImpl.HasStub;
 import org.batfish.datamodel.matchers.OspfAreaMatchersImpl.HasStubType;
@@ -19,12 +21,26 @@ import org.hamcrest.Matcher;
 
 public final class OspfAreaMatchers {
 
+  /** Provides a matcher that matches if the OSPF area's injectDefaultRoute is true. */
+  public static HasInjectDefaultRoute hasInjectDefaultRoute() {
+    return new HasInjectDefaultRoute();
+  }
+
   /**
    * Provides a matcher that matches if the provided {@code subMatcher} matches the OSPF area's
    * interfaces.
    */
   public static HasInterfaces hasInterfaces(Matcher<? super Set<String>> subMatcher) {
     return new HasInterfaces(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the provide {@code subMatcher} matches the OSPF area's
+   * metricOfDefaultRoute.
+   */
+  public static HasMetricOfDefaultRoute hasMetricOfDefaultRoute(
+      Matcher<? super Integer> subMatcher) {
+    return new HasMetricOfDefaultRoute(subMatcher);
   }
 
   /**

@@ -758,6 +758,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
     newArea.setStub(toStubSettings(area.getStubSettings()));
     newArea.setStubType(area.getStubType());
     newArea.setSummaries(area.getSummaries());
+    newArea.setInjectDefaultRoute(area.getInjectDefaultRoute());
+    newArea.setMetricOfDefaultRoute(area.getMetricOfDefaultRoute());
     return newArea;
   }
 
@@ -2387,6 +2389,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
   }
 
   private org.batfish.datamodel.Zone toZone(Zone zone) {
+    String zoneName = zone.getName();
 
     FirewallFilter inboundFilter = zone.getInboundFilter();
     IpAccessList inboundFilterList = null;
@@ -2406,7 +2409,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       toHostFilterList = _c.getIpAccessLists().get(toHostFilter.getName());
     }
 
-    org.batfish.datamodel.Zone newZone = new org.batfish.datamodel.Zone(zone.getName());
+    org.batfish.datamodel.Zone newZone = new org.batfish.datamodel.Zone(zoneName);
     if (fromHostFilterList != null) {
       newZone.setFromHostFilterName(fromHostFilterList.getName());
     }
@@ -2438,7 +2441,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     for (Interface iface : zone.getInterfaces()) {
       String ifaceName = iface.getName();
       org.batfish.datamodel.Interface newIface = _c.getInterfaces().get(ifaceName);
-      newIface.setZone(newZone);
+      newIface.setZoneName(zoneName);
       FirewallFilter inboundInterfaceFilter = zone.getInboundInterfaceFilters().get(ifaceName);
       if (inboundInterfaceFilter != null) {
         newZone
