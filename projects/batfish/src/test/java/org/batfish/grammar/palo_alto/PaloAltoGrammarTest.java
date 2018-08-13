@@ -22,8 +22,10 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasInterfaces;
+import static org.batfish.datamodel.matchers.VrfMatchers.hasName;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.DEFAULT_VSYS_NAME;
+import static org.batfish.representation.palo_alto.PaloAltoConfiguration.NULL_VRF_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.SHARED_VSYS_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.computeObjectName;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.computeServiceGroupMemberAclName;
@@ -58,6 +60,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.matchers.InterfaceMatchers;
 import org.batfish.grammar.VendorConfigurationFormatDetector;
 import org.batfish.grammar.flattener.Flattener;
 import org.batfish.grammar.flattener.FlattenerLineMap;
@@ -204,6 +207,24 @@ public class PaloAltoGrammarTest {
         ccae,
         hasUndefinedReference(
             filename, INTERFACE, "ethernet1/undefined", VIRTUAL_ROUTER_INTERFACE));
+  }
+
+  @Test
+  public void testInterfaceVirtualRouterAssignment() throws IOException {
+    String hostname = "interface-virtual-router";
+    Configuration c = parseConfig(hostname);
+
+    // Make sure each interface is associated with the correct vrf
+    assertThat(
+        c, hasInterface("ethernet1/1", InterfaceMatchers.hasVrf(hasName(equalTo("default")))));
+    assertThat(
+        c, hasInterface("ethernet1/2", InterfaceMatchers.hasVrf(hasName(equalTo("somename")))));
+    assertThat(
+        c, hasInterface("ethernet1/3", InterfaceMatchers.hasVrf(hasName(equalTo("somename")))));
+
+    // Make sure the orphaned vrf is associated with the "null", constructed vrf
+    assertThat(
+        c, hasInterface("ethernet1/4", InterfaceMatchers.hasVrf(hasName(equalTo(NULL_VRF_NAME)))));
   }
 
   @Test
