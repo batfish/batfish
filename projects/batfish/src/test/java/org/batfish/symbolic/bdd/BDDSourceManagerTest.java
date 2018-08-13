@@ -1,6 +1,7 @@
 package org.batfish.symbolic.bdd;
 
 import static org.batfish.datamodel.IpAccessListLine.ACCEPT_ALL;
+import static org.batfish.datamodel.IpAccessListLine.accepting;
 import static org.batfish.datamodel.IpAccessListLine.rejecting;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.SOURCE_ORIGINATING_FROM_DEVICE;
@@ -62,7 +63,7 @@ public class BDDSourceManagerTest {
     NetworkFactory nf = new NetworkFactory();
     Configuration config =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
-    Interface.Builder ib = nf.interfaceBuilder().setOwner(config);
+    Interface.Builder ib = nf.interfaceBuilder().setOwner(config).setActive(true);
     ib.setName(IFACE1).build();
     ib.setName(IFACE2).build();
     String iface3 = "iface3";
@@ -76,14 +77,16 @@ public class BDDSourceManagerTest {
             .setName("acl")
             .setLines(
                 ImmutableList.of(
-                    rejecting().setMatchCondition(matchSrcInterface(IFACE1)).build(), ACCEPT_ALL))
+                    accepting().setMatchCondition(matchSrcInterface(IFACE1)).build(),
+                    rejecting().setMatchCondition(matchSrcInterface(iface4)).build(),
+                    ACCEPT_ALL))
             .build();
 
     BDDSourceManager mgr = BDDSourceManager.forIpAccessList(_pkt, config, acl);
     Map<String, BDD> srcBDDs = mgr.getSourceBDDs();
     assertThat(srcBDDs.entrySet(), hasSize(3));
-    assertThat(srcBDDs, hasEntry(IFACE1, not(isZero())));
-    assertThat(srcBDDs, hasEntry(SOURCE_ORIGINATING_FROM_DEVICE, not(isZero())));
-    assertThat(srcBDDs, hasEntry(iface4, isZero()));
+    assertThat(srcBDDs, hasEntry(equalTo(IFACE1), not(isZero())));
+    assertThat(srcBDDs, hasEntry(equalTo(SOURCE_ORIGINATING_FROM_DEVICE), not(isZero())));
+    assertThat(srcBDDs, hasEntry(equalTo(iface4), isZero()));
   }
 }
