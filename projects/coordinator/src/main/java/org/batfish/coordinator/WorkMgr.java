@@ -5,10 +5,14 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 import static java.util.stream.Collectors.toCollection;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Sets;
 import io.opentracing.ActiveSpan;
 import io.opentracing.References;
 import io.opentracing.SpanContext;
@@ -41,6 +45,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
@@ -69,11 +74,17 @@ import org.batfish.coordinator.WorkQueueMgr.QueueType;
 import org.batfish.coordinator.config.Settings;
 import org.batfish.datamodel.AnalysisMetadata;
 import org.batfish.datamodel.TestrigMetadata;
+import org.batfish.datamodel.answers.Aggregation;
+import org.batfish.datamodel.answers.AnalysisAnswerMetricsResult;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.AutocompleteSuggestion;
 import org.batfish.datamodel.answers.AutocompleteSuggestion.CompletionType;
+import org.batfish.datamodel.answers.ColumnAggregation;
+import org.batfish.datamodel.answers.ColumnAggregationResult;
+import org.batfish.datamodel.answers.Metrics;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
+import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.pojo.Topology;
 import org.batfish.datamodel.questions.BgpPropertySpecifier;
@@ -82,6 +93,9 @@ import org.batfish.datamodel.questions.NodePropertySpecifier;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.OspfPropertySpecifier;
 import org.batfish.datamodel.questions.Question;
+import org.batfish.datamodel.table.ColumnMetadata;
+import org.batfish.datamodel.table.Row;
+import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
 import org.codehaus.jettison.json.JSONArray;
@@ -693,6 +707,36 @@ public class WorkMgr extends AbstractCoordinator {
       String analysisName)
       throws JsonProcessingException {
     SortedSet<String> questions = listAnalysisQuestions(containerName, analysisName);
+    Map<String, String> retMap = new TreeMap<>();
+    for (String questionName : questions) {
+      retMap.put(
+          questionName,
+          getAnalysisAnswer(
+              containerName,
+              baseTestrig,
+              baseEnv,
+              deltaTestrig,
+              deltaEnv,
+              analysisName,
+              questionName));
+    }
+    return retMap;
+  }
+
+  public Map<String, String> getAnalysisAnswers(
+      String containerName,
+      String baseTestrig,
+      String baseEnv,
+      String deltaTestrig,
+      String deltaEnv,
+      String analysisName,
+      Set<String> analysisQuestions)
+      throws JsonProcessingException {
+    SortedSet<String> allQuestions = listAnalysisQuestions(containerName, analysisName);
+    SortedSet<String> questions =
+        analysisQuestions.isEmpty()
+            ? allQuestions
+            : ImmutableSortedSet.copyOf(Sets.intersection(allQuestions, analysisQuestions));
     Map<String, String> retMap = new TreeMap<>();
     for (String questionName : questions) {
       retMap.put(
@@ -1753,5 +1797,100 @@ public class WorkMgr extends AbstractCoordinator {
   public boolean checkContainerExists(String containerName) {
     Path containerDir = getdirContainer(containerName, false);
     return Files.exists(containerDir);
+  }
+
+  /**
+   * Compute metrics for the answer to each question in an analysis.
+   *
+   * @param answers Mapping from questionName to raw answer JSON string
+   * @param aggregations A list of aggregations to be performed on each answer and returned in the
+   *     order specified in the {@link Metrics} contained in each result within the returned {@link
+   *     AnalysisAnswerMetricsResult}
+   * @return A mapping from questionName to the metrics for that question
+   */
+  public @Nonnull Map<String, AnalysisAnswerMetricsResult> getAnalysisAnswersMetrics(
+      Map<String, String> answers, List<ColumnAggregation> aggregations) {
+    return CommonUtil.toImmutableMap(
+        answers,
+        Entry::getKey,
+        rawAnswerByNameEntry ->
+            toAnalysisAnswerMetricsResult(rawAnswerByNameEntry.getValue(), aggregations));
+  }
+
+  @VisibleForTesting
+  @Nonnull
+  AnalysisAnswerMetricsResult toAnalysisAnswerMetricsResult(
+      @Nonnull String rawAnswer, @Nonnull List<ColumnAggregation> aggregations) {
+    AnswerStatus status;
+    Answer answer;
+    try {
+      answer = BatfishObjectMapper.mapper().readValue(rawAnswer, new TypeReference<Answer>() {});
+      status = answer.getStatus();
+      TableAnswerElement table = (TableAnswerElement) answer.getAnswerElements().get(0);
+      int numRows = table.getRows().size();
+      List<ColumnAggregationResult> aggregationResults =
+          computeColumnAggregations(table, aggregations);
+      return new AnalysisAnswerMetricsResult(new Metrics(aggregationResults, numRows), status);
+    } catch (Exception e) {
+      _logger.errorf(
+          "Failed to convert answer string to AnalysisAnswerMetricsResult: %s", e.getMessage());
+      return new AnalysisAnswerMetricsResult(null, AnswerStatus.FAILURE);
+    }
+  }
+
+  @VisibleForTesting
+  @Nonnull
+  List<ColumnAggregationResult> computeColumnAggregations(
+      @Nonnull TableAnswerElement table, @Nonnull List<ColumnAggregation> aggregations) {
+    return aggregations
+        .stream()
+        .map(columnAggregation -> computeColumnAggregation(table, columnAggregation))
+        .collect(ImmutableList.toImmutableList());
+  }
+
+  @VisibleForTesting
+  @Nonnull
+  ColumnAggregationResult computeColumnAggregation(
+      @Nonnull TableAnswerElement table, ColumnAggregation columnAggregation) {
+    Object value;
+    String column = columnAggregation.getColumn();
+    Aggregation aggregation = columnAggregation.getAggregation();
+    switch (aggregation) {
+      case MAX:
+        value = computeColumnMax(table, column);
+        break;
+      default:
+        _logger.errorf("Unhandled aggregation type: %s", aggregation);
+        value = null;
+        break;
+    }
+    return new ColumnAggregationResult(aggregation, column, value);
+  }
+
+  @VisibleForTesting
+  @Nullable
+  Integer computeColumnMax(@Nonnull TableAnswerElement table, @Nonnull String column) {
+    ColumnMetadata columnMetadata = table.getMetadata().toColumnMap().get(column);
+    if (columnMetadata == null) {
+      _logger.errorf("No column named: %s", column);
+      return null;
+    }
+    Schema schema = columnMetadata.getSchema();
+    Function<Row, Integer> rowToInteger;
+    if (schema.equals(Schema.INTEGER)) {
+      rowToInteger = r -> r.getInteger(column);
+    } else if (schema.equals(Schema.ISSUE)) {
+      rowToInteger = r -> r.getIssue(column).getSeverity();
+    } else {
+      _logger.errorf("Invalid schema for MAX aggregation: %s", schema);
+      return null;
+    }
+    return table
+        .getRows()
+        .getData()
+        .stream()
+        .map(rowToInteger)
+        .max(Comparator.naturalOrder())
+        .orElse(null);
   }
 }

@@ -9,6 +9,8 @@ import static org.junit.Assert.fail;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import java.io.File;
 import java.io.FileInputStream;
@@ -16,6 +18,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import javax.ws.rs.core.Response;
@@ -29,8 +32,22 @@ import org.batfish.common.WorkItem;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.coordinator.config.Settings;
+import org.batfish.datamodel.answers.Aggregation;
+import org.batfish.datamodel.answers.AnalysisAnswerMetricsResult;
+import org.batfish.datamodel.answers.Answer;
+import org.batfish.datamodel.answers.AnswerStatus;
+import org.batfish.datamodel.answers.ColumnAggregation;
+import org.batfish.datamodel.answers.ColumnAggregationResult;
+import org.batfish.datamodel.answers.GetAnalysisAnswerMetricsAnswer;
+import org.batfish.datamodel.answers.Metrics;
+import org.batfish.datamodel.answers.Schema;
+import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.Question.InstanceData;
+import org.batfish.datamodel.table.ColumnMetadata;
+import org.batfish.datamodel.table.Row;
+import org.batfish.datamodel.table.TableAnswerElement;
+import org.batfish.datamodel.table.TableMetadata;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 import org.junit.Rule;
@@ -644,5 +661,100 @@ public class WorkMgrServiceTest {
             "config.cfg");
     String actualMessage = response.getEntity().toString();
     assertThat(actualMessage, equalTo("config content"));
+  }
+
+  @Test
+  public void testGetAnalysisAnswersMetrics() throws Exception {
+    String analysisName = "analysis1";
+    String questionName = "question1";
+    String questionContent = "questionContent";
+    String analysisQuestionsStr =
+        BatfishObjectMapper.writePrettyString(ImmutableList.of(questionName));
+
+    initNetworkEnvironment();
+
+    String columnName = "col";
+    int value = 5;
+    Answer testAnswer = new Answer();
+    testAnswer.addAnswerElement(
+        new TableAnswerElement(
+                new TableMetadata(
+                    ImmutableList.of(new ColumnMetadata(columnName, Schema.INTEGER, "foobar")),
+                    new DisplayHints().getTextDesc()))
+            .addRow(Row.of(columnName, value)));
+    testAnswer.setStatus(AnswerStatus.SUCCESS);
+    String answer = BatfishObjectMapper.writePrettyString(testAnswer);
+
+    String analysisJsonString =
+        String.format("{\"%s\":{\"question\":\"%s\"}}", questionName, questionContent);
+    File analysisFile = _networksFolder.newFile(analysisName);
+    FileUtils.writeStringToFile(analysisFile, analysisJsonString);
+
+    _service.configureAnalysis(
+        CoordConsts.DEFAULT_API_KEY,
+        Version.getVersion(),
+        null,
+        _networkName,
+        "new",
+        analysisName,
+        new FileInputStream(analysisFile),
+        "",
+        null);
+
+    Path answerDir =
+        _networksFolder
+            .getRoot()
+            .toPath()
+            .resolve(
+                Paths.get(
+                    _networkName,
+                    BfConsts.RELPATH_TESTRIGS_DIR,
+                    _snapshotName,
+                    BfConsts.RELPATH_ANALYSES_DIR,
+                    analysisName,
+                    BfConsts.RELPATH_QUESTIONS_DIR,
+                    questionName,
+                    BfConsts.RELPATH_ENVIRONMENTS_DIR,
+                    BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME));
+
+    Path answer1Path = answerDir.resolve(BfConsts.RELPATH_ANSWER_JSON);
+    answerDir.toFile().mkdirs();
+    CommonUtil.writeFile(answer1Path, answer);
+
+    List<ColumnAggregation> aggregations =
+        ImmutableList.of(new ColumnAggregation(Aggregation.MAX, columnName));
+    String aggregationsStr = BatfishObjectMapper.writePrettyString(aggregations);
+
+    JSONArray answerOutput =
+        _service.getAnalysisAnswersMetrics(
+            CoordConsts.DEFAULT_API_KEY,
+            Version.getVersion(),
+            _networkName,
+            _snapshotName,
+            null,
+            aggregationsStr,
+            analysisName,
+            analysisQuestionsStr,
+            null);
+
+    assertThat(answerOutput.get(0), equalTo(CoordConsts.SVC_KEY_SUCCESS));
+
+    JSONObject answerJsonObject = (JSONObject) answerOutput.get(1);
+    String answerJsonString = answerJsonObject.getString(CoordConsts.SVC_KEY_ANSWER);
+    GetAnalysisAnswerMetricsAnswer structuredAnswer =
+        BatfishObjectMapper.mapper()
+            .readValue(answerJsonString, new TypeReference<GetAnalysisAnswerMetricsAnswer>() {});
+    assertThat(
+        structuredAnswer,
+        equalTo(
+            new GetAnalysisAnswerMetricsAnswer(
+                ImmutableMap.of(
+                    questionName,
+                    new AnalysisAnswerMetricsResult(
+                        new Metrics(
+                            ImmutableList.of(
+                                new ColumnAggregationResult(Aggregation.MAX, columnName, value)),
+                            1),
+                        AnswerStatus.SUCCESS)))));
   }
 }
