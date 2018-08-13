@@ -1915,8 +1915,9 @@ public class WorkMgr extends AbstractCoordinator {
                 rawAnswersEntry.getValue(), analysisAnswersOptions.get(rawAnswersEntry.getKey())));
   }
 
-  private @Nonnull Answer processAnalysisAnswer(
-      String rawAnswerStr, AnalysisAnswerOptions options) {
+  @VisibleForTesting
+  @Nonnull
+  Answer processAnalysisAnswer(String rawAnswerStr, AnalysisAnswerOptions options) {
     if (rawAnswerStr == null) {
       Answer answer = Answer.failureAnswer("Not found", null);
       answer.setStatus(AnswerStatus.NOTFOUND);
@@ -1937,8 +1938,10 @@ public class WorkMgr extends AbstractCoordinator {
     }
   }
 
+  @VisibleForTesting
   @SuppressWarnings("resource")
-  private @Nonnull TableAnswerElement processAnalysisAnswerTable(
+  @Nonnull
+  TableAnswerElement processAnalysisAnswerTable(
       TableAnswerElement rawTable, AnalysisAnswerOptions options) {
     Map<String, ColumnMetadata> rawColumnMap = rawTable.getMetadata().toColumnMap();
     Stream<Row> rawStream = rawTable.getRowsList().stream();
@@ -1972,11 +1975,16 @@ public class WorkMgr extends AbstractCoordinator {
     return table;
   }
 
-  private @Nonnull Comparator<Row> buildComparator(
+  @VisibleForTesting
+  @Nonnull
+  Comparator<Row> buildComparator(
       Map<String, ColumnMetadata> rawColumnMap, List<ColumnSortOption> sortOrder) {
     ColumnSortOption firstColumnSortOption = sortOrder.get(0);
     ColumnMetadata firstMetadata = rawColumnMap.get(firstColumnSortOption.getColumn());
     Comparator<Row> comparator = columnComparator(firstMetadata);
+    if (firstColumnSortOption.getReversed()) {
+      comparator = comparator.reversed();
+    }
     for (int i = 1; i < sortOrder.size(); i++) {
       ColumnSortOption columnSortOption = sortOrder.get(i);
       Comparator<Row> nextComparator =
@@ -1989,14 +1997,16 @@ public class WorkMgr extends AbstractCoordinator {
     return comparator;
   }
 
-  private Comparator<Row> columnComparator(ColumnMetadata columnMetadata) {
+  @VisibleForTesting
+  Comparator<Row> columnComparator(ColumnMetadata columnMetadata) {
     Schema schema = columnMetadata.getSchema();
     String column = columnMetadata.getName();
-    if (schema.equals(Schema.ISSUE)) {
-      return (lhs, rhs) ->
-          Integer.compare(lhs.getIssue(column).getSeverity(), rhs.getIssue(column).getSeverity());
+    if (schema.equals(Schema.INTEGER)) {
+      return Comparator.comparing(r -> r.getInteger(column));
+    } else if (schema.equals(Schema.ISSUE)) {
+      return Comparator.comparing(r -> r.getIssue(column).getSeverity());
     } else if (schema.equals(Schema.STRING)) {
-      return (lhs, rhs) -> lhs.getString(column).compareTo(rhs.getString(column));
+      return Comparator.comparing(r -> r.getString(column));
     } else {
       throw new UnsupportedOperationException(
           String.format("Unsupported Schema for sorting: %s", schema));

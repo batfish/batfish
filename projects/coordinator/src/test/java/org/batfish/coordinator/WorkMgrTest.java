@@ -24,14 +24,17 @@ import java.nio.file.Paths;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import org.batfish.common.AnalysisAnswerOptions;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BfConsts;
+import org.batfish.common.ColumnSortOption;
 import org.batfish.common.Container;
 import org.batfish.common.WorkItem;
 import org.batfish.common.util.BatfishObjectMapper;
@@ -859,5 +862,331 @@ public class WorkMgrTest {
             .addRow(Row.of(columnName, value));
 
     assertThat(_manager.computeColumnMax(table, columnName), nullValue());
+  }
+
+  @Test
+  public void testProcessAnalysisAnswers() throws IOException {
+    String questionName = "q";
+    String columnName = "issue";
+    int maxRows = 1;
+    int rowOffset = 0;
+
+    TableAnswerElement table =
+        new TableAnswerElement(
+            new TableMetadata(
+                ImmutableList.of(new ColumnMetadata(columnName, Schema.ISSUE, "foobar"))));
+    table.addRow(Row.of(columnName, new Issue("blah", 5, new Issue.Type("m", "n"))));
+    Answer answer = new Answer();
+    answer.addAnswerElement(table);
+    answer.setStatus(AnswerStatus.SUCCESS);
+    String answerStr = BatfishObjectMapper.writePrettyString(answer);
+    Map<String, String> rawAnswers = ImmutableMap.of(questionName, answerStr);
+    AnalysisAnswerOptions options =
+        new AnalysisAnswerOptions(
+            ImmutableSet.of(columnName),
+            maxRows,
+            rowOffset,
+            ImmutableList.of(new ColumnSortOption(columnName, true)));
+    Map<String, AnalysisAnswerOptions> analysisAnswersOptions =
+        ImmutableMap.of(questionName, options);
+
+    Map<String, Answer> processedAnswers =
+        _manager.processAnalysisAnswers(rawAnswers, analysisAnswersOptions);
+    List<Row> processedRows =
+        ((TableAnswerElement) processedAnswers.get(questionName).getAnswerElements().get(0))
+            .getRowsList();
+
+    assertThat(processedRows, equalTo(table.getRowsList()));
+  }
+
+  @Test
+  public void testProcessAnalysisAnswer() throws IOException {
+    String columnName = "issue";
+    int maxRows = 1;
+    int rowOffset = 0;
+    TableAnswerElement table =
+        new TableAnswerElement(
+            new TableMetadata(
+                ImmutableList.of(new ColumnMetadata(columnName, Schema.ISSUE, "foobar"))));
+    table.addRow(Row.of(columnName, new Issue("blah", 5, new Issue.Type("m", "n"))));
+    Answer answer = new Answer();
+    answer.addAnswerElement(table);
+    answer.setStatus(AnswerStatus.SUCCESS);
+    String answerStr = BatfishObjectMapper.writePrettyString(answer);
+    AnalysisAnswerOptions options =
+        new AnalysisAnswerOptions(
+            ImmutableSet.of(columnName),
+            maxRows,
+            rowOffset,
+            ImmutableList.of(new ColumnSortOption(columnName, true)));
+
+    List<Row> processedRows =
+        ((TableAnswerElement)
+                _manager.processAnalysisAnswer(answerStr, options).getAnswerElements().get(0))
+            .getRowsList();
+
+    assertThat(processedRows, equalTo(table.getRowsList()));
+  }
+
+  @Test
+  public void testProcessAnalysisAnswerFailure() throws IOException {
+    String columnName = "issue";
+    int maxRows = 1;
+    int rowOffset = 0;
+    AnalysisAnswerOptions options =
+        new AnalysisAnswerOptions(
+            ImmutableSet.of(columnName),
+            maxRows,
+            rowOffset,
+            ImmutableList.of(new ColumnSortOption(columnName, true)));
+    Answer badInput = new Answer();
+    badInput.setStatus(AnswerStatus.SUCCESS);
+    String rawAnswerStr = BatfishObjectMapper.writePrettyString(badInput);
+    Answer processedAnswer = _manager.processAnalysisAnswer(rawAnswerStr, options);
+
+    assertThat(processedAnswer.getStatus(), equalTo(AnswerStatus.FAILURE));
+  }
+
+  @Test
+  public void testProcessAnalysisAnswerNotFound() throws IOException {
+    String columnName = "issue";
+    int maxRows = 1;
+    int rowOffset = 0;
+    AnalysisAnswerOptions options =
+        new AnalysisAnswerOptions(
+            ImmutableSet.of(columnName),
+            maxRows,
+            rowOffset,
+            ImmutableList.of(new ColumnSortOption(columnName, true)));
+    Answer processedAnswer = _manager.processAnalysisAnswer(null, options);
+
+    assertThat(processedAnswer.getStatus(), equalTo(AnswerStatus.NOTFOUND));
+  }
+
+  @Test
+  public void testProcessAnalysisAnswerTableSorting() {
+    String columnName = "val";
+    TableAnswerElement table =
+        new TableAnswerElement(
+            new TableMetadata(
+                ImmutableList.of(new ColumnMetadata(columnName, Schema.INTEGER, "foobar"))));
+    Row row1 = Row.of(columnName, 1);
+    Row row2 = Row.of(columnName, 2);
+    table.addRow(row1);
+    table.addRow(row2);
+    AnalysisAnswerOptions optionsSorting =
+        new AnalysisAnswerOptions(
+            ImmutableSet.of(columnName),
+            Integer.MAX_VALUE,
+            0,
+            ImmutableList.of(new ColumnSortOption(columnName, false)));
+    AnalysisAnswerOptions optionsSortingReverse =
+        new AnalysisAnswerOptions(
+            ImmutableSet.of(columnName),
+            Integer.MAX_VALUE,
+            0,
+            ImmutableList.of(new ColumnSortOption(columnName, true)));
+
+    assertThat(
+        _manager.processAnalysisAnswerTable(table, optionsSorting).getRowsList(),
+        equalTo(ImmutableList.of(row1, row2)));
+    assertThat(
+        _manager.processAnalysisAnswerTable(table, optionsSortingReverse).getRowsList(),
+        equalTo(ImmutableList.of(row2, row1)));
+  }
+
+  @Test
+  public void testProcessAnalysisAnswerTableOffset() {
+    String columnName = "val";
+    TableAnswerElement table =
+        new TableAnswerElement(
+            new TableMetadata(
+                ImmutableList.of(new ColumnMetadata(columnName, Schema.INTEGER, "foobar"))));
+    Row row1 = Row.of(columnName, 1);
+    Row row2 = Row.of(columnName, 2);
+    table.addRow(row1);
+    table.addRow(row2);
+    AnalysisAnswerOptions optionsNoOffset =
+        new AnalysisAnswerOptions(
+            ImmutableSet.of(columnName), Integer.MAX_VALUE, 0, ImmutableList.of());
+    AnalysisAnswerOptions optionsOffset =
+        new AnalysisAnswerOptions(
+            ImmutableSet.of(columnName), Integer.MAX_VALUE, 1, ImmutableList.of());
+
+    assertThat(
+        _manager.processAnalysisAnswerTable(table, optionsNoOffset).getRowsList(),
+        equalTo(ImmutableList.of(row1, row2)));
+    assertThat(
+        _manager.processAnalysisAnswerTable(table, optionsOffset).getRowsList(),
+        equalTo(ImmutableList.of(row2)));
+  }
+
+  @Test
+  public void testProcessAnalysisAnswerTableMaxRows() {
+    String columnName = "val";
+    TableAnswerElement table =
+        new TableAnswerElement(
+            new TableMetadata(
+                ImmutableList.of(new ColumnMetadata(columnName, Schema.INTEGER, "foobar"))));
+    Row row1 = Row.of(columnName, 1);
+    Row row2 = Row.of(columnName, 2);
+    table.addRow(row1);
+    table.addRow(row2);
+    AnalysisAnswerOptions optionsNoLimit =
+        new AnalysisAnswerOptions(
+            ImmutableSet.of(columnName), Integer.MAX_VALUE, 0, ImmutableList.of());
+    AnalysisAnswerOptions optionsLimit =
+        new AnalysisAnswerOptions(ImmutableSet.of(columnName), 1, 0, ImmutableList.of());
+
+    assertThat(
+        _manager.processAnalysisAnswerTable(table, optionsNoLimit).getRowsList(),
+        equalTo(ImmutableList.of(row1, row2)));
+    assertThat(
+        _manager.processAnalysisAnswerTable(table, optionsLimit).getRowsList(),
+        equalTo(ImmutableList.of(row1)));
+  }
+
+  @Test
+  public void testProcessAnalysisAnswerTableFilter() {
+    String columnName = "val";
+    String otherColumnName = "val2";
+    TableMetadata originalMetadata =
+        new TableMetadata(
+            ImmutableList.of(
+                new ColumnMetadata(columnName, Schema.INTEGER, "foobar"),
+                new ColumnMetadata(otherColumnName, Schema.INTEGER, "foobaz")));
+    TableAnswerElement table = new TableAnswerElement(originalMetadata);
+    Row row1 = Row.of(columnName, 1, otherColumnName, 3);
+    Row row2 = Row.of(columnName, 2, otherColumnName, 4);
+    table.addRow(row1);
+    table.addRow(row2);
+    AnalysisAnswerOptions optionsNoFilter =
+        new AnalysisAnswerOptions(ImmutableSet.of(), Integer.MAX_VALUE, 0, ImmutableList.of());
+    AnalysisAnswerOptions optionsFilter =
+        new AnalysisAnswerOptions(
+            ImmutableSet.of(columnName), Integer.MAX_VALUE, 0, ImmutableList.of());
+
+    Row row1Filtered = Row.of(columnName, 1);
+    Row row2Filtered = Row.of(columnName, 2);
+
+    assertThat(
+        _manager.processAnalysisAnswerTable(table, optionsNoFilter).getRowsList(),
+        equalTo(ImmutableList.of(row1, row2)));
+    assertThat(
+        _manager.processAnalysisAnswerTable(table, optionsFilter).getRowsList(),
+        equalTo(ImmutableList.of(row1Filtered, row2Filtered)));
+  }
+
+  @Test
+  public void testBuildComparator() {
+    String col1 = "col1";
+    String col2 = "col2";
+    Map<String, ColumnMetadata> rawColumnMap =
+        ImmutableMap.of(
+            col1,
+            new ColumnMetadata(col1, Schema.INTEGER, "blah"),
+            col2,
+            new ColumnMetadata(col2, Schema.INTEGER, "bloop"));
+    Comparator<Row> comCol1 =
+        _manager.buildComparator(rawColumnMap, ImmutableList.of(new ColumnSortOption(col1, false)));
+    Comparator<Row> comCol1Reversed =
+        _manager.buildComparator(rawColumnMap, ImmutableList.of(new ColumnSortOption(col1, true)));
+    Comparator<Row> comCol2 =
+        _manager.buildComparator(rawColumnMap, ImmutableList.of(new ColumnSortOption(col2, false)));
+    Comparator<Row> comCol2Reversed =
+        _manager.buildComparator(rawColumnMap, ImmutableList.of(new ColumnSortOption(col2, true)));
+    Comparator<Row> comCol1Then2 =
+        _manager.buildComparator(
+            rawColumnMap,
+            ImmutableList.of(new ColumnSortOption(col1, false), new ColumnSortOption(col2, false)));
+    Comparator<Row> comCol2Then1 =
+        _manager.buildComparator(
+            rawColumnMap,
+            ImmutableList.of(new ColumnSortOption(col2, false), new ColumnSortOption(col1, false)));
+
+    Row row1 = Row.of(col1, 1, col2, 10);
+    Row row2 = Row.of(col1, 1, col2, 20);
+    Row row3 = Row.of(col1, 2, col2, 10);
+    Row row4 = Row.of(col1, 2, col2, 20);
+
+    assertThat(comCol1.compare(row1, row2), equalTo(0));
+    assertThat(comCol1.compare(row1, row3), equalTo(-1));
+    assertThat(comCol1.compare(row1, row4), equalTo(-1));
+    assertThat(comCol1.compare(row2, row3), equalTo(-1));
+    assertThat(comCol1.compare(row2, row4), equalTo(-1));
+    assertThat(comCol1.compare(row3, row4), equalTo(0));
+
+    assertThat(comCol1Reversed.compare(row1, row2), equalTo(0));
+    assertThat(comCol1Reversed.compare(row1, row3), equalTo(1));
+    assertThat(comCol1Reversed.compare(row1, row4), equalTo(1));
+    assertThat(comCol1Reversed.compare(row2, row3), equalTo(1));
+    assertThat(comCol1Reversed.compare(row2, row4), equalTo(1));
+    assertThat(comCol1Reversed.compare(row3, row4), equalTo(0));
+
+    assertThat(comCol2.compare(row1, row2), equalTo(-1));
+    assertThat(comCol2.compare(row1, row3), equalTo(0));
+    assertThat(comCol2.compare(row1, row4), equalTo(-1));
+    assertThat(comCol2.compare(row2, row3), equalTo(1));
+    assertThat(comCol2.compare(row2, row4), equalTo(0));
+    assertThat(comCol2.compare(row3, row4), equalTo(-1));
+
+    assertThat(comCol2Reversed.compare(row1, row2), equalTo(1));
+    assertThat(comCol2Reversed.compare(row1, row3), equalTo(0));
+    assertThat(comCol2Reversed.compare(row1, row4), equalTo(1));
+    assertThat(comCol2Reversed.compare(row2, row3), equalTo(-1));
+    assertThat(comCol2Reversed.compare(row2, row4), equalTo(0));
+    assertThat(comCol2Reversed.compare(row3, row4), equalTo(1));
+
+    assertThat(comCol1Then2.compare(row1, row2), equalTo(-1));
+    assertThat(comCol1Then2.compare(row1, row3), equalTo(-1));
+    assertThat(comCol1Then2.compare(row1, row4), equalTo(-1));
+    assertThat(comCol1Then2.compare(row2, row3), equalTo(-1));
+    assertThat(comCol1Then2.compare(row2, row4), equalTo(-1));
+    assertThat(comCol1Then2.compare(row3, row4), equalTo(-1));
+
+    assertThat(comCol2Then1.compare(row1, row2), equalTo(-1));
+    assertThat(comCol2Then1.compare(row1, row3), equalTo(-1));
+    assertThat(comCol2Then1.compare(row1, row4), equalTo(-1));
+    assertThat(comCol2Then1.compare(row2, row3), equalTo(1));
+    assertThat(comCol2Then1.compare(row2, row4), equalTo(-1));
+    assertThat(comCol2Then1.compare(row3, row4), equalTo(-1));
+  }
+
+  @Test
+  public void testColumnComparator() {
+    String colInteger = "colInteger";
+    String colIssue = "colIssue";
+    String colString = "colString";
+
+    ColumnMetadata columnMetadataInteger =
+        new ColumnMetadata(colInteger, Schema.INTEGER, "colIntegerDesc");
+    ColumnMetadata columnMetadataIssue = new ColumnMetadata(colIssue, Schema.ISSUE, "colIssueDesc");
+    ColumnMetadata columnMetadataString =
+        new ColumnMetadata(colString, Schema.STRING, "colStringDesc");
+
+    Comparator<Row> comInteger = _manager.columnComparator(columnMetadataInteger);
+    Comparator<Row> comIssue = _manager.columnComparator(columnMetadataIssue);
+    Comparator<Row> comString = _manager.columnComparator(columnMetadataString);
+
+    Row r1 =
+        Row.of(
+            colInteger,
+            1,
+            colIssue,
+            new Issue("blah", 1, new Issue.Type("major", "minor")),
+            colString,
+            "a");
+    Row r2 =
+        Row.of(
+            colInteger,
+            2,
+            colIssue,
+            new Issue("blah", 2, new Issue.Type("major", "minor")),
+            colString,
+            "b");
+
+    assertThat(comInteger.compare(r1, r2), equalTo(-1));
+    assertThat(comIssue.compare(r1, r2), equalTo(-1));
+    assertThat(comString.compare(r1, r2), equalTo(-1));
   }
 }
