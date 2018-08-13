@@ -48,7 +48,7 @@ public class AclLineMatchExprToBDDTest {
   @Before
   public void setup() {
     _pkt = new BDDPacket();
-    _sourceMgr = BDDSourceManager.forInterfaces(_pkt, ImmutableList.of(IFACE1, IFACE2));
+    _sourceMgr = BDDSourceManager.forInterfaces(_pkt, ImmutableSet.of(IFACE1, IFACE2));
     _toBDD =
         new AclLineMatchExprToBDD(
             _pkt.getFactory(), _pkt, ImmutableMap.of(), ImmutableMap.of(), _sourceMgr);

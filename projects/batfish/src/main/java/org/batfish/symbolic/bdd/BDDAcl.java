@@ -1,8 +1,8 @@
 package org.batfish.symbolic.bdd;
 
 import com.google.common.base.Suppliers;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -66,7 +66,7 @@ public class BDDAcl {
         acl,
         ImmutableMap.of(),
         ImmutableMap.of(),
-        BDDSourceManager.forInterfaces(pkt, ImmutableList.of()));
+        BDDSourceManager.forInterfaces(pkt, ImmutableSet.of()));
   }
 
   public static BDDAcl create(
@@ -75,7 +75,7 @@ public class BDDAcl {
       Map<String, IpAccessList> aclEnv,
       Map<String, IpSpace> ipSpaceEnv) {
     return create(
-        pkt, acl, aclEnv, ipSpaceEnv, BDDSourceManager.forInterfaces(pkt, ImmutableList.of()));
+        pkt, acl, aclEnv, ipSpaceEnv, BDDSourceManager.forInterfaces(pkt, ImmutableSet.of()));
   }
 
   public static BDDAcl create(

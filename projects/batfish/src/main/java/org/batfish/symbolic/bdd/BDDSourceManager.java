@@ -6,13 +6,11 @@ import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.referen
 import static org.batfish.symbolic.bdd.BDDUtils.isAssignment;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.google.common.math.LongMath;
 import java.math.RoundingMode;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -20,6 +18,7 @@ import java.util.Set;
 import net.sf.javabdd.BDD;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpAccessList;
 
 /**
@@ -39,26 +38,42 @@ public final class BDDSourceManager {
    * org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists#SOURCE_ORIGINATING_FROM_DEVICE}.
    */
   @VisibleForTesting
-  BDDSourceManager(BDDPacket pkt, List<String> sources) {
+  BDDSourceManager(BDDPacket pkt, Set<String> sources) {
+    this(pkt, ImmutableSet.of(), sources);
+  }
+
+  private BDDSourceManager(BDDPacket pkt, Set<String> inactiveInterfaces, Set<String> sources) {
+    ImmutableMap.Builder<String, BDD> sourceBDDs = ImmutableMap.builder();
+
+    // add sourceBDD entries for inactive sources
+    for (String inactiveInterface : inactiveInterfaces) {
+      // inactive interfaces cannot be sources
+      sourceBDDs.put(inactiveInterface, pkt.getFactory().zero());
+    }
+
+    // add sourceBDD entries for active sources and initialize _isSane constraint
     if (sources.size() == 0) {
-      _isSane = pkt.getFactory().one();
-      _sourceBDDs = ImmutableMap.of();
-    } else {
       int bitsRequired = LongMath.log2(sources.size(), RoundingMode.CEILING);
       BDDInteger var = pkt.allocateBDDInteger(VAR_NAME, bitsRequired, false);
+      sourceBDDs.putAll(computeMatchSourceBDDs(var, sources));
+      // _isSane constrains var to be one of the values assigned to sources.
       _isSane = var.leq(sources.size() - 1);
-      _sourceBDDs = computeMatchSourceBDDs(var, sources);
+    } else {
+      // no source var, so don't need a sane constraint
+      _isSane = pkt.getFactory().one();
     }
+
+    _sourceBDDs = sourceBDDs.build();
   }
 
   /**
    * Create a {@link BDDSourceManager} that tracks the specified interfaces as sources, plus the
    * device itself.
    */
-  public static BDDSourceManager forInterfaces(BDDPacket pkt, List<String> interfaces) {
+  public static BDDSourceManager forInterfaces(BDDPacket pkt, Set<String> interfaces) {
     return new BDDSourceManager(
         pkt,
-        ImmutableList.<String>builder()
+        ImmutableSet.<String>builder()
             .addAll(interfaces)
             .add(SOURCE_ORIGINATING_FROM_DEVICE)
             .build());
@@ -70,34 +85,44 @@ public final class BDDSourceManager {
    */
   public static BDDSourceManager forIpAccessList(
       BDDPacket pkt, Configuration config, IpAccessList acl) {
-    List<String> interfaces = sourcesForIpAccessList(config, acl);
-    return new BDDSourceManager(pkt, interfaces);
-  }
-
-  @VisibleForTesting
-  static List<String> sourcesForIpAccessList(Configuration config, IpAccessList acl) {
     Set<String> referencedSources = referencedSources(config.getIpAccessLists(), acl);
+
     if (referencedSources.isEmpty()) {
-      return ImmutableList.of();
+      return new BDDSourceManager(pkt, ImmutableSet.of());
     }
 
-    Set<String> allSources =
-        ImmutableSet.<String>builder()
-            .add(SOURCE_ORIGINATING_FROM_DEVICE)
-            .addAll(config.getInterfaces().keySet())
-            .build();
-    Set<String> unReferencedInterfaces = Sets.difference(allSources, referencedSources);
+    ImmutableSet.Builder<String> inactiveInterfacesBuilder = ImmutableSet.builder();
+    ImmutableSet.Builder<String> allSourcesBuilder = ImmutableSet.builder();
+    allSourcesBuilder.add(SOURCE_ORIGINATING_FROM_DEVICE);
+
+    for (Interface iface : config.getInterfaces().values()) {
+      if (iface.getActive()) {
+        allSourcesBuilder.add(iface.getName());
+      } else {
+        inactiveInterfacesBuilder.add(iface.getName());
+      }
+    }
+    Set<String> inactiveInterfaces = inactiveInterfacesBuilder.build();
+    Set<String> allSources = allSourcesBuilder.build();
+
+    // discard any referenced interfaces that are inactive
+    referencedSources = Sets.intersection(referencedSources, allSources);
+
     /*
      * If only some interfaces are referenced, we only need to track the referenced ones, plus one
      * more (as a representative of the set of unreferenced interfaces). This is in case the
      * BDD is true only when the source is not the device itself or any referenced interface.
      */
-    return unReferencedInterfaces.isEmpty()
-        ? ImmutableList.copyOf(allSources)
-        : ImmutableList.<String>builder()
-            .addAll(referencedSources)
-            .add(unReferencedInterfaces.iterator().next())
-            .build();
+    Set<String> unReferencedInterfaces = Sets.difference(allSources, referencedSources);
+    Set<String> sources =
+        unReferencedInterfaces.isEmpty()
+            ? ImmutableSet.copyOf(allSources)
+            : ImmutableSet.<String>builder()
+                .addAll(referencedSources)
+                .add(unReferencedInterfaces.iterator().next())
+                .build();
+
+    return new BDDSourceManager(pkt, inactiveInterfaces, sources);
   }
 
   /**
@@ -106,7 +131,7 @@ public final class BDDSourceManager {
    * and one for "none of them". We use 0 for "none of them".
    */
   private static Map<String, BDD> computeMatchSourceBDDs(
-      BDDInteger srcInterfaceVar, List<String> srcInterfaces) {
+      BDDInteger srcInterfaceVar, Set<String> srcInterfaces) {
     ImmutableMap.Builder<String, BDD> matchSrcInterfaceBDDs = ImmutableMap.builder();
     CommonUtil.forEachWithIndex(
         srcInterfaces,
@@ -122,9 +147,14 @@ public final class BDDSourceManager {
     return getSourceBDD(iface);
   }
 
-  private BDD getSourceBDD(String iface) {
-    checkArgument(_sourceBDDs.containsKey(iface), "Missing BDD for source: " + iface);
-    return _sourceBDDs.get(iface);
+  private BDD getSourceBDD(String source) {
+    checkArgument(_sourceBDDs.containsKey(source), "Missing BDD for source: " + source);
+    return _sourceBDDs.get(source);
+  }
+
+  @VisibleForTesting
+  Map<String, BDD> getSourceBDDs() {
+    return _sourceBDDs;
   }
 
   /**

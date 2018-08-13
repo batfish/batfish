@@ -7,14 +7,16 @@ import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.SOURCE_
 import static org.batfish.symbolic.bdd.BDDMatchers.isZero;
 import static org.batfish.symbolic.bdd.BDDOps.orNull;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.not;
 
 import com.google.common.collect.ImmutableList;
-import java.util.List;
+import com.google.common.collect.ImmutableSet;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import net.sf.javabdd.BDD;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -28,7 +30,7 @@ public class BDDSourceManagerTest {
 
   private static final String IFACE2 = "iface2";
 
-  private static final List<String> IFACES = ImmutableList.of(IFACE1, IFACE2);
+  private static final Set<String> IFACES = ImmutableSet.of(IFACE1, IFACE2);
 
   BDDPacket _pkt = new BDDPacket();
 
@@ -65,6 +67,8 @@ public class BDDSourceManagerTest {
     ib.setName(IFACE2).build();
     String iface3 = "iface3";
     ib.setName(iface3).build();
+    String iface4 = "iface4";
+    ib.setName(iface4).setActive(false).build();
 
     // an ACL that can only match with an IFACE2 or iface3
     IpAccessList acl =
@@ -75,11 +79,11 @@ public class BDDSourceManagerTest {
                     rejecting().setMatchCondition(matchSrcInterface(IFACE1)).build(), ACCEPT_ALL))
             .build();
 
-    List<String> trackedIfaces = BDDSourceManager.sourcesForIpAccessList(config, acl);
-    assertThat(trackedIfaces, hasSize(2));
-    assertThat(trackedIfaces, hasItem(IFACE1));
-    assertThat(
-        trackedIfaces,
-        anyOf(hasItem(SOURCE_ORIGINATING_FROM_DEVICE), hasItem(IFACE2), hasItem(iface3)));
+    BDDSourceManager mgr = BDDSourceManager.forIpAccessList(_pkt, config, acl);
+    Map<String, BDD> srcBDDs = mgr.getSourceBDDs();
+    assertThat(srcBDDs.entrySet(), hasSize(3));
+    assertThat(srcBDDs, hasEntry(IFACE1, not(isZero())));
+    assertThat(srcBDDs, hasEntry(SOURCE_ORIGINATING_FROM_DEVICE, not(isZero())));
+    assertThat(srcBDDs, hasEntry(iface4, isZero()));
   }
 }
