@@ -3,7 +3,7 @@ package org.batfish.symbolic.bdd;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
-import java.util.LinkedList;
+import com.google.common.collect.ImmutableList;
 import java.util.List;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
@@ -21,36 +21,17 @@ public class BDDPrimeImplicantsTest {
     BDD u = factory.ithVar(3);
     BDD v = factory.ithVar(4);
 
-    BDD bdd1 = x.or(y);
-    List<BDD> pis1 = allPIs(bdd1);
-    List<BDD> oracle1 = new LinkedList<>();
-    oracle1.add(y);
-    oracle1.add(x);
-    assertThat(pis1, equalTo(oracle1));
+    assertThat(allPIs(x.or(y)), equalTo(ImmutableList.of(y, x)));
 
-    BDD bdd2 = x.or(y).and(x.not().or(z));
-    List<BDD> pis2 = allPIs(bdd2);
-    List<BDD> oracle2 = new LinkedList<>();
-    oracle2.add(x.and(z));
-    oracle2.add(x.not().and(y));
-    oracle2.add(y.and(z));
-    assertThat(pis2, equalTo(oracle2));
+    assertThat(
+        allPIs(x.or(y).and(x.not().or(z))),
+        equalTo(ImmutableList.of(x.and(z), x.not().and(y), y.and(z))));
 
-    BDD bdd3 = x.and(y).or(z.and(u)).or(v);
-    List<BDD> pis3 = allPIs(bdd3);
-    List<BDD> oracle3 = new LinkedList<>();
-    oracle3.add(v);
-    oracle3.add(z.and(u));
-    oracle3.add(x.and(y));
-    assertThat(pis3, equalTo(oracle3));
+    assertThat(
+        allPIs(x.and(y).or(z.and(u)).or(v)), equalTo(ImmutableList.of(v, z.and(u), x.and(y))));
   }
 
   private static List<BDD> allPIs(BDD bdd) {
-    BDDPrimeImplicants bddPI = new BDDPrimeImplicants(bdd);
-    List<BDD> pis = new LinkedList<>();
-    for (BDD pi : bddPI) {
-      pis.add(pi);
-    }
-    return pis;
+    return ImmutableList.copyOf(new BDDPrimeImplicants(bdd));
   }
 }

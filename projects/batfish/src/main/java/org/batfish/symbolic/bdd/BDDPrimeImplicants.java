@@ -92,13 +92,11 @@ public class BDDPrimeImplicants implements Iterable<BDD> {
     int occurrenceVar = var2OccurrenceVar(currVar);
     int signVar = var2SignVar(currVar);
     BDD signPI =
-        highPIOnly
-            .andWith(_factory.ithVar(signVar))
-            .or(lowPIOnly.andWith(_factory.nithVar(signVar)));
+        highPIOnly.and(_factory.ithVar(signVar)).or(lowPIOnly.and(_factory.nithVar(signVar)));
     BDD allPI =
         signPI
-            .andWith(_factory.ithVar(occurrenceVar))
-            .or(commonPI.andWith(_factory.nithVar(occurrenceVar)));
+            .and(_factory.ithVar(occurrenceVar))
+            .or(commonPI.and(_factory.nithVar(occurrenceVar)));
     memoTable.put(bdd, allPI);
     return allPI;
   }
@@ -193,10 +191,8 @@ public class BDDPrimeImplicants implements Iterable<BDD> {
           _workQueue.offer(new SearchState(low, partialPI, size));
           _workQueue.offer(new SearchState(high, partialPI, size + 1));
         } else {
-          _workQueue.offer(
-              new SearchState(low, partialPI.id().andWith(_factory.nithVar(var)), size));
-          _workQueue.offer(
-              new SearchState(high, partialPI.id().andWith(_factory.ithVar(var)), size));
+          _workQueue.offer(new SearchState(low, partialPI.id().and(_factory.nithVar(var)), size));
+          _workQueue.offer(new SearchState(high, partialPI.id().and(_factory.ithVar(var)), size));
         }
       }
 
