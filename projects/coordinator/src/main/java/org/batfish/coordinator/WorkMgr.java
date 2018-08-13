@@ -1830,6 +1830,9 @@ public class WorkMgr extends AbstractCoordinator {
       Answer answer =
           BatfishObjectMapper.mapper().readValue(rawAnswer, new TypeReference<Answer>() {});
       status = answer.getStatus();
+      if (status != AnswerStatus.SUCCESS) {
+        return new AnalysisAnswerMetricsResult(null, status);
+      }
       TableAnswerElement table = (TableAnswerElement) answer.getAnswerElements().get(0);
       int numRows = table.getRows().size();
       List<ColumnAggregationResult> aggregationResults =
