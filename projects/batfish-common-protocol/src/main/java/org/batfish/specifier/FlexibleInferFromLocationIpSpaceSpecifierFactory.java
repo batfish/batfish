@@ -9,7 +9,8 @@ import com.google.auto.service.AutoService;
 @AutoService(IpSpaceSpecifierFactory.class)
 public final class FlexibleInferFromLocationIpSpaceSpecifierFactory
     extends FlexibleIpSpaceSpecifierFactory {
-  static final String NAME = FlexibleInferFromLocationIpSpaceSpecifierFactory.class.getSimpleName();
+  public static final String NAME =
+      FlexibleInferFromLocationIpSpaceSpecifierFactory.class.getSimpleName();
 
   @Override
   protected IpSpaceSpecifier defaultIpSpaceSpecifier() {
