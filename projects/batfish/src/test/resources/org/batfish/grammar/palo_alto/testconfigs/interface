@@ -7,3 +7,5 @@ set network interface ethernet ethernet1/2 comment "interface's long description
 set network interface ethernet ethernet1/3 link-status down
 set network interface ethernet ethernet1/3 link-status up
 set network interface ethernet ethernet1/3 comment 'single quoted description'
+# Interfaces are not functionally active unless they are in a virtual-router
+set network virtual-router default interface [ ethernet1/1 ethernet1/2 ethernet1/3 ]
