@@ -193,7 +193,10 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     for (Vsys vsys : _configuration.getVirtualSystems().values()) {
       for (Zone zone : vsys.getZones().values()) {
         for (String ifname : zone.getInterfaceNames()) {
-          _configuration.getInterfaces().get(ifname).setZone(zone);
+          Interface iface = _configuration.getInterfaces().get(ifname);
+          if (iface != null) {
+            iface.setZone(zone);
+          }
         }
       }
     }
