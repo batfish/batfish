@@ -52,7 +52,7 @@ public final class BDDSourceManager {
     }
 
     // add sourceBDD entries for active sources and initialize _isSane constraint
-    if (sources.size() > 0) {
+    if (!sources.isEmpty()) {
       int bitsRequired = LongMath.log2(sources.size(), RoundingMode.CEILING);
       BDDInteger var = pkt.allocateBDDInteger(VAR_NAME, bitsRequired, false);
       sourceBDDs.putAll(computeMatchSourceBDDs(var, sources));
