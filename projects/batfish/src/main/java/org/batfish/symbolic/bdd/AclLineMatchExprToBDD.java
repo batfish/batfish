@@ -3,6 +3,7 @@ package org.batfish.symbolic.bdd;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import java.util.Map;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -47,7 +48,7 @@ public class AclLineMatchExprToBDD implements GenericAclLineMatchExprVisitor<BDD
     _aclEnv = ImmutableMap.copyOf(aclEnv);
     _factory = factory;
     _bddOps = new BDDOps(factory);
-    _bddSrcManager = new BDDSourceManager(packet, ImmutableList.of());
+    _bddSrcManager = BDDSourceManager.forInterfaces(packet, ImmutableSet.of());
     _namedIpSpaces = ImmutableMap.copyOf(namedIpSpaces);
     _headerSpaceToBDD = new HeaderSpaceToBDD(packet, _namedIpSpaces);
   }
@@ -92,7 +93,7 @@ public class AclLineMatchExprToBDD implements GenericAclLineMatchExprVisitor<BDD
         matchSrcInterface
             .getSrcInterfaces()
             .stream()
-            .map(_bddSrcManager::getSrcInterfaceBDD)
+            .map(_bddSrcManager::getSourceInterfaceBDD)
             .collect(Collectors.toList()));
   }
 
