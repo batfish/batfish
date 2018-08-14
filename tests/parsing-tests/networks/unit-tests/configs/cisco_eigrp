@@ -38,6 +38,10 @@ router eigrp 5
  traffic-share balanced
  variance 4
 !
+router eigrp 6
+ no default-metric
+ redistribute eigrp 4
+!
 ip access-list extended bippety
  permit tcp 30.9.132.0 0.0.1.255 host 1.1.1.1 range 48000 48060
  remark **  Blah blah

@@ -15,15 +15,20 @@ public abstract class EigrpRoute extends AbstractRoute {
 
   static final String PROP_EIGRP_METRIC = "eigrp-metric";
 
+  static final String PROP_PROCESS_ASN = "process-asn";
+
   private static final long serialVersionUID = 1L;
 
-  protected final int _admin;
+  final int _admin;
 
-  protected final EigrpMetric _metric;
+  final EigrpMetric _metric;
 
-  protected final String _nextHopInterface;
+  final String _nextHopInterface;
 
-  protected final Ip _nextHopIp;
+  final Ip _nextHopIp;
+
+  /** AS number of the EIGRP process that installed this route in the RIB */
+  final long _processAsn;
 
   @JsonCreator
   protected EigrpRoute(
@@ -31,12 +36,14 @@ public abstract class EigrpRoute extends AbstractRoute {
       @JsonProperty(PROP_NETWORK) Prefix network,
       @Nullable @JsonProperty(PROP_NEXT_HOP_INTERFACE) String nextHopInterface,
       @Nullable @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
-      @JsonProperty(PROP_METRIC) EigrpMetric metric) {
+      @JsonProperty(PROP_METRIC) EigrpMetric metric,
+      @JsonProperty long processAsn) {
     super(network);
     _admin = admin;
     _metric = requireNonNull(metric);
     _nextHopInterface = firstNonNull(nextHopInterface, Route.UNSET_NEXT_HOP_INTERFACE);
     _nextHopIp = firstNonNull(nextHopIp, Route.UNSET_ROUTE_NEXT_HOP_IP);
+    _processAsn = processAsn;
   }
 
   @JsonIgnore(false)
@@ -73,6 +80,11 @@ public abstract class EigrpRoute extends AbstractRoute {
   @Override
   public final Ip getNextHopIp() {
     return _nextHopIp;
+  }
+
+  @JsonProperty(PROP_PROCESS_ASN)
+  public long getProcessAsn() {
+    return _processAsn;
   }
 
   @Override

@@ -12,12 +12,7 @@ import org.batfish.datamodel.eigrp.EigrpMetric;
 /** Represents an internal EIGRP route */
 public class EigrpInternalRoute extends EigrpRoute {
 
-  private static final String PROP_PROCESS_ASN = "process-asn";
-
   private static final long serialVersionUID = 1L;
-
-  /** AS number of the EIGRP process that learned this route */
-  private final long _processAsn;
 
   private EigrpInternalRoute(
       int admin,
@@ -26,8 +21,7 @@ public class EigrpInternalRoute extends EigrpRoute {
       @Nullable String nextHopInterface,
       @Nullable Ip nextHopIp,
       @Nonnull EigrpMetric metric) {
-    super(admin, network, nextHopInterface, nextHopIp, metric);
-    _processAsn = processAsn;
+    super(admin, network, nextHopInterface, nextHopIp, metric, processAsn);
   }
 
   @JsonCreator
@@ -72,17 +66,13 @@ public class EigrpInternalRoute extends EigrpRoute {
     return Objects.hash(_admin, _metric.hashCode(), _network, _nextHopIp, _nextHopInterface);
   }
 
-  public long getProcessAsn() {
-    return _processAsn;
-  }
-
   public static class Builder extends AbstractRouteBuilder<Builder, EigrpInternalRoute> {
 
-    @Nullable Long _processAsn;
+    @Nullable private EigrpMetric _eigrpMetric;
 
     @Nullable String _nextHopInterface;
 
-    @Nullable private EigrpMetric _eigrpMetric;
+    @Nullable Long _processAsn;
 
     @Nullable
     @Override
