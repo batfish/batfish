@@ -1,11 +1,14 @@
 package org.batfish.datamodel.table;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multiset;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.BatfishObjectMapper;
@@ -28,12 +31,15 @@ public final class TableAnswerElement extends AnswerElement {
 
   private Rows _rows;
 
+  private List<Row> _rowsList;
+
   private TableMetadata _tableMetadata;
 
   @JsonCreator
   public TableAnswerElement(@Nonnull @JsonProperty(PROP_METADATA) TableMetadata tableMetadata) {
     _tableMetadata = tableMetadata;
     _rows = new Rows();
+    _rowsList = new LinkedList<>();
     _excludedRows = new LinkedList<>();
   }
 
@@ -44,6 +50,7 @@ public final class TableAnswerElement extends AnswerElement {
    */
   public TableAnswerElement addRow(Row row) {
     _rows.add(row);
+    _rowsList.add(row);
     return this;
   }
 
@@ -125,9 +132,14 @@ public final class TableAnswerElement extends AnswerElement {
     return _tableMetadata;
   }
 
-  @JsonProperty(PROP_ROWS)
+  @JsonIgnore
   public Rows getRows() {
     return _rows;
+  }
+
+  @JsonProperty(PROP_ROWS)
+  public List<Row> getRowsList() {
+    return ImmutableList.copyOf(_rowsList);
   }
 
   /**
@@ -157,8 +169,26 @@ public final class TableAnswerElement extends AnswerElement {
     _excludedRows = excludedRows == null ? new LinkedList<>() : excludedRows;
   }
 
-  @JsonProperty(PROP_ROWS)
+  @JsonIgnore
   private void setRows(Rows rows) {
-    _rows = rows == null ? new Rows() : rows;
+    if (rows == null) {
+      _rows = new Rows();
+      _rowsList = new LinkedList<>();
+    } else {
+      _rows = rows;
+      _rowsList = rows.getData().stream().collect(Collectors.toList());
+    }
+  }
+
+  @JsonProperty(PROP_ROWS)
+  private void setRowsList(List<Row> rows) {
+    _rows = new Rows();
+    if (rows == null) {
+      _rowsList = new LinkedList<>();
+
+    } else {
+      _rowsList = rows;
+    }
+    _rowsList.forEach(_rows::add);
   }
 }
