@@ -1,5 +1,6 @@
 package org.batfish.common.util;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -10,6 +11,7 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.introspect.VisibilityChecker;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -136,6 +138,18 @@ public final class BatfishObjectMapper {
         JsonInclude.Value.construct(Include.NON_EMPTY, Include.ALWAYS));
     // This line makes Guava collections work with jackson
     mapper.registerModule(new GuavaModule());
+
+    // Only serialize/deserialize annotated properties
+    VisibilityChecker onlyAnnotatedChecker =
+        mapper
+            .getDeserializationConfig()
+            .getDefaultVisibilityChecker()
+            .withCreatorVisibility(JsonAutoDetect.Visibility.NONE)
+            .withFieldVisibility(JsonAutoDetect.Visibility.NONE)
+            .withGetterVisibility(JsonAutoDetect.Visibility.NONE)
+            .withIsGetterVisibility(JsonAutoDetect.Visibility.NONE)
+            .withSetterVisibility(JsonAutoDetect.Visibility.NONE);
+    mapper.setVisibility(onlyAnnotatedChecker);
 
     return mapper;
   }
