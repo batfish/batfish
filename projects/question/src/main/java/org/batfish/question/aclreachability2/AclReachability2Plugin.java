@@ -17,6 +17,6 @@ public class AclReachability2Plugin extends QuestionPlugin {
 
   @Override
   protected Question createQuestion() {
-    return new AclReachability2Question(".*", NodesSpecifier.ALL);
+    return new AclReachability2Question();
   }
 }
