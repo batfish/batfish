@@ -11,11 +11,10 @@ import javax.annotation.Nullable;
 import org.batfish.common.BfConsts;
 
 public class AnalysisAnswerMetricsResult {
-  private static final String PROP_METRICS = "metrics";
 
   @JsonCreator
   private static @Nonnull AnalysisAnswerMetricsResult create(
-      @JsonProperty(PROP_METRICS) Metrics metrics,
+      @JsonProperty(BfConsts.PROP_METRICS) Metrics metrics,
       @JsonProperty(BfConsts.PROP_STATUS) AnswerStatus status) {
     return new AnalysisAnswerMetricsResult(metrics, requireNonNull(status));
   }
@@ -41,7 +40,7 @@ public class AnalysisAnswerMetricsResult {
     return Objects.equals(_metrics, rhs._metrics) && _status == rhs._status;
   }
 
-  @JsonProperty(PROP_METRICS)
+  @JsonProperty(BfConsts.PROP_METRICS)
   public @Nullable Metrics getMetrics() {
     return _metrics;
   }
@@ -60,7 +59,7 @@ public class AnalysisAnswerMetricsResult {
   public String toString() {
     return toStringHelper(getClass())
         .omitNullValues()
-        .add(PROP_METRICS, _metrics)
+        .add(BfConsts.PROP_METRICS, _metrics)
         .add(BfConsts.PROP_STATUS, _status)
         .toString();
   }

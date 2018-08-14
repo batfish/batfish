@@ -10,17 +10,14 @@ import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.common.BfConsts;
 
 public class Metrics {
 
-  public static final String PROP_AGGREGATIONS = "aggregations";
-
-  public static final String PROP_NUM_ROWS = "numRows";
-
   @JsonCreator
   private static @Nonnull Metrics create(
-      @JsonProperty(PROP_AGGREGATIONS) List<ColumnAggregationResult> aggregations,
-      @JsonProperty(PROP_NUM_ROWS) int numRows) {
+      @JsonProperty(BfConsts.PROP_AGGREGATIONS) List<ColumnAggregationResult> aggregations,
+      @JsonProperty(BfConsts.PROP_NUM_ROWS) int numRows) {
     return new Metrics(firstNonNull(aggregations, ImmutableList.of()), numRows);
   }
 
@@ -45,12 +42,12 @@ public class Metrics {
     return _aggregations.equals(rhs._aggregations) && _numRows == rhs._numRows;
   }
 
-  @JsonProperty(PROP_AGGREGATIONS)
+  @JsonProperty(BfConsts.PROP_AGGREGATIONS)
   public @Nonnull List<ColumnAggregationResult> getAggregations() {
     return _aggregations;
   }
 
-  @JsonProperty(PROP_NUM_ROWS)
+  @JsonProperty(BfConsts.PROP_NUM_ROWS)
   public int getNumRows() {
     return _numRows;
   }
@@ -63,8 +60,8 @@ public class Metrics {
   @Override
   public String toString() {
     return toStringHelper(getClass())
-        .add(PROP_AGGREGATIONS, _aggregations)
-        .add(PROP_NUM_ROWS, _numRows)
+        .add(BfConsts.PROP_AGGREGATIONS, _aggregations)
+        .add(BfConsts.PROP_NUM_ROWS, _numRows)
         .toString();
   }
 }

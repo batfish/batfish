@@ -9,14 +9,13 @@ import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.common.BfConsts;
 
 public class GetAnalysisAnswerMetricsAnswer {
 
-  private static final String PROP_RESULTS = "results";
-
   @JsonCreator
   private static @Nonnull GetAnalysisAnswerMetricsAnswer create(
-      @JsonProperty(PROP_RESULTS) Map<String, AnalysisAnswerMetricsResult> results) {
+      @JsonProperty(BfConsts.PROP_RESULTS) Map<String, AnalysisAnswerMetricsResult> results) {
     return new GetAnalysisAnswerMetricsAnswer(firstNonNull(results, ImmutableMap.of()));
   }
 
@@ -37,7 +36,7 @@ public class GetAnalysisAnswerMetricsAnswer {
     return _results.equals(((GetAnalysisAnswerMetricsAnswer) obj)._results);
   }
 
-  @JsonProperty(PROP_RESULTS)
+  @JsonProperty(BfConsts.PROP_RESULTS)
   public @Nonnull Map<String, AnalysisAnswerMetricsResult> getResults() {
     return _results;
   }
@@ -49,6 +48,6 @@ public class GetAnalysisAnswerMetricsAnswer {
 
   @Override
   public String toString() {
-    return toStringHelper(getClass()).add(PROP_RESULTS, _results).toString();
+    return toStringHelper(getClass()).add(BfConsts.PROP_RESULTS, _results).toString();
   }
 }

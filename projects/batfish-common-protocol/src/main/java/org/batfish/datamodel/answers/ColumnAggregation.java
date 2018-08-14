@@ -8,17 +8,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.common.BfConsts;
 
 public class ColumnAggregation {
 
-  public static final String PROP_AGGREGATION = "aggregation";
-
-  public static final String PROP_COLUMN = "column";
-
   @JsonCreator
   private static @Nonnull ColumnAggregation create(
-      @JsonProperty(PROP_AGGREGATION) Aggregation aggregation,
-      @JsonProperty(PROP_COLUMN) String column) {
+      @JsonProperty(BfConsts.PROP_AGGREGATION) Aggregation aggregation,
+      @JsonProperty(BfConsts.PROP_COLUMN) String column) {
     return new ColumnAggregation(requireNonNull(aggregation), requireNonNull(column));
   }
 
@@ -48,12 +45,12 @@ public class ColumnAggregation {
     return Objects.hash(_aggregation.ordinal(), _column);
   }
 
-  @JsonProperty(PROP_AGGREGATION)
+  @JsonProperty(BfConsts.PROP_AGGREGATION)
   public @Nonnull Aggregation getAggregation() {
     return _aggregation;
   }
 
-  @JsonProperty(PROP_COLUMN)
+  @JsonProperty(BfConsts.PROP_COLUMN)
   public @Nonnull String getColumn() {
     return _column;
   }
@@ -61,8 +58,8 @@ public class ColumnAggregation {
   @Override
   public String toString() {
     return toStringHelper(getClass())
-        .add(PROP_AGGREGATION, _aggregation)
-        .add(PROP_COLUMN, _column)
+        .add(BfConsts.PROP_AGGREGATION, _aggregation)
+        .add(BfConsts.PROP_COLUMN, _column)
         .toString();
   }
 }

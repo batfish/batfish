@@ -9,13 +9,10 @@ import javax.annotation.Nonnull;
 
 public class ColumnSortOption {
 
-  private static final String PROP_COLUMN = "column";
-
-  private static final String PROP_REVERSED = "reversed";
-
   @JsonCreator
   private static @Nonnull ColumnSortOption create(
-      @JsonProperty(PROP_COLUMN) String column, @JsonProperty(PROP_REVERSED) Boolean reversed) {
+      @JsonProperty(BfConsts.PROP_COLUMN) String column,
+      @JsonProperty(BfConsts.PROP_REVERSED) Boolean reversed) {
     return new ColumnSortOption(requireNonNull(column), firstNonNull(reversed, false));
   }
 
@@ -28,12 +25,12 @@ public class ColumnSortOption {
     _reversed = reversed;
   }
 
-  @JsonProperty(PROP_COLUMN)
+  @JsonProperty(BfConsts.PROP_COLUMN)
   public @Nonnull String getColumn() {
     return _column;
   }
 
-  @JsonProperty(PROP_REVERSED)
+  @JsonProperty(BfConsts.PROP_REVERSED)
   public boolean getReversed() {
     return _reversed;
   }

@@ -15,20 +15,12 @@ import javax.annotation.Nullable;
 
 public class AnalysisAnswerOptions {
 
-  private static final String PROP_COLUMNS = "columns";
-
-  private static final String PROP_MAX_ROWS = "maxRows";
-
-  private static final String PROP_ROW_OFFSET = "rowOffset";
-
-  private static final String PROP_SORT_ORDER = "sortOrder";
-
   @JsonCreator
   private static @Nonnull AnalysisAnswerOptions create(
-      @JsonProperty(PROP_COLUMNS) Set<String> columns,
-      @JsonProperty(PROP_MAX_ROWS) Integer maxRows,
-      @JsonProperty(PROP_ROW_OFFSET) Integer rowOffset,
-      @JsonProperty(PROP_SORT_ORDER) List<ColumnSortOption> sortOrder) {
+      @JsonProperty(BfConsts.PROP_COLUMNS) Set<String> columns,
+      @JsonProperty(BfConsts.PROP_MAX_ROWS) Integer maxRows,
+      @JsonProperty(BfConsts.PROP_ROW_OFFSET) Integer rowOffset,
+      @JsonProperty(BfConsts.PROP_SORT_ORDER) List<ColumnSortOption> sortOrder) {
     return new AnalysisAnswerOptions(
         firstNonNull(columns, ImmutableSet.of()),
         firstNonNull(maxRows, Integer.MAX_VALUE),
@@ -70,22 +62,22 @@ public class AnalysisAnswerOptions {
         && _sortOrder.equals(rhs._sortOrder);
   }
 
-  @JsonProperty(PROP_COLUMNS)
+  @JsonProperty(BfConsts.PROP_COLUMNS)
   public Set<String> getColumns() {
     return _columns;
   }
 
-  @JsonProperty(PROP_MAX_ROWS)
+  @JsonProperty(BfConsts.PROP_MAX_ROWS)
   public int getMaxRows() {
     return _maxRows;
   }
 
-  @JsonProperty(PROP_ROW_OFFSET)
+  @JsonProperty(BfConsts.PROP_ROW_OFFSET)
   public int getRowOffset() {
     return _rowOffset;
   }
 
-  @JsonProperty(PROP_SORT_ORDER)
+  @JsonProperty(BfConsts.PROP_SORT_ORDER)
   public List<ColumnSortOption> getSortOrder() {
     return _sortOrder;
   }
@@ -98,10 +90,10 @@ public class AnalysisAnswerOptions {
   @Override
   public String toString() {
     return toStringHelper(getClass())
-        .add(PROP_COLUMNS, _columns)
-        .add(PROP_MAX_ROWS, _maxRows)
-        .add(PROP_ROW_OFFSET, _rowOffset)
-        .add(PROP_SORT_ORDER, _sortOrder)
+        .add(BfConsts.PROP_COLUMNS, _columns)
+        .add(BfConsts.PROP_MAX_ROWS, _maxRows)
+        .add(BfConsts.PROP_ROW_OFFSET, _rowOffset)
+        .add(BfConsts.PROP_SORT_ORDER, _sortOrder)
         .toString();
   }
 }
