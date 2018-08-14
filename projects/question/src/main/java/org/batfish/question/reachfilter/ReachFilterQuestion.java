@@ -48,8 +48,7 @@ public final class ReachFilterQuestion extends Question {
   private static final String PROP_DESTINATION_IP_SPACE_SPECIFIER_FACTORY =
       "destinationIpSpaceSpecifierFactory";
 
-  private static final String PROP_DESTINATION_IP_SPACE_SPECIFIER_INPUT =
-      "destinationIpSpaceSpecifierInput";
+  private static final String PROP_DESTINATION_IP_SPACE_SPECIFIER_INPUT = "dst";
 
   private static final String PROP_DST_PORTS = "dstPorts";
 
@@ -60,7 +59,7 @@ public final class ReachFilterQuestion extends Question {
   private static final String PROP_SOURCE_IP_SPACE_SPECIFIER_FACTORY =
       "sourceIpSpaceSpecifierFactory";
 
-  private static final String PROP_SOURCE_IP_SPACE_SPECIFIER_INPUT = "sourceIpSpaceSpecifierInput";
+  private static final String PROP_SOURCE_IP_SPACE_SPECIFIER_INPUT = "src";
 
   public enum Type {
     PERMIT,
@@ -106,7 +105,7 @@ public final class ReachFilterQuestion extends Question {
           String sourceIpSpaceSpecifierFactory,
       @JsonProperty(PROP_SOURCE_IP_SPACE_SPECIFIER_INPUT) @Nullable
           String sourceIpSpaceSpecifierInput,
-      @JsonProperty(PROP_QUERY) @Nullable Type type) {
+      @JsonProperty(PROP_QUERY) @Nullable String type) {
     _filterSpecifierInput = filterSpecifierInput;
     _nodesSpecifier = firstNonNull(nodesSpecifier, NodesSpecifier.ALL);
     _destinationIpSpaceSpecifierFactory =
@@ -118,7 +117,7 @@ public final class ReachFilterQuestion extends Question {
     _sourceIpSpaceSpecifierFactory =
         firstNonNull(sourceIpSpaceSpecifierFactory, DEFAULT_SRC_IP_SPECIFIER_FACTORY);
     _sourceIpSpaceSpecifierInput = sourceIpSpaceSpecifierInput;
-    _type = firstNonNull(type, PERMIT);
+    setQuery(firstNonNull(type, "permit"));
   }
 
   ReachFilterQuestion() {

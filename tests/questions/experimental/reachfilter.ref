@@ -1,18 +1,33 @@
 {
   "class" : "org.batfish.question.reachfilter.ReachFilterQuestion",
-  "differential" : false,
+  "destinationIpSpaceSpecifierFactory" : "destFactory",
+  "dst" : "2.2.2.2",
   "filterRegex" : ".*",
+  "nodeRegex" : ".*",
+  "sourceIpSpaceSpecifierFactory" : "sourceFactory",
+  "src" : "1.1.1.1",
+  "differential" : false,
   "includeOneTableKeys" : true,
   "instance" : {
     "description" : "Find headers for which a filter takes a particular behavior.",
     "instanceName" : "qname",
     "longDescription" : "This question searches for headers for which a filter (access control list) has a particular behavior. The behaviors can be: that the filter permits the header (permit), that it denies the header (deny), or that the header is matched by a particular line (matchLine <lineNumber>). Filters are selected using node and filter specifiers, which might match multiple filters. In this case, a (possibly different) header will be found for each filter.",
     "tags" : [
-      "dataPlane",
-      "reachability",
-      "traceroute"
+      "acl"
     ],
     "variables" : {
+      "destinationIpSpaceSpecifierFactory" : {
+        "description" : "Name of the IpSpaceSpecifierFactory to use for the destination IpSpace",
+        "optional" : true,
+        "type" : "string",
+        "value" : "destFactory"
+      },
+      "dst" : {
+        "description" : "Flexible specification of destinoation IpSpace",
+        "optional" : false,
+        "type" : "string",
+        "value" : "2.2.2.2"
+      },
       "filterRegex" : {
         "description" : "Only consider filters that match this specification",
         "optional" : true,
@@ -30,8 +45,19 @@
         "optional" : true,
         "type" : "string",
         "value" : "matchLine 0"
+      },
+      "sourceIpSpaceSpecifierFactory" : {
+        "description" : "Name of the IpSpaceSpecifierFactory to use for the source IpSpace",
+        "optional" : true,
+        "type" : "string",
+        "value" : "sourceFactory"
+      },
+      "src" : {
+        "description" : "Flexible specification of source IpSpace",
+        "optional" : false,
+        "type" : "string",
+        "value" : "1.1.1.1"
       }
     }
-  },
-  "nodeRegex" : ".*"
+  }
 }
