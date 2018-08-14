@@ -220,8 +220,6 @@ public final class ReachFilterQuestion extends Question {
         .setDstPorts(_dstPorts)
         .setDstProtocols(_dstProtocols)
         .setSrcPorts(_srcPorts)
-        // src and dst protocols can't be different for ACLs
-        .setSrcProtocols(_dstProtocols)
         .build();
   }
 
