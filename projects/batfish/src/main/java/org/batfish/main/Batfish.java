@@ -196,6 +196,7 @@ import org.batfish.symbolic.abstraction.Roles;
 import org.batfish.symbolic.bdd.BDDAcl;
 import org.batfish.symbolic.bdd.BDDPacket;
 import org.batfish.symbolic.bdd.BDDSourceManager;
+import org.batfish.symbolic.bdd.HeaderSpaceToBDD;
 import org.batfish.symbolic.smt.PropertyChecker;
 import org.batfish.vendor.VendorConfiguration;
 import org.batfish.z3.AclIdentifier;
@@ -4274,7 +4275,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
     BDDPacket bddPacket = new BDDPacket();
     BDDSourceManager mgr = BDDSourceManager.forIpAccessList(bddPacket, node, acl);
     BDDAcl bddAcl = BDDAcl.create(bddPacket, acl, node.getIpAccessLists(), node.getIpSpaces(), mgr);
-    BDD satAssignment = bddAcl.getBdd().and(mgr.isSane()).fullSatOne();
+    parameters.resolveHeaderspace(specifierContext());
+    BDD headerSpace =
+        new HeaderSpaceToBDD(bddPacket, ImmutableMap.of()).toBDD(parameters.getHeaderSpace());
+    BDD satAssignment = bddAcl.getBdd().and(mgr.isSane()).and(headerSpace).fullSatOne();
     if (satAssignment.isZero()) {
       return Optional.empty();
     }

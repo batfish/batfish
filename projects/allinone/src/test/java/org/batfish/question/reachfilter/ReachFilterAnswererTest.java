@@ -8,7 +8,10 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasDstIp;
+import static org.batfish.datamodel.matchers.FlowMatchers.hasDstPort;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasIngressInterface;
+import static org.batfish.datamodel.matchers.FlowMatchers.hasSrcIp;
+import static org.batfish.datamodel.matchers.FlowMatchers.hasSrcPort;
 import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
 import static org.batfish.datamodel.matchers.TableAnswerElementMatchers.hasRows;
 import static org.batfish.question.reachfilter.ReachFilterAnswerer.toDenyAcl;
@@ -28,6 +31,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.SortedMap;
@@ -35,17 +39,22 @@ import org.batfish.common.Pair;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface.Builder;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
+import org.batfish.datamodel.IpIpSpace;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.question.ReachFilterParameters;
+import org.batfish.specifier.ConstantIpSpaceSpecifier;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -385,5 +394,47 @@ public final class ReachFilterAnswererTest {
         _batfish.reachFilter(_config, denyAllSourcesAcl, _defaultReachFilterParams);
     assertThat("Should find a flow", flow.isPresent());
     assertThat(flow.get(), hasIngressInterface(IFACE2));
+  }
+
+  @Test
+  public void testReachFilter_ACCEPT_ALL_dstIpConstraint() {
+    Ip constraintIp = new Ip("21.21.21.21");
+    ReachFilterParameters params =
+        ReachFilterParameters.builder()
+            .setDestinationIpSpaceSpecifier(
+                new ConstantIpSpaceSpecifier(new IpIpSpace(constraintIp)))
+            .setSourceIpSpaceSpecifier(new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE))
+            .setHeaderSpace(new HeaderSpace())
+            .build();
+    Optional<Flow> permitFlow = _batfish.reachFilter(_config, ACCEPT_ALL_ACL, params);
+    assertThat(permitFlow.get(), hasDstIp(constraintIp));
+  }
+
+  @Test
+  public void testReachFilter_ACCEPT_ALL_srcIpConstraint() {
+    Ip constraintIp = new Ip("21.21.21.21");
+    ReachFilterParameters params =
+        ReachFilterParameters.builder()
+            .setDestinationIpSpaceSpecifier(new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE))
+            .setSourceIpSpaceSpecifier(new ConstantIpSpaceSpecifier(new IpIpSpace(constraintIp)))
+            .setHeaderSpace(new HeaderSpace())
+            .build();
+    Optional<Flow> permitFlow = _batfish.reachFilter(_config, ACCEPT_ALL_ACL, params);
+    assertThat(permitFlow.get(), hasSrcIp(constraintIp));
+  }
+
+  @Test
+  public void testReachFilter_DENY_ALL_portConstraints() {
+    HeaderSpace hs = new HeaderSpace();
+    hs.setSrcPorts(Collections.singletonList(new SubRange(1111, 1111)));
+    hs.setDstPorts(Collections.singletonList(new SubRange(2222, 2222)));
+    ReachFilterParameters params =
+        ReachFilterParameters.builder()
+            .setDestinationIpSpaceSpecifier(new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE))
+            .setSourceIpSpaceSpecifier(new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE))
+            .setHeaderSpace(hs)
+            .build();
+    Optional<Flow> permitFlow = _batfish.reachFilter(_config, ACCEPT_ALL_ACL, params);
+    assertThat(permitFlow.get(), allOf(hasSrcPort(1111), hasDstPort(2222)));
   }
 }
