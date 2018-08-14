@@ -78,7 +78,7 @@ public final class ReachFilterQuestion extends Question {
 
   @Nonnull private final String _nodesSpecifierFactory;
 
-  @Nullable private final String _nodesSpecifierInput;
+  @Nullable private String _nodesSpecifierInput;
 
   @Nonnull private final String _destinationIpSpaceSpecifierFactory;
 
@@ -243,8 +243,14 @@ public final class ReachFilterQuestion extends Question {
         .build();
   }
 
+  @VisibleForTesting
   void setFilterSpecifierInput(@Nullable String filterSpecifierInput) {
     _filterSpecifierInput = filterSpecifierInput;
+  }
+
+  @VisibleForTesting
+  public void setNodesSpecifierInput(@Nullable String nodesSpecifierInput) {
+    _nodesSpecifierInput = nodesSpecifierInput;
   }
 
   @JsonProperty(PROP_QUERY)

@@ -16,7 +16,7 @@ public class IpIpSpace extends IpSpace {
   private final Ip _ip;
 
   @JsonCreator
-  public IpIpSpace(@JsonProperty(PROP_IP) Ip ip) {
+  IpIpSpace(@JsonProperty(PROP_IP) Ip ip) {
     _ip = ip;
   }
 

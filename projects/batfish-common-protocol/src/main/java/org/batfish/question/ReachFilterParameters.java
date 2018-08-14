@@ -1,11 +1,15 @@
 package org.batfish.question;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.util.Objects.requireNonNull;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import javax.annotation.Nonnull;
+import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.specifier.IpSpaceAssignment.Entry;
 import org.batfish.specifier.IpSpaceSpecifier;
 import org.batfish.specifier.SpecifierContext;
@@ -30,32 +34,33 @@ public class ReachFilterParameters {
     return _destinationIpSpaceSpecifier;
   }
 
+  @Nonnull
   public IpSpaceSpecifier getSourceIpSpaceSpecifier() {
     return _sourceIpSpaceSpecifier;
   }
 
+  @Nonnull
   public HeaderSpace getHeaderSpace() {
     return _headerSpace;
   }
 
   /** Resolve all parameters and update the underlying headerspace. */
   public void resolveHeaderspace(SpecifierContext ctx) {
-    _headerSpace.setDstIps(
-        _destinationIpSpaceSpecifier
-            .resolve(ImmutableSet.of(), ctx)
-            .getEntries()
-            .stream()
-            .map(Entry::getIpSpace)
-            .findFirst()
-            .orElse(EmptyIpSpace.INSTANCE));
-    _headerSpace.setSrcIps(
-        _sourceIpSpaceSpecifier
-            .resolve(ImmutableSet.of(), ctx)
-            .getEntries()
-            .stream()
-            .map(Entry::getIpSpace)
-            .findFirst()
-            .orElse(EmptyIpSpace.INSTANCE));
+    _headerSpace.setDstIps(resolveIpSpaceSpecifier(_destinationIpSpaceSpecifier, ctx));
+    _headerSpace.setSrcIps(resolveIpSpaceSpecifier(_sourceIpSpaceSpecifier, ctx));
+  }
+
+  @Nonnull
+  private static IpSpace resolveIpSpaceSpecifier(IpSpaceSpecifier specifier, SpecifierContext ctx) {
+    return firstNonNull(
+        AclIpSpace.union(
+            specifier
+                .resolve(ImmutableSet.of(), ctx)
+                .getEntries()
+                .stream()
+                .map(Entry::getIpSpace)
+                .collect(ImmutableList.toImmutableList())),
+        EmptyIpSpace.INSTANCE);
   }
 
   public static final class Builder {

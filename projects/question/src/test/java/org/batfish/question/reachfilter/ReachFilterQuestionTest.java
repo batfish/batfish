@@ -16,6 +16,7 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.question.ReachFilterParameters;
 import org.batfish.question.reachfilter.ReachFilterQuestion.Type;
+import org.batfish.specifier.FlexibleNodeSpecifierFactory;
 import org.batfish.specifier.FlexibleUniverseIpSpaceSpecifierFactory;
 import org.batfish.specifier.IpSpaceAssignment.Entry;
 import org.batfish.specifier.IpSpaceSpecifier;
@@ -38,6 +39,8 @@ public class ReachFilterQuestionTest {
     assertThat(q.getType(), is(Type.PERMIT));
     assertThat(q.getNodesSpecifier(), notNullValue());
     assertThat(q.getDataPlane(), equalTo(false));
+    assertThat(q.getNodesSpecifierFactory(), equalTo(FlexibleNodeSpecifierFactory.NAME));
+    assertThat(q.getNodesSpecifierInput(), nullValue());
     assertThat(
         q.getDestinationIpSpaceSpecifierFactory(),
         equalTo(FlexibleUniverseIpSpaceSpecifierFactory.NAME));

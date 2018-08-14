@@ -20,6 +20,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -34,6 +35,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.SortedMap;
 import org.batfish.common.Pair;
 import org.batfish.datamodel.Configuration;
@@ -44,7 +46,6 @@ import org.batfish.datamodel.Interface.Builder;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
-import org.batfish.datamodel.IpIpSpace;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
@@ -401,8 +402,7 @@ public final class ReachFilterAnswererTest {
     Ip constraintIp = new Ip("21.21.21.21");
     ReachFilterParameters params =
         ReachFilterParameters.builder()
-            .setDestinationIpSpaceSpecifier(
-                new ConstantIpSpaceSpecifier(new IpIpSpace(constraintIp)))
+            .setDestinationIpSpaceSpecifier(new ConstantIpSpaceSpecifier(constraintIp.toIpSpace()))
             .setSourceIpSpaceSpecifier(new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE))
             .setHeaderSpace(new HeaderSpace())
             .build();
@@ -416,7 +416,7 @@ public final class ReachFilterAnswererTest {
     ReachFilterParameters params =
         ReachFilterParameters.builder()
             .setDestinationIpSpaceSpecifier(new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE))
-            .setSourceIpSpaceSpecifier(new ConstantIpSpaceSpecifier(new IpIpSpace(constraintIp)))
+            .setSourceIpSpaceSpecifier(new ConstantIpSpaceSpecifier(constraintIp.toIpSpace()))
             .setHeaderSpace(new HeaderSpace())
             .build();
     Optional<Flow> permitFlow = _batfish.reachFilter(_config, ACCEPT_ALL_ACL, params);
@@ -436,5 +436,16 @@ public final class ReachFilterAnswererTest {
             .build();
     Optional<Flow> permitFlow = _batfish.reachFilter(_config, ACCEPT_ALL_ACL, params);
     assertThat(permitFlow.get(), allOf(hasSrcPort(1111), hasDstPort(2222)));
+  }
+
+  @Test
+  public void testReachFilterNodeSpecifierDefault() {
+    ReachFilterQuestion q = new ReachFilterQuestion();
+    Set<String> nodes = q.getNodesSpecifier().resolve(_batfish.specifierContext());
+    assertThat(nodes, contains(_config.getHostname()));
+
+    q.setNodesSpecifierInput("UNMATCHABLE");
+    nodes = q.getNodesSpecifier().resolve(_batfish.specifierContext());
+    assertThat(nodes, emptyIterable());
   }
 }
