@@ -19416,6 +19416,25 @@
             "              DEC:'4'  <== mode:DEFAULT_MODE",
             "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))))",
             "  (stanza",
+            "    (s_router_eigrp",
+            "      (re_classic",
+            "        ROUTER:'router'  <== mode:DEFAULT_MODE",
+            "        EIGRP:'eigrp'  <== mode:DEFAULT_MODE",
+            "        asnum = DEC:'6'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
+            "        (re_classic_tail",
+            "          (re_default_metric",
+            "            NO:'no'  <== mode:DEFAULT_MODE",
+            "            DEFAULT_METRIC:'default-metric'  <== mode:DEFAULT_MODE",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "        (re_classic_tail",
+            "          (re_redistribute",
+            "            (re_redistribute_eigrp",
+            "              REDISTRIBUTE:'redistribute'  <== mode:DEFAULT_MODE",
+            "              EIGRP:'eigrp'  <== mode:DEFAULT_MODE",
+            "              asn = DEC:'4'  <== mode:DEFAULT_MODE",
+            "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))))",
+            "  (stanza",
             "    (extended_access_list_stanza",
             "      IP:'ip'  <== mode:DEFAULT_MODE",
             "      ACCESS_LIST:'access-list'  <== mode:DEFAULT_MODE",
@@ -57175,20 +57194,20 @@
           "extended ipv4 access-list" : {
             "bippety" : {
               "definitionLines" : [
-                41,
-                42,
-                43,
-                44,
                 45,
                 46,
-                47
+                47,
+                48,
+                49,
+                50,
+                51
               ],
               "numReferrers" : 0
             },
             "bloop_blop" : {
               "definitionLines" : [
-                110,
-                111
+                114,
+                115
               ],
               "numReferrers" : 0
             }
@@ -57196,7 +57215,7 @@
           "interface" : {
             "Ethernet0" : {
               "definitionLines" : [
-                151
+                155
               ],
               "numReferrers" : 1
             }
@@ -61701,6 +61720,10 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "No candidates for EIGRP (AS 4) router-id"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No candidates for EIGRP (AS 6) router-id"
             },
             {
               "tag" : "MISCELLANEOUS",

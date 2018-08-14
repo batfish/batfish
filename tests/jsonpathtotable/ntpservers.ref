@@ -39,24 +39,6 @@
       {
         "ntpServers" : [ ],
         "node" : {
-          "name" : "as3core1"
-        }
-      },
-      {
-        "ntpServers" : [ ],
-        "node" : {
-          "name" : "as2core1"
-        }
-      },
-      {
-        "ntpServers" : [ ],
-        "node" : {
-          "name" : "as2core2"
-        }
-      },
-      {
-        "ntpServers" : [ ],
-        "node" : {
           "name" : "as1border1"
         }
       },
@@ -66,7 +48,7 @@
           "23.23.23.23"
         ],
         "node" : {
-          "name" : "as2border1"
+          "name" : "as1border2"
         }
       },
       {
@@ -81,37 +63,19 @@
           "23.23.23.23"
         ],
         "node" : {
-          "name" : "as1border2"
-        }
-      },
-      {
-        "ntpServers" : [
-          "18.18.18.18",
-          "23.23.23.23"
-        ],
-        "node" : {
-          "name" : "as3border2"
-        }
-      },
-      {
-        "ntpServers" : [
-          "18.18.18.18",
-          "23.23.23.23"
-        ],
-        "node" : {
-          "name" : "as3border1"
+          "name" : "as2border1"
         }
       },
       {
         "ntpServers" : [ ],
         "node" : {
-          "name" : "host2"
+          "name" : "as2core1"
         }
       },
       {
         "ntpServers" : [ ],
         "node" : {
-          "name" : "host1"
+          "name" : "as2core2"
         }
       },
       {
@@ -130,6 +94,42 @@
         "ntpServers" : [ ],
         "node" : {
           "name" : "as2dist2"
+        }
+      },
+      {
+        "ntpServers" : [
+          "18.18.18.18",
+          "23.23.23.23"
+        ],
+        "node" : {
+          "name" : "as3border1"
+        }
+      },
+      {
+        "ntpServers" : [
+          "18.18.18.18",
+          "23.23.23.23"
+        ],
+        "node" : {
+          "name" : "as3border2"
+        }
+      },
+      {
+        "ntpServers" : [ ],
+        "node" : {
+          "name" : "as3core1"
+        }
+      },
+      {
+        "ntpServers" : [ ],
+        "node" : {
+          "name" : "host1"
+        }
+      },
+      {
+        "ntpServers" : [ ],
+        "node" : {
+          "name" : "host2"
         }
       }
     ],

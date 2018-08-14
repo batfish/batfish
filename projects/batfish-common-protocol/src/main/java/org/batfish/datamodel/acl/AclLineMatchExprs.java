@@ -1,5 +1,6 @@
 package org.batfish.datamodel.acl;
 
+import com.google.common.collect.ImmutableList;
 import java.util.Arrays;
 import java.util.List;
 import org.batfish.datamodel.HeaderSpace;
@@ -45,6 +46,10 @@ public final class AclLineMatchExprs {
     return matchDst(new Ip(ip).toIpSpace());
   }
 
+  public static MatchSrcInterface matchSrcInterface(String... iface) {
+    return new MatchSrcInterface(ImmutableList.copyOf(iface));
+  }
+
   public static NotMatchExpr not(AclLineMatchExpr expr) {
     return new NotMatchExpr(expr);
   }
@@ -55,5 +60,9 @@ public final class AclLineMatchExprs {
 
   public static OrMatchExpr or(List<AclLineMatchExpr> exprs) {
     return new OrMatchExpr(exprs);
+  }
+
+  public static PermittedByAcl permittedByAcl(String aclName) {
+    return new PermittedByAcl(aclName);
   }
 }

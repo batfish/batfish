@@ -3,7 +3,7 @@
   "nodeRegex" : ".*",
   "propertySpec" : "multipath-.*",
   "differential" : false,
-  "includeOneTableKeys" : false,
+  "includeOneTableKeys" : true,
   "instance" : {
     "description" : "Gets properties of BGP routing processes",
     "instanceName" : "qname",

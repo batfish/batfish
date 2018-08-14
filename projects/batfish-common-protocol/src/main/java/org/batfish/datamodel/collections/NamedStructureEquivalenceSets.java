@@ -146,6 +146,7 @@ public class NamedStructureEquivalenceSets<T> {
     return _sameNamedStructures;
   }
 
+  @JsonProperty(PROP_STRUCTURE_CLASS_NAME)
   public String getStructureClassName() {
     return _structureClassName;
   }

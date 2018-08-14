@@ -1,11 +1,14 @@
 package org.batfish.datamodel.routing_policy.statement;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.expr.LongExpr;
 
 public class SetMetric extends Statement {
+
+  private static final String PROP_METRIC = "metric";
 
   /** */
   private static final long serialVersionUID = 1L;
@@ -52,6 +55,7 @@ public class SetMetric extends Statement {
     return result;
   }
 
+  @JsonProperty(PROP_METRIC)
   public LongExpr getMetric() {
     return _metric;
   }
@@ -64,6 +68,7 @@ public class SetMetric extends Statement {
     return result;
   }
 
+  @JsonProperty(PROP_METRIC)
   public void setMetric(LongExpr metric) {
     _metric = metric;
   }

@@ -71,6 +71,7 @@ public class LiteralCommunitySet extends CommunitySetExpr {
     return _communities.equals(((LiteralCommunitySet) obj)._communities);
   }
 
+  @JsonProperty(PROP_COMMUNITIES)
   public @Nonnull SortedSet<Long> getCommunities() {
     return _communities;
   }

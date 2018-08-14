@@ -52,7 +52,7 @@ public class TableDiffTest {
 
     assertThat(
         TableDiff.buildMap(new Rows().add(Row.of("k1", "a")), columns),
-        equalTo(ImmutableMap.of(new LinkedList<>(), Row.of("k1", "a"))));
+        equalTo(ImmutableMap.of(new LinkedList<>(), ImmutableList.of(Row.of("k1", "a")))));
   }
 
   @Test
@@ -67,10 +67,10 @@ public class TableDiffTest {
     Row row2 = Row.of("key", "key2", "both", "both2", "value", "value2");
     Rows rows = new Rows().add(row1).add(row2);
 
-    Map<List<Object>, Row> map = TableDiff.buildMap(rows, columns);
+    Map<List<Object>, List<Row>> map = TableDiff.buildMap(rows, columns);
 
     // row1 should be returned
-    assertThat(map.get(ImmutableList.of("key1", "both1")), equalTo(row1));
+    assertThat(map.get(ImmutableList.of("key1", "both1")), equalTo(ImmutableList.of(row1)));
 
     // nothing should be returned since the key is "partial"
     assertNull(map.get(ImmutableList.of("key1")));
@@ -225,17 +225,17 @@ public class TableDiffTest {
     TableAnswerElement table1 = new TableAnswerElement(metadata).addRow(row1);
     TableAnswerElement table23 = new TableAnswerElement(metadata).addRow(row2).addRow(row3);
 
-    // ignore: true -- should get 0 rows since the two tables have no key in common
+    // includeOneTableKeys = false ==> 0 rows since the tables have no key in common
     assertThat(TableDiff.diffTables(table12, table3, false).getRows().size(), equalTo(0));
     assertThat(TableDiff.diffTables(table3, table12, false).getRows().size(), equalTo(0));
 
-    // ignore: true should get 1 row since the two tables have a common key with different value
+    // includeOneTableKeys = false ==> 1 row since the tables have a common key w/ different values
     assertThat(TableDiff.diffTables(table23, table1, false).getRows().size(), equalTo(1));
     assertThat(TableDiff.diffTables(table1, table23, false).getRows().size(), equalTo(1));
 
-    // ignore: false -- should get 2 rows, one for each key
-    assertThat(TableDiff.diffTables(table12, table3, true).getRows().size(), equalTo(2));
-    assertThat(TableDiff.diffTables(table3, table12, true).getRows().size(), equalTo(2));
+    // includeOneTableKsy = true ==> should get 3 rows
+    assertThat(TableDiff.diffTables(table12, table3, true).getRows().size(), equalTo(3));
+    assertThat(TableDiff.diffTables(table3, table12, true).getRows().size(), equalTo(3));
   }
 
   /**
@@ -261,9 +261,9 @@ public class TableDiffTest {
     TableAnswerElement table123 =
         new TableAnswerElement(metadata).addRow(row1).addRow(row2).addRow(row3);
 
-    // expected count is 2: Two rows with identical keys in table123 are compressed
-    assertThat(TableDiff.diffTables(table123, table0, true).getRows().size(), equalTo(2));
-    assertThat(TableDiff.diffTables(table0, table123, true).getRows().size(), equalTo(2));
+    // expected count is 3 -- all rows from table123
+    assertThat(TableDiff.diffTables(table123, table0, true).getRows().size(), equalTo(3));
+    assertThat(TableDiff.diffTables(table0, table123, true).getRows().size(), equalTo(3));
 
     // expected count is 2: one for diffKey, one for sameKey
     assertThat(TableDiff.diffTables(table13, table2, true).getRows().size(), equalTo(2));

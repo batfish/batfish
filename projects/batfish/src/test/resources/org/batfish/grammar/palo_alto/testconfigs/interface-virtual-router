@@ -1,0 +1,7 @@
+set deviceconfig system hostname interface-virtual-router
+set network virtual-router default interface ethernet1/1
+set network virtual-router somename interface [ ethernet1/2 ethernet1/3 ]
+set network interface ethernet ethernet1/1 layer3 ip 1.1.1.1/24
+set network interface ethernet ethernet1/2 layer3 ip 1.1.2.1/24
+set network interface ethernet ethernet1/3 layer3 ip 1.1.3.1/24
+set network interface ethernet ethernet1/4 layer3 ip 1.1.4.1/24

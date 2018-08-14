@@ -3,7 +3,7 @@
   "nodeRegex" : ".*",
   "prefix" : "0.0.0.0/0",
   "differential" : false,
-  "includeOneTableKeys" : false,
+  "includeOneTableKeys" : true,
   "instance" : {
     "description" : "Trace route prefix propagation throughout the network",
     "instanceName" : "qname",

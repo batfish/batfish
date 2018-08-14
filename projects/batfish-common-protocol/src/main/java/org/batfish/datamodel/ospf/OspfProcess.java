@@ -99,6 +99,8 @@ public class OspfProcess implements Serializable {
 
   private static final int DEFAULT_CISCO_VLAN_OSPF_COST = 1;
 
+  private static final String PROP_AREAS = "areas";
+
   private static final String PROP_EXPORT_POLICY = "exportPolicy";
 
   private static final String PROP_EXPORT_POLICY_SOURCES = "exportPolicySources";
@@ -114,6 +116,10 @@ public class OspfProcess implements Serializable {
   private static final String PROP_MAX_METRIC_TRANSIT_LINKS = "maxMetricTransitLinks";
 
   private static final String PROP_PROCESS_ID = "processId";
+
+  private static final String PROP_REFERENCE_BANDWIDTH = "referenceBandwidth";
+
+  private static final String PROP_ROUTER_ID = "routerId";
 
   private static final long serialVersionUID = 1L;
 
@@ -178,6 +184,7 @@ public class OspfProcess implements Serializable {
   }
 
   @JsonPropertyDescription("The OSPF areas contained in this process")
+  @JsonProperty(PROP_AREAS)
   public SortedMap<Long, OspfArea> getAreas() {
     return _areas;
   }
@@ -238,6 +245,7 @@ public class OspfProcess implements Serializable {
   @JsonPropertyDescription(
       "The reference bandwidth by which an interface's bandwidth is divided to determine its OSPF "
           + "cost")
+  @JsonProperty(PROP_REFERENCE_BANDWIDTH)
   public Double getReferenceBandwidth() {
     return _referenceBandwidth;
   }
@@ -247,6 +255,7 @@ public class OspfProcess implements Serializable {
   }
 
   @JsonPropertyDescription("The router-id of this OSPF process")
+  @JsonProperty(PROP_ROUTER_ID)
   public Ip getRouterId() {
     return _routerId;
   }

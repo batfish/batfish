@@ -1,7 +1,7 @@
 {
   "class" : "org.batfish.question.NodesQuestionPlugin$NodesQuestion",
   "differential" : false,
-  "includeOneTableKeys" : false,
+  "includeOneTableKeys" : true,
   "instance" : {
     "description" : "Outputs the configuration of nodes in the network.",
     "instanceName" : "qname",

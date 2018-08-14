@@ -86,6 +86,7 @@ public final class Conjunction extends BooleanExpr {
     return result;
   }
 
+  @JsonProperty(PROP_CONJUNCTS)
   public void setConjuncts(List<BooleanExpr> conjuncts) {
     _conjuncts = conjuncts;
   }

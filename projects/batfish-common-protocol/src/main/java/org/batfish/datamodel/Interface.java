@@ -395,6 +395,8 @@ public final class Interface extends ComparableStructure<String> {
 
   private static final String PROP_PREFIX = "prefix";
 
+  private static final String PROP_PROXY_ARP = "proxyArp";
+
   private static final String PROP_RIP_ENABLED = "ripEnabled";
 
   private static final String PROP_RIP_PASSIVE = "ripPassive";
@@ -685,9 +687,7 @@ public final class Interface extends ComparableStructure<String> {
 
   private SortedMap<Integer, VrrpGroup> _vrrpGroups;
 
-  private Zone _zone;
-
-  private transient String _zoneName;
+  private String _zoneName;
 
   private String _hsrpVersion;
 
@@ -807,7 +807,7 @@ public final class Interface extends ComparableStructure<String> {
     if (!Objects.equals(this._switchportMode, other._switchportMode)) {
       return false;
     }
-    if (!Objects.equals(this._zone, other._zone)) {
+    if (!Objects.equals(this._zoneName, other._zoneName)) {
       return false;
     }
     return true;
@@ -1076,6 +1076,7 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   @JsonPropertyDescription("Whether or not proxy-ARP is enabled on this interface.")
+  @JsonProperty(PROP_PROXY_ARP)
   public boolean getProxyArp() {
     return _proxyArp;
   }
@@ -1165,19 +1166,10 @@ public final class Interface extends ComparableStructure<String> {
     return _vrrpGroups;
   }
 
-  @JsonIgnore
-  public Zone getZone() {
-    return _zone;
-  }
-
   @JsonProperty(PROP_ZONE)
   @JsonPropertyDescription("The firewall zone to which this interface belongs.")
   public String getZoneName() {
-    if (_zone != null) {
-      return _zone.getName();
-    } else {
-      return _zoneName;
-    }
+    return _zoneName;
   }
 
   public boolean isLoopback(ConfigurationFormat vendor) {
@@ -1415,6 +1407,7 @@ public final class Interface extends ComparableStructure<String> {
     _address = address;
   }
 
+  @JsonProperty(PROP_PROXY_ARP)
   public void setProxyArp(boolean proxyArp) {
     _proxyArp = proxyArp;
   }
@@ -1487,11 +1480,6 @@ public final class Interface extends ComparableStructure<String> {
     _vrrpGroups = vrrpGroups;
   }
 
-  @JsonIgnore
-  public void setZone(Zone zone) {
-    _zone = zone;
-  }
-
   @JsonProperty(PROP_ZONE)
   public void setZoneName(String zoneName) {
     _zoneName = zoneName;
@@ -1503,6 +1491,7 @@ public final class Interface extends ComparableStructure<String> {
     iface.put("name", _key);
     iface.put(PROP_PREFIX, _address.toString());
     iface.put(PROP_INTERFACE_TYPE, _interfaceType.toString());
+    iface.put(PROP_ZONE, _zoneName);
     return iface;
   }
 }

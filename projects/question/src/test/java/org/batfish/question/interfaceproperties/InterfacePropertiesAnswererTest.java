@@ -1,6 +1,8 @@
 package org.batfish.question.interfaceproperties;
 
+import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.core.IsEqual.equalTo;
 
@@ -79,6 +81,38 @@ public class InterfacePropertiesAnswererTest {
             .build();
 
     assertThat(propertyRows, equalTo(ImmutableMultiset.of(expectedRow)));
+  }
+
+  @Test
+  public void getPropertiesExcludeShutInterfaces() {
+    Configuration conf = new Configuration("node", ConfigurationFormat.CISCO_IOS);
+    Interface active = Interface.builder().setName("active").setOwner(conf).setActive(true).build();
+    Interface shut = Interface.builder().setName("shut").setOwner(conf).setActive(false).build();
+    conf.getInterfaces().putAll(ImmutableMap.of("active", active, "shut", shut));
+
+    String property = "description";
+    InterfacePropertySpecifier propertySpecifier = new InterfacePropertySpecifier(property);
+
+    Multiset<Row> propertyRows =
+        InterfacePropertiesAnswerer.getProperties(
+            propertySpecifier,
+            ImmutableMap.of("node", conf),
+            ImmutableSet.of("node"),
+            InterfacesSpecifier.ALL,
+            true,
+            new TableMetadata(
+                    InterfacePropertiesAnswerer.createColumnMetadata(propertySpecifier),
+                    (String) null)
+                .toColumnMap());
+
+    // we should have exactly one row; iface1 should have been filtered out
+    assertThat(propertyRows, hasSize(1));
+    assertThat(
+        propertyRows.iterator().next(),
+        hasColumn(
+            InterfacePropertiesAnswerer.COL_INTERFACE,
+            equalTo(new NodeInterfacePair("node", "active")),
+            Schema.INTERFACE));
   }
 
   private @Nonnull Multiset<Row> getRows(String property) {

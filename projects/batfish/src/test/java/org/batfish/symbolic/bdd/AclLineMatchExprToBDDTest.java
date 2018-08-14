@@ -1,7 +1,5 @@
 package org.batfish.symbolic.bdd;
 
-import static org.batfish.symbolic.bdd.BDDMatchers.isOne;
-import static org.batfish.symbolic.bdd.BDDMatchers.isZero;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.oneOf;
@@ -16,13 +14,9 @@ import java.util.function.Supplier;
 import net.sf.javabdd.BDD;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.NonRecursiveSupplier;
-import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.State;
-import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
-import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.NotMatchExpr;
 import org.batfish.datamodel.acl.OriginatingFromDevice;
@@ -39,75 +33,19 @@ public class AclLineMatchExprToBDDTest {
 
   private static final String IFACE2 = "iface2";
 
-  private BDD _originatingFromDevice;
-
   private BDDPacket _pkt;
 
-  private BDDSrcManager _srcInterfaceManager;
+  private BDDSourceManager _sourceMgr;
 
   private AclLineMatchExprToBDD _toBDD;
 
   @Before
   public void setup() {
     _pkt = new BDDPacket();
-    _srcInterfaceManager = new BDDSrcManager(_pkt, ImmutableList.of(IFACE1, IFACE2));
-    _originatingFromDevice = _srcInterfaceManager.getOriginatingFromDeviceBDD();
+    _sourceMgr = BDDSourceManager.forInterfaces(_pkt, ImmutableSet.of(IFACE1, IFACE2));
     _toBDD =
         new AclLineMatchExprToBDD(
-            _pkt.getFactory(), _pkt, ImmutableMap.of(), ImmutableMap.of(), _srcInterfaceManager);
-  }
-
-  @Test
-  public void testMatchHeaderSpace_unconstrained() {
-    assertThat(_toBDD.visit(new MatchHeaderSpace(HeaderSpace.builder().build())), isOne());
-  }
-
-  @Test
-  public void testMatchHeaderSpace_srcOrDstIps() {
-    Ip srcOrDstIp = new Ip("1.2.3.4");
-    HeaderSpace headerSpace = HeaderSpace.builder().setSrcOrDstIps(srcOrDstIp.toIpSpace()).build();
-    BDD bdd = _toBDD.visit(new MatchHeaderSpace(headerSpace));
-
-    BDD dstIpBDD = _pkt.getDstIp().value(srcOrDstIp.asLong());
-    BDD srcIpBDD = _pkt.getSrcIp().value(srcOrDstIp.asLong());
-    assertThat(bdd, equalTo(dstIpBDD.or(srcIpBDD)));
-
-    // force srcIp to be srcOrDstIp
-    Ip dstIp = new Ip("1.1.1.1");
-    headerSpace =
-        HeaderSpace.builder()
-            .setDstIps(dstIp.toIpSpace())
-            .setSrcOrDstIps(srcOrDstIp.toIpSpace())
-            .build();
-    bdd = _toBDD.visit(new MatchHeaderSpace(headerSpace));
-    dstIpBDD = _pkt.getDstIp().value(dstIp.asLong());
-    assertThat(bdd, equalTo(srcIpBDD.and(dstIpBDD)));
-
-    // neither can be srcOrDstIp. unsatisfiable
-    Ip srcIp = new Ip("2.2.2.2");
-    headerSpace =
-        HeaderSpace.builder()
-            .setDstIps(dstIp.toIpSpace())
-            .setSrcIps(srcIp.toIpSpace())
-            .setSrcOrDstIps(srcOrDstIp.toIpSpace())
-            .build();
-    bdd = _toBDD.visit(new MatchHeaderSpace(headerSpace));
-    assertThat(bdd, isZero());
-  }
-
-  @Test
-  public void testMatchHeaderSpace_srcOrDstPorts() {
-    SubRange portRange = new SubRange(10, 20);
-    HeaderSpace headerSpace =
-        HeaderSpace.builder().setSrcOrDstPorts(ImmutableList.of(portRange)).build();
-    AclLineMatchExpr matchExpr = new MatchHeaderSpace(headerSpace);
-    BDD bdd = _toBDD.visit(matchExpr);
-
-    BDDInteger dstPort = _pkt.getDstPort();
-    BDD dstPortBDD = dstPort.leq(20).and(dstPort.geq(10));
-    BDDInteger srcPort = _pkt.getSrcPort();
-    BDD srcPortBDD = srcPort.leq(20).and(srcPort.geq(10));
-    assertThat(bdd, equalTo(dstPortBDD.or(srcPortBDD)));
+            _pkt.getFactory(), _pkt, ImmutableMap.of(), ImmutableMap.of(), _sourceMgr);
   }
 
   @Test
@@ -144,102 +82,35 @@ public class AclLineMatchExprToBDDTest {
   }
 
   @Test
-  public void testMatchHeaderSpace_dscps() {
-    HeaderSpace headerSpace =
-        HeaderSpace.builder()
-            .setDscps(ImmutableSet.of(1, 2, 3))
-            .setNotDscps(ImmutableSet.of(3, 4, 5))
-            .build();
-    AclLineMatchExpr matchExpr = new MatchHeaderSpace(headerSpace);
-    BDD bdd = _toBDD.visit(matchExpr);
-
-    BDDInteger dscp = _pkt.getDscp();
-    BDD dscpBDD = dscp.value(1).or(dscp.value(2));
-    assertThat(bdd, equalTo(dscpBDD));
-  }
-
-  @Test
-  public void testMatchHeaderSpace_ecns() {
-    HeaderSpace headerSpace =
-        HeaderSpace.builder()
-            .setEcns(ImmutableSet.of(0, 1))
-            .setNotEcns(ImmutableSet.of(1, 2))
-            .build();
-    AclLineMatchExpr matchExpr = new MatchHeaderSpace(headerSpace);
-    BDD bdd = _toBDD.visit(matchExpr);
-
-    BDDInteger ecn = _pkt.getEcn();
-    BDD ecnBDD = ecn.value(0);
-    assertThat(bdd, equalTo(ecnBDD));
-  }
-
-  @Test
-  public void testMatchHeaderSpace_fragmentOffsets() {
-    HeaderSpace headerSpace =
-        HeaderSpace.builder()
-            .setFragmentOffsets(ImmutableSet.of(new SubRange(0, 5)))
-            .setNotFragmentOffsets(ImmutableSet.of(new SubRange(2, 6)))
-            .build();
-    AclLineMatchExpr matchExpr = new MatchHeaderSpace(headerSpace);
-    BDD bdd = _toBDD.visit(matchExpr);
-
-    BDDInteger fragmentOffset = _pkt.getFragmentOffset();
-    BDD fragmentOffsetBDD = fragmentOffset.value(0).or(fragmentOffset.value(1));
-    assertThat(bdd, equalTo(fragmentOffsetBDD));
-  }
-
-  @Test
-  public void testMatchHeaderSpace_icmpType() {
-    HeaderSpace headerSpace =
-        HeaderSpace.builder().setIcmpTypes(ImmutableList.of(new SubRange(8, 8))).build();
-    AclLineMatchExpr matchExpr = new MatchHeaderSpace(headerSpace);
-    BDD matchExprBDD = _toBDD.visit(matchExpr);
-    BDD icmpTypeBDD = _pkt.getIcmpType().value(8);
-    assertThat(matchExprBDD, equalTo(icmpTypeBDD));
-  }
-
-  @Test
-  public void testMatchHeaderSpace_state() {
-    HeaderSpace headerSpace =
-        HeaderSpace.builder()
-            .setStates(ImmutableSet.of(State.fromNum(0), State.fromNum(1)))
-            .build();
-    AclLineMatchExpr matchExpr = new MatchHeaderSpace(headerSpace);
-    BDD bdd = _toBDD.visit(matchExpr);
-
-    BDDInteger state = _pkt.getState();
-    BDD stateBDD = state.value(0).or(state.value(1));
-    assertThat(bdd, equalTo(stateBDD));
-  }
-
-  @Test
   public void testMatchSrcInterface() {
-    BDDInteger srcInterfaceVar = _srcInterfaceManager.getSrcInterfaceVar();
-
     MatchSrcInterface matchSrcInterface1 = new MatchSrcInterface(ImmutableList.of(IFACE1));
+    BDD iface1BDD = _sourceMgr.getSourceInterfaceBDD(IFACE1);
+    BDD iface2BDD = _sourceMgr.getSourceInterfaceBDD(IFACE2);
+
     BDD bdd1 = _toBDD.visit(matchSrcInterface1);
-    assertThat(bdd1, equalTo(srcInterfaceVar.value(1)));
-    assertThat(_srcInterfaceManager.getInterfaceFromAssignment(bdd1), equalTo(Optional.of(IFACE1)));
+    assertThat(bdd1, equalTo(iface1BDD));
+    assertThat(_sourceMgr.getSourceFromAssignment(bdd1), equalTo(Optional.of(IFACE1)));
 
     MatchSrcInterface matchSrcInterface2 = new MatchSrcInterface(ImmutableList.of(IFACE2));
-    assertThat(_toBDD.visit(matchSrcInterface2), equalTo(srcInterfaceVar.value(2)));
+    assertThat(_toBDD.visit(matchSrcInterface2), equalTo(iface2BDD));
 
     MatchSrcInterface matchSrcInterface1Or2 =
         new MatchSrcInterface(ImmutableList.of(IFACE1, IFACE2));
     BDD bdd1Or2 = _toBDD.visit(matchSrcInterface1Or2);
-    assertThat(bdd1Or2, equalTo(srcInterfaceVar.value(1).or(srcInterfaceVar.value(2))));
+    assertThat(bdd1Or2, equalTo(iface1BDD.or(iface2BDD)));
     assertThat(
-        _srcInterfaceManager.getInterfaceFromAssignment(bdd1Or2.fullSatOne()).get(),
-        oneOf(IFACE1, IFACE2));
+        _sourceMgr.getSourceFromAssignment(bdd1Or2.fullSatOne()).get(), oneOf(IFACE1, IFACE2));
 
     AclLineMatchExpr expr =
         new AndMatchExpr(
             ImmutableList.of(matchSrcInterface1Or2, new NotMatchExpr(matchSrcInterface1)));
-    assertThat(_toBDD.visit(expr), equalTo(srcInterfaceVar.value(2)));
+    assertThat(_toBDD.visit(expr), equalTo(iface2BDD));
   }
 
   @Test
   public void testOriginateFromInterface() {
-    assertThat(_toBDD.visit(OriginatingFromDevice.INSTANCE), equalTo(_originatingFromDevice));
+    assertThat(
+        _toBDD.visit(OriginatingFromDevice.INSTANCE),
+        equalTo(_sourceMgr.getOriginatingFromDeviceBDD()));
   }
 }
