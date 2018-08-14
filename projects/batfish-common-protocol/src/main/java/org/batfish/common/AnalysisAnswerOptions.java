@@ -95,6 +95,7 @@ public class AnalysisAnswerOptions {
     return Objects.hash(_columns, _maxRows, _rowOffset, _sortOrder);
   }
 
+  @Override
   public String toString() {
     return toStringHelper(getClass())
         .add(PROP_COLUMNS, _columns)
