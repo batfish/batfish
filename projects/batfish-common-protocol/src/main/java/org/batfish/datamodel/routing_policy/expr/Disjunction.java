@@ -1,5 +1,6 @@
 package org.batfish.datamodel.routing_policy.expr;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
@@ -13,6 +14,8 @@ import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 
 public final class Disjunction extends BooleanExpr {
+
+  private static final String PROP_DISJUNCTS = "disjuncts";
 
   /** */
   private static final long serialVersionUID = 1L;
@@ -65,6 +68,7 @@ public final class Disjunction extends BooleanExpr {
     return result;
   }
 
+  @JsonProperty(PROP_DISJUNCTS)
   public List<BooleanExpr> getDisjuncts() {
     return _disjuncts;
   }
@@ -77,6 +81,7 @@ public final class Disjunction extends BooleanExpr {
     return result;
   }
 
+  @JsonProperty(PROP_DISJUNCTS)
   public void setDisjuncts(List<BooleanExpr> disjuncts) {
     _disjuncts = disjuncts;
   }
