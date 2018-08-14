@@ -8,11 +8,11 @@ import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.junit.Test;
 
-public class FlexibleIpSpaceSpecifierFactoryTest {
+public class FlexibleInferFromLocationIpSpaceSpecifierFactoryTest {
   @Test
   public void testConstantIpSpace() {
     assertThat(
-        new FlexibleIpSpaceSpecifierFactory().buildIpSpaceSpecifier("1.1.1.1"),
+        new FlexibleInferFromLocationIpSpaceSpecifierFactory().buildIpSpaceSpecifier("1.1.1.1"),
         equalTo(
             new ConstantIpSpaceSpecifier(
                 IpWildcardSetIpSpace.builder().including(new IpWildcard("1.1.1.1")).build())));
@@ -21,22 +21,23 @@ public class FlexibleIpSpaceSpecifierFactoryTest {
   @Test
   public void testLoad() {
     assertThat(
-        IpSpaceSpecifierFactory.load(FlexibleIpSpaceSpecifierFactory.NAME)
-            instanceof FlexibleIpSpaceSpecifierFactory,
+        IpSpaceSpecifierFactory.load(FlexibleInferFromLocationIpSpaceSpecifierFactory.NAME)
+            instanceof FlexibleInferFromLocationIpSpaceSpecifierFactory,
         is(true));
   }
 
   @Test
   public void testNull() {
     assertThat(
-        new FlexibleIpSpaceSpecifierFactory().buildIpSpaceSpecifier(null),
+        new FlexibleInferFromLocationIpSpaceSpecifierFactory().buildIpSpaceSpecifier(null),
         is(InferFromLocationIpSpaceSpecifier.INSTANCE));
   }
 
   @Test
   public void testRefAddressGroup() {
     assertThat(
-        new FlexibleIpSpaceSpecifierFactory().buildIpSpaceSpecifier("rEf.AddressGroup(a, b)"),
+        new FlexibleInferFromLocationIpSpaceSpecifierFactory()
+            .buildIpSpaceSpecifier("rEf.AddressGroup(a, b)"),
         equalTo(new ReferenceAddressGroupIpSpaceSpecifier("a", "b")));
   }
 }
