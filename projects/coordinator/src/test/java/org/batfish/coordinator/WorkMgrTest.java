@@ -736,6 +736,43 @@ public class WorkMgrTest {
   }
 
   @Test
+  public void testToAnalysisAnswerMetricsResultUnsuccessfulAnswer() throws IOException {
+    String columnName = "col";
+
+    Answer testAnswer = new Answer();
+    testAnswer.setStatus(AnswerStatus.FAILURE);
+    String rawAnswer = BatfishObjectMapper.writePrettyString(testAnswer);
+    List<ColumnAggregation> aggregations =
+        ImmutableList.of(new ColumnAggregation(Aggregation.MAX, columnName));
+
+    assertThat(
+        _manager.toAnalysisAnswerMetricsResult(rawAnswer, aggregations),
+        equalTo(new AnalysisAnswerMetricsResult(null, AnswerStatus.FAILURE)));
+  }
+
+  @Test
+  public void testToAnalysisAnswerMetricsResultFailedComputation() throws IOException {
+    String columnName = "col";
+    int value = 5;
+
+    Answer testAnswer = new Answer();
+    testAnswer.addAnswerElement(
+        new TableAnswerElement(
+                new TableMetadata(
+                    ImmutableList.of(new ColumnMetadata(columnName, Schema.INTEGER, "foobar")),
+                    new DisplayHints().getTextDesc()))
+            .addRow(Row.of(columnName, value)));
+    testAnswer.setStatus(AnswerStatus.SUCCESS);
+    String rawAnswer = BatfishObjectMapper.writePrettyString(testAnswer);
+    List<ColumnAggregation> aggregations =
+        ImmutableList.of(new ColumnAggregation(Aggregation.MAX, "fakeColumn"));
+
+    assertThat(
+        _manager.toAnalysisAnswerMetricsResult(rawAnswer, aggregations),
+        equalTo(new AnalysisAnswerMetricsResult(null, AnswerStatus.FAILURE)));
+  }
+
+  @Test
   public void testComputeColumnAggregations() {
     String columnName = "col";
     int value = 5;
@@ -846,7 +883,8 @@ public class WorkMgrTest {
                     new DisplayHints().getTextDesc()))
             .addRow(Row.of(columnName, value));
 
-    assertThat(_manager.computeColumnMax(table, invalidColumnName), nullValue());
+    _thrown.expect(IllegalArgumentException.class);
+    _manager.computeColumnMax(table, invalidColumnName);
   }
 
   @Test
@@ -861,7 +899,8 @@ public class WorkMgrTest {
                     new DisplayHints().getTextDesc()))
             .addRow(Row.of(columnName, value));
 
-    assertThat(_manager.computeColumnMax(table, columnName), nullValue());
+    _thrown.expect(UnsupportedOperationException.class);
+    _manager.computeColumnMax(table, columnName);
   }
 
   @Test
@@ -1188,5 +1227,15 @@ public class WorkMgrTest {
     assertThat(comInteger.compare(r1, r2), equalTo(-1));
     assertThat(comIssue.compare(r1, r2), equalTo(-1));
     assertThat(comString.compare(r1, r2), equalTo(-1));
+  }
+
+  @Test
+  public void testColumnComparatorUnsupported() {
+    String colObject = "colObject";
+
+    ColumnMetadata columnObject = new ColumnMetadata(colObject, Schema.OBJECT, "colObjectDesc");
+
+    _thrown.expect(UnsupportedOperationException.class);
+    _manager.columnComparator(columnObject);
   }
 }

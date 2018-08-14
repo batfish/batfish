@@ -1879,8 +1879,9 @@ public class WorkMgr extends AbstractCoordinator {
   Integer computeColumnMax(@Nonnull TableAnswerElement table, @Nonnull String column) {
     ColumnMetadata columnMetadata = table.getMetadata().toColumnMap().get(column);
     if (columnMetadata == null) {
-      _logger.errorf("No column named: %s", column);
-      return null;
+      String message = String.format("No column named: %s", column);
+      _logger.error(message);
+      throw new IllegalArgumentException(message);
     }
     Schema schema = columnMetadata.getSchema();
     Function<Row, Integer> rowToInteger;
@@ -1889,8 +1890,9 @@ public class WorkMgr extends AbstractCoordinator {
     } else if (schema.equals(Schema.ISSUE)) {
       rowToInteger = r -> r.getIssue(column).getSeverity();
     } else {
-      _logger.errorf("Invalid schema for MAX aggregation: %s", schema);
-      return null;
+      String message = String.format("Unsupported schema for MAX aggregation: %s", schema);
+      _logger.error(message);
+      throw new UnsupportedOperationException(message);
     }
     return table
         .getRows()
@@ -2008,8 +2010,9 @@ public class WorkMgr extends AbstractCoordinator {
     } else if (schema.equals(Schema.STRING)) {
       return Comparator.comparing(r -> r.getString(column));
     } else {
-      throw new UnsupportedOperationException(
-          String.format("Unsupported Schema for sorting: %s", schema));
+      String message = String.format("Unsupported Schema for sorting: %s", schema);
+      _logger.error(message);
+      throw new UnsupportedOperationException(message);
     }
   }
 }
