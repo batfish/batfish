@@ -894,7 +894,10 @@ public class CiscoGrammarTest {
     assertThat(routingPolicy, notNullValue());
 
     EigrpExternalRoute.Builder outputRouteBuilder = new EigrpExternalRoute.Builder();
-    outputRouteBuilder.setDestinationAsn(1L).setNetwork(Prefix.parse("1.0.0.0/32"));
+    outputRouteBuilder
+        .setDestinationAsn(1L)
+        .setNetwork(Prefix.parse("1.0.0.0/32"))
+        .setProcessAsn(2L);
 
     EigrpMetric originalMetric =
         EigrpMetric.builder()
@@ -903,6 +906,10 @@ public class CiscoGrammarTest {
             .setMode(EigrpProcessMode.CLASSIC)
             .build();
     assertNotNull(originalMetric);
+
+    // VirtualEigrpProcess sets metric to route metric by default
+    outputRouteBuilder.setEigrpMetric(originalMetric);
+
     EigrpInternalRoute originalRoute =
         EigrpInternalRoute.builder()
             .setAdmin(90)
@@ -936,7 +943,10 @@ public class CiscoGrammarTest {
     assertThat(routingPolicy, notNullValue());
 
     EigrpExternalRoute.Builder outputRouteBuilder = new EigrpExternalRoute.Builder();
-    outputRouteBuilder.setDestinationAsn(asn).setNetwork(Prefix.parse("1.0.0.0/32"));
+    outputRouteBuilder
+        .setDestinationAsn(asn)
+        .setNetwork(Prefix.parse("1.0.0.0/32"))
+        .setProcessAsn(asn);
     EigrpMetric.Builder metricBuilder = EigrpMetric.builder().setMode(EigrpProcessMode.CLASSIC);
 
     // Check if routingPolicy accepts connected route and sets correct metric

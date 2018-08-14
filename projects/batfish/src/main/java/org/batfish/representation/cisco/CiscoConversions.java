@@ -92,9 +92,9 @@ import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunityConjunction;
 import org.batfish.datamodel.routing_policy.expr.LiteralEigrpMetric;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.MatchProcessAsn;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
-import org.batfish.datamodel.routing_policy.expr.RouteEigrpMetric;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetEigrpMetric;
 import org.batfish.datamodel.routing_policy.statement.Statement;
@@ -1002,6 +1002,14 @@ class CiscoConversions {
               ImmutableList.of(
                   new MatchProtocol(RoutingProtocol.EIGRP),
                   new MatchProtocol(RoutingProtocol.EIGRP_EX)));
+
+      Long otherAsn =
+          (Long) policy.getSpecialAttributes().get(EigrpRedistributionPolicy.EIGRP_AS_NUMBER);
+      if (otherAsn == null) {
+        oldConfig.getWarnings().redFlag("Unable to redistribute - policy has no ASN");
+        return null;
+      }
+      eigrpExportConditions.getConjuncts().add(new MatchProcessAsn(otherAsn));
     } else {
       matchExpr = new MatchProtocol(protocol);
     }
@@ -1013,20 +1021,19 @@ class CiscoConversions {
 
     // Set the metric
     // TODO prefer metric from route map
+    // https://github.com/batfish/batfish/issues/2070
     EigrpMetric metric = policy.getMetric() != null ? policy.getMetric() : proc.getDefaultMetric();
-    if (metric == null && protocol == RoutingProtocol.EIGRP) {
-      eigrpExportStatements.add(new SetEigrpMetric(new RouteEigrpMetric()));
-    } else if (metric == null) {
+    if (metric != null) {
+      eigrpExportStatements.add(new SetEigrpMetric(new LiteralEigrpMetric(metric)));
+    } else if (protocol != RoutingProtocol.EIGRP) {
       /*
-       * TODO no default metric
+       * TODO no default metric (and not EIGRP into EIGRP)
        * 1) connected can use the interface metric
        * 2) static with next hop interface can use the interface metric
        * 3) If none of the above, bad configuration
        */
       oldConfig.getWarnings().redFlag("Unable to redistribute - no metric");
       return null;
-    } else {
-      eigrpExportStatements.add(new SetEigrpMetric(new LiteralEigrpMetric(metric)));
     }
 
     String exportRouteMapName = policy.getRouteMap();

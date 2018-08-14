@@ -144,6 +144,10 @@ class VirtualEigrpProcess {
   @Nullable
   private EigrpExternalRoute computeEigrpExportRoute(AbstractRoute potentialExportRoute) {
     EigrpExternalRoute.Builder outputRouteBuilder = new EigrpExternalRoute.Builder();
+    // Set the metric to match the route metric by default for EIGRP into EIGRP
+    if (potentialExportRoute instanceof EigrpRoute) {
+      outputRouteBuilder.setEigrpMetric(((EigrpRoute) potentialExportRoute).getEigrpMetric());
+    }
     // Export based on the policy result of processing the potentialExportRoute
     boolean accept =
         _exportPolicy != null
@@ -160,6 +164,7 @@ class VirtualEigrpProcess {
       outputRouteBuilder.setDestinationAsn(_asn);
     }
     outputRouteBuilder.setNetwork(potentialExportRoute.getNetwork());
+    outputRouteBuilder.setProcessAsn(_asn);
     EigrpExternalRoute outputRoute = requireNonNull(outputRouteBuilder.build());
     outputRoute.setNonRouting(true);
     return outputRoute;
@@ -238,6 +243,8 @@ class VirtualEigrpProcess {
 
     RibDelta.Builder<EigrpExternalRoute> deltaBuilder = new RibDelta.Builder<>(_externalStagingRib);
     EigrpExternalRoute.Builder routeBuilder = new EigrpExternalRoute.Builder();
+    routeBuilder.setAdmin(_defaultExternalAdminCost).setProcessAsn(_asn);
+
     _incomingRoutes.forEach(
         (edge, queue) -> {
           Interface nextHopIntf = edge.getNode1().getInterface(nc);
@@ -252,7 +259,6 @@ class VirtualEigrpProcess {
           EigrpMetric connectingIntfMetric = connectingIntf.getEigrp().getMetric();
 
           routeBuilder
-              .setAdmin(_defaultExternalAdminCost)
               .setNextHopInterface(nextHopIntf.getName())
               .setNextHopIp(nextHopIntf.getAddress().getIp());
           while (queue.peek() != null) {
