@@ -5,15 +5,8 @@ import static java.util.Objects.requireNonNull;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.specifier.IpSpaceSpecifier;
-import org.batfish.specifier.NodeSpecifier;
 
-/**
- * A set of parameters for ACL filter analysis that uses high-level specifiers.
- *
- * <p>Nullable parameters are interpreted as "no constraint". If a (Nonnull) constraint is supplied,
- * then it must be satisfiable. For example, if a no nodes match a {@link NodeSpecifier}, it is
- * unsatisfiable. This requirement is enforced during resolution.
- */
+/** A set of parameters for ACL filter analysis that uses high-level specifiers. */
 public class ReachFilterParameters {
   private final @Nonnull IpSpaceSpecifier _destinationIpSpaceSpecifier;
   private final @Nonnull IpSpaceSpecifier _sourceIpSpaceSpecifier;
