@@ -3,13 +3,14 @@ package org.batfish.symbolic.bdd;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import java.util.ArrayList;
-import java.util.Collections;
+import com.google.common.collect.Lists;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Supplier;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import org.batfish.common.util.NonRecursiveSupplier;
@@ -19,25 +20,26 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 
+/** Representation of an Access Control List (ACL) as a Binary Decision Diagram (BDD). */
 public class BDDAcl {
 
-  private IpAccessList _acl;
+  @Nullable private IpAccessList _acl;
 
   private final Map<String, Supplier<BDD>> _aclEnv;
 
-  private BDD _bdd;
+  @Nullable private BDD _bdd;
 
   private BDDSourceManager _bddSrcManager;
 
   private BDDFactory _factory;
 
-  private Map<String, IpSpace> _ipSpaceEnv;
+  @Nonnull private Map<String, IpSpace> _ipSpaceEnv;
 
-  private BDDPacket _pkt;
+  @Nonnull private BDDPacket _pkt;
 
   private BDDAcl(
-      BDDPacket pkt,
-      IpAccessList acl,
+      @Nonnull BDDPacket pkt,
+      @Nullable IpAccessList acl,
       Map<String, Supplier<BDD>> aclEnv,
       Map<String, IpSpace> ipSpaceEnv,
       BDDSourceManager bddSrcManager) {
@@ -56,10 +58,16 @@ public class BDDAcl {
     _aclEnv = other._aclEnv;
     _bddSrcManager = other._bddSrcManager;
     _factory = other._factory;
-    _ipSpaceEnv = ImmutableMap.copyOf(_ipSpaceEnv);
+    _ipSpaceEnv = ImmutableMap.copyOf(other._ipSpaceEnv);
     _pkt = other._pkt;
   }
 
+  /**
+   * Create a new BDD given an ACL
+   *
+   * @param pkt a {@link BDDPacket} -- a collection of attributes to use in a BDD
+   * @param acl the {@link IpAccessList} to represent
+   */
   public static BDDAcl create(BDDPacket pkt, IpAccessList acl) {
     return create(
         pkt,
@@ -69,6 +77,15 @@ public class BDDAcl {
         BDDSourceManager.forInterfaces(pkt, ImmutableSet.of()));
   }
 
+  /**
+   * Create a new BDD given an ACL
+   *
+   * @param pkt a {@link BDDPacket} -- a collection of attributes to use in a BDD
+   * @param acl the {@link IpAccessList} to represent
+   * @param aclEnv a map of ACL names to {@link IpAccessList}. Used when original {@code acl} refers
+   *     to other ACLs.
+   * @param ipSpaceEnv a map of names to named IpSpaces.
+   */
   public static BDDAcl create(
       BDDPacket pkt,
       IpAccessList acl,
@@ -112,9 +129,9 @@ public class BDDAcl {
     return abdd;
   }
 
-  /*
-   * Convert an Access Control List (ACL) to a symbolic boolean expression.
-   * The default action in an ACL is to deny all traffic.
+  /**
+   * Convert an Access Control List (ACL) to a symbolic boolean expression. The default action in an
+   * ACL is to deny all traffic.
    */
   private void computeACL() {
     // Check if there is an ACL first
@@ -128,20 +145,19 @@ public class BDDAcl {
     AclLineMatchExprToBDD aclLineMatchExprToBDD =
         new AclLineMatchExprToBDD(_factory, _pkt, _aclEnv, _ipSpaceEnv, _bddSrcManager);
 
-    List<IpAccessListLine> lines = new ArrayList<>(_acl.getLines());
-    Collections.reverse(lines);
-
-    for (IpAccessListLine line : lines) {
+    for (IpAccessListLine line : Lists.reverse(_acl.getLines())) {
       BDD lineBDD = aclLineMatchExprToBDD.visit(line.getMatchCondition());
       BDD actionBDD = line.getAction() == LineAction.ACCEPT ? _factory.one() : _factory.zero();
       _bdd = lineBDD.ite(actionBDD, _bdd);
     }
   }
 
+  @Nullable
   public IpAccessList getAcl() {
     return _acl;
   }
 
+  @Nullable
   public BDD getBdd() {
     return _bdd;
   }
@@ -150,6 +166,7 @@ public class BDDAcl {
     return _factory;
   }
 
+  @Nonnull
   public BDDPacket getPkt() {
     return _pkt;
   }
@@ -168,18 +185,14 @@ public class BDDAcl {
     return Objects.equals(_bdd, other._bdd);
   }
 
-  /*
-   * Create a new version of the BDD restricted to a prefix
-   */
+  /** Create a new version of the BDD restricted to a prefix */
   public BDDAcl restrict(Prefix pfx) {
     BDDAcl other = new BDDAcl(this);
     other._bdd = this._pkt.restrict(this._bdd, pfx);
     return other;
   }
 
-  /*
-   * Create a new version of the BDD restricted to a list of prefixes
-   */
+  /** Create a new version of the BDD restricted to a list of prefixes */
   public BDDAcl restrict(List<Prefix> prefixes) {
     BDDAcl other = new BDDAcl(this);
     other._bdd = this._pkt.restrict(this._bdd, prefixes);
