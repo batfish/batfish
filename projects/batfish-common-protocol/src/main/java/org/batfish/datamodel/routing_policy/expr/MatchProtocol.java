@@ -1,11 +1,14 @@
 package org.batfish.datamodel.routing_policy.expr;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 
 public class MatchProtocol extends BooleanExpr {
+
+  private static final String PROP_PROTOCOL = "protocol";
 
   /** */
   private static final long serialVersionUID = 1L;
@@ -45,6 +48,7 @@ public class MatchProtocol extends BooleanExpr {
     return result;
   }
 
+  @JsonProperty(PROP_PROTOCOL)
   public RoutingProtocol getProtocol() {
     return _protocol;
   }
@@ -57,6 +61,7 @@ public class MatchProtocol extends BooleanExpr {
     return result;
   }
 
+  @JsonProperty(PROP_PROTOCOL)
   public void setProtocol(RoutingProtocol protocol) {
     _protocol = protocol;
   }

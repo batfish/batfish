@@ -1,5 +1,6 @@
 package org.batfish.datamodel.pojo;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Map;
 import java.util.Objects;
 import javax.annotation.Nullable;
@@ -23,6 +24,7 @@ public abstract class BfObject {
         && Objects.equals(_id, ((BfObject) o).getId()));
   }
 
+  @JsonProperty(PROP_ID)
   public String getId() {
     return _id;
   }
