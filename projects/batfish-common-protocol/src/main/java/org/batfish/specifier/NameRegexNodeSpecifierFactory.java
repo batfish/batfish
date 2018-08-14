@@ -17,10 +17,8 @@ public class NameRegexNodeSpecifierFactory implements NodeSpecifierFactory {
 
   @Override
   public NodeSpecifier buildNodeSpecifier(@Nullable Object input) {
-    if (input == null) {
-      input = ".*";
-    }
-    checkArgument(input instanceof String, "String input required for " + NAME);
-    return new NameRegexNodeSpecifier(Pattern.compile((String) input));
+    Object nonNullinput = input == null ? ".*" : input;
+    checkArgument(nonNullinput instanceof String, "String input required for " + NAME);
+    return new NameRegexNodeSpecifier(Pattern.compile((String) nonNullinput));
   }
 }
