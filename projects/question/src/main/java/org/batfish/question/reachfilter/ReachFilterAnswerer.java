@@ -49,7 +49,7 @@ public class ReachFilterAnswerer extends Answerer {
     TableAnswerElement initialAnswer = null;
     Map<String, Configuration> configurations = _batfish.loadConfigurations();
     for (Pair<String, IpAccessList> pair : acls) {
-      Optional<Flow> result = null;
+      Optional<Flow> result;
       try {
         result = _batfish.reachFilter(configurations.get(pair.getFirst()), pair.getSecond());
       } catch (Throwable t) {
@@ -69,7 +69,9 @@ public class ReachFilterAnswerer extends Answerer {
       }
     }
     TableAnswerElement answer = TraceFiltersAnswerer.create(new TraceFiltersQuestion(null, null));
-    answer.postProcessAnswer(question, initialAnswer.getRows().getData());
+    if (initialAnswer != null) {
+      answer.postProcessAnswer(question, initialAnswer.getRows().getData());
+    }
     return answer;
   }
 
