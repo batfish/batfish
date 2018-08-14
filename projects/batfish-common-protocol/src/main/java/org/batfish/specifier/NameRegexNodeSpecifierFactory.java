@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.auto.service.AutoService;
 import java.util.regex.Pattern;
+import javax.annotation.Nullable;
 
 @AutoService(NodeSpecifierFactory.class)
 public class NameRegexNodeSpecifierFactory implements NodeSpecifierFactory {
@@ -15,7 +16,10 @@ public class NameRegexNodeSpecifierFactory implements NodeSpecifierFactory {
   }
 
   @Override
-  public NodeSpecifier buildNodeSpecifier(Object input) {
+  public NodeSpecifier buildNodeSpecifier(@Nullable Object input) {
+    if (input == null) {
+      input = ".*";
+    }
     checkArgument(input instanceof String, "String input required for " + NAME);
     return new NameRegexNodeSpecifier(Pattern.compile((String) input));
   }

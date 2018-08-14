@@ -3,7 +3,8 @@
   "destinationIpSpaceSpecifierFactory" : "destFactory",
   "dst" : "2.2.2.2",
   "filterRegex" : ".*",
-  "nodeRegex" : ".*",
+  "nodesSpecifierFactory" : "nodesFactory",
+  "nodesSpecifierInput" : ".*",
   "sourceIpSpaceSpecifierFactory" : "sourceFactory",
   "src" : "1.1.1.1",
   "differential" : false,
@@ -13,8 +14,7 @@
     "instanceName" : "qname",
     "longDescription" : "This question searches for headers for which a filter (access control list) has a particular behavior. The behaviors can be: that the filter permits the header (permit), that it denies the header (deny), or that the header is matched by a particular line (matchLine <lineNumber>). Filters are selected using node and filter specifiers, which might match multiple filters. In this case, a (possibly different) header will be found for each filter.",
     "tags" : [
-      "acl",
-      "dataplane"
+      "acl"
     ],
     "variables" : {
       "destinationIpSpaceSpecifierFactory" : {
@@ -35,11 +35,17 @@
         "type" : "javaRegex",
         "value" : ".*"
       },
-      "nodeRegex" : {
-        "description" : "Only consider filters present on these nodes",
+      "nodes" : {
+        "description" : "Flexible specification of nodes",
         "optional" : true,
-        "type" : "javaRegex",
+        "type" : "string",
         "value" : ".*"
+      },
+      "nodesSpecifierFactory" : {
+        "description" : "Name of the nodesSpecifierFactory to use",
+        "optional" : true,
+        "type" : "string",
+        "value" : "nodesFactory"
       },
       "query" : {
         "description" : "permit|deny|matchLine <line number>",

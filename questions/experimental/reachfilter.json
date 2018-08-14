@@ -4,7 +4,8 @@
   "destinationIpSpaceSpecifierFactory": "${destinationIpSpaceSpecifierFactory}",
   "dst": "${dst}",
   "filterRegex": "${filterRegex}",
-  "nodeRegex": "${nodeRegex}",
+  "nodesSpecifierFactory": "${nodesSpecifierFactory}",
+  "nodesSpecifierInput": "${nodes}",
   "sourceIpSpaceSpecifierFactory": "${sourceIpSpaceSpecifierFactory}",
   "src": "${src}",
   "query": "${query}",
@@ -31,10 +32,15 @@
         "optional": true,
         "type": "javaRegex"
       },
-      "nodeRegex": {
-        "description": "Only consider filters present on these nodes",
+      "nodes": {
+        "description": "Flexible specification of nodes",
         "optional": true,
-        "type": "javaRegex"
+        "type": "string"
+      },
+      "nodesSpecifierFactory": {
+        "description": "Name of the nodesSpecifierFactory to use",
+        "optional": true,
+        "type": "string"
       },
       "sourceIpSpaceSpecifierFactory": {
         "description": "Name of the IpSpaceSpecifierFactory to use for the source IpSpace",

@@ -85,7 +85,7 @@ public class ReachFilterAnswerer extends Answerer {
     List<Pair<String, IpAccessList>> acls =
         question
             .getNodesSpecifier()
-            .getMatchingNodes(_batfish)
+            .resolve(_batfish.specifierContext())
             .stream()
             .map(configs::get)
             .flatMap(

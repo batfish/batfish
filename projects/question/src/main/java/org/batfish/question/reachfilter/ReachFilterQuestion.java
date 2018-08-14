@@ -17,15 +17,17 @@ import org.batfish.common.BatfishException;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.SubRange;
-import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.question.ReachFilterParameters;
 import org.batfish.specifier.FilterSpecifier;
 import org.batfish.specifier.FilterSpecifierFactory;
 import org.batfish.specifier.FlexibleFilterSpecifierFactory;
+import org.batfish.specifier.FlexibleNodeSpecifierFactory;
 import org.batfish.specifier.FlexibleUniverseIpSpaceSpecifierFactory;
 import org.batfish.specifier.IpSpaceSpecifier;
 import org.batfish.specifier.IpSpaceSpecifierFactory;
+import org.batfish.specifier.NodeSpecifier;
+import org.batfish.specifier.NodeSpecifierFactory;
 
 /** A question to determine which flows match a particular ACL action. */
 public final class ReachFilterQuestion extends Question {
@@ -40,8 +42,6 @@ public final class ReachFilterQuestion extends Question {
 
   private static final String PROP_FILTER_SPECIFIER_INPUT = "filterRegex";
 
-  private static final String PROP_NODES_SPECIFIER_NAME = "nodeRegex";
-
   // TODO: this should probably be "action" for consistency
   private static final String PROP_QUERY = "query";
 
@@ -53,6 +53,10 @@ public final class ReachFilterQuestion extends Question {
   private static final String PROP_DST_PORTS = "dstPorts";
 
   private static final String PROP_DST_PROTOCOLS = "dstProtocols";
+
+  private static final String PROP_NODES_SPECIFIER_FACTORY = "nodesSpecifierFactory";
+
+  private static final String PROP_NODES_SPECIFIER_INPUT = "nodesSpecifierInput";
 
   private static final String PROP_SRC_PORTS = "srcPorts";
 
@@ -72,7 +76,9 @@ public final class ReachFilterQuestion extends Question {
 
   @Nullable private String _filterSpecifierInput;
 
-  @Nonnull private NodesSpecifier _nodesSpecifier;
+  @Nonnull private final String _nodesSpecifierFactory;
+
+  @Nullable private final String _nodesSpecifierInput;
 
   @Nonnull private final String _destinationIpSpaceSpecifierFactory;
 
@@ -93,7 +99,6 @@ public final class ReachFilterQuestion extends Question {
   @JsonCreator
   private ReachFilterQuestion(
       @JsonProperty(PROP_FILTER_SPECIFIER_INPUT) @Nullable String filterSpecifierInput,
-      @JsonProperty(PROP_NODES_SPECIFIER_NAME) @Nullable NodesSpecifier nodesSpecifier,
       @JsonProperty(PROP_DESTINATION_IP_SPACE_SPECIFIER_FACTORY) @Nullable
           String destinationIpSpaceSpecifierFactory,
       @JsonProperty(PROP_DESTINATION_IP_SPACE_SPECIFIER_INPUT) @Nullable
@@ -101,13 +106,16 @@ public final class ReachFilterQuestion extends Question {
       @JsonProperty(PROP_DST_PORTS) @Nullable SortedSet<SubRange> dstPorts,
       @JsonProperty(PROP_SRC_PORTS) @Nullable SortedSet<SubRange> srcPorts,
       @JsonProperty(PROP_DST_PROTOCOLS) @Nullable SortedSet<Protocol> dstProtocols,
+      @JsonProperty(PROP_NODES_SPECIFIER_FACTORY) @Nullable String nodeSpecifierFactory,
+      @JsonProperty(PROP_NODES_SPECIFIER_INPUT) @Nullable String nodesSpecifierInput,
       @JsonProperty(PROP_SOURCE_IP_SPACE_SPECIFIER_FACTORY) @Nullable
           String sourceIpSpaceSpecifierFactory,
       @JsonProperty(PROP_SOURCE_IP_SPACE_SPECIFIER_INPUT) @Nullable
           String sourceIpSpaceSpecifierInput,
       @JsonProperty(PROP_QUERY) @Nullable String type) {
     _filterSpecifierInput = filterSpecifierInput;
-    _nodesSpecifier = firstNonNull(nodesSpecifier, NodesSpecifier.ALL);
+    _nodesSpecifierFactory = firstNonNull(nodeSpecifierFactory, FlexibleNodeSpecifierFactory.NAME);
+    _nodesSpecifierInput = nodesSpecifierInput;
     _destinationIpSpaceSpecifierFactory =
         firstNonNull(destinationIpSpaceSpecifierFactory, DEFAULT_DST_IP_SPECIFIER_FACTORY);
     _destinationIpSpaceSpecifierInput = destinationIpSpaceSpecifierInput;
@@ -121,7 +129,7 @@ public final class ReachFilterQuestion extends Question {
   }
 
   ReachFilterQuestion() {
-    this(null, null, null, null, null, null, null, null, null, null);
+    this(null, null, null, null, null, null, null, null, null, null, null);
   }
 
   @Override
@@ -147,10 +155,16 @@ public final class ReachFilterQuestion extends Question {
     return _filterSpecifierInput;
   }
 
+  @JsonProperty(PROP_NODES_SPECIFIER_FACTORY)
   @Nonnull
-  @JsonProperty(PROP_NODES_SPECIFIER_NAME)
-  public NodesSpecifier getNodesSpecifier() {
-    return _nodesSpecifier;
+  public String getNodesSpecifierFactory() {
+    return _nodesSpecifierFactory;
+  }
+
+  @JsonProperty(PROP_NODES_SPECIFIER_INPUT)
+  @Nullable
+  public String getNodesSpecifierInput() {
+    return _nodesSpecifierInput;
   }
 
   @JsonIgnore
@@ -213,6 +227,12 @@ public final class ReachFilterQuestion extends Question {
         .buildIpSpaceSpecifier(_sourceIpSpaceSpecifierInput);
   }
 
+  @Nonnull
+  NodeSpecifier getNodesSpecifier() {
+    return NodeSpecifierFactory.load(_nodesSpecifierFactory)
+        .buildNodeSpecifier(_nodesSpecifierInput);
+  }
+
   @VisibleForTesting
   @Nonnull
   HeaderSpace getHeaderSpace() {
@@ -225,10 +245,6 @@ public final class ReachFilterQuestion extends Question {
 
   void setFilterSpecifierInput(@Nullable String filterSpecifierInput) {
     _filterSpecifierInput = filterSpecifierInput;
-  }
-
-  void setNodesSpecifier(@Nonnull NodesSpecifier nodesSpecifier) {
-    _nodesSpecifier = nodesSpecifier;
   }
 
   @JsonProperty(PROP_QUERY)

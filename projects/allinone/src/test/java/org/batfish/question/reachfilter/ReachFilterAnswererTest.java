@@ -42,7 +42,6 @@ import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.answers.Schema;
-import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -181,7 +180,6 @@ public final class ReachFilterAnswererTest {
   public void testGetQueryAcls_permit() {
     ReachFilterQuestion question = new ReachFilterQuestion();
     question.setQuery("permit");
-    question.setNodesSpecifier(new NodesSpecifier(".*"));
     question.setFilterSpecifierInput(ACL.getName());
     ReachFilterAnswerer answerer = new ReachFilterAnswerer(question, _batfish);
     List<Pair<String, IpAccessList>> queryAcls = answerer.getQueryAcls(question);
@@ -196,7 +194,6 @@ public final class ReachFilterAnswererTest {
   public void testGetQueryAcls_deny() {
     ReachFilterQuestion question = new ReachFilterQuestion();
     question.setQuery("deny");
-    question.setNodesSpecifier(new NodesSpecifier(".*"));
     question.setFilterSpecifierInput(ACL.getName());
     ReachFilterAnswerer answerer = new ReachFilterAnswerer(question, _batfish);
     List<Pair<String, IpAccessList>> queryAcls = answerer.getQueryAcls(question);
@@ -211,7 +208,6 @@ public final class ReachFilterAnswererTest {
   public void testGetQueryAcls_matchLine2() {
     ReachFilterQuestion question = new ReachFilterQuestion();
     question.setQuery("matchLine 2");
-    question.setNodesSpecifier(new NodesSpecifier(".*"));
     question.setFilterSpecifierInput(ACL.getName());
     ReachFilterAnswerer answerer = new ReachFilterAnswerer(question, _batfish);
     List<Pair<String, IpAccessList>> queryAcls = answerer.getQueryAcls(question);
@@ -313,7 +309,6 @@ public final class ReachFilterAnswererTest {
   public void testAnswer() {
     ReachFilterQuestion question = new ReachFilterQuestion();
     ReachFilterAnswerer answerer = new ReachFilterAnswerer(question, _batfish);
-    question.setNodesSpecifier(new NodesSpecifier(".*"));
     question.setFilterSpecifierInput(null);
     TableAnswerElement ae = (TableAnswerElement) answerer.answer();
     assertThat(
