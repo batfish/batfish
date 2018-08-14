@@ -31,6 +31,8 @@ public final class Interface implements Serializable {
 
   private final SortedMap<String, Interface> _units;
 
+  private Zone _zone;
+
   public Interface(String name) {
     _active = true;
     _allAddresses = new LinkedHashSet<>();
@@ -75,6 +77,10 @@ public final class Interface implements Serializable {
     return _units;
   }
 
+  public Zone getZone() {
+    return _zone;
+  }
+
   public void setActive(boolean active) {
     _active = active;
   }
@@ -97,5 +103,9 @@ public final class Interface implements Serializable {
 
   public void setTag(Integer tag) {
     _tag = tag;
+  }
+
+  public void setZone(Zone zone) {
+    _zone = zone;
   }
 }

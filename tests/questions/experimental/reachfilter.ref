@@ -2,7 +2,7 @@
   "class" : "org.batfish.question.reachfilter.ReachFilterQuestion",
   "differential" : false,
   "filterRegex" : ".*",
-  "includeOneTableKeys" : false,
+  "includeOneTableKeys" : true,
   "instance" : {
     "description" : "Find headers for which a filter takes a particular behavior.",
     "instanceName" : "qname",

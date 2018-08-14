@@ -3,6 +3,7 @@ package org.batfish.symbolic.bdd;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -42,7 +43,7 @@ public class AclLineMatchExprToBDD implements GenericAclLineMatchExprVisitor<BDD
 
   private final BDDFactory _factory;
 
-  private final BDDSrcManager _bddSrcManager;
+  private final BDDSourceManager _bddSrcManager;
 
   private Map<String, IpSpace> _namedIpSpaces;
 
@@ -56,7 +57,7 @@ public class AclLineMatchExprToBDD implements GenericAclLineMatchExprVisitor<BDD
     _aclEnv = ImmutableMap.copyOf(aclEnv);
     _factory = factory;
     _bddOps = new BDDOps(factory);
-    _bddSrcManager = new BDDSrcManager(packet, ImmutableList.of());
+    _bddSrcManager = BDDSourceManager.forInterfaces(packet, ImmutableSet.of());
     _namedIpSpaces = ImmutableMap.copyOf(namedIpSpaces);
     _packet = packet;
   }
@@ -66,7 +67,7 @@ public class AclLineMatchExprToBDD implements GenericAclLineMatchExprVisitor<BDD
       BDDPacket packet,
       Map<String, Supplier<BDD>> aclEnv,
       Map<String, IpSpace> namedIpSpaces,
-      @Nonnull BDDSrcManager bddSrcManager) {
+      @Nonnull BDDSourceManager bddSrcManager) {
     _aclEnv = ImmutableMap.copyOf(aclEnv);
     _bddSrcManager = bddSrcManager;
     _factory = factory;
@@ -204,7 +205,7 @@ public class AclLineMatchExprToBDD implements GenericAclLineMatchExprVisitor<BDD
         matchSrcInterface
             .getSrcInterfaces()
             .stream()
-            .map(_bddSrcManager::getSrcInterfaceBDD)
+            .map(_bddSrcManager::getSourceInterfaceBDD)
             .collect(Collectors.toList()));
   }
 

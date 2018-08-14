@@ -201,7 +201,7 @@ import org.batfish.symbolic.abstraction.Roles;
 import org.batfish.symbolic.bdd.AclLineMatchExprToBDD;
 import org.batfish.symbolic.bdd.BDDAcl;
 import org.batfish.symbolic.bdd.BDDPacket;
-import org.batfish.symbolic.bdd.BDDSrcManager;
+import org.batfish.symbolic.bdd.BDDSourceManager;
 import org.batfish.symbolic.smt.PropertyChecker;
 import org.batfish.vendor.VendorConfiguration;
 import org.batfish.z3.AclIdentifier;
@@ -4340,8 +4340,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Override
   public Optional<Flow> reachFilter(Configuration node, IpAccessList acl) {
     BDDPacket bddPacket = new BDDPacket();
-    List<String> interfaces = ImmutableList.copyOf(node.getInterfaces().keySet());
-    BDDSrcManager mgr = new BDDSrcManager(bddPacket, interfaces);
+    BDDSourceManager mgr = BDDSourceManager.forIpAccessList(bddPacket, node, acl);
     BDDAcl bddAcl = BDDAcl.create(bddPacket, acl, node.getIpAccessLists(), node.getIpSpaces(), mgr);
     BDD satAssignment = bddAcl.getBdd().and(mgr.isSane()).fullSatOne();
     if (satAssignment.isZero()) {
@@ -4350,7 +4349,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     Flow.Builder flowBuilder = bddAcl.getPkt().getFlowFromAssignment(satAssignment);
     flowBuilder.setTag(getFlowTag()).setIngressNode(node.getHostname());
-    mgr.getInterfaceFromAssignment(satAssignment).ifPresent(flowBuilder::setIngressInterface);
+    mgr.getSourceFromAssignment(satAssignment).ifPresent(flowBuilder::setIngressInterface);
     return Optional.of(flowBuilder.build());
   }
 

@@ -1,8 +1,8 @@
 package org.batfish.symbolic.bdd;
 
 import com.google.common.base.Suppliers;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -27,7 +27,7 @@ public class BDDAcl {
 
   private BDD _bdd;
 
-  private BDDSrcManager _bddSrcManager;
+  private BDDSourceManager _bddSrcManager;
 
   private BDDFactory _factory;
 
@@ -40,7 +40,7 @@ public class BDDAcl {
       IpAccessList acl,
       Map<String, Supplier<BDD>> aclEnv,
       Map<String, IpSpace> ipSpaceEnv,
-      BDDSrcManager bddSrcManager) {
+      BDDSourceManager bddSrcManager) {
     _bdd = null;
     _acl = acl;
     _aclEnv = ImmutableMap.copyOf(aclEnv);
@@ -62,7 +62,11 @@ public class BDDAcl {
 
   public static BDDAcl create(BDDPacket pkt, IpAccessList acl) {
     return create(
-        pkt, acl, ImmutableMap.of(), ImmutableMap.of(), new BDDSrcManager(pkt, ImmutableList.of()));
+        pkt,
+        acl,
+        ImmutableMap.of(),
+        ImmutableMap.of(),
+        BDDSourceManager.forInterfaces(pkt, ImmutableSet.of()));
   }
 
   public static BDDAcl create(
@@ -70,7 +74,8 @@ public class BDDAcl {
       IpAccessList acl,
       Map<String, IpAccessList> aclEnv,
       Map<String, IpSpace> ipSpaceEnv) {
-    return create(pkt, acl, aclEnv, ipSpaceEnv, new BDDSrcManager(pkt, ImmutableList.of()));
+    return create(
+        pkt, acl, aclEnv, ipSpaceEnv, BDDSourceManager.forInterfaces(pkt, ImmutableSet.of()));
   }
 
   public static BDDAcl create(
@@ -78,7 +83,7 @@ public class BDDAcl {
       IpAccessList acl,
       Map<String, IpAccessList> aclEnv,
       Map<String, IpSpace> ipSpaceEnv,
-      BDDSrcManager bddSrcManager) {
+      BDDSourceManager bddSrcManager) {
     // use laziness to tie the recursive knot.
     Map<String, Supplier<BDD>> bddAclEnv = new HashMap<>();
     aclEnv.forEach(
@@ -101,7 +106,7 @@ public class BDDAcl {
       IpAccessList acl,
       Map<String, Supplier<BDD>> aclEnv,
       Map<String, IpSpace> ipSpaceEnv,
-      BDDSrcManager bddSrcManager) {
+      BDDSourceManager bddSrcManager) {
     BDDAcl abdd = new BDDAcl(pkt, acl, aclEnv, ipSpaceEnv, bddSrcManager);
     abdd.computeACL();
     return abdd;

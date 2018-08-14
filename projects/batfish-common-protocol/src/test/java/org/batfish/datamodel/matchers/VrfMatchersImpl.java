@@ -82,6 +82,17 @@ final class VrfMatchersImpl {
     }
   }
 
+  static final class HasName extends FeatureMatcher<Vrf, String> {
+    HasName(@Nonnull Matcher<? super String> subMatcher) {
+      super(subMatcher, "A VRF with name:", "name");
+    }
+
+    @Override
+    protected String featureValueOf(Vrf actual) {
+      return actual.getName();
+    }
+  }
+
   static final class HasSnmpServer extends FeatureMatcher<Vrf, SnmpServer> {
     HasSnmpServer(@Nonnull Matcher<? super SnmpServer> subMatcher) {
       super(subMatcher, "A Vrf with snmpServer:", "snmpServer");

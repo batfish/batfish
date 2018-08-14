@@ -7,6 +7,7 @@
   "filter" : "mtu > 0",
   "innerQuestion" : {
     "class" : "org.batfish.question.interfaceproperties.InterfacePropertiesQuestion",
+    "excludeShutInterfaces" : false,
     "interfaceRegex" : "Gig.*",
     "nodeRegex" : "as1core2",
     "propertySpec" : ".*",
@@ -14,10 +15,10 @@
     "displayHints" : {
       "textDesc" : "${interface} has MTU ${mtu}"
     },
-    "includeOneTableKeys" : false
+    "includeOneTableKeys" : true
   },
   "differential" : false,
-  "includeOneTableKeys" : false,
+  "includeOneTableKeys" : true,
   "instance" : {
     "description" : "Find interfaces where the configured MTU is <comparator> <mtuBytes>. E.g. if <comparator> is '<' and <mtuBytes> is 1500, then find interfaces where the configured MTU is less than 1500 bytes",
     "instanceName" : "qname",
