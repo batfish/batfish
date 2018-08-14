@@ -126,8 +126,6 @@ import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
-import org.batfish.datamodel.acl.MatchSrcInterface;
-import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TypeMatchExprsCollector;
 import org.batfish.datamodel.answers.AclLinesAnswerElementInterface;
@@ -752,22 +750,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     // Map each ACL line to its own phony config with ACL and dependencies specialized to that line
     Map<AclLine, Configuration> configs = new TreeMap<>();
-    TypeMatchExprsCollector<MatchSrcInterface> matchSrcInterfaceFinder =
-        new TypeMatchExprsCollector<>(MatchSrcInterface.class);
-    TypeMatchExprsCollector<OriginatingFromDevice> originatingFromDeviceFinder =
-        new TypeMatchExprsCollector<>(OriginatingFromDevice.class);
     TypeMatchExprsCollector<PermittedByAcl> permittedByAclFinder =
         new TypeMatchExprsCollector<>(PermittedByAcl.class);
     aclSpecs
         .parallelStream()
-        .forEach(
-            aclSpec ->
-                collectConfigs(
-                    aclSpec,
-                    configs,
-                    matchSrcInterfaceFinder,
-                    originatingFromDeviceFinder,
-                    permittedByAclFinder));
+        .forEach(aclSpec -> collectConfigs(aclSpec, configs, permittedByAclFinder));
 
     // Find all unreachable lines
     List<NodSatJob<AclLine>> lineReachabilityJobs = generateUnreachableAclLineJobs(configs);
@@ -836,8 +823,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
   private void collectConfigs(
       AclSpecs aclSpec,
       Map<AclLine, Configuration> configs,
-      TypeMatchExprsCollector<MatchSrcInterface> matchSrcInterfaceFinder,
-      TypeMatchExprsCollector<OriginatingFromDevice> originatingFromDeviceFinder,
       TypeMatchExprsCollector<PermittedByAcl> permittedByAclFinder) {
     String hostname = aclSpec.reprHostname;
     List<IpAccessListLine> lines = aclSpec.acl.getSanitizedAcl().getLines();
@@ -848,10 +833,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
             Function.identity(),
             iface -> Interface.builder().setName(iface).build());
 
-    Configuration unspecializedConfig = new Configuration(hostname, ConfigurationFormat.CISCO_IOS);
-    unspecializedConfig.setInterfaces(interfaces);
-    unspecializedConfig.setIpAccessLists(collectAcls(lines.size(), aclSpec, null));
-
     IntStream.range(0, lines.size())
         .parallel()
         .forEach(
@@ -859,16 +840,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
               AclLine aclLine = new AclLine(hostname, aclName, lineNum);
               AclLineMatchExpr matchExpr = lines.get(lineNum).getMatchCondition();
 
-              // Don't specialize for source interfaces or originating from device
-              // TODO remove this and unspecializedConfig once BDDPacket includes these properties
-              if (!matchExpr.accept(matchSrcInterfaceFinder).isEmpty()
-                  || !matchExpr.accept(originatingFromDeviceFinder).isEmpty()) {
-                configs.put(aclLine, unspecializedConfig);
-                return;
-              }
-
               // If line matches other ACLs, build aclEnv
               BDDPacket bddPacket = new BDDPacket();
+              BDDSourceManager sourceMgr =
+                  BDDSourceManager.forInterfaces(bddPacket, aclSpec.acl.getInterfaces());
               List<PermittedByAcl> aclMatchExprs = matchExpr.accept(permittedByAclFinder);
               Map<String, Supplier<BDD>> aclEnv = new TreeMap<>();
               if (!aclMatchExprs.isEmpty()) {
@@ -886,7 +861,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
                                                 bddPacket,
                                                 dep.getValue(),
                                                 dependencies,
-                                                ImmutableMap.of())
+                                                ImmutableMap.of(),
+                                                sourceMgr)
                                             .getBdd()));
               }
 
@@ -894,7 +870,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
               BDD lineBDD =
                   matchExpr.accept(
                       new AclLineMatchExprToBDD(
-                          bddPacket.getFactory(), bddPacket, aclEnv, ImmutableMap.of()));
+                          bddPacket.getFactory(), bddPacket, aclEnv, ImmutableMap.of(), sourceMgr));
               BDDIpAccessListSpecializer specializer =
                   new BDDIpAccessListSpecializer(bddPacket, lineBDD);
 
