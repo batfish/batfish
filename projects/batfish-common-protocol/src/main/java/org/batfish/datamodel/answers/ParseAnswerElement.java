@@ -6,8 +6,8 @@ import org.batfish.common.ParseTreeSentences;
 
 public abstract class ParseAnswerElement extends InitStepAnswerElement {
 
-  protected final String PROP_PARSE_STATUS = "parseStatus";
-  protected final String PROP_PARSE_TREES = "parseTrees";
+  protected static final String PROP_PARSE_STATUS = "parseStatus";
+  protected static final String PROP_PARSE_TREES = "parseTrees";
 
   @JsonProperty(PROP_PARSE_STATUS)
   public abstract SortedMap<String, ParseStatus> getParseStatus();
