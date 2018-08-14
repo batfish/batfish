@@ -110,8 +110,8 @@ public class If extends Statement {
   public List<Statement> getFalseStatements() {
     return _falseStatements;
   }
-  @JsonProperty(PROP_GUARD)
 
+  @JsonProperty(PROP_GUARD)
   public BooleanExpr getGuard() {
     return _guard;
   }
