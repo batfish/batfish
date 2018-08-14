@@ -1,5 +1,6 @@
 package org.batfish.question;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
 import com.google.common.collect.Iterables;
@@ -28,6 +29,7 @@ public class BgpAsnUseQuestionPlugin extends QuestionPlugin {
 
     private SortedSetMultimap<Long, String> _asns;
 
+    @JsonCreator
     public BgpAsnUseAnswerElement(@JsonProperty(PROP_ASNS) TreeMultimap<Long, String> asns) {
       _asns = (asns == null) ? TreeMultimap.create() : asns;
     }
@@ -119,6 +121,7 @@ public class BgpAsnUseQuestionPlugin extends QuestionPlugin {
 
     private NodesSpecifier _nodeRegex;
 
+    @JsonCreator
     public BgpAsnUseQuestion(
         @JsonProperty(PROP_MIN_COUNT) Integer minCount,
         @JsonProperty(PROP_NODE_REGEX) NodesSpecifier nodeRegex) {

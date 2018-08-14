@@ -53,7 +53,7 @@ public class Topology extends BfObject {
             new Link(
                 pojoInterface.getId(),
                 org.batfish.datamodel.pojo.Interface.getId(
-                    Node.getId(edge.getNode2()), edge.getInt2()));
+                    Node.makeId(edge.getNode2()), edge.getInt2()));
 
         pojoTopology.getInterfaces().add(pojoInterface);
         pojoTopology.getLinks().add(pojoLink);

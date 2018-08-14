@@ -1,5 +1,6 @@
 package org.batfish.datamodel.questions;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Arrays;
@@ -91,6 +92,7 @@ public class NodesSpecifier {
     }
   }
 
+  @JsonCreator
   public NodesSpecifier(String expression) {
     this(expression, false);
   }

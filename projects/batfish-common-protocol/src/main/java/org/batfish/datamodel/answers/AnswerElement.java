@@ -10,7 +10,7 @@ import org.batfish.common.util.BatfishObjectMapper;
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
 public abstract class AnswerElement {
 
-  public static final String PROP_SUMMARY = "summary";
+  protected static final String PROP_SUMMARY = "summary";
 
   protected AnswerSummary _summary;
 
