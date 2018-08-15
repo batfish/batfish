@@ -38,7 +38,6 @@ import org.junit.rules.TemporaryFolder;
 
 /** End-to-end SpecifiersReachabilityQuestion tests. */
 public class SpecifiersReachabilityQuestionTest {
-  private static final String FAST_ETHERNET = "FastEthernet0/0";
   private static final String LOOPBACK = "Loopback0";
   private static final String NODE1 = "node1";
   private static final String NODE2 = "node2";
