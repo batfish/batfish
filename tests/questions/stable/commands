@@ -7,7 +7,7 @@ test -raw tests/questions/stable/fileParseStatus.ref validate-template fileParse
 test -raw tests/questions/stable/ipOwners.ref validate-template ipOwners duplicatesOnly=false
 
 # validate routes
-test -raw tests/questions/stable/routes.ref validate-template routes nodeRegex=".*", vrfRegex=".*", protocol="all"
+test -raw tests/questions/stable/routes.ref validate-template routes nodeRegex=".*", vrfRegex=".*", protocol="main"
 
 # test tracefilters
 test  -raw tests/questions/stable/tracefilters.ref validate-template tracefilters dscp=12, dst="1.2.3.4", dstPort=23, dstProtocol="udp", ecn=1, filterRegex=".*", fragmentOffset=12, icmpCode=12, icmpType=23, ingressInterface="randomInterface", ipProtocol="23", nodeRegex=".*", packetLength=12, srcIp="1.1.1.1", srcPort=123, srcProtocol="tcp", state="new", tcpAck=true, tcpCwr=false, tcpEce=true, tcpFin=false, tcpPsh=true, tcpRst=false, tcpSyn=true, tcpUrg=false

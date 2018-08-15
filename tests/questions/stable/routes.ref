@@ -1,7 +1,7 @@
 {
   "class" : "org.batfish.question.routes.RoutesQuestion",
   "nodeRegex" : ".*",
-  "protocol" : "ALL",
+  "protocol" : "MAIN",
   "vrfRegex" : ".*",
   "differential" : false,
   "includeOneTableKeys" : true,
@@ -22,13 +22,14 @@
       },
       "protocol" : {
         "allowedValues" : [
-          "all",
-          "bgp"
+          "bgp",
+          "bgpmp",
+          "main"
         ],
         "description" : "Only return routes from a given protocol RIB.",
         "optional" : true,
         "type" : "string",
-        "value" : "all"
+        "value" : "main"
       },
       "vrfRegex" : {
         "description" : "Only include routes on VRFs whose name matches this regex",
