@@ -54,6 +54,13 @@ public class FlexibleLocationSpecifierFactoryTest {
             new ToInterfaceLinkLocationSpecifier(
                 new NodeSpecifierInterfaceLocationSpecifier(
                     new FlexibleNodeSpecifierFactory().buildNodeSpecifier("foo")))));
+    exception.expect(UnsupportedOperationException.class);
+    assertThat(
+        parse("exit(foo)"),
+        equalTo(
+            new ToInterfaceLinkLocationSpecifier(
+                new NodeSpecifierInterfaceLocationSpecifier(
+                    new FlexibleNodeSpecifierFactory().buildNodeSpecifier("foo")))));
   }
 
   @Test
