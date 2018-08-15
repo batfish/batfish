@@ -5571,7 +5571,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _w.redFlag(
           String.format("Interface alias '%s' can not be applied to multiple interfaces.", alias));
     } else {
-      // Define the alias like an interface to make ref tracking easier
+      // Define the alias as an interface to make ref tracking easier
       defineStructure(INTERFACE, alias, ctx);
       _configuration.referenceStructure(
           INTERFACE, alias, INTERFACE_SELF_REF, ctx.getStart().getLine());
@@ -5581,7 +5581,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
               .addAll(iface.getDeclaredNames())
               .add(alias)
               .build());
-      _currentInterfaces.get(0).setAlias(alias);
+      iface.setAlias(alias);
     }
   }
 
