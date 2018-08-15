@@ -70,12 +70,6 @@ public class FlexibleLocationSpecifierFactoryTest {
   }
 
   @Test
-  public void parseFuncUnknown() {
-    exception.expect(IllegalArgumentException.class);
-    parse("foo(foo)");
-  }
-
-  @Test
   public void parseUnbalancedBrackets() {
     exception.expect(IllegalArgumentException.class);
     parse("foo[bar");
