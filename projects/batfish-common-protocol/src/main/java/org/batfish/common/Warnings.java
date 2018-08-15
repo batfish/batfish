@@ -1,6 +1,7 @@
 package org.batfish.common;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static java.util.Objects.requireNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -27,7 +28,7 @@ public class Warnings implements Serializable {
 
   private static final String PROP_UNIMPLEMENTED = "Unimplemented features";
 
-  private final List<ParseWarning> _parseWarnings;
+  @Nonnull private final List<ParseWarning> _parseWarnings;
 
   private transient boolean _pedanticRecord;
 
@@ -64,6 +65,7 @@ public class Warnings implements Serializable {
     _unimplementedRecord = unimplementedRecord;
   }
 
+  @Nonnull
   @JsonProperty(PROP_PARSE_WARNINGS)
   public List<ParseWarning> getParseWarnings() {
     return _parseWarnings;
@@ -145,12 +147,13 @@ public class Warnings implements Serializable {
     _unimplementedWarnings.add(new Warning(msg, "UNIMPLEMENTED"));
   }
 
-  static class ParseWarning implements Serializable {
+  /** A class to represent a parse warning in a file. */
+  public static class ParseWarning implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private static final String PROP_COMMENT = "Comment";
     private static final String PROP_LINE = "Line";
-    private static final String PROP_PARSE_CONTEXT = "Parser_Context";
+    private static final String PROP_PARSER_CONTEXT = "Parser_Context";
     private static final String PROP_TEXT = "Text";
 
     @Nullable private final String _comment;
@@ -159,14 +162,14 @@ public class Warnings implements Serializable {
     @Nonnull private final String _text;
 
     @JsonCreator
-    private ParseWarning(
+    public ParseWarning(
         @JsonProperty(PROP_LINE) int line,
         @JsonProperty(PROP_TEXT) @Nonnull String text,
-        @JsonProperty(PROP_PARSE_CONTEXT) @Nonnull String parserContext,
+        @JsonProperty(PROP_PARSER_CONTEXT) @Nonnull String parserContext,
         @JsonProperty(PROP_COMMENT) @Nullable String comment) {
       _line = line;
-      _text = text;
-      _parserContext = parserContext;
+      _text = requireNonNull(text, PROP_TEXT);
+      _parserContext = requireNonNull(parserContext, PROP_PARSER_CONTEXT);
       _comment = comment;
     }
 
@@ -181,7 +184,7 @@ public class Warnings implements Serializable {
       return _line;
     }
 
-    @JsonProperty(PROP_PARSE_CONTEXT)
+    @JsonProperty(PROP_PARSER_CONTEXT)
     @Nonnull
     public String getParserContext() {
       return _parserContext;
