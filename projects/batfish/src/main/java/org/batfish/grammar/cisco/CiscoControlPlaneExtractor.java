@@ -5568,8 +5568,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (ifaces.containsKey(alias)) {
       _w.redFlag(String.format("Interface alias '%s' is already in use.", alias));
     } else if (_currentInterfaces.size() > 1) {
-      _w.redFlag(
-          String.format("Interface alias '%s' can not be applied to multiple interfaces.", alias));
+      _w.redFlag(String.format("Parse assertion failed for _currentInterfaces"));
     } else {
       // Define the alias as an interface to make ref tracking easier
       defineStructure(INTERFACE, alias, ctx);
