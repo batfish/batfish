@@ -1672,8 +1672,8 @@
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "ROUTER",
         "interfaces" : {
-          "Ethernet0/0" : {
-            "name" : "Ethernet0/0",
+          "blah" : {
+            "name" : "blah",
             "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
@@ -1682,7 +1682,8 @@
             "autostate" : true,
             "bandwidth" : 1.0E7,
             "declaredNames" : [
-              "Ethernet0/0"
+              "Ethernet0/0",
+              "blah"
             ],
             "mtu" : 1500,
             "nativeVlan" : 1,
@@ -1726,7 +1727,7 @@
           "default" : {
             "name" : "default",
             "interfaces" : [
-              "Ethernet0/0"
+              "blah"
             ],
             "ospfProcess" : {
               "areas" : {
@@ -1734,7 +1735,7 @@
                   "name" : 0,
                   "injectDefaultRoute" : true,
                   "interfaces" : [
-                    "Ethernet0/0"
+                    "blah"
                   ],
                   "metricOfDefaultRoute" : 0,
                   "stubType" : "NONE"
@@ -6891,36 +6892,6 @@
             "type" : "PHYSICAL",
             "vrf" : "default"
           },
-          "GigabitEthernet0/0" : {
-            "name" : "GigabitEthernet0/0",
-            "accessVlan" : 0,
-            "active" : true,
-            "allPrefixes" : [
-              "192.168.0.1/24"
-            ],
-            "autostate" : true,
-            "bandwidth" : 1.0E9,
-            "declaredNames" : [
-              "GigabitEthernet0/0"
-            ],
-            "mtu" : 1500,
-            "nativeVlan" : 1,
-            "ospfCost" : 60,
-            "ospfDeadInterval" : 0,
-            "ospfEnabled" : false,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
-            "ospfPointToPoint" : false,
-            "prefix" : "192.168.0.1/24",
-            "proxyArp" : true,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "default"
-          },
           "Loopback0" : {
             "name" : "Loopback0",
             "accessVlan" : 0,
@@ -7254,6 +7225,37 @@
             "type" : "UNKNOWN",
             "vrf" : "default"
           },
+          "inside" : {
+            "name" : "inside",
+            "accessVlan" : 0,
+            "active" : true,
+            "allPrefixes" : [
+              "192.168.0.1/24"
+            ],
+            "autostate" : true,
+            "bandwidth" : 1.0E9,
+            "declaredNames" : [
+              "GigabitEthernet0/0",
+              "inside"
+            ],
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfCost" : 60,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "prefix" : "192.168.0.1/24",
+            "proxyArp" : true,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
           "tunnel-ip6" : {
             "name" : "tunnel-ip6",
             "accessVlan" : 0,
@@ -7334,7 +7336,6 @@
               "Dot11Radio0",
               "Ethernet1/11",
               "Ethernet1/12",
-              "GigabitEthernet0/0",
               "Loopback0",
               "Modular-Cable1/2/3:4",
               "Null0",
@@ -7348,6 +7349,7 @@
               "Vlan4094",
               "Vxlan1",
               "Wideband-Cable1/2/3:4",
+              "inside",
               "tunnel-ip6"
             ]
           }

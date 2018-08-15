@@ -555,6 +555,7 @@ import org.batfish.grammar.cisco.CiscoParser.If_ip_vrf_forwardingContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_vrf_sitemapContext;
 import org.batfish.grammar.cisco.CiscoParser.If_isis_metricContext;
 import org.batfish.grammar.cisco.CiscoParser.If_mtuContext;
+import org.batfish.grammar.cisco.CiscoParser.If_nameifContext;
 import org.batfish.grammar.cisco.CiscoParser.If_rp_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.If_service_policyContext;
 import org.batfish.grammar.cisco.CiscoParser.If_service_policy_control_subscriberContext;
@@ -5557,6 +5558,29 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     int mtu = toInteger(ctx.DEC());
     for (Interface currentInterface : _currentInterfaces) {
       currentInterface.setMtu(mtu);
+    }
+  }
+
+  @Override
+  public void exitIf_nameif(If_nameifContext ctx) {
+    String alias = ctx.name.getText();
+    Map<String, Interface> ifaces = _configuration.getInterfaces();
+    if (ifaces.containsKey(alias)) {
+      _w.redFlag(String.format("Interface alias '%s' is already in use.", alias));
+    } else if (_currentInterfaces.size() > 1) {
+      _w.redFlag(String.format("Parse assertion failed for _currentInterfaces"));
+    } else {
+      // Define the alias as an interface to make ref tracking easier
+      defineStructure(INTERFACE, alias, ctx);
+      _configuration.referenceStructure(
+          INTERFACE, alias, INTERFACE_SELF_REF, ctx.getStart().getLine());
+      Interface iface = _currentInterfaces.get(0);
+      iface.setDeclaredNames(
+          new ImmutableSortedSet.Builder<String>(naturalOrder())
+              .addAll(iface.getDeclaredNames())
+              .add(alias)
+              .build());
+      iface.setAlias(alias);
     }
   }
 
