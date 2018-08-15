@@ -1,28 +1,57 @@
 {
   "class": "org.batfish.question.reachfilter.ReachFilterQuestion",
   "differential": false,
+  "destinationIpSpaceSpecifierFactory": "${destinationIpSpaceSpecifierFactory}",
+  "dst": "${dst}",
   "filterRegex": "${filterRegex}",
-  "nodeRegex": "${nodeRegex}",
+  "nodesSpecifierFactory": "${nodesSpecifierFactory}",
+  "nodesSpecifierInput": "${nodes}",
+  "sourceIpSpaceSpecifierFactory": "${sourceIpSpaceSpecifierFactory}",
+  "src": "${src}",
   "query": "${query}",
   "instance": {
     "description": "Find headers for which a filter takes a particular behavior.",
     "instanceName": "reachfilter",
     "longDescription": "This question searches for headers for which a filter (access control list) has a particular behavior. The behaviors can be: that the filter permits the header (permit), that it denies the header (deny), or that the header is matched by a particular line (matchLine <lineNumber>). Filters are selected using node and filter specifiers, which might match multiple filters. In this case, a (possibly different) header will be found for each filter.", 
     "tags": [
-      "dataPlane",
-      "reachability",
-      "traceroute"
+      "acl",
+      "dataplane"
     ],
     "variables": {
+      "destinationIpSpaceSpecifierFactory": {
+        "description": "Name of the IpSpaceSpecifierFactory to use for the destination IpSpace",
+        "optional": true,
+        "type": "string"
+      },
+      "dst": {
+        "description": "Flexible specification of destinoation IpSpace",
+        "optional": false,
+        "type": "string"
+      },
       "filterRegex": {
         "description": "Only consider filters that match this specification",
         "optional": true,
         "type": "javaRegex"
       },
-      "nodeRegex": {
-        "description": "Only consider filters present on these nodes",
+      "nodes": {
+        "description": "Flexible specification of nodes",
         "optional": true,
-        "type": "javaRegex"
+        "type": "string"
+      },
+      "nodesSpecifierFactory": {
+        "description": "Name of the nodesSpecifierFactory to use",
+        "optional": true,
+        "type": "string"
+      },
+      "sourceIpSpaceSpecifierFactory": {
+        "description": "Name of the IpSpaceSpecifierFactory to use for the source IpSpace",
+        "optional": true,
+        "type": "string"
+      },
+      "src": {
+        "description": "Flexible specification of source IpSpace",
+        "optional": false,
+        "type": "string"
       },
       "query": {
         "description": "permit|deny|matchLine <line number>",

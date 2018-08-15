@@ -9,7 +9,7 @@ import org.batfish.datamodel.UniverseIpSpace;
  */
 @AutoService(IpSpaceSpecifierFactory.class)
 public final class FlexibleUniverseIpSpaceSpecifierFactory extends FlexibleIpSpaceSpecifierFactory {
-  static final String NAME = FlexibleUniverseIpSpaceSpecifierFactory.class.getSimpleName();
+  public static final String NAME = FlexibleUniverseIpSpaceSpecifierFactory.class.getSimpleName();
 
   @Override
   protected IpSpaceSpecifier defaultIpSpaceSpecifier() {
