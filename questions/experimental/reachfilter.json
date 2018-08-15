@@ -25,7 +25,7 @@
       },
       "dst": {
         "description": "Flexible specification of destinoation IpSpace",
-        "optional": false,
+        "optional": true,
         "type": "string"
       },
       "filterRegex": {
@@ -50,7 +50,7 @@
       },
       "src": {
         "description": "Flexible specification of source IpSpace",
-        "optional": false,
+        "optional": true,
         "type": "string"
       },
       "query": {
