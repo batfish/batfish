@@ -7939,7 +7939,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitRoute_tail(Route_tailContext ctx) {
-    String nextHopInterfaceAlias = ctx.iface.getText();
+    String nextHopInterface = ctx.iface.getText();
     Prefix prefix = new Prefix(toIp(ctx.destination), toIp(ctx.mask));
     Ip nextHopIp = toIp(ctx.gateway);
 
@@ -7954,7 +7954,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
 
     StaticRoute route =
-        new StaticRoute(prefix, nextHopIp, nextHopInterfaceAlias, distance, null, track, false);
+        new StaticRoute(prefix, nextHopIp, nextHopInterface, distance, null, track, false);
     currentVrf().getStaticRoutes().add(route);
   }
 
