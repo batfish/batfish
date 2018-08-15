@@ -18,6 +18,6 @@ public class RoutesQuestionTest {
 
     assertThat(question.getNodeRegex(), equalTo(NodesSpecifier.ALL));
     assertThat(question.getVrfRegex(), equalTo(".*"));
-    assertThat(question.getProtocol(), equalTo(RibProtocol.ALL));
+    assertThat(question.getProtocol(), equalTo(RibProtocol.MAIN));
   }
 }

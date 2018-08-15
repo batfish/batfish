@@ -24,7 +24,7 @@
                 "description": "Only return routes from a given protocol RIB.",
                 "optional": true,
                 "type": "string",
-                "allowedValues": ["all", "bgp"]
+                "allowedValues": ["main", "bgp", "bgpmp"]
             }
         }
     },
