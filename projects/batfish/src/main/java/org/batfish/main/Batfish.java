@@ -2658,6 +2658,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
               (hostname, initStepWarnings) -> {
                 Warnings combined =
                     warnings.computeIfAbsent(hostname, h -> buildWarnings(_settings));
+                combined.getParseWarnings().addAll(initStepWarnings.getParseWarnings());
                 combined.getPedanticWarnings().addAll(initStepWarnings.getPedanticWarnings());
                 combined.getRedFlagWarnings().addAll(initStepWarnings.getRedFlagWarnings());
                 combined

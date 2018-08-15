@@ -1,7 +1,6 @@
 package org.batfish.common;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
-import static com.google.common.base.Strings.isNullOrEmpty;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -20,11 +19,15 @@ public class Warnings implements Serializable {
 
   private static final String MISCELLANEOUS = "MISCELLANEOUS";
 
+  private static final String PROP_PARSE_WARNINGS = "Parse warnings";
+
   private static final String PROP_PEDANTIC = "Pedantic complaints";
 
   private static final String PROP_RED_FLAGS = "Red flags";
 
   private static final String PROP_UNIMPLEMENTED = "Unimplemented features";
+
+  private final List<ParseWarning> _parseWarnings;
 
   private transient boolean _pedanticRecord;
 
@@ -39,12 +42,14 @@ public class Warnings implements Serializable {
   private final List<Warning> _unimplementedWarnings;
 
   @JsonCreator
-  public Warnings(
+  private Warnings(
       @Nullable @JsonProperty(PROP_PEDANTIC) List<Warning> pedanticWarnings,
       @Nullable @JsonProperty(PROP_RED_FLAGS) List<Warning> redFlagWarnings,
-      @Nullable @JsonProperty(PROP_UNIMPLEMENTED) List<Warning> unimplementedWarnings) {
+      @Nullable @JsonProperty(PROP_UNIMPLEMENTED) List<Warning> unimplementedWarnings,
+      @Nullable @JsonProperty(PROP_PARSE_WARNINGS) LinkedList<ParseWarning> parseWarnings) {
     _pedanticWarnings = firstNonNull(pedanticWarnings, new LinkedList<>());
     _redFlagWarnings = firstNonNull(redFlagWarnings, new LinkedList<>());
+    _parseWarnings = firstNonNull(parseWarnings, new LinkedList<>());
     _unimplementedWarnings = firstNonNull(unimplementedWarnings, new LinkedList<>());
   }
 
@@ -53,10 +58,15 @@ public class Warnings implements Serializable {
   }
 
   public Warnings(boolean pedanticRecord, boolean redFlagRecord, boolean unimplementedRecord) {
-    this(null, null, null);
+    this(null, null, null, null);
     _pedanticRecord = pedanticRecord;
     _redFlagRecord = redFlagRecord;
     _unimplementedRecord = unimplementedRecord;
+  }
+
+  @JsonProperty(PROP_PARSE_WARNINGS)
+  public List<ParseWarning> getParseWarnings() {
+    return _parseWarnings;
   }
 
   @JsonProperty(PROP_PEDANTIC)
@@ -78,7 +88,8 @@ public class Warnings implements Serializable {
   public boolean isEmpty() {
     return _pedanticWarnings.isEmpty()
         && _redFlagWarnings.isEmpty()
-        && _unimplementedWarnings.isEmpty();
+        && _unimplementedWarnings.isEmpty()
+        && _parseWarnings.isEmpty();
   }
 
   public void pedantic(String msg) {
@@ -113,11 +124,10 @@ public class Warnings implements Serializable {
       @Nonnull String line,
       @Nonnull BatfishCombinedParser<?, ?> parser,
       @Nullable String comment) {
-    String commentMsg = isNullOrEmpty(comment) ? "" : String.format("[comment: %s] ", comment);
+    int lineNumber = ctx.getStart().getLine();
     String ruleStack = ctx.toString(Arrays.asList(parser.getParser().getRuleNames()));
-
-    unimplemented(
-        String.format("%s %s[Batfish parser context: %s]", line.trim(), commentMsg, ruleStack));
+    String trimmedLine = line.trim();
+    _parseWarnings.add(new ParseWarning(lineNumber, trimmedLine, ruleStack, comment));
   }
 
   /** @see #todo(ParserRuleContext, String, BatfishCombinedParser, String) */
@@ -129,13 +139,58 @@ public class Warnings implements Serializable {
   }
 
   public void unimplemented(String msg) {
-    unimplemented(msg, "UNIMPLEMENTED");
-  }
-
-  public void unimplemented(String msg, String tag) {
     if (!_unimplementedRecord) {
       return;
     }
-    _unimplementedWarnings.add(new Warning(msg, tag));
+    _unimplementedWarnings.add(new Warning(msg, "UNIMPLEMENTED"));
+  }
+
+  static class ParseWarning implements Serializable {
+    private static final long serialVersionUID = 1L;
+
+    private static final String PROP_COMMENT = "Comment";
+    private static final String PROP_LINE = "Line";
+    private static final String PROP_PARSE_CONTEXT = "Parser_Context";
+    private static final String PROP_TEXT = "Text";
+
+    @Nullable private final String _comment;
+    private final int _line;
+    @Nonnull private final String _parserContext;
+    @Nonnull private final String _text;
+
+    @JsonCreator
+    private ParseWarning(
+        @JsonProperty(PROP_LINE) int line,
+        @JsonProperty(PROP_TEXT) @Nonnull String text,
+        @JsonProperty(PROP_PARSE_CONTEXT) @Nonnull String parserContext,
+        @JsonProperty(PROP_COMMENT) @Nullable String comment) {
+      _line = line;
+      _text = text;
+      _parserContext = parserContext;
+      _comment = comment;
+    }
+
+    @JsonProperty(PROP_COMMENT)
+    @Nullable
+    public String getComment() {
+      return _comment;
+    }
+
+    @JsonProperty(PROP_LINE)
+    public int getLine() {
+      return _line;
+    }
+
+    @JsonProperty(PROP_PARSE_CONTEXT)
+    @Nonnull
+    public String getParserContext() {
+      return _parserContext;
+    }
+
+    @JsonProperty(PROP_TEXT)
+    @Nonnull
+    public String getText() {
+      return _text;
+    }
   }
 }
