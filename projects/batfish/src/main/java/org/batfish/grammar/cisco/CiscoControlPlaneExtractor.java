@@ -7961,6 +7961,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       track = toInteger(ctx.track);
     }
 
+    if (ctx.TUNNELED() != null) {
+      _w.redFlag("Interface default tunnel gateway option not yet supported.");
+    }
+
     StaticRoute route =
         new StaticRoute(prefix, nextHopIp, nextHopInterface, distance, null, track, false);
     currentVrf().getStaticRoutes().add(route);

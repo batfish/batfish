@@ -2081,11 +2081,17 @@ route_tail
 :
    iface = variable destination = IP_ADDRESS mask = IP_ADDRESS gateway = IP_ADDRESS
    (
-      distance = DEC+
-   )?
+      (
+         distance = DEC+
+      )?
+      (
+         TRACK track = DEC+
+      )?
+   )
+   |
    (
-      TRACK track = DEC+
-   )?
+      TUNNELED
+   )
 ;
 
 router_multicast_stanza
@@ -3650,6 +3656,7 @@ stanza
    | s_redundancy
    | s_rf
    | s_role
+   | s_route
    | s_router_eigrp
    | s_router_ospf
    | s_router_ospfv3
