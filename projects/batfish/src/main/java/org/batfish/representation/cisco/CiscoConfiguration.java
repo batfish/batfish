@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import static org.batfish.common.util.CommonUtil.toImmutableMap;
 import static org.batfish.datamodel.Interface.UNSET_LOCAL_INTERFACE;
+import static org.batfish.datamodel.Interface.computeInterfaceType;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
 import static org.batfish.representation.cisco.CiscoConversions.convertCryptoMapSet;
@@ -2029,11 +2030,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
   }
 
   private org.batfish.datamodel.Interface toInterface(
-      Interface iface, Map<String, IpAccessList> ipAccessLists, Configuration c) {
-    String name = iface.getName();
-    org.batfish.datamodel.Interface newIface = new org.batfish.datamodel.Interface(name, c);
+      String ifaceName, Interface iface, Map<String, IpAccessList> ipAccessLists, Configuration c) {
+    org.batfish.datamodel.Interface newIface =
+        new org.batfish.datamodel.Interface(
+            ifaceName, c, computeInterfaceType(iface.getName(), c.getConfigurationFormat()));
     if (newIface.getInterfaceType() == InterfaceType.VLAN) {
-      newIface.setVlan(CommonUtil.getInterfaceVlanNumber(name));
+      newIface.setVlan(CommonUtil.getInterfaceVlanNumber(ifaceName));
     }
     String vrfName = iface.getVrf();
     Vrf vrf = _vrfs.computeIfAbsent(vrfName, Vrf::new);
@@ -2080,10 +2082,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
         OspfProcess proc = vrf.getOspfProcess();
         if (proc != null) {
           if (iface.getOspfActive()) {
-            proc.getActiveInterfaceList().add(name);
+            proc.getActiveInterfaceList().add(ifaceName);
           }
           if (iface.getOspfPassive()) {
-            proc.getPassiveInterfaceList().add(name);
+            proc.getPassiveInterfaceList().add(ifaceName);
           }
           for (InterfaceAddress address : newIface.getAllAddresses()) {
             Prefix prefix = address.getPrefix();
@@ -2092,7 +2094,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
           }
         } else {
           _w.redFlag(
-              "Interface: '" + name + "' contains OSPF settings, but there is no OSPF process");
+              "Interface: '"
+                  + ifaceName
+                  + "' contains OSPF settings, but there is no OSPF process");
         }
       }
       newIface.setOspfCost(iface.getOspfCost());
@@ -3100,14 +3104,16 @@ public final class CiscoConfiguration extends VendorConfiguration {
     // convert interfaces
     _interfaces.forEach(
         (ifaceName, iface) -> {
+          // Handle renaming interfaces for ASA devices
+          String newIfaceName = firstNonNull(iface.getAlias(), ifaceName);
           org.batfish.datamodel.Interface newInterface =
-              toInterface(iface, c.getIpAccessLists(), c);
+              toInterface(newIfaceName, iface, c.getIpAccessLists(), c);
           String vrfName = iface.getVrf();
           if (vrfName == null) {
             throw new BatfishException("Missing vrf name for iface: '" + iface.getName() + "'");
           }
-          c.getInterfaces().put(ifaceName, newInterface);
-          c.getVrfs().get(vrfName).getInterfaces().put(ifaceName, newInterface);
+          c.getInterfaces().put(newIfaceName, newInterface);
+          c.getVrfs().get(vrfName).getInterfaces().put(newIfaceName, newInterface);
         });
 
     // copy tracking groups

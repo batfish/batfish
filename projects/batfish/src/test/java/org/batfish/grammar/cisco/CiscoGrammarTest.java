@@ -315,6 +315,7 @@ import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
 import org.batfish.representation.cisco.CiscoConfiguration;
+import org.batfish.representation.cisco.CiscoStructureType;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
@@ -3300,5 +3301,24 @@ public class CiscoGrammarTest {
         hasInterface(
             "Ethernet1/1",
             hasAllAddresses(containsInAnyOrder(new InterfaceAddress("10.20.0.3/31")))));
+  }
+
+  @Test
+  public void testAsaInterface() throws IOException {
+    String hostname = "asa-interface";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Configuration c = batfish.loadConfigurations().get(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    // Confirm interface's address is extracted properly
+    assertThat(
+        c,
+        hasInterface(
+            "ifname", hasAllAddresses(containsInAnyOrder(new InterfaceAddress("3.0.0.2/24")))));
+
+    // Confirm interface definition is tracked for the alias name
+    assertThat(ccae, hasDefinedStructure(filename, CiscoStructureType.INTERFACE, "ifname"));
   }
 }

@@ -6747,9 +6747,10 @@
             "          subnet = IP_ADDRESS:'255.255.255.0'  <== mode:DEFAULT_MODE",
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "      (if_inner",
-            "        (if_null_block",
+            "        (if_nameif",
             "          NAMEIF:'nameif'  <== mode:DEFAULT_MODE",
-            "          VARIABLE:'blah'  <== mode:DEFAULT_MODE",
+            "          name = (variable",
+            "            VARIABLE:'blah'  <== mode:DEFAULT_MODE)",
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "      (if_inner",
             "        (if_null_block",
@@ -22997,9 +22998,10 @@
             "            low = DEC:'0'  <== mode:M_Interface)))",
             "      NEWLINE:'\\n'  <== mode:M_Interface",
             "      (if_inner",
-            "        (if_null_block",
+            "        (if_nameif",
             "          NAMEIF:'nameif'  <== mode:DEFAULT_MODE",
-            "          INSIDE:'inside'  <== mode:DEFAULT_MODE",
+            "          name = (variable",
+            "            INSIDE:'inside'  <== mode:DEFAULT_MODE)",
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "      (if_inner",
             "        (if_null_block",
@@ -56401,6 +56403,12 @@
                 8
               ],
               "numReferrers" : 1
+            },
+            "blah" : {
+              "definitionLines" : [
+                7
+              ],
+              "numReferrers" : 1
             }
           }
         },
@@ -57679,6 +57687,12 @@
             "Wideband-Cable1/2/3:4" : {
               "definitionLines" : [
                 335
+              ],
+              "numReferrers" : 1
+            },
+            "inside" : {
+              "definitionLines" : [
+                303
               ],
               "numReferrers" : 1
             },
