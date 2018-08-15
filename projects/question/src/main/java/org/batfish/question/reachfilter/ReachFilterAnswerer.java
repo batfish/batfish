@@ -51,7 +51,11 @@ public class ReachFilterAnswerer extends Answerer {
     for (Pair<String, IpAccessList> pair : acls) {
       Optional<Flow> result;
       try {
-        result = _batfish.reachFilter(configurations.get(pair.getFirst()), pair.getSecond());
+        result =
+            _batfish.reachFilter(
+                configurations.get(pair.getFirst()),
+                pair.getSecond(),
+                question.toReachFilterParameters());
       } catch (Throwable t) {
         _batfish.getLogger().warn(t.getMessage());
         continue;
@@ -83,7 +87,7 @@ public class ReachFilterAnswerer extends Answerer {
     List<Pair<String, IpAccessList>> acls =
         question
             .getNodesSpecifier()
-            .getMatchingNodes(_batfish)
+            .resolve(_batfish.specifierContext())
             .stream()
             .map(configs::get)
             .flatMap(

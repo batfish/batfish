@@ -43,6 +43,7 @@ import org.batfish.datamodel.questions.smt.HeaderQuestion;
 import org.batfish.datamodel.questions.smt.RoleQuestion;
 import org.batfish.grammar.BgpTableFormat;
 import org.batfish.grammar.GrammarSettings;
+import org.batfish.question.ReachFilterParameters;
 import org.batfish.question.ReachabilityParameters;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRoleDimension;
@@ -308,7 +309,8 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public Optional<Flow> reachFilter(Configuration node, IpAccessList acl) {
+  public Optional<Flow> reachFilter(
+      Configuration node, IpAccessList acl, ReachFilterParameters params) {
     throw new UnsupportedOperationException();
   }
 

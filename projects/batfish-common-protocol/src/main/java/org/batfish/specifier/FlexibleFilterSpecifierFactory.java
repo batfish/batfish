@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.google.auto.service.AutoService;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.annotation.Nullable;
 
 /**
  * A {@link FilterSpecifierFactory} that accepts three types of inputs:
@@ -28,7 +29,7 @@ public class FlexibleFilterSpecifierFactory implements FilterSpecifierFactory {
   }
 
   @Override
-  public FilterSpecifier buildFilterSpecifier(Object input) {
+  public FilterSpecifier buildFilterSpecifier(@Nullable Object input) {
     if (input == null) {
       return new ShorthandFilterSpecifierFactory().buildFilterSpecifier(null);
     }
