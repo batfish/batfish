@@ -28,6 +28,7 @@ import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
+import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.symbolic.bdd.AclLineMatchExprToBDD;
 import org.batfish.symbolic.bdd.BDDInteger;
 import org.batfish.symbolic.bdd.BDDPacket;
@@ -254,6 +255,23 @@ public class BDDIpAccessListSpecializerTest {
     assertThat(
         specializeTo(line1, line2, interfaces),
         equalTo(new MatchSrcInterface(ImmutableList.of("i1"))));
+  }
+
+  @Test
+  public void specializeOriginatingFromDeviceRepeat() {
+    // Both lines accept packets originating from device; line 1 should specialize to true expr
+    AclLineMatchExpr line1 = OriginatingFromDevice.INSTANCE;
+    AclLineMatchExpr line2 = OriginatingFromDevice.INSTANCE;
+    assertThat(specializeTo(line1, line2, ImmutableSet.of()), equalTo(TRUE));
+  }
+
+  @Test
+  public void specializeOriginatingFromDeviceToMatchSrcInterface() {
+    // First line matches originating from device, second matches source interfaces; line 1 should
+    // specialize to false expr
+    AclLineMatchExpr line1 = OriginatingFromDevice.INSTANCE;
+    AclLineMatchExpr line2 = new MatchSrcInterface(ImmutableSet.of("i1"));
+    assertThat(specializeTo(line1, line2, ImmutableSet.of("i1")), equalTo(FALSE));
   }
 
   private AclLineMatchExpr specializeTo(
