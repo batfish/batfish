@@ -16811,7 +16811,7 @@
         "ipSpaceMetadata" : {
           "global~ASET" : {
             "sourceName" : "global~ASET",
-            "sourceType" : "addressbook"
+            "sourceType" : "address-book"
           }
         },
         "ipSpaces" : {
