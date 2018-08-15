@@ -5564,16 +5564,24 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitIf_nameif(If_nameifContext ctx) {
     String alias = ctx.name.getText();
-    Map<String, String> aliasMap = _configuration.getInterfaceAliases();
-    if (_configuration.getInterfaceAliases().containsKey(alias)) {
-      _w.redFlag(
-          String.format(
-              "Interface alias '%s' is already in use by '%s'.", alias, aliasMap.get(alias)));
+    Map<String, Interface> ifaces = _configuration.getInterfaces();
+    if (ifaces.containsKey(alias)) {
+      _w.redFlag(String.format("Interface alias '%s' is already in use.", alias));
     } else if (_currentInterfaces.size() > 1) {
       _w.redFlag(
           String.format("Interface alias '%s' can not be applied to multiple interfaces.", alias));
     } else {
-      aliasMap.put(alias, _currentInterfaces.get(0).getName());
+      // Define the alias like an interface to make ref tracking easier
+      defineStructure(INTERFACE, alias, ctx);
+      _configuration.referenceStructure(
+          INTERFACE, alias, INTERFACE_SELF_REF, ctx.getStart().getLine());
+      Interface iface = _currentInterfaces.get(0);
+      iface.setDeclaredNames(
+          new ImmutableSortedSet.Builder<String>(naturalOrder())
+              .addAll(iface.getDeclaredNames())
+              .add(alias)
+              .build());
+      _currentInterfaces.get(0).setAlias(alias);
     }
   }
 

@@ -3310,7 +3310,6 @@ public class CiscoGrammarTest {
     assertThat(
         c,
         hasInterface(
-            "GigabitEthernet0/1",
-            hasAllAddresses(containsInAnyOrder(new InterfaceAddress("3.0.0.2/24")))));
+            "ifname", hasAllAddresses(containsInAnyOrder(new InterfaceAddress("3.0.0.2/24")))));
   }
 }
