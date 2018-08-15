@@ -47,7 +47,7 @@ public class Warnings implements Serializable {
       @Nullable @JsonProperty(PROP_PEDANTIC) List<Warning> pedanticWarnings,
       @Nullable @JsonProperty(PROP_RED_FLAGS) List<Warning> redFlagWarnings,
       @Nullable @JsonProperty(PROP_UNIMPLEMENTED) List<Warning> unimplementedWarnings,
-      @Nullable @JsonProperty(PROP_PARSE_WARNINGS) LinkedList<ParseWarning> parseWarnings) {
+      @Nullable @JsonProperty(PROP_PARSE_WARNINGS) List<ParseWarning> parseWarnings) {
     _pedanticWarnings = firstNonNull(pedanticWarnings, new LinkedList<>());
     _redFlagWarnings = firstNonNull(redFlagWarnings, new LinkedList<>());
     _parseWarnings = firstNonNull(parseWarnings, new LinkedList<>());
