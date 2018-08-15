@@ -217,7 +217,8 @@ public class AclReachability2Test {
      Will test that both give the same result.
     */
     TableAnswerElement generalAnswer = answer(new AclReachability2Question());
-    TableAnswerElement specificAnswer = answer(new AclReachability2Question(acl.getName(), null));
+    TableAnswerElement specificAnswer =
+        answer(new AclReachability2Question(null, acl.getName(), null, null));
 
     // Construct the expected result. Should find line 1 to be blocked by line 0 in main ACL.
     Multiset<Row> expected =
