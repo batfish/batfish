@@ -16808,6 +16808,12 @@
             "sourceType" : "firewall filter"
           }
         },
+        "ipSpaceMetadata" : {
+          "global~ASET" : {
+            "sourceName" : "global~ASET",
+            "sourceType" : "addressbook"
+          }
+        },
         "ipSpaces" : {
           "global~ASET" : {
             "class" : "org.batfish.datamodel.IpWildcardSetIpSpace"

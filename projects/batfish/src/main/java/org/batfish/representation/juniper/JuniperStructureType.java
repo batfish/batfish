@@ -3,6 +3,7 @@ package org.batfish.representation.juniper;
 import org.batfish.vendor.StructureType;
 
 public enum JuniperStructureType implements StructureType {
+  ADDRESS_BOOK("addressbook"),
   APPLICATION("application"),
   APPLICATION_OR_APPLICATION_SET("application or application-set"),
   APPLICATION_SET("application-set"),
