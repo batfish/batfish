@@ -26,7 +26,7 @@
       },
       "dst" : {
         "description" : "Flexible specification of destinoation IpSpace",
-        "optional" : false,
+        "optional" : true,
         "type" : "string",
         "value" : "2.2.2.2"
       },
@@ -62,7 +62,7 @@
       },
       "src" : {
         "description" : "Flexible specification of source IpSpace",
-        "optional" : false,
+        "optional" : true,
         "type" : "string",
         "value" : "1.1.1.1"
       }
