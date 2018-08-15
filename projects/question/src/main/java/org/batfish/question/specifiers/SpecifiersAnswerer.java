@@ -42,7 +42,7 @@ public final class SpecifiersAnswerer extends Answerer {
 
     List<ColumnMetadata> columns =
         ImmutableList.of(
-            new ColumnMetadata("Location", Schema.STRING, "Resolution", false, false),
+            new ColumnMetadata("Locations", Schema.STRING, "Resolution", false, false),
             new ColumnMetadata("IpSpace", Schema.STRING, "IpSpace", false, false));
     TableAnswerElement table = new TableAnswerElement(new TableMetadata(columns));
     Map<String, ColumnMetadata> columnMap = table.getMetadata().toColumnMap();

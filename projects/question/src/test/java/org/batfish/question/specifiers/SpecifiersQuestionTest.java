@@ -7,6 +7,7 @@ import static org.hamcrest.Matchers.nullValue;
 
 import com.google.auto.service.AutoService;
 import java.util.Set;
+import org.batfish.question.specifiers.SpecifiersQuestion.QueryType;
 import org.batfish.specifier.AllInterfacesLocationSpecifier;
 import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.specifier.IpSpaceSpecifier;
@@ -54,7 +55,7 @@ public final class SpecifiersQuestionTest {
   @Test
   public void testGetIpSpaceSpecifier_inputWithoutFactory() {
     exception.expect(NullPointerException.class);
-    SpecifiersQuestion question = new SpecifiersQuestion();
+    SpecifiersQuestion question = new SpecifiersQuestion(QueryType.IP_SPACE);
     question.setIpSpaceSpecifierFactory(null);
     question.setIpSpaceSpecifierInput("foo");
     question.getIpSpaceSpecifier();
@@ -62,7 +63,7 @@ public final class SpecifiersQuestionTest {
 
   @Test
   public void testGetIpSpaceSpecifier_defaultInput() {
-    SpecifiersQuestion question = new SpecifiersQuestion();
+    SpecifiersQuestion question = new SpecifiersQuestion(QueryType.IP_SPACE);
     question.setIpSpaceSpecifierFactory(new TestIpSpaceSpecifierFactory().getName());
 
     IpSpaceSpecifier ipSpaceSpecifier = question.getIpSpaceSpecifier();
@@ -75,7 +76,7 @@ public final class SpecifiersQuestionTest {
   @Test
   public void testGetIpSpaceSpecifier() {
     String input = "input";
-    SpecifiersQuestion question = new SpecifiersQuestion();
+    SpecifiersQuestion question = new SpecifiersQuestion(QueryType.IP_SPACE);
     question.setIpSpaceSpecifierFactory(new TestIpSpaceSpecifierFactory().getName());
 
     question.setIpSpaceSpecifierInput(input);
@@ -88,14 +89,15 @@ public final class SpecifiersQuestionTest {
 
   @Test
   public void testGetLocationSpecifier_defaultFactory() {
-    LocationSpecifier locationSpecifier = new SpecifiersQuestion().getLocationSpecifier();
+    LocationSpecifier locationSpecifier =
+        new SpecifiersQuestion(QueryType.LOCATION).getLocationSpecifier();
     assertThat(locationSpecifier, equalTo(AllInterfacesLocationSpecifier.INSTANCE));
   }
 
   @Test
   public void testGetLocationSpecifier_inputWithoutFactory() {
     exception.expect(NullPointerException.class);
-    SpecifiersQuestion question = new SpecifiersQuestion();
+    SpecifiersQuestion question = new SpecifiersQuestion(QueryType.LOCATION);
     question.setLocationSpecifierFactory(null);
     question.setLocationSpecifierInput("foo");
     question.getLocationSpecifier();

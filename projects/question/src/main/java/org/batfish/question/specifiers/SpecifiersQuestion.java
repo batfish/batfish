@@ -1,5 +1,6 @@
 package org.batfish.question.specifiers;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -67,7 +68,10 @@ public final class SpecifiersQuestion extends Question {
 
   @Nonnull private QueryType _queryType;
 
-  public SpecifiersQuestion() {}
+  public SpecifiersQuestion(@JsonProperty(PROP_QUERY_TYPE) QueryType queryType) {
+    checkArgument(queryType != null, "'queryType must be specified");
+    _queryType = queryType;
+  }
 
   public FilterSpecifier getFilterSpecifier() {
     checkNotNull(_filterSpecifierFactory, PROP_FILTER_SPECIFIER_FACTORY + " is null");
@@ -100,7 +104,7 @@ public final class SpecifiersQuestion extends Question {
 
   @Override
   public boolean getDataPlane() {
-    return true; // is this correct, matt?
+    return false;
   }
 
   @Override
@@ -211,10 +215,5 @@ public final class SpecifiersQuestion extends Question {
   @JsonProperty(PROP_NODE_SPECIFIER_INPUT)
   public void setNodeSpecifierInput(String nodeSpecifierInput) {
     _nodeSpecifierInput = nodeSpecifierInput;
-  }
-
-  @JsonProperty(PROP_QUERY_TYPE)
-  public void setNodeSpecifierInput(QueryType queryType) {
-    _queryType = queryType;
   }
 }
