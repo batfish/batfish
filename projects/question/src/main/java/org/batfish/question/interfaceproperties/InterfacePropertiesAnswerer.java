@@ -136,13 +136,13 @@ public class InterfacePropertiesAnswerer extends Answerer {
       Map<String, Configuration> configurations,
       Set<String> nodes,
       InterfacesSpecifier interfacesSpecifier,
-      boolean onlyActive,
+      boolean excludeShutInterfaces,
       Map<String, ColumnMetadata> columns) {
     Multiset<Row> rows = HashMultiset.create();
 
     for (String nodeName : nodes) {
       for (Interface iface : configurations.get(nodeName).getInterfaces().values()) {
-        if (!interfacesSpecifier.matches(iface) || (onlyActive && !iface.getActive())) {
+        if (!interfacesSpecifier.matches(iface) || (excludeShutInterfaces && !iface.getActive())) {
           continue;
         }
         RowBuilder row =
