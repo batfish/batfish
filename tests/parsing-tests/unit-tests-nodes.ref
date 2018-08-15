@@ -1727,7 +1727,7 @@
           "default" : {
             "name" : "default",
             "interfaces" : [
-              "Ethernet0/0"
+              "blah"
             ],
             "ospfProcess" : {
               "areas" : {
@@ -1735,7 +1735,7 @@
                   "name" : 0,
                   "injectDefaultRoute" : true,
                   "interfaces" : [
-                    "Ethernet0/0"
+                    "blah"
                   ],
                   "metricOfDefaultRoute" : 0,
                   "stubType" : "NONE"
