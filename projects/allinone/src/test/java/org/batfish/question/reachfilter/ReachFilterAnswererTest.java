@@ -188,9 +188,11 @@ public final class ReachFilterAnswererTest {
 
   @Test
   public void testGetQueryAcls_permit() {
-    ReachFilterQuestion question = new ReachFilterQuestion();
-    question.setQuery("permit");
-    question.setFilterSpecifierInput(ACL.getName());
+    ReachFilterQuestion question =
+        ReachFilterQuestion.builder()
+            .setFilterSpecifierInput(ACL.getName())
+            .setQuery("permit")
+            .build();
     ReachFilterAnswerer answerer = new ReachFilterAnswerer(question, _batfish);
     List<Pair<String, IpAccessList>> queryAcls = answerer.getQueryAcls(question);
     assertThat(queryAcls, hasSize(1));
@@ -202,9 +204,11 @@ public final class ReachFilterAnswererTest {
 
   @Test
   public void testGetQueryAcls_deny() {
-    ReachFilterQuestion question = new ReachFilterQuestion();
-    question.setQuery("deny");
-    question.setFilterSpecifierInput(ACL.getName());
+    ReachFilterQuestion question =
+        ReachFilterQuestion.builder()
+            .setFilterSpecifierInput(ACL.getName())
+            .setQuery("deny")
+            .build();
     ReachFilterAnswerer answerer = new ReachFilterAnswerer(question, _batfish);
     List<Pair<String, IpAccessList>> queryAcls = answerer.getQueryAcls(question);
     assertThat(queryAcls, hasSize(1));
@@ -216,9 +220,11 @@ public final class ReachFilterAnswererTest {
 
   @Test
   public void testGetQueryAcls_matchLine2() {
-    ReachFilterQuestion question = new ReachFilterQuestion();
-    question.setQuery("matchLine 2");
-    question.setFilterSpecifierInput(ACL.getName());
+    ReachFilterQuestion question =
+        ReachFilterQuestion.builder()
+            .setFilterSpecifierInput(ACL.getName())
+            .setQuery("matchLine 2")
+            .build();
     ReachFilterAnswerer answerer = new ReachFilterAnswerer(question, _batfish);
     List<Pair<String, IpAccessList>> queryAcls = answerer.getQueryAcls(question);
     assertThat(queryAcls, hasSize(1));
@@ -319,7 +325,6 @@ public final class ReachFilterAnswererTest {
   public void testAnswer() {
     ReachFilterQuestion question = new ReachFilterQuestion();
     ReachFilterAnswerer answerer = new ReachFilterAnswerer(question, _batfish);
-    question.setFilterSpecifierInput(null);
     TableAnswerElement ae = (TableAnswerElement) answerer.answer();
     assertThat(
         ae,
@@ -444,7 +449,12 @@ public final class ReachFilterAnswererTest {
     Set<String> nodes = q.getNodesSpecifier().resolve(_batfish.specifierContext());
     assertThat(nodes, contains(_config.getHostname()));
 
-    q.setNodesSpecifierInput("UNMATCHABLE");
+    q =
+        ReachFilterQuestion.builder()
+            .setFilterSpecifierInput(ACL.getName())
+            .setQuery("permit")
+            .setNodesSpecifierInput("UNMATCHABLE")
+            .build();
     nodes = q.getNodesSpecifier().resolve(_batfish.specifierContext());
     assertThat(nodes, emptyIterable());
   }

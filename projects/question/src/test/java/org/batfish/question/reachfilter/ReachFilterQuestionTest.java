@@ -75,20 +75,20 @@ public class ReachFilterQuestionTest {
     assertThat(question.getType(), is(Type.PERMIT));
     assertThat(question.getLineNumber(), nullValue());
 
-    question.setQuery("deny");
+    question = ReachFilterQuestion.builder().setQuery("deny").build();
     assertThat(question.getType(), is(Type.DENY));
     assertThat(question.getLineNumber(), nullValue());
 
-    question.setQuery("matchLine 5");
+    question = ReachFilterQuestion.builder().setQuery("matchLine 5").build();
     assertThat(question.getType(), is(Type.MATCH_LINE));
     assertThat(question.getLineNumber(), is(5));
 
-    question.setQuery("permit");
+    question = ReachFilterQuestion.builder().setQuery("permit").build();
     assertThat(question.getType(), is(Type.PERMIT));
     assertThat(question.getLineNumber(), nullValue());
 
     exception.expect(BatfishException.class);
     exception.expectMessage("Unrecognized query: foo");
-    question.setQuery("foo");
+    ReachFilterQuestion.builder().setQuery("foo").build();
   }
 }

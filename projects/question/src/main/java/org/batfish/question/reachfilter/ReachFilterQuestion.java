@@ -74,11 +74,11 @@ public final class ReachFilterQuestion extends Question {
   // Invariant: null unless _type == MATCH_LINE
   @Nullable private Integer _lineNumber;
 
-  @Nullable private String _filterSpecifierInput;
+  @Nullable private final String _filterSpecifierInput;
 
   @Nonnull private final String _nodesSpecifierFactory;
 
-  @Nullable private String _nodesSpecifierInput;
+  @Nullable private final String _nodesSpecifierInput;
 
   @Nonnull private final String _destinationIpSpaceSpecifierFactory;
 
@@ -243,18 +243,8 @@ public final class ReachFilterQuestion extends Question {
         .build();
   }
 
-  @VisibleForTesting
-  void setFilterSpecifierInput(@Nullable String filterSpecifierInput) {
-    _filterSpecifierInput = filterSpecifierInput;
-  }
-
-  @VisibleForTesting
-  public void setNodesSpecifierInput(@Nullable String nodesSpecifierInput) {
-    _nodesSpecifierInput = nodesSpecifierInput;
-  }
-
   @JsonProperty(PROP_QUERY)
-  public void setQuery(String query) {
+  private void setQuery(String query) {
     if (query.equals("permit")) {
       _type = PERMIT;
       _lineNumber = null;
@@ -277,5 +267,97 @@ public final class ReachFilterQuestion extends Question {
         .setSourceIpSpaceSpecifier(getSourceSpecifier())
         .setDestinationIpSpaceSpecifier(getDestinationSpecifier())
         .build();
+  }
+
+  static Builder builder() {
+    return new Builder();
+  }
+
+  @VisibleForTesting
+  static final class Builder {
+    private String _filterSpecifierInput;
+    private String _nodesSpecifierFactory;
+    private String _nodesSpecifierInput;
+    private String _destinationIpSpaceSpecifierFactory;
+    private String _destinationIpSpaceSpecifierInput;
+    private SortedSet<SubRange> _dstPorts;
+    private SortedSet<SubRange> _srcPorts;
+    private SortedSet<Protocol> _dstProtocols;
+    private String _sourceIpSpaceSpecifierFactory;
+    private String _sourceIpSpaceSpecifierInput;
+    private String _type;
+
+    private Builder() {}
+
+    public Builder setFilterSpecifierInput(String filterSpecifierInput) {
+      this._filterSpecifierInput = filterSpecifierInput;
+      return this;
+    }
+
+    public Builder setNodesSpecifierFactory(String nodesSpecifierFactory) {
+      this._nodesSpecifierFactory = nodesSpecifierFactory;
+      return this;
+    }
+
+    public Builder setNodesSpecifierInput(String nodesSpecifierInput) {
+      this._nodesSpecifierInput = nodesSpecifierInput;
+      return this;
+    }
+
+    public Builder setDestinationIpSpaceSpecifierFactory(
+        String destinationIpSpaceSpecifierFactory) {
+      this._destinationIpSpaceSpecifierFactory = destinationIpSpaceSpecifierFactory;
+      return this;
+    }
+
+    public Builder setDestinationIpSpaceSpecifierInput(String destinationIpSpaceSpecifierInput) {
+      this._destinationIpSpaceSpecifierInput = destinationIpSpaceSpecifierInput;
+      return this;
+    }
+
+    public Builder setDstPorts(SortedSet<SubRange> dstPorts) {
+      this._dstPorts = dstPorts;
+      return this;
+    }
+
+    public Builder setSrcPorts(SortedSet<SubRange> srcPorts) {
+      this._srcPorts = srcPorts;
+      return this;
+    }
+
+    public Builder setDstProtocols(SortedSet<Protocol> dstProtocols) {
+      this._dstProtocols = dstProtocols;
+      return this;
+    }
+
+    public Builder setSourceIpSpaceSpecifierFactory(String sourceIpSpaceSpecifierFactory) {
+      this._sourceIpSpaceSpecifierFactory = sourceIpSpaceSpecifierFactory;
+      return this;
+    }
+
+    public Builder setSourceIpSpaceSpecifierInput(String sourceIpSpaceSpecifierInput) {
+      this._sourceIpSpaceSpecifierInput = sourceIpSpaceSpecifierInput;
+      return this;
+    }
+
+    public Builder setQuery(String type) {
+      this._type = type;
+      return this;
+    }
+
+    public ReachFilterQuestion build() {
+      return new ReachFilterQuestion(
+          _filterSpecifierInput,
+          _destinationIpSpaceSpecifierFactory,
+          _destinationIpSpaceSpecifierInput,
+          _dstPorts,
+          _srcPorts,
+          _dstProtocols,
+          _nodesSpecifierFactory,
+          _nodesSpecifierInput,
+          _sourceIpSpaceSpecifierFactory,
+          _sourceIpSpaceSpecifierInput,
+          _type);
+    }
   }
 }
