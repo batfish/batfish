@@ -41,7 +41,7 @@ public enum BgpDecisionVariable {
   }
 
   @JsonValue
-  public String BgpDecisionVariableName() {
+  public String bgpDecisionVariableName() {
     return _name;
   }
 }
