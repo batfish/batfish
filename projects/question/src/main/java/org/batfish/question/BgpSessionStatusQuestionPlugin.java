@@ -355,6 +355,7 @@ public class BgpSessionStatusQuestionPlugin extends QuestionPlugin {
 
     @Nonnull private Pattern _typeRegex;
 
+    @JsonCreator
     public BgpSessionStatusQuestion(
         @JsonProperty(PROP_FOREIGN_BGP_GROUPS) SortedSet<String> foreignBgpGroups,
         @JsonProperty(PROP_NODE1_REGEX) NodesSpecifier regex1,

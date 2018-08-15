@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.google.auto.service.AutoService;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.questions.NodesSpecifier;
 
 /**
@@ -29,7 +30,7 @@ public class FlexibleNodeSpecifierFactory implements NodeSpecifierFactory {
   }
 
   @Override
-  public NodeSpecifier buildNodeSpecifier(Object input) {
+  public NodeSpecifier buildNodeSpecifier(@Nullable Object input) {
     if (input == null) {
       return AllNodesNodeSpecifier.INSTANCE;
     }

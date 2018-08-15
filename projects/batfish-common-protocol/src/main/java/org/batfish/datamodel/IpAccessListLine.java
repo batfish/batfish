@@ -121,15 +121,18 @@ public final class IpAccessListLine implements Serializable {
 
   @JsonPropertyDescription(
       "The action the underlying access-list will take when this line matches an IPV4 packet.")
+  @JsonProperty(PROP_ACTION)
   public @Nonnull LineAction getAction() {
     return _action;
   }
 
+  @JsonProperty(PROP_MATCH_CONDITION)
   public @Nonnull AclLineMatchExpr getMatchCondition() {
     return _matchCondition;
   }
 
   @JsonSchemaDescription("The name of this line in the list")
+  @JsonProperty(PROP_NAME)
   public String getName() {
     return _name;
   }

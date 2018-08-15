@@ -1,6 +1,7 @@
 package org.batfish.datamodel.routing_policy.statement;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.SortedSet;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.routing_policy.Environment;
@@ -8,6 +9,8 @@ import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.expr.CommunitySetExpr;
 
 public class AddCommunity extends Statement {
+
+  private static final String PROP_EXPR = "expr";
 
   /** */
   private static final long serialVersionUID = 1L;
@@ -55,6 +58,7 @@ public class AddCommunity extends Statement {
     return result;
   }
 
+  @JsonProperty(PROP_EXPR)
   public CommunitySetExpr getExpr() {
     return _expr;
   }
@@ -67,6 +71,7 @@ public class AddCommunity extends Statement {
     return result;
   }
 
+  @JsonProperty(PROP_EXPR)
   public void setExpr(CommunitySetExpr expr) {
     _expr = expr;
   }

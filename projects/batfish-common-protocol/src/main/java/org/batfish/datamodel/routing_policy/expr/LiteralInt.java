@@ -1,9 +1,12 @@
 package org.batfish.datamodel.routing_policy.expr;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.batfish.datamodel.routing_policy.Environment;
 
 public class LiteralInt extends IntExpr {
+
+  private static final String PROP_VALUE = "value";
 
   /** */
   private static final long serialVersionUID = 1L;
@@ -40,6 +43,7 @@ public class LiteralInt extends IntExpr {
     return _value;
   }
 
+  @JsonProperty(PROP_VALUE)
   public int getValue() {
     return _value;
   }
@@ -52,6 +56,7 @@ public class LiteralInt extends IntExpr {
     return result;
   }
 
+  @JsonProperty(PROP_VALUE)
   public void setValue(int value) {
     _value = value;
   }

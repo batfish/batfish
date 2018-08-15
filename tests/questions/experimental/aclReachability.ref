@@ -1,7 +1,9 @@
 {
   "class" : "org.batfish.question.aclreachability2.AclReachability2Question",
-  "aclNameRegex" : ".*",
-  "nodeRegex" : ".*",
+  "filterSpecifierFactory" : "FlexibleFilterSpecifierFactory",
+  "filterSpecifierInput" : ".*",
+  "nodeSpecifierFactory" : "FlexibleNodeSpecifierFactory",
+  "nodeSpecifierInput" : ".*",
   "differential" : false,
   "includeOneTableKeys" : true,
   "instance" : {
@@ -13,16 +15,28 @@
       "default"
     ],
     "variables" : {
-      "aclNameRegex" : {
-        "description" : "Only include ACLs whose name matches this regex",
-        "optional" : false,
-        "type" : "javaRegex",
+      "filterSpecifierFactory" : {
+        "description" : "FilterSpecifierFactory used to process filterSpecifierInput",
+        "optional" : true,
+        "type" : "string",
+        "value" : "FlexibleFilterSpecifierFactory"
+      },
+      "filterSpecifierInput" : {
+        "description" : "Specifies the filter(s) to be analyzed",
+        "optional" : true,
+        "type" : "string",
         "value" : ".*"
       },
-      "nodeRegex" : {
-        "description" : "Only include ACLs on nodes whose name matches this regex",
-        "optional" : false,
-        "type" : "nodeSpec",
+      "nodeSpecifierFactory" : {
+        "description" : "NodeSpecifierFactory used to process nodeSpecifierInput",
+        "optional" : true,
+        "type" : "string",
+        "value" : "FlexibleNodeSpecifierFactory"
+      },
+      "nodeSpecifierInput" : {
+        "description" : "Only analyze filters on specified nodes",
+        "optional" : true,
+        "type" : "string",
         "value" : ".*"
       }
     }
