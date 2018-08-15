@@ -56,23 +56,39 @@ public abstract class IpAccessListSpecializer
 
   abstract HeaderSpace specialize(HeaderSpace headerSpace);
 
+  /**
+   * Returns a specialized version of the given {@link IpAccessList}.
+   *
+   * @param ipAccessList ACL to specialize
+   * @return Specialized version of the given ACL
+   */
   public final IpAccessList specialize(IpAccessList ipAccessList) {
     return specializeUpToLine(ipAccessList, ipAccessList.getLines().size());
   }
 
+  /**
+   * Returns a version of the given {@link IpAccessList} with lines up to {@code lineNum}
+   * specialized, line {@code lineNum} unchanged, and all later lines removed.
+   *
+   * @param ipAccessList ACL to specialize
+   * @param lineNum Final line to include in specialized version; this line will not be specialized
+   * @return Version of the given ACL specialized up to line {@code lineNum}
+   */
   public final IpAccessList specializeUpToLine(IpAccessList ipAccessList, int lineNum) {
     if (!canSpecialize()) {
       return ipAccessList;
     }
 
+    List<IpAccessListLine> originalLines = ipAccessList.getLines();
+    lineNum = Math.min(lineNum, originalLines.size());
+
     List<IpAccessListLine> specializedLines =
-        IntStream.range(0, ipAccessList.getLines().size())
-            .mapToObj(
-                i -> {
-                  IpAccessListLine line = ipAccessList.getLines().get(i);
-                  return i < lineNum ? specialize(line).orElse(FALSE_LINE) : line;
-                })
+        IntStream.range(0, lineNum - 1)
+            .mapToObj(i -> specialize(originalLines.get(i)).orElse(FALSE_LINE))
             .collect(Collectors.toList());
+    if (lineNum < originalLines.size()) {
+      specializedLines.add(originalLines.get(lineNum));
+    }
 
     return IpAccessList.builder()
         .setName(ipAccessList.getName())
@@ -175,7 +191,7 @@ public abstract class IpAccessListSpecializer
   }
 
   @Override
-  public final AclLineMatchExpr visitMatchSrcInterface(MatchSrcInterface matchSrcInterface) {
+  public AclLineMatchExpr visitMatchSrcInterface(MatchSrcInterface matchSrcInterface) {
     return matchSrcInterface;
   }
 
@@ -193,8 +209,7 @@ public abstract class IpAccessListSpecializer
   }
 
   @Override
-  public final AclLineMatchExpr visitOriginatingFromDevice(
-      OriginatingFromDevice originatingFromDevice) {
+  public AclLineMatchExpr visitOriginatingFromDevice(OriginatingFromDevice originatingFromDevice) {
     return originatingFromDevice;
   }
 
