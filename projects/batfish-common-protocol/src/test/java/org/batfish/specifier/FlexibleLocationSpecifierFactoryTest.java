@@ -19,6 +19,12 @@ public class FlexibleLocationSpecifierFactoryTest {
             new NodeSpecifierInterfaceLocationSpecifier(
                 new FlexibleNodeSpecifierFactory().buildNodeSpecifier("foo"))));
     assertThat(
+        parse("ref.noderole(bar1, bar2)"),
+        equalTo(
+            new NodeSpecifierInterfaceLocationSpecifier(
+                new FlexibleNodeSpecifierFactory()
+                    .buildNodeSpecifier("ref.noderole(bar1, bar2)"))));
+    assertThat(
         parse("[bar]"),
         equalTo(
             new InterfaceSpecifierInterfaceLocationSpecifier(
