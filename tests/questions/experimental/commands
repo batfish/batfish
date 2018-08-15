@@ -36,6 +36,9 @@ test -raw tests/questions/experimental/prefixTracer.ref validate-template prefix
 # validate reachfilter
 test -raw tests/questions/experimental/reachfilter.ref validate-template reachfilter filterRegex=".*", nodeRegex=".*", query="matchLine 0"
 
+# validate specifiers
+test -raw tests/questions/experimental/specifiers.ref validate-template specifiers queryType="filter", filterSpecifierFactory="FlexibleFilterSpecifierFactory", filterSpecifierInput="filterSpecifierInput", interfaceSpecifierFactory="FlexibleInterfaceSpecifierFactory", interfaceSpecifierInput="filterSpecifierInput", ipSpaceSpecifierFactory="InferFromLocationIpSpaceSpecifierFactory", ipSpaceSpecifierInput="ipSpaceSpecifierInput", locationSpecifierFactory="FlexibleLocationSpecifierFactory", locationSpecifierInput="locationSpecifierInput", nodeSpecifierFactory="FlexibleNodeSpecifierFactory", nodeSpecifierInput="nodeSpecifierInput" 
+
 # validate specifiersReachability
 test -raw tests/questions/experimental/specifiersReachability.ref validate-template specifiersReachability actions=["accept"], debug=false, destinationIpSpaceSpecifierFactory="destFactory", dst="destination.*", finalNodesSpecifierFactory="finalNodeFactory", finalNodesSpecifierInput="finalNode", sourceLocationSpecifierFactory="sourceFactory", src="sourceNode"
 
