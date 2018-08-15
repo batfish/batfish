@@ -860,7 +860,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
                       new AclLineMatchExprToBDD(
                           bddPacket.getFactory(), bddPacket, aclEnv, ImmutableMap.of(), sourceMgr));
               BDDIpAccessListSpecializer specializer =
-                  new BDDIpAccessListSpecializer(bddPacket, lineBDD);
+                  new BDDIpAccessListSpecializer(bddPacket, lineBDD, ImmutableMap.of(), sourceMgr);
 
               // Build new configuration from ACLs and interfaces
               Configuration c = new Configuration(hostname, ConfigurationFormat.CISCO_IOS);
