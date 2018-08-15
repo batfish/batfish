@@ -841,6 +841,7 @@ import org.batfish.grammar.cisco.CiscoParser.Route_map_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Route_policy_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Route_policy_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Route_reflector_client_bgp_tailContext;
+import org.batfish.grammar.cisco.CiscoParser.Route_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Router_bgp_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Router_id_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Router_isis_stanzaContext;
@@ -887,7 +888,6 @@ import org.batfish.grammar.cisco.CiscoParser.S_no_access_list_extendedContext;
 import org.batfish.grammar.cisco.CiscoParser.S_no_access_list_standardContext;
 import org.batfish.grammar.cisco.CiscoParser.S_ntpContext;
 import org.batfish.grammar.cisco.CiscoParser.S_policy_mapContext;
-import org.batfish.grammar.cisco.CiscoParser.S_routeContext;
 import org.batfish.grammar.cisco.CiscoParser.S_router_ospfContext;
 import org.batfish.grammar.cisco.CiscoParser.S_router_ripContext;
 import org.batfish.grammar.cisco.CiscoParser.S_serviceContext;
@@ -7938,6 +7938,27 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitRoute_tail(Route_tailContext ctx) {
+    String nextHopInterfaceAlias = ctx.iface.getText();
+    Prefix prefix = new Prefix(toIp(ctx.destination), toIp(ctx.mask));
+    Ip nextHopIp = toIp(ctx.gateway);
+
+    int distance = DEFAULT_STATIC_ROUTE_DISTANCE;
+    if (ctx.distance != null) {
+      distance = toInteger(ctx.distance);
+    }
+
+    Integer track = null;
+    if (ctx.track != null) {
+      track = toInteger(ctx.track);
+    }
+
+    StaticRoute route =
+        new StaticRoute(prefix, nextHopIp, nextHopInterfaceAlias, distance, null, track, false);
+    currentVrf().getStaticRoutes().add(route);
+  }
+
+  @Override
   public void exitRouter_bgp_stanza(Router_bgp_stanzaContext ctx) {
     if (_parser.getParser().isNxos()) {
       _currentBgpNxVrfConfiguration = null;
@@ -8163,14 +8184,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitS_no_access_list_standard(S_no_access_list_standardContext ctx) {
     String name = ctx.ACL_NUM_STANDARD().getText();
     _configuration.getStandardAcls().remove(name);
-  }
-
-  @Override
-  public void exitS_route(S_routeContext ctx) {
-    String nextHopInterfaceAlias = ctx.iface.getText();
-    Prefix prefix = new Prefix(toIp(ctx.destination), toIp(ctx.mask));
-    Ip nextHopIp = toIp(ctx.gateway);
-    int distance = DEFAULT_STATIC_ROUTE_DISTANCE;
   }
 
   @Override

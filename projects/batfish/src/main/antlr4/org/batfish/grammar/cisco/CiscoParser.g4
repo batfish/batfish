@@ -2077,6 +2077,17 @@ role_null
    ) null_rest_of_line
 ;
 
+route_tail
+:
+   iface = variable destination = IP_ADDRESS mask = IP_ADDRESS gateway = IP_ADDRESS
+   (
+      distance = DEC+
+   )?
+   (
+      TRACK track = DEC+
+   )?
+;
+
 router_multicast_stanza
 :
    IPV6? ROUTER
@@ -2905,10 +2916,7 @@ s_role
 
 s_route
 :
-   NO? ROUTE iface = variable destination = IP_ADDRESS mask = IP_ADDRESS gateway = IP_ADDRESS
-   (
-      distance = DEC+
-   )?
+   NO? ROUTE route_tail
 ;
 
 s_router_vrrp
