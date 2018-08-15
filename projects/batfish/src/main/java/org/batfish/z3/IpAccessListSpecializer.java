@@ -83,7 +83,7 @@ public abstract class IpAccessListSpecializer
     lineNum = Math.min(lineNum, originalLines.size());
 
     List<IpAccessListLine> specializedLines =
-        IntStream.range(0, lineNum - 1)
+        IntStream.range(0, lineNum)
             .mapToObj(i -> specialize(originalLines.get(i)).orElse(FALSE_LINE))
             .collect(Collectors.toList());
     if (lineNum < originalLines.size()) {
