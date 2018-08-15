@@ -56403,6 +56403,12 @@
                 8
               ],
               "numReferrers" : 1
+            },
+            "blah" : {
+              "definitionLines" : [
+                303
+              ],
+              "numReferrers" : 1
             }
           }
         },
@@ -57681,6 +57687,12 @@
             "Wideband-Cable1/2/3:4" : {
               "definitionLines" : [
                 335
+              ],
+              "numReferrers" : 1
+            },
+            "inside" : {
+              "definitionLines" : [
+                303
               ],
               "numReferrers" : 1
             },
