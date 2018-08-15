@@ -870,7 +870,6 @@ null_single
       | RD
       | RESOURCE
       | RESOURCE_POOL
-      | ROUTE
       | ROUTE_TARGET
       | RTR
       | SAME_SECURITY_TRAFFIC

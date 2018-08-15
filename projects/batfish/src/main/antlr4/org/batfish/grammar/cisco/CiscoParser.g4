@@ -2903,6 +2903,14 @@ s_role
    )*
 ;
 
+s_route
+:
+   NO? ROUTE iface = variable destination = IP_ADDRESS mask = IP_ADDRESS gateway = IP_ADDRESS
+   (
+      distance = DEC+
+   )?
+;
+
 s_router_vrrp
 :
    NO? ROUTER VRRP NEWLINE

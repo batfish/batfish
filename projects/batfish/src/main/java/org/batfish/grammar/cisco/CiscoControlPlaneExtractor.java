@@ -887,6 +887,7 @@ import org.batfish.grammar.cisco.CiscoParser.S_no_access_list_extendedContext;
 import org.batfish.grammar.cisco.CiscoParser.S_no_access_list_standardContext;
 import org.batfish.grammar.cisco.CiscoParser.S_ntpContext;
 import org.batfish.grammar.cisco.CiscoParser.S_policy_mapContext;
+import org.batfish.grammar.cisco.CiscoParser.S_routeContext;
 import org.batfish.grammar.cisco.CiscoParser.S_router_ospfContext;
 import org.batfish.grammar.cisco.CiscoParser.S_router_ripContext;
 import org.batfish.grammar.cisco.CiscoParser.S_serviceContext;
@@ -8162,6 +8163,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitS_no_access_list_standard(S_no_access_list_standardContext ctx) {
     String name = ctx.ACL_NUM_STANDARD().getText();
     _configuration.getStandardAcls().remove(name);
+  }
+
+  @Override
+  public void exitS_route(S_routeContext ctx) {
+    String nextHopInterfaceAlias = ctx.iface.getText();
+    Prefix prefix = new Prefix(toIp(ctx.destination), toIp(ctx.mask));
+    Ip nextHopIp = toIp(ctx.gateway);
+    int distance = DEFAULT_STATIC_ROUTE_DISTANCE;
   }
 
   @Override
