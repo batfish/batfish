@@ -739,8 +739,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public void answerAclReachability(
       List<AclSpecs> aclSpecs, AclLinesAnswerElementInterface answerRows) {
 
-    long t0 = System.currentTimeMillis();
-
     // Map aclSpecs into a map of hostname/aclName pairs to AclSpecs objects
     Map<AclIdentifier, AclSpecs> aclSpecsMap =
         toImmutableSortedMap(
@@ -770,9 +768,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
             .map(Entry::getKey)
             .collect(Collectors.toSet());
 
-    long t1 = System.currentTimeMillis();
-    System.out.println("Unreachable: " + ((t1 - t0) / 1000.));
-
     // For all unreachable lines, see if they are unmatchable
     List<NodSatJob<AclLine>> lineMatchabilityJobs =
         generateAllUnmatchableLineJobs(configs, unreachableLines);
@@ -788,16 +783,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
             .map(Entry::getKey)
             .collect(Collectors.toSet());
 
-    long t2 = System.currentTimeMillis();
-    System.out.println("Unmatchable: " + ((t2 - t1) / 1000.));
-
     // For lines that are unreachable but not unmatchable, find earlier blocking lines
     List<NodFirstUnsatJob<AclLine, Integer>> blockingLineJobs =
         generateBlockingLineJobs(configs, unreachableLines, unmatchableLines);
     Map<AclLine, Integer> blockingLinesMap = new TreeMap<>();
     computeNodFirstUnsatOutput(blockingLineJobs, blockingLinesMap);
-
-    System.out.println("Blocking: " + ((System.currentTimeMillis() - t2) / 1000.));
 
     // Report lines
     for (AclLine line : unreachableLines) {
@@ -816,8 +806,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
         answerRows.addUnreachableLine(aclSpec, lineNum, false, blockingLineNums);
       }
     }
-
-    System.out.println("Total time: " + ((System.currentTimeMillis() - t0) / 1000.));
   }
 
   private void collectConfigs(
