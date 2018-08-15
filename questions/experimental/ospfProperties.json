@@ -4,7 +4,7 @@
     "nodeRegex": "${nodeRegex}",
     "propertySpec": "${propertySpec}",
     "instance": {
-        "description": "Gets properties of OSPF routing processes",
+        "description": "Returns configuration parameters for OSPF routing processes",
         "instanceName": "ospfProperties",
         "tags": [
             "OSPF"
@@ -16,7 +16,7 @@
                 "optional": true
             },
             "propertySpec": {
-                "description": "Which properties to fetch; default is all of them",
+                "description": "Restricts the list of properties to fetch. Default returns all properties",
                 "type": "ospfPropertySpec",
                 "optional": "true"
             }

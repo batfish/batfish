@@ -4,7 +4,7 @@
     "prefix": "${prefix}",
     "nodeRegex": "${nodeRegex}",
     "instance": {
-        "description": "Trace route prefix propagation throughout the network",
+        "description": "Trace route propagation through the network",
         "instanceName": "prefixTracer",
         "tags": [
             "dataplane"
@@ -16,7 +16,7 @@
                 "optional": true
             },
             "nodeRegex": {
-                "description": "Nodes matching this regex will have their prefix tracing information reported",
+                "description": "Only retrieve prefix tracing information for nodes that match this regex",
                 "type": "string",
                 "optional": true
             }

@@ -2,9 +2,9 @@
     "class": "org.batfish.question.NodesQuestionPlugin$NodesQuestion",
     "differential": false,
     "instance": {
-        "description": "Outputs the configuration of nodes in the network.",
+        "description": "Return configuration attributes of nodes in the network.",
         "instanceName": "nodes",
-        "longDescription": "This question may be used to extract the configuration of the node in the Batfish datamodel or a summary of it.",
+        "longDescription": "Returns a JSON dictionary with all (or summary) of the configuration paramters that are stored in the vendor independant data-model.",
         "tags": [
             "dataModel"
         ],
