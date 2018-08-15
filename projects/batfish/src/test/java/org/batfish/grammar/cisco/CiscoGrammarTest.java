@@ -3301,4 +3301,16 @@ public class CiscoGrammarTest {
             "Ethernet1/1",
             hasAllAddresses(containsInAnyOrder(new InterfaceAddress("10.20.0.3/31")))));
   }
+
+  @Test
+  public void testAsaInterface() throws IOException {
+    Configuration c = parseConfig("asa-interface");
+
+    // Confirm interface's address is extracted properly
+    assertThat(
+        c,
+        hasInterface(
+            "GigabitEthernet0/1",
+            hasAllAddresses(containsInAnyOrder(new InterfaceAddress("3.0.0.2/24")))));
+  }
 }

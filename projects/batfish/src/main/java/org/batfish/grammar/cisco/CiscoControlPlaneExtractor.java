@@ -555,6 +555,7 @@ import org.batfish.grammar.cisco.CiscoParser.If_ip_vrf_forwardingContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_vrf_sitemapContext;
 import org.batfish.grammar.cisco.CiscoParser.If_isis_metricContext;
 import org.batfish.grammar.cisco.CiscoParser.If_mtuContext;
+import org.batfish.grammar.cisco.CiscoParser.If_nameifContext;
 import org.batfish.grammar.cisco.CiscoParser.If_rp_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.If_service_policyContext;
 import org.batfish.grammar.cisco.CiscoParser.If_service_policy_control_subscriberContext;
@@ -5557,6 +5558,22 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     int mtu = toInteger(ctx.DEC());
     for (Interface currentInterface : _currentInterfaces) {
       currentInterface.setMtu(mtu);
+    }
+  }
+
+  @Override
+  public void exitIf_nameif(If_nameifContext ctx) {
+    String alias = ctx.name.getText();
+    Map<String, String> aliasMap = _configuration.getInterfaceAliases();
+    if (_configuration.getInterfaceAliases().containsKey(alias)) {
+      _w.redFlag(
+          String.format(
+              "Interface alias '%s' is already in use by '%s'.", alias, aliasMap.get(alias)));
+    } else if (_currentInterfaces.size() > 1) {
+      _w.redFlag(
+          String.format("Interface alias '%s' can not be applied to multiple interfaces.", alias));
+    } else {
+      aliasMap.put(alias, _currentInterfaces.get(0).getName());
     }
   }
 

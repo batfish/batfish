@@ -396,6 +396,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private final Map<String, InspectPolicyMap> _inspectPolicyMaps;
 
+  private final Map<String, String> _interfaceAliases;
+
   private final Map<String, Interface> _interfaces;
 
   private final Map<String, IpsecProfile> _ipsecProfiles;
@@ -490,6 +492,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _isakmpProfiles = new TreeMap<>();
     _inspectClassMaps = new TreeMap<>();
     _inspectPolicyMaps = new TreeMap<>();
+    _interfaceAliases = new TreeMap<>();
     _interfaces = new TreeMap<>();
     _ipsecTransformSets = new TreeMap<>();
     _ipsecProfiles = new TreeMap<>();
@@ -770,6 +773,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
       }
     }
     return null;
+  }
+
+  /** Returns a map of interface alias to interface name */
+  public Map<String, String> getInterfaceAliases() {
+    return _interfaceAliases;
   }
 
   public Map<String, Interface> getInterfaces() {
