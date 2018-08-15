@@ -237,6 +237,11 @@ public class NodesSpecifier {
     return suggestions;
   }
 
+  /** @return The input {@link String} expression. */
+  public String getExpression() {
+    return _expression;
+  }
+
   /** Return the set of nodes that match this specifier */
   public Set<String> getMatchingNodes(IBatfish batfish) {
     return getMatchingNodes(batfish.specifierContext());

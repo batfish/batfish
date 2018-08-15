@@ -4,9 +4,12 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
+import com.google.common.collect.ImmutableSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import javax.annotation.Nullable;
@@ -14,7 +17,9 @@ import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
+import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.answers.AclLinesAnswerElement;
 import org.batfish.datamodel.answers.AclLinesAnswerElementInterface.AclSpecs;
 import org.batfish.datamodel.answers.AnswerElement;
@@ -48,9 +53,21 @@ public class AclReachabilityQuestionPlugin extends QuestionPlugin {
             e);
       }
       SortedMap<String, Configuration> configurations = _batfish.loadConfigurations();
+      Map<String, Set<IpAccessList>> specifiedAcls =
+          CommonUtil.toImmutableMap(
+              specifiedNodes,
+              Function.identity(),
+              node ->
+                  configurations
+                      .get(node)
+                      .getIpAccessLists()
+                      .values()
+                      .stream()
+                      .filter(acl -> aclRegex.matcher(acl.getName()).matches())
+                      .collect(ImmutableSet.toImmutableSet()));
+
       List<AclSpecs> aclSpecs =
-          AclReachabilityAnswererUtils.getAclSpecs(
-              configurations, specifiedNodes, aclRegex, answer);
+          AclReachabilityAnswererUtils.getAclSpecs(configurations, specifiedAcls, answer);
       _batfish.answerAclReachability(aclSpecs, answer);
       return answer;
     }

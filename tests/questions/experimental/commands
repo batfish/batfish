@@ -1,7 +1,7 @@
 load-questions questions/experimental
 
 # validate aclReachability
-test -raw tests/questions/experimental/aclReachability.ref validate-template aclReachability aclNameRegex=".*", nodeRegex=".*"
+test -raw tests/questions/experimental/aclReachability.ref validate-template aclReachability filterSpecifierFactory="FlexibleFilterSpecifierFactory", filterSpecifierInput=".*", nodeSpecifierFactory="FlexibleNodeSpecifierFactory", nodeSpecifierInput=".*"
 
 # validate bgpProperties
 test -raw tests/questions/experimental/bgpProperties.ref validate-template bgpProperties nodeRegex=".*", propertySpec="multipath-.*"
