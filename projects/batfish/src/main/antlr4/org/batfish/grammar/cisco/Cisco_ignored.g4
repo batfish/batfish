@@ -474,7 +474,6 @@ null_inner
       | RETRIES
       | REVISION
       | RING
-      | ROUTE
       | ROUTE_TARGET
       | RP_ADDRESS
       | SA_FILTER

@@ -3339,6 +3339,12 @@ public class CiscoGrammarTest {
                             .setNetwork(Prefix.parse("0.0.0.0/0"))
                             .setNextHopInterface("ifname")
                             .setAdministrativeCost(2)
+                            .build(),
+                        StaticRoute.builder()
+                            .setNextHopIp(new Ip("3.0.0.2"))
+                            .setNetwork(Prefix.parse("1.0.0.0/8"))
+                            .setNextHopInterface("ifname")
+                            .setAdministrativeCost(3)
                             .build())))));
   }
 }

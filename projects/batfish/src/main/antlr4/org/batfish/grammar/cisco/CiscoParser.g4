@@ -2082,16 +2082,18 @@ route_tail
    iface = variable destination = IP_ADDRESS mask = IP_ADDRESS gateway = IP_ADDRESS
    (
       (
-         distance = DEC+
-      )?
+         (
+            distance = DEC+
+         )?
+         (
+            TRACK track = DEC+
+         )?
+      )
+      |
       (
-         TRACK track = DEC+
-      )?
-   )
-   |
-   (
-      TUNNELED
-   )
+         TUNNELED
+      )
+   ) NEWLINE
 ;
 
 router_multicast_stanza
