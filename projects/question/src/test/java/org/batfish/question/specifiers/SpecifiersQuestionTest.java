@@ -7,10 +7,7 @@ import static org.hamcrest.Matchers.nullValue;
 
 import com.google.auto.service.AutoService;
 import java.util.Set;
-import org.batfish.common.BatfishException;
-import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.specifier.AllInterfacesLocationSpecifier;
-import org.batfish.specifier.ConstantIpSpaceSpecifier;
 import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.specifier.IpSpaceSpecifier;
 import org.batfish.specifier.IpSpaceSpecifierFactory;
@@ -55,15 +52,10 @@ public final class SpecifiersQuestionTest {
   @Rule public final ExpectedException exception = ExpectedException.none();
 
   @Test
-  public void testGetIpSpaceSpecifier_defaultFactory() {
-    IpSpaceSpecifier specifier = new SpecifiersQuestion().getIpSpaceSpecifier();
-    assertThat(specifier, equalTo(new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE)));
-  }
-
-  @Test
   public void testGetIpSpaceSpecifier_inputWithoutFactory() {
-    exception.expect(BatfishException.class);
+    exception.expect(NullPointerException.class);
     SpecifiersQuestion question = new SpecifiersQuestion();
+    question.setIpSpaceSpecifierFactory(null);
     question.setIpSpaceSpecifierInput("foo");
     question.getIpSpaceSpecifier();
   }
@@ -102,8 +94,9 @@ public final class SpecifiersQuestionTest {
 
   @Test
   public void testGetLocationSpecifier_inputWithoutFactory() {
-    exception.expect(BatfishException.class);
+    exception.expect(NullPointerException.class);
     SpecifiersQuestion question = new SpecifiersQuestion();
+    question.setLocationSpecifierFactory(null);
     question.setLocationSpecifierInput("foo");
     question.getLocationSpecifier();
   }
