@@ -62,7 +62,7 @@
         "type": "integer"
       },
       "filterRegex": {
-        "description": "Only consider filters that match this specification",
+        "description": "Only consider filters that match this regular expression",
         "optional": false,
         "type": "javaRegex"
       },
@@ -82,7 +82,7 @@
         "type": "integer"
       },
       "ingressInterface": {
-        "description": "Ingress interface for external-originating packet",
+        "description": "Ingress interface(s) to consider for this flow. Important to specify for firewalls, since that picks the zone and zone rules",
         "minLength": 1,
         "optional": true,
         "type": "string"
@@ -93,7 +93,7 @@
         "type": "string"
       },
       "nodeRegex": {
-        "description": "Only consider filters present on these nodes",
+        "description": "Only consider filters present on nodes that match this regular expression",
         "type": "javaRegex",
         "value": ".*"
       },
