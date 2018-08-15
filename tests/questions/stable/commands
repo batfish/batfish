@@ -6,6 +6,9 @@ test -raw tests/questions/stable/fileParseStatus.ref validate-template fileParse
 # validate ipOwners
 test -raw tests/questions/stable/ipOwners.ref validate-template ipOwners duplicatesOnly=false
 
+# validate parseWarning
+test -raw tests/questions/stable/parseWarning.ref validate-template parseWarning
+
 # validate routes
 test -raw tests/questions/stable/routes.ref validate-template routes nodeRegex=".*", vrfRegex=".*", protocol="main"
 
