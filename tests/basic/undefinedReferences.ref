@@ -1,0 +1,65 @@
+[
+  {
+    "class" : "org.batfish.datamodel.table.TableAnswerElement",
+    "metadata" : {
+      "columnMetadata" : [
+        {
+          "description" : "File containing reference",
+          "isKey" : true,
+          "isValue" : false,
+          "name" : "filename",
+          "schema" : "String"
+        },
+        {
+          "description" : "Type of struct reference is supposed to be",
+          "isKey" : false,
+          "isValue" : false,
+          "name" : "structType",
+          "schema" : "String"
+        },
+        {
+          "description" : "The undefined reference",
+          "isKey" : true,
+          "isValue" : false,
+          "name" : "refName",
+          "schema" : "String"
+        },
+        {
+          "description" : "Context of undefined reference",
+          "isKey" : true,
+          "isValue" : false,
+          "name" : "context",
+          "schema" : "String"
+        },
+        {
+          "description" : "Lines where reference appears",
+          "isKey" : false,
+          "isValue" : false,
+          "name" : "lines",
+          "schema" : "FileLines"
+        }
+      ],
+      "textDesc" : "'${filename}' has undefined '${structType}' called '${refName}' being used as '${context}' at line(s) ${lines}"
+    },
+    "rows" : [
+      {
+        "filename" : "configs/as2core2.cfg",
+        "structType" : "route-map",
+        "refName" : "filter-bogons",
+        "context" : "bgp inbound route-map",
+        "lines" : {
+          "filename" : "configs/as2core2.cfg",
+          "lines" : [
+            109
+          ]
+        }
+      }
+    ],
+    "summary" : {
+      "notes" : "Found 1 results",
+      "numFailed" : 0,
+      "numPassed" : 0,
+      "numResults" : 1
+    }
+  }
+]
