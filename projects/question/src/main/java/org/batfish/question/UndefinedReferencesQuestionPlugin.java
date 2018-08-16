@@ -65,10 +65,7 @@ public class UndefinedReferencesQuestionPlugin extends QuestionPlugin {
           .entrySet()
           .stream()
           .filter(e -> includeFiles.contains(e.getKey()))
-          .forEach(
-              e -> {
-                rows.addAll(processEntryToRows(e));
-              });
+          .forEach(e -> rows.addAll(processEntryToRows(e)));
 
       TableAnswerElement table = new TableAnswerElement(createMetadata());
       table.postProcessAnswer(_question, rows);
