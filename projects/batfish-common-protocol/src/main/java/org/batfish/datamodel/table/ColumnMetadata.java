@@ -21,7 +21,7 @@ public final class ColumnMetadata {
   private static final String PROP_SCHEMA = "schema";
 
   // must start with letters or underscore, and only contain {-,\w} ( i.e., [-a-zA-Z_0-9])
-  public static final String COLUMN_NAME_PATTERN = "[a-zA-Z0-9_.~]*[-\\s\\w/.:~]*";
+  public static final String COLUMN_NAME_PATTERN = "[a-zA-Z0-9_~]+[-\\w\\.:~@]*";
   private static final Pattern _COLUMN_NAME_PATTERN = Pattern.compile(COLUMN_NAME_PATTERN);
 
   @Nonnull private String _description;
