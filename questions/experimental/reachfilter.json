@@ -3,9 +3,9 @@
   "differential": false,
   "destinationIpSpaceSpecifierFactory": "${destinationIpSpaceSpecifierFactory}",
   "dst": "${dst}",
-  "filterRegex": "${filters}",
+  "filterRegex": "${filterRegex}",
   "nodesSpecifierFactory": "${nodesSpecifierFactory}",
-  "nodesSpecifierInput": "${nodes}",
+  "nodesSpecifierInput": "${nodeSpecifierInput}",
   "sourceIpSpaceSpecifierFactory": "${sourceIpSpaceSpecifierFactory}",
   "src": "${src}",
   "query": "${query}",
@@ -28,12 +28,12 @@
         "optional": true,
         "type": "string"
       },
-      "filters": {
+      "filterRegeex": {
         "description": "Only evaluate filters that match this regex",
         "optional": true,
         "type": "javaRegex"
       },
-      "nodes": {
+      "nodeSpecifierInput": {
         "description": "Only evaluate filters present on nodes matching this regex",
         "optional": true,
         "type": "string"

@@ -1,8 +1,8 @@
 {
     "class": "org.batfish.question.interfaceproperties.InterfacePropertiesQuestion",
     "differential": false,
-    "interfaceRegex": "${interfaces}",
-    "nodeRegex": "${nodes}",
+    "interfaceRegex": "${interfaceRegex}",
+    "nodeRegex": "${nodeRegex}",
     "propertySpec": "${propertySpec}",
     "instance": {
         "description": "Returns configuration properties of interfaces",
@@ -12,12 +12,12 @@
             "interfaces"
         ],
         "variables": {
-            "interfaces": {
+            "interfaceRegex": {
                 "description": "Only include interfaces that match this regex",
                 "type": "javaRegex",
                 "optional": true
             },
-            "nodes": {
+            "nodeRegex": {
                 "description": "Only include nodes that match this regex",
                 "type": "nodeSpec",
                 "optional": true

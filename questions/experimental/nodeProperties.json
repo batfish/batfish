@@ -1,7 +1,7 @@
 {
     "class": "org.batfish.question.nodeproperties.NodePropertiesQuestion",
     "differential": false,
-    "nodeRegex": "${nodes}",
+    "nodeRegex": "${nodeRegex}",
     "propertySpec": "${propertySpec}",
     "instance": {
         "description": "Return configuration properties of nodes",
@@ -9,7 +9,7 @@
         "tags": [
         ],
         "variables": {
-            "nodes": {
+            "nodeRegex": {
                 "description": "Only include nodes that match this regex",
                 "type": "nodeSpec",
                 "optional": true
