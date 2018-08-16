@@ -169,7 +169,7 @@ public class RoutesAnswererTest {
 
   @Test
   public void testGetTableMetadataProtocolAll() {
-    List<ColumnMetadata> columnMetadata = getTableMetadata(RibProtocol.ALL).getColumnMetadata();
+    List<ColumnMetadata> columnMetadata = getTableMetadata(RibProtocol.MAIN).getColumnMetadata();
 
     assertThat(
         columnMetadata
@@ -310,7 +310,7 @@ public class RoutesAnswererTest {
 
   @Test
   public void testHasTextDesc() {
-    String textDesc = getTableMetadata(RibProtocol.ALL).getTextDesc();
+    String textDesc = getTableMetadata(RibProtocol.MAIN).getTextDesc();
 
     assertThat(textDesc, notNullValue());
     assertThat(textDesc, not(emptyString()));

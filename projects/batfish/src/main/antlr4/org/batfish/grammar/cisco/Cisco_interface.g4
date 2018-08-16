@@ -455,6 +455,11 @@ if_mtu
    MTU mtu_size = DEC NEWLINE
 ;
 
+if_nameif
+:
+   NAMEIF name = variable NEWLINE
+;
+
 if_no_ip_address
 :
    NO IP ADDRESS NEWLINE
@@ -692,7 +697,6 @@ if_null_block
       | MOP
       | MPLS
       | NAME
-      | NAMEIF
       | NEGOTIATE
       | NEGOTIATION
       | NMSP
@@ -1480,6 +1484,7 @@ if_inner
    | if_isis_tag
    | if_load_interval
    | if_mtu
+   | if_nameif
    | if_no_ip_address
    | if_port_security
    | if_private_vlan

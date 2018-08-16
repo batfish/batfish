@@ -2,7 +2,6 @@ package org.batfish.allinone;
 
 import static org.batfish.datamodel.matchers.FlowHistoryInfoMatchers.hasFlow;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasDstIp;
-import static org.batfish.datamodel.matchers.FlowMatchers.hasIngressInterface;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasIngressNode;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasSrcIp;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -39,7 +38,6 @@ import org.junit.rules.TemporaryFolder;
 
 /** End-to-end SpecifiersReachabilityQuestion tests. */
 public class SpecifiersReachabilityQuestionTest {
-  private static final String FAST_ETHERNET = "FastEthernet0/0";
   private static final String LOOPBACK = "Loopback0";
   private static final String NODE1 = "node1";
   private static final String NODE2 = "node2";
@@ -142,39 +140,13 @@ public class SpecifiersReachabilityQuestionTest {
     AnswerElement answer = new SpecifiersReachabilityAnswerer(question, _batfish).answer();
     assertThat(answer, instanceOf(FlowHistory.class));
     Collection<FlowHistoryInfo> flowHistoryInfos = ((FlowHistory) answer).getTraces().values();
-    assertThat(flowHistoryInfos, hasSize(4));
+    assertThat(flowHistoryInfos, hasSize(2));
     assertThat(
         flowHistoryInfos,
-        hasItem(
-            hasFlow(
-                allOf(
-                    hasIngressNode(NODE1),
-                    hasIngressInterface(FAST_ETHERNET),
-                    hasSrcIp(new Ip("5.5.5.5"))))));
+        hasItem(hasFlow(allOf(hasIngressNode(NODE1), hasSrcIp(new Ip("5.5.5.5"))))));
     assertThat(
         flowHistoryInfos,
-        hasItem(
-            hasFlow(
-                allOf(
-                    hasIngressNode(NODE1),
-                    hasIngressInterface(LOOPBACK),
-                    hasSrcIp(new Ip("5.5.5.5"))))));
-    assertThat(
-        flowHistoryInfos,
-        hasItem(
-            hasFlow(
-                allOf(
-                    hasIngressNode(NODE2),
-                    hasIngressInterface(FAST_ETHERNET),
-                    hasSrcIp(new Ip("5.5.5.5"))))));
-    assertThat(
-        flowHistoryInfos,
-        hasItem(
-            hasFlow(
-                allOf(
-                    hasIngressNode(NODE2),
-                    hasIngressInterface(LOOPBACK),
-                    hasSrcIp(new Ip("5.5.5.5"))))));
+        hasItem(hasFlow(allOf(hasIngressNode(NODE2), hasSrcIp(new Ip("5.5.5.5"))))));
   }
 
   /**

@@ -51,6 +51,8 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
   public static final String DEFAULT_VSYS_NAME = "vsys1";
 
+  public static final String NULL_VRF_NAME = "~NULL_VRF~";
+
   private static final String RULEBASE_NAME = "RULEBASE";
 
   public static final String SHARED_VSYS_NAME = "~SHARED_VSYS~";
@@ -324,8 +326,9 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     newIface.setDescription(iface.getComment());
 
     String ifAclName = computeOutgoingFilterName(iface.getName());
-    if (iface.getZone() != null) {
-      Zone zone = iface.getZone();
+    Zone zone = iface.getZone();
+    if (zone != null) {
+      newIface.setZoneName(zone.getName());
       newIface.setOutgoingFilter(
           IpAccessList.builder()
               .setOwner(_c)
@@ -353,7 +356,6 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
                           .build()))
               .build());
     }
-
     return newIface;
   }
 
@@ -388,6 +390,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
       org.batfish.datamodel.Interface iface = _c.getInterfaces().get(interfaceName);
       if (iface != null) {
         map.put(interfaceName, iface);
+        iface.setVrf(vrf);
       }
     }
     vrf.setInterfaces(map);
@@ -418,8 +421,30 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
       _c.getInterfaces().put(i.getKey(), toInterface(i.getValue()));
     }
 
+    // Vrf conversion uses interfaces, so must be done after interface exist in VI model
     for (Entry<String, VirtualRouter> vr : _virtualRouters.entrySet()) {
       _c.getVrfs().put(vr.getKey(), toVrf(vr.getValue()));
+    }
+
+    // Batfish cannot handle interfaces without a Vrf
+    // So put orphaned interfaces in a constructed Vrf and shut them down
+    Vrf nullVrf = new Vrf(NULL_VRF_NAME);
+    NavigableMap<String, org.batfish.datamodel.Interface> orphanedInterfaces = new TreeMap<>();
+    for (Entry<String, org.batfish.datamodel.Interface> i : _c.getInterfaces().entrySet()) {
+      org.batfish.datamodel.Interface iface = i.getValue();
+      if (iface.getVrf() == null) {
+        orphanedInterfaces.put(iface.getName(), iface);
+        iface.setVrf(nullVrf);
+        iface.setActive(false);
+        _w.redFlag(
+            String.format(
+                "Interface %s is not in a virtual-router, placing in %s and shutting it down.",
+                iface.getName(), nullVrf.getName()));
+      }
+    }
+    if (orphanedInterfaces.size() > 0) {
+      nullVrf.setInterfaces(orphanedInterfaces);
+      _c.getVrfs().put(nullVrf.getName(), nullVrf);
     }
 
     // Handle converting items within virtual systems

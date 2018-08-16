@@ -2,7 +2,7 @@
   "class" : "org.batfish.question.jsonpath.JsonPathQuestionPlugin$JsonPathQuestion",
   "debug" : false,
   "differential" : false,
-  "includeOneTableKeys" : false,
+  "includeOneTableKeys" : true,
   "innerQuestion" : {
     "class" : "org.batfish.question.specifiers.SpecifiersReachabilityQuestion",
     "actions" : [
@@ -13,7 +13,7 @@
     "differential" : false,
     "finalNodesSpecifierFactory" : "finalNodeFactory",
     "finalNodesSpecifierInput" : "finalNode",
-    "includeOneTableKeys" : false,
+    "includeOneTableKeys" : true,
     "sourceLocationSpecifierFactory" : "sourceFactory",
     "sourceLocationSpecifierInput" : "sourceNode"
   },

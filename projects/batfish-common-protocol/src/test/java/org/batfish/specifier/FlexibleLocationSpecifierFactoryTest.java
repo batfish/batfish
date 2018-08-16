@@ -19,6 +19,12 @@ public class FlexibleLocationSpecifierFactoryTest {
             new NodeSpecifierInterfaceLocationSpecifier(
                 new FlexibleNodeSpecifierFactory().buildNodeSpecifier("foo"))));
     assertThat(
+        parse("ref.noderole(bar1, bar2)"),
+        equalTo(
+            new NodeSpecifierInterfaceLocationSpecifier(
+                new FlexibleNodeSpecifierFactory()
+                    .buildNodeSpecifier("ref.noderole(bar1, bar2)"))));
+    assertThat(
         parse("[bar]"),
         equalTo(
             new InterfaceSpecifierInterfaceLocationSpecifier(
@@ -54,12 +60,13 @@ public class FlexibleLocationSpecifierFactoryTest {
             new ToInterfaceLinkLocationSpecifier(
                 new NodeSpecifierInterfaceLocationSpecifier(
                     new FlexibleNodeSpecifierFactory().buildNodeSpecifier("foo")))));
-  }
-
-  @Test
-  public void parseFuncUnknown() {
-    exception.expect(IllegalArgumentException.class);
-    parse("foo(foo)");
+    exception.expect(UnsupportedOperationException.class);
+    assertThat(
+        parse("exit(foo)"),
+        equalTo(
+            new ToInterfaceLinkLocationSpecifier(
+                new NodeSpecifierInterfaceLocationSpecifier(
+                    new FlexibleNodeSpecifierFactory().buildNodeSpecifier("foo")))));
   }
 
   @Test

@@ -1,5 +1,6 @@
 package org.batfish.datamodel.acl;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
@@ -17,6 +18,7 @@ public final class AclTrace implements Serializable {
 
   private final List<TraceEvent> _events;
 
+  @JsonCreator
   public AclTrace(@JsonProperty(PROP_EVENTS) @Nullable Iterable<TraceEvent> events) {
     _events = events != null ? ImmutableList.copyOf(events) : ImmutableList.of();
   }

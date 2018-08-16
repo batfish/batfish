@@ -172,6 +172,7 @@ import org.batfish.job.FlattenVendorConfigurationJob;
 import org.batfish.job.ParseEnvironmentBgpTableJob;
 import org.batfish.job.ParseEnvironmentRoutingTableJob;
 import org.batfish.job.ParseVendorConfigurationJob;
+import org.batfish.question.ReachFilterParameters;
 import org.batfish.question.ReachabilityParameters;
 import org.batfish.question.ResolvedReachabilityParameters;
 import org.batfish.referencelibrary.ReferenceLibrary;
@@ -195,6 +196,7 @@ import org.batfish.symbolic.abstraction.Roles;
 import org.batfish.symbolic.bdd.BDDAcl;
 import org.batfish.symbolic.bdd.BDDPacket;
 import org.batfish.symbolic.bdd.BDDSourceManager;
+import org.batfish.symbolic.bdd.HeaderSpaceToBDD;
 import org.batfish.symbolic.smt.PropertyChecker;
 import org.batfish.vendor.VendorConfiguration;
 import org.batfish.z3.AclIdentifier;
@@ -2658,6 +2660,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
               (hostname, initStepWarnings) -> {
                 Warnings combined =
                     warnings.computeIfAbsent(hostname, h -> buildWarnings(_settings));
+                combined.getParseWarnings().addAll(initStepWarnings.getParseWarnings());
                 combined.getPedanticWarnings().addAll(initStepWarnings.getPedanticWarnings());
                 combined.getRedFlagWarnings().addAll(initStepWarnings.getRedFlagWarnings());
                 combined
@@ -4268,19 +4271,22 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public Optional<Flow> reachFilter(Configuration node, IpAccessList acl) {
+  public Optional<Flow> reachFilter(
+      Configuration node, IpAccessList acl, ReachFilterParameters parameters) {
     BDDPacket bddPacket = new BDDPacket();
-    List<String> interfaces = ImmutableList.copyOf(node.getInterfaces().keySet());
-    BDDSourceManager mgr = new BDDSourceManager(bddPacket, interfaces);
+    BDDSourceManager mgr = BDDSourceManager.forIpAccessList(bddPacket, node, acl);
     BDDAcl bddAcl = BDDAcl.create(bddPacket, acl, node.getIpAccessLists(), node.getIpSpaces(), mgr);
-    BDD satAssignment = bddAcl.getBdd().and(mgr.isSane()).fullSatOne();
+    parameters.resolveHeaderspace(specifierContext());
+    BDD headerSpace =
+        new HeaderSpaceToBDD(bddPacket, ImmutableMap.of()).toBDD(parameters.getHeaderSpace());
+    BDD satAssignment = bddAcl.getBdd().and(mgr.isSane()).and(headerSpace).fullSatOne();
     if (satAssignment.isZero()) {
       return Optional.empty();
     }
 
     Flow.Builder flowBuilder = bddAcl.getPkt().getFlowFromAssignment(satAssignment);
     flowBuilder.setTag(getFlowTag()).setIngressNode(node.getHostname());
-    mgr.getInterfaceFromAssignment(satAssignment).ifPresent(flowBuilder::setIngressInterface);
+    mgr.getSourceFromAssignment(satAssignment).ifPresent(flowBuilder::setIngressInterface);
     return Optional.of(flowBuilder.build());
   }
 

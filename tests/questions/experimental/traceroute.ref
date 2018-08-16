@@ -10,7 +10,7 @@
   "icmpCode" : 12,
   "icmpType" : 23,
   "ignoreAcls" : false,
-  "includeOneTableKeys" : false,
+  "includeOneTableKeys" : true,
   "instance" : {
     "description" : "Perform a traceroute.",
     "instanceName" : "qname",
@@ -177,7 +177,7 @@
   "ipProtocol" : "TRUNK1",
   "packetLength" : 12,
   "srcIpSpace" : "1.1.1.1",
-  "srcIpSpaceSpecifierFactory" : "FlexibleIpSpaceSpecifierFactory",
+  "srcIpSpaceSpecifierFactory" : "FlexibleInferFromLocationIpSpaceSpecifierFactory",
   "srcPort" : 123,
   "srcProtocol" : "tcp",
   "state" : "NEW",

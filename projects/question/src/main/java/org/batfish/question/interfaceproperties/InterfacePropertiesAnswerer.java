@@ -93,6 +93,7 @@ public class InterfacePropertiesAnswerer extends Answerer {
             configurations,
             nodes,
             question.getInterfaceRegex(),
+            question.getOnlyActive(),
             tableMetadata.toColumnMap());
 
     answer.postProcessAnswer(question, propertyRows);
@@ -102,6 +103,21 @@ public class InterfacePropertiesAnswerer extends Answerer {
   /** Returns the name of the column that contains the value of property {@code property} */
   public static String getColumnName(String property) {
     return property;
+  }
+
+  public static Multiset<Row> getProperties(
+      InterfacePropertySpecifier propertySpecifier,
+      Map<String, Configuration> configurations,
+      Set<String> nodes,
+      InterfacesSpecifier interfacesSpecifier,
+      Map<String, ColumnMetadata> columns) {
+    return getProperties(
+        propertySpecifier,
+        configurations,
+        nodes,
+        interfacesSpecifier,
+        InterfacePropertiesQuestion.DEFAULT_EXCLUDE_SHUT_INTERFACES,
+        columns);
   }
 
   /**
@@ -120,12 +136,13 @@ public class InterfacePropertiesAnswerer extends Answerer {
       Map<String, Configuration> configurations,
       Set<String> nodes,
       InterfacesSpecifier interfacesSpecifier,
+      boolean excludeShutInterfaces,
       Map<String, ColumnMetadata> columns) {
     Multiset<Row> rows = HashMultiset.create();
 
     for (String nodeName : nodes) {
       for (Interface iface : configurations.get(nodeName).getInterfaces().values()) {
-        if (!interfacesSpecifier.matches(iface)) {
+        if (!interfacesSpecifier.matches(iface) || (excludeShutInterfaces && !iface.getActive())) {
           continue;
         }
         RowBuilder row =

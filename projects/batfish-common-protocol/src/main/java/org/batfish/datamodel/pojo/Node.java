@@ -22,7 +22,7 @@ public class Node extends BfObject {
       @JsonProperty(PROP_NAME) String name,
       @JsonProperty(PROP_ID) String id,
       @JsonProperty(PROP_TYPE) DeviceType type) {
-    super(firstNonNull(id, getId(name)));
+    super(firstNonNull(id, makeId(name)));
     _name = name;
     _type = type;
     if (name == null) {
@@ -31,14 +31,14 @@ public class Node extends BfObject {
   }
 
   public Node(String name) {
-    this(name, getId(name), null);
+    this(name, makeId(name), null);
   }
 
   public Node(String name, DeviceType type) {
-    this(name, getId(name), type);
+    this(name, makeId(name), type);
   }
 
-  public static String getId(String name) {
+  public static String makeId(String name) {
     return "node-" + name;
   }
 

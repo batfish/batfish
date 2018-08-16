@@ -3,6 +3,7 @@ package org.batfish.specifier;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.auto.service.AutoService;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.questions.FiltersSpecifier;
 import org.batfish.datamodel.questions.FiltersSpecifier.Type;
 
@@ -22,7 +23,7 @@ public final class ShorthandFilterSpecifierFactory implements FilterSpecifierFac
   }
 
   @Override
-  public FilterSpecifier buildFilterSpecifier(Object input) {
+  public FilterSpecifier buildFilterSpecifier(@Nullable Object input) {
     if (input == null) {
       return new ShorthandFilterSpecifier(FiltersSpecifier.ALL);
     }

@@ -31,6 +31,8 @@ public class SelfAdjacenciesQuestionPlugin extends QuestionPlugin {
 
   public static class SelfAdjacenciesAnswerElement extends AnswerElement {
 
+    private static final String PROP_SELF_ADJACENCIES = "selfAdjacencies";
+
     public static class InterfaceIpPair extends Pair<String, Ip> {
 
       private static final String PROP_INTERFACE_NAME = "interfaceName";
@@ -70,10 +72,12 @@ public class SelfAdjacenciesQuestionPlugin extends QuestionPlugin {
       interfaces.add(new InterfaceIpPair(interfaceName, address));
     }
 
+    @JsonProperty(PROP_SELF_ADJACENCIES)
     public SortedMap<String, SortedMap<Prefix, SortedSet<InterfaceIpPair>>> getSelfAdjacencies() {
       return _selfAdjacencies;
     }
 
+    @JsonProperty(PROP_SELF_ADJACENCIES)
     public void setSelfAdjacencies(
         SortedMap<String, SortedMap<Prefix, SortedSet<InterfaceIpPair>>> selfAdjacencies) {
       _selfAdjacencies = selfAdjacencies;

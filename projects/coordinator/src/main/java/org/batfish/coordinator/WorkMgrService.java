@@ -5,6 +5,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableSet;
 import io.opentracing.util.GlobalTracer;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -18,6 +19,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.UUID;
 import javax.annotation.Nullable;
@@ -30,8 +32,10 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import org.apache.commons.io.FileExistsException;
+import org.batfish.common.AnalysisAnswerOptions;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.BfConsts;
 import org.batfish.common.Container;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.Version;
@@ -41,8 +45,12 @@ import org.batfish.coordinator.AnalysisMetadataMgr.AnalysisType;
 import org.batfish.coordinator.WorkDetails.WorkType;
 import org.batfish.coordinator.WorkQueueMgr.QueueType;
 import org.batfish.datamodel.TestrigMetadata;
+import org.batfish.datamodel.answers.AnalysisAnswerMetricsResult;
+import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AutocompleteSuggestion;
 import org.batfish.datamodel.answers.AutocompleteSuggestion.CompletionType;
+import org.batfish.datamodel.answers.ColumnAggregation;
+import org.batfish.datamodel.answers.GetAnalysisAnswerMetricsAnswer;
 import org.batfish.datamodel.pojo.WorkStatus;
 import org.batfish.datamodel.questions.Question;
 import org.codehaus.jettison.json.JSONArray;
@@ -772,6 +780,217 @@ public class WorkMgrService {
       String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.errorf(
           "WMS:getAnalysisAnswers exception for apikey:%s in network:%s, snapshot:%s, "
+              + "deltasnapshot:%s; exception:%s",
+          apiKey,
+          networkNameParam,
+          snapshotNameParam,
+          deltaSnapshotParam == null ? "" : deltaSnapshotParam,
+          stackTrace);
+      return failureResponse(e.getMessage());
+    }
+  }
+
+  /**
+   * Get metrics for answers for a previously run analysis
+   *
+   * @param apiKey The API key of the client
+   * @param clientVersion The version of the client
+   * @param networkName The name of the network in which the analysis resides
+   * @param snapshotName The name of the snapshot on which the analysis was run
+   * @param deltaSnapshot The name of the delta snapshot on which the analysis was run
+   * @param aggregationsStr A list of aggregations to be computed and returned for each table
+   * @param analysisName The name of the analysis
+   * @param analysisQuestionsStr The names of the questions for which to retrieve metrics
+   * @return TODO: document JSON response
+   */
+  @POST
+  @Path(CoordConsts.SVC_RSC_GET_ANALYSIS_ANSWERS_METRICS)
+  @Produces(MediaType.APPLICATION_JSON)
+  public JSONArray getAnalysisAnswersMetrics(
+      @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
+      @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
+      @FormDataParam(CoordConsts.SVC_KEY_NETWORK_NAME) String networkName,
+      @FormDataParam(CoordConsts.SVC_KEY_SNAPSHOT_NAME) String snapshotName,
+      @FormDataParam(CoordConsts.SVC_KEY_DELTA_SNAPSHOT_NAME) String deltaSnapshot,
+      @FormDataParam(CoordConsts.SVC_KEY_AGGREGATIONS) String aggregationsStr,
+      @FormDataParam(CoordConsts.SVC_KEY_ANALYSIS_NAME) String analysisName,
+      @FormDataParam(CoordConsts.SVC_KEY_ANALYSIS_QUESTIONS)
+          String analysisQuestionsStr /* optional */,
+      @FormDataParam(CoordConsts.SVC_KEY_WORKITEM) String workItemStr /* optional */) {
+    String networkNameParam = networkName;
+    String snapshotNameParam = snapshotName;
+    String deltaSnapshotParam = deltaSnapshot;
+    try {
+      _logger.infof(
+          "WMS:getAnalysisAnswersMetrics %s %s %s %s %s\n",
+          apiKey, networkNameParam, snapshotNameParam, analysisName, analysisQuestionsStr);
+
+      checkStringParam(apiKey, "API key");
+      checkStringParam(clientVersion, "Client version");
+      checkStringParam(networkNameParam, "Network name");
+      checkStringParam(snapshotNameParam, "Base snapshot name");
+      checkStringParam(analysisName, "Analysis name");
+      Set<String> analysisQuestions =
+          Strings.isNullOrEmpty(analysisQuestionsStr)
+              ? ImmutableSet.of()
+              : BatfishObjectMapper.mapper()
+                  .readValue(analysisQuestionsStr, new TypeReference<Set<String>>() {});
+
+      checkApiKeyValidity(apiKey);
+      checkClientVersion(clientVersion);
+      checkNetworkAccessibility(apiKey, networkNameParam);
+
+      JSONObject response = new JSONObject();
+
+      if (!Strings.isNullOrEmpty(workItemStr)) {
+        WorkItem workItem = BatfishObjectMapper.mapper().readValue(workItemStr, WorkItem.class);
+        if (!workItem.getContainerName().equals(networkNameParam)
+            || !workItem.getTestrigName().equals(snapshotNameParam)) {
+          return failureResponse(
+              "Mismatch in parameters: WorkItem is not for the supplied network or snapshot");
+        }
+        QueuedWork work = Main.getWorkMgr().getMatchingWork(workItem, QueueType.INCOMPLETE);
+        if (work != null) {
+          String taskStr = BatfishObjectMapper.writePrettyString(work.getLastTaskCheckResult());
+          response
+              .put(CoordConsts.SVC_KEY_WORKID, work.getWorkItem().getId())
+              .put(CoordConsts.SVC_KEY_WORKSTATUS, work.getStatus().toString())
+              .put(CoordConsts.SVC_KEY_TASKSTATUS, taskStr);
+        }
+      }
+
+      List<ColumnAggregation> aggregations =
+          BatfishObjectMapper.mapper()
+              .readValue(aggregationsStr, new TypeReference<List<ColumnAggregation>>() {});
+
+      Map<String, String> answers =
+          Main.getWorkMgr()
+              .getAnalysisAnswers(
+                  networkNameParam,
+                  snapshotNameParam,
+                  BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
+                  deltaSnapshotParam,
+                  BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
+                  analysisName,
+                  analysisQuestions);
+
+      Map<String, AnalysisAnswerMetricsResult> analysisAnswerMetricsResults =
+          Main.getWorkMgr().getAnalysisAnswersMetrics(answers, aggregations);
+
+      GetAnalysisAnswerMetricsAnswer answer =
+          new GetAnalysisAnswerMetricsAnswer(analysisAnswerMetricsResults);
+
+      String answerStr = BatfishObjectMapper.writePrettyString(answer);
+
+      return successResponse(response.put(CoordConsts.SVC_KEY_ANSWER, answerStr));
+    } catch (IllegalArgumentException | AccessControlException e) {
+      _logger.errorf("WMS:getAnalysisAnswers exception: %s\n", e.getMessage());
+      return failureResponse(e.getMessage());
+    } catch (Exception e) {
+      String stackTrace = Throwables.getStackTraceAsString(e);
+      _logger.errorf(
+          "WMS:getAnalysisAnswersMetrics exception for apikey:%s in network:%s, snapshot:%s, "
+              + "deltasnapshot:%s; exception:%s",
+          apiKey,
+          networkNameParam,
+          snapshotNameParam,
+          deltaSnapshotParam == null ? "" : deltaSnapshotParam,
+          stackTrace);
+      return failureResponse(e.getMessage());
+    }
+  }
+
+  /**
+   * Get metrics for answers for a previously run analysis
+   *
+   * @param apiKey The API key of the client
+   * @param clientVersion The version of the client
+   * @param networkName The name of the network in which the analysis resides
+   * @param snapshotName The name of the snapshot on which the analysis was run
+   * @param deltaSnapshot The name of the delta snapshot on which the analysis was run
+   * @param analysisName The name of the analysis
+   * @param analysisAnswersOptionsStr Options specifying which answers to retrieve and how to
+   *     process them
+   * @return TODO: document JSON response
+   */
+  @POST
+  @Path(CoordConsts.SVC_RSC_GET_ANALYSIS_ANSWERS_ROWS)
+  @Produces(MediaType.APPLICATION_JSON)
+  public JSONArray getAnalysisAnswersRows(
+      @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
+      @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
+      @FormDataParam(CoordConsts.SVC_KEY_NETWORK_NAME) String networkName,
+      @FormDataParam(CoordConsts.SVC_KEY_SNAPSHOT_NAME) String snapshotName,
+      @FormDataParam(CoordConsts.SVC_KEY_DELTA_SNAPSHOT_NAME) String deltaSnapshot,
+      @FormDataParam(CoordConsts.SVC_KEY_ANALYSIS_NAME) String analysisName,
+      @FormDataParam(CoordConsts.SVC_KEY_ANALYSIS_ANSWERS_OPTIONS) String analysisAnswersOptionsStr,
+      @FormDataParam(CoordConsts.SVC_KEY_WORKITEM) String workItemStr /* optional */) {
+    String networkNameParam = networkName;
+    String snapshotNameParam = snapshotName;
+    String deltaSnapshotParam = deltaSnapshot;
+    try {
+      _logger.infof(
+          "WMS:getAnalysisAnswersRows %s %s %s %s %s\n",
+          apiKey, networkNameParam, snapshotNameParam, analysisName, analysisAnswersOptionsStr);
+
+      checkStringParam(apiKey, "API key");
+      checkStringParam(clientVersion, "Client version");
+      checkStringParam(networkNameParam, "Network name");
+      checkStringParam(snapshotNameParam, "Base snapshot name");
+      checkStringParam(analysisName, "Analysis name");
+      Map<String, AnalysisAnswerOptions> analysisAnswersOptions =
+          BatfishObjectMapper.mapper()
+              .readValue(
+                  analysisAnswersOptionsStr,
+                  new TypeReference<Map<String, AnalysisAnswerOptions>>() {});
+
+      checkApiKeyValidity(apiKey);
+      checkClientVersion(clientVersion);
+      checkNetworkAccessibility(apiKey, networkNameParam);
+
+      JSONObject response = new JSONObject();
+
+      if (!Strings.isNullOrEmpty(workItemStr)) {
+        WorkItem workItem = BatfishObjectMapper.mapper().readValue(workItemStr, WorkItem.class);
+        if (!workItem.getContainerName().equals(networkNameParam)
+            || !workItem.getTestrigName().equals(snapshotNameParam)) {
+          return failureResponse(
+              "Mismatch in parameters: WorkItem is not for the supplied network or snapshot");
+        }
+        QueuedWork work = Main.getWorkMgr().getMatchingWork(workItem, QueueType.INCOMPLETE);
+        if (work != null) {
+          String taskStr = BatfishObjectMapper.writePrettyString(work.getLastTaskCheckResult());
+          response
+              .put(CoordConsts.SVC_KEY_WORKID, work.getWorkItem().getId())
+              .put(CoordConsts.SVC_KEY_WORKSTATUS, work.getStatus().toString())
+              .put(CoordConsts.SVC_KEY_TASKSTATUS, taskStr);
+        }
+      }
+
+      Map<String, String> rawAnswers =
+          Main.getWorkMgr()
+              .getAnalysisAnswers(
+                  networkNameParam,
+                  snapshotNameParam,
+                  BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
+                  deltaSnapshotParam,
+                  BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
+                  analysisName,
+                  analysisAnswersOptions.keySet());
+
+      Map<String, Answer> answers =
+          Main.getWorkMgr().processAnalysisAnswers(rawAnswers, analysisAnswersOptions);
+
+      String answerStr = BatfishObjectMapper.writePrettyString(answers);
+
+      return successResponse(response.put(CoordConsts.SVC_KEY_ANSWERS, answerStr));
+    } catch (IllegalArgumentException | AccessControlException e) {
+      _logger.errorf("WMS:getAnalysisAnswers exception: %s\n", e.getMessage());
+      return failureResponse(e.getMessage());
+    } catch (Exception e) {
+      String stackTrace = Throwables.getStackTraceAsString(e);
+      _logger.errorf(
+          "WMS:getAnalysisAnswersMetrics exception for apikey:%s in network:%s, snapshot:%s, "
               + "deltasnapshot:%s; exception:%s",
           apiKey,
           networkNameParam,

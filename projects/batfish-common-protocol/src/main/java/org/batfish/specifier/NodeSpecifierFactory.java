@@ -2,6 +2,7 @@ package org.batfish.specifier;
 
 import java.util.ServiceLoader;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 
 public interface NodeSpecifierFactory {
@@ -19,5 +20,5 @@ public interface NodeSpecifierFactory {
   String getName();
 
   /** The NodeSpecifier factory method. Input types vary by factory. */
-  NodeSpecifier buildNodeSpecifier(Object input);
+  NodeSpecifier buildNodeSpecifier(@Nullable Object input);
 }

@@ -2,6 +2,7 @@ package org.batfish.specifier;
 
 import java.util.ServiceLoader;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 
 public interface FilterSpecifierFactory {
@@ -19,5 +20,5 @@ public interface FilterSpecifierFactory {
   String getName();
 
   /** The FilterSpecifier factory method. Input types vary by factory. */
-  FilterSpecifier buildFilterSpecifier(Object input);
+  FilterSpecifier buildFilterSpecifier(@Nullable Object input);
 }

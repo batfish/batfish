@@ -474,7 +474,6 @@ null_inner
       | RETRIES
       | REVISION
       | RING
-      | ROUTE
       | ROUTE_TARGET
       | RP_ADDRESS
       | SA_FILTER
@@ -870,7 +869,7 @@ null_single
       | RD
       | RESOURCE
       | RESOURCE_POOL
-      | ROUTE
+      | NO ROUTE
       | ROUTE_TARGET
       | RTR
       | SAME_SECURITY_TRAFFIC

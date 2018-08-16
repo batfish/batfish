@@ -23,13 +23,14 @@ package org.batfish.specifier;
  * ATOMIC_VALUE ::= NS?([IS])?
  * COMBINATION ::= VALUE [+-] VALUE
  * FUNC ::= enter(VALUE) | exit(VALUE)
- * NS ::= <Grammar of FlexibleNodesSpecifier>
- * IS ::= <Grammar of FlexibleInterfaceSpecifier>
+ * NS ::= <Grammar of FlexibleNodesSpecifierFactory>
+ * IS ::= <Grammar of FlexibleInterfaceSpecifierFactory>
  * </pre>
  *
- * <p>NB: The space around '+' and '-' is mandatory and is used to split the string properly.
- * Further, nested expressions a + (b + c) are not currently supported. We need a more complex
- * parsing approach to effectively support those (which we can do if this overall approach seems
+ * <p>NB: The space around '+' and '-' is mandatory and is used to split the string properly, and
+ * nested expressions a + (b + c) are not currently supported. Further, 'enter(..)' and 'exit(...)'
+ * are assumed to not be valid FlexibleNodesSpecifierFactory inputs. We need a more complex *
+ * parsing approach to effectively support those (which we can do if this overall approach seems *
  * useful).
  */
 import static com.google.common.base.Preconditions.checkArgument;
@@ -47,18 +48,19 @@ import org.apache.commons.lang3.StringUtils;
 public class FlexibleLocationSpecifierFactory implements LocationSpecifierFactory {
   public static final String NAME = FlexibleLocationSpecifierFactory.class.getSimpleName();
 
+  private static final String FUNC_ENTER = "enter";
+  private static final String FUNC_EXIT = "exit";
+  private static final String FUNC_REGEX = FUNC_ENTER + "|" + FUNC_EXIT;
+
   private static final Pattern ATOMIC_PATTERN = Pattern.compile("^([^\\[]*)\\s*(\\[.*\\])?$");
   private static final Pattern COMBINATION_PATTERN = Pattern.compile("^(.*)\\s+([-+])\\s+(.*)$");
   private static final Pattern FUNC_PATTERN =
-      Pattern.compile("^([a-z\\.]+)\\s*\\(\\s*(.*)\\s*\\)$");
-
-  private static final String FUNC_ENTER = "enter";
-  private static final String FUNC_EXIT = "exit";
+      Pattern.compile("^(" + FUNC_REGEX + ")\\s*\\(\\s*(.*)\\s*\\)$");
 
   @Override
   public LocationSpecifier buildLocationSpecifier(@Nullable Object input) {
     if (input == null) {
-      return AllInterfaceLinksLocationSpecifier.INSTANCE;
+      return AllInterfacesLocationSpecifier.INSTANCE;
     }
     checkArgument(input instanceof String, NAME + " input must be a String");
     return parse((String) input);

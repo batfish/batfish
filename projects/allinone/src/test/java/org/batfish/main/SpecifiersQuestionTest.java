@@ -12,12 +12,12 @@ import java.io.IOException;
 import java.util.SortedMap;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
@@ -25,6 +25,7 @@ import org.batfish.datamodel.matchers.TableAnswerElementMatchers;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.question.specifiers.SpecifiersAnswerer;
 import org.batfish.question.specifiers.SpecifiersQuestion;
+import org.batfish.question.specifiers.SpecifiersQuestion.QueryType;
 import org.batfish.specifier.InterfaceLocation;
 import org.hamcrest.Matchers;
 import org.junit.Before;
@@ -60,8 +61,8 @@ public class SpecifiersQuestionTest {
   }
 
   @Test
-  public void testNoInput() {
-    SpecifiersQuestion question = new SpecifiersQuestion();
+  public void testIpSpaceNoInputQuery() {
+    SpecifiersQuestion question = new SpecifiersQuestion(QueryType.IP_SPACE);
 
     AnswerElement answer = new SpecifiersAnswerer(question, _batfish).answer();
     assertThat(answer, instanceOf(TableAnswerElement.class));
@@ -73,8 +74,7 @@ public class SpecifiersQuestionTest {
         TableAnswerElementMatchers.hasRows(
             Matchers.contains(
                 allOf(
-                    hasColumn(
-                        "IpSpace", equalTo(UniverseIpSpace.INSTANCE.toString()), Schema.STRING),
+                    hasColumn("IpSpace", equalTo(EmptyIpSpace.INSTANCE.toString()), Schema.STRING),
                     hasColumn(
                         "Locations",
                         equalTo(ImmutableSet.of(_interfaceLocation).toString()),

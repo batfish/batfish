@@ -1,11 +1,14 @@
 package org.batfish.datamodel.routing_policy.expr;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.routing_policy.Environment;
 
 public class NamedPrefixSet extends PrefixSetExpr {
+
+  private static final String PROP_NAME = "name";
 
   /** */
   private static final long serialVersionUID = 1L;
@@ -41,6 +44,7 @@ public class NamedPrefixSet extends PrefixSetExpr {
     return true;
   }
 
+  @JsonProperty(PROP_NAME)
   public String getName() {
     return _name;
   }
@@ -64,6 +68,7 @@ public class NamedPrefixSet extends PrefixSetExpr {
     }
   }
 
+  @JsonProperty(PROP_NAME)
   public void setName(String name) {
     _name = name;
   }

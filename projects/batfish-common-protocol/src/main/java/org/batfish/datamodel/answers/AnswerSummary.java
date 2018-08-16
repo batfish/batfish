@@ -1,9 +1,19 @@
 package org.batfish.datamodel.answers;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Strings;
 
 /** A general way to summarize what the answer contains, using three basic integers */
 public class AnswerSummary {
+
+  private static final String PROP_NOTES = "notes";
+
+  private static final String PROP_NUM_FAILED = "numFailed";
+
+  private static final String PROP_NUM_PASSED = "numPassed";
+
+  private static final String PROP_NUM_RESULTS = "numResults";
 
   private String _notes = "";
 
@@ -13,6 +23,7 @@ public class AnswerSummary {
 
   private int _numResults;
 
+  @JsonCreator
   public AnswerSummary() {}
 
   public AnswerSummary(String notes, int numFailed, int numPassed, int numResults) {
@@ -37,18 +48,22 @@ public class AnswerSummary {
     }
   }
 
+  @JsonProperty(PROP_NOTES)
   public String getNotes() {
     return _notes;
   }
 
+  @JsonProperty(PROP_NUM_FAILED)
   public int getNumFailed() {
     return _numFailed;
   }
 
+  @JsonProperty(PROP_NUM_PASSED)
   public int getNumPassed() {
     return _numPassed;
   }
 
+  @JsonProperty(PROP_NUM_RESULTS)
   public int getNumResults() {
     return _numResults;
   }
@@ -72,18 +87,22 @@ public class AnswerSummary {
     _numResults = 0;
   }
 
+  @JsonProperty(PROP_NOTES)
   public void setNotes(String notes) {
     this._notes = notes;
   }
 
+  @JsonProperty(PROP_NUM_FAILED)
   public void setNumFailed(int numFailed) {
     this._numFailed = numFailed;
   }
 
+  @JsonProperty(PROP_NUM_PASSED)
   public void setNumPassed(int numPassed) {
     this._numPassed = numPassed;
   }
 
+  @JsonProperty(PROP_NUM_RESULTS)
   public void setNumResults(int numResults) {
     this._numResults = numResults;
   }
