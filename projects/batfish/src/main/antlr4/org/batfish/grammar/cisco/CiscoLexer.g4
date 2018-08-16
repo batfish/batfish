@@ -12298,6 +12298,11 @@ TUNNEL_ID
    'tunnel-id'
 ;
 
+TUNNELED
+:
+   'tunneled'
+;
+
 TUNNELED_NODE_ADDRESS
 :
    'tunneled-node-address'
