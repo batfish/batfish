@@ -3,8 +3,8 @@
   "destinationIpSpaceSpecifierFactory" : "destFactory",
   "dst" : "2.2.2.2",
   "filterRegex" : ".*",
-  "nodesSpecifierFactory" : "nodesFactory",
-  "nodesSpecifierInput" : ".*",
+  "nodeSpecifierFactory" : "nodesFactory",
+  "nodeSpecifierInput" : ".*",
   "sourceIpSpaceSpecifierFactory" : "sourceFactory",
   "src" : "1.1.1.1",
   "differential" : false,
@@ -36,13 +36,13 @@
         "type" : "javaRegex",
         "value" : ".*"
       },
-      "nodesSpecifierFactory" : {
-        "description" : "Name of the nodesSpecifierFactory to use",
+      "nodeSpecifierFactory" : {
+        "description" : "Name of the nodeSpecifierFactory to use",
         "optional" : true,
         "type" : "string",
         "value" : "nodesFactory"
       },
-      "nodesSpecifierInput" : {
+      "nodeSpecifierInput" : {
         "description" : "Only evaluate filters present on nodes matching this regex",
         "optional" : true,
         "type" : "string",

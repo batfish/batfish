@@ -453,7 +453,7 @@ public final class ReachFilterAnswererTest {
         ReachFilterQuestion.builder()
             .setFilterSpecifierInput(ACL.getName())
             .setQuery("permit")
-            .setNodesSpecifierInput("UNMATCHABLE")
+            .setNodeSpecifierInput("UNMATCHABLE")
             .build();
     nodes = q.getNodesSpecifier().resolve(_batfish.specifierContext());
     assertThat(nodes, emptyIterable());
