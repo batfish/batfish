@@ -6,6 +6,7 @@ import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.question.QuestionPlugin;
+import org.batfish.question.specifiers.SpecifiersQuestion.QueryType;
 
 @AutoService(Plugin.class)
 public final class SpecifiersQuestionPlugin extends QuestionPlugin {
@@ -17,6 +18,7 @@ public final class SpecifiersQuestionPlugin extends QuestionPlugin {
 
   @Override
   protected Question createQuestion() {
-    return new SpecifiersQuestion();
+    // no reason for this to be the default but we must instantiate with something
+    return new SpecifiersQuestion(QueryType.IP_SPACE);
   }
 }
