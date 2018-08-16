@@ -73,6 +73,7 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
+import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.JuniperUtils;
 import org.batfish.datamodel.AaaAuthenticationLoginList;
@@ -117,6 +118,7 @@ import org.batfish.datamodel.ospf.OspfDefaultOriginateType;
 import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.ospf.StubType;
 import org.batfish.datamodel.vendor_family.juniper.TacplusServer;
+import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.A_applicationContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.A_application_setContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Aa_termContext;
@@ -1713,8 +1715,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   private final String _text;
 
-  private final boolean _unrecognizedAsRedFlag;
-
   private final Warnings _w;
 
   private ApplicationSet _currentApplicationSet;
@@ -1723,17 +1723,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   private StubSettings _currentStubSettings;
 
-  public ConfigurationBuilder(
-      FlatJuniperCombinedParser parser,
-      String text,
-      Warnings warnings,
-      boolean unrecognizedAsRedFlag) {
+  public ConfigurationBuilder(FlatJuniperCombinedParser parser, String text, Warnings warnings) {
     _parser = parser;
     _text = text;
     _configuration = new JuniperConfiguration();
     _currentRoutingInstance = _configuration.getDefaultRoutingInstance();
     _termRouteFilters = new HashMap<>();
-    _unrecognizedAsRedFlag = unrecognizedAsRedFlag;
     _w = warnings;
     _conjunctionPolicyIndex = 0;
     _disjunctionPolicyIndex = 0;
@@ -5220,12 +5215,17 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     Token token = errorNode.getSymbol();
     String lineText = errorNode.getText().replace("\n", "").replace("\r", "").trim();
     int line = getLine(token);
-    String msg = String.format("Unrecognized Line: %d: %s", line, lineText);
-    if (_unrecognizedAsRedFlag) {
-      _w.redFlag(msg + " SUBSEQUENT LINES MAY NOT BE PROCESSED CORRECTLY");
-      _configuration.setUnrecognized(true);
+    _configuration.setUnrecognized(true);
+
+    if (token instanceof UnrecognizedLineToken) {
+      UnrecognizedLineToken unrecToken = (UnrecognizedLineToken) token;
+      _w.getParseWarnings()
+          .add(
+              new ParseWarning(
+                  line, lineText, unrecToken.getParserContext(), "This syntax is unrecognized"));
     } else {
-      _parser.getErrors().add(msg);
+      String msg = String.format("Unrecognized Line: %d: %s", line, lineText);
+      _w.redFlag(msg + " SUBSEQUENT LINES MAY NOT BE PROCESSED CORRECTLY");
     }
   }
 }

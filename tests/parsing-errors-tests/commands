@@ -11,21 +11,6 @@ test -compareall tests/parsing-errors-tests/recovery-invalid-ip-no-verbose.ref g
 #all config files failed in parsing step
 test -compareall tests/parsing-errors-tests/recovery-all-parsing-failed.ref init-snapshot test_rigs/example-parsing-error/all-fail
 
-### ALLOW RECOVERY DURING PARSING, BUT CRASH AFTER POST-PROCESSING IN PRESENCE OF UNRECOGNIZED LINES
-add-batfish-option urf false
-
-#parsing error
-test -compareall tests/parsing-errors-tests/nourf-parsing-error.ref init-snapshot test_rigs/example-parsing-error
-test -compareall tests/parsing-errors-tests/nourf-no-verbose.ref get initinfo verboseError=false
-#test -compareall tests/parsing-errors-tests/verbose.ref get initinfo verboseError=true
-
-#parsing Iptables error
-test -compareall tests/parsing-errors-tests/nourf-init-invalid-iptables.ref init-snapshot test_rigs/example-parsing-error/invalid-iptables
-test -compareall tests/parsing-errors-tests/nourf-invalid-ip-no-verbose.ref get initinfo
-
-#all config files failed in parsing step
-test -compareall tests/parsing-errors-tests/nourf-all-parsing-failed.ref init-snapshot test_rigs/example-parsing-error/all-fail
-
 ### DISABLE RECOVERY ALTOGETHER SO THAT UNRECOGNIZED LINES CAUSE PARSING FAILURE
 add-batfish-option disableunrecognized
 

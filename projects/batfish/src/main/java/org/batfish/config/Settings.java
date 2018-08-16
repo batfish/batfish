@@ -949,10 +949,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     return !_config.getBoolean(BfConsts.ARG_UNIMPLEMENTED_SUPPRESS);
   }
 
-  public boolean getUnrecognizedAsRedFlag() {
-    return _config.getBoolean(BfConsts.ARG_UNRECOGNIZED_AS_RED_FLAG);
-  }
-
   public boolean getValidateEnvironment() {
     return _config.getBoolean(BfConsts.COMMAND_VALIDATE_ENVIRONMENT);
   }
@@ -1061,7 +1057,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     setDefaultProperty(ARG_TRACING_AGENT_HOST, "localhost");
     setDefaultProperty(ARG_TRACING_AGENT_PORT, 5775);
     setDefaultProperty(ARG_TRACING_ENABLE, false);
-    setDefaultProperty(BfConsts.ARG_UNRECOGNIZED_AS_RED_FLAG, true);
     setDefaultProperty(BfConsts.ARG_UNIMPLEMENTED_SUPPRESS, false);
     setDefaultProperty(BfConsts.ARG_VERBOSE_PARSE, false);
     setDefaultProperty(ARG_VERSION, false);
@@ -1317,10 +1312,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
         "suppresses warnings about unimplemented configuration directives");
 
     addBooleanOption(
-        BfConsts.ARG_UNRECOGNIZED_AS_RED_FLAG,
-        "treat unrecognized configuration directives as red flags instead of force-crashing");
-
-    addBooleanOption(
         BfConsts.ARG_VERBOSE_PARSE,
         "(developer option) include parse/convert data in init-testrig answer");
 
@@ -1455,7 +1446,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     getIntegerOptionValue(ARG_TRACING_AGENT_PORT);
     getBooleanOptionValue(ARG_TRACING_ENABLE);
     getBooleanOptionValue(BfConsts.ARG_UNIMPLEMENTED_SUPPRESS);
-    getBooleanOptionValue(BfConsts.ARG_UNRECOGNIZED_AS_RED_FLAG);
     getBooleanOptionValue(BfConsts.COMMAND_VALIDATE_ENVIRONMENT);
     getBooleanOptionValue(BfConsts.ARG_VERBOSE_PARSE);
     getIntegerOptionValue(ARG_Z3_TIMEOUT);
@@ -1613,10 +1603,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
   @Override
   public void setThrowOnParserError(boolean throwOnParserError) {
     _config.setProperty(ARG_THROW_ON_PARSER_ERROR, throwOnParserError);
-  }
-
-  public void setUnrecognizedAsRedFlag(boolean unrecognizedAsRedFlag) {
-    _config.setProperty(BfConsts.ARG_UNRECOGNIZED_AS_RED_FLAG, unrecognizedAsRedFlag);
   }
 
   public void setValidateEnvironment(boolean validateEnvironment) {
