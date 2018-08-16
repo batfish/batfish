@@ -83,6 +83,7 @@ public class ParseEnvironmentBgpTableResult
       BatfishLogger logger,
       ParseEnvironmentBgpTablesAnswerElement answerElement) {
     appendHistory(logger);
+    String filename = _file.getFileName().toString();
     if (_bgpTable != null) {
       String hostname = _name;
       if (bgpTables.containsKey(hostname)) {
@@ -96,13 +97,12 @@ public class ParseEnvironmentBgpTableResult
           answerElement.getParseTrees().put(hostname, _parseTree);
         }
         if (_bgpTable.getUnrecognized()) {
-          answerElement.getParseStatus().put(hostname, ParseStatus.PARTIALLY_UNRECOGNIZED);
+          answerElement.getParseStatus().put(filename, ParseStatus.PARTIALLY_UNRECOGNIZED);
         } else {
-          answerElement.getParseStatus().put(hostname, ParseStatus.PASSED);
+          answerElement.getParseStatus().put(filename, ParseStatus.PASSED);
         }
       }
     } else {
-      String filename = _file.getFileName().toString();
       answerElement.getParseStatus().put(filename, _status);
       if (_status == ParseStatus.FAILED) {
         answerElement

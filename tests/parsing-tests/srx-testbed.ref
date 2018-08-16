@@ -8,9 +8,9 @@
         "junos-srx-3" : "configs/junos-srx-3.cfg"
       },
       "parseStatus" : {
-        "junos-srx-1" : "PASSED",
-        "junos-srx-2" : "PASSED",
-        "junos-srx-3" : "PASSED"
+        "configs/junos-srx-1.cfg" : "PASSED",
+        "configs/junos-srx-2.cfg" : "PASSED",
+        "configs/junos-srx-3.cfg" : "PASSED"
       },
       "parseTrees" : {
         "junos-srx-1" : {
@@ -6184,9 +6184,9 @@
     {
       "class" : "org.batfish.datamodel.answers.InitInfoAnswerElement",
       "parseStatus" : {
-        "junos-srx-1" : "PASSED",
-        "junos-srx-2" : "PASSED",
-        "junos-srx-3" : "PASSED"
+        "configs/junos-srx-1.cfg" : "PASSED",
+        "configs/junos-srx-2.cfg" : "PASSED",
+        "configs/junos-srx-3.cfg" : "PASSED"
       }
     }
   ],

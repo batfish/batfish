@@ -3,9 +3,9 @@
     {
       "class" : "org.batfish.datamodel.answers.InitInfoAnswerElement",
       "parseStatus" : {
-        "as1r1" : "PARTIALLY_UNRECOGNIZED",
-        "as1r2" : "PARTIALLY_UNRECOGNIZED",
-        "as2r1" : "PARTIALLY_UNRECOGNIZED"
+        "configs/as1r1.cfg" : "PARTIALLY_UNRECOGNIZED",
+        "configs/as1r2.cfg" : "PARTIALLY_UNRECOGNIZED",
+        "configs/as2r1.cfg" : "PARTIALLY_UNRECOGNIZED"
       }
     }
   ],
