@@ -3,24 +3,19 @@
   "differential": false,
   "destinationIpSpaceSpecifierFactory": "${destinationIpSpaceSpecifierFactory}",
   "dst": "${dst}",
-  "filterRegex": "${filterRegex}",
+  "filterRegex": "${filters}",
   "nodesSpecifierFactory": "${nodesSpecifierFactory}",
   "nodesSpecifierInput": "${nodes}",
   "sourceIpSpaceSpecifierFactory": "${sourceIpSpaceSpecifierFactory}",
   "src": "${src}",
   "query": "${query}",
   "instance": {
-    "description": "Find flows for which a filter takes a particular behavior.",
+    "description": "Find flows for which a filter takes a particular behavior",
     "instanceName": "reachfilter",
-    "longDescription": "This question searches for flows for which a filter (access control list) has a particular behavior. The behaviors can be: that the filter permits the flow (permit), that it denies the flow (deny), or that the flow is matched by a particular line (matchLine <lineNumber>). Filters are selected using node and filter specifiers, which might match multiple filters. In this case, a (possibly different) flow will be found for each filter.", 
+    "longDescription": "This question searches for flows for which a filter (access control list) has a particular behavior. The behaviors can be: that the filter permits the flow (permit), that it denies the flow (deny), or that the flow is matched by a particular line (matchLine <lineNumber>). Filters are selected using node and filter specifiers, which might match multiple filters. In this case, a (possibly different) flow will be found for each filter", 
     "tags": [
-<<<<<<< HEAD
       "dataPlane",
-      "filters"
-=======
-      "acl",
-      "dataplane"
->>>>>>> 2b5c6053964798b9f47870ff00e0d29ee541c10b
+      "acl"
     ],
     "variables": {
       "destinationIpSpaceSpecifierFactory": {
@@ -33,18 +28,13 @@
         "optional": true,
         "type": "string"
       },
-      "filterRegex": {
-        "description": "Only consider filters that match this regex",
+      "filters": {
+        "description": "Only evaluate filters that match this regex",
         "optional": true,
         "type": "javaRegex"
       },
-<<<<<<< HEAD
-      "nodeRegex": {
-        "description": "Only consider filters present on nodes matching this regex",
-=======
       "nodes": {
-        "description": "Flexible specification of nodes",
->>>>>>> 2b5c6053964798b9f47870ff00e0d29ee541c10b
+        "description": "Only evaluate filters present on nodes matching this regex",
         "optional": true,
         "type": "string"
       },
@@ -64,7 +54,7 @@
         "type": "string"
       },
       "query": {
-        "description": "The behavior that you want evaluated. Options are: permit|deny|matchLine <line number>",
+        "description": "The behavior that you want evaluated. Options are: permit|deny|matchLine <line number>. Only one option should be selected",
         "optional": true,
         "type": "string"
       }

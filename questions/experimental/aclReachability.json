@@ -1,50 +1,26 @@
 {
     "class": "org.batfish.question.aclreachability2.AclReachability2Question",
     "differential": false,
-    "filterSpecifierFactory": "${filterSpecifierFactory}",
-    "filterSpecifierInput": "${filterSpecifierInput}",
-    "nodeSpecifierFactory": "${nodeSpecifierFactory}",
-    "nodeSpecifierInput": "${nodeSpecifierInput}",
+    "filterSpecifierInput": "${filters}",
+    "nodeSpecifierInput": "${nodes}",
     "instance": {
-        "description": "Display ACLs with unreachable lines",
+        "description": "Display ACLs/filters with unreachable lines",
         "instanceName": "aclReachability",
-        "longDescription": "Return ACLs with unreachable lines, along with all of the unreachable lines within the ACL.",
+        "longDescription": "Return ACLs/filters with unreachable lines, along with all of the unreachable lines within each ACL/filter.",
         "tags": [
             "acl",
             "default"
         ],
         "variables": {
-<<<<<<< HEAD
-            "aclNameRegex": {
-                "description": "Only evaluate ACLs whose name matches this regex",
-                "type": "javaRegex",
-                "value": ".*"
-            },
-            "nodeRegex": {
-                "description": "Only evalute ACLs on nodes whose name matches this regex",
-                "type": "nodeSpec",
-                "value": ".*"
-=======
-            "filterSpecifierFactory": {
-              "description": "FilterSpecifierFactory used to process filterSpecifierInput",
+            "filters": {
+              "description": "Name or regex identifying the filter(s) to test",
               "type": "string",
               "optional": true
             },
-            "filterSpecifierInput": {
-              "description": "Specifies the filter(s) to be analyzed",
+            "nodes": {
+              "description": "Name or regex identifying the nodes to restrict the test to",
               "type": "string",
               "optional": true
-            },
-            "nodeSpecifierFactory": {
-              "description": "NodeSpecifierFactory used to process nodeSpecifierInput",
-              "type": "string",
-              "optional": true
-            },
-            "nodeSpecifierInput": {
-              "description": "Only analyze filters on specified nodes",
-              "type": "string",
-              "optional": true
->>>>>>> 2b5c6053964798b9f47870ff00e0d29ee541c10b
             }
         }
     }

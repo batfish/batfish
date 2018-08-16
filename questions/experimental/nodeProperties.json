@@ -1,21 +1,21 @@
 {
     "class": "org.batfish.question.nodeproperties.NodePropertiesQuestion",
     "differential": false,
-    "nodeRegex": "${nodeRegex}",
+    "nodeRegex": "${nodes}",
     "propertySpec": "${propertySpec}",
     "instance": {
-        "description": "Gets properties of nodes",
+        "description": "Return configuration properties of nodes",
         "instanceName": "nodeProperties",
         "tags": [
         ],
         "variables": {
-            "nodeRegex": {
-                "description": "Only include nodes that match this specification",
+            "nodes": {
+                "description": "Only include nodes that match this regex",
                 "type": "nodeSpec",
                 "optional": true
             },
             "propertySpec": {
-                "description": "Which properties to fetch; default is all of them",
+                "description": "Only include properties that match this regex. Default behavior is to return all properties",
                 "type": "nodePropertySpec",
                 "optional": "true"             
             }

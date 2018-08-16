@@ -1,22 +1,22 @@
 {
     "class": "org.batfish.question.ospfproperties.OspfPropertiesQuestion",
     "differential": false,
-    "nodeRegex": "${nodeRegex}",
+    "nodeRegex": "${nodes}",
     "propertySpec": "${propertySpec}",
     "instance": {
-        "description": "Returns configuration parameters for OSPF routing processes",
+        "description": "Return configuration parameters for OSPF routing processes",
         "instanceName": "ospfProperties",
         "tags": [
-            "OSPF"
+            "ospf"
         ],
         "variables": {
-            "nodeRegex": {
-                "description": "Only include nodes that match this specification",
+            "nodes": {
+                "description": "Only include nodes that match this regex",
                 "type": "nodeSpec",
                 "optional": true
             },
             "propertySpec": {
-                "description": "Restricts the list of properties to fetch. Default returns all properties",
+                "description": "Only include properties that match this regex. Default behavior is to return all properties",
                 "type": "ospfPropertySpec",
                 "optional": "true"
             }

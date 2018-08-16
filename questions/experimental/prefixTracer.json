@@ -2,21 +2,21 @@
     "class": "org.batfish.question.prefixtracer.PrefixTracerQuestion",
     "differential": false,
     "prefix": "${prefix}",
-    "nodeRegex": "${nodeRegex}",
+    "nodeRegex": "${nodes}",
     "instance": {
-        "description": "Trace route propagation through the network",
+        "description": "Trace prefix propagation through the network",
         "instanceName": "prefixTracer",
         "tags": [
             "dataplane"
         ],
         "variables": {
             "prefix": {
-                "description": "Which prefix to trace",
+                "description": "The prefix to trace. Expected format is A.B.C.D/Y",
                 "type": "prefix",
                 "optional": true
             },
-            "nodeRegex": {
-                "description": "Only retrieve prefix tracing information for nodes that match this regex",
+            "nodes": {
+                "description": "Only include prefix tracing information for nodes that match this regex",
                 "type": "string",
                 "optional": true
             }
