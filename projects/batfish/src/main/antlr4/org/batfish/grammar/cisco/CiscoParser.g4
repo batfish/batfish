@@ -2924,7 +2924,7 @@ s_role
 
 s_route
 :
-   NO? ROUTE route_tail
+   ROUTE route_tail
 ;
 
 s_router_vrrp

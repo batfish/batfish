@@ -869,6 +869,7 @@ null_single
       | RD
       | RESOURCE
       | RESOURCE_POOL
+      | NO ROUTE
       | ROUTE_TARGET
       | RTR
       | SAME_SECURITY_TRAFFIC
