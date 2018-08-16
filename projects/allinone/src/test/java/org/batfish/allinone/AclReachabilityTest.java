@@ -74,19 +74,13 @@ public class AclReachabilityTest {
     _aclb
         .setLines(
             ImmutableList.of(
-                IpAccessListLine.accepting()
-                    .setMatchCondition(new PermittedByAcl("acl1"))
-                    .setName("reference acl1 from acl0")
-                    .build()))
+                IpAccessListLine.accepting().setMatchCondition(new PermittedByAcl("acl1")).build()))
         .setName("acl0")
         .build();
     _aclb
         .setLines(
             ImmutableList.of(
-                IpAccessListLine.accepting()
-                    .setMatchCondition(new PermittedByAcl("acl2"))
-                    .setName("reference acl2 from acl1")
-                    .build(),
+                IpAccessListLine.accepting().setMatchCondition(new PermittedByAcl("acl2")).build(),
                 acceptingHeaderSpace(
                     HeaderSpace.builder()
                         .setSrcIps(Prefix.parse("1.0.0.0/24").toIpSpace())
@@ -96,19 +90,13 @@ public class AclReachabilityTest {
     _aclb
         .setLines(
             ImmutableList.of(
-                IpAccessListLine.accepting()
-                    .setMatchCondition(new PermittedByAcl("acl0"))
-                    .setName("reference acl0 from acl2")
-                    .build()))
+                IpAccessListLine.accepting().setMatchCondition(new PermittedByAcl("acl0")).build()))
         .setName("acl2")
         .build();
     _aclb
         .setLines(
             ImmutableList.of(
-                IpAccessListLine.accepting()
-                    .setMatchCondition(new PermittedByAcl("acl1"))
-                    .setName("reference acl1 from acl3")
-                    .build()))
+                IpAccessListLine.accepting().setMatchCondition(new PermittedByAcl("acl1")).build()))
         .setName("acl3")
         .build();
 
