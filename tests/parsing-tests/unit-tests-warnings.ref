@@ -1,0 +1,368 @@
+[
+  {
+    "class" : "org.batfish.datamodel.table.TableAnswerElement",
+    "metadata" : {
+      "columnMetadata" : [
+        {
+          "description" : "The file that was parsed",
+          "isKey" : true,
+          "isValue" : false,
+          "name" : "Filename",
+          "schema" : "String"
+        },
+        {
+          "description" : "The text of the input that caused the warning",
+          "isKey" : true,
+          "isValue" : false,
+          "name" : "Text",
+          "schema" : "String"
+        },
+        {
+          "description" : "The line number in the input file that caused the warning",
+          "isKey" : false,
+          "isValue" : false,
+          "name" : "Line",
+          "schema" : "Integer"
+        },
+        {
+          "description" : "The context of the Batfish parser when the warning occurred",
+          "isKey" : false,
+          "isValue" : false,
+          "name" : "Parser_Context",
+          "schema" : "String"
+        },
+        {
+          "description" : "An optional comment explaining more information about the warning",
+          "isKey" : false,
+          "isValue" : false,
+          "name" : "Comment",
+          "schema" : "String"
+        }
+      ],
+      "textDesc" : "File ${Filename}: warning at line ${Line}: ${Text} when the Batfish parser was in state ${Parser_Context}. Optional comment: ${Comment}."
+    },
+    "rows" : [
+      {
+        "Filename" : "aruba_misc",
+        "Line" : 90,
+        "Text" : "no ip default-gateway import cell",
+        "Parser_Context" : "[s_ip_default_gateway stanza cisco_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "aruba_misc",
+        "Line" : 91,
+        "Text" : "no ip default-gateway import pppoe",
+        "Parser_Context" : "[s_ip_default_gateway stanza cisco_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "asa_acl",
+        "Line" : 7,
+        "Text" : "interface outside",
+        "Parser_Context" : "[access_list_ip_range extended_access_list_tail extended_access_list_stanza stanza cisco_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "cisco_acl",
+        "Line" : 10,
+        "Text" : "60 permit tcp any any eq mlag ttl eq 255",
+        "Parser_Context" : "[extended_access_list_tail extended_access_list_stanza stanza cisco_configuration]",
+        "Comment" : "matching ttl in extended access list"
+      },
+      {
+        "Filename" : "cisco_acl",
+        "Line" : 11,
+        "Text" : "70 permit udp any any eq mlag ttl eq 255",
+        "Parser_Context" : "[extended_access_list_tail extended_access_list_stanza stanza cisco_configuration]",
+        "Comment" : "matching ttl in extended access list"
+      },
+      {
+        "Filename" : "cisco_bgp",
+        "Line" : 28,
+        "Text" : "redistribute ospf 2",
+        "Parser_Context" : "[redistribute_ospf_bgp_tail bgp_tail router_bgp_stanza_tail router_bgp_stanza stanza cisco_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "cisco_bgp",
+        "Line" : 29,
+        "Text" : "redistribute ospf 2 vrf vrf1",
+        "Parser_Context" : "[redistribute_ospf_bgp_tail bgp_tail router_bgp_stanza_tail router_bgp_stanza stanza cisco_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "cisco_bgp_confederation",
+        "Line" : 7,
+        "Text" : "bgp confederation identifier 100",
+        "Parser_Context" : "[bgp_confederation_rb_stanza router_bgp_stanza_tail router_bgp_stanza stanza cisco_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "cisco_bgp_confederation",
+        "Line" : 8,
+        "Text" : "bgp confederation peers 10 11",
+        "Parser_Context" : "[bgp_confederation_rb_stanza router_bgp_stanza_tail router_bgp_stanza stanza cisco_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "cisco_eigrp",
+        "Line" : 115,
+        "Text" : "addrgroup bleep_blorp",
+        "Parser_Context" : "[access_list_ip_range extended_access_list_tail extended_access_list_stanza stanza cisco_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "cisco_eigrp",
+        "Line" : 118,
+        "Text" : "address-family ipv4 multicast vrf autonomous-system autonomous-system 4\n  af-interface Ethernet0\n   add-paths 4\n   bandwidth-percent 75\n   dampening-change 75\n   dampening-interval 45\n   hold-time 40\n   passive-interface\n  exit-af-interface\n  eigrp default-route-tag 2\n  network 1.1.1.100\n  remote-neighbors source GigabitEthernet0/0/1 unicast-listen lisp-encap 2\n  topology base\n   offset-list 21 out 10\n   summary-metric 192.168.0.0/16 10000 10 255 1 1500 distance 20\n   traffic-share balanced\n   variance 4\n  exit-af-topology\n  topology VOICE tid 1000\n   no auto-summary\n  exit-af-topology\n  passive-interface default\n  no passive-interface FastEthernet0/1\n exit-address-family",
+        "Parser_Context" : "[ren_address_family re_named_tail re_named s_router_eigrp stanza cisco_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "cisco_eigrp",
+        "Line" : 15,
+        "Text" : "default-metric 1 2 3 4 5",
+        "Parser_Context" : "[re_default_metric re_classic_tail re_classic s_router_eigrp stanza cisco_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "cisco_eigrp",
+        "Line" : 15,
+        "Text" : "default-metric 1 2 3 4 5",
+        "Parser_Context" : "[re_default_metric re_classic_tail re_classic s_router_eigrp stanza cisco_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "cisco_eigrp",
+        "Line" : 15,
+        "Text" : "default-metric 1 2 3 4 5",
+        "Parser_Context" : "[re_default_metric re_classic_tail re_classic s_router_eigrp stanza cisco_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "cisco_eigrp",
+        "Line" : 34,
+        "Text" : "redistribute isis route-map ISIS_TO_EIGRP",
+        "Parser_Context" : "[re_redistribute_isis re_redistribute re_classic_tail re_classic s_router_eigrp stanza cisco_configuration]",
+        "Comment" : "ISIS redistirution in EIGRP is not implemented"
+      },
+      {
+        "Filename" : "cisco_eigrp",
+        "Line" : 35,
+        "Text" : "redistribute ospf 4 route-map OSPF_TO_EIGRP",
+        "Parser_Context" : "[re_redistribute_ospf re_redistribute re_classic_tail re_classic s_router_eigrp stanza cisco_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "cisco_eigrp",
+        "Line" : 37,
+        "Text" : "redistribute static metric 10000 10 255 1 1500 route-map STATIC_TO_EIGRP",
+        "Parser_Context" : "[re_redistribute_static re_redistribute re_classic_tail re_classic s_router_eigrp stanza cisco_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "cisco_eigrp",
+        "Line" : 37,
+        "Text" : "redistribute static metric 10000 10 255 1 1500 route-map STATIC_TO_EIGRP",
+        "Parser_Context" : "[re_redistribute_static re_redistribute re_classic_tail re_classic s_router_eigrp stanza cisco_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "cisco_eigrp",
+        "Line" : 37,
+        "Text" : "redistribute static metric 10000 10 255 1 1500 route-map STATIC_TO_EIGRP",
+        "Parser_Context" : "[re_redistribute_static re_redistribute re_classic_tail re_classic s_router_eigrp stanza cisco_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "cisco_interface",
+        "Line" : 276,
+        "Text" : "mode gre multipoint",
+        "Parser_Context" : "[iftunnel_mode if_tunnel if_inner s_interface stanza cisco_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "cisco_ospf",
+        "Line" : 23,
+        "Text" : "area 0.0.0.0 filter-list prefix filterName in",
+        "Parser_Context" : "[ro_area_filterlist s_router_ospf stanza cisco_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "cisco_ospf",
+        "Line" : 24,
+        "Text" : "area 0.0.0.0 filter-list prefix filterName out",
+        "Parser_Context" : "[ro_area_filterlist s_router_ospf stanza cisco_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "cisco_ospf",
+        "Line" : 29,
+        "Text" : "area 0.0.0.0 nssa no-redistribution",
+        "Parser_Context" : "[ro_area_nssa s_router_ospf stanza cisco_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "cisco_ospf",
+        "Line" : 30,
+        "Text" : "area 0.0.0.0 nssa no-redistribution no-summary",
+        "Parser_Context" : "[ro_area_nssa s_router_ospf stanza cisco_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "cisco_ospf",
+        "Line" : 31,
+        "Text" : "area 0.0.0.0 nssa no-redistribution default-information-originate no-summary",
+        "Parser_Context" : "[ro_area_nssa s_router_ospf stanza cisco_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "cisco_ospf",
+        "Line" : 60,
+        "Text" : "maximum-paths 32",
+        "Parser_Context" : "[ro_maximum_paths s_router_ospf stanza cisco_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "cisco_ospf",
+        "Line" : 75,
+        "Text" : "area 0 filter-list prefix INFILTER in",
+        "Parser_Context" : "[ro_area_filterlist s_router_ospf stanza cisco_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "cisco_ospf",
+        "Line" : 76,
+        "Text" : "area 0 filter-list prefix OUTFILTER out",
+        "Parser_Context" : "[ro_area_filterlist s_router_ospf stanza cisco_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "cisco_route_map",
+        "Line" : 33,
+        "Text" : "match source-protocol ospf 1",
+        "Parser_Context" : "[match_source_protocol_rm_stanza match_rm_stanza rm_stanza route_map_stanza stanza cisco_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "cisco_route_map",
+        "Line" : 41,
+        "Text" : "match source-protocol static",
+        "Parser_Context" : "[match_source_protocol_rm_stanza match_rm_stanza rm_stanza route_map_stanza stanza cisco_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "cisco_vrf",
+        "Line" : 7,
+        "Text" : "ip route 0.0.0.0/0 1.2.3.4",
+        "Parser_Context" : "[vrfc_ip_route s_vrf_context stanza cisco_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "ios_xr_bgp_neighbor_group",
+        "Line" : 17,
+        "Text" : "use session-group blabber",
+        "Parser_Context" : "[use_session_group_bgp_tail session_group_rb_stanza router_bgp_stanza_tail router_bgp_stanza stanza cisco_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "ios_xr_bgp_neighbor_group",
+        "Line" : 94,
+        "Text" : "use session-group CIAO",
+        "Parser_Context" : "[use_session_group_bgp_tail session_group_rb_stanza router_bgp_stanza_tail router_bgp_stanza stanza cisco_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "ios_xr_class_map",
+        "Line" : 10,
+        "Text" : "match not dscp ipv4 cs2 cs3 cs4",
+        "Parser_Context" : "[cm_match s_class_map stanza cisco_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "ios_xr_ospf",
+        "Line" : 9,
+        "Text" : "maximum paths 16",
+        "Parser_Context" : "[ro_maximum_paths s_router_ospf stanza cisco_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "iptables/host1.iptables",
+        "Line" : 16,
+        "Text" : "-s 1.2.3.4/32 -p tcp -m tcp --dport 22 -j ACCEPT",
+        "Parser_Context" : "[rule_spec command_append command_tail command iptables_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "iptables/host1.iptables",
+        "Line" : 17,
+        "Text" : "-s 11.22.33.44/32 -p tcp -m tcp --dport 25 -j ACCEPT",
+        "Parser_Context" : "[rule_spec command_append command_tail command iptables_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "iptables/host1.iptables",
+        "Line" : 18,
+        "Text" : "-s 111.222.111.222/32 -p tcp -m tcp --dport 80 -j ACCEPT",
+        "Parser_Context" : "[rule_spec command_append command_tail command iptables_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "iptables/host1.iptables",
+        "Line" : 19,
+        "Text" : "-s 4.3.2.1/32 -p tcp -m tcp --dport 110 -j ACCEPT",
+        "Parser_Context" : "[rule_spec command_append command_tail command iptables_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "iptables/host1.iptables",
+        "Line" : 20,
+        "Text" : "-s 44.22.33.11/32 -p tcp -m tcp --dport 143 -j ACCEPT",
+        "Parser_Context" : "[rule_spec command_append command_tail command iptables_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "juniper-ospf",
+        "Line" : 11,
+        "Text" : "area-range dead:beef::/56 override-metric 100",
+        "Parser_Context" : "[oa_area_range o_area o_common p_ospf3 s_protocols s_common statement set_line_tail set_line flat_juniper_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "juniper-ospf",
+        "Line" : 11,
+        "Text" : "area-range dead:beef::/56 override-metric 100",
+        "Parser_Context" : "[oa_area_range o_area o_common p_ospf3 s_protocols s_common statement set_line_tail set_line flat_juniper_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "peer_template",
+        "Line" : 24,
+        "Text" : "allowas-in 1",
+        "Parser_Context" : "[rbnx_n_af_allowas_in rbnx_n_af_inner rbnx_n_address_family rbnx_n_inner rbnx_template_peer router_bgp_nxos_toplevel router_bgp_stanza stanza cisco_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "test",
+        "Line" : 4,
+        "Text" : "ip default-gateway 128.125.253.254",
+        "Parser_Context" : "[s_ip_default_gateway stanza cisco_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "vrf_context",
+        "Line" : 7,
+        "Text" : "ip route 0.0.0.0/0 1.2.3.4",
+        "Parser_Context" : "[vrfc_ip_route s_vrf_context stanza cisco_configuration]",
+        "Comment" : "This feature is not currently supported"
+      }
+    ],
+    "summary" : {
+      "notes" : "Found 45 results",
+      "numFailed" : 0,
+      "numPassed" : 0,
+      "numResults" : 45
+    }
+  }
+]
