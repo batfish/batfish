@@ -35,6 +35,7 @@ import org.batfish.datamodel.AsPathAccessListLine;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IkeGateway;
 import org.batfish.datamodel.IkeKeyType;
@@ -86,11 +87,13 @@ import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.CommunitySetExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
+import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunityConjunction;
 import org.batfish.datamodel.routing_policy.expr.LiteralEigrpMetric;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.MatchProcessAsn;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.statement.If;
@@ -566,7 +569,7 @@ class CiscoConversions {
   }
 
   static IpSpace toIpSpace(NetworkObjectGroup networkObjectGroup) {
-    return AclIpSpace.union(networkObjectGroup.getLines());
+    return firstNonNull(AclIpSpace.union(networkObjectGroup.getLines()), EmptyIpSpace.INSTANCE);
   }
 
   /** Converts a {@link Tunnel} to an {@link IpsecPeerConfig} */
@@ -993,7 +996,25 @@ class CiscoConversions {
     RoutingProtocol protocol = policy.getSourceProtocol();
     // All redistribution must match the specified protocol.
     Conjunction eigrpExportConditions = new Conjunction();
-    eigrpExportConditions.getConjuncts().add(new MatchProtocol(protocol));
+    BooleanExpr matchExpr;
+    if (protocol == RoutingProtocol.EIGRP) {
+      matchExpr =
+          new Disjunction(
+              ImmutableList.of(
+                  new MatchProtocol(RoutingProtocol.EIGRP),
+                  new MatchProtocol(RoutingProtocol.EIGRP_EX)));
+
+      Long otherAsn =
+          (Long) policy.getSpecialAttributes().get(EigrpRedistributionPolicy.EIGRP_AS_NUMBER);
+      if (otherAsn == null) {
+        oldConfig.getWarnings().redFlag("Unable to redistribute - policy has no ASN");
+        return null;
+      }
+      eigrpExportConditions.getConjuncts().add(new MatchProcessAsn(otherAsn));
+    } else {
+      matchExpr = new MatchProtocol(protocol);
+    }
+    eigrpExportConditions.getConjuncts().add(matchExpr);
 
     // Default routes can be redistributed into EIGRP. Don't filter them.
 
@@ -1001,19 +1022,19 @@ class CiscoConversions {
 
     // Set the metric
     // TODO prefer metric from route map
+    // https://github.com/batfish/batfish/issues/2070
     EigrpMetric metric = policy.getMetric() != null ? policy.getMetric() : proc.getDefaultMetric();
-    if (metric == null) {
+    if (metric != null) {
+      eigrpExportStatements.add(new SetEigrpMetric(new LiteralEigrpMetric(metric)));
+    } else if (protocol != RoutingProtocol.EIGRP) {
       /*
-       * TODO no default metric
+       * TODO no default metric (and not EIGRP into EIGRP)
        * 1) connected can use the interface metric
        * 2) static with next hop interface can use the interface metric
-       * 3) redistribution of eigrp into eigrp can directly use the 'external' route metric
-       * 4) If none of the above, bad configuration
+       * 3) If none of the above, bad configuration
        */
       oldConfig.getWarnings().redFlag("Unable to redistribute - no metric");
       return null;
-    } else {
-      eigrpExportStatements.add(new SetEigrpMetric(new LiteralEigrpMetric(metric)));
     }
 
     String exportRouteMapName = policy.getRouteMap();

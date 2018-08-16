@@ -27,7 +27,10 @@ re_classic_tail
 
 re_default_metric
 :
-   NO? DEFAULT_METRIC bw_kbps = DEC delay_10us = DEC reliability = DEC eff_bw = DEC mtu = DEC NEWLINE
+   NO? DEFAULT_METRIC
+   (
+      bw_kbps = DEC delay_10us = DEC reliability = DEC eff_bw = DEC mtu = DEC
+   )? NEWLINE
 ;
 
 re_eigrp_null

@@ -73,6 +73,9 @@ public class BgpProcess implements Serializable {
 
   private static final String PROP_MULTIPATH_EBGP = "multipathEbgp";
 
+  private static final String PROP_MULTIPATH_EQUIVALENT_AS_PATH_MATCH_MODE =
+      "multipathEquivalentAsPathMatchMode";
+
   private static final String PROP_MULTIPATH_IBGP = "multipathIbgp";
 
   private static final String PROP_ACTIVE_NEIGHBORS = "neighbors";
@@ -165,6 +168,7 @@ public class BgpProcess implements Serializable {
     return _multipathEbgp;
   }
 
+  @JsonProperty(PROP_MULTIPATH_EQUIVALENT_AS_PATH_MATCH_MODE)
   public MultipathEquivalentAsPathMatchMode getMultipathEquivalentAsPathMatchMode() {
     return _multipathEquivalentAsPathMatchMode;
   }
@@ -209,6 +213,7 @@ public class BgpProcess implements Serializable {
     _multipathEbgp = multipathEbgp;
   }
 
+  @JsonProperty(PROP_MULTIPATH_EQUIVALENT_AS_PATH_MATCH_MODE)
   public void setMultipathEquivalentAsPathMatchMode(
       MultipathEquivalentAsPathMatchMode multipathEquivalentAsPathMatchMode) {
     _multipathEquivalentAsPathMatchMode = multipathEquivalentAsPathMatchMode;

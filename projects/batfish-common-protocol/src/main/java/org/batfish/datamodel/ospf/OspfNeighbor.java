@@ -11,6 +11,12 @@ import org.batfish.datamodel.IpLink;
 
 public class OspfNeighbor extends ComparableStructure<IpLink> {
 
+  private static final String PROP_AREA = "area";
+
+  private static final String PROP_IFACE = "iface";
+
+  private static final String PROP_VRF = "vrf";
+
   public static final class OspfNeighborSummary extends ComparableStructure<String> {
 
     private static final String PROP_LOCAL_IP = "localIp";
@@ -81,10 +87,12 @@ public class OspfNeighbor extends ComparableStructure<IpLink> {
     super(ipEdge);
   }
 
+  @JsonProperty(PROP_AREA)
   public long getArea() {
     return _area;
   }
 
+  @JsonProperty(PROP_IFACE)
   public Interface getIface() {
     return _iface;
   }
@@ -114,14 +122,17 @@ public class OspfNeighbor extends ComparableStructure<IpLink> {
     return _remoteOspfNeighbor;
   }
 
+  @JsonProperty(PROP_VRF)
   public String getVrf() {
     return _vrf;
   }
 
+  @JsonProperty(PROP_AREA)
   public void setArea(long area) {
     _area = area;
   }
 
+  @JsonProperty(PROP_IFACE)
   public void setIface(Interface iface) {
     _iface = iface;
   }
@@ -138,6 +149,7 @@ public class OspfNeighbor extends ComparableStructure<IpLink> {
     _remoteOspfNeighbor = remoteOspfNeighbor;
   }
 
+  @JsonProperty(PROP_VRF)
   public void setVrf(String vrf) {
     _vrf = vrf;
   }

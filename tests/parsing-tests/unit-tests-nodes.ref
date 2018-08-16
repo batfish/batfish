@@ -6402,8 +6402,25 @@
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
                 "comment" : "EIGRP export routes for eigrp",
                 "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                  "protocol" : "eigrp"
+                  "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
+                  "conjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProcessAsn"
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
+                      "disjuncts" : [
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                          "protocol" : "eigrp"
+                        },
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                          "protocol" : "eigrpEX"
+                        }
+                      ]
+                    }
+                  ]
                 },
                 "trueStatements" : [
                   {
@@ -16789,6 +16806,12 @@
             ],
             "sourceName" : "~GLOBAL_SECURITY_POLICY~",
             "sourceType" : "firewall filter"
+          }
+        },
+        "ipSpaceMetadata" : {
+          "global~ASET" : {
+            "sourceName" : "global~ASET",
+            "sourceType" : "address-book"
           }
         },
         "ipSpaces" : {

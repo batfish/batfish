@@ -28,6 +28,8 @@ public class IsisLoopbacksQuestionPlugin extends QuestionPlugin {
 
   public static class IsisLoopbacksAnswerElement extends AnswerElement {
 
+    private static final String PROP_INACTIVE = "inactive";
+
     private SortedMap<String, SortedSet<String>> _inactive;
 
     private SortedMap<String, SortedSet<String>> _l1;
@@ -61,6 +63,7 @@ public class IsisLoopbacksQuestionPlugin extends QuestionPlugin {
       interfacesByHostname.add(interfaceName);
     }
 
+    @JsonProperty(PROP_INACTIVE)
     public SortedMap<String, SortedSet<String>> getInactive() {
       return _inactive;
     }
@@ -93,6 +96,7 @@ public class IsisLoopbacksQuestionPlugin extends QuestionPlugin {
       return _running;
     }
 
+    @JsonProperty(PROP_INACTIVE)
     public void setInactive(SortedMap<String, SortedSet<String>> inactive) {
       _inactive = inactive;
     }

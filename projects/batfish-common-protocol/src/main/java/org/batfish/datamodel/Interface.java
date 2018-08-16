@@ -395,6 +395,8 @@ public final class Interface extends ComparableStructure<String> {
 
   private static final String PROP_PREFIX = "prefix";
 
+  private static final String PROP_PROXY_ARP = "proxyArp";
+
   private static final String PROP_RIP_ENABLED = "ripEnabled";
 
   private static final String PROP_RIP_PASSIVE = "ripPassive";
@@ -1074,6 +1076,7 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   @JsonPropertyDescription("Whether or not proxy-ARP is enabled on this interface.")
+  @JsonProperty(PROP_PROXY_ARP)
   public boolean getProxyArp() {
     return _proxyArp;
   }
@@ -1404,6 +1407,7 @@ public final class Interface extends ComparableStructure<String> {
     _address = address;
   }
 
+  @JsonProperty(PROP_PROXY_ARP)
   public void setProxyArp(boolean proxyArp) {
     _proxyArp = proxyArp;
   }

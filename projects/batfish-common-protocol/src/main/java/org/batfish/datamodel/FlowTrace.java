@@ -1,5 +1,6 @@
 package org.batfish.datamodel;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
@@ -21,6 +22,7 @@ public class FlowTrace implements Comparable<FlowTrace> {
 
   private final String _notes;
 
+  @JsonCreator
   public FlowTrace(
       @JsonProperty(PROP_DISPOSITION) FlowDisposition disposition,
       @JsonProperty(PROP_HOPS) List<FlowTraceHop> hops,

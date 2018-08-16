@@ -18,7 +18,17 @@ import org.batfish.datamodel.IpAccessListLine;
  */
 public class AclLinesAnswerElement extends AnswerElement implements AclLinesAnswerElementInterface {
 
+  private static final String PROP_UNREACHABLE_LINES = "unreachableLines";
+
   public static class AclReachabilityEntry implements Comparable<AclReachabilityEntry> {
+
+    private static final String PROP_DIFFERENT_ACTION = "differentAction";
+
+    private static final String PROP_EARLIEST_MORE_GENERAL_LINE_INDEX =
+        "earliestMoreGeneralLineIndex";
+
+    private static final String PROP_EARLIEST_MORE_GENERAL_LINE_NAME =
+        "earliestMoreGeneralLineName";
 
     private static final String PROP_INDEX = "index";
 
@@ -56,6 +66,7 @@ public class AclLinesAnswerElement extends AnswerElement implements AclLinesAnsw
       return _index == ((AclReachabilityEntry) o)._index;
     }
 
+    @JsonProperty(PROP_DIFFERENT_ACTION)
     public boolean getDifferentAction() {
       return _differentAction;
     }
@@ -70,6 +81,7 @@ public class AclLinesAnswerElement extends AnswerElement implements AclLinesAnsw
      *
      * <p>This is a temporary solution for communicating these cases and will be changed soon.
      */
+    @JsonProperty(PROP_EARLIEST_MORE_GENERAL_LINE_INDEX)
     public Integer getEarliestMoreGeneralLineIndex() {
       return _earliestMoreGeneralLineIndex;
     }
@@ -87,14 +99,17 @@ public class AclLinesAnswerElement extends AnswerElement implements AclLinesAnsw
      * <p>This is a temporary solution for communicating the latter two cases and will be changed
      * soon.
      */
+    @JsonProperty(PROP_EARLIEST_MORE_GENERAL_LINE_NAME)
     public String getEarliestMoreGeneralLineName() {
       return _earliestMoreGeneralLineName;
     }
 
+    @JsonProperty(PROP_INDEX)
     public int getIndex() {
       return _index;
     }
 
+    @JsonProperty(PROP_NAME)
     public String getName() {
       return _name;
     }
@@ -114,14 +129,17 @@ public class AclLinesAnswerElement extends AnswerElement implements AclLinesAnsw
       return sb;
     }
 
+    @JsonProperty(PROP_DIFFERENT_ACTION)
     public void setDifferentAction(boolean differentAction) {
       _differentAction = differentAction;
     }
 
+    @JsonProperty(PROP_EARLIEST_MORE_GENERAL_LINE_INDEX)
     public void setEarliestMoreGeneralLineIndex(Integer earliestMoreGeneralLineIndex) {
       _earliestMoreGeneralLineIndex = earliestMoreGeneralLineIndex;
     }
 
+    @JsonProperty(PROP_EARLIEST_MORE_GENERAL_LINE_NAME)
     public void setEarliestMoreGeneralLineName(String earliestMoreGeneralLineName) {
       _earliestMoreGeneralLineName = earliestMoreGeneralLineName;
     }
@@ -201,6 +219,7 @@ public class AclLinesAnswerElement extends AnswerElement implements AclLinesAnsw
     return _reachableLines;
   }
 
+  @JsonProperty(PROP_UNREACHABLE_LINES)
   public SortedMap<String, SortedMap<String, SortedSet<AclReachabilityEntry>>>
       getUnreachableLines() {
     return _unreachableLines;
@@ -233,6 +252,7 @@ public class AclLinesAnswerElement extends AnswerElement implements AclLinesAnsw
   public void setReachableLines(
       SortedMap<String, SortedMap<String, SortedSet<AclReachabilityEntry>>> reachableLines) {}
 
+  @JsonProperty(PROP_UNREACHABLE_LINES)
   public void setUnreachableLines(
       SortedMap<String, SortedMap<String, SortedSet<AclReachabilityEntry>>> unreachableLines) {
     _unreachableLines = unreachableLines;

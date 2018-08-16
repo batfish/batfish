@@ -5,10 +5,14 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 import static java.util.stream.Collectors.toCollection;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Sets;
 import io.opentracing.ActiveSpan;
 import io.opentracing.References;
 import io.opentracing.SpanContext;
@@ -24,6 +28,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
@@ -41,16 +46,19 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import org.batfish.common.AnalysisAnswerOptions;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.BfConsts.TaskStatus;
+import org.batfish.common.ColumnSortOption;
 import org.batfish.common.Container;
 import org.batfish.common.CoordConsts.WorkStatusCode;
 import org.batfish.common.Pair;
@@ -69,11 +77,17 @@ import org.batfish.coordinator.WorkQueueMgr.QueueType;
 import org.batfish.coordinator.config.Settings;
 import org.batfish.datamodel.AnalysisMetadata;
 import org.batfish.datamodel.TestrigMetadata;
+import org.batfish.datamodel.answers.Aggregation;
+import org.batfish.datamodel.answers.AnalysisAnswerMetricsResult;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.AutocompleteSuggestion;
 import org.batfish.datamodel.answers.AutocompleteSuggestion.CompletionType;
+import org.batfish.datamodel.answers.ColumnAggregation;
+import org.batfish.datamodel.answers.ColumnAggregationResult;
+import org.batfish.datamodel.answers.Metrics;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
+import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.pojo.Topology;
 import org.batfish.datamodel.questions.BgpPropertySpecifier;
@@ -82,6 +96,10 @@ import org.batfish.datamodel.questions.NodePropertySpecifier;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.OspfPropertySpecifier;
 import org.batfish.datamodel.questions.Question;
+import org.batfish.datamodel.table.ColumnMetadata;
+import org.batfish.datamodel.table.Row;
+import org.batfish.datamodel.table.TableAnswerElement;
+import org.batfish.datamodel.table.TableMetadata;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
 import org.codehaus.jettison.json.JSONArray;
@@ -693,6 +711,36 @@ public class WorkMgr extends AbstractCoordinator {
       String analysisName)
       throws JsonProcessingException {
     SortedSet<String> questions = listAnalysisQuestions(containerName, analysisName);
+    Map<String, String> retMap = new TreeMap<>();
+    for (String questionName : questions) {
+      retMap.put(
+          questionName,
+          getAnalysisAnswer(
+              containerName,
+              baseTestrig,
+              baseEnv,
+              deltaTestrig,
+              deltaEnv,
+              analysisName,
+              questionName));
+    }
+    return retMap;
+  }
+
+  public Map<String, String> getAnalysisAnswers(
+      String containerName,
+      String baseTestrig,
+      String baseEnv,
+      String deltaTestrig,
+      String deltaEnv,
+      String analysisName,
+      Set<String> analysisQuestions)
+      throws JsonProcessingException {
+    SortedSet<String> allQuestions = listAnalysisQuestions(containerName, analysisName);
+    SortedSet<String> questions =
+        analysisQuestions.isEmpty()
+            ? allQuestions
+            : ImmutableSortedSet.copyOf(Sets.intersection(allQuestions, analysisQuestions));
     Map<String, String> retMap = new TreeMap<>();
     for (String questionName : questions) {
       retMap.put(
@@ -1753,5 +1801,218 @@ public class WorkMgr extends AbstractCoordinator {
   public boolean checkContainerExists(String containerName) {
     Path containerDir = getdirContainer(containerName, false);
     return Files.exists(containerDir);
+  }
+
+  /**
+   * Compute metrics for the answer to each question in an analysis.
+   *
+   * @param answers Mapping from questionName to raw answer JSON string
+   * @param aggregations A list of aggregations to be performed on each answer and returned in the
+   *     order specified in the {@link Metrics} contained in each result within the returned {@link
+   *     AnalysisAnswerMetricsResult}
+   * @return A mapping from questionName to the metrics for that question
+   */
+  public @Nonnull Map<String, AnalysisAnswerMetricsResult> getAnalysisAnswersMetrics(
+      Map<String, String> answers, List<ColumnAggregation> aggregations) {
+    return CommonUtil.toImmutableMap(
+        answers,
+        Entry::getKey,
+        rawAnswerByNameEntry ->
+            toAnalysisAnswerMetricsResult(rawAnswerByNameEntry.getValue(), aggregations));
+  }
+
+  @VisibleForTesting
+  @Nonnull
+  AnalysisAnswerMetricsResult toAnalysisAnswerMetricsResult(
+      @Nonnull String rawAnswer, @Nonnull List<ColumnAggregation> aggregations) {
+    AnswerStatus status;
+    try {
+      Answer answer =
+          BatfishObjectMapper.mapper().readValue(rawAnswer, new TypeReference<Answer>() {});
+      status = answer.getStatus();
+      if (status != AnswerStatus.SUCCESS) {
+        return new AnalysisAnswerMetricsResult(null, status);
+      }
+      TableAnswerElement table = (TableAnswerElement) answer.getAnswerElements().get(0);
+      int numRows = table.getRows().size();
+      List<ColumnAggregationResult> aggregationResults =
+          computeColumnAggregations(table, aggregations);
+      return new AnalysisAnswerMetricsResult(new Metrics(aggregationResults, numRows), status);
+    } catch (Exception e) {
+      _logger.errorf(
+          "Failed to convert answer string to AnalysisAnswerMetricsResult: %s", e.getMessage());
+      return new AnalysisAnswerMetricsResult(null, AnswerStatus.FAILURE);
+    }
+  }
+
+  @VisibleForTesting
+  @Nonnull
+  List<ColumnAggregationResult> computeColumnAggregations(
+      @Nonnull TableAnswerElement table, @Nonnull List<ColumnAggregation> aggregations) {
+    return aggregations
+        .stream()
+        .map(columnAggregation -> computeColumnAggregation(table, columnAggregation))
+        .collect(ImmutableList.toImmutableList());
+  }
+
+  @VisibleForTesting
+  @Nonnull
+  ColumnAggregationResult computeColumnAggregation(
+      @Nonnull TableAnswerElement table, ColumnAggregation columnAggregation) {
+    Object value;
+    String column = columnAggregation.getColumn();
+    Aggregation aggregation = columnAggregation.getAggregation();
+    switch (aggregation) {
+      case MAX:
+        value = computeColumnMax(table, column);
+        break;
+      default:
+        _logger.errorf("Unhandled aggregation type: %s", aggregation);
+        value = null;
+        break;
+    }
+    return new ColumnAggregationResult(aggregation, column, value);
+  }
+
+  @VisibleForTesting
+  @Nullable
+  Integer computeColumnMax(@Nonnull TableAnswerElement table, @Nonnull String column) {
+    ColumnMetadata columnMetadata = table.getMetadata().toColumnMap().get(column);
+    if (columnMetadata == null) {
+      String message = String.format("No column named: %s", column);
+      _logger.error(message);
+      throw new IllegalArgumentException(message);
+    }
+    Schema schema = columnMetadata.getSchema();
+    Function<Row, Integer> rowToInteger;
+    if (schema.equals(Schema.INTEGER)) {
+      rowToInteger = r -> r.getInteger(column);
+    } else if (schema.equals(Schema.ISSUE)) {
+      rowToInteger = r -> r.getIssue(column).getSeverity();
+    } else {
+      String message = String.format("Unsupported schema for MAX aggregation: %s", schema);
+      _logger.error(message);
+      throw new UnsupportedOperationException(message);
+    }
+    return table
+        .getRows()
+        .getData()
+        .stream()
+        .map(rowToInteger)
+        .max(Comparator.naturalOrder())
+        .orElse(null);
+  }
+
+  /**
+   * Filter and sort {@code rawAnswers} according to options specified in {@code
+   * analysisAnswersOptions}
+   */
+  public Map<String, Answer> processAnalysisAnswers(
+      Map<String, String> rawAnswers, Map<String, AnalysisAnswerOptions> analysisAnswersOptions) {
+    return CommonUtil.toImmutableMap(
+        rawAnswers,
+        Entry::getKey,
+        rawAnswersEntry ->
+            processAnalysisAnswer(
+                rawAnswersEntry.getValue(), analysisAnswersOptions.get(rawAnswersEntry.getKey())));
+  }
+
+  @VisibleForTesting
+  @Nonnull
+  Answer processAnalysisAnswer(String rawAnswerStr, AnalysisAnswerOptions options) {
+    if (rawAnswerStr == null) {
+      Answer answer = Answer.failureAnswer("Not found", null);
+      answer.setStatus(AnswerStatus.NOTFOUND);
+      return answer;
+    }
+    try {
+      Answer rawAnswer =
+          BatfishObjectMapper.mapper().readValue(rawAnswerStr, new TypeReference<Answer>() {});
+      TableAnswerElement rawTable = (TableAnswerElement) rawAnswer.getAnswerElements().get(0);
+      Answer answer = new Answer();
+      answer.setStatus(rawAnswer.getStatus());
+      answer.addAnswerElement(processAnalysisAnswerTable(rawTable, options));
+      return answer;
+    } catch (Exception e) {
+      _logger.errorf(
+          "Failed to convert answer string to ProcessAnalysisAnswerResult: %s", e.getMessage());
+      return Answer.failureAnswer(e.getMessage(), null);
+    }
+  }
+
+  @VisibleForTesting
+  @SuppressWarnings("resource")
+  @Nonnull
+  TableAnswerElement processAnalysisAnswerTable(
+      TableAnswerElement rawTable, AnalysisAnswerOptions options) {
+    Map<String, ColumnMetadata> rawColumnMap = rawTable.getMetadata().toColumnMap();
+    Stream<Row> rawStream = rawTable.getRowsList().stream();
+    Stream<Row> sortedStream =
+        options.getSortOrder().isEmpty()
+            ? rawStream
+            : rawStream.sorted(buildComparator(rawColumnMap, options.getSortOrder()));
+    List<Row> sortedRows = sortedStream.collect(ImmutableList.toImmutableList());
+    Stream<Row> truncatedStream =
+        sortedRows.stream().skip(options.getRowOffset()).limit(options.getMaxRows());
+    List<Row> truncatedRows = truncatedStream.collect(ImmutableList.toImmutableList());
+    Stream<Row> filteredStream;
+    TableAnswerElement table;
+    if (options.getColumns().isEmpty()) {
+      filteredStream = truncatedRows.stream();
+      table = new TableAnswerElement(rawTable.getMetadata());
+    } else {
+      filteredStream =
+          truncatedRows
+              .stream()
+              .map(rawRow -> Row.builder().putAll(rawRow, options.getColumns()).build());
+      Map<String, ColumnMetadata> columnMap = new LinkedHashMap<>(rawColumnMap);
+      columnMap.keySet().retainAll(options.getColumns());
+      List<ColumnMetadata> columnMetadata =
+          columnMap.values().stream().collect(ImmutableList.toImmutableList());
+      table =
+          new TableAnswerElement(
+              new TableMetadata(columnMetadata, rawTable.getMetadata().getTextDesc()));
+    }
+    filteredStream.forEach(table::addRow);
+    return table;
+  }
+
+  @VisibleForTesting
+  @Nonnull
+  Comparator<Row> buildComparator(
+      Map<String, ColumnMetadata> rawColumnMap, List<ColumnSortOption> sortOrder) {
+    ColumnSortOption firstColumnSortOption = sortOrder.get(0);
+    ColumnMetadata firstMetadata = rawColumnMap.get(firstColumnSortOption.getColumn());
+    Comparator<Row> comparator = columnComparator(firstMetadata);
+    if (firstColumnSortOption.getReversed()) {
+      comparator = comparator.reversed();
+    }
+    for (int i = 1; i < sortOrder.size(); i++) {
+      ColumnSortOption columnSortOption = sortOrder.get(i);
+      Comparator<Row> nextComparator =
+          columnComparator(rawColumnMap.get(columnSortOption.getColumn()));
+      if (columnSortOption.getReversed()) {
+        nextComparator = nextComparator.reversed();
+      }
+      comparator = comparator.thenComparing(nextComparator);
+    }
+    return comparator;
+  }
+
+  @VisibleForTesting
+  Comparator<Row> columnComparator(ColumnMetadata columnMetadata) {
+    Schema schema = columnMetadata.getSchema();
+    String column = columnMetadata.getName();
+    if (schema.equals(Schema.INTEGER)) {
+      return Comparator.comparing(r -> r.getInteger(column));
+    } else if (schema.equals(Schema.ISSUE)) {
+      return Comparator.comparing(r -> r.getIssue(column).getSeverity());
+    } else if (schema.equals(Schema.STRING)) {
+      return Comparator.comparing(r -> r.getString(column));
+    } else {
+      String message = String.format("Unsupported Schema for sorting: %s", schema);
+      _logger.error(message);
+      throw new UnsupportedOperationException(message);
+    }
   }
 }

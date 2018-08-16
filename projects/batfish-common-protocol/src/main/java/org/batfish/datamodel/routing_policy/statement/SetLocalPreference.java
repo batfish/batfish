@@ -1,12 +1,15 @@
 package org.batfish.datamodel.routing_policy.statement;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.expr.IntExpr;
 
 public class SetLocalPreference extends Statement {
+
+  private static final String PROP_LOCAL_PREFERENCE = "localPreference";
 
   /** */
   private static final long serialVersionUID = 1L;
@@ -54,6 +57,7 @@ public class SetLocalPreference extends Statement {
     return result;
   }
 
+  @JsonProperty(PROP_LOCAL_PREFERENCE)
   public IntExpr getLocalPreference() {
     return _localPreference;
   }
@@ -66,6 +70,7 @@ public class SetLocalPreference extends Statement {
     return result;
   }
 
+  @JsonProperty(PROP_LOCAL_PREFERENCE)
   public void setLocalPreference(IntExpr localPreference) {
     _localPreference = localPreference;
   }

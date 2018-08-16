@@ -59,6 +59,7 @@ public class NamedCommunitySet extends CommunitySetExpr {
     return _name.equals(((NamedCommunitySet) obj)._name);
   }
 
+  @JsonProperty(PROP_NAME)
   public String getName() {
     return _name;
   }

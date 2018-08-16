@@ -1,5 +1,6 @@
 package org.batfish.datamodel.questions;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Arrays;
@@ -91,6 +92,7 @@ public class NodesSpecifier {
     }
   }
 
+  @JsonCreator
   public NodesSpecifier(String expression) {
     this(expression, false);
   }
@@ -233,6 +235,11 @@ public class NodesSpecifier {
     }
 
     return suggestions;
+  }
+
+  /** @return The input {@link String} expression. */
+  public String getExpression() {
+    return _expression;
   }
 
   /** Return the set of nodes that match this specifier */

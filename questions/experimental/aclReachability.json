@@ -1,8 +1,10 @@
 {
     "class": "org.batfish.question.aclreachability2.AclReachability2Question",
     "differential": false,
-    "aclNameRegex": "${aclNameRegex}",
-    "nodeRegex": "${nodeRegex}",
+    "filterSpecifierFactory": "${filterSpecifierFactory}",
+    "filterSpecifierInput": "${filterSpecifierInput}",
+    "nodeSpecifierFactory": "${nodeSpecifierFactory}",
+    "nodeSpecifierInput": "${nodeSpecifierInput}",
     "instance": {
         "description": "Display ACLs with unreachable lines",
         "instanceName": "aclReachability",
@@ -12,6 +14,7 @@
             "default"
         ],
         "variables": {
+<<<<<<< HEAD
             "aclNameRegex": {
                 "description": "Only evaluate ACLs whose name matches this regex",
                 "type": "javaRegex",
@@ -21,6 +24,27 @@
                 "description": "Only evalute ACLs on nodes whose name matches this regex",
                 "type": "nodeSpec",
                 "value": ".*"
+=======
+            "filterSpecifierFactory": {
+              "description": "FilterSpecifierFactory used to process filterSpecifierInput",
+              "type": "string",
+              "optional": true
+            },
+            "filterSpecifierInput": {
+              "description": "Specifies the filter(s) to be analyzed",
+              "type": "string",
+              "optional": true
+            },
+            "nodeSpecifierFactory": {
+              "description": "NodeSpecifierFactory used to process nodeSpecifierInput",
+              "type": "string",
+              "optional": true
+            },
+            "nodeSpecifierInput": {
+              "description": "Only analyze filters on specified nodes",
+              "type": "string",
+              "optional": true
+>>>>>>> 2b5c6053964798b9f47870ff00e0d29ee541c10b
             }
         }
     }

@@ -321,17 +321,17 @@
       "configs/cisco_eigrp" : {
         "extended ipv4 access-list" : {
           "bippety" : [
-            41,
-            42,
-            43,
-            44,
             45,
             46,
-            47
+            47,
+            48,
+            49,
+            50,
+            51
           ],
           "bloop_blop" : [
-            110,
-            111
+            114,
+            115
           ]
         }
       },
