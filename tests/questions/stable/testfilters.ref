@@ -14,13 +14,14 @@
   "includeOneTableKeys" : true,
   "ingressInterface" : "randomInterface",
   "instance" : {
-    "description" : "Perform a traceroute.",
+    "description" : "Evaluate the processing of a flow by a given filter/ACL.",
     "instanceName" : "qname",
-    "longDescription" : "This question performs a virtual traceroute in the network from a starting node. A destination IP and ingress (source) node must be specified. Other IP headers are given default values if unspecified.\nUnlike a real traceroute, this traceroute is directional. That is, for it to succeed, the reverse connectivity is not needed. This feature can help debug connectivity issues by decoupling the two directions.",
+    "longDescription" : "Find the disposition of the specified flow when processed through the specified filter/ACL.",
     "tags" : [
       "dataPlane",
-      "reachability",
-      "traceroute"
+      "filter",
+      "flow",
+      "trace"
     ],
     "variables" : {
       "dscp" : {
@@ -54,8 +55,8 @@
         "value" : 1
       },
       "filterRegex" : {
-        "description" : "Only consider filters that match this specification",
-        "optional" : true,
+        "description" : "Only consider filters that match this regular expression",
+        "optional" : false,
         "type" : "javaRegex",
         "value" : ".*"
       },
@@ -78,7 +79,7 @@
         "value" : 23
       },
       "ingressInterface" : {
-        "description" : "Ingress interface for external-originating packet",
+        "description" : "Ingress interface(s) to consider for this flow. Important to specify for firewalls, since that picks the zone and zone rules",
         "minLength" : 1,
         "optional" : true,
         "type" : "string",
@@ -91,8 +92,8 @@
         "value" : "23"
       },
       "nodeRegex" : {
-        "description" : "Only consider filters present on these nodes",
-        "optional" : true,
+        "description" : "Only consider filters present on nodes that match this regular expression",
+        "optional" : false,
         "type" : "javaRegex",
         "value" : ".*"
       },
