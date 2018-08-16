@@ -258,22 +258,25 @@ public class BatfishTest {
   @Test
   public void testReadMissingIptableFile() throws IOException {
     HostConfiguration host1 = new HostConfiguration();
+    String filename = Paths.get("iptables", "host1.iptables").toString();
     host1.setHostname("host1");
-    host1.setIptablesFile(Paths.get("iptables").resolve("host1.iptables").toString());
+    host1.setIptablesFile(filename);
     SortedMap<String, VendorConfiguration> hostConfigurations = new TreeMap<>();
     hostConfigurations.put("host1", host1);
     SortedMap<Path, String> iptablesData = new TreeMap<>();
     Path testRigPath = _folder.newFolder("testrig").toPath();
     ParseVendorConfigurationAnswerElement answerElement =
         new ParseVendorConfigurationAnswerElement();
-    answerElement.getParseStatus().put("host1", ParseStatus.PASSED);
+    answerElement.getParseStatus().put("configs/host1.cfg", ParseStatus.PASSED);
     Batfish batfish = BatfishTestUtils.getBatfish(new TreeMap<>(), _folder);
     String failureMessage =
         "Iptables file iptables"
             + File.separator
             + "host1.iptables for host host1 is not contained within the testrig";
     batfish.readIptableFiles(testRigPath, hostConfigurations, iptablesData, answerElement);
-    assertThat(answerElement.getParseStatus().get("host1"), equalTo(ParseStatus.FAILED));
+    assertThat(
+        answerElement.getParseStatus().get(Paths.get("iptables", "host1.iptables").toString()),
+        equalTo(ParseStatus.FAILED));
     assertThat(
         answerElement.getErrors().get("host1").prettyPrint(), containsString(failureMessage));
     // When host file failed, verify that error message contains both failure messages

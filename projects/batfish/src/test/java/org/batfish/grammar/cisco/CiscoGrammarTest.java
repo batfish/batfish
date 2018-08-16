@@ -3321,4 +3321,30 @@ public class CiscoGrammarTest {
     // Confirm interface definition is tracked for the alias name
     assertThat(ccae, hasDefinedStructure(filename, CiscoStructureType.INTERFACE, "ifname"));
   }
+
+  @Test
+  public void testAsaStaticRoute() throws IOException {
+    Configuration c = parseConfig("asa-static-route");
+
+    // Confirm static route is extracted properly
+    assertThat(
+        c,
+        ConfigurationMatchers.hasVrf(
+            "default",
+            hasStaticRoutes(
+                equalTo(
+                    ImmutableSet.of(
+                        StaticRoute.builder()
+                            .setNextHopIp(new Ip("3.0.0.1"))
+                            .setNetwork(Prefix.parse("0.0.0.0/0"))
+                            .setNextHopInterface("ifname")
+                            .setAdministrativeCost(2)
+                            .build(),
+                        StaticRoute.builder()
+                            .setNextHopIp(new Ip("3.0.0.2"))
+                            .setNetwork(Prefix.parse("1.0.0.0/8"))
+                            .setNextHopInterface("ifname")
+                            .setAdministrativeCost(3)
+                            .build())))));
+  }
 }

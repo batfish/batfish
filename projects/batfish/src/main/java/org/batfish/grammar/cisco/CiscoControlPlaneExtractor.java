@@ -841,6 +841,7 @@ import org.batfish.grammar.cisco.CiscoParser.Route_map_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Route_policy_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Route_policy_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Route_reflector_client_bgp_tailContext;
+import org.batfish.grammar.cisco.CiscoParser.Route_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Router_bgp_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Router_id_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Router_isis_stanzaContext;
@@ -7941,6 +7942,31 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitRoute_reflector_client_bgp_tail(Route_reflector_client_bgp_tailContext ctx) {
     _currentPeerGroup.setRouteReflectorClient(true);
+  }
+
+  @Override
+  public void exitRoute_tail(Route_tailContext ctx) {
+    String nextHopInterface = ctx.iface.getText();
+    Prefix prefix = new Prefix(toIp(ctx.destination), toIp(ctx.mask));
+    Ip nextHopIp = toIp(ctx.gateway);
+
+    int distance = DEFAULT_STATIC_ROUTE_DISTANCE;
+    if (ctx.distance != null) {
+      distance = toInteger(ctx.distance);
+    }
+
+    Integer track = null;
+    if (ctx.track != null) {
+      track = toInteger(ctx.track);
+    }
+
+    if (ctx.TUNNELED() != null) {
+      _w.redFlag("Interface default tunnel gateway option not yet supported.");
+    }
+
+    StaticRoute route =
+        new StaticRoute(prefix, nextHopIp, nextHopInterface, distance, null, track, false);
+    currentVrf().getStaticRoutes().add(route);
   }
 
   @Override

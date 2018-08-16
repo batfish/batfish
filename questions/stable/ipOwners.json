@@ -3,14 +3,15 @@
     "differential": false,
     "duplicatesOnly": "${duplicatesOnly}",
     "instance": {
-        "description": "Outputs the mapping from IPs to node, VRF, and interface combination.",
+        "description": "Returns the mapping of IP address, interface, node and VRF for all devices in the snapshot.",
         "instanceName": "ipOwners",
         "tags": [
-            "ip", "configuration"
+            "ip", 
+            "configuration"
         ],
         "variables": {
             "duplicatesOnly": {
-                "description": "Whether to return duplicate IPs only (owned by different node/VRF)",
+                "description": "Restrict output to only IP addresses that are duplicated (configured on a different node or VRF) in the snapshot",
                 "type": "boolean",
                 "value": false
             }
