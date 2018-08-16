@@ -15,6 +15,7 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.specifier.AllInterfaceLinksLocationSpecifier;
 import org.batfish.specifier.AllInterfaceLinksLocationSpecifierFactory;
+import org.batfish.specifier.AllInterfacesLocationSpecifier;
 import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.batfish.specifier.ConstantIpSpaceSpecifier;
 import org.batfish.specifier.ConstantUniverseIpSpaceSpecifierFactory;
@@ -152,8 +153,7 @@ public class SpecifiersReachabilityQuestionTest {
   public void getSourceLocationSpecifier_bothNull() {
     SpecifiersReachabilityQuestion question = new SpecifiersReachabilityQuestion();
     assertThat(
-        question.getSourceLocationSpecifier(),
-        equalTo(AllInterfaceLinksLocationSpecifier.INSTANCE));
+        question.getSourceLocationSpecifier(), equalTo(AllInterfacesLocationSpecifier.INSTANCE));
   }
 
   @Test

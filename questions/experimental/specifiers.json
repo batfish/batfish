@@ -1,0 +1,78 @@
+{
+  "class": "org.batfish.question.specifiers.SpecifiersQuestion",
+  "filterSpecifierFactory": "${filterSpecifierFactory}",
+  "filterSpecifierInput": "${filterSpecifierInput}",
+  "interfaceSpecifierFactory": "${interfaceSpecifierFactory}",
+  "interfaceSpecifierInput": "${interfaceSpecifierInput}",
+  "ipSpaceSpecifierFactory": "${ipSpaceSpecifierFactory}",
+  "ipSpaceSpecifierInput": "${ipSpaceSpecifierInput}",
+  "locationSpecifierFactory": "${locationSpecifierFactory}",
+  "locationSpecifierInput": "${locationSpecifierInput}",
+  "nodeSpecifierFactory": "${nodeSpecifierFactory}",
+  "nodeSpecifierInput": "${nodeSpecifierInput}",
+  "queryType": "${queryType}",
+  "instance": {
+    "description": "Find the locations and IpSpaces specified by the input specifiers",
+    "instanceName": "specifiers",
+    "tags": [
+      "specifiers"
+    ],
+    "variables": {
+      "filterSpecifierFactory": {
+        "description": "Name of the FilterSpecifierFactory to use",
+        "optional": true,
+        "type": "string"
+      },
+      "filterSpecifierInput": {
+        "description": "Input to the FilterSpecifier",
+        "optional": true,
+        "type": "string"
+      },
+      "interfaceSpecifierFactory": {
+        "description": "Name of the InterfaceSpecifierFactory to use",
+        "optional": true,
+        "type": "string"
+      },
+      "interfaceSpecifierInput": {
+        "description": "Input to the interfaceSpecifier",
+        "optional": true,
+        "type": "string"
+      },
+      "ipSpaceSpecifierFactory": {
+        "description": "Name of the IpSpaceSpecifierFactory to use",
+        "optional": true,
+        "type": "string"
+      },
+      "ipSpaceSpecifierInput": {
+        "description": "Input to the IpSpaceSpecifier",
+        "optional": true,
+        "type": "string"
+      },
+      "locationSpecifierFactory":{
+        "description": "Name of the LocationSpecifierFactory to use",
+        "optional": true,
+        "type": "string"
+      },
+      "locationSpecifierInput": {
+        "description": "Input to the LocationSpecifier",
+        "optional": true,
+        "type": "string"
+      },
+      "nodeSpecifierFactory": {
+        "description": "Name of the NodeSpecifierFactory to use",
+        "optional": true,
+        "type": "string"
+      },
+      "nodeSpecifierInput": {
+        "description": "Input to the NodeSpecifier",
+        "optional": true,
+        "type": "string"
+      },
+      "queryType": {
+        "description" : "The type of query to perform. Should be one of FILTER, INTERFACE, IP_SPACE, LOCATION, NODE",
+        "optional": false,
+        "type": "string"
+      }
+    }
+  }
+}

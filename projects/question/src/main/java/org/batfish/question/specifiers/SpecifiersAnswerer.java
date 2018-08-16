@@ -27,32 +27,39 @@ public final class SpecifiersAnswerer extends Answerer {
   @Override
   public AnswerElement answer() {
     SpecifiersQuestion question = (SpecifiersQuestion) _question;
-
     SpecifierContext context = _batfish.specifierContext();
+
+    switch (question.getQueryType()) {
+      case IP_SPACE:
+        return resolveIpSpace(question, context);
+      default:
+        throw new IllegalArgumentException("Unhandled query type: " + question.getQueryType());
+    }
+  }
+
+  private static TableAnswerElement resolveIpSpace(
+      SpecifiersQuestion question, SpecifierContext context) {
+
+    List<ColumnMetadata> columns =
+        ImmutableList.of(
+            new ColumnMetadata("Locations", Schema.STRING, "Resolution", false, false),
+            new ColumnMetadata("IpSpace", Schema.STRING, "IpSpace", false, false));
+    TableAnswerElement table = new TableAnswerElement(new TableMetadata(columns));
+    Map<String, ColumnMetadata> columnMap = table.getMetadata().toColumnMap();
 
     Set<Location> locations = question.getLocationSpecifier().resolve(context);
     IpSpaceAssignment ipSpaceAssignment =
         question.getIpSpaceSpecifier().resolve(locations, context);
 
-    TableAnswerElement table = tableAnswerElement();
-    Map<String, ColumnMetadata> columns = table.getMetadata().toColumnMap();
     for (IpSpaceAssignment.Entry entry : ipSpaceAssignment.getEntries()) {
       table.addRow(
           Row.of(
-              columns,
+              columnMap,
               "Locations",
               entry.getLocations().toString(),
               "IpSpace",
               Objects.toString(entry.getIpSpace())));
     }
     return table;
-  }
-
-  private static TableAnswerElement tableAnswerElement() {
-    List<ColumnMetadata> columns =
-        ImmutableList.of(
-            new ColumnMetadata("Locations", Schema.STRING, "Locations", false, false),
-            new ColumnMetadata("IpSpace", Schema.STRING, "IpSpace", false, false));
-    return new TableAnswerElement(new TableMetadata(columns, (String) null));
   }
 }

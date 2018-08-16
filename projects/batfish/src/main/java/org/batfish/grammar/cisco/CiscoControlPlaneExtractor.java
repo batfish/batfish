@@ -555,6 +555,7 @@ import org.batfish.grammar.cisco.CiscoParser.If_ip_vrf_forwardingContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_vrf_sitemapContext;
 import org.batfish.grammar.cisco.CiscoParser.If_isis_metricContext;
 import org.batfish.grammar.cisco.CiscoParser.If_mtuContext;
+import org.batfish.grammar.cisco.CiscoParser.If_nameifContext;
 import org.batfish.grammar.cisco.CiscoParser.If_rp_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.If_service_policyContext;
 import org.batfish.grammar.cisco.CiscoParser.If_service_policy_control_subscriberContext;
@@ -840,6 +841,7 @@ import org.batfish.grammar.cisco.CiscoParser.Route_map_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Route_policy_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Route_policy_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Route_reflector_client_bgp_tailContext;
+import org.batfish.grammar.cisco.CiscoParser.Route_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Router_bgp_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Router_id_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Router_isis_stanzaContext;
@@ -5561,6 +5563,29 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitIf_nameif(If_nameifContext ctx) {
+    String alias = ctx.name.getText();
+    Map<String, Interface> ifaces = _configuration.getInterfaces();
+    if (ifaces.containsKey(alias)) {
+      _w.redFlag(String.format("Interface alias '%s' is already in use.", alias));
+    } else if (_currentInterfaces.size() > 1) {
+      _w.redFlag(String.format("Parse assertion failed for _currentInterfaces"));
+    } else {
+      // Define the alias as an interface to make ref tracking easier
+      defineStructure(INTERFACE, alias, ctx);
+      _configuration.referenceStructure(
+          INTERFACE, alias, INTERFACE_SELF_REF, ctx.getStart().getLine());
+      Interface iface = _currentInterfaces.get(0);
+      iface.setDeclaredNames(
+          new ImmutableSortedSet.Builder<String>(naturalOrder())
+              .addAll(iface.getDeclaredNames())
+              .add(alias)
+              .build());
+      iface.setAlias(alias);
+    }
+  }
+
+  @Override
   public void exitIf_service_policy(If_service_policyContext ctx) {
     // TODO: do something with this.
     String mapname = ctx.policy_map.getText();
@@ -7917,6 +7942,31 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitRoute_reflector_client_bgp_tail(Route_reflector_client_bgp_tailContext ctx) {
     _currentPeerGroup.setRouteReflectorClient(true);
+  }
+
+  @Override
+  public void exitRoute_tail(Route_tailContext ctx) {
+    String nextHopInterface = ctx.iface.getText();
+    Prefix prefix = new Prefix(toIp(ctx.destination), toIp(ctx.mask));
+    Ip nextHopIp = toIp(ctx.gateway);
+
+    int distance = DEFAULT_STATIC_ROUTE_DISTANCE;
+    if (ctx.distance != null) {
+      distance = toInteger(ctx.distance);
+    }
+
+    Integer track = null;
+    if (ctx.track != null) {
+      track = toInteger(ctx.track);
+    }
+
+    if (ctx.TUNNELED() != null) {
+      _w.redFlag("Interface default tunnel gateway option not yet supported.");
+    }
+
+    StaticRoute route =
+        new StaticRoute(prefix, nextHopIp, nextHopInterface, distance, null, track, false);
+    currentVrf().getStaticRoutes().add(route);
   }
 
   @Override
