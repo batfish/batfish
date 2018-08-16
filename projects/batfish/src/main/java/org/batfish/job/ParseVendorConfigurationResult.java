@@ -116,9 +116,9 @@ public class ParseVendorConfigurationResult
         answerElement.getParseTrees().put(hostname, _parseTree);
       }
       if (_vc.getUnrecognized()) {
-        answerElement.getParseStatus().put(hostname, ParseStatus.PARTIALLY_UNRECOGNIZED);
+        answerElement.getParseStatus().put(_filename, ParseStatus.PARTIALLY_UNRECOGNIZED);
       } else {
-        answerElement.getParseStatus().put(hostname, ParseStatus.PASSED);
+        answerElement.getParseStatus().put(_filename, ParseStatus.PASSED);
         answerElement.getFileMap().put(hostname, _filename);
       }
 
