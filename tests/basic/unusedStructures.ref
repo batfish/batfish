@@ -1,0 +1,300 @@
+[
+  {
+    "class" : "org.batfish.datamodel.table.TableAnswerElement",
+    "metadata" : {
+      "columnMetadata" : [
+        {
+          "description" : "File containing structure",
+          "isKey" : true,
+          "isValue" : false,
+          "name" : "filename",
+          "schema" : "String"
+        },
+        {
+          "description" : "Type of structure",
+          "isKey" : false,
+          "isValue" : false,
+          "name" : "structType",
+          "schema" : "String"
+        },
+        {
+          "description" : "Name of structure",
+          "isKey" : true,
+          "isValue" : false,
+          "name" : "refName",
+          "schema" : "String"
+        },
+        {
+          "description" : "Lines where structure appears",
+          "isKey" : false,
+          "isValue" : false,
+          "name" : "lines",
+          "schema" : "FileLines"
+        }
+      ],
+      "textDesc" : "'${filename}' has unused '${structType}' called '${refName}' at line(s) ${lines}"
+    },
+    "rows" : [
+      {
+        "filename" : "configs/as1border1.cfg",
+        "structType" : "bgp group",
+        "refName" : "as3",
+        "lines" : {
+          "filename" : "configs/as1border1.cfg",
+          "lines" : [
+            83
+          ]
+        }
+      },
+      {
+        "filename" : "configs/as1border1.cfg",
+        "structType" : "expanded community-list",
+        "refName" : "as1_community",
+        "lines" : {
+          "filename" : "configs/as1border1.cfg",
+          "lines" : [
+            119
+          ]
+        }
+      },
+      {
+        "filename" : "configs/as1border1.cfg",
+        "structType" : "ipv4 prefix-list",
+        "refName" : "inbound_route_filter",
+        "lines" : {
+          "filename" : "configs/as1border1.cfg",
+          "lines" : [
+            129,
+            130
+          ]
+        }
+      },
+      {
+        "filename" : "configs/as1border2.cfg",
+        "structType" : "bgp group",
+        "refName" : "as2",
+        "lines" : {
+          "filename" : "configs/as1border2.cfg",
+          "lines" : [
+            87
+          ]
+        }
+      },
+      {
+        "filename" : "configs/as1border2.cfg",
+        "structType" : "expanded community-list",
+        "refName" : "as1_community",
+        "lines" : {
+          "filename" : "configs/as1border2.cfg",
+          "lines" : [
+            123
+          ]
+        }
+      },
+      {
+        "filename" : "configs/as1border2.cfg",
+        "structType" : "ipv4 prefix-list",
+        "refName" : "inbound_route_filter",
+        "lines" : {
+          "filename" : "configs/as1border2.cfg",
+          "lines" : [
+            134,
+            135
+          ]
+        }
+      },
+      {
+        "filename" : "configs/as2border1.cfg",
+        "structType" : "bgp group",
+        "refName" : "as3",
+        "lines" : {
+          "filename" : "configs/as2border1.cfg",
+          "lines" : [
+            93
+          ]
+        }
+      },
+      {
+        "filename" : "configs/as2border1.cfg",
+        "structType" : "expanded community-list",
+        "refName" : "as2_community",
+        "lines" : {
+          "filename" : "configs/as2border1.cfg",
+          "lines" : [
+            124
+          ]
+        }
+      },
+      {
+        "filename" : "configs/as2border1.cfg",
+        "structType" : "ipv4 prefix-list",
+        "refName" : "inbound_route_filter",
+        "lines" : {
+          "filename" : "configs/as2border1.cfg",
+          "lines" : [
+            140,
+            141
+          ]
+        }
+      },
+      {
+        "filename" : "configs/as2border2.cfg",
+        "structType" : "bgp group",
+        "refName" : "as1",
+        "lines" : {
+          "filename" : "configs/as2border2.cfg",
+          "lines" : [
+            86
+          ]
+        }
+      },
+      {
+        "filename" : "configs/as2border2.cfg",
+        "structType" : "expanded community-list",
+        "refName" : "as2_community",
+        "lines" : {
+          "filename" : "configs/as2border2.cfg",
+          "lines" : [
+            121
+          ]
+        }
+      },
+      {
+        "filename" : "configs/as2border2.cfg",
+        "structType" : "ipv4 prefix-list",
+        "refName" : "inbound_route_filter",
+        "lines" : {
+          "filename" : "configs/as2border2.cfg",
+          "lines" : [
+            136,
+            137
+          ]
+        }
+      },
+      {
+        "filename" : "configs/as2dept1.cfg",
+        "structType" : "extended ipv4 access-list",
+        "refName" : "105",
+        "lines" : {
+          "filename" : "configs/as2dept1.cfg",
+          "lines" : [
+            121,
+            122,
+            123,
+            124
+          ]
+        }
+      },
+      {
+        "filename" : "configs/as2dept1.cfg",
+        "structType" : "extended ipv4 access-list",
+        "refName" : "RESTRICT_HOST_TRAFFIC_OUT",
+        "lines" : {
+          "filename" : "configs/as2dept1.cfg",
+          "lines" : [
+            114,
+            115,
+            116,
+            117
+          ]
+        }
+      },
+      {
+        "filename" : "configs/as2dist1.cfg",
+        "structType" : "extended ipv4 access-list",
+        "refName" : "102",
+        "lines" : {
+          "filename" : "configs/as2dist1.cfg",
+          "lines" : [
+            116
+          ]
+        }
+      },
+      {
+        "filename" : "configs/as2dist2.cfg",
+        "structType" : "extended ipv4 access-list",
+        "refName" : "102",
+        "lines" : {
+          "filename" : "configs/as2dist2.cfg",
+          "lines" : [
+            116
+          ]
+        }
+      },
+      {
+        "filename" : "configs/as3border1.cfg",
+        "structType" : "bgp group",
+        "refName" : "as1",
+        "lines" : {
+          "filename" : "configs/as3border1.cfg",
+          "lines" : [
+            81
+          ]
+        }
+      },
+      {
+        "filename" : "configs/as3border1.cfg",
+        "structType" : "expanded community-list",
+        "refName" : "as3_community",
+        "lines" : {
+          "filename" : "configs/as3border1.cfg",
+          "lines" : [
+            115
+          ]
+        }
+      },
+      {
+        "filename" : "configs/as3border1.cfg",
+        "structType" : "ipv4 prefix-list",
+        "refName" : "inbound_route_filter",
+        "lines" : {
+          "filename" : "configs/as3border1.cfg",
+          "lines" : [
+            123,
+            124
+          ]
+        }
+      },
+      {
+        "filename" : "configs/as3border2.cfg",
+        "structType" : "bgp group",
+        "refName" : "as2",
+        "lines" : {
+          "filename" : "configs/as3border2.cfg",
+          "lines" : [
+            83
+          ]
+        }
+      },
+      {
+        "filename" : "configs/as3border2.cfg",
+        "structType" : "expanded community-list",
+        "refName" : "as3_community",
+        "lines" : {
+          "filename" : "configs/as3border2.cfg",
+          "lines" : [
+            115
+          ]
+        }
+      },
+      {
+        "filename" : "configs/as3border2.cfg",
+        "structType" : "ipv4 prefix-list",
+        "refName" : "inbound_route_filter",
+        "lines" : {
+          "filename" : "configs/as3border2.cfg",
+          "lines" : [
+            121,
+            122
+          ]
+        }
+      }
+    ],
+    "summary" : {
+      "notes" : "Found 22 results",
+      "numFailed" : 0,
+      "numPassed" : 0,
+      "numResults" : 22
+    }
+  }
+]
