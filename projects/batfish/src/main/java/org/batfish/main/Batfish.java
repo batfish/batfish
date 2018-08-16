@@ -175,6 +175,7 @@ import org.batfish.job.ParseVendorConfigurationJob;
 import org.batfish.question.ReachFilterParameters;
 import org.batfish.question.ReachabilityParameters;
 import org.batfish.question.ResolvedReachabilityParameters;
+import org.batfish.question.reachfilter.DifferentialReachFilterResult;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.representation.aws.AwsConfiguration;
 import org.batfish.representation.host.HostConfiguration;
@@ -196,6 +197,7 @@ import org.batfish.symbolic.abstraction.Roles;
 import org.batfish.symbolic.bdd.BDDAcl;
 import org.batfish.symbolic.bdd.BDDPacket;
 import org.batfish.symbolic.bdd.BDDSourceManager;
+import org.batfish.symbolic.bdd.DifferentialBDDSourceManager;
 import org.batfish.symbolic.bdd.HeaderSpaceToBDD;
 import org.batfish.symbolic.smt.PropertyChecker;
 import org.batfish.vendor.VendorConfiguration;
@@ -4274,24 +4276,88 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return answerElement;
   }
 
+  /** Performs a difference reachFilters analysis (both increase and decreased reachability). */
+  @Override
+  public DifferentialReachFilterResult differentialReachFilter(
+      Configuration baseConfig,
+      IpAccessList baseAcl,
+      Configuration deltaConfig,
+      IpAccessList deltaAcl,
+      ReachFilterParameters reachFilterParameters) {
+    BDDPacket bddPacket = new BDDPacket();
+
+    /*
+     * Get separate headerspace constraints for base and delta snapshots because they could change
+     * due to differences in named IpSpaces etc.
+     */
+    pushBaseEnvironment();
+    BDD baseHeaderSpaceBDD =
+        new HeaderSpaceToBDD(bddPacket, baseConfig.getIpSpaces())
+            .toBDD(reachFilterParameters.resolveHeaderspace(specifierContext()));
+    popEnvironment();
+
+    pushDeltaEnvironment();
+    BDD deltaHeaderSpaceBDD =
+        new HeaderSpaceToBDD(bddPacket, deltaConfig.getIpSpaces())
+            .toBDD(reachFilterParameters.resolveHeaderspace(specifierContext()));
+    popEnvironment();
+
+    DifferentialBDDSourceManager diffMgr =
+        DifferentialBDDSourceManager.forAcls(bddPacket, baseConfig, baseAcl, deltaConfig, deltaAcl);
+
+    BDDSourceManager mgr = diffMgr.getBddSourceManager();
+    BDD baseAclBDD =
+        BDDAcl.create(
+                bddPacket, baseAcl, baseConfig.getIpAccessLists(), baseConfig.getIpSpaces(), mgr)
+            .getBdd()
+            .and(baseHeaderSpaceBDD)
+            .and(diffMgr.getBaseSane());
+    BDD deltaAclBDD =
+        BDDAcl.create(
+                bddPacket, deltaAcl, deltaConfig.getIpAccessLists(), deltaConfig.getIpSpaces(), mgr)
+            .getBdd()
+            .and(deltaHeaderSpaceBDD)
+            .and(diffMgr.getDeltaSane());
+
+    String hostname = baseConfig.getHostname();
+
+    BDD increasedBDD = baseAclBDD.not().and(deltaAclBDD);
+    Flow increasedFlow = getFlow(bddPacket, mgr, hostname, increasedBDD).orElse(null);
+
+    BDD decreasedBDD = baseAclBDD.and(deltaAclBDD.not());
+    Flow decreasedFlow = getFlow(bddPacket, mgr, hostname, decreasedBDD).orElse(null);
+
+    return new DifferentialReachFilterResult(increasedFlow, decreasedFlow);
+  }
+
+  private Optional<Flow> getFlow(
+      BDDPacket pkt, BDDSourceManager bddSourceManager, String hostname, BDD bdd) {
+    if (bdd.isZero()) {
+      return Optional.empty();
+    }
+    BDD assignment = bdd.fullSatOne();
+    return Optional.of(
+        pkt.getFlowFromAssignment(assignment)
+            .setTag(getFlowTag())
+            .setIngressNode(hostname)
+            .setIngressInterface(bddSourceManager.getSourceFromAssignment(assignment).orElse(null))
+            .build());
+  }
+
   @Override
   public Optional<Flow> reachFilter(
       Configuration node, IpAccessList acl, ReachFilterParameters parameters) {
     BDDPacket bddPacket = new BDDPacket();
     BDDSourceManager mgr = BDDSourceManager.forIpAccessList(bddPacket, node, acl);
-    BDDAcl bddAcl = BDDAcl.create(bddPacket, acl, node.getIpAccessLists(), node.getIpSpaces(), mgr);
-    parameters.resolveHeaderspace(specifierContext());
-    BDD headerSpace =
-        new HeaderSpaceToBDD(bddPacket, ImmutableMap.of()).toBDD(parameters.getHeaderSpace());
-    BDD satAssignment = bddAcl.getBdd().and(mgr.isSane()).and(headerSpace).fullSatOne();
-    if (satAssignment.isZero()) {
-      return Optional.empty();
-    }
-
-    Flow.Builder flowBuilder = bddAcl.getPkt().getFlowFromAssignment(satAssignment);
-    flowBuilder.setTag(getFlowTag()).setIngressNode(node.getHostname());
-    mgr.getSourceFromAssignment(satAssignment).ifPresent(flowBuilder::setIngressInterface);
-    return Optional.of(flowBuilder.build());
+    BDD headerSpaceBDD =
+        new HeaderSpaceToBDD(bddPacket, node.getIpSpaces())
+            .toBDD(parameters.resolveHeaderspace(specifierContext()));
+    BDD bdd =
+        BDDAcl.create(bddPacket, acl, node.getIpAccessLists(), node.getIpSpaces(), mgr)
+            .getBdd()
+            .and(headerSpaceBDD)
+            .and(mgr.isSane());
+    return getFlow(bddPacket, mgr, node.getHostname(), bdd);
   }
 
   @Override

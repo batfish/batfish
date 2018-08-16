@@ -44,6 +44,7 @@ import org.batfish.grammar.BgpTableFormat;
 import org.batfish.grammar.GrammarSettings;
 import org.batfish.question.ReachFilterParameters;
 import org.batfish.question.ReachabilityParameters;
+import org.batfish.question.reachfilter.DifferentialReachFilterResult;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
@@ -62,6 +63,13 @@ public interface IBatfish extends IPluginConsumer {
   DataPlaneAnswerElement computeDataPlane(boolean differentialContext);
 
   boolean debugFlagEnabled(String flag);
+
+  DifferentialReachFilterResult differentialReachFilter(
+      Configuration baseConfig,
+      IpAccessList baseAcl,
+      Configuration deltaConfig,
+      IpAccessList deltaAcl,
+      ReachFilterParameters reachFilterParameters);
 
   ReferenceLibrary getReferenceLibraryData();
 
