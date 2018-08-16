@@ -60,7 +60,7 @@ public class FlexibleLocationSpecifierFactory implements LocationSpecifierFactor
   @Override
   public LocationSpecifier buildLocationSpecifier(@Nullable Object input) {
     if (input == null) {
-      return AllInterfaceLinksLocationSpecifier.INSTANCE;
+      return AllInterfacesLocationSpecifier.INSTANCE;
     }
     checkArgument(input instanceof String, NAME + " input must be a String");
     return parse((String) input);
