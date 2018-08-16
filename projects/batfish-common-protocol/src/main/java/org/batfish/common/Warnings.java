@@ -129,7 +129,8 @@ public class Warnings implements Serializable {
     int lineNumber = ctx.getStart().getLine();
     String ruleStack = ctx.toString(Arrays.asList(parser.getParser().getRuleNames()));
     String trimmedLine = line.trim();
-    _parseWarnings.add(new ParseWarning(lineNumber, trimmedLine, ruleStack, comment));
+    String commentMessage = firstNonNull(comment, "This feature is not currently supported");
+    _parseWarnings.add(new ParseWarning(lineNumber, trimmedLine, ruleStack, commentMessage));
   }
 
   /** @see #todo(ParserRuleContext, String, BatfishCombinedParser, String) */

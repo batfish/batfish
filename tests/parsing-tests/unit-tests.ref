@@ -55726,11 +55726,13 @@
         "aruba_misc" : {
           "Parse warnings" : [
             {
+              "Comment" : "This feature is not currently supported",
               "Line" : 90,
               "Parser_Context" : "[s_ip_default_gateway stanza cisco_configuration]",
               "Text" : "no ip default-gateway import cell"
             },
             {
+              "Comment" : "This feature is not currently supported",
               "Line" : 91,
               "Parser_Context" : "[s_ip_default_gateway stanza cisco_configuration]",
               "Text" : "no ip default-gateway import pppoe"
@@ -55740,6 +55742,7 @@
         "asa_acl" : {
           "Parse warnings" : [
             {
+              "Comment" : "This feature is not currently supported",
               "Line" : 7,
               "Parser_Context" : "[access_list_ip_range extended_access_list_tail extended_access_list_stanza stanza cisco_configuration]",
               "Text" : "interface outside"
@@ -55829,11 +55832,13 @@
         "cisco_bgp" : {
           "Parse warnings" : [
             {
+              "Comment" : "This feature is not currently supported",
               "Line" : 28,
               "Parser_Context" : "[redistribute_ospf_bgp_tail bgp_tail router_bgp_stanza_tail router_bgp_stanza stanza cisco_configuration]",
               "Text" : "redistribute ospf 2"
             },
             {
+              "Comment" : "This feature is not currently supported",
               "Line" : 29,
               "Parser_Context" : "[redistribute_ospf_bgp_tail bgp_tail router_bgp_stanza_tail router_bgp_stanza stanza cisco_configuration]",
               "Text" : "redistribute ospf 2 vrf vrf1"
@@ -55865,11 +55870,13 @@
         "cisco_bgp_confederation" : {
           "Parse warnings" : [
             {
+              "Comment" : "This feature is not currently supported",
               "Line" : 7,
               "Parser_Context" : "[bgp_confederation_rb_stanza router_bgp_stanza_tail router_bgp_stanza stanza cisco_configuration]",
               "Text" : "bgp confederation identifier 100"
             },
             {
+              "Comment" : "This feature is not currently supported",
               "Line" : 8,
               "Parser_Context" : "[bgp_confederation_rb_stanza router_bgp_stanza_tail router_bgp_stanza stanza cisco_configuration]",
               "Text" : "bgp confederation peers 10 11"
@@ -55879,16 +55886,19 @@
         "cisco_eigrp" : {
           "Parse warnings" : [
             {
+              "Comment" : "This feature is not currently supported",
               "Line" : 15,
               "Parser_Context" : "[re_default_metric re_classic_tail re_classic s_router_eigrp stanza cisco_configuration]",
               "Text" : "default-metric 1 2 3 4 5"
             },
             {
+              "Comment" : "This feature is not currently supported",
               "Line" : 15,
               "Parser_Context" : "[re_default_metric re_classic_tail re_classic s_router_eigrp stanza cisco_configuration]",
               "Text" : "default-metric 1 2 3 4 5"
             },
             {
+              "Comment" : "This feature is not currently supported",
               "Line" : 15,
               "Parser_Context" : "[re_default_metric re_classic_tail re_classic s_router_eigrp stanza cisco_configuration]",
               "Text" : "default-metric 1 2 3 4 5"
@@ -55900,31 +55910,37 @@
               "Text" : "redistribute isis route-map ISIS_TO_EIGRP"
             },
             {
+              "Comment" : "This feature is not currently supported",
               "Line" : 35,
               "Parser_Context" : "[re_redistribute_ospf re_redistribute re_classic_tail re_classic s_router_eigrp stanza cisco_configuration]",
               "Text" : "redistribute ospf 4 route-map OSPF_TO_EIGRP"
             },
             {
+              "Comment" : "This feature is not currently supported",
               "Line" : 37,
               "Parser_Context" : "[re_redistribute_static re_redistribute re_classic_tail re_classic s_router_eigrp stanza cisco_configuration]",
               "Text" : "redistribute static metric 10000 10 255 1 1500 route-map STATIC_TO_EIGRP"
             },
             {
+              "Comment" : "This feature is not currently supported",
               "Line" : 37,
               "Parser_Context" : "[re_redistribute_static re_redistribute re_classic_tail re_classic s_router_eigrp stanza cisco_configuration]",
               "Text" : "redistribute static metric 10000 10 255 1 1500 route-map STATIC_TO_EIGRP"
             },
             {
+              "Comment" : "This feature is not currently supported",
               "Line" : 37,
               "Parser_Context" : "[re_redistribute_static re_redistribute re_classic_tail re_classic s_router_eigrp stanza cisco_configuration]",
               "Text" : "redistribute static metric 10000 10 255 1 1500 route-map STATIC_TO_EIGRP"
             },
             {
+              "Comment" : "This feature is not currently supported",
               "Line" : 115,
               "Parser_Context" : "[access_list_ip_range extended_access_list_tail extended_access_list_stanza stanza cisco_configuration]",
               "Text" : "addrgroup bleep_blorp"
             },
             {
+              "Comment" : "This feature is not currently supported",
               "Line" : 118,
               "Parser_Context" : "[ren_address_family re_named_tail re_named s_router_eigrp stanza cisco_configuration]",
               "Text" : "address-family ipv4 multicast vrf autonomous-system autonomous-system 4\n  af-interface Ethernet0\n   add-paths 4\n   bandwidth-percent 75\n   dampening-change 75\n   dampening-interval 45\n   hold-time 40\n   passive-interface\n  exit-af-interface\n  eigrp default-route-tag 2\n  network 1.1.1.100\n  remote-neighbors source GigabitEthernet0/0/1 unicast-listen lisp-encap 2\n  topology base\n   offset-list 21 out 10\n   summary-metric 192.168.0.0/16 10000 10 255 1 1500 distance 20\n   traffic-share balanced\n   variance 4\n  exit-af-topology\n  topology VOICE tid 1000\n   no auto-summary\n  exit-af-topology\n  passive-interface default\n  no passive-interface FastEthernet0/1\n exit-address-family"
@@ -55934,6 +55950,7 @@
         "cisco_interface" : {
           "Parse warnings" : [
             {
+              "Comment" : "This feature is not currently supported",
               "Line" : 276,
               "Parser_Context" : "[iftunnel_mode if_tunnel if_inner s_interface stanza cisco_configuration]",
               "Text" : "mode gre multipoint"
@@ -55943,41 +55960,49 @@
         "cisco_ospf" : {
           "Parse warnings" : [
             {
+              "Comment" : "This feature is not currently supported",
               "Line" : 23,
               "Parser_Context" : "[ro_area_filterlist s_router_ospf stanza cisco_configuration]",
               "Text" : "area 0.0.0.0 filter-list prefix filterName in"
             },
             {
+              "Comment" : "This feature is not currently supported",
               "Line" : 24,
               "Parser_Context" : "[ro_area_filterlist s_router_ospf stanza cisco_configuration]",
               "Text" : "area 0.0.0.0 filter-list prefix filterName out"
             },
             {
+              "Comment" : "This feature is not currently supported",
               "Line" : 29,
               "Parser_Context" : "[ro_area_nssa s_router_ospf stanza cisco_configuration]",
               "Text" : "area 0.0.0.0 nssa no-redistribution"
             },
             {
+              "Comment" : "This feature is not currently supported",
               "Line" : 30,
               "Parser_Context" : "[ro_area_nssa s_router_ospf stanza cisco_configuration]",
               "Text" : "area 0.0.0.0 nssa no-redistribution no-summary"
             },
             {
+              "Comment" : "This feature is not currently supported",
               "Line" : 31,
               "Parser_Context" : "[ro_area_nssa s_router_ospf stanza cisco_configuration]",
               "Text" : "area 0.0.0.0 nssa no-redistribution default-information-originate no-summary"
             },
             {
+              "Comment" : "This feature is not currently supported",
               "Line" : 60,
               "Parser_Context" : "[ro_maximum_paths s_router_ospf stanza cisco_configuration]",
               "Text" : "maximum-paths 32"
             },
             {
+              "Comment" : "This feature is not currently supported",
               "Line" : 75,
               "Parser_Context" : "[ro_area_filterlist s_router_ospf stanza cisco_configuration]",
               "Text" : "area 0 filter-list prefix INFILTER in"
             },
             {
+              "Comment" : "This feature is not currently supported",
               "Line" : 76,
               "Parser_Context" : "[ro_area_filterlist s_router_ospf stanza cisco_configuration]",
               "Text" : "area 0 filter-list prefix OUTFILTER out"
@@ -55987,11 +56012,13 @@
         "cisco_route_map" : {
           "Parse warnings" : [
             {
+              "Comment" : "This feature is not currently supported",
               "Line" : 33,
               "Parser_Context" : "[match_source_protocol_rm_stanza match_rm_stanza rm_stanza route_map_stanza stanza cisco_configuration]",
               "Text" : "match source-protocol ospf 1"
             },
             {
+              "Comment" : "This feature is not currently supported",
               "Line" : 41,
               "Parser_Context" : "[match_source_protocol_rm_stanza match_rm_stanza rm_stanza route_map_stanza stanza cisco_configuration]",
               "Text" : "match source-protocol static"
@@ -56023,6 +56050,7 @@
         "cisco_vrf" : {
           "Parse warnings" : [
             {
+              "Comment" : "This feature is not currently supported",
               "Line" : 7,
               "Parser_Context" : "[vrfc_ip_route s_vrf_context stanza cisco_configuration]",
               "Text" : "ip route 0.0.0.0/0 1.2.3.4"
@@ -56044,11 +56072,13 @@
         "ios_xr_bgp_neighbor_group" : {
           "Parse warnings" : [
             {
+              "Comment" : "This feature is not currently supported",
               "Line" : 17,
               "Parser_Context" : "[use_session_group_bgp_tail session_group_rb_stanza router_bgp_stanza_tail router_bgp_stanza stanza cisco_configuration]",
               "Text" : "use session-group blabber"
             },
             {
+              "Comment" : "This feature is not currently supported",
               "Line" : 94,
               "Parser_Context" : "[use_session_group_bgp_tail session_group_rb_stanza router_bgp_stanza_tail router_bgp_stanza stanza cisco_configuration]",
               "Text" : "use session-group CIAO"
@@ -56058,6 +56088,7 @@
         "ios_xr_class_map" : {
           "Parse warnings" : [
             {
+              "Comment" : "This feature is not currently supported",
               "Line" : 10,
               "Parser_Context" : "[cm_match s_class_map stanza cisco_configuration]",
               "Text" : "match not dscp ipv4 cs2 cs3 cs4"
@@ -56067,6 +56098,7 @@
         "ios_xr_ospf" : {
           "Parse warnings" : [
             {
+              "Comment" : "This feature is not currently supported",
               "Line" : 9,
               "Parser_Context" : "[ro_maximum_paths s_router_ospf stanza cisco_configuration]",
               "Text" : "maximum paths 16"
@@ -56114,26 +56146,31 @@
         "iptables/host1.iptables" : {
           "Parse warnings" : [
             {
+              "Comment" : "This feature is not currently supported",
               "Line" : 16,
               "Parser_Context" : "[rule_spec command_append command_tail command iptables_configuration]",
               "Text" : "-s 1.2.3.4/32 -p tcp -m tcp --dport 22 -j ACCEPT"
             },
             {
+              "Comment" : "This feature is not currently supported",
               "Line" : 17,
               "Parser_Context" : "[rule_spec command_append command_tail command iptables_configuration]",
               "Text" : "-s 11.22.33.44/32 -p tcp -m tcp --dport 25 -j ACCEPT"
             },
             {
+              "Comment" : "This feature is not currently supported",
               "Line" : 18,
               "Parser_Context" : "[rule_spec command_append command_tail command iptables_configuration]",
               "Text" : "-s 111.222.111.222/32 -p tcp -m tcp --dport 80 -j ACCEPT"
             },
             {
+              "Comment" : "This feature is not currently supported",
               "Line" : 19,
               "Parser_Context" : "[rule_spec command_append command_tail command iptables_configuration]",
               "Text" : "-s 4.3.2.1/32 -p tcp -m tcp --dport 110 -j ACCEPT"
             },
             {
+              "Comment" : "This feature is not currently supported",
               "Line" : 20,
               "Parser_Context" : "[rule_spec command_append command_tail command iptables_configuration]",
               "Text" : "-s 44.22.33.11/32 -p tcp -m tcp --dport 143 -j ACCEPT"
@@ -56143,11 +56180,13 @@
         "juniper-ospf" : {
           "Parse warnings" : [
             {
+              "Comment" : "This feature is not currently supported",
               "Line" : 11,
               "Parser_Context" : "[oa_area_range o_area o_common p_ospf3 s_protocols s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "area-range dead:beef::/56 override-metric 100"
             },
             {
+              "Comment" : "This feature is not currently supported",
               "Line" : 11,
               "Parser_Context" : "[oa_area_range o_area o_common p_ospf3 s_protocols s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "area-range dead:beef::/56 override-metric 100"
@@ -56201,6 +56240,7 @@
         "peer_template" : {
           "Parse warnings" : [
             {
+              "Comment" : "This feature is not currently supported",
               "Line" : 24,
               "Parser_Context" : "[rbnx_n_af_allowas_in rbnx_n_af_inner rbnx_n_address_family rbnx_n_inner rbnx_template_peer router_bgp_nxos_toplevel router_bgp_stanza stanza cisco_configuration]",
               "Text" : "allowas-in 1"
@@ -56218,6 +56258,7 @@
         "test" : {
           "Parse warnings" : [
             {
+              "Comment" : "This feature is not currently supported",
               "Line" : 4,
               "Parser_Context" : "[s_ip_default_gateway stanza cisco_configuration]",
               "Text" : "ip default-gateway 128.125.253.254"
@@ -56235,6 +56276,7 @@
         "vrf_context" : {
           "Parse warnings" : [
             {
+              "Comment" : "This feature is not currently supported",
               "Line" : 7,
               "Parser_Context" : "[vrfc_ip_route s_vrf_context stanza cisco_configuration]",
               "Text" : "ip route 0.0.0.0/0 1.2.3.4"
