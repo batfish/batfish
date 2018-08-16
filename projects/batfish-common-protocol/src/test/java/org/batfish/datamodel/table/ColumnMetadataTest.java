@@ -73,5 +73,9 @@ public class ColumnMetadataTest {
     // Allow the under score, tilde, hyphen, numbers in the column name
     assertThat(
         ColumnMetadata.isLegalColumnName("colNameWith!@#$%^&*()+Characters"), equalTo(false));
+
+    // Atleast one character should be given as column name
+    assertThat(ColumnMetadata.isLegalColumnName(""), equalTo(false));
+    assertThat(ColumnMetadata.isLegalColumnName("a"), equalTo(true));
   }
 }
