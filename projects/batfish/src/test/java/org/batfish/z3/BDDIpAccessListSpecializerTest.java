@@ -28,6 +28,7 @@ import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
+import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.symbolic.bdd.AclLineMatchExprToBDD;
 import org.batfish.symbolic.bdd.BDDInteger;
@@ -272,6 +273,31 @@ public class BDDIpAccessListSpecializerTest {
     AclLineMatchExpr line1 = OriginatingFromDevice.INSTANCE;
     AclLineMatchExpr line2 = new MatchSrcInterface(ImmutableSet.of("i1"));
     assertThat(specializeTo(line1, line2, ImmutableSet.of("i1")), equalTo(FALSE));
+  }
+
+  @Test
+  public void specializeOriginatingFromDeviceWithOr() {
+    // First line matches originating from device, second matches that or a source interface; line 1
+    // should not change
+    AclLineMatchExpr line1 = OriginatingFromDevice.INSTANCE;
+    AclLineMatchExpr line2 =
+        new OrMatchExpr(
+            ImmutableSet.of(
+                OriginatingFromDevice.INSTANCE, new MatchSrcInterface(ImmutableSet.of("i1"))));
+    assertThat(
+        specializeTo(line1, line2, ImmutableSet.of("i1")), equalTo(OriginatingFromDevice.INSTANCE));
+  }
+
+  @Test
+  public void specializeOriginatingFromDeviceWithOr2() {
+    // First line matches originating from device or src interface, second matches only originating
+    // from device; line 1 should specialize to true expr
+    AclLineMatchExpr line1 =
+        new OrMatchExpr(
+            ImmutableSet.of(
+                OriginatingFromDevice.INSTANCE, new MatchSrcInterface(ImmutableSet.of("i1"))));
+    AclLineMatchExpr line2 = OriginatingFromDevice.INSTANCE;
+    assertThat(specializeTo(line1, line2, ImmutableSet.of("i1", "i2")), equalTo(TRUE));
   }
 
   private AclLineMatchExpr specializeTo(

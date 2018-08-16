@@ -98,10 +98,12 @@ public final class BDDIpAccessListSpecializer extends IpAccessListSpecializer {
   @Override
   public final AclLineMatchExpr visitOriginatingFromDevice(
       OriginatingFromDevice originatingFromDevice) {
-    BDD flowAndOriginatingFromDevice = _flowBDD.and(_bddSrcManager.getOriginatingFromDeviceBDD());
-    return flowAndOriginatingFromDevice.isOne()
-        ? TrueExpr.INSTANCE
-        : flowAndOriginatingFromDevice.isZero() ? FalseExpr.INSTANCE : originatingFromDevice;
+    if (_flowBDD.imp(_bddSrcManager.getOriginatingFromDeviceBDD()).isOne()) {
+      return TrueExpr.INSTANCE;
+    } else if (_flowBDD.imp(_bddSrcManager.getOriginatingFromDeviceBDD().not()).isOne()) {
+      return FalseExpr.INSTANCE;
+    }
+    return originatingFromDevice;
   }
 
   @Override
