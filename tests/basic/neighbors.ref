@@ -2321,7 +2321,7 @@
         }
       }
     ],
-    "verboseLanNeighbors" : [
+    "verboseLayer3Neighbors" : [
       {
         "edgeSummary" : {
           "node1" : "as1border1",
