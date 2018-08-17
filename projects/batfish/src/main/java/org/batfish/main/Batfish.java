@@ -3,6 +3,7 @@ package org.batfish.main;
 import static java.util.stream.Collectors.toMap;
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import static org.batfish.common.util.CommonUtil.toImmutableSortedMap;
+import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.referencedSources;
 import static org.batfish.main.ReachabilityParametersResolver.resolveReachabilityParameters;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -197,7 +198,6 @@ import org.batfish.symbolic.abstraction.Roles;
 import org.batfish.symbolic.bdd.BDDAcl;
 import org.batfish.symbolic.bdd.BDDPacket;
 import org.batfish.symbolic.bdd.BDDSourceManager;
-import org.batfish.symbolic.bdd.DifferentialBDDSourceManager;
 import org.batfish.symbolic.bdd.HeaderSpaceToBDD;
 import org.batfish.symbolic.smt.PropertyChecker;
 import org.batfish.vendor.VendorConfiguration;
@@ -4302,22 +4302,27 @@ public class Batfish extends PluginConsumer implements IBatfish {
             .toBDD(reachFilterParameters.resolveHeaderspace(specifierContext()));
     popEnvironment();
 
-    DifferentialBDDSourceManager diffMgr =
-        DifferentialBDDSourceManager.forAcls(bddPacket, baseConfig, baseAcl, deltaConfig, deltaAcl);
+    Set<String> activeInterfaces =
+        Sets.intersection(baseConfig.activeInterfaces(), deltaConfig.activeInterfaces());
+    Set<String> referencedSources =
+        Sets.union(
+            referencedSources(baseConfig.getIpAccessLists(), baseAcl),
+            referencedSources(deltaConfig.getIpAccessLists(), deltaAcl));
 
-    BDDSourceManager mgr = diffMgr.getBddSourceManager();
+    BDDSourceManager mgr =
+        BDDSourceManager.forSources(bddPacket, activeInterfaces, referencedSources);
     BDD baseAclBDD =
         BDDAcl.create(
                 bddPacket, baseAcl, baseConfig.getIpAccessLists(), baseConfig.getIpSpaces(), mgr)
             .getBdd()
             .and(baseHeaderSpaceBDD)
-            .and(diffMgr.getBaseSane());
+            .and(mgr.isSane());
     BDD deltaAclBDD =
         BDDAcl.create(
                 bddPacket, deltaAcl, deltaConfig.getIpAccessLists(), deltaConfig.getIpSpaces(), mgr)
             .getBdd()
             .and(deltaHeaderSpaceBDD)
-            .and(diffMgr.getDeltaSane());
+            .and(mgr.isSane());
 
     String hostname = baseConfig.getHostname();
 

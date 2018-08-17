@@ -2,9 +2,7 @@ package org.batfish.main;
 
 import static org.batfish.datamodel.IpAccessListLine.accepting;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
-import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasDstIp;
-import static org.batfish.datamodel.matchers.FlowMatchers.hasIngressInterface;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import com.google.common.collect.ImmutableList;
@@ -60,53 +58,6 @@ public class DifferentialReachFilterTest {
         ImmutableSortedMap.of(baseConfig.getHostname(), baseConfig),
         ImmutableSortedMap.of(deltaConfig.getHostname(), deltaConfig),
         _tmp);
-  }
-
-  @Test
-  public void testInterfaceActiveInactive() throws IOException {
-    Configuration baseConfig = _cb.build();
-    Configuration deltaConfig = _cb.build();
-    _ib.setName(IFACE1).setOwner(baseConfig).build();
-    _ib.setOwner(deltaConfig).setActive(false).build();
-    IpAccessList acl =
-        _ab.setLines(
-                ImmutableList.of(accepting().setMatchCondition(matchSrcInterface(IFACE1)).build()))
-            .build();
-    Batfish batfish = getBatfish(baseConfig, deltaConfig);
-    DifferentialReachFilterResult result =
-        batfish.differentialReachFilter(baseConfig, acl, deltaConfig, acl, _params);
-    assertThat("Expected no increased flow", !result.getIncreasedFlow().isPresent());
-    assertThat("Expected decreased flow", result.getDecreasedFlow().isPresent());
-    assertThat(result.getDecreasedFlow().get(), hasIngressInterface(IFACE1));
-
-    // flip base and delta
-    result = batfish.differentialReachFilter(deltaConfig, acl, baseConfig, acl, _params);
-    assertThat("Expected no decreased flow", !result.getDecreasedFlow().isPresent());
-    assertThat("Expected increased flow", result.getIncreasedFlow().isPresent());
-    assertThat(result.getIncreasedFlow().get(), hasIngressInterface(IFACE1));
-  }
-
-  @Test
-  public void testInterfaceAddedRemoved() throws IOException {
-    Configuration baseConfig = _cb.build();
-    Configuration deltaConfig = _cb.build();
-    _ib.setName(IFACE1).setOwner(baseConfig).build();
-    IpAccessList acl =
-        _ab.setLines(
-                ImmutableList.of(accepting().setMatchCondition(matchSrcInterface(IFACE1)).build()))
-            .build();
-    Batfish batfish = getBatfish(baseConfig, deltaConfig);
-    DifferentialReachFilterResult result =
-        batfish.differentialReachFilter(baseConfig, acl, deltaConfig, acl, _params);
-    assertThat("Expected no increased flow", !result.getIncreasedFlow().isPresent());
-    assertThat("Expected decreased flow", result.getDecreasedFlow().isPresent());
-    assertThat(result.getDecreasedFlow().get(), hasIngressInterface(IFACE1));
-
-    // flip base and delta
-    result = batfish.differentialReachFilter(deltaConfig, acl, baseConfig, acl, _params);
-    assertThat("Expected no decreased flow", !result.getDecreasedFlow().isPresent());
-    assertThat("Expected increased flow", result.getIncreasedFlow().isPresent());
-    assertThat(result.getIncreasedFlow().get(), hasIngressInterface(IFACE1));
   }
 
   @Test

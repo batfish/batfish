@@ -84,9 +84,8 @@ public class BDDSourceManagerTest {
 
     BDDSourceManager mgr = BDDSourceManager.forIpAccessList(_pkt, config, acl);
     Map<String, BDD> srcBDDs = mgr.getSourceBDDs();
-    assertThat(srcBDDs.entrySet(), hasSize(3));
+    assertThat(srcBDDs.entrySet(), hasSize(2));
     assertThat(srcBDDs, hasEntry(equalTo(IFACE1), not(isZero())));
     assertThat(srcBDDs, hasEntry(equalTo(SOURCE_ORIGINATING_FROM_DEVICE), not(isZero())));
-    assertThat(srcBDDs, hasEntry(equalTo(iface4), isZero()));
   }
 }

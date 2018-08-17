@@ -27,7 +27,9 @@ import org.batfish.datamodel.IpAccessList;
 public final class BDDSourceManager {
   private static final String VAR_NAME = "PacketSource";
 
-  private BDD _isSane;
+  private final BDD _falseBDD;
+
+  private final BDD _isSane;
 
   private final Map<String, BDD> _sourceBDDs;
 
@@ -38,17 +40,7 @@ public final class BDDSourceManager {
    */
   @VisibleForTesting
   BDDSourceManager(BDDPacket pkt, Set<String> sources) {
-    this(pkt, ImmutableSet.of(), sources);
-  }
-
-  private BDDSourceManager(BDDPacket pkt, Set<String> inactiveInterfaces, Set<String> sources) {
     ImmutableMap.Builder<String, BDD> sourceBDDs = ImmutableMap.builder();
-
-    // add sourceBDD entries for inactive sources
-    for (String inactiveInterface : inactiveInterfaces) {
-      // inactive interfaces cannot be sources
-      sourceBDDs.put(inactiveInterface, pkt.getFactory().zero());
-    }
 
     // add sourceBDD entries for active sources and initialize _isSane constraint
     if (!sources.isEmpty()) {
@@ -63,6 +55,7 @@ public final class BDDSourceManager {
     }
 
     _sourceBDDs = sourceBDDs.build();
+    _falseBDD = pkt.getFactory().zero();
   }
 
   /**
@@ -80,19 +73,11 @@ public final class BDDSourceManager {
 
   public static BDDSourceManager forIpAccessList(
       BDDPacket pkt, Configuration config, IpAccessList acl) {
-    return forIpAccessList(
-        pkt,
-        config.activeInterfaces(),
-        config.inactiveInterfaces(),
-        config.getIpAccessLists(),
-        acl);
+    return forIpAccessList(pkt, config.activeInterfaces(), config.getIpAccessLists(), acl);
   }
 
   public static BDDSourceManager forSources(
-      BDDPacket pkt,
-      Set<String> activeInterfaces,
-      Set<String> inactiveInterfaces,
-      Set<String> referencedSources) {
+      BDDPacket pkt, Set<String> activeInterfaces, Set<String> referencedSources) {
     if (referencedSources.isEmpty()) {
       return new BDDSourceManager(pkt, ImmutableSet.of());
     }
@@ -120,7 +105,7 @@ public final class BDDSourceManager {
                 .add(unReferencedInterfaces.iterator().next())
                 .build();
 
-    return new BDDSourceManager(pkt, inactiveInterfaces, sources);
+    return new BDDSourceManager(pkt, sources);
   }
 
   /**
@@ -130,11 +115,10 @@ public final class BDDSourceManager {
   public static BDDSourceManager forIpAccessList(
       BDDPacket pkt,
       Set<String> activeInterfaces,
-      Set<String> inactiveInterfaces,
       Map<String, IpAccessList> namedAcls,
       IpAccessList acl) {
     Set<String> referencedSources = referencedSources(namedAcls, acl);
-    return forSources(pkt, activeInterfaces, inactiveInterfaces, referencedSources);
+    return forSources(pkt, activeInterfaces, referencedSources);
   }
 
   /**
@@ -160,8 +144,7 @@ public final class BDDSourceManager {
   }
 
   private BDD getSourceBDD(String source) {
-    checkArgument(_sourceBDDs.containsKey(source), "Missing BDD for source: " + source);
-    return _sourceBDDs.get(source);
+    return _sourceBDDs.getOrDefault(source, _falseBDD);
   }
 
   @VisibleForTesting
