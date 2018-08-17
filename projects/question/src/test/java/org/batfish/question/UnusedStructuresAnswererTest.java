@@ -2,7 +2,7 @@ package org.batfish.question;
 
 import static org.batfish.question.UnusedStructuresQuestionPlugin.UnusedStructuresAnswerer.COL_FILENAME;
 import static org.batfish.question.UnusedStructuresQuestionPlugin.UnusedStructuresAnswerer.COL_LINES;
-import static org.batfish.question.UnusedStructuresQuestionPlugin.UnusedStructuresAnswerer.COL_REF_NAME;
+import static org.batfish.question.UnusedStructuresQuestionPlugin.UnusedStructuresAnswerer.COL_STRUCT_NAME;
 import static org.batfish.question.UnusedStructuresQuestionPlugin.UnusedStructuresAnswerer.COL_STRUCT_TYPE;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -51,7 +51,7 @@ public class UnusedStructuresAnswererTest {
           "f",
           COL_STRUCT_TYPE,
           "t",
-          COL_REF_NAME,
+          COL_STRUCT_NAME,
           "n",
           COL_LINES,
           new FileLines("f", ImmutableSortedSet.of(1)));
@@ -87,7 +87,7 @@ public class UnusedStructuresAnswererTest {
                 "f",
                 COL_STRUCT_TYPE,
                 "t",
-                COL_REF_NAME,
+                COL_STRUCT_NAME,
                 "n2",
                 COL_LINES,
                 new FileLines("f", ImmutableSortedSet.of(2, 3))));

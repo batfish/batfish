@@ -32,7 +32,7 @@ public class UnusedStructuresQuestionPlugin extends QuestionPlugin {
 
     static final String COL_LINES = "lines";
     static final String COL_FILENAME = "filename";
-    static final String COL_REF_NAME = "refName";
+    static final String COL_STRUCT_NAME = "structName";
     static final String COL_STRUCT_TYPE = "structType";
 
     public UnusedStructuresAnswerer(Question question, IBatfish batfish) {
@@ -90,7 +90,7 @@ public class UnusedStructuresQuestionPlugin extends QuestionPlugin {
                     filename,
                     COL_STRUCT_TYPE,
                     structType,
-                    COL_REF_NAME,
+                    COL_STRUCT_NAME,
                     name,
                     COL_LINES,
                     new FileLines(filename, info.getDefinitionLines())));
@@ -106,13 +106,13 @@ public class UnusedStructuresQuestionPlugin extends QuestionPlugin {
               new ColumnMetadata(
                   COL_FILENAME, Schema.STRING, "File containing structure", true, false),
               new ColumnMetadata(COL_STRUCT_TYPE, Schema.STRING, "Type of structure", false, false),
-              new ColumnMetadata(COL_REF_NAME, Schema.STRING, "Name of structure", true, false),
+              new ColumnMetadata(COL_STRUCT_NAME, Schema.STRING, "Name of structure", true, false),
               new ColumnMetadata(
                   COL_LINES, Schema.FILE_LINES, "Lines where structure appears", false, false));
       String textDesc =
           String.format(
               "'${%s}' has unused '${%s}' called '${%s}' at line(s) ${%s}",
-              COL_FILENAME, COL_STRUCT_TYPE, COL_REF_NAME, COL_LINES);
+              COL_FILENAME, COL_STRUCT_TYPE, COL_STRUCT_NAME, COL_LINES);
       return new TableMetadata(columnMetadata, textDesc);
     }
   }
