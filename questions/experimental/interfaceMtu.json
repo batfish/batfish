@@ -13,12 +13,11 @@
         }
     },
     "instance": {
-        "description": "Find interfaces where the configured MTU is <comparator> <mtuBytes>. E.g. if <comparator> is '<' and <mtuBytes> is 1500, then find interfaces where the configured MTU is less than 1500 bytes",
+        "description": "Find interfaces where the configured MTU matches the specified comparator and mtuBytes.",
+        "longDescription": "For example, if comparator is '<' and mtuBytes is 1500, then only interfaces where the configured MTU is less than 1500 bytes will be returned",
         "instanceName": "interfaceMtu",
         "tags": [
-            "dataPlane",
-            "reachability",
-            "isolation"
+            "configuration"
         ],
         "variables": {
             "comparator": {
@@ -28,7 +27,7 @@
               "value": "<"
             },
             "interfaceRegex": {
-              "description": "Only include interfaces whose name matches this regex",
+              "description": "Only evaluate interfaces whose name matches this regex",
               "type": "javaRegex",
               "value": ".*"
             },

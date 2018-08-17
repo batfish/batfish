@@ -54,9 +54,9 @@ public final class ReachFilterQuestion extends Question {
 
   private static final String PROP_DST_PROTOCOLS = "dstProtocols";
 
-  private static final String PROP_NODES_SPECIFIER_FACTORY = "nodesSpecifierFactory";
+  private static final String PROP_NODE_SPECIFIER_FACTORY = "nodeSpecifierFactory";
 
-  private static final String PROP_NODES_SPECIFIER_INPUT = "nodesSpecifierInput";
+  private static final String PROP_NODE_SPECIFIER_INPUT = "nodeSpecifierInput";
 
   private static final String PROP_SRC_PORTS = "srcPorts";
 
@@ -76,9 +76,9 @@ public final class ReachFilterQuestion extends Question {
 
   @Nullable private final String _filterSpecifierInput;
 
-  @Nonnull private final String _nodesSpecifierFactory;
+  @Nonnull private final String _nodeSpecifierFactory;
 
-  @Nullable private final String _nodesSpecifierInput;
+  @Nullable private final String _nodeSpecifierInput;
 
   @Nonnull private final String _destinationIpSpaceSpecifierFactory;
 
@@ -106,16 +106,16 @@ public final class ReachFilterQuestion extends Question {
       @JsonProperty(PROP_DST_PORTS) @Nullable SortedSet<SubRange> dstPorts,
       @JsonProperty(PROP_SRC_PORTS) @Nullable SortedSet<SubRange> srcPorts,
       @JsonProperty(PROP_DST_PROTOCOLS) @Nullable SortedSet<Protocol> dstProtocols,
-      @JsonProperty(PROP_NODES_SPECIFIER_FACTORY) @Nullable String nodeSpecifierFactory,
-      @JsonProperty(PROP_NODES_SPECIFIER_INPUT) @Nullable String nodesSpecifierInput,
+      @JsonProperty(PROP_NODE_SPECIFIER_FACTORY) @Nullable String nodeSpecifierFactory,
+      @JsonProperty(PROP_NODE_SPECIFIER_INPUT) @Nullable String nodesSpecifierInput,
       @JsonProperty(PROP_SOURCE_IP_SPACE_SPECIFIER_FACTORY) @Nullable
           String sourceIpSpaceSpecifierFactory,
       @JsonProperty(PROP_SOURCE_IP_SPACE_SPECIFIER_INPUT) @Nullable
           String sourceIpSpaceSpecifierInput,
       @JsonProperty(PROP_QUERY) @Nullable String type) {
     _filterSpecifierInput = filterSpecifierInput;
-    _nodesSpecifierFactory = firstNonNull(nodeSpecifierFactory, FlexibleNodeSpecifierFactory.NAME);
-    _nodesSpecifierInput = nodesSpecifierInput;
+    _nodeSpecifierFactory = firstNonNull(nodeSpecifierFactory, FlexibleNodeSpecifierFactory.NAME);
+    _nodeSpecifierInput = nodesSpecifierInput;
     _destinationIpSpaceSpecifierFactory =
         firstNonNull(destinationIpSpaceSpecifierFactory, DEFAULT_DST_IP_SPECIFIER_FACTORY);
     _destinationIpSpaceSpecifierInput = destinationIpSpaceSpecifierInput;
@@ -155,16 +155,16 @@ public final class ReachFilterQuestion extends Question {
     return _filterSpecifierInput;
   }
 
-  @JsonProperty(PROP_NODES_SPECIFIER_FACTORY)
+  @JsonProperty(PROP_NODE_SPECIFIER_FACTORY)
   @Nonnull
-  public String getNodesSpecifierFactory() {
-    return _nodesSpecifierFactory;
+  public String getNodeSpecifierFactory() {
+    return _nodeSpecifierFactory;
   }
 
-  @JsonProperty(PROP_NODES_SPECIFIER_INPUT)
+  @JsonProperty(PROP_NODE_SPECIFIER_INPUT)
   @Nullable
-  public String getNodesSpecifierInput() {
-    return _nodesSpecifierInput;
+  public String getNodeSpecifierInput() {
+    return _nodeSpecifierInput;
   }
 
   @JsonIgnore
@@ -229,8 +229,7 @@ public final class ReachFilterQuestion extends Question {
 
   @Nonnull
   NodeSpecifier getNodesSpecifier() {
-    return NodeSpecifierFactory.load(_nodesSpecifierFactory)
-        .buildNodeSpecifier(_nodesSpecifierInput);
+    return NodeSpecifierFactory.load(_nodeSpecifierFactory).buildNodeSpecifier(_nodeSpecifierInput);
   }
 
   @VisibleForTesting
@@ -276,8 +275,8 @@ public final class ReachFilterQuestion extends Question {
   @VisibleForTesting
   static final class Builder {
     private String _filterSpecifierInput;
-    private String _nodesSpecifierFactory;
-    private String _nodesSpecifierInput;
+    private String _nodeSpecifierFactory;
+    private String _nodeSpecifierInput;
     private String _destinationIpSpaceSpecifierFactory;
     private String _destinationIpSpaceSpecifierInput;
     private SortedSet<SubRange> _dstPorts;
@@ -294,13 +293,13 @@ public final class ReachFilterQuestion extends Question {
       return this;
     }
 
-    public Builder setNodesSpecifierFactory(String nodesSpecifierFactory) {
-      this._nodesSpecifierFactory = nodesSpecifierFactory;
+    public Builder setNodeSpecifierFactory(String nodesSpecifierFactory) {
+      this._nodeSpecifierFactory = nodesSpecifierFactory;
       return this;
     }
 
-    public Builder setNodesSpecifierInput(String nodesSpecifierInput) {
-      this._nodesSpecifierInput = nodesSpecifierInput;
+    public Builder setNodeSpecifierInput(String nodesSpecifierInput) {
+      this._nodeSpecifierInput = nodesSpecifierInput;
       return this;
     }
 
@@ -353,8 +352,8 @@ public final class ReachFilterQuestion extends Question {
           _dstPorts,
           _srcPorts,
           _dstProtocols,
-          _nodesSpecifierFactory,
-          _nodesSpecifierInput,
+          _nodeSpecifierFactory,
+          _nodeSpecifierInput,
           _sourceIpSpaceSpecifierFactory,
           _sourceIpSpaceSpecifierInput,
           _type);

@@ -18,7 +18,7 @@
     "sourceLocationSpecifierInput" : "sourceNode"
   },
   "instance" : {
-    "description" : "Find (headers of) packets that match specified reachability, ingress, and disposition constraints.",
+    "description" : "Find flows that match the ingress and egress location, src and dest ip address and disposition constraints, as described by the input specifiers.",
     "instanceName" : "qname",
     "tags" : [
       "dataPlane",
@@ -26,7 +26,7 @@
     ],
     "variables" : {
       "actions" : {
-        "description" : "Only return headers of packets whose final node performs an action from this set on them",
+        "description" : "Only return flows for which the disposition is from this set",
         "minElements" : 1,
         "optional" : true,
         "type" : "string",
@@ -35,7 +35,7 @@
         ]
       },
       "debug" : {
-        "description" : "Whether to embed debug information in the answer",
+        "description" : "Flag to decide whether to embed debug information in the answer",
         "optional" : false,
         "type" : "boolean",
         "value" : false
@@ -47,19 +47,19 @@
         "value" : "destFactory"
       },
       "dst" : {
-        "description" : "Specify destination nodes by regex",
+        "description" : "Restrict query to destination nodes that match this regex",
         "optional" : false,
         "type" : "string",
         "value" : "destination.*"
       },
       "finalNodesSpecifierFactory" : {
-        "description" : "Name of the NodeSpecifierFactory to use for finalNodes.",
+        "description" : "Name of the NodeSpecifierFactory to use for finalNodes",
         "optional" : true,
         "type" : "string",
         "value" : "finalNodeFactory"
       },
       "finalNodesSpecifierInput" : {
-        "description" : "Input to specify the set of nodes at which traces should end.",
+        "description" : "Input to specify the set of nodes at which traces should end",
         "optional" : true,
         "type" : "string",
         "value" : "finalNode"
