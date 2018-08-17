@@ -157,8 +157,8 @@ public class BDDPacket {
 
     _bitNames = new HashMap<>();
 
-    _dstIp = allocateBDDInteger("dstIp", IP_LENGTH, true);
-    _srcIp = allocateBDDInteger("srcIp", IP_LENGTH, true);
+    _dstIp = allocateBDDInteger("dstIp", IP_LENGTH, false);
+    _srcIp = allocateBDDInteger("srcIp", IP_LENGTH, false);
     _dstPort = allocateBDDInteger("dstPort", PORT_LENGTH, false);
     _srcPort = allocateBDDInteger("srcPort", PORT_LENGTH, false);
     _ipProtocol = allocateBDDInteger("ipProtocol", IP_PROTOCOL_LENGTH, false);

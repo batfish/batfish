@@ -4,21 +4,22 @@
     "nodeRegex": "${nodeRegex}",
     "propertySpec": "${propertySpec}",
     "instance": {
-        "description": "Gets properties of BGP routing processes",
+        "description": "Return BGP configuration properties",
         "instanceName": "bgpProperties",
         "tags": [
-            "BGP"
+            "bgp",
+            "configuration"
         ],
         "variables": {
             "nodeRegex": {
-                "description": "Only include nodes that match this specification",
+                "description": "Only include nodes that match this regex",
                 "type": "nodeSpec",
                 "optional": true
             },
             "propertySpec": {
-                "description": "Which properties to fetch; default is all of them",
+                "description": "Only include properties that match this regex. Default behavior is to return all properties",
                 "type": "bgpPropertySpec",
-                "optional": "true"
+                "optional": true
             }
         }
     }

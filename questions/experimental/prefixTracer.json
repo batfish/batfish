@@ -4,19 +4,19 @@
     "prefix": "${prefix}",
     "nodeRegex": "${nodeRegex}",
     "instance": {
-        "description": "Trace route prefix propagation throughout the network",
+        "description": "Trace prefix propagation through the network",
         "instanceName": "prefixTracer",
         "tags": [
             "dataplane"
         ],
         "variables": {
             "prefix": {
-                "description": "Which prefix to trace",
+                "description": "The prefix to trace. Expected format is A.B.C.D/Y",
                 "type": "prefix",
                 "optional": true
             },
             "nodeRegex": {
-                "description": "Nodes matching this regex will have their prefix tracing information reported",
+                "description": "Only include prefix tracing information for nodes that match this regex",
                 "type": "string",
                 "optional": true
             }

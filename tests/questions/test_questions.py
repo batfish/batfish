@@ -43,9 +43,25 @@ def test_instance_vars_present(question):
 
     assert 'instance' in q
     instance = q['instance']
-    for v in instance.get('variables', []):
+    for v in instance.get('variables', {}):
         v_pattern = '${' + v + '}'
         assert v_pattern in text
+
+
+def test_types(question):
+    """Tests (partially) that instance variable properties have the correct types."""
+    with open(path.join(REPO, question), 'r') as qfile:
+        text = qfile.read()
+        q = loads(text)
+
+    assert 'instance' in q
+    instance = q['instance']
+    for name, data in instance.get('variables', {}).items():
+        assert 'optional' not in data or isinstance(data['optional'], bool)
+        if data.get('type') == 'boolean':
+            assert 'value' not in data or isinstance(data['value'], bool)
+        elif data.get('type') in ['integer', 'long']:
+            assert 'value' not in data or isinstance(data['value'], int)
 
 
 def test_indented_with_spaces(question):

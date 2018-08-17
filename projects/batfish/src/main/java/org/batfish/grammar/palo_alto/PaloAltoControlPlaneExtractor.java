@@ -9,23 +9,14 @@ import org.batfish.vendor.VendorConfiguration;
 
 public class PaloAltoControlPlaneExtractor implements ControlPlaneExtractor {
 
+  private final PaloAltoCombinedParser _parser;
+  private final String _text;
+  private final Warnings _w;
   private PaloAltoConfiguration _configuration;
 
-  private final PaloAltoCombinedParser _parser;
-
-  private final String _text;
-
-  private final boolean _unrecognizedAsRedFlag;
-
-  private final Warnings _w;
-
   public PaloAltoControlPlaneExtractor(
-      String fileText,
-      PaloAltoCombinedParser combinedParser,
-      Warnings warnings,
-      boolean unrecognizedAsRedFlag) {
+      String fileText, PaloAltoCombinedParser combinedParser, Warnings warnings) {
     _text = fileText;
-    _unrecognizedAsRedFlag = unrecognizedAsRedFlag;
     _parser = combinedParser;
     _w = warnings;
   }
@@ -37,8 +28,7 @@ public class PaloAltoControlPlaneExtractor implements ControlPlaneExtractor {
 
   @Override
   public void processParseTree(ParserRuleContext tree) {
-    PaloAltoConfigurationBuilder cb =
-        new PaloAltoConfigurationBuilder(_parser, _text, _w, _unrecognizedAsRedFlag);
+    PaloAltoConfigurationBuilder cb = new PaloAltoConfigurationBuilder(_parser, _text, _w);
     ParseTreeWalker walker = new ParseTreeWalker();
     walker.walk(cb, tree);
     _configuration = cb.getConfiguration();

@@ -154,9 +154,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
         _logger.info("OK\n");
         CiscoCombinedParser ciscoParser = new CiscoCombinedParser(newFileText, _settings, format);
         combinedParser = ciscoParser;
-        extractor =
-            new CiscoControlPlaneExtractor(
-                newFileText, ciscoParser, format, _warnings, _settings.getUnrecognizedAsRedFlag());
+        extractor = new CiscoControlPlaneExtractor(newFileText, ciscoParser, format, _warnings);
         break;
 
       case HOST:
@@ -239,9 +237,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
         FlatJuniperCombinedParser flatJuniperParser =
             new FlatJuniperCombinedParser(_fileText, _settings, lineMap);
         combinedParser = flatJuniperParser;
-        extractor =
-            new FlatJuniperControlPlaneExtractor(
-                _fileText, flatJuniperParser, _warnings, _settings.getUnrecognizedAsRedFlag());
+        extractor = new FlatJuniperControlPlaneExtractor(_fileText, flatJuniperParser, _warnings);
         break;
 
       case IPTABLES:
@@ -297,9 +293,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
       case PALO_ALTO:
         PaloAltoCombinedParser paParser = new PaloAltoCombinedParser(_fileText, _settings, lineMap);
         combinedParser = paParser;
-        extractor =
-            new PaloAltoControlPlaneExtractor(
-                _fileText, paParser, _warnings, _settings.getUnrecognizedAsRedFlag());
+        extractor = new PaloAltoControlPlaneExtractor(_fileText, paParser, _warnings);
         break;
 
       case ALCATEL_AOS:
