@@ -30,8 +30,8 @@ public class UnusedStructuresQuestionPlugin extends QuestionPlugin {
 
   public static class UnusedStructuresAnswerer extends Answerer {
 
-    static final String COL_LINES = "lines";
     static final String COL_FILENAME = "filename";
+    static final String COL_LINES = "lines";
     static final String COL_STRUCT_NAME = "structName";
     static final String COL_STRUCT_TYPE = "structType";
 
