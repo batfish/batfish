@@ -23,7 +23,7 @@
             "propertySpec": {
                 "description": "Only include properties that match this specification",
                 "type": "interfacePropertySpec",
-                "optional": "true"             
+                "optional": true
             }
         }
     }
