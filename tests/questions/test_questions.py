@@ -62,8 +62,6 @@ def test_types(question):
             assert 'value' not in data or isinstance(data['value'], bool)
         elif data.get('type') in ['integer', 'long']:
             assert 'value' not in data or isinstance(data['value'], int)
-        elif data.get('type') in ['integer', 'long']:
-            assert 'value' not in data or isinstance(data['value'], int)
 
 
 def test_indented_with_spaces(question):
