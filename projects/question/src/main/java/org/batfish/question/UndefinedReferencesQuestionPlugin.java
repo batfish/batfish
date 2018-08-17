@@ -2,6 +2,7 @@ package org.batfish.question;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.LinkedHashMultiset;
 import com.google.common.collect.Multiset;
@@ -31,9 +32,9 @@ public class UndefinedReferencesQuestionPlugin extends QuestionPlugin {
 
     static final String COL_CONTEXT = "context";
     static final String COL_FILENAME = "filename";
+    static final String COL_LINES = "lines";
     static final String COL_REF_NAME = "refName";
     static final String COL_STRUCT_TYPE = "structType";
-    static final String COL_LINES = "lines";
 
     public UndefinedReferencesAnswerer(Question question, IBatfish batfish) {
       super(question, batfish);
@@ -72,8 +73,9 @@ public class UndefinedReferencesQuestionPlugin extends QuestionPlugin {
       return table;
     }
 
+    @VisibleForTesting
     // Entry is: filename -> struct type -> struct name -> context -> line nums
-    private static List<Row> processEntryToRows(
+    public static List<Row> processEntryToRows(
         Entry<String, SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>>
             e) {
       List<Row> rows = new ArrayList<>();
