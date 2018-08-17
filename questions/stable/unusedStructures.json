@@ -11,8 +11,8 @@
         ],
         "variables": {
             "nodeRegex": {
-                "description": "Only check nodes whose name matches this regex",
-                "type": "javaRegex",
+                "description": "Only check nodes that match this specifier",
+                "type": "nodeSpec",
                 "value": ".*"
             }
         }
