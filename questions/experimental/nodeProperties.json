@@ -17,7 +17,7 @@
             "propertySpec": {
                 "description": "Which properties to fetch; default is all of them",
                 "type": "nodePropertySpec",
-                "optional": "true"             
+                "optional": true
             }
         }
     }
