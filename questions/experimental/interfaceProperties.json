@@ -5,25 +5,27 @@
     "nodeRegex": "${nodeRegex}",
     "propertySpec": "${propertySpec}",
     "instance": {
-        "description": "Gets properties of interfaces",
+        "description": "Returns configuration properties of interfaces",
         "instanceName": "interfaceProperties",
         "tags": [
+            "configuration",
+            "interfaces"
         ],
         "variables": {
             "interfaceRegex": {
-                "description": "Only include interfaces that match this specification",
+                "description": "Only include interfaces that match this regex",
                 "type": "javaRegex",
                 "optional": true
             },
             "nodeRegex": {
-                "description": "Only include nodes that match this specification",
+                "description": "Only include nodes that match this regex",
                 "type": "nodeSpec",
                 "optional": true
             },
             "propertySpec": {
-                "description": "Only include properties that match this specification",
+                "description": "Only include properties that match this regex. Default behavior is to return all properties",
                 "type": "interfacePropertySpec",
-                "optional": "true"             
+                "optional": true
             }
         }
     }

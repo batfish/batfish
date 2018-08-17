@@ -1,47 +1,42 @@
 {
     "class": "org.batfish.question.bgpsessionstatus.BgpSessionStatusQuestion",
     "differential": false,
-    "foreignBgpGroups": "${foreignBgpGroups}",
     "includeEstablishedCount": "${includeEstablishedCount}",
     "node1Regex": "${node1Regex}",
     "node2Regex": "${node2Regex}",
     "status": "${status}",
     "type": "${type}",
     "instance": {
-        "description": "Lists the status of configured BGP sessions",
+        "description": "Return the status of configured BGP sessions",
         "instanceName": "bgpSessionStatus",
         "tags": [
-            "bgp"
+            "bgp",
+            "dataplane",
+            "status"
         ],
         "variables": {
-            "foreignBgpGroups": {
-                "description": "BGP neighbor groups that are considered to be external, i.e. whose peering addresses are not expected to be in configurations provided",
-                "minElements": 0,
-                "optional": true,
-                "type": "string"
-            },
             "includeEstablishedCount": {
-                "description": "Whether the count of actually established neighbors should be included",
+                "description": "Flag to decide if the count of established neighbors should be included. Primarily used for dynamic BGP sessions",
                 "optional": true,
-                "type": "boolean"                
+                "type": "boolean"
             },
             "node1Regex": {
-                "description": "Only include sessions whose first node's name matches this regex",
+                "description": "Only include sessions for which first node's name matches this regex",
                 "type": "nodeSpec",
                 "optional": true
             },
             "node2Regex": {
-                "description": "Only include sessions whose second node's name matches this regex",
+                "description": "Only include sessions for which second node's name matches this regex",
                 "type": "nodeSpec",
                 "optional": true
             },
             "status": {
-                "description": "Only report sessions whose status matches the regex",
+                "description": "Only include sessions for which status matches this regex",
                 "type": "javaRegex",
                 "optional": true
             },
             "type": {
-                "description": "Only report session whose type (ibgp, ebgp_singlehop, ebgp_multihop) matches the regex",
+                "description": "Only include sessions for which type (ibgp, ebgp_singlehop, ebgp_multihop) matches this regex",
                 "type": "javaRegex",
                 "optional": true
             }

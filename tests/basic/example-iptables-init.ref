@@ -18,19 +18,21 @@
         "z2-host2" : "hosts/z2-host2.json"
       },
       "parseStatus" : {
-        "internet-host" : "PASSED",
+        "configs/r1.cfg" : "PASSED",
+        "configs/r2.cfg" : "PASSED",
+        "configs/r3.cfg" : "PASSED",
+        "configs/z1-firewall.cfg" : "PASSED",
+        "configs/z2-firewall.cfg" : "PASSED",
+        "hosts/internet-host.json" : "PASSED",
+        "hosts/z1-firewall.json" : "PASSED",
+        "hosts/z1-host1.json" : "PASSED",
+        "hosts/z1-host2.json" : "PASSED",
+        "hosts/z2-firewall.json" : "PASSED",
+        "hosts/z2-host1.json" : "PASSED",
+        "hosts/z2-host2.json" : "PASSED",
         "iptables/z1-firewall.v4" : "PASSED",
         "iptables/z2-firewall.v4" : "PASSED",
-        "iptables/z2-host2.v4" : "PASSED",
-        "r1" : "PASSED",
-        "r2" : "PASSED",
-        "r3" : "PASSED",
-        "z1-firewall" : "PASSED",
-        "z1-host1" : "PASSED",
-        "z1-host2" : "PASSED",
-        "z2-firewall" : "PASSED",
-        "z2-host1" : "PASSED",
-        "z2-host2" : "PASSED"
+        "iptables/z2-host2.v4" : "PASSED"
       },
       "version" : "0.36.0",
       "warnings" : {
@@ -201,19 +203,21 @@
     {
       "class" : "org.batfish.datamodel.answers.InitInfoAnswerElement",
       "parseStatus" : {
-        "internet-host" : "PASSED",
+        "configs/r1.cfg" : "PASSED",
+        "configs/r2.cfg" : "PASSED",
+        "configs/r3.cfg" : "PASSED",
+        "configs/z1-firewall.cfg" : "PASSED",
+        "configs/z2-firewall.cfg" : "PASSED",
+        "hosts/internet-host.json" : "PASSED",
+        "hosts/z1-firewall.json" : "PASSED",
+        "hosts/z1-host1.json" : "PASSED",
+        "hosts/z1-host2.json" : "PASSED",
+        "hosts/z2-firewall.json" : "PASSED",
+        "hosts/z2-host1.json" : "PASSED",
+        "hosts/z2-host2.json" : "PASSED",
         "iptables/z1-firewall.v4" : "PASSED",
         "iptables/z2-firewall.v4" : "PASSED",
-        "iptables/z2-host2.v4" : "PASSED",
-        "r1" : "PASSED",
-        "r2" : "PASSED",
-        "r3" : "PASSED",
-        "z1-firewall" : "PASSED",
-        "z1-host1" : "PASSED",
-        "z1-host2" : "PASSED",
-        "z2-firewall" : "PASSED",
-        "z2-host1" : "PASSED",
-        "z2-host2" : "PASSED"
+        "iptables/z2-host2.v4" : "PASSED"
       }
     }
   ],

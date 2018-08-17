@@ -3407,42 +3407,45 @@ public class Batfish extends PluginConsumer implements IBatfish {
     List<BatfishException> failureCauses = new ArrayList<>();
     for (VendorConfiguration vc : hostConfigurations.values()) {
       HostConfiguration hostConfig = (HostConfiguration) vc;
-      if (hostConfig.getIptablesFile() != null) {
-        Path path = Paths.get(testRigPath.toString(), hostConfig.getIptablesFile());
+      String iptablesFile = hostConfig.getIptablesFile();
+      if (iptablesFile == null) {
+        continue;
+      }
 
-        // ensure that the iptables file is not taking us outside of the
-        // testrig
-        try {
-          if (!path.toFile().getCanonicalPath().contains(testRigPath.toFile().getCanonicalPath())
-              || !path.toFile().exists()) {
-            String failureMessage =
-                String.format(
-                    "Iptables file %s for host %s is not contained within the testrig",
-                    hostConfig.getIptablesFile(), hostConfig.getHostname());
-            BatfishException bfc;
-            if (answerElement.getErrors().containsKey(hostConfig.getHostname())) {
-              bfc =
-                  new BatfishException(
-                      failureMessage,
-                      answerElement.getErrors().get(hostConfig.getHostname()).getException());
-              answerElement.getErrors().put(hostConfig.getHostname(), bfc.getBatfishStackTrace());
-            } else {
-              bfc = new BatfishException(failureMessage);
-              if (_settings.getExitOnFirstError()) {
-                throw bfc;
-              } else {
-                failureCauses.add(bfc);
-                answerElement.getErrors().put(hostConfig.getHostname(), bfc.getBatfishStackTrace());
-                answerElement.getParseStatus().put(hostConfig.getHostname(), ParseStatus.FAILED);
-              }
-            }
+      Path path = Paths.get(testRigPath.toString(), iptablesFile);
+
+      // ensure that the iptables file is not taking us outside of the
+      // testrig
+      try {
+        if (!path.toFile().getCanonicalPath().contains(testRigPath.toFile().getCanonicalPath())
+            || !path.toFile().exists()) {
+          String failureMessage =
+              String.format(
+                  "Iptables file %s for host %s is not contained within the testrig",
+                  hostConfig.getIptablesFile(), hostConfig.getHostname());
+          BatfishException bfc;
+          if (answerElement.getErrors().containsKey(hostConfig.getHostname())) {
+            bfc =
+                new BatfishException(
+                    failureMessage,
+                    answerElement.getErrors().get(hostConfig.getHostname()).getException());
+            answerElement.getErrors().put(hostConfig.getHostname(), bfc.getBatfishStackTrace());
           } else {
-            String fileText = CommonUtil.readFile(path);
-            iptablesData.put(path, fileText);
+            bfc = new BatfishException(failureMessage);
+            if (_settings.getExitOnFirstError()) {
+              throw bfc;
+            } else {
+              failureCauses.add(bfc);
+              answerElement.getErrors().put(hostConfig.getHostname(), bfc.getBatfishStackTrace());
+              answerElement.getParseStatus().put(hostConfig.getIptablesFile(), ParseStatus.FAILED);
+            }
           }
-        } catch (IOException e) {
-          throw new BatfishException("Could not get canonical path", e);
+        } else {
+          String fileText = CommonUtil.readFile(path);
+          iptablesData.put(path, fileText);
         }
+      } catch (IOException e) {
+        throw new BatfishException("Could not get canonical path", e);
       }
     }
 
@@ -4105,7 +4108,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     // warn about unused overlays
     overlayHostConfigurations.forEach(
-        (name, overlay) -> answerElement.getParseStatus().put(name, ParseStatus.ORPHANED));
+        (name, overlay) ->
+            answerElement.getParseStatus().put(overlay.getFilename(), ParseStatus.ORPHANED));
 
     serializeObjects(output);
     _logger.printElapsedTime();

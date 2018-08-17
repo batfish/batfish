@@ -21,6 +21,7 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
+import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
@@ -28,6 +29,7 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.UniverseIpSpace;
+import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Palo_alto_configurationContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_serviceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_service_groupContext;
@@ -123,19 +125,13 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   private final String _text;
 
-  private final boolean _unrecognizedAsRedFlag;
-
   private final Warnings _w;
 
   public PaloAltoConfigurationBuilder(
-      PaloAltoCombinedParser parser,
-      String text,
-      Warnings warnings,
-      boolean unrecognizedAsRedFlag) {
+      PaloAltoCombinedParser parser, String text, Warnings warnings) {
     _configuration = new PaloAltoConfiguration();
     _parser = parser;
     _text = text;
-    _unrecognizedAsRedFlag = unrecognizedAsRedFlag;
     _w = warnings;
   }
 
@@ -618,12 +614,17 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     Token token = errorNode.getSymbol();
     String lineText = errorNode.getText().replace("\n", "").replace("\r", "").trim();
     int line = getLine(token);
-    String msg = String.format("Unrecognized Line: %d: %s", line, lineText);
-    if (_unrecognizedAsRedFlag) {
-      _w.redFlag(msg + " SUBSEQUENT LINES MAY NOT BE PROCESSED CORRECTLY");
-      _configuration.setUnrecognized(true);
+    _configuration.setUnrecognized(true);
+
+    if (token instanceof UnrecognizedLineToken) {
+      UnrecognizedLineToken unrecToken = (UnrecognizedLineToken) token;
+      _w.getParseWarnings()
+          .add(
+              new ParseWarning(
+                  line, lineText, unrecToken.getParserContext(), "This syntax is unrecognized"));
     } else {
-      _parser.getErrors().add(msg);
+      String msg = String.format("Unrecognized Line: %d: %s", line, lineText);
+      _w.redFlag(msg + " SUBSEQUENT LINES MAY NOT BE PROCESSED CORRECTLY");
     }
   }
 }
