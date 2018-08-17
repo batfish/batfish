@@ -21,7 +21,7 @@
         "allowedValues" : [
           "ebgp",
           "ibgp",
-          "lan",
+          "layer3",
           "ospf"
         ],
         "description" : "Types of neighbor relationships to include",
