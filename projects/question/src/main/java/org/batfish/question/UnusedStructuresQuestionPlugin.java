@@ -2,6 +2,7 @@ package org.batfish.question;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.LinkedHashMultiset;
 import com.google.common.collect.Multiset;
@@ -71,8 +72,9 @@ public class UnusedStructuresQuestionPlugin extends QuestionPlugin {
       return table;
     }
 
-    // Entry is: filename -> struct type -> struct name -> context -> line nums
-    private static List<Row> processEntryToRows(
+    @VisibleForTesting
+    // Entry is: filename -> struct type -> struct name -> defined structure info
+    public static List<Row> processEntryToRows(
         Entry<String, SortedMap<String, SortedMap<String, DefinedStructureInfo>>> e) {
       List<Row> rows = new ArrayList<>();
       String filename = e.getKey();
