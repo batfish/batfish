@@ -1,19 +1,8 @@
-package org.batfish.question.aclreachability2;
+package org.batfish.datamodel.acl;
 
 import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.List;
-import org.batfish.datamodel.acl.AclLineMatchExpr;
-import org.batfish.datamodel.acl.AndMatchExpr;
-import org.batfish.datamodel.acl.FalseExpr;
-import org.batfish.datamodel.acl.GenericAclLineMatchExprVisitor;
-import org.batfish.datamodel.acl.MatchHeaderSpace;
-import org.batfish.datamodel.acl.MatchSrcInterface;
-import org.batfish.datamodel.acl.NotMatchExpr;
-import org.batfish.datamodel.acl.OrMatchExpr;
-import org.batfish.datamodel.acl.OriginatingFromDevice;
-import org.batfish.datamodel.acl.PermittedByAcl;
-import org.batfish.datamodel.acl.TrueExpr;
 
 /**
  * Collects all {@link AclLineMatchExpr}s of the given type built into the visited expression.
