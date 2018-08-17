@@ -4,7 +4,7 @@
     "nodeRegex": "${nodeRegex}",
     "propertySpec": "${propertySpec}",
     "instance": {
-        "description": "Return BGP configuration properites",
+        "description": "Return BGP configuration properties",
         "instanceName": "bgpProperties",
         "tags": [
             "bgp",

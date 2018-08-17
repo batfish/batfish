@@ -5,7 +5,7 @@
   "differential" : false,
   "includeOneTableKeys" : true,
   "instance" : {
-    "description" : "Return BGP configuration properites",
+    "description" : "Return BGP configuration properties",
     "instanceName" : "qname",
     "tags" : [
       "bgp",
