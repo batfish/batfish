@@ -18,7 +18,6 @@ import java.util.Set;
 import net.sf.javabdd.BDD;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpAccessList;
 
 /**
@@ -82,7 +81,11 @@ public final class BDDSourceManager {
   public static BDDSourceManager forIpAccessList(
       BDDPacket pkt, Configuration config, IpAccessList acl) {
     return forIpAccessList(
-        pkt, activeInterfaces(config), inactiveInterfaces(config), config.getIpAccessLists(), acl);
+        pkt,
+        config.activeInterfaces(),
+        config.inactiveInterfaces(),
+        config.getIpAccessLists(),
+        acl);
   }
 
   public static BDDSourceManager forSources(
@@ -118,26 +121,6 @@ public final class BDDSourceManager {
                 .build();
 
     return new BDDSourceManager(pkt, inactiveInterfaces, sources);
-  }
-
-  public static Set<String> activeInterfaces(Configuration config) {
-    return config
-        .getInterfaces()
-        .values()
-        .stream()
-        .filter(Interface::getActive)
-        .map(Interface::getName)
-        .collect(ImmutableSet.toImmutableSet());
-  }
-
-  public static Set<String> inactiveInterfaces(Configuration config) {
-    return config
-        .getInterfaces()
-        .values()
-        .stream()
-        .filter(iface -> !iface.getActive())
-        .map(Interface::getName)
-        .collect(ImmutableSet.toImmutableSet());
   }
 
   /**

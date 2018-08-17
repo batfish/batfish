@@ -11,6 +11,9 @@ import org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists;
  * Adapts {@link BDDSourceManager} for differential analysis between two versions of an ACL, where
  * interfaces could have been added/removed, enabled/disabled, and references to interfaces could
  * also have been added/removed.
+ *
+ * <p>It provides a {@link BDDSourceManager} for sources active in either snapshot, along with
+ * "sanity" constraints for each snapshot (that the source must be active in that snapshot).
  */
 public final class DifferentialBDDSourceManager {
   private final BDDSourceManager _bddSourceManager;
@@ -33,13 +36,13 @@ public final class DifferentialBDDSourceManager {
       Configuration deltaConfig,
       IpAccessList deltaAcl) {
     BDDPacket pkt = bddPacket;
-    Set<String> interfacesActiveInBase = BDDSourceManager.activeInterfaces(baseConfig);
-    Set<String> interfacesActiveInDelta = BDDSourceManager.activeInterfaces(deltaConfig);
+    Set<String> interfacesActiveInBase = baseConfig.activeInterfaces();
+    Set<String> interfacesActiveInDelta = deltaConfig.activeInterfaces();
     Set<String> interfacesActiveInEither =
         Sets.union(interfacesActiveInBase, interfacesActiveInDelta);
 
-    Set<String> interfacesInactiveInBase = BDDSourceManager.inactiveInterfaces(baseConfig);
-    Set<String> interfacesInactiveInDelta = BDDSourceManager.inactiveInterfaces(deltaConfig);
+    Set<String> interfacesInactiveInBase = baseConfig.inactiveInterfaces();
+    Set<String> interfacesInactiveInDelta = deltaConfig.inactiveInterfaces();
     Set<String> interfacesInactiveInBoth =
         Sets.intersection(interfacesInactiveInBase, interfacesInactiveInDelta);
 

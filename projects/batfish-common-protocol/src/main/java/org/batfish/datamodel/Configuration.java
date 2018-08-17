@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
@@ -17,6 +18,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.NavigableSet;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -406,6 +408,24 @@ public final class Configuration implements Serializable {
         .map(InterfaceAddress::getIp)
         .min(Ip::compareTo)
         .orElse(null);
+  }
+
+  public Set<String> activeInterfaces() {
+    return _interfaces
+        .values()
+        .stream()
+        .filter(Interface::getActive)
+        .map(Interface::getName)
+        .collect(ImmutableSet.toImmutableSet());
+  }
+
+  public Set<String> inactiveInterfaces() {
+    return _interfaces
+        .values()
+        .stream()
+        .filter(iface -> !iface.getActive())
+        .map(Interface::getName)
+        .collect(ImmutableSet.toImmutableSet());
   }
 
   @JsonProperty(PROP_COMMUNITY_LISTS)
