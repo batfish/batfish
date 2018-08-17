@@ -1,5 +1,9 @@
 load-questions questions/stable
 
+# validate aaaAuthenticationLogin
+test -raw tests/questions/stable/aaaAuthenticationLogin.ref validate-template aaaAuthenticationLogin nodeRegex=".*"
+
+
 # validate fileParseStatus
 test -raw tests/questions/stable/fileParseStatus.ref validate-template fileParseStatus
 

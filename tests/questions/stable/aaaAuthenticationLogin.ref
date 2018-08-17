@@ -1,0 +1,24 @@
+{
+  "class" : "org.batfish.question.aaaauthenticationlogin.AaaAuthenticationLoginQuestion",
+  "nodeRegex" : ".*",
+  "differential" : false,
+  "includeOneTableKeys" : true,
+  "instance" : {
+    "description" : "Find nodes that do not require authentication on all lines.",
+    "instanceName" : "qname",
+    "tags" : [
+      "aaa",
+      "authentication",
+      "ciscoFamily",
+      "dataModel"
+    ],
+    "variables" : {
+      "nodeRegex" : {
+        "description" : "Only include nodes whose name matches this regex",
+        "optional" : false,
+        "type" : "javaRegex",
+        "value" : ".*"
+      }
+    }
+  }
+}
