@@ -2,16 +2,16 @@ Found 1 analyses
 {"analysis1": {"unusedstructures": {
  "class": "org.batfish.question.UnusedStructuresQuestionPlugin$UnusedStructuresQuestion",
  "differential": false,
+ "nodeRegex": "${nodeRegex}",
  "instance": {
-  "description": "Outputs cases where structures (e.g., ACL, routemaps) are defined but not used.",
+  "description": "Return nodes with structures such as ACLs, routemaps, etc. that are defined but not used.",
   "instanceName": "unusedStructures",
-  "longDescription": "Such occurrences could be configuration errors or leftover cruft.",
+  "longDescription": "Return nodes with structures such as ACLs, routes, etc. that are defined but not used. This may represent a bug in the configuration, which may have occurred because a final step in a template or MOP was not completed. Or it could be harmless extra configuration generated from a master template that is not meant to be used on those nodes.",
   "tags": ["default"],
   "variables": {"nodeRegex": {
-   "description": "Only check nodes whose name matches this regex",
-   "type": "javaRegex",
+   "description": "Only include nodes that match this regex",
+   "type": "nodeSpec",
    "value": ".*"
   }}
- },
- "nodeRegex": "${nodeRegex}"
+ }
 }}}
