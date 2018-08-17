@@ -442,8 +442,8 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void exitSrs_from(Srs_fromContext ctx) {
     for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
-      String name = var.getText();
-      _currentRule.getFrom().add(name);
+      String zoneName = var.getText();
+      _currentRule.getFrom().add(zoneName);
     }
   }
 
@@ -473,8 +473,8 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void exitSrs_to(Srs_toContext ctx) {
     for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
-      String name = var.getText();
-      _currentRule.getTo().add(name);
+      String zoneName = var.getText();
+      _currentRule.getTo().add(zoneName);
     }
   }
 

@@ -101,7 +101,13 @@ public class PaloAltoGrammarTest {
   }
 
   private static Flow createFlow(IpProtocol protocol, int sourcePort, int destinationPort) {
-    return createFlow("1.1.1.1", "2.2.2.2", protocol, sourcePort, destinationPort);
+    Flow.Builder fb = new Flow.Builder();
+    fb.setIngressNode("node");
+    fb.setIpProtocol(protocol);
+    fb.setDstPort(destinationPort);
+    fb.setSrcPort(sourcePort);
+    fb.setTag("test");
+    return fb.build();
   }
 
   private static Flow createFlow(String sourceAddress, String destinationAddress) {
@@ -388,6 +394,8 @@ public class PaloAltoGrammarTest {
   @Test
   public void testRulebaseReference() throws IOException {
     String hostname = "rulebase";
+    String filename = "configs/" + hostname;
+
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse();
@@ -395,13 +403,13 @@ public class PaloAltoGrammarTest {
     String serviceName = computeObjectName(DEFAULT_VSYS_NAME, "SERVICE1");
 
     // Confirm reference count is correct for used structure
-    assertThat(ccae, hasNumReferrers(hostname, PaloAltoStructureType.SERVICE, serviceName, 1));
+    assertThat(ccae, hasNumReferrers(filename, PaloAltoStructureType.SERVICE, serviceName, 1));
 
     // Confirm undefined reference is detected
     assertThat(
         ccae,
         hasUndefinedReference(
-            hostname,
+            filename,
             PaloAltoStructureType.SERVICE_OR_SERVICE_GROUP,
             "SERVICE_UNDEF",
             PaloAltoStructureUsage.RULEBASE_SERVICE));
@@ -416,18 +424,15 @@ public class PaloAltoGrammarTest {
     String if2name = "ethernet1/2";
     String if3name = "ethernet1/3";
     String if4name = "ethernet1/4";
-    String ipAclName1 = "~vsys1~z1~OUTGOING_FILTER~";
-    String ipAclName2 = "~vsys2~z1~OUTGOING_FILTER~";
-    Flow flow = createFlow("1.1.4.255", "1.1.3.2");
+    Flow flow = createFlow("1.1.1.1", "2.2.2.2");
 
-    // Confirm flow is rejected by vsys1 deny rule
-    assertThat(c, hasIpAccessList(ipAclName1, rejects(flow, "ethernet1/2", c)));
+    // Confirm flow is rejected in vsys1
     assertThat(c, hasInterface(if1name, hasOutgoingFilter(rejects(flow, if2name, c))));
 
     // Confirm intravsys flow is accepted in vsys2
-    assertThat(c, hasIpAccessList(ipAclName2, accepts(flow, "ethernet1/4", c)));
-    // Confirm intervsys flow is rejected in vsys2
-    assertThat(c, hasIpAccessList(ipAclName2, rejects(flow, "ethernet1/2", c)));
+    assertThat(c, hasInterface(if3name, hasOutgoingFilter(accepts(flow, if4name, c))));
+    // Confirm intervsys flow (even from same zone name) is rejected in vsys2
+    assertThat(c, hasInterface(if3name, hasOutgoingFilter(rejects(flow, if2name, c))));
   }
 
   @Test

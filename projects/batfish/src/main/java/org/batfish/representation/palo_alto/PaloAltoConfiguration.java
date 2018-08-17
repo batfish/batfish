@@ -45,9 +45,11 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
   private static final long serialVersionUID = 1L;
 
-  public static final String CATCHALL_SERVICE_NAME = "any";
+  /** This is the service name that matches all traffic */
+  private static final String CATCHALL_SERVICE_NAME = "any";
 
-  public static final String CATCHALL_ZONE_NAME = "any";
+  /** This is the zone name that matches traffic from all zones (but not unzoned traffic) */
+  private static final String CATCHALL_ZONE_NAME = "any";
 
   public static final String DEFAULT_VSYS_NAME = "vsys1";
 
@@ -160,7 +162,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   }
 
   /** Generate egress IpAccessList name given an interface or zone name */
-  private static String computeOutgoingFilterName(String interfaceOrZoneName) {
+  public static String computeOutgoingFilterName(String interfaceOrZoneName) {
     return String.format("~%s~OUTGOING_FILTER~", interfaceOrZoneName);
   }
 
@@ -251,6 +253,9 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
       ipAccessListLineBuilder.rejecting();
     }
 
+    // TODO(https://github.com/batfish/batfish/issues/2097): need to handle matching specified
+    // applications
+
     // Construct headerspace match expression
     HeaderSpace.Builder headerSpaceBuilder = HeaderSpace.builder();
     for (IpSpace source : rule.getSource()) {
@@ -295,14 +300,10 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
       conjuncts.add(new OrMatchExpr(serviceDisjuncts));
     }
 
-    // TODO handle application
-
     AclLineMatchExpr aclLineMatchExpr;
     if (conjuncts.size() == 1) {
-      // IpAccessListLine should just match headerspace
       aclLineMatchExpr = conjuncts.get(0);
     } else {
-      // IpAccessListLine should match headerspace AND srcInterface
       aclLineMatchExpr = new AndMatchExpr(conjuncts);
     }
     return ipAccessListLineBuilder
