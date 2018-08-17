@@ -42,4 +42,40 @@ public class ColumnMetadataTest {
     assertThat(c.getIsKey(), equalTo(true));
     assertThat(c.getIsValue(), equalTo(true));
   }
+
+  @Test
+  public void testInvalidColumnNameWithSpecialCharacters() {
+
+    // Allow the tilde character in the column name
+    assertThat(ColumnMetadata.isLegalColumnName("~colNamewith~Tilde"), equalTo(true));
+
+    // Allow the under score in the column name
+    assertThat(ColumnMetadata.isLegalColumnName("_colNameWith_UnderScore"), equalTo(true));
+
+    // Do not allow the hyphen in the start of column name
+    assertThat(ColumnMetadata.isLegalColumnName("-colNameWith-hyphen"), equalTo(false));
+    assertThat(ColumnMetadata.isLegalColumnName("colNameWith-hyphen"), equalTo(true));
+
+    // Do not allow the space in the column name
+    assertThat(ColumnMetadata.isLegalColumnName("column name"), equalTo(false));
+
+    // Do not allow . characters in the start of column name
+    assertThat(ColumnMetadata.isLegalColumnName(".test.colName"), equalTo(false));
+    assertThat(ColumnMetadata.isLegalColumnName("test.colName"), equalTo(true));
+
+    // Do not allow @ characters in the start of column name
+    assertThat(ColumnMetadata.isLegalColumnName("@test@colName"), equalTo(false));
+    assertThat(ColumnMetadata.isLegalColumnName("test@colName"), equalTo(true));
+
+    // Allow the under score, tilde, hyphen, numbers in the column name
+    assertThat(ColumnMetadata.isLegalColumnName("_colName_With~Under-Score0-9"), equalTo(true));
+
+    // Allow the under score, tilde, hyphen, numbers in the column name
+    assertThat(
+        ColumnMetadata.isLegalColumnName("colNameWith!@#$%^&*()+Characters"), equalTo(false));
+
+    // Atleast one character should be given as column name
+    assertThat(ColumnMetadata.isLegalColumnName(""), equalTo(false));
+    assertThat(ColumnMetadata.isLegalColumnName("a"), equalTo(true));
+  }
 }
