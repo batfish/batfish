@@ -17,3 +17,6 @@ test  -raw tests/questions/stable/testfilters.ref validate-template testfilters 
 
 # test undefinedReferences
 test -raw tests/questions/stable/undefinedReferences.ref validate-template undefinedreferences nodeRegex=".*"
+
+# validate unusedstructures
+test -raw tests/questions/stable/unusedStructures.ref validate-template unusedstructures nodeRegex=".*"
