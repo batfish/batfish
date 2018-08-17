@@ -26,7 +26,7 @@
   "tcpUrg": "${tcpUrg}",
   "traceStart": "${traceStart}",
   "instance": {
-    "description": "Perform a traceroute.",
+    "description": "Trace the path(s) for the specified flow.",
     "instanceName": "traceroute",
     "longDescription": "This question performs a virtual traceroute in the network from a starting node. A destination IP and ingress (source) node must be specified. Other IP headers are given default values if unspecified.\nUnlike a real traceroute, this traceroute is directional. That is, for it to succeed, the reverse connectivity is not needed. This feature can help debug connectivity issues by decoupling the two directions.",
     "tags": [
@@ -156,7 +156,7 @@
         "type": "boolean"
       },
       "traceStart": {
-        "description": "Location to start tracing from",
+        "description": "Location (node and interface combination) to start tracing from",
         "minLength": 1,
         "type": "string"
       }

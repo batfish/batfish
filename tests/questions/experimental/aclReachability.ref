@@ -1,40 +1,26 @@
 {
   "class" : "org.batfish.question.aclreachability2.AclReachability2Question",
-  "filterSpecifierFactory" : "FlexibleFilterSpecifierFactory",
   "filterSpecifierInput" : ".*",
-  "nodeSpecifierFactory" : "FlexibleNodeSpecifierFactory",
   "nodeSpecifierInput" : ".*",
   "differential" : false,
   "includeOneTableKeys" : true,
   "instance" : {
-    "description" : "Identifies unreachable lines in ACLs",
+    "description" : "Display ACLs/filters with unreachable lines",
     "instanceName" : "qname",
-    "longDescription" : "Report ACLs with unreachable lines, as well as reachability of each line within the ACL. Unreachable lines can indicate erroneous configuration.",
+    "longDescription" : "Return ACLs/filters with unreachable lines, along with all of the unreachable lines within each ACL/filter.",
     "tags" : [
       "acl",
       "default"
     ],
     "variables" : {
-      "filterSpecifierFactory" : {
-        "description" : "FilterSpecifierFactory used to process filterSpecifierInput",
-        "optional" : true,
-        "type" : "string",
-        "value" : "FlexibleFilterSpecifierFactory"
-      },
       "filterSpecifierInput" : {
-        "description" : "Specifies the filter(s) to be analyzed",
+        "description" : "Name or regex identifying the filter(s) to test",
         "optional" : true,
         "type" : "string",
         "value" : ".*"
       },
-      "nodeSpecifierFactory" : {
-        "description" : "NodeSpecifierFactory used to process nodeSpecifierInput",
-        "optional" : true,
-        "type" : "string",
-        "value" : "FlexibleNodeSpecifierFactory"
-      },
       "nodeSpecifierInput" : {
-        "description" : "Only analyze filters on specified nodes",
+        "description" : "Name or regex identifying the nodes to restrict the test to",
         "optional" : true,
         "type" : "string",
         "value" : ".*"

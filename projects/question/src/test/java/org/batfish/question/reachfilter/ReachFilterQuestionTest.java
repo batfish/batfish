@@ -39,8 +39,8 @@ public class ReachFilterQuestionTest {
     assertThat(q.getType(), is(Type.PERMIT));
     assertThat(q.getNodesSpecifier(), notNullValue());
     assertThat(q.getDataPlane(), equalTo(false));
-    assertThat(q.getNodesSpecifierFactory(), equalTo(FlexibleNodeSpecifierFactory.NAME));
-    assertThat(q.getNodesSpecifierInput(), nullValue());
+    assertThat(q.getNodeSpecifierFactory(), equalTo(FlexibleNodeSpecifierFactory.NAME));
+    assertThat(q.getNodeSpecifierInput(), nullValue());
     assertThat(
         q.getDestinationIpSpaceSpecifierFactory(),
         equalTo(FlexibleUniverseIpSpaceSpecifierFactory.NAME));
