@@ -2,7 +2,7 @@
     "class": "org.batfish.question.aaaauthenticationlogin.AaaAuthenticationLoginQuestion",
     "differential": false,
     "instance": {
-        "description": "Find nodes that do not require authentication on all lines.",
+        "description": "Return nodes that do not require authentication on all lines.",
         "instanceName": "aaaAuthenticationLogin",
         "tags": [
             "aaa",
@@ -12,7 +12,7 @@
         ],
         "variables": {
             "nodeRegex": {
-                "description": "Only include nodes whose name matches this regex",
+                "description": "Only include nodes that match this regex",
                 "type": "javaRegex",
                 "value": ".*"
             }

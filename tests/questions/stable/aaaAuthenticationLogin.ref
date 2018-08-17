@@ -4,7 +4,7 @@
   "differential" : false,
   "includeOneTableKeys" : true,
   "instance" : {
-    "description" : "Find nodes that do not require authentication on all lines.",
+    "description" : "Return nodes that do not require authentication on all lines.",
     "instanceName" : "qname",
     "tags" : [
       "aaa",
@@ -14,7 +14,7 @@
     ],
     "variables" : {
       "nodeRegex" : {
-        "description" : "Only include nodes whose name matches this regex",
+        "description" : "Only include nodes that match this regex",
         "optional" : false,
         "type" : "javaRegex",
         "value" : ".*"
