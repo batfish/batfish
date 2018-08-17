@@ -23,10 +23,8 @@ import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.GenericAclLineMatchExprVisitor;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
-import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.NotMatchExpr;
 import org.batfish.datamodel.acl.OrMatchExpr;
-import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
 
@@ -191,11 +189,6 @@ public abstract class IpAccessListSpecializer
   }
 
   @Override
-  public AclLineMatchExpr visitMatchSrcInterface(MatchSrcInterface matchSrcInterface) {
-    return matchSrcInterface;
-  }
-
-  @Override
   public final AclLineMatchExpr visitNotMatchExpr(NotMatchExpr notMatchExpr) {
     AclLineMatchExpr subExpr = notMatchExpr.getOperand().accept(this);
 
@@ -206,11 +199,6 @@ public abstract class IpAccessListSpecializer
     } else {
       return new NotMatchExpr(subExpr);
     }
-  }
-
-  @Override
-  public AclLineMatchExpr visitOriginatingFromDevice(OriginatingFromDevice originatingFromDevice) {
-    return originatingFromDevice;
   }
 
   @Override
