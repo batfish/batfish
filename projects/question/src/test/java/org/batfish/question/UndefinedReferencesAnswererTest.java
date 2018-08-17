@@ -18,6 +18,8 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.plugin.IBatfishTestAdapter;
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.collections.FileLines;
@@ -122,13 +124,17 @@ public class UndefinedReferencesAnswererTest {
     @Override
     public ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement() {
       ParseVendorConfigurationAnswerElement pvcae = new ParseVendorConfigurationAnswerElement();
-      pvcae.setFileMap(ImmutableSortedMap.of("h1", "f1", "h2", "f2"));
+      pvcae.setFileMap(ImmutableSortedMap.of("h", "f", "h2", "f2"));
       return pvcae;
     }
 
     @Override
     public SpecifierContext specifierContext() {
-      return MockSpecifierContext.builder().build();
+      Configuration c1 = new Configuration("h", ConfigurationFormat.CISCO_IOS);
+      Configuration c2 = new Configuration("h2", ConfigurationFormat.CISCO_IOS);
+      return MockSpecifierContext.builder()
+          .setConfigs(ImmutableSortedMap.of("h", c1, "h2", c2))
+          .build();
     }
   }
 }
