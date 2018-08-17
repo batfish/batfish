@@ -185,7 +185,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
 
     private SortedSet<VerboseRipEdge> _verboseRipNeighbors;
 
-    public void addLanEdge(Edge edge) {
+    public void addLayer3Edge(Edge edge) {
       _layer3Neighbors.add(edge);
     }
 
