@@ -225,6 +225,21 @@ PROTOCOL
     'protocol'
 ;
 
+RESET_BOTH
+:
+    'reset-both'
+;
+
+RESET_CLIENT
+:
+    'reset-client'
+;
+
+RESET_SERVER
+:
+    'reset-server'
+;
+
 ROUTING_TABLE
 :
     'routing-table'

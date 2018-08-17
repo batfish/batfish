@@ -411,10 +411,8 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   public void exitSrs_action(Srs_actionContext ctx) {
     if (ctx.ALLOW() != null) {
       _currentRule.setAction(LineAction.ACCEPT);
-    } else if (ctx.DENY() != null || ctx.DROP() != null) {
-      _currentRule.setAction(LineAction.REJECT);
     } else {
-      _w.redFlag("Unimplemented rule action: " + getFullText(ctx));
+      _currentRule.setAction(LineAction.REJECT);
     }
   }
 

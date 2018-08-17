@@ -37,6 +37,9 @@ srs_action
         ALLOW
         | DENY
         | DROP
+        | RESET_BOTH
+        | RESET_CLIENT
+        | RESET_SERVER
     )
 ;
 
