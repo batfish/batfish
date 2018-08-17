@@ -18,7 +18,7 @@
             "propertySpec": {
                 "description": "Which properties to fetch; default is all of them",
                 "type": "ospfPropertySpec",
-                "optional": "true"
+                "optional": true
             }
         }
     }
