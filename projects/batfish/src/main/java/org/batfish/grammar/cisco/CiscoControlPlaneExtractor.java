@@ -253,6 +253,7 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.common.BatfishException;
 import org.batfish.common.RedFlagBatfishException;
 import org.batfish.common.Warnings;
+import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.common.WellKnownCommunity;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AaaAuthenticationLoginList;
@@ -369,6 +370,7 @@ import org.batfish.datamodel.vendor_family.cisco.SntpServer;
 import org.batfish.datamodel.vendor_family.cisco.SshSettings;
 import org.batfish.datamodel.vendor_family.cisco.User;
 import org.batfish.grammar.ControlPlaneExtractor;
+import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.cisco.CiscoParser.Aaa_accountingContext;
 import org.batfish.grammar.cisco.CiscoParser.Aaa_accounting_commands_lineContext;
 import org.batfish.grammar.cisco.CiscoParser.Aaa_accounting_defaultContext;
@@ -1447,8 +1449,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private final String _text;
 
-  private final boolean _unrecognizedAsRedFlag;
-
   private final Warnings _w;
 
   private NetworkObject _currentNetworkObject;
@@ -1472,17 +1472,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private String _currentTrackingGroup;
 
   public CiscoControlPlaneExtractor(
-      String text,
-      CiscoCombinedParser parser,
-      ConfigurationFormat format,
-      Warnings warnings,
-      boolean unrecognizedAsRedFlag) {
+      String text, CiscoCombinedParser parser, ConfigurationFormat format, Warnings warnings) {
     _text = text;
     _parser = parser;
     _format = format;
     _w = warnings;
     _peerGroupStack = new ArrayList<>();
-    _unrecognizedAsRedFlag = unrecognizedAsRedFlag;
     _currentBlockNeighborAddressFamilies = new HashSet<>();
   }
 
@@ -10392,9 +10387,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private <T, U extends T> T convProblem(
       Class<T> returnType, ParserRuleContext ctx, U defaultReturnValue) {
-    if (!_unrecognizedAsRedFlag) {
-      throw convError(returnType, ctx);
-    }
     _w.redFlag(convErrorMessage(returnType, ctx));
     return defaultReturnValue;
   }
@@ -10477,14 +10469,19 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void visitErrorNode(ErrorNode errorNode) {
     Token token = errorNode.getSymbol();
-    String lineText = errorNode.getText().replace("\n", "").replace("\r", "").trim();
     int line = token.getLine();
-    String msg = String.format("Unrecognized Line: %d: %s", line, lineText);
-    if (_unrecognizedAsRedFlag) {
-      _w.redFlag(msg + " SUBSEQUENT LINES MAY NOT BE PROCESSED CORRECTLY");
-      _configuration.setUnrecognized(true);
+    String lineText = errorNode.getText().replace("\n", "").replace("\r", "").trim();
+    _configuration.setUnrecognized(true);
+
+    if (token instanceof UnrecognizedLineToken) {
+      UnrecognizedLineToken unrecToken = (UnrecognizedLineToken) token;
+      _w.getParseWarnings()
+          .add(
+              new ParseWarning(
+                  line, lineText, unrecToken.getParserContext(), "This syntax is unrecognized"));
     } else {
-      _parser.getErrors().add(msg);
+      String msg = String.format("Unrecognized Line: %d: %s", line, lineText);
+      _w.redFlag(msg + " SUBSEQUENT LINES MAY NOT BE PROCESSED CORRECTLY");
     }
   }
 }

@@ -73,7 +73,6 @@ public class BfConsts {
   public static final String ARG_TASK_PLUGIN = "taskplugin";
   public static final String ARG_TESTRIG = "testrig";
   public static final String ARG_UNIMPLEMENTED_SUPPRESS = "unimplementedsuppress";
-  public static final String ARG_UNRECOGNIZED_AS_RED_FLAG = "urf";
   public static final String ARG_VERBOSE_PARSE = "verboseparse";
 
   public static final String COMMAND_ANALYZE = "analyze";

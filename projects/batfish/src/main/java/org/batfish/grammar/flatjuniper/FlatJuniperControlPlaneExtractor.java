@@ -9,23 +9,14 @@ import org.batfish.vendor.VendorConfiguration;
 
 public class FlatJuniperControlPlaneExtractor implements ControlPlaneExtractor {
 
+  private final FlatJuniperCombinedParser _parser;
+  private final String _text;
+  private final Warnings _w;
   private JuniperConfiguration _configuration;
 
-  private final FlatJuniperCombinedParser _parser;
-
-  private final String _text;
-
-  private final boolean _unrecognizedAsRedFlag;
-
-  private final Warnings _w;
-
   public FlatJuniperControlPlaneExtractor(
-      String fileText,
-      FlatJuniperCombinedParser combinedParser,
-      Warnings warnings,
-      boolean unrecognizedAsRedFlag) {
+      String fileText, FlatJuniperCombinedParser combinedParser, Warnings warnings) {
     _text = fileText;
-    _unrecognizedAsRedFlag = unrecognizedAsRedFlag;
     _parser = combinedParser;
     _w = warnings;
   }
@@ -63,7 +54,7 @@ public class FlatJuniperControlPlaneExtractor implements ControlPlaneExtractor {
     walker.walk(dlp, tree);
     ApplyPathApplicator ap = new ApplyPathApplicator(hierarchy, _w);
     walker.walk(ap, tree);
-    ConfigurationBuilder cb = new ConfigurationBuilder(_parser, _text, _w, _unrecognizedAsRedFlag);
+    ConfigurationBuilder cb = new ConfigurationBuilder(_parser, _text, _w);
     walker.walk(cb, tree);
     _configuration = cb.getConfiguration();
   }
