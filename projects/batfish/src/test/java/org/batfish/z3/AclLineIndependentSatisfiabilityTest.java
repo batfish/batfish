@@ -96,7 +96,10 @@ public class AclLineIndependentSatisfiabilityTest {
   private Set<Integer> computeIndependentlyUnmatchableAclLines(
       Batfish batfish, Configuration c, String aclName, Set<Integer> linesToCheck) {
     List<NodSatJob<AclLine>> jobs =
-        batfish.generateUnmatchableAclLineJobs(c, aclName, linesToCheck);
+        linesToCheck
+            .stream()
+            .map(l -> batfish.generateUnmatchableAclLineJob(c, aclName, l))
+            .collect(Collectors.toList());
     Map<AclLine, Boolean> satisfiabilityByLine = new TreeMap<>();
     batfish.computeNodSatOutput(jobs, satisfiabilityByLine);
 

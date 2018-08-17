@@ -23,6 +23,7 @@ import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.MatchSrcInterface;
+import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.junit.Test;
 
@@ -38,6 +39,17 @@ public final class IpAccessListSpecializerTest {
         HeaderSpace specialize(HeaderSpace headerSpace) {
           return HeaderSpace.builder().build();
         }
+
+        @Override
+        public AclLineMatchExpr visitMatchSrcInterface(MatchSrcInterface matchSrcInterface) {
+          return matchSrcInterface;
+        }
+
+        @Override
+        public AclLineMatchExpr visitOriginatingFromDevice(
+            OriginatingFromDevice originatingFromDevice) {
+          return originatingFromDevice;
+        }
       };
 
   private static final IpAccessListSpecializer IDENTITY_SPECIALIZER =
@@ -50,6 +62,17 @@ public final class IpAccessListSpecializerTest {
         @Override
         protected HeaderSpace specialize(HeaderSpace headerSpace) {
           return headerSpace;
+        }
+
+        @Override
+        public AclLineMatchExpr visitMatchSrcInterface(MatchSrcInterface matchSrcInterface) {
+          return matchSrcInterface;
+        }
+
+        @Override
+        public AclLineMatchExpr visitOriginatingFromDevice(
+            OriginatingFromDevice originatingFromDevice) {
+          return originatingFromDevice;
         }
       };
 
