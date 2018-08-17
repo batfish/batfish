@@ -1,6 +1,7 @@
 package org.batfish.grammar.palo_alto;
 
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
+import static org.batfish.representation.palo_alto.PaloAltoConfiguration.CATCHALL_APPLICATION_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.DEFAULT_VSYS_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.SHARED_VSYS_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.computeObjectName;
@@ -59,6 +60,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Snvrrt_nexthopContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sr_securityContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Src_or_dst_list_itemContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_actionContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_applicationContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_descriptionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_destinationContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_disabledContext;
@@ -412,6 +414,16 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
       _currentRule.setAction(LineAction.REJECT);
     } else {
       _w.redFlag("Unimplemented rule action: " + getFullText(ctx));
+    }
+  }
+
+  @Override
+  public void exitSrs_application(Srs_applicationContext ctx) {
+    for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
+      String name = var.getText();
+      if (!name.equals(CATCHALL_APPLICATION_NAME)) {
+        _w.redFlag("Unhandled application: " + name);
+      }
     }
   }
 

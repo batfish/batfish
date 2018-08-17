@@ -45,10 +45,13 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
   private static final long serialVersionUID = 1L;
 
-  /** This is the service name that matches all traffic */
+  /** This is the name of an application that matches all traffic */
+  public static final String CATCHALL_APPLICATION_NAME = "any";
+
+  /** This is the name of a service that matches all traffic */
   private static final String CATCHALL_SERVICE_NAME = "any";
 
-  /** This is the zone name that matches traffic from all zones (but not unzoned traffic) */
+  /** This is the name of the zone that matches traffic in all zones (but not unzoned traffic) */
   private static final String CATCHALL_ZONE_NAME = "any";
 
   public static final String DEFAULT_VSYS_NAME = "vsys1";
