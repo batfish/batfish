@@ -58,8 +58,6 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
   public static final String NULL_VRF_NAME = "~NULL_VRF~";
 
-  private static final String RULEBASE_NAME = "RULEBASE";
-
   public static final String SHARED_VSYS_NAME = "~SHARED_VSYS~";
 
   private Configuration _c;
@@ -203,7 +201,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
         _c.getZones().put(zoneName, toZone(zoneName, zone));
 
         String aclName = computeOutgoingFilterName(zoneName);
-        _c.getIpAccessLists().put(aclName, toIpAccessList(aclName, vsys.getRules(), zone));
+        _c.getIpAccessLists().put(aclName, generateOutgoingFilter(aclName, zone));
       }
 
       // Services
@@ -224,9 +222,10 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     _c.setLoggingServers(loggingServers);
   }
 
-  /** Convert firewall rules into a zone-specific outgoing IpAccessList */
-  private IpAccessList toIpAccessList(String name, SortedMap<String, Rule> rules, Zone toZone) {
+  /** Generate outgoing IpAccessList for the specified zone */
+  private IpAccessList generateOutgoingFilter(String name, Zone toZone) {
     List<IpAccessListLine> lines = new TreeList<>();
+    SortedMap<String, Rule> rules = toZone.getVsys().getRules();
 
     for (Rule rule : rules.values()) {
       if (!rule.getDisabled()
@@ -249,7 +248,8 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   /** Convert specified firewall rule into an IpAccessListLine */
   private IpAccessListLine toIpAccessListLine(Rule rule) {
     List<AclLineMatchExpr> conjuncts = new TreeList<>();
-    IpAccessListLine.Builder ipAccessListLineBuilder = IpAccessListLine.builder();
+    IpAccessListLine.Builder ipAccessListLineBuilder =
+        IpAccessListLine.builder().setName(rule.getName());
     if (rule.getAction() == LineAction.ACCEPT) {
       ipAccessListLineBuilder.accepting();
     } else {
@@ -303,15 +303,9 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
       conjuncts.add(new OrMatchExpr(serviceDisjuncts));
     }
 
-    AclLineMatchExpr aclLineMatchExpr;
-    if (conjuncts.size() == 1) {
-      aclLineMatchExpr = conjuncts.get(0);
-    } else {
-      aclLineMatchExpr = new AndMatchExpr(conjuncts);
-    }
     return ipAccessListLineBuilder
         .setName(rule.getName())
-        .setMatchCondition(aclLineMatchExpr)
+        .setMatchCondition(new AndMatchExpr(conjuncts))
         .build();
   }
 

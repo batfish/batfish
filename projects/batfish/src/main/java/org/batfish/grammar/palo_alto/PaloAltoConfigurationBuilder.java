@@ -14,6 +14,7 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.SERVIC
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.VIRTUAL_ROUTER_INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.ZONE_INTERFACE;
 
+import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.Token;
@@ -179,7 +180,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   /** Convert source or destination list item into an appropriate IpSpace */
-  private IpSpace toIpSpace(Src_or_dst_list_itemContext ctx) {
+  private @Nullable IpSpace toIpSpace(Src_or_dst_list_itemContext ctx) {
     if (ctx.ANY() != null) {
       return UniverseIpSpace.INSTANCE;
     } else if (ctx.IP_ADDRESS() != null) {
