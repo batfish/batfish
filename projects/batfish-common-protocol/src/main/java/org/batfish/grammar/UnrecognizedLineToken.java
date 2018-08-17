@@ -44,12 +44,12 @@ public class UnrecognizedLineToken implements Token {
 
   @Override
   public int getStartIndex() {
-    return 0;
+    return -1;
   }
 
   @Override
   public int getStopIndex() {
-    return 0;
+    return -1;
   }
 
   @Override
