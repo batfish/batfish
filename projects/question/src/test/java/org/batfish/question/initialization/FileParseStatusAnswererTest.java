@@ -41,7 +41,7 @@ public class FileParseStatusAnswererTest {
             COL_HOSTS,
             ImmutableList.of(new Node("h1")));
 
-    Row row = FileParseStatusAnswerer.getRow("host", ParseStatus.EMPTY, "h1");
+    Row row = FileParseStatusAnswerer.getRow("host", ParseStatus.EMPTY, ImmutableList.of("h1"));
     assertThat(row, equalTo(expected));
   }
 
@@ -73,7 +73,7 @@ public class FileParseStatusAnswererTest {
     @Override
     public ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement() {
       ParseVendorConfigurationAnswerElement pvcae = new ParseVendorConfigurationAnswerElement();
-      pvcae.setFileMap(ImmutableSortedMap.of("f", "h"));
+      pvcae.setFileMap(ImmutableSortedMap.of("h", "f"));
       pvcae.setParseStatus(ImmutableSortedMap.of("f", ParseStatus.PASSED));
       return pvcae;
     }
