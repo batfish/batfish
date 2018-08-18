@@ -4320,21 +4320,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
       ReachFilterParameters reachFilterParameters) {
     BDDPacket bddPacket = new BDDPacket();
 
-    /*
-     * Get separate headerspace constraints for base and delta snapshots because they could change
-     * due to differences in named IpSpaces etc.
-     */
-    pushBaseEnvironment();
-    BDD baseHeaderSpaceBDD =
-        new HeaderSpaceToBDD(bddPacket, baseConfig.getIpSpaces())
-            .toBDD(reachFilterParameters.resolveHeaderspace(specifierContext()));
-    popEnvironment();
-
-    pushDeltaEnvironment();
-    BDD deltaHeaderSpaceBDD =
-        new HeaderSpaceToBDD(bddPacket, deltaConfig.getIpSpaces())
-            .toBDD(reachFilterParameters.resolveHeaderspace(specifierContext()));
-    popEnvironment();
+    HeaderSpace headerSpace = reachFilterParameters.resolveHeaderspace(specifierContext());
+    BDD headerSpaceBDD =
+        new HeaderSpaceToBDD(bddPacket, baseConfig.getIpSpaces()).toBDD(headerSpace);
 
     Set<String> activeInterfaces =
         Sets.intersection(baseConfig.activeInterfaces(), deltaConfig.activeInterfaces());
@@ -4349,13 +4337,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
         BDDAcl.create(
                 bddPacket, baseAcl, baseConfig.getIpAccessLists(), baseConfig.getIpSpaces(), mgr)
             .getBdd()
-            .and(baseHeaderSpaceBDD)
+            .and(headerSpaceBDD)
             .and(mgr.isSane());
     BDD deltaAclBDD =
         BDDAcl.create(
                 bddPacket, deltaAcl, deltaConfig.getIpAccessLists(), deltaConfig.getIpSpaces(), mgr)
             .getBdd()
-            .and(deltaHeaderSpaceBDD)
+            .and(headerSpaceBDD)
             .and(mgr.isSane());
 
     String hostname = baseConfig.getHostname();
