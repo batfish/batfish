@@ -291,6 +291,10 @@ public class HeaderQuestion extends Question {
     return _diffType;
   }
 
+  /**
+   * Represents the list of criteria according to which BGP best path selection occurs. Criteria are
+   * used in the order specified by the list.
+   */
   @JsonProperty(PROP_BGP_RANKING)
   public List<BgpDecisionVariable> getBgpRanking() {
     return _bgpRanking;

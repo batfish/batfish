@@ -1388,6 +1388,11 @@ class EncoderSlice {
       tiebreak = mkTrue();
     }
 
+    /* This creates two maps bgpRankingBetter and bgpRankingEq that associate each BGP path ranking
+    criterion with an SMT variable that denotes that the best route is better (resp. equal) than
+    another route (vars). To construct the final BoolExpr as described above,
+    we iterate the list (bgpRanks) of BgpDecisionVariable elemnts and only use the SMT variables
+    that are relevant as dictated by the list. */
     EnumMap<BgpDecisionVariable, BoolExpr> bgpRankingBetter =
         new EnumMap<>(BgpDecisionVariable.class);
     EnumMap<BgpDecisionVariable, BoolExpr> bgpRankingEq = new EnumMap<>(BgpDecisionVariable.class);
