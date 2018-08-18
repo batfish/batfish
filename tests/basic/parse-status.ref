@@ -18,20 +18,20 @@
           "schema" : "String"
         },
         {
-          "description" : "Names of hosts produced from this file",
+          "description" : "Names of nodes produced from this file",
           "isKey" : false,
           "isValue" : true,
-          "name" : "Hosts",
+          "name" : "Nodes",
           "schema" : "List<Node>"
         }
       ],
-      "textDesc" : "File ${Filename} parsed with status ${Status} and produced hosts ${Hosts}"
+      "textDesc" : "File ${Filename} parsed with status ${Status} and produced nodes ${Nodes}"
     },
     "rows" : [
       {
         "Filename" : "configs/as1border1.cfg",
         "Status" : "PASSED",
-        "Hosts" : [
+        "Nodes" : [
           {
             "id" : "node-as1border1",
             "name" : "as1border1"
@@ -41,7 +41,7 @@
       {
         "Filename" : "configs/as1border2.cfg",
         "Status" : "PASSED",
-        "Hosts" : [
+        "Nodes" : [
           {
             "id" : "node-as1border2",
             "name" : "as1border2"
@@ -51,7 +51,7 @@
       {
         "Filename" : "configs/as1core1.cfg",
         "Status" : "PASSED",
-        "Hosts" : [
+        "Nodes" : [
           {
             "id" : "node-as1core1",
             "name" : "as1core1"
@@ -61,7 +61,7 @@
       {
         "Filename" : "configs/as2border1.cfg",
         "Status" : "PASSED",
-        "Hosts" : [
+        "Nodes" : [
           {
             "id" : "node-as2border1",
             "name" : "as2border1"
@@ -71,7 +71,7 @@
       {
         "Filename" : "configs/as2border2.cfg",
         "Status" : "PASSED",
-        "Hosts" : [
+        "Nodes" : [
           {
             "id" : "node-as2border2",
             "name" : "as2border2"
@@ -81,7 +81,7 @@
       {
         "Filename" : "configs/as2core1.cfg",
         "Status" : "PASSED",
-        "Hosts" : [
+        "Nodes" : [
           {
             "id" : "node-as2core1",
             "name" : "as2core1"
@@ -91,7 +91,7 @@
       {
         "Filename" : "configs/as2core2.cfg",
         "Status" : "PASSED",
-        "Hosts" : [
+        "Nodes" : [
           {
             "id" : "node-as2core2",
             "name" : "as2core2"
@@ -101,7 +101,7 @@
       {
         "Filename" : "configs/as2dept1.cfg",
         "Status" : "PASSED",
-        "Hosts" : [
+        "Nodes" : [
           {
             "id" : "node-as2dept1",
             "name" : "as2dept1"
@@ -111,7 +111,7 @@
       {
         "Filename" : "configs/as2dist1.cfg",
         "Status" : "PASSED",
-        "Hosts" : [
+        "Nodes" : [
           {
             "id" : "node-as2dist1",
             "name" : "as2dist1"
@@ -121,7 +121,7 @@
       {
         "Filename" : "configs/as2dist2.cfg",
         "Status" : "PASSED",
-        "Hosts" : [
+        "Nodes" : [
           {
             "id" : "node-as2dist2",
             "name" : "as2dist2"
@@ -131,7 +131,7 @@
       {
         "Filename" : "configs/as3border1.cfg",
         "Status" : "PASSED",
-        "Hosts" : [
+        "Nodes" : [
           {
             "id" : "node-as3border1",
             "name" : "as3border1"
@@ -141,7 +141,7 @@
       {
         "Filename" : "configs/as3border2.cfg",
         "Status" : "PASSED",
-        "Hosts" : [
+        "Nodes" : [
           {
             "id" : "node-as3border2",
             "name" : "as3border2"
@@ -151,7 +151,7 @@
       {
         "Filename" : "configs/as3core1.cfg",
         "Status" : "PASSED",
-        "Hosts" : [
+        "Nodes" : [
           {
             "id" : "node-as3core1",
             "name" : "as3core1"
@@ -161,7 +161,7 @@
       {
         "Filename" : "hosts/host1.json",
         "Status" : "PASSED",
-        "Hosts" : [
+        "Nodes" : [
           {
             "id" : "node-host1",
             "name" : "host1"
@@ -171,7 +171,7 @@
       {
         "Filename" : "hosts/host2.json",
         "Status" : "PASSED",
-        "Hosts" : [
+        "Nodes" : [
           {
             "id" : "node-host2",
             "name" : "host2"
@@ -181,7 +181,7 @@
       {
         "Filename" : "iptables/host1.iptables",
         "Status" : "PASSED",
-        "Hosts" : [
+        "Nodes" : [
           {
             "id" : "node-iptables/host1.iptables",
             "name" : "iptables/host1.iptables"
@@ -191,7 +191,7 @@
       {
         "Filename" : "iptables/host2.iptables",
         "Status" : "PASSED",
-        "Hosts" : [
+        "Nodes" : [
           {
             "id" : "node-iptables/host2.iptables",
             "name" : "iptables/host2.iptables"
