@@ -45,6 +45,7 @@ import org.batfish.grammar.BgpTableFormat;
 import org.batfish.grammar.GrammarSettings;
 import org.batfish.question.ReachFilterParameters;
 import org.batfish.question.ReachabilityParameters;
+import org.batfish.question.reachfilter.DifferentialReachFilterResult;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
@@ -84,6 +85,16 @@ public class IBatfishTestAdapter implements IBatfish {
 
   @Override
   public boolean debugFlagEnabled(String flag) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public DifferentialReachFilterResult differentialReachFilter(
+      Configuration baseConfig,
+      IpAccessList baseAcl,
+      Configuration deltaConfig,
+      IpAccessList deltaAcl,
+      ReachFilterParameters reachFilterParameters) {
     throw new UnsupportedOperationException();
   }
 
