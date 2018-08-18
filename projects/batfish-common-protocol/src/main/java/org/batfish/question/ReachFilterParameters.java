@@ -15,7 +15,7 @@ import org.batfish.specifier.IpSpaceSpecifier;
 import org.batfish.specifier.SpecifierContext;
 
 /** A set of parameters for ACL filter analysis that uses high-level specifiers. */
-public class ReachFilterParameters {
+public final class ReachFilterParameters {
   private final @Nonnull IpSpaceSpecifier _destinationIpSpaceSpecifier;
   private final @Nonnull IpSpaceSpecifier _sourceIpSpaceSpecifier;
   private final @Nonnull HeaderSpace _headerSpace;
@@ -39,15 +39,13 @@ public class ReachFilterParameters {
     return _sourceIpSpaceSpecifier;
   }
 
-  @Nonnull
-  public HeaderSpace getHeaderSpace() {
-    return _headerSpace;
-  }
-
   /** Resolve all parameters and update the underlying headerspace. */
-  public void resolveHeaderspace(SpecifierContext ctx) {
-    _headerSpace.setDstIps(resolveIpSpaceSpecifier(_destinationIpSpaceSpecifier, ctx));
-    _headerSpace.setSrcIps(resolveIpSpaceSpecifier(_sourceIpSpaceSpecifier, ctx));
+  public HeaderSpace resolveHeaderspace(SpecifierContext ctx) {
+    return _headerSpace
+        .toBuilder()
+        .setSrcIps(resolveIpSpaceSpecifier(_sourceIpSpaceSpecifier, ctx))
+        .setDstIps(resolveIpSpaceSpecifier(_destinationIpSpaceSpecifier, ctx))
+        .build();
   }
 
   @Nonnull

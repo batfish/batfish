@@ -18,7 +18,6 @@ import java.util.Set;
 import net.sf.javabdd.BDD;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpAccessList;
 
 /**
@@ -28,7 +27,9 @@ import org.batfish.datamodel.IpAccessList;
 public final class BDDSourceManager {
   private static final String VAR_NAME = "PacketSource";
 
-  private BDD _isSane;
+  private final BDD _falseBDD;
+
+  private final BDD _isSane;
 
   private final Map<String, BDD> _sourceBDDs;
 
@@ -39,17 +40,7 @@ public final class BDDSourceManager {
    */
   @VisibleForTesting
   BDDSourceManager(BDDPacket pkt, Set<String> sources) {
-    this(pkt, ImmutableSet.of(), sources);
-  }
-
-  private BDDSourceManager(BDDPacket pkt, Set<String> inactiveInterfaces, Set<String> sources) {
     ImmutableMap.Builder<String, BDD> sourceBDDs = ImmutableMap.builder();
-
-    // add sourceBDD entries for inactive sources
-    for (String inactiveInterface : inactiveInterfaces) {
-      // inactive interfaces cannot be sources
-      sourceBDDs.put(inactiveInterface, pkt.getFactory().zero());
-    }
 
     // add sourceBDD entries for active sources and initialize _isSane constraint
     if (!sources.isEmpty()) {
@@ -64,6 +55,7 @@ public final class BDDSourceManager {
     }
 
     _sourceBDDs = sourceBDDs.build();
+    _falseBDD = pkt.getFactory().zero();
   }
 
   /**
@@ -79,50 +71,54 @@ public final class BDDSourceManager {
             .build());
   }
 
-  /**
-   * Create a {@link BDDSourceManager} for a specified {@link IpAccessList}. To minimize the number
-   * of {@link BDD} bits used, it will only track interfaces referenced by the ACL.
-   */
   public static BDDSourceManager forIpAccessList(
       BDDPacket pkt, Configuration config, IpAccessList acl) {
-    Set<String> referencedSources = referencedSources(config.getIpAccessLists(), acl);
+    return forIpAccessList(pkt, config.activeInterfaces(), config.getIpAccessLists(), acl);
+  }
 
+  public static BDDSourceManager forSources(
+      BDDPacket pkt, Set<String> activeInterfaces, Set<String> referencedSources) {
     if (referencedSources.isEmpty()) {
       return new BDDSourceManager(pkt, ImmutableSet.of());
     }
 
-    ImmutableSet.Builder<String> inactiveInterfacesBuilder = ImmutableSet.builder();
-    ImmutableSet.Builder<String> allSourcesBuilder = ImmutableSet.builder();
-    allSourcesBuilder.add(SOURCE_ORIGINATING_FROM_DEVICE);
-
-    for (Interface iface : config.getInterfaces().values()) {
-      if (iface.getActive()) {
-        allSourcesBuilder.add(iface.getName());
-      } else {
-        inactiveInterfacesBuilder.add(iface.getName());
-      }
-    }
-    Set<String> inactiveInterfaces = inactiveInterfacesBuilder.build();
-    Set<String> allSources = allSourcesBuilder.build();
+    Set<String> activeSources =
+        ImmutableSet.<String>builder()
+            .add(SOURCE_ORIGINATING_FROM_DEVICE)
+            .addAll(activeInterfaces)
+            .build();
 
     // discard any referenced interfaces that are inactive
-    referencedSources = Sets.intersection(referencedSources, allSources);
+    Set<String> referencedActiveSources = Sets.intersection(referencedSources, activeSources);
 
     /*
      * If only some interfaces are referenced, we only need to track the referenced ones, plus one
      * more (as a representative of the set of unreferenced interfaces). This is in case the
      * BDD is true only when the source is not the device itself or any referenced interface.
      */
-    Set<String> unReferencedInterfaces = Sets.difference(allSources, referencedSources);
+    Set<String> unReferencedInterfaces = Sets.difference(activeSources, referencedActiveSources);
     Set<String> sources =
         unReferencedInterfaces.isEmpty()
-            ? ImmutableSet.copyOf(allSources)
+            ? ImmutableSet.copyOf(activeSources)
             : ImmutableSet.<String>builder()
-                .addAll(referencedSources)
+                .addAll(referencedActiveSources)
                 .add(unReferencedInterfaces.iterator().next())
                 .build();
 
-    return new BDDSourceManager(pkt, inactiveInterfaces, sources);
+    return new BDDSourceManager(pkt, sources);
+  }
+
+  /**
+   * Create a {@link BDDSourceManager} for a specified {@link IpAccessList}. To minimize the number
+   * of {@link BDD} bits used, it will only track interfaces referenced by the ACL.
+   */
+  public static BDDSourceManager forIpAccessList(
+      BDDPacket pkt,
+      Set<String> activeInterfaces,
+      Map<String, IpAccessList> namedAcls,
+      IpAccessList acl) {
+    Set<String> referencedSources = referencedSources(namedAcls, acl);
+    return forSources(pkt, activeInterfaces, referencedSources);
   }
 
   /**
@@ -148,8 +144,7 @@ public final class BDDSourceManager {
   }
 
   private BDD getSourceBDD(String source) {
-    checkArgument(_sourceBDDs.containsKey(source), "Missing BDD for source: " + source);
-    return _sourceBDDs.get(source);
+    return _sourceBDDs.getOrDefault(source, _falseBDD);
   }
 
   @VisibleForTesting
