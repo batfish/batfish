@@ -269,6 +269,7 @@ public class CommonUtil {
   }
 
   /** @throws IllegalArgumentException if the given number is over 2^16-1. */
+  @SuppressWarnings("https://github.com/batfish/batfish/issues/2103")
   private static void checkLongWithin16Bit(long l) {
     if (l > 0xFFFFL) {
       throw new IllegalArgumentException("AS Number larger than 16-bit");
@@ -284,9 +285,12 @@ public class CommonUtil {
   public static long communityStringToLong(@Nonnull String str) {
     String[] parts = str.split(":");
     long high = Long.parseLong(parts[0]);
-    checkLongWithin16Bit(high);
+    // Bug: this function is called on both regular and extended communities.
+    // Do not perform checking of as "validity"
+    // https://github.com/batfish/batfish/issues/2103
+    //    checkLongWithin16Bit(high);
     long low = Long.parseLong(parts[1]);
-    checkLongWithin16Bit(low);
+    //    checkLongWithin16Bit(low);
     return low + (high << 16);
   }
 
