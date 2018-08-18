@@ -109,6 +109,7 @@ public class ParseVendorConfigurationResult
         hostname = modifiedNewName;
       }
       vendorConfigurations.put(hostname, _vc);
+      answerElement.getFileMap().put(hostname, _filename);
       if (!_warnings.isEmpty()) {
         answerElement.getWarnings().put(hostname, _warnings);
       }
@@ -119,7 +120,6 @@ public class ParseVendorConfigurationResult
         answerElement.getParseStatus().put(_filename, ParseStatus.PARTIALLY_UNRECOGNIZED);
       } else {
         answerElement.getParseStatus().put(_filename, ParseStatus.PASSED);
-        answerElement.getFileMap().put(hostname, _filename);
       }
 
     } else {
