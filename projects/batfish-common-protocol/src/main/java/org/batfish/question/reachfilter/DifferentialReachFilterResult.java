@@ -14,10 +14,18 @@ public final class DifferentialReachFilterResult {
     _increasedFlow = increasedFlow;
   }
 
+  /**
+   * @return An example {@link Flow} that is permitted by the base ACL but not the delta ACL, if any
+   *     exists.
+   */
   public Optional<Flow> getDecreasedFlow() {
     return Optional.ofNullable(_decreasedFlow);
   }
 
+  /**
+   * @return An example {@link Flow} that is permitted by the delta ACL but not the base ACL, if any
+   *     exists.
+   */
   public Optional<Flow> getIncreasedFlow() {
     return Optional.ofNullable(_increasedFlow);
   }

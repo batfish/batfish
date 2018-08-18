@@ -4276,7 +4276,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return answerElement;
   }
 
-  /** Performs a difference reachFilters analysis (both increase and decreased reachability). */
+  /** Performs a difference reachFilters analysis (both increased and decreased reachability). */
   @Override
   public DifferentialReachFilterResult differentialReachFilter(
       Configuration baseConfig,
