@@ -3,23 +3,19 @@ package org.batfish.datamodel;
 import java.io.Serializable;
 import org.batfish.common.BatfishException;
 
+/** Represents extended BGP community, as described in RFC4360 */
 public final class ExtendedCommunity implements Serializable {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
-  private long _value;
+  private final long _value;
 
   public ExtendedCommunity(int part1, long part2, int part3) {
     _value = (part1) | (part2 << 16) | (((long) part3) << 48);
   }
 
-  public ExtendedCommunity(long communityLong) {
-    _value = communityLong;
-  }
-
   public ExtendedCommunity(String communityStr) {
-    _value = 0L;
+    long value = 0L;
     byte subTypeByte;
     byte typeByte;
     long gaLong;
@@ -77,10 +73,11 @@ public final class ExtendedCommunity implements Serializable {
     int subTypeOffset = 8;
     int gaOffset = subTypeOffset + 8;
     int laOffset = gaOffset + (gaBytes * 8);
-    _value |= typeByte;
-    _value |= ((long) subTypeByte) << subTypeOffset;
-    _value |= gaLong << gaOffset;
-    _value |= laLong << laOffset;
+    value |= typeByte;
+    value |= ((long) subTypeByte) << subTypeOffset;
+    value |= gaLong << gaOffset;
+    value |= laLong << laOffset;
+    _value = value;
   }
 
   public long asLong() {
