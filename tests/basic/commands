@@ -6,6 +6,7 @@ add-batfish-option verboseparse
 
 # some ref tests using example network
 test -compareall tests/basic/init.ref init-snapshot test_rigs/example basic-example
+test tests/basic/parse-status.ref get fileparsestatus
 test -compareall tests/basic/genDp.ref generate-dataplane
 test -raw tests/basic/topology.ref get-object testrig_pojo_topology
 test tests/basic/nodes-summary.ref get nodes summary=true
