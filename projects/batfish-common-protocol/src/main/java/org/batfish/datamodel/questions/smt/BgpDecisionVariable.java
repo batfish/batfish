@@ -25,9 +25,9 @@ public enum BgpDecisionVariable {
   public static BgpDecisionVariable fromName(String name) throws BatfishException {
     try {
       return BgpDecisionVariable.valueOf(name.toUpperCase());
-    } catch (Exception IllegalArgumentException) {
-      throw new BatfishException(
-          "No " + BgpDecisionVariable.class.getSimpleName() + " with name: \"" + name + "\"");
+    } catch (IllegalArgumentException ex) {
+        throw new BatfishException(
+            "No " + BgpDecisionVariable.class.getSimpleName() + " with name: \"" + name + "\"");
     }
   }
 
