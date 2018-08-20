@@ -2,14 +2,20 @@ package org.batfish.grammar.palo_alto;
 
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.CATCHALL_APPLICATION_NAME;
+import static org.batfish.representation.palo_alto.PaloAltoConfiguration.CATCHALL_SERVICE_NAME;
+import static org.batfish.representation.palo_alto.PaloAltoConfiguration.CATCHALL_ZONE_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.DEFAULT_VSYS_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.SHARED_VSYS_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.computeObjectName;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.INTERFACE;
+import static org.batfish.representation.palo_alto.PaloAltoStructureType.RULE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.SERVICE_GROUP;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.SERVICE_OR_SERVICE_GROUP;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ZONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.RULEBASE_SERVICE;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.RULE_FROM_ZONE;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.RULE_SELF_REF;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.RULE_TO_ZONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.SERVICE_GROUP_MEMBER;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.VIRTUAL_ROUTER_INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.ZONE_INTERFACE;
@@ -398,8 +404,13 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void enterSr_security(Sr_securityContext ctx) {
-    _currentRule =
-        _currentVsys.getRules().computeIfAbsent(ctx.name.getText(), n -> new Rule(n, _currentVsys));
+    String name = ctx.name.getText();
+    _currentRule = _currentVsys.getRules().computeIfAbsent(name, n -> new Rule(n, _currentVsys));
+
+    // Use constructed name so same-named defs across vsys are unique
+    String uniqueName = computeObjectName(_currentVsys.getName(), name);
+    defineStructure(RULE, uniqueName, ctx);
+    _configuration.referenceStructure(RULE, uniqueName, RULE_SELF_REF, getLine(ctx.name.start));
   }
 
   @Override
@@ -451,6 +462,12 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
       String zoneName = var.getText();
       _currentRule.getFrom().add(zoneName);
+
+      if (!zoneName.equals(CATCHALL_ZONE_NAME)) {
+        // Use constructed object name so same-named refs across vsys are unique
+        String uniqueName = computeObjectName(_currentVsys.getName(), zoneName);
+        _configuration.referenceStructure(ZONE, uniqueName, RULE_FROM_ZONE, getLine(var.start));
+      }
     }
   }
 
@@ -460,10 +477,12 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
       String serviceName = var.getText();
       _currentRule.getService().add(new ServiceOrServiceGroupReference(serviceName));
 
-      // Use constructed object name so same-named refs across vsys are unique
-      String uniqueName = computeObjectName(_currentVsys.getName(), serviceName);
-      _configuration.referenceStructure(
-          SERVICE_OR_SERVICE_GROUP, uniqueName, RULEBASE_SERVICE, getLine(var.start));
+      if (!serviceName.equals(CATCHALL_SERVICE_NAME)) {
+        // Use constructed object name so same-named refs across vsys are unique
+        String uniqueName = computeObjectName(_currentVsys.getName(), serviceName);
+        _configuration.referenceStructure(
+            SERVICE_OR_SERVICE_GROUP, uniqueName, RULEBASE_SERVICE, getLine(var.start));
+      }
     }
   }
 
@@ -482,6 +501,12 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
       String zoneName = var.getText();
       _currentRule.getTo().add(zoneName);
+
+      if (!zoneName.equals(CATCHALL_ZONE_NAME)) {
+        // Use constructed object name so same-named refs across vsys are unique
+        String uniqueName = computeObjectName(_currentVsys.getName(), zoneName);
+        _configuration.referenceStructure(ZONE, uniqueName, RULE_TO_ZONE, getLine(var.start));
+      }
     }
   }
 

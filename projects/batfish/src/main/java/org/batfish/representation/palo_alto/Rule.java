@@ -6,6 +6,7 @@ import java.util.TreeSet;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.LineAction;
 
+/** PAN datamodel component containing security rule configuration */
 public final class Rule implements Serializable {
   /** */
   private static final long serialVersionUID = 1L;

@@ -10,7 +10,7 @@ set service SERVICE1 protocol tcp port 999
 
 # Block all rule is disabled, so should have no impact
 set rulebase security rules RULE0 disabled yes
-set rulebase security rules RULE0 from any
+set rulebase security rules RULE0 from [ any ZONE_UNDEF ]
 set rulebase security rules RULE0 to any
 set rulebase security rules RULE0 source any
 set rulebase security rules RULE0 destination any

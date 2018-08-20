@@ -401,11 +401,16 @@ public class PaloAltoGrammarTest {
         batfish.loadConvertConfigurationAnswerElementOrReparse();
 
     String serviceName = computeObjectName(DEFAULT_VSYS_NAME, "SERVICE1");
+    String z1Name = computeObjectName(DEFAULT_VSYS_NAME, "z1");
+    String z2Name = computeObjectName(DEFAULT_VSYS_NAME, "z2");
+    String zoneUndefName = computeObjectName(DEFAULT_VSYS_NAME, "ZONE_UNDEF");
 
     // Confirm reference count is correct for used structure
     assertThat(ccae, hasNumReferrers(filename, PaloAltoStructureType.SERVICE, serviceName, 1));
+    assertThat(ccae, hasNumReferrers(filename, PaloAltoStructureType.ZONE, z1Name, 2));
+    assertThat(ccae, hasNumReferrers(filename, PaloAltoStructureType.ZONE, z2Name, 2));
 
-    // Confirm undefined reference is detected
+    // Confirm undefined references are detected
     assertThat(
         ccae,
         hasUndefinedReference(
@@ -413,6 +418,13 @@ public class PaloAltoGrammarTest {
             PaloAltoStructureType.SERVICE_OR_SERVICE_GROUP,
             "SERVICE_UNDEF",
             PaloAltoStructureUsage.RULEBASE_SERVICE));
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            filename,
+            PaloAltoStructureType.ZONE,
+            zoneUndefName,
+            PaloAltoStructureUsage.RULE_FROM_ZONE));
   }
 
   @Test

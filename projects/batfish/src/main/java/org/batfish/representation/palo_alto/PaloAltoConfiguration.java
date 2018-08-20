@@ -49,10 +49,10 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   public static final String CATCHALL_APPLICATION_NAME = "any";
 
   /** This is the name of a service that matches all traffic */
-  private static final String CATCHALL_SERVICE_NAME = "any";
+  public static final String CATCHALL_SERVICE_NAME = "any";
 
   /** This is the name of the zone that matches traffic in all zones (but not unzoned traffic) */
-  private static final String CATCHALL_ZONE_NAME = "any";
+  public static final String CATCHALL_ZONE_NAME = "any";
 
   public static final String DEFAULT_VSYS_NAME = "vsys1";
 
@@ -453,6 +453,11 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
         PaloAltoStructureType.INTERFACE,
         PaloAltoStructureUsage.VIRTUAL_ROUTER_INTERFACE,
         PaloAltoStructureUsage.ZONE_INTERFACE);
+    markConcreteStructure(PaloAltoStructureType.RULE, PaloAltoStructureUsage.RULE_SELF_REF);
+    markConcreteStructure(
+        PaloAltoStructureType.ZONE,
+        PaloAltoStructureUsage.RULE_FROM_ZONE,
+        PaloAltoStructureUsage.RULE_TO_ZONE);
 
     // Handle marking for structures that may exist in one of a couple namespaces
     markAbstractStructureFromUnknownNamespace(
