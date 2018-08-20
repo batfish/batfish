@@ -7,7 +7,7 @@ export PROJECTS_PATH="$BATFISH_ROOT/projects"
 export BATFISH_VERSION="$(grep -1 batfish-parent "${PROJECTS_PATH}/pom.xml" | grep version | sed 's/[<>]/|/g' | cut -f3 -d\|)"
 
 export BATFISH_PATH="$PROJECTS_PATH/batfish"
-export BATFISH_TEST_RIG_PATH="$BATFISH_ROOT/test_rigs"
+export BATFISH_TEST_RIG_PATH="$BATFISH_ROOT/networks"
 export BATFISH="$BATFISH_PATH/batfish"
 
 export BATFISH_CLIENT_PATH="$PROJECTS_PATH/batfish-client"
