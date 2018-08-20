@@ -192,7 +192,7 @@ install_z3_ubuntu() {
 }
 
 linux_dist() {
-  case "$(lsb_release -ds)" in
+  case "$(lsb_release -ds | awk '{print $1}')" in
     Ubuntu)
       echo ubuntu
       ;;
