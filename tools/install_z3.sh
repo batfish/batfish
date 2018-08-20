@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-SCRIPT_DIR="$(cd "$(dirname "$BASH_SOURCE")"; pwd)"
+VERSION="2018-01-12-450f3c9b459d128135abb5bbd4fa0508fe26bfae"
 
 install_z3() {
   MAJOR_OS="$(major_os)"
@@ -27,7 +27,6 @@ install_z3_cygwin() {
   W32DIR="$WDIR/SysWOW64"
   W64DIR="$WDIR/System32"
   OLD_PWD="$PWD"
-  VERSION="2018-01-12-450f3c9b459d128135abb5bbd4fa0508fe26bfae"
   Z3_REPO_URL="https://github.com/batfish/z3"
   Z364_ZIP_URL="${Z3_REPO_URL}/releases/download/z3-${VERSION}/z3-${VERSION}-x64-win.zip"
   Z364_ZIP="$(basename "${Z364_ZIP_URL}")"
@@ -96,7 +95,6 @@ install_z3_osx() {
   LIBDIR="${INSTALL_PREFIX}/lib"
   OLD_PWD="${PWD}"
   OLD_UMASK="$(umask)"
-  VERSION="2018-01-12-450f3c9b459d128135abb5bbd4fa0508fe26bfae"
   OSX_VERSION="10.13.2"
   Z3_REPO_URL="https://github.com/batfish/z3"
   Z3_ZIP_URL="${Z3_REPO_URL}/releases/download/z3-${VERSION}/z3-${VERSION}-x64-osx-${OSX_VERSION}.zip"
@@ -135,7 +133,6 @@ install_z3_ubuntu() {
   LIBDIR="${INSTALL_PREFIX}/lib"
   OLD_PWD="${PWD}"
   OLD_UMASK="$(umask)"
-  VERSION="2018-01-12-450f3c9b459d128135abb5bbd4fa0508fe26bfae"
   declare -A MD5_HASH
   X64_1404="x64-14.04"
   X64_1604="x64-16.04"
