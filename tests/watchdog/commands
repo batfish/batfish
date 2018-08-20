@@ -1,5 +1,5 @@
 # any (preferably small) network will do
-init-snapshot test_rigs/fattree-examples/fattree2/
+init-snapshot networks/fattree-examples/fattree2/
 
 # schedule both works, the first of which takes looong, in the background with fixed workIds
 set-background-execution true

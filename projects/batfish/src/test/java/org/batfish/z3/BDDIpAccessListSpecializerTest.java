@@ -1,6 +1,7 @@
 package org.batfish.z3;
 
 import static org.batfish.datamodel.IpAccessListLine.acceptingHeaderSpace;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.FALSE;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.TRUE;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.match;
 import static org.hamcrest.Matchers.equalTo;
@@ -9,7 +10,9 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import java.util.Optional;
+import java.util.Set;
 import net.sf.javabdd.BDD;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.HeaderSpace;
@@ -22,9 +25,15 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.UniverseIpSpace;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.MatchSrcInterface;
+import org.batfish.datamodel.acl.OrMatchExpr;
+import org.batfish.datamodel.acl.OriginatingFromDevice;
+import org.batfish.symbolic.bdd.AclLineMatchExprToBDD;
 import org.batfish.symbolic.bdd.BDDInteger;
 import org.batfish.symbolic.bdd.BDDPacket;
+import org.batfish.symbolic.bdd.BDDSourceManager;
 import org.batfish.symbolic.bdd.IpSpaceToBDD;
 import org.junit.Test;
 
@@ -207,6 +216,101 @@ public class BDDIpAccessListSpecializerTest {
   @Test
   public void specializeIcmpTypes() {
     specializeSubRangeField(PKT.getIcmpType(), HeaderSpace.Builder::setIcmpTypes);
+  }
+
+  @Test
+  public void specializeMatchSrcInterfaceSuperset() {
+    // Line 1 matches a superset of the interfaces line 2 matches; should specialize to TrueExpr
+    Set<String> interfaces = ImmutableSet.of("i1", "i2");
+    AclLineMatchExpr line1 = new MatchSrcInterface(ImmutableList.of("i1", "i2"));
+    AclLineMatchExpr line2 = new MatchSrcInterface(ImmutableList.of("i1"));
+    assertThat(specializeTo(line1, line2, interfaces), equalTo(TRUE));
+  }
+
+  @Test
+  public void specializeMatchSrcInterfaceSubset() {
+    // Line 1 matches a subset of the interfaces line 2 matches; should remain the same
+    Set<String> interfaces = ImmutableSet.of("i1", "i2");
+    AclLineMatchExpr line1 = new MatchSrcInterface(ImmutableList.of("i1"));
+    AclLineMatchExpr line2 = new MatchSrcInterface(ImmutableList.of("i1", "i2"));
+    assertThat(specializeTo(line1, line2, interfaces), equalTo(line1));
+  }
+
+  @Test
+  public void specializeMatchSrcInterfaceNoOverlap() {
+    // Line 1 matches a set of interfaces with no overlap with those line 2 matches; should
+    // specialize to FalseExpr
+    Set<String> interfaces = ImmutableSet.of("i1", "i2");
+    AclLineMatchExpr line1 = new MatchSrcInterface(ImmutableList.of("i1"));
+    AclLineMatchExpr line2 = new MatchSrcInterface(ImmutableList.of("i2"));
+    assertThat(specializeTo(line1, line2, interfaces), equalTo(FALSE));
+  }
+
+  @Test
+  public void specializeMatchSrcInterfaceOverlap() {
+    // Line 1 and line 2 have interfaces in common, but neither is a superset of the other; line 1
+    // should specialize to a subset of line 2
+    Set<String> interfaces = ImmutableSet.of("i1", "i2", "i3");
+    AclLineMatchExpr line1 = new MatchSrcInterface(ImmutableList.of("i1", "i2"));
+    AclLineMatchExpr line2 = new MatchSrcInterface(ImmutableList.of("i1", "i3"));
+    assertThat(
+        specializeTo(line1, line2, interfaces),
+        equalTo(new MatchSrcInterface(ImmutableList.of("i1"))));
+  }
+
+  @Test
+  public void specializeOriginatingFromDeviceRepeat() {
+    // Both lines accept packets originating from device; line 1 should specialize to true expr
+    AclLineMatchExpr line1 = OriginatingFromDevice.INSTANCE;
+    AclLineMatchExpr line2 = OriginatingFromDevice.INSTANCE;
+    assertThat(specializeTo(line1, line2, ImmutableSet.of()), equalTo(TRUE));
+  }
+
+  @Test
+  public void specializeOriginatingFromDeviceToMatchSrcInterface() {
+    // First line matches originating from device, second matches source interfaces; line 1 should
+    // specialize to false expr
+    AclLineMatchExpr line1 = OriginatingFromDevice.INSTANCE;
+    AclLineMatchExpr line2 = new MatchSrcInterface(ImmutableSet.of("i1"));
+    assertThat(specializeTo(line1, line2, ImmutableSet.of("i1")), equalTo(FALSE));
+  }
+
+  @Test
+  public void specializeOriginatingFromDeviceWithOr() {
+    // First line matches originating from device, second matches that or a source interface; line 1
+    // should not change
+    AclLineMatchExpr line1 = OriginatingFromDevice.INSTANCE;
+    AclLineMatchExpr line2 =
+        new OrMatchExpr(
+            ImmutableSet.of(
+                OriginatingFromDevice.INSTANCE, new MatchSrcInterface(ImmutableSet.of("i1"))));
+    assertThat(
+        specializeTo(line1, line2, ImmutableSet.of("i1")), equalTo(OriginatingFromDevice.INSTANCE));
+  }
+
+  @Test
+  public void specializeOriginatingFromDeviceWithOr2() {
+    // First line matches originating from device or src interface, second matches only originating
+    // from device; line 1 should specialize to true expr
+    AclLineMatchExpr line1 =
+        new OrMatchExpr(
+            ImmutableSet.of(
+                OriginatingFromDevice.INSTANCE, new MatchSrcInterface(ImmutableSet.of("i1"))));
+    AclLineMatchExpr line2 = OriginatingFromDevice.INSTANCE;
+    assertThat(specializeTo(line1, line2, ImmutableSet.of("i1", "i2")), equalTo(TRUE));
+  }
+
+  private AclLineMatchExpr specializeTo(
+      AclLineMatchExpr line1, AclLineMatchExpr line2, Set<String> interfaces) {
+    BDDPacket pkt = new BDDPacket();
+    BDDSourceManager sourceMgr = BDDSourceManager.forInterfaces(pkt, interfaces);
+    BDD line2BDD =
+        line2.accept(
+            new AclLineMatchExprToBDD(
+                pkt.getFactory(), pkt, ImmutableMap.of(), ImmutableMap.of(), sourceMgr));
+    BDDIpAccessListSpecializer specializer =
+        new BDDIpAccessListSpecializer(pkt, line2BDD, ImmutableMap.of(), sourceMgr);
+    return line1.accept(specializer);
   }
 
   @Test

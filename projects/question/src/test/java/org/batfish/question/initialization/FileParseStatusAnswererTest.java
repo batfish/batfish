@@ -1,7 +1,7 @@
 package org.batfish.question.initialization;
 
 import static org.batfish.question.initialization.FileParseStatusAnswerer.COL_FILENAME;
-import static org.batfish.question.initialization.FileParseStatusAnswerer.COL_HOSTS;
+import static org.batfish.question.initialization.FileParseStatusAnswerer.COL_NODES;
 import static org.batfish.question.initialization.FileParseStatusAnswerer.COL_PARSE_STATUS;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -24,7 +24,7 @@ public class FileParseStatusAnswererTest {
   @Test
   public void testGetRowWithoutHost() {
     Row expected =
-        Row.of(COL_FILENAME, "nohost", COL_PARSE_STATUS, "FAILED", COL_HOSTS, ImmutableList.of());
+        Row.of(COL_FILENAME, "nohost", COL_PARSE_STATUS, "FAILED", COL_NODES, ImmutableList.of());
 
     Row row = FileParseStatusAnswerer.getRow("nohost", ParseStatus.FAILED, null);
     assertThat(row, equalTo(expected));
@@ -38,10 +38,10 @@ public class FileParseStatusAnswererTest {
             "host",
             COL_PARSE_STATUS,
             "EMPTY",
-            COL_HOSTS,
+            COL_NODES,
             ImmutableList.of(new Node("h1")));
 
-    Row row = FileParseStatusAnswerer.getRow("host", ParseStatus.EMPTY, "h1");
+    Row row = FileParseStatusAnswerer.getRow("host", ParseStatus.EMPTY, ImmutableList.of("h1"));
     assertThat(row, equalTo(expected));
   }
 
@@ -60,7 +60,7 @@ public class FileParseStatusAnswererTest {
                         "f",
                         COL_PARSE_STATUS,
                         ParseStatus.PASSED,
-                        COL_HOSTS,
+                        COL_NODES,
                         ImmutableList.of(new Node("h"))))));
   }
 
@@ -73,7 +73,7 @@ public class FileParseStatusAnswererTest {
     @Override
     public ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement() {
       ParseVendorConfigurationAnswerElement pvcae = new ParseVendorConfigurationAnswerElement();
-      pvcae.setFileMap(ImmutableSortedMap.of("f", "h"));
+      pvcae.setFileMap(ImmutableSortedMap.of("h", "f"));
       pvcae.setParseStatus(ImmutableSortedMap.of("f", ParseStatus.PASSED));
       return pvcae;
     }

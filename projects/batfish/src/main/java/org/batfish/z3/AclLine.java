@@ -22,4 +22,8 @@ public class AclLine extends Pair<String, Pair<String, Integer>> {
   public int getLine() {
     return _second.getSecond();
   }
+
+  public AclIdentifier toAclIdentifier() {
+    return new AclIdentifier(_first, _second.getFirst());
+  }
 }

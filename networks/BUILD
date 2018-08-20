@@ -1,7 +1,7 @@
 package(default_visibility = ["//visibility:public"])
 
 filegroup(
-    name = "test_rigs",
+    name = "networks",
     srcs = glob(["*/**"]),
 )
 

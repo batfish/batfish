@@ -27,6 +27,7 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.VrrpGroup;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class CommonUtilTest {
@@ -204,11 +205,13 @@ public class CommonUtilTest {
   }
 
   @Test(expected = IllegalArgumentException.class)
+  @Ignore("https://github.com/batfish/batfish/issues/2103")
   public void testCommunityStringHighTooBig() {
     communityStringToLong("65537:1");
   }
 
   @Test(expected = IllegalArgumentException.class)
+  @Ignore("https://github.com/batfish/batfish/issues/2103")
   public void testCommunityStringLowTooBig() {
     communityStringToLong("1:65537");
   }

@@ -33,7 +33,7 @@
         "role2" : "core"
       }
     ],
-    "roleLanNeighbors" : [
+    "roleLayer3Neighbors" : [
       {
         "role1" : "border",
         "role2" : "border"

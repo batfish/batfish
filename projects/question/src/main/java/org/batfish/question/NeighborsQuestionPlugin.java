@@ -109,11 +109,11 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
 
     private static final String PROP_IBGP_NEIGHBORS = "ibgpNeighbors";
 
-    private static final String PROP_LAN_NEIGHBORS = "lanNeighbors";
-
     private static final String PROP_LAYER1_NEIGHBORS = "layer1Neighbors";
 
     private static final String PROP_LAYER2_NEIGHBORS = "layer2Neighbors";
+
+    private static final String PROP_LAYER3_NEIGHBORS = "layer3Neighbors";
 
     private static final String PROP_EIGRP_NEIGHBORS = "eigrpNeighbors";
 
@@ -127,7 +127,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
 
     private static final String PROP_ROLE_IBGP_NEIGHBORS = "roleIbgpNeighbors";
 
-    private static final String PROP_ROLE_LAN_NEIGHBORS = "roleLanNeighbors";
+    private static final String PROP_ROLE_LAYER3_NEIGHBORS = "roleLayer3Neighbors";
 
     private static final String PROP_ROLE_OSPF_NEIGHBORS = "roleOspfNeighbors";
 
@@ -139,7 +139,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
 
     private static final String PROP_VERBOSE_IBGP_NEIGHBORS = "verboseIbgpNeighbors";
 
-    private static final String PROP_VERBOSE_LAN_NEIGHBORS = "verboseLanNeighbors";
+    private static final String PROP_VERBOSE_LAYER3_NEIGHBORS = "verboseLayer3Neighbors";
 
     private static final String PROP_VERBOSE_OSPF_NEIGHBORS = "verboseOspfNeighbors";
 
@@ -149,11 +149,11 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
 
     private SortedSet<IpEdge> _ibgpNeighbors;
 
-    private SortedSet<Edge> _lanNeighbors;
-
     private Layer1Topology _layer1Neighbors;
 
     private Layer2Topology _layer2Neighbors;
+
+    private SortedSet<Edge> _layer3Neighbors;
 
     private SortedSet<IpEdge> _eigrpNeighbors;
 
@@ -167,7 +167,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
 
     private SortedSet<RoleEdge> _roleIbgpNeighbors;
 
-    private SortedSet<RoleEdge> _roleLanNeighbors;
+    private SortedSet<RoleEdge> _roleLayer3Neighbors;
 
     private SortedSet<RoleEdge> _roleOspfNeighbors;
 
@@ -179,14 +179,14 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
 
     private SortedSet<VerboseBgpEdge> _verboseIbgpNeighbors;
 
-    private SortedSet<VerboseEdge> _verboseLanNeighbors;
+    private SortedSet<VerboseEdge> _verboseLayer3Neighbors;
 
     private SortedSet<VerboseOspfEdge> _verboseOspfNeighbors;
 
     private SortedSet<VerboseRipEdge> _verboseRipNeighbors;
 
-    public void addLanEdge(Edge edge) {
-      _lanNeighbors.add(edge);
+    public void addLayer3Edge(Edge edge) {
+      _layer3Neighbors.add(edge);
     }
 
     @JsonProperty(PROP_EBGP_NEIGHBORS)
@@ -204,11 +204,6 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       return _ibgpNeighbors;
     }
 
-    @JsonProperty(PROP_LAN_NEIGHBORS)
-    public SortedSet<Edge> getLanNeighbors() {
-      return _lanNeighbors;
-    }
-
     @JsonProperty(PROP_LAYER1_NEIGHBORS)
     public Layer1Topology getLayer1Neighbors() {
       return _layer1Neighbors;
@@ -217,6 +212,11 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
     @JsonProperty(PROP_LAYER2_NEIGHBORS)
     public Layer2Topology getLayer2Neighbors() {
       return _layer2Neighbors;
+    }
+
+    @JsonProperty(PROP_LAYER3_NEIGHBORS)
+    public SortedSet<Edge> getLayer3Neighbors() {
+      return _layer3Neighbors;
     }
 
     @JsonProperty(PROP_OSPF_NEIGHBORS)
@@ -244,9 +244,9 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       return _roleIbgpNeighbors;
     }
 
-    @JsonProperty(PROP_ROLE_LAN_NEIGHBORS)
-    public SortedSet<RoleEdge> getRoleLanNeighbors() {
-      return _roleLanNeighbors;
+    @JsonProperty(PROP_ROLE_LAYER3_NEIGHBORS)
+    public SortedSet<RoleEdge> getRoleLayer3Neighbors() {
+      return _roleLayer3Neighbors;
     }
 
     @JsonProperty(PROP_ROLE_OSPF_NEIGHBORS)
@@ -274,9 +274,9 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       return _verboseIbgpNeighbors;
     }
 
-    @JsonProperty(PROP_VERBOSE_LAN_NEIGHBORS)
-    public SortedSet<VerboseEdge> getVerboseLanNeighbors() {
-      return _verboseLanNeighbors;
+    @JsonProperty(PROP_VERBOSE_LAYER3_NEIGHBORS)
+    public SortedSet<VerboseEdge> getVerboseLayer3Neighbors() {
+      return _verboseLayer3Neighbors;
     }
 
     @JsonProperty(PROP_VERBOSE_OSPF_NEIGHBORS)
@@ -301,8 +301,8 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       _ibgpNeighbors = new TreeSet<>();
     }
 
-    public void initLanNeighbors() {
-      _lanNeighbors = new TreeSet<>();
+    public void initLayer3Neighbors() {
+      _layer3Neighbors = new TreeSet<>();
     }
 
     public void initOspfNeighbors() {
@@ -313,31 +313,31 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       _ripNeighbors = new TreeSet<>();
     }
 
-    public void initVerboseLanNeighbors() {
-      _verboseLanNeighbors = new TreeSet<>();
+    public void initVerboseLayer3Neighbors() {
+      _verboseLayer3Neighbors = new TreeSet<>();
     }
 
     @Override
     public String prettyPrint() {
       StringBuilder sb = new StringBuilder("Results for neighbors\n");
 
-      if (_lanNeighbors != null) {
-        sb.append("  LAN neighbors\n");
-        for (Edge edge : _lanNeighbors) {
+      if (_layer3Neighbors != null) {
+        sb.append("  Layer 3 neighbors\n");
+        for (Edge edge : _layer3Neighbors) {
           sb.append("    " + edge + "\n");
         }
       }
 
-      if (_verboseLanNeighbors != null) {
-        sb.append("  LAN neighbors\n");
-        for (VerboseEdge edge : _verboseLanNeighbors) {
+      if (_verboseLayer3Neighbors != null) {
+        sb.append("  Layer 3 neighbors\n");
+        for (VerboseEdge edge : _verboseLayer3Neighbors) {
           sb.append("    " + edge + "\n");
         }
       }
 
-      if (_roleLanNeighbors != null) {
-        sb.append("  LAN neighbors\n");
-        for (RoleEdge edge : _roleLanNeighbors) {
+      if (_roleLayer3Neighbors != null) {
+        sb.append("  Layer 3 neighbors\n");
+        for (RoleEdge edge : _roleLayer3Neighbors) {
           sb.append("    " + edge + "\n");
         }
       }
@@ -444,11 +444,6 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       _ibgpNeighbors = ibgpNeighbors;
     }
 
-    @JsonProperty(PROP_LAN_NEIGHBORS)
-    public void setLanNeighbors(SortedSet<Edge> lanNeighbors) {
-      _lanNeighbors = lanNeighbors;
-    }
-
     @JsonProperty(PROP_LAYER1_NEIGHBORS)
     public void setLayer1Neighbors(Layer1Topology layer1Neighbors) {
       _layer1Neighbors = layer1Neighbors;
@@ -457,6 +452,11 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
     @JsonProperty(PROP_LAYER2_NEIGHBORS)
     public void setLayer2Neighbors(Layer2Topology layer2Neighbors) {
       _layer2Neighbors = layer2Neighbors;
+    }
+
+    @JsonProperty(PROP_LAYER3_NEIGHBORS)
+    public void setLayer3Neighbors(SortedSet<Edge> layer3Neighbors) {
+      _layer3Neighbors = layer3Neighbors;
     }
 
     @JsonProperty(PROP_OSPF_NEIGHBORS)
@@ -484,9 +484,9 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       _roleIbgpNeighbors = roleIbgpNeighbors;
     }
 
-    @JsonProperty(PROP_ROLE_LAN_NEIGHBORS)
-    public void setRoleLanNeighbors(SortedSet<RoleEdge> roleLanNeighbors) {
-      _roleLanNeighbors = roleLanNeighbors;
+    @JsonProperty(PROP_ROLE_LAYER3_NEIGHBORS)
+    public void setRoleLayer3Neighbors(SortedSet<RoleEdge> roleLayer3Neighbors) {
+      _roleLayer3Neighbors = roleLayer3Neighbors;
     }
 
     @JsonProperty(PROP_ROLE_OSPF_NEIGHBORS)
@@ -516,9 +516,9 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       _verboseIbgpNeighbors.addAll(verboseIbgpNeighbors);
     }
 
-    @JsonProperty(PROP_VERBOSE_LAN_NEIGHBORS)
-    public void setVerboseLanNeighbors(SortedSet<VerboseEdge> verboseLanNeighbors) {
-      _verboseLanNeighbors = verboseLanNeighbors;
+    @JsonProperty(PROP_VERBOSE_LAYER3_NEIGHBORS)
+    public void setVerboseLayer3Neighbors(SortedSet<VerboseEdge> verboseLayer3Neighbors) {
+      _verboseLayer3Neighbors = verboseLayer3Neighbors;
     }
 
     @JsonProperty(PROP_VERBOSE_OSPF_NEIGHBORS)
@@ -820,7 +820,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       }
 
       if (question.getNeighborTypes().isEmpty()
-          || question.getNeighborTypes().contains(NeighborType.LAN)) {
+          || question.getNeighborTypes().contains(NeighborType.LAYER3)) {
         initTopology();
         SortedSet<Edge> matchingEdges = new TreeSet<>();
         for (Edge edge : _topology.getEdges()) {
@@ -830,7 +830,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
         }
         switch (question.getStyle()) {
           case SUMMARY:
-            answerElement.setLanNeighbors(matchingEdges);
+            answerElement.setLayer3Neighbors(matchingEdges);
             break;
           case VERBOSE:
             SortedSet<VerboseEdge> vMatchingEdges = new TreeSet<>();
@@ -841,7 +841,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
               Interface i2 = n2.getInterfaces().get(edge.getInt2());
               vMatchingEdges.add(new VerboseEdge(i1, i2, edge));
             }
-            answerElement.setVerboseLanNeighbors(vMatchingEdges);
+            answerElement.setVerboseLayer3Neighbors(vMatchingEdges);
             break;
           case ROLE:
             SortedSet<RoleEdge> rMatchingEdges = new TreeSet<>();
@@ -856,7 +856,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
                 }
               }
             }
-            answerElement.setRoleLanNeighbors(rMatchingEdges);
+            answerElement.setRoleLayer3Neighbors(rMatchingEdges);
             break;
           default:
             throw new BatfishException(

@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.SortedSet;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpAccessList;
@@ -21,10 +23,8 @@ import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.GenericAclLineMatchExprVisitor;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
-import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.NotMatchExpr;
 import org.batfish.datamodel.acl.OrMatchExpr;
-import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
 
@@ -54,18 +54,39 @@ public abstract class IpAccessListSpecializer
 
   abstract HeaderSpace specialize(HeaderSpace headerSpace);
 
+  /**
+   * Returns a specialized version of the given {@link IpAccessList}.
+   *
+   * @param ipAccessList ACL to specialize
+   * @return Specialized version of the given ACL
+   */
   public final IpAccessList specialize(IpAccessList ipAccessList) {
+    return specializeUpToLine(ipAccessList, ipAccessList.getLines().size());
+  }
+
+  /**
+   * Returns a version of the given {@link IpAccessList} with lines up to {@code lineNum}
+   * specialized, line {@code lineNum} unchanged, and all later lines removed.
+   *
+   * @param ipAccessList ACL to specialize
+   * @param lineNum Final line to include in specialized version; this line will not be specialized
+   * @return Version of the given ACL specialized up to line {@code lineNum}
+   */
+  public final IpAccessList specializeUpToLine(IpAccessList ipAccessList, int lineNum) {
     if (!canSpecialize()) {
       return ipAccessList;
     }
 
+    List<IpAccessListLine> originalLines = ipAccessList.getLines();
+    int lastSpecializedLine = Math.min(lineNum, originalLines.size());
+
     List<IpAccessListLine> specializedLines =
-        ipAccessList
-            .getLines()
-            .stream()
-            // replace unmatchable lines with FALSE_LINE to preserve line numbers
-            .map(line -> specialize(line).orElse(FALSE_LINE))
-            .collect(ImmutableList.toImmutableList());
+        IntStream.range(0, lastSpecializedLine)
+            .mapToObj(i -> specialize(originalLines.get(i)).orElse(FALSE_LINE))
+            .collect(Collectors.toList());
+    if (lineNum < originalLines.size()) {
+      specializedLines.add(originalLines.get(lineNum));
+    }
 
     return IpAccessList.builder()
         .setName(ipAccessList.getName())
@@ -168,11 +189,6 @@ public abstract class IpAccessListSpecializer
   }
 
   @Override
-  public final AclLineMatchExpr visitMatchSrcInterface(MatchSrcInterface matchSrcInterface) {
-    return matchSrcInterface;
-  }
-
-  @Override
   public final AclLineMatchExpr visitNotMatchExpr(NotMatchExpr notMatchExpr) {
     AclLineMatchExpr subExpr = notMatchExpr.getOperand().accept(this);
 
@@ -183,12 +199,6 @@ public abstract class IpAccessListSpecializer
     } else {
       return new NotMatchExpr(subExpr);
     }
-  }
-
-  @Override
-  public final AclLineMatchExpr visitOriginatingFromDevice(
-      OriginatingFromDevice originatingFromDevice) {
-    return originatingFromDevice;
   }
 
   @Override

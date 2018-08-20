@@ -178,6 +178,18 @@ public class ConvertConfigurationAnswerElement extends InitStepAnswerElement
     _errors = errors;
   }
 
+  public void setDefinedStructures(
+      SortedMap<String, SortedMap<String, SortedMap<String, DefinedStructureInfo>>>
+          definedStructures) {
+    _definedStructures = definedStructures;
+  }
+
+  public void setUndefinedReferences(
+      SortedMap<String, SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>>
+          undefinedReferences) {
+    _undefinedReferences = undefinedReferences;
+  }
+
   public void setVersion(String version) {
     _version = version;
   }
