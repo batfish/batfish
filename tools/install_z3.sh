@@ -73,7 +73,6 @@ install_z3_cygwin() {
   cd "${OLD_PWD}" || exit 1
   echo "Removing temporary installation files"
   rm -rf "${WORKING}" || exit 1
-  echo "Successfully installed Z3!"
 }
 
 install_z3_linux() {
@@ -123,7 +122,6 @@ install_z3_osx() {
   cd "${OLD_PWD}" || exit 1
   echo "Removing temporary installation files"
   rm -rf "${WORKING}" || exit 1
-  echo "Successfully installed Z3!"
 }
 
 install_z3_ubuntu() {
