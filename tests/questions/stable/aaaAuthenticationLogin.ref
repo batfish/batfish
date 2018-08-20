@@ -16,7 +16,7 @@
       "nodeRegex" : {
         "description" : "Only include nodes that match this regex",
         "optional" : false,
-        "type" : "javaRegex",
+        "type" : "nodeSpec",
         "value" : ".*"
       }
     }

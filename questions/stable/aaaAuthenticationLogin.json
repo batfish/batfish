@@ -13,7 +13,7 @@
         "variables": {
             "nodeRegex": {
                 "description": "Only include nodes that match this regex",
-                "type": "javaRegex",
+                "type": "nodeSpec",
                 "value": ".*"
             }
         }
