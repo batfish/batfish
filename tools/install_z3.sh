@@ -116,8 +116,8 @@ install_z3_ubuntu() {
   declare -A MD5_HASH
   X64_1404="x64-14.04"
   X64_1604="x64-16.04"
-  MD5_HASH["${X64_1404}"]="659bb30fa712a83f1487737e28002829"
-  MD5_HASH["${X64_1604}"]="bb4348fb052277388fcd9aa392ee231e"
+  MD5_HASH["${X64_1404}"]="cea61b607c4ec43c3e1d039660b0bcd3"
+  MD5_HASH["${X64_1604}"]="5192fc9a1769c6f37a03aa8200c96b8a"
   MACHINE="$(uname -m)"
   if [ "${MACHINE}" = "x86_64" ]; then
     ARCH="x64"
