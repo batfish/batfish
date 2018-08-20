@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 
 /** Represents a configured IPSec peer */
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
-public abstract class IpsecPeerConfig implements Serializable, Comparable<IpsecPeerConfig> {
+public abstract class IpsecPeerConfig implements Serializable {
 
   static final String PROP_IPSEC_POLICY = "ipsecPolicy";
 
@@ -50,11 +50,6 @@ public abstract class IpsecPeerConfig implements Serializable, Comparable<IpsecP
     _policyAccessList = policyAccessList;
     _localAddress = firstNonNull(localAddress, Ip.AUTO);
     _tunnelInterface = tunnelInterface;
-  }
-
-  @Override
-  public int compareTo(@Nonnull IpsecPeerConfig rhs) {
-    return _physicalInterface.compareTo(rhs._physicalInterface);
   }
 
   @JsonPropertyDescription("Local address for IPSec peer")
