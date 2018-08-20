@@ -61,13 +61,13 @@ class FileParseStatusAnswerer extends Answerer {
     for (String hostname : firstNonNull(hostsProduced, Collections.<String>emptyList())) {
       nodesProduced.add(new Node(hostname));
     }
-    builder.put(COL_HOSTS, nodesProduced.build());
+    builder.put(COL_NODES, nodesProduced.build());
     return builder.build();
   }
 
   static final String COL_FILENAME = "Filename";
   static final String COL_PARSE_STATUS = "Status";
-  static final String COL_HOSTS = "Hosts";
+  static final String COL_NODES = "Nodes";
 
   private static final List<ColumnMetadata> METADATA =
       ImmutableList.of(
@@ -75,16 +75,16 @@ class FileParseStatusAnswerer extends Answerer {
           new ColumnMetadata(
               COL_PARSE_STATUS, Schema.STRING, "The status of the parsing operation", false, true),
           new ColumnMetadata(
-              COL_HOSTS,
+              COL_NODES,
               Schema.list(Schema.NODE),
-              "Names of hosts produced from this file",
+              "Names of nodes produced from this file",
               false,
               true));
 
   private static final String TEXT_DESC =
       String.format(
-          "File ${%s} parsed with status ${%s} and produced hosts ${%s}",
-          COL_FILENAME, COL_PARSE_STATUS, COL_HOSTS);
+          "File ${%s} parsed with status ${%s} and produced nodes ${%s}",
+          COL_FILENAME, COL_PARSE_STATUS, COL_NODES);
 
   private static final TableMetadata TABLE_METADATA = new TableMetadata(METADATA, TEXT_DESC);
 }

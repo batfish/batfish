@@ -5,7 +5,7 @@ add-batfish-option haltonparseerror
 add-batfish-option verboseparse
 
 # example-aws network
-test tests/aws/init-example-aws.ref init-snapshot test_rigs/example-aws basic-example-aws
+test tests/aws/init-example-aws.ref init-snapshot networks/example-aws basic-example-aws
 test tests/aws/nodes-example-aws.ref get nodes summary=false
 test -raw tests/aws/topology-example-aws.ref get-object testrig_pojo_topology
 test tests/aws/ipsecvpnstatus-example-aws.ref get ipsecvpnstatus node1Regex="lhr-border-02", problemRegex="missing.*"
