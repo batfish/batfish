@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-VERSION="2018-01-12-450f3c9b459d128135abb5bbd4fa0508fe26bfae"
+VERSION="2018-01-31-ad9d6482e3a4fc78165db3cc77ffa16aed2691d4"
 
 install_z3() {
   MAJOR_OS="$(major_os)"
@@ -28,12 +28,9 @@ install_z3_cygwin() {
   W64DIR="$WDIR/System32"
   OLD_PWD="$PWD"
   Z3_REPO_URL="https://github.com/batfish/z3"
-  Z364_ZIP_URL="${Z3_REPO_URL}/releases/download/z3-${VERSION}/z3-${VERSION}-x64-win.zip"
+  Z364_ZIP_URL="${Z3_REPO_URL}/releases/download/z3-${VERSION}/z3-${VERSION}-windows-x64.zip"
   Z364_ZIP="$(basename "${Z364_ZIP_URL}")"
   Z364_DIR="$(basename "${Z364_ZIP}" .zip)"
-  Z332_ZIP_URL="${Z3_REPO_URL}/releases/download/z3-${VERSION}/z3-${VERSION}-x86-win.zip"
-  Z332_ZIP="$(basename "${Z332_ZIP_URL}")"
-  Z332_DIR="$(basename "${Z332_ZIP}" .zip)"
   set -x
   set -e
   echo "Creating temporary installation folder for Z3"
@@ -44,31 +41,14 @@ install_z3_cygwin() {
   echo "Unpacking Z3 64-bit installation files"
   unzip "${Z364_ZIP}"
   echo "Installing Z3 64-bit to ${W64DIR}"
-  cp "${Z364_DIR}/bin/libz3.dll" "${W64DIR}"
+  cp "${Z364_DIR}/libz3.dll" "${W64DIR}"
   getfacl "${W64DIR}/msvcr110.dll" | setfacl -f - "${W64DIR}/libz3.dll"
-  cp "${Z364_DIR}/bin/libz3java.dll" "${W64DIR}"
+  cp "${Z364_DIR}/libz3java.dll" "${W64DIR}"
   getfacl "${W64DIR}/msvcr110.dll" | setfacl -f - "${W64DIR}/libz3java.dll"
-  cp "${Z364_DIR}/bin/libz3.dll" "${W64DIR}/z3.dll"
+  cp "${Z364_DIR}/libz3.dll" "${W64DIR}/z3.dll"
   getfacl "${W64DIR}/msvcr110.dll" | setfacl -f - "${W64DIR}/z3.dll"
-  cp "${Z364_DIR}/bin/libz3java.dll" "${W64DIR}/z3java.dll"
+  cp "${Z364_DIR}/libz3java.dll" "${W64DIR}/z3java.dll"
   getfacl "${W64DIR}/msvcr110.dll" | setfacl -f - "${W64DIR}/z3java.dll"
-  cp "${Z364_DIR}/bin/Microsoft.Z3.dll" "${W64DIR}/"
-  getfacl "${W64DIR}/msvcr110.dll" | setfacl -f - "${W64DIR}/Microsoft.Z3.dll"
-  echo "Downloading Z3 32-bit from ${Z364_ZIP_URL}"
-  wget "${Z332_ZIP_URL}"
-  echo "Unpacking Z3 32-bit installation files"
-  unzip "${Z332_ZIP}"
-  echo "Installing Z3 32-bit to ${W64DIR}"
-  cp "${Z332_DIR}/bin/libz3.dll" "${W32DIR}/"
-  getfacl "${W32DIR}/msvcr110.dll" | setfacl -f - "${W32DIR}/libz3.dll"
-  cp "${Z332_DIR}/bin/libz3java.dll" "${W32DIR}/"
-  getfacl "${W32DIR}/msvcr110.dll" | setfacl -f - "${W32DIR}/libz3java.dll"
-  cp "${Z332_DIR}/bin/libz3.dll" "${W32DIR}/z3.dll"
-  getfacl "${W32DIR}/msvcr110.dll" | setfacl -f - "${W32DIR}/z3.dll"
-  cp "${Z332_DIR}/bin/libz3java.dll" "${W32DIR}/z3java.dll"
-  getfacl "${W32DIR}/msvcr110.dll" | setfacl -f - "${W32DIR}/z3java.dll"
-  cp "${Z332_DIR}/bin/Microsoft.Z3.dll" "${W32DIR}/"
-  getfacl "${W32DIR}/msvcr110.dll" | setfacl -f - "${W32DIR}/Microsoft.Z3.dll"
   cd "${OLD_PWD}" || exit 1
   echo "Removing temporary installation files"
   rm -rf "${WORKING}" || exit 1
