@@ -20,9 +20,13 @@
       "neighborTypes" : {
         "allowedValues" : [
           "ebgp",
+          "eigrp",
           "ibgp",
+          "layer1",
+          "layer2",
           "layer3",
-          "ospf"
+          "ospf",
+          "rip"
         ],
         "description" : "Types of neighbor relationships to include",
         "minElements" : 0,
