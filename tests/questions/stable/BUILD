@@ -5,6 +5,6 @@ ref_tests(
     commands = ":commands",
     extra_deps = glob(["*.ref"]) + [
         "//questions:stable",
-        "//test_rigs",
+        "//networks",
     ],
 )
