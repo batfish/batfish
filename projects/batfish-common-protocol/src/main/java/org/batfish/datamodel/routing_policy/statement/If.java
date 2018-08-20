@@ -1,6 +1,7 @@
 package org.batfish.datamodel.routing_policy.statement;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
@@ -18,6 +19,10 @@ import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 
 public class If extends Statement {
+
+  private static final String PROP_FALSE_STATEMENTS = "falseStatements";
+  private static final String PROP_GUARD = "guard";
+  private static final String PROP_TRUE_STATEMENTS = "trueStatements";
 
   /** */
   private static final long serialVersionUID = 1L;
@@ -101,14 +106,17 @@ public class If extends Statement {
     return fallThroughResult;
   }
 
+  @JsonProperty(PROP_FALSE_STATEMENTS)
   public List<Statement> getFalseStatements() {
     return _falseStatements;
   }
 
+  @JsonProperty(PROP_GUARD)
   public BooleanExpr getGuard() {
     return _guard;
   }
 
+  @JsonProperty(PROP_TRUE_STATEMENTS)
   public List<Statement> getTrueStatements() {
     return _trueStatements;
   }
@@ -123,14 +131,17 @@ public class If extends Statement {
     return result;
   }
 
+  @JsonProperty(PROP_FALSE_STATEMENTS)
   public void setFalseStatements(List<Statement> falseStatements) {
     _falseStatements = falseStatements;
   }
 
+  @JsonProperty(PROP_GUARD)
   public void setGuard(BooleanExpr guard) {
     _guard = guard;
   }
 
+  @JsonProperty(PROP_TRUE_STATEMENTS)
   public void setTrueStatements(List<Statement> trueStatements) {
     _trueStatements = trueStatements;
   }

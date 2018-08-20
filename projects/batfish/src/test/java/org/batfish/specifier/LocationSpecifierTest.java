@@ -8,6 +8,7 @@ import static org.hamcrest.Matchers.not;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Sets;
 import java.util.Collection;
 import java.util.List;
@@ -21,6 +22,7 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Vrf;
 import org.batfish.role.NodeRole;
+import org.batfish.role.NodeRoleDimension;
 import org.junit.Test;
 
 /** Tests for built-in location specifiers. */
@@ -74,9 +76,13 @@ public class LocationSpecifierTest {
     _context =
         MockSpecifierContext.builder()
             .setConfigs(_testConfigs)
-            .setNodeRolesByDimension(
-                ImmutableMap.of(
-                    _roleDim, ImmutableSet.of(new NodeRole(roleName, n1.getHostname()))))
+            .setNodeRoleDimensions(
+                ImmutableSet.of(
+                    new NodeRoleDimension(
+                        _roleDim,
+                        ImmutableSortedSet.of(new NodeRole(roleName, n1.getHostname())),
+                        null,
+                        null)))
             .build();
   }
 

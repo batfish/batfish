@@ -1,8 +1,8 @@
 package org.batfish.main;
 
 import static java.util.stream.Collectors.toMap;
-import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import static org.batfish.common.util.CommonUtil.toImmutableSortedMap;
+import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.referencedSources;
 import static org.batfish.main.ReachabilityParametersResolver.resolveReachabilityParameters;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -53,6 +53,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -116,6 +117,7 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpsecVpn;
 import org.batfish.datamodel.RipNeighbor;
@@ -124,6 +126,9 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.PermittedByAcl;
+import org.batfish.datamodel.acl.TypeMatchExprsCollector;
 import org.batfish.datamodel.answers.AclLinesAnswerElementInterface;
 import org.batfish.datamodel.answers.AclLinesAnswerElementInterface.AclSpecs;
 import org.batfish.datamodel.answers.Answer;
@@ -147,10 +152,8 @@ import org.batfish.datamodel.answers.ReportAnswerElement;
 import org.batfish.datamodel.answers.RunAnalysisAnswerElement;
 import org.batfish.datamodel.answers.ValidateEnvironmentAnswerElement;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
-import org.batfish.datamodel.collections.MultiSet;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.collections.RoutesByVrf;
-import org.batfish.datamodel.collections.TreeMultiSet;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.questions.InvalidReachabilityParametersException;
@@ -174,8 +177,10 @@ import org.batfish.job.FlattenVendorConfigurationJob;
 import org.batfish.job.ParseEnvironmentBgpTableJob;
 import org.batfish.job.ParseEnvironmentRoutingTableJob;
 import org.batfish.job.ParseVendorConfigurationJob;
+import org.batfish.question.ReachFilterParameters;
 import org.batfish.question.ReachabilityParameters;
 import org.batfish.question.ResolvedReachabilityParameters;
+import org.batfish.question.reachfilter.DifferentialReachFilterResult;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.representation.aws.AwsConfiguration;
 import org.batfish.representation.host.HostConfiguration;
@@ -194,14 +199,18 @@ import org.batfish.specifier.SpecifierContextImpl;
 import org.batfish.specifier.UnionLocationSpecifier;
 import org.batfish.symbolic.abstraction.BatfishCompressor;
 import org.batfish.symbolic.abstraction.Roles;
+import org.batfish.symbolic.bdd.AclLineMatchExprToBDD;
 import org.batfish.symbolic.bdd.BDDAcl;
 import org.batfish.symbolic.bdd.BDDPacket;
+import org.batfish.symbolic.bdd.BDDSourceManager;
+import org.batfish.symbolic.bdd.HeaderSpaceToBDD;
 import org.batfish.symbolic.smt.PropertyChecker;
 import org.batfish.vendor.VendorConfiguration;
 import org.batfish.z3.AclIdentifier;
 import org.batfish.z3.AclLine;
 import org.batfish.z3.AclLineIndependentSatisfiabilityQuerySynthesizer;
 import org.batfish.z3.AclReachabilityQuerySynthesizer;
+import org.batfish.z3.BDDIpAccessListSpecializer;
 import org.batfish.z3.BlacklistDstIpQuerySynthesizer;
 import org.batfish.z3.CompositeNodJob;
 import org.batfish.z3.EarliestMoreGeneralReachableLineQuerySynthesizer;
@@ -602,7 +611,15 @@ public class Batfish extends PluginConsumer implements IBatfish {
               }
             }
             initAnalysisQuestionPath(analysisName, questionName);
-            outputAnswer(currentAnswer);
+            try {
+              outputAnswer(currentAnswer);
+              ae.getAnswers().put(questionName, currentAnswer);
+            } catch (Exception e) {
+              Answer errorAnswer = new Answer();
+              errorAnswer.addAnswerElement(
+                  new BatfishStackTrace(new BatfishException("Failed to output answer", e)));
+              ae.getAnswers().put(questionName, errorAnswer);
+            }
             ae.getAnswers().put(questionName, currentAnswer);
             _settings.setQuestionPath(null);
             summary.combine(currentAnswer.getSummary());
@@ -704,28 +721,22 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   /**
-   * Generates jobs to identify any independently unmatchable ACL lines (i.e. they have
-   * unsatisfiable match condition) in the given set of ACL lines.
+   * Generates job to identify whether a given ACL line is unmatchable (i.e. it has unsatisfiable
+   * match condition).
    *
-   * @param c Configuration containing ACL to check for unmatchable lines
-   * @param aclName Name of ACL to check for unmatchable lines
-   * @param linesToCheck Line numbers in the given ACL to check for matchability
-   * @return The {@link NodSatJob}s to run to find unmatchable lines in the given set of lines
+   * @param c Configuration containing ACL to check for unmatchable line
+   * @param aclName Name of ACL to check for unmatchable line
+   * @param lineToCheck Line number in the given ACL to check for matchability
+   * @return The {@link NodSatJob} to run to see if the given line is unmatchable
    */
   @VisibleForTesting
-  public List<NodSatJob<AclLine>> generateUnmatchableAclLineJobs(
-      Configuration c, String aclName, Set<Integer> linesToCheck) {
-    List<NodSatJob<AclLine>> jobs = new ArrayList<>();
-
+  public NodSatJob<AclLine> generateUnmatchableAclLineJob(
+      Configuration c, String aclName, int lineToCheck) {
     String hostname = c.getHostname();
     Synthesizer aclSynthesizer = synthesizeAcls(hostname, c, aclName);
-    for (int lineNumber : linesToCheck) {
-      AclLineIndependentSatisfiabilityQuerySynthesizer query =
-          new AclLineIndependentSatisfiabilityQuerySynthesizer(hostname, aclName, lineNumber);
-      NodSatJob<AclLine> job = new NodSatJob<>(_settings, aclSynthesizer, query, true);
-      jobs.add(job);
-    }
-    return jobs;
+    AclLineIndependentSatisfiabilityQuerySynthesizer query =
+        new AclLineIndependentSatisfiabilityQuerySynthesizer(hostname, aclName, lineToCheck);
+    return new NodSatJob<>(_settings, aclSynthesizer, query, true);
   }
 
   @Override
@@ -739,19 +750,27 @@ public class Batfish extends PluginConsumer implements IBatfish {
             aclSpec -> new AclIdentifier(aclSpec.reprHostname, aclSpec.acl.getAclName()),
             Function.identity());
 
-    // Build a phony config for each aclspec. Keys are representative hostname/aclName pairs.
-    Map<AclIdentifier, Configuration> configs =
-        toImmutableSortedMap(
-            aclSpecsMap.entrySet(), Entry::getKey, e -> buildConfiguration(e.getValue()));
+    // Map each ACL line to its own phony config with ACL and dependencies specialized to that line
+    Map<AclLine, Configuration> configs = new TreeMap<>();
+    TypeMatchExprsCollector<PermittedByAcl> permittedByAclFinder =
+        new TypeMatchExprsCollector<>(PermittedByAcl.class);
+    aclSpecs
+        .parallelStream()
+        .forEach(aclSpec -> collectConfigs(aclSpec, configs, permittedByAclFinder));
 
     // Find all unreachable lines
-    List<NodSatJob<AclLine>> lineReachabilityJobs =
-        generateUnreachableAclLineJobs(aclSpecsMap, configs);
+    List<NodSatJob<AclLine>> lineReachabilityJobs = generateUnreachableAclLineJobs(configs);
     Map<AclLine, Boolean> lineReachabilityMap = new TreeMap<>();
     computeNodSatOutput(lineReachabilityJobs, lineReachabilityMap);
 
-    // Organize all the unreachable lines into one set of unreachable lines per ACL
-    Map<AclIdentifier, Set<Integer>> unreachableLines = groupByAcl(lineReachabilityMap);
+    // Collect the unreachable lines into a set
+    Set<AclLine> unreachableLines =
+        lineReachabilityMap
+            .entrySet()
+            .stream()
+            .filter(e -> !e.getValue())
+            .map(Entry::getKey)
+            .collect(Collectors.toSet());
 
     // For all unreachable lines, see if they are unmatchable
     List<NodSatJob<AclLine>> lineMatchabilityJobs =
@@ -759,164 +778,190 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Map<AclLine, Boolean> lineMatchabilityMap = new TreeMap<>();
     computeNodSatOutput(lineMatchabilityJobs, lineMatchabilityMap);
 
-    // Organize all the unmatchable lines into one set of unmatchable lines per ACL
-    Map<AclIdentifier, Set<Integer>> unmatchableLines = groupByAcl(lineMatchabilityMap);
+    // Collect the unmatchable lines into a set
+    Set<AclLine> unmatchableLines =
+        lineMatchabilityMap
+            .entrySet()
+            .stream()
+            .filter(e -> !e.getValue())
+            .map(Entry::getKey)
+            .collect(Collectors.toSet());
 
     // For lines that are unreachable but not unmatchable, find earlier blocking lines
     List<NodFirstUnsatJob<AclLine, Integer>> blockingLineJobs =
-        generateAllBlockingLineJobs(aclSpecsMap, configs, unreachableLines, unmatchableLines);
+        generateBlockingLineJobs(configs, unreachableLines, unmatchableLines);
     Map<AclLine, Integer> blockingLinesMap = new TreeMap<>();
     computeNodFirstUnsatOutput(blockingLineJobs, blockingLinesMap);
 
     // Report lines
-    for (AclIdentifier reprPair : unreachableLines.keySet()) {
-      AclSpecs aclSpec = aclSpecsMap.get(reprPair);
-      Set<Integer> unreachableLinesSet = unreachableLines.get(reprPair);
-      Set<Integer> unmatchableLinesSet =
-          firstNonNull(unmatchableLines.get(reprPair), ImmutableSet.of());
-      for (int lineNum : unreachableLinesSet) {
-        if (unmatchableLinesSet.contains(lineNum)) {
-          // Line is unmatchable
-          answerRows.addUnreachableLine(aclSpec, lineNum, true, new TreeSet<>());
-        } else {
-          // Line is matchable, but blocked
-          String hostname = reprPair.getHostname();
-          String aclName = reprPair.getAclName();
-
-          Integer blockingLineNum = blockingLinesMap.get(new AclLine(hostname, aclName, lineNum));
-          SortedSet<Integer> blockingLineNums =
-              blockingLineNum == null
-                  ? ImmutableSortedSet.of()
-                  : ImmutableSortedSet.of(blockingLineNum);
-          answerRows.addUnreachableLine(aclSpec, lineNum, false, blockingLineNums);
-        }
+    for (AclLine line : unreachableLines) {
+      AclSpecs aclSpec = aclSpecsMap.get(line.toAclIdentifier());
+      int lineNum = line.getLine();
+      if (unmatchableLines.contains(line)) {
+        // Line is unmatchable
+        answerRows.addUnreachableLine(aclSpec, lineNum, true, new TreeSet<>());
+      } else {
+        // Line is matchable, but blocked
+        Integer blockingLineNum = blockingLinesMap.get(line);
+        SortedSet<Integer> blockingLineNums =
+            blockingLineNum == null
+                ? ImmutableSortedSet.of()
+                : ImmutableSortedSet.of(blockingLineNum);
+        answerRows.addUnreachableLine(aclSpec, lineNum, false, blockingLineNums);
       }
     }
   }
 
-  private Configuration buildConfiguration(AclSpecs aclSpec) {
-    Configuration c = new Configuration(aclSpec.reprHostname, ConfigurationFormat.CISCO_IOS);
-
-    // Set interfaces
-    c.setInterfaces(
+  private void collectConfigs(
+      AclSpecs aclSpec,
+      Map<AclLine, Configuration> configs,
+      TypeMatchExprsCollector<PermittedByAcl> permittedByAclFinder) {
+    String hostname = aclSpec.reprHostname;
+    List<IpAccessListLine> lines = aclSpec.acl.getSanitizedAcl().getLines();
+    String aclName = aclSpec.acl.getAclName();
+    NavigableMap<String, Interface> interfaces =
         toImmutableSortedMap(
             aclSpec.acl.getInterfaces(),
             Function.identity(),
-            iface -> Interface.builder().setName(iface).setOwner(c).build()));
+            iface -> Interface.builder().setName(iface).build());
 
-    // Inject sanitized ACL and dependencies into phony configuration
-    Map<String, IpAccessList> dependencies = aclSpec.acl.getDependencies();
-    NavigableMap<String, IpAccessList> aclsMap =
-        (new ImmutableSortedMap.Builder<String, IpAccessList>(Comparator.naturalOrder()))
-            .putAll(dependencies)
-            .put(aclSpec.acl.getAclName(), aclSpec.acl.getSanitizedAcl())
-            .build();
-    c.setIpAccessLists(aclsMap);
+    IntStream.range(0, lines.size())
+        .parallel()
+        .forEach(
+            lineNum -> {
+              AclLine aclLine = new AclLine(hostname, aclName, lineNum);
+              AclLineMatchExpr matchExpr = lines.get(lineNum).getMatchCondition();
 
-    return c;
+              // If line matches other ACLs, build aclEnv
+              BDDPacket bddPacket = new BDDPacket();
+              BDDSourceManager sourceMgr =
+                  BDDSourceManager.forInterfaces(bddPacket, aclSpec.acl.getInterfaces());
+              List<PermittedByAcl> aclMatchExprs = matchExpr.accept(permittedByAclFinder);
+              Map<String, Supplier<BDD>> aclEnv = new TreeMap<>();
+              if (!aclMatchExprs.isEmpty()) {
+                Map<String, IpAccessList> dependencies = aclSpec.acl.getDependencies();
+                aclEnv =
+                    dependencies
+                        .entrySet()
+                        .stream()
+                        .collect(
+                            Collectors.toMap(
+                                dep -> dep.getKey(),
+                                dep ->
+                                    () ->
+                                        BDDAcl.create(
+                                                bddPacket,
+                                                dep.getValue(),
+                                                dependencies,
+                                                ImmutableMap.of(),
+                                                sourceMgr)
+                                            .getBdd()));
+              }
+
+              // Specialize ACL and dependencies to current line
+              BDD lineBDD =
+                  matchExpr.accept(
+                      new AclLineMatchExprToBDD(
+                          bddPacket.getFactory(), bddPacket, aclEnv, ImmutableMap.of(), sourceMgr));
+              BDDIpAccessListSpecializer specializer =
+                  new BDDIpAccessListSpecializer(bddPacket, lineBDD, ImmutableMap.of(), sourceMgr);
+
+              // Build new configuration from ACLs and interfaces
+              Configuration c = new Configuration(hostname, ConfigurationFormat.CISCO_IOS);
+              c.setInterfaces(interfaces);
+              c.setIpAccessLists(collectAcls(lineNum, aclSpec, specializer));
+              configs.put(aclLine, c);
+            });
   }
 
-  // Given a NOD result, breaks it into a map of ACLs (specified by hostname/ACL name pairs) to sets
-  // of line numbers in each ACL that did not satisfy the NOD condition.
-  private Map<AclIdentifier, Set<Integer>> groupByAcl(Map<AclLine, Boolean> nodResult) {
-    Map<AclIdentifier, Set<Integer>> destMap = new TreeMap<>();
-    for (Entry<AclLine, Boolean> lineEntry : nodResult.entrySet()) {
-      if (!lineEntry.getValue()) {
-        String hostname = lineEntry.getKey().getHostname();
-        String aclName = lineEntry.getKey().getAclName();
-        int lineNum = lineEntry.getKey().getLine();
-        destMap
-            .computeIfAbsent(new AclIdentifier(hostname, aclName), p -> new TreeSet<>())
-            .add(lineNum);
-      }
+  private NavigableMap<String, IpAccessList> collectAcls(
+      int lineNum, AclSpecs aclSpec, @Nullable BDDIpAccessListSpecializer specializer) {
+    Map<String, IpAccessList> dependencies = aclSpec.acl.getDependencies();
+    IpAccessList acl = aclSpec.acl.getSanitizedAcl();
+    if (specializer != null) {
+      dependencies =
+          dependencies
+              .entrySet()
+              .stream()
+              .collect(
+                  Collectors.toMap(
+                      dep -> dep.getKey(), dep -> specializer.specialize(dep.getValue())));
+      acl = specializer.specializeUpToLine(acl, lineNum);
     }
-    return destMap;
+    return new ImmutableSortedMap.Builder<String, IpAccessList>(Comparator.naturalOrder())
+        .putAll(dependencies)
+        .put(acl.getName(), acl)
+        .build();
   }
 
   private List<NodSatJob<AclLine>> generateAllUnmatchableLineJobs(
-      Map<AclIdentifier, Configuration> configs,
-      Map<AclIdentifier, Set<Integer>> unreachableLines) {
+      Map<AclLine, Configuration> configs, Set<AclLine> unreachableLines) {
     List<NodSatJob<AclLine>> lineMatchabilityJobs = new ArrayList<>();
-    for (Entry<AclIdentifier, Set<Integer>> e : unreachableLines.entrySet()) {
-      String aclName = e.getKey().getAclName();
-      Configuration c = configs.get(e.getKey());
 
-      // Create jobs to see if each unreachable line is unmatchable
-      lineMatchabilityJobs.addAll(generateUnmatchableAclLineJobs(c, aclName, e.getValue()));
+    // For each unreachable line, create a job to check if it is unmatchable
+    for (AclLine line : unreachableLines) {
+      String aclName = line.getAclName();
+      Configuration c = configs.get(line);
+      lineMatchabilityJobs.add(generateUnmatchableAclLineJob(c, aclName, line.getLine()));
     }
     return lineMatchabilityJobs;
   }
 
   private List<NodSatJob<AclLine>> generateUnreachableAclLineJobs(
-      Map<AclIdentifier, AclSpecs> aclSpecsMap, Map<AclIdentifier, Configuration> configs) {
+      Map<AclLine, Configuration> configs) {
     List<NodSatJob<AclLine>> lineReachabilityJobs = new ArrayList<>();
-    for (AclIdentifier reprPair : aclSpecsMap.keySet()) {
-      Configuration c = configs.get(reprPair);
-      IpAccessList sanitizedAcl = aclSpecsMap.get(reprPair).acl.getSanitizedAcl();
-      String aclName = sanitizedAcl.getName();
-      String hostname = c.getHostname();
+    for (Entry<AclLine, Configuration> lineEntry : configs.entrySet()) {
+      AclLine line = lineEntry.getKey();
+      String aclName = line.getAclName();
+      String hostname = line.getHostname();
+      int lineNum = line.getLine();
+
+      Configuration c = lineEntry.getValue();
       Synthesizer aclSynthesizer = synthesizeAcls(hostname, c, aclName);
 
       // Create job for each line to see if it's unreachable
-      for (int lineNum = 0; lineNum < sanitizedAcl.getLines().size(); lineNum++) {
-        List<RuleStatement> rules =
-            IntStream.range(0, sanitizedAcl.getLines().size())
-                .mapToObj(
-                    i ->
-                        new BasicRuleStatement(
-                            TrueExpr.INSTANCE,
-                            ImmutableSet.of(new AclLineMatch(hostname, aclName, i)),
-                            new NumberedQuery(i)))
-                .collect(Collectors.toList());
-        AclReachabilityQuerySynthesizer query =
-            new AclReachabilityQuerySynthesizer(rules, hostname, aclName, lineNum);
-        lineReachabilityJobs.add(new NodSatJob<>(_settings, aclSynthesizer, query, true));
-      }
+      List<RuleStatement> rules =
+          IntStream.range(0, lineNum + 1)
+              .mapToObj(
+                  i ->
+                      new BasicRuleStatement(
+                          TrueExpr.INSTANCE,
+                          ImmutableSet.of(new AclLineMatch(hostname, aclName, i)),
+                          new NumberedQuery(i)))
+              .collect(Collectors.toList());
+      AclReachabilityQuerySynthesizer query =
+          new AclReachabilityQuerySynthesizer(rules, hostname, aclName, lineNum);
+      lineReachabilityJobs.add(new NodSatJob<>(_settings, aclSynthesizer, query, true));
     }
     return lineReachabilityJobs;
   }
 
-  private List<NodFirstUnsatJob<AclLine, Integer>> generateAllBlockingLineJobs(
-      Map<AclIdentifier, AclSpecs> aclSpecsMap,
-      Map<AclIdentifier, Configuration> configs,
-      Map<AclIdentifier, Set<Integer>> unreachableLines,
-      Map<AclIdentifier, Set<Integer>> unmatchableLines) {
-    List<NodFirstUnsatJob<AclLine, Integer>> blockingLineJobs = new ArrayList<>();
-    for (AclIdentifier reprPair : unreachableLines.keySet()) {
-      IpAccessList sanitizedAcl = aclSpecsMap.get(reprPair).acl.getSanitizedAcl();
-      Configuration c = configs.get(reprPair);
-      Set<Integer> unreachableLinesSet = unreachableLines.get(reprPair);
-      Set<Integer> unmatchableLinesSet =
-          firstNonNull(unmatchableLines.get(reprPair), ImmutableSet.of());
-      blockingLineJobs.addAll(
-          generateBlockingLineJobs(c, sanitizedAcl, unreachableLinesSet, unmatchableLinesSet));
-    }
-    return blockingLineJobs;
-  }
-
   private List<NodFirstUnsatJob<AclLine, Integer>> generateBlockingLineJobs(
-      Configuration c,
-      IpAccessList acl,
-      Set<Integer> unreachableAclLines,
-      Set<Integer> unmatchableLineNums) {
-    String hostname = c.getHostname();
-    String aclName = acl.getName();
-    Synthesizer aclSynthesizer = synthesizeAcls(hostname, c, aclName);
-    List<String> interfaces = ImmutableList.sortedCopyOf(c.getInterfaces().keySet());
-    NavigableMap<String, IpSpace> ipSpaces = ImmutableSortedMap.copyOf(c.getIpSpaces());
-    NavigableMap<String, IpAccessList> acls = ImmutableSortedMap.copyOf(c.getIpAccessLists());
+      Map<AclLine, Configuration> configs,
+      Set<AclLine> unreachableAclLines,
+      Set<AclLine> unmatchableLineNums) {
 
     // Create jobs to find blocking lines for all unreachable lines that aren't unmatchable
     List<NodFirstUnsatJob<AclLine, Integer>> jobs = new ArrayList<>();
-    for (int lineNum : unreachableAclLines) {
-      if (!unmatchableLineNums.contains(lineNum)) {
+    for (AclLine line : unreachableAclLines) {
+      if (!unmatchableLineNums.contains(line)) {
+        Configuration c = configs.get(line);
+        String hostname = c.getHostname();
+        String aclName = line.getAclName();
+        Synthesizer aclSynthesizer = synthesizeAcls(hostname, c, aclName);
+        List<String> interfaces = ImmutableList.copyOf(c.getInterfaces().keySet());
+        NavigableMap<String, IpSpace> ipSpaces = ImmutableSortedMap.copyOf(c.getIpSpaces());
+        NavigableMap<String, IpAccessList> acls = ImmutableSortedMap.copyOf(c.getIpAccessLists());
+        IpAccessList acl = c.getIpAccessLists().get(aclName);
+
         List<AclLine> toCheck =
-            IntStream.range(0, lineNum)
+            IntStream.range(0, line.getLine())
                 .mapToObj(i -> new AclLine(hostname, aclName, i))
+                .filter(l -> !unreachableAclLines.contains(l))
                 .collect(Collectors.toList());
         EarliestMoreGeneralReachableLineQuerySynthesizer query =
             new EarliestMoreGeneralReachableLineQuerySynthesizer(
-                new AclLine(hostname, aclName, lineNum), toCheck, acl, ipSpaces, acls, interfaces);
+                line, toCheck, acl, ipSpaces, acls, interfaces);
         jobs.add(new NodFirstUnsatJob<>(_settings, aclSynthesizer, query, true));
       }
     }
@@ -928,8 +973,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         settings.getPedanticRecord() && settings.getLogger().isActive(BatfishLogger.LEVEL_PEDANTIC),
         settings.getRedFlagRecord() && settings.getLogger().isActive(BatfishLogger.LEVEL_REDFLAG),
         settings.getUnimplementedRecord()
-            && settings.getLogger().isActive(BatfishLogger.LEVEL_UNIMPLEMENTED),
-        settings.getPrintParseTree());
+            && settings.getLogger().isActive(BatfishLogger.LEVEL_UNIMPLEMENTED));
   }
 
   private void checkBaseDirExists() {
@@ -1875,13 +1919,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   /**
-   * Gets the {@link NodeRoleDimension} object give dimension name
+   * Gets the {@link NodeRoleDimension} object given dimension name. If {@code dimension} is null,
+   * returns the default dimension.
    *
    * @param dimension The dimension name
    * @return An {@link Optional} that has the requested NodeRoleDimension or empty otherwise.
    */
   @Override
-  public Optional<NodeRoleDimension> getNodeRoleDimension(String dimension) {
+  public Optional<NodeRoleDimension> getNodeRoleDimension(@Nullable String dimension) {
     Path nodeRoleDataPath =
         _settings
             .getStorageBase()
@@ -2011,29 +2056,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Override
   public PluginClientType getType() {
     return PluginClientType.BATFISH;
-  }
-
-  private void histogram(Path testRigPath) {
-    Map<Path, String> configurationData =
-        readConfigurationFiles(testRigPath, BfConsts.RELPATH_CONFIGURATIONS_DIR);
-    // todo: either remove histogram function or do something userful with
-    // answer
-    Map<String, VendorConfiguration> vendorConfigurations =
-        parseVendorConfigurations(
-            configurationData,
-            new ParseVendorConfigurationAnswerElement(),
-            ConfigurationFormat.UNKNOWN);
-    _logger.info("Building feature histogram...");
-    MultiSet<String> histogram = new TreeMultiSet<>();
-    for (VendorConfiguration vc : vendorConfigurations.values()) {
-      Set<String> unimplementedFeatures = vc.getUnimplementedFeatures();
-      histogram.add(unimplementedFeatures);
-    }
-    _logger.info("OK\n");
-    for (String feature : histogram.elements()) {
-      int count = histogram.count(feature);
-      _logger.outputf("%s: %s\n", feature, count);
-    }
   }
 
   private void initAnalysisQuestionPath(String analysisName, String questionName) {
@@ -2674,6 +2696,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
               (hostname, initStepWarnings) -> {
                 Warnings combined =
                     warnings.computeIfAbsent(hostname, h -> buildWarnings(_settings));
+                combined.getParseWarnings().addAll(initStepWarnings.getParseWarnings());
                 combined.getPedanticWarnings().addAll(initStepWarnings.getPedanticWarnings());
                 combined.getRedFlagWarnings().addAll(initStepWarnings.getRedFlagWarnings());
                 combined
@@ -3151,7 +3174,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         // router
         if (c.getDeviceType() == null
             && (vrf.getBgpProcess() != null
-                || vrf.getEigrpProcess() != null
+                || !vrf.getEigrpProcesses().isEmpty()
                 || vrf.getOspfProcess() != null
                 || vrf.getRipProcess() != null)) {
           c.setDeviceType(DeviceType.ROUTER);
@@ -3420,42 +3443,45 @@ public class Batfish extends PluginConsumer implements IBatfish {
     List<BatfishException> failureCauses = new ArrayList<>();
     for (VendorConfiguration vc : hostConfigurations.values()) {
       HostConfiguration hostConfig = (HostConfiguration) vc;
-      if (hostConfig.getIptablesFile() != null) {
-        Path path = Paths.get(testRigPath.toString(), hostConfig.getIptablesFile());
+      String iptablesFile = hostConfig.getIptablesFile();
+      if (iptablesFile == null) {
+        continue;
+      }
 
-        // ensure that the iptables file is not taking us outside of the
-        // testrig
-        try {
-          if (!path.toFile().getCanonicalPath().contains(testRigPath.toFile().getCanonicalPath())
-              || !path.toFile().exists()) {
-            String failureMessage =
-                String.format(
-                    "Iptables file %s for host %s is not contained within the testrig",
-                    hostConfig.getIptablesFile(), hostConfig.getHostname());
-            BatfishException bfc;
-            if (answerElement.getErrors().containsKey(hostConfig.getHostname())) {
-              bfc =
-                  new BatfishException(
-                      failureMessage,
-                      answerElement.getErrors().get(hostConfig.getHostname()).getException());
-              answerElement.getErrors().put(hostConfig.getHostname(), bfc.getBatfishStackTrace());
-            } else {
-              bfc = new BatfishException(failureMessage);
-              if (_settings.getExitOnFirstError()) {
-                throw bfc;
-              } else {
-                failureCauses.add(bfc);
-                answerElement.getErrors().put(hostConfig.getHostname(), bfc.getBatfishStackTrace());
-                answerElement.getParseStatus().put(hostConfig.getHostname(), ParseStatus.FAILED);
-              }
-            }
+      Path path = Paths.get(testRigPath.toString(), iptablesFile);
+
+      // ensure that the iptables file is not taking us outside of the
+      // testrig
+      try {
+        if (!path.toFile().getCanonicalPath().contains(testRigPath.toFile().getCanonicalPath())
+            || !path.toFile().exists()) {
+          String failureMessage =
+              String.format(
+                  "Iptables file %s for host %s is not contained within the testrig",
+                  hostConfig.getIptablesFile(), hostConfig.getHostname());
+          BatfishException bfc;
+          if (answerElement.getErrors().containsKey(hostConfig.getHostname())) {
+            bfc =
+                new BatfishException(
+                    failureMessage,
+                    answerElement.getErrors().get(hostConfig.getHostname()).getException());
+            answerElement.getErrors().put(hostConfig.getHostname(), bfc.getBatfishStackTrace());
           } else {
-            String fileText = CommonUtil.readFile(path);
-            iptablesData.put(path, fileText);
+            bfc = new BatfishException(failureMessage);
+            if (_settings.getExitOnFirstError()) {
+              throw bfc;
+            } else {
+              failureCauses.add(bfc);
+              answerElement.getErrors().put(hostConfig.getHostname(), bfc.getBatfishStackTrace());
+              answerElement.getParseStatus().put(hostConfig.getIptablesFile(), ParseStatus.FAILED);
+            }
           }
-        } catch (IOException e) {
-          throw new BatfishException("Could not get canonical path", e);
+        } else {
+          String fileText = CommonUtil.readFile(path);
+          iptablesData.put(path, fileText);
         }
+      } catch (IOException e) {
+        throw new BatfishException("Could not get canonical path", e);
       }
     }
 
@@ -3771,11 +3797,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     if (_settings.getSynthesizeJsonTopology()) {
       writeJsonTopology();
-      return answer;
-    }
-
-    if (_settings.getHistogram()) {
-      histogram(_testrigSettings.getTestRigPath());
       return answer;
     }
 
@@ -4123,7 +4144,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     // warn about unused overlays
     overlayHostConfigurations.forEach(
-        (name, overlay) -> answerElement.getParseStatus().put(name, ParseStatus.ORPHANED));
+        (name, overlay) ->
+            answerElement.getParseStatus().put(overlay.getFilename(), ParseStatus.ORPHANED));
 
     serializeObjects(output);
     _logger.printElapsedTime();
@@ -4288,14 +4310,93 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return answerElement;
   }
 
+  /** Performs a difference reachFilters analysis (both increased and decreased reachability). */
   @Override
-  public Optional<Flow> reachFilter(String nodeName, IpAccessList acl) {
+  public DifferentialReachFilterResult differentialReachFilter(
+      Configuration baseConfig,
+      IpAccessList baseAcl,
+      Configuration deltaConfig,
+      IpAccessList deltaAcl,
+      ReachFilterParameters reachFilterParameters) {
     BDDPacket bddPacket = new BDDPacket();
-    BDDAcl bddAcl = BDDAcl.create(bddPacket, acl);
-    return bddAcl
-        .getPkt()
-        .getFlow(bddAcl.getBdd())
-        .map(flowBuilder -> flowBuilder.setTag(getFlowTag()).setIngressNode(nodeName).build());
+
+    /*
+     * Get separate headerspace constraints for base and delta snapshots because they could change
+     * due to differences in named IpSpaces etc.
+     */
+    pushBaseEnvironment();
+    BDD baseHeaderSpaceBDD =
+        new HeaderSpaceToBDD(bddPacket, baseConfig.getIpSpaces())
+            .toBDD(reachFilterParameters.resolveHeaderspace(specifierContext()));
+    popEnvironment();
+
+    pushDeltaEnvironment();
+    BDD deltaHeaderSpaceBDD =
+        new HeaderSpaceToBDD(bddPacket, deltaConfig.getIpSpaces())
+            .toBDD(reachFilterParameters.resolveHeaderspace(specifierContext()));
+    popEnvironment();
+
+    Set<String> activeInterfaces =
+        Sets.intersection(baseConfig.activeInterfaces(), deltaConfig.activeInterfaces());
+    Set<String> referencedSources =
+        Sets.union(
+            referencedSources(baseConfig.getIpAccessLists(), baseAcl),
+            referencedSources(deltaConfig.getIpAccessLists(), deltaAcl));
+
+    BDDSourceManager mgr =
+        BDDSourceManager.forSources(bddPacket, activeInterfaces, referencedSources);
+    BDD baseAclBDD =
+        BDDAcl.create(
+                bddPacket, baseAcl, baseConfig.getIpAccessLists(), baseConfig.getIpSpaces(), mgr)
+            .getBdd()
+            .and(baseHeaderSpaceBDD)
+            .and(mgr.isSane());
+    BDD deltaAclBDD =
+        BDDAcl.create(
+                bddPacket, deltaAcl, deltaConfig.getIpAccessLists(), deltaConfig.getIpSpaces(), mgr)
+            .getBdd()
+            .and(deltaHeaderSpaceBDD)
+            .and(mgr.isSane());
+
+    String hostname = baseConfig.getHostname();
+
+    BDD increasedBDD = baseAclBDD.not().and(deltaAclBDD);
+    Flow increasedFlow = getFlow(bddPacket, mgr, hostname, increasedBDD).orElse(null);
+
+    BDD decreasedBDD = baseAclBDD.and(deltaAclBDD.not());
+    Flow decreasedFlow = getFlow(bddPacket, mgr, hostname, decreasedBDD).orElse(null);
+
+    return new DifferentialReachFilterResult(increasedFlow, decreasedFlow);
+  }
+
+  private Optional<Flow> getFlow(
+      BDDPacket pkt, BDDSourceManager bddSourceManager, String hostname, BDD bdd) {
+    if (bdd.isZero()) {
+      return Optional.empty();
+    }
+    BDD assignment = bdd.fullSatOne();
+    return Optional.of(
+        pkt.getFlowFromAssignment(assignment)
+            .setTag(getFlowTag())
+            .setIngressNode(hostname)
+            .setIngressInterface(bddSourceManager.getSourceFromAssignment(assignment).orElse(null))
+            .build());
+  }
+
+  @Override
+  public Optional<Flow> reachFilter(
+      Configuration node, IpAccessList acl, ReachFilterParameters parameters) {
+    BDDPacket bddPacket = new BDDPacket();
+    BDDSourceManager mgr = BDDSourceManager.forIpAccessList(bddPacket, node, acl);
+    BDD headerSpaceBDD =
+        new HeaderSpaceToBDD(bddPacket, node.getIpSpaces())
+            .toBDD(parameters.resolveHeaderspace(specifierContext()));
+    BDD bdd =
+        BDDAcl.create(bddPacket, acl, node.getIpAccessLists(), node.getIpSpaces(), mgr)
+            .getBdd()
+            .and(headerSpaceBDD)
+            .and(mgr.isSane());
+    return getFlow(bddPacket, mgr, node.getHostname(), bdd);
   }
 
   @Override

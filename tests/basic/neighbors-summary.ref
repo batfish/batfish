@@ -209,7 +209,7 @@
         "node2" : "as3border2"
       }
     ],
-    "lanNeighbors" : [
+    "layer3Neighbors" : [
       {
         "node1" : "as1border1",
         "node1interface" : "GigabitEthernet0/0",

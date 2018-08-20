@@ -206,6 +206,7 @@ public class Route implements Comparable<Route>, Serializable {
     return _tag;
   }
 
+  @JsonProperty(PROP_VRF)
   public String getVrf() {
     return _vrf;
   }

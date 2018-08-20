@@ -63,6 +63,9 @@ public class CoordConsts {
   /** Various constants used as keys on multi-part form data */
   public static final String SVC_KEY_ADD_WORKER = "addworker";
 
+  public static final String SVC_KEY_AGGREGATIONS = "aggregations";
+  public static final String SVC_KEY_ANALYSIS_ANSWERS_OPTIONS = "analysisanswersoptions";
+  public static final String SVC_KEY_ANALYSIS_QUESTIONS = "analysisquestions";
   public static final String SVC_KEY_ANALYSIS_LIST = "analysislist";
   public static final String SVC_KEY_ANALYSIS_NAME = "analysisname";
   public static final String SVC_KEY_ANALYSIS_TYPE = "analysistype";
@@ -138,6 +141,8 @@ public class CoordConsts {
   public static final String SVC_RSC_CONFIGURE_QUESTION_TEMPLATE = "configurequestiontemplate";
   public static final String SVC_RSC_GET_ANALYSIS_ANSWER = "getanalysisanswer";
   public static final String SVC_RSC_GET_ANALYSIS_ANSWERS = "getanalysisanswers";
+  public static final String SVC_RSC_GET_ANALYSIS_ANSWERS_METRICS = "getanalysisanswersmetrics";
+  public static final String SVC_RSC_GET_ANALYSIS_ANSWERS_ROWS = "getanalysisanswersrows";
   public static final String SVC_RSC_GET_ANSWER = "getanswer";
   public static final String SVC_RSC_GET_CONFIGURATION = "getconfiguration";
   public static final String SVC_RSC_GET_CONTAINER = "getcontainer";

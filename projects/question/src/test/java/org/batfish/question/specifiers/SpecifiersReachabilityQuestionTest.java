@@ -15,15 +15,17 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.specifier.AllInterfaceLinksLocationSpecifier;
 import org.batfish.specifier.AllInterfaceLinksLocationSpecifierFactory;
+import org.batfish.specifier.AllInterfacesLocationSpecifier;
 import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.batfish.specifier.ConstantIpSpaceSpecifier;
 import org.batfish.specifier.ConstantUniverseIpSpaceSpecifierFactory;
 import org.batfish.specifier.ConstantWildcardSetIpSpaceSpecifierFactory;
+import org.batfish.specifier.FlexibleNodeSpecifierFactory;
 import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
 import org.batfish.specifier.NameRegexNodeSpecifier;
 import org.batfish.specifier.NameRegexNodeSpecifierFactory;
 import org.batfish.specifier.NodeNameRegexConnectedHostsIpSpaceSpecifier;
-import org.batfish.specifier.NodeNameRegexInterfaceLocationSpecifier;
+import org.batfish.specifier.NodeSpecifierInterfaceLocationSpecifier;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -151,8 +153,7 @@ public class SpecifiersReachabilityQuestionTest {
   public void getSourceLocationSpecifier_bothNull() {
     SpecifiersReachabilityQuestion question = new SpecifiersReachabilityQuestion();
     assertThat(
-        question.getSourceLocationSpecifier(),
-        equalTo(AllInterfaceLinksLocationSpecifier.INSTANCE));
+        question.getSourceLocationSpecifier(), equalTo(AllInterfacesLocationSpecifier.INSTANCE));
   }
 
   @Test
@@ -161,7 +162,9 @@ public class SpecifiersReachabilityQuestionTest {
     question.setSourceLocationSpecifierInput("foo");
     assertThat(
         question.getSourceLocationSpecifier(),
-        equalTo(new NodeNameRegexInterfaceLocationSpecifier(Pattern.compile("foo"))));
+        equalTo(
+            new NodeSpecifierInterfaceLocationSpecifier(
+                new FlexibleNodeSpecifierFactory().buildNodeSpecifier("foo"))));
   }
 
   @Test

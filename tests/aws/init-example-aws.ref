@@ -5,7 +5,7 @@
       "lhr-border-02" : "configs/lhr-border-02.cfg"
     },
     "parseStatus" : {
-      "lhr-border-02" : "PASSED"
+      "configs/lhr-border-02.cfg" : "PASSED"
     },
     "version" : "0.36.0"
   },
@@ -311,7 +311,7 @@
   {
     "class" : "org.batfish.datamodel.answers.InitInfoAnswerElement",
     "parseStatus" : {
-      "lhr-border-02" : "PASSED"
+      "configs/lhr-border-02.cfg" : "PASSED"
     }
   }
 ]

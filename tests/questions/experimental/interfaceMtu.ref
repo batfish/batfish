@@ -7,6 +7,7 @@
   "filter" : "mtu > 0",
   "innerQuestion" : {
     "class" : "org.batfish.question.interfaceproperties.InterfacePropertiesQuestion",
+    "excludeShutInterfaces" : false,
     "interfaceRegex" : "Gig.*",
     "nodeRegex" : "as1core2",
     "propertySpec" : ".*",
@@ -14,17 +15,16 @@
     "displayHints" : {
       "textDesc" : "${interface} has MTU ${mtu}"
     },
-    "includeOneTableKeys" : false
+    "includeOneTableKeys" : true
   },
   "differential" : false,
-  "includeOneTableKeys" : false,
+  "includeOneTableKeys" : true,
   "instance" : {
-    "description" : "Find interfaces where the configured MTU is <comparator> <mtuBytes>. E.g. if <comparator> is '<' and <mtuBytes> is 1500, then find interfaces where the configured MTU is less than 1500 bytes",
+    "description" : "Find interfaces where the configured MTU matches the specified comparator and mtuBytes.",
     "instanceName" : "qname",
+    "longDescription" : "For example, if comparator is '<' and mtuBytes is 1500, then only interfaces where the configured MTU is less than 1500 bytes will be returned",
     "tags" : [
-      "dataPlane",
-      "isolation",
-      "reachability"
+      "configuration"
     ],
     "variables" : {
       "comparator" : {
@@ -34,7 +34,7 @@
         "value" : ">"
       },
       "interfaceRegex" : {
-        "description" : "Only include interfaces whose name matches this regex",
+        "description" : "Only evaluate interfaces whose name matches this regex",
         "optional" : false,
         "type" : "javaRegex",
         "value" : "Gig.*"

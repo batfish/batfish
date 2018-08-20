@@ -1,11 +1,10 @@
 package org.batfish.question.routes;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
-import static org.batfish.question.routes.RoutesQuestion.RibProtocol.ALL;
+import static org.batfish.question.routes.RoutesQuestion.RibProtocol.MAIN;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.google.common.collect.ImmutableMap;
 import java.util.Arrays;
 import java.util.Map;
@@ -22,7 +21,7 @@ public class RoutesQuestion extends Question {
 
   /** RIBs of these protocols are available for examining routes using {@link RoutesQuestion}. */
   public enum RibProtocol {
-    ALL("all"),
+    MAIN("main"),
     BGP("bgp"),
     BGPMP("bgpmp"); // BGP multi path
 
@@ -38,7 +37,7 @@ public class RoutesQuestion extends Question {
 
     @JsonCreator
     private static RibProtocol fromName(String name) {
-      return _map.getOrDefault(name.toLowerCase(), ALL);
+      return _map.getOrDefault(name.toLowerCase(), MAIN);
     }
 
     RibProtocol(String protocol) {
@@ -74,7 +73,7 @@ public class RoutesQuestion extends Question {
       @Nullable @JsonProperty(PROP_PROTOCOL) RibProtocol protocol) {
     _nodeRegex = firstNonNull(nodeRegex, NodesSpecifier.ALL);
     _vrfRegex = firstNonNull(vrfRegex, ".*");
-    _protocol = firstNonNull(protocol, ALL);
+    _protocol = firstNonNull(protocol, MAIN);
   }
 
   /** Create new routes question with default parameters. */
@@ -93,21 +92,18 @@ public class RoutesQuestion extends Question {
   }
 
   @JsonProperty(PROP_NODE_REGEX)
-  @JsonPropertyDescription("Node specifier. Nodes matching this will have their routes reported.")
   @Nonnull
   public NodesSpecifier getNodeRegex() {
     return _nodeRegex;
   }
 
   @JsonProperty(PROP_VRF_REGEX)
-  @JsonPropertyDescription("VRF specifier. Only routes for matching VRFs will be reported.")
   @Nonnull
   public String getVrfRegex() {
     return _vrfRegex;
   }
 
   @JsonProperty(PROP_PROTOCOL)
-  @JsonPropertyDescription("RIB protocol (e.g., bgp). 'all' means main RIB.")
   @Nonnull
   public RibProtocol getProtocol() {
     return _protocol;

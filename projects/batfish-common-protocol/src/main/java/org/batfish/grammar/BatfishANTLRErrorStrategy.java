@@ -15,7 +15,6 @@ import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.TokenStream;
 import org.antlr.v4.runtime.atn.ATNState;
 import org.antlr.v4.runtime.misc.IntervalSet;
-import org.antlr.v4.runtime.misc.Pair;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTree;
 
@@ -140,17 +139,7 @@ public class BatfishANTLRErrorStrategy extends DefaultErrorStrategy {
     }
     String lineText = _lines[separator.getLine() - 1] + separator.getText();
     Token lineToken =
-        recognizer
-            .getTokenFactory()
-            .create(
-                new Pair<>(null, null),
-                BatfishLexer.UNRECOGNIZED_LINE_TOKEN,
-                String.format("%s (Batfish parser context: %s)", lineText, _parserStateAtRecovery),
-                Lexer.DEFAULT_TOKEN_CHANNEL,
-                -1,
-                -1,
-                separator.getLine(),
-                0);
+        new UnrecognizedLineToken(lineText, separator.getLine(), _parserStateAtRecovery);
     ErrorNode errorNode = recognizer.createErrorNode(ctx, lineToken);
     ctx.addErrorNode(errorNode);
     return lineToken;

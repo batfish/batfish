@@ -2,29 +2,29 @@
     "class": "org.batfish.question.routes.RoutesQuestion",
     "differential": false,
     "instance": {
-        "description": "Show routing tables.",
+        "description": "Show routing tables",
         "instanceName": "routes",
-        "longDescription": "Output every route in every RIB for every VRF of every node in the network.",
+        "longDescription": "Return routes for the specified RIB for specified VRF for specified node(s)",
         "tags": [
             "dataPlane",
             "route"
         ],
         "variables": {
             "nodeRegex": {
-                "description": "Only include routes on nodes whose name matches this regex",
+                "description": "Only include routes for nodes whose name matches this regex",
                 "type": "javaRegex",
                 "value": ".*"
             },
             "vrfRegex": {
-                "description": "Only include routes on VRFs whose name matches this regex",
+                "description": "Only include routes for VRFs whose name matches this regex",
                 "type": "javaRegex",
                 "value": ".*"
             },
             "protocol": {
-                "description": "Only return routes from a given protocol RIB.",
+                "description": "Only return routes from a given protocol RIB",
                 "optional": true,
                 "type": "string",
-                "allowedValues": ["all", "bgp"]
+                "allowedValues": ["main", "bgp", "bgpmp"]
             }
         }
     },

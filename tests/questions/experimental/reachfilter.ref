@@ -1,0 +1,71 @@
+{
+  "class" : "org.batfish.question.reachfilter.ReachFilterQuestion",
+  "destinationIpSpaceSpecifierFactory" : "destFactory",
+  "dst" : "2.2.2.2",
+  "filterRegex" : ".*",
+  "nodeSpecifierFactory" : "nodesFactory",
+  "nodeSpecifierInput" : ".*",
+  "sourceIpSpaceSpecifierFactory" : "sourceFactory",
+  "src" : "1.1.1.1",
+  "differential" : false,
+  "includeOneTableKeys" : true,
+  "instance" : {
+    "description" : "Find flows for which a filter takes a particular behavior",
+    "instanceName" : "qname",
+    "longDescription" : "This question searches for flows for which a filter (access control list) has a particular behavior. The behaviors can be: that the filter permits the flow (permit), that it denies the flow (deny), or that the flow is matched by a particular line (matchLine <lineNumber>). Filters are selected using node and filter specifiers, which might match multiple filters. In this case, a (possibly different) flow will be found for each filter",
+    "tags" : [
+      "acl",
+      "dataPlane"
+    ],
+    "variables" : {
+      "destinationIpSpaceSpecifierFactory" : {
+        "description" : "Name of the IpSpaceSpecifierFactory to use for the destination IpSpace",
+        "optional" : true,
+        "type" : "string",
+        "value" : "destFactory"
+      },
+      "dst" : {
+        "description" : "Flexible specification of destinoation IpSpace",
+        "optional" : true,
+        "type" : "string",
+        "value" : "2.2.2.2"
+      },
+      "filterRegex" : {
+        "description" : "Only evaluate filters that match this regex",
+        "optional" : true,
+        "type" : "javaRegex",
+        "value" : ".*"
+      },
+      "nodeSpecifierFactory" : {
+        "description" : "Name of the nodeSpecifierFactory to use",
+        "optional" : true,
+        "type" : "string",
+        "value" : "nodesFactory"
+      },
+      "nodeSpecifierInput" : {
+        "description" : "Only evaluate filters present on nodes matching this regex",
+        "optional" : true,
+        "type" : "string",
+        "value" : ".*"
+      },
+      "query" : {
+        "description" : "The behavior that you want evaluated. Options are: permit|deny|matchLine <line number>. Only one option should be selected",
+        "optional" : true,
+        "type" : "string",
+        "value" : "matchLine 0"
+      },
+      "sourceIpSpaceSpecifierFactory" : {
+        "description" : "Name of the IpSpaceSpecifierFactory to use for the source IpSpace",
+        "optional" : true,
+        "type" : "string",
+        "value" : "sourceFactory"
+      },
+      "src" : {
+        "description" : "Flexible specification of source IpSpace",
+        "optional" : true,
+        "type" : "string",
+        "value" : "1.1.1.1"
+      }
+    }
+  }
+}

@@ -1,0 +1,19 @@
+!
+hostname ios-eigrp-asn
+!
+interface Ethernet0
+ ip address 10.0.0.1 255.255.255.0
+ no shutdown
+!
+interface Ethernet1
+ ip address 10.0.1.1 255.255.255.0
+ ip vrf forwarding vrf-name
+ no shutdown
+!
+router eigrp 1
+  network 10.0.0.0 0.0.0.255
+ address-family ipv4 vrf vrf-name
+  autonomous-system 2
+  network 10.0.1.0 0.0.0.255
+ exit-address-family
+!

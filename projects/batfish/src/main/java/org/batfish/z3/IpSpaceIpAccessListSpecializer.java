@@ -6,6 +6,9 @@ import static org.batfish.datamodel.AclIpSpace.union;
 import java.util.Map;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.MatchSrcInterface;
+import org.batfish.datamodel.acl.OriginatingFromDevice;
 
 public final class IpSpaceIpAccessListSpecializer extends IpAccessListSpecializer {
   private final boolean _canSpecialize;
@@ -70,5 +73,16 @@ public final class IpSpaceIpAccessListSpecializer extends IpAccessListSpecialize
         .setSrcIps(specializeWith(headerSpace.getSrcIps(), _srcIpSpaceSpecializer))
         .setSrcOrDstIps(specializeWith(headerSpace.getSrcOrDstIps(), _srcOrDstIpSpaceSpecializer))
         .build();
+  }
+
+  @Override
+  public final AclLineMatchExpr visitMatchSrcInterface(MatchSrcInterface matchSrcInterface) {
+    return matchSrcInterface;
+  }
+
+  @Override
+  public final AclLineMatchExpr visitOriginatingFromDevice(
+      OriginatingFromDevice originatingFromDevice) {
+    return originatingFromDevice;
   }
 }

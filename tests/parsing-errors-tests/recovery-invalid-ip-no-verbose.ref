@@ -3,8 +3,8 @@
     {
       "class" : "org.batfish.datamodel.answers.InitInfoAnswerElement",
       "parseStatus" : {
-        "as1r1" : "PASSED",
-        "host1" : "PASSED",
+        "configs/as1r1.cfg" : "PASSED",
+        "hosts/host1.json" : "PASSED",
         "iptables/host1.iptables" : "PASSED"
       }
     }
@@ -14,7 +14,7 @@
     "differential" : false,
     "environmentBgpTables" : false,
     "environmentRoutes" : false,
-    "includeOneTableKeys" : false,
+    "includeOneTableKeys" : true,
     "summary" : false,
     "verboseError" : false
   },

@@ -1,6 +1,7 @@
 package org.batfish.grammar.cisco;
 
 import static java.util.Objects.requireNonNull;
+import static org.batfish.common.util.CommonUtil.sha256Digest;
 import static org.batfish.datamodel.AuthenticationMethod.ENABLE;
 import static org.batfish.datamodel.AuthenticationMethod.GROUP_RADIUS;
 import static org.batfish.datamodel.AuthenticationMethod.GROUP_TACACS;
@@ -63,10 +64,11 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.hasZone;
 import static org.batfish.datamodel.matchers.DataModelMatchers.isIpSpaceReferenceThat;
 import static org.batfish.datamodel.matchers.DataModelMatchers.isPermittedByAclThat;
 import static org.batfish.datamodel.matchers.DataModelMatchers.permits;
-import static org.batfish.datamodel.matchers.EigrpInterfaceSettingsMatchers.hasDelay;
+import static org.batfish.datamodel.matchers.EigrpMetricMatchers.hasDelay;
 import static org.batfish.datamodel.matchers.EigrpRouteMatchers.hasEigrpMetric;
 import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasDstIps;
 import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasSrcIps;
+import static org.batfish.datamodel.matchers.HsrpGroupMatchers.hasTrackActions;
 import static org.batfish.datamodel.matchers.IkeGatewayMatchers.hasAddress;
 import static org.batfish.datamodel.matchers.IkeGatewayMatchers.hasExternalInterface;
 import static org.batfish.datamodel.matchers.IkeGatewayMatchers.hasIkePolicy;
@@ -85,6 +87,8 @@ import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasLifeTimeSeco
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDeclaredNames;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasEigrp;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasHsrpGroup;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasHsrpVersion;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfArea;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrf;
@@ -129,9 +133,11 @@ import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.hasMetric;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.isAdvertised;
 import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasArea;
 import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasAreas;
+import static org.batfish.datamodel.matchers.RegexCommunitySetMatchers.hasRegex;
+import static org.batfish.datamodel.matchers.RegexCommunitySetMatchers.isRegexCommunitySet;
 import static org.batfish.datamodel.matchers.SnmpServerMatchers.hasCommunities;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
-import static org.batfish.datamodel.matchers.VrfMatchers.hasEigrpProcess;
+import static org.batfish.datamodel.matchers.VrfMatchers.hasEigrpProcesses;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasOspfProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasSnmpServer;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
@@ -148,6 +154,7 @@ import static org.batfish.representation.cisco.CiscoConfiguration.computeService
 import static org.batfish.representation.cisco.CiscoConfiguration.computeServiceObjectGroupAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeZonePairAclName;
 import static org.batfish.representation.cisco.CiscoStructureType.ACCESS_LIST;
+import static org.batfish.representation.cisco.CiscoStructureType.BFD_TEMPLATE;
 import static org.batfish.representation.cisco.CiscoStructureType.INSPECT_CLASS_MAP;
 import static org.batfish.representation.cisco.CiscoStructureType.INSPECT_POLICY_MAP;
 import static org.batfish.representation.cisco.CiscoStructureType.IPV4_ACCESS_LIST;
@@ -169,9 +176,11 @@ import static org.batfish.representation.cisco.CiscoStructureType.ROUTE_MAP;
 import static org.batfish.representation.cisco.CiscoStructureType.SECURITY_ZONE;
 import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_OBJECT;
 import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_OBJECT_GROUP;
+import static org.batfish.representation.cisco.CiscoStructureType.TRACK;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OR_SERVICE_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INSPECT_POLICY_MAP_INSPECT_CLASS;
+import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_BFD_TEMPLATE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_INCOMING_FILTER;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_OUTGOING_FILTER;
 import static org.batfish.representation.cisco.CiscoStructureUsage.IP_NAT_DESTINATION_ACCESS_LIST;
@@ -197,10 +206,12 @@ import static org.hamcrest.Matchers.in;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.graph.EndpointPair;
@@ -214,6 +225,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
 import org.batfish.common.WellKnownCommunity;
 import org.batfish.common.plugin.DataPlanePlugin;
 import org.batfish.common.util.CommonUtil;
@@ -230,6 +242,7 @@ import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.EigrpExternalRoute;
+import org.batfish.datamodel.EigrpInternalRoute;
 import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.HeaderSpace;
@@ -258,6 +271,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
+import org.batfish.datamodel.RegexCommunitySet;
 import org.batfish.datamodel.RipInternalRoute;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
@@ -266,9 +280,11 @@ import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.eigrp.EigrpMetric;
 import org.batfish.datamodel.eigrp.EigrpProcessMode;
+import org.batfish.datamodel.matchers.CommunityListLineMatchers;
+import org.batfish.datamodel.matchers.CommunityListMatchers;
 import org.batfish.datamodel.matchers.ConfigurationMatchers;
 import org.batfish.datamodel.matchers.EigrpInterfaceSettingsMatchers;
-import org.batfish.datamodel.matchers.EigrpProcessMatchers;
+import org.batfish.datamodel.matchers.HsrpGroupMatchers;
 import org.batfish.datamodel.matchers.IkeGatewayMatchers;
 import org.batfish.datamodel.matchers.IkePhase1KeyMatchers;
 import org.batfish.datamodel.matchers.IkePhase1ProposalMatchers;
@@ -287,10 +303,19 @@ import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.ospf.StubType;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.expr.CommunityHalvesExpr;
+import org.batfish.datamodel.routing_policy.expr.CommunitySetExpr;
+import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
+import org.batfish.datamodel.routing_policy.expr.LiteralCommunityConjunction;
+import org.batfish.datamodel.routing_policy.expr.LiteralCommunityHalf;
+import org.batfish.datamodel.routing_policy.expr.RangeCommunityHalf;
+import org.batfish.datamodel.tracking.DecrementPriority;
+import org.batfish.datamodel.tracking.TrackInterface;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
 import org.batfish.representation.cisco.CiscoConfiguration;
+import org.batfish.representation.cisco.CiscoStructureType;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
@@ -736,22 +761,68 @@ public class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosEigrpNetwork() throws IOException {
-    Configuration c = parseConfig("ios-eigrp-network");
+  public void testIosBfdTemplate() throws IOException {
+    String hostname = "ios-bfd-template";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
 
-    /* Confirm classic mode networks are configured correctly */
-    assertThat(c, hasDefaultVrf(hasEigrpProcess(EigrpProcessMatchers.hasAsn(1L))));
+    assertThat(ccae, hasNumReferrers(filename, BFD_TEMPLATE, "bfd-template-unused", 0));
+    assertThat(ccae, hasNumReferrers(filename, BFD_TEMPLATE, "bfd-template-used", 1));
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            filename, BFD_TEMPLATE, "bfd-template-undefined", INTERFACE_BFD_TEMPLATE));
+  }
+
+  /**
+   * Test EIGRP address family configured within another process EIGRP configuration can declare a
+   * process that is nested in the configuration of another process. The processes are not connected
+   * in any way. The nesting is only one layer.
+   */
+  @Test
+  public void testIosEigrpAddressFamily() throws IOException {
+    Configuration c = parseConfig("ios-eigrp-address-family");
+
+    /* Confirm both processes are present */
+    assertThat(c, hasDefaultVrf(hasEigrpProcesses(hasKey(1L))));
+    assertThat(c, ConfigurationMatchers.hasVrf("vrf-name", hasEigrpProcesses(hasKey(2L))));
+
+    /* Confirm interfaces were matched */
+    assertThat(c, hasInterface("Ethernet0", hasEigrp(EigrpInterfaceSettingsMatchers.hasAsn(1L))));
+    assertThat(c, hasInterface("Ethernet1", hasEigrp(EigrpInterfaceSettingsMatchers.hasAsn(2L))));
+  }
+
+  /**
+   * Test EIGRP autonomous-system stanza Cisco does not recommend configuring the autonomous system
+   * number this way, but it is possible.
+   */
+  @Test
+  public void testIosEigrpAsn() throws IOException {
+    Configuration c = parseConfig("ios-eigrp-asn");
+
+    /* Confirm both processes are present */
+    assertThat(c, hasDefaultVrf(hasEigrpProcesses(hasKey(1L))));
+    assertThat(c, ConfigurationMatchers.hasVrf("vrf-name", hasEigrpProcesses(hasKey(2L))));
+
+    /* Confirm interfaces were matched */
+    assertThat(c, hasInterface("Ethernet0", hasEigrp(EigrpInterfaceSettingsMatchers.hasAsn(1L))));
+    assertThat(c, hasInterface("Ethernet1", hasEigrp(EigrpInterfaceSettingsMatchers.hasAsn(2L))));
+  }
+
+  /** Test classic EIGRP process with passive interfaces */
+  @Test
+  public void testIosEigrpClassic() throws IOException {
+    Configuration c = parseConfig("ios-eigrp-classic");
+
+    /* Confirm process is present */
+    assertThat(c, hasDefaultVrf(hasEigrpProcesses(hasKey(1L))));
+
+    /* Confirm interfaces were matched */
     assertThat(c, hasInterface("Ethernet0", hasEigrp(EigrpInterfaceSettingsMatchers.hasAsn(1L))));
     assertThat(c, hasInterface("Ethernet1", hasEigrp(EigrpInterfaceSettingsMatchers.hasAsn(1L))));
     assertThat(c, hasInterface("Ethernet2", hasEigrp(EigrpInterfaceSettingsMatchers.hasAsn(1L))));
-
-    /* Confirm named mode networks are configured correctly */
-    assertThat(
-        c,
-        ConfigurationMatchers.hasVrf("vrf-name", hasEigrpProcess(EigrpProcessMatchers.hasAsn(2L))));
-    assertThat(c, hasInterface("Ethernet3", hasEigrp(EigrpInterfaceSettingsMatchers.hasAsn(2L))));
-    assertThat(c, hasInterface("Ethernet4", hasEigrp(EigrpInterfaceSettingsMatchers.hasAsn(2L))));
-    assertThat(c, hasInterface("Ethernet5", hasEigrp(EigrpInterfaceSettingsMatchers.hasAsn(2L))));
 
     /* Passive interfaces are configured correctly */
     assertThat(
@@ -760,6 +831,45 @@ public class CiscoGrammarTest {
         c, hasInterface("Ethernet1", hasEigrp(EigrpInterfaceSettingsMatchers.hasPassive(false))));
     assertThat(
         c, hasInterface("Ethernet2", hasEigrp(EigrpInterfaceSettingsMatchers.hasPassive(true))));
+  }
+
+  /** Test mixing named and classic EIGRP processes in separate VRFs */
+  @Test
+  public void testIosEigrpMixed() throws IOException {
+    Configuration c = parseConfig("ios-eigrp-mixed");
+
+    /* Confirm classic mode networks are configured correctly */
+    assertThat(c, hasDefaultVrf(hasEigrpProcesses(hasKey(1L))));
+    assertThat(c, hasInterface("Ethernet0", hasEigrp(EigrpInterfaceSettingsMatchers.hasAsn(1L))));
+
+    /* Confirm named mode networks are configured correctly */
+    assertThat(c, ConfigurationMatchers.hasVrf("vrf-name", hasEigrpProcesses(hasKey(2L))));
+    assertThat(c, hasInterface("Ethernet1", hasEigrp(EigrpInterfaceSettingsMatchers.hasAsn(2L))));
+  }
+
+  /** Test multiple classic EIGRP processes in the same VRF */
+  @Test
+  public void testIosEigrpMultiple() throws IOException {
+    Configuration c = parseConfig("ios-eigrp-multiple");
+
+    /* Confirm both processes are present */
+    assertThat(c, hasDefaultVrf(hasEigrpProcesses(hasKey(1L))));
+    assertThat(c, hasDefaultVrf(hasEigrpProcesses(hasKey(2L))));
+
+    /* Confirm interfaces were matched */
+    assertThat(c, hasInterface("Ethernet0", hasEigrp(EigrpInterfaceSettingsMatchers.hasAsn(1L))));
+    assertThat(c, hasInterface("Ethernet1", hasEigrp(EigrpInterfaceSettingsMatchers.hasAsn(2L))));
+  }
+
+  /** Test named EIGRP process with passive interfaces */
+  @Test
+  public void testIosEigrpNamed() throws IOException {
+    Configuration c = parseConfig("ios-eigrp-named");
+
+    /* Confirm process is present */
+    assertThat(c, hasDefaultVrf(hasEigrpProcesses(hasKey(2L))));
+
+    /* Passive interfaces are configured correctly */
     assertThat(
         c, hasInterface("Ethernet3", hasEigrp(EigrpInterfaceSettingsMatchers.hasPassive(false))));
     assertThat(
@@ -768,18 +878,76 @@ public class CiscoGrammarTest {
         c, hasInterface("Ethernet5", hasEigrp(EigrpInterfaceSettingsMatchers.hasPassive(true))));
   }
 
+  /**
+   * Test EIGRP into EIGRP route redistribution. Checks if routing policy accepts EIGRP routes and
+   * sets metric correctly.
+   */
   @Test
-  public void testIosEigrpRedistribution() throws IOException {
-    Configuration c = parseConfig("ios-eigrp-redistribution");
+  public void testIosEigrpRedistributeEigrp() throws IOException {
+    Configuration c = parseConfig("ios-eigrp-redistribute-eigrp");
 
-    assertThat(c, hasDefaultVrf(hasEigrpProcess(notNullValue())));
+    assertThat(c, hasDefaultVrf(hasEigrpProcesses(hasKey(1L))));
+    assertThat(c, hasDefaultVrf(hasEigrpProcesses(hasKey(2L))));
     String exportPolicyName =
-        requireNonNull(c.getVrfs().get(DEFAULT_VRF_NAME).getEigrpProcess()).getExportPolicy();
+        c.getVrfs().get(DEFAULT_VRF_NAME).getEigrpProcesses().get(2L).getExportPolicy();
+    assertThat(exportPolicyName, notNullValue());
     RoutingPolicy routingPolicy = c.getRoutingPolicies().get(exportPolicyName);
     assertThat(routingPolicy, notNullValue());
 
     EigrpExternalRoute.Builder outputRouteBuilder = new EigrpExternalRoute.Builder();
-    outputRouteBuilder.setNetwork(Prefix.parse("1.0.0.0/32"));
+    outputRouteBuilder
+        .setDestinationAsn(1L)
+        .setNetwork(Prefix.parse("1.0.0.0/32"))
+        .setProcessAsn(2L);
+
+    EigrpMetric originalMetric =
+        EigrpMetric.builder()
+            .setBandwidth(2e9)
+            .setDelay(4e5)
+            .setMode(EigrpProcessMode.CLASSIC)
+            .build();
+    assertNotNull(originalMetric);
+
+    // VirtualEigrpProcess sets metric to route metric by default
+    outputRouteBuilder.setEigrpMetric(originalMetric);
+
+    EigrpInternalRoute originalRoute =
+        EigrpInternalRoute.builder()
+            .setAdmin(90)
+            .setEigrpMetric(originalMetric)
+            .setNetwork(outputRouteBuilder.getNetwork())
+            .setProcessAsn(1L)
+            .build();
+    assertNotNull(originalRoute);
+
+    // Check if routingPolicy accepts EIGRP route and sets correct metric from original route
+    assertTrue(
+        routingPolicy.process(
+            originalRoute, outputRouteBuilder, null, DEFAULT_VRF_NAME, Direction.OUT));
+    assertThat(outputRouteBuilder.build(), hasEigrpMetric(originalRoute.getEigrpMetric()));
+  }
+
+  /**
+   * Test EIGRP route redistribution. Redistributes a connected route and checks if routing policy
+   * accepts OSPF routes given "redistribute ospf 1"
+   */
+  @Test
+  public void testIosEigrpRedistribution() throws IOException {
+    Configuration c = parseConfig("ios-eigrp-redistribution");
+    long asn = 1L;
+
+    assertThat(c, hasDefaultVrf(hasEigrpProcesses(hasKey(asn))));
+    String exportPolicyName =
+        c.getVrfs().get(DEFAULT_VRF_NAME).getEigrpProcesses().get(asn).getExportPolicy();
+    assertThat(exportPolicyName, notNullValue());
+    RoutingPolicy routingPolicy = c.getRoutingPolicies().get(exportPolicyName);
+    assertThat(routingPolicy, notNullValue());
+
+    EigrpExternalRoute.Builder outputRouteBuilder = new EigrpExternalRoute.Builder();
+    outputRouteBuilder
+        .setDestinationAsn(asn)
+        .setNetwork(Prefix.parse("1.0.0.0/32"))
+        .setProcessAsn(asn);
     EigrpMetric.Builder metricBuilder = EigrpMetric.builder().setMode(EigrpProcessMode.CLASSIC);
 
     // Check if routingPolicy accepts connected route and sets correct metric
@@ -906,9 +1074,21 @@ public class CiscoGrammarTest {
   public void testIosInterfaceDelay() throws IOException {
     Configuration c = parseConfig("ios-interface-delay");
 
-    assertThat(c, hasInterface("GigabitEthernet0/0", hasEigrp(hasDelay(1E7))));
-    assertThat(c, hasInterface("GigabitEthernet0/1", hasEigrp(hasDelay(1E10))));
-    assertThat(c, hasInterface("FastEthernet0/1", hasEigrp(hasDelay(1E8))));
+    assertThat(
+        c,
+        hasInterface(
+            "GigabitEthernet0/0",
+            hasEigrp(EigrpInterfaceSettingsMatchers.hasEigrpMetric(hasDelay(1E7)))));
+    assertThat(
+        c,
+        hasInterface(
+            "GigabitEthernet0/1",
+            hasEigrp(EigrpInterfaceSettingsMatchers.hasEigrpMetric(hasDelay(1E10)))));
+    assertThat(
+        c,
+        hasInterface(
+            "FastEthernet0/1",
+            hasEigrp(EigrpInterfaceSettingsMatchers.hasEigrpMetric(hasDelay(1E8)))));
   }
 
   @Test
@@ -918,6 +1098,33 @@ public class CiscoGrammarTest {
     assertThat(c, hasInterface("GigabitEthernet0/0", hasBandwidth(1E9D)));
     assertThat(c, hasInterface("GigabitEthernet0/1", hasBandwidth(1E9D)));
     assertThat(c, hasInterface("GigabitEthernet0/2", hasBandwidth(100E6D)));
+  }
+
+  @Test
+  public void testIosInterfaceStandby() throws IOException {
+    Configuration c = parseConfig("ios-interface-standby");
+    Interface i = c.getInterfaces().get("Ethernet0");
+
+    assertThat(
+        c,
+        ConfigurationMatchers.hasTrackingGroups(
+            equalTo(ImmutableMap.of("1", new TrackInterface("Tunnel1")))));
+    assertThat(
+        i,
+        hasHsrpGroup(
+            1001,
+            HsrpGroupMatchers.hasAuthentication(
+                sha256Digest("012345678901234567890123456789012345678"))));
+    assertThat(i, hasHsrpGroup(1001, HsrpGroupMatchers.hasHelloTime(500)));
+    assertThat(i, hasHsrpGroup(1001, HsrpGroupMatchers.hasHoldTime(2)));
+    assertThat(i, hasHsrpGroup(1001, HsrpGroupMatchers.hasIp(new Ip("10.0.0.1"))));
+    assertThat(i, hasHsrpGroup(1001, HsrpGroupMatchers.hasPriority(105)));
+    assertThat(i, hasHsrpGroup(1001, HsrpGroupMatchers.hasPreempt()));
+    assertThat(
+        i,
+        hasHsrpGroup(
+            1001, hasTrackActions(equalTo(ImmutableMap.of("1", new DecrementPriority(20))))));
+    assertThat(i, hasHsrpVersion("2"));
   }
 
   @Test
@@ -1230,6 +1437,22 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testIosOspfDistributeList() throws IOException {
+    String hostname = "ios-ospf-distribute-list";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_EXTENDED, "aclin", 1));
+    assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_EXTENDED, "aclout", 1));
+    assertThat(ccae, hasNumReferrers(filename, PREFIX_LIST, "plin", 1));
+    assertThat(ccae, hasNumReferrers(filename, PREFIX_LIST, "plout", 1));
+    assertThat(ccae, hasNumReferrers(filename, ROUTE_MAP, "rmin", 1));
+    assertThat(ccae, hasNumReferrers(filename, ROUTE_MAP, "rmout", 1));
+  }
+
+  @Test
   public void testIosOspfNetwork() throws IOException {
     Configuration c = parseConfig("ios-interface-ospf-network");
 
@@ -1450,6 +1673,19 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testIosTrack() throws IOException {
+    String hostname = "ios-track";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    assertThat(ccae, hasNumReferrers(filename, TRACK, "1", 1));
+    assertThat(ccae, hasNumReferrers(filename, TRACK, "2", 0));
+    assertThat(ccae, hasUndefinedReference(filename, TRACK, "3"));
+  }
+
+  @Test
   public void testIosZoneSecurity() throws IOException {
     String hostname = "ios-zone-security";
     String filename = "configs/" + hostname;
@@ -1637,6 +1873,56 @@ public class CiscoGrammarTest {
     assertThat(c, hasInterface(e2Name, hasOutgoingFilter(rejects(flow, e3Name, c))));
     assertThat(c, hasInterface(e3Name, hasOutgoingFilter(rejects(flow, e1Name, c))));
     assertThat(c, hasInterface(e3Name, hasOutgoingFilter(rejects(flow, e2Name, c))));
+  }
+
+  @Test
+  public void testIosXrCommunitySet() throws IOException {
+    Configuration c = parseConfig("ios-xr-community-set");
+    CommunityList list = c.getCommunityLists().get("set1");
+
+    assertThat(
+        list,
+        CommunityListMatchers.hasLine(
+            0,
+            CommunityListLineMatchers.hasMatchCondition(
+                isRegexCommunitySet(hasRegex("^1234:.*")))));
+    assertThat(
+        list,
+        CommunityListMatchers.hasLine(
+            1,
+            CommunityListLineMatchers.hasMatchCondition(
+                equalTo(new CommunityHalvesExpr(RangeCommunityHalf.ALL, RangeCommunityHalf.ALL)))));
+    assertThat(
+        list,
+        CommunityListMatchers.hasLine(
+            2,
+            CommunityListLineMatchers.hasMatchCondition(
+                equalTo(new LiteralCommunity(CommonUtil.communityStringToLong("1:2"))))));
+    assertThat(
+        list,
+        CommunityListMatchers.hasLine(
+            3,
+            CommunityListLineMatchers.hasMatchCondition(
+                equalTo(
+                    new CommunityHalvesExpr(
+                        RangeCommunityHalf.ALL, new LiteralCommunityHalf(3))))));
+    assertThat(
+        list,
+        CommunityListMatchers.hasLine(
+            4,
+            CommunityListLineMatchers.hasMatchCondition(
+                equalTo(
+                    new CommunityHalvesExpr(
+                        new LiteralCommunityHalf(4), RangeCommunityHalf.ALL)))));
+    assertThat(
+        list,
+        CommunityListMatchers.hasLine(
+            5,
+            CommunityListLineMatchers.hasMatchCondition(
+                equalTo(
+                    new CommunityHalvesExpr(
+                        new LiteralCommunityHalf(6),
+                        new RangeCommunityHalf(new SubRange(100, 103)))))));
   }
 
   @Test
@@ -1850,79 +2136,100 @@ public class CiscoGrammarTest {
     SortedMap<String, CommunityList> nxosCommunityLists =
         nxosCommunityListConfig.getCommunityLists();
 
-    String iosRegexImpliedStd = getCLRegex(iosCommunityLists, "40");
-    String iosRegexImpliedExp = getCLRegex(iosCommunityLists, "400");
-    String iosRegexStd = getCLRegex(iosCommunityLists, "std_community");
-    String iosRegexExp = getCLRegex(iosCommunityLists, "exp_community");
-    String iosRegexStdAsnn = getCLRegex(iosCommunityLists, "std_as_nn");
-    String iosRegexExpAsnn = getCLRegex(iosCommunityLists, "exp_as_nn");
-    String iosRegexStdGshut = getCLRegex(iosCommunityLists, "std_gshut");
-    String iosRegexExpGshut = getCLRegex(iosCommunityLists, "exp_gshut");
-    String iosRegexStdInternet = getCLRegex(iosCommunityLists, "std_internet");
-    String iosRegexExpInternet = getCLRegex(iosCommunityLists, "exp_internet");
-    String iosRegexStdLocalAs = getCLRegex(iosCommunityLists, "std_local_AS");
-    String iosRegexExpLocalAs = getCLRegex(iosCommunityLists, "exp_local_AS");
-    String iosRegexStdNoAdv = getCLRegex(iosCommunityLists, "std_no_advertise");
-    String iosRegexExpNoAdv = getCLRegex(iosCommunityLists, "exp_no_advertise");
-    String iosRegexStdNoExport = getCLRegex(iosCommunityLists, "std_no_export");
-    String iosRegexExpNoExport = getCLRegex(iosCommunityLists, "exp_no_export");
+    long iosImpliedStd = communityListToCommunity(iosCommunityLists, "40");
+    String iosRegexImpliedExp = communityListToRegex(iosCommunityLists, "400");
+    long iosStdAsnn = communityListToCommunity(iosCommunityLists, "std_as_nn");
+    String iosRegexExpAsnn = communityListToRegex(iosCommunityLists, "exp_as_nn");
+    long iosStdGshut = communityListToCommunity(iosCommunityLists, "std_gshut");
+    String iosRegexExpGshut = communityListToRegex(iosCommunityLists, "exp_gshut");
+    long iosStdInternet = communityListToCommunity(iosCommunityLists, "std_internet");
+    String iosRegexExpInternet = communityListToRegex(iosCommunityLists, "exp_internet");
+    long iosStdLocalAs = communityListToCommunity(iosCommunityLists, "std_local_AS");
+    String iosRegexExpLocalAs = communityListToRegex(iosCommunityLists, "exp_local_AS");
+    long iosStdNoAdv = communityListToCommunity(iosCommunityLists, "std_no_advertise");
+    String iosRegexExpNoAdv = communityListToRegex(iosCommunityLists, "exp_no_advertise");
+    long iosStdNoExport = communityListToCommunity(iosCommunityLists, "std_no_export");
+    String iosRegexExpNoExport = communityListToRegex(iosCommunityLists, "exp_no_export");
 
-    String eosRegexStd = getCLRegex(eosCommunityLists, "eos_std");
-    String eosRegexExp = getCLRegex(eosCommunityLists, "eos_exp");
-    String eosRegexStdGshut = getCLRegex(eosCommunityLists, "eos_std_gshut");
-    String eosRegexStdInternet = getCLRegex(eosCommunityLists, "eos_std_internet");
-    String eosRegexStdLocalAs = getCLRegex(eosCommunityLists, "eos_std_local_AS");
-    String eosRegexStdNoAdv = getCLRegex(eosCommunityLists, "eos_std_no_adv");
-    String eosRegexStdNoExport = getCLRegex(eosCommunityLists, "eos_std_no_export");
-    String eosRegexStdMulti = getCLRegex(eosCommunityLists, "eos_std_multi");
-    String eosRegexExpMulti = getCLRegex(eosCommunityLists, "eos_exp_multi");
+    long eosStd = communityListToCommunity(eosCommunityLists, "eos_std");
+    String eosRegexExp = communityListToRegex(eosCommunityLists, "eos_exp");
+    long eosStdGshut = communityListToCommunity(eosCommunityLists, "eos_std_gshut");
+    long eosStdInternet = communityListToCommunity(eosCommunityLists, "eos_std_internet");
+    long eosStdLocalAs = communityListToCommunity(eosCommunityLists, "eos_std_local_AS");
+    long eosStdNoAdv = communityListToCommunity(eosCommunityLists, "eos_std_no_adv");
+    long eosStdNoExport = communityListToCommunity(eosCommunityLists, "eos_std_no_export");
+    String eosRegexExpMulti = communityListToRegex(eosCommunityLists, "eos_exp_multi");
 
-    String nxosRegexStd = getCLRegex(nxosCommunityLists, "nxos_std");
-    String nxosRegexExp = getCLRegex(nxosCommunityLists, "nxos_exp");
-    String nxosRegexStdInternet = getCLRegex(nxosCommunityLists, "nxos_std_internet");
-    String nxosRegexStdLocalAs = getCLRegex(nxosCommunityLists, "nxos_std_local_AS");
-    String nxosRegexStdNoAdv = getCLRegex(nxosCommunityLists, "nxos_std_no_adv");
-    String nxosRegexStdNoExport = getCLRegex(nxosCommunityLists, "nxos_std_no_export");
-    String nxosRegexStdMulti = getCLRegex(nxosCommunityLists, "nxos_std_multi");
-    String nxosRegexExpMulti = getCLRegex(nxosCommunityLists, "nxos_exp_multi");
+    long nxosStd = communityListToCommunity(nxosCommunityLists, "nxos_std");
+    String nxosRegexExp = communityListToRegex(nxosCommunityLists, "nxos_exp");
+    long nxosStdInternet = communityListToCommunity(nxosCommunityLists, "nxos_std_internet");
+    long nxosStdLocalAs = communityListToCommunity(nxosCommunityLists, "nxos_std_local_AS");
+    long nxosStdNoAdv = communityListToCommunity(nxosCommunityLists, "nxos_std_no_adv");
+    long nxosStdNoExport = communityListToCommunity(nxosCommunityLists, "nxos_std_no_export");
+    String nxosRegexExpMulti = communityListToRegex(nxosCommunityLists, "nxos_exp_multi");
+
+    // check literal communities
+    assertThat(iosImpliedStd, equalTo(4294967295L));
+    assertThat(iosStdAsnn, equalTo(CommonUtil.communityStringToLong("65535:65535")));
+    assertThat(eosStd, equalTo(CommonUtil.communityStringToLong("0:1")));
+    assertThat(nxosStd, equalTo(CommonUtil.communityStringToLong("65535:65535")));
+
+    // check regex communities
+    assertThat(iosRegexImpliedExp, equalTo("4294967295"));
+    assertThat(iosRegexExpAsnn, equalTo("65535:65535"));
+    assertThat(eosRegexExp, equalTo("1"));
+    /*
+     *  TODO: https://github.com/batfish/batfish/issues/1993
+     *  (Should be three regexes: '0:1', '0:2, '0:3')
+     */
+    assertThat(eosRegexExpMulti, equalTo("0:10:20:3"));
+    assertThat(nxosRegexExp, equalTo("65535:65535"));
+    /*
+     *  TODO: https://github.com/batfish/batfish/issues/1993
+     *  (Should be three regexes: '0:1', '0:2, '0:3')
+     */
+    assertThat(nxosRegexExpMulti, equalTo("0:10:20:3"));
 
     // Check well known community regexes are generated properly
-    String regexInternet = "^" + CommonUtil.longToCommunity(WellKnownCommunity.INTERNET) + "$";
-    String regexNoAdv = "^" + CommonUtil.longToCommunity(WellKnownCommunity.NO_ADVERTISE) + "$";
-    String regexNoExport = "^" + CommonUtil.longToCommunity(WellKnownCommunity.NO_EXPORT) + "$";
-    String regexGshut =
-        "^" + CommonUtil.longToCommunity(WellKnownCommunity.GRACEFUL_SHUTDOWN) + "$";
-    String regexLocalAs =
-        "^" + CommonUtil.longToCommunity(WellKnownCommunity.NO_EXPORT_SUBCONFED) + "$";
-    assertThat(iosRegexStdInternet, equalTo(regexInternet));
-    assertThat(iosRegexStdNoAdv, equalTo(regexNoAdv));
-    assertThat(iosRegexStdNoExport, equalTo(regexNoExport));
-    assertThat(iosRegexStdGshut, equalTo(regexGshut));
-    assertThat(iosRegexStdLocalAs, equalTo(regexLocalAs));
-    assertThat(eosRegexStdInternet, equalTo(regexInternet));
-    assertThat(eosRegexStdNoAdv, equalTo(regexNoAdv));
-    assertThat(eosRegexStdNoExport, equalTo(regexNoExport));
-    assertThat(eosRegexStdGshut, equalTo(regexGshut));
-    assertThat(eosRegexStdLocalAs, equalTo(regexLocalAs));
+    assertThat(iosStdInternet, equalTo(WellKnownCommunity.INTERNET));
+    assertThat(iosStdNoAdv, equalTo(WellKnownCommunity.NO_ADVERTISE));
+    assertThat(iosStdNoExport, equalTo(WellKnownCommunity.NO_EXPORT));
+    assertThat(iosStdGshut, equalTo(WellKnownCommunity.GRACEFUL_SHUTDOWN));
+    assertThat(iosStdLocalAs, equalTo(WellKnownCommunity.NO_EXPORT_SUBCONFED));
+    assertThat(eosStdInternet, equalTo(WellKnownCommunity.INTERNET));
+    assertThat(eosStdNoAdv, equalTo(WellKnownCommunity.NO_ADVERTISE));
+    assertThat(eosStdNoExport, equalTo(WellKnownCommunity.NO_EXPORT));
+    assertThat(eosStdGshut, equalTo(WellKnownCommunity.GRACEFUL_SHUTDOWN));
+    assertThat(eosStdLocalAs, equalTo(WellKnownCommunity.NO_EXPORT_SUBCONFED));
     // NX-OS does not support gshut
-    assertThat(nxosRegexStdInternet, equalTo(regexInternet));
-    assertThat(nxosRegexStdNoAdv, equalTo(regexNoAdv));
-    assertThat(nxosRegexStdNoExport, equalTo(regexNoExport));
-    assertThat(nxosRegexStdLocalAs, equalTo(regexLocalAs));
+    assertThat(nxosStdInternet, equalTo(WellKnownCommunity.INTERNET));
+    assertThat(nxosStdNoAdv, equalTo(WellKnownCommunity.NO_ADVERTISE));
+    assertThat(nxosStdNoExport, equalTo(WellKnownCommunity.NO_EXPORT));
+    assertThat(nxosStdLocalAs, equalTo(WellKnownCommunity.NO_EXPORT_SUBCONFED));
 
-    // Confirm for the same literal communities, standard and expanded regexs are different
-    assertThat(iosRegexImpliedStd, not(equalTo(iosRegexImpliedExp)));
-    assertThat(iosRegexStd, not(equalTo(iosRegexExp)));
-    assertThat(iosRegexStdAsnn, not(equalTo(iosRegexExpAsnn)));
-    assertThat(iosRegexStdInternet, not(equalTo(iosRegexExpInternet)));
-    assertThat(iosRegexStdNoAdv, not(equalTo(iosRegexExpNoAdv)));
-    assertThat(iosRegexStdNoExport, not(equalTo(iosRegexExpNoExport)));
-    assertThat(iosRegexStdGshut, not(equalTo(iosRegexExpGshut)));
-    assertThat(iosRegexStdLocalAs, not(equalTo(iosRegexExpLocalAs)));
-    assertThat(eosRegexStd, not(equalTo(eosRegexExp)));
-    assertThat(eosRegexStdMulti, not(equalTo(eosRegexExpMulti)));
-    assertThat(nxosRegexStd, not(equalTo(nxosRegexExp)));
-    assertThat(nxosRegexStdMulti, not(equalTo(nxosRegexExpMulti)));
+    // make sure well known communities in expanded lists are not actually converted
+    assertThat(iosRegexExpGshut, equalTo("gshut"));
+    assertThat(iosRegexExpInternet, equalTo("internet"));
+    assertThat(iosRegexExpLocalAs, equalTo("local-AS"));
+    assertThat(iosRegexExpNoAdv, equalTo("no-advertise"));
+    assertThat(iosRegexExpNoExport, equalTo("no-export"));
+
+    // check conjunctions of communities are converted correctly
+    assertThat(
+        ((LiteralCommunityConjunction)
+                communityListToMatchCondition(iosCommunityLists, "std_community"))
+            .getRequiredCommunities(),
+        equalTo(ImmutableSet.of(1L, 2L, 3L)));
+    assertThat(
+        ((LiteralCommunityConjunction)
+                communityListToMatchCondition(eosCommunityLists, "eos_std_multi"))
+            .getRequiredCommunities(),
+        equalTo(ImmutableSet.of(1L, 2L, 3L)));
+    assertThat(
+        ((LiteralCommunityConjunction)
+                communityListToMatchCondition(nxosCommunityLists, "nxos_std_multi"))
+            .getRequiredCommunities(),
+        equalTo(ImmutableSet.of(1L, 2L, 3L)));
   }
 
   @Test
@@ -2278,9 +2585,27 @@ public class CiscoGrammarTest {
                 hasIkePhase1Proposals(equalTo(ImmutableList.of("10", "20"))))));
   }
 
-  private static String getCLRegex(
+  private static CommunitySetExpr communityListToMatchCondition(
       SortedMap<String, CommunityList> communityLists, String communityName) {
-    return communityLists.get(communityName).getLines().get(0).getRegex();
+    return communityLists.get(communityName).getLines().get(0).getMatchCondition();
+  }
+
+  private static long communityListToCommunity(
+      SortedMap<String, CommunityList> communityLists, String communityName) {
+    return communityLists
+        .get(communityName)
+        .getLines()
+        .get(0)
+        .getMatchCondition()
+        .asLiteralCommunities(null)
+        .first();
+  }
+
+  private static @Nonnull String communityListToRegex(
+      SortedMap<String, CommunityList> communityLists, String communityName) {
+    return ((RegexCommunitySet)
+            communityLists.get(communityName).getLines().get(0).getMatchCondition())
+        .getRegex();
   }
 
   @Test
@@ -2899,7 +3224,7 @@ public class CiscoGrammarTest {
   }
 
   private Configuration parseConfig(String hostname) throws IOException {
-    return parseTextConfigs(hostname).get(hostname);
+    return parseTextConfigs(hostname).get(hostname.toLowerCase());
   }
 
   private Map<String, Configuration> parseTextConfigs(String... configurationNames)
@@ -2933,7 +3258,7 @@ public class CiscoGrammarTest {
 
     Boolean[] expectedResults = new Boolean[] {Boolean.TRUE, Boolean.FALSE, null};
     for (int i = 0; i < configurationNames.length; i++) {
-      Configuration configuration = configurations.get(configurationNames[i]);
+      Configuration configuration = configurations.get(configurationNames[i].toLowerCase());
       assertThat(configuration.getVrfs().size(), equalTo(1));
       for (Vrf vrf : configuration.getVrfs().values()) {
         assertThat(vrf.getOspfProcess().getRfc1583Compatible(), is(expectedResults[i]));
@@ -2976,5 +3301,50 @@ public class CiscoGrammarTest {
         hasInterface(
             "Ethernet1/1",
             hasAllAddresses(containsInAnyOrder(new InterfaceAddress("10.20.0.3/31")))));
+  }
+
+  @Test
+  public void testAsaInterface() throws IOException {
+    String hostname = "asa-interface";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Configuration c = batfish.loadConfigurations().get(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    // Confirm interface's address is extracted properly
+    assertThat(
+        c,
+        hasInterface(
+            "ifname", hasAllAddresses(containsInAnyOrder(new InterfaceAddress("3.0.0.2/24")))));
+
+    // Confirm interface definition is tracked for the alias name
+    assertThat(ccae, hasDefinedStructure(filename, CiscoStructureType.INTERFACE, "ifname"));
+  }
+
+  @Test
+  public void testAsaStaticRoute() throws IOException {
+    Configuration c = parseConfig("asa-static-route");
+
+    // Confirm static route is extracted properly
+    assertThat(
+        c,
+        ConfigurationMatchers.hasVrf(
+            "default",
+            hasStaticRoutes(
+                equalTo(
+                    ImmutableSet.of(
+                        StaticRoute.builder()
+                            .setNextHopIp(new Ip("3.0.0.1"))
+                            .setNetwork(Prefix.parse("0.0.0.0/0"))
+                            .setNextHopInterface("ifname")
+                            .setAdministrativeCost(2)
+                            .build(),
+                        StaticRoute.builder()
+                            .setNextHopIp(new Ip("3.0.0.2"))
+                            .setNetwork(Prefix.parse("1.0.0.0/8"))
+                            .setNextHopInterface("ifname")
+                            .setAdministrativeCost(3)
+                            .build())))));
   }
 }

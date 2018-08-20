@@ -28,7 +28,7 @@ public class OspfProcess implements Serializable {
 
   public static class Builder extends NetworkFactoryBuilder<OspfProcess> {
 
-    private String _exportPolicy;
+    @Nullable private String _exportPolicy;
 
     private Long _maxMetricExternalNetworks;
 
@@ -61,7 +61,7 @@ public class OspfProcess implements Serializable {
       return ospfProcess;
     }
 
-    public Builder setExportPolicy(RoutingPolicy exportPolicy) {
+    public Builder setExportPolicy(@Nullable RoutingPolicy exportPolicy) {
       _exportPolicy = exportPolicy != null ? exportPolicy.getName() : null;
       return this;
     }
@@ -99,6 +99,8 @@ public class OspfProcess implements Serializable {
 
   private static final int DEFAULT_CISCO_VLAN_OSPF_COST = 1;
 
+  private static final String PROP_AREAS = "areas";
+
   private static final String PROP_EXPORT_POLICY = "exportPolicy";
 
   private static final String PROP_EXPORT_POLICY_SOURCES = "exportPolicySources";
@@ -115,6 +117,10 @@ public class OspfProcess implements Serializable {
 
   private static final String PROP_PROCESS_ID = "processId";
 
+  private static final String PROP_REFERENCE_BANDWIDTH = "referenceBandwidth";
+
+  private static final String PROP_ROUTER_ID = "routerId";
+
   private static final long serialVersionUID = 1L;
 
   public static Builder builder(NetworkFactory networkFactory) {
@@ -123,7 +129,7 @@ public class OspfProcess implements Serializable {
 
   private SortedMap<Long, OspfArea> _areas;
 
-  private String _exportPolicy;
+  @Nullable private String _exportPolicy;
 
   private SortedSet<String> _exportPolicySources;
 
@@ -178,6 +184,7 @@ public class OspfProcess implements Serializable {
   }
 
   @JsonPropertyDescription("The OSPF areas contained in this process")
+  @JsonProperty(PROP_AREAS)
   public SortedMap<Long, OspfArea> getAreas() {
     return _areas;
   }
@@ -186,6 +193,7 @@ public class OspfProcess implements Serializable {
   @JsonPropertyDescription(
       "The routing policy applied to routes in the main RIB to determine which ones are to be "
           + "exported into OSPF and how")
+  @Nullable
   public String getExportPolicy() {
     return _exportPolicy;
   }
@@ -237,6 +245,7 @@ public class OspfProcess implements Serializable {
   @JsonPropertyDescription(
       "The reference bandwidth by which an interface's bandwidth is divided to determine its OSPF "
           + "cost")
+  @JsonProperty(PROP_REFERENCE_BANDWIDTH)
   public Double getReferenceBandwidth() {
     return _referenceBandwidth;
   }
@@ -246,6 +255,7 @@ public class OspfProcess implements Serializable {
   }
 
   @JsonPropertyDescription("The router-id of this OSPF process")
+  @JsonProperty(PROP_ROUTER_ID)
   public Ip getRouterId() {
     return _routerId;
   }
@@ -276,7 +286,7 @@ public class OspfProcess implements Serializable {
   }
 
   @JsonProperty(PROP_EXPORT_POLICY)
-  public void setExportPolicy(String exportPolicy) {
+  public void setExportPolicy(@Nullable String exportPolicy) {
     _exportPolicy = exportPolicy;
   }
 

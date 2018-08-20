@@ -238,6 +238,15 @@ bfd_null
    ) null_rest_of_line
 ;
 
+bfd_template_null
+:
+  NO?
+  (
+    ECHO
+    | INTERVAL
+  ) null_rest_of_line
+;
+
 cisco_configuration
 :
    NEWLINE?
@@ -2068,6 +2077,25 @@ role_null
    ) null_rest_of_line
 ;
 
+route_tail
+:
+   iface = variable destination = IP_ADDRESS mask = IP_ADDRESS gateway = IP_ADDRESS
+   (
+      (
+         (
+            distance = DEC+
+         )?
+         (
+            TRACK track = DEC+
+         )?
+      )
+      |
+      (
+         TUNNELED
+      )
+   ) NEWLINE
+;
+
 router_multicast_stanza
 :
    IPV6? ROUTER
@@ -2176,6 +2204,11 @@ s_bfd
    (
       bfd_null
    )*
+;
+
+s_bfd_template
+:
+  BFD_TEMPLATE SINGLE_HOP name = variable_permissive NEWLINE bfd_template_null*
 ;
 
 s_cluster
@@ -2889,6 +2922,11 @@ s_role
    )*
 ;
 
+s_route
+:
+   ROUTE route_tail
+;
+
 s_router_vrrp
 :
    NO? ROUTER VRRP NEWLINE
@@ -3059,10 +3097,12 @@ s_time_range
 
 s_track
 :
-   TRACK null_rest_of_line
-   (
-      track_null
-   )*
+  TRACK name = variable
+  (
+    track_block
+    | track_interface
+    | track_list
+  )
 ;
 
 s_tunnel_group
@@ -3498,6 +3538,7 @@ stanza
    | s_arp_access_list_extended
    | s_authentication
    | s_bfd
+   | s_bfd_template
    | s_cable
    | s_call_home
    | s_callhome
@@ -3617,6 +3658,7 @@ stanza
    | s_redundancy
    | s_rf
    | s_role
+   | s_route
    | s_router_eigrp
    | s_router_ospf
    | s_router_ospfv3
@@ -3841,14 +3883,37 @@ tr_null
    ) null_rest_of_line
 ;
 
-track_null
+track_block
 :
-   NO?
-   (
-      DELAY
-      | OBJECT
-      | TYPE
-   ) null_rest_of_line
+  NEWLINE track_block_null*
+;
+
+track_block_null
+:
+  TYPE null_rest_of_line track_block_type_null*
+;
+
+track_block_type_null
+:
+  OBJECT null_rest_of_line
+;
+
+track_interface
+:
+  INTERFACE interface_name LINE_PROTOCOL NEWLINE
+;
+
+track_list
+:
+  LIST null_rest_of_line track_list_null*
+;
+
+track_list_null
+:
+  (
+    DELAY
+    | OBJECT
+  ) null_rest_of_line
 ;
 
 ts_common

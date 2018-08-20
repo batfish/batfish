@@ -4,10 +4,12 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.InterfaceType;
 
 /**
  * Enables specification of groups of interfaces in various questions.
@@ -26,6 +28,8 @@ public class InterfacesSpecifier {
   public enum Type {
     DESC,
     NAME,
+    /** refers to {@link InterfaceType} */
+    TYPE,
     VRF
   }
 
@@ -47,11 +51,11 @@ public class InterfacesSpecifier {
 
     if (parts.length == 1) {
       _type = Type.NAME;
-      _regex = Pattern.compile(_expression);
+      _regex = Pattern.compile(_expression, Pattern.CASE_INSENSITIVE);
     } else if (parts.length == 2) {
       try {
         _type = Type.valueOf(parts[0].toUpperCase());
-        _regex = Pattern.compile(parts[1]);
+        _regex = Pattern.compile(parts[1], Pattern.CASE_INSENSITIVE);
       } catch (IllegalArgumentException e) {
         throw new IllegalArgumentException(
             "Illegal InterfacesSpecifier filter "
@@ -72,6 +76,20 @@ public class InterfacesSpecifier {
     _regex = regex;
   }
 
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (!(obj instanceof InterfacesSpecifier)) {
+      return false;
+    }
+    InterfacesSpecifier that = (InterfacesSpecifier) obj;
+    return Objects.equals(_expression, that._expression)
+        && Objects.equals(_regex.pattern(), that._regex.pattern())
+        && Objects.equals(_type, that._type);
+  }
+
   @JsonIgnore
   public Pattern getRegex() {
     return _regex;
@@ -88,11 +106,18 @@ public class InterfacesSpecifier {
         return _regex.matcher(iface.getDescription()).matches();
       case NAME:
         return _regex.matcher(iface.getName()).matches();
+      case TYPE:
+        return _regex.matcher(iface.getInterfaceType().toString()).matches();
       case VRF:
         return _regex.matcher(iface.getVrfName()).matches();
       default:
         throw new BatfishException("Unhandled InterfacesSpecifier type: " + _type);
     }
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_expression, _regex.pattern(), _type.ordinal());
   }
 
   @Override

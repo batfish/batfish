@@ -14,6 +14,8 @@ import org.batfish.datamodel.pojo.Environment;
 
 public class FlowHistory extends AnswerElement {
 
+  private static final String PROP_TRACES = "traces";
+
   public static class FlowHistoryInfo {
 
     private static final String PROP_ENVIRONMENTS = "environments";
@@ -38,14 +40,17 @@ public class FlowHistory extends AnswerElement {
       _paths = paths;
     }
 
+    @JsonProperty(PROP_ENVIRONMENTS)
     public Map<String, Environment> getEnvironments() {
       return _environments;
     }
 
+    @JsonProperty(PROP_FLOW)
     public Flow getFlow() {
       return _flow;
     }
 
+    @JsonProperty(PROP_PATHS)
     public Map<String, Set<FlowTrace>> getPaths() {
       return _paths;
     }
@@ -76,6 +81,7 @@ public class FlowHistory extends AnswerElement {
     _traces.get(flowText).getPaths().get(envTag).add(trace);
   }
 
+  @JsonProperty(PROP_TRACES)
   public Map<String, FlowHistoryInfo> getTraces() {
     return _traces;
   }
@@ -97,8 +103,7 @@ public class FlowHistory extends AnswerElement {
     return retString.toString();
   }
 
-  /* Only for Jackson */
-  @SuppressWarnings("unused")
+  @JsonProperty(PROP_TRACES)
   private void setTraces(SortedMap<String, FlowHistoryInfo> traces) {
     _traces = traces;
   }

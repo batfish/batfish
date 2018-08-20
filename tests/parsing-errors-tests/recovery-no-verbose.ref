@@ -3,17 +3,21 @@
     {
       "class" : "org.batfish.datamodel.answers.InitInfoAnswerElement",
       "parseStatus" : {
-        "as1r1" : "PARTIALLY_UNRECOGNIZED",
-        "as1r2" : "PASSED",
-        "as2r1" : "PASSED"
+        "configs/as1r1.cfg" : "PARTIALLY_UNRECOGNIZED",
+        "configs/as1r2.cfg" : "PASSED",
+        "configs/as2r1.cfg" : "PASSED"
       },
       "warnings" : {
         "as1r1" : {
-          "Red flags" : [
+          "Parse warnings" : [
             {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Unrecognized Line: 5: ip address 10.12.11.1 255.255.255.0aaaaa:wq (Batfish parser context: [if_inner s_interface stanza cisco_configuration]) SUBSEQUENT LINES MAY NOT BE PROCESSED CORRECTLY"
-            },
+              "Comment" : "This syntax is unrecognized",
+              "Line" : 5,
+              "Parser_Context" : "[if_inner s_interface stanza cisco_configuration]",
+              "Text" : "ip address 10.12.11.1 255.255.255.0aaaaa:wq"
+            }
+          ],
+          "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
               "text" : "Could not determine update source for BGP neighbor: '10.12.11.2'"
@@ -28,7 +32,7 @@
     "differential" : false,
     "environmentBgpTables" : false,
     "environmentRoutes" : false,
-    "includeOneTableKeys" : false,
+    "includeOneTableKeys" : true,
     "summary" : false,
     "verboseError" : false
   },

@@ -91,7 +91,7 @@ public class RoutesAnswerer extends Answerer {
         return getBgpRibRoutes(dp.getBgpRoutes(false), matchingNodes, vrfRegex);
       case BGPMP:
         return getBgpRibRoutes(dp.getBgpRoutes(true), matchingNodes, vrfRegex);
-      case ALL:
+      case MAIN:
       default:
         return getMainRibRoutes(dp.getRibs(), matchingNodes, vrfRegex, ipOwners);
     }
@@ -241,7 +241,7 @@ public class RoutesAnswerer extends Answerer {
                 Boolean.FALSE,
                 Boolean.TRUE));
         break;
-      case ALL:
+      case MAIN:
       default:
         columnBuilder.add(
             new ColumnMetadata(

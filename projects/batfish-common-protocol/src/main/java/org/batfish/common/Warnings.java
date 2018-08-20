@@ -1,6 +1,7 @@
 package org.batfish.common;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static java.util.Objects.requireNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -9,15 +10,17 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.grammar.BatfishCombinedParser;
-import org.batfish.grammar.ParseTreePrettyPrinter;
 
 public class Warnings implements Serializable {
   private static final long serialVersionUID = 1L;
 
   private static final String MISCELLANEOUS = "MISCELLANEOUS";
+
+  private static final String PROP_PARSE_WARNINGS = "Parse warnings";
 
   private static final String PROP_PEDANTIC = "Pedantic complaints";
 
@@ -25,11 +28,11 @@ public class Warnings implements Serializable {
 
   private static final String PROP_UNIMPLEMENTED = "Unimplemented features";
 
+  @Nonnull private final List<ParseWarning> _parseWarnings;
+
   private transient boolean _pedanticRecord;
 
   private final List<Warning> _pedanticWarnings;
-
-  private transient boolean _printParseTree;
 
   private transient boolean _redFlagRecord;
 
@@ -40,29 +43,32 @@ public class Warnings implements Serializable {
   private final List<Warning> _unimplementedWarnings;
 
   @JsonCreator
-  public Warnings(
+  private Warnings(
       @Nullable @JsonProperty(PROP_PEDANTIC) List<Warning> pedanticWarnings,
       @Nullable @JsonProperty(PROP_RED_FLAGS) List<Warning> redFlagWarnings,
-      @Nullable @JsonProperty(PROP_UNIMPLEMENTED) List<Warning> unimplementedWarnings) {
+      @Nullable @JsonProperty(PROP_UNIMPLEMENTED) List<Warning> unimplementedWarnings,
+      @Nullable @JsonProperty(PROP_PARSE_WARNINGS) List<ParseWarning> parseWarnings) {
     _pedanticWarnings = firstNonNull(pedanticWarnings, new LinkedList<>());
     _redFlagWarnings = firstNonNull(redFlagWarnings, new LinkedList<>());
+    _parseWarnings = firstNonNull(parseWarnings, new LinkedList<>());
     _unimplementedWarnings = firstNonNull(unimplementedWarnings, new LinkedList<>());
   }
 
   public Warnings() {
-    this(false, false, false, false);
+    this(false, false, false);
   }
 
-  public Warnings(
-      boolean pedanticRecord,
-      boolean redFlagRecord,
-      boolean unimplementedRecord,
-      boolean printParseTree) {
-    this(null, null, null);
+  public Warnings(boolean pedanticRecord, boolean redFlagRecord, boolean unimplementedRecord) {
+    this(null, null, null, null);
     _pedanticRecord = pedanticRecord;
-    _printParseTree = printParseTree;
     _redFlagRecord = redFlagRecord;
     _unimplementedRecord = unimplementedRecord;
+  }
+
+  @Nonnull
+  @JsonProperty(PROP_PARSE_WARNINGS)
+  public List<ParseWarning> getParseWarnings() {
+    return _parseWarnings;
   }
 
   @JsonProperty(PROP_PEDANTIC)
@@ -84,7 +90,8 @@ public class Warnings implements Serializable {
   public boolean isEmpty() {
     return _pedanticWarnings.isEmpty()
         && _redFlagWarnings.isEmpty()
-        && _unimplementedWarnings.isEmpty();
+        && _unimplementedWarnings.isEmpty()
+        && _parseWarnings.isEmpty();
   }
 
   public void pedantic(String msg) {
@@ -109,51 +116,85 @@ public class Warnings implements Serializable {
     _redFlagWarnings.add(new Warning(msg, tag));
   }
 
+  /**
+   * Adds a note that there is work to do to handle the given {@link ParserRuleContext}. The output
+   * will include the text of the given {@code line} and, for debugging/implementation, the current
+   * parser rule stack, and the given {@code comment} if present.
+   */
   public void todo(
-      ParserRuleContext ctx, String feature, BatfishCombinedParser<?, ?> parser, String text) {
-    if (!_unimplementedRecord) {
-      return;
-    }
-    String prefix = "WARNING: UNIMPLEMENTED: " + (_unimplementedWarnings.size() + 1) + ": ";
-    StringBuilder sb = new StringBuilder();
-    List<String> ruleNames = Arrays.asList(parser.getParser().getRuleNames());
-    String ruleStack = ctx.toString(ruleNames);
-    sb.append(
-        prefix
-            + "Missing implementation for top (leftmost) parser rule in stack: '"
-            + ruleStack
-            + "'.\n");
-    sb.append(prefix + "Unimplemented feature: " + feature + "\n");
-    sb.append(prefix + "Rule context follows:\n");
-    int start = ctx.start.getStartIndex();
-    int startLine = ctx.start.getLine();
-    int end = ctx.stop.getStopIndex();
-    String ruleText = text.substring(start, end + 1);
-    String[] ruleTextLines = ruleText.split("\\n", -1);
-    for (int line = startLine, i = 0; i < ruleTextLines.length; line++, i++) {
-      String contextPrefix = prefix + " line " + line + ": ";
-      sb.append(contextPrefix + ruleTextLines[i] + "\n");
-    }
-    if (_printParseTree) {
-      sb.append(prefix + "Parse tree follows:\n");
-      String parseTreePrefix = prefix + "PARSE TREE: ";
-      String parseTreeText = ParseTreePrettyPrinter.print(ctx, parser);
-      String[] parseTreeLines = parseTreeText.split("\n", -1);
-      for (String parseTreeLine : parseTreeLines) {
-        sb.append(parseTreePrefix + parseTreeLine + "\n");
-      }
-    }
-    _unimplementedWarnings.add(new Warning(sb.toString(), "UNIMPLEMENTED"));
+      @Nonnull ParserRuleContext ctx,
+      @Nonnull String line,
+      @Nonnull BatfishCombinedParser<?, ?> parser,
+      @Nullable String comment) {
+    int lineNumber = ctx.getStart().getLine();
+    String ruleStack = ctx.toString(Arrays.asList(parser.getParser().getRuleNames()));
+    String trimmedLine = line.trim();
+    String commentMessage = firstNonNull(comment, "This feature is not currently supported");
+    _parseWarnings.add(new ParseWarning(lineNumber, trimmedLine, ruleStack, commentMessage));
+  }
+
+  /** @see #todo(ParserRuleContext, String, BatfishCombinedParser, String) */
+  public void todo(
+      @Nonnull ParserRuleContext ctx,
+      @Nonnull String line,
+      @Nonnull BatfishCombinedParser<?, ?> parser) {
+    todo(ctx, line, parser, /* no comment */ null);
   }
 
   public void unimplemented(String msg) {
-    unimplemented(msg, MISCELLANEOUS);
-  }
-
-  public void unimplemented(String msg, String tag) {
     if (!_unimplementedRecord) {
       return;
     }
-    _unimplementedWarnings.add(new Warning(msg, tag));
+    _unimplementedWarnings.add(new Warning(msg, "UNIMPLEMENTED"));
+  }
+
+  /** A class to represent a parse warning in a file. */
+  public static class ParseWarning implements Serializable {
+    private static final long serialVersionUID = 1L;
+
+    private static final String PROP_COMMENT = "Comment";
+    private static final String PROP_LINE = "Line";
+    private static final String PROP_PARSER_CONTEXT = "Parser_Context";
+    private static final String PROP_TEXT = "Text";
+
+    @Nullable private final String _comment;
+    private final int _line;
+    @Nonnull private final String _parserContext;
+    @Nonnull private final String _text;
+
+    @JsonCreator
+    public ParseWarning(
+        @JsonProperty(PROP_LINE) int line,
+        @JsonProperty(PROP_TEXT) @Nonnull String text,
+        @JsonProperty(PROP_PARSER_CONTEXT) @Nonnull String parserContext,
+        @JsonProperty(PROP_COMMENT) @Nullable String comment) {
+      _line = line;
+      _text = requireNonNull(text, PROP_TEXT);
+      _parserContext = requireNonNull(parserContext, PROP_PARSER_CONTEXT);
+      _comment = comment;
+    }
+
+    @JsonProperty(PROP_COMMENT)
+    @Nullable
+    public String getComment() {
+      return _comment;
+    }
+
+    @JsonProperty(PROP_LINE)
+    public int getLine() {
+      return _line;
+    }
+
+    @JsonProperty(PROP_PARSER_CONTEXT)
+    @Nonnull
+    public String getParserContext() {
+      return _parserContext;
+    }
+
+    @JsonProperty(PROP_TEXT)
+    @Nonnull
+    public String getText() {
+      return _text;
+    }
   }
 }

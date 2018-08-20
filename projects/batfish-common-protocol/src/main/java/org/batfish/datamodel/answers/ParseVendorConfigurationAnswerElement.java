@@ -1,5 +1,6 @@
 package org.batfish.datamodel.answers;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -13,6 +14,10 @@ public class ParseVendorConfigurationAnswerElement extends ParseAnswerElement
 
   /** */
   private static final long serialVersionUID = 1L;
+
+  private static final String PROP_FILE_MAP = "fileMap";
+
+  private static final String PROP_VERSION = "version";
 
   private SortedMap<String, BatfishException.BatfishStackTrace> _errors;
 
@@ -46,6 +51,7 @@ public class ParseVendorConfigurationAnswerElement extends ParseAnswerElement
     return _errors;
   }
 
+  @JsonProperty(PROP_FILE_MAP)
   public SortedMap<String, String> getFileMap() {
     return _fileMap;
   }
@@ -60,6 +66,7 @@ public class ParseVendorConfigurationAnswerElement extends ParseAnswerElement
     return _parseTrees;
   }
 
+  @JsonProperty(PROP_VERSION)
   public String getVersion() {
     return _version;
   }
@@ -107,6 +114,7 @@ public class ParseVendorConfigurationAnswerElement extends ParseAnswerElement
     _errors = errors;
   }
 
+  @JsonProperty(PROP_FILE_MAP)
   public void setFileMap(SortedMap<String, String> fileMap) {
     _fileMap = fileMap;
   }
@@ -121,6 +129,7 @@ public class ParseVendorConfigurationAnswerElement extends ParseAnswerElement
     _parseTrees = parseTrees;
   }
 
+  @JsonProperty(PROP_VERSION)
   public void setVersion(String version) {
     _version = version;
   }

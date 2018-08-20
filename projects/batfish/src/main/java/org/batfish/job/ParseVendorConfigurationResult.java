@@ -109,6 +109,7 @@ public class ParseVendorConfigurationResult
         hostname = modifiedNewName;
       }
       vendorConfigurations.put(hostname, _vc);
+      answerElement.getFileMap().put(hostname, _filename);
       if (!_warnings.isEmpty()) {
         answerElement.getWarnings().put(hostname, _warnings);
       }
@@ -116,10 +117,9 @@ public class ParseVendorConfigurationResult
         answerElement.getParseTrees().put(hostname, _parseTree);
       }
       if (_vc.getUnrecognized()) {
-        answerElement.getParseStatus().put(hostname, ParseStatus.PARTIALLY_UNRECOGNIZED);
+        answerElement.getParseStatus().put(_filename, ParseStatus.PARTIALLY_UNRECOGNIZED);
       } else {
-        answerElement.getParseStatus().put(hostname, ParseStatus.PASSED);
-        answerElement.getFileMap().put(hostname, _filename);
+        answerElement.getParseStatus().put(_filename, ParseStatus.PASSED);
       }
 
     } else {

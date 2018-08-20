@@ -73,7 +73,6 @@ public class BfConsts {
   public static final String ARG_TASK_PLUGIN = "taskplugin";
   public static final String ARG_TESTRIG = "testrig";
   public static final String ARG_UNIMPLEMENTED_SUPPRESS = "unimplementedsuppress";
-  public static final String ARG_UNRECOGNIZED_AS_RED_FLAG = "urf";
   public static final String ARG_VERBOSE_PARSE = "verboseparse";
 
   public static final String COMMAND_ANALYZE = "analyze";
@@ -90,6 +89,8 @@ public class BfConsts {
   /*
    * JSON key names
    */
+  public static final String PROP_AGGREGATION = "aggregation";
+  public static final String PROP_AGGREGATIONS = "aggregations";
   public static final String PROP_ALLINONE_PROPERTIES_PATH = "batfishAllinonePropertiesPath";
   public static final String PROP_ALLOWED_VALUES = "allowedValues";
   public static final String PROP_ANSWER_ELEMENTS = "answerElements";
@@ -97,6 +98,8 @@ public class BfConsts {
   public static final String PROP_BATFISH_PROPERTIES_PATH = "batfishBatfishPropertiesPath";
   public static final String PROP_BGP_ANNOUNCEMENTS = "Announcements";
   public static final String PROP_CLIENT_PROPERTIES_PATH = "batfishClientPropertiesPath";
+  public static final String PROP_COLUMN = "column";
+  public static final String PROP_COLUMNS = "columns";
   public static final String PROP_COORDINATOR_PROPERTIES_PATH = "batfishCoordinatorPropertiesPath";
   public static final String PROP_DESCRIPTION = "description";
   public static final String PROP_DIFFERENTIAL = "differential";
@@ -107,10 +110,17 @@ public class BfConsts {
   public static final String PROP_INSTANCE = "instance";
   public static final String PROP_INSTANCE_NAME = "instanceName";
   public static final String PROP_LONG_DESCRIPTION = "longDescription";
+  public static final String PROP_MAX_ROWS = "maxRows";
+  public static final String PROP_METRICS = "metrics";
   public static final String PROP_MIN_ELEMENTS = "minElements";
   public static final String PROP_MIN_LENGTH = "minLength";
+  public static final String PROP_NUM_ROWS = "numRows";
   public static final String PROP_OPTIONAL = "optional";
   public static final String PROP_QUESTION = "question";
+  public static final String PROP_RESULTS = "results";
+  public static final String PROP_REVERSED = "reversed";
+  public static final String PROP_ROW_OFFSET = "rowOffset";
+  public static final String PROP_SORT_ORDER = "sortOrder";
   public static final String PROP_STATUS = "status";
   public static final String PROP_SUMMARY = "summary";
   public static final String PROP_TAGS = "tags";

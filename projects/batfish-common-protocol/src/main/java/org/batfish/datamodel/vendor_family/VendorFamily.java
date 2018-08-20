@@ -1,5 +1,6 @@
 package org.batfish.datamodel.vendor_family;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -8,6 +9,10 @@ import org.batfish.datamodel.vendor_family.cisco.CiscoFamily;
 import org.batfish.datamodel.vendor_family.juniper.JuniperFamily;
 
 public class VendorFamily implements Serializable {
+
+  private static final String PROP_AWS = "aws";
+  private static final String PROP_CISCO = "cisco";
+  private static final String PROP_JUNIPER = "juniper";
 
   public enum Type {
     AWS,
@@ -25,26 +30,32 @@ public class VendorFamily implements Serializable {
 
   private JuniperFamily _juniper;
 
+  @JsonProperty(PROP_AWS)
   public AwsFamily getAws() {
     return _aws;
   }
 
+  @JsonProperty(PROP_CISCO)
   public CiscoFamily getCisco() {
     return _cisco;
   }
 
+  @JsonProperty(PROP_JUNIPER)
   public JuniperFamily getJuniper() {
     return _juniper;
   }
 
+  @JsonProperty(PROP_AWS)
   public void setAws(AwsFamily aws) {
     _aws = aws;
   }
 
+  @JsonProperty(PROP_CISCO)
   public void setCisco(CiscoFamily cisco) {
     _cisco = cisco;
   }
 
+  @JsonProperty(PROP_JUNIPER)
   public void setJuniper(JuniperFamily juniper) {
     _juniper = juniper;
   }

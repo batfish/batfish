@@ -3,19 +3,19 @@
   "nodeRegex" : ".*",
   "propertySpec" : "ntp.*",
   "differential" : false,
-  "includeOneTableKeys" : false,
+  "includeOneTableKeys" : true,
   "instance" : {
-    "description" : "Gets properties of nodes",
+    "description" : "Return configuration properties of nodes",
     "instanceName" : "qname",
     "variables" : {
       "nodeRegex" : {
-        "description" : "Only include nodes that match this specification",
+        "description" : "Only include nodes that match this regex",
         "optional" : true,
         "type" : "nodeSpec",
         "value" : ".*"
       },
       "propertySpec" : {
-        "description" : "Which properties to fetch; default is all of them",
+        "description" : "Only include properties that match this regex. Default behavior is to return all properties",
         "optional" : true,
         "type" : "nodePropertySpec",
         "value" : "ntp.*"

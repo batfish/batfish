@@ -1,12 +1,15 @@
 package org.batfish.datamodel.routing_policy.expr;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.SortedSet;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 
 public class MatchCommunitySet extends BooleanExpr {
+
+  private static final String PROP_EXPR = "expr";
 
   /** */
   private static final long serialVersionUID = 1L;
@@ -58,12 +61,13 @@ public class MatchCommunitySet extends BooleanExpr {
       inputCommunities = bgpRoute.getCommunities();
     }
     if (inputCommunities != null) {
-      match = _expr.matchSingleCommunity(environment, inputCommunities);
+      match = _expr.matchAnyCommunity(environment, inputCommunities);
     }
     result.setBooleanValue(match);
     return result;
   }
 
+  @JsonProperty(PROP_EXPR)
   public CommunitySetExpr getExpr() {
     return _expr;
   }
@@ -76,6 +80,7 @@ public class MatchCommunitySet extends BooleanExpr {
     return result;
   }
 
+  @JsonProperty(PROP_EXPR)
   public void setExpr(CommunitySetExpr expr) {
     _expr = expr;
   }

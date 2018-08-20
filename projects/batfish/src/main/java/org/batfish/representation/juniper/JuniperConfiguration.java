@@ -54,6 +54,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.IpSpaceMetadata;
 import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.IpsecPeerConfig;
@@ -65,6 +66,7 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RegexCommunitySet;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterList;
@@ -225,15 +227,13 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   private NavigableSet<String> _tacplusServers;
 
-  private transient Set<String> _unimplementedFeatures;
-
   private ConfigurationFormat _vendor;
 
   private final Map<String, Vlan> _vlanNameToVlan;
 
   private final Map<String, Zone> _zones;
 
-  public JuniperConfiguration(Set<String> unimplementedFeatures) {
+  public JuniperConfiguration() {
     _allStandardCommunities = new HashSet<>();
     _applications = new TreeMap<>();
     _applicationSets = new TreeMap<>();
@@ -263,7 +263,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
     _routingInstances.put(Configuration.DEFAULT_VRF_NAME, _defaultRoutingInstance);
     _syslogHosts = new TreeSet<>();
     _tacplusServers = new TreeSet<>();
-    _unimplementedFeatures = unimplementedFeatures;
     _vlanNameToVlan = new TreeMap<>();
     _zones = new TreeMap<>();
   }
@@ -760,6 +759,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
     newArea.setStub(toStubSettings(area.getStubSettings()));
     newArea.setStubType(area.getStubType());
     newArea.setSummaries(area.getSummaries());
+    newArea.setInjectDefaultRoute(area.getInjectDefaultRoute());
+    newArea.setMetricOfDefaultRoute(area.getMetricOfDefaultRoute());
     return newArea;
   }
 
@@ -901,11 +902,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   public NavigableSet<String> getTacplusServers() {
     return _tacplusServers;
-  }
-
-  @Override
-  public Set<String> getUnimplementedFeatures() {
-    return _unimplementedFeatures;
   }
 
   public Map<String, Vlan> getVlanNameToVlan() {
@@ -1132,7 +1128,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
       String regex = line.getRegex();
       String javaRegex = communityRegexToJavaRegex(regex);
       org.batfish.datamodel.CommunityListLine newLine =
-          new org.batfish.datamodel.CommunityListLine(LineAction.ACCEPT, javaRegex);
+          new org.batfish.datamodel.CommunityListLine(
+              LineAction.ACCEPT, new RegexCommunitySet(javaRegex));
       newLines.add(newLine);
     }
     org.batfish.datamodel.CommunityList newCl =
@@ -1979,7 +1976,20 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
     // Convert AddressBooks to IpSpaces
     _globalAddressBooks.forEach(
-        (name, addressBook) -> _c.getIpSpaces().putAll(toIpSpaces(name, addressBook)));
+        (name, addressBook) -> {
+          Map<String, IpSpace> ipspaces = toIpSpaces(name, addressBook);
+          _c.getIpSpaces().putAll(ipspaces);
+          ipspaces
+              .keySet()
+              .forEach(
+                  ipSpaceName ->
+                      _c.getIpSpaceMetadata()
+                          .put(
+                              ipSpaceName,
+                              new IpSpaceMetadata(
+                                  ipSpaceName,
+                                  JuniperStructureType.ADDRESS_BOOK.getDescription())));
+        });
 
     // TODO: instead make both IpAccessList and Ip6AccessList instances from
     // such firewall filters
@@ -2195,7 +2205,17 @@ public final class JuniperConfiguration extends VendorConfiguration {
       org.batfish.datamodel.Zone newZone = toZone(zone);
       _c.getZones().put(zone.getName(), newZone);
       if (!zone.getAddressBook().getEntries().isEmpty()) {
-        _c.getIpSpaces().putAll(toIpSpaces(zone.getName(), zone.getAddressBook()));
+        Map<String, IpSpace> ipSpaces = toIpSpaces(zone.getName(), zone.getAddressBook());
+        _c.getIpSpaces().putAll(ipSpaces);
+        ipSpaces
+            .keySet()
+            .forEach(
+                ipSpaceName ->
+                    _c.getIpSpaceMetadata()
+                        .put(
+                            ipSpaceName,
+                            new IpSpaceMetadata(
+                                ipSpaceName, JuniperStructureType.ADDRESS_BOOK.getDescription())));
       }
     }
     // If there are zones, then assume we will need to support existing connection ACL
@@ -2393,6 +2413,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
   }
 
   private org.batfish.datamodel.Zone toZone(Zone zone) {
+    String zoneName = zone.getName();
 
     FirewallFilter inboundFilter = zone.getInboundFilter();
     IpAccessList inboundFilterList = null;
@@ -2412,40 +2433,49 @@ public final class JuniperConfiguration extends VendorConfiguration {
       toHostFilterList = _c.getIpAccessLists().get(toHostFilter.getName());
     }
 
-    org.batfish.datamodel.Zone newZone =
-        new org.batfish.datamodel.Zone(
-            zone.getName(), inboundFilterList, fromHostFilterList, toHostFilterList);
+    org.batfish.datamodel.Zone newZone = new org.batfish.datamodel.Zone(zoneName);
+    if (fromHostFilterList != null) {
+      newZone.setFromHostFilterName(fromHostFilterList.getName());
+    }
+    if (inboundFilterList != null) {
+      newZone.setInboundFilterName(inboundFilterList.getName());
+    }
+    if (toHostFilterList != null) {
+      newZone.setToHostFilterName(toHostFilterList.getName());
+    }
+
+    newZone.setInboundInterfaceFiltersNames(new TreeMap<>());
     for (Entry<String, FirewallFilter> e : zone.getInboundInterfaceFilters().entrySet()) {
       String inboundInterfaceName = e.getKey();
       FirewallFilter inboundInterfaceFilter = e.getValue();
       String inboundInterfaceFilterName = inboundInterfaceFilter.getName();
       org.batfish.datamodel.Interface newIface = _c.getInterfaces().get(inboundInterfaceName);
-      IpAccessList inboundInterfaceFilterList =
-          _c.getIpAccessLists().get(inboundInterfaceFilterName);
-      newZone.getInboundInterfaceFilters().put(newIface.getName(), inboundInterfaceFilterList);
+      newZone.getInboundInterfaceFiltersNames().put(newIface.getName(), inboundInterfaceFilterName);
     }
 
+    newZone.setToZonePoliciesNames(new TreeMap<>());
     for (Entry<String, FirewallFilter> e : zone.getToZonePolicies().entrySet()) {
       String toZoneName = e.getKey();
       FirewallFilter toZoneFilter = e.getValue();
       String toZoneFilterName = toZoneFilter.getName();
-      IpAccessList toZoneFilterList = _c.getIpAccessLists().get(toZoneFilterName);
-      newZone.getToZonePolicies().put(toZoneName, toZoneFilterList);
+      newZone.getToZonePoliciesNames().put(toZoneName, toZoneFilterName);
     }
 
+    newZone.setInboundInterfaceFiltersNames(new TreeMap<>());
     for (Interface iface : zone.getInterfaces()) {
       String ifaceName = iface.getName();
       org.batfish.datamodel.Interface newIface = _c.getInterfaces().get(ifaceName);
-      newIface.setZone(newZone);
+      newIface.setZoneName(zoneName);
       FirewallFilter inboundInterfaceFilter = zone.getInboundInterfaceFilters().get(ifaceName);
-      IpAccessList inboundInterfaceFilterList;
       if (inboundInterfaceFilter != null) {
-        String name = inboundInterfaceFilter.getName();
-        inboundInterfaceFilterList = _c.getIpAccessLists().get(name);
-      } else {
-        inboundInterfaceFilterList = inboundFilterList;
+        newZone
+            .getInboundInterfaceFiltersNames()
+            .put(newIface.getName(), inboundInterfaceFilter.getName());
+      } else if (inboundFilterList != null) {
+        newZone
+            .getInboundInterfaceFiltersNames()
+            .put(newIface.getName(), inboundFilterList.getName());
       }
-      newZone.getInboundInterfaceFilters().put(newIface.getName(), inboundInterfaceFilterList);
     }
 
     return newZone;

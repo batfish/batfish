@@ -1,7 +1,5 @@
 package org.batfish.grammar.flatvyos;
 
-import java.util.Set;
-import java.util.TreeSet;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
@@ -94,8 +92,6 @@ import org.batfish.vendor.VendorConfiguration;
 
 public class FlatVyosControlPlaneExtractor extends FlatVyosParserBaseListener
     implements ControlPlaneExtractor {
-
-  private static final String F_INTERFACES_ADDRESS_DHCP = "interfaces address dhcp";
 
   private static LineAction toAction(Line_actionContext ctx) {
     if (ctx.DENY() != null) {
@@ -199,8 +195,6 @@ public class FlatVyosControlPlaneExtractor extends FlatVyosParserBaseListener
 
   private final String _text;
 
-  private final Set<String> _unimplementedFeatures;
-
   private VyosConfiguration _vendorConfiguration;
 
   private final Warnings _w;
@@ -209,7 +203,6 @@ public class FlatVyosControlPlaneExtractor extends FlatVyosParserBaseListener
       String text, FlatVyosCombinedParser parser, Warnings warnings) {
     _text = text;
     _parser = parser;
-    _unimplementedFeatures = new TreeSet<>();
     _w = warnings;
   }
 
@@ -477,7 +470,7 @@ public class FlatVyosControlPlaneExtractor extends FlatVyosParserBaseListener
   @Override
   public void exitIt_address(It_addressContext ctx) {
     if (ctx.DHCP() != null) {
-      todo(ctx, F_INTERFACES_ADDRESS_DHCP);
+      todo(ctx);
     } else if (ctx.IP_PREFIX() != null) {
       InterfaceAddress address = new InterfaceAddress(ctx.IP_PREFIX().getText());
       if (_currentInterface.getAddress() == null) {
@@ -688,11 +681,6 @@ public class FlatVyosControlPlaneExtractor extends FlatVyosParserBaseListener
   }
 
   @Override
-  public Set<String> getUnimplementedFeatures() {
-    return _unimplementedFeatures;
-  }
-
-  @Override
   public VendorConfiguration getVendorConfiguration() {
     return _vendorConfiguration;
   }
@@ -703,8 +691,7 @@ public class FlatVyosControlPlaneExtractor extends FlatVyosParserBaseListener
     walker.walk(this, tree);
   }
 
-  private void todo(ParserRuleContext ctx, String feature) {
-    _w.todo(ctx, feature, _parser, _text);
-    _unimplementedFeatures.add("Vyos: " + feature);
+  private void todo(ParserRuleContext ctx) {
+    _w.todo(ctx, _text, _parser);
   }
 }

@@ -18,12 +18,15 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.hasZone;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDescription;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasZoneName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasInterfaces;
+import static org.batfish.datamodel.matchers.VrfMatchers.hasName;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.DEFAULT_VSYS_NAME;
+import static org.batfish.representation.palo_alto.PaloAltoConfiguration.NULL_VRF_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.SHARED_VSYS_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.computeObjectName;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.computeServiceGroupMemberAclName;
@@ -41,7 +44,9 @@ import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -58,6 +63,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.matchers.InterfaceMatchers;
 import org.batfish.grammar.VendorConfigurationFormatDetector;
 import org.batfish.grammar.flattener.Flattener;
 import org.batfish.grammar.flattener.FlattenerLineMap;
@@ -83,7 +89,7 @@ public class PaloAltoGrammarTest {
   }
 
   private Configuration parseConfig(String hostname) throws IOException {
-    return parseTextConfigs(hostname).get(hostname);
+    return parseTextConfigs(hostname).get(hostname.toLowerCase());
   }
 
   private Map<String, Configuration> parseTextConfigs(String... configurationNames)
@@ -204,6 +210,24 @@ public class PaloAltoGrammarTest {
         ccae,
         hasUndefinedReference(
             filename, INTERFACE, "ethernet1/undefined", VIRTUAL_ROUTER_INTERFACE));
+  }
+
+  @Test
+  public void testInterfaceVirtualRouterAssignment() throws IOException {
+    String hostname = "interface-virtual-router";
+    Configuration c = parseConfig(hostname);
+
+    // Make sure each interface is associated with the correct vrf
+    assertThat(
+        c, hasInterface("ethernet1/1", InterfaceMatchers.hasVrf(hasName(equalTo("default")))));
+    assertThat(
+        c, hasInterface("ethernet1/2", InterfaceMatchers.hasVrf(hasName(equalTo("somename")))));
+    assertThat(
+        c, hasInterface("ethernet1/3", InterfaceMatchers.hasVrf(hasName(equalTo("somename")))));
+
+    // Make sure the orphaned vrf is associated with the "null", constructed vrf
+    assertThat(
+        c, hasInterface("ethernet1/4", InterfaceMatchers.hasVrf(hasName(equalTo(NULL_VRF_NAME)))));
   }
 
   @Test
@@ -527,5 +551,10 @@ public class PaloAltoGrammarTest {
     assertThat(
         c, hasZone(z1Name, hasMemberInterfaces(containsInAnyOrder("ethernet1/1", "ethernet1/2"))));
     assertThat(c, hasZone(zEmptyName, hasMemberInterfaces(empty())));
+
+    // Confirm interfaces are associated with the correct zones
+    assertThat(c, hasInterface("ethernet1/1", hasZoneName(equalTo("z1"))));
+    assertThat(c, hasInterface("ethernet1/2", hasZoneName(equalTo("z1"))));
+    assertThat(c, hasInterface("ethernet1/3", hasZoneName(is(nullValue()))));
   }
 }

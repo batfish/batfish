@@ -1,5 +1,6 @@
 package org.batfish.representation.palo_alto;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 
 import com.google.common.collect.ImmutableList;
@@ -12,7 +13,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.NavigableSet;
-import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -33,6 +33,8 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
   public static final String DEFAULT_VSYS_NAME = "vsys1";
 
+  public static final String NULL_VRF_NAME = "~NULL_VRF~";
+
   public static final String SHARED_VSYS_NAME = "~SHARED_VSYS~";
 
   private Configuration _c;
@@ -49,17 +51,14 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
   private String _ntpServerSecondary;
 
-  private transient Set<String> _unimplementedFeatures;
-
   private ConfigurationFormat _vendor;
 
   private final SortedMap<String, VirtualRouter> _virtualRouters;
 
   private final SortedMap<String, Vsys> _virtualSystems;
 
-  public PaloAltoConfiguration(Set<String> unimplementedFeatures) {
+  public PaloAltoConfiguration() {
     _interfaces = new TreeMap<>();
-    _unimplementedFeatures = unimplementedFeatures;
     _virtualRouters = new TreeMap<>();
     _virtualSystems = new TreeMap<>();
   }
@@ -95,11 +94,6 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     return servers;
   }
 
-  @Override
-  public Set<String> getUnimplementedFeatures() {
-    return _unimplementedFeatures;
-  }
-
   public SortedMap<String, VirtualRouter> getVirtualRouters() {
     return _virtualRouters;
   }
@@ -118,7 +112,8 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
   @Override
   public void setHostname(String hostname) {
-    _hostname = hostname;
+    checkNotNull(hostname, "'hostname' cannot be null");
+    _hostname = hostname.toLowerCase();
   }
 
   public void setNtpServerPrimary(String ntpServerPrimary) {
@@ -135,6 +130,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   }
 
   // Visible for testing
+
   /**
    * Generate unique object name (no collision across vsys namespaces) given a vsys name and
    * original object name
@@ -153,6 +149,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   }
 
   // Visible for testing
+
   /**
    * Generate IpAccessList name for the specified serviceGroupMemberName in the specified vsysName
    */
@@ -208,6 +205,11 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     newIface.setActive(iface.getActive());
     newIface.setDescription(iface.getComment());
 
+    Zone zone = iface.getZone();
+    if (zone != null) {
+      newIface.setZoneName(zone.getName());
+    }
+
     return newIface;
   }
 
@@ -242,6 +244,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
       org.batfish.datamodel.Interface iface = _c.getInterfaces().get(interfaceName);
       if (iface != null) {
         map.put(interfaceName, iface);
+        iface.setVrf(vrf);
       }
     }
     vrf.setInterfaces(map);
@@ -269,8 +272,30 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
       _c.getInterfaces().put(i.getKey(), toInterface(i.getValue()));
     }
 
+    // Vrf conversion uses interfaces, so must be done after interface exist in VI model
     for (Entry<String, VirtualRouter> vr : _virtualRouters.entrySet()) {
       _c.getVrfs().put(vr.getKey(), toVrf(vr.getValue()));
+    }
+
+    // Batfish cannot handle interfaces without a Vrf
+    // So put orphaned interfaces in a constructed Vrf and shut them down
+    Vrf nullVrf = new Vrf(NULL_VRF_NAME);
+    NavigableMap<String, org.batfish.datamodel.Interface> orphanedInterfaces = new TreeMap<>();
+    for (Entry<String, org.batfish.datamodel.Interface> i : _c.getInterfaces().entrySet()) {
+      org.batfish.datamodel.Interface iface = i.getValue();
+      if (iface.getVrf() == null) {
+        orphanedInterfaces.put(iface.getName(), iface);
+        iface.setVrf(nullVrf);
+        iface.setActive(false);
+        _w.redFlag(
+            String.format(
+                "Interface %s is not in a virtual-router, placing in %s and shutting it down.",
+                iface.getName(), nullVrf.getName()));
+      }
+    }
+    if (orphanedInterfaces.size() > 0) {
+      nullVrf.setInterfaces(orphanedInterfaces);
+      _c.getVrfs().put(nullVrf.getName(), nullVrf);
     }
 
     // Handle converting items within virtual systems

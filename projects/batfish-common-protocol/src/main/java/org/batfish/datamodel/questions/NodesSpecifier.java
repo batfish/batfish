@@ -1,5 +1,6 @@
 package org.batfish.datamodel.questions;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Arrays;
@@ -18,6 +19,7 @@ import org.batfish.datamodel.answers.AutocompleteSuggestion;
 import org.batfish.role.NodeRole;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
+import org.batfish.specifier.SpecifierContext;
 
 /**
  * Enables specification of groups of nodes in various questions.
@@ -90,6 +92,7 @@ public class NodesSpecifier {
     }
   }
 
+  @JsonCreator
   public NodesSpecifier(String expression) {
     this(expression, false);
   }
@@ -234,19 +237,26 @@ public class NodesSpecifier {
     return suggestions;
   }
 
+  /** @return The input {@link String} expression. */
+  public String getExpression() {
+    return _expression;
+  }
+
+  /** Return the set of nodes that match this specifier */
   public Set<String> getMatchingNodes(IBatfish batfish) {
-    return getMatchingNodes(batfish, batfish.loadConfigurations().keySet());
+    return getMatchingNodes(batfish.specifierContext());
   }
 
   @JsonIgnore
-  private Set<String> getMatchingNodes(IBatfish batfish, Set<String> nodes) {
+  /** Return the set of nodes that match this specifier */
+  public Set<String> getMatchingNodes(SpecifierContext ctxt) {
     switch (_type) {
       case NAME:
-        return getMatchingNodesByName(nodes);
+        return getMatchingNodesByName(ctxt.getConfigs().keySet());
       case ROLE:
-        Optional<NodeRoleDimension> roleDimension = batfish.getNodeRoleDimension(_roleDimension);
+        Optional<NodeRoleDimension> roleDimension = ctxt.getNodeRoleDimension(_roleDimension);
         if (roleDimension.isPresent()) {
-          return getMatchingNodesByRole(roleDimension.get(), nodes);
+          return getMatchingNodesByRole(roleDimension.get(), ctxt.getConfigs().keySet());
         } else {
           return Collections.emptySet();
         }

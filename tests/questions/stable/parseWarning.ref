@@ -1,0 +1,14 @@
+{
+  "class" : "org.batfish.question.initialization.ParseWarningQuestion",
+  "differential" : false,
+  "includeOneTableKeys" : true,
+  "instance" : {
+    "description" : "Return a table of the Batfish warnings that occurred parsing this snapshot.",
+    "instanceName" : "qname",
+    "tags" : [
+      "file",
+      "initialization",
+      "parse"
+    ]
+  }
+}

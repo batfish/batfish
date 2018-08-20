@@ -1,5 +1,6 @@
 package org.batfish.datamodel.matchers;
 
+import java.util.Map;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.BgpProcess;
@@ -26,14 +27,14 @@ final class VrfMatchersImpl {
     }
   }
 
-  static final class HasEigrpProcess extends FeatureMatcher<Vrf, EigrpProcess> {
-    HasEigrpProcess(@Nonnull Matcher<? super EigrpProcess> subMatcher) {
-      super(subMatcher, "A Vrf with eigrpProcess:", "eigrpProcess");
+  static final class HasEigrpProcesses extends FeatureMatcher<Vrf, Map<Long, EigrpProcess>> {
+    HasEigrpProcesses(@Nonnull Matcher<? super Map<Long, EigrpProcess>> subMatcher) {
+      super(subMatcher, "A Vrf with eigrpProcesses:", "eigrpProcesses");
     }
 
     @Override
-    protected EigrpProcess featureValueOf(Vrf actual) {
-      return actual.getEigrpProcess();
+    protected Map<Long, EigrpProcess> featureValueOf(Vrf actual) {
+      return actual.getEigrpProcesses();
     }
   }
 
@@ -78,6 +79,17 @@ final class VrfMatchersImpl {
     @Override
     protected OspfProcess featureValueOf(Vrf actual) {
       return actual.getOspfProcess();
+    }
+  }
+
+  static final class HasName extends FeatureMatcher<Vrf, String> {
+    HasName(@Nonnull Matcher<? super String> subMatcher) {
+      super(subMatcher, "A VRF with name:", "name");
+    }
+
+    @Override
+    protected String featureValueOf(Vrf actual) {
+      return actual.getName();
     }
   }
 

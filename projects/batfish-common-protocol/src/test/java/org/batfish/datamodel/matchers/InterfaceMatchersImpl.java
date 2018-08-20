@@ -14,6 +14,7 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.eigrp.EigrpInterfaceSettings;
+import org.batfish.datamodel.hsrp.HsrpGroup;
 import org.batfish.datamodel.isis.IsisInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.hamcrest.FeatureMatcher;
@@ -107,6 +108,34 @@ final class InterfaceMatchersImpl {
     @Nullable
     protected EigrpInterfaceSettings featureValueOf(Interface actual) {
       return actual.getEigrp();
+    }
+  }
+
+  static final class HasHsrpGroup extends FeatureMatcher<Interface, HsrpGroup> {
+    private final int _number;
+
+    HasHsrpGroup(int number, @Nonnull Matcher<? super HsrpGroup> subMatcher) {
+      super(
+          subMatcher,
+          String.format("An Interface with hsrpGroup %d:", number),
+          String.format("hsrpGroup %d", number));
+      _number = number;
+    }
+
+    @Override
+    protected HsrpGroup featureValueOf(Interface actual) {
+      return actual.getHsrpGroups().get(_number);
+    }
+  }
+
+  static final class HasHsrpVersion extends FeatureMatcher<Interface, String> {
+    HasHsrpVersion(@Nonnull Matcher<? super String> subMatcher) {
+      super(subMatcher, "An Interface with hsrpVersion:", "hsrpVersion");
+    }
+
+    @Override
+    protected String featureValueOf(Interface actual) {
+      return actual.getHsrpVersion();
     }
   }
 

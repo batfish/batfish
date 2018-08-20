@@ -26,6 +26,10 @@ public class EigrpInterface implements Comparable<EigrpInterface> {
     _vrfName = vrfName;
   }
 
+  public EigrpInterface(@Nonnull String hostname, @Nonnull Interface iface) {
+    this(hostname, iface.getName(), iface.getVrfName());
+  }
+
   @Override
   public int compareTo(@Nonnull EigrpInterface o) {
     return Comparator.comparing(EigrpInterface::getHostname)

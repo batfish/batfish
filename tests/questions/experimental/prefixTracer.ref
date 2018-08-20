@@ -3,22 +3,22 @@
   "nodeRegex" : ".*",
   "prefix" : "0.0.0.0/0",
   "differential" : false,
-  "includeOneTableKeys" : false,
+  "includeOneTableKeys" : true,
   "instance" : {
-    "description" : "Trace route prefix propagation throughout the network",
+    "description" : "Trace prefix propagation through the network",
     "instanceName" : "qname",
     "tags" : [
       "dataplane"
     ],
     "variables" : {
       "nodeRegex" : {
-        "description" : "Nodes matching this regex will have their prefix tracing information reported",
+        "description" : "Only include prefix tracing information for nodes that match this regex",
         "optional" : true,
         "type" : "string",
         "value" : ".*"
       },
       "prefix" : {
-        "description" : "Which prefix to trace",
+        "description" : "The prefix to trace. Expected format is A.B.C.D/Y",
         "optional" : true,
         "type" : "prefix",
         "value" : "0.0.0.0/0"

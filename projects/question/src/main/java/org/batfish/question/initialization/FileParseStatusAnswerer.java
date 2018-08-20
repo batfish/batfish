@@ -1,7 +1,13 @@
 package org.batfish.question.initialization;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.TreeMultimap;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nonnull;
@@ -25,15 +31,14 @@ class FileParseStatusAnswerer extends Answerer {
     ParseVendorConfigurationAnswerElement pvcae =
         _batfish.loadParseVendorConfigurationAnswerElement();
 
-    Map<String, String> fileMap = pvcae.getFileMap();
     Map<String, ParseStatus> statusMap = pvcae.getParseStatus();
     Rows rows = new Rows();
 
+    Multimap<String, String> fileToHost = TreeMultimap.create();
+    pvcae.getFileMap().forEach((hostname, filename) -> fileToHost.put(filename, hostname));
+
     statusMap.forEach(
-        (filename, status) -> {
-          Row row = getRow(filename, status, fileMap.get(filename));
-          rows.add(row);
-        });
+        (filename, status) -> rows.add(getRow(filename, status, fileToHost.get(filename))));
 
     TableAnswerElement answerElement = new TableAnswerElement(TABLE_METADATA);
     answerElement.postProcessAnswer(_question, rows.getData());
@@ -46,17 +51,17 @@ class FileParseStatusAnswerer extends Answerer {
 
   @Nonnull
   @VisibleForTesting
-  static Row getRow(String filename, ParseStatus status, @Nullable String hostProduced) {
+  static Row getRow(
+      String filename, ParseStatus status, @Nullable Collection<String> hostsProduced) {
     Row.TypedRowBuilder builder = Row.builder(TABLE_METADATA.toColumnMap());
     builder.put(COL_FILENAME, filename);
     builder.put(COL_PARSE_STATUS, status.toString());
 
-    if (hostProduced == null) {
-      builder.put(COL_HOSTS, ImmutableList.of());
-    } else {
-      builder.put(COL_HOSTS, ImmutableList.of(new Node(hostProduced)));
+    ImmutableList.Builder<Node> nodesProduced = ImmutableList.builder();
+    for (String hostname : firstNonNull(hostsProduced, Collections.<String>emptyList())) {
+      nodesProduced.add(new Node(hostname));
     }
-
+    builder.put(COL_HOSTS, nodesProduced.build());
     return builder.build();
   }
 

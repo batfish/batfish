@@ -12,7 +12,6 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.SERVIC
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.VIRTUAL_ROUTER_INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.ZONE_INTERFACE;
 
-import java.util.Set;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.Token;
@@ -21,10 +20,12 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
+import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.Prefix;
+import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Palo_alto_configurationContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_serviceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_service_groupContext;
@@ -107,23 +108,13 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   private final String _text;
 
-  private final Set<String> _unimplementedFeatures;
-
-  private final boolean _unrecognizedAsRedFlag;
-
   private final Warnings _w;
 
   public PaloAltoConfigurationBuilder(
-      PaloAltoCombinedParser parser,
-      String text,
-      Warnings warnings,
-      Set<String> unimplementedFeatures,
-      boolean unrecognizedAsRedFlag) {
-    _configuration = new PaloAltoConfiguration(unimplementedFeatures);
+      PaloAltoCombinedParser parser, String text, Warnings warnings) {
+    _configuration = new PaloAltoConfiguration();
     _parser = parser;
     _text = text;
-    _unimplementedFeatures = unimplementedFeatures;
-    _unrecognizedAsRedFlag = unrecognizedAsRedFlag;
     _w = warnings;
   }
 
@@ -186,10 +177,25 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void enterPalo_alto_configuration(Palo_alto_configurationContext ctx) {
-    _configuration = new PaloAltoConfiguration(_unimplementedFeatures);
+    _configuration = new PaloAltoConfiguration();
     _configuration.getVirtualSystems().computeIfAbsent(SHARED_VSYS_NAME, Vsys::new);
     _defaultVsys = _configuration.getVirtualSystems().computeIfAbsent(DEFAULT_VSYS_NAME, Vsys::new);
     _currentVsys = _defaultVsys;
+  }
+
+  @Override
+  public void exitPalo_alto_configuration(Palo_alto_configurationContext ctx) {
+    // Assign the appropriate zone to each interface
+    for (Vsys vsys : _configuration.getVirtualSystems().values()) {
+      for (Zone zone : vsys.getZones().values()) {
+        for (String ifname : zone.getInterfaceNames()) {
+          Interface iface = _configuration.getInterfaces().get(ifname);
+          if (iface != null) {
+            iface.setZone(zone);
+          }
+        }
+      }
+    }
   }
 
   @Override
@@ -497,12 +503,17 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     Token token = errorNode.getSymbol();
     String lineText = errorNode.getText().replace("\n", "").replace("\r", "").trim();
     int line = getLine(token);
-    String msg = String.format("Unrecognized Line: %d: %s", line, lineText);
-    if (_unrecognizedAsRedFlag) {
-      _w.redFlag(msg + " SUBSEQUENT LINES MAY NOT BE PROCESSED CORRECTLY");
-      _configuration.setUnrecognized(true);
+    _configuration.setUnrecognized(true);
+
+    if (token instanceof UnrecognizedLineToken) {
+      UnrecognizedLineToken unrecToken = (UnrecognizedLineToken) token;
+      _w.getParseWarnings()
+          .add(
+              new ParseWarning(
+                  line, lineText, unrecToken.getParserContext(), "This syntax is unrecognized"));
     } else {
-      _parser.getErrors().add(msg);
+      String msg = String.format("Unrecognized Line: %d: %s", line, lineText);
+      _w.redFlag(msg + " SUBSEQUENT LINES MAY NOT BE PROCESSED CORRECTLY");
     }
   }
 }

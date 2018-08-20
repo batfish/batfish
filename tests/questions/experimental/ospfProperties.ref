@@ -3,22 +3,22 @@
   "nodeRegex" : ".*",
   "propertySpec" : "maximum-.*",
   "differential" : false,
-  "includeOneTableKeys" : false,
+  "includeOneTableKeys" : true,
   "instance" : {
-    "description" : "Gets properties of OSPF routing processes",
+    "description" : "Return configuration parameters for OSPF routing processes",
     "instanceName" : "qname",
     "tags" : [
-      "OSPF"
+      "ospf"
     ],
     "variables" : {
       "nodeRegex" : {
-        "description" : "Only include nodes that match this specification",
+        "description" : "Only include nodes that match this regex",
         "optional" : true,
         "type" : "nodeSpec",
         "value" : ".*"
       },
       "propertySpec" : {
-        "description" : "Which properties to fetch; default is all of them",
+        "description" : "Only include properties that match this regex. Default behavior is to return all properties",
         "optional" : true,
         "type" : "ospfPropertySpec",
         "value" : "maximum-.*"

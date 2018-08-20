@@ -1,8 +1,10 @@
 package org.batfish.representation.cisco;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import static org.batfish.common.util.CommonUtil.toImmutableMap;
 import static org.batfish.datamodel.Interface.UNSET_LOCAL_INTERFACE;
+import static org.batfish.datamodel.Interface.computeInterfaceType;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
 import static org.batfish.representation.cisco.CiscoConversions.convertCryptoMapSet;
@@ -44,6 +46,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -108,6 +111,7 @@ import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.eigrp.EigrpInterfaceSettings;
+import org.batfish.datamodel.eigrp.EigrpMetric;
 import org.batfish.datamodel.isis.IsisInterfaceLevelSettings;
 import org.batfish.datamodel.isis.IsisInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfArea;
@@ -142,6 +146,7 @@ import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
+import org.batfish.datamodel.tracking.TrackMethod;
 import org.batfish.datamodel.vendor_family.cisco.Aaa;
 import org.batfish.datamodel.vendor_family.cisco.AaaAuthentication;
 import org.batfish.datamodel.vendor_family.cisco.AaaAuthenticationLogin;
@@ -448,8 +453,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private final SortedMap<String, Integer> _undefinedPeerGroups;
 
-  private transient Set<String> _unimplementedFeatures;
-
   private transient Set<NamedBgpPeerGroup> _unusedPeerGroups;
 
   private transient Set<NamedBgpPeerGroup> _unusedPeerSessions;
@@ -466,10 +469,15 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private final Map<String, SecurityZone> _securityZones;
 
-  public CiscoConfiguration(Set<String> unimplementedFeatures) {
+  private final Map<String, TrackMethod> _trackingGroups;
+
+  private Map<String, NamedCommunitySet> _communitySets;
+
+  public CiscoConfiguration() {
     _asPathAccessLists = new TreeMap<>();
     _asPathSets = new TreeMap<>();
     _cf = new CiscoFamily();
+    _communitySets = new TreeMap<>();
     _cryptoMapSets = new HashMap<>();
     _dhcpRelayServers = new ArrayList<>();
     _dnsServers = new TreeSet<>();
@@ -506,8 +514,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _standardIpv6AccessLists = new TreeMap<>();
     _standardCommunityLists = new TreeMap<>();
     _tacacsServers = new TreeSet<>();
+    _trackingGroups = new TreeMap<>();
     _undefinedPeerGroups = new TreeMap<>();
-    _unimplementedFeatures = unimplementedFeatures;
     _vrfs = new TreeMap<>();
     _vrfs.put(Configuration.DEFAULT_VRF_NAME, new Vrf(Configuration.DEFAULT_VRF_NAME));
     _vrrpGroups = new TreeMap<>();
@@ -929,11 +937,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return _undefinedPeerGroups;
   }
 
-  @Override
-  public Set<String> getUnimplementedFeatures() {
-    return _unimplementedFeatures;
-  }
-
   private Ip getUpdateSource(
       Configuration c,
       String vrfName,
@@ -1122,7 +1125,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   @Override
   public void setHostname(String hostname) {
-    _hostname = hostname;
+    checkNotNull(hostname, "'hostname' cannot be null");
+    _hostname = hostname.toLowerCase();
   }
 
   public void setNtpSourceInterface(String ntpSourceInterface) {
@@ -2026,11 +2030,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
   }
 
   private org.batfish.datamodel.Interface toInterface(
-      Interface iface, Map<String, IpAccessList> ipAccessLists, Configuration c) {
-    String name = iface.getName();
-    org.batfish.datamodel.Interface newIface = new org.batfish.datamodel.Interface(name, c);
+      String ifaceName, Interface iface, Map<String, IpAccessList> ipAccessLists, Configuration c) {
+    org.batfish.datamodel.Interface newIface =
+        new org.batfish.datamodel.Interface(
+            ifaceName, c, computeInterfaceType(iface.getName(), c.getConfigurationFormat()));
     if (newIface.getInterfaceType() == InterfaceType.VLAN) {
-      newIface.setVlan(CommonUtil.getInterfaceVlanNumber(name));
+      newIface.setVlan(CommonUtil.getInterfaceVlanNumber(ifaceName));
     }
     String vrfName = iface.getVrf();
     Vrf vrf = _vrfs.computeIfAbsent(vrfName, Vrf::new);
@@ -2038,6 +2043,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
     newIface.setActive(iface.getActive());
     newIface.setChannelGroup(iface.getChannelGroup());
     newIface.setCryptoMap(iface.getCryptoMap());
+    newIface.setHsrpGroups(
+        CommonUtil.toImmutableMap(
+            iface.getHsrpGroups(), Entry::getKey, e -> CiscoConversions.toHsrpGroup(e.getValue())));
+    newIface.setHsrpVersion(iface.getHsrpVersion());
     newIface.setAutoState(iface.getAutoState());
     newIface.setVrf(c.getVrfs().get(vrfName));
     if (iface.getBandwidth() == null) {
@@ -2073,10 +2082,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
         OspfProcess proc = vrf.getOspfProcess();
         if (proc != null) {
           if (iface.getOspfActive()) {
-            proc.getActiveInterfaceList().add(name);
+            proc.getActiveInterfaceList().add(ifaceName);
           }
           if (iface.getOspfPassive()) {
-            proc.getPassiveInterfaceList().add(name);
+            proc.getPassiveInterfaceList().add(ifaceName);
           }
           for (InterfaceAddress address : newIface.getAllAddresses()) {
             Prefix prefix = address.getPrefix();
@@ -2085,7 +2094,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
           }
         } else {
           _w.redFlag(
-              "Interface: '" + name + "' contains OSPF settings, but there is no OSPF process");
+              "Interface: '"
+                  + ifaceName
+                  + "' contains OSPF settings, but there is no OSPF process");
         }
       }
       newIface.setOspfCost(iface.getOspfCost());
@@ -2093,22 +2104,56 @@ public final class CiscoConfiguration extends VendorConfiguration {
       newIface.setOspfHelloMultiplier(iface.getOspfHelloMultiplier());
     }
 
-    EigrpProcess eigrpProcess = vrf.getEigrpProcess();
-    if (eigrpProcess != null) {
-      /*
-       * Some settings are here, others are set later when the EigrpProcess sets this
-       * interface
-       */
-      boolean passive = eigrpProcess.getPassiveInterfaceDefault();
-      if (iface.getEigrpPassive() != null) {
-        passive = iface.getEigrpPassive();
+    EigrpProcess eigrpProcess = null;
+    if (iface.getAddress() != null) {
+      for (EigrpProcess process : vrf.getEigrpProcesses().values()) {
+        if (process.getNetworks().contains(iface.getAddress().getPrefix())) {
+          // Found a process on interface
+          if (eigrpProcess != null) {
+            // Cisco does not recommend running multiple EIGRP autonomous systems on the same
+            // interface
+            _w.redFlag("Interface: '" + iface.getName() + "' matches multiple EIGRP processes");
+            break;
+          }
+          eigrpProcess = process;
+        }
       }
+    }
+    // Let toEigrpProcess handle null asn failure
+    if (eigrpProcess != null && eigrpProcess.getAsn() != null) {
+      boolean passive =
+          eigrpProcess
+              .getInterfacePassiveStatus()
+              .getOrDefault(iface.getName(), eigrpProcess.getPassiveInterfaceDefault());
+
+      // For bandwidth/delay, defaults are separate from actuals to inform metric calculations
+      EigrpMetric metric =
+          EigrpMetric.builder()
+              .setBandwidth(iface.getBandwidth())
+              .setMode(eigrpProcess.getMode())
+              .setDefaultBandwidth(
+                  Interface.getDefaultBandwidth(iface.getName(), c.getConfigurationFormat()))
+              .setDefaultDelay(
+                  Interface.getDefaultDelay(iface.getName(), c.getConfigurationFormat()))
+              .setDelay(iface.getDelay())
+              .build();
+
       newIface.setEigrp(
           EigrpInterfaceSettings.builder()
-              .setBandwidth(iface.getBandwidth())
-              .setDelay(iface.getDelay())
+              .setAsn(eigrpProcess.getAsn())
+              .setEnabled(true)
+              .setMetric(metric)
               .setPassive(passive)
               .build());
+      if (newIface.getEigrp() == null) {
+        _w.redFlag("Interface: '" + iface.getName() + "' failed to set EIGRP settings");
+      }
+    }
+    if (eigrpProcess == null && iface.getDelay() != null) {
+      _w.redFlag(
+          "Interface: '"
+              + iface.getName()
+              + "' contains EIGRP settings but is not part of an EIGRP process");
     }
 
     boolean level1 = false;
@@ -2231,32 +2276,22 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return String.format("~COMBINED_OUTGOING_ACL~%s~", interfaceName);
   }
 
-  /**
-   * For a given protocol, processes any redistribution policy that exists and adds any new policy
-   * statements to {@code allOspfExportStatements}.
-   */
-  private void applyOspfRedistributionPolicy(
-      OspfProcess proc,
-      RoutingProtocol protocol,
-      CiscoStructureUsage structureType,
-      List<Statement> allOspfExportStatements) {
-    OspfRedistributionPolicy policy = proc.getRedistributionPolicies().get(protocol);
-    if (policy == null) {
-      // There is no redistribution policy for this protocol.
-      return;
-    }
-
-    If redistributionPolicy = convertOspfRedistributionPolicy(policy, proc, structureType);
-    allOspfExportStatements.add(redistributionPolicy);
-  }
-
   // For testing.
-  If convertOspfRedistributionPolicy(
-      OspfRedistributionPolicy policy, OspfProcess proc, CiscoStructureUsage structureType) {
+  If convertOspfRedistributionPolicy(OspfRedistributionPolicy policy, OspfProcess proc) {
     RoutingProtocol protocol = policy.getSourceProtocol();
     // All redistribution must match the specified protocol.
     Conjunction ospfExportConditions = new Conjunction();
-    ospfExportConditions.getConjuncts().add(new MatchProtocol(protocol));
+    if (protocol == RoutingProtocol.EIGRP) {
+      ospfExportConditions
+          .getConjuncts()
+          .add(
+              new Disjunction(
+                  ImmutableList.of(
+                      new MatchProtocol(RoutingProtocol.EIGRP),
+                      new MatchProtocol(RoutingProtocol.EIGRP_EX))));
+    } else {
+      ospfExportConditions.getConjuncts().add(new MatchProtocol(protocol));
+    }
 
     // Do not redistribute the default route.
     ospfExportConditions.getConjuncts().add(NOT_DEFAULT_ROUTE);
@@ -2467,25 +2502,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
       ospfExportDefault.setGuard(ospfExportDefaultConditions);
     }
 
-    // policy for redistributing connected routes
-    applyOspfRedistributionPolicy(
-        proc,
-        RoutingProtocol.CONNECTED,
-        CiscoStructureUsage.OSPF_REDISTRIBUTE_CONNECTED_MAP,
-        ospfExportStatements);
-    // ... for static routes
-    applyOspfRedistributionPolicy(
-        proc,
-        RoutingProtocol.STATIC,
-        CiscoStructureUsage.OSPF_REDISTRIBUTE_STATIC_MAP,
-        ospfExportStatements);
-    // ... for BGP routes
-    applyOspfRedistributionPolicy(
-        proc,
-        RoutingProtocol.BGP,
-        CiscoStructureUsage.OSPF_REDISTRIBUTE_BGP_MAP,
-        ospfExportStatements);
-
     newProcess.setReferenceBandwidth(proc.getReferenceBandwidth());
     Ip routerId = proc.getRouterId();
     if (routerId == null) {
@@ -2496,6 +2512,15 @@ public final class CiscoConfiguration extends VendorConfiguration {
       }
     }
     newProcess.setRouterId(routerId);
+
+    // policies for redistributing routes
+    ospfExportStatements.addAll(
+        proc.getRedistributionPolicies()
+            .values()
+            .stream()
+            .map(policy -> convertOspfRedistributionPolicy(policy, proc))
+            .collect(Collectors.toList()));
+
     return newProcess;
   }
 
@@ -2930,16 +2955,18 @@ public final class CiscoConfiguration extends VendorConfiguration {
       c.getAsPathAccessLists().put(apList.getName(), apList);
     }
 
-    // convert standard/expanded community lists to community lists
+    // convert standard/expanded community lists and community-sets to community lists
     for (StandardCommunityList scList : _standardCommunityLists.values()) {
-      ExpandedCommunityList ecList = scList.toExpandedCommunityList();
-      CommunityList cList = CiscoConversions.toCommunityList(ecList);
+      CommunityList cList = CiscoConversions.toCommunityList(scList);
       c.getCommunityLists().put(cList.getName(), cList);
     }
     for (ExpandedCommunityList ecList : _expandedCommunityLists.values()) {
       CommunityList cList = CiscoConversions.toCommunityList(ecList);
       c.getCommunityLists().put(cList.getName(), cList);
     }
+    _communitySets.forEach(
+        (name, communitySet) ->
+            c.getCommunityLists().put(name, CiscoConversions.toCommunityList(communitySet)));
 
     // convert prefix lists to route filter lists
     for (PrefixList prefixList : _prefixLists.values()) {
@@ -3077,15 +3104,20 @@ public final class CiscoConfiguration extends VendorConfiguration {
     // convert interfaces
     _interfaces.forEach(
         (ifaceName, iface) -> {
+          // Handle renaming interfaces for ASA devices
+          String newIfaceName = firstNonNull(iface.getAlias(), ifaceName);
           org.batfish.datamodel.Interface newInterface =
-              toInterface(iface, c.getIpAccessLists(), c);
+              toInterface(newIfaceName, iface, c.getIpAccessLists(), c);
           String vrfName = iface.getVrf();
           if (vrfName == null) {
             throw new BatfishException("Missing vrf name for iface: '" + iface.getName() + "'");
           }
-          c.getInterfaces().put(ifaceName, newInterface);
-          c.getVrfs().get(vrfName).getInterfaces().put(ifaceName, newInterface);
+          c.getInterfaces().put(newIfaceName, newInterface);
+          c.getVrfs().get(vrfName).getInterfaces().put(newIfaceName, newInterface);
         });
+
+    // copy tracking groups
+    c.getTrackingGroups().putAll(_trackingGroups);
 
     // apply vrrp settings to interfaces
     applyVrrp(c);
@@ -3219,13 +3251,15 @@ public final class CiscoConfiguration extends VendorConfiguration {
             newVrf.setOspfProcess(newOspfProcess);
           }
 
-          // convert eigrp process
-          EigrpProcess eigrpProcess = vrf.getEigrpProcess();
-          if (eigrpProcess != null) {
-            org.batfish.datamodel.eigrp.EigrpProcess newEigrpProcess =
-                CiscoConversions.toEigrpProcess(eigrpProcess, vrfName, c, this);
-            newVrf.setEigrpProcess(newEigrpProcess);
-          }
+          // convert eigrp processes
+          vrf.getEigrpProcesses()
+              .values()
+              .stream()
+              .map(proc -> CiscoConversions.toEigrpProcess(proc, vrfName, c, this))
+              .filter(Objects::nonNull)
+              .forEach(
+                  eigrpProcess ->
+                      newVrf.getEigrpProcesses().put(eigrpProcess.getAsn(), eigrpProcess));
 
           // convert isis process
           IsisProcess isisProcess = vrf.getIsisProcess();
@@ -3261,6 +3295,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
     }
 
     markConcreteStructure(
+        CiscoStructureType.BFD_TEMPLATE, CiscoStructureUsage.INTERFACE_BFD_TEMPLATE);
+
+    markConcreteStructure(
         CiscoStructureType.COMMUNITY_SET,
         CiscoStructureUsage.ROUTE_POLICY_COMMUNITY_MATCHES_ANY,
         CiscoStructureUsage.ROUTE_POLICY_COMMUNITY_MATCHES_EVERY,
@@ -3275,7 +3312,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.BGP_UPDATE_SOURCE_INTERFACE,
         CiscoStructureUsage.INTERFACE_SELF_REF,
         CiscoStructureUsage.SERVICE_POLICY_INTERFACE,
-        CiscoStructureUsage.ROUTER_VRRP_INTERFACE);
+        CiscoStructureUsage.ROUTER_VRRP_INTERFACE,
+        CiscoStructureUsage.TRACK_INTERFACE);
 
     // mark references to ACLs that may not appear in data model
     markIpOrMacAcls(
@@ -3316,6 +3354,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.INSPECT_CLASS_MAP_MATCH_ACCESS_GROUP,
         CiscoStructureUsage.INTERFACE_IGMP_ACCESS_GROUP_ACL,
         CiscoStructureUsage.INTERFACE_IP_INBAND_ACCESS_GROUP,
+        CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_ACCESS_LIST_IN,
+        CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_ACCESS_LIST_OUT,
         CiscoStructureUsage.RIP_DISTRIBUTE_LIST,
         CiscoStructureUsage.ROUTER_ISIS_DISTRIBUTE_LIST_ACL,
         CiscoStructureUsage.SNMP_SERVER_FILE_TRANSFER_ACL,
@@ -3336,6 +3376,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureType.PREFIX_LIST,
         CiscoStructureUsage.BGP_INBOUND_PREFIX_LIST,
         CiscoStructureUsage.BGP_OUTBOUND_PREFIX_LIST,
+        CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_PREFIX_LIST_IN,
+        CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_PREFIX_LIST_OUT,
         CiscoStructureUsage.ROUTE_MAP_MATCH_IPV4_PREFIX_LIST);
     markConcreteStructure(
         CiscoStructureType.PREFIX6_LIST,
@@ -3384,6 +3426,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.INTERFACE_POLICY_ROUTING_MAP,
         CiscoStructureUsage.INTERFACE_SUMMARY_ADDRESS_EIGRP_LEAK_MAP,
         CiscoStructureUsage.OSPF_DEFAULT_ORIGINATE_ROUTE_MAP,
+        CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_ROUTE_MAP_IN,
+        CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_ROUTE_MAP_OUT,
         CiscoStructureUsage.OSPF_REDISTRIBUTE_BGP_MAP,
         CiscoStructureUsage.OSPF_REDISTRIBUTE_CONNECTED_MAP,
         CiscoStructureUsage.OSPF_REDISTRIBUTE_EIGRP_MAP,
@@ -3489,6 +3533,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.CLASS_MAP_SERVICE_TEMPLATE,
         CiscoStructureUsage.CLASS_MAP_ACTIVATED_SERVICE_TEMPLATE,
         CiscoStructureUsage.POLICY_MAP_EVENT_CLASS_ACTIVATE);
+
+    // track
+    markConcreteStructure(CiscoStructureType.TRACK, CiscoStructureUsage.INTERFACE_STANDBY_TRACK);
 
     // zone
     markConcreteStructure(
@@ -4097,5 +4144,13 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public Map<String, SecurityZone> getSecurityZones() {
     return _securityZones;
+  }
+
+  public Map<String, TrackMethod> getTrackingGroups() {
+    return _trackingGroups;
+  }
+
+  public Map<String, NamedCommunitySet> getCommunitySets() {
+    return _communitySets;
   }
 }

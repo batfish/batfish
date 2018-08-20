@@ -10,9 +10,12 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
-import java.util.regex.Pattern;
+import java.util.SortedMap;
 import java.util.stream.Collectors;
+import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclIpSpaceLine;
 import org.batfish.datamodel.Configuration;
@@ -590,10 +593,15 @@ public class AclReachabilityAnswererUtilsTest {
   }
 
   private List<AclSpecs> getAclSpecs(Set<String> configNames) {
-    return AclReachabilityAnswererUtils.getAclSpecs(
-        ImmutableSortedMap.of("c1", _c1, "c2", _c2),
-        configNames,
-        Pattern.compile(".*"),
-        new AclLines2Rows());
+    SortedMap<String, Configuration> configs = ImmutableSortedMap.of("c1", _c1, "c2", _c2);
+    Map<String, Set<IpAccessList>> acls =
+        CommonUtil.toImmutableMap(
+            configs,
+            Entry::getKey,
+            entry ->
+                configNames.contains(entry.getKey())
+                    ? ImmutableSet.copyOf(entry.getValue().getIpAccessLists().values())
+                    : ImmutableSet.of());
+    return AclReachabilityAnswererUtils.getAclSpecs(configs, acls, new AclLines2Rows());
   }
 }

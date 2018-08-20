@@ -165,6 +165,11 @@ public class EigrpMetric implements Serializable {
         _classicBandwidth, _classicDelay, _mode.ordinal(), _namedBandwidth, _namedDelay);
   }
 
+  @JsonIgnore
+  public double getBandwidth() {
+    return _namedBandwidth * 1000L;
+  }
+
   /** The classic bandwidth metric */
   @JsonProperty(PROP_CLASSIC_BANDWIDTH)
   private long getClassicBandwidth() {

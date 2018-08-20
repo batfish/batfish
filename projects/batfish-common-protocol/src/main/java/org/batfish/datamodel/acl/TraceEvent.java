@@ -7,7 +7,7 @@ import java.io.Serializable;
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
 public interface TraceEvent extends Serializable {
 
-  static final String PROP_DESCRIPTION = "description";
+  String PROP_DESCRIPTION = "description";
 
   @JsonProperty(PROP_DESCRIPTION)
   String getDescription();

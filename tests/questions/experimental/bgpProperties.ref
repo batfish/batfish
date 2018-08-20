@@ -3,22 +3,23 @@
   "nodeRegex" : ".*",
   "propertySpec" : "multipath-.*",
   "differential" : false,
-  "includeOneTableKeys" : false,
+  "includeOneTableKeys" : true,
   "instance" : {
-    "description" : "Gets properties of BGP routing processes",
+    "description" : "Return BGP configuration properties",
     "instanceName" : "qname",
     "tags" : [
-      "BGP"
+      "bgp",
+      "configuration"
     ],
     "variables" : {
       "nodeRegex" : {
-        "description" : "Only include nodes that match this specification",
+        "description" : "Only include nodes that match this regex",
         "optional" : true,
         "type" : "nodeSpec",
         "value" : ".*"
       },
       "propertySpec" : {
-        "description" : "Which properties to fetch; default is all of them",
+        "description" : "Only include properties that match this regex. Default behavior is to return all properties",
         "optional" : true,
         "type" : "bgpPropertySpec",
         "value" : "multipath-.*"

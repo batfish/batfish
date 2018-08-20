@@ -5,7 +5,9 @@ import java.util.Collection;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
@@ -19,24 +21,28 @@ public class EigrpProcess implements Serializable {
 
   private static final String DEFAULT_ADDRESS_FAMILY = "ipv4-unicast";
   private static final long serialVersionUID = 1L;
+  private final Map<String, Boolean> _interfacePassiveStatus;
+  private final EigrpProcessMode _mode;
+  private final Set<IpWildcard> _wildcardNetworks;
+  private final Set<Prefix> _networks;
+  private final Map<RoutingProtocol, EigrpRedistributionPolicy> _redistributionPolicies;
+  private final @Nonnull String _vrfName;
   private String _addressFamily;
-  private long _asn;
+  private @Nullable Long _asn;
   private boolean _autoSummary;
   private @Nullable EigrpMetric _defaultMetric;
-  private EigrpProcessMode _mode;
-  private Ip _routerId;
-  private Set<IpWildcard> _wildcardNetworks;
-  private Set<Prefix> _networks;
+  @Nullable private Ip _routerId;
   private boolean _passiveInterfaceDefault;
-  private Map<RoutingProtocol, EigrpRedistributionPolicy> _redistributionPolicies;
 
-  public EigrpProcess(Long asn, EigrpProcessMode mode) {
+  public EigrpProcess(@Nullable Long asn, EigrpProcessMode mode, @Nonnull String vrfName) {
     _asn = asn;
     _addressFamily = DEFAULT_ADDRESS_FAMILY;
     _autoSummary = false;
+    _interfacePassiveStatus = new TreeMap<>();
     _mode = mode;
     _networks = new TreeSet<>();
     _redistributionPolicies = new EnumMap<>(RoutingProtocol.class);
+    _vrfName = vrfName;
     _wildcardNetworks = new TreeSet<>();
   }
 
@@ -72,11 +78,12 @@ public class EigrpProcess implements Serializable {
     _addressFamily = af;
   }
 
-  public long getAsn() {
+  @Nullable
+  public Long getAsn() {
     return _asn;
   }
 
-  public void setAsn(long asn) {
+  public void setAsn(@Nullable Long asn) {
     _asn = asn;
   }
 
@@ -95,6 +102,10 @@ public class EigrpProcess implements Serializable {
 
   public void setDefaultMetric(@Nullable EigrpMetric metric) {
     _defaultMetric = metric;
+  }
+
+  public Map<String, Boolean> getInterfacePassiveStatus() {
+    return _interfacePassiveStatus;
   }
 
   public EigrpProcessMode getMode() {
@@ -117,15 +128,20 @@ public class EigrpProcess implements Serializable {
     return _redistributionPolicies;
   }
 
+  @Nullable
   public Ip getRouterId() {
     return _routerId;
   }
 
-  public void setRouterId(Ip routerId) {
+  public void setRouterId(@Nullable Ip routerId) {
     _routerId = routerId;
   }
 
   public Set<IpWildcard> getWildcardNetworks() {
     return _wildcardNetworks;
+  }
+
+  public String getVrf() {
+    return _vrfName;
   }
 }

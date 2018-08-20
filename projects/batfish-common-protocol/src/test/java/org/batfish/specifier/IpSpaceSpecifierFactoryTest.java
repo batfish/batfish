@@ -28,10 +28,13 @@ public class IpSpaceSpecifierFactoryTest {
   }
 
   @Test
-  public void testInferFromLocationIpSpaceSpecifierFactory() {
+  public void testFlexibleInferFromLocationIpSpaceSpecifierFactory() {
     assertThat(
-        new InferFromLocationIpSpaceSpecifierFactory().buildIpSpaceSpecifier(null),
-        is(InferFromLocationIpSpaceSpecifier.INSTANCE));
+        load(FlexibleInferFromLocationIpSpaceSpecifierFactory.NAME),
+        Matchers.instanceOf(FlexibleInferFromLocationIpSpaceSpecifierFactory.class));
+    assertThat(
+        new FlexibleInferFromLocationIpSpaceSpecifierFactory().buildIpSpaceSpecifier(null),
+        equalTo(InferFromLocationIpSpaceSpecifier.INSTANCE));
   }
 
   @Test
@@ -39,11 +42,31 @@ public class IpSpaceSpecifierFactoryTest {
     assertThat(
         load(FlexibleLocationIpSpaceSpecifierFactory.NAME),
         instanceOf(FlexibleLocationIpSpaceSpecifierFactory.class));
+    IpSpaceSpecifier actual =
+        new FlexibleLocationIpSpaceSpecifierFactory().buildIpSpaceSpecifier("[vrf(foo)]");
     assertThat(
-        new FlexibleLocationIpSpaceSpecifierFactory().buildIpSpaceSpecifier("vrf=foo"),
+        actual,
         equalTo(
             new LocationIpSpaceSpecifier(
-                new VrfNameRegexInterfaceLinkLocationSpecifier(Pattern.compile("foo")))));
+                new InterfaceSpecifierInterfaceLocationSpecifier(
+                    new VrfNameRegexInterfaceSpecifier(Pattern.compile("foo"))))));
+  }
+
+  @Test
+  public void testFlexibleUniverseIpSpaceSpecifierFactory() {
+    assertThat(
+        load(FlexibleUniverseIpSpaceSpecifierFactory.NAME),
+        instanceOf(FlexibleUniverseIpSpaceSpecifierFactory.class));
+    assertThat(
+        new FlexibleUniverseIpSpaceSpecifierFactory().buildIpSpaceSpecifier(null),
+        equalTo(new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE)));
+  }
+
+  @Test
+  public void testInferFromLocationIpSpaceSpecifierFactory() {
+    assertThat(
+        new InferFromLocationIpSpaceSpecifierFactory().buildIpSpaceSpecifier(null),
+        is(InferFromLocationIpSpaceSpecifier.INSTANCE));
   }
 
   @Test
