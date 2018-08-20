@@ -296,6 +296,7 @@ import org.batfish.datamodel.matchers.IpsecPolicyMatchers;
 import org.batfish.datamodel.matchers.IpsecProposalMatchers;
 import org.batfish.datamodel.matchers.IpsecVpnMatchers;
 import org.batfish.datamodel.matchers.OspfAreaMatchers;
+import org.batfish.datamodel.matchers.RouteFilterListMatchers;
 import org.batfish.datamodel.matchers.StubSettingsMatchers;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfDefaultOriginateType;
@@ -653,6 +654,42 @@ public class CiscoGrammarTest {
   public void testIosLoggingOnDefault() throws IOException {
     Configuration loggingOnOmitted = parseConfig("iosLoggingOnOmitted");
     assertThat(loggingOnOmitted, hasVendorFamily(hasCisco(hasLogging(isOn()))));
+  }
+
+  @Test
+  public void testIosAclInRouteMap() throws IOException {
+    String hostname = "ios-acl-in-routemap";
+    Configuration c = parseConfig(hostname);
+    assertThat(c, hasRouteFilterList("10", permits(Prefix.parse("10.0.0.0/8"))));
+    assertThat(c, hasRouteFilterList("10", permits(Prefix.parse("10.1.0.0/16"))));
+    assertThat(
+        c, hasRouteFilterList("10", RouteFilterListMatchers.rejects(Prefix.parse("10.0.0.0/7"))));
+    assertThat(
+        c,
+        hasIpAccessList(
+            "10",
+            accepts(
+                Flow.builder()
+                    .setSrcIp(new Ip("10.1.1.1"))
+                    .setDstIp(new Ip("11.1.1.1"))
+                    .setIngressNode(hostname)
+                    .setTag("test")
+                    .build(),
+                "Ethernet1",
+                c)));
+    assertThat(
+        c,
+        hasIpAccessList(
+            "10",
+            rejects(
+                Flow.builder()
+                    .setSrcIp(new Ip("11.1.1.1"))
+                    .setDstIp(new Ip("10.1.1.1"))
+                    .setIngressNode(hostname)
+                    .setTag("test")
+                    .build(),
+                "Ethernet1",
+                c)));
   }
 
   @Test

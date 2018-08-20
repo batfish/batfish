@@ -1,0 +1,17 @@
+!
+hostname ios-acl-in-routemap
+!
+!
+access-list 10 permit 10.0.0.0 0.255.255.255
+!
+route-map RM permit 100
+  match ip address 10
+!
+interface Ethernet1
+ ip address 10.1.1.0 255.255.255.0
+ ip access-group 10 in
+!
+router bgp 1
+ neighbor 2.2.2.2 remote-as 2
+ neighbor 2.2.2.2 route-map RM out
+ network 10.1.1.0/24

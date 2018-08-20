@@ -1112,6 +1112,16 @@ class CiscoConversions {
     return new RouteFilterList(eaList.getName(), lines);
   }
 
+  static RouteFilterList toRouteFilterList(StandardAccessList saList) {
+    List<RouteFilterLine> lines =
+        saList
+            .getLines()
+            .stream()
+            .map(CiscoConversions::toRouteFilterLine)
+            .collect(ImmutableList.toImmutableList());
+    return new RouteFilterList(saList.getName(), lines);
+  }
+
   static RouteFilterList toRouteFilterList(PrefixList list) {
     RouteFilterList newRouteFilterList = new RouteFilterList(list.getName());
     List<RouteFilterLine> newLines =
@@ -1254,6 +1264,19 @@ class CiscoConversions {
     Prefix prefix = new Prefix(ip, prefixLength);
     return new RouteFilterLine(
         action, new IpWildcard(prefix), new SubRange(minPrefixLength, maxPrefixLength));
+  }
+
+  /** Convert a standard access list line to a route filter list line */
+  private static RouteFilterLine toRouteFilterLine(StandardAccessListLine fromLine) {
+    LineAction action = fromLine.getAction();
+    IpWildcard srcIpWildcard =
+        ((WildcardAddressSpecifier) fromLine.getSrcAddressSpecifier()).getIpWildcard();
+    Prefix prefix = srcIpWildcard.toPrefix();
+
+    return new RouteFilterLine(
+        action,
+        new IpWildcard(prefix),
+        new SubRange(prefix.getPrefixLength(), Prefix.MAX_PREFIX_LENGTH));
   }
 
   private CiscoConversions() {} // prevent instantiation of utility class
