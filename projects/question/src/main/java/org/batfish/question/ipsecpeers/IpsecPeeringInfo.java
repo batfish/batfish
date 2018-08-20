@@ -28,11 +28,11 @@ public class IpsecPeeringInfo {
 
   @Nullable private String _responderHostname;
 
-  private String _responderInterface;
+  @Nullable private String _responderInterface;
 
-  private Ip _responderIp;
+  @Nullable private Ip _responderIp;
 
-  private String _responderTunnelInterface;
+  @Nullable private String _responderTunnelInterface;
 
   @Nonnull private IpsecPeeringStatus _ipsecPeeringStatus;
 
@@ -42,9 +42,9 @@ public class IpsecPeeringInfo {
       @Nonnull Ip initiatorIp,
       @Nullable String initiatorTunnelInterface,
       @Nullable String responderHostname,
-      String responderInterface,
-      Ip responderIp,
-      String responderTunnelInterface,
+      @Nullable String responderInterface,
+      @Nullable Ip responderIp,
+      @Nullable String responderTunnelInterface,
       IpsecPeeringStatus ipsecPeeringStatus) {
     _initiatorHostname = initiatorHostname;
     _initiatorInterface = initiatorInterface;
@@ -72,14 +72,17 @@ public class IpsecPeeringInfo {
     return _initiatorIp;
   }
 
+  @Nullable
   public String getInitiatorTunnelInterface() {
     return _initiatorTunnelInterface;
   }
 
+  @Nullable
   public String getResponderHostname() {
     return _responderHostname;
   }
 
+  @Nullable
   public String getResponderInterface() {
     return _responderInterface;
   }
@@ -89,6 +92,7 @@ public class IpsecPeeringInfo {
     return _responderTunnelInterface;
   }
 
+  @Nullable
   public Ip getResponderIp() {
     return _responderIp;
   }

@@ -17,9 +17,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import org.batfish.common.Answerer;
-import org.batfish.common.Pair;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.IpsecUtil;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IpsecDynamicPeerConfig;
@@ -62,7 +60,7 @@ class IpsecPeersAnswerer extends Answerer {
     Set<String> initiatorNodes = question.getInitiatorRegex().getMatchingNodes(_batfish);
     Set<String> responderNodes = question.getResponderRegex().getMatchingNodes(_batfish);
 
-    TableAnswerElement answerElement = new TableAnswerElement(getTableMetadata());
+    TableAnswerElement answerElement = new TableAnswerElement(createTableMetaData(question));
 
     Multiset<IpsecPeeringInfo> ipsecPeerings =
         rawAnswer(networkConfigurations, ipsecTopology, initiatorNodes, responderNodes);
@@ -80,15 +78,16 @@ class IpsecPeersAnswerer extends Answerer {
 
   @VisibleForTesting
   static Multiset<IpsecPeeringInfo> rawAnswer(
-      NetworkConfigurations networkConfigurations, ValueGraph<IpsecPeerConfigId, IpsecSession> ipsecTopology,
+      NetworkConfigurations networkConfigurations,
+      ValueGraph<IpsecPeerConfigId, IpsecSession> ipsecTopology,
       Set<String> initiatorNodes,
-      Set<String> responderNodes
-      ) {
+      Set<String> responderNodes) {
     Multiset<IpsecPeeringInfo> ipsecPeeringsInfos = HashMultiset.create();
 
     for (IpsecPeerConfigId node : ipsecTopology.nodes()) {
       IpsecPeerConfig ipsecPeerConfig = networkConfigurations.getIpecPeerConfig(node);
-      if (ipsecPeerConfig == null || ipsecPeerConfig  instanceof IpsecDynamicPeerConfig
+      if (ipsecPeerConfig == null
+          || ipsecPeerConfig instanceof IpsecDynamicPeerConfig
           || !initiatorNodes.contains(node.getHostName())) {
         continue;
       }
@@ -116,7 +115,7 @@ class IpsecPeersAnswerer extends Answerer {
           continue;
         }
         IpsecPeerConfig ipsecPeerConfigNeighbor = networkConfigurations.getIpecPeerConfig(neighbor);
-        if(ipsecPeerConfigNeighbor == null){
+        if (ipsecPeerConfigNeighbor == null) {
           continue;
         }
         processNeighbor(neighbor, ipsecPeeringInfoBuilder, ipsecPeerConfigNeighbor, ipsecSession);
@@ -127,15 +126,16 @@ class IpsecPeersAnswerer extends Answerer {
   }
 
   private static void processNeighbor(
-      IpsecPeerConfigId ipsecPeerConfigId,
+      IpsecPeerConfigId ipsecPeerConfigIdNeighbor,
       IpsecPeeringInfo.Builder ipsecPeeringInfoBuilder,
-      IpsecPeerConfig ipsecPeerConfig,
+      IpsecPeerConfig ipsecPeerConfigNeighbor,
       IpsecSession ipsecSession) {
 
-    ipsecPeeringInfoBuilder.setResponderHostname(ipsecPeerConfigId.getHostName());
-    ipsecPeeringInfoBuilder.setResponderInterface(ipsecPeerConfig.getPhysicalInterface());
-    ipsecPeeringInfoBuilder.setResponderIp(ipsecPeerConfig.getLocalAddress());
-    ipsecPeeringInfoBuilder.setResponderTunnelInterface(ipsecPeerConfig.getTunnelInterface());
+    ipsecPeeringInfoBuilder.setResponderHostname(ipsecPeerConfigIdNeighbor.getHostName());
+    ipsecPeeringInfoBuilder.setResponderInterface(ipsecPeerConfigNeighbor.getPhysicalInterface());
+    ipsecPeeringInfoBuilder.setResponderIp(ipsecPeerConfigNeighbor.getLocalAddress());
+    ipsecPeeringInfoBuilder.setResponderTunnelInterface(
+        ipsecPeerConfigNeighbor.getTunnelInterface());
 
     if (ipsecSession.getNegotiatedIkeP1Proposal() == null) {
       ipsecPeeringInfoBuilder.setIpsecPeeringStatus(IKE_PHASE1_FAILED);
@@ -160,7 +160,9 @@ class IpsecPeersAnswerer extends Answerer {
         .put(
             COL_INIT_INTERFACE_IP,
             String.format("%s:%s", info.getInitiatorInterface(), info.getInitiatorIp()))
-        .put(COL_RESPONDER, new Node(info.getResponderHostname()))
+        .put(
+            COL_RESPONDER,
+            info.getResponderHostname() == null ? null : new Node(info.getResponderHostname()))
         .put(
             COL_RESPONDER_INTERFACE_IP,
             String.format("%s:%s", info.getResponderInterface(), info.getResponderIp()))
@@ -176,18 +178,21 @@ class IpsecPeersAnswerer extends Answerer {
   }
 
   /** Create table metadata for this answer. */
-  private static TableMetadata getTableMetadata() {
+  private static TableMetadata createTableMetaData(Question question) {
     List<ColumnMetadata> columnMetadata = getColumnMetadata();
-    DisplayHints displayHints = new DisplayHints();
-    displayHints.setTextDesc(
+    String textDesc =
         String.format(
             " IPSec peering between initiator ${%s} with interface and IP ${%s} and responder ${%s} with interface and IP ${%s}s has status ${%s}.",
             COL_INITIATOR,
             COL_INIT_INTERFACE_IP,
             COL_RESPONDER,
             COL_RESPONDER_INTERFACE_IP,
-            COL_STATUS));
-    return new TableMetadata(columnMetadata, displayHints);
+            COL_STATUS);
+    DisplayHints dhints = question.getDisplayHints();
+    if (dhints != null && dhints.getTextDesc() != null) {
+      textDesc = dhints.getTextDesc();
+    }
+    return new TableMetadata(columnMetadata, textDesc);
   }
 
   /** Create column metadata. */
