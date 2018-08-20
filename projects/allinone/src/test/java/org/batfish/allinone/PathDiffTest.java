@@ -32,7 +32,7 @@ import org.junit.rules.TemporaryFolder;
 public class PathDiffTest {
   @Rule public TemporaryFolder tmp = new TemporaryFolder();
 
-  /** 3.3.3.3/32 <--- A <---> B ---> 4.4.4.4/32 */
+  /** 3.3.3.3/32 &lt;--- A &lt;---&gt; B ---&gt; 4.4.4.4/32 */
   private static SortedMap<String, Configuration> twoNodeNetwork(boolean connected) {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
@@ -81,7 +81,7 @@ public class PathDiffTest {
       vB.getStaticRoutes().add(rb.setNetwork(pA).setNextHopIp(pAB.getStartIp()).build());
     }
 
-    return ImmutableSortedMap.of(cA.getName(), cA, cB.getName(), cB);
+    return ImmutableSortedMap.of(cA.getHostname(), cA, cB.getHostname(), cB);
   }
 
   @Test

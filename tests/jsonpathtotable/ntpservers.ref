@@ -18,9 +18,7 @@
           "schema" : "Node"
         }
       ],
-      "displayHints" : {
-        "textDesc" : "The NTP servers of ${node} are ${ntpServers}"
-      }
+      "textDesc" : "The NTP servers of ${node} are ${ntpServers}"
     },
     "excludedRows" : [
       {

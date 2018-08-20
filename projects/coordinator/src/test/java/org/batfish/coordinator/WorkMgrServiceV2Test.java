@@ -37,7 +37,7 @@ public class WorkMgrServiceV2Test extends WorkMgrServiceV2TestBase {
   }
 
   private WebTarget getContainersTarget() {
-    return target(CoordConsts.SVC_CFG_WORK_MGR2).path(CoordConstsV2.RSC_CONTAINERS);
+    return target(CoordConsts.SVC_CFG_WORK_MGR2).path(CoordConstsV2.RSC_NETWORKS);
   }
 
   @Test
@@ -66,14 +66,14 @@ public class WorkMgrServiceV2Test extends WorkMgrServiceV2TestBase {
   public void redirectContainer() {
     Response response =
         target(CoordConsts.SVC_CFG_WORK_MGR2)
-            .path(CoordConstsV2.RSC_CONTAINER)
+            .path(CoordConstsV2.RSC_NETWORK)
             .property(FOLLOW_REDIRECTS, false)
             .request()
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, Version.getVersion())
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
             .get();
     assertThat(response.getStatus(), equalTo(MOVED_PERMANENTLY.getStatusCode()));
-    assertThat(response.getLocation().getPath(), equalTo("/v2/containers"));
+    assertThat(response.getLocation().getPath(), equalTo("/v2/networks"));
   }
 
   /** Test that the ApiKey is extracted from the correct header */
@@ -126,6 +126,6 @@ public class WorkMgrServiceV2Test extends WorkMgrServiceV2TestBase {
     assertThat(resp.getStatus(), equalTo(FORBIDDEN.getStatusCode()));
     assertThat(
         resp.readEntity(String.class),
-        equalTo("container 'someContainer' is not accessible by the api key: AnotherApiKey"));
+        equalTo("network 'someContainer' is not accessible by the api key: AnotherApiKey"));
   }
 }

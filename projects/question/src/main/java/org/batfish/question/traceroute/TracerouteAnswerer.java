@@ -24,7 +24,6 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
-import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
@@ -92,7 +91,7 @@ public final class TracerouteAnswerer extends Answerer {
     return table;
   }
 
-  private static TableMetadata createMetadata() {
+  public static TableMetadata createMetadata() {
     List<ColumnMetadata> columnMetadata =
         ImmutableList.of(
             new ColumnMetadata(COL_NODE, Schema.NODE, "Ingress node", true, false),
@@ -103,10 +102,7 @@ public final class TracerouteAnswerer extends Answerer {
                 COL_RESULTS, Schema.set(Schema.STRING), "The set of outcomes", false, true),
             new ColumnMetadata(COL_PATHS, Schema.set(Schema.FLOW_TRACE), "The paths", false, true));
 
-    DisplayHints dhints = new DisplayHints();
-    dhints.setTextDesc(String.format("Paths for flow ${%s}", COL_FLOW));
-
-    return new TableMetadata(columnMetadata, dhints);
+    return new TableMetadata(columnMetadata, String.format("Paths for flow ${%s}", COL_FLOW));
   }
 
   /**
@@ -143,7 +139,7 @@ public final class TracerouteAnswerer extends Answerer {
    * Converts a flowHistory object into a set of Rows. Expects that the traces correspond to only
    * one environment.
    */
-  private static Multiset<Row> flowHistoryToRows(FlowHistory flowHistory) {
+  public static Multiset<Row> flowHistoryToRows(FlowHistory flowHistory) {
     Multiset<Row> rows = LinkedHashMultiset.create();
     for (FlowHistoryInfo historyInfo : flowHistory.getTraces().values()) {
       rows.add(flowHistoryToRow(historyInfo));

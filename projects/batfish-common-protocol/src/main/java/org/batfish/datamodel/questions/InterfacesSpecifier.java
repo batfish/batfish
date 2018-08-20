@@ -15,8 +15,8 @@ import org.batfish.datamodel.Interface;
  * <p>Currently supported example specifiers:
  *
  * <ul>
- *   <li>Loopback.* —> all interfaces with matching names
- *   <li>desc:KK.* -> all interfaces whose description matches KK.*
+ *   <li>Loopback.* -&gt; all interfaces with matching names
+ *   <li>desc:KK.* -&gt; all interfaces whose description matches KK.*
  * </ul>
  *
  * <p>In the future, we might need other tags and boolean expressions over tags.

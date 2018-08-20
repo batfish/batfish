@@ -4,8 +4,10 @@
 .DS_Store
 .*.swp
 
-# ignore maven pom version backups
+# Maven files
+dependency-reduced-pom.xml
 pom.xml.versionsBackup
+target/
 
 # Ignore the list of java files to format-check
 /files_to_check
@@ -36,3 +38,5 @@ org.eclipse.core.resources.prefs
 # Ignore jacoco coverage reports
 coverage*
 
+# Ignore python cache files
+__pycache__

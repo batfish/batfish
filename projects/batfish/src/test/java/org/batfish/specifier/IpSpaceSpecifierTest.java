@@ -11,6 +11,7 @@ import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import java.util.Map;
 import java.util.Set;
@@ -68,7 +69,7 @@ public class IpSpaceSpecifierTest {
             .setConfigs(_configs)
             .setInterfaceOwnedIps(
                 ImmutableMap.of(
-                    _c1.getName(),
+                    _c1.getHostname(),
                     ImmutableMap.of(
                         _i1.getName(),
                         _i1.getAddress().getIp().toIpSpace(),
@@ -107,7 +108,7 @@ public class IpSpaceSpecifierTest {
         assignment,
         hasEntry(
             containsIp(new Ip("1.0.0.0")),
-            contains(new InterfaceLocation(_i1.getOwner().getName(), _i1.getName()))));
+            contains(new InterfaceLocation(_i1.getOwner().getHostname(), _i1.getName()))));
 
     assertThat(
         assignment,
@@ -124,24 +125,32 @@ public class IpSpaceSpecifierTest {
                         containsIp(new Ip("2.0.0.1")),
                         containsIp(new Ip("2.0.0.2")),
                         containsIp(new Ip("2.0.0.3"))))),
-            contains(new InterfaceLinkLocation(_i1.getOwner().getName(), _i1.getName()))));
+            contains(new InterfaceLinkLocation(_i1.getOwner().getHostname(), _i1.getName()))));
 
     // Locations that don't own any ipspace are assigned EmptyIpSpace.
     assertThat(
         assignment,
         hasEntry(
             equalTo(EmptyIpSpace.INSTANCE),
-            contains(new InterfaceLocation(_i2.getOwner().getName(), _i2.getName()))));
+            contains(new InterfaceLocation(_i2.getOwner().getHostname(), _i2.getName()))));
     assertThat(
         assignment,
         hasEntry(
             equalTo(EmptyIpSpace.INSTANCE),
-            contains(new InterfaceLinkLocation(_i2.getOwner().getName(), _i2.getName()))));
+            contains(new InterfaceLinkLocation(_i2.getOwner().getHostname(), _i2.getName()))));
+  }
+
+  @Test
+  public void testLocationIpSpaceSpecifier() {
+    IpSpaceAssignment assignment =
+        new LocationIpSpaceSpecifier(AllInterfacesLocationSpecifier.INSTANCE)
+            .resolve(ImmutableSet.of(), _context);
+    assertThat(assignment, hasEntry(containsIp(new Ip("1.0.0.0")), equalTo(ImmutableSet.of())));
   }
 
   @Test
   public void testNodeNameRegexConnectedHostsIpSpaceSpecifier() {
-    Pattern pattern = Pattern.compile(_c1.getName());
+    Pattern pattern = Pattern.compile(_c1.getHostname());
     IpSpaceAssignment assignment =
         new NodeNameRegexConnectedHostsIpSpaceSpecifier(pattern).resolve(_allLocations, _context);
 

@@ -9,7 +9,6 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import org.batfish.common.Pair;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 
@@ -181,10 +180,9 @@ public class AclLinesAnswerElement extends AnswerElement implements AclLinesAnsw
       entry.setDifferentAction(!line.getAction().equals(blockingLine.getAction()));
     }
 
-    Pair<String, String> hostnameAndAcl = aclSpecs.getRepresentativeHostnameAclPair();
     _unreachableLines
-        .computeIfAbsent(hostnameAndAcl.getFirst(), k -> new TreeMap<>())
-        .computeIfAbsent(hostnameAndAcl.getSecond(), k -> new TreeSet<>())
+        .computeIfAbsent(aclSpecs.reprHostname, k -> new TreeMap<>())
+        .computeIfAbsent(aclSpecs.acl.getAclName(), k -> new TreeSet<>())
         .add(entry);
   }
 

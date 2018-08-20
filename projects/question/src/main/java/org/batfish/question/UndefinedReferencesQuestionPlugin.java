@@ -2,25 +2,26 @@ package org.batfish.question;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
+import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.AnswerSummary;
-import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
-import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
-import org.batfish.datamodel.answers.Problem;
-import org.batfish.datamodel.answers.ProblemsAnswerElement;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 
 @AutoService(Plugin.class)
 public class UndefinedReferencesQuestionPlugin extends QuestionPlugin {
 
-  public static class UndefinedReferencesAnswerElement extends ProblemsAnswerElement {
+  public static class UndefinedReferencesAnswerElement extends AnswerElement {
+
+    private static final String PROP_UNDEFINED_REFERENCES = "undefinedReferences";
 
     private SortedMap<
             String, SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>>
@@ -31,6 +32,7 @@ public class UndefinedReferencesQuestionPlugin extends QuestionPlugin {
       setSummary(new AnswerSummary());
     }
 
+    @JsonProperty(PROP_UNDEFINED_REFERENCES)
     public SortedMap<
             String, SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>>
         getUndefinedReferences() {
@@ -41,8 +43,8 @@ public class UndefinedReferencesQuestionPlugin extends QuestionPlugin {
     public String prettyPrint() {
       final StringBuilder sb = new StringBuilder();
       _undefinedReferences.forEach(
-          (hostname, byType) -> {
-            sb.append(hostname + ":\n");
+          (filename, byType) -> {
+            sb.append(filename + ":\n");
             byType.forEach(
                 (type, byName) -> {
                   sb.append("  " + type + ":\n");
@@ -58,6 +60,7 @@ public class UndefinedReferencesQuestionPlugin extends QuestionPlugin {
       return sb.toString();
     }
 
+    @JsonProperty(PROP_UNDEFINED_REFERENCES)
     public void setUndefinedReferences(
         SortedMap<
                 String, SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>>
@@ -86,54 +89,30 @@ public class UndefinedReferencesQuestionPlugin extends QuestionPlugin {
     @Override
     public UndefinedReferencesAnswerElement answer() {
       UndefinedReferencesQuestion question = (UndefinedReferencesQuestion) _question;
-      UndefinedReferencesAnswerElement answerElement = new UndefinedReferencesAnswerElement();
-      ConvertConfigurationAnswerElement ccae =
-          _batfish.loadConvertConfigurationAnswerElementOrReparse();
-      Set<String> includeNodes = question.getNodeRegex().getMatchingNodes(_batfish);
 
-      ccae.getUndefinedReferences()
-          .forEach(
-              (hostname, byType) -> {
-                if (includeNodes.contains(hostname)) {
-                  answerElement.getUndefinedReferences().put(hostname, byType);
-                }
-              });
-      ParseVendorConfigurationAnswerElement pvcae =
-          _batfish.loadParseVendorConfigurationAnswerElement();
-      SortedMap<String, String> hostnameFilenameMap = pvcae.getFileMap();
-      answerElement
-          .getUndefinedReferences()
-          .forEach(
-              (hostname, byType) -> {
-                String filename = hostnameFilenameMap.get(hostname);
-                if (filename != null) {
-                  byType.forEach(
-                      (type, byName) ->
-                          byName.forEach(
-                              (name, byUsage) ->
-                                  byUsage.forEach(
-                                      (usage, lines) -> {
-                                        String problemShort =
-                                            "undefined:" + type + ":usage:" + usage + ":" + name;
-                                        Problem problem =
-                                            answerElement.getProblems().get(problemShort);
-                                        if (problem == null) {
-                                          problem = new Problem();
-                                          String problemLong =
-                                              "Undefined reference to structure of type: '"
-                                                  + type
-                                                  + "' with usage: '"
-                                                  + usage
-                                                  + "' named '"
-                                                  + name
-                                                  + "'";
-                                          problem.setDescription(problemLong);
-                                          answerElement.getProblems().put(problemShort, problem);
-                                        }
-                                        problem.getFiles().put(filename, lines);
-                                      })));
-                }
-              });
+      // Find all the filenames that produced the queried nodes. This might have false positives if
+      // a file produced multiple nodes, but that was already mis-handled before. Need to rewrite
+      // this question as a TableAnswerElement.
+      Set<String> includeNodes = question.getNodeRegex().getMatchingNodes(_batfish);
+      SortedMap<String, String> hostnameFilenameMap =
+          _batfish.loadParseVendorConfigurationAnswerElement().getFileMap();
+      Set<String> includeFiles =
+          hostnameFilenameMap
+              .entrySet()
+              .stream()
+              .filter(e -> includeNodes.contains(e.getKey()))
+              .map(Entry::getValue)
+              .collect(Collectors.toSet());
+
+      UndefinedReferencesAnswerElement answerElement = new UndefinedReferencesAnswerElement();
+      SortedMap<String, SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>>
+          undefinedReferences =
+              _batfish.loadConvertConfigurationAnswerElementOrReparse().getUndefinedReferences();
+      undefinedReferences
+          .entrySet()
+          .stream()
+          .filter(e -> includeFiles.contains(e.getKey()))
+          .forEach(e -> answerElement.getUndefinedReferences().put(e.getKey(), e.getValue()));
       answerElement.updateSummary();
       return answerElement;
     }

@@ -1,18 +1,24 @@
 package org.batfish.representation.cisco;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import org.batfish.common.util.ComparableStructure;
 
-public class RoutePolicy extends ComparableStructure<String> {
+public class RoutePolicy implements Serializable {
 
   private static final long serialVersionUID = 1L;
+
+  private final String _name;
 
   private List<RoutePolicyStatement> _stmtList;
 
   public RoutePolicy(String name) {
-    super(name);
+    _name = name;
     _stmtList = new ArrayList<>();
+  }
+
+  public String getName() {
+    return _name;
   }
 
   public List<RoutePolicyStatement> getStatements() {

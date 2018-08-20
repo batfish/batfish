@@ -1,7 +1,6 @@
 package org.batfish.representation.aws;
 
 import java.io.Serializable;
-import org.batfish.common.BatfishLogger;
 import org.batfish.datamodel.Ip;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -18,7 +17,7 @@ public class VgwTelemetry implements Serializable {
 
   private final String _statusMessage;
 
-  public VgwTelemetry(JSONObject jObj, BatfishLogger logger) throws JSONException {
+  public VgwTelemetry(JSONObject jObj) throws JSONException {
     _status = jObj.getString(AwsVpcEntity.JSON_KEY_STATUS);
     _statusMessage = jObj.getString(AwsVpcEntity.JSON_KEY_STATUS_MESSAGE);
     _acceptedRouteCount = jObj.getInt(AwsVpcEntity.JSON_KEY_ACCEPTED_ROUTE_COUNT);

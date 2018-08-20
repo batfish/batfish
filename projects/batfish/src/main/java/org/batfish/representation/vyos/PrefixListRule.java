@@ -1,12 +1,12 @@
 package org.batfish.representation.vyos;
 
+import java.io.Serializable;
 import org.batfish.common.BatfishException;
-import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
 
-public class PrefixListRule extends ComparableStructure<Integer> {
+public class PrefixListRule implements Serializable {
 
   /** */
   private static final long serialVersionUID = 1L;
@@ -21,8 +21,7 @@ public class PrefixListRule extends ComparableStructure<Integer> {
 
   private Prefix _prefix;
 
-  public PrefixListRule(int num) {
-    super(num);
+  public PrefixListRule() {
     _ge = 0;
     _le = 32;
   }

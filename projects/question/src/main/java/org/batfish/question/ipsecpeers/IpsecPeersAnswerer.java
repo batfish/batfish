@@ -20,10 +20,13 @@ import org.batfish.common.Answerer;
 import org.batfish.common.Pair;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.common.util.IpsecUtil;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IpsecDynamicPeerConfig;
 import org.batfish.datamodel.IpsecPeerConfig;
+import org.batfish.datamodel.IpsecPeerConfigId;
 import org.batfish.datamodel.IpsecSession;
+import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
@@ -52,8 +55,9 @@ class IpsecPeersAnswerer extends Answerer {
   public AnswerElement answer() {
     IpsecPeersQuestion question = (IpsecPeersQuestion) _question;
     Map<String, Configuration> configurations = _batfish.loadConfigurations();
-    ValueGraph<Pair<String, IpsecPeerConfig>, IpsecSession> ipsecTopology =
-        CommonUtil.initIpsecTopology(configurations);
+    NetworkConfigurations networkConfigurations = NetworkConfigurations.of(configurations);
+    ValueGraph<IpsecPeerConfigId, IpsecSession> ipsecTopology =
+        IpsecUtil.initIpsecTopology(configurations);
 
     Set<String> initiatorNodes = question.getInitiatorRegex().getMatchingNodes(_batfish);
     Set<String> responderNodes = question.getResponderRegex().getMatchingNodes(_batfish);
@@ -61,7 +65,7 @@ class IpsecPeersAnswerer extends Answerer {
     TableAnswerElement answerElement = new TableAnswerElement(getTableMetadata());
 
     Multiset<IpsecPeeringInfo> ipsecPeerings =
-        rawAnswer(ipsecTopology, initiatorNodes, responderNodes);
+        rawAnswer(networkConfigurations, ipsecTopology, initiatorNodes, responderNodes);
     answerElement.postProcessAnswer(
         question,
         ipsecPeerings
@@ -76,40 +80,46 @@ class IpsecPeersAnswerer extends Answerer {
 
   @VisibleForTesting
   static Multiset<IpsecPeeringInfo> rawAnswer(
-      ValueGraph<Pair<String, IpsecPeerConfig>, IpsecSession> ipsecTopology,
+      NetworkConfigurations networkConfigurations, ValueGraph<IpsecPeerConfigId, IpsecSession> ipsecTopology,
       Set<String> initiatorNodes,
-      Set<String> responderNodes) {
+      Set<String> responderNodes
+      ) {
     Multiset<IpsecPeeringInfo> ipsecPeeringsInfos = HashMultiset.create();
 
-    for (Pair<String, IpsecPeerConfig> node : ipsecTopology.nodes()) {
-      if (node.getSecond() instanceof IpsecDynamicPeerConfig
-          || !initiatorNodes.contains(node.getFirst())) {
+    for (IpsecPeerConfigId node : ipsecTopology.nodes()) {
+      IpsecPeerConfig ipsecPeerConfig = networkConfigurations.getIpecPeerConfig(node);
+      if (ipsecPeerConfig == null || ipsecPeerConfig  instanceof IpsecDynamicPeerConfig
+          || !initiatorNodes.contains(node.getHostName())) {
         continue;
       }
       IpsecPeeringInfo.Builder ipsecPeeringInfoBuilder = IpsecPeeringInfo.builder();
 
-      ipsecPeeringInfoBuilder.setInitiatorHostname(node.getFirst());
-      ipsecPeeringInfoBuilder.setInitiatorInterface(node.getSecond().getPhysicalInterface());
-      ipsecPeeringInfoBuilder.setInitiatorIp(node.getSecond().getLocalAddress());
-      ipsecPeeringInfoBuilder.setInitiatorTunnelInterface(node.getSecond().getTunnelInterface());
+      ipsecPeeringInfoBuilder.setInitiatorHostname(node.getHostName());
+      ipsecPeeringInfoBuilder.setInitiatorInterface(ipsecPeerConfig.getPhysicalInterface());
+      ipsecPeeringInfoBuilder.setInitiatorIp(ipsecPeerConfig.getLocalAddress());
+      ipsecPeeringInfoBuilder.setInitiatorTunnelInterface(ipsecPeerConfig.getTunnelInterface());
 
-      Set<Pair<String, IpsecPeerConfig>> neigbors = ipsecTopology.adjacentNodes(node);
+      Set<IpsecPeerConfigId> neighbors = ipsecTopology.adjacentNodes(node);
 
-      if (neigbors.isEmpty()) {
+      if (neighbors.isEmpty()) {
         ipsecPeeringInfoBuilder.setIpsecPeeringStatus(MISSING_END_POINT);
         ipsecPeeringsInfos.add(ipsecPeeringInfoBuilder.build());
         continue;
       }
 
-      for (Pair<String, IpsecPeerConfig> neighbor : neigbors) {
-        if (!responderNodes.contains(neighbor.getFirst())) {
+      for (IpsecPeerConfigId neighbor : neighbors) {
+        if (!responderNodes.contains(neighbor.getHostName())) {
           continue;
         }
         IpsecSession ipsecSession = ipsecTopology.edgeValueOrDefault(node, neighbor, null);
         if (ipsecSession == null) {
           continue;
         }
-        processNeighbor(ipsecPeeringInfoBuilder, neighbor, ipsecSession);
+        IpsecPeerConfig ipsecPeerConfigNeighbor = networkConfigurations.getIpecPeerConfig(neighbor);
+        if(ipsecPeerConfigNeighbor == null){
+          continue;
+        }
+        processNeighbor(neighbor, ipsecPeeringInfoBuilder, ipsecPeerConfigNeighbor, ipsecSession);
         ipsecPeeringsInfos.add(ipsecPeeringInfoBuilder.build());
       }
     }
@@ -117,14 +127,15 @@ class IpsecPeersAnswerer extends Answerer {
   }
 
   private static void processNeighbor(
+      IpsecPeerConfigId ipsecPeerConfigId,
       IpsecPeeringInfo.Builder ipsecPeeringInfoBuilder,
-      Pair<String, IpsecPeerConfig> neighbor,
+      IpsecPeerConfig ipsecPeerConfig,
       IpsecSession ipsecSession) {
 
-    ipsecPeeringInfoBuilder.setResponderHostname(neighbor.getFirst());
-    ipsecPeeringInfoBuilder.setResponderInterface(neighbor.getSecond().getPhysicalInterface());
-    ipsecPeeringInfoBuilder.setResponderIp(neighbor.getSecond().getLocalAddress());
-    ipsecPeeringInfoBuilder.setResponderTunnelInterface(neighbor.getSecond().getTunnelInterface());
+    ipsecPeeringInfoBuilder.setResponderHostname(ipsecPeerConfigId.getHostName());
+    ipsecPeeringInfoBuilder.setResponderInterface(ipsecPeerConfig.getPhysicalInterface());
+    ipsecPeeringInfoBuilder.setResponderIp(ipsecPeerConfig.getLocalAddress());
+    ipsecPeeringInfoBuilder.setResponderTunnelInterface(ipsecPeerConfig.getTunnelInterface());
 
     if (ipsecSession.getNegotiatedIkeP1Proposal() == null) {
       ipsecPeeringInfoBuilder.setIpsecPeeringStatus(IKE_PHASE1_FAILED);

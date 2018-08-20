@@ -10,10 +10,10 @@ import static org.batfish.client.Command.CLEAR_SCREEN;
 import static org.batfish.client.Command.DEL_ANALYSIS;
 import static org.batfish.client.Command.DEL_ANALYSIS_QUESTIONS;
 import static org.batfish.client.Command.DEL_BATFISH_OPTION;
-import static org.batfish.client.Command.DEL_CONTAINER;
 import static org.batfish.client.Command.DEL_ENVIRONMENT;
+import static org.batfish.client.Command.DEL_NETWORK;
 import static org.batfish.client.Command.DEL_QUESTION;
-import static org.batfish.client.Command.DEL_TESTRIG;
+import static org.batfish.client.Command.DEL_SNAPSHOT;
 import static org.batfish.client.Command.DIR;
 import static org.batfish.client.Command.EXIT;
 import static org.batfish.client.Command.GEN_DELTA_DP;
@@ -30,39 +30,37 @@ import static org.batfish.client.Command.GET_DELTA;
 import static org.batfish.client.Command.GET_QUESTION;
 import static org.batfish.client.Command.HELP;
 import static org.batfish.client.Command.INIT_ANALYSIS;
-import static org.batfish.client.Command.INIT_CONTAINER;
-import static org.batfish.client.Command.INIT_DELTA_TESTRIG;
+import static org.batfish.client.Command.INIT_DELTA_SNAPSHOT;
 import static org.batfish.client.Command.INIT_ENVIRONMENT;
-import static org.batfish.client.Command.INIT_TESTRIG;
+import static org.batfish.client.Command.INIT_NETWORK;
+import static org.batfish.client.Command.INIT_SNAPSHOT;
 import static org.batfish.client.Command.LIST_ANALYSES;
-import static org.batfish.client.Command.LIST_CONTAINERS;
 import static org.batfish.client.Command.LIST_ENVIRONMENTS;
+import static org.batfish.client.Command.LIST_NETWORKS;
 import static org.batfish.client.Command.LIST_QUESTIONS;
-import static org.batfish.client.Command.LIST_TESTRIGS;
+import static org.batfish.client.Command.LIST_SNAPSHOTS;
 import static org.batfish.client.Command.LOAD_QUESTIONS;
 import static org.batfish.client.Command.PROMPT;
 import static org.batfish.client.Command.PWD;
-import static org.batfish.client.Command.REINIT_DELTA_TESTRIG;
-import static org.batfish.client.Command.REINIT_TESTRIG;
 import static org.batfish.client.Command.RUN_ANALYSIS;
 import static org.batfish.client.Command.RUN_ANALYSIS_DELTA;
 import static org.batfish.client.Command.RUN_ANALYSIS_DIFFERENTIAL;
 import static org.batfish.client.Command.SET_BATFISH_LOGLEVEL;
-import static org.batfish.client.Command.SET_CONTAINER;
 import static org.batfish.client.Command.SET_DELTA_ENV;
-import static org.batfish.client.Command.SET_DELTA_TESTRIG;
+import static org.batfish.client.Command.SET_DELTA_SNAPSHOT;
 import static org.batfish.client.Command.SET_ENV;
 import static org.batfish.client.Command.SET_LOGLEVEL;
+import static org.batfish.client.Command.SET_NETWORK;
 import static org.batfish.client.Command.SET_PRETTY_PRINT;
-import static org.batfish.client.Command.SET_TESTRIG;
+import static org.batfish.client.Command.SET_SNAPSHOT;
 import static org.batfish.client.Command.SHOW_API_KEY;
 import static org.batfish.client.Command.SHOW_BATFISH_LOGLEVEL;
 import static org.batfish.client.Command.SHOW_BATFISH_OPTIONS;
-import static org.batfish.client.Command.SHOW_CONTAINER;
 import static org.batfish.client.Command.SHOW_COORDINATOR_HOST;
-import static org.batfish.client.Command.SHOW_DELTA_TESTRIG;
+import static org.batfish.client.Command.SHOW_DELTA_SNAPSHOT;
 import static org.batfish.client.Command.SHOW_LOGLEVEL;
-import static org.batfish.client.Command.SHOW_TESTRIG;
+import static org.batfish.client.Command.SHOW_NETWORK;
+import static org.batfish.client.Command.SHOW_SNAPSHOT;
 import static org.batfish.client.Command.TEST;
 import static org.batfish.client.Command.UPLOAD_CUSTOM_OBJECT;
 import static org.batfish.common.CoordConsts.DEFAULT_API_KEY;
@@ -127,11 +125,11 @@ import org.junit.rules.TemporaryFolder;
 /** Tests for {@link org.batfish.client.Client}. */
 public class ClientTest {
 
-  private static final String CONTAINER_NOT_SET = "Active container is not set\n";
+  private static final String NETWORK_NOT_SET = "Active network is not set\n";
 
-  private static final String TESTRIG_NOT_SET =
-      "Active testrig is not set.\nSpecify testrig on"
-          + " command line (-testrigdir <testrigdir>) or use command (INIT_TESTRIG <testrigdir>)\n";
+  private static final String SNAPSHOT_NOT_SET =
+      "Active snapshot is not set.\nSpecify snapshot on"
+          + " command line (-snapshotdir <snapshotdir>) or use command (init-snapshot <snapshotdir>)\n";
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
   @Rule public ExpectedException _thrown = ExpectedException.none();
@@ -179,7 +177,7 @@ public class ClientTest {
   @Test
   public void testAnswerDeltaValidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    checkProcessCommandErrorMessage(ANSWER_DELTA, parameters, TESTRIG_NOT_SET);
+    checkProcessCommandErrorMessage(ANSWER_DELTA, parameters, SNAPSHOT_NOT_SET);
   }
 
   @Test
@@ -190,7 +188,7 @@ public class ClientTest {
   @Test
   public void testAnswerValidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    checkProcessCommandErrorMessage(ANSWER, parameters, TESTRIG_NOT_SET);
+    checkProcessCommandErrorMessage(ANSWER, parameters, SNAPSHOT_NOT_SET);
   }
 
   @Test
@@ -249,13 +247,13 @@ public class ClientTest {
   @Test
   public void testDelAnalysisQuestionValidParas() throws Exception {
     String[] parameters = new String[] {"parameter1", "parameter2"};
-    checkProcessCommandErrorMessage(DEL_ANALYSIS_QUESTIONS, parameters, CONTAINER_NOT_SET);
+    checkProcessCommandErrorMessage(DEL_ANALYSIS_QUESTIONS, parameters, NETWORK_NOT_SET);
   }
 
   @Test
   public void testDelAnalysisValidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    checkProcessCommandErrorMessage(DEL_ANALYSIS, parameters, CONTAINER_NOT_SET);
+    checkProcessCommandErrorMessage(DEL_ANALYSIS, parameters, NETWORK_NOT_SET);
   }
 
   @Test
@@ -271,8 +269,8 @@ public class ClientTest {
   }
 
   @Test
-  public void testDelContainerInvalidParas() throws Exception {
-    testInvalidInput(DEL_CONTAINER, new String[] {}, new String[] {});
+  public void testDelNetworkInvalidParas() throws Exception {
+    testInvalidInput(DEL_NETWORK, new String[] {}, new String[] {});
   }
 
   @Test
@@ -283,7 +281,7 @@ public class ClientTest {
   @Test
   public void testDelEnvironmentValidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    checkProcessCommandErrorMessage(DEL_ENVIRONMENT, parameters, TESTRIG_NOT_SET);
+    checkProcessCommandErrorMessage(DEL_ENVIRONMENT, parameters, SNAPSHOT_NOT_SET);
   }
 
   @Test
@@ -294,18 +292,18 @@ public class ClientTest {
   @Test
   public void testDelQuestionValidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    checkProcessCommandErrorMessage(DEL_QUESTION, parameters, TESTRIG_NOT_SET);
+    checkProcessCommandErrorMessage(DEL_QUESTION, parameters, SNAPSHOT_NOT_SET);
   }
 
   @Test
-  public void testDelTestrigInvalidParas() throws Exception {
-    testInvalidInput(DEL_TESTRIG, new String[] {}, new String[] {});
+  public void testDelSnapshotInvalidParas() throws Exception {
+    testInvalidInput(DEL_SNAPSHOT, new String[] {}, new String[] {});
   }
 
   @Test
-  public void testDelTestrigValidParas() throws Exception {
+  public void testDelSnapshotValidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    checkProcessCommandErrorMessage(DEL_TESTRIG, parameters, CONTAINER_NOT_SET);
+    checkProcessCommandErrorMessage(DEL_SNAPSHOT, parameters, NETWORK_NOT_SET);
   }
 
   @Test
@@ -359,7 +357,7 @@ public class ClientTest {
   @Test
   public void testGenerateDataplaneDeltaValidParas() throws Exception {
     checkProcessCommandErrorMessage(
-        GEN_DELTA_DP, new String[] {}, "Active delta testrig is not set\n");
+        GEN_DELTA_DP, new String[] {}, "Active delta snapshot is not set\n");
   }
 
   @Test
@@ -370,19 +368,20 @@ public class ClientTest {
 
   @Test
   public void testGenerateDataplaneValidParas() throws Exception {
-    checkProcessCommandErrorMessage(GEN_DP, new String[] {}, TESTRIG_NOT_SET);
+    checkProcessCommandErrorMessage(GEN_DP, new String[] {}, SNAPSHOT_NOT_SET);
   }
 
   @Test
   public void testGetAnalysisAnswersDeltaValidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    checkProcessCommandErrorMessage(GET_ANALYSIS_ANSWERS_DELTA, parameters, TESTRIG_NOT_SET);
+    checkProcessCommandErrorMessage(GET_ANALYSIS_ANSWERS_DELTA, parameters, SNAPSHOT_NOT_SET);
   }
 
   @Test
   public void testGetAnalysisAnswersDifferentialValidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    checkProcessCommandErrorMessage(GET_ANALYSIS_ANSWERS_DIFFERENTIAL, parameters, TESTRIG_NOT_SET);
+    checkProcessCommandErrorMessage(
+        GET_ANALYSIS_ANSWERS_DIFFERENTIAL, parameters, SNAPSHOT_NOT_SET);
   }
 
   @Test
@@ -393,19 +392,19 @@ public class ClientTest {
   @Test
   public void testGetAnalysisAnswersValidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    checkProcessCommandErrorMessage(GET_ANALYSIS_ANSWERS, parameters, TESTRIG_NOT_SET);
+    checkProcessCommandErrorMessage(GET_ANALYSIS_ANSWERS, parameters, SNAPSHOT_NOT_SET);
   }
 
   @Test
   public void testGetAnswersDeltaValidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    checkProcessCommandErrorMessage(GET_ANSWER_DELTA, parameters, TESTRIG_NOT_SET);
+    checkProcessCommandErrorMessage(GET_ANSWER_DELTA, parameters, SNAPSHOT_NOT_SET);
   }
 
   @Test
   public void testGetAnswersDifferentialValidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    checkProcessCommandErrorMessage(GET_ANSWER_DIFFERENTIAL, parameters, TESTRIG_NOT_SET);
+    checkProcessCommandErrorMessage(GET_ANSWER_DIFFERENTIAL, parameters, SNAPSHOT_NOT_SET);
   }
 
   @Test
@@ -416,7 +415,7 @@ public class ClientTest {
   @Test
   public void testGetAnswersValidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    checkProcessCommandErrorMessage(GET_ANSWER, parameters, TESTRIG_NOT_SET);
+    checkProcessCommandErrorMessage(GET_ANSWER, parameters, SNAPSHOT_NOT_SET);
   }
 
   @Test
@@ -427,7 +426,7 @@ public class ClientTest {
   @Test
   public void testGetDeltaValidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    checkProcessCommandErrorMessage(GET_DELTA, parameters, TESTRIG_NOT_SET);
+    checkProcessCommandErrorMessage(GET_DELTA, parameters, SNAPSHOT_NOT_SET);
   }
 
   @Test
@@ -477,13 +476,13 @@ public class ClientTest {
   @Test
   public void testGetQuestionValidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    checkProcessCommandErrorMessage(GET_QUESTION, parameters, TESTRIG_NOT_SET);
+    checkProcessCommandErrorMessage(GET_QUESTION, parameters, SNAPSHOT_NOT_SET);
   }
 
   @Test
   public void testGetValidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    checkProcessCommandErrorMessage(GET, parameters, TESTRIG_NOT_SET);
+    checkProcessCommandErrorMessage(GET, parameters, SNAPSHOT_NOT_SET);
   }
 
   @Test
@@ -516,8 +515,8 @@ public class ClientTest {
   }
 
   @Test
-  public void testInitContainerEmptyParasWithOption() throws Exception {
-    Command command = INIT_CONTAINER;
+  public void testInitNetworkEmptyParasWithOption() throws Exception {
+    Command command = INIT_NETWORK;
     String[] args = new String[] {"-setname"};
     Pair<String, String> usage = Command.getUsageMap().get(command);
     String expected =
@@ -528,15 +527,15 @@ public class ClientTest {
   }
 
   @Test
-  public void testInitContainerInvalidOptions() throws Exception {
-    Command command = INIT_CONTAINER;
-    String invalidOption = "-setcontainer";
+  public void testInitNetworkInvalidOptions() throws Exception {
+    Command command = INIT_NETWORK;
+    String invalidOption = "-setnetwork";
     String[] args = new String[] {invalidOption, "parameter1"};
     Pair<String, String> usage = Command.getUsageMap().get(command);
     String expected =
         String.format(
             "Invalid arguments: %s %s\n%s %s\n\t%s\n\n",
-            "[-setcontainer]",
+            "[-setnetwork]",
             "[parameter1]",
             command.commandName(),
             usage.getFirst(),
@@ -545,9 +544,9 @@ public class ClientTest {
   }
 
   @Test
-  public void testInitContainerInvalidParas() throws Exception {
+  public void testInitNetworkInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1", "parameter2", "parameter3"};
-    testInvalidInput(INIT_CONTAINER, new String[] {}, parameters);
+    testInvalidInput(INIT_NETWORK, new String[] {}, parameters);
   }
 
   @Test
@@ -558,17 +557,17 @@ public class ClientTest {
   @Test
   public void testInitEnvValidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    checkProcessCommandErrorMessage(INIT_ENVIRONMENT, parameters, TESTRIG_NOT_SET);
+    checkProcessCommandErrorMessage(INIT_ENVIRONMENT, parameters, SNAPSHOT_NOT_SET);
   }
 
   @Test
-  public void testInitTestrigDeltaInvalidParas() throws Exception {
-    testInvalidInput(INIT_DELTA_TESTRIG, new String[] {}, new String[] {});
+  public void testInitSnapshotDeltaInvalidParas() throws Exception {
+    testInvalidInput(INIT_DELTA_SNAPSHOT, new String[] {}, new String[] {});
   }
 
   @Test
-  public void testInitTestrigInvalidParas() throws Exception {
-    testInvalidInput(INIT_TESTRIG, new String[] {}, new String[] {});
+  public void testInitSnapshotInvalidParas() throws Exception {
+    testInvalidInput(INIT_SNAPSHOT, new String[] {}, new String[] {});
   }
 
   @Test
@@ -762,13 +761,13 @@ public class ClientTest {
   @Test
   public void testListAnalysisValidParas() throws Exception {
     String[] parameters = new String[] {};
-    checkProcessCommandErrorMessage(LIST_ANALYSES, parameters, CONTAINER_NOT_SET);
+    checkProcessCommandErrorMessage(LIST_ANALYSES, parameters, NETWORK_NOT_SET);
   }
 
   @Test
-  public void testListContainersInvalidParas() throws Exception {
+  public void testListNetworksInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(LIST_CONTAINERS, new String[] {}, parameters);
+    testInvalidInput(LIST_NETWORKS, new String[] {}, parameters);
   }
 
   @Test
@@ -779,7 +778,7 @@ public class ClientTest {
 
   @Test
   public void testListEnvironmentsValidParas() throws Exception {
-    checkProcessCommandErrorMessage(LIST_ENVIRONMENTS, new String[] {}, TESTRIG_NOT_SET);
+    checkProcessCommandErrorMessage(LIST_ENVIRONMENTS, new String[] {}, SNAPSHOT_NOT_SET);
   }
 
   @Test
@@ -790,13 +789,13 @@ public class ClientTest {
 
   @Test
   public void testListQuestionsValidParas() throws Exception {
-    checkProcessCommandErrorMessage(LIST_QUESTIONS, new String[] {}, TESTRIG_NOT_SET);
+    checkProcessCommandErrorMessage(LIST_QUESTIONS, new String[] {}, SNAPSHOT_NOT_SET);
   }
 
   @Test
-  public void testListTestrigsInvalidParas() throws Exception {
+  public void testListSnapshotsInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(LIST_TESTRIGS, new String[] {}, parameters);
+    testInvalidInput(LIST_SNAPSHOTS, new String[] {}, parameters);
   }
 
   @Test
@@ -1189,27 +1188,15 @@ public class ClientTest {
   }
 
   @Test
-  public void testReinitTestrigDeltaInvalidParas() throws Exception {
-    String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(REINIT_DELTA_TESTRIG, new String[] {}, parameters);
-  }
-
-  @Test
-  public void testReinitTestrigInvalidParas() throws Exception {
-    String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(REINIT_TESTRIG, new String[] {}, parameters);
-  }
-
-  @Test
   public void testRunAnalysisDeltaValidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    checkProcessCommandErrorMessage(RUN_ANALYSIS_DELTA, parameters, CONTAINER_NOT_SET);
+    checkProcessCommandErrorMessage(RUN_ANALYSIS_DELTA, parameters, NETWORK_NOT_SET);
   }
 
   @Test
   public void testRunAnalysisDifferentialValidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    checkProcessCommandErrorMessage(RUN_ANALYSIS_DIFFERENTIAL, parameters, CONTAINER_NOT_SET);
+    checkProcessCommandErrorMessage(RUN_ANALYSIS_DIFFERENTIAL, parameters, NETWORK_NOT_SET);
   }
 
   @Test
@@ -1220,7 +1207,7 @@ public class ClientTest {
   @Test
   public void testRunAnalysisValidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    checkProcessCommandErrorMessage(RUN_ANALYSIS, parameters, CONTAINER_NOT_SET);
+    checkProcessCommandErrorMessage(RUN_ANALYSIS, parameters, NETWORK_NOT_SET);
   }
 
   @Test
@@ -1259,17 +1246,15 @@ public class ClientTest {
   }
 
   @Test
-  public void testSetContainerInvalidParas() throws Exception {
-    testInvalidInput(SET_CONTAINER, new String[] {}, new String[] {});
+  public void testSetNetworkInvalidParas() throws Exception {
+    testInvalidInput(SET_NETWORK, new String[] {}, new String[] {});
   }
 
   @Test
-  public void testSetContainerValidParas() throws Exception {
+  public void testSetNetworkValidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
     testProcessCommandWithValidInput(
-        SET_CONTAINER,
-        parameters,
-        String.format("Active container is now set to %s\n", parameters[0]));
+        SET_NETWORK, parameters, String.format("Active network is now set to %s\n", parameters[0]));
   }
 
   @Test
@@ -1283,21 +1268,21 @@ public class ClientTest {
     testProcessCommandWithValidInput(
         SET_DELTA_ENV,
         parameters,
-        String.format("Active delta testrig->environment is now null->%s\n", parameters[0]));
+        String.format("Active delta snapshot->environment is now null->%s\n", parameters[0]));
   }
 
   @Test
-  public void testSetDeltaTestrigInvalidParas() throws Exception {
-    testInvalidInput(SET_DELTA_TESTRIG, new String[] {}, new String[] {});
+  public void testSetDeltaSnapshotInvalidParas() throws Exception {
+    testInvalidInput(SET_DELTA_SNAPSHOT, new String[] {}, new String[] {});
   }
 
   @Test
-  public void testSetDeltaTestrigValidParas() throws Exception {
+  public void testSetDeltaSnapshotValidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
     testProcessCommandWithValidInput(
-        SET_DELTA_TESTRIG,
+        SET_DELTA_SNAPSHOT,
         parameters,
-        String.format("Delta testrig->env is now %s->env_default\n", parameters[0]));
+        String.format("Delta snapshot->env is now %s->env_default\n", parameters[0]));
   }
 
   @Test
@@ -1308,7 +1293,7 @@ public class ClientTest {
   @Test
   public void testSetEnvValidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    checkProcessCommandErrorMessage(SET_ENV, parameters, TESTRIG_NOT_SET);
+    checkProcessCommandErrorMessage(SET_ENV, parameters, SNAPSHOT_NOT_SET);
   }
 
   @Test
@@ -1336,14 +1321,14 @@ public class ClientTest {
   }
 
   @Test
-  public void testSetTestrigInvalidParas() throws Exception {
-    testInvalidInput(SET_TESTRIG, new String[] {}, new String[] {});
+  public void testSetSnapshotInvalidParas() throws Exception {
+    testInvalidInput(SET_SNAPSHOT, new String[] {}, new String[] {});
   }
 
   @Test
-  public void testSetTestrigValidParas() throws Exception {
+  public void testSetSnapshotValidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    checkProcessCommandErrorMessage(SET_TESTRIG, parameters, CONTAINER_NOT_SET);
+    checkProcessCommandErrorMessage(SET_SNAPSHOT, parameters, NETWORK_NOT_SET);
   }
 
   @Test
@@ -1383,15 +1368,14 @@ public class ClientTest {
   }
 
   @Test
-  public void testShowConrainerValidParas() throws Exception {
-    testProcessCommandWithValidInput(
-        SHOW_CONTAINER, new String[] {}, "Current container is null\n");
+  public void testShowNetworkValidParas() throws Exception {
+    testProcessCommandWithValidInput(SHOW_NETWORK, new String[] {}, "Current network is null\n");
   }
 
   @Test
-  public void testShowContainerInvalidParas() throws Exception {
+  public void testShowNetworkInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(SHOW_CONTAINER, new String[] {}, parameters);
+    testInvalidInput(SHOW_NETWORK, new String[] {}, parameters);
   }
 
   @Test
@@ -1407,15 +1391,15 @@ public class ClientTest {
   }
 
   @Test
-  public void testShowDeltaTestrigInvalidParas() throws Exception {
+  public void testShowDeltaSnapshotInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(SHOW_DELTA_TESTRIG, new String[] {}, parameters);
+    testInvalidInput(SHOW_DELTA_SNAPSHOT, new String[] {}, parameters);
   }
 
   @Test
-  public void testShowDeltaTestrigValidParas() throws Exception {
+  public void testShowDeltaSnapshotValidParas() throws Exception {
     checkProcessCommandErrorMessage(
-        SHOW_DELTA_TESTRIG, new String[] {}, "Active delta testrig is not set\n");
+        SHOW_DELTA_SNAPSHOT, new String[] {}, "Active delta snapshot is not set\n");
   }
 
   @Test
@@ -1431,21 +1415,21 @@ public class ClientTest {
   }
 
   @Test
-  public void testShowTestrigInvalidParas() throws Exception {
+  public void testShowSnapshotInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(SHOW_TESTRIG, new String[] {}, parameters);
+    testInvalidInput(SHOW_SNAPSHOT, new String[] {}, parameters);
   }
 
   @Test
-  public void testShowTestrigValidParas() throws Exception {
+  public void testShowSnapshotValidParas() throws Exception {
     String[] parameters = new String[] {};
-    checkProcessCommandErrorMessage(SHOW_TESTRIG, parameters, TESTRIG_NOT_SET);
+    checkProcessCommandErrorMessage(SHOW_SNAPSHOT, parameters, SNAPSHOT_NOT_SET);
   }
 
   @Test
   public void testShowVersionInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(SHOW_TESTRIG, new String[] {}, parameters);
+    testInvalidInput(SHOW_SNAPSHOT, new String[] {}, parameters);
   }
 
   @Test
@@ -1499,7 +1483,7 @@ public class ClientTest {
   @Test
   public void testUploadCustomObjectValidParas() throws Exception {
     String[] parameters = new String[] {"parameter1", "parameter2"};
-    checkProcessCommandErrorMessage(UPLOAD_CUSTOM_OBJECT, parameters, TESTRIG_NOT_SET);
+    checkProcessCommandErrorMessage(UPLOAD_CUSTOM_OBJECT, parameters, SNAPSHOT_NOT_SET);
   }
 
   @Test

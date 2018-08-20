@@ -1,12 +1,12 @@
 package org.batfish.datamodel.questions;
 
+import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
-import java.util.Arrays;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
@@ -19,8 +19,8 @@ import org.batfish.datamodel.IpAccessList;
  * <p>Currently supported example specifiers:
  *
  * <ul>
- *   <li>lhr-.* —> all filters with matching names
- *   <li>name:lhr-.* -> same as above; name: is optional
+ *   <li>lhr-.* -&gt; all filters with matching names
+ *   <li>name:lhr-.* -&gt; same as above; name: is optional
  *   <li>ipv4:lhr-.* all IPv4 access lists with matching names
  *   <li>ipv6:lhr-.* all IPv6 access lists with matching names
  * </ul>
@@ -53,24 +53,20 @@ public class FiltersSpecifier {
 
     String[] parts = expression.split(":");
 
-    if (parts.length == 1) {
-      _type = Type.NAME;
-      _regex = Pattern.compile(_expression);
-    } else if (parts.length == 2) {
-      try {
-        _type = Type.valueOf(parts[0].toUpperCase());
-        _regex = Pattern.compile(parts[1]);
-      } catch (IllegalArgumentException e) {
-        throw new IllegalArgumentException(
-            "Illegal FiltersSpecifier filter "
-                + parts[0]
-                + ".  Should be one of "
-                + Arrays.stream(Type.values())
-                    .map(Object::toString)
-                    .collect(Collectors.joining(", ")));
+    String upperExpression = expression.toUpperCase();
+    Type parsedType = null;
+    for (Type type : Type.values()) {
+      if (upperExpression.startsWith(type.name() + ":")) {
+        parsedType = type;
+        break;
       }
+    }
+    _type = firstNonNull(parsedType, Type.NAME);
+
+    if (parsedType == null) {
+      _regex = Pattern.compile(_expression);
     } else {
-      throw new IllegalArgumentException("Cannot parse FiltersSpecifier " + expression);
+      _regex = Pattern.compile(_expression.substring(_type.name().length() + 1));
     }
   }
 

@@ -3,9 +3,9 @@
     {
       "class" : "org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement",
       "fileMap" : {
-        "host1" : "host1.json",
-        "us_border" : "us_border.cfg",
-        "us_switch" : "us_switch.cfg"
+        "host1" : "hosts/host1.json",
+        "us_border" : "configs/us_border.cfg",
+        "us_switch" : "configs/us_switch.cfg"
       },
       "parseStatus" : {
         "host1" : "PASSED",
@@ -249,7 +249,7 @@
             "      IP:'ip'  <== mode:DEFAULT_MODE",
             "      PREFIX_LIST:'prefix-list'  <== mode:DEFAULT_MODE",
             "      name = (variable",
-            "        VARIABLE:'pl-us-to-atlantis'  <== mode:DEFAULT_MODE)",
+            "        VARIABLE:'pl-us-to-atlantis'  <== mode:M_Name)",
             "      (ip_prefix_list_tail",
             "        SEQ:'seq'  <== mode:DEFAULT_MODE",
             "        seqnum = DEC:'10'  <== mode:DEFAULT_MODE",
@@ -262,7 +262,7 @@
             "      IP:'ip'  <== mode:DEFAULT_MODE",
             "      PREFIX_LIST:'prefix-list'  <== mode:DEFAULT_MODE",
             "      name = (variable",
-            "        VARIABLE:'pl-atlantis-to-us-mcast'  <== mode:DEFAULT_MODE)",
+            "        VARIABLE:'pl-atlantis-to-us-mcast'  <== mode:M_Name)",
             "      (ip_prefix_list_tail",
             "        SEQ:'seq'  <== mode:DEFAULT_MODE",
             "        seqnum = DEC:'10'  <== mode:DEFAULT_MODE",
@@ -303,8 +303,8 @@
             "            ADDRESS:'address'  <== mode:DEFAULT_MODE",
             "            PREFIX_LIST:'prefix-list'  <== mode:DEFAULT_MODE",
             "            (variable",
-            "              VARIABLE:'pl-us-to-atlantis'  <== mode:DEFAULT_MODE)",
-            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "              VARIABLE:'pl-us-to-atlantis'  <== mode:M_Words)",
+            "            NEWLINE:'\\n'  <== mode:M_Words)))",
             "      (rm_stanza",
             "        (set_rm_stanza",
             "          (set_metric_rm_stanza",
@@ -330,8 +330,8 @@
             "            ADDRESS:'address'  <== mode:DEFAULT_MODE",
             "            PREFIX_LIST:'prefix-list'  <== mode:DEFAULT_MODE",
             "            (variable",
-            "              VARIABLE:'pl-atlantis-to-us-mcast'  <== mode:DEFAULT_MODE)",
-            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "              VARIABLE:'pl-atlantis-to-us-mcast'  <== mode:M_Words)",
+            "            NEWLINE:'\\n'  <== mode:M_Words)))",
             "      (rm_stanza",
             "        (set_rm_stanza",
             "          (set_community_rm_stanza",
@@ -478,8 +478,7 @@
     {
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
       "definedStructures" : {
-        "host1" : { },
-        "us_border" : {
+        "configs/us_border.cfg" : {
           "extended ipv4 access-list" : {
             "acl-atlantis-nat" : {
               "definitionLines" : [
@@ -576,7 +575,7 @@
             }
           }
         },
-        "us_switch" : {
+        "configs/us_switch.cfg" : {
           "interface" : {
             "Ethernet1" : {
               "definitionLines" : [
@@ -595,7 +594,8 @@
               "numReferrers" : 1
             }
           }
-        }
+        },
+        "hosts/host1.json" : { }
       },
       "version" : "0.36.0"
     },

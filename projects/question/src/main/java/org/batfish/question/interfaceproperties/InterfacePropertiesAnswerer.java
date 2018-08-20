@@ -1,6 +1,5 @@
 package org.batfish.question.interfaceproperties;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multiset;
@@ -18,6 +17,7 @@ import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.questions.InterfacePropertySpecifier;
+import org.batfish.datamodel.questions.InterfacesSpecifier;
 import org.batfish.datamodel.questions.PropertySpecifier;
 import org.batfish.datamodel.questions.PropertySpecifier.PropertyDescriptor;
 import org.batfish.datamodel.questions.Question;
@@ -36,37 +36,46 @@ public class InterfacePropertiesAnswerer extends Answerer {
   }
 
   /**
+   * Creates {@link ColumnMetadata}s that the answer should have based on the {@code
+   * propertySpecifier}.
+   *
+   * @param propertySpecifier The {@link InterfacePropertySpecifier} that describes the set of
+   *     properties
+   * @return The {@link List} of {@link ColumnMetadata}s
+   */
+  public static List<ColumnMetadata> createColumnMetadata(
+      InterfacePropertySpecifier propertySpecifier) {
+    return ImmutableList.<ColumnMetadata>builder()
+        .add(new ColumnMetadata(COL_INTERFACE, Schema.INTERFACE, "Interface", true, false))
+        .addAll(
+            propertySpecifier
+                .getMatchingProperties()
+                .stream()
+                .map(
+                    prop ->
+                        new ColumnMetadata(
+                            getColumnName(prop),
+                            InterfacePropertySpecifier.JAVA_MAP.get(prop).getSchema(),
+                            "Property " + prop,
+                            false,
+                            true))
+                .collect(Collectors.toList()))
+        .build();
+  }
+
+  /**
    * Creates a {@link TableMetadata} object from the question.
    *
    * @param question The question
    * @return The resulting {@link TableMetadata} object
    */
-  static TableMetadata createMetadata(InterfacePropertiesQuestion question) {
-    List<ColumnMetadata> columnMetadata =
-        ImmutableList.<ColumnMetadata>builder()
-            .add(new ColumnMetadata(COL_INTERFACE, Schema.INTERFACE, "Interface", true, false))
-            .addAll(
-                question
-                    .getPropertySpec()
-                    .getMatchingProperties()
-                    .stream()
-                    .map(
-                        prop ->
-                            new ColumnMetadata(
-                                prop,
-                                InterfacePropertySpecifier.JAVA_MAP.get(prop).getSchema(),
-                                "Property " + prop,
-                                false,
-                                true))
-                    .collect(Collectors.toList()))
-            .build();
-
+  private static TableMetadata createTableMetadata(InterfacePropertiesQuestion question) {
+    String textDesc = String.format("Properties of interface ${%s}.", COL_INTERFACE);
     DisplayHints dhints = question.getDisplayHints();
-    if (dhints == null) {
-      dhints = new DisplayHints();
-      dhints.setTextDesc(String.format("Properties of interface ${%s}.", COL_INTERFACE));
+    if (dhints != null && dhints.getTextDesc() != null) {
+      textDesc = dhints.getTextDesc();
     }
-    return new TableMetadata(columnMetadata, dhints);
+    return new TableMetadata(createColumnMetadata(question.getPropertySpec()), textDesc);
   }
 
   @Override
@@ -75,31 +84,55 @@ public class InterfacePropertiesAnswerer extends Answerer {
     Map<String, Configuration> configurations = _batfish.loadConfigurations();
     Set<String> nodes = question.getNodeRegex().getMatchingNodes(_batfish);
 
-    TableMetadata tableMetadata = createMetadata(question);
+    TableMetadata tableMetadata = createTableMetadata(question);
     TableAnswerElement answer = new TableAnswerElement(tableMetadata);
 
-    Multiset<Row> propertyRows = rawAnswer(question, configurations, nodes);
+    Multiset<Row> propertyRows =
+        getProperties(
+            question.getPropertySpec(),
+            configurations,
+            nodes,
+            question.getInterfaceRegex(),
+            tableMetadata.toColumnMap());
 
     answer.postProcessAnswer(question, propertyRows);
     return answer;
   }
 
-  @VisibleForTesting
-  static Multiset<Row> rawAnswer(
-      InterfacePropertiesQuestion question,
+  /** Returns the name of the column that contains the value of property {@code property} */
+  public static String getColumnName(String property) {
+    return property;
+  }
+
+  /**
+   * Gets properties of interfaces.
+   *
+   * @param propertySpecifier Specifies which properties to get
+   * @param configurations configuration to use in extractions
+   * @param nodes the set of nodes to consider
+   * @param interfacesSpecifier Specifies which interfaces to consider
+   * @param columns a map from column name to {@link ColumnMetadata}
+   * @return A multiset of {@link Row}s where each row corresponds to a node and columns correspond
+   *     to property values.
+   */
+  public static Multiset<Row> getProperties(
+      InterfacePropertySpecifier propertySpecifier,
       Map<String, Configuration> configurations,
-      Set<String> nodes) {
+      Set<String> nodes,
+      InterfacesSpecifier interfacesSpecifier,
+      Map<String, ColumnMetadata> columns) {
     Multiset<Row> rows = HashMultiset.create();
 
     for (String nodeName : nodes) {
       for (Interface iface : configurations.get(nodeName).getInterfaces().values()) {
-        if (!question.getInterfaceRegex().matches(iface)) {
+        if (!interfacesSpecifier.matches(iface)) {
           continue;
         }
         RowBuilder row =
-            Row.builder().put(COL_INTERFACE, new NodeInterfacePair(nodeName, iface.getName()));
+            Row.builder(columns)
+                .put(COL_INTERFACE, new NodeInterfacePair(nodeName, iface.getName()));
 
-        for (String property : question.getPropertySpec().getMatchingProperties()) {
+        for (String property : propertySpecifier.getMatchingProperties()) {
           PropertyDescriptor<Interface> propertyDescriptor =
               InterfacePropertySpecifier.JAVA_MAP.get(property);
           try {

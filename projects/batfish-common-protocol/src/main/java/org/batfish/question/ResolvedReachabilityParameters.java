@@ -3,7 +3,6 @@ package org.batfish.question;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Sets;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
@@ -148,27 +147,6 @@ public final class ResolvedReachabilityParameters {
     _specialize = builder._specialize;
     _requiredTransitNodes = builder._requiredTransitNodes;
     _useCompression = builder._useCompression;
-
-    // validate actions
-    if (_actions.isEmpty()) {
-      throw new InvalidReachabilityParametersException("No actions");
-    }
-    // validate source IP assignment
-    if (_sourceIpSpaceByLocations.getEntries().isEmpty()) {
-      throw new InvalidReachabilityParametersException("No source locations");
-    }
-
-    // validate final nodes
-    if (_finalNodes.isEmpty()) {
-      throw new InvalidReachabilityParametersException("No final nodes");
-    }
-
-    // validate transit nodes
-    Set<String> commonNodes = Sets.intersection(_requiredTransitNodes, _forbiddenTransitNodes);
-    if (!commonNodes.isEmpty()) {
-      throw new InvalidReachabilityParametersException(
-          "Required and forbidden transit nodes overlap: " + commonNodes);
-    }
   }
 
   public static Builder builder() {

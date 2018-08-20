@@ -67,9 +67,7 @@
           "schema" : "Integer"
         }
       ],
-      "displayHints" : {
-        "textDesc" : "On ${node} session ${vrfName}:${remotePrefix} has configured status ${configuredStatus}."
-      }
+      "textDesc" : "On ${node} session ${vrfName}:${remotePrefix} has configured status ${configuredStatus}."
     },
     "rows" : [
       {

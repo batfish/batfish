@@ -21,17 +21,23 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Multiset;
 import com.google.common.graph.MutableValueGraph;
 import com.google.common.graph.ValueGraphBuilder;
-import org.batfish.common.Pair;
+import java.util.Comparator;
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.datamodel.IkePhase1Proposal;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpsecPeerConfig;
+import org.batfish.datamodel.IpsecPeerConfigId;
 import org.batfish.datamodel.IpsecPhase2Proposal;
 import org.batfish.datamodel.IpsecSession;
 import org.batfish.datamodel.IpsecStaticPeerConfig;
+import org.batfish.datamodel.NetworkConfigurations;
+import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.table.Row;
@@ -40,35 +46,72 @@ import org.junit.Test;
 
 /** Tests for {@link IpsecPeersAnswerer} */
 public class IpsecPeersAnswererTest {
+  private static final String INITIATOR_IPSEC_PEER_CONFIG = "initiatorIpsecPeerConfig";
+  private static final String RESPONDER_IPSEC_PEER_CONFIG = "responderIpsecPeerConfig";
 
-  private static final String INITIATOR_HOST_NAME = "initiator_host_name";
-  private static final String RESPONDER_HOST_NAME = "responder_host_name";
+  private static final String INITIATOR_HOST_NAME = "initiatorHostName";
+  private static final String RESPONDER_HOST_NAME = "responderHostName";
 
   private IpsecStaticPeerConfig.Builder _ipsecStaticPeerConfigBuilder =
       IpsecStaticPeerConfig.builder();
-  private MutableValueGraph<Pair<String, IpsecPeerConfig>, IpsecSession> _graph;
-  private IpsecSession _ipsecSession;
+  private MutableValueGraph<IpsecPeerConfigId, IpsecSession> _graph;
+  private IpsecSession.Builder _ipsecSessionBuilder;
+  private NetworkConfigurations _networkConfigurations;
 
   @Before
   public void setup() {
+    Configuration initiatorNode;
+    Configuration responderNode;
     _ipsecStaticPeerConfigBuilder
         .setPhysicalInterface("Test_interface")
         .setLocalAddress(new Ip("1.2.3.4"))
         .setTunnelInterface("Tunnel_interface");
     _graph = ValueGraphBuilder.directed().allowsSelfLoops(false).build();
-    _ipsecSession = new IpsecSession();
+    _ipsecSessionBuilder = IpsecSession.builder();
+
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+
+    ImmutableSortedMap.Builder<String, Configuration> configs =
+        new ImmutableSortedMap.Builder<>(Comparator.naturalOrder());
+
+    initiatorNode = cb.setHostname(INITIATOR_HOST_NAME).build();
+    responderNode = cb.setHostname(RESPONDER_HOST_NAME).build();
+
+    ImmutableSortedMap.Builder<String, IpsecPeerConfig> initiatorIpsecPeerConfigMapBuilder =
+        ImmutableSortedMap.naturalOrder();
+    initiatorNode.setIpsecPeerConfigs(
+        initiatorIpsecPeerConfigMapBuilder
+            .put(INITIATOR_IPSEC_PEER_CONFIG, _ipsecStaticPeerConfigBuilder.build())
+            .build());
+
+    ImmutableSortedMap.Builder<String, IpsecPeerConfig> responderIpsecPeerConfigMapBuilder =
+        ImmutableSortedMap.naturalOrder();
+    responderNode.setIpsecPeerConfigs(
+        responderIpsecPeerConfigMapBuilder
+            .put(RESPONDER_IPSEC_PEER_CONFIG, _ipsecStaticPeerConfigBuilder.build())
+            .build());
+
+    configs.put(initiatorNode.getHostname(), initiatorNode);
+    configs.put(responderNode.getHostname(), responderNode);
+
+    _networkConfigurations = NetworkConfigurations.of(configs.build());
   }
 
   @Test
   public void testGenerateRowsIke1Fail() {
     // IPSecSession does not have IKE phase 1 proposal set
     _graph.putEdgeValue(
-        new Pair<>(INITIATOR_HOST_NAME, _ipsecStaticPeerConfigBuilder.build()),
-        new Pair<>(RESPONDER_HOST_NAME, _ipsecStaticPeerConfigBuilder.build()),
-        _ipsecSession);
+        new IpsecPeerConfigId(INITIATOR_IPSEC_PEER_CONFIG, INITIATOR_HOST_NAME),
+        new IpsecPeerConfigId(RESPONDER_IPSEC_PEER_CONFIG, RESPONDER_HOST_NAME),
+        _ipsecSessionBuilder.build());
     Multiset<IpsecPeeringInfo> peerings =
         rawAnswer(
-            _graph, ImmutableSet.of(INITIATOR_HOST_NAME), ImmutableSet.of(RESPONDER_HOST_NAME));
+            _networkConfigurations,
+            _graph,
+            ImmutableSet.of(INITIATOR_HOST_NAME),
+            ImmutableSet.of(RESPONDER_HOST_NAME));
 
     // answer should have exactly one row
     assertThat(peerings, hasSize(1));
@@ -79,14 +122,17 @@ public class IpsecPeersAnswererTest {
   @Test
   public void testGenerateRowsIke1KeyFail() {
     // IPSecSession does not have IKE phase 1 key set
-    _ipsecSession.setNegotiatedIkeP1Proposal(new IkePhase1Proposal("test_ike_proposal"));
+    _ipsecSessionBuilder.setNegotiatedIkeP1Proposal(new IkePhase1Proposal("test_ike_proposal"));
     _graph.putEdgeValue(
-        new Pair<>(INITIATOR_HOST_NAME, _ipsecStaticPeerConfigBuilder.build()),
-        new Pair<>(RESPONDER_HOST_NAME, _ipsecStaticPeerConfigBuilder.build()),
-        _ipsecSession);
+        new IpsecPeerConfigId(INITIATOR_IPSEC_PEER_CONFIG, INITIATOR_HOST_NAME),
+        new IpsecPeerConfigId(RESPONDER_IPSEC_PEER_CONFIG, RESPONDER_HOST_NAME),
+        _ipsecSessionBuilder.build());
     Multiset<IpsecPeeringInfo> peerings =
         rawAnswer(
-            _graph, ImmutableSet.of(INITIATOR_HOST_NAME), ImmutableSet.of(RESPONDER_HOST_NAME));
+            _networkConfigurations,
+            _graph,
+            ImmutableSet.of(INITIATOR_HOST_NAME),
+            ImmutableSet.of(RESPONDER_HOST_NAME));
 
     // answer should have exactly one row
     assertThat(peerings, hasSize(1));
@@ -97,15 +143,18 @@ public class IpsecPeersAnswererTest {
   @Test
   public void testGenerateRowsIpsec2Fail() {
     // IPSecSession does not have IPSec phase 2 proposal set
-    _ipsecSession.setNegotiatedIkeP1Proposal(new IkePhase1Proposal("test_ike_proposal"));
-    _ipsecSession.setNegotiatedIkeP1Key(new IkePhase1Key());
+    _ipsecSessionBuilder.setNegotiatedIkeP1Proposal(new IkePhase1Proposal("test_ike_proposal"));
+    _ipsecSessionBuilder.setNegotiatedIkeP1Key(new IkePhase1Key());
     _graph.putEdgeValue(
-        new Pair<>(INITIATOR_HOST_NAME, _ipsecStaticPeerConfigBuilder.build()),
-        new Pair<>(RESPONDER_HOST_NAME, _ipsecStaticPeerConfigBuilder.build()),
-        _ipsecSession);
+        new IpsecPeerConfigId(INITIATOR_IPSEC_PEER_CONFIG, INITIATOR_HOST_NAME),
+        new IpsecPeerConfigId(RESPONDER_IPSEC_PEER_CONFIG, RESPONDER_HOST_NAME),
+        _ipsecSessionBuilder.build());
     Multiset<IpsecPeeringInfo> peerings =
         rawAnswer(
-            _graph, ImmutableSet.of(INITIATOR_HOST_NAME), ImmutableSet.of(RESPONDER_HOST_NAME));
+            _networkConfigurations,
+            _graph,
+            ImmutableSet.of(INITIATOR_HOST_NAME),
+            ImmutableSet.of(RESPONDER_HOST_NAME));
 
     // answer should have exactly one row
     assertThat(peerings, hasSize(1));
@@ -116,10 +165,13 @@ public class IpsecPeersAnswererTest {
   @Test
   public void testGenerateRowsMissingEndpoint() {
     // Responder not set in the graph
-    _graph.addNode(new Pair<>(INITIATOR_HOST_NAME, _ipsecStaticPeerConfigBuilder.build()));
+    _graph.addNode(new IpsecPeerConfigId(INITIATOR_IPSEC_PEER_CONFIG, INITIATOR_HOST_NAME));
     Multiset<IpsecPeeringInfo> peerings =
         rawAnswer(
-            _graph, ImmutableSet.of(INITIATOR_HOST_NAME), ImmutableSet.of(RESPONDER_HOST_NAME));
+            _networkConfigurations,
+            _graph,
+            ImmutableSet.of(INITIATOR_HOST_NAME),
+            ImmutableSet.of(RESPONDER_HOST_NAME));
 
     // answer should have exactly one row
     assertThat(peerings, hasSize(1));
@@ -129,17 +181,20 @@ public class IpsecPeersAnswererTest {
 
   @Test
   public void testGenerateRowsIpsecEstablished() {
-    // IPSecSession does not have IPSec phase 2 proposal set
-    _ipsecSession.setNegotiatedIkeP1Proposal(new IkePhase1Proposal("test_ike_proposal"));
-    _ipsecSession.setNegotiatedIkeP1Key(new IkePhase1Key());
-    _ipsecSession.setNegotiatedIpsecP2Proposal(new IpsecPhase2Proposal());
+    // IPSecSession has all phases negotiated and IKE phase 1 key consistent
+    _ipsecSessionBuilder.setNegotiatedIkeP1Proposal(new IkePhase1Proposal("test_ike_proposal"));
+    _ipsecSessionBuilder.setNegotiatedIkeP1Key(new IkePhase1Key());
+    _ipsecSessionBuilder.setNegotiatedIpsecP2Proposal(new IpsecPhase2Proposal());
     _graph.putEdgeValue(
-        new Pair<>(INITIATOR_HOST_NAME, _ipsecStaticPeerConfigBuilder.build()),
-        new Pair<>(RESPONDER_HOST_NAME, _ipsecStaticPeerConfigBuilder.build()),
-        _ipsecSession);
+        new IpsecPeerConfigId(INITIATOR_IPSEC_PEER_CONFIG, INITIATOR_HOST_NAME),
+        new IpsecPeerConfigId(RESPONDER_IPSEC_PEER_CONFIG, RESPONDER_HOST_NAME),
+        _ipsecSessionBuilder.build());
     Multiset<IpsecPeeringInfo> peerings =
         rawAnswer(
-            _graph, ImmutableSet.of(INITIATOR_HOST_NAME), ImmutableSet.of(RESPONDER_HOST_NAME));
+            _networkConfigurations,
+            _graph,
+            ImmutableSet.of(INITIATOR_HOST_NAME),
+            ImmutableSet.of(RESPONDER_HOST_NAME));
 
     // answer should have exactly one row
     assertThat(peerings, hasSize(1));

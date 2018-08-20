@@ -1,8 +1,8 @@
 package org.batfish.datamodel.matchers;
 
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.vendor_family.cisco.AaaAuthenticationLoginList;
-import org.batfish.datamodel.vendor_family.cisco.Line;
+import org.batfish.datamodel.AaaAuthenticationLoginList;
+import org.batfish.datamodel.Line;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 

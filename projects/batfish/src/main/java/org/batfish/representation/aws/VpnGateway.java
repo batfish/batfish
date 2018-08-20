@@ -3,7 +3,6 @@ package org.batfish.representation.aws;
 import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
-import org.batfish.common.BatfishLogger;
 import org.batfish.common.Pair;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
@@ -22,7 +21,7 @@ public class VpnGateway implements AwsVpcEntity, Serializable {
 
   private String _vpnGatewayId;
 
-  public VpnGateway(JSONObject jObj, BatfishLogger logger) throws JSONException {
+  public VpnGateway(JSONObject jObj) throws JSONException {
     _vpnGatewayId = jObj.getString(JSON_KEY_VPN_GATEWAY_ID);
 
     JSONArray attachments = jObj.getJSONArray(JSON_KEY_VPC_ATTACHMENTS);

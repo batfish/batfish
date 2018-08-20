@@ -9,20 +9,20 @@ crypto isakmp policy 12
 !
 crypto keyring KEYRING
   pre-shared-key address 2.3.4.6 key psk2
-  local-address 3.4.5.6
+  local-address 2.3.4.8
 !
 crypto isakmp profile ISAKMP-PROFIE
    keyring KEYRING
    match identity address 2.3.4.6 255.255.255.255
    keepalive 10 retry 3
-   local-address 3.4.5.6
+   local-address 2.3.4.8
 !
 crypto keyring KEYRING_FOR_R3
-  pre-shared-key address 5.6.7.8 key psk4
+  pre-shared-key address 2.3.4.11 key psk4
 !
 crypto isakmp profile ISAKMP-PROFILE-FOR-R3
    keyring KEYRING_FOR_R3
-   match identity address 5.6.7.8 255.255.255.255
+   match identity address 2.3.4.11 255.255.255.255
    keepalive 10 retry 3
 !
 crypto ipsec transform-set ts1 esp-aes 256 esp-md5-hmac
@@ -44,7 +44,7 @@ crypto map mymap 20 ipsec-isakmp
 crypto map mysecondmap 20 ipsec-isakmp
  match address ACL
  set transform-set ts1
- set peer 5.6.7.8
+ set peer 2.3.4.11
  set pfs group2
 !
 ip access-list extended ACL
@@ -52,15 +52,15 @@ ip access-list extended ACL
 !
 interface Tunnel23
  ip address 11.12.13.15 255.255.255.0
- tunnel source 3.4.5.7
+ tunnel source 2.3.4.10
  tunnel mode ipsec ipv4
- tunnel destination 5.6.7.8
+ tunnel destination 2.3.4.11
  tunnel protection ipsec profile ipsec-profile
 !
 interface TenGigabitEthernet0/0
- ip address 3.4.5.6 255.255.255.0
+ ip address 2.3.4.8 255.255.255.0
  crypto map mymap
 !
 interface TenGigabitEthernet0/1
- ip address 3.4.5.7 255.255.255.0
+ ip address 2.3.4.10 255.255.255.0
  crypto map mysecondmap

@@ -142,7 +142,7 @@ public abstract class VendorConfiguration implements Serializable, GenericConfig
 
   public final void setAnswerElement(ConvertConfigurationAnswerElement answerElement) {
     _answerElement = answerElement;
-    _answerElement.getDefinedStructures().put(getHostname(), _structureDefinitions);
+    _answerElement.getDefinedStructures().put(getFilename(), _structureDefinitions);
   }
 
   public void setFilename(String filename) {
@@ -168,9 +168,9 @@ public abstract class VendorConfiguration implements Serializable, GenericConfig
   public abstract Configuration toVendorIndependentConfiguration() throws VendorConversionException;
 
   public void undefined(StructureType structureType, String name, StructureUsage usage, int line) {
-    String hostname = getHostname();
+    String filename = getFilename();
     SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>> byType =
-        _answerElement.getUndefinedReferences().computeIfAbsent(hostname, k -> new TreeMap<>());
+        _answerElement.getUndefinedReferences().computeIfAbsent(filename, k -> new TreeMap<>());
     String type = structureType.getDescription();
     SortedMap<String, SortedMap<String, SortedSet<Integer>>> byName =
         byType.computeIfAbsent(type, k -> new TreeMap<>());

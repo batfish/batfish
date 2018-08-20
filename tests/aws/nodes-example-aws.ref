@@ -849,7 +849,7 @@
               "10.10.255.8/32"
             ],
             "autostate" : true,
-            "bandwidth" : 1.0E12,
+            "bandwidth" : 8.0E9,
             "declaredNames" : [
               "Loopback0"
             ],
@@ -977,7 +977,9 @@
                 },
                 "name" : "permit icmp any 10.100.0.0 0.0.255.255"
               }
-            ]
+            ],
+            "sourceName" : "2001",
+            "sourceType" : "extended ipv4 access-list"
           },
           "LIMIT_PEER" : {
             "name" : "LIMIT_PEER",
@@ -1018,7 +1020,9 @@
                 },
                 "name" : "permit ip host 10.10.30.2 host 10.10.30.1"
               }
-            ]
+            ],
+            "sourceName" : "LIMIT_PEER",
+            "sourceType" : "extended ipv4 access-list"
           },
           "MATCH_ALL_BGP" : {
             "name" : "MATCH_ALL_BGP",
@@ -1041,7 +1045,9 @@
                 },
                 "name" : "permit ip any any"
               }
-            ]
+            ],
+            "sourceName" : "MATCH_ALL_BGP",
+            "sourceType" : "extended ipv4 access-list"
           }
         },
         "ipsecPeerConfigs" : {
@@ -1803,7 +1809,7 @@
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
-                  "allowRemoteAsOut" : false,
+                  "allowRemoteAsOut" : true,
                   "clusterId" : 168492808,
                   "defaultMetric" : 0,
                   "ebgpMultihop" : false,
@@ -1829,7 +1835,7 @@
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
-                  "allowRemoteAsOut" : false,
+                  "allowRemoteAsOut" : true,
                   "clusterId" : 168492808,
                   "defaultMetric" : 0,
                   "ebgpMultihop" : false,
@@ -1851,7 +1857,7 @@
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
-                  "allowRemoteAsOut" : false,
+                  "allowRemoteAsOut" : true,
                   "clusterId" : 168492808,
                   "defaultMetric" : 0,
                   "ebgpMultihop" : false,
@@ -1876,7 +1882,7 @@
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
-                  "allowRemoteAsOut" : false,
+                  "allowRemoteAsOut" : true,
                   "clusterId" : 168492808,
                   "defaultMetric" : 0,
                   "ebgpMultihop" : false,
@@ -1897,7 +1903,7 @@
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
-                  "allowRemoteAsOut" : false,
+                  "allowRemoteAsOut" : true,
                   "clusterId" : 168492808,
                   "defaultMetric" : 0,
                   "ebgpMultihop" : false,
@@ -1934,7 +1940,7 @@
                   "advertiseExternal" : false,
                   "advertiseInactive" : true,
                   "allowLocalAsIn" : false,
-                  "allowRemoteAsOut" : false,
+                  "allowRemoteAsOut" : true,
                   "clusterId" : 168492808,
                   "defaultMetric" : 0,
                   "ebgpMultihop" : false,
@@ -2119,7 +2125,9 @@
                 },
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
-            ]
+            ],
+            "sourceName" : "acl-7b78771d",
+            "sourceType" : "Network ACL"
           },
           "acl-7b78771d_ingress" : {
             "name" : "acl-7b78771d_ingress",
@@ -2144,7 +2152,9 @@
                 },
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
-            ]
+            ],
+            "sourceName" : "acl-7b78771d",
+            "sourceType" : "Network ACL"
           }
         },
         "vendorFamily" : {
@@ -2262,7 +2272,9 @@
                 },
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
-            ]
+            ],
+            "sourceName" : "acl-7b78771d",
+            "sourceType" : "Network ACL"
           },
           "acl-7b78771d_ingress" : {
             "name" : "acl-7b78771d_ingress",
@@ -2287,7 +2299,9 @@
                 },
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
-            ]
+            ],
+            "sourceName" : "acl-7b78771d",
+            "sourceType" : "Network ACL"
           }
         },
         "vendorFamily" : {
@@ -2405,7 +2419,9 @@
                 },
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
-            ]
+            ],
+            "sourceName" : "acl-4db39c28",
+            "sourceType" : "Network ACL"
           },
           "acl-4db39c28_ingress" : {
             "name" : "acl-4db39c28_ingress",
@@ -2442,7 +2458,9 @@
                 },
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
-            ]
+            ],
+            "sourceName" : "acl-4db39c28",
+            "sourceType" : "Network ACL"
           }
         },
         "vendorFamily" : {
@@ -2560,7 +2578,9 @@
                 },
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
-            ]
+            ],
+            "sourceName" : "acl-7b78771d",
+            "sourceType" : "Network ACL"
           },
           "acl-7b78771d_ingress" : {
             "name" : "acl-7b78771d_ingress",
@@ -2585,7 +2605,9 @@
                 },
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
-            ]
+            ],
+            "sourceName" : "acl-7b78771d",
+            "sourceType" : "Network ACL"
           }
         },
         "vendorFamily" : {
@@ -2703,7 +2725,9 @@
                 },
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
-            ]
+            ],
+            "sourceName" : "acl-3d4f745b",
+            "sourceType" : "Network ACL"
           },
           "acl-3d4f745b_ingress" : {
             "name" : "acl-3d4f745b_ingress",
@@ -2728,7 +2752,9 @@
                 },
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
-            ]
+            ],
+            "sourceName" : "acl-3d4f745b",
+            "sourceType" : "Network ACL"
           }
         },
         "vendorFamily" : {
@@ -2846,7 +2872,9 @@
                 },
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
-            ]
+            ],
+            "sourceName" : "acl-7b78771d",
+            "sourceType" : "Network ACL"
           },
           "acl-7b78771d_ingress" : {
             "name" : "acl-7b78771d_ingress",
@@ -2871,7 +2899,9 @@
                 },
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
-            ]
+            ],
+            "sourceName" : "acl-7b78771d",
+            "sourceType" : "Network ACL"
           }
         },
         "vendorFamily" : {
@@ -2989,7 +3019,9 @@
                 },
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
-            ]
+            ],
+            "sourceName" : "acl-3d4f745b",
+            "sourceType" : "Network ACL"
           },
           "acl-3d4f745b_ingress" : {
             "name" : "acl-3d4f745b_ingress",
@@ -3014,7 +3046,9 @@
                 },
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
-            ]
+            ],
+            "sourceName" : "acl-3d4f745b",
+            "sourceType" : "Network ACL"
           }
         },
         "vendorFamily" : {
@@ -3132,7 +3166,9 @@
                 },
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
-            ]
+            ],
+            "sourceName" : "acl-4db39c28",
+            "sourceType" : "Network ACL"
           },
           "acl-4db39c28_ingress" : {
             "name" : "acl-4db39c28_ingress",
@@ -3169,7 +3205,9 @@
                 },
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
-            ]
+            ],
+            "sourceName" : "acl-4db39c28",
+            "sourceType" : "Network ACL"
           }
         },
         "vendorFamily" : {
@@ -3287,7 +3325,9 @@
                 },
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
-            ]
+            ],
+            "sourceName" : "acl-4db39c28",
+            "sourceType" : "Network ACL"
           },
           "acl-4db39c28_ingress" : {
             "name" : "acl-4db39c28_ingress",
@@ -3324,7 +3364,9 @@
                 },
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
-            ]
+            ],
+            "sourceName" : "acl-4db39c28",
+            "sourceType" : "Network ACL"
           }
         },
         "vendorFamily" : {
@@ -3442,7 +3484,9 @@
                 },
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
-            ]
+            ],
+            "sourceName" : "acl-7b78771d",
+            "sourceType" : "Network ACL"
           },
           "acl-7b78771d_ingress" : {
             "name" : "acl-7b78771d_ingress",
@@ -3467,7 +3511,9 @@
                 },
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
-            ]
+            ],
+            "sourceName" : "acl-7b78771d",
+            "sourceType" : "Network ACL"
           }
         },
         "vendorFamily" : {

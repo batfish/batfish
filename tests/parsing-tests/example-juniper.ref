@@ -3,20 +3,20 @@
     {
       "class" : "org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement",
       "fileMap" : {
-        "as1border1" : "as1border1.cfg",
-        "as1border2" : "as1border2.cfg",
-        "as1core1" : "as1core1.cfg",
-        "as2border1" : "as2border1.cfg",
-        "as2border2" : "as2border2.cfg",
-        "as2core1" : "as2core1.cfg",
-        "as2core2" : "as2core2.cfg",
-        "as2dept1" : "as2dept1.cfg",
-        "as2dist1" : "as2dist1.cfg",
-        "as2dist2" : "as2dist2.cfg",
-        "as2host1" : "as2host1.cfg",
-        "as3border1" : "as3border1.cfg",
-        "as3border2" : "as3border2.cfg",
-        "as3core1" : "as3core1.cfg"
+        "as1border1" : "configs/as1border1.cfg",
+        "as1border2" : "configs/as1border2.cfg",
+        "as1core1" : "configs/as1core1.cfg",
+        "as2border1" : "configs/as2border1.cfg",
+        "as2border2" : "configs/as2border2.cfg",
+        "as2core1" : "configs/as2core1.cfg",
+        "as2core2" : "configs/as2core2.cfg",
+        "as2dept1" : "configs/as2dept1.cfg",
+        "as2dist1" : "configs/as2dist1.cfg",
+        "as2dist2" : "configs/as2dist2.cfg",
+        "as2host1" : "configs/as2host1.cfg",
+        "as3border1" : "configs/as3border1.cfg",
+        "as3border2" : "configs/as3border2.cfg",
+        "as3core1" : "configs/as3core1.cfg"
       },
       "parseStatus" : {
         "as1border1" : "PASSED",
@@ -3356,7 +3356,7 @@
             "      IP:'ip'  <== mode:DEFAULT_MODE",
             "      PREFIX_LIST:'prefix-list'  <== mode:DEFAULT_MODE",
             "      name = (variable",
-            "        VARIABLE:'inbound_route_filter'  <== mode:DEFAULT_MODE)",
+            "        VARIABLE:'inbound_route_filter'  <== mode:M_Name)",
             "      (ip_prefix_list_tail",
             "        SEQ:'seq'  <== mode:DEFAULT_MODE",
             "        seqnum = DEC:'5'  <== mode:DEFAULT_MODE",
@@ -3371,7 +3371,7 @@
             "      IP:'ip'  <== mode:DEFAULT_MODE",
             "      PREFIX_LIST:'prefix-list'  <== mode:DEFAULT_MODE",
             "      name = (variable",
-            "        VARIABLE:'inbound_route_filter'  <== mode:DEFAULT_MODE)",
+            "        VARIABLE:'inbound_route_filter'  <== mode:M_Name)",
             "      (ip_prefix_list_tail",
             "        SEQ:'seq'  <== mode:DEFAULT_MODE",
             "        seqnum = DEC:'10'  <== mode:DEFAULT_MODE",
@@ -4332,7 +4332,7 @@
             "      IP:'ip'  <== mode:DEFAULT_MODE",
             "      PREFIX_LIST:'prefix-list'  <== mode:DEFAULT_MODE",
             "      name = (variable",
-            "        VARIABLE:'inbound_route_filter'  <== mode:DEFAULT_MODE)",
+            "        VARIABLE:'inbound_route_filter'  <== mode:M_Name)",
             "      (ip_prefix_list_tail",
             "        SEQ:'seq'  <== mode:DEFAULT_MODE",
             "        seqnum = DEC:'5'  <== mode:DEFAULT_MODE",
@@ -4347,7 +4347,7 @@
             "      IP:'ip'  <== mode:DEFAULT_MODE",
             "      PREFIX_LIST:'prefix-list'  <== mode:DEFAULT_MODE",
             "      name = (variable",
-            "        VARIABLE:'inbound_route_filter'  <== mode:DEFAULT_MODE)",
+            "        VARIABLE:'inbound_route_filter'  <== mode:M_Name)",
             "      (ip_prefix_list_tail",
             "        SEQ:'seq'  <== mode:DEFAULT_MODE",
             "        seqnum = DEC:'10'  <== mode:DEFAULT_MODE",
@@ -8816,7 +8816,7 @@
             "      IP:'ip'  <== mode:DEFAULT_MODE",
             "      PREFIX_LIST:'prefix-list'  <== mode:DEFAULT_MODE",
             "      name = (variable",
-            "        VARIABLE:'inbound_route_filter'  <== mode:DEFAULT_MODE)",
+            "        VARIABLE:'inbound_route_filter'  <== mode:M_Name)",
             "      (ip_prefix_list_tail",
             "        SEQ:'seq'  <== mode:DEFAULT_MODE",
             "        seqnum = DEC:'5'  <== mode:DEFAULT_MODE",
@@ -8831,7 +8831,7 @@
             "      IP:'ip'  <== mode:DEFAULT_MODE",
             "      PREFIX_LIST:'prefix-list'  <== mode:DEFAULT_MODE",
             "      name = (variable",
-            "        VARIABLE:'inbound_route_filter'  <== mode:DEFAULT_MODE)",
+            "        VARIABLE:'inbound_route_filter'  <== mode:M_Name)",
             "      (ip_prefix_list_tail",
             "        SEQ:'seq'  <== mode:DEFAULT_MODE",
             "        seqnum = DEC:'10'  <== mode:DEFAULT_MODE",
@@ -9707,7 +9707,7 @@
             "      IP:'ip'  <== mode:DEFAULT_MODE",
             "      PREFIX_LIST:'prefix-list'  <== mode:DEFAULT_MODE",
             "      name = (variable",
-            "        VARIABLE:'inbound_route_filter'  <== mode:DEFAULT_MODE)",
+            "        VARIABLE:'inbound_route_filter'  <== mode:M_Name)",
             "      (ip_prefix_list_tail",
             "        SEQ:'seq'  <== mode:DEFAULT_MODE",
             "        seqnum = DEC:'5'  <== mode:DEFAULT_MODE",
@@ -9722,7 +9722,7 @@
             "      IP:'ip'  <== mode:DEFAULT_MODE",
             "      PREFIX_LIST:'prefix-list'  <== mode:DEFAULT_MODE",
             "      name = (variable",
-            "        VARIABLE:'inbound_route_filter'  <== mode:DEFAULT_MODE)",
+            "        VARIABLE:'inbound_route_filter'  <== mode:M_Name)",
             "      (ip_prefix_list_tail",
             "        SEQ:'seq'  <== mode:DEFAULT_MODE",
             "        seqnum = DEC:'10'  <== mode:DEFAULT_MODE",
@@ -10603,7 +10603,7 @@
     {
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
       "definedStructures" : {
-        "as1border1" : {
+        "configs/as1border1.cfg" : {
           "bgp group" : {
             "as1" : {
               "definitionLines" : [
@@ -10707,7 +10707,7 @@
             }
           }
         },
-        "as1border2" : {
+        "configs/as1border2.cfg" : {
           "bgp group" : {
             "as1" : {
               "definitionLines" : [
@@ -10823,7 +10823,7 @@
             }
           }
         },
-        "as1core1" : {
+        "configs/as1core1.cfg" : {
           "bgp group" : {
             "as1" : {
               "definitionLines" : [
@@ -10860,7 +10860,7 @@
             }
           }
         },
-        "as2border1" : {
+        "configs/as2border1.cfg" : {
           "bgp group" : {
             "as1" : {
               "definitionLines" : [
@@ -11023,7 +11023,7 @@
             }
           }
         },
-        "as2border2" : {
+        "configs/as2border2.cfg" : {
           "bgp group" : {
             "as1" : {
               "definitionLines" : [
@@ -11188,7 +11188,7 @@
             }
           }
         },
-        "as2core1" : {
+        "configs/as2core1.cfg" : {
           "bgp group" : {
             "as2" : {
               "definitionLines" : [
@@ -11255,7 +11255,7 @@
             }
           }
         },
-        "as2core2" : {
+        "configs/as2core2.cfg" : {
           "bgp group" : {
             "as2" : {
               "definitionLines" : [
@@ -11310,7 +11310,7 @@
             }
           }
         },
-        "as2dept1" : {
+        "configs/as2dept1.cfg" : {
           "bgp group" : {
             "as2" : {
               "definitionLines" : [
@@ -11419,7 +11419,7 @@
             }
           }
         },
-        "as2dist1" : {
+        "configs/as2dist1.cfg" : {
           "bgp group" : {
             "as2" : {
               "definitionLines" : [
@@ -11515,7 +11515,7 @@
             }
           }
         },
-        "as2dist2" : {
+        "configs/as2dist2.cfg" : {
           "bgp group" : {
             "as2" : {
               "definitionLines" : [
@@ -11611,7 +11611,7 @@
             }
           }
         },
-        "as2host1" : {
+        "configs/as2host1.cfg" : {
           "interface" : {
             "FastEthernet0/0" : {
               "definitionLines" : [
@@ -11641,7 +11641,7 @@
             }
           }
         },
-        "as3border1" : {
+        "configs/as3border1.cfg" : {
           "bgp group" : {
             "as1" : {
               "definitionLines" : [
@@ -11786,7 +11786,7 @@
             }
           }
         },
-        "as3border2" : {
+        "configs/as3border2.cfg" : {
           "bgp group" : {
             "as1" : {
               "definitionLines" : [
@@ -11931,7 +11931,7 @@
             }
           }
         },
-        "as3core1" : {
+        "configs/as3core1.cfg" : {
           "bgp group" : {
             "as3" : {
               "definitionLines" : [
@@ -11984,7 +11984,7 @@
         }
       },
       "undefinedReferences" : {
-        "as2core2" : {
+        "configs/as2core2.cfg" : {
           "route-map" : {
             "filter-bogons" : {
               "bgp inbound route-map" : [
@@ -11997,10 +11997,16 @@
       "version" : "0.36.0",
       "warnings" : {
         "as1border1" : {
-          "Red flags" : {
-            "1" : "MISCELLANEOUS: Could not determine local ip for bgp peering with neighbor ip: 3.2.2.2",
-            "2" : "MISCELLANEOUS: Could not determine local ip for bgp peering with neighbor ip: 5.6.7.8"
-          }
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Could not determine local ip for bgp peering with neighbor ip: 3.2.2.2"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Could not determine local ip for bgp peering with neighbor ip: 5.6.7.8"
+            }
+          ]
         }
       }
     },

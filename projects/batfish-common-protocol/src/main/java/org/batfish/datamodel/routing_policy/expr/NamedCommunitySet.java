@@ -37,6 +37,10 @@ public class NamedCommunitySet extends CommunitySetExpr {
   @Override
   public SortedSet<Long> communities(Environment environment, Set<Long> communityCandidates) {
     CommunityList cl = environment.getConfiguration().getCommunityLists().get(_name);
+    if (cl == null) {
+      // There is no community set with that name, assuming it's empty.
+      return ImmutableSortedSet.of();
+    }
     return communityCandidates
         .stream()
         .filter(cl::permits)

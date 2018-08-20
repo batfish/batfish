@@ -136,7 +136,7 @@ final class BatfishStorage {
     if (!Files.exists(path)) {
       return null;
     }
-    _newBatch.apply("Reading legacy topology", 0);
+    AtomicInteger counter = _newBatch.apply("Reading legacy topology", 1);
     String topologyFileText = CommonUtil.readFile(path);
     try {
       return BatfishObjectMapper.mapper().readValue(topologyFileText, Topology.class);
@@ -145,6 +145,8 @@ final class BatfishStorage {
           "Unexpected exception caught while loading legacy testrig topology for testrig %s: %s",
           testrig, Throwables.getStackTraceAsString(e));
       return null;
+    } finally {
+      counter.incrementAndGet();
     }
   }
 
@@ -157,7 +159,7 @@ final class BatfishStorage {
     if (!Files.exists(path)) {
       return null;
     }
-    _newBatch.apply("Reading layer-1 topology", 0);
+    AtomicInteger counter = _newBatch.apply("Reading layer-1 topology", 1);
     String topologyFileText = CommonUtil.readFile(path);
     try {
       return BatfishObjectMapper.mapper().readValue(topologyFileText, Layer1Topology.class);
@@ -166,6 +168,8 @@ final class BatfishStorage {
           "Unexpected exception caught while loading layer-1 topology for testrig %s: %s",
           testrig, Throwables.getStackTraceAsString(e));
       return null;
+    } finally {
+      counter.incrementAndGet();
     }
   }
 

@@ -23,6 +23,7 @@ import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowHistory;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.AclLinesAnswerElementInterface;
 import org.batfish.datamodel.answers.AclLinesAnswerElementInterface.AclSpecs;
@@ -43,6 +44,7 @@ import org.batfish.datamodel.questions.smt.RoleQuestion;
 import org.batfish.grammar.BgpTableFormat;
 import org.batfish.grammar.GrammarSettings;
 import org.batfish.question.ReachabilityParameters;
+import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
 import org.batfish.specifier.SpecifierContext;
@@ -56,6 +58,11 @@ public class IBatfishTestAdapter implements IBatfish {
   @Override
   public void answerAclReachability(
       List<AclSpecs> aclSpecs, AclLinesAnswerElementInterface emptyAnswer) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public Set<Flow> bddReducedReachability() {
     throw new UnsupportedOperationException();
   }
 
@@ -76,6 +83,11 @@ public class IBatfishTestAdapter implements IBatfish {
 
   @Override
   public boolean debugFlagEnabled(String flag) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public ReferenceLibrary getReferenceLibraryData() {
     throw new UnsupportedOperationException();
   }
 
@@ -295,6 +307,11 @@ public class IBatfishTestAdapter implements IBatfish {
     throw new UnsupportedOperationException();
   }
 
+  @Override
+  public Optional<Flow> reachFilter(String nodeName, IpAccessList acl) {
+    throw new UnsupportedOperationException();
+  }
+
   @Nullable
   @Override
   public String readExternalBgpAnnouncementsFile() {
@@ -397,6 +414,11 @@ public class IBatfishTestAdapter implements IBatfish {
 
   @Override
   public void writeDataPlane(DataPlane dp, DataPlaneAnswerElement ae) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public Set<Flow> bddMultipathConsistency() {
     throw new UnsupportedOperationException();
   }
 }

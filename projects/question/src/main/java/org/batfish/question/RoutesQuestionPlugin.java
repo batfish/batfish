@@ -395,7 +395,7 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
   /**
    * Outputs all routes (RIB) at nodes in the network.
    *
-   * <p>It produces routes from all protocols (e.g., BGP, OSPF, static, and connected).
+   * <p>It produces routes from all protocols (e.g., BGP, EIGRP, OSPF, static, and connected).
    */
   public static class RoutesQuestion extends Question {
 

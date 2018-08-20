@@ -46,6 +46,11 @@ public final class ServiceGroup implements ServiceGroupMember {
                 _name));
       }
     }
-    return new IpAccessList(_name, lines);
+    return IpAccessList.builder()
+        .setName(_name)
+        .setLines(lines)
+        .setSourceName(_name)
+        .setSourceType(PaloAltoStructureType.SERVICE_GROUP.getDescription())
+        .build();
   }
 }

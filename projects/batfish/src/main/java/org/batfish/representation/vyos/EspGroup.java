@@ -1,11 +1,11 @@
 package org.batfish.representation.vyos;
 
+import java.io.Serializable;
 import java.util.Map;
 import java.util.TreeMap;
-import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.DiffieHellmanGroup;
 
-public class EspGroup extends ComparableStructure<String> {
+public class EspGroup implements Serializable {
 
   /** */
   private static final long serialVersionUID = 1L;
@@ -14,6 +14,8 @@ public class EspGroup extends ComparableStructure<String> {
 
   private int _lifetimeSeconds;
 
+  private final String _name;
+
   private DiffieHellmanGroup _pfsDhGroup;
 
   private PfsSource _pfsSource;
@@ -21,7 +23,7 @@ public class EspGroup extends ComparableStructure<String> {
   private final Map<Integer, EspProposal> _proposals;
 
   public EspGroup(String name) {
-    super(name);
+    _name = name;
     _proposals = new TreeMap<>();
   }
 
@@ -31,6 +33,10 @@ public class EspGroup extends ComparableStructure<String> {
 
   public int getLifetimeSeconds() {
     return _lifetimeSeconds;
+  }
+
+  public String getName() {
+    return _name;
   }
 
   public DiffieHellmanGroup getPfsDhGroup() {

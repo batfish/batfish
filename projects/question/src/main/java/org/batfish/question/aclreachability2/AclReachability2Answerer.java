@@ -59,7 +59,7 @@ public class AclReachability2Answerer extends Answerer {
    * @param question The question
    * @return The resulting {@link TableMetadata} object
    */
-  private static TableMetadata createMetadata(AclReachability2Question question) {
+  public static TableMetadata createMetadata(Question question) {
     List<ColumnMetadata> columnMetadata =
         new ImmutableList.Builder<ColumnMetadata>()
             .add(
@@ -94,11 +94,11 @@ public class AclReachability2Answerer extends Answerer {
                     AclLines2Rows.COL_MESSAGE, Schema.STRING, "Message", false, false))
             .build();
 
+    String textDesc = String.format("${%s}", AclLines2Rows.COL_MESSAGE);
     DisplayHints dhints = question.getDisplayHints();
-    if (dhints == null) {
-      dhints = new DisplayHints();
-      dhints.setTextDesc(String.format("${%s}", AclLines2Rows.COL_MESSAGE));
+    if (dhints != null && dhints.getTextDesc() != null) {
+      textDesc = dhints.getTextDesc();
     }
-    return new TableMetadata(columnMetadata, dhints);
+    return new TableMetadata(columnMetadata, textDesc);
   }
 }

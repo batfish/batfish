@@ -55,6 +55,7 @@ import org.batfish.symbolic.answers.SmtDeterminismAnswerElement;
 import org.batfish.symbolic.answers.SmtManyAnswerElement;
 import org.batfish.symbolic.answers.SmtOneAnswerElement;
 import org.batfish.symbolic.answers.SmtReachabilityAnswerElement;
+import org.batfish.symbolic.bdd.BDDPacket;
 import org.batfish.symbolic.collections.Table2;
 import org.batfish.symbolic.utils.PathRegexes;
 import org.batfish.symbolic.utils.PatternUtils;
@@ -70,11 +71,13 @@ import org.batfish.symbolic.utils.Tuple;
  */
 public class PropertyChecker {
 
+  private BDDPacket _bddPacket;
   private IBatfish _batfish;
   private final Settings _settings;
   private final Object _lock;
 
-  public PropertyChecker(IBatfish batfish, Settings settings) {
+  public PropertyChecker(BDDPacket bddPacket, IBatfish batfish, Settings settings) {
+    this._bddPacket = bddPacket;
     this._batfish = batfish;
     this._settings = settings;
     this._lock = new Object();
@@ -249,7 +252,7 @@ public class PropertyChecker {
       System.out.println("Created destination classes");
       System.out.println("Num Classes: " + dcs.getHeaderspaceMap().size());
       long l = System.currentTimeMillis();
-      List<Supplier<NetworkSlice>> ecs = NetworkSlice.allSlices(dcs, numFailures);
+      List<Supplier<NetworkSlice>> ecs = NetworkSlice.allSlices(_bddPacket, dcs, numFailures);
       l = System.currentTimeMillis() - l;
       System.out.println("Created BDDs");
       return new Tuple<>(ecs.parallelStream(), l);
@@ -1078,9 +1081,9 @@ public class PropertyChecker {
       BoolExpr required;
       if (strict) {
         SymbolicRoute best1 =
-            e1.getMainSlice().getSymbolicDecisions().getBestNeighbor().get(conf1.getName());
+            e1.getMainSlice().getSymbolicDecisions().getBestNeighbor().get(conf1.getHostname());
         SymbolicRoute best2 =
-            e2.getMainSlice().getSymbolicDecisions().getBestNeighbor().get(conf2.getName());
+            e2.getMainSlice().getSymbolicDecisions().getBestNeighbor().get(conf2.getHostname());
         // Just pick some protocol for defaults, shouldn't matter for best choice
         required = equal(e2, conf2, best1, best2);
       } else {

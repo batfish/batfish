@@ -1,6 +1,7 @@
 package org.batfish.representation.cisco;
 
 import com.google.common.collect.ImmutableSortedSet;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -9,7 +10,6 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
-import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
@@ -18,7 +18,7 @@ import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.isis.IsisInterfaceMode;
 
-public class Interface extends ComparableStructure<String> {
+public class Interface implements Serializable {
 
   private static final double ARISTA_ETHERNET_BANDWIDTH = 1E9;
 
@@ -34,8 +34,11 @@ public class Interface extends ComparableStructure<String> {
 
   private static final double LONG_REACH_ETHERNET_BANDWIDTH = 10E6;
 
-  /** dirty hack: just chose a very large number */
-  private static final double LOOPBACK_BANDWIDTH = 1E12;
+  /** Loopback bandwidth */
+  private static final double LOOPBACK_BANDWIDTH = 8E9;
+
+  /** Loopback delay for IOS */
+  private static final double LOOPBACK_IOS_DELAY = 5E9;
 
   /** NX-OS Ethernet 802.3z - may not apply for non-NX-OS */
   private static final double NXOS_ETHERNET_BANDWIDTH = 1E9;
@@ -117,17 +120,25 @@ public class Interface extends ComparableStructure<String> {
 
   private boolean _autoState;
 
-  private Double _bandwidth;
+  @Nullable private Double _bandwidth;
 
   private String _channelGroup;
 
   private String _cryptoMap;
+
+  @Nullable private Double _delay;
 
   private String _description;
 
   private SortedSet<Ip> _dhcpRelayAddresses;
 
   private boolean _dhcpRelayClient;
+
+  /**
+   * True (or false) means interface was explicitly configured as (not) passive. Null means not
+   * explicit
+   */
+  @Nullable private Boolean _eigrpPassive;
 
   private String _incomingFilter;
 
@@ -138,6 +149,8 @@ public class Interface extends ComparableStructure<String> {
   @Nullable private IsisInterfaceMode _isisInterfaceMode;
 
   private int _mtu;
+
+  private final String _name;
 
   private int _nativeVlan;
 
@@ -193,18 +206,41 @@ public class Interface extends ComparableStructure<String> {
 
   private String _securityZone;
 
+  public static double getDefaultDelay(String name, ConfigurationFormat format) {
+    if (format == ConfigurationFormat.CISCO_IOS && name.startsWith("Loopback")) {
+      // TODO Cisco NX whitepaper says to use the formula, not this value. Confirm?
+      // Enhanced Interior Gateway Routing Protocol (EIGRP) Wide Metrics White Paper
+      return LOOPBACK_IOS_DELAY;
+    }
+    double bandwidth = getDefaultBandwidth(name, format);
+    if (bandwidth == 0D) {
+      // TODO EIGRP will not use this interface because cost is proportional to bandwidth^-1
+      return 0D;
+    }
+
+    /*
+     * Delay is only relevant on routers that support EIGRP (Cisco).
+     *
+     * When bandwidth > 1Gb, this formula is used. The interface may report a different value.
+     * For bandwidths < 1Gb, the delay is interface type-specific. However, all of the specific cases
+     * handled in getDefaultBandwidth also match this formula.
+     * See https://tools.ietf.org/html/rfc7868#section-5.6.1.2
+     */
+    return 1E16 / bandwidth;
+  }
+
   public String getSecurityZone() {
     return _securityZone;
   }
 
   public Interface(String name, CiscoConfiguration c) {
-    super(name);
     _active = true;
     _autoState = true;
     _allowedVlans = new ArrayList<>();
     _declaredNames = ImmutableSortedSet.of();
     _dhcpRelayAddresses = new TreeSet<>();
     _isisInterfaceMode = IsisInterfaceMode.UNSET;
+    _name = name;
     _nativeVlan = 1;
     _secondaryAddresses = new LinkedHashSet<>();
     SwitchportMode defaultSwitchportMode = c.getCf().getDefaultSwitchportMode();
@@ -292,6 +328,11 @@ public class Interface extends ComparableStructure<String> {
     return _dhcpRelayClient;
   }
 
+  @Nullable
+  public Boolean getEigrpPassive() {
+    return _eigrpPassive;
+  }
+
   public String getIncomingFilter() {
     return _incomingFilter;
   }
@@ -310,6 +351,10 @@ public class Interface extends ComparableStructure<String> {
 
   public int getMtu() {
     return _mtu;
+  }
+
+  public String getName() {
+    return _name;
   }
 
   public int getNativeVlan() {
@@ -358,6 +403,11 @@ public class Interface extends ComparableStructure<String> {
 
   public InterfaceAddress getAddress() {
     return _address;
+  }
+
+  @Nullable
+  public Double getDelay() {
+    return _delay;
   }
 
   public boolean getProxyArp() {
@@ -431,7 +481,7 @@ public class Interface extends ComparableStructure<String> {
     _autoState = autoState;
   }
 
-  public void setBandwidth(Double bandwidth) {
+  public void setBandwidth(@Nullable Double bandwidth) {
     _bandwidth = bandwidth;
   }
 
@@ -521,6 +571,14 @@ public class Interface extends ComparableStructure<String> {
 
   public void setAddress(InterfaceAddress address) {
     _address = address;
+  }
+
+  public void setDelay(@Nullable Double delayPs) {
+    _delay = delayPs;
+  }
+
+  public void setEigrpPassive(boolean eigrpPassive) {
+    _eigrpPassive = eigrpPassive;
   }
 
   public void setProxyArp(boolean proxyArp) {

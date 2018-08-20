@@ -4,11 +4,11 @@ add-batfish-option haltonconverterror
 add-batfish-option haltonparseerror
 add-batfish-option verboseparse
 
-### creating, listing, deleting testrigs
-init-testrig test_rigs/example testrig0
-init-testrig test_rigs/example testrig1
-test -raw tests/ui-focused/del-testrig.ref del-testrig testrig0
-test -raw tests/ui-focused/list-testrigs1.ref list-testrigs -nometadata
+### creating, listing, deleting snapshots
+init-snapshot test_rigs/example snapshot0
+init-snapshot test_rigs/example snapshot1
+test -raw tests/ui-focused/del-snapshot.ref del-snapshot snapshot0
+test -raw tests/ui-focused/list-snapshots1.ref list-snapshots -nometadata
 
 #### creating, listing, and deleting analyses
 test -raw tests/ui-focused/init-analysis0.ref init-analysis analysis0 tests/ui-focused/templates

@@ -1,8 +1,8 @@
 package org.batfish.representation.cisco;
 
-import org.batfish.common.util.ComparableStructure;
+import java.io.Serializable;
 
-public class SecurityZonePair extends ComparableStructure<String> {
+public class SecurityZonePair implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
@@ -10,10 +10,12 @@ public class SecurityZonePair extends ComparableStructure<String> {
 
   private String _inspectPolicyMap;
 
+  private final String _name;
+
   private final String _srcZone;
 
   public SecurityZonePair(String name, String srcZone, String dstZone) {
-    super(name);
+    _name = name;
     _srcZone = srcZone;
     _dstZone = dstZone;
   }
@@ -24,6 +26,10 @@ public class SecurityZonePair extends ComparableStructure<String> {
 
   public String getInspectPolicyMap() {
     return _inspectPolicyMap;
+  }
+
+  public String getName() {
+    return _name;
   }
 
   public String getSrcZone() {

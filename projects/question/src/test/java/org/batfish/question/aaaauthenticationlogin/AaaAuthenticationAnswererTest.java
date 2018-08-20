@@ -10,13 +10,13 @@ import com.google.common.collect.ImmutableSet;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Set;
+import org.batfish.datamodel.AaaAuthenticationLoginList;
 import org.batfish.datamodel.AuthenticationMethod;
+import org.batfish.datamodel.Line;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
-import org.batfish.datamodel.vendor_family.cisco.AaaAuthenticationLoginList;
-import org.batfish.datamodel.vendor_family.cisco.Line;
 import org.junit.Test;
 
 public class AaaAuthenticationAnswererTest {

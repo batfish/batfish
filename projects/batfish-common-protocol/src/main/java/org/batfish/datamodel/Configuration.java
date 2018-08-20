@@ -10,6 +10,7 @@ import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Map;
@@ -24,7 +25,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
-import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -33,7 +33,7 @@ import org.batfish.datamodel.vendor_family.VendorFamily;
 @JsonSchemaDescription(
     "A Configuration represents an autonomous network device, such as a router, host, switch, or "
         + "firewall.")
-public final class Configuration extends ComparableStructure<String> {
+public final class Configuration implements Serializable {
 
   public static class Builder extends NetworkFactoryBuilder<Configuration> {
 
@@ -129,6 +129,8 @@ public final class Configuration extends ComparableStructure<String> {
 
   private static final String PROP_IP_SPACES = "ipSpaces";
 
+  private static final String PROP_IP_SPACE_METADATA = "ipSpaceMetadata";
+
   private static final String PROP_IPSEC_PEER_CONFIGS = "ipsecPeerConfigs";
 
   private static final String PROP_IPSEC_PHASE2_POLICIES = "ipsecPhase2Policies";
@@ -142,6 +144,8 @@ public final class Configuration extends ComparableStructure<String> {
   private static final String PROP_IPSEC_VPNS = "ipsecVpns";
 
   private static final String PROP_LOGGING_SOURCE_INTERFACE = "loggingSourceInterface";
+
+  private static final String PROP_NAME = "name";
 
   private static final String PROP_NTP_SOURCE_INTERFACE = "ntpSourceInterface";
 
@@ -207,6 +211,8 @@ public final class Configuration extends ComparableStructure<String> {
 
   private NavigableMap<String, IpSpace> _ipSpaces;
 
+  private NavigableMap<String, IpSpaceMetadata> _ipSpaceMetadata;
+
   private NavigableMap<String, IpsecPeerConfig> _ipsecPeerConfigs;
 
   private NavigableMap<String, IpsecPhase2Policy> _ipsecPhase2Policies;
@@ -223,7 +229,9 @@ public final class Configuration extends ComparableStructure<String> {
 
   private String _loggingSourceInterface;
 
-  /** Normal => Excluding extended and reserved vlans that should not be modified or deleted. */
+  private final String _name;
+
+  /** Normal =&gt; Excluding extended and reserved vlans that should not be modified or deleted. */
   private SubRange _normalVlanRange;
 
   private NavigableSet<String> _ntpServers;
@@ -245,8 +253,6 @@ public final class Configuration extends ComparableStructure<String> {
   private NavigableMap<String, Route6FilterList> _route6FilterLists;
 
   private NavigableMap<String, RouteFilterList> _routeFilterLists;
-
-  private transient NavigableSet<Route> _routes;
 
   private NavigableMap<String, RoutingPolicy> _routingPolicies;
 
@@ -271,16 +277,20 @@ public final class Configuration extends ComparableStructure<String> {
   private NavigableMap<String, Zone> _zones;
 
   @JsonCreator
-  public Configuration(
+  private static Configuration makeConfiguration(
       @JsonProperty(PROP_NAME) String hostname,
-      @Nonnull @JsonProperty(PROP_CONFIGURATION_FORMAT) ConfigurationFormat configurationFormat) {
-    super(hostname);
-    _asPathAccessLists = new TreeMap<>();
-    _authenticationKeyChains = new TreeMap<>();
-    _communityLists = new TreeMap<>();
+      @Nullable @JsonProperty(PROP_CONFIGURATION_FORMAT) ConfigurationFormat configurationFormat) {
     if (configurationFormat == null) {
       throw new BatfishException("Configuration format cannot be null");
     }
+    return new Configuration(hostname, configurationFormat);
+  }
+
+  public Configuration(String hostname, @Nonnull ConfigurationFormat configurationFormat) {
+    _name = hostname;
+    _asPathAccessLists = new TreeMap<>();
+    _authenticationKeyChains = new TreeMap<>();
+    _communityLists = new TreeMap<>();
     _configurationFormat = configurationFormat;
     _dnsServers = new TreeSet<>();
     _domainName = null;
@@ -294,6 +304,7 @@ public final class Configuration extends ComparableStructure<String> {
     _ipAccessLists = new TreeMap<>();
     _ip6AccessLists = new TreeMap<>();
     _ipSpaces = new TreeMap<>();
+    _ipSpaceMetadata = new TreeMap<>();
     _ipsecPeerConfigs = ImmutableSortedMap.of();
     _ipsecPhase2Policies = ImmutableSortedMap.of();
     _ipsecPhase2Proposals = ImmutableSortedMap.of();
@@ -437,7 +448,7 @@ public final class Configuration extends ComparableStructure<String> {
   @JsonProperty(PROP_NAME)
   @JsonPropertyDescription("Hostname of this node.")
   public String getHostname() {
-    return _key;
+    return _name;
   }
 
   @JsonProperty(PROP_IKE_GATEWAYS)
@@ -501,6 +512,11 @@ public final class Configuration extends ComparableStructure<String> {
   @JsonProperty(PROP_IP_SPACES)
   public NavigableMap<String, IpSpace> getIpSpaces() {
     return _ipSpaces;
+  }
+
+  @JsonProperty(PROP_IP_SPACE_METADATA)
+  public NavigableMap<String, IpSpaceMetadata> getIpSpaceMetadata() {
+    return _ipSpaceMetadata;
   }
 
   @JsonProperty(PROP_IPSEC_PHASE2_POLICIES)
@@ -595,11 +611,6 @@ public final class Configuration extends ComparableStructure<String> {
   @JsonPropertyDescription("Dictionary of all IPV4 route filter lists for this node.")
   public NavigableMap<String, RouteFilterList> getRouteFilterLists() {
     return _routeFilterLists;
-  }
-
-  @JsonIgnore
-  public NavigableSet<Route> getRoutes() {
-    return _routes;
   }
 
   @JsonProperty(PROP_ROUTING_POLICIES)
@@ -901,5 +912,10 @@ public final class Configuration extends ComparableStructure<String> {
                 .stream()
                 .collect(Collectors.toMap(Entry::getKey, e -> e.getValue().simplify())));
     _routingPolicies = simpleRoutingPolicies;
+  }
+
+  @Override
+  public String toString() {
+    return _name;
   }
 }

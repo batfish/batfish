@@ -2,8 +2,8 @@ package org.batfish.job;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
-import java.nio.file.Path;
 import java.util.Map;
+import javax.annotation.Nonnull;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BatfishLogger.BatfishLoggerHistory;
@@ -17,7 +17,7 @@ public class ParseVendorConfigurationResult
     extends BatfishJobResult<
         Map<String, VendorConfiguration>, ParseVendorConfigurationAnswerElement> {
 
-  private final Path _file;
+  private final String _filename;
 
   private ParseTreeSentences _parseTree;
 
@@ -30,21 +30,24 @@ public class ParseVendorConfigurationResult
   private static Multimap<String, String> _duplicateHostnames = HashMultimap.create();
 
   public ParseVendorConfigurationResult(
-      long elapsedTime, BatfishLoggerHistory history, Path file, Throwable failureCause) {
+      long elapsedTime,
+      BatfishLoggerHistory history,
+      String filename,
+      @Nonnull Throwable failureCause) {
     super(elapsedTime, history, failureCause);
-    _file = file;
+    _filename = filename;
     _status = ParseStatus.FAILED;
   }
 
   public ParseVendorConfigurationResult(
       long elapsedTime,
       BatfishLoggerHistory history,
-      Path file,
+      String filename,
       VendorConfiguration vc,
       Warnings warnings,
       ParseTreeSentences parseTree) {
     super(elapsedTime, history);
-    _file = file;
+    _filename = filename;
     _parseTree = parseTree;
     _vc = vc;
     _warnings = warnings;
@@ -55,11 +58,11 @@ public class ParseVendorConfigurationResult
   public ParseVendorConfigurationResult(
       long elapsedTime,
       BatfishLoggerHistory history,
-      Path file,
+      String filename,
       Warnings warnings,
       ParseStatus status) {
     super(elapsedTime, history);
-    _file = file;
+    _filename = filename;
     _status = status;
     _warnings = warnings;
   }
@@ -72,7 +75,7 @@ public class ParseVendorConfigurationResult
     } else if (_vc != null) {
       terseLogLevelPrefix = _vc.getHostname() + ": ";
     } else {
-      terseLogLevelPrefix = _file + ": ";
+      terseLogLevelPrefix = _filename + ": ";
     }
     logger.append(_history, terseLogLevelPrefix);
   }
@@ -116,22 +119,22 @@ public class ParseVendorConfigurationResult
         answerElement.getParseStatus().put(hostname, ParseStatus.PARTIALLY_UNRECOGNIZED);
       } else {
         answerElement.getParseStatus().put(hostname, ParseStatus.PASSED);
-        answerElement.getFileMap().put(hostname, _file.getFileName().toString());
+        answerElement.getFileMap().put(hostname, _filename);
       }
 
     } else {
-      String filename = _file.getFileName().toString();
-      answerElement.getParseStatus().put(filename, _status);
+      answerElement.getParseStatus().put(_filename, _status);
       if (_status == ParseStatus.FAILED) {
+        assert _failureCause != null; // status == FAILED, failureCause must be non-null
         answerElement
             .getErrors()
-            .put(filename, ((BatfishException) _failureCause).getBatfishStackTrace());
+            .put(_filename, ((BatfishException) _failureCause).getBatfishStackTrace());
       }
     }
   }
 
-  public Path getFile() {
-    return _file;
+  public String getFilename() {
+    return _filename;
   }
 
   @Override
@@ -158,7 +161,7 @@ public class ParseVendorConfigurationResult
     if (_vc == null) {
       return "<EMPTY OR UNSUPPORTED FORMAT>";
     } else if (_vc.getHostname() == null) {
-      return "<File: \"" + _file + "\" has indeterminate hostname>";
+      return "<File: \"" + _filename + "\" has indeterminate hostname>";
     } else {
       return "<" + _vc.getHostname() + ">";
     }

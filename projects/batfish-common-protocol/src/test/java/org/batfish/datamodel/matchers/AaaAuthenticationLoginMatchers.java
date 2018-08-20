@@ -1,9 +1,9 @@
 package org.batfish.datamodel.matchers;
 
 import java.util.SortedMap;
+import org.batfish.datamodel.AaaAuthenticationLoginList;
 import org.batfish.datamodel.matchers.AaaAuthenticationLoginMatchersImpl.HasListForKey;
 import org.batfish.datamodel.matchers.AaaAuthenticationLoginMatchersImpl.HasLists;
-import org.batfish.datamodel.vendor_family.cisco.AaaAuthenticationLoginList;
 import org.hamcrest.Matcher;
 
 public class AaaAuthenticationLoginMatchers {

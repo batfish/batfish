@@ -319,6 +319,8 @@ final class CiscoNxConversions {
           !firstNonNull(
               naf4.getSuppressInactive(), af4 != null ? af4.getSuppressInactive() : Boolean.FALSE));
       newNeighborBuilder.setAllowLocalAsIn(firstNonNull(naf4.getAllowAsIn(), Boolean.FALSE));
+      newNeighborBuilder.setAllowRemoteAsOut(
+          firstNonNull(naf4.getDisablePeerAsCheck(), Boolean.FALSE));
       String inboundMap = naf4.getInboundRouteMap();
       newNeighborBuilder.setImportPolicy(
           inboundMap != null && c.getRoutingPolicies().containsKey(inboundMap) ? inboundMap : null);

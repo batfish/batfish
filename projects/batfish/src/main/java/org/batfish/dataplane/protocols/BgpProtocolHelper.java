@@ -7,6 +7,8 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.BgpActivePeerConfig;
+import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpSessionProperties;
@@ -38,6 +40,9 @@ public class BgpProtocolHelper {
       throws BgpRoutePropagationException {
 
     BgpRoute.Builder transformedOutgoingRouteBuilder = new BgpRoute.Builder();
+
+    // Set the tag
+    transformedOutgoingRouteBuilder.setTag(route.getTag());
 
     transformedOutgoingRouteBuilder.setReceivedFromIp(fromNeighbor.getLocalIp());
     RoutingProtocol remoteRouteProtocol = route.getProtocol();
@@ -165,14 +170,19 @@ public class BgpProtocolHelper {
       BgpRoute remoteIbgpRoute = (BgpRoute) route;
       localPreference = remoteIbgpRoute.getLocalPreference();
     }
-    if (nextHopIp.equals(Route.UNSET_ROUTE_NEXT_HOP_IP)) {
-      // should only happen for ibgp
-      String nextHopInterface = route.getNextHopInterface();
-      InterfaceAddress nextHopAddress = fromVrf.getInterfaces().get(nextHopInterface).getAddress();
-      if (nextHopAddress == null) {
-        throw new BgpRoutePropagationException("Route's nextHopInterface has no address");
+    if (Route.UNSET_ROUTE_NEXT_HOP_IP.equals(nextHopIp)) {
+      // should only happen for ibgp or dynamic bgp
+      if (fromNeighbor instanceof BgpPassivePeerConfig) {
+        nextHopIp = ((BgpActivePeerConfig) toNeighbor).getPeerAddress();
+      } else {
+        String nextHopInterface = route.getNextHopInterface();
+        InterfaceAddress nextHopAddress =
+            fromVrf.getInterfaces().get(nextHopInterface).getAddress();
+        if (nextHopAddress == null) {
+          throw new BgpRoutePropagationException("Route's nextHopInterface has no address");
+        }
+        nextHopIp = nextHopAddress.getIp();
       }
-      nextHopIp = nextHopAddress.getIp();
     }
     transformedOutgoingRouteBuilder.setNextHopIp(nextHopIp);
     transformedOutgoingRouteBuilder.setLocalPreference(localPreference);

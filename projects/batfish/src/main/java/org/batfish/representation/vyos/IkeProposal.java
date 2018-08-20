@@ -1,10 +1,10 @@
 package org.batfish.representation.vyos;
 
-import org.batfish.common.util.ComparableStructure;
+import java.io.Serializable;
 import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.EncryptionAlgorithm;
 
-public class IkeProposal extends ComparableStructure<Integer> {
+public class IkeProposal implements Serializable {
 
   /** */
   private static final long serialVersionUID = 1L;
@@ -14,10 +14,6 @@ public class IkeProposal extends ComparableStructure<Integer> {
   private EncryptionAlgorithm _encryptionAlgorithm;
 
   private HashAlgorithm _hashAlgorithm;
-
-  public IkeProposal(Integer name) {
-    super(name);
-  }
 
   public DiffieHellmanGroup getDhGroup() {
     return _dhGroup;

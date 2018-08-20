@@ -290,15 +290,15 @@ public class BgpSessionStatusAnswerer extends Answerer {
                 false,
                 true));
 
+    String textDesc =
+        String.format(
+            "On ${%s} session ${%s}:${%s} has configured status ${%s}.",
+            COL_NODE, COL_VRF_NAME, COL_REMOTE_PREFIX, COL_CONFIGURED_STATUS);
     DisplayHints dhints = question.getDisplayHints();
-    if (dhints == null) {
-      dhints = new DisplayHints();
-      dhints.setTextDesc(
-          String.format(
-              "On ${%s} session ${%s}:${%s} has configured status ${%s}.",
-              COL_NODE, COL_VRF_NAME, COL_REMOTE_PREFIX, COL_CONFIGURED_STATUS));
+    if (dhints != null && dhints.getTextDesc() != null) {
+      textDesc = dhints.getTextDesc();
     }
-    return new TableMetadata(columnMetadata, dhints);
+    return new TableMetadata(columnMetadata, textDesc);
   }
 
   /**

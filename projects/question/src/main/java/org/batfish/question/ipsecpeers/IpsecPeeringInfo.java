@@ -4,6 +4,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.question.ipsecpeers.IpsecPeeringInfo.IpsecPeeringStatus.MISSING_END_POINT;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
 
 /** Captures the configuration state of an IPSec peering */
@@ -23,9 +24,9 @@ public class IpsecPeeringInfo {
 
   @Nonnull private Ip _initiatorIp;
 
-  private String _initiatorTunnelInterface;
+  @Nullable private String _initiatorTunnelInterface;
 
-  private String _responderHostname;
+  @Nullable private String _responderHostname;
 
   private String _responderInterface;
 
@@ -39,8 +40,8 @@ public class IpsecPeeringInfo {
       @Nonnull String initiatorHostname,
       @Nonnull String initiatorInterface,
       @Nonnull Ip initiatorIp,
-      String initiatorTunnelInterface,
-      String responderHostname,
+      @Nullable String initiatorTunnelInterface,
+      @Nullable String responderHostname,
       String responderInterface,
       Ip responderIp,
       String responderTunnelInterface,
@@ -83,6 +84,7 @@ public class IpsecPeeringInfo {
     return _responderInterface;
   }
 
+  @Nullable
   public String getResponderTunnelInterface() {
     return _responderTunnelInterface;
   }
@@ -134,7 +136,7 @@ public class IpsecPeeringInfo {
       return this;
     }
 
-    public Builder setInitiatorTunnelInterface(String initiatorTunnelInterface) {
+    public Builder setInitiatorTunnelInterface(@Nullable String initiatorTunnelInterface) {
       _initiatorTunnelInterface = initiatorTunnelInterface;
       return this;
     }
@@ -154,7 +156,7 @@ public class IpsecPeeringInfo {
       return this;
     }
 
-    public Builder setResponderTunnelInterface(String responderTunnelInterface) {
+    public Builder setResponderTunnelInterface(@Nullable String responderTunnelInterface) {
       _responderTunnelInterface = responderTunnelInterface;
       return this;
     }

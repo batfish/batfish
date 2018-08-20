@@ -1,0 +1,67 @@
+{
+  "class" : "org.batfish.question.NeighborsQuestionPlugin$NeighborsQuestion",
+  "neighborTypes" : [
+    "ebgp"
+  ],
+  "node1Regex" : ".*",
+  "node2Regex" : ".*",
+  "roleDimension" : "default",
+  "style" : "summary",
+  "differential" : false,
+  "includeOneTableKeys" : false,
+  "instance" : {
+    "description" : "Lists neighbor relationships in the testrig.",
+    "instanceName" : "qname",
+    "longDescription" : "Details coming...",
+    "tags" : [
+      "consistencyAcrossConfigs",
+      "topology"
+    ],
+    "variables" : {
+      "neighborTypes" : {
+        "allowedValues" : [
+          "ebgp",
+          "ibgp",
+          "lan",
+          "ospf"
+        ],
+        "description" : "Types of neighbor relationships to include",
+        "minElements" : 0,
+        "optional" : true,
+        "type" : "string",
+        "value" : [
+          "ebgp"
+        ]
+      },
+      "node1Regex" : {
+        "description" : "Only include edges whose first node's name matches this regex",
+        "optional" : false,
+        "type" : "javaRegex",
+        "value" : ".*"
+      },
+      "node2Regex" : {
+        "description" : "Only include edges whose second node's name matches this regex",
+        "optional" : false,
+        "type" : "javaRegex",
+        "value" : ".*"
+      },
+      "roleDimension" : {
+        "description" : "Role dimension to run the question on",
+        "optional" : true,
+        "type" : "string",
+        "value" : "default"
+      },
+      "style" : {
+        "allowedValues" : [
+          "role",
+          "summary",
+          "verbose"
+        ],
+        "description" : "String indicating the style of information requested about each edge",
+        "optional" : false,
+        "type" : "string",
+        "value" : "summary"
+      }
+    }
+  }
+}

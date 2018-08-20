@@ -14,8 +14,10 @@ import java.util.NavigableSet;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import javax.annotation.Nullable;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
+import org.batfish.datamodel.eigrp.EigrpProcess;
 import org.batfish.datamodel.isis.IsisProcess;
 import org.batfish.datamodel.ospf.OspfProcess;
 
@@ -63,6 +65,8 @@ public class Vrf extends ComparableStructure<String> {
 
   private static final String PROP_ISIS_PROCESS = "isisProcess";
 
+  private static final String PROP_EIGRP_PROCESS = "eigrpProcess";
+
   private static final String PROP_OSPF_PROCESS = "ospfProcess";
 
   private static final String PROP_RIP_PROCESS = "ripProcess";
@@ -86,6 +90,8 @@ public class Vrf extends ComparableStructure<String> {
 
   private NavigableMap<String, Interface> _interfaces;
 
+  @Nullable private EigrpProcess _eigrpProcess;
+
   private IsisProcess _isisProcess;
 
   private transient NavigableSet<BgpAdvertisement> _originatedAdvertisements;
@@ -94,7 +100,7 @@ public class Vrf extends ComparableStructure<String> {
 
   private transient NavigableSet<BgpAdvertisement> _originatedIbgpAdvertisements;
 
-  private OspfProcess _ospfProcess;
+  @Nullable private OspfProcess _ospfProcess;
 
   private transient NavigableSet<BgpAdvertisement> _receivedAdvertisements;
 
@@ -151,6 +157,13 @@ public class Vrf extends ComparableStructure<String> {
   @JsonPropertyDescription("Generated IPV4 routes for this VRF")
   public NavigableSet<GeneratedRoute> getGeneratedRoutes() {
     return _generatedRoutes;
+  }
+
+  @JsonProperty(PROP_EIGRP_PROCESS)
+  @JsonPropertyDescription("EIGRP routing process for this VRF")
+  @Nullable
+  public EigrpProcess getEigrpProcess() {
+    return _eigrpProcess;
   }
 
   @JsonProperty(PROP_INTERFACES)
@@ -302,6 +315,11 @@ public class Vrf extends ComparableStructure<String> {
   @JsonProperty(PROP_ISIS_PROCESS)
   public void setIsisProcess(IsisProcess process) {
     _isisProcess = process;
+  }
+
+  @JsonProperty(PROP_EIGRP_PROCESS)
+  public void setEigrpProcess(@Nullable EigrpProcess process) {
+    _eigrpProcess = process;
   }
 
   @JsonProperty(PROP_OSPF_PROCESS)

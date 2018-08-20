@@ -1,6 +1,7 @@
 package org.batfish.specifier;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import org.batfish.common.util.CommonUtil;
@@ -8,6 +9,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.main.Batfish;
+import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.role.NodeRole;
 import org.batfish.role.NodeRoleDimension;
 
@@ -36,6 +38,11 @@ public class SpecifierContextImpl implements SpecifierContext {
   @Override
   public Map<String, Configuration> getConfigs() {
     return _configs;
+  }
+
+  @Override
+  public Optional<ReferenceBook> getReferenceBook(String bookName) {
+    return _batfish.getReferenceLibraryData().getReferenceBook(bookName);
   }
 
   @Nonnull

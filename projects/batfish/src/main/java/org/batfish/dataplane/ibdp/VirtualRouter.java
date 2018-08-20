@@ -16,6 +16,7 @@ import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.graph.Network;
 import com.google.common.graph.ValueGraph;
+import java.io.Serializable;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Collections;
@@ -40,7 +41,6 @@ import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
-import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpActivePeerConfig;
@@ -55,6 +55,9 @@ import org.batfish.datamodel.BgpTieBreaker;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.Edge;
+import org.batfish.datamodel.EigrpExternalRoute;
+import org.batfish.datamodel.EigrpInternalRoute;
+import org.batfish.datamodel.EigrpRoute;
 import org.batfish.datamodel.Fib;
 import org.batfish.datamodel.FibImpl;
 import org.batfish.datamodel.GeneratedRoute;
@@ -81,6 +84,10 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.eigrp.EigrpEdge;
+import org.batfish.datamodel.eigrp.EigrpInterface;
+import org.batfish.datamodel.eigrp.EigrpMetric;
+import org.batfish.datamodel.eigrp.EigrpProcess;
 import org.batfish.datamodel.isis.IsisEdge;
 import org.batfish.datamodel.isis.IsisInterfaceLevelSettings;
 import org.batfish.datamodel.isis.IsisInterfaceMode;
@@ -103,6 +110,9 @@ import org.batfish.dataplane.protocols.OspfProtocolHelper;
 import org.batfish.dataplane.rib.BgpBestPathRib;
 import org.batfish.dataplane.rib.BgpMultipathRib;
 import org.batfish.dataplane.rib.ConnectedRib;
+import org.batfish.dataplane.rib.EigrpExternalRib;
+import org.batfish.dataplane.rib.EigrpInternalRib;
+import org.batfish.dataplane.rib.EigrpRib;
 import org.batfish.dataplane.rib.IsisLevelRib;
 import org.batfish.dataplane.rib.IsisRib;
 import org.batfish.dataplane.rib.LocalRib;
@@ -121,7 +131,7 @@ import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 import org.batfish.dataplane.rib.StaticRib;
 import org.batfish.dataplane.topology.BgpEdgeId;
 
-public class VirtualRouter extends ComparableStructure<String> {
+public class VirtualRouter implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
@@ -149,6 +159,26 @@ public class VirtualRouter extends ComparableStructure<String> {
 
   /** The RIB containing connected routes */
   private transient ConnectedRib _connectedRib;
+
+  /** Helper RIB containing EIGRP external paths */
+  private transient EigrpExternalRib _eigrpExternalRib;
+
+  private transient EigrpExternalRib _eigrpExternalStagingRib;
+
+  /** Incoming messages into this router from each EIGRP adjacency */
+  private transient SortedMap<EigrpEdge, Queue<RouteAdvertisement<EigrpExternalRoute>>>
+      _eigrpIncomingRoutes;
+
+  /** Helper RIB containing all EIGRP paths internal to this router's ASN. */
+  private transient EigrpInternalRib _eigrpInternalRib;
+
+  /**
+   * Helper RIB containing paths obtained with EIGRP during current iteration. An Adj-RIB of sorts.
+   */
+  private transient EigrpInternalRib _eigrpInternalStagingRib;
+
+  /** Helper RIB containing EIGRP internal and external paths. */
+  private transient EigrpRib _eigrpRib;
 
   /** Helper RIB containing best paths obtained with external BGP */
   transient BgpBestPathRib _ebgpBestPathRib;
@@ -199,6 +229,8 @@ public class VirtualRouter extends ComparableStructure<String> {
   /** Keeps track of changes to the main RIB */
   private transient RibDelta.Builder<AbstractRoute> _mainRibRouteDeltaBuiler;
 
+  private final String _name;
+
   transient OspfExternalType1Rib _ospfExternalType1Rib;
 
   transient OspfExternalType1Rib _ospfExternalType1StagingRib;
@@ -229,6 +261,9 @@ public class VirtualRouter extends ComparableStructure<String> {
 
   /** Set of all received BGP advertisements in {@link BgpAdvertisement} form */
   private Set<BgpAdvertisement> _receivedBgpAdvertisements;
+
+  /** Set of all valid EIGRP external routes that we know about */
+  private final Map<Prefix, SortedSet<EigrpExternalRoute>> _receivedEigrpExternalRoutes;
 
   /** Set of all valid IS-IS level-1 routes that we know about */
   private Map<Prefix, SortedSet<IsisRoute>> _receivedIsisL1Routes;
@@ -273,13 +308,14 @@ public class VirtualRouter extends ComparableStructure<String> {
   final Vrf _vrf;
 
   VirtualRouter(final String name, final Configuration c) {
-    super(name);
     _c = c;
+    _name = name;
     _vrf = c.getVrfs().get(name);
     initRibs();
     // Keep track of sent and received advertisements
     _receivedBgpAdvertisements = new LinkedHashSet<>();
     _sentBgpAdvertisements = new LinkedHashSet<>();
+    _receivedEigrpExternalRoutes = new TreeMap<>();
     _receivedIsisL1Routes = new TreeMap<>();
     _receivedIsisL2Routes = new TreeMap<>();
     _receivedOspExternalType1Routes = new TreeMap<>();
@@ -387,7 +423,46 @@ public class VirtualRouter extends ComparableStructure<String> {
     importRib(_independentRib, _staticInterfaceRib);
     importRib(_mainRib, _independentRib);
     initIntraAreaOspfRoutes();
+    initInternalEigrpRoutes();
     initBaseRipRoutes();
+  }
+
+  /** Initialize internal EIGRP routes from the interface prefixes */
+  private void initInternalEigrpRoutes() {
+    EigrpProcess proc = _vrf.getEigrpProcess();
+    if (proc == null) {
+      return; // nothing to do
+    }
+    /*
+     * Init internal routes from connected routes. For each interface prefix, construct a new
+     * internal route.
+     */
+    for (String ifaceName : _vrf.getInterfaceNames()) {
+      Interface iface = _c.getInterfaces().get(ifaceName);
+      if (!iface.getActive()
+          || iface.getEigrp() == null
+          || !iface.getEigrp().getEnabled()
+          || iface.getEigrp().getMetric() == null) {
+        continue;
+      }
+      Set<Prefix> allNetworkPrefixes =
+          iface
+              .getAllAddresses()
+              .stream()
+              .map(InterfaceAddress::getPrefix)
+              .collect(Collectors.toSet());
+      for (Prefix prefix : allNetworkPrefixes) {
+        EigrpInternalRoute route =
+            EigrpInternalRoute.builder()
+                .setAdmin(
+                    RoutingProtocol.EIGRP.getDefaultAdministrativeCost(_c.getConfigurationFormat()))
+                .setEigrpMetric(iface.getEigrp().getMetric())
+                .setNetwork(prefix)
+                .setNextHopInterface(ifaceName)
+                .build();
+        _eigrpInternalRib.mergeRoute(route);
+      }
+    }
   }
 
   /**
@@ -395,13 +470,15 @@ public class VirtualRouter extends ComparableStructure<String> {
    *
    * @param allNodes map of all network nodes, keyed by hostname
    * @param bgpTopology the bgp peering relationships
+   * @param eigrpTopology The topology representing EIGRP adjacencies
    */
   void initForEgpComputation(
       final Map<String, Node> allNodes,
       Topology topology,
       ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology,
+      Network<EigrpInterface, EigrpEdge> eigrpTopology,
       Network<IsisNode, IsisEdge> isisTopology) {
-    initQueuesAndDeltaBuilders(allNodes, topology, bgpTopology, isisTopology);
+    initQueuesAndDeltaBuilders(allNodes, topology, bgpTopology, eigrpTopology, isisTopology);
   }
 
   /**
@@ -410,16 +487,21 @@ public class VirtualRouter extends ComparableStructure<String> {
    * @param allNodes map of all network nodes, keyed by hostname
    * @param topology Layer 3 network topology
    * @param bgpTopology the bgp peering relationships
+   * @param eigrpTopology The topology representing EIGRP adjacencies
    */
   @VisibleForTesting
   void initQueuesAndDeltaBuilders(
       final Map<String, Node> allNodes,
       final Topology topology,
       ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology,
+      Network<EigrpInterface, EigrpEdge> eigrpTopology,
       Network<IsisNode, IsisEdge> isisTopology) {
 
     // Initialize message queues for each BGP neighbor
     initBgpQueues(bgpTopology);
+
+    // Initialize message queues for each EIGRP neighbor
+    initEigrpQueues(eigrpTopology);
 
     initIsisQueues(isisTopology);
 
@@ -477,6 +559,25 @@ public class VirtualRouter extends ComparableStructure<String> {
               .collect(
                   toImmutableSortedMap(Function.identity(), e -> new ConcurrentLinkedQueue<>()));
     }
+  }
+
+  /**
+   * Initialize incoming EIGRP message queues for each adjacency
+   *
+   * @param eigrpTopology The topology representing EIGRP adjacencies
+   */
+  private void initEigrpQueues(Network<EigrpInterface, EigrpEdge> eigrpTopology) {
+    if (_vrf.getEigrpProcess() == null) {
+      _eigrpIncomingRoutes = ImmutableSortedMap.of();
+      return;
+    }
+    _eigrpIncomingRoutes =
+        _vrf.getInterfaceNames()
+            .stream()
+            .map(ifaceName -> new EigrpInterface(_c.getHostname(), ifaceName, _vrf.getName()))
+            .filter(eigrpTopology.nodes()::contains)
+            .flatMap(n -> eigrpTopology.inEdges(n).stream())
+            .collect(toImmutableSortedMap(Function.identity(), e -> new ConcurrentLinkedQueue<>()));
   }
 
   private void initIsisQueues(Network<IsisNode, IsisEdge> isisTopology) {
@@ -636,6 +737,7 @@ public class VirtualRouter extends ComparableStructure<String> {
         // Non-null metric means we generate a new summary and put it in the RIB
         OspfInterAreaRoute summaryRoute =
             new OspfInterAreaRoute(prefix, Ip.ZERO, admin, metric, areaNum);
+        summaryRoute.setNonRouting(true);
         if (_ospfInterAreaStagingRib.mergeRouteGetDelta(summaryRoute) != null) {
           changed = true;
         }
@@ -861,7 +963,7 @@ public class VirtualRouter extends ComparableStructure<String> {
                     transformedOutgoingRoute,
                     transformedIncomingRouteBuilder,
                     advert.getSrcIp(),
-                    _key,
+                    _name,
                     Direction.IN);
           }
         }
@@ -1041,6 +1143,38 @@ public class VirtualRouter extends ComparableStructure<String> {
     }
   }
 
+  /**
+   * Computes an exportable EIGRP route from policy and existing routes
+   *
+   * @param potentialExportRoute Route to consider exporting
+   * @param exportPolicy Routing policy to determine whether and how to export
+   * @param proc EIGRP process which may export a route
+   * @return The computed export route or null if no route will be exported
+   */
+  @Nullable
+  private EigrpExternalRoute computeEigrpExportRoute(
+      AbstractRoute potentialExportRoute, RoutingPolicy exportPolicy, EigrpProcess proc) {
+    EigrpExternalRoute.Builder outputRouteBuilder = new EigrpExternalRoute.Builder();
+    // Export based on the policy result of processing the potentialExportRoute
+    boolean accept =
+        exportPolicy.process(potentialExportRoute, outputRouteBuilder, null, _name, Direction.OUT);
+    if (!accept) {
+      return null;
+    }
+    outputRouteBuilder.setAdmin(
+        RoutingProtocol.EIGRP_EX.getDefaultAdministrativeCost(_c.getConfigurationFormat()));
+    if (potentialExportRoute instanceof EigrpExternalRoute) {
+      EigrpExternalRoute externalRoute = (EigrpExternalRoute) potentialExportRoute;
+      outputRouteBuilder.setAsn(externalRoute.getAsn());
+    } else {
+      outputRouteBuilder.setAsn(proc.getAsn());
+    }
+    outputRouteBuilder.setNetwork(potentialExportRoute.getNetwork());
+    EigrpExternalRoute outputRoute = outputRouteBuilder.build();
+    outputRoute.setNonRouting(true);
+    return outputRoute;
+  }
+
   @Nullable
   @VisibleForTesting
   OspfExternalRoute computeOspfExportRoute(
@@ -1048,7 +1182,7 @@ public class VirtualRouter extends ComparableStructure<String> {
     OspfExternalRoute.Builder outputRouteBuilder = new OspfExternalRoute.Builder();
     // Export based on the policy result of processing the potentialExportRoute
     boolean accept =
-        exportPolicy.process(potentialExportRoute, outputRouteBuilder, null, _key, Direction.OUT);
+        exportPolicy.process(potentialExportRoute, outputRouteBuilder, null, _name, Direction.OUT);
     if (!accept) {
       return null;
     }
@@ -1076,6 +1210,43 @@ public class VirtualRouter extends ComparableStructure<String> {
     OspfExternalRoute outputRoute = outputRouteBuilder.build();
     outputRoute.setNonRouting(true);
     return outputRoute;
+  }
+
+  /**
+   * Initial computation of all exportable EIGRP routes
+   *
+   * @param allNodes map of all nodes, keyed by hostname
+   */
+  void initEigrpExports(Map<String, Node> allNodes) {
+    EigrpProcess proc = _vrf.getEigrpProcess();
+    // Nothing to do
+    if (proc == null) {
+      return;
+    }
+
+    // get EIGRP export policy name
+    String exportPolicyName = proc.getExportPolicy();
+    if (exportPolicyName == null) {
+      return; // nothing to export
+    }
+
+    RoutingPolicy exportPolicy = _c.getRoutingPolicies().get(exportPolicyName);
+    if (exportPolicy == null) {
+      return; // nothing to export
+    }
+
+    // For each route in the previous RIB, compute an export route and add it
+    RibDelta.Builder<EigrpExternalRoute> builder = new Builder<>(_eigrpExternalRib);
+
+    for (AbstractRoute potentialExport : _mainRib.getRoutes()) {
+      EigrpExternalRoute outputRoute = computeEigrpExportRoute(potentialExport, exportPolicy, proc);
+      if (outputRoute == null) {
+        continue; // no need to export
+      }
+      builder.from(_eigrpExternalRib.mergeRouteGetDelta(outputRoute));
+    }
+
+    queueOutgoingEigrpExternalRoutes(allNodes, builder.build());
   }
 
   void initIsisExports(Map<String, Node> allNodes, NetworkConfigurations nc) {
@@ -1229,6 +1400,11 @@ public class VirtualRouter extends ComparableStructure<String> {
     _ebgpMultipathRib = new BgpMultipathRib(mpTieBreaker);
     _ebgpStagingRib = new BgpMultipathRib(mpTieBreaker);
     _generatedRib = new Rib();
+    _eigrpExternalRib = new EigrpExternalRib(_receivedEigrpExternalRoutes);
+    _eigrpExternalStagingRib = new EigrpExternalRib(null);
+    _eigrpInternalRib = new EigrpInternalRib();
+    _eigrpInternalStagingRib = new EigrpInternalRib();
+    _eigrpRib = new EigrpRib();
     _ibgpMultipathRib = new BgpMultipathRib(mpTieBreaker);
     _ibgpStagingRib = new BgpMultipathRib(mpTieBreaker);
     _independentRib = new Rib();
@@ -1246,8 +1422,8 @@ public class VirtualRouter extends ComparableStructure<String> {
     _ospfExternalType2StagingRib = new OspfExternalType2Rib(getHostname(), null);
     _ospfInterAreaRib = new OspfInterAreaRib();
     _ospfInterAreaStagingRib = new OspfInterAreaRib();
-    _ospfIntraAreaRib = new OspfIntraAreaRib(this);
-    _ospfIntraAreaStagingRib = new OspfIntraAreaRib(this);
+    _ospfIntraAreaRib = new OspfIntraAreaRib();
+    _ospfIntraAreaStagingRib = new OspfIntraAreaRib();
     _ospfRib = new OspfRib();
     _ripInternalRib = new RipInternalRib();
     _ripInternalStagingRib = new RipInternalRib();
@@ -1650,7 +1826,7 @@ public class VirtualRouter extends ComparableStructure<String> {
                     transformedIncomingRouteBuilder,
                     remoteBgpConfig.getLocalIp(),
                     ourConfigId.getRemotePeerPrefix(),
-                    _key,
+                    _name,
                     Direction.IN);
           }
         }
@@ -2006,6 +2182,52 @@ public class VirtualRouter extends ComparableStructure<String> {
   }
 
   /**
+   * Propagate EIGRP Internal routes from a single neighbor.
+   *
+   * @param neighbor the neighbor
+   * @param connectingInterfaceMetric EIGRP Metric of the interface on which we are connected to the
+   *     neighbor
+   * @param neighborInterface interface that the neighbor uses to connect to us
+   * @param adminCost route administrative distance
+   * @return true if new routes have been added to our staging RIB
+   */
+  private boolean propagateEigrpInternalRoutesFromNeighbor(
+      Node neighbor,
+      EigrpMetric connectingInterfaceMetric,
+      Interface neighborInterface,
+      int adminCost) {
+
+    EigrpMetric neighborInterfaceMetric =
+        requireNonNull(requireNonNull(neighborInterface.getEigrp()).getMetric());
+
+    /*
+     * An EIGRP neighbor relationship exists on this edge. We will examine all internal routes
+     * belonging to the neighbor to see what should be propagated to this router. We compute
+     * the new cost associated with our settings and the existing metrics and use the
+     * neighborInterface's address as the next hop ip.
+     */
+    String neighborVrfName = neighborInterface.getVrfName();
+    VirtualRouter neighborVirtualRouter = neighbor.getVirtualRouters().get(neighborVrfName);
+    boolean changed = false;
+    for (EigrpInternalRoute neighborRoute : neighborVirtualRouter._eigrpInternalRib.getRoutes()) {
+      EigrpMetric newMetric =
+          connectingInterfaceMetric.accumulate(
+              neighborInterfaceMetric, neighborRoute.getEigrpMetric());
+      Ip nextHopIp = neighborInterface.getAddress().getIp();
+      EigrpInternalRoute newRoute =
+          EigrpInternalRoute.builder()
+              .setAdmin(adminCost)
+              .setEigrpMetric(newMetric)
+              .setNetwork(neighborRoute.getNetwork())
+              .setNextHopInterface(neighborInterface.getName())
+              .setNextHopIp(nextHopIp)
+              .build();
+      changed |= _eigrpInternalStagingRib.mergeRoute(newRoute);
+    }
+    return changed;
+  }
+
+  /**
    * Propagate OSPF Internal routes from a single neighbor.
    *
    * @param proc The receiving OSPF process
@@ -2148,6 +2370,108 @@ public class VirtualRouter extends ComparableStructure<String> {
             neighborRoute.getNetwork(), nextHopIp, adminCost, newCost, linkAreaNum);
     return neighborRoute.getArea() == linkAreaNum
         && (_ospfIntraAreaStagingRib.mergeRoute(newRoute));
+  }
+
+  /**
+   * Propagate EIGRP external routes from our neighbors by reading EIGRP route "advertisements" from
+   * our queues.
+   *
+   * @param nc All network configurations
+   * @return a {@link RibDelta}
+   */
+  @Nullable
+  RibDelta<EigrpExternalRoute> propagateEigrpExternalRoutes(NetworkConfigurations nc) {
+    if (_vrf.getEigrpProcess() == null) {
+      return null;
+    }
+
+    RibDelta.Builder<EigrpExternalRoute> deltaBuilder =
+        new RibDelta.Builder<>(_eigrpExternalStagingRib);
+    EigrpExternalRoute.Builder routeBuilder = new EigrpExternalRoute.Builder();
+    int admin = RoutingProtocol.EIGRP_EX.getDefaultAdministrativeCost(_c.getConfigurationFormat());
+    _eigrpIncomingRoutes.forEach(
+        (edge, queue) -> {
+          Interface nextHopIntf = edge.getNode1().getInterface(nc);
+          Interface connectingIntf = edge.getNode2().getInterface(nc);
+
+          // Edge nodes must have EIGRP configuration
+          requireNonNull(nextHopIntf.getEigrp());
+          requireNonNull(nextHopIntf.getEigrp().getMetric());
+          requireNonNull(connectingIntf.getEigrp());
+          requireNonNull(connectingIntf.getEigrp().getMetric());
+
+          EigrpMetric nextHopIntfMetric = nextHopIntf.getEigrp().getMetric();
+          EigrpMetric connectingIntfMetric = connectingIntf.getEigrp().getMetric();
+
+          routeBuilder
+              .setAdmin(admin)
+              .setNextHopInterface(nextHopIntf.getName())
+              .setNextHopIp(nextHopIntf.getAddress().getIp());
+          while (queue.peek() != null) {
+            RouteAdvertisement<EigrpExternalRoute> routeAdvert = queue.remove();
+            EigrpExternalRoute neighborRoute = routeAdvert.getRoute();
+            EigrpMetric metric =
+                connectingIntfMetric.accumulate(nextHopIntfMetric, neighborRoute.getEigrpMetric());
+            routeBuilder
+                .setAsn(neighborRoute.getAsn())
+                .setEigrpMetric(metric)
+                .setNetwork(neighborRoute.getNetwork());
+            EigrpExternalRoute newRoute = routeBuilder.build();
+            if (routeAdvert.isWithdrawn()) {
+              deltaBuilder.remove(newRoute, Reason.WITHDRAW);
+              SortedSet<EigrpExternalRoute> backups =
+                  _receivedEigrpExternalRoutes.get(newRoute.getNetwork());
+              if (backups != null) {
+                backups.remove(newRoute);
+              }
+            } else {
+              deltaBuilder.from(_eigrpExternalStagingRib.mergeRouteGetDelta(newRoute));
+              _receivedEigrpExternalRoutes
+                  .computeIfAbsent(newRoute.getNetwork(), k -> new TreeSet<>())
+                  .add(newRoute);
+            }
+          }
+        });
+
+    return deltaBuilder.build();
+  }
+
+  /**
+   * Propagate EIGRP internal routes from every valid EIGRP neighbors
+   *
+   * @param nodes mapping of node names to instances.
+   * @param topology network topology
+   * @param nc All network configurations
+   * @return true if new routes have been added to the staging RIB
+   */
+  boolean propagateEigrpInternalRoutes(
+      Map<String, Node> nodes,
+      Network<EigrpInterface, EigrpEdge> topology,
+      NetworkConfigurations nc) {
+
+    if (_vrf.getEigrpProcess() == null) {
+      return false;
+    }
+
+    // Default EIGRP admin cost for constructing new routes
+    int adminCost = RoutingProtocol.EIGRP.getDefaultAdministrativeCost(_c.getConfigurationFormat());
+
+    return _vrf.getInterfaceNames()
+            .stream()
+            .map(ifaceName -> new EigrpInterface(_c.getHostname(), ifaceName, _vrf.getName()))
+            .filter(topology.nodes()::contains)
+            .flatMap(n -> topology.inEdges(n).stream())
+            .mapToInt(
+                edge ->
+                    propagateEigrpInternalRoutesFromNeighbor(
+                            nodes.get(edge.getNode1().getHostname()),
+                            requireNonNull(edge.getNode2().getInterfaceSettings(nc).getMetric()),
+                            edge.getNode1().getInterface(nc),
+                            adminCost)
+                        ? 1
+                        : 0)
+            .sum()
+        > 0; // Don't use any short-circuit operators
   }
 
   /**
@@ -2383,6 +2707,26 @@ public class VirtualRouter extends ComparableStructure<String> {
     return tmpSession;
   }
 
+  private void queueOutgoingEigrpExternalRoutes(
+      Map<String, Node> allNodes, @Nullable RibDelta<EigrpExternalRoute> delta) {
+    if (_vrf.getEigrpProcess() == null || _eigrpIncomingRoutes == null) {
+      return;
+    }
+    // Loop over neighbors, enqueue messages
+    _eigrpIncomingRoutes
+        .keySet()
+        .forEach(
+            edge -> {
+              Queue<RouteAdvertisement<EigrpExternalRoute>> queue =
+                  (allNodes
+                          .get(edge.getNode1().getHostname())
+                          .getVirtualRouters()
+                          .get(edge.getNode1().getVrf()))
+                      ._eigrpIncomingRoutes.get(edge.reverse());
+              queueDelta(queue, delta);
+            });
+  }
+
   private void queueOutgoingIsisRoutes(
       @Nonnull Map<String, Node> allNodes,
       NetworkConfigurations nc,
@@ -2524,6 +2868,29 @@ public class VirtualRouter extends ComparableStructure<String> {
   }
 
   /**
+   * Merges staged EIGRP external route into "real" EIGRP-external RIB. Following that, move any
+   * resulting deltas into the combined EIGRP RIB, and finally, main RIB.
+   *
+   * @param allNodes all network nodes, keyed by hostname
+   * @param delta staging delta
+   * @return true if any routes from delta were merged into the combined EIGRP RIB.
+   */
+  boolean unstageEigrpExternalRoutes(
+      Map<String, Node> allNodes, RibDelta<EigrpExternalRoute> delta) {
+    RibDelta<EigrpExternalRoute> ribDelta = importRibDelta(_eigrpExternalRib, delta);
+    queueOutgoingEigrpExternalRoutes(allNodes, delta);
+    Builder<EigrpRoute> eigrpDeltaBuilder = new Builder<>(_eigrpRib);
+    eigrpDeltaBuilder.from(importRibDelta(_eigrpRib, ribDelta));
+    _mainRibRouteDeltaBuiler.from(importRibDelta(_mainRib, eigrpDeltaBuilder.build()));
+    return ribDelta != null;
+  }
+
+  /** Merges staged EIGRP internal routes into the "real" EIGRP-internal RIBs */
+  void unstageEigrpInternalRoutes() {
+    importRib(_eigrpInternalRib, _eigrpInternalStagingRib);
+  }
+
+  /**
    * Move IS-IS routes from L1/L2 staging RIBs into their respective "proper" RIBs. Following that,
    * move any resulting deltas into the combined IS-IS RIB, and finally, main RIB.
    *
@@ -2599,6 +2966,7 @@ public class VirtualRouter extends ComparableStructure<String> {
             ? EXACT_PATH
             : _vrf.getBgpProcess().getMultipathEquivalentAsPathMatchMode();
     _ebgpStagingRib = new BgpMultipathRib(mpTieBreaker);
+    _eigrpExternalStagingRib = new EigrpExternalRib(null);
     _ibgpStagingRib = new BgpMultipathRib(mpTieBreaker);
     _ospfExternalType1StagingRib = new OspfExternalType1Rib(getHostname(), null);
     _ospfExternalType2StagingRib = new OspfExternalType2Rib(getHostname(), null);
@@ -2609,6 +2977,11 @@ public class VirtualRouter extends ComparableStructure<String> {
     _mainRibRouteDeltaBuiler.from(importRib(_mainRib, _independentRib));
 
     /*
+     * Re-add independent EIGRP routes to eigrpRib for tie-breaking
+     */
+    importRib(_eigrpRib, _eigrpInternalRib);
+
+    /*
      * Re-add independent OSPF routes to ospfRib for tie-breaking
      */
     importRib(_ospfRib, _ospfIntraAreaRib);
@@ -2617,6 +2990,14 @@ public class VirtualRouter extends ComparableStructure<String> {
      * Re-add independent RIP routes to ripRib for tie-breaking
      */
     importRib(_ripRib, _ripInternalRib);
+  }
+
+  /**
+   * Merge internal EIGRP RIBs into a general EIGRP RIB, then merge that into the independent RIB
+   */
+  void importEigrpInternalRoutes() {
+    importRib(_eigrpRib, _eigrpInternalRib);
+    importRib(_independentRib, _eigrpRib);
   }
 
   /**
@@ -2988,6 +3369,13 @@ public class VirtualRouter extends ComparableStructure<String> {
             .mapToInt(RouteAdvertisement::hashCode)
             .sum()
         + _ospfExternalIncomingRoutes
+            .values()
+            .stream()
+            .flatMap(Queue::stream)
+            .mapToInt(RouteAdvertisement::hashCode)
+            .sum()
+        + _eigrpExternalRib.getRoutes().hashCode()
+        + _eigrpIncomingRoutes
             .values()
             .stream()
             .flatMap(Queue::stream)

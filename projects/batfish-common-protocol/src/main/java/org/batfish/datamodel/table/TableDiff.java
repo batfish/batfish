@@ -17,7 +17,6 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.answers.Schema.Type;
-import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.table.Row.RowBuilder;
 
 /** A utility class to diff two tables */
@@ -26,21 +25,25 @@ public final class TableDiff {
 
   private TableDiff() {}
 
-  static final String COL_KEY_STATUS = "KeyStatus";
-  static final String COL_KEY_STATUS_DESC = "In which table(s) is the key present";
-  static final String COL_KEY_STATUS_BOTH = "Key in both";
-  static final String COL_KEY_STATUS_ONLY_BASE = "Key only in Base";
-  static final String COL_KEY_STATUS_ONLY_DELTA = "Key only in Delta";
+  private static final String COL_BASE_PREFIX = "Base_";
+  private static final String COL_DELTA_PREFIX = "Delta_";
+  private static final String COL_DIFF_PREFIX = "Diff_";
 
-  static final String NULL_VALUE_BASE = "Value is null in Base";
-  private static final String NULL_VALUE_DELTA = "Value is null in Delta";
+  public static final String COL_KEY_PRESENCE = "KeyPresence";
+  public static final String COL_KEY_PRESENCE_DESC = "In which table(s) is the key present";
+  static final String COL_KEY_STATUS_BOTH = "In both";
+  static final String COL_KEY_STATUS_ONLY_BASE = "Only in Base";
+  static final String COL_KEY_STATUS_ONLY_DELTA = "Only in Delta";
+
+  static final String NULL_VALUE_BASE = "Base value is null";
+  private static final String NULL_VALUE_DELTA = "Delta value is null";
 
   static final String RESULT_DIFFERENT = "<Different>";
   static final String RESULT_SAME = "<Same>";
 
-  @VisibleForTesting
-  static String baseColumnName(String originalColumnName) {
-    return "Base_" + originalColumnName;
+  /** Returns the modified column name to represent the delta value of the original column */
+  public static String baseColumnName(String originalColumnName) {
+    return COL_BASE_PREFIX + originalColumnName;
   }
 
   /**
@@ -58,9 +61,9 @@ public final class TableDiff {
     return map;
   }
 
-  @VisibleForTesting
-  static String deltaColumnName(String originalColumnName) {
-    return "Delta_" + originalColumnName;
+  /** Returns the modified column name to represent the delta value of the original column */
+  public static String deltaColumnName(String originalColumnName) {
+    return COL_DELTA_PREFIX + originalColumnName;
   }
 
   @VisibleForTesting
@@ -68,9 +71,9 @@ public final class TableDiff {
     return "Difference between base and delta for " + originalColumnName;
   }
 
-  @VisibleForTesting
-  static String diffColumnName(String originalColumnName) {
-    return "Diff_" + originalColumnName;
+  /** Returns the modified column name to represent the delta value of the original column */
+  public static String diffColumnName(String originalColumnName) {
+    return COL_DIFF_PREFIX + originalColumnName;
   }
 
   @VisibleForTesting
@@ -144,7 +147,7 @@ public final class TableDiff {
 
     // 2. Insert the key status column
     diffColumnMetatadata.add(
-        new ColumnMetadata(COL_KEY_STATUS, Schema.STRING, COL_KEY_STATUS_DESC, false, true));
+        new ColumnMetadata(COL_KEY_PRESENCE, Schema.STRING, COL_KEY_PRESENCE_DESC, false, true));
 
     // 3. Add other columns
     for (ColumnMetadata cm : inputMetadata.getColumnMetadata()) {
@@ -167,7 +170,7 @@ public final class TableDiff {
               deltaColumnName(cm.getName()), cm.getSchema(), cm.getDescription(), false, false));
     }
 
-    return new TableMetadata(diffColumnMetatadata.build(), new DisplayHints(null, null, dhintText));
+    return new TableMetadata(diffColumnMetatadata.build(), dhintText);
   }
 
   /**
@@ -193,7 +196,7 @@ public final class TableDiff {
         baseRow == null
             ? COL_KEY_STATUS_ONLY_DELTA
             : deltaRow == null ? COL_KEY_STATUS_ONLY_BASE : COL_KEY_STATUS_BOTH;
-    rowBuilder.put(COL_KEY_STATUS, keyStatus);
+    rowBuilder.put(COL_KEY_PRESENCE, keyStatus);
 
     for (ColumnMetadata cm : inputMetadata.getColumnMetadata()) {
       if (cm.getIsKey()) {
