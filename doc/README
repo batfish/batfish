@@ -1,3 +1,0 @@
-To produce documentation for projects, run the appropriate project build command with the 'doc' target.
-To produce all project documentation, simply run: batfish_build_all doc
-To produce question documentation, run: batfish_questions_doc
