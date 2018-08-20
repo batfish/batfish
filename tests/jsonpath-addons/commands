@@ -5,7 +5,7 @@ add-batfish-option haltonparseerror
 add-batfish-option verboseparse
 
 # set up the example network
-init-snapshot test_rigs/example jsonpath-example
+init-snapshot networks/example jsonpath-example
 
 # assertions 
 test tests/jsonpath-addons/jsonpath-assertion-countequals.ref get jsonpath innerQuestion: {"class": "org.batfish.question.NodesQuestionPlugin$NodesQuestion", summary: False}, paths: [{"path" : "$.nodes['as3border1']..mtu", "assertion": {"type" : "countEquals", "expect": 5}}]

@@ -5,7 +5,7 @@ add-batfish-option haltonparseerror
 add-batfish-option verboseparse
 
 # set up the example network
-init-snapshot test_rigs/example jsonpath-example
+init-snapshot networks/example jsonpath-example
 
 test tests/jsonpathtotable/ntpservers.ref get jsonpathtotable innerQuestion: {"class": "org.batfish.question.NodesQuestionPlugin$NodesQuestion", "summary": false}, pathQuery: { "path": "$.nodes[*].ntpServers", "extractions": {"nodeName": {"schema": "String", "method": "prefix", "index": 1, "include": false}, "ntpServers": {"schema": "List<Ip>", "method": "suffixofsuffix", "filter": "$.*", "isKey": false}}, "compositions": { "node": {"schema": "Node", "dictionary": {"name": "nodeName"}, "isValue": false}}}, "displayHints": { "textDesc" : "The NTP servers of ${node} are ${ntpServers}"}, "exclusions" : [{"specification" : {"node" : {"name" : "as2border2"}}}]
 

@@ -16,4 +16,4 @@ test tests/parsing-tests/unit-tests-warnings.ref get parsewarning
 test -compareall tests/parsing-tests/srx-testbed.ref init-snapshot tests/parsing-tests/networks/srx-testbed
 
 # The example-juniper currently has a bunch of stuff not in unit-tests. Keep testing it for now.
-test -compareall tests/parsing-tests/example-juniper.ref init-snapshot test_rigs/example-juniper
+test -compareall tests/parsing-tests/example-juniper.ref init-snapshot networks/example-juniper

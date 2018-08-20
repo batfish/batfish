@@ -12,7 +12,7 @@ echo ## If you want to run against www.batfish.org
 echo ## % batfish_client -runmode interactive
 
 echo # load the testing 
-init-testrig test_rigs/example tr-base
+init-testrig networks/example tr-base
 
 echo ################
 echo # The configurations are converted to JSON-based  vendor-independent data model:
@@ -78,7 +78,7 @@ echo #############
 echo # comparing two sets of configs (e.g., current + planned) is a powerful debugging aid
 
 echo # initialize the delta testrig and generate its dataplane
-init-delta-testrig test_rigs/example-with-delta tr-delta
+init-delta-testrig networks/example-with-delta tr-delta
 
 echo # any earlier query can be executed differentially, to see if how behavior differs
 get neighbors differential=true
