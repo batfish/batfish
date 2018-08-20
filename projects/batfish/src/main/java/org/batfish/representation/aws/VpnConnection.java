@@ -393,7 +393,7 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
         conj.getConjuncts()
             .add(
                 new MatchPrefixSet(
-                    new DestinationNetwork(), new NamedPrefixSet(originationPolicyName)));
+                    DestinationNetwork.instance(), new NamedPrefixSet(originationPolicyName)));
 
         cgBgpPeerConfig.build();
         vgwToVpcBuilder.build();

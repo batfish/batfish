@@ -28,7 +28,7 @@ public class RoutePolicyBooleanDestination extends RoutePolicyBoolean {
   public BooleanExpr toBooleanExpr(CiscoConfiguration cc, Configuration c, Warnings w) {
     PrefixSetExpr prefixSetExpr = _prefixSet.toPrefixSetExpr(cc, c, w);
     if (prefixSetExpr != null) {
-      return new MatchPrefixSet(new DestinationNetwork(), prefixSetExpr);
+      return new MatchPrefixSet(DestinationNetwork.instance(), prefixSetExpr);
     } else {
       Prefix6SetExpr prefix6SetExpr = _prefixSet.toPrefix6SetExpr(cc, c, w);
       return new MatchPrefix6Set(new DestinationNetwork6(), prefix6SetExpr);

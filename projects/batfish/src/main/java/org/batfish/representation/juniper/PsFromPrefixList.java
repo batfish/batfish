@@ -24,6 +24,6 @@ public final class PsFromPrefixList extends PsFrom {
 
   @Override
   public BooleanExpr toBooleanExpr(JuniperConfiguration jc, Configuration c, Warnings warnings) {
-    return new MatchPrefixSet(new DestinationNetwork(), new NamedPrefixSet(_name));
+    return new MatchPrefixSet(DestinationNetwork.instance(), new NamedPrefixSet(_name));
   }
 }

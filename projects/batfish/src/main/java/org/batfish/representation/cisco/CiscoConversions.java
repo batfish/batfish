@@ -248,7 +248,7 @@ class CiscoConversions {
       Configuration c, String vrfName, Prefix prefix) {
     BooleanExpr matchLongerNetworks =
         new MatchPrefixSet(
-            new DestinationNetwork(),
+            DestinationNetwork.instance(),
             new ExplicitPrefixSet(new PrefixSpace(PrefixRange.moreSpecificThan(prefix))));
     If currentGeneratedRouteConditional =
         new If(matchLongerNetworks, singletonList(Statements.ReturnTrue.toStaticStatement()));
@@ -288,7 +288,8 @@ class CiscoConversions {
 
     return new If(
         "Suppress more specific networks for summary-only aggregate-address networks",
-        new MatchPrefixSet(new DestinationNetwork(), new NamedPrefixSet(matchLonger.getName())),
+        new MatchPrefixSet(
+            DestinationNetwork.instance(), new NamedPrefixSet(matchLonger.getName())),
         ImmutableList.of(Statements.Suppress.toStaticStatement()),
         ImmutableList.of());
   }

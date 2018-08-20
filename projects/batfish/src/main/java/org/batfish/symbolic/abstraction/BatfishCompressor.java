@@ -182,7 +182,7 @@ public class BatfishCompressor {
       guard = BooleanExprs.FALSE;
     } else {
       AbstractionPrefixSet eps = new AbstractionPrefixSet(filter._prefixTrie);
-      MatchPrefixSet match = new MatchPrefixSet(new DestinationNetwork(), eps);
+      MatchPrefixSet match = new MatchPrefixSet(DestinationNetwork.instance(), eps);
       if (filter._isForDefaultSlice) {
         // Let traffic through if it passes the filter or was advertised from outside the network.
         Disjunction pfxOrExternal = new Disjunction();
