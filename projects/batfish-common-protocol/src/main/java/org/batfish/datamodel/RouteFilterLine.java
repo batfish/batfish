@@ -80,7 +80,7 @@ public class RouteFilterLine implements Serializable {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_action, _lengthRange, _ipWildcard);
+    return Objects.hash(_action.ordinal(), _lengthRange, _ipWildcard);
   }
 
   public String toCompactString() {
