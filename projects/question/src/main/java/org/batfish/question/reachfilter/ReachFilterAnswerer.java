@@ -49,7 +49,7 @@ public final class ReachFilterAnswerer extends Answerer {
   static final String COLUMN_FLOW = "flow";
   static final String COLUMN_ACTION = "action";
   static final String COLUMN_LINE_NUMBER = "lineNumber";
-  final String COLUMN_LINE_CONTENT = "lineContent";
+  static final String COLUMN_LINE_CONTENT = "lineContent";
   static final String COLUMN_TRACE = "trace";
 
   static final String BASE = "base";
