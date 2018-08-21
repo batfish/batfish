@@ -25,6 +25,10 @@ public class StandardAccessList implements Serializable {
     return _lines;
   }
 
+  public String getName() {
+    return _name;
+  }
+
   public ExtendedAccessList toExtendedAccessList() {
     ExtendedAccessList eal = new ExtendedAccessList(_name);
     eal.setParent(this);
