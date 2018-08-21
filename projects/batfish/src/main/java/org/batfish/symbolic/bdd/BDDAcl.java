@@ -11,6 +11,7 @@ import java.util.Objects;
 import java.util.function.Supplier;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import org.batfish.common.util.NonRecursiveSupplier;
@@ -21,40 +22,37 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 
 /** Representation of an Access Control List (ACL) as a Binary Decision Diagram (BDD). */
-public class BDDAcl {
+@ParametersAreNonnullByDefault
+public final class BDDAcl {
 
-  @Nullable private IpAccessList _acl;
+  @Nonnull private final Map<String, Supplier<BDD>> _aclEnv;
 
-  private final Map<String, Supplier<BDD>> _aclEnv;
+  @Nonnull private BDD _bdd;
 
-  @Nullable private BDD _bdd;
+  @Nonnull private final BDDSourceManager _bddSrcManager;
 
-  private BDDSourceManager _bddSrcManager;
+  @Nonnull private final BDDFactory _factory;
 
-  private BDDFactory _factory;
+  @Nonnull private final Map<String, IpSpace> _ipSpaceEnv;
 
-  @Nonnull private Map<String, IpSpace> _ipSpaceEnv;
-
-  @Nonnull private BDDPacket _pkt;
+  @Nonnull private final BDDPacket _pkt;
 
   private BDDAcl(
-      @Nonnull BDDPacket pkt,
+      BDDPacket pkt,
       @Nullable IpAccessList acl,
       Map<String, Supplier<BDD>> aclEnv,
       Map<String, IpSpace> ipSpaceEnv,
       BDDSourceManager bddSrcManager) {
-    _bdd = null;
-    _acl = acl;
     _aclEnv = ImmutableMap.copyOf(aclEnv);
     _bddSrcManager = bddSrcManager;
     _pkt = pkt;
     _factory = _pkt.getFactory();
     _ipSpaceEnv = ImmutableMap.copyOf(ipSpaceEnv);
+    _bdd = computeACL(acl);
   }
 
   private BDDAcl(BDDAcl other) {
     _bdd = other._bdd;
-    _acl = other._acl;
     _aclEnv = other._aclEnv;
     _bddSrcManager = other._bddSrcManager;
     _factory = other._factory;
@@ -113,9 +111,7 @@ public class BDDAcl {
                             createWithBDDAclEnv(pkt, namedAcl, bddAclEnv, ipSpaceEnv, bddSrcManager)
                                 ._bdd))));
 
-    BDDAcl abdd = new BDDAcl(pkt, acl, bddAclEnv, ipSpaceEnv, bddSrcManager);
-    abdd.computeACL();
-    return abdd;
+    return new BDDAcl(pkt, acl, bddAclEnv, ipSpaceEnv, bddSrcManager);
   }
 
   private static BDDAcl createWithBDDAclEnv(
@@ -124,44 +120,38 @@ public class BDDAcl {
       Map<String, Supplier<BDD>> aclEnv,
       Map<String, IpSpace> ipSpaceEnv,
       BDDSourceManager bddSrcManager) {
-    BDDAcl abdd = new BDDAcl(pkt, acl, aclEnv, ipSpaceEnv, bddSrcManager);
-    abdd.computeACL();
-    return abdd;
+    return new BDDAcl(pkt, acl, aclEnv, ipSpaceEnv, bddSrcManager);
   }
 
   /**
    * Convert an Access Control List (ACL) to a symbolic boolean expression. The default action in an
    * ACL is to deny all traffic.
    */
-  private void computeACL() {
+  @Nonnull
+  private BDD computeACL(@Nullable IpAccessList acl) {
     // Check if there is an ACL first
-    if (_acl == null) {
-      _bdd = _factory.one();
-      return;
+    if (acl == null) {
+      return _factory.one();
     }
 
-    _bdd = _factory.zero();
-
+    BDD result = _factory.zero();
     AclLineMatchExprToBDD aclLineMatchExprToBDD =
         new AclLineMatchExprToBDD(_factory, _pkt, _aclEnv, _ipSpaceEnv, _bddSrcManager);
 
-    for (IpAccessListLine line : Lists.reverse(_acl.getLines())) {
+    for (IpAccessListLine line : Lists.reverse(acl.getLines())) {
       BDD lineBDD = aclLineMatchExprToBDD.visit(line.getMatchCondition());
       BDD actionBDD = line.getAction() == LineAction.ACCEPT ? _factory.one() : _factory.zero();
-      _bdd = lineBDD.ite(actionBDD, _bdd);
+      result = lineBDD.ite(actionBDD, result);
     }
+    return result;
   }
 
-  @Nullable
-  public IpAccessList getAcl() {
-    return _acl;
-  }
-
-  @Nullable
+  @Nonnull
   public BDD getBdd() {
     return _bdd;
   }
 
+  @Nonnull
   public BDDFactory getFactory() {
     return _factory;
   }
@@ -173,7 +163,7 @@ public class BDDAcl {
 
   @Override
   public int hashCode() {
-    return _bdd != null ? _bdd.hashCode() : 0;
+    return Objects.hash(_bdd);
   }
 
   @Override
