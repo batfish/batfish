@@ -5,6 +5,7 @@ import java.io.Serializable;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.routing_policy.Environment;
 
+/** Base class for expressions that extract a {@link Prefix}. */
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
 public abstract class PrefixExpr implements Serializable {
 

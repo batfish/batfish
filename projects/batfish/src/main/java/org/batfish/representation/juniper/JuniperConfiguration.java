@@ -1071,7 +1071,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     routingPolicyConditional.getFalseStatements().add(Statements.ExitReject.toStaticStatement());
     String rflName = "~AGGREGATE_" + policyNameSuffix + "_RF~";
     MatchPrefixSet isContributingRoute =
-        new MatchPrefixSet(new DestinationNetwork(), new NamedPrefixSet(rflName));
+        new MatchPrefixSet(DestinationNetwork.instance(), new NamedPrefixSet(rflName));
     routingPolicyConditional.setGuard(isContributingRoute);
     RouteFilterList rfList = new RouteFilterList(rflName);
     rfList.addLine(
@@ -1100,7 +1100,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     routingPolicyConditional.getFalseStatements().add(Statements.ExitReject.toStaticStatement());
     String rflName = "~SUMMARY" + policyNameSuffix + "_RF~";
     MatchPrefixSet isContributingRoute =
-        new MatchPrefixSet(new DestinationNetwork(), new NamedPrefixSet(rflName));
+        new MatchPrefixSet(DestinationNetwork.instance(), new NamedPrefixSet(rflName));
     routingPolicyConditional.setGuard(isContributingRoute);
     RouteFilterList rfList = new RouteFilterList(rflName);
     rfList.addLine(
@@ -1865,7 +1865,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
                     routeFilterName + "_ACTION_LINE_" + actionLineCounter;
                 lineSpecificIfStatement.setComment(lineSpecificClauseName);
                 MatchPrefixSet mrf =
-                    new MatchPrefixSet(new DestinationNetwork(), new NamedPrefixSet(lineListName));
+                    new MatchPrefixSet(
+                        DestinationNetwork.instance(), new NamedPrefixSet(lineListName));
                 lineSpecificIfStatement.setGuard(mrf);
                 lineSpecificIfStatement.getTrueStatements().addAll(toStatements(line.getThens()));
                 statements.add(lineSpecificIfStatement);

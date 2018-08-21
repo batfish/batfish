@@ -74,7 +74,6 @@
           "as1border2"
         ],
         "structDefinition" : {
-          "name" : "103",
           "lines" : [
             {
               "action" : "ACCEPT",
@@ -86,7 +85,8 @@
               "ipWildcard" : "3.0.2.0/24",
               "lengthRange" : "24-24"
             }
-          ]
+          ],
+          "name" : "103"
         },
         "structType" : "RouteFilterList"
       },
@@ -103,7 +103,6 @@
           "as2dept1"
         ],
         "structDefinition" : {
-          "name" : "102",
           "lines" : [
             {
               "action" : "ACCEPT",
@@ -115,7 +114,8 @@
               "ipWildcard" : "2.128.0.0/16",
               "lengthRange" : "16-16"
             }
-          ]
+          ],
+          "name" : "102"
         },
         "structType" : "RouteFilterList"
       }

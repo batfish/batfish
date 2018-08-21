@@ -3,23 +3,22 @@ package org.batfish.datamodel.routing_policy.expr;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.routing_policy.Environment;
 
-public class NextHopIp extends IpExpr {
+/** Expression that extracts a route's next hop IP given a routing policy environment. */
+public final class NextHopIp extends IpExpr {
 
-  /** */
   private static final long serialVersionUID = 1L;
+
+  private static final NextHopIp INSTANCE = new NextHopIp();
+
+  private NextHopIp() {}
+
+  public static NextHopIp instance() {
+    return INSTANCE;
+  }
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj) {
-      return true;
-    }
-    if (obj == null) {
-      return false;
-    }
-    if (getClass() != obj.getClass()) {
-      return false;
-    }
-    return true;
+    return this == obj || (obj instanceof NextHopIp);
   }
 
   @Override
@@ -29,9 +28,6 @@ public class NextHopIp extends IpExpr {
 
   @Override
   public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + 0x12345678;
-    return result;
+    return System.identityHashCode(this);
   }
 }

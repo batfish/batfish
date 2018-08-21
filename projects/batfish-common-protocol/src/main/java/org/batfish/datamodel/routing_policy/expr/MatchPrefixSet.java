@@ -2,13 +2,13 @@ package org.batfish.datamodel.routing_policy.expr;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import javax.annotation.Nonnull;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 
 public class MatchPrefixSet extends BooleanExpr {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private static final String PROP_PREFIX = "prefix";
@@ -22,7 +22,7 @@ public class MatchPrefixSet extends BooleanExpr {
   @JsonCreator
   private MatchPrefixSet() {}
 
-  public MatchPrefixSet(PrefixExpr prefix, PrefixSetExpr prefixSet) {
+  public MatchPrefixSet(@Nonnull PrefixExpr prefix, @Nonnull PrefixSetExpr prefixSet) {
     _prefix = prefix;
     _prefixSet = prefixSet;
   }
