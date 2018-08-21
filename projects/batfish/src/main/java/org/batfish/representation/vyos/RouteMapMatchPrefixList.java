@@ -30,7 +30,7 @@ public class RouteMapMatchPrefixList implements RouteMapMatch {
   public BooleanExpr toBooleanExpr(VyosConfiguration vc, Configuration c, Warnings w) {
     PrefixList pl = vc.getPrefixLists().get(_prefixList);
     if (pl != null) {
-      return new MatchPrefixSet(new DestinationNetwork(), new NamedPrefixSet(_prefixList));
+      return new MatchPrefixSet(DestinationNetwork.instance(), new NamedPrefixSet(_prefixList));
     } else {
       vc.undefined(
           VyosStructureType.PREFIX_LIST,

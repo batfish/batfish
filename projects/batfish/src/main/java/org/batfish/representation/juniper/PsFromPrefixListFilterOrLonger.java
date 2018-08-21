@@ -46,7 +46,8 @@ public final class PsFromPrefixListFilterOrLonger extends PsFrom {
           c.getRouteFilterLists().put(orLongerListName, orLongerList);
         }
       }
-      return new MatchPrefixSet(new DestinationNetwork(), new NamedPrefixSet(orLongerListName));
+      return new MatchPrefixSet(
+          DestinationNetwork.instance(), new NamedPrefixSet(orLongerListName));
     } else {
       warnings.redFlag("Reference to undefined prefix-list: \"" + _prefixList + "\"");
       return BooleanExprs.FALSE;

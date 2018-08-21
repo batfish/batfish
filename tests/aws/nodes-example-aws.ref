@@ -1154,17 +1154,16 @@
         },
         "routeFilterLists" : {
           "MATCH_ALL_BGP" : {
-            "name" : "MATCH_ALL_BGP",
             "lines" : [
               {
                 "action" : "ACCEPT",
                 "ipWildcard" : "0.0.0.0/0",
                 "lengthRange" : "0-32"
               }
-            ]
+            ],
+            "name" : "MATCH_ALL_BGP"
           },
           "PROTECT_LOOPBACK" : {
-            "name" : "PROTECT_LOOPBACK",
             "lines" : [
               {
                 "action" : "REJECT",
@@ -1176,7 +1175,8 @@
                 "ipWildcard" : "0.0.0.0/0",
                 "lengthRange" : "0-32"
               }
-            ]
+            ],
+            "name" : "PROTECT_LOOPBACK"
           }
         },
         "routingPolicies" : {
@@ -3984,24 +3984,24 @@
         },
         "routeFilterLists" : {
           "vpn-ba2e34a8-1_origination" : {
-            "name" : "vpn-ba2e34a8-1_origination",
             "lines" : [
               {
                 "action" : "ACCEPT",
                 "ipWildcard" : "10.100.0.0/16",
                 "lengthRange" : "16-16"
               }
-            ]
+            ],
+            "name" : "vpn-ba2e34a8-1_origination"
           },
           "vpn-ba2e34a8-2_origination" : {
-            "name" : "vpn-ba2e34a8-2_origination",
             "lines" : [
               {
                 "action" : "ACCEPT",
                 "ipWildcard" : "10.100.0.0/16",
                 "lengthRange" : "16-16"
               }
-            ]
+            ],
+            "name" : "vpn-ba2e34a8-2_origination"
           }
         },
         "routingPolicies" : {

@@ -245,24 +245,24 @@
         },
         "routeFilterLists" : {
           "ScienceDMZ-networks" : {
-            "name" : "ScienceDMZ-networks",
             "lines" : [
               {
                 "action" : "ACCEPT",
                 "ipWildcard" : "192.154.2.0/24",
                 "lengthRange" : "24-32"
               }
-            ]
+            ],
+            "name" : "ScienceDMZ-networks"
           },
           "~MATCH_SUPPRESSED_SUMMARY_ONLY:default~" : {
-            "name" : "~MATCH_SUPPRESSED_SUMMARY_ONLY:default~",
             "lines" : [
               {
                 "action" : "ACCEPT",
                 "ipWildcard" : "192.154.2.0/24",
                 "lengthRange" : "25-32"
               }
-            ]
+            ],
+            "name" : "~MATCH_SUPPRESSED_SUMMARY_ONLY:default~"
           }
         },
         "routingPolicies" : {
@@ -4149,17 +4149,16 @@
         },
         "routeFilterLists" : {
           "A+C" : {
-            "name" : "A+C",
             "lines" : [
               {
                 "action" : "ACCEPT",
                 "ipWildcard" : "2.2.0.0/19",
                 "lengthRange" : "24-32"
               }
-            ]
+            ],
+            "name" : "A+C"
           },
           "foo" : {
-            "name" : "foo",
             "lines" : [
               {
                 "action" : "ACCEPT",
@@ -4171,7 +4170,8 @@
                 "ipWildcard" : "2.2.0.0/19",
                 "lengthRange" : "24-32"
               }
-            ]
+            ],
+            "name" : "foo"
           }
         },
         "vendorFamily" : {
@@ -4862,7 +4862,6 @@
         },
         "routeFilterLists" : {
           "allowprefix" : {
-            "name" : "allowprefix",
             "lines" : [
               {
                 "action" : "ACCEPT",
@@ -4874,10 +4873,10 @@
                 "ipWildcard" : "209.165.201.0/24",
                 "lengthRange" : "24-32"
               }
-            ]
+            ],
+            "name" : "allowprefix"
           },
           "allowprefix-asa" : {
-            "name" : "allowprefix-asa",
             "lines" : [
               {
                 "action" : "ACCEPT",
@@ -4889,7 +4888,8 @@
                 "ipWildcard" : "209.165.201.0/24",
                 "lengthRange" : "24-32"
               }
-            ]
+            ],
+            "name" : "allowprefix-asa"
           }
         },
         "vendorFamily" : {
@@ -5027,14 +5027,14 @@
         "deviceType" : "ROUTER",
         "routeFilterLists" : {
           "~MATCH_SUPPRESSED_SUMMARY_ONLY:aVrfWithInnerStatements~" : {
-            "name" : "~MATCH_SUPPRESSED_SUMMARY_ONLY:aVrfWithInnerStatements~",
             "lines" : [
               {
                 "action" : "ACCEPT",
                 "ipWildcard" : "192.168.0.0/16",
                 "lengthRange" : "17-32"
               }
-            ]
+            ],
+            "name" : "~MATCH_SUPPRESSED_SUMMARY_ONLY:aVrfWithInnerStatements~"
           }
         },
         "routingPolicies" : {
@@ -9231,7 +9231,6 @@
         },
         "routeFilterLists" : {
           "~OSPF_SUMMARY_FILTER:default:0~" : {
-            "name" : "~OSPF_SUMMARY_FILTER:default:0~",
             "lines" : [
               {
                 "action" : "REJECT",
@@ -9243,10 +9242,10 @@
                 "ipWildcard" : "0.0.0.0/0",
                 "lengthRange" : "0-32"
               }
-            ]
+            ],
+            "name" : "~OSPF_SUMMARY_FILTER:default:0~"
           },
           "~OSPF_SUMMARY_FILTER:default:16909056~" : {
-            "name" : "~OSPF_SUMMARY_FILTER:default:16909056~",
             "lines" : [
               {
                 "action" : "REJECT",
@@ -9258,7 +9257,8 @@
                 "ipWildcard" : "0.0.0.0/0",
                 "lengthRange" : "0-32"
               }
-            ]
+            ],
+            "name" : "~OSPF_SUMMARY_FILTER:default:16909056~"
           }
         },
         "routingPolicies" : {
@@ -11073,14 +11073,14 @@
         "deviceType" : "SWITCH",
         "routeFilterLists" : {
           "PFX_LIST" : {
-            "name" : "PFX_LIST",
             "lines" : [
               {
                 "action" : "ACCEPT",
                 "ipWildcard" : "10.0.0.0/15",
                 "lengthRange" : "15-32"
               }
-            ]
+            ],
+            "name" : "PFX_LIST"
           }
         },
         "routingPolicies" : {
@@ -12748,14 +12748,14 @@
         "deviceType" : "ROUTER",
         "routeFilterLists" : {
           "~MATCH_SUPPRESSED_SUMMARY_ONLY:default~" : {
-            "name" : "~MATCH_SUPPRESSED_SUMMARY_ONLY:default~",
             "lines" : [
               {
                 "action" : "ACCEPT",
                 "ipWildcard" : "1.0.0.0/8",
                 "lengthRange" : "9-32"
               }
-            ]
+            ],
+            "name" : "~MATCH_SUPPRESSED_SUMMARY_ONLY:default~"
           }
         },
         "routingPolicies" : {
@@ -13564,7 +13564,6 @@
         },
         "routeFilterLists" : {
           "~OSPF_SUMMARY_FILTER:default:0~" : {
-            "name" : "~OSPF_SUMMARY_FILTER:default:0~",
             "lines" : [
               {
                 "action" : "REJECT",
@@ -13576,7 +13575,8 @@
                 "ipWildcard" : "0.0.0.0/0",
                 "lengthRange" : "0-32"
               }
-            ]
+            ],
+            "name" : "~OSPF_SUMMARY_FILTER:default:0~"
           }
         },
         "routingPolicies" : {
@@ -13842,14 +13842,14 @@
         "deviceType" : "SWITCH",
         "routeFilterLists" : {
           "DENY-IPV4-ANY-IN" : {
-            "name" : "DENY-IPV4-ANY-IN",
             "lines" : [
               {
                 "action" : "REJECT",
                 "ipWildcard" : "0.0.0.0/0",
                 "lengthRange" : "0-32"
               }
-            ]
+            ],
+            "name" : "DENY-IPV4-ANY-IN"
           }
         },
         "vendorFamily" : {
@@ -13991,14 +13991,14 @@
         },
         "routeFilterLists" : {
           "~SUMMARY1_2_0_0_16_RF~" : {
-            "name" : "~SUMMARY1_2_0_0_16_RF~",
             "lines" : [
               {
                 "action" : "ACCEPT",
                 "ipWildcard" : "1.2.0.0/16",
                 "lengthRange" : "17-32"
               }
-            ]
+            ],
+            "name" : "~SUMMARY1_2_0_0_16_RF~"
           }
         },
         "routingPolicies" : {
@@ -16440,7 +16440,6 @@
         },
         "routeFilterLists" : {
           "route-filter-test-v4:t1" : {
-            "name" : "route-filter-test-v4:t1",
             "lines" : [
               {
                 "action" : "ACCEPT",
@@ -16487,7 +16486,8 @@
                 "ipWildcard" : "1.7.0.0/24",
                 "lengthRange" : "24-24"
               }
-            ]
+            ],
+            "name" : "route-filter-test-v4:t1"
           }
         },
         "routingPolicies" : {
@@ -16603,14 +16603,14 @@
         "deviceType" : "SWITCH",
         "routeFilterLists" : {
           "~AGGREGATE_10_0_0_0_8_RF~" : {
-            "name" : "~AGGREGATE_10_0_0_0_8_RF~",
             "lines" : [
               {
                 "action" : "ACCEPT",
                 "ipWildcard" : "10.0.0.0/8",
                 "lengthRange" : "9-32"
               }
-            ]
+            ],
+            "name" : "~AGGREGATE_10_0_0_0_8_RF~"
           }
         },
         "routingPolicies" : {
@@ -20825,24 +20825,24 @@
         "deviceType" : "SWITCH",
         "routeFilterLists" : {
           "default" : {
-            "name" : "default",
             "lines" : [
               {
                 "action" : "ACCEPT",
                 "ipWildcard" : "0.0.0.0/0",
                 "lengthRange" : "0-0"
               }
-            ]
+            ],
+            "name" : "default"
           },
           "test" : {
-            "name" : "test",
             "lines" : [
               {
                 "action" : "ACCEPT",
                 "ipWildcard" : "192.168.100.2/31",
                 "lengthRange" : "31-31"
               }
-            ]
+            ],
+            "name" : "test"
           }
         },
         "routingPolicies" : {
@@ -20900,17 +20900,16 @@
         "deviceType" : "SWITCH",
         "routeFilterLists" : {
           "default_route" : {
-            "name" : "default_route",
             "lines" : [
               {
                 "action" : "ACCEPT",
                 "ipWildcard" : "0.0.0.0",
                 "lengthRange" : "32-32"
               }
-            ]
+            ],
+            "name" : "default_route"
           },
           "ucla_networks" : {
-            "name" : "ucla_networks",
             "lines" : [
               {
                 "action" : "ACCEPT",
@@ -20952,7 +20951,8 @@
                 "ipWildcard" : "198.17.109.0/24",
                 "lengthRange" : "24-32"
               }
-            ]
+            ],
+            "name" : "ucla_networks"
           }
         },
         "vendorFamily" : {
@@ -20989,14 +20989,14 @@
         },
         "routeFilterLists" : {
           "v4_list" : {
-            "name" : "v4_list",
             "lines" : [
               {
                 "action" : "ACCEPT",
                 "ipWildcard" : "0.0.0.0/0",
                 "lengthRange" : "0-0"
               }
-            ]
+            ],
+            "name" : "v4_list"
           }
         },
         "routingPolicies" : {

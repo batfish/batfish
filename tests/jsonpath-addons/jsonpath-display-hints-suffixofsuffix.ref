@@ -439,7 +439,6 @@
               ],
               "routeFilterLists" : {
                 "101" : {
-                  "name" : "101",
                   "lines" : [
                     {
                       "action" : "ACCEPT",
@@ -451,10 +450,10 @@
                       "ipWildcard" : "1.0.2.0/24",
                       "lengthRange" : "24-24"
                     }
-                  ]
+                  ],
+                  "name" : "101"
                 },
                 "103" : {
-                  "name" : "103",
                   "lines" : [
                     {
                       "action" : "ACCEPT",
@@ -466,10 +465,10 @@
                       "ipWildcard" : "3.0.2.0/24",
                       "lengthRange" : "24-24"
                     }
-                  ]
+                  ],
+                  "name" : "103"
                 },
                 "inbound_route_filter" : {
-                  "name" : "inbound_route_filter",
                   "lines" : [
                     {
                       "action" : "REJECT",
@@ -481,27 +480,28 @@
                       "ipWildcard" : "0.0.0.0/0",
                       "lengthRange" : "0-32"
                     }
-                  ]
+                  ],
+                  "name" : "inbound_route_filter"
                 },
                 "outbound_routes" : {
-                  "name" : "outbound_routes",
                   "lines" : [
                     {
                       "action" : "ACCEPT",
                       "ipWildcard" : "2.128.0.0/9",
                       "lengthRange" : "16-32"
                     }
-                  ]
+                  ],
+                  "name" : "outbound_routes"
                 },
                 "~MATCH_SUPPRESSED_SUMMARY_ONLY:default~" : {
-                  "name" : "~MATCH_SUPPRESSED_SUMMARY_ONLY:default~",
                   "lines" : [
                     {
                       "action" : "ACCEPT",
                       "ipWildcard" : "2.128.0.0/16",
                       "lengthRange" : "17-32"
                     }
-                  ]
+                  ],
+                  "name" : "~MATCH_SUPPRESSED_SUMMARY_ONLY:default~"
                 }
               },
               "routingPolicies" : {

@@ -173,7 +173,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
   static {
     MATCH_DEFAULT_ROUTE =
         new MatchPrefixSet(
-            new DestinationNetwork(),
+            DestinationNetwork.instance(),
             new ExplicitPrefixSet(
                 new PrefixSpace(new PrefixRange(Prefix.ZERO, new SubRange(0, 0)))));
     MATCH_DEFAULT_ROUTE.setComment("match default route");
@@ -1236,7 +1236,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         List<BooleanExpr> generateAggregateConditions = new ArrayList<>();
         generateAggregateConditions.add(
             new MatchPrefixSet(
-                new DestinationNetwork(),
+                DestinationNetwork.instance(),
                 new ExplicitPrefixSet(new PrefixSpace(PrefixRange.fromPrefix(prefix)))));
         generateAggregateConditions.add(new MatchProtocol(RoutingProtocol.AGGREGATE));
 
@@ -1346,7 +1346,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
                 List<BooleanExpr> exportNetworkConditions =
                     ImmutableList.of(
                         new MatchPrefixSet(
-                            new DestinationNetwork(), new ExplicitPrefixSet(exportSpace)),
+                            DestinationNetwork.instance(), new ExplicitPrefixSet(exportSpace)),
                         new Not(new MatchProtocol(RoutingProtocol.BGP)),
                         new Not(new MatchProtocol(RoutingProtocol.IBGP)),
                         new Not(new MatchProtocol(RoutingProtocol.AGGREGATE)),
@@ -1505,7 +1505,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       List<BooleanExpr> generateAggregateConditions = new ArrayList<>();
       generateAggregateConditions.add(
           new MatchPrefixSet(
-              new DestinationNetwork(),
+              DestinationNetwork.instance(),
               new ExplicitPrefixSet(new PrefixSpace(PrefixRange.fromPrefix(prefix)))));
       generateAggregateConditions.add(new MatchProtocol(RoutingProtocol.AGGREGATE));
 
@@ -1721,7 +1721,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
               newBgpProcess.addToOriginationSpace(space);
               exportNetworkConditions
                   .getConjuncts()
-                  .add(new MatchPrefixSet(new DestinationNetwork(), new ExplicitPrefixSet(space)));
+                  .add(
+                      new MatchPrefixSet(
+                          DestinationNetwork.instance(), new ExplicitPrefixSet(space)));
               exportNetworkConditions
                   .getConjuncts()
                   .add(new Not(new MatchProtocol(RoutingProtocol.BGP)));
