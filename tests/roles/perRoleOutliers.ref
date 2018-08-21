@@ -167,7 +167,6 @@
           "as2border2"
         ],
         "structDefinition" : {
-          "name" : "102",
           "lines" : [
             {
               "action" : "ACCEPT",
@@ -179,7 +178,8 @@
               "ipWildcard" : "2.128.0.0/16",
               "lengthRange" : "16-16"
             }
-          ]
+          ],
+          "name" : "102"
         },
         "structType" : "RouteFilterList",
         "role" : "border"

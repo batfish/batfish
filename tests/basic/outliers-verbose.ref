@@ -194,7 +194,6 @@
         "hypothesis" : "sameDefinition",
         "name" : "101",
         "structDefinition" : {
-          "name" : "101",
           "lines" : [
             {
               "action" : "ACCEPT",
@@ -206,7 +205,8 @@
               "ipWildcard" : "1.0.2.0/24",
               "lengthRange" : "24-24"
             }
-          ]
+          ],
+          "name" : "101"
         },
         "structType" : "RouteFilterList"
       },
@@ -518,7 +518,6 @@
         "hypothesis" : "sameDefinition",
         "name" : "105",
         "structDefinition" : {
-          "name" : "105",
           "lines" : [
             {
               "action" : "ACCEPT",
@@ -540,7 +539,8 @@
               "ipWildcard" : "3.0.2.0/24",
               "lengthRange" : "24-24"
             }
-          ]
+          ],
+          "name" : "105"
         },
         "structType" : "RouteFilterList"
       },
@@ -552,14 +552,14 @@
         "hypothesis" : "sameDefinition",
         "name" : "default_list",
         "structDefinition" : {
-          "name" : "default_list",
           "lines" : [
             {
               "action" : "ACCEPT",
               "ipWildcard" : "0.0.0.0/0",
               "lengthRange" : "0-0"
             }
-          ]
+          ],
+          "name" : "default_list"
         },
         "structType" : "RouteFilterList"
       },
@@ -571,14 +571,14 @@
         "hypothesis" : "sameDefinition",
         "name" : "outbound_routes",
         "structDefinition" : {
-          "name" : "outbound_routes",
           "lines" : [
             {
               "action" : "ACCEPT",
               "ipWildcard" : "2.128.0.0/9",
               "lengthRange" : "16-32"
             }
-          ]
+          ],
+          "name" : "outbound_routes"
         },
         "structType" : "RouteFilterList"
       },
@@ -754,7 +754,6 @@
           "as1border2"
         ],
         "structDefinition" : {
-          "name" : "103",
           "lines" : [
             {
               "action" : "ACCEPT",
@@ -766,7 +765,8 @@
               "ipWildcard" : "3.0.2.0/24",
               "lengthRange" : "24-24"
             }
-          ]
+          ],
+          "name" : "103"
         },
         "structType" : "RouteFilterList"
       },
@@ -1134,14 +1134,14 @@
         "hypothesis" : "sameDefinition",
         "name" : "as4-prefixes",
         "structDefinition" : {
-          "name" : "as4-prefixes",
           "lines" : [
             {
               "action" : "ACCEPT",
               "ipWildcard" : "4.0.0.0/8",
               "lengthRange" : "8-32"
             }
-          ]
+          ],
+          "name" : "as4-prefixes"
         },
         "structType" : "RouteFilterList"
       },
@@ -1347,7 +1347,6 @@
           "as2dept1"
         ],
         "structDefinition" : {
-          "name" : "102",
           "lines" : [
             {
               "action" : "ACCEPT",
@@ -1359,7 +1358,8 @@
               "ipWildcard" : "2.128.0.0/16",
               "lengthRange" : "16-16"
             }
-          ]
+          ],
+          "name" : "102"
         },
         "structType" : "RouteFilterList"
       },
@@ -2034,7 +2034,6 @@
           "as3border2"
         ],
         "structDefinition" : {
-          "name" : "inbound_route_filter",
           "lines" : [
             {
               "action" : "REJECT",
@@ -2046,7 +2045,8 @@
               "ipWildcard" : "0.0.0.0/0",
               "lengthRange" : "0-32"
             }
-          ]
+          ],
+          "name" : "inbound_route_filter"
         },
         "structType" : "RouteFilterList"
       },

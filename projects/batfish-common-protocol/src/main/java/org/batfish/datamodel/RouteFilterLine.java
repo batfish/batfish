@@ -2,12 +2,11 @@ package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.google.common.base.MoreObjects;
-import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 import java.io.Serializable;
+import java.util.Objects;
 
-@JsonSchemaDescription("A line in a RouteFilterList")
+/** A line in a {@link RouteFilterList}. */
 public class RouteFilterLine implements Serializable {
 
   private static final String PROP_ACTION = "action";
@@ -51,48 +50,37 @@ public class RouteFilterLine implements Serializable {
     } else if (!(o instanceof RouteFilterLine)) {
       return false;
     }
+
     RouteFilterLine other = (RouteFilterLine) o;
-    if (_action != other._action) {
-      return false;
-    }
-    if (!_lengthRange.equals(other._lengthRange)) {
-      return false;
-    }
-    if (!_ipWildcard.equals(other._ipWildcard)) {
-      return false;
-    }
-    return true;
+    return Objects.equals(_action, other._action)
+        && Objects.equals(_lengthRange, other._lengthRange)
+        && Objects.equals(_ipWildcard, other._ipWildcard);
   }
 
+  /** The action the underlying access-list will take when this line matches an IPV4 route. */
   @JsonProperty(PROP_ACTION)
-  @JsonPropertyDescription(
-      "The action the underlying access-list will take when this line matches an IPV4 route.")
   public LineAction getAction() {
     return _action;
   }
 
+  /** The range of acceptable prefix-lengths for a route. */
   @JsonProperty(PROP_LENGTH_RANGE)
-  @JsonPropertyDescription("The range of acceptable prefix-lengths for a route.")
   public SubRange getLengthRange() {
     return _lengthRange;
   }
 
+  /**
+   * The bits against which to compare a route's prefix. The mask of this IP Wildcard determines
+   * which bits must match.
+   */
   @JsonProperty(PROP_IP_WILDCARD)
-  @JsonPropertyDescription(
-      "The bits against which to compare a route's prefix. The mask of this IP Wildcard determines "
-          + "which bits must match")
   public IpWildcard getIpWildcard() {
     return _ipWildcard;
   }
 
   @Override
   public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + _action.ordinal();
-    result = prime * result + _lengthRange.hashCode();
-    result = prime * result + _ipWildcard.hashCode();
-    return result;
+    return Objects.hash(_action.ordinal(), _lengthRange, _ipWildcard);
   }
 
   public String toCompactString() {
