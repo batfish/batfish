@@ -1,16 +1,16 @@
-package org.batfish.question.ipsecpeers;
+package org.batfish.question.ipsecsessionstatus;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
-import static org.batfish.question.ipsecpeers.IpsecPeeringInfo.IpsecPeeringStatus.MISSING_END_POINT;
+import static org.batfish.question.ipsecsessionstatus.IpsecSessionInfo.IpsecSessionStatus.MISSING_END_POINT;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
 
-/** Captures the configuration state of an IPSec peering */
-public class IpsecPeeringInfo {
+/** Captures the configuration state of an IPSec session */
+public class IpsecSessionInfo {
 
-  public enum IpsecPeeringStatus {
+  public enum IpsecSessionStatus {
     IPSEC_SESSION_ESTABLISHED,
     IKE_PHASE1_FAILED,
     IKE_PHASE1_KEY_MISMATCH,
@@ -34,9 +34,9 @@ public class IpsecPeeringInfo {
 
   @Nullable private String _responderTunnelInterface;
 
-  @Nonnull private IpsecPeeringStatus _ipsecPeeringStatus;
+  @Nonnull private IpsecSessionStatus _ipsecSessionStatus;
 
-  private IpsecPeeringInfo(
+  private IpsecSessionInfo(
       @Nonnull String initiatorHostname,
       @Nonnull String initiatorInterface,
       @Nonnull Ip initiatorIp,
@@ -45,7 +45,7 @@ public class IpsecPeeringInfo {
       @Nullable String responderInterface,
       @Nullable Ip responderIp,
       @Nullable String responderTunnelInterface,
-      IpsecPeeringStatus ipsecPeeringStatus) {
+      IpsecSessionStatus ipsecSessionStatus) {
     _initiatorHostname = initiatorHostname;
     _initiatorInterface = initiatorInterface;
     _initiatorIp = initiatorIp;
@@ -54,7 +54,7 @@ public class IpsecPeeringInfo {
     _responderInterface = responderInterface;
     _responderIp = responderIp;
     _responderTunnelInterface = responderTunnelInterface;
-    _ipsecPeeringStatus = firstNonNull(ipsecPeeringStatus, MISSING_END_POINT);
+    _ipsecSessionStatus = firstNonNull(ipsecSessionStatus, MISSING_END_POINT);
   }
 
   @Nonnull
@@ -98,8 +98,8 @@ public class IpsecPeeringInfo {
   }
 
   @Nonnull
-  public IpsecPeeringStatus getIpsecPeeringStatus() {
-    return _ipsecPeeringStatus;
+  public IpsecSessionStatus getIpsecSessionStatus() {
+    return _ipsecSessionStatus;
   }
 
   public static Builder builder() {
@@ -123,7 +123,7 @@ public class IpsecPeeringInfo {
 
     private String _responderTunnelInterface;
 
-    private IpsecPeeringStatus _ipsecPeeringStatus;
+    private IpsecSessionStatus _ipsecSessionStatus;
 
     private Builder() {}
 
@@ -167,13 +167,13 @@ public class IpsecPeeringInfo {
       return this;
     }
 
-    public Builder setIpsecPeeringStatus(IpsecPeeringStatus ipsecPeeringStatus) {
-      _ipsecPeeringStatus = ipsecPeeringStatus;
+    public Builder setIpsecSessionStatus(IpsecSessionStatus ipsecSessionStatus) {
+      _ipsecSessionStatus = ipsecSessionStatus;
       return this;
     }
 
-    public IpsecPeeringInfo build() {
-      return new IpsecPeeringInfo(
+    public IpsecSessionInfo build() {
+      return new IpsecSessionInfo(
           _initiatorHostname,
           _initiatorInterface,
           _initiatorIp,
@@ -182,7 +182,7 @@ public class IpsecPeeringInfo {
           _responderInterface,
           _responderIp,
           _responderTunnelInterface,
-          _ipsecPeeringStatus);
+          _ipsecSessionStatus);
     }
   }
 }

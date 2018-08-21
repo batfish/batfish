@@ -1,10 +1,10 @@
-package org.batfish.question.ipsecpeers;
+package org.batfish.question.ipsecsessionstatus;
 
-import static org.batfish.question.ipsecpeers.IpsecPeeringInfo.IpsecPeeringStatus.IKE_PHASE1_FAILED;
-import static org.batfish.question.ipsecpeers.IpsecPeeringInfo.IpsecPeeringStatus.IKE_PHASE1_KEY_MISMATCH;
-import static org.batfish.question.ipsecpeers.IpsecPeeringInfo.IpsecPeeringStatus.IPSEC_PHASE2_FAILED;
-import static org.batfish.question.ipsecpeers.IpsecPeeringInfo.IpsecPeeringStatus.IPSEC_SESSION_ESTABLISHED;
-import static org.batfish.question.ipsecpeers.IpsecPeeringInfo.IpsecPeeringStatus.MISSING_END_POINT;
+import static org.batfish.question.ipsecsessionstatus.IpsecSessionInfo.IpsecSessionStatus.IKE_PHASE1_FAILED;
+import static org.batfish.question.ipsecsessionstatus.IpsecSessionInfo.IpsecSessionStatus.IKE_PHASE1_KEY_MISMATCH;
+import static org.batfish.question.ipsecsessionstatus.IpsecSessionInfo.IpsecSessionStatus.IPSEC_PHASE2_FAILED;
+import static org.batfish.question.ipsecsessionstatus.IpsecSessionInfo.IpsecSessionStatus.IPSEC_SESSION_ESTABLISHED;
+import static org.batfish.question.ipsecsessionstatus.IpsecSessionInfo.IpsecSessionStatus.MISSING_END_POINT;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashMultiset;
@@ -37,7 +37,7 @@ import org.batfish.datamodel.table.Row.RowBuilder;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
 
-class IpsecPeersAnswerer extends Answerer {
+class IpsecSessionStatusAnswerer extends Answerer {
   static final String COL_INITIATOR = "Initiator";
   static final String COL_INIT_INTERFACE = "InitiatorInterface";
   static final String COL_INIT_IP = "InitiatorIp";
@@ -48,13 +48,13 @@ class IpsecPeersAnswerer extends Answerer {
   static final String COL_TUNNEL_INTERFACES = "TunnelInterfaces";
   private static final String NOT_APPLICABLE = "Not Applicable";
 
-  IpsecPeersAnswerer(Question question, IBatfish batfish) {
+  IpsecSessionStatusAnswerer(Question question, IBatfish batfish) {
     super(question, batfish);
   }
 
   @Override
   public AnswerElement answer() {
-    IpsecPeersQuestion question = (IpsecPeersQuestion) _question;
+    IpsecSessionStatusQuestion question = (IpsecSessionStatusQuestion) _question;
     Map<String, Configuration> configurations = _batfish.loadConfigurations();
     NetworkConfigurations networkConfigurations = NetworkConfigurations.of(configurations);
     ValueGraph<IpsecPeerConfigId, IpsecSession> ipsecTopology =
@@ -65,27 +65,27 @@ class IpsecPeersAnswerer extends Answerer {
 
     TableAnswerElement answerElement = new TableAnswerElement(createTableMetaData(question));
 
-    Multiset<IpsecPeeringInfo> ipsecPeerings =
+    Multiset<IpsecSessionInfo> ipsecSessionInfos =
         rawAnswer(networkConfigurations, ipsecTopology, initiatorNodes, responderNodes);
     answerElement.postProcessAnswer(
         question,
-        ipsecPeerings
+        ipsecSessionInfos
             .stream()
             .filter(
-                ipsecPeeringInfo ->
-                    question.matchesStatus(ipsecPeeringInfo.getIpsecPeeringStatus()))
-            .map(IpsecPeersAnswerer::toRow)
+                ipsecSessionInfo ->
+                    question.matchesStatus(ipsecSessionInfo.getIpsecSessionStatus()))
+            .map(IpsecSessionStatusAnswerer::toRow)
             .collect(Collectors.toCollection(HashMultiset::create)));
     return answerElement;
   }
 
   @VisibleForTesting
-  static Multiset<IpsecPeeringInfo> rawAnswer(
+  static Multiset<IpsecSessionInfo> rawAnswer(
       NetworkConfigurations networkConfigurations,
       ValueGraph<IpsecPeerConfigId, IpsecSession> ipsecTopology,
       Set<String> initiatorNodes,
       Set<String> responderNodes) {
-    Multiset<IpsecPeeringInfo> ipsecPeeringsInfos = HashMultiset.create();
+    Multiset<IpsecSessionInfo> ipsecSessionInfos = HashMultiset.create();
 
     for (IpsecPeerConfigId node : ipsecTopology.nodes()) {
       IpsecPeerConfig ipsecPeerConfig = networkConfigurations.getIpecPeerConfig(node);
@@ -94,18 +94,18 @@ class IpsecPeersAnswerer extends Answerer {
           || !initiatorNodes.contains(node.getHostName())) {
         continue;
       }
-      IpsecPeeringInfo.Builder ipsecPeeringInfoBuilder = IpsecPeeringInfo.builder();
+      IpsecSessionInfo.Builder ipsecSessionInfoBuilder = IpsecSessionInfo.builder();
 
-      ipsecPeeringInfoBuilder.setInitiatorHostname(node.getHostName());
-      ipsecPeeringInfoBuilder.setInitiatorInterface(ipsecPeerConfig.getPhysicalInterface());
-      ipsecPeeringInfoBuilder.setInitiatorIp(ipsecPeerConfig.getLocalAddress());
-      ipsecPeeringInfoBuilder.setInitiatorTunnelInterface(ipsecPeerConfig.getTunnelInterface());
+      ipsecSessionInfoBuilder.setInitiatorHostname(node.getHostName());
+      ipsecSessionInfoBuilder.setInitiatorInterface(ipsecPeerConfig.getPhysicalInterface());
+      ipsecSessionInfoBuilder.setInitiatorIp(ipsecPeerConfig.getLocalAddress());
+      ipsecSessionInfoBuilder.setInitiatorTunnelInterface(ipsecPeerConfig.getTunnelInterface());
 
       Set<IpsecPeerConfigId> neighbors = ipsecTopology.adjacentNodes(node);
 
       if (neighbors.isEmpty()) {
-        ipsecPeeringInfoBuilder.setIpsecPeeringStatus(MISSING_END_POINT);
-        ipsecPeeringsInfos.add(ipsecPeeringInfoBuilder.build());
+        ipsecSessionInfoBuilder.setIpsecSessionStatus(MISSING_END_POINT);
+        ipsecSessionInfos.add(ipsecSessionInfoBuilder.build());
         continue;
       }
 
@@ -121,44 +121,45 @@ class IpsecPeersAnswerer extends Answerer {
         if (ipsecPeerConfigNeighbor == null) {
           continue;
         }
-        processNeighbor(neighbor, ipsecPeeringInfoBuilder, ipsecPeerConfigNeighbor, ipsecSession);
-        ipsecPeeringsInfos.add(ipsecPeeringInfoBuilder.build());
+        processNeighbor(neighbor, ipsecSessionInfoBuilder, ipsecPeerConfigNeighbor, ipsecSession);
+        ipsecSessionInfos.add(ipsecSessionInfoBuilder.build());
       }
     }
-    return ipsecPeeringsInfos;
+    return ipsecSessionInfos;
   }
 
   private static void processNeighbor(
       IpsecPeerConfigId ipsecPeerConfigIdNeighbor,
-      IpsecPeeringInfo.Builder ipsecPeeringInfoBuilder,
+      IpsecSessionInfo.Builder ipsecSessioningInfoBuilder,
       IpsecPeerConfig ipsecPeerConfigNeighbor,
       IpsecSession ipsecSession) {
 
-    ipsecPeeringInfoBuilder.setResponderHostname(ipsecPeerConfigIdNeighbor.getHostName());
-    ipsecPeeringInfoBuilder.setResponderInterface(ipsecPeerConfigNeighbor.getPhysicalInterface());
-    ipsecPeeringInfoBuilder.setResponderIp(ipsecPeerConfigNeighbor.getLocalAddress());
-    ipsecPeeringInfoBuilder.setResponderTunnelInterface(
+    ipsecSessioningInfoBuilder.setResponderHostname(ipsecPeerConfigIdNeighbor.getHostName());
+    ipsecSessioningInfoBuilder.setResponderInterface(
+        ipsecPeerConfigNeighbor.getPhysicalInterface());
+    ipsecSessioningInfoBuilder.setResponderIp(ipsecPeerConfigNeighbor.getLocalAddress());
+    ipsecSessioningInfoBuilder.setResponderTunnelInterface(
         ipsecPeerConfigNeighbor.getTunnelInterface());
 
     if (ipsecSession.getNegotiatedIkeP1Proposal() == null) {
-      ipsecPeeringInfoBuilder.setIpsecPeeringStatus(IKE_PHASE1_FAILED);
+      ipsecSessioningInfoBuilder.setIpsecSessionStatus(IKE_PHASE1_FAILED);
     } else if (ipsecSession.getNegotiatedIkeP1Key() == null) {
-      ipsecPeeringInfoBuilder.setIpsecPeeringStatus(IKE_PHASE1_KEY_MISMATCH);
+      ipsecSessioningInfoBuilder.setIpsecSessionStatus(IKE_PHASE1_KEY_MISMATCH);
     } else if (ipsecSession.getNegotiatedIpsecP2Proposal() == null) {
-      ipsecPeeringInfoBuilder.setIpsecPeeringStatus(IPSEC_PHASE2_FAILED);
+      ipsecSessioningInfoBuilder.setIpsecSessionStatus(IPSEC_PHASE2_FAILED);
     } else {
-      ipsecPeeringInfoBuilder.setIpsecPeeringStatus(IPSEC_SESSION_ESTABLISHED);
+      ipsecSessioningInfoBuilder.setIpsecSessionStatus(IPSEC_SESSION_ESTABLISHED);
     }
   }
 
   /**
-   * Creates a {@link Row} object from the corresponding {@link IpsecPeeringInfo} object.
+   * Creates a {@link Row} object from the corresponding {@link IpsecSessionInfo} object.
    *
-   * @param info input {@link IpsecPeeringInfo}
+   * @param info input {@link IpsecSessionInfo}
    * @return The output {@link Row}
    */
   @VisibleForTesting
-  static Row toRow(@Nonnull IpsecPeeringInfo info) {
+  static Row toRow(@Nonnull IpsecSessionInfo info) {
     RowBuilder row = Row.builder();
     row.put(COL_INITIATOR, new Node(info.getInitiatorHostname()))
         .put(
@@ -183,7 +184,7 @@ class IpsecPeersAnswerer extends Answerer {
                     "%s->%s",
                     info.getInitiatorTunnelInterface(), info.getResponderTunnelInterface())
                 : NOT_APPLICABLE)
-        .put(COL_STATUS, info.getIpsecPeeringStatus());
+        .put(COL_STATUS, info.getIpsecSessionStatus());
     return row.build();
   }
 
@@ -192,7 +193,7 @@ class IpsecPeersAnswerer extends Answerer {
     List<ColumnMetadata> columnMetadata = getColumnMetadata();
     String textDesc =
         String.format(
-            " IPSec peering between initiator ${%s} with interface {%s} and IP ${%s} and responder ${%s} with interface {%s} and IP ${%s}s has status ${%s}.",
+            " IPSec peering session between initiator ${%s} with interface {%s} and IP ${%s} and responder ${%s} with interface {%s} and IP ${%s}s has status ${%s}.",
             COL_INITIATOR,
             COL_INIT_INTERFACE,
             COL_INIT_IP,
@@ -217,7 +218,7 @@ class IpsecPeersAnswerer extends Answerer {
         new ColumnMetadata(COL_RESPONDER_INTERFACE, Schema.INTERFACE, "Responder Interface"),
         new ColumnMetadata(COL_RESPONDER_IP, Schema.IP, "Responder IP"),
         new ColumnMetadata(
-            COL_TUNNEL_INTERFACES, Schema.STRING, "Tunnel interfaces pair used in peering"),
-        new ColumnMetadata(COL_STATUS, Schema.STRING, "IPSec peering status"));
+            COL_TUNNEL_INTERFACES, Schema.STRING, "Tunnel interfaces pair used in peering session"),
+        new ColumnMetadata(COL_STATUS, Schema.STRING, "IPSec session status"));
   }
 }

@@ -1,22 +1,22 @@
-package org.batfish.question.ipsecpeers;
+package org.batfish.question.ipsecsessionstatus;
 
 import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
-import static org.batfish.question.ipsecpeers.IpsecPeeringInfo.IpsecPeeringStatus.IKE_PHASE1_FAILED;
-import static org.batfish.question.ipsecpeers.IpsecPeeringInfo.IpsecPeeringStatus.IKE_PHASE1_KEY_MISMATCH;
-import static org.batfish.question.ipsecpeers.IpsecPeeringInfo.IpsecPeeringStatus.IPSEC_PHASE2_FAILED;
-import static org.batfish.question.ipsecpeers.IpsecPeeringInfo.IpsecPeeringStatus.IPSEC_SESSION_ESTABLISHED;
-import static org.batfish.question.ipsecpeers.IpsecPeeringInfo.IpsecPeeringStatus.MISSING_END_POINT;
-import static org.batfish.question.ipsecpeers.IpsecPeeringInfoMatchers.hasIpsecPeeringStatus;
-import static org.batfish.question.ipsecpeers.IpsecPeersAnswerer.COL_INITIATOR;
-import static org.batfish.question.ipsecpeers.IpsecPeersAnswerer.COL_INIT_INTERFACE;
-import static org.batfish.question.ipsecpeers.IpsecPeersAnswerer.COL_INIT_IP;
-import static org.batfish.question.ipsecpeers.IpsecPeersAnswerer.COL_RESPONDER;
-import static org.batfish.question.ipsecpeers.IpsecPeersAnswerer.COL_RESPONDER_INTERFACE;
-import static org.batfish.question.ipsecpeers.IpsecPeersAnswerer.COL_RESPONDER_IP;
-import static org.batfish.question.ipsecpeers.IpsecPeersAnswerer.COL_STATUS;
-import static org.batfish.question.ipsecpeers.IpsecPeersAnswerer.COL_TUNNEL_INTERFACES;
-import static org.batfish.question.ipsecpeers.IpsecPeersAnswerer.rawAnswer;
-import static org.batfish.question.ipsecpeers.IpsecPeersAnswerer.toRow;
+import static org.batfish.question.ipsecsessionstatus.IpsecSessionInfo.IpsecSessionStatus.IKE_PHASE1_FAILED;
+import static org.batfish.question.ipsecsessionstatus.IpsecSessionInfo.IpsecSessionStatus.IKE_PHASE1_KEY_MISMATCH;
+import static org.batfish.question.ipsecsessionstatus.IpsecSessionInfo.IpsecSessionStatus.IPSEC_PHASE2_FAILED;
+import static org.batfish.question.ipsecsessionstatus.IpsecSessionInfo.IpsecSessionStatus.IPSEC_SESSION_ESTABLISHED;
+import static org.batfish.question.ipsecsessionstatus.IpsecSessionInfo.IpsecSessionStatus.MISSING_END_POINT;
+import static org.batfish.question.ipsecsessionstatus.IpsecSessionInfoMatchers.hasIpsecSessionStatus;
+import static org.batfish.question.ipsecsessionstatus.IpsecSessionStatusAnswerer.COL_INITIATOR;
+import static org.batfish.question.ipsecsessionstatus.IpsecSessionStatusAnswerer.COL_INIT_INTERFACE;
+import static org.batfish.question.ipsecsessionstatus.IpsecSessionStatusAnswerer.COL_INIT_IP;
+import static org.batfish.question.ipsecsessionstatus.IpsecSessionStatusAnswerer.COL_RESPONDER;
+import static org.batfish.question.ipsecsessionstatus.IpsecSessionStatusAnswerer.COL_RESPONDER_INTERFACE;
+import static org.batfish.question.ipsecsessionstatus.IpsecSessionStatusAnswerer.COL_RESPONDER_IP;
+import static org.batfish.question.ipsecsessionstatus.IpsecSessionStatusAnswerer.COL_STATUS;
+import static org.batfish.question.ipsecsessionstatus.IpsecSessionStatusAnswerer.COL_TUNNEL_INTERFACES;
+import static org.batfish.question.ipsecsessionstatus.IpsecSessionStatusAnswerer.rawAnswer;
+import static org.batfish.question.ipsecsessionstatus.IpsecSessionStatusAnswerer.toRow;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
@@ -47,8 +47,8 @@ import org.batfish.datamodel.table.Row;
 import org.junit.Before;
 import org.junit.Test;
 
-/** Tests for {@link IpsecPeersAnswerer} */
-public class IpsecPeersAnswererTest {
+/** Tests for {@link IpsecSessionStatusAnswerer} */
+public class IpsecSessionStatusAnswererTest {
   private static final String INITIATOR_IPSEC_PEER_CONFIG = "initiatorIpsecPeerConfig";
   private static final String RESPONDER_IPSEC_PEER_CONFIG = "responderIpsecPeerConfig";
 
@@ -109,7 +109,7 @@ public class IpsecPeersAnswererTest {
         new IpsecPeerConfigId(INITIATOR_IPSEC_PEER_CONFIG, INITIATOR_HOST_NAME),
         new IpsecPeerConfigId(RESPONDER_IPSEC_PEER_CONFIG, RESPONDER_HOST_NAME),
         _ipsecSessionBuilder.build());
-    Multiset<IpsecPeeringInfo> peerings =
+    Multiset<IpsecSessionInfo> sessions =
         rawAnswer(
             _networkConfigurations,
             _graph,
@@ -117,9 +117,9 @@ public class IpsecPeersAnswererTest {
             ImmutableSet.of(RESPONDER_HOST_NAME));
 
     // answer should have exactly one row
-    assertThat(peerings, hasSize(1));
+    assertThat(sessions, hasSize(1));
 
-    assertThat(peerings.iterator().next(), hasIpsecPeeringStatus(equalTo(IKE_PHASE1_FAILED)));
+    assertThat(sessions.iterator().next(), hasIpsecSessionStatus(equalTo(IKE_PHASE1_FAILED)));
   }
 
   @Test
@@ -130,7 +130,7 @@ public class IpsecPeersAnswererTest {
         new IpsecPeerConfigId(INITIATOR_IPSEC_PEER_CONFIG, INITIATOR_HOST_NAME),
         new IpsecPeerConfigId(RESPONDER_IPSEC_PEER_CONFIG, RESPONDER_HOST_NAME),
         _ipsecSessionBuilder.build());
-    Multiset<IpsecPeeringInfo> peerings =
+    Multiset<IpsecSessionInfo> ipsecSessionInfos =
         rawAnswer(
             _networkConfigurations,
             _graph,
@@ -138,9 +138,11 @@ public class IpsecPeersAnswererTest {
             ImmutableSet.of(RESPONDER_HOST_NAME));
 
     // answer should have exactly one row
-    assertThat(peerings, hasSize(1));
+    assertThat(ipsecSessionInfos, hasSize(1));
 
-    assertThat(peerings.iterator().next(), hasIpsecPeeringStatus(equalTo(IKE_PHASE1_KEY_MISMATCH)));
+    assertThat(
+        ipsecSessionInfos.iterator().next(),
+        hasIpsecSessionStatus(equalTo(IKE_PHASE1_KEY_MISMATCH)));
   }
 
   @Test
@@ -152,7 +154,7 @@ public class IpsecPeersAnswererTest {
         new IpsecPeerConfigId(INITIATOR_IPSEC_PEER_CONFIG, INITIATOR_HOST_NAME),
         new IpsecPeerConfigId(RESPONDER_IPSEC_PEER_CONFIG, RESPONDER_HOST_NAME),
         _ipsecSessionBuilder.build());
-    Multiset<IpsecPeeringInfo> peerings =
+    Multiset<IpsecSessionInfo> ipsecSessionInfos =
         rawAnswer(
             _networkConfigurations,
             _graph,
@@ -160,16 +162,17 @@ public class IpsecPeersAnswererTest {
             ImmutableSet.of(RESPONDER_HOST_NAME));
 
     // answer should have exactly one row
-    assertThat(peerings, hasSize(1));
+    assertThat(ipsecSessionInfos, hasSize(1));
 
-    assertThat(peerings.iterator().next(), hasIpsecPeeringStatus(equalTo(IPSEC_PHASE2_FAILED)));
+    assertThat(
+        ipsecSessionInfos.iterator().next(), hasIpsecSessionStatus(equalTo(IPSEC_PHASE2_FAILED)));
   }
 
   @Test
   public void testGenerateRowsMissingEndpoint() {
     // Responder not set in the graph
     _graph.addNode(new IpsecPeerConfigId(INITIATOR_IPSEC_PEER_CONFIG, INITIATOR_HOST_NAME));
-    Multiset<IpsecPeeringInfo> peerings =
+    Multiset<IpsecSessionInfo> ipsecSessionInfos =
         rawAnswer(
             _networkConfigurations,
             _graph,
@@ -177,9 +180,10 @@ public class IpsecPeersAnswererTest {
             ImmutableSet.of(RESPONDER_HOST_NAME));
 
     // answer should have exactly one row
-    assertThat(peerings, hasSize(1));
+    assertThat(ipsecSessionInfos, hasSize(1));
 
-    assertThat(peerings.iterator().next(), hasIpsecPeeringStatus(equalTo(MISSING_END_POINT)));
+    assertThat(
+        ipsecSessionInfos.iterator().next(), hasIpsecSessionStatus(equalTo(MISSING_END_POINT)));
   }
 
   @Test
@@ -192,7 +196,7 @@ public class IpsecPeersAnswererTest {
         new IpsecPeerConfigId(INITIATOR_IPSEC_PEER_CONFIG, INITIATOR_HOST_NAME),
         new IpsecPeerConfigId(RESPONDER_IPSEC_PEER_CONFIG, RESPONDER_HOST_NAME),
         _ipsecSessionBuilder.build());
-    Multiset<IpsecPeeringInfo> peerings =
+    Multiset<IpsecSessionInfo> ipsecSessionInfos =
         rawAnswer(
             _networkConfigurations,
             _graph,
@@ -200,17 +204,18 @@ public class IpsecPeersAnswererTest {
             ImmutableSet.of(RESPONDER_HOST_NAME));
 
     // answer should have exactly one row
-    assertThat(peerings, hasSize(1));
+    assertThat(ipsecSessionInfos, hasSize(1));
 
     assertThat(
-        peerings.iterator().next(), hasIpsecPeeringStatus(equalTo(IPSEC_SESSION_ESTABLISHED)));
+        ipsecSessionInfos.iterator().next(),
+        hasIpsecSessionStatus(equalTo(IPSEC_SESSION_ESTABLISHED)));
   }
 
   @Test
   public void testToRow() {
-    IpsecPeeringInfo.Builder ipsecPeeringInfoBuilder = IpsecPeeringInfo.builder();
+    IpsecSessionInfo.Builder ipsecPeeringInfoBuilder = IpsecSessionInfo.builder();
 
-    IpsecPeeringInfo ipsecPeeringInfo =
+    IpsecSessionInfo ipsecSessionInfo =
         ipsecPeeringInfoBuilder
             .setInitiatorHostname(INITIATOR_HOST_NAME)
             .setInitiatorInterface("Test_interface")
@@ -220,10 +225,10 @@ public class IpsecPeersAnswererTest {
             .setResponderInterface("Test_interface")
             .setResponderIp(new Ip("2.3.4.5"))
             .setResponderTunnelInterface("Tunnel1_interface")
-            .setIpsecPeeringStatus(IPSEC_SESSION_ESTABLISHED)
+            .setIpsecSessionStatus(IPSEC_SESSION_ESTABLISHED)
             .build();
 
-    Row row = toRow(ipsecPeeringInfo);
+    Row row = toRow(ipsecSessionInfo);
 
     assertThat(
         row,

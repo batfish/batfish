@@ -1,4 +1,4 @@
-package org.batfish.question.ipsecpeers;
+package org.batfish.question.ipsecsessionstatus;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 
@@ -10,10 +10,10 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
-import org.batfish.question.ipsecpeers.IpsecPeeringInfo.IpsecPeeringStatus;
+import org.batfish.question.ipsecsessionstatus.IpsecSessionInfo.IpsecSessionStatus;
 
-/** Return status of all IPSec peers in the network */
-public class IpsecPeersQuestion extends Question {
+/** Return status of all IPSec sessions in the network */
+public class IpsecSessionStatusQuestion extends Question {
 
   private static final String PROP_INITIATOR_REGEX = "initiatorRegex";
 
@@ -21,7 +21,7 @@ public class IpsecPeersQuestion extends Question {
 
   private static final String PROP_STATUS_REGEX = "statusRegex";
 
-  private static final String QUESTION_NAME = "ipsecpeers";
+  private static final String QUESTION_NAME = "ipsecsessionstatus";
 
   @Nonnull private NodesSpecifier _initiatorRegex;
 
@@ -30,7 +30,7 @@ public class IpsecPeersQuestion extends Question {
   @Nonnull private Pattern _statusRegex;
 
   @JsonCreator
-  public IpsecPeersQuestion(
+  public IpsecSessionStatusQuestion(
       @Nullable @JsonProperty(PROP_INITIATOR_REGEX) NodesSpecifier initiatorRegex,
       @Nullable @JsonProperty(PROP_RESPONDER_REGEX) NodesSpecifier responderRegex,
       @Nullable @JsonProperty(PROP_STATUS_REGEX) String statusRegex) {
@@ -67,7 +67,7 @@ public class IpsecPeersQuestion extends Question {
     return _statusRegex.toString();
   }
 
-  boolean matchesStatus(@Nullable IpsecPeeringStatus status) {
+  boolean matchesStatus(@Nullable IpsecSessionStatus status) {
     return status != null && _statusRegex.matcher(status.toString()).matches();
   }
 }
