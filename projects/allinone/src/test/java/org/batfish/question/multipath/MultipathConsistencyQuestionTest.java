@@ -18,8 +18,12 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
-public class TestMultipathQuestion {
+/** Tests of {@link MultipathConsistencyQuestion}. */
+@RunWith(JUnit4.class)
+public class MultipathConsistencyQuestionTest {
   @Rule public TemporaryFolder temp = new TemporaryFolder();
 
   private TestNetwork _testNetwork;
