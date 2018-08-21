@@ -751,12 +751,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
             Function.identity());
 
     // Map each ACL line to its own phony config with ACL and dependencies specialized to that line
-    Map<AclLine, Configuration> configs = new TreeMap<>();
     TypeMatchExprsCollector<PermittedByAcl> permittedByAclFinder =
         new TypeMatchExprsCollector<>(PermittedByAcl.class);
-    aclSpecs
-        .parallelStream()
-        .forEach(aclSpec -> collectConfigs(aclSpec, configs, permittedByAclFinder));
+    Map<AclLine, Configuration> configs =
+        aclSpecs
+            .parallelStream()
+            .map(aclSpec -> collectConfigs(aclSpec, permittedByAclFinder))
+            .flatMap(configsMap -> configsMap.entrySet().stream())
+            .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
 
     // Find all unreachable lines
     List<NodSatJob<AclLine>> lineReachabilityJobs = generateUnreachableAclLineJobs(configs);
@@ -812,10 +814,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
-  private void collectConfigs(
-      AclSpecs aclSpec,
-      Map<AclLine, Configuration> configs,
-      TypeMatchExprsCollector<PermittedByAcl> permittedByAclFinder) {
+  private Map<AclLine, Configuration> collectConfigs(
+      AclSpecs aclSpec, TypeMatchExprsCollector<PermittedByAcl> permittedByAclFinder) {
     String hostname = aclSpec.reprHostname;
     List<IpAccessListLine> lines = aclSpec.acl.getSanitizedAcl().getLines();
     String aclName = aclSpec.acl.getAclName();
@@ -825,53 +825,61 @@ public class Batfish extends PluginConsumer implements IBatfish {
             Function.identity(),
             iface -> Interface.builder().setName(iface).build());
 
-    IntStream.range(0, lines.size())
+    return IntStream.range(0, lines.size())
         .parallel()
-        .forEach(
-            lineNum -> {
-              AclLine aclLine = new AclLine(hostname, aclName, lineNum);
-              AclLineMatchExpr matchExpr = lines.get(lineNum).getMatchCondition();
+        .mapToObj(i -> new AclLine(hostname, aclName, i))
+        .collect(
+            Collectors.toMap(
+                Function.identity(),
+                aclLine -> {
+                  int lineNum = aclLine.getLine();
+                  AclLineMatchExpr matchExpr = lines.get(lineNum).getMatchCondition();
 
-              // If line matches other ACLs, build aclEnv
-              BDDPacket bddPacket = new BDDPacket();
-              BDDSourceManager sourceMgr =
-                  BDDSourceManager.forInterfaces(bddPacket, aclSpec.acl.getInterfaces());
-              List<PermittedByAcl> aclMatchExprs = matchExpr.accept(permittedByAclFinder);
-              Map<String, Supplier<BDD>> aclEnv = new TreeMap<>();
-              if (!aclMatchExprs.isEmpty()) {
-                Map<String, IpAccessList> dependencies = aclSpec.acl.getDependencies();
-                aclEnv =
-                    dependencies
-                        .entrySet()
-                        .stream()
-                        .collect(
-                            Collectors.toMap(
-                                dep -> dep.getKey(),
-                                dep ->
-                                    () ->
-                                        BDDAcl.create(
-                                                bddPacket,
-                                                dep.getValue(),
-                                                dependencies,
-                                                ImmutableMap.of(),
-                                                sourceMgr)
-                                            .getBdd()));
-              }
+                  // If line matches other ACLs, build aclEnv
+                  BDDPacket bddPacket = new BDDPacket();
+                  BDDSourceManager sourceMgr =
+                      BDDSourceManager.forInterfaces(bddPacket, aclSpec.acl.getInterfaces());
+                  List<PermittedByAcl> aclMatchExprs = matchExpr.accept(permittedByAclFinder);
+                  Map<String, Supplier<BDD>> aclEnv = new TreeMap<>();
+                  if (!aclMatchExprs.isEmpty()) {
+                    Map<String, IpAccessList> dependencies = aclSpec.acl.getDependencies();
+                    aclEnv =
+                        dependencies
+                            .entrySet()
+                            .stream()
+                            .collect(
+                                Collectors.toMap(
+                                    dep -> dep.getKey(),
+                                    dep ->
+                                        () ->
+                                            BDDAcl.create(
+                                                    bddPacket,
+                                                    dep.getValue(),
+                                                    dependencies,
+                                                    ImmutableMap.of(),
+                                                    sourceMgr)
+                                                .getBdd()));
+                  }
 
-              // Specialize ACL and dependencies to current line
-              BDD lineBDD =
-                  matchExpr.accept(
-                      new AclLineMatchExprToBDD(
-                          bddPacket.getFactory(), bddPacket, aclEnv, ImmutableMap.of(), sourceMgr));
-              BDDIpAccessListSpecializer specializer =
-                  new BDDIpAccessListSpecializer(bddPacket, lineBDD, ImmutableMap.of(), sourceMgr);
+                  // Specialize ACL and dependencies to current line
+                  BDD lineBDD =
+                      matchExpr.accept(
+                          new AclLineMatchExprToBDD(
+                              bddPacket.getFactory(),
+                              bddPacket,
+                              aclEnv,
+                              ImmutableMap.of(),
+                              sourceMgr));
+                  BDDIpAccessListSpecializer specializer =
+                      new BDDIpAccessListSpecializer(
+                          bddPacket, lineBDD, ImmutableMap.of(), sourceMgr);
 
-              // Build new configuration from ACLs and interfaces
-              Configuration c = new Configuration(hostname, ConfigurationFormat.CISCO_IOS);
-              c.setInterfaces(interfaces);
-              c.setIpAccessLists(collectAcls(lineNum, aclSpec, specializer));
-              configs.put(aclLine, c);
-            });
+                  // Build new configuration from ACLs and interfaces
+                  Configuration c = new Configuration(hostname, ConfigurationFormat.CISCO_IOS);
+                  c.setInterfaces(interfaces);
+                  c.setIpAccessLists(collectAcls(lineNum, aclSpec, specializer));
+                  return c;
+                }));
   }
 
   private NavigableMap<String, IpAccessList> collectAcls(
