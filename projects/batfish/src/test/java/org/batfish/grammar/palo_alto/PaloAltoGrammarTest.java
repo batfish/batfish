@@ -13,6 +13,7 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructu
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructureWithDefinitionLines;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasMemberInterfaces;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasOutgoingFilter;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasZone;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
@@ -70,6 +71,8 @@ import org.batfish.grammar.flattener.FlattenerLineMap;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.representation.palo_alto.Interface;
+import org.batfish.representation.palo_alto.PaloAltoStructureType;
+import org.batfish.representation.palo_alto.PaloAltoStructureUsage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -100,6 +103,27 @@ public class PaloAltoGrammarTest {
   private static Flow createFlow(IpProtocol protocol, int sourcePort, int destinationPort) {
     Flow.Builder fb = new Flow.Builder();
     fb.setIngressNode("node");
+    fb.setIpProtocol(protocol);
+    fb.setDstPort(destinationPort);
+    fb.setSrcPort(sourcePort);
+    fb.setTag("test");
+    return fb.build();
+  }
+
+  private static Flow createFlow(String sourceAddress, String destinationAddress) {
+    return createFlow(sourceAddress, destinationAddress, IpProtocol.TCP, 1, 1);
+  }
+
+  private static Flow createFlow(
+      String sourceAddress,
+      String destinationAddress,
+      IpProtocol protocol,
+      int sourcePort,
+      int destinationPort) {
+    Flow.Builder fb = new Flow.Builder();
+    fb.setIngressNode("node");
+    fb.setSrcIp(new Ip(sourceAddress));
+    fb.setDstIp(new Ip(destinationAddress));
     fb.setIpProtocol(protocol);
     fb.setDstPort(destinationPort);
     fb.setSrcPort(sourcePort);
@@ -304,6 +328,123 @@ public class PaloAltoGrammarTest {
 
     // Confirm both ntp servers show up
     assertThat(c.getNtpServers(), containsInAnyOrder("1.1.1.1", "ntpservername"));
+  }
+
+  @Test
+  public void testRulebase() throws IOException {
+    String hostname = "rulebase";
+    Configuration c = parseConfig(hostname);
+
+    String if1name = "ethernet1/1";
+    String if2name = "ethernet1/2";
+    String if3name = "ethernet1/3";
+    String if4name = "ethernet1/4";
+    Flow z1ToZ1permitted = createFlow("1.1.2.255", "1.1.1.2");
+    Flow z1ToZ1rejectedDestination = createFlow("1.1.2.2", "1.1.1.3");
+    Flow z1ToZ1rejectedService = createFlow("1.1.2.2", "1.1.1.3", IpProtocol.TCP, 1, 999);
+    Flow z2ToZ1permitted = createFlow("1.1.4.255", "1.1.1.2");
+    Flow noZoneToZ1rejected = createFlow("1.1.3.2", "1.1.1.2");
+
+    // Confirm flow matching deny rule is rejected
+    assertThat(
+        c, hasInterface(if1name, hasOutgoingFilter(rejects(z1ToZ1rejectedService, if2name, c))));
+
+    // Confirm intrazone flow matching allow rule is accepted
+    assertThat(c, hasInterface(if1name, hasOutgoingFilter(accepts(z1ToZ1permitted, if2name, c))));
+    // Confirm intrazone flow not matching allow rule (bad destination address) is rejected
+    assertThat(
+        c,
+        hasInterface(if1name, hasOutgoingFilter(rejects(z1ToZ1rejectedDestination, if2name, c))));
+
+    // Confirm interzone flow matching allow rule is accepted
+    assertThat(c, hasInterface(if1name, hasOutgoingFilter(accepts(z2ToZ1permitted, if4name, c))));
+
+    // Confirm flow from an unzoned interface is rejected
+    assertThat(
+        c, hasInterface(if1name, hasOutgoingFilter(rejects(noZoneToZ1rejected, if3name, c))));
+  }
+
+  @Test
+  public void testRulebaseDefault() throws IOException {
+    String hostname = "rulebase-default";
+    Configuration c = parseConfig(hostname);
+
+    String if1name = "ethernet1/1";
+    String if2name = "ethernet1/2";
+    String if3name = "ethernet1/3";
+    String if4name = "ethernet1/4";
+    Flow z1ToZ1 = createFlow("1.1.1.2", "1.1.2.2");
+    Flow z1ToZ2 = createFlow("1.1.1.2", "1.1.4.2");
+    Flow z2ToZ1 = createFlow("1.1.4.2", "1.1.1.2");
+    Flow noZoneToZ1 = createFlow("1.1.3.2", "1.1.1.2");
+    Flow z1ToNoZone = createFlow("1.1.1.2", "1.1.3.2");
+
+    // Confirm intrazone flow is accepted by default
+    assertThat(c, hasInterface(if2name, hasOutgoingFilter(accepts(z1ToZ1, if1name, c))));
+
+    // Confirm interzone flows are rejected by default
+    assertThat(c, hasInterface(if4name, hasOutgoingFilter(rejects(z1ToZ2, if1name, c))));
+    assertThat(c, hasInterface(if1name, hasOutgoingFilter(rejects(z2ToZ1, if4name, c))));
+
+    // Confirm unzoned flows are rejected by default
+    assertThat(c, hasInterface(if1name, hasOutgoingFilter(rejects(noZoneToZ1, if3name, c))));
+    assertThat(c, hasInterface(if3name, hasOutgoingFilter(rejects(z1ToNoZone, if1name, c))));
+  }
+
+  @Test
+  public void testRulebaseReference() throws IOException {
+    String hostname = "rulebase";
+    String filename = "configs/" + hostname;
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    String serviceName = computeObjectName(DEFAULT_VSYS_NAME, "SERVICE1");
+    String z1Name = computeObjectName(DEFAULT_VSYS_NAME, "z1");
+    String z2Name = computeObjectName(DEFAULT_VSYS_NAME, "z2");
+    String zoneUndefName = computeObjectName(DEFAULT_VSYS_NAME, "ZONE_UNDEF");
+
+    // Confirm reference count is correct for used structure
+    assertThat(ccae, hasNumReferrers(filename, PaloAltoStructureType.SERVICE, serviceName, 1));
+    assertThat(ccae, hasNumReferrers(filename, PaloAltoStructureType.ZONE, z1Name, 2));
+    assertThat(ccae, hasNumReferrers(filename, PaloAltoStructureType.ZONE, z2Name, 2));
+
+    // Confirm undefined references are detected
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            filename,
+            PaloAltoStructureType.SERVICE_OR_SERVICE_GROUP,
+            "SERVICE_UNDEF",
+            PaloAltoStructureUsage.RULEBASE_SERVICE));
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            filename,
+            PaloAltoStructureType.ZONE,
+            zoneUndefName,
+            PaloAltoStructureUsage.RULE_FROM_ZONE));
+  }
+
+  @Test
+  public void testVsysRulebase() throws IOException {
+    String hostname = "vsys-rulebase";
+    Configuration c = parseConfig(hostname);
+
+    String if1name = "ethernet1/1";
+    String if2name = "ethernet1/2";
+    String if3name = "ethernet1/3";
+    String if4name = "ethernet1/4";
+    Flow flow = createFlow("1.1.1.1", "2.2.2.2");
+
+    // Confirm flow is rejected in vsys1
+    assertThat(c, hasInterface(if1name, hasOutgoingFilter(rejects(flow, if2name, c))));
+
+    // Confirm intravsys flow is accepted in vsys2
+    assertThat(c, hasInterface(if3name, hasOutgoingFilter(accepts(flow, if4name, c))));
+    // Confirm intervsys flow (even from same zone name) is rejected in vsys2
+    assertThat(c, hasInterface(if3name, hasOutgoingFilter(rejects(flow, if2name, c))));
   }
 
   @Test
