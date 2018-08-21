@@ -51,6 +51,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.datamodel.table.Rows;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -308,17 +309,16 @@ public final class ReachFilterAnswererTest {
   @Test
   public void testTraceFilter() {
     ReachFilterQuestion question = new ReachFilterQuestion();
-    Flow flow =
-        Flow.builder().setIngressNode(_config.getHostname()).setDstIp(IP2).setTag("tag").build();
+    String hostname = _config.getHostname();
+    Flow flow = Flow.builder().setIngressNode(hostname).setDstIp(IP2).setTag("tag").build();
     ReachFilterAnswerer answerer = new ReachFilterAnswerer(question, _batfish);
-    TableAnswerElement ae = answerer.traceFilter(_config, ACL, flow);
+    Rows rows = answerer.traceFilterRows(hostname, ACL, flow);
     assertThat(
-        ae,
-        hasRows(
-            contains(
-                allOf(
-                    hasColumn("action", equalTo("REJECT"), Schema.STRING),
-                    hasColumn("filterName", equalTo(ACL.getName()), Schema.STRING)))));
+        rows.getData(),
+        contains(
+            allOf(
+                hasColumn("action", equalTo("REJECT"), Schema.STRING),
+                hasColumn("filterName", equalTo(ACL.getName()), Schema.STRING))));
   }
 
   @Test
