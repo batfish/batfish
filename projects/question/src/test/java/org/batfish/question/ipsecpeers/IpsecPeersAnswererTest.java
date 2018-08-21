@@ -234,12 +234,22 @@ public class IpsecPeersAnswererTest {
                 COL_INIT_INTERFACE,
                 equalTo(new NodeInterfacePair(INITIATOR_HOST_NAME, "Test_interface")),
                 Schema.INTERFACE),
-            hasColumn(COL_INIT_IP, equalTo(new Ip("1.2.3.4")), Schema.IP),
+            hasColumn(COL_INIT_IP, equalTo(new Ip("1.2.3.4")), Schema.IP)));
+
+    // Splitting the assertions to avoid "Unchecked generics arrays creation warnings for allOf()
+    // varargs"
+    assertThat(
+        row,
+        allOf(
             hasColumn(
                 COL_RESPONDER_INTERFACE,
                 equalTo(new NodeInterfacePair(RESPONDER_HOST_NAME, "Test_interface")),
                 Schema.INTERFACE),
-            hasColumn(COL_RESPONDER_IP, equalTo(new Ip("2.3.4.5")), Schema.IP),
+            hasColumn(COL_RESPONDER_IP, equalTo(new Ip("2.3.4.5")), Schema.IP)));
+
+    assertThat(
+        row,
+        allOf(
             hasColumn(
                 COL_TUNNEL_INTERFACES,
                 equalTo("Tunnel_interface->Tunnel1_interface"),
