@@ -125,6 +125,8 @@ public class IpsecPeeringInfo {
 
     private IpsecPeeringStatus _ipsecPeeringStatus;
 
+    private Builder() {}
+
     public Builder setInitiatorHostname(String initiatorHostname) {
       _initiatorHostname = initiatorHostname;
       return this;

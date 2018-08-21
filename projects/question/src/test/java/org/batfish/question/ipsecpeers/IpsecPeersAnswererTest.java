@@ -8,11 +8,13 @@ import static org.batfish.question.ipsecpeers.IpsecPeeringInfo.IpsecPeeringStatu
 import static org.batfish.question.ipsecpeers.IpsecPeeringInfo.IpsecPeeringStatus.MISSING_END_POINT;
 import static org.batfish.question.ipsecpeers.IpsecPeeringInfoMatchers.hasIpsecPeeringStatus;
 import static org.batfish.question.ipsecpeers.IpsecPeersAnswerer.COL_INITIATOR;
-import static org.batfish.question.ipsecpeers.IpsecPeersAnswerer.COL_INIT_INTERFACE_IP;
+import static org.batfish.question.ipsecpeers.IpsecPeersAnswerer.COL_INIT_INTERFACE;
+import static org.batfish.question.ipsecpeers.IpsecPeersAnswerer.COL_INIT_IP;
 import static org.batfish.question.ipsecpeers.IpsecPeersAnswerer.COL_RESPONDER;
-import static org.batfish.question.ipsecpeers.IpsecPeersAnswerer.COL_RESPONDER_INTERFACE_IP;
+import static org.batfish.question.ipsecpeers.IpsecPeersAnswerer.COL_RESPONDER_INTERFACE;
+import static org.batfish.question.ipsecpeers.IpsecPeersAnswerer.COL_RESPONDER_IP;
 import static org.batfish.question.ipsecpeers.IpsecPeersAnswerer.COL_STATUS;
-import static org.batfish.question.ipsecpeers.IpsecPeersAnswerer.COL_TUNNEL_INTERFACE;
+import static org.batfish.question.ipsecpeers.IpsecPeersAnswerer.COL_TUNNEL_INTERFACES;
 import static org.batfish.question.ipsecpeers.IpsecPeersAnswerer.rawAnswer;
 import static org.batfish.question.ipsecpeers.IpsecPeersAnswerer.toRow;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -39,6 +41,7 @@ import org.batfish.datamodel.IpsecStaticPeerConfig;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.table.Row;
 import org.junit.Before;
@@ -227,10 +230,18 @@ public class IpsecPeersAnswererTest {
         allOf(
             hasColumn(COL_INITIATOR, equalTo(new Node(INITIATOR_HOST_NAME)), Schema.NODE),
             hasColumn(COL_RESPONDER, equalTo(new Node(RESPONDER_HOST_NAME)), Schema.NODE),
-            hasColumn(COL_INIT_INTERFACE_IP, equalTo("Test_interface:1.2.3.4"), Schema.STRING),
-            hasColumn(COL_RESPONDER_INTERFACE_IP, equalTo("Test_interface:2.3.4.5"), Schema.STRING),
             hasColumn(
-                COL_TUNNEL_INTERFACE,
+                COL_INIT_INTERFACE,
+                equalTo(new NodeInterfacePair(INITIATOR_HOST_NAME, "Test_interface")),
+                Schema.INTERFACE),
+            hasColumn(COL_INIT_IP, equalTo(new Ip("1.2.3.4")), Schema.IP),
+            hasColumn(
+                COL_RESPONDER_INTERFACE,
+                equalTo(new NodeInterfacePair(RESPONDER_HOST_NAME, "Test_interface")),
+                Schema.INTERFACE),
+            hasColumn(COL_RESPONDER_IP, equalTo(new Ip("2.3.4.5")), Schema.IP),
+            hasColumn(
+                COL_TUNNEL_INTERFACES,
                 equalTo("Tunnel_interface->Tunnel1_interface"),
                 Schema.STRING),
             hasColumn(COL_STATUS, equalTo("IPSEC_SESSION_ESTABLISHED"), Schema.STRING)));

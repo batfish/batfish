@@ -27,6 +27,7 @@ import org.batfish.datamodel.IpsecSession;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.questions.Question;
@@ -38,11 +39,13 @@ import org.batfish.datamodel.table.TableMetadata;
 
 class IpsecPeersAnswerer extends Answerer {
   static final String COL_INITIATOR = "Initiator";
-  static final String COL_INIT_INTERFACE_IP = "InitiatorInterfaceAndIp";
+  static final String COL_INIT_INTERFACE = "InitiatorInterface";
+  static final String COL_INIT_IP = "InitiatorIp";
   static final String COL_RESPONDER = "Responder";
-  static final String COL_RESPONDER_INTERFACE_IP = "ResponderInterfaceAndIp";
+  static final String COL_RESPONDER_INTERFACE = "ResponderInterface";
+  static final String COL_RESPONDER_IP = "ResponderIp";
   static final String COL_STATUS = "status";
-  static final String COL_TUNNEL_INTERFACE = "TunnelInterface";
+  static final String COL_TUNNEL_INTERFACES = "TunnelInterfaces";
   private static final String NOT_APPLICABLE = "Not Applicable";
 
   IpsecPeersAnswerer(Question question, IBatfish batfish) {
@@ -154,20 +157,27 @@ class IpsecPeersAnswerer extends Answerer {
    * @param info input {@link IpsecPeeringInfo}
    * @return The output {@link Row}
    */
-  public static Row toRow(@Nonnull IpsecPeeringInfo info) {
+  @VisibleForTesting
+  static Row toRow(@Nonnull IpsecPeeringInfo info) {
     RowBuilder row = Row.builder();
     row.put(COL_INITIATOR, new Node(info.getInitiatorHostname()))
         .put(
-            COL_INIT_INTERFACE_IP,
-            String.format("%s:%s", info.getInitiatorInterface(), info.getInitiatorIp()))
+            COL_INIT_INTERFACE,
+            new NodeInterfacePair(
+                info.getInitiatorHostname(), String.format("%s", info.getInitiatorInterface())))
+        .put(COL_INIT_IP, info.getInitiatorIp())
         .put(
             COL_RESPONDER,
             info.getResponderHostname() == null ? null : new Node(info.getResponderHostname()))
         .put(
-            COL_RESPONDER_INTERFACE_IP,
-            String.format("%s:%s", info.getResponderInterface(), info.getResponderIp()))
+            COL_RESPONDER_INTERFACE,
+            info.getResponderHostname() != null && info.getResponderInterface() != null
+                ? new NodeInterfacePair(
+                    info.getResponderHostname(), String.format("%s", info.getResponderInterface()))
+                : null)
+        .put(COL_RESPONDER_IP, info.getResponderIp())
         .put(
-            COL_TUNNEL_INTERFACE,
+            COL_TUNNEL_INTERFACES,
             info.getInitiatorTunnelInterface() != null && info.getResponderTunnelInterface() != null
                 ? String.format(
                     "%s->%s",
@@ -182,11 +192,13 @@ class IpsecPeersAnswerer extends Answerer {
     List<ColumnMetadata> columnMetadata = getColumnMetadata();
     String textDesc =
         String.format(
-            " IPSec peering between initiator ${%s} with interface and IP ${%s} and responder ${%s} with interface and IP ${%s}s has status ${%s}.",
+            " IPSec peering between initiator ${%s} with interface {%s} and IP ${%s} and responder ${%s} with interface {%s} and IP ${%s}s has status ${%s}.",
             COL_INITIATOR,
-            COL_INIT_INTERFACE_IP,
+            COL_INIT_INTERFACE,
+            COL_INIT_IP,
             COL_RESPONDER,
-            COL_RESPONDER_INTERFACE_IP,
+            COL_RESPONDER_INTERFACE,
+            COL_RESPONDER_IP,
             COL_STATUS);
     DisplayHints dhints = question.getDisplayHints();
     if (dhints != null && dhints.getTextDesc() != null) {
@@ -199,10 +211,13 @@ class IpsecPeersAnswerer extends Answerer {
   private static List<ColumnMetadata> getColumnMetadata() {
     return ImmutableList.of(
         new ColumnMetadata(COL_INITIATOR, Schema.NODE, "IPSec initiator"),
-        new ColumnMetadata(COL_INIT_INTERFACE_IP, Schema.NODE, "Initiator Interface & IP"),
+        new ColumnMetadata(COL_INIT_INTERFACE, Schema.INTERFACE, "Initiator Interface"),
+        new ColumnMetadata(COL_INIT_IP, Schema.IP, "Initiator IP"),
         new ColumnMetadata(COL_RESPONDER, Schema.NODE, "IPSec responder"),
-        new ColumnMetadata(COL_RESPONDER_INTERFACE_IP, Schema.NODE, "Responder Interface & IP"),
-        new ColumnMetadata(COL_STATUS, Schema.STRING, "IPSec peering status"),
-        new ColumnMetadata(COL_TUNNEL_INTERFACE, Schema.STRING, "Tunnel interface"));
+        new ColumnMetadata(COL_RESPONDER_INTERFACE, Schema.INTERFACE, "Responder Interface"),
+        new ColumnMetadata(COL_RESPONDER_IP, Schema.IP, "Responder IP"),
+        new ColumnMetadata(
+            COL_TUNNEL_INTERFACES, Schema.STRING, "Tunnel interfaces pair used in peering"),
+        new ColumnMetadata(COL_STATUS, Schema.STRING, "IPSec peering status"));
   }
 }
