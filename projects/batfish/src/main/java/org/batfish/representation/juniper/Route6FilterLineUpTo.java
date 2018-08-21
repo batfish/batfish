@@ -22,7 +22,7 @@ public final class Route6FilterLineUpTo extends Route6FilterLine {
     int prefixLength = _prefix6.getPrefixLength();
     org.batfish.datamodel.Route6FilterLine line =
         new org.batfish.datamodel.Route6FilterLine(
-            LineAction.ACCEPT, _prefix6, new SubRange(prefixLength, _maxPrefixLength));
+            LineAction.PERMIT, _prefix6, new SubRange(prefixLength, _maxPrefixLength));
     rfl.addLine(line);
   }
 

@@ -282,7 +282,7 @@ class CiscoConversions {
     prefixesToSuppress.forEachRemaining(
         p ->
             matchLonger.addLine(
-                new RouteFilterLine(LineAction.ACCEPT, PrefixRange.moreSpecificThan(p))));
+                new RouteFilterLine(LineAction.PERMIT, PrefixRange.moreSpecificThan(p))));
     // Bookkeeping: record that we created this RouteFilterList to match longer networks.
     c.getRouteFilterLists().put(matchLonger.getName(), matchLonger);
 
@@ -1222,13 +1222,13 @@ class CiscoConversions {
   private static AsPathAccessListLine toAsPathAccessListLine(AsPathSetElem elem) {
     String regex = CiscoConfiguration.toJavaRegex(elem.regex());
     AsPathAccessListLine line = new AsPathAccessListLine();
-    line.setAction(LineAction.ACCEPT);
+    line.setAction(LineAction.PERMIT);
     line.setRegex(regex);
     return line;
   }
 
   private static CommunityListLine toCommunityListLine(CommunitySetElem elem) {
-    return new CommunityListLine(LineAction.ACCEPT, elem.toCommunitySetExpr());
+    return new CommunityListLine(LineAction.PERMIT, elem.toCommunitySetExpr());
   }
 
   private static CommunityListLine toCommunityListLine(ExpandedCommunityListLine eclLine) {

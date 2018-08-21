@@ -126,7 +126,7 @@ public class AclLineMatchExprToBooleanExpr implements GenericAclLineMatchExprVis
       IpAccessListLine line = iter.previous();
       BooleanExpr matched = toBooleanExpr(line.getMatchCondition());
       BooleanExpr permitted =
-          line.getAction() == LineAction.ACCEPT
+          line.getAction() == LineAction.PERMIT
               ? org.batfish.z3.expr.TrueExpr.INSTANCE
               : org.batfish.z3.expr.FalseExpr.INSTANCE;
       expr = new IfThenElse(matched, permitted, expr);

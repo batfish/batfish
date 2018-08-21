@@ -160,7 +160,7 @@ public class CommunityList extends CommunitySetExpr {
             .findFirst();
 
     // "invert != condition" is a concise way of inverting a boolean
-    return action.isPresent() && _invertMatch != (action.get() == LineAction.ACCEPT);
+    return action.isPresent() && _invertMatch != (action.get() == LineAction.PERMIT);
   }
 
   @Override
@@ -251,7 +251,7 @@ public class CommunityList extends CommunitySetExpr {
             .findFirst();
 
     // "invert != condition" is a concise way of inverting a boolean
-    return action.isPresent() && _invertMatch != (action.get() == LineAction.ACCEPT);
+    return action.isPresent() && _invertMatch != (action.get() == LineAction.PERMIT);
   }
 
   /**

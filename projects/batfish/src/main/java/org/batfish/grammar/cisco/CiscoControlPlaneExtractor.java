@@ -7224,12 +7224,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitPi_iosicd_drop(Pi_iosicd_dropContext ctx) {
-    _currentInspectPolicyMap.setClassDefaultAction(LineAction.REJECT);
+    _currentInspectPolicyMap.setClassDefaultAction(LineAction.DENY);
   }
 
   @Override
   public void exitPi_iosicd_pass(Pi_iosicd_passContext ctx) {
-    _currentInspectPolicyMap.setClassDefaultAction(LineAction.ACCEPT);
+    _currentInspectPolicyMap.setClassDefaultAction(LineAction.PERMIT);
   }
 
   @Override
@@ -7301,7 +7301,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           maxLen = toInteger(ctx.eqpl);
         }
         SubRange lengthRange = new SubRange(minLen, maxLen);
-        PrefixListLine line = new PrefixListLine(LineAction.ACCEPT, prefix, lengthRange);
+        PrefixListLine line = new PrefixListLine(LineAction.PERMIT, prefix, lengthRange);
         pl.addLine(line);
       } else {
         Prefix6List pl = _configuration.getPrefix6Lists().computeIfAbsent(name, Prefix6List::new);
@@ -7326,7 +7326,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           maxLen = toInteger(ctx.eqpl);
         }
         SubRange lengthRange = new SubRange(minLen, maxLen);
-        Prefix6ListLine line = new Prefix6ListLine(LineAction.ACCEPT, prefix6, lengthRange);
+        Prefix6ListLine line = new Prefix6ListLine(LineAction.PERMIT, prefix6, lengthRange);
         pl.addLine(line);
       }
     }
@@ -9493,9 +9493,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private LineAction toLineAction(Access_list_actionContext ctx) {
     if (ctx.PERMIT() != null) {
-      return LineAction.ACCEPT;
+      return LineAction.PERMIT;
     } else if (ctx.DENY() != null) {
-      return LineAction.REJECT;
+      return LineAction.DENY;
     } else {
       throw convError(LineAction.class, ctx);
     }

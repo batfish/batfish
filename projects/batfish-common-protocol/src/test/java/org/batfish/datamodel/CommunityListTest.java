@@ -26,7 +26,7 @@ public class CommunityListTest {
         new CommunityList(
             NAME,
             ImmutableList.of(
-                new CommunityListLine(LineAction.ACCEPT, new LiteralCommunity(COMMUNITY1))),
+                new CommunityListLine(LineAction.PERMIT, new LiteralCommunity(COMMUNITY1))),
             false);
 
     assertThat(cl.matchCommunity(null, COMMUNITY1), equalTo(true));
@@ -38,7 +38,7 @@ public class CommunityListTest {
         new CommunityList(
             NAME,
             ImmutableList.of(
-                new CommunityListLine(LineAction.REJECT, new LiteralCommunity(COMMUNITY1))),
+                new CommunityListLine(LineAction.DENY, new LiteralCommunity(COMMUNITY1))),
             false);
 
     assertThat(cl.matchCommunity(null, COMMUNITY1), equalTo(false));

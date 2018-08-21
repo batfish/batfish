@@ -95,9 +95,9 @@ public class FlatVyosControlPlaneExtractor extends FlatVyosParserBaseListener
 
   private static LineAction toAction(Line_actionContext ctx) {
     if (ctx.DENY() != null) {
-      return LineAction.REJECT;
+      return LineAction.DENY;
     } else if (ctx.PERMIT() != null) {
-      return LineAction.ACCEPT;
+      return LineAction.PERMIT;
     } else {
       throw new BatfishException("invalid line_action: " + ctx.getText());
     }

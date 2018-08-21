@@ -81,7 +81,7 @@ public class Route6FilterList extends ComparableStructure<String> {
         int prefixLength = prefix.getPrefixLength();
         SubRange range = line.getLengthRange();
         if (prefixLength >= range.getStart() && prefixLength <= range.getEnd()) {
-          accept = line.getAction() == LineAction.ACCEPT;
+          accept = line.getAction() == LineAction.PERMIT;
           break;
         }
       }

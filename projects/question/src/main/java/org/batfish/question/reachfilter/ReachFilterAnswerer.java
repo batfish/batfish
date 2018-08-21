@@ -271,12 +271,12 @@ public final class ReachFilterAnswerer extends Answerer {
                 acl.getLines()
                     .subList(0, lineNumber)
                     .stream()
-                    .map(l -> l.toBuilder().setAction(LineAction.REJECT).build()),
+                    .map(l -> l.toBuilder().setAction(LineAction.DENY).build()),
                 Stream.of(
                     acl.getLines()
                         .get(lineNumber)
                         .toBuilder()
-                        .setAction(LineAction.ACCEPT)
+                        .setAction(LineAction.PERMIT)
                         .build()))
             .collect(ImmutableList.toImmutableList());
     return IpAccessList.builder().setName(acl.getName()).setLines(lines).build();
@@ -293,9 +293,9 @@ public final class ReachFilterAnswerer extends Answerer {
                             l.toBuilder()
                                 // flip action
                                 .setAction(
-                                    l.getAction() == LineAction.ACCEPT
-                                        ? LineAction.REJECT
-                                        : LineAction.ACCEPT)
+                                    l.getAction() == LineAction.PERMIT
+                                        ? LineAction.DENY
+                                        : LineAction.PERMIT)
                                 .build()),
                 // accept if we reach the end of the ACL
                 Stream.of(IpAccessListLine.ACCEPT_ALL))
