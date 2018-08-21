@@ -3049,14 +3049,17 @@ public final class CiscoConfiguration extends VendorConfiguration {
     // convert standard/extended ipv6 access lists to ipv6 access lists or
     // route6 filter
     // lists
-    List<ExtendedIpv6AccessList> allIpv6ACLs = new ArrayList<>();
     for (StandardIpv6AccessList saList : _standardIpv6AccessLists.values()) {
-      ExtendedIpv6AccessList eaList = saList.toExtendedIpv6AccessList();
-      allIpv6ACLs.add(eaList);
-      // TODO: update correct conversion of standard ACLs to router filter lists for IPv6
+      if (isAclUsedForRoutingv6(saList.getName())) {
+        Route6FilterList rfList = CiscoConversions.toRoute6FilterList(saList);
+        c.getRoute6FilterLists().put(rfList.getName(), rfList);
+      }
+      c.getIp6AccessLists()
+          .put(
+              saList.getName(),
+              CiscoConversions.toIp6AccessList(saList.toExtendedIpv6AccessList()));
     }
-    allIpv6ACLs.addAll(_extendedIpv6AccessLists.values());
-    for (ExtendedIpv6AccessList eaList : allIpv6ACLs) {
+    for (ExtendedIpv6AccessList eaList : _extendedIpv6AccessLists.values()) {
       if (isAclUsedForRoutingv6(eaList.getName())) {
         Route6FilterList rfList = CiscoConversions.toRoute6FilterList(eaList);
         c.getRoute6FilterLists().put(rfList.getName(), rfList);

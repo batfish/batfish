@@ -1093,6 +1093,17 @@ class CiscoConversions {
     return new Route6FilterList(name, lines);
   }
 
+  static Route6FilterList toRoute6FilterList(StandardIpv6AccessList eaList) {
+    String name = eaList.getName();
+    List<Route6FilterLine> lines =
+        eaList
+            .getLines()
+            .stream()
+            .map(CiscoConversions::toRoute6FilterLine)
+            .collect(ImmutableList.toImmutableList());
+    return new Route6FilterList(name, lines);
+  }
+
   static Route6FilterList toRoute6FilterList(Prefix6List list) {
     List<Route6FilterLine> lines =
         list.getLines()
@@ -1248,6 +1259,17 @@ class CiscoConversions {
     return new Route6FilterLine(action, prefix, new SubRange(minPrefixLength, maxPrefixLength));
   }
 
+  /** Convert a standard IPv6 access list line to a route filter list line */
+  private static Route6FilterLine toRoute6FilterLine(StandardIpv6AccessListLine fromLine) {
+    LineAction action = fromLine.getAction();
+    Prefix6 prefix = fromLine.getIpWildcard().toPrefix();
+
+    return new Route6FilterLine(
+        action,
+        new Ip6Wildcard(prefix),
+        new SubRange(prefix.getPrefixLength(), Prefix6.MAX_PREFIX_LENGTH));
+  }
+
   private static RouteFilterLine toRouteFilterLine(ExtendedAccessListLine fromLine) {
     LineAction action = fromLine.getAction();
     IpWildcard srcIpWildcard =
@@ -1269,6 +1291,10 @@ class CiscoConversions {
   /** Convert a standard access list line to a route filter list line */
   private static RouteFilterLine toRouteFilterLine(StandardAccessListLine fromLine) {
     LineAction action = fromLine.getAction();
+    /*
+     * This cast is safe since the other address specifier (network object group specifier)
+     * can be used only from extended ACLs.
+     */
     IpWildcard srcIpWildcard =
         ((WildcardAddressSpecifier) fromLine.getSrcAddressSpecifier()).getIpWildcard();
     Prefix prefix = srcIpWildcard.toPrefix();

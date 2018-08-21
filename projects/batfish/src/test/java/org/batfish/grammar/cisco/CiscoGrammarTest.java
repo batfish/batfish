@@ -296,6 +296,7 @@ import org.batfish.datamodel.matchers.IpsecPolicyMatchers;
 import org.batfish.datamodel.matchers.IpsecProposalMatchers;
 import org.batfish.datamodel.matchers.IpsecVpnMatchers;
 import org.batfish.datamodel.matchers.OspfAreaMatchers;
+import org.batfish.datamodel.matchers.Route6FilterListMatchers;
 import org.batfish.datamodel.matchers.RouteFilterListMatchers;
 import org.batfish.datamodel.matchers.StubSettingsMatchers;
 import org.batfish.datamodel.ospf.OspfArea;
@@ -690,6 +691,12 @@ public class CiscoGrammarTest {
                     .build(),
                 "Ethernet1",
                 c)));
+    // Check Ipv6 as well
+    assertThat(c, hasRoute6FilterList("v6list", permits(new Prefix6("::FFFF:10.0.0.0/105"))));
+    assertThat(
+        c,
+        hasRoute6FilterList(
+            "v6list", Route6FilterListMatchers.rejects(new Prefix6("::FFFF:10.0.0.0/103"))));
   }
 
   @Test
