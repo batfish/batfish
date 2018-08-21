@@ -1,2 +1,2 @@
-init-testrig networks/fullmesh/fullmesh10
+init-snapshot networks/fullmesh/fullmesh10
 test abstract get smt-reachability finalIfaceRegex="Ethernet.*", stats=True, useAbstraction=True 

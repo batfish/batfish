@@ -12,7 +12,7 @@ echo ## If you want to run against www.batfish.org
 echo ## % batfish_client -runmode interactive
 
 echo # load the testing
-init-testrig networks/example2
+init-snapshot networks/example2
 
 echo ################
 echo # The configurations are converted to JSON-based  vendor-independent data model:
