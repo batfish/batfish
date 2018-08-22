@@ -100,30 +100,27 @@ public class Main {
   }
 
   @VisibleForTesting
-  static String readQuestionTemplate(Path file, Map<String, String> templates) {
+  static String readQuestionTemplate(Path file, Map<String, String> templates)
+      throws JSONException, IOException {
     String questionText = CommonUtil.readFile(file);
-    try {
-      JSONObject questionObj = new JSONObject(questionText);
-      if (questionObj.has(BfConsts.PROP_INSTANCE) && !questionObj.isNull(BfConsts.PROP_INSTANCE)) {
-        JSONObject instanceDataObj = questionObj.getJSONObject(BfConsts.PROP_INSTANCE);
-        String instanceDataStr = instanceDataObj.toString();
-        Question.InstanceData instanceData =
-            BatfishObjectMapper.mapper().readValue(instanceDataStr, Question.InstanceData.class);
-        String name = instanceData.getInstanceName();
-        String key = name.toLowerCase();
-        if (templates.containsKey(key) && _logger != null) {
-          _logger.warnf(
-              "Found duplicate template having instance name %s, only the last one in the list of templatedirs will be loaded",
-              name);
-        }
-
-        templates.put(key, questionText);
-        return name;
-      } else {
-        throw new BatfishException(String.format("Question in file:%s has no instance name", file));
+    JSONObject questionObj = new JSONObject(questionText);
+    if (questionObj.has(BfConsts.PROP_INSTANCE) && !questionObj.isNull(BfConsts.PROP_INSTANCE)) {
+      JSONObject instanceDataObj = questionObj.getJSONObject(BfConsts.PROP_INSTANCE);
+      String instanceDataStr = instanceDataObj.toString();
+      Question.InstanceData instanceData =
+          BatfishObjectMapper.mapper().readValue(instanceDataStr, Question.InstanceData.class);
+      String name = instanceData.getInstanceName();
+      String key = name.toLowerCase();
+      if (templates.containsKey(key) && _logger != null) {
+        _logger.warnf(
+            "Found duplicate template having instance name %s, only the last one in the list of templatedirs will be loaded",
+            name);
       }
-    } catch (JSONException | IOException e) {
-      throw new BatfishException("Failed to process question", e);
+
+      templates.put(key, questionText);
+      return name;
+    } else {
+      throw new BatfishException(String.format("Question in file:%s has no instance name", file));
     }
   }
 
@@ -139,7 +136,13 @@ public class Main {
             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
               String filename = file.getFileName().toString();
               if (filename.endsWith(".json")) {
-                readQuestionTemplate(file, templates);
+                try {
+                  readQuestionTemplate(file, templates);
+                } catch (Exception e) {
+                  _logger.errorf(
+                      "Failed to read question template from '%s': %s",
+                      file, Throwables.getStackTraceAsString(e));
+                }
               }
               return FileVisitResult.CONTINUE;
             }
