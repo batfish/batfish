@@ -10644,6 +10644,38 @@
               "numReferrers" : 1
             }
           },
+          "interface" : {
+            "fe-0/0/0" : {
+              "definitionLines" : [
+                4
+              ],
+              "numReferrers" : 1
+            },
+            "fe-0/0/0.0" : {
+              "definitionLines" : [
+                4
+              ],
+              "numReferrers" : 1
+            },
+            "fe-0/0/0.1" : {
+              "definitionLines" : [
+                5
+              ],
+              "numReferrers" : 1
+            },
+            "lo0" : {
+              "definitionLines" : [
+                3
+              ],
+              "numReferrers" : 1
+            },
+            "lo0.0" : {
+              "definitionLines" : [
+                3
+              ],
+              "numReferrers" : 1
+            }
+          },
           "policy-statement" : {
             "as1_to_as1" : {
               "definitionLines" : [
@@ -10736,6 +10768,44 @@
                 23,
                 24,
                 25
+              ],
+              "numReferrers" : 1
+            }
+          },
+          "interface" : {
+            "fe-0/0/0" : {
+              "definitionLines" : [
+                4
+              ],
+              "numReferrers" : 1
+            },
+            "fe-0/0/0.0" : {
+              "definitionLines" : [
+                4
+              ],
+              "numReferrers" : 1
+            },
+            "fe-0/0/0.1" : {
+              "definitionLines" : [
+                5
+              ],
+              "numReferrers" : 1
+            },
+            "fe-0/0/0.2" : {
+              "definitionLines" : [
+                6
+              ],
+              "numReferrers" : 1
+            },
+            "lo0" : {
+              "definitionLines" : [
+                3
+              ],
+              "numReferrers" : 1
+            },
+            "lo0.0" : {
+              "definitionLines" : [
+                3
               ],
               "numReferrers" : 1
             }

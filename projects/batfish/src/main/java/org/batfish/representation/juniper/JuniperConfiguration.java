@@ -2373,7 +2373,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
         JuniperStructureType.INTERFACE,
         JuniperStructureUsage.IKE_GATEWAY_EXTERNAL_INTERFACE,
         JuniperStructureUsage.INTERFACE_SELF_REFERENCE,
-        JuniperStructureUsage.IPSEC_VPN_BIND_INTERFACE);
+        JuniperStructureUsage.IPSEC_VPN_BIND_INTERFACE,
+        JuniperStructureUsage.ROUTING_INSTANCE_INTERFACE);
     markConcreteStructure(
         JuniperStructureType.POLICY_STATEMENT,
         JuniperStructureUsage.BGP_EXPORT_POLICY,

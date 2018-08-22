@@ -5969,6 +5969,20 @@
               "numReferrers" : 2
             }
           },
+          "interface" : {
+            "fxp0" : {
+              "definitionLines" : [
+                99
+              ],
+              "numReferrers" : 1
+            },
+            "fxp0.0" : {
+              "definitionLines" : [
+                99
+              ],
+              "numReferrers" : 1
+            }
+          },
           "ipsec policy" : {
             "test-ipsec-policy" : {
               "definitionLines" : [
@@ -6033,6 +6047,20 @@
               "numReferrers" : 2
             }
           },
+          "interface" : {
+            "fxp0" : {
+              "definitionLines" : [
+                85
+              ],
+              "numReferrers" : 1
+            },
+            "fxp0.0" : {
+              "definitionLines" : [
+                85
+              ],
+              "numReferrers" : 1
+            }
+          },
           "ipsec policy" : {
             "test-ipsec-policy" : {
               "definitionLines" : [
@@ -6088,6 +6116,20 @@
                 24
               ],
               "numReferrers" : 2
+            }
+          },
+          "interface" : {
+            "fxp0" : {
+              "definitionLines" : [
+                76
+              ],
+              "numReferrers" : 1
+            },
+            "fxp0.0" : {
+              "definitionLines" : [
+                76
+              ],
+              "numReferrers" : 1
             }
           },
           "ipsec policy" : {

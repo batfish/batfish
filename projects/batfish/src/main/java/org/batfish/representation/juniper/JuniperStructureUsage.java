@@ -32,6 +32,7 @@ public enum JuniperStructureUsage implements StructureUsage {
   POLICY_STATEMENT_POLICY("policy-statement policy"),
   POLICY_STATEMENT_PREFIX_LIST("policy-statement prefix-list"),
   POLICY_STATEMENT_PREFIX_LIST_FILTER("policy-statement prefix-list-filter"),
+  ROUTING_INSTANCE_INTERFACE("routing-instance interface"),
   SECURITY_POLICY_MATCH_APPLICATION("security policy match application"),
   SNMP_COMMUNITY_PREFIX_LIST("snmp community prefix-list");
 

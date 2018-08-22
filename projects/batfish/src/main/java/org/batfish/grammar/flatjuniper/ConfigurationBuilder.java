@@ -37,6 +37,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.IKE_POLIC
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_FILTER;
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_INCOMING_FILTER;
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_OUTGOING_FILTER;
+import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_SELF_REFERENCE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_VLAN;
 import static org.batfish.representation.juniper.JuniperStructureUsage.IPSEC_POLICY_IPSEC_PROPOSAL;
 import static org.batfish.representation.juniper.JuniperStructureUsage.IPSEC_VPN_BIND_INTERFACE;
@@ -46,6 +47,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.OSPF_EXPO
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_PREFIX_LIST_FILTER;
+import static org.batfish.representation.juniper.JuniperStructureUsage.ROUTING_INSTANCE_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.SECURITY_POLICY_MATCH_APPLICATION;
 import static org.batfish.representation.juniper.JuniperStructureUsage.SNMP_COMMUNITY_PREFIX_LIST;
 
@@ -1967,6 +1969,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       _currentInterface.setRoutingInstance(_currentRoutingInstance.getName());
       _currentInterface.setParent(_currentMasterInterface);
       units.put(unitFullName, _currentInterface);
+      defineStructure(INTERFACE, unitFullName, ctx);
+      _configuration.referenceStructure(
+          INTERFACE, unitFullName, INTERFACE_SELF_REFERENCE, ctx.getStart().getLine());
     }
   }
 
@@ -2032,6 +2037,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
         currentInterface.setRoutingInstance(_currentRoutingInstance.getName());
         currentInterface.setParent(_configuration.getGlobalMasterInterface());
         interfaces.put(fullIfaceName, currentInterface);
+        defineStructure(INTERFACE, fullIfaceName, ctx);
+        _configuration.referenceStructure(
+            INTERFACE, fullIfaceName, INTERFACE_SELF_REFERENCE, ctx.getStart().getLine());
       }
     }
     _currentInterface = currentInterface;
@@ -4111,7 +4119,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void exitRi_interface(Ri_interfaceContext ctx) {
     Interface iface = initInterface(ctx.id);
     iface.setRoutingInstance(_currentRoutingInstance.getName());
-    defineStructure(INTERFACE, iface.getName(), ctx);
+    _configuration.referenceStructure(
+        INTERFACE, iface.getName(), ROUTING_INSTANCE_INTERFACE, ctx.id.getStart().getLine());
   }
 
   @Override
