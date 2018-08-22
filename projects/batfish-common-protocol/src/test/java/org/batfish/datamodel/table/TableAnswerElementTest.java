@@ -5,9 +5,15 @@ import static org.junit.Assert.assertThat;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.IntNode;
+import com.google.common.collect.ImmutableList;
+import com.sun.tools.javac.util.Pair;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.answers.AnswerSummary;
+import org.batfish.datamodel.answers.AutocompleteSuggestion;
+import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.questions.Assertion;
 import org.batfish.datamodel.questions.Assertion.AssertionType;
 import org.junit.Rule;
@@ -71,5 +77,45 @@ public class TableAnswerElementTest {
     otherRows.addRow(Row.builder().put("key1", "value1").build());
 
     assertThat(otherRows.evaluateAssertion(assertion), equalTo(false));
+  }
+
+  @Test
+  public void testAutoComplete() {
+    String columnName = "column";
+    TableAnswerElement table =
+        new TableAnswerElement(
+            new TableMetadata(
+                ImmutableList.of(new ColumnMetadata(columnName, Schema.STRING, "foobar")),
+                "no desc"));
+
+    int entryNum = 1;
+    for (int i = 0; i < 3; ++i, ++entryNum) {
+      String entry = "entry " + entryNum;
+      table.addRow(Row.of(columnName, entry));
+    }
+
+    table.addRow(Row.of(columnName, "entry 1"));
+    table.addRow(Row.of(columnName, "entry 1"));
+    table.addRow(Row.of(columnName, "entry 1"));
+    table.addRow(Row.of(columnName, "entry 1"));
+    table.addRow(Row.of(columnName, "other entry"));
+
+    Pair<List<AutocompleteSuggestion>, Boolean> truncatedSuggestions =
+        table.autoComplete(columnName, "entry", 2);
+    Pair<List<AutocompleteSuggestion>, Boolean> nonTruncatedSuggestions =
+        table.autoComplete(columnName, "", 10);
+
+    assertThat(truncatedSuggestions.fst.size(), equalTo(2));
+    assertThat(truncatedSuggestions.snd, equalTo(true));
+
+    assertThat(
+        nonTruncatedSuggestions.fst,
+        equalTo(
+            Arrays.asList(
+                new AutocompleteSuggestion("entry 1", true),
+                new AutocompleteSuggestion("entry 2", true),
+                new AutocompleteSuggestion("entry 3", true),
+                new AutocompleteSuggestion("other entry", true))));
+    assertThat(nonTruncatedSuggestions.snd, equalTo(false));
   }
 }

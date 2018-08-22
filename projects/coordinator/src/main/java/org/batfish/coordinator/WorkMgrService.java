@@ -6,6 +6,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableSet;
+import com.sun.tools.javac.util.Pair;
 import io.opentracing.util.GlobalTracer;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -117,6 +118,65 @@ public class WorkMgrService {
     } catch (Exception e) {
       String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.errorf("WMS:autoComplete exception: %s", stackTrace);
+      return failureResponse(e.getMessage());
+    }
+  }
+
+  @POST
+  @Path(CoordConsts.SVC_RSC_AUTO_COMPLETE_TABLE_ANSWER_ROWS)
+  @Produces(MediaType.APPLICATION_JSON)
+  public JSONArray autoCompleteTableAnswerRows(
+      @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
+      @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
+      @FormDataParam(CoordConsts.SVC_KEY_NETWORK_NAME) String networkName,
+      @FormDataParam(CoordConsts.SVC_KEY_SNAPSHOT_NAME) String snapshotName,
+      @FormDataParam(CoordConsts.SVC_KEY_QUESTION_NAME) String questionName,
+      @FormDataParam(CoordConsts.SVC_KEY_COLUMN_NAME) String columnName,
+      /* Optional parameters */
+      @FormDataParam(CoordConsts.SVC_KEY_ANALYSIS_NAME) String analysisName,
+      @FormDataParam(CoordConsts.SVC_KEY_DELTA_SNAPSHOT_NAME) String deltaName,
+      @FormDataParam(CoordConsts.SVC_KEY_QUERY) String query,
+      @FormDataParam(CoordConsts.SVC_KEY_MAX_SUGGESTIONS) String maxSuggestions) {
+    try {
+      _logger.infof(
+          "WMS:autoCompleteTableAnswerRows %s %s %s %s %s %s\n",
+          analysisName, snapshotName, deltaName, questionName, columnName, query);
+
+      checkStringParam(apiKey, "API key");
+      checkStringParam(clientVersion, "Client version");
+      checkStringParam(networkName, "Network name");
+      checkStringParam(snapshotName, "Snapshot name");
+      checkStringParam(questionName, "Question name");
+      checkStringParam(columnName, "Column name");
+
+      checkApiKeyValidity(apiKey);
+      checkClientVersion(clientVersion);
+      checkNetworkAccessibility(apiKey, networkName);
+
+      Pair<List<AutocompleteSuggestion>, Boolean> answer =
+          Main.getWorkMgr()
+              .autoCompleteTableAnswerRows(
+                  networkName,
+                  snapshotName,
+                  questionName,
+                  columnName,
+                  analysisName,
+                  deltaName,
+                  query,
+                  Strings.isNullOrEmpty(maxSuggestions) ? 10 : Integer.parseInt(maxSuggestions));
+
+      return successResponse(
+          new JSONObject()
+              .put(
+                  CoordConsts.SVC_KEY_SUGGESTIONS,
+                  BatfishObjectMapper.mapper().writeValueAsString(answer.fst))
+              .put(CoordConsts.SVC_KEY_TRUNCATED, answer.snd));
+    } catch (IllegalArgumentException | AccessControlException e) {
+      _logger.errorf("WMS:autoCompleteTableAnswerRows exception: %s\n", e.getMessage());
+      return failureResponse(e.getMessage());
+    } catch (Exception e) {
+      String stackTrace = Throwables.getStackTraceAsString(e);
+      _logger.errorf("WMS:autoCompleteTableAnswerRows exception: %s\n", stackTrace);
       return failureResponse(e.getMessage());
     }
   }

@@ -17,12 +17,14 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.sun.tools.javac.util.Pair;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -46,6 +48,7 @@ import org.batfish.datamodel.answers.Aggregation;
 import org.batfish.datamodel.answers.AnalysisAnswerMetricsResult;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerStatus;
+import org.batfish.datamodel.answers.AutocompleteSuggestion;
 import org.batfish.datamodel.answers.ColumnAggregation;
 import org.batfish.datamodel.answers.ColumnAggregationResult;
 import org.batfish.datamodel.answers.Issue;
@@ -267,6 +270,59 @@ public class WorkMgrTest {
     CommonUtil.writeFile(configPath.resolve("config.cfg"), "config content");
     String result = _manager.getConfiguration("container", "testrig", "config.cfg");
     assertThat(result, equalTo("config content"));
+  }
+
+  @Test
+  public void testAutoCompleteTableAnswerRows() throws IOException {
+    String containerName = "myContainer";
+    String snapshotName = "snapshot";
+    String questionName = "question";
+    String columnName = "column";
+    String value = "autoCompleteSuggestion";
+    String query = "auto";
+
+    _manager.initContainer(containerName, null);
+
+    Answer testAnswer = new Answer();
+    testAnswer.addAnswerElement(
+        new TableAnswerElement(
+                new TableMetadata(
+                    ImmutableList.of(new ColumnMetadata(columnName, Schema.STRING, "foobar")),
+                    new DisplayHints().getTextDesc()))
+            .addRow(Row.of(columnName, value)));
+    testAnswer.setStatus(AnswerStatus.SUCCESS);
+    String rawAnswer = BatfishObjectMapper.writePrettyString(testAnswer);
+
+    Path answerDir =
+        _folder
+            .getRoot()
+            .toPath()
+            .resolve(
+                Paths.get(
+                    containerName,
+                    BfConsts.RELPATH_TESTRIGS_DIR,
+                    snapshotName,
+                    BfConsts.RELPATH_ANSWERS_DIR,
+                    questionName,
+                    BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
+                    BfConsts.RELPATH_STANDARD_DIR));
+
+    Path answerPath = answerDir.resolve(BfConsts.RELPATH_ANSWER_JSON);
+
+    answerDir.toFile().mkdirs();
+
+    CommonUtil.writeFile(answerPath, rawAnswer);
+
+    Pair<List<AutocompleteSuggestion>, Boolean> suggestions =
+        _manager.autoCompleteTableAnswerRows(
+            containerName, snapshotName, questionName, columnName, null, null, query, 10);
+
+    Pair<List<AutocompleteSuggestion>, Boolean> noSuggestions =
+        _manager.autoCompleteTableAnswerRows(
+            containerName, snapshotName, questionName, columnName, null, null, "blah", 10);
+
+    assertThat(suggestions.fst, equalTo(Arrays.asList(new AutocompleteSuggestion(value, true))));
+    assertThat(noSuggestions.fst, equalTo(Collections.EMPTY_LIST));
   }
 
   @Test
