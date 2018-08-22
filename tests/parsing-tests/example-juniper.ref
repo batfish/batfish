@@ -10647,9 +10647,10 @@
           "interface" : {
             "fe-0/0/0" : {
               "definitionLines" : [
-                4
+                4,
+                5
               ],
-              "numReferrers" : 1
+              "numReferrers" : 2
             },
             "fe-0/0/0.0" : {
               "definitionLines" : [
@@ -10775,9 +10776,11 @@
           "interface" : {
             "fe-0/0/0" : {
               "definitionLines" : [
-                4
+                4,
+                5,
+                6
               ],
-              "numReferrers" : 1
+              "numReferrers" : 3
             },
             "fe-0/0/0.0" : {
               "definitionLines" : [

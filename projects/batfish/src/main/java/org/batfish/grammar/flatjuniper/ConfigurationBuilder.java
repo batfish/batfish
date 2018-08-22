@@ -1975,10 +1975,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       _currentInterface.setRoutingInstance(_currentRoutingInstance.getName());
       _currentInterface.setParent(_currentMasterInterface);
       units.put(unitFullName, _currentInterface);
-      defineStructure(INTERFACE, unitFullName, ctx);
-      _configuration.referenceStructure(
-          INTERFACE, unitFullName, INTERFACE_SELF_REFERENCE, ctx.getStart().getLine());
     }
+    defineStructure(INTERFACE, unitFullName, ctx);
+    _configuration.referenceStructure(
+        INTERFACE, unitFullName, INTERFACE_SELF_REFERENCE, ctx.getStart().getLine());
   }
 
   @Override
@@ -2043,10 +2043,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
         currentInterface.setRoutingInstance(_currentRoutingInstance.getName());
         currentInterface.setParent(_configuration.getGlobalMasterInterface());
         interfaces.put(fullIfaceName, currentInterface);
-        defineStructure(INTERFACE, fullIfaceName, ctx);
-        _configuration.referenceStructure(
-            INTERFACE, fullIfaceName, INTERFACE_SELF_REFERENCE, ctx.getStart().getLine());
       }
+      defineStructure(INTERFACE, currentInterface.getName(), ctx);
+      _configuration.referenceStructure(
+          INTERFACE,
+          currentInterface.getName(),
+          INTERFACE_SELF_REFERENCE,
+          ctx.getStart().getLine());
     }
     _currentInterface = currentInterface;
     _currentMasterInterface = currentInterface;
