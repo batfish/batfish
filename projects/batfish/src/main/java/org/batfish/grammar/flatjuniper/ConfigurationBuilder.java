@@ -1959,12 +1959,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void enterI_unit(I_unitContext ctx) {
     String unit = ctx.num.getText();
-    int definitionLine = getLine(ctx.num);
     String unitFullName = _currentMasterInterface.getName() + "." + unit;
     Map<String, Interface> units = _currentMasterInterface.getUnits();
     _currentInterface = units.get(unitFullName);
     if (_currentInterface == null) {
-      _currentInterface = new Interface(unitFullName, definitionLine);
+      _currentInterface = new Interface(unitFullName);
       _currentInterface.setRoutingInstance(_currentRoutingInstance.getName());
       _currentInterface.setParent(_currentMasterInterface);
       units.put(unitFullName, _currentInterface);
@@ -2029,8 +2028,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       currentInterface = interfaces.get(ifaceName);
       if (currentInterface == null) {
         String fullIfaceName = nodeDevicePrefix + ifaceName;
-        int definitionLine = getLine(ctx.interface_id().getStart());
-        currentInterface = new Interface(fullIfaceName, definitionLine);
+        currentInterface = new Interface(fullIfaceName);
         currentInterface.setRoutingInstance(_currentRoutingInstance.getName());
         currentInterface.setParent(_configuration.getGlobalMasterInterface());
         interfaces.put(fullIfaceName, currentInterface);
@@ -2045,7 +2043,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     Map<String, Interface> interfaces = _configuration.getInterfaces();
     String unitFullName = null;
     String name = getInterfaceName(ctx.id);
-    int definitionLine = getLine(ctx.id.name);
     String unit = null;
     if (ctx.id.unit != null) {
       unit = ctx.id.unit.getText();
@@ -2053,16 +2050,15 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     unitFullName = name + "." + unit;
     _currentIsisInterface = interfaces.get(name);
     if (_currentIsisInterface == null) {
-      _currentIsisInterface = new Interface(name, definitionLine);
+      _currentIsisInterface = new Interface(name);
       _currentIsisInterface.setRoutingInstance(_currentRoutingInstance.getName());
       interfaces.put(name, _currentIsisInterface);
     }
     if (unit != null) {
-      definitionLine = getLine(ctx.id.unit);
       Map<String, Interface> units = _currentIsisInterface.getUnits();
       _currentIsisInterface = units.get(unitFullName);
       if (_currentIsisInterface == null) {
-        _currentIsisInterface = new Interface(unitFullName, definitionLine);
+        _currentIsisInterface = new Interface(unitFullName);
         _currentIsisInterface.setRoutingInstance(_currentRoutingInstance.getName());
         units.put(unitFullName, _currentIsisInterface);
       }
@@ -3855,17 +3851,15 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitPopsf_interface(Popsf_interfaceContext ctx) {
     String name = getInterfaceName(ctx.id);
-    int definitionLine = getLine(ctx.id.name);
     String unit = null;
     if (ctx.id.unit != null) {
       unit = ctx.id.unit.getText();
-      definitionLine = getLine(ctx.id.unit);
     }
     String unitFullName = name + "." + unit;
     Map<String, Interface> interfaces = _configuration.getInterfaces();
     Interface iface = interfaces.get(name);
     if (iface == null) {
-      iface = new Interface(name, definitionLine);
+      iface = new Interface(name);
       iface.setRoutingInstance(_currentRoutingInstance.getName());
       interfaces.put(name, iface);
     }
@@ -3874,7 +3868,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       Map<String, Interface> units = iface.getUnits();
       iface = units.get(unitFullName);
       if (iface == null) {
-        iface = new Interface(unitFullName, definitionLine);
+        iface = new Interface(unitFullName);
         iface.setRoutingInstance(_currentRoutingInstance.getName());
         units.put(unitFullName, iface);
       }
@@ -4979,16 +4973,14 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       interfaces = _configuration.getInterfaces();
     }
     String name = getInterfaceName(id);
-    int definitionLine = getLine(id.name);
     String unit = null;
     if (id.unit != null) {
       unit = id.unit.getText();
-      definitionLine = getLine(id.unit);
     }
     String unitFullName = name + "." + unit;
     Interface iface = interfaces.get(name);
     if (iface == null) {
-      iface = new Interface(name, definitionLine);
+      iface = new Interface(name);
       iface.setRoutingInstance(currentRoutingInstance);
       interfaces.put(name, iface);
     }
@@ -4996,7 +4988,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       Map<String, Interface> units = iface.getUnits();
       iface = units.get(unitFullName);
       if (iface == null) {
-        iface = new Interface(unitFullName, definitionLine);
+        iface = new Interface(unitFullName);
         iface.setRoutingInstance(currentRoutingInstance);
         units.put(unitFullName, iface);
       }
