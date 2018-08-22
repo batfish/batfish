@@ -29,6 +29,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.DHCP_RELA
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_DESTINATION_PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_SOURCE_PREFIX_LIST;
+import static org.batfish.representation.juniper.JuniperStructureUsage.FORWARDING_OPTIONS_DHCP_RELAY_GROUP_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FORWARDING_TABLE_EXPORT_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.GENERATED_ROUTE_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.IKE_GATEWAY_EXTERNAL_INTERFACE;
@@ -43,13 +44,18 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.IPSEC_POL
 import static org.batfish.representation.juniper.JuniperStructureUsage.IPSEC_VPN_BIND_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.IPSEC_VPN_IKE_GATEWAY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.IPSEC_VPN_IPSEC_POLICY;
+import static org.batfish.representation.juniper.JuniperStructureUsage.ISIS_INTERFACE;
+import static org.batfish.representation.juniper.JuniperStructureUsage.OSPF_AREA_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.OSPF_EXPORT_POLICY;
+import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_FROM_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_PREFIX_LIST_FILTER;
 import static org.batfish.representation.juniper.JuniperStructureUsage.ROUTING_INSTANCE_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.SECURITY_POLICY_MATCH_APPLICATION;
+import static org.batfish.representation.juniper.JuniperStructureUsage.SECURITY_ZONES_SECURITY_ZONES_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.SNMP_COMMUNITY_PREFIX_LIST;
+import static org.batfish.representation.juniper.JuniperStructureUsage.STATIC_ROUTE_NEXT_HOP_INTERFACE;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -2049,13 +2055,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void enterIs_interface(Is_interfaceContext ctx) {
     Map<String, Interface> interfaces = _configuration.getInterfaces();
-    String unitFullName = null;
     String name = getInterfaceName(ctx.id);
     String unit = null;
     if (ctx.id.unit != null) {
       unit = ctx.id.unit.getText();
     }
-    unitFullName = name + "." + unit;
     _currentIsisInterface = interfaces.get(name);
     if (_currentIsisInterface == null) {
       _currentIsisInterface = new Interface(name);
@@ -2063,6 +2067,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       interfaces.put(name, _currentIsisInterface);
     }
     if (unit != null) {
+      String unitFullName = name + "." + unit;
       Map<String, Interface> units = _currentIsisInterface.getUnits();
       _currentIsisInterface = units.get(unitFullName);
       if (_currentIsisInterface == null) {
@@ -2071,6 +2076,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
         units.put(unitFullName, _currentIsisInterface);
       }
     }
+    _configuration.referenceStructure(
+        INTERFACE, _currentIsisInterface.getName(), ISIS_INTERFACE, ctx.id.getStart().getLine());
     _currentIsisInterface.getIsisSettings().setEnabled(true);
   }
 
@@ -2153,6 +2160,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     } else {
       _currentOspfInterface = initInterface(ctx.id);
       unitFullName = _currentOspfInterface.getName();
+      _configuration.referenceStructure(
+          INTERFACE, unitFullName, OSPF_AREA_INTERFACE, ctx.id.getStart().getLine());
     }
     Ip currentArea = new Ip(_currentArea.getName());
     Ip currentInterfaceArea = _currentOspfInterface.getOspfArea();
@@ -2754,6 +2763,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     _currentZoneInterface = initInterface(ctx.interface_id());
     _currentZone.getInterfaces().add(_currentZoneInterface);
     _configuration.getInterfaceZones().put(_currentZoneInterface.getName(), _currentZone);
+    _configuration.referenceStructure(
+        INTERFACE,
+        _currentZoneInterface.getName(),
+        SECURITY_ZONES_SECURITY_ZONES_INTERFACE,
+        ctx.interface_id().getStart().getLine());
   }
 
   @Override
@@ -3396,6 +3410,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       Interface iface = initInterface(ctx.interface_id());
       String interfaceName = iface.getName();
       _currentDhcpRelayGroup.getInterfaces().add(interfaceName);
+      _configuration.referenceStructure(
+          INTERFACE,
+          interfaceName,
+          FORWARDING_OPTIONS_DHCP_RELAY_GROUP_INTERFACE,
+          ctx.interface_id().getStart().getLine());
     }
   }
 
@@ -3871,7 +3890,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       iface.setRoutingInstance(_currentRoutingInstance.getName());
       interfaces.put(name, iface);
     }
-    PsFrom from;
+    PsFromInterface from;
     if (unit != null) {
       Map<String, Interface> units = iface.getUnits();
       iface = units.get(unitFullName);
@@ -3885,6 +3904,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       from = new PsFromInterface(name);
     }
     _currentPsTerm.getFroms().add(from);
+    _configuration.referenceStructure(
+        INTERFACE, from.getName(), POLICY_STATEMENT_FROM_INTERFACE, ctx.id.getStart().getLine());
   }
 
   @Override
@@ -4241,8 +4262,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       Ip nextHopIp = new Ip(ctx.IP_ADDRESS().getText());
       _currentStaticRoute.setNextHopIp(nextHopIp);
     } else if (ctx.interface_id() != null) {
-      initInterface(ctx.interface_id());
-      _currentStaticRoute.setNextHopInterface(ctx.interface_id().getText());
+      Interface iface = initInterface(ctx.interface_id());
+      _currentStaticRoute.setNextHopInterface(iface.getName());
+      _configuration.referenceStructure(
+          INTERFACE,
+          iface.getName(),
+          STATIC_ROUTE_NEXT_HOP_INTERFACE,
+          ctx.interface_id().getStart().getLine());
     }
   }
 

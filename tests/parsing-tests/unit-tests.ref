@@ -61575,6 +61575,23 @@
                 13
               ]
             }
+          },
+          "interface" : {
+            "et-0/0/10.0" : {
+              "fowarding-options dhcp-relay group interface" : [
+                15
+              ]
+            },
+            "ge-0/2/5.0" : {
+              "fowarding-options dhcp-relay group interface" : [
+                18
+              ]
+            },
+            "xe-1/0/0.0" : {
+              "fowarding-options dhcp-relay group interface" : [
+                10
+              ]
+            }
           }
         },
         "configs/juniper_interfaces" : {
@@ -61582,6 +61599,49 @@
             "bippetyboppety" : {
               "interface vlan" : [
                 12
+              ]
+            }
+          }
+        },
+        "configs/juniper_isis" : {
+          "interface" : {
+            "ge-0/0/0.0" : {
+              "isis interface" : [
+                4,
+                5
+              ]
+            }
+          }
+        },
+        "configs/juniper_ospf" : {
+          "interface" : {
+            "xe-0/0/1.0" : {
+              "ospf area interface" : [
+                12
+              ]
+            },
+            "xe-0/0/20:0.0" : {
+              "ospf area interface" : [
+                3
+              ]
+            },
+            "xe-0/0/21:0.0" : {
+              "ospf area interface" : [
+                4
+              ]
+            }
+          }
+        },
+        "configs/juniper_relay" : {
+          "interface" : {
+            "irb.10" : {
+              "fowarding-options dhcp-relay group interface" : [
+                7
+              ]
+            },
+            "irb.20" : {
+              "fowarding-options dhcp-relay group interface" : [
+                8
               ]
             }
           }
