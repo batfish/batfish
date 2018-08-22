@@ -1,7 +1,7 @@
 package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import org.batfish.common.BatfishException;
+import com.google.common.annotations.VisibleForTesting;
 
 /** An access-control action */
 public enum LineAction {
@@ -9,7 +9,8 @@ public enum LineAction {
   DENY;
 
   @JsonCreator
-  public static LineAction forValue(String value) {
+  @VisibleForTesting
+  static LineAction forValue(String value) {
     switch (value.toLowerCase()) {
       case "permit":
       case "accept":
@@ -18,7 +19,7 @@ public enum LineAction {
       case "reject":
         return DENY;
       default:
-        throw new BatfishException("Unrecognized ACL line action: " + value);
+        throw new IllegalArgumentException("Unrecognized ACL line action: " + value);
     }
   }
 }
