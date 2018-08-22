@@ -156,7 +156,7 @@ public class RoutesAnswerer extends Answerer {
                     .put(COL_NEXT_HOP_IP, route.getNextHopIp())
                     .put(COL_NEXT_HOP, computeNextHopNode(route.getNextHopIp(), ipOwners))
                     .put(COL_PROTOCOL, route.getProtocol())
-                    .put(COL_TAG, route.getTag())
+                    .put(COL_TAG, route.getTag() == AbstractRoute.NO_TAG ? null : route.getTag())
                     .put(COL_ADMIN_DISTANCE, route.getAdministrativeCost())
                     .put(COL_METRIC, route.getMetric())
                     .build())
