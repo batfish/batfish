@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
@@ -23,7 +22,6 @@ import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
-import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
@@ -42,12 +40,10 @@ import org.batfish.specifier.LocationVisitor;
 import org.batfish.specifier.SpecifierContext;
 
 public final class TracerouteAnswerer extends Answerer {
-  static final String COL_DST_IP = "dstIp";
+  static final String COL_BASE_TRACES = "Base_traces";
+  static final String COL_DELTA_TRACES = "Delta_traces";
   static final String COL_FLOW = "flow";
-  static final String COL_NODE = "node";
-  static final String COL_NUM_PATHS = "numPaths";
-  static final String COL_PATHS = "paths";
-  static final String COL_RESULTS = "results";
+  static final String COL_TRACES = "traces";
 
   private final Map<String, Configuration> _configurations;
   private final IpSpaceRepresentative _ipSpaceRepresentative;
@@ -85,23 +81,56 @@ public final class TracerouteAnswerer extends Answerer {
     Set<Flow> flows = getFlows(tag);
     _batfish.processFlows(flows, ((TracerouteQuestion) _question).getIgnoreAcls());
     FlowHistory flowHistory = _batfish.getHistory();
-    Multiset<Row> rows = flowHistoryToRows(flowHistory);
-    TableAnswerElement table = new TableAnswerElement(createMetadata());
+    Multiset<Row> rows = flowHistoryToRows(flowHistory, false);
+    TableAnswerElement table = new TableAnswerElement(createMetadata(false));
     table.postProcessAnswer(_question, rows);
     return table;
   }
 
-  public static TableMetadata createMetadata() {
-    List<ColumnMetadata> columnMetadata =
-        ImmutableList.of(
-            new ColumnMetadata(COL_NODE, Schema.NODE, "Ingress node", true, false),
-            new ColumnMetadata(COL_DST_IP, Schema.IP, "Destination IP of the packet", true, false),
-            new ColumnMetadata(COL_FLOW, Schema.FLOW, "The flow", true, false),
-            new ColumnMetadata(COL_NUM_PATHS, Schema.INTEGER, "The number of paths", false, true),
-            new ColumnMetadata(
-                COL_RESULTS, Schema.set(Schema.STRING), "The set of outcomes", false, true),
-            new ColumnMetadata(COL_PATHS, Schema.set(Schema.FLOW_TRACE), "The paths", false, true));
+  @Override
+  public AnswerElement answerDiff() {
+    Set<Flow> flows = getFlows(_batfish.getDifferentialFlowTag());
 
+    _batfish.pushBaseEnvironment();
+    _batfish.processFlows(flows, ((TracerouteQuestion) _question).getIgnoreAcls());
+    _batfish.popEnvironment();
+
+    _batfish.pushDeltaEnvironment();
+    _batfish.processFlows(flows, ((TracerouteQuestion) _question).getIgnoreAcls());
+    _batfish.popEnvironment();
+
+    FlowHistory flowHistory = _batfish.getHistory();
+    Multiset<Row> rows = flowHistoryToRows(flowHistory, true);
+    TableAnswerElement table = new TableAnswerElement(createMetadata(true));
+    table.postProcessAnswer(_question, rows);
+    return table;
+  }
+
+  public static TableMetadata createMetadata(boolean differential) {
+    List<ColumnMetadata> columnMetadata;
+    if (differential) {
+      columnMetadata =
+          ImmutableList.of(
+              new ColumnMetadata(COL_FLOW, Schema.FLOW, "The flow", true, false),
+              new ColumnMetadata(
+                  COL_BASE_TRACES,
+                  Schema.set(Schema.FLOW_TRACE),
+                  "The flow traces in the BASE environment",
+                  false,
+                  true),
+              new ColumnMetadata(
+                  COL_DELTA_TRACES,
+                  Schema.set(Schema.FLOW_TRACE),
+                  "The flow traces in the DELTA environment",
+                  false,
+                  true));
+    } else {
+      columnMetadata =
+          ImmutableList.of(
+              new ColumnMetadata(COL_FLOW, Schema.FLOW, "The flow", true, false),
+              new ColumnMetadata(
+                  COL_TRACES, Schema.set(Schema.FLOW_TRACE), "The flow traces", false, true));
+    }
     return new TableMetadata(columnMetadata, String.format("Paths for flow ${%s}", COL_FLOW));
   }
 
@@ -118,31 +147,43 @@ public final class TracerouteAnswerer extends Answerer {
             historyInfo.getPaths().size()));
     Set<FlowTrace> paths =
         historyInfo.getPaths().values().stream().findAny().orElseGet(ImmutableSet::of);
-    Set<String> results =
-        paths.stream().map(path -> path.getDisposition().toString()).collect(Collectors.toSet());
+    return Row.of(COL_FLOW, historyInfo.getFlow(), COL_TRACES, paths);
+  }
+
+  /**
+   * Converts {@code FlowHistoryInfo} into {@link Row}. Expects that the history object contains
+   * traces for base and delta environments
+   */
+  static Row diffFlowHistoryToRow(FlowHistoryInfo historyInfo) {
+    // there should only be two environments in this object
+    checkArgument(
+        historyInfo.getPaths().size() == 2,
+        String.format(
+            "Expect exactly two environments in flow history info. Found %d",
+            historyInfo.getPaths().size()));
     return Row.of(
-        COL_NODE,
-        new Node(historyInfo.getFlow().getIngressNode()),
-        COL_DST_IP,
-        historyInfo.getFlow().getDstIp(),
         COL_FLOW,
         historyInfo.getFlow(),
-        COL_NUM_PATHS,
-        paths.size(),
-        COL_RESULTS,
-        results,
-        COL_PATHS,
-        paths);
+        COL_BASE_TRACES,
+        historyInfo.getPaths().get("BASE"),
+        COL_DELTA_TRACES,
+        historyInfo.getPaths().get("DELTA"));
   }
 
   /**
    * Converts a flowHistory object into a set of Rows. Expects that the traces correspond to only
    * one environment.
    */
-  public static Multiset<Row> flowHistoryToRows(FlowHistory flowHistory) {
+  public static Multiset<Row> flowHistoryToRows(FlowHistory flowHistory, boolean differential) {
     Multiset<Row> rows = LinkedHashMultiset.create();
-    for (FlowHistoryInfo historyInfo : flowHistory.getTraces().values()) {
-      rows.add(flowHistoryToRow(historyInfo));
+    if (differential) {
+      for (FlowHistoryInfo historyInfo : flowHistory.getTraces().values()) {
+        rows.add(diffFlowHistoryToRow(historyInfo));
+      }
+    } else {
+      for (FlowHistoryInfo historyInfo : flowHistory.getTraces().values()) {
+        rows.add(flowHistoryToRow(historyInfo));
+      }
     }
     return rows;
   }

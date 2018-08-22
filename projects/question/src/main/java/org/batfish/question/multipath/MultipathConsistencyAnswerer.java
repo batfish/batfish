@@ -25,8 +25,8 @@ public class MultipathConsistencyAnswerer extends Answerer {
     Set<Flow> flows = _batfish.bddMultipathConsistency();
     _batfish.processFlows(flows, false);
     FlowHistory flowHistory = _batfish.getHistory();
-    Multiset<Row> rows = flowHistoryToRows(flowHistory);
-    TableAnswerElement table = new TableAnswerElement(createMetadata());
+    Multiset<Row> rows = flowHistoryToRows(flowHistory, false);
+    TableAnswerElement table = new TableAnswerElement(createMetadata(false));
     table.postProcessAnswer(_question, rows);
     return table;
   }

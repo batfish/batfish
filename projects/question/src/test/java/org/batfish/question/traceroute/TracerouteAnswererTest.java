@@ -13,7 +13,6 @@ import org.batfish.datamodel.FlowHistory.FlowHistoryInfo;
 import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.pojo.Environment;
-import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.table.Row;
 import org.junit.Test;
 
@@ -41,17 +40,9 @@ public class TracerouteAnswererTest {
         row,
         equalTo(
             Row.of(
-                TracerouteAnswerer.COL_NODE,
-                new Node("node"),
-                TracerouteAnswerer.COL_DST_IP,
-                flow.getDstIp(),
                 TracerouteAnswerer.COL_FLOW,
                 flow,
-                TracerouteAnswerer.COL_NUM_PATHS,
-                2,
-                TracerouteAnswerer.COL_RESULTS,
-                ImmutableSet.of("ACCEPTED", "DENIED_OUT"),
-                TracerouteAnswerer.COL_PATHS,
-                traces)));
+                TracerouteAnswerer.COL_TRACES,
+                historyInfo.getPaths().values().stream().findAny().orElseGet(ImmutableSet::of))));
   }
 }

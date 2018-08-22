@@ -21,9 +21,9 @@ import org.batfish.datamodel.table.TableMetadata;
 public class ReducedReachabilityAnswerer extends Answerer {
   static final String COL_FLOW = "flow";
 
-  static final String COL_BASE_TRACES = "BASE_traces";
+  static final String COL_BASE_TRACES = "Base_traces";
 
-  static final String COL_DELTA_TRACES = "DELTA_traces";
+  static final String COL_DELTA_TRACES = "Delta_traces";
 
   public ReducedReachabilityAnswerer(Question question, IBatfish batfish) {
     super(question, batfish);
