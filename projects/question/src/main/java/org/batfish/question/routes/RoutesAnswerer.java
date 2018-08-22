@@ -156,7 +156,7 @@ public class RoutesAnswerer extends Answerer {
                     .put(COL_NEXT_HOP_IP, route.getNextHopIp())
                     .put(COL_NEXT_HOP, computeNextHopNode(route.getNextHopIp(), ipOwners))
                     .put(COL_PROTOCOL, route.getProtocol())
-                    .put(COL_TAG, route.getTag())
+                    .put(COL_TAG, route.getTag() == AbstractRoute.NO_TAG ? null : route.getTag())
                     .put(COL_ADMIN_DISTANCE, route.getAdministrativeCost())
                     .put(COL_METRIC, route.getMetric())
                     .build())
@@ -213,7 +213,7 @@ public class RoutesAnswerer extends Answerer {
   @VisibleForTesting
   static TableMetadata getTableMetadata(RibProtocol protocol) {
     ImmutableList.Builder<ColumnMetadata> columnBuilder = ImmutableList.builder();
-    addCommonTableColumns(columnBuilder);
+    addCommonTableColumnsAtStart(columnBuilder);
     switch (protocol) {
       case BGP:
         columnBuilder.add(
@@ -264,11 +264,20 @@ public class RoutesAnswerer extends Answerer {
             new ColumnMetadata(
                 COL_METRIC, Schema.INTEGER, "Route's metric", Boolean.FALSE, Boolean.TRUE));
     }
+    addCommonTableColumnsAtEnd(columnBuilder);
     return new TableMetadata(columnBuilder.build(), "Display RIB routes");
   }
 
+  /** Generate table columns that should be always present, at the end of table. */
+  private static void addCommonTableColumnsAtEnd(
+      ImmutableList.Builder<ColumnMetadata> columnBuilder) {
+    columnBuilder.add(
+        new ColumnMetadata(COL_TAG, Schema.INTEGER, "Route tag", Boolean.FALSE, Boolean.TRUE));
+  }
+
   /** Generate table columns that should be always present, at the start of table. */
-  private static void addCommonTableColumns(ImmutableList.Builder<ColumnMetadata> columnBuilder) {
+  private static void addCommonTableColumnsAtStart(
+      ImmutableList.Builder<ColumnMetadata> columnBuilder) {
     columnBuilder.add(
         new ColumnMetadata(COL_NODE, Schema.NODE, "Node", Boolean.TRUE, Boolean.FALSE));
     columnBuilder.add(
@@ -277,7 +286,5 @@ public class RoutesAnswerer extends Answerer {
         new ColumnMetadata(
             COL_NETWORK, Schema.PREFIX, "Route network (prefix)", Boolean.TRUE, Boolean.TRUE));
     columnBuilder.add(new ColumnMetadata(COL_PROTOCOL, Schema.STRING, "Route protocol"));
-    columnBuilder.add(
-        new ColumnMetadata(COL_TAG, Schema.INTEGER, "Route tag", Boolean.FALSE, Boolean.TRUE));
   }
 }
