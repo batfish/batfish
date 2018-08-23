@@ -36,12 +36,12 @@ public class NodePropertySpecifier extends PropertySpecifier {
               "Authentication_Key_Chains",
               new PropertyDescriptor<>(
                   Configuration::getAuthenticationKeyChains, Schema.set(Schema.STRING)))
-          .put("canonical_Ip", new PropertyDescriptor<>(Configuration::getCanonicalIp, Schema.IP))
+          .put("Canonical_Ip", new PropertyDescriptor<>(Configuration::getCanonicalIp, Schema.IP))
           .put(
-              "community_Lists",
+              "Community_Lists",
               new PropertyDescriptor<>(Configuration::getCommunityLists, Schema.set(Schema.STRING)))
           .put(
-              "configuration_Format",
+              "Configuration_Format",
               new PropertyDescriptor<>(Configuration::getConfigurationFormat, Schema.STRING))
           .put(
               "Default_Cross_Zone_Action",
@@ -51,12 +51,12 @@ public class NodePropertySpecifier extends PropertySpecifier {
               new PropertyDescriptor<>(Configuration::getDefaultInboundAction, Schema.STRING))
           .put("Device_Type", new PropertyDescriptor<>(Configuration::getDeviceType, Schema.STRING))
           .put(
-              "dns_Servers",
+              "Dns_Servers",
               new PropertyDescriptor<>(Configuration::getDnsServers, Schema.set(Schema.STRING)))
           .put(
-              "dns_Source_Interface",
+              "Dns_Source_Interface",
               new PropertyDescriptor<>(Configuration::getDnsSourceInterface, Schema.STRING))
-          .put("domain_Name", new PropertyDescriptor<>(Configuration::getDomainName, Schema.STRING))
+          .put("Domain_Name", new PropertyDescriptor<>(Configuration::getDomainName, Schema.STRING))
           .put("Hostname", new PropertyDescriptor<>(Configuration::getHostname, Schema.STRING))
           .put(
               "Ike_Gateways",
@@ -123,7 +123,7 @@ public class NodePropertySpecifier extends PropertySpecifier {
               "Tacacs_Source_Interface",
               new PropertyDescriptor<>(Configuration::getTacacsSourceInterface, Schema.STRING))
           .put(
-              "VendorFamily",
+              "Vendor_Family",
               new PropertyDescriptor<>(Configuration::getVendorFamily, Schema.STRING))
           .put("Vrfs", new PropertyDescriptor<>(Configuration::getVrfs, Schema.set(Schema.STRING)))
           .put(

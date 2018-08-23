@@ -45,7 +45,7 @@ public class BgpPropertiesAnswererTest {
 
     Multiset<Row> propertyRows =
         BgpPropertiesAnswerer.getProperties(
-            question.getPropertySpec(),
+            question.getProperties(),
             ImmutableMap.of("node1", conf1),
             ImmutableSet.of("node1"),
             metadata.toColumnMap());

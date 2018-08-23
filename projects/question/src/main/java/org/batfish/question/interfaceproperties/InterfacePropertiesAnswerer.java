@@ -75,24 +75,24 @@ public class InterfacePropertiesAnswerer extends Answerer {
     if (dhints != null && dhints.getTextDesc() != null) {
       textDesc = dhints.getTextDesc();
     }
-    return new TableMetadata(createColumnMetadata(question.getPropertySpec()), textDesc);
+    return new TableMetadata(createColumnMetadata(question.getProperties()), textDesc);
   }
 
   @Override
   public AnswerElement answer() {
     InterfacePropertiesQuestion question = (InterfacePropertiesQuestion) _question;
     Map<String, Configuration> configurations = _batfish.loadConfigurations();
-    Set<String> nodes = question.getNodeRegex().getMatchingNodes(_batfish);
+    Set<String> nodes = question.getNodes().getMatchingNodes(_batfish);
 
     TableMetadata tableMetadata = createTableMetadata(question);
     TableAnswerElement answer = new TableAnswerElement(tableMetadata);
 
     Multiset<Row> propertyRows =
         getProperties(
-            question.getPropertySpec(),
+            question.getProperties(),
             configurations,
             nodes,
-            question.getInterfaceRegex(),
+            question.getInterfaces(),
             question.getOnlyActive(),
             tableMetadata.toColumnMap());
 

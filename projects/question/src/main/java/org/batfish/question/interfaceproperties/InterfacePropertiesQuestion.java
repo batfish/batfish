@@ -55,17 +55,17 @@ public class InterfacePropertiesQuestion extends Question {
   }
 
   @JsonProperty(PROP_INTERFACES)
-  public InterfacesSpecifier getInterfaceRegex() {
+  public InterfacesSpecifier getInterfaces() {
     return _interfaces;
   }
 
   @JsonProperty(PROP_NODES)
-  public NodesSpecifier getNodeRegex() {
+  public NodesSpecifier getNodes() {
     return _nodes;
   }
 
   @JsonProperty(PROP_PROPERTIES)
-  public InterfacePropertySpecifier getPropertySpec() {
+  public InterfacePropertySpecifier getProperties() {
     return _properties;
   }
 }

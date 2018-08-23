@@ -73,21 +73,20 @@ public class BgpPropertiesAnswerer extends Answerer {
     if (dhints != null && dhints.getTextDesc() != null) {
       textDesc = dhints.getTextDesc();
     }
-    return new TableMetadata(createColumnMetadata(question.getPropertySpec()), textDesc);
+    return new TableMetadata(createColumnMetadata(question.getProperties()), textDesc);
   }
 
   @Override
   public AnswerElement answer() {
     BgpPropertiesQuestion question = (BgpPropertiesQuestion) _question;
     Map<String, Configuration> configurations = _batfish.loadConfigurations();
-    Set<String> nodes = question.getNodeRegex().getMatchingNodes(_batfish);
+    Set<String> nodes = question.getNodes().getMatchingNodes(_batfish);
 
     TableMetadata tableMetadata = createTableMetadata(question);
     TableAnswerElement answer = new TableAnswerElement(tableMetadata);
 
     Multiset<Row> propertyRows =
-        getProperties(
-            question.getPropertySpec(), configurations, nodes, tableMetadata.toColumnMap());
+        getProperties(question.getProperties(), configurations, nodes, tableMetadata.toColumnMap());
 
     answer.postProcessAnswer(question, propertyRows);
     return answer;

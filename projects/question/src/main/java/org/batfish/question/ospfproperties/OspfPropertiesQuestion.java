@@ -39,12 +39,12 @@ public class OspfPropertiesQuestion extends Question {
   }
 
   @JsonProperty(PROP_NODES)
-  public NodesSpecifier getNodeRegex() {
+  public NodesSpecifier getNodes() {
     return _nodes;
   }
 
   @JsonProperty(PROP_PROPERTIES)
-  public OspfPropertySpecifier getPropertySpec() {
+  public OspfPropertySpecifier getProperties() {
     return _properties;
   }
 }

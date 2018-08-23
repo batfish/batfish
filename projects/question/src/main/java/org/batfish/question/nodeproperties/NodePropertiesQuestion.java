@@ -42,12 +42,12 @@ public class NodePropertiesQuestion extends Question {
   }
 
   @JsonProperty(PROP_NODES)
-  public NodesSpecifier getNodeRegex() {
+  public NodesSpecifier getNodes() {
     return _nodes;
   }
 
   @JsonProperty(PROP_PROPERTIES)
-  public NodePropertySpecifier getPropertySpec() {
+  public NodePropertySpecifier getProperties() {
     return _properties;
   }
 

@@ -43,7 +43,7 @@ public class OspfPropertiesAnswererTest {
 
     Multiset<Row> propertyRows =
         OspfPropertiesAnswerer.getProperties(
-            question.getPropertySpec(),
+            question.getProperties(),
             ImmutableMap.of("node1", conf1),
             ImmutableSet.of("node1"),
             metadata.toColumnMap());

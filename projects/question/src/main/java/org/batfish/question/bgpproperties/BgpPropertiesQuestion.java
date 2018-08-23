@@ -39,12 +39,12 @@ public class BgpPropertiesQuestion extends Question {
   }
 
   @JsonProperty(PROP_NODES)
-  public NodesSpecifier getNodeRegex() {
+  public NodesSpecifier getNodes() {
     return _nodes;
   }
 
   @JsonProperty(PROP_PROPERTIES)
-  public BgpPropertySpecifier getPropertySpec() {
+  public BgpPropertySpecifier getProperties() {
     return _properties;
   }
 }
