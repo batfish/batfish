@@ -87,7 +87,7 @@ public class OspfPropertySpecifier extends PropertySpecifier {
     return JAVA_MAP
         .keySet()
         .stream()
-        .filter(prop -> _pattern.matcher(prop).matches())
+        .filter(prop -> _pattern.matcher(prop.toLowerCase()).matches())
         .collect(Collectors.toSet());
   }
 
