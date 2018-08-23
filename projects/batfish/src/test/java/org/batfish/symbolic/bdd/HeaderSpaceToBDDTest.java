@@ -12,6 +12,7 @@ import net.sf.javabdd.BDD;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.State;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TcpFlags;
@@ -32,6 +33,15 @@ public class HeaderSpaceToBDDTest {
   @Test
   public void test_unconstrained() {
     assertThat(_toBDD.toBDD(HeaderSpace.builder().build()), isOne());
+  }
+
+  @Test
+  public void test_negate() {
+    IpSpace ip = new Ip("1.2.3.4").toIpSpace();
+    BDD ipBDD = _toBDD.toBDD(ip, _pkt.getDstIp());
+    assertThat(
+        _toBDD.toBDD(HeaderSpace.builder().setDstIps(ip).setNegate(true).build()),
+        equalTo(ipBDD.not()));
   }
 
   @Test

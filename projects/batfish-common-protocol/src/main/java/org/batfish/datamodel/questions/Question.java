@@ -44,6 +44,7 @@ public abstract class Question implements IQuestion {
     public static class Variable {
 
       public enum Type {
+        ANSWER_ELEMENT("answerElement", true),
         BGP_PROPERTY_SPEC("bgpPropertySpec", true),
         BOOLEAN("boolean", false),
         COMPARATOR("comparator", true),

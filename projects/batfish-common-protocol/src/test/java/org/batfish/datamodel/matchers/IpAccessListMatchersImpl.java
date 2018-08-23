@@ -45,7 +45,7 @@ final class IpAccessListMatchersImpl {
     @Override
     protected boolean matchesSafely(IpAccessList item, Description mismatchDescription) {
       if (item.filter(_flow, _srcInterface, _availableAcls, _namedIpSpaces).getAction()
-          != LineAction.ACCEPT) {
+          != LineAction.PERMIT) {
         mismatchDescription.appendText(String.format("does not accept flow '%s'", _flow));
         if (_srcInterface != null) {
           mismatchDescription.appendText(String.format("at source interface: %s", _srcInterface));
@@ -108,7 +108,7 @@ final class IpAccessListMatchersImpl {
     @Override
     protected boolean matchesSafely(IpAccessList item, Description mismatchDescription) {
       if (item.filter(_flow, _srcInterface, _availableAcls, _namedIpSpaces).getAction()
-          != LineAction.REJECT) {
+          != LineAction.DENY) {
         mismatchDescription.appendText(String.format("does not reject flow '%s'", _flow));
         if (_srcInterface != null) {
           mismatchDescription.appendText(String.format("at source interface: %s", _srcInterface));

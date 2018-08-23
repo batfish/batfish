@@ -85,7 +85,7 @@ public final class AsPathAccessList implements Serializable {
       Matcher matcher = p.matcher(asPathString);
       boolean match = matcher.find();
       if (match) {
-        accept = line.getAction() == LineAction.ACCEPT;
+        accept = line.getAction() == LineAction.PERMIT;
         break;
       }
     }

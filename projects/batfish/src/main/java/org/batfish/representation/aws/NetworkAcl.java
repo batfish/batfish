@@ -51,7 +51,7 @@ public class NetworkAcl implements AwsVpcEntity, Serializable {
     for (NetworkAclEntry entry : _entries) {
       if ((isEgress && entry.getIsEgress()) || (!isEgress && !entry.getIsEgress())) {
         int key = entry.getRuleNumber();
-        LineAction action = entry.getIsAllow() ? LineAction.ACCEPT : LineAction.REJECT;
+        LineAction action = entry.getIsAllow() ? LineAction.PERMIT : LineAction.DENY;
         Prefix prefix = entry.getCidrBlock();
         HeaderSpace.Builder headerSpaceBuilder = HeaderSpace.builder();
         if (!prefix.equals(Prefix.ZERO)) {
@@ -87,7 +87,7 @@ public class NetworkAcl implements AwsVpcEntity, Serializable {
         } else {
           portStr = portRange.toString();
         }
-        String actionStr = action == LineAction.ACCEPT ? "ALLOW" : "DENY";
+        String actionStr = action == LineAction.PERMIT ? "ALLOW" : "DENY";
         String lineNumber = key == 32767 ? "*" : Integer.toString(key);
         lineMap.put(
             key,

@@ -55,7 +55,7 @@ public final class IpSpaceDescriberTest {
             .setLines(
                 ImmutableList.of(
                     AclIpSpaceLine.builder()
-                        .setAction(LineAction.ACCEPT)
+                        .setAction(LineAction.PERMIT)
                         .setIpSpace(lineIpSpace)
                         .build()))
             .build();

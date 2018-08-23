@@ -138,11 +138,9 @@ public class DefaultTransitionGeneratorTest {
 
   private static Map<String, Map<String, List<LineAction>>> aclActions() {
     List<LineAction> acl1ActionsByLine =
-        ImmutableList.of(
-            LineAction.ACCEPT, LineAction.REJECT, LineAction.ACCEPT, LineAction.REJECT);
+        ImmutableList.of(LineAction.PERMIT, LineAction.DENY, LineAction.PERMIT, LineAction.DENY);
     List<LineAction> acl2ActionsByLine =
-        ImmutableList.of(
-            LineAction.REJECT, LineAction.ACCEPT, LineAction.REJECT, LineAction.ACCEPT);
+        ImmutableList.of(LineAction.DENY, LineAction.PERMIT, LineAction.DENY, LineAction.PERMIT);
     ImmutableMap<String, List<LineAction>> aclActions =
         ImmutableMap.of(ACL1, acl1ActionsByLine, ACL2, acl2ActionsByLine, ACL3, ImmutableList.of());
     Map<String, Map<String, List<LineAction>>> aclActionss =

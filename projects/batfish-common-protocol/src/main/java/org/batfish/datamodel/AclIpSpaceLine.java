@@ -21,7 +21,7 @@ public class AclIpSpaceLine implements Comparable<AclIpSpaceLine>, Serializable 
     private String _srcText;
 
     private Builder() {
-      _action = LineAction.ACCEPT;
+      _action = LineAction.PERMIT;
     }
 
     public AclIpSpaceLine build() {
@@ -66,7 +66,7 @@ public class AclIpSpaceLine implements Comparable<AclIpSpaceLine>, Serializable 
   }
 
   public static AclIpSpaceLine reject(IpSpace ipSpace) {
-    return builder().setIpSpace(ipSpace).setAction(LineAction.REJECT).build();
+    return builder().setIpSpace(ipSpace).setAction(LineAction.DENY).build();
   }
 
   private final LineAction _action;
@@ -131,7 +131,7 @@ public class AclIpSpaceLine implements Comparable<AclIpSpaceLine>, Serializable 
   @Override
   public String toString() {
     ToStringHelper helper = MoreObjects.toStringHelper(getClass());
-    if (_action != LineAction.ACCEPT) {
+    if (_action != LineAction.PERMIT) {
       helper.add(PROP_ACTION, _action);
     }
     helper.add(PROP_IP_SPACE, _ipSpace);
