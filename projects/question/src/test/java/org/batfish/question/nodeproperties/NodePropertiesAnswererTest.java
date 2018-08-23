@@ -24,8 +24,8 @@ public class NodePropertiesAnswererTest {
   @Test
   @SuppressWarnings("deprecation") // includes test of deprecated functionality
   public void getProperties() {
-    String property1 = "configuration-format";
-    String property2 = "ntp-servers";
+    String property1 = "Configuration_Format";
+    String property2 = "Ntp_Servers";
     NodePropertySpecifier propertySpec = new NodePropertySpecifier(property1 + "|" + property2);
 
     Configuration conf1 = new Configuration("node1", ConfigurationFormat.CISCO_IOS);
