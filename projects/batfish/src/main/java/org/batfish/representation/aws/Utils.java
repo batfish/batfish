@@ -24,8 +24,8 @@ public class Utils {
             .setHostname(name)
             .setDomainName(domainName)
             .setConfigurationFormat(ConfigurationFormat.AWS)
-            .setDefaultInboundAction(LineAction.ACCEPT)
-            .setDefaultCrossZoneAction(LineAction.ACCEPT)
+            .setDefaultInboundAction(LineAction.PERMIT)
+            .setDefaultCrossZoneAction(LineAction.PERMIT)
             .build();
     FACTORY.vrfBuilder().setName(Configuration.DEFAULT_VRF_NAME).setOwner(c).build();
     c.getVendorFamily().setAws(new AwsFamily());

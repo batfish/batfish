@@ -239,7 +239,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void enterS_zone(S_zoneContext ctx) {
-    String name = ctx.name.getText();
+    String name = getText(ctx.name);
     _currentZone = _currentVsys.getZones().computeIfAbsent(name, n -> new Zone(n, _currentVsys));
 
     // Use constructed zone name so same-named zone defs across vsys are unique
@@ -254,7 +254,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitSds_hostname(Sds_hostnameContext ctx) {
-    _configuration.setHostname(ctx.name.getText());
+    _configuration.setHostname(getText(ctx.name));
   }
 
   @Override
@@ -296,7 +296,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void enterSn_virtual_router(Sn_virtual_routerContext ctx) {
     _currentVirtualRouter =
-        _configuration.getVirtualRouters().computeIfAbsent(ctx.name.getText(), VirtualRouter::new);
+        _configuration.getVirtualRouters().computeIfAbsent(getText(ctx.name), VirtualRouter::new);
   }
 
   @Override
@@ -359,7 +359,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     _currentStaticRoute =
         _currentVirtualRouter
             .getStaticRoutes()
-            .computeIfAbsent(ctx.name.getText(), StaticRoute::new);
+            .computeIfAbsent(getText(ctx.name), StaticRoute::new);
   }
 
   @Override
@@ -404,7 +404,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void enterSr_security(Sr_securityContext ctx) {
-    String name = ctx.name.getText();
+    String name = getText(ctx.name);
     _currentRule = _currentVsys.getRules().computeIfAbsent(name, n -> new Rule(n, _currentVsys));
 
     // Use constructed name so same-named defs across vsys are unique
@@ -421,16 +421,16 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void exitSrs_action(Srs_actionContext ctx) {
     if (ctx.ALLOW() != null) {
-      _currentRule.setAction(LineAction.ACCEPT);
+      _currentRule.setAction(LineAction.PERMIT);
     } else {
-      _currentRule.setAction(LineAction.REJECT);
+      _currentRule.setAction(LineAction.DENY);
     }
   }
 
   @Override
   public void exitSrs_application(Srs_applicationContext ctx) {
     for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
-      String name = var.getText();
+      String name = getText(var);
       if (!name.equals(CATCHALL_APPLICATION_NAME)) {
         _w.redFlag("Unhandled application: " + name);
       }
@@ -499,7 +499,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void exitSrs_to(Srs_toContext ctx) {
     for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
-      String zoneName = var.getText();
+      String zoneName = getText(var);
       _currentRule.getTo().add(zoneName);
 
       if (!zoneName.equals(CATCHALL_ZONE_NAME)) {
@@ -512,7 +512,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void enterS_service(S_serviceContext ctx) {
-    String name = ctx.name.getText();
+    String name = getText(ctx.name);
     _currentService = _currentVsys.getServices().computeIfAbsent(name, Service::new);
 
     // Use constructed service name so same-named defs across vsys are unique
@@ -557,7 +557,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void enterS_service_group(S_service_groupContext ctx) {
-    String name = ctx.name.getText();
+    String name = getText(ctx.name);
     _currentServiceGroup = _currentVsys.getServiceGroups().computeIfAbsent(name, ServiceGroup::new);
 
     // Use constructed service-group name so same-named defs across vsys are unique

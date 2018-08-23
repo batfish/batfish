@@ -193,7 +193,7 @@ public class AclIpSpace extends IpSpace {
         .filter(line -> line.getIpSpace().containsIp(ip, namedIpSpaces))
         .map(AclIpSpaceLine::getAction)
         .findFirst()
-        .orElse(LineAction.REJECT);
+        .orElse(LineAction.DENY);
   }
 
   @Override
@@ -206,7 +206,7 @@ public class AclIpSpace extends IpSpace {
     Builder builder = AclIpSpace.builder();
     _lines.forEach(
         line -> {
-          if (line.getAction() == LineAction.ACCEPT) {
+          if (line.getAction() == LineAction.PERMIT) {
             builder.thenRejecting(line.getIpSpace());
           } else {
             builder.thenPermitting(line.getIpSpace());
@@ -218,7 +218,7 @@ public class AclIpSpace extends IpSpace {
 
   @Override
   public boolean containsIp(@Nonnull Ip ip, @Nonnull Map<String, IpSpace> namedIpSpaces) {
-    return action(ip, namedIpSpaces) == LineAction.ACCEPT;
+    return action(ip, namedIpSpaces) == LineAction.PERMIT;
   }
 
   @Override

@@ -97,7 +97,7 @@ public class ReachFilterAnswererDifferentialTest {
                         hasColumn(equalTo(COLUMN_FLOW), hasDstIp(ip), Schema.FLOW),
                         hasColumn(
                             equalTo(COLUMN_ACTION),
-                            equalTo(LineAction.REJECT.toString()),
+                            equalTo(LineAction.DENY.toString()),
                             Schema.STRING)),
                     allOf(
                         hasColumn(equalTo(COLUMN_RESULT_TYPE), equalTo(INCREASED), Schema.STRING),
@@ -105,7 +105,7 @@ public class ReachFilterAnswererDifferentialTest {
                         hasColumn(equalTo(COLUMN_FLOW), hasDstIp(ip), Schema.FLOW),
                         hasColumn(
                             equalTo(COLUMN_ACTION),
-                            equalTo(LineAction.ACCEPT.toString()),
+                            equalTo(LineAction.PERMIT.toString()),
                             Schema.STRING))))));
   }
 }

@@ -56,7 +56,7 @@ public class IpAccessListToBoolExpr implements GenericAclLineMatchExprVisitor<Bo
     for (IpAccessListLine line : Lists.reverse(ipAccessList.getLines())) {
       BoolExpr matchExpr = line.getMatchCondition().accept(this);
       BoolExpr actionExpr =
-          line.getAction() == LineAction.ACCEPT ? _context.mkTrue() : _context.mkFalse();
+          line.getAction() == LineAction.PERMIT ? _context.mkTrue() : _context.mkFalse();
       expr = (BoolExpr) _context.mkITE(matchExpr, actionExpr, expr);
     }
     return expr;

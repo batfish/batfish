@@ -58,16 +58,16 @@ public class IpSpaceMayNotContainWildcard implements GenericIpSpaceVisitor<Boole
   @Override
   public Boolean visitAclIpSpace(AclIpSpace aclIpSpace) {
     for (AclIpSpaceLine line : aclIpSpace.getLines()) {
-      if (line.getAction() == LineAction.REJECT && ipSpaceMayIntersectWildcard(line.getIpSpace())) {
+      if (line.getAction() == LineAction.DENY && ipSpaceMayIntersectWildcard(line.getIpSpace())) {
         return true;
       }
 
-      if (line.getAction() == LineAction.ACCEPT && ipSpaceContainsWildcard(line.getIpSpace())) {
+      if (line.getAction() == LineAction.PERMIT && ipSpaceContainsWildcard(line.getIpSpace())) {
         return false;
       }
     }
     /*
-     * If we reach this point, no ACCEPT line is guaranteed to contain ipWildcard. This means
+     * If we reach this point, no PERMIT line is guaranteed to contain ipWildcard. This means
      * it's possible (though not certain) that this does not contain ipWildcard.
      */
     return true;
