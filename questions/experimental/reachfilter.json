@@ -23,7 +23,7 @@
         "description": "Search for packet headers outside the specified headerspace, rather than inside the space.",
         "optional": true,
         "type": "boolean"
-      }
+      },
       "destinationIpSpaceSpecifierFactory": {
         "description": "Name of the IpSpaceSpecifierFactory to use for the destination IpSpace",
         "optional": true,
