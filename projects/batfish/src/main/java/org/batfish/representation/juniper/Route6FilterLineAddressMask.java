@@ -25,7 +25,7 @@ public final class Route6FilterLineAddressMask extends Route6FilterLine {
     int prefixLength = _prefix6.getPrefixLength();
     org.batfish.datamodel.Route6FilterLine line =
         new org.batfish.datamodel.Route6FilterLine(
-            LineAction.ACCEPT,
+            LineAction.PERMIT,
             new Ip6Wildcard(
                 new Prefix6(_prefix6.getAddress(), prefixLength).getAddress(), _addressMask),
             new SubRange(prefixLength, prefixLength));

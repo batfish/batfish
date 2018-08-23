@@ -181,11 +181,11 @@ public class RoutesAnswererTest {
             COL_VRF_NAME,
             COL_NETWORK,
             COL_PROTOCOL,
-            COL_TAG,
             COL_NEXT_HOP_IP,
             COL_NEXT_HOP,
             COL_ADMIN_DISTANCE,
-            COL_METRIC));
+            COL_METRIC,
+            COL_TAG));
 
     assertThat(
         columnMetadata
@@ -197,9 +197,9 @@ public class RoutesAnswererTest {
             Schema.STRING,
             Schema.PREFIX,
             Schema.STRING,
-            Schema.INTEGER,
             Schema.IP,
             Schema.STRING,
+            Schema.INTEGER,
             Schema.INTEGER,
             Schema.INTEGER));
   }
@@ -213,14 +213,14 @@ public class RoutesAnswererTest {
         COL_VRF_NAME,
         COL_NETWORK,
         COL_PROTOCOL,
-        COL_TAG,
         COL_NEXT_HOP_IP,
         // BGP attributes
         COL_AS_PATH,
         COL_METRIC,
         COL_LOCAL_PREF,
         COL_COMMUNITIES,
-        COL_ORIGIN_PROTOCOL);
+        COL_ORIGIN_PROTOCOL,
+        COL_TAG);
     List<String> expected = expectedBuilder.build();
 
     assertThat(

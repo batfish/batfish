@@ -318,6 +318,15 @@ public class Client extends AbstractClient implements IClient {
     }
     Variable.Type expectedType = variable.getType();
     switch (expectedType) {
+      case ANSWER_ELEMENT:
+        // this will barf with JsonProcessingException if the value is not castable
+        try {
+          BatfishObjectMapper.mapper().treeToValue(value, AnswerElement.class);
+        } catch (JsonProcessingException e) {
+          throw new BatfishException(
+              String.format("Could not cast value to AnswerElement: %s", value), e);
+        }
+        break;
       case BGP_PROPERTY_SPEC:
         if (!(value.isTextual())) {
           throw new BatfishException(

@@ -27,7 +27,7 @@ public final class Route4FilterLineThrough extends Route4FilterLine {
       Prefix currentPrefix = new Prefix(currentNetworkAddress, i);
       org.batfish.datamodel.RouteFilterLine line =
           new org.batfish.datamodel.RouteFilterLine(
-              LineAction.ACCEPT, currentPrefix, new SubRange(i, i));
+              LineAction.PERMIT, currentPrefix, new SubRange(i, i));
       rfl.addLine(line);
     }
   }

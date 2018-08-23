@@ -33,7 +33,7 @@ public final class RouteMapSetCommunityListLine extends RouteMapSetLine {
         StandardCommunityList scl = cc.getStandardCommunityLists().get(communityListName);
         if (scl != null) {
           for (StandardCommunityListLine line : scl.getLines()) {
-            if (line.getAction() == LineAction.ACCEPT) {
+            if (line.getAction() == LineAction.PERMIT) {
               communities.addAll(line.getCommunities());
             } else {
               w.redFlag(

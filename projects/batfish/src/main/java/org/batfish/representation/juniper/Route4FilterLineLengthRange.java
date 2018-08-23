@@ -24,7 +24,7 @@ public final class Route4FilterLineLengthRange extends Route4FilterLine {
   public void applyTo(RouteFilterList rfl) {
     org.batfish.datamodel.RouteFilterLine line =
         new org.batfish.datamodel.RouteFilterLine(
-            LineAction.ACCEPT, _prefix, new SubRange(_minPrefixLength, _maxPrefixLength));
+            LineAction.PERMIT, _prefix, new SubRange(_minPrefixLength, _maxPrefixLength));
     rfl.addLine(line);
   }
 

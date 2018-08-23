@@ -5,8 +5,8 @@
       "aaa_accounting" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "aaa_accounting",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -33,8 +33,8 @@
       "aaa_authentication_login_default_tacacs_local" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "aaa_authentication_login_default_tacacs_local",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -68,8 +68,8 @@
       "aaa_group_server_source_interface" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "aaa_group_server_source_interface",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -91,8 +91,8 @@
       "access_list" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "access_list",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -111,8 +111,8 @@
       "address_family" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "address_family",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
@@ -218,14 +218,14 @@
       "aggaddress" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "aggaddress",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
         "route6FilterLists" : {
           "ScienceDMZ-networks" : {
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "ipWildcard" : "2607:f010:3f9:8000:0:0:0:0/52",
                 "lengthRange" : "52-128"
               }
@@ -235,7 +235,7 @@
           "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "ipWildcard" : "2607:f010:3f9:8000:0:0:0:0/52",
                 "lengthRange" : "52-52"
               }
@@ -247,7 +247,7 @@
           "ScienceDMZ-networks" : {
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "ipWildcard" : "192.154.2.0/24",
                 "lengthRange" : "24-32"
               }
@@ -257,7 +257,7 @@
           "~MATCH_SUPPRESSED_SUMMARY_ONLY:default~" : {
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "ipWildcard" : "192.154.2.0/24",
                 "lengthRange" : "25-32"
               }
@@ -580,8 +580,8 @@
       "arista-event-handler" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "arista-event-handler",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -600,15 +600,15 @@
       "arista_acl" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "arista_acl",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "ipAccessLists" : {
           "abcd" : {
             "name" : "abcd",
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -629,7 +629,7 @@
                 "name" : "5 permit vlan 123 0x000 udp any 224.0.0.0/4"
               },
               {
-                "action" : "REJECT",
+                "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -668,8 +668,8 @@
       "arista_bgp" : {
         "configurationFormat" : "ARISTA",
         "name" : "arista_bgp",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "ROUTE_MAP" : {
@@ -734,8 +734,8 @@
       "arista_dhcp_relay" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "arista_dhcp_relay",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "Ethernet0" : {
@@ -814,8 +814,8 @@
       "arista_interface" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "arista_interface",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "Vlan1" : {
@@ -884,8 +884,8 @@
       "arista_ip_route" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "arista_ip_route",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -924,8 +924,8 @@
       "arista_logging" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "arista_logging",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -944,15 +944,15 @@
       "arista_misc" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "arista_misc",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "ipAccessLists" : {
           "sshabc" : {
             "name" : "sshabc",
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -992,8 +992,8 @@
       "arista_ospf" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "arista_ospf",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "routingPolicies" : {
           "~OSPF_EXPORT_POLICY:default~" : {
@@ -1017,8 +1017,8 @@
       "arista_queue_monitor" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "arista_queue_monitor",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -1037,8 +1037,8 @@
       "arista_username" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "arista_username",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -1069,8 +1069,8 @@
       "arista_vrf" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "arista_vrf",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -1093,8 +1093,8 @@
       "aruba_aaa" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "aruba_aaa",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -1117,8 +1117,8 @@
       "aruba_acl" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "aruba_acl",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -1137,8 +1137,8 @@
       "aruba_airgroup" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "aruba_airgroup",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -1157,8 +1157,8 @@
       "aruba_crypto" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "aruba_crypto",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "ikePhase1Proposals" : {
           "1" : {
@@ -1197,8 +1197,8 @@
       "aruba_dhcp" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "aruba_dhcp",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -1222,8 +1222,8 @@
       "aruba_interface" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "aruba_interface",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "GigabitEthernet0/0/0" : {
@@ -1284,8 +1284,8 @@
       "aruba_logging" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "aruba_logging",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "loggingServers" : [
           "1.2.3.4"
@@ -1312,8 +1312,8 @@
       "aruba_misc" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "aruba_misc",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -1332,8 +1332,8 @@
       "aruba_net" : {
         "configurationFormat" : "ARUBAOS",
         "name" : "aruba_net",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -1349,8 +1349,8 @@
       "aruba_snmp" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "aruba_snmp",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "snmpTrapServers" : [
           "1.2.3.4"
@@ -1392,8 +1392,8 @@
       "aruba_time_range" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "aruba_time_range",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -1412,8 +1412,8 @@
       "aruba_user_role" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "aruba_user_role",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -1432,8 +1432,8 @@
       "aruba_vlan" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "aruba_vlan",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -1452,8 +1452,8 @@
       "aruba_voice" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "aruba_voice",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -1472,8 +1472,8 @@
       "aruba_vpn" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "aruba_vpn",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -1492,8 +1492,8 @@
       "as_path_prepend" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "as_path_prepend",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "routingPolicies" : {
           "rmap" : {
@@ -1535,15 +1535,15 @@
       "asa_acl" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "asa_acl",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "ipAccessLists" : {
           "Local_LAN_Access" : {
             "name" : "Local_LAN_Access",
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -1568,7 +1568,7 @@
             "name" : "outside",
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -1600,7 +1600,7 @@
             "name" : "outside_in",
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -1645,8 +1645,8 @@
       "asa_banner" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "asa_banner",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -1668,8 +1668,8 @@
       "asa_ospf" : {
         "configurationFormat" : "CISCO_ASA",
         "name" : "asa_ospf",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
         "interfaces" : {
           "blah" : {
@@ -1752,8 +1752,8 @@
       "asa_ssh" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "asa_ssh",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -1780,8 +1780,8 @@
       "banner" : {
         "configurationFormat" : "CISCO_IOS_XR",
         "name" : "banner",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -1808,8 +1808,8 @@
       "banner_dos" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "banner_dos",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -1832,8 +1832,8 @@
       "bgp-allow" : {
         "configurationFormat" : "FLAT_JUNIPER",
         "name" : "bgp-allow",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~DEFAULT_BGP_EXPORT_POLICY~" : {
@@ -2099,8 +2099,8 @@
       "bgp-enforce-first-as" : {
         "configurationFormat" : "FLAT_JUNIPER",
         "name" : "bgp-enforce-first-as",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~DEFAULT_BGP_EXPORT_POLICY~" : {
@@ -2363,8 +2363,8 @@
       "bgp_address_family" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "bgp_address_family",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
@@ -2657,8 +2657,8 @@
       "bgp_default_originate_policy" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "bgp_default_originate_policy",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
@@ -2755,8 +2755,8 @@
       "bgp_foundry" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "bgp_foundry",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
@@ -2885,8 +2885,8 @@
       "bgp_nsr" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "bgp_nsr",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
@@ -2945,14 +2945,14 @@
       "bgp_route_policy" : {
         "configurationFormat" : "CISCO_IOS_XR",
         "name" : "bgp_route_policy",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
         "route6FilterLists" : {
           "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "ipWildcard" : "2607:f380:0:0:0:0:0:0/32",
                 "lengthRange" : "32-32"
               }
@@ -3105,15 +3105,15 @@
       "cadant_acl" : {
         "configurationFormat" : "CADANT",
         "name" : "cadant_acl",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "ip6AccessLists" : {
           "ipv6-acl-foo" : {
             "name" : "ipv6-acl-foo",
             "lines" : [
               {
-                "action" : "REJECT",
+                "action" : "DENY",
                 "dstIps" : [
                   "0:0:0:0:0:0:0:0/0"
                 ],
@@ -3130,7 +3130,7 @@
                 ]
               },
               {
-                "action" : "REJECT",
+                "action" : "DENY",
                 "dstIps" : [
                   "0:0:0:0:0:0:0:0/0"
                 ],
@@ -3147,7 +3147,7 @@
                 ]
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "dstIps" : [
                   "0:0:0:0:0:0:0:0/0"
                 ],
@@ -3161,7 +3161,7 @@
                 ]
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "dstIps" : [
                   "0:0:0:0:0:0:0:0/0"
                 ],
@@ -3172,7 +3172,7 @@
                 ]
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "dstIps" : [
                   "dead:0:0:0:0:0:0:0/8"
                 ],
@@ -3186,7 +3186,7 @@
                 ]
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "dstIps" : [
                   "beef:0:0:0:0:0:0:0/33"
                 ],
@@ -3203,7 +3203,7 @@
                 ]
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "dstIps" : [
                   "beef:0:0:0:0:0:0:0/33"
                 ],
@@ -3220,7 +3220,7 @@
                 ]
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "dstIps" : [
                   "beef:dead:0:0:0:0:0:0/36"
                 ],
@@ -3234,7 +3234,7 @@
                 ]
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "dstIps" : [
                   "0:0:0:0:0:0:0:0/0"
                 ],
@@ -3261,7 +3261,7 @@
             "name" : "50",
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -3286,7 +3286,7 @@
             "name" : "51",
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -3304,7 +3304,7 @@
                 "name" : "permit 2.3.4.0 0.0.0.255"
               },
               {
-                "action" : "REJECT",
+                "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -3329,7 +3329,7 @@
             "name" : "99",
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -3365,8 +3365,8 @@
       "cadant_banner" : {
         "configurationFormat" : "CADANT",
         "name" : "cadant_banner",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -3385,8 +3385,8 @@
       "cadant_bgp" : {
         "configurationFormat" : "CADANT",
         "name" : "cadant_bgp",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
@@ -3442,8 +3442,8 @@
       "cadant_cable" : {
         "configurationFormat" : "CADANT",
         "name" : "cadant_cable",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -3474,8 +3474,8 @@
       "cadant_interface" : {
         "configurationFormat" : "CADANT",
         "name" : "cadant_interface",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "Ethernet6/0.0" : {
@@ -3926,8 +3926,8 @@
       "cadant_ip_route" : {
         "configurationFormat" : "CADANT",
         "name" : "cadant_ip_route",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -4018,8 +4018,8 @@
       "cadant_isis" : {
         "configurationFormat" : "CADANT",
         "name" : "cadant_isis",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -4041,8 +4041,8 @@
       "cadant_line" : {
         "configurationFormat" : "CADANT",
         "name" : "cadant_line",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -4058,8 +4058,8 @@
       "cadant_logging" : {
         "configurationFormat" : "CADANT",
         "name" : "cadant_logging",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "loggingServers" : [
           "1.2.3.4"
@@ -4088,8 +4088,8 @@
       "cadant_misc" : {
         "configurationFormat" : "CADANT",
         "name" : "cadant_misc",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "ntpServers" : [
           "1.2.3.4",
@@ -4127,19 +4127,19 @@
       "cadant_prefix_list" : {
         "configurationFormat" : "CADANT",
         "name" : "cadant_prefix_list",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "route6FilterLists" : {
           "bar" : {
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "ipWildcard" : "0:0:0:0:0:0:0:0",
                 "lengthRange" : "128-128"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "ipWildcard" : "dead:beef:0:0:0:0:0:0/26",
                 "lengthRange" : "64-64"
               }
@@ -4151,7 +4151,7 @@
           "A+C" : {
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "ipWildcard" : "2.2.0.0/19",
                 "lengthRange" : "24-32"
               }
@@ -4161,12 +4161,12 @@
           "foo" : {
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "ipWildcard" : "1.1.1.1",
                 "lengthRange" : "32-32"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "ipWildcard" : "2.2.0.0/19",
                 "lengthRange" : "24-32"
               }
@@ -4188,8 +4188,8 @@
       "cadant_qos" : {
         "configurationFormat" : "CADANT",
         "name" : "cadant_qos",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -4205,8 +4205,8 @@
       "cadant_rip" : {
         "configurationFormat" : "CADANT",
         "name" : "cadant_rip",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~RIP_EXPORT_POLICY:default~" : {
@@ -4230,8 +4230,8 @@
       "cadant_route_map" : {
         "configurationFormat" : "CADANT",
         "name" : "cadant_route_map",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "routingPolicies" : {
           "bar" : {
@@ -4267,8 +4267,8 @@
       "cadant_snmp" : {
         "configurationFormat" : "CADANT",
         "name" : "cadant_snmp",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "snmpSourceInterface" : "Loopback0",
         "snmpTrapServers" : [
@@ -4304,8 +4304,8 @@
       "cisco-zone" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco-zone",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -4332,8 +4332,8 @@
       "cisco_aaa" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_aaa",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -4419,15 +4419,15 @@
       "cisco_acl" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_acl",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "ipAccessLists" : {
           "BLAH-BLAH" : {
             "name" : "BLAH-BLAH",
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -4448,7 +4448,7 @@
                 "name" : "10 permit icmp any any"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -4469,7 +4469,7 @@
                 "name" : "20 permit ip any any tracked"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -4490,7 +4490,7 @@
                 "name" : "30 permit ospf any any"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -4514,7 +4514,7 @@
                 "name" : "40 permit tcp any any eq bgp"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -4540,7 +4540,7 @@
                 "name" : "50 permit udp any any eq bootps bootpc ntp"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.AndMatchExpr",
                   "conjuncts" : [
@@ -4566,7 +4566,7 @@
                 "name" : "60 permit tcp any any eq mlag ttl eq 255"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.AndMatchExpr",
                   "conjuncts" : [
@@ -4592,7 +4592,7 @@
                 "name" : "70 permit udp any any eq mlag ttl eq 255"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -4613,7 +4613,7 @@
                 "name" : "80 permit vrrp any any"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -4634,7 +4634,7 @@
                 "name" : "90 permit ahp any any"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -4655,7 +4655,7 @@
                 "name" : "100 permit pim any any"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -4676,7 +4676,7 @@
                 "name" : "110 permit igmp any any"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -4700,7 +4700,7 @@
                 "name" : "120 permit tcp any any range 1 10"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -4724,7 +4724,7 @@
                 "name" : "140 permit udp 10.0.0.0/19 any eq snmp"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -4748,7 +4748,7 @@
                 "name" : "180 permit udp host 10.0.0.0 any eq snmp"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -4772,7 +4772,7 @@
                 "name" : "220 permit tcp 10.0.0.0/19 any eq ssh"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -4796,7 +4796,7 @@
                 "name" : "260 permit tcp host 10.0.0.0 any eq ssh"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -4828,7 +4828,7 @@
             "name" : "blah",
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -4864,12 +4864,12 @@
           "allowprefix" : {
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "ipWildcard" : "192.0.2.0/24",
                 "lengthRange" : "24-24"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "ipWildcard" : "209.165.201.0/24",
                 "lengthRange" : "24-32"
               }
@@ -4879,12 +4879,12 @@
           "allowprefix-asa" : {
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "ipWildcard" : "192.0.2.0/24",
                 "lengthRange" : "24-32"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "ipWildcard" : "209.165.201.0/24",
                 "lengthRange" : "24-32"
               }
@@ -4909,8 +4909,8 @@
       "cisco_additional_paths" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_additional_paths",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
@@ -4969,8 +4969,8 @@
       "cisco_authentication" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_authentication",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -4993,11 +4993,11 @@
           "10" : {
             "lines" : [
               {
-                "action" : "REJECT",
+                "action" : "DENY",
                 "regex" : "^65535$"
               },
               {
-                "action" : "REJECT",
+                "action" : "DENY",
                 "regex" : "(,|\\{|\\}|^|$| )65535(,|\\{|\\}|^|$| )"
               }
             ],
@@ -5006,7 +5006,7 @@
           "20" : {
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "regex" : "^65536$"
               }
             ],
@@ -5015,21 +5015,21 @@
           "30" : {
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "regex" : "^4000$"
               }
             ],
             "name" : "30"
           }
         },
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
         "routeFilterLists" : {
           "~MATCH_SUPPRESSED_SUMMARY_ONLY:aVrfWithInnerStatements~" : {
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "ipWildcard" : "192.168.0.0/16",
                 "lengthRange" : "17-32"
               }
@@ -5617,8 +5617,8 @@
       "cisco_bgp_confederation" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_bgp_confederation",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
@@ -5677,8 +5677,8 @@
       "cisco_cable" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_cable",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "Cable1/2/3" : {
@@ -5769,8 +5769,8 @@
       "cisco_callhome" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_callhome",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -5790,8 +5790,8 @@
       "cisco_control_plane" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_control_plane",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -5810,8 +5810,8 @@
       "cisco_controller" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_controller",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -5830,8 +5830,8 @@
       "cisco_crypto" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_crypto",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "ikePhase1Keys" : {
           "VRF:ABC:DEF:GHI:1234" : {
@@ -6020,8 +6020,8 @@
       "cisco_dhcp" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_dhcp",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -6045,8 +6045,8 @@
       "cisco_domain" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_domain",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "dnsServers" : [
           "1.2.3.4",
@@ -6071,8 +6071,8 @@
       "cisco_dot11" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_dot11",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -6091,8 +6091,8 @@
       "cisco_dot1x" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_dot1x",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -6111,8 +6111,8 @@
       "cisco_dspfarm" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_dspfarm",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -6131,8 +6131,8 @@
       "cisco_dynamic_access_policy_record" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_dynamic_access_policy_record",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -6151,8 +6151,8 @@
       "cisco_eigrp" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_eigrp",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
         "interfaces" : {
           "Ethernet0" : {
@@ -6186,7 +6186,7 @@
             "name" : "bippety",
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -6210,7 +6210,7 @@
                 "name" : "permit tcp 30.9.132.0 0.0.1.255 host 1.1.1.1 range 48000 48060"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -6234,7 +6234,7 @@
                 "name" : "permit tcp host 1.1.1.1 any eq 27401"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -6258,7 +6258,7 @@
                 "name" : "permit tcp any host 1.1.1.1 eq 65001"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -6282,7 +6282,7 @@
                 "name" : "permit tcp host 1.1.1.1 any eq 20000"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -6313,7 +6313,7 @@
             "name" : "bloop_blop",
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -6558,8 +6558,8 @@
       "cisco_enable" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_enable",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -6579,8 +6579,8 @@
       "cisco_flow" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_flow",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "GigabitEthernet0/1" : {
@@ -6629,8 +6629,8 @@
       "cisco_hardware" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_hardware",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -6649,8 +6649,8 @@
       "cisco_hsrp" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_hsrp",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "TenGigabitEthernet0/0/2/2" : {
@@ -6699,8 +6699,8 @@
       "cisco_interface" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_interface",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "Async1" : {
@@ -7287,7 +7287,7 @@
             "name" : "abc",
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -7358,8 +7358,8 @@
       "cisco_ip" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_ip",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -7381,8 +7381,8 @@
       "cisco_ip_nat" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_ip_nat",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -7401,8 +7401,8 @@
       "cisco_ip_route" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_ip_route",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -7536,8 +7536,8 @@
       "cisco_ipsla" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_ipsla",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -7556,8 +7556,8 @@
       "cisco_ipv6" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_ipv6",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -7576,15 +7576,15 @@
       "cisco_ipv6_access_list" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_ipv6_access_list",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "ip6AccessLists" : {
           "RT404888-XO" : {
             "name" : "RT404888-XO",
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "dstIps" : [
                   "0:0:0:0:0:0:0:0/0"
                 ],
@@ -7598,7 +7598,7 @@
                 ]
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "dstIps" : [
                   "fe80:0:0:0:0:0:0:0/64"
                 ],
@@ -7612,7 +7612,7 @@
                 ]
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "dstIps" : [
                   "ff02:0:0:0:0:0:0:0/64"
                 ],
@@ -7626,7 +7626,7 @@
                 ]
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "dstIps" : [
                   "0:0:0:0:0:0:0:0"
                 ],
@@ -7640,7 +7640,7 @@
                 ]
               },
               {
-                "action" : "REJECT",
+                "action" : "DENY",
                 "dstIps" : [
                   "0:0:0:0:0:0:0:0/0"
                 ],
@@ -7654,7 +7654,7 @@
                 ]
               },
               {
-                "action" : "REJECT",
+                "action" : "DENY",
                 "dstIps" : [
                   "0:0:0:0:0:0:0:0/0"
                 ],
@@ -7668,7 +7668,7 @@
                 ]
               },
               {
-                "action" : "REJECT",
+                "action" : "DENY",
                 "dstIps" : [
                   "0:0:0:0:0:0:0:0/0"
                 ],
@@ -7682,7 +7682,7 @@
                 ]
               },
               {
-                "action" : "REJECT",
+                "action" : "DENY",
                 "dstIps" : [
                   "0:0:0:0:0:0:0:0/0"
                 ],
@@ -7696,7 +7696,7 @@
                 ]
               },
               {
-                "action" : "REJECT",
+                "action" : "DENY",
                 "dstIps" : [
                   "0:0:0:0:0:0:0:0/0"
                 ],
@@ -7710,7 +7710,7 @@
                 ]
               },
               {
-                "action" : "REJECT",
+                "action" : "DENY",
                 "dstIps" : [
                   "0:0:0:0:0:0:0:0/0"
                 ],
@@ -7724,7 +7724,7 @@
                 ]
               },
               {
-                "action" : "REJECT",
+                "action" : "DENY",
                 "dstIps" : [
                   "0:0:0:0:0:0:0:0/0"
                 ],
@@ -7738,7 +7738,7 @@
                 ]
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "dstIps" : [
                   "0:0:0:0:0:0:0:0/0"
                 ],
@@ -7757,7 +7757,7 @@
             "name" : "abcdefg",
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "dstIps" : [
                   "0:0:0:0:0:0:0:0/0"
                 ],
@@ -7771,7 +7771,7 @@
                 ]
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "dstIps" : [
                   "0:0:0:0:0:0:0:0/0"
                 ],
@@ -7785,7 +7785,7 @@
                 ]
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "dstIps" : [
                   "0:0:0:0:0:0:0:0/0"
                 ],
@@ -7799,7 +7799,7 @@
                 ]
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "dstIps" : [
                   "0:0:0:0:0:0:0:0/0"
                 ],
@@ -7832,8 +7832,8 @@
       "cisco_isis" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_isis",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "GigabitEthernet0/0" : {
@@ -8081,8 +8081,8 @@
       "cisco_l2tp" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_l2tp",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -8106,8 +8106,8 @@
       "cisco_line" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_line",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -8665,8 +8665,8 @@
       "cisco_logging" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_logging",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "loggingServers" : [
           "1.1.1.1",
@@ -8727,8 +8727,8 @@
       "cisco_mac_acl" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_mac_acl",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -8747,15 +8747,15 @@
       "cisco_misc" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_misc",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "ipAccessLists" : {
           "~SERVICE_OBJECT_GROUP~SVCGRP-ICMP~" : {
             "name" : "~SERVICE_OBJECT_GROUP~SVCGRP-ICMP~",
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.OrMatchExpr",
                   "disjuncts" : [
@@ -8818,8 +8818,8 @@
       "cisco_monitor" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_monitor",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -8838,8 +8838,8 @@
       "cisco_mpls" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_mpls",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -8858,8 +8858,8 @@
       "cisco_multicast" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_multicast",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -8878,8 +8878,8 @@
       "cisco_ntp" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_ntp",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "ntpServers" : [
           "1.2.3.4",
@@ -8918,15 +8918,15 @@
       "cisco_nxos" : {
         "configurationFormat" : "CISCO_NX",
         "name" : "cisco_nxos",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "ipAccessLists" : {
           "copp-system-acl-icmp" : {
             "name" : "copp-system-acl-icmp",
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -8968,14 +8968,14 @@
       "cisco_nxos_bgp" : {
         "configurationFormat" : "CISCO_NX",
         "name" : "cisco_nxos_bgp",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
         "route6FilterLists" : {
           "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "ipWildcard" : "fe80:0:0:0:0:0:0:0/120",
                 "lengthRange" : "120-120"
               }
@@ -9166,8 +9166,8 @@
       "cisco_ospf" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_ospf",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
         "interfaces" : {
           "Ethernet0/0" : {
@@ -9233,12 +9233,12 @@
           "~OSPF_SUMMARY_FILTER:default:0~" : {
             "lines" : [
               {
-                "action" : "REJECT",
+                "action" : "DENY",
                 "ipWildcard" : "1.2.3.0/24",
                 "lengthRange" : "25-32"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "ipWildcard" : "0.0.0.0/0",
                 "lengthRange" : "0-32"
               }
@@ -9248,12 +9248,12 @@
           "~OSPF_SUMMARY_FILTER:default:16909056~" : {
             "lines" : [
               {
-                "action" : "REJECT",
+                "action" : "DENY",
                 "ipWildcard" : "1.2.3.0/24",
                 "lengthRange" : "24-32"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "ipWildcard" : "0.0.0.0/0",
                 "lengthRange" : "0-32"
               }
@@ -9429,8 +9429,8 @@
       "cisco_pim" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_pim",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -9449,8 +9449,8 @@
       "cisco_platform" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_platform",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -9469,8 +9469,8 @@
       "cisco_privilege" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_privilege",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -9489,19 +9489,19 @@
       "cisco_qos" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_qos",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "ipAccessLists" : {
           "~INSPECT_POLICY_MAP_ACL~pminspect~" : {
             "name" : "~INSPECT_POLICY_MAP_ACL~pminspect~",
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
-                "name" : "class-default action: ACCEPT"
+                "name" : "class-default action: PERMIT"
               }
             ],
             "sourceName" : "pminspect",
@@ -9539,14 +9539,14 @@
             "class" : "org.batfish.datamodel.AclIpSpace",
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "ipSpace" : {
                   "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                   "ipWildcard" : "1.1.1.1"
                 }
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "ipSpace" : {
                   "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                   "ipWildcard" : "1.1.1.1"
@@ -9576,8 +9576,8 @@
       "cisco_queue_monitor" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_queue_monitor",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -9596,8 +9596,8 @@
       "cisco_redundancy" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_redundancy",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -9616,8 +9616,8 @@
       "cisco_rip" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_rip",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~RIP_EXPORT_POLICY:default~" : {
@@ -9644,8 +9644,8 @@
       "cisco_role" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_role",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -9668,11 +9668,11 @@
           "AS_PATH_ACL1" : {
             "lines" : [
               {
-                "action" : "REJECT",
+                "action" : "DENY",
                 "regex" : "^65535$"
               },
               {
-                "action" : "REJECT",
+                "action" : "DENY",
                 "regex" : "(,|\\{|\\}|^|$| )65535(,|\\{|\\}|^|$| )"
               }
             ],
@@ -9681,7 +9681,7 @@
           "AS_PATH_ACL2" : {
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "regex" : "^65536$"
               }
             ],
@@ -9690,15 +9690,15 @@
           "AS_PATH_ACL_UNUSED" : {
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "regex" : "^4000$"
               }
             ],
             "name" : "AS_PATH_ACL_UNUSED"
           }
         },
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "routingPolicies" : {
           "MAP_NAME1" : {
@@ -9886,8 +9886,8 @@
       "cisco_sccp" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_sccp",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -9906,8 +9906,8 @@
       "cisco_snmp" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_snmp",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "snmpSourceInterface" : "Loopback0",
         "snmpTrapServers" : [
@@ -10046,8 +10046,8 @@
       "cisco_spanning_tree" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_spanning_tree",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -10066,8 +10066,8 @@
       "cisco_ssh" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_ssh",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -10089,8 +10089,8 @@
       "cisco_stcapp" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_stcapp",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -10109,15 +10109,15 @@
       "cisco_style_acl1" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_style_acl1",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "ipAccessLists" : {
           "blah" : {
             "name" : "blah",
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -10155,15 +10155,15 @@
       "cisco_style_acl2" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_style_acl2",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "ipAccessLists" : {
           "1" : {
             "name" : "1",
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -10201,8 +10201,8 @@
       "cisco_system" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_system",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -10222,8 +10222,8 @@
       "cisco_tacacs" : {
         "configurationFormat" : "CISCO_NX",
         "name" : "cisco_tacacs",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "tacacsServers" : [
           "1.2.3.4",
@@ -10256,8 +10256,8 @@
       "cisco_track" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_track",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "trackingGroups" : {
           "1" : {
@@ -10286,8 +10286,8 @@
       "cisco_username" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_username",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -10322,8 +10322,8 @@
       "cisco_username_without_password" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_username_without_password",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -10353,8 +10353,8 @@
       "cisco_vdc" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_vdc",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -10373,8 +10373,8 @@
       "cisco_vlan" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_vlan",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -10393,8 +10393,8 @@
       "cisco_voice" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_voice",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -10413,8 +10413,8 @@
       "cisco_vpdn" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_vpdn",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -10433,8 +10433,8 @@
       "cisco_vpn" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_vpn",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -10453,8 +10453,8 @@
       "cisco_vrf" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_vrf",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -10487,8 +10487,8 @@
       "cisco_vrrp" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_vrrp",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "Ethernet0" : {
@@ -10549,8 +10549,8 @@
       "cisco_webvpn" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_webvpn",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -10569,8 +10569,8 @@
       "cisco_wsma" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_wsma",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -10589,8 +10589,8 @@
       "colon_in_vrf" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "colon_in_vrf",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
@@ -10697,7 +10697,7 @@
             "invertMatch" : false,
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunity",
                   "community" : 80936723
@@ -10711,7 +10711,7 @@
             "invertMatch" : false,
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.routing_policy.expr.CommunityHalvesExpr",
                   "left" : {
@@ -10732,7 +10732,7 @@
             "invertMatch" : false,
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunity",
                   "community" : 141099002
@@ -10746,7 +10746,7 @@
             "invertMatch" : false,
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.RegexCommunitySet",
                   "regex" : "^52:.*"
@@ -10760,7 +10760,7 @@
             "invertMatch" : false,
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunity",
                   "community" : 141034138
@@ -10774,7 +10774,7 @@
             "invertMatch" : false,
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.RegexCommunitySet",
                   "regex" : "2152:*"
@@ -10788,7 +10788,7 @@
             "invertMatch" : false,
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunity",
                   "community" : 141099674
@@ -10802,7 +10802,7 @@
             "invertMatch" : false,
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.RegexCommunitySet",
                   "regex" : "2153:*"
@@ -10816,7 +10816,7 @@
             "invertMatch" : false,
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunity",
                   "community" : 3408538
@@ -10830,7 +10830,7 @@
             "invertMatch" : false,
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunity",
                   "community" : 3473370
@@ -10844,7 +10844,7 @@
             "invertMatch" : false,
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunity",
                   "community" : 141098890
@@ -10858,7 +10858,7 @@
             "invertMatch" : false,
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunity",
                   "community" : 3410025
@@ -10872,7 +10872,7 @@
             "invertMatch" : false,
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunity",
                   "community" : 141164426
@@ -10882,8 +10882,8 @@
             "name" : "ucla_to_hpr_community_ipv6"
           }
         },
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -10908,7 +10908,7 @@
             "invertMatch" : false,
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunity",
                   "community" : 655303352
@@ -10918,8 +10918,8 @@
             "name" : "9999-RRR"
           }
         },
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "routingPolicies" : {
           "AAA1-BBB-CCC" : {
@@ -10983,7 +10983,7 @@
             "invertMatch" : false,
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunity",
                   "community" : 655303352
@@ -10993,8 +10993,8 @@
             "name" : "9999-RRR"
           }
         },
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "routingPolicies" : {
           "AAA1-BBB-CCC" : {
@@ -11058,7 +11058,7 @@
             "invertMatch" : false,
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunity",
                   "community" : 4915242
@@ -11068,14 +11068,14 @@
             "name" : "COMM_LIST_NAME"
           }
         },
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "routeFilterLists" : {
           "PFX_LIST" : {
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "ipWildcard" : "10.0.0.0/15",
                 "lengthRange" : "15-32"
               }
@@ -11146,7 +11146,7 @@
             "invertMatch" : false,
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.routing_policy.expr.CommunityHalvesExpr",
                   "left" : {
@@ -11160,7 +11160,7 @@
                 }
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.routing_policy.expr.CommunityHalvesExpr",
                   "left" : {
@@ -11182,8 +11182,8 @@
             "name" : "foo"
           }
         },
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -11202,15 +11202,15 @@
       "foundry_access_list" : {
         "configurationFormat" : "FOUNDRY",
         "name" : "foundry_access_list",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "ip6AccessLists" : {
           "RT404888-Caltech" : {
             "name" : "RT404888-Caltech",
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "dstIps" : [
                   "0:0:0:0:0:0:0:0/0"
                 ],
@@ -11224,7 +11224,7 @@
                 ]
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "dstIps" : [
                   "0:0:0:0:0:0:0:0/0"
                 ],
@@ -11238,7 +11238,7 @@
                 ]
               },
               {
-                "action" : "REJECT",
+                "action" : "DENY",
                 "dstIps" : [
                   "0:0:0:0:0:0:0:0/0"
                 ],
@@ -11252,7 +11252,7 @@
                 ]
               },
               {
-                "action" : "REJECT",
+                "action" : "DENY",
                 "dstIps" : [
                   "0:0:0:0:0:0:0:0/0"
                 ],
@@ -11266,7 +11266,7 @@
                 ]
               },
               {
-                "action" : "REJECT",
+                "action" : "DENY",
                 "dstIps" : [
                   "0:0:0:0:0:0:0:0/0"
                 ],
@@ -11280,7 +11280,7 @@
                 ]
               },
               {
-                "action" : "REJECT",
+                "action" : "DENY",
                 "dstIps" : [
                   "0:0:0:0:0:0:0:0/0"
                 ],
@@ -11294,7 +11294,7 @@
                 ]
               },
               {
-                "action" : "REJECT",
+                "action" : "DENY",
                 "dstIps" : [
                   "0:0:0:0:0:0:0:0/0"
                 ],
@@ -11308,7 +11308,7 @@
                 ]
               },
               {
-                "action" : "REJECT",
+                "action" : "DENY",
                 "dstIps" : [
                   "0:0:0:0:0:0:0:0/0"
                 ],
@@ -11322,7 +11322,7 @@
                 ]
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "dstIps" : [
                   "0:0:0:0:0:0:0:0/0"
                 ],
@@ -11352,8 +11352,8 @@
       "foundry_bgp" : {
         "configurationFormat" : "FOUNDRY",
         "name" : "foundry_bgp",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
@@ -11409,8 +11409,8 @@
       "foundry_interface" : {
         "configurationFormat" : "FOUNDRY",
         "name" : "foundry_interface",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "Ethernet1/15" : {
@@ -11456,8 +11456,8 @@
       "foundry_misc" : {
         "configurationFormat" : "FOUNDRY",
         "name" : "foundry_misc",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -11490,8 +11490,8 @@
       "foundry_vlan_group" : {
         "configurationFormat" : "FOUNDRY",
         "name" : "foundry_vlan_group",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -11507,8 +11507,8 @@
       "host1" : {
         "configurationFormat" : "HOST",
         "name" : "host1",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "HOST",
         "interfaces" : {
           "eth0" : {
@@ -11548,7 +11548,7 @@
             "name" : "filter::INPUT",
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -11568,7 +11568,7 @@
                 "name" : "-s 1.2.3.4/32 -p tcp -m tcp --dport 22 -j ACCEPT"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -11588,7 +11588,7 @@
                 "name" : "-s 11.22.33.44/32 -p tcp -m tcp --dport 25 -j ACCEPT"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -11608,7 +11608,7 @@
                 "name" : "-s 111.222.111.222/32 -p tcp -m tcp --dport 80 -j ACCEPT"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -11628,7 +11628,7 @@
                 "name" : "-s 4.3.2.1/32 -p tcp -m tcp --dport 110 -j ACCEPT"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -11648,7 +11648,7 @@
                 "name" : "-s 44.22.33.11/32 -p tcp -m tcp --dport 143 -j ACCEPT"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
@@ -11660,7 +11660,7 @@
             "name" : "filter::OUTPUT",
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
@@ -11672,7 +11672,7 @@
             "name" : "mangle::FORWARD",
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
@@ -11684,7 +11684,7 @@
             "name" : "mangle::INPUT",
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
@@ -11696,7 +11696,7 @@
             "name" : "mangle::OUTPUT",
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
@@ -11708,7 +11708,7 @@
             "name" : "mangle::POSTROUTING",
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
@@ -11720,7 +11720,7 @@
             "name" : "mangle::PREROUTING",
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
@@ -11732,7 +11732,7 @@
             "name" : "nat::OUTPUT",
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
@@ -11744,7 +11744,7 @@
             "name" : "nat::POSTROUTING",
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
@@ -11756,7 +11756,7 @@
             "name" : "nat::PREROUTING",
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
@@ -11789,8 +11789,8 @@
       "host2" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "host2",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
         "interfaces" : {
           "Ethernet0" : {
@@ -11863,7 +11863,7 @@
             "name" : "iptables_Ethernet0_ingress",
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -11877,7 +11877,7 @@
                 "name" : "-s 2.128.0.101/32 -i eth0 -j ACCEPT"
               },
               {
-                "action" : "REJECT",
+                "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -11887,7 +11887,7 @@
                 "name" : "-j DROP"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
@@ -11899,7 +11899,7 @@
             "name" : "iptables_Ethernet1_ingress",
             "lines" : [
               {
-                "action" : "REJECT",
+                "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -11909,7 +11909,7 @@
                 "name" : "-j DROP"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
@@ -11962,8 +11962,8 @@
       "if_tag_is" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "if_tag_is",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "routingPolicies" : {
           "FOO" : {
@@ -12233,8 +12233,8 @@
       "interface_exit" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "interface_exit",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "Vlan303" : {
@@ -12323,8 +12323,8 @@
       "interface_name" : {
         "configurationFormat" : "CISCO_IOS_XR",
         "name" : "interface_name",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "FastEthernet12/13" : {
@@ -12449,8 +12449,8 @@
       "interface_sdr" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "interface_sdr",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "Loopback0" : {
@@ -12504,8 +12504,8 @@
       "ios_bfd" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "ios_bfd",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -12524,8 +12524,8 @@
       "ios_bgp" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "ios_bgp",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
@@ -12584,8 +12584,8 @@
       "ios_interface" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "ios_interface",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "GigabitEthernet1/0/1" : {
@@ -12634,8 +12634,8 @@
       "ios_standby" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "ios_standby",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "Vlan1000" : {
@@ -12703,8 +12703,8 @@
       "ios_template" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "ios_template",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -12723,8 +12723,8 @@
       "ios_xr_acl" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "ios_xr_acl",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -12743,14 +12743,14 @@
       "ios_xr_bgp" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "ios_xr_bgp",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
         "routeFilterLists" : {
           "~MATCH_SUPPRESSED_SUMMARY_ONLY:default~" : {
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "ipWildcard" : "1.0.0.0/8",
                 "lengthRange" : "9-32"
               }
@@ -12968,8 +12968,8 @@
       "ios_xr_bgp_neighbor_group" : {
         "configurationFormat" : "CISCO_IOS_XR",
         "name" : "ios_xr_bgp_neighbor_group",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
@@ -13168,8 +13168,8 @@
       "ios_xr_class_map" : {
         "configurationFormat" : "CISCO_IOS_XR",
         "name" : "ios_xr_class_map",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -13185,8 +13185,8 @@
       "ios_xr_isis" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "ios_xr_isis",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "GigabitEthernet0/2/1/6" : {
@@ -13244,8 +13244,8 @@
       "ios_xr_logging" : {
         "configurationFormat" : "CISCO_IOS_XR",
         "name" : "ios_xr_logging",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -13264,8 +13264,8 @@
       "ios_xr_misc" : {
         "configurationFormat" : "CISCO_IOS_XR",
         "name" : "ios_xr_misc",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -13281,8 +13281,8 @@
       "ios_xr_multipart" : {
         "configurationFormat" : "CISCO_IOS_XR",
         "name" : "ios_xr_multipart",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -13301,8 +13301,8 @@
       "ios_xr_ntp" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "ios_xr_ntp",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "ntpServers" : [
           "1.2.3.4"
@@ -13331,8 +13331,8 @@
       "ios_xr_ospf" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "ios_xr_ospf",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
         "interfaces" : {
           "Bundle-Ethernet101" : {
@@ -13566,12 +13566,12 @@
           "~OSPF_SUMMARY_FILTER:default:0~" : {
             "lines" : [
               {
-                "action" : "REJECT",
+                "action" : "DENY",
                 "ipWildcard" : "10.0.0.0/15",
                 "lengthRange" : "16-32"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "ipWildcard" : "0.0.0.0/0",
                 "lengthRange" : "0-32"
               }
@@ -13668,8 +13668,8 @@
       "ios_xr_router_static" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "ios_xr_router_static",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -13780,8 +13780,8 @@
       "ios_xr_ssh" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "ios_xr_ssh",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -13800,8 +13800,8 @@
       "ios_xr_taskgroup" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "ios_xr_taskgroup",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -13820,8 +13820,8 @@
       "iosxrmulticast" : {
         "configurationFormat" : "CISCO_IOS_XR",
         "name" : "iosxrmulticast",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -13837,14 +13837,14 @@
       "ip_prefix_list_single_line" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "ip_prefix_list_single_line",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "routeFilterLists" : {
           "DENY-IPV4-ANY-IN" : {
             "lines" : [
               {
-                "action" : "REJECT",
+                "action" : "DENY",
                 "ipWildcard" : "0.0.0.0/0",
                 "lengthRange" : "0-32"
               }
@@ -13869,8 +13869,8 @@
       "isr_crypto_gdoi" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "isr_crypto_gdoi",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -13889,8 +13889,8 @@
       "isr_voip" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "isr_voip",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -13909,8 +13909,8 @@
       "juniper-ospf" : {
         "configurationFormat" : "FLAT_JUNIPER",
         "name" : "juniper-ospf",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
         "interfaces" : {
           "xe-0/0/1.0" : {
@@ -13993,7 +13993,7 @@
           "~SUMMARY1_2_0_0_16_RF~" : {
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "ipWildcard" : "1.2.0.0/16",
                 "lengthRange" : "17-32"
               }
@@ -14154,15 +14154,15 @@
       "juniper-tcpflags" : {
         "configurationFormat" : "FLAT_JUNIPER",
         "name" : "juniper-tcpflags",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "ipAccessLists" : {
           "foo" : {
             "name" : "foo",
             "lines" : [
               {
-                "action" : "REJECT",
+                "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -14238,8 +14238,8 @@
       "juniper_application" : {
         "configurationFormat" : "FLAT_JUNIPER",
         "name" : "juniper_application",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "juniper" : {
@@ -14283,8 +14283,8 @@
       "juniper_apply_macro" : {
         "configurationFormat" : "FLAT_JUNIPER",
         "name" : "juniper_apply_macro",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "juniper" : {
@@ -14328,8 +14328,8 @@
       "juniper_bgp" : {
         "configurationFormat" : "FLAT_JUNIPER",
         "name" : "juniper_bgp",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~DEFAULT_BGP_EXPORT_POLICY~" : {
@@ -14683,8 +14683,8 @@
             "tolerance" : 30
           }
         },
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~DEFAULT_BGP_EXPORT_POLICY~" : {
@@ -15071,8 +15071,8 @@
       "juniper_bgp_remove_private_as" : {
         "configurationFormat" : "FLAT_JUNIPER",
         "name" : "juniper_bgp_remove_private_as",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~DEFAULT_BGP_EXPORT_POLICY~" : {
@@ -15218,7 +15218,7 @@
             "invertMatch" : false,
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.RegexCommunitySet",
                   "regex" : "target:123456L:.*$"
@@ -15232,7 +15232,7 @@
             "invertMatch" : false,
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.RegexCommunitySet",
                   "regex" : "8075:[1][0][0-3,5-9][0-9][0-9]$"
@@ -15246,7 +15246,7 @@
             "invertMatch" : false,
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.RegexCommunitySet",
                   "regex" : "^_200_5?(1-3)*\\?:[^3]+$"
@@ -15256,8 +15256,8 @@
             "name" : "COMM_REGEX"
           }
         },
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "juniper" : {
@@ -15301,15 +15301,15 @@
       "juniper_firewall" : {
         "configurationFormat" : "FLAT_JUNIPER",
         "name" : "juniper_firewall",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "ipAccessLists" : {
           "blah" : {
             "name" : "blah",
             "lines" : [
               {
-                "action" : "REJECT",
+                "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -15317,14 +15317,14 @@
                       "class" : "org.batfish.datamodel.AclIpSpace",
                       "lines" : [
                         {
-                          "action" : "ACCEPT",
+                          "action" : "PERMIT",
                           "ipSpace" : {
                             "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                             "ipWildcard" : "1.2.3.4"
                           }
                         },
                         {
-                          "action" : "ACCEPT",
+                          "action" : "PERMIT",
                           "ipSpace" : {
                             "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                             "ipWildcard" : "1.2.3.5"
@@ -15390,8 +15390,8 @@
       "juniper_forwarding_options" : {
         "configurationFormat" : "FLAT_JUNIPER",
         "name" : "juniper_forwarding_options",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "et-0/0/10.0" : {
@@ -15520,8 +15520,8 @@
       "juniper_interfaces" : {
         "configurationFormat" : "FLAT_JUNIPER",
         "name" : "juniper_interfaces",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "ae0.0" : {
@@ -15690,8 +15690,8 @@
       "juniper_isis" : {
         "configurationFormat" : "FLAT_JUNIPER",
         "name" : "juniper_isis",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "ge-0/0/0.0" : {
@@ -15765,8 +15765,8 @@
       "juniper_l2_learning" : {
         "configurationFormat" : "FLAT_JUNIPER",
         "name" : "juniper_l2_learning",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "juniper" : {
@@ -15810,8 +15810,8 @@
       "juniper_misc" : {
         "configurationFormat" : "FLAT_JUNIPER",
         "name" : "juniper_misc",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "domainName" : "my.domain.name",
         "vendorFamily" : {
@@ -15856,8 +15856,8 @@
       "juniper_ntp" : {
         "configurationFormat" : "FLAT_JUNIPER",
         "name" : "juniper_ntp",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "ntpServers" : [
           "1.2.3.4",
@@ -15905,8 +15905,8 @@
       "juniper_ospf_stub_areas" : {
         "configurationFormat" : "FLAT_JUNIPER",
         "name" : "juniper_ospf_stub_areas",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~OSPF_EXPORT_POLICY:default~" : {
@@ -16016,8 +16016,8 @@
       "juniper_passwords" : {
         "configurationFormat" : "FLAT_JUNIPER",
         "name" : "juniper_passwords",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "tacacsServers" : [
           "1.2.3.4",
@@ -16078,8 +16078,8 @@
       "juniper_policy_statement" : {
         "configurationFormat" : "FLAT_JUNIPER",
         "name" : "juniper_policy_statement",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "routingPolicies" : {
           "POLICY-NAME" : {
@@ -16241,8 +16241,8 @@
       "juniper_relay" : {
         "configurationFormat" : "FLAT_JUNIPER",
         "name" : "juniper_relay",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "irb.10" : {
@@ -16348,94 +16348,94 @@
       "juniper_route_filter" : {
         "configurationFormat" : "FLAT_JUNIPER",
         "name" : "juniper_route_filter",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "route6FilterLists" : {
           "route-filter-test-v6:t1" : {
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "ipWildcard" : "2001:db8:1234:0:0:0:0:0/48",
                 "lengthRange" : "48-48"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "ipWildcard" : "2001:db8:1235:0:0:0:0:0/58",
                 "lengthRange" : "59-128"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "ipWildcard" : "2001:db8:1236:0:0:0:0:0/68",
                 "lengthRange" : "68-128"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "ipWildcard" : "2001:db8:1237:0:0:0:0:0/78",
                 "lengthRange" : "78-88"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "ipWildcard" : "2001:db8:1238:0:0:0:0:0/88",
                 "lengthRange" : "100-110"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "ipWildcard" : "2001:db8:1239:0:0:0:0:0/98",
                 "lengthRange" : "98-98"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "ipWildcard" : "2001:db8:1239:0:0:0:0:0/99",
                 "lengthRange" : "99-99"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "ipWildcard" : "2001:db8:1239:0:0:0:0:0/100",
                 "lengthRange" : "100-100"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "ipWildcard" : "2001:db8:1239:0:0:0:0:0/101",
                 "lengthRange" : "101-101"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "ipWildcard" : "2001:db8:1239:0:0:0:0:0/102",
                 "lengthRange" : "102-102"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "ipWildcard" : "2001:db8:1239:0:0:0:0:0/103",
                 "lengthRange" : "103-103"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "ipWildcard" : "2001:db8:1239:0:0:0:0:0/104",
                 "lengthRange" : "104-104"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "ipWildcard" : "2001:db8:1239:0:0:0:0:0/105",
                 "lengthRange" : "105-105"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "ipWildcard" : "2001:db8:1239:0:0:0:0:0/106",
                 "lengthRange" : "106-106"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "ipWildcard" : "2001:db8:1239:0:0:0:0:0/107",
                 "lengthRange" : "107-107"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "ipWildcard" : "2001:db8:1239:0:0:0:0:0/108",
                 "lengthRange" : "108-108"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "ipWildcard" : "2001:db8:1239:0:0:0:0:0/109",
                 "lengthRange" : "109-109"
               }
@@ -16447,47 +16447,47 @@
           "route-filter-test-v4:t1" : {
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "ipWildcard" : "1.2.0.0/16",
                 "lengthRange" : "16-16"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "ipWildcard" : "1.3.0.0/17",
                 "lengthRange" : "18-32"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "ipWildcard" : "1.4.0.0/18",
                 "lengthRange" : "18-32"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "ipWildcard" : "1.5.0.0/19",
                 "lengthRange" : "19-24"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "ipWildcard" : "1.6.0.0/20",
                 "lengthRange" : "26-29"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "ipWildcard" : "1.7.0.0/21",
                 "lengthRange" : "21-21"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "ipWildcard" : "1.7.0.0/22",
                 "lengthRange" : "22-22"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "ipWildcard" : "1.7.0.0/23",
                 "lengthRange" : "23-23"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "ipWildcard" : "1.7.0.0/24",
                 "lengthRange" : "24-24"
               }
@@ -16603,14 +16603,14 @@
       "juniper_routing_options" : {
         "configurationFormat" : "FLAT_JUNIPER",
         "name" : "juniper_routing_options",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "routeFilterLists" : {
           "~AGGREGATE_10_0_0_0_8_RF~" : {
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "ipWildcard" : "10.0.0.0/8",
                 "lengthRange" : "9-32"
               }
@@ -16704,8 +16704,8 @@
       "juniper_security" : {
         "configurationFormat" : "FLAT_JUNIPER",
         "name" : "juniper_security",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "ikePhase1Keys" : {
           "~IKE_PHASE1_KEY_1.2.3.4~" : {
@@ -16758,7 +16758,7 @@
             "name" : "~EXISTING_CONNECTION~",
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -16776,7 +16776,7 @@
             "name" : "~FROM_ZONE~A~TO_ZONE~B",
             "lines" : [
               {
-                "action" : "REJECT",
+                "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.AndMatchExpr",
                   "conjuncts" : [
@@ -16801,7 +16801,7 @@
             "name" : "~GLOBAL_SECURITY_POLICY~",
             "lines" : [
               {
-                "action" : "REJECT",
+                "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -16879,8 +16879,8 @@
       "juniper_snmp" : {
         "configurationFormat" : "FLAT_JUNIPER",
         "name" : "juniper_snmp",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "juniper" : {
@@ -16944,8 +16944,8 @@
       "juniper_syslog" : {
         "configurationFormat" : "FLAT_JUNIPER",
         "name" : "juniper_syslog",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "loggingServers" : [
           "1.2.3.4"
@@ -16992,8 +16992,8 @@
       "juniper_system" : {
         "configurationFormat" : "FLAT_JUNIPER",
         "name" : "juniper_system",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "juniper" : {
@@ -17037,8 +17037,8 @@
       "juniper_tacplus" : {
         "configurationFormat" : "FLAT_JUNIPER",
         "name" : "juniper_tacplus",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "tacacsServers" : [
           "1.2.3.4",
@@ -17097,8 +17097,8 @@
       "l2vpn" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "l2vpn",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -17117,8 +17117,8 @@
       "local_v6_addr" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "local_v6_addr",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
@@ -17177,8 +17177,8 @@
       "mac_access_list" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "mac_access_list",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -17197,8 +17197,8 @@
       "mcastrouting" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "mcastrouting",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -17217,8 +17217,8 @@
       "mos_interface" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "mos_interface",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "Ethernet1" : {
@@ -17345,8 +17345,8 @@
       "mos_misc" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "mos_misc",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "loggingServers" : [
           "1.2.3.4"
@@ -17386,8 +17386,8 @@
       "msdp_originator_id" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "msdp_originator_id",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -17406,8 +17406,8 @@
       "named_and_numbered_lists" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "named_and_numbered_lists",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "routingPolicies" : {
           "foo" : {
@@ -17437,8 +17437,8 @@
       "nat-08c21704416f06046" : {
         "configurationFormat" : "AWS",
         "name" : "nat-08c21704416f06046",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "domainName" : "aws",
         "vendorFamily" : {
@@ -17455,8 +17455,8 @@
       "nat-09fd8f73171d2d9a3" : {
         "configurationFormat" : "AWS",
         "name" : "nat-09fd8f73171d2d9a3",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "domainName" : "aws",
         "vendorFamily" : {
@@ -17473,8 +17473,8 @@
       "neighbor" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "neighbor",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
@@ -17580,8 +17580,8 @@
       "neighbor-name-numbers" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "neighbor-name-numbers",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
@@ -17640,8 +17640,8 @@
       "neighbor_dos" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "neighbor_dos",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
@@ -17747,8 +17747,8 @@
       "neighbor_mix" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "neighbor_mix",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
@@ -18017,8 +18017,8 @@
       "neighbor_nxos" : {
         "configurationFormat" : "CISCO_NX",
         "name" : "neighbor_nxos",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
@@ -18077,14 +18077,14 @@
       "network6" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "network6",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
         "route6FilterLists" : {
           "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "ipWildcard" : "1a01:111:a100:1001:0:0:0:0/64",
                 "lengthRange" : "64-64"
               }
@@ -18149,8 +18149,8 @@
       "nexus" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "nexus",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -18169,8 +18169,8 @@
       "nexus-arista-router-bgp" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "nexus-arista-router-bgp",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
@@ -18229,14 +18229,14 @@
       "nexus_bgp" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "nexus_bgp",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
         "route6FilterLists" : {
           "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "ipWildcard" : "0:0:0:0:0:0:102:300/120",
                 "lengthRange" : "120-120"
               }
@@ -18413,8 +18413,8 @@
       "nexus_ntp" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "nexus_ntp",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "ntpServers" : [
           "1.2.3.4",
@@ -18451,8 +18451,8 @@
       "nexus_ssh" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "nexus_ssh",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -18471,8 +18471,8 @@
       "no_aaa_group_server" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "no_aaa_group_server",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -18491,8 +18491,8 @@
       "no_ip_name_server" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "no_ip_name_server",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -18511,8 +18511,8 @@
       "no_mask_reply" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "no_mask_reply",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "GigabitEthernet1" : {
@@ -18565,8 +18565,8 @@
       "no_snmp_server" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "no_snmp_server",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -18585,8 +18585,8 @@
       "non_nexus_neighbor_af" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "non_nexus_neighbor_af",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
@@ -18762,15 +18762,15 @@
       "nxos_acl" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "nxos_acl",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "ipAccessLists" : {
           "blah" : {
             "name" : "blah",
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -18819,8 +18819,8 @@
       "nxos_bgp" : {
         "configurationFormat" : "CISCO_NX",
         "name" : "nxos_bgp",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
@@ -18879,8 +18879,8 @@
       "nxos_interface" : {
         "configurationFormat" : "CISCO_NX",
         "name" : "nxos_interface",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "Ethernet0/0" : {
@@ -18955,8 +18955,8 @@
       "nxos_misc" : {
         "configurationFormat" : "CISCO_NX",
         "name" : "nxos_misc",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -18975,8 +18975,8 @@
       "nxos_ospf" : {
         "configurationFormat" : "CISCO_NX",
         "name" : "nxos_ospf",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~OSPF_EXPORT_POLICY:OTHER~" : {
@@ -19112,8 +19112,8 @@
       "nxos_route_map_continue" : {
         "configurationFormat" : "CISCO_NX",
         "name" : "nxos_route_map_continue",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "routingPolicies" : {
           "foobar" : {
@@ -20271,8 +20271,8 @@
       "nxos_system" : {
         "configurationFormat" : "CISCO_NX",
         "name" : "nxos_system",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -20291,8 +20291,8 @@
       "openflow" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "openflow",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -20311,8 +20311,8 @@
       "peer_template" : {
         "configurationFormat" : "CISCO_NX",
         "name" : "peer_template",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
@@ -20751,8 +20751,8 @@
       "pim" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "pim",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "Loopback1" : {
@@ -20805,8 +20805,8 @@
       "pim_snooping" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "pim_snooping",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -20825,14 +20825,14 @@
       "prefix_list_ipv4" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "prefix_list_ipv4",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "routeFilterLists" : {
           "default" : {
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "ipWildcard" : "0.0.0.0/0",
                 "lengthRange" : "0-0"
               }
@@ -20842,7 +20842,7 @@
           "test" : {
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "ipWildcard" : "192.168.100.2/31",
                 "lengthRange" : "31-31"
               }
@@ -20900,14 +20900,14 @@
       "preset" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "preset",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "routeFilterLists" : {
           "default_route" : {
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "ipWildcard" : "0.0.0.0",
                 "lengthRange" : "32-32"
               }
@@ -20917,42 +20917,42 @@
           "ucla_networks" : {
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "ipWildcard" : "128.97.0.0/16",
                 "lengthRange" : "16-32"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "ipWildcard" : "131.179.0.0/16",
                 "lengthRange" : "16-32"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "ipWildcard" : "149.142.0.0/16",
                 "lengthRange" : "16-32"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "ipWildcard" : "164.67.0.0/16",
                 "lengthRange" : "16-32"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "ipWildcard" : "169.232.0.0/16",
                 "lengthRange" : "16-32"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "ipWildcard" : "192.35.225.0/24",
                 "lengthRange" : "24-32"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "ipWildcard" : "192.154.2.0/24",
                 "lengthRange" : "24-32"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "ipWildcard" : "198.17.109.0/24",
                 "lengthRange" : "24-32"
               }
@@ -20977,14 +20977,14 @@
       "route_maps_in_two_address_families" : {
         "configurationFormat" : "CISCO_NX",
         "name" : "route_maps_in_two_address_families",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
         "route6FilterLists" : {
           "v6_list" : {
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "ipWildcard" : "0:0:0:0:0:0:0:0",
                 "lengthRange" : "128-128"
               }
@@ -20996,7 +20996,7 @@
           "v4_list" : {
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "ipWildcard" : "0.0.0.0/0",
                 "lengthRange" : "0-0"
               }
@@ -21179,7 +21179,7 @@
           "ama-coe-as-path" : {
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "regex" : "^64666((,|\\{|\\}|^|$| )64666)*$"
               }
             ],
@@ -21188,7 +21188,7 @@
           "ama-coe-as-path2" : {
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "regex" : "^64666((,|\\{|\\}|^|$| )64666)*$"
               }
             ],
@@ -21197,27 +21197,27 @@
           "ama-coe-as-path3" : {
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "regex" : "^64666((,|\\{|\\}|^|$| )64666)*$"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "regex" : "^64666((,|\\{|\\}|^|$| )64666)*$"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "regex" : "^64666((,|\\{|\\}|^|$| )64666)*$"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "regex" : "^$"
               }
             ],
             "name" : "ama-coe-as-path3"
           }
         },
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "routingPolicies" : {
           "erick-test" : {
@@ -21331,49 +21331,49 @@
                                             "invertMatch" : false,
                                             "lines" : [
                                               {
-                                                "action" : "ACCEPT",
+                                                "action" : "PERMIT",
                                                 "matchCondition" : {
                                                   "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunity",
                                                   "community" : 364058035
                                                 }
                                               },
                                               {
-                                                "action" : "ACCEPT",
+                                                "action" : "PERMIT",
                                                 "matchCondition" : {
                                                   "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunity",
                                                   "community" : 364117919
                                                 }
                                               },
                                               {
-                                                "action" : "ACCEPT",
+                                                "action" : "PERMIT",
                                                 "matchCondition" : {
                                                   "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunity",
                                                   "community" : 364117917
                                                 }
                                               },
                                               {
-                                                "action" : "ACCEPT",
+                                                "action" : "PERMIT",
                                                 "matchCondition" : {
                                                   "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunity",
                                                   "community" : 364183434
                                                 }
                                               },
                                               {
-                                                "action" : "ACCEPT",
+                                                "action" : "PERMIT",
                                                 "matchCondition" : {
                                                   "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunity",
                                                   "community" : 364183454
                                                 }
                                               },
                                               {
-                                                "action" : "ACCEPT",
+                                                "action" : "PERMIT",
                                                 "matchCondition" : {
                                                   "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunity",
                                                   "community" : 364183452
                                                 }
                                               },
                                               {
-                                                "action" : "ACCEPT",
+                                                "action" : "PERMIT",
                                                 "matchCondition" : {
                                                   "class" : "org.batfish.datamodel.routing_policy.expr.CommunityHalvesExpr",
                                                   "left" : {
@@ -21461,7 +21461,7 @@
                                             "invertMatch" : false,
                                             "lines" : [
                                               {
-                                                "action" : "ACCEPT",
+                                                "action" : "PERMIT",
                                                 "matchCondition" : {
                                                   "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunity",
                                                   "community" : 364058035
@@ -21538,7 +21538,7 @@
                                         "invertMatch" : false,
                                         "lines" : [
                                           {
-                                            "action" : "ACCEPT",
+                                            "action" : "PERMIT",
                                             "matchCondition" : {
                                               "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunity",
                                               "community" : 920255987
@@ -21605,21 +21605,21 @@
                                 "invertMatch" : false,
                                 "lines" : [
                                   {
-                                    "action" : "ACCEPT",
+                                    "action" : "PERMIT",
                                     "matchCondition" : {
                                       "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunity",
                                       "community" : 364118010
                                     }
                                   },
                                   {
-                                    "action" : "ACCEPT",
+                                    "action" : "PERMIT",
                                     "matchCondition" : {
                                       "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunity",
                                       "community" : 364053147
                                     }
                                   },
                                   {
-                                    "action" : "ACCEPT",
+                                    "action" : "PERMIT",
                                     "matchCondition" : {
                                       "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunity",
                                       "community" : 364116480
@@ -21711,8 +21711,8 @@
       "route_policy_igp_cost" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "route_policy_igp_cost",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "routingPolicies" : {
           "EBGP_CUST_FULL_v4" : {
@@ -21838,8 +21838,8 @@
       "route_policy_metric_type" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "route_policy_metric_type",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "routingPolicies" : {
           "to_csuchico" : {
@@ -21880,7 +21880,7 @@
                             "invertMatch" : false,
                             "lines" : [
                               {
-                                "action" : "ACCEPT",
+                                "action" : "PERMIT",
                                 "matchCondition" : {
                                   "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunity",
                                   "community" : 141035624
@@ -21946,8 +21946,8 @@
       "route_policy_param" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "route_policy_param",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "routingPolicies" : {
           "cust_v4_in" : {
@@ -22011,14 +22011,14 @@
                         "invertMatch" : false,
                         "lines" : [
                           {
-                            "action" : "ACCEPT",
+                            "action" : "PERMIT",
                             "matchCondition" : {
                               "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunity",
                               "community" : 141099007
                             }
                           },
                           {
-                            "action" : "ACCEPT",
+                            "action" : "PERMIT",
                             "matchCondition" : {
                               "class" : "org.batfish.datamodel.routing_policy.expr.CommunityHalvesExpr",
                               "left" : {
@@ -22076,21 +22076,21 @@
                         "invertMatch" : false,
                         "lines" : [
                           {
-                            "action" : "ACCEPT",
+                            "action" : "PERMIT",
                             "matchCondition" : {
                               "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunity",
                               "community" : 141034138
                             }
                           },
                           {
-                            "action" : "ACCEPT",
+                            "action" : "PERMIT",
                             "matchCondition" : {
                               "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunity",
                               "community" : 141098970
                             }
                           },
                           {
-                            "action" : "ACCEPT",
+                            "action" : "PERMIT",
                             "matchCondition" : {
                               "class" : "org.batfish.datamodel.routing_policy.expr.CommunityHalvesExpr",
                               "left" : {
@@ -22180,8 +22180,8 @@
       "router_msdp" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "router_msdp",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -22200,8 +22200,8 @@
       "rp" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "rp",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "routingPolicies" : {
           "EBGP-PEER-AS2828-LAX-PNI-OUT" : {
@@ -22662,21 +22662,21 @@
                         "invertMatch" : false,
                         "lines" : [
                           {
-                            "action" : "ACCEPT",
+                            "action" : "PERMIT",
                             "matchCondition" : {
                               "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunity",
                               "community" : 80872090
                             }
                           },
                           {
-                            "action" : "ACCEPT",
+                            "action" : "PERMIT",
                             "matchCondition" : {
                               "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunity",
                               "community" : 80936922
                             }
                           },
                           {
-                            "action" : "ACCEPT",
+                            "action" : "PERMIT",
                             "matchCondition" : {
                               "class" : "org.batfish.datamodel.routing_policy.expr.CommunityHalvesExpr",
                               "left" : {
@@ -23593,7 +23593,7 @@
                                                                                         "invertMatch" : false,
                                                                                         "lines" : [
                                                                                           {
-                                                                                            "action" : "ACCEPT",
+                                                                                            "action" : "PERMIT",
                                                                                             "matchCondition" : {
                                                                                               "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunity",
                                                                                               "community" : 809107338
@@ -23609,7 +23609,7 @@
                                                                                         "invertMatch" : false,
                                                                                         "lines" : [
                                                                                           {
-                                                                                            "action" : "ACCEPT",
+                                                                                            "action" : "PERMIT",
                                                                                             "matchCondition" : {
                                                                                               "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunity",
                                                                                               "community" : 809107357
@@ -23785,7 +23785,7 @@
                                                                 "invertMatch" : false,
                                                                 "lines" : [
                                                                   {
-                                                                    "action" : "ACCEPT",
+                                                                    "action" : "PERMIT",
                                                                     "matchCondition" : {
                                                                       "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunity",
                                                                       "community" : 141035624
@@ -23801,7 +23801,7 @@
                                                                 "invertMatch" : false,
                                                                 "lines" : [
                                                                   {
-                                                                    "action" : "ACCEPT",
+                                                                    "action" : "PERMIT",
                                                                     "matchCondition" : {
                                                                       "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunity",
                                                                       "community" : 141098770
@@ -23891,14 +23891,14 @@
                                                         "invertMatch" : false,
                                                         "lines" : [
                                                           {
-                                                            "action" : "ACCEPT",
+                                                            "action" : "PERMIT",
                                                             "matchCondition" : {
                                                               "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunity",
                                                               "community" : 141098770
                                                             }
                                                           },
                                                           {
-                                                            "action" : "ACCEPT",
+                                                            "action" : "PERMIT",
                                                             "matchCondition" : {
                                                               "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunity",
                                                               "community" : 141098970
@@ -24027,14 +24027,14 @@
                                     "invertMatch" : false,
                                     "lines" : [
                                       {
-                                        "action" : "ACCEPT",
+                                        "action" : "PERMIT",
                                         "matchCondition" : {
                                           "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunity",
                                           "community" : 2623275007
                                         }
                                       },
                                       {
-                                        "action" : "ACCEPT",
+                                        "action" : "PERMIT",
                                         "matchCondition" : {
                                           "class" : "org.batfish.datamodel.routing_policy.expr.CommunityHalvesExpr",
                                           "left" : {
@@ -24159,8 +24159,8 @@
       "set_inline_community" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "set_inline_community",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "routingPolicies" : {
           "FOOBAR" : {
@@ -24175,7 +24175,7 @@
                     "invertMatch" : false,
                     "lines" : [
                       {
-                        "action" : "ACCEPT",
+                        "action" : "PERMIT",
                         "matchCondition" : {
                           "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunity",
                           "community" : 65538
@@ -24224,8 +24224,8 @@
       "statistics" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "statistics",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -24244,8 +24244,8 @@
       "switchport_range" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "switchport_range",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "FastEthernet0/1" : {
@@ -24300,8 +24300,8 @@
       "syslog_source_interface" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "syslog_source_interface",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -24320,8 +24320,8 @@
       "taskgroup" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "taskgroup",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -24340,15 +24340,15 @@
       "tcpflags" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "tcpflags",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "ipAccessLists" : {
           "100" : {
             "name" : "100",
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -24389,7 +24389,7 @@
                 "name" : "permit tcp 1.2.3.4/31 any ack"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -24430,7 +24430,7 @@
                 "name" : "permit tcp 1.2.3.4/31 any rst"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -24579,7 +24579,7 @@
                 "name" : "permit tcp 1.2.3.4/31 any syn ack urg psh rst ece fin cwr"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -24620,7 +24620,7 @@
                 "name" : "permit tcp 1.2.3.4/31 any fin"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -24700,8 +24700,8 @@
       "test" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "test",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -24720,8 +24720,8 @@
       "underscore_variable" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "underscore_variable",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "routingPolicies" : {
           "JKL_MNO_PQR" : {
@@ -24751,8 +24751,8 @@
       "variables" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "variables",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "FastEthernet0/0" : {
@@ -24801,8 +24801,8 @@
       "variables_dos" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "variables_dos",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "FastEthernet0/0" : {
@@ -24851,8 +24851,8 @@
       "vlan_access_map4" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "vlan_access_map4",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "EBGP-PEER" : {
@@ -24867,7 +24867,7 @@
                     "invertMatch" : false,
                     "lines" : [
                       {
-                        "action" : "ACCEPT",
+                        "action" : "PERMIT",
                         "matchCondition" : {
                           "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunity",
                           "community" : 529254200
@@ -24973,8 +24973,8 @@
       "vrf_context" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "vrf_context",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -25018,8 +25018,8 @@
       "vxlan" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "vxlan",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
