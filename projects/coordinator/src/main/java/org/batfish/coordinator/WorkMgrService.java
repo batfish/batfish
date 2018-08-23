@@ -45,11 +45,10 @@ import org.batfish.coordinator.AnalysisMetadataMgr.AnalysisType;
 import org.batfish.coordinator.WorkDetails.WorkType;
 import org.batfish.coordinator.WorkQueueMgr.QueueType;
 import org.batfish.datamodel.TestrigMetadata;
-import org.batfish.datamodel.answers.AnalysisAnswerMetricsResult;
 import org.batfish.datamodel.answers.Answer;
+import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.AutocompleteSuggestion;
 import org.batfish.datamodel.answers.AutocompleteSuggestion.CompletionType;
-import org.batfish.datamodel.answers.ColumnAggregation;
 import org.batfish.datamodel.answers.GetAnalysisAnswerMetricsAnswer;
 import org.batfish.datamodel.pojo.WorkStatus;
 import org.batfish.datamodel.questions.Question;
@@ -859,26 +858,16 @@ public class WorkMgrService {
         }
       }
 
-      List<ColumnAggregation> aggregations =
-          BatfishObjectMapper.mapper()
-              .readValue(aggregationsStr, new TypeReference<List<ColumnAggregation>>() {});
-
-      Map<String, String> answers =
+      Map<String, AnswerMetadata> answersMetadata =
           Main.getWorkMgr()
-              .getAnalysisAnswers(
+              .getAnalysisAnswersMetadata(
                   networkNameParam,
                   snapshotNameParam,
-                  BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
                   deltaSnapshotParam,
-                  BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
                   analysisName,
                   analysisQuestions);
 
-      Map<String, AnalysisAnswerMetricsResult> analysisAnswerMetricsResults =
-          Main.getWorkMgr().getAnalysisAnswersMetrics(answers, aggregations);
-
-      GetAnalysisAnswerMetricsAnswer answer =
-          new GetAnalysisAnswerMetricsAnswer(analysisAnswerMetricsResults);
+      GetAnalysisAnswerMetricsAnswer answer = new GetAnalysisAnswerMetricsAnswer(answersMetadata);
 
       String answerStr = BatfishObjectMapper.writePrettyString(answer);
 
