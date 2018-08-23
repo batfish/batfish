@@ -9,14 +9,14 @@ set zone z2 network layer3 ethernet1/4
 set service SERVICE1 protocol tcp port 999
 
 # Block all rule is disabled, so should have no impact
-set rulebase security rules RULE0 disabled yes
-set rulebase security rules RULE0 from [ any ZONE_UNDEF ]
-set rulebase security rules RULE0 to any
-set rulebase security rules RULE0 source any
-set rulebase security rules RULE0 destination any
-set rulebase security rules RULE0 service [ any SERVICE_UNDEF ]
-set rulebase security rules RULE0 application any
-set rulebase security rules RULE0 action drop
+set rulebase security rules "disabled rule" disabled yes
+set rulebase security rules "disabled rule" from [ any ZONE_UNDEF ]
+set rulebase security rules "disabled rule" to any
+set rulebase security rules "disabled rule" source any
+set rulebase security rules "disabled rule" destination any
+set rulebase security rules "disabled rule" service [ any SERVICE_UNDEF ]
+set rulebase security rules "disabled rule" application any
+set rulebase security rules "disabled rule" action drop
 
 set rulebase security rules RULE1 from any
 set rulebase security rules RULE1 to [ z1 z2 ]
