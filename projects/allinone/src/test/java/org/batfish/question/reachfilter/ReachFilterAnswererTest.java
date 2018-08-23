@@ -336,7 +336,7 @@ public final class ReachFilterAnswererTest {
         rows.getData(),
         contains(
             allOf(
-                hasColumn("action", equalTo("REJECT"), Schema.STRING),
+                hasColumn("action", equalTo("DENY"), Schema.STRING),
                 hasColumn("filterName", equalTo(ACL.getName()), Schema.STRING))));
   }
 
@@ -351,15 +351,15 @@ public final class ReachFilterAnswererTest {
             containsInAnyOrder(
                 ImmutableList.of(
                     allOf(
-                        hasColumn("action", equalTo("ACCEPT"), Schema.STRING),
+                        hasColumn("action", equalTo("PERMIT"), Schema.STRING),
                         hasColumn("filterName", equalTo(ACL.getName()), Schema.STRING),
                         hasColumn("lineNumber", oneOf(0, 3), Schema.INTEGER)),
                     allOf(
-                        hasColumn("action", equalTo("ACCEPT"), Schema.STRING),
+                        hasColumn("action", equalTo("PERMIT"), Schema.STRING),
                         hasColumn("filterName", equalTo(BLOCKED_LINE_ACL.getName()), Schema.STRING),
                         hasColumn("lineNumber", equalTo(0), Schema.INTEGER)),
                     allOf(
-                        hasColumn("action", equalTo("ACCEPT"), Schema.STRING),
+                        hasColumn("action", equalTo("PERMIT"), Schema.STRING),
                         hasColumn("filterName", equalTo(SRC_ACL.getName()), Schema.STRING),
                         hasColumn("lineNumber", oneOf(0, 1, 2), Schema.INTEGER))))));
   }

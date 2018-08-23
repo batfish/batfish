@@ -124,7 +124,7 @@ class TracerouteEngineImplContext {
                                 .getAcl()
                                 .filter(flow, srcInterface, aclDefinitions, namedIpSpaces)
                                 .getAction()
-                            != LineAction.REJECT)
+                            != LineAction.DENY)
             .findFirst();
     if (!matchingSourceNat.isPresent()) {
       // No NAT rule matched.
@@ -396,7 +396,7 @@ class TracerouteEngineImplContext {
     } else {
       lineDesc = "no-match";
     }
-    boolean denied = outResult.getAction() == LineAction.REJECT;
+    boolean denied = outResult.getAction() == LineAction.DENY;
     if (denied) {
       String notes = disposition + "{" + outFilterName + "}{" + lineDesc + "}";
       if (out) {

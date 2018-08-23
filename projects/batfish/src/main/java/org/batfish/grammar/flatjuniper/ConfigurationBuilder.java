@@ -3354,12 +3354,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void exitFlat_juniper_configuration(Flat_juniper_configurationContext ctx) {
     if (_hasZones) {
       if (_defaultCrossZoneAction == null) {
-        _defaultCrossZoneAction = LineAction.REJECT;
+        _defaultCrossZoneAction = LineAction.DENY;
       }
       _configuration.setDefaultCrossZoneAction(_defaultCrossZoneAction);
-      _configuration.setDefaultInboundAction(LineAction.REJECT);
+      _configuration.setDefaultInboundAction(LineAction.DENY);
     } else {
-      _configuration.setDefaultInboundAction(LineAction.ACCEPT);
+      _configuration.setDefaultInboundAction(LineAction.PERMIT);
     }
   }
 
@@ -4514,9 +4514,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitSep_default_policy(Sep_default_policyContext ctx) {
     if (ctx.PERMIT_ALL() != null) {
-      _defaultCrossZoneAction = LineAction.ACCEPT;
+      _defaultCrossZoneAction = LineAction.PERMIT;
     } else if (ctx.DENY_ALL() != null) {
-      _defaultCrossZoneAction = LineAction.REJECT;
+      _defaultCrossZoneAction = LineAction.DENY;
     }
   }
 

@@ -76,7 +76,7 @@ public abstract class IpSpaceSpecializer implements GenericIpSpaceVisitor<IpSpac
 
     if (specializedLines
         .stream()
-        .allMatch(aclIpSpaceLine -> aclIpSpaceLine.getAction() == LineAction.REJECT)) {
+        .allMatch(aclIpSpaceLine -> aclIpSpaceLine.getAction() == LineAction.DENY)) {
       return EmptyIpSpace.INSTANCE;
     }
 

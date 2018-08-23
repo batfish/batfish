@@ -348,10 +348,10 @@ public class VyosConfiguration extends VendorConfiguration {
       }
       ifStatement.setGuard(conj.simplify());
       switch (rule.getAction()) {
-        case ACCEPT:
+        case PERMIT:
           trueStatements.add(Statements.ExitAccept.toStaticStatement());
           break;
-        case REJECT:
+        case DENY:
           trueStatements.add(Statements.ExitReject.toStaticStatement());
           break;
         default:
@@ -367,8 +367,8 @@ public class VyosConfiguration extends VendorConfiguration {
   public Configuration toVendorIndependentConfiguration() throws VendorConversionException {
     _ipToInterfaceMap = new HashMap<>();
     _c = new Configuration(_hostname, _format);
-    _c.setDefaultCrossZoneAction(LineAction.ACCEPT);
-    _c.setDefaultInboundAction(LineAction.ACCEPT);
+    _c.setDefaultCrossZoneAction(LineAction.PERMIT);
+    _c.setDefaultInboundAction(LineAction.PERMIT);
 
     convertPrefixLists();
     convertRouteMaps();

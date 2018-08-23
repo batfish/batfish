@@ -382,7 +382,7 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
                 prefix -> {
                   RouteFilterLine matchOutgoingPrefix =
                       new RouteFilterLine(
-                          LineAction.ACCEPT,
+                          LineAction.PERMIT,
                           prefix,
                           new SubRange(prefix.getPrefixLength(), prefix.getPrefixLength()));
                   originationRouteFilter.addLine(matchOutgoingPrefix);

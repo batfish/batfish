@@ -63,8 +63,8 @@ public class PermittedByAclTest {
   public void testAclMatch() {
     // Test ACL line expressions which are permitted by other ACLs
 
-    Map<String, IpAccessList> acceptAcl = createAclMap("acl1", "1.2.3.4/32", LineAction.ACCEPT);
-    Map<String, IpAccessList> rejectAcl = createAclMap("acl1", "1.2.3.4/32", LineAction.REJECT);
+    Map<String, IpAccessList> acceptAcl = createAclMap("acl1", "1.2.3.4/32", LineAction.PERMIT);
+    Map<String, IpAccessList> rejectAcl = createAclMap("acl1", "1.2.3.4/32", LineAction.DENY);
     PermittedByAcl exprMatch = new PermittedByAcl("acl1", false);
 
     // Confirm a flow matching the ACL is correctly identified as accepted

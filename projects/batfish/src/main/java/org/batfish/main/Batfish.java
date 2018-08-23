@@ -1570,7 +1570,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // "~STUB_ORIGINATION_ROUTE_FILTER~";
     // RouteFilterList rf = new RouteFilterList(
     // stubOriginationRouteFilterListName);
-    // RouteFilterLine rfl = new RouteFilterLine(LineAction.ACCEPT,
+    // RouteFilterLine rfl = new RouteFilterLine(LineAction.PERMIT,
     // Prefix.ZERO,
     // new SubRange(0, 0));
     // rf.addLine(rfl);

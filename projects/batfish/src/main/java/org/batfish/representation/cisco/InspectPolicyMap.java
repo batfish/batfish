@@ -18,7 +18,7 @@ public class InspectPolicyMap implements Serializable {
 
   public InspectPolicyMap(String name) {
     _name = name;
-    _classDefaultAction = LineAction.REJECT;
+    _classDefaultAction = LineAction.DENY;
     _inspectClasses = new TreeMap<>();
   }
 

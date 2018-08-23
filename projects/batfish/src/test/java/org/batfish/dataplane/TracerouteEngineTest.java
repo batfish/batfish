@@ -73,7 +73,7 @@ public class TracerouteEngineTest {
     Flow flow = makeFlow();
 
     SourceNat nat = new SourceNat();
-    nat.setAcl(makeAcl("accept", LineAction.ACCEPT));
+    nat.setAcl(makeAcl("accept", LineAction.PERMIT));
     nat.setPoolIpFirst(new Ip("4.5.6.7"));
 
     Flow transformed =
@@ -87,7 +87,7 @@ public class TracerouteEngineTest {
     Flow flow = makeFlow();
 
     SourceNat nat = new SourceNat();
-    nat.setAcl(makeAcl("reject", LineAction.REJECT));
+    nat.setAcl(makeAcl("reject", LineAction.DENY));
     nat.setPoolIpFirst(new Ip("4.5.6.7"));
 
     Flow transformed =
@@ -101,11 +101,11 @@ public class TracerouteEngineTest {
     Flow flow = makeFlow();
 
     SourceNat nat = new SourceNat();
-    nat.setAcl(makeAcl("firstAccept", LineAction.ACCEPT));
+    nat.setAcl(makeAcl("firstAccept", LineAction.PERMIT));
     nat.setPoolIpFirst(new Ip("4.5.6.7"));
 
     SourceNat secondNat = new SourceNat();
-    secondNat.setAcl(makeAcl("secondAccept", LineAction.ACCEPT));
+    secondNat.setAcl(makeAcl("secondAccept", LineAction.PERMIT));
     secondNat.setPoolIpFirst(new Ip("4.5.6.8"));
 
     Flow transformed =
@@ -119,11 +119,11 @@ public class TracerouteEngineTest {
     Flow flow = makeFlow();
 
     SourceNat nat = new SourceNat();
-    nat.setAcl(makeAcl("rejectAll", LineAction.REJECT));
+    nat.setAcl(makeAcl("rejectAll", LineAction.DENY));
     nat.setPoolIpFirst(new Ip("4.5.6.7"));
 
     SourceNat secondNat = new SourceNat();
-    secondNat.setAcl(makeAcl("acceptAnyway", LineAction.ACCEPT));
+    secondNat.setAcl(makeAcl("acceptAnyway", LineAction.PERMIT));
     secondNat.setPoolIpFirst(new Ip("4.5.6.8"));
 
     Flow transformed =
@@ -137,7 +137,7 @@ public class TracerouteEngineTest {
     Flow flow = makeFlow();
 
     SourceNat nat = new SourceNat();
-    nat.setAcl(makeAcl("matchAll", LineAction.ACCEPT));
+    nat.setAcl(makeAcl("matchAll", LineAction.PERMIT));
 
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage("missing NAT address or pool");

@@ -72,14 +72,14 @@ public class IpSpaceSimplifier implements GenericIpSpaceVisitor<IpSpace> {
     /*
      * If there is only one line, and it accepts, then simplify to the space of that line.
      */
-    if (simplifiedLines.size() == 1 && simplifiedLines.get(0).getAction() == LineAction.ACCEPT) {
+    if (simplifiedLines.size() == 1 && simplifiedLines.get(0).getAction() == LineAction.PERMIT) {
       return simplifiedLines.get(0).getIpSpace();
     }
 
     /*
      * If all lines reject (or there are no lines), simplify to EmptyIpSpace.
      */
-    if (simplifiedLines.stream().allMatch(line -> line.getAction() == LineAction.REJECT)) {
+    if (simplifiedLines.stream().allMatch(line -> line.getAction() == LineAction.DENY)) {
       return EmptyIpSpace.INSTANCE;
     }
 
@@ -91,7 +91,7 @@ public class IpSpaceSimplifier implements GenericIpSpaceVisitor<IpSpace> {
             .get(simplifiedLines.size() - 1)
             .getIpSpace()
             .equals(UniverseIpSpace.INSTANCE)
-        && simplifiedLines.stream().allMatch(line -> line.getAction() == LineAction.ACCEPT)) {
+        && simplifiedLines.stream().allMatch(line -> line.getAction() == LineAction.PERMIT)) {
       return UniverseIpSpace.INSTANCE;
     }
 
