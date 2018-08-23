@@ -73,7 +73,7 @@ public final class DefaultDeniedByIpAccessList implements TerminalTraceEvent {
 
   @Override
   public FilterResult toFilterResult() {
-    return new FilterResult(null, LineAction.REJECT);
+    return new FilterResult(null, LineAction.DENY);
   }
 
   @Override

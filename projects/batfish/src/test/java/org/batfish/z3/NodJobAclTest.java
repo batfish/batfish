@@ -87,7 +87,7 @@ public class NodJobAclTest {
         aclb.setLines(
                 ImmutableList.of(
                     IpAccessListLine.builder()
-                        .setAction(LineAction.ACCEPT)
+                        .setAction(LineAction.PERMIT)
                         .setMatchCondition(new MatchSrcInterface(ImmutableList.of(iface1)))
                         .build()))
             .setOwner(dstNode)
@@ -233,7 +233,7 @@ public class NodJobAclTest {
         aclb.setLines(
                 ImmutableList.of(
                     IpAccessListLine.builder()
-                        .setAction(LineAction.ACCEPT)
+                        .setAction(LineAction.PERMIT)
                         .setMatchCondition(new MatchSrcInterface(ImmutableList.of(iface1)))
                         .build()))
             .setOwner(node)
@@ -345,12 +345,12 @@ public class NodJobAclTest {
 
   @Test
   public void testPermittedByAcl_accept() throws IOException {
-    testPermittedByAcl_helper(LineAction.ACCEPT);
+    testPermittedByAcl_helper(LineAction.PERMIT);
   }
 
   @Test
   public void testPermittedByAcl_reject() throws IOException {
-    testPermittedByAcl_helper(LineAction.REJECT);
+    testPermittedByAcl_helper(LineAction.DENY);
   }
 
   private static void testPermittedByAcl_helper(LineAction action) throws IOException {
@@ -384,7 +384,7 @@ public class NodJobAclTest {
             .setLines(
                 ImmutableList.of(
                     IpAccessListLine.builder()
-                        .setAction(LineAction.ACCEPT)
+                        .setAction(LineAction.PERMIT)
                         .setMatchCondition(new PermittedByAcl("acl1"))
                         .build()))
             .build();
@@ -442,6 +442,6 @@ public class NodJobAclTest {
     /* Run query */
     Status status = NodJobTest.checkSat(nodJob);
     assertThat(
-        status, equalTo(action == LineAction.ACCEPT ? Status.SATISFIABLE : Status.UNSATISFIABLE));
+        status, equalTo(action == LineAction.PERMIT ? Status.SATISFIABLE : Status.UNSATISFIABLE));
   }
 }

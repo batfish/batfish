@@ -1398,7 +1398,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
               .getIpv6Networks()
               .keySet()
               .stream()
-              .map(p6 -> new Route6FilterLine(LineAction.ACCEPT, Prefix6Range.fromPrefix6(p6)))
+              .map(p6 -> new Route6FilterLine(LineAction.PERMIT, Prefix6Range.fromPrefix6(p6)))
               .collect(ImmutableList.toImmutableList());
       Route6FilterList localFilter6 =
           new Route6FilterList("~BGP_NETWORK6_NETWORKS_FILTER:" + vrfName + "~", lines);
@@ -1745,7 +1745,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
                 int prefixLen = prefix6.getPrefixLength();
                 Route6FilterLine line =
                     new Route6FilterLine(
-                        LineAction.ACCEPT, prefix6, new SubRange(prefixLen, prefixLen));
+                        LineAction.PERMIT, prefix6, new SubRange(prefixLen, prefixLen));
                 localFilter6.addLine(line);
                 String mapName = bgpNetwork6.getRouteMapName();
                 if (mapName != null) {
@@ -2439,14 +2439,14 @@ public final class CiscoConfiguration extends VendorConfiguration {
                 : prefixLength;
         summaryFilter.addLine(
             new RouteFilterLine(
-                LineAction.REJECT,
+                LineAction.DENY,
                 new IpWildcard(prefix),
                 new SubRange(filterMinPrefixLength, Prefix.MAX_PREFIX_LENGTH)));
       }
       area.setSummaries(ImmutableSortedMap.copyOf(summaries));
       summaryFilter.addLine(
           new RouteFilterLine(
-              LineAction.ACCEPT,
+              LineAction.PERMIT,
               new IpWildcard(Prefix.ZERO),
               new SubRange(0, Prefix.MAX_PREFIX_LENGTH)));
     }
@@ -2739,11 +2739,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
         rmSet.applyTo(matchStatements, this, c, _w);
       }
       switch (rmClause.getAction()) {
-        case ACCEPT:
+        case PERMIT:
           matchStatements.add(Statements.ReturnTrue.toStaticStatement());
           break;
 
-        case REJECT:
+        case DENY:
           matchStatements.add(Statements.ReturnFalse.toStaticStatement());
           break;
 
@@ -2827,7 +2827,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         }
       }
       switch (rmClause.getAction()) {
-        case ACCEPT:
+        case PERMIT:
           if (continueStatement == null) {
             onMatchStatements.add(Statements.ExitAccept.toStaticStatement());
           } else {
@@ -2836,7 +2836,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
           }
           break;
 
-        case REJECT:
+        case DENY:
           onMatchStatements.add(Statements.ExitReject.toStaticStatement());
           break;
 
@@ -2891,8 +2891,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
   public Configuration toVendorIndependentConfiguration() {
     final Configuration c = new Configuration(_hostname, _vendor);
     c.getVendorFamily().setCisco(_cf);
-    c.setDefaultInboundAction(LineAction.ACCEPT);
-    c.setDefaultCrossZoneAction(LineAction.ACCEPT);
+    c.setDefaultInboundAction(LineAction.PERMIT);
+    c.setDefaultCrossZoneAction(LineAction.PERMIT);
     c.setDnsServers(_dnsServers);
     c.setDnsSourceInterface(_dnsSourceInterface);
     c.setDomainName(_domainName);

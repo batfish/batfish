@@ -127,7 +127,7 @@ public class AclLineMatchExprToBooleanExprTest {
                     HeaderSpace.builder()
                         .setDstIps(ImmutableList.of(new IpWildcard("1.2.3.4")))
                         .build()))
-            .setAction(LineAction.REJECT)
+            .setAction(LineAction.DENY)
             .build();
 
     IpAccessListLine line2 =
@@ -137,7 +137,7 @@ public class AclLineMatchExprToBooleanExprTest {
                     HeaderSpace.builder()
                         .setDstIps(ImmutableList.of(new IpWildcard("1.2.3.0/24")))
                         .build()))
-            .setAction(LineAction.ACCEPT)
+            .setAction(LineAction.PERMIT)
             .build();
 
     IpAccessList acl =

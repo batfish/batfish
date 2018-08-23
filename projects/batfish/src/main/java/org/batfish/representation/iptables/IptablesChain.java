@@ -42,9 +42,9 @@ public class IptablesChain implements Serializable {
 
   public LineAction getIpAccessListLineAction() {
     if (_policy == ChainPolicy.ACCEPT) {
-      return LineAction.ACCEPT;
+      return LineAction.PERMIT;
     } else if (_policy == ChainPolicy.DROP) {
-      return LineAction.REJECT;
+      return LineAction.DENY;
     } else {
       throw new BatfishException("Unsupported ChainPolicy for mapping to LineAction: " + _policy);
     }

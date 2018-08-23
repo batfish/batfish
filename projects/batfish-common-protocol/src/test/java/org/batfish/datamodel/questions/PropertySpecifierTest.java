@@ -93,7 +93,7 @@ public class PropertySpecifierTest {
   @Test
   public void fillPropertyForcedString() {
     Configuration configuration = new Configuration("hostname", ConfigurationFormat.CISCO_IOS);
-    configuration.setDefaultInboundAction(LineAction.ACCEPT);
+    configuration.setDefaultInboundAction(LineAction.PERMIT);
     String property = "default-inbound-action";
     PropertyDescriptor<Configuration> propertyDescriptor =
         NodePropertySpecifier.JAVA_MAP.get(property);
@@ -103,7 +103,7 @@ public class PropertySpecifierTest {
 
     // the row should be filled out with the String value
     assertThat(
-        row.build(), equalTo(Row.builder().put(property, LineAction.ACCEPT.toString()).build()));
+        row.build(), equalTo(Row.builder().put(property, LineAction.PERMIT.toString()).build()));
   }
 
   @Test

@@ -87,7 +87,7 @@
           "tcpFlagsSyn" : 0,
           "tcpFlagsUrg" : 0
         },
-        "action" : "REJECT",
+        "action" : "DENY",
         "lineNumber" : 2,
         "lineContent" : "default",
         "trace" : {
@@ -133,7 +133,7 @@
           "tcpFlagsSyn" : 0,
           "tcpFlagsUrg" : 0
         },
-        "action" : "ACCEPT",
+        "action" : "PERMIT",
         "lineNumber" : 0,
         "lineContent" : "default",
         "trace" : {
@@ -142,52 +142,6 @@
               "class" : "org.batfish.datamodel.acl.PermittedByIpAccessListLine",
               "description" : "Flow permitted by ACL named 'filter::OUTPUT', index 0: default",
               "index" : 0,
-              "lineDescription" : "default",
-              "name" : "filter::OUTPUT"
-            }
-          ]
-        }
-      },
-      {
-        "node" : {
-          "id" : "node-host2",
-          "name" : "host2"
-        },
-        "filterName" : "filter::OUTPUT",
-        "flow" : {
-          "dscp" : 0,
-          "dstIp" : "1.1.1.1",
-          "dstPort" : 0,
-          "ecn" : 0,
-          "fragmentOffset" : 0,
-          "icmpCode" : 255,
-          "icmpVar" : 255,
-          "ingressNode" : "host2",
-          "ingressVrf" : "default",
-          "ipProtocol" : "IP",
-          "packetLength" : 0,
-          "srcIp" : "AUTO/NONE(-1l)",
-          "srcPort" : 0,
-          "state" : "NEW",
-          "tag" : "BASE",
-          "tcpFlagsAck" : 0,
-          "tcpFlagsCwr" : 0,
-          "tcpFlagsEce" : 0,
-          "tcpFlagsFin" : 0,
-          "tcpFlagsPsh" : 0,
-          "tcpFlagsRst" : 0,
-          "tcpFlagsSyn" : 0,
-          "tcpFlagsUrg" : 0
-        },
-        "action" : "ACCEPT",
-        "lineNumber" : 1,
-        "lineContent" : "default",
-        "trace" : {
-          "events" : [
-            {
-              "class" : "org.batfish.datamodel.acl.PermittedByIpAccessListLine",
-              "description" : "Flow permitted by ACL named 'filter::OUTPUT', index 1: default",
-              "index" : 1,
               "lineDescription" : "default",
               "name" : "filter::OUTPUT"
             }
@@ -225,7 +179,7 @@
           "tcpFlagsSyn" : 0,
           "tcpFlagsUrg" : 0
         },
-        "action" : "REJECT",
+        "action" : "DENY",
         "lineNumber" : 1,
         "lineContent" : "default",
         "trace" : {
@@ -236,6 +190,52 @@
               "index" : 1,
               "lineDescription" : "default",
               "name" : "filter::INPUT"
+            }
+          ]
+        }
+      },
+      {
+        "node" : {
+          "id" : "node-host2",
+          "name" : "host2"
+        },
+        "filterName" : "filter::OUTPUT",
+        "flow" : {
+          "dscp" : 0,
+          "dstIp" : "1.1.1.1",
+          "dstPort" : 0,
+          "ecn" : 0,
+          "fragmentOffset" : 0,
+          "icmpCode" : 255,
+          "icmpVar" : 255,
+          "ingressNode" : "host2",
+          "ingressVrf" : "default",
+          "ipProtocol" : "IP",
+          "packetLength" : 0,
+          "srcIp" : "AUTO/NONE(-1l)",
+          "srcPort" : 0,
+          "state" : "NEW",
+          "tag" : "BASE",
+          "tcpFlagsAck" : 0,
+          "tcpFlagsCwr" : 0,
+          "tcpFlagsEce" : 0,
+          "tcpFlagsFin" : 0,
+          "tcpFlagsPsh" : 0,
+          "tcpFlagsRst" : 0,
+          "tcpFlagsSyn" : 0,
+          "tcpFlagsUrg" : 0
+        },
+        "action" : "PERMIT",
+        "lineNumber" : 1,
+        "lineContent" : "default",
+        "trace" : {
+          "events" : [
+            {
+              "class" : "org.batfish.datamodel.acl.PermittedByIpAccessListLine",
+              "description" : "Flow permitted by ACL named 'filter::OUTPUT', index 1: default",
+              "index" : 1,
+              "lineDescription" : "default",
+              "name" : "filter::OUTPUT"
             }
           ]
         }
@@ -271,7 +271,7 @@
           "tcpFlagsSyn" : 0,
           "tcpFlagsUrg" : 0
         },
-        "action" : "ACCEPT",
+        "action" : "PERMIT",
         "lineNumber" : 0,
         "lineContent" : "default",
         "trace" : {
@@ -317,7 +317,7 @@
           "tcpFlagsSyn" : 0,
           "tcpFlagsUrg" : 0
         },
-        "action" : "ACCEPT",
+        "action" : "PERMIT",
         "lineNumber" : 0,
         "lineContent" : "default",
         "trace" : {

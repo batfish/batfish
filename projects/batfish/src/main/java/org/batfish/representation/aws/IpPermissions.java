@@ -108,7 +108,7 @@ public class IpPermissions implements Serializable {
 
   private HeaderSpace.Builder toHeaderSpaceBuilder() {
     HeaderSpace.Builder headerSpaceBuilder = HeaderSpace.builder();
-    //    line.setAction(LineAction.ACCEPT);
+    //    line.setAction(LineAction.PERMIT);
     IpProtocol protocol = toIpProtocol(_ipProtocol);
     if (protocol != null) {
       headerSpaceBuilder.setIpProtocols(ImmutableSet.of(protocol));

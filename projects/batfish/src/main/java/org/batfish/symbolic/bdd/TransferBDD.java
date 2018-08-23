@@ -805,7 +805,7 @@ class TransferBDD {
     Collections.reverse(lines);
     BDD acc = factory.zero();
     for (CommunityListLine line : lines) {
-      boolean action = (line.getAction() == LineAction.ACCEPT);
+      boolean action = (line.getAction() == LineAction.PERMIT);
       CommunityVar cvar = toRegexCommunityVar(toCommunityVar(line.getMatchCondition()));
       p.debug("Match Line: " + cvar);
       p.debug("Action: " + line.getAction());
@@ -877,7 +877,7 @@ class TransferBDD {
         p.debug("Prefix Range: " + range);
         p.debug("Action: " + line.getAction());
         BDD matches = isRelevantFor(other, range);
-        BDD action = mkBDD(line.getAction() == LineAction.ACCEPT);
+        BDD action = mkBDD(line.getAction() == LineAction.PERMIT);
         acc = ite(matches, action, acc);
       }
     }
