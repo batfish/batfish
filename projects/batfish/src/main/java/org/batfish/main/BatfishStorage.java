@@ -338,6 +338,10 @@ final class BatfishStorage {
     Path answerDir =
         computeAnswerDir(
             analysisName, questionPath, baseSnapshotName, deltaSnapshotName, questionName, diff);
+    if (answerDir == null) {
+      // If settings has neither a question nor an analysis configured, don't write a file
+      return;
+    }
     Path answerMetricsPath = answerDir.resolve(BfConsts.RELPATH_ANSWER_METADATA);
     CommonUtil.writeFile(answerMetricsPath, metricsStr);
   }

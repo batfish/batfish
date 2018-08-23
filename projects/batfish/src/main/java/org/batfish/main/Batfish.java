@@ -2770,7 +2770,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
-  private void outputAnswerMetadata(Answer answer) {
+  void outputAnswerMetadata(Answer answer) {
     _storage.storeAnswerMetadata(
         AnswerMetadataUtil.computeAnswerMetadata(answer, _aggregations, _logger),
         _settings.getAnalysisName(),
