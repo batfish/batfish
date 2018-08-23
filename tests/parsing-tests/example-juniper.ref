@@ -10644,6 +10644,39 @@
               "numReferrers" : 1
             }
           },
+          "interface" : {
+            "fe-0/0/0" : {
+              "definitionLines" : [
+                4,
+                5
+              ],
+              "numReferrers" : 2
+            },
+            "fe-0/0/0.0" : {
+              "definitionLines" : [
+                4
+              ],
+              "numReferrers" : 2
+            },
+            "fe-0/0/0.1" : {
+              "definitionLines" : [
+                5
+              ],
+              "numReferrers" : 1
+            },
+            "lo0" : {
+              "definitionLines" : [
+                3
+              ],
+              "numReferrers" : 1
+            },
+            "lo0.0" : {
+              "definitionLines" : [
+                3
+              ],
+              "numReferrers" : 2
+            }
+          },
           "policy-statement" : {
             "as1_to_as1" : {
               "definitionLines" : [
@@ -10738,6 +10771,46 @@
                 25
               ],
               "numReferrers" : 1
+            }
+          },
+          "interface" : {
+            "fe-0/0/0" : {
+              "definitionLines" : [
+                4,
+                5,
+                6
+              ],
+              "numReferrers" : 3
+            },
+            "fe-0/0/0.0" : {
+              "definitionLines" : [
+                4
+              ],
+              "numReferrers" : 2
+            },
+            "fe-0/0/0.1" : {
+              "definitionLines" : [
+                5
+              ],
+              "numReferrers" : 1
+            },
+            "fe-0/0/0.2" : {
+              "definitionLines" : [
+                6
+              ],
+              "numReferrers" : 1
+            },
+            "lo0" : {
+              "definitionLines" : [
+                3
+              ],
+              "numReferrers" : 1
+            },
+            "lo0.0" : {
+              "definitionLines" : [
+                3
+              ],
+              "numReferrers" : 2
             }
           },
           "policy-statement" : {

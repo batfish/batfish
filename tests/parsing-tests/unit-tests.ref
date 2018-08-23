@@ -45412,7 +45412,24 @@
             "                        MEMBERS:'members'  <== mode:M_Vlan",
             "                        name = (variable",
             "                          text = VARIABLE:'bippetyboppety'  <== mode:DEFAULT_MODE)))))))))))",
-            "    NEWLINE:'\\n\\n'  <== mode:DEFAULT_MODE)",
+            "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "  (set_line",
+            "    SET:'set'  <== mode:DEFAULT_MODE",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_routing_instances",
+            "            ROUTING_INSTANCES:'routing-instances'  <== mode:DEFAULT_MODE",
+            "            (ri_named_routing_instance",
+            "              name = (variable",
+            "                text = VARIABLE:'SOME_INSTANCE'  <== mode:DEFAULT_MODE)",
+            "              (ri_interface",
+            "                INTERFACE:'interface'  <== mode:DEFAULT_MODE",
+            "                id = (interface_id",
+            "                  name = VARIABLE:'ae0'  <== mode:M_Interface",
+            "                  PERIOD:'.'  <== mode:DEFAULT_MODE",
+            "                  unit = DEC:'0'  <== mode:DEFAULT_MODE)))))))",
+            "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "  (set_line",
             "    SET:'set'  <== mode:DEFAULT_MODE",
             "    (set_line_tail",
@@ -59482,11 +59499,72 @@
           }
         },
         "configs/juniper_interfaces" : {
+          "interface" : {
+            "ae0" : {
+              "definitionLines" : [
+                5
+              ],
+              "numReferrers" : 1
+            },
+            "ae0.0" : {
+              "definitionLines" : [
+                5
+              ],
+              "numReferrers" : 2
+            },
+            "ge-0/0/0" : {
+              "definitionLines" : [
+                6
+              ],
+              "numReferrers" : 1
+            },
+            "irb" : {
+              "definitionLines" : [
+                9,
+                10,
+                11
+              ],
+              "numReferrers" : 3
+            },
+            "irb.5" : {
+              "definitionLines" : [
+                9,
+                10,
+                11
+              ],
+              "numReferrers" : 3
+            },
+            "xe-0/0/0:0" : {
+              "definitionLines" : [
+                7,
+                8
+              ],
+              "numReferrers" : 2
+            },
+            "xe-0/0/0:0.0" : {
+              "definitionLines" : [
+                8
+              ],
+              "numReferrers" : 1
+            },
+            "xe-0/0/5:0" : {
+              "definitionLines" : [
+                12
+              ],
+              "numReferrers" : 1
+            },
+            "xe-0/0/5:0.0" : {
+              "definitionLines" : [
+                12
+              ],
+              "numReferrers" : 1
+            }
+          },
           "vlan" : {
             "unused-vlan" : {
               "definitionLines" : [
-                15,
-                16
+                16,
+                17
               ],
               "numReferrers" : 0
             }
@@ -61502,6 +61580,23 @@
                 13
               ]
             }
+          },
+          "interface" : {
+            "et-0/0/10.0" : {
+              "fowarding-options dhcp-relay group interface" : [
+                15
+              ]
+            },
+            "ge-0/2/5.0" : {
+              "fowarding-options dhcp-relay group interface" : [
+                18
+              ]
+            },
+            "xe-1/0/0.0" : {
+              "fowarding-options dhcp-relay group interface" : [
+                10
+              ]
+            }
           }
         },
         "configs/juniper_interfaces" : {
@@ -61509,6 +61604,49 @@
             "bippetyboppety" : {
               "interface vlan" : [
                 12
+              ]
+            }
+          }
+        },
+        "configs/juniper_isis" : {
+          "interface" : {
+            "ge-0/0/0.0" : {
+              "isis interface" : [
+                4,
+                5
+              ]
+            }
+          }
+        },
+        "configs/juniper_ospf" : {
+          "interface" : {
+            "xe-0/0/1.0" : {
+              "ospf area interface" : [
+                12
+              ]
+            },
+            "xe-0/0/20:0.0" : {
+              "ospf area interface" : [
+                3
+              ]
+            },
+            "xe-0/0/21:0.0" : {
+              "ospf area interface" : [
+                4
+              ]
+            }
+          }
+        },
+        "configs/juniper_relay" : {
+          "interface" : {
+            "irb.10" : {
+              "fowarding-options dhcp-relay group interface" : [
+                7
+              ]
+            },
+            "irb.20" : {
+              "fowarding-options dhcp-relay group interface" : [
+                8
               ]
             }
           }

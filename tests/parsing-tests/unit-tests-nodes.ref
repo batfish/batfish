@@ -15547,7 +15547,7 @@
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "AGGREGATED",
-            "vrf" : "default"
+            "vrf" : "SOME_INSTANCE"
           },
           "irb.5" : {
             "name" : "irb.5",
@@ -15671,10 +15671,15 @@
           }
         },
         "vrfs" : {
+          "SOME_INSTANCE" : {
+            "name" : "SOME_INSTANCE",
+            "interfaces" : [
+              "ae0.0"
+            ]
+          },
           "default" : {
             "name" : "default",
             "interfaces" : [
-              "ae0.0",
               "irb.5",
               "xe-0/0/0:0.0",
               "xe-0/0/5:0.0"
