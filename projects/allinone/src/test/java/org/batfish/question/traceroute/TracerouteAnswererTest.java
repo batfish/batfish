@@ -6,6 +6,7 @@ import static org.batfish.datamodel.matchers.FlowMatchers.hasIngressNode;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasIngressVrf;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasSrcIp;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasTag;
+import static org.batfish.datamodel.matchers.FlowTraceMatchers.hasDisposition;
 import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
@@ -24,6 +25,7 @@ import java.util.SortedMap;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessListLine;
@@ -37,7 +39,6 @@ import org.batfish.main.TestrigText;
 import org.batfish.specifier.NameRegexInterfaceLinkLocationSpecifierFactory;
 import org.batfish.specifier.NodeNameRegexInterfaceLinkLocationSpecifierFactory;
 import org.batfish.specifier.NodeNameRegexInterfaceLocationSpecifierFactory;
-import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -202,9 +203,9 @@ public class TracerouteAnswererTest {
         answer.getRows().getData(),
         everyItem(
             hasColumn(
-                "results",
-                Matchers.equalTo(ImmutableList.of("DENIED_OUT")),
-                Schema.list(Schema.STRING))));
+                "traces",
+                everyItem(hasDisposition(FlowDisposition.DENIED_OUT)),
+                Schema.set(Schema.FLOW_TRACE))));
 
     // with ignoreAcls we get NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
     question.setIgnoreAcls(true);
@@ -214,8 +215,8 @@ public class TracerouteAnswererTest {
         answer.getRows().getData(),
         everyItem(
             hasColumn(
-                "results",
-                Matchers.equalTo(ImmutableList.of("NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK")),
-                Schema.list(Schema.STRING))));
+                "traces",
+                everyItem(hasDisposition(FlowDisposition.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK)),
+                Schema.set(Schema.FLOW_TRACE))));
   }
 }

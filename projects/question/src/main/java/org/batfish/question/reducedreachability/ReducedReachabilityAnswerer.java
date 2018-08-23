@@ -15,15 +15,18 @@ import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
+import org.batfish.datamodel.table.TableDiff;
 import org.batfish.datamodel.table.TableMetadata;
 
 /** An {@link Answerer} for {@link ReducedReachabilityQuestion}. */
 public class ReducedReachabilityAnswerer extends Answerer {
   static final String COL_FLOW = "flow";
 
-  static final String COL_BASE_TRACES = "Base_traces";
+  static final String COL_TRACES = "traces";
 
-  static final String COL_DELTA_TRACES = "Delta_traces";
+  static final String COL_BASE_TRACES = TableDiff.baseColumnName(COL_TRACES);
+
+  static final String COL_DELTA_TRACES = TableDiff.deltaColumnName(COL_TRACES);
 
   public ReducedReachabilityAnswerer(Question question, IBatfish batfish) {
     super(question, batfish);

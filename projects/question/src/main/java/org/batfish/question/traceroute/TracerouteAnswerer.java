@@ -26,6 +26,7 @@ import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
+import org.batfish.datamodel.table.TableDiff;
 import org.batfish.datamodel.table.TableMetadata;
 import org.batfish.datamodel.visitors.IpSpaceRepresentative;
 import org.batfish.specifier.InterfaceLinkLocation;
@@ -40,8 +41,8 @@ import org.batfish.specifier.LocationVisitor;
 import org.batfish.specifier.SpecifierContext;
 
 public final class TracerouteAnswerer extends Answerer {
-  static final String COL_BASE_TRACES = "Base_traces";
-  static final String COL_DELTA_TRACES = "Delta_traces";
+  //  static final String COL_BASE_TRACES = "Base_traces";
+  //  static final String COL_DELTA_TRACES = "Delta_traces";
   static final String COL_FLOW = "flow";
   static final String COL_TRACES = "traces";
 
@@ -113,13 +114,13 @@ public final class TracerouteAnswerer extends Answerer {
           ImmutableList.of(
               new ColumnMetadata(COL_FLOW, Schema.FLOW, "The flow", true, false),
               new ColumnMetadata(
-                  COL_BASE_TRACES,
+                  TableDiff.baseColumnName(COL_TRACES),
                   Schema.set(Schema.FLOW_TRACE),
                   "The flow traces in the BASE environment",
                   false,
                   true),
               new ColumnMetadata(
-                  COL_DELTA_TRACES,
+                  TableDiff.deltaColumnName(COL_TRACES),
                   Schema.set(Schema.FLOW_TRACE),
                   "The flow traces in the DELTA environment",
                   false,
@@ -164,9 +165,9 @@ public final class TracerouteAnswerer extends Answerer {
     return Row.of(
         COL_FLOW,
         historyInfo.getFlow(),
-        COL_BASE_TRACES,
+        TableDiff.baseColumnName(COL_TRACES),
         historyInfo.getPaths().get("BASE"),
-        COL_DELTA_TRACES,
+        TableDiff.deltaColumnName(COL_TRACES),
         historyInfo.getPaths().get("DELTA"));
   }
 
