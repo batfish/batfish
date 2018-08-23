@@ -482,9 +482,9 @@ public class PaloAltoGrammarTest {
     String service1AclName = computeServiceGroupMemberAclName(DEFAULT_VSYS_NAME, "SERVICE1");
     String service2AclName = computeServiceGroupMemberAclName(DEFAULT_VSYS_NAME, "SERVICE2");
     String service3AclName = computeServiceGroupMemberAclName(DEFAULT_VSYS_NAME, "SERVICE3");
-    String service4AclName = computeServiceGroupMemberAclName(DEFAULT_VSYS_NAME, "SERVICE4");
+    String service4AclName = computeServiceGroupMemberAclName(DEFAULT_VSYS_NAME, "SERVICE 4");
     String serviceGroup1AclName = computeServiceGroupMemberAclName(DEFAULT_VSYS_NAME, "SG1");
-    String serviceGroup2AclName = computeServiceGroupMemberAclName(DEFAULT_VSYS_NAME, "SG2");
+    String serviceGroup2AclName = computeServiceGroupMemberAclName(DEFAULT_VSYS_NAME, "SG 2");
 
     Flow service1Flow = createFlow(IpProtocol.TCP, 999, 1);
     Flow service2Flow = createFlow(IpProtocol.UDP, 4, 999);
@@ -529,9 +529,9 @@ public class PaloAltoGrammarTest {
     String service1Name = computeObjectName(DEFAULT_VSYS_NAME, "SERVICE1");
     String service2Name = computeObjectName(DEFAULT_VSYS_NAME, "SERVICE2");
     String service3Name = computeObjectName(DEFAULT_VSYS_NAME, "SERVICE3");
-    String service4Name = computeObjectName(DEFAULT_VSYS_NAME, "SERVICE4");
+    String service4Name = computeObjectName(DEFAULT_VSYS_NAME, "SERVICE 4");
     String serviceGroup1Name = computeObjectName(DEFAULT_VSYS_NAME, "SG1");
-    String serviceGroup2Name = computeObjectName(DEFAULT_VSYS_NAME, "SG2");
+    String serviceGroup2Name = computeObjectName(DEFAULT_VSYS_NAME, "SG 2");
 
     // Confirm structure definitions are tracked
     assertThat(ccae, hasDefinedStructure(filename, SERVICE, service1Name));
@@ -561,7 +561,7 @@ public class PaloAltoGrammarTest {
 
     assertThat(c, hasVrf("default", hasInterfaces(hasItem("ethernet1/1"))));
     assertThat(c, hasVrf("somename", hasInterfaces(hasItems("ethernet1/2", "ethernet1/3"))));
-    assertThat(c, hasVrf("someothername", hasInterfaces(emptyIterable())));
+    assertThat(c, hasVrf("some other name", hasInterfaces(emptyIterable())));
   }
 
   @Test
@@ -677,7 +677,7 @@ public class PaloAltoGrammarTest {
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse();
 
-    String z1Name = computeObjectName(DEFAULT_VSYS_NAME, "z1");
+    String z1Name = computeObjectName(DEFAULT_VSYS_NAME, "zone 1");
     String zEmptyName = computeObjectName(DEFAULT_VSYS_NAME, "zempty");
 
     // Confirm zone definitions are recorded properly
@@ -694,8 +694,8 @@ public class PaloAltoGrammarTest {
     assertThat(c, hasZone(zEmptyName, hasMemberInterfaces(empty())));
 
     // Confirm interfaces are associated with the correct zones
-    assertThat(c, hasInterface("ethernet1/1", hasZoneName(equalTo("z1"))));
-    assertThat(c, hasInterface("ethernet1/2", hasZoneName(equalTo("z1"))));
+    assertThat(c, hasInterface("ethernet1/1", hasZoneName(equalTo("zone 1"))));
+    assertThat(c, hasInterface("ethernet1/2", hasZoneName(equalTo("zone 1"))));
     assertThat(c, hasInterface("ethernet1/3", hasZoneName(is(nullValue()))));
   }
 }
