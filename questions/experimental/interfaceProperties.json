@@ -13,17 +13,17 @@
         ],
         "variables": {
             "interfaces": {
-                "description": "Only include interfaces that match this regex (default behavior is to include all interfaces)",
-                "type": "interfaceSpec",
+                "description": "Only include interfaces that match this regex",
+                "type": "javaRegex",
                 "optional": true
             },
             "nodes": {
-                "description": "Only include nodes that match this regex (default behavior is to include all nodes)",
+                "description": "Only include nodes that match this regex",
                 "type": "nodeSpec",
                 "optional": true
             },
             "properties": {
-                "description": "Only include properties that match this regex (default behavior is to include all properties)",
+                "description": "Only include properties that match this regex",
                 "type": "interfacePropertySpec",
                 "optional": true
             }

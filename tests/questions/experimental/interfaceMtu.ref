@@ -8,9 +8,9 @@
   "innerQuestion" : {
     "class" : "org.batfish.question.interfaceproperties.InterfacePropertiesQuestion",
     "excludeShutInterfaces" : false,
-    "interfaceRegex" : "Gig.*",
-    "nodeRegex" : "as1core2",
-    "propertySpec" : ".*",
+    "interfaces" : "Gig.*",
+    "nodes" : "as1core2",
+    "properties" : ".*",
     "differential" : false,
     "displayHints" : {
       "textDesc" : "${interface} has MTU ${mtu}"
@@ -33,7 +33,7 @@
         "type" : "comparator",
         "value" : ">"
       },
-      "interfaceRegex" : {
+      "interfaces" : {
         "description" : "Only evaluate interfaces whose name matches this regex",
         "optional" : false,
         "type" : "javaRegex",
@@ -45,7 +45,7 @@
         "type" : "integer",
         "value" : 0
       },
-      "nodeRegex" : {
+      "nodes" : {
         "description" : "Only include nodes whose name matches this regex",
         "optional" : false,
         "type" : "javaRegex",
