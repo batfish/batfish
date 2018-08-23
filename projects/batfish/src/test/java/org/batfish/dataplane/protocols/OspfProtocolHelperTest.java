@@ -95,8 +95,8 @@ public class OspfProtocolHelperTest {
     assertThat(
         isOspfInterAreaDefaultOriginationAllowed(proc, neighborProc, area0, area1), equalTo(true));
 
-    // Area does not inject the default route
-    area0.setInjectDefaultRoute(false);
+    // Area1 is stub without default route injection
+    area1.setInjectDefaultRoute(false);
     assertThat(
         isOspfInterAreaDefaultOriginationAllowed(proc, neighborProc, area0, area1), equalTo(false));
 
