@@ -9,7 +9,6 @@ import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowHistory;
 import org.batfish.datamodel.FlowHistory.FlowHistoryInfo;
-import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.ColumnMetadata;
@@ -20,7 +19,7 @@ import org.batfish.datamodel.table.TableMetadata;
 
 /** An {@link Answerer} for {@link ReducedReachabilityQuestion}. */
 public class ReducedReachabilityAnswerer extends Answerer {
-  static final String COL_FLOW = "flow";
+  public static final String COL_FLOW = "flow";
 
   static final String COL_TRACES = "traces";
 
@@ -33,12 +32,12 @@ public class ReducedReachabilityAnswerer extends Answerer {
   }
 
   @Override
-  public AnswerElement answer() {
+  public TableAnswerElement answer() {
     return answerDiff();
   }
 
   @Override
-  public AnswerElement answerDiff() {
+  public TableAnswerElement answerDiff() {
     Set<Flow> flows = _batfish.bddReducedReachability();
     _batfish.pushBaseEnvironment();
     _batfish.processFlows(flows, false);
