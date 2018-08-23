@@ -1,6 +1,7 @@
 {
   "class": "org.batfish.question.reachfilter.ReachFilterQuestion",
   "differential": false,
+  "complementHeaderSpace": "${complementHeaderSpace}",
   "destinationIpSpaceSpecifierFactory": "${destinationIpSpaceSpecifierFactory}",
   "dst": "${dst}",
   "filterRegex": "${filterRegex}",
@@ -18,6 +19,11 @@
       "acl"
     ],
     "variables": {
+      "complementHeaderSpace": {
+        "description": "Search for packet headers outside the specified headerspace, rather than inside the space.",
+        "optional": true,
+        "type": "boolean"
+      }
       "destinationIpSpaceSpecifierFactory": {
         "description": "Name of the IpSpaceSpecifierFactory to use for the destination IpSpace",
         "optional": true,
