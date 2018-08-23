@@ -529,9 +529,9 @@ public class PaloAltoGrammarTest {
     String service1Name = computeObjectName(DEFAULT_VSYS_NAME, "SERVICE1");
     String service2Name = computeObjectName(DEFAULT_VSYS_NAME, "SERVICE2");
     String service3Name = computeObjectName(DEFAULT_VSYS_NAME, "SERVICE3");
-    String service4Name = computeObjectName(DEFAULT_VSYS_NAME, "SERVICE4");
+    String service4Name = computeObjectName(DEFAULT_VSYS_NAME, "SERVICE 4");
     String serviceGroup1Name = computeObjectName(DEFAULT_VSYS_NAME, "SG1");
-    String serviceGroup2Name = computeObjectName(DEFAULT_VSYS_NAME, "SG2");
+    String serviceGroup2Name = computeObjectName(DEFAULT_VSYS_NAME, "SG 2");
 
     // Confirm structure definitions are tracked
     assertThat(ccae, hasDefinedStructure(filename, SERVICE, service1Name));
