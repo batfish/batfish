@@ -1,6 +1,8 @@
 #
 set system host-name default-applications
 #
+set interfaces ge-0/0/0 unit 0 family inet address 1.2.3.4/24
+#
 set applications application-set APPSET1 application junos-http
 set applications application-set APPSET1 application junos-https
 set applications application-set APPSET2 application junos-http

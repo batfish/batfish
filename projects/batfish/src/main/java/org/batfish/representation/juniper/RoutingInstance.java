@@ -79,7 +79,7 @@ public class RoutingInstance implements Serializable {
     _masterBgpGroup = new BgpGroup();
     _masterBgpGroup.setMultipath(false);
     _masterBgpGroup.setMultipathMultipleAs(false);
-    _globalMasterInterface = new Interface(MASTER_INTERFACE_NAME, -1);
+    _globalMasterInterface = new Interface(MASTER_INTERFACE_NAME);
     _globalMasterInterface.setRoutingInstance(name);
     _name = name;
     _namedBgpGroups = new TreeMap<>();

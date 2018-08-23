@@ -49,9 +49,9 @@ public class JuniperConfigurationTest {
 
     Zone zone = new Zone("zone", new TreeMap<>());
     String interface1Name = "interface1";
-    zone.getInterfaces().add(new Interface(interface1Name, -1));
+    zone.getInterfaces().add(new Interface(interface1Name));
     String interface2Name = "interface2";
-    zone.getInterfaces().add(new Interface(interface2Name, -1));
+    zone.getInterfaces().add(new Interface(interface2Name));
     config.getZones().put("zone", zone);
     filter.setFromZone("zone");
     IpAccessList headerSpaceAndSrcInterfaceAcl = config.toIpAccessList(filter);
