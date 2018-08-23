@@ -41,8 +41,6 @@ import org.batfish.specifier.LocationVisitor;
 import org.batfish.specifier.SpecifierContext;
 
 public final class TracerouteAnswerer extends Answerer {
-  //  static final String COL_BASE_TRACES = "Base_traces";
-  //  static final String COL_DELTA_TRACES = "Delta_traces";
   static final String COL_FLOW = "flow";
   static final String COL_TRACES = "traces";
 
