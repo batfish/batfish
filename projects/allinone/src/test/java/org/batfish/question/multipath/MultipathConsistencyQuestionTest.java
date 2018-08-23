@@ -7,7 +7,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.everyItem;
 
-import com.sun.tools.javac.util.List;
+import com.google.common.collect.ImmutableList;
 import java.io.IOException;
 import org.batfish.bddreachability.TestNetwork;
 import org.batfish.datamodel.Flow;
@@ -71,7 +71,7 @@ public class MultipathConsistencyQuestionTest {
             hasColumn(
                 "traces",
                 containsInAnyOrder(
-                    List.of(
+                    ImmutableList.of(
                         hasDisposition(FlowDisposition.DENIED_IN),
                         hasDisposition(FlowDisposition.ACCEPTED))),
                 Schema.set(Schema.FLOW_TRACE))));
