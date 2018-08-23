@@ -1978,7 +1978,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     }
     defineStructure(INTERFACE, unitFullName, ctx);
     _configuration.referenceStructure(
-        INTERFACE, unitFullName, INTERFACE_SELF_REFERENCE, ctx.getStart().getLine());
+        INTERFACE, unitFullName, INTERFACE_SELF_REFERENCE, getLine(ctx.num));
   }
 
   @Override
@@ -2046,10 +2046,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       }
       defineStructure(INTERFACE, currentInterface.getName(), ctx);
       _configuration.referenceStructure(
-          INTERFACE,
-          currentInterface.getName(),
-          INTERFACE_SELF_REFERENCE,
-          ctx.getStart().getLine());
+          INTERFACE, currentInterface.getName(), INTERFACE_SELF_REFERENCE, getLine(ctx.getStart()));
     }
     _currentInterface = currentInterface;
     _currentMasterInterface = currentInterface;
@@ -2080,7 +2077,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       }
     }
     _configuration.referenceStructure(
-        INTERFACE, _currentIsisInterface.getName(), ISIS_INTERFACE, ctx.id.getStart().getLine());
+        INTERFACE, _currentIsisInterface.getName(), ISIS_INTERFACE, getLine(ctx.id.getStop()));
     _currentIsisInterface.getIsisSettings().setEnabled(true);
   }
 
@@ -2164,7 +2161,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       _currentOspfInterface = initInterface(ctx.id);
       unitFullName = _currentOspfInterface.getName();
       _configuration.referenceStructure(
-          INTERFACE, unitFullName, OSPF_AREA_INTERFACE, ctx.id.getStart().getLine());
+          INTERFACE, unitFullName, OSPF_AREA_INTERFACE, getLine(ctx.id.getStop()));
     }
     Ip currentArea = new Ip(_currentArea.getName());
     Ip currentInterfaceArea = _currentOspfInterface.getOspfArea();
@@ -2770,7 +2767,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
         INTERFACE,
         _currentZoneInterface.getName(),
         SECURITY_ZONES_SECURITY_ZONES_INTERFACE,
-        ctx.interface_id().getStart().getLine());
+        getLine(ctx.interface_id().getStop()));
   }
 
   @Override
@@ -3417,7 +3414,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
           INTERFACE,
           interfaceName,
           FORWARDING_OPTIONS_DHCP_RELAY_GROUP_INTERFACE,
-          ctx.interface_id().getStart().getLine());
+          getLine(ctx.interface_id().getStop()));
     }
   }
 
@@ -3908,7 +3905,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     }
     _currentPsTerm.getFroms().add(from);
     _configuration.referenceStructure(
-        INTERFACE, from.getName(), POLICY_STATEMENT_FROM_INTERFACE, ctx.id.getStart().getLine());
+        INTERFACE, from.getName(), POLICY_STATEMENT_FROM_INTERFACE, getLine(ctx.id.getStop()));
   }
 
   @Override
@@ -4144,7 +4141,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     Interface iface = initInterface(ctx.id);
     iface.setRoutingInstance(_currentRoutingInstance.getName());
     _configuration.referenceStructure(
-        INTERFACE, iface.getName(), ROUTING_INSTANCE_INTERFACE, ctx.id.getStart().getLine());
+        INTERFACE, iface.getName(), ROUTING_INSTANCE_INTERFACE, getLine(ctx.id.getStop()));
   }
 
   @Override
@@ -4271,7 +4268,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
           INTERFACE,
           iface.getName(),
           STATIC_ROUTE_NEXT_HOP_INTERFACE,
-          ctx.interface_id().getStart().getLine());
+          getLine(ctx.interface_id().getStop()));
     }
   }
 
