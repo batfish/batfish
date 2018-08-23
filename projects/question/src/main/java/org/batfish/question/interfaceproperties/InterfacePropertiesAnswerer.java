@@ -29,7 +29,7 @@ import org.batfish.datamodel.table.TableMetadata;
 
 public class InterfacePropertiesAnswerer extends Answerer {
 
-  public static final String COL_INTERFACE = "interface";
+  public static final String COL_INTERFACE = "Interface";
 
   public InterfacePropertiesAnswerer(Question question, IBatfish batfish) {
     super(question, batfish);

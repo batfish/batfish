@@ -55,7 +55,7 @@ public class BgpPropertiesAnswererTest {
         Row.builder()
             .put(BgpPropertiesAnswerer.COL_NODE, new Node("node1"))
             .put(BgpPropertiesAnswerer.COL_VRF, "vrf1")
-            .put(BgpPropertiesAnswerer.COL_ROUTER_ID, new Ip("1.1.1.1"))
+            .put(BgpPropertiesAnswerer.COL_ROUTER, new Ip("1.1.1.1"))
             .put(property2, BgpTieBreaker.ARRIVAL_ORDER.toString())
             .put(property1, true)
             .build();

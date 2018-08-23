@@ -29,8 +29,8 @@ import org.batfish.datamodel.table.TableMetadata;
 public class BgpPropertiesAnswerer extends Answerer {
 
   public static final String COL_NODE = "Node";
-  public static final String COL_VRF = "VRF";
-  public static final String COL_ROUTER_ID = "RouterId";
+  public static final String COL_VRF = "Vrf";
+  public static final String COL_ROUTER = "Router";
 
   public BgpPropertiesAnswerer(Question question, IBatfish batfish) {
     super(question, batfish);
@@ -46,8 +46,8 @@ public class BgpPropertiesAnswerer extends Answerer {
   public static List<ColumnMetadata> createColumnMetadata(BgpPropertySpecifier propertySpecifier) {
     return ImmutableList.<ColumnMetadata>builder()
         .add(new ColumnMetadata(COL_NODE, Schema.NODE, "Node", true, false))
-        .add(new ColumnMetadata(COL_VRF, Schema.STRING, "VRF", true, false))
-        .add(new ColumnMetadata(COL_ROUTER_ID, Schema.IP, "RouterId", true, false))
+        .add(new ColumnMetadata(COL_VRF, Schema.STRING, "Vrf", true, false))
+        .add(new ColumnMetadata(COL_ROUTER, Schema.IP, "RouterId", true, false))
         .addAll(
             propertySpecifier
                 .getMatchingProperties()
@@ -68,7 +68,7 @@ public class BgpPropertiesAnswerer extends Answerer {
   static TableMetadata createTableMetadata(BgpPropertiesQuestion question) {
     String textDesc =
         String.format(
-            "Properties of BGP process ${%s}:${%s}:${%s}.", COL_NODE, COL_VRF, COL_ROUTER_ID);
+            "Properties of BGP process ${%s}:${%s}:${%s}.", COL_NODE, COL_VRF, COL_ROUTER);
     DisplayHints dhints = question.getDisplayHints();
     if (dhints != null && dhints.getTextDesc() != null) {
       textDesc = dhints.getTextDesc();
@@ -126,7 +126,7 @@ public class BgpPropertiesAnswerer extends Answerer {
                         Row.builder(columnMetadata)
                             .put(COL_NODE, new Node(nodeName))
                             .put(COL_VRF, vrf.getName())
-                            .put(COL_ROUTER_ID, bgpProcess.getRouterId());
+                            .put(COL_ROUTER, bgpProcess.getRouterId());
 
                     for (String property : propertySpecifier.getMatchingProperties()) {
                       PropertyDescriptor<BgpProcess> propertyDescriptor =

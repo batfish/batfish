@@ -26,7 +26,7 @@ import org.batfish.datamodel.table.TableMetadata;
 
 public class NodePropertiesAnswerer extends Answerer {
 
-  public static final String COL_NODE = "node";
+  public static final String COL_NODE = "Node";
 
   public NodePropertiesAnswerer(Question question, IBatfish batfish) {
     super(question, batfish);

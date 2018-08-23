@@ -29,8 +29,8 @@ import org.batfish.datamodel.table.TableMetadata;
 public class OspfPropertiesAnswerer extends Answerer {
 
   public static final String COL_NODE = "Node";
-  public static final String COL_VRF = "VRF";
-  public static final String COL_PROCESS_ID = "ProcessId";
+  public static final String COL_VRF = "Vrf";
+  public static final String COL_PROCESS = "Process";
 
   public OspfPropertiesAnswerer(Question question, IBatfish batfish) {
     super(question, batfish);
@@ -46,8 +46,8 @@ public class OspfPropertiesAnswerer extends Answerer {
   public static List<ColumnMetadata> createColumnMetadata(OspfPropertySpecifier propertySpecifier) {
     return ImmutableList.<ColumnMetadata>builder()
         .add(new ColumnMetadata(COL_NODE, Schema.NODE, "Node", true, false))
-        .add(new ColumnMetadata(COL_VRF, Schema.STRING, "VRF", true, false))
-        .add(new ColumnMetadata(COL_PROCESS_ID, Schema.STRING, "ProcessId", true, false))
+        .add(new ColumnMetadata(COL_VRF, Schema.STRING, "Vrf", true, false))
+        .add(new ColumnMetadata(COL_PROCESS, Schema.STRING, "ProcessId", true, false))
         .addAll(
             propertySpecifier
                 .getMatchingProperties()
@@ -68,7 +68,7 @@ public class OspfPropertiesAnswerer extends Answerer {
   static TableMetadata createTableMetadata(OspfPropertiesQuestion question) {
     String textDesc =
         String.format(
-            "Properties of OSPF process ${%s}:${%s}:${%s}.", COL_NODE, COL_VRF, COL_PROCESS_ID);
+            "Properties of OSPF process ${%s}:${%s}:${%s}.", COL_NODE, COL_VRF, COL_PROCESS);
     DisplayHints dhints = question.getDisplayHints();
     if (dhints != null && dhints.getTextDesc() != null) {
       textDesc = dhints.getTextDesc();
@@ -126,7 +126,7 @@ public class OspfPropertiesAnswerer extends Answerer {
                         Row.builder(columnMetadata)
                             .put(COL_NODE, new Node(nodeName))
                             .put(COL_VRF, vrf.getName())
-                            .put(COL_PROCESS_ID, ospfProcess.getProcessId());
+                            .put(COL_PROCESS, ospfProcess.getProcessId());
 
                     for (String property : propertySpecifier.getMatchingProperties()) {
                       PropertyDescriptor<OspfProcess> propertyDescriptor =

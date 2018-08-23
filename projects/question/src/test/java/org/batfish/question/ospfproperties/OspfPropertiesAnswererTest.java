@@ -53,7 +53,7 @@ public class OspfPropertiesAnswererTest {
         Row.builder()
             .put(OspfPropertiesAnswerer.COL_NODE, new Node("node1"))
             .put(OspfPropertiesAnswerer.COL_VRF, "vrf1")
-            .put(OspfPropertiesAnswerer.COL_PROCESS_ID, "uber-proc")
+            .put(OspfPropertiesAnswerer.COL_PROCESS, "uber-proc")
             .put(property2, 42.0)
             .put(property1, "my-policy")
             .build();

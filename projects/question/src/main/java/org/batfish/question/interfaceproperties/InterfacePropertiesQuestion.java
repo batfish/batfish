@@ -10,33 +10,33 @@ import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 
 /**
- * A question that returns properties of interfaces in a tabular format. {@link #_nodeRegex}, {@link
- * #_interfaceRegex}, and {@link #_propertySpec} determine which nodes, interfaces, and properties
- * are included. The default is to include everything.
+ * A question that returns properties of interfaces in a tabular format. {@link #_nodes}, {@link
+ * #_interfaces}, and {@link #_properties} determine which nodes, interfaces, and properties are
+ * included. The default is to include everything.
  */
 public class InterfacePropertiesQuestion extends Question {
 
   static final boolean DEFAULT_EXCLUDE_SHUT_INTERFACES = false;
 
   private static final String PROP_EXCLUDE_SHUT_INTERFACES = "excludeShutInterfaces";
-  private static final String PROP_INTERFACE_REGEX = "interfaceRegex";
-  private static final String PROP_NODE_REGEX = "nodeRegex";
-  private static final String PROP_PROPERTY_SPEC = "propertySpec";
+  private static final String PROP_INTERFACES = "interfaces";
+  private static final String PROP_NODES = "nodes";
+  private static final String PROP_PROPERTIES = "properties";
 
-  @Nonnull private InterfacesSpecifier _interfaceRegex;
-  @Nonnull private NodesSpecifier _nodeRegex;
+  @Nonnull private InterfacesSpecifier _interfaces;
+  @Nonnull private NodesSpecifier _nodes;
   private boolean _onlyActive;
-  @Nonnull private InterfacePropertySpecifier _propertySpec;
+  @Nonnull private InterfacePropertySpecifier _properties;
 
   public InterfacePropertiesQuestion(
       @JsonProperty(PROP_EXCLUDE_SHUT_INTERFACES) Boolean excludeShutInterfaces,
-      @JsonProperty(PROP_INTERFACE_REGEX) InterfacesSpecifier interfaceRegex,
-      @JsonProperty(PROP_NODE_REGEX) NodesSpecifier nodeRegex,
-      @JsonProperty(PROP_PROPERTY_SPEC) InterfacePropertySpecifier propertySpec) {
+      @JsonProperty(PROP_INTERFACES) InterfacesSpecifier interfaceRegex,
+      @JsonProperty(PROP_NODES) NodesSpecifier nodeRegex,
+      @JsonProperty(PROP_PROPERTIES) InterfacePropertySpecifier propertySpec) {
     _onlyActive = firstNonNull(excludeShutInterfaces, DEFAULT_EXCLUDE_SHUT_INTERFACES);
-    _interfaceRegex = firstNonNull(interfaceRegex, InterfacesSpecifier.ALL);
-    _nodeRegex = firstNonNull(nodeRegex, NodesSpecifier.ALL);
-    _propertySpec = firstNonNull(propertySpec, InterfacePropertySpecifier.ALL);
+    _interfaces = firstNonNull(interfaceRegex, InterfacesSpecifier.ALL);
+    _nodes = firstNonNull(nodeRegex, NodesSpecifier.ALL);
+    _properties = firstNonNull(propertySpec, InterfacePropertySpecifier.ALL);
   }
 
   @Override
@@ -54,18 +54,18 @@ public class InterfacePropertiesQuestion extends Question {
     return _onlyActive;
   }
 
-  @JsonProperty(PROP_INTERFACE_REGEX)
+  @JsonProperty(PROP_INTERFACES)
   public InterfacesSpecifier getInterfaceRegex() {
-    return _interfaceRegex;
+    return _interfaces;
   }
 
-  @JsonProperty(PROP_NODE_REGEX)
+  @JsonProperty(PROP_NODES)
   public NodesSpecifier getNodeRegex() {
-    return _nodeRegex;
+    return _nodes;
   }
 
-  @JsonProperty(PROP_PROPERTY_SPEC)
+  @JsonProperty(PROP_PROPERTIES)
   public InterfacePropertySpecifier getPropertySpec() {
-    return _propertySpec;
+    return _properties;
   }
 }

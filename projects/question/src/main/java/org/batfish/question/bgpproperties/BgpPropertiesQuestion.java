@@ -9,23 +9,23 @@ import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 
 /**
- * A question that returns properties of BGP routing processes. {@link #_nodeRegex} and {@link
- * #_propertySpec} determine which nodes and properties are included. The default is to include
+ * A question that returns properties of BGP routing processes. {@link #_nodes} and {@link
+ * #_properties} determine which nodes and properties are included. The default is to include
  * everything.
  */
 public class BgpPropertiesQuestion extends Question {
 
-  private static final String PROP_NODE_REGEX = "nodeRegex";
-  private static final String PROP_PROPERTY_SPEC = "propertySpec";
+  private static final String PROP_NODES = "nodes";
+  private static final String PROP_PROPERTIES = "properties";
 
-  @Nonnull private NodesSpecifier _nodeRegex;
-  @Nonnull private BgpPropertySpecifier _propertySpec;
+  @Nonnull private NodesSpecifier _nodes;
+  @Nonnull private BgpPropertySpecifier _properties;
 
   public BgpPropertiesQuestion(
-      @JsonProperty(PROP_NODE_REGEX) NodesSpecifier nodeRegex,
-      @JsonProperty(PROP_PROPERTY_SPEC) BgpPropertySpecifier propertySpec) {
-    _nodeRegex = firstNonNull(nodeRegex, NodesSpecifier.ALL);
-    _propertySpec = firstNonNull(propertySpec, BgpPropertySpecifier.ALL);
+      @JsonProperty(PROP_NODES) NodesSpecifier nodeRegex,
+      @JsonProperty(PROP_PROPERTIES) BgpPropertySpecifier propertySpec) {
+    _nodes = firstNonNull(nodeRegex, NodesSpecifier.ALL);
+    _properties = firstNonNull(propertySpec, BgpPropertySpecifier.ALL);
   }
 
   @Override
@@ -38,13 +38,13 @@ public class BgpPropertiesQuestion extends Question {
     return "bgpproperties";
   }
 
-  @JsonProperty(PROP_NODE_REGEX)
+  @JsonProperty(PROP_NODES)
   public NodesSpecifier getNodeRegex() {
-    return _nodeRegex;
+    return _nodes;
   }
 
-  @JsonProperty(PROP_PROPERTY_SPEC)
+  @JsonProperty(PROP_PROPERTIES)
   public BgpPropertySpecifier getPropertySpec() {
-    return _propertySpec;
+    return _properties;
   }
 }
