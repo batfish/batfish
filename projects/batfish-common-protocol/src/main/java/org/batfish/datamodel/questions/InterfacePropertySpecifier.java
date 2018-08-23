@@ -28,94 +28,94 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
 
   public static Map<String, PropertyDescriptor<Interface>> JAVA_MAP =
       new ImmutableMap.Builder<String, PropertyDescriptor<Interface>>()
-          .put("access-vlan", new PropertyDescriptor<>(Interface::getAccessVlan, Schema.INTEGER))
-          .put("active", new PropertyDescriptor<>(Interface::getActive, Schema.BOOLEAN))
+          .put("Access_Vlan", new PropertyDescriptor<>(Interface::getAccessVlan, Schema.INTEGER))
+          .put("Active", new PropertyDescriptor<>(Interface::getActive, Schema.BOOLEAN))
           .put(
-              "additional-arp-ips",
+              "Additional_Arp_Ips",
               new PropertyDescriptor<>(Interface::getAdditionalArpIps, Schema.list(Schema.IP)))
           .put(
-              "allowed-vlans",
+              "Allowed_Vlans",
               new PropertyDescriptor<>(Interface::getAllowedVlans, Schema.list(Schema.STRING)))
           .put(
-              "all-prefixes",
+              "All_Prefixes",
               new PropertyDescriptor<>(Interface::getAllAddresses, Schema.list(Schema.STRING)))
-          .put("auto-state-vlan", new PropertyDescriptor<>(Interface::getAutoState, Schema.BOOLEAN))
-          .put("bandwidth", new PropertyDescriptor<>(Interface::getBandwidth, Schema.DOUBLE))
-          .put("blacklisted", new PropertyDescriptor<>(Interface::getBlacklisted, Schema.BOOLEAN))
-          .put("channel-group", new PropertyDescriptor<>(Interface::getChannelGroup, Schema.STRING))
+          .put("Auto_State_Vlan", new PropertyDescriptor<>(Interface::getAutoState, Schema.BOOLEAN))
+          .put("Bandwidth", new PropertyDescriptor<>(Interface::getBandwidth, Schema.DOUBLE))
+          .put("Blacklisted", new PropertyDescriptor<>(Interface::getBlacklisted, Schema.BOOLEAN))
+          .put("Channel_Group", new PropertyDescriptor<>(Interface::getChannelGroup, Schema.STRING))
           .put(
-              "channel-group-members",
+              "Channel_Group_Members",
               new PropertyDescriptor<>(
                   Interface::getChannelGroupMembers, Schema.list(Schema.STRING)))
           .put(
-              "declared-names",
+              "Declared_Names",
               new PropertyDescriptor<>(Interface::getDeclaredNames, Schema.list(Schema.STRING)))
-          .put("description", new PropertyDescriptor<>(Interface::getDescription, Schema.STRING))
+          .put("Description", new PropertyDescriptor<>(Interface::getDescription, Schema.STRING))
           .put(
-              "dhcp-relay-addresses",
+              "Dhcp_Relay_Addresses",
               new PropertyDescriptor<>(Interface::getDhcpRelayAddresses, Schema.list(Schema.IP)))
           .put(
-              "hsrp-groups",
+              "Hsrp_Groups",
               new PropertyDescriptor<>(Interface::getHsrpGroups, Schema.set(Schema.STRING)))
-          .put("hsrp-version", new PropertyDescriptor<>(Interface::getHsrpVersion, Schema.STRING))
+          .put("Hsrp_Version", new PropertyDescriptor<>(Interface::getHsrpVersion, Schema.STRING))
           // skip inbound-filter
           .put(
-              "inbound-filter-name",
+              "Inbound_Filter_Name",
               new PropertyDescriptor<>(Interface::getInboundFilterName, Schema.STRING))
           // skip incoming filter
           .put(
-              "incoming-filter-name",
+              "Incoming_Filter_Name",
               new PropertyDescriptor<>(Interface::getIncomingFilter, Schema.STRING))
           .put(
-              "interface-type",
+              "Interface_Type",
               new PropertyDescriptor<>(Interface::getInterfaceType, Schema.STRING))
-          .put("mtu", new PropertyDescriptor<>(Interface::getMtu, Schema.INTEGER))
-          .put("native-vlan", new PropertyDescriptor<>(Interface::getNativeVlan, Schema.INTEGER))
+          .put("Mtu", new PropertyDescriptor<>(Interface::getMtu, Schema.INTEGER))
+          .put("Native_Vlan", new PropertyDescriptor<>(Interface::getNativeVlan, Schema.INTEGER))
           // skip ospf area
           .put(
-              "ospf-area-name",
+              "Ospf_Area_Name",
               new PropertyDescriptor<>(Interface::getOspfAreaName, Schema.INTEGER))
-          .put("ospf-cost", new PropertyDescriptor<>(Interface::getOspfCost, Schema.INTEGER))
-          .put("ospf-enabled", new PropertyDescriptor<>(Interface::getOspfEnabled, Schema.BOOLEAN))
+          .put("Ospf_Cost", new PropertyDescriptor<>(Interface::getOspfCost, Schema.INTEGER))
+          .put("Ospf_Enabled", new PropertyDescriptor<>(Interface::getOspfEnabled, Schema.BOOLEAN))
           .put(
-              "ospf-hello-multiplier",
+              "Ospf_Hello_Multiplier",
               new PropertyDescriptor<>(Interface::getOspfHelloMultiplier, Schema.INTEGER))
-          .put("ospf-passive", new PropertyDescriptor<>(Interface::getOspfPassive, Schema.BOOLEAN))
+          .put("Ospf_Passive", new PropertyDescriptor<>(Interface::getOspfPassive, Schema.BOOLEAN))
           .put(
-              "ospf-point-to-point",
+              "Ospf_Point_To_Point",
               new PropertyDescriptor<>(Interface::getOspfPointToPoint, Schema.BOOLEAN))
           // skip outgoing filter
           .put(
-              "outgoing-filter-name",
+              "Outgoing_Filter_Name",
               new PropertyDescriptor<>(Interface::getOutgoingFilterName, Schema.STRING))
           // skip getOwner
-          .put("primary-address", new PropertyDescriptor<>(Interface::getAddress, Schema.STRING))
-          .put("proxy-arp", new PropertyDescriptor<>(Interface::getProxyArp, Schema.BOOLEAN))
-          .put("rip-enabled", new PropertyDescriptor<>(Interface::getRipEnabled, Schema.BOOLEAN))
-          .put("rip-passive", new PropertyDescriptor<>(Interface::getRipPassive, Schema.BOOLEAN))
+          .put("Primary_Address", new PropertyDescriptor<>(Interface::getAddress, Schema.STRING))
+          .put("Proxy_Arp", new PropertyDescriptor<>(Interface::getProxyArp, Schema.BOOLEAN))
+          .put("Rip_Enabled", new PropertyDescriptor<>(Interface::getRipEnabled, Schema.BOOLEAN))
+          .put("Rip_Passive", new PropertyDescriptor<>(Interface::getRipPassive, Schema.BOOLEAN))
           // skip routing policy
           .put(
-              "routing-policy-name",
+              "Routing_Policy_Name",
               new PropertyDescriptor<>(Interface::getRoutingPolicyName, Schema.STRING))
           .put(
-              "source-nats",
+              "Source_Nats",
               new PropertyDescriptor<>(Interface::getSourceNats, Schema.list(Schema.STRING)))
           .put(
-              "spanning-tree-portfast",
+              "Spanning_Tree_Portfast",
               new PropertyDescriptor<>(Interface::getSpanningTreePortfast, Schema.BOOLEAN))
-          .put("switchport", new PropertyDescriptor<>(Interface::getSwitchport, Schema.BOOLEAN))
+          .put("Switchport", new PropertyDescriptor<>(Interface::getSwitchport, Schema.BOOLEAN))
           .put(
-              "switchport-mode",
+              "Switchport_Mode",
               new PropertyDescriptor<>(Interface::getSwitchportMode, Schema.STRING))
           .put(
-              "switchport-trunk-encapsulation",
+              "Switchport_Trunk_Encapsulation",
               new PropertyDescriptor<>(Interface::getSwitchportTrunkEncapsulation, Schema.STRING))
-          .put("vrf", new PropertyDescriptor<>(Interface::getVrf, Schema.STRING))
+          .put("Vrf", new PropertyDescriptor<>(Interface::getVrf, Schema.STRING))
           .put(
-              "vrrp-groups",
+              "Vrrp_Groups",
               new PropertyDescriptor<>(Interface::getVrrpGroups, Schema.list(Schema.INTEGER)))
           // skip zone
-          .put("zone-name", new PropertyDescriptor<>(Interface::getZoneName, Schema.STRING))
+          .put("Zone_Name", new PropertyDescriptor<>(Interface::getZoneName, Schema.STRING))
           .build();
 
   public static final InterfacePropertySpecifier ALL = new InterfacePropertySpecifier(".*");

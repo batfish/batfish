@@ -27,32 +27,32 @@ public class BgpPropertySpecifier extends PropertySpecifier {
   public static Map<String, PropertyDescriptor<BgpProcess>> JAVA_MAP =
       new ImmutableMap.Builder<String, PropertyDescriptor<BgpProcess>>()
           .put(
-              "active-neighbors",
+              "Active_Neighbors",
               new PropertyDescriptor<>(BgpProcess::getActiveNeighbors, Schema.set(Schema.STRING)))
           .put(
-              "cluster-ids",
+              "Cluster_Ids",
               new PropertyDescriptor<>(BgpProcess::getClusterIds, Schema.set(Schema.STRING)))
           .put(
-              "generated-routes",
+              "Generated_Routes",
               new PropertyDescriptor<>(BgpProcess::getGeneratedRoutes, Schema.set(Schema.STRING)))
           .put(
-              "multipath-equivalent-aspath-match-mode",
+              "Multipath_Equivalent_Aspath_Match_Mode",
               new PropertyDescriptor<>(
                   BgpProcess::getMultipathEquivalentAsPathMatchMode, Schema.STRING))
           .put(
-              "multipath-ebgp",
+              "Multipath_Ebgp",
               new PropertyDescriptor<>(BgpProcess::getMultipathEbgp, Schema.BOOLEAN))
           .put(
-              "multipath-ibgp",
+              "Multipath_Ibgp",
               new PropertyDescriptor<>(BgpProcess::getMultipathIbgp, Schema.BOOLEAN))
           .put(
-              "origination-space",
+              "Origination_Space",
               new PropertyDescriptor<>(BgpProcess::getOriginationSpace, Schema.STRING))
           .put(
-              "passive-neighbors",
+              "Passive_Neighbors",
               new PropertyDescriptor<>(BgpProcess::getPassiveNeighbors, Schema.set(Schema.STRING)))
           // skip router-id; included as part of process identity
-          .put("tie-breaker", new PropertyDescriptor<>(BgpProcess::getTieBreaker, Schema.STRING))
+          .put("Tie_Breaker", new PropertyDescriptor<>(BgpProcess::getTieBreaker, Schema.STRING))
           .build();
 
   public static final BgpPropertySpecifier ALL = new BgpPropertySpecifier(".*");
