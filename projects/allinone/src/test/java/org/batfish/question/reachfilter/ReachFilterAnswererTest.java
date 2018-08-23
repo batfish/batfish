@@ -271,6 +271,25 @@ public final class ReachFilterAnswererTest {
   }
 
   @Test
+  public void testReachFilter_permit_headerSpace() {
+    ReachFilterParameters.Builder paramsBuilder =
+        ReachFilterParameters.builder()
+            .setDestinationIpSpaceSpecifier(new ConstantIpSpaceSpecifier(IP0.toIpSpace()))
+            .setSourceIpSpaceSpecifier(new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE))
+            .setHeaderSpace(HeaderSpace.builder().build());
+
+    ReachFilterParameters params = paramsBuilder.build();
+    Optional<Flow> permitFlow = _batfish.reachFilter(_config, ACL, params);
+    assertThat("Should find permitted flow", permitFlow.isPresent());
+    assertThat(permitFlow.get(), hasDstIp(IP0));
+
+    params = paramsBuilder.setHeaderSpace(HeaderSpace.builder().setNegate(true).build()).build();
+    permitFlow = _batfish.reachFilter(_config, ACL, params);
+    assertThat("Should find permitted flow", permitFlow.isPresent());
+    assertThat(permitFlow.get(), hasDstIp(IP3));
+  }
+
+  @Test
   public void testReachFilter_deny() {
     Optional<Flow> permitFlow =
         _batfish.reachFilter(_config, toDenyAcl(ACL), _defaultReachFilterParams);
