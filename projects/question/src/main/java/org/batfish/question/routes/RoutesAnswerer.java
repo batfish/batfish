@@ -44,11 +44,11 @@ public class RoutesAnswerer extends Answerer {
   static final String COL_VRF_NAME = "VRF";
   static final String COL_NETWORK = "Network";
   static final String COL_NEXT_HOP_IP = "NextHopIp";
+  static final String COL_PROTOCOL = "Protocol";
   static final String COL_TAG = "Tag";
 
   // Present sometimes
   static final String COL_NEXT_HOP = "NextHop";
-  static final String COL_PROTOCOL = "Protocol";
   static final String COL_METRIC = "Metric";
 
   // Main RIB
@@ -285,6 +285,8 @@ public class RoutesAnswerer extends Answerer {
     columnBuilder.add(
         new ColumnMetadata(
             COL_NETWORK, Schema.PREFIX, "Route network (prefix)", Boolean.TRUE, Boolean.TRUE));
-    columnBuilder.add(new ColumnMetadata(COL_PROTOCOL, Schema.STRING, "Route protocol"));
+    columnBuilder.add(
+        new ColumnMetadata(
+            COL_PROTOCOL, Schema.STRING, "Route protocol", Boolean.FALSE, Boolean.TRUE));
   }
 }
