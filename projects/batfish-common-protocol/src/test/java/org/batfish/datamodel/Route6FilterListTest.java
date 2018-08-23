@@ -22,7 +22,7 @@ public class Route6FilterListTest {
             "test-route6-filter-mask",
             ImmutableList.of(
                 new Route6FilterLine(
-                    LineAction.ACCEPT,
+                    LineAction.PERMIT,
                     new Ip6Wildcard(
                         "2001:db8:1234:2345:3456:4567:5678:6789;0:ffff:0:0:0:ffff:ffff:ffff"),
                     new SubRange(64, 64))));
@@ -31,7 +31,7 @@ public class Route6FilterListTest {
             "test-route6-filter-prefix",
             ImmutableList.of(
                 new Route6FilterLine(
-                    LineAction.ACCEPT,
+                    LineAction.PERMIT,
                     new Ip6Wildcard(
                         "2001:db8:1234:2345:3456:4567:5678:6789;0:0:0:0:ffff:ffff:ffff:ffff"),
                     new SubRange(65, 70))));
@@ -40,7 +40,7 @@ public class Route6FilterListTest {
             "test-route6-filter-prefix",
             ImmutableList.of(
                 new Route6FilterLine(
-                    LineAction.ACCEPT,
+                    LineAction.PERMIT,
                     new Ip6Wildcard(
                         "2001:db8:1234:2345:3456:4567:5678:6789;0:0:0:0:ffff:ffff:ffff:ffff"),
                     new SubRange(64, 64))));

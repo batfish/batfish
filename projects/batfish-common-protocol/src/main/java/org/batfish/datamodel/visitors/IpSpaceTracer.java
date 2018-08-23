@@ -60,7 +60,7 @@ public class IpSpaceTracer implements GenericIpSpaceVisitor<Boolean> {
               _ipDescription,
               _ipSpaceDescriber);
         }
-        return line.getAction() == LineAction.ACCEPT;
+        return line.getAction() == LineAction.PERMIT;
       }
     }
     if (name != null) {

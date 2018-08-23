@@ -140,7 +140,7 @@ public final class BDDAcl {
 
     for (IpAccessListLine line : Lists.reverse(acl.getLines())) {
       BDD lineBDD = aclLineMatchExprToBDD.visit(line.getMatchCondition());
-      BDD actionBDD = line.getAction() == LineAction.ACCEPT ? _factory.one() : _factory.zero();
+      BDD actionBDD = line.getAction() == LineAction.PERMIT ? _factory.one() : _factory.zero();
       result = lineBDD.ite(actionBDD, result);
     }
     return result;

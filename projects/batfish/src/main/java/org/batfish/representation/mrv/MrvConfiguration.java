@@ -42,8 +42,8 @@ public class MrvConfiguration extends VendorConfiguration {
   @Override
   public Configuration toVendorIndependentConfiguration() throws VendorConversionException {
     _c = new Configuration(_hostname, _vendor);
-    _c.setDefaultCrossZoneAction(LineAction.ACCEPT);
-    _c.setDefaultInboundAction(LineAction.ACCEPT);
+    _c.setDefaultCrossZoneAction(LineAction.PERMIT);
+    _c.setDefaultInboundAction(LineAction.PERMIT);
     return _c;
   }
 }

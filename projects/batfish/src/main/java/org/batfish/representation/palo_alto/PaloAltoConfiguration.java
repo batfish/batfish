@@ -208,7 +208,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
       for (Service service : vsys.getServices().values()) {
         String serviceGroupAclName = computeServiceGroupMemberAclName(vsysName, service.getName());
         _c.getIpAccessLists()
-            .put(serviceGroupAclName, service.toIpAccessList(LineAction.ACCEPT, this, vsys));
+            .put(serviceGroupAclName, service.toIpAccessList(LineAction.PERMIT, this, vsys));
       }
 
       // Service groups
@@ -216,7 +216,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
         String serviceGroupAclName =
             computeServiceGroupMemberAclName(vsysName, serviceGroup.getName());
         _c.getIpAccessLists()
-            .put(serviceGroupAclName, serviceGroup.toIpAccessList(LineAction.ACCEPT, this, vsys));
+            .put(serviceGroupAclName, serviceGroup.toIpAccessList(LineAction.PERMIT, this, vsys));
       }
     }
     _c.setLoggingServers(loggingServers);
@@ -250,7 +250,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     List<AclLineMatchExpr> conjuncts = new TreeList<>();
     IpAccessListLine.Builder ipAccessListLineBuilder =
         IpAccessListLine.builder().setName(rule.getName());
-    if (rule.getAction() == LineAction.ACCEPT) {
+    if (rule.getAction() == LineAction.PERMIT) {
       ipAccessListLineBuilder.accepting();
     } else {
       ipAccessListLineBuilder.rejecting();
@@ -407,8 +407,8 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   public Configuration toVendorIndependentConfiguration() throws VendorConversionException {
     String hostname = getHostname();
     _c = new Configuration(hostname, _vendor);
-    _c.setDefaultCrossZoneAction(LineAction.REJECT);
-    _c.setDefaultInboundAction(LineAction.ACCEPT);
+    _c.setDefaultCrossZoneAction(LineAction.DENY);
+    _c.setDefaultInboundAction(LineAction.PERMIT);
     _c.setDnsServers(getDnsServers());
     _c.setNtpServers(getNtpServers());
 

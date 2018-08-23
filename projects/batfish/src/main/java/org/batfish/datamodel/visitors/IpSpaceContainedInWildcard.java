@@ -35,7 +35,7 @@ public class IpSpaceContainedInWildcard implements GenericIpSpaceVisitor<Boolean
     return aclIpSpace
         .getLines()
         .stream()
-        .filter(line -> line.getAction() == LineAction.ACCEPT)
+        .filter(line -> line.getAction() == LineAction.PERMIT)
         .allMatch(line -> line.getIpSpace().accept(this));
   }
 

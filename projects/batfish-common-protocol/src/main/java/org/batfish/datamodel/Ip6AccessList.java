@@ -64,7 +64,7 @@ public class Ip6AccessList extends ComparableStructure<String> {
         return new FilterResult(i, line.getAction());
       }
     }
-    return new FilterResult(null, LineAction.REJECT);
+    return new FilterResult(null, LineAction.DENY);
   }
 
   @JsonProperty(PROP_LINES)
@@ -76,7 +76,7 @@ public class Ip6AccessList extends ComparableStructure<String> {
   private boolean noDenyOrLastDeny(Ip6AccessList acl) {
     int count = 0;
     for (Ip6AccessListLine line : acl.getLines()) {
-      if (line.getAction() == LineAction.REJECT && count < acl.getLines().size() - 1) {
+      if (line.getAction() == LineAction.DENY && count < acl.getLines().size() - 1) {
         return false;
       }
       count++;

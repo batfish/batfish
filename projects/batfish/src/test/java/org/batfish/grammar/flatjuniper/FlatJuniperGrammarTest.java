@@ -1495,7 +1495,7 @@ public class FlatJuniperGrammarTest {
                 equalTo(
                     ImmutableList.of(
                         IpAccessListLine.builder()
-                            .setAction(LineAction.ACCEPT)
+                            .setAction(LineAction.PERMIT)
                             .setMatchCondition(
                                 new MatchHeaderSpace(
                                     HeaderSpace.builder()
@@ -1864,7 +1864,7 @@ public class FlatJuniperGrammarTest {
                 equalTo(
                     ImmutableList.of(
                         IpAccessListLine.builder()
-                            .setAction(LineAction.ACCEPT)
+                            .setAction(LineAction.PERMIT)
                             .setMatchCondition(
                                 new MatchHeaderSpace(
                                     HeaderSpace.builder()
@@ -2430,15 +2430,15 @@ public class FlatJuniperGrammarTest {
         RouteFilterListMatchers.hasLines(
             containsInAnyOrder(
                 new RouteFilterLine(
-                    LineAction.ACCEPT, Prefix.parse("1.2.0.0/16"), new SubRange(16, 16)),
+                    LineAction.PERMIT, Prefix.parse("1.2.0.0/16"), new SubRange(16, 16)),
                 new RouteFilterLine(
-                    LineAction.ACCEPT, Prefix.parse("1.2.0.0/16"), new SubRange(17, 32)),
+                    LineAction.PERMIT, Prefix.parse("1.2.0.0/16"), new SubRange(17, 32)),
                 new RouteFilterLine(
-                    LineAction.ACCEPT, Prefix.parse("1.7.0.0/16"), new SubRange(16, 16)),
+                    LineAction.PERMIT, Prefix.parse("1.7.0.0/16"), new SubRange(16, 16)),
                 new RouteFilterLine(
-                    LineAction.ACCEPT, Prefix.parse("1.7.0.0/17"), new SubRange(17, 17)),
+                    LineAction.PERMIT, Prefix.parse("1.7.0.0/17"), new SubRange(17, 17)),
                 new RouteFilterLine(
-                    LineAction.ACCEPT,
+                    LineAction.PERMIT,
                     new IpWildcard("1.0.0.0:0.255.0.255"),
                     new SubRange(16, 16)))));
   }

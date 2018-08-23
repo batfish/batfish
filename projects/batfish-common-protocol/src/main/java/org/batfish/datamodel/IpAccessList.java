@@ -138,7 +138,7 @@ public class IpAccessList extends ComparableStructure<String> {
       String srcInterface,
       Map<String, IpAccessList> availableAcls,
       Map<String, IpSpace> namedIpSpaces) {
-    return filter(flow, srcInterface, availableAcls, namedIpSpaces, LineAction.REJECT);
+    return filter(flow, srcInterface, availableAcls, namedIpSpaces, LineAction.DENY);
   }
 
   public FilterResult filter(
@@ -176,7 +176,7 @@ public class IpAccessList extends ComparableStructure<String> {
   private boolean noDenyOrLastDeny(IpAccessList acl) {
     int count = 0;
     for (IpAccessListLine line : acl.getLines()) {
-      if (line.getAction() == LineAction.REJECT && count < acl.getLines().size() - 1) {
+      if (line.getAction() == LineAction.DENY && count < acl.getLines().size() - 1) {
         return false;
       }
       count++;

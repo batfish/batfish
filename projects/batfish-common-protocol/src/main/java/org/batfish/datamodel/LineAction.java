@@ -1,9 +1,25 @@
 package org.batfish.datamodel;
 
-import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.google.common.annotations.VisibleForTesting;
 
-@JsonSchemaDescription("An access-control action")
+/** An access-control action */
 public enum LineAction {
-  ACCEPT,
-  REJECT
+  PERMIT,
+  DENY;
+
+  @JsonCreator
+  @VisibleForTesting
+  static LineAction forValue(String value) {
+    switch (value.toLowerCase()) {
+      case "permit":
+      case "accept":
+        return PERMIT;
+      case "deny":
+      case "reject":
+        return DENY;
+      default:
+        throw new IllegalArgumentException("Unrecognized ACL line action: " + value);
+    }
+  }
 }
