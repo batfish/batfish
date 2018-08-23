@@ -55,8 +55,8 @@ public class InterfacePropertiesAnswererTest {
 
     conf1.getInterfaces().putAll(ImmutableMap.of("iface1", iface1, "iface2", iface2));
 
-    String property1 = "Description";
-    String property2 = "Active";
+    String property1 = InterfacePropertySpecifier.DESCRIPTION;
+    String property2 = InterfacePropertySpecifier.ACTIVE;
     InterfacePropertySpecifier propertySpecifier =
         new InterfacePropertySpecifier(property1 + "|" + property2);
 
@@ -90,7 +90,7 @@ public class InterfacePropertiesAnswererTest {
     Interface shut = Interface.builder().setName("shut").setOwner(conf).setActive(false).build();
     conf.getInterfaces().putAll(ImmutableMap.of("active", active, "shut", shut));
 
-    String property = "Description";
+    String property = InterfacePropertySpecifier.DESCRIPTION;
     InterfacePropertySpecifier propertySpecifier = new InterfacePropertySpecifier(property);
 
     Multiset<Row> propertyRows =

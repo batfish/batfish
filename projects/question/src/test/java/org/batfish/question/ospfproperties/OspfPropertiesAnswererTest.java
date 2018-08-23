@@ -33,8 +33,8 @@ public class OspfPropertiesAnswererTest {
     Configuration conf1 = new Configuration("node1", ConfigurationFormat.CISCO_IOS);
     conf1.setVrfs(ImmutableMap.of("vrf1", vrf1));
 
-    String property1 = "Export_Policy";
-    String property2 = "Reference_Bandwidth";
+    String property1 = OspfPropertySpecifier.EXPORT_POLICY;
+    String property2 = OspfPropertySpecifier.REFERENCE_BANDWIDTH;
 
     OspfPropertiesQuestion question =
         new OspfPropertiesQuestion(null, new OspfPropertySpecifier(property1 + "|" + property2));
@@ -53,7 +53,7 @@ public class OspfPropertiesAnswererTest {
         Row.builder()
             .put(OspfPropertiesAnswerer.COL_NODE, new Node("node1"))
             .put(OspfPropertiesAnswerer.COL_VRF, "vrf1")
-            .put(OspfPropertiesAnswerer.COL_PROCESS, "uber-proc")
+            .put(OspfPropertiesAnswerer.COL_PROCESS_ID, "uber-proc")
             .put(property2, 42.0)
             .put(property1, "my-policy")
             .build();

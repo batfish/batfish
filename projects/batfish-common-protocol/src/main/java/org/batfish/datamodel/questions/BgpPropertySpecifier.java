@@ -24,35 +24,46 @@ import org.batfish.datamodel.answers.Schema;
  */
 public class BgpPropertySpecifier extends PropertySpecifier {
 
+  public static final String ACTIVE_NEIGHBORS = "Active_Neighbors";
+  public static final String CLUSTER_IDS = "Cluster_IDs";
+  public static final String GENERATED_ROUTES = "Generated_Routes";
+  public static final String MULTIPATH_EQUIVALENT_AS_PATH_MATCH_MODE =
+      "Multipath_Equivalent_AS_Path_Match_Mode";
+  public static final String MULTIPATH_EBGP = "Multipath_EBGP";
+  public static final String MULTIPATH_IBGP = "Multipath_IBGP";
+  public static final String ORIGINATION_SPACE = "Origination_Space";
+  public static final String PASSIVE_NEIGHBORS = "Passive_Neighbors";
+  public static final String TIE_BREAKER = "Tie_Breaker";
+
   public static Map<String, PropertyDescriptor<BgpProcess>> JAVA_MAP =
       new ImmutableMap.Builder<String, PropertyDescriptor<BgpProcess>>()
           .put(
-              "Active_Neighbors",
+              ACTIVE_NEIGHBORS,
               new PropertyDescriptor<>(BgpProcess::getActiveNeighbors, Schema.set(Schema.STRING)))
           .put(
-              "Cluster_Ids",
+              CLUSTER_IDS,
               new PropertyDescriptor<>(BgpProcess::getClusterIds, Schema.set(Schema.STRING)))
           .put(
-              "Generated_Routes",
+              GENERATED_ROUTES,
               new PropertyDescriptor<>(BgpProcess::getGeneratedRoutes, Schema.set(Schema.STRING)))
           .put(
-              "Multipath_Equivalent_Aspath_Match_Mode",
+              MULTIPATH_EQUIVALENT_AS_PATH_MATCH_MODE,
               new PropertyDescriptor<>(
                   BgpProcess::getMultipathEquivalentAsPathMatchMode, Schema.STRING))
           .put(
-              "Multipath_Ebgp",
+              MULTIPATH_EBGP,
               new PropertyDescriptor<>(BgpProcess::getMultipathEbgp, Schema.BOOLEAN))
           .put(
-              "Multipath_Ibgp",
+              MULTIPATH_IBGP,
               new PropertyDescriptor<>(BgpProcess::getMultipathIbgp, Schema.BOOLEAN))
           .put(
-              "Origination_Space",
+              ORIGINATION_SPACE,
               new PropertyDescriptor<>(BgpProcess::getOriginationSpace, Schema.STRING))
           .put(
-              "Passive_Neighbors",
+              PASSIVE_NEIGHBORS,
               new PropertyDescriptor<>(BgpProcess::getPassiveNeighbors, Schema.set(Schema.STRING)))
           // skip router-id; included as part of process identity
-          .put("Tie_Breaker", new PropertyDescriptor<>(BgpProcess::getTieBreaker, Schema.STRING))
+          .put(TIE_BREAKER, new PropertyDescriptor<>(BgpProcess::getTieBreaker, Schema.STRING))
           .build();
 
   public static final BgpPropertySpecifier ALL = new BgpPropertySpecifier(".*");

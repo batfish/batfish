@@ -24,42 +24,53 @@ import org.batfish.datamodel.ospf.OspfProcess;
  */
 public class OspfPropertySpecifier extends PropertySpecifier {
 
+  public static final String AREA_BORDER_ROUTER = "Area_Border_Router";
+  public static final String AREAS = "Areas";
+  public static final String EXPORT_POLICY = "Export_Policy";
+  public static final String GENERATED_ROUTES = "Generated_Routes";
+  public static final String MAX_METRIC_EXTERNAL_NETWORKS = "Max_Metric_External_Networks";
+  public static final String MAX_METRIC_STUB_NETWORKS = "Max_Metric_Stub_Networks";
+  public static final String MAX_METRIC_SUMMARY_NETWORKS = "Max_Metric_Summary_Networks";
+  public static final String MAX_METRIC_TRANSIT_LINKS = "Max_Metric_Transit_Links";
+  public static final String NEIGHBORS = "Neighbors";
+  public static final String REFERENCE_BANDWIDTH = "Reference_Bandwidth";
+  public static final String RFC_1583_COMPATIBLE = "RFC1583_Compatible";
+  public static final String ROUTER_ID = "Router_ID";
+
   public static Map<String, PropertyDescriptor<OspfProcess>> JAVA_MAP =
       new ImmutableMap.Builder<String, PropertyDescriptor<OspfProcess>>()
           .put(
-              "Area_Border_Router",
+              AREA_BORDER_ROUTER,
               new PropertyDescriptor<>(OspfProcess::isAreaBorderRouter, Schema.BOOLEAN))
           // will go from Long to String --> area Ids are not integral anyway
-          .put("Areas", new PropertyDescriptor<>(OspfProcess::getAreas, Schema.set(Schema.STRING)))
+          .put(AREAS, new PropertyDescriptor<>(OspfProcess::getAreas, Schema.set(Schema.STRING)))
+          .put(EXPORT_POLICY, new PropertyDescriptor<>(OspfProcess::getExportPolicy, Schema.STRING))
           .put(
-              "Export_Policy",
-              new PropertyDescriptor<>(OspfProcess::getExportPolicy, Schema.STRING))
-          .put(
-              "Generated_Routes",
+              GENERATED_ROUTES,
               new PropertyDescriptor<>(OspfProcess::getGeneratedRoutes, Schema.set(Schema.STRING)))
           // All max-metrics go from Long to String
           .put(
-              "Max_Metric_External_Networks",
+              MAX_METRIC_EXTERNAL_NETWORKS,
               new PropertyDescriptor<>(OspfProcess::getMaxMetricExternalNetworks, Schema.INTEGER))
           .put(
-              "Max_Metric_Stub_Networks",
+              MAX_METRIC_STUB_NETWORKS,
               new PropertyDescriptor<>(OspfProcess::getMaxMetricStubNetworks, Schema.INTEGER))
           .put(
-              "Max_Metric_Summary_Networks",
+              MAX_METRIC_SUMMARY_NETWORKS,
               new PropertyDescriptor<>(OspfProcess::getMaxMetricSummaryNetworks, Schema.INTEGER))
           .put(
-              "Max_Metric_Transit_Links",
+              MAX_METRIC_TRANSIT_LINKS,
               new PropertyDescriptor<>(OspfProcess::getMaxMetricTransitLinks, Schema.INTEGER))
           .put(
-              "Neighbors",
+              NEIGHBORS,
               new PropertyDescriptor<>(OspfProcess::getOspfNeighbors, Schema.set(Schema.STRING)))
           .put(
-              "Reference_Bandwidth",
+              REFERENCE_BANDWIDTH,
               new PropertyDescriptor<>(OspfProcess::getReferenceBandwidth, Schema.DOUBLE))
           .put(
-              "Rfc1583_Compatible",
+              RFC_1583_COMPATIBLE,
               new PropertyDescriptor<>(OspfProcess::getRfc1583Compatible, Schema.BOOLEAN))
-          .put("Router_Id", new PropertyDescriptor<>(OspfProcess::getRouterId, Schema.IP))
+          .put(ROUTER_ID, new PropertyDescriptor<>(OspfProcess::getRouterId, Schema.IP))
           .build();
 
   public static final OspfPropertySpecifier ALL = new OspfPropertySpecifier(".*");
