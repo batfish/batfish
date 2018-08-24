@@ -5114,10 +5114,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   private static AsPath toAsPath(As_path_exprContext path) {
-    List<SortedSet<Long>> asPath = path.items
-        .stream()
-        .map(ConfigurationBuilder::toAsSet)
-        .collect(ImmutableList.toImmutableList());
+    List<SortedSet<Long>> asPath =
+        path.items
+            .stream()
+            .map(ConfigurationBuilder::toAsSet)
+            .collect(ImmutableList.toImmutableList());
     return new AsPath(asPath);
   }
 

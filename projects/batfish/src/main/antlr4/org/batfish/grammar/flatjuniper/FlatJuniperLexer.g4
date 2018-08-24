@@ -5907,6 +5907,11 @@ M_AsPathExpr_DEC
    F_Digit+ -> type ( DEC )
 ;
 
+M_AsPathExpr_PERIOD
+:
+   '.' -> type ( PERIOD )
+;
+
 M_AsPathExpr_OPEN_BRACKET
 :
    '[' -> type ( OPEN_BRACKET )
