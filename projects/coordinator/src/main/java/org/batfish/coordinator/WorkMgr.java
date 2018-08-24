@@ -1657,22 +1657,26 @@ public class WorkMgr extends AbstractCoordinator {
     try {
       workItem.setSourceSpan(GlobalTracer.get().activeSpan());
       WorkDetails workDetails = computeWorkDetails(workItem);
-      try {
-        if (TestrigMetadataMgr.getEnvironmentMetadata(
-                    workItem.getContainerName(), workDetails.baseTestrig, workDetails.baseEnv)
-                == null
-            || (workDetails.isDifferential
-                && TestrigMetadataMgr.getEnvironmentMetadata(
-                        workItem.getContainerName(), workDetails.deltaTestrig, workDetails.deltaEnv)
-                    == null)) {
-          throw new BatfishException("Environment metadata not found");
-        }
-      } catch (Exception e) {
-        throw new BatfishException("Snapshot/environment metadata not found.");
+      if (TestrigMetadataMgr.getEnvironmentMetadata(
+              workItem.getContainerName(), workDetails.baseTestrig, workDetails.baseEnv)
+          == null) {
+        throw new BatfishException(
+            String.format(
+                "Snapshot/environment metadata not found for %s/%s",
+                workDetails.baseTestrig, workDetails.baseEnv));
+      }
+      if (workDetails.isDifferential
+          && TestrigMetadataMgr.getEnvironmentMetadata(
+                  workItem.getContainerName(), workDetails.deltaTestrig, workDetails.deltaEnv)
+              == null) {
+        throw new BatfishException(
+            String.format(
+                "Snapshot/environment metadata not found for %s/%s",
+                workDetails.deltaTestrig, workDetails.deltaEnv));
       }
       success = _workQueueMgr.queueUnassignedWork(new QueuedWork(workItem, workDetails));
     } catch (Exception e) {
-      throw new BatfishException("Failed to queue work", e);
+      throw new BatfishException(String.format("Failed to queue work: %s", e.getMessage()), e);
     }
     // as an optimization trigger AssignWork to see if we can schedule this (or another) work
     if (success) {
