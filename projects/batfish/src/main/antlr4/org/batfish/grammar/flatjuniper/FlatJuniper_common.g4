@@ -53,14 +53,14 @@ as_set
 :
   OPEN_BRACKET
   (
-    items += DEC
+    items += bgp_asn
   )+ CLOSE_BRACKET
 ;
 
 as_unit
 :
   as_set
-  | DEC
+  | bgp_asn
 ;
 
 bgp_asn

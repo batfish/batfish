@@ -60,6 +60,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.STATIC_RO
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Ordering;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -69,7 +70,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
-import java.util.TreeSet;
 import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RuleContext;
@@ -5101,19 +5101,23 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     return proposals;
   }
 
-  private AsPath toAsPath(As_path_exprContext path) {
-    List<SortedSet<Long>> asPath = new ArrayList<>();
-    for (As_unitContext ctx : path.items) {
-      SortedSet<Long> asSet = new TreeSet<>();
-      if (ctx.DEC() != null) {
-        asSet.add(toLong(ctx.DEC()));
-      } else {
-        for (Token token : ctx.as_set().items) {
-          asSet.add(toLong(token));
-        }
-      }
-      asPath.add(asSet);
+  private static SortedSet<Long> toAsSet(As_unitContext ctx) {
+    if (ctx.bgp_asn() != null) {
+      return ImmutableSortedSet.of(toAsNum(ctx.bgp_asn()));
+    } else {
+      return ctx.as_set()
+          .items
+          .stream()
+          .map(ConfigurationBuilder::toAsNum)
+          .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural()));
     }
+  }
+
+  private static AsPath toAsPath(As_path_exprContext path) {
+    List<SortedSet<Long>> asPath = path.items
+        .stream()
+        .map(ConfigurationBuilder::toAsSet)
+        .collect(ImmutableList.toImmutableList());
     return new AsPath(asPath);
   }
 
