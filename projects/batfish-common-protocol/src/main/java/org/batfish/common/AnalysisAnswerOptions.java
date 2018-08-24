@@ -18,11 +18,13 @@ public class AnalysisAnswerOptions {
   @JsonCreator
   private static @Nonnull AnalysisAnswerOptions create(
       @JsonProperty(BfConsts.PROP_COLUMNS) Set<String> columns,
+      @JsonProperty(BfConsts.PROP_FILTERS) List<ColumnFilter> filters,
       @JsonProperty(BfConsts.PROP_MAX_ROWS) Integer maxRows,
       @JsonProperty(BfConsts.PROP_ROW_OFFSET) Integer rowOffset,
       @JsonProperty(BfConsts.PROP_SORT_ORDER) List<ColumnSortOption> sortOrder) {
     return new AnalysisAnswerOptions(
         firstNonNull(columns, ImmutableSet.of()),
+        firstNonNull(filters, ImmutableList.of()),
         firstNonNull(maxRows, Integer.MAX_VALUE),
         firstNonNull(rowOffset, 0),
         firstNonNull(sortOrder, ImmutableList.of()));
@@ -36,12 +38,16 @@ public class AnalysisAnswerOptions {
 
   private final List<ColumnSortOption> _sortOrder;
 
+  private final List<ColumnFilter> _filters;
+
   public AnalysisAnswerOptions(
       @Nonnull Set<String> columns,
+      @Nonnull List<ColumnFilter> filters,
       int maxRows,
       int rowOffset,
       @Nonnull List<ColumnSortOption> sortOrder) {
     _columns = columns;
+    _filters = filters;
     _maxRows = maxRows;
     _rowOffset = rowOffset;
     _sortOrder = sortOrder;
@@ -57,6 +63,7 @@ public class AnalysisAnswerOptions {
     }
     AnalysisAnswerOptions rhs = (AnalysisAnswerOptions) obj;
     return _columns.equals(rhs._columns)
+        && _filters.equals(rhs._filters)
         && _maxRows == rhs._maxRows
         && _rowOffset == rhs._rowOffset
         && _sortOrder.equals(rhs._sortOrder);
@@ -65,6 +72,11 @@ public class AnalysisAnswerOptions {
   @JsonProperty(BfConsts.PROP_COLUMNS)
   public Set<String> getColumns() {
     return _columns;
+  }
+
+  @JsonProperty(BfConsts.PROP_FILTERS)
+  public @Nonnull List<ColumnFilter> getFilters() {
+    return _filters;
   }
 
   @JsonProperty(BfConsts.PROP_MAX_ROWS)
@@ -84,13 +96,14 @@ public class AnalysisAnswerOptions {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_columns, _maxRows, _rowOffset, _sortOrder);
+    return Objects.hash(_columns, _filters, _maxRows, _rowOffset, _sortOrder);
   }
 
   @Override
   public String toString() {
     return toStringHelper(getClass())
         .add(BfConsts.PROP_COLUMNS, _columns)
+        .add(BfConsts.PROP_FILTERS, _filters)
         .add(BfConsts.PROP_MAX_ROWS, _maxRows)
         .add(BfConsts.PROP_ROW_OFFSET, _rowOffset)
         .add(BfConsts.PROP_SORT_ORDER, _sortOrder)
