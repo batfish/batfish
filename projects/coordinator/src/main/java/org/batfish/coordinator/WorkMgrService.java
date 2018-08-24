@@ -797,7 +797,6 @@ public class WorkMgrService {
    * @param networkName The name of the network in which the analysis resides
    * @param snapshotName The name of the snapshot on which the analysis was run
    * @param deltaSnapshot The name of the delta snapshot on which the analysis was run
-   * @param aggregationsStr A list of aggregations to be computed and returned for each table
    * @param analysisName The name of the analysis
    * @param analysisQuestionsStr The names of the questions for which to retrieve metrics
    * @return TODO: document JSON response
@@ -811,7 +810,6 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_NETWORK_NAME) String networkName,
       @FormDataParam(CoordConsts.SVC_KEY_SNAPSHOT_NAME) String snapshotName,
       @FormDataParam(CoordConsts.SVC_KEY_DELTA_SNAPSHOT_NAME) String deltaSnapshot,
-      @FormDataParam(CoordConsts.SVC_KEY_AGGREGATIONS) String aggregationsStr,
       @FormDataParam(CoordConsts.SVC_KEY_ANALYSIS_NAME) String analysisName,
       @FormDataParam(CoordConsts.SVC_KEY_ANALYSIS_QUESTIONS)
           String analysisQuestionsStr /* optional */,

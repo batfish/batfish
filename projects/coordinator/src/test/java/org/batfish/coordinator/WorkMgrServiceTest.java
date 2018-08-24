@@ -19,7 +19,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import javax.ws.rs.core.Response;
@@ -39,7 +38,6 @@ import org.batfish.datamodel.answers.Aggregation;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.AnswerStatus;
-import org.batfish.datamodel.answers.ColumnAggregation;
 import org.batfish.datamodel.answers.GetAnalysisAnswerMetricsAnswer;
 import org.batfish.datamodel.answers.Metrics;
 import org.batfish.datamodel.answers.Schema;
@@ -719,10 +717,6 @@ public class WorkMgrServiceTest {
     answerDir.toFile().mkdirs();
     CommonUtil.writeFile(answer1MetadataPath, answerMetadata);
 
-    List<ColumnAggregation> aggregations =
-        ImmutableList.of(new ColumnAggregation(Aggregation.MAX, columnName));
-    String aggregationsStr = BatfishObjectMapper.writePrettyString(aggregations);
-
     JSONArray answerOutput =
         _service.getAnalysisAnswersMetrics(
             CoordConsts.DEFAULT_API_KEY,
@@ -730,7 +724,6 @@ public class WorkMgrServiceTest {
             _networkName,
             _snapshotName,
             null,
-            aggregationsStr,
             analysisName,
             analysisQuestionsStr,
             null);
