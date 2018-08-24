@@ -20,9 +20,12 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.UniverseIpSpace;
+import org.batfish.datamodel.questions.InterfacesSpecifier;
 import org.batfish.question.ReachFilterParameters;
 import org.batfish.question.reachfilter.DifferentialReachFilterResult;
 import org.batfish.specifier.ConstantIpSpaceSpecifier;
+import org.batfish.specifier.FlexibleInterfaceSpecifierFactory;
+import org.batfish.specifier.ShorthandInterfaceSpecifier;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -33,6 +36,7 @@ public class DifferentialReachFilterTest {
 
   private static final String HOSTNAME = "hostname";
   private static final String IFACE1 = "iface1";
+  private static final String IFACE2 = "iface2";
   private static final Ip IP = new Ip("1.2.3.4");
 
   private NetworkFactory _nf;
@@ -54,6 +58,8 @@ public class DifferentialReachFilterTest {
         ReachFilterParameters.builder()
             .setDestinationIpSpaceSpecifier(new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE))
             .setSourceIpSpaceSpecifier(new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE))
+            .setSourceInterfaceSpecifier(
+                new FlexibleInterfaceSpecifierFactory().buildInterfaceSpecifier(null))
             .setHeaderSpace(HeaderSpace.builder().build())
             .build();
   }
@@ -113,5 +119,52 @@ public class DifferentialReachFilterTest {
     assertThat("Expected no increased flow", !result.getIncreasedFlow().isPresent());
     assertThat("Expected decreased flow", result.getDecreasedFlow().isPresent());
     assertThat(result.getDecreasedFlow().get(), hasDstIp(IP));
+  }
+
+  @Test
+  public void testSourceInterfaceParameter() throws IOException {
+    Configuration baseConfig = _cb.build();
+    Configuration deltaConfig = _cb.build();
+    _ib.setName(IFACE1).setOwner(baseConfig).build();
+    _ib.setOwner(deltaConfig).build();
+    _ib.setName(IFACE2).setOwner(baseConfig).build();
+    _ib.setOwner(deltaConfig).build();
+    IpAccessList baseAcl = _ab.build();
+    IpAccessList deltaAcl =
+        _ab.setLines(
+                ImmutableList.of(
+                    accepting()
+                        .setMatchCondition(and(matchSrcInterface(IFACE1), matchDst(IP)))
+                        .build()))
+            .build();
+
+    Batfish batfish = getBatfish(baseConfig, deltaConfig);
+    ReachFilterParameters params =
+        _params
+            .toBuilder()
+            .setSourceInterfaceSpecifier(
+                new ShorthandInterfaceSpecifier(new InterfacesSpecifier(IFACE1)))
+            .build();
+
+    params = _params;
+
+    // can match line 1 because IFACE1 is specified
+    DifferentialReachFilterResult result =
+        batfish.differentialReachFilter(baseConfig, baseAcl, deltaConfig, deltaAcl, params);
+    assertThat("Expected no decreased flow", !result.getDecreasedFlow().isPresent());
+    assertThat("Expected increased flow", result.getIncreasedFlow().isPresent());
+    assertThat(result.getIncreasedFlow().get(), allOf(hasIngressInterface(IFACE1), hasDstIp(IP)));
+
+    params =
+        _params
+            .toBuilder()
+            .setSourceInterfaceSpecifier(
+                new ShorthandInterfaceSpecifier(new InterfacesSpecifier(IFACE2)))
+            .build();
+
+    // not can't match line 1 because IFACE2 is specified
+    result = batfish.differentialReachFilter(baseConfig, baseAcl, deltaConfig, deltaAcl, params);
+    assertThat("Expected no decreased flow", !result.getDecreasedFlow().isPresent());
+    assertThat("Expected no increased flow", !result.getIncreasedFlow().isPresent());
   }
 }
