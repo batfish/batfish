@@ -26,108 +26,143 @@ import org.batfish.datamodel.answers.Schema;
  */
 public class NodePropertySpecifier extends PropertySpecifier {
 
+  public static final String AS_PATH_ACCESS_LISTS = "AS_Path_Access_Lists";
+  public static final String AUTHENTICATION_KEY_CHAINS = "Authentication_Key_Chains";
+  public static final String CANONICAL_IP = "Canonical_IP";
+  public static final String COMMUNITY_LISTS = "Community_Lists";
+  public static final String CONFIGURATION_FORMAT = "Configuration_Format";
+  public static final String DEFAULT_CROSS_ZONE_ACTION = "Default_Cross_Zone_Action";
+  public static final String DEFAULT_INBOUND_ACTION = "Default_Inbound_Action";
+  public static final String DEVICE_TYPE = "Device_Type";
+  public static final String DNS_SERVERS = "DNS_Servers";
+  public static final String DNS_SOURCE_INTERFACE = "DNS_Source_Interface";
+  public static final String DOMAIN_NAME = "Domain_Name";
+  public static final String HOSTNAME = "Hostname";
+  public static final String IKE_GATEWAYS = "IKE_Gateways";
+  public static final String IKE_POLICIES = "IKE_Policies";
+  public static final String INTERFACES = "Interfaces";
+  public static final String IP_ACCESS_LISTS = "IP_Access_Lists";
+  public static final String IP_SPACES = "IP_Spaces";
+  public static final String IP_6_ACCESS_LISTS = "IP6_Access_Lists";
+  public static final String IPSEC_POLICIES = "IPSec_Policies";
+  public static final String IPSEC_PROPOSALS = "IPSec_Proposals";
+  public static final String IPSEC_VPNS = "IPSec_Vpns";
+  public static final String LOGGING_SERVERS = "Logging_Servers";
+  public static final String LOGGING_SOURCE_INTERFACE = "Logging_Source_Interface";
+  public static final String NTP_SERVERS = "NTP_Servers";
+  public static final String NTP_SOURCE_INTERFACE = "NTP_Source_Interface";
+  public static final String ROUTE_FILTER_LISTS = "Route_Filter_Lists";
+  public static final String ROUTE_6_FILTER_LISTS = "Route6_Filter_Lists";
+  public static final String ROUTING_POLICIES = "Routing_Policies";
+  public static final String SNMP_SOURCE_INTERFACE = "SNMP_Source_Interface";
+  public static final String SNMP_TRAP_SERVERS = "SNMP_Trap_Servers";
+  public static final String TACACS_SERVERS = "TACACS_Servers";
+  public static final String TACACS_SOURCE_INTERFACE = "TACACS_Source_Interface";
+  public static final String VENDOR_FAMILY = "Vendor_Family";
+  public static final String VRFS = "VRFs";
+  public static final String ZONES = "Zones";
+
   public static Map<String, PropertyDescriptor<Configuration>> JAVA_MAP =
       new ImmutableMap.Builder<String, PropertyDescriptor<Configuration>>()
           .put(
-              "as-path-access-lists",
+              AS_PATH_ACCESS_LISTS,
               new PropertyDescriptor<>(
                   Configuration::getAsPathAccessLists, Schema.set(Schema.STRING)))
           .put(
-              "authentication-key-chains",
+              AUTHENTICATION_KEY_CHAINS,
               new PropertyDescriptor<>(
                   Configuration::getAuthenticationKeyChains, Schema.set(Schema.STRING)))
-          .put("canonical-ip", new PropertyDescriptor<>(Configuration::getCanonicalIp, Schema.IP))
+          .put(CANONICAL_IP, new PropertyDescriptor<>(Configuration::getCanonicalIp, Schema.IP))
           .put(
-              "community-lists",
+              COMMUNITY_LISTS,
               new PropertyDescriptor<>(Configuration::getCommunityLists, Schema.set(Schema.STRING)))
           .put(
-              "configuration-format",
+              CONFIGURATION_FORMAT,
               new PropertyDescriptor<>(Configuration::getConfigurationFormat, Schema.STRING))
           .put(
-              "default-cross-zone-action",
+              DEFAULT_CROSS_ZONE_ACTION,
               new PropertyDescriptor<>(Configuration::getDefaultCrossZoneAction, Schema.STRING))
           .put(
-              "default-inbound-action",
+              DEFAULT_INBOUND_ACTION,
               new PropertyDescriptor<>(Configuration::getDefaultInboundAction, Schema.STRING))
-          .put("device-type", new PropertyDescriptor<>(Configuration::getDeviceType, Schema.STRING))
+          .put(DEVICE_TYPE, new PropertyDescriptor<>(Configuration::getDeviceType, Schema.STRING))
           .put(
-              "dns-servers",
+              DNS_SERVERS,
               new PropertyDescriptor<>(Configuration::getDnsServers, Schema.set(Schema.STRING)))
           .put(
-              "dns-source-interface",
+              DNS_SOURCE_INTERFACE,
               new PropertyDescriptor<>(Configuration::getDnsSourceInterface, Schema.STRING))
-          .put("domain-name", new PropertyDescriptor<>(Configuration::getDomainName, Schema.STRING))
-          .put("hostname", new PropertyDescriptor<>(Configuration::getHostname, Schema.STRING))
+          .put(DOMAIN_NAME, new PropertyDescriptor<>(Configuration::getDomainName, Schema.STRING))
+          .put(HOSTNAME, new PropertyDescriptor<>(Configuration::getHostname, Schema.STRING))
           .put(
-              "ike-gateways",
+              IKE_GATEWAYS,
               new PropertyDescriptor<>(Configuration::getIkeGateways, Schema.set(Schema.STRING)))
           .put(
-              "ike-policies",
+              IKE_POLICIES,
               new PropertyDescriptor<>(Configuration::getIkePolicies, Schema.set(Schema.STRING)))
           .put(
-              "interfaces",
+              INTERFACES,
               new PropertyDescriptor<>(Configuration::getInterfaces, Schema.set(Schema.STRING)))
           .put(
-              "ip-access-lists",
+              IP_ACCESS_LISTS,
               new PropertyDescriptor<>(Configuration::getIpAccessLists, Schema.set(Schema.STRING)))
           .put(
-              "ip-spaces",
+              IP_SPACES,
               new PropertyDescriptor<>(Configuration::getIpSpaces, Schema.set(Schema.STRING)))
           .put(
-              "ip6-access-lists",
+              IP_6_ACCESS_LISTS,
               new PropertyDescriptor<>(Configuration::getIp6AccessLists, Schema.set(Schema.STRING)))
           .put(
-              "ipsec-policies",
+              IPSEC_POLICIES,
               new PropertyDescriptor<>(Configuration::getIpsecPolicies, Schema.set(Schema.STRING)))
           .put(
-              "ipsec-proposals",
+              IPSEC_PROPOSALS,
               new PropertyDescriptor<>(Configuration::getIpsecProposals, Schema.set(Schema.STRING)))
           .put(
-              "ipsec-vpns",
+              IPSEC_VPNS,
               new PropertyDescriptor<>(Configuration::getIpsecVpns, Schema.set(Schema.STRING)))
           .put(
-              "logging-servers",
+              LOGGING_SERVERS,
               new PropertyDescriptor<>(Configuration::getLoggingServers, Schema.set(Schema.STRING)))
           .put(
-              "logging-source-interface",
+              LOGGING_SOURCE_INTERFACE,
               new PropertyDescriptor<>(Configuration::getLoggingSourceInterface, Schema.STRING))
           .put(
-              "ntp-servers",
+              NTP_SERVERS,
               new PropertyDescriptor<>(Configuration::getNtpServers, Schema.set(Schema.STRING)))
           .put(
-              "ntp-source-interface",
+              NTP_SOURCE_INTERFACE,
               new PropertyDescriptor<>(Configuration::getNtpSourceInterface, Schema.STRING))
           .put(
-              "route-filter-lists",
+              ROUTE_FILTER_LISTS,
               new PropertyDescriptor<>(
                   Configuration::getRouteFilterLists, Schema.set(Schema.STRING)))
           .put(
-              "route6-filter-lists",
+              ROUTE_6_FILTER_LISTS,
               new PropertyDescriptor<>(
                   Configuration::getRoute6FilterLists, Schema.set(Schema.STRING)))
           .put(
-              "routing-policies",
+              ROUTING_POLICIES,
               new PropertyDescriptor<>(
                   Configuration::getRoutingPolicies, Schema.set(Schema.STRING)))
           .put(
-              "snmp-source-interface",
+              SNMP_SOURCE_INTERFACE,
               new PropertyDescriptor<>(Configuration::getSnmpSourceInterface, Schema.STRING))
           .put(
-              "snmp-trap-servers",
+              SNMP_TRAP_SERVERS,
               new PropertyDescriptor<>(
                   Configuration::getSnmpTrapServers, Schema.set(Schema.STRING)))
           .put(
-              "tacacs-servers",
+              TACACS_SERVERS,
               new PropertyDescriptor<>(Configuration::getTacacsServers, Schema.set(Schema.STRING)))
           .put(
-              "tacacs-source-interface",
+              TACACS_SOURCE_INTERFACE,
               new PropertyDescriptor<>(Configuration::getTacacsSourceInterface, Schema.STRING))
           .put(
-              "vendor-family",
+              VENDOR_FAMILY,
               new PropertyDescriptor<>(Configuration::getVendorFamily, Schema.STRING))
-          .put("vrfs", new PropertyDescriptor<>(Configuration::getVrfs, Schema.set(Schema.STRING)))
-          .put(
-              "zones", new PropertyDescriptor<>(Configuration::getZones, Schema.set(Schema.STRING)))
+          .put(VRFS, new PropertyDescriptor<>(Configuration::getVrfs, Schema.set(Schema.STRING)))
+          .put(ZONES, new PropertyDescriptor<>(Configuration::getZones, Schema.set(Schema.STRING)))
           .build();
 
   public static final NodePropertySpecifier ALL = new NodePropertySpecifier(".*");
@@ -158,7 +193,7 @@ public class NodePropertySpecifier extends PropertySpecifier {
     return JAVA_MAP
         .keySet()
         .stream()
-        .filter(prop -> _pattern.matcher(prop).matches())
+        .filter(prop -> _pattern.matcher(prop.toLowerCase()).matches())
         .collect(Collectors.toSet());
   }
 

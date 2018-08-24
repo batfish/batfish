@@ -1,7 +1,7 @@
 {
   "class" : "org.batfish.question.ospfproperties.OspfPropertiesQuestion",
-  "nodeRegex" : ".*",
-  "propertySpec" : "maximum-.*",
+  "nodes" : ".*",
+  "properties" : "maximum-.*",
   "differential" : false,
   "includeOneTableKeys" : true,
   "instance" : {
@@ -11,14 +11,14 @@
       "ospf"
     ],
     "variables" : {
-      "nodeRegex" : {
+      "nodes" : {
         "description" : "Only include nodes that match this regex",
         "optional" : true,
         "type" : "nodeSpec",
         "value" : ".*"
       },
-      "propertySpec" : {
-        "description" : "Only include properties that match this regex. Default behavior is to return all properties",
+      "properties" : {
+        "description" : "Only include properties that match this regex",
         "optional" : true,
         "type" : "ospfPropertySpec",
         "value" : "maximum-.*"

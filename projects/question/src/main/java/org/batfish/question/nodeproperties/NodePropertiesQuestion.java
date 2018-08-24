@@ -12,23 +12,23 @@ import org.batfish.datamodel.questions.Question;
 
 /**
  * A question that returns properties of nodes in a tabular format. {@link
- * NodePropertiesQuestion#_nodeRegex} determines which nodes are included, and {@link
- * NodePropertiesQuestion#_propertySpec} determines which properties are included.
+ * NodePropertiesQuestion#_nodes} determines which nodes are included, and {@link
+ * NodePropertiesQuestion#_properties} determines which properties are included.
  */
 public class NodePropertiesQuestion extends Question {
 
-  private static final String PROP_NODE_REGEX = "nodeRegex";
-  private static final String PROP_PROPERTY_SPEC = "propertySpec";
+  private static final String PROP_NODES = "nodes";
+  private static final String PROP_PROPERTIES = "properties";
 
-  @Nonnull private NodesSpecifier _nodeRegex;
+  @Nonnull private NodesSpecifier _nodes;
 
-  @Nonnull private NodePropertySpecifier _propertySpec;
+  @Nonnull private NodePropertySpecifier _properties;
 
   public NodePropertiesQuestion(
-      @JsonProperty(PROP_NODE_REGEX) NodesSpecifier nodeRegex,
-      @JsonProperty(PROP_PROPERTY_SPEC) NodePropertySpecifier propertySpec) {
-    _nodeRegex = firstNonNull(nodeRegex, NodesSpecifier.ALL);
-    _propertySpec = firstNonNull(propertySpec, NodePropertySpecifier.ALL);
+      @JsonProperty(PROP_NODES) NodesSpecifier nodeRegex,
+      @JsonProperty(PROP_PROPERTIES) NodePropertySpecifier propertySpec) {
+    _nodes = firstNonNull(nodeRegex, NodesSpecifier.ALL);
+    _properties = firstNonNull(propertySpec, NodePropertySpecifier.ALL);
   }
 
   @Override
@@ -41,19 +41,19 @@ public class NodePropertiesQuestion extends Question {
     return "nodeproperties";
   }
 
-  @JsonProperty(PROP_NODE_REGEX)
-  public NodesSpecifier getNodeRegex() {
-    return _nodeRegex;
+  @JsonProperty(PROP_NODES)
+  public NodesSpecifier getNodes() {
+    return _nodes;
   }
 
-  @JsonProperty(PROP_PROPERTY_SPEC)
-  public NodePropertySpecifier getPropertySpec() {
-    return _propertySpec;
+  @JsonProperty(PROP_PROPERTIES)
+  public NodePropertySpecifier getProperties() {
+    return _properties;
   }
 
   @Deprecated // backwards compatibility for older questions
   @JsonProperty("properties")
   void setProperties(List<String> properties) {
-    _propertySpec = new NodePropertySpecifier(StringUtils.join(properties, "|"));
+    _properties = new NodePropertySpecifier(StringUtils.join(properties, "|"));
   }
 }
