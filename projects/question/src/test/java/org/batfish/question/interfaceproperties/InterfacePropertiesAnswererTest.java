@@ -143,7 +143,7 @@ public class InterfacePropertiesAnswererTest {
   @Test
   public void testHsrpGroups() {
     _ib.setHsrpGroups(ImmutableMap.of(1, HsrpGroup.builder().setGroupNumber(1).build())).build();
-    String property = "Hsrp_Groups";
+    String property = InterfacePropertySpecifier.HSRP_GROUPS;
 
     assertThat(getActualValue(property, Schema.set(Schema.STRING)), equalTo(ImmutableSet.of("1")));
   }
@@ -151,7 +151,7 @@ public class InterfacePropertiesAnswererTest {
   @Test
   public void testHsrpGroupsEmpty() {
     _ib.build();
-    String property = "Hsrp_Groups";
+    String property = InterfacePropertySpecifier.HSRP_GROUPS;
 
     assertThat(getActualValue(property, Schema.set(Schema.STRING)), equalTo(ImmutableSet.of()));
   }
@@ -159,7 +159,7 @@ public class InterfacePropertiesAnswererTest {
   @Test
   public void testHsrpVersion() {
     _ib.setHsrpVersion("2").build();
-    String property = "Hsrp_Version";
+    String property = InterfacePropertySpecifier.HSRP_VERSION;
 
     assertThat(getActualValue(property, Schema.STRING), equalTo("2"));
   }
@@ -167,7 +167,7 @@ public class InterfacePropertiesAnswererTest {
   @Test
   public void testHsrpVersionUnset() {
     _ib.build();
-    String property = "Hsrp_Version";
+    String property = InterfacePropertySpecifier.HSRP_VERSION;
 
     assertThat(getActualValue(property, Schema.STRING), nullValue());
   }
