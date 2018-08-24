@@ -111,8 +111,7 @@ public class ReducedReachabilityQuestionTest {
   public void testReducedReachabilityQuestion() throws IOException {
     Question question = new ReducedReachabilityQuestion();
     Batfish batfish = initBatfish();
-    TableAnswerElement answer =
-        (TableAnswerElement) new ReducedReachabilityAnswerer(question, batfish).answer();
+    TableAnswerElement answer = new ReducedReachabilityAnswerer(question, batfish).answer();
     Ip dstIp = new Ip("2.2.2.2");
     assertThat(
         answer,

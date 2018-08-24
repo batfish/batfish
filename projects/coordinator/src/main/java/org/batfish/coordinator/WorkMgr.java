@@ -11,6 +11,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Sets;
 import io.opentracing.ActiveSpan;
@@ -77,15 +78,11 @@ import org.batfish.coordinator.WorkQueueMgr.QueueType;
 import org.batfish.coordinator.config.Settings;
 import org.batfish.datamodel.AnalysisMetadata;
 import org.batfish.datamodel.TestrigMetadata;
-import org.batfish.datamodel.answers.Aggregation;
-import org.batfish.datamodel.answers.AnalysisAnswerMetricsResult;
 import org.batfish.datamodel.answers.Answer;
+import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.AutocompleteSuggestion;
 import org.batfish.datamodel.answers.AutocompleteSuggestion.CompletionType;
-import org.batfish.datamodel.answers.ColumnAggregation;
-import org.batfish.datamodel.answers.ColumnAggregationResult;
-import org.batfish.datamodel.answers.Metrics;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
@@ -702,6 +699,68 @@ public class WorkMgr extends AbstractCoordinator {
     return answer;
   }
 
+  public AnswerMetadata getAnalysisAnswerMetadata(
+      String containerName,
+      String baseSnapshot,
+      String deltaSnapshot,
+      String analysisName,
+      String questionName)
+      throws JsonProcessingException {
+    Path analysisDir = getdirContainerAnalysis(containerName, analysisName);
+    Path testrigDir = getdirTestrig(containerName, baseSnapshot);
+
+    Path questionFile =
+        analysisDir.resolve(
+            Paths.get(
+                BfConsts.RELPATH_QUESTIONS_DIR, questionName, BfConsts.RELPATH_QUESTION_FILE));
+    if (!Files.exists(questionFile)) {
+      throw new BatfishException("Question file for question " + questionName + "not found");
+    }
+    Path answerDir =
+        testrigDir.resolve(
+            Paths.get(
+                BfConsts.RELPATH_ANALYSES_DIR,
+                analysisName,
+                BfConsts.RELPATH_QUESTIONS_DIR,
+                questionName,
+                BfConsts.RELPATH_ENVIRONMENTS_DIR,
+                BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME));
+    if (deltaSnapshot != null) {
+      answerDir =
+          answerDir.resolve(
+              Paths.get(
+                  BfConsts.RELPATH_DELTA,
+                  deltaSnapshot,
+                  BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME));
+    }
+    Path answerMetadataFile = answerDir.resolve(BfConsts.RELPATH_ANSWER_METADATA);
+    AnswerMetadata answerMetadata;
+    if (!Files.exists(answerMetadataFile)) {
+      Answer ans = Answer.failureAnswer("Not answered", null);
+      ans.setStatus(AnswerStatus.NOTFOUND);
+      answerMetadata = new AnswerMetadata(null, AnswerStatus.NOTFOUND);
+    } else {
+      boolean answerIsStale;
+      answerIsStale =
+          CommonUtil.getLastModifiedTime(questionFile)
+                  .compareTo(CommonUtil.getLastModifiedTime(answerMetadataFile))
+              > 0;
+      if (answerIsStale) {
+        answerMetadata = new AnswerMetadata(null, AnswerStatus.STALE);
+      } else {
+        String answerMetadataString = CommonUtil.readFile(answerMetadataFile);
+        try {
+          answerMetadata =
+              BatfishObjectMapper.mapper()
+                  .readValue(answerMetadataString, new TypeReference<AnswerMetadata>() {});
+        } catch (IOException e) {
+          answerMetadata = new AnswerMetadata(null, AnswerStatus.FAILURE);
+        }
+      }
+    }
+    return answerMetadata;
+  }
+
   public Map<String, String> getAnalysisAnswers(
       String containerName,
       String baseTestrig,
@@ -755,6 +814,28 @@ public class WorkMgr extends AbstractCoordinator {
               questionName));
     }
     return retMap;
+  }
+
+  public @Nonnull Map<String, AnswerMetadata> getAnalysisAnswersMetadata(
+      String network,
+      String baseSnapshot,
+      String deltaSnapshot,
+      String analysisName,
+      Set<String> analysisQuestions)
+      throws JsonProcessingException {
+    SortedSet<String> allQuestions = listAnalysisQuestions(network, analysisName);
+    SortedSet<String> questions =
+        analysisQuestions.isEmpty()
+            ? allQuestions
+            : ImmutableSortedSet.copyOf(Sets.intersection(allQuestions, analysisQuestions));
+    ImmutableSortedMap.Builder<String, AnswerMetadata> builder = ImmutableSortedMap.naturalOrder();
+    for (String questionName : questions) {
+      builder.put(
+          questionName,
+          getAnalysisAnswerMetadata(
+              network, baseSnapshot, deltaSnapshot, analysisName, questionName));
+    }
+    return builder.build();
   }
 
   public String getAnalysisQuestion(
@@ -1576,22 +1657,26 @@ public class WorkMgr extends AbstractCoordinator {
     try {
       workItem.setSourceSpan(GlobalTracer.get().activeSpan());
       WorkDetails workDetails = computeWorkDetails(workItem);
-      try {
-        if (TestrigMetadataMgr.getEnvironmentMetadata(
-                    workItem.getContainerName(), workDetails.baseTestrig, workDetails.baseEnv)
-                == null
-            || (workDetails.isDifferential
-                && TestrigMetadataMgr.getEnvironmentMetadata(
-                        workItem.getContainerName(), workDetails.deltaTestrig, workDetails.deltaEnv)
-                    == null)) {
-          throw new BatfishException("Environment metadata not found");
-        }
-      } catch (Exception e) {
-        throw new BatfishException("Snapshot/environment metadata not found.");
+      if (TestrigMetadataMgr.getEnvironmentMetadata(
+              workItem.getContainerName(), workDetails.baseTestrig, workDetails.baseEnv)
+          == null) {
+        throw new BatfishException(
+            String.format(
+                "Snapshot/environment metadata not found for %s/%s",
+                workDetails.baseTestrig, workDetails.baseEnv));
+      }
+      if (workDetails.isDifferential
+          && TestrigMetadataMgr.getEnvironmentMetadata(
+                  workItem.getContainerName(), workDetails.deltaTestrig, workDetails.deltaEnv)
+              == null) {
+        throw new BatfishException(
+            String.format(
+                "Snapshot/environment metadata not found for %s/%s",
+                workDetails.deltaTestrig, workDetails.deltaEnv));
       }
       success = _workQueueMgr.queueUnassignedWork(new QueuedWork(workItem, workDetails));
     } catch (Exception e) {
-      throw new BatfishException("Failed to queue work", e);
+      throw new BatfishException(String.format("Failed to queue work: %s", e.getMessage()), e);
     }
     // as an optimization trigger AssignWork to see if we can schedule this (or another) work
     if (success) {
@@ -1801,106 +1886,6 @@ public class WorkMgr extends AbstractCoordinator {
   public boolean checkContainerExists(String containerName) {
     Path containerDir = getdirContainer(containerName, false);
     return Files.exists(containerDir);
-  }
-
-  /**
-   * Compute metrics for the answer to each question in an analysis.
-   *
-   * @param answers Mapping from questionName to raw answer JSON string
-   * @param aggregations A list of aggregations to be performed on each answer and returned in the
-   *     order specified in the {@link Metrics} contained in each result within the returned {@link
-   *     AnalysisAnswerMetricsResult}
-   * @return A mapping from questionName to the metrics for that question
-   */
-  public @Nonnull Map<String, AnalysisAnswerMetricsResult> getAnalysisAnswersMetrics(
-      Map<String, String> answers, List<ColumnAggregation> aggregations) {
-    return CommonUtil.toImmutableMap(
-        answers,
-        Entry::getKey,
-        rawAnswerByNameEntry ->
-            toAnalysisAnswerMetricsResult(rawAnswerByNameEntry.getValue(), aggregations));
-  }
-
-  @VisibleForTesting
-  @Nonnull
-  AnalysisAnswerMetricsResult toAnalysisAnswerMetricsResult(
-      @Nonnull String rawAnswer, @Nonnull List<ColumnAggregation> aggregations) {
-    AnswerStatus status;
-    try {
-      Answer answer =
-          BatfishObjectMapper.mapper().readValue(rawAnswer, new TypeReference<Answer>() {});
-      status = answer.getStatus();
-      if (status != AnswerStatus.SUCCESS) {
-        return new AnalysisAnswerMetricsResult(null, status);
-      }
-      TableAnswerElement table = (TableAnswerElement) answer.getAnswerElements().get(0);
-      int numRows = table.getRows().size();
-      List<ColumnAggregationResult> aggregationResults =
-          computeColumnAggregations(table, aggregations);
-      return new AnalysisAnswerMetricsResult(new Metrics(aggregationResults, numRows), status);
-    } catch (Exception e) {
-      _logger.errorf(
-          "Failed to convert answer string to AnalysisAnswerMetricsResult: %s", e.getMessage());
-      return new AnalysisAnswerMetricsResult(null, AnswerStatus.FAILURE);
-    }
-  }
-
-  @VisibleForTesting
-  @Nonnull
-  List<ColumnAggregationResult> computeColumnAggregations(
-      @Nonnull TableAnswerElement table, @Nonnull List<ColumnAggregation> aggregations) {
-    return aggregations
-        .stream()
-        .map(columnAggregation -> computeColumnAggregation(table, columnAggregation))
-        .collect(ImmutableList.toImmutableList());
-  }
-
-  @VisibleForTesting
-  @Nonnull
-  ColumnAggregationResult computeColumnAggregation(
-      @Nonnull TableAnswerElement table, ColumnAggregation columnAggregation) {
-    Object value;
-    String column = columnAggregation.getColumn();
-    Aggregation aggregation = columnAggregation.getAggregation();
-    switch (aggregation) {
-      case MAX:
-        value = computeColumnMax(table, column);
-        break;
-      default:
-        _logger.errorf("Unhandled aggregation type: %s", aggregation);
-        value = null;
-        break;
-    }
-    return new ColumnAggregationResult(aggregation, column, value);
-  }
-
-  @VisibleForTesting
-  @Nullable
-  Integer computeColumnMax(@Nonnull TableAnswerElement table, @Nonnull String column) {
-    ColumnMetadata columnMetadata = table.getMetadata().toColumnMap().get(column);
-    if (columnMetadata == null) {
-      String message = String.format("No column named: %s", column);
-      _logger.error(message);
-      throw new IllegalArgumentException(message);
-    }
-    Schema schema = columnMetadata.getSchema();
-    Function<Row, Integer> rowToInteger;
-    if (schema.equals(Schema.INTEGER)) {
-      rowToInteger = r -> r.getInteger(column);
-    } else if (schema.equals(Schema.ISSUE)) {
-      rowToInteger = r -> r.getIssue(column).getSeverity();
-    } else {
-      String message = String.format("Unsupported schema for MAX aggregation: %s", schema);
-      _logger.error(message);
-      throw new UnsupportedOperationException(message);
-    }
-    return table
-        .getRows()
-        .getData()
-        .stream()
-        .map(rowToInteger)
-        .max(Comparator.naturalOrder())
-        .orElse(null);
   }
 
   /**

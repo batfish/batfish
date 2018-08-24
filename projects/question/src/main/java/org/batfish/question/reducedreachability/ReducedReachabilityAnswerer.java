@@ -9,33 +9,37 @@ import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowHistory;
 import org.batfish.datamodel.FlowHistory.FlowHistoryInfo;
-import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
+import org.batfish.datamodel.table.TableDiff;
 import org.batfish.datamodel.table.TableMetadata;
 
 /** An {@link Answerer} for {@link ReducedReachabilityQuestion}. */
 public class ReducedReachabilityAnswerer extends Answerer {
-  static final String COL_FLOW = "flow";
+  public static final String COL_FLOW = "flow";
 
-  static final String COL_BASE_TRACES = "BASE_traces";
+  static final String COL_BASE_TRACES = TableDiff.baseColumnName(getTracesColumnName());
 
-  static final String COL_DELTA_TRACES = "DELTA_traces";
+  static final String COL_DELTA_TRACES = TableDiff.deltaColumnName(getTracesColumnName());
 
   public ReducedReachabilityAnswerer(Question question, IBatfish batfish) {
     super(question, batfish);
   }
 
+  private static String getTracesColumnName() {
+    return "traces";
+  }
+
   @Override
-  public AnswerElement answer() {
+  public TableAnswerElement answer() {
     return answerDiff();
   }
 
   @Override
-  public AnswerElement answerDiff() {
+  public TableAnswerElement answerDiff() {
     Set<Flow> flows = _batfish.bddReducedReachability();
     _batfish.pushBaseEnvironment();
     _batfish.processFlows(flows, false);
@@ -74,7 +78,7 @@ public class ReducedReachabilityAnswerer extends Answerer {
    * Converts a flowHistory object into a set of Rows. Expects that the traces correspond to only
    * one environment.
    */
-  private static Multiset<Row> flowHistoryToRows(FlowHistory flowHistory) {
+  private Multiset<Row> flowHistoryToRows(FlowHistory flowHistory) {
     Multiset<Row> rows = LinkedHashMultiset.create();
     for (FlowHistoryInfo historyInfo : flowHistory.getTraces().values()) {
       rows.add(
@@ -82,9 +86,9 @@ public class ReducedReachabilityAnswerer extends Answerer {
               COL_FLOW,
               historyInfo.getFlow(),
               COL_BASE_TRACES,
-              historyInfo.getPaths().get("BASE"),
+              historyInfo.getPaths().get(Flow.BASE_FLOW_TAG),
               COL_DELTA_TRACES,
-              historyInfo.getPaths().get("DELTA")));
+              historyInfo.getPaths().get(Flow.DELTA_FLOW_TAG)));
     }
     return rows;
   }

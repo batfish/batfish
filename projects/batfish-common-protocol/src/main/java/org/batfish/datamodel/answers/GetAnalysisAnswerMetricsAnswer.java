@@ -15,13 +15,13 @@ public class GetAnalysisAnswerMetricsAnswer {
 
   @JsonCreator
   private static @Nonnull GetAnalysisAnswerMetricsAnswer create(
-      @JsonProperty(BfConsts.PROP_RESULTS) Map<String, AnalysisAnswerMetricsResult> results) {
+      @JsonProperty(BfConsts.PROP_RESULTS) Map<String, AnswerMetadata> results) {
     return new GetAnalysisAnswerMetricsAnswer(firstNonNull(results, ImmutableMap.of()));
   }
 
-  private final Map<String, AnalysisAnswerMetricsResult> _results;
+  private final Map<String, AnswerMetadata> _results;
 
-  public GetAnalysisAnswerMetricsAnswer(@Nonnull Map<String, AnalysisAnswerMetricsResult> results) {
+  public GetAnalysisAnswerMetricsAnswer(@Nonnull Map<String, AnswerMetadata> results) {
     _results = results;
   }
 
@@ -37,7 +37,7 @@ public class GetAnalysisAnswerMetricsAnswer {
   }
 
   @JsonProperty(BfConsts.PROP_RESULTS)
-  public @Nonnull Map<String, AnalysisAnswerMetricsResult> getResults() {
+  public @Nonnull Map<String, AnswerMetadata> getResults() {
     return _results;
   }
 

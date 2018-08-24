@@ -621,6 +621,7 @@ public class Driver {
                       assert outputAnswerSpan != null;
                       if (settings.getTaskId() != null) {
                         batfish.outputAnswerWithLog(answer);
+                        batfish.outputAnswerMetadata(answer);
                       }
                     }
                   }

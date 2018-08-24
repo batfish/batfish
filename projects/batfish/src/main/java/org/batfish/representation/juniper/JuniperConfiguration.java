@@ -2371,8 +2371,16 @@ public final class JuniperConfiguration extends VendorConfiguration {
         JuniperStructureUsage.INTERFACE_OUTGOING_FILTER);
     markConcreteStructure(
         JuniperStructureType.INTERFACE,
+        JuniperStructureUsage.FORWARDING_OPTIONS_DHCP_RELAY_GROUP_INTERFACE,
         JuniperStructureUsage.IKE_GATEWAY_EXTERNAL_INTERFACE,
-        JuniperStructureUsage.IPSEC_VPN_BIND_INTERFACE);
+        JuniperStructureUsage.INTERFACE_SELF_REFERENCE,
+        JuniperStructureUsage.IPSEC_VPN_BIND_INTERFACE,
+        JuniperStructureUsage.ISIS_INTERFACE,
+        JuniperStructureUsage.OSPF_AREA_INTERFACE,
+        JuniperStructureUsage.POLICY_STATEMENT_FROM_INTERFACE,
+        JuniperStructureUsage.ROUTING_INSTANCE_INTERFACE,
+        JuniperStructureUsage.SECURITY_ZONES_SECURITY_ZONES_INTERFACE,
+        JuniperStructureUsage.STATIC_ROUTE_NEXT_HOP_INTERFACE);
     markConcreteStructure(
         JuniperStructureType.POLICY_STATEMENT,
         JuniperStructureUsage.BGP_EXPORT_POLICY,

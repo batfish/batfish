@@ -65,7 +65,7 @@ public class OspfProtocolHelper {
       OspfProcess process, OspfProcess neighborProc, OspfArea area, OspfArea neighborArea) {
     return neighborProc.isAreaBorderRouter()
         && !process.isAreaBorderRouter()
-        && area.getInjectDefaultRoute()
+        && neighborArea.getInjectDefaultRoute()
         && (neighborArea.getStubType() == StubType.STUB
             || (neighborArea.getStubType() == StubType.NSSA
                 && neighborArea.getNssa().getDefaultOriginateType()
