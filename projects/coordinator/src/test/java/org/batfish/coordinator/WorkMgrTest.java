@@ -4,7 +4,6 @@ import static org.batfish.coordinator.WorkMgr.generateFileDateString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -42,18 +41,12 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.WorkItemBuilder;
 import org.batfish.coordinator.AnalysisMetadataMgr.AnalysisType;
 import org.batfish.datamodel.TestrigMetadata;
-import org.batfish.datamodel.answers.Aggregation;
-import org.batfish.datamodel.answers.AnalysisAnswerMetricsResult;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerStatus;
-import org.batfish.datamodel.answers.ColumnAggregation;
-import org.batfish.datamodel.answers.ColumnAggregationResult;
 import org.batfish.datamodel.answers.Issue;
-import org.batfish.datamodel.answers.Metrics;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.pojo.Topology;
-import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
@@ -673,234 +666,6 @@ public class WorkMgrTest {
                 .parse("2018-04-19T12:34:56-08:00")
                 .query(Instant::from)),
         equalTo("foo_2018-04-19T20-34-56.000"));
-  }
-
-  @Test
-  public void testGetAnalysisAnswerMetrics() throws IOException {
-    String checkName = "check1";
-    String columnName = "col";
-    int value = 5;
-
-    Answer testAnswer = new Answer();
-    testAnswer.addAnswerElement(
-        new TableAnswerElement(
-                new TableMetadata(
-                    ImmutableList.of(new ColumnMetadata(columnName, Schema.INTEGER, "foobar")),
-                    new DisplayHints().getTextDesc()))
-            .addRow(Row.of(columnName, value)));
-    testAnswer.setStatus(AnswerStatus.SUCCESS);
-    Map<String, String> answers =
-        ImmutableMap.of(checkName, BatfishObjectMapper.writePrettyString(testAnswer));
-    List<ColumnAggregation> aggregations =
-        ImmutableList.of(new ColumnAggregation(Aggregation.MAX, columnName));
-
-    assertThat(
-        _manager.getAnalysisAnswersMetrics(answers, aggregations),
-        equalTo(
-            ImmutableMap.of(
-                checkName,
-                new AnalysisAnswerMetricsResult(
-                    new Metrics(
-                        ImmutableList.of(
-                            new ColumnAggregationResult(Aggregation.MAX, columnName, value)),
-                        1),
-                    AnswerStatus.SUCCESS))));
-  }
-
-  @Test
-  public void testToAnalysisAnswerMetricsResult() throws IOException {
-    String columnName = "col";
-    int value = 5;
-
-    Answer testAnswer = new Answer();
-    testAnswer.addAnswerElement(
-        new TableAnswerElement(
-                new TableMetadata(
-                    ImmutableList.of(new ColumnMetadata(columnName, Schema.INTEGER, "foobar")),
-                    new DisplayHints().getTextDesc()))
-            .addRow(Row.of(columnName, value)));
-    testAnswer.setStatus(AnswerStatus.SUCCESS);
-    String rawAnswer = BatfishObjectMapper.writePrettyString(testAnswer);
-    List<ColumnAggregation> aggregations =
-        ImmutableList.of(new ColumnAggregation(Aggregation.MAX, columnName));
-
-    assertThat(
-        _manager.toAnalysisAnswerMetricsResult(rawAnswer, aggregations),
-        equalTo(
-            new AnalysisAnswerMetricsResult(
-                new Metrics(
-                    ImmutableList.of(
-                        new ColumnAggregationResult(Aggregation.MAX, columnName, value)),
-                    1),
-                AnswerStatus.SUCCESS)));
-  }
-
-  @Test
-  public void testToAnalysisAnswerMetricsResultUnsuccessfulAnswer() throws IOException {
-    String columnName = "col";
-
-    Answer testAnswer = new Answer();
-    testAnswer.setStatus(AnswerStatus.FAILURE);
-    String rawAnswer = BatfishObjectMapper.writePrettyString(testAnswer);
-    List<ColumnAggregation> aggregations =
-        ImmutableList.of(new ColumnAggregation(Aggregation.MAX, columnName));
-
-    assertThat(
-        _manager.toAnalysisAnswerMetricsResult(rawAnswer, aggregations),
-        equalTo(new AnalysisAnswerMetricsResult(null, AnswerStatus.FAILURE)));
-  }
-
-  @Test
-  public void testToAnalysisAnswerMetricsResultFailedComputation() throws IOException {
-    String columnName = "col";
-    int value = 5;
-
-    Answer testAnswer = new Answer();
-    testAnswer.addAnswerElement(
-        new TableAnswerElement(
-                new TableMetadata(
-                    ImmutableList.of(new ColumnMetadata(columnName, Schema.INTEGER, "foobar")),
-                    new DisplayHints().getTextDesc()))
-            .addRow(Row.of(columnName, value)));
-    testAnswer.setStatus(AnswerStatus.SUCCESS);
-    String rawAnswer = BatfishObjectMapper.writePrettyString(testAnswer);
-    List<ColumnAggregation> aggregations =
-        ImmutableList.of(new ColumnAggregation(Aggregation.MAX, "fakeColumn"));
-
-    assertThat(
-        _manager.toAnalysisAnswerMetricsResult(rawAnswer, aggregations),
-        equalTo(new AnalysisAnswerMetricsResult(null, AnswerStatus.FAILURE)));
-  }
-
-  @Test
-  public void testComputeColumnAggregations() {
-    String columnName = "col";
-    int value = 5;
-
-    TableAnswerElement table =
-        new TableAnswerElement(
-                new TableMetadata(
-                    ImmutableList.of(new ColumnMetadata(columnName, Schema.INTEGER, "foobar")),
-                    new DisplayHints().getTextDesc()))
-            .addRow(Row.of(columnName, value));
-    List<ColumnAggregation> aggregations =
-        ImmutableList.of(new ColumnAggregation(Aggregation.MAX, columnName));
-
-    assertThat(
-        _manager.computeColumnAggregations(table, aggregations),
-        equalTo(ImmutableList.of(new ColumnAggregationResult(Aggregation.MAX, columnName, value))));
-  }
-
-  @Test
-  public void testComputeColumnAggregationMax() {
-    String columnName = "col";
-    int value = 5;
-
-    TableAnswerElement table =
-        new TableAnswerElement(
-                new TableMetadata(
-                    ImmutableList.of(new ColumnMetadata(columnName, Schema.INTEGER, "foobar")),
-                    new DisplayHints().getTextDesc()))
-            .addRow(Row.of(columnName, value));
-    ColumnAggregation columnAggregation = new ColumnAggregation(Aggregation.MAX, columnName);
-
-    assertThat(
-        _manager.computeColumnAggregation(table, columnAggregation),
-        equalTo(new ColumnAggregationResult(Aggregation.MAX, columnName, value)));
-  }
-
-  @Test
-  public void testComputeColumnMaxOneRowInteger() {
-    String columnName = "col";
-    int value = 5;
-
-    TableAnswerElement table =
-        new TableAnswerElement(
-                new TableMetadata(
-                    ImmutableList.of(new ColumnMetadata(columnName, Schema.INTEGER, "foobar")),
-                    new DisplayHints().getTextDesc()))
-            .addRow(Row.of(columnName, value));
-
-    assertThat(_manager.computeColumnMax(table, columnName), equalTo(value));
-  }
-
-  @Test
-  public void testComputeColumnMaxOneRowIssue() {
-    String columnName = "col";
-    int severity = 5;
-    Issue value = new Issue("blah", severity, new Issue.Type("1", "2"));
-
-    TableAnswerElement table =
-        new TableAnswerElement(
-                new TableMetadata(
-                    ImmutableList.of(new ColumnMetadata(columnName, Schema.ISSUE, "foobar")),
-                    new DisplayHints().getTextDesc()))
-            .addRow(Row.of(columnName, value));
-
-    assertThat(_manager.computeColumnMax(table, columnName), equalTo(severity));
-  }
-
-  @Test
-  public void testComputeColumnMaxTwoRows() {
-    String columnName = "col";
-    int value1 = 5;
-    int value2 = 10;
-
-    TableAnswerElement table =
-        new TableAnswerElement(
-                new TableMetadata(
-                    ImmutableList.of(new ColumnMetadata(columnName, Schema.INTEGER, "foobar")),
-                    new DisplayHints().getTextDesc()))
-            .addRow(Row.of(columnName, value1))
-            .addRow(Row.of(columnName, value2));
-
-    assertThat(_manager.computeColumnMax(table, columnName), equalTo(value2));
-  }
-
-  @Test
-  public void testComputeColumnMaxNoRows() {
-    String columnName = "col";
-
-    TableAnswerElement table =
-        new TableAnswerElement(
-            new TableMetadata(
-                ImmutableList.of(new ColumnMetadata(columnName, Schema.INTEGER, "foobar")),
-                new DisplayHints().getTextDesc()));
-
-    assertThat(_manager.computeColumnMax(table, columnName), nullValue());
-  }
-
-  @Test
-  public void testComputeColumnMaxInvalidColumn() {
-    String columnName = "col";
-    String invalidColumnName = "invalid";
-    int value = 5;
-
-    TableAnswerElement table =
-        new TableAnswerElement(
-                new TableMetadata(
-                    ImmutableList.of(new ColumnMetadata(columnName, Schema.INTEGER, "foobar")),
-                    new DisplayHints().getTextDesc()))
-            .addRow(Row.of(columnName, value));
-
-    _thrown.expect(IllegalArgumentException.class);
-    _manager.computeColumnMax(table, invalidColumnName);
-  }
-
-  @Test
-  public void testComputeColumnMaxInvalidSchema() {
-    String columnName = "col";
-    String value = "hello";
-
-    TableAnswerElement table =
-        new TableAnswerElement(
-                new TableMetadata(
-                    ImmutableList.of(new ColumnMetadata(columnName, Schema.STRING, "foobar")),
-                    new DisplayHints().getTextDesc()))
-            .addRow(Row.of(columnName, value));
-
-    _thrown.expect(UnsupportedOperationException.class);
-    _manager.computeColumnMax(table, columnName);
   }
 
   @Test

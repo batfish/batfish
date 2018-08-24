@@ -3,6 +3,7 @@ package org.batfish.main;
 import static org.batfish.common.plugin.PluginConsumer.DEFAULT_HEADER_LENGTH_BYTES;
 import static org.batfish.common.plugin.PluginConsumer.detectFormat;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Throwables;
 import com.google.common.io.Closer;
 import java.io.FileInputStream;
@@ -38,6 +39,7 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Topology;
+import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 
 /** A utility class that abstracts the underlying file system storage used by {@link Batfish}. */
@@ -245,6 +247,108 @@ final class BatfishStorage {
               serializeObject(e.getValue(), currentOutputPath);
               progressCount.incrementAndGet();
             });
+  }
+
+  private @Nullable Path computeAnswerDir(
+      String analysisName,
+      Path questionPath,
+      String baseSnapshotName,
+      String deltaSnapshotName,
+      String questionName,
+      boolean diff) {
+    // TODO: https://github.com/batfish/batfish/issues/2143 don't pass in questionPath
+    Path answerDir;
+
+    if (questionName != null) {
+      // If settings has a question name, we're answering an adhoc question. Set up path accordingly
+      Path testrigDir = getTestrigDir(baseSnapshotName);
+      answerDir =
+          testrigDir.resolve(
+              Paths.get(
+                  BfConsts.RELPATH_ANSWERS_DIR,
+                  questionName,
+                  BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME));
+      if (diff) {
+        answerDir =
+            answerDir.resolve(
+                Paths.get(
+                    BfConsts.RELPATH_DIFF_DIR,
+                    deltaSnapshotName,
+                    BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME));
+      } else {
+        answerDir = answerDir.resolve(Paths.get(BfConsts.RELPATH_STANDARD_DIR));
+      }
+    } else if (analysisName != null && questionPath != null) {
+      // If settings has an analysis name and question path, we're answering an analysis question
+      Path questionDir = questionPath.getParent();
+      answerDir =
+          questionDir.resolve(
+              Paths.get(
+                  BfConsts.RELPATH_ENVIRONMENTS_DIR, BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME));
+      if (diff) {
+        answerDir =
+            answerDir.resolve(
+                Paths.get(
+                    BfConsts.RELPATH_DELTA,
+                    deltaSnapshotName,
+                    BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME));
+      }
+    } else {
+      // If settings has neither a question nor an analysis configured, don't write a file
+      return null;
+    }
+    return answerDir;
+  }
+
+  public void storeAnswer(
+      String answerStr,
+      String analysisName,
+      Path questionPath,
+      String baseSnapshotName,
+      String deltaSnapshotName,
+      String questionName,
+      boolean diff) {
+    Path answerDir =
+        computeAnswerDir(
+            analysisName, questionPath, baseSnapshotName, deltaSnapshotName, questionName, diff);
+    // If settings has neither a question nor an analysis configured, don't write a file
+    if (answerDir == null) {
+      return;
+    }
+    Path answerPath = answerDir.resolve(BfConsts.RELPATH_ANSWER_JSON);
+    answerDir.toFile().mkdirs();
+    CommonUtil.writeFile(answerPath, answerStr);
+  }
+
+  public void storeAnswerMetadata(
+      AnswerMetadata answerMetrics,
+      String analysisName,
+      Path questionPath,
+      String baseSnapshotName,
+      String deltaSnapshotName,
+      String questionName,
+      boolean diff) {
+    // TODO: don't pass in questionPath
+    String metricsStr;
+    try {
+      metricsStr = BatfishObjectMapper.writePrettyString(answerMetrics);
+    } catch (JsonProcessingException e) {
+      throw new BatfishException("Could not write answer metrics", e);
+    }
+    Path answerDir =
+        computeAnswerDir(
+            analysisName, questionPath, baseSnapshotName, deltaSnapshotName, questionName, diff);
+    if (answerDir == null) {
+      // If settings has neither a question nor an analysis configured, don't write a file
+      return;
+    }
+    answerDir.toFile().mkdirs();
+    if (!answerDir.toFile().exists() && !answerDir.toFile().mkdirs()) {
+      throw new BatfishException(
+          String.format("Unable to create a answer metadata directory '%s'", answerDir));
+    }
+    Path answerMetricsPath = answerDir.resolve(BfConsts.RELPATH_ANSWER_METADATA);
+    CommonUtil.writeFile(answerMetricsPath, metricsStr);
   }
 
   /**

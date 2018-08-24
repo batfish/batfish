@@ -133,6 +133,7 @@ import org.batfish.datamodel.answers.AclLinesAnswerElementInterface;
 import org.batfish.datamodel.answers.AclLinesAnswerElementInterface.AclSpecs;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerElement;
+import org.batfish.datamodel.answers.AnswerMetadataUtil;
 import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.AnswerSummary;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
@@ -613,6 +614,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
             initAnalysisQuestionPath(analysisName, questionName);
             try {
               outputAnswer(currentAnswer);
+              outputAnswerMetadata(currentAnswer);
               ae.getAnswers().put(questionName, currentAnswer);
             } catch (Exception e) {
               Answer errorAnswer = new Answer();
@@ -2765,6 +2767,17 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
+  void outputAnswerMetadata(Answer answer) {
+    _storage.storeAnswerMetadata(
+        AnswerMetadataUtil.computeAnswerMetadata(answer, _logger),
+        _settings.getAnalysisName(),
+        _settings.getQuestionPath(),
+        _baseTestrigSettings.getName(),
+        _deltaTestrigSettings.getName(),
+        _settings.getQuestionName(),
+        _settings.getDiffQuestion());
+  }
+
   private ParserRuleContext parse(BatfishCombinedParser<?, ?> parser) {
     return parse(parser, _logger, _settings);
   }
@@ -4708,46 +4721,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private void writeJsonAnswer(String structuredAnswerString) {
-    // TODO Reduce calls to _settings to deobfuscate this method's purpose and dependencies.
-    // Purpose: to write answer json files for adhoc and analysis questions
-    // Dependencies: Container, tr & env, (delta tr & env), question name, analysis name if present
-    boolean diff = _settings.getDiffQuestion();
-    String baseEnvName = _testrigSettings.getEnvironmentSettings().getName();
-    Path answerDir;
-
-    if (_settings.getQuestionName() != null) {
-      // If settings has a question name, we're answering an adhoc question. Set up path accordingly
-      Path testrigDir = _testrigSettings.getBasePath();
-      answerDir =
-          testrigDir.resolve(
-              Paths.get(BfConsts.RELPATH_ANSWERS_DIR, _settings.getQuestionName(), baseEnvName));
-      if (diff) {
-        String deltaTestrigName = _deltaTestrigSettings.getName();
-        String deltaEnvName = _deltaTestrigSettings.getEnvironmentSettings().getName();
-        answerDir =
-            answerDir.resolve(Paths.get(BfConsts.RELPATH_DIFF_DIR, deltaTestrigName, deltaEnvName));
-      } else {
-        answerDir = answerDir.resolve(Paths.get(BfConsts.RELPATH_STANDARD_DIR));
-      }
-    } else if (_settings.getAnalysisName() != null && _settings.getQuestionPath() != null) {
-      // If settings has an analysis name and question path, we're answering an analysis question
-      Path questionDir = _settings.getQuestionPath().getParent();
-      answerDir = questionDir.resolve(Paths.get(BfConsts.RELPATH_ENVIRONMENTS_DIR, baseEnvName));
-      if (diff) {
-        answerDir =
-            answerDir.resolve(
-                Paths.get(
-                    BfConsts.RELPATH_DELTA,
-                    _deltaTestrigSettings.getName(),
-                    _deltaTestrigSettings.getEnvironmentSettings().getName()));
-      }
-    } else {
-      // If settings has neither a question nor an analysis configured, don't write a file
-      return;
-    }
-    Path structuredAnswerPath = answerDir.resolve(BfConsts.RELPATH_ANSWER_JSON);
-    answerDir.toFile().mkdirs();
-    CommonUtil.writeFile(structuredAnswerPath, structuredAnswerString);
+    _storage.storeAnswer(
+        structuredAnswerString,
+        _settings.getAnalysisName(),
+        _settings.getQuestionPath(),
+        _baseTestrigSettings.getName(),
+        _deltaTestrigSettings.getName(),
+        _settings.getQuestionName(),
+        _settings.getDiffQuestion());
   }
 
   private void writeJsonAnswerWithLog(@Nullable String logString, String structuredAnswerString) {
