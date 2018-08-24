@@ -275,7 +275,8 @@ public final class ReachFilterAnswererTest {
   @Test
   public void testReachFilter_permit_headerSpace() {
     ReachFilterParameters.Builder paramsBuilder =
-        ReachFilterParameters.builder()
+        _defaultReachFilterParams
+            .toBuilder()
             .setDestinationIpSpaceSpecifier(new ConstantIpSpaceSpecifier(IP0.toIpSpace()))
             .setSourceIpSpaceSpecifier(new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE))
             .setHeaderSpace(HeaderSpace.builder().build());
@@ -445,7 +446,8 @@ public final class ReachFilterAnswererTest {
   public void testReachFilter_ACCEPT_ALL_dstIpConstraint() {
     Ip constraintIp = new Ip("21.21.21.21");
     ReachFilterParameters params =
-        ReachFilterParameters.builder()
+        _defaultReachFilterParams
+            .toBuilder()
             .setDestinationIpSpaceSpecifier(new ConstantIpSpaceSpecifier(constraintIp.toIpSpace()))
             .setSourceIpSpaceSpecifier(new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE))
             .setHeaderSpace(new HeaderSpace())
@@ -458,7 +460,8 @@ public final class ReachFilterAnswererTest {
   public void testReachFilter_ACCEPT_ALL_srcIpConstraint() {
     Ip constraintIp = new Ip("21.21.21.21");
     ReachFilterParameters params =
-        ReachFilterParameters.builder()
+        _defaultReachFilterParams
+            .toBuilder()
             .setDestinationIpSpaceSpecifier(new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE))
             .setSourceIpSpaceSpecifier(new ConstantIpSpaceSpecifier(constraintIp.toIpSpace()))
             .setHeaderSpace(new HeaderSpace())
@@ -473,7 +476,8 @@ public final class ReachFilterAnswererTest {
     hs.setSrcPorts(Collections.singletonList(new SubRange(1111, 1111)));
     hs.setDstPorts(Collections.singletonList(new SubRange(2222, 2222)));
     ReachFilterParameters params =
-        ReachFilterParameters.builder()
+        _defaultReachFilterParams
+            .toBuilder()
             .setDestinationIpSpaceSpecifier(new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE))
             .setSourceIpSpaceSpecifier(new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE))
             .setHeaderSpace(hs)
