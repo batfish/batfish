@@ -33,6 +33,7 @@ import java.util.TreeSet;
 import org.batfish.common.AnalysisAnswerOptions;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BfConsts;
+import org.batfish.common.ColumnFilter;
 import org.batfish.common.ColumnSortOption;
 import org.batfish.common.Container;
 import org.batfish.common.WorkItem;
@@ -688,6 +689,7 @@ public class WorkMgrTest {
     AnalysisAnswerOptions options =
         new AnalysisAnswerOptions(
             ImmutableSet.of(columnName),
+            ImmutableList.of(),
             maxRows,
             rowOffset,
             ImmutableList.of(new ColumnSortOption(columnName, true)));
@@ -720,6 +722,7 @@ public class WorkMgrTest {
     AnalysisAnswerOptions options =
         new AnalysisAnswerOptions(
             ImmutableSet.of(columnName),
+            ImmutableList.of(),
             maxRows,
             rowOffset,
             ImmutableList.of(new ColumnSortOption(columnName, true)));
@@ -740,6 +743,7 @@ public class WorkMgrTest {
     AnalysisAnswerOptions options =
         new AnalysisAnswerOptions(
             ImmutableSet.of(columnName),
+            ImmutableList.of(),
             maxRows,
             rowOffset,
             ImmutableList.of(new ColumnSortOption(columnName, true)));
@@ -759,6 +763,7 @@ public class WorkMgrTest {
     AnalysisAnswerOptions options =
         new AnalysisAnswerOptions(
             ImmutableSet.of(columnName),
+            ImmutableList.of(),
             maxRows,
             rowOffset,
             ImmutableList.of(new ColumnSortOption(columnName, true)));
@@ -781,12 +786,14 @@ public class WorkMgrTest {
     AnalysisAnswerOptions optionsSorting =
         new AnalysisAnswerOptions(
             ImmutableSet.of(columnName),
+            ImmutableList.of(),
             Integer.MAX_VALUE,
             0,
             ImmutableList.of(new ColumnSortOption(columnName, false)));
     AnalysisAnswerOptions optionsSortingReverse =
         new AnalysisAnswerOptions(
             ImmutableSet.of(columnName),
+            ImmutableList.of(),
             Integer.MAX_VALUE,
             0,
             ImmutableList.of(new ColumnSortOption(columnName, true)));
@@ -812,10 +819,18 @@ public class WorkMgrTest {
     table.addRow(row2);
     AnalysisAnswerOptions optionsNoOffset =
         new AnalysisAnswerOptions(
-            ImmutableSet.of(columnName), Integer.MAX_VALUE, 0, ImmutableList.of());
+            ImmutableSet.of(columnName),
+            ImmutableList.of(),
+            Integer.MAX_VALUE,
+            0,
+            ImmutableList.of());
     AnalysisAnswerOptions optionsOffset =
         new AnalysisAnswerOptions(
-            ImmutableSet.of(columnName), Integer.MAX_VALUE, 1, ImmutableList.of());
+            ImmutableSet.of(columnName),
+            ImmutableList.of(),
+            Integer.MAX_VALUE,
+            1,
+            ImmutableList.of());
 
     assertThat(
         _manager.processAnalysisAnswerTable(table, optionsNoOffset).getRowsList(),
@@ -823,6 +838,37 @@ public class WorkMgrTest {
     assertThat(
         _manager.processAnalysisAnswerTable(table, optionsOffset).getRowsList(),
         equalTo(ImmutableList.of(row2)));
+  }
+
+  @Test
+  public void testProcessAnalysisAnswerTableFiltered() {
+    String columnName = "val";
+    TableAnswerElement table =
+        new TableAnswerElement(
+            new TableMetadata(
+                ImmutableList.of(new ColumnMetadata(columnName, Schema.STRING, "foobar"))));
+    String whitelistedValue = "hello";
+    Row row1 = Row.of(columnName, whitelistedValue);
+    Row row2 = Row.of(columnName, "goodbye");
+    table.addRow(row1);
+    table.addRow(row2);
+    AnalysisAnswerOptions optionsNotFiltered =
+        new AnalysisAnswerOptions(
+            ImmutableSet.of(), ImmutableList.of(), Integer.MAX_VALUE, 0, ImmutableList.of());
+    AnalysisAnswerOptions optionsFiltered =
+        new AnalysisAnswerOptions(
+            ImmutableSet.of(),
+            ImmutableList.of(new ColumnFilter(columnName, whitelistedValue)),
+            Integer.MAX_VALUE,
+            0,
+            ImmutableList.of());
+
+    assertThat(
+        _manager.processAnalysisAnswerTable(table, optionsNotFiltered).getRowsList(),
+        equalTo(ImmutableList.of(row1, row2)));
+    assertThat(
+        _manager.processAnalysisAnswerTable(table, optionsFiltered).getRowsList(),
+        equalTo(ImmutableList.of(row1)));
   }
 
   @Test
@@ -838,9 +884,9 @@ public class WorkMgrTest {
     table.addRow(row2);
     AnalysisAnswerOptions optionsNoLimit =
         new AnalysisAnswerOptions(
-            ImmutableSet.of(columnName), Integer.MAX_VALUE, 0, ImmutableList.of());
+            ImmutableSet.of(), ImmutableList.of(), Integer.MAX_VALUE, 0, ImmutableList.of());
     AnalysisAnswerOptions optionsLimit =
-        new AnalysisAnswerOptions(ImmutableSet.of(columnName), 1, 0, ImmutableList.of());
+        new AnalysisAnswerOptions(ImmutableSet.of(), ImmutableList.of(), 1, 0, ImmutableList.of());
 
     assertThat(
         _manager.processAnalysisAnswerTable(table, optionsNoLimit).getRowsList(),
@@ -851,7 +897,7 @@ public class WorkMgrTest {
   }
 
   @Test
-  public void testProcessAnalysisAnswerTableFilter() {
+  public void testProcessAnalysisAnswerTableProject() {
     String columnName = "val";
     String otherColumnName = "val2";
     TableMetadata originalMetadata =
@@ -864,21 +910,26 @@ public class WorkMgrTest {
     Row row2 = Row.of(columnName, 2, otherColumnName, 4);
     table.addRow(row1);
     table.addRow(row2);
-    AnalysisAnswerOptions optionsNoFilter =
-        new AnalysisAnswerOptions(ImmutableSet.of(), Integer.MAX_VALUE, 0, ImmutableList.of());
-    AnalysisAnswerOptions optionsFilter =
+    AnalysisAnswerOptions optionsNoProject =
         new AnalysisAnswerOptions(
-            ImmutableSet.of(columnName), Integer.MAX_VALUE, 0, ImmutableList.of());
+            ImmutableSet.of(), ImmutableList.of(), Integer.MAX_VALUE, 0, ImmutableList.of());
+    AnalysisAnswerOptions optionsProject =
+        new AnalysisAnswerOptions(
+            ImmutableSet.of(columnName),
+            ImmutableList.of(),
+            Integer.MAX_VALUE,
+            0,
+            ImmutableList.of());
 
-    Row row1Filtered = Row.of(columnName, 1);
-    Row row2Filtered = Row.of(columnName, 2);
+    Row row1Projected = Row.of(columnName, 1);
+    Row row2Projected = Row.of(columnName, 2);
 
     assertThat(
-        _manager.processAnalysisAnswerTable(table, optionsNoFilter).getRowsList(),
+        _manager.processAnalysisAnswerTable(table, optionsNoProject).getRowsList(),
         equalTo(ImmutableList.of(row1, row2)));
     assertThat(
-        _manager.processAnalysisAnswerTable(table, optionsFilter).getRowsList(),
-        equalTo(ImmutableList.of(row1Filtered, row2Filtered)));
+        _manager.processAnalysisAnswerTable(table, optionsProject).getRowsList(),
+        equalTo(ImmutableList.of(row1Projected, row2Projected)));
   }
 
   @Test
