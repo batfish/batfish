@@ -8,6 +8,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import org.batfish.common.BatfishLogger;
 import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.table.ColumnMetadata;
@@ -80,7 +81,10 @@ public class AnswerMetadataUtilTest {
 
     assertThat(
         AnswerMetadataUtil.computeAnswerMetadata(testAnswer, _logger),
-        equalTo(new AnswerMetadata(null, AnswerStatus.FAILURE)));
+        equalTo(
+            new AnswerMetadata(
+                new Metrics(ImmutableMap.of(columnName, ImmutableMap.of(Aggregation.MAX)), 1),
+                AnswerStatus.SUCCESS)));
   }
 
   @Test
@@ -99,7 +103,7 @@ public class AnswerMetadataUtilTest {
 
     assertThat(
         AnswerMetadataUtil.computeColumnAggregations(table, aggregations, _logger),
-        equalTo(ImmutableMap.of(columnName, ImmutableMap.of(Aggregation.MAX, value))));
+        equalTo(ImmutableMap.of(columnName, ImmutableMap.of(Aggregation.MAX, Optional.of(value)))));
   }
 
   @Test
@@ -117,7 +121,7 @@ public class AnswerMetadataUtilTest {
 
     assertThat(
         AnswerMetadataUtil.computeColumnAggregation(table, columnAggregation, _logger),
-        equalTo(new ColumnAggregationResult(Aggregation.MAX, columnName, value)));
+        equalTo(new ColumnAggregationResult(Aggregation.MAX, columnName, Optional.of(value))));
   }
 
   @Test
@@ -132,7 +136,9 @@ public class AnswerMetadataUtilTest {
                     new DisplayHints().getTextDesc()))
             .addRow(Row.of(columnName, value));
 
-    assertThat(AnswerMetadataUtil.computeColumnMax(table, columnName, _logger), equalTo(value));
+    assertThat(
+        AnswerMetadataUtil.computeColumnMax(table, columnName, _logger),
+        equalTo(Optional.of(value)));
   }
 
   @Test
@@ -148,7 +154,9 @@ public class AnswerMetadataUtilTest {
                     new DisplayHints().getTextDesc()))
             .addRow(Row.of(columnName, value));
 
-    assertThat(AnswerMetadataUtil.computeColumnMax(table, columnName, _logger), equalTo(severity));
+    assertThat(
+        AnswerMetadataUtil.computeColumnMax(table, columnName, _logger),
+        equalTo(Optional.of(severity)));
   }
 
   @Test
@@ -165,7 +173,9 @@ public class AnswerMetadataUtilTest {
             .addRow(Row.of(columnName, value1))
             .addRow(Row.of(columnName, value2));
 
-    assertThat(AnswerMetadataUtil.computeColumnMax(table, columnName, _logger), equalTo(value2));
+    assertThat(
+        AnswerMetadataUtil.computeColumnMax(table, columnName, _logger),
+        equalTo(Optional.of(value2)));
   }
 
   @Test
@@ -178,7 +188,8 @@ public class AnswerMetadataUtilTest {
                 ImmutableList.of(new ColumnMetadata(columnName, Schema.INTEGER, "foobar")),
                 new DisplayHints().getTextDesc()));
 
-    assertThat(AnswerMetadataUtil.computeColumnMax(table, columnName, _logger), nullValue());
+    assertThat(
+        AnswerMetadataUtil.computeColumnMax(table, columnName, _logger), equalTo(Optional.empty()));
   }
 
   @Test
@@ -210,7 +221,7 @@ public class AnswerMetadataUtilTest {
                     new DisplayHints().getTextDesc()))
             .addRow(Row.of(columnName, value));
 
-    _thrown.expect(UnsupportedOperationException.class);
-    AnswerMetadataUtil.computeColumnMax(table, columnName, _logger);
+    assertThat(
+        AnswerMetadataUtil.computeColumnMax(table, columnName, _logger), equalTo(Optional.empty()));
   }
 }

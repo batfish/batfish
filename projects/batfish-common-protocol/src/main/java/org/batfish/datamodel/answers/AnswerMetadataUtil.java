@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.function.Function;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -90,7 +91,7 @@ public final class AnswerMetadataUtil {
       @Nonnull TableAnswerElement table,
       @Nonnull ColumnAggregation columnAggregation,
       @Nonnull BatfishLogger logger) {
-    Object value;
+    Optional<? extends Object> value;
     String column = columnAggregation.getColumn();
     Aggregation aggregation = columnAggregation.getAggregation();
     switch (aggregation) {
@@ -98,16 +99,16 @@ public final class AnswerMetadataUtil {
         value = computeColumnMax(table, column, logger);
         break;
       default:
-        logger.errorf("Unhandled aggregation type: %s\n", aggregation);
-        value = null;
-        break;
+        String message = String.format("Unhandled aggregation type: %s", aggregation);
+        logger.errorf("%s\n", message);
+        throw new IllegalArgumentException(message);
     }
     return new ColumnAggregationResult(aggregation, column, value);
   }
 
   @VisibleForTesting
   @Nullable
-  static Integer computeColumnMax(
+  static Optional<Integer> computeColumnMax(
       @Nonnull TableAnswerElement table, @Nonnull String column, @Nonnull BatfishLogger logger) {
     ColumnMetadata columnMetadata = table.getMetadata().toColumnMap().get(column);
     if (columnMetadata == null) {
@@ -122,16 +123,9 @@ public final class AnswerMetadataUtil {
     } else if (schema.equals(Schema.ISSUE)) {
       rowToInteger = r -> r.getIssue(column).getSeverity();
     } else {
-      String message = String.format("Unsupported schema for MAX aggregation: %s", schema);
-      logger.errorf("%s\n", message);
-      throw new UnsupportedOperationException(message);
+      // unsupported
+      return Optional.empty();
     }
-    return table
-        .getRows()
-        .getData()
-        .stream()
-        .map(rowToInteger)
-        .max(Comparator.naturalOrder())
-        .orElse(null);
+    return table.getRows().getData().stream().map(rowToInteger).max(Comparator.naturalOrder());
   }
 }
