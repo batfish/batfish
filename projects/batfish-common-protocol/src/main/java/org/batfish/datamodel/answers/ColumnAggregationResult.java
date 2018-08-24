@@ -6,6 +6,7 @@ import static java.util.Objects.requireNonNull;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
+import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BfConsts;
@@ -16,8 +17,9 @@ public class ColumnAggregationResult {
   private static @Nonnull ColumnAggregationResult create(
       @JsonProperty(BfConsts.PROP_AGGREGATION) Aggregation aggregation,
       @JsonProperty(BfConsts.PROP_COLUMN) String column,
-      @JsonProperty(BfConsts.PROP_VALUE) Object value) {
-    return new ColumnAggregationResult(requireNonNull(aggregation), requireNonNull(column), value);
+      @JsonProperty(BfConsts.PROP_VALUE) Optional<? extends Object> value) {
+    return new ColumnAggregationResult(
+        requireNonNull(aggregation), requireNonNull(column), requireNonNull(value));
   }
 
   private final Aggregation _aggregation;
@@ -27,7 +29,7 @@ public class ColumnAggregationResult {
   private final Object _value;
 
   public ColumnAggregationResult(
-      @Nonnull Aggregation aggregation, @Nonnull String column, @Nullable Object value) {
+      @Nonnull Aggregation aggregation, @Nonnull String column, @Nonnull Object value) {
     _aggregation = aggregation;
     _column = column;
     _value = value;
@@ -58,7 +60,7 @@ public class ColumnAggregationResult {
   }
 
   @JsonProperty(BfConsts.PROP_VALUE)
-  public @Nullable Object getValue() {
+  public @Nonnull Object getValue() {
     return _value;
   }
 

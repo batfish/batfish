@@ -3052,7 +3052,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitBpa_as(Bpa_asContext ctx) {
-    int peerAs = toInt(ctx.as);
+    long peerAs = toLong(ctx.as);
     _currentBgpGroup.setPeerAs(peerAs);
   }
 
