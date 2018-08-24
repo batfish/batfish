@@ -23,6 +23,17 @@ public class HeaderSpaceMatchersImpl {
     }
   }
 
+  static class HasDstPorts extends FeatureMatcher<HeaderSpace, SortedSet<SubRange>> {
+    HasDstPorts(@Nonnull Matcher<? super SortedSet<SubRange>> subMatcher) {
+      super(subMatcher, "A HeaderSpace with dstPorts:", "dstPorts");
+    }
+
+    @Override
+    protected SortedSet<SubRange> featureValueOf(HeaderSpace headerSpace) {
+      return headerSpace.getDstPorts();
+    }
+  }
+
   static class HasIpProtocols extends FeatureMatcher<HeaderSpace, SortedSet<IpProtocol>> {
     HasIpProtocols(@Nonnull Matcher<? super SortedSet<IpProtocol>> subMatcher) {
       super(subMatcher, "A HeaderSpace with ipProtocols:", "ipProtocols");
