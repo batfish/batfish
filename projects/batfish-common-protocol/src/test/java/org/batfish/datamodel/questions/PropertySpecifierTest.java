@@ -1,9 +1,5 @@
 package org.batfish.datamodel.questions;
 
-import static org.batfish.datamodel.questions.NodePropertySpecifier.DEFAULT_INBOUND_ACTION;
-import static org.batfish.datamodel.questions.NodePropertySpecifier.INTERFACES;
-import static org.batfish.datamodel.questions.NodePropertySpecifier.NTP_SERVERS;
-import static org.batfish.datamodel.questions.NodePropertySpecifier.NTP_SOURCE_INTERFACE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 
@@ -34,7 +30,9 @@ public class PropertySpecifierTest {
 
   @Test
   public void baseAutoComplete() {
-    Set<String> properties = ImmutableSet.of("abc", NTP_SERVERS, NTP_SOURCE_INTERFACE);
+    Set<String> properties =
+        ImmutableSet.of(
+            "abc", NodePropertySpecifier.NTP_SERVERS, NodePropertySpecifier.NTP_SOURCE_INTERFACE);
 
     // null or empty string should yield all options, with .* as the first one
     assertThat(
@@ -50,8 +48,8 @@ public class PropertySpecifierTest {
         equalTo(
             ImmutableList.of(
                 new AutocompleteSuggestion(".*ntp.*", false),
-                new AutocompleteSuggestion(NTP_SERVERS, false),
-                new AutocompleteSuggestion(NTP_SOURCE_INTERFACE, false))));
+                new AutocompleteSuggestion(NodePropertySpecifier.NTP_SERVERS, false),
+                new AutocompleteSuggestion(NodePropertySpecifier.NTP_SOURCE_INTERFACE, false))));
   }
 
   @Test
@@ -98,7 +96,7 @@ public class PropertySpecifierTest {
   public void fillPropertyForcedString() {
     Configuration configuration = new Configuration("hostname", ConfigurationFormat.CISCO_IOS);
     configuration.setDefaultInboundAction(LineAction.PERMIT);
-    String property = DEFAULT_INBOUND_ACTION;
+    String property = NodePropertySpecifier.DEFAULT_INBOUND_ACTION;
     PropertyDescriptor<Configuration> propertyDescriptor =
         NodePropertySpecifier.JAVA_MAP.get(property);
     RowBuilder row = Row.builder();
@@ -113,7 +111,7 @@ public class PropertySpecifierTest {
   @Test
   public void fillPropertyListEmpty() {
     Configuration configuration = new Configuration("hostname", ConfigurationFormat.CISCO_IOS);
-    String property = NTP_SERVERS;
+    String property = NodePropertySpecifier.NTP_SERVERS;
     PropertyDescriptor<Configuration> propertyDescriptor =
         NodePropertySpecifier.JAVA_MAP.get(property);
     RowBuilder row = Row.builder();
@@ -128,7 +126,7 @@ public class PropertySpecifierTest {
   public void fillPropertyListNonEmpty() {
     Configuration configuration = new Configuration("hostname", ConfigurationFormat.CISCO_IOS);
     configuration.setNtpServers(ImmutableSortedSet.of("sa", "sb"));
-    String property = NTP_SERVERS;
+    String property = NodePropertySpecifier.NTP_SERVERS;
     PropertyDescriptor<Configuration> propertyDescriptor =
         NodePropertySpecifier.JAVA_MAP.get(property);
     RowBuilder row = Row.builder();
@@ -144,7 +142,7 @@ public class PropertySpecifierTest {
   public void fillPropertyMap() {
     Configuration configuration = new Configuration("hostname", ConfigurationFormat.CISCO_IOS);
     configuration.setInterfaces(ImmutableSortedMap.of("i1", new Interface("i1")));
-    String property = INTERFACES;
+    String property = NodePropertySpecifier.INTERFACES;
     PropertyDescriptor<Configuration> propertyDescriptor =
         NodePropertySpecifier.JAVA_MAP.get(property);
     RowBuilder row = Row.builder();
@@ -158,7 +156,7 @@ public class PropertySpecifierTest {
   @Test
   public void fillPropertyNull() {
     Configuration configuration = new Configuration("hostname", ConfigurationFormat.CISCO_IOS);
-    String property = NTP_SOURCE_INTERFACE;
+    String property = NodePropertySpecifier.NTP_SOURCE_INTERFACE;
     PropertyDescriptor<Configuration> propertyDescriptor =
         NodePropertySpecifier.JAVA_MAP.get(property);
     RowBuilder row = Row.builder();
