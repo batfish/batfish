@@ -5,8 +5,8 @@
       "es-domain" : {
         "configurationFormat" : "AWS",
         "name" : "es-domain",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "HOST",
         "domainName" : "aws",
         "interfaces" : {
@@ -72,7 +72,7 @@
             "name" : "~SECURITY_GROUP_EGRESS_ACL~",
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -107,7 +107,7 @@
                 }
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -127,7 +127,7 @@
             "name" : "~SECURITY_GROUP_INGRESS_ACL~",
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -162,7 +162,7 @@
                 }
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -218,8 +218,8 @@
       "igw-068fee63" : {
         "configurationFormat" : "AWS",
         "name" : "igw-068fee63",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "domainName" : "aws",
         "interfaces" : {
@@ -278,8 +278,8 @@
       "igw-9b93ddfc" : {
         "configurationFormat" : "AWS",
         "name" : "igw-9b93ddfc",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "domainName" : "aws",
         "interfaces" : {
@@ -338,8 +338,8 @@
       "igw-fac5839d" : {
         "configurationFormat" : "AWS",
         "name" : "igw-fac5839d",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "domainName" : "aws",
         "interfaces" : {
@@ -398,8 +398,8 @@
       "lhr-border-02" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "lhr-border-02",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
         "domainName" : "demo.com",
         "ikeGateways" : {
@@ -936,7 +936,7 @@
             "name" : "2001",
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -957,7 +957,7 @@
                 "name" : "permit icmp 10.100.0.0 0.0.255.255 any"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -985,7 +985,7 @@
             "name" : "LIMIT_PEER",
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -1003,7 +1003,7 @@
                 "name" : "permit ip 10.1.30.0 0.0.0.255 any"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -1028,7 +1028,7 @@
             "name" : "MATCH_ALL_BGP",
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -1154,29 +1154,29 @@
         },
         "routeFilterLists" : {
           "MATCH_ALL_BGP" : {
-            "name" : "MATCH_ALL_BGP",
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "ipWildcard" : "0.0.0.0/0",
                 "lengthRange" : "0-32"
               }
-            ]
+            ],
+            "name" : "MATCH_ALL_BGP"
           },
           "PROTECT_LOOPBACK" : {
-            "name" : "PROTECT_LOOPBACK",
             "lines" : [
               {
-                "action" : "REJECT",
+                "action" : "DENY",
                 "ipWildcard" : "10.10.255.0/28",
                 "lengthRange" : "28-32"
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "ipWildcard" : "0.0.0.0/0",
                 "lengthRange" : "0-32"
               }
-            ]
+            ],
+            "name" : "PROTECT_LOOPBACK"
           }
         },
         "routingPolicies" : {
@@ -2043,8 +2043,8 @@
       "subnet-073b8061" : {
         "configurationFormat" : "AWS",
         "name" : "subnet-073b8061",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "domainName" : "aws",
         "interfaces" : {
@@ -2108,7 +2108,7 @@
             "name" : "acl-7b78771d_egress",
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -2118,7 +2118,7 @@
                 "name" : "100 ALL ALL 0.0.0.0/0 ALLOW"
               },
               {
-                "action" : "REJECT",
+                "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -2135,7 +2135,7 @@
             "name" : "acl-7b78771d_ingress",
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -2145,7 +2145,7 @@
                 "name" : "100 ALL ALL 0.0.0.0/0 ALLOW"
               },
               {
-                "action" : "REJECT",
+                "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -2190,8 +2190,8 @@
       "subnet-1641fa70" : {
         "configurationFormat" : "AWS",
         "name" : "subnet-1641fa70",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "domainName" : "aws",
         "interfaces" : {
@@ -2255,7 +2255,7 @@
             "name" : "acl-7b78771d_egress",
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -2265,7 +2265,7 @@
                 "name" : "100 ALL ALL 0.0.0.0/0 ALLOW"
               },
               {
-                "action" : "REJECT",
+                "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -2282,7 +2282,7 @@
             "name" : "acl-7b78771d_ingress",
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -2292,7 +2292,7 @@
                 "name" : "100 ALL ALL 0.0.0.0/0 ALLOW"
               },
               {
-                "action" : "REJECT",
+                "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -2337,8 +2337,8 @@
       "subnet-1f315846" : {
         "configurationFormat" : "AWS",
         "name" : "subnet-1f315846",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "domainName" : "aws",
         "interfaces" : {
@@ -2402,7 +2402,7 @@
             "name" : "acl-4db39c28_egress",
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -2412,7 +2412,7 @@
                 "name" : "100 ALL ALL 0.0.0.0/0 ALLOW"
               },
               {
-                "action" : "REJECT",
+                "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -2429,7 +2429,7 @@
             "name" : "acl-4db39c28_ingress",
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -2451,7 +2451,7 @@
                 "name" : "100 TCP [3306,3306] 162.243.144.192/32 ALLOW"
               },
               {
-                "action" : "REJECT",
+                "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -2496,8 +2496,8 @@
       "subnet-30398256" : {
         "configurationFormat" : "AWS",
         "name" : "subnet-30398256",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "domainName" : "aws",
         "interfaces" : {
@@ -2561,7 +2561,7 @@
             "name" : "acl-7b78771d_egress",
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -2571,7 +2571,7 @@
                 "name" : "100 ALL ALL 0.0.0.0/0 ALLOW"
               },
               {
-                "action" : "REJECT",
+                "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -2588,7 +2588,7 @@
             "name" : "acl-7b78771d_ingress",
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -2598,7 +2598,7 @@
                 "name" : "100 ALL ALL 0.0.0.0/0 ALLOW"
               },
               {
-                "action" : "REJECT",
+                "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -2643,8 +2643,8 @@
       "subnet-62f14104" : {
         "configurationFormat" : "AWS",
         "name" : "subnet-62f14104",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "domainName" : "aws",
         "interfaces" : {
@@ -2708,7 +2708,7 @@
             "name" : "acl-3d4f745b_egress",
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -2718,7 +2718,7 @@
                 "name" : "100 ALL ALL 0.0.0.0/0 ALLOW"
               },
               {
-                "action" : "REJECT",
+                "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -2735,7 +2735,7 @@
             "name" : "acl-3d4f745b_ingress",
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -2745,7 +2745,7 @@
                 "name" : "100 ALL ALL 0.0.0.0/0 ALLOW"
               },
               {
-                "action" : "REJECT",
+                "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -2790,8 +2790,8 @@
       "subnet-7044ff16" : {
         "configurationFormat" : "AWS",
         "name" : "subnet-7044ff16",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "domainName" : "aws",
         "interfaces" : {
@@ -2855,7 +2855,7 @@
             "name" : "acl-7b78771d_egress",
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -2865,7 +2865,7 @@
                 "name" : "100 ALL ALL 0.0.0.0/0 ALLOW"
               },
               {
-                "action" : "REJECT",
+                "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -2882,7 +2882,7 @@
             "name" : "acl-7b78771d_ingress",
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -2892,7 +2892,7 @@
                 "name" : "100 ALL ALL 0.0.0.0/0 ALLOW"
               },
               {
-                "action" : "REJECT",
+                "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -2937,8 +2937,8 @@
       "subnet-8d0cbdeb" : {
         "configurationFormat" : "AWS",
         "name" : "subnet-8d0cbdeb",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "domainName" : "aws",
         "interfaces" : {
@@ -3002,7 +3002,7 @@
             "name" : "acl-3d4f745b_egress",
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -3012,7 +3012,7 @@
                 "name" : "100 ALL ALL 0.0.0.0/0 ALLOW"
               },
               {
-                "action" : "REJECT",
+                "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -3029,7 +3029,7 @@
             "name" : "acl-3d4f745b_ingress",
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -3039,7 +3039,7 @@
                 "name" : "100 ALL ALL 0.0.0.0/0 ALLOW"
               },
               {
-                "action" : "REJECT",
+                "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -3084,8 +3084,8 @@
       "subnet-9c8adceb" : {
         "configurationFormat" : "AWS",
         "name" : "subnet-9c8adceb",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "domainName" : "aws",
         "interfaces" : {
@@ -3149,7 +3149,7 @@
             "name" : "acl-4db39c28_egress",
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -3159,7 +3159,7 @@
                 "name" : "100 ALL ALL 0.0.0.0/0 ALLOW"
               },
               {
-                "action" : "REJECT",
+                "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -3176,7 +3176,7 @@
             "name" : "acl-4db39c28_ingress",
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -3198,7 +3198,7 @@
                 "name" : "100 TCP [3306,3306] 162.243.144.192/32 ALLOW"
               },
               {
-                "action" : "REJECT",
+                "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -3243,8 +3243,8 @@
       "subnet-d9cafabc" : {
         "configurationFormat" : "AWS",
         "name" : "subnet-d9cafabc",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "domainName" : "aws",
         "interfaces" : {
@@ -3308,7 +3308,7 @@
             "name" : "acl-4db39c28_egress",
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -3318,7 +3318,7 @@
                 "name" : "100 ALL ALL 0.0.0.0/0 ALLOW"
               },
               {
-                "action" : "REJECT",
+                "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -3335,7 +3335,7 @@
             "name" : "acl-4db39c28_ingress",
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -3357,7 +3357,7 @@
                 "name" : "100 TCP [3306,3306] 162.243.144.192/32 ALLOW"
               },
               {
-                "action" : "REJECT",
+                "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -3402,8 +3402,8 @@
       "subnet-f73a8191" : {
         "configurationFormat" : "AWS",
         "name" : "subnet-f73a8191",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "domainName" : "aws",
         "interfaces" : {
@@ -3467,7 +3467,7 @@
             "name" : "acl-7b78771d_egress",
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -3477,7 +3477,7 @@
                 "name" : "100 ALL ALL 0.0.0.0/0 ALLOW"
               },
               {
-                "action" : "REJECT",
+                "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -3494,7 +3494,7 @@
             "name" : "acl-7b78771d_ingress",
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -3504,7 +3504,7 @@
                 "name" : "100 ALL ALL 0.0.0.0/0 ALLOW"
               },
               {
-                "action" : "REJECT",
+                "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -3549,8 +3549,8 @@
       "test-rds" : {
         "configurationFormat" : "AWS",
         "name" : "test-rds",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "HOST",
         "domainName" : "aws",
         "interfaces" : {
@@ -3588,7 +3588,7 @@
             "name" : "~SECURITY_GROUP_EGRESS_ACL~",
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -3633,7 +3633,7 @@
                 }
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -3653,7 +3653,7 @@
             "name" : "~SECURITY_GROUP_INGRESS_ACL~",
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -3688,7 +3688,7 @@
                 }
               },
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
@@ -3744,8 +3744,8 @@
       "vgw-81fd279f" : {
         "configurationFormat" : "AWS",
         "name" : "vgw-81fd279f",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
         "domainName" : "aws",
         "ikeGateways" : {
@@ -3984,24 +3984,24 @@
         },
         "routeFilterLists" : {
           "vpn-ba2e34a8-1_origination" : {
-            "name" : "vpn-ba2e34a8-1_origination",
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "ipWildcard" : "10.100.0.0/16",
                 "lengthRange" : "16-16"
               }
-            ]
+            ],
+            "name" : "vpn-ba2e34a8-1_origination"
           },
           "vpn-ba2e34a8-2_origination" : {
-            "name" : "vpn-ba2e34a8-2_origination",
             "lines" : [
               {
-                "action" : "ACCEPT",
+                "action" : "PERMIT",
                 "ipWildcard" : "10.100.0.0/16",
                 "lengthRange" : "16-16"
               }
-            ]
+            ],
+            "name" : "vpn-ba2e34a8-2_origination"
           }
         },
         "routingPolicies" : {
@@ -4230,8 +4230,8 @@
       "vpc-815775e7" : {
         "configurationFormat" : "AWS",
         "name" : "vpc-815775e7",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
         "domainName" : "aws",
         "interfaces" : {
@@ -4335,8 +4335,8 @@
       "vpc-925131f4" : {
         "configurationFormat" : "AWS",
         "name" : "vpc-925131f4",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "domainName" : "aws",
         "interfaces" : {
@@ -4468,8 +4468,8 @@
       "vpc-b390fad5" : {
         "configurationFormat" : "AWS",
         "name" : "vpc-b390fad5",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "domainName" : "aws",
         "interfaces" : {
@@ -4709,8 +4709,8 @@
       "vpc-f8fad69d" : {
         "configurationFormat" : "AWS",
         "name" : "vpc-f8fad69d",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "domainName" : "aws",
         "interfaces" : {

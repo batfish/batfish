@@ -145,7 +145,7 @@ public class DefaultTransitionGenerator implements StateVisitor {
                     (acl, linesActions) -> {
                       int lineNumber = 0;
                       for (LineAction linesAction : linesActions) {
-                        if (linesAction == LineAction.REJECT) {
+                        if (linesAction == LineAction.DENY) {
                           _rules.add(
                               new BasicRuleStatement(
                                   new AclLineMatch(node, acl, lineNumber), new AclDeny(node, acl)));
@@ -293,7 +293,7 @@ public class DefaultTransitionGenerator implements StateVisitor {
                       lineActions.forEach(
                           lineAction -> {
                             int line = lineNumber.getAndIncrement();
-                            if (lineAction == LineAction.ACCEPT) {
+                            if (lineAction == LineAction.PERMIT) {
                               _rules.add(
                                   new BasicRuleStatement(
                                       new AclLineMatch(hostname, acl, line),

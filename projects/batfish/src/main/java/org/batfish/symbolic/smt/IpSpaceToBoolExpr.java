@@ -38,7 +38,7 @@ public class IpSpaceToBoolExpr implements GenericIpSpaceVisitor<BoolExpr> {
     for (AclIpSpaceLine aclIpSpaceLine : Lists.reverse(aclIpSpace.getLines())) {
       BoolExpr matchExpr = aclIpSpaceLine.getIpSpace().accept(this);
       BoolExpr actionExpr =
-          aclIpSpaceLine.getAction() == LineAction.ACCEPT ? _context.mkTrue() : _context.mkFalse();
+          aclIpSpaceLine.getAction() == LineAction.PERMIT ? _context.mkTrue() : _context.mkFalse();
       expr = (BoolExpr) _context.mkITE(matchExpr, actionExpr, expr);
     }
     return expr;

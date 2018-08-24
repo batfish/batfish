@@ -4,6 +4,7 @@ import org.batfish.vendor.StructureType;
 
 public enum PaloAltoStructureType implements StructureType {
   INTERFACE("interface"),
+  RULE("rule"),
   SERVICE("service"),
   SERVICE_GROUP("service-group"),
   SERVICE_OR_SERVICE_GROUP("service or service-group"),

@@ -67,7 +67,7 @@ public class IpSpaceBooleanExprTransformer implements GenericIpSpaceVisitor<Bool
             expr =
                 new IfThenElse(
                     new IpSpaceMatchExpr(line.getIpSpace(), _namedIpSpaces, field).getExpr(),
-                    line.getAction() == LineAction.ACCEPT ? TrueExpr.INSTANCE : FalseExpr.INSTANCE,
+                    line.getAction() == LineAction.PERMIT ? TrueExpr.INSTANCE : FalseExpr.INSTANCE,
                     expr);
           }
           return expr;

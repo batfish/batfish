@@ -63,7 +63,7 @@
           "invertMatch" : false,
           "lines" : [
             {
-              "action" : "ACCEPT",
+              "action" : "PERMIT",
               "matchCondition" : {
                 "class" : "org.batfish.datamodel.RegexCommunitySet",
                 "regex" : "(,|\\{|\\}|^|$| )2:"
@@ -89,7 +89,7 @@
           "invertMatch" : false,
           "lines" : [
             {
-              "action" : "ACCEPT",
+              "action" : "PERMIT",
               "matchCondition" : {
                 "class" : "org.batfish.datamodel.RegexCommunitySet",
                 "regex" : "(,|\\{|\\}|^|$| )1:"
@@ -115,7 +115,7 @@
           "invertMatch" : false,
           "lines" : [
             {
-              "action" : "ACCEPT",
+              "action" : "PERMIT",
               "matchCondition" : {
                 "class" : "org.batfish.datamodel.RegexCommunitySet",
                 "regex" : "(,|\\{|\\}|^|$| )3:"
@@ -141,7 +141,7 @@
           "name" : "101",
           "lines" : [
             {
-              "action" : "ACCEPT",
+              "action" : "PERMIT",
               "matchCondition" : {
                 "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                 "headerSpace" : {
@@ -159,7 +159,7 @@
               "name" : "permit ip host 1.0.1.0 host 255.255.255.0"
             },
             {
-              "action" : "ACCEPT",
+              "action" : "PERMIT",
               "matchCondition" : {
                 "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                 "headerSpace" : {
@@ -194,19 +194,19 @@
         "hypothesis" : "sameDefinition",
         "name" : "101",
         "structDefinition" : {
-          "name" : "101",
           "lines" : [
             {
-              "action" : "ACCEPT",
+              "action" : "PERMIT",
               "ipWildcard" : "1.0.1.0/24",
               "lengthRange" : "24-24"
             },
             {
-              "action" : "ACCEPT",
+              "action" : "PERMIT",
               "ipWildcard" : "1.0.2.0/24",
               "lengthRange" : "24-24"
             }
-          ]
+          ],
+          "name" : "101"
         },
         "structType" : "RouteFilterList"
       },
@@ -222,7 +222,7 @@
           "name" : "105",
           "lines" : [
             {
-              "action" : "ACCEPT",
+              "action" : "PERMIT",
               "matchCondition" : {
                 "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                 "headerSpace" : {
@@ -240,7 +240,7 @@
               "name" : "permit ip host 1.0.1.0 host 255.255.255.0"
             },
             {
-              "action" : "ACCEPT",
+              "action" : "PERMIT",
               "matchCondition" : {
                 "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                 "headerSpace" : {
@@ -258,7 +258,7 @@
               "name" : "permit ip host 1.0.2.0 host 255.255.255.0"
             },
             {
-              "action" : "ACCEPT",
+              "action" : "PERMIT",
               "matchCondition" : {
                 "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                 "headerSpace" : {
@@ -276,7 +276,7 @@
               "name" : "permit ip host 3.0.1.0 host 255.255.255.0"
             },
             {
-              "action" : "ACCEPT",
+              "action" : "PERMIT",
               "matchCondition" : {
                 "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                 "headerSpace" : {
@@ -310,7 +310,7 @@
           "invertMatch" : false,
           "lines" : [
             {
-              "action" : "ACCEPT",
+              "action" : "PERMIT",
               "matchCondition" : {
                 "class" : "org.batfish.datamodel.RegexCommunitySet",
                 "regex" : "(,|\\{|\\}|^|$| )65001:"
@@ -332,7 +332,7 @@
           "name" : "filter::FORWARD",
           "lines" : [
             {
-              "action" : "ACCEPT",
+              "action" : "PERMIT",
               "matchCondition" : {
                 "class" : "org.batfish.datamodel.acl.TrueExpr"
               },
@@ -353,7 +353,7 @@
           "name" : "mangle::FORWARD",
           "lines" : [
             {
-              "action" : "ACCEPT",
+              "action" : "PERMIT",
               "matchCondition" : {
                 "class" : "org.batfish.datamodel.acl.TrueExpr"
               },
@@ -374,7 +374,7 @@
           "name" : "mangle::INPUT",
           "lines" : [
             {
-              "action" : "ACCEPT",
+              "action" : "PERMIT",
               "matchCondition" : {
                 "class" : "org.batfish.datamodel.acl.TrueExpr"
               },
@@ -395,7 +395,7 @@
           "name" : "mangle::OUTPUT",
           "lines" : [
             {
-              "action" : "ACCEPT",
+              "action" : "PERMIT",
               "matchCondition" : {
                 "class" : "org.batfish.datamodel.acl.TrueExpr"
               },
@@ -416,7 +416,7 @@
           "name" : "mangle::POSTROUTING",
           "lines" : [
             {
-              "action" : "ACCEPT",
+              "action" : "PERMIT",
               "matchCondition" : {
                 "class" : "org.batfish.datamodel.acl.TrueExpr"
               },
@@ -437,7 +437,7 @@
           "name" : "mangle::PREROUTING",
           "lines" : [
             {
-              "action" : "ACCEPT",
+              "action" : "PERMIT",
               "matchCondition" : {
                 "class" : "org.batfish.datamodel.acl.TrueExpr"
               },
@@ -458,7 +458,7 @@
           "name" : "nat::OUTPUT",
           "lines" : [
             {
-              "action" : "ACCEPT",
+              "action" : "PERMIT",
               "matchCondition" : {
                 "class" : "org.batfish.datamodel.acl.TrueExpr"
               },
@@ -479,7 +479,7 @@
           "name" : "nat::POSTROUTING",
           "lines" : [
             {
-              "action" : "ACCEPT",
+              "action" : "PERMIT",
               "matchCondition" : {
                 "class" : "org.batfish.datamodel.acl.TrueExpr"
               },
@@ -500,7 +500,7 @@
           "name" : "nat::PREROUTING",
           "lines" : [
             {
-              "action" : "ACCEPT",
+              "action" : "PERMIT",
               "matchCondition" : {
                 "class" : "org.batfish.datamodel.acl.TrueExpr"
               },
@@ -518,29 +518,29 @@
         "hypothesis" : "sameDefinition",
         "name" : "105",
         "structDefinition" : {
-          "name" : "105",
           "lines" : [
             {
-              "action" : "ACCEPT",
+              "action" : "PERMIT",
               "ipWildcard" : "1.0.1.0/24",
               "lengthRange" : "24-24"
             },
             {
-              "action" : "ACCEPT",
+              "action" : "PERMIT",
               "ipWildcard" : "1.0.2.0/24",
               "lengthRange" : "24-24"
             },
             {
-              "action" : "ACCEPT",
+              "action" : "PERMIT",
               "ipWildcard" : "3.0.1.0/24",
               "lengthRange" : "24-24"
             },
             {
-              "action" : "ACCEPT",
+              "action" : "PERMIT",
               "ipWildcard" : "3.0.2.0/24",
               "lengthRange" : "24-24"
             }
-          ]
+          ],
+          "name" : "105"
         },
         "structType" : "RouteFilterList"
       },
@@ -552,14 +552,14 @@
         "hypothesis" : "sameDefinition",
         "name" : "default_list",
         "structDefinition" : {
-          "name" : "default_list",
           "lines" : [
             {
-              "action" : "ACCEPT",
+              "action" : "PERMIT",
               "ipWildcard" : "0.0.0.0/0",
               "lengthRange" : "0-0"
             }
-          ]
+          ],
+          "name" : "default_list"
         },
         "structType" : "RouteFilterList"
       },
@@ -571,14 +571,14 @@
         "hypothesis" : "sameDefinition",
         "name" : "outbound_routes",
         "structDefinition" : {
-          "name" : "outbound_routes",
           "lines" : [
             {
-              "action" : "ACCEPT",
+              "action" : "PERMIT",
               "ipWildcard" : "2.128.0.0/9",
               "lengthRange" : "16-32"
             }
-          ]
+          ],
+          "name" : "outbound_routes"
         },
         "structType" : "RouteFilterList"
       },
@@ -699,7 +699,7 @@
           "name" : "103",
           "lines" : [
             {
-              "action" : "ACCEPT",
+              "action" : "PERMIT",
               "matchCondition" : {
                 "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                 "headerSpace" : {
@@ -717,7 +717,7 @@
               "name" : "permit ip host 3.0.1.0 host 255.255.255.0"
             },
             {
-              "action" : "ACCEPT",
+              "action" : "PERMIT",
               "matchCondition" : {
                 "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                 "headerSpace" : {
@@ -754,19 +754,19 @@
           "as1border2"
         ],
         "structDefinition" : {
-          "name" : "103",
           "lines" : [
             {
-              "action" : "ACCEPT",
+              "action" : "PERMIT",
               "ipWildcard" : "3.0.1.0/24",
               "lengthRange" : "24-24"
             },
             {
-              "action" : "ACCEPT",
+              "action" : "PERMIT",
               "ipWildcard" : "3.0.2.0/24",
               "lengthRange" : "24-24"
             }
-          ]
+          ],
+          "name" : "103"
         },
         "structType" : "RouteFilterList"
       },
@@ -780,7 +780,7 @@
           "invertMatch" : false,
           "lines" : [
             {
-              "action" : "ACCEPT",
+              "action" : "PERMIT",
               "matchCondition" : {
                 "class" : "org.batfish.datamodel.RegexCommunitySet",
                 "regex" : "(,|\\{|\\}|^|$| )4:"
@@ -801,7 +801,7 @@
           "name" : "INSIDE_TO_AS1",
           "lines" : [
             {
-              "action" : "ACCEPT",
+              "action" : "PERMIT",
               "matchCondition" : {
                 "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                 "headerSpace" : {
@@ -819,7 +819,7 @@
               "name" : "permit ip 2.0.0.0 0.255.255.255 1.0.0.0 0.255.255.255"
             },
             {
-              "action" : "ACCEPT",
+              "action" : "PERMIT",
               "matchCondition" : {
                 "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                 "headerSpace" : {
@@ -837,7 +837,7 @@
               "name" : "permit ip 10.12.11.2 0.0.0.0 10.12.11.1 0.0.0.0"
             },
             {
-              "action" : "REJECT",
+              "action" : "DENY",
               "matchCondition" : {
                 "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                 "headerSpace" : {
@@ -870,7 +870,7 @@
           "name" : "INSIDE_TO_AS3",
           "lines" : [
             {
-              "action" : "ACCEPT",
+              "action" : "PERMIT",
               "matchCondition" : {
                 "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                 "headerSpace" : {
@@ -888,7 +888,7 @@
               "name" : "permit ip 2.0.0.0 0.255.255.255 3.0.0.0 0.255.255.255"
             },
             {
-              "action" : "ACCEPT",
+              "action" : "PERMIT",
               "matchCondition" : {
                 "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                 "headerSpace" : {
@@ -906,7 +906,7 @@
               "name" : "permit ip 10.23.21.2 0.0.0.0 10.23.21.3 0.0.0.0"
             },
             {
-              "action" : "REJECT",
+              "action" : "DENY",
               "matchCondition" : {
                 "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                 "headerSpace" : {
@@ -939,7 +939,7 @@
           "name" : "RESTRICT_HOST_TRAFFIC_IN",
           "lines" : [
             {
-              "action" : "ACCEPT",
+              "action" : "PERMIT",
               "matchCondition" : {
                 "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                 "headerSpace" : {
@@ -957,7 +957,7 @@
               "name" : "permit ip 2.128.0.0 0.0.255.255 any"
             },
             {
-              "action" : "REJECT",
+              "action" : "DENY",
               "matchCondition" : {
                 "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                 "headerSpace" : {
@@ -975,7 +975,7 @@
               "name" : "deny   ip any any"
             },
             {
-              "action" : "ACCEPT",
+              "action" : "PERMIT",
               "matchCondition" : {
                 "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                 "headerSpace" : {
@@ -1011,7 +1011,7 @@
           "name" : "RESTRICT_HOST_TRAFFIC_OUT",
           "lines" : [
             {
-              "action" : "ACCEPT",
+              "action" : "PERMIT",
               "matchCondition" : {
                 "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                 "headerSpace" : {
@@ -1029,7 +1029,7 @@
               "name" : "permit ip any 2.128.0.0 0.0.255.255"
             },
             {
-              "action" : "REJECT",
+              "action" : "DENY",
               "matchCondition" : {
                 "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                 "headerSpace" : {
@@ -1047,7 +1047,7 @@
               "name" : "deny   ip 1.128.0.0 0.0.255.255 2.128.0.0 0.0.255.255"
             },
             {
-              "action" : "REJECT",
+              "action" : "DENY",
               "matchCondition" : {
                 "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                 "headerSpace" : {
@@ -1080,7 +1080,7 @@
           "name" : "blocktelnet",
           "lines" : [
             {
-              "action" : "REJECT",
+              "action" : "DENY",
               "matchCondition" : {
                 "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                 "headerSpace" : {
@@ -1104,7 +1104,7 @@
               "name" : "deny   tcp any any eq telnet"
             },
             {
-              "action" : "ACCEPT",
+              "action" : "PERMIT",
               "matchCondition" : {
                 "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                 "headerSpace" : {
@@ -1134,14 +1134,14 @@
         "hypothesis" : "sameDefinition",
         "name" : "as4-prefixes",
         "structDefinition" : {
-          "name" : "as4-prefixes",
           "lines" : [
             {
-              "action" : "ACCEPT",
+              "action" : "PERMIT",
               "ipWildcard" : "4.0.0.0/8",
               "lengthRange" : "8-32"
             }
-          ]
+          ],
+          "name" : "as4-prefixes"
         },
         "structType" : "RouteFilterList"
       },
@@ -1347,19 +1347,19 @@
           "as2dept1"
         ],
         "structDefinition" : {
-          "name" : "102",
           "lines" : [
             {
-              "action" : "ACCEPT",
+              "action" : "PERMIT",
               "ipWildcard" : "2.0.0.0/8",
               "lengthRange" : "8-8"
             },
             {
-              "action" : "ACCEPT",
+              "action" : "PERMIT",
               "ipWildcard" : "2.128.0.0/16",
               "lengthRange" : "16-16"
             }
-          ]
+          ],
+          "name" : "102"
         },
         "structType" : "RouteFilterList"
       },
@@ -1418,7 +1418,7 @@
           "name" : "OUTSIDE_TO_INSIDE",
           "lines" : [
             {
-              "action" : "REJECT",
+              "action" : "DENY",
               "matchCondition" : {
                 "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                 "headerSpace" : {
@@ -1436,7 +1436,7 @@
               "name" : "deny   ip 2.0.0.0 0.255.255.255 any"
             },
             {
-              "action" : "REJECT",
+              "action" : "DENY",
               "matchCondition" : {
                 "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                 "headerSpace" : {
@@ -1454,7 +1454,7 @@
               "name" : "deny   ip any host 2.128.1.101"
             },
             {
-              "action" : "ACCEPT",
+              "action" : "PERMIT",
               "matchCondition" : {
                 "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                 "headerSpace" : {
@@ -1490,7 +1490,7 @@
           "name" : "filter::INPUT",
           "lines" : [
             {
-              "action" : "ACCEPT",
+              "action" : "PERMIT",
               "matchCondition" : {
                 "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                 "headerSpace" : {
@@ -1506,7 +1506,7 @@
               "name" : "-p udp --dport 53 -j ACCEPT"
             },
             {
-              "action" : "ACCEPT",
+              "action" : "PERMIT",
               "matchCondition" : {
                 "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                 "headerSpace" : {
@@ -1522,7 +1522,7 @@
               "name" : "-p tcp --dport 22 -j ACCEPT"
             },
             {
-              "action" : "REJECT",
+              "action" : "DENY",
               "matchCondition" : {
                 "class" : "org.batfish.datamodel.acl.TrueExpr"
               },
@@ -1545,7 +1545,7 @@
           "name" : "filter::OUTPUT",
           "lines" : [
             {
-              "action" : "ACCEPT",
+              "action" : "PERMIT",
               "matchCondition" : {
                 "class" : "org.batfish.datamodel.acl.TrueExpr"
               },
@@ -1573,7 +1573,7 @@
           "name" : "102",
           "lines" : [
             {
-              "action" : "ACCEPT",
+              "action" : "PERMIT",
               "matchCondition" : {
                 "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                 "headerSpace" : {
@@ -1591,7 +1591,7 @@
               "name" : "permit ip host 2.0.0.0 host 255.0.0.0"
             },
             {
-              "action" : "ACCEPT",
+              "action" : "PERMIT",
               "matchCondition" : {
                 "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                 "headerSpace" : {
@@ -2034,19 +2034,19 @@
           "as3border2"
         ],
         "structDefinition" : {
-          "name" : "inbound_route_filter",
           "lines" : [
             {
-              "action" : "REJECT",
+              "action" : "DENY",
               "ipWildcard" : "1.0.0.0/8",
               "lengthRange" : "8-32"
             },
             {
-              "action" : "ACCEPT",
+              "action" : "PERMIT",
               "ipWildcard" : "0.0.0.0/0",
               "lengthRange" : "0-32"
             }
-          ]
+          ],
+          "name" : "inbound_route_filter"
         },
         "structType" : "RouteFilterList"
       },

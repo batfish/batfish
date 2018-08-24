@@ -1,32 +1,41 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
-import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
-import org.batfish.common.util.ComparableStructure;
 
-@JsonSchemaDescription("An access-list used to filter IPV4 routes")
-public class RouteFilterList extends ComparableStructure<String> {
+/**
+ * Filter list for IPV4 routes. Performs filtering on IPv4 prefixes with access-list-like behavior
+ * (match in order, with an implicit "deny all" at the end).
+ */
+public class RouteFilterList implements Serializable {
 
   private static final String PROP_LINES = "lines";
+
+  private static final String PROP_NAME = "name";
 
   private static final long serialVersionUID = 1L;
 
   private final Supplier<Set<Prefix>> _deniedCache;
 
-  private List<RouteFilterLine> _lines;
+  @Nonnull private List<RouteFilterLine> _lines;
+
+  @Nullable private final String _name;
 
   private final Supplier<Set<Prefix>> _permittedCache;
 
@@ -40,15 +49,22 @@ public class RouteFilterList extends ComparableStructure<String> {
   }
 
   @JsonCreator
-  public RouteFilterList(@JsonProperty(PROP_NAME) String name) {
-    this(name, Collections.emptyList());
+  private static RouteFilterList create(
+      @JsonProperty(PROP_NAME) @Nullable String name,
+      @JsonProperty(PROP_LINES) @Nullable List<RouteFilterLine> lines) {
+    return new RouteFilterList(name, firstNonNull(lines, ImmutableList.of()));
   }
 
-  public RouteFilterList(String name, List<RouteFilterLine> lines) {
-    super(name);
+  /** Create and empty route filter list (with no lines) */
+  public RouteFilterList(@Nullable String name) {
+    this(name, ImmutableList.of());
+  }
+
+  public RouteFilterList(@Nullable String name, @Nonnull List<RouteFilterLine> lines) {
+    _name = name;
     _deniedCache = Suppliers.memoize(new CacheSupplier());
     _permittedCache = Suppliers.memoize(new CacheSupplier());
-    this._lines = lines;
+    _lines = lines;
   }
 
   public void addLine(RouteFilterLine r) {
@@ -66,20 +82,32 @@ public class RouteFilterList extends ComparableStructure<String> {
     return other._lines.equals(_lines);
   }
 
+  @Override
+  public int hashCode() {
+    return Objects.hash(_lines);
+  }
+
+  @Nullable
+  @JsonProperty(PROP_NAME)
+  public String getName() {
+    return _name;
+  }
+
+  /** The lines against which to check an IPV4 route */
+  @Nonnull
   @JsonProperty(PROP_LINES)
-  @JsonPropertyDescription("The lines against which to check an IPV4 route")
   public List<RouteFilterLine> getLines() {
     return _lines;
   }
 
-  private boolean newPermits(Prefix prefix) {
+  private boolean evaluatePrefix(Prefix prefix) {
     boolean accept = false;
     for (RouteFilterLine line : _lines) {
       if (line.getIpWildcard().containsIp(prefix.getStartIp())) {
         int prefixLength = prefix.getPrefixLength();
         SubRange range = line.getLengthRange();
         if (prefixLength >= range.getStart() && prefixLength <= range.getEnd()) {
-          accept = line.getAction() == LineAction.ACCEPT;
+          accept = line.getAction() == LineAction.PERMIT;
           break;
         }
       }
@@ -92,20 +120,21 @@ public class RouteFilterList extends ComparableStructure<String> {
     return accept;
   }
 
+  /** Check if a given prefix is permitted by this filter list. */
   public boolean permits(Prefix prefix) {
     if (_deniedCache.get().contains(prefix)) {
       return false;
     } else if (_permittedCache.get().contains(prefix)) {
       return true;
     }
-    return newPermits(prefix);
+    return evaluatePrefix(prefix);
   }
 
   /**
    * Returns the set of {@link IpWildcard ips} that match this filter list.
    *
    * @throws BatfishException if any line in this {@link RouteFilterList} does not have an {@link
-   *     LineAction#ACCEPT} when matching.
+   *     LineAction#PERMIT} when matching.
    */
   @JsonIgnore
   public List<IpWildcard> getMatchingIps() {
@@ -113,7 +142,7 @@ public class RouteFilterList extends ComparableStructure<String> {
         .stream()
         .map(
             rfLine -> {
-              if (rfLine.getAction() != LineAction.ACCEPT) {
+              if (rfLine.getAction() != LineAction.PERMIT) {
                 throw new BatfishException(
                     "Expected accept action for routerfilterlist from juniper");
               } else {
@@ -123,8 +152,8 @@ public class RouteFilterList extends ComparableStructure<String> {
         .collect(Collectors.toList());
   }
 
-  @JsonProperty(PROP_LINES)
-  public void setLines(List<RouteFilterLine> lines) {
+  /** Set the list of lines against which to match a route's prefix. */
+  public void setLines(@Nonnull List<RouteFilterLine> lines) {
     _lines = lines;
   }
 }

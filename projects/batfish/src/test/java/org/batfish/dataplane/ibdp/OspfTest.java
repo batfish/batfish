@@ -83,7 +83,7 @@ public class OspfTest {
     If exportIfMatchL2Prefix = new If();
     exportIfMatchL2Prefix.setGuard(
         new MatchPrefixSet(
-            new DestinationNetwork(),
+            DestinationNetwork.instance(),
             new ExplicitPrefixSet(new PrefixSpace(PrefixRange.fromPrefix(address.getPrefix())))));
     exportIfMatchL2Prefix.setTrueStatements(
         ImmutableList.of(

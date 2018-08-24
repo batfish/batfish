@@ -9,3 +9,8 @@ filegroup(
     name = "example",
     srcs = glob(["example/**"]),
 )
+
+filegroup(
+    name = "example_juniper",
+    srcs = glob(["example-juniper/**"]),
+)

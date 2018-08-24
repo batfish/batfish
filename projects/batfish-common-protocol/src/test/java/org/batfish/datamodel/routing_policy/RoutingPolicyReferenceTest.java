@@ -23,8 +23,12 @@ import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
-public class RoutingPolicyTests {
+/** Tests reference tracking in {@link RoutingPolicy}. */
+@RunWith(JUnit4.class)
+public class RoutingPolicyReferenceTest {
 
   private static Configuration _c;
 

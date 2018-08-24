@@ -111,7 +111,7 @@
           "name" : "102",
           "lines" : [
             {
-              "action" : "ACCEPT",
+              "action" : "PERMIT",
               "matchCondition" : {
                 "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                 "headerSpace" : {
@@ -129,7 +129,7 @@
               "name" : "permit ip host 2.0.0.0 host 255.0.0.0"
             },
             {
-              "action" : "ACCEPT",
+              "action" : "PERMIT",
               "matchCondition" : {
                 "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                 "headerSpace" : {
@@ -167,19 +167,19 @@
           "as2border2"
         ],
         "structDefinition" : {
-          "name" : "102",
           "lines" : [
             {
-              "action" : "ACCEPT",
+              "action" : "PERMIT",
               "ipWildcard" : "2.0.0.0/8",
               "lengthRange" : "8-8"
             },
             {
-              "action" : "ACCEPT",
+              "action" : "PERMIT",
               "ipWildcard" : "2.128.0.0/16",
               "lengthRange" : "16-16"
             }
-          ]
+          ],
+          "name" : "102"
         },
         "structType" : "RouteFilterList",
         "role" : "border"

@@ -24,6 +24,24 @@ java_library(
     ],
 )
 
+java_library(
+    name = "question_testlib",
+    testonly = True,
+    srcs = glob(
+        [
+            "src/test/java/**/*.java",
+        ],
+        exclude = ["src/test/java/**/*Test.java"],
+    ),
+    deps = [
+        ":question",
+        "//projects/batfish-common-protocol:common",
+        "@hamcrest//:compile",
+        "@jsr305//:compile",
+        "@junit//:compile",
+    ],
+)
+
 junit_tests(
     name = "question_tests",
     size = "small",
@@ -41,6 +59,7 @@ junit_tests(
     ],
     deps = [
         ":question",
+        ":question_testlib",
         "//projects/batfish-common-protocol:common",
         "//projects/batfish-common-protocol:common_testlib",
         "//projects/lib/jsonpath",

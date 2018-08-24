@@ -1,24 +1,31 @@
 package org.batfish.datamodel.routing_policy.expr;
 
+import static java.util.Objects.requireNonNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Objects;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.routing_policy.Environment;
 
-public class NamedPrefixSet extends PrefixSetExpr {
+/** Expression for matching a {@link Prefix} against a named {@link RouteFilterList}. */
+public final class NamedPrefixSet extends PrefixSetExpr {
 
   private static final String PROP_NAME = "name";
 
-  /** */
   private static final long serialVersionUID = 1L;
 
-  private String _name;
+  private final String _name;
 
   @JsonCreator
-  private NamedPrefixSet() {}
+  private static NamedPrefixSet create(@JsonProperty(PROP_NAME) @Nullable String name) {
+    return new NamedPrefixSet(requireNonNull(name));
+  }
 
-  public NamedPrefixSet(String name) {
+  public NamedPrefixSet(@Nonnull String name) {
     _name = name;
   }
 
@@ -27,21 +34,11 @@ public class NamedPrefixSet extends PrefixSetExpr {
     if (this == obj) {
       return true;
     }
-    if (obj == null) {
-      return false;
-    }
-    if (getClass() != obj.getClass()) {
+    if (!(obj instanceof NamedPrefixSet)) {
       return false;
     }
     NamedPrefixSet other = (NamedPrefixSet) obj;
-    if (_name == null) {
-      if (other._name != null) {
-        return false;
-      }
-    } else if (!_name.equals(other._name)) {
-      return false;
-    }
-    return true;
+    return Objects.equals(_name, other._name);
   }
 
   @JsonProperty(PROP_NAME)
@@ -51,10 +48,7 @@ public class NamedPrefixSet extends PrefixSetExpr {
 
   @Override
   public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + ((_name == null) ? 0 : _name.hashCode());
-    return result;
+    return Objects.hash(_name);
   }
 
   @Override
@@ -66,10 +60,5 @@ public class NamedPrefixSet extends PrefixSetExpr {
       environment.setError(true);
       return false;
     }
-  }
-
-  @JsonProperty(PROP_NAME)
-  public void setName(String name) {
-    _name = name;
   }
 }

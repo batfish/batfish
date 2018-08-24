@@ -5,8 +5,8 @@ import static com.google.common.base.MoreObjects.toStringHelper;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableList;
-import java.util.List;
+import com.google.common.collect.ImmutableMap;
+import java.util.Map;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -16,16 +16,16 @@ public class Metrics {
 
   @JsonCreator
   private static @Nonnull Metrics create(
-      @JsonProperty(BfConsts.PROP_AGGREGATIONS) List<ColumnAggregationResult> aggregations,
+      @JsonProperty(BfConsts.PROP_AGGREGATIONS) Map<String, Map<Aggregation, Object>> aggregations,
       @JsonProperty(BfConsts.PROP_NUM_ROWS) int numRows) {
-    return new Metrics(firstNonNull(aggregations, ImmutableList.of()), numRows);
+    return new Metrics(firstNonNull(aggregations, ImmutableMap.of()), numRows);
   }
 
-  private final List<ColumnAggregationResult> _aggregations;
+  private final Map<String, Map<Aggregation, Object>> _aggregations;
 
   private final int _numRows;
 
-  public Metrics(@Nonnull List<ColumnAggregationResult> aggregations, int numRows) {
+  public Metrics(@Nonnull Map<String, Map<Aggregation, Object>> aggregations, int numRows) {
     _aggregations = aggregations;
     _numRows = numRows;
   }
@@ -43,7 +43,7 @@ public class Metrics {
   }
 
   @JsonProperty(BfConsts.PROP_AGGREGATIONS)
-  public @Nonnull List<ColumnAggregationResult> getAggregations() {
+  public @Nonnull Map<String, Map<Aggregation, Object>> getAggregations() {
     return _aggregations;
   }
 

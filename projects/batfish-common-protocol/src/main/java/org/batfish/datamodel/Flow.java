@@ -422,6 +422,10 @@ public final class Flow implements Comparable<Flow>, Serializable {
 
   private static final String PROP_TCP_FLAGS_URG = "tcpFlagsUrg";
 
+  public static final String BASE_FLOW_TAG = "BASE";
+
+  public static final String DELTA_FLOW_TAG = "DELTA";
+
   /** */
   private static final long serialVersionUID = 1L;
 

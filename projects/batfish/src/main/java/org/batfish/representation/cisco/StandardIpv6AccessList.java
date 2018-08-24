@@ -25,6 +25,10 @@ public class StandardIpv6AccessList implements Serializable {
     return _lines;
   }
 
+  public String getName() {
+    return _name;
+  }
+
   public ExtendedIpv6AccessList toExtendedIpv6AccessList() {
     ExtendedIpv6AccessList eal = new ExtendedIpv6AccessList(_name);
     eal.setParent(this);

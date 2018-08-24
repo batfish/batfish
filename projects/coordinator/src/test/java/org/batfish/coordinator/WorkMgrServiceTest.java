@@ -20,7 +20,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import javax.ws.rs.core.Response;
@@ -37,8 +36,8 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.coordinator.config.Settings;
 import org.batfish.datamodel.answers.Aggregation;
-import org.batfish.datamodel.answers.AnalysisAnswerMetricsResult;
 import org.batfish.datamodel.answers.Answer;
+import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.AutocompleteSuggestion;
 import org.batfish.datamodel.answers.ColumnAggregation;
@@ -767,15 +766,11 @@ public class WorkMgrServiceTest {
 
     String columnName = "col";
     int value = 5;
-    Answer testAnswer = new Answer();
-    testAnswer.addAnswerElement(
-        new TableAnswerElement(
-                new TableMetadata(
-                    ImmutableList.of(new ColumnMetadata(columnName, Schema.INTEGER, "foobar")),
-                    new DisplayHints().getTextDesc()))
-            .addRow(Row.of(columnName, value)));
-    testAnswer.setStatus(AnswerStatus.SUCCESS);
-    String answer = BatfishObjectMapper.writePrettyString(testAnswer);
+    AnswerMetadata testAnswerMetadata =
+        new AnswerMetadata(
+            new Metrics(ImmutableMap.of(columnName, ImmutableMap.of(Aggregation.MAX, value)), 1),
+            AnswerStatus.SUCCESS);
+    String answerMetadata = BatfishObjectMapper.writePrettyString(testAnswerMetadata);
 
     String analysisJsonString =
         String.format("{\"%s\":{\"question\":\"%s\"}}", questionName, questionContent);
@@ -809,13 +804,9 @@ public class WorkMgrServiceTest {
                     BfConsts.RELPATH_ENVIRONMENTS_DIR,
                     BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME));
 
-    Path answer1Path = answerDir.resolve(BfConsts.RELPATH_ANSWER_JSON);
+    Path answer1MetadataPath = answerDir.resolve(BfConsts.RELPATH_ANSWER_METADATA);
     answerDir.toFile().mkdirs();
-    CommonUtil.writeFile(answer1Path, answer);
-
-    List<ColumnAggregation> aggregations =
-        ImmutableList.of(new ColumnAggregation(Aggregation.MAX, columnName));
-    String aggregationsStr = BatfishObjectMapper.writePrettyString(aggregations);
+    CommonUtil.writeFile(answer1MetadataPath, answerMetadata);
 
     JSONArray answerOutput =
         _service.getAnalysisAnswersMetrics(
@@ -824,7 +815,6 @@ public class WorkMgrServiceTest {
             _networkName,
             _snapshotName,
             null,
-            aggregationsStr,
             analysisName,
             analysisQuestionsStr,
             null);
@@ -842,10 +832,9 @@ public class WorkMgrServiceTest {
             new GetAnalysisAnswerMetricsAnswer(
                 ImmutableMap.of(
                     questionName,
-                    new AnalysisAnswerMetricsResult(
+                    new AnswerMetadata(
                         new Metrics(
-                            ImmutableList.of(
-                                new ColumnAggregationResult(Aggregation.MAX, columnName, value)),
+                            ImmutableMap.of(columnName, ImmutableMap.of(Aggregation.MAX, value)),
                             1),
                         AnswerStatus.SUCCESS)))));
   }

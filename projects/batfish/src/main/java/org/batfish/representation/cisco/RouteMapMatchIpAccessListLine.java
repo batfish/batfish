@@ -54,7 +54,8 @@ public class RouteMapMatchIpAccessListLine extends RouteMapMatchLine {
       }
       if (list != null) {
         if (_routing) {
-          disjuncts.add(new MatchPrefixSet(new DestinationNetwork(), new NamedPrefixSet(listName)));
+          disjuncts.add(
+              new MatchPrefixSet(DestinationNetwork.instance(), new NamedPrefixSet(listName)));
         } else {
           disjuncts.add(new MatchIpAccessList(listName));
         }

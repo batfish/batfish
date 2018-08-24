@@ -95,7 +95,7 @@ public final class AclTracer extends Evaluator {
   public void recordAction(
       @Nonnull IpAccessList ipAccessList, int index, @Nonnull IpAccessListLine line) {
     String lineDescription = firstNonNull(line.getName(), line.toString());
-    if (line.getAction() == LineAction.ACCEPT) {
+    if (line.getAction() == LineAction.PERMIT) {
       _traceEvents.add(
           new PermittedByIpAccessListLine(
               index,
@@ -122,7 +122,7 @@ public final class AclTracer extends Evaluator {
       Ip ip,
       String ipDescription,
       IpSpaceDescriber describer) {
-    if (line.getAction() == LineAction.ACCEPT) {
+    if (line.getAction() == LineAction.PERMIT) {
       _traceEvents.add(
           new PermittedByAclIpSpaceLine(
               aclIpSpaceName,
@@ -365,7 +365,7 @@ public final class AclTracer extends Evaluator {
       IpAccessListLine line = lines.get(i);
       if (line.getMatchCondition().accept(this)) {
         recordAction(ipAccessList, i, line);
-        return line.getAction() == LineAction.ACCEPT;
+        return line.getAction() == LineAction.PERMIT;
       }
     }
     recordDefaultDeny(ipAccessList);

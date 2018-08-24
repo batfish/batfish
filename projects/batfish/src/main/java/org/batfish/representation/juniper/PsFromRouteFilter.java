@@ -36,7 +36,8 @@ public final class PsFromRouteFilter extends PsFrom {
     BooleanExpr match4 = null;
     BooleanExpr match6 = null;
     if (rfl != null) {
-      match4 = new MatchPrefixSet(new DestinationNetwork(), new NamedPrefixSet(_routeFilterName));
+      match4 =
+          new MatchPrefixSet(DestinationNetwork.instance(), new NamedPrefixSet(_routeFilterName));
     }
     if (rfl6 != null) {
       match6 =

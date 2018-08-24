@@ -223,7 +223,7 @@ class TransferSSA {
       SubRange r = line.getLengthRange();
       PrefixRange range = new PrefixRange(p, r);
       BoolExpr matches = _enc.isRelevantFor(other.getPrefixLength(), range);
-      BoolExpr action = _enc.mkBool(line.getAction() == LineAction.ACCEPT);
+      BoolExpr action = _enc.mkBool(line.getAction() == LineAction.PERMIT);
       acc = _enc.mkIf(matches, action, acc);
     }
     return acc;
@@ -313,7 +313,7 @@ class TransferSSA {
     Collections.reverse(lines);
     BoolExpr acc = _enc.mkFalse();
     for (CommunityListLine line : lines) {
-      boolean action = (line.getAction() == LineAction.ACCEPT);
+      boolean action = (line.getAction() == LineAction.PERMIT);
       CommunityVar cvar = toCommunityVar(line.getMatchCondition());
       BoolExpr c = other.getCommunities().get(cvar);
       acc = _enc.mkIf(c, _enc.mkBool(action), acc);

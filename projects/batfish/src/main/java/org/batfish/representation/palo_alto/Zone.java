@@ -13,9 +13,12 @@ public final class Zone implements Serializable {
 
   private final String _name;
 
-  public Zone(String name) {
+  private final Vsys _vsys;
+
+  public Zone(String name, Vsys vsys) {
     _name = name;
     _interfaceNames = new TreeSet<>();
+    _vsys = vsys;
   }
 
   public Set<String> getInterfaceNames() {
@@ -24,5 +27,9 @@ public final class Zone implements Serializable {
 
   public String getName() {
     return _name;
+  }
+
+  public Vsys getVsys() {
+    return _vsys;
   }
 }

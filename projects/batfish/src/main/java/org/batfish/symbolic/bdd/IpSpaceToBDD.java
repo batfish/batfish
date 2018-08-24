@@ -133,7 +133,7 @@ public final class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
       bdd =
           visit(aclIpSpaceLine.getIpSpace())
               .ite(
-                  aclIpSpaceLine.getAction() == LineAction.ACCEPT
+                  aclIpSpaceLine.getAction() == LineAction.PERMIT
                       ? _factory.one()
                       : _factory.zero(),
                   bdd);

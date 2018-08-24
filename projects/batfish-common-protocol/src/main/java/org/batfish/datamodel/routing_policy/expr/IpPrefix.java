@@ -7,7 +7,6 @@ import org.batfish.datamodel.routing_policy.Environment;
 
 public class IpPrefix extends PrefixExpr {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private IpExpr _ip;
