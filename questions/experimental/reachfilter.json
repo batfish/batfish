@@ -4,11 +4,13 @@
   "complementHeaderSpace": "${complementHeaderSpace}",
   "destinationIpSpaceSpecifierFactory": "${destinationIpSpaceSpecifierFactory}",
   "dst": "${dst}",
+  "dstPorts": "${dstPorts}",
   "filterRegex": "${filterRegex}",
   "nodeSpecifierFactory": "${nodeSpecifierFactory}",
   "nodeSpecifierInput": "${nodeSpecifierInput}",
   "sourceIpSpaceSpecifierFactory": "${sourceIpSpaceSpecifierFactory}",
   "src": "${src}",
+  "srcPorts": "${srcPorts}",
   "query": "${query}",
   "instance": {
     "description": "Find flows for which a filter takes a particular behavior",
@@ -34,6 +36,12 @@
         "optional": true,
         "type": "string"
       },
+      "dstPorts": {
+        "description": "Destination ports",
+        "minElements": 0,
+        "optional": true,
+        "type": "subrange"
+      },
       "filterRegex": {
         "description": "Only evaluate filters that match this regex",
         "optional": true,
@@ -58,6 +66,12 @@
         "description": "Flexible specification of source IpSpace",
         "optional": true,
         "type": "string"
+      },
+      "srcPorts": {
+        "description": "Source ports",
+        "minElements": 0,
+        "optional": true,
+        "type": "subrange"
       },
       "query": {
         "description": "The behavior that you want evaluated. Options are: permit|deny|matchLine <line number>. Only one option should be selected",
