@@ -55,8 +55,8 @@ public class InterfacePropertiesAnswererTest {
 
     conf1.getInterfaces().putAll(ImmutableMap.of("iface1", iface1, "iface2", iface2));
 
-    String property1 = "description";
-    String property2 = "active";
+    String property1 = InterfacePropertySpecifier.DESCRIPTION;
+    String property2 = InterfacePropertySpecifier.ACTIVE;
     InterfacePropertySpecifier propertySpecifier =
         new InterfacePropertySpecifier(property1 + "|" + property2);
 
@@ -90,7 +90,7 @@ public class InterfacePropertiesAnswererTest {
     Interface shut = Interface.builder().setName("shut").setOwner(conf).setActive(false).build();
     conf.getInterfaces().putAll(ImmutableMap.of("active", active, "shut", shut));
 
-    String property = "description";
+    String property = InterfacePropertySpecifier.DESCRIPTION;
     InterfacePropertySpecifier propertySpecifier = new InterfacePropertySpecifier(property);
 
     Multiset<Row> propertyRows =
@@ -143,7 +143,7 @@ public class InterfacePropertiesAnswererTest {
   @Test
   public void testHsrpGroups() {
     _ib.setHsrpGroups(ImmutableMap.of(1, HsrpGroup.builder().setGroupNumber(1).build())).build();
-    String property = "hsrp-groups";
+    String property = InterfacePropertySpecifier.HSRP_GROUPS;
 
     assertThat(getActualValue(property, Schema.set(Schema.STRING)), equalTo(ImmutableSet.of("1")));
   }
@@ -151,7 +151,7 @@ public class InterfacePropertiesAnswererTest {
   @Test
   public void testHsrpGroupsEmpty() {
     _ib.build();
-    String property = "hsrp-groups";
+    String property = InterfacePropertySpecifier.HSRP_GROUPS;
 
     assertThat(getActualValue(property, Schema.set(Schema.STRING)), equalTo(ImmutableSet.of()));
   }
@@ -159,7 +159,7 @@ public class InterfacePropertiesAnswererTest {
   @Test
   public void testHsrpVersion() {
     _ib.setHsrpVersion("2").build();
-    String property = "hsrp-version";
+    String property = InterfacePropertySpecifier.HSRP_VERSION;
 
     assertThat(getActualValue(property, Schema.STRING), equalTo("2"));
   }
@@ -167,7 +167,7 @@ public class InterfacePropertiesAnswererTest {
   @Test
   public void testHsrpVersionUnset() {
     _ib.build();
-    String property = "hsrp-version";
+    String property = InterfacePropertySpecifier.HSRP_VERSION;
 
     assertThat(getActualValue(property, Schema.STRING), nullValue());
   }

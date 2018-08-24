@@ -30,7 +30,7 @@ public class OspfPropertiesAnswerer extends Answerer {
 
   public static final String COL_NODE = "Node";
   public static final String COL_VRF = "VRF";
-  public static final String COL_PROCESS_ID = "ProcessId";
+  public static final String COL_PROCESS_ID = "Process_ID";
 
   public OspfPropertiesAnswerer(Question question, IBatfish batfish) {
     super(question, batfish);
@@ -47,7 +47,7 @@ public class OspfPropertiesAnswerer extends Answerer {
     return ImmutableList.<ColumnMetadata>builder()
         .add(new ColumnMetadata(COL_NODE, Schema.NODE, "Node", true, false))
         .add(new ColumnMetadata(COL_VRF, Schema.STRING, "VRF", true, false))
-        .add(new ColumnMetadata(COL_PROCESS_ID, Schema.STRING, "ProcessId", true, false))
+        .add(new ColumnMetadata(COL_PROCESS_ID, Schema.STRING, "Process ID", true, false))
         .addAll(
             propertySpecifier
                 .getMatchingProperties()
@@ -73,21 +73,20 @@ public class OspfPropertiesAnswerer extends Answerer {
     if (dhints != null && dhints.getTextDesc() != null) {
       textDesc = dhints.getTextDesc();
     }
-    return new TableMetadata(createColumnMetadata(question.getPropertySpec()), textDesc);
+    return new TableMetadata(createColumnMetadata(question.getProperties()), textDesc);
   }
 
   @Override
   public AnswerElement answer() {
     OspfPropertiesQuestion question = (OspfPropertiesQuestion) _question;
     Map<String, Configuration> configurations = _batfish.loadConfigurations();
-    Set<String> nodes = question.getNodeRegex().getMatchingNodes(_batfish);
+    Set<String> nodes = question.getNodes().getMatchingNodes(_batfish);
 
     TableMetadata tableMetadata = createTableMetadata(question);
     TableAnswerElement answer = new TableAnswerElement(tableMetadata);
 
     Multiset<Row> propertyRows =
-        getProperties(
-            question.getPropertySpec(), configurations, nodes, tableMetadata.toColumnMap());
+        getProperties(question.getProperties(), configurations, nodes, tableMetadata.toColumnMap());
 
     answer.postProcessAnswer(question, propertyRows);
     return answer;

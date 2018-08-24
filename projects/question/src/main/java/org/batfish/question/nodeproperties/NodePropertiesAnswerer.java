@@ -26,7 +26,7 @@ import org.batfish.datamodel.table.TableMetadata;
 
 public class NodePropertiesAnswerer extends Answerer {
 
-  public static final String COL_NODE = "node";
+  public static final String COL_NODE = "Node";
 
   public NodePropertiesAnswerer(Question question, IBatfish batfish) {
     super(question, batfish);
@@ -64,20 +64,19 @@ public class NodePropertiesAnswerer extends Answerer {
     if (dhints != null && dhints.getTextDesc() != null) {
       textDesc = dhints.getTextDesc();
     }
-    return new TableMetadata(createColumnMetadata(question.getPropertySpec()), textDesc);
+    return new TableMetadata(createColumnMetadata(question.getProperties()), textDesc);
   }
 
   @Override
   public AnswerElement answer() {
     NodePropertiesQuestion question = (NodePropertiesQuestion) _question;
     Map<String, Configuration> configurations = _batfish.loadConfigurations();
-    Set<String> nodes = question.getNodeRegex().getMatchingNodes(_batfish);
+    Set<String> nodes = question.getNodes().getMatchingNodes(_batfish);
 
     TableMetadata tableMetadata = createTableMetadata(question);
 
     Multiset<Row> propertyRows =
-        getProperties(
-            question.getPropertySpec(), configurations, nodes, tableMetadata.toColumnMap());
+        getProperties(question.getProperties(), configurations, nodes, tableMetadata.toColumnMap());
 
     TableAnswerElement answer = new TableAnswerElement(tableMetadata);
     answer.postProcessAnswer(question, propertyRows);
