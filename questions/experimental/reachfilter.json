@@ -5,6 +5,7 @@
   "destinationIpSpaceSpecifierFactory": "${destinationIpSpaceSpecifierFactory}",
   "dst": "${dst}",
   "dstPorts": "${dstPorts}",
+  "dstProtocols": "${dstProtocols}",
   "filterRegex": "${filterRegex}",
   "nodeSpecifierFactory": "${nodeSpecifierFactory}",
   "nodeSpecifierInput": "${nodeSpecifierInput}",
@@ -41,6 +42,13 @@
         "minElements": 0,
         "optional": true,
         "type": "subrange"
+      },
+      "dstProtocols" : {
+        "description" : "Destination protocols",
+        "minElements" : 0,
+        "optional" : true,
+        "type" : "string",
+        "value": []
       },
       "filterRegex": {
         "description": "Only evaluate filters that match this regex",
