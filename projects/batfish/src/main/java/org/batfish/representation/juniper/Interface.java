@@ -48,8 +48,6 @@ public class Interface implements Serializable {
 
   private double _bandwidth;
 
-  private final int _definitionLine;
-
   private String _description;
 
   private String _incomingFilter;
@@ -96,18 +94,12 @@ public class Interface implements Serializable {
 
   private final SortedMap<Integer, VrrpGroup> _vrrpGroups;
 
-  @SuppressWarnings("unused")
-  private Interface() {
-    this("", -1);
-  }
-
-  public Interface(String name, int definitionLine) {
+  public Interface(String name) {
     _active = true;
     _additionalArpIps = ImmutableSet.of();
     _allAddresses = new LinkedHashSet<>();
     _allAddressIps = new LinkedHashSet<>();
     _bandwidth = getDefaultBandwidthByName(name);
-    _definitionLine = definitionLine;
     _isisSettings = new IsisInterfaceSettings();
     _name = name;
     _nativeVlan = 1;
@@ -149,10 +141,6 @@ public class Interface implements Serializable {
 
   public double getBandwidth() {
     return _bandwidth;
-  }
-
-  public int getDefinitionLine() {
-    return _definitionLine;
   }
 
   public String getDescription() {

@@ -5969,6 +5969,87 @@
               "numReferrers" : 2
             }
           },
+          "interface" : {
+            "fxp0" : {
+              "definitionLines" : [
+                99
+              ],
+              "numReferrers" : 1
+            },
+            "fxp0.0" : {
+              "definitionLines" : [
+                99
+              ],
+              "numReferrers" : 1
+            },
+            "ge-0/0/0" : {
+              "definitionLines" : [
+                96
+              ],
+              "numReferrers" : 1
+            },
+            "ge-0/0/0.0" : {
+              "definitionLines" : [
+                96
+              ],
+              "numReferrers" : 3
+            },
+            "ge-0/0/1" : {
+              "definitionLines" : [
+                97
+              ],
+              "numReferrers" : 1
+            },
+            "ge-0/0/1.0" : {
+              "definitionLines" : [
+                97
+              ],
+              "numReferrers" : 3
+            },
+            "ge-0/0/2" : {
+              "definitionLines" : [
+                98
+              ],
+              "numReferrers" : 1
+            },
+            "ge-0/0/2.0" : {
+              "definitionLines" : [
+                98
+              ],
+              "numReferrers" : 2
+            },
+            "lo0" : {
+              "definitionLines" : [
+                100
+              ],
+              "numReferrers" : 1
+            },
+            "lo0.0" : {
+              "definitionLines" : [
+                100
+              ],
+              "numReferrers" : 2
+            },
+            "st0" : {
+              "definitionLines" : [
+                101,
+                102
+              ],
+              "numReferrers" : 2
+            },
+            "st0.2" : {
+              "definitionLines" : [
+                101
+              ],
+              "numReferrers" : 3
+            },
+            "st0.3" : {
+              "definitionLines" : [
+                102
+              ],
+              "numReferrers" : 3
+            }
+          },
           "ipsec policy" : {
             "test-ipsec-policy" : {
               "definitionLines" : [
@@ -6033,6 +6114,87 @@
               "numReferrers" : 2
             }
           },
+          "interface" : {
+            "fxp0" : {
+              "definitionLines" : [
+                85
+              ],
+              "numReferrers" : 1
+            },
+            "fxp0.0" : {
+              "definitionLines" : [
+                85
+              ],
+              "numReferrers" : 1
+            },
+            "ge-0/0/0" : {
+              "definitionLines" : [
+                82
+              ],
+              "numReferrers" : 1
+            },
+            "ge-0/0/0.0" : {
+              "definitionLines" : [
+                82
+              ],
+              "numReferrers" : 3
+            },
+            "ge-0/0/1" : {
+              "definitionLines" : [
+                83
+              ],
+              "numReferrers" : 1
+            },
+            "ge-0/0/1.0" : {
+              "definitionLines" : [
+                83
+              ],
+              "numReferrers" : 3
+            },
+            "ge-0/0/2" : {
+              "definitionLines" : [
+                84
+              ],
+              "numReferrers" : 1
+            },
+            "ge-0/0/2.0" : {
+              "definitionLines" : [
+                84
+              ],
+              "numReferrers" : 2
+            },
+            "lo0" : {
+              "definitionLines" : [
+                86
+              ],
+              "numReferrers" : 1
+            },
+            "lo0.0" : {
+              "definitionLines" : [
+                86
+              ],
+              "numReferrers" : 2
+            },
+            "st0" : {
+              "definitionLines" : [
+                87,
+                88
+              ],
+              "numReferrers" : 2
+            },
+            "st0.1" : {
+              "definitionLines" : [
+                87
+              ],
+              "numReferrers" : 3
+            },
+            "st0.3" : {
+              "definitionLines" : [
+                88
+              ],
+              "numReferrers" : 3
+            }
+          },
           "ipsec policy" : {
             "test-ipsec-policy" : {
               "definitionLines" : [
@@ -6090,6 +6252,87 @@
               "numReferrers" : 2
             }
           },
+          "interface" : {
+            "fxp0" : {
+              "definitionLines" : [
+                76
+              ],
+              "numReferrers" : 1
+            },
+            "fxp0.0" : {
+              "definitionLines" : [
+                76
+              ],
+              "numReferrers" : 1
+            },
+            "ge-0/0/0" : {
+              "definitionLines" : [
+                73
+              ],
+              "numReferrers" : 1
+            },
+            "ge-0/0/0.0" : {
+              "definitionLines" : [
+                73
+              ],
+              "numReferrers" : 3
+            },
+            "ge-0/0/1" : {
+              "definitionLines" : [
+                74
+              ],
+              "numReferrers" : 1
+            },
+            "ge-0/0/1.0" : {
+              "definitionLines" : [
+                74
+              ],
+              "numReferrers" : 3
+            },
+            "ge-0/0/2" : {
+              "definitionLines" : [
+                75
+              ],
+              "numReferrers" : 1
+            },
+            "ge-0/0/2.0" : {
+              "definitionLines" : [
+                75
+              ],
+              "numReferrers" : 2
+            },
+            "lo0" : {
+              "definitionLines" : [
+                77
+              ],
+              "numReferrers" : 1
+            },
+            "lo0.0" : {
+              "definitionLines" : [
+                77
+              ],
+              "numReferrers" : 2
+            },
+            "st0" : {
+              "definitionLines" : [
+                78,
+                79
+              ],
+              "numReferrers" : 2
+            },
+            "st0.1" : {
+              "definitionLines" : [
+                78
+              ],
+              "numReferrers" : 2
+            },
+            "st0.2" : {
+              "definitionLines" : [
+                79
+              ],
+              "numReferrers" : 3
+            }
+          },
           "ipsec policy" : {
             "test-ipsec-policy" : {
               "definitionLines" : [
@@ -6106,75 +6349,6 @@
                 90
               ],
               "numReferrers" : 1
-            }
-          }
-        }
-      },
-      "undefinedReferences" : {
-        "configs/junos-srx-1.cfg" : {
-          "interface" : {
-            "ge-0/0/0.0" : {
-              "ike gateway external-interface" : [
-                30
-              ]
-            },
-            "ge-0/0/1.0" : {
-              "ike gateway external-interface" : [
-                27
-              ]
-            },
-            "st0.2" : {
-              "ipsec vpn bind-interface" : [
-                36
-              ]
-            },
-            "st0.3" : {
-              "ipsec vpn bind-interface" : [
-                33
-              ]
-            }
-          }
-        },
-        "configs/junos-srx-2.cfg" : {
-          "interface" : {
-            "ge-0/0/0.0" : {
-              "ike gateway external-interface" : [
-                27
-              ]
-            },
-            "ge-0/0/1.0" : {
-              "ike gateway external-interface" : [
-                30
-              ]
-            },
-            "st0.1" : {
-              "ipsec vpn bind-interface" : [
-                33
-              ]
-            },
-            "st0.3" : {
-              "ipsec vpn bind-interface" : [
-                36
-              ]
-            }
-          }
-        },
-        "configs/junos-srx-3.cfg" : {
-          "interface" : {
-            "ge-0/0/0.0" : {
-              "ike gateway external-interface" : [
-                30
-              ]
-            },
-            "ge-0/0/1.0" : {
-              "ike gateway external-interface" : [
-                27
-              ]
-            },
-            "st0.2" : {
-              "ipsec vpn bind-interface" : [
-                33
-              ]
             }
           }
         }

@@ -42,8 +42,7 @@ public final class ReachFilterQuestion extends Question {
 
   private static final String PROP_FILTER_SPECIFIER_INPUT = "filterRegex";
 
-  // TODO: this should probably be "action" for consistency
-  private static final String PROP_QUERY = "query";
+  private static final String PROP_COMPLEMENT_HEADERSPACE = "complementHeaderSpace";
 
   private static final String PROP_DESTINATION_IP_SPACE_SPECIFIER_FACTORY =
       "destinationIpSpaceSpecifierFactory";
@@ -65,11 +64,16 @@ public final class ReachFilterQuestion extends Question {
 
   private static final String PROP_SOURCE_IP_SPACE_SPECIFIER_INPUT = "src";
 
+  // TODO: this should probably be "action" for consistency
+  private static final String PROP_QUERY = "query";
+
   public enum Type {
     PERMIT,
     DENY,
     MATCH_LINE
   }
+
+  private final boolean _complementHeaderSpace;
 
   // Invariant: null unless _type == MATCH_LINE
   @Nullable private Integer _lineNumber;
@@ -98,6 +102,7 @@ public final class ReachFilterQuestion extends Question {
 
   @JsonCreator
   private ReachFilterQuestion(
+      @JsonProperty(PROP_COMPLEMENT_HEADERSPACE) boolean complementHeaderSpace,
       @JsonProperty(PROP_FILTER_SPECIFIER_INPUT) @Nullable String filterSpecifierInput,
       @JsonProperty(PROP_DESTINATION_IP_SPACE_SPECIFIER_FACTORY) @Nullable
           String destinationIpSpaceSpecifierFactory,
@@ -113,6 +118,7 @@ public final class ReachFilterQuestion extends Question {
       @JsonProperty(PROP_SOURCE_IP_SPACE_SPECIFIER_INPUT) @Nullable
           String sourceIpSpaceSpecifierInput,
       @JsonProperty(PROP_QUERY) @Nullable String type) {
+    _complementHeaderSpace = complementHeaderSpace;
     _filterSpecifierInput = filterSpecifierInput;
     _nodeSpecifierFactory = firstNonNull(nodeSpecifierFactory, FlexibleNodeSpecifierFactory.NAME);
     _nodeSpecifierInput = nodesSpecifierInput;
@@ -129,7 +135,12 @@ public final class ReachFilterQuestion extends Question {
   }
 
   ReachFilterQuestion() {
-    this(null, null, null, null, null, null, null, null, null, null, null);
+    this(false, null, null, null, null, null, null, null, null, null, null, null);
+  }
+
+  @JsonProperty(PROP_COMPLEMENT_HEADERSPACE)
+  public boolean getComplementHeaderSpace() {
+    return _complementHeaderSpace;
   }
 
   @Override
@@ -239,6 +250,7 @@ public final class ReachFilterQuestion extends Question {
         .setDstPorts(_dstPorts)
         .setDstProtocols(_dstProtocols)
         .setSrcPorts(_srcPorts)
+        .setNegate(_complementHeaderSpace)
         .build();
   }
 
@@ -274,6 +286,7 @@ public final class ReachFilterQuestion extends Question {
 
   @VisibleForTesting
   static final class Builder {
+    private boolean _complementHeaderSpace;
     private String _filterSpecifierInput;
     private String _nodeSpecifierFactory;
     private String _nodeSpecifierInput;
@@ -287,6 +300,11 @@ public final class ReachFilterQuestion extends Question {
     private String _type;
 
     private Builder() {}
+
+    public Builder setComplementHeaderSpace(boolean complementHeaderSpace) {
+      _complementHeaderSpace = complementHeaderSpace;
+      return this;
+    }
 
     public Builder setFilterSpecifierInput(String filterSpecifierInput) {
       this._filterSpecifierInput = filterSpecifierInput;
@@ -346,6 +364,7 @@ public final class ReachFilterQuestion extends Question {
 
     public ReachFilterQuestion build() {
       return new ReachFilterQuestion(
+          _complementHeaderSpace,
           _filterSpecifierInput,
           _destinationIpSpaceSpecifierFactory,
           _destinationIpSpaceSpecifierInput,
