@@ -9,7 +9,8 @@
     "finalNodesSpecifierFactory": "${finalNodesSpecifierFactory}",
     "finalNodesSpecifierInput": "${finalNodesSpecifierInput}",
     "sourceLocationSpecifierFactory": "${sourceLocationSpecifierFactory}",
-    "sourceLocationSpecifierInput": "${src}"
+    "sourceLocationSpecifierInput": "${start}",
+    "sourceIpSpaceSpecifierInput": "${srcIp}"
   },
   "instance": {
     "description": "Find flows that match the ingress and egress location, src and dest ip address and disposition constraints, as described by the input specifiers.",
@@ -58,9 +59,14 @@
         "optional": true,
         "type": "string"
       },
-      "src": {
+      "start": {
         "description": "Flexible specification of source locations",
         "optional": false,
+        "type": "string"
+      },
+      "srcIp": {
+        "description": "Flexible specification of source Ip -- filled based on location if unspecified",
+        "optional": true,
         "type": "string"
       }
     }
