@@ -38,7 +38,7 @@
             },
             "nodes": {
               "description": "Only include nodes whose name matches this regex",
-              "type": "javaRegex",
+              "type": "nodeSpec",
               "value": ".*"
             }
         }
