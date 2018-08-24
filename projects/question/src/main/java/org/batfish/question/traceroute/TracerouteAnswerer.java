@@ -137,7 +137,7 @@ public final class TracerouteAnswerer extends Answerer {
    * Converts {@code FlowHistoryInfo} into {@link Row}. Expects that the history object contains
    * traces for only one environment
    */
-  static Row flowHistoryToRow(FlowHistoryInfo historyInfo) {
+  Row flowHistoryToRow(FlowHistoryInfo historyInfo) {
     // there should be only environment in this object
     checkArgument(
         historyInfo.getPaths().size() == 1,
@@ -153,7 +153,7 @@ public final class TracerouteAnswerer extends Answerer {
    * Converts {@code FlowHistoryInfo} into {@link Row}. Expects that the history object contains
    * traces for base and delta environments
    */
-  static Row diffFlowHistoryToRow(FlowHistoryInfo historyInfo) {
+  Row diffFlowHistoryToRow(FlowHistoryInfo historyInfo) {
     // there should only be two environments in this object
     checkArgument(
         historyInfo.getPaths().size() == 2,
@@ -164,16 +164,13 @@ public final class TracerouteAnswerer extends Answerer {
         COL_FLOW,
         historyInfo.getFlow(),
         TableDiff.baseColumnName(COL_TRACES),
-        historyInfo.getPaths().get("BASE"),
+        historyInfo.getPaths().get(_batfish.getBaseFlowTag()),
         TableDiff.deltaColumnName(COL_TRACES),
-        historyInfo.getPaths().get("DELTA"));
+        historyInfo.getPaths().get(_batfish.getDeltaFlowTag()));
   }
 
-  /**
-   * Converts a flowHistory object into a set of Rows. Expects that the traces correspond to only
-   * one environment.
-   */
-  public static Multiset<Row> flowHistoryToRows(FlowHistory flowHistory, boolean differential) {
+  /** Converts a flowHistory object into a set of Rows. */
+  public Multiset<Row> flowHistoryToRows(FlowHistory flowHistory, boolean differential) {
     Multiset<Row> rows = LinkedHashMultiset.create();
     if (differential) {
       for (FlowHistoryInfo historyInfo : flowHistory.getTraces().values()) {

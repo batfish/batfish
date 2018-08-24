@@ -21,14 +21,16 @@ import org.batfish.datamodel.table.TableMetadata;
 public class ReducedReachabilityAnswerer extends Answerer {
   public static final String COL_FLOW = "flow";
 
-  static final String COL_TRACES = "traces";
+  static final String COL_BASE_TRACES = TableDiff.baseColumnName(getTracesColumnName());
 
-  static final String COL_BASE_TRACES = TableDiff.baseColumnName(COL_TRACES);
-
-  static final String COL_DELTA_TRACES = TableDiff.deltaColumnName(COL_TRACES);
+  static final String COL_DELTA_TRACES = TableDiff.deltaColumnName(getTracesColumnName());
 
   public ReducedReachabilityAnswerer(Question question, IBatfish batfish) {
     super(question, batfish);
+  }
+
+  private static String getTracesColumnName() {
+    return "traces";
   }
 
   @Override
@@ -76,7 +78,7 @@ public class ReducedReachabilityAnswerer extends Answerer {
    * Converts a flowHistory object into a set of Rows. Expects that the traces correspond to only
    * one environment.
    */
-  private static Multiset<Row> flowHistoryToRows(FlowHistory flowHistory) {
+  private Multiset<Row> flowHistoryToRows(FlowHistory flowHistory) {
     Multiset<Row> rows = LinkedHashMultiset.create();
     for (FlowHistoryInfo historyInfo : flowHistory.getTraces().values()) {
       rows.add(
@@ -84,9 +86,9 @@ public class ReducedReachabilityAnswerer extends Answerer {
               COL_FLOW,
               historyInfo.getFlow(),
               COL_BASE_TRACES,
-              historyInfo.getPaths().get("BASE"),
+              historyInfo.getPaths().get(_batfish.getBaseFlowTag()),
               COL_DELTA_TRACES,
-              historyInfo.getPaths().get("DELTA")));
+              historyInfo.getPaths().get(_batfish.getDeltaFlowTag())));
     }
     return rows;
   }

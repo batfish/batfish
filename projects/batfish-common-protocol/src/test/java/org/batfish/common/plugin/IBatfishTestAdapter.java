@@ -109,12 +109,22 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
+  public String getBaseFlowTag() {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public String getContainerName() {
     throw new UnsupportedOperationException();
   }
 
   @Override
   public DataPlanePlugin getDataPlanePlugin() {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public String getDeltaFlowTag() {
     throw new UnsupportedOperationException();
   }
 

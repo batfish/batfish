@@ -5,7 +5,6 @@ import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.everyItem;
 
 import com.google.common.collect.ImmutableList;
 import java.io.IOException;
@@ -63,17 +62,17 @@ public class MultipathConsistencyQuestionTest {
             .build();
 
     assertThat(
-        ae.getRows().getData(), everyItem(hasColumn("flow", equalTo(testFlow), Schema.FLOW)));
+        ae.getRows().getData().iterator().next(),
+        hasColumn("flow", equalTo(testFlow), Schema.FLOW));
 
     assertThat(
-        ae.getRows().getData(),
-        everyItem(
-            hasColumn(
-                "traces",
-                containsInAnyOrder(
-                    ImmutableList.of(
-                        hasDisposition(FlowDisposition.DENIED_IN),
-                        hasDisposition(FlowDisposition.ACCEPTED))),
-                Schema.set(Schema.FLOW_TRACE))));
+        ae.getRows().getData().iterator().next(),
+        hasColumn(
+            "traces",
+            containsInAnyOrder(
+                ImmutableList.of(
+                    hasDisposition(FlowDisposition.DENIED_IN),
+                    hasDisposition(FlowDisposition.ACCEPTED))),
+            Schema.set(Schema.FLOW_TRACE)));
   }
 }

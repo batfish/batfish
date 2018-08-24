@@ -1827,6 +1827,16 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
+  public String getBaseFlowTag() {
+    return BASE_TESTRIG_TAG;
+  }
+
+  @Override
+  public String getDeltaFlowTag() {
+    return DELTA_TESTRIG_TAG;
+  }
+
+  @Override
   public String getFlowTag() {
     return getFlowTag(_testrigSettings);
   }
