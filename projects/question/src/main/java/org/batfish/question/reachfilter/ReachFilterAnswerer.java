@@ -50,8 +50,8 @@ import org.batfish.specifier.SpecifierContext;
 
 /** Answerer for ReachFilterQuestion */
 public final class ReachFilterAnswerer extends Answerer {
-  static final String COLUMN_SNAPSHOT = "Snapshot";
-  static final String COLUMN_RESULT_TYPE = "Result_Type";
+  static final String COLUMN_SNAPSHOT = "snapshot";
+  static final String COLUMN_RESULT_TYPE = "resultType";
 
   static final String BASE = "Base";
   static final String DELTA = "Delta";

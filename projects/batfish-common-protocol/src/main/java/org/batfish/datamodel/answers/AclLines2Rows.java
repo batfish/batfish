@@ -21,12 +21,12 @@ import org.batfish.datamodel.table.Row;
  */
 @ParametersAreNonnullByDefault
 public class AclLines2Rows implements AclLinesAnswerElementInterface {
-  public static final String COL_SOURCES = "aclSources";
-  public static final String COL_LINES = "lines";
-  public static final String COL_BLOCKED_LINE_NUM = "blockedLineNum";
-  public static final String COL_BLOCKING_LINE_NUMS = "blockingLineNums";
-  public static final String COL_DIFF_ACTION = "differentAction";
-  public static final String COL_MESSAGE = "message";
+  public static final String COL_SOURCES = "ACL_Sources";
+  public static final String COL_LINES = "Lines";
+  public static final String COL_BLOCKED_LINE_NUM = "Blocked_Line_Num";
+  public static final String COL_BLOCKING_LINE_NUMS = "Blocking_Line_Nums";
+  public static final String COL_DIFF_ACTION = "Different_Action";
+  public static final String COL_MESSAGE = "Message";
 
   private final Multiset<Row> _rows = HashMultiset.create();
 
