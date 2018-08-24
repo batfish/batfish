@@ -80,7 +80,6 @@ public class ColumnMetadataTest {
 
     // Allow / in the column name
     assertThat(
-        ColumnMetadata.isLegalColumnName("~col_name_test:default:123.234.456.0/21~"),
-        equalTo(true));
+        ColumnMetadata.isLegalColumnName("~col_name_test:default:192.168.10.1/24~"), equalTo(true));
   }
 }

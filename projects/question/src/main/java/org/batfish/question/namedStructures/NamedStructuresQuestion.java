@@ -11,9 +11,9 @@ import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 
 /**
- * A question that returns properties of nodes in a tabular format. {@link
+ * A question that returns named structures of nodes in a tabular format. {@link
  * NamedStructuresQuestion#_nodeRegex} determines which nodes are included, and {@link
- * NamedStructuresQuestion#_propertySpec} determines which properties are included.
+ * NamedStructuresQuestion#_propertySpec} determines which named structures are included.
  */
 public class NamedStructuresQuestion extends Question {
 
