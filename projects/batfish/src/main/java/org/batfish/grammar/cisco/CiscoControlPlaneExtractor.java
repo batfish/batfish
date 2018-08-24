@@ -4246,8 +4246,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       DynamicIpBgpPeerGroup pg = proc.addDynamicIpPeerGroup(prefix);
       pg.setGroupName(name);
       pg.setGroupNameLine(line);
-      if (ctx.as != null) {
-        long remoteAs = toLong(ctx.as);
+      if (ctx.bgp_asn() != null) {
+        long remoteAs = toAsNum(ctx.bgp_asn());
         pg.setRemoteAs(remoteAs);
       }
     } else if (ctx.IPV6_PREFIX() != null) {
@@ -4255,8 +4255,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       DynamicIpv6BgpPeerGroup pg = proc.addDynamicIpv6PeerGroup(prefix6);
       pg.setGroupName(name);
       pg.setGroupNameLine(line);
-      if (ctx.as != null) {
-        long remoteAs = toLong(ctx.as);
+      if (ctx.bgp_asn() != null) {
+        long remoteAs = toAsNum(ctx.bgp_asn());
         pg.setRemoteAs(remoteAs);
       }
     }
@@ -6250,7 +6250,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitLocal_as_bgp_tail(Local_as_bgp_tailContext ctx) {
-    long as = toLong(ctx.as);
+    long as = toAsNum(ctx.bgp_asn());
     _currentPeerGroup.setLocalAs(as);
   }
 
@@ -7507,7 +7507,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitRemote_as_bgp_tail(Remote_as_bgp_tailContext ctx) {
     BgpProcess proc = currentVrf().getBgpProcess();
-    long as = toLong(ctx.as);
+    long as = toAsNum(ctx.bgp_asn());
     if (_currentPeerGroup != proc.getMasterBgpPeerGroup()) {
       _currentPeerGroup.setRemoteAs(as);
     } else {
@@ -7702,7 +7702,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     RoutingProtocol sourceProtocol = RoutingProtocol.BGP;
     OspfRedistributionPolicy r = new OspfRedistributionPolicy(sourceProtocol);
     proc.getRedistributionPolicies().put(sourceProtocol, r);
-    int as = toInteger(ctx.as);
+    long as = toAsNum(ctx.bgp_asn());
     r.getSpecialAttributes().put(OspfRedistributionPolicy.BGP_AS, as);
     if (ctx.metric != null) {
       int metric = toInteger(ctx.metric);
@@ -9804,14 +9804,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private OriginExpr toOriginExpr(Origin_expr_literalContext ctx) {
     OriginType originType;
-    Integer asNum = null;
+    Long asNum = null;
     LiteralOrigin originExpr;
     if (ctx.IGP() != null) {
       originType = OriginType.IGP;
     } else if (ctx.INCOMPLETE() != null) {
       originType = OriginType.INCOMPLETE;
-    } else if (ctx.as != null) {
-      asNum = toInteger(ctx.as);
+    } else if (ctx.bgp_asn() != null) {
+      asNum = toAsNum(ctx.bgp_asn());
       originType = OriginType.IGP;
     } else {
       throw convError(OriginExpr.class, ctx);
