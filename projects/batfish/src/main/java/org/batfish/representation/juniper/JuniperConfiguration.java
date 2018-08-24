@@ -317,7 +317,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     boolean multipathMultipleAsSet = false;
 
     if (mg.getLocalAs() == null) {
-      Integer routingInstanceAs = routingInstance.getAs();
+      Long routingInstanceAs = routingInstance.getAs();
       if (routingInstanceAs == null) {
         routingInstanceAs = _defaultRoutingInstance.getAs();
       }

@@ -156,6 +156,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_multipathContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_neighborContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_remove_privateContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_typeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bgp_asnContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bl_loopsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bl_numberContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bl_privateContext;
@@ -1405,6 +1406,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     } else {
       throw new BatfishException("Invalid ike authentication method: " + ctx.getText());
     }
+  }
+
+  private static long toAsNum(Bgp_asnContext ctx) {
+    if (ctx.asn != null) {
+      return toLong(ctx.asn);
+    }
+    return (toLong(ctx.asn4hi) << 16) + toLong(ctx.asn4lo);
   }
 
   private static int toInt(TerminalNode node) {
@@ -3041,7 +3049,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitBl_number(Bl_numberContext ctx) {
-    int localAs = toInt(ctx.as);
+    long localAs = toAsNum(ctx.asn);
     _currentBgpGroup.setLocalAs(localAs);
   }
 
@@ -3052,7 +3060,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitBpa_as(Bpa_asContext ctx) {
-    long peerAs = toLong(ctx.as);
+    long peerAs = toAsNum(ctx.asn);
     _currentBgpGroup.setPeerAs(peerAs);
   }
 
@@ -4156,8 +4164,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitRo_autonomous_system(Ro_autonomous_systemContext ctx) {
-    if (ctx.as != null) {
-      int as = toInt(ctx.as);
+    if (ctx.asn != null) {
+      long as = toAsNum(ctx.asn);
       _currentRoutingInstance.setAs(as);
     }
   }

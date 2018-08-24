@@ -63,6 +63,12 @@ as_unit
   | DEC
 ;
 
+bgp_asn
+:
+    asn = DEC
+    | asn4hi = DEC PERIOD asn4lo = DEC
+;
+
 description
 :
   DESCRIPTION text = M_Description_DESCRIPTION?
