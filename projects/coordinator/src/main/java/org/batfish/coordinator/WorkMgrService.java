@@ -45,11 +45,10 @@ import org.batfish.coordinator.AnalysisMetadataMgr.AnalysisType;
 import org.batfish.coordinator.WorkDetails.WorkType;
 import org.batfish.coordinator.WorkQueueMgr.QueueType;
 import org.batfish.datamodel.TestrigMetadata;
-import org.batfish.datamodel.answers.AnalysisAnswerMetricsResult;
 import org.batfish.datamodel.answers.Answer;
+import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.AutocompleteSuggestion;
 import org.batfish.datamodel.answers.AutocompleteSuggestion.CompletionType;
-import org.batfish.datamodel.answers.ColumnAggregation;
 import org.batfish.datamodel.answers.GetAnalysisAnswerMetricsAnswer;
 import org.batfish.datamodel.pojo.WorkStatus;
 import org.batfish.datamodel.questions.Question;
@@ -798,7 +797,6 @@ public class WorkMgrService {
    * @param networkName The name of the network in which the analysis resides
    * @param snapshotName The name of the snapshot on which the analysis was run
    * @param deltaSnapshot The name of the delta snapshot on which the analysis was run
-   * @param aggregationsStr A list of aggregations to be computed and returned for each table
    * @param analysisName The name of the analysis
    * @param analysisQuestionsStr The names of the questions for which to retrieve metrics
    * @return TODO: document JSON response
@@ -812,7 +810,6 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_NETWORK_NAME) String networkName,
       @FormDataParam(CoordConsts.SVC_KEY_SNAPSHOT_NAME) String snapshotName,
       @FormDataParam(CoordConsts.SVC_KEY_DELTA_SNAPSHOT_NAME) String deltaSnapshot,
-      @FormDataParam(CoordConsts.SVC_KEY_AGGREGATIONS) String aggregationsStr,
       @FormDataParam(CoordConsts.SVC_KEY_ANALYSIS_NAME) String analysisName,
       @FormDataParam(CoordConsts.SVC_KEY_ANALYSIS_QUESTIONS)
           String analysisQuestionsStr /* optional */,
@@ -859,26 +856,16 @@ public class WorkMgrService {
         }
       }
 
-      List<ColumnAggregation> aggregations =
-          BatfishObjectMapper.mapper()
-              .readValue(aggregationsStr, new TypeReference<List<ColumnAggregation>>() {});
-
-      Map<String, String> answers =
+      Map<String, AnswerMetadata> answersMetadata =
           Main.getWorkMgr()
-              .getAnalysisAnswers(
+              .getAnalysisAnswersMetadata(
                   networkNameParam,
                   snapshotNameParam,
-                  BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
                   deltaSnapshotParam,
-                  BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
                   analysisName,
                   analysisQuestions);
 
-      Map<String, AnalysisAnswerMetricsResult> analysisAnswerMetricsResults =
-          Main.getWorkMgr().getAnalysisAnswersMetrics(answers, aggregations);
-
-      GetAnalysisAnswerMetricsAnswer answer =
-          new GetAnalysisAnswerMetricsAnswer(analysisAnswerMetricsResults);
+      GetAnalysisAnswerMetricsAnswer answer = new GetAnalysisAnswerMetricsAnswer(answersMetadata);
 
       String answerStr = BatfishObjectMapper.writePrettyString(answer);
 

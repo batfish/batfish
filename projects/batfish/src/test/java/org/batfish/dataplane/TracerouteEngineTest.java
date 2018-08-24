@@ -334,13 +334,13 @@ public class TracerouteEngineTest {
     Flow flow =
         Flow.builder()
             .setIngressNode(c.getHostname())
-            .setTag(Batfish.BASE_TESTRIG_TAG)
+            .setTag(Flow.BASE_FLOW_TAG)
             .setDstIp(new Ip("1.0.0.1"))
             .build();
     b.processFlows(ImmutableSet.of(flow), false);
     FlowHistory history = b.getHistory();
     FlowHistoryInfo info = history.getTraces().get(flow.toString());
-    FlowTrace trace = info.getPaths().get(Batfish.BASE_TESTRIG_TAG).iterator().next();
+    FlowTrace trace = info.getPaths().get(Flow.BASE_FLOW_TAG).iterator().next();
 
     /* Flow should be blocked by ACL before ARP, which would otherwise result in unreachable neighbor */
     assertThat(trace.getDisposition(), equalTo(FlowDisposition.DENIED_OUT));
@@ -382,13 +382,13 @@ public class TracerouteEngineTest {
     Flow flow =
         Flow.builder()
             .setIngressNode(c1.getHostname())
-            .setTag(Batfish.BASE_TESTRIG_TAG)
+            .setTag(Flow.BASE_FLOW_TAG)
             .setDstIp(new Ip("1.0.0.1"))
             .build();
     b.processFlows(ImmutableSet.of(flow), false);
     FlowHistory history = b.getHistory();
     FlowHistoryInfo info = history.getTraces().get(flow.toString());
-    FlowTrace trace = info.getPaths().get(Batfish.BASE_TESTRIG_TAG).iterator().next();
+    FlowTrace trace = info.getPaths().get(Flow.BASE_FLOW_TAG).iterator().next();
 
     /* Flow should be blocked by ACL before ARP, which would otherwise result in unreachable neighbor */
     assertThat(trace.getDisposition(), equalTo(FlowDisposition.DENIED_OUT));

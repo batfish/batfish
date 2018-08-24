@@ -6,6 +6,9 @@
   "dstPorts" : [
     "0-0"
   ],
+  "dstProtocols" : [
+    "tcp"
+  ],
   "filterRegex" : ".*",
   "nodeSpecifierFactory" : "nodesFactory",
   "nodeSpecifierInput" : ".*",
@@ -50,6 +53,15 @@
         "type" : "subrange",
         "value" : [
           0
+        ]
+      },
+      "dstProtocols" : {
+        "description" : "Destination protocols",
+        "minElements" : 0,
+        "optional" : true,
+        "type" : "string",
+        "value" : [
+          "tcp"
         ]
       },
       "filterRegex" : {
