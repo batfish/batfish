@@ -1581,7 +1581,7 @@ public class WorkMgr extends AbstractCoordinator {
           == null) {
         throw new BatfishException(
             String.format(
-                "Snapshot/environment metadata not found for :%s/%s",
+                "Snapshot/environment metadata not found for %s/%s",
                 workDetails.baseTestrig, workDetails.baseEnv));
       }
       if (workDetails.isDifferential
@@ -1590,7 +1590,7 @@ public class WorkMgr extends AbstractCoordinator {
               == null) {
         throw new BatfishException(
             String.format(
-                "Snapshot/environment metadata not found for :%s/%s",
+                "Snapshot/environment metadata not found for %s/%s",
                 workDetails.deltaTestrig, workDetails.deltaEnv));
       }
       success = _workQueueMgr.queueUnassignedWork(new QueuedWork(workItem, workDetails));
