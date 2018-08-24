@@ -1,8 +1,8 @@
 {
     "class": "org.batfish.question.bgpproperties.BgpPropertiesQuestion",
     "differential": false,
-    "nodeRegex": "${nodeRegex}",
-    "propertySpec": "${propertySpec}",
+    "nodes": "${nodes}",
+    "properties": "${properties}",
     "instance": {
         "description": "Return BGP configuration properties",
         "instanceName": "bgpProperties",
@@ -11,13 +11,13 @@
             "configuration"
         ],
         "variables": {
-            "nodeRegex": {
+            "nodes": {
                 "description": "Only include nodes that match this regex",
                 "type": "nodeSpec",
                 "optional": true
             },
-            "propertySpec": {
-                "description": "Only include properties that match this regex. Default behavior is to return all properties",
+            "properties": {
+                "description": "Only include properties that match this regex",
                 "type": "bgpPropertySpec",
                 "optional": true
             }

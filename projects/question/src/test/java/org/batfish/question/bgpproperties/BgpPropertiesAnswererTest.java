@@ -35,8 +35,8 @@ public class BgpPropertiesAnswererTest {
     Configuration conf1 = new Configuration("node1", ConfigurationFormat.CISCO_IOS);
     conf1.setVrfs(ImmutableMap.of("vrf1", vrf1));
 
-    String property1 = "multipath-ebgp";
-    String property2 = "tie-breaker";
+    String property1 = BgpPropertySpecifier.MULTIPATH_EBGP;
+    String property2 = BgpPropertySpecifier.TIE_BREAKER;
 
     BgpPropertiesQuestion question =
         new BgpPropertiesQuestion(null, new BgpPropertySpecifier(property1 + "|" + property2));
@@ -45,7 +45,7 @@ public class BgpPropertiesAnswererTest {
 
     Multiset<Row> propertyRows =
         BgpPropertiesAnswerer.getProperties(
-            question.getPropertySpec(),
+            question.getProperties(),
             ImmutableMap.of("node1", conf1),
             ImmutableSet.of("node1"),
             metadata.toColumnMap());
