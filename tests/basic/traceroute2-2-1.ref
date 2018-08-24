@@ -4,20 +4,6 @@
     "metadata" : {
       "columnMetadata" : [
         {
-          "description" : "Ingress node",
-          "isKey" : true,
-          "isValue" : false,
-          "name" : "node",
-          "schema" : "Node"
-        },
-        {
-          "description" : "Destination IP of the packet",
-          "isKey" : true,
-          "isValue" : false,
-          "name" : "dstIp",
-          "schema" : "Ip"
-        },
-        {
           "description" : "The flow",
           "isKey" : true,
           "isValue" : false,
@@ -25,24 +11,10 @@
           "schema" : "Flow"
         },
         {
-          "description" : "The number of paths",
+          "description" : "The flow traces",
           "isKey" : false,
           "isValue" : true,
-          "name" : "numPaths",
-          "schema" : "Integer"
-        },
-        {
-          "description" : "The set of outcomes",
-          "isKey" : false,
-          "isValue" : true,
-          "name" : "results",
-          "schema" : "Set<String>"
-        },
-        {
-          "description" : "The paths",
-          "isKey" : false,
-          "isValue" : true,
-          "name" : "paths",
+          "name" : "traces",
           "schema" : "Set<FlowTrace>"
         }
       ],
@@ -50,11 +22,6 @@
     },
     "rows" : [
       {
-        "node" : {
-          "id" : "node-host2",
-          "name" : "host2"
-        },
-        "dstIp" : "1.0.1.1",
         "flow" : {
           "dscp" : 0,
           "dstIp" : "1.0.1.1",
@@ -80,11 +47,7 @@
           "tcpFlagsSyn" : 0,
           "tcpFlagsUrg" : 0
         },
-        "numPaths" : 4,
-        "results" : [
-          "ACCEPTED"
-        ],
-        "paths" : [
+        "traces" : [
           {
             "disposition" : "ACCEPTED",
             "hops" : [
