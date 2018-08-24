@@ -601,10 +601,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     return _activeTestrigSettings;
   }
 
-  public String getAggregations() {
-    return _config.getString(BfConsts.ARG_AGGREGATIONS);
-  }
-
   public String getAnalysisName() {
     return _config.getString(BfConsts.ARG_ANALYSIS_NAME);
   }
@@ -983,7 +979,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
   }
 
   private void initConfigDefaults() {
-    setDefaultProperty(BfConsts.ARG_AGGREGATIONS, null);
     setDefaultProperty(BfConsts.ARG_ANALYSIS_NAME, null);
     setDefaultProperty(BfConsts.ARG_BDP_DETAIL, false);
     setDefaultProperty(BfConsts.ARG_BDP_MAX_OSCILLATION_RECOVERY_ATTEMPTS, 0);
@@ -1079,9 +1074,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
   }
 
   private void initOptions() {
-
-    addOption(
-        BfConsts.ARG_AGGREGATIONS, "aggregations to be performed on table answers", "aggregations");
 
     addOption(BfConsts.ARG_ANALYSIS_NAME, "name of analysis", ARGNAME_NAME);
 
@@ -1372,7 +1364,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     }
 
     // REGULAR OPTIONS
-    getStringOptionValue(BfConsts.ARG_AGGREGATIONS);
     getStringOptionValue(BfConsts.ARG_ANALYSIS_NAME);
     getBooleanOptionValue(BfConsts.COMMAND_ANALYZE);
     getBooleanOptionValue(BfConsts.COMMAND_ANSWER);

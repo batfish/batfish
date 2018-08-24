@@ -256,7 +256,7 @@ final class BatfishStorage {
       String deltaSnapshotName,
       String questionName,
       boolean diff) {
-    // TODO: don't pass in questionPath
+    // TODO: https://github.com/batfish/batfish/issues/2143 don't pass in questionPath
     Path answerDir;
 
     if (questionName != null) {
@@ -341,6 +341,11 @@ final class BatfishStorage {
     if (answerDir == null) {
       // If settings has neither a question nor an analysis configured, don't write a file
       return;
+    }
+    answerDir.toFile().mkdirs();
+    if (!answerDir.toFile().exists() && !answerDir.toFile().mkdirs()) {
+      throw new BatfishException(
+          String.format("Unable to create a answer metadata directory '%s'", answerDir));
     }
     Path answerMetricsPath = answerDir.resolve(BfConsts.RELPATH_ANSWER_METADATA);
     CommonUtil.writeFile(answerMetricsPath, metricsStr);

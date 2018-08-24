@@ -136,7 +136,6 @@ import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.AnswerMetadataUtil;
 import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.AnswerSummary;
-import org.batfish.datamodel.answers.ColumnAggregation;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.DataPlaneAnswerElement;
 import org.batfish.datamodel.answers.FlattenVendorConfigurationAnswerElement;
@@ -527,8 +526,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
   private final List<TestrigSettings> _testrigSettingsStack;
 
   private Map<String, DataPlanePlugin> _dataPlanePlugins;
-
-  private List<ColumnAggregation> _aggregations;
 
   public Batfish(
       Settings settings,
@@ -2772,7 +2769,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   void outputAnswerMetadata(Answer answer) {
     _storage.storeAnswerMetadata(
-        AnswerMetadataUtil.computeAnswerMetadata(answer, _aggregations, _logger),
+        AnswerMetadataUtil.computeAnswerMetadata(answer, _logger),
         _settings.getAnalysisName(),
         _settings.getQuestionPath(),
         _baseTestrigSettings.getName(),
@@ -3883,7 +3880,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
 
     if (_settings.getAnswer()) {
-      initAggregations();
       try (ActiveSpan questionSpan =
           GlobalTracer.get().buildSpan("Getting answer to question").startActive()) {
         assert questionSpan != null; // avoid unused warning
@@ -3893,7 +3889,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
 
     if (_settings.getAnalyze()) {
-      initAggregations();
       answer.append(analyze());
       action = true;
     }
@@ -3912,22 +3907,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
       throw new CleanBatfishException("No task performed! Run with -help flag to see usage\n");
     }
     return answer;
-  }
-
-  private void initAggregations() {
-    String aggregationsStr = _settings.getAggregations();
-    if (aggregationsStr == null) {
-      _aggregations = ImmutableList.of();
-      return;
-    }
-    try {
-      _aggregations =
-          BatfishObjectMapper.mapper()
-              .readValue(aggregationsStr, new TypeReference<List<ColumnAggregation>>() {});
-    } catch (IOException e) {
-      throw new IllegalArgumentException(
-          String.format("Invalid aggregations: %s", aggregationsStr), e);
-    }
   }
 
   public static void serializeAsJson(Path outputPath, Object object, String objectName) {

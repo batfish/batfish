@@ -36,7 +36,6 @@ public class BfConsts {
       "/org/batfish/coordinator/config/coordinator.properties";
   public static final String ABSPATH_DEFAULT_SALT = "org/batfish/common/util/salt";
 
-  public static final String ARG_AGGREGATIONS = "aggregations";
   public static final String ARG_ANALYSIS_NAME = "analysisname";
   public static final String ARG_BDP_DETAIL = "bdpdetail";
   public static final String ARG_BDP_MAX_OSCILLATION_RECOVERY_ATTEMPTS =

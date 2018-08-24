@@ -2,12 +2,17 @@ package org.batfish.datamodel.answers;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.function.Function;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
@@ -17,20 +22,16 @@ public final class AnswerMetadataUtil {
   private AnswerMetadataUtil() {}
 
   public static @Nonnull AnswerMetadata computeAnswerMetadata(
-      @Nonnull Answer answer,
-      @Nonnull List<ColumnAggregation> columnAggregations,
-      BatfishLogger logger) {
+      @Nonnull Answer answer, @Nonnull BatfishLogger logger) {
     try {
-      return new AnswerMetadata(
-          computeMetrics(answer, columnAggregations, logger), answer.getStatus());
+      return new AnswerMetadata(computeMetrics(answer, logger), answer.getStatus());
     } catch (Exception e) {
       return new AnswerMetadata(null, AnswerStatus.FAILURE);
     }
   }
 
   @VisibleForTesting
-  static @Nullable Metrics computeMetrics(
-      Answer answer, List<ColumnAggregation> columnAggregations, BatfishLogger logger) {
+  static @Nullable Metrics computeMetrics(@Nonnull Answer answer, @Nonnull BatfishLogger logger) {
     if (answer.getAnswerElements().isEmpty()) {
       return null;
     }
@@ -40,29 +41,55 @@ public final class AnswerMetadataUtil {
     }
     TableAnswerElement table = (TableAnswerElement) ae;
     int numRows = table.getRowsList().size();
-    List<ColumnAggregationResult> columnAggregationResults =
-        computeColumnAggregations(table, columnAggregations, logger);
+    ImmutableList.Builder<ColumnAggregation> columnAggregationsBuilder = ImmutableList.builder();
+    table
+        .getMetadata()
+        .getColumnMetadata()
+        .stream()
+        .map(ColumnMetadata::getName)
+        .forEach(
+            column ->
+                Arrays.stream(Aggregation.values())
+                    .forEach(
+                        aggregation ->
+                            columnAggregationsBuilder.add(
+                                new ColumnAggregation(aggregation, column))));
+    Map<String, Map<Aggregation, Object>> columnAggregationResults =
+        computeColumnAggregations(table, columnAggregationsBuilder.build(), logger);
     return new Metrics(columnAggregationResults, numRows);
   }
 
   @VisibleForTesting
   @Nonnull
-  static List<ColumnAggregationResult> computeColumnAggregations(
+  static Map<String, Map<Aggregation, Object>> computeColumnAggregations(
       @Nonnull TableAnswerElement table,
       @Nonnull List<ColumnAggregation> aggregations,
-      BatfishLogger logger) {
-    return aggregations
+      @Nonnull BatfishLogger logger) {
+    Map<String, Map<Aggregation, Object>> columnAggregations = new HashMap<>();
+    aggregations
         .stream()
         .map(columnAggregation -> computeColumnAggregation(table, columnAggregation, logger))
-        .collect(ImmutableList.toImmutableList());
+        .forEach(
+            columnAggregationResult ->
+                columnAggregations
+                    .computeIfAbsent(columnAggregationResult.getColumn(), c -> new HashMap<>())
+                    .computeIfAbsent(
+                        columnAggregationResult.getAggregation(),
+                        a -> columnAggregationResult.getValue()));
+    return CommonUtil.toImmutableMap(
+        columnAggregations,
+        Entry::getKey,
+        columnAggregationsByColumnEntry ->
+            CommonUtil.toImmutableMap(
+                columnAggregationsByColumnEntry.getValue(), Entry::getKey, Entry::getValue));
   }
 
   @VisibleForTesting
   @Nonnull
   static ColumnAggregationResult computeColumnAggregation(
       @Nonnull TableAnswerElement table,
-      ColumnAggregation columnAggregation,
-      BatfishLogger logger) {
+      @Nonnull ColumnAggregation columnAggregation,
+      @Nonnull BatfishLogger logger) {
     Object value;
     String column = columnAggregation.getColumn();
     Aggregation aggregation = columnAggregation.getAggregation();
@@ -81,7 +108,7 @@ public final class AnswerMetadataUtil {
   @VisibleForTesting
   @Nullable
   static Integer computeColumnMax(
-      @Nonnull TableAnswerElement table, @Nonnull String column, BatfishLogger logger) {
+      @Nonnull TableAnswerElement table, @Nonnull String column, @Nonnull BatfishLogger logger) {
     ColumnMetadata columnMetadata = table.getMetadata().toColumnMap().get(column);
     if (columnMetadata == null) {
       String message = String.format("No column named: %s", column);

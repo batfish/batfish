@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import java.io.IOException;
 import java.util.List;
 import org.batfish.common.BatfishLogger;
@@ -42,52 +43,43 @@ public class AnswerMetadataUtilTest {
                     new DisplayHints().getTextDesc()))
             .addRow(Row.of(columnName, value)));
     testAnswer.setStatus(AnswerStatus.SUCCESS);
-    List<ColumnAggregation> aggregations =
-        ImmutableList.of(new ColumnAggregation(Aggregation.MAX, columnName));
 
     assertThat(
-        AnswerMetadataUtil.computeAnswerMetadata(testAnswer, aggregations, _logger),
+        AnswerMetadataUtil.computeAnswerMetadata(testAnswer, _logger),
         equalTo(
             new AnswerMetadata(
                 new Metrics(
-                    ImmutableList.of(
-                        new ColumnAggregationResult(Aggregation.MAX, columnName, value)),
-                    1),
+                    ImmutableMap.of(columnName, ImmutableMap.of(Aggregation.MAX, value)), 1),
                 AnswerStatus.SUCCESS)));
   }
 
   @Test
   public void testComputeAnswerMetadataUnsuccessfulAnswer() throws IOException {
-    String columnName = "col";
-
     Answer testAnswer = new Answer();
     testAnswer.setStatus(AnswerStatus.FAILURE);
-    List<ColumnAggregation> aggregations =
-        ImmutableList.of(new ColumnAggregation(Aggregation.MAX, columnName));
 
     assertThat(
-        AnswerMetadataUtil.computeAnswerMetadata(testAnswer, aggregations, _logger),
+        AnswerMetadataUtil.computeAnswerMetadata(testAnswer, _logger),
         equalTo(new AnswerMetadata(null, AnswerStatus.FAILURE)));
   }
 
   @Test
-  public void testComputeAnswerMetadataFailedComputation() throws IOException {
+  public void testComputeAnswerMetadataInapplicable() throws IOException {
     String columnName = "col";
-    int value = 5;
+    List<Integer> value = ImmutableList.of(5);
 
     Answer testAnswer = new Answer();
     testAnswer.addAnswerElement(
         new TableAnswerElement(
                 new TableMetadata(
-                    ImmutableList.of(new ColumnMetadata(columnName, Schema.INTEGER, "foobar")),
+                    ImmutableList.of(
+                        new ColumnMetadata(columnName, Schema.list(Schema.INTEGER), "foobar")),
                     new DisplayHints().getTextDesc()))
             .addRow(Row.of(columnName, value)));
     testAnswer.setStatus(AnswerStatus.SUCCESS);
-    List<ColumnAggregation> aggregations =
-        ImmutableList.of(new ColumnAggregation(Aggregation.MAX, "fakeColumn"));
 
     assertThat(
-        AnswerMetadataUtil.computeAnswerMetadata(testAnswer, aggregations, _logger),
+        AnswerMetadataUtil.computeAnswerMetadata(testAnswer, _logger),
         equalTo(new AnswerMetadata(null, AnswerStatus.FAILURE)));
   }
 
@@ -107,7 +99,7 @@ public class AnswerMetadataUtilTest {
 
     assertThat(
         AnswerMetadataUtil.computeColumnAggregations(table, aggregations, _logger),
-        equalTo(ImmutableList.of(new ColumnAggregationResult(Aggregation.MAX, columnName, value))));
+        equalTo(ImmutableMap.of(columnName, ImmutableMap.of(Aggregation.MAX, value))));
   }
 
   @Test

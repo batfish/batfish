@@ -40,7 +40,6 @@ import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.ColumnAggregation;
-import org.batfish.datamodel.answers.ColumnAggregationResult;
 import org.batfish.datamodel.answers.GetAnalysisAnswerMetricsAnswer;
 import org.batfish.datamodel.answers.Metrics;
 import org.batfish.datamodel.answers.Schema;
@@ -680,9 +679,7 @@ public class WorkMgrServiceTest {
     int value = 5;
     AnswerMetadata testAnswerMetadata =
         new AnswerMetadata(
-            new Metrics(
-                ImmutableList.of(new ColumnAggregationResult(Aggregation.MAX, columnName, value)),
-                1),
+            new Metrics(ImmutableMap.of(columnName, ImmutableMap.of(Aggregation.MAX, value)), 1),
             AnswerStatus.SUCCESS);
     String answerMetadata = BatfishObjectMapper.writePrettyString(testAnswerMetadata);
 
@@ -753,8 +750,7 @@ public class WorkMgrServiceTest {
                     questionName,
                     new AnswerMetadata(
                         new Metrics(
-                            ImmutableList.of(
-                                new ColumnAggregationResult(Aggregation.MAX, columnName, value)),
+                            ImmutableMap.of(columnName, ImmutableMap.of(Aggregation.MAX, value)),
                             1),
                         AnswerStatus.SUCCESS)))));
   }
