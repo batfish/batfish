@@ -1,5 +1,13 @@
 package org.batfish.question.reachfilter;
 
+import static org.batfish.question.tracefilters.TraceFiltersAnswerer.COLUMN_ACTION;
+import static org.batfish.question.tracefilters.TraceFiltersAnswerer.COLUMN_FILTER_NAME;
+import static org.batfish.question.tracefilters.TraceFiltersAnswerer.COLUMN_FLOW;
+import static org.batfish.question.tracefilters.TraceFiltersAnswerer.COLUMN_LINE_CONTENT;
+import static org.batfish.question.tracefilters.TraceFiltersAnswerer.COLUMN_LINE_NUMBER;
+import static org.batfish.question.tracefilters.TraceFiltersAnswerer.COLUMN_NODE;
+import static org.batfish.question.tracefilters.TraceFiltersAnswerer.COLUMN_TRACE;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
@@ -44,13 +52,6 @@ import org.batfish.specifier.SpecifierContext;
 public final class ReachFilterAnswerer extends Answerer {
   static final String COLUMN_SNAPSHOT = "snapshot";
   static final String COLUMN_RESULT_TYPE = "resultType";
-  static final String COLUMN_NODE = "node";
-  static final String COLUMN_FILTER_NAME = "filterName";
-  static final String COLUMN_FLOW = "flow";
-  static final String COLUMN_ACTION = "action";
-  static final String COLUMN_LINE_NUMBER = "lineNumber";
-  static final String COLUMN_LINE_CONTENT = "lineContent";
-  static final String COLUMN_TRACE = "trace";
 
   static final String BASE = "base";
   static final String DELTA = "delta";
