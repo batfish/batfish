@@ -48,7 +48,7 @@
       "nodeRegex" : {
         "description" : "Only include nodes whose name matches this regex",
         "optional" : false,
-        "type" : "javaRegex",
+        "type" : "nodeSpec",
         "value" : "as1core2"
       }
     }
