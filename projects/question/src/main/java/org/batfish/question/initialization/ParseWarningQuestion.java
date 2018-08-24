@@ -11,7 +11,7 @@ public final class ParseWarningQuestion extends Question {
 
   @Override
   public String getName() {
-    return "parsewarning";
+    return "parseWarning";
   }
 
   ParseWarningQuestion() {} // package-private constructor

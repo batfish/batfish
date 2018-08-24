@@ -10,13 +10,13 @@
       "default"
     ],
     "variables" : {
-      "nodeRegex" : {
-        "description" : "Only check nodes that match this specifier",
+      "nodes" : {
+        "description" : "Examine undefined references on nodes matching this name or regex",
         "optional" : false,
         "type" : "nodeSpec",
         "value" : ".*"
       }
     }
   },
-  "nodeRegex" : ".*"
+  "nodes" : ".*"
 }

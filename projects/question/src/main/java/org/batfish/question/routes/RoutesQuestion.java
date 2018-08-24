@@ -45,34 +45,34 @@ public class RoutesQuestion extends Question {
     }
   }
 
-  private static final String PROP_NODE_REGEX = "nodeRegex";
+  private static final String PROP_NODES = "nodes";
 
-  private static final String PROP_VRF_REGEX = "vrfRegex";
+  private static final String PROP_VRFS = "vrfs";
 
   private static final String PROP_PROTOCOL = "protocol";
 
   private static final String QUESTION_NAME = "routes2";
 
-  @Nonnull private NodesSpecifier _nodeRegex;
+  @Nonnull private NodesSpecifier _nodes;
 
-  @Nonnull private String _vrfRegex;
+  @Nonnull private String _vrfs;
 
   @Nonnull private RibProtocol _protocol;
 
   /**
    * Create a new question.
    *
-   * @param nodeRegex {@link NodesSpecifier} indicating which nodes' RIBs should be considered
-   * @param vrfRegex a regex pattern indicating which VRFs should be considered
+   * @param nodes {@link NodesSpecifier} indicating which nodes' RIBs should be considered
+   * @param vrfs a regex pattern indicating which VRFs should be considered
    * @param protocol a specific protocol RIB to return routes from.
    */
   @JsonCreator
   private RoutesQuestion(
-      @Nullable @JsonProperty(PROP_NODE_REGEX) NodesSpecifier nodeRegex,
-      @Nullable @JsonProperty(PROP_VRF_REGEX) String vrfRegex,
+      @Nullable @JsonProperty(PROP_NODES) NodesSpecifier nodes,
+      @Nullable @JsonProperty(PROP_VRFS) String vrfs,
       @Nullable @JsonProperty(PROP_PROTOCOL) RibProtocol protocol) {
-    _nodeRegex = firstNonNull(nodeRegex, NodesSpecifier.ALL);
-    _vrfRegex = firstNonNull(vrfRegex, ".*");
+    _nodes = firstNonNull(nodes, NodesSpecifier.ALL);
+    _vrfs = firstNonNull(vrfs, ".*");
     _protocol = firstNonNull(protocol, MAIN);
   }
 
@@ -91,16 +91,16 @@ public class RoutesQuestion extends Question {
     return QUESTION_NAME;
   }
 
-  @JsonProperty(PROP_NODE_REGEX)
+  @JsonProperty(PROP_NODES)
   @Nonnull
-  public NodesSpecifier getNodeRegex() {
-    return _nodeRegex;
+  public NodesSpecifier getNodes() {
+    return _nodes;
   }
 
-  @JsonProperty(PROP_VRF_REGEX)
+  @JsonProperty(PROP_VRFS)
   @Nonnull
-  public String getVrfRegex() {
-    return _vrfRegex;
+  public String getVrfs() {
+    return _vrfs;
   }
 
   @JsonProperty(PROP_PROTOCOL)

@@ -11,7 +11,7 @@ public final class FileParseStatusQuestion extends Question {
 
   @Override
   public String getName() {
-    return "fileparsestatus";
+    return "fileParseStatus";
   }
 
   FileParseStatusQuestion() {} // package-private constructor

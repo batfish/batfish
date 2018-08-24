@@ -1,10 +1,10 @@
 {
   "class" : "org.batfish.question.aaaauthenticationlogin.AaaAuthenticationLoginQuestion",
-  "nodeRegex" : ".*",
+  "nodes" : ".*",
   "differential" : false,
   "includeOneTableKeys" : true,
   "instance" : {
-    "description" : "Return nodes that do not require authentication on all lines.",
+    "description" : "Return nodes that do not require authentication on all lines",
     "instanceName" : "qname",
     "tags" : [
       "aaa",
@@ -13,8 +13,8 @@
       "dataModel"
     ],
     "variables" : {
-      "nodeRegex" : {
-        "description" : "Only include nodes that match this regex",
+      "nodes" : {
+        "description" : "Examine AAA Authentication on nodes matching this name or regex",
         "optional" : false,
         "type" : "nodeSpec",
         "value" : ".*"

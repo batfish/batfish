@@ -30,11 +30,11 @@ public class UndefinedReferencesQuestionPlugin extends QuestionPlugin {
 
   public static class UndefinedReferencesAnswerer extends Answerer {
 
-    static final String COL_CONTEXT = "context";
-    static final String COL_FILENAME = "filename";
-    static final String COL_LINES = "lines";
-    static final String COL_REF_NAME = "refName";
-    static final String COL_STRUCT_TYPE = "structType";
+    static final String COL_CONTEXT = "Context";
+    static final String COL_FILENAME = "File_Name";
+    static final String COL_LINES = "Lines";
+    static final String COL_REF_NAME = "Ref_Name";
+    static final String COL_STRUCT_TYPE = "Struct_Type";
 
     public UndefinedReferencesAnswerer(Question question, IBatfish batfish) {
       super(question, batfish);
@@ -47,7 +47,7 @@ public class UndefinedReferencesQuestionPlugin extends QuestionPlugin {
       // Find all the filenames that produced the queried nodes. This might have false positives if
       // a file produced multiple nodes, but that was already mis-handled before. Need to rewrite
       // this question as a TableAnswerElement.
-      Set<String> includeNodes = question.getNodeRegex().getMatchingNodes(_batfish);
+      Set<String> includeNodes = question.getNodes().getMatchingNodes(_batfish);
       SortedMap<String, String> hostnameFilenameMap =
           _batfish.loadParseVendorConfigurationAnswerElement().getFileMap();
       Set<String> includeFiles =
@@ -141,18 +141,18 @@ public class UndefinedReferencesQuestionPlugin extends QuestionPlugin {
    * vendors.
    *
    * @type UndefinedReferences onefile
-   * @param nodeRegex Regular expression for names of nodes to include. Default value is '.*' (all
+   * @param nodes Regular expression for names of nodes to include. Default value is '.*' (all
    *     nodes).
    * @example bf_answer("Nodes", nodeRegex="as1.*") Analyze all nodes whose names begin with "as1".
    */
   public static class UndefinedReferencesQuestion extends Question {
 
-    private static final String PROP_NODE_REGEX = "nodeRegex";
+    private static final String PROP_NODES = "nodes";
 
-    private NodesSpecifier _nodeRegex;
+    private NodesSpecifier _nodes;
 
     public UndefinedReferencesQuestion() {
-      _nodeRegex = NodesSpecifier.ALL;
+      _nodes = NodesSpecifier.ALL;
     }
 
     @Override
@@ -162,17 +162,17 @@ public class UndefinedReferencesQuestionPlugin extends QuestionPlugin {
 
     @Override
     public String getName() {
-      return "undefinedreferences";
+      return "undefinedReferences";
     }
 
-    @JsonProperty(PROP_NODE_REGEX)
-    public NodesSpecifier getNodeRegex() {
-      return _nodeRegex;
+    @JsonProperty(PROP_NODES)
+    public NodesSpecifier getNodes() {
+      return _nodes;
     }
 
-    @JsonProperty(PROP_NODE_REGEX)
-    public void setNodeRegex(NodesSpecifier nodeRegex) {
-      _nodeRegex = nodeRegex;
+    @JsonProperty(PROP_NODES)
+    public void setNodes(NodesSpecifier nodes) {
+      _nodes = nodes;
     }
   }
 
