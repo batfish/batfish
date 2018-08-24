@@ -1931,25 +1931,25 @@ public class WorkMgr extends AbstractCoordinator {
   TableAnswerElement processAnalysisAnswerTable(
       TableAnswerElement rawTable, AnalysisAnswerOptions options) {
     Map<String, ColumnMetadata> rawColumnMap = rawTable.getMetadata().toColumnMap();
-    Stream<Row> rawStream = rawTable.getRowsList().stream();
+    Stream<Row> filteredStream =
+        rawTable
+            .getRowsList()
+            .stream()
+            .filter(row -> options.getFilters().stream().allMatch(filter -> filter.matches(row)));
     Stream<Row> sortedStream =
         options.getSortOrder().isEmpty()
-            ? rawStream
-            : rawStream.sorted(buildComparator(rawColumnMap, options.getSortOrder()));
-    List<Row> sortedRows = sortedStream.collect(ImmutableList.toImmutableList());
+            ? filteredStream
+            : filteredStream.sorted(buildComparator(rawColumnMap, options.getSortOrder()));
     Stream<Row> truncatedStream =
-        sortedRows.stream().skip(options.getRowOffset()).limit(options.getMaxRows());
-    List<Row> truncatedRows = truncatedStream.collect(ImmutableList.toImmutableList());
-    Stream<Row> filteredStream;
+        sortedStream.skip(options.getRowOffset()).limit(options.getMaxRows());
+    Stream<Row> projectedStream;
     TableAnswerElement table;
     if (options.getColumns().isEmpty()) {
-      filteredStream = truncatedRows.stream();
+      projectedStream = truncatedStream;
       table = new TableAnswerElement(rawTable.getMetadata());
     } else {
-      filteredStream =
-          truncatedRows
-              .stream()
-              .map(rawRow -> Row.builder().putAll(rawRow, options.getColumns()).build());
+      projectedStream =
+          truncatedStream.map(rawRow -> Row.builder().putAll(rawRow, options.getColumns()).build());
       Map<String, ColumnMetadata> columnMap = new LinkedHashMap<>(rawColumnMap);
       columnMap.keySet().retainAll(options.getColumns());
       List<ColumnMetadata> columnMetadata =
@@ -1958,7 +1958,7 @@ public class WorkMgr extends AbstractCoordinator {
           new TableAnswerElement(
               new TableMetadata(columnMetadata, rawTable.getMetadata().getTextDesc()));
     }
-    filteredStream.forEach(table::addRow);
+    projectedStream.forEach(table::addRow);
     return table;
   }
 

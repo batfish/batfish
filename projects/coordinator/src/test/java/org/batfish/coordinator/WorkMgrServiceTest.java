@@ -26,6 +26,7 @@ import org.apache.commons.io.FileUtils;
 import org.batfish.common.AnalysisAnswerOptions;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
+import org.batfish.common.ColumnFilter;
 import org.batfish.common.ColumnSortOption;
 import org.batfish.common.Container;
 import org.batfish.common.CoordConsts;
@@ -759,6 +760,7 @@ public class WorkMgrServiceTest {
             questionName,
             new AnalysisAnswerOptions(
                 ImmutableSet.of(columnName),
+                ImmutableList.of(new ColumnFilter(columnName, "")),
                 Integer.MAX_VALUE,
                 0,
                 ImmutableList.of(new ColumnSortOption(columnName, false))));
