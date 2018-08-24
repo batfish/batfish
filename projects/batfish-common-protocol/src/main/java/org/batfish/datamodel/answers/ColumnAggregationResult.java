@@ -26,12 +26,10 @@ public class ColumnAggregationResult {
 
   private final String _column;
 
-  private final Optional<? extends Object> _value;
+  private final Object _value;
 
   public ColumnAggregationResult(
-      @Nonnull Aggregation aggregation,
-      @Nonnull String column,
-      @Nonnull Optional<? extends Object> value) {
+      @Nonnull Aggregation aggregation, @Nonnull String column, @Nonnull Object value) {
     _aggregation = aggregation;
     _column = column;
     _value = value;
@@ -62,7 +60,7 @@ public class ColumnAggregationResult {
   }
 
   @JsonProperty(BfConsts.PROP_VALUE)
-  public @Nullable Optional<? extends Object> getValue() {
+  public @Nonnull Object getValue() {
     return _value;
   }
 
