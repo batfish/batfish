@@ -26,11 +26,11 @@ public class AclReachability2Question extends Question {
 
   private static final String PROP_FILTER_SPECIFIER_FACTORY = "filterSpecifierFactory";
 
-  private static final String PROP_FILTER_SPECIFIER_INPUT = "filterSpecifierInput";
+  private static final String PROP_FILTER_SPECIFIER_INPUT = "filters";
 
   private static final String PROP_NODE_SPECIFIER_FACTORY = "nodeSpecifierFactory";
 
-  private static final String PROP_NODE_SPECIFIER_INPUT = "nodeSpecifierInput";
+  private static final String PROP_NODE_SPECIFIER_INPUT = "nodes";
 
   private String _filterSpecifierFactory;
 
@@ -72,7 +72,7 @@ public class AclReachability2Question extends Question {
 
   @Override
   public String getName() {
-    return "aclreachability2";
+    return "aclReachability2";
   }
 
   @JsonProperty(PROP_NODE_SPECIFIER_FACTORY)
