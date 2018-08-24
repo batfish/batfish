@@ -98,6 +98,7 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.pojo.WorkStatus;
 import org.batfish.datamodel.questions.BgpPropertySpecifier;
 import org.batfish.datamodel.questions.InterfacePropertySpecifier;
+import org.batfish.datamodel.questions.NamedStructureSpecifier;
 import org.batfish.datamodel.questions.NodePropertySpecifier;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.OspfPropertySpecifier;
@@ -414,6 +415,13 @@ public class Client extends AbstractClient implements IClient {
           throw new BatfishException(
               String.format("It is not a valid JSON %s value", expectedType.getName()));
         }
+        break;
+      case NAMED_STRUCTURE_SPEC:
+        if (!(value.isTextual())) {
+          throw new BatfishException(
+              String.format("A Batfish %s must be a JSON string", expectedType.getName()));
+        }
+        new NamedStructureSpecifier(value.textValue());
         break;
       case NODE_PROPERTY_SPEC:
         if (!(value.isTextual())) {
