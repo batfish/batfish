@@ -51,12 +51,14 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.datamodel.questions.InterfacesSpecifier;
 import org.batfish.datamodel.table.Rows;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.question.ReachFilterParameters;
 import org.batfish.specifier.ConstantIpSpaceSpecifier;
+import org.batfish.specifier.ShorthandInterfaceSpecifier;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -419,6 +421,24 @@ public final class ReachFilterAnswererTest {
         _batfish.reachFilter(_config, denyAllSourcesAcl, _defaultReachFilterParams);
     assertThat("Should find a flow", flow.isPresent());
     assertThat(flow.get(), hasIngressInterface(IFACE2));
+  }
+
+  @Test
+  public void testSourceInterfaceParameter() {
+    ReachFilterParameters params =
+        _defaultReachFilterParams
+            .toBuilder()
+            .setSourceInterfaceSpecifier(
+                new ShorthandInterfaceSpecifier(new InterfacesSpecifier(IFACE1)))
+            .build();
+
+    // can match line 1 because IFACE1 is specified
+    Optional<Flow> flow = _batfish.reachFilter(_config, toMatchLineAcl(1, SRC_ACL), params);
+    assertThat(flow.get(), allOf(hasIngressInterface(IFACE1), hasDstIp(IP1)));
+
+    // cannot match line 2 because IFACE2 is not specified
+    flow = _batfish.reachFilter(_config, toMatchLineAcl(2, SRC_ACL), params);
+    assertThat("Should not find a matching flow", !flow.isPresent());
   }
 
   @Test

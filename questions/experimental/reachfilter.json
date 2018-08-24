@@ -8,6 +8,7 @@
   "filterRegex": "${filterRegex}",
   "nodeSpecifierFactory": "${nodeSpecifierFactory}",
   "nodeSpecifierInput": "${nodeSpecifierInput}",
+  "sourceInterfaces" : "${sourceInterfaces}",
   "sourceIpSpaceSpecifierFactory": "${sourceIpSpaceSpecifierFactory}",
   "src": "${src}",
   "srcPorts": "${srcPorts}",
@@ -54,6 +55,11 @@
       },
       "nodeSpecifierFactory": {
         "description": "Name of the nodeSpecifierFactory to use",
+        "optional": true,
+        "type": "string"
+      },
+      "sourceInterfaces": {
+        "description": "Only consider these interfaces as possible sources",
         "optional": true,
         "type": "string"
       },
