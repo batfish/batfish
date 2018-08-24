@@ -61,11 +61,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -4006,19 +4004,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitPopst_as_path_prepend(Popst_as_path_prependContext ctx) {
-    List<Long> asPaths = new LinkedList<>();
-    if (ctx.DEC() != null) {
-      asPaths.add(toLong(ctx.DEC()));
-    } else if (ctx.DOUBLE_QUOTED_STRING() != null) {
-      String[] unquoted = unquote(ctx.DOUBLE_QUOTED_STRING().getText()).split("\\s+");
-      Arrays.stream(unquoted).map(Long::parseLong).forEach(asPaths::add);
-    } else {
-      _w.redFlag(
-          String.format(
-              "unimplemented 'policy-options policy-statement term' then clause: %s",
-              getFullText(ctx)));
-      return;
-    }
+    List<Long> asPaths =
+        ctx.bgp_asn()
+            .stream()
+            .map(ConfigurationBuilder::toAsNum)
+            .collect(ImmutableList.toImmutableList());
     _currentPsThens.add(new PsThenAsPathPrepend(asPaths));
   }
 

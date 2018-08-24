@@ -16156,7 +16156,39 @@
                         },
                         {
                           "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitAs",
+                          "as" : 8060929
+                        },
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitAs",
                           "as" : 789
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.PrependAsPath",
+                    "expr" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralAsList",
+                      "list" : [
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitAs",
+                          "as" : 456
+                        },
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitAs",
+                          "as" : 789
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.PrependAsPath",
+                    "expr" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralAsList",
+                      "list" : [
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitAs",
+                          "as" : 8061384
                         }
                       ]
                     }
