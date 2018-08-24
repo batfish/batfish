@@ -1931,10 +1931,11 @@ public class WorkMgr extends AbstractCoordinator {
   TableAnswerElement processAnalysisAnswerTable(
       TableAnswerElement rawTable, AnalysisAnswerOptions options) {
     Map<String, ColumnMetadata> rawColumnMap = rawTable.getMetadata().toColumnMap();
-    Stream<Row> rawStream = rawTable.getRowsList().stream();
     Stream<Row> filteredStream =
-        rawStream.filter(
-            row -> options.getFilters().stream().allMatch(filter -> filter.matches(row)));
+        rawTable
+            .getRowsList()
+            .stream()
+            .filter(row -> options.getFilters().stream().allMatch(filter -> filter.matches(row)));
     Stream<Row> sortedStream =
         options.getSortOrder().isEmpty()
             ? filteredStream
