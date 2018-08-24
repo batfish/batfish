@@ -240,10 +240,6 @@ import org.codehaus.jettison.json.JSONObject;
 /** This class encapsulates the main control logic for Batfish. */
 public class Batfish extends PluginConsumer implements IBatfish {
 
-  public static final String BASE_TESTRIG_TAG = "BASE";
-
-  public static final String DELTA_TESTRIG_TAG = "DELTA";
-
   public static final String DIFFERENTIAL_FLOW_TAG = "DIFFERENTIAL";
 
   /** The name of the [optional] topology file within a test-rig */
@@ -1827,16 +1823,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public String getBaseFlowTag() {
-    return BASE_TESTRIG_TAG;
-  }
-
-  @Override
-  public String getDeltaFlowTag() {
-    return DELTA_TESTRIG_TAG;
-  }
-
-  @Override
   public String getFlowTag() {
     return getFlowTag(_testrigSettings);
   }
@@ -1846,9 +1832,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // ":"
     // + testrigSettings.getEnvironmentSettings().getEnvName();
     if (testrigSettings == _deltaTestrigSettings) {
-      return DELTA_TESTRIG_TAG;
+      return Flow.DELTA_FLOW_TAG;
     } else if (testrigSettings == _baseTestrigSettings) {
-      return BASE_TESTRIG_TAG;
+      return Flow.BASE_FLOW_TAG;
     } else {
       throw new BatfishException("Could not determine flow tag");
     }

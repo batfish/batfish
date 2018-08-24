@@ -86,9 +86,9 @@ public class ReducedReachabilityAnswerer extends Answerer {
               COL_FLOW,
               historyInfo.getFlow(),
               COL_BASE_TRACES,
-              historyInfo.getPaths().get(_batfish.getBaseFlowTag()),
+              historyInfo.getPaths().get(Flow.BASE_FLOW_TAG),
               COL_DELTA_TRACES,
-              historyInfo.getPaths().get(_batfish.getDeltaFlowTag())));
+              historyInfo.getPaths().get(Flow.DELTA_FLOW_TAG)));
     }
     return rows;
   }
