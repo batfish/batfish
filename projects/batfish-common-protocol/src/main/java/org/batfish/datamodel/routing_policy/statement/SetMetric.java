@@ -1,22 +1,30 @@
 package org.batfish.datamodel.routing_policy.statement;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.expr.LongExpr;
 
-public class SetMetric extends Statement {
-
+@ParametersAreNonnullByDefault
+public final class SetMetric extends Statement {
   private static final String PROP_METRIC = "metric";
 
   /** */
   private static final long serialVersionUID = 1L;
 
-  private LongExpr _metric;
+  @Nonnull private final LongExpr _metric;
 
   @JsonCreator
-  private SetMetric() {}
+  private static SetMetric jsonCreator(@Nullable @JsonProperty(PROP_METRIC) LongExpr metric) {
+    checkArgument(metric != null, "%s must be provided", PROP_METRIC);
+    return new SetMetric(metric);
+  }
 
   public SetMetric(LongExpr metric) {
     _metric = metric;
@@ -26,22 +34,11 @@ public class SetMetric extends Statement {
   public boolean equals(Object obj) {
     if (this == obj) {
       return true;
-    }
-    if (obj == null) {
-      return false;
-    }
-    if (getClass() != obj.getClass()) {
+    } else if (!(obj instanceof SetMetric)) {
       return false;
     }
     SetMetric other = (SetMetric) obj;
-    if (_metric == null) {
-      if (other._metric != null) {
-        return false;
-      }
-    } else if (!_metric.equals(other._metric)) {
-      return false;
-    }
-    return true;
+    return _metric.equals(other._metric);
   }
 
   @Override
@@ -56,6 +53,7 @@ public class SetMetric extends Statement {
   }
 
   @JsonProperty(PROP_METRIC)
+  @Nonnull
   public LongExpr getMetric() {
     return _metric;
   }
@@ -64,12 +62,7 @@ public class SetMetric extends Statement {
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + ((_metric == null) ? 0 : _metric.hashCode());
+    result = prime * result + _metric.hashCode();
     return result;
-  }
-
-  @JsonProperty(PROP_METRIC)
-  public void setMetric(LongExpr metric) {
-    _metric = metric;
   }
 }
