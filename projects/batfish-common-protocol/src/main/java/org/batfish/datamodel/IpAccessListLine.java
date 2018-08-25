@@ -26,7 +26,7 @@ public final class IpAccessListLine implements Serializable {
     private Builder() {}
 
     public Builder accepting() {
-      _action = LineAction.ACCEPT;
+      _action = LineAction.PERMIT;
       return this;
     }
 
@@ -35,7 +35,7 @@ public final class IpAccessListLine implements Serializable {
     }
 
     public Builder rejecting() {
-      _action = LineAction.REJECT;
+      _action = LineAction.DENY;
       return this;
     }
 
@@ -70,7 +70,7 @@ public final class IpAccessListLine implements Serializable {
   private static final long serialVersionUID = 1L;
 
   public static Builder accepting() {
-    return new Builder().setAction(LineAction.ACCEPT);
+    return new Builder().setAction(LineAction.PERMIT);
   }
 
   public static IpAccessListLine acceptingHeaderSpace(HeaderSpace headerSpace) {
@@ -82,7 +82,7 @@ public final class IpAccessListLine implements Serializable {
   }
 
   public static Builder rejecting() {
-    return new Builder().setAction(LineAction.REJECT);
+    return new Builder().setAction(LineAction.DENY);
   }
 
   public static IpAccessListLine rejectingHeaderSpace(HeaderSpace headerSpace) {

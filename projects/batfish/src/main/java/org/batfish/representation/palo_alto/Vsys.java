@@ -11,6 +11,8 @@ public final class Vsys implements Serializable {
 
   private final String _name;
 
+  private SortedMap<String, Rule> _rules;
+
   private final SortedMap<String, Service> _services;
 
   private final SortedMap<String, ServiceGroup> _serviceGroups;
@@ -21,6 +23,7 @@ public final class Vsys implements Serializable {
 
   public Vsys(String name) {
     _name = name;
+    _rules = new TreeMap<>();
     _services = new TreeMap<>();
     _serviceGroups = new TreeMap<>();
     _syslogServerGroups = new TreeMap<>();
@@ -30,6 +33,11 @@ public final class Vsys implements Serializable {
   /** Returns the name of this vsys. */
   public String getName() {
     return _name;
+  }
+
+  /** Returns a map of rule name to rule for the rules in this vsys. */
+  public SortedMap<String, Rule> getRules() {
+    return _rules;
   }
 
   /** Returns a map of service name to service for the services in this vsys. */

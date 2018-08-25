@@ -1398,7 +1398,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
               .getIpv6Networks()
               .keySet()
               .stream()
-              .map(p6 -> new Route6FilterLine(LineAction.ACCEPT, Prefix6Range.fromPrefix6(p6)))
+              .map(p6 -> new Route6FilterLine(LineAction.PERMIT, Prefix6Range.fromPrefix6(p6)))
               .collect(ImmutableList.toImmutableList());
       Route6FilterList localFilter6 =
           new Route6FilterList("~BGP_NETWORK6_NETWORKS_FILTER:" + vrfName + "~", lines);
@@ -1745,7 +1745,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
                 int prefixLen = prefix6.getPrefixLength();
                 Route6FilterLine line =
                     new Route6FilterLine(
-                        LineAction.ACCEPT, prefix6, new SubRange(prefixLen, prefixLen));
+                        LineAction.PERMIT, prefix6, new SubRange(prefixLen, prefixLen));
                 localFilter6.addLine(line);
                 String mapName = bgpNetwork6.getRouteMapName();
                 if (mapName != null) {
@@ -2439,14 +2439,14 @@ public final class CiscoConfiguration extends VendorConfiguration {
                 : prefixLength;
         summaryFilter.addLine(
             new RouteFilterLine(
-                LineAction.REJECT,
+                LineAction.DENY,
                 new IpWildcard(prefix),
                 new SubRange(filterMinPrefixLength, Prefix.MAX_PREFIX_LENGTH)));
       }
       area.setSummaries(ImmutableSortedMap.copyOf(summaries));
       summaryFilter.addLine(
           new RouteFilterLine(
-              LineAction.ACCEPT,
+              LineAction.PERMIT,
               new IpWildcard(Prefix.ZERO),
               new SubRange(0, Prefix.MAX_PREFIX_LENGTH)));
     }
@@ -2739,11 +2739,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
         rmSet.applyTo(matchStatements, this, c, _w);
       }
       switch (rmClause.getAction()) {
-        case ACCEPT:
+        case PERMIT:
           matchStatements.add(Statements.ReturnTrue.toStaticStatement());
           break;
 
-        case REJECT:
+        case DENY:
           matchStatements.add(Statements.ReturnFalse.toStaticStatement());
           break;
 
@@ -2827,7 +2827,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         }
       }
       switch (rmClause.getAction()) {
-        case ACCEPT:
+        case PERMIT:
           if (continueStatement == null) {
             onMatchStatements.add(Statements.ExitAccept.toStaticStatement());
           } else {
@@ -2836,7 +2836,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
           }
           break;
 
-        case REJECT:
+        case DENY:
           onMatchStatements.add(Statements.ExitReject.toStaticStatement());
           break;
 
@@ -2891,8 +2891,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
   public Configuration toVendorIndependentConfiguration() {
     final Configuration c = new Configuration(_hostname, _vendor);
     c.getVendorFamily().setCisco(_cf);
-    c.setDefaultInboundAction(LineAction.ACCEPT);
-    c.setDefaultCrossZoneAction(LineAction.ACCEPT);
+    c.setDefaultInboundAction(LineAction.PERMIT);
+    c.setDefaultCrossZoneAction(LineAction.PERMIT);
     c.setDnsServers(_dnsServers);
     c.setDnsSourceInterface(_dnsSourceInterface);
     c.setDomainName(_domainName);
@@ -2984,14 +2984,18 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     // convert standard/extended access lists to access lists or route filter
     // lists
-    List<ExtendedAccessList> allACLs = new ArrayList<>();
     for (StandardAccessList saList : _standardAccessLists.values()) {
-      ExtendedAccessList eaList = saList.toExtendedAccessList();
-      allACLs.add(eaList);
+      if (isAclUsedForRouting(saList.getName())) {
+        RouteFilterList rfList = CiscoConversions.toRouteFilterList(saList);
+        c.getRouteFilterLists().put(rfList.getName(), rfList);
+      }
+      c.getIpAccessLists()
+          .put(
+              saList.getName(),
+              CiscoConversions.toIpAccessList(saList.toExtendedAccessList(), this._objectGroups));
     }
-    allACLs.addAll(_extendedAccessLists.values());
-    for (ExtendedAccessList eaList : allACLs) {
-      if (usedForRouting(eaList)) {
+    for (ExtendedAccessList eaList : _extendedAccessLists.values()) {
+      if (isAclUsedForRouting(eaList.getName())) {
         RouteFilterList rfList = CiscoConversions.toRouteFilterList(eaList);
         c.getRouteFilterLists().put(rfList.getName(), rfList);
       }
@@ -3047,14 +3051,18 @@ public final class CiscoConfiguration extends VendorConfiguration {
     // convert standard/extended ipv6 access lists to ipv6 access lists or
     // route6 filter
     // lists
-    List<ExtendedIpv6AccessList> allIpv6ACLs = new ArrayList<>();
     for (StandardIpv6AccessList saList : _standardIpv6AccessLists.values()) {
-      ExtendedIpv6AccessList eaList = saList.toExtendedIpv6AccessList();
-      allIpv6ACLs.add(eaList);
+      if (isAclUsedForRoutingv6(saList.getName())) {
+        Route6FilterList rfList = CiscoConversions.toRoute6FilterList(saList);
+        c.getRoute6FilterLists().put(rfList.getName(), rfList);
+      }
+      c.getIp6AccessLists()
+          .put(
+              saList.getName(),
+              CiscoConversions.toIp6AccessList(saList.toExtendedIpv6AccessList()));
     }
-    allIpv6ACLs.addAll(_extendedIpv6AccessLists.values());
-    for (ExtendedIpv6AccessList eaList : allIpv6ACLs) {
-      if (usedForRouting(eaList)) {
+    for (ExtendedIpv6AccessList eaList : _extendedIpv6AccessLists.values()) {
+      if (isAclUsedForRoutingv6(eaList.getName())) {
         Route6FilterList rfList = CiscoConversions.toRoute6FilterList(eaList);
         c.getRoute6FilterLists().put(rfList.getName(), rfList);
       }
@@ -3893,8 +3901,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     }
   }
 
-  private boolean usedForRouting(ExtendedAccessList eaList) {
-    String eaListName = eaList.getName();
+  private boolean isAclUsedForRouting(String aclName) {
     String currentMapName;
     for (Vrf vrf : _vrfs.values()) {
       // check ospf policies
@@ -3902,12 +3909,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
       if (ospfProcess != null) {
         for (OspfRedistributionPolicy rp : ospfProcess.getRedistributionPolicies().values()) {
           currentMapName = rp.getRouteMap();
-          if (containsIpAccessList(eaListName, currentMapName)) {
+          if (containsIpAccessList(aclName, currentMapName)) {
             return true;
           }
         }
         currentMapName = ospfProcess.getDefaultInformationOriginateMap();
-        if (containsIpAccessList(eaListName, currentMapName)) {
+        if (containsIpAccessList(aclName, currentMapName)) {
           return true;
         }
       }
@@ -3915,17 +3922,17 @@ public final class CiscoConfiguration extends VendorConfiguration {
       if (ripProcess != null) {
         // check rip distribute lists
         if (ripProcess.getDistributeListInAcl()
-            && ripProcess.getDistributeListIn().equals(eaListName)) {
+            && ripProcess.getDistributeListIn().equals(aclName)) {
           return true;
         }
         if (ripProcess.getDistributeListOutAcl()
-            && ripProcess.getDistributeListOut().equals(eaListName)) {
+            && ripProcess.getDistributeListOut().equals(aclName)) {
           return true;
         }
         // check rip redistribution policies
         for (RipRedistributionPolicy rp : ripProcess.getRedistributionPolicies().values()) {
           currentMapName = rp.getRouteMap();
-          if (containsIpAccessList(eaListName, currentMapName)) {
+          if (containsIpAccessList(aclName, currentMapName)) {
             return true;
           }
         }
@@ -3935,21 +3942,21 @@ public final class CiscoConfiguration extends VendorConfiguration {
       if (bgpProcess != null) {
         for (BgpRedistributionPolicy rp : bgpProcess.getRedistributionPolicies().values()) {
           currentMapName = rp.getRouteMap();
-          if (containsIpAccessList(eaListName, currentMapName)) {
+          if (containsIpAccessList(aclName, currentMapName)) {
             return true;
           }
         }
         for (BgpPeerGroup pg : bgpProcess.getAllPeerGroups()) {
           currentMapName = pg.getInboundRouteMap();
-          if (containsIpAccessList(eaListName, currentMapName)) {
+          if (containsIpAccessList(aclName, currentMapName)) {
             return true;
           }
           currentMapName = pg.getOutboundRouteMap();
-          if (containsIpAccessList(eaListName, currentMapName)) {
+          if (containsIpAccessList(aclName, currentMapName)) {
             return true;
           }
           currentMapName = pg.getDefaultOriginateMap();
-          if (containsIpAccessList(eaListName, currentMapName)) {
+          if (containsIpAccessList(aclName, currentMapName)) {
             return true;
           }
         }
@@ -3958,8 +3965,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return false;
   }
 
-  private boolean usedForRouting(ExtendedIpv6AccessList eaList) {
-    String eaListName = eaList.getName();
+  private boolean isAclUsedForRoutingv6(String aclName) {
     String currentMapName;
     for (Vrf vrf : _vrfs.values()) {
       // check ospf policies
@@ -3967,12 +3973,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
       if (ospfProcess != null) {
         for (OspfRedistributionPolicy rp : ospfProcess.getRedistributionPolicies().values()) {
           currentMapName = rp.getRouteMap();
-          if (containsIpv6AccessList(eaListName, currentMapName)) {
+          if (containsIpv6AccessList(aclName, currentMapName)) {
             return true;
           }
         }
         currentMapName = ospfProcess.getDefaultInformationOriginateMap();
-        if (containsIpAccessList(eaListName, currentMapName)) {
+        if (containsIpAccessList(aclName, currentMapName)) {
           return true;
         }
       }
@@ -3981,29 +3987,29 @@ public final class CiscoConfiguration extends VendorConfiguration {
       if (bgpProcess != null) {
         for (BgpRedistributionPolicy rp : bgpProcess.getRedistributionPolicies().values()) {
           currentMapName = rp.getRouteMap();
-          if (containsIpv6AccessList(eaListName, currentMapName)) {
+          if (containsIpv6AccessList(aclName, currentMapName)) {
             return true;
           }
         }
         for (BgpPeerGroup pg : bgpProcess.getAllPeerGroups()) {
           currentMapName = pg.getInboundRouteMap();
-          if (containsIpv6AccessList(eaListName, currentMapName)) {
+          if (containsIpv6AccessList(aclName, currentMapName)) {
             return true;
           }
           currentMapName = pg.getInboundRoute6Map();
-          if (containsIpv6AccessList(eaListName, currentMapName)) {
+          if (containsIpv6AccessList(aclName, currentMapName)) {
             return true;
           }
           currentMapName = pg.getOutboundRouteMap();
-          if (containsIpv6AccessList(eaListName, currentMapName)) {
+          if (containsIpv6AccessList(aclName, currentMapName)) {
             return true;
           }
           currentMapName = pg.getOutboundRoute6Map();
-          if (containsIpv6AccessList(eaListName, currentMapName)) {
+          if (containsIpv6AccessList(aclName, currentMapName)) {
             return true;
           }
           currentMapName = pg.getDefaultOriginateMap();
-          if (containsIpv6AccessList(eaListName, currentMapName)) {
+          if (containsIpv6AccessList(aclName, currentMapName)) {
             return true;
           }
         }

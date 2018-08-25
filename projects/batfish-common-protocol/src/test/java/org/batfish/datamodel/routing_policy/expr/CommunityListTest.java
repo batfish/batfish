@@ -86,13 +86,13 @@ public final class CommunityListTest {
         new CommunityList(
             "",
             ImmutableList.of(
-                new CommunityListLine(LineAction.REJECT, EmptyCommunitySetExpr.INSTANCE),
+                new CommunityListLine(LineAction.DENY, EmptyCommunitySetExpr.INSTANCE),
                 CommunityListLine.accepting(new LiteralCommunity(1L))),
             false);
     CommunityList rejecting =
         new CommunityList(
             "",
-            ImmutableList.of(new CommunityListLine(LineAction.REJECT, new LiteralCommunity(1L))),
+            ImmutableList.of(new CommunityListLine(LineAction.DENY, new LiteralCommunity(1L))),
             false);
     CommunityList empty = new CommunityList("", ImmutableList.of(), false);
 
@@ -119,13 +119,13 @@ public final class CommunityListTest {
         new CommunityList(
             "",
             ImmutableList.of(
-                new CommunityListLine(LineAction.REJECT, EmptyCommunitySetExpr.INSTANCE),
+                new CommunityListLine(LineAction.DENY, EmptyCommunitySetExpr.INSTANCE),
                 CommunityListLine.accepting(new LiteralCommunity(1L))),
             false);
     CommunityList rejecting =
         new CommunityList(
             "",
-            ImmutableList.of(new CommunityListLine(LineAction.REJECT, new LiteralCommunity(1L))),
+            ImmutableList.of(new CommunityListLine(LineAction.DENY, new LiteralCommunity(1L))),
             false);
     CommunityList empty = new CommunityList("", ImmutableList.of(), false);
 

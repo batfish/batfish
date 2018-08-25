@@ -53,11 +53,11 @@ public class IpSpaceMayIntersectWildcard implements GenericIpSpaceVisitor<Boolea
   @Override
   public Boolean visitAclIpSpace(AclIpSpace aclIpSpace) {
     for (AclIpSpaceLine line : aclIpSpace.getLines()) {
-      if (line.getAction() == LineAction.ACCEPT && ipSpaceMayIntersectWildcard(line.getIpSpace())) {
+      if (line.getAction() == LineAction.PERMIT && ipSpaceMayIntersectWildcard(line.getIpSpace())) {
         return true;
       }
 
-      if (line.getAction() == LineAction.REJECT && ipSpaceContainsWildcard(line.getIpSpace())) {
+      if (line.getAction() == LineAction.DENY && ipSpaceContainsWildcard(line.getIpSpace())) {
         return false;
       }
     }

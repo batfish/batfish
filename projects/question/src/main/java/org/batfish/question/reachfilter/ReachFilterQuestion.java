@@ -22,8 +22,10 @@ import org.batfish.question.ReachFilterParameters;
 import org.batfish.specifier.FilterSpecifier;
 import org.batfish.specifier.FilterSpecifierFactory;
 import org.batfish.specifier.FlexibleFilterSpecifierFactory;
+import org.batfish.specifier.FlexibleInterfaceSpecifierFactory;
 import org.batfish.specifier.FlexibleNodeSpecifierFactory;
 import org.batfish.specifier.FlexibleUniverseIpSpaceSpecifierFactory;
+import org.batfish.specifier.InterfaceSpecifier;
 import org.batfish.specifier.IpSpaceSpecifier;
 import org.batfish.specifier.IpSpaceSpecifierFactory;
 import org.batfish.specifier.NodeSpecifier;
@@ -42,8 +44,7 @@ public final class ReachFilterQuestion extends Question {
 
   private static final String PROP_FILTER_SPECIFIER_INPUT = "filterRegex";
 
-  // TODO: this should probably be "action" for consistency
-  private static final String PROP_QUERY = "query";
+  private static final String PROP_COMPLEMENT_HEADERSPACE = "complementHeaderSpace";
 
   private static final String PROP_DESTINATION_IP_SPACE_SPECIFIER_FACTORY =
       "destinationIpSpaceSpecifierFactory";
@@ -60,16 +61,23 @@ public final class ReachFilterQuestion extends Question {
 
   private static final String PROP_SRC_PORTS = "srcPorts";
 
+  private static final String PROP_SOURCE_INTERFACE_FILTER_SPECIFIER = "sourceInterfaces";
+
   private static final String PROP_SOURCE_IP_SPACE_SPECIFIER_FACTORY =
       "sourceIpSpaceSpecifierFactory";
 
   private static final String PROP_SOURCE_IP_SPACE_SPECIFIER_INPUT = "src";
+
+  // TODO: this should probably be "action" for consistency
+  private static final String PROP_QUERY = "query";
 
   public enum Type {
     PERMIT,
     DENY,
     MATCH_LINE
   }
+
+  private final boolean _complementHeaderSpace;
 
   // Invariant: null unless _type == MATCH_LINE
   @Nullable private Integer _lineNumber;
@@ -90,6 +98,8 @@ public final class ReachFilterQuestion extends Question {
 
   @Nonnull private final SortedSet<Protocol> _dstProtocols;
 
+  @Nullable private final String _sourceInterfaces;
+
   @Nonnull private final String _sourceIpSpaceSpecifierFactory;
 
   @Nullable private final String _sourceIpSpaceSpecifierInput;
@@ -98,6 +108,7 @@ public final class ReachFilterQuestion extends Question {
 
   @JsonCreator
   private ReachFilterQuestion(
+      @JsonProperty(PROP_COMPLEMENT_HEADERSPACE) boolean complementHeaderSpace,
       @JsonProperty(PROP_FILTER_SPECIFIER_INPUT) @Nullable String filterSpecifierInput,
       @JsonProperty(PROP_DESTINATION_IP_SPACE_SPECIFIER_FACTORY) @Nullable
           String destinationIpSpaceSpecifierFactory,
@@ -108,11 +119,13 @@ public final class ReachFilterQuestion extends Question {
       @JsonProperty(PROP_DST_PROTOCOLS) @Nullable SortedSet<Protocol> dstProtocols,
       @JsonProperty(PROP_NODE_SPECIFIER_FACTORY) @Nullable String nodeSpecifierFactory,
       @JsonProperty(PROP_NODE_SPECIFIER_INPUT) @Nullable String nodesSpecifierInput,
+      @JsonProperty(PROP_SOURCE_INTERFACE_FILTER_SPECIFIER) @Nullable String sourceInterfaces,
       @JsonProperty(PROP_SOURCE_IP_SPACE_SPECIFIER_FACTORY) @Nullable
           String sourceIpSpaceSpecifierFactory,
       @JsonProperty(PROP_SOURCE_IP_SPACE_SPECIFIER_INPUT) @Nullable
           String sourceIpSpaceSpecifierInput,
       @JsonProperty(PROP_QUERY) @Nullable String type) {
+    _complementHeaderSpace = complementHeaderSpace;
     _filterSpecifierInput = filterSpecifierInput;
     _nodeSpecifierFactory = firstNonNull(nodeSpecifierFactory, FlexibleNodeSpecifierFactory.NAME);
     _nodeSpecifierInput = nodesSpecifierInput;
@@ -122,6 +135,7 @@ public final class ReachFilterQuestion extends Question {
     _dstPorts = firstNonNull(dstPorts, ImmutableSortedSet.of());
     _srcPorts = firstNonNull(srcPorts, ImmutableSortedSet.of());
     _dstProtocols = firstNonNull(dstProtocols, ImmutableSortedSet.of());
+    _sourceInterfaces = sourceInterfaces;
     _sourceIpSpaceSpecifierFactory =
         firstNonNull(sourceIpSpaceSpecifierFactory, DEFAULT_SRC_IP_SPECIFIER_FACTORY);
     _sourceIpSpaceSpecifierInput = sourceIpSpaceSpecifierInput;
@@ -129,7 +143,12 @@ public final class ReachFilterQuestion extends Question {
   }
 
   ReachFilterQuestion() {
-    this(null, null, null, null, null, null, null, null, null, null, null);
+    this(false, null, null, null, null, null, null, null, null, null, null, null, null);
+  }
+
+  @JsonProperty(PROP_COMPLEMENT_HEADERSPACE)
+  public boolean getComplementHeaderSpace() {
+    return _complementHeaderSpace;
   }
 
   @Override
@@ -222,6 +241,11 @@ public final class ReachFilterQuestion extends Question {
   }
 
   @Nonnull
+  private InterfaceSpecifier getSourceInterfaceSpecifier() {
+    return new FlexibleInterfaceSpecifierFactory().buildInterfaceSpecifier(_sourceInterfaces);
+  }
+
+  @Nonnull
   private IpSpaceSpecifier getSourceSpecifier() {
     return IpSpaceSpecifierFactory.load(_destinationIpSpaceSpecifierFactory)
         .buildIpSpaceSpecifier(_sourceIpSpaceSpecifierInput);
@@ -239,6 +263,7 @@ public final class ReachFilterQuestion extends Question {
         .setDstPorts(_dstPorts)
         .setDstProtocols(_dstProtocols)
         .setSrcPorts(_srcPorts)
+        .setNegate(_complementHeaderSpace)
         .build();
   }
 
@@ -263,6 +288,7 @@ public final class ReachFilterQuestion extends Question {
   ReachFilterParameters toReachFilterParameters() {
     return ReachFilterParameters.builder()
         .setHeaderSpace(getHeaderSpace())
+        .setSourceInterfaceSpecifier(getSourceInterfaceSpecifier())
         .setSourceIpSpaceSpecifier(getSourceSpecifier())
         .setDestinationIpSpaceSpecifier(getDestinationSpecifier())
         .build();
@@ -274,6 +300,7 @@ public final class ReachFilterQuestion extends Question {
 
   @VisibleForTesting
   static final class Builder {
+    private boolean _complementHeaderSpace;
     private String _filterSpecifierInput;
     private String _nodeSpecifierFactory;
     private String _nodeSpecifierInput;
@@ -282,11 +309,17 @@ public final class ReachFilterQuestion extends Question {
     private SortedSet<SubRange> _dstPorts;
     private SortedSet<SubRange> _srcPorts;
     private SortedSet<Protocol> _dstProtocols;
+    private String _sourceInterfaces;
     private String _sourceIpSpaceSpecifierFactory;
     private String _sourceIpSpaceSpecifierInput;
     private String _type;
 
     private Builder() {}
+
+    public Builder setComplementHeaderSpace(boolean complementHeaderSpace) {
+      _complementHeaderSpace = complementHeaderSpace;
+      return this;
+    }
 
     public Builder setFilterSpecifierInput(String filterSpecifierInput) {
       this._filterSpecifierInput = filterSpecifierInput;
@@ -329,6 +362,11 @@ public final class ReachFilterQuestion extends Question {
       return this;
     }
 
+    public Builder setSourceInterfaces(String sourceInterfaces) {
+      _sourceInterfaces = sourceInterfaces;
+      return this;
+    }
+
     public Builder setSourceIpSpaceSpecifierFactory(String sourceIpSpaceSpecifierFactory) {
       this._sourceIpSpaceSpecifierFactory = sourceIpSpaceSpecifierFactory;
       return this;
@@ -346,6 +384,7 @@ public final class ReachFilterQuestion extends Question {
 
     public ReachFilterQuestion build() {
       return new ReachFilterQuestion(
+          _complementHeaderSpace,
           _filterSpecifierInput,
           _destinationIpSpaceSpecifierFactory,
           _destinationIpSpaceSpecifierInput,
@@ -354,6 +393,7 @@ public final class ReachFilterQuestion extends Question {
           _dstProtocols,
           _nodeSpecifierFactory,
           _nodeSpecifierInput,
+          _sourceInterfaces,
           _sourceIpSpaceSpecifierFactory,
           _sourceIpSpaceSpecifierInput,
           _type);

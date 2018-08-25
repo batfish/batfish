@@ -10,20 +10,20 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BfConsts;
 
-public class AnalysisAnswerMetricsResult {
+public class AnswerMetadata {
 
   @JsonCreator
-  private static @Nonnull AnalysisAnswerMetricsResult create(
+  private static @Nonnull AnswerMetadata create(
       @JsonProperty(BfConsts.PROP_METRICS) Metrics metrics,
       @JsonProperty(BfConsts.PROP_STATUS) AnswerStatus status) {
-    return new AnalysisAnswerMetricsResult(metrics, requireNonNull(status));
+    return new AnswerMetadata(metrics, requireNonNull(status));
   }
 
   private final Metrics _metrics;
 
   private final AnswerStatus _status;
 
-  public AnalysisAnswerMetricsResult(@Nullable Metrics metrics, @Nonnull AnswerStatus status) {
+  public AnswerMetadata(@Nullable Metrics metrics, @Nonnull AnswerStatus status) {
     _metrics = metrics;
     _status = status;
   }
@@ -33,10 +33,10 @@ public class AnalysisAnswerMetricsResult {
     if (this == obj) {
       return true;
     }
-    if (!(obj instanceof AnalysisAnswerMetricsResult)) {
+    if (!(obj instanceof AnswerMetadata)) {
       return false;
     }
-    AnalysisAnswerMetricsResult rhs = (AnalysisAnswerMetricsResult) obj;
+    AnswerMetadata rhs = (AnswerMetadata) obj;
     return Objects.equals(_metrics, rhs._metrics) && _status == rhs._status;
   }
 

@@ -20,7 +20,7 @@ public class CommunityListLine implements Serializable {
   private static final long serialVersionUID = 1L;
 
   public static @Nonnull CommunityListLine accepting(CommunitySetExpr matchCondition) {
-    return new CommunityListLine(LineAction.ACCEPT, matchCondition);
+    return new CommunityListLine(LineAction.PERMIT, matchCondition);
   }
 
   private final LineAction _action;

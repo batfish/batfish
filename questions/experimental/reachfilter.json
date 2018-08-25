@@ -1,13 +1,18 @@
 {
   "class": "org.batfish.question.reachfilter.ReachFilterQuestion",
   "differential": false,
+  "complementHeaderSpace": "${complementHeaderSpace}",
   "destinationIpSpaceSpecifierFactory": "${destinationIpSpaceSpecifierFactory}",
   "dst": "${dst}",
+  "dstPorts": "${dstPorts}",
+  "dstProtocols": "${dstProtocols}",
   "filterRegex": "${filterRegex}",
   "nodeSpecifierFactory": "${nodeSpecifierFactory}",
   "nodeSpecifierInput": "${nodeSpecifierInput}",
+  "sourceInterfaces" : "${sourceInterfaces}",
   "sourceIpSpaceSpecifierFactory": "${sourceIpSpaceSpecifierFactory}",
   "src": "${src}",
+  "srcPorts": "${srcPorts}",
   "query": "${query}",
   "instance": {
     "description": "Find flows for which a filter takes a particular behavior",
@@ -18,6 +23,11 @@
       "acl"
     ],
     "variables": {
+      "complementHeaderSpace": {
+        "description": "Search for packet headers outside the specified headerspace, rather than inside the space.",
+        "optional": true,
+        "type": "boolean"
+      },
       "destinationIpSpaceSpecifierFactory": {
         "description": "Name of the IpSpaceSpecifierFactory to use for the destination IpSpace",
         "optional": true,
@@ -27,6 +37,19 @@
         "description": "Flexible specification of destinoation IpSpace",
         "optional": true,
         "type": "string"
+      },
+      "dstPorts": {
+        "description": "Destination ports",
+        "minElements": 0,
+        "optional": true,
+        "type": "subrange"
+      },
+      "dstProtocols" : {
+        "description" : "Destination protocols",
+        "minElements" : 0,
+        "optional" : true,
+        "type" : "string",
+        "value": []
       },
       "filterRegex": {
         "description": "Only evaluate filters that match this regex",
@@ -43,6 +66,11 @@
         "optional": true,
         "type": "string"
       },
+      "sourceInterfaces": {
+        "description": "Only consider these interfaces as possible sources",
+        "optional": true,
+        "type": "string"
+      },
       "sourceIpSpaceSpecifierFactory": {
         "description": "Name of the IpSpaceSpecifierFactory to use for the source IpSpace",
         "optional": true,
@@ -52,6 +80,12 @@
         "description": "Flexible specification of source IpSpace",
         "optional": true,
         "type": "string"
+      },
+      "srcPorts": {
+        "description": "Source ports",
+        "minElements": 0,
+        "optional": true,
+        "type": "subrange"
       },
       "query": {
         "description": "The behavior that you want evaluated. Options are: permit|deny|matchLine <line number>. Only one option should be selected",

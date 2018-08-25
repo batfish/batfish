@@ -58,7 +58,6 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.hasOutgoingFilter
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRedFlagWarning;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRoute6FilterList;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRouteFilterList;
-import static org.batfish.datamodel.matchers.DataModelMatchers.hasSrcOrDstPorts;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasZone;
 import static org.batfish.datamodel.matchers.DataModelMatchers.isIpSpaceReferenceThat;
@@ -67,6 +66,7 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.permits;
 import static org.batfish.datamodel.matchers.EigrpMetricMatchers.hasDelay;
 import static org.batfish.datamodel.matchers.EigrpRouteMatchers.hasEigrpMetric;
 import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasDstIps;
+import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasDstPorts;
 import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasSrcIps;
 import static org.batfish.datamodel.matchers.HsrpGroupMatchers.hasTrackActions;
 import static org.batfish.datamodel.matchers.IkeGatewayMatchers.hasAddress;
@@ -296,6 +296,8 @@ import org.batfish.datamodel.matchers.IpsecPolicyMatchers;
 import org.batfish.datamodel.matchers.IpsecProposalMatchers;
 import org.batfish.datamodel.matchers.IpsecVpnMatchers;
 import org.batfish.datamodel.matchers.OspfAreaMatchers;
+import org.batfish.datamodel.matchers.Route6FilterListMatchers;
+import org.batfish.datamodel.matchers.RouteFilterListMatchers;
 import org.batfish.datamodel.matchers.StubSettingsMatchers;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfDefaultOriginateType;
@@ -653,6 +655,48 @@ public class CiscoGrammarTest {
   public void testIosLoggingOnDefault() throws IOException {
     Configuration loggingOnOmitted = parseConfig("iosLoggingOnOmitted");
     assertThat(loggingOnOmitted, hasVendorFamily(hasCisco(hasLogging(isOn()))));
+  }
+
+  @Test
+  public void testIosAclInRouteMap() throws IOException {
+    String hostname = "ios-acl-in-routemap";
+    Configuration c = parseConfig(hostname);
+    assertThat(c, hasRouteFilterList("10", permits(Prefix.parse("10.0.0.0/8"))));
+    assertThat(c, hasRouteFilterList("10", permits(Prefix.parse("10.1.0.0/16"))));
+    assertThat(
+        c, hasRouteFilterList("10", RouteFilterListMatchers.rejects(Prefix.parse("10.0.0.0/7"))));
+    assertThat(
+        c,
+        hasIpAccessList(
+            "10",
+            accepts(
+                Flow.builder()
+                    .setSrcIp(new Ip("10.1.1.1"))
+                    .setDstIp(new Ip("11.1.1.1"))
+                    .setIngressNode(hostname)
+                    .setTag("test")
+                    .build(),
+                "Ethernet1",
+                c)));
+    assertThat(
+        c,
+        hasIpAccessList(
+            "10",
+            rejects(
+                Flow.builder()
+                    .setSrcIp(new Ip("11.1.1.1"))
+                    .setDstIp(new Ip("10.1.1.1"))
+                    .setIngressNode(hostname)
+                    .setTag("test")
+                    .build(),
+                "Ethernet1",
+                c)));
+    // Check Ipv6 as well
+    assertThat(c, hasRoute6FilterList("v6list", permits(new Prefix6("::FFFF:10.0.0.0/105"))));
+    assertThat(
+        c,
+        hasRoute6FilterList(
+            "v6list", Route6FilterListMatchers.rejects(new Prefix6("::FFFF:10.0.0.0/103"))));
   }
 
   @Test
@@ -1352,13 +1396,13 @@ public class CiscoGrammarTest {
                                                 hasHeaderSpace(
                                                     allOf(
                                                         hasIpProtocols(contains(IpProtocol.TCP)),
-                                                        hasSrcOrDstPorts(
+                                                        hasDstPorts(
                                                             hasItem(new SubRange(65500)))))),
                                             isMatchHeaderSpaceThat(
                                                 hasHeaderSpace(
                                                     allOf(
                                                         hasIpProtocols(contains(IpProtocol.TCP)),
-                                                        hasSrcOrDstPorts(
+                                                        hasDstPorts(
                                                             hasItem(
                                                                 new SubRange(
                                                                     NamedPort.DOMAIN.number())))))),
@@ -1366,7 +1410,7 @@ public class CiscoGrammarTest {
                                                 hasHeaderSpace(
                                                     allOf(
                                                         hasIpProtocols(contains(IpProtocol.TCP)),
-                                                        hasSrcOrDstPorts(
+                                                        hasDstPorts(
                                                             hasItem(
                                                                 new SubRange(
                                                                     NamedPort.CMDtcp_OR_SYSLOGudp
@@ -1375,7 +1419,7 @@ public class CiscoGrammarTest {
                                                 hasHeaderSpace(
                                                     allOf(
                                                         hasIpProtocols(contains(IpProtocol.TCP)),
-                                                        hasSrcOrDstPorts(
+                                                        hasDstPorts(
                                                             hasItem(
                                                                 new SubRange(
                                                                     NamedPort.HTTP
@@ -1397,13 +1441,13 @@ public class CiscoGrammarTest {
                                                 hasHeaderSpace(
                                                     allOf(
                                                         hasIpProtocols(contains(IpProtocol.UDP)),
-                                                        hasSrcOrDstPorts(
+                                                        hasDstPorts(
                                                             hasItem(new SubRange(65501)))))),
                                             isMatchHeaderSpaceThat(
                                                 hasHeaderSpace(
                                                     allOf(
                                                         hasIpProtocols(contains(IpProtocol.UDP)),
-                                                        hasSrcOrDstPorts(
+                                                        hasDstPorts(
                                                             hasItem(
                                                                 new SubRange(
                                                                     NamedPort.NTP.number())))))),
@@ -1411,7 +1455,7 @@ public class CiscoGrammarTest {
                                                 hasHeaderSpace(
                                                     allOf(
                                                         hasIpProtocols(contains(IpProtocol.UDP)),
-                                                        hasSrcOrDstPorts(
+                                                        hasDstPorts(
                                                             hasItem(
                                                                 new SubRange(
                                                                     NamedPort.SNMPTRAP
@@ -1420,7 +1464,7 @@ public class CiscoGrammarTest {
                                                 hasHeaderSpace(
                                                     allOf(
                                                         hasIpProtocols(contains(IpProtocol.UDP)),
-                                                        hasSrcOrDstPorts(
+                                                        hasDstPorts(
                                                             hasItem(
                                                                 new SubRange(
                                                                     NamedPort.CMDtcp_OR_SYSLOGudp
@@ -1429,7 +1473,7 @@ public class CiscoGrammarTest {
                                                 hasHeaderSpace(
                                                     allOf(
                                                         hasIpProtocols(contains(IpProtocol.UDP)),
-                                                        hasSrcOrDstPorts(
+                                                        hasDstPorts(
                                                             hasItem(
                                                                 new SubRange(
                                                                     NamedPort.TFTP

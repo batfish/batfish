@@ -10,9 +10,29 @@ options {
 
 // Keywords
 
+ACTION
+:
+    'action'
+;
+
 ADMIN_DIST
 :
     'admin-dist'
+;
+
+ALLOW
+:
+    'allow'
+;
+
+ANY
+:
+    'any'
+;
+
+APPLICATION
+:
+    'application'
 ;
 
 AUTHENTICATION_TYPE
@@ -40,6 +60,11 @@ CONFIG
     'config'
 ;
 
+DENY
+:
+    'deny'
+;
+
 DESCRIPTION
 :
     'description'
@@ -60,6 +85,16 @@ DEVICECONFIG
     'deviceconfig'
 ;
 
+DISABLED
+:
+    'disabled'
+;
+
+DNS
+:
+    'dns'
+;
+
 DNS_SETTING
 :
     'dns-setting'
@@ -70,14 +105,29 @@ DOWN
     'down'
 ;
 
+DROP
+:
+    'drop'
+;
+
 ETHERNET
 :
     'ethernet'
 ;
 
+FROM
+:
+    'from'
+;
+
 HOSTNAME
 :
     'hostname'
+;
+
+ICMP
+:
+    'icmp'
 ;
 
 INTERFACE
@@ -135,6 +185,11 @@ NEXTHOP
     'nexthop'
 ;
 
+NO
+:
+    'no'
+;
+
 NTP_SERVER_ADDRESS
 :
     'ntp-server-address'
@@ -170,9 +225,34 @@ PROTOCOL
     'protocol'
 ;
 
+RESET_BOTH
+:
+    'reset-both'
+;
+
+RESET_CLIENT
+:
+    'reset-client'
+;
+
+RESET_SERVER
+:
+    'reset-server'
+;
+
 ROUTING_TABLE
 :
     'routing-table'
+;
+
+RULEBASE
+:
+    'rulebase'
+;
+
+RULES
+:
+    'rules'
 ;
 
 SCTP
@@ -188,6 +268,11 @@ SECONDARY
 SECONDARY_NTP_SERVER
 :
     'secondary-ntp-server'
+;
+
+SECURITY
+:
+    'security'
 ;
 
 SERVER
@@ -220,6 +305,11 @@ SHARED
     'shared'
 ;
 
+SOURCE
+:
+    'source'
+;
+
 SOURCE_PORT
 :
     'source-port'
@@ -245,6 +335,11 @@ TAG
     'tag'
 ;
 
+TO
+:
+    'to'
+;
+
 TCP
 :
     'tcp'
@@ -268,6 +363,11 @@ UP
 VIRTUAL_ROUTER
 :
     'virtual-router'
+;
+
+YES
+:
+    'yes'
 ;
 
 VSYS
@@ -305,6 +405,11 @@ IP_ADDRESS
 IP_PREFIX
 :
     F_IpAddress '/' F_PrefixLength
+;
+
+IP_RANGE
+:
+    F_IpAddress '-' F_IpAddress
 ;
 
 LINE_COMMENT

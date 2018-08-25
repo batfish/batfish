@@ -73,7 +73,7 @@ public class TracerouteEngineTest {
     Flow flow = makeFlow();
 
     SourceNat nat = new SourceNat();
-    nat.setAcl(makeAcl("accept", LineAction.ACCEPT));
+    nat.setAcl(makeAcl("accept", LineAction.PERMIT));
     nat.setPoolIpFirst(new Ip("4.5.6.7"));
 
     Flow transformed =
@@ -87,7 +87,7 @@ public class TracerouteEngineTest {
     Flow flow = makeFlow();
 
     SourceNat nat = new SourceNat();
-    nat.setAcl(makeAcl("reject", LineAction.REJECT));
+    nat.setAcl(makeAcl("reject", LineAction.DENY));
     nat.setPoolIpFirst(new Ip("4.5.6.7"));
 
     Flow transformed =
@@ -101,11 +101,11 @@ public class TracerouteEngineTest {
     Flow flow = makeFlow();
 
     SourceNat nat = new SourceNat();
-    nat.setAcl(makeAcl("firstAccept", LineAction.ACCEPT));
+    nat.setAcl(makeAcl("firstAccept", LineAction.PERMIT));
     nat.setPoolIpFirst(new Ip("4.5.6.7"));
 
     SourceNat secondNat = new SourceNat();
-    secondNat.setAcl(makeAcl("secondAccept", LineAction.ACCEPT));
+    secondNat.setAcl(makeAcl("secondAccept", LineAction.PERMIT));
     secondNat.setPoolIpFirst(new Ip("4.5.6.8"));
 
     Flow transformed =
@@ -119,11 +119,11 @@ public class TracerouteEngineTest {
     Flow flow = makeFlow();
 
     SourceNat nat = new SourceNat();
-    nat.setAcl(makeAcl("rejectAll", LineAction.REJECT));
+    nat.setAcl(makeAcl("rejectAll", LineAction.DENY));
     nat.setPoolIpFirst(new Ip("4.5.6.7"));
 
     SourceNat secondNat = new SourceNat();
-    secondNat.setAcl(makeAcl("acceptAnyway", LineAction.ACCEPT));
+    secondNat.setAcl(makeAcl("acceptAnyway", LineAction.PERMIT));
     secondNat.setPoolIpFirst(new Ip("4.5.6.8"));
 
     Flow transformed =
@@ -137,7 +137,7 @@ public class TracerouteEngineTest {
     Flow flow = makeFlow();
 
     SourceNat nat = new SourceNat();
-    nat.setAcl(makeAcl("matchAll", LineAction.ACCEPT));
+    nat.setAcl(makeAcl("matchAll", LineAction.PERMIT));
 
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage("missing NAT address or pool");
@@ -334,13 +334,13 @@ public class TracerouteEngineTest {
     Flow flow =
         Flow.builder()
             .setIngressNode(c.getHostname())
-            .setTag(Batfish.BASE_TESTRIG_TAG)
+            .setTag(Flow.BASE_FLOW_TAG)
             .setDstIp(new Ip("1.0.0.1"))
             .build();
     b.processFlows(ImmutableSet.of(flow), false);
     FlowHistory history = b.getHistory();
     FlowHistoryInfo info = history.getTraces().get(flow.toString());
-    FlowTrace trace = info.getPaths().get(Batfish.BASE_TESTRIG_TAG).iterator().next();
+    FlowTrace trace = info.getPaths().get(Flow.BASE_FLOW_TAG).iterator().next();
 
     /* Flow should be blocked by ACL before ARP, which would otherwise result in unreachable neighbor */
     assertThat(trace.getDisposition(), equalTo(FlowDisposition.DENIED_OUT));
@@ -382,13 +382,13 @@ public class TracerouteEngineTest {
     Flow flow =
         Flow.builder()
             .setIngressNode(c1.getHostname())
-            .setTag(Batfish.BASE_TESTRIG_TAG)
+            .setTag(Flow.BASE_FLOW_TAG)
             .setDstIp(new Ip("1.0.0.1"))
             .build();
     b.processFlows(ImmutableSet.of(flow), false);
     FlowHistory history = b.getHistory();
     FlowHistoryInfo info = history.getTraces().get(flow.toString());
-    FlowTrace trace = info.getPaths().get(Batfish.BASE_TESTRIG_TAG).iterator().next();
+    FlowTrace trace = info.getPaths().get(Flow.BASE_FLOW_TAG).iterator().next();
 
     /* Flow should be blocked by ACL before ARP, which would otherwise result in unreachable neighbor */
     assertThat(trace.getDisposition(), equalTo(FlowDisposition.DENIED_OUT));

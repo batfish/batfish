@@ -125,7 +125,7 @@ public class SynthesizerInputImplTest {
             .setForwardingAnalysis(MockForwardingAnalysis.builder().build())
             .setTopology(new Topology(ImmutableSortedSet.of(forwardEdge, backEdge)))
             .build();
-    List<LineAction> expectedActions = ImmutableList.of(LineAction.ACCEPT, LineAction.REJECT);
+    List<LineAction> expectedActions = ImmutableList.of(LineAction.PERMIT, LineAction.DENY);
     Map<String, List<LineAction>> expectedSrcNodeWithDataPlane =
         ImmutableMap.of(
             edgeInterfaceInAcl.getName(),

@@ -17,7 +17,7 @@
           "invertMatch" : false,
           "lines" : [
             {
-              "action" : "ACCEPT",
+              "action" : "PERMIT",
               "matchCondition" : {
                 "class" : "org.batfish.datamodel.RegexCommunitySet",
                 "regex" : "(,|\\{|\\}|^|$| )1:"
@@ -44,7 +44,7 @@
           "invertMatch" : false,
           "lines" : [
             {
-              "action" : "ACCEPT",
+              "action" : "PERMIT",
               "matchCondition" : {
                 "class" : "org.batfish.datamodel.RegexCommunitySet",
                 "regex" : "(,|\\{|\\}|^|$| )2:"
@@ -71,7 +71,7 @@
           "invertMatch" : false,
           "lines" : [
             {
-              "action" : "ACCEPT",
+              "action" : "PERMIT",
               "matchCondition" : {
                 "class" : "org.batfish.datamodel.RegexCommunitySet",
                 "regex" : "(,|\\{|\\}|^|$| )3:"
@@ -109,7 +109,7 @@
           "invertMatch" : false,
           "lines" : [
             {
-              "action" : "ACCEPT",
+              "action" : "PERMIT",
               "matchCondition" : {
                 "class" : "org.batfish.datamodel.RegexCommunitySet",
                 "regex" : "(,|\\{|\\}|^|$| )2:"
@@ -132,7 +132,7 @@
           "invertMatch" : false,
           "lines" : [
             {
-              "action" : "ACCEPT",
+              "action" : "PERMIT",
               "matchCondition" : {
                 "class" : "org.batfish.datamodel.RegexCommunitySet",
                 "regex" : "(,|\\{|\\}|^|$| )65001:"

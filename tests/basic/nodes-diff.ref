@@ -19,7 +19,7 @@
             "103" : {
               "class" : "org.batfish.datamodel.ConfigDiffElement",
               "inAfterOnly" : [
-                "ACCEPT 3.0.2.0/24 [24,24] "
+                "PERMIT 3.0.2.0/24 [24,24] "
               ]
             }
           }

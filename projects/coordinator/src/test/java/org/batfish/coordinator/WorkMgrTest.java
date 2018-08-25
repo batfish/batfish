@@ -4,7 +4,6 @@ import static org.batfish.coordinator.WorkMgr.generateFileDateString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -34,6 +33,7 @@ import java.util.TreeSet;
 import org.batfish.common.AnalysisAnswerOptions;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BfConsts;
+import org.batfish.common.ColumnFilter;
 import org.batfish.common.ColumnSortOption;
 import org.batfish.common.Container;
 import org.batfish.common.WorkItem;
@@ -42,18 +42,12 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.WorkItemBuilder;
 import org.batfish.coordinator.AnalysisMetadataMgr.AnalysisType;
 import org.batfish.datamodel.TestrigMetadata;
-import org.batfish.datamodel.answers.Aggregation;
-import org.batfish.datamodel.answers.AnalysisAnswerMetricsResult;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerStatus;
-import org.batfish.datamodel.answers.ColumnAggregation;
-import org.batfish.datamodel.answers.ColumnAggregationResult;
 import org.batfish.datamodel.answers.Issue;
-import org.batfish.datamodel.answers.Metrics;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.pojo.Topology;
-import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
@@ -676,234 +670,6 @@ public class WorkMgrTest {
   }
 
   @Test
-  public void testGetAnalysisAnswerMetrics() throws IOException {
-    String checkName = "check1";
-    String columnName = "col";
-    int value = 5;
-
-    Answer testAnswer = new Answer();
-    testAnswer.addAnswerElement(
-        new TableAnswerElement(
-                new TableMetadata(
-                    ImmutableList.of(new ColumnMetadata(columnName, Schema.INTEGER, "foobar")),
-                    new DisplayHints().getTextDesc()))
-            .addRow(Row.of(columnName, value)));
-    testAnswer.setStatus(AnswerStatus.SUCCESS);
-    Map<String, String> answers =
-        ImmutableMap.of(checkName, BatfishObjectMapper.writePrettyString(testAnswer));
-    List<ColumnAggregation> aggregations =
-        ImmutableList.of(new ColumnAggregation(Aggregation.MAX, columnName));
-
-    assertThat(
-        _manager.getAnalysisAnswersMetrics(answers, aggregations),
-        equalTo(
-            ImmutableMap.of(
-                checkName,
-                new AnalysisAnswerMetricsResult(
-                    new Metrics(
-                        ImmutableList.of(
-                            new ColumnAggregationResult(Aggregation.MAX, columnName, value)),
-                        1),
-                    AnswerStatus.SUCCESS))));
-  }
-
-  @Test
-  public void testToAnalysisAnswerMetricsResult() throws IOException {
-    String columnName = "col";
-    int value = 5;
-
-    Answer testAnswer = new Answer();
-    testAnswer.addAnswerElement(
-        new TableAnswerElement(
-                new TableMetadata(
-                    ImmutableList.of(new ColumnMetadata(columnName, Schema.INTEGER, "foobar")),
-                    new DisplayHints().getTextDesc()))
-            .addRow(Row.of(columnName, value)));
-    testAnswer.setStatus(AnswerStatus.SUCCESS);
-    String rawAnswer = BatfishObjectMapper.writePrettyString(testAnswer);
-    List<ColumnAggregation> aggregations =
-        ImmutableList.of(new ColumnAggregation(Aggregation.MAX, columnName));
-
-    assertThat(
-        _manager.toAnalysisAnswerMetricsResult(rawAnswer, aggregations),
-        equalTo(
-            new AnalysisAnswerMetricsResult(
-                new Metrics(
-                    ImmutableList.of(
-                        new ColumnAggregationResult(Aggregation.MAX, columnName, value)),
-                    1),
-                AnswerStatus.SUCCESS)));
-  }
-
-  @Test
-  public void testToAnalysisAnswerMetricsResultUnsuccessfulAnswer() throws IOException {
-    String columnName = "col";
-
-    Answer testAnswer = new Answer();
-    testAnswer.setStatus(AnswerStatus.FAILURE);
-    String rawAnswer = BatfishObjectMapper.writePrettyString(testAnswer);
-    List<ColumnAggregation> aggregations =
-        ImmutableList.of(new ColumnAggregation(Aggregation.MAX, columnName));
-
-    assertThat(
-        _manager.toAnalysisAnswerMetricsResult(rawAnswer, aggregations),
-        equalTo(new AnalysisAnswerMetricsResult(null, AnswerStatus.FAILURE)));
-  }
-
-  @Test
-  public void testToAnalysisAnswerMetricsResultFailedComputation() throws IOException {
-    String columnName = "col";
-    int value = 5;
-
-    Answer testAnswer = new Answer();
-    testAnswer.addAnswerElement(
-        new TableAnswerElement(
-                new TableMetadata(
-                    ImmutableList.of(new ColumnMetadata(columnName, Schema.INTEGER, "foobar")),
-                    new DisplayHints().getTextDesc()))
-            .addRow(Row.of(columnName, value)));
-    testAnswer.setStatus(AnswerStatus.SUCCESS);
-    String rawAnswer = BatfishObjectMapper.writePrettyString(testAnswer);
-    List<ColumnAggregation> aggregations =
-        ImmutableList.of(new ColumnAggregation(Aggregation.MAX, "fakeColumn"));
-
-    assertThat(
-        _manager.toAnalysisAnswerMetricsResult(rawAnswer, aggregations),
-        equalTo(new AnalysisAnswerMetricsResult(null, AnswerStatus.FAILURE)));
-  }
-
-  @Test
-  public void testComputeColumnAggregations() {
-    String columnName = "col";
-    int value = 5;
-
-    TableAnswerElement table =
-        new TableAnswerElement(
-                new TableMetadata(
-                    ImmutableList.of(new ColumnMetadata(columnName, Schema.INTEGER, "foobar")),
-                    new DisplayHints().getTextDesc()))
-            .addRow(Row.of(columnName, value));
-    List<ColumnAggregation> aggregations =
-        ImmutableList.of(new ColumnAggregation(Aggregation.MAX, columnName));
-
-    assertThat(
-        _manager.computeColumnAggregations(table, aggregations),
-        equalTo(ImmutableList.of(new ColumnAggregationResult(Aggregation.MAX, columnName, value))));
-  }
-
-  @Test
-  public void testComputeColumnAggregationMax() {
-    String columnName = "col";
-    int value = 5;
-
-    TableAnswerElement table =
-        new TableAnswerElement(
-                new TableMetadata(
-                    ImmutableList.of(new ColumnMetadata(columnName, Schema.INTEGER, "foobar")),
-                    new DisplayHints().getTextDesc()))
-            .addRow(Row.of(columnName, value));
-    ColumnAggregation columnAggregation = new ColumnAggregation(Aggregation.MAX, columnName);
-
-    assertThat(
-        _manager.computeColumnAggregation(table, columnAggregation),
-        equalTo(new ColumnAggregationResult(Aggregation.MAX, columnName, value)));
-  }
-
-  @Test
-  public void testComputeColumnMaxOneRowInteger() {
-    String columnName = "col";
-    int value = 5;
-
-    TableAnswerElement table =
-        new TableAnswerElement(
-                new TableMetadata(
-                    ImmutableList.of(new ColumnMetadata(columnName, Schema.INTEGER, "foobar")),
-                    new DisplayHints().getTextDesc()))
-            .addRow(Row.of(columnName, value));
-
-    assertThat(_manager.computeColumnMax(table, columnName), equalTo(value));
-  }
-
-  @Test
-  public void testComputeColumnMaxOneRowIssue() {
-    String columnName = "col";
-    int severity = 5;
-    Issue value = new Issue("blah", severity, new Issue.Type("1", "2"));
-
-    TableAnswerElement table =
-        new TableAnswerElement(
-                new TableMetadata(
-                    ImmutableList.of(new ColumnMetadata(columnName, Schema.ISSUE, "foobar")),
-                    new DisplayHints().getTextDesc()))
-            .addRow(Row.of(columnName, value));
-
-    assertThat(_manager.computeColumnMax(table, columnName), equalTo(severity));
-  }
-
-  @Test
-  public void testComputeColumnMaxTwoRows() {
-    String columnName = "col";
-    int value1 = 5;
-    int value2 = 10;
-
-    TableAnswerElement table =
-        new TableAnswerElement(
-                new TableMetadata(
-                    ImmutableList.of(new ColumnMetadata(columnName, Schema.INTEGER, "foobar")),
-                    new DisplayHints().getTextDesc()))
-            .addRow(Row.of(columnName, value1))
-            .addRow(Row.of(columnName, value2));
-
-    assertThat(_manager.computeColumnMax(table, columnName), equalTo(value2));
-  }
-
-  @Test
-  public void testComputeColumnMaxNoRows() {
-    String columnName = "col";
-
-    TableAnswerElement table =
-        new TableAnswerElement(
-            new TableMetadata(
-                ImmutableList.of(new ColumnMetadata(columnName, Schema.INTEGER, "foobar")),
-                new DisplayHints().getTextDesc()));
-
-    assertThat(_manager.computeColumnMax(table, columnName), nullValue());
-  }
-
-  @Test
-  public void testComputeColumnMaxInvalidColumn() {
-    String columnName = "col";
-    String invalidColumnName = "invalid";
-    int value = 5;
-
-    TableAnswerElement table =
-        new TableAnswerElement(
-                new TableMetadata(
-                    ImmutableList.of(new ColumnMetadata(columnName, Schema.INTEGER, "foobar")),
-                    new DisplayHints().getTextDesc()))
-            .addRow(Row.of(columnName, value));
-
-    _thrown.expect(IllegalArgumentException.class);
-    _manager.computeColumnMax(table, invalidColumnName);
-  }
-
-  @Test
-  public void testComputeColumnMaxInvalidSchema() {
-    String columnName = "col";
-    String value = "hello";
-
-    TableAnswerElement table =
-        new TableAnswerElement(
-                new TableMetadata(
-                    ImmutableList.of(new ColumnMetadata(columnName, Schema.STRING, "foobar")),
-                    new DisplayHints().getTextDesc()))
-            .addRow(Row.of(columnName, value));
-
-    _thrown.expect(UnsupportedOperationException.class);
-    _manager.computeColumnMax(table, columnName);
-  }
-
-  @Test
   public void testProcessAnalysisAnswers() throws IOException {
     String questionName = "q";
     String columnName = "issue";
@@ -923,6 +689,7 @@ public class WorkMgrTest {
     AnalysisAnswerOptions options =
         new AnalysisAnswerOptions(
             ImmutableSet.of(columnName),
+            ImmutableList.of(),
             maxRows,
             rowOffset,
             ImmutableList.of(new ColumnSortOption(columnName, true)));
@@ -955,6 +722,7 @@ public class WorkMgrTest {
     AnalysisAnswerOptions options =
         new AnalysisAnswerOptions(
             ImmutableSet.of(columnName),
+            ImmutableList.of(),
             maxRows,
             rowOffset,
             ImmutableList.of(new ColumnSortOption(columnName, true)));
@@ -975,6 +743,7 @@ public class WorkMgrTest {
     AnalysisAnswerOptions options =
         new AnalysisAnswerOptions(
             ImmutableSet.of(columnName),
+            ImmutableList.of(),
             maxRows,
             rowOffset,
             ImmutableList.of(new ColumnSortOption(columnName, true)));
@@ -994,6 +763,7 @@ public class WorkMgrTest {
     AnalysisAnswerOptions options =
         new AnalysisAnswerOptions(
             ImmutableSet.of(columnName),
+            ImmutableList.of(),
             maxRows,
             rowOffset,
             ImmutableList.of(new ColumnSortOption(columnName, true)));
@@ -1016,12 +786,14 @@ public class WorkMgrTest {
     AnalysisAnswerOptions optionsSorting =
         new AnalysisAnswerOptions(
             ImmutableSet.of(columnName),
+            ImmutableList.of(),
             Integer.MAX_VALUE,
             0,
             ImmutableList.of(new ColumnSortOption(columnName, false)));
     AnalysisAnswerOptions optionsSortingReverse =
         new AnalysisAnswerOptions(
             ImmutableSet.of(columnName),
+            ImmutableList.of(),
             Integer.MAX_VALUE,
             0,
             ImmutableList.of(new ColumnSortOption(columnName, true)));
@@ -1047,10 +819,18 @@ public class WorkMgrTest {
     table.addRow(row2);
     AnalysisAnswerOptions optionsNoOffset =
         new AnalysisAnswerOptions(
-            ImmutableSet.of(columnName), Integer.MAX_VALUE, 0, ImmutableList.of());
+            ImmutableSet.of(columnName),
+            ImmutableList.of(),
+            Integer.MAX_VALUE,
+            0,
+            ImmutableList.of());
     AnalysisAnswerOptions optionsOffset =
         new AnalysisAnswerOptions(
-            ImmutableSet.of(columnName), Integer.MAX_VALUE, 1, ImmutableList.of());
+            ImmutableSet.of(columnName),
+            ImmutableList.of(),
+            Integer.MAX_VALUE,
+            1,
+            ImmutableList.of());
 
     assertThat(
         _manager.processAnalysisAnswerTable(table, optionsNoOffset).getRowsList(),
@@ -1058,6 +838,37 @@ public class WorkMgrTest {
     assertThat(
         _manager.processAnalysisAnswerTable(table, optionsOffset).getRowsList(),
         equalTo(ImmutableList.of(row2)));
+  }
+
+  @Test
+  public void testProcessAnalysisAnswerTableFiltered() {
+    String columnName = "val";
+    TableAnswerElement table =
+        new TableAnswerElement(
+            new TableMetadata(
+                ImmutableList.of(new ColumnMetadata(columnName, Schema.STRING, "foobar"))));
+    String whitelistedValue = "hello";
+    Row row1 = Row.of(columnName, whitelistedValue);
+    Row row2 = Row.of(columnName, "goodbye");
+    table.addRow(row1);
+    table.addRow(row2);
+    AnalysisAnswerOptions optionsNotFiltered =
+        new AnalysisAnswerOptions(
+            ImmutableSet.of(), ImmutableList.of(), Integer.MAX_VALUE, 0, ImmutableList.of());
+    AnalysisAnswerOptions optionsFiltered =
+        new AnalysisAnswerOptions(
+            ImmutableSet.of(),
+            ImmutableList.of(new ColumnFilter(columnName, whitelistedValue)),
+            Integer.MAX_VALUE,
+            0,
+            ImmutableList.of());
+
+    assertThat(
+        _manager.processAnalysisAnswerTable(table, optionsNotFiltered).getRowsList(),
+        equalTo(ImmutableList.of(row1, row2)));
+    assertThat(
+        _manager.processAnalysisAnswerTable(table, optionsFiltered).getRowsList(),
+        equalTo(ImmutableList.of(row1)));
   }
 
   @Test
@@ -1073,9 +884,9 @@ public class WorkMgrTest {
     table.addRow(row2);
     AnalysisAnswerOptions optionsNoLimit =
         new AnalysisAnswerOptions(
-            ImmutableSet.of(columnName), Integer.MAX_VALUE, 0, ImmutableList.of());
+            ImmutableSet.of(), ImmutableList.of(), Integer.MAX_VALUE, 0, ImmutableList.of());
     AnalysisAnswerOptions optionsLimit =
-        new AnalysisAnswerOptions(ImmutableSet.of(columnName), 1, 0, ImmutableList.of());
+        new AnalysisAnswerOptions(ImmutableSet.of(), ImmutableList.of(), 1, 0, ImmutableList.of());
 
     assertThat(
         _manager.processAnalysisAnswerTable(table, optionsNoLimit).getRowsList(),
@@ -1086,7 +897,7 @@ public class WorkMgrTest {
   }
 
   @Test
-  public void testProcessAnalysisAnswerTableFilter() {
+  public void testProcessAnalysisAnswerTableProject() {
     String columnName = "val";
     String otherColumnName = "val2";
     TableMetadata originalMetadata =
@@ -1099,21 +910,26 @@ public class WorkMgrTest {
     Row row2 = Row.of(columnName, 2, otherColumnName, 4);
     table.addRow(row1);
     table.addRow(row2);
-    AnalysisAnswerOptions optionsNoFilter =
-        new AnalysisAnswerOptions(ImmutableSet.of(), Integer.MAX_VALUE, 0, ImmutableList.of());
-    AnalysisAnswerOptions optionsFilter =
+    AnalysisAnswerOptions optionsNoProject =
         new AnalysisAnswerOptions(
-            ImmutableSet.of(columnName), Integer.MAX_VALUE, 0, ImmutableList.of());
+            ImmutableSet.of(), ImmutableList.of(), Integer.MAX_VALUE, 0, ImmutableList.of());
+    AnalysisAnswerOptions optionsProject =
+        new AnalysisAnswerOptions(
+            ImmutableSet.of(columnName),
+            ImmutableList.of(),
+            Integer.MAX_VALUE,
+            0,
+            ImmutableList.of());
 
-    Row row1Filtered = Row.of(columnName, 1);
-    Row row2Filtered = Row.of(columnName, 2);
+    Row row1Projected = Row.of(columnName, 1);
+    Row row2Projected = Row.of(columnName, 2);
 
     assertThat(
-        _manager.processAnalysisAnswerTable(table, optionsNoFilter).getRowsList(),
+        _manager.processAnalysisAnswerTable(table, optionsNoProject).getRowsList(),
         equalTo(ImmutableList.of(row1, row2)));
     assertThat(
-        _manager.processAnalysisAnswerTable(table, optionsFilter).getRowsList(),
-        equalTo(ImmutableList.of(row1Filtered, row2Filtered)));
+        _manager.processAnalysisAnswerTable(table, optionsProject).getRowsList(),
+        equalTo(ImmutableList.of(row1Projected, row2Projected)));
   }
 
   @Test

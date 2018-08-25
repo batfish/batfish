@@ -51,11 +51,14 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.datamodel.questions.InterfacesSpecifier;
+import org.batfish.datamodel.table.Rows;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.question.ReachFilterParameters;
 import org.batfish.specifier.ConstantIpSpaceSpecifier;
+import org.batfish.specifier.ShorthandInterfaceSpecifier;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -270,6 +273,26 @@ public final class ReachFilterAnswererTest {
   }
 
   @Test
+  public void testReachFilter_permit_headerSpace() {
+    ReachFilterParameters.Builder paramsBuilder =
+        _defaultReachFilterParams
+            .toBuilder()
+            .setDestinationIpSpaceSpecifier(new ConstantIpSpaceSpecifier(IP0.toIpSpace()))
+            .setSourceIpSpaceSpecifier(new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE))
+            .setHeaderSpace(HeaderSpace.builder().build());
+
+    ReachFilterParameters params = paramsBuilder.build();
+    Optional<Flow> permitFlow = _batfish.reachFilter(_config, ACL, params);
+    assertThat("Should find permitted flow", permitFlow.isPresent());
+    assertThat(permitFlow.get(), hasDstIp(IP0));
+
+    params = paramsBuilder.setHeaderSpace(HeaderSpace.builder().setNegate(true).build()).build();
+    permitFlow = _batfish.reachFilter(_config, ACL, params);
+    assertThat("Should find permitted flow", permitFlow.isPresent());
+    assertThat(permitFlow.get(), hasDstIp(IP3));
+  }
+
+  @Test
   public void testReachFilter_deny() {
     Optional<Flow> permitFlow =
         _batfish.reachFilter(_config, toDenyAcl(ACL), _defaultReachFilterParams);
@@ -308,17 +331,16 @@ public final class ReachFilterAnswererTest {
   @Test
   public void testTraceFilter() {
     ReachFilterQuestion question = new ReachFilterQuestion();
-    Flow flow =
-        Flow.builder().setIngressNode(_config.getHostname()).setDstIp(IP2).setTag("tag").build();
+    String hostname = _config.getHostname();
+    Flow flow = Flow.builder().setIngressNode(hostname).setDstIp(IP2).setTag("tag").build();
     ReachFilterAnswerer answerer = new ReachFilterAnswerer(question, _batfish);
-    TableAnswerElement ae = answerer.traceFilter(_config, ACL, flow);
+    Rows rows = answerer.traceFilterRows(hostname, ACL, flow);
     assertThat(
-        ae,
-        hasRows(
-            contains(
-                allOf(
-                    hasColumn("action", equalTo("REJECT"), Schema.STRING),
-                    hasColumn("filterName", equalTo(ACL.getName()), Schema.STRING)))));
+        rows.getData(),
+        contains(
+            allOf(
+                hasColumn("action", equalTo("DENY"), Schema.STRING),
+                hasColumn("filterName", equalTo(ACL.getName()), Schema.STRING))));
   }
 
   @Test
@@ -332,15 +354,15 @@ public final class ReachFilterAnswererTest {
             containsInAnyOrder(
                 ImmutableList.of(
                     allOf(
-                        hasColumn("action", equalTo("ACCEPT"), Schema.STRING),
+                        hasColumn("action", equalTo("PERMIT"), Schema.STRING),
                         hasColumn("filterName", equalTo(ACL.getName()), Schema.STRING),
                         hasColumn("lineNumber", oneOf(0, 3), Schema.INTEGER)),
                     allOf(
-                        hasColumn("action", equalTo("ACCEPT"), Schema.STRING),
+                        hasColumn("action", equalTo("PERMIT"), Schema.STRING),
                         hasColumn("filterName", equalTo(BLOCKED_LINE_ACL.getName()), Schema.STRING),
                         hasColumn("lineNumber", equalTo(0), Schema.INTEGER)),
                     allOf(
-                        hasColumn("action", equalTo("ACCEPT"), Schema.STRING),
+                        hasColumn("action", equalTo("PERMIT"), Schema.STRING),
                         hasColumn("filterName", equalTo(SRC_ACL.getName()), Schema.STRING),
                         hasColumn("lineNumber", oneOf(0, 1, 2), Schema.INTEGER))))));
   }
@@ -403,10 +425,29 @@ public final class ReachFilterAnswererTest {
   }
 
   @Test
+  public void testSourceInterfaceParameter() {
+    ReachFilterParameters params =
+        _defaultReachFilterParams
+            .toBuilder()
+            .setSourceInterfaceSpecifier(
+                new ShorthandInterfaceSpecifier(new InterfacesSpecifier(IFACE1)))
+            .build();
+
+    // can match line 1 because IFACE1 is specified
+    Optional<Flow> flow = _batfish.reachFilter(_config, toMatchLineAcl(1, SRC_ACL), params);
+    assertThat(flow.get(), allOf(hasIngressInterface(IFACE1), hasDstIp(IP1)));
+
+    // cannot match line 2 because IFACE2 is not specified
+    flow = _batfish.reachFilter(_config, toMatchLineAcl(2, SRC_ACL), params);
+    assertThat("Should not find a matching flow", !flow.isPresent());
+  }
+
+  @Test
   public void testReachFilter_ACCEPT_ALL_dstIpConstraint() {
     Ip constraintIp = new Ip("21.21.21.21");
     ReachFilterParameters params =
-        ReachFilterParameters.builder()
+        _defaultReachFilterParams
+            .toBuilder()
             .setDestinationIpSpaceSpecifier(new ConstantIpSpaceSpecifier(constraintIp.toIpSpace()))
             .setSourceIpSpaceSpecifier(new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE))
             .setHeaderSpace(new HeaderSpace())
@@ -419,7 +460,8 @@ public final class ReachFilterAnswererTest {
   public void testReachFilter_ACCEPT_ALL_srcIpConstraint() {
     Ip constraintIp = new Ip("21.21.21.21");
     ReachFilterParameters params =
-        ReachFilterParameters.builder()
+        _defaultReachFilterParams
+            .toBuilder()
             .setDestinationIpSpaceSpecifier(new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE))
             .setSourceIpSpaceSpecifier(new ConstantIpSpaceSpecifier(constraintIp.toIpSpace()))
             .setHeaderSpace(new HeaderSpace())
@@ -434,7 +476,8 @@ public final class ReachFilterAnswererTest {
     hs.setSrcPorts(Collections.singletonList(new SubRange(1111, 1111)));
     hs.setDstPorts(Collections.singletonList(new SubRange(2222, 2222)));
     ReachFilterParameters params =
-        ReachFilterParameters.builder()
+        _defaultReachFilterParams
+            .toBuilder()
             .setDestinationIpSpaceSpecifier(new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE))
             .setSourceIpSpaceSpecifier(new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE))
             .setHeaderSpace(hs)

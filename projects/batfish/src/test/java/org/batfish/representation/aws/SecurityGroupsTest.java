@@ -300,7 +300,7 @@ public class SecurityGroupsTest {
         outFilter
             .filter(_flowBuilder.build(), null, ImmutableMap.of(), ImmutableMap.of())
             .getAction(),
-        equalTo(LineAction.REJECT));
+        equalTo(LineAction.DENY));
   }
 
   @Test
@@ -325,7 +325,7 @@ public class SecurityGroupsTest {
         outFilter
             .filter(_flowBuilder.build(), null, ImmutableMap.of(), ImmutableMap.of())
             .getAction(),
-        equalTo(LineAction.ACCEPT));
+        equalTo(LineAction.PERMIT));
   }
 
   @Test
@@ -350,6 +350,6 @@ public class SecurityGroupsTest {
         outFilter
             .filter(_flowBuilder.build(), null, ImmutableMap.of(), ImmutableMap.of())
             .getAction(),
-        equalTo(LineAction.REJECT));
+        equalTo(LineAction.DENY));
   }
 }

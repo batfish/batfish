@@ -133,6 +133,7 @@ import org.batfish.datamodel.answers.AclLinesAnswerElementInterface;
 import org.batfish.datamodel.answers.AclLinesAnswerElementInterface.AclSpecs;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerElement;
+import org.batfish.datamodel.answers.AnswerMetadataUtil;
 import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.AnswerSummary;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
@@ -239,10 +240,6 @@ import org.codehaus.jettison.json.JSONObject;
 
 /** This class encapsulates the main control logic for Batfish. */
 public class Batfish extends PluginConsumer implements IBatfish {
-
-  public static final String BASE_TESTRIG_TAG = "BASE";
-
-  public static final String DELTA_TESTRIG_TAG = "DELTA";
 
   public static final String DIFFERENTIAL_FLOW_TAG = "DIFFERENTIAL";
 
@@ -613,6 +610,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
             initAnalysisQuestionPath(analysisName, questionName);
             try {
               outputAnswer(currentAnswer);
+              outputAnswerMetadata(currentAnswer);
               ae.getAnswers().put(questionName, currentAnswer);
             } catch (Exception e) {
               Answer errorAnswer = new Answer();
@@ -751,12 +749,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
             Function.identity());
 
     // Map each ACL line to its own phony config with ACL and dependencies specialized to that line
-    Map<AclLine, Configuration> configs = new TreeMap<>();
     TypeMatchExprsCollector<PermittedByAcl> permittedByAclFinder =
         new TypeMatchExprsCollector<>(PermittedByAcl.class);
-    aclSpecs
-        .parallelStream()
-        .forEach(aclSpec -> collectConfigs(aclSpec, configs, permittedByAclFinder));
+    Map<AclLine, Configuration> configs =
+        aclSpecs
+            .parallelStream()
+            .map(aclSpec -> collectConfigs(aclSpec, permittedByAclFinder))
+            .flatMap(configsMap -> configsMap.entrySet().stream())
+            .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
 
     // Find all unreachable lines
     List<NodSatJob<AclLine>> lineReachabilityJobs = generateUnreachableAclLineJobs(configs);
@@ -812,10 +812,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
-  private void collectConfigs(
-      AclSpecs aclSpec,
-      Map<AclLine, Configuration> configs,
-      TypeMatchExprsCollector<PermittedByAcl> permittedByAclFinder) {
+  private Map<AclLine, Configuration> collectConfigs(
+      AclSpecs aclSpec, TypeMatchExprsCollector<PermittedByAcl> permittedByAclFinder) {
     String hostname = aclSpec.reprHostname;
     List<IpAccessListLine> lines = aclSpec.acl.getSanitizedAcl().getLines();
     String aclName = aclSpec.acl.getAclName();
@@ -825,53 +823,61 @@ public class Batfish extends PluginConsumer implements IBatfish {
             Function.identity(),
             iface -> Interface.builder().setName(iface).build());
 
-    IntStream.range(0, lines.size())
+    return IntStream.range(0, lines.size())
         .parallel()
-        .forEach(
-            lineNum -> {
-              AclLine aclLine = new AclLine(hostname, aclName, lineNum);
-              AclLineMatchExpr matchExpr = lines.get(lineNum).getMatchCondition();
+        .mapToObj(i -> new AclLine(hostname, aclName, i))
+        .collect(
+            Collectors.toMap(
+                Function.identity(),
+                aclLine -> {
+                  int lineNum = aclLine.getLine();
+                  AclLineMatchExpr matchExpr = lines.get(lineNum).getMatchCondition();
 
-              // If line matches other ACLs, build aclEnv
-              BDDPacket bddPacket = new BDDPacket();
-              BDDSourceManager sourceMgr =
-                  BDDSourceManager.forInterfaces(bddPacket, aclSpec.acl.getInterfaces());
-              List<PermittedByAcl> aclMatchExprs = matchExpr.accept(permittedByAclFinder);
-              Map<String, Supplier<BDD>> aclEnv = new TreeMap<>();
-              if (!aclMatchExprs.isEmpty()) {
-                Map<String, IpAccessList> dependencies = aclSpec.acl.getDependencies();
-                aclEnv =
-                    dependencies
-                        .entrySet()
-                        .stream()
-                        .collect(
-                            Collectors.toMap(
-                                dep -> dep.getKey(),
-                                dep ->
-                                    () ->
-                                        BDDAcl.create(
-                                                bddPacket,
-                                                dep.getValue(),
-                                                dependencies,
-                                                ImmutableMap.of(),
-                                                sourceMgr)
-                                            .getBdd()));
-              }
+                  // If line matches other ACLs, build aclEnv
+                  BDDPacket bddPacket = new BDDPacket();
+                  BDDSourceManager sourceMgr =
+                      BDDSourceManager.forInterfaces(bddPacket, aclSpec.acl.getInterfaces());
+                  List<PermittedByAcl> aclMatchExprs = matchExpr.accept(permittedByAclFinder);
+                  Map<String, Supplier<BDD>> aclEnv = new TreeMap<>();
+                  if (!aclMatchExprs.isEmpty()) {
+                    Map<String, IpAccessList> dependencies = aclSpec.acl.getDependencies();
+                    aclEnv =
+                        dependencies
+                            .entrySet()
+                            .stream()
+                            .collect(
+                                Collectors.toMap(
+                                    dep -> dep.getKey(),
+                                    dep ->
+                                        () ->
+                                            BDDAcl.create(
+                                                    bddPacket,
+                                                    dep.getValue(),
+                                                    dependencies,
+                                                    ImmutableMap.of(),
+                                                    sourceMgr)
+                                                .getBdd()));
+                  }
 
-              // Specialize ACL and dependencies to current line
-              BDD lineBDD =
-                  matchExpr.accept(
-                      new AclLineMatchExprToBDD(
-                          bddPacket.getFactory(), bddPacket, aclEnv, ImmutableMap.of(), sourceMgr));
-              BDDIpAccessListSpecializer specializer =
-                  new BDDIpAccessListSpecializer(bddPacket, lineBDD, ImmutableMap.of(), sourceMgr);
+                  // Specialize ACL and dependencies to current line
+                  BDD lineBDD =
+                      matchExpr.accept(
+                          new AclLineMatchExprToBDD(
+                              bddPacket.getFactory(),
+                              bddPacket,
+                              aclEnv,
+                              ImmutableMap.of(),
+                              sourceMgr));
+                  BDDIpAccessListSpecializer specializer =
+                      new BDDIpAccessListSpecializer(
+                          bddPacket, lineBDD, ImmutableMap.of(), sourceMgr);
 
-              // Build new configuration from ACLs and interfaces
-              Configuration c = new Configuration(hostname, ConfigurationFormat.CISCO_IOS);
-              c.setInterfaces(interfaces);
-              c.setIpAccessLists(collectAcls(lineNum, aclSpec, specializer));
-              configs.put(aclLine, c);
-            });
+                  // Build new configuration from ACLs and interfaces
+                  Configuration c = new Configuration(hostname, ConfigurationFormat.CISCO_IOS);
+                  c.setInterfaces(interfaces);
+                  c.setIpAccessLists(collectAcls(lineNum, aclSpec, specializer));
+                  return c;
+                }));
   }
 
   private NavigableMap<String, IpAccessList> collectAcls(
@@ -1562,7 +1568,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // "~STUB_ORIGINATION_ROUTE_FILTER~";
     // RouteFilterList rf = new RouteFilterList(
     // stubOriginationRouteFilterListName);
-    // RouteFilterLine rfl = new RouteFilterLine(LineAction.ACCEPT,
+    // RouteFilterLine rfl = new RouteFilterLine(LineAction.PERMIT,
     // Prefix.ZERO,
     // new SubRange(0, 0));
     // rf.addLine(rfl);
@@ -1828,9 +1834,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // ":"
     // + testrigSettings.getEnvironmentSettings().getEnvName();
     if (testrigSettings == _deltaTestrigSettings) {
-      return DELTA_TESTRIG_TAG;
+      return Flow.DELTA_FLOW_TAG;
     } else if (testrigSettings == _baseTestrigSettings) {
-      return BASE_TESTRIG_TAG;
+      return Flow.BASE_FLOW_TAG;
     } else {
       throw new BatfishException("Could not determine flow tag");
     }
@@ -2755,6 +2761,17 @@ public class Batfish extends PluginConsumer implements IBatfish {
       }
       throw be;
     }
+  }
+
+  void outputAnswerMetadata(Answer answer) {
+    _storage.storeAnswerMetadata(
+        AnswerMetadataUtil.computeAnswerMetadata(answer, _logger),
+        _settings.getAnalysisName(),
+        _settings.getQuestionPath(),
+        _baseTestrigSettings.getName(),
+        _deltaTestrigSettings.getName(),
+        _settings.getQuestionName(),
+        _settings.getDiffQuestion());
   }
 
   private ParserRuleContext parse(BatfishCombinedParser<?, ?> parser) {
@@ -4320,24 +4337,22 @@ public class Batfish extends PluginConsumer implements IBatfish {
       ReachFilterParameters reachFilterParameters) {
     BDDPacket bddPacket = new BDDPacket();
 
-    /*
-     * Get separate headerspace constraints for base and delta snapshots because they could change
-     * due to differences in named IpSpaces etc.
-     */
-    pushBaseEnvironment();
-    BDD baseHeaderSpaceBDD =
-        new HeaderSpaceToBDD(bddPacket, baseConfig.getIpSpaces())
-            .toBDD(reachFilterParameters.resolveHeaderspace(specifierContext()));
-    popEnvironment();
+    HeaderSpace headerSpace = reachFilterParameters.resolveHeaderspace(specifierContext());
+    BDD headerSpaceBDD =
+        new HeaderSpaceToBDD(bddPacket, baseConfig.getIpSpaces()).toBDD(headerSpace);
 
-    pushDeltaEnvironment();
-    BDD deltaHeaderSpaceBDD =
-        new HeaderSpaceToBDD(bddPacket, deltaConfig.getIpSpaces())
-            .toBDD(reachFilterParameters.resolveHeaderspace(specifierContext()));
-    popEnvironment();
+    // resolve specified source interfaces that exist in both configs.
+    Set<String> commonSourceInterfaces =
+        Sets.intersection(
+            resolveBaseSourceInterfaces(reachFilterParameters, baseConfig.getHostname()),
+            resolveDeltaSourceInterfaces(reachFilterParameters, deltaConfig.getHostname()));
 
+    // effectively active interfaces are those of interest that are active in both configs.
     Set<String> activeInterfaces =
-        Sets.intersection(baseConfig.activeInterfaces(), deltaConfig.activeInterfaces());
+        Sets.intersection(
+            commonSourceInterfaces,
+            Sets.intersection(baseConfig.activeInterfaces(), deltaConfig.activeInterfaces()));
+
     Set<String> referencedSources =
         Sets.union(
             referencedSources(baseConfig.getIpAccessLists(), baseAcl),
@@ -4349,13 +4364,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
         BDDAcl.create(
                 bddPacket, baseAcl, baseConfig.getIpAccessLists(), baseConfig.getIpSpaces(), mgr)
             .getBdd()
-            .and(baseHeaderSpaceBDD)
+            .and(headerSpaceBDD)
             .and(mgr.isSane());
     BDD deltaAclBDD =
         BDDAcl.create(
                 bddPacket, deltaAcl, deltaConfig.getIpAccessLists(), deltaConfig.getIpSpaces(), mgr)
             .getBdd()
-            .and(deltaHeaderSpaceBDD)
+            .and(headerSpaceBDD)
             .and(mgr.isSane());
 
     String hostname = baseConfig.getHostname();
@@ -4367,6 +4382,29 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Flow decreasedFlow = getFlow(bddPacket, mgr, hostname, decreasedBDD).orElse(null);
 
     return new DifferentialReachFilterResult(increasedFlow, decreasedFlow);
+  }
+
+  private Set<String> resolveDeltaSourceInterfaces(ReachFilterParameters parameters, String node) {
+    pushDeltaEnvironment();
+    Set<String> sourceInterfaces = resolveSourceInterfaces(parameters, node);
+    popEnvironment();
+    return sourceInterfaces;
+  }
+
+  private Set<String> resolveBaseSourceInterfaces(ReachFilterParameters parameters, String node) {
+    pushBaseEnvironment();
+    Set<String> sourceInterfaces = resolveSourceInterfaces(parameters, node);
+    popEnvironment();
+    return sourceInterfaces;
+  }
+
+  private Set<String> resolveSourceInterfaces(ReachFilterParameters parameters, String node) {
+    return parameters
+        .getSourceInterfaceSpecifier()
+        .resolve(ImmutableSet.of(node), specifierContext())
+        .stream()
+        .map(Interface::getName)
+        .collect(ImmutableSet.toImmutableSet());
   }
 
   private Optional<Flow> getFlow(
@@ -4387,7 +4425,16 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public Optional<Flow> reachFilter(
       Configuration node, IpAccessList acl, ReachFilterParameters parameters) {
     BDDPacket bddPacket = new BDDPacket();
-    BDDSourceManager mgr = BDDSourceManager.forIpAccessList(bddPacket, node, acl);
+
+    Set<String> activeInterfaces =
+        Sets.intersection(
+            node.activeInterfaces(), resolveSourceInterfaces(parameters, node.getHostname()));
+
+    Set<String> referencedSources = referencedSources(node.getIpAccessLists(), acl);
+
+    BDDSourceManager mgr =
+        BDDSourceManager.forSources(bddPacket, activeInterfaces, referencedSources);
+
     BDD headerSpaceBDD =
         new HeaderSpaceToBDD(bddPacket, node.getIpSpaces())
             .toBDD(parameters.resolveHeaderspace(specifierContext()));
@@ -4712,46 +4759,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private void writeJsonAnswer(String structuredAnswerString) {
-    // TODO Reduce calls to _settings to deobfuscate this method's purpose and dependencies.
-    // Purpose: to write answer json files for adhoc and analysis questions
-    // Dependencies: Container, tr & env, (delta tr & env), question name, analysis name if present
-    boolean diff = _settings.getDiffQuestion();
-    String baseEnvName = _testrigSettings.getEnvironmentSettings().getName();
-    Path answerDir;
-
-    if (_settings.getQuestionName() != null) {
-      // If settings has a question name, we're answering an adhoc question. Set up path accordingly
-      Path testrigDir = _testrigSettings.getBasePath();
-      answerDir =
-          testrigDir.resolve(
-              Paths.get(BfConsts.RELPATH_ANSWERS_DIR, _settings.getQuestionName(), baseEnvName));
-      if (diff) {
-        String deltaTestrigName = _deltaTestrigSettings.getName();
-        String deltaEnvName = _deltaTestrigSettings.getEnvironmentSettings().getName();
-        answerDir =
-            answerDir.resolve(Paths.get(BfConsts.RELPATH_DIFF_DIR, deltaTestrigName, deltaEnvName));
-      } else {
-        answerDir = answerDir.resolve(Paths.get(BfConsts.RELPATH_STANDARD_DIR));
-      }
-    } else if (_settings.getAnalysisName() != null && _settings.getQuestionPath() != null) {
-      // If settings has an analysis name and question path, we're answering an analysis question
-      Path questionDir = _settings.getQuestionPath().getParent();
-      answerDir = questionDir.resolve(Paths.get(BfConsts.RELPATH_ENVIRONMENTS_DIR, baseEnvName));
-      if (diff) {
-        answerDir =
-            answerDir.resolve(
-                Paths.get(
-                    BfConsts.RELPATH_DELTA,
-                    _deltaTestrigSettings.getName(),
-                    _deltaTestrigSettings.getEnvironmentSettings().getName()));
-      }
-    } else {
-      // If settings has neither a question nor an analysis configured, don't write a file
-      return;
-    }
-    Path structuredAnswerPath = answerDir.resolve(BfConsts.RELPATH_ANSWER_JSON);
-    answerDir.toFile().mkdirs();
-    CommonUtil.writeFile(structuredAnswerPath, structuredAnswerString);
+    _storage.storeAnswer(
+        structuredAnswerString,
+        _settings.getAnalysisName(),
+        _settings.getQuestionPath(),
+        _baseTestrigSettings.getName(),
+        _deltaTestrigSettings.getName(),
+        _settings.getQuestionName(),
+        _settings.getDiffQuestion());
   }
 
   private void writeJsonAnswerWithLog(@Nullable String logString, String structuredAnswerString) {

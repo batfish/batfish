@@ -22,7 +22,7 @@ public class RoutingInstance implements Serializable {
   /** */
   private static final long serialVersionUID = 1L;
 
-  private Integer _as;
+  @Nullable private Long _as;
 
   private final SortedMap<String, DhcpRelayGroup> _dhcpRelayGroups;
 
@@ -79,7 +79,7 @@ public class RoutingInstance implements Serializable {
     _masterBgpGroup = new BgpGroup();
     _masterBgpGroup.setMultipath(false);
     _masterBgpGroup.setMultipathMultipleAs(false);
-    _globalMasterInterface = new Interface(MASTER_INTERFACE_NAME, -1);
+    _globalMasterInterface = new Interface(MASTER_INTERFACE_NAME);
     _globalMasterInterface.setRoutingInstance(name);
     _name = name;
     _namedBgpGroups = new TreeMap<>();
@@ -109,7 +109,8 @@ public class RoutingInstance implements Serializable {
     _system = new JuniperSystem();
   }
 
-  public Integer getAs() {
+  @Nullable
+  public Long getAs() {
     return _as;
   }
 
@@ -206,7 +207,7 @@ public class RoutingInstance implements Serializable {
     return _system;
   }
 
-  public void setAs(int as) {
+  public void setAs(@Nullable Long as) {
     _as = as;
   }
 

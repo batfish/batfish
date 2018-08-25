@@ -107,7 +107,7 @@ public class RouteFilterList implements Serializable {
         int prefixLength = prefix.getPrefixLength();
         SubRange range = line.getLengthRange();
         if (prefixLength >= range.getStart() && prefixLength <= range.getEnd()) {
-          accept = line.getAction() == LineAction.ACCEPT;
+          accept = line.getAction() == LineAction.PERMIT;
           break;
         }
       }
@@ -134,7 +134,7 @@ public class RouteFilterList implements Serializable {
    * Returns the set of {@link IpWildcard ips} that match this filter list.
    *
    * @throws BatfishException if any line in this {@link RouteFilterList} does not have an {@link
-   *     LineAction#ACCEPT} when matching.
+   *     LineAction#PERMIT} when matching.
    */
   @JsonIgnore
   public List<IpWildcard> getMatchingIps() {
@@ -142,7 +142,7 @@ public class RouteFilterList implements Serializable {
         .stream()
         .map(
             rfLine -> {
-              if (rfLine.getAction() != LineAction.ACCEPT) {
+              if (rfLine.getAction() != LineAction.PERMIT) {
                 throw new BatfishException(
                     "Expected accept action for routerfilterlist from juniper");
               } else {

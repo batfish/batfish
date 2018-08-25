@@ -119,7 +119,7 @@ public final class DeniedByIpAccessListLine implements TerminalTraceEvent {
 
   @Override
   public FilterResult toFilterResult() {
-    return new FilterResult(_index, LineAction.REJECT);
+    return new FilterResult(_index, LineAction.DENY);
   }
 
   @Override

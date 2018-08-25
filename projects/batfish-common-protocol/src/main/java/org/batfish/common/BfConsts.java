@@ -105,6 +105,7 @@ public class BfConsts {
   public static final String PROP_DIFFERENTIAL = "differential";
   public static final String PROP_DISPLAY_HINTS = "displayHints";
   public static final String PROP_EXCLUSIONS = "exclusions";
+  public static final String PROP_FILTERS = "filters";
   public static final String PROP_INCLUDE_ONE_TABLE_KEYS = "includeOneTableKeys";
   public static final String PROP_INNER_QUESTION = "innerQuestion";
   public static final String PROP_INSTANCE = "instance";
@@ -132,6 +133,7 @@ public class BfConsts {
   public static final String RELPATH_ANALYSIS_FILE = "analysis";
   public static final String RELPATH_ANSWER_HTML = "answer.html";
   public static final String RELPATH_ANSWER_JSON = "answer.json";
+  public static final String RELPATH_ANSWER_METADATA = "answer_metadata.json";
   public static final String RELPATH_ANSWERS_DIR = "answers";
   public static final String RELPATH_AWS_CONFIGS_DIR = "aws_configs";
   public static final String RELPATH_AWS_CONFIGS_FILE = "aws_configs";

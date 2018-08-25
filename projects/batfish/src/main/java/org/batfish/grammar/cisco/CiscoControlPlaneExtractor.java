@@ -4246,8 +4246,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       DynamicIpBgpPeerGroup pg = proc.addDynamicIpPeerGroup(prefix);
       pg.setGroupName(name);
       pg.setGroupNameLine(line);
-      if (ctx.as != null) {
-        long remoteAs = toLong(ctx.as);
+      if (ctx.bgp_asn() != null) {
+        long remoteAs = toAsNum(ctx.bgp_asn());
         pg.setRemoteAs(remoteAs);
       }
     } else if (ctx.IPV6_PREFIX() != null) {
@@ -4255,8 +4255,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       DynamicIpv6BgpPeerGroup pg = proc.addDynamicIpv6PeerGroup(prefix6);
       pg.setGroupName(name);
       pg.setGroupNameLine(line);
-      if (ctx.as != null) {
-        long remoteAs = toLong(ctx.as);
+      if (ctx.bgp_asn() != null) {
+        long remoteAs = toAsNum(ctx.bgp_asn());
         pg.setRemoteAs(remoteAs);
       }
     }
@@ -4713,7 +4713,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private void exitEigrpProcess(ParserRuleContext ctx) {
     // In process context
     if (_currentEigrpProcess == null) {
-      _w.todo(ctx, getFullText(ctx), _parser, "No eigrp process available");
+      _w.addWarning(ctx, getFullText(ctx), _parser, "No eigrp process available");
       return;
     }
     EigrpProcess proc = _currentEigrpProcess;
@@ -4726,7 +4726,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
        * The result should be a process with ASN 1, but instead the result is an invalid EIGRP
        * process with null ASN.
        */
-      _w.todo(ctx, getFullText(ctx), _parser, "No eigrp ASN configured");
+      _w.addWarning(ctx, getFullText(ctx), _parser, "No eigrp ASN configured");
       return;
     }
     proc.computeNetworks(_configuration.getInterfaces().values());
@@ -4852,7 +4852,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           tcpFlags.add(alt);
         }
         if (feature.FRAGMENTS() != null) {
-          _w.todo(ctx, getFullText(ctx), _parser, "matching fragments in extended access list");
+          _w.addWarning(
+              ctx, getFullText(ctx), _parser, "matching fragments in extended access list");
           return UnimplementedAccessListServiceSpecifier.INSTANCE;
         }
         if (feature.HOST_UNKNOWN() != null) {
@@ -4911,7 +4912,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           icmpType = IcmpType.TIME_EXCEEDED;
         }
         if (feature.TTL() != null) {
-          _w.todo(ctx, getFullText(ctx), _parser, "matching ttl in extended access list");
+          _w.addWarning(ctx, getFullText(ctx), _parser, "matching ttl in extended access list");
           return UnimplementedAccessListServiceSpecifier.INSTANCE;
         }
         if (feature.TTL_EXCEEDED() != null) {
@@ -6250,7 +6251,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitLocal_as_bgp_tail(Local_as_bgp_tailContext ctx) {
-    long as = toLong(ctx.as);
+    long as = toAsNum(ctx.bgp_asn());
     _currentPeerGroup.setLocalAs(as);
   }
 
@@ -6592,7 +6593,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitRe_autonomous_system(Re_autonomous_systemContext ctx) {
     // In process context
     if (_currentEigrpProcess == null) {
-      _w.todo(ctx, getFullText(ctx), _parser, "No eigrp process available");
+      _w.addWarning(ctx, getFullText(ctx), _parser, "No eigrp process available");
       return;
     }
 
@@ -6604,7 +6605,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitRe_default_metric(Re_default_metricContext ctx) {
     // In process context
     if (_currentEigrpProcess == null) {
-      _w.todo(ctx, getFullText(ctx), _parser, "No eigrp process available");
+      _w.addWarning(ctx, getFullText(ctx), _parser, "No eigrp process available");
       return;
     }
     if (ctx.NO() == null) {
@@ -6620,7 +6621,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitRe_eigrp_router_id(Re_eigrp_router_idContext ctx) {
     // In process context
     if (_currentEigrpProcess == null) {
-      _w.todo(ctx, getFullText(ctx), _parser, "No eigrp process available");
+      _w.addWarning(ctx, getFullText(ctx), _parser, "No eigrp process available");
       return;
     }
     if (ctx.NO() == null) {
@@ -6643,7 +6644,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitRe_passive_interface(Re_passive_interfaceContext ctx) {
     // In process context
     if (_currentEigrpProcess == null) {
-      _w.todo(ctx, getFullText(ctx), _parser, "No eigrp process available");
+      _w.addWarning(ctx, getFullText(ctx), _parser, "No eigrp process available");
       return;
     }
     boolean passive = (ctx.NO() == null);
@@ -6655,7 +6656,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitRe_passive_interface_default(Re_passive_interface_defaultContext ctx) {
     // In process context
     if (_currentEigrpProcess == null) {
-      _w.todo(ctx, getFullText(ctx), _parser, "No eigrp process available");
+      _w.addWarning(ctx, getFullText(ctx), _parser, "No eigrp process available");
       return;
     }
     boolean passive = (ctx.NO() == null);
@@ -6666,7 +6667,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitRe_redistribute_bgp(Re_redistribute_bgpContext ctx) {
     // In process context
     if (_currentEigrpProcess == null) {
-      _w.todo(ctx, getFullText(ctx), _parser, "No eigrp process available");
+      _w.addWarning(ctx, getFullText(ctx), _parser, "No eigrp process available");
       return;
     }
     RoutingProtocol sourceProtocol = RoutingProtocol.BGP;
@@ -6694,7 +6695,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitRe_redistribute_connected(Re_redistribute_connectedContext ctx) {
     // In process context
     if (_currentEigrpProcess == null) {
-      _w.todo(ctx, getFullText(ctx), _parser, "No eigrp process available");
+      _w.addWarning(ctx, getFullText(ctx), _parser, "No eigrp process available");
       return;
     }
     RoutingProtocol sourceProtocol = RoutingProtocol.CONNECTED;
@@ -6721,7 +6722,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitRe_redistribute_eigrp(Re_redistribute_eigrpContext ctx) {
     // In process context
     if (_currentEigrpProcess == null) {
-      _w.todo(ctx, getFullText(ctx), _parser, "No eigrp process available");
+      _w.addWarning(ctx, getFullText(ctx), _parser, "No eigrp process available");
       return;
     }
     RoutingProtocol sourceProtocol = RoutingProtocol.EIGRP;
@@ -6752,14 +6753,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _configuration.referenceStructure(
           ROUTE_MAP, mapname, EIGRP_REDISTRIBUTE_ISIS_MAP, ctx.map.getStart().getLine());
     }
-    _w.todo(ctx, getFullText(ctx), _parser, "ISIS redistirution in EIGRP is not implemented");
+    _w.addWarning(ctx, getFullText(ctx), _parser, "ISIS redistirution in EIGRP is not implemented");
   }
 
   @Override
   public void exitRe_redistribute_ospf(Re_redistribute_ospfContext ctx) {
     // In process context
     if (_currentEigrpProcess == null) {
-      _w.todo(ctx, getFullText(ctx), _parser, "No eigrp process available");
+      _w.addWarning(ctx, getFullText(ctx), _parser, "No eigrp process available");
       return;
     }
     RoutingProtocol sourceProtocol = RoutingProtocol.OSPF;
@@ -6791,7 +6792,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitRe_redistribute_rip(Re_redistribute_ripContext ctx) {
     // In process context
     if (_currentEigrpProcess == null) {
-      _w.todo(ctx, getFullText(ctx), _parser, "No eigrp process available");
+      _w.addWarning(ctx, getFullText(ctx), _parser, "No eigrp process available");
       return;
     }
     RoutingProtocol sourceProtocol = RoutingProtocol.RIP;
@@ -6817,7 +6818,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitRe_redistribute_static(Re_redistribute_staticContext ctx) {
     // In process context
     if (_currentEigrpProcess == null) {
-      _w.todo(ctx, getFullText(ctx), _parser, "No eigrp process available");
+      _w.addWarning(ctx, getFullText(ctx), _parser, "No eigrp process available");
       return;
     }
     RoutingProtocol sourceProtocol = RoutingProtocol.STATIC;
@@ -6848,12 +6849,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitReafi_passive_interface(Reafi_passive_interfaceContext ctx) {
     // In process context
     if (_currentEigrpProcess == null) {
-      _w.todo(ctx, getFullText(ctx), _parser, "No eigrp process available");
+      _w.addWarning(ctx, getFullText(ctx), _parser, "No eigrp process available");
       return;
     }
     // In interface context
     if (_currentEigrpInterface == null) {
-      _w.todo(ctx, getFullText(ctx), _parser, "No eigrp interface available");
+      _w.addWarning(ctx, getFullText(ctx), _parser, "No eigrp interface available");
       return;
     }
 
@@ -7224,12 +7225,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitPi_iosicd_drop(Pi_iosicd_dropContext ctx) {
-    _currentInspectPolicyMap.setClassDefaultAction(LineAction.REJECT);
+    _currentInspectPolicyMap.setClassDefaultAction(LineAction.DENY);
   }
 
   @Override
   public void exitPi_iosicd_pass(Pi_iosicd_passContext ctx) {
-    _currentInspectPolicyMap.setClassDefaultAction(LineAction.ACCEPT);
+    _currentInspectPolicyMap.setClassDefaultAction(LineAction.PERMIT);
   }
 
   @Override
@@ -7301,7 +7302,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           maxLen = toInteger(ctx.eqpl);
         }
         SubRange lengthRange = new SubRange(minLen, maxLen);
-        PrefixListLine line = new PrefixListLine(LineAction.ACCEPT, prefix, lengthRange);
+        PrefixListLine line = new PrefixListLine(LineAction.PERMIT, prefix, lengthRange);
         pl.addLine(line);
       } else {
         Prefix6List pl = _configuration.getPrefix6Lists().computeIfAbsent(name, Prefix6List::new);
@@ -7326,7 +7327,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           maxLen = toInteger(ctx.eqpl);
         }
         SubRange lengthRange = new SubRange(minLen, maxLen);
-        Prefix6ListLine line = new Prefix6ListLine(LineAction.ACCEPT, prefix6, lengthRange);
+        Prefix6ListLine line = new Prefix6ListLine(LineAction.PERMIT, prefix6, lengthRange);
         pl.addLine(line);
       }
     }
@@ -7507,7 +7508,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitRemote_as_bgp_tail(Remote_as_bgp_tailContext ctx) {
     BgpProcess proc = currentVrf().getBgpProcess();
-    long as = toLong(ctx.as);
+    long as = toAsNum(ctx.bgp_asn());
     if (_currentPeerGroup != proc.getMasterBgpPeerGroup()) {
       _currentPeerGroup.setRemoteAs(as);
     } else {
@@ -7702,7 +7703,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     RoutingProtocol sourceProtocol = RoutingProtocol.BGP;
     OspfRedistributionPolicy r = new OspfRedistributionPolicy(sourceProtocol);
     proc.getRedistributionPolicies().put(sourceProtocol, r);
-    int as = toInteger(ctx.as);
+    long as = toAsNum(ctx.bgp_asn());
     r.getSpecialAttributes().put(OspfRedistributionPolicy.BGP_AS, as);
     if (ctx.metric != null) {
       int metric = toInteger(ctx.metric);
@@ -9359,18 +9360,32 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   private Integer toIcmpType(Icmp_object_typeContext ctx) {
-    if (ctx.ECHO() != null) {
+    if (ctx.ALTERNATE_ADDRESS() != null) {
+      return IcmpType.ALTERNATE_ADDRESS;
+    } else if (ctx.CONVERSION_ERROR() != null) {
+      return IcmpType.CONVERSION_ERROR;
+    } else if (ctx.ECHO() != null) {
       return IcmpType.ECHO_REQUEST;
     } else if (ctx.ECHO_REPLY() != null) {
       return IcmpType.ECHO_REPLY;
+    } else if (ctx.MOBILE_REDIRECT() != null) {
+      return IcmpType.MOBILE_REDIRECT;
     } else if (ctx.PARAMETER_PROBLEM() != null) {
       return IcmpType.PARAMETER_PROBLEM;
     } else if (ctx.REDIRECT() != null) {
       return IcmpType.REDIRECT_MESSAGE;
+    } else if (ctx.ROUTER_ADVERTISEMENT() != null) {
+      return IcmpType.ROUTER_ADVERTISEMENT;
+    } else if (ctx.ROUTER_SOLICITATION() != null) {
+      return IcmpType.ROUTER_SOLICITATION;
     } else if (ctx.SOURCE_QUENCH() != null) {
       return IcmpType.SOURCE_QUENCH;
     } else if (ctx.TIME_EXCEEDED() != null) {
       return IcmpType.TIME_EXCEEDED;
+    } else if (ctx.TIMESTAMP_REPLY() != null) {
+      return IcmpType.TIMESTAMP_REPLY;
+    } else if (ctx.TIMESTAMP_REQUEST() != null) {
+      return IcmpType.TIMESTAMP_REQUEST;
     } else if (ctx.TRACEROUTE() != null) {
       return IcmpType.TRACEROUTE;
     } else if (ctx.UNREACHABLE() != null) {
@@ -9493,9 +9508,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private LineAction toLineAction(Access_list_actionContext ctx) {
     if (ctx.PERMIT() != null) {
-      return LineAction.ACCEPT;
+      return LineAction.PERMIT;
     } else if (ctx.DENY() != null) {
-      return LineAction.REJECT;
+      return LineAction.DENY;
     } else {
       throw convError(LineAction.class, ctx);
     }
@@ -9790,14 +9805,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private OriginExpr toOriginExpr(Origin_expr_literalContext ctx) {
     OriginType originType;
-    Integer asNum = null;
+    Long asNum = null;
     LiteralOrigin originExpr;
     if (ctx.IGP() != null) {
       originType = OriginType.IGP;
     } else if (ctx.INCOMPLETE() != null) {
       originType = OriginType.INCOMPLETE;
-    } else if (ctx.as != null) {
-      asNum = toInteger(ctx.as);
+    } else if (ctx.bgp_asn() != null) {
+      asNum = toAsNum(ctx.bgp_asn());
       originType = OriginType.IGP;
     } else {
       throw convError(OriginExpr.class, ctx);

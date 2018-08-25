@@ -172,7 +172,7 @@ public class HostConfiguration extends VendorConfiguration {
       IpAccessList acl = _c.getIpAccessLists().get(aclName);
       if (acl != null) {
         for (IpAccessListLine line : acl.getLines()) {
-          if (line.getAction() == LineAction.REJECT) {
+          if (line.getAction() == LineAction.DENY) {
             return false;
           }
           /*
@@ -204,8 +204,8 @@ public class HostConfiguration extends VendorConfiguration {
     }
     String hostname = getHostname();
     _c = new Configuration(hostname, ConfigurationFormat.HOST);
-    _c.setDefaultCrossZoneAction(LineAction.ACCEPT);
-    _c.setDefaultInboundAction(LineAction.ACCEPT);
+    _c.setDefaultCrossZoneAction(LineAction.PERMIT);
+    _c.setDefaultInboundAction(LineAction.PERMIT);
     _c.getVrfs().put(Configuration.DEFAULT_VRF_NAME, new Vrf(Configuration.DEFAULT_VRF_NAME));
 
     // add interfaces

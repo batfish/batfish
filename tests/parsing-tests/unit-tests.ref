@@ -701,7 +701,8 @@
             "            ip = IP_ADDRESS:'1.2.3.4'  <== mode:M_NEIGHBOR",
             "            (remote_as_bgp_tail",
             "              REMOTE_AS:'remote-as'  <== mode:DEFAULT_MODE",
-            "              as = DEC:'1'  <== mode:DEFAULT_MODE",
+            "              (bgp_asn",
+            "                asn = DEC:'1'  <== mode:DEFAULT_MODE)",
             "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "          (address_family_footer",
             "            EXIT_ADDRESS_FAMILY:'exit-address-family'  <== mode:DEFAULT_MODE",
@@ -7010,7 +7011,8 @@
             "            ROUTING_OPTIONS:'routing-options'  <== mode:DEFAULT_MODE",
             "            (ro_autonomous_system",
             "              AUTONOMOUS_SYSTEM:'autonomous-system'  <== mode:DEFAULT_MODE",
-            "              as = DEC:'1'  <== mode:DEFAULT_MODE",
+            "              asn = (bgp_asn",
+            "                asn = DEC:'1'  <== mode:DEFAULT_MODE)",
             "              (apply))))))",
             "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "  (set_line",
@@ -7030,7 +7032,8 @@
             "                  (b_peer_as",
             "                    PEER_AS:'peer-as'  <== mode:DEFAULT_MODE",
             "                    (bpa_as",
-            "                      as = DEC:'2'  <== mode:DEFAULT_MODE)))))))))",
+            "                      asn = (bgp_asn",
+            "                        asn = DEC:'2'  <== mode:DEFAULT_MODE))))))))))",
             "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "  (set_line",
             "    SET:'set'  <== mode:DEFAULT_MODE",
@@ -7094,7 +7097,8 @@
             "            ROUTING_OPTIONS:'routing-options'  <== mode:DEFAULT_MODE",
             "            (ro_autonomous_system",
             "              AUTONOMOUS_SYSTEM:'autonomous-system'  <== mode:DEFAULT_MODE",
-            "              as = DEC:'1'  <== mode:DEFAULT_MODE",
+            "              asn = (bgp_asn",
+            "                asn = DEC:'1'  <== mode:DEFAULT_MODE)",
             "              (apply))))))",
             "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "  (set_line",
@@ -7136,7 +7140,8 @@
             "                  (b_peer_as",
             "                    PEER_AS:'peer-as'  <== mode:DEFAULT_MODE",
             "                    (bpa_as",
-            "                      as = DEC:'2'  <== mode:DEFAULT_MODE)))))))))",
+            "                      asn = (bgp_asn",
+            "                        asn = DEC:'2'  <== mode:DEFAULT_MODE))))))))))",
             "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "  (set_line",
             "    SET:'set'  <== mode:DEFAULT_MODE",
@@ -7217,7 +7222,8 @@
             "          peergroup = VARIABLE:'as1'  <== mode:M_NEIGHBOR",
             "          (remote_as_bgp_tail",
             "            REMOTE_AS:'remote-as'  <== mode:DEFAULT_MODE",
-            "            as = DEC:'1'  <== mode:DEFAULT_MODE",
+            "            (bgp_asn",
+            "              asn = DEC:'1'  <== mode:DEFAULT_MODE)",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "      (router_bgp_stanza_tail",
             "        (peer_group_creation_rb_stanza",
@@ -7231,7 +7237,8 @@
             "          peergroup = VARIABLE:'as2'  <== mode:M_NEIGHBOR",
             "          (remote_as_bgp_tail",
             "            REMOTE_AS:'remote-as'  <== mode:DEFAULT_MODE",
-            "            as = DEC:'2'  <== mode:DEFAULT_MODE",
+            "            (bgp_asn",
+            "              asn = DEC:'2'  <== mode:DEFAULT_MODE)",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "      (router_bgp_stanza_tail",
             "        (peer_group_creation_rb_stanza",
@@ -7245,7 +7252,8 @@
             "          peergroup = VARIABLE:'as3'  <== mode:M_NEIGHBOR",
             "          (remote_as_bgp_tail",
             "            REMOTE_AS:'remote-as'  <== mode:DEFAULT_MODE",
-            "            as = DEC:'3'  <== mode:DEFAULT_MODE",
+            "            (bgp_asn",
+            "              asn = DEC:'3'  <== mode:DEFAULT_MODE)",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "      (router_bgp_stanza_tail",
             "        (peer_group_assignment_rb_stanza",
@@ -7485,7 +7493,8 @@
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "          (remote_as_bgp_tail",
             "            REMOTE_AS:'remote-as'  <== mode:DEFAULT_MODE",
-            "            as = DEC:'64666'  <== mode:DEFAULT_MODE",
+            "            (bgp_asn",
+            "              asn = DEC:'64666'  <== mode:DEFAULT_MODE)",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "      (router_bgp_stanza_tail",
             "        (bgp_tail",
@@ -7587,7 +7596,8 @@
             "        (bgp_tail",
             "          (local_as_bgp_tail",
             "            LOCAL_AS:'local-as'  <== mode:DEFAULT_MODE",
-            "            as = DEC:'2153'  <== mode:DEFAULT_MODE",
+            "            (bgp_asn",
+            "              asn = DEC:'2153'  <== mode:DEFAULT_MODE)",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "      (router_bgp_stanza_tail",
             "        (bgp_tail",
@@ -7809,7 +7819,8 @@
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "          (remote_as_bgp_tail",
             "            REMOTE_AS:'remote-as'  <== mode:DEFAULT_MODE",
-            "            as = DEC:'11164'  <== mode:DEFAULT_MODE",
+            "            (bgp_asn",
+            "              asn = DEC:'11164'  <== mode:DEFAULT_MODE)",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "          (use_neighbor_group_bgp_tail",
             "            USE:'use'  <== mode:DEFAULT_MODE",
@@ -8197,7 +8208,8 @@
             "          ip = IP_ADDRESS:'1.2.3.4'  <== mode:M_NEIGHBOR",
             "          (remote_as_bgp_tail",
             "            REMOTE_AS:'remote-as'  <== mode:DEFAULT_MODE",
-            "            as = DEC:'12345'  <== mode:DEFAULT_MODE",
+            "            (bgp_asn",
+            "              asn = DEC:'12345'  <== mode:DEFAULT_MODE)",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "      (router_bgp_stanza_tail",
             "        (neighbor_flat_rb_stanza",
@@ -8250,7 +8262,8 @@
             "          ip6 = IPV6_ADDRESS:'dead:beef::1'  <== mode:M_NEIGHBOR",
             "          (remote_as_bgp_tail",
             "            REMOTE_AS:'remote-as'  <== mode:DEFAULT_MODE",
-            "            as = DEC:'12345'  <== mode:DEFAULT_MODE",
+            "            (bgp_asn",
+            "              asn = DEC:'12345'  <== mode:DEFAULT_MODE)",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "      (router_bgp_stanza_tail",
             "        (neighbor_flat_rb_stanza",
@@ -13888,7 +13901,8 @@
             "            ip = IP_ADDRESS:'10.0.1.2'  <== mode:M_NEIGHBOR",
             "            (remote_as_bgp_tail",
             "              REMOTE_AS:'remote-as'  <== mode:DEFAULT_MODE",
-            "              as = DEC:'65001'  <== mode:DEFAULT_MODE",
+            "              (bgp_asn",
+            "                asn = DEC:'65001'  <== mode:DEFAULT_MODE)",
             "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "          (bgp_tail",
             "            (network_bgp_tail",
@@ -37747,7 +37761,8 @@
             "        (bgp_tail",
             "          (local_as_bgp_tail",
             "            LOCAL_AS:'local-as'  <== mode:DEFAULT_MODE",
-            "            as = DEC:'12345'  <== mode:DEFAULT_MODE",
+            "            (bgp_asn",
+            "              asn = DEC:'12345'  <== mode:DEFAULT_MODE)",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "      (router_bgp_stanza_tail",
             "        (bgp_tail",
@@ -37787,7 +37802,8 @@
             "          peergroup = VARIABLE:'bippety'  <== mode:M_NEIGHBOR",
             "          (remote_as_bgp_tail",
             "            REMOTE_AS:'remote-as'  <== mode:DEFAULT_MODE",
-            "            as = DEC:'12345'  <== mode:DEFAULT_MODE",
+            "            (bgp_asn",
+            "              asn = DEC:'12345'  <== mode:DEFAULT_MODE)",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "      (router_bgp_stanza_tail",
             "        (neighbor_flat_rb_stanza",
@@ -39221,7 +39237,8 @@
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "          (remote_as_bgp_tail",
             "            REMOTE_AS:'remote-as'  <== mode:DEFAULT_MODE",
-            "            as = DEC:'12345'  <== mode:DEFAULT_MODE",
+            "            (bgp_asn",
+            "              asn = DEC:'12345'  <== mode:DEFAULT_MODE)",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "          (use_session_group_bgp_tail",
             "            USE:'use'  <== mode:DEFAULT_MODE",
@@ -39243,7 +39260,8 @@
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "          (remote_as_bgp_tail",
             "            REMOTE_AS:'remote-as'  <== mode:DEFAULT_MODE",
-            "            as = DEC:'65202'  <== mode:DEFAULT_MODE",
+            "            (bgp_asn",
+            "              asn = DEC:'65202'  <== mode:DEFAULT_MODE)",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "          (update_source_bgp_tail",
             "            UPDATE_SOURCE:'update-source'  <== mode:DEFAULT_MODE",
@@ -39317,7 +39335,8 @@
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "          (remote_as_bgp_tail",
             "            REMOTE_AS:'remote-as'  <== mode:DEFAULT_MODE",
-            "            as = DEC:'5555'  <== mode:DEFAULT_MODE",
+            "            (bgp_asn",
+            "              asn = DEC:'5555'  <== mode:DEFAULT_MODE)",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "          (update_source_bgp_tail",
             "            UPDATE_SOURCE:'update-source'  <== mode:DEFAULT_MODE",
@@ -39381,7 +39400,8 @@
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "          (remote_as_bgp_tail",
             "            REMOTE_AS:'remote-as'  <== mode:DEFAULT_MODE",
-            "            as = DEC:'5555'  <== mode:DEFAULT_MODE",
+            "            (bgp_asn",
+            "              asn = DEC:'5555'  <== mode:DEFAULT_MODE)",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "          (update_source_bgp_tail",
             "            UPDATE_SOURCE:'update-source'  <== mode:DEFAULT_MODE",
@@ -39429,7 +39449,8 @@
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "          (remote_as_bgp_tail",
             "            REMOTE_AS:'remote-as'  <== mode:DEFAULT_MODE",
-            "            as = DEC:'5555'  <== mode:DEFAULT_MODE",
+            "            (bgp_asn",
+            "              asn = DEC:'5555'  <== mode:DEFAULT_MODE)",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "          (update_source_bgp_tail",
             "            UPDATE_SOURCE:'update-source'  <== mode:DEFAULT_MODE",
@@ -39484,7 +39505,8 @@
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "          (remote_as_bgp_tail",
             "            REMOTE_AS:'remote-as'  <== mode:DEFAULT_MODE",
-            "            as = DEC:'5555'  <== mode:DEFAULT_MODE",
+            "            (bgp_asn",
+            "              asn = DEC:'5555'  <== mode:DEFAULT_MODE)",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "          (update_source_bgp_tail",
             "            UPDATE_SOURCE:'update-source'  <== mode:DEFAULT_MODE",
@@ -39601,7 +39623,8 @@
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "          (remote_as_bgp_tail",
             "            REMOTE_AS:'remote-as'  <== mode:DEFAULT_MODE",
-            "            as = DEC:'21'  <== mode:DEFAULT_MODE",
+            "            (bgp_asn",
+            "              asn = DEC:'21'  <== mode:DEFAULT_MODE)",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "          (use_session_group_bgp_tail",
             "            USE:'use'  <== mode:DEFAULT_MODE",
@@ -42384,7 +42407,8 @@
             "                  (b_peer_as",
             "                    PEER_AS:'peer-as'  <== mode:DEFAULT_MODE",
             "                    (bpa_as",
-            "                      as = DEC:'12345'  <== mode:DEFAULT_MODE)))))))))",
+            "                      asn = (bgp_asn",
+            "                        asn = DEC:'12345'  <== mode:DEFAULT_MODE))))))))))",
             "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "  (set_line",
             "    SET:'set'  <== mode:DEFAULT_MODE",
@@ -42526,7 +42550,8 @@
             "                  (b_peer_as",
             "                    PEER_AS:'peer-as'  <== mode:DEFAULT_MODE",
             "                    (bpa_as",
-            "                      as = DEC:'12345'  <== mode:DEFAULT_MODE)))))))))",
+            "                      asn = (bgp_asn",
+            "                        asn = DEC:'12345'  <== mode:DEFAULT_MODE))))))))))",
             "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "  (set_line",
             "    SET:'set'  <== mode:DEFAULT_MODE",
@@ -42703,7 +42728,8 @@
             "                  (b_peer_as",
             "                    PEER_AS:'peer-as'  <== mode:DEFAULT_MODE",
             "                    (bpa_as",
-            "                      as = DEC:'54321'  <== mode:DEFAULT_MODE)))))))))",
+            "                      asn = (bgp_asn",
+            "                        asn = DEC:'54321'  <== mode:DEFAULT_MODE))))))))))",
             "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "  (set_line",
             "    SET:'set'  <== mode:DEFAULT_MODE",
@@ -42859,7 +42885,8 @@
             "                  (b_peer_as",
             "                    PEER_AS:'peer-as'  <== mode:DEFAULT_MODE",
             "                    (bpa_as",
-            "                      as = DEC:'54321'  <== mode:DEFAULT_MODE)))))))))",
+            "                      asn = (bgp_asn",
+            "                        asn = DEC:'54321'  <== mode:DEFAULT_MODE))))))))))",
             "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "  (set_line",
             "    SET:'set'  <== mode:DEFAULT_MODE",
@@ -42991,7 +43018,8 @@
             "                  (b_peer_as",
             "                    PEER_AS:'peer-as'  <== mode:DEFAULT_MODE",
             "                    (bpa_as",
-            "                      as = DEC:'65530'  <== mode:DEFAULT_MODE)))))))))",
+            "                      asn = (bgp_asn",
+            "                        asn = DEC:'65530'  <== mode:DEFAULT_MODE))))))))))",
             "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "  (set_line",
             "    SET:'set'  <== mode:DEFAULT_MODE",
@@ -43021,7 +43049,8 @@
             "            ROUTING_OPTIONS:'routing-options'  <== mode:DEFAULT_MODE",
             "            (ro_autonomous_system",
             "              AUTONOMOUS_SYSTEM:'autonomous-system'  <== mode:DEFAULT_MODE",
-            "              as = DEC:'65533'  <== mode:DEFAULT_MODE",
+            "              asn = (bgp_asn",
+            "                asn = DEC:'65533'  <== mode:DEFAULT_MODE)",
             "              (apply))))))",
             "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "  (set_line",
@@ -43266,7 +43295,8 @@
             "                  (b_peer_as",
             "                    PEER_AS:'peer-as'  <== mode:DEFAULT_MODE",
             "                    (bpa_as",
-            "                      as = DEC:'65530'  <== mode:DEFAULT_MODE)))))))))",
+            "                      asn = (bgp_asn",
+            "                        asn = DEC:'65530'  <== mode:DEFAULT_MODE))))))))))",
             "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "  (set_line",
             "    SET:'set'  <== mode:DEFAULT_MODE",
@@ -45412,7 +45442,24 @@
             "                        MEMBERS:'members'  <== mode:M_Vlan",
             "                        name = (variable",
             "                          text = VARIABLE:'bippetyboppety'  <== mode:DEFAULT_MODE)))))))))))",
-            "    NEWLINE:'\\n\\n'  <== mode:DEFAULT_MODE)",
+            "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "  (set_line",
+            "    SET:'set'  <== mode:DEFAULT_MODE",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_routing_instances",
+            "            ROUTING_INSTANCES:'routing-instances'  <== mode:DEFAULT_MODE",
+            "            (ri_named_routing_instance",
+            "              name = (variable",
+            "                text = VARIABLE:'SOME_INSTANCE'  <== mode:DEFAULT_MODE)",
+            "              (ri_interface",
+            "                INTERFACE:'interface'  <== mode:DEFAULT_MODE",
+            "                id = (interface_id",
+            "                  name = VARIABLE:'ae0'  <== mode:M_Interface",
+            "                  PERIOD:'.'  <== mode:DEFAULT_MODE",
+            "                  unit = DEC:'0'  <== mode:DEFAULT_MODE)))))))",
+            "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "  (set_line",
             "    SET:'set'  <== mode:DEFAULT_MODE",
             "    (set_line_tail",
@@ -45972,7 +46019,8 @@
             "                    (popst_common",
             "                      (popst_as_path_prepend",
             "                        AS_PATH_PREPEND:'as-path-prepend'  <== mode:DEFAULT_MODE",
-            "                        DEC:'123'  <== mode:DEFAULT_MODE))))))))))",
+            "                        (bgp_asn",
+            "                          asn = DEC:'123'  <== mode:M_AsPathPrepend)))))))))))",
             "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "  (set_line",
             "    SET:'set'  <== mode:DEFAULT_MODE",
@@ -45995,7 +46043,66 @@
             "                    (popst_common",
             "                      (popst_as_path_prepend",
             "                        AS_PATH_PREPEND:'as-path-prepend'  <== mode:DEFAULT_MODE",
-            "                        DOUBLE_QUOTED_STRING:'\"456 789\"'  <== mode:DEFAULT_MODE))))))))))",
+            "                        (bgp_asn",
+            "                          asn4hi = DEC:'123'  <== mode:M_AsPathPrepend",
+            "                          PERIOD:'.'  <== mode:DEFAULT_MODE",
+            "                          asn4lo = DEC:'456'  <== mode:DEFAULT_MODE)))))))))))",
+            "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "  (set_line",
+            "    SET:'set'  <== mode:DEFAULT_MODE",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_policy_options",
+            "            POLICY_OPTIONS:'policy-options'  <== mode:DEFAULT_MODE",
+            "            (po_policy_statement",
+            "              POLICY_STATEMENT:'policy-statement'  <== mode:DEFAULT_MODE",
+            "              name = (variable",
+            "                text = VARIABLE:'POLICY-NAME'  <== mode:DEFAULT_MODE)",
+            "              (pops_term",
+            "                TERM:'term'  <== mode:DEFAULT_MODE",
+            "                name = (variable",
+            "                  text = VARIABLE:'TERM'  <== mode:DEFAULT_MODE)",
+            "                (pops_common",
+            "                  (pops_then",
+            "                    THEN:'then'  <== mode:DEFAULT_MODE",
+            "                    (popst_common",
+            "                      (popst_as_path_prepend",
+            "                        AS_PATH_PREPEND:'as-path-prepend'  <== mode:DEFAULT_MODE",
+            "                        (bgp_asn",
+            "                          asn = DEC:'456'  <== mode:M_AsPathPrepend_Inner)",
+            "                        (bgp_asn",
+            "                          asn = DEC:'789'  <== mode:M_AsPathPrepend_Inner)))))))))))",
+            "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "  (set_line",
+            "    SET:'set'  <== mode:DEFAULT_MODE",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_policy_options",
+            "            POLICY_OPTIONS:'policy-options'  <== mode:DEFAULT_MODE",
+            "            (po_policy_statement",
+            "              POLICY_STATEMENT:'policy-statement'  <== mode:DEFAULT_MODE",
+            "              name = (variable",
+            "                text = VARIABLE:'POLICY-NAME'  <== mode:DEFAULT_MODE)",
+            "              (pops_term",
+            "                TERM:'term'  <== mode:DEFAULT_MODE",
+            "                name = (variable",
+            "                  text = VARIABLE:'TERM'  <== mode:DEFAULT_MODE)",
+            "                (pops_common",
+            "                  (pops_then",
+            "                    THEN:'then'  <== mode:DEFAULT_MODE",
+            "                    (popst_common",
+            "                      (popst_as_path_prepend",
+            "                        AS_PATH_PREPEND:'as-path-prepend'  <== mode:DEFAULT_MODE",
+            "                        (bgp_asn",
+            "                          asn = DEC:'456'  <== mode:M_AsPathPrepend_Inner)",
+            "                        (bgp_asn",
+            "                          asn4hi = DEC:'123'  <== mode:M_AsPathPrepend_Inner",
+            "                          PERIOD:'.'  <== mode:M_AsPathPrepend_Inner",
+            "                          asn4lo = DEC:'1'  <== mode:M_AsPathPrepend_Inner)",
+            "                        (bgp_asn",
+            "                          asn = DEC:'789'  <== mode:M_AsPathPrepend_Inner)))))))))))",
             "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "  (set_line",
             "    SET:'set'  <== mode:DEFAULT_MODE",
@@ -46696,6 +46803,57 @@
             "                  AGGREGATOR:'aggregator'  <== mode:M_AsPath",
             "                  as = DEC:'65500'  <== mode:DEFAULT_MODE",
             "                  ip = IP_ADDRESS:'10.0.0.1'  <== mode:DEFAULT_MODE)))))))",
+            "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "  (set_line",
+            "    SET:'set'  <== mode:DEFAULT_MODE",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_routing_options",
+            "            ROUTING_OPTIONS:'routing-options'  <== mode:DEFAULT_MODE",
+            "            (ro_aggregate",
+            "              AGGREGATE:'aggregate'  <== mode:DEFAULT_MODE",
+            "              ROUTE:'route'  <== mode:DEFAULT_MODE",
+            "              prefix = IP_PREFIX:'20.0.0.0/8'  <== mode:DEFAULT_MODE",
+            "              (roa_as_path",
+            "                AS_PATH:'as-path'  <== mode:DEFAULT_MODE",
+            "                (roaa_path",
+            "                  PATH:'path'  <== mode:M_AsPath",
+            "                  path = (as_path_expr",
+            "                    (as_unit",
+            "                      (bgp_asn",
+            "                        asn4hi = DEC:'123'  <== mode:M_AsPathPath",
+            "                        PERIOD:'.'  <== mode:DEFAULT_MODE",
+            "                        asn4lo = DEC:'4'  <== mode:DEFAULT_MODE))))))))))",
+            "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "  (set_line",
+            "    SET:'set'  <== mode:DEFAULT_MODE",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_routing_options",
+            "            ROUTING_OPTIONS:'routing-options'  <== mode:DEFAULT_MODE",
+            "            (ro_aggregate",
+            "              AGGREGATE:'aggregate'  <== mode:DEFAULT_MODE",
+            "              ROUTE:'route'  <== mode:DEFAULT_MODE",
+            "              prefix = IP_PREFIX:'30.0.0.0/8'  <== mode:DEFAULT_MODE",
+            "              (roa_as_path",
+            "                AS_PATH:'as-path'  <== mode:DEFAULT_MODE",
+            "                (roaa_path",
+            "                  PATH:'path'  <== mode:M_AsPath",
+            "                  path = (as_path_expr",
+            "                    (as_unit",
+            "                      (as_set",
+            "                        OPEN_BRACKET:'['  <== mode:M_AsPathExpr",
+            "                        (bgp_asn",
+            "                          asn4hi = DEC:'123'  <== mode:M_AsPathExpr",
+            "                          PERIOD:'.'  <== mode:M_AsPathExpr",
+            "                          asn4lo = DEC:'4'  <== mode:M_AsPathExpr)",
+            "                        (bgp_asn",
+            "                          asn4hi = DEC:'456'  <== mode:M_AsPathExpr",
+            "                          PERIOD:'.'  <== mode:M_AsPathExpr",
+            "                          asn4lo = DEC:'7'  <== mode:M_AsPathExpr)",
+            "                        CLOSE_BRACKET:']'  <== mode:M_AsPathExpr))))))))))",
             "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "  (set_line",
             "    SET:'set'  <== mode:DEFAULT_MODE",
@@ -49931,7 +50089,8 @@
             "          peergroup = VARIABLE:'1234-5'  <== mode:M_NEIGHBOR",
             "          (remote_as_bgp_tail",
             "            REMOTE_AS:'remote-as'  <== mode:DEFAULT_MODE",
-            "            as = DEC:'1'  <== mode:DEFAULT_MODE",
+            "            (bgp_asn",
+            "              asn = DEC:'1'  <== mode:DEFAULT_MODE)",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "      (router_bgp_stanza_tail",
             "        (neighbor_flat_rb_stanza",
@@ -49939,7 +50098,8 @@
             "          ip6 = IPV6_ADDRESS:'1:01::'  <== mode:M_NEIGHBOR",
             "          (remote_as_bgp_tail",
             "            REMOTE_AS:'remote-as'  <== mode:DEFAULT_MODE",
-            "            as = DEC:'1'  <== mode:DEFAULT_MODE",
+            "            (bgp_asn",
+            "              asn = DEC:'1'  <== mode:DEFAULT_MODE)",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "      (router_bgp_stanza_tail",
             "        (neighbor_flat_rb_stanza",
@@ -49947,7 +50107,8 @@
             "          peergroup = VARIABLE:'1.2.3.4abc'  <== mode:M_NEIGHBOR",
             "          (remote_as_bgp_tail",
             "            REMOTE_AS:'remote-as'  <== mode:DEFAULT_MODE",
-            "            as = DEC:'1'  <== mode:DEFAULT_MODE",
+            "            (bgp_asn",
+            "              asn = DEC:'1'  <== mode:DEFAULT_MODE)",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "      (router_bgp_stanza_tail",
             "        (neighbor_flat_rb_stanza",
@@ -49955,7 +50116,8 @@
             "          peergroup = VARIABLE:'abc1.2.3.4'  <== mode:M_NEIGHBOR",
             "          (remote_as_bgp_tail",
             "            REMOTE_AS:'remote-as'  <== mode:DEFAULT_MODE",
-            "            as = DEC:'1'  <== mode:DEFAULT_MODE",
+            "            (bgp_asn",
+            "              asn = DEC:'1'  <== mode:DEFAULT_MODE)",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "      (router_bgp_stanza_tail",
             "        (neighbor_flat_rb_stanza",
@@ -49963,7 +50125,8 @@
             "          peergroup = VARIABLE:'abc1.2.3.4def'  <== mode:M_NEIGHBOR",
             "          (remote_as_bgp_tail",
             "            REMOTE_AS:'remote-as'  <== mode:DEFAULT_MODE",
-            "            as = DEC:'1'  <== mode:DEFAULT_MODE",
+            "            (bgp_asn",
+            "              asn = DEC:'1'  <== mode:DEFAULT_MODE)",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "      (router_bgp_stanza_tail",
             "        (neighbor_flat_rb_stanza",
@@ -49971,7 +50134,8 @@
             "          ip6 = IPV6_ADDRESS:'a1:01::'  <== mode:M_NEIGHBOR",
             "          (remote_as_bgp_tail",
             "            REMOTE_AS:'remote-as'  <== mode:DEFAULT_MODE",
-            "            as = DEC:'1'  <== mode:DEFAULT_MODE",
+            "            (bgp_asn",
+            "              asn = DEC:'1'  <== mode:DEFAULT_MODE)",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "      (router_bgp_stanza_tail",
             "        (neighbor_flat_rb_stanza",
@@ -49979,7 +50143,8 @@
             "          peergroup = VARIABLE:'123.123.123.abc'  <== mode:M_NEIGHBOR",
             "          (remote_as_bgp_tail",
             "            REMOTE_AS:'remote-as'  <== mode:DEFAULT_MODE",
-            "            as = DEC:'1'  <== mode:DEFAULT_MODE",
+            "            (bgp_asn",
+            "              asn = DEC:'1'  <== mode:DEFAULT_MODE)",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "      (router_bgp_stanza_tail",
             "        (neighbor_flat_rb_stanza",
@@ -49987,7 +50152,8 @@
             "          ip = IP_ADDRESS:'123.123.123.123'  <== mode:M_NEIGHBOR",
             "          (remote_as_bgp_tail",
             "            REMOTE_AS:'remote-as'  <== mode:DEFAULT_MODE",
-            "            as = DEC:'1'  <== mode:DEFAULT_MODE",
+            "            (bgp_asn",
+            "              asn = DEC:'1'  <== mode:DEFAULT_MODE)",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))))",
             "  (stanza",
             "    (s_null",
@@ -50052,7 +50218,8 @@
             "          peergroup = VARIABLE:'1234-5'  <== mode:M_NEIGHBOR",
             "          (remote_as_bgp_tail",
             "            REMOTE_AS:'remote-as'  <== mode:DEFAULT_MODE",
-            "            as = DEC:'1'  <== mode:DEFAULT_MODE",
+            "            (bgp_asn",
+            "              asn = DEC:'1'  <== mode:DEFAULT_MODE)",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "      (router_bgp_stanza_tail",
             "        (neighbor_flat_rb_stanza",
@@ -50060,7 +50227,8 @@
             "          ip6 = IPV6_ADDRESS:'1:01::'  <== mode:M_NEIGHBOR",
             "          (remote_as_bgp_tail",
             "            REMOTE_AS:'remote-as'  <== mode:DEFAULT_MODE",
-            "            as = DEC:'1'  <== mode:DEFAULT_MODE",
+            "            (bgp_asn",
+            "              asn = DEC:'1'  <== mode:DEFAULT_MODE)",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "      (router_bgp_stanza_tail",
             "        (neighbor_flat_rb_stanza",
@@ -50068,7 +50236,8 @@
             "          peergroup = VARIABLE:'1.2.3.4abc'  <== mode:M_NEIGHBOR",
             "          (remote_as_bgp_tail",
             "            REMOTE_AS:'remote-as'  <== mode:DEFAULT_MODE",
-            "            as = DEC:'1'  <== mode:DEFAULT_MODE",
+            "            (bgp_asn",
+            "              asn = DEC:'1'  <== mode:DEFAULT_MODE)",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "      (router_bgp_stanza_tail",
             "        (neighbor_flat_rb_stanza",
@@ -50076,7 +50245,8 @@
             "          peergroup = VARIABLE:'abc1.2.3.4'  <== mode:M_NEIGHBOR",
             "          (remote_as_bgp_tail",
             "            REMOTE_AS:'remote-as'  <== mode:DEFAULT_MODE",
-            "            as = DEC:'1'  <== mode:DEFAULT_MODE",
+            "            (bgp_asn",
+            "              asn = DEC:'1'  <== mode:DEFAULT_MODE)",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "      (router_bgp_stanza_tail",
             "        (neighbor_flat_rb_stanza",
@@ -50084,7 +50254,8 @@
             "          peergroup = VARIABLE:'abc1.2.3.4def'  <== mode:M_NEIGHBOR",
             "          (remote_as_bgp_tail",
             "            REMOTE_AS:'remote-as'  <== mode:DEFAULT_MODE",
-            "            as = DEC:'1'  <== mode:DEFAULT_MODE",
+            "            (bgp_asn",
+            "              asn = DEC:'1'  <== mode:DEFAULT_MODE)",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "      (router_bgp_stanza_tail",
             "        (neighbor_flat_rb_stanza",
@@ -50092,7 +50263,8 @@
             "          ip6 = IPV6_ADDRESS:'a1:01::'  <== mode:M_NEIGHBOR",
             "          (remote_as_bgp_tail",
             "            REMOTE_AS:'remote-as'  <== mode:DEFAULT_MODE",
-            "            as = DEC:'1'  <== mode:DEFAULT_MODE",
+            "            (bgp_asn",
+            "              asn = DEC:'1'  <== mode:DEFAULT_MODE)",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "      (router_bgp_stanza_tail",
             "        (neighbor_flat_rb_stanza",
@@ -50100,7 +50272,8 @@
             "          peergroup = VARIABLE:'123.123.123.abc'  <== mode:M_NEIGHBOR",
             "          (remote_as_bgp_tail",
             "            REMOTE_AS:'remote-as'  <== mode:DEFAULT_MODE",
-            "            as = DEC:'1'  <== mode:DEFAULT_MODE",
+            "            (bgp_asn",
+            "              asn = DEC:'1'  <== mode:DEFAULT_MODE)",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "      (router_bgp_stanza_tail",
             "        (neighbor_flat_rb_stanza",
@@ -50108,7 +50281,8 @@
             "          ip = IP_ADDRESS:'123.123.123.123'  <== mode:M_NEIGHBOR",
             "          (remote_as_bgp_tail",
             "            REMOTE_AS:'remote-as'  <== mode:DEFAULT_MODE",
-            "            as = DEC:'1'  <== mode:DEFAULT_MODE",
+            "            (bgp_asn",
+            "              asn = DEC:'1'  <== mode:DEFAULT_MODE)",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))))",
             "  (stanza",
             "    (s_null",
@@ -50145,7 +50319,8 @@
             "          ip = IP_ADDRESS:'1.1.1.1'  <== mode:M_NEIGHBOR",
             "          (remote_as_bgp_tail",
             "            REMOTE_AS:'remote-as'  <== mode:DEFAULT_MODE",
-            "            as = DEC:'1'  <== mode:DEFAULT_MODE",
+            "            (bgp_asn",
+            "              asn = DEC:'1'  <== mode:DEFAULT_MODE)",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "      (router_bgp_stanza_tail",
             "        (address_family_rb_stanza",
@@ -50165,7 +50340,8 @@
             "            ip = IP_ADDRESS:'3.3.3.3'  <== mode:M_NEIGHBOR",
             "            (remote_as_bgp_tail",
             "              REMOTE_AS:'remote-as'  <== mode:DEFAULT_MODE",
-            "              as = DEC:'3'  <== mode:DEFAULT_MODE",
+            "              (bgp_asn",
+            "                asn = DEC:'3'  <== mode:DEFAULT_MODE)",
             "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "          (address_family_footer)))",
             "      (router_bgp_stanza_tail",
@@ -50224,7 +50400,8 @@
             "          ip = IP_ADDRESS:'4.4.4.4'  <== mode:M_NEIGHBOR",
             "          (remote_as_bgp_tail",
             "            REMOTE_AS:'remote-as'  <== mode:DEFAULT_MODE",
-            "            as = DEC:'4'  <== mode:DEFAULT_MODE",
+            "            (bgp_asn",
+            "              asn = DEC:'4'  <== mode:DEFAULT_MODE)",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "      (router_bgp_stanza_tail",
             "        (address_family_rb_stanza",
@@ -50552,7 +50729,8 @@
             "          (template_peer_rb_stanza_tail",
             "            (remote_as_bgp_tail",
             "              REMOTE_AS:'remote-as'  <== mode:DEFAULT_MODE",
-            "              as = DEC:'12345'  <== mode:DEFAULT_MODE",
+            "              (bgp_asn",
+            "                asn = DEC:'12345'  <== mode:DEFAULT_MODE)",
             "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "            (template_peer_rb_stanza_tail",
             "              (bgp_tail",
@@ -50830,7 +51008,8 @@
             "          ip = IP_ADDRESS:'10.0.0.0'  <== mode:M_NEIGHBOR",
             "          (remote_as_bgp_tail",
             "            REMOTE_AS:'remote-as'  <== mode:DEFAULT_MODE",
-            "            as = DEC:'1'  <== mode:DEFAULT_MODE",
+            "            (bgp_asn",
+            "              asn = DEC:'1'  <== mode:DEFAULT_MODE)",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "      (router_bgp_stanza_tail",
             "        (address_family_rb_stanza",
@@ -59482,11 +59661,72 @@
           }
         },
         "configs/juniper_interfaces" : {
+          "interface" : {
+            "ae0" : {
+              "definitionLines" : [
+                5
+              ],
+              "numReferrers" : 1
+            },
+            "ae0.0" : {
+              "definitionLines" : [
+                5
+              ],
+              "numReferrers" : 2
+            },
+            "ge-0/0/0" : {
+              "definitionLines" : [
+                6
+              ],
+              "numReferrers" : 1
+            },
+            "irb" : {
+              "definitionLines" : [
+                9,
+                10,
+                11
+              ],
+              "numReferrers" : 3
+            },
+            "irb.5" : {
+              "definitionLines" : [
+                9,
+                10,
+                11
+              ],
+              "numReferrers" : 3
+            },
+            "xe-0/0/0:0" : {
+              "definitionLines" : [
+                7,
+                8
+              ],
+              "numReferrers" : 2
+            },
+            "xe-0/0/0:0.0" : {
+              "definitionLines" : [
+                8
+              ],
+              "numReferrers" : 1
+            },
+            "xe-0/0/5:0" : {
+              "definitionLines" : [
+                12
+              ],
+              "numReferrers" : 1
+            },
+            "xe-0/0/5:0.0" : {
+              "definitionLines" : [
+                12
+              ],
+              "numReferrers" : 1
+            }
+          },
           "vlan" : {
             "unused-vlan" : {
               "definitionLines" : [
-                15,
-                16
+                16,
+                17
               ],
               "numReferrers" : 0
             }
@@ -59518,7 +59758,9 @@
                 16,
                 17,
                 18,
-                19
+                19,
+                20,
+                21
               ],
               "numReferrers" : 0
             }
@@ -61502,6 +61744,23 @@
                 13
               ]
             }
+          },
+          "interface" : {
+            "et-0/0/10.0" : {
+              "fowarding-options dhcp-relay group interface" : [
+                15
+              ]
+            },
+            "ge-0/2/5.0" : {
+              "fowarding-options dhcp-relay group interface" : [
+                18
+              ]
+            },
+            "xe-1/0/0.0" : {
+              "fowarding-options dhcp-relay group interface" : [
+                10
+              ]
+            }
           }
         },
         "configs/juniper_interfaces" : {
@@ -61509,6 +61768,49 @@
             "bippetyboppety" : {
               "interface vlan" : [
                 12
+              ]
+            }
+          }
+        },
+        "configs/juniper_isis" : {
+          "interface" : {
+            "ge-0/0/0.0" : {
+              "isis interface" : [
+                4,
+                5
+              ]
+            }
+          }
+        },
+        "configs/juniper_ospf" : {
+          "interface" : {
+            "xe-0/0/1.0" : {
+              "ospf area interface" : [
+                12
+              ]
+            },
+            "xe-0/0/20:0.0" : {
+              "ospf area interface" : [
+                3
+              ]
+            },
+            "xe-0/0/21:0.0" : {
+              "ospf area interface" : [
+                4
+              ]
+            }
+          }
+        },
+        "configs/juniper_relay" : {
+          "interface" : {
+            "irb.10" : {
+              "fowarding-options dhcp-relay group interface" : [
+                7
+              ]
+            },
+            "irb.20" : {
+              "fowarding-options dhcp-relay group interface" : [
+                8
               ]
             }
           }
