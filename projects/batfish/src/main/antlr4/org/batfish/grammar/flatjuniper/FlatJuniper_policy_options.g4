@@ -415,11 +415,7 @@ popst_as_path_expand
 
 popst_as_path_prepend
 :
-   AS_PATH_PREPEND
-   (
-      DEC
-      | DOUBLE_QUOTED_STRING
-   )
+   AS_PATH_PREPEND bgp_asn+
 ;
 
 popst_color

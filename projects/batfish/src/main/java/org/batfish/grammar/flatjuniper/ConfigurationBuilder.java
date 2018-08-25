@@ -57,21 +57,20 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.SECURITY_
 import static org.batfish.representation.juniper.JuniperStructureUsage.SNMP_COMMUNITY_PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureUsage.STATIC_ROUTE_NEXT_HOP_INTERFACE;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Ordering;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
-import java.util.TreeSet;
 import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RuleContext;
@@ -156,6 +155,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_multipathContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_neighborContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_remove_privateContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_typeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bgp_asnContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bl_loopsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bl_numberContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bl_privateContext;
@@ -1404,6 +1404,36 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       return IkeAuthenticationMethod.RSA_SIGNATURES;
     } else {
       throw new BatfishException("Invalid ike authentication method: " + ctx.getText());
+    }
+  }
+
+  @VisibleForTesting
+  long sanitizeAsn(long asn, int bytes, ParserRuleContext ctx) {
+    long mask;
+    if (bytes == 2) {
+      mask = 0xFFFF;
+    } else {
+      assert bytes == 4;
+      mask = 0xFFFFFFFF;
+    }
+    if ((asn & mask) != asn) {
+      _w.addWarning(
+          ctx,
+          ctx.getText(),
+          _parser,
+          String.format("AS number %s is out of the legal %s-byte AS range", asn, bytes));
+      return 0;
+    }
+    return asn;
+  }
+
+  private long toAsNum(Bgp_asnContext ctx) {
+    if (ctx.asn != null) {
+      return sanitizeAsn(toLong(ctx.asn), 4, ctx);
+    } else {
+      long hi = sanitizeAsn(toLong(ctx.asn4hi), 2, ctx);
+      long lo = sanitizeAsn(toLong(ctx.asn4lo), 2, ctx);
+      return (hi << 16) + lo;
     }
   }
 
@@ -3041,7 +3071,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitBl_number(Bl_numberContext ctx) {
-    int localAs = toInt(ctx.as);
+    long localAs = toAsNum(ctx.asn);
     _currentBgpGroup.setLocalAs(localAs);
   }
 
@@ -3052,7 +3082,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitBpa_as(Bpa_asContext ctx) {
-    long peerAs = toLong(ctx.as);
+    long peerAs = toAsNum(ctx.asn);
     _currentBgpGroup.setPeerAs(peerAs);
   }
 
@@ -3998,19 +4028,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitPopst_as_path_prepend(Popst_as_path_prependContext ctx) {
-    List<Long> asPaths = new LinkedList<>();
-    if (ctx.DEC() != null) {
-      asPaths.add(toLong(ctx.DEC()));
-    } else if (ctx.DOUBLE_QUOTED_STRING() != null) {
-      String[] unquoted = unquote(ctx.DOUBLE_QUOTED_STRING().getText()).split("\\s+");
-      Arrays.stream(unquoted).map(Long::parseLong).forEach(asPaths::add);
-    } else {
-      _w.redFlag(
-          String.format(
-              "unimplemented 'policy-options policy-statement term' then clause: %s",
-              getFullText(ctx)));
-      return;
-    }
+    List<Long> asPaths =
+        ctx.bgp_asn().stream().map(this::toAsNum).collect(ImmutableList.toImmutableList());
     _currentPsThens.add(new PsThenAsPathPrepend(asPaths));
   }
 
@@ -4156,8 +4175,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitRo_autonomous_system(Ro_autonomous_systemContext ctx) {
-    if (ctx.as != null) {
-      int as = toInt(ctx.as);
+    if (ctx.asn != null) {
+      long as = toAsNum(ctx.asn);
       _currentRoutingInstance.setAs(as);
     }
   }
@@ -5103,19 +5122,21 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     return proposals;
   }
 
-  private AsPath toAsPath(As_path_exprContext path) {
-    List<SortedSet<Long>> asPath = new ArrayList<>();
-    for (As_unitContext ctx : path.items) {
-      SortedSet<Long> asSet = new TreeSet<>();
-      if (ctx.DEC() != null) {
-        asSet.add(toLong(ctx.DEC()));
-      } else {
-        for (Token token : ctx.as_set().items) {
-          asSet.add(toLong(token));
-        }
-      }
-      asPath.add(asSet);
+  private SortedSet<Long> toAsSet(As_unitContext ctx) {
+    if (ctx.bgp_asn() != null) {
+      return ImmutableSortedSet.of(toAsNum(ctx.bgp_asn()));
+    } else {
+      return ctx.as_set()
+          .items
+          .stream()
+          .map(this::toAsNum)
+          .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural()));
     }
+  }
+
+  private AsPath toAsPath(As_path_exprContext path) {
+    List<SortedSet<Long>> asPath =
+        path.items.stream().map(this::toAsSet).collect(ImmutableList.toImmutableList());
     return new AsPath(asPath);
   }
 
