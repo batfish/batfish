@@ -57,6 +57,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.SECURITY_
 import static org.batfish.representation.juniper.JuniperStructureUsage.SNMP_COMMUNITY_PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureUsage.STATIC_ROUTE_NEXT_HOP_INTERFACE;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
@@ -1406,11 +1407,34 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     }
   }
 
-  private static long toAsNum(Bgp_asnContext ctx) {
-    if (ctx.asn != null) {
-      return toLong(ctx.asn);
+  @VisibleForTesting
+  long sanitizeAsn(long asn, int bytes, ParserRuleContext ctx) {
+    long mask;
+    if (bytes == 2) {
+      mask = 0xFFFF;
+    } else {
+      assert bytes == 4;
+      mask = 0xFFFFFFFF;
     }
-    return (toLong(ctx.asn4hi) << 16) + toLong(ctx.asn4lo);
+    if ((asn & mask) != asn) {
+      _w.addWarning(
+          ctx,
+          ctx.getText(),
+          _parser,
+          String.format("AS number %s is out of the legal %s-byte AS range", asn, bytes));
+      return 0;
+    }
+    return asn;
+  }
+
+  private long toAsNum(Bgp_asnContext ctx) {
+    if (ctx.asn != null) {
+      return sanitizeAsn(toLong(ctx.asn), 4, ctx);
+    } else {
+      long hi = sanitizeAsn(toLong(ctx.asn4hi), 2, ctx);
+      long lo = sanitizeAsn(toLong(ctx.asn4lo), 2, ctx);
+      return (hi << 16) + lo;
+    }
   }
 
   private static int toInt(TerminalNode node) {
@@ -4005,10 +4029,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitPopst_as_path_prepend(Popst_as_path_prependContext ctx) {
     List<Long> asPaths =
-        ctx.bgp_asn()
-            .stream()
-            .map(ConfigurationBuilder::toAsNum)
-            .collect(ImmutableList.toImmutableList());
+        ctx.bgp_asn().stream().map(this::toAsNum).collect(ImmutableList.toImmutableList());
     _currentPsThens.add(new PsThenAsPathPrepend(asPaths));
   }
 
@@ -5101,24 +5122,21 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     return proposals;
   }
 
-  private static SortedSet<Long> toAsSet(As_unitContext ctx) {
+  private SortedSet<Long> toAsSet(As_unitContext ctx) {
     if (ctx.bgp_asn() != null) {
       return ImmutableSortedSet.of(toAsNum(ctx.bgp_asn()));
     } else {
       return ctx.as_set()
           .items
           .stream()
-          .map(ConfigurationBuilder::toAsNum)
+          .map(this::toAsNum)
           .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural()));
     }
   }
 
-  private static AsPath toAsPath(As_path_exprContext path) {
+  private AsPath toAsPath(As_path_exprContext path) {
     List<SortedSet<Long>> asPath =
-        path.items
-            .stream()
-            .map(ConfigurationBuilder::toAsSet)
-            .collect(ImmutableList.toImmutableList());
+        path.items.stream().map(this::toAsSet).collect(ImmutableList.toImmutableList());
     return new AsPath(asPath);
   }
 
