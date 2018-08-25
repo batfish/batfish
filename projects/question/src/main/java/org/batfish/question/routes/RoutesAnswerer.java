@@ -58,7 +58,7 @@ public class RoutesAnswerer extends Answerer {
   static final String COL_AS_PATH = "AS_Path";
   static final String COL_LOCAL_PREF = "Local_Pref";
   static final String COL_COMMUNITIES = "Communities";
-  static final String COL_ORIGIN_PROTOCOL = "Original_Protocol";
+  static final String COL_ORIGIN_PROTOCOL = "Origin_Protocol";
 
   RoutesAnswerer(Question question, IBatfish batfish) {
     super(question, batfish);
