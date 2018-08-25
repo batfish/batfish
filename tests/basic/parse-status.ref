@@ -7,7 +7,7 @@
           "description" : "The file that was parsed",
           "isKey" : true,
           "isValue" : false,
-          "name" : "Filename",
+          "name" : "File_Name",
           "schema" : "String"
         },
         {
@@ -25,11 +25,11 @@
           "schema" : "List<Node>"
         }
       ],
-      "textDesc" : "File ${Filename} parsed with status ${Status} and produced nodes ${Nodes}"
+      "textDesc" : "File ${File_Name} parsed with status ${Status} and produced nodes ${Nodes}"
     },
     "rows" : [
       {
-        "Filename" : "configs/as1border1.cfg",
+        "File_Name" : "configs/as1border1.cfg",
         "Status" : "PASSED",
         "Nodes" : [
           {
@@ -39,7 +39,7 @@
         ]
       },
       {
-        "Filename" : "configs/as1border2.cfg",
+        "File_Name" : "configs/as1border2.cfg",
         "Status" : "PASSED",
         "Nodes" : [
           {
@@ -49,7 +49,7 @@
         ]
       },
       {
-        "Filename" : "configs/as1core1.cfg",
+        "File_Name" : "configs/as1core1.cfg",
         "Status" : "PASSED",
         "Nodes" : [
           {
@@ -59,7 +59,7 @@
         ]
       },
       {
-        "Filename" : "configs/as2border1.cfg",
+        "File_Name" : "configs/as2border1.cfg",
         "Status" : "PASSED",
         "Nodes" : [
           {
@@ -69,7 +69,7 @@
         ]
       },
       {
-        "Filename" : "configs/as2border2.cfg",
+        "File_Name" : "configs/as2border2.cfg",
         "Status" : "PASSED",
         "Nodes" : [
           {
@@ -79,7 +79,7 @@
         ]
       },
       {
-        "Filename" : "configs/as2core1.cfg",
+        "File_Name" : "configs/as2core1.cfg",
         "Status" : "PASSED",
         "Nodes" : [
           {
@@ -89,7 +89,7 @@
         ]
       },
       {
-        "Filename" : "configs/as2core2.cfg",
+        "File_Name" : "configs/as2core2.cfg",
         "Status" : "PASSED",
         "Nodes" : [
           {
@@ -99,7 +99,7 @@
         ]
       },
       {
-        "Filename" : "configs/as2dept1.cfg",
+        "File_Name" : "configs/as2dept1.cfg",
         "Status" : "PASSED",
         "Nodes" : [
           {
@@ -109,7 +109,7 @@
         ]
       },
       {
-        "Filename" : "configs/as2dist1.cfg",
+        "File_Name" : "configs/as2dist1.cfg",
         "Status" : "PASSED",
         "Nodes" : [
           {
@@ -119,7 +119,7 @@
         ]
       },
       {
-        "Filename" : "configs/as2dist2.cfg",
+        "File_Name" : "configs/as2dist2.cfg",
         "Status" : "PASSED",
         "Nodes" : [
           {
@@ -129,7 +129,7 @@
         ]
       },
       {
-        "Filename" : "configs/as3border1.cfg",
+        "File_Name" : "configs/as3border1.cfg",
         "Status" : "PASSED",
         "Nodes" : [
           {
@@ -139,7 +139,7 @@
         ]
       },
       {
-        "Filename" : "configs/as3border2.cfg",
+        "File_Name" : "configs/as3border2.cfg",
         "Status" : "PASSED",
         "Nodes" : [
           {
@@ -149,7 +149,7 @@
         ]
       },
       {
-        "Filename" : "configs/as3core1.cfg",
+        "File_Name" : "configs/as3core1.cfg",
         "Status" : "PASSED",
         "Nodes" : [
           {
@@ -159,7 +159,7 @@
         ]
       },
       {
-        "Filename" : "hosts/host1.json",
+        "File_Name" : "hosts/host1.json",
         "Status" : "PASSED",
         "Nodes" : [
           {
@@ -169,7 +169,7 @@
         ]
       },
       {
-        "Filename" : "hosts/host2.json",
+        "File_Name" : "hosts/host2.json",
         "Status" : "PASSED",
         "Nodes" : [
           {
@@ -179,7 +179,7 @@
         ]
       },
       {
-        "Filename" : "iptables/host1.iptables",
+        "File_Name" : "iptables/host1.iptables",
         "Status" : "PASSED",
         "Nodes" : [
           {
@@ -189,7 +189,7 @@
         ]
       },
       {
-        "Filename" : "iptables/host2.iptables",
+        "File_Name" : "iptables/host2.iptables",
         "Status" : "PASSED",
         "Nodes" : [
           {

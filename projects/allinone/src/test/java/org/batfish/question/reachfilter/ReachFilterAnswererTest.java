@@ -16,6 +16,9 @@ import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
 import static org.batfish.datamodel.matchers.TableAnswerElementMatchers.hasRows;
 import static org.batfish.question.reachfilter.ReachFilterAnswerer.toDenyAcl;
 import static org.batfish.question.reachfilter.ReachFilterAnswerer.toMatchLineAcl;
+import static org.batfish.question.testfilters.TestFiltersAnswerer.COLUMN_ACTION;
+import static org.batfish.question.testfilters.TestFiltersAnswerer.COLUMN_FILTER_NAME;
+import static org.batfish.question.testfilters.TestFiltersAnswerer.COLUMN_LINE_NUMBER;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
@@ -326,18 +329,18 @@ public final class ReachFilterAnswererTest {
   }
 
   @Test
-  public void testTraceFilter() {
+  public void testTestFilter() {
     ReachFilterQuestion question = new ReachFilterQuestion();
     String hostname = _config.getHostname();
     Flow flow = Flow.builder().setIngressNode(hostname).setDstIp(IP2).setTag("tag").build();
     ReachFilterAnswerer answerer = new ReachFilterAnswerer(question, _batfish);
-    Rows rows = answerer.traceFilterRows(hostname, ACL, flow);
+    Rows rows = answerer.testFiltersRows(hostname, ACL, flow);
     assertThat(
         rows.getData(),
         contains(
             allOf(
-                hasColumn("action", equalTo("DENY"), Schema.STRING),
-                hasColumn("filterName", equalTo(ACL.getName()), Schema.STRING))));
+                hasColumn(COLUMN_ACTION, equalTo("DENY"), Schema.STRING),
+                hasColumn(COLUMN_FILTER_NAME, equalTo(ACL.getName()), Schema.STRING))));
   }
 
   @Test
@@ -351,17 +354,18 @@ public final class ReachFilterAnswererTest {
             containsInAnyOrder(
                 ImmutableList.of(
                     allOf(
-                        hasColumn("action", equalTo("PERMIT"), Schema.STRING),
-                        hasColumn("filterName", equalTo(ACL.getName()), Schema.STRING),
-                        hasColumn("lineNumber", oneOf(0, 3), Schema.INTEGER)),
+                        hasColumn(COLUMN_ACTION, equalTo("PERMIT"), Schema.STRING),
+                        hasColumn(COLUMN_FILTER_NAME, equalTo(ACL.getName()), Schema.STRING),
+                        hasColumn(COLUMN_LINE_NUMBER, oneOf(0, 3), Schema.INTEGER)),
                     allOf(
-                        hasColumn("action", equalTo("PERMIT"), Schema.STRING),
-                        hasColumn("filterName", equalTo(BLOCKED_LINE_ACL.getName()), Schema.STRING),
-                        hasColumn("lineNumber", equalTo(0), Schema.INTEGER)),
+                        hasColumn(COLUMN_ACTION, equalTo("PERMIT"), Schema.STRING),
+                        hasColumn(
+                            COLUMN_FILTER_NAME, equalTo(BLOCKED_LINE_ACL.getName()), Schema.STRING),
+                        hasColumn(COLUMN_LINE_NUMBER, equalTo(0), Schema.INTEGER)),
                     allOf(
-                        hasColumn("action", equalTo("PERMIT"), Schema.STRING),
-                        hasColumn("filterName", equalTo(SRC_ACL.getName()), Schema.STRING),
-                        hasColumn("lineNumber", oneOf(0, 1, 2), Schema.INTEGER))))));
+                        hasColumn(COLUMN_ACTION, equalTo("PERMIT"), Schema.STRING),
+                        hasColumn(COLUMN_FILTER_NAME, equalTo(SRC_ACL.getName()), Schema.STRING),
+                        hasColumn(COLUMN_LINE_NUMBER, oneOf(0, 1, 2), Schema.INTEGER))))));
   }
 
   @Test

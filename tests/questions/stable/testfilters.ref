@@ -1,7 +1,7 @@
 {
-  "class" : "org.batfish.question.tracefilters.TraceFiltersQuestion",
-  "filterRegex" : ".*",
-  "nodeRegex" : ".*",
+  "class" : "org.batfish.question.testfilters.TestFiltersQuestion",
+  "filters" : ".*",
+  "nodes" : ".*",
   "differential" : false,
   "dscp" : 12,
   "dst" : "1.2.3.4",
@@ -14,7 +14,7 @@
   "includeOneTableKeys" : true,
   "ingressInterface" : "randomInterface",
   "instance" : {
-    "description" : "Evaluate the processing of a flow by a given filter/ACL.",
+    "description" : "Evaluate the processing of a flow by a given filter/ACL",
     "instanceName" : "qname",
     "longDescription" : "Find the disposition of the specified flow when processed through the specified filter/ACL.",
     "tags" : [
@@ -54,7 +54,7 @@
         "type" : "integer",
         "value" : 1
       },
-      "filterRegex" : {
+      "filters" : {
         "description" : "Only consider filters that match this regular expression",
         "optional" : false,
         "type" : "javaRegex",
@@ -91,10 +91,10 @@
         "type" : "string",
         "value" : "23"
       },
-      "nodeRegex" : {
-        "description" : "Only consider filters present on nodes that match this regular expression",
+      "nodes" : {
+        "description" : "Examine filters on nodes matching this name or regex",
         "optional" : false,
-        "type" : "javaRegex",
+        "type" : "nodeSpec",
         "value" : ".*"
       },
       "packetLength" : {

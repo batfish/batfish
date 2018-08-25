@@ -1,23 +1,23 @@
 {
   "class" : "org.batfish.question.routes.RoutesQuestion",
-  "nodeRegex" : ".*",
+  "nodes" : ".*",
   "protocol" : "MAIN",
-  "vrfRegex" : ".*",
+  "vrfs" : ".*",
   "differential" : false,
   "includeOneTableKeys" : true,
   "instance" : {
     "description" : "Show routing tables",
     "instanceName" : "qname",
-    "longDescription" : "Return routes for the specified RIB for specified VRF for specified node(s)",
+    "longDescription" : "Return routes for the specified RIB for specified VRF for specified node(s).",
     "tags" : [
       "dataPlane",
       "route"
     ],
     "variables" : {
-      "nodeRegex" : {
-        "description" : "Only include routes for nodes whose name matches this regex",
+      "nodes" : {
+        "description" : "Examine routes on nodes matching this name or regex",
         "optional" : false,
-        "type" : "javaRegex",
+        "type" : "nodeSpec",
         "value" : ".*"
       },
       "protocol" : {
@@ -31,8 +31,8 @@
         "type" : "string",
         "value" : "main"
       },
-      "vrfRegex" : {
-        "description" : "Only include routes for VRFs whose name matches this regex",
+      "vrfs" : {
+        "description" : "Examine routes on VRFs matching this name or regex",
         "optional" : false,
         "type" : "javaRegex",
         "value" : ".*"
