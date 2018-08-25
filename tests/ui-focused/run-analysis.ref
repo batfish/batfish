@@ -316,7 +316,7 @@
             ],
             "variables" : {
               "nodes" : {
-                "description" : "Examine unused structures on nodes matching this name or regex",
+                "description" : "Look for unused structures on nodes matching this name or regex",
                 "optional" : false,
                 "type" : "nodeSpec",
                 "value" : ".*"

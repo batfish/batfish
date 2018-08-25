@@ -11,7 +11,7 @@
         ],
         "variables": {
             "nodes": {
-                "description": "Examine undefined references on nodes matching this name or regex",
+                "description": "Look for undefined references on nodes matching this name or regex",
                 "type": "nodeSpec",
                 "value": ".*"
             }
