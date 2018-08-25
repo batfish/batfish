@@ -3,6 +3,7 @@ package org.batfish.representation.juniper;
 import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.BgpAuthenticationAlgorithm;
 import org.batfish.datamodel.Ip;
 
@@ -289,7 +290,7 @@ public class BgpGroup implements Serializable {
     _localAddress = localAddress;
   }
 
-  public final void setLocalAs(long localAs) {
+  public final void setLocalAs(@Nullable Long localAs) {
     _localAs = localAs;
   }
 

@@ -430,7 +430,7 @@ bl_loops
 
 bl_number
 :
-   as = DEC
+   asn = bgp_asn
 ;
 
 bl_private
@@ -450,7 +450,7 @@ bm_ttl
 
 bpa_as
 :
-   as = DEC
+   asn = bgp_asn
 ;
 
 bps_always_compare_med
