@@ -10,17 +10,16 @@ import org.batfish.datamodel.questions.Question;
 
 public class AaaAuthenticationLoginQuestion extends Question {
 
-  private static final String PROP_NODE_REGEX = "nodeRegex";
+  private static final String PROP_NODES = "nodes";
 
-  @Nonnull private NodesSpecifier _nodeRegex;
+  @Nonnull private NodesSpecifier _nodes;
 
   public AaaAuthenticationLoginQuestion() {
     this(null);
   }
 
-  public AaaAuthenticationLoginQuestion(
-      @Nullable @JsonProperty(PROP_NODE_REGEX) NodesSpecifier nodeRegex) {
-    _nodeRegex = firstNonNull(nodeRegex, NodesSpecifier.ALL);
+  public AaaAuthenticationLoginQuestion(@Nullable @JsonProperty(PROP_NODES) NodesSpecifier nodes) {
+    _nodes = firstNonNull(nodes, NodesSpecifier.ALL);
   }
 
   @Override
@@ -33,13 +32,13 @@ public class AaaAuthenticationLoginQuestion extends Question {
     return "AaaAuthenticationLogin";
   }
 
-  @JsonProperty(PROP_NODE_REGEX)
-  public NodesSpecifier getNodeRegex() {
-    return _nodeRegex;
+  @JsonProperty(PROP_NODES)
+  public NodesSpecifier getNodes() {
+    return _nodes;
   }
 
-  @JsonProperty(PROP_NODE_REGEX)
-  public void setNodeRegex(NodesSpecifier nodeRegex) {
-    _nodeRegex = nodeRegex;
+  @JsonProperty(PROP_NODES)
+  public void setNodes(NodesSpecifier nodes) {
+    _nodes = nodes;
   }
 }

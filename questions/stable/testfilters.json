@@ -1,18 +1,18 @@
 {
-  "class": "org.batfish.question.tracefilters.TraceFiltersQuestion",
+  "class": "org.batfish.question.testfilters.TestFiltersQuestion",
   "differential": false,
   "dscp": "${dscp}",
   "dst": "${dst}",
   "dstPort": "${dstPort}",
   "dstProtocol": "${dstProtocol}",
   "ecn": "${ecn}",
-  "filterRegex": "${filterRegex}",
+  "filters": "${filters}",
   "fragmentOffset": "${fragmentOffset}",
   "icmpCode": "${icmpCode}",
   "icmpType": "${icmpType}",
   "ingressInterface": "${ingressInterface}",
   "ipProtocol": "${ipProtocol}",
-  "nodeRegex": "${nodeRegex}",
+  "nodes": "${nodes}",
   "packetLength": "${packetLength}",
   "srcIp": "${srcIp}",
   "srcPort": "${srcPort}",
@@ -27,7 +27,7 @@
   "tcpSyn": "${tcpSyn}",
   "tcpUrg": "${tcpUrg}",
   "instance": {
-    "description": "Evaluate the processing of a flow by a given filter/ACL.",
+    "description": "Evaluate the processing of a flow by a given filter/ACL",
     "instanceName": "testfilters",
     "longDescription": "Find the disposition of the specified flow when processed through the specified filter/ACL.",
     "tags": [
@@ -61,7 +61,7 @@
         "optional": true,
         "type": "integer"
       },
-      "filterRegex": {
+      "filters": {
         "description": "Only consider filters that match this regular expression",
         "type": "javaRegex",
         "value": ".*"
@@ -92,9 +92,9 @@
         "optional": true,
         "type": "string"
       },
-      "nodeRegex": {
-        "description": "Only consider filters present on nodes that match this regular expression",
-        "type": "javaRegex",
+      "nodes": {
+        "description": "Examine filters on nodes matching this name or regex",
+        "type": "nodeSpec",
         "value": ".*"
       },
       "packetLength": {

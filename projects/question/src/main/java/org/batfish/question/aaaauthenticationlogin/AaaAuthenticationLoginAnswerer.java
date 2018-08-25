@@ -27,8 +27,8 @@ import org.batfish.datamodel.table.TableMetadata;
 @ParametersAreNonnullByDefault
 public class AaaAuthenticationLoginAnswerer extends Answerer {
 
-  public static final String COLUMN_NODE = "node";
-  public static final String COLUMN_LINE_NAMES = "lineNames";
+  public static final String COLUMN_NODE = "Node";
+  public static final String COLUMN_LINE_NAMES = "Line_Names";
 
   private static final String TEXT_DESC =
       String.format(
@@ -69,7 +69,7 @@ public class AaaAuthenticationLoginAnswerer extends Answerer {
 
     TableAnswerElement answerElement = create(question);
 
-    Set<String> specifiedNodes = question.getNodeRegex().getMatchingNodes(_batfish);
+    Set<String> specifiedNodes = question.getNodes().getMatchingNodes(_batfish);
 
     SortedMap<String, Configuration> configs = _batfish.loadConfigurations();
     configs.forEach(

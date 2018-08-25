@@ -12,8 +12,8 @@ import static org.batfish.question.reachfilter.ReachFilterAnswerer.COLUMN_RESULT
 import static org.batfish.question.reachfilter.ReachFilterAnswerer.COLUMN_SNAPSHOT;
 import static org.batfish.question.reachfilter.ReachFilterAnswerer.DELTA;
 import static org.batfish.question.reachfilter.ReachFilterAnswerer.INCREASED;
-import static org.batfish.question.tracefilters.TraceFiltersAnswerer.COLUMN_ACTION;
-import static org.batfish.question.tracefilters.TraceFiltersAnswerer.COLUMN_FLOW;
+import static org.batfish.question.testfilters.TestFiltersAnswerer.COLUMN_ACTION;
+import static org.batfish.question.testfilters.TestFiltersAnswerer.COLUMN_FLOW;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;

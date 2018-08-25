@@ -4,19 +4,19 @@
     "instance": {
         "description": "Show routing tables",
         "instanceName": "routes",
-        "longDescription": "Return routes for the specified RIB for specified VRF for specified node(s)",
+        "longDescription": "Return routes for the specified RIB for specified VRF for specified node(s).",
         "tags": [
             "dataPlane",
             "route"
         ],
         "variables": {
-            "nodeRegex": {
-                "description": "Only include routes for nodes whose name matches this regex",
-                "type": "javaRegex",
+            "nodes": {
+                "description": "Examine routes on nodes matching this name or regex",
+                "type": "nodeSpec",
                 "value": ".*"
             },
-            "vrfRegex": {
-                "description": "Only include routes for VRFs whose name matches this regex",
+            "vrfs": {
+                "description": "Examine routes on VRFs matching this name or regex",
                 "type": "javaRegex",
                 "value": ".*"
             },
@@ -28,7 +28,7 @@
             }
         }
     },
-    "nodeRegex": "${nodeRegex}",
+    "nodes": "${nodes}",
     "protocol": "${protocol}",
-    "vrfRegex": "${vrfRegex}"
+    "vrfs": "${vrfs}"
 }
