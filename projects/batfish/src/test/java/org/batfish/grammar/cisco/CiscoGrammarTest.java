@@ -652,6 +652,61 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testAsaNestedNetworkObjectGroup() throws IOException {
+    String hostname = "asa-nested-network-object-group";
+    Ip engHostIp = new Ip("10.1.1.5");
+    Ip hrHostIp = new Ip("10.1.2.8");
+    Ip financeHostIp = new Ip("10.1.4.89");
+    Ip otherIp = new Ip("1.2.3.4");
+    Configuration c = parseConfig(hostname);
+
+    assertThat(c, hasIpSpace("admin", containsIp(engHostIp, c.getIpSpaces())));
+    assertThat(c, hasIpSpace("admin", containsIp(hrHostIp, c.getIpSpaces())));
+    assertThat(c, hasIpSpace("admin", containsIp(financeHostIp, c.getIpSpaces())));
+    assertThat(c, hasIpSpace("admin", not(containsIp(otherIp, c.getIpSpaces()))));
+  }
+
+  @Test
+  public void testAsaNestedProtocolObjectGroup() throws IOException {
+    String hostname = "asa-nested-protocol-object-group";
+    String protocols = computeProtocolObjectGroupAclName("protocols");
+    int someSrcPort = 65535;
+    int someDstPort = 1;
+
+    Flow igmpFlow = createFlow(IpProtocol.IGMP, someSrcPort, someDstPort);
+    Flow tcpFlow = createFlow(IpProtocol.TCP, someSrcPort, someDstPort);
+    Flow ospfFlow = createFlow(IpProtocol.OSPF, someSrcPort, someDstPort);
+    Flow otherFlow = createFlow(IpProtocol.AHP, someSrcPort, someDstPort);
+
+    Configuration c = parseConfig(hostname);
+
+    assertThat(c, hasIpAccessList(protocols, accepts(igmpFlow, null, c)));
+    assertThat(c, hasIpAccessList(protocols, accepts(tcpFlow, null, c)));
+    assertThat(c, hasIpAccessList(protocols, accepts(ospfFlow, null, c)));
+    assertThat(c, hasIpAccessList(protocols, not(accepts(otherFlow, null, c))));
+  }
+
+  @Test
+  public void testAsaNestedServiceObjectGroup() throws IOException {
+    String hostname = "asa-nested-service-object-group";
+    String services = computeServiceObjectGroupAclName("services");
+    int someSrcPort = 65535;
+    int someDstPort = 1;
+
+    Flow dns = createFlow(IpProtocol.UDP, someSrcPort, 53);
+    Flow customPort = createFlow(IpProtocol.UDP, someSrcPort, 1234);
+    Flow customPortInRange = createFlow(IpProtocol.TCP, someSrcPort, 2350);
+    Flow otherFlow = createFlow(IpProtocol.AHP, someSrcPort, someDstPort);
+
+    Configuration c = parseConfig(hostname);
+
+    assertThat(c, hasIpAccessList(services, accepts(dns, null, c)));
+    assertThat(c, hasIpAccessList(services, accepts(customPort, null, c)));
+    assertThat(c, hasIpAccessList(services, accepts(customPortInRange, null, c)));
+    assertThat(c, hasIpAccessList(services, not(accepts(otherFlow, null, c))));
+  }
+
+  @Test
   public void testIosLoggingOnDefault() throws IOException {
     Configuration loggingOnOmitted = parseConfig("iosLoggingOnOmitted");
     assertThat(loggingOnOmitted, hasVendorFamily(hasCisco(hasLogging(isOn()))));

@@ -15060,6 +15060,11 @@ M_ObjectGroup_USER
   'user' -> type ( USER ) , popMode
 ;
 
+M_ObjectGroup_GROUP
+:
+  'group' -> type ( GROUP ) , popMode
+;
+
 /* Do not reorder above literals */
 M_ObjectGroup_NAME
 :

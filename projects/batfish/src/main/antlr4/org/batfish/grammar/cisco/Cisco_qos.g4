@@ -286,6 +286,63 @@ o_service
    )*
 ;
 
+ogg_network
+:
+   NETWORK name = variable_permissive NEWLINE
+   (
+      og_description
+      | oggn_group_object
+   )*
+;
+
+oggn_group_object
+:
+   GROUP_OBJECT name = variable_permissive NEWLINE
+;
+
+ogg_protocol
+:
+   PROTOCOL name = variable_permissive NEWLINE
+   (
+      og_description
+      | oggp_group_object
+   )*
+;
+
+oggp_group_object
+:
+   GROUP_OBJECT name = variable_permissive NEWLINE
+;
+
+ogg_service
+:
+   SERVICE name = variable_permissive NEWLINE
+   (
+      og_description
+      | oggs_group_object
+   )*
+;
+
+oggs_group_object
+:
+   GROUP_OBJECT name = variable_permissive NEWLINE
+;
+
+og_description
+:
+   description_line
+;
+
+og_group
+:
+   GROUP
+   (
+      ogg_network
+      | ogg_protocol
+      | ogg_service
+   )
+;
+
 og_icmp_type
 :
    ICMP_TYPE name = variable_permissive NEWLINE
@@ -336,6 +393,7 @@ og_service
       | ogs_service_object
       | ogs_tcp
       | ogs_udp
+      | ogs_port_object
    )*
 ;
 
@@ -476,6 +534,11 @@ ogs_udp
    UDP ps = port_specifier NEWLINE
 ;
 
+ogs_port_object
+:
+   PORT_OBJECT ps = port_specifier NEWLINE
+;
+
 ogu_description
 :
    description_line
@@ -539,6 +602,11 @@ on_subnet
       )
       | prefix6 = IPV6_PREFIX
    ) NEWLINE
+;
+
+on_group
+:
+   GROUP_OBJECT name = variable_permissive NEWLINE
 ;
 
 os_description
@@ -794,7 +862,8 @@ s_object_group
 :
    OBJECT_GROUP
    (
-      og_icmp_type
+      og_group
+      | og_icmp_type
       | og_ip_address
       | og_network
       | og_protocol
