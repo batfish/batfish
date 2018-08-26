@@ -86,7 +86,7 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
 
     private SortedSet<State> _states;
 
-    private List<TcpFlags> _tcpFlags;
+    private List<TcpFlagsMatchConditions> _tcpFlags;
 
     private Builder() {
       _dscps = ImmutableSortedSet.of();
@@ -265,7 +265,7 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
       return _states;
     }
 
-    public List<TcpFlags> getTcpFlags() {
+    public List<TcpFlagsMatchConditions> getTcpFlags() {
       return _tcpFlags;
     }
 
@@ -449,7 +449,7 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
       return this;
     }
 
-    public Builder setTcpFlags(Iterable<TcpFlags> tcpFlags) {
+    public Builder setTcpFlags(Iterable<TcpFlagsMatchConditions> tcpFlags) {
       _tcpFlags = ImmutableList.copyOf(tcpFlags);
       return this;
     }
@@ -622,7 +622,7 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
 
   private SortedSet<State> _states;
 
-  private List<TcpFlags> _tcpFlags;
+  private List<TcpFlagsMatchConditions> _tcpFlags;
 
   public HeaderSpace() {
     _dscps = Collections.emptySortedSet();
@@ -922,7 +922,7 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
 
   @JsonPropertyDescription("A set of acceptable TCP flag bitmasks for a TCP packet to match")
   @JsonProperty(PROP_TCP_FLAGS)
-  public List<TcpFlags> getTcpFlags() {
+  public List<TcpFlagsMatchConditions> getTcpFlags() {
     return _tcpFlags;
   }
 
@@ -1304,7 +1304,7 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
   }
 
   @JsonProperty(PROP_TCP_FLAGS)
-  public void setTcpFlags(Iterable<TcpFlags> tcpFlags) {
+  public void setTcpFlags(Iterable<TcpFlagsMatchConditions> tcpFlags) {
     _tcpFlags = ImmutableList.copyOf(tcpFlags);
   }
 

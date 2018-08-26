@@ -74,7 +74,7 @@ import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.State;
 import org.batfish.datamodel.SubRange;
-import org.batfish.datamodel.TcpFlags;
+import org.batfish.datamodel.TcpFlagsMatchConditions;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
@@ -537,7 +537,7 @@ class CiscoConversions {
       }
       Set<State> states = fromLine.getStates();
       newLine.getStates().addAll(states);
-      List<TcpFlags> tcpFlags = fromLine.getTcpFlags();
+      List<TcpFlagsMatchConditions> tcpFlags = fromLine.getTcpFlags();
       newLine.getTcpFlags().addAll(tcpFlags);
       Set<Integer> dscps = fromLine.getDscps();
       newLine.getDscps().addAll(dscps);

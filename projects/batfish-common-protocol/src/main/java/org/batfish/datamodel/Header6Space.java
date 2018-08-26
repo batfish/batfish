@@ -80,7 +80,7 @@ public class Header6Space implements Serializable {
 
   private Set<State> _states;
 
-  private List<TcpFlags> _tcpFlags;
+  private List<TcpFlagsMatchConditions> _tcpFlags;
 
   public Header6Space() {
     _dscps = new TreeSet<>();
@@ -291,7 +291,7 @@ public class Header6Space implements Serializable {
     return _states;
   }
 
-  public List<TcpFlags> getTcpFlags() {
+  public List<TcpFlagsMatchConditions> getTcpFlags() {
     return _tcpFlags;
   }
 
@@ -474,7 +474,7 @@ public class Header6Space implements Serializable {
     _states = states;
   }
 
-  public void setTcpFlags(List<TcpFlags> tcpFlags) {
+  public void setTcpFlags(List<TcpFlagsMatchConditions> tcpFlags) {
     _tcpFlags = tcpFlags;
   }
 
@@ -524,7 +524,7 @@ public class Header6Space implements Serializable {
         + _notIcmpCodes
         + ", States:"
         + _states
-        + ", TcpFlags:"
+        + ", TcpFlagsMatchConditions:"
         + _tcpFlags
         + "]";
   }

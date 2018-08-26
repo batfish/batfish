@@ -36,7 +36,7 @@ import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
-import org.batfish.datamodel.TcpFlags;
+import org.batfish.datamodel.TcpFlagsMatchConditions;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.main.Batfish;
@@ -182,7 +182,7 @@ public class ElasticsearchDomainTest {
                                       new IpWildcard("1.2.3.4/32"),
                                       new IpWildcard("10.193.16.105/32")))
                               .setSrcPorts(Sets.newHashSet(new SubRange(45, 50)))
-                              .setTcpFlags(ImmutableSet.of(TcpFlags.ACK_TCP_FLAG))
+                              .setTcpFlags(ImmutableSet.of(TcpFlagsMatchConditions.ACK_TCP_FLAG))
                               .build()),
                       IpAccessListLine.acceptingHeaderSpace(
                           HeaderSpace.builder()
@@ -196,7 +196,7 @@ public class ElasticsearchDomainTest {
                       IpAccessListLine.acceptingHeaderSpace(
                           HeaderSpace.builder()
                               .setSrcIps(Sets.newHashSet(new IpWildcard("0.0.0.0/0")))
-                              .setTcpFlags(ImmutableSet.of(TcpFlags.ACK_TCP_FLAG))
+                              .setTcpFlags(ImmutableSet.of(TcpFlagsMatchConditions.ACK_TCP_FLAG))
                               .build()),
                       IpAccessListLine.acceptingHeaderSpace(
                           HeaderSpace.builder()
