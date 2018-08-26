@@ -78,7 +78,7 @@ public class Header6Space implements Serializable {
 
   private SortedSet<SubRange> _srcPorts;
 
-  private Set<State> _states;
+  private Set<FlowState> _states;
 
   private List<TcpFlags> _tcpFlags;
 
@@ -95,7 +95,7 @@ public class Header6Space implements Serializable {
     _srcPorts = new TreeSet<>();
     _icmpTypes = new TreeSet<>();
     _icmpCodes = new TreeSet<>();
-    _states = EnumSet.noneOf(State.class);
+    _states = EnumSet.noneOf(FlowState.class);
     _tcpFlags = new ArrayList<>();
     _notDscps = new TreeSet<>();
     _notDstIps = new TreeSet<>();
@@ -287,7 +287,7 @@ public class Header6Space implements Serializable {
     return _srcPorts;
   }
 
-  public Set<State> getStates() {
+  public Set<FlowState> getStates() {
     return _states;
   }
 
@@ -470,7 +470,7 @@ public class Header6Space implements Serializable {
     _srcPorts = srcPorts;
   }
 
-  public void setStates(Set<State> states) {
+  public void setStates(Set<FlowState> states) {
     _states = states;
   }
 

@@ -9,11 +9,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import net.sf.javabdd.BDD;
+import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
-import org.batfish.datamodel.State;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TcpFlags;
 import org.junit.Before;
@@ -158,7 +158,7 @@ public class HeaderSpaceToBDDTest {
   public void test_state() {
     HeaderSpace headerSpace =
         HeaderSpace.builder()
-            .setStates(ImmutableSet.of(State.fromNum(0), State.fromNum(1)))
+            .setStates(ImmutableSet.of(FlowState.fromNum(0), FlowState.fromNum(1)))
             .build();
     BDD bdd = _toBDD.toBDD(headerSpace);
 

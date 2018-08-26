@@ -25,9 +25,9 @@ import org.batfish.common.BatfishException;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Flow.Builder;
+import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
-import org.batfish.datamodel.State;
 import org.batfish.job.BatfishJob;
 import org.batfish.job.BatfishJobResult;
 import org.batfish.z3.expr.QueryStatement;
@@ -62,7 +62,7 @@ public abstract class Z3ContextJob<R extends BatfishJobResult<?, ?>> extends Bat
           .put(Field.ECN.getName(), (flowBuilder, value) -> flowBuilder.setEcn(value.intValue()))
           .put(
               Field.STATE.getName(),
-              (flowBuilder, value) -> flowBuilder.setState(State.fromNum(value.intValue())))
+              (flowBuilder, value) -> flowBuilder.setState(FlowState.fromNum(value.intValue())))
           .put(
               Field.ICMP_TYPE.getName(),
               (flowBuilder, value) -> flowBuilder.setIcmpType(value.intValue()))

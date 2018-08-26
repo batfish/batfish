@@ -154,6 +154,7 @@ import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IkeAuthenticationMethod;
 import org.batfish.datamodel.IkeHashingAlgorithm;
@@ -176,7 +177,6 @@ import org.batfish.datamodel.OspfExternalType2Route;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
-import org.batfish.datamodel.State;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
@@ -234,10 +234,10 @@ public class FlatJuniperGrammarTest {
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
   private static Flow createFlow(String sourceAddress, String destinationAddress) {
-    return createFlow(sourceAddress, destinationAddress, State.NEW);
+    return createFlow(sourceAddress, destinationAddress, FlowState.NEW);
   }
 
-  private static Flow createFlow(String sourceAddress, String destinationAddress, State state) {
+  private static Flow createFlow(String sourceAddress, String destinationAddress, FlowState state) {
     Flow.Builder fb = new Flow.Builder();
     fb.setIngressNode("node");
     fb.setSrcIp(new Ip(sourceAddress));
@@ -1002,8 +1002,10 @@ public class FlatJuniperGrammarTest {
 
     Flow trustToUntrustFlow = createFlow(trustedIpAddr, untrustedIpAddr);
     Flow untrustToTrustFlow = createFlow(untrustedIpAddr, trustedIpAddr);
-    Flow trustToUntrustReturnFlow = createFlow(trustedIpAddr, untrustedIpAddr, State.ESTABLISHED);
-    Flow untrustToTrustReturnFlow = createFlow(untrustedIpAddr, trustedIpAddr, State.ESTABLISHED);
+    Flow trustToUntrustReturnFlow =
+        createFlow(trustedIpAddr, untrustedIpAddr, FlowState.ESTABLISHED);
+    Flow untrustToTrustReturnFlow =
+        createFlow(untrustedIpAddr, trustedIpAddr, FlowState.ESTABLISHED);
 
     IpAccessList aclTrustOut = c.getInterfaces().get(interfaceNameTrust).getOutgoingFilter();
     IpAccessList aclUntrustOut = c.getInterfaces().get(interfaceNameUntrust).getOutgoingFilter();
