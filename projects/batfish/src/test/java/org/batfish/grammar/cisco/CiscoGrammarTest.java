@@ -147,6 +147,7 @@ import static org.batfish.datamodel.vendor_family.cisco.CiscoFamilyMatchers.hasL
 import static org.batfish.datamodel.vendor_family.cisco.LoggingMatchers.isOn;
 import static org.batfish.grammar.cisco.CiscoControlPlaneExtractor.SERIAL_LINE;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeCombinedOutgoingAclName;
+import static org.batfish.representation.cisco.CiscoConfiguration.computeIcmpObjectGroupAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeInspectClassMapAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeInspectPolicyMapAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeProtocolObjectGroupAclName;
@@ -649,6 +650,24 @@ public class CiscoGrammarTest {
     assertThat(c, hasIpAccessList(ogsAclName, accepts(flowTcpPass, null, c)));
     assertThat(c, hasIpAccessList(ogsAclName, not(accepts(flowTcpFail, null, c))));
     assertThat(c, hasIpAccessList(ogsAclName, accepts(flowInlinePass, null, c)));
+  }
+
+  @Test
+  public void testAsaNestedIcmpTypeObjectGroup() throws IOException {
+    String hostname = "asa-nested-icmp-type-object-group";
+    String services = computeIcmpObjectGroupAclName("services");
+
+    Flow echoReplyFlow = createIcmpFlow(IcmpType.ECHO_REPLY);
+    Flow unreachableFlow = createIcmpFlow(IcmpType.DESTINATION_UNREACHABLE);
+    Flow redirectFlow = createIcmpFlow(IcmpType.REDIRECT_MESSAGE);
+    Flow otherFlow = createIcmpFlow(IcmpType.TRACEROUTE);
+
+    Configuration c = parseConfig(hostname);
+
+    assertThat(c, hasIpAccessList(services, accepts(echoReplyFlow, null, c)));
+    assertThat(c, hasIpAccessList(services, accepts(unreachableFlow, null, c)));
+    assertThat(c, hasIpAccessList(services, accepts(redirectFlow, null, c)));
+    assertThat(c, hasIpAccessList(services, not(accepts(otherFlow, null, c))));
   }
 
   @Test

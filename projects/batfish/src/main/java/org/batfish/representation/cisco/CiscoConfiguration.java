@@ -298,6 +298,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
             ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().getAddress().getIp()));
   }
 
+  public static String computeIcmpObjectGroupAclName(String name) {
+    return String.format("~ICMP_OBJECT_GROUP~%s~", name);
+  }
+
   public static String computeProtocolObjectGroupAclName(String name) {
     return String.format("~PROTOCOL_OBJECT_GROUP~%s~", name);
   }
@@ -413,6 +417,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private final Map<String, NatPool> _natPools;
 
+  private final Map<String, IcmpTypeObjectGroup> _icmpTypeObjectGroups;
+
   private final Map<String, NetworkObjectGroup> _networkObjectGroups;
 
   private final Map<String, NetworkObject> _networkObjects;
@@ -497,6 +503,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _keyrings = new TreeMap<>();
     _macAccessLists = new TreeMap<>();
     _natPools = new TreeMap<>();
+    _icmpTypeObjectGroups = new TreeMap<>();
     _networkObjectGroups = new TreeMap<>();
     _networkObjects = new TreeMap<>();
     _nxBgpGlobalConfiguration = new CiscoNxBgpGlobalConfiguration();
@@ -3028,6 +3035,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
                         new IpSpaceMetadata(
                             name, CiscoStructureType.NETWORK_OBJECT.getDescription())));
 
+    // convert each IcmpTypeGroup to IpAccessList
+    _icmpTypeObjectGroups.forEach(
+        (name, icmpTypeObjectGroups) ->
+            c.getIpAccessLists()
+                .put(computeIcmpObjectGroupAclName(name), toIpAccessList(icmpTypeObjectGroups)));
+
     // convert each ProtocolObjectGroup to IpAccessList
     _protocolObjectGroups.forEach(
         (name, protocolObjectGroup) ->
@@ -3587,6 +3600,19 @@ public final class CiscoConfiguration extends VendorConfiguration {
         .build();
   }
 
+  private IpAccessList toIpAccessList(IcmpTypeObjectGroup icmpTypeObjectGroup) {
+    return IpAccessList.builder()
+        .setLines(
+            ImmutableList.of(
+                IpAccessListLine.accepting()
+                    .setMatchCondition(icmpTypeObjectGroup.toAclLineMatchExpr())
+                    .build()))
+        .setName(computeProtocolObjectGroupAclName(icmpTypeObjectGroup.getName()))
+        .setSourceName(icmpTypeObjectGroup.getName())
+        .setSourceType(CiscoStructureType.ICMP_TYPE_OBJECT_GROUP.getDescription())
+        .build();
+  }
+
   /** Converts an IPSec Profile to IPSec policy */
   private IpsecPolicy toIpSecPolicy(Configuration configuration, IpsecProfile ipsecProfile) {
     String name = ipsecProfile.getName();
@@ -4112,6 +4138,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
         tunnel.setSourceAddress(ifaceNameToPrimaryIp.get(tunnel.getSourceInterfaceName()));
       }
     }
+  }
+
+  public Map<String, IcmpTypeObjectGroup> getIcmpTypeObjectGroups() {
+    return _icmpTypeObjectGroups;
   }
 
   public Map<String, NetworkObjectGroup> getNetworkObjectGroups() {

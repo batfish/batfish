@@ -25,6 +25,7 @@ import static org.batfish.representation.cisco.CiscoStructureType.DEPI_CLASS;
 import static org.batfish.representation.cisco.CiscoStructureType.DEPI_TUNNEL;
 import static org.batfish.representation.cisco.CiscoStructureType.DOCSIS_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureType.DOCSIS_POLICY_RULE;
+import static org.batfish.representation.cisco.CiscoStructureType.ICMP_TYPE_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureType.INSPECT_CLASS_MAP;
 import static org.batfish.representation.cisco.CiscoStructureType.INSPECT_POLICY_MAP;
 import static org.batfish.representation.cisco.CiscoStructureType.INTERFACE;
@@ -43,6 +44,7 @@ import static org.batfish.representation.cisco.CiscoStructureType.KEYRING;
 import static org.batfish.representation.cisco.CiscoStructureType.L2TP_CLASS;
 import static org.batfish.representation.cisco.CiscoStructureType.MAC_ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureType.NAT_POOL;
+import static org.batfish.representation.cisco.CiscoStructureType.NESTED_ICMP_TYPE_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureType.NESTED_NETWORK_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureType.NESTED_PROTOCOL_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureType.NESTED_SERVICE_OBJECT_GROUP;
@@ -675,15 +677,20 @@ import org.batfish.grammar.cisco.CiscoParser.Ntp_source_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Null_as_path_regexContext;
 import org.batfish.grammar.cisco.CiscoParser.O_networkContext;
 import org.batfish.grammar.cisco.CiscoParser.O_serviceContext;
+import org.batfish.grammar.cisco.CiscoParser.Og_icmp_typeContext;
 import org.batfish.grammar.cisco.CiscoParser.Og_networkContext;
 import org.batfish.grammar.cisco.CiscoParser.Og_protocolContext;
 import org.batfish.grammar.cisco.CiscoParser.Og_serviceContext;
+import org.batfish.grammar.cisco.CiscoParser.Ogg_icmp_typeContext;
 import org.batfish.grammar.cisco.CiscoParser.Ogg_networkContext;
 import org.batfish.grammar.cisco.CiscoParser.Ogg_protocolContext;
 import org.batfish.grammar.cisco.CiscoParser.Ogg_serviceContext;
+import org.batfish.grammar.cisco.CiscoParser.Oggit_group_objectContext;
 import org.batfish.grammar.cisco.CiscoParser.Oggn_group_objectContext;
 import org.batfish.grammar.cisco.CiscoParser.Oggp_group_objectContext;
 import org.batfish.grammar.cisco.CiscoParser.Oggs_group_objectContext;
+import org.batfish.grammar.cisco.CiscoParser.Ogit_group_objectContext;
+import org.batfish.grammar.cisco.CiscoParser.Ogit_icmp_objectContext;
 import org.batfish.grammar.cisco.CiscoParser.Ogn_group_objectContext;
 import org.batfish.grammar.cisco.CiscoParser.Ogn_host_ipContext;
 import org.batfish.grammar.cisco.CiscoParser.Ogn_ip_with_maskContext;
@@ -1043,6 +1050,9 @@ import org.batfish.representation.cisco.ExtendedIpv6AccessList;
 import org.batfish.representation.cisco.ExtendedIpv6AccessListLine;
 import org.batfish.representation.cisco.HsrpGroup;
 import org.batfish.representation.cisco.IcmpServiceObjectGroupLine;
+import org.batfish.representation.cisco.IcmpTypeGroupReferenceLine;
+import org.batfish.representation.cisco.IcmpTypeGroupTypeLine;
+import org.batfish.representation.cisco.IcmpTypeObjectGroup;
 import org.batfish.representation.cisco.InspectClassMap;
 import org.batfish.representation.cisco.InspectClassMapMatch;
 import org.batfish.representation.cisco.InspectClassMapMatchAccessGroup;
@@ -1490,6 +1500,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private NetworkObject _currentNetworkObject;
 
   private NetworkObjectGroup _currentNetworkObjectGroup;
+
+  private IcmpTypeObjectGroup _currentIcmpTypeObjectGroup;
 
   private ProtocolObjectGroup _currentProtocolObjectGroup;
 
@@ -2570,6 +2582,61 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitO_service(O_serviceContext ctx) {
     _currentServiceObject = null;
+  }
+
+  @Override
+  public void enterOg_icmp_type(Og_icmp_typeContext ctx) {
+    String name = ctx.name.getText();
+    if (_configuration.getObjectGroups().containsKey(name)) {
+      _currentIcmpTypeObjectGroup = new IcmpTypeObjectGroup(name);
+      warnObjectGroupRedefinition(name);
+    } else {
+      _currentIcmpTypeObjectGroup =
+          _configuration.getIcmpTypeObjectGroups().computeIfAbsent(name, IcmpTypeObjectGroup::new);
+      _configuration.getObjectGroups().put(name, _currentIcmpTypeObjectGroup);
+      defineStructure(ICMP_TYPE_OBJECT_GROUP, name, ctx);
+    }
+  }
+
+  @Override
+  public void exitOgit_icmp_object(Ogit_icmp_objectContext ctx) {
+    _currentIcmpTypeObjectGroup.getLines().add(new IcmpTypeGroupTypeLine(toIcmpType(ctx.icmp_object_type())));
+  }
+
+  @Override
+  public void exitOg_icmp_type(Og_icmp_typeContext ctx) {
+    _currentIcmpTypeObjectGroup = null;
+  }
+
+  @Override
+  public void enterOgg_icmp_type(Ogg_icmp_typeContext ctx) {
+    String name = ctx.name.getText();
+    _currentIcmpTypeObjectGroup = new IcmpTypeObjectGroup(name);
+    if (_configuration.getObjectGroups().containsKey(name)) {
+      warnObjectGroupRedefinition(name);
+    } else {
+      _configuration.getIcmpTypeObjectGroups().put(name, _currentIcmpTypeObjectGroup);
+      _configuration.getObjectGroups().put(name, _currentIcmpTypeObjectGroup);
+      defineStructure(NESTED_ICMP_TYPE_OBJECT_GROUP, name, ctx);
+    }
+  }
+
+  @Override
+  public void exitOggit_group_object(Oggit_group_objectContext ctx) {
+    addIcmpTypeGroupReference(ctx.name.getText());
+  }
+
+  @Override
+  public void exitOgit_group_object(Ogit_group_objectContext ctx) {
+    addIcmpTypeGroupReference(ctx.name.getText());
+  }
+
+  private void addIcmpTypeGroupReference(String name) {
+    if (_configuration.getIcmpTypeObjectGroups().containsKey(name)) {
+      _currentIcmpTypeObjectGroup.getLines().add(new IcmpTypeGroupReferenceLine(name));
+    } else {
+      warnUndefinedObjectGroupReferenced(name);
+    }
   }
 
   @Override

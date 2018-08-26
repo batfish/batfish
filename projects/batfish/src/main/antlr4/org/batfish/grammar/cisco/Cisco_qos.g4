@@ -286,6 +286,20 @@ o_service
    )*
 ;
 
+ogg_icmp_type
+:
+   ICMP_TYPE name = variable_permissive NEWLINE
+   (
+      og_description
+      | oggit_group_object
+   )*
+;
+
+oggit_group_object
+:
+   GROUP_OBJECT name = variable_permissive NEWLINE
+;
+
 ogg_network
 :
    NETWORK name = variable_permissive NEWLINE
@@ -337,7 +351,8 @@ og_group
 :
    GROUP
    (
-      ogg_network
+      ogg_icmp_type
+      | ogg_network
       | ogg_protocol
       | ogg_service
    )
@@ -347,7 +362,8 @@ og_icmp_type
 :
    ICMP_TYPE name = variable_permissive NEWLINE
    (
-      ogit_group_object
+      ogit_description
+      | ogit_group_object
       | ogit_icmp_object
    )*
 ;
@@ -426,6 +442,11 @@ ogipa_ip_addresses
          )
       )
    ) NEWLINE
+;
+
+ogit_description
+:
+   description_line
 ;
 
 ogit_group_object
