@@ -3,9 +3,7 @@ package org.batfish.question.namedstructures;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.Multiset;
-import com.google.common.collect.UnmodifiableListIterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -41,13 +39,11 @@ public class NamedStructuresAnswerer extends Answerer {
    *
    * @return The {@link List} of {@link ColumnMetadata}s
    */
-  @SuppressWarnings("unchecked")
   public static TableMetadata createNamedStructuresMetadata(
       NamedStructuresQuestion question,
       Map<String, Configuration> configurations,
       Set<String> nodes) {
     ImmutableList.Builder<ColumnMetadata> columnMetadataList = ImmutableList.builder();
-    ImmutableList.builder();
     columnMetadataList.add(new ColumnMetadata(COL_NODE, Schema.NODE, "Node", true, false));
 
     for (String nodeName : nodes) {
@@ -59,15 +55,21 @@ public class NamedStructuresAnswerer extends Answerer {
                 .apply(configurations.get(nodeName));
         if (namedStructureValues != null
             && ((namedStructureValues instanceof Map<?, ?>)
-                && !((TreeMap) namedStructureValues).isEmpty())) {
+                && !((Map<?, ?>) namedStructureValues).isEmpty())) {
 
-          for (Map.Entry<Object, Object> namedStructureEntry :
-              ((TreeMap<Object, Object>) namedStructureValues).entrySet()) {
+          for (Map.Entry<?, ?> namedStructureEntry :
+              ((Map<?, ?>) namedStructureValues).entrySet()) {
             String namedStructureEntryKey = namedStructureEntry.getKey().toString();
 
             Schema columnSchema = Schema.OBJECT;
             String finalNameStructureEntry = namedStructure + ":" + namedStructureEntryKey;
-            if (!getIsEntryPresent(columnMetadataList, finalNameStructureEntry)) {
+
+            if (!columnMetadataList
+                .build()
+                .stream()
+                .anyMatch(
+                    columnMetadata -> columnMetadata.getName().equals(finalNameStructureEntry))) {
+
               columnMetadataList.add(
                   new ColumnMetadata(
                       finalNameStructureEntry,
@@ -90,7 +92,6 @@ public class NamedStructuresAnswerer extends Answerer {
   }
 
   @VisibleForTesting
-  @SuppressWarnings("unchecked")
   static Multiset<Row> rawNamedStructuresAnswer(
       NamedStructuresQuestion question,
       Map<String, Configuration> configurations,
@@ -100,16 +101,15 @@ public class NamedStructuresAnswerer extends Answerer {
     Multiset<Row> rows = HashMultiset.create();
     Map<String, ColumnMetadata> columns = tableMetadata.toColumnMap();
     for (String nodeName : nodes) {
-      RowBuilder row = Row.builder();
+      RowBuilder row = Row.builder(columns);
       row.put(COL_NODE, new Node(nodeName));
 
       for (Map.Entry<String, ColumnMetadata> columnEntry : columns.entrySet()) {
-
-        if (columnEntry.getKey().equalsIgnoreCase("node")) {
+        String columnName = columnEntry.getKey();
+        if (columnName.equalsIgnoreCase(COL_NODE)) {
           continue;
         }
 
-        String columnName = columnEntry.getKey();
         String[] columnSplits = columnName.split(":", 2);
         String actualNameStructureType = columnSplits[0];
 
@@ -122,8 +122,8 @@ public class NamedStructuresAnswerer extends Answerer {
 
           if ((namedStructureValues instanceof Map<?, ?>)
               && !((TreeMap) namedStructureValues).isEmpty()) {
-            for (Map.Entry<Object, Object> namedStructureEntry :
-                ((TreeMap<Object, Object>) namedStructureValues).entrySet()) {
+            for (Map.Entry<?, ?> namedStructureEntry :
+                ((Map<?, ?>) namedStructureValues).entrySet()) {
               Object namedStructutureEntryValue = namedStructureEntry.getValue();
               row.put(columnName, namedStructutureEntryValue);
             }
@@ -136,22 +136,6 @@ public class NamedStructuresAnswerer extends Answerer {
       rows.add(row.build());
     }
     return rows;
-  }
-
-  private static boolean getIsEntryPresent(
-      Builder<ColumnMetadata> columnMetadataList, String namedStructure) {
-
-    UnmodifiableListIterator<ColumnMetadata> iter = columnMetadataList.build().listIterator();
-    boolean flag = false;
-    while (iter.hasNext()) {
-      ColumnMetadata columnVal = iter.next();
-      String propertyIterValName = columnVal.getName();
-      if (propertyIterValName.equals(namedStructure)) {
-        flag = true;
-        break;
-      }
-    }
-    return flag;
   }
 
   @Override

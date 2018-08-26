@@ -3,9 +3,7 @@ package org.batfish.question.namedstructures;
 import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.List;
 import javax.annotation.Nonnull;
-import org.apache.commons.lang3.StringUtils;
 import org.batfish.datamodel.questions.NamedStructureSpecifier;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
@@ -49,11 +47,5 @@ public class NamedStructuresQuestion extends Question {
   @JsonProperty(PROP_PROPERTY_SPEC)
   public NamedStructureSpecifier getPropertySpec() {
     return _propertySpec;
-  }
-
-  @Deprecated // backwards compatibility for older questions
-  @JsonProperty("properties")
-  void setProperties(List<String> properties) {
-    _propertySpec = new NamedStructureSpecifier(StringUtils.join(properties, "|"));
   }
 }
