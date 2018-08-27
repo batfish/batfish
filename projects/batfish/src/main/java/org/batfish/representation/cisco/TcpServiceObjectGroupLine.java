@@ -31,7 +31,7 @@ public class TcpServiceObjectGroupLine implements ServiceObjectGroupLine {
     return new MatchHeaderSpace(
         HeaderSpace.builder()
             .setIpProtocols(ImmutableList.of(IpProtocol.TCP))
-            .setSrcOrDstPorts(_ports)
+            .setDstPorts(_ports)
             .build());
   }
 }

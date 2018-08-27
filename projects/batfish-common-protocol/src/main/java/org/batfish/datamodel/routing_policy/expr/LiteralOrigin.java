@@ -13,14 +13,14 @@ public class LiteralOrigin extends OriginExpr {
   /** */
   private static final long serialVersionUID = 1L;
 
-  private Integer _asNum;
+  @Nullable private Long _asNum;
 
   private OriginType _originType;
 
   @JsonCreator
   private LiteralOrigin() {}
 
-  public LiteralOrigin(OriginType originType, @Nullable Integer asNum) {
+  public LiteralOrigin(OriginType originType, @Nullable Long asNum) {
     _asNum = asNum;
     _originType = originType;
   }
@@ -55,7 +55,8 @@ public class LiteralOrigin extends OriginExpr {
     return _originType;
   }
 
-  public Integer getAsNum() {
+  @Nullable
+  public Long getAsNum() {
     return _asNum;
   }
 
@@ -73,7 +74,7 @@ public class LiteralOrigin extends OriginExpr {
     return result;
   }
 
-  public void setAsNum(Integer asNum) {
+  public void setAsNum(@Nullable Long asNum) {
     _asNum = asNum;
   }
 

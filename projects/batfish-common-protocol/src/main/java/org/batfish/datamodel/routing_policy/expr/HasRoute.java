@@ -1,18 +1,29 @@
 package org.batfish.datamodel.routing_policy.expr;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 
-public class HasRoute extends BooleanExpr {
+@ParametersAreNonnullByDefault
+public final class HasRoute extends BooleanExpr {
+  private static final String PROP_EXPR = "expr";
 
   /** */
   private static final long serialVersionUID = 1L;
 
-  private PrefixSetExpr _expr;
+  @Nonnull private PrefixSetExpr _expr;
 
   @JsonCreator
-  private HasRoute() {}
+  private static HasRoute jsonCreator(@Nullable @JsonProperty(PROP_EXPR) PrefixSetExpr expr) {
+    checkArgument(expr != null, "%s must be provided", PROP_EXPR);
+    return new HasRoute(expr);
+  }
 
   public HasRoute(PrefixSetExpr expr) {
     _expr = expr;
@@ -22,22 +33,14 @@ public class HasRoute extends BooleanExpr {
   public boolean equals(Object obj) {
     if (this == obj) {
       return true;
-    }
-    if (obj == null) {
+    } else if (!(obj instanceof HasRoute)) {
       return false;
     }
     if (getClass() != obj.getClass()) {
       return false;
     }
     HasRoute other = (HasRoute) obj;
-    if (_expr == null) {
-      if (other._expr != null) {
-        return false;
-      }
-    } else if (!_expr.equals(other._expr)) {
-      return false;
-    }
-    return true;
+    return _expr.equals(other._expr);
   }
 
   @Override
@@ -46,6 +49,8 @@ public class HasRoute extends BooleanExpr {
     // TODO Auto-generated method stub
   }
 
+  @JsonProperty(PROP_EXPR)
+  @Nonnull
   public PrefixSetExpr getExpr() {
     return _expr;
   }
@@ -54,7 +59,7 @@ public class HasRoute extends BooleanExpr {
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + ((_expr == null) ? 0 : _expr.hashCode());
+    result = prime * result + _expr.hashCode();
     return result;
   }
 

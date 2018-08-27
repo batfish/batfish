@@ -1,18 +1,30 @@
 package org.batfish.datamodel.routing_policy.expr;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableList;
 import java.util.List;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.routing_policy.Environment;
 
-public class ExplicitAsPathSet extends AsPathSetExpr {
+@ParametersAreNonnullByDefault
+public final class ExplicitAsPathSet extends AsPathSetExpr {
+  private static final String PROP_ELEMS = "elems";
 
   /** */
   private static final long serialVersionUID = 1L;
 
-  private List<AsPathSetElem> _elems;
+  @Nonnull private List<AsPathSetElem> _elems;
 
   @JsonCreator
-  private ExplicitAsPathSet() {}
+  private static ExplicitAsPathSet jsonCreator(
+      @Nullable @JsonProperty(PROP_ELEMS) List<AsPathSetElem> elems) {
+    return new ExplicitAsPathSet(firstNonNull(elems, ImmutableList.of()));
+  }
 
   public ExplicitAsPathSet(List<AsPathSetElem> elems) {
     _elems = elems;
@@ -22,24 +34,15 @@ public class ExplicitAsPathSet extends AsPathSetExpr {
   public boolean equals(Object obj) {
     if (this == obj) {
       return true;
-    }
-    if (obj == null) {
-      return false;
-    }
-    if (getClass() != obj.getClass()) {
+    } else if (!(obj instanceof ExplicitAsPathSet)) {
       return false;
     }
     ExplicitAsPathSet other = (ExplicitAsPathSet) obj;
-    if (_elems == null) {
-      if (other._elems != null) {
-        return false;
-      }
-    } else if (!_elems.equals(other._elems)) {
-      return false;
-    }
-    return true;
+    return _elems.equals(other._elems);
   }
 
+  @JsonProperty(PROP_ELEMS)
+  @Nonnull
   public List<AsPathSetElem> getElems() {
     return _elems;
   }
@@ -48,7 +51,7 @@ public class ExplicitAsPathSet extends AsPathSetExpr {
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + ((_elems == null) ? 0 : _elems.hashCode());
+    result = prime * result + _elems.hashCode();
     return result;
   }
 

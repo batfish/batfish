@@ -1,21 +1,32 @@
 package org.batfish.datamodel.routing_policy.statement;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.IsisRoute;
 import org.batfish.datamodel.isis.IsisLevel;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.expr.IsisLevelExpr;
 
-public class SetIsisLevel extends Statement {
+@ParametersAreNonnullByDefault
+public final class SetIsisLevel extends Statement {
+  private static final String PROP_LEVEL = "level";
 
   /** */
   private static final long serialVersionUID = 1L;
 
-  private IsisLevelExpr _level;
+  @Nonnull private IsisLevelExpr _level;
 
   @JsonCreator
-  private SetIsisLevel() {}
+  private static SetIsisLevel jsonCreator(@Nullable @JsonProperty(PROP_LEVEL) IsisLevelExpr level) {
+    checkArgument(level != null, "%s must be provided", level);
+    return new SetIsisLevel(level);
+  }
 
   public SetIsisLevel(IsisLevelExpr level) {
     _level = level;
@@ -25,22 +36,11 @@ public class SetIsisLevel extends Statement {
   public boolean equals(Object obj) {
     if (this == obj) {
       return true;
-    }
-    if (obj == null) {
-      return false;
-    }
-    if (getClass() != obj.getClass()) {
+    } else if (!(obj instanceof SetIsisLevel)) {
       return false;
     }
     SetIsisLevel other = (SetIsisLevel) obj;
-    if (_level == null) {
-      if (other._level != null) {
-        return false;
-      }
-    } else if (!_level.equals(other._level)) {
-      return false;
-    }
-    return true;
+    return _level.equals(other._level);
   }
 
   @Override
@@ -52,6 +52,8 @@ public class SetIsisLevel extends Statement {
     return result;
   }
 
+  @JsonProperty(PROP_LEVEL)
+  @Nonnull
   public IsisLevelExpr getLevel() {
     return _level;
   }
@@ -60,7 +62,7 @@ public class SetIsisLevel extends Statement {
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + ((_level == null) ? 0 : _level.hashCode());
+    result = prime * result + _level.hashCode();
     return result;
   }
 

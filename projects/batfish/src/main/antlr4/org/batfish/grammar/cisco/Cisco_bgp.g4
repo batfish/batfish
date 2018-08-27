@@ -193,7 +193,7 @@ bgp_listen_range_rb_stanza
       | IPV6_PREFIX
    ) PEER_GROUP name = variable
    (
-      REMOTE_AS as = DEC
+      REMOTE_AS bgp_asn
    )? NEWLINE
 ;
 
@@ -351,7 +351,7 @@ inherit_peer_session_bgp_tail
 
 local_as_bgp_tail
 :
-   LOCAL_AS as = DEC
+   LOCAL_AS bgp_asn
    (
       NO_PREPEND
       | REPLACE_AS
@@ -736,7 +736,7 @@ prefix_list_bgp_tail
 
 remote_as_bgp_tail
 :
-   REMOTE_AS as = DEC NEWLINE
+   REMOTE_AS bgp_asn NEWLINE
 ;
 
 remove_private_as_bgp_tail

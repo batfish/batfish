@@ -1,19 +1,29 @@
 package org.batfish.datamodel.routing_policy.statement;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.expr.IntExpr;
 
-public class SetTag extends Statement {
-
+@ParametersAreNonnullByDefault
+public final class SetTag extends Statement {
+  private static final String PROP_TAG = "tag";
   /** */
   private static final long serialVersionUID = 1L;
 
-  private IntExpr _tag;
+  @Nonnull private final IntExpr _tag;
 
   @JsonCreator
-  private SetTag() {}
+  private static SetTag jsonCreator(@Nullable @JsonProperty(PROP_TAG) IntExpr expr) {
+    checkArgument(expr != null, "%s must be provided", PROP_TAG);
+    return new SetTag(expr);
+  }
 
   public SetTag(IntExpr expr) {
     _tag = expr;
@@ -23,22 +33,11 @@ public class SetTag extends Statement {
   public boolean equals(Object obj) {
     if (this == obj) {
       return true;
-    }
-    if (obj == null) {
-      return false;
-    }
-    if (getClass() != obj.getClass()) {
+    } else if (!(obj instanceof SetTag)) {
       return false;
     }
     SetTag other = (SetTag) obj;
-    if (_tag == null) {
-      if (other._tag != null) {
-        return false;
-      }
-    } else if (!_tag.equals(other._tag)) {
-      return false;
-    }
-    return true;
+    return _tag.equals(other._tag);
   }
 
   @Override
@@ -52,6 +51,8 @@ public class SetTag extends Statement {
     return result;
   }
 
+  @JsonProperty(PROP_TAG)
+  @Nonnull
   public IntExpr getTag() {
     return _tag;
   }
@@ -60,11 +61,7 @@ public class SetTag extends Statement {
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + ((_tag == null) ? 0 : _tag.hashCode());
+    result = prime * result + _tag.hashCode();
     return result;
-  }
-
-  public void setTag(IntExpr tag) {
-    _tag = tag;
   }
 }

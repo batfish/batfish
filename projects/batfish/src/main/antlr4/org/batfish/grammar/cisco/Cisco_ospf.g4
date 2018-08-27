@@ -321,7 +321,7 @@ ro_passive_interface
 
 ro_redistribute_bgp
 :
-   REDISTRIBUTE BGP as = DEC
+   REDISTRIBUTE BGP bgp_asn
    (
       (
          METRIC metric = DEC

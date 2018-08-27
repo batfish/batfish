@@ -1,10 +1,13 @@
 package org.batfish.datamodel;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 
 @JsonSchemaDescription("A line in an Ip6AccessList")
 public final class Ip6AccessListLine extends Header6Space {
+  private static final String PROP_ACTION = "action";
+  private static final String PROP_NAME = "name";
 
   private static final long serialVersionUID = 1L;
 
@@ -16,24 +19,22 @@ public final class Ip6AccessListLine extends Header6Space {
   public boolean equals(Object obj) {
     if (this == obj) {
       return true;
+    } else if (!(obj instanceof Ip6AccessListLine)) {
+      return false;
     }
     Ip6AccessListLine other = (Ip6AccessListLine) obj;
-    if (!super.equals(obj)) {
-      return false;
-    }
-    if (_action != other._action) {
-      return false;
-    }
-    return true;
+    return super.equals(obj) && _action == other._action;
   }
 
   @JsonPropertyDescription(
       "The action the underlying access-list will take when this line matches an IPV6 packet.")
+  @JsonProperty(PROP_ACTION)
   public LineAction getAction() {
     return _action;
   }
 
   @JsonSchemaDescription("The name of this line in the list")
+  @JsonProperty(PROP_NAME)
   public String getName() {
     return _name;
   }
@@ -44,10 +45,12 @@ public final class Ip6AccessListLine extends Header6Space {
     return 0;
   }
 
+  @JsonProperty(PROP_ACTION)
   public void setAction(LineAction action) {
     _action = action;
   }
 
+  @JsonProperty(PROP_NAME)
   public void setName(String name) {
     _name = name;
   }

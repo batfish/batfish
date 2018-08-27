@@ -31,7 +31,7 @@ public class UdpServiceObjectGroupLine implements ServiceObjectGroupLine {
     return new MatchHeaderSpace(
         HeaderSpace.builder()
             .setIpProtocols(ImmutableList.of(IpProtocol.UDP))
-            .setSrcOrDstPorts(_ports)
+            .setDstPorts(_ports)
             .build());
   }
 }
