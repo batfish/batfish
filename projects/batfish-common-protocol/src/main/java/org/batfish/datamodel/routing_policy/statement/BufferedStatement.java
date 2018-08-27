@@ -1,24 +1,35 @@
 package org.batfish.datamodel.routing_policy.statement;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Map;
 import java.util.Set;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 
-public class BufferedStatement extends Statement {
+public final class BufferedStatement extends Statement {
+
+  private static final String PROP_STATEMENT = "statement";
 
   /** */
   private static final long serialVersionUID = 1L;
 
-  private Statement _statement;
+  @Nonnull private Statement _statement;
 
   @JsonCreator
-  private BufferedStatement() {}
+  private static BufferedStatement jsonCreator(
+      @Nullable @JsonProperty(PROP_STATEMENT) Statement statement) {
+    checkArgument(statement != null, "%s is required", PROP_STATEMENT);
+    return new BufferedStatement(statement);
+  }
 
-  public BufferedStatement(Statement statement) {
+  public BufferedStatement(@Nonnull Statement statement) {
     _statement = statement;
   }
 
@@ -33,21 +44,11 @@ public class BufferedStatement extends Statement {
     if (this == obj) {
       return true;
     }
-    if (obj == null) {
-      return false;
-    }
-    if (getClass() != obj.getClass()) {
+    if (!(obj instanceof BufferedStatement)) {
       return false;
     }
     BufferedStatement other = (BufferedStatement) obj;
-    if (_statement == null) {
-      if (other._statement != null) {
-        return false;
-      }
-    } else if (!_statement.equals(other._statement)) {
-      return false;
-    }
-    return true;
+    return _statement.equals(other._statement);
   }
 
   @Override
@@ -57,6 +58,8 @@ public class BufferedStatement extends Statement {
     return result;
   }
 
+  @JsonProperty(PROP_STATEMENT)
+  @Nonnull
   public Statement getStatement() {
     return _statement;
   }
@@ -65,11 +68,11 @@ public class BufferedStatement extends Statement {
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + ((_statement == null) ? 0 : _statement.hashCode());
+    result = prime * result + _statement.hashCode();
     return result;
   }
 
-  public void setStatement(Statement statement) {
+  public void setStatement(@Nonnull Statement statement) {
     _statement = statement;
   }
 }

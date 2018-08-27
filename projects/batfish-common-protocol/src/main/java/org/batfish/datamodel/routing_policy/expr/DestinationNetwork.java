@@ -1,5 +1,6 @@
 package org.batfish.datamodel.routing_policy.expr;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.routing_policy.Environment;
 
@@ -22,6 +23,7 @@ public final class DestinationNetwork extends PrefixExpr {
     return env.getOriginalRoute().getNetwork();
   }
 
+  @JsonCreator
   public static DestinationNetwork instance() {
     return INSTANCE;
   }

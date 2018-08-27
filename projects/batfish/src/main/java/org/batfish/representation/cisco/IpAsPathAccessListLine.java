@@ -1,16 +1,19 @@
 package org.batfish.representation.cisco;
 
 import java.io.Serializable;
+import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.AsPathAccessListLine;
 import org.batfish.datamodel.LineAction;
 
+@ParametersAreNonnullByDefault
 public class IpAsPathAccessListLine implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
-  private LineAction _action;
+  @Nonnull private LineAction _action;
 
-  private String _regex;
+  @Nonnull private String _regex;
 
   public IpAsPathAccessListLine(LineAction action, String regex) {
     _action = action;
@@ -18,14 +21,7 @@ public class IpAsPathAccessListLine implements Serializable {
   }
 
   public AsPathAccessListLine toAsPathAccessListLine() {
-    AsPathAccessListLine line = new AsPathAccessListLine();
-    line.setAction(_action);
     String regex = CiscoConfiguration.toJavaRegex(_regex);
-    line.setRegex(regex);
-    return line;
-  }
-
-  public LineAction getAction() {
-    return _action;
+    return new AsPathAccessListLine(_action, regex);
   }
 }

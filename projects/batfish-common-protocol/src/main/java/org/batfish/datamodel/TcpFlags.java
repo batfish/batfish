@@ -1,10 +1,29 @@
 package org.batfish.datamodel;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import java.io.Serializable;
 import java.util.Comparator;
 
 public final class TcpFlags implements Serializable, Comparable<TcpFlags> {
+
+  private static final String PROP_ACK = "ack";
+  private static final String PROP_CWR = "cwr";
+  private static final String PROP_ECE = "ece";
+  private static final String PROP_FIN = "fin";
+  private static final String PROP_PSH = "psh";
+  private static final String PROP_RST = "rst";
+  private static final String PROP_SYN = "syn";
+  private static final String PROP_URG = "urg";
+  private static final String PROP_USE_ACK = "useAck";
+  private static final String PROP_USE_CWR = "useCwr";
+  private static final String PROP_USE_ECE = "useEce";
+  private static final String PROP_USE_FIN = "useFin";
+  private static final String PROP_USE_PSH = "usePsh";
+  private static final String PROP_USE_RST = "useRst";
+  private static final String PROP_USE_SYN = "useSyn";
+  private static final String PROP_USE_URG = "useUrg";
 
   public static class Builder {
     private boolean _ack;
@@ -203,6 +222,7 @@ public final class TcpFlags implements Serializable, Comparable<TcpFlags> {
 
   private boolean _useUrg;
 
+  @JsonCreator
   public TcpFlags() {}
 
   private TcpFlags(
@@ -261,81 +281,97 @@ public final class TcpFlags implements Serializable, Comparable<TcpFlags> {
   }
 
   @JsonPropertyDescription("Value for ACK bit if used (true->1/false->0)")
+  @JsonProperty(PROP_ACK)
   public boolean getAck() {
     return _ack;
   }
 
   @JsonPropertyDescription("Value for CWR bit if used (true->1/false->0)")
+  @JsonProperty(PROP_CWR)
   public boolean getCwr() {
     return _cwr;
   }
 
   @JsonPropertyDescription("Value for ECE bit if used (true->1/false->0)")
+  @JsonProperty(PROP_ECE)
   public boolean getEce() {
     return _ece;
   }
 
   @JsonPropertyDescription("Value for FIN bit if used (true->1/false->0)")
+  @JsonProperty(PROP_FIN)
   public boolean getFin() {
     return _fin;
   }
 
   @JsonPropertyDescription("Value for PSH bit if used (true->1/false->0)")
+  @JsonProperty(PROP_PSH)
   public boolean getPsh() {
     return _psh;
   }
 
   @JsonPropertyDescription("Value for RST bit if used (true->1/false->0)")
+  @JsonProperty(PROP_RST)
   public boolean getRst() {
     return _rst;
   }
 
   @JsonPropertyDescription("Value for SYN bit if used (true->1/false->0)")
+  @JsonProperty(PROP_SYN)
   public boolean getSyn() {
     return _syn;
   }
 
   @JsonPropertyDescription("Value for URG bit if used (true->1/false->0)")
+  @JsonProperty(PROP_URG)
   public boolean getUrg() {
     return _urg;
   }
 
   @JsonPropertyDescription("Whether or not to match against the ACK bit")
+  @JsonProperty(PROP_USE_ACK)
   public boolean getUseAck() {
     return _useAck;
   }
 
   @JsonPropertyDescription("Whether or not to match against the CWR bit")
+  @JsonProperty(PROP_USE_CWR)
   public boolean getUseCwr() {
     return _useCwr;
   }
 
   @JsonPropertyDescription("Whether or not to match against the ECE bit")
+  @JsonProperty(PROP_USE_ECE)
   public boolean getUseEce() {
     return _useEce;
   }
 
   @JsonPropertyDescription("Whether or not to match against the FIN bit")
+  @JsonProperty(PROP_USE_FIN)
   public boolean getUseFin() {
     return _useFin;
   }
 
   @JsonPropertyDescription("Whether or not to match against the PSH bit")
+  @JsonProperty(PROP_USE_PSH)
   public boolean getUsePsh() {
     return _usePsh;
   }
 
   @JsonPropertyDescription("Whether or not to match against the RST bit")
+  @JsonProperty(PROP_USE_RST)
   public boolean getUseRst() {
     return _useRst;
   }
 
   @JsonPropertyDescription("Whether or not to match against the SYN bit")
+  @JsonProperty(PROP_USE_SYN)
   public boolean getUseSyn() {
     return _useSyn;
   }
 
   @JsonPropertyDescription("Whether or not to match against the URG bit")
+  @JsonProperty(PROP_USE_URG)
   public boolean getUseUrg() {
     return _useUrg;
   }
@@ -380,66 +416,82 @@ public final class TcpFlags implements Serializable, Comparable<TcpFlags> {
         && !(_useUrg && _urg ^ (flow6.getTcpFlagsUrg() == 1));
   }
 
+  @JsonProperty(PROP_ACK)
   public void setAck(boolean ack) {
     _ack = ack;
   }
 
+  @JsonProperty(PROP_CWR)
   public void setCwr(boolean cwr) {
     _cwr = cwr;
   }
 
+  @JsonProperty(PROP_ECE)
   public void setEce(boolean ece) {
     _ece = ece;
   }
 
+  @JsonProperty(PROP_FIN)
   public void setFin(boolean fin) {
     _fin = fin;
   }
 
+  @JsonProperty(PROP_PSH)
   public void setPsh(boolean psh) {
     _psh = psh;
   }
 
+  @JsonProperty(PROP_RST)
   public void setRst(boolean rst) {
     _rst = rst;
   }
 
+  @JsonProperty(PROP_SYN)
   public void setSyn(boolean syn) {
     _syn = syn;
   }
 
+  @JsonProperty(PROP_URG)
   public void setUrg(boolean urg) {
     _urg = urg;
   }
 
+  @JsonProperty(PROP_USE_ACK)
   public void setUseAck(boolean useAck) {
     _useAck = useAck;
   }
 
+  @JsonProperty(PROP_USE_CWR)
   public void setUseCwr(boolean useCwr) {
     _useCwr = useCwr;
   }
 
+  @JsonProperty(PROP_USE_ECE)
   public void setUseEce(boolean useEce) {
     _useEce = useEce;
   }
 
+  @JsonProperty(PROP_USE_FIN)
   public void setUseFin(boolean useFin) {
     _useFin = useFin;
   }
 
+  @JsonProperty(PROP_USE_PSH)
   public void setUsePsh(boolean usePsh) {
     _usePsh = usePsh;
   }
 
+  @JsonProperty(PROP_USE_RST)
   public void setUseRst(boolean useRst) {
     _useRst = useRst;
   }
 
+  @JsonProperty(PROP_USE_SYN)
   public void setUseSyn(boolean useSyn) {
     _useSyn = useSyn;
   }
 
+  @JsonProperty(PROP_USE_URG)
   public void setUseUrg(boolean useUrg) {
     _useUrg = useUrg;
   }
@@ -458,7 +510,7 @@ public final class TcpFlags implements Serializable, Comparable<TcpFlags> {
     return sb.toString();
   }
 
-  private String toString(boolean bit, boolean useBit) {
+  private static String toString(boolean bit, boolean useBit) {
     if (useBit) {
       if (bit) {
         return "1";
