@@ -1,6 +1,7 @@
 package org.batfish.question.aclreachability2;
 
-import com.google.common.collect.ImmutableList;
+import static org.batfish.datamodel.answers.AclLines2Rows.createMetadata;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -14,12 +15,8 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.answers.AclLines2Rows;
 import org.batfish.datamodel.answers.AclLinesAnswerElementInterface.AclSpecs;
-import org.batfish.datamodel.answers.Schema;
-import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.questions.Question;
-import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.TableAnswerElement;
-import org.batfish.datamodel.table.TableMetadata;
 import org.batfish.specifier.FilterSpecifier;
 import org.batfish.specifier.SpecifierContext;
 
@@ -50,54 +47,5 @@ public class AclReachability2Answerer extends Answerer {
     TableAnswerElement answer = new TableAnswerElement(createMetadata(question));
     answer.postProcessAnswer(question, answerRows.getRows());
     return answer;
-  }
-
-  /**
-   * Creates a {@link TableMetadata} object from the question.
-   *
-   * @param question The question
-   * @return The resulting {@link TableMetadata} object
-   */
-  public static TableMetadata createMetadata(Question question) {
-    List<ColumnMetadata> columnMetadata =
-        new ImmutableList.Builder<ColumnMetadata>()
-            .add(
-                new ColumnMetadata(
-                    AclLines2Rows.COL_SOURCES,
-                    Schema.list(Schema.STRING),
-                    "ACL sources",
-                    true,
-                    false))
-            .add(
-                new ColumnMetadata(
-                    AclLines2Rows.COL_LINES, Schema.list(Schema.STRING), "ACL lines", false, false))
-            .add(
-                new ColumnMetadata(
-                    AclLines2Rows.COL_BLOCKED_LINE_NUM,
-                    Schema.INTEGER,
-                    "Blocked line number",
-                    true,
-                    false))
-            .add(
-                new ColumnMetadata(
-                    AclLines2Rows.COL_BLOCKING_LINE_NUMS,
-                    Schema.list(Schema.INTEGER),
-                    "Blocking line numbers",
-                    false,
-                    true))
-            .add(
-                new ColumnMetadata(
-                    AclLines2Rows.COL_DIFF_ACTION, Schema.BOOLEAN, "Different action", false, true))
-            .add(
-                new ColumnMetadata(
-                    AclLines2Rows.COL_MESSAGE, Schema.STRING, "Message", false, false))
-            .build();
-
-    String textDesc = String.format("${%s}", AclLines2Rows.COL_MESSAGE);
-    DisplayHints dhints = question.getDisplayHints();
-    if (dhints != null && dhints.getTextDesc() != null) {
-      textDesc = dhints.getTextDesc();
-    }
-    return new TableMetadata(columnMetadata, textDesc);
   }
 }
