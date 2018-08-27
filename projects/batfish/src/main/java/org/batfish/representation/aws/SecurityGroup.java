@@ -12,7 +12,7 @@ import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpWildcard;
-import org.batfish.datamodel.TcpFlags;
+import org.batfish.datamodel.TcpFlagsMatchConditions;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.visitors.HeaderSpaceConverter;
 import org.codehaus.jettison.json.JSONArray;
@@ -89,7 +89,8 @@ public class SecurityGroup implements AwsVpcEntity, Serializable {
                                   .setIpProtocols(srcHeaderSpace.getIpProtocols())
                                   .setDstIps(srcHeaderSpace.getSrcIps())
                                   .setSrcPorts(srcHeaderSpace.getDstPorts())
-                                  .setTcpFlags(ImmutableSet.of(TcpFlags.ACK_TCP_FLAG))
+                                  .setTcpFlags(
+                                      ImmutableSet.of(TcpFlagsMatchConditions.ACK_TCP_FLAG))
                                   .build()))
                       .setAction(ipAccessListLine.getAction())
                       .build();
@@ -110,7 +111,8 @@ public class SecurityGroup implements AwsVpcEntity, Serializable {
                                   .setIpProtocols(srcHeaderSpace.getIpProtocols())
                                   .setSrcIps(srcHeaderSpace.getDstIps())
                                   .setSrcPorts(srcHeaderSpace.getDstPorts())
-                                  .setTcpFlags(ImmutableSet.of(TcpFlags.ACK_TCP_FLAG))
+                                  .setTcpFlags(
+                                      ImmutableSet.of(TcpFlagsMatchConditions.ACK_TCP_FLAG))
                                   .build()))
                       .setAction(ipAccessListLine.getAction())
                       .build();
