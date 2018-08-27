@@ -83,16 +83,18 @@
                       ]
                     },
                     "negate" : false,
-                    "tcpFlags" : [
+                    "tcpFlagsMatchConditions" : [
                       {
-                        "ack" : true,
-                        "cwr" : false,
-                        "ece" : false,
-                        "fin" : false,
-                        "psh" : false,
-                        "rst" : false,
-                        "syn" : false,
-                        "urg" : false,
+                        "tcpFlags" : {
+                          "ack" : true,
+                          "cwr" : false,
+                          "ece" : false,
+                          "fin" : false,
+                          "psh" : false,
+                          "rst" : false,
+                          "syn" : false,
+                          "urg" : false
+                        },
                         "useAck" : true,
                         "useCwr" : false,
                         "useEce" : false,
@@ -138,16 +140,18 @@
                         "0.0.0.0/0"
                       ]
                     },
-                    "tcpFlags" : [
+                    "tcpFlagsMatchConditions" : [
                       {
-                        "ack" : true,
-                        "cwr" : false,
-                        "ece" : false,
-                        "fin" : false,
-                        "psh" : false,
-                        "rst" : false,
-                        "syn" : false,
-                        "urg" : false,
+                        "tcpFlags" : {
+                          "ack" : true,
+                          "cwr" : false,
+                          "ece" : false,
+                          "fin" : false,
+                          "psh" : false,
+                          "rst" : false,
+                          "syn" : false,
+                          "urg" : false
+                        },
                         "useAck" : true,
                         "useCwr" : false,
                         "useEce" : false,
@@ -3609,16 +3613,18 @@
                     "srcPorts" : [
                       "3306-3306"
                     ],
-                    "tcpFlags" : [
+                    "tcpFlagsMatchConditions" : [
                       {
-                        "ack" : true,
-                        "cwr" : false,
-                        "ece" : false,
-                        "fin" : false,
-                        "psh" : false,
-                        "rst" : false,
-                        "syn" : false,
-                        "urg" : false,
+                        "tcpFlags" : {
+                          "ack" : true,
+                          "cwr" : false,
+                          "ece" : false,
+                          "fin" : false,
+                          "psh" : false,
+                          "rst" : false,
+                          "syn" : false,
+                          "urg" : false
+                        },
                         "useAck" : true,
                         "useCwr" : false,
                         "useEce" : false,
@@ -3664,16 +3670,18 @@
                         "0.0.0.0/0"
                       ]
                     },
-                    "tcpFlags" : [
+                    "tcpFlagsMatchConditions" : [
                       {
-                        "ack" : true,
-                        "cwr" : false,
-                        "ece" : false,
-                        "fin" : false,
-                        "psh" : false,
-                        "rst" : false,
-                        "syn" : false,
-                        "urg" : false,
+                        "tcpFlags" : {
+                          "ack" : true,
+                          "cwr" : false,
+                          "ece" : false,
+                          "fin" : false,
+                          "psh" : false,
+                          "rst" : false,
+                          "syn" : false,
+                          "urg" : false
+                        },
                         "useAck" : true,
                         "useCwr" : false,
                         "useEce" : false,

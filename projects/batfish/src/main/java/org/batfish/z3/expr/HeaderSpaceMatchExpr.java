@@ -19,7 +19,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.State;
 import org.batfish.datamodel.SubRange;
-import org.batfish.datamodel.TcpFlags;
+import org.batfish.datamodel.TcpFlagsMatchConditions;
 import org.batfish.z3.Field;
 import org.batfish.z3.expr.visitors.ExprVisitor;
 import org.batfish.z3.expr.visitors.GenericBooleanExprVisitor;
@@ -243,7 +243,7 @@ public final class HeaderSpaceMatchExpr extends BooleanExpr {
             .collect(ImmutableList.toImmutableList()));
   }
 
-  public static BooleanExpr matchTcpFlags(List<TcpFlags> tcpFlags) {
+  public static BooleanExpr matchTcpFlags(List<TcpFlagsMatchConditions> tcpFlags) {
     LitIntExpr one = new LitIntExpr(1, 1);
     LitIntExpr zero = new LitIntExpr(0, 1);
     return new OrExpr(
@@ -253,42 +253,42 @@ public final class HeaderSpaceMatchExpr extends BooleanExpr {
                 currentTcpFlags -> {
                   ImmutableList.Builder<BooleanExpr> matchCurrentTcpFlags = ImmutableList.builder();
                   if (currentTcpFlags.getUseCwr()) {
-                    LitIntExpr bit = currentTcpFlags.getCwr() ? one : zero;
+                    LitIntExpr bit = currentTcpFlags.getTcpFlags().getCwr() ? one : zero;
                     EqExpr matchFlag = new EqExpr(new VarIntExpr(Field.TCP_FLAGS_CWR), bit);
                     matchCurrentTcpFlags.add(matchFlag);
                   }
                   if (currentTcpFlags.getUseEce()) {
-                    LitIntExpr bit = currentTcpFlags.getEce() ? one : zero;
+                    LitIntExpr bit = currentTcpFlags.getTcpFlags().getEce() ? one : zero;
                     EqExpr matchFlag = new EqExpr(new VarIntExpr(Field.TCP_FLAGS_ECE), bit);
                     matchCurrentTcpFlags.add(matchFlag);
                   }
                   if (currentTcpFlags.getUseUrg()) {
-                    LitIntExpr bit = currentTcpFlags.getUrg() ? one : zero;
+                    LitIntExpr bit = currentTcpFlags.getTcpFlags().getUrg() ? one : zero;
                     EqExpr matchFlag = new EqExpr(new VarIntExpr(Field.TCP_FLAGS_URG), bit);
                     matchCurrentTcpFlags.add(matchFlag);
                   }
                   if (currentTcpFlags.getUseAck()) {
-                    LitIntExpr bit = currentTcpFlags.getAck() ? one : zero;
+                    LitIntExpr bit = currentTcpFlags.getTcpFlags().getAck() ? one : zero;
                     EqExpr matchFlag = new EqExpr(new VarIntExpr(Field.TCP_FLAGS_ACK), bit);
                     matchCurrentTcpFlags.add(matchFlag);
                   }
                   if (currentTcpFlags.getUsePsh()) {
-                    LitIntExpr bit = currentTcpFlags.getPsh() ? one : zero;
+                    LitIntExpr bit = currentTcpFlags.getTcpFlags().getPsh() ? one : zero;
                     EqExpr matchFlag = new EqExpr(new VarIntExpr(Field.TCP_FLAGS_PSH), bit);
                     matchCurrentTcpFlags.add(matchFlag);
                   }
                   if (currentTcpFlags.getUseRst()) {
-                    LitIntExpr bit = currentTcpFlags.getRst() ? one : zero;
+                    LitIntExpr bit = currentTcpFlags.getTcpFlags().getRst() ? one : zero;
                     EqExpr matchFlag = new EqExpr(new VarIntExpr(Field.TCP_FLAGS_RST), bit);
                     matchCurrentTcpFlags.add(matchFlag);
                   }
                   if (currentTcpFlags.getUseSyn()) {
-                    LitIntExpr bit = currentTcpFlags.getSyn() ? one : zero;
+                    LitIntExpr bit = currentTcpFlags.getTcpFlags().getSyn() ? one : zero;
                     EqExpr matchFlag = new EqExpr(new VarIntExpr(Field.TCP_FLAGS_SYN), bit);
                     matchCurrentTcpFlags.add(matchFlag);
                   }
                   if (currentTcpFlags.getUseFin()) {
-                    LitIntExpr bit = currentTcpFlags.getFin() ? one : zero;
+                    LitIntExpr bit = currentTcpFlags.getTcpFlags().getFin() ? one : zero;
                     EqExpr matchFlag = new EqExpr(new VarIntExpr(Field.TCP_FLAGS_FIN), bit);
                     matchCurrentTcpFlags.add(matchFlag);
                   }
