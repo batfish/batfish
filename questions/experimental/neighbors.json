@@ -2,9 +2,9 @@
     "class": "org.batfish.question.NeighborsQuestionPlugin$NeighborsQuestion",
     "differential": false,
     "instance": {
-        "description": "Lists neighbor relationships in the snapshot.",
+        "description": "Lists neighbor relationships in the snapshot",
         "instanceName": "neighbors",
-        "longDescription": "Return neighbor relationships of the specified type (layer3, eBGP, iBGP, ospf, etc...)",
+        "longDescription": "Lists neighbor relationships of the specified type (layer3, eBGP, iBGP, ospf, etc.)",
         "tags": [
             "topology"
         ],
@@ -25,14 +25,14 @@
                 "optional": true,
                 "type": "string"
             },
-            "node1Regex": {
-                "description": "Only include neighbors whose first node's name matches this regex",
-                "type": "javaRegex",
+            "nodes": {
+                "description": "Include neighbors whose first node matches this name or regex",
+                "type": "nodeSpec",
                 "value": ".*"
             },
-            "node2Regex": {
-                "description": "Only include neighbors whose second node's name matches this regex",
-                "type": "javaRegex",
+            "remoteNodes": {
+                "description": "Include neighbors whose second node matches this name or regex",
+                "type": "nodeSpec",
                 "value": ".*"
             },
             "style": {
@@ -53,8 +53,8 @@
         }
     },
     "neighborTypes": "${neighborTypes}",
-    "node1Regex": "${node1Regex}",
-    "node2Regex": "${node2Regex}",
+    "nodes": "${nodes}",
+    "remoteNodes": "${remoteNodes}",
     "roleDimension": "${roleDimension}",
     "style": "${style}"
 }
