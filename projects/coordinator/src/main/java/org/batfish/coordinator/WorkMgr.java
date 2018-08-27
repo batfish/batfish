@@ -89,6 +89,7 @@ import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.pojo.Topology;
 import org.batfish.datamodel.questions.BgpPropertySpecifier;
 import org.batfish.datamodel.questions.InterfacePropertySpecifier;
+import org.batfish.datamodel.questions.NamedStructureSpecifier;
 import org.batfish.datamodel.questions.NodePropertySpecifier;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.OspfPropertySpecifier;
@@ -323,6 +324,11 @@ public class WorkMgr extends AbstractCoordinator {
       case INTERFACE_PROPERTY:
         {
           List<AutocompleteSuggestion> suggestions = InterfacePropertySpecifier.autoComplete(query);
+          return suggestions.subList(0, Integer.min(suggestions.size(), maxSuggestions));
+        }
+      case NAMED_STRUCTURE:
+        {
+          List<AutocompleteSuggestion> suggestions = NamedStructureSpecifier.autoComplete(query);
           return suggestions.subList(0, Integer.min(suggestions.size(), maxSuggestions));
         }
       case NODE:

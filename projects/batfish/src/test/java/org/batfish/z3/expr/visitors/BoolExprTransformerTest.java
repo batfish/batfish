@@ -21,6 +21,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TcpFlags;
+import org.batfish.datamodel.TcpFlagsMatchConditions;
 import org.batfish.z3.Field;
 import org.batfish.z3.MockSynthesizerInput;
 import org.batfish.z3.NodContext;
@@ -227,8 +228,11 @@ public class BoolExprTransformerTest {
                 .setStates(ImmutableSet.of(FlowState.ESTABLISHED, FlowState.NEW))
                 .setTcpFlags(
                     ImmutableSet.of(
-                        TcpFlags.builder().setAck(true).setUseAck(true).build(),
-                        TcpFlags.builder().setUseCwr(true).build()))
+                        TcpFlagsMatchConditions.builder()
+                            .setTcpFlags(TcpFlags.builder().setAck(true).build())
+                            .setUseAck(true)
+                            .build(),
+                        TcpFlagsMatchConditions.builder().setUseCwr(true).build()))
                 .build(),
             ImmutableMap.of());
 

@@ -11,7 +11,7 @@ import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.SubRange;
-import org.batfish.datamodel.TcpFlags;
+import org.batfish.datamodel.TcpFlagsMatchConditions;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 
@@ -38,7 +38,7 @@ public class SimpleExtendedAccessListServiceSpecifier implements AccessListServi
 
     private Set<FlowState> _states;
 
-    private List<TcpFlags> _tcpFlags;
+    private List<TcpFlagsMatchConditions> _tcpFlags;
 
     public SimpleExtendedAccessListServiceSpecifier build() {
       return new SimpleExtendedAccessListServiceSpecifier(this);
@@ -84,7 +84,7 @@ public class SimpleExtendedAccessListServiceSpecifier implements AccessListServi
       return this;
     }
 
-    public Builder setTcpFlags(Iterable<TcpFlags> tcpFlags) {
+    public Builder setTcpFlags(Iterable<TcpFlagsMatchConditions> tcpFlags) {
       _tcpFlags = ImmutableList.copyOf(tcpFlags);
       return this;
     }
@@ -110,7 +110,7 @@ public class SimpleExtendedAccessListServiceSpecifier implements AccessListServi
 
   private final Set<FlowState> _states;
 
-  private final List<TcpFlags> _tcpFlags;
+  private final List<TcpFlagsMatchConditions> _tcpFlags;
 
   private SimpleExtendedAccessListServiceSpecifier(Builder builder) {
     _dscps = builder._dscps;

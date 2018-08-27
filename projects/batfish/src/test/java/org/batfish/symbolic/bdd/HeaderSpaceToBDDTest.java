@@ -16,6 +16,7 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TcpFlags;
+import org.batfish.datamodel.TcpFlagsMatchConditions;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -169,10 +170,18 @@ public class HeaderSpaceToBDDTest {
 
   @Test
   public void test_tcpFlags() {
-    TcpFlags flags1 =
-        TcpFlags.builder().setUseAck(true).setAck(true).setUseEce(true).setEce(false).build();
-    TcpFlags flags2 =
-        TcpFlags.builder().setUseCwr(true).setCwr(true).setUseFin(true).setFin(false).build();
+    TcpFlagsMatchConditions flags1 =
+        TcpFlagsMatchConditions.builder()
+            .setUseAck(true)
+            .setUseEce(true)
+            .setTcpFlags(TcpFlags.builder().setAck(true).setEce(false).build())
+            .build();
+    TcpFlagsMatchConditions flags2 =
+        TcpFlagsMatchConditions.builder()
+            .setUseCwr(true)
+            .setUseFin(true)
+            .setTcpFlags(TcpFlags.builder().setCwr(true).setFin(false).build())
+            .build();
     HeaderSpace headerSpace =
         HeaderSpace.builder().setTcpFlags(ImmutableList.of(flags1, flags2)).build();
     BDD bdd = _toBDD.toBDD(headerSpace);

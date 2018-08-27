@@ -74,7 +74,7 @@ import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
-import org.batfish.datamodel.TcpFlags;
+import org.batfish.datamodel.TcpFlagsMatchConditions;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
@@ -537,7 +537,7 @@ class CiscoConversions {
       }
       Set<FlowState> states = fromLine.getStates();
       newLine.getStates().addAll(states);
-      List<TcpFlags> tcpFlags = fromLine.getTcpFlags();
+      List<TcpFlagsMatchConditions> tcpFlags = fromLine.getTcpFlags();
       newLine.getTcpFlags().addAll(tcpFlags);
       Set<Integer> dscps = fromLine.getDscps();
       newLine.getDscps().addAll(dscps);
@@ -1221,9 +1221,7 @@ class CiscoConversions {
 
   private static AsPathAccessListLine toAsPathAccessListLine(AsPathSetElem elem) {
     String regex = CiscoConfiguration.toJavaRegex(elem.regex());
-    AsPathAccessListLine line = new AsPathAccessListLine();
-    line.setAction(LineAction.PERMIT);
-    line.setRegex(regex);
+    AsPathAccessListLine line = new AsPathAccessListLine(LineAction.PERMIT, regex);
     return line;
   }
 

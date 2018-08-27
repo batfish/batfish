@@ -1,5 +1,6 @@
 package org.batfish.datamodel;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -10,7 +11,31 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 public class Header6Space implements Serializable {
-
+  private static final String PROP_DSCPS = "dscps";
+  private static final String PROP_DST_IPS = "dstIps";
+  private static final String PROP_DST_PORTS = "dstPorts";
+  private static final String PROP_ECNS = "ecns";
+  private static final String PROP_FRAGMENT_OFFSETS = "fragmentOffsets";
+  private static final String PROP_ICMP_CODES = "icmpCodes";
+  private static final String PROP_ICMP_TYPES = "icmpTypes";
+  private static final String PROP_IP_PROTOCOLS = "ipProtocols";
+  private static final String PROP_NEGATE = "negate";
+  private static final String PROP_NOT_DSCPS = "notDscps";
+  private static final String PROP_NOT_DST_IPS = "notDstIps";
+  private static final String PROP_NOT_DST_PORTS = "notDstPorts";
+  private static final String PROP_NOT_ECNS = "notEcns";
+  private static final String PROP_NOT_FRAGMENT_OFFSETS = "notFragmentOffsets";
+  private static final String PROP_NOT_ICMP_CODES = "notIcmpCodes";
+  private static final String PROP_NOT_ICMP_TYPES = "notIcmpTypes";
+  private static final String PROP_NOT_IP_PROTOCOLS = "notIpProtocols";
+  private static final String PROP_NOT_SRC_IPS = "notSrcIps";
+  private static final String PROP_NOT_SRC_PORTS = "notSrcPorts";
+  private static final String PROP_SRC_IPS = "srcIps";
+  private static final String PROP_SRC_OR_DST_IPS = "srcOrDstIps";
+  private static final String PROP_SRC_OR_DST_PORTS = "srcOrDstPorts";
+  private static final String PROP_SRC_PORTS = "srcPorts";
+  private static final String PROP_STATES = "states";
+  private static final String PROP_TCP_FLAGS_MATCH_CONDITIONS = "tcpFlagsMatchConditions";
   /** */
   private static final long serialVersionUID = 1L;
 
@@ -80,7 +105,7 @@ public class Header6Space implements Serializable {
 
   private Set<FlowState> _states;
 
-  private List<TcpFlags> _tcpFlags;
+  private List<TcpFlagsMatchConditions> _tcpFlags;
 
   public Header6Space() {
     _dscps = new TreeSet<>();
@@ -195,103 +220,128 @@ public class Header6Space implements Serializable {
     return true;
   }
 
+  @JsonProperty(PROP_DSCPS)
   public SortedSet<Integer> getDscps() {
     return _dscps;
   }
 
+  @JsonProperty(PROP_DST_IPS)
   public SortedSet<Ip6Wildcard> getDstIps() {
     return _dstIps;
   }
 
+  @JsonProperty(PROP_DST_PORTS)
   public SortedSet<SubRange> getDstPorts() {
     return _dstPorts;
   }
 
+  @JsonProperty(PROP_ECNS)
   public SortedSet<Integer> getEcns() {
     return _ecns;
   }
 
+  @JsonProperty(PROP_FRAGMENT_OFFSETS)
   public SortedSet<SubRange> getFragmentOffsets() {
     return _fragmentOffsets;
   }
 
+  @JsonProperty(PROP_ICMP_CODES)
   public SortedSet<SubRange> getIcmpCodes() {
     return _icmpCodes;
   }
 
+  @JsonProperty(PROP_ICMP_TYPES)
   public SortedSet<SubRange> getIcmpTypes() {
     return _icmpTypes;
   }
 
+  @JsonProperty(PROP_IP_PROTOCOLS)
   public Set<IpProtocol> getIpProtocols() {
     return _ipProtocols;
   }
 
+  @JsonProperty(PROP_NEGATE)
   public boolean getNegate() {
     return _negate;
   }
 
+  @JsonProperty(PROP_NOT_DSCPS)
   public SortedSet<Integer> getNotDscps() {
     return _notDscps;
   }
 
+  @JsonProperty(PROP_NOT_DST_IPS)
   public SortedSet<Ip6Wildcard> getNotDstIps() {
     return _notDstIps;
   }
 
+  @JsonProperty(PROP_NOT_DST_PORTS)
   public SortedSet<SubRange> getNotDstPorts() {
     return _notDstPorts;
   }
 
+  @JsonProperty(PROP_NOT_ECNS)
   public SortedSet<Integer> getNotEcns() {
     return _notEcns;
   }
 
+  @JsonProperty(PROP_NOT_FRAGMENT_OFFSETS)
   public SortedSet<SubRange> getNotFragmentOffsets() {
     return _notFragmentOffsets;
   }
 
+  @JsonProperty(PROP_NOT_ICMP_CODES)
   public SortedSet<SubRange> getNotIcmpCodes() {
     return _notIcmpCodes;
   }
 
+  @JsonProperty(PROP_NOT_ICMP_TYPES)
   public SortedSet<SubRange> getNotIcmpTypes() {
     return _notIcmpTypes;
   }
 
+  @JsonProperty(PROP_NOT_IP_PROTOCOLS)
   public Set<IpProtocol> getNotIpProtocols() {
     return _notIpProtocols;
   }
 
+  @JsonProperty(PROP_NOT_SRC_IPS)
   public SortedSet<Ip6Wildcard> getNotSrcIps() {
     return _notSrcIps;
   }
 
+  @JsonProperty(PROP_NOT_SRC_PORTS)
   public SortedSet<SubRange> getNotSrcPorts() {
     return _notSrcPorts;
   }
 
+  @JsonProperty(PROP_SRC_IPS)
   public SortedSet<Ip6Wildcard> getSrcIps() {
     return _srcIps;
   }
 
+  @JsonProperty(PROP_SRC_OR_DST_IPS)
   public SortedSet<Ip6Wildcard> getSrcOrDstIps() {
     return _srcOrDstIps;
   }
 
+  @JsonProperty(PROP_SRC_OR_DST_PORTS)
   public SortedSet<SubRange> getSrcOrDstPorts() {
     return _srcOrDstPorts;
   }
 
+  @JsonProperty(PROP_SRC_PORTS)
   public SortedSet<SubRange> getSrcPorts() {
     return _srcPorts;
   }
 
+  @JsonProperty(PROP_STATES)
   public Set<FlowState> getStates() {
     return _states;
   }
 
-  public List<TcpFlags> getTcpFlags() {
+  @JsonProperty(PROP_TCP_FLAGS_MATCH_CONDITIONS)
+  public List<TcpFlagsMatchConditions> getTcpFlags() {
     return _tcpFlags;
   }
 
@@ -376,105 +426,130 @@ public class Header6Space implements Serializable {
     return true;
   }
 
+  @JsonProperty(PROP_DSCPS)
   public void setDscps(SortedSet<Integer> dscps) {
     _dscps = dscps;
   }
 
+  @JsonProperty(PROP_DST_IPS)
   public void setDstIps(SortedSet<Ip6Wildcard> dstIps) {
     _dstIps = dstIps;
   }
 
+  @JsonProperty(PROP_DST_PORTS)
   public void setDstPorts(SortedSet<SubRange> dstPorts) {
     _dstPorts = dstPorts;
   }
 
+  @JsonProperty(PROP_ECNS)
   public void setEcns(SortedSet<Integer> ecns) {
     _ecns = ecns;
   }
 
+  @JsonProperty(PROP_FRAGMENT_OFFSETS)
   public void setFragmentOffsets(SortedSet<SubRange> fragmentOffsets) {
     _fragmentOffsets = fragmentOffsets;
   }
 
+  @JsonProperty(PROP_ICMP_CODES)
   public void setIcmpCodes(SortedSet<SubRange> icmpCodes) {
     _icmpCodes = icmpCodes;
   }
 
+  @JsonProperty(PROP_ICMP_TYPES)
   public void setIcmpTypes(SortedSet<SubRange> icmpTypes) {
     _icmpTypes = icmpTypes;
   }
 
+  @JsonProperty(PROP_IP_PROTOCOLS)
   public void setIpProtocols(Set<IpProtocol> ipProtocols) {
     _ipProtocols.clear();
     _ipProtocols.addAll(ipProtocols);
   }
 
+  @JsonProperty(PROP_NEGATE)
   public void setNegate(boolean negate) {
     _negate = negate;
   }
 
+  @JsonProperty(PROP_NOT_DSCPS)
   public void setNotDscps(SortedSet<Integer> notDscps) {
     _notDscps = notDscps;
   }
 
+  @JsonProperty(PROP_NOT_DST_IPS)
   public void setNotDstIps(SortedSet<Ip6Wildcard> notDstIps) {
     _notDstIps = notDstIps;
   }
 
+  @JsonProperty(PROP_NOT_DST_PORTS)
   public void setNotDstPorts(SortedSet<SubRange> notDstPorts) {
     _notDstPorts = notDstPorts;
   }
 
+  @JsonProperty(PROP_NOT_ECNS)
   public void setNotEcns(SortedSet<Integer> notEcns) {
     _notEcns = notEcns;
   }
 
+  @JsonProperty(PROP_NOT_FRAGMENT_OFFSETS)
   public void setNotFragmentOffsets(SortedSet<SubRange> notFragmentOffsets) {
     _notFragmentOffsets = notFragmentOffsets;
   }
 
+  @JsonProperty(PROP_NOT_ICMP_CODES)
   public void setNotIcmpCodes(SortedSet<SubRange> notIcmpCodes) {
     _notIcmpCodes = notIcmpCodes;
   }
 
+  @JsonProperty(PROP_NOT_ICMP_TYPES)
   public void setNotIcmpTypes(SortedSet<SubRange> notIcmpTypes) {
     _notIcmpTypes = notIcmpTypes;
   }
 
+  @JsonProperty(PROP_NOT_IP_PROTOCOLS)
   public void setNotIpProtocols(Set<IpProtocol> notIpProtocols) {
     _notIpProtocols.clear();
     _notIpProtocols.addAll(notIpProtocols);
   }
 
+  @JsonProperty(PROP_NOT_SRC_IPS)
   public void setNotSrcIps(SortedSet<Ip6Wildcard> notSrcIps) {
     _notSrcIps = notSrcIps;
   }
 
+  @JsonProperty(PROP_NOT_SRC_PORTS)
   public void setNotSrcPorts(SortedSet<SubRange> notSrcPorts) {
     _notSrcPorts = notSrcPorts;
   }
 
+  @JsonProperty(PROP_SRC_IPS)
   public void setSrcIps(SortedSet<Ip6Wildcard> srcIps) {
     _srcIps = srcIps;
   }
 
+  @JsonProperty(PROP_SRC_OR_DST_IPS)
   public void setSrcOrDstIps(SortedSet<Ip6Wildcard> srcOrDstIps) {
     _srcOrDstIps = srcOrDstIps;
   }
 
+  @JsonProperty(PROP_SRC_OR_DST_PORTS)
   public void setSrcOrDstPorts(SortedSet<SubRange> srcOrDstPorts) {
     _srcOrDstPorts = srcOrDstPorts;
   }
 
+  @JsonProperty(PROP_SRC_PORTS)
   public void setSrcPorts(SortedSet<SubRange> srcPorts) {
     _srcPorts = srcPorts;
   }
 
+  @JsonProperty(PROP_STATES)
   public void setStates(Set<FlowState> states) {
     _states = states;
   }
 
-  public void setTcpFlags(List<TcpFlags> tcpFlags) {
+  @JsonProperty(PROP_TCP_FLAGS_MATCH_CONDITIONS)
+  public void setTcpFlags(List<TcpFlagsMatchConditions> tcpFlags) {
     _tcpFlags = tcpFlags;
   }
 
@@ -524,37 +599,8 @@ public class Header6Space implements Serializable {
         + _notIcmpCodes
         + ", States:"
         + _states
-        + ", TcpFlags:"
+        + ", TcpFlagsMatchConditions:"
         + _tcpFlags
         + "]";
-  }
-
-  public final boolean unrestricted() {
-    boolean ret =
-        _dscps.isEmpty()
-            && _notDscps.isEmpty()
-            && _dstIps.isEmpty()
-            && _notDstIps.isEmpty()
-            && _dstPorts.isEmpty()
-            && _notDstPorts.isEmpty()
-            && _ecns.isEmpty()
-            && _notEcns.isEmpty()
-            && _fragmentOffsets.isEmpty()
-            && _notFragmentOffsets.isEmpty()
-            && _icmpCodes.isEmpty()
-            && _notIcmpCodes.isEmpty()
-            && _icmpTypes.isEmpty()
-            && _notIcmpTypes.isEmpty()
-            && _ipProtocols.isEmpty()
-            && _notIpProtocols.isEmpty()
-            && _srcIps.isEmpty()
-            && _notSrcIps.isEmpty()
-            && _srcOrDstIps.isEmpty()
-            && _srcOrDstPorts.isEmpty()
-            && _srcPorts.isEmpty()
-            && _notSrcPorts.isEmpty()
-            && _states.isEmpty()
-            && _tcpFlags.isEmpty();
-    return ret;
   }
 }

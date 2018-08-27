@@ -1,16 +1,27 @@
 package org.batfish.datamodel.routing_policy.expr;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
+import static com.google.common.base.Preconditions.checkArgument;
 
-public class RegexAsPathSetElem extends AsPathSetElem {
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
+
+@ParametersAreNonnullByDefault
+public final class RegexAsPathSetElem extends AsPathSetElem {
+  private static final String PROP_REGEX = "regex";
 
   /** */
   private static final long serialVersionUID = 1L;
 
-  private String _regex;
+  @Nonnull private String _regex;
 
   @JsonCreator
-  private RegexAsPathSetElem() {}
+  private static RegexAsPathSetElem jsonCreator(@Nullable @JsonProperty(PROP_REGEX) String regex) {
+    checkArgument(regex != null, "%s must be provided", PROP_REGEX);
+    return new RegexAsPathSetElem(regex);
+  }
 
   public RegexAsPathSetElem(String regex) {
     _regex = regex;
@@ -20,24 +31,15 @@ public class RegexAsPathSetElem extends AsPathSetElem {
   public boolean equals(Object obj) {
     if (this == obj) {
       return true;
-    }
-    if (obj == null) {
-      return false;
-    }
-    if (getClass() != obj.getClass()) {
+    } else if (!(obj instanceof RegexAsPathSetElem)) {
       return false;
     }
     RegexAsPathSetElem other = (RegexAsPathSetElem) obj;
-    if (_regex == null) {
-      if (other._regex != null) {
-        return false;
-      }
-    } else if (!_regex.equals(other._regex)) {
-      return false;
-    }
-    return true;
+    return _regex.equals(other._regex);
   }
 
+  @JsonProperty(PROP_REGEX)
+  @Nonnull
   public String getRegex() {
     return _regex;
   }
@@ -46,13 +48,13 @@ public class RegexAsPathSetElem extends AsPathSetElem {
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + ((_regex == null) ? 0 : _regex.hashCode());
+    result = prime * result + _regex.hashCode();
     return result;
   }
 
   @Override
   public String regex() {
-    return _regex;
+    return getRegex();
   }
 
   public void setRegex(String regex) {

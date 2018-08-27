@@ -2,10 +2,15 @@ package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.collect.ImmutableMap;
-import java.util.Comparator;
 import java.util.Map;
 import org.batfish.common.BatfishException;
 
+/**
+ * List of known IP protocols corresponding to their number as assigned by the Internet Assigned
+ * Numbers Authority (IANA).
+ *
+ * <p>See https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml
+ */
 public enum IpProtocol {
   AHP(51),
   AN(107),
@@ -57,6 +62,7 @@ public enum IpProtocol {
   IGMP(2),
   IGP(9),
   IL(40),
+  /** Denotes any IP protocol, not a value defined by IANA */
   IP(256),
   IPComp(108),
   IPCU(71),
@@ -264,9 +270,6 @@ public enum IpProtocol {
   XNET(15),
   XNS_IDP(22),
   XTP(36);
-
-  public static final Comparator<IpProtocol> BY_NUMBER =
-      (p1, p2) -> Integer.compare(p1.number(), p2.number());
 
   private static final Map<Integer, IpProtocol> NUMBER_TO_PROTOCOL_MAP = buildNumberToProtocolMap();
 

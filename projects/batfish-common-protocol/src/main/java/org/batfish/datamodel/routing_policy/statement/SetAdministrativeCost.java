@@ -1,6 +1,12 @@
 package org.batfish.datamodel.routing_policy.statement;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.expr.IntExpr;
@@ -9,15 +15,21 @@ import org.batfish.datamodel.routing_policy.expr.IntExpr;
  * Type of {@link Statement} to set the administrative cost of output route present in the {@link
  * Environment}
  */
-public class SetAdministrativeCost extends Statement {
+@ParametersAreNonnullByDefault
+public final class SetAdministrativeCost extends Statement {
+  private static final String PROP_ADMIN = "admin";
 
   /** */
   private static final long serialVersionUID = 1L;
 
-  private IntExpr _admin;
+  @Nonnull private final IntExpr _admin;
 
   @JsonCreator
-  private SetAdministrativeCost() {}
+  private static SetAdministrativeCost jsonCreator(
+      @Nullable @JsonProperty(PROP_ADMIN) IntExpr admin) {
+    checkArgument(admin != null, "%s must be provided", PROP_ADMIN);
+    return new SetAdministrativeCost(admin);
+  }
 
   public SetAdministrativeCost(IntExpr admin) {
     _admin = admin;
@@ -27,22 +39,11 @@ public class SetAdministrativeCost extends Statement {
   public boolean equals(Object obj) {
     if (this == obj) {
       return true;
-    }
-    if (obj == null) {
-      return false;
-    }
-    if (getClass() != obj.getClass()) {
+    } else if (!(obj instanceof SetAdministrativeCost)) {
       return false;
     }
     SetAdministrativeCost other = (SetAdministrativeCost) obj;
-    if (_admin == null) {
-      if (other._admin != null) {
-        return false;
-      }
-    } else if (!_admin.equals(other._admin)) {
-      return false;
-    }
-    return true;
+    return _admin.equals(other._admin);
   }
 
   @Override
@@ -56,6 +57,8 @@ public class SetAdministrativeCost extends Statement {
     return result;
   }
 
+  @JsonProperty(PROP_ADMIN)
+  @Nonnull
   public IntExpr getAdmin() {
     return _admin;
   }
@@ -64,11 +67,7 @@ public class SetAdministrativeCost extends Statement {
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + ((_admin == null) ? 0 : _admin.hashCode());
+    result = prime * result + _admin.hashCode();
     return result;
-  }
-
-  public void setAdmin(IntExpr admin) {
-    _admin = admin;
   }
 }

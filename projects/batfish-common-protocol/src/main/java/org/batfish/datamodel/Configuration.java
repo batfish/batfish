@@ -130,6 +130,8 @@ public final class Configuration implements Serializable {
 
   private static final String PROP_INTERFACES = "interfaces";
 
+  private static final String PROP_IP6_ACCESS_LISTS = "ip6AccessLists";
+
   private static final String PROP_IP_ACCESS_LISTS = "ipAccessLists";
 
   private static final String PROP_IP_SPACES = "ipSpaces";
@@ -157,6 +159,8 @@ public final class Configuration implements Serializable {
   private static final String PROP_NTP_SERVERS = "ntpServers";
 
   private static final String PROP_NTP_SOURCE_INTERFACE = "ntpSourceInterface";
+
+  private static final String PROP_ROUTE6_FILTER_LISTS = "route6FilterLists";
 
   private static final String PROP_ROUTE_FILTER_LISTS = "routeFilterLists";
 
@@ -530,6 +534,7 @@ public final class Configuration implements Serializable {
   }
 
   @JsonPropertyDescription("Dictionary of all IPV6 access-lists for this node.")
+  @JsonProperty(PROP_IP6_ACCESS_LISTS)
   public NavigableMap<String, Ip6AccessList> getIp6AccessLists() {
     return _ip6AccessLists;
   }
@@ -642,6 +647,7 @@ public final class Configuration implements Serializable {
   }
 
   @JsonPropertyDescription("Dictionary of all IPV6 route filter lists for this node.")
+  @JsonProperty(PROP_ROUTE6_FILTER_LISTS)
   public NavigableMap<String, Route6FilterList> getRoute6FilterLists() {
     return _route6FilterLists;
   }
@@ -826,6 +832,7 @@ public final class Configuration implements Serializable {
     _interfaces = interfaces;
   }
 
+  @JsonProperty(PROP_IP6_ACCESS_LISTS)
   public void setIp6AccessLists(NavigableMap<String, Ip6AccessList> ip6AccessLists) {
     _ip6AccessLists = ip6AccessLists;
   }
@@ -907,6 +914,7 @@ public final class Configuration implements Serializable {
     _ntpSourceInterface = ntpSourceInterface;
   }
 
+  @JsonProperty(PROP_ROUTE6_FILTER_LISTS)
   public void setRoute6FilterLists(NavigableMap<String, Route6FilterList> route6FilterLists) {
     _route6FilterLists = route6FilterLists;
   }

@@ -24,6 +24,7 @@ import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TcpFlags;
+import org.batfish.datamodel.TcpFlagsMatchConditions;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
@@ -408,20 +409,29 @@ public class BDDIpAccessListSpecializerTest {
     BDDIpAccessListSpecializer specializer =
         new BDDIpAccessListSpecializer(PKT, headerSpaceBDD, ImmutableMap.of());
 
-    Iterable<TcpFlags> originalFlagsList =
+    Iterable<TcpFlagsMatchConditions> originalFlagsList =
         ImmutableList.of(
-            TcpFlags.builder().setUseAck(true).setAck(true).build(),
-            TcpFlags.builder().setUseAck(true).setAck(true).setUseEce(true).setEce(false).build(),
-            TcpFlags.builder()
+            TcpFlagsMatchConditions.builder()
+                .setUseAck(true)
+                .setTcpFlags(TcpFlags.builder().setAck(true).build())
+                .build(),
+            TcpFlagsMatchConditions.builder()
+                .setUseAck(true)
                 .setUseEce(true)
-                .setEce(true)
+                .setTcpFlags(TcpFlags.builder().setAck(true).setEce(false).build())
+                .build(),
+            TcpFlagsMatchConditions.builder()
+                .setUseEce(true)
                 .setUseFin(true)
-                .setFin(true)
                 .setUseRst(true)
-                .setRst(true)
+                .setTcpFlags(TcpFlags.builder().setEce(true).setFin(true).setRst(true).build())
                 .build());
-    Iterable<TcpFlags> specializedFlagsList =
-        ImmutableList.of(TcpFlags.builder().setUseAck(true).setAck(true).build());
+    Iterable<TcpFlagsMatchConditions> specializedFlagsList =
+        ImmutableList.of(
+            TcpFlagsMatchConditions.builder()
+                .setUseAck(true)
+                .setTcpFlags(TcpFlags.builder().setAck(true).build())
+                .build());
     HeaderSpace original = HeaderSpace.builder().setTcpFlags(originalFlagsList).build();
     HeaderSpace specialized = HeaderSpace.builder().setTcpFlags(specializedFlagsList).build();
     assertThat(specializer.specialize(original), equalTo(specialized));

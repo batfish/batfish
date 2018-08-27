@@ -116,6 +116,7 @@ import org.batfish.datamodel.SnmpServer;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.TcpFlags;
+import org.batfish.datamodel.TcpFlagsMatchConditions;
 import org.batfish.datamodel.VrrpGroup;
 import org.batfish.datamodel.isis.IsisAuthenticationAlgorithm;
 import org.batfish.datamodel.isis.IsisHelloAuthenticationType;
@@ -1567,46 +1568,47 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     return new SubRange(low, high);
   }
 
-  private static TcpFlags toTcpFlags(Tcp_flags_alternativeContext ctx) {
-    TcpFlags tcpFlags = new TcpFlags();
+  private static TcpFlagsMatchConditions toTcpFlags(Tcp_flags_alternativeContext ctx) {
+    TcpFlagsMatchConditions.Builder tcpFlagsConditionsBuilder = TcpFlagsMatchConditions.builder();
+    TcpFlags.Builder tcpFlagsBuilder = TcpFlags.builder();
     for (Tcp_flags_literalContext literalCtx : ctx.literals) {
       boolean value = literalCtx.BANG() == null;
       Tcp_flags_atomContext atom = literalCtx.tcp_flags_atom();
       if (atom.ACK() != null) {
-        tcpFlags.setUseAck(true);
-        tcpFlags.setAck(value);
+        tcpFlagsConditionsBuilder.setUseAck(true);
+        tcpFlagsBuilder.setAck(value);
       } else if (atom.CWR() != null) {
-        tcpFlags.setUseCwr(true);
-        tcpFlags.setCwr(value);
+        tcpFlagsConditionsBuilder.setUseCwr(true);
+        tcpFlagsBuilder.setCwr(value);
       } else if (atom.ECE() != null) {
-        tcpFlags.setUseEce(true);
-        tcpFlags.setEce(value);
+        tcpFlagsConditionsBuilder.setUseEce(true);
+        tcpFlagsBuilder.setEce(value);
       } else if (atom.FIN() != null) {
-        tcpFlags.setUseFin(true);
-        tcpFlags.setFin(value);
+        tcpFlagsConditionsBuilder.setUseFin(true);
+        tcpFlagsBuilder.setFin(value);
       } else if (atom.PSH() != null) {
-        tcpFlags.setUsePsh(true);
-        tcpFlags.setPsh(value);
+        tcpFlagsConditionsBuilder.setUsePsh(true);
+        tcpFlagsBuilder.setPsh(value);
       } else if (atom.RST() != null) {
-        tcpFlags.setUseRst(true);
-        tcpFlags.setRst(value);
+        tcpFlagsConditionsBuilder.setUseRst(true);
+        tcpFlagsBuilder.setRst(value);
       } else if (atom.SYN() != null) {
-        tcpFlags.setUseSyn(true);
-        tcpFlags.setSyn(value);
+        tcpFlagsConditionsBuilder.setUseSyn(true);
+        tcpFlagsBuilder.setSyn(value);
       } else if (atom.URG() != null) {
-        tcpFlags.setUseUrg(true);
-        tcpFlags.setUrg(value);
+        tcpFlagsConditionsBuilder.setUseUrg(true);
+        tcpFlagsBuilder.setUrg(value);
       } else {
         throw new BatfishException("Invalid tcp-flags atom: " + atom.getText());
       }
     }
-    return tcpFlags;
+    return tcpFlagsConditionsBuilder.setTcpFlags(tcpFlagsBuilder.build()).build();
   }
 
-  private static List<TcpFlags> toTcpFlags(Tcp_flagsContext ctx) {
-    List<TcpFlags> tcpFlagsList = new ArrayList<>();
+  private static List<TcpFlagsMatchConditions> toTcpFlags(Tcp_flagsContext ctx) {
+    List<TcpFlagsMatchConditions> tcpFlagsList = new ArrayList<>();
     for (Tcp_flags_alternativeContext alternativeCtx : ctx.alternatives) {
-      TcpFlags tcpFlags = toTcpFlags(alternativeCtx);
+      TcpFlagsMatchConditions tcpFlags = toTcpFlags(alternativeCtx);
       tcpFlagsList.add(tcpFlags);
     }
     return tcpFlagsList;
@@ -3319,35 +3321,37 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitFftf_tcp_established(Fftf_tcp_establishedContext ctx) {
-    List<TcpFlags> tcpFlags = new ArrayList<>();
-    TcpFlags alt1 = new TcpFlags();
-    alt1.setUseAck(true);
-    alt1.setAck(true);
-    tcpFlags.add(alt1);
-    TcpFlags alt2 = new TcpFlags();
-    alt2.setUseRst(true);
-    alt2.setRst(true);
-    tcpFlags.add(alt2);
+    List<TcpFlagsMatchConditions> tcpFlags = new ArrayList<>();
+    tcpFlags.add(
+        TcpFlagsMatchConditions.builder()
+            .setTcpFlags(TcpFlags.builder().setAck(true).build())
+            .setUseAck(true)
+            .build());
+    tcpFlags.add(
+        TcpFlagsMatchConditions.builder()
+            .setTcpFlags(TcpFlags.builder().setRst(true).build())
+            .setUseRst(true)
+            .build());
     FwFrom from = new FwFromTcpFlags(tcpFlags);
     _currentFwTerm.getFroms().add(from);
   }
 
   @Override
   public void exitFftf_tcp_flags(Fftf_tcp_flagsContext ctx) {
-    List<TcpFlags> tcpFlags = toTcpFlags(ctx.tcp_flags());
+    List<TcpFlagsMatchConditions> tcpFlags = toTcpFlags(ctx.tcp_flags());
     FwFrom from = new FwFromTcpFlags(tcpFlags);
     _currentFwTerm.getFroms().add(from);
   }
 
   @Override
   public void exitFftf_tcp_initial(Fftf_tcp_initialContext ctx) {
-    List<TcpFlags> tcpFlags = new ArrayList<>();
-    TcpFlags alt1 = new TcpFlags();
-    alt1.setUseAck(true);
-    alt1.setAck(false);
-    alt1.setUseSyn(true);
-    alt1.setSyn(true);
-    tcpFlags.add(alt1);
+    List<TcpFlagsMatchConditions> tcpFlags = new ArrayList<>();
+    tcpFlags.add(
+        TcpFlagsMatchConditions.builder()
+            .setTcpFlags(TcpFlags.builder().setAck(true).setSyn(true).build())
+            .setUseAck(true)
+            .setUseSyn(true)
+            .build());
     FwFrom from = new FwFromTcpFlags(tcpFlags);
     _currentFwTerm.getFroms().add(from);
   }

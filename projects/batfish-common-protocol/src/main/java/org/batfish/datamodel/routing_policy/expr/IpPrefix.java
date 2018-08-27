@@ -1,20 +1,35 @@
 package org.batfish.datamodel.routing_policy.expr;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.routing_policy.Environment;
 
-public class IpPrefix extends PrefixExpr {
+@ParametersAreNonnullByDefault
+public final class IpPrefix extends PrefixExpr {
+  private static final String PROP_IP = "ip";
+  private static final String PROP_PREFIX_LENGTH = "prefixLength";
 
   private static final long serialVersionUID = 1L;
 
-  private IpExpr _ip;
+  @Nonnull private IpExpr _ip;
 
-  private IntExpr _prefixLength;
+  @Nonnull private IntExpr _prefixLength;
 
   @JsonCreator
-  private IpPrefix() {}
+  private static IpPrefix jsonCreator(
+      @Nullable @JsonProperty(PROP_IP) IpExpr ip,
+      @Nullable @JsonProperty(PROP_PREFIX_LENGTH) IntExpr prefixLength) {
+    checkArgument(ip != null, "%s must be provided", PROP_IP);
+    checkArgument(prefixLength != null, "%s must be provided", PROP_PREFIX_LENGTH);
+    return new IpPrefix(ip, prefixLength);
+  }
 
   public IpPrefix(IpExpr ip, IntExpr prefixLength) {
     _ip = ip;
@@ -25,29 +40,11 @@ public class IpPrefix extends PrefixExpr {
   public boolean equals(Object obj) {
     if (this == obj) {
       return true;
-    }
-    if (obj == null) {
-      return false;
-    }
-    if (getClass() != obj.getClass()) {
+    } else if (!(obj instanceof IpPrefix)) {
       return false;
     }
     IpPrefix other = (IpPrefix) obj;
-    if (_ip == null) {
-      if (other._ip != null) {
-        return false;
-      }
-    } else if (!_ip.equals(other._ip)) {
-      return false;
-    }
-    if (_prefixLength == null) {
-      if (other._prefixLength != null) {
-        return false;
-      }
-    } else if (!_prefixLength.equals(other._prefixLength)) {
-      return false;
-    }
-    return true;
+    return _ip.equals(other._ip) && _prefixLength.equals(other._prefixLength);
   }
 
   @Override
@@ -57,10 +54,14 @@ public class IpPrefix extends PrefixExpr {
     return new Prefix(ip, prefixLength);
   }
 
+  @JsonProperty(PROP_IP)
+  @Nonnull
   public IpExpr getIp() {
     return _ip;
   }
 
+  @JsonProperty(PROP_PREFIX_LENGTH)
+  @Nonnull
   public IntExpr getPrefixLength() {
     return _prefixLength;
   }
@@ -69,8 +70,8 @@ public class IpPrefix extends PrefixExpr {
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + ((_ip == null) ? 0 : _ip.hashCode());
-    result = prime * result + ((_prefixLength == null) ? 0 : _prefixLength.hashCode());
+    result = prime * result + _ip.hashCode();
+    result = prime * result + _prefixLength.hashCode();
     return result;
   }
 

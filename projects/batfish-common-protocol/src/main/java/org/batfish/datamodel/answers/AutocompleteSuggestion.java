@@ -11,6 +11,7 @@ public class AutocompleteSuggestion {
   public enum CompletionType {
     BGP_PROPERTY,
     INTERFACE_PROPERTY,
+    NAMED_STRUCTURE,
     NODE,
     NODE_PROPERTY,
     OSPF_PROPERTY

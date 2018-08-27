@@ -1,20 +1,31 @@
 package org.batfish.datamodel.routing_policy.expr;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableList;
 import java.util.List;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.routing_policy.Environment;
 
-public class IpNextHop extends NextHopExpr {
+@ParametersAreNonnullByDefault
+public final class IpNextHop extends NextHopExpr {
+  private static final String PROP_IPS = "ips";
 
   /** */
   private static final long serialVersionUID = 1L;
 
-  private List<Ip> _ips;
+  @Nonnull private final List<Ip> _ips;
 
   @JsonCreator
-  private IpNextHop() {}
+  private static IpNextHop jsonCreator(@Nullable @JsonProperty(PROP_IPS) List<Ip> ips) {
+    return new IpNextHop(firstNonNull(ips, ImmutableList.of()));
+  }
 
   public IpNextHop(List<Ip> ips) {
     _ips = ips;
@@ -24,24 +35,18 @@ public class IpNextHop extends NextHopExpr {
   public boolean equals(Object obj) {
     if (this == obj) {
       return true;
-    }
-    if (obj == null) {
+    } else if (!(obj instanceof IpNextHop)) {
       return false;
     }
     if (getClass() != obj.getClass()) {
       return false;
     }
     IpNextHop other = (IpNextHop) obj;
-    if (_ips == null) {
-      if (other._ips != null) {
-        return false;
-      }
-    } else if (!_ips.equals(other._ips)) {
-      return false;
-    }
-    return true;
+    return _ips.equals(other._ips);
   }
 
+  @JsonProperty(PROP_IPS)
+  @Nonnull
   public List<Ip> getIps() {
     return _ips;
   }
@@ -59,11 +64,7 @@ public class IpNextHop extends NextHopExpr {
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + ((_ips == null) ? 0 : _ips.hashCode());
+    result = prime * result + _ips.hashCode();
     return result;
-  }
-
-  public void setIps(List<Ip> ips) {
-    _ips = ips;
   }
 }
