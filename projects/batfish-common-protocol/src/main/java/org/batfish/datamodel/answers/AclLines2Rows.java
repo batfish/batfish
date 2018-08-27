@@ -32,7 +32,7 @@ public class AclLines2Rows implements AclLinesAnswerElementInterface {
     CYCLICAL_REFERENCE,
     MULTIPLE_BLOCKING_LINES,
     SINGLE_BLOCKING_LINE,
-    UNDEFINED_REFERFENCE,
+    UNDEFINED_REFERENCE,
     UNMATCHABLE
   }
 
@@ -106,7 +106,7 @@ public class AclLines2Rows implements AclLinesAnswerElementInterface {
     CanonicalAcl canonicalAcl = aclSpecs.acl;
     Reason reason =
         canonicalAcl.hasUndefinedRef(lineNumber)
-            ? Reason.UNDEFINED_REFERFENCE
+            ? Reason.UNDEFINED_REFERENCE
             : unmatchable
                 ? Reason.UNMATCHABLE
                 : blockingLines.isEmpty()
@@ -186,7 +186,7 @@ public class AclLines2Rows implements AclLinesAnswerElementInterface {
                 "ACLs { %s } contain an unreachable line:\n  [index %d] %s\n",
                 String.join("; ", flatSources), blockedLineNum, blockedLineName));
     switch (reason) {
-      case UNDEFINED_REFERFENCE:
+      case UNDEFINED_REFERENCE:
         sb.append("This line references a structure that is not defined.");
         break;
       case UNMATCHABLE:

@@ -13,7 +13,7 @@ import static org.batfish.datamodel.answers.AclLines2Rows.COL_SOURCES;
 import static org.batfish.datamodel.answers.AclLines2Rows.Reason.CYCLICAL_REFERENCE;
 import static org.batfish.datamodel.answers.AclLines2Rows.Reason.MULTIPLE_BLOCKING_LINES;
 import static org.batfish.datamodel.answers.AclLines2Rows.Reason.SINGLE_BLOCKING_LINE;
-import static org.batfish.datamodel.answers.AclLines2Rows.Reason.UNDEFINED_REFERFENCE;
+import static org.batfish.datamodel.answers.AclLines2Rows.Reason.UNDEFINED_REFERENCE;
 import static org.batfish.datamodel.answers.AclLines2Rows.Reason.UNMATCHABLE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -270,7 +270,7 @@ public class AclReachability2Test {
                 .put(COL_BLOCKED_LINE_NUM, 0)
                 .put(COL_BLOCKING_LINE_NUMS, ImmutableList.of())
                 .put(COL_DIFF_ACTION, false)
-                .put(COL_REASON, UNDEFINED_REFERFENCE)
+                .put(COL_REASON, UNDEFINED_REFERENCE)
                 .put(
                     COL_MESSAGE,
                     "ACLs { c1: acl } contain an unreachable line:\n  [index 0] IpAccessListLine{action=PERMIT,"
