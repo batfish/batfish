@@ -77,5 +77,9 @@ public class ColumnMetadataTest {
     // Atleast one character should be given as column name
     assertThat(ColumnMetadata.isLegalColumnName(""), equalTo(false));
     assertThat(ColumnMetadata.isLegalColumnName("a"), equalTo(true));
+
+    // Allow / in the column name
+    assertThat(
+        ColumnMetadata.isLegalColumnName("~col_name_test:default:192.168.10.1/24~"), equalTo(true));
   }
 }

@@ -1,19 +1,30 @@
 package org.batfish.datamodel.routing_policy.expr;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 
-public class MatchRouteType extends BooleanExpr {
+@ParametersAreNonnullByDefault
+public final class MatchRouteType extends BooleanExpr {
+  private static final String PROP_TYPE = "type";
 
   /** */
   private static final long serialVersionUID = 1L;
 
-  private RouteTypeExpr _type;
+  @Nonnull private RouteTypeExpr _type;
 
   @JsonCreator
-  private MatchRouteType() {}
+  private static MatchRouteType jsonCreator(@Nullable @JsonProperty(PROP_TYPE) RouteTypeExpr type) {
+    checkArgument(type != null, "%s must be provided", PROP_TYPE);
+    return new MatchRouteType(type);
+  }
 
   public MatchRouteType(RouteTypeExpr type) {
     _type = type;
@@ -23,22 +34,11 @@ public class MatchRouteType extends BooleanExpr {
   public boolean equals(Object obj) {
     if (this == obj) {
       return true;
-    }
-    if (obj == null) {
-      return false;
-    }
-    if (getClass() != obj.getClass()) {
+    } else if (!(obj instanceof MatchRouteType)) {
       return false;
     }
     MatchRouteType other = (MatchRouteType) obj;
-    if (_type == null) {
-      if (other._type != null) {
-        return false;
-      }
-    } else if (!_type.equals(other._type)) {
-      return false;
-    }
-    return true;
+    return _type.equals(other._type);
   }
 
   @Override
@@ -47,6 +47,8 @@ public class MatchRouteType extends BooleanExpr {
     throw new BatfishException("unimplemented: match route type: " + type.routeTypeName());
   }
 
+  @JsonProperty(PROP_TYPE)
+  @Nonnull
   public RouteTypeExpr getType() {
     return _type;
   }
@@ -55,7 +57,7 @@ public class MatchRouteType extends BooleanExpr {
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + ((_type == null) ? 0 : _type.hashCode());
+    result = prime * result + _type.hashCode();
     return result;
   }
 

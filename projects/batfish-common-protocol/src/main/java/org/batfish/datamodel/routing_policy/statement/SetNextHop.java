@@ -1,23 +1,37 @@
 package org.batfish.datamodel.routing_policy.statement;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.expr.NextHopExpr;
 
-public class SetNextHop extends Statement {
-
+@ParametersAreNonnullByDefault
+public final class SetNextHop extends Statement {
+  private static final String PROP_DESTINATION_VRF = "destinationVrf";
+  private static final String PROP_EXPR = "expr";
   /** */
   private static final long serialVersionUID = 1L;
 
   private boolean _destinationVrf;
 
-  private NextHopExpr _expr;
+  @Nonnull private NextHopExpr _expr;
 
   @JsonCreator
-  private SetNextHop() {}
+  private static SetNextHop jsonCreator(
+      @Nullable @JsonProperty(PROP_DESTINATION_VRF) Boolean destinationVrf,
+      @Nullable @JsonProperty(PROP_EXPR) NextHopExpr expr) {
+    checkArgument(destinationVrf != null, "%s must be provided", PROP_DESTINATION_VRF);
+    checkArgument(expr != null, "%s must be provided", PROP_EXPR);
+    return new SetNextHop(expr, destinationVrf);
+  }
 
   public SetNextHop(NextHopExpr expr, boolean destinationVrf) {
     _expr = expr;
@@ -28,25 +42,11 @@ public class SetNextHop extends Statement {
   public boolean equals(Object obj) {
     if (this == obj) {
       return true;
-    }
-    if (obj == null) {
-      return false;
-    }
-    if (getClass() != obj.getClass()) {
+    } else if (!(obj instanceof SetNextHop)) {
       return false;
     }
     SetNextHop other = (SetNextHop) obj;
-    if (_destinationVrf != other._destinationVrf) {
-      return false;
-    }
-    if (_expr == null) {
-      if (other._expr != null) {
-        return false;
-      }
-    } else if (!_expr.equals(other._expr)) {
-      return false;
-    }
-    return true;
+    return _destinationVrf == other._destinationVrf && _expr.equals(other._expr);
   }
 
   @Override
@@ -64,10 +64,13 @@ public class SetNextHop extends Statement {
     return result;
   }
 
+  @JsonProperty(PROP_DESTINATION_VRF)
   public boolean getDestinationVrf() {
     return _destinationVrf;
   }
 
+  @JsonProperty(PROP_EXPR)
+  @Nonnull
   public NextHopExpr getExpr() {
     return _expr;
   }
@@ -77,15 +80,7 @@ public class SetNextHop extends Statement {
     final int prime = 31;
     int result = 1;
     result = prime * result + (_destinationVrf ? 1231 : 1237);
-    result = prime * result + ((_expr == null) ? 0 : _expr.hashCode());
+    result = prime * result + _expr.hashCode();
     return result;
-  }
-
-  public void setDestinationVrf(boolean destinationVrf) {
-    _destinationVrf = destinationVrf;
-  }
-
-  public void setExpr(NextHopExpr expr) {
-    _expr = expr;
   }
 }

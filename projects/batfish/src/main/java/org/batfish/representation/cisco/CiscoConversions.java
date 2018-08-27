@@ -1221,9 +1221,7 @@ class CiscoConversions {
 
   private static AsPathAccessListLine toAsPathAccessListLine(AsPathSetElem elem) {
     String regex = CiscoConfiguration.toJavaRegex(elem.regex());
-    AsPathAccessListLine line = new AsPathAccessListLine();
-    line.setAction(LineAction.PERMIT);
-    line.setRegex(regex);
+    AsPathAccessListLine line = new AsPathAccessListLine(LineAction.PERMIT, regex);
     return line;
   }
 
