@@ -551,7 +551,7 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
 
   private static final String PROP_STATES = "states";
 
-  private static final String PROP_TCP_FLAGS = "tcpFlags";
+  private static final String PROP_TCP_FLAGS_MATCH_CONDITIONS = "tcpFlagsMatchConditions";
 
   /** */
   private static final long serialVersionUID = 1L;
@@ -921,7 +921,7 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
   }
 
   @JsonPropertyDescription("A set of acceptable TCP flag bitmasks for a TCP packet to match")
-  @JsonProperty(PROP_TCP_FLAGS)
+  @JsonProperty(PROP_TCP_FLAGS_MATCH_CONDITIONS)
   public List<TcpFlagsMatchConditions> getTcpFlags() {
     return _tcpFlags;
   }
@@ -1303,7 +1303,7 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
     _states = ImmutableSortedSet.copyOf(states);
   }
 
-  @JsonProperty(PROP_TCP_FLAGS)
+  @JsonProperty(PROP_TCP_FLAGS_MATCH_CONDITIONS)
   public void setTcpFlags(Iterable<TcpFlagsMatchConditions> tcpFlags) {
     _tcpFlags = ImmutableList.copyOf(tcpFlags);
   }
@@ -1379,7 +1379,7 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
         .add(PROP_SRC_PORTS, nullIfEmpty(_srcPorts))
         .add(PROP_SRC_PROTOCOLS, nullIfEmpty(_srcProtocols))
         .add(PROP_STATES, nullIfEmpty(_states))
-        .add(PROP_TCP_FLAGS, nullIfEmpty(_tcpFlags))
+        .add(PROP_TCP_FLAGS_MATCH_CONDITIONS, nullIfEmpty(_tcpFlags))
         .toString();
   }
 

@@ -14,14 +14,14 @@ public final class TcpFlagsMatchConditions
     implements Serializable, Comparable<TcpFlagsMatchConditions> {
 
   private static final String PROP_TCP_FLAGS = "tcpFlags";
-  private static final String PROP_USE_ACK = "ack";
-  private static final String PROP_USE_CWR = "cwr";
-  private static final String PROP_USE_ECE = "ece";
-  private static final String PROP_USE_FIN = "fin";
-  private static final String PROP_USE_PSH = "psh";
-  private static final String PROP_USE_RST = "rst";
-  private static final String PROP_USE_SYN = "syn";
-  private static final String PROP_USE_URG = "urg";
+  private static final String PROP_USE_ACK = "useAck";
+  private static final String PROP_USE_CWR = "useCwr";
+  private static final String PROP_USE_ECE = "useEce";
+  private static final String PROP_USE_FIN = "useFin";
+  private static final String PROP_USE_PSH = "usePsh";
+  private static final String PROP_USE_RST = "useRst";
+  private static final String PROP_USE_SYN = "useSyn";
+  private static final String PROP_USE_URG = "useUrg";
 
   private final TcpFlags _tcpFlags;
 
