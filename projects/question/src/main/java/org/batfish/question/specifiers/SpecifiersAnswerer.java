@@ -32,6 +32,8 @@ public final class SpecifiersAnswerer extends Answerer {
     switch (question.getQueryType()) {
       case IP_SPACE:
         return resolveIpSpace(question, context);
+      case LOCATION:
+        return resolveLocation(question, context);
       default:
         throw new IllegalArgumentException("Unhandled query type: " + question.getQueryType());
     }
@@ -59,6 +61,21 @@ public final class SpecifiersAnswerer extends Answerer {
               entry.getLocations().toString(),
               "IpSpace",
               Objects.toString(entry.getIpSpace())));
+    }
+    return table;
+  }
+
+  private static TableAnswerElement resolveLocation(
+      SpecifiersQuestion question, SpecifierContext context) {
+
+    List<ColumnMetadata> columns =
+        ImmutableList.of(new ColumnMetadata("Location", Schema.STRING, "Resolution", false, false));
+    TableAnswerElement table = new TableAnswerElement(new TableMetadata(columns));
+    Map<String, ColumnMetadata> columnMap = table.getMetadata().toColumnMap();
+
+    Set<Location> locations = question.getLocationSpecifier().resolve(context);
+    for (Location location : locations) {
+      table.addRow(Row.of(columnMap, "Location", location.toString()));
     }
     return table;
   }
