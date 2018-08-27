@@ -393,7 +393,7 @@ origin_expr
 origin_expr_literal
 :
    (
-      EGP as = DEC
+      EGP bgp_asn
    )
    | IGP
    | INCOMPLETE

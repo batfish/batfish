@@ -1,20 +1,30 @@
 package org.batfish.datamodel.routing_policy.statement;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.expr.IntExpr;
 
-public class SetWeight extends Statement {
-
+@ParametersAreNonnullByDefault
+public final class SetWeight extends Statement {
+  private static final String PROP_WEIGHT = "weight";
   /** */
   private static final long serialVersionUID = 1L;
 
-  private IntExpr _weight;
+  @Nonnull private IntExpr _weight;
 
   @JsonCreator
-  private SetWeight() {}
+  private static SetWeight jsonCreator(@Nullable @JsonProperty(PROP_WEIGHT) IntExpr weight) {
+    checkArgument(weight != null, "%s must be provided", PROP_WEIGHT);
+    return new SetWeight(weight);
+  }
 
   public SetWeight(IntExpr weight) {
     _weight = weight;
@@ -24,22 +34,11 @@ public class SetWeight extends Statement {
   public boolean equals(Object obj) {
     if (this == obj) {
       return true;
-    }
-    if (obj == null) {
-      return false;
-    }
-    if (getClass() != obj.getClass()) {
+    } else if (!(obj instanceof SetWeight)) {
       return false;
     }
     SetWeight other = (SetWeight) obj;
-    if (_weight == null) {
-      if (other._weight != null) {
-        return false;
-      }
-    } else if (!_weight.equals(other._weight)) {
-      return false;
-    }
-    return true;
+    return _weight.equals(other._weight);
   }
 
   @Override
@@ -51,6 +50,8 @@ public class SetWeight extends Statement {
     return result;
   }
 
+  @JsonProperty(PROP_WEIGHT)
+  @Nonnull
   public IntExpr getWeight() {
     return _weight;
   }
@@ -59,7 +60,7 @@ public class SetWeight extends Statement {
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + ((_weight == null) ? 0 : _weight.hashCode());
+    result = prime * result + _weight.hashCode();
     return result;
   }
 

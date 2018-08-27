@@ -385,7 +385,7 @@ AS_PATH_GROUP
 
 AS_PATH_PREPEND
 :
-   'as-path-prepend'
+   'as-path-prepend' -> pushMode ( M_AsPathPrepend )
 ;
 
 ASCII_TEXT
@@ -5907,6 +5907,11 @@ M_AsPathExpr_DEC
    F_Digit+ -> type ( DEC )
 ;
 
+M_AsPathExpr_PERIOD
+:
+   '.' -> type ( PERIOD )
+;
+
 M_AsPathExpr_OPEN_BRACKET
 :
    '[' -> type ( OPEN_BRACKET )
@@ -5923,6 +5928,45 @@ M_AsPathExpr_DOUBLE_QUOTE
 ;
 
 M_AsPathExpr_WS
+:
+   F_WhitespaceChar+ -> channel ( HIDDEN )
+;
+
+mode M_AsPathPrepend;
+
+M_AsPathPrepend_DEC
+:
+   F_Digit+ -> type ( DEC ) , popMode
+;
+
+M_AsPathPrepend_DOUBLE_QUOTE
+:
+   '"' -> channel( HIDDEN ) , mode ( M_AsPathPrepend_Inner )
+;
+
+M_AsPathPrepend_WS
+:
+   F_WhitespaceChar+ -> channel ( HIDDEN )
+;
+
+mode M_AsPathPrepend_Inner;
+
+M_AsPathPrepend_Inner_DEC
+:
+   F_Digit+ -> type ( DEC )
+;
+
+M_AsPathPrepend_Inner_DOUBLE_QUOTE
+:
+   '"' -> channel( HIDDEN ) , popMode
+;
+
+M_AsPathPrepend_Inner_PERIOD
+:
+   '.' -> type ( PERIOD )
+;
+
+M_AsPathPrepend_Inner_WS
 :
    F_WhitespaceChar+ -> channel ( HIDDEN )
 ;

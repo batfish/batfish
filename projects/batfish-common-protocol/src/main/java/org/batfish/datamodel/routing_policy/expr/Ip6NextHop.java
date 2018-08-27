@@ -1,20 +1,30 @@
 package org.batfish.datamodel.routing_policy.expr;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableList;
 import java.util.List;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.routing_policy.Environment;
 
-public class Ip6NextHop extends NextHopExpr {
-
+@ParametersAreNonnullByDefault
+public final class Ip6NextHop extends NextHopExpr {
+  private static final String PROP_IPS = "ips";
   /** */
   private static final long serialVersionUID = 1L;
 
-  private List<Ip6> _ips;
+  @Nonnull private final List<Ip6> _ips;
 
   @JsonCreator
-  private Ip6NextHop() {}
+  private static Ip6NextHop jsonCreator(@Nullable @JsonProperty(PROP_IPS) List<Ip6> ips) {
+    return new Ip6NextHop(firstNonNull(ips, ImmutableList.of()));
+  }
 
   public Ip6NextHop(List<Ip6> ips) {
     _ips = ips;
@@ -24,24 +34,15 @@ public class Ip6NextHop extends NextHopExpr {
   public boolean equals(Object obj) {
     if (this == obj) {
       return true;
-    }
-    if (obj == null) {
-      return false;
-    }
-    if (getClass() != obj.getClass()) {
+    } else if (!(obj instanceof Ip6NextHop)) {
       return false;
     }
     Ip6NextHop other = (Ip6NextHop) obj;
-    if (_ips == null) {
-      if (other._ips != null) {
-        return false;
-      }
-    } else if (!_ips.equals(other._ips)) {
-      return false;
-    }
-    return true;
+    return _ips.equals(other._ips);
   }
 
+  @JsonProperty(PROP_IPS)
+  @Nonnull
   public List<Ip6> getIps() {
     return _ips;
   }
@@ -56,11 +57,7 @@ public class Ip6NextHop extends NextHopExpr {
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + ((_ips == null) ? 0 : _ips.hashCode());
+    result = prime * result + _ips.hashCode();
     return result;
-  }
-
-  public void setIps(List<Ip6> ips) {
-    _ips = ips;
   }
 }

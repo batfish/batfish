@@ -1,21 +1,35 @@
 package org.batfish.datamodel.routing_policy.expr;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 
-public class MatchPrefix6Set extends BooleanExpr {
-
+@ParametersAreNonnullByDefault
+public final class MatchPrefix6Set extends BooleanExpr {
+  private static final String PROP_PREFIX = "prefix";
+  private static final String PROP_PREFIX_SET = "prefixSet";
   /** */
   private static final long serialVersionUID = 1L;
 
-  private Prefix6Expr _prefix;
+  @Nonnull private Prefix6Expr _prefix;
 
-  private Prefix6SetExpr _prefixSet;
+  @Nonnull private Prefix6SetExpr _prefixSet;
 
   @JsonCreator
-  private MatchPrefix6Set() {}
+  private static MatchPrefix6Set jsonCreator(
+      @Nullable @JsonProperty(PROP_PREFIX) Prefix6Expr prefix,
+      @Nullable @JsonProperty(PROP_PREFIX_SET) Prefix6SetExpr prefixSet) {
+    checkArgument(prefix != null, "%s must be provided", PROP_PREFIX);
+    checkArgument(prefixSet != null, "%s must be provided", PROP_PREFIX_SET);
+    return new MatchPrefix6Set(prefix, prefixSet);
+  }
 
   public MatchPrefix6Set(Prefix6Expr prefix, Prefix6SetExpr prefixSet) {
     _prefix = prefix;
@@ -26,29 +40,11 @@ public class MatchPrefix6Set extends BooleanExpr {
   public boolean equals(Object obj) {
     if (this == obj) {
       return true;
-    }
-    if (obj == null) {
-      return false;
-    }
-    if (getClass() != obj.getClass()) {
+    } else if (!(obj instanceof MatchPrefix6Set)) {
       return false;
     }
     MatchPrefix6Set other = (MatchPrefix6Set) obj;
-    if (_prefix == null) {
-      if (other._prefix != null) {
-        return false;
-      }
-    } else if (!_prefix.equals(other._prefix)) {
-      return false;
-    }
-    if (_prefixSet == null) {
-      if (other._prefixSet != null) {
-        return false;
-      }
-    } else if (!_prefixSet.equals(other._prefixSet)) {
-      return false;
-    }
-    return true;
+    return _prefix.equals(other._prefix) && _prefixSet.equals(other._prefixSet);
   }
 
   @Override
@@ -60,10 +56,14 @@ public class MatchPrefix6Set extends BooleanExpr {
     return result;
   }
 
+  @JsonProperty(PROP_PREFIX)
+  @Nonnull
   public Prefix6Expr getPrefix() {
     return _prefix;
   }
 
+  @JsonProperty(PROP_PREFIX_SET)
+  @Nonnull
   public Prefix6SetExpr getPrefixSet() {
     return _prefixSet;
   }
@@ -72,16 +72,8 @@ public class MatchPrefix6Set extends BooleanExpr {
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + ((_prefix == null) ? 0 : _prefix.hashCode());
-    result = prime * result + ((_prefixSet == null) ? 0 : _prefixSet.hashCode());
+    result = prime * result + _prefix.hashCode();
+    result = prime * result + _prefixSet.hashCode();
     return result;
-  }
-
-  public void setPrefix(Prefix6Expr prefix) {
-    _prefix = prefix;
-  }
-
-  public void setPrefixSet(Prefix6SetExpr prefixSet) {
-    _prefixSet = prefixSet;
   }
 }

@@ -1,17 +1,21 @@
 package org.batfish.common;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ParseTreeSentences implements Serializable {
+  private static final String PROP_SENTENCES = "sentences";
 
   /** */
   private static final long serialVersionUID = 1L;
 
   protected List<String> _sentences;
 
+  @JsonCreator
   public ParseTreeSentences() {
     _sentences = new ArrayList<>();
   }
@@ -26,6 +30,7 @@ public class ParseTreeSentences implements Serializable {
     }
   }
 
+  @JsonProperty(PROP_SENTENCES)
   public List<String> getSentences() {
     return _sentences;
   }
@@ -35,6 +40,7 @@ public class ParseTreeSentences implements Serializable {
     return _sentences.isEmpty();
   }
 
+  @JsonProperty(PROP_SENTENCES)
   public void setSentences(List<String> sentences) {
     _sentences = sentences;
   }

@@ -43,6 +43,7 @@ import org.batfish.datamodel.table.Row.RowBuilder;
 import org.batfish.datamodel.table.Rows;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
+import org.batfish.question.ReachFilterParameters;
 import org.batfish.question.testfilters.TestFiltersAnswerer;
 import org.batfish.question.testfilters.TestFiltersQuestion;
 import org.batfish.specifier.FilterSpecifier;
@@ -94,13 +95,17 @@ public final class ReachFilterAnswerer extends Answerer {
     Multimap<String, String> deltaAcls = getSpecifiedAcls(question);
     _batfish.popEnvironment();
 
+    ReachFilterParameters parameters = question.toReachFilterParameters();
+
     Set<String> commonNodes = Sets.intersection(baseAcls.keySet(), deltaAcls.keySet());
     for (String node : commonNodes) {
       Configuration baseConfig = baseConfigs.get(node);
       Configuration deltaConfig = deltaConfigs.get(node);
+
       Set<String> commonAcls =
           Sets.intersection(
               ImmutableSet.copyOf(baseAcls.get(node)), ImmutableSet.copyOf(deltaAcls.get(node)));
+
       for (String aclName : commonAcls) {
         Optional<IpAccessList> baseAcl = makeQueryAcl(baseConfig.getIpAccessLists().get(aclName));
         Optional<IpAccessList> deltaAcl = makeQueryAcl(deltaConfig.getIpAccessLists().get(aclName));
@@ -114,11 +119,7 @@ public final class ReachFilterAnswerer extends Answerer {
 
         DifferentialReachFilterResult result =
             _batfish.differentialReachFilter(
-                baseConfig,
-                baseAcl.get(),
-                deltaConfig,
-                deltaAcl.get(),
-                question.toReachFilterParameters());
+                baseConfig, baseAcl.get(), deltaConfig, deltaAcl.get(), parameters);
 
         result
             .getDecreasedFlow()
