@@ -3,6 +3,18 @@ package org.batfish.allinone;
 import static org.batfish.datamodel.IpAccessListLine.acceptingHeaderSpace;
 import static org.batfish.datamodel.IpAccessListLine.rejectingHeaderSpace;
 import static org.batfish.datamodel.answers.AclLines2Rows.COLUMN_METADATA;
+import static org.batfish.datamodel.answers.AclLines2Rows.COL_BLOCKED_LINE_NUM;
+import static org.batfish.datamodel.answers.AclLines2Rows.COL_BLOCKING_LINE_NUMS;
+import static org.batfish.datamodel.answers.AclLines2Rows.COL_DIFF_ACTION;
+import static org.batfish.datamodel.answers.AclLines2Rows.COL_LINES;
+import static org.batfish.datamodel.answers.AclLines2Rows.COL_MESSAGE;
+import static org.batfish.datamodel.answers.AclLines2Rows.COL_REASON;
+import static org.batfish.datamodel.answers.AclLines2Rows.COL_SOURCES;
+import static org.batfish.datamodel.answers.AclLines2Rows.Reason.CYCLICAL_REFERENCE;
+import static org.batfish.datamodel.answers.AclLines2Rows.Reason.MULTIPLE_BLOCKING_LINES;
+import static org.batfish.datamodel.answers.AclLines2Rows.Reason.SINGLE_BLOCKING_LINE;
+import static org.batfish.datamodel.answers.AclLines2Rows.Reason.UNDEFINED_REFERFENCE;
+import static org.batfish.datamodel.answers.AclLines2Rows.Reason.UNMATCHABLE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
@@ -31,7 +43,6 @@ import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.PermittedByAcl;
-import org.batfish.datamodel.answers.AclLines2Rows;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.main.Batfish;
@@ -93,17 +104,14 @@ public class AclReachability2Test {
     Multiset<Row> expected =
         ImmutableMultiset.of(
             Row.builder(COLUMN_METADATA)
-                .put(AclLines2Rows.COL_SOURCES, ImmutableList.of(_c1.getHostname() + ": acl"))
-                .put(AclLines2Rows.COL_LINES, lineNames)
-                .put(AclLines2Rows.COL_BLOCKED_LINE_NUM, 1)
-                .put(AclLines2Rows.COL_BLOCKING_LINE_NUMS, ImmutableSet.of(0))
-                .put(AclLines2Rows.COL_DIFF_ACTION, false)
-                .put(AclLines2Rows.COL_CIRCULAR_REFERENCE, false)
-                .put(AclLines2Rows.COL_MULTIPLE_BLOCKING_LINES, false)
-                .put(AclLines2Rows.COL_UNDEFINED_REFERENCE, false)
-                .put(AclLines2Rows.COL_UNMATCHABLE, false)
+                .put(COL_SOURCES, ImmutableList.of(_c1.getHostname() + ": acl"))
+                .put(COL_LINES, lineNames)
+                .put(COL_BLOCKED_LINE_NUM, 1)
+                .put(COL_BLOCKING_LINE_NUMS, ImmutableSet.of(0))
+                .put(COL_DIFF_ACTION, false)
+                .put(COL_REASON, SINGLE_BLOCKING_LINE)
                 .put(
-                    AclLines2Rows.COL_MESSAGE,
+                    COL_MESSAGE,
                     "ACLs { c1: acl } contain an unreachable line:\n  [index 1] "
                         + lineNames.get(1)
                         + "\nBlocking line(s):\n  [index 0] "
@@ -139,17 +147,14 @@ public class AclReachability2Test {
     Multiset<Row> expected =
         ImmutableMultiset.of(
             Row.builder(COLUMN_METADATA)
-                .put(AclLines2Rows.COL_SOURCES, ImmutableList.of(_c1.getHostname() + ": acl"))
-                .put(AclLines2Rows.COL_LINES, lineNames)
-                .put(AclLines2Rows.COL_BLOCKED_LINE_NUM, 1)
-                .put(AclLines2Rows.COL_BLOCKING_LINE_NUMS, ImmutableSet.of(0))
-                .put(AclLines2Rows.COL_DIFF_ACTION, false)
-                .put(AclLines2Rows.COL_CIRCULAR_REFERENCE, false)
-                .put(AclLines2Rows.COL_MULTIPLE_BLOCKING_LINES, false)
-                .put(AclLines2Rows.COL_UNDEFINED_REFERENCE, false)
-                .put(AclLines2Rows.COL_UNMATCHABLE, false)
+                .put(COL_SOURCES, ImmutableList.of(_c1.getHostname() + ": acl"))
+                .put(COL_LINES, lineNames)
+                .put(COL_BLOCKED_LINE_NUM, 1)
+                .put(COL_BLOCKING_LINE_NUMS, ImmutableSet.of(0))
+                .put(COL_DIFF_ACTION, false)
+                .put(COL_REASON, SINGLE_BLOCKING_LINE)
                 .put(
-                    AclLines2Rows.COL_MESSAGE,
+                    COL_MESSAGE,
                     "ACLs { c1: acl } contain an unreachable line:\n  [index 1] "
                         + lineNames.get(1)
                         + "\nBlocking line(s):\n  [index 0] "
@@ -183,19 +188,13 @@ public class AclReachability2Test {
     Multiset<Row> expected =
         ImmutableMultiset.of(
             Row.builder(COLUMN_METADATA)
-                .put(
-                    AclLines2Rows.COL_SOURCES, ImmutableList.of(_c1.getHostname() + ": acl1, acl2"))
-                .put(AclLines2Rows.COL_LINES, null)
-                .put(AclLines2Rows.COL_BLOCKED_LINE_NUM, null)
-                .put(AclLines2Rows.COL_BLOCKING_LINE_NUMS, null)
-                .put(AclLines2Rows.COL_DIFF_ACTION, null)
-                .put(AclLines2Rows.COL_CIRCULAR_REFERENCE, true)
-                .put(AclLines2Rows.COL_MULTIPLE_BLOCKING_LINES, false)
-                .put(AclLines2Rows.COL_UNDEFINED_REFERENCE, false)
-                .put(AclLines2Rows.COL_UNMATCHABLE, false)
-                .put(
-                    AclLines2Rows.COL_MESSAGE,
-                    "Cyclic ACL references in node 'c1': acl1 -> acl2 -> acl1")
+                .put(COL_SOURCES, ImmutableList.of(_c1.getHostname() + ": acl1, acl2"))
+                .put(COL_LINES, null)
+                .put(COL_BLOCKED_LINE_NUM, null)
+                .put(COL_BLOCKING_LINE_NUMS, null)
+                .put(COL_DIFF_ACTION, null)
+                .put(COL_REASON, CYCLICAL_REFERENCE)
+                .put(COL_MESSAGE, "Cyclic ACL references in node 'c1': acl1 -> acl2 -> acl1")
                 .build());
     assertThat(answer.getRows().getData(), equalTo(expected));
   }
@@ -241,20 +240,14 @@ public class AclReachability2Test {
     Multiset<Row> expected =
         ImmutableMultiset.of(
             Row.builder(COLUMN_METADATA)
+                .put(COL_SOURCES, ImmutableList.of(_c1.getHostname() + ": acl0, acl1, acl2"))
+                .put(COL_LINES, null)
+                .put(COL_BLOCKED_LINE_NUM, null)
+                .put(COL_BLOCKING_LINE_NUMS, null)
+                .put(COL_DIFF_ACTION, null)
+                .put(COL_REASON, CYCLICAL_REFERENCE)
                 .put(
-                    AclLines2Rows.COL_SOURCES,
-                    ImmutableList.of(_c1.getHostname() + ": acl0, acl1, acl2"))
-                .put(AclLines2Rows.COL_LINES, null)
-                .put(AclLines2Rows.COL_BLOCKED_LINE_NUM, null)
-                .put(AclLines2Rows.COL_BLOCKING_LINE_NUMS, null)
-                .put(AclLines2Rows.COL_DIFF_ACTION, null)
-                .put(AclLines2Rows.COL_CIRCULAR_REFERENCE, true)
-                .put(AclLines2Rows.COL_MULTIPLE_BLOCKING_LINES, false)
-                .put(AclLines2Rows.COL_UNDEFINED_REFERENCE, false)
-                .put(AclLines2Rows.COL_UNMATCHABLE, false)
-                .put(
-                    AclLines2Rows.COL_MESSAGE,
-                    "Cyclic ACL references in node 'c1': acl0 -> acl1 -> acl2 -> acl0")
+                    COL_MESSAGE, "Cyclic ACL references in node 'c1': acl0 -> acl1 -> acl2 -> acl0")
                 .build());
     assertThat(answer.getRows().getData(), equalTo(expected));
   }
@@ -272,17 +265,14 @@ public class AclReachability2Test {
     Multiset<Row> expected =
         ImmutableMultiset.of(
             Row.builder(COLUMN_METADATA)
-                .put(AclLines2Rows.COL_SOURCES, ImmutableList.of(_c1.getHostname() + ": acl"))
-                .put(AclLines2Rows.COL_LINES, ImmutableList.of(aclLine.toString()))
-                .put(AclLines2Rows.COL_BLOCKED_LINE_NUM, 0)
-                .put(AclLines2Rows.COL_BLOCKING_LINE_NUMS, ImmutableList.of())
-                .put(AclLines2Rows.COL_DIFF_ACTION, false)
-                .put(AclLines2Rows.COL_CIRCULAR_REFERENCE, false)
-                .put(AclLines2Rows.COL_MULTIPLE_BLOCKING_LINES, false)
-                .put(AclLines2Rows.COL_UNDEFINED_REFERENCE, true)
-                .put(AclLines2Rows.COL_UNMATCHABLE, false)
+                .put(COL_SOURCES, ImmutableList.of(_c1.getHostname() + ": acl"))
+                .put(COL_LINES, ImmutableList.of(aclLine.toString()))
+                .put(COL_BLOCKED_LINE_NUM, 0)
+                .put(COL_BLOCKING_LINE_NUMS, ImmutableList.of())
+                .put(COL_DIFF_ACTION, false)
+                .put(COL_REASON, UNDEFINED_REFERFENCE)
                 .put(
-                    AclLines2Rows.COL_MESSAGE,
+                    COL_MESSAGE,
                     "ACLs { c1: acl } contain an unreachable line:\n  [index 0] IpAccessListLine{action=PERMIT,"
                         + " matchCondition=PermittedByAcl{aclName=???, defaultAccept=false}}"
                         + "\nThis line references a structure that is not defined.")
@@ -328,19 +318,14 @@ public class AclReachability2Test {
     Multiset<Row> expected =
         ImmutableMultiset.of(
             Row.builder(COLUMN_METADATA)
+                .put(COL_SOURCES, ImmutableList.of(_c1.getHostname() + ": " + acl.getName()))
+                .put(COL_LINES, lineNames)
+                .put(COL_BLOCKED_LINE_NUM, 1)
+                .put(COL_BLOCKING_LINE_NUMS, ImmutableList.of(0))
+                .put(COL_DIFF_ACTION, false)
+                .put(COL_REASON, SINGLE_BLOCKING_LINE)
                 .put(
-                    AclLines2Rows.COL_SOURCES,
-                    ImmutableList.of(_c1.getHostname() + ": " + acl.getName()))
-                .put(AclLines2Rows.COL_LINES, lineNames)
-                .put(AclLines2Rows.COL_BLOCKED_LINE_NUM, 1)
-                .put(AclLines2Rows.COL_BLOCKING_LINE_NUMS, ImmutableList.of(0))
-                .put(AclLines2Rows.COL_DIFF_ACTION, false)
-                .put(AclLines2Rows.COL_CIRCULAR_REFERENCE, false)
-                .put(AclLines2Rows.COL_MULTIPLE_BLOCKING_LINES, false)
-                .put(AclLines2Rows.COL_UNDEFINED_REFERENCE, false)
-                .put(AclLines2Rows.COL_UNMATCHABLE, false)
-                .put(
-                    AclLines2Rows.COL_MESSAGE,
+                    COL_MESSAGE,
                     "ACLs { c1: acl2 } contain an unreachable line:\n  [index 1] IpAccessListLine{action=PERMIT, "
                         + "matchCondition=MatchHeaderSpace{headerSpace=HeaderSpace{srcIps=PrefixIpSpace{prefix=1.0.0.0/24}}}}"
                         + "\nBlocking line(s):\n  [index 0] IpAccessListLine{action=PERMIT, "
@@ -380,19 +365,14 @@ public class AclReachability2Test {
     Multiset<Row> expected =
         ImmutableMultiset.of(
             Row.builder(COLUMN_METADATA)
+                .put(COL_SOURCES, ImmutableList.of(_c1.getHostname() + ": " + acl.getName()))
+                .put(COL_LINES, lineNames)
+                .put(COL_BLOCKED_LINE_NUM, 2)
+                .put(COL_BLOCKING_LINE_NUMS, ImmutableList.of())
+                .put(COL_DIFF_ACTION, false)
+                .put(COL_REASON, MULTIPLE_BLOCKING_LINES)
                 .put(
-                    AclLines2Rows.COL_SOURCES,
-                    ImmutableList.of(_c1.getHostname() + ": " + acl.getName()))
-                .put(AclLines2Rows.COL_LINES, lineNames)
-                .put(AclLines2Rows.COL_BLOCKED_LINE_NUM, 2)
-                .put(AclLines2Rows.COL_BLOCKING_LINE_NUMS, ImmutableList.of())
-                .put(AclLines2Rows.COL_DIFF_ACTION, false)
-                .put(AclLines2Rows.COL_CIRCULAR_REFERENCE, false)
-                .put(AclLines2Rows.COL_MULTIPLE_BLOCKING_LINES, true)
-                .put(AclLines2Rows.COL_UNDEFINED_REFERENCE, false)
-                .put(AclLines2Rows.COL_UNMATCHABLE, false)
-                .put(
-                    AclLines2Rows.COL_MESSAGE,
+                    COL_MESSAGE,
                     "ACLs { c1: acl } contain an unreachable line:\n  [index 2] IpAccessListLine{action=PERMIT, "
                         + "matchCondition=MatchHeaderSpace{headerSpace=HeaderSpace{srcIps=IpWildcardIpSpace{ipWildcard=1.0.0.0/31}}}}"
                         + "\nMultiple earlier lines partially block this line, making it unreachable.")
@@ -431,56 +411,41 @@ public class AclReachability2Test {
     Multiset<Row> expected =
         ImmutableMultiset.of(
             Row.builder(COLUMN_METADATA)
+                .put(COL_SOURCES, ImmutableList.of(_c1.getHostname() + ": " + acl.getName()))
+                .put(COL_LINES, lineNames)
+                .put(COL_BLOCKED_LINE_NUM, 1)
+                .put(COL_BLOCKING_LINE_NUMS, ImmutableList.of(0))
+                .put(COL_DIFF_ACTION, true)
+                .put(COL_REASON, SINGLE_BLOCKING_LINE)
                 .put(
-                    AclLines2Rows.COL_SOURCES,
-                    ImmutableList.of(_c1.getHostname() + ": " + acl.getName()))
-                .put(AclLines2Rows.COL_LINES, lineNames)
-                .put(AclLines2Rows.COL_BLOCKED_LINE_NUM, 1)
-                .put(AclLines2Rows.COL_BLOCKING_LINE_NUMS, ImmutableList.of(0))
-                .put(AclLines2Rows.COL_DIFF_ACTION, true)
-                .put(AclLines2Rows.COL_CIRCULAR_REFERENCE, false)
-                .put(AclLines2Rows.COL_MULTIPLE_BLOCKING_LINES, false)
-                .put(AclLines2Rows.COL_UNDEFINED_REFERENCE, false)
-                .put(AclLines2Rows.COL_UNMATCHABLE, false)
-                .put(
-                    AclLines2Rows.COL_MESSAGE,
+                    COL_MESSAGE,
                     "ACLs { c1: acl } contain an unreachable line:\n  [index 1] IpAccessListLine{action=PERMIT, "
                         + "matchCondition=MatchHeaderSpace{headerSpace=HeaderSpace{srcIps=PrefixIpSpace{prefix=1.0.0.0/24}}}}"
                         + "\nBlocking line(s):\n  [index 0] IpAccessListLine{action=DENY, "
                         + "matchCondition=MatchHeaderSpace{headerSpace=HeaderSpace{srcIps=PrefixIpSpace{prefix=1.0.0.0/24}}}}")
                 .build(),
             Row.builder(COLUMN_METADATA)
+                .put(COL_SOURCES, ImmutableList.of(_c1.getHostname() + ": " + acl.getName()))
+                .put(COL_LINES, lineNames)
+                .put(COL_BLOCKED_LINE_NUM, 2)
+                .put(COL_BLOCKING_LINE_NUMS, ImmutableList.of())
+                .put(COL_DIFF_ACTION, false)
+                .put(COL_REASON, UNMATCHABLE)
                 .put(
-                    AclLines2Rows.COL_SOURCES,
-                    ImmutableList.of(_c1.getHostname() + ": " + acl.getName()))
-                .put(AclLines2Rows.COL_LINES, lineNames)
-                .put(AclLines2Rows.COL_BLOCKED_LINE_NUM, 2)
-                .put(AclLines2Rows.COL_BLOCKING_LINE_NUMS, ImmutableList.of())
-                .put(AclLines2Rows.COL_DIFF_ACTION, false)
-                .put(AclLines2Rows.COL_CIRCULAR_REFERENCE, false)
-                .put(AclLines2Rows.COL_MULTIPLE_BLOCKING_LINES, false)
-                .put(AclLines2Rows.COL_UNDEFINED_REFERENCE, false)
-                .put(AclLines2Rows.COL_UNMATCHABLE, true)
-                .put(
-                    AclLines2Rows.COL_MESSAGE,
+                    COL_MESSAGE,
                     "ACLs { c1: acl } contain an unreachable line:\n"
                         + "  [index 2] IpAccessListLine{action=PERMIT, matchCondition=FalseExpr{}}\n"
                         + "This line will never match any packet, independent of preceding lines.")
                 .build(),
             Row.builder(COLUMN_METADATA)
+                .put(COL_SOURCES, ImmutableList.of(_c1.getHostname() + ": " + acl.getName()))
+                .put(COL_LINES, lineNames)
+                .put(COL_BLOCKED_LINE_NUM, 3)
+                .put(COL_BLOCKING_LINE_NUMS, ImmutableList.of(0))
+                .put(COL_DIFF_ACTION, true)
+                .put(COL_REASON, SINGLE_BLOCKING_LINE)
                 .put(
-                    AclLines2Rows.COL_SOURCES,
-                    ImmutableList.of(_c1.getHostname() + ": " + acl.getName()))
-                .put(AclLines2Rows.COL_LINES, lineNames)
-                .put(AclLines2Rows.COL_BLOCKED_LINE_NUM, 3)
-                .put(AclLines2Rows.COL_BLOCKING_LINE_NUMS, ImmutableList.of(0))
-                .put(AclLines2Rows.COL_DIFF_ACTION, true)
-                .put(AclLines2Rows.COL_CIRCULAR_REFERENCE, false)
-                .put(AclLines2Rows.COL_MULTIPLE_BLOCKING_LINES, false)
-                .put(AclLines2Rows.COL_UNDEFINED_REFERENCE, false)
-                .put(AclLines2Rows.COL_UNMATCHABLE, false)
-                .put(
-                    AclLines2Rows.COL_MESSAGE,
+                    COL_MESSAGE,
                     "ACLs { c1: acl } contain an unreachable line:\n  [index 3] IpAccessListLine{action=PERMIT, "
                         + "matchCondition=MatchHeaderSpace{headerSpace=HeaderSpace{srcIps=PrefixIpSpace{prefix=1.0.0.0/32}}}}"
                         + "\nBlocking line(s):\n  [index 0] IpAccessListLine{action=DENY, "
@@ -549,19 +514,14 @@ public class AclReachability2Test {
     Multiset<Row> expected =
         ImmutableMultiset.of(
             Row.builder(COLUMN_METADATA)
+                .put(COL_SOURCES, ImmutableList.of(_c1.getHostname() + ": " + acl.getName()))
+                .put(COL_LINES, lineNames)
+                .put(COL_BLOCKED_LINE_NUM, 1)
+                .put(COL_BLOCKING_LINE_NUMS, ImmutableList.of(0))
+                .put(COL_DIFF_ACTION, false)
+                .put(COL_REASON, SINGLE_BLOCKING_LINE)
                 .put(
-                    AclLines2Rows.COL_SOURCES,
-                    ImmutableList.of(_c1.getHostname() + ": " + acl.getName()))
-                .put(AclLines2Rows.COL_LINES, lineNames)
-                .put(AclLines2Rows.COL_BLOCKED_LINE_NUM, 1)
-                .put(AclLines2Rows.COL_BLOCKING_LINE_NUMS, ImmutableList.of(0))
-                .put(AclLines2Rows.COL_DIFF_ACTION, false)
-                .put(AclLines2Rows.COL_CIRCULAR_REFERENCE, false)
-                .put(AclLines2Rows.COL_MULTIPLE_BLOCKING_LINES, false)
-                .put(AclLines2Rows.COL_UNDEFINED_REFERENCE, false)
-                .put(AclLines2Rows.COL_UNMATCHABLE, false)
-                .put(
-                    AclLines2Rows.COL_MESSAGE,
+                    COL_MESSAGE,
                     "ACLs { c1: acl } contain an unreachable line:\n  [index 1] IpAccessListLine{action=PERMIT,"
                         + " matchCondition=MatchSrcInterface{srcInterfaces=[iface]}}\n"
                         + "Blocking line(s):\n  [index 0] IpAccessListLine{action=PERMIT,"

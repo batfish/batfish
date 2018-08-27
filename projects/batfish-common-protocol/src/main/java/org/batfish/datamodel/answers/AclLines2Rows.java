@@ -27,14 +27,20 @@ import org.batfish.datamodel.table.TableMetadata;
  */
 @ParametersAreNonnullByDefault
 public class AclLines2Rows implements AclLinesAnswerElementInterface {
+
+  public static enum Reason {
+    CYCLICAL_REFERENCE,
+    MULTIPLE_BLOCKING_LINES,
+    SINGLE_BLOCKING_LINE,
+    UNDEFINED_REFERFENCE,
+    UNMATCHABLE
+  }
+
   public static final String COL_SOURCES = "aclSources";
   public static final String COL_LINES = "lines";
   public static final String COL_BLOCKED_LINE_NUM = "blockedLineNum";
   public static final String COL_BLOCKING_LINE_NUMS = "blockingLineNums";
-  public static final String COL_CIRCULAR_REFERENCE = "circularReference";
-  public static final String COL_MULTIPLE_BLOCKING_LINES = "multipleBlockingLines";
-  public static final String COL_UNDEFINED_REFERENCE = "undefinedReference";
-  public static final String COL_UNMATCHABLE = "unmatchable";
+  public static final String COL_REASON = "reason";
   public static final String COL_DIFF_ACTION = "differentAction";
   public static final String COL_MESSAGE = "message";
 
@@ -63,24 +69,8 @@ public class AclLines2Rows implements AclLinesAnswerElementInterface {
               COL_DIFF_ACTION,
               new ColumnMetadata(COL_DIFF_ACTION, Schema.BOOLEAN, "Different action", false, true))
           .put(
-              COL_CIRCULAR_REFERENCE,
-              new ColumnMetadata(
-                  COL_CIRCULAR_REFERENCE, Schema.BOOLEAN, "Circular reference", false, true))
-          .put(
-              COL_UNDEFINED_REFERENCE,
-              new ColumnMetadata(
-                  COL_UNDEFINED_REFERENCE, Schema.BOOLEAN, "Undefined reference", false, true))
-          .put(
-              COL_UNMATCHABLE,
-              new ColumnMetadata(COL_UNMATCHABLE, Schema.BOOLEAN, "Unmatchable line", false, true))
-          .put(
-              COL_MULTIPLE_BLOCKING_LINES,
-              new ColumnMetadata(
-                  COL_MULTIPLE_BLOCKING_LINES,
-                  Schema.BOOLEAN,
-                  "Multiple blocking lines",
-                  false,
-                  true))
+              COL_REASON,
+              new ColumnMetadata(COL_REASON, Schema.STRING, "Reason unreachable", false, true))
           .put(COL_MESSAGE, new ColumnMetadata(COL_MESSAGE, Schema.STRING, "Message", false, false))
           .build();
 
@@ -114,10 +104,14 @@ public class AclLines2Rows implements AclLinesAnswerElementInterface {
             .collect(Collectors.toList());
 
     CanonicalAcl canonicalAcl = aclSpecs.acl;
-    boolean undefinedRef = canonicalAcl.hasUndefinedRef(lineNumber);
-    boolean independentlyUnmatchable = !undefinedRef && unmatchable;
-    boolean multipleBlocking = !undefinedRef && !unmatchable && blockingLines.isEmpty();
-
+    Reason reason =
+        canonicalAcl.hasUndefinedRef(lineNumber)
+            ? Reason.UNDEFINED_REFERFENCE
+            : unmatchable
+                ? Reason.UNMATCHABLE
+                : blockingLines.isEmpty()
+                    ? Reason.MULTIPLE_BLOCKING_LINES
+                    : Reason.SINGLE_BLOCKING_LINE;
     _rows.add(
         Row.builder(COLUMN_METADATA)
             .put(COL_SOURCES, flatSources)
@@ -130,10 +124,7 @@ public class AclLines2Rows implements AclLinesAnswerElementInterface {
             .put(COL_BLOCKED_LINE_NUM, lineNumber)
             .put(COL_BLOCKING_LINE_NUMS, blockingLines)
             .put(COL_DIFF_ACTION, diffAction)
-            .put(COL_CIRCULAR_REFERENCE, false)
-            .put(COL_MULTIPLE_BLOCKING_LINES, multipleBlocking)
-            .put(COL_UNDEFINED_REFERENCE, undefinedRef)
-            .put(COL_UNMATCHABLE, independentlyUnmatchable)
+            .put(COL_REASON, reason)
             .put(
                 COL_MESSAGE,
                 buildMessage(
@@ -141,9 +132,7 @@ public class AclLines2Rows implements AclLinesAnswerElementInterface {
                     lineNumber,
                     flatSources,
                     blockingLines,
-                    undefinedRef,
-                    independentlyUnmatchable,
-                    multipleBlocking))
+                    reason))
             .build());
   }
 
@@ -174,10 +163,7 @@ public class AclLines2Rows implements AclLinesAnswerElementInterface {
             .put(COL_BLOCKED_LINE_NUM, null)
             .put(COL_BLOCKING_LINE_NUMS, null)
             .put(COL_DIFF_ACTION, null)
-            .put(COL_CIRCULAR_REFERENCE, true)
-            .put(COL_UNDEFINED_REFERENCE, false)
-            .put(COL_UNMATCHABLE, false)
-            .put(COL_MULTIPLE_BLOCKING_LINES, false)
+            .put(COL_REASON, Reason.CYCLICAL_REFERENCE)
             .put(
                 COL_MESSAGE,
                 String.format(
@@ -191,9 +177,7 @@ public class AclLines2Rows implements AclLinesAnswerElementInterface {
       int blockedLineNum,
       List<String> flatSources,
       SortedSet<Integer> blockingLines,
-      boolean undefinedRef,
-      boolean unmatchable,
-      boolean multipleBlocking) {
+      Reason reason) {
     String blockedLineName =
         firstNonNull(lines.get(blockedLineNum).getName(), lines.get(blockedLineNum).toString());
     StringBuilder sb =
@@ -201,27 +185,34 @@ public class AclLines2Rows implements AclLinesAnswerElementInterface {
             String.format(
                 "ACLs { %s } contain an unreachable line:\n  [index %d] %s\n",
                 String.join("; ", flatSources), blockedLineNum, blockedLineName));
-    if (undefinedRef) {
-      sb.append("This line references a structure that is not defined.");
-    } else if (unmatchable) {
-      sb.append("This line will never match any packet, independent of preceding lines.");
-    } else if (multipleBlocking) {
-      sb.append("Multiple earlier lines partially block this line, making it unreachable.");
-    } else {
-      sb.append(
-          String.format(
-              "Blocking line(s):\n%s",
-              String.join(
-                  "\n",
-                  blockingLines
-                      .stream()
-                      .map(
-                          i -> {
-                            String blockingLineName =
-                                firstNonNull(lines.get(i).getName(), lines.get(i).toString());
-                            return String.format("  [index %d] %s", i, blockingLineName);
-                          })
-                      .collect(Collectors.toList()))));
+    switch (reason) {
+      case UNDEFINED_REFERFENCE:
+        sb.append("This line references a structure that is not defined.");
+        break;
+      case UNMATCHABLE:
+        sb.append("This line will never match any packet, independent of preceding lines.");
+        break;
+      case MULTIPLE_BLOCKING_LINES:
+        sb.append("Multiple earlier lines partially block this line, making it unreachable.");
+        break;
+      case SINGLE_BLOCKING_LINE:
+        sb.append(
+            String.format(
+                "Blocking line(s):\n%s",
+                String.join(
+                    "\n",
+                    blockingLines
+                        .stream()
+                        .map(
+                            i -> {
+                              String blockingLineName =
+                                  firstNonNull(lines.get(i).getName(), lines.get(i).toString());
+                              return String.format("  [index %d] %s", i, blockingLineName);
+                            })
+                        .collect(Collectors.toList()))));
+        break;
+      default:
+        throw new IllegalArgumentException(String.format("Unsupported reason: %s", reason));
     }
     return sb.toString();
   }
