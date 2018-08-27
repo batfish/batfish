@@ -38,6 +38,7 @@ public class AclLines2Rows implements AclLinesAnswerElementInterface {
 
   public static final String COL_SOURCES = "aclSources";
   public static final String COL_LINES = "lines";
+  public static final String COL_BLOCKED_LINE_ACTION = "blockedLineAction";
   public static final String COL_BLOCKED_LINE_NUM = "blockedLineNum";
   public static final String COL_BLOCKING_LINE_NUMS = "blockingLineNums";
   public static final String COL_REASON = "reason";
@@ -57,6 +58,10 @@ public class AclLines2Rows implements AclLinesAnswerElementInterface {
               COL_BLOCKED_LINE_NUM,
               new ColumnMetadata(
                   COL_BLOCKED_LINE_NUM, Schema.INTEGER, "Blocked line number", true, false))
+          .put(
+              COL_BLOCKED_LINE_ACTION,
+              new ColumnMetadata(
+                  COL_BLOCKED_LINE_ACTION, Schema.STRING, "Blocked line action", true, false))
           .put(
               COL_BLOCKING_LINE_NUMS,
               new ColumnMetadata(
@@ -121,6 +126,7 @@ public class AclLines2Rows implements AclLinesAnswerElementInterface {
                     .stream()
                     .map(l -> firstNonNull(l.getName(), l.toString()))
                     .collect(Collectors.toList()))
+            .put(COL_BLOCKED_LINE_ACTION, blockedLineAction)
             .put(COL_BLOCKED_LINE_NUM, lineNumber)
             .put(COL_BLOCKING_LINE_NUMS, blockingLines)
             .put(COL_DIFF_ACTION, diffAction)
@@ -161,6 +167,7 @@ public class AclLines2Rows implements AclLinesAnswerElementInterface {
             .put(COL_SOURCES, ImmutableList.of(hostname + ": " + String.join(", ", aclsInCycle)))
             .put(COL_LINES, null)
             .put(COL_BLOCKED_LINE_NUM, null)
+            .put(COL_BLOCKED_LINE_ACTION, null)
             .put(COL_BLOCKING_LINE_NUMS, null)
             .put(COL_DIFF_ACTION, null)
             .put(COL_REASON, Reason.CYCLICAL_REFERENCE)
