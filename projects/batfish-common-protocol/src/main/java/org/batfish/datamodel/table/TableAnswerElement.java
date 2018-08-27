@@ -1,19 +1,28 @@
 package org.batfish.datamodel.table;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multiset;
+import com.sun.tools.javac.util.Pair;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.AnswerSummary;
+import org.batfish.datamodel.answers.AutocompleteSuggestion;
 import org.batfish.datamodel.questions.Assertion;
 import org.batfish.datamodel.questions.Exclusion;
 import org.batfish.datamodel.questions.Question;
@@ -162,6 +171,40 @@ public final class TableAnswerElement extends AnswerElement {
         });
 
     setSummary(computeSummary(question.getAssertion()));
+  }
+
+  /**
+   * @param columnName Name of column whose entries are considered for autocomplete suggestions
+   * @param query Query for which autocomplete suggestions will be given
+   * @param maxSuggestions Max number of suggestions to be returned
+   * @return a Pair containing a set of {@link AutocompleteSuggestion} and a boolean that is true if
+   *     the list was truncated because more than {@code maxSuggestions} suggestions were found and
+   *     false if the list contains all possible autocomplete suggestions
+   */
+  public Pair<List<AutocompleteSuggestion>, Boolean> autoComplete(
+      String columnName, @Nullable String query, int maxSuggestions) {
+    String finalQuery = firstNonNull(query, "").toLowerCase();
+    Map<String, ColumnMetadata> columnMetadataMap = _tableMetadata.toColumnMap();
+
+    List<AutocompleteSuggestion> suggestions = new ArrayList<>();
+    Set<String> suggestionSet = new TreeSet<>();
+    int numSuggestions = 0;
+    boolean truncated = false;
+
+    for (Row row : getRowsList()) {
+      String entry = row.get(columnName, columnMetadataMap.get(columnName).getSchema()).toString();
+      if (entry.contains(finalQuery) && !suggestionSet.contains(entry)) {
+        numSuggestions++;
+        if (numSuggestions > maxSuggestions) {
+          truncated = true;
+          break;
+        }
+        suggestions.add(new AutocompleteSuggestion(entry, !entry.equals(finalQuery)));
+        suggestionSet.add(entry);
+      }
+    }
+
+    return Pair.of(suggestions, truncated);
   }
 
   @JsonProperty(PROP_EXCLUDED_ROWS)

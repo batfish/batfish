@@ -356,6 +356,78 @@ public class WorkMgr extends AbstractCoordinator {
     }
   }
 
+  public com.sun.tools.javac.util.Pair<List<AutocompleteSuggestion>, Boolean>
+      autoCompleteTableAnswerRows(
+          String networkName,
+          String snapshotName,
+          String questionName,
+          String columnName,
+          @Nullable String analysisName,
+          @Nullable String deltaName,
+          @Nullable String query,
+          int maxSuggestions)
+          throws JsonProcessingException {
+
+    Path snapshotDir = getdirTestrig(networkName, snapshotName);
+    Path answerDir;
+    if (analysisName != null) {
+      answerDir =
+          snapshotDir.resolve(
+              Paths.get(
+                  BfConsts.RELPATH_ANALYSES_DIR,
+                  analysisName,
+                  BfConsts.RELPATH_QUESTIONS_DIR,
+                  questionName,
+                  BfConsts.RELPATH_ENVIRONMENTS_DIR,
+                  BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME));
+      if (deltaName != null) {
+        answerDir =
+            answerDir.resolve(
+                Paths.get(
+                    BfConsts.RELPATH_DELTA, deltaName, BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME));
+      }
+    } else {
+      answerDir =
+          snapshotDir.resolve(
+              Paths.get(
+                  BfConsts.RELPATH_ANSWERS_DIR,
+                  questionName,
+                  BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME));
+      if (deltaName != null) {
+        answerDir =
+            answerDir.resolve(
+                Paths.get(
+                    BfConsts.RELPATH_DIFF_DIR,
+                    deltaName,
+                    BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME));
+      } else {
+        answerDir = answerDir.resolve(Paths.get(BfConsts.RELPATH_STANDARD_DIR));
+      }
+    }
+
+    Path answerFile = answerDir.resolve(BfConsts.RELPATH_ANSWER_JSON);
+    String answerString = "unknown";
+    if (!Files.exists(answerFile)) {
+      Answer ans = Answer.failureAnswer("Not answered", null);
+      ans.setStatus(AnswerStatus.NOTFOUND);
+      answerString = BatfishObjectMapper.writePrettyString(ans);
+    } else {
+      answerString = CommonUtil.readFile(answerFile);
+    }
+
+    try {
+      Answer answer =
+          BatfishObjectMapper.mapper().readValue(answerString, new TypeReference<Answer>() {});
+      TableAnswerElement table = (TableAnswerElement) answer.getAnswerElements().get(0);
+      return table.autoComplete(columnName, query, maxSuggestions);
+    } catch (Exception e) {
+      _logger.errorf(
+          "WM:autoCompleteTableAnswerRows Failed to convert answer to table answer: %s",
+          e.getMessage());
+      throw new BatfishException("Failed to convert answer to table answer: " + e.getMessage());
+    }
+  }
+
   private void checkTask(QueuedWork work, String worker) {
     _logger.infof("WM:CheckWork: Trying to check %s on %s\n", work, worker);
 

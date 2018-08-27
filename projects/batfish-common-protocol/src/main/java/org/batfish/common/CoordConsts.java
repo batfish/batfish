@@ -76,6 +76,7 @@ public class CoordConsts {
   public static final String SVC_KEY_AUTO_ANALYZE = "autoanalyze";
   public static final String SVC_KEY_AUTO_ANALYZE_TESTRIG = "autoanalyzetestrig";
   public static final String SVC_KEY_BASE_ENV_NAME = "baseenvname";
+  public static final String SVC_KEY_COLUMN_NAME = "columnname";
   public static final String SVC_KEY_COMPLETION_TYPE = "completiontype";
   public static final String SVC_KEY_CONFIGURATION_NAME = "configurationname";
   public static final String SVC_KEY_CONTAINER_LIST = "containerlist";
@@ -117,6 +118,7 @@ public class CoordConsts {
   public static final String SVC_KEY_TESTRIG_LIST = "testriglist";
   public static final String SVC_KEY_TESTRIG_METADATA = "testrigmetadata";
   public static final String SVC_KEY_TESTRIG_NAME = "testrigname";
+  public static final String SVC_KEY_TRUNCATED = "truncated";
   public static final String SVC_KEY_VERBOSE = "verbose";
   public static final String SVC_KEY_VERSION = "version";
   public static final String SVC_KEY_WORK_LIST = "worklist";
@@ -129,6 +131,8 @@ public class CoordConsts {
   /** Constants for endpoints of various service calls */
   public static final String SVC_RSC_AUTO_COMPLETE = "autocomplete";
 
+  public static final String SVC_RSC_AUTO_COMPLETE_TABLE_ANSWER_ROWS =
+      "autocompletetableanswerrows";
   public static final String SVC_RSC_CHECK_API_KEY = "checkapikey";
   public static final String SVC_RSC_CONFIGURE_ANALYSIS = "configureanalysis";
   public static final String SVC_RSC_DEL_ANALYSIS = "delanalysis";

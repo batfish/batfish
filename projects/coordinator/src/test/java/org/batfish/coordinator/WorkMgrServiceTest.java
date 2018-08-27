@@ -18,6 +18,7 @@ import java.io.FileInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
@@ -39,6 +40,9 @@ import org.batfish.datamodel.answers.Aggregation;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.AnswerStatus;
+import org.batfish.datamodel.answers.AutocompleteSuggestion;
+import org.batfish.datamodel.answers.ColumnAggregation;
+import org.batfish.datamodel.answers.ColumnAggregationResult;
 import org.batfish.datamodel.answers.GetAnalysisAnswerMetricsAnswer;
 import org.batfish.datamodel.answers.Metrics;
 import org.batfish.datamodel.answers.Schema;
@@ -123,6 +127,93 @@ public class WorkMgrServiceTest {
     Container expected =
         Container.of(_networkName, Sets.newTreeSet(Collections.singleton(_snapshotName)));
     assertThat(network, equalTo(expected));
+  }
+
+  @Test
+  public void testAutoCompleteTableAnswerRows() throws Exception {
+    String questionName = "question";
+    String columnName = "column";
+    String value = "autoCompleteSuggestion";
+    String query = "auto";
+
+    initNetworkEnvironment();
+
+    Answer testAnswer = new Answer();
+    testAnswer.addAnswerElement(
+        new TableAnswerElement(
+                new TableMetadata(
+                    ImmutableList.of(new ColumnMetadata(columnName, Schema.STRING, "foobar")),
+                    new DisplayHints().getTextDesc()))
+            .addRow(Row.of(columnName, value)));
+    testAnswer.setStatus(AnswerStatus.SUCCESS);
+    String rawAnswer = BatfishObjectMapper.writePrettyString(testAnswer);
+
+    Path answerDir =
+        _networksFolder
+            .getRoot()
+            .toPath()
+            .resolve(
+                Paths.get(
+                    _networkName,
+                    BfConsts.RELPATH_TESTRIGS_DIR,
+                    _snapshotName,
+                    BfConsts.RELPATH_ANSWERS_DIR,
+                    questionName,
+                    BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
+                    BfConsts.RELPATH_STANDARD_DIR));
+
+    Path answerPath = answerDir.resolve(BfConsts.RELPATH_ANSWER_JSON);
+
+    answerDir.toFile().mkdirs();
+
+    CommonUtil.writeFile(answerPath, rawAnswer);
+
+    JSONArray suggestionsJson =
+        _service.autoCompleteTableAnswerRows(
+            CoordConsts.DEFAULT_API_KEY,
+            Version.getVersion(),
+            _networkName,
+            _snapshotName,
+            questionName,
+            columnName,
+            null,
+            null,
+            query,
+            null);
+
+    JSONArray noSuggestionsJson =
+        _service.autoCompleteTableAnswerRows(
+            CoordConsts.DEFAULT_API_KEY,
+            Version.getVersion(),
+            _networkName,
+            _snapshotName,
+            questionName,
+            columnName,
+            null,
+            null,
+            "blah",
+            null);
+
+    assertThat(suggestionsJson.get(0), equalTo(CoordConsts.SVC_KEY_SUCCESS));
+    assertThat(noSuggestionsJson.get(0), equalTo(CoordConsts.SVC_KEY_SUCCESS));
+
+    JSONObject suggestionsJsonObject = (JSONObject) suggestionsJson.get(1);
+    JSONObject noSuggestionsJsonObject = (JSONObject) noSuggestionsJson.get(1);
+
+    assertThat(suggestionsJsonObject.getString(CoordConsts.SVC_KEY_TRUNCATED), equalTo("false"));
+    assertThat(noSuggestionsJsonObject.getString(CoordConsts.SVC_KEY_TRUNCATED), equalTo("false"));
+
+    String suggestionsString = suggestionsJsonObject.getString(CoordConsts.SVC_KEY_SUGGESTIONS);
+    String noSuggestionsString = noSuggestionsJsonObject.getString(CoordConsts.SVC_KEY_SUGGESTIONS);
+
+    assertThat(
+        suggestionsString,
+        equalTo(
+            BatfishObjectMapper.mapper()
+                .writeValueAsString(Arrays.asList(new AutocompleteSuggestion(value, true)))));
+    assertThat(
+        noSuggestionsString,
+        equalTo(BatfishObjectMapper.mapper().writeValueAsString(Collections.EMPTY_LIST)));
   }
 
   @Test
