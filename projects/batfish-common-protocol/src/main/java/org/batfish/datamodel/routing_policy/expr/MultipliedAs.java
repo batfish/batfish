@@ -1,21 +1,37 @@
 package org.batfish.datamodel.routing_policy.expr;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.routing_policy.Environment;
 
-public class MultipliedAs extends AsPathListExpr {
+@ParametersAreNonnullByDefault
+public final class MultipliedAs extends AsPathListExpr {
+
+  private static final String PROP_EXPR = "expr";
+  private static final String PROP_NUMBER = "number";
 
   /** */
   private static final long serialVersionUID = 1L;
 
-  private AsExpr _expr;
+  @Nonnull private AsExpr _expr;
 
-  private IntExpr _number;
+  @Nonnull private IntExpr _number;
 
   @JsonCreator
-  private MultipliedAs() {}
+  private static MultipliedAs jsonCreator(
+      @Nullable @JsonProperty(PROP_EXPR) AsExpr expr,
+      @Nullable @JsonProperty(PROP_NUMBER) IntExpr number) {
+    checkArgument(expr != null, "%s must be provided", PROP_EXPR);
+    checkArgument(number != null, "%s must be provided", PROP_NUMBER);
+    return new MultipliedAs(expr, number);
+  }
 
   public MultipliedAs(AsExpr expr, IntExpr number) {
     _expr = expr;
@@ -26,29 +42,11 @@ public class MultipliedAs extends AsPathListExpr {
   public boolean equals(Object obj) {
     if (this == obj) {
       return true;
-    }
-    if (obj == null) {
-      return false;
-    }
-    if (getClass() != obj.getClass()) {
+    } else if (!(obj instanceof MultipliedAs)) {
       return false;
     }
     MultipliedAs other = (MultipliedAs) obj;
-    if (_expr == null) {
-      if (other._expr != null) {
-        return false;
-      }
-    } else if (!_expr.equals(other._expr)) {
-      return false;
-    }
-    if (_number == null) {
-      if (other._number != null) {
-        return false;
-      }
-    } else if (!_number.equals(other._number)) {
-      return false;
-    }
-    return true;
+    return _expr.equals(other._expr) && _number.equals(other._number);
   }
 
   @Override
@@ -62,10 +60,14 @@ public class MultipliedAs extends AsPathListExpr {
     return listBuilder.build();
   }
 
+  @JsonProperty(PROP_EXPR)
+  @Nonnull
   public AsExpr getExpr() {
     return _expr;
   }
 
+  @JsonProperty(PROP_NUMBER)
+  @Nonnull
   public IntExpr getNumber() {
     return _number;
   }
@@ -74,8 +76,8 @@ public class MultipliedAs extends AsPathListExpr {
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + ((_expr == null) ? 0 : _expr.hashCode());
-    result = prime * result + ((_number == null) ? 0 : _number.hashCode());
+    result = prime * result + _expr.hashCode();
+    result = prime * result + _number.hashCode();
     return result;
   }
 

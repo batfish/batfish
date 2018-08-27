@@ -1,19 +1,29 @@
 package org.batfish.datamodel.routing_policy.expr;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.routing_policy.Environment;
 
-public class LiteralAsList extends AsPathListExpr {
+@ParametersAreNonnullByDefault
+public final class LiteralAsList extends AsPathListExpr {
+  private static final String PROP_LIST = "list";
 
   /** */
   private static final long serialVersionUID = 1L;
 
-  private List<AsExpr> _list;
+  @Nonnull private List<AsExpr> _list;
 
   @JsonCreator
-  private LiteralAsList() {}
+  private static LiteralAsList jsonCreator(@Nullable @JsonProperty(PROP_LIST) List<AsExpr> list) {
+    return new LiteralAsList(firstNonNull(list, ImmutableList.of()));
+  }
 
   public LiteralAsList(List<AsExpr> list) {
     _list = list;
@@ -31,14 +41,7 @@ public class LiteralAsList extends AsPathListExpr {
       return false;
     }
     LiteralAsList other = (LiteralAsList) obj;
-    if (_list == null) {
-      if (other._list != null) {
-        return false;
-      }
-    } else if (!_list.equals(other._list)) {
-      return false;
-    }
-    return true;
+    return _list.equals(other._list);
   }
 
   @Override
@@ -49,6 +52,8 @@ public class LiteralAsList extends AsPathListExpr {
         .collect(ImmutableList.toImmutableList());
   }
 
+  @JsonProperty(PROP_LIST)
+  @Nonnull
   public List<AsExpr> getList() {
     return _list;
   }
@@ -57,7 +62,7 @@ public class LiteralAsList extends AsPathListExpr {
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + ((_list == null) ? 0 : _list.hashCode());
+    result = prime * result + _list.hashCode();
     return result;
   }
 

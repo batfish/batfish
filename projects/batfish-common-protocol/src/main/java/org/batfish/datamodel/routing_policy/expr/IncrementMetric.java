@@ -1,17 +1,28 @@
 package org.batfish.datamodel.routing_policy.expr;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.routing_policy.Environment;
 
-public class IncrementMetric extends LongExpr {
+@ParametersAreNonnullByDefault
+public final class IncrementMetric extends LongExpr {
+  private static final String PROP_ADDEND = "addend";
 
   /** */
   private static final long serialVersionUID = 1L;
 
-  private long _addend;
+  @Nonnull private long _addend;
 
   @JsonCreator
-  private IncrementMetric() {}
+  private static IncrementMetric jsonCreator(@Nullable @JsonProperty(PROP_ADDEND) Long addend) {
+    checkArgument(addend != null, "%s must be provided", PROP_ADDEND);
+    return new IncrementMetric(addend);
+  }
 
   public IncrementMetric(long addend) {
     _addend = addend;
@@ -21,18 +32,11 @@ public class IncrementMetric extends LongExpr {
   public boolean equals(Object obj) {
     if (this == obj) {
       return true;
-    }
-    if (obj == null) {
-      return false;
-    }
-    if (getClass() != obj.getClass()) {
+    } else if (!(obj instanceof IncrementMetric)) {
       return false;
     }
     IncrementMetric other = (IncrementMetric) obj;
-    if (_addend != other._addend) {
-      return false;
-    }
-    return true;
+    return _addend == other._addend;
   }
 
   @Override
@@ -42,6 +46,7 @@ public class IncrementMetric extends LongExpr {
     return newVal;
   }
 
+  @JsonProperty(PROP_ADDEND)
   public long getAddend() {
     return _addend;
   }
@@ -52,9 +57,5 @@ public class IncrementMetric extends LongExpr {
     int result = 1;
     result = prime * result + Long.hashCode(_addend);
     return result;
-  }
-
-  public void setAddend(int addend) {
-    _addend = addend;
   }
 }
