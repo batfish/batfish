@@ -59,6 +59,7 @@ public abstract class Question implements IQuestion {
         JSON_PATH("jsonPath", true),
         JSON_PATH_REGEX("jsonPathRegex", true),
         LONG("long", false),
+        NAMED_STRUCTURE_SPEC("namedStructureSpec", true),
         NODE_PROPERTY_SPEC("nodePropertySpec", true),
         NODE_SPEC("nodeSpec", true),
         OSPF_PROPERTY_SPEC("ospfPropertySpec", true),
