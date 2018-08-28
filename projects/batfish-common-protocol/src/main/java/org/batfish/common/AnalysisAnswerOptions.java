@@ -21,16 +21,20 @@ public final class AnalysisAnswerOptions {
       @JsonProperty(BfConsts.PROP_FILTERS) List<ColumnFilter> filters,
       @JsonProperty(BfConsts.PROP_MAX_ROWS) Integer maxRows,
       @JsonProperty(BfConsts.PROP_ROW_OFFSET) Integer rowOffset,
-      @JsonProperty(BfConsts.PROP_SORT_ORDER) List<ColumnSortOption> sortOrder) {
+      @JsonProperty(BfConsts.PROP_SORT_ORDER) List<ColumnSortOption> sortOrder,
+      @JsonProperty(BfConsts.PROP_UNIQUE_ROWS) Boolean uniqueRows) {
     return new AnalysisAnswerOptions(
         firstNonNull(columns, ImmutableSet.of()),
         firstNonNull(filters, ImmutableList.of()),
         firstNonNull(maxRows, Integer.MAX_VALUE),
         firstNonNull(rowOffset, 0),
-        firstNonNull(sortOrder, ImmutableList.of()));
+        firstNonNull(sortOrder, ImmutableList.of()),
+        firstNonNull(uniqueRows, false));
   }
 
   private final Set<String> _columns;
+
+  private final List<ColumnFilter> _filters;
 
   private final int _maxRows;
 
@@ -38,19 +42,21 @@ public final class AnalysisAnswerOptions {
 
   private final List<ColumnSortOption> _sortOrder;
 
-  private final List<ColumnFilter> _filters;
+  private final boolean _uniqueRows;
 
   public AnalysisAnswerOptions(
       @Nonnull Set<String> columns,
       @Nonnull List<ColumnFilter> filters,
       int maxRows,
       int rowOffset,
-      @Nonnull List<ColumnSortOption> sortOrder) {
+      @Nonnull List<ColumnSortOption> sortOrder,
+      boolean uniqueRows) {
     _columns = columns;
     _filters = filters;
     _maxRows = maxRows;
     _rowOffset = rowOffset;
     _sortOrder = sortOrder;
+    _uniqueRows = uniqueRows;
   }
 
   @Override
@@ -66,7 +72,8 @@ public final class AnalysisAnswerOptions {
         && _filters.equals(rhs._filters)
         && _maxRows == rhs._maxRows
         && _rowOffset == rhs._rowOffset
-        && _sortOrder.equals(rhs._sortOrder);
+        && _sortOrder.equals(rhs._sortOrder)
+        && _uniqueRows == rhs._uniqueRows;
   }
 
   @JsonProperty(BfConsts.PROP_COLUMNS)
@@ -94,9 +101,14 @@ public final class AnalysisAnswerOptions {
     return _sortOrder;
   }
 
+  @JsonProperty(BfConsts.PROP_UNIQUE_ROWS)
+  public boolean getUniqueRows() {
+    return _uniqueRows;
+  }
+
   @Override
   public int hashCode() {
-    return Objects.hash(_columns, _filters, _maxRows, _rowOffset, _sortOrder);
+    return Objects.hash(_columns, _filters, _maxRows, _rowOffset, _sortOrder, _uniqueRows);
   }
 
   @Override
@@ -107,6 +119,7 @@ public final class AnalysisAnswerOptions {
         .add(BfConsts.PROP_MAX_ROWS, _maxRows)
         .add(BfConsts.PROP_ROW_OFFSET, _rowOffset)
         .add(BfConsts.PROP_SORT_ORDER, _sortOrder)
+        .add(BfConsts.PROP_UNIQUE_ROWS, _uniqueRows)
         .toString();
   }
 }
