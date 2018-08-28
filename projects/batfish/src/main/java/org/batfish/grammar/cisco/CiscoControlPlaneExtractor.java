@@ -265,6 +265,7 @@ import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.DscpType;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.EncryptionAlgorithm;
+import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.IcmpCode;
 import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.IkeAuthenticationMethod;
@@ -297,7 +298,6 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SnmpCommunity;
 import org.batfish.datamodel.SnmpHost;
 import org.batfish.datamodel.SnmpServer;
-import org.batfish.datamodel.State;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.SwitchportMode;
@@ -4805,7 +4805,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       List<TcpFlagsMatchConditions> tcpFlags = new ArrayList<>();
       Set<Integer> dscps = new TreeSet<>();
       Set<Integer> ecns = new TreeSet<>();
-      Set<State> states = EnumSet.noneOf(State.class);
+      Set<FlowState> states = EnumSet.noneOf(FlowState.class);
       for (Extended_access_list_additional_featureContext feature : ctx.features) {
         if (feature.ACK() != null) {
           tcpFlags.add(
@@ -4933,7 +4933,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           icmpCode = IcmpCode.TRACEROUTE;
         }
         if (feature.TRACKED() != null) {
-          states.add(State.ESTABLISHED);
+          states.add(FlowState.ESTABLISHED);
         }
         if (feature.UNREACHABLE() != null) {
           icmpType = IcmpType.DESTINATION_UNREACHABLE;
@@ -5034,7 +5034,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     List<TcpFlagsMatchConditions> tcpFlags = new ArrayList<>();
     Set<Integer> dscps = new TreeSet<>();
     Set<Integer> ecns = new TreeSet<>();
-    Set<State> states = EnumSet.noneOf(State.class);
+    Set<FlowState> states = EnumSet.noneOf(FlowState.class);
     for (Extended_access_list_additional_featureContext feature : ctx.features) {
       if (feature.ACK() != null) {
         tcpFlags.add(
@@ -5159,7 +5159,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         icmpCode = IcmpCode.TRACEROUTE;
       }
       if (feature.TRACKED() != null) {
-        states.add(State.ESTABLISHED);
+        states.add(FlowState.ESTABLISHED);
       }
       if (feature.UNREACHABLE() != null) {
         icmpType = IcmpType.DESTINATION_UNREACHABLE;

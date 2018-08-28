@@ -17,10 +17,10 @@ import net.sf.javabdd.BDDPairing;
 import net.sf.javabdd.JFactory;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.State;
 
 /**
  * A collection of attributes describing an packet, represented using BDDs
@@ -309,7 +309,7 @@ public class BDDPacket {
     fb.setDscp(_dscp.satAssignmentToLong(satAssignment).intValue());
     fb.setEcn(_ecn.satAssignmentToLong(satAssignment).intValue());
     fb.setFragmentOffset(_fragmentOffset.satAssignmentToLong(satAssignment).intValue());
-    fb.setState(State.fromNum(_state.satAssignmentToLong(satAssignment).intValue()));
+    fb.setState(FlowState.fromNum(_state.satAssignmentToLong(satAssignment).intValue()));
     return fb;
   }
 

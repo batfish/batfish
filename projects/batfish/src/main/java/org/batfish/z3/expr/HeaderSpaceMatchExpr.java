@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.batfish.common.BatfishException;
+import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
@@ -17,7 +18,6 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Protocol;
-import org.batfish.datamodel.State;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TcpFlagsMatchConditions;
 import org.batfish.z3.Field;
@@ -231,7 +231,7 @@ public final class HeaderSpaceMatchExpr extends BooleanExpr {
     return matchProtocol(srcProtocols, true, false);
   }
 
-  public static BooleanExpr matchState(Set<State> states) {
+  public static BooleanExpr matchState(Set<FlowState> states) {
     return new OrExpr(
         states
             .stream()
