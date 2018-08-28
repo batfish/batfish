@@ -12,7 +12,7 @@ public class PrefixTracerQuestionTest {
   @Test
   public void testConstructorHasDefaultNodeSpecifier() {
     PrefixTracerQuestion ptq = new PrefixTracerQuestion();
-    assertThat(ptq.getNodeRegex(), equalTo(NodesSpecifier.ALL));
+    assertThat(ptq.getNodes(), equalTo(NodesSpecifier.ALL));
   }
 
   @Test

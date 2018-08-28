@@ -7,88 +7,88 @@
           "description" : "The node where this session is configured",
           "isKey" : true,
           "isValue" : false,
-          "name" : "node",
+          "name" : "Node",
           "schema" : "Node"
         },
         {
           "description" : "The local IP of the session",
           "isKey" : false,
           "isValue" : false,
-          "name" : "localIp",
+          "name" : "Local_IP",
           "schema" : "Ip"
         },
         {
           "description" : "The VRF in which this session is configured",
           "isKey" : true,
           "isValue" : false,
-          "name" : "vrfName",
+          "name" : "VRF_Name",
           "schema" : "String"
         },
         {
           "description" : "Local interface of the session",
           "isKey" : false,
           "isValue" : true,
-          "name" : "localInterface",
+          "name" : "Local_Interface",
           "schema" : "Interface"
         },
         {
           "description" : "Remote node for this session",
           "isKey" : false,
           "isValue" : false,
-          "name" : "remoteNode",
+          "name" : "Remote_Node",
           "schema" : "Node"
         },
         {
           "description" : "Remote prefix for this session",
           "isKey" : true,
           "isValue" : false,
-          "name" : "remotePrefix",
+          "name" : "Remote_Prefix",
           "schema" : "Prefix"
         },
         {
           "description" : "The type of this session",
           "isKey" : false,
           "isValue" : false,
-          "name" : "sessionType",
+          "name" : "Session_Type",
           "schema" : "String"
         },
         {
           "description" : "Configured status",
           "isKey" : false,
           "isValue" : true,
-          "name" : "configuredStatus",
+          "name" : "Configured_Status",
           "schema" : "String"
         },
         {
           "description" : "Number of neighbors with whom BGP session was established",
           "isKey" : false,
           "isValue" : true,
-          "name" : "establishedNeighbors",
+          "name" : "Established_Neighbors",
           "schema" : "Integer"
         }
       ],
-      "textDesc" : "On ${node} session ${vrfName}:${remotePrefix} has configured status ${configuredStatus}."
+      "textDesc" : "On ${Node} session ${VRF_Name}:${Remote_Prefix} has configured status ${Configured_Status}."
     },
     "rows" : [
       {
-        "configuredStatus" : "UNIQUE_MATCH",
-        "establishedNeighbors" : 1,
-        "localInterface" : {
+        "Configured_Status" : "UNIQUE_MATCH",
+        "Established_Neighbors" : 1,
+        "Local_Interface" : {
           "hostname" : "as2border2",
           "interface" : "GigabitEthernet0/0"
         },
-        "localIp" : "10.23.21.2",
-        "node" : {
+        "Local_IP" : "10.23.21.2",
+        "Node" : {
           "id" : "node-as2border2",
           "name" : "as2border2"
         },
-        "remoteNode" : {
+        "Remote_Node" : {
           "id" : "node-as3border1",
           "name" : "as3border1"
         },
-        "remotePrefix" : "10.23.21.3/32",
-        "sessionType" : "EBGP_SINGLEHOP",
-        "vrfName" : "default"
+        "Remote_Prefix" : "10.23.21.3/32",
+        "Session_Type" : "EBGP_SINGLEHOP",
+        "VRF_Name" : "default"
       }
     ],
     "summary" : {

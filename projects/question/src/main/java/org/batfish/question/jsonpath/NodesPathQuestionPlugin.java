@@ -32,7 +32,7 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
     public JsonPathAnswerElement answer() {
       NodesPathQuestion question = (NodesPathQuestion) _question;
       NodesQuestion nq = new NodesQuestion();
-      nq.setNodeRegex(question.getNodeRegex());
+      nq.setNodes(question.getNodeRegex());
       nq.setNodeTypes(question.getNodeTypes());
       nq.setSummary(false);
       JsonPathQuestion jq = new JsonPathQuestion();
@@ -46,7 +46,7 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
     public AnswerElement answerDiff() {
       NodesPathQuestion question = (NodesPathQuestion) _question;
       NodesQuestion nq = new NodesQuestion();
-      nq.setNodeRegex(question.getNodeRegex());
+      nq.setNodes(question.getNodeRegex());
       nq.setNodeTypes(question.getNodeTypes());
       nq.setSummary(false);
       JsonPathQuestion jq = new JsonPathQuestion();

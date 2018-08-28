@@ -2,7 +2,7 @@
     "class": "org.batfish.question.prefixtracer.PrefixTracerQuestion",
     "differential": false,
     "prefix": "${prefix}",
-    "nodeRegex": "${nodeRegex}",
+    "nodes": "${nodes}",
     "instance": {
         "description": "Trace prefix propagation through the network",
         "instanceName": "prefixTracer",
@@ -15,9 +15,9 @@
                 "type": "prefix",
                 "optional": true
             },
-            "nodeRegex": {
-                "description": "Only include prefix tracing information for nodes that match this regex",
-                "type": "string",
+            "nodes": {
+                "description": "Include prefix tracing information for nodes matching this name or regex",
+                "type": "nodeSpec",
                 "optional": true
             }
         }

@@ -43,15 +43,15 @@ import org.batfish.question.bgpsessionstatus.BgpSessionInfo.SessionStatus;
 
 public class BgpSessionStatusAnswerer extends Answerer {
 
-  public static final String COL_CONFIGURED_STATUS = "configuredStatus";
-  public static final String COL_ESTABLISHED_NEIGHBORS = "establishedNeighbors";
-  public static final String COL_LOCAL_INTERFACE = "localInterface";
-  public static final String COL_LOCAL_IP = "localIp";
-  public static final String COL_NODE = "node";
-  public static final String COL_REMOTE_NODE = "remoteNode";
-  public static final String COL_REMOTE_PREFIX = "remotePrefix";
-  public static final String COL_SESSION_TYPE = "sessionType";
-  public static final String COL_VRF_NAME = "vrfName";
+  public static final String COL_CONFIGURED_STATUS = "Configured_Status";
+  public static final String COL_ESTABLISHED_NEIGHBORS = "Established_Neighbors";
+  public static final String COL_LOCAL_INTERFACE = "Local_Interface";
+  public static final String COL_LOCAL_IP = "Local_IP";
+  public static final String COL_NODE = "Node";
+  public static final String COL_REMOTE_NODE = "Remote_Node";
+  public static final String COL_REMOTE_PREFIX = "Remote_Prefix";
+  public static final String COL_SESSION_TYPE = "Session_Type";
+  public static final String COL_VRF_NAME = "VRF_Name";
 
   /** Answerer for the BGP Session status question (new version). */
   public BgpSessionStatusAnswerer(Question question, IBatfish batfish) {
@@ -89,8 +89,8 @@ public class BgpSessionStatusAnswerer extends Answerer {
   public Multiset<BgpSessionInfo> rawAnswer(BgpSessionStatusQuestion question) {
     Multiset<BgpSessionInfo> sessions = HashMultiset.create();
     Map<String, Configuration> configurations = _batfish.loadConfigurations();
-    Set<String> includeNodes1 = question.getNode1Regex().getMatchingNodes(_batfish);
-    Set<String> includeNodes2 = question.getNode2Regex().getMatchingNodes(_batfish);
+    Set<String> includeNodes1 = question.getNodes().getMatchingNodes(_batfish);
+    Set<String> includeNodes2 = question.getRemoteNodes().getMatchingNodes(_batfish);
 
     Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpNodeOwners(configurations, true);
     Set<Ip> allInterfaceIps = ipOwners.keySet();

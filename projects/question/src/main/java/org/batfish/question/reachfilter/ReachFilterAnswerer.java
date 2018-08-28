@@ -1,12 +1,12 @@
 package org.batfish.question.reachfilter;
 
-import static org.batfish.question.testfilters.TestFiltersAnswerer.COLUMN_ACTION;
-import static org.batfish.question.testfilters.TestFiltersAnswerer.COLUMN_FILTER_NAME;
-import static org.batfish.question.testfilters.TestFiltersAnswerer.COLUMN_FLOW;
-import static org.batfish.question.testfilters.TestFiltersAnswerer.COLUMN_LINE_CONTENT;
-import static org.batfish.question.testfilters.TestFiltersAnswerer.COLUMN_LINE_NUMBER;
-import static org.batfish.question.testfilters.TestFiltersAnswerer.COLUMN_NODE;
-import static org.batfish.question.testfilters.TestFiltersAnswerer.COLUMN_TRACE;
+import static org.batfish.question.testfilters.TestFiltersAnswerer.COL_ACTION;
+import static org.batfish.question.testfilters.TestFiltersAnswerer.COL_FILTER_NAME;
+import static org.batfish.question.testfilters.TestFiltersAnswerer.COL_FLOW;
+import static org.batfish.question.testfilters.TestFiltersAnswerer.COL_LINE_CONTENT;
+import static org.batfish.question.testfilters.TestFiltersAnswerer.COL_LINE_NUMBER;
+import static org.batfish.question.testfilters.TestFiltersAnswerer.COL_NODE;
+import static org.batfish.question.testfilters.TestFiltersAnswerer.COL_TRACE;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
@@ -51,8 +51,8 @@ import org.batfish.specifier.SpecifierContext;
 
 /** Answerer for ReachFilterQuestion */
 public final class ReachFilterAnswerer extends Answerer {
-  static final String COLUMN_SNAPSHOT = "Snapshot";
-  static final String COLUMN_RESULT_TYPE = "Result_Type";
+  static final String COL_SNAPSHOT = "Snapshot";
+  static final String COL_RESULT_TYPE = "Result_Type";
 
   static final String BASE = "Base";
   static final String DELTA = "Delta";
@@ -175,8 +175,7 @@ public final class ReachFilterAnswerer extends Answerer {
 
   private static Rows toDifferentialTableRows(String resultType, String snapshot, Rows traceRows) {
     ImmutableMultiset.Builder<Row> rows = ImmutableMultiset.builder();
-    RowBuilder rb =
-        Row.builder().put(COLUMN_RESULT_TYPE, resultType).put(COLUMN_SNAPSHOT, snapshot);
+    RowBuilder rb = Row.builder().put(COL_RESULT_TYPE, resultType).put(COL_SNAPSHOT, snapshot);
     traceRows.iterator().forEachRemaining(row -> rows.add(rb.putAll(row).build()));
     return new Rows(rows.build());
   }
@@ -184,24 +183,19 @@ public final class ReachFilterAnswerer extends Answerer {
   private TableMetadata differentialTableMetaData() {
     List<ColumnMetadata> columnMetadata =
         ImmutableList.of(
-            new ColumnMetadata(COLUMN_RESULT_TYPE, Schema.STRING, "Result type", true, false),
-            new ColumnMetadata(COLUMN_SNAPSHOT, Schema.STRING, "Snapshot", true, false),
-            new ColumnMetadata(COLUMN_NODE, Schema.NODE, "Node", true, false),
-            new ColumnMetadata(COLUMN_FILTER_NAME, Schema.STRING, "Filter name", true, false),
-            new ColumnMetadata(COLUMN_FLOW, Schema.FLOW, "Evaluated flow", true, false),
-            new ColumnMetadata(COLUMN_ACTION, Schema.STRING, "Outcome", false, true),
-            new ColumnMetadata(COLUMN_LINE_NUMBER, Schema.INTEGER, "Line number", false, true),
-            new ColumnMetadata(COLUMN_LINE_CONTENT, Schema.STRING, "Line content", false, true),
-            new ColumnMetadata(COLUMN_TRACE, Schema.ACL_TRACE, "ACL trace", false, true));
+            new ColumnMetadata(COL_RESULT_TYPE, Schema.STRING, "Result type", true, false),
+            new ColumnMetadata(COL_SNAPSHOT, Schema.STRING, "Snapshot", true, false),
+            new ColumnMetadata(COL_NODE, Schema.NODE, "Node", true, false),
+            new ColumnMetadata(COL_FILTER_NAME, Schema.STRING, "Filter name", true, false),
+            new ColumnMetadata(COL_FLOW, Schema.FLOW, "Evaluated flow", true, false),
+            new ColumnMetadata(COL_ACTION, Schema.STRING, "Outcome", false, true),
+            new ColumnMetadata(COL_LINE_NUMBER, Schema.INTEGER, "Line number", false, true),
+            new ColumnMetadata(COL_LINE_CONTENT, Schema.STRING, "Line content", false, true),
+            new ColumnMetadata(COL_TRACE, Schema.ACL_TRACE, "ACL trace", false, true));
     String textDesc =
         String.format(
             "Filter ${%s} on node ${%s} will ${%s} flow ${%s} at line ${%s} ${%s}",
-            COLUMN_FILTER_NAME,
-            COLUMN_NODE,
-            COLUMN_ACTION,
-            COLUMN_FLOW,
-            COLUMN_LINE_NUMBER,
-            COLUMN_LINE_CONTENT);
+            COL_FILTER_NAME, COL_NODE, COL_ACTION, COL_FLOW, COL_LINE_NUMBER, COL_LINE_CONTENT);
     return new TableMetadata(columnMetadata, textDesc);
   }
 

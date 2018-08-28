@@ -12,12 +12,12 @@
         ],
         "variables": {
             "nodes": {
-                "description": "Only include nodes that match this regex",
+                "description": "Include nodes matching this name or regex",
                 "type": "nodeSpec",
                 "optional": true
             },
             "properties": {
-                "description": "Only include properties that match this regex",
+                "description": "Include properties matching this regex",
                 "type": "bgpPropertySpec",
                 "optional": true
             }
