@@ -57,10 +57,10 @@ public final class SpecifiersReachabilityQuestion extends Question {
   private static final String PROP_FINAL_NODES_SPECIFIER_INPUT = "finalNodesSpecifierInput";
 
   private static final String PROP_FORBIDDEN_TRANSIT_NODES_NODE_SPECIFIER_INPUT =
-      "forbiddenTransitNodesNodeSpecifierFactory";
+      "forbiddenTransitNodesNodeSpecifierInput";
 
   private static final String PROP_FORBIDDEN_TRANSIT_NODES_NODE_SPECIFIER_FACTORY =
-      "forbiddenTransitNodesNodeSpecifierInput";
+      "forbiddenTransitNodesNodeSpecifierFactory";
 
   private static final String PROP_SOURCE_IP_SPACE_SPECIFIER_FACTORY =
       "sourceIpSpaceSpecifierFactory";
