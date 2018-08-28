@@ -26,11 +26,11 @@ import org.batfish.datamodel.table.TableMetadata;
 
 /** Computes the answer for a PrefixTracer question. */
 class PrefixTracerAnswerer extends Answerer {
-  static final String COL_NODE = "node";
-  static final String COL_VRF = "vrf";
-  static final String COL_PREFIX = "prefix";
-  static final String COL_ACTION = "action";
-  static final String COL_PEER = "peer";
+  static final String COL_NODE = "Node";
+  static final String COL_VRF = "VRF";
+  static final String COL_PREFIX = "Prefix";
+  static final String COL_ACTION = "Action";
+  static final String COL_PEER = "Peer";
 
   PrefixTracerAnswerer(Question question, IBatfish batfish) {
     super(question, batfish);
@@ -45,7 +45,7 @@ class PrefixTracerAnswerer extends Answerer {
     SortedMap<String, SortedMap<String, Map<Prefix, Map<String, Set<String>>>>> prefixTracingInfo =
         dp.getPrefixTracingInfoSummary();
     answer.postProcessAnswer(
-        question, getRows(prefixTracingInfo, question.getPrefix(), question.getNodeRegex()));
+        question, getRows(prefixTracingInfo, question.getPrefix(), question.getNodes()));
 
     return answer;
   }

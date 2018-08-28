@@ -1,6 +1,6 @@
 {
   "class" : "org.batfish.question.prefixtracer.PrefixTracerQuestion",
-  "nodeRegex" : ".*",
+  "nodes" : ".*",
   "prefix" : "0.0.0.0/0",
   "differential" : false,
   "includeOneTableKeys" : true,
@@ -11,10 +11,10 @@
       "dataplane"
     ],
     "variables" : {
-      "nodeRegex" : {
-        "description" : "Only include prefix tracing information for nodes that match this regex",
+      "nodes" : {
+        "description" : "Include prefix tracing information for nodes matching this name or regex",
         "optional" : true,
-        "type" : "string",
+        "type" : "nodeSpec",
         "value" : ".*"
       },
       "prefix" : {
