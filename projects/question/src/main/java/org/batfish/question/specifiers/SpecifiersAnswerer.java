@@ -20,8 +20,8 @@ import org.batfish.specifier.SpecifierContext;
 
 public final class SpecifiersAnswerer extends Answerer {
 
-  static final String COL_LOCATIONS = "Locations";
-  static final String COL_IP_SPACE = "IP_Space";
+  public static final String COL_LOCATIONS = "Locations";
+  public static final String COL_IP_SPACE = "IP_Space";
 
   public SpecifiersAnswerer(Question question, IBatfish batfish) {
     super(question, batfish);
