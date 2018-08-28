@@ -359,8 +359,6 @@ public final class Interface extends ComparableStructure<String> {
 
   private static final String PROP_HSRP_VERSION = "hsrpVersion";
 
-  private static final String PROP_INBOUND_FILTER = "inboundFilter";
-
   private static final String PROP_INCOMING_FILTER = "incomingFilter";
 
   private static final String PROP_INTERFACE_TYPE = "type";
@@ -619,10 +617,6 @@ public final class Interface extends ComparableStructure<String> {
 
   private Map<Integer, HsrpGroup> _hsrpGroups;
 
-  private IpAccessList _inboundFilter;
-
-  private transient String _inboundFilterName;
-
   private IpAccessList _incomingFilter;
 
   private transient String _incomingFilterName;
@@ -770,9 +764,6 @@ public final class Interface extends ComparableStructure<String> {
     }
     // we check ACLs for name match only -- full ACL diff can be done
     // elsewhere.
-    if (!IpAccessList.bothNullOrSameName(this.getInboundFilter(), other.getInboundFilter())) {
-      return false;
-    }
     if (!IpAccessList.bothNullOrSameName(this.getIncomingFilter(), other.getIncomingFilter())) {
       return false;
     }
@@ -910,22 +901,6 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_HSRP_VERSION)
   public @Nullable String getHsrpVersion() {
     return _hsrpVersion;
-  }
-
-  @JsonIgnore
-  public IpAccessList getInboundFilter() {
-    return _inboundFilter;
-  }
-
-  @JsonProperty(PROP_INBOUND_FILTER)
-  @JsonPropertyDescription(
-      "The IPV4 access-list used to filter traffic destined for this device on this interface.")
-  public String getInboundFilterName() {
-    if (_inboundFilter != null) {
-      return _inboundFilter.getName();
-    } else {
-      return _inboundFilterName;
-    }
   }
 
   @JsonIgnore
@@ -1184,26 +1159,6 @@ public final class Interface extends ComparableStructure<String> {
     return name.startsWith("lo");
   }
 
-  public void resolveReferences(Configuration owner) {
-    _owner = owner;
-    _vrf = owner.getVrfs().get(_vrfName);
-    if (_inboundFilterName != null) {
-      _inboundFilter = owner.getIpAccessLists().get(_inboundFilterName);
-    }
-    if (_incomingFilterName != null) {
-      _incomingFilter = owner.getIpAccessLists().get(_incomingFilterName);
-    }
-    if (_outgoingFilterName != null) {
-      _outgoingFilter = owner.getIpAccessLists().get(_outgoingFilterName);
-    }
-    if (_ospfAreaName != null) {
-      OspfProcess ospfProc = _vrf.getOspfProcess();
-      if (ospfProc != null) {
-        _ospfArea = ospfProc.getAreas().get(_ospfAreaName);
-      }
-    }
-  }
-
   @JsonProperty(PROP_ACCESS_VLAN)
   public void setAccessVlan(int vlan) {
     _accessVlan = vlan;
@@ -1287,16 +1242,6 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_HSRP_VERSION)
   public void setHsrpVersion(String hsrpVersion) {
     _hsrpVersion = hsrpVersion;
-  }
-
-  @JsonIgnore
-  public void setInboundFilter(IpAccessList inboundFilter) {
-    _inboundFilter = inboundFilter;
-  }
-
-  @JsonProperty(PROP_INBOUND_FILTER)
-  public void setInboundFilterName(String inboundFilterName) {
-    _inboundFilterName = inboundFilterName;
   }
 
   @JsonIgnore

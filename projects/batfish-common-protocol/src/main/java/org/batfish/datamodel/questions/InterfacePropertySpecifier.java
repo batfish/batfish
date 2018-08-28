@@ -58,10 +58,6 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
               "hsrp-groups",
               new PropertyDescriptor<>(Interface::getHsrpGroups, Schema.set(Schema.STRING)))
           .put("hsrp-version", new PropertyDescriptor<>(Interface::getHsrpVersion, Schema.STRING))
-          // skip inbound-filter
-          .put(
-              "inbound-filter-name",
-              new PropertyDescriptor<>(Interface::getInboundFilterName, Schema.STRING))
           // skip incoming filter
           .put(
               "incoming-filter-name",

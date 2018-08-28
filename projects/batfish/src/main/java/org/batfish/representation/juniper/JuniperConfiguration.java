@@ -1303,15 +1303,14 @@ public final class JuniperConfiguration extends VendorConfiguration {
           zone.getInboundInterfaceFilters().get(iface.getName());
       if (zoneInboundInterfaceFilter != null) {
         String zoneInboundInterfaceFilterName = zoneInboundInterfaceFilter.getName();
-        IpAccessList zoneInboundInterfaceFilterList =
-            _c.getIpAccessLists().get(zoneInboundInterfaceFilterName);
-        newIface.setInboundFilter(zoneInboundInterfaceFilterList);
-      } else {
-        // filter for zone
-        FirewallFilter zoneInboundFilter = zone.getInboundFilter();
-        String zoneInboundFilterName = zoneInboundFilter.getName();
-        IpAccessList zoneInboundFilterList = _c.getIpAccessLists().get(zoneInboundFilterName);
-        newIface.setInboundFilter(zoneInboundFilterList);
+        /* TODO: move this into zone policy. */
+        //        IpAccessList zoneInboundInterfaceFilterList =
+        //            _c.getIpAccessLists().get(zoneInboundInterfaceFilterName);
+        //        newIface.setInboundFilter(zoneInboundInterfaceFilterList);
+        _w.redFlag(
+            String.format(
+                "Zone inbound interface filter %s on %s",
+                zoneInboundInterfaceFilterName, iface.getName()));
       }
     }
     String inAclName = iface.getIncomingFilter();
@@ -1341,19 +1340,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
       }
     }
     newIface.setOutgoingFilter(buildOutgoingFilter(iface, securityPolicyAcl));
-
-    // Prefix primaryPrefix = iface.getPrimaryAddress();
-    // Set<Prefix> allPrefixes = iface.getAllAddresses();
-    // if (primaryPrefix != null) {
-    // newIface.setAddress(primaryPrefix);
-    // }
-    // else {
-    // if (!allPrefixes.isEmpty()) {
-    // Prefix firstOfAllPrefixes = allPrefixes.toArray(new Prefix[] {})[0];
-    // newIface.setAddress(firstOfAllPrefixes);
-    // }
-    // }
-    // newIface.getAllAddresses().addAll(allPrefixes);
 
     if (iface.getPrimaryAddress() != null) {
       newIface.setAddress(iface.getPrimaryAddress());
