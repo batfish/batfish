@@ -2,7 +2,9 @@ package org.batfish.allinone;
 
 import static org.batfish.datamodel.IpAccessListLine.acceptingHeaderSpace;
 import static org.batfish.datamodel.IpAccessListLine.rejectingHeaderSpace;
+import static org.batfish.datamodel.LineAction.PERMIT;
 import static org.batfish.datamodel.answers.AclLines2Rows.COLUMN_METADATA;
+import static org.batfish.datamodel.answers.AclLines2Rows.COL_BLOCKED_LINE_ACTION;
 import static org.batfish.datamodel.answers.AclLines2Rows.COL_BLOCKED_LINE_NUM;
 import static org.batfish.datamodel.answers.AclLines2Rows.COL_BLOCKING_LINE_NUMS;
 import static org.batfish.datamodel.answers.AclLines2Rows.COL_DIFF_ACTION;
@@ -36,6 +38,7 @@ import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
@@ -107,6 +110,7 @@ public class AclReachability2Test {
                 .put(COL_SOURCES, ImmutableList.of(_c1.getHostname() + ": acl"))
                 .put(COL_LINES, lineNames)
                 .put(COL_BLOCKED_LINE_NUM, 1)
+                .put(COL_BLOCKED_LINE_ACTION, LineAction.PERMIT)
                 .put(COL_BLOCKING_LINE_NUMS, ImmutableSet.of(0))
                 .put(COL_DIFF_ACTION, false)
                 .put(COL_REASON, SINGLE_BLOCKING_LINE)
@@ -150,6 +154,7 @@ public class AclReachability2Test {
                 .put(COL_SOURCES, ImmutableList.of(_c1.getHostname() + ": acl"))
                 .put(COL_LINES, lineNames)
                 .put(COL_BLOCKED_LINE_NUM, 1)
+                .put(COL_BLOCKED_LINE_ACTION, LineAction.PERMIT)
                 .put(COL_BLOCKING_LINE_NUMS, ImmutableSet.of(0))
                 .put(COL_DIFF_ACTION, false)
                 .put(COL_REASON, SINGLE_BLOCKING_LINE)
@@ -191,6 +196,7 @@ public class AclReachability2Test {
                 .put(COL_SOURCES, ImmutableList.of(_c1.getHostname() + ": acl1, acl2"))
                 .put(COL_LINES, null)
                 .put(COL_BLOCKED_LINE_NUM, null)
+                .put(COL_BLOCKED_LINE_ACTION, null)
                 .put(COL_BLOCKING_LINE_NUMS, null)
                 .put(COL_DIFF_ACTION, null)
                 .put(COL_REASON, CYCLICAL_REFERENCE)
@@ -243,6 +249,7 @@ public class AclReachability2Test {
                 .put(COL_SOURCES, ImmutableList.of(_c1.getHostname() + ": acl0, acl1, acl2"))
                 .put(COL_LINES, null)
                 .put(COL_BLOCKED_LINE_NUM, null)
+                .put(COL_BLOCKED_LINE_ACTION, null)
                 .put(COL_BLOCKING_LINE_NUMS, null)
                 .put(COL_DIFF_ACTION, null)
                 .put(COL_REASON, CYCLICAL_REFERENCE)
@@ -268,6 +275,7 @@ public class AclReachability2Test {
                 .put(COL_SOURCES, ImmutableList.of(_c1.getHostname() + ": acl"))
                 .put(COL_LINES, ImmutableList.of(aclLine.toString()))
                 .put(COL_BLOCKED_LINE_NUM, 0)
+                .put(COL_BLOCKED_LINE_ACTION, PERMIT)
                 .put(COL_BLOCKING_LINE_NUMS, ImmutableList.of())
                 .put(COL_DIFF_ACTION, false)
                 .put(COL_REASON, UNDEFINED_REFERENCE)
@@ -321,6 +329,7 @@ public class AclReachability2Test {
                 .put(COL_SOURCES, ImmutableList.of(_c1.getHostname() + ": " + acl.getName()))
                 .put(COL_LINES, lineNames)
                 .put(COL_BLOCKED_LINE_NUM, 1)
+                .put(COL_BLOCKED_LINE_ACTION, PERMIT)
                 .put(COL_BLOCKING_LINE_NUMS, ImmutableList.of(0))
                 .put(COL_DIFF_ACTION, false)
                 .put(COL_REASON, SINGLE_BLOCKING_LINE)
@@ -368,6 +377,7 @@ public class AclReachability2Test {
                 .put(COL_SOURCES, ImmutableList.of(_c1.getHostname() + ": " + acl.getName()))
                 .put(COL_LINES, lineNames)
                 .put(COL_BLOCKED_LINE_NUM, 2)
+                .put(COL_BLOCKED_LINE_ACTION, PERMIT)
                 .put(COL_BLOCKING_LINE_NUMS, ImmutableList.of())
                 .put(COL_DIFF_ACTION, false)
                 .put(COL_REASON, MULTIPLE_BLOCKING_LINES)
@@ -414,6 +424,7 @@ public class AclReachability2Test {
                 .put(COL_SOURCES, ImmutableList.of(_c1.getHostname() + ": " + acl.getName()))
                 .put(COL_LINES, lineNames)
                 .put(COL_BLOCKED_LINE_NUM, 1)
+                .put(COL_BLOCKED_LINE_ACTION, PERMIT)
                 .put(COL_BLOCKING_LINE_NUMS, ImmutableList.of(0))
                 .put(COL_DIFF_ACTION, true)
                 .put(COL_REASON, SINGLE_BLOCKING_LINE)
@@ -428,6 +439,7 @@ public class AclReachability2Test {
                 .put(COL_SOURCES, ImmutableList.of(_c1.getHostname() + ": " + acl.getName()))
                 .put(COL_LINES, lineNames)
                 .put(COL_BLOCKED_LINE_NUM, 2)
+                .put(COL_BLOCKED_LINE_ACTION, PERMIT)
                 .put(COL_BLOCKING_LINE_NUMS, ImmutableList.of())
                 .put(COL_DIFF_ACTION, false)
                 .put(COL_REASON, UNMATCHABLE)
@@ -441,6 +453,7 @@ public class AclReachability2Test {
                 .put(COL_SOURCES, ImmutableList.of(_c1.getHostname() + ": " + acl.getName()))
                 .put(COL_LINES, lineNames)
                 .put(COL_BLOCKED_LINE_NUM, 3)
+                .put(COL_BLOCKED_LINE_ACTION, PERMIT)
                 .put(COL_BLOCKING_LINE_NUMS, ImmutableList.of(0))
                 .put(COL_DIFF_ACTION, true)
                 .put(COL_REASON, SINGLE_BLOCKING_LINE)
@@ -517,6 +530,7 @@ public class AclReachability2Test {
                 .put(COL_SOURCES, ImmutableList.of(_c1.getHostname() + ": " + acl.getName()))
                 .put(COL_LINES, lineNames)
                 .put(COL_BLOCKED_LINE_NUM, 1)
+                .put(COL_BLOCKED_LINE_ACTION, PERMIT)
                 .put(COL_BLOCKING_LINE_NUMS, ImmutableList.of(0))
                 .put(COL_DIFF_ACTION, false)
                 .put(COL_REASON, SINGLE_BLOCKING_LINE)

@@ -16,7 +16,7 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.State;
 import org.batfish.datamodel.SubRange;
-import org.batfish.datamodel.TcpFlags;
+import org.batfish.datamodel.TcpFlagsMatchConditions;
 
 /** Convert a {@link HeaderSpace headerspace constraint} to a {@link BDD}. */
 public final class HeaderSpaceToBDD {
@@ -83,7 +83,7 @@ public final class HeaderSpaceToBDD {
   }
 
   @VisibleForTesting
-  BDD toBDD(List<TcpFlags> tcpFlags) {
+  BDD toBDD(List<TcpFlagsMatchConditions> tcpFlags) {
     if (tcpFlags == null || tcpFlags.isEmpty()) {
       return null;
     }
@@ -91,23 +91,23 @@ public final class HeaderSpaceToBDD {
     return _bddOps.or(tcpFlags.stream().map(this::toBDD).collect(ImmutableList.toImmutableList()));
   }
 
-  /** For TcpFlags */
+  /** For TcpFlagsMatchConditions */
   @VisibleForTesting
   static BDD toBDD(boolean useFlag, boolean flagValue, BDD flagBDD) {
     return useFlag ? flagValue ? flagBDD : flagBDD.not() : null;
   }
 
   @VisibleForTesting
-  BDD toBDD(TcpFlags tcpFlags) {
+  BDD toBDD(TcpFlagsMatchConditions tcpFlags) {
     return _bddOps.and(
-        toBDD(tcpFlags.getUseAck(), tcpFlags.getAck(), _bddPacket.getTcpAck()),
-        toBDD(tcpFlags.getUseCwr(), tcpFlags.getCwr(), _bddPacket.getTcpCwr()),
-        toBDD(tcpFlags.getUseEce(), tcpFlags.getEce(), _bddPacket.getTcpEce()),
-        toBDD(tcpFlags.getUseFin(), tcpFlags.getFin(), _bddPacket.getTcpFin()),
-        toBDD(tcpFlags.getUsePsh(), tcpFlags.getPsh(), _bddPacket.getTcpPsh()),
-        toBDD(tcpFlags.getUseRst(), tcpFlags.getRst(), _bddPacket.getTcpRst()),
-        toBDD(tcpFlags.getUseSyn(), tcpFlags.getSyn(), _bddPacket.getTcpSyn()),
-        toBDD(tcpFlags.getUseUrg(), tcpFlags.getUrg(), _bddPacket.getTcpUrg()));
+        toBDD(tcpFlags.getUseAck(), tcpFlags.getTcpFlags().getAck(), _bddPacket.getTcpAck()),
+        toBDD(tcpFlags.getUseCwr(), tcpFlags.getTcpFlags().getCwr(), _bddPacket.getTcpCwr()),
+        toBDD(tcpFlags.getUseEce(), tcpFlags.getTcpFlags().getEce(), _bddPacket.getTcpEce()),
+        toBDD(tcpFlags.getUseFin(), tcpFlags.getTcpFlags().getFin(), _bddPacket.getTcpFin()),
+        toBDD(tcpFlags.getUsePsh(), tcpFlags.getTcpFlags().getPsh(), _bddPacket.getTcpPsh()),
+        toBDD(tcpFlags.getUseRst(), tcpFlags.getTcpFlags().getRst(), _bddPacket.getTcpRst()),
+        toBDD(tcpFlags.getUseSyn(), tcpFlags.getTcpFlags().getSyn(), _bddPacket.getTcpSyn()),
+        toBDD(tcpFlags.getUseUrg(), tcpFlags.getTcpFlags().getUrg(), _bddPacket.getTcpUrg()));
   }
 
   public BDD toBDD(HeaderSpace headerSpace) {

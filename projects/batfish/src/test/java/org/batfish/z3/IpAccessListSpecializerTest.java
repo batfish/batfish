@@ -19,7 +19,7 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.State;
 import org.batfish.datamodel.SubRange;
-import org.batfish.datamodel.TcpFlags;
+import org.batfish.datamodel.TcpFlagsMatchConditions;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.MatchSrcInterface;
@@ -120,7 +120,8 @@ public final class IpAccessListSpecializerTest {
     List<Protocol> protocolList = ImmutableList.of(Protocol.TCP);
     List<State> stateList = ImmutableList.of(State.NEW);
     List<SubRange> subRangeList = ImmutableList.of(new SubRange(0, 0));
-    List<TcpFlags> tcpFlagsList = ImmutableList.of(TcpFlags.ACK_TCP_FLAG);
+    List<TcpFlagsMatchConditions> tcpFlagsList =
+        ImmutableList.of(TcpFlagsMatchConditions.ACK_TCP_FLAG);
     /* If the initial headerspace has non-empty disjunctions that become empty after specialization,
      * the entire match expression is FALSE.
      */

@@ -21,7 +21,7 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.SubRange;
-import org.batfish.datamodel.TcpFlags;
+import org.batfish.datamodel.TcpFlagsMatchConditions;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -48,7 +48,7 @@ public class SecurityGroupsTest {
         IpAccessListLine.acceptingHeaderSpace(
             HeaderSpace.builder()
                 .setSrcIps(Sets.newHashSet(new IpWildcard("0.0.0.0/0")))
-                .setTcpFlags(ImmutableSet.of(TcpFlags.ACK_TCP_FLAG))
+                .setTcpFlags(ImmutableSet.of(TcpFlagsMatchConditions.ACK_TCP_FLAG))
                 .build());
     _region = new Region("test");
     _flowBuilder = new Builder();
@@ -250,7 +250,7 @@ public class SecurityGroupsTest {
                         .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
                         .setSrcIps(Sets.newHashSet(new IpWildcard("5.6.7.8/32")))
                         .setSrcPorts(Sets.newHashSet(new SubRange(80, 80)))
-                        .setTcpFlags(ImmutableSet.of(TcpFlags.ACK_TCP_FLAG))
+                        .setTcpFlags(ImmutableSet.of(TcpFlagsMatchConditions.ACK_TCP_FLAG))
                         .build()),
                 IpAccessListLine.acceptingHeaderSpace(
                     HeaderSpace.builder()
@@ -268,7 +268,7 @@ public class SecurityGroupsTest {
                         .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
                         .setDstIps(Sets.newHashSet(new IpWildcard("1.2.3.4/32")))
                         .setSrcPorts(Sets.newHashSet(new SubRange(22, 22)))
-                        .setTcpFlags(ImmutableSet.of(TcpFlags.ACK_TCP_FLAG))
+                        .setTcpFlags(ImmutableSet.of(TcpFlagsMatchConditions.ACK_TCP_FLAG))
                         .build()),
                 IpAccessListLine.acceptingHeaderSpace(
                     HeaderSpace.builder()

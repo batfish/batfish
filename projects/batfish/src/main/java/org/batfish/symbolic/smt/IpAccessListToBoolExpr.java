@@ -17,7 +17,7 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.SubRange;
-import org.batfish.datamodel.TcpFlags;
+import org.batfish.datamodel.TcpFlagsMatchConditions;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.FalseExpr;
@@ -101,7 +101,7 @@ public class IpAccessListToBoolExpr implements GenericAclLineMatchExprVisitor<Bo
         : _context.mkAnd(_context.mkGe(var, startExpr), _context.mkLe(var, endExpr));
   }
 
-  private BoolExpr toBoolExpr(List<TcpFlags> tcpFlags) {
+  private BoolExpr toBoolExpr(List<TcpFlagsMatchConditions> tcpFlags) {
     if (tcpFlags == null || tcpFlags.isEmpty()) {
       return null;
     }
@@ -109,25 +109,25 @@ public class IpAccessListToBoolExpr implements GenericAclLineMatchExprVisitor<Bo
     return _context.mkOr(tcpFlags.stream().map(this::toBoolExpr).toArray(BoolExpr[]::new));
   }
 
-  /** For TcpFlags */
+  /** For TcpFlagsMatchConditions */
   private BoolExpr toBoolExpr(boolean useFlag, boolean flagValue, BoolExpr flagExpr) {
     return useFlag ? flagValue ? flagExpr : _context.mkNot(flagExpr) : null;
   }
 
-  private BoolExpr toBoolExpr(TcpFlags tcpFlags) {
+  private BoolExpr toBoolExpr(TcpFlagsMatchConditions tcpFlags) {
     if (!tcpFlags.anyUsed()) {
       return null;
     }
 
     return _boolExprOps.and(
-        toBoolExpr(tcpFlags.getUseAck(), tcpFlags.getAck(), _packet.getTcpAck()),
-        toBoolExpr(tcpFlags.getUseCwr(), tcpFlags.getCwr(), _packet.getTcpCwr()),
-        toBoolExpr(tcpFlags.getUseEce(), tcpFlags.getEce(), _packet.getTcpEce()),
-        toBoolExpr(tcpFlags.getUseFin(), tcpFlags.getFin(), _packet.getTcpFin()),
-        toBoolExpr(tcpFlags.getUsePsh(), tcpFlags.getPsh(), _packet.getTcpPsh()),
-        toBoolExpr(tcpFlags.getUseRst(), tcpFlags.getRst(), _packet.getTcpRst()),
-        toBoolExpr(tcpFlags.getUseSyn(), tcpFlags.getSyn(), _packet.getTcpSyn()),
-        toBoolExpr(tcpFlags.getUseUrg(), tcpFlags.getUrg(), _packet.getTcpUrg()));
+        toBoolExpr(tcpFlags.getUseAck(), tcpFlags.getTcpFlags().getAck(), _packet.getTcpAck()),
+        toBoolExpr(tcpFlags.getUseCwr(), tcpFlags.getTcpFlags().getCwr(), _packet.getTcpCwr()),
+        toBoolExpr(tcpFlags.getUseEce(), tcpFlags.getTcpFlags().getEce(), _packet.getTcpEce()),
+        toBoolExpr(tcpFlags.getUseFin(), tcpFlags.getTcpFlags().getFin(), _packet.getTcpFin()),
+        toBoolExpr(tcpFlags.getUsePsh(), tcpFlags.getTcpFlags().getPsh(), _packet.getTcpPsh()),
+        toBoolExpr(tcpFlags.getUseRst(), tcpFlags.getTcpFlags().getRst(), _packet.getTcpRst()),
+        toBoolExpr(tcpFlags.getUseSyn(), tcpFlags.getTcpFlags().getSyn(), _packet.getTcpSyn()),
+        toBoolExpr(tcpFlags.getUseUrg(), tcpFlags.getTcpFlags().getUrg(), _packet.getTcpUrg()));
   }
 
   private static <T> void forbidHeaderSpaceField(String fieldName, Set<T> fieldValue) {
