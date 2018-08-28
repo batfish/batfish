@@ -1,21 +1,18 @@
 package org.batfish.question.reachfilter;
 
-import static org.batfish.question.tracefilters.TraceFiltersAnswerer.COLUMN_ACTION;
 import static org.batfish.question.tracefilters.TraceFiltersAnswerer.COLUMN_FILTER_NAME;
-import static org.batfish.question.tracefilters.TraceFiltersAnswerer.COLUMN_FLOW;
-import static org.batfish.question.tracefilters.TraceFiltersAnswerer.COLUMN_LINE_CONTENT;
-import static org.batfish.question.tracefilters.TraceFiltersAnswerer.COLUMN_LINE_NUMBER;
 import static org.batfish.question.tracefilters.TraceFiltersAnswerer.COLUMN_NODE;
-import static org.batfish.question.tracefilters.TraceFiltersAnswerer.COLUMN_TRACE;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Multiset;
 import com.google.common.collect.Sets;
+import com.google.common.collect.Sets.SetView;
 import com.google.common.collect.Streams;
 import java.util.List;
 import java.util.Map;
@@ -34,15 +31,12 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.answers.AnswerElement;
-import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
-import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
-import org.batfish.datamodel.table.Row.RowBuilder;
 import org.batfish.datamodel.table.Rows;
 import org.batfish.datamodel.table.TableAnswerElement;
-import org.batfish.datamodel.table.TableMetadata;
+import org.batfish.datamodel.table.TableDiff;
 import org.batfish.question.ReachFilterParameters;
 import org.batfish.question.tracefilters.TraceFiltersAnswerer;
 import org.batfish.question.tracefilters.TraceFiltersQuestion;
@@ -51,14 +45,6 @@ import org.batfish.specifier.SpecifierContext;
 
 /** Answerer for ReachFilterQuestion */
 public final class ReachFilterAnswerer extends Answerer {
-  static final String COLUMN_SNAPSHOT = "snapshot";
-  static final String COLUMN_RESULT_TYPE = "resultType";
-
-  static final String BASE = "base";
-  static final String DELTA = "delta";
-  static final String INCREASED = "increased";
-  static final String DECREASED = "decreased";
-
   private TableAnswerElement _tableAnswerElement;
 
   public ReachFilterAnswerer(Question question, IBatfish batfish) {
@@ -83,8 +69,6 @@ public final class ReachFilterAnswerer extends Answerer {
   }
 
   private void differentialAnswer(ReachFilterQuestion question) {
-    _tableAnswerElement = new TableAnswerElement(differentialTableMetaData());
-
     _batfish.pushBaseEnvironment();
     Map<String, Configuration> baseConfigs = _batfish.loadConfigurations();
     Multimap<String, String> baseAcls = getSpecifiedAcls(question);
@@ -96,6 +80,11 @@ public final class ReachFilterAnswerer extends Answerer {
     _batfish.popEnvironment();
 
     ReachFilterParameters parameters = question.toReachFilterParameters();
+
+    TableAnswerElement baseTable =
+        TraceFiltersAnswerer.create(new TraceFiltersQuestion(null, null));
+    TableAnswerElement deltaTable =
+        TraceFiltersAnswerer.create(new TraceFiltersQuestion(null, null));
 
     Set<String> commonNodes = Sets.intersection(baseAcls.keySet(), deltaAcls.keySet());
     for (String node : commonNodes) {
@@ -112,11 +101,24 @@ public final class ReachFilterAnswerer extends Answerer {
         if (!baseAcl.isPresent() && !deltaAcl.isPresent()) {
           continue;
         }
-        if (baseAcl.isPresent() ^ deltaAcl.isPresent()) {
-          _logger.warn("Could only make query ACL for one of the snapshots.");
+        if (baseAcl.isPresent() && !deltaAcl.isPresent() && question.getIncludeOneTableKeys()) {
+          baseTable.addRow(
+              Row.builder(baseTable.getMetadata().toColumnMap())
+                  .put(COLUMN_NODE, node)
+                  .put(COLUMN_FILTER_NAME, aclName)
+                  .build());
+          continue;
+        }
+        if (!baseAcl.isPresent() && deltaAcl.isPresent() && question.getIncludeOneTableKeys()) {
+          deltaTable.addRow(
+              Row.builder(deltaTable.getMetadata().toColumnMap())
+                  .put(COLUMN_NODE, node)
+                  .put(COLUMN_FILTER_NAME, aclName)
+                  .build());
           continue;
         }
 
+        // present in both snapshot
         DifferentialReachFilterResult result =
             _batfish.differentialReachFilter(
                 baseConfig, baseAcl.get(), deltaConfig, deltaAcl.get(), parameters);
@@ -124,35 +126,41 @@ public final class ReachFilterAnswerer extends Answerer {
         result
             .getDecreasedFlow()
             .ifPresent(
-                flow ->
-                    processDifferentialFlow(DECREASED, node, baseAcl.get(), deltaAcl.get(), flow));
+                flow -> {
+                  baseTable.addRow(traceFilterRow(true, node, baseAcl.get(), flow));
+                  deltaTable.addRow(traceFilterRow(false, node, deltaAcl.get(), flow));
+                });
 
         result
             .getIncreasedFlow()
             .ifPresent(
-                flow ->
-                    processDifferentialFlow(INCREASED, node, baseAcl.get(), deltaAcl.get(), flow));
+                flow -> {
+                  baseTable.addRow(traceFilterRow(true, node, baseAcl.get(), flow));
+                  deltaTable.addRow(traceFilterRow(false, node, deltaAcl.get(), flow));
+                });
       }
     }
-  }
 
-  private void processDifferentialFlow(
-      String resultType, String hostname, IpAccessList baseAcl, IpAccessList deltaAcl, Flow flow) {
-    appendRows(
-        toDifferentialTableRows(resultType, BASE, traceFilterRows(true, hostname, baseAcl, flow)));
-    appendRows(
-        toDifferentialTableRows(
-            resultType, DELTA, traceFilterRows(false, hostname, deltaAcl, flow)));
+    // take care of nodes that are present in only one snapshot
+    if (question.getIncludeOneTableKeys()) {
+      addOneSnapshotNodes(Sets.difference(baseAcls.keySet(), deltaAcls.keySet()), baseTable);
+      addOneSnapshotNodes(Sets.difference(deltaAcls.keySet(), baseAcls.keySet()), deltaTable);
+    }
+
+    TableAnswerElement diffTable =
+        TableDiff.diffTables(baseTable, deltaTable, question.getIncludeOneTableKeys());
+
+    _tableAnswerElement = new TableAnswerElement(diffTable.getMetadata());
+    _tableAnswerElement.postProcessAnswer(question, diffTable.getRows().getData());
   }
 
   private void nonDifferentialAnswer(ReachFilterQuestion question) {
-    _tableAnswerElement = TraceFiltersAnswerer.create(new TraceFiltersQuestion(null, null));
-
     List<Pair<String, IpAccessList>> acls = getQueryAcls(question);
     if (acls.isEmpty()) {
       throw new BatfishException("No matching filters");
     }
 
+    Multiset<Row> rows = HashMultiset.create();
     /*
      * For each query ACL, try to get a flow. If one exists, run traceFilter on that flow.
      * Concatenate the answers for all flows into one big table.
@@ -169,44 +177,11 @@ public final class ReachFilterAnswerer extends Answerer {
         _batfish.getLogger().warn(t.getMessage());
         continue;
       }
-      result.ifPresent(flow -> appendRows(traceFilterRows(hostname, acl, flow)));
+      result.ifPresent(flow -> rows.add(traceFilterRow(hostname, acl, flow)));
     }
-  }
 
-  private static Rows toDifferentialTableRows(String resultType, String snapshot, Rows traceRows) {
-    ImmutableMultiset.Builder<Row> rows = ImmutableMultiset.builder();
-    RowBuilder rb =
-        Row.builder().put(COLUMN_RESULT_TYPE, resultType).put(COLUMN_SNAPSHOT, snapshot);
-    traceRows.iterator().forEachRemaining(row -> rows.add(rb.putAll(row).build()));
-    return new Rows(rows.build());
-  }
-
-  private TableMetadata differentialTableMetaData() {
-    List<ColumnMetadata> columnMetadata =
-        ImmutableList.of(
-            new ColumnMetadata(COLUMN_RESULT_TYPE, Schema.STRING, "Result type", true, false),
-            new ColumnMetadata(COLUMN_SNAPSHOT, Schema.STRING, "Snapshot", true, false),
-            new ColumnMetadata(COLUMN_NODE, Schema.NODE, "Node", true, false),
-            new ColumnMetadata(COLUMN_FILTER_NAME, Schema.STRING, "Filter name", true, false),
-            new ColumnMetadata(COLUMN_FLOW, Schema.FLOW, "Evaluated flow", true, false),
-            new ColumnMetadata(COLUMN_ACTION, Schema.STRING, "Outcome", false, true),
-            new ColumnMetadata(COLUMN_LINE_NUMBER, Schema.INTEGER, "Line number", false, true),
-            new ColumnMetadata(COLUMN_LINE_CONTENT, Schema.STRING, "Line content", false, true),
-            new ColumnMetadata(COLUMN_TRACE, Schema.ACL_TRACE, "ACL trace", false, true));
-    String textDesc =
-        String.format(
-            "Filter ${%s} on node ${%s} will ${%s} flow ${%s} at line ${%s} ${%s}",
-            COLUMN_FILTER_NAME,
-            COLUMN_NODE,
-            COLUMN_ACTION,
-            COLUMN_FLOW,
-            COLUMN_LINE_NUMBER,
-            COLUMN_LINE_CONTENT);
-    return new TableMetadata(columnMetadata, textDesc);
-  }
-
-  private void appendRows(Rows rows) {
-    rows.iterator().forEachRemaining(_tableAnswerElement::addRow);
+    _tableAnswerElement = TraceFiltersAnswerer.create(new TraceFiltersQuestion(null, null));
+    _tableAnswerElement.postProcessAnswer(question, rows);
   }
 
   private Multimap<String, String> getSpecifiedAcls(ReachFilterQuestion question) {
@@ -305,20 +280,20 @@ public final class ReachFilterAnswerer extends Answerer {
     return IpAccessList.builder().setName(acl.getName()).setLines(lines).build();
   }
 
-  private Rows traceFilterRows(boolean base, String hostname, IpAccessList acl, Flow flow) {
+  private Row traceFilterRow(boolean base, String hostname, IpAccessList acl, Flow flow) {
     if (base) {
       _batfish.pushBaseEnvironment();
     } else {
       _batfish.pushDeltaEnvironment();
     }
-    Rows rows = traceFilterRows(hostname, acl, flow);
+    Row row = traceFilterRow(hostname, acl, flow);
     _batfish.popEnvironment();
-    return rows;
+    return row;
   }
 
   @VisibleForTesting
   @Nonnull
-  Rows traceFilterRows(String hostname, IpAccessList acl, Flow flow) {
+  Row traceFilterRow(String hostname, IpAccessList acl, Flow flow) {
     TraceFiltersQuestion traceFiltersQuestion =
         new TraceFiltersQuestion(new NodesSpecifier(hostname), acl.getName());
     traceFiltersQuestion.setDscp(flow.getDscp());
@@ -342,6 +317,19 @@ public final class ReachFilterAnswerer extends Answerer {
     traceFiltersQuestion.setTcpFlagsRst(flow.getTcpFlagsRst() == 1);
     traceFiltersQuestion.setTcpFlagsSyn(flow.getTcpFlagsSyn() == 1);
     traceFiltersQuestion.setTcpFlagsUrg(flow.getTcpFlagsUrg() == 1);
-    return new TraceFiltersAnswerer(traceFiltersQuestion, _batfish).answer().getRows();
+    Rows rows = new TraceFiltersAnswerer(traceFiltersQuestion, _batfish).answer().getRows();
+    if (rows.size() != 1) {
+      throw new BatfishException(
+          String.format(
+              "TraceFiltersAnswerer produced an unexpected number of Rows: %d", rows.size()));
+    }
+    return rows.iterator().next();
+  }
+
+  /** Adds {@code nodes} (which are present in only one snapshot) to the {@code table} */
+  private void addOneSnapshotNodes(SetView<String> nodes, TableAnswerElement table) {
+    for (String node : nodes) {
+      table.addRow(Row.builder(table.getMetadata().toColumnMap()).put(COLUMN_NODE, node).build());
+    }
   }
 }

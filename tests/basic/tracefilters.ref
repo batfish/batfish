@@ -77,7 +77,7 @@
           "srcIp" : "AUTO/NONE(-1l)",
           "srcPort" : 0,
           "state" : "NEW",
-          "tag" : "BASE",
+          "tag" : "FlowTag",
           "tcpFlagsAck" : 0,
           "tcpFlagsCwr" : 0,
           "tcpFlagsEce" : 0,
@@ -123,7 +123,7 @@
           "srcIp" : "AUTO/NONE(-1l)",
           "srcPort" : 0,
           "state" : "NEW",
-          "tag" : "BASE",
+          "tag" : "FlowTag",
           "tcpFlagsAck" : 0,
           "tcpFlagsCwr" : 0,
           "tcpFlagsEce" : 0,
@@ -169,7 +169,7 @@
           "srcIp" : "AUTO/NONE(-1l)",
           "srcPort" : 0,
           "state" : "NEW",
-          "tag" : "BASE",
+          "tag" : "FlowTag",
           "tcpFlagsAck" : 0,
           "tcpFlagsCwr" : 0,
           "tcpFlagsEce" : 0,
@@ -215,7 +215,7 @@
           "srcIp" : "AUTO/NONE(-1l)",
           "srcPort" : 0,
           "state" : "NEW",
-          "tag" : "BASE",
+          "tag" : "FlowTag",
           "tcpFlagsAck" : 0,
           "tcpFlagsCwr" : 0,
           "tcpFlagsEce" : 0,
@@ -242,8 +242,8 @@
       },
       {
         "node" : {
-          "id" : "node-host2",
-          "name" : "host2"
+          "id" : "node-host1",
+          "name" : "host1"
         },
         "filterName" : "filter::FORWARD",
         "flow" : {
@@ -254,14 +254,14 @@
           "fragmentOffset" : 0,
           "icmpCode" : 255,
           "icmpVar" : 255,
-          "ingressNode" : "host2",
+          "ingressNode" : "host1",
           "ingressVrf" : "default",
           "ipProtocol" : "IP",
           "packetLength" : 0,
           "srcIp" : "AUTO/NONE(-1l)",
           "srcPort" : 0,
           "state" : "NEW",
-          "tag" : "BASE",
+          "tag" : "FlowTag",
           "tcpFlagsAck" : 0,
           "tcpFlagsCwr" : 0,
           "tcpFlagsEce" : 0,
@@ -288,8 +288,8 @@
       },
       {
         "node" : {
-          "id" : "node-host1",
-          "name" : "host1"
+          "id" : "node-host2",
+          "name" : "host2"
         },
         "filterName" : "filter::FORWARD",
         "flow" : {
@@ -300,14 +300,14 @@
           "fragmentOffset" : 0,
           "icmpCode" : 255,
           "icmpVar" : 255,
-          "ingressNode" : "host1",
+          "ingressNode" : "host2",
           "ingressVrf" : "default",
           "ipProtocol" : "IP",
           "packetLength" : 0,
           "srcIp" : "AUTO/NONE(-1l)",
           "srcPort" : 0,
           "state" : "NEW",
-          "tag" : "BASE",
+          "tag" : "FlowTag",
           "tcpFlagsAck" : 0,
           "tcpFlagsCwr" : 0,
           "tcpFlagsEce" : 0,
