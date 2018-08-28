@@ -13,7 +13,7 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class AnalysisAnswerOptions {
+public final class AnalysisAnswerOptions {
 
   @JsonCreator
   private static @Nonnull AnalysisAnswerOptions create(

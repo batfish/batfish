@@ -5,9 +5,11 @@ import static java.util.Objects.requireNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Objects;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
-public class ColumnSortOption {
+public final class ColumnSortOption {
 
   @JsonCreator
   private static @Nonnull ColumnSortOption create(
@@ -25,6 +27,18 @@ public class ColumnSortOption {
     _reversed = reversed;
   }
 
+  @Override
+  public boolean equals(@Nullable Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (!(obj instanceof ColumnSortOption)) {
+      return false;
+    }
+    ColumnSortOption rhs = (ColumnSortOption) obj;
+    return _column.equals(rhs._column) && _reversed == rhs._reversed;
+  }
+
   @JsonProperty(BfConsts.PROP_COLUMN)
   public @Nonnull String getColumn() {
     return _column;
@@ -33,5 +47,10 @@ public class ColumnSortOption {
   @JsonProperty(BfConsts.PROP_REVERSED)
   public boolean getReversed() {
     return _reversed;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_column, _reversed);
   }
 }
