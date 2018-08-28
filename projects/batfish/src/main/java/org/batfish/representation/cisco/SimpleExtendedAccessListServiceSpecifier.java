@@ -7,9 +7,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nonnull;
+import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpProtocol;
-import org.batfish.datamodel.State;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TcpFlagsMatchConditions;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
@@ -36,7 +36,7 @@ public class SimpleExtendedAccessListServiceSpecifier implements AccessListServi
 
     private List<SubRange> _srcPortRanges;
 
-    private Set<State> _states;
+    private Set<FlowState> _states;
 
     private List<TcpFlagsMatchConditions> _tcpFlags;
 
@@ -79,7 +79,7 @@ public class SimpleExtendedAccessListServiceSpecifier implements AccessListServi
       return this;
     }
 
-    public Builder setStates(Iterable<State> states) {
+    public Builder setStates(Iterable<FlowState> states) {
       _states = ImmutableSet.copyOf(states);
       return this;
     }
@@ -108,7 +108,7 @@ public class SimpleExtendedAccessListServiceSpecifier implements AccessListServi
 
   private final List<SubRange> _srcPortRanges;
 
-  private final Set<State> _states;
+  private final Set<FlowState> _states;
 
   private final List<TcpFlagsMatchConditions> _tcpFlags;
 

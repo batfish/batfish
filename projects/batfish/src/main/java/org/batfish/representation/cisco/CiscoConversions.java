@@ -36,6 +36,7 @@ import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.EmptyIpSpace;
+import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IkeGateway;
 import org.batfish.datamodel.IkeKeyType;
@@ -72,7 +73,6 @@ import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
-import org.batfish.datamodel.State;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TcpFlagsMatchConditions;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
@@ -535,7 +535,7 @@ class CiscoConversions {
       if (icmpCode != null) {
         newLine.setIcmpCodes(new TreeSet<>(Collections.singleton(new SubRange(icmpCode))));
       }
-      Set<State> states = fromLine.getStates();
+      Set<FlowState> states = fromLine.getStates();
       newLine.getStates().addAll(states);
       List<TcpFlagsMatchConditions> tcpFlags = fromLine.getTcpFlags();
       newLine.getTcpFlags().addAll(tcpFlags);

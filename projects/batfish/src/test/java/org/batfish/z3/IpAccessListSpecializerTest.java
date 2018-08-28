@@ -13,11 +13,11 @@ import static org.junit.Assert.assertThat;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import org.batfish.datamodel.EmptyIpSpace;
+import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.Protocol;
-import org.batfish.datamodel.State;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TcpFlagsMatchConditions;
 import org.batfish.datamodel.UniverseIpSpace;
@@ -118,7 +118,7 @@ public final class IpAccessListSpecializerTest {
     List<Integer> integerList = ImmutableList.of(0);
     List<IpProtocol> ipProtocolList = ImmutableList.of(IpProtocol.ICMP);
     List<Protocol> protocolList = ImmutableList.of(Protocol.TCP);
-    List<State> stateList = ImmutableList.of(State.NEW);
+    List<FlowState> stateList = ImmutableList.of(FlowState.NEW);
     List<SubRange> subRangeList = ImmutableList.of(new SubRange(0, 0));
     List<TcpFlagsMatchConditions> tcpFlagsList =
         ImmutableList.of(TcpFlagsMatchConditions.ACK_TCP_FLAG);

@@ -84,7 +84,7 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
 
     private SortedSet<Protocol> _srcProtocols;
 
-    private SortedSet<State> _states;
+    private SortedSet<FlowState> _states;
 
     private List<TcpFlagsMatchConditions> _tcpFlags;
 
@@ -261,7 +261,7 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
       return _srcProtocols;
     }
 
-    public SortedSet<State> getStates() {
+    public SortedSet<FlowState> getStates() {
       return _states;
     }
 
@@ -444,7 +444,7 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
       return this;
     }
 
-    public Builder setStates(Iterable<State> states) {
+    public Builder setStates(Iterable<FlowState> states) {
       _states = ImmutableSortedSet.copyOf(states);
       return this;
     }
@@ -620,7 +620,7 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
 
   private SortedSet<Protocol> _srcProtocols;
 
-  private SortedSet<State> _states;
+  private SortedSet<FlowState> _states;
 
   private List<TcpFlagsMatchConditions> _tcpFlags;
 
@@ -916,7 +916,7 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
 
   @JsonPropertyDescription("A set of acceptable abstract firewall states for a packet to match")
   @JsonProperty(PROP_STATES)
-  public SortedSet<State> getStates() {
+  public SortedSet<FlowState> getStates() {
     return _states;
   }
 
@@ -1299,7 +1299,7 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
   }
 
   @JsonProperty(PROP_STATES)
-  public void setStates(Iterable<State> states) {
+  public void setStates(Iterable<FlowState> states) {
     _states = ImmutableSortedSet.copyOf(states);
   }
 

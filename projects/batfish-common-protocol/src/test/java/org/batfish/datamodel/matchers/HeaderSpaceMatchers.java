@@ -2,8 +2,8 @@ package org.batfish.datamodel.matchers;
 
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
+import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.IpSpace;
-import org.batfish.datamodel.State;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.matchers.HeaderSpaceMatchersImpl.HasDstIps;
 import org.batfish.datamodel.matchers.HeaderSpaceMatchersImpl.HasDstPorts;
@@ -68,7 +68,7 @@ public class HeaderSpaceMatchers {
    * Provides a matcher that matches if the provided {@code subMatcher} matches the HeaderSpace's
    * state.
    */
-  public static HasStates hasStates(@Nonnull Matcher<? super SortedSet<State>> subMatcher) {
+  public static HasStates hasStates(@Nonnull Matcher<? super SortedSet<FlowState>> subMatcher) {
     return new HasStates(subMatcher);
   }
 

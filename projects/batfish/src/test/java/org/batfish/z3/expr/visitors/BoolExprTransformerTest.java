@@ -12,13 +12,13 @@ import com.google.common.collect.ImmutableSet;
 import com.microsoft.z3.BitVecExpr;
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
+import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Protocol;
-import org.batfish.datamodel.State;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.TcpFlagsMatchConditions;
@@ -225,7 +225,7 @@ public class BoolExprTransformerTest {
                         new SubRange(intCounter++, intCounter++),
                         new SubRange(intCounter++, intCounter++)))
                 .setSrcProtocols(ImmutableSet.of(Protocol.HTTPS, Protocol.DNS))
-                .setStates(ImmutableSet.of(State.ESTABLISHED, State.NEW))
+                .setStates(ImmutableSet.of(FlowState.ESTABLISHED, FlowState.NEW))
                 .setTcpFlags(
                     ImmutableSet.of(
                         TcpFlagsMatchConditions.builder()
