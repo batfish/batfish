@@ -52,7 +52,6 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.questions.InterfacesSpecifier;
-import org.batfish.datamodel.table.Rows;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -334,13 +333,11 @@ public final class ReachFilterAnswererTest {
     String hostname = _config.getHostname();
     Flow flow = Flow.builder().setIngressNode(hostname).setDstIp(IP2).setTag("tag").build();
     ReachFilterAnswerer answerer = new ReachFilterAnswerer(question, _batfish);
-    Rows rows = answerer.traceFilterRows(hostname, ACL, flow);
     assertThat(
-        rows.getData(),
-        contains(
-            allOf(
-                hasColumn("action", equalTo("DENY"), Schema.STRING),
-                hasColumn("filterName", equalTo(ACL.getName()), Schema.STRING))));
+        answerer.traceFilterRow(hostname, ACL, flow),
+        allOf(
+            hasColumn("action", equalTo("DENY"), Schema.STRING),
+            hasColumn("filterName", equalTo(ACL.getName()), Schema.STRING)));
   }
 
   @Test
