@@ -15,19 +15,19 @@
     ],
     "variables" : {
       "interfaces" : {
-        "description" : "Only include interfaces that match this regex",
+        "description" : "Include interfaces matching this regex",
         "optional" : true,
         "type" : "javaRegex",
         "value" : ".*"
       },
       "nodes" : {
-        "description" : "Only include nodes that match this regex",
+        "description" : "Include nodes matching this name or regex",
         "optional" : true,
         "type" : "nodeSpec",
         "value" : ".*"
       },
       "properties" : {
-        "description" : "Only include properties that match this regex",
+        "description" : "Include properties matching this regex",
         "optional" : true,
         "type" : "interfacePropertySpec",
         "value" : ".*"

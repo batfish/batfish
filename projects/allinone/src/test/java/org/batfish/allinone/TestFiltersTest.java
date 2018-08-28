@@ -9,7 +9,7 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.isPermittedByIpAc
 import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
 import static org.batfish.datamodel.matchers.RowsMatchers.hasSize;
 import static org.batfish.datamodel.matchers.TableAnswerElementMatchers.hasRows;
-import static org.batfish.question.testfilters.TestFiltersAnswerer.COLUMN_FILTER_NAME;
+import static org.batfish.question.testfilters.TestFiltersAnswerer.COL_FILTER_NAME;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
@@ -105,9 +105,9 @@ public class TestFiltersTest {
         answer,
         hasRows(
             forAll(
-                hasColumn(COLUMN_FILTER_NAME, equalTo(acl.getName()), Schema.STRING),
+                hasColumn(COL_FILTER_NAME, equalTo(acl.getName()), Schema.STRING),
                 hasColumn(
-                    TestFiltersAnswerer.COLUMN_TRACE,
+                    TestFiltersAnswerer.COL_TRACE,
                     hasEvents(
                         contains(
                             ImmutableList.of(
@@ -120,9 +120,9 @@ public class TestFiltersTest {
         answer,
         hasRows(
             forAll(
-                hasColumn(COLUMN_FILTER_NAME, equalTo(referencedAcl.getName()), Schema.STRING),
+                hasColumn(COL_FILTER_NAME, equalTo(referencedAcl.getName()), Schema.STRING),
                 hasColumn(
-                    TestFiltersAnswerer.COLUMN_TRACE,
+                    TestFiltersAnswerer.COL_TRACE,
                     hasEvents(
                         contains(isDefaultDeniedByIpAccessListNamed(referencedAcl.getName()))),
                     Schema.ACL_TRACE))));

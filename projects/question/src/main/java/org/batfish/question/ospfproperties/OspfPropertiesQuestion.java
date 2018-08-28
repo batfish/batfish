@@ -35,7 +35,7 @@ public class OspfPropertiesQuestion extends Question {
 
   @Override
   public String getName() {
-    return "ospfproperties";
+    return "ospfProperties";
   }
 
   @JsonProperty(PROP_NODES)

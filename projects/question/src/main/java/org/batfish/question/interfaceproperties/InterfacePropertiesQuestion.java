@@ -46,7 +46,7 @@ public class InterfacePropertiesQuestion extends Question {
 
   @Override
   public String getName() {
-    return "interfaceproperties";
+    return "interfaceProperties";
   }
 
   @JsonProperty(PROP_EXCLUDE_SHUT_INTERFACES)

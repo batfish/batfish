@@ -324,7 +324,7 @@ public class NodesQuestionPlugin extends QuestionPlugin {
       // initRemoteBgpNeighbors(_batfish, configurations);
 
       SortedMap<String, Configuration> answerNodes = new TreeMap<>();
-      Set<String> nodes = question.getNodeRegex().getMatchingNodes(_batfish);
+      Set<String> nodes = question.getNodes().getMatchingNodes(_batfish);
       for (String node : configurations.keySet()) {
         if (nodes.contains(node)) {
           answerNodes.put(node, configurations.get(node));
@@ -476,7 +476,7 @@ public class NodesQuestionPlugin extends QuestionPlugin {
    * or a summary of it.
    *
    * @type Nodes onefile
-   * @param nodeRegex Regular expression for names of nodes to include. Default value is '.*' (all
+   * @param nodes Regular expression for names of nodes to include. Default value is '.*' (all
    *     nodes).
    * @param nodeType Set of nodes to focus on among (BGP, EIGRP, ISIS, OSPF). Default is empty set
    *     ('[]') which indicates all types.
@@ -487,13 +487,13 @@ public class NodesQuestionPlugin extends QuestionPlugin {
    */
   public static class NodesQuestion extends Question {
 
-    private static final String PROP_NODE_REGEX = "nodeRegex";
+    private static final String PROP_NODES = "nodes";
 
     private static final String PROP_NODE_TYPES = "nodeTypes";
 
     private static final String PROP_SUMMARY = "summary";
 
-    private NodesSpecifier _nodeRegex;
+    private NodesSpecifier _nodes;
 
     private SortedSet<NodeType> _nodeTypes;
 
@@ -501,7 +501,7 @@ public class NodesQuestionPlugin extends QuestionPlugin {
 
     public NodesQuestion() {
       _nodeTypes = new TreeSet<>();
-      _nodeRegex = NodesSpecifier.ALL;
+      _nodes = NodesSpecifier.ALL;
       _summary = true;
     }
 
@@ -515,9 +515,9 @@ public class NodesQuestionPlugin extends QuestionPlugin {
       return "nodes";
     }
 
-    @JsonProperty(PROP_NODE_REGEX)
-    public NodesSpecifier getNodeRegex() {
-      return _nodeRegex;
+    @JsonProperty(PROP_NODES)
+    public NodesSpecifier getNodes() {
+      return _nodes;
     }
 
     @JsonProperty(PROP_NODE_TYPES)
@@ -530,9 +530,9 @@ public class NodesQuestionPlugin extends QuestionPlugin {
       return _summary;
     }
 
-    @JsonProperty(PROP_NODE_REGEX)
-    public void setNodeRegex(NodesSpecifier regex) {
-      _nodeRegex = regex;
+    @JsonProperty(PROP_NODES)
+    public void setNodes(NodesSpecifier regex) {
+      _nodes = regex;
     }
 
     @JsonProperty(PROP_NODE_TYPES)

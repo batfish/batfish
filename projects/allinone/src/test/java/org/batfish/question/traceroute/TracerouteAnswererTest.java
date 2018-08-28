@@ -257,7 +257,7 @@ public class TracerouteAnswererTest {
         answer.getRows().getData(),
         everyItem(
             hasColumn(
-                "traces",
+                COL_TRACES,
                 everyItem(hasDisposition(FlowDisposition.DENIED_OUT)),
                 Schema.set(Schema.FLOW_TRACE))));
 
@@ -269,7 +269,7 @@ public class TracerouteAnswererTest {
         answer.getRows().getData(),
         everyItem(
             hasColumn(
-                "traces",
+                COL_TRACES,
                 everyItem(hasDisposition(FlowDisposition.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK)),
                 Schema.set(Schema.FLOW_TRACE))));
   }
