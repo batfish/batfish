@@ -7,22 +7,22 @@
           "description" : "The flow",
           "isKey" : true,
           "isValue" : false,
-          "name" : "flow",
+          "name" : "Flow",
           "schema" : "Flow"
         },
         {
           "description" : "The flow traces",
           "isKey" : false,
           "isValue" : true,
-          "name" : "traces",
+          "name" : "Traces",
           "schema" : "Set<FlowTrace>"
         }
       ],
-      "textDesc" : "Paths for flow ${flow}"
+      "textDesc" : "Paths for flow ${Flow}"
     },
     "rows" : [
       {
-        "flow" : {
+        "Flow" : {
           "dscp" : 0,
           "dstIp" : "2.128.0.101",
           "dstPort" : 0,
@@ -47,7 +47,7 @@
           "tcpFlagsSyn" : 0,
           "tcpFlagsUrg" : 0
         },
-        "traces" : [
+        "Traces" : [
           {
             "disposition" : "DENIED_IN",
             "hops" : [
@@ -379,7 +379,7 @@
         ]
       },
       {
-        "flow" : {
+        "Flow" : {
           "dscp" : 0,
           "dstIp" : "2.128.0.101",
           "dstPort" : 0,
@@ -404,7 +404,7 @@
           "tcpFlagsSyn" : 0,
           "tcpFlagsUrg" : 0
         },
-        "traces" : [
+        "Traces" : [
           {
             "disposition" : "DENIED_IN",
             "hops" : [
@@ -736,7 +736,7 @@
         ]
       },
       {
-        "flow" : {
+        "Flow" : {
           "dscp" : 0,
           "dstIp" : "2.128.0.101",
           "dstPort" : 0,
@@ -761,7 +761,7 @@
           "tcpFlagsSyn" : 0,
           "tcpFlagsUrg" : 0
         },
-        "traces" : [
+        "Traces" : [
           {
             "disposition" : "DENIED_IN",
             "hops" : [
@@ -1093,7 +1093,7 @@
         ]
       },
       {
-        "flow" : {
+        "Flow" : {
           "dscp" : 0,
           "dstIp" : "2.128.0.101",
           "dstPort" : 0,
@@ -1118,7 +1118,7 @@
           "tcpFlagsSyn" : 0,
           "tcpFlagsUrg" : 0
         },
-        "traces" : [
+        "Traces" : [
           {
             "disposition" : "DENIED_IN",
             "hops" : [

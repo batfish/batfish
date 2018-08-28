@@ -30,13 +30,13 @@ import org.batfish.specifier.SpecifierContext;
 
 public class TraceFiltersAnswerer extends Answerer {
 
-  public static final String COLUMN_NODE = "node";
-  public static final String COLUMN_FILTER_NAME = "filterName";
-  public static final String COLUMN_FLOW = "flow";
-  public static final String COLUMN_ACTION = "action";
-  public static final String COLUMN_LINE_NUMBER = "lineNumber";
-  public static final String COLUMN_LINE_CONTENT = "lineContent";
-  public static final String COLUMN_TRACE = "trace";
+  public static final String COL_NODE = "Node";
+  public static final String COL_FILTER_NAME = "Filter_Name";
+  public static final String COL_FLOW = "Flow";
+  public static final String COL_ACTION = "Action";
+  public static final String COL_LINE_NUMBER = "Line_Number";
+  public static final String COL_LINE_CONTENT = "Line_Content";
+  public static final String COL_TRACE = "Trace";
 
   public TraceFiltersAnswerer(Question question, IBatfish batfish) {
     super(question, batfish);
@@ -52,22 +52,17 @@ public class TraceFiltersAnswerer extends Answerer {
   public static TableAnswerElement create(TraceFiltersQuestion question) {
     List<ColumnMetadata> columnMetadata =
         ImmutableList.of(
-            new ColumnMetadata(COLUMN_NODE, Schema.NODE, "Node", true, false),
-            new ColumnMetadata(COLUMN_FILTER_NAME, Schema.STRING, "Filter name", true, false),
-            new ColumnMetadata(COLUMN_FLOW, Schema.FLOW, "Evaluated flow", true, false),
-            new ColumnMetadata(COLUMN_ACTION, Schema.STRING, "Outcome", false, true),
-            new ColumnMetadata(COLUMN_LINE_NUMBER, Schema.INTEGER, "Line number", false, true),
-            new ColumnMetadata(COLUMN_LINE_CONTENT, Schema.STRING, "Line content", false, true),
-            new ColumnMetadata(COLUMN_TRACE, Schema.ACL_TRACE, "ACL trace", false, true));
+            new ColumnMetadata(COL_NODE, Schema.NODE, "Node", true, false),
+            new ColumnMetadata(COL_FILTER_NAME, Schema.STRING, "Filter name", true, false),
+            new ColumnMetadata(COL_FLOW, Schema.FLOW, "Evaluated flow", true, false),
+            new ColumnMetadata(COL_ACTION, Schema.STRING, "Outcome", false, true),
+            new ColumnMetadata(COL_LINE_NUMBER, Schema.INTEGER, "Line number", false, true),
+            new ColumnMetadata(COL_LINE_CONTENT, Schema.STRING, "Line content", false, true),
+            new ColumnMetadata(COL_TRACE, Schema.ACL_TRACE, "ACL trace", false, true));
     String textDesc =
         String.format(
             "Filter ${%s} on node ${%s} will ${%s} flow ${%s} at line ${%s} ${%s}",
-            COLUMN_FILTER_NAME,
-            COLUMN_NODE,
-            COLUMN_ACTION,
-            COLUMN_FLOW,
-            COLUMN_LINE_NUMBER,
-            COLUMN_LINE_CONTENT);
+            COL_FILTER_NAME, COL_NODE, COL_ACTION, COL_FLOW, COL_LINE_NUMBER, COL_LINE_CONTENT);
     DisplayHints dhints = question.getDisplayHints();
     if (dhints != null && dhints.getTextDesc() != null) {
       textDesc = dhints.getTextDesc();
@@ -112,13 +107,13 @@ public class TraceFiltersAnswerer extends Answerer {
       String lineContent,
       AclTrace trace) {
     RowBuilder row = Row.builder();
-    row.put(TraceFiltersAnswerer.COLUMN_NODE, new Node(nodeName))
-        .put(TraceFiltersAnswerer.COLUMN_FILTER_NAME, filterName)
-        .put(TraceFiltersAnswerer.COLUMN_FLOW, flow)
-        .put(TraceFiltersAnswerer.COLUMN_ACTION, action)
-        .put(TraceFiltersAnswerer.COLUMN_LINE_NUMBER, matchLine)
-        .put(TraceFiltersAnswerer.COLUMN_LINE_CONTENT, lineContent)
-        .put(TraceFiltersAnswerer.COLUMN_TRACE, trace);
+    row.put(TraceFiltersAnswerer.COL_NODE, new Node(nodeName))
+        .put(TraceFiltersAnswerer.COL_FILTER_NAME, filterName)
+        .put(TraceFiltersAnswerer.COL_FLOW, flow)
+        .put(TraceFiltersAnswerer.COL_ACTION, action)
+        .put(TraceFiltersAnswerer.COL_LINE_NUMBER, matchLine)
+        .put(TraceFiltersAnswerer.COL_LINE_CONTENT, lineContent)
+        .put(TraceFiltersAnswerer.COL_TRACE, trace);
     return row.build();
   }
 

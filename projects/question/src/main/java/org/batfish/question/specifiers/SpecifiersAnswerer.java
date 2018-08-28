@@ -20,6 +20,9 @@ import org.batfish.specifier.SpecifierContext;
 
 public final class SpecifiersAnswerer extends Answerer {
 
+  static final String COL_LOCATIONS = "Locations";
+  static final String COL_IP_SPACE = "IP_Space";
+
   public SpecifiersAnswerer(Question question, IBatfish batfish) {
     super(question, batfish);
   }
@@ -42,8 +45,8 @@ public final class SpecifiersAnswerer extends Answerer {
 
     List<ColumnMetadata> columns =
         ImmutableList.of(
-            new ColumnMetadata("Locations", Schema.STRING, "Resolution", false, false),
-            new ColumnMetadata("IpSpace", Schema.STRING, "IpSpace", false, false));
+            new ColumnMetadata(COL_LOCATIONS, Schema.STRING, "Resolution", false, false),
+            new ColumnMetadata(COL_IP_SPACE, Schema.STRING, "IP space", false, false));
     TableAnswerElement table = new TableAnswerElement(new TableMetadata(columns));
     Map<String, ColumnMetadata> columnMap = table.getMetadata().toColumnMap();
 
@@ -55,9 +58,9 @@ public final class SpecifiersAnswerer extends Answerer {
       table.addRow(
           Row.of(
               columnMap,
-              "Locations",
+              COL_LOCATIONS,
               entry.getLocations().toString(),
-              "IpSpace",
+              COL_IP_SPACE,
               Objects.toString(entry.getIpSpace())));
     }
     return table;
