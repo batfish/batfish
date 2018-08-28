@@ -34,7 +34,7 @@
         "value" : ">"
       },
       "interfaces" : {
-        "description" : "Only evaluate interfaces whose name matches this regex",
+        "description" : "Evaluate interfaces matching this regex",
         "optional" : false,
         "type" : "javaRegex",
         "value" : "Gig.*"
@@ -46,7 +46,7 @@
         "value" : 0
       },
       "nodes" : {
-        "description" : "Only include nodes whose name matches this regex",
+        "description" : "Include nodes matching this name or regex",
         "optional" : false,
         "type" : "nodeSpec",
         "value" : "as1core2"

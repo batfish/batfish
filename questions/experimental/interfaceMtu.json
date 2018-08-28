@@ -27,7 +27,7 @@
               "value": "<"
             },
             "interfaces": {
-              "description": "Only evaluate interfaces whose name matches this regex",
+              "description": "Evaluate interfaces matching this regex",
               "type": "javaRegex",
               "value": ".*"
             },
@@ -37,7 +37,7 @@
               "value": 1500
             },
             "nodes": {
-              "description": "Only include nodes whose name matches this regex",
+              "description": "Include nodes matching this name or regex",
               "type": "nodeSpec",
               "value": ".*"
             }
