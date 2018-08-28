@@ -265,6 +265,7 @@ import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.DscpType;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.EncryptionAlgorithm;
+import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.IcmpCode;
 import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.IkeAuthenticationMethod;
@@ -297,11 +298,11 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SnmpCommunity;
 import org.batfish.datamodel.SnmpHost;
 import org.batfish.datamodel.SnmpServer;
-import org.batfish.datamodel.State;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.TcpFlags;
+import org.batfish.datamodel.TcpFlagsMatchConditions;
 import org.batfish.datamodel.eigrp.EigrpMetric;
 import org.batfish.datamodel.eigrp.EigrpProcessMode;
 import org.batfish.datamodel.isis.IsisInterfaceMode;
@@ -4801,26 +4802,28 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           ctx.alps_dst != null ? toPortRanges(ctx.alps_dst) : Collections.emptyList();
       Integer icmpType = null;
       Integer icmpCode = null;
-      List<TcpFlags> tcpFlags = new ArrayList<>();
+      List<TcpFlagsMatchConditions> tcpFlags = new ArrayList<>();
       Set<Integer> dscps = new TreeSet<>();
       Set<Integer> ecns = new TreeSet<>();
-      Set<State> states = EnumSet.noneOf(State.class);
+      Set<FlowState> states = EnumSet.noneOf(FlowState.class);
       for (Extended_access_list_additional_featureContext feature : ctx.features) {
         if (feature.ACK() != null) {
-          TcpFlags alt = new TcpFlags();
-          alt.setUseAck(true);
-          alt.setAck(true);
-          tcpFlags.add(alt);
+          tcpFlags.add(
+              TcpFlagsMatchConditions.builder()
+                  .setTcpFlags(TcpFlags.builder().setAck(true).build())
+                  .setUseAck(true)
+                  .build());
         }
         if (feature.DSCP() != null) {
           int dscpType = toDscpType(feature.dscp_type());
           dscps.add(dscpType);
         }
         if (feature.ECE() != null) {
-          TcpFlags alt = new TcpFlags();
-          alt.setUseEce(true);
-          alt.setEce(true);
-          tcpFlags.add(alt);
+          tcpFlags.add(
+              TcpFlagsMatchConditions.builder()
+                  .setTcpFlags(TcpFlags.builder().setEce(true).build())
+                  .setUseEce(true)
+                  .build());
         }
         if (feature.ECHO_REPLY() != null) {
           icmpType = IcmpType.ECHO_REPLY;
@@ -4836,20 +4839,23 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         }
         if (feature.ESTABLISHED() != null) {
           // must contain ACK or RST
-          TcpFlags alt1 = new TcpFlags();
-          TcpFlags alt2 = new TcpFlags();
-          alt1.setUseAck(true);
-          alt1.setAck(true);
-          alt2.setUseRst(true);
-          alt2.setRst(true);
-          tcpFlags.add(alt1);
-          tcpFlags.add(alt2);
+          tcpFlags.add(
+              TcpFlagsMatchConditions.builder()
+                  .setTcpFlags(TcpFlags.builder().setAck(true).build())
+                  .setUseAck(true)
+                  .build());
+          tcpFlags.add(
+              TcpFlagsMatchConditions.builder()
+                  .setTcpFlags(TcpFlags.builder().setRst(true).build())
+                  .setUseRst(true)
+                  .build());
         }
         if (feature.FIN() != null) {
-          TcpFlags alt = new TcpFlags();
-          alt.setUseFin(true);
-          alt.setFin(true);
-          tcpFlags.add(alt);
+          tcpFlags.add(
+              TcpFlagsMatchConditions.builder()
+                  .setTcpFlags(TcpFlags.builder().setFin(true).build())
+                  .setUseFin(true)
+                  .build());
         }
         if (feature.FRAGMENTS() != null) {
           _w.addWarning(
@@ -4884,29 +4890,32 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           icmpCode = IcmpCode.DESTINATION_PORT_UNREACHABLE;
         }
         if (feature.PSH() != null) {
-          TcpFlags alt = new TcpFlags();
-          alt.setUsePsh(true);
-          alt.setPsh(true);
-          tcpFlags.add(alt);
+          tcpFlags.add(
+              TcpFlagsMatchConditions.builder()
+                  .setTcpFlags(TcpFlags.builder().setPsh(true).build())
+                  .setUsePsh(true)
+                  .build());
         }
         if (feature.REDIRECT() != null) {
           icmpType = IcmpType.REDIRECT_MESSAGE;
         }
         if (feature.RST() != null) {
-          TcpFlags alt = new TcpFlags();
-          alt.setUseRst(true);
-          alt.setRst(true);
-          tcpFlags.add(alt);
+          tcpFlags.add(
+              TcpFlagsMatchConditions.builder()
+                  .setTcpFlags(TcpFlags.builder().setRst(true).build())
+                  .setUseRst(true)
+                  .build());
         }
         if (feature.SOURCE_QUENCH() != null) {
           icmpType = IcmpType.SOURCE_QUENCH;
           icmpCode = IcmpCode.SOURCE_QUENCH;
         }
         if (feature.SYN() != null) {
-          TcpFlags alt = new TcpFlags();
-          alt.setUseSyn(true);
-          alt.setSyn(true);
-          tcpFlags.add(alt);
+          tcpFlags.add(
+              TcpFlagsMatchConditions.builder()
+                  .setTcpFlags(TcpFlags.builder().setSyn(true).build())
+                  .setUseSyn(true)
+                  .build());
         }
         if (feature.TIME_EXCEEDED() != null) {
           icmpType = IcmpType.TIME_EXCEEDED;
@@ -4924,16 +4933,17 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           icmpCode = IcmpCode.TRACEROUTE;
         }
         if (feature.TRACKED() != null) {
-          states.add(State.ESTABLISHED);
+          states.add(FlowState.ESTABLISHED);
         }
         if (feature.UNREACHABLE() != null) {
           icmpType = IcmpType.DESTINATION_UNREACHABLE;
         }
         if (feature.URG() != null) {
-          TcpFlags alt = new TcpFlags();
-          alt.setUseUrg(true);
-          alt.setUrg(true);
-          tcpFlags.add(alt);
+          tcpFlags.add(
+              TcpFlagsMatchConditions.builder()
+                  .setTcpFlags(TcpFlags.builder().setUrg(true).build())
+                  .setUseUrg(true)
+                  .build());
         }
       }
       return SimpleExtendedAccessListServiceSpecifier.builder()
@@ -5021,26 +5031,28 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         ctx.alps_dst != null ? toPortRanges(ctx.alps_dst) : Collections.emptyList();
     Integer icmpType = null;
     Integer icmpCode = null;
-    List<TcpFlags> tcpFlags = new ArrayList<>();
+    List<TcpFlagsMatchConditions> tcpFlags = new ArrayList<>();
     Set<Integer> dscps = new TreeSet<>();
     Set<Integer> ecns = new TreeSet<>();
-    Set<State> states = EnumSet.noneOf(State.class);
+    Set<FlowState> states = EnumSet.noneOf(FlowState.class);
     for (Extended_access_list_additional_featureContext feature : ctx.features) {
       if (feature.ACK() != null) {
-        TcpFlags alt = new TcpFlags();
-        alt.setUseAck(true);
-        alt.setAck(true);
-        tcpFlags.add(alt);
+        tcpFlags.add(
+            TcpFlagsMatchConditions.builder()
+                .setTcpFlags(TcpFlags.builder().setAck(true).build())
+                .setUseAck(true)
+                .build());
       }
       if (feature.DSCP() != null) {
         int dscpType = toDscpType(feature.dscp_type());
         dscps.add(dscpType);
       }
       if (feature.ECE() != null) {
-        TcpFlags alt = new TcpFlags();
-        alt.setUseEce(true);
-        alt.setEce(true);
-        tcpFlags.add(alt);
+        tcpFlags.add(
+            TcpFlagsMatchConditions.builder()
+                .setTcpFlags(TcpFlags.builder().setEce(true).build())
+                .setUseEce(true)
+                .build());
       }
       if (feature.ECHO_REPLY() != null) {
         icmpType = IcmpType.ECHO_REPLY;
@@ -5056,20 +5068,23 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       }
       if (feature.ESTABLISHED() != null) {
         // must contain ACK or RST
-        TcpFlags alt1 = new TcpFlags();
-        TcpFlags alt2 = new TcpFlags();
-        alt1.setUseAck(true);
-        alt1.setAck(true);
-        alt2.setUseRst(true);
-        alt2.setRst(true);
-        tcpFlags.add(alt1);
-        tcpFlags.add(alt2);
+        tcpFlags.add(
+            TcpFlagsMatchConditions.builder()
+                .setTcpFlags(TcpFlags.builder().setAck(true).build())
+                .setUseAck(true)
+                .build());
+        tcpFlags.add(
+            TcpFlagsMatchConditions.builder()
+                .setTcpFlags(TcpFlags.builder().setRst(true).build())
+                .setUseRst(true)
+                .build());
       }
       if (feature.FIN() != null) {
-        TcpFlags alt = new TcpFlags();
-        alt.setUseFin(true);
-        alt.setFin(true);
-        tcpFlags.add(alt);
+        tcpFlags.add(
+            TcpFlagsMatchConditions.builder()
+                .setTcpFlags(TcpFlags.builder().setFin(true).build())
+                .setUseFin(true)
+                .build());
       }
       if (feature.FRAGMENTS() != null) {
         todo(ctx);
@@ -5102,29 +5117,32 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         icmpCode = IcmpCode.DESTINATION_PORT_UNREACHABLE;
       }
       if (feature.PSH() != null) {
-        TcpFlags alt = new TcpFlags();
-        alt.setUsePsh(true);
-        alt.setPsh(true);
-        tcpFlags.add(alt);
+        tcpFlags.add(
+            TcpFlagsMatchConditions.builder()
+                .setTcpFlags(TcpFlags.builder().setPsh(true).build())
+                .setUsePsh(true)
+                .build());
       }
       if (feature.REDIRECT() != null) {
         icmpType = IcmpType.REDIRECT_MESSAGE;
       }
       if (feature.RST() != null) {
-        TcpFlags alt = new TcpFlags();
-        alt.setUseRst(true);
-        alt.setRst(true);
-        tcpFlags.add(alt);
+        tcpFlags.add(
+            TcpFlagsMatchConditions.builder()
+                .setTcpFlags(TcpFlags.builder().setRst(true).build())
+                .setUseRst(true)
+                .build());
       }
       if (feature.SOURCE_QUENCH() != null) {
         icmpType = IcmpType.SOURCE_QUENCH;
         icmpCode = IcmpCode.SOURCE_QUENCH;
       }
       if (feature.SYN() != null) {
-        TcpFlags alt = new TcpFlags();
-        alt.setUseSyn(true);
-        alt.setSyn(true);
-        tcpFlags.add(alt);
+        tcpFlags.add(
+            TcpFlagsMatchConditions.builder()
+                .setTcpFlags(TcpFlags.builder().setSyn(true).build())
+                .setUseSyn(true)
+                .build());
       }
       if (feature.TIME_EXCEEDED() != null) {
         icmpType = IcmpType.TIME_EXCEEDED;
@@ -5141,16 +5159,17 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         icmpCode = IcmpCode.TRACEROUTE;
       }
       if (feature.TRACKED() != null) {
-        states.add(State.ESTABLISHED);
+        states.add(FlowState.ESTABLISHED);
       }
       if (feature.UNREACHABLE() != null) {
         icmpType = IcmpType.DESTINATION_UNREACHABLE;
       }
       if (feature.URG() != null) {
-        TcpFlags alt = new TcpFlags();
-        alt.setUseUrg(true);
-        alt.setUrg(true);
-        tcpFlags.add(alt);
+        tcpFlags.add(
+            TcpFlagsMatchConditions.builder()
+                .setTcpFlags(TcpFlags.builder().setUrg(true).build())
+                .setUseUrg(true)
+                .build());
       }
     }
     String name = getFullText(ctx).trim();
@@ -5565,7 +5584,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (ifaces.containsKey(alias)) {
       _w.redFlag(String.format("Interface alias '%s' is already in use.", alias));
     } else if (_currentInterfaces.size() > 1) {
-      _w.redFlag(String.format("Parse assertion failed for _currentInterfaces"));
+      _w.redFlag("Parse assertion failed for _currentInterfaces");
     } else {
       // Define the alias as an interface to make ref tracking easier
       defineStructure(INTERFACE, alias, ctx);

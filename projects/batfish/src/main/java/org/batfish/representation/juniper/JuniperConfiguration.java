@@ -44,6 +44,7 @@ import org.batfish.datamodel.BgpPeerConfig.Builder;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IkeKeyType;
 import org.batfish.datamodel.IkePhase1Key;
@@ -72,7 +73,6 @@ import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SnmpServer;
-import org.batfish.datamodel.State;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.SwitchportMode;
@@ -133,7 +133,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
                       LineAction.PERMIT,
                       new MatchHeaderSpace(
                           HeaderSpace.builder()
-                              .setStates(ImmutableList.of(State.ESTABLISHED))
+                              .setStates(ImmutableList.of(FlowState.ESTABLISHED))
                               .build()),
                       ACL_NAME_EXISTING_CONNECTION)))
           .build();

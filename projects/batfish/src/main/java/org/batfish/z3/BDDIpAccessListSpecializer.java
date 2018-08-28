@@ -17,7 +17,7 @@ import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.SubRange;
-import org.batfish.datamodel.TcpFlags;
+import org.batfish.datamodel.TcpFlagsMatchConditions;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.FalseExpr;
@@ -175,7 +175,8 @@ public final class BDDIpAccessListSpecializer extends IpAccessListSpecializer {
     return srcIps == null ? null : _srcIpSpaceSpecializer.specialize(srcIps);
   }
 
-  private @Nullable List<TcpFlags> specializeTcpFlags(@Nullable List<TcpFlags> tcpFlags) {
+  private @Nullable List<TcpFlagsMatchConditions> specializeTcpFlags(
+      @Nullable List<TcpFlagsMatchConditions> tcpFlags) {
     return tcpFlags == null
         ? null
         : tcpFlags
@@ -184,13 +185,20 @@ public final class BDDIpAccessListSpecializer extends IpAccessListSpecializer {
                 flags -> {
                   BDD flagsBDD =
                       BDDOps.andNull(
-                          tcpFlagBDD(flags.getUseAck(), flags.getAck(), _pkt.getTcpAck()),
-                          tcpFlagBDD(flags.getUseCwr(), flags.getCwr(), _pkt.getTcpCwr()),
-                          tcpFlagBDD(flags.getUseEce(), flags.getEce(), _pkt.getTcpEce()),
-                          tcpFlagBDD(flags.getUseFin(), flags.getFin(), _pkt.getTcpFin()),
-                          tcpFlagBDD(flags.getUsePsh(), flags.getPsh(), _pkt.getTcpPsh()),
-                          tcpFlagBDD(flags.getUseRst(), flags.getRst(), _pkt.getTcpRst()),
-                          tcpFlagBDD(flags.getUseUrg(), flags.getUrg(), _pkt.getTcpUrg()));
+                          tcpFlagBDD(
+                              flags.getUseAck(), flags.getTcpFlags().getAck(), _pkt.getTcpAck()),
+                          tcpFlagBDD(
+                              flags.getUseCwr(), flags.getTcpFlags().getCwr(), _pkt.getTcpCwr()),
+                          tcpFlagBDD(
+                              flags.getUseEce(), flags.getTcpFlags().getEce(), _pkt.getTcpEce()),
+                          tcpFlagBDD(
+                              flags.getUseFin(), flags.getTcpFlags().getFin(), _pkt.getTcpFin()),
+                          tcpFlagBDD(
+                              flags.getUsePsh(), flags.getTcpFlags().getPsh(), _pkt.getTcpPsh()),
+                          tcpFlagBDD(
+                              flags.getUseRst(), flags.getTcpFlags().getRst(), _pkt.getTcpRst()),
+                          tcpFlagBDD(
+                              flags.getUseUrg(), flags.getTcpFlags().getUrg(), _pkt.getTcpUrg()));
                   return flagsBDD != null && !_flowBDD.and(flagsBDD).isZero();
                 })
             .collect(ImmutableList.toImmutableList());

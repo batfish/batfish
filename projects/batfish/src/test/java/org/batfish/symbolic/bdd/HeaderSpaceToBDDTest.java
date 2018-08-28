@@ -9,13 +9,14 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import net.sf.javabdd.BDD;
+import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
-import org.batfish.datamodel.State;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TcpFlags;
+import org.batfish.datamodel.TcpFlagsMatchConditions;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -158,7 +159,7 @@ public class HeaderSpaceToBDDTest {
   public void test_state() {
     HeaderSpace headerSpace =
         HeaderSpace.builder()
-            .setStates(ImmutableSet.of(State.fromNum(0), State.fromNum(1)))
+            .setStates(ImmutableSet.of(FlowState.fromNum(0), FlowState.fromNum(1)))
             .build();
     BDD bdd = _toBDD.toBDD(headerSpace);
 
@@ -169,10 +170,18 @@ public class HeaderSpaceToBDDTest {
 
   @Test
   public void test_tcpFlags() {
-    TcpFlags flags1 =
-        TcpFlags.builder().setUseAck(true).setAck(true).setUseEce(true).setEce(false).build();
-    TcpFlags flags2 =
-        TcpFlags.builder().setUseCwr(true).setCwr(true).setUseFin(true).setFin(false).build();
+    TcpFlagsMatchConditions flags1 =
+        TcpFlagsMatchConditions.builder()
+            .setUseAck(true)
+            .setUseEce(true)
+            .setTcpFlags(TcpFlags.builder().setAck(true).setEce(false).build())
+            .build();
+    TcpFlagsMatchConditions flags2 =
+        TcpFlagsMatchConditions.builder()
+            .setUseCwr(true)
+            .setUseFin(true)
+            .setTcpFlags(TcpFlags.builder().setCwr(true).setFin(false).build())
+            .build();
     HeaderSpace headerSpace =
         HeaderSpace.builder().setTcpFlags(ImmutableList.of(flags1, flags2)).build();
     BDD bdd = _toBDD.toBDD(headerSpace);

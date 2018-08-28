@@ -44,7 +44,7 @@ public final class Flow implements Comparable<Flow>, Serializable {
 
     private int _srcPort;
 
-    private @Nonnull State _state;
+    private @Nonnull FlowState _state;
 
     // Nullable because no sensible default. User is required to specify.
     private @Nullable String _tag;
@@ -78,7 +78,7 @@ public final class Flow implements Comparable<Flow>, Serializable {
       _icmpCode = IcmpCode.UNSET;
       _ingressVrf = Configuration.DEFAULT_VRF_NAME;
       _packetLength = 0;
-      _state = State.NEW;
+      _state = FlowState.NEW;
       _tcpFlagsCwr = 0;
       _tcpFlagsEce = 0;
       _tcpFlagsUrg = 0;
@@ -198,7 +198,7 @@ public final class Flow implements Comparable<Flow>, Serializable {
       return _srcPort;
     }
 
-    public State getState() {
+    public FlowState getState() {
       return _state;
     }
 
@@ -323,7 +323,7 @@ public final class Flow implements Comparable<Flow>, Serializable {
       return this;
     }
 
-    public Builder setState(State state) {
+    public Builder setState(FlowState state) {
       _state = state;
       return this;
     }
@@ -461,7 +461,7 @@ public final class Flow implements Comparable<Flow>, Serializable {
 
   private final int _srcPort;
 
-  private final @Nonnull State _state;
+  private final @Nonnull FlowState _state;
 
   private final @Nonnull String _tag;
 
@@ -496,7 +496,7 @@ public final class Flow implements Comparable<Flow>, Serializable {
       int icmpType,
       int icmpCode,
       int packetLength,
-      @Nonnull State state,
+      @Nonnull FlowState state,
       int tcpFlagsCwr,
       int tcpFlagsEce,
       int tcpFlagsUrg,
@@ -554,7 +554,7 @@ public final class Flow implements Comparable<Flow>, Serializable {
       @JsonProperty(PROP_ICMP_TYPE) int icmpType,
       @JsonProperty(PROP_ICMP_CODE) int icmpCode,
       @JsonProperty(PROP_PACKET_LENGTH) int packetLength,
-      @JsonProperty(PROP_STATE) State state,
+      @JsonProperty(PROP_STATE) FlowState state,
       @JsonProperty(PROP_TCP_FLAGS_CWR) int tcpFlagsCwr,
       @JsonProperty(PROP_TCP_FLAGS_ECE) int tcpFlagsEce,
       @JsonProperty(PROP_TCP_FLAGS_URG) int tcpFlagsUrg,
@@ -791,7 +791,7 @@ public final class Flow implements Comparable<Flow>, Serializable {
   }
 
   @JsonProperty(PROP_STATE)
-  public State getState() {
+  public FlowState getState() {
     return _state;
   }
 

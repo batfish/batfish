@@ -11,9 +11,9 @@ import java.io.IOException;
 import org.batfish.bddreachability.TestNetwork;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
+import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
-import org.batfish.datamodel.State;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.main.Batfish;
@@ -54,7 +54,7 @@ public class MultipathConsistencyQuestionTest {
             .setSrcIp(new Ip("2.0.0.0"))
             .setDstIp(new Ip("2.1.0.0"))
             .setIpProtocol(IpProtocol.HOPOPT)
-            .setState(State.NEW)
+            .setState(FlowState.NEW)
             .setTag("BASE")
             .setDstPort(1234)
             .setIcmpCode(0)

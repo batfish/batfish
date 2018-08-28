@@ -72,7 +72,7 @@ public final class Flow6 implements Comparable<Flow6> {
 
   private final int _srcPort;
 
-  private final State _state;
+  private final FlowState _state;
 
   private final String _tag;
 
@@ -105,7 +105,7 @@ public final class Flow6 implements Comparable<Flow6> {
       @JsonProperty(PROP_FRAGMENT_OFFSET) int fragmentOffset,
       @JsonProperty(PROP_ICMP_TYPE) int icmpType,
       @JsonProperty(PROP_ICMP_CODE) int icmpCode,
-      @JsonProperty(PROP_STATE) State state,
+      @JsonProperty(PROP_STATE) FlowState state,
       @JsonProperty(PROP_TCP_FLAGS_CWR) int tcpFlagsCwr,
       @JsonProperty(PROP_TCP_FLAGS_ECE) int tcpFlagsEce,
       @JsonProperty(PROP_TCP_FLAGS_URG) int tcpFlagsUrg,
@@ -347,7 +347,7 @@ public final class Flow6 implements Comparable<Flow6> {
   }
 
   @JsonProperty(PROP_STATE)
-  public State getState() {
+  public FlowState getState() {
     return _state;
   }
 

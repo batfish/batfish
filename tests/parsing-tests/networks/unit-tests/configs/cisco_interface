@@ -306,6 +306,7 @@ interface GigabitEthernet0/0
  ospf cost 60
 !
 interface Loopback0
+ no nameif
 !
 interface Modular-Cable1/2/3:4
 !

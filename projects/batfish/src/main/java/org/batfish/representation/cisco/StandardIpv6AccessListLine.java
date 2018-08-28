@@ -4,10 +4,10 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
+import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.Ip6Wildcard;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.State;
 
 public class StandardIpv6AccessListLine implements Serializable {
 
@@ -63,7 +63,7 @@ public class StandardIpv6AccessListLine implements Serializable {
         _ecns,
         null,
         null,
-        EnumSet.noneOf(State.class),
+        EnumSet.noneOf(FlowState.class),
         Collections.emptyList());
   }
 }

@@ -9,6 +9,7 @@ import org.batfish.datamodel.Fib;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowTrace;
 
+/** The default implementation of a traceroute engine */
 public class TracerouteEngineImpl implements ITracerouteEngine {
   private static ITracerouteEngine _instance = new TracerouteEngineImpl();
 
