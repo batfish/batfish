@@ -10,7 +10,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Supplier;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
@@ -41,7 +40,7 @@ public final class BDDAcl {
 
   private BDDAcl(
       BDDPacket pkt,
-      @Nullable IpAccessList acl,
+      IpAccessList acl,
       Map<String, Supplier<BDD>> aclEnv,
       Map<String, IpSpace> ipSpaceEnv,
       BDDSourceManager bddSrcManager) {
@@ -134,15 +133,7 @@ public final class BDDAcl {
    */
   @Nonnull
   private static BDD computeACL(
-      BDDFactory bddFactory,
-      AclLineMatchExprToBDD aclLineMatchExprToBDD,
-      @Nullable IpAccessList acl) {
-
-    // Check if there is an ACL first
-    if (acl == null) {
-      return bddFactory.one();
-    }
-
+      BDDFactory bddFactory, AclLineMatchExprToBDD aclLineMatchExprToBDD, IpAccessList acl) {
     BDD result = bddFactory.zero();
     for (IpAccessListLine line : Lists.reverse(acl.getLines())) {
       BDD lineBDD = aclLineMatchExprToBDD.visit(line.getMatchCondition());
