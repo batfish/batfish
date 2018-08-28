@@ -1,17 +1,28 @@
 package org.batfish.datamodel.routing_policy.expr;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.routing_policy.Environment;
 
-public class VarAsPathSet extends AsPathSetExpr {
+@ParametersAreNonnullByDefault
+public final class VarAsPathSet extends AsPathSetExpr {
+  private static final String PROP_VAR = "var";
 
   /** */
   private static final long serialVersionUID = 1L;
 
-  private String _var;
+  @Nonnull private String _var;
 
   @JsonCreator
-  private VarAsPathSet() {}
+  private static VarAsPathSet jsonCreator(@Nullable @JsonProperty(PROP_VAR) String var) {
+    checkArgument(var != null, "%s must be provided", PROP_VAR);
+    return new VarAsPathSet(var);
+  }
 
   public VarAsPathSet(String var) {
     _var = var;
@@ -21,24 +32,15 @@ public class VarAsPathSet extends AsPathSetExpr {
   public boolean equals(Object obj) {
     if (this == obj) {
       return true;
-    }
-    if (obj == null) {
-      return false;
-    }
-    if (getClass() != obj.getClass()) {
+    } else if (!(obj instanceof VarAsPathSet)) {
       return false;
     }
     VarAsPathSet other = (VarAsPathSet) obj;
-    if (_var == null) {
-      if (other._var != null) {
-        return false;
-      }
-    } else if (!_var.equals(other._var)) {
-      return false;
-    }
-    return true;
+    return _var.equals(other._var);
   }
 
+  @JsonProperty(PROP_VAR)
+  @Nonnull
   public String getVar() {
     return _var;
   }
@@ -47,7 +49,7 @@ public class VarAsPathSet extends AsPathSetExpr {
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + ((_var == null) ? 0 : _var.hashCode());
+    result = prime * result + _var.hashCode();
     return result;
   }
 

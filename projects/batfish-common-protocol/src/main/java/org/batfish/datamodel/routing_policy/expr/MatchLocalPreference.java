@@ -1,20 +1,35 @@
 package org.batfish.datamodel.routing_policy.expr;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 
-public class MatchLocalPreference extends BooleanExpr {
+@ParametersAreNonnullByDefault
+public final class MatchLocalPreference extends BooleanExpr {
+  private static final String PROP_COMPARATOR = "comparator";
+  private static final String PROP_METRIC = "metric";
 
   /** */
   private static final long serialVersionUID = 1L;
 
-  private IntComparator _comparator;
+  @Nonnull private IntComparator _comparator;
 
-  private IntExpr _metric;
+  @Nonnull private IntExpr _metric;
 
   @JsonCreator
-  private MatchLocalPreference() {}
+  private static MatchLocalPreference jsonCreator(
+      @Nullable @JsonProperty(PROP_COMPARATOR) IntComparator comparator,
+      @Nullable @JsonProperty(PROP_METRIC) IntExpr metric) {
+    checkArgument(comparator != null, "%s must be provided", PROP_COMPARATOR);
+    checkArgument(metric != null, "%s must be provided", PROP_METRIC);
+    return new MatchLocalPreference(comparator, metric);
+  }
 
   public MatchLocalPreference(IntComparator comparator, IntExpr metric) {
     _comparator = comparator;
@@ -25,25 +40,11 @@ public class MatchLocalPreference extends BooleanExpr {
   public boolean equals(Object obj) {
     if (this == obj) {
       return true;
-    }
-    if (obj == null) {
-      return false;
-    }
-    if (getClass() != obj.getClass()) {
+    } else if (!(obj instanceof MatchLocalPreference)) {
       return false;
     }
     MatchLocalPreference other = (MatchLocalPreference) obj;
-    if (_comparator != other._comparator) {
-      return false;
-    }
-    if (_metric == null) {
-      if (other._metric != null) {
-        return false;
-      }
-    } else if (!_metric.equals(other._metric)) {
-      return false;
-    }
-    return true;
+    return _comparator == other._comparator && _metric.equals(other._metric);
   }
 
   @Override
@@ -52,10 +53,14 @@ public class MatchLocalPreference extends BooleanExpr {
     // TODO Auto-generated method stub
   }
 
+  @JsonProperty(PROP_COMPARATOR)
+  @Nonnull
   public IntComparator getComparator() {
     return _comparator;
   }
 
+  @JsonProperty(PROP_METRIC)
+  @Nonnull
   public IntExpr getMetric() {
     return _metric;
   }

@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
+import javax.annotation.Nullable;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
@@ -19,11 +20,11 @@ public abstract class BooleanExpr implements Serializable {
   /** */
   private static final long serialVersionUID = 1L;
 
-  private static final String PROP_COMMENT = "comment";
+  protected static final String PROP_COMMENT = "comment";
 
   protected transient BooleanExpr _simplified;
 
-  private String _comment;
+  @Nullable private String _comment;
 
   /**
    * Get all the routing-policies referenced by this expression.
@@ -42,6 +43,7 @@ public abstract class BooleanExpr implements Serializable {
   public abstract Result evaluate(Environment environment);
 
   @JsonProperty(PROP_COMMENT)
+  @Nullable
   public String getComment() {
     return _comment;
   }
@@ -50,7 +52,7 @@ public abstract class BooleanExpr implements Serializable {
   public abstract int hashCode();
 
   @JsonProperty(PROP_COMMENT)
-  public void setComment(String comment) {
+  public void setComment(@Nullable String comment) {
     _comment = comment;
   }
 

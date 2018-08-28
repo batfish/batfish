@@ -1,4 +1,4 @@
-package org.batfish.question.tracefilters;
+package org.batfish.question.namedstructures;
 
 import com.google.auto.service.AutoService;
 import org.batfish.common.Answerer;
@@ -8,15 +8,15 @@ import org.batfish.datamodel.questions.Question;
 import org.batfish.question.QuestionPlugin;
 
 @AutoService(Plugin.class)
-public class TraceFiltersQuestionPlugin extends QuestionPlugin {
+public class NamedStructuresPlugin extends QuestionPlugin {
 
   @Override
   protected Answerer createAnswerer(Question question, IBatfish batfish) {
-    return new TraceFiltersAnswerer(question, batfish);
+    return new NamedStructuresAnswerer(question, batfish);
   }
 
   @Override
   protected Question createQuestion() {
-    return new TraceFiltersQuestion(null, null);
+    return new NamedStructuresQuestion(null, null);
   }
 }

@@ -9,7 +9,7 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.isPermittedByIpAc
 import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
 import static org.batfish.datamodel.matchers.RowsMatchers.hasSize;
 import static org.batfish.datamodel.matchers.TableAnswerElementMatchers.hasRows;
-import static org.batfish.question.tracefilters.TraceFiltersAnswerer.COL_FILTER_NAME;
+import static org.batfish.question.testfilters.TestFiltersAnswerer.COL_FILTER_NAME;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
@@ -32,14 +32,14 @@ import org.batfish.datamodel.matchers.PermittedByIpAccessListLineMatchers;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
-import org.batfish.question.tracefilters.TraceFiltersAnswerer;
-import org.batfish.question.tracefilters.TraceFiltersQuestion;
+import org.batfish.question.testfilters.TestFiltersAnswerer;
+import org.batfish.question.testfilters.TestFiltersQuestion;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-public class TraceFiltersTest {
+public class TestFiltersTest {
 
   private Configuration _c;
 
@@ -95,9 +95,9 @@ public class TraceFiltersTest {
     assertThat(_c, hasIpAccessLists(hasEntry(referencedAcl.getName(), referencedAcl)));
     assertThat(_c, hasIpAccessLists(hasEntry(acl.getName(), acl)));
 
-    TraceFiltersQuestion question = new TraceFiltersQuestion(null, null);
+    TestFiltersQuestion question = new TestFiltersQuestion(null, null);
     question.setSrcIp(new Ip("1.0.0.4"));
-    TraceFiltersAnswerer answerer = new TraceFiltersAnswerer(question, batfish);
+    TestFiltersAnswerer answerer = new TestFiltersAnswerer(question, batfish);
     TableAnswerElement answer = answerer.answer();
 
     /* Trace should be present for referencing acl with two events: being denied by referenced acl, and permited by referencing acl in later line */
@@ -107,7 +107,7 @@ public class TraceFiltersTest {
             forAll(
                 hasColumn(COL_FILTER_NAME, equalTo(acl.getName()), Schema.STRING),
                 hasColumn(
-                    TraceFiltersAnswerer.COL_TRACE,
+                    TestFiltersAnswerer.COL_TRACE,
                     hasEvents(
                         contains(
                             ImmutableList.of(
@@ -122,7 +122,7 @@ public class TraceFiltersTest {
             forAll(
                 hasColumn(COL_FILTER_NAME, equalTo(referencedAcl.getName()), Schema.STRING),
                 hasColumn(
-                    TraceFiltersAnswerer.COL_TRACE,
+                    TestFiltersAnswerer.COL_TRACE,
                     hasEvents(
                         contains(isDefaultDeniedByIpAccessListNamed(referencedAcl.getName()))),
                     Schema.ACL_TRACE))));
@@ -147,8 +147,8 @@ public class TraceFiltersTest {
         BatfishTestUtils.getBatfish(
             ImmutableSortedMap.of(c1.getHostname(), c1, c2.getHostname(), c2, c3.getHostname(), c3),
             _folder);
-    TraceFiltersQuestion question = new TraceFiltersQuestion(null, null);
-    TraceFiltersAnswerer answerer = new TraceFiltersAnswerer(question, batfish);
+    TestFiltersQuestion question = new TestFiltersQuestion(null, null);
+    TestFiltersAnswerer answerer = new TestFiltersAnswerer(question, batfish);
     TableAnswerElement answer = answerer.answer();
 
     // There should be 6 rows

@@ -1,17 +1,18 @@
 package org.batfish.datamodel.routing_policy.expr;
 
-import static java.util.Objects.requireNonNull;
+import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.routing_policy.Environment;
 
 /** Expression for matching a {@link Prefix} against a named {@link RouteFilterList}. */
+@ParametersAreNonnullByDefault
 public final class NamedPrefixSet extends PrefixSetExpr {
 
   private static final String PROP_NAME = "name";
@@ -21,11 +22,12 @@ public final class NamedPrefixSet extends PrefixSetExpr {
   private final String _name;
 
   @JsonCreator
-  private static NamedPrefixSet create(@JsonProperty(PROP_NAME) @Nullable String name) {
-    return new NamedPrefixSet(requireNonNull(name));
+  private static NamedPrefixSet create(@Nullable @JsonProperty(PROP_NAME) String name) {
+    checkArgument(name != null, "%s must be provided", PROP_NAME);
+    return new NamedPrefixSet(name);
   }
 
-  public NamedPrefixSet(@Nonnull String name) {
+  public NamedPrefixSet(String name) {
     _name = name;
   }
 

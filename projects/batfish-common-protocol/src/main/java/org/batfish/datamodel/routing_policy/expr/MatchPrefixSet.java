@@ -1,28 +1,41 @@
 package org.batfish.datamodel.routing_policy.expr;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 
-public class MatchPrefixSet extends BooleanExpr {
+@ParametersAreNonnullByDefault
+public final class MatchPrefixSet extends BooleanExpr {
 
   private static final long serialVersionUID = 1L;
 
   private static final String PROP_PREFIX = "prefix";
-
   private static final String PROP_PREFIX_SET = "prefixSet";
 
-  private PrefixExpr _prefix;
+  @Nonnull private PrefixExpr _prefix;
 
-  private PrefixSetExpr _prefixSet;
+  @Nonnull private PrefixSetExpr _prefixSet;
 
   @JsonCreator
-  private MatchPrefixSet() {}
+  private static MatchPrefixSet jsonCreator(
+      @Nullable @JsonProperty(PROP_PREFIX) PrefixExpr prefix,
+      @Nullable @JsonProperty(PROP_PREFIX_SET) PrefixSetExpr prefixSet,
+      @Nullable @JsonProperty(PROP_COMMENT) String comment) {
+    checkArgument(prefix != null, "%s must be provided", PROP_PREFIX);
+    checkArgument(prefixSet != null, "%s must be provided", PROP_PREFIX_SET);
+    MatchPrefixSet ret = new MatchPrefixSet(prefix, prefixSet);
+    ret.setComment(comment);
+    return ret;
+  }
 
-  public MatchPrefixSet(@Nonnull PrefixExpr prefix, @Nonnull PrefixSetExpr prefixSet) {
+  public MatchPrefixSet(PrefixExpr prefix, PrefixSetExpr prefixSet) {
     _prefix = prefix;
     _prefixSet = prefixSet;
   }
@@ -31,29 +44,11 @@ public class MatchPrefixSet extends BooleanExpr {
   public boolean equals(Object obj) {
     if (this == obj) {
       return true;
-    }
-    if (obj == null) {
-      return false;
-    }
-    if (getClass() != obj.getClass()) {
+    } else if (!(obj instanceof MatchPrefixSet)) {
       return false;
     }
     MatchPrefixSet other = (MatchPrefixSet) obj;
-    if (_prefix == null) {
-      if (other._prefix != null) {
-        return false;
-      }
-    } else if (!_prefix.equals(other._prefix)) {
-      return false;
-    }
-    if (_prefixSet == null) {
-      if (other._prefixSet != null) {
-        return false;
-      }
-    } else if (!_prefixSet.equals(other._prefixSet)) {
-      return false;
-    }
-    return true;
+    return _prefix.equals(other._prefix) && _prefixSet.equals(other._prefixSet);
   }
 
   @Override
@@ -66,11 +61,13 @@ public class MatchPrefixSet extends BooleanExpr {
   }
 
   @JsonProperty(PROP_PREFIX)
+  @Nonnull
   public PrefixExpr getPrefix() {
     return _prefix;
   }
 
   @JsonProperty(PROP_PREFIX_SET)
+  @Nonnull
   public PrefixSetExpr getPrefixSet() {
     return _prefixSet;
   }
@@ -79,19 +76,9 @@ public class MatchPrefixSet extends BooleanExpr {
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + ((_prefix == null) ? 0 : _prefix.hashCode());
-    result = prime * result + ((_prefixSet == null) ? 0 : _prefixSet.hashCode());
+    result = prime * result + _prefix.hashCode();
+    result = prime * result + _prefixSet.hashCode();
     return result;
-  }
-
-  @JsonProperty(PROP_PREFIX)
-  public void setPrefix(PrefixExpr prefix) {
-    _prefix = prefix;
-  }
-
-  @JsonProperty(PROP_PREFIX_SET)
-  public void setPrefixSet(PrefixSetExpr prefixSet) {
-    _prefixSet = prefixSet;
   }
 
   @Override

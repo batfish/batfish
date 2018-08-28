@@ -1,5 +1,6 @@
 package org.batfish.datamodel.ospf;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 import javax.annotation.Nullable;
@@ -17,6 +18,7 @@ public final class OspfAreaSummary implements Serializable {
   private final boolean _advertised;
   @Nullable private final Long _metric;
 
+  @JsonCreator
   public OspfAreaSummary(
       @JsonProperty(PROP_ADVERTISE) boolean advertised,
       @JsonProperty(PROP_METRIC) @Nullable Long metric) {

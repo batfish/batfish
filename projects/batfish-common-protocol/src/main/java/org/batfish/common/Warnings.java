@@ -121,24 +121,23 @@ public class Warnings implements Serializable {
    * will include the text of the given {@code line} and, for debugging/implementation, the current
    * parser rule stack, and the given {@code comment} if present.
    */
-  public void todo(
+  public void addWarning(
       @Nonnull ParserRuleContext ctx,
       @Nonnull String line,
       @Nonnull BatfishCombinedParser<?, ?> parser,
-      @Nullable String comment) {
+      @Nonnull String comment) {
     int lineNumber = ctx.getStart().getLine();
     String ruleStack = ctx.toString(Arrays.asList(parser.getParser().getRuleNames()));
     String trimmedLine = line.trim();
-    String commentMessage = firstNonNull(comment, "This feature is not currently supported");
-    _parseWarnings.add(new ParseWarning(lineNumber, trimmedLine, ruleStack, commentMessage));
+    _parseWarnings.add(new ParseWarning(lineNumber, trimmedLine, ruleStack, comment));
   }
 
-  /** @see #todo(ParserRuleContext, String, BatfishCombinedParser, String) */
+  /** @see #addWarning(ParserRuleContext, String, BatfishCombinedParser, String) */
   public void todo(
       @Nonnull ParserRuleContext ctx,
       @Nonnull String line,
       @Nonnull BatfishCombinedParser<?, ?> parser) {
-    todo(ctx, line, parser, /* no comment */ null);
+    addWarning(ctx, line, parser, "This feature is not currently supported");
   }
 
   public void unimplemented(String msg) {

@@ -1,5 +1,6 @@
 package org.batfish.datamodel.vendor_family.juniper;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.annotations.VisibleForTesting;
 import java.io.Serializable;
 import java.util.Collections;
@@ -10,7 +11,11 @@ import org.batfish.datamodel.AuthenticationMethod;
 import org.batfish.datamodel.Line;
 
 public class JuniperFamily implements Serializable {
-
+  private static final String PROP_LINES = "lines";
+  private static final String PROP_ROOT_AUTHENTICATION_ENCRYPTED_PASSWORD =
+      "rootAuthenticationEncryptedPassword";
+  private static final String PROP_SYSTEM_AUTHENTICATION_ORDER = "systemAuthenticationOrder";
+  private static final String PROP_TACPLUS_SERVERS = "tacplusServers";
   /** */
   private static final long serialVersionUID = 1L;
 
@@ -42,34 +47,42 @@ public class JuniperFamily implements Serializable {
     _lines.put(AUXILIARY_LINE_NAME, aux);
   }
 
+  @JsonProperty(PROP_LINES)
   public SortedMap<String, Line> getLines() {
     return _lines;
   }
 
+  @JsonProperty(PROP_ROOT_AUTHENTICATION_ENCRYPTED_PASSWORD)
   public String getRootAuthenticationEncryptedPassword() {
     return _rootAuthenticationEncryptedPassword;
   }
 
+  @JsonProperty(PROP_SYSTEM_AUTHENTICATION_ORDER)
   public AaaAuthenticationLoginList getSystemAuthenticationOrder() {
     return _systemAuthenticationOrder;
   }
 
+  @JsonProperty(PROP_TACPLUS_SERVERS)
   public SortedMap<String, TacplusServer> getTacplusServers() {
     return _tacplusServers;
   }
 
+  @JsonProperty(PROP_LINES)
   public void setLines(SortedMap<String, Line> lines) {
     _lines = lines;
   }
 
+  @JsonProperty(PROP_ROOT_AUTHENTICATION_ENCRYPTED_PASSWORD)
   public void setRootAuthenticationEncryptedPassword(String rootAuthenticationEncryptedPassword) {
     _rootAuthenticationEncryptedPassword = rootAuthenticationEncryptedPassword;
   }
 
+  @JsonProperty(PROP_SYSTEM_AUTHENTICATION_ORDER)
   public void setSystemAuthenticationOrder(AaaAuthenticationLoginList authenticationOrder) {
     _systemAuthenticationOrder = authenticationOrder;
   }
 
+  @JsonProperty(PROP_TACPLUS_SERVERS)
   public void setTacplusServers(SortedMap<String, TacplusServer> tacplusServers) {
     _tacplusServers = tacplusServers;
   }

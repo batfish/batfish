@@ -149,7 +149,7 @@ ro_auto_export
 
 ro_autonomous_system
 :
-   AUTONOMOUS_SYSTEM as = DEC?
+   AUTONOMOUS_SYSTEM asn = bgp_asn?
    (
       apply
       |

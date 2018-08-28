@@ -1,4 +1,4 @@
-package org.batfish.question.tracefilters;
+package org.batfish.question.testfilters;
 
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
@@ -28,7 +28,7 @@ import org.batfish.datamodel.table.TableMetadata;
 import org.batfish.specifier.FilterSpecifier;
 import org.batfish.specifier.SpecifierContext;
 
-public class TraceFiltersAnswerer extends Answerer {
+public class TestFiltersAnswerer extends Answerer {
 
   public static final String COL_NODE = "Node";
   public static final String COL_FILTER_NAME = "Filter_Name";
@@ -38,18 +38,18 @@ public class TraceFiltersAnswerer extends Answerer {
   public static final String COL_LINE_CONTENT = "Line_Content";
   public static final String COL_TRACE = "Trace";
 
-  public TraceFiltersAnswerer(Question question, IBatfish batfish) {
+  public TestFiltersAnswerer(Question question, IBatfish batfish) {
     super(question, batfish);
   }
 
   /**
-   * Creates a {@link TableAnswerElement} object the right metadata
+   * Creates a {@link TableAnswerElement} object containing the right metadata
    *
    * @param question The question object for which the answer is being created, to borrow its {@link
    *     DisplayHints}
    * @return The creates the answer element object.
    */
-  public static TableAnswerElement create(TraceFiltersQuestion question) {
+  public static TableAnswerElement create(TestFiltersQuestion question) {
     List<ColumnMetadata> columnMetadata =
         ImmutableList.of(
             new ColumnMetadata(COL_NODE, Schema.NODE, "Node", true, false),
@@ -73,9 +73,9 @@ public class TraceFiltersAnswerer extends Answerer {
 
   @Override
   public TableAnswerElement answer() {
-    TraceFiltersQuestion question = (TraceFiltersQuestion) _question;
+    TestFiltersQuestion question = (TestFiltersQuestion) _question;
     Map<String, Configuration> configurations = _batfish.loadConfigurations();
-    Set<String> includeNodes = question.getNodeRegex().getMatchingNodes(_batfish);
+    Set<String> includeNodes = question.getNodes().getMatchingNodes(_batfish);
     SpecifierContext specifierContext = _batfish.specifierContext();
 
     Multiset<Row> rows = rawAnswer(configurations, question, includeNodes, specifierContext);
@@ -86,9 +86,7 @@ public class TraceFiltersAnswerer extends Answerer {
   }
 
   private Flow getFlow(
-      String ingressNode,
-      TraceFiltersQuestion question,
-      Map<String, Configuration> configurations) {
+      String ingressNode, TestFiltersQuestion question, Map<String, Configuration> configurations) {
     Flow.Builder flowBuilder = question.createBaseFlowBuilder();
     flowBuilder.setTag(_batfish.getFlowTag());
     flowBuilder.setIngressNode(ingressNode);
@@ -107,19 +105,19 @@ public class TraceFiltersAnswerer extends Answerer {
       String lineContent,
       AclTrace trace) {
     RowBuilder row = Row.builder();
-    row.put(TraceFiltersAnswerer.COL_NODE, new Node(nodeName))
-        .put(TraceFiltersAnswerer.COL_FILTER_NAME, filterName)
-        .put(TraceFiltersAnswerer.COL_FLOW, flow)
-        .put(TraceFiltersAnswerer.COL_ACTION, action)
-        .put(TraceFiltersAnswerer.COL_LINE_NUMBER, matchLine)
-        .put(TraceFiltersAnswerer.COL_LINE_CONTENT, lineContent)
-        .put(TraceFiltersAnswerer.COL_TRACE, trace);
+    row.put(TestFiltersAnswerer.COL_NODE, new Node(nodeName))
+        .put(TestFiltersAnswerer.COL_FILTER_NAME, filterName)
+        .put(TestFiltersAnswerer.COL_FLOW, flow)
+        .put(TestFiltersAnswerer.COL_ACTION, action)
+        .put(TestFiltersAnswerer.COL_LINE_NUMBER, matchLine)
+        .put(TestFiltersAnswerer.COL_LINE_CONTENT, lineContent)
+        .put(TestFiltersAnswerer.COL_TRACE, trace);
     return row.build();
   }
 
   Multiset<Row> rawAnswer(
       Map<String, Configuration> configurations,
-      TraceFiltersQuestion question,
+      TestFiltersQuestion question,
       Set<String> includeNodes,
       SpecifierContext specifierContext) {
 

@@ -4341,8 +4341,18 @@ public class Batfish extends PluginConsumer implements IBatfish {
     BDD headerSpaceBDD =
         new HeaderSpaceToBDD(bddPacket, baseConfig.getIpSpaces()).toBDD(headerSpace);
 
+    // resolve specified source interfaces that exist in both configs.
+    Set<String> commonSourceInterfaces =
+        Sets.intersection(
+            resolveBaseSourceInterfaces(reachFilterParameters, baseConfig.getHostname()),
+            resolveDeltaSourceInterfaces(reachFilterParameters, deltaConfig.getHostname()));
+
+    // effectively active interfaces are those of interest that are active in both configs.
     Set<String> activeInterfaces =
-        Sets.intersection(baseConfig.activeInterfaces(), deltaConfig.activeInterfaces());
+        Sets.intersection(
+            commonSourceInterfaces,
+            Sets.intersection(baseConfig.activeInterfaces(), deltaConfig.activeInterfaces()));
+
     Set<String> referencedSources =
         Sets.union(
             referencedSources(baseConfig.getIpAccessLists(), baseAcl),
@@ -4374,6 +4384,29 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return new DifferentialReachFilterResult(increasedFlow, decreasedFlow);
   }
 
+  private Set<String> resolveDeltaSourceInterfaces(ReachFilterParameters parameters, String node) {
+    pushDeltaEnvironment();
+    Set<String> sourceInterfaces = resolveSourceInterfaces(parameters, node);
+    popEnvironment();
+    return sourceInterfaces;
+  }
+
+  private Set<String> resolveBaseSourceInterfaces(ReachFilterParameters parameters, String node) {
+    pushBaseEnvironment();
+    Set<String> sourceInterfaces = resolveSourceInterfaces(parameters, node);
+    popEnvironment();
+    return sourceInterfaces;
+  }
+
+  private Set<String> resolveSourceInterfaces(ReachFilterParameters parameters, String node) {
+    return parameters
+        .getSourceInterfaceSpecifier()
+        .resolve(ImmutableSet.of(node), specifierContext())
+        .stream()
+        .map(Interface::getName)
+        .collect(ImmutableSet.toImmutableSet());
+  }
+
   private Optional<Flow> getFlow(
       BDDPacket pkt, BDDSourceManager bddSourceManager, String hostname, BDD bdd) {
     if (bdd.isZero()) {
@@ -4392,7 +4425,16 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public Optional<Flow> reachFilter(
       Configuration node, IpAccessList acl, ReachFilterParameters parameters) {
     BDDPacket bddPacket = new BDDPacket();
-    BDDSourceManager mgr = BDDSourceManager.forIpAccessList(bddPacket, node, acl);
+
+    Set<String> activeInterfaces =
+        Sets.intersection(
+            node.activeInterfaces(), resolveSourceInterfaces(parameters, node.getHostname()));
+
+    Set<String> referencedSources = referencedSources(node.getIpAccessLists(), acl);
+
+    BDDSourceManager mgr =
+        BDDSourceManager.forSources(bddPacket, activeInterfaces, referencedSources);
+
     BDD headerSpaceBDD =
         new HeaderSpaceToBDD(bddPacket, node.getIpSpaces())
             .toBDD(parameters.resolveHeaderspace(specifierContext()));

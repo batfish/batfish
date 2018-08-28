@@ -12,39 +12,39 @@
                   "description" : "File containing structure",
                   "isKey" : true,
                   "isValue" : false,
-                  "name" : "filename",
+                  "name" : "File_Name",
                   "schema" : "String"
                 },
                 {
                   "description" : "Type of structure",
                   "isKey" : false,
                   "isValue" : false,
-                  "name" : "structType",
+                  "name" : "Struct_Type",
                   "schema" : "String"
                 },
                 {
                   "description" : "Name of structure",
                   "isKey" : true,
                   "isValue" : false,
-                  "name" : "structName",
+                  "name" : "Struct_Name",
                   "schema" : "String"
                 },
                 {
                   "description" : "Lines where structure appears",
                   "isKey" : false,
                   "isValue" : false,
-                  "name" : "lines",
+                  "name" : "Lines",
                   "schema" : "FileLines"
                 }
               ],
-              "textDesc" : "'${filename}' has unused '${structType}' called '${structName}' at line(s) ${lines}"
+              "textDesc" : "'${File_Name}' has unused '${Struct_Type}' called '${Struct_Name}' at line(s) ${Lines}"
             },
             "rows" : [
               {
-                "filename" : "configs/as1border1.cfg",
-                "structType" : "bgp group",
-                "structName" : "as3",
-                "lines" : {
+                "File_Name" : "configs/as1border1.cfg",
+                "Struct_Type" : "bgp group",
+                "Struct_Name" : "as3",
+                "Lines" : {
                   "filename" : "configs/as1border1.cfg",
                   "lines" : [
                     83
@@ -52,10 +52,10 @@
                 }
               },
               {
-                "filename" : "configs/as1border1.cfg",
-                "structType" : "expanded community-list",
-                "structName" : "as1_community",
-                "lines" : {
+                "File_Name" : "configs/as1border1.cfg",
+                "Struct_Type" : "expanded community-list",
+                "Struct_Name" : "as1_community",
+                "Lines" : {
                   "filename" : "configs/as1border1.cfg",
                   "lines" : [
                     119
@@ -63,10 +63,10 @@
                 }
               },
               {
-                "filename" : "configs/as1border1.cfg",
-                "structType" : "ipv4 prefix-list",
-                "structName" : "inbound_route_filter",
-                "lines" : {
+                "File_Name" : "configs/as1border1.cfg",
+                "Struct_Type" : "ipv4 prefix-list",
+                "Struct_Name" : "inbound_route_filter",
+                "Lines" : {
                   "filename" : "configs/as1border1.cfg",
                   "lines" : [
                     129,
@@ -75,10 +75,10 @@
                 }
               },
               {
-                "filename" : "configs/as1border2.cfg",
-                "structType" : "bgp group",
-                "structName" : "as2",
-                "lines" : {
+                "File_Name" : "configs/as1border2.cfg",
+                "Struct_Type" : "bgp group",
+                "Struct_Name" : "as2",
+                "Lines" : {
                   "filename" : "configs/as1border2.cfg",
                   "lines" : [
                     87
@@ -86,10 +86,10 @@
                 }
               },
               {
-                "filename" : "configs/as1border2.cfg",
-                "structType" : "expanded community-list",
-                "structName" : "as1_community",
-                "lines" : {
+                "File_Name" : "configs/as1border2.cfg",
+                "Struct_Type" : "expanded community-list",
+                "Struct_Name" : "as1_community",
+                "Lines" : {
                   "filename" : "configs/as1border2.cfg",
                   "lines" : [
                     123
@@ -97,10 +97,10 @@
                 }
               },
               {
-                "filename" : "configs/as1border2.cfg",
-                "structType" : "ipv4 prefix-list",
-                "structName" : "inbound_route_filter",
-                "lines" : {
+                "File_Name" : "configs/as1border2.cfg",
+                "Struct_Type" : "ipv4 prefix-list",
+                "Struct_Name" : "inbound_route_filter",
+                "Lines" : {
                   "filename" : "configs/as1border2.cfg",
                   "lines" : [
                     134,
@@ -109,10 +109,10 @@
                 }
               },
               {
-                "filename" : "configs/as2border1.cfg",
-                "structType" : "bgp group",
-                "structName" : "as3",
-                "lines" : {
+                "File_Name" : "configs/as2border1.cfg",
+                "Struct_Type" : "bgp group",
+                "Struct_Name" : "as3",
+                "Lines" : {
                   "filename" : "configs/as2border1.cfg",
                   "lines" : [
                     93
@@ -120,10 +120,10 @@
                 }
               },
               {
-                "filename" : "configs/as2border1.cfg",
-                "structType" : "expanded community-list",
-                "structName" : "as2_community",
-                "lines" : {
+                "File_Name" : "configs/as2border1.cfg",
+                "Struct_Type" : "expanded community-list",
+                "Struct_Name" : "as2_community",
+                "Lines" : {
                   "filename" : "configs/as2border1.cfg",
                   "lines" : [
                     124
@@ -131,10 +131,10 @@
                 }
               },
               {
-                "filename" : "configs/as2border1.cfg",
-                "structType" : "ipv4 prefix-list",
-                "structName" : "inbound_route_filter",
-                "lines" : {
+                "File_Name" : "configs/as2border1.cfg",
+                "Struct_Type" : "ipv4 prefix-list",
+                "Struct_Name" : "inbound_route_filter",
+                "Lines" : {
                   "filename" : "configs/as2border1.cfg",
                   "lines" : [
                     140,
@@ -143,10 +143,10 @@
                 }
               },
               {
-                "filename" : "configs/as2border2.cfg",
-                "structType" : "bgp group",
-                "structName" : "as1",
-                "lines" : {
+                "File_Name" : "configs/as2border2.cfg",
+                "Struct_Type" : "bgp group",
+                "Struct_Name" : "as1",
+                "Lines" : {
                   "filename" : "configs/as2border2.cfg",
                   "lines" : [
                     86
@@ -154,10 +154,10 @@
                 }
               },
               {
-                "filename" : "configs/as2border2.cfg",
-                "structType" : "expanded community-list",
-                "structName" : "as2_community",
-                "lines" : {
+                "File_Name" : "configs/as2border2.cfg",
+                "Struct_Type" : "expanded community-list",
+                "Struct_Name" : "as2_community",
+                "Lines" : {
                   "filename" : "configs/as2border2.cfg",
                   "lines" : [
                     121
@@ -165,10 +165,10 @@
                 }
               },
               {
-                "filename" : "configs/as2border2.cfg",
-                "structType" : "ipv4 prefix-list",
-                "structName" : "inbound_route_filter",
-                "lines" : {
+                "File_Name" : "configs/as2border2.cfg",
+                "Struct_Type" : "ipv4 prefix-list",
+                "Struct_Name" : "inbound_route_filter",
+                "Lines" : {
                   "filename" : "configs/as2border2.cfg",
                   "lines" : [
                     136,
@@ -177,10 +177,10 @@
                 }
               },
               {
-                "filename" : "configs/as2dept1.cfg",
-                "structType" : "extended ipv4 access-list",
-                "structName" : "105",
-                "lines" : {
+                "File_Name" : "configs/as2dept1.cfg",
+                "Struct_Type" : "extended ipv4 access-list",
+                "Struct_Name" : "105",
+                "Lines" : {
                   "filename" : "configs/as2dept1.cfg",
                   "lines" : [
                     121,
@@ -191,10 +191,10 @@
                 }
               },
               {
-                "filename" : "configs/as2dept1.cfg",
-                "structType" : "extended ipv4 access-list",
-                "structName" : "RESTRICT_HOST_TRAFFIC_OUT",
-                "lines" : {
+                "File_Name" : "configs/as2dept1.cfg",
+                "Struct_Type" : "extended ipv4 access-list",
+                "Struct_Name" : "RESTRICT_HOST_TRAFFIC_OUT",
+                "Lines" : {
                   "filename" : "configs/as2dept1.cfg",
                   "lines" : [
                     114,
@@ -205,10 +205,10 @@
                 }
               },
               {
-                "filename" : "configs/as2dist1.cfg",
-                "structType" : "extended ipv4 access-list",
-                "structName" : "102",
-                "lines" : {
+                "File_Name" : "configs/as2dist1.cfg",
+                "Struct_Type" : "extended ipv4 access-list",
+                "Struct_Name" : "102",
+                "Lines" : {
                   "filename" : "configs/as2dist1.cfg",
                   "lines" : [
                     116
@@ -216,10 +216,10 @@
                 }
               },
               {
-                "filename" : "configs/as2dist2.cfg",
-                "structType" : "extended ipv4 access-list",
-                "structName" : "102",
-                "lines" : {
+                "File_Name" : "configs/as2dist2.cfg",
+                "Struct_Type" : "extended ipv4 access-list",
+                "Struct_Name" : "102",
+                "Lines" : {
                   "filename" : "configs/as2dist2.cfg",
                   "lines" : [
                     116
@@ -227,10 +227,10 @@
                 }
               },
               {
-                "filename" : "configs/as3border1.cfg",
-                "structType" : "bgp group",
-                "structName" : "as1",
-                "lines" : {
+                "File_Name" : "configs/as3border1.cfg",
+                "Struct_Type" : "bgp group",
+                "Struct_Name" : "as1",
+                "Lines" : {
                   "filename" : "configs/as3border1.cfg",
                   "lines" : [
                     81
@@ -238,10 +238,10 @@
                 }
               },
               {
-                "filename" : "configs/as3border1.cfg",
-                "structType" : "expanded community-list",
-                "structName" : "as3_community",
-                "lines" : {
+                "File_Name" : "configs/as3border1.cfg",
+                "Struct_Type" : "expanded community-list",
+                "Struct_Name" : "as3_community",
+                "Lines" : {
                   "filename" : "configs/as3border1.cfg",
                   "lines" : [
                     115
@@ -249,10 +249,10 @@
                 }
               },
               {
-                "filename" : "configs/as3border1.cfg",
-                "structType" : "ipv4 prefix-list",
-                "structName" : "inbound_route_filter",
-                "lines" : {
+                "File_Name" : "configs/as3border1.cfg",
+                "Struct_Type" : "ipv4 prefix-list",
+                "Struct_Name" : "inbound_route_filter",
+                "Lines" : {
                   "filename" : "configs/as3border1.cfg",
                   "lines" : [
                     123,
@@ -261,10 +261,10 @@
                 }
               },
               {
-                "filename" : "configs/as3border2.cfg",
-                "structType" : "bgp group",
-                "structName" : "as2",
-                "lines" : {
+                "File_Name" : "configs/as3border2.cfg",
+                "Struct_Type" : "bgp group",
+                "Struct_Name" : "as2",
+                "Lines" : {
                   "filename" : "configs/as3border2.cfg",
                   "lines" : [
                     83
@@ -272,10 +272,10 @@
                 }
               },
               {
-                "filename" : "configs/as3border2.cfg",
-                "structType" : "expanded community-list",
-                "structName" : "as3_community",
-                "lines" : {
+                "File_Name" : "configs/as3border2.cfg",
+                "Struct_Type" : "expanded community-list",
+                "Struct_Name" : "as3_community",
+                "Lines" : {
                   "filename" : "configs/as3border2.cfg",
                   "lines" : [
                     115
@@ -283,10 +283,10 @@
                 }
               },
               {
-                "filename" : "configs/as3border2.cfg",
-                "structType" : "ipv4 prefix-list",
-                "structName" : "inbound_route_filter",
-                "lines" : {
+                "File_Name" : "configs/as3border2.cfg",
+                "Struct_Type" : "ipv4 prefix-list",
+                "Struct_Name" : "inbound_route_filter",
+                "Lines" : {
                   "filename" : "configs/as3border2.cfg",
                   "lines" : [
                     121,
@@ -308,22 +308,22 @@
           "differential" : false,
           "includeOneTableKeys" : true,
           "instance" : {
-            "description" : "Return nodes with structures such as ACLs, routemaps, etc. that are defined but not used.",
+            "description" : "Return nodes with structures such as ACLs, routemaps, etc. that are defined but not used",
             "instanceName" : "unusedStructures",
             "longDescription" : "Return nodes with structures such as ACLs, routes, etc. that are defined but not used. This may represent a bug in the configuration, which may have occurred because a final step in a template or MOP was not completed. Or it could be harmless extra configuration generated from a master template that is not meant to be used on those nodes.",
             "tags" : [
               "default"
             ],
             "variables" : {
-              "nodeRegex" : {
-                "description" : "Only include nodes that match this regex",
+              "nodes" : {
+                "description" : "Look for unused structures on nodes matching this name or regex",
                 "optional" : false,
                 "type" : "nodeSpec",
                 "value" : ".*"
               }
             }
           },
-          "nodeRegex" : ".*"
+          "nodes" : ".*"
         },
         "status" : "SUCCESS",
         "summary" : {

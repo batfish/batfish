@@ -1,12 +1,12 @@
 package org.batfish.question.reachfilter;
 
-import static org.batfish.question.tracefilters.TraceFiltersAnswerer.COL_ACTION;
-import static org.batfish.question.tracefilters.TraceFiltersAnswerer.COL_FILTER_NAME;
-import static org.batfish.question.tracefilters.TraceFiltersAnswerer.COL_FLOW;
-import static org.batfish.question.tracefilters.TraceFiltersAnswerer.COL_LINE_CONTENT;
-import static org.batfish.question.tracefilters.TraceFiltersAnswerer.COL_LINE_NUMBER;
-import static org.batfish.question.tracefilters.TraceFiltersAnswerer.COL_NODE;
-import static org.batfish.question.tracefilters.TraceFiltersAnswerer.COL_TRACE;
+import static org.batfish.question.testfilters.TestFiltersAnswerer.COL_ACTION;
+import static org.batfish.question.testfilters.TestFiltersAnswerer.COL_FILTER_NAME;
+import static org.batfish.question.testfilters.TestFiltersAnswerer.COL_FLOW;
+import static org.batfish.question.testfilters.TestFiltersAnswerer.COL_LINE_CONTENT;
+import static org.batfish.question.testfilters.TestFiltersAnswerer.COL_LINE_NUMBER;
+import static org.batfish.question.testfilters.TestFiltersAnswerer.COL_NODE;
+import static org.batfish.question.testfilters.TestFiltersAnswerer.COL_TRACE;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
@@ -43,8 +43,9 @@ import org.batfish.datamodel.table.Row.RowBuilder;
 import org.batfish.datamodel.table.Rows;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
-import org.batfish.question.tracefilters.TraceFiltersAnswerer;
-import org.batfish.question.tracefilters.TraceFiltersQuestion;
+import org.batfish.question.ReachFilterParameters;
+import org.batfish.question.testfilters.TestFiltersAnswerer;
+import org.batfish.question.testfilters.TestFiltersQuestion;
 import org.batfish.specifier.FilterSpecifier;
 import org.batfish.specifier.SpecifierContext;
 
@@ -53,10 +54,10 @@ public final class ReachFilterAnswerer extends Answerer {
   static final String COL_SNAPSHOT = "Snapshot";
   static final String COL_RESULT_TYPE = "Result_Type";
 
-  static final String BASE = "base";
-  static final String DELTA = "delta";
-  static final String INCREASED = "increased";
-  static final String DECREASED = "decreased";
+  static final String BASE = "Base";
+  static final String DELTA = "Delta";
+  static final String INCREASED = "Increased";
+  static final String DECREASED = "Decreased";
 
   private TableAnswerElement _tableAnswerElement;
 
@@ -94,13 +95,17 @@ public final class ReachFilterAnswerer extends Answerer {
     Multimap<String, String> deltaAcls = getSpecifiedAcls(question);
     _batfish.popEnvironment();
 
+    ReachFilterParameters parameters = question.toReachFilterParameters();
+
     Set<String> commonNodes = Sets.intersection(baseAcls.keySet(), deltaAcls.keySet());
     for (String node : commonNodes) {
       Configuration baseConfig = baseConfigs.get(node);
       Configuration deltaConfig = deltaConfigs.get(node);
+
       Set<String> commonAcls =
           Sets.intersection(
               ImmutableSet.copyOf(baseAcls.get(node)), ImmutableSet.copyOf(deltaAcls.get(node)));
+
       for (String aclName : commonAcls) {
         Optional<IpAccessList> baseAcl = makeQueryAcl(baseConfig.getIpAccessLists().get(aclName));
         Optional<IpAccessList> deltaAcl = makeQueryAcl(deltaConfig.getIpAccessLists().get(aclName));
@@ -114,11 +119,7 @@ public final class ReachFilterAnswerer extends Answerer {
 
         DifferentialReachFilterResult result =
             _batfish.differentialReachFilter(
-                baseConfig,
-                baseAcl.get(),
-                deltaConfig,
-                deltaAcl.get(),
-                question.toReachFilterParameters());
+                baseConfig, baseAcl.get(), deltaConfig, deltaAcl.get(), parameters);
 
         result
             .getDecreasedFlow()
@@ -138,14 +139,14 @@ public final class ReachFilterAnswerer extends Answerer {
   private void processDifferentialFlow(
       String resultType, String hostname, IpAccessList baseAcl, IpAccessList deltaAcl, Flow flow) {
     appendRows(
-        toDifferentialTableRows(resultType, BASE, traceFilterRows(true, hostname, baseAcl, flow)));
+        toDifferentialTableRows(resultType, BASE, testFiltersRows(true, hostname, baseAcl, flow)));
     appendRows(
         toDifferentialTableRows(
-            resultType, DELTA, traceFilterRows(false, hostname, deltaAcl, flow)));
+            resultType, DELTA, testFiltersRows(false, hostname, deltaAcl, flow)));
   }
 
   private void nonDifferentialAnswer(ReachFilterQuestion question) {
-    _tableAnswerElement = TraceFiltersAnswerer.create(new TraceFiltersQuestion(null, null));
+    _tableAnswerElement = TestFiltersAnswerer.create(new TestFiltersQuestion(null, null));
 
     List<Pair<String, IpAccessList>> acls = getQueryAcls(question);
     if (acls.isEmpty()) {
@@ -153,7 +154,7 @@ public final class ReachFilterAnswerer extends Answerer {
     }
 
     /*
-     * For each query ACL, try to get a flow. If one exists, run traceFilter on that flow.
+     * For each query ACL, try to get a flow. If one exists, run testFilter on that flow.
      * Concatenate the answers for all flows into one big table.
      */
     Map<String, Configuration> configurations = _batfish.loadConfigurations();
@@ -168,7 +169,7 @@ public final class ReachFilterAnswerer extends Answerer {
         _batfish.getLogger().warn(t.getMessage());
         continue;
       }
-      result.ifPresent(flow -> appendRows(traceFilterRows(hostname, acl, flow)));
+      result.ifPresent(flow -> appendRows(testFiltersRows(hostname, acl, flow)));
     }
   }
 
@@ -298,43 +299,43 @@ public final class ReachFilterAnswerer extends Answerer {
     return IpAccessList.builder().setName(acl.getName()).setLines(lines).build();
   }
 
-  private Rows traceFilterRows(boolean base, String hostname, IpAccessList acl, Flow flow) {
+  private Rows testFiltersRows(boolean base, String hostname, IpAccessList acl, Flow flow) {
     if (base) {
       _batfish.pushBaseEnvironment();
     } else {
       _batfish.pushDeltaEnvironment();
     }
-    Rows rows = traceFilterRows(hostname, acl, flow);
+    Rows rows = testFiltersRows(hostname, acl, flow);
     _batfish.popEnvironment();
     return rows;
   }
 
   @VisibleForTesting
   @Nonnull
-  Rows traceFilterRows(String hostname, IpAccessList acl, Flow flow) {
-    TraceFiltersQuestion traceFiltersQuestion =
-        new TraceFiltersQuestion(new NodesSpecifier(hostname), acl.getName());
-    traceFiltersQuestion.setDscp(flow.getDscp());
-    traceFiltersQuestion.setDst(flow.getDstIp().toString());
-    traceFiltersQuestion.setDstPort(flow.getDstPort());
-    traceFiltersQuestion.setEcn(flow.getEcn());
-    traceFiltersQuestion.setFragmentOffset(flow.getFragmentOffset());
-    traceFiltersQuestion.setIcmpCode(flow.getFragmentOffset());
-    traceFiltersQuestion.setIcmpType(flow.getFragmentOffset());
-    traceFiltersQuestion.setIngressInterface(flow.getIngressInterface());
-    traceFiltersQuestion.setIpProtocol(flow.getIpProtocol());
-    traceFiltersQuestion.setPacketLength(flow.getPacketLength());
-    traceFiltersQuestion.setSrcIp(flow.getSrcIp());
-    traceFiltersQuestion.setSrcPort(flow.getSrcPort());
-    traceFiltersQuestion.setState(flow.getState());
-    traceFiltersQuestion.setTcpFlagsAck(flow.getTcpFlagsAck() == 1);
-    traceFiltersQuestion.setTcpFlagsCwr(flow.getTcpFlagsCwr() == 1);
-    traceFiltersQuestion.setTcpFlagsEce(flow.getTcpFlagsEce() == 1);
-    traceFiltersQuestion.setTcpFlagsFin(flow.getTcpFlagsFin() == 1);
-    traceFiltersQuestion.setTcpFlagsPsh(flow.getTcpFlagsPsh() == 1);
-    traceFiltersQuestion.setTcpFlagsRst(flow.getTcpFlagsRst() == 1);
-    traceFiltersQuestion.setTcpFlagsSyn(flow.getTcpFlagsSyn() == 1);
-    traceFiltersQuestion.setTcpFlagsUrg(flow.getTcpFlagsUrg() == 1);
-    return new TraceFiltersAnswerer(traceFiltersQuestion, _batfish).answer().getRows();
+  Rows testFiltersRows(String hostname, IpAccessList acl, Flow flow) {
+    TestFiltersQuestion testFiltersQuestion =
+        new TestFiltersQuestion(new NodesSpecifier(hostname), acl.getName());
+    testFiltersQuestion.setDscp(flow.getDscp());
+    testFiltersQuestion.setDst(flow.getDstIp().toString());
+    testFiltersQuestion.setDstPort(flow.getDstPort());
+    testFiltersQuestion.setEcn(flow.getEcn());
+    testFiltersQuestion.setFragmentOffset(flow.getFragmentOffset());
+    testFiltersQuestion.setIcmpCode(flow.getFragmentOffset());
+    testFiltersQuestion.setIcmpType(flow.getFragmentOffset());
+    testFiltersQuestion.setIngressInterface(flow.getIngressInterface());
+    testFiltersQuestion.setIpProtocol(flow.getIpProtocol());
+    testFiltersQuestion.setPacketLength(flow.getPacketLength());
+    testFiltersQuestion.setSrcIp(flow.getSrcIp());
+    testFiltersQuestion.setSrcPort(flow.getSrcPort());
+    testFiltersQuestion.setState(flow.getState());
+    testFiltersQuestion.setTcpFlagsAck(flow.getTcpFlagsAck() == 1);
+    testFiltersQuestion.setTcpFlagsCwr(flow.getTcpFlagsCwr() == 1);
+    testFiltersQuestion.setTcpFlagsEce(flow.getTcpFlagsEce() == 1);
+    testFiltersQuestion.setTcpFlagsFin(flow.getTcpFlagsFin() == 1);
+    testFiltersQuestion.setTcpFlagsPsh(flow.getTcpFlagsPsh() == 1);
+    testFiltersQuestion.setTcpFlagsRst(flow.getTcpFlagsRst() == 1);
+    testFiltersQuestion.setTcpFlagsSyn(flow.getTcpFlagsSyn() == 1);
+    testFiltersQuestion.setTcpFlagsUrg(flow.getTcpFlagsUrg() == 1);
+    return new TestFiltersAnswerer(testFiltersQuestion, _batfish).answer().getRows();
   }
 }

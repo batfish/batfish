@@ -65,7 +65,7 @@ class FileParseStatusAnswerer extends Answerer {
     return builder.build();
   }
 
-  static final String COL_FILENAME = "Filename";
+  static final String COL_FILENAME = "File_Name";
   static final String COL_PARSE_STATUS = "Status";
   static final String COL_NODES = "Nodes";
 

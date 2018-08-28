@@ -1,10 +1,15 @@
 package org.batfish.datamodel.routing_policy.expr;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.routing_policy.Environment;
 
-public class LiteralInt extends IntExpr {
+@ParametersAreNonnullByDefault
+public final class LiteralInt extends IntExpr {
 
   private static final String PROP_VALUE = "value";
 
@@ -14,7 +19,10 @@ public class LiteralInt extends IntExpr {
   private int _value;
 
   @JsonCreator
-  private LiteralInt() {}
+  private static LiteralInt jsonCreator(@Nullable @JsonProperty(PROP_VALUE) Integer value) {
+    checkArgument(value != null, "%s must be provided", PROP_VALUE);
+    return new LiteralInt(value);
+  }
 
   public LiteralInt(int value) {
     _value = value;
@@ -24,18 +32,11 @@ public class LiteralInt extends IntExpr {
   public boolean equals(Object obj) {
     if (this == obj) {
       return true;
-    }
-    if (obj == null) {
-      return false;
-    }
-    if (getClass() != obj.getClass()) {
+    } else if (!(obj instanceof LiteralInt)) {
       return false;
     }
     LiteralInt other = (LiteralInt) obj;
-    if (_value != other._value) {
-      return false;
-    }
-    return true;
+    return _value == other._value;
   }
 
   @Override
@@ -56,7 +57,6 @@ public class LiteralInt extends IntExpr {
     return result;
   }
 
-  @JsonProperty(PROP_VALUE)
   public void setValue(int value) {
     _value = value;
   }

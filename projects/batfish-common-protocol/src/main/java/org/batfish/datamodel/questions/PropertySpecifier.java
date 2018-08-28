@@ -83,7 +83,7 @@ public abstract class PropertySpecifier {
   }
 
   /** Converts the extracted propertyValue to what is specified in the properyDescriptor */
-  static Object convertTypeIfNeeded(
+  public static Object convertTypeIfNeeded(
       Object propertyValue, PropertyDescriptor<?> propertyDescriptor) {
 
     Object outputPropertyValue = propertyValue;
