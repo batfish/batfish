@@ -59,15 +59,15 @@ public final class ColumnFilter {
     return Objects.hash(_column, _filterText);
   }
 
+  public boolean matches(@Nonnull Row row) {
+    return row.get(_column).toString().contains(_filterText);
+  }
+
   @Override
   public String toString() {
     return toStringHelper(getClass())
         .add(PROP_COLUMN, _column)
         .add(PROP_FILTER_TEXT, _filterText)
         .toString();
-  }
-
-  public boolean matches(@Nonnull Row row) {
-    return row.get(_column).toString().contains(_filterText);
   }
 }
