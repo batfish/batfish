@@ -95,7 +95,7 @@ public class TraceFiltersAnswerer extends Answerer {
       TraceFiltersQuestion question,
       Map<String, Configuration> configurations) {
     Flow.Builder flowBuilder = question.createBaseFlowBuilder();
-    flowBuilder.setTag(_batfish.getFlowTag());
+    flowBuilder.setTag("FlowTag"); // dummy tag
     flowBuilder.setIngressNode(ingressNode);
     if (flowBuilder.getDstIp().equals(Ip.AUTO)) {
       flowBuilder.setDstIp(question.createDstIpFromDst(configurations));

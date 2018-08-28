@@ -7,11 +7,6 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasDstIp;
 import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
 import static org.batfish.datamodel.matchers.TableAnswerElementMatchers.hasRows;
-import static org.batfish.question.reachfilter.ReachFilterAnswerer.BASE;
-import static org.batfish.question.reachfilter.ReachFilterAnswerer.COLUMN_RESULT_TYPE;
-import static org.batfish.question.reachfilter.ReachFilterAnswerer.COLUMN_SNAPSHOT;
-import static org.batfish.question.reachfilter.ReachFilterAnswerer.DELTA;
-import static org.batfish.question.reachfilter.ReachFilterAnswerer.INCREASED;
 import static org.batfish.question.tracefilters.TraceFiltersAnswerer.COLUMN_ACTION;
 import static org.batfish.question.tracefilters.TraceFiltersAnswerer.COLUMN_FLOW;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -31,6 +26,7 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.table.TableAnswerElement;
+import org.batfish.datamodel.table.TableDiff;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.junit.Before;
@@ -92,19 +88,13 @@ public class ReachFilterAnswererDifferentialTest {
             contains(
                 ImmutableList.of(
                     allOf(
-                        hasColumn(equalTo(COLUMN_RESULT_TYPE), equalTo(INCREASED), Schema.STRING),
-                        hasColumn(equalTo(COLUMN_SNAPSHOT), equalTo(BASE), Schema.STRING),
                         hasColumn(equalTo(COLUMN_FLOW), hasDstIp(ip), Schema.FLOW),
                         hasColumn(
-                            equalTo(COLUMN_ACTION),
+                            equalTo(TableDiff.baseColumnName(COLUMN_ACTION)),
                             equalTo(LineAction.DENY.toString()),
-                            Schema.STRING)),
-                    allOf(
-                        hasColumn(equalTo(COLUMN_RESULT_TYPE), equalTo(INCREASED), Schema.STRING),
-                        hasColumn(equalTo(COLUMN_SNAPSHOT), equalTo(DELTA), Schema.STRING),
-                        hasColumn(equalTo(COLUMN_FLOW), hasDstIp(ip), Schema.FLOW),
+                            Schema.STRING),
                         hasColumn(
-                            equalTo(COLUMN_ACTION),
+                            equalTo(TableDiff.deltaColumnName(COLUMN_ACTION)),
                             equalTo(LineAction.PERMIT.toString()),
                             Schema.STRING))))));
   }
