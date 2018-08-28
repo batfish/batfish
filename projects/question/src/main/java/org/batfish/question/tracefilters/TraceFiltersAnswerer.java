@@ -95,7 +95,7 @@ public class TraceFiltersAnswerer extends Answerer {
       TraceFiltersQuestion question,
       Map<String, Configuration> configurations) {
     Flow.Builder flowBuilder = question.createBaseFlowBuilder();
-    flowBuilder.setTag("FlowTag"); // dummy tag
+    flowBuilder.setTag("FlowTag"); // dummy tag; consistent tags enable flow diffs
     flowBuilder.setIngressNode(ingressNode);
     if (flowBuilder.getDstIp().equals(Ip.AUTO)) {
       flowBuilder.setDstIp(question.createDstIpFromDst(configurations));
