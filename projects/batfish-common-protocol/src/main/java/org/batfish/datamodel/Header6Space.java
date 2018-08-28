@@ -35,7 +35,7 @@ public class Header6Space implements Serializable {
   private static final String PROP_SRC_OR_DST_PORTS = "srcOrDstPorts";
   private static final String PROP_SRC_PORTS = "srcPorts";
   private static final String PROP_STATES = "states";
-  private static final String PROP_TCP_FLAGS = "tcpFlags";
+  private static final String PROP_TCP_FLAGS_MATCH_CONDITIONS = "tcpFlagsMatchConditions";
   /** */
   private static final long serialVersionUID = 1L;
 
@@ -103,9 +103,9 @@ public class Header6Space implements Serializable {
 
   private SortedSet<SubRange> _srcPorts;
 
-  private Set<State> _states;
+  private Set<FlowState> _states;
 
-  private List<TcpFlags> _tcpFlags;
+  private List<TcpFlagsMatchConditions> _tcpFlags;
 
   public Header6Space() {
     _dscps = new TreeSet<>();
@@ -120,7 +120,7 @@ public class Header6Space implements Serializable {
     _srcPorts = new TreeSet<>();
     _icmpTypes = new TreeSet<>();
     _icmpCodes = new TreeSet<>();
-    _states = EnumSet.noneOf(State.class);
+    _states = EnumSet.noneOf(FlowState.class);
     _tcpFlags = new ArrayList<>();
     _notDscps = new TreeSet<>();
     _notDstIps = new TreeSet<>();
@@ -336,12 +336,12 @@ public class Header6Space implements Serializable {
   }
 
   @JsonProperty(PROP_STATES)
-  public Set<State> getStates() {
+  public Set<FlowState> getStates() {
     return _states;
   }
 
-  @JsonProperty(PROP_TCP_FLAGS)
-  public List<TcpFlags> getTcpFlags() {
+  @JsonProperty(PROP_TCP_FLAGS_MATCH_CONDITIONS)
+  public List<TcpFlagsMatchConditions> getTcpFlags() {
     return _tcpFlags;
   }
 
@@ -544,12 +544,12 @@ public class Header6Space implements Serializable {
   }
 
   @JsonProperty(PROP_STATES)
-  public void setStates(Set<State> states) {
+  public void setStates(Set<FlowState> states) {
     _states = states;
   }
 
-  @JsonProperty(PROP_TCP_FLAGS)
-  public void setTcpFlags(List<TcpFlags> tcpFlags) {
+  @JsonProperty(PROP_TCP_FLAGS_MATCH_CONDITIONS)
+  public void setTcpFlags(List<TcpFlagsMatchConditions> tcpFlags) {
     _tcpFlags = tcpFlags;
   }
 
@@ -599,7 +599,7 @@ public class Header6Space implements Serializable {
         + _notIcmpCodes
         + ", States:"
         + _states
-        + ", TcpFlags:"
+        + ", TcpFlagsMatchConditions:"
         + _tcpFlags
         + "]";
   }

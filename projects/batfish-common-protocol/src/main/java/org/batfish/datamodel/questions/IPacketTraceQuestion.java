@@ -7,10 +7,10 @@ import java.util.Map;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.Protocol;
-import org.batfish.datamodel.State;
 
 /** Parent class for questions that reason about the fate of flow. */
 public abstract class IPacketTraceQuestion extends Question implements IQuestion {
@@ -89,7 +89,7 @@ public abstract class IPacketTraceQuestion extends Question implements IQuestion
 
   private Protocol _srcProtocol;
 
-  private State _state;
+  private FlowState _state;
 
   private Boolean _tcpFlagsAck;
 
@@ -300,7 +300,7 @@ public abstract class IPacketTraceQuestion extends Question implements IQuestion
   }
 
   @JsonProperty(PROP_STATE)
-  public State getState() {
+  public FlowState getState() {
     return _state;
   }
 
@@ -444,7 +444,7 @@ public abstract class IPacketTraceQuestion extends Question implements IQuestion
   }
 
   @JsonProperty(PROP_STATE)
-  public void setState(State state) {
+  public void setState(FlowState state) {
     _state = state;
   }
 

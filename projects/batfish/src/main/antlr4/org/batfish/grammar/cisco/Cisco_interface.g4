@@ -465,6 +465,11 @@ if_no_ip_address
    NO IP ADDRESS NEWLINE
 ;
 
+if_no_nameif
+:
+   NO NAMEIF NEWLINE
+;
+
 if_null_block
 :
    NO?
@@ -1486,6 +1491,7 @@ if_inner
    | if_mtu
    | if_nameif
    | if_no_ip_address
+   | if_no_nameif
    | if_port_security
    | if_private_vlan
    | if_service_instance
