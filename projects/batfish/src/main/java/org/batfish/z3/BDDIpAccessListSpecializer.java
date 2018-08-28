@@ -31,30 +31,43 @@ import org.batfish.symbolic.bdd.BDDSourceManager;
 import org.batfish.symbolic.bdd.IpSpaceToBDD;
 
 public final class BDDIpAccessListSpecializer extends IpAccessListSpecializer {
-  private BDDSourceManager _bddSrcManager;
+  private final BDDSourceManager _bddSrcManager;
   private final BDDIpSpaceSpecializer _dstIpSpaceSpecializer;
   private final BDD _flowBDD;
   private final BDDPacket _pkt;
   private final BDDIpSpaceSpecializer _srcIpSpaceSpecializer;
+  private final boolean _simplifyToTrue;
 
   public BDDIpAccessListSpecializer(
       BDDPacket pkt,
       BDD flowBDD,
       Map<String, IpSpace> namedIpSpaces,
       BDDSourceManager bddSrcManager) {
+    this(pkt, flowBDD, namedIpSpaces, bddSrcManager, true);
+  }
+
+  public BDDIpAccessListSpecializer(
+      BDDPacket pkt,
+      BDD flowBDD,
+      Map<String, IpSpace> namedIpSpaces,
+      BDDSourceManager bddSrcManager,
+      boolean simplifyToTrue) {
     _bddSrcManager = bddSrcManager;
     _dstIpSpaceSpecializer =
         new BDDIpSpaceSpecializer(
             flowBDD,
             namedIpSpaces,
-            new IpSpaceToBDD(pkt.getDstIp().getFactory(), pkt.getDstIp(), namedIpSpaces));
+            new IpSpaceToBDD(pkt.getDstIp().getFactory(), pkt.getDstIp(), namedIpSpaces),
+            simplifyToTrue);
     _pkt = pkt;
     _flowBDD = flowBDD;
+    _simplifyToTrue = simplifyToTrue;
     _srcIpSpaceSpecializer =
         new BDDIpSpaceSpecializer(
             flowBDD,
             namedIpSpaces,
-            new IpSpaceToBDD(pkt.getSrcIp().getFactory(), pkt.getSrcIp(), namedIpSpaces));
+            new IpSpaceToBDD(pkt.getSrcIp().getFactory(), pkt.getSrcIp(), namedIpSpaces),
+            simplifyToTrue);
   }
 
   @VisibleForTesting
@@ -98,7 +111,7 @@ public final class BDDIpAccessListSpecializer extends IpAccessListSpecializer {
   @Override
   public final AclLineMatchExpr visitOriginatingFromDevice(
       OriginatingFromDevice originatingFromDevice) {
-    if (_flowBDD.imp(_bddSrcManager.getOriginatingFromDeviceBDD()).isOne()) {
+    if (_simplifyToTrue && _flowBDD.imp(_bddSrcManager.getOriginatingFromDeviceBDD()).isOne()) {
       return TrueExpr.INSTANCE;
     } else if (_flowBDD.imp(_bddSrcManager.getOriginatingFromDeviceBDD().not()).isOne()) {
       return FalseExpr.INSTANCE;
@@ -122,7 +135,7 @@ public final class BDDIpAccessListSpecializer extends IpAccessListSpecializer {
 
     if (relevantInterfaces.isEmpty()) {
       return FalseExpr.INSTANCE;
-    } else if (_flowBDD.imp(BDDOps.orNull(matchingInterfaceBDDs)).isOne()) {
+    } else if (_simplifyToTrue && _flowBDD.imp(BDDOps.orNull(matchingInterfaceBDDs)).isOne()) {
       return TrueExpr.INSTANCE;
     }
     return new MatchSrcInterface(relevantInterfaces);
