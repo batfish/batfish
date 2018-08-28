@@ -32,13 +32,6 @@ public final class FlowTraceHop implements Serializable {
 
   private final Flow _transformedFlow;
 
-  public FlowTraceHop(
-      @JsonProperty(PROP_EDGE) Edge edge,
-      @JsonProperty(PROP_ROUTES) SortedSet<String> routes,
-      @JsonProperty(PROP_TRANSFORMED_FLOW) Flow transformedFlow) {
-    this(edge, routes, null, null, transformedFlow);
-  }
-
   @JsonCreator
   public FlowTraceHop(
       @JsonProperty(PROP_EDGE) Edge edge,
@@ -57,8 +50,7 @@ public final class FlowTraceHop implements Serializable {
   public boolean equals(Object obj) {
     if (this == obj) {
       return true;
-    }
-    if (obj == null || !(obj instanceof FlowTraceHop)) {
+    } else if (!(obj instanceof FlowTraceHop)) {
       return false;
     }
     FlowTraceHop other = (FlowTraceHop) obj;
