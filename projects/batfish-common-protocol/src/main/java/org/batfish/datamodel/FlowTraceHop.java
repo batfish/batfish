@@ -1,13 +1,21 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.Comparators;
+import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Ordering;
 import java.io.Serializable;
+import java.util.Comparator;
 import java.util.Objects;
 import java.util.SortedSet;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public final class FlowTraceHop implements Serializable {
+public final class FlowTraceHop implements Comparable<FlowTraceHop>, Serializable {
 
   private static final String PROP_EDGE = "edge";
 
@@ -28,19 +36,19 @@ public final class FlowTraceHop implements Serializable {
 
   @Nullable private String _filterOut;
 
-  private final SortedSet<String> _routes;
+  @Nonnull private final SortedSet<String> _routes;
 
-  private final Flow _transformedFlow;
+  @Nullable private final Flow _transformedFlow;
 
   @JsonCreator
   public FlowTraceHop(
       @JsonProperty(PROP_EDGE) Edge edge,
-      @JsonProperty(PROP_ROUTES) SortedSet<String> routes,
-      @JsonProperty(PROP_FILTER_OUT) String filterOut,
-      @JsonProperty(PROP_FILTER_IN) String filterIn,
-      @JsonProperty(PROP_TRANSFORMED_FLOW) Flow transformedFlow) {
+      @Nullable @JsonProperty(PROP_ROUTES) SortedSet<String> routes,
+      @Nullable @JsonProperty(PROP_FILTER_OUT) String filterOut,
+      @Nullable @JsonProperty(PROP_FILTER_IN) String filterIn,
+      @Nullable @JsonProperty(PROP_TRANSFORMED_FLOW) Flow transformedFlow) {
     _edge = edge;
-    _routes = routes;
+    _routes = firstNonNull(routes, ImmutableSortedSet.of());
     _filterOut = filterOut;
     _filterIn = filterIn;
     _transformedFlow = transformedFlow;
@@ -67,21 +75,25 @@ public final class FlowTraceHop implements Serializable {
   }
 
   @JsonProperty(PROP_FILTER_IN)
+  @Nullable
   public String getFilterIn() {
     return _filterIn;
   }
 
   @JsonProperty(PROP_FILTER_OUT)
+  @Nullable
   public String getFilterOut() {
     return _filterOut;
   }
 
   @JsonProperty(PROP_ROUTES)
+  @Nonnull
   public SortedSet<String> getRoutes() {
     return _routes;
   }
 
   @JsonProperty(PROP_TRANSFORMED_FLOW)
+  @Nullable
   public Flow getTransformedFlow() {
     return _transformedFlow;
   }
@@ -91,16 +103,39 @@ public final class FlowTraceHop implements Serializable {
     final int prime = 31;
     int result = 1;
     result = prime * result + ((_edge == null) ? 0 : _edge.hashCode());
-    result = prime * result + ((_routes == null) ? 0 : _routes.hashCode());
+    result = prime * result + _routes.hashCode();
     result = prime * result + ((_transformedFlow == null) ? 0 : _transformedFlow.hashCode());
     return result;
   }
 
-  public void setFilterIn(String filterIn) {
+  public void setFilterIn(@Nullable String filterIn) {
     _filterIn = filterIn;
   }
 
-  public void setFilterOut(String filterOut) {
+  public void setFilterOut(@Nullable String filterOut) {
     _filterOut = filterOut;
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(FlowTraceHop.class)
+        .omitNullValues()
+        .add("edge", _edge)
+        .add("routes", _routes)
+        .add("filterIn", _filterIn)
+        .add("filterOut", PROP_FILTER_OUT)
+        .add("transformedFlow", _transformedFlow)
+        .toString();
+  }
+
+  @Override
+  public int compareTo(FlowTraceHop o) {
+    return Comparator.comparing(FlowTraceHop::getEdge)
+        .thenComparing(
+            FlowTraceHop::getTransformedFlow, Comparator.nullsFirst(Comparator.naturalOrder()))
+        .thenComparing(FlowTraceHop::getRoutes, Comparators.lexicographical(Ordering.natural()))
+        .thenComparing(FlowTraceHop::getFilterIn, Comparator.nullsFirst(Comparator.naturalOrder()))
+        .thenComparing(FlowTraceHop::getFilterOut, Comparator.nullsFirst(Comparator.naturalOrder()))
+        .compare(this, o);
   }
 }
