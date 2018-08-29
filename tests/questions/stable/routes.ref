@@ -1,7 +1,9 @@
 {
   "class" : "org.batfish.question.routes.RoutesQuestion",
+  "network" : "1.1.1.0/24",
   "nodes" : ".*",
-  "protocol" : "MAIN",
+  "protocols" : ".*",
+  "rib" : "MAIN",
   "vrfs" : ".*",
   "differential" : false,
   "includeOneTableKeys" : true,
@@ -14,19 +16,31 @@
       "route"
     ],
     "variables" : {
+      "network" : {
+        "description" : "Examine routes for networks matching this prefix",
+        "optional" : true,
+        "type" : "prefix",
+        "value" : "1.1.1.1/24"
+      },
       "nodes" : {
         "description" : "Examine routes on nodes matching this name or regex",
         "optional" : false,
         "type" : "nodeSpec",
         "value" : ".*"
       },
-      "protocol" : {
+      "protocols" : {
+        "description" : "Examine routes for protocols matching this name or regex",
+        "optional" : false,
+        "type" : "javaRegex",
+        "value" : ".*"
+      },
+      "rib" : {
         "allowedValues" : [
           "bgp",
           "bgpmp",
           "main"
         ],
-        "description" : "Only return routes from a given protocol RIB",
+        "description" : "Only return routes from a given RIB",
         "optional" : true,
         "type" : "string",
         "value" : "main"
