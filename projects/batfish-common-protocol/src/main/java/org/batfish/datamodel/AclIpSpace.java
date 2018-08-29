@@ -113,29 +113,40 @@ public class AclIpSpace extends IpSpace {
   }
 
   private static @Nullable IpSpace intersection(Spliterator<IpSpace> ipSpaces) {
-    IpSpace[] concreteSpaces =
-        StreamSupport.stream(ipSpaces, false)
-            .filter(Objects::nonNull)
+    IpSpace[] nonNullSpaces =
+        StreamSupport.stream(ipSpaces, false).filter(Objects::nonNull).toArray(IpSpace[]::new);
+
+    if (nonNullSpaces.length == 0) {
+      // all null
+      return null;
+    }
+
+    IpSpace[] nonUniverseSpaces =
+        Arrays.stream(nonNullSpaces)
             .filter(ipSpace -> ipSpace != UniverseIpSpace.INSTANCE)
             .toArray(IpSpace[]::new);
 
-    if (concreteSpaces.length == 0) {
-      // all null or Universe
-      return null;
+    if (nonUniverseSpaces.length == 0) {
+      // all UniverseIpSpace
+      return UniverseIpSpace.INSTANCE;
     }
-    if (concreteSpaces.length == 1) {
-      return concreteSpaces[0];
+
+    if (nonUniverseSpaces.length == 1) {
+      return nonUniverseSpaces[0];
     }
 
     // complement each concrete space.
-    for (int i = 0; i < concreteSpaces.length; i++) {
-      if (concreteSpaces[i] == EmptyIpSpace.INSTANCE) {
+    for (int i = 0; i < nonUniverseSpaces.length; i++) {
+      if (nonUniverseSpaces[i] == EmptyIpSpace.INSTANCE) {
         return EmptyIpSpace.INSTANCE;
       }
-      concreteSpaces[i] = concreteSpaces[i].complement();
+      nonUniverseSpaces[i] = nonUniverseSpaces[i].complement();
     }
 
-    return builder().thenRejecting(concreteSpaces).thenPermitting(UniverseIpSpace.INSTANCE).build();
+    return builder()
+        .thenRejecting(nonUniverseSpaces)
+        .thenPermitting(UniverseIpSpace.INSTANCE)
+        .build();
   }
 
   public static Builder permitting(IpSpace... ipSpaces) {

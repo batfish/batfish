@@ -38,7 +38,9 @@ public class AclIpSpaceTest {
   @Test
   public void testIntersection() {
     IpIpSpace ipSpace = new Ip("1.2.3.4").toIpSpace();
-    assertThat(intersection(null, UniverseIpSpace.INSTANCE, null), nullValue());
+    assertThat(intersection(null, null), nullValue());
+    assertThat(
+        intersection(null, UniverseIpSpace.INSTANCE, null), equalTo(UniverseIpSpace.INSTANCE));
     assertThat(intersection(ipSpace, null, UniverseIpSpace.INSTANCE), equalTo(ipSpace));
     assertThat(intersection(EmptyIpSpace.INSTANCE, ipSpace), equalTo(EmptyIpSpace.INSTANCE));
   }
