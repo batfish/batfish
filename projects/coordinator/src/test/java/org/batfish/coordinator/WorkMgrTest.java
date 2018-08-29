@@ -692,7 +692,8 @@ public class WorkMgrTest {
             ImmutableList.of(),
             maxRows,
             rowOffset,
-            ImmutableList.of(new ColumnSortOption(columnName, true)));
+            ImmutableList.of(new ColumnSortOption(columnName, true)),
+            false);
     Map<String, AnalysisAnswerOptions> analysisAnswersOptions =
         ImmutableMap.of(questionName, options);
 
@@ -725,7 +726,8 @@ public class WorkMgrTest {
             ImmutableList.of(),
             maxRows,
             rowOffset,
-            ImmutableList.of(new ColumnSortOption(columnName, true)));
+            ImmutableList.of(new ColumnSortOption(columnName, true)),
+            false);
 
     List<Row> processedRows =
         ((TableAnswerElement)
@@ -746,7 +748,8 @@ public class WorkMgrTest {
             ImmutableList.of(),
             maxRows,
             rowOffset,
-            ImmutableList.of(new ColumnSortOption(columnName, true)));
+            ImmutableList.of(new ColumnSortOption(columnName, true)),
+            false);
     Answer badInput = new Answer();
     badInput.setStatus(AnswerStatus.SUCCESS);
     String rawAnswerStr = BatfishObjectMapper.writePrettyString(badInput);
@@ -766,7 +769,8 @@ public class WorkMgrTest {
             ImmutableList.of(),
             maxRows,
             rowOffset,
-            ImmutableList.of(new ColumnSortOption(columnName, true)));
+            ImmutableList.of(new ColumnSortOption(columnName, true)),
+            false);
     Answer processedAnswer = _manager.processAnalysisAnswer(null, options);
 
     assertThat(processedAnswer.getStatus(), equalTo(AnswerStatus.NOTFOUND));
@@ -789,14 +793,16 @@ public class WorkMgrTest {
             ImmutableList.of(),
             Integer.MAX_VALUE,
             0,
-            ImmutableList.of(new ColumnSortOption(columnName, false)));
+            ImmutableList.of(new ColumnSortOption(columnName, false)),
+            false);
     AnalysisAnswerOptions optionsSortingReverse =
         new AnalysisAnswerOptions(
             ImmutableSet.of(columnName),
             ImmutableList.of(),
             Integer.MAX_VALUE,
             0,
-            ImmutableList.of(new ColumnSortOption(columnName, true)));
+            ImmutableList.of(new ColumnSortOption(columnName, true)),
+            false);
 
     assertThat(
         _manager.processAnalysisAnswerTable(table, optionsSorting).getRowsList(),
@@ -823,14 +829,16 @@ public class WorkMgrTest {
             ImmutableList.of(),
             Integer.MAX_VALUE,
             0,
-            ImmutableList.of());
+            ImmutableList.of(),
+            false);
     AnalysisAnswerOptions optionsOffset =
         new AnalysisAnswerOptions(
             ImmutableSet.of(columnName),
             ImmutableList.of(),
             Integer.MAX_VALUE,
             1,
-            ImmutableList.of());
+            ImmutableList.of(),
+            false);
 
     assertThat(
         _manager.processAnalysisAnswerTable(table, optionsNoOffset).getRowsList(),
@@ -854,14 +862,15 @@ public class WorkMgrTest {
     table.addRow(row2);
     AnalysisAnswerOptions optionsNotFiltered =
         new AnalysisAnswerOptions(
-            ImmutableSet.of(), ImmutableList.of(), Integer.MAX_VALUE, 0, ImmutableList.of());
+            ImmutableSet.of(), ImmutableList.of(), Integer.MAX_VALUE, 0, ImmutableList.of(), false);
     AnalysisAnswerOptions optionsFiltered =
         new AnalysisAnswerOptions(
             ImmutableSet.of(),
             ImmutableList.of(new ColumnFilter(columnName, whitelistedValue)),
             Integer.MAX_VALUE,
             0,
-            ImmutableList.of());
+            ImmutableList.of(),
+            false);
 
     assertThat(
         _manager.processAnalysisAnswerTable(table, optionsNotFiltered).getRowsList(),
@@ -884,9 +893,10 @@ public class WorkMgrTest {
     table.addRow(row2);
     AnalysisAnswerOptions optionsNoLimit =
         new AnalysisAnswerOptions(
-            ImmutableSet.of(), ImmutableList.of(), Integer.MAX_VALUE, 0, ImmutableList.of());
+            ImmutableSet.of(), ImmutableList.of(), Integer.MAX_VALUE, 0, ImmutableList.of(), false);
     AnalysisAnswerOptions optionsLimit =
-        new AnalysisAnswerOptions(ImmutableSet.of(), ImmutableList.of(), 1, 0, ImmutableList.of());
+        new AnalysisAnswerOptions(
+            ImmutableSet.of(), ImmutableList.of(), 1, 0, ImmutableList.of(), false);
 
     assertThat(
         _manager.processAnalysisAnswerTable(table, optionsNoLimit).getRowsList(),
@@ -912,14 +922,15 @@ public class WorkMgrTest {
     table.addRow(row2);
     AnalysisAnswerOptions optionsNoProject =
         new AnalysisAnswerOptions(
-            ImmutableSet.of(), ImmutableList.of(), Integer.MAX_VALUE, 0, ImmutableList.of());
+            ImmutableSet.of(), ImmutableList.of(), Integer.MAX_VALUE, 0, ImmutableList.of(), false);
     AnalysisAnswerOptions optionsProject =
         new AnalysisAnswerOptions(
             ImmutableSet.of(columnName),
             ImmutableList.of(),
             Integer.MAX_VALUE,
             0,
-            ImmutableList.of());
+            ImmutableList.of(),
+            false);
 
     Row row1Projected = Row.of(columnName, 1);
     Row row2Projected = Row.of(columnName, 2);
@@ -930,6 +941,32 @@ public class WorkMgrTest {
     assertThat(
         _manager.processAnalysisAnswerTable(table, optionsProject).getRowsList(),
         equalTo(ImmutableList.of(row1Projected, row2Projected)));
+  }
+
+  @Test
+  public void testProcessAnalysisAnswerTableUniqueRows() {
+    String columnName = "val";
+    TableAnswerElement table =
+        new TableAnswerElement(
+            new TableMetadata(
+                ImmutableList.of(new ColumnMetadata(columnName, Schema.INTEGER, "foobar"))));
+    Row row1 = Row.of(columnName, 1);
+    Row row2 = Row.of(columnName, 1);
+    table.addRow(row1);
+    table.addRow(row2);
+    AnalysisAnswerOptions optionsNonUnique =
+        new AnalysisAnswerOptions(
+            ImmutableSet.of(), ImmutableList.of(), Integer.MAX_VALUE, 0, ImmutableList.of(), false);
+    AnalysisAnswerOptions optionsUnique =
+        new AnalysisAnswerOptions(
+            ImmutableSet.of(), ImmutableList.of(), Integer.MAX_VALUE, 0, ImmutableList.of(), true);
+
+    assertThat(
+        _manager.processAnalysisAnswerTable(table, optionsNonUnique).getRowsList(),
+        equalTo(ImmutableList.of(row1, row2)));
+    assertThat(
+        _manager.processAnalysisAnswerTable(table, optionsUnique).getRowsList(),
+        equalTo(ImmutableList.of(row1)));
   }
 
   @Test

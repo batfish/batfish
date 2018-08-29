@@ -58,100 +58,8 @@
     "rows" : [
       {
         "Node" : {
-          "id" : "node-host2",
-          "name" : "host2"
-        },
-        "Filter_Name" : "filter::FORWARD",
-        "Flow" : {
-          "dscp" : 0,
-          "dstIp" : "1.1.1.1",
-          "dstPort" : 0,
-          "ecn" : 0,
-          "fragmentOffset" : 0,
-          "icmpCode" : 255,
-          "icmpVar" : 255,
-          "ingressNode" : "host2",
-          "ingressVrf" : "default",
-          "ipProtocol" : "IP",
-          "packetLength" : 0,
-          "srcIp" : "AUTO/NONE(-1l)",
-          "srcPort" : 0,
-          "state" : "NEW",
-          "tag" : "BASE",
-          "tcpFlagsAck" : 0,
-          "tcpFlagsCwr" : 0,
-          "tcpFlagsEce" : 0,
-          "tcpFlagsFin" : 0,
-          "tcpFlagsPsh" : 0,
-          "tcpFlagsRst" : 0,
-          "tcpFlagsSyn" : 0,
-          "tcpFlagsUrg" : 0
-        },
-        "Action" : "PERMIT",
-        "Line_Number" : 0,
-        "Line_Content" : "default",
-        "Trace" : {
-          "events" : [
-            {
-              "class" : "org.batfish.datamodel.acl.PermittedByIpAccessListLine",
-              "description" : "Flow permitted by ACL named 'filter::FORWARD', index 0: default",
-              "index" : 0,
-              "lineDescription" : "default",
-              "name" : "filter::FORWARD"
-            }
-          ]
-        }
-      },
-      {
-        "Node" : {
           "id" : "node-host1",
           "name" : "host1"
-        },
-        "Filter_Name" : "filter::FORWARD",
-        "Flow" : {
-          "dscp" : 0,
-          "dstIp" : "1.1.1.1",
-          "dstPort" : 0,
-          "ecn" : 0,
-          "fragmentOffset" : 0,
-          "icmpCode" : 255,
-          "icmpVar" : 255,
-          "ingressNode" : "host1",
-          "ingressVrf" : "default",
-          "ipProtocol" : "IP",
-          "packetLength" : 0,
-          "srcIp" : "AUTO/NONE(-1l)",
-          "srcPort" : 0,
-          "state" : "NEW",
-          "tag" : "BASE",
-          "tcpFlagsAck" : 0,
-          "tcpFlagsCwr" : 0,
-          "tcpFlagsEce" : 0,
-          "tcpFlagsFin" : 0,
-          "tcpFlagsPsh" : 0,
-          "tcpFlagsRst" : 0,
-          "tcpFlagsSyn" : 0,
-          "tcpFlagsUrg" : 0
-        },
-        "Action" : "PERMIT",
-        "Line_Number" : 0,
-        "Line_Content" : "default",
-        "Trace" : {
-          "events" : [
-            {
-              "class" : "org.batfish.datamodel.acl.PermittedByIpAccessListLine",
-              "description" : "Flow permitted by ACL named 'filter::FORWARD', index 0: default",
-              "index" : 0,
-              "lineDescription" : "default",
-              "name" : "filter::FORWARD"
-            }
-          ]
-        }
-      },
-      {
-        "Node" : {
-          "id" : "node-host2",
-          "name" : "host2"
         },
         "Filter_Name" : "filter::INPUT",
         "Flow" : {
@@ -162,14 +70,14 @@
           "fragmentOffset" : 0,
           "icmpCode" : 255,
           "icmpVar" : 255,
-          "ingressNode" : "host2",
+          "ingressNode" : "host1",
           "ingressVrf" : "default",
           "ipProtocol" : "IP",
           "packetLength" : 0,
           "srcIp" : "AUTO/NONE(-1l)",
           "srcPort" : 0,
           "state" : "NEW",
-          "tag" : "BASE",
+          "tag" : "FlowTag",
           "tcpFlagsAck" : 0,
           "tcpFlagsCwr" : 0,
           "tcpFlagsEce" : 0,
@@ -180,62 +88,16 @@
           "tcpFlagsUrg" : 0
         },
         "Action" : "DENY",
-        "Line_Number" : 1,
+        "Line_Number" : 2,
         "Line_Content" : "default",
         "Trace" : {
           "events" : [
             {
               "class" : "org.batfish.datamodel.acl.DeniedByIpAccessListLine",
-              "description" : "Flow denied by ACL named 'filter::INPUT', index 1: default",
-              "index" : 1,
+              "description" : "Flow denied by ACL named 'filter::INPUT', index 2: default",
+              "index" : 2,
               "lineDescription" : "default",
               "name" : "filter::INPUT"
-            }
-          ]
-        }
-      },
-      {
-        "Node" : {
-          "id" : "node-host2",
-          "name" : "host2"
-        },
-        "Filter_Name" : "filter::OUTPUT",
-        "Flow" : {
-          "dscp" : 0,
-          "dstIp" : "1.1.1.1",
-          "dstPort" : 0,
-          "ecn" : 0,
-          "fragmentOffset" : 0,
-          "icmpCode" : 255,
-          "icmpVar" : 255,
-          "ingressNode" : "host2",
-          "ingressVrf" : "default",
-          "ipProtocol" : "IP",
-          "packetLength" : 0,
-          "srcIp" : "AUTO/NONE(-1l)",
-          "srcPort" : 0,
-          "state" : "NEW",
-          "tag" : "BASE",
-          "tcpFlagsAck" : 0,
-          "tcpFlagsCwr" : 0,
-          "tcpFlagsEce" : 0,
-          "tcpFlagsFin" : 0,
-          "tcpFlagsPsh" : 0,
-          "tcpFlagsRst" : 0,
-          "tcpFlagsSyn" : 0,
-          "tcpFlagsUrg" : 0
-        },
-        "Action" : "PERMIT",
-        "Line_Number" : 1,
-        "Line_Content" : "default",
-        "Trace" : {
-          "events" : [
-            {
-              "class" : "org.batfish.datamodel.acl.PermittedByIpAccessListLine",
-              "description" : "Flow permitted by ACL named 'filter::OUTPUT', index 1: default",
-              "index" : 1,
-              "lineDescription" : "default",
-              "name" : "filter::OUTPUT"
             }
           ]
         }
@@ -261,7 +123,7 @@
           "srcIp" : "AUTO/NONE(-1l)",
           "srcPort" : 0,
           "state" : "NEW",
-          "tag" : "BASE",
+          "tag" : "FlowTag",
           "tcpFlagsAck" : 0,
           "tcpFlagsCwr" : 0,
           "tcpFlagsEce" : 0,
@@ -288,10 +150,56 @@
       },
       {
         "Node" : {
+          "id" : "node-host2",
+          "name" : "host2"
+        },
+        "Filter_Name" : "filter::INPUT",
+        "Flow" : {
+          "dscp" : 0,
+          "dstIp" : "1.1.1.1",
+          "dstPort" : 0,
+          "ecn" : 0,
+          "fragmentOffset" : 0,
+          "icmpCode" : 255,
+          "icmpVar" : 255,
+          "ingressNode" : "host2",
+          "ingressVrf" : "default",
+          "ipProtocol" : "IP",
+          "packetLength" : 0,
+          "srcIp" : "AUTO/NONE(-1l)",
+          "srcPort" : 0,
+          "state" : "NEW",
+          "tag" : "FlowTag",
+          "tcpFlagsAck" : 0,
+          "tcpFlagsCwr" : 0,
+          "tcpFlagsEce" : 0,
+          "tcpFlagsFin" : 0,
+          "tcpFlagsPsh" : 0,
+          "tcpFlagsRst" : 0,
+          "tcpFlagsSyn" : 0,
+          "tcpFlagsUrg" : 0
+        },
+        "Action" : "DENY",
+        "Line_Number" : 1,
+        "Line_Content" : "default",
+        "Trace" : {
+          "events" : [
+            {
+              "class" : "org.batfish.datamodel.acl.DeniedByIpAccessListLine",
+              "description" : "Flow denied by ACL named 'filter::INPUT', index 1: default",
+              "index" : 1,
+              "lineDescription" : "default",
+              "name" : "filter::INPUT"
+            }
+          ]
+        }
+      },
+      {
+        "Node" : {
           "id" : "node-host1",
           "name" : "host1"
         },
-        "Filter_Name" : "filter::INPUT",
+        "Filter_Name" : "filter::FORWARD",
         "Flow" : {
           "dscp" : 0,
           "dstIp" : "1.1.1.1",
@@ -307,7 +215,7 @@
           "srcIp" : "AUTO/NONE(-1l)",
           "srcPort" : 0,
           "state" : "NEW",
-          "tag" : "BASE",
+          "tag" : "FlowTag",
           "tcpFlagsAck" : 0,
           "tcpFlagsCwr" : 0,
           "tcpFlagsEce" : 0,
@@ -317,17 +225,109 @@
           "tcpFlagsSyn" : 0,
           "tcpFlagsUrg" : 0
         },
-        "Action" : "DENY",
-        "Line_Number" : 2,
+        "Action" : "PERMIT",
+        "Line_Number" : 0,
         "Line_Content" : "default",
         "Trace" : {
           "events" : [
             {
-              "class" : "org.batfish.datamodel.acl.DeniedByIpAccessListLine",
-              "description" : "Flow denied by ACL named 'filter::INPUT', index 2: default",
-              "index" : 2,
+              "class" : "org.batfish.datamodel.acl.PermittedByIpAccessListLine",
+              "description" : "Flow permitted by ACL named 'filter::FORWARD', index 0: default",
+              "index" : 0,
               "lineDescription" : "default",
-              "name" : "filter::INPUT"
+              "name" : "filter::FORWARD"
+            }
+          ]
+        }
+      },
+      {
+        "Node" : {
+          "id" : "node-host2",
+          "name" : "host2"
+        },
+        "Filter_Name" : "filter::FORWARD",
+        "Flow" : {
+          "dscp" : 0,
+          "dstIp" : "1.1.1.1",
+          "dstPort" : 0,
+          "ecn" : 0,
+          "fragmentOffset" : 0,
+          "icmpCode" : 255,
+          "icmpVar" : 255,
+          "ingressNode" : "host2",
+          "ingressVrf" : "default",
+          "ipProtocol" : "IP",
+          "packetLength" : 0,
+          "srcIp" : "AUTO/NONE(-1l)",
+          "srcPort" : 0,
+          "state" : "NEW",
+          "tag" : "FlowTag",
+          "tcpFlagsAck" : 0,
+          "tcpFlagsCwr" : 0,
+          "tcpFlagsEce" : 0,
+          "tcpFlagsFin" : 0,
+          "tcpFlagsPsh" : 0,
+          "tcpFlagsRst" : 0,
+          "tcpFlagsSyn" : 0,
+          "tcpFlagsUrg" : 0
+        },
+        "Action" : "PERMIT",
+        "Line_Number" : 0,
+        "Line_Content" : "default",
+        "Trace" : {
+          "events" : [
+            {
+              "class" : "org.batfish.datamodel.acl.PermittedByIpAccessListLine",
+              "description" : "Flow permitted by ACL named 'filter::FORWARD', index 0: default",
+              "index" : 0,
+              "lineDescription" : "default",
+              "name" : "filter::FORWARD"
+            }
+          ]
+        }
+      },
+      {
+        "Node" : {
+          "id" : "node-host2",
+          "name" : "host2"
+        },
+        "Filter_Name" : "filter::OUTPUT",
+        "Flow" : {
+          "dscp" : 0,
+          "dstIp" : "1.1.1.1",
+          "dstPort" : 0,
+          "ecn" : 0,
+          "fragmentOffset" : 0,
+          "icmpCode" : 255,
+          "icmpVar" : 255,
+          "ingressNode" : "host2",
+          "ingressVrf" : "default",
+          "ipProtocol" : "IP",
+          "packetLength" : 0,
+          "srcIp" : "AUTO/NONE(-1l)",
+          "srcPort" : 0,
+          "state" : "NEW",
+          "tag" : "FlowTag",
+          "tcpFlagsAck" : 0,
+          "tcpFlagsCwr" : 0,
+          "tcpFlagsEce" : 0,
+          "tcpFlagsFin" : 0,
+          "tcpFlagsPsh" : 0,
+          "tcpFlagsRst" : 0,
+          "tcpFlagsSyn" : 0,
+          "tcpFlagsUrg" : 0
+        },
+        "Action" : "PERMIT",
+        "Line_Number" : 1,
+        "Line_Content" : "default",
+        "Trace" : {
+          "events" : [
+            {
+              "class" : "org.batfish.datamodel.acl.PermittedByIpAccessListLine",
+              "description" : "Flow permitted by ACL named 'filter::OUTPUT', index 1: default",
+              "index" : 1,
+              "lineDescription" : "default",
+              "name" : "filter::OUTPUT"
             }
           ]
         }

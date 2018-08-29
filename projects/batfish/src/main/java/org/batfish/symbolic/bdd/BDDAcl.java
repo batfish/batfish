@@ -10,7 +10,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Supplier;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
@@ -37,9 +36,11 @@ public final class BDDAcl {
 
   @Nonnull private final BDDPacket _pkt;
 
+  private final AclLineMatchExprToBDD _aclLineMatchExprToBDD;
+
   private BDDAcl(
       BDDPacket pkt,
-      @Nullable IpAccessList acl,
+      IpAccessList acl,
       Map<String, Supplier<BDD>> aclEnv,
       Map<String, IpSpace> ipSpaceEnv,
       BDDSourceManager bddSrcManager) {
@@ -48,7 +49,9 @@ public final class BDDAcl {
     _pkt = pkt;
     _factory = _pkt.getFactory();
     _ipSpaceEnv = ImmutableMap.copyOf(ipSpaceEnv);
-    _bdd = computeACL(acl);
+    _aclLineMatchExprToBDD =
+        new AclLineMatchExprToBDD(_factory, _pkt, _aclEnv, _ipSpaceEnv, _bddSrcManager);
+    _bdd = computeACL(_factory, _aclLineMatchExprToBDD, acl);
   }
 
   private BDDAcl(BDDAcl other) {
@@ -58,6 +61,7 @@ public final class BDDAcl {
     _factory = other._factory;
     _ipSpaceEnv = ImmutableMap.copyOf(other._ipSpaceEnv);
     _pkt = other._pkt;
+    _aclLineMatchExprToBDD = other._aclLineMatchExprToBDD;
   }
 
   /**
@@ -128,22 +132,19 @@ public final class BDDAcl {
    * ACL is to deny all traffic.
    */
   @Nonnull
-  private BDD computeACL(@Nullable IpAccessList acl) {
-    // Check if there is an ACL first
-    if (acl == null) {
-      return _factory.one();
-    }
-
-    BDD result = _factory.zero();
-    AclLineMatchExprToBDD aclLineMatchExprToBDD =
-        new AclLineMatchExprToBDD(_factory, _pkt, _aclEnv, _ipSpaceEnv, _bddSrcManager);
-
+  private static BDD computeACL(
+      BDDFactory bddFactory, AclLineMatchExprToBDD aclLineMatchExprToBDD, IpAccessList acl) {
+    BDD result = bddFactory.zero();
     for (IpAccessListLine line : Lists.reverse(acl.getLines())) {
       BDD lineBDD = aclLineMatchExprToBDD.visit(line.getMatchCondition());
-      BDD actionBDD = line.getAction() == LineAction.PERMIT ? _factory.one() : _factory.zero();
+      BDD actionBDD = line.getAction() == LineAction.PERMIT ? bddFactory.one() : bddFactory.zero();
       result = lineBDD.ite(actionBDD, result);
     }
     return result;
+  }
+
+  public AclLineMatchExprToBDD getAclLineMatchExprToBDD() {
+    return _aclLineMatchExprToBDD;
   }
 
   @Nonnull

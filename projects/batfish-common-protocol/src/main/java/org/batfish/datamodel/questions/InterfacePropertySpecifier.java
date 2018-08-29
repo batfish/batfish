@@ -41,7 +41,6 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
   public static final String DHCP_RELAY_ADDRESSES = "DHCP_Relay_Addresses";
   public static final String HSRP_GROUPS = "HSRP_Groups";
   public static final String HSRP_VERSION = "HSRP_Version";
-  public static final String INBOUND_FILTER_NAME = "Inbound_Filter_Name";
   public static final String INCOMING_FILTER_NAME = "Incoming_Filter_Name";
   public static final String INTERFACE_TYPE = "Interface_Type";
   public static final String MTU = "MTU";
@@ -99,10 +98,6 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
               HSRP_GROUPS,
               new PropertyDescriptor<>(Interface::getHsrpGroups, Schema.set(Schema.STRING)))
           .put(HSRP_VERSION, new PropertyDescriptor<>(Interface::getHsrpVersion, Schema.STRING))
-          // skip inbound-filter
-          .put(
-              INBOUND_FILTER_NAME,
-              new PropertyDescriptor<>(Interface::getInboundFilterName, Schema.STRING))
           // skip incoming filter
           .put(
               INCOMING_FILTER_NAME,
