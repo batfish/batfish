@@ -21,7 +21,6 @@ test -compareall tests/basic/genDp-delta.ref generate-delta-dataplane
 test tests/basic/nodes-diff.ref get nodes summary=false, differential=true
 
 # Everything below here is to be converted into regular unit tests in some form.
-test tests/basic/aclReachability.ref get aclReachability
 test tests/basic/aclReachability2.ref get aclReachability2
 test tests/basic/bgpSessionStatus.ref get bgpsessionstatus type="ebgp.*", status="missing.*"
 test tests/basic/bgpSessionStatusNew.ref get bgpsessionstatusnew nodes="as2.*", remoteNodes="as3.*", includeEstablishedCount=true
