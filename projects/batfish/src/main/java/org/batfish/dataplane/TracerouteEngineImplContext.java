@@ -20,7 +20,6 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.CommonUtil;
@@ -159,19 +158,16 @@ class TracerouteEngineImplContext {
      * 2. the interface's vrf has a route to the destination
      * 3. the destination is not on the incoming edge.
      */
-    @Nonnull
-    Map<String, Map<Ip, Set<AbstractRoute>>> nextHopInterfaces =
-        ifaceFib.getNextHopInterfaces(arpIp);
+    Set<String> nextHopInterfaces = ifaceFib.getNextHopInterfaces(arpIp);
     return iface.getProxyArp()
         && !nextHopInterfaces.isEmpty()
-        && nextHopInterfaces.keySet().stream().noneMatch(iface.getName()::equals);
+        && nextHopInterfaces.stream().noneMatch(iface.getName()::equals);
   }
 
   private final Map<String, Configuration> _configurations;
   private final DataPlane _dataPlane;
   private final Map<String, Map<String, Fib>> _fibs;
   private final Set<Flow> _flows;
-  private final Map<Flow, Set<FlowTrace>> _flowTraces;
   private final ForwardingAnalysis _forwardingAnalysis;
   private final boolean _ignoreAcls;
 
@@ -183,7 +179,6 @@ class TracerouteEngineImplContext {
     _configurations = dataPlane.getConfigurations();
     _dataPlane = dataPlane;
     _flows = flows;
-    _flowTraces = new ConcurrentHashMap<>();
     _fibs = fibs;
     _ignoreAcls = ignoreAcls;
     _forwardingAnalysis = _dataPlane.getForwardingAnalysis();
@@ -230,10 +225,9 @@ class TracerouteEngineImplContext {
     }
     // .. and what the next hops are based on the FIB.
     Fib currentFib = _fibs.get(currentNodeName).get(vrfName);
-    Map<String, Map<Ip, Set<AbstractRoute>>> nextHopInterfacesWithRoutes =
-        currentFib.getNextHopInterfaces(dstIp);
-    if (nextHopInterfacesWithRoutes.isEmpty()) {
-      // No route to take, bail.
+    Set<String> nextHopInterfaces = currentFib.getNextHopInterfaces(dstIp);
+    if (nextHopInterfaces.isEmpty()) {
+      // No interface can forward traffic for this dstIp.
       FlowTrace trace =
           new FlowTrace(FlowDisposition.NO_ROUTE, hopsSoFar, FlowDisposition.NO_ROUTE.toString());
       flowTraces.add(trace);
@@ -244,9 +238,14 @@ class TracerouteEngineImplContext {
         currentFib.getNextHopInterfacesByRoute(dstIp);
     Map<String, IpAccessList> aclDefinitions = currentConfiguration.getIpAccessLists();
     NavigableMap<String, IpSpace> namedIpSpaces = currentConfiguration.getIpSpaces();
-    for (String nextHopInterfaceName : nextHopInterfacesWithRoutes.keySet()) {
+
+    // For every interface with a route to the dst IP
+    for (String nextHopInterfaceName : nextHopInterfaces) {
       SortedSet<String> routesForThisNextHopInterface = new TreeSet<>();
       Ip finalNextHopIp = null;
+
+      // Loop over all matching routes that use nextHopInterfaceName as one of the next hop
+      // interfaces.
       for (Entry<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> e :
           nextHopInterfacesByRoute.entrySet()) {
         AbstractRoute routeCandidate = e.getKey();
@@ -319,7 +318,7 @@ class TracerouteEngineImplContext {
                 originalFlow,
                 routesForThisNextHopInterface,
                 newTransformedFlow);
-        if (edges != null) {
+        if (edges != null && !edges.isEmpty()) {
           processCurrentNextHopInterfaceEdges(
               visitedEdges,
               srcInterface,
@@ -343,14 +342,14 @@ class TracerouteEngineImplContext {
                     srcInterface, outFilter, disposition, nextHopInterface, transmissionContext);
           }
           if (!denied) {
-            Edge neighborUnreachbleEdge =
+            Edge neighborUnreachableEdge =
                 new Edge(
                     nextHopInterface,
                     new NodeInterfacePair(
                         Configuration.NODE_NONE_NAME, Interface.NULL_INTERFACE_NAME));
             FlowTraceHop neighborUnreachableHop =
                 new FlowTraceHop(
-                    neighborUnreachbleEdge,
+                    neighborUnreachableEdge,
                     routesForThisNextHopInterface,
                     null,
                     null,
@@ -549,12 +548,13 @@ class TracerouteEngineImplContext {
   }
 
   SortedMap<Flow, Set<FlowTrace>> processFlows() {
+    Map<Flow, Set<FlowTrace>> flowTraces = new ConcurrentHashMap<>();
     _flows
         .parallelStream()
         .forEach(
             flow -> {
               Set<FlowTrace> currentFlowTraces = new TreeSet<>();
-              _flowTraces.put(flow, currentFlowTraces);
+              flowTraces.put(flow, currentFlowTraces);
               String ingressNodeName = flow.getIngressNode();
               if (ingressNodeName == null) {
                 throw new BatfishException(
@@ -597,7 +597,7 @@ class TracerouteEngineImplContext {
                     flow);
               }
             });
-    return new TreeMap<>(_flowTraces);
+    return new TreeMap<>(flowTraces);
   }
 
   private boolean processFlowTransmission(

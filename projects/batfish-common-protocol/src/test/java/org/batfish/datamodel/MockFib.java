@@ -86,8 +86,8 @@ public class MockFib implements Fib {
   }
 
   @Override
-  public @Nonnull Map<String, Map<Ip, Set<AbstractRoute>>> getNextHopInterfaces(Ip ip) {
-    return _nextHopInterfacesByIp.getOrDefault(ip, ImmutableMap.of());
+  public @Nonnull Set<String> getNextHopInterfaces(Ip ip) {
+    return _nextHopInterfacesByIp.getOrDefault(ip, ImmutableMap.of()).keySet();
   }
 
   @Override
