@@ -87,7 +87,7 @@ public class RoutesAnswerer extends Answerer {
       DataPlane dp,
       RibProtocol rib,
       Set<String> matchingNodes,
-      Prefix network,
+      @Nullable Prefix network,
       String protocolRegex,
       String vrfRegex,
       @Nullable Map<Ip, Set<String>> ipOwners) {
@@ -108,7 +108,7 @@ public class RoutesAnswerer extends Answerer {
   private static Multiset<Row> getBgpRibRoutes(
       Table<String, String, Set<BgpRoute>> bgpRoutes,
       Set<String> matchingNodes,
-      Prefix network,
+      @Nullable Prefix network,
       String protocolRegex,
       String vrfRegex) {
     HashMultiset<Row> rows = HashMultiset.create();
@@ -134,7 +134,7 @@ public class RoutesAnswerer extends Answerer {
   static Multiset<Row> getMainRibRoutes(
       SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs,
       Set<String> matchingNodes,
-      Prefix network,
+      @Nullable Prefix network,
       String protocolRegex,
       String vrfRegex,
       @Nullable Map<Ip, Set<String>> ipOwners) {
@@ -167,7 +167,7 @@ public class RoutesAnswerer extends Answerer {
   private static List<Row> getRowsForAbstractRoutes(
       String node,
       String vrfName,
-      Prefix network,
+      @Nullable Prefix network,
       Pattern compiledProtocolRegex,
       Set<AbstractRoute> routes,
       @Nullable Map<Ip, Set<String>> ipOwners) {
@@ -216,7 +216,7 @@ public class RoutesAnswerer extends Answerer {
   static List<Row> getRowsForBgpRoutes(
       String hostname,
       String vrfName,
-      Prefix network,
+      @Nullable Prefix network,
       Pattern compiledProtocolRegex,
       Set<BgpRoute> routes) {
     Node nodeObj = new Node(hostname);

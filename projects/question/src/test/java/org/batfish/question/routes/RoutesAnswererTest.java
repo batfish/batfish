@@ -59,6 +59,7 @@ import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.AnswerElement;
@@ -302,6 +303,7 @@ public class RoutesAnswererTest {
                     .setOriginatorIp(ip)
                     .setReceivedFromIp(ip)
                     .setCommunities(ImmutableSortedSet.of(65537L))
+                    .setProtocol(RoutingProtocol.BGP)
                     .build()));
 
     assertThat(
