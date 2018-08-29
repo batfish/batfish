@@ -127,6 +127,7 @@ public class BfConsts {
   public static final String PROP_SUMMARY = "summary";
   public static final String PROP_TAGS = "tags";
   public static final String PROP_TYPE = "type";
+  public static final String PROP_UNIQUE_ROWS = "uniqueRows";
   public static final String PROP_VALUE = "value";
   public static final String PROP_VARIABLES = "variables";
 
