@@ -763,7 +763,8 @@ public class WorkMgrServiceTest {
                 ImmutableList.of(new ColumnFilter(columnName, "")),
                 Integer.MAX_VALUE,
                 0,
-                ImmutableList.of(new ColumnSortOption(columnName, false))));
+                ImmutableList.of(new ColumnSortOption(columnName, false)),
+                false));
     String analysisAnswersOptionsStr =
         BatfishObjectMapper.writePrettyString(analysisAnswersOptions);
 
