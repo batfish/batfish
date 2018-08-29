@@ -113,6 +113,11 @@ public final class SubRange implements Serializable, Comparable<SubRange> {
     return _end < _start;
   }
 
+  /** Check if this range is a singleton value. */
+  public boolean isSingleValue() {
+    return _start == _end;
+  }
+
   @JsonValue
   public String serializedForm() {
     return String.format("%d-%d", _start, _end);
