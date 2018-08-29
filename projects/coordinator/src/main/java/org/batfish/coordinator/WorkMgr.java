@@ -1932,7 +1932,6 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   @VisibleForTesting
-  @SuppressWarnings("resource")
   @Nonnull
   TableAnswerElement processAnalysisAnswerTable(
       TableAnswerElement rawTable, AnalysisAnswerOptions options) {
@@ -1946,16 +1945,14 @@ public class WorkMgr extends AbstractCoordinator {
         options.getSortOrder().isEmpty()
             ? filteredStream
             : filteredStream.sorted(buildComparator(rawColumnMap, options.getSortOrder()));
-    Stream<Row> truncatedStream =
-        sortedStream.skip(options.getRowOffset()).limit(options.getMaxRows());
     Stream<Row> projectedStream;
     TableAnswerElement table;
     if (options.getColumns().isEmpty()) {
-      projectedStream = truncatedStream;
+      projectedStream = sortedStream;
       table = new TableAnswerElement(rawTable.getMetadata());
     } else {
       projectedStream =
-          truncatedStream.map(rawRow -> Row.builder().putAll(rawRow, options.getColumns()).build());
+          sortedStream.map(rawRow -> Row.builder().putAll(rawRow, options.getColumns()).build());
       Map<String, ColumnMetadata> columnMap = new LinkedHashMap<>(rawColumnMap);
       columnMap.keySet().retainAll(options.getColumns());
       List<ColumnMetadata> columnMetadata =
@@ -1964,7 +1961,13 @@ public class WorkMgr extends AbstractCoordinator {
           new TableAnswerElement(
               new TableMetadata(columnMetadata, rawTable.getMetadata().getTextDesc()));
     }
-    projectedStream.forEach(table::addRow);
+    Stream<Row> uniquifiedStream = projectedStream;
+    if (options.getUniqueRows()) {
+      uniquifiedStream = uniquifiedStream.distinct();
+    }
+    Stream<Row> truncatedStream =
+        uniquifiedStream.skip(options.getRowOffset()).limit(options.getMaxRows());
+    truncatedStream.forEach(table::addRow);
     return table;
   }
 

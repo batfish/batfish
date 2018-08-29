@@ -88,7 +88,7 @@ public class TestFiltersAnswerer extends Answerer {
   private Flow getFlow(
       String ingressNode, TestFiltersQuestion question, Map<String, Configuration> configurations) {
     Flow.Builder flowBuilder = question.createBaseFlowBuilder();
-    flowBuilder.setTag(_batfish.getFlowTag());
+    flowBuilder.setTag("FlowTag"); // dummy tag; consistent tags enable flow diffs
     flowBuilder.setIngressNode(ingressNode);
     if (flowBuilder.getDstIp().equals(Ip.AUTO)) {
       flowBuilder.setDstIp(question.createDstIpFromDst(configurations));
