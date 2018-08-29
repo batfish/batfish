@@ -43,8 +43,10 @@ import org.batfish.common.util.WorkItemBuilder;
 import org.batfish.coordinator.AnalysisMetadataMgr.AnalysisType;
 import org.batfish.datamodel.TestrigMetadata;
 import org.batfish.datamodel.answers.Answer;
+import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.Issue;
+import org.batfish.datamodel.answers.Metrics;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.pojo.Topology;
@@ -607,6 +609,93 @@ public class WorkMgrTest {
         "Work Queue not correct for user analyses",
         workQueue.get(1).matches(analysisWorkItem),
         equalTo(true));
+  }
+
+  @Test
+  public void testGetAnswerMetadata() throws JsonProcessingException {
+    String networkName = "network1";
+    String snapshotName = "snapshot1";
+    String analysisName = "analysis1";
+    String question1Name = "question1";
+    String questionContent = "{}";
+    AnswerMetadata answer1Metadata =
+        new AnswerMetadata(new Metrics(ImmutableMap.of(), 1), AnswerStatus.SUCCESS);
+    String question2Name = "question2Name";
+    AnswerMetadata answer2Metadata =
+        new AnswerMetadata(new Metrics(ImmutableMap.of(), 2), AnswerStatus.SUCCESS);
+    String question3Name = "question3";
+    String question4Name = "question4";
+
+    _manager.initContainer(networkName, null);
+
+    _manager.configureAnalysis(
+        networkName,
+        true,
+        analysisName,
+        ImmutableMap.of(question1Name, questionContent, question3Name, questionContent),
+        ImmutableList.of(),
+        null);
+
+    _manager.uploadQuestion(networkName, question2Name, questionContent, false);
+    _manager.uploadQuestion(networkName, question4Name, questionContent, false);
+
+    Path answer1Dir =
+        _folder
+            .getRoot()
+            .toPath()
+            .resolve(
+                Paths.get(
+                    networkName,
+                    BfConsts.RELPATH_TESTRIGS_DIR,
+                    snapshotName,
+                    BfConsts.RELPATH_ANALYSES_DIR,
+                    analysisName,
+                    BfConsts.RELPATH_QUESTIONS_DIR,
+                    question1Name,
+                    BfConsts.RELPATH_ENVIRONMENTS_DIR,
+                    BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME));
+
+    Path answer2Dir =
+        _folder
+            .getRoot()
+            .toPath()
+            .resolve(
+                Paths.get(
+                    networkName,
+                    BfConsts.RELPATH_TESTRIGS_DIR,
+                    snapshotName,
+                    BfConsts.RELPATH_ANSWERS_DIR,
+                    question2Name,
+                    BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
+                    BfConsts.RELPATH_STANDARD_DIR));
+
+    // TODO: https://github.com/batfish/batfish/issues/2192
+    Path answer1MetadataPath = answer1Dir.resolve(BfConsts.RELPATH_ANSWER_METADATA);
+    Path answer2MetadataPath = answer2Dir.resolve(BfConsts.RELPATH_ANSWER_METADATA);
+
+    answer1Dir.toFile().mkdirs();
+    answer2Dir.toFile().mkdirs();
+
+    CommonUtil.writeFile(
+        answer1MetadataPath, BatfishObjectMapper.writePrettyString(answer1Metadata));
+    CommonUtil.writeFile(
+        answer2MetadataPath, BatfishObjectMapper.writePrettyString(answer2Metadata));
+
+    AnswerMetadata answer1Result =
+        _manager.getAnswerMetadata(networkName, snapshotName, null, analysisName, question1Name);
+    AnswerMetadata answer2Result =
+        _manager.getAnswerMetadata(networkName, snapshotName, null, null, question2Name);
+    AnswerMetadata answer3Result =
+        _manager.getAnswerMetadata(networkName, snapshotName, null, analysisName, question3Name);
+    AnswerMetadata answer4Result =
+        _manager.getAnswerMetadata(networkName, snapshotName, null, null, question4Name);
+
+    AnswerMetadata notFound = new AnswerMetadata(null, AnswerStatus.NOTFOUND);
+
+    assertThat(answer1Result, equalTo(answer1Metadata));
+    assertThat(answer2Result, equalTo(answer2Metadata));
+    assertThat(answer3Result, equalTo(notFound));
+    assertThat(answer4Result, equalTo(notFound));
   }
 
   @Test

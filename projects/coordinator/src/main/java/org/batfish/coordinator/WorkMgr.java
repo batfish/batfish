@@ -103,6 +103,7 @@ import org.batfish.role.NodeRolesData;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
+import org.codehaus.plexus.util.ExceptionUtils;
 import org.glassfish.jersey.uri.UriComponent;
 
 public class WorkMgr extends AbstractCoordinator {
@@ -720,7 +721,8 @@ public class WorkMgr extends AbstractCoordinator {
             Paths.get(
                 BfConsts.RELPATH_QUESTIONS_DIR, questionName, BfConsts.RELPATH_QUESTION_FILE));
     if (!Files.exists(questionFile)) {
-      throw new BatfishException("Question file for question " + questionName + "not found");
+      _logger.errorf("Question file for question '%s' not found\n", questionName);
+      return new AnswerMetadata(null, AnswerStatus.NOTFOUND);
     }
     Path answerDir =
         testrigDir.resolve(
@@ -892,6 +894,68 @@ public class WorkMgr extends AbstractCoordinator {
       }
     }
     return answer;
+  }
+
+  public @Nonnull AnswerMetadata getAnswerMetadata(
+      @Nonnull String network,
+      @Nonnull String baseSnapshot,
+      @Nullable String deltaSnapshot,
+      @Nullable String analysisName,
+      @Nonnull String questionName)
+      throws JsonProcessingException {
+    return analysisName != null
+        ? getAnalysisAnswerMetadata(
+            network, baseSnapshot, deltaSnapshot, analysisName, questionName)
+        : getAnswerMetadata(network, baseSnapshot, deltaSnapshot, questionName);
+  }
+
+  private @Nonnull AnswerMetadata getAnswerMetadata(
+      @Nonnull String network,
+      @Nonnull String baseSnapshot,
+      @Nullable String deltaSnapshot,
+      @Nonnull String questionName)
+      throws JsonProcessingException {
+    Path questionDir = getdirContainerQuestion(network, questionName);
+    Path questionFile = questionDir.resolve(BfConsts.RELPATH_QUESTION_FILE);
+    if (!Files.exists(questionFile)) {
+      throw new BatfishException("Question file not found for " + questionName);
+    }
+    Path testrigDir = getdirTestrig(network, baseSnapshot);
+    Path answerDir =
+        testrigDir.resolve(
+            Paths.get(
+                BfConsts.RELPATH_ANSWERS_DIR,
+                questionName,
+                BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME));
+    if (deltaSnapshot != null) {
+      answerDir =
+          answerDir.resolve(
+              Paths.get(
+                  BfConsts.RELPATH_DIFF_DIR,
+                  deltaSnapshot,
+                  BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME));
+    } else {
+      answerDir = answerDir.resolve(Paths.get(BfConsts.RELPATH_STANDARD_DIR));
+    }
+    Path answerMetadataFile = answerDir.resolve(BfConsts.RELPATH_ANSWER_METADATA);
+    if (!Files.exists(answerMetadataFile)) {
+      return new AnswerMetadata(null, AnswerStatus.NOTFOUND);
+    }
+    if (CommonUtil.getLastModifiedTime(questionFile)
+            .compareTo(CommonUtil.getLastModifiedTime(answerMetadataFile))
+        > 0) {
+      return new AnswerMetadata(null, AnswerStatus.STALE);
+    }
+    String answerMetadataStr = CommonUtil.readFile(answerMetadataFile);
+    try {
+      return BatfishObjectMapper.mapper()
+          .readValue(answerMetadataStr, new TypeReference<AnswerMetadata>() {});
+    } catch (IOException e) {
+      _logger.errorf(
+          "Failed to read answer metadata file: %s\n%s",
+          answerMetadataFile, ExceptionUtils.getStackTrace(e));
+      return new AnswerMetadata(null, AnswerStatus.FAILURE);
+    }
   }
 
   /**
@@ -1814,15 +1878,21 @@ public class WorkMgr extends AbstractCoordinator {
     CommonUtil.deleteIfExists(zipFile);
   }
 
-  public void uploadQuestion(String containerName, String qName, String questionJson) {
-    // Validate the question before saving it to disk.
-    try {
-      Question.parseQuestion(questionJson);
-    } catch (Exception e) {
-      throw new BatfishException(
-          String.format("Invalid question %s/%s: %s", containerName, qName, e.getMessage()), e);
-    }
+  public void uploadQuestion(String networkName, String questionName, String questionJson) {
+    uploadQuestion(networkName, questionName, questionJson, true);
+  }
 
+  @VisibleForTesting
+  void uploadQuestion(String containerName, String qName, String questionJson, boolean validate) {
+    if (validate) {
+      // Validate the question before saving it to disk.
+      try {
+        Question.parseQuestion(questionJson);
+      } catch (Exception e) {
+        throw new BatfishException(
+            String.format("Invalid question %s/%s: %s", containerName, qName, e.getMessage()), e);
+      }
+    }
     Path containerDir = getdirNetwork(containerName);
     Path qDir = containerDir.resolve(Paths.get(BfConsts.RELPATH_QUESTIONS_DIR, qName));
     if (Files.exists(qDir)) {
