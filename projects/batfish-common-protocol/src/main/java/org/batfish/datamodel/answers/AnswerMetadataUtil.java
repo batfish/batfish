@@ -1,7 +1,9 @@
 package org.batfish.datamodel.answers;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -9,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Function;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -20,8 +23,6 @@ import org.batfish.datamodel.table.TableAnswerElement;
 
 public final class AnswerMetadataUtil {
 
-  private AnswerMetadataUtil() {}
-
   public static @Nonnull AnswerMetadata computeAnswerMetadata(
       @Nonnull Answer answer, @Nonnull BatfishLogger logger) {
     try {
@@ -32,32 +33,24 @@ public final class AnswerMetadataUtil {
   }
 
   @VisibleForTesting
-  static @Nullable Metrics computeMetrics(@Nonnull Answer answer, @Nonnull BatfishLogger logger) {
-    if (answer.getAnswerElements().isEmpty()) {
-      return null;
+  @Nullable
+  static ColumnAggregationResult computeColumnAggregation(
+      @Nonnull TableAnswerElement table,
+      @Nonnull ColumnAggregation columnAggregation,
+      @Nonnull BatfishLogger logger) {
+    Object value;
+    String column = columnAggregation.getColumn();
+    Aggregation aggregation = columnAggregation.getAggregation();
+    switch (aggregation) {
+      case MAX:
+        value = computeColumnMax(table, column, logger);
+        break;
+      default:
+        String message = String.format("Unhandled aggregation type: %s", aggregation);
+        logger.errorf("%s\n", message);
+        throw new IllegalArgumentException(message);
     }
-    AnswerElement ae = answer.getAnswerElements().get(0);
-    if (!(ae instanceof TableAnswerElement)) {
-      return null;
-    }
-    TableAnswerElement table = (TableAnswerElement) ae;
-    int numRows = table.getRowsList().size();
-    ImmutableList.Builder<ColumnAggregation> columnAggregationsBuilder = ImmutableList.builder();
-    table
-        .getMetadata()
-        .getColumnMetadata()
-        .stream()
-        .map(ColumnMetadata::getName)
-        .forEach(
-            column ->
-                Arrays.stream(Aggregation.values())
-                    .forEach(
-                        aggregation ->
-                            columnAggregationsBuilder.add(
-                                new ColumnAggregation(aggregation, column))));
-    Map<String, Map<Aggregation, Object>> columnAggregationResults =
-        computeColumnAggregations(table, columnAggregationsBuilder.build(), logger);
-    return new Metrics(columnAggregationResults, numRows);
+    return value == null ? null : new ColumnAggregationResult(aggregation, column, value);
   }
 
   @VisibleForTesting
@@ -88,27 +81,6 @@ public final class AnswerMetadataUtil {
 
   @VisibleForTesting
   @Nullable
-  static ColumnAggregationResult computeColumnAggregation(
-      @Nonnull TableAnswerElement table,
-      @Nonnull ColumnAggregation columnAggregation,
-      @Nonnull BatfishLogger logger) {
-    Object value;
-    String column = columnAggregation.getColumn();
-    Aggregation aggregation = columnAggregation.getAggregation();
-    switch (aggregation) {
-      case MAX:
-        value = computeColumnMax(table, column, logger);
-        break;
-      default:
-        String message = String.format("Unhandled aggregation type: %s", aggregation);
-        logger.errorf("%s\n", message);
-        throw new IllegalArgumentException(message);
-    }
-    return value == null ? null : new ColumnAggregationResult(aggregation, column, value);
-  }
-
-  @VisibleForTesting
-  @Nullable
   static Integer computeColumnMax(
       @Nonnull TableAnswerElement table, @Nonnull String column, @Nonnull BatfishLogger logger) {
     ColumnMetadata columnMetadata = table.getMetadata().toColumnMap().get(column);
@@ -135,4 +107,53 @@ public final class AnswerMetadataUtil {
         .max(Comparator.naturalOrder())
         .orElse(null);
   }
+
+  @VisibleForTesting
+  static Set<String> computeEmptyColumns(TableAnswerElement table) {
+    return table
+        .getMetadata()
+        .toColumnMap()
+        .keySet()
+        .stream()
+        .filter(
+            column ->
+                table
+                    .getRowsList()
+                    .stream()
+                    .map(row -> row.getObject(column))
+                    .allMatch(Predicates.isNull()))
+        .collect(ImmutableSet.toImmutableSet());
+  }
+
+  @VisibleForTesting
+  static @Nullable Metrics computeMetrics(@Nonnull Answer answer, @Nonnull BatfishLogger logger) {
+    if (answer.getAnswerElements().isEmpty()) {
+      return null;
+    }
+    AnswerElement ae = answer.getAnswerElements().get(0);
+    if (!(ae instanceof TableAnswerElement)) {
+      return null;
+    }
+    TableAnswerElement table = (TableAnswerElement) ae;
+    int numRows = table.getRowsList().size();
+    ImmutableList.Builder<ColumnAggregation> columnAggregationsBuilder = ImmutableList.builder();
+    table
+        .getMetadata()
+        .getColumnMetadata()
+        .stream()
+        .map(ColumnMetadata::getName)
+        .forEach(
+            column ->
+                Arrays.stream(Aggregation.values())
+                    .forEach(
+                        aggregation ->
+                            columnAggregationsBuilder.add(
+                                new ColumnAggregation(aggregation, column))));
+    Map<String, Map<Aggregation, Object>> columnAggregationResults =
+        computeColumnAggregations(table, columnAggregationsBuilder.build(), logger);
+    Set<String> emptyColumns = computeEmptyColumns(table);
+    return new Metrics(columnAggregationResults, emptyColumns, numRows);
+  }
+
+  private AnswerMetadataUtil() {}
 }
