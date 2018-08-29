@@ -1,4 +1,4 @@
-package org.batfish.question.aclreachability2;
+package org.batfish.question.aclreachability;
 
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 
@@ -23,11 +23,11 @@ import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TypeMatchExprsCollector;
 import org.batfish.datamodel.acl.UndefinedReferenceException;
-import org.batfish.datamodel.answers.AclLines2Rows;
+import org.batfish.datamodel.answers.AclReachabilityRows;
 import org.batfish.datamodel.answers.AclSpecs;
 
 /**
- * Class to hold methods used by both {@link AclReachability2Answerer} and the original ACL
+ * Class to hold methods used by both {@link AclReachabilityAnswerer} and the original ACL
  * reachability question plugin.
  */
 public final class AclReachabilityAnswererUtils {
@@ -309,7 +309,7 @@ public final class AclReachabilityAnswererUtils {
   public static List<AclSpecs> getAclSpecs(
       SortedMap<String, Configuration> configurations,
       Map<String, Set<IpAccessList>> specifiedAcls,
-      AclLines2Rows answer) {
+      AclReachabilityRows answer) {
     List<AclSpecs.Builder> aclSpecs = new ArrayList<>();
 
     /*

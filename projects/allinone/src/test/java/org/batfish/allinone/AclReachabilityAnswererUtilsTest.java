@@ -37,9 +37,9 @@ import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.NotMatchExpr;
 import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.PermittedByAcl;
-import org.batfish.datamodel.answers.AclLines2Rows;
+import org.batfish.datamodel.answers.AclReachabilityRows;
 import org.batfish.datamodel.answers.AclSpecs;
-import org.batfish.question.aclreachability2.AclReachabilityAnswererUtils;
+import org.batfish.question.aclreachability.AclReachabilityAnswererUtils;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -602,6 +602,6 @@ public class AclReachabilityAnswererUtilsTest {
                 configNames.contains(entry.getKey())
                     ? ImmutableSet.copyOf(entry.getValue().getIpAccessLists().values())
                     : ImmutableSet.of());
-    return AclReachabilityAnswererUtils.getAclSpecs(configs, acls, new AclLines2Rows());
+    return AclReachabilityAnswererUtils.getAclSpecs(configs, acls, new AclReachabilityRows());
   }
 }

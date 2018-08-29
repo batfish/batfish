@@ -21,9 +21,9 @@ import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableMetadata;
 
-/** Represents answers to aclReachability2. */
+/** Represents answers to aclReachability. */
 @ParametersAreNonnullByDefault
-public class AclLines2Rows {
+public class AclReachabilityRows {
   public static final String COL_SOURCES = "ACL_Sources";
   public static final String COL_LINES = "Lines";
   public static final String COL_BLOCKED_LINE_ACTION = "Blocked_Line_Action";

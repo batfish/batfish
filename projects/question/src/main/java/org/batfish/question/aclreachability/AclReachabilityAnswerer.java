@@ -1,6 +1,6 @@
-package org.batfish.question.aclreachability2;
+package org.batfish.question.aclreachability;
 
-import static org.batfish.datamodel.answers.AclLines2Rows.createMetadata;
+import static org.batfish.datamodel.answers.AclReachabilityRows.createMetadata;
 
 import java.util.List;
 import java.util.Map;
@@ -13,7 +13,7 @@ import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.answers.AclLines2Rows;
+import org.batfish.datamodel.answers.AclReachabilityRows;
 import org.batfish.datamodel.answers.AclSpecs;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.TableAnswerElement;
@@ -21,16 +21,16 @@ import org.batfish.specifier.FilterSpecifier;
 import org.batfish.specifier.SpecifierContext;
 
 @ParametersAreNonnullByDefault
-public class AclReachability2Answerer extends Answerer {
+public class AclReachabilityAnswerer extends Answerer {
 
-  public AclReachability2Answerer(Question question, IBatfish batfish) {
+  public AclReachabilityAnswerer(Question question, IBatfish batfish) {
     super(question, batfish);
   }
 
   @Override
   public TableAnswerElement answer() {
-    AclReachability2Question question = (AclReachability2Question) _question;
-    AclLines2Rows answerRows = new AclLines2Rows();
+    AclReachabilityQuestion question = (AclReachabilityQuestion) _question;
+    AclReachabilityRows answerRows = new AclReachabilityRows();
 
     SpecifierContext ctxt = _batfish.specifierContext();
     Set<String> specifiedNodes = question.nodeSpecifier().resolve(ctxt);
