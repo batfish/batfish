@@ -14,7 +14,7 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.answers.AclLines2Rows;
-import org.batfish.datamodel.answers.AclLinesAnswerElementInterface.AclSpecs;
+import org.batfish.datamodel.answers.AclSpecs;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.specifier.FilterSpecifier;

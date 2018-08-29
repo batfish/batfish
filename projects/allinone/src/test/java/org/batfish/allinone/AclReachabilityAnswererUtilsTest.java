@@ -38,7 +38,7 @@ import org.batfish.datamodel.acl.NotMatchExpr;
 import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.answers.AclLines2Rows;
-import org.batfish.datamodel.answers.AclLinesAnswerElementInterface.AclSpecs;
+import org.batfish.datamodel.answers.AclSpecs;
 import org.batfish.question.aclreachability2.AclReachabilityAnswererUtils;
 import org.junit.Before;
 import org.junit.Rule;

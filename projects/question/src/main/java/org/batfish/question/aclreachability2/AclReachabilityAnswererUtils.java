@@ -23,8 +23,8 @@ import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TypeMatchExprsCollector;
 import org.batfish.datamodel.acl.UndefinedReferenceException;
-import org.batfish.datamodel.answers.AclLinesAnswerElementInterface;
-import org.batfish.datamodel.answers.AclLinesAnswerElementInterface.AclSpecs;
+import org.batfish.datamodel.answers.AclLines2Rows;
+import org.batfish.datamodel.answers.AclSpecs;
 
 /**
  * Class to hold methods used by both {@link AclReachability2Answerer} and the original ACL
@@ -309,7 +309,7 @@ public final class AclReachabilityAnswererUtils {
   public static List<AclSpecs> getAclSpecs(
       SortedMap<String, Configuration> configurations,
       Map<String, Set<IpAccessList>> specifiedAcls,
-      AclLinesAnswerElementInterface answer) {
+      AclLines2Rows answer) {
     List<AclSpecs.Builder> aclSpecs = new ArrayList<>();
 
     /*

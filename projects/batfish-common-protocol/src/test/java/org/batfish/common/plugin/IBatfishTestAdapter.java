@@ -25,8 +25,8 @@ import org.batfish.datamodel.FlowHistory;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.Topology;
-import org.batfish.datamodel.answers.AclLinesAnswerElementInterface;
-import org.batfish.datamodel.answers.AclLinesAnswerElementInterface.AclSpecs;
+import org.batfish.datamodel.answers.AclLines2Rows;
+import org.batfish.datamodel.answers.AclSpecs;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.DataPlaneAnswerElement;
@@ -58,8 +58,7 @@ import org.batfish.specifier.SpecifierContext;
 public class IBatfishTestAdapter implements IBatfish {
 
   @Override
-  public void answerAclReachability(
-      List<AclSpecs> aclSpecs, AclLinesAnswerElementInterface emptyAnswer) {
+  public void answerAclReachability(List<AclSpecs> aclSpecs, AclLines2Rows emptyAnswer) {
     throw new UnsupportedOperationException();
   }
 

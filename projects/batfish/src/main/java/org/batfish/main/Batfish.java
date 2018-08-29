@@ -129,8 +129,8 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TypeMatchExprsCollector;
-import org.batfish.datamodel.answers.AclLinesAnswerElementInterface;
-import org.batfish.datamodel.answers.AclLinesAnswerElementInterface.AclSpecs;
+import org.batfish.datamodel.answers.AclLines2Rows;
+import org.batfish.datamodel.answers.AclSpecs;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.AnswerMetadataUtil;
@@ -738,8 +738,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public void answerAclReachability(
-      List<AclSpecs> aclSpecs, AclLinesAnswerElementInterface answerRows) {
+  public void answerAclReachability(List<AclSpecs> aclSpecs, AclLines2Rows answerRows) {
 
     // Map aclSpecs into a map of hostname/aclName pairs to AclSpecs objects
     Map<AclIdentifier, AclSpecs> aclSpecsMap =
