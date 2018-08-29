@@ -1,4 +1,4 @@
-package org.batfish.question.aclreachability2;
+package org.batfish.question.aclreachability;
 
 import java.util.Map;
 import java.util.stream.Collectors;
