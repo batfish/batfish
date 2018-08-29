@@ -40,7 +40,7 @@
           "bgpmp",
           "main"
         ],
-        "description" : "Only return routes from a given RIB",
+        "description" : "Only return routes from a given protocol RIB",
         "optional" : true,
         "type" : "string",
         "value" : "main"
