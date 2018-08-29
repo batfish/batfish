@@ -26,39 +26,23 @@ import javax.annotation.Nullable;
  * </ul>
  *
  * <p>Upon construction, the constraints are validated, although their intersections are not
- * resolved. For resolution, see {@link #resolveIpProtocols}, {@link #resolveSrcPorts}, and {@link
- * #resolveDstPorts}
+ * resolved. For resolution, see {@link #resolveIpProtocols}, and {@link #resolveDstPorts}
  */
 public class PacketHeaderConstraints {
 
   private static final String PROP_DSCPS = "dscps";
-
   private static final String PROP_DST_IPS = "dstIps";
-
   private static final String PROP_DST_PORTS = "dstPorts";
-
-  private static final String PROP_DST_PROTOCOLS = "dstProtocols";
-
   private static final String PROP_ECNS = "ecns";
-
   private static final String PROP_FRAGMENT_OFFSETS = "fragmentOffsets";
-
   private static final String PROP_ICMP_CODES = "icmpCodes";
-
   private static final String PROP_ICMP_TYPES = "icmpTypes";
-
   private static final String PROP_IP_PROTOCOLS = "ipProtocols";
-
   private static final String PROP_PACKET_LENGTHS = "packetLengths";
-
   private static final String PROP_SRC_IPS = "srcIps";
-
   private static final String PROP_SRC_PORTS = "srcPorts";
-
-  private static final String PROP_SRC_PROTOCOLS = "srcProtocols";
-
   private static final String PROP_FLOW_STATES = "flowStates";
-
+  private static final String PROP_APPLICATIONS = "applications";
   static final Set<IpProtocol> IP_PROTOCOLS_WITH_PORTS =
       ImmutableSet.of(IpProtocol.TCP, IpProtocol.UDP, IpProtocol.DCCP, IpProtocol.SCTP);
 
@@ -94,9 +78,9 @@ public class PacketHeaderConstraints {
   @Nullable private final Set<SubRange> _dstPorts;
 
   // Shorthands for UDP/TCP fields
-  @Nullable private final Set<Protocol> _dstProtocols;
+  // TODO: allow specification of more complex applications, the existing Protocol Enum is limiting.
+  @Nullable private final Set<Protocol> _applications;
 
-  @Nullable private final Set<Protocol> _srcProtocols;
   private static final SubRange ALLOWED_PORTS = new SubRange(0, 65535);
 
   // TODO: add tcp flags
@@ -115,8 +99,7 @@ public class PacketHeaderConstraints {
       @Nullable @JsonProperty(PROP_ICMP_TYPES) Set<SubRange> icmpTypes,
       @Nullable @JsonProperty(PROP_SRC_PORTS) Set<SubRange> srcPorts,
       @Nullable @JsonProperty(PROP_DST_PORTS) Set<SubRange> dstPorts,
-      @Nullable @JsonProperty(PROP_SRC_PROTOCOLS) Set<Protocol> srcProtocols,
-      @Nullable @JsonProperty(PROP_DST_PROTOCOLS) Set<Protocol> dstProtocols)
+      @Nullable @JsonProperty(PROP_APPLICATIONS) Set<Protocol> applications)
       throws IllegalArgumentException {
     _dscps = dscps;
     _ecns = ecns;
@@ -130,15 +113,14 @@ public class PacketHeaderConstraints {
     _icmpType = icmpTypes;
     _srcPorts = srcPorts;
     _dstPorts = dstPorts;
-    _dstProtocols = dstProtocols;
-    _srcProtocols = srcProtocols;
+    _applications = applications;
     validate(this);
   }
 
   /** Create new object with all fields unconstrained */
   public static PacketHeaderConstraints unconstrained() {
     return new PacketHeaderConstraints(
-        null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+        null, null, null, null, null, null, null, null, null, null, null, null, null);
   }
 
   @Nullable
@@ -214,28 +196,15 @@ public class PacketHeaderConstraints {
   }
 
   @Nullable
-  @JsonProperty(PROP_SRC_PROTOCOLS)
-  public Set<Protocol> getSrcProtocols() {
-    return _srcProtocols;
-  }
-
-  @Nullable
-  @JsonProperty(PROP_DST_PROTOCOLS)
+  @JsonProperty(PROP_APPLICATIONS)
   public Set<Protocol> getDstProtocols() {
-    return _dstProtocols;
+    return _applications;
   }
 
   /** Return the set of allowed IP protocols */
   @Nullable
   public Set<IpProtocol> resolveIpProtocols() {
-    return resolveIpProtocols(
-        getIpProtocols(), getSrcPorts(), getDstPorts(), getSrcProtocols(), getDstProtocols());
-  }
-
-  /** Return the set of allowed source port values */
-  @Nullable
-  public Set<SubRange> resolveSrcPorts() {
-    return resolvePorts(getSrcPorts(), getSrcProtocols());
+    return resolveIpProtocols(getIpProtocols(), getSrcPorts(), getDstPorts(), getDstProtocols());
   }
 
   /** Return the set of allowed destination port values */
@@ -256,8 +225,7 @@ public class PacketHeaderConstraints {
     validatePortValues(headerConstraints.getSrcPorts());
     validatePortValues(headerConstraints.getDstPorts());
     try {
-      areProtocolsAndPortsCompatible(
-          ipProtocols, headerConstraints.getSrcPorts(), headerConstraints.getSrcProtocols());
+      areProtocolsAndPortsCompatible(ipProtocols, headerConstraints.getSrcPorts(), null);
     } catch (IllegalArgumentException e) {
       throw new IllegalArgumentException(
           String.format("Source ports/protocols are incompatible: %s", e.getMessage()));
@@ -408,8 +376,7 @@ public class PacketHeaderConstraints {
    * @param ipProtocols specified IP protocols
    * @param srcPorts specified source ports
    * @param dstPorts specified destination ports
-   * @param srcProtocols specified source application protocols
-   * @param dstProtocols specified destination application protocols
+   * @param applications specified destination application protocols
    * @return a set of {@link IpProtocol}s that are allowed. {@code null} means no constraints.
    * @throws IllegalArgumentException if the set of IP protocols resolves to an empty set.
    */
@@ -419,8 +386,7 @@ public class PacketHeaderConstraints {
       @Nullable Set<IpProtocol> ipProtocols,
       @Nullable Set<SubRange> srcPorts,
       @Nullable Set<SubRange> dstPorts,
-      @Nullable Set<Protocol> srcProtocols,
-      @Nullable Set<Protocol> dstProtocols)
+      @Nullable Set<Protocol> applications)
       throws IllegalArgumentException {
     @Nullable
     Set<IpProtocol> resolvedIpProtocols = ipProtocols; // either already defined or we don't care
@@ -433,19 +399,9 @@ public class PacketHeaderConstraints {
       }
     }
 
-    if (srcProtocols != null) {
+    if (applications != null) {
       Set<IpProtocol> collected =
-          srcProtocols.stream().map(Protocol::getIpProtocol).collect(ImmutableSet.toImmutableSet());
-      if (resolvedIpProtocols == null) {
-        resolvedIpProtocols = collected;
-      } else {
-        resolvedIpProtocols = Sets.intersection(resolvedIpProtocols, collected);
-      }
-    }
-
-    if (dstProtocols != null) {
-      Set<IpProtocol> collected =
-          dstProtocols.stream().map(Protocol::getIpProtocol).collect(ImmutableSet.toImmutableSet());
+          applications.stream().map(Protocol::getIpProtocol).collect(ImmutableSet.toImmutableSet());
       if (resolvedIpProtocols == null) {
         resolvedIpProtocols = collected;
       } else {
@@ -527,8 +483,7 @@ public class PacketHeaderConstraints {
     private @Nullable Set<SubRange> _srcPorts;
     private @Nullable Set<SubRange> _dstPorts;
     // Shorthands for UDP/TCP fields
-    private @Nullable Set<Protocol> _dstProtocols;
-    private @Nullable Set<Protocol> _srcProtocols;
+    private @Nullable Set<Protocol> _applications;
 
     private Builder() {}
 
@@ -592,13 +547,8 @@ public class PacketHeaderConstraints {
       return this;
     }
 
-    public Builder setSrcProtocols(Set<Protocol> srcProtocols) {
-      this._srcProtocols = srcProtocols;
-      return this;
-    }
-
-    public Builder setDstProtocols(@Nullable Set<Protocol> dstProtocols) {
-      this._dstProtocols = dstProtocols;
+    public Builder setApplications(@Nullable Set<Protocol> applications) {
+      this._applications = applications;
       return this;
     }
 
@@ -616,8 +566,7 @@ public class PacketHeaderConstraints {
           _icmpTypes,
           _srcPorts,
           _dstPorts,
-          _srcProtocols,
-          _dstProtocols);
+          _applications);
     }
   }
 }
