@@ -103,7 +103,6 @@ import org.batfish.role.NodeRolesData;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
-import org.codehaus.plexus.util.ExceptionUtils;
 import org.glassfish.jersey.uri.UriComponent;
 
 public class WorkMgr extends AbstractCoordinator {
@@ -953,7 +952,7 @@ public class WorkMgr extends AbstractCoordinator {
     } catch (IOException e) {
       _logger.errorf(
           "Failed to read answer metadata file: %s\n%s",
-          answerMetadataFile, ExceptionUtils.getStackTrace(e));
+          answerMetadataFile, Throwables.getStackTraceAsString(e));
       return new AnswerMetadata(null, AnswerStatus.FAILURE);
     }
   }
