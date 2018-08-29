@@ -11,9 +11,9 @@ public interface Fib extends Serializable {
   @Nonnull
   Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> getNextHopInterfaces();
 
-  /** Mapping: nextHopInterface -&gt; nextHopIp -&gt; interfaceRoutes */
+  /** Set of interfaces used to forward traffic destined to this IP. */
   @Nonnull
-  Map<String, Map<Ip, Set<AbstractRoute>>> getNextHopInterfaces(Ip ip);
+  Set<String> getNextHopInterfaces(Ip ip);
 
   @Nonnull
   Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> getNextHopInterfacesByRoute(

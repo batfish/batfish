@@ -116,7 +116,7 @@ public class FibImpl implements Fib {
   }
 
   @Override
-  public @Nonnull Map<String, Map<Ip, Set<AbstractRoute>>> getNextHopInterfaces(Ip ip) {
+  public @Nonnull Set<String> getNextHopInterfaces(Ip ip) {
     Map<String, Map<Ip, Set<AbstractRoute>>> outputNextHopInterfaces = new TreeMap<>();
     Set<AbstractRoute> nextHopRoutes = _rib.longestPrefixMatch(ip);
     for (AbstractRoute nextHopRoute : nextHopRoutes) {
@@ -130,7 +130,7 @@ public class FibImpl implements Fib {
                 nextHopInterfaceRoutesByFinalNextHopIp);
           });
     }
-    return outputNextHopInterfaces;
+    return outputNextHopInterfaces.keySet();
   }
 
   @Override
