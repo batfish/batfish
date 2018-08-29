@@ -1,6 +1,8 @@
 package org.batfish.main;
 
 import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
+import static org.batfish.question.specifiers.SpecifiersAnswerer.COL_IP_SPACE;
+import static org.batfish.question.specifiers.SpecifiersAnswerer.COL_LOCATIONS;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
@@ -74,9 +76,10 @@ public class SpecifiersQuestionTest {
         TableAnswerElementMatchers.hasRows(
             Matchers.contains(
                 allOf(
-                    hasColumn("IpSpace", equalTo(EmptyIpSpace.INSTANCE.toString()), Schema.STRING),
                     hasColumn(
-                        "Locations",
+                        COL_IP_SPACE, equalTo(EmptyIpSpace.INSTANCE.toString()), Schema.STRING),
+                    hasColumn(
+                        COL_LOCATIONS,
                         equalTo(ImmutableSet.of(_interfaceLocation).toString()),
                         Schema.STRING)))));
   }

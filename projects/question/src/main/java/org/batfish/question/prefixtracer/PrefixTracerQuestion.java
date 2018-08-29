@@ -16,17 +16,16 @@ import org.batfish.datamodel.questions.Question;
 public class PrefixTracerQuestion extends Question {
 
   private static final String PROP_PREFIX = "prefix";
-  private static final String PROP_NODE_REGEX = "nodeRegex";
+  private static final String PROP_NODES = "nodes";
 
   @Nullable private Prefix _prefix;
-  private NodesSpecifier _nodeSpecifier;
+  private NodesSpecifier _nodes;
 
   @JsonCreator
   private PrefixTracerQuestion(
-      @JsonProperty(PROP_PREFIX) Prefix prefix,
-      @JsonProperty(PROP_NODE_REGEX) NodesSpecifier nodeRegex) {
+      @JsonProperty(PROP_PREFIX) Prefix prefix, @JsonProperty(PROP_NODES) NodesSpecifier nodes) {
     _prefix = prefix;
-    _nodeSpecifier = firstNonNull(nodeRegex, NodesSpecifier.ALL);
+    _nodes = firstNonNull(nodes, NodesSpecifier.ALL);
   }
 
   public PrefixTracerQuestion() {
@@ -45,7 +44,7 @@ public class PrefixTracerQuestion extends Question {
    */
   @Override
   public String getName() {
-    return "prefixtracer";
+    return "prefixTracer";
   }
 
   @Nullable
@@ -54,8 +53,8 @@ public class PrefixTracerQuestion extends Question {
     return _prefix;
   }
 
-  @JsonProperty(PROP_NODE_REGEX)
-  public NodesSpecifier getNodeRegex() {
-    return _nodeSpecifier;
+  @JsonProperty(PROP_NODES)
+  public NodesSpecifier getNodes() {
+    return _nodes;
   }
 }

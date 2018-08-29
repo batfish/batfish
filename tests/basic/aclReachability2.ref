@@ -7,97 +7,97 @@
           "description" : "ACL sources",
           "isKey" : true,
           "isValue" : false,
-          "name" : "aclSources",
+          "name" : "ACL_Sources",
           "schema" : "List<String>"
         },
         {
           "description" : "ACL lines",
           "isKey" : false,
           "isValue" : false,
-          "name" : "lines",
+          "name" : "Lines",
           "schema" : "List<String>"
         },
         {
           "description" : "Blocked line number",
           "isKey" : true,
           "isValue" : false,
-          "name" : "blockedLineNum",
+          "name" : "Blocked_Line_Num",
           "schema" : "Integer"
         },
         {
           "description" : "Blocked line action",
           "isKey" : true,
           "isValue" : false,
-          "name" : "blockedLineAction",
+          "name" : "Blocked_Line_Action",
           "schema" : "String"
         },
         {
           "description" : "Blocking line numbers",
           "isKey" : false,
           "isValue" : true,
-          "name" : "blockingLineNums",
+          "name" : "Blocking_Line_Nums",
           "schema" : "List<Integer>"
         },
         {
           "description" : "Different action",
           "isKey" : false,
           "isValue" : true,
-          "name" : "differentAction",
+          "name" : "Different_Action",
           "schema" : "Boolean"
         },
         {
           "description" : "Reason unreachable",
           "isKey" : false,
           "isValue" : true,
-          "name" : "reason",
+          "name" : "Reason",
           "schema" : "String"
         },
         {
           "description" : "Message",
           "isKey" : false,
           "isValue" : false,
-          "name" : "message",
+          "name" : "Message",
           "schema" : "String"
         }
       ],
-      "textDesc" : "${message}"
+      "textDesc" : "${Message}"
     },
     "rows" : [
       {
-        "aclSources" : [
+        "ACL_Sources" : [
           "as2dept1: RESTRICT_HOST_TRAFFIC_IN"
         ],
-        "lines" : [
+        "Lines" : [
           "permit ip 2.128.0.0 0.0.255.255 any",
           "deny   ip any any",
           "permit icmp any any"
         ],
-        "blockedLineAction" : "PERMIT",
-        "blockedLineNum" : 2,
-        "blockingLineNums" : [
+        "Blocked_Line_Action" : "PERMIT",
+        "Blocked_Line_Num" : 2,
+        "Blocking_Line_Nums" : [
           1
         ],
-        "differentAction" : true,
-        "reason" : "SINGLE_BLOCKING_LINE",
-        "message" : "ACLs { as2dept1: RESTRICT_HOST_TRAFFIC_IN } contain an unreachable line:\n  [index 2] permit icmp any any\nBlocking line(s):\n  [index 1] deny   ip any any"
+        "Different_Action" : true,
+        "Reason" : "SINGLE_BLOCKING_LINE",
+        "Message" : "ACLs { as2dept1: RESTRICT_HOST_TRAFFIC_IN } contain an unreachable line:\n  [index 2] permit icmp any any\nBlocking line(s):\n  [index 1] deny   ip any any"
       },
       {
-        "aclSources" : [
+        "ACL_Sources" : [
           "as2dept1: RESTRICT_HOST_TRAFFIC_OUT"
         ],
-        "lines" : [
+        "Lines" : [
           "permit ip any 2.128.0.0 0.0.255.255",
           "deny   ip 1.128.0.0 0.0.255.255 2.128.0.0 0.0.255.255",
           "deny   ip any any"
         ],
-        "blockedLineAction" : "DENY",
-        "blockedLineNum" : 1,
-        "blockingLineNums" : [
+        "Blocked_Line_Action" : "DENY",
+        "Blocked_Line_Num" : 1,
+        "Blocking_Line_Nums" : [
           0
         ],
-        "differentAction" : true,
-        "reason" : "SINGLE_BLOCKING_LINE",
-        "message" : "ACLs { as2dept1: RESTRICT_HOST_TRAFFIC_OUT } contain an unreachable line:\n  [index 1] deny   ip 1.128.0.0 0.0.255.255 2.128.0.0 0.0.255.255\nBlocking line(s):\n  [index 0] permit ip any 2.128.0.0 0.0.255.255"
+        "Different_Action" : true,
+        "Reason" : "SINGLE_BLOCKING_LINE",
+        "Message" : "ACLs { as2dept1: RESTRICT_HOST_TRAFFIC_OUT } contain an unreachable line:\n  [index 1] deny   ip 1.128.0.0 0.0.255.255 2.128.0.0 0.0.255.255\nBlocking line(s):\n  [index 0] permit ip any 2.128.0.0 0.0.255.255"
       }
     ],
     "summary" : {

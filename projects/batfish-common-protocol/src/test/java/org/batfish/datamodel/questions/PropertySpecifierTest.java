@@ -30,7 +30,9 @@ public class PropertySpecifierTest {
 
   @Test
   public void baseAutoComplete() {
-    Set<String> properties = ImmutableSet.of("abc", "ntp-servers", "ntp-source-interface");
+    Set<String> properties =
+        ImmutableSet.of(
+            "abc", NodePropertySpecifier.NTP_SERVERS, NodePropertySpecifier.NTP_SOURCE_INTERFACE);
 
     // null or empty string should yield all options, with .* as the first one
     assertThat(
@@ -46,8 +48,8 @@ public class PropertySpecifierTest {
         equalTo(
             ImmutableList.of(
                 new AutocompleteSuggestion(".*ntp.*", false),
-                new AutocompleteSuggestion("ntp-servers", false),
-                new AutocompleteSuggestion("ntp-source-interface", false))));
+                new AutocompleteSuggestion(NodePropertySpecifier.NTP_SERVERS, false),
+                new AutocompleteSuggestion(NodePropertySpecifier.NTP_SOURCE_INTERFACE, false))));
   }
 
   @Test
@@ -94,7 +96,7 @@ public class PropertySpecifierTest {
   public void fillPropertyForcedString() {
     Configuration configuration = new Configuration("hostname", ConfigurationFormat.CISCO_IOS);
     configuration.setDefaultInboundAction(LineAction.PERMIT);
-    String property = "default-inbound-action";
+    String property = NodePropertySpecifier.DEFAULT_INBOUND_ACTION;
     PropertyDescriptor<Configuration> propertyDescriptor =
         NodePropertySpecifier.JAVA_MAP.get(property);
     RowBuilder row = Row.builder();
@@ -109,7 +111,7 @@ public class PropertySpecifierTest {
   @Test
   public void fillPropertyListEmpty() {
     Configuration configuration = new Configuration("hostname", ConfigurationFormat.CISCO_IOS);
-    String property = "ntp-servers";
+    String property = NodePropertySpecifier.NTP_SERVERS;
     PropertyDescriptor<Configuration> propertyDescriptor =
         NodePropertySpecifier.JAVA_MAP.get(property);
     RowBuilder row = Row.builder();
@@ -124,7 +126,7 @@ public class PropertySpecifierTest {
   public void fillPropertyListNonEmpty() {
     Configuration configuration = new Configuration("hostname", ConfigurationFormat.CISCO_IOS);
     configuration.setNtpServers(ImmutableSortedSet.of("sa", "sb"));
-    String property = "ntp-servers";
+    String property = NodePropertySpecifier.NTP_SERVERS;
     PropertyDescriptor<Configuration> propertyDescriptor =
         NodePropertySpecifier.JAVA_MAP.get(property);
     RowBuilder row = Row.builder();
@@ -140,7 +142,7 @@ public class PropertySpecifierTest {
   public void fillPropertyMap() {
     Configuration configuration = new Configuration("hostname", ConfigurationFormat.CISCO_IOS);
     configuration.setInterfaces(ImmutableSortedMap.of("i1", new Interface("i1")));
-    String property = "interfaces";
+    String property = NodePropertySpecifier.INTERFACES;
     PropertyDescriptor<Configuration> propertyDescriptor =
         NodePropertySpecifier.JAVA_MAP.get(property);
     RowBuilder row = Row.builder();
@@ -154,7 +156,7 @@ public class PropertySpecifierTest {
   @Test
   public void fillPropertyNull() {
     Configuration configuration = new Configuration("hostname", ConfigurationFormat.CISCO_IOS);
-    String property = "ntp-source-interface";
+    String property = NodePropertySpecifier.NTP_SOURCE_INTERFACE;
     PropertyDescriptor<Configuration> propertyDescriptor =
         NodePropertySpecifier.JAVA_MAP.get(property);
     RowBuilder row = Row.builder();

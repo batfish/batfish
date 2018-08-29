@@ -9,7 +9,7 @@ public class IpOwnersQuestion extends Question {
 
   private static final String PROP_DUPLICATES_ONLY = "duplicatesOnly";
 
-  private static final String QUESTION_NAME = "ipowners";
+  private static final String QUESTION_NAME = "ipOwners";
 
   /** Whether to return duplicate IPs (owned by multiple nodes) only. */
   private boolean _duplicatesOnly;

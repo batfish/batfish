@@ -560,8 +560,8 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       NeighborsAnswerElement answerElement = new NeighborsAnswerElement();
 
       Map<String, Configuration> configurations = _batfish.loadConfigurations();
-      Set<String> includeNodes1 = question.getNode1Regex().getMatchingNodes(_batfish);
-      Set<String> includeNodes2 = question.getNode2Regex().getMatchingNodes(_batfish);
+      Set<String> includeNodes1 = question.getNodes().getMatchingNodes(_batfish);
+      Set<String> includeNodes2 = question.getRemoteNodes().getMatchingNodes(_batfish);
 
       if (question.getStyle() == EdgeStyle.ROLE) {
         NodeRoleDimension roleDimension =
@@ -983,9 +983,9 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
    * @type Neighbors multifile
    * @param neighborType The type(s) of neighbor relationships to focus on among (eBGP, iBGP, IP).
    *     Default is IP.
-   * @param node1Regex Regular expression to match the nodes names for one end of pair. Default is
-   *     '.*' (all nodes).
-   * @param node2Regex Regular expression to match the nodes names for the other end of the pair.
+   * @param nodes Regular expression to match the nodes names for one end of pair. Default is '.*'
+   *     (all nodes).
+   * @param remoteNodes Regular expression to match the nodes names for the other end of the pair.
    *     Default is '.*' (all nodes).
    * @param style String indicating the style of information requested about each edge: "summary" is
    *     the default and returns only the names of nodes/interfaces in the edge; "verbose" provides
@@ -1003,9 +1003,9 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
 
     private static final String PROP_NEIGHBOR_TYPES = "neighborTypes";
 
-    private static final String PROP_NODE1_REGEX = "node1Regex";
+    private static final String PROP_NODES = "nodes";
 
-    private static final String PROP_NODE2_REGEX = "node2Regex";
+    private static final String PROP_REMOTE_NODES = "remoteNodes";
 
     private static final String PROP_ROLE_DIMENSION = "roleDimension";
 
@@ -1013,9 +1013,9 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
 
     @Nonnull private final SortedSet<NeighborType> _neighborTypes;
 
-    @Nonnull private final NodesSpecifier _node1Regex;
+    @Nonnull private final NodesSpecifier _nodes;
 
-    @Nonnull private final NodesSpecifier _node2Regex;
+    @Nonnull private final NodesSpecifier _remoteNodes;
 
     @Nullable private final String _roleDimension;
 
@@ -1023,13 +1023,13 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
 
     @JsonCreator
     public NeighborsQuestion(
-        @JsonProperty(PROP_NODE1_REGEX) NodesSpecifier nodes1,
-        @JsonProperty(PROP_NODE2_REGEX) NodesSpecifier nodes2,
+        @JsonProperty(PROP_NODES) NodesSpecifier nodes,
+        @JsonProperty(PROP_REMOTE_NODES) NodesSpecifier remoteNodes,
         @JsonProperty(PROP_NEIGHBOR_TYPES) SortedSet<NeighborType> neighborTypes,
         @JsonProperty(PROP_STYLE) EdgeStyle style,
         @JsonProperty(PROP_ROLE_DIMENSION) String roleDimension) {
-      _node1Regex = nodes1 == null ? NodesSpecifier.ALL : nodes1;
-      _node2Regex = nodes2 == null ? NodesSpecifier.ALL : nodes2;
+      _nodes = nodes == null ? NodesSpecifier.ALL : nodes;
+      _remoteNodes = remoteNodes == null ? NodesSpecifier.ALL : remoteNodes;
       _neighborTypes = neighborTypes == null ? new TreeSet<>() : neighborTypes;
       _style = style == null ? EdgeStyle.SUMMARY : style;
       _roleDimension = roleDimension;
@@ -1050,14 +1050,14 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       return _neighborTypes;
     }
 
-    @JsonProperty(PROP_NODE1_REGEX)
-    public NodesSpecifier getNode1Regex() {
-      return _node1Regex;
+    @JsonProperty(PROP_NODES)
+    public NodesSpecifier getNodes() {
+      return _nodes;
     }
 
-    @JsonProperty(PROP_NODE2_REGEX)
-    public NodesSpecifier getNode2Regex() {
-      return _node2Regex;
+    @JsonProperty(PROP_REMOTE_NODES)
+    public NodesSpecifier getRemoteNodes() {
+      return _remoteNodes;
     }
 
     @JsonProperty(PROP_ROLE_DIMENSION)
@@ -1077,10 +1077,10 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
             String.format(
                 "neighbors %s%s=%s | %s=%s | %s=%s | %s=%b",
                 prettyPrintBase(),
-                PROP_NODE1_REGEX,
-                _node1Regex,
-                PROP_NODE2_REGEX,
-                _node2Regex,
+                PROP_NODES,
+                _nodes,
+                PROP_REMOTE_NODES,
+                _remoteNodes,
                 PROP_NEIGHBOR_TYPES,
                 _neighborTypes.toString(),
                 PROP_STYLE,

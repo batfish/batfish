@@ -1,7 +1,7 @@
 {
   "class" : "org.batfish.question.bgpproperties.BgpPropertiesQuestion",
-  "nodeRegex" : ".*",
-  "propertySpec" : "multipath-.*",
+  "nodes" : ".*",
+  "properties" : "multipath-.*",
   "differential" : false,
   "includeOneTableKeys" : true,
   "instance" : {
@@ -12,14 +12,14 @@
       "configuration"
     ],
     "variables" : {
-      "nodeRegex" : {
-        "description" : "Only include nodes that match this regex",
+      "nodes" : {
+        "description" : "Include nodes matching this name or regex",
         "optional" : true,
         "type" : "nodeSpec",
         "value" : ".*"
       },
-      "propertySpec" : {
-        "description" : "Only include properties that match this regex. Default behavior is to return all properties",
+      "properties" : {
+        "description" : "Include properties matching this regex",
         "optional" : true,
         "type" : "bgpPropertySpec",
         "value" : "multipath-.*"

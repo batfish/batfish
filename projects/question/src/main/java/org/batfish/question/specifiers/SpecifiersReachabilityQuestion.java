@@ -192,7 +192,7 @@ public final class SpecifiersReachabilityQuestion extends Question {
 
   @Override
   public String getName() {
-    return "specifiersreachability";
+    return "specifiersReachability";
   }
 
   ReachabilityParameters getReachabilityParameters() {

@@ -43,22 +43,22 @@ public class RoutesAnswerer extends Answerer {
   static final String COL_NODE = "Node";
   static final String COL_VRF_NAME = "VRF";
   static final String COL_NETWORK = "Network";
-  static final String COL_NEXT_HOP_IP = "NextHopIp";
+  static final String COL_NEXT_HOP_IP = "Next_Hop_IP";
   static final String COL_PROTOCOL = "Protocol";
   static final String COL_TAG = "Tag";
 
   // Present sometimes
-  static final String COL_NEXT_HOP = "NextHop";
+  static final String COL_NEXT_HOP = "Next_Hop";
   static final String COL_METRIC = "Metric";
 
   // Main RIB
-  static final String COL_ADMIN_DISTANCE = "AdminDistance";
+  static final String COL_ADMIN_DISTANCE = "Admin_Distance";
 
   // BGP only
-  static final String COL_AS_PATH = "AsPath";
-  static final String COL_LOCAL_PREF = "LocalPref";
+  static final String COL_AS_PATH = "AS_Path";
+  static final String COL_LOCAL_PREF = "Local_Pref";
   static final String COL_COMMUNITIES = "Communities";
-  static final String COL_ORIGIN_PROTOCOL = "OriginProtocol";
+  static final String COL_ORIGIN_PROTOCOL = "Origin_Protocol";
 
   RoutesAnswerer(Question question, IBatfish batfish) {
     super(question, batfish);
@@ -74,8 +74,8 @@ public class RoutesAnswerer extends Answerer {
         generateRows(
             dp,
             question.getProtocol(),
-            question.getNodeRegex().getMatchingNodes(_batfish),
-            question.getVrfRegex(),
+            question.getNodes().getMatchingNodes(_batfish),
+            question.getVrfs(),
             computeIpNodeOwners(_batfish.loadConfigurations(), true)));
     return answer;
   }
