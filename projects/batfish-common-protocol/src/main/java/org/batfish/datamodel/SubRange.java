@@ -69,6 +69,14 @@ public final class SubRange implements Serializable, Comparable<SubRange> {
         .compare(this, rhs);
   }
 
+  /**
+   * Returns true if the {@code other} subrange is <b>fully</b> contained within this subrange. An
+   * empty {@code other} is trivially considered to be contained within any subrange.
+   */
+  public boolean contains(@Nonnull SubRange other) {
+    return other.isEmpty() || (_start <= other.getStart() && _end >= other.getEnd());
+  }
+
   @Override
   public boolean equals(Object o) {
     if (o == this) {
@@ -98,6 +106,11 @@ public final class SubRange implements Serializable, Comparable<SubRange> {
   /** Check whether a given integer belongs to this range */
   public boolean includes(int integer) {
     return _start <= integer && integer <= _end;
+  }
+
+  /** Returns true if this subrange is empty */
+  public boolean isEmpty() {
+    return _end < _start;
   }
 
   @JsonValue
