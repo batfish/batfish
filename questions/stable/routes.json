@@ -20,7 +20,17 @@
                 "type": "javaRegex",
                 "value": ".*"
             },
-            "protocol": {
+            "network": {
+                "description": "Examine routes for networks matching this prefix",
+                "type": "prefix",
+                "optional": true,
+            },
+            "protocols": {
+                "description": "Examine routes for protocols matching this name or regex",
+                "type": "javaRegex",
+                "value": ".*"
+            },
+            "rib": {
                 "description": "Only return routes from a given protocol RIB",
                 "optional": true,
                 "type": "string",
@@ -28,7 +38,9 @@
             }
         }
     },
+    "network": "${network}",
     "nodes": "${nodes}",
-    "protocol": "${protocol}",
-    "vrfs": "${vrfs}"
+    "protocols": "${protocols}",
+    "rib": "${rib}",
+    "vrfs": "${vrfs}",
 }
