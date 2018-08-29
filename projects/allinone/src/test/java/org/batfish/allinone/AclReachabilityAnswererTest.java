@@ -37,15 +37,15 @@ import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.NotMatchExpr;
 import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.PermittedByAcl;
-import org.batfish.datamodel.answers.AclLines2Rows;
-import org.batfish.datamodel.answers.AclLinesAnswerElementInterface.AclSpecs;
-import org.batfish.question.aclreachability2.AclReachabilityAnswererUtils;
+import org.batfish.datamodel.answers.AclReachabilityRows;
+import org.batfish.datamodel.answers.AclSpecs;
+import org.batfish.question.aclreachability.AclReachabilityAnswerer;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-public class AclReachabilityAnswererUtilsTest {
+public class AclReachabilityAnswererTest {
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
@@ -602,6 +602,6 @@ public class AclReachabilityAnswererUtilsTest {
                 configNames.contains(entry.getKey())
                     ? ImmutableSet.copyOf(entry.getValue().getIpAccessLists().values())
                     : ImmutableSet.of());
-    return AclReachabilityAnswererUtils.getAclSpecs(configs, acls, new AclLines2Rows());
+    return AclReachabilityAnswerer.getAclSpecs(configs, acls, new AclReachabilityRows());
   }
 }

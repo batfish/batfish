@@ -21,12 +21,9 @@ import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableMetadata;
 
-/**
- * Represents answers to aclReachability2. Implements {@link AclLinesAnswerElementInterface} so that
- * aclReachability and aclReachability2 can use some of the same methods to answer both.
- */
+/** Represents answers to aclReachability. */
 @ParametersAreNonnullByDefault
-public class AclLines2Rows implements AclLinesAnswerElementInterface {
+public class AclReachabilityRows {
   public static final String COL_SOURCES = "ACL_Sources";
   public static final String COL_LINES = "Lines";
   public static final String COL_BLOCKED_LINE_ACTION = "Blocked_Line_Action";
@@ -80,7 +77,6 @@ public class AclLines2Rows implements AclLinesAnswerElementInterface {
 
   private final Multiset<Row> _rows = HashMultiset.create();
 
-  @Override
   public void addUnreachableLine(
       AclSpecs aclSpecs, int lineNumber, boolean unmatchable, SortedSet<Integer> blockingLines) {
 
@@ -159,7 +155,6 @@ public class AclLines2Rows implements AclLinesAnswerElementInterface {
     return new TableMetadata(columnMetadata, textDesc);
   }
 
-  @Override
   public void addCycle(String hostname, List<String> aclsInCycle) {
     _rows.add(
         Row.builder(COLUMN_METADATA)
