@@ -3,7 +3,7 @@
     "differential": false,
     "duplicatesOnly": "${duplicatesOnly}",
     "instance": {
-        "description": "Returns the mapping of IP address, interface, node and VRF for all devices in the snapshot.",
+        "description": "Returns the mapping of IP address, interface, node and VRF for all devices in the snapshot",
         "instanceName": "ipOwners",
         "tags": [
             "ip", 

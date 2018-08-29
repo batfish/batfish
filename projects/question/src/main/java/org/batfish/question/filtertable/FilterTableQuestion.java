@@ -71,6 +71,6 @@ public class FilterTableQuestion extends Question {
 
   @Override
   public String getName() {
-    return "filtertable";
+    return "filterTable";
   }
 }

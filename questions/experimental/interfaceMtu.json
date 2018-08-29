@@ -6,8 +6,8 @@
     "innerQuestion": {
         "class": "org.batfish.question.interfaceproperties.InterfacePropertiesQuestion",
         "differential": false,
-        "interfaceRegex": "${interfaceRegex}",
-        "nodeRegex": "${nodeRegex}",
+        "interfaces": "${interfaces}",
+        "nodes": "${nodes}",
         "displayHints": {
             "textDesc": "${interface} has MTU ${mtu}"
         }
@@ -26,8 +26,8 @@
               "type": "comparator",
               "value": "<"
             },
-            "interfaceRegex": {
-              "description": "Only evaluate interfaces whose name matches this regex",
+            "interfaces": {
+              "description": "Evaluate interfaces matching this regex",
               "type": "javaRegex",
               "value": ".*"
             },
@@ -36,9 +36,9 @@
               "type": "integer",
               "value": 1500
             },
-            "nodeRegex": {
-              "description": "Only include nodes whose name matches this regex",
-              "type": "javaRegex",
+            "nodes": {
+              "description": "Include nodes matching this name or regex",
+              "type": "nodeSpec",
               "value": ".*"
             }
         }

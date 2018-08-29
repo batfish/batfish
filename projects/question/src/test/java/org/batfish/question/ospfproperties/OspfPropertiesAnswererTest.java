@@ -33,8 +33,8 @@ public class OspfPropertiesAnswererTest {
     Configuration conf1 = new Configuration("node1", ConfigurationFormat.CISCO_IOS);
     conf1.setVrfs(ImmutableMap.of("vrf1", vrf1));
 
-    String property1 = "export-policy";
-    String property2 = "reference-bandwidth";
+    String property1 = OspfPropertySpecifier.EXPORT_POLICY;
+    String property2 = OspfPropertySpecifier.REFERENCE_BANDWIDTH;
 
     OspfPropertiesQuestion question =
         new OspfPropertiesQuestion(null, new OspfPropertySpecifier(property1 + "|" + property2));
@@ -43,7 +43,7 @@ public class OspfPropertiesAnswererTest {
 
     Multiset<Row> propertyRows =
         OspfPropertiesAnswerer.getProperties(
-            question.getPropertySpec(),
+            question.getProperties(),
             ImmutableMap.of("node1", conf1),
             ImmutableSet.of("node1"),
             metadata.toColumnMap());

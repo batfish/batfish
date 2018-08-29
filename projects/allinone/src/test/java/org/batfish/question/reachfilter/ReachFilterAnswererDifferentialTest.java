@@ -7,8 +7,8 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasDstIp;
 import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
 import static org.batfish.datamodel.matchers.TableAnswerElementMatchers.hasRows;
-import static org.batfish.question.tracefilters.TraceFiltersAnswerer.COLUMN_ACTION;
-import static org.batfish.question.tracefilters.TraceFiltersAnswerer.COLUMN_FLOW;
+import static org.batfish.question.testfilters.TestFiltersAnswerer.COL_ACTION;
+import static org.batfish.question.testfilters.TestFiltersAnswerer.COL_FLOW;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
@@ -88,13 +88,13 @@ public class ReachFilterAnswererDifferentialTest {
             contains(
                 ImmutableList.of(
                     allOf(
-                        hasColumn(equalTo(COLUMN_FLOW), hasDstIp(ip), Schema.FLOW),
+                        hasColumn(equalTo(COL_FLOW), hasDstIp(ip), Schema.FLOW),
                         hasColumn(
-                            equalTo(TableDiff.baseColumnName(COLUMN_ACTION)),
+                            equalTo(TableDiff.baseColumnName(COL_ACTION)),
                             equalTo(LineAction.DENY.toString()),
                             Schema.STRING),
                         hasColumn(
-                            equalTo(TableDiff.deltaColumnName(COLUMN_ACTION)),
+                            equalTo(TableDiff.deltaColumnName(COL_ACTION)),
                             equalTo(LineAction.PERMIT.toString()),
                             Schema.STRING))))));
   }

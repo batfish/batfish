@@ -13,9 +13,9 @@ public class BgpSessionStatusQuestionTest {
 
     assertThat(question.getDataPlane(), equalTo(false));
     assertThat(question.getIncludeEstablishedCount(), equalTo(false));
-    assertThat(question.getNode1Regex(), equalTo(NodesSpecifier.ALL));
-    assertThat(question.getNode2Regex(), equalTo(NodesSpecifier.ALL));
-    assertThat(question.getName(), equalTo("bgpsessionstatusnew"));
+    assertThat(question.getNodes(), equalTo(NodesSpecifier.ALL));
+    assertThat(question.getRemoteNodes(), equalTo(NodesSpecifier.ALL));
+    assertThat(question.getName(), equalTo("bgpSessionStatusNew"));
   }
 
   @Test

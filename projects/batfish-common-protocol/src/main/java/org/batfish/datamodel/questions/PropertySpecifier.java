@@ -65,7 +65,7 @@ public abstract class PropertySpecifier {
       List<AutocompleteSuggestion> propertySuggestions =
           allProperties
               .stream()
-              .filter(prop -> queryPattern.matcher(prop).matches())
+              .filter(prop -> queryPattern.matcher(prop.toLowerCase()).matches())
               .map(prop -> new AutocompleteSuggestion(prop, false))
               .collect(Collectors.toList());
 

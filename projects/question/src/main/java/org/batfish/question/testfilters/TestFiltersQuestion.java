@@ -1,4 +1,4 @@
-package org.batfish.question.tracefilters;
+package org.batfish.question.testfilters;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -15,23 +15,23 @@ import org.batfish.specifier.FlexibleFilterSpecifierFactory;
  * Computes the fate of the flow at a filter. The set of filters to consider are controlled by node
  * and filter regex fields. By default, all filters on all nodes are considered.
  */
-public class TraceFiltersQuestion extends IPacketTraceQuestion {
+public class TestFiltersQuestion extends IPacketTraceQuestion {
 
   private static final String FILTER_SPECIFIER_FACTORY = FlexibleFilterSpecifierFactory.NAME;
 
-  private static final String PROP_FILTER_REGEX = "filterRegex";
+  private static final String PROP_FILTERS = "filters";
 
-  private static final String PROP_NODE_REGEX = "nodeRegex";
+  private static final String PROP_NODES = "nodes";
 
   @Nullable private String _filterSpecifierInput;
 
-  @Nonnull private NodesSpecifier _nodeRegex;
+  @Nonnull private NodesSpecifier _nodes;
 
   @JsonCreator
-  public TraceFiltersQuestion(
-      @JsonProperty(PROP_NODE_REGEX) NodesSpecifier nodeRegex,
-      @JsonProperty(PROP_FILTER_REGEX) String filterSpecifierInput) {
-    _nodeRegex = nodeRegex == null ? NodesSpecifier.ALL : nodeRegex;
+  public TestFiltersQuestion(
+      @JsonProperty(PROP_NODES) NodesSpecifier nodes,
+      @JsonProperty(PROP_FILTERS) String filterSpecifierInput) {
+    _nodes = nodes == null ? NodesSpecifier.ALL : nodes;
     _filterSpecifierInput = filterSpecifierInput;
   }
 
@@ -40,7 +40,7 @@ public class TraceFiltersQuestion extends IPacketTraceQuestion {
     return false;
   }
 
-  @JsonProperty(PROP_FILTER_REGEX)
+  @JsonProperty(PROP_FILTERS)
   private String getFilterSpecifierInput() {
     return _filterSpecifierInput;
   }
@@ -54,11 +54,11 @@ public class TraceFiltersQuestion extends IPacketTraceQuestion {
 
   @Override
   public String getName() {
-    return "tracefilters";
+    return "testFilters";
   }
 
-  @JsonProperty(PROP_NODE_REGEX)
-  public NodesSpecifier getNodeRegex() {
-    return _nodeRegex;
+  @JsonProperty(PROP_NODES)
+  public NodesSpecifier getNodes() {
+    return _nodes;
   }
 }

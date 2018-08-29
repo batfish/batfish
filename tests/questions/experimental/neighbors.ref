@@ -3,16 +3,16 @@
   "neighborTypes" : [
     "ebgp"
   ],
-  "node1Regex" : ".*",
-  "node2Regex" : ".*",
+  "nodes" : ".*",
+  "remoteNodes" : ".*",
   "roleDimension" : "default",
   "style" : "summary",
   "differential" : false,
   "includeOneTableKeys" : true,
   "instance" : {
-    "description" : "Lists neighbor relationships in the snapshot.",
+    "description" : "Lists neighbor relationships in the snapshot",
     "instanceName" : "qname",
-    "longDescription" : "Return neighbor relationships of the specified type (layer3, eBGP, iBGP, ospf, etc...)",
+    "longDescription" : "Lists neighbor relationships of the specified type (layer3, eBGP, iBGP, ospf, etc.)",
     "tags" : [
       "topology"
     ],
@@ -36,16 +36,16 @@
           "ebgp"
         ]
       },
-      "node1Regex" : {
-        "description" : "Only include neighbors whose first node's name matches this regex",
+      "nodes" : {
+        "description" : "Include neighbors whose first node matches this name or regex",
         "optional" : false,
-        "type" : "javaRegex",
+        "type" : "nodeSpec",
         "value" : ".*"
       },
-      "node2Regex" : {
-        "description" : "Only include neighbors whose second node's name matches this regex",
+      "remoteNodes" : {
+        "description" : "Include neighbors whose second node matches this name or regex",
         "optional" : false,
-        "type" : "javaRegex",
+        "type" : "nodeSpec",
         "value" : ".*"
       },
       "roleDimension" : {
