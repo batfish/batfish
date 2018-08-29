@@ -198,6 +198,8 @@ import org.batfish.specifier.Location;
 import org.batfish.specifier.SpecifierContext;
 import org.batfish.specifier.SpecifierContextImpl;
 import org.batfish.specifier.UnionLocationSpecifier;
+import org.batfish.storage.FileBasedStorage;
+import org.batfish.storage.StorageProvider;
 import org.batfish.symbolic.abstraction.BatfishCompressor;
 import org.batfish.symbolic.abstraction.Roles;
 import org.batfish.symbolic.bdd.AclLineMatchExprToBDD;
@@ -511,7 +513,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private Settings _settings;
 
-  private final BatfishStorage _storage;
+  private final StorageProvider _storage;
 
   // this variable is used communicate with parent thread on how the job
   // finished (null if job finished successfully)
@@ -549,9 +551,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _answererCreators = new HashMap<>();
     _testrigSettingsStack = new ArrayList<>();
     _dataPlanePlugins = new HashMap<>();
-    _storage =
-        new BatfishStorage(
-            _settings.getStorageBase().resolve(_settings.getContainer()), _logger, this::newBatch);
+    _storage = new FileBasedStorage(_settings.getStorageBase(), _logger, this::newBatch);
   }
 
   private Answer analyze() {
@@ -1115,7 +1115,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     DataPlanePlugin dataPlanePlugin = getDataPlanePlugin();
     ComputeDataPlaneResult result = dataPlanePlugin.computeDataPlane(false, configs, topo);
 
-    _storage.storeCompressedConfigurations(configs, _testrigSettings.getName());
+    _storage.storeCompressedConfigurations(
+        configs, _settings.getContainer(), _testrigSettings.getName());
     return new CompressDataPlaneResult(configs, result._dataPlane, result._answerElement);
   }
 
@@ -1214,11 +1215,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @VisibleForTesting
   Topology computeTestrigTopology(Map<String, Configuration> configurations) {
-    Topology legacyTopology = _storage.loadLegacyTopology(_testrigSettings.getName());
+    Topology legacyTopology =
+        _storage.loadLegacyTopology(_settings.getContainer(), _testrigSettings.getName());
     if (legacyTopology != null) {
       return legacyTopology;
     }
-    Layer1Topology rawLayer1Topology = _storage.loadLayer1Topology(_testrigSettings.getName());
+    Layer1Topology rawLayer1Topology =
+        _storage.loadLayer1Topology(_settings.getContainer(), _testrigSettings.getName());
     if (rawLayer1Topology != null) {
       _logger.infof(
           "Testrig:%s in container:%s has layer-1 topology file",
@@ -2392,7 +2395,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _logger.debugf("Loading configurations for %s, cache miss", snapshot);
 
     // Next, see if we have an up-to-date, environment-specific configurations on disk.
-    configurations = _storage.loadCompressedConfigurations(snapshot.getSnapshot().getTestrig());
+    configurations =
+        _storage.loadCompressedConfigurations(
+            _settings.getContainer(), snapshot.getSnapshot().getTestrig());
     if (configurations != null) {
       return configurations;
     } else {
@@ -2418,7 +2423,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _logger.debugf("Loading configurations for %s, cache miss", snapshot);
 
     // Next, see if we have an up-to-date, environment-specific configurations on disk.
-    configurations = _storage.loadConfigurations(snapshot.getSnapshot().getTestrig());
+    configurations =
+        _storage.loadConfigurations(_settings.getContainer(), snapshot.getSnapshot().getTestrig());
     if (configurations != null) {
       _logger.debugf("Loaded configurations for %s off disk", snapshot);
       applyEnvironment(configurations);
@@ -2436,7 +2442,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _logger.infof("Repairing configurations for testrig %s", _testrigSettings.getName());
     repairConfigurations();
     SortedMap<String, Configuration> configurations =
-        _storage.loadConfigurations(_testrigSettings.getName());
+        _storage.loadConfigurations(_settings.getContainer(), _testrigSettings.getName());
     Verify.verify(
         configurations != null,
         "Configurations should not be null when loaded immediately after repair.");
@@ -2447,7 +2453,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Override
   public ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElementOrReparse() {
     ConvertConfigurationAnswerElement ccae =
-        _storage.loadConvertConfigurationAnswerElement(_testrigSettings.getName());
+        _storage.loadConvertConfigurationAnswerElement(
+            _settings.getContainer(), _testrigSettings.getName());
     if (ccae != null
         && Version.isCompatibleVersion(
             "Service", "Old processed configurations", ccae.getVersion())) {
@@ -2455,7 +2462,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
 
     repairConfigurations();
-    ccae = _storage.loadConvertConfigurationAnswerElement(_testrigSettings.getName());
+    ccae =
+        _storage.loadConvertConfigurationAnswerElement(
+            _settings.getContainer(), _testrigSettings.getName());
     if (ccae != null
         && Version.isCompatibleVersion(
             "Service", "Old processed configurations", ccae.getVersion())) {
@@ -2763,14 +2772,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   void outputAnswerMetadata(Answer answer) {
+    String deltaSnapshot = _settings.getDiffQuestion() ? _deltaTestrigSettings.getName() : null;
     _storage.storeAnswerMetadata(
         AnswerMetadataUtil.computeAnswerMetadata(answer, _logger),
-        _settings.getAnalysisName(),
-        _settings.getQuestionPath(),
+        _settings.getContainer(),
         _baseTestrigSettings.getName(),
-        _deltaTestrigSettings.getName(),
-        _settings.getQuestionName(),
-        _settings.getDiffQuestion());
+        deltaSnapshot,
+        _settings.getAnalysisName(),
+        _settings.getQuestionName());
   }
 
   private ParserRuleContext parse(BatfishCombinedParser<?, ?> parser) {
@@ -4084,7 +4093,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
         org.batfish.datamodel.pojo.Topology.create(
             _testrigSettings.getName(), configurations, testrigTopology);
     serializeAsJson(_testrigSettings.getPojoTopologyPath(), pojoTopology, "testrig pojo topology");
-    _storage.storeConfigurations(configurations, answerElement, _testrigSettings.getName());
+    _storage.storeConfigurations(
+        configurations, answerElement, _settings.getContainer(), _testrigSettings.getName());
 
     applyEnvironment(configurations);
     Topology envTopology = computeEnvironmentTopology(configurations);
@@ -4758,14 +4768,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private void writeJsonAnswer(String structuredAnswerString) {
+    String deltaSnapshot = _settings.getDiffQuestion() ? _deltaTestrigSettings.getName() : null;
     _storage.storeAnswer(
         structuredAnswerString,
-        _settings.getAnalysisName(),
-        _settings.getQuestionPath(),
+        _settings.getContainer(),
         _baseTestrigSettings.getName(),
-        _deltaTestrigSettings.getName(),
-        _settings.getQuestionName(),
-        _settings.getDiffQuestion());
+        deltaSnapshot,
+        _settings.getAnalysisName(),
+        _settings.getQuestionName());
   }
 
   private void writeJsonAnswerWithLog(@Nullable String logString, String structuredAnswerString) {
@@ -4812,7 +4822,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public @Nullable Layer1Topology getLayer1Topology() {
-    return _storage.loadLayer1Topology(_testrigSettings.getName());
+    return _storage.loadLayer1Topology(_settings.getContainer(), _testrigSettings.getName());
   }
 
   @Override

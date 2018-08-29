@@ -1,4 +1,4 @@
-package org.batfish.main;
+package org.batfish.storage;
 
 import static org.batfish.common.plugin.PluginConsumer.DEFAULT_HEADER_LENGTH_BYTES;
 import static org.batfish.common.plugin.PluginConsumer.detectFormat;
@@ -43,17 +43,17 @@ import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 
 /** A utility class that abstracts the underlying file system storage used by {@link Batfish}. */
-final class BatfishStorage {
+public final class FileBasedStorage implements StorageProvider {
+  private final Path _baseDir;
   private final BatfishLogger _logger;
-  private final Path _containerDir;
   private final BiFunction<String, Integer, AtomicInteger> _newBatch;
 
-  /** Create a new {@link BatfishStorage} instance that uses the given root path as a container. */
-  public BatfishStorage(
-      Path containerDir,
-      BatfishLogger logger,
-      BiFunction<String, Integer, AtomicInteger> newBatch) {
-    _containerDir = containerDir;
+  /**
+   * Create a new {@link FileBasedStorage} instance that uses the given root path as a container.
+   */
+  public FileBasedStorage(
+      Path baseDir, BatfishLogger logger, BiFunction<String, Integer, AtomicInteger> newBatch) {
+    _baseDir = baseDir;
     _logger = logger;
     _newBatch = newBatch;
   }
@@ -62,36 +62,41 @@ final class BatfishStorage {
    * Returns the compressed configuration files for the given testrig. If a serialized copy of these
    * configurations is not already present, then this function returns {@code null}.
    */
+  @Override
   @Nullable
-  public SortedMap<String, Configuration> loadCompressedConfigurations(String testrig) {
-    Path testrigDir = getTestrigDir(testrig);
+  public SortedMap<String, Configuration> loadCompressedConfigurations(
+      @Nonnull String network, @Nonnull String snapshot) {
+    Path testrigDir = getSnapshotDir(network, snapshot);
     Path indepDir = testrigDir.resolve(BfConsts.RELPATH_COMPRESSED_CONFIG_DIR);
-    return loadConfigurations(testrig, indepDir);
+    return loadConfigurations(network, snapshot, indepDir);
   }
 
   /**
    * Returns the configuration files for the given testrig. If a serialized copy of these
    * configurations is not already present, then this function returns {@code null}.
    */
+  @Override
   @Nullable
-  public SortedMap<String, Configuration> loadConfigurations(String testrig) {
-    Path testrigDir = getTestrigDir(testrig);
+  public SortedMap<String, Configuration> loadConfigurations(
+      @Nonnull String network, @Nonnull String snapshot) {
+    Path testrigDir = getSnapshotDir(network, snapshot);
     Path indepDir = testrigDir.resolve(BfConsts.RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR);
-    return loadConfigurations(testrig, indepDir);
+    return loadConfigurations(network, snapshot, indepDir);
   }
 
-  private SortedMap<String, Configuration> loadConfigurations(String testrig, Path indepDir) {
+  private SortedMap<String, Configuration> loadConfigurations(
+      @Nonnull String network, @Nonnull String snapshot, Path indepDir) {
     // If the directory that would contain these configs does not even exist, no cache exists.
     if (!Files.exists(indepDir)) {
-      _logger.debugf("Unable to load configs for %s from disk: no cache directory", testrig);
+      _logger.debugf("Unable to load configs for %s from disk: no cache directory", snapshot);
       return null;
     }
 
     // If the directory exists, then likely the configs exist and are useful. Still, we need to
     // confirm that they were serialized with a compatible version of Batfish first.
-    if (!cachedConfigsAreCompatible(testrig)) {
+    if (!cachedConfigsAreCompatible(network, snapshot)) {
       _logger.debugf(
-          "Unable to load configs for %s from disk: error or incompatible version", testrig);
+          "Unable to load configs for %s from disk: error or incompatible version", snapshot);
       return null;
     }
 
@@ -113,9 +118,10 @@ final class BatfishStorage {
     }
   }
 
-  @Nullable
-  public ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElement(String testrig) {
-    Path ccaePath = getTestrigDir(testrig).resolve(BfConsts.RELPATH_CONVERT_ANSWER_PATH);
+  @Override
+  public @Nullable ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElement(
+      @Nonnull String network, @Nonnull String snapshot) {
+    Path ccaePath = getSnapshotDir(network, snapshot).resolve(BfConsts.RELPATH_CONVERT_ANSWER_PATH);
     if (!Files.exists(ccaePath)) {
       return null;
     }
@@ -129,9 +135,10 @@ final class BatfishStorage {
     }
   }
 
-  public @Nullable Topology loadLegacyTopology(@Nonnull String testrig) {
+  @Override
+  public @Nullable Topology loadLegacyTopology(@Nonnull String network, @Nonnull String snapshot) {
     Path path =
-        getTestrigDir(testrig)
+        getSnapshotDir(network, snapshot)
             .resolve(
                 Paths.get(
                     BfConsts.RELPATH_TEST_RIG_DIR, BfConsts.RELPATH_TESTRIG_LEGACY_TOPOLOGY_PATH));
@@ -144,17 +151,18 @@ final class BatfishStorage {
       return BatfishObjectMapper.mapper().readValue(topologyFileText, Topology.class);
     } catch (IOException e) {
       _logger.warnf(
-          "Unexpected exception caught while loading legacy testrig topology for testrig %s: %s",
-          testrig, Throwables.getStackTraceAsString(e));
+          "Unexpected exception caught while loading legacy testrig topology for snapshot %s: %s",
+          snapshot, Throwables.getStackTraceAsString(e));
       return null;
     } finally {
       counter.incrementAndGet();
     }
   }
 
-  public @Nullable Layer1Topology loadLayer1Topology(@Nonnull String testrig) {
+  public @Nullable Layer1Topology loadLayer1Topology(
+      @Nonnull String network, @Nonnull String snapshot) {
     Path path =
-        getTestrigDir(testrig)
+        getSnapshotDir(network, snapshot)
             .resolve(
                 Paths.get(
                     BfConsts.RELPATH_TEST_RIG_DIR, BfConsts.RELPATH_TESTRIG_L1_TOPOLOGY_PATH));
@@ -167,8 +175,8 @@ final class BatfishStorage {
       return BatfishObjectMapper.mapper().readValue(topologyFileText, Layer1Topology.class);
     } catch (IOException e) {
       _logger.warnf(
-          "Unexpected exception caught while loading layer-1 topology for testrig %s: %s",
-          testrig, Throwables.getStackTraceAsString(e));
+          "Unexpected exception caught while loading layer-1 topology for snapshot %s: %s",
+          snapshot, Throwables.getStackTraceAsString(e));
       return null;
     } finally {
       counter.incrementAndGet();
@@ -179,9 +187,12 @@ final class BatfishStorage {
    * Stores the configurations into the compressed config path for the given testrig. Will replace
    * any previously-stored compressed configurations.
    */
+  @Override
   public void storeCompressedConfigurations(
-      Map<String, Configuration> configurations, String testrig) {
-    Path testrigDir = getTestrigDir(testrig);
+      @Nonnull Map<String, Configuration> configurations,
+      @Nonnull String network,
+      @Nonnull String snapshot) {
+    Path testrigDir = getSnapshotDir(network, snapshot);
 
     if (!testrigDir.toFile().exists() && !testrigDir.toFile().mkdirs()) {
       throw new BatfishException(
@@ -192,8 +203,8 @@ final class BatfishStorage {
 
     String batchName =
         String.format(
-            "Serializing %s compressed configuration structures for testrig %s",
-            configurations.size(), testrig);
+            "Serializing %s compressed configuration structures for snapshot %s",
+            configurations.size(), snapshot);
     storeConfigurations(outputDir, batchName, configurations);
   }
 
@@ -201,11 +212,13 @@ final class BatfishStorage {
    * Stores the configuration information into the given testrig. Will replace any previously-stored
    * configurations.
    */
+  @Override
   public void storeConfigurations(
-      Map<String, Configuration> configurations,
-      ConvertConfigurationAnswerElement convertAnswerElement,
-      String testrig) {
-    Path testrigDir = getTestrigDir(testrig);
+      @Nonnull Map<String, Configuration> configurations,
+      @Nonnull ConvertConfigurationAnswerElement convertAnswerElement,
+      @Nonnull String network,
+      @Nonnull String snapshot) {
+    Path testrigDir = getSnapshotDir(network, snapshot);
     if (!testrigDir.toFile().exists() && !testrigDir.toFile().mkdirs()) {
       throw new BatfishException(
           String.format("Unable to create testrig directory '%s'", testrigDir));
@@ -220,8 +233,8 @@ final class BatfishStorage {
 
     String batchName =
         String.format(
-            "Serializing %s vendor-independent configuration structures for testrig %s",
-            configurations.size(), testrig);
+            "Serializing %s vendor-independent configuration structures for snapshot %s",
+            configurations.size(), snapshot);
 
     storeConfigurations(outputDir, batchName, configurations);
   }
@@ -249,68 +262,65 @@ final class BatfishStorage {
             });
   }
 
-  private @Nullable Path computeAnswerDir(
-      String analysisName,
-      Path questionPath,
-      String baseSnapshotName,
-      String deltaSnapshotName,
-      String questionName,
-      boolean diff) {
-    // TODO: https://github.com/batfish/batfish/issues/2143 don't pass in questionPath
-    Path answerDir;
-
-    if (questionName != null) {
-      // If settings has a question name, we're answering an adhoc question. Set up path accordingly
-      Path testrigDir = getTestrigDir(baseSnapshotName);
-      answerDir =
-          testrigDir.resolve(
-              Paths.get(
-                  BfConsts.RELPATH_ANSWERS_DIR,
-                  questionName,
-                  BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME));
-      if (diff) {
-        answerDir =
-            answerDir.resolve(
-                Paths.get(
-                    BfConsts.RELPATH_DIFF_DIR,
-                    deltaSnapshotName,
-                    BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME));
-      } else {
-        answerDir = answerDir.resolve(Paths.get(BfConsts.RELPATH_STANDARD_DIR));
-      }
-    } else if (analysisName != null && questionPath != null) {
-      // If settings has an analysis name and question path, we're answering an analysis question
-      Path questionDir = questionPath.getParent();
-      answerDir =
-          questionDir.resolve(
-              Paths.get(
-                  BfConsts.RELPATH_ENVIRONMENTS_DIR, BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME));
-      if (diff) {
-        answerDir =
-            answerDir.resolve(
-                Paths.get(
-                    BfConsts.RELPATH_DELTA,
-                    deltaSnapshotName,
-                    BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME));
-      }
-    } else {
-      // If settings has neither a question nor an analysis configured, don't write a file
-      return null;
-    }
-    return answerDir;
+  private @Nonnull Path getAnswerDir(
+      @Nonnull String network,
+      @Nonnull String baseSnapshot,
+      @Nullable String deltaSnapshot,
+      @Nullable String analysis,
+      @Nonnull String question) {
+    return deltaSnapshot != null
+        ? getDeltaAnswerDir(network, baseSnapshot, deltaSnapshot, analysis, question)
+        : getStandardAnswerDir(network, baseSnapshot, analysis, question);
   }
 
+  private @Nonnull Path getStandardAnswerDir(
+      @Nonnull String network,
+      @Nonnull String snapshot,
+      @Nullable String analysis,
+      @Nonnull String question) {
+    Path snapshotDir = getSnapshotDir(network, snapshot);
+    Path dirWithQuestions =
+        analysis != null
+            ? snapshotDir.resolve(BfConsts.RELPATH_ANALYSES_DIR).resolve(analysis)
+            : snapshotDir;
+    return dirWithQuestions
+        .resolve(BfConsts.RELPATH_QUESTIONS_DIR)
+        .resolve(question)
+        .resolve(BfConsts.RELPATH_ENVIRONMENTS_DIR)
+        .resolve(BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME);
+  }
+
+  private @Nonnull Path getDeltaAnswerDir(
+      @Nonnull String network,
+      @Nonnull String baseSnapshot,
+      @Nonnull String deltaSnapshot,
+      @Nullable String analysis,
+      @Nonnull String question) {
+    Path snapshotDir = getSnapshotDir(network, baseSnapshot);
+    Path dirWithQuestions =
+        analysis != null
+            ? snapshotDir.resolve(BfConsts.RELPATH_ANALYSES_DIR).resolve(analysis)
+            : snapshotDir;
+    return dirWithQuestions
+        .resolve(BfConsts.RELPATH_QUESTIONS_DIR)
+        .resolve(question)
+        .resolve(BfConsts.RELPATH_ENVIRONMENTS_DIR)
+        .resolve(BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME)
+        .resolve(BfConsts.RELPATH_DELTA)
+        .resolve(deltaSnapshot)
+        .resolve(BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME);
+  }
+
+  @Override
   public void storeAnswer(
-      String answerStr,
-      String analysisName,
-      Path questionPath,
-      String baseSnapshotName,
-      String deltaSnapshotName,
-      String questionName,
-      boolean diff) {
+      @Nonnull String answerStr,
+      @Nonnull String network,
+      @Nonnull String baseSnapshotName,
+      @Nullable String deltaSnapshotName,
+      @Nullable String analysisName,
+      @Nonnull String questionName) {
     Path answerDir =
-        computeAnswerDir(
-            analysisName, questionPath, baseSnapshotName, deltaSnapshotName, questionName, diff);
+        getAnswerDir(network, baseSnapshotName, deltaSnapshotName, analysisName, questionName);
     // If settings has neither a question nor an analysis configured, don't write a file
     if (answerDir == null) {
       return;
@@ -320,15 +330,14 @@ final class BatfishStorage {
     CommonUtil.writeFile(answerPath, answerStr);
   }
 
+  @Override
   public void storeAnswerMetadata(
-      AnswerMetadata answerMetrics,
-      String analysisName,
-      Path questionPath,
-      String baseSnapshotName,
-      String deltaSnapshotName,
-      String questionName,
-      boolean diff) {
-    // TODO: don't pass in questionPath
+      @Nonnull AnswerMetadata answerMetrics,
+      @Nonnull String network,
+      @Nullable String analysisName,
+      @Nonnull String baseSnapshotName,
+      @Nullable String deltaSnapshotName,
+      @Nonnull String questionName) {
     String metricsStr;
     try {
       metricsStr = BatfishObjectMapper.writePrettyString(answerMetrics);
@@ -336,8 +345,7 @@ final class BatfishStorage {
       throw new BatfishException("Could not write answer metrics", e);
     }
     Path answerDir =
-        computeAnswerDir(
-            analysisName, questionPath, baseSnapshotName, deltaSnapshotName, questionName, diff);
+        getAnswerDir(network, baseSnapshotName, deltaSnapshotName, analysisName, questionName);
     if (answerDir == null) {
       // If settings has neither a question nor an analysis configured, don't write a file
       return;
@@ -353,7 +361,7 @@ final class BatfishStorage {
 
   /**
    * Returns a single object of the given class deserialized from the given file. Uses the {@link
-   * BatfishStorage} default file encoding including serialization format and compression.
+   * FileBasedStorage} default file encoding including serialization format and compression.
    */
   private static <S extends Serializable> S deserializeObject(Path inputFile, Class<S> outputClass)
       throws BatfishException {
@@ -412,7 +420,7 @@ final class BatfishStorage {
   }
 
   /**
-   * Writes a single object of the given class to the given file. Uses the {@link BatfishStorage}
+   * Writes a single object of the given class to the given file. Uses the {@link FileBasedStorage}
    * default file encoding including serialization format and compression.
    */
   private static void serializeObject(Serializable object, Path outputFile) {
@@ -427,23 +435,58 @@ final class BatfishStorage {
     }
   }
 
-  private boolean cachedConfigsAreCompatible(String testrig) {
+  private boolean cachedConfigsAreCompatible(@Nonnull String network, @Nonnull String snapshot) {
     try {
-      ConvertConfigurationAnswerElement ccae = loadConvertConfigurationAnswerElement(testrig);
+      ConvertConfigurationAnswerElement ccae =
+          loadConvertConfigurationAnswerElement(network, snapshot);
       return ccae != null
           && Version.isCompatibleVersion(
-              BatfishStorage.class.getCanonicalName(),
+              FileBasedStorage.class.getCanonicalName(),
               "Old processed configurations",
               ccae.getVersion());
     } catch (BatfishException e) {
       _logger.warnf(
-          "Unexpected exception caught while deserializing configs for testrig %s: %s",
-          testrig, Throwables.getStackTraceAsString(e));
+          "Unexpected exception caught while deserializing configs for snapshot %s: %s",
+          snapshot, Throwables.getStackTraceAsString(e));
       return false;
     }
   }
 
-  private Path getTestrigDir(String testrig) {
-    return _containerDir.resolve(BfConsts.RELPATH_TESTRIGS_DIR).resolve(testrig);
+  private @Nonnull Path getNetworkAnalysisDir(
+      @Nonnull String network, @Nonnull String snapshot, @Nonnull String analysis) {
+    return getNetworkDir(network).resolve(BfConsts.RELPATH_ANALYSES_DIR).resolve(analysis);
+  }
+
+  private @Nonnull Path getAnalysisQuestionDir(
+      @Nonnull String network,
+      @Nonnull String snapshot,
+      @Nonnull String analysis,
+      @Nonnull String question) {
+    return getNetworkAnalysisDir(network, snapshot, analysis)
+        .resolve(BfConsts.RELPATH_QUESTIONS_DIR)
+        .resolve(question);
+  }
+
+  private @Nonnull Path getAdHocQuestionDir(
+      @Nonnull String network, @Nonnull String snapshot, @Nonnull String question) {
+    return getNetworkDir(network).resolve(BfConsts.RELPATH_QUESTIONS_DIR).resolve(question);
+  }
+
+  private @Nonnull Path getNetworkDir(@Nonnull String network) {
+    return _baseDir.resolve(network);
+  }
+
+  private @Nonnull Path getSnapshotDir(@Nonnull String network, @Nonnull String snapshot) {
+    return getNetworkDir(network).resolve(BfConsts.RELPATH_TESTRIGS_DIR).resolve(snapshot);
+  }
+
+  private @Nonnull Path getQuestionDir(
+      @Nonnull String network,
+      @Nonnull String snapshot,
+      @Nullable String analysis,
+      @Nonnull String question) {
+    return analysis != null
+        ? getAnalysisQuestionDir(network, snapshot, analysis, question)
+        : getAdHocQuestionDir(network, snapshot, question);
   }
 }
