@@ -363,6 +363,12 @@ public class Client extends AbstractClient implements IClient {
               String.format("It is not a valid JSON %s value", expectedType.getName()));
         }
         break;
+      case HEADER_CONSTRAINT:
+        if (!value.isObject() && !value.isNull()) {
+          throw new BatfishException(
+              String.format("Not a valid packet header constraint: %s", expectedType.getName()));
+        }
+        break;
       case INTEGER:
         if (!value.isInt()) {
           throw new BatfishException(
