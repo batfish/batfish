@@ -1562,16 +1562,6 @@ public class CommonUtil {
         new SSLEngineConfigurator(sslCon, false, verifyClient, false));
   }
 
-  public static <S extends Set<T>, T> S symmetricDifference(
-      Set<T> set1, Set<T> set2, Supplier<S> constructor) {
-    S differenceSet = constructor.get();
-    differenceSet.addAll(set1);
-    differenceSet.addAll(set2);
-    S intersection = intersection(set1, set2, constructor);
-    differenceSet.removeAll(intersection);
-    return differenceSet;
-  }
-
   public static Topology synthesizeTopology(Map<String, Configuration> configurations) {
     SortedSet<Edge> edges = new TreeSet<>();
     Map<Prefix, List<Interface>> prefixInterfaces = new HashMap<>();
@@ -1605,16 +1595,6 @@ public class CommonUtil {
       }
     }
     return new Topology(edges);
-  }
-
-  public static SortedMap<Integer, String> toLineMap(String str) {
-    SortedMap<Integer, String> map = new TreeMap<>();
-    String[] lines = str.split("\n", -1);
-    for (int i = 0; i < lines.length; i++) {
-      String line = lines[i];
-      map.put(i, line);
-    }
-    return map;
   }
 
   public static <K1, K2, V1, V2> Map<K2, V2> toImmutableMap(
