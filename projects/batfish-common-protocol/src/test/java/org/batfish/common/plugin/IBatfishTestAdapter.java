@@ -31,6 +31,7 @@ import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.DataPlaneAnswerElement;
 import org.batfish.datamodel.answers.InitInfoAnswerElement;
+import org.batfish.datamodel.answers.IssueConfig;
 import org.batfish.datamodel.answers.ParseEnvironmentBgpTablesAnswerElement;
 import org.batfish.datamodel.answers.ParseEnvironmentRoutingTablesAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
@@ -148,6 +149,11 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
+  public IssueConfig getIssueConfig(String questionName) {
+    return new IssueConfig(null);
+  }
+
+  @Override
   public Layer1Topology getLayer1Topology() {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
@@ -172,11 +178,6 @@ public class IBatfishTestAdapter implements IBatfish {
   @Override
   public NodeRolesData getNodeRolesData() {
     throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public Optional<String> getQuestionConfiguration(String questionName) {
-    return Optional.empty();
   }
 
   @Override

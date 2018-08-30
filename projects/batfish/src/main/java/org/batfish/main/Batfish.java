@@ -141,6 +141,7 @@ import org.batfish.datamodel.answers.DataPlaneAnswerElement;
 import org.batfish.datamodel.answers.FlattenVendorConfigurationAnswerElement;
 import org.batfish.datamodel.answers.InitInfoAnswerElement;
 import org.batfish.datamodel.answers.InitStepAnswerElement;
+import org.batfish.datamodel.answers.IssueConfig;
 import org.batfish.datamodel.answers.NodAnswerElement;
 import org.batfish.datamodel.answers.NodFirstUnsatAnswerElement;
 import org.batfish.datamodel.answers.NodSatAnswerElement;
@@ -1944,21 +1945,29 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
+  /** Returns the {@link IssueConfig} for the given major issue type.
+   *
+   * If the corresponding file is not found or it cannot be deserealized, return an empty object.
+   */
   @Override
-  public Optional<String> getQuestionConfiguration(String questionName) {
-    Path questionConfig =
+  public IssueConfig getIssueConfig(String majorIssueType) {
+    Path issueConfig =
         _settings
             .getStorageBase()
             .resolve(_settings.getContainer())
             .resolve(BfConsts.RELPATH_CONTAINER_SETTINGS)
-            .resolve(BfConsts.RELPATH_CONTAINER_SETTINGS_QUESTIONS)
-            .resolve(questionName + ".json");
-    if (Files.exists(questionConfig)) {
-      String text = CommonUtil.readFile(questionConfig);
-      return text == null ? Optional.empty() : Optional.of(text);
-    } else {
-      return Optional.empty();
+            .resolve(BfConsts.RELPATH_CONTAINER_SETTINGS_ISSUES)
+            .resolve(majorIssueType + ".json");
+    if (Files.exists(issueConfig)) {
+      try {
+        return BatfishObjectMapper.mapper().readValue(issueConfig.toFile(), IssueConfig.class);
+      } catch (IOException e) {
+        _logger.errorf(
+            "ERROR: Could not cast %s to IssueConfig: %s",
+            issueConfig, Throwables.getStackTraceAsString(e));
+      }
     }
+    return new IssueConfig(null);
   }
 
   @Override

@@ -30,6 +30,7 @@ import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.DataPlaneAnswerElement;
 import org.batfish.datamodel.answers.InitInfoAnswerElement;
+import org.batfish.datamodel.answers.IssueConfig;
 import org.batfish.datamodel.answers.ParseEnvironmentBgpTablesAnswerElement;
 import org.batfish.datamodel.answers.ParseEnvironmentRoutingTablesAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
@@ -91,6 +92,9 @@ public interface IBatfish extends IPluginConsumer {
 
   FlowHistory getHistory();
 
+  /** Get the configuration of the major issue type {@code majorIssueType} if its present */
+  IssueConfig getIssueConfig(String majorIssueType);
+
   @Nullable
   Layer1Topology getLayer1Topology();
 
@@ -100,9 +104,6 @@ public interface IBatfish extends IPluginConsumer {
   NodeRolesData getNodeRolesData();
 
   Optional<NodeRoleDimension> getNodeRoleDimension(String roleDimension);
-
-  /** Get the configuration of the question named {@code questionName} if its present */
-  Optional<String> getQuestionConfiguration(String questionName);
 
   Map<String, String> getQuestionTemplates();
 
