@@ -1103,9 +1103,9 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_NETWORK_NAME) String networkName,
       @FormDataParam(CoordConsts.SVC_KEY_SNAPSHOT_NAME) String snapshotName,
       @FormDataParam(CoordConsts.SVC_KEY_DELTA_SNAPSHOT_NAME) String deltaSnapshot,
-      @FormDataParam(CoordConsts.SVC_KEY_ANALYSIS_NAME) @Nullable String analysisName,
+      @FormDataParam(CoordConsts.SVC_KEY_ANALYSIS_NAME) String analysisName,
       @FormDataParam(CoordConsts.SVC_KEY_QUESTION_NAME) String questionName,
-      @FormDataParam(CoordConsts.SVC_KEY_WORKITEM) @Nullable String workItemStr) {
+      @FormDataParam(CoordConsts.SVC_KEY_WORKITEM) String workItemStr) {
     String networkNameParam = networkName;
     String snapshotNameParam = snapshotName;
     String deltaSnapshotParam = deltaSnapshot;
