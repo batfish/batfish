@@ -23,7 +23,7 @@
             "network": {
                 "description": "Examine routes for networks matching this prefix",
                 "type": "prefix",
-                "optional": true,
+                "optional": true
             },
             "protocols": {
                 "description": "Examine routes for protocols matching this name or regex",
