@@ -42,5 +42,5 @@
     "nodes": "${nodes}",
     "protocols": "${protocols}",
     "rib": "${rib}",
-    "vrfs": "${vrfs}",
+    "vrfs": "${vrfs}"
 }
