@@ -16,11 +16,14 @@ import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.ForwardingAction;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.questions.InvalidReachabilityParametersException;
 import org.batfish.datamodel.visitors.IpSpaceRepresentativeImpl;
 import org.batfish.main.Batfish.CompressDataPlaneResult;
 import org.batfish.question.ReachabilityParameters;
 import org.batfish.question.ResolvedReachabilityParameters;
+import org.batfish.specifier.InterfaceLinkLocation;
+import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.specifier.IpSpaceAssignment.Entry;
 import org.batfish.specifier.Location;
@@ -153,7 +156,33 @@ final class ReachabilityParametersResolver {
 
   @VisibleForTesting
   IpSpaceAssignment resolveSourceIpSpaceAssignment() throws InvalidReachabilityParametersException {
-    Set<Location> sourceLocations = _params.getSourceLocationSpecifier().resolve(_context);
+    Set<Location> sourceLocations =
+        _params
+            .getSourceLocationSpecifier()
+            .resolve(_context)
+            .stream()
+            .filter(
+                l -> {
+                  NodeInterfacePair iface;
+                  if (l instanceof InterfaceLocation) {
+                    iface =
+                        new NodeInterfacePair(
+                            ((InterfaceLocation) l).getNodeName(),
+                            ((InterfaceLocation) l).getInterfaceName());
+                  } else {
+                    assert l instanceof InterfaceLinkLocation;
+                    iface =
+                        new NodeInterfacePair(
+                            ((InterfaceLinkLocation) l).getNodeName(),
+                            ((InterfaceLinkLocation) l).getInterfaceName());
+                  }
+                  return _configs
+                      .get(iface.getHostname())
+                      .getInterfaces()
+                      .get(iface.getInterface())
+                      .getActive();
+                })
+            .collect(ImmutableSet.toImmutableSet());
     if (sourceLocations.isEmpty()) {
       throw new InvalidReachabilityParametersException("No matching source locations");
     }
