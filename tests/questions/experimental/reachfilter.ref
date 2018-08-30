@@ -7,7 +7,7 @@
     "0-0"
   ],
   "dstProtocols" : [
-    "tcp"
+    "http"
   ],
   "filterRegex" : ".*",
   "nodeSpecifierFactory" : "nodesFactory",
@@ -61,7 +61,7 @@
         "optional" : true,
         "type" : "string",
         "value" : [
-          "tcp"
+          "http"
         ]
       },
       "filterRegex" : {

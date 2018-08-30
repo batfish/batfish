@@ -204,7 +204,7 @@ public class BoolExprTransformerTest {
                     ImmutableSet.of(
                         new SubRange(intCounter++, intCounter++),
                         new SubRange(intCounter++, intCounter++)))
-                .setNotSrcProtocols(ImmutableSet.of(Protocol.SSH, Protocol.TCP))
+                .setNotSrcProtocols(ImmutableSet.of(Protocol.SSH, Protocol.HTTP))
                 .setPacketLengths(
                     ImmutableSet.of(
                         new SubRange(intCounter++, intCounter++),
@@ -219,7 +219,7 @@ public class BoolExprTransformerTest {
                     ImmutableSet.of(
                         new SubRange(intCounter++, intCounter++),
                         new SubRange(intCounter++, intCounter++)))
-                .setSrcOrDstProtocols(ImmutableSet.of(Protocol.UDP, Protocol.HTTP))
+                .setSrcOrDstProtocols(ImmutableSet.of(Protocol.DNS, Protocol.HTTP))
                 .setSrcPorts(
                     ImmutableSet.of(
                         new SubRange(intCounter++, intCounter++),
