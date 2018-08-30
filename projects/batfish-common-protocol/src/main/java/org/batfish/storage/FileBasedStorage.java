@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import net.jpountz.lz4.LZ4FrameInputStream;
 import net.jpountz.lz4.LZ4FrameOutputStream;
 import org.batfish.common.BatfishException;
@@ -43,6 +44,7 @@ import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 
 /** A utility class that abstracts the underlying file system storage used by {@link Batfish}. */
+@ParametersAreNonnullByDefault
 public final class FileBasedStorage implements StorageProvider {
   private final Path _baseDir;
   private final BatfishLogger _logger;
@@ -65,7 +67,7 @@ public final class FileBasedStorage implements StorageProvider {
   @Override
   @Nullable
   public SortedMap<String, Configuration> loadCompressedConfigurations(
-      @Nonnull String network, @Nonnull String snapshot) {
+      String network, String snapshot) {
     Path testrigDir = getSnapshotDir(network, snapshot);
     Path indepDir = testrigDir.resolve(BfConsts.RELPATH_COMPRESSED_CONFIG_DIR);
     return loadConfigurations(network, snapshot, indepDir);
@@ -77,15 +79,14 @@ public final class FileBasedStorage implements StorageProvider {
    */
   @Override
   @Nullable
-  public SortedMap<String, Configuration> loadConfigurations(
-      @Nonnull String network, @Nonnull String snapshot) {
+  public SortedMap<String, Configuration> loadConfigurations(String network, String snapshot) {
     Path testrigDir = getSnapshotDir(network, snapshot);
     Path indepDir = testrigDir.resolve(BfConsts.RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR);
     return loadConfigurations(network, snapshot, indepDir);
   }
 
-  private SortedMap<String, Configuration> loadConfigurations(
-      @Nonnull String network, @Nonnull String snapshot, Path indepDir) {
+  private @Nullable SortedMap<String, Configuration> loadConfigurations(
+      String network, String snapshot, Path indepDir) {
     // If the directory that would contain these configs does not even exist, no cache exists.
     if (!Files.exists(indepDir)) {
       _logger.debugf("Unable to load configs for %s from disk: no cache directory", snapshot);
@@ -120,7 +121,7 @@ public final class FileBasedStorage implements StorageProvider {
 
   @Override
   public @Nullable ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElement(
-      @Nonnull String network, @Nonnull String snapshot) {
+      String network, String snapshot) {
     Path ccaePath = getSnapshotDir(network, snapshot).resolve(BfConsts.RELPATH_CONVERT_ANSWER_PATH);
     if (!Files.exists(ccaePath)) {
       return null;
@@ -136,7 +137,7 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   @Override
-  public @Nullable Topology loadLegacyTopology(@Nonnull String network, @Nonnull String snapshot) {
+  public @Nullable Topology loadLegacyTopology(String network, String snapshot) {
     Path path =
         getSnapshotDir(network, snapshot)
             .resolve(
@@ -160,8 +161,7 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   @Override
-  public @Nullable Layer1Topology loadLayer1Topology(
-      @Nonnull String network, @Nonnull String snapshot) {
+  public @Nullable Layer1Topology loadLayer1Topology(String network, String snapshot) {
     Path path =
         getSnapshotDir(network, snapshot)
             .resolve(
@@ -190,9 +190,7 @@ public final class FileBasedStorage implements StorageProvider {
    */
   @Override
   public void storeCompressedConfigurations(
-      @Nonnull Map<String, Configuration> configurations,
-      @Nonnull String network,
-      @Nonnull String snapshot) {
+      Map<String, Configuration> configurations, String network, String snapshot) {
     Path testrigDir = getSnapshotDir(network, snapshot);
 
     if (!testrigDir.toFile().exists() && !testrigDir.toFile().mkdirs()) {
@@ -215,10 +213,10 @@ public final class FileBasedStorage implements StorageProvider {
    */
   @Override
   public void storeConfigurations(
-      @Nonnull Map<String, Configuration> configurations,
-      @Nonnull ConvertConfigurationAnswerElement convertAnswerElement,
-      @Nonnull String network,
-      @Nonnull String snapshot) {
+      Map<String, Configuration> configurations,
+      ConvertConfigurationAnswerElement convertAnswerElement,
+      String network,
+      String snapshot) {
     Path testrigDir = getSnapshotDir(network, snapshot);
     if (!testrigDir.toFile().exists() && !testrigDir.toFile().mkdirs()) {
       throw new BatfishException(
@@ -264,21 +262,18 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   private @Nonnull Path getAnswerDir(
-      @Nonnull String network,
-      @Nonnull String baseSnapshot,
+      String network,
+      String baseSnapshot,
       @Nullable String deltaSnapshot,
       @Nullable String analysis,
-      @Nonnull String question) {
+      String question) {
     return deltaSnapshot != null
         ? getDeltaAnswerDir(network, baseSnapshot, deltaSnapshot, analysis, question)
         : getStandardAnswerDir(network, baseSnapshot, analysis, question);
   }
 
   private @Nonnull Path getStandardAnswerDir(
-      @Nonnull String network,
-      @Nonnull String snapshot,
-      @Nullable String analysis,
-      @Nonnull String question) {
+      String network, String snapshot, @Nullable String analysis, String question) {
     Path snapshotDir = getSnapshotDir(network, snapshot);
     Path dirWithQuestions =
         analysis != null
@@ -292,11 +287,11 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   private @Nonnull Path getDeltaAnswerDir(
-      @Nonnull String network,
-      @Nonnull String baseSnapshot,
-      @Nonnull String deltaSnapshot,
+      String network,
+      String baseSnapshot,
+      String deltaSnapshot,
       @Nullable String analysis,
-      @Nonnull String question) {
+      String question) {
     Path snapshotDir = getSnapshotDir(network, baseSnapshot);
     Path dirWithQuestions =
         analysis != null
@@ -314,14 +309,13 @@ public final class FileBasedStorage implements StorageProvider {
 
   @Override
   public void storeAnswer(
-      @Nonnull String answerStr,
-      @Nonnull String network,
-      @Nonnull String baseSnapshotName,
-      @Nullable String deltaSnapshotName,
-      @Nullable String analysisName,
-      @Nonnull String questionName) {
-    Path answerDir =
-        getAnswerDir(network, baseSnapshotName, deltaSnapshotName, analysisName, questionName);
+      String answerStr,
+      String network,
+      String baseSnapshot,
+      @Nullable String deltaSnapshot,
+      @Nullable String analysis,
+      String question) {
+    Path answerDir = getAnswerDir(network, baseSnapshot, deltaSnapshot, analysis, question);
     // If settings has neither a question nor an analysis configured, don't write a file
     if (answerDir == null) {
       return;
@@ -333,20 +327,19 @@ public final class FileBasedStorage implements StorageProvider {
 
   @Override
   public void storeAnswerMetadata(
-      @Nonnull AnswerMetadata answerMetrics,
-      @Nonnull String network,
-      @Nullable String analysisName,
-      @Nonnull String baseSnapshotName,
-      @Nullable String deltaSnapshotName,
-      @Nonnull String questionName) {
+      AnswerMetadata answerMetrics,
+      String network,
+      @Nullable String analysis,
+      String baseSnapshot,
+      @Nullable String deltaSnapshot,
+      String question) {
     String metricsStr;
     try {
       metricsStr = BatfishObjectMapper.writePrettyString(answerMetrics);
     } catch (JsonProcessingException e) {
       throw new BatfishException("Could not write answer metrics", e);
     }
-    Path answerDir =
-        getAnswerDir(network, baseSnapshotName, deltaSnapshotName, analysisName, questionName);
+    Path answerDir = getAnswerDir(network, baseSnapshot, deltaSnapshot, analysis, question);
     if (answerDir == null) {
       // If settings has neither a question nor an analysis configured, don't write a file
       return;
@@ -436,7 +429,7 @@ public final class FileBasedStorage implements StorageProvider {
     }
   }
 
-  private boolean cachedConfigsAreCompatible(@Nonnull String network, @Nonnull String snapshot) {
+  private boolean cachedConfigsAreCompatible(String network, String snapshot) {
     try {
       ConvertConfigurationAnswerElement ccae =
           loadConvertConfigurationAnswerElement(network, snapshot);
@@ -453,39 +446,36 @@ public final class FileBasedStorage implements StorageProvider {
     }
   }
 
-  private @Nonnull Path getNetworkAnalysisDir(@Nonnull String network, @Nonnull String analysis) {
+  private @Nonnull Path getNetworkAnalysisDir(String network, String analysis) {
     return getNetworkDir(network).resolve(BfConsts.RELPATH_ANALYSES_DIR).resolve(analysis);
   }
 
-  private @Nonnull Path getAnalysisQuestionDir(
-      @Nonnull String network, @Nonnull String analysis, @Nonnull String question) {
+  private @Nonnull Path getAnalysisQuestionDir(String network, String analysis, String question) {
     return getNetworkAnalysisDir(network, analysis)
         .resolve(BfConsts.RELPATH_QUESTIONS_DIR)
         .resolve(question);
   }
 
-  private @Nonnull Path getAdHocQuestionDir(@Nonnull String network, @Nonnull String question) {
+  private @Nonnull Path getAdHocQuestionDir(String network, String question) {
     return getNetworkDir(network).resolve(BfConsts.RELPATH_QUESTIONS_DIR).resolve(question);
   }
 
-  private @Nonnull Path getNetworkDir(@Nonnull String network) {
+  private @Nonnull Path getNetworkDir(String network) {
     return _baseDir.resolve(network);
   }
 
-  private @Nonnull Path getSnapshotDir(@Nonnull String network, @Nonnull String snapshot) {
+  private @Nonnull Path getSnapshotDir(String network, String snapshot) {
     return getNetworkDir(network).resolve(BfConsts.RELPATH_TESTRIGS_DIR).resolve(snapshot);
   }
 
-  private @Nonnull Path getQuestionDir(
-      @Nonnull String network, @Nullable String analysis, @Nonnull String question) {
+  private @Nonnull Path getQuestionDir(String network, @Nullable String analysis, String question) {
     return analysis != null
         ? getAnalysisQuestionDir(network, analysis, question)
         : getAdHocQuestionDir(network, question);
   }
 
   @Override
-  public String loadQuestion(
-      @Nonnull String network, @Nullable String analysis, @Nonnull String question) {
+  public @Nonnull String loadQuestion(String network, @Nullable String analysis, String question) {
     Path questionPath =
         getQuestionDir(network, analysis, question).resolve(BfConsts.RELPATH_QUESTION_FILE);
     return CommonUtil.readFile(questionPath);
