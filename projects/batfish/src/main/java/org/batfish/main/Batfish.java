@@ -1952,7 +1952,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
             .resolve(_settings.getContainer())
             .resolve(BfConsts.RELPATH_CONTAINER_SETTINGS)
             .resolve(BfConsts.RELPATH_CONTAINER_SETTINGS_QUESTIONS)
-            .resolve(questionName);
+            .resolve(questionName + ".json");
     if (Files.exists(questionConfig)) {
       String text = CommonUtil.readFile(questionConfig);
       return text == null ? Optional.empty() : Optional.of(text);
