@@ -26,7 +26,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
-public class BatfishStorageTest {
+public class FileBasedStorageTest {
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
   private Path _containerDir;

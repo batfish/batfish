@@ -373,16 +373,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
-  public static void initQuestionSettings(Settings settings) {
-    String questionName = settings.getQuestionName();
-    Path containerDir = settings.getStorageBase().resolve(settings.getContainer());
-    if (questionName != null) {
-      Path questionPath =
-          containerDir.resolve(BfConsts.RELPATH_QUESTIONS_DIR).resolve(questionName);
-      settings.setQuestionPath(questionPath.resolve(BfConsts.RELPATH_QUESTION_FILE));
-    }
-  }
-
   public static void initTestrigSettings(Settings settings) {
     String testrig = settings.getTestrig();
     String envName = settings.getEnvironmentName();
@@ -407,7 +397,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
       } else {
         settings.setActiveTestrigSettings(settings.getBaseTestrigSettings());
       }
-      initQuestionSettings(settings);
     } else if (containerDir != null) {
       throw new CleanBatfishException("Must supply argument to -" + BfConsts.ARG_TESTRIG);
     }
@@ -532,7 +521,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
       Cache<NetworkSnapshot, DataPlane> cachedCompressedDataPlanes,
       Cache<NetworkSnapshot, DataPlane> cachedDataPlanes,
       Map<NetworkSnapshot, SortedMap<String, BgpAdvertisementsByVrf>> cachedEnvironmentBgpTables,
-      Map<NetworkSnapshot, SortedMap<String, RoutesByVrf>> cachedEnvironmentRoutingTables) {
+      Map<NetworkSnapshot, SortedMap<String, RoutesByVrf>> cachedEnvironmentRoutingTables,
+      @Nullable StorageProvider alternateStorageProvider) {
     super(settings.getSerializeToText());
     _settings = settings;
     _bgpTablePlugins = new TreeMap<>();
@@ -551,7 +541,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _answererCreators = new HashMap<>();
     _testrigSettingsStack = new ArrayList<>();
     _dataPlanePlugins = new HashMap<>();
-    _storage = new FileBasedStorage(_settings.getStorageBase(), _logger, this::newBatch);
+    _storage =
+        alternateStorageProvider != null
+            ? alternateStorageProvider
+            : new FileBasedStorage(_settings.getStorageBase(), _logger, this::newBatch);
   }
 
   private Answer analyze() {
@@ -572,12 +565,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
           "Analysis questions dir does not exist: '" + analysisQuestionsDir + "'");
     }
     RunAnalysisAnswerElement ae = new RunAnalysisAnswerElement();
+    String analysisQuestionName = _settings.getQuestionName();
     try (Stream<Path> questions = CommonUtil.list(analysisQuestionsDir)) {
       questions.forEach(
           analysisQuestionDir -> {
             String questionName = analysisQuestionDir.getFileName().toString();
-            Path analysisQuestionPath = analysisQuestionDir.resolve(BfConsts.RELPATH_QUESTION_FILE);
-            _settings.setQuestionPath(analysisQuestionPath);
+            _settings.setQuestionName(questionName);
             Answer currentAnswer;
             try (ActiveSpan analysisQuestionSpan =
                 GlobalTracer.get().buildSpan("Getting answer to analysis question").startActive()) {
@@ -607,7 +600,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
                     e);
               }
             }
-            initAnalysisQuestionPath(analysisName, questionName);
             try {
               outputAnswer(currentAnswer);
               outputAnswerMetadata(currentAnswer);
@@ -619,10 +611,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
               ae.getAnswers().put(questionName, errorAnswer);
             }
             ae.getAnswers().put(questionName, currentAnswer);
-            _settings.setQuestionPath(null);
+            _settings.setQuestionName(null);
             summary.combine(currentAnswer.getSummary());
           });
     }
+    _settings.setQuestionName(analysisQuestionName);
     answer.addAnswerElement(ae);
     answer.setSummary(summary);
     return answer;
@@ -635,13 +628,30 @@ public class Batfish extends PluginConsumer implements IBatfish {
     try (ActiveSpan parseQuestionSpan =
         GlobalTracer.get().buildSpan("Parse question").startActive()) {
       assert parseQuestionSpan != null; // avoid not used warning
-      question = Question.parseQuestion(_settings.getQuestionPath());
-    } catch (Exception e) {
-      Answer answer = new Answer();
-      BatfishException exception = new BatfishException("Could not parse question", e);
-      answer.setStatus(AnswerStatus.FAILURE);
-      answer.addAnswerElement(exception.getBatfishStackTrace());
-      return answer;
+      String rawQuestionStr;
+      try {
+        rawQuestionStr =
+            _storage.loadQuestion(
+                _settings.getContainer(),
+                _settings.getBaseTestrigSettings().getName(),
+                _settings.getAnalysisName(),
+                _settings.getQuestionName());
+      } catch (Exception e) {
+        Answer answer = new Answer();
+        BatfishException exception = new BatfishException("Could not read question", e);
+        answer.setStatus(AnswerStatus.FAILURE);
+        answer.addAnswerElement(exception.getBatfishStackTrace());
+        return answer;
+      }
+      try {
+        question = Question.parseQuestion(rawQuestionStr);
+      } catch (Exception e) {
+        Answer answer = new Answer();
+        BatfishException exception = new BatfishException("Could not parse question", e);
+        answer.setStatus(AnswerStatus.FAILURE);
+        answer.addAnswerElement(exception.getBatfishStackTrace());
+        return answer;
+      }
     }
 
     if (GlobalTracer.get().activeSpan() != null) {
@@ -2064,22 +2074,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Override
   public PluginClientType getType() {
     return PluginClientType.BATFISH;
-  }
-
-  private void initAnalysisQuestionPath(String analysisName, String questionName) {
-    Path questionDir =
-        _testrigSettings
-            .getBasePath()
-            .resolve(
-                Paths.get(
-                        BfConsts.RELPATH_ANALYSES_DIR,
-                        analysisName,
-                        BfConsts.RELPATH_QUESTIONS_DIR,
-                        questionName)
-                    .toString());
-    questionDir.toFile().mkdirs();
-    Path questionPath = questionDir.resolve(BfConsts.RELPATH_QUESTION_FILE);
-    _settings.setQuestionPath(questionPath);
   }
 
   @Override

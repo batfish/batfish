@@ -489,4 +489,16 @@ public final class FileBasedStorage implements StorageProvider {
         ? getAnalysisQuestionDir(network, snapshot, analysis, question)
         : getAdHocQuestionDir(network, snapshot, question);
   }
+
+  @Override
+  public String loadQuestion(
+      @Nonnull String network,
+      @Nonnull String snapshot,
+      @Nullable String analysis,
+      @Nonnull String question) {
+    Path questionPath =
+        getQuestionDir(network, snapshot, analysis, question)
+            .resolve(BfConsts.RELPATH_QUESTION_FILE);
+    return CommonUtil.readFile(questionPath);
+  }
 }

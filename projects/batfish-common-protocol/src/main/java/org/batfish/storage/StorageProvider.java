@@ -72,4 +72,11 @@ public interface StorageProvider {
       @Nonnull String baseSnapshotName,
       @Nullable String deltaSnapshotName,
       @Nonnull String questionName);
+
+  @Nonnull
+  String loadQuestion(
+      @Nonnull String network,
+      @Nonnull String snapshot,
+      @Nullable String analysis,
+      @Nonnull String question);
 }
