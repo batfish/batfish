@@ -4,7 +4,7 @@
   "dscp" : 12,
   "dst" : "1.2.3.4",
   "dstPort" : 23,
-  "dstProtocol" : "udp",
+  "dstProtocol" : "dns",
   "ecn" : 1,
   "fragmentOffset" : 12,
   "icmpCode" : 12,
@@ -43,7 +43,7 @@
         "description" : "Destination named protocol (can affect IP protocol number; ICMP type/code; TCP/UDP destination port)",
         "optional" : true,
         "type" : "string",
-        "value" : "udp"
+        "value" : "dns"
       },
       "ecn" : {
         "description" : "Applied Explicit Congestion Notification (ECN) value in TCP header",
@@ -79,7 +79,7 @@
         "description" : "IP Protocol number in IP header",
         "optional" : true,
         "type" : "string",
-        "value" : "23"
+        "value" : "tcp"
       },
       "packetLength" : {
         "description" : "Packet length in IP header",
@@ -103,7 +103,7 @@
         "description" : "Source named protocol (can affect IP protocol number; ICMP type/code; TCP/UDP source port)",
         "optional" : true,
         "type" : "string",
-        "value" : "tcp"
+        "value" : "http"
       },
       "state" : {
         "allowedValues" : [
@@ -174,12 +174,12 @@
       }
     }
   },
-  "ipProtocol" : "TRUNK1",
+  "ipProtocol" : "TCP",
   "packetLength" : 12,
   "srcIpSpace" : "1.1.1.1",
   "srcIpSpaceSpecifierFactory" : "FlexibleInferFromLocationIpSpaceSpecifierFactory",
   "srcPort" : 123,
-  "srcProtocol" : "tcp",
+  "srcProtocol" : "http",
   "state" : "NEW",
   "tcpAck" : true,
   "tcpCwr" : false,
