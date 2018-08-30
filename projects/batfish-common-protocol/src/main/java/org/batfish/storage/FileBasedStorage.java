@@ -159,6 +159,7 @@ public final class FileBasedStorage implements StorageProvider {
     }
   }
 
+  @Override
   public @Nullable Layer1Topology loadLayer1Topology(
       @Nonnull String network, @Nonnull String snapshot) {
     Path path =
@@ -452,23 +453,20 @@ public final class FileBasedStorage implements StorageProvider {
     }
   }
 
-  private @Nonnull Path getNetworkAnalysisDir(
-      @Nonnull String network, @Nonnull String snapshot, @Nonnull String analysis) {
+  private @Nonnull Path getNetworkAnalysisDir(@Nonnull String network, @Nonnull String analysis) {
     return getNetworkDir(network).resolve(BfConsts.RELPATH_ANALYSES_DIR).resolve(analysis);
   }
 
   private @Nonnull Path getAnalysisQuestionDir(
       @Nonnull String network,
-      @Nonnull String snapshot,
       @Nonnull String analysis,
       @Nonnull String question) {
-    return getNetworkAnalysisDir(network, snapshot, analysis)
+    return getNetworkAnalysisDir(network, analysis)
         .resolve(BfConsts.RELPATH_QUESTIONS_DIR)
         .resolve(question);
   }
 
-  private @Nonnull Path getAdHocQuestionDir(
-      @Nonnull String network, @Nonnull String snapshot, @Nonnull String question) {
+  private @Nonnull Path getAdHocQuestionDir(@Nonnull String network, @Nonnull String question) {
     return getNetworkDir(network).resolve(BfConsts.RELPATH_QUESTIONS_DIR).resolve(question);
   }
 
@@ -486,8 +484,8 @@ public final class FileBasedStorage implements StorageProvider {
       @Nullable String analysis,
       @Nonnull String question) {
     return analysis != null
-        ? getAnalysisQuestionDir(network, snapshot, analysis, question)
-        : getAdHocQuestionDir(network, snapshot, question);
+        ? getAnalysisQuestionDir(network, analysis, question)
+        : getAdHocQuestionDir(network, question);
   }
 
   @Override
