@@ -1945,9 +1945,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
-  /** Returns the {@link IssueConfig} for the given major issue type.
+  /**
+   * Returns the {@link IssueConfig} for the given major issue type.
    *
-   * If the corresponding file is not found or it cannot be deserealized, return an empty object.
+   * <p>If the corresponding file is not found or it cannot be deserealized, return an empty object.
    */
   @Override
   public IssueConfig getIssueConfig(String majorIssueType) {
