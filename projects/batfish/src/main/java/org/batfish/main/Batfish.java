@@ -1945,6 +1945,23 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
+  public Optional<String> getQuestionConfiguration(String questionName) {
+    Path questionConfig =
+        _settings
+            .getStorageBase()
+            .resolve(_settings.getContainer())
+            .resolve(BfConsts.RELPATH_CONTAINER_SETTINGS)
+            .resolve(BfConsts.RELPATH_CONTAINER_SETTINGS_QUESTIONS)
+            .resolve(questionName);
+    if (Files.exists(questionConfig)) {
+      String text = CommonUtil.readFile(questionConfig);
+      return text == null ? Optional.empty() : Optional.of(text);
+    } else {
+      return Optional.empty();
+    }
+  }
+
+  @Override
   public Map<String, String> getQuestionTemplates() {
     if (_settings.getCoordinatorHost() == null) {
       throw new BatfishException("Cannot get question templates: coordinator host is not set");

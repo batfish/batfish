@@ -101,6 +101,9 @@ public interface IBatfish extends IPluginConsumer {
 
   Optional<NodeRoleDimension> getNodeRoleDimension(String roleDimension);
 
+  /** Get the configuration of the question named {@code questionName} if its present */
+  Optional<String> getQuestionConfiguration(String questionName);
+
   Map<String, String> getQuestionTemplates();
 
   SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes(boolean useCompression);

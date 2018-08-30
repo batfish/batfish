@@ -175,6 +175,11 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
+  public Optional<String> getQuestionConfiguration(String questionName) {
+    return Optional.empty();
+  }
+
+  @Override
   public Map<String, String> getQuestionTemplates() {
     throw new UnsupportedOperationException();
   }
