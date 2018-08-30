@@ -11,7 +11,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.SortedSet;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpAccessList;
@@ -78,11 +77,12 @@ public abstract class IpAccessListSpecializer
     }
 
     List<IpAccessListLine> originalLines = ipAccessList.getLines();
-    int lastSpecializedLine = Math.min(lineNum, originalLines.size());
 
     List<IpAccessListLine> specializedLines =
-        IntStream.range(0, lastSpecializedLine)
-            .mapToObj(i -> specialize(originalLines.get(i)).orElse(FALSE_LINE))
+        originalLines
+            .stream()
+            .limit(lineNum)
+            .map(originalLine -> specialize(originalLine).orElse(FALSE_LINE))
             .collect(Collectors.toList());
     if (lineNum < originalLines.size()) {
       specializedLines.add(originalLines.get(lineNum));
