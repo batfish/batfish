@@ -1,4 +1,4 @@
-package org.batfish.question.neighbors;
+package org.batfish.question.edges;
 
 import com.google.auto.service.AutoService;
 import org.batfish.common.plugin.IBatfish;
@@ -7,14 +7,14 @@ import org.batfish.datamodel.questions.Question;
 import org.batfish.question.QuestionPlugin;
 
 @AutoService(Plugin.class)
-public class NeighborsQuestionPlugin extends QuestionPlugin {
+public class EdgesQuestionPlugin extends QuestionPlugin {
   @Override
-  protected NeighborsAnswerer createAnswerer(Question question, IBatfish batfish) {
-    return new NeighborsAnswerer(question, batfish);
+  protected EdgesAnswerer createAnswerer(Question question, IBatfish batfish) {
+    return new EdgesAnswerer(question, batfish);
   }
 
   @Override
   protected Question createQuestion() {
-    return new NeighborsQuestion(null, null, null);
+    return new EdgesQuestion(null, null, null);
   }
 }

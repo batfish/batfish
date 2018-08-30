@@ -1,26 +1,26 @@
-package org.batfish.question.neighbors;
+package org.batfish.question.edges;
 
 import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
-import static org.batfish.question.neighbors.NeighborsAnswerer.COL_AS_NUMBER;
-import static org.batfish.question.neighbors.NeighborsAnswerer.COL_INTERFACE;
-import static org.batfish.question.neighbors.NeighborsAnswerer.COL_IP;
-import static org.batfish.question.neighbors.NeighborsAnswerer.COL_IPS;
-import static org.batfish.question.neighbors.NeighborsAnswerer.COL_NODE;
-import static org.batfish.question.neighbors.NeighborsAnswerer.COL_REMOTE_AS_NUMBER;
-import static org.batfish.question.neighbors.NeighborsAnswerer.COL_REMOTE_INTERFACE;
-import static org.batfish.question.neighbors.NeighborsAnswerer.COL_REMOTE_IP;
-import static org.batfish.question.neighbors.NeighborsAnswerer.COL_REMOTE_IPS;
-import static org.batfish.question.neighbors.NeighborsAnswerer.COL_REMOTE_NODE;
-import static org.batfish.question.neighbors.NeighborsAnswerer.COL_REMOTE_VLAN;
-import static org.batfish.question.neighbors.NeighborsAnswerer.COL_VLAN;
-import static org.batfish.question.neighbors.NeighborsAnswerer.bgpEdgeToRow;
-import static org.batfish.question.neighbors.NeighborsAnswerer.eigrpEdgeToRow;
-import static org.batfish.question.neighbors.NeighborsAnswerer.isisEdgeToRow;
-import static org.batfish.question.neighbors.NeighborsAnswerer.layer1EdgeToRow;
-import static org.batfish.question.neighbors.NeighborsAnswerer.layer2EdgeToRow;
-import static org.batfish.question.neighbors.NeighborsAnswerer.layer3EdgeToRow;
-import static org.batfish.question.neighbors.NeighborsAnswerer.ospfEdgeToRow;
-import static org.batfish.question.neighbors.NeighborsAnswerer.ripEdgeToRow;
+import static org.batfish.question.edges.EdgesAnswerer.COL_AS_NUMBER;
+import static org.batfish.question.edges.EdgesAnswerer.COL_INTERFACE;
+import static org.batfish.question.edges.EdgesAnswerer.COL_IP;
+import static org.batfish.question.edges.EdgesAnswerer.COL_IPS;
+import static org.batfish.question.edges.EdgesAnswerer.COL_NODE;
+import static org.batfish.question.edges.EdgesAnswerer.COL_REMOTE_AS_NUMBER;
+import static org.batfish.question.edges.EdgesAnswerer.COL_REMOTE_INTERFACE;
+import static org.batfish.question.edges.EdgesAnswerer.COL_REMOTE_IP;
+import static org.batfish.question.edges.EdgesAnswerer.COL_REMOTE_IPS;
+import static org.batfish.question.edges.EdgesAnswerer.COL_REMOTE_NODE;
+import static org.batfish.question.edges.EdgesAnswerer.COL_REMOTE_VLAN;
+import static org.batfish.question.edges.EdgesAnswerer.COL_VLAN;
+import static org.batfish.question.edges.EdgesAnswerer.eigrpEdgeToRow;
+import static org.batfish.question.edges.EdgesAnswerer.getBgpEdgeRow;
+import static org.batfish.question.edges.EdgesAnswerer.getOspfEdgeRow;
+import static org.batfish.question.edges.EdgesAnswerer.getRipEdgeRow;
+import static org.batfish.question.edges.EdgesAnswerer.isisEdgeToRow;
+import static org.batfish.question.edges.EdgesAnswerer.layer1EdgeToRow;
+import static org.batfish.question.edges.EdgesAnswerer.layer2EdgeToRow;
+import static org.batfish.question.edges.EdgesAnswerer.layer3EdgeToRow;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
@@ -28,41 +28,29 @@ import static org.hamcrest.Matchers.equalTo;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import java.util.Map;
-import org.batfish.common.Pair;
 import org.batfish.common.topology.Layer1Edge;
 import org.batfish.common.topology.Layer2Edge;
-import org.batfish.datamodel.BgpActivePeerConfig;
-import org.batfish.datamodel.BgpPeerConfig;
-import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpLink;
 import org.batfish.datamodel.NetworkFactory;
-import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.RipNeighbor;
 import org.batfish.datamodel.answers.Schema;
-import org.batfish.datamodel.collections.IpEdge;
 import org.batfish.datamodel.collections.NodeInterfacePair;
-import org.batfish.datamodel.collections.VerboseBgpEdge;
-import org.batfish.datamodel.collections.VerboseOspfEdge;
-import org.batfish.datamodel.collections.VerboseRipEdge;
 import org.batfish.datamodel.eigrp.EigrpEdge;
 import org.batfish.datamodel.eigrp.EigrpInterface;
 import org.batfish.datamodel.isis.IsisEdge;
 import org.batfish.datamodel.isis.IsisLevel;
 import org.batfish.datamodel.isis.IsisNode;
-import org.batfish.datamodel.ospf.OspfNeighbor;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.table.Row;
 import org.junit.Before;
 import org.junit.Test;
 
-/** Test for {@link NeighborsAnswerer} */
-public class NeighborsAnswererTest {
+/** Test for {@link EdgesAnswerer} */
+public class EdgesAnswererTest {
   private Configuration _host1;
   private Configuration _host2;
 
@@ -113,19 +101,7 @@ public class NeighborsAnswererTest {
 
   @Test
   public void testOspfToRow() {
-    OspfNeighbor ospfNeighbor1 = new OspfNeighbor(new IpLink(new Ip("1.1.1.1"), new Ip("2.2.2.2")));
-    OspfNeighbor ospfNeighbor2 = new OspfNeighbor(new IpLink(new Ip("2.2.2.2"), new Ip("3.3.3.3")));
-    ospfNeighbor1.setOwner(_host1);
-    ospfNeighbor1.setInterface(_host1.getInterfaces().get("int1"));
-    ospfNeighbor2.setOwner(_host2);
-    ospfNeighbor2.setInterface(_host2.getInterfaces().get("int2"));
-
-    VerboseOspfEdge testEdge =
-        new VerboseOspfEdge(
-            ospfNeighbor1,
-            ospfNeighbor2,
-            new IpEdge("host1", new Ip("100.101.102.103"), "host2", new Ip("100.101.102.103")));
-    Row row = ospfEdgeToRow(testEdge);
+    Row row = getOspfEdgeRow("host1", "int1", "host2", "int2");
 
     assertThat(
         row,
@@ -162,19 +138,7 @@ public class NeighborsAnswererTest {
 
   @Test
   public void testRipToRow() {
-    RipNeighbor ripNeighbor1 = new RipNeighbor(new Pair<>(new Ip("1.1.1.1"), new Ip("2.2.2.2")));
-    RipNeighbor ripNeighbor2 = new RipNeighbor(new Pair<>(new Ip("2.2.2.2"), new Ip("3.3.3.3")));
-    ripNeighbor1.setOwner(_host1);
-    ripNeighbor1.setInterface(_host1.getInterfaces().get("int1"));
-    ripNeighbor2.setOwner(_host2);
-    ripNeighbor2.setInterface(_host2.getInterfaces().get("int2"));
-
-    VerboseRipEdge testEdge =
-        new VerboseRipEdge(
-            ripNeighbor1,
-            ripNeighbor2,
-            new IpEdge("host1", new Ip("100.101.102.103"), "host2", new Ip("100.101.102.103")));
-    Row row = ripEdgeToRow(testEdge);
+    Row row = getRipEdgeRow("host1", "int1", "host2", "int2");
 
     assertThat(
         row,
@@ -191,17 +155,7 @@ public class NeighborsAnswererTest {
 
   @Test
   public void testBgpToRow() {
-    BgpPeerConfig bgpPeerConfig1 = BgpActivePeerConfig.builder().setLocalAs(1L).build();
-    BgpPeerConfig bgpPeerConfig2 = BgpActivePeerConfig.builder().setLocalAs(2L).build();
-
-    VerboseBgpEdge verboseBgpEdge =
-        new VerboseBgpEdge(
-            bgpPeerConfig1,
-            bgpPeerConfig2,
-            new BgpPeerConfigId("na", "na", new Prefix(new Ip("1.1.1.1"), 24), false),
-            new BgpPeerConfigId("na", "na", new Prefix(new Ip("2.2.2.2"), 24), false),
-            new IpEdge("host1", new Ip("1.1.1.1"), "host2", new Ip("2.2.2.2")));
-    Row row = bgpEdgeToRow(verboseBgpEdge);
+    Row row = getBgpEdgeRow("host1", new Ip("1.1.1.1"), 1L, "host2", new Ip("2.2.2.2"), 2L);
     assertThat(
         row,
         allOf(
