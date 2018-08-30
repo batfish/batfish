@@ -311,11 +311,11 @@ public final class FileBasedStorage implements StorageProvider {
   public void storeAnswer(
       String answerStr,
       String network,
-      String baseSnapshot,
-      @Nullable String deltaSnapshot,
-      @Nullable String analysis,
-      String question) {
-    Path answerDir = getAnswerDir(network, baseSnapshot, deltaSnapshot, analysis, question);
+      String snapshot,
+      String question,
+      @Nullable String referenceSnapshot,
+      @Nullable String analysis) {
+    Path answerDir = getAnswerDir(network, snapshot, referenceSnapshot, analysis, question);
     // If settings has neither a question nor an analysis configured, don't write a file
     if (answerDir == null) {
       return;
@@ -329,17 +329,17 @@ public final class FileBasedStorage implements StorageProvider {
   public void storeAnswerMetadata(
       AnswerMetadata answerMetrics,
       String network,
-      @Nullable String analysis,
-      String baseSnapshot,
-      @Nullable String deltaSnapshot,
-      String question) {
+      String snapshot,
+      String question,
+      @Nullable String referenceSnapshot,
+      @Nullable String analysis) {
     String metricsStr;
     try {
       metricsStr = BatfishObjectMapper.writePrettyString(answerMetrics);
     } catch (JsonProcessingException e) {
       throw new BatfishException("Could not write answer metrics", e);
     }
-    Path answerDir = getAnswerDir(network, baseSnapshot, deltaSnapshot, analysis, question);
+    Path answerDir = getAnswerDir(network, snapshot, referenceSnapshot, analysis, question);
     if (answerDir == null) {
       // If settings has neither a question nor an analysis configured, don't write a file
       return;

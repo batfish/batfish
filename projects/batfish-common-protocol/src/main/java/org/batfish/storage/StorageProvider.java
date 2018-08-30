@@ -82,8 +82,8 @@ public interface StorageProvider {
    * @param network The name of the network
    * @param snapshot The name of the base snapshot
    * @param question The name of the question
-   * @param referenceSnapshot (optional) The name of the deltaSnapshot for a differential question, or
-   *     {@code null} for a non-differential question
+   * @param referenceSnapshot (optional) The name of the deltaSnapshot for a differential question,
+   *     or {@code null} for a non-differential question
    * @param analysis (optional) The name of the analysis for an analysis question, or {@code null}
    *     for an ad-hoc question
    */
