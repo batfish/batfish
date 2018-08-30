@@ -548,77 +548,84 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private Answer analyze() {
-    Answer answer = new Answer();
-    AnswerSummary summary = new AnswerSummary();
-    String analysisName = _settings.getAnalysisName();
-    String containerName = _settings.getContainer();
-    Path analysisQuestionsDir =
-        _settings
-            .getStorageBase()
-            .resolve(containerName)
-            .resolve(
-                Paths.get(
-                        BfConsts.RELPATH_ANALYSES_DIR, analysisName, BfConsts.RELPATH_QUESTIONS_DIR)
-                    .toString());
-    if (!Files.exists(analysisQuestionsDir)) {
-      throw new BatfishException(
-          "Analysis questions dir does not exist: '" + analysisQuestionsDir + "'");
-    }
-    RunAnalysisAnswerElement ae = new RunAnalysisAnswerElement();
-    String analysisQuestionName = _settings.getQuestionName();
-    try (Stream<Path> questions = CommonUtil.list(analysisQuestionsDir)) {
-      questions.forEach(
-          analysisQuestionDir -> {
-            String questionName = analysisQuestionDir.getFileName().toString();
-            _settings.setQuestionName(questionName);
-            Answer currentAnswer;
-            try (ActiveSpan analysisQuestionSpan =
-                GlobalTracer.get().buildSpan("Getting answer to analysis question").startActive()) {
-              assert analysisQuestionSpan != null; // make span not show up as unused
-              analysisQuestionSpan.setTag("analysis-name", analysisName);
-              currentAnswer = answer();
-            }
-            // Ensuring that question was parsed successfully
-            if (currentAnswer.getQuestion() != null) {
-              try {
-                // TODO: This can be represented much cleanly and easily with a Json
-                _logger.infof(
-                    "Ran question:%s from analysis:%s in container:%s; work-id:%s, status:%s, "
-                        + "computed dataplane:%s, parameters:%s\n",
-                    questionName,
-                    analysisName,
-                    containerName,
-                    getTaskId(),
-                    currentAnswer.getSummary().getNumFailed() > 0 ? "failed" : "passed",
-                    currentAnswer.getQuestion().getDataPlane(),
-                    BatfishObjectMapper.writeString(
-                        currentAnswer.getQuestion().getInstance().getVariables()));
-              } catch (JsonProcessingException e) {
-                throw new BatfishException(
-                    String.format(
-                        "Error logging question %s in analysis %s", questionName, analysisName),
-                    e);
+    try {
+      Answer answer = new Answer();
+      AnswerSummary summary = new AnswerSummary();
+      String analysisName = _settings.getAnalysisName();
+      String containerName = _settings.getContainer();
+      Path analysisQuestionsDir =
+          _settings
+              .getStorageBase()
+              .resolve(containerName)
+              .resolve(
+                  Paths.get(
+                          BfConsts.RELPATH_ANALYSES_DIR,
+                          analysisName,
+                          BfConsts.RELPATH_QUESTIONS_DIR)
+                      .toString());
+      if (!Files.exists(analysisQuestionsDir)) {
+        throw new BatfishException(
+            "Analysis questions dir does not exist: '" + analysisQuestionsDir + "'");
+      }
+      RunAnalysisAnswerElement ae = new RunAnalysisAnswerElement();
+      try (Stream<Path> questions = CommonUtil.list(analysisQuestionsDir)) {
+        questions.forEach(
+            analysisQuestionDir -> {
+              String questionName = analysisQuestionDir.getFileName().toString();
+              _settings.setQuestionName(questionName);
+              Answer currentAnswer;
+              try (ActiveSpan analysisQuestionSpan =
+                  GlobalTracer.get()
+                      .buildSpan("Getting answer to analysis question")
+                      .startActive()) {
+                assert analysisQuestionSpan != null; // make span not show up as unused
+                analysisQuestionSpan.setTag("analysis-name", analysisName);
+                currentAnswer = answer();
               }
-            }
-            try {
-              outputAnswer(currentAnswer);
-              outputAnswerMetadata(currentAnswer);
+              // Ensuring that question was parsed successfully
+              if (currentAnswer.getQuestion() != null) {
+                try {
+                  // TODO: This can be represented much cleanly and easily with a Json
+                  _logger.infof(
+                      "Ran question:%s from analysis:%s in container:%s; work-id:%s, status:%s, "
+                          + "computed dataplane:%s, parameters:%s\n",
+                      questionName,
+                      analysisName,
+                      containerName,
+                      getTaskId(),
+                      currentAnswer.getSummary().getNumFailed() > 0 ? "failed" : "passed",
+                      currentAnswer.getQuestion().getDataPlane(),
+                      BatfishObjectMapper.writeString(
+                          currentAnswer.getQuestion().getInstance().getVariables()));
+                } catch (JsonProcessingException e) {
+                  throw new BatfishException(
+                      String.format(
+                          "Error logging question %s in analysis %s", questionName, analysisName),
+                      e);
+                }
+              }
+              try {
+                outputAnswer(currentAnswer);
+                outputAnswerMetadata(currentAnswer);
+                ae.getAnswers().put(questionName, currentAnswer);
+              } catch (Exception e) {
+                Answer errorAnswer = new Answer();
+                errorAnswer.addAnswerElement(
+                    new BatfishStackTrace(new BatfishException("Failed to output answer", e)));
+                ae.getAnswers().put(questionName, errorAnswer);
+              }
               ae.getAnswers().put(questionName, currentAnswer);
-            } catch (Exception e) {
-              Answer errorAnswer = new Answer();
-              errorAnswer.addAnswerElement(
-                  new BatfishStackTrace(new BatfishException("Failed to output answer", e)));
-              ae.getAnswers().put(questionName, errorAnswer);
-            }
-            ae.getAnswers().put(questionName, currentAnswer);
-            _settings.setQuestionName(null);
-            summary.combine(currentAnswer.getSummary());
-          });
+              summary.combine(currentAnswer.getSummary());
+            });
+      }
+      answer.addAnswerElement(ae);
+      answer.setSummary(summary);
+      return answer;
+    } finally {
+      // ensure question name is null so logger does not try to write analysis answer into a
+      // question's answer folder
+      _settings.setQuestionName(null);
     }
-    _settings.setQuestionName(analysisQuestionName);
-    answer.addAnswerElement(ae);
-    answer.setSummary(summary);
-    return answer;
   }
 
   public Answer answer() {
