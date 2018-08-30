@@ -7,6 +7,7 @@ import static java.util.Objects.requireNonNull;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -81,29 +82,38 @@ public class Issue {
     }
   }
 
-  private static final String COL_EXPLANATION = "explanation";
-  private static final String COL_SEVERITY = "severity";
-  private static final String COL_TYPE = "type";
+  private static final String PROP_EXPLANATION = "explanation";
+  private static final String PROP_SEVERITY = "severity";
+  private static final String PROP_TYPE = "type";
+  private static final String PROP_URL = "url";
 
-  private String _explanation;
-  private int _severity;
-  private Type _type;
+  @Nullable private String _explanation;
+  @Nonnull private int _severity;
+  @Nonnull private Type _type;
+  @Nullable private String _url;
 
   @JsonCreator
   private static Issue getIssue(
-      @Nullable @JsonProperty(COL_EXPLANATION) String explanation,
-      @Nullable @JsonProperty(COL_SEVERITY) Integer severity,
-      @Nullable @JsonProperty(COL_TYPE) Type type) {
+      @JsonProperty(PROP_EXPLANATION) String explanation,
+      @JsonProperty(PROP_SEVERITY) Integer severity,
+      @JsonProperty(PROP_TYPE) Type type,
+      @JsonProperty(PROP_URL) String url) {
     return new Issue(
         firstNonNull(explanation, ""),
-        requireNonNull(severity, COL_SEVERITY + " cannot be null"),
-        requireNonNull(type, COL_TYPE + " cannot be null"));
+        requireNonNull(severity, PROP_SEVERITY + " cannot be null"),
+        requireNonNull(type, PROP_TYPE + " cannot be null"),
+        url);
   }
 
   public Issue(String explanation, Integer severity, Type type) {
+    this(explanation, severity, type, null);
+  }
+
+  public Issue(String explanation, Integer severity, Type type, String url) {
     _explanation = explanation;
     _severity = severity;
     _type = type;
+    _url = url;
   }
 
   @Override
@@ -125,27 +135,35 @@ public class Issue {
     return Objects.hash(_explanation, _severity, _type);
   }
 
-  @JsonProperty(COL_EXPLANATION)
+  @JsonProperty(PROP_EXPLANATION)
+  @Nullable
   public String getExplanation() {
     return _explanation;
   }
 
-  @JsonProperty(COL_SEVERITY)
+  @JsonProperty(PROP_SEVERITY)
   public int getSeverity() {
     return _severity;
   }
 
-  @JsonProperty(COL_TYPE)
+  @JsonProperty(PROP_TYPE)
   public Type getType() {
     return _type;
+  }
+
+  @JsonProperty(PROP_URL)
+  @Nullable
+  public String getUrl() {
+    return _url;
   }
 
   @Override
   public String toString() {
     return toStringHelper(getClass())
-        .add(COL_EXPLANATION, _explanation)
-        .add(COL_SEVERITY, _severity)
-        .add(COL_TYPE, _type)
+        .add(PROP_EXPLANATION, _explanation)
+        .add(PROP_SEVERITY, _severity)
+        .add(PROP_TYPE, _type)
+        .add(PROP_URL, _url)
         .toString();
   }
 }
