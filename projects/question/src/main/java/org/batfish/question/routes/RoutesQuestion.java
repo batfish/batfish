@@ -12,6 +12,7 @@ import java.util.function.Function;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 
@@ -45,40 +46,52 @@ public class RoutesQuestion extends Question {
     }
   }
 
+  private static final String PROP_NETWORK = "network";
+
   private static final String PROP_NODES = "nodes";
+
+  private static final String PROP_PROTOCOLS = "protocols";
+
+  private static final String PROP_RIB = "rib";
 
   private static final String PROP_VRFS = "vrfs";
 
-  private static final String PROP_PROTOCOL = "protocol";
-
   private static final String QUESTION_NAME = "routes2";
+
+  @Nullable private Prefix _network;
 
   @Nonnull private NodesSpecifier _nodes;
 
-  @Nonnull private String _vrfs;
+  @Nonnull private String _protocols;
 
-  @Nonnull private RibProtocol _protocol;
+  @Nonnull private RibProtocol _rib;
+
+  @Nonnull private String _vrfs;
 
   /**
    * Create a new question.
    *
    * @param nodes {@link NodesSpecifier} indicating which nodes' RIBs should be considered
    * @param vrfs a regex pattern indicating which VRFs should be considered
-   * @param protocol a specific protocol RIB to return routes from.
+   * @param rib a specific protocol RIB to return routes from.
    */
   @JsonCreator
   private RoutesQuestion(
+      @Nullable @JsonProperty(PROP_NETWORK) Prefix network,
       @Nullable @JsonProperty(PROP_NODES) NodesSpecifier nodes,
       @Nullable @JsonProperty(PROP_VRFS) String vrfs,
-      @Nullable @JsonProperty(PROP_PROTOCOL) RibProtocol protocol) {
+      @Nullable @JsonProperty(PROP_PROTOCOLS) String protocols,
+      @Nullable @JsonProperty(PROP_RIB) RibProtocol rib) {
+    _network = network;
     _nodes = firstNonNull(nodes, NodesSpecifier.ALL);
+    _protocols = firstNonNull(protocols, ".*");
+    _rib = firstNonNull(rib, MAIN);
     _vrfs = firstNonNull(vrfs, ".*");
-    _protocol = firstNonNull(protocol, MAIN);
   }
 
   /** Create new routes question with default parameters. */
   public RoutesQuestion() {
-    this(null, null, null);
+    this(null, null, null, null, null);
   }
 
   @Override
@@ -91,21 +104,33 @@ public class RoutesQuestion extends Question {
     return QUESTION_NAME;
   }
 
+  @JsonProperty(PROP_NETWORK)
+  @Nullable
+  public Prefix getNetwork() {
+    return _network;
+  }
+
   @JsonProperty(PROP_NODES)
   @Nonnull
   public NodesSpecifier getNodes() {
     return _nodes;
   }
 
+  @JsonProperty(PROP_PROTOCOLS)
+  @Nonnull
+  public String getProtocols() {
+    return _protocols;
+  }
+
+  @JsonProperty(PROP_RIB)
+  @Nonnull
+  public RibProtocol getRib() {
+    return _rib;
+  }
+
   @JsonProperty(PROP_VRFS)
   @Nonnull
   public String getVrfs() {
     return _vrfs;
-  }
-
-  @JsonProperty(PROP_PROTOCOL)
-  @Nonnull
-  public RibProtocol getProtocol() {
-    return _protocol;
   }
 }
