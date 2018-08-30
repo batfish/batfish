@@ -458,9 +458,7 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   private @Nonnull Path getAnalysisQuestionDir(
-      @Nonnull String network,
-      @Nonnull String analysis,
-      @Nonnull String question) {
+      @Nonnull String network, @Nonnull String analysis, @Nonnull String question) {
     return getNetworkAnalysisDir(network, analysis)
         .resolve(BfConsts.RELPATH_QUESTIONS_DIR)
         .resolve(question);
