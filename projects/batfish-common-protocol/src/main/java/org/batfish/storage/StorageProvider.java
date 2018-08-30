@@ -123,7 +123,6 @@ public interface StorageProvider {
    * @param analysis (optional) The name of the analysis for an analysis question, or {@code null}
    *     for an ad-hoc question
    * @param question The name of the question
-   * @return
    */
   @Nonnull
   String loadQuestion(@Nonnull String network, @Nullable String analysis, @Nonnull String question);
