@@ -32,15 +32,15 @@ public class Issue {
    * of certain (sub) type.
    */
   public static class Type {
-    private static final String COL_MAJOR = "major";
-    private static final String COL_MINOR = "minor";
+    private static final String PROP_MAJOR = "major";
+    private static final String PROP_MINOR = "minor";
 
-    private String _major;
-    private String _minor;
+    @Nonnull private String _major;
+    @Nonnull private String _minor;
 
     @JsonCreator
     private static Type createType(
-        @JsonProperty(COL_MAJOR) String major, @JsonProperty(COL_MINOR) String minor) {
+        @JsonProperty(PROP_MAJOR) String major, @JsonProperty(PROP_MINOR) String minor) {
       return new Type(firstNonNull(major, ""), firstNonNull(minor, ""));
     }
 
@@ -49,12 +49,14 @@ public class Issue {
       _minor = minor;
     }
 
-    @JsonProperty(COL_MAJOR)
+    @Nonnull
+    @JsonProperty(PROP_MAJOR)
     public String getMajor() {
       return _major;
     }
 
-    @JsonProperty(COL_MINOR)
+    @Nonnull
+    @JsonProperty(PROP_MINOR)
     public String getMinor() {
       return _minor;
     }
@@ -68,7 +70,7 @@ public class Issue {
         return false;
       }
       Type rhs = (Type) obj;
-      return _major.equals(rhs._major) && _minor.equals(rhs._minor);
+      return Objects.equals(_major, rhs._major) && Objects.equals(_minor, rhs._minor);
     }
 
     @Override
@@ -78,7 +80,7 @@ public class Issue {
 
     @Override
     public String toString() {
-      return toStringHelper(getClass()).add(COL_MAJOR, _major).add(COL_MINOR, _minor).toString();
+      return toStringHelper(getClass()).add(PROP_MAJOR, _major).add(PROP_MINOR, _minor).toString();
     }
   }
 
@@ -125,14 +127,15 @@ public class Issue {
       return false;
     }
     Issue rhs = (Issue) obj;
-    return _explanation.equals(rhs._explanation)
-        && _severity == rhs._severity
-        && _type.equals(rhs._type);
+    return Objects.equals(_explanation, rhs._explanation)
+        && Objects.equals(_severity, rhs._severity)
+        && Objects.equals(_type, rhs._type)
+        && Objects.equals(_url, rhs._url);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_explanation, _severity, _type);
+    return Objects.hash(_explanation, _severity, _type, _url);
   }
 
   @JsonProperty(PROP_EXPLANATION)
@@ -146,6 +149,7 @@ public class Issue {
     return _severity;
   }
 
+  @Nonnull
   @JsonProperty(PROP_TYPE)
   public Type getType() {
     return _type;
