@@ -16,6 +16,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -612,34 +613,24 @@ public class WorkMgrTest {
   }
 
   @Test
-  public void testGetAnswerMetadata() throws JsonProcessingException {
+  public void testGetAnswerMetadataAnalysisSuccess()
+      throws JsonProcessingException, FileNotFoundException {
     String networkName = "network1";
     String snapshotName = "snapshot1";
     String analysisName = "analysis1";
-    String question1Name = "question1";
+    String questionName = "question1";
     String questionContent = "{}";
-    AnswerMetadata answer1Metadata =
+    AnswerMetadata answerMetadata =
         new AnswerMetadata(new Metrics(ImmutableMap.of(), 1), AnswerStatus.SUCCESS);
-    String question2Name = "question2Name";
-    AnswerMetadata answer2Metadata =
-        new AnswerMetadata(new Metrics(ImmutableMap.of(), 2), AnswerStatus.SUCCESS);
-    String question3Name = "question3";
-    String question4Name = "question4";
-
     _manager.initContainer(networkName, null);
-
     _manager.configureAnalysis(
         networkName,
         true,
         analysisName,
-        ImmutableMap.of(question1Name, questionContent, question3Name, questionContent),
+        ImmutableMap.of(questionName, questionContent),
         ImmutableList.of(),
         null);
-
-    _manager.uploadQuestion(networkName, question2Name, questionContent, false);
-    _manager.uploadQuestion(networkName, question4Name, questionContent, false);
-
-    Path answer1Dir =
+    Path answerDir =
         _folder
             .getRoot()
             .toPath()
@@ -651,11 +642,32 @@ public class WorkMgrTest {
                     BfConsts.RELPATH_ANALYSES_DIR,
                     analysisName,
                     BfConsts.RELPATH_QUESTIONS_DIR,
-                    question1Name,
+                    questionName,
                     BfConsts.RELPATH_ENVIRONMENTS_DIR,
                     BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME));
+    // TODO: https://github.com/batfish/batfish/issues/2192
+    Path answerMetadataPath = answerDir.resolve(BfConsts.RELPATH_ANSWER_METADATA);
+    answerDir.toFile().mkdirs();
+    CommonUtil.writeFile(answerMetadataPath, BatfishObjectMapper.writePrettyString(answerMetadata));
+    AnswerMetadata answerResult =
+        _manager.getAnswerMetadata(networkName, snapshotName, null, analysisName, questionName);
 
-    Path answer2Dir =
+    assertThat(answerResult, equalTo(answerMetadata));
+  }
+
+  @Test
+  public void testGetAnswerMetadataAnalysisMissingQuestion()
+      throws JsonProcessingException, FileNotFoundException {
+    String networkName = "network1";
+    String snapshotName = "snapshot1";
+    String analysisName = "analysis1";
+    String questionName = "question1";
+    AnswerMetadata answerMetadata =
+        new AnswerMetadata(new Metrics(ImmutableMap.of(), 1), AnswerStatus.SUCCESS);
+    _manager.initContainer(networkName, null);
+    _manager.configureAnalysis(
+        networkName, true, analysisName, ImmutableMap.of(), ImmutableList.of(), null);
+    Path answerDir =
         _folder
             .getRoot()
             .toPath()
@@ -664,38 +676,187 @@ public class WorkMgrTest {
                     networkName,
                     BfConsts.RELPATH_TESTRIGS_DIR,
                     snapshotName,
-                    BfConsts.RELPATH_ANSWERS_DIR,
-                    question2Name,
+                    BfConsts.RELPATH_ANALYSES_DIR,
+                    analysisName,
+                    BfConsts.RELPATH_QUESTIONS_DIR,
+                    questionName,
+                    BfConsts.RELPATH_ENVIRONMENTS_DIR,
+                    BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME));
+    // TODO: https://github.com/batfish/batfish/issues/2192
+    Path answerMetadataPath = answerDir.resolve(BfConsts.RELPATH_ANSWER_METADATA);
+    answerDir.toFile().mkdirs();
+    CommonUtil.writeFile(answerMetadataPath, BatfishObjectMapper.writePrettyString(answerMetadata));
+    _thrown.expect(FileNotFoundException.class);
+    _manager.getAnswerMetadata(networkName, snapshotName, null, analysisName, questionName);
+  }
+
+  @Test
+  public void testGetAnswerMetadataAnalysisMissingAnswerMetadata()
+      throws JsonProcessingException, FileNotFoundException {
+    String networkName = "network1";
+    String snapshotName = "snapshot1";
+    String analysisName = "analysis1";
+    String questionName = "question1";
+    String questionContent = "{}";
+    _manager.initContainer(networkName, null);
+    _manager.configureAnalysis(
+        networkName,
+        true,
+        analysisName,
+        ImmutableMap.of(questionName, questionContent),
+        ImmutableList.of(),
+        null);
+    Path answerDir =
+        _folder
+            .getRoot()
+            .toPath()
+            .resolve(
+                Paths.get(
+                    networkName,
+                    BfConsts.RELPATH_TESTRIGS_DIR,
+                    snapshotName,
+                    BfConsts.RELPATH_ANALYSES_DIR,
+                    analysisName,
+                    BfConsts.RELPATH_QUESTIONS_DIR,
+                    questionName,
+                    BfConsts.RELPATH_ENVIRONMENTS_DIR,
+                    BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME));
+    answerDir.toFile().mkdirs();
+    AnswerMetadata answerResult =
+        _manager.getAnswerMetadata(networkName, snapshotName, null, analysisName, questionName);
+
+    assertThat(answerResult, equalTo(new AnswerMetadata(null, AnswerStatus.NOTFOUND)));
+  }
+
+  @Test
+  public void testGetAnswerMetadataAnalysisMissingAnalysis()
+      throws JsonProcessingException, FileNotFoundException {
+    String networkName = "network1";
+    String snapshotName = "snapshot1";
+    String analysisName = "analysis1";
+    String questionName = "question1";
+    AnswerMetadata answerMetadata =
+        new AnswerMetadata(new Metrics(ImmutableMap.of(), 1), AnswerStatus.SUCCESS);
+    _manager.initContainer(networkName, null);
+    Path answerDir =
+        _folder
+            .getRoot()
+            .toPath()
+            .resolve(
+                Paths.get(
+                    networkName,
+                    BfConsts.RELPATH_TESTRIGS_DIR,
+                    snapshotName,
+                    BfConsts.RELPATH_ANALYSES_DIR,
+                    analysisName,
+                    BfConsts.RELPATH_QUESTIONS_DIR,
+                    questionName,
+                    BfConsts.RELPATH_ENVIRONMENTS_DIR,
+                    BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME));
+    // TODO: https://github.com/batfish/batfish/issues/2192
+    Path answerMetadataPath = answerDir.resolve(BfConsts.RELPATH_ANSWER_METADATA);
+    answerDir.toFile().mkdirs();
+    CommonUtil.writeFile(answerMetadataPath, BatfishObjectMapper.writePrettyString(answerMetadata));
+
+    _thrown.expect(Exception.class);
+    _manager.getAnswerMetadata(networkName, snapshotName, null, analysisName, questionName);
+  }
+
+  @Test
+  public void testGetAnswerMetadataAdHocSuccess()
+      throws JsonProcessingException, FileNotFoundException {
+    String networkName = "network1";
+    String snapshotName = "snapshot1";
+    String questionContent = "{}";
+    String questionName = "question2Name";
+    AnswerMetadata answerMetadata =
+        new AnswerMetadata(new Metrics(ImmutableMap.of(), 2), AnswerStatus.SUCCESS);
+    _manager.initContainer(networkName, null);
+    _manager.uploadQuestion(networkName, questionName, questionContent, false);
+    Path answerDir =
+        _folder
+            .getRoot()
+            .toPath()
+            .resolve(
+                Paths.get(
+                    networkName,
+                    BfConsts.RELPATH_TESTRIGS_DIR,
+                    snapshotName,
+                    BfConsts.RELPATH_QUESTIONS_DIR,
+                    questionName,
                     BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
                     BfConsts.RELPATH_STANDARD_DIR));
-
     // TODO: https://github.com/batfish/batfish/issues/2192
-    Path answer1MetadataPath = answer1Dir.resolve(BfConsts.RELPATH_ANSWER_METADATA);
-    Path answer2MetadataPath = answer2Dir.resolve(BfConsts.RELPATH_ANSWER_METADATA);
+    Path answerMetadataPath = answerDir.resolve(BfConsts.RELPATH_ANSWER_METADATA);
+    answerDir.toFile().mkdirs();
+    CommonUtil.writeFile(answerMetadataPath, BatfishObjectMapper.writePrettyString(answerMetadata));
 
-    answer1Dir.toFile().mkdirs();
-    answer2Dir.toFile().mkdirs();
-
-    CommonUtil.writeFile(
-        answer1MetadataPath, BatfishObjectMapper.writePrettyString(answer1Metadata));
-    CommonUtil.writeFile(
-        answer2MetadataPath, BatfishObjectMapper.writePrettyString(answer2Metadata));
-
-    AnswerMetadata answer1Result =
-        _manager.getAnswerMetadata(networkName, snapshotName, null, analysisName, question1Name);
     AnswerMetadata answer2Result =
-        _manager.getAnswerMetadata(networkName, snapshotName, null, null, question2Name);
-    AnswerMetadata answer3Result =
-        _manager.getAnswerMetadata(networkName, snapshotName, null, analysisName, question3Name);
-    AnswerMetadata answer4Result =
-        _manager.getAnswerMetadata(networkName, snapshotName, null, null, question4Name);
+        _manager.getAnswerMetadata(networkName, snapshotName, null, null, questionName);
 
-    AnswerMetadata notFound = new AnswerMetadata(null, AnswerStatus.NOTFOUND);
+    assertThat(answer2Result, equalTo(answerMetadata));
+  }
 
-    assertThat(answer1Result, equalTo(answer1Metadata));
-    assertThat(answer2Result, equalTo(answer2Metadata));
-    assertThat(answer3Result, equalTo(notFound));
-    assertThat(answer4Result, equalTo(notFound));
+  @Test
+  public void testGetAnswerMetadataAdHocMissingAnswerMetadata()
+      throws JsonProcessingException, FileNotFoundException {
+    String networkName = "network1";
+    String snapshotName = "snapshot1";
+    String questionContent = "{}";
+    String questionName = "question2Name";
+    _manager.initContainer(networkName, null);
+    _manager.uploadQuestion(networkName, questionName, questionContent, false);
+    Path answerDir =
+        _folder
+            .getRoot()
+            .toPath()
+            .resolve(
+                Paths.get(
+                    networkName,
+                    BfConsts.RELPATH_TESTRIGS_DIR,
+                    snapshotName,
+                    BfConsts.RELPATH_QUESTIONS_DIR,
+                    questionName,
+                    BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
+                    BfConsts.RELPATH_STANDARD_DIR));
+    // TODO: https://github.com/batfish/batfish/issues/2192
+    answerDir.toFile().mkdirs();
+
+    AnswerMetadata answer2Result =
+        _manager.getAnswerMetadata(networkName, snapshotName, null, null, questionName);
+
+    assertThat(answer2Result, equalTo(new AnswerMetadata(null, AnswerStatus.NOTFOUND)));
+  }
+
+  @Test
+  public void testGetAnswerMetadataAdHocMissingQuestion()
+      throws JsonProcessingException, FileNotFoundException {
+    String networkName = "network1";
+    String snapshotName = "snapshot1";
+    String questionName = "question2Name";
+    AnswerMetadata answerMetadata =
+        new AnswerMetadata(new Metrics(ImmutableMap.of(), 2), AnswerStatus.SUCCESS);
+    _manager.initContainer(networkName, null);
+    Path answerDir =
+        _folder
+            .getRoot()
+            .toPath()
+            .resolve(
+                Paths.get(
+                    networkName,
+                    BfConsts.RELPATH_TESTRIGS_DIR,
+                    snapshotName,
+                    BfConsts.RELPATH_QUESTIONS_DIR,
+                    questionName,
+                    BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
+                    BfConsts.RELPATH_STANDARD_DIR));
+    // TODO: https://github.com/batfish/batfish/issues/2192
+    Path answerMetadataPath = answerDir.resolve(BfConsts.RELPATH_ANSWER_METADATA);
+    answerDir.toFile().mkdirs();
+    CommonUtil.writeFile(answerMetadataPath, BatfishObjectMapper.writePrettyString(answerMetadata));
+
+    _thrown.expect(Exception.class);
+    _manager.getAnswerMetadata(networkName, snapshotName, null, null, questionName);
   }
 
   @Test

@@ -1082,19 +1082,20 @@ public class WorkMgrService {
   }
 
   /**
-   * Get metrics for answers for a previously run analysis
+   * Get metrics for answers for a previously asked ad-hoc or analysis question
    *
    * @param apiKey The API key of the client
    * @param clientVersion The version of the client
    * @param networkName The name of the network in which the analysis resides
    * @param snapshotName The name of the snapshot on which the analysis was run
    * @param deltaSnapshot The name of the delta snapshot on which the analysis was run
-   * @param analysisName (optional) The name of the analysis containing the question
+   * @param analysisName (optional) The name of the analysis containing the question, or {@code
+   *     null} if requesting metrics for an ad-hoc question
    * @param questionName The name of the question
    * @return TODO: document JSON response
    */
   @POST
-  @Path(CoordConsts.SVC_RSC_GET_ANALYSIS_ANSWERS_METRICS)
+  @Path(CoordConsts.SVC_RSC_GET_ANSWER_METRICS)
   @Produces(MediaType.APPLICATION_JSON)
   public JSONArray getAnswerMetrics(
       @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
@@ -1102,22 +1103,21 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_NETWORK_NAME) String networkName,
       @FormDataParam(CoordConsts.SVC_KEY_SNAPSHOT_NAME) String snapshotName,
       @FormDataParam(CoordConsts.SVC_KEY_DELTA_SNAPSHOT_NAME) String deltaSnapshot,
-      @FormDataParam(CoordConsts.SVC_KEY_ANALYSIS_NAME) String analysisName,
+      @FormDataParam(CoordConsts.SVC_KEY_ANALYSIS_NAME) @Nullable String analysisName,
       @FormDataParam(CoordConsts.SVC_KEY_QUESTION_NAME) String questionName,
-      @FormDataParam(CoordConsts.SVC_KEY_WORKITEM) String workItemStr /* optional */) {
+      @FormDataParam(CoordConsts.SVC_KEY_WORKITEM) @Nullable String workItemStr) {
     String networkNameParam = networkName;
     String snapshotNameParam = snapshotName;
     String deltaSnapshotParam = deltaSnapshot;
     try {
       _logger.infof(
-          "WMS:getAnswerMetrics %s %s %s %s %s\n",
-          apiKey, networkNameParam, snapshotNameParam, analysisName, questionName);
+          "WMS:getAnswerMetrics %s %s %s %s %s %s\n",
+          apiKey, networkNameParam, snapshotNameParam, deltaSnapshot, analysisName, questionName);
 
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
       checkStringParam(networkNameParam, "Network name");
       checkStringParam(snapshotNameParam, "Base snapshot name");
-      checkStringParam(analysisName, "Analysis name");
 
       checkApiKeyValidity(apiKey);
       checkClientVersion(clientVersion);
@@ -1160,12 +1160,14 @@ public class WorkMgrService {
     } catch (Exception e) {
       String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.errorf(
-          "WMS:getAnalysisAnswersMetrics exception for apikey:%s in network:%s, snapshot:%s, "
-              + "deltasnapshot:%s; exception:%s",
+          "WMS:getAnswerMetrics exception for apikey:%s in network:%s, snapshot:%s, "
+              + "deltasnapshot:%s, analysis:%s, question:%s; exception:%s",
           apiKey,
           networkNameParam,
           snapshotNameParam,
-          deltaSnapshotParam == null ? "" : deltaSnapshotParam,
+          deltaSnapshotParam,
+          analysisName,
+          questionName,
           stackTrace);
       return failureResponse(e.getMessage());
     }

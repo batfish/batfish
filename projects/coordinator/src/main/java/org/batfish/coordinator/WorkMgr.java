@@ -18,6 +18,7 @@ import io.opentracing.ActiveSpan;
 import io.opentracing.References;
 import io.opentracing.SpanContext;
 import io.opentracing.util.GlobalTracer;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -705,13 +706,13 @@ public class WorkMgr extends AbstractCoordinator {
     return answer;
   }
 
-  public AnswerMetadata getAnalysisAnswerMetadata(
+  private AnswerMetadata getAnalysisAnswerMetadata(
       String containerName,
       String baseSnapshot,
       String deltaSnapshot,
       String analysisName,
       String questionName)
-      throws JsonProcessingException {
+      throws JsonProcessingException, FileNotFoundException {
     Path analysisDir = getdirContainerAnalysis(containerName, analysisName);
     Path testrigDir = getdirTestrig(containerName, baseSnapshot);
 
@@ -720,8 +721,12 @@ public class WorkMgr extends AbstractCoordinator {
             Paths.get(
                 BfConsts.RELPATH_QUESTIONS_DIR, questionName, BfConsts.RELPATH_QUESTION_FILE));
     if (!Files.exists(questionFile)) {
-      _logger.errorf("Question file for question '%s' not found\n", questionName);
-      return new AnswerMetadata(null, AnswerStatus.NOTFOUND);
+      String message =
+          String.format(
+              "Question file for question '%s' in analysis '%s' not found",
+              questionName, analysisName);
+      _logger.errorf("%s\n", message);
+      throw new FileNotFoundException(message);
     }
     Path answerDir =
         testrigDir.resolve(
@@ -829,7 +834,7 @@ public class WorkMgr extends AbstractCoordinator {
       String deltaSnapshot,
       String analysisName,
       Set<String> analysisQuestions)
-      throws JsonProcessingException {
+      throws JsonProcessingException, FileNotFoundException {
     SortedSet<String> allQuestions = listAnalysisQuestions(network, analysisName);
     SortedSet<String> questions =
         analysisQuestions.isEmpty()
@@ -901,7 +906,7 @@ public class WorkMgr extends AbstractCoordinator {
       @Nullable String deltaSnapshot,
       @Nullable String analysisName,
       @Nonnull String questionName)
-      throws JsonProcessingException {
+      throws JsonProcessingException, FileNotFoundException {
     return analysisName != null
         ? getAnalysisAnswerMetadata(
             network, baseSnapshot, deltaSnapshot, analysisName, questionName)
@@ -923,7 +928,7 @@ public class WorkMgr extends AbstractCoordinator {
     Path answerDir =
         testrigDir.resolve(
             Paths.get(
-                BfConsts.RELPATH_ANSWERS_DIR,
+                BfConsts.RELPATH_QUESTIONS_DIR,
                 questionName,
                 BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME));
     if (deltaSnapshot != null) {
