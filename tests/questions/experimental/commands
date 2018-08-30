@@ -18,6 +18,9 @@ test -raw tests/questions/experimental/interfaceMtu.ref validate-template interf
 # validate interfaceProperties
 test -raw tests/questions/experimental/interfaceProperties.ref validate-template interfaceProperties nodes=".*", interfaces=".*", properties=".*"
 
+# validate namedStructures
+test -raw tests/questions/experimental/namedStructures.ref validate-template namedStructures nodes=".*", properties=".*"
+
 # validate neighbors
 test -raw tests/questions/experimental/neighbors.ref validate-template neighbors neighborTypes=["ebgp"], nodes=".*", remoteNodes=".*", style="summary", roleDimension="default"
 
