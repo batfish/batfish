@@ -1,5 +1,5 @@
 {
-  "class": "org.batfish.question.edges.EdgessQuestion",
+  "class": "org.batfish.question.edges.EdgesQuestion",
     "differential": false,
     "instance": {
         "description": "Lists different types of edges in a snapshot",
