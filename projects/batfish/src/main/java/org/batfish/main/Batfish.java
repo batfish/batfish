@@ -2768,9 +2768,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
         AnswerMetadataUtil.computeAnswerMetadata(answer, _logger),
         _settings.getContainer(),
         _baseTestrigSettings.getName(),
+        _settings.getQuestionName(),
         deltaSnapshot,
-        _settings.getAnalysisName(),
-        _settings.getQuestionName());
+        _settings.getAnalysisName());
   }
 
   private ParserRuleContext parse(BatfishCombinedParser<?, ?> parser) {
@@ -4764,9 +4764,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
         structuredAnswerString,
         _settings.getContainer(),
         _baseTestrigSettings.getName(),
+        _settings.getQuestionName(),
         deltaSnapshot,
-        _settings.getAnalysisName(),
-        _settings.getQuestionName());
+        _settings.getAnalysisName());
   }
 
   private void writeJsonAnswerWithLog(@Nullable String logString, String structuredAnswerString) {
