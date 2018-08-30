@@ -30,5 +30,5 @@ def ref_tests(name, commands, allinone = None, extra_deps = None, **kwargs):
             allinone,
             commands,
         ] + extra_deps,
-        tags = [ "exclusive" ],
+        tags = ["exclusive"],
     )
