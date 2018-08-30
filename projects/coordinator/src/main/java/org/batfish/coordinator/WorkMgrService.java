@@ -1155,7 +1155,7 @@ public class WorkMgrService {
 
       return successResponse(response.put(CoordConsts.SVC_KEY_ANSWER, answerStr));
     } catch (IllegalArgumentException | AccessControlException e) {
-      _logger.errorf("WMS:getAnalysisAnswers exception: %s\n", e.getMessage());
+      _logger.errorf("WMS:getAnswerMetrics exception: %s\n", e.getMessage());
       return failureResponse(e.getMessage());
     } catch (Exception e) {
       String stackTrace = Throwables.getStackTraceAsString(e);
