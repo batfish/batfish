@@ -2488,7 +2488,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
        * repaired, so we still might need to load it from disk.
        */
       loadDataPlaneAnswerElement(compressed);
-      dp = cache.getIfPresent(_testrigSettings);
+      dp = cache.getIfPresent(snapshot);
       if (dp == null) {
         newBatch("Loading data plane from disk", 0);
         dp = deserializeObject(path, DataPlane.class);
