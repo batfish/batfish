@@ -84,7 +84,7 @@ public class TestStorageProvider implements StorageProvider {
   }
 
   @Override
-  public String loadQuestion(String network, String snapshot, String analysis, String question) {
+  public String loadQuestion(String network, String analysis, String question) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
   }

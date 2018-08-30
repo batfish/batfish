@@ -477,10 +477,7 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   private @Nonnull Path getQuestionDir(
-      @Nonnull String network,
-      @Nonnull String snapshot,
-      @Nullable String analysis,
-      @Nonnull String question) {
+      @Nonnull String network, @Nullable String analysis, @Nonnull String question) {
     return analysis != null
         ? getAnalysisQuestionDir(network, analysis, question)
         : getAdHocQuestionDir(network, question);
@@ -488,13 +485,9 @@ public final class FileBasedStorage implements StorageProvider {
 
   @Override
   public String loadQuestion(
-      @Nonnull String network,
-      @Nonnull String snapshot,
-      @Nullable String analysis,
-      @Nonnull String question) {
+      @Nonnull String network, @Nullable String analysis, @Nonnull String question) {
     Path questionPath =
-        getQuestionDir(network, snapshot, analysis, question)
-            .resolve(BfConsts.RELPATH_QUESTION_FILE);
+        getQuestionDir(network, analysis, question).resolve(BfConsts.RELPATH_QUESTION_FILE);
     return CommonUtil.readFile(questionPath);
   }
 }

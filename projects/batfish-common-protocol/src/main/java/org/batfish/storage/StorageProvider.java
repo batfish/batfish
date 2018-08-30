@@ -74,9 +74,5 @@ public interface StorageProvider {
       @Nonnull String questionName);
 
   @Nonnull
-  String loadQuestion(
-      @Nonnull String network,
-      @Nonnull String snapshot,
-      @Nullable String analysis,
-      @Nonnull String question);
+  String loadQuestion(@Nonnull String network, @Nullable String analysis, @Nonnull String question);
 }
