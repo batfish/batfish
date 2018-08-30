@@ -123,7 +123,7 @@ public final class FlowTraceHop implements Comparable<FlowTraceHop>, Serializabl
         .add("edge", _edge)
         .add("routes", _routes)
         .add("filterIn", _filterIn)
-        .add("filterOut", PROP_FILTER_OUT)
+        .add("filterOut", _filterOut)
         .add("transformedFlow", _transformedFlow)
         .toString();
   }
