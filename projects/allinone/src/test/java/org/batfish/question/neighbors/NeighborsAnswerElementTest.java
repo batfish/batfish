@@ -1,4 +1,4 @@
-package org.batfish.question.edges;
+package org.batfish.question.neighbors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
