@@ -24,8 +24,8 @@ import org.batfish.datamodel.FlowHistory;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.Topology;
-import org.batfish.datamodel.answers.AclLinesAnswerElementInterface;
-import org.batfish.datamodel.answers.AclLinesAnswerElementInterface.AclSpecs;
+import org.batfish.datamodel.answers.AclReachabilityRows;
+import org.batfish.datamodel.answers.AclSpecs;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.DataPlaneAnswerElement;
@@ -52,7 +52,7 @@ import org.batfish.specifier.SpecifierContext;
 
 public interface IBatfish extends IPluginConsumer {
 
-  void answerAclReachability(List<AclSpecs> aclSpecs, AclLinesAnswerElementInterface emptyAnswer);
+  void answerAclReachability(List<AclSpecs> aclSpecs, AclReachabilityRows emptyAnswer);
 
   Set<Flow> bddReducedReachability();
 
