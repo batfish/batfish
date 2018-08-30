@@ -2763,12 +2763,16 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   void outputAnswerMetadata(Answer answer) {
+    String question = _settings.getQuestionName();
+    if (question == null) {
+      return;
+    }
     String deltaSnapshot = _settings.getDiffQuestion() ? _deltaTestrigSettings.getName() : null;
     _storage.storeAnswerMetadata(
         AnswerMetadataUtil.computeAnswerMetadata(answer, _logger),
         _settings.getContainer(),
         _baseTestrigSettings.getName(),
-        _settings.getQuestionName(),
+        question,
         deltaSnapshot,
         _settings.getAnalysisName());
   }
@@ -4782,7 +4786,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
       CommonUtil.writeFile(jsonPath, logString);
     }
     // Write answer.json and answer-pretty.json if WorkItem was answering a question
-    writeJsonAnswer(structuredAnswerString);
+    if (_settings.getQuestionName() != null) {
+      writeJsonAnswer(structuredAnswerString);
+    }
   }
 
   private void writeJsonTopology() {

@@ -316,10 +316,6 @@ public final class FileBasedStorage implements StorageProvider {
       @Nullable String referenceSnapshot,
       @Nullable String analysis) {
     Path answerDir = getAnswerDir(network, snapshot, referenceSnapshot, analysis, question);
-    // If settings has neither a question nor an analysis configured, don't write a file
-    if (answerDir == null) {
-      return;
-    }
     Path answerPath = answerDir.resolve(BfConsts.RELPATH_ANSWER_JSON);
     answerDir.toFile().mkdirs();
     CommonUtil.writeFile(answerPath, answerStr);
