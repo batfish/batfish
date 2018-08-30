@@ -17,22 +17,27 @@ import static org.batfish.question.edges.EdgesAnswerer.eigrpEdgeToRow;
 import static org.batfish.question.edges.EdgesAnswerer.getBgpEdgeRow;
 import static org.batfish.question.edges.EdgesAnswerer.getOspfEdgeRow;
 import static org.batfish.question.edges.EdgesAnswerer.getRipEdgeRow;
+import static org.batfish.question.edges.EdgesAnswerer.getTableMetadata;
 import static org.batfish.question.edges.EdgesAnswerer.isisEdgeToRow;
 import static org.batfish.question.edges.EdgesAnswerer.layer1EdgeToRow;
 import static org.batfish.question.edges.EdgesAnswerer.layer2EdgeToRow;
 import static org.batfish.question.edges.EdgesAnswerer.layer3EdgeToRow;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import java.util.List;
 import java.util.Map;
 import org.batfish.common.topology.Layer1Edge;
 import org.batfish.common.topology.Layer2Edge;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Edge;
+import org.batfish.datamodel.EdgeType;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
@@ -45,6 +50,7 @@ import org.batfish.datamodel.isis.IsisEdge;
 import org.batfish.datamodel.isis.IsisLevel;
 import org.batfish.datamodel.isis.IsisNode;
 import org.batfish.datamodel.pojo.Node;
+import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.junit.Before;
 import org.junit.Test;
@@ -222,5 +228,102 @@ public class EdgesAnswererTest {
                 COL_REMOTE_IPS,
                 equalTo(ImmutableSet.of(new Ip("2.2.2.2"))),
                 Schema.set(Schema.IP))));
+  }
+
+  @Test
+  public void testTableMetadataLayer3() {
+    List<ColumnMetadata> columnMetadata = getTableMetadata(EdgeType.LAYER3).getColumnMetadata();
+    assertThat(
+        columnMetadata
+            .stream()
+            .map(ColumnMetadata::getName)
+            .collect(ImmutableList.toImmutableList()),
+        contains(
+            COL_NODE,
+            COL_INTERFACE,
+            COL_IPS,
+            COL_REMOTE_NODE,
+            COL_REMOTE_INTERFACE,
+            COL_REMOTE_IPS));
+
+    assertThat(
+        columnMetadata
+            .stream()
+            .map(ColumnMetadata::getSchema)
+            .collect(ImmutableList.toImmutableList()),
+        contains(
+            Schema.NODE,
+            Schema.INTERFACE,
+            Schema.set(Schema.IP),
+            Schema.NODE,
+            Schema.INTERFACE,
+            Schema.set(Schema.IP)));
+  }
+
+  @Test
+  public void testTableMetadataLayer2() {
+    List<ColumnMetadata> columnMetadata = getTableMetadata(EdgeType.LAYER2).getColumnMetadata();
+    assertThat(
+        columnMetadata
+            .stream()
+            .map(ColumnMetadata::getName)
+            .collect(ImmutableList.toImmutableList()),
+        contains(
+            COL_NODE,
+            COL_INTERFACE,
+            COL_VLAN,
+            COL_REMOTE_NODE,
+            COL_REMOTE_INTERFACE,
+            COL_REMOTE_VLAN));
+
+    assertThat(
+        columnMetadata
+            .stream()
+            .map(ColumnMetadata::getSchema)
+            .collect(ImmutableList.toImmutableList()),
+        contains(
+            Schema.NODE,
+            Schema.INTERFACE,
+            Schema.STRING,
+            Schema.NODE,
+            Schema.INTERFACE,
+            Schema.STRING));
+  }
+
+  @Test
+  public void testTableMetadataBgp() {
+    List<ColumnMetadata> columnMetadata = getTableMetadata(EdgeType.BGP).getColumnMetadata();
+    assertThat(
+        columnMetadata
+            .stream()
+            .map(ColumnMetadata::getName)
+            .collect(ImmutableList.toImmutableList()),
+        contains(
+            COL_NODE, COL_IP, COL_AS_NUMBER, COL_REMOTE_NODE, COL_REMOTE_IP, COL_REMOTE_AS_NUMBER));
+
+    assertThat(
+        columnMetadata
+            .stream()
+            .map(ColumnMetadata::getSchema)
+            .collect(ImmutableList.toImmutableList()),
+        contains(Schema.NODE, Schema.IP, Schema.STRING, Schema.NODE, Schema.IP, Schema.STRING));
+  }
+
+  @Test
+  public void testTableMetadataOthers() {
+    List<ColumnMetadata> columnMetadata = getTableMetadata(EdgeType.OSPF).getColumnMetadata();
+    assertThat(
+        columnMetadata
+            .stream()
+            .map(ColumnMetadata::getName)
+            .collect(ImmutableList.toImmutableList()),
+        contains(COL_NODE, COL_INTERFACE, COL_REMOTE_NODE, COL_REMOTE_INTERFACE));
+
+    assertThat(
+        columnMetadata
+            .stream()
+            .map(ColumnMetadata::getSchema)
+            .collect(ImmutableList.toImmutableList()),
+        contains(Schema.NODE, Schema.INTERFACE, Schema.NODE, Schema.INTERFACE));
   }
 }
