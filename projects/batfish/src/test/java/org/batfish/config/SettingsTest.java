@@ -3,10 +3,8 @@ package org.batfish.config;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-import java.nio.file.Paths;
 import org.batfish.common.CleanBatfishException;
 import org.batfish.main.Driver.RunMode;
 import org.junit.Test;
@@ -62,21 +60,6 @@ public class SettingsTest {
   public void testRunModeCaseInsensitive() {
     Settings settings = new Settings(new String[] {"-runmode=workservice"});
     assertThat(settings.getRunMode(), equalTo(RunMode.WORKSERVICE));
-  }
-
-  /**
-   * Value of question path is allowed to have null and acts as a special value, ensure that's
-   * supported.
-   */
-  @Test
-  public void testQuestionPathAllowNull() {
-    Settings settings = new Settings(new String[] {});
-    settings.setQuestionPath(Paths.get("test"));
-
-    assertThat(settings.getQuestionPath(), equalTo(Paths.get("test")));
-    // Update to null
-    settings.setQuestionPath(null);
-    assertThat(settings.getQuestionPath(), is(nullValue()));
   }
 
   @Test

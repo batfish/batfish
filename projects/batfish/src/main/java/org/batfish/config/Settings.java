@@ -532,8 +532,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
   public static final String TASK_ID = "taskid";
 
-  private static final String QUESTION_PATH = "questionpath";
-
   private TestrigSettings _activeTestrigSettings;
 
   private TestrigSettings _baseTestrigSettings;
@@ -814,11 +812,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
   public String getQuestionName() {
     return _config.getString(BfConsts.ARG_QUESTION_NAME);
-  }
-
-  @Nullable
-  public Path getQuestionPath() {
-    return nullablePath(_config.getString(QUESTION_PATH));
   }
 
   public boolean getRedFlagRecord() {
@@ -1539,14 +1532,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     _config.setProperty(ARG_PRINT_PARSE_TREE_LINE_NUMS, printParseTreeLineNums);
   }
 
-  public void setQuestionPath(@Nullable Path questionPath) {
-    if (questionPath != null) {
-      _config.setProperty(QUESTION_PATH, questionPath.toString());
-    } else {
-      _config.clearProperty(QUESTION_PATH);
-    }
-  }
-
   public void setReport(boolean report) {
     _config.setProperty(BfConsts.COMMAND_REPORT, report);
   }
@@ -1619,5 +1604,9 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
   public void setDataplaneEngineName(String name) {
     _config.setProperty(ARG_DATAPLANE_ENGINE_NAME, name);
+  }
+
+  public void setQuestionName(String questionName) {
+    _config.setProperty(BfConsts.ARG_QUESTION_NAME, questionName);
   }
 }
