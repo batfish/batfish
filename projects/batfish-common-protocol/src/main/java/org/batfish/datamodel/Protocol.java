@@ -1,24 +1,29 @@
 package org.batfish.datamodel;
 
+import static java.util.Objects.requireNonNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 
+/** Shorthands for application-level protocols (i.e., combos of TCP or UDP and port) */
 public enum Protocol {
   DNS("dns", IpProtocol.UDP, NamedPort.DOMAIN.number()),
   HTTP("http", IpProtocol.TCP, NamedPort.HTTP.number()),
   HTTPS("https", IpProtocol.TCP, NamedPort.HTTPS.number()),
+  SNMP("snmp", IpProtocol.UDP, NamedPort.SNMP.number()),
   SSH("ssh", IpProtocol.TCP, NamedPort.SSH.number()),
-  TELNET("telnet", IpProtocol.TCP, NamedPort.TELNET.number()),
-  TCP("tcp", IpProtocol.TCP, null),
-  UDP("udp", IpProtocol.UDP, null);
+  TELNET("telnet", IpProtocol.TCP, NamedPort.TELNET.number());
 
   private static final Map<String, Protocol> MAP = initMap();
 
   @JsonCreator
-  public static Protocol fromString(String name) {
+  public static Protocol fromString(@Nullable String name) {
+    requireNonNull(name, "Cannot instantiate protocol from null");
     Protocol value = MAP.get(name.toLowerCase());
     if (value == null) {
       throw new BatfishException(
@@ -36,27 +41,30 @@ public enum Protocol {
     return map.build();
   }
 
-  private final IpProtocol _ipProtocol;
+  @Nonnull private final IpProtocol _ipProtocol;
 
-  private final String _name;
+  @Nonnull private final String _name;
 
-  private final Integer _port;
+  @Nonnull private final Integer _port;
 
-  Protocol(String name, IpProtocol ipProtocol, Integer port) {
+  Protocol(@Nonnull String name, @Nonnull IpProtocol ipProtocol, @Nonnull Integer port) {
     _name = name;
     _ipProtocol = ipProtocol;
     _port = port;
   }
 
+  @Nonnull
   public IpProtocol getIpProtocol() {
     return _ipProtocol;
   }
 
+  @Nonnull
   @JsonValue
   public String getName() {
     return _name;
   }
 
+  @Nonnull
   public Integer getPort() {
     return _port;
   }

@@ -3,8 +3,12 @@ package org.batfish.datamodel;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.Comparators;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Ordering;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.collections.NodeInterfacePair;
@@ -34,22 +38,10 @@ public class FlowTrace implements Comparable<FlowTrace> {
 
   @Override
   public int compareTo(FlowTrace rhs) {
-    for (int i = 0; i < _hops.size(); i++) {
-      if (rhs._hops.size() < i + 1) {
-        return 1;
-      }
-      Edge leftHop = _hops.get(i).getEdge();
-      Edge rightHop = rhs._hops.get(i).getEdge();
-      int result = leftHop.compareTo(rightHop);
-      if (result != 0) {
-        return result;
-      }
-    }
-    if (rhs._hops.size() == _hops.size()) {
-      return _disposition.compareTo(rhs._disposition);
-    } else {
-      return -1;
-    }
+    return Comparator.comparing(FlowTrace::getHops, Comparators.lexicographical(Ordering.natural()))
+        .thenComparing(FlowTrace::getDisposition)
+        .thenComparing(FlowTrace::getNotes, Comparator.nullsFirst(Ordering.natural()))
+        .compare(this, rhs);
   }
 
   @Override
@@ -60,7 +52,9 @@ public class FlowTrace implements Comparable<FlowTrace> {
       return false;
     }
     FlowTrace rhs = (FlowTrace) o;
-    return _disposition == rhs._disposition && _hops.equals(rhs._hops);
+    return _disposition == rhs._disposition
+        && _hops.equals(rhs._hops)
+        && Objects.equals(_notes, rhs._notes);
   }
 
   @JsonProperty(PROP_DISPOSITION)
@@ -105,11 +99,7 @@ public class FlowTrace implements Comparable<FlowTrace> {
 
   @Override
   public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + _disposition.ordinal();
-    result = prime * result + _hops.hashCode();
-    return result;
+    return Objects.hash(_hops, _disposition.ordinal(), _notes);
   }
 
   @Override
@@ -127,7 +117,7 @@ public class FlowTrace implements Comparable<FlowTrace> {
       if (transformedFlow != null) {
         transformedFlowString = " ***TRANSFORMED:" + transformedFlow.prettyPrint("") + "***";
       }
-      String routesStr = routes != null ? (" --- " + routes) : "";
+      String routesStr = routes.isEmpty() ? (" --- " + routes) : "";
       String filterOutStr =
           hop.getFilterOut() != null ? (" -- [out: " + hop.getFilterOut() + "]") : "";
       String filterInStr = hop.getFilterIn() != null ? (" -- [in: " + hop.getFilterIn() + "]") : "";

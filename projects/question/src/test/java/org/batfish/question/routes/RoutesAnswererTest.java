@@ -41,6 +41,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
+import java.util.regex.Pattern;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.plugin.IBatfishTestAdapter;
 import org.batfish.datamodel.AbstractRoute;
@@ -49,13 +50,16 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.GenericRib;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.LocalRoute;
 import org.batfish.datamodel.MockDataPlane;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.AnswerElement;
@@ -75,9 +79,36 @@ public class RoutesAnswererTest {
         ImmutableSortedMap.of(
             "n1", ImmutableSortedMap.of(Configuration.DEFAULT_VRF_NAME, new MockRib<>()));
 
-    Multiset<Row> actual = getMainRibRoutes(ribs, ImmutableSet.of("n1"), ".*", null);
+    Multiset<Row> actual = getMainRibRoutes(ribs, ImmutableSet.of("n1"), null, ".*", ".*", null);
 
     assertThat(actual, hasSize(0));
+  }
+
+  @Test
+  public void testHasNetworkFiltering() {
+    SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs =
+        ImmutableSortedMap.of(
+            "n1",
+            ImmutableSortedMap.of(
+                Configuration.DEFAULT_VRF_NAME,
+                new MockRib<>(
+                    ImmutableSet.of(
+                        StaticRoute.builder()
+                            .setNetwork(Prefix.parse("1.1.1.0/24"))
+                            .setNextHopInterface("Null")
+                            .build(),
+                        StaticRoute.builder()
+                            .setNetwork(Prefix.parse("2.2.2.0/24"))
+                            .setNextHopInterface("Null")
+                            .build()))));
+
+    Multiset<Row> actual =
+        getMainRibRoutes(
+            ribs, ImmutableSet.of("n1"), new Prefix(new Ip("2.2.2.0"), 24), ".*", ".*", null);
+
+    assertThat(actual, hasSize(1));
+    assertThat(
+        actual.iterator().next().getPrefix(COL_NETWORK), equalTo(Prefix.parse("2.2.2.0/24")));
   }
 
   @Test
@@ -94,9 +125,33 @@ public class RoutesAnswererTest {
                             .setNextHopInterface("Null")
                             .build()))));
 
-    Multiset<Row> actual = getMainRibRoutes(ribs, ImmutableSet.of("differentNode"), ".*", null);
+    Multiset<Row> actual =
+        getMainRibRoutes(ribs, ImmutableSet.of("differentNode"), null, ".*", ".*", null);
 
     assertThat(actual, hasSize(0));
+  }
+
+  @Test
+  public void testHasProtocolFiltering() {
+    SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs =
+        ImmutableSortedMap.of(
+            "n1",
+            ImmutableSortedMap.of(
+                Configuration.DEFAULT_VRF_NAME,
+                new MockRib<>(
+                    ImmutableSet.of(
+                        StaticRoute.builder()
+                            .setNetwork(Prefix.parse("1.1.1.0/24"))
+                            .setNextHopInterface("Null")
+                            .build(),
+                        new LocalRoute(new InterfaceAddress("2.2.2.0/24"), "Null")))));
+
+    Multiset<Row> actual =
+        getMainRibRoutes(ribs, ImmutableSet.of("n1"), null, "stati.*", ".*", null);
+
+    assertThat(actual, hasSize(1));
+    assertThat(
+        actual.iterator().next().getPrefix(COL_NETWORK), equalTo(Prefix.parse("1.1.1.0/24")));
   }
 
   @Test
@@ -120,7 +175,8 @@ public class RoutesAnswererTest {
                             .setNextHopInterface("Null")
                             .build()))));
 
-    Multiset<Row> actual = getMainRibRoutes(ribs, ImmutableSet.of("n1"), "^not.*", null);
+    Multiset<Row> actual =
+        getMainRibRoutes(ribs, ImmutableSet.of("n1"), null, ".*", "^not.*", null);
 
     assertThat(actual, hasSize(1));
     assertThat(
@@ -142,7 +198,7 @@ public class RoutesAnswererTest {
                             .setAdministrativeCost(10)
                             .build()))));
 
-    Multiset<Row> actual = getMainRibRoutes(ribs, ImmutableSet.of("n1"), ".*", null);
+    Multiset<Row> actual = getMainRibRoutes(ribs, ImmutableSet.of("n1"), null, ".*", ".*", null);
 
     assertThat(actual.iterator().next().get(COL_ADMIN_DISTANCE, Schema.INTEGER), equalTo(10));
   }
@@ -162,7 +218,7 @@ public class RoutesAnswererTest {
                             .setMetric(111)
                             .build()))));
 
-    Multiset<Row> actual = getMainRibRoutes(ribs, ImmutableSet.of("n1"), ".*", null);
+    Multiset<Row> actual = getMainRibRoutes(ribs, ImmutableSet.of("n1"), null, ".*", ".*", null);
 
     assertThat(actual.iterator().next().get(COL_METRIC, Schema.INTEGER), equalTo(111));
   }
@@ -238,6 +294,8 @@ public class RoutesAnswererTest {
         getRowsForBgpRoutes(
             "node",
             "vrf",
+            null,
+            Pattern.compile(".*"),
             ImmutableSet.of(
                 new Builder()
                     .setNetwork(new Prefix(ip, MAX_PREFIX_LENGTH))
@@ -245,6 +303,7 @@ public class RoutesAnswererTest {
                     .setOriginatorIp(ip)
                     .setReceivedFromIp(ip)
                     .setCommunities(ImmutableSortedSet.of(65537L))
+                    .setProtocol(RoutingProtocol.BGP)
                     .build()));
 
     assertThat(

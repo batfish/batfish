@@ -2423,13 +2423,16 @@ public class VirtualRouter implements Serializable {
     BGP topology edges not guaranteed to be symmetrical (in case of dynamic neighbors).
     So to get session properties, we might need to flip the src/dst edge
      */
-    BgpSessionProperties tmpSession;
-    try {
-      tmpSession = bgpTopology.edgeValue(edge.src(), edge.dst());
-    } catch (IllegalArgumentException e) {
-      tmpSession = bgpTopology.edgeValue(edge.dst(), edge.src());
+    Optional<BgpSessionProperties> session = bgpTopology.edgeValue(edge.src(), edge.dst());
+    if (session.isPresent()) {
+      return session.get();
     }
-    return tmpSession;
+    return bgpTopology
+        .edgeValue(edge.dst(), edge.src())
+        .orElseThrow(
+            () ->
+                new IllegalArgumentException(
+                    String.format("No BGP edge %s in BGP topology", edge)));
   }
 
   private void queueOutgoingIsisRoutes(

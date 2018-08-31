@@ -268,11 +268,6 @@
       <artifactId>jgrapht-core</artifactId>
     </dependency>
 
-    <dependency>
-      <groupId>org.lz4</groupId>
-      <artifactId>lz4-java</artifactId>
-    </dependency>
-
     <!-- Runtime dependencies to add logging. -->
     <dependency>
       <groupId>org.slf4j</groupId>
