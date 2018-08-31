@@ -5,6 +5,8 @@ import javax.ws.rs.BadRequestException;
 import javax.ws.rs.GET;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -43,8 +45,15 @@ public class IssueSettingsResource {
       Main.getWorkMgr().putMajorIssueConfig(_network, bean.major, issueConfig);
       return Response.ok().build();
     } catch (IOException e) {
-      throw new InternalServerErrorException("Could not add the new minor issue config");
+      throw new InternalServerErrorException("Could not add the issue config");
     }
+  }
+
+  /** Relocate the request to {@link ReferenceBookResource}. */
+  @Path("/{major}/{minor}")
+  public IssueConfigResource getIssueConfigResource(
+      @PathParam("major") String major, @PathParam("minor") String minor) {
+    return new IssueConfigResource(_network, major, minor);
   }
 
   /** Nothing to send today for a plan get call on this resource */

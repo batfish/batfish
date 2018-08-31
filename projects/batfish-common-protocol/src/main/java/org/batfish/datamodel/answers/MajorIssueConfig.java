@@ -13,6 +13,7 @@ import java.nio.file.Path;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import org.batfish.common.util.BatfishObjectMapper;
@@ -45,10 +46,23 @@ public class MajorIssueConfig {
         && Objects.equals(_minorIssueConfigs, ((MajorIssueConfig) o)._minorIssueConfigs);
   }
 
+  /** Deletes the specified {@code minorIssue} */
+  public boolean delMinorIssueConfig(String minorIssue) {
+    List<MinorIssueConfig> tmpList = new LinkedList<MinorIssueConfig>(_minorIssueConfigs);
+    boolean result = tmpList.removeIf(i -> i.getMinor().equals(minorIssue));
+    _minorIssueConfigs = ImmutableSet.copyOf(tmpList);
+    return result;
+  }
+
   @JsonProperty(PROP_MAJOR_ISSUE)
   @Nonnull
   public String getMajorIssue() {
     return _majorIssue;
+  }
+
+  /** Returns the MinorIssueConfig for the specified {@code minorIssue} */
+  public Optional<MinorIssueConfig> getMinorIssueConfig(String minorIssue) {
+    return _minorIssueConfigs.stream().filter(m -> m.getMinor().equals(minorIssue)).findAny();
   }
 
   @JsonProperty(PROP_MINOR_ISSUE_CONFIGS)
