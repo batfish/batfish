@@ -157,23 +157,23 @@
                 {
                   "edge" : {
                     "node1" : "as2border2",
-                    "node1interface" : "FastEthernet0/1",
-                    "node2" : "as2core1",
-                    "node2interface" : "FastEthernet0/1"
+                    "node1interface" : "FastEthernet1/0",
+                    "node2" : "as2core2",
+                    "node2interface" : "FastEthernet0/0"
                   },
                   "routes" : [
-                    "OspfExternalType2Route<2.34.101.0/24,nhip:2.12.21.2,nhint:dynamic>_fnhip:2.12.21.2"
+                    "OspfExternalType2Route<2.34.101.0/24,nhip:2.12.22.2,nhint:dynamic>_fnhip:2.12.22.2"
                   ]
                 },
                 {
                   "edge" : {
-                    "node1" : "as2core1",
-                    "node1interface" : "FastEthernet2/0",
+                    "node1" : "as2core2",
+                    "node1interface" : "FastEthernet1/0",
                     "node2" : "as2dist1",
-                    "node2interface" : "FastEthernet0/1"
+                    "node2interface" : "FastEthernet0/0"
                   },
                   "routes" : [
-                    "OspfExternalType2Route<2.34.101.0/24,nhip:2.23.11.3,nhint:dynamic>_fnhip:2.23.11.3"
+                    "OspfExternalType2Route<2.34.101.0/24,nhip:2.23.21.3,nhint:dynamic>_fnhip:2.23.21.3"
                   ]
                 },
                 {
@@ -196,23 +196,23 @@
                 {
                   "edge" : {
                     "node1" : "as2border2",
-                    "node1interface" : "FastEthernet1/0",
-                    "node2" : "as2core2",
-                    "node2interface" : "FastEthernet0/0"
+                    "node1interface" : "FastEthernet0/1",
+                    "node2" : "as2core1",
+                    "node2interface" : "FastEthernet0/1"
                   },
                   "routes" : [
-                    "OspfExternalType2Route<2.34.101.0/24,nhip:2.12.22.2,nhint:dynamic>_fnhip:2.12.22.2"
+                    "OspfExternalType2Route<2.34.101.0/24,nhip:2.12.21.2,nhint:dynamic>_fnhip:2.12.21.2"
                   ]
                 },
                 {
                   "edge" : {
-                    "node1" : "as2core2",
-                    "node1interface" : "FastEthernet1/0",
+                    "node1" : "as2core1",
+                    "node1interface" : "FastEthernet2/0",
                     "node2" : "as2dist1",
-                    "node2interface" : "FastEthernet0/0"
+                    "node2interface" : "FastEthernet0/1"
                   },
                   "routes" : [
-                    "OspfExternalType2Route<2.34.101.0/24,nhip:2.23.21.3,nhint:dynamic>_fnhip:2.23.21.3"
+                    "OspfExternalType2Route<2.34.101.0/24,nhip:2.23.11.3,nhint:dynamic>_fnhip:2.23.11.3"
                   ]
                 },
                 {
