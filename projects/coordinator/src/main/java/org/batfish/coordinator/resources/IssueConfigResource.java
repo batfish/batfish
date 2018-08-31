@@ -9,7 +9,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-import org.batfish.common.BatfishLogger;
 import org.batfish.coordinator.Main;
 import org.batfish.datamodel.answers.MajorIssueConfig;
 import org.batfish.datamodel.answers.MinorIssueConfig;
@@ -21,7 +20,6 @@ import org.batfish.datamodel.answers.MinorIssueConfig;
 @Produces(MediaType.APPLICATION_JSON)
 public class IssueConfigResource {
 
-  private BatfishLogger _logger = Main.getLogger();
   private String _major;
   private String _minor;
   private String _network;
