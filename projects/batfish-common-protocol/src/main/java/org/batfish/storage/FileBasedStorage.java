@@ -290,15 +290,19 @@ public final class FileBasedStorage implements StorageProvider {
   private @Nonnull Path getStandardAnswerDir(
       String network, String snapshot, @Nullable String analysis, String question) {
     Path snapshotDir = getSnapshotDir(network, snapshot);
-    Path dirWithQuestions =
-        analysis != null
-            ? snapshotDir.resolve(BfConsts.RELPATH_ANALYSES_DIR).resolve(analysis)
-            : snapshotDir;
-    return dirWithQuestions
-        .resolve(BfConsts.RELPATH_QUESTIONS_DIR)
-        .resolve(question)
-        .resolve(BfConsts.RELPATH_ENVIRONMENTS_DIR)
-        .resolve(BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME);
+    return analysis != null
+        ? snapshotDir
+            .resolve(BfConsts.RELPATH_ANALYSES_DIR)
+            .resolve(analysis)
+            .resolve(BfConsts.RELPATH_QUESTIONS_DIR)
+            .resolve(question)
+            .resolve(BfConsts.RELPATH_ENVIRONMENTS_DIR)
+            .resolve(BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME)
+        : snapshotDir
+            .resolve(BfConsts.RELPATH_ANSWERS_DIR)
+            .resolve(question)
+            .resolve(BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME)
+            .resolve(BfConsts.RELPATH_STANDARD_DIR);
   }
 
   private @Nonnull Path getDeltaAnswerDir(
@@ -308,18 +312,24 @@ public final class FileBasedStorage implements StorageProvider {
       @Nullable String analysis,
       String question) {
     Path snapshotDir = getSnapshotDir(network, baseSnapshot);
-    Path dirWithQuestions =
-        analysis != null
-            ? snapshotDir.resolve(BfConsts.RELPATH_ANALYSES_DIR).resolve(analysis)
-            : snapshotDir;
-    return dirWithQuestions
-        .resolve(BfConsts.RELPATH_QUESTIONS_DIR)
-        .resolve(question)
-        .resolve(BfConsts.RELPATH_ENVIRONMENTS_DIR)
-        .resolve(BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME)
-        .resolve(BfConsts.RELPATH_DELTA)
-        .resolve(deltaSnapshot)
-        .resolve(BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME);
+    return analysis != null
+        ? snapshotDir
+            .resolve(BfConsts.RELPATH_ANALYSES_DIR)
+            .resolve(analysis)
+            .resolve(BfConsts.RELPATH_QUESTIONS_DIR)
+            .resolve(question)
+            .resolve(BfConsts.RELPATH_ENVIRONMENTS_DIR)
+            .resolve(BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME)
+            .resolve(BfConsts.RELPATH_DELTA)
+            .resolve(deltaSnapshot)
+            .resolve(BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME)
+        : snapshotDir
+            .resolve(BfConsts.RELPATH_ANSWERS_DIR)
+            .resolve(question)
+            .resolve(BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME)
+            .resolve(BfConsts.RELPATH_DIFF_DIR)
+            .resolve(deltaSnapshot)
+            .resolve(BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME);
   }
 
   @Override
