@@ -31,7 +31,7 @@ import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.DataPlaneAnswerElement;
 import org.batfish.datamodel.answers.InitInfoAnswerElement;
-import org.batfish.datamodel.answers.IssueConfig;
+import org.batfish.datamodel.answers.MajorIssueConfig;
 import org.batfish.datamodel.answers.ParseEnvironmentBgpTablesAnswerElement;
 import org.batfish.datamodel.answers.ParseEnvironmentRoutingTablesAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
@@ -149,8 +149,8 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public IssueConfig getIssueConfig(String questionName) {
-    return new IssueConfig(null);
+  public MajorIssueConfig getMajorIssueConfig(String majorIssue) {
+    return new MajorIssueConfig(majorIssue, null);
   }
 
   @Override

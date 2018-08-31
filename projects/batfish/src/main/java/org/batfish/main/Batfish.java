@@ -141,7 +141,7 @@ import org.batfish.datamodel.answers.DataPlaneAnswerElement;
 import org.batfish.datamodel.answers.FlattenVendorConfigurationAnswerElement;
 import org.batfish.datamodel.answers.InitInfoAnswerElement;
 import org.batfish.datamodel.answers.InitStepAnswerElement;
-import org.batfish.datamodel.answers.IssueConfig;
+import org.batfish.datamodel.answers.MajorIssueConfig;
 import org.batfish.datamodel.answers.NodAnswerElement;
 import org.batfish.datamodel.answers.NodFirstUnsatAnswerElement;
 import org.batfish.datamodel.answers.NodSatAnswerElement;
@@ -1946,29 +1946,27 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   /**
-   * Returns the {@link IssueConfig} for the given major issue type.
+   * Returns the {@link MajorIssueConfig} for the given major issue type.
    *
    * <p>If the corresponding file is not found or it cannot be deserealized, return an empty object.
    */
   @Override
-  public IssueConfig getIssueConfig(String majorIssueType) {
-    Path issueConfig =
-        _settings
-            .getStorageBase()
-            .resolve(_settings.getContainer())
-            .resolve(BfConsts.RELPATH_CONTAINER_SETTINGS)
-            .resolve(BfConsts.RELPATH_CONTAINER_SETTINGS_ISSUES)
-            .resolve(majorIssueType + ".json");
-    if (Files.exists(issueConfig)) {
-      try {
-        return BatfishObjectMapper.mapper().readValue(issueConfig.toFile(), IssueConfig.class);
-      } catch (IOException e) {
-        _logger.errorf(
-            "ERROR: Could not cast %s to IssueConfig: %s",
-            issueConfig, Throwables.getStackTraceAsString(e));
-      }
+  public MajorIssueConfig getMajorIssueConfig(String majorIssueType) {
+    try {
+      return MajorIssueConfig.read(
+          _settings
+              .getStorageBase()
+              .resolve(_settings.getContainer())
+              .resolve(BfConsts.RELPATH_CONTAINER_SETTINGS)
+              .resolve(BfConsts.RELPATH_CONTAINER_SETTINGS_ISSUES)
+              .resolve(majorIssueType + ".json"),
+          majorIssueType);
+    } catch (IOException e) {
+      _logger.errorf(
+          "ERROR: Could not cast file to MajorIssueConfig: %s",
+          Throwables.getStackTraceAsString(e));
+      return new MajorIssueConfig(majorIssueType, null);
     }
-    return new IssueConfig(null);
   }
 
   @Override
