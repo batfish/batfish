@@ -16,7 +16,7 @@
     "variables" : {
       "excludeShutInterfaces" : {
         "description" : "Exclude interfaces that are shutdown",
-        "optional" : false,
+        "optional" : true,
         "type" : "boolean",
         "value" : false
       },
