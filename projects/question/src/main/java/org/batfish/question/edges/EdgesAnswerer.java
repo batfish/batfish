@@ -40,6 +40,7 @@ import org.batfish.datamodel.eigrp.EigrpEdge;
 import org.batfish.datamodel.eigrp.EigrpInterface;
 import org.batfish.datamodel.eigrp.EigrpTopology;
 import org.batfish.datamodel.isis.IsisEdge;
+import org.batfish.datamodel.isis.IsisNode;
 import org.batfish.datamodel.isis.IsisTopology;
 import org.batfish.datamodel.ospf.OspfNeighbor;
 import org.batfish.datamodel.ospf.OspfProcess;
@@ -100,17 +101,23 @@ public class EdgesAnswerer extends Answerer {
       Set<String> includeNodes,
       Set<String> includeRemoteNodes,
       EdgeType edgeType) {
+    Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpNodeOwners(configurations, true);
     switch (edgeType) {
       case BGP:
-        return getBgpEdges(configurations, includeNodes, includeRemoteNodes);
+        ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
+            CommonUtil.initBgpTopology(configurations, ipOwners, false, false, null, null);
+        return getBgpEdges(configurations, includeNodes, includeRemoteNodes, bgpTopology);
       case EIGRP:
-        return getEigrpEdges(configurations, includeNodes, includeRemoteNodes, topology);
+        Network<EigrpInterface, EigrpEdge> eigrpTopology =
+            EigrpTopology.initEigrpTopology(configurations, topology);
+        return getEigrpEdges(includeNodes, includeRemoteNodes, eigrpTopology);
       case ISIS:
-        return getIsisEdges(configurations, includeNodes, includeRemoteNodes, topology);
+        Network<IsisNode, IsisEdge> isisTopology =
+            IsisTopology.initIsisTopology(configurations, topology);
+        return getIsisEdges(includeNodes, includeRemoteNodes, isisTopology);
       case OSPF:
         return getOspfEdges(configurations, includeNodes, includeRemoteNodes, topology);
       case RIP:
-        Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpNodeOwners(configurations, true);
         _batfish.initRemoteRipNeighbors(configurations, ipOwners, topology);
         return getRipEdges(configurations, includeNodes, includeRemoteNodes);
       case LAYER1:
@@ -125,13 +132,10 @@ public class EdgesAnswerer extends Answerer {
     }
   }
 
-  private static Multiset<Row> getEigrpEdges(
-      Map<String, Configuration> configurations,
+  static Multiset<Row> getEigrpEdges(
       Set<String> includeNodes,
       Set<String> includeRemoteNodes,
-      Topology topology) {
-    Network<EigrpInterface, EigrpEdge> eigrpTopology =
-        EigrpTopology.initEigrpTopology(configurations, topology);
+      Network<EigrpInterface, EigrpEdge> eigrpTopology) {
 
     return eigrpTopology
         .edges()
@@ -144,14 +148,12 @@ public class EdgesAnswerer extends Answerer {
         .collect(Collectors.toCollection(HashMultiset::create));
   }
 
-  private static Multiset<Row> getBgpEdges(
+  static Multiset<Row> getBgpEdges(
       Map<String, Configuration> configurations,
       Set<String> includeNodes,
-      Set<String> includeRemoteNodes) {
+      Set<String> includeRemoteNodes,
+      ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology) {
     Multiset<Row> rows = HashMultiset.create();
-    Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpNodeOwners(configurations, true);
-    ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
-        CommonUtil.initBgpTopology(configurations, ipOwners, false, false, null, null);
     for (EndpointPair<BgpPeerConfigId> session : bgpTopology.edges()) {
       BgpPeerConfigId bgpPeerConfigId = session.source();
       BgpPeerConfigId remoteBgpPeerConfigId = session.target();
@@ -178,12 +180,11 @@ public class EdgesAnswerer extends Answerer {
     return rows;
   }
 
-  private static Multiset<Row> getIsisEdges(
-      Map<String, Configuration> configurations,
+  static Multiset<Row> getIsisEdges(
       Set<String> includeNodes,
       Set<String> includeRemoteNodes,
-      Topology topology) {
-    return IsisTopology.initIsisTopology(configurations, topology)
+      Network<IsisNode, IsisEdge> isisTopology) {
+    return isisTopology
         .edges()
         .stream()
         .filter(Objects::nonNull)
@@ -195,7 +196,7 @@ public class EdgesAnswerer extends Answerer {
         .collect(Collectors.toCollection(HashMultiset::create));
   }
 
-  private static Multiset<Row> getLayer1Edges(
+  static Multiset<Row> getLayer1Edges(
       Set<String> includeNodes,
       Set<String> includeRemoteNodes,
       @Nullable Layer1Topology layer1Topology) {
@@ -214,7 +215,7 @@ public class EdgesAnswerer extends Answerer {
         .collect(Collectors.toCollection(HashMultiset::create));
   }
 
-  private static Multiset<Row> getLayer2Edges(
+  static Multiset<Row> getLayer2Edges(
       Set<String> includeNodes,
       Set<String> includeRemoteNodes,
       @Nullable Layer2Topology layer2Topology) {
@@ -233,7 +234,7 @@ public class EdgesAnswerer extends Answerer {
         .collect(Collectors.toCollection(HashMultiset::create));
   }
 
-  private static Multiset<Row> getLayer3Edges(
+  static Multiset<Row> getLayer3Edges(
       Map<String, Configuration> configurations,
       Set<String> includeNodes,
       Set<String> includeRemoteNodes,
@@ -249,7 +250,7 @@ public class EdgesAnswerer extends Answerer {
         .collect(Collectors.toCollection(HashMultiset::create));
   }
 
-  private static Multiset<Row> getOspfEdges(
+  static Multiset<Row> getOspfEdges(
       Map<String, Configuration> configurations,
       Set<String> includeNodes,
       Set<String> includeRemoteNodes,
@@ -283,7 +284,7 @@ public class EdgesAnswerer extends Answerer {
     return rows;
   }
 
-  private static Multiset<Row> getRipEdges(
+  static Multiset<Row> getRipEdges(
       Map<String, Configuration> configurations,
       Set<String> includeNodes,
       Set<String> includeRemoteNodes) {

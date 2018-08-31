@@ -1,9 +1,12 @@
 package org.batfish.datamodel;
 
+import static java.util.Objects.requireNonNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
+import javax.annotation.Nonnull;
 import org.batfish.common.BatfishException;
 
 public enum EdgeType {
@@ -29,6 +32,7 @@ public enum EdgeType {
 
   @JsonCreator
   public static EdgeType fromName(String name) {
+    requireNonNull(name, "Cannot create an EdgeType from null");
     EdgeType instance = _map.get(name.toLowerCase());
     if (instance == null) {
       throw new BatfishException(
@@ -37,12 +41,13 @@ public enum EdgeType {
     return instance;
   }
 
-  private final String _name;
+  @Nonnull private final String _name;
 
-  EdgeType(String name) {
+  EdgeType(@Nonnull String name) {
     _name = name;
   }
 
+  @Nonnull
   @JsonValue
   public String edgeTypeName() {
     return _name;

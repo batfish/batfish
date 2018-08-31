@@ -15,8 +15,16 @@ import static org.batfish.question.edges.EdgesAnswerer.COL_REMOTE_VLAN;
 import static org.batfish.question.edges.EdgesAnswerer.COL_VLAN;
 import static org.batfish.question.edges.EdgesAnswerer.eigrpEdgeToRow;
 import static org.batfish.question.edges.EdgesAnswerer.getBgpEdgeRow;
+import static org.batfish.question.edges.EdgesAnswerer.getBgpEdges;
+import static org.batfish.question.edges.EdgesAnswerer.getEigrpEdges;
+import static org.batfish.question.edges.EdgesAnswerer.getIsisEdges;
+import static org.batfish.question.edges.EdgesAnswerer.getLayer1Edges;
+import static org.batfish.question.edges.EdgesAnswerer.getLayer2Edges;
+import static org.batfish.question.edges.EdgesAnswerer.getLayer3Edges;
 import static org.batfish.question.edges.EdgesAnswerer.getOspfEdgeRow;
+import static org.batfish.question.edges.EdgesAnswerer.getOspfEdges;
 import static org.batfish.question.edges.EdgesAnswerer.getRipEdgeRow;
+import static org.batfish.question.edges.EdgesAnswerer.getRipEdges;
 import static org.batfish.question.edges.EdgesAnswerer.getTableMetadata;
 import static org.batfish.question.edges.EdgesAnswerer.isisEdgeToRow;
 import static org.batfish.question.edges.EdgesAnswerer.layer1EdgeToRow;
@@ -25,15 +33,31 @@ import static org.batfish.question.edges.EdgesAnswerer.layer3EdgeToRow;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Multiset;
+import com.google.common.graph.MutableNetwork;
+import com.google.common.graph.MutableValueGraph;
+import com.google.common.graph.NetworkBuilder;
+import com.google.common.graph.ValueGraphBuilder;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import org.batfish.common.Pair;
 import org.batfish.common.topology.Layer1Edge;
+import org.batfish.common.topology.Layer1Node;
+import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.Layer2Edge;
+import org.batfish.common.topology.Layer2Topology;
+import org.batfish.datamodel.BgpActivePeerConfig;
+import org.batfish.datamodel.BgpPeerConfigId;
+import org.batfish.datamodel.BgpProcess;
+import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Edge;
@@ -42,6 +66,11 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
+import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RipNeighbor;
+import org.batfish.datamodel.RipProcess;
+import org.batfish.datamodel.Topology;
+import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.eigrp.EigrpEdge;
@@ -49,6 +78,8 @@ import org.batfish.datamodel.eigrp.EigrpInterface;
 import org.batfish.datamodel.isis.IsisEdge;
 import org.batfish.datamodel.isis.IsisLevel;
 import org.batfish.datamodel.isis.IsisNode;
+import org.batfish.datamodel.ospf.OspfArea;
+import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
@@ -59,6 +90,10 @@ import org.junit.Test;
 public class EdgesAnswererTest {
   private Configuration _host1;
   private Configuration _host2;
+  private Topology _topology;
+  private Map<String, Configuration> _configurations;
+  private Set<String> _includeNodes;
+  private Set<String> _includeRemoteNodes;
 
   @Before
   public void setup() {
@@ -74,6 +109,7 @@ public class EdgesAnswererTest {
                 .setName("int1")
                 .setAddress(new InterfaceAddress(new Ip("1.1.1.1"), 24))
                 .build()));
+
     _host2 = cb.setHostname("host2").build();
     _host2.setInterfaces(
         ImmutableSortedMap.of(
@@ -82,6 +118,297 @@ public class EdgesAnswererTest {
                 .setName("int2")
                 .setAddress(new InterfaceAddress(new Ip("2.2.2.2"), 24))
                 .build()));
+
+    _configurations = ImmutableSortedMap.of("host1", _host1, "host2", _host2);
+    _includeNodes = ImmutableSortedSet.of("host1", "host2");
+    _includeRemoteNodes = ImmutableSortedSet.of("host1", "host2");
+
+    // Sending an  edge from host1 to host2 in layer 3
+    _topology = new Topology(ImmutableSortedSet.of(new Edge("host1", "int1", "host2", "int2")));
+  }
+
+  @Test
+  public void testGetEigrpEdges() {
+    MutableNetwork<EigrpInterface, EigrpEdge> eigrpTopology =
+        NetworkBuilder.directed().allowsParallelEdges(false).allowsSelfLoops(false).build();
+
+    EigrpInterface eigrpInterface1 = new EigrpInterface("host1", "int1", "vrf1");
+    EigrpInterface eigrpInterface2 = new EigrpInterface("host2", "int2", "vrf2");
+
+    eigrpTopology.addEdge(
+        eigrpInterface1, eigrpInterface2, new EigrpEdge(eigrpInterface1, eigrpInterface2));
+
+    Multiset<Row> rows = getEigrpEdges(_includeNodes, _includeRemoteNodes, eigrpTopology);
+
+    assertThat(
+        rows,
+        contains(
+            allOf(
+                hasColumn(COL_NODE, equalTo(new Node("host1")), Schema.NODE),
+                hasColumn(
+                    COL_INTERFACE,
+                    equalTo(new NodeInterfacePair("host1", "int1")),
+                    Schema.INTERFACE),
+                hasColumn(COL_REMOTE_NODE, equalTo(new Node("host2")), Schema.NODE),
+                hasColumn(
+                    COL_REMOTE_INTERFACE,
+                    equalTo(new NodeInterfacePair("host2", "int2")),
+                    Schema.INTERFACE))));
+  }
+
+  @Test
+  public void testGetBgpEdges() {
+    BgpProcess bgp1 = new BgpProcess();
+    bgp1.setRouterId(new Ip("1.1.1.1"));
+    BgpActivePeerConfig peer1 =
+        BgpActivePeerConfig.builder().setLocalIp(new Ip("1.1.1.1")).setLocalAs(1L).build();
+    bgp1.getActiveNeighbors().put(new Prefix(new Ip("2.2.2.2"), 24), peer1);
+    BgpPeerConfigId neighborId1 =
+        new BgpPeerConfigId("host1", "vrf1", new Prefix(new Ip("2.2.2.2"), 24), false);
+
+    BgpProcess bgp2 = new BgpProcess();
+    bgp2.setRouterId(new Ip("2.2.2.2"));
+    BgpActivePeerConfig peer2 =
+        BgpActivePeerConfig.builder().setLocalIp(new Ip("2.2.2.2")).setLocalAs(2L).build();
+    bgp2.getActiveNeighbors().put(new Prefix(new Ip("1.1.1.1"), 24), peer2);
+    BgpPeerConfigId neighborId2 =
+        new BgpPeerConfigId("host2", "vrf2", new Prefix(new Ip("1.1.1.1"), 24), false);
+
+    Vrf vrf1 = new Vrf("vrf1");
+    vrf1.setBgpProcess(bgp1);
+    Vrf vrf2 = new Vrf("vrf2");
+    vrf2.setBgpProcess(bgp2);
+
+    _host1.setVrfs(ImmutableSortedMap.of("vrf1", vrf1));
+    _host2.setVrfs(ImmutableSortedMap.of("vrf2", vrf2));
+
+    MutableValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
+        ValueGraphBuilder.directed().allowsSelfLoops(false).build();
+    bgpTopology.putEdgeValue(neighborId1, neighborId2, BgpSessionProperties.from(peer1, peer2));
+
+    Multiset<Row> rows =
+        getBgpEdges(_configurations, _includeNodes, _includeRemoteNodes, bgpTopology);
+
+    assertThat(
+        rows,
+        contains(
+            allOf(
+                hasColumn(COL_NODE, equalTo(new Node("host1")), Schema.NODE),
+                hasColumn(COL_IP, equalTo(new Ip("1.1.1.1")), Schema.IP),
+                hasColumn(COL_AS_NUMBER, equalTo("1"), Schema.STRING),
+                hasColumn(COL_REMOTE_NODE, equalTo(new Node("host2")), Schema.NODE),
+                hasColumn(COL_REMOTE_IP, equalTo(new Ip("2.2.2.2")), Schema.IP),
+                hasColumn(COL_REMOTE_AS_NUMBER, equalTo("2"), Schema.STRING))));
+  }
+
+  @Test
+  public void testGetOspfEdges() {
+    OspfProcess ospf1 = new OspfProcess();
+    OspfProcess ospf2 = new OspfProcess();
+
+    NetworkFactory nf = new NetworkFactory();
+    OspfArea one = OspfArea.builder(nf).setNumber(1L).setOspfProcess(ospf1).build();
+    OspfArea two = OspfArea.builder(nf).setNumber(2L).setOspfProcess(ospf2).build();
+    one.getInterfaces().add("int1");
+    two.getInterfaces().add("int2");
+    ospf1.getAreas().put(1L, one);
+    ospf2.getAreas().put(1L, two);
+
+    Vrf vrf1 = new Vrf("vrf1");
+    vrf1.setOspfProcess(ospf1);
+    Vrf vrf2 = new Vrf("vrf2");
+    vrf2.setOspfProcess(ospf2);
+
+    _host1.setVrfs(ImmutableSortedMap.of("vrf1", vrf1));
+    _host2.setVrfs(ImmutableSortedMap.of("vrf2", vrf2));
+    _host1.getInterfaces().get("int1").setVrf(vrf1);
+    _host2.getInterfaces().get("int2").setVrf(vrf2);
+
+    Multiset<Row> rows =
+        getOspfEdges(_configurations, _includeNodes, _includeRemoteNodes, _topology);
+    assertThat(
+        rows,
+        contains(
+            allOf(
+                hasColumn(COL_NODE, equalTo(new Node("host1")), Schema.NODE),
+                hasColumn(
+                    COL_INTERFACE,
+                    equalTo(new NodeInterfacePair("host1", "int1")),
+                    Schema.INTERFACE),
+                hasColumn(COL_REMOTE_NODE, equalTo(new Node("host2")), Schema.NODE),
+                hasColumn(
+                    COL_REMOTE_INTERFACE,
+                    equalTo(new NodeInterfacePair("host2", "int2")),
+                    Schema.INTERFACE))));
+  }
+
+  @Test
+  public void testGetRipEdges() {
+    RipProcess rip1 = new RipProcess();
+    RipProcess rip2 = new RipProcess();
+    RipNeighbor ripNeighbor1 = new RipNeighbor(new Pair<>(new Ip("1.1.1.1"), new Ip("2.2.2.2")));
+    RipNeighbor ripNeighbor2 = new RipNeighbor(new Pair<>(new Ip("2.2.2.2"), new Ip("1.1.1.1")));
+    rip1.setRipNeighbors(
+        ImmutableSortedMap.of(new Pair<>(new Ip("1.1.1.1"), new Ip("2.2.2.2")), ripNeighbor1));
+    rip2.setRipNeighbors(
+        ImmutableSortedMap.of(new Pair<>(new Ip("2.2.2.2"), new Ip("1.1.1.1")), ripNeighbor2));
+    ripNeighbor1.setOwner(_host1);
+    ripNeighbor2.setOwner(_host2);
+    ripNeighbor1.setIface(_host1.getInterfaces().get("int1"));
+    ripNeighbor2.setIface(_host2.getInterfaces().get("int2"));
+    ripNeighbor1.setRemoteRipNeighbor(ripNeighbor2);
+    ripNeighbor2.setRemoteRipNeighbor(ripNeighbor1);
+
+    Vrf vrf1 = new Vrf("vrf1");
+    Vrf vrf2 = new Vrf("vrf2");
+
+    vrf1.setRipProcess(rip1);
+    vrf2.setRipProcess(rip2);
+
+    _host1.setVrfs(ImmutableSortedMap.of("vrf1", vrf1));
+    _host2.setVrfs(ImmutableSortedMap.of("vrf2", vrf2));
+
+    Multiset<Row> rows = getRipEdges(_configurations, _includeNodes, _includeRemoteNodes);
+
+    assertThat(
+        rows,
+        containsInAnyOrder(
+            ImmutableList.of(
+                allOf(
+                    hasColumn(COL_NODE, equalTo(new Node("host1")), Schema.NODE),
+                    hasColumn(
+                        COL_INTERFACE,
+                        equalTo(new NodeInterfacePair("host1", "int1")),
+                        Schema.INTERFACE),
+                    hasColumn(COL_REMOTE_NODE, equalTo(new Node("host2")), Schema.NODE),
+                    hasColumn(
+                        COL_REMOTE_INTERFACE,
+                        equalTo(new NodeInterfacePair("host2", "int2")),
+                        Schema.INTERFACE)),
+                allOf(
+                    hasColumn(COL_NODE, equalTo(new Node("host2")), Schema.NODE),
+                    hasColumn(
+                        COL_INTERFACE,
+                        equalTo(new NodeInterfacePair("host2", "int2")),
+                        Schema.INTERFACE),
+                    hasColumn(COL_REMOTE_NODE, equalTo(new Node("host1")), Schema.NODE),
+                    hasColumn(
+                        COL_REMOTE_INTERFACE,
+                        equalTo(new NodeInterfacePair("host1", "int1")),
+                        Schema.INTERFACE)))));
+  }
+
+  @Test
+  public void testGetIsisEdges() {
+    IsisNode node1 = new IsisNode("host1", "int1");
+    IsisNode node2 = new IsisNode("host2", "int2");
+
+    IsisEdge edge = new IsisEdge(IsisLevel.LEVEL_1, node1, node2);
+
+    MutableNetwork<IsisNode, IsisEdge> isisTopology =
+        NetworkBuilder.directed().allowsParallelEdges(false).allowsSelfLoops(false).build();
+    isisTopology.addEdge(node1, node2, edge);
+
+    Multiset<Row> rows = getIsisEdges(_includeNodes, _includeRemoteNodes, isisTopology);
+    assertThat(
+        rows,
+        contains(
+            allOf(
+                hasColumn(COL_NODE, equalTo(new Node("host1")), Schema.NODE),
+                hasColumn(
+                    COL_INTERFACE,
+                    equalTo(new NodeInterfacePair("host1", "int1")),
+                    Schema.INTERFACE),
+                hasColumn(COL_REMOTE_NODE, equalTo(new Node("host2")), Schema.NODE),
+                hasColumn(
+                    COL_REMOTE_INTERFACE,
+                    equalTo(new NodeInterfacePair("host2", "int2")),
+                    Schema.INTERFACE))));
+  }
+
+  @Test
+  public void testGetLayer1Edges() {
+    Layer1Node layer1Node1 = new Layer1Node("host1", "int1");
+    Layer1Node layer1Node2 = new Layer1Node("host2", "int2");
+
+    Multiset<Row> rows =
+        getLayer1Edges(
+            _includeNodes,
+            _includeRemoteNodes,
+            new Layer1Topology(ImmutableSortedSet.of(new Layer1Edge(layer1Node1, layer1Node2))));
+    assertThat(
+        rows,
+        contains(
+            allOf(
+                hasColumn(COL_NODE, equalTo(new Node("host1")), Schema.NODE),
+                hasColumn(
+                    COL_INTERFACE,
+                    equalTo(new NodeInterfacePair("host1", "int1")),
+                    Schema.INTERFACE),
+                hasColumn(COL_REMOTE_NODE, equalTo(new Node("host2")), Schema.NODE),
+                hasColumn(
+                    COL_REMOTE_INTERFACE,
+                    equalTo(new NodeInterfacePair("host2", "int2")),
+                    Schema.INTERFACE))));
+  }
+
+  @Test
+  public void testGetLayer2Edges() {
+    Layer1Node layer1Node1 = new Layer1Node("host1", "int1");
+    Layer1Node layer1Node2 = new Layer1Node("host2", "int2");
+
+    Multiset<Row> rows =
+        getLayer2Edges(
+            _includeNodes,
+            _includeRemoteNodes,
+            new Layer2Topology(
+                ImmutableSortedSet.of(new Layer2Edge(layer1Node1, 1, layer1Node2, 2, 12))));
+    assertThat(
+        rows,
+        contains(
+            allOf(
+                hasColumn(COL_NODE, equalTo(new Node("host1")), Schema.NODE),
+                hasColumn(
+                    COL_INTERFACE,
+                    equalTo(new NodeInterfacePair("host1", "int1")),
+                    Schema.INTERFACE),
+                hasColumn(COL_VLAN, equalTo("1"), Schema.STRING),
+                hasColumn(COL_REMOTE_NODE, equalTo(new Node("host2")), Schema.NODE),
+                hasColumn(
+                    COL_REMOTE_INTERFACE,
+                    equalTo(new NodeInterfacePair("host2", "int2")),
+                    Schema.INTERFACE),
+                hasColumn(COL_REMOTE_VLAN, equalTo("2"), Schema.STRING))));
+  }
+
+  @Test
+  public void testGetLayer3Edges() {
+    Topology layer3Topology =
+        new Topology(ImmutableSortedSet.of(new Edge("host1", "int1", "host2", "int2")));
+
+    Multiset<Row> rows =
+        getLayer3Edges(_configurations, _includeNodes, _includeRemoteNodes, layer3Topology);
+
+    assertThat(
+        rows,
+        contains(
+            allOf(
+                hasColumn(COL_NODE, equalTo(new Node("host1")), Schema.NODE),
+                hasColumn(
+                    COL_INTERFACE,
+                    equalTo(new NodeInterfacePair("host1", "int1")),
+                    Schema.INTERFACE),
+                hasColumn(
+                    COL_IPS, equalTo(ImmutableSet.of(new Ip("1.1.1.1"))), Schema.set(Schema.IP)),
+                hasColumn(COL_REMOTE_NODE, equalTo(new Node("host2")), Schema.NODE),
+                hasColumn(
+                    COL_REMOTE_INTERFACE,
+                    equalTo(new NodeInterfacePair("host2", "int2")),
+                    Schema.INTERFACE),
+                hasColumn(
+                    COL_REMOTE_IPS,
+                    equalTo(ImmutableSet.of(new Ip("2.2.2.2"))),
+                    Schema.set(Schema.IP)))));
   }
 
   @Test
