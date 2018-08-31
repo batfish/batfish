@@ -131,8 +131,8 @@ public interface StorageProvider {
    * Return a list of the names of the questions associated with the given analysis of the given
    * network
    *
-   * @param containerName
-   * @param analysisName
+   * @param network The name of the network
+   * @param analysis The name of the analysis
    */
   @Nonnull
   List<String> listAnalysisQuestions(String network, String analysis);
