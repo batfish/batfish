@@ -1,5 +1,6 @@
 package org.batfish.storage;
 
+import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import javax.annotation.Nonnull;
@@ -125,4 +126,14 @@ public interface StorageProvider {
    */
   @Nonnull
   String loadQuestion(String network, String question, @Nullable String analysis);
+
+  /**
+   * Return a list of the names of the questions associated with the given analysis of the given
+   * network
+   *
+   * @param containerName
+   * @param analysisName
+   */
+  @Nonnull
+  List<String> listAnalysisQuestions(String network, String analysis);
 }

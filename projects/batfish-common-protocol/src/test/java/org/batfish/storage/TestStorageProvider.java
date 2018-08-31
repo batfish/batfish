@@ -1,5 +1,6 @@
 package org.batfish.storage;
 
+import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import org.batfish.common.topology.Layer1Topology;
@@ -85,6 +86,12 @@ public class TestStorageProvider implements StorageProvider {
 
   @Override
   public String loadQuestion(String network, String analysis, String question) {
+    throw new UnsupportedOperationException(
+        "no implementation for generated method"); // TODO Auto-generated method stub
+  }
+
+  @Override
+  public List<String> listAnalysisQuestions(String network, String analysis) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
   }

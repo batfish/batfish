@@ -5,6 +5,7 @@ import static org.batfish.common.plugin.PluginConsumer.detectFormat;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableList;
 import com.google.common.io.Closer;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -17,6 +18,7 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.SortedMap;
@@ -191,20 +193,24 @@ public final class FileBasedStorage implements StorageProvider {
   @Override
   public void storeCompressedConfigurations(
       Map<String, Configuration> configurations, String network, String snapshot) {
-    Path testrigDir = getSnapshotDir(network, snapshot);
+    Path snapshotDir = getSnapshotDir(network, snapshot);
 
-    if (!testrigDir.toFile().exists() && !testrigDir.toFile().mkdirs()) {
+    if (!snapshotDir.toFile().exists() && !snapshotDir.toFile().mkdirs()) {
       throw new BatfishException(
-          String.format("Unable to create testrig directory '%s'", testrigDir));
+          String.format("Unable to create snapshot directory '%s'", snapshotDir));
     }
 
-    Path outputDir = testrigDir.resolve(BfConsts.RELPATH_COMPRESSED_CONFIG_DIR);
+    Path outputDir = getCompressedConfigDir(network, snapshot);
 
     String batchName =
         String.format(
             "Serializing %s compressed configuration structures for snapshot %s",
             configurations.size(), snapshot);
     storeConfigurations(outputDir, batchName, configurations);
+  }
+
+  private Path getCompressedConfigDir(String network, String snapshot) {
+    return getSnapshotDir(network, snapshot).resolve(BfConsts.RELPATH_COMPRESSED_CONFIG_DIR);
   }
 
   /**
@@ -217,18 +223,18 @@ public final class FileBasedStorage implements StorageProvider {
       ConvertConfigurationAnswerElement convertAnswerElement,
       String network,
       String snapshot) {
-    Path testrigDir = getSnapshotDir(network, snapshot);
-    if (!testrigDir.toFile().exists() && !testrigDir.toFile().mkdirs()) {
+    Path snapshotDir = getSnapshotDir(network, snapshot);
+    if (!snapshotDir.toFile().exists() && !snapshotDir.toFile().mkdirs()) {
       throw new BatfishException(
-          String.format("Unable to create testrig directory '%s'", testrigDir));
+          String.format("Unable to create snapshot directory '%s'", snapshotDir));
     }
 
     // Save the convert configuration answer element.
-    Path ccaePath = testrigDir.resolve(BfConsts.RELPATH_CONVERT_ANSWER_PATH);
+    Path ccaePath = getConvertAnswerPath(network, snapshot);
     CommonUtil.deleteIfExists(ccaePath);
     serializeObject(convertAnswerElement, ccaePath);
 
-    Path outputDir = testrigDir.resolve(BfConsts.RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR);
+    Path outputDir = getVendorIndependentConfigDir(network, snapshot);
 
     String batchName =
         String.format(
@@ -236,6 +242,15 @@ public final class FileBasedStorage implements StorageProvider {
             configurations.size(), snapshot);
 
     storeConfigurations(outputDir, batchName, configurations);
+  }
+
+  private @Nonnull Path getVendorIndependentConfigDir(String network, String snapshot) {
+    return getSnapshotDir(network, snapshot)
+        .resolve(BfConsts.RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR);
+  }
+
+  private @Nonnull Path getConvertAnswerPath(String network, String snapshot) {
+    return getSnapshotDir(network, snapshot).resolve(BfConsts.RELPATH_CONVERT_ANSWER_PATH);
   }
 
   private void storeConfigurations(
@@ -447,9 +462,7 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   private @Nonnull Path getAnalysisQuestionDir(String network, String analysis, String question) {
-    return getNetworkAnalysisDir(network, analysis)
-        .resolve(BfConsts.RELPATH_QUESTIONS_DIR)
-        .resolve(question);
+    return getAnalysisQuestionsDir(network, analysis).resolve(question);
   }
 
   private @Nonnull Path getAdHocQuestionDir(String network, String question) {
@@ -475,5 +488,26 @@ public final class FileBasedStorage implements StorageProvider {
     Path questionPath =
         getQuestionDir(network, analysis, question).resolve(BfConsts.RELPATH_QUESTION_FILE);
     return CommonUtil.readFile(questionPath);
+  }
+
+  private @Nonnull Path getVendorSpecificConfigDir(String network, String snapshot) {
+    return getSnapshotDir(network, snapshot).resolve(BfConsts.RELPATH_VENDOR_SPECIFIC_CONFIG_DIR);
+  }
+
+  @Override
+  public @Nonnull List<String> listAnalysisQuestions(String network, String analysis) {
+    Path analysisQuestionsDir = getAnalysisQuestionsDir(network, analysis);
+    if (!Files.exists(analysisQuestionsDir)) {
+      throw new BatfishException(
+          String.format("Analysis questions dir does not exist: '%s'", analysisQuestionsDir));
+    }
+    return CommonUtil.list(analysisQuestionsDir)
+        .map(Path::getFileName)
+        .map(Object::toString)
+        .collect(ImmutableList.toImmutableList());
+  }
+
+  private @Nonnull Path getAnalysisQuestionsDir(String network, String analysis) {
+    return getNetworkAnalysisDir(network, analysis).resolve(BfConsts.RELPATH_QUESTIONS_DIR);
   }
 }
