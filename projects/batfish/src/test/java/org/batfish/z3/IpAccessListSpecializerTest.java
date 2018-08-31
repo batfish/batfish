@@ -117,7 +117,7 @@ public final class IpAccessListSpecializerTest {
   public void visitMatchHeaderSpace_EmptyDisjunction() {
     List<Integer> integerList = ImmutableList.of(0);
     List<IpProtocol> ipProtocolList = ImmutableList.of(IpProtocol.ICMP);
-    List<Protocol> protocolList = ImmutableList.of(Protocol.TCP);
+    List<Protocol> protocolList = ImmutableList.of(Protocol.HTTP);
     List<FlowState> stateList = ImmutableList.of(FlowState.NEW);
     List<SubRange> subRangeList = ImmutableList.of(new SubRange(0, 0));
     List<TcpFlagsMatchConditions> tcpFlagsList =
