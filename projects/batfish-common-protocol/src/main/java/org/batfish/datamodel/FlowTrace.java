@@ -38,8 +38,8 @@ public class FlowTrace implements Comparable<FlowTrace> {
       if (rhs._hops.size() < i + 1) {
         return 1;
       }
-      Edge leftHop = _hops.get(i).getEdge();
-      Edge rightHop = rhs._hops.get(i).getEdge();
+      FlowTraceHop leftHop = _hops.get(i);
+      FlowTraceHop rightHop = rhs._hops.get(i);
       int result = leftHop.compareTo(rightHop);
       if (result != 0) {
         return result;
