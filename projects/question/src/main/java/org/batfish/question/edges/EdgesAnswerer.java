@@ -132,6 +132,7 @@ public class EdgesAnswerer extends Answerer {
     }
   }
 
+  @VisibleForTesting
   static Multiset<Row> getEigrpEdges(
       Set<String> includeNodes,
       Set<String> includeRemoteNodes,
@@ -148,6 +149,7 @@ public class EdgesAnswerer extends Answerer {
         .collect(Collectors.toCollection(HashMultiset::create));
   }
 
+  @VisibleForTesting
   static Multiset<Row> getBgpEdges(
       Map<String, Configuration> configurations,
       Set<String> includeNodes,
@@ -180,6 +182,7 @@ public class EdgesAnswerer extends Answerer {
     return rows;
   }
 
+  @VisibleForTesting
   static Multiset<Row> getIsisEdges(
       Set<String> includeNodes,
       Set<String> includeRemoteNodes,
@@ -196,6 +199,7 @@ public class EdgesAnswerer extends Answerer {
         .collect(Collectors.toCollection(HashMultiset::create));
   }
 
+  @VisibleForTesting
   static Multiset<Row> getLayer1Edges(
       Set<String> includeNodes,
       Set<String> includeRemoteNodes,
@@ -215,6 +219,7 @@ public class EdgesAnswerer extends Answerer {
         .collect(Collectors.toCollection(HashMultiset::create));
   }
 
+  @VisibleForTesting
   static Multiset<Row> getLayer2Edges(
       Set<String> includeNodes,
       Set<String> includeRemoteNodes,
@@ -234,6 +239,7 @@ public class EdgesAnswerer extends Answerer {
         .collect(Collectors.toCollection(HashMultiset::create));
   }
 
+  @VisibleForTesting
   static Multiset<Row> getLayer3Edges(
       Map<String, Configuration> configurations,
       Set<String> includeNodes,
@@ -250,6 +256,7 @@ public class EdgesAnswerer extends Answerer {
         .collect(Collectors.toCollection(HashMultiset::create));
   }
 
+  @VisibleForTesting
   static Multiset<Row> getOspfEdges(
       Map<String, Configuration> configurations,
       Set<String> includeNodes,
@@ -284,6 +291,7 @@ public class EdgesAnswerer extends Answerer {
     return rows;
   }
 
+  @VisibleForTesting
   static Multiset<Row> getRipEdges(
       Map<String, Configuration> configurations,
       Set<String> includeNodes,
@@ -316,6 +324,7 @@ public class EdgesAnswerer extends Answerer {
     return rows;
   }
 
+  @VisibleForTesting
   static Row eigrpEdgeToRow(EigrpEdge eigrpEdge) {
     RowBuilder row = Row.builder();
     row.put(COL_NODE, new Node(eigrpEdge.getNode1().getHostname()))
@@ -331,6 +340,7 @@ public class EdgesAnswerer extends Answerer {
     return row.build();
   }
 
+  @VisibleForTesting
   static Row getBgpEdgeRow(
       String node,
       @Nullable Ip ip,
@@ -363,6 +373,7 @@ public class EdgesAnswerer extends Answerer {
     return row.build();
   }
 
+  @VisibleForTesting
   static Row layer1EdgeToRow(Layer1Edge layer1Edge) {
     RowBuilder row = Row.builder();
     row.put(COL_NODE, new Node(layer1Edge.getNode1().getHostname()))
@@ -379,6 +390,7 @@ public class EdgesAnswerer extends Answerer {
     return row.build();
   }
 
+  @VisibleForTesting
   static Row layer2EdgeToRow(Layer2Edge layer2Edge) {
     RowBuilder row = Row.builder();
     row.put(COL_NODE, new Node(layer2Edge.getNode1().getHostname()))
@@ -397,6 +409,7 @@ public class EdgesAnswerer extends Answerer {
     return row.build();
   }
 
+  @VisibleForTesting
   static Row layer3EdgeToRow(Map<String, Configuration> configurations, Edge edge) {
     Interface interface1 = configurations.get(edge.getNode1()).getInterfaces().get(edge.getInt1());
     Interface interface2 = configurations.get(edge.getNode2()).getInterfaces().get(edge.getInt2());
@@ -426,6 +439,7 @@ public class EdgesAnswerer extends Answerer {
     return row.build();
   }
 
+  @VisibleForTesting
   static Row getOspfEdgeRow(String node, String iface, String remoteNode, String remoteIface) {
     RowBuilder row = Row.builder();
     row.put(COL_NODE, new Node(node))

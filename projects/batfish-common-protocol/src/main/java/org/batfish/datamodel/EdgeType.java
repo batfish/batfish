@@ -36,7 +36,7 @@ public enum EdgeType {
     EdgeType instance = _map.get(name.toLowerCase());
     if (instance == null) {
       throw new BatfishException(
-          "No " + EdgeType.class.getSimpleName() + " with name: '" + name + "'");
+          String.format("No %s with name: '%s'", EdgeType.class.getSimpleName(), name));
     }
     return instance;
   }
