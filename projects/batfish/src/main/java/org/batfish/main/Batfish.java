@@ -129,8 +129,8 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TypeMatchExprsCollector;
-import org.batfish.datamodel.answers.AclLinesAnswerElementInterface;
-import org.batfish.datamodel.answers.AclLinesAnswerElementInterface.AclSpecs;
+import org.batfish.datamodel.answers.AclReachabilityRows;
+import org.batfish.datamodel.answers.AclSpecs;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.AnswerMetadataUtil;
@@ -738,8 +738,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public void answerAclReachability(
-      List<AclSpecs> aclSpecs, AclLinesAnswerElementInterface answerRows) {
+  public void answerAclReachability(List<AclSpecs> aclSpecs, AclReachabilityRows answerRows) {
 
     // Map aclSpecs into a map of hostname/aclName pairs to AclSpecs objects
     Map<AclIdentifier, AclSpecs> aclSpecsMap =
@@ -812,7 +811,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
-  private Map<AclLine, Configuration> collectConfigs(
+  private static Map<AclLine, Configuration> collectConfigs(
       AclSpecs aclSpec, TypeMatchExprsCollector<PermittedByAcl> permittedByAclFinder) {
     String hostname = aclSpec.reprHostname;
     List<IpAccessListLine> lines = aclSpec.acl.getSanitizedAcl().getLines();
@@ -880,7 +879,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
                 }));
   }
 
-  private NavigableMap<String, IpAccessList> collectAcls(
+  private static NavigableMap<String, IpAccessList> collectAcls(
       int lineNum, AclSpecs aclSpec, @Nullable BDDIpAccessListSpecializer specializer) {
     Map<String, IpAccessList> dependencies = aclSpec.acl.getDependencies();
     IpAccessList acl = aclSpec.acl.getSanitizedAcl();
@@ -890,8 +889,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
               .entrySet()
               .stream()
               .collect(
-                  Collectors.toMap(
-                      dep -> dep.getKey(), dep -> specializer.specialize(dep.getValue())));
+                  Collectors.toMap(Entry::getKey, dep -> specializer.specialize(dep.getValue())));
       acl = specializer.specializeUpToLine(acl, lineNum);
     }
     return new ImmutableSortedMap.Builder<String, IpAccessList>(Comparator.naturalOrder())
@@ -997,7 +995,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     checkDataPlane(_testrigSettings);
   }
 
-  public void checkDataPlane(TestrigSettings testrigSettings) {
+  public static void checkDataPlane(TestrigSettings testrigSettings) {
     EnvironmentSettings envSettings = testrigSettings.getEnvironmentSettings();
     if (!Files.exists(envSettings.getDataPlanePath())) {
       throw new CleanBatfishException(
@@ -2490,7 +2488,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
        * repaired, so we still might need to load it from disk.
        */
       loadDataPlaneAnswerElement(compressed);
-      dp = cache.getIfPresent(_testrigSettings);
+      dp = cache.getIfPresent(snapshot);
       if (dp == null) {
         newBatch("Loading data plane from disk", 0);
         dp = deserializeObject(path, DataPlane.class);

@@ -1698,7 +1698,7 @@ public class ClientTest {
 
   @Test
   public void testValidProtocolValue() throws IOException {
-    JsonNode prefixRangeNode = _mapper.readTree("\"tcp\"");
+    JsonNode prefixRangeNode = _mapper.readTree("\"http\"");
     Question.InstanceData.Variable variable = new Question.InstanceData.Variable();
     variable.setType(PROTOCOL);
     Client.validateType(prefixRangeNode, variable);

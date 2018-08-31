@@ -1,7 +1,9 @@
-package org.batfish.question.aclreachability2;
+package org.batfish.question.aclreachability;
 
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
+import static org.batfish.datamodel.answers.AclReachabilityRows.createMetadata;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.List;
@@ -10,7 +12,12 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.common.Answerer;
+import org.batfish.common.plugin.IBatfish;
+import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpAccessList;
@@ -23,14 +30,40 @@ import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TypeMatchExprsCollector;
 import org.batfish.datamodel.acl.UndefinedReferenceException;
-import org.batfish.datamodel.answers.AclLinesAnswerElementInterface;
-import org.batfish.datamodel.answers.AclLinesAnswerElementInterface.AclSpecs;
+import org.batfish.datamodel.answers.AclReachabilityRows;
+import org.batfish.datamodel.answers.AclSpecs;
+import org.batfish.datamodel.questions.Question;
+import org.batfish.datamodel.table.TableAnswerElement;
+import org.batfish.specifier.FilterSpecifier;
+import org.batfish.specifier.SpecifierContext;
 
-/**
- * Class to hold methods used by both {@link AclReachability2Answerer} and the original ACL
- * reachability question plugin.
- */
-public final class AclReachabilityAnswererUtils {
+@ParametersAreNonnullByDefault
+public class AclReachabilityAnswerer extends Answerer {
+
+  public AclReachabilityAnswerer(Question question, IBatfish batfish) {
+    super(question, batfish);
+  }
+
+  @Override
+  public TableAnswerElement answer() {
+    AclReachabilityQuestion question = (AclReachabilityQuestion) _question;
+    AclReachabilityRows answerRows = new AclReachabilityRows();
+
+    SpecifierContext ctxt = _batfish.specifierContext();
+    Set<String> specifiedNodes = question.nodeSpecifier().resolve(ctxt);
+    FilterSpecifier filterSpecifier = question.filterSpecifier();
+
+    Map<String, Set<IpAccessList>> specifiedAcls =
+        CommonUtil.toImmutableMap(
+            specifiedNodes, Function.identity(), node -> filterSpecifier.resolve(node, ctxt));
+
+    SortedMap<String, Configuration> configurations = _batfish.loadConfigurations();
+    List<AclSpecs> aclSpecs = getAclSpecs(configurations, specifiedAcls, answerRows);
+    _batfish.answerAclReachability(aclSpecs, answerRows);
+    TableAnswerElement answer = new TableAnswerElement(createMetadata(question));
+    answer.postProcessAnswer(question, answerRows.getRows());
+    return answer;
+  }
 
   private static final TypeMatchExprsCollector<PermittedByAcl> permittedByAclCollector =
       new TypeMatchExprsCollector<>(PermittedByAcl.class);
@@ -306,10 +339,11 @@ public final class AclReachabilityAnswererUtils {
    * @return List of {@link AclSpecs} objects to analyze for an ACL reachability question with the
    *     given specified nodes and ACL regex.
    */
+  @VisibleForTesting
   public static List<AclSpecs> getAclSpecs(
       SortedMap<String, Configuration> configurations,
       Map<String, Set<IpAccessList>> specifiedAcls,
-      AclLinesAnswerElementInterface answer) {
+      AclReachabilityRows answer) {
     List<AclSpecs.Builder> aclSpecs = new ArrayList<>();
 
     /*

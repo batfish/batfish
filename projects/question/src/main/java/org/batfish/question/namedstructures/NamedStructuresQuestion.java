@@ -10,23 +10,23 @@ import org.batfish.datamodel.questions.Question;
 
 /**
  * A question that returns named structures of nodes in a tabular format. {@link
- * NamedStructuresQuestion#_nodeRegex} determines which nodes are included, and {@link
- * NamedStructuresQuestion#_propertySpec} determines which named structures are included.
+ * NamedStructuresQuestion#_nodes} determines which nodes are included, and {@link
+ * NamedStructuresQuestion#_properties} determines which named structures are included.
  */
 public class NamedStructuresQuestion extends Question {
 
-  private static final String PROP_NODE_REGEX = "nodeRegex";
-  private static final String PROP_PROPERTY_SPEC = "propertySpec";
+  private static final String PROP_NODES = "nodes";
+  private static final String PROP_PROPERTIES = "properties";
 
-  private final NodesSpecifier _nodeRegex;
+  private final NodesSpecifier _nodes;
 
-  @Nonnull private NamedStructureSpecifier _propertySpec;
+  @Nonnull private NamedStructureSpecifier _properties;
 
   public NamedStructuresQuestion(
-      @JsonProperty(PROP_NODE_REGEX) NodesSpecifier nodeRegex,
-      @JsonProperty(PROP_PROPERTY_SPEC) NamedStructureSpecifier propertySpec) {
-    _nodeRegex = firstNonNull(nodeRegex, NodesSpecifier.ALL);
-    _propertySpec = firstNonNull(propertySpec, NamedStructureSpecifier.ALL);
+      @JsonProperty(PROP_NODES) NodesSpecifier nodes,
+      @JsonProperty(PROP_PROPERTIES) NamedStructureSpecifier properties) {
+    _nodes = firstNonNull(nodes, NodesSpecifier.ALL);
+    _properties = firstNonNull(properties, NamedStructureSpecifier.ALL);
   }
 
   @Override
@@ -36,16 +36,16 @@ public class NamedStructuresQuestion extends Question {
 
   @Override
   public String getName() {
-    return "namedstructures";
+    return "namedStructures";
   }
 
-  @JsonProperty(PROP_NODE_REGEX)
-  public NodesSpecifier getNodeRegex() {
-    return _nodeRegex;
+  @JsonProperty(PROP_NODES)
+  public NodesSpecifier getNodes() {
+    return _nodes;
   }
 
-  @JsonProperty(PROP_PROPERTY_SPEC)
-  public NamedStructureSpecifier getPropertySpec() {
-    return _propertySpec;
+  @JsonProperty(PROP_PROPERTIES)
+  public NamedStructureSpecifier getProperties() {
+    return _properties;
   }
 }

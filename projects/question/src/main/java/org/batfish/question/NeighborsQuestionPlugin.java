@@ -744,7 +744,16 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
         for (EndpointPair<BgpPeerConfigId> session : _bgpTopology.edges()) {
           BgpPeerConfigId bgpPeerConfigId = session.source();
           BgpPeerConfigId remoteBgpPeerConfigId = session.target();
-          boolean ebgp = _bgpTopology.edgeValue(bgpPeerConfigId, remoteBgpPeerConfigId).isEbgp();
+          boolean ebgp =
+              _bgpTopology
+                  .edgeValue(bgpPeerConfigId, remoteBgpPeerConfigId)
+                  .orElseThrow(
+                      () ->
+                          new IllegalStateException(
+                              String.format(
+                                  "Edge %s -> %s not in BGP topology",
+                                  bgpPeerConfigId, remoteBgpPeerConfigId)))
+                  .isEbgp();
           if (ebgp) {
             VerboseBgpEdge edge =
                 constructVerboseBgpEdge(
@@ -785,7 +794,14 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
           BgpPeerConfigId bgpPeerConfigId = session.source();
           BgpPeerConfigId remoteBgpPeerConfigId = session.target();
           BgpSessionProperties sessionProp =
-              _bgpTopology.edgeValue(bgpPeerConfigId, remoteBgpPeerConfigId);
+              _bgpTopology
+                  .edgeValue(bgpPeerConfigId, remoteBgpPeerConfigId)
+                  .orElseThrow(
+                      () ->
+                          new IllegalStateException(
+                              String.format(
+                                  "Edge %s -> %s not in IBGP topology",
+                                  bgpPeerConfigId, remoteBgpPeerConfigId)));
           boolean ibgp = sessionProp.getSessionType() == SessionType.IBGP;
           if (ibgp) {
             VerboseBgpEdge edge =

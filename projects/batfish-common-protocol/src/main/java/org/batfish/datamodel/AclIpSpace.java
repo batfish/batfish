@@ -113,17 +113,40 @@ public class AclIpSpace extends IpSpace {
   }
 
   private static @Nullable IpSpace intersection(Spliterator<IpSpace> ipSpaces) {
-    IpSpace[] complements =
-        StreamSupport.stream(ipSpaces, false)
-            .filter(Objects::nonNull)
-            .map(IpSpace::complement)
-            .toArray(IpSpace[]::new);
+    IpSpace[] nonNullSpaces =
+        StreamSupport.stream(ipSpaces, false).filter(Objects::nonNull).toArray(IpSpace[]::new);
 
-    if (complements.length == 0) {
+    if (nonNullSpaces.length == 0) {
+      // all null
       return null;
     }
 
-    return builder().thenRejecting(complements).thenPermitting(UniverseIpSpace.INSTANCE).build();
+    IpSpace[] nonUniverseSpaces =
+        Arrays.stream(nonNullSpaces)
+            .filter(ipSpace -> ipSpace != UniverseIpSpace.INSTANCE)
+            .toArray(IpSpace[]::new);
+
+    if (nonUniverseSpaces.length == 0) {
+      // all UniverseIpSpace
+      return UniverseIpSpace.INSTANCE;
+    }
+
+    if (nonUniverseSpaces.length == 1) {
+      return nonUniverseSpaces[0];
+    }
+
+    // complement each concrete space.
+    for (int i = 0; i < nonUniverseSpaces.length; i++) {
+      if (nonUniverseSpaces[i] == EmptyIpSpace.INSTANCE) {
+        return EmptyIpSpace.INSTANCE;
+      }
+      nonUniverseSpaces[i] = nonUniverseSpaces[i].complement();
+    }
+
+    return builder()
+        .thenRejecting(nonUniverseSpaces)
+        .thenPermitting(UniverseIpSpace.INSTANCE)
+        .build();
   }
 
   public static Builder permitting(IpSpace... ipSpaces) {
@@ -151,7 +174,7 @@ public class AclIpSpace extends IpSpace {
    * {@code null} ipSpaces are ignored. If all arguments are {@code null}, returns {@code null}.
    */
   public static @Nullable IpSpace union(IpSpace... ipSpaces) {
-    return unionNonnull(Arrays.stream(ipSpaces).filter(Objects::nonNull).toArray(IpSpace[]::new));
+    return union(Arrays.asList(ipSpaces));
   }
 
   /**
@@ -159,10 +182,19 @@ public class AclIpSpace extends IpSpace {
    * {@code null} ipSpaces are ignored. If all arguments are {@code null}, returns {@code null}.
    */
   public static @Nullable IpSpace union(Iterable<IpSpace> ipSpaces) {
-    return unionNonnull(
+    IpSpace[] nonNullSpaces =
         StreamSupport.stream(ipSpaces.spliterator(), false)
             .filter(Objects::nonNull)
-            .toArray(IpSpace[]::new));
+            .toArray(IpSpace[]::new);
+    if (nonNullSpaces.length == 0) {
+      // no constraint
+      return null;
+    }
+    IpSpace[] nonEmptySpaces =
+        Arrays.stream(nonNullSpaces)
+            .filter(ipSpace -> ipSpace != EmptyIpSpace.INSTANCE)
+            .toArray(IpSpace[]::new);
+    return nonEmptySpaces.length == 0 ? EmptyIpSpace.INSTANCE : unionNonnull(nonEmptySpaces);
   }
 
   private static @Nullable IpSpace unionNonnull(IpSpace... ipSpaces) {
