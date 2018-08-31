@@ -16,7 +16,7 @@
             "excludeShutInterfaces": {
                 "description": "Exclude interfaces that are shutdown",
                 "type": "boolean",
-                "optional": false
+                "optional": true
             },
             "interfaces": {
                 "description": "Include interfaces matching this regex",
