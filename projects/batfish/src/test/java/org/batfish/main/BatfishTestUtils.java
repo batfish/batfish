@@ -27,6 +27,7 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.dataplane.ibdp.IncrementalDataPlanePlugin;
+import org.batfish.storage.StorageProvider;
 import org.junit.rules.TemporaryFolder;
 
 public class BatfishTestUtils {
@@ -76,7 +77,8 @@ public class BatfishTestUtils {
             makeDataPlaneCache(),
             makeDataPlaneCache(),
             makeEnvBgpCache(),
-            makeEnvRouteCache());
+            makeEnvRouteCache(),
+            null);
     if (!configurations.isEmpty()) {
       Batfish.serializeAsJson(
           settings.getBaseTestrigSettings().getEnvironmentSettings().getSerializedTopologyPath(),
@@ -125,7 +127,8 @@ public class BatfishTestUtils {
             makeDataPlaneCache(),
             makeDataPlaneCache(),
             makeEnvBgpCache(),
-            makeEnvRouteCache());
+            makeEnvRouteCache(),
+            null);
     batfish.getSettings().setDiffQuestion(true);
     if (!baseConfigs.isEmpty()) {
       Batfish.serializeAsJson(
@@ -211,7 +214,8 @@ public class BatfishTestUtils {
             makeDataPlaneCache(),
             makeDataPlaneCache(),
             makeEnvBgpCache(),
-            makeEnvRouteCache());
+            makeEnvRouteCache(),
+            null);
     registerDataPlanePlugins(batfish);
     return batfish;
   }
@@ -245,6 +249,29 @@ public class BatfishTestUtils {
       SortedMap<String, Configuration> configurations, @Nonnull TemporaryFolder tempFolder)
       throws IOException {
     return initBatfish(configurations, tempFolder);
+  }
+
+  /** Get a new Batfish instance with given storage provider */
+  public static Batfish getBatfish(@Nonnull StorageProvider storageProvider) {
+    Settings settings = new Settings(new String[] {});
+    settings.setLogger(new BatfishLogger("debug", false));
+    final Cache<NetworkSnapshot, SortedMap<String, Configuration>> testrigs = makeTestrigCache();
+    final Cache<NetworkSnapshot, SortedMap<String, Configuration>> compressedTestrigs =
+        makeTestrigCache();
+
+    settings.setContainer("tempContainer");
+    Batfish batfish =
+        new Batfish(
+            settings,
+            compressedTestrigs,
+            testrigs,
+            makeDataPlaneCache(),
+            makeDataPlaneCache(),
+            makeEnvBgpCache(),
+            makeEnvRouteCache(),
+            storageProvider);
+    registerDataPlanePlugins(batfish);
+    return batfish;
   }
 
   /**
