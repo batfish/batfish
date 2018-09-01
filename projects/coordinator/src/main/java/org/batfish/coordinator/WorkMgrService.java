@@ -1079,9 +1079,9 @@ public class WorkMgrService {
    *
    * @param apiKey The API key of the client
    * @param clientVersion The version of the client
-   * @param networkName The name of the network in which the analysis resides
-   * @param snapshotName The name of the snapshot on which the analysis was run
-   * @param deltaSnapshot The name of the delta snapshot on which the analysis was run
+   * @param networkName The name of the network in which the question resides
+   * @param snapshotName The name of the snapshot on which the question was run
+   * @param deltaSnapshot The name of the delta snapshot on which the question was run
    * @param analysis (optional) The name of the analysis containing the question, or {@code null} if
    *     requesting metrics for an ad-hoc question
    * @param question The name of the question
