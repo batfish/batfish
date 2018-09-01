@@ -9,6 +9,9 @@ test -raw tests/questions/stable/fileParseStatus.ref validate-template fileParse
 # validate ipOwners
 test -raw tests/questions/stable/ipOwners.ref validate-template ipOwners duplicatesOnly=false
 
+# validate edges
+test -raw tests/questions/stable/edges.ref validate-template edges edgeType="bgp", nodes=".*", remoteNodes=".*"
+
 # validate parseWarning
 test -raw tests/questions/stable/parseWarning.ref validate-template parseWarning
 
