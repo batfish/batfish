@@ -1048,8 +1048,8 @@ public class WorkMgr extends AbstractCoordinator {
           majorIssueType);
     } catch (IOException e) {
       _logger.errorf(
-          "ERROR: Could not cast file to MajorIssueConfig: %s",
-          Throwables.getStackTraceAsString(e));
+          "ERROR: Could not cast file for major issue %s in network %s to MajorIssueConfig: %s",
+          majorIssueType, networkName, Throwables.getStackTraceAsString(e));
       return new MajorIssueConfig(majorIssueType, null);
     }
   }

@@ -73,31 +73,35 @@ public class IssueConfigResourceTest extends WorkMgrServiceV2TestBase {
   @Test
   public void testDelIssueConfig() throws IOException {
     String network = "myNetwork";
+    String major = "major";
+    String minor = "minor";
     Main.getWorkMgr().initContainer(network, null);
 
-    Response response = getIssueConfigTarget(network, "major", "minor").delete();
+    Response response = getIssueConfigTarget(network, major, minor).delete();
     assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
 
-    addIssue(network, "major", "minor", 100, "www.cnn");
+    addIssue(network, major, minor, 100, "www.cnn");
 
-    response = getIssueConfigTarget(network, "major", "minor").delete();
+    response = getIssueConfigTarget(network, major, minor).delete();
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
   }
 
   @Test
   public void testGetIssueConfig() throws IOException {
     String network = "myNetwork";
+    String major = "major";
+    String minor = "minor";
     Main.getWorkMgr().initContainer(network, null);
 
-    Response response = getIssueConfigTarget(network, "major", "minor").get();
+    Response response = getIssueConfigTarget(network, major, minor).get();
     assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
 
-    addIssue(network, "major", "minor", 100, "www.cnn");
+    addIssue(network, major, minor, 100, "www.cnn");
 
-    response = getIssueConfigTarget(network, "major", "minor").get();
+    response = getIssueConfigTarget(network, major, minor).get();
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
     assertThat(
         response.readEntity(IssueConfigBean.class),
-        equalTo(new IssueConfigBean("major", new MinorIssueConfig("minor", 100, "www.cnn"))));
+        equalTo(new IssueConfigBean(major, new MinorIssueConfig(minor, 100, "www.cnn"))));
   }
 }

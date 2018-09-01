@@ -15,16 +15,16 @@ import javax.ws.rs.core.Response;
 @Produces(MediaType.APPLICATION_JSON)
 public class NetworkSettingsResource {
 
-  private String _container;
+  private String _network;
 
-  public NetworkSettingsResource(String container) {
-    _container = container;
+  public NetworkSettingsResource(String network) {
+    _network = network;
   }
 
   /** Relocate the request to {@link IssueSettingsResource}. */
   @Path(RSC_ISSUES)
   public IssueSettingsResource getReferenceBookResource() {
-    return new IssueSettingsResource(_container);
+    return new IssueSettingsResource(_network);
   }
 
   /** Nothing to send today for a plan get call on this resource */

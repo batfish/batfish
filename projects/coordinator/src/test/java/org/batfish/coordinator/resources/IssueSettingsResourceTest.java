@@ -51,6 +51,7 @@ public class IssueSettingsResourceTest extends WorkMgrServiceV2TestBase {
   @Test
   public void addMinorIssueConfig() throws IOException {
     String network = "myNetwork";
+    String major = "major";
     Main.getWorkMgr().initContainer(network, null);
 
     // add a minor issue
@@ -59,12 +60,12 @@ public class IssueSettingsResourceTest extends WorkMgrServiceV2TestBase {
         getIssueSettingsTarget(network)
             .post(
                 Entity.entity(
-                    new IssueConfigBean("major", minor1Config), MediaType.APPLICATION_JSON));
+                    new IssueConfigBean(major, minor1Config), MediaType.APPLICATION_JSON));
 
     // test: minorIssue should have been added
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-    MajorIssueConfig config = Main.getWorkMgr().getMajorIssueConfig(network, "major");
-    assertThat(config, equalTo(new MajorIssueConfig("major", ImmutableList.of(minor1Config))));
+    MajorIssueConfig config = Main.getWorkMgr().getMajorIssueConfig(network, major);
+    assertThat(config, equalTo(new MajorIssueConfig(major, ImmutableList.of(minor1Config))));
 
     // add two more minor issues, one for the same one as before
     MinorIssueConfig minor1ConfigAgain = new MinorIssueConfig("minor1", 90, "www");
@@ -72,15 +73,14 @@ public class IssueSettingsResourceTest extends WorkMgrServiceV2TestBase {
     getIssueSettingsTarget(network)
         .post(
             Entity.entity(
-                new IssueConfigBean("major", minor1ConfigAgain), MediaType.APPLICATION_JSON));
+                new IssueConfigBean(major, minor1ConfigAgain), MediaType.APPLICATION_JSON));
     getIssueSettingsTarget(network)
-        .post(
-            Entity.entity(new IssueConfigBean("major", minor2Config), MediaType.APPLICATION_JSON));
+        .post(Entity.entity(new IssueConfigBean(major, minor2Config), MediaType.APPLICATION_JSON));
 
     // test: check the state now
-    MajorIssueConfig configAgain = Main.getWorkMgr().getMajorIssueConfig(network, "major");
+    MajorIssueConfig configAgain = Main.getWorkMgr().getMajorIssueConfig(network, major);
     assertThat(
         configAgain,
-        equalTo(new MajorIssueConfig("major", ImmutableList.of(minor1ConfigAgain, minor2Config))));
+        equalTo(new MajorIssueConfig(major, ImmutableList.of(minor1ConfigAgain, minor2Config))));
   }
 }
