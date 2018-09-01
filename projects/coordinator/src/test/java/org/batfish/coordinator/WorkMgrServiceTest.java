@@ -49,6 +49,7 @@ import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
+import org.batfish.storage.FileBasedStorage;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 import org.junit.Rule;
@@ -78,7 +79,11 @@ public class WorkMgrServiceTest {
         });
     Main.setLogger(logger);
     Main.initAuthorizer();
-    WorkMgr manager = new WorkMgr(settings, logger);
+    WorkMgr manager =
+        new WorkMgr(
+            settings,
+            logger,
+            new FileBasedStorage(Main.getSettings().getContainersLocation(), logger));
     Main.setWorkMgr(manager);
     manager.initContainer(_networkName, null);
     _service = new WorkMgrService();
@@ -928,47 +933,20 @@ public class WorkMgrServiceTest {
   public void testGetAnswerMetricsAdHoc() throws Exception {
     String questionName = "question1";
     String questionContent = "questionContent";
-
+    String columnName = "col";
     initNetworkEnvironment();
 
-    String columnName = "col";
     int value = 5;
     AnswerMetadata testAnswerMetadata =
         new AnswerMetadata(
             new Metrics(ImmutableMap.of(columnName, ImmutableMap.of(Aggregation.MAX, value)), 1),
             AnswerStatus.SUCCESS);
-    String answerMetadata = BatfishObjectMapper.writePrettyString(testAnswerMetadata);
 
-    Path questionFile =
-        _networksFolder
-            .getRoot()
-            .toPath()
-            .resolve(
-                Paths.get(
-                    _networkName,
-                    BfConsts.RELPATH_QUESTIONS_DIR,
-                    questionName,
-                    BfConsts.RELPATH_QUESTION_FILE));
-    questionFile.getParent().toFile().mkdirs();
-    CommonUtil.writeFile(questionFile, questionContent);
-
-    Path answerDir =
-        _networksFolder
-            .getRoot()
-            .toPath()
-            .resolve(
-                Paths.get(
-                    _networkName,
-                    BfConsts.RELPATH_TESTRIGS_DIR,
-                    _snapshotName,
-                    BfConsts.RELPATH_QUESTIONS_DIR,
-                    questionName,
-                    BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
-                    BfConsts.RELPATH_STANDARD_DIR));
-
-    Path answer1MetadataPath = answerDir.resolve(BfConsts.RELPATH_ANSWER_METADATA);
-    answerDir.toFile().mkdirs();
-    CommonUtil.writeFile(answer1MetadataPath, answerMetadata);
+    Main.getWorkMgr().getStorage().storeQuestion(questionContent, _networkName, questionName, null);
+    Main.getWorkMgr()
+        .getStorage()
+        .storeAnswerMetadata(
+            testAnswerMetadata, _networkName, _snapshotName, questionName, null, null);
 
     JSONArray answerOutput =
         _service.getAnswerMetrics(

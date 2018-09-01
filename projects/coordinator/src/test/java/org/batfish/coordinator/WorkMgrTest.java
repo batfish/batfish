@@ -55,6 +55,7 @@ import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
+import org.batfish.storage.StorageProvider;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -70,10 +71,13 @@ public class WorkMgrTest {
 
   private WorkMgr _manager;
 
+  private StorageProvider _storage;
+
   @Before
   public void initManager() throws Exception {
     WorkMgrTestUtils.initWorkManager(_folder);
     _manager = Main.getWorkMgr();
+    _storage = _manager.getStorage();
   }
 
   private static void createTestrigWithMetadata(String container, String testrig)
@@ -404,74 +408,15 @@ public class WorkMgrTest {
     _manager.configureAnalysis(
         containerName, true, analysisName, questionsToAdd, Lists.newArrayList(), null);
 
-    Path answer1Dir =
-        _folder
-            .getRoot()
-            .toPath()
-            .resolve(
-                Paths.get(
-                    containerName,
-                    BfConsts.RELPATH_TESTRIGS_DIR,
-                    testrigName,
-                    BfConsts.RELPATH_ANALYSES_DIR,
-                    analysisName,
-                    BfConsts.RELPATH_QUESTIONS_DIR,
-                    question1Name,
-                    BfConsts.RELPATH_ENVIRONMENTS_DIR,
-                    BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME));
-
-    Path answer2Dir =
-        _folder
-            .getRoot()
-            .toPath()
-            .resolve(
-                Paths.get(
-                    containerName,
-                    BfConsts.RELPATH_TESTRIGS_DIR,
-                    testrigName,
-                    BfConsts.RELPATH_ANALYSES_DIR,
-                    analysisName,
-                    BfConsts.RELPATH_QUESTIONS_DIR,
-                    question2Name,
-                    BfConsts.RELPATH_ENVIRONMENTS_DIR,
-                    BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME));
-
-    Path answer1Path = answer1Dir.resolve(BfConsts.RELPATH_ANSWER_JSON);
-    Path answer2Path = answer2Dir.resolve(BfConsts.RELPATH_ANSWER_JSON);
-
-    answer1Dir.toFile().mkdirs();
-    answer2Dir.toFile().mkdirs();
-
-    CommonUtil.writeFile(answer1Path, answer1);
-    CommonUtil.writeFile(answer2Path, answer2);
+    _storage.storeAnswer(answer1, containerName, testrigName, question1Name, null, analysisName);
+    _storage.storeAnswer(answer2, containerName, testrigName, question2Name, null, analysisName);
 
     String answer1Output =
-        _manager.getAnalysisAnswer(
-            containerName,
-            testrigName,
-            BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
-            null,
-            null,
-            analysisName,
-            question1Name);
+        _manager.getAnswer(containerName, testrigName, question1Name, null, analysisName);
     String answer2Output =
-        _manager.getAnalysisAnswer(
-            containerName,
-            testrigName,
-            BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
-            null,
-            null,
-            analysisName,
-            question2Name);
+        _manager.getAnswer(containerName, testrigName, question2Name, null, analysisName);
     String answer3Output =
-        _manager.getAnalysisAnswer(
-            containerName,
-            testrigName,
-            BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
-            null,
-            null,
-            analysisName,
-            question3Name);
+        _manager.getAnswer(containerName, testrigName, question3Name, null, analysisName);
 
     Answer failedAnswer = Answer.failureAnswer("Not answered", null);
     failedAnswer.setStatus(AnswerStatus.NOTFOUND);
@@ -630,27 +575,10 @@ public class WorkMgrTest {
         ImmutableMap.of(questionName, questionContent),
         ImmutableList.of(),
         null);
-    Path answerDir =
-        _folder
-            .getRoot()
-            .toPath()
-            .resolve(
-                Paths.get(
-                    networkName,
-                    BfConsts.RELPATH_TESTRIGS_DIR,
-                    snapshotName,
-                    BfConsts.RELPATH_ANALYSES_DIR,
-                    analysisName,
-                    BfConsts.RELPATH_QUESTIONS_DIR,
-                    questionName,
-                    BfConsts.RELPATH_ENVIRONMENTS_DIR,
-                    BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME));
-    // TODO: https://github.com/batfish/batfish/issues/2192
-    Path answerMetadataPath = answerDir.resolve(BfConsts.RELPATH_ANSWER_METADATA);
-    answerDir.toFile().mkdirs();
-    CommonUtil.writeFile(answerMetadataPath, BatfishObjectMapper.writePrettyString(answerMetadata));
+    _storage.storeAnswerMetadata(
+        answerMetadata, networkName, snapshotName, questionName, null, analysisName);
     AnswerMetadata answerResult =
-        _manager.getAnswerMetadata(networkName, snapshotName, null, analysisName, questionName);
+        _manager.getAnswerMetadata(networkName, snapshotName, questionName, null, analysisName);
 
     assertThat(answerResult, equalTo(answerMetadata));
   }
@@ -667,27 +595,11 @@ public class WorkMgrTest {
     _manager.initContainer(networkName, null);
     _manager.configureAnalysis(
         networkName, true, analysisName, ImmutableMap.of(), ImmutableList.of(), null);
-    Path answerDir =
-        _folder
-            .getRoot()
-            .toPath()
-            .resolve(
-                Paths.get(
-                    networkName,
-                    BfConsts.RELPATH_TESTRIGS_DIR,
-                    snapshotName,
-                    BfConsts.RELPATH_ANALYSES_DIR,
-                    analysisName,
-                    BfConsts.RELPATH_QUESTIONS_DIR,
-                    questionName,
-                    BfConsts.RELPATH_ENVIRONMENTS_DIR,
-                    BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME));
-    // TODO: https://github.com/batfish/batfish/issues/2192
-    Path answerMetadataPath = answerDir.resolve(BfConsts.RELPATH_ANSWER_METADATA);
-    answerDir.toFile().mkdirs();
-    CommonUtil.writeFile(answerMetadataPath, BatfishObjectMapper.writePrettyString(answerMetadata));
+    _storage.storeAnswerMetadata(
+        answerMetadata, networkName, snapshotName, questionName, null, analysisName);
+
     _thrown.expect(FileNotFoundException.class);
-    _manager.getAnswerMetadata(networkName, snapshotName, null, analysisName, questionName);
+    _manager.getAnswerMetadata(networkName, snapshotName, questionName, null, analysisName);
   }
 
   @Test
@@ -706,24 +618,9 @@ public class WorkMgrTest {
         ImmutableMap.of(questionName, questionContent),
         ImmutableList.of(),
         null);
-    Path answerDir =
-        _folder
-            .getRoot()
-            .toPath()
-            .resolve(
-                Paths.get(
-                    networkName,
-                    BfConsts.RELPATH_TESTRIGS_DIR,
-                    snapshotName,
-                    BfConsts.RELPATH_ANALYSES_DIR,
-                    analysisName,
-                    BfConsts.RELPATH_QUESTIONS_DIR,
-                    questionName,
-                    BfConsts.RELPATH_ENVIRONMENTS_DIR,
-                    BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME));
-    answerDir.toFile().mkdirs();
+    _storage.storeAnswer("answer", networkName, snapshotName, questionName, null, analysisName);
     AnswerMetadata answerResult =
-        _manager.getAnswerMetadata(networkName, snapshotName, null, analysisName, questionName);
+        _manager.getAnswerMetadata(networkName, snapshotName, questionName, null, analysisName);
 
     assertThat(answerResult, equalTo(new AnswerMetadata(null, AnswerStatus.NOTFOUND)));
   }
@@ -738,28 +635,11 @@ public class WorkMgrTest {
     AnswerMetadata answerMetadata =
         new AnswerMetadata(new Metrics(ImmutableMap.of(), 1), AnswerStatus.SUCCESS);
     _manager.initContainer(networkName, null);
-    Path answerDir =
-        _folder
-            .getRoot()
-            .toPath()
-            .resolve(
-                Paths.get(
-                    networkName,
-                    BfConsts.RELPATH_TESTRIGS_DIR,
-                    snapshotName,
-                    BfConsts.RELPATH_ANALYSES_DIR,
-                    analysisName,
-                    BfConsts.RELPATH_QUESTIONS_DIR,
-                    questionName,
-                    BfConsts.RELPATH_ENVIRONMENTS_DIR,
-                    BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME));
-    // TODO: https://github.com/batfish/batfish/issues/2192
-    Path answerMetadataPath = answerDir.resolve(BfConsts.RELPATH_ANSWER_METADATA);
-    answerDir.toFile().mkdirs();
-    CommonUtil.writeFile(answerMetadataPath, BatfishObjectMapper.writePrettyString(answerMetadata));
+    _storage.storeAnswerMetadata(
+        answerMetadata, networkName, snapshotName, questionName, null, analysisName);
 
     _thrown.expect(Exception.class);
-    _manager.getAnswerMetadata(networkName, snapshotName, null, analysisName, questionName);
+    _manager.getAnswerMetadata(networkName, snapshotName, questionName, null, analysisName);
   }
 
   @Test
@@ -773,26 +653,10 @@ public class WorkMgrTest {
         new AnswerMetadata(new Metrics(ImmutableMap.of(), 2), AnswerStatus.SUCCESS);
     _manager.initContainer(networkName, null);
     _manager.uploadQuestion(networkName, questionName, questionContent, false);
-    Path answerDir =
-        _folder
-            .getRoot()
-            .toPath()
-            .resolve(
-                Paths.get(
-                    networkName,
-                    BfConsts.RELPATH_TESTRIGS_DIR,
-                    snapshotName,
-                    BfConsts.RELPATH_QUESTIONS_DIR,
-                    questionName,
-                    BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
-                    BfConsts.RELPATH_STANDARD_DIR));
-    // TODO: https://github.com/batfish/batfish/issues/2192
-    Path answerMetadataPath = answerDir.resolve(BfConsts.RELPATH_ANSWER_METADATA);
-    answerDir.toFile().mkdirs();
-    CommonUtil.writeFile(answerMetadataPath, BatfishObjectMapper.writePrettyString(answerMetadata));
-
+    _storage.storeAnswerMetadata(
+        answerMetadata, networkName, snapshotName, questionName, null, null);
     AnswerMetadata answer2Result =
-        _manager.getAnswerMetadata(networkName, snapshotName, null, null, questionName);
+        _manager.getAnswerMetadata(networkName, snapshotName, questionName, null, null);
 
     assertThat(answer2Result, equalTo(answerMetadata));
   }
@@ -806,24 +670,9 @@ public class WorkMgrTest {
     String questionName = "question2Name";
     _manager.initContainer(networkName, null);
     _manager.uploadQuestion(networkName, questionName, questionContent, false);
-    Path answerDir =
-        _folder
-            .getRoot()
-            .toPath()
-            .resolve(
-                Paths.get(
-                    networkName,
-                    BfConsts.RELPATH_TESTRIGS_DIR,
-                    snapshotName,
-                    BfConsts.RELPATH_QUESTIONS_DIR,
-                    questionName,
-                    BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
-                    BfConsts.RELPATH_STANDARD_DIR));
-    // TODO: https://github.com/batfish/batfish/issues/2192
-    answerDir.toFile().mkdirs();
-
+    _storage.storeAnswer("answer", networkName, snapshotName, questionName, null, null);
     AnswerMetadata answer2Result =
-        _manager.getAnswerMetadata(networkName, snapshotName, null, null, questionName);
+        _manager.getAnswerMetadata(networkName, snapshotName, questionName, null, null);
 
     assertThat(answer2Result, equalTo(new AnswerMetadata(null, AnswerStatus.NOTFOUND)));
   }
@@ -837,23 +686,8 @@ public class WorkMgrTest {
     AnswerMetadata answerMetadata =
         new AnswerMetadata(new Metrics(ImmutableMap.of(), 2), AnswerStatus.SUCCESS);
     _manager.initContainer(networkName, null);
-    Path answerDir =
-        _folder
-            .getRoot()
-            .toPath()
-            .resolve(
-                Paths.get(
-                    networkName,
-                    BfConsts.RELPATH_TESTRIGS_DIR,
-                    snapshotName,
-                    BfConsts.RELPATH_QUESTIONS_DIR,
-                    questionName,
-                    BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
-                    BfConsts.RELPATH_STANDARD_DIR));
-    // TODO: https://github.com/batfish/batfish/issues/2192
-    Path answerMetadataPath = answerDir.resolve(BfConsts.RELPATH_ANSWER_METADATA);
-    answerDir.toFile().mkdirs();
-    CommonUtil.writeFile(answerMetadataPath, BatfishObjectMapper.writePrettyString(answerMetadata));
+    _storage.storeAnswerMetadata(
+        answerMetadata, networkName, snapshotName, questionName, null, null);
 
     _thrown.expect(Exception.class);
     _manager.getAnswerMetadata(networkName, snapshotName, null, null, questionName);

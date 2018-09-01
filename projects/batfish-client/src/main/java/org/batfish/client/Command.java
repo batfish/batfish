@@ -45,7 +45,6 @@ public enum Command {
   GET_NETWORK("get-network"),
   GET_OBJECT("get-object"),
   GET_OBJECT_DELTA("get-delta-object"),
-  GET_QUESTION("get-question"),
   GET_QUESTION_TEMPLATES("get-question-templates"),
   GET_WORK_STATUS("get-work-status"),
   HELP("help"),
@@ -240,7 +239,6 @@ public enum Command {
     descs.put(GET_NETWORK, new Pair<>("<network-name>", "Get the information of the network"));
     descs.put(GET_OBJECT, new Pair<>("<object path>", "Get the object"));
     descs.put(GET_OBJECT_DELTA, new Pair<>("<object path>", "Get the object from delta snapshot"));
-    descs.put(GET_QUESTION, new Pair<>("<question-name>", "Get the question and parameter files"));
     descs.put(GET_QUESTION_TEMPLATES, new Pair<>("", "Get question templates from coordinator"));
     descs.put(GET_WORK_STATUS, new Pair<>("<work-id>", "Get the status of the specified work id"));
     descs.put(HELP, new Pair<>("[command]", "Print the list of supported commands"));

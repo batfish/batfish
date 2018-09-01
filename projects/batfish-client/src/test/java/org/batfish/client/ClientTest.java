@@ -27,7 +27,6 @@ import static org.batfish.client.Command.GET_ANSWER_DELTA;
 import static org.batfish.client.Command.GET_ANSWER_DIFFERENTIAL;
 import static org.batfish.client.Command.GET_CONFIGURATION;
 import static org.batfish.client.Command.GET_DELTA;
-import static org.batfish.client.Command.GET_QUESTION;
 import static org.batfish.client.Command.HELP;
 import static org.batfish.client.Command.INIT_ANALYSIS;
 import static org.batfish.client.Command.INIT_DELTA_SNAPSHOT;
@@ -435,11 +434,6 @@ public class ClientTest {
   }
 
   @Test
-  public void testGetQuestionInvalidParas() throws Exception {
-    testInvalidInput(GET_QUESTION, new String[] {}, new String[] {});
-  }
-
-  @Test
   public void testGetQuestionName() throws JSONException {
     JSONObject testQuestion = new JSONObject();
     testQuestion.put(
@@ -471,12 +465,6 @@ public class ClientTest {
 
     // check exception when instance itself is not present
     Client.getQuestionName(testQuestion, "testquestion");
-  }
-
-  @Test
-  public void testGetQuestionValidParas() throws Exception {
-    String[] parameters = new String[] {"parameter1"};
-    checkProcessCommandErrorMessage(GET_QUESTION, parameters, SNAPSHOT_NOT_SET);
   }
 
   @Test

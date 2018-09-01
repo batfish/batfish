@@ -663,14 +663,12 @@ public class WorkMgrService {
 
       String answer =
           Main.getWorkMgr()
-              .getAnalysisAnswer(
+              .getAnswer(
                   networkNameParam,
                   snapshotNameParam,
-                  baseEnv,
+                  questionName,
                   deltaSnapshotParam,
-                  deltaEnv,
-                  analysisName,
-                  questionName);
+                  analysisName);
 
       String answerStr = BatfishObjectMapper.writePrettyString(answer);
 
@@ -1056,12 +1054,7 @@ public class WorkMgrService {
       String answer =
           Main.getWorkMgr()
               .getAnswer(
-                  networkNameParam,
-                  snapshotNameParam,
-                  baseEnv,
-                  deltaSnapshotParam,
-                  deltaEnv,
-                  questionName);
+                  networkNameParam, snapshotNameParam, questionName, deltaSnapshotParam, null);
 
       return successResponse(new JSONObject().put(CoordConsts.SVC_KEY_ANSWER, answer));
     } catch (IllegalArgumentException | AccessControlException e) {
@@ -1089,9 +1082,9 @@ public class WorkMgrService {
    * @param networkName The name of the network in which the analysis resides
    * @param snapshotName The name of the snapshot on which the analysis was run
    * @param deltaSnapshot The name of the delta snapshot on which the analysis was run
-   * @param analysisName (optional) The name of the analysis containing the question, or {@code
-   *     null} if requesting metrics for an ad-hoc question
-   * @param questionName The name of the question
+   * @param analysis (optional) The name of the analysis containing the question, or {@code null} if
+   *     requesting metrics for an ad-hoc question
+   * @param question The name of the question
    * @return TODO: document JSON response
    */
   @POST
@@ -1103,32 +1096,32 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_NETWORK_NAME) String networkName,
       @FormDataParam(CoordConsts.SVC_KEY_SNAPSHOT_NAME) String snapshotName,
       @FormDataParam(CoordConsts.SVC_KEY_DELTA_SNAPSHOT_NAME) String deltaSnapshot,
-      @FormDataParam(CoordConsts.SVC_KEY_ANALYSIS_NAME) String analysisName,
-      @FormDataParam(CoordConsts.SVC_KEY_QUESTION_NAME) String questionName,
+      @FormDataParam(CoordConsts.SVC_KEY_ANALYSIS_NAME) String analysis,
+      @FormDataParam(CoordConsts.SVC_KEY_QUESTION_NAME) String question,
       @FormDataParam(CoordConsts.SVC_KEY_WORKITEM) String workItemStr) {
-    String networkNameParam = networkName;
-    String snapshotNameParam = snapshotName;
-    String deltaSnapshotParam = deltaSnapshot;
+    String network = networkName;
+    String snapshot = snapshotName;
+    String referenceSnapshot = deltaSnapshot;
     try {
       _logger.infof(
           "WMS:getAnswerMetrics %s %s %s %s %s %s\n",
-          apiKey, networkNameParam, snapshotNameParam, deltaSnapshot, analysisName, questionName);
+          apiKey, network, snapshot, deltaSnapshot, analysis, question);
 
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
-      checkStringParam(networkNameParam, "Network name");
-      checkStringParam(snapshotNameParam, "Base snapshot name");
+      checkStringParam(network, "Network name");
+      checkStringParam(snapshot, "Base snapshot name");
 
       checkApiKeyValidity(apiKey);
       checkClientVersion(clientVersion);
-      checkNetworkAccessibility(apiKey, networkNameParam);
+      checkNetworkAccessibility(apiKey, network);
 
       JSONObject response = new JSONObject();
 
       if (!Strings.isNullOrEmpty(workItemStr)) {
         WorkItem workItem = BatfishObjectMapper.mapper().readValue(workItemStr, WorkItem.class);
-        if (!workItem.getContainerName().equals(networkNameParam)
-            || !workItem.getTestrigName().equals(snapshotNameParam)) {
+        if (!workItem.getContainerName().equals(network)
+            || !workItem.getTestrigName().equals(snapshot)) {
           return failureResponse(
               "Mismatch in parameters: WorkItem is not for the supplied network or snapshot");
         }
@@ -1144,12 +1137,7 @@ public class WorkMgrService {
 
       AnswerMetadata answerMetadata =
           Main.getWorkMgr()
-              .getAnswerMetadata(
-                  networkNameParam,
-                  snapshotNameParam,
-                  deltaSnapshotParam,
-                  analysisName,
-                  questionName);
+              .getAnswerMetadata(network, snapshot, question, referenceSnapshot, analysis);
 
       String answerStr = BatfishObjectMapper.writePrettyString(answerMetadata);
 
@@ -1162,13 +1150,7 @@ public class WorkMgrService {
       _logger.errorf(
           "WMS:getAnswerMetrics exception for apikey:%s in network:%s, snapshot:%s, "
               + "deltasnapshot:%s, analysis:%s, question:%s; exception:%s",
-          apiKey,
-          networkNameParam,
-          snapshotNameParam,
-          deltaSnapshotParam,
-          analysisName,
-          questionName,
-          stackTrace);
+          apiKey, network, snapshot, referenceSnapshot, analysis, question, stackTrace);
       return failureResponse(e.getMessage());
     }
   }

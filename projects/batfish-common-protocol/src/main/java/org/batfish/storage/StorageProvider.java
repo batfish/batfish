@@ -1,5 +1,8 @@
 package org.batfish.storage;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.file.attribute.FileTime;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
@@ -83,8 +86,8 @@ public interface StorageProvider {
    * @param network The name of the network
    * @param snapshot The name of the base snapshot
    * @param question The name of the question
-   * @param referenceSnapshot (optional) The name of the deltaSnapshot for a differential question,
-   *     or {@code null} for a non-differential question
+   * @param referenceSnapshot (optional) The name of the reference snapshot for a differential
+   *     question, or {@code null} for a non-differential question
    * @param analysis (optional) The name of the analysis for an analysis question, or {@code null}
    *     for an ad-hoc question
    */
@@ -99,17 +102,17 @@ public interface StorageProvider {
   /**
    * Store the metadata for the answer to an ad-hoc or analysis question.
    *
-   * @param answerMetrics The metadata to store
+   * @param answerMetadata The metadata to store
    * @param network The name of the network
    * @param snapshot The name of the base snapshot
    * @param question The name of the question
-   * @param referenceSnapshot (optional) The name of the deltaSnapshot for a differential question,
-   *     or {@code null} for a non-differential question
+   * @param referenceSnapshot (optional) The name of the reference snapshot for a differential
+   *     question, or {@code null} for a non-differential question
    * @param analysis (optional) The name of the analysis for an analysis question, or {@code null}
    *     for an ad-hoc question
    */
   void storeAnswerMetadata(
-      AnswerMetadata answerMetrics,
+      AnswerMetadata answerMetadata,
       String network,
       String snapshot,
       String question,
@@ -136,4 +139,118 @@ public interface StorageProvider {
    */
   @Nonnull
   List<String> listAnalysisQuestions(String network, String analysis);
+
+  /**
+   * Returns {@code true} iff the specified question exists.
+   *
+   * @param network The name of the network
+   * @param question The name of the question
+   * @param analysis (optional) The name of the analysis for an analysis question, or {@code null}
+   *     for an ad-hoc question
+   */
+  boolean checkQuestionExists(String network, String question, @Nullable String analysis);
+
+  /**
+   * Load the JSON-serialized answer to an ad-hoc or analysis question.
+   *
+   * @param network The name of the network
+   * @param snapshot The name of the base snapshot
+   * @param question The name of the question
+   * @param referenceSnapshot (optional) The name of the reference snapshot for a differential
+   *     question, or {@code null} for a non-differential question
+   * @param analysis (optional) The name of the analysis for an analysis question, or {@code null}
+   *     for an ad-hoc question
+   * @throws {@link FileNotFoundException} if answer does not exist; {@link IOException} if there is
+   *     an error reading the answer.
+   */
+  @Nonnull
+  String loadAnswer(
+      String network,
+      String snapshot,
+      String question,
+      @Nullable String referenceSnapshot,
+      @Nullable String analysis)
+      throws FileNotFoundException, IOException;
+
+  /**
+   * Load the metadata for the answer to an ad-hoc or analysis question.
+   *
+   * @param network The name of the network
+   * @param snapshot The name of the base snapshot
+   * @param question The name of the question
+   * @param referenceSnapshot (optional) The name of the reference snapshot for a differential
+   *     question, or {@code null} for a non-differential question
+   * @param analysis (optional) The name of the analysis for an analysis question, or {@code null}
+   *     for an ad-hoc question
+   * @throws {@link FileNotFoundException} if answer metadata does not exist; {@link IOException} if
+   *     there is an error reading the answer metadata.
+   */
+  @Nonnull
+  AnswerMetadata loadAnswerMetadata(
+      String network,
+      String snapshot,
+      String question,
+      @Nullable String referenceSnapshot,
+      @Nullable String analysis)
+      throws FileNotFoundException, IOException;
+
+  /**
+   * Returns the last-modified time of the specified question.
+   *
+   * @param network The name of the network
+   * @param question The name of the question
+   * @param analysis (optional) The name of the analysis for an analysis question, or {@code null}
+   *     for an ad-hoc question
+   */
+  @Nonnull
+  FileTime getQuestionLastModifiedTime(String network, String question, @Nullable String analysis);
+
+  /**
+   * Returns the last-modified time of answer to the specified question.
+   *
+   * @param network The name of the network
+   * @param snapshot The name of the base snapshot
+   * @param question The name of the question
+   * @param referenceSnapshot (optional) The name of the reference snapshot for a differential
+   *     question, or {@code null} for a non-differential question
+   * @param analysis (optional) The name of the analysis for an analysis question, or {@code null}
+   *     for an ad-hoc question
+   */
+  @Nonnull
+  FileTime getAnswerLastModifiedTime(
+      String network,
+      String snapshot,
+      String question,
+      @Nullable String referenceSnapshot,
+      @Nullable String analysis);
+
+  /**
+   * Returns the last-modified time of metadata of the answer to the specified question.
+   *
+   * @param network The name of the network
+   * @param snapshot The name of the base snapshot
+   * @param question The name of the question
+   * @param referenceSnapshot (optional) The name of the reference snapshot for a differential
+   *     question, or {@code null} for a non-differential question
+   * @param analysis (optional) The name of the analysis for an analysis question, or {@code null}
+   *     for an ad-hoc question
+   */
+  @Nonnull
+  FileTime getAnswerMetadataLastModifiedTime(
+      String network,
+      String snapshot,
+      String question,
+      @Nullable String referenceSnapshot,
+      @Nullable String analysis);
+
+  /**
+   * Stores a question with the specified name and text.
+   *
+   * @param questionStr The JSON-serialized text of the question
+   * @param network The name of the network
+   * @param snapshot The name of the base snapshot
+   * @param question The name of the question
+   */
+  void storeQuestion(
+      String questionStr, String network, String question, @Nullable String analysis);
 }
