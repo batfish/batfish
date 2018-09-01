@@ -1,6 +1,6 @@
 {
   "class" : "org.batfish.question.edges.EdgesQuestion",
-  "edgeType" : "bgp",
+  "edgeType" : "BGP",
   "nodes" : ".*",
   "remoteNodes" : ".*",
   "differential" : false,
