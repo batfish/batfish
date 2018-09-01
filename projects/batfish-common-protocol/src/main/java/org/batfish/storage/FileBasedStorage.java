@@ -357,7 +357,11 @@ public final class FileBasedStorage implements StorageProvider {
       @Nullable String referenceSnapshot,
       @Nullable String analysis) {
     Path answerPath = getAnswerPath(network, snapshot, question, referenceSnapshot, analysis);
-    answerPath.getParent().toFile().mkdirs();
+    Path answerDir = getAnswerDir(network, snapshot, question, referenceSnapshot, analysis);
+    if (!answerDir.toFile().exists() && !answerDir.toFile().mkdirs()) {
+      throw new BatfishException(
+          String.format("Unable to create answer directory '%s'", answerDir));
+    }
     CommonUtil.writeFile(answerPath, answerStr);
   }
 
@@ -376,10 +380,9 @@ public final class FileBasedStorage implements StorageProvider {
       throw new BatfishException("Could not write answer metrics", e);
     }
     Path answerDir = getAnswerDir(network, snapshot, question, referenceSnapshot, analysis);
-    answerDir.toFile().mkdirs();
     if (!answerDir.toFile().exists() && !answerDir.toFile().mkdirs()) {
       throw new BatfishException(
-          String.format("Unable to create a answer metadata directory '%s'", answerDir));
+          String.format("Unable to create answer metadata directory '%s'", answerDir));
     }
     Path answerMetricsPath = answerDir.resolve(BfConsts.RELPATH_ANSWER_METADATA);
     CommonUtil.writeFile(answerMetricsPath, metricsStr);
@@ -633,8 +636,9 @@ public final class FileBasedStorage implements StorageProvider {
       String questionStr, String network, String question, @Nullable String analysis) {
     Path questionPath = getQuestionPath(network, question, analysis);
     Path questionDir = questionPath.getParent();
-    if (!questionDir.toFile().mkdirs()) {
-      throw new BatfishException("Failed to create directory: '" + questionDir + "'");
+    if (!questionDir.toFile().exists() && !questionDir.toFile().mkdirs()) {
+      throw new BatfishException(
+          String.format("Unable to create question directory '%s'", questionDir));
     }
     CommonUtil.writeFile(questionPath, questionStr);
   }
