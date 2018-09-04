@@ -369,11 +369,11 @@ public class PacketHeaderConstraints {
 
     // Ports are only applicable to TCP/UDP
     if (ports != null && ipProtocols != null) {
-      if (!Sets.difference(ipProtocols, IP_PROTOCOLS_WITH_PORTS).isEmpty()) {
-        throw new IllegalArgumentException(
-            String.format(
-                "Cannot combine given ports (%s) and IP protocols (%s)", ports, ipProtocols));
-      }
+      checkArgument(
+          Sets.difference(ipProtocols, IP_PROTOCOLS_WITH_PORTS).isEmpty(),
+          "Cannot combine given ports (%s) and IP protocols (%s)",
+          ports,
+          ipProtocols);
     }
 
     // Intersection of IP protocols and higher level protocols should not be empty
@@ -381,12 +381,11 @@ public class PacketHeaderConstraints {
       // Resolve Ip protocols from higher-level application protocols
       Set<IpProtocol> resolvedIpProtocols =
           protocols.stream().map(Protocol::getIpProtocol).collect(ImmutableSet.toImmutableSet());
-      if (Sets.intersection(ipProtocols, resolvedIpProtocols).isEmpty()) {
-        throw new IllegalArgumentException(
-            String.format(
-                "Combination of given IP protocols (%s) and application protocols (%s) cannot be satisfied",
-                ipProtocols, protocols));
-      }
+      checkArgument(
+          !Sets.intersection(ipProtocols, resolvedIpProtocols).isEmpty(),
+          "Combination of given IP protocols (%s) and application protocols (%s) cannot be satisfied",
+          ipProtocols,
+          protocols);
     }
 
     // Intersection of ports given and ports resolved from higher-level protocols should
@@ -396,13 +395,14 @@ public class PacketHeaderConstraints {
           protocols.stream().map(Protocol::getPort).collect(ImmutableSet.toImmutableSet());
 
       // for each subrange, run all resolved ports through it, to see if a match occurs
-      if (ports
-          .stream()
-          .flatMap(subrange -> resolvedPorts.stream().map(subrange::includes))
-          .noneMatch(Predicate.isEqual(true))) {
-        throw new IllegalArgumentException(
-            String.format("Given ports (%s) and protocols (%s) do not overlap", ports, protocols));
-      }
+      checkArgument(
+          ports
+              .stream()
+              .flatMap(subrange -> resolvedPorts.stream().map(subrange::includes))
+              .anyMatch(Predicate.isEqual(true)),
+          "Given ports (%s) and protocols (%s) do not overlap",
+          ports,
+          protocols);
     }
     return true;
   }
