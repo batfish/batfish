@@ -16,6 +16,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -43,8 +44,10 @@ import org.batfish.common.util.WorkItemBuilder;
 import org.batfish.coordinator.AnalysisMetadataMgr.AnalysisType;
 import org.batfish.datamodel.TestrigMetadata;
 import org.batfish.datamodel.answers.Answer;
+import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.Issue;
+import org.batfish.datamodel.answers.Metrics;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.pojo.Topology;
@@ -52,6 +55,7 @@ import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
+import org.batfish.storage.StorageProvider;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -67,10 +71,13 @@ public class WorkMgrTest {
 
   private WorkMgr _manager;
 
+  private StorageProvider _storage;
+
   @Before
   public void initManager() throws Exception {
     WorkMgrTestUtils.initWorkManager(_folder);
     _manager = Main.getWorkMgr();
+    _storage = _manager.getStorage();
   }
 
   private static void createTestrigWithMetadata(String container, String testrig)
@@ -379,7 +386,7 @@ public class WorkMgrTest {
   }
 
   @Test
-  public void testGetAnalysisAnswer() throws JsonProcessingException {
+  public void testGetAnalysisAnswer() throws JsonProcessingException, FileNotFoundException {
     String containerName = "container1";
     String testrigName = "testrig1";
     String analysisName = "analysis1";
@@ -401,74 +408,15 @@ public class WorkMgrTest {
     _manager.configureAnalysis(
         containerName, true, analysisName, questionsToAdd, Lists.newArrayList(), null);
 
-    Path answer1Dir =
-        _folder
-            .getRoot()
-            .toPath()
-            .resolve(
-                Paths.get(
-                    containerName,
-                    BfConsts.RELPATH_TESTRIGS_DIR,
-                    testrigName,
-                    BfConsts.RELPATH_ANALYSES_DIR,
-                    analysisName,
-                    BfConsts.RELPATH_QUESTIONS_DIR,
-                    question1Name,
-                    BfConsts.RELPATH_ENVIRONMENTS_DIR,
-                    BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME));
-
-    Path answer2Dir =
-        _folder
-            .getRoot()
-            .toPath()
-            .resolve(
-                Paths.get(
-                    containerName,
-                    BfConsts.RELPATH_TESTRIGS_DIR,
-                    testrigName,
-                    BfConsts.RELPATH_ANALYSES_DIR,
-                    analysisName,
-                    BfConsts.RELPATH_QUESTIONS_DIR,
-                    question2Name,
-                    BfConsts.RELPATH_ENVIRONMENTS_DIR,
-                    BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME));
-
-    Path answer1Path = answer1Dir.resolve(BfConsts.RELPATH_ANSWER_JSON);
-    Path answer2Path = answer2Dir.resolve(BfConsts.RELPATH_ANSWER_JSON);
-
-    answer1Dir.toFile().mkdirs();
-    answer2Dir.toFile().mkdirs();
-
-    CommonUtil.writeFile(answer1Path, answer1);
-    CommonUtil.writeFile(answer2Path, answer2);
+    _storage.storeAnswer(answer1, containerName, testrigName, question1Name, null, analysisName);
+    _storage.storeAnswer(answer2, containerName, testrigName, question2Name, null, analysisName);
 
     String answer1Output =
-        _manager.getAnalysisAnswer(
-            containerName,
-            testrigName,
-            BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
-            null,
-            null,
-            analysisName,
-            question1Name);
+        _manager.getAnswer(containerName, testrigName, question1Name, null, analysisName);
     String answer2Output =
-        _manager.getAnalysisAnswer(
-            containerName,
-            testrigName,
-            BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
-            null,
-            null,
-            analysisName,
-            question2Name);
+        _manager.getAnswer(containerName, testrigName, question2Name, null, analysisName);
     String answer3Output =
-        _manager.getAnalysisAnswer(
-            containerName,
-            testrigName,
-            BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
-            null,
-            null,
-            analysisName,
-            question3Name);
+        _manager.getAnswer(containerName, testrigName, question3Name, null, analysisName);
 
     Answer failedAnswer = Answer.failureAnswer("Not answered", null);
     failedAnswer.setStatus(AnswerStatus.NOTFOUND);
@@ -480,7 +428,7 @@ public class WorkMgrTest {
   }
 
   @Test
-  public void testGetAnalysisAnswers() throws JsonProcessingException {
+  public void testGetAnalysisAnswers() throws JsonProcessingException, FileNotFoundException {
     String containerName = "container1";
     String testrigName = "testrig1";
     String analysisName = "analysis1";
@@ -547,7 +495,8 @@ public class WorkMgrTest {
             BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
             null,
             null,
-            analysisName);
+            analysisName,
+            ImmutableSet.of());
     Map<String, String> answers2 =
         _manager.getAnalysisAnswers(
             containerName,
@@ -607,6 +556,142 @@ public class WorkMgrTest {
         "Work Queue not correct for user analyses",
         workQueue.get(1).matches(analysisWorkItem),
         equalTo(true));
+  }
+
+  @Test
+  public void testGetAnswerMetadataAnalysisSuccess()
+      throws JsonProcessingException, FileNotFoundException {
+    String networkName = "network1";
+    String snapshotName = "snapshot1";
+    String analysisName = "analysis1";
+    String questionName = "question1";
+    String questionContent = "{}";
+    AnswerMetadata answerMetadata =
+        new AnswerMetadata(new Metrics(ImmutableMap.of(), 1), AnswerStatus.SUCCESS);
+    _manager.initContainer(networkName, null);
+    _manager.configureAnalysis(
+        networkName,
+        true,
+        analysisName,
+        ImmutableMap.of(questionName, questionContent),
+        ImmutableList.of(),
+        null);
+    _storage.storeAnswerMetadata(
+        answerMetadata, networkName, snapshotName, questionName, null, analysisName);
+    AnswerMetadata answerResult =
+        _manager.getAnswerMetadata(networkName, snapshotName, questionName, null, analysisName);
+
+    assertThat(answerResult, equalTo(answerMetadata));
+  }
+
+  @Test
+  public void testGetAnswerMetadataAnalysisMissingQuestion()
+      throws JsonProcessingException, FileNotFoundException {
+    String networkName = "network1";
+    String snapshotName = "snapshot1";
+    String analysisName = "analysis1";
+    String questionName = "question1";
+    AnswerMetadata answerMetadata =
+        new AnswerMetadata(new Metrics(ImmutableMap.of(), 1), AnswerStatus.SUCCESS);
+    _manager.initContainer(networkName, null);
+    _manager.configureAnalysis(
+        networkName, true, analysisName, ImmutableMap.of(), ImmutableList.of(), null);
+    _storage.storeAnswerMetadata(
+        answerMetadata, networkName, snapshotName, questionName, null, analysisName);
+
+    _thrown.expect(FileNotFoundException.class);
+    _manager.getAnswerMetadata(networkName, snapshotName, questionName, null, analysisName);
+  }
+
+  @Test
+  public void testGetAnswerMetadataAnalysisMissingAnswerMetadata()
+      throws JsonProcessingException, FileNotFoundException {
+    String networkName = "network1";
+    String snapshotName = "snapshot1";
+    String analysisName = "analysis1";
+    String questionName = "question1";
+    String questionContent = "{}";
+    _manager.initContainer(networkName, null);
+    _manager.configureAnalysis(
+        networkName,
+        true,
+        analysisName,
+        ImmutableMap.of(questionName, questionContent),
+        ImmutableList.of(),
+        null);
+    _storage.storeAnswer("answer", networkName, snapshotName, questionName, null, analysisName);
+    AnswerMetadata answerResult =
+        _manager.getAnswerMetadata(networkName, snapshotName, questionName, null, analysisName);
+
+    assertThat(answerResult, equalTo(new AnswerMetadata(null, AnswerStatus.NOTFOUND)));
+  }
+
+  @Test
+  public void testGetAnswerMetadataAnalysisMissingAnalysis()
+      throws JsonProcessingException, FileNotFoundException {
+    String networkName = "network1";
+    String snapshotName = "snapshot1";
+    String analysisName = "analysis1";
+    String questionName = "question1";
+    AnswerMetadata answerMetadata =
+        new AnswerMetadata(new Metrics(ImmutableMap.of(), 1), AnswerStatus.SUCCESS);
+    _manager.initContainer(networkName, null);
+    _storage.storeAnswerMetadata(
+        answerMetadata, networkName, snapshotName, questionName, null, analysisName);
+
+    _thrown.expect(Exception.class);
+    _manager.getAnswerMetadata(networkName, snapshotName, questionName, null, analysisName);
+  }
+
+  @Test
+  public void testGetAnswerMetadataAdHocSuccess()
+      throws JsonProcessingException, FileNotFoundException {
+    String networkName = "network1";
+    String snapshotName = "snapshot1";
+    String questionContent = "{}";
+    String questionName = "question2Name";
+    AnswerMetadata answerMetadata =
+        new AnswerMetadata(new Metrics(ImmutableMap.of(), 2), AnswerStatus.SUCCESS);
+    _manager.initContainer(networkName, null);
+    _manager.uploadQuestion(networkName, questionName, questionContent, false);
+    _storage.storeAnswerMetadata(
+        answerMetadata, networkName, snapshotName, questionName, null, null);
+    AnswerMetadata answer2Result =
+        _manager.getAnswerMetadata(networkName, snapshotName, questionName, null, null);
+
+    assertThat(answer2Result, equalTo(answerMetadata));
+  }
+
+  @Test
+  public void testGetAnswerMetadataAdHocMissingAnswerMetadata()
+      throws JsonProcessingException, FileNotFoundException {
+    String networkName = "network1";
+    String snapshotName = "snapshot1";
+    String questionContent = "{}";
+    String questionName = "question2Name";
+    _manager.initContainer(networkName, null);
+    _manager.uploadQuestion(networkName, questionName, questionContent, false);
+    _storage.storeAnswer("answer", networkName, snapshotName, questionName, null, null);
+    AnswerMetadata answer2Result =
+        _manager.getAnswerMetadata(networkName, snapshotName, questionName, null, null);
+
+    assertThat(answer2Result, equalTo(new AnswerMetadata(null, AnswerStatus.NOTFOUND)));
+  }
+
+  @Test
+  public void testGetAnswerMetadataAdHocMissingQuestion()
+      throws JsonProcessingException, FileNotFoundException {
+    String networkName = "network1";
+    String snapshotName = "snapshot1";
+    String questionName = "question2Name";
+    AnswerMetadata answerMetadata =
+        new AnswerMetadata(new Metrics(ImmutableMap.of(), 2), AnswerStatus.SUCCESS);
+    _manager.initContainer(networkName, null);
+    _storage.storeAnswerMetadata(
+        answerMetadata, networkName, snapshotName, questionName, null, null);
+
+    _thrown.expect(Exception.class);
+    _manager.getAnswerMetadata(networkName, snapshotName, null, null, questionName);
   }
 
   @Test

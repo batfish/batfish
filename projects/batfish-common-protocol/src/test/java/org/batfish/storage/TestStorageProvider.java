@@ -1,5 +1,8 @@
 package org.batfish.storage;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.file.attribute.FileTime;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
@@ -92,6 +95,54 @@ public class TestStorageProvider implements StorageProvider {
 
   @Override
   public List<String> listAnalysisQuestions(String network, String analysis) {
+    throw new UnsupportedOperationException(
+        "no implementation for generated method"); // TODO Auto-generated method stub
+  }
+
+  @Override
+  public boolean checkQuestionExists(String network, String question, String analysis) {
+    throw new UnsupportedOperationException(
+        "no implementation for generated method"); // TODO Auto-generated method stub
+  }
+
+  @Override
+  public String loadAnswer(
+      String network, String snapshot, String question, String referenceSnapshot, String analysis)
+      throws FileNotFoundException {
+    throw new UnsupportedOperationException(
+        "no implementation for generated method"); // TODO Auto-generated method stub
+  }
+
+  @Override
+  public AnswerMetadata loadAnswerMetadata(
+      String network, String snapshot, String question, String referenceSnapshot, String analysis)
+      throws FileNotFoundException, IOException {
+    throw new UnsupportedOperationException(
+        "no implementation for generated method"); // TODO Auto-generated method stub
+  }
+
+  @Override
+  public FileTime getQuestionLastModifiedTime(String network, String question, String analysis) {
+    throw new UnsupportedOperationException(
+        "no implementation for generated method"); // TODO Auto-generated method stub
+  }
+
+  @Override
+  public FileTime getAnswerLastModifiedTime(
+      String network, String snapshot, String question, String referenceSnapshot, String analysis) {
+    throw new UnsupportedOperationException(
+        "no implementation for generated method"); // TODO Auto-generated method stub
+  }
+
+  @Override
+  public FileTime getAnswerMetadataLastModifiedTime(
+      String network, String snapshot, String question, String referenceSnapshot, String analysis) {
+    throw new UnsupportedOperationException(
+        "no implementation for generated method"); // TODO Auto-generated method stub
+  }
+
+  @Override
+  public void storeQuestion(String questionStr, String network, String question, String analysis) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
   }

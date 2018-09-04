@@ -42,6 +42,7 @@ import org.batfish.coordinator.authorizer.NoneAuthorizer;
 import org.batfish.coordinator.config.ConfigurationLocator;
 import org.batfish.coordinator.config.Settings;
 import org.batfish.datamodel.questions.Question;
+import org.batfish.storage.FileBasedStorage;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.grizzly.http.server.HttpServer;
@@ -314,7 +315,9 @@ public class Main {
   }
 
   private static void initWorkManager(BindPortFutures bindPortFutures) {
-    _workManager = new WorkMgr(_settings, _logger);
+    _workManager =
+        new WorkMgr(
+            _settings, _logger, new FileBasedStorage(_settings.getContainersLocation(), _logger));
     _workManager.startWorkManager();
     // Initialize and start the work manager service using the legacy API and Jettison.
     startWorkManagerService(

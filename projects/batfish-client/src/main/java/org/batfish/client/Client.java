@@ -1407,34 +1407,6 @@ public class Client extends AbstractClient implements IClient {
     return true;
   }
 
-  private boolean getQuestion(List<String> options, List<String> parameters) {
-    if (!isValidArgument(options, parameters, 0, 1, 1, Command.GET_QUESTION)) {
-      return false;
-    }
-    if (!isSetTestrig() || !isSetContainer(true)) {
-      return false;
-    }
-
-    String questionName = parameters.get(0);
-
-    String questionFileName =
-        String.format(
-            "%s/%s/%s",
-            BfConsts.RELPATH_QUESTIONS_DIR, questionName, BfConsts.RELPATH_QUESTION_FILE);
-
-    String downloadedQuestionFile =
-        _workHelper.getObject(_currContainerName, _currTestrig, questionFileName);
-    if (downloadedQuestionFile == null) {
-      _logger.errorf("Failed to get question file %s\n", questionFileName);
-      return false;
-    }
-
-    String questionString = CommonUtil.readFile(Paths.get(downloadedQuestionFile));
-    _logger.outputf("Question:\n%s\n", questionString);
-
-    return true;
-  }
-
   /**
    * Returns the name from a JSON representing a question
    *
@@ -2634,8 +2606,6 @@ public class Client extends AbstractClient implements IClient {
         return getObject(outWriter, options, parameters, false);
       case GET_OBJECT_DELTA:
         return getObject(outWriter, options, parameters, false);
-      case GET_QUESTION:
-        return getQuestion(options, parameters);
       case GET_QUESTION_TEMPLATES:
         return getQuestionTemplates(options, parameters);
       case GET_WORK_STATUS:

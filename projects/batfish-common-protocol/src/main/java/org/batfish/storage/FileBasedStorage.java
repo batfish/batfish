@@ -4,10 +4,12 @@ import static org.batfish.common.plugin.PluginConsumer.DEFAULT_HEADER_LENGTH_BYT
 import static org.batfish.common.plugin.PluginConsumer.detectFormat;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.Closer;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -18,6 +20,7 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.FileTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -26,12 +29,14 @@ import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.jpountz.lz4.LZ4FrameInputStream;
 import net.jpountz.lz4.LZ4FrameOutputStream;
+import org.apache.commons.io.FileUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
@@ -53,13 +58,24 @@ public final class FileBasedStorage implements StorageProvider {
   private final BiFunction<String, Integer, AtomicInteger> _newBatch;
 
   /**
-   * Create a new {@link FileBasedStorage} instance that uses the given root path as a container.
+   * Create a new {@link FileBasedStorage} instance that uses the given root path and job batch
+   * provider function.
    */
   public FileBasedStorage(
       Path baseDir, BatfishLogger logger, BiFunction<String, Integer, AtomicInteger> newBatch) {
     _baseDir = baseDir;
     _logger = logger;
     _newBatch = newBatch;
+  }
+
+  /**
+   * Create a new {@link FileBasedStorage} instance that uses the given root path job and whose job
+   * batch provider function is a NOP.
+   */
+  public FileBasedStorage(Path baseDir, BatfishLogger logger) {
+    _baseDir = baseDir;
+    _logger = logger;
+    _newBatch = (a, b) -> new AtomicInteger();
   }
 
   /**
@@ -278,17 +294,17 @@ public final class FileBasedStorage implements StorageProvider {
 
   private @Nonnull Path getAnswerDir(
       String network,
-      String baseSnapshot,
-      @Nullable String deltaSnapshot,
-      @Nullable String analysis,
-      String question) {
-    return deltaSnapshot != null
-        ? getDeltaAnswerDir(network, baseSnapshot, deltaSnapshot, analysis, question)
-        : getStandardAnswerDir(network, baseSnapshot, analysis, question);
+      String snapshot,
+      String question,
+      @Nullable String referenceSnapshot,
+      @Nullable String analysis) {
+    return referenceSnapshot != null
+        ? getDeltaAnswerDir(network, snapshot, question, referenceSnapshot, analysis)
+        : getStandardAnswerDir(network, snapshot, question, analysis);
   }
 
   private @Nonnull Path getStandardAnswerDir(
-      String network, String snapshot, @Nullable String analysis, String question) {
+      String network, String snapshot, String question, @Nullable String analysis) {
     Path snapshotDir = getSnapshotDir(network, snapshot);
     return analysis != null
         ? snapshotDir
@@ -307,11 +323,11 @@ public final class FileBasedStorage implements StorageProvider {
 
   private @Nonnull Path getDeltaAnswerDir(
       String network,
-      String baseSnapshot,
-      String deltaSnapshot,
-      @Nullable String analysis,
-      String question) {
-    Path snapshotDir = getSnapshotDir(network, baseSnapshot);
+      String snapshot,
+      String question,
+      String referenceSnapshot,
+      @Nullable String analysis) {
+    Path snapshotDir = getSnapshotDir(network, snapshot);
     return analysis != null
         ? snapshotDir
             .resolve(BfConsts.RELPATH_ANALYSES_DIR)
@@ -321,14 +337,14 @@ public final class FileBasedStorage implements StorageProvider {
             .resolve(BfConsts.RELPATH_ENVIRONMENTS_DIR)
             .resolve(BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME)
             .resolve(BfConsts.RELPATH_DELTA)
-            .resolve(deltaSnapshot)
+            .resolve(referenceSnapshot)
             .resolve(BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME)
         : snapshotDir
             .resolve(BfConsts.RELPATH_ANSWERS_DIR)
             .resolve(question)
             .resolve(BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME)
             .resolve(BfConsts.RELPATH_DIFF_DIR)
-            .resolve(deltaSnapshot)
+            .resolve(referenceSnapshot)
             .resolve(BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME);
   }
 
@@ -340,15 +356,18 @@ public final class FileBasedStorage implements StorageProvider {
       String question,
       @Nullable String referenceSnapshot,
       @Nullable String analysis) {
-    Path answerDir = getAnswerDir(network, snapshot, referenceSnapshot, analysis, question);
-    Path answerPath = answerDir.resolve(BfConsts.RELPATH_ANSWER_JSON);
-    answerDir.toFile().mkdirs();
+    Path answerPath = getAnswerPath(network, snapshot, question, referenceSnapshot, analysis);
+    Path answerDir = getAnswerDir(network, snapshot, question, referenceSnapshot, analysis);
+    if (!answerDir.toFile().exists() && !answerDir.toFile().mkdirs()) {
+      throw new BatfishException(
+          String.format("Unable to create answer directory '%s'", answerDir));
+    }
     CommonUtil.writeFile(answerPath, answerStr);
   }
 
   @Override
   public void storeAnswerMetadata(
-      AnswerMetadata answerMetrics,
+      AnswerMetadata answerMetadata,
       String network,
       String snapshot,
       String question,
@@ -356,19 +375,14 @@ public final class FileBasedStorage implements StorageProvider {
       @Nullable String analysis) {
     String metricsStr;
     try {
-      metricsStr = BatfishObjectMapper.writePrettyString(answerMetrics);
+      metricsStr = BatfishObjectMapper.writePrettyString(answerMetadata);
     } catch (JsonProcessingException e) {
       throw new BatfishException("Could not write answer metrics", e);
     }
-    Path answerDir = getAnswerDir(network, snapshot, referenceSnapshot, analysis, question);
-    if (answerDir == null) {
-      // If settings has neither a question nor an analysis configured, don't write a file
-      return;
-    }
-    answerDir.toFile().mkdirs();
+    Path answerDir = getAnswerDir(network, snapshot, question, referenceSnapshot, analysis);
     if (!answerDir.toFile().exists() && !answerDir.toFile().mkdirs()) {
       throw new BatfishException(
-          String.format("Unable to create a answer metadata directory '%s'", answerDir));
+          String.format("Unable to create answer metadata directory '%s'", answerDir));
     }
     Path answerMetricsPath = answerDir.resolve(BfConsts.RELPATH_ANSWER_METADATA);
     CommonUtil.writeFile(answerMetricsPath, metricsStr);
@@ -471,7 +485,7 @@ public final class FileBasedStorage implements StorageProvider {
     return getNetworkDir(network).resolve(BfConsts.RELPATH_ANALYSES_DIR).resolve(analysis);
   }
 
-  private @Nonnull Path getAnalysisQuestionDir(String network, String analysis, String question) {
+  private @Nonnull Path getAnalysisQuestionDir(String network, String question, String analysis) {
     return getAnalysisQuestionsDir(network, analysis).resolve(question);
   }
 
@@ -487,17 +501,15 @@ public final class FileBasedStorage implements StorageProvider {
     return getNetworkDir(network).resolve(BfConsts.RELPATH_TESTRIGS_DIR).resolve(snapshot);
   }
 
-  private @Nonnull Path getQuestionDir(String network, @Nullable String analysis, String question) {
+  private @Nonnull Path getQuestionDir(String network, String question, @Nullable String analysis) {
     return analysis != null
-        ? getAnalysisQuestionDir(network, analysis, question)
+        ? getAnalysisQuestionDir(network, question, analysis)
         : getAdHocQuestionDir(network, question);
   }
 
   @Override
-  public @Nonnull String loadQuestion(String network, @Nullable String analysis, String question) {
-    Path questionPath =
-        getQuestionDir(network, analysis, question).resolve(BfConsts.RELPATH_QUESTION_FILE);
-    return CommonUtil.readFile(questionPath);
+  public @Nonnull String loadQuestion(String network, String question, @Nullable String analysis) {
+    return CommonUtil.readFile(getQuestionPath(network, question, analysis));
   }
 
   private @Nonnull Path getVendorSpecificConfigDir(String network, String snapshot) {
@@ -511,13 +523,124 @@ public final class FileBasedStorage implements StorageProvider {
       throw new BatfishException(
           String.format("Analysis questions dir does not exist: '%s'", analysisQuestionsDir));
     }
-    return CommonUtil.list(analysisQuestionsDir)
-        .map(Path::getFileName)
-        .map(Object::toString)
-        .collect(ImmutableList.toImmutableList());
+    try (Stream<Path> analysisQuestions = CommonUtil.list(analysisQuestionsDir)) {
+      return analysisQuestions
+          .map(Path::getFileName)
+          .map(Object::toString)
+          .collect(ImmutableList.toImmutableList());
+    }
   }
 
   private @Nonnull Path getAnalysisQuestionsDir(String network, String analysis) {
     return getNetworkAnalysisDir(network, analysis).resolve(BfConsts.RELPATH_QUESTIONS_DIR);
+  }
+
+  @Override
+  public boolean checkQuestionExists(String network, String question, @Nullable String analysis) {
+    return Files.exists(getQuestionPath(network, question, analysis));
+  }
+
+  private @Nonnull Path getQuestionPath(
+      String network, String question, @Nullable String analysis) {
+    return getQuestionDir(network, question, analysis).resolve(BfConsts.RELPATH_QUESTION_FILE);
+  }
+
+  @Override
+  public @Nonnull String loadAnswer(
+      String network,
+      String snapshot,
+      String question,
+      @Nullable String referenceSnapshot,
+      @Nullable String analysis)
+      throws FileNotFoundException, IOException {
+    Path answerPath = getAnswerPath(network, snapshot, question, referenceSnapshot, analysis);
+    if (!Files.exists(answerPath)) {
+      throw new FileNotFoundException(
+          String.format(
+              "Could not find answer for question:'%s' in network:'%s'; snapshot:'%s'; referenceSnapshot:'%s'; analysis:'%s'",
+              question, network, snapshot, referenceSnapshot, analysis));
+    }
+    return FileUtils.readFileToString(answerPath.toFile());
+  }
+
+  @Override
+  public @Nonnull AnswerMetadata loadAnswerMetadata(
+      String network,
+      String snapshot,
+      String question,
+      @Nullable String referenceSnapshot,
+      @Nullable String analysis)
+      throws FileNotFoundException, IOException {
+    Path answerMetadataPath =
+        getAnswerMetadataPath(network, snapshot, question, referenceSnapshot, analysis);
+    if (!Files.exists(answerMetadataPath)) {
+      throw new FileNotFoundException(
+          String.format(
+              "Could not find answer metadata for question:'%s' in network:'%s'; snapshot:'%s'; referenceSnapshot:'%s'; analysis:'%s'",
+              question, network, snapshot, referenceSnapshot, analysis));
+    }
+    String answerMetadataStr = FileUtils.readFileToString(answerMetadataPath.toFile());
+    return BatfishObjectMapper.mapper()
+        .readValue(answerMetadataStr, new TypeReference<AnswerMetadata>() {});
+  }
+
+  private @Nonnull Path getAnswerPath(
+      String network,
+      String snapshot,
+      String question,
+      @Nullable String referenceSnapshot,
+      @Nullable String analysis) {
+    return getAnswerDir(network, snapshot, question, referenceSnapshot, analysis)
+        .resolve(BfConsts.RELPATH_ANSWER_JSON);
+  }
+
+  private @Nonnull Path getAnswerMetadataPath(
+      String network,
+      String snapshot,
+      String question,
+      @Nullable String referenceSnapshot,
+      @Nullable String analysis) {
+    return getAnswerDir(network, snapshot, question, referenceSnapshot, analysis)
+        .resolve(BfConsts.RELPATH_ANSWER_METADATA);
+  }
+
+  @Override
+  public FileTime getQuestionLastModifiedTime(
+      String network, String question, @Nullable String analysis) {
+    return CommonUtil.getLastModifiedTime(getQuestionPath(network, question, analysis));
+  }
+
+  @Override
+  public FileTime getAnswerLastModifiedTime(
+      String network,
+      String snapshot,
+      String question,
+      @Nullable String referenceSnapshot,
+      @Nullable String analysis) {
+    return CommonUtil.getLastModifiedTime(
+        getAnswerPath(network, snapshot, question, referenceSnapshot, analysis));
+  }
+
+  @Override
+  public FileTime getAnswerMetadataLastModifiedTime(
+      String network,
+      String snapshot,
+      String question,
+      @Nullable String referenceSnapshot,
+      @Nullable String analysis) {
+    return CommonUtil.getLastModifiedTime(
+        getAnswerMetadataPath(network, snapshot, question, referenceSnapshot, analysis));
+  }
+
+  @Override
+  public void storeQuestion(
+      String questionStr, String network, String question, @Nullable String analysis) {
+    Path questionPath = getQuestionPath(network, question, analysis);
+    Path questionDir = questionPath.getParent();
+    if (!questionDir.toFile().exists() && !questionDir.toFile().mkdirs()) {
+      throw new BatfishException(
+          String.format("Unable to create question directory '%s'", questionDir));
+    }
+    CommonUtil.writeFile(questionPath, questionStr);
   }
 }
