@@ -108,7 +108,6 @@ public class Row implements Comparable<Row>, Serializable {
 
     private TypedRowBuilder(Map<String, ColumnMetadata> columns) {
       _columns = columns;
-      columns.keySet().forEach(column -> put(column, null));
     }
 
     /**
@@ -375,5 +374,9 @@ public class Row implements Comparable<Row>, Serializable {
   @Override
   public String toString() {
     return _data.toString();
+  }
+
+  public boolean hasNonNull(String column) {
+    return _data.hasNonNull(column);
   }
 }

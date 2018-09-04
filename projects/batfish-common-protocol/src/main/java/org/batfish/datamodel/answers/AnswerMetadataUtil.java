@@ -1,7 +1,6 @@
 package org.batfish.datamodel.answers;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.Arrays;
@@ -115,13 +114,7 @@ public final class AnswerMetadataUtil {
         .toColumnMap()
         .keySet()
         .stream()
-        .filter(
-            column ->
-                table
-                    .getRowsList()
-                    .stream()
-                    .map(row -> row.getObject(column))
-                    .allMatch(Predicates.isNull()))
+        .filter(column -> table.getRowsList().stream().allMatch(row -> !row.hasNonNull(column)))
         .collect(ImmutableSet.toImmutableSet());
   }
 
