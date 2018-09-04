@@ -31,6 +31,7 @@ import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.DataPlaneAnswerElement;
 import org.batfish.datamodel.answers.InitInfoAnswerElement;
+import org.batfish.datamodel.answers.MajorIssueConfig;
 import org.batfish.datamodel.answers.ParseEnvironmentBgpTablesAnswerElement;
 import org.batfish.datamodel.answers.ParseEnvironmentRoutingTablesAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
@@ -145,6 +146,11 @@ public class IBatfishTestAdapter implements IBatfish {
   @Override
   public FlowHistory getHistory() {
     throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public MajorIssueConfig getMajorIssueConfig(String majorIssue) {
+    return new MajorIssueConfig(majorIssue, null);
   }
 
   @Override

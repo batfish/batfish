@@ -141,6 +141,7 @@ import org.batfish.datamodel.answers.DataPlaneAnswerElement;
 import org.batfish.datamodel.answers.FlattenVendorConfigurationAnswerElement;
 import org.batfish.datamodel.answers.InitInfoAnswerElement;
 import org.batfish.datamodel.answers.InitStepAnswerElement;
+import org.batfish.datamodel.answers.MajorIssueConfig;
 import org.batfish.datamodel.answers.NodAnswerElement;
 import org.batfish.datamodel.answers.NodFirstUnsatAnswerElement;
 import org.batfish.datamodel.answers.NodSatAnswerElement;
@@ -1944,6 +1945,30 @@ public class Batfish extends PluginConsumer implements IBatfish {
     } catch (IOException e) {
       _logger.errorf("Could not read roles data from %s: %s", nodeRoleDataPath, e);
       return Optional.empty();
+    }
+  }
+
+  /**
+   * Returns the {@link MajorIssueConfig} for the given major issue type.
+   *
+   * <p>If the corresponding file is not found or it cannot be deserealized, return an empty object.
+   */
+  @Override
+  public MajorIssueConfig getMajorIssueConfig(String majorIssueType) {
+    try {
+      return MajorIssueConfig.read(
+          _settings
+              .getStorageBase()
+              .resolve(_settings.getContainer())
+              .resolve(BfConsts.RELPATH_CONTAINER_SETTINGS)
+              .resolve(BfConsts.RELPATH_CONTAINER_SETTINGS_ISSUES)
+              .resolve(majorIssueType + ".json"),
+          majorIssueType);
+    } catch (IOException e) {
+      _logger.errorf(
+          "ERROR: Could not cast file for major issue %s to MajorIssueConfig: %s",
+          majorIssueType, Throwables.getStackTraceAsString(e));
+      return new MajorIssueConfig(majorIssueType, null);
     }
   }
 

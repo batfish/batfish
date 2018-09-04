@@ -83,6 +83,7 @@ import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.AutocompleteSuggestion;
 import org.batfish.datamodel.answers.AutocompleteSuggestion.CompletionType;
+import org.batfish.datamodel.answers.MajorIssueConfig;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
@@ -1036,6 +1037,23 @@ public class WorkMgr extends AbstractCoordinator {
     return getdirNetwork(networkName).resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR));
   }
 
+  /** Fetches the {@code MajorIssueConfig} for the given network and major issue type. */
+  public MajorIssueConfig getMajorIssueConfig(String networkName, String majorIssueType) {
+    try {
+      return MajorIssueConfig.read(
+          getdirNetwork(networkName)
+              .resolve(BfConsts.RELPATH_CONTAINER_SETTINGS)
+              .resolve(BfConsts.RELPATH_CONTAINER_SETTINGS_ISSUES)
+              .resolve(majorIssueType + ".json"),
+          majorIssueType);
+    } catch (IOException e) {
+      _logger.errorf(
+          "ERROR: Could not cast file for major issue %s in network %s to MajorIssueConfig: %s",
+          majorIssueType, networkName, Throwables.getStackTraceAsString(e));
+      return new MajorIssueConfig(majorIssueType, null);
+    }
+  }
+
   /**
    * Returns the latest testrig in the container.
    *
@@ -1630,6 +1648,21 @@ public class WorkMgr extends AbstractCoordinator {
                 })
             .collect(Collectors.toList());
     return testrigs;
+  }
+
+  /** Writes the {@code MajorIssueConfig} for the given network and major issue type. */
+  public void putMajorIssueConfig(
+      String networkName, String majorIssueType, MajorIssueConfig config) throws IOException {
+    Path path =
+        getdirNetwork(networkName)
+            .resolve(BfConsts.RELPATH_CONTAINER_SETTINGS)
+            .resolve(BfConsts.RELPATH_CONTAINER_SETTINGS_ISSUES)
+            .resolve(majorIssueType + ".json");
+    if (Files.notExists(path)) {
+      Files.createDirectories(path.getParent());
+      Files.createFile(path);
+    }
+    CommonUtil.writeFile(path, BatfishObjectMapper.mapper().writeValueAsString(config));
   }
 
   public void putObject(
