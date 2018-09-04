@@ -552,7 +552,8 @@ public class Driver {
               CACHED_COMPRESSED_DATA_PLANES,
               CACHED_DATA_PLANES,
               CACHED_ENVIRONMENT_BGP_TABLES,
-              CACHED_ENVIRONMENT_ROUTING_TABLES);
+              CACHED_ENVIRONMENT_ROUTING_TABLES,
+              null);
 
       @Nullable
       SpanContext runBatfishSpanContext =

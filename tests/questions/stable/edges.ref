@@ -1,0 +1,46 @@
+{
+  "class" : "org.batfish.question.edges.EdgesQuestion",
+  "edgeType" : "BGP",
+  "nodes" : ".*",
+  "remoteNodes" : ".*",
+  "differential" : false,
+  "includeOneTableKeys" : true,
+  "instance" : {
+    "description" : "Lists different types of edges in a snapshot",
+    "instanceName" : "qname",
+    "longDescription" : "Lists neighbor relationships of the specified type (layer3, BGP, ospf, etc. in the form of edges)",
+    "tags" : [
+      "topology"
+    ],
+    "variables" : {
+      "edgeType" : {
+        "allowedValues" : [
+          "bgp",
+          "eigrp",
+          "isis",
+          "layer1",
+          "layer2",
+          "layer3",
+          "ospf",
+          "rip"
+        ],
+        "description" : "Types of edges to include",
+        "optional" : true,
+        "type" : "string",
+        "value" : "bgp"
+      },
+      "nodes" : {
+        "description" : "Include edges whose first node matches this name or regex",
+        "optional" : false,
+        "type" : "nodeSpec",
+        "value" : ".*"
+      },
+      "remoteNodes" : {
+        "description" : "Include edges whose second node matches this name or regex",
+        "optional" : false,
+        "type" : "nodeSpec",
+        "value" : ".*"
+      }
+    }
+  }
+}
