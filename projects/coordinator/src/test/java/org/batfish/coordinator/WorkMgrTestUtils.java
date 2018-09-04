@@ -10,10 +10,10 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
-import org.batfish.coordinator.config.Settings;
 import org.batfish.datamodel.TestrigMetadata;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.pojo.Topology;
+import org.batfish.storage.FileBasedStorage;
 import org.junit.rules.TemporaryFolder;
 
 public final class WorkMgrTestUtils {
@@ -22,11 +22,14 @@ public final class WorkMgrTestUtils {
 
   public static void initWorkManager(TemporaryFolder folder) throws Exception {
     BatfishLogger logger = new BatfishLogger("debug", false);
-    Settings settings = new Settings(new String[] {});
     Main.mainInit(new String[] {"-containerslocation", folder.getRoot().toString()});
     Main.setLogger(logger);
     Main.initAuthorizer();
-    Main.setWorkMgr(new WorkMgr(settings, logger));
+    Main.setWorkMgr(
+        new WorkMgr(
+            Main.getSettings(),
+            logger,
+            new FileBasedStorage(Main.getSettings().getContainersLocation(), logger)));
   }
 
   public static void initTestrigWithTopology(String container, String testrig, Set<String> nodes)

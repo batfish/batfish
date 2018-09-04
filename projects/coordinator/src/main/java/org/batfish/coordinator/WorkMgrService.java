@@ -667,14 +667,12 @@ public class WorkMgrService {
 
       String answer =
           Main.getWorkMgr()
-              .getAnalysisAnswer(
+              .getAnswer(
                   networkNameParam,
                   snapshotNameParam,
-                  baseEnv,
+                  questionName,
                   referenceSnapshotParam,
-                  deltaEnv,
-                  analysisName,
-                  questionName);
+                  analysisName);
 
       String answerStr = BatfishObjectMapper.writePrettyString(answer);
 
@@ -775,7 +773,8 @@ public class WorkMgrService {
                   baseEnv,
                   referenceSnapshotParam,
                   deltaEnv,
-                  analysisName);
+                  analysisName,
+                  ImmutableSet.of());
 
       String answersStr = BatfishObjectMapper.writePrettyString(answers);
 
@@ -1070,12 +1069,7 @@ public class WorkMgrService {
       String answer =
           Main.getWorkMgr()
               .getAnswer(
-                  networkNameParam,
-                  snapshotNameParam,
-                  baseEnv,
-                  referenceSnapshotParam,
-                  deltaEnv,
-                  questionName);
+                  networkNameParam, snapshotNameParam, questionName, referenceSnapshotParam, null);
 
       return successResponse(new JSONObject().put(CoordConsts.SVC_KEY_ANSWER, answer));
     } catch (IllegalArgumentException | AccessControlException e) {
@@ -1091,6 +1085,87 @@ public class WorkMgrService {
           snapshotNameParam,
           referenceSnapshotParam == null ? "" : referenceSnapshotParam,
           stackTrace);
+      return failureResponse(e.getMessage());
+    }
+  }
+
+  /**
+   * Get metrics for answers for a previously asked ad-hoc or analysis question
+   *
+   * @param apiKey The API key of the client
+   * @param clientVersion The version of the client
+   * @param networkName The name of the network in which the question resides
+   * @param snapshotName The name of the snapshot on which the question was run
+   * @param deltaSnapshot The name of the delta snapshot on which the question was run
+   * @param analysis (optional) The name of the analysis containing the question, or {@code null} if
+   *     requesting metrics for an ad-hoc question
+   * @param question The name of the question
+   * @return TODO: document JSON response
+   */
+  @POST
+  @Path(CoordConsts.SVC_RSC_GET_ANSWER_METRICS)
+  @Produces(MediaType.APPLICATION_JSON)
+  public JSONArray getAnswerMetrics(
+      @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
+      @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
+      @FormDataParam(CoordConsts.SVC_KEY_NETWORK_NAME) String networkName,
+      @FormDataParam(CoordConsts.SVC_KEY_SNAPSHOT_NAME) String snapshotName,
+      @FormDataParam(CoordConsts.SVC_KEY_DELTA_SNAPSHOT_NAME) String deltaSnapshot,
+      @FormDataParam(CoordConsts.SVC_KEY_ANALYSIS_NAME) String analysis,
+      @FormDataParam(CoordConsts.SVC_KEY_QUESTION_NAME) String question,
+      @FormDataParam(CoordConsts.SVC_KEY_WORKITEM) String workItemStr) {
+    String network = networkName;
+    String snapshot = snapshotName;
+    String referenceSnapshot = deltaSnapshot;
+    try {
+      _logger.infof(
+          "WMS:getAnswerMetrics %s %s %s %s %s %s\n",
+          apiKey, network, snapshot, deltaSnapshot, analysis, question);
+
+      checkStringParam(apiKey, "API key");
+      checkStringParam(clientVersion, "Client version");
+      checkStringParam(network, "Network name");
+      checkStringParam(snapshot, "Base snapshot name");
+
+      checkApiKeyValidity(apiKey);
+      checkClientVersion(clientVersion);
+      checkNetworkAccessibility(apiKey, network);
+
+      JSONObject response = new JSONObject();
+
+      if (!Strings.isNullOrEmpty(workItemStr)) {
+        WorkItem workItem = BatfishObjectMapper.mapper().readValue(workItemStr, WorkItem.class);
+        if (!workItem.getContainerName().equals(network)
+            || !workItem.getTestrigName().equals(snapshot)) {
+          return failureResponse(
+              "Mismatch in parameters: WorkItem is not for the supplied network or snapshot");
+        }
+        QueuedWork work = Main.getWorkMgr().getMatchingWork(workItem, QueueType.INCOMPLETE);
+        if (work != null) {
+          String taskStr = BatfishObjectMapper.writePrettyString(work.getLastTaskCheckResult());
+          response
+              .put(CoordConsts.SVC_KEY_WORKID, work.getWorkItem().getId())
+              .put(CoordConsts.SVC_KEY_WORKSTATUS, work.getStatus().toString())
+              .put(CoordConsts.SVC_KEY_TASKSTATUS, taskStr);
+        }
+      }
+
+      AnswerMetadata answerMetadata =
+          Main.getWorkMgr()
+              .getAnswerMetadata(network, snapshot, question, referenceSnapshot, analysis);
+
+      String answerStr = BatfishObjectMapper.writePrettyString(answerMetadata);
+
+      return successResponse(response.put(CoordConsts.SVC_KEY_ANSWER, answerStr));
+    } catch (IllegalArgumentException | AccessControlException e) {
+      _logger.errorf("WMS:getAnswerMetrics exception: %s\n", e.getMessage());
+      return failureResponse(e.getMessage());
+    } catch (Exception e) {
+      String stackTrace = Throwables.getStackTraceAsString(e);
+      _logger.errorf(
+          "WMS:getAnswerMetrics exception for apikey:%s in network:%s, snapshot:%s, "
+              + "deltasnapshot:%s, analysis:%s, question:%s; exception:%s",
+          apiKey, network, snapshot, referenceSnapshot, analysis, question, stackTrace);
       return failureResponse(e.getMessage());
     }
   }
