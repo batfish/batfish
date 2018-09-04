@@ -765,7 +765,8 @@ public class WorkMgrService {
                   baseEnv,
                   deltaSnapshotParam,
                   deltaEnv,
-                  analysisName);
+                  analysisName,
+                  ImmutableSet.of());
 
       String answersStr = BatfishObjectMapper.writePrettyString(answers);
 

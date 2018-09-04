@@ -495,7 +495,8 @@ public class WorkMgrTest {
             BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
             null,
             null,
-            analysisName);
+            analysisName,
+            ImmutableSet.of());
     Map<String, String> answers2 =
         _manager.getAnalysisAnswers(
             containerName,

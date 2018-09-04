@@ -13,7 +13,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Sets;
 import io.opentracing.ActiveSpan;
 import io.opentracing.References;
 import io.opentracing.SpanContext;
@@ -40,7 +39,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
-import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.UUID;
 import java.util.concurrent.Executors;
@@ -701,23 +699,7 @@ public class WorkMgr extends AbstractCoordinator {
     return answer;
   }
 
-  public Map<String, String> getAnalysisAnswers(
-      String network,
-      String snapshot,
-      String baseEnv,
-      String referenceSnapshot,
-      String deltaEnv,
-      String analysis)
-      throws JsonProcessingException, FileNotFoundException {
-    SortedSet<String> questions = listAnalysisQuestions(network, analysis);
-    Map<String, String> retMap = new TreeMap<>();
-    for (String question : questions) {
-      retMap.put(question, getAnswer(network, snapshot, question, referenceSnapshot, analysis));
-    }
-    return retMap;
-  }
-
-  public Map<String, String> getAnalysisAnswers(
+  public @Nonnull Map<String, String> getAnalysisAnswers(
       String network,
       String snapshot,
       String baseEnv,
@@ -726,17 +708,14 @@ public class WorkMgr extends AbstractCoordinator {
       String analysis,
       Set<String> analysisQuestions)
       throws JsonProcessingException, FileNotFoundException {
-    SortedSet<String> allQuestions = listAnalysisQuestions(network, analysis);
-    SortedSet<String> questions =
-        analysisQuestions.isEmpty()
-            ? allQuestions
-            : ImmutableSortedSet.copyOf(Sets.intersection(allQuestions, analysisQuestions));
-    Map<String, String> retMap = new TreeMap<>();
+    Set<String> questions =
+        analysisQuestions.isEmpty() ? listAnalysisQuestions(network, analysis) : analysisQuestions;
+    ImmutableSortedMap.Builder<String, String> result = ImmutableSortedMap.naturalOrder();
     for (String questionName : questions) {
-      retMap.put(
+      result.put(
           questionName, getAnswer(network, snapshot, questionName, referenceSnapshot, analysis));
     }
-    return retMap;
+    return result.build();
   }
 
   public @Nonnull Map<String, AnswerMetadata> getAnalysisAnswersMetadata(
@@ -746,17 +725,14 @@ public class WorkMgr extends AbstractCoordinator {
       String analysis,
       Set<String> analysisQuestions)
       throws JsonProcessingException, FileNotFoundException {
-    SortedSet<String> allQuestions = listAnalysisQuestions(network, analysis);
-    SortedSet<String> questions =
-        analysisQuestions.isEmpty()
-            ? allQuestions
-            : ImmutableSortedSet.copyOf(Sets.intersection(allQuestions, analysisQuestions));
-    ImmutableSortedMap.Builder<String, AnswerMetadata> builder = ImmutableSortedMap.naturalOrder();
+    Set<String> questions =
+        analysisQuestions.isEmpty() ? listAnalysisQuestions(network, analysis) : analysisQuestions;
+    ImmutableSortedMap.Builder<String, AnswerMetadata> result = ImmutableSortedMap.naturalOrder();
     for (String question : questions) {
-      builder.put(
+      result.put(
           question, getAnswerMetadata(network, snapshot, question, referenceSnapshot, analysis));
     }
-    return builder.build();
+    return result.build();
   }
 
   public String getAnalysisQuestion(
