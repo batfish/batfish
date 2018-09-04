@@ -3,7 +3,7 @@ package org.batfish.client;
 import static org.batfish.client.Command.ADD_ANALYSIS_QUESTIONS;
 import static org.batfish.client.Command.ADD_BATFISH_OPTION;
 import static org.batfish.client.Command.ANSWER;
-import static org.batfish.client.Command.ANSWER_DELTA;
+import static org.batfish.client.Command.ANSWER_REFERENCE;
 import static org.batfish.client.Command.CAT;
 import static org.batfish.client.Command.CHECK_API_KEY;
 import static org.batfish.client.Command.CLEAR_SCREEN;
@@ -16,23 +16,22 @@ import static org.batfish.client.Command.DEL_QUESTION;
 import static org.batfish.client.Command.DEL_SNAPSHOT;
 import static org.batfish.client.Command.DIR;
 import static org.batfish.client.Command.EXIT;
-import static org.batfish.client.Command.GEN_DELTA_DP;
 import static org.batfish.client.Command.GEN_DP;
+import static org.batfish.client.Command.GEN_REFERENCE_DP;
 import static org.batfish.client.Command.GET;
 import static org.batfish.client.Command.GET_ANALYSIS_ANSWERS;
-import static org.batfish.client.Command.GET_ANALYSIS_ANSWERS_DELTA;
 import static org.batfish.client.Command.GET_ANALYSIS_ANSWERS_DIFFERENTIAL;
+import static org.batfish.client.Command.GET_ANALYSIS_ANSWERS_REFERENCE;
 import static org.batfish.client.Command.GET_ANSWER;
-import static org.batfish.client.Command.GET_ANSWER_DELTA;
 import static org.batfish.client.Command.GET_ANSWER_DIFFERENTIAL;
+import static org.batfish.client.Command.GET_ANSWER_REFERENCE;
 import static org.batfish.client.Command.GET_CONFIGURATION;
-import static org.batfish.client.Command.GET_DELTA;
-import static org.batfish.client.Command.GET_QUESTION;
+import static org.batfish.client.Command.GET_REFERENCE;
 import static org.batfish.client.Command.HELP;
 import static org.batfish.client.Command.INIT_ANALYSIS;
-import static org.batfish.client.Command.INIT_DELTA_SNAPSHOT;
 import static org.batfish.client.Command.INIT_ENVIRONMENT;
 import static org.batfish.client.Command.INIT_NETWORK;
+import static org.batfish.client.Command.INIT_REFERENCE_SNAPSHOT;
 import static org.batfish.client.Command.INIT_SNAPSHOT;
 import static org.batfish.client.Command.LIST_ANALYSES;
 import static org.batfish.client.Command.LIST_ENVIRONMENTS;
@@ -43,23 +42,23 @@ import static org.batfish.client.Command.LOAD_QUESTIONS;
 import static org.batfish.client.Command.PROMPT;
 import static org.batfish.client.Command.PWD;
 import static org.batfish.client.Command.RUN_ANALYSIS;
-import static org.batfish.client.Command.RUN_ANALYSIS_DELTA;
 import static org.batfish.client.Command.RUN_ANALYSIS_DIFFERENTIAL;
+import static org.batfish.client.Command.RUN_ANALYSIS_REFERENCE;
 import static org.batfish.client.Command.SET_BATFISH_LOGLEVEL;
 import static org.batfish.client.Command.SET_DELTA_ENV;
-import static org.batfish.client.Command.SET_DELTA_SNAPSHOT;
 import static org.batfish.client.Command.SET_ENV;
 import static org.batfish.client.Command.SET_LOGLEVEL;
 import static org.batfish.client.Command.SET_NETWORK;
 import static org.batfish.client.Command.SET_PRETTY_PRINT;
+import static org.batfish.client.Command.SET_REFERENCE_SNAPSHOT;
 import static org.batfish.client.Command.SET_SNAPSHOT;
 import static org.batfish.client.Command.SHOW_API_KEY;
 import static org.batfish.client.Command.SHOW_BATFISH_LOGLEVEL;
 import static org.batfish.client.Command.SHOW_BATFISH_OPTIONS;
 import static org.batfish.client.Command.SHOW_COORDINATOR_HOST;
-import static org.batfish.client.Command.SHOW_DELTA_SNAPSHOT;
 import static org.batfish.client.Command.SHOW_LOGLEVEL;
 import static org.batfish.client.Command.SHOW_NETWORK;
+import static org.batfish.client.Command.SHOW_REFERENCE_SNAPSHOT;
 import static org.batfish.client.Command.SHOW_SNAPSHOT;
 import static org.batfish.client.Command.TEST;
 import static org.batfish.client.Command.UPLOAD_CUSTOM_OBJECT;
@@ -170,14 +169,14 @@ public class ClientTest {
   }
 
   @Test
-  public void testAnswerDeltaInvalidParas() throws Exception {
-    testInvalidInput(ANSWER_DELTA, new String[] {}, new String[] {});
+  public void testAnswerReferenceInvalidParas() throws Exception {
+    testInvalidInput(ANSWER_REFERENCE, new String[] {}, new String[] {});
   }
 
   @Test
-  public void testAnswerDeltaValidParas() throws Exception {
+  public void testAnswerReferenceValidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    checkProcessCommandErrorMessage(ANSWER_DELTA, parameters, SNAPSHOT_NOT_SET);
+    checkProcessCommandErrorMessage(ANSWER_REFERENCE, parameters, SNAPSHOT_NOT_SET);
   }
 
   @Test
@@ -349,15 +348,15 @@ public class ClientTest {
   }
 
   @Test
-  public void testGenerateDataplaneDeltaInvalidParas() throws Exception {
+  public void testGenerateDataplaneReferenceInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(GEN_DELTA_DP, new String[] {}, parameters);
+    testInvalidInput(GEN_REFERENCE_DP, new String[] {}, parameters);
   }
 
   @Test
-  public void testGenerateDataplaneDeltaValidParas() throws Exception {
+  public void testGenerateDataplaneReferenceValidParas() throws Exception {
     checkProcessCommandErrorMessage(
-        GEN_DELTA_DP, new String[] {}, "Active delta snapshot is not set\n");
+        GEN_REFERENCE_DP, new String[] {}, "Active delta snapshot is not set\n");
   }
 
   @Test
@@ -372,9 +371,9 @@ public class ClientTest {
   }
 
   @Test
-  public void testGetAnalysisAnswersDeltaValidParas() throws Exception {
+  public void testGetAnalysisAnswersReferenceValidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    checkProcessCommandErrorMessage(GET_ANALYSIS_ANSWERS_DELTA, parameters, SNAPSHOT_NOT_SET);
+    checkProcessCommandErrorMessage(GET_ANALYSIS_ANSWERS_REFERENCE, parameters, SNAPSHOT_NOT_SET);
   }
 
   @Test
@@ -396,9 +395,9 @@ public class ClientTest {
   }
 
   @Test
-  public void testGetAnswersDeltaValidParas() throws Exception {
+  public void testGetAnswersReferenceValidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    checkProcessCommandErrorMessage(GET_ANSWER_DELTA, parameters, SNAPSHOT_NOT_SET);
+    checkProcessCommandErrorMessage(GET_ANSWER_REFERENCE, parameters, SNAPSHOT_NOT_SET);
   }
 
   @Test
@@ -419,24 +418,19 @@ public class ClientTest {
   }
 
   @Test
-  public void testGetDeltaInvalidParas() throws Exception {
-    testInvalidInput(GET_DELTA, new String[] {}, new String[] {});
+  public void testGetReferenceInvalidParas() throws Exception {
+    testInvalidInput(GET_REFERENCE, new String[] {}, new String[] {});
   }
 
   @Test
-  public void testGetDeltaValidParas() throws Exception {
+  public void testGetReferenceValidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    checkProcessCommandErrorMessage(GET_DELTA, parameters, SNAPSHOT_NOT_SET);
+    checkProcessCommandErrorMessage(GET_REFERENCE, parameters, SNAPSHOT_NOT_SET);
   }
 
   @Test
   public void testGetInvalidParas() throws Exception {
     testInvalidInput(GET, new String[] {}, new String[] {});
-  }
-
-  @Test
-  public void testGetQuestionInvalidParas() throws Exception {
-    testInvalidInput(GET_QUESTION, new String[] {}, new String[] {});
   }
 
   @Test
@@ -471,12 +465,6 @@ public class ClientTest {
 
     // check exception when instance itself is not present
     Client.getQuestionName(testQuestion, "testquestion");
-  }
-
-  @Test
-  public void testGetQuestionValidParas() throws Exception {
-    String[] parameters = new String[] {"parameter1"};
-    checkProcessCommandErrorMessage(GET_QUESTION, parameters, SNAPSHOT_NOT_SET);
   }
 
   @Test
@@ -561,8 +549,8 @@ public class ClientTest {
   }
 
   @Test
-  public void testInitSnapshotDeltaInvalidParas() throws Exception {
-    testInvalidInput(INIT_DELTA_SNAPSHOT, new String[] {}, new String[] {});
+  public void testInitSnapshotReferenceInvalidParas() throws Exception {
+    testInvalidInput(INIT_REFERENCE_SNAPSHOT, new String[] {}, new String[] {});
   }
 
   @Test
@@ -1188,9 +1176,9 @@ public class ClientTest {
   }
 
   @Test
-  public void testRunAnalysisDeltaValidParas() throws Exception {
+  public void testRunAnalysisReferenceValidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    checkProcessCommandErrorMessage(RUN_ANALYSIS_DELTA, parameters, NETWORK_NOT_SET);
+    checkProcessCommandErrorMessage(RUN_ANALYSIS_REFERENCE, parameters, NETWORK_NOT_SET);
   }
 
   @Test
@@ -1272,17 +1260,17 @@ public class ClientTest {
   }
 
   @Test
-  public void testSetDeltaSnapshotInvalidParas() throws Exception {
-    testInvalidInput(SET_DELTA_SNAPSHOT, new String[] {}, new String[] {});
+  public void testSetReferenceSnapshotInvalidParas() throws Exception {
+    testInvalidInput(SET_REFERENCE_SNAPSHOT, new String[] {}, new String[] {});
   }
 
   @Test
-  public void testSetDeltaSnapshotValidParas() throws Exception {
+  public void testSetReferenceSnapshotValidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
     testProcessCommandWithValidInput(
-        SET_DELTA_SNAPSHOT,
+        SET_REFERENCE_SNAPSHOT,
         parameters,
-        String.format("Delta snapshot->env is now %s->env_default\n", parameters[0]));
+        String.format("Reference snapshot->env is now %s->env_default\n", parameters[0]));
   }
 
   @Test
@@ -1391,15 +1379,15 @@ public class ClientTest {
   }
 
   @Test
-  public void testShowDeltaSnapshotInvalidParas() throws Exception {
+  public void testShowReferenceSnapshotInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(SHOW_DELTA_SNAPSHOT, new String[] {}, parameters);
+    testInvalidInput(SHOW_REFERENCE_SNAPSHOT, new String[] {}, parameters);
   }
 
   @Test
-  public void testShowDeltaSnapshotValidParas() throws Exception {
+  public void testShowReferenceSnapshotValidParas() throws Exception {
     checkProcessCommandErrorMessage(
-        SHOW_DELTA_SNAPSHOT, new String[] {}, "Active delta snapshot is not set\n");
+        SHOW_REFERENCE_SNAPSHOT, new String[] {}, "Active delta snapshot is not set\n");
   }
 
   @Test

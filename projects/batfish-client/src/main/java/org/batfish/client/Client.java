@@ -683,7 +683,7 @@ public class Client extends AbstractClient implements IClient {
       List<String> options,
       List<String> parameters,
       boolean delta) {
-    Command command = delta ? Command.ANSWER_DELTA : Command.ANSWER;
+    Command command = delta ? Command.ANSWER_REFERENCE : Command.ANSWER;
     if (!isValidArgument(options, parameters, 0, 1, Integer.MAX_VALUE, command)) {
       return false;
     }
@@ -1141,9 +1141,9 @@ public class Client extends AbstractClient implements IClient {
     return execute(wItemGenDp, outWriter);
   }
 
-  private boolean generateDeltaDataplane(
+  private boolean generateReferenceDataplane(
       @Nullable FileWriter outWriter, List<String> options, List<String> parameters) {
-    if (!isValidArgument(options, parameters, 0, 0, 0, Command.GEN_DELTA_DP)) {
+    if (!isValidArgument(options, parameters, 0, 0, 0, Command.GEN_REFERENCE_DP)) {
       return false;
     }
     if (!isSetDeltaEnvironment() || !isSetTestrig() || !isSetContainer(true)) {
@@ -1188,7 +1188,7 @@ public class Client extends AbstractClient implements IClient {
       List<String> options,
       List<String> parameters,
       boolean delta) {
-    Command command = delta ? Command.GET_DELTA : Command.GET;
+    Command command = delta ? Command.GET_REFERENCE : Command.GET;
     if (!isValidArgument(options, parameters, 0, 1, Integer.MAX_VALUE, command)) {
       return false;
     }
@@ -1403,34 +1403,6 @@ public class Client extends AbstractClient implements IClient {
     String objectString = CommonUtil.readFile(Paths.get(tmpPath));
 
     logOutput(outWriter, objectString + "\n");
-
-    return true;
-  }
-
-  private boolean getQuestion(List<String> options, List<String> parameters) {
-    if (!isValidArgument(options, parameters, 0, 1, 1, Command.GET_QUESTION)) {
-      return false;
-    }
-    if (!isSetTestrig() || !isSetContainer(true)) {
-      return false;
-    }
-
-    String questionName = parameters.get(0);
-
-    String questionFileName =
-        String.format(
-            "%s/%s/%s",
-            BfConsts.RELPATH_QUESTIONS_DIR, questionName, BfConsts.RELPATH_QUESTION_FILE);
-
-    String downloadedQuestionFile =
-        _workHelper.getObject(_currContainerName, _currTestrig, questionFileName);
-    if (downloadedQuestionFile == null) {
-      _logger.errorf("Failed to get question file %s\n", questionFileName);
-      return false;
-    }
-
-    String questionString = CommonUtil.readFile(Paths.get(downloadedQuestionFile));
-    _logger.outputf("Question:\n%s\n", questionString);
 
     return true;
   }
@@ -1810,7 +1782,7 @@ public class Client extends AbstractClient implements IClient {
       List<String> options,
       List<String> parameters,
       boolean delta) {
-    Command command = delta ? Command.INIT_DELTA_SNAPSHOT : Command.INIT_SNAPSHOT;
+    Command command = delta ? Command.INIT_REFERENCE_SNAPSHOT : Command.INIT_SNAPSHOT;
     if (!isValidArgument(options, parameters, 1, 1, 2, command)) {
       return false;
     }
@@ -2609,7 +2581,7 @@ public class Client extends AbstractClient implements IClient {
         return generateDataplane(outWriter, options, parameters);
       case GEN_DELTA_DP:
       case GEN_REFERENCE_DP:
-        return generateDeltaDataplane(outWriter, options, parameters);
+        return generateReferenceDataplane(outWriter, options, parameters);
       case GET:
         return get(words, outWriter, options, parameters, false);
       case GET_CONFIGURATION:
@@ -2640,8 +2612,6 @@ public class Client extends AbstractClient implements IClient {
       case GET_OBJECT_DELTA:
       case GET_OBJECT_REFERENCE:
         return getObject(outWriter, options, parameters, false);
-      case GET_QUESTION:
-        return getQuestion(options, parameters);
       case GET_QUESTION_TEMPLATES:
         return getQuestionTemplates(options, parameters);
       case GET_WORK_STATUS:
@@ -2654,7 +2624,6 @@ public class Client extends AbstractClient implements IClient {
         return initNetwork(options, parameters);
       case INIT_DELTA_SNAPSHOT:
       case INIT_REFERENCE_SNAPSHOT:
-        return initSnapshot(outWriter, options, parameters, true);
       case INIT_DELTA_TESTRIG:
         return initSnapshot(outWriter, options, parameters, true);
       case INIT_ENVIRONMENT:
@@ -2713,7 +2682,7 @@ public class Client extends AbstractClient implements IClient {
       case SET_DELTA_SNAPSHOT:
       case SET_DELTA_TESTRIG:
       case SET_REFERENCE_SNAPSHOT:
-        return setDeltaSnapshot(options, parameters);
+        return setReferenceSnapshot(options, parameters);
       case SET_LOGLEVEL:
         return setLogLevel(options, parameters);
       case SET_NETWORK:
@@ -2737,7 +2706,7 @@ public class Client extends AbstractClient implements IClient {
       case SHOW_DELTA_SNAPSHOT:
       case SHOW_DELTA_TESTRIG:
       case SHOW_REFERENCE_SNAPSHOT:
-        return showDeltaSnapshot(options, parameters);
+        return showReferenceSnapshot(options, parameters);
       case SHOW_LOGLEVEL:
         return showLogLevel(options, parameters);
       case SHOW_NETWORK:
@@ -3007,8 +2976,8 @@ public class Client extends AbstractClient implements IClient {
     return true;
   }
 
-  private boolean setDeltaSnapshot(List<String> options, List<String> parameters) {
-    if (!isValidArgument(options, parameters, 0, 1, 2, Command.SET_DELTA_SNAPSHOT)) {
+  private boolean setReferenceSnapshot(List<String> options, List<String> parameters) {
+    if (!isValidArgument(options, parameters, 0, 1, 2, Command.SET_REFERENCE_SNAPSHOT)) {
       return false;
     }
     _currDeltaTestrig = parameters.get(0);
@@ -3122,8 +3091,8 @@ public class Client extends AbstractClient implements IClient {
     return true;
   }
 
-  private boolean showDeltaSnapshot(List<String> options, List<String> parameters) {
-    if (!isValidArgument(options, parameters, 0, 0, 0, Command.SHOW_DELTA_SNAPSHOT)) {
+  private boolean showReferenceSnapshot(List<String> options, List<String> parameters) {
+    if (!isValidArgument(options, parameters, 0, 0, 0, Command.SHOW_REFERENCE_SNAPSHOT)) {
       return false;
     }
     if (!isSetDeltaEnvironment()) {

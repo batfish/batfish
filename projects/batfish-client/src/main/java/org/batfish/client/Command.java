@@ -50,7 +50,6 @@ public enum Command {
   GET_OBJECT("get-object"),
   GET_OBJECT_DELTA("get-delta-object"),
   GET_OBJECT_REFERENCE("get-reference-object"),
-  GET_QUESTION("get-question"),
   GET_QUESTION_TEMPLATES("get-question-templates"),
   GET_REFERENCE("get-reference"),
   GET_WORK_STATUS("get-work-status"),
@@ -280,7 +279,6 @@ public enum Command {
     descs.put(
         GET_OBJECT_REFERENCE,
         new Pair<>("<object path>", "Get the object from reference snapshot"));
-    descs.put(GET_QUESTION, new Pair<>("<question-name>", "Get the question and parameter files"));
     descs.put(GET_QUESTION_TEMPLATES, new Pair<>("", "Get question templates from coordinator"));
     descs.put(
         GET_REFERENCE,

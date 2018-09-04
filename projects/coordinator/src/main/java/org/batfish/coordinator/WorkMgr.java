@@ -13,11 +13,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Sets;
 import io.opentracing.ActiveSpan;
 import io.opentracing.References;
 import io.opentracing.SpanContext;
 import io.opentracing.util.GlobalTracer;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -39,7 +39,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
-import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.UUID;
 import java.util.concurrent.Executors;
@@ -101,6 +100,7 @@ import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
+import org.batfish.storage.StorageProvider;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -144,12 +144,20 @@ public class WorkMgr extends AbstractCoordinator {
 
   private WorkQueueMgr _workQueueMgr;
 
-  public WorkMgr(Settings settings, BatfishLogger logger) {
+  private final StorageProvider _storage;
+
+  public WorkMgr(Settings settings, BatfishLogger logger, @Nonnull StorageProvider storage) {
     super(false);
     _settings = settings;
+    _storage = storage;
     _logger = logger;
     _workQueueMgr = new WorkQueueMgr(logger);
     loadPlugins();
+  }
+
+  @VisibleForTesting
+  public @Nonnull StorageProvider getStorage() {
+    return _storage;
   }
 
   private void assignWork() {
@@ -581,7 +589,7 @@ public class WorkMgr extends AbstractCoordinator {
   private void configureAnalysisValidityCheck(
       String containerName,
       boolean newAnalysis,
-      String aName,
+      String analysisName,
       Map<String, String> questionsToAdd,
       List<String> questionsToDelete,
       Path aDir) {
@@ -591,7 +599,8 @@ public class WorkMgr extends AbstractCoordinator {
     if (newAnalysis) {
       if (Files.exists(aDir)) {
         throw new BatfishException(
-            String.format("Analysis '%s' already exists for container '%s'", aName, containerName));
+            String.format(
+                "Analysis '%s' already exists for container '%s'", analysisName, containerName));
       } else if (!questionsToDelete.isEmpty()) {
         throw new BatfishException("Cannot delete questions from a new analysis");
       }
@@ -602,14 +611,15 @@ public class WorkMgr extends AbstractCoordinator {
       // 3. questionsToAdd includes a question that already exists and won't be deleted
       if (!Files.exists(aDir)) {
         throw new BatfishException(
-            String.format("Analysis '%s' does not exist for container '%s'", aName, containerName));
+            String.format(
+                "Analysis '%s' does not exist for container '%s'", analysisName, containerName));
       }
       Path questionsDir = aDir.resolve(BfConsts.RELPATH_QUESTIONS_DIR);
       for (String qName : questionsToDelete) {
         Path qDir = questionsDir.resolve(qName);
         if (!Files.exists(qDir)) {
           throw new BatfishException(
-              String.format("Question '%s' does not exist for analysis '%s'", qName, aName));
+              String.format("Question '%s' does not exist for analysis '%s'", qName, analysisName));
         }
       }
       for (Entry<String, String> entry : questionsToAdd.entrySet()) {
@@ -617,7 +627,7 @@ public class WorkMgr extends AbstractCoordinator {
             && Files.exists(questionsDir.resolve(entry.getKey()))) {
           throw new BatfishException(
               String.format(
-                  "Question '%s' already exists for analysis '%s'", entry.getKey(), aName));
+                  "Question '%s' already exists for analysis '%s'", entry.getKey(), analysisName));
         }
       }
     }
@@ -652,197 +662,78 @@ public class WorkMgr extends AbstractCoordinator {
     CommonUtil.deleteDirectory(qDir);
   }
 
-  public String getAnalysisAnswer(
-      String containerName,
-      String baseTestrig,
-      String baseEnv,
-      String deltaTestrig,
-      String deltaEnv,
-      String analysisName,
-      String questionName)
-      throws JsonProcessingException {
-    Path analysisDir = getdirContainerAnalysis(containerName, analysisName);
-    Path testrigDir = getdirTestrig(containerName, baseTestrig);
-
+  public String getAnswer(
+      String network,
+      String snapshot,
+      String question,
+      @Nullable String referenceSnapshot,
+      @Nullable String analysis)
+      throws JsonProcessingException, FileNotFoundException {
+    if (!_storage.checkQuestionExists(network, question, analysis)) {
+      throw new FileNotFoundException("Question file not found for " + question);
+    }
     String answer = "unknown";
-    Path questionFile =
-        analysisDir.resolve(
-            Paths.get(
-                BfConsts.RELPATH_QUESTIONS_DIR, questionName, BfConsts.RELPATH_QUESTION_FILE));
-    if (!Files.exists(questionFile)) {
-      throw new BatfishException("Question file for question " + questionName + "not found");
-    }
-    Path answerDir =
-        testrigDir.resolve(
-            Paths.get(
-                BfConsts.RELPATH_ANALYSES_DIR,
-                analysisName,
-                BfConsts.RELPATH_QUESTIONS_DIR,
-                questionName,
-                BfConsts.RELPATH_ENVIRONMENTS_DIR,
-                baseEnv));
-    if (deltaTestrig != null) {
-      answerDir = answerDir.resolve(Paths.get(BfConsts.RELPATH_DELTA, deltaTestrig, deltaEnv));
-    }
-    Path answerFile = answerDir.resolve(BfConsts.RELPATH_ANSWER_JSON);
-    if (!Files.exists(answerFile)) {
-      Answer ans = Answer.failureAnswer("Not answered", null);
-      ans.setStatus(AnswerStatus.NOTFOUND);
-      answer = BatfishObjectMapper.writePrettyString(ans);
-    } else {
-      boolean answerIsStale;
-      answerIsStale =
-          CommonUtil.getLastModifiedTime(questionFile)
-                  .compareTo(CommonUtil.getLastModifiedTime(answerFile))
-              > 0;
-      if (answerIsStale) {
+    try {
+      answer = _storage.loadAnswer(network, snapshot, question, referenceSnapshot, analysis);
+      if (_storage
+              .getQuestionLastModifiedTime(network, question, analysis)
+              .compareTo(
+                  _storage.getAnswerLastModifiedTime(
+                      network, snapshot, question, referenceSnapshot, analysis))
+          > 0) {
         Answer ans = Answer.failureAnswer("Not fresh", null);
         ans.setStatus(AnswerStatus.STALE);
         answer = BatfishObjectMapper.writePrettyString(ans);
-      } else {
-        answer = CommonUtil.readFile(answerFile);
       }
+    } catch (FileNotFoundException e) {
+      Answer ans = Answer.failureAnswer("Not answered", null);
+      ans.setStatus(AnswerStatus.NOTFOUND);
+      answer = BatfishObjectMapper.writePrettyString(ans);
+    } catch (IOException e) {
+      String message =
+          String.format("Failed to read answer file:\n%s", Throwables.getStackTraceAsString(e));
+      _logger.error(message);
+      Answer ans = Answer.failureAnswer(message, null);
+      ans.setStatus(AnswerStatus.FAILURE);
+      answer = BatfishObjectMapper.writePrettyString(ans);
     }
     return answer;
   }
 
-  public AnswerMetadata getAnalysisAnswerMetadata(
-      String containerName,
-      String baseSnapshot,
-      String deltaSnapshot,
-      String analysisName,
-      String questionName)
-      throws JsonProcessingException {
-    Path analysisDir = getdirContainerAnalysis(containerName, analysisName);
-    Path testrigDir = getdirTestrig(containerName, baseSnapshot);
-
-    Path questionFile =
-        analysisDir.resolve(
-            Paths.get(
-                BfConsts.RELPATH_QUESTIONS_DIR, questionName, BfConsts.RELPATH_QUESTION_FILE));
-    if (!Files.exists(questionFile)) {
-      throw new BatfishException("Question file for question " + questionName + "not found");
-    }
-    Path answerDir =
-        testrigDir.resolve(
-            Paths.get(
-                BfConsts.RELPATH_ANALYSES_DIR,
-                analysisName,
-                BfConsts.RELPATH_QUESTIONS_DIR,
-                questionName,
-                BfConsts.RELPATH_ENVIRONMENTS_DIR,
-                BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME));
-    if (deltaSnapshot != null) {
-      answerDir =
-          answerDir.resolve(
-              Paths.get(
-                  BfConsts.RELPATH_DELTA,
-                  deltaSnapshot,
-                  BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME));
-    }
-    Path answerMetadataFile = answerDir.resolve(BfConsts.RELPATH_ANSWER_METADATA);
-    AnswerMetadata answerMetadata;
-    if (!Files.exists(answerMetadataFile)) {
-      Answer ans = Answer.failureAnswer("Not answered", null);
-      ans.setStatus(AnswerStatus.NOTFOUND);
-      answerMetadata = new AnswerMetadata(null, AnswerStatus.NOTFOUND);
-    } else {
-      boolean answerIsStale;
-      answerIsStale =
-          CommonUtil.getLastModifiedTime(questionFile)
-                  .compareTo(CommonUtil.getLastModifiedTime(answerMetadataFile))
-              > 0;
-      if (answerIsStale) {
-        answerMetadata = new AnswerMetadata(null, AnswerStatus.STALE);
-      } else {
-        String answerMetadataString = CommonUtil.readFile(answerMetadataFile);
-        try {
-          answerMetadata =
-              BatfishObjectMapper.mapper()
-                  .readValue(answerMetadataString, new TypeReference<AnswerMetadata>() {});
-        } catch (IOException e) {
-          answerMetadata = new AnswerMetadata(null, AnswerStatus.FAILURE);
-        }
-      }
-    }
-    return answerMetadata;
-  }
-
-  public Map<String, String> getAnalysisAnswers(
-      String containerName,
-      String baseTestrig,
+  public @Nonnull Map<String, String> getAnalysisAnswers(
+      String network,
+      String snapshot,
       String baseEnv,
-      String deltaTestrig,
+      String referenceSnapshot,
       String deltaEnv,
-      String analysisName)
-      throws JsonProcessingException {
-    SortedSet<String> questions = listAnalysisQuestions(containerName, analysisName);
-    Map<String, String> retMap = new TreeMap<>();
-    for (String questionName : questions) {
-      retMap.put(
-          questionName,
-          getAnalysisAnswer(
-              containerName,
-              baseTestrig,
-              baseEnv,
-              deltaTestrig,
-              deltaEnv,
-              analysisName,
-              questionName));
-    }
-    return retMap;
-  }
-
-  public Map<String, String> getAnalysisAnswers(
-      String containerName,
-      String baseTestrig,
-      String baseEnv,
-      String deltaTestrig,
-      String deltaEnv,
-      String analysisName,
+      String analysis,
       Set<String> analysisQuestions)
-      throws JsonProcessingException {
-    SortedSet<String> allQuestions = listAnalysisQuestions(containerName, analysisName);
-    SortedSet<String> questions =
-        analysisQuestions.isEmpty()
-            ? allQuestions
-            : ImmutableSortedSet.copyOf(Sets.intersection(allQuestions, analysisQuestions));
-    Map<String, String> retMap = new TreeMap<>();
+      throws JsonProcessingException, FileNotFoundException {
+    Set<String> questions =
+        analysisQuestions.isEmpty() ? listAnalysisQuestions(network, analysis) : analysisQuestions;
+    ImmutableSortedMap.Builder<String, String> result = ImmutableSortedMap.naturalOrder();
     for (String questionName : questions) {
-      retMap.put(
-          questionName,
-          getAnalysisAnswer(
-              containerName,
-              baseTestrig,
-              baseEnv,
-              deltaTestrig,
-              deltaEnv,
-              analysisName,
-              questionName));
+      result.put(
+          questionName, getAnswer(network, snapshot, questionName, referenceSnapshot, analysis));
     }
-    return retMap;
+    return result.build();
   }
 
   public @Nonnull Map<String, AnswerMetadata> getAnalysisAnswersMetadata(
       String network,
-      String baseSnapshot,
-      String deltaSnapshot,
-      String analysisName,
+      String snapshot,
+      String referenceSnapshot,
+      String analysis,
       Set<String> analysisQuestions)
-      throws JsonProcessingException {
-    SortedSet<String> allQuestions = listAnalysisQuestions(network, analysisName);
-    SortedSet<String> questions =
-        analysisQuestions.isEmpty()
-            ? allQuestions
-            : ImmutableSortedSet.copyOf(Sets.intersection(allQuestions, analysisQuestions));
-    ImmutableSortedMap.Builder<String, AnswerMetadata> builder = ImmutableSortedMap.naturalOrder();
-    for (String questionName : questions) {
-      builder.put(
-          questionName,
-          getAnalysisAnswerMetadata(
-              network, baseSnapshot, deltaSnapshot, analysisName, questionName));
+      throws JsonProcessingException, FileNotFoundException {
+    Set<String> questions =
+        analysisQuestions.isEmpty() ? listAnalysisQuestions(network, analysis) : analysisQuestions;
+    ImmutableSortedMap.Builder<String, AnswerMetadata> result = ImmutableSortedMap.naturalOrder();
+    for (String question : questions) {
+      result.put(
+          question, getAnswerMetadata(network, snapshot, question, referenceSnapshot, analysis));
     }
-    return builder.build();
+    return result.build();
   }
 
   public String getAnalysisQuestion(
@@ -854,45 +745,38 @@ public class WorkMgr extends AbstractCoordinator {
     return CommonUtil.readFile(qFile);
   }
 
-  public String getAnswer(
-      String containerName,
-      String baseTestrig,
-      String baseEnv,
-      String deltaTestrig,
-      String deltaEnv,
-      String questionName)
-      throws JsonProcessingException {
-    Path questionDir = getdirContainerQuestion(containerName, questionName);
-    Path questionFile = questionDir.resolve(BfConsts.RELPATH_QUESTION_FILE);
-    if (!Files.exists(questionFile)) {
-      throw new BatfishException("Question file not found for " + questionName);
+  public @Nonnull AnswerMetadata getAnswerMetadata(
+      @Nonnull String network,
+      @Nonnull String snapshot,
+      @Nonnull String question,
+      @Nullable String referenceSnapshot,
+      @Nullable String analysis)
+      throws JsonProcessingException, FileNotFoundException {
+    if (!_storage.checkQuestionExists(network, question, analysis)) {
+      throw new FileNotFoundException(
+          String.format(
+              "Question file not found for question named '%s' in network:%s; snapshot:%s; referenceSnapshot:%s; analysis:%s",
+              question, network, snapshot, referenceSnapshot, analysis));
     }
-    Path testrigDir = getdirTestrig(containerName, baseTestrig);
-    Path answerDir =
-        testrigDir.resolve(Paths.get(BfConsts.RELPATH_ANSWERS_DIR, questionName, baseEnv));
-    if (deltaTestrig != null) {
-      answerDir = answerDir.resolve(Paths.get(BfConsts.RELPATH_DIFF_DIR, deltaTestrig, deltaEnv));
-    } else {
-      answerDir = answerDir.resolve(Paths.get(BfConsts.RELPATH_STANDARD_DIR));
-    }
-    Path answerFile = answerDir.resolve(BfConsts.RELPATH_ANSWER_JSON);
-    String answer = "unknown";
-    if (!Files.exists(answerFile)) {
-      Answer ans = Answer.failureAnswer("Not answered", null);
-      ans.setStatus(AnswerStatus.NOTFOUND);
-      answer = BatfishObjectMapper.writePrettyString(ans);
-    } else {
-      if (CommonUtil.getLastModifiedTime(questionFile)
-              .compareTo(CommonUtil.getLastModifiedTime(answerFile))
+    try {
+      AnswerMetadata answerMetadata =
+          _storage.loadAnswerMetadata(network, snapshot, question, referenceSnapshot, analysis);
+      if (_storage
+              .getQuestionLastModifiedTime(network, question, analysis)
+              .compareTo(
+                  _storage.getAnswerMetadataLastModifiedTime(
+                      network, snapshot, question, referenceSnapshot, analysis))
           > 0) {
-        Answer ans = Answer.failureAnswer("Not fresh", null);
-        ans.setStatus(AnswerStatus.STALE);
-        answer = BatfishObjectMapper.writePrettyString(ans);
-      } else {
-        answer = CommonUtil.readFile(answerFile);
+        return new AnswerMetadata(null, AnswerStatus.STALE);
       }
+      return answerMetadata;
+    } catch (FileNotFoundException e) {
+      return new AnswerMetadata(null, AnswerStatus.NOTFOUND);
+    } catch (IOException e) {
+      _logger.errorf(
+          "Failed to read answer metadata file:\n%s", Throwables.getStackTraceAsString(e));
+      return new AnswerMetadata(null, AnswerStatus.FAILURE);
     }
-    return answer;
   }
 
   /**
@@ -1847,26 +1731,26 @@ public class WorkMgr extends AbstractCoordinator {
     CommonUtil.deleteIfExists(zipFile);
   }
 
-  public void uploadQuestion(String containerName, String qName, String questionJson) {
-    // Validate the question before saving it to disk.
-    try {
-      Question.parseQuestion(questionJson);
-    } catch (Exception e) {
-      throw new BatfishException(
-          String.format("Invalid question %s/%s: %s", containerName, qName, e.getMessage()), e);
-    }
+  public void uploadQuestion(String network, String question, String questionJson) {
+    uploadQuestion(network, question, questionJson, true);
+  }
 
-    Path containerDir = getdirNetwork(containerName);
-    Path qDir = containerDir.resolve(Paths.get(BfConsts.RELPATH_QUESTIONS_DIR, qName));
-    if (Files.exists(qDir)) {
+  @VisibleForTesting
+  void uploadQuestion(String network, String question, String questionJson, boolean validate) {
+    if (validate) {
+      // Validate the question before saving it to disk.
+      try {
+        Question.parseQuestion(questionJson);
+      } catch (Exception e) {
+        throw new BatfishException(
+            String.format("Invalid question %s/%s: %s", network, question, e.getMessage()), e);
+      }
+    }
+    if (_storage.checkQuestionExists(network, question, null)) {
       throw new BatfishException(
-          "Question: '" + qName + "' already exists in container '" + containerName + "'");
+          "Question: '" + question + "' already exists in container '" + network + "'");
     }
-    if (!qDir.toFile().mkdirs()) {
-      throw new BatfishException("Failed to create directory: '" + qDir + "'");
-    }
-    Path file = qDir.resolve(BfConsts.RELPATH_QUESTION_FILE);
-    CommonUtil.writeFile(file, questionJson);
+    _storage.storeQuestion(questionJson, network, question, null);
   }
 
   private static final DateTimeFormatter FORMATTER =
