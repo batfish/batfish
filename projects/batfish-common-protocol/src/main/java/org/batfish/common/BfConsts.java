@@ -105,6 +105,7 @@ public class BfConsts {
   public static final String PROP_DIFFERENTIAL = "differential";
   public static final String PROP_DISPLAY_HINTS = "displayHints";
   public static final String PROP_EXCLUSIONS = "exclusions";
+  public static final String PROP_EMPTY_COLUMNS = "emptyColumns";
   public static final String PROP_FILTERS = "filters";
   public static final String PROP_INCLUDE_ONE_TABLE_KEYS = "includeOneTableKeys";
   public static final String PROP_INNER_QUESTION = "innerQuestion";

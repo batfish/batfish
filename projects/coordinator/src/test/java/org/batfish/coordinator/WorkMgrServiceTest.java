@@ -683,7 +683,10 @@ public class WorkMgrServiceTest {
     int value = 5;
     AnswerMetadata testAnswerMetadata =
         new AnswerMetadata(
-            new Metrics(ImmutableMap.of(columnName, ImmutableMap.of(Aggregation.MAX, value)), 1),
+            new Metrics(
+                ImmutableMap.of(columnName, ImmutableMap.of(Aggregation.MAX, value)),
+                ImmutableSet.of(),
+                1),
             AnswerStatus.SUCCESS);
     String answerMetadata = BatfishObjectMapper.writePrettyString(testAnswerMetadata);
 
@@ -750,6 +753,7 @@ public class WorkMgrServiceTest {
                     new AnswerMetadata(
                         new Metrics(
                             ImmutableMap.of(columnName, ImmutableMap.of(Aggregation.MAX, value)),
+                            ImmutableSet.of(),
                             1),
                         AnswerStatus.SUCCESS)))));
   }
