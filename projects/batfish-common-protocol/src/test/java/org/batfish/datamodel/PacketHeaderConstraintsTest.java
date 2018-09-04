@@ -151,7 +151,7 @@ public class PacketHeaderConstraintsTest {
 
   @Test
   public void testDefaults() {
-    PacketHeaderConstraints constraints = new PacketHeaderConstraints();
+    PacketHeaderConstraints constraints = PacketHeaderConstraints.unconstrained();
     assertThat(constraints.getSrcPorts(), nullValue());
     assertThat(constraints.getDscps(), nullValue());
     assertThat(constraints.getEcns(), nullValue());
@@ -220,28 +220,40 @@ public class PacketHeaderConstraintsTest {
     assertThat(
         constraints.resolveDstPorts(),
         equalTo(ImmutableSet.of(new SubRange(22, 22), new SubRange(80, 80))));
+  }
 
+  @Test
+  public void testValidationSrcPortICMP() {
     // Src port incompatibility
     thrown.expect(IllegalArgumentException.class);
     PacketHeaderConstraints.builder()
         .setSrcPorts(Collections.singleton(new SubRange(22, 22)))
         .setIpProtocols(Collections.singleton(IpProtocol.ICMP))
         .build();
+  }
 
+  @Test
+  public void testValidationDstPortICMP() {
     // Dst port incompatibility
     thrown.expect(IllegalArgumentException.class);
     PacketHeaderConstraints.builder()
         .setDstPorts(Collections.singleton(new SubRange(22, 22)))
         .setIpProtocols(Collections.singleton(IpProtocol.ICMP))
         .build();
+  }
 
+  @Test
+  public void testValidationTCPICMPIncompatible() {
     // TCP + ICMP codes incompatibility
     thrown.expect(IllegalArgumentException.class);
     PacketHeaderConstraints.builder()
         .setIpProtocols(Collections.singleton(IpProtocol.TCP))
         .setIcmpCodes(Collections.singleton(new SubRange(1, 1)))
         .build();
+  }
 
+  @Test
+  public void testValidationResolveSrcPorts() {
     // src port resolution
     thrown.expect(IllegalArgumentException.class);
     PacketHeaderConstraints.builder()
@@ -249,7 +261,10 @@ public class PacketHeaderConstraintsTest {
         .setSrcPorts(Collections.singleton(new SubRange(30, 40)))
         .setSrcProtocols(Collections.singleton(SSH))
         .build();
+  }
 
+  @Test
+  public void testValidationResolveDstPorts() {
     // dst port resolution
     thrown.expect(IllegalArgumentException.class);
     PacketHeaderConstraints.builder()
@@ -257,38 +272,69 @@ public class PacketHeaderConstraintsTest {
         .setDstPorts(Collections.singleton(new SubRange(30, 40)))
         .setDstProtocols(Collections.singleton(SSH))
         .build();
+  }
 
+  @Test
+  public void testValidationInvalidSrcPort() {
     // Port range too large, src or dst
     thrown.expect(IllegalArgumentException.class);
     PacketHeaderConstraints.builder()
         .setIpProtocols(Collections.singleton(IpProtocol.TCP))
         .setSrcPorts(Collections.singleton(new SubRange(0, 1 << 16)))
         .build();
+  }
+
+  @Test
+  public void testValidationInvalidDstPort() {
     thrown.expect(IllegalArgumentException.class);
     PacketHeaderConstraints.builder()
         .setIpProtocols(Collections.singleton(IpProtocol.TCP))
         .setDstPorts(Collections.singleton(new SubRange(0, 1 << 16)))
         .build();
+  }
 
-    // Reject empty lists
+  @Test
+  public void testValidationNoProtocols() {
     thrown.expect(IllegalArgumentException.class);
     PacketHeaderConstraints.builder().setIpProtocols(ImmutableSet.of()).build();
+  }
+
+  @Test
+  public void testValidationNoSrcPorts() {
     thrown.expect(IllegalArgumentException.class);
     PacketHeaderConstraints.builder().setSrcPorts(ImmutableSet.of()).build();
+  }
+
+  @Test
+  public void testValidationNoDestPorts() {
     thrown.expect(IllegalArgumentException.class);
     PacketHeaderConstraints.builder().setDstPorts(ImmutableSet.of()).build();
+  }
+
+  @Test
+  public void testValidationNoIcmpCodes() {
     thrown.expect(IllegalArgumentException.class);
     PacketHeaderConstraints.builder().setIcmpCodes(ImmutableSet.of()).build();
+  }
+
+  @Test
+  public void testValidationNoIcmpTypes() {
     thrown.expect(IllegalArgumentException.class);
     PacketHeaderConstraints.builder().setIcmpTypes(ImmutableSet.of()).build();
+  }
 
+  @Test
+  public void testValidationDstProtocolsIncompatible() {
     // Reject empty IP protocol intersections
     thrown.expect(IllegalArgumentException.class);
     PacketHeaderConstraints.builder()
         .setIpProtocols(ImmutableSet.of(IpProtocol.ICMP, IpProtocol.TCP))
         .setDstProtocols(Collections.singleton(Protocol.DNS))
         .build();
+  }
 
+  @Test
+  public void testValidationSrcProtocolsIncompatible() {
     // Reject empty port intersections
     thrown.expect(IllegalArgumentException.class);
     PacketHeaderConstraints.builder()

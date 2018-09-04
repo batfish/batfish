@@ -1,10 +1,13 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import javax.annotation.Nonnull;
@@ -94,6 +97,7 @@ public class PacketHeaderConstraints {
   @Nullable private final Set<Protocol> _dstProtocols;
 
   @Nullable private final Set<Protocol> _srcProtocols;
+  private static final SubRange ALLOWED_PORTS = new SubRange(0, 65535);
 
   // TODO: add tcp flags
 
@@ -132,21 +136,9 @@ public class PacketHeaderConstraints {
   }
 
   /** Create new object with all fields unconstrained */
-  public PacketHeaderConstraints() {
-    _dscps = null;
-    _ecns = null;
-    _packetLengths = null;
-    _flowStates = null;
-    _fragmentOffsets = null;
-    _ipProtocols = null;
-    _srcIp = null;
-    _dstIp = null;
-    _icmpCode = null;
-    _icmpType = null;
-    _srcPorts = null;
-    _dstPorts = null;
-    _dstProtocols = null;
-    _srcProtocols = null;
+  public static PacketHeaderConstraints unconstrained() {
+    return new PacketHeaderConstraints(
+        null, null, null, null, null, null, null, null, null, null, null, null, null, null);
   }
 
   @Nullable
@@ -255,6 +247,11 @@ public class PacketHeaderConstraints {
   /** Check that constraints contain valid values and do not conflict with each other. */
   private static void validate(@Nonnull PacketHeaderConstraints headerConstraints)
       throws IllegalArgumentException {
+    // Ensure IP protocols is not an empty set
+    Set<IpProtocol> ipProtocols = headerConstraints.getIpProtocols();
+    if (ipProtocols != null) {
+      checkArgument(!ipProtocols.isEmpty(), "Cannot have empty set of IpProtocols");
+    }
     validateIpFields(headerConstraints);
     validateIcmpFields(headerConstraints);
     validatePortValues(headerConstraints.getSrcPorts());
@@ -277,27 +274,26 @@ public class PacketHeaderConstraints {
       throw new IllegalArgumentException(
           String.format("Destination ports/protocols are incompatible: %s", e.getMessage()));
     }
-    // TODO: validate other fields: fragmet offsets, packet lengths, etc.
+    // TODO: validate other fields: fragment offsets, packet lengths, etc.
   }
 
   private static void validatePortValues(@Nullable Set<SubRange> ports)
       throws IllegalArgumentException {
-    // Reject empty lists and empty subranges
-    SubRange allowed = new SubRange(0, 65535);
-    if (ports != null) {
-      if (ports.isEmpty()
-          || ports.stream().map(SubRange::isEmpty).anyMatch(Predicate.isEqual(true))) {
-        throw new IllegalArgumentException("Empty port subranges are not allowed");
-      }
-      ports.forEach(
-          subRange -> {
-            if (!allowed.contains(subRange)) {
-              throw new IllegalArgumentException(
-                  String.format(
-                      "Port range %s is outside of the allowed range %s", subRange, allowed));
-            }
-          });
+    // Reject empty lists and empty port ranges
+    if (ports == null) {
+      return;
     }
+    if (ports.isEmpty()
+        || ports.stream().map(SubRange::isEmpty).allMatch(Predicate.isEqual(true))) {
+      throw new IllegalArgumentException("Empty port ranges are not allowed");
+    }
+    Optional<SubRange> invalidRange =
+        ports.stream().filter(portRange -> !ALLOWED_PORTS.contains(portRange)).findFirst();
+    checkArgument(
+        !invalidRange.isPresent(),
+        "Port range %s is outside of the allowed range %s",
+        invalidRange,
+        ALLOWED_PORTS);
   }
 
   private static void validateIcmpFields(@Nonnull PacketHeaderConstraints headerConstraints)
@@ -305,32 +301,24 @@ public class PacketHeaderConstraints {
     Set<IpProtocol> ipProtocols = headerConstraints.getIpProtocols();
     Set<SubRange> icmpTypes = headerConstraints.getIcmpTypes();
     if (icmpTypes != null) {
-      if (ipProtocols != null && !ipProtocols.contains(IpProtocol.ICMP)) {
-        throw new IllegalArgumentException(
-            "ICMP types specified when ICMP protocol is forbidden in IpProtocols");
-      }
-      icmpTypes.forEach(
-          subRange -> {
-            if (!isValidIcmpTypeOrCode(subRange)) {
-              throw new IllegalArgumentException(
-                  String.format("Invalid ICMP type range: %s", subRange));
-            }
-          });
+      checkArgument(!icmpTypes.isEmpty(), "Set of ICMP types cannot be empty");
+      checkArgument(
+          ipProtocols == null || ipProtocols.equals(ImmutableSet.of(IpProtocol.ICMP)),
+          "ICMP types specified when ICMP protocol is forbidden in IpProtocols");
+      Optional<SubRange> invalidRange =
+          icmpTypes.stream().filter(types -> !isValidIcmpTypeOrCode(types)).findFirst();
+      checkArgument(!invalidRange.isPresent(), "Invalid ICMP type range: %s", invalidRange);
     }
 
     Set<SubRange> icmpCodes = headerConstraints.getIcmpCodes();
     if (icmpCodes != null) {
-      if (ipProtocols != null && !ipProtocols.contains(IpProtocol.ICMP)) {
-        throw new IllegalArgumentException(
-            "ICMP codes specified when ICMP protocol is forbidden in IpProtocols");
-      }
-      icmpCodes.forEach(
-          subRange -> {
-            if (!isValidIcmpTypeOrCode(subRange)) {
-              throw new IllegalArgumentException(
-                  String.format("Invalid ICMP code range: %s", subRange));
-            }
-          });
+      checkArgument(!icmpCodes.isEmpty(), "Set of ICMP codes cannot be empty");
+      checkArgument(
+          ipProtocols == null || ipProtocols.equals(ImmutableSet.of(IpProtocol.ICMP)),
+          "ICMP codes specified when ICMP protocol is forbidden in IpProtocols");
+      Optional<SubRange> invalidRange =
+          icmpCodes.stream().filter(codes -> !isValidIcmpTypeOrCode(codes)).findFirst();
+      checkArgument(!invalidRange.isPresent(), "Invalid ICMP code range: %s", invalidRange);
     }
   }
 
@@ -338,22 +326,17 @@ public class PacketHeaderConstraints {
       throws IllegalArgumentException {
     Set<SubRange> dscps = headerConstraints.getDscps();
     if (dscps != null) {
-      dscps.forEach(
-          dscp -> {
-            if (!isValidDscp(dscp)) {
-              throw new IllegalArgumentException(String.format("Invalid value for DSCP: %s", dscp));
-            }
-          });
+      checkArgument(!dscps.isEmpty(), "Empty set of DSCP values is not allowed");
+      Optional<SubRange> invalidRange =
+          dscps.stream().filter(dscp -> !isValidDscp(dscp)).findFirst();
+      checkArgument(!invalidRange.isPresent(), "Invalid value for DSCP: %s", invalidRange);
     }
 
     Set<SubRange> ecns = headerConstraints.getEcns();
     if (ecns != null) {
-      ecns.forEach(
-          ecn -> {
-            if (!isValidEcn(ecn)) {
-              throw new IllegalArgumentException(String.format("Invalid value for ECN: %s", ecn));
-            }
-          });
+      checkArgument(!ecns.isEmpty(), "Empty set of ECN values is not allowed");
+      Optional<SubRange> invalidRange = ecns.stream().filter(ecn -> !isValidEcn(ecn)).findFirst();
+      checkArgument(!invalidRange.isPresent(), "Invalid value for ECN: %s", invalidRange);
     }
   }
 
@@ -424,6 +407,18 @@ public class PacketHeaderConstraints {
     return true;
   }
 
+  /**
+   * Resolve the set of allowed IP protocols given higher-level constraints (on ports and/or
+   * protocols).
+   *
+   * @param ipProtocols specified IP protocols
+   * @param srcPorts specified source ports
+   * @param dstPorts specified destination ports
+   * @param srcProtocols specified source application protocols
+   * @param dstProtocols specified destination application protocols
+   * @return a set of {@link IpProtocol}s that are allowed. {@code null} means no constraints.
+   * @throws IllegalArgumentException if the set of IP protocols resolves to an empty set.
+   */
   @Nullable
   @VisibleForTesting
   static Set<IpProtocol> resolveIpProtocols(
@@ -431,7 +426,8 @@ public class PacketHeaderConstraints {
       @Nullable Set<SubRange> srcPorts,
       @Nullable Set<SubRange> dstPorts,
       @Nullable Set<Protocol> srcProtocols,
-      @Nullable Set<Protocol> dstProtocols) {
+      @Nullable Set<Protocol> dstProtocols)
+      throws IllegalArgumentException {
     @Nullable
     Set<IpProtocol> resolvedIpProtocols = ipProtocols; // either already defined or we don't care
 
@@ -473,6 +469,13 @@ public class PacketHeaderConstraints {
     return resolvedIpProtocols;
   }
 
+  /**
+   * Resolve set of allowed ports, given high-level constraints on application protocols.
+   *
+   * @param ports specified ports
+   * @param protocols specified application protocols
+   * @return a set of allowed port ranges that satisfy the constraints
+   */
   @Nullable
   @VisibleForTesting
   static Set<SubRange> resolvePorts(
