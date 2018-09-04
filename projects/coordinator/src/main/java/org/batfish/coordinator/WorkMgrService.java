@@ -598,9 +598,9 @@ public class WorkMgrService {
    * @param clientVersion The version of the client
    * @param networkName The name of the network in which the analysis resides
    * @param snapshotName The name of the snapshot on which the analysis was run
-   * @param baseEnv The name of the base environment on which the analysis was run
-   * @param deltaSnapshot The name of the delta snapshot on which the analysis was run
-   * @param deltaEnv The name of the delta environment on which the analysis was run
+   * @param baseEnv The name of the environment on which the analysis was run
+   * @param referenceSnapshot The name of the reference snapshot on which the analysis was run
+   * @param deltaEnv The name of the reference environment on which the analysis was run
    * @param analysisName The name of the analysis
    * @param questionName The name of the question
    * @return TODO: document JSON response
@@ -618,13 +618,17 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_ENV_NAME) String baseEnv,
       @FormDataParam(CoordConsts.SVC_KEY_DELTA_TESTRIG_NAME) String deltaTestrig,
       @FormDataParam(CoordConsts.SVC_KEY_DELTA_SNAPSHOT_NAME) String deltaSnapshot,
+      @FormDataParam(CoordConsts.SVC_KEY_REFERENCE_SNAPSHOT_NAME) String referenceSnapshot,
       @FormDataParam(CoordConsts.SVC_KEY_DELTA_ENV_NAME) String deltaEnv,
       @FormDataParam(CoordConsts.SVC_KEY_ANALYSIS_NAME) String analysisName,
       @FormDataParam(CoordConsts.SVC_KEY_QUESTION_NAME) String questionName,
       @FormDataParam(CoordConsts.SVC_KEY_WORKITEM) String workItemStr /* optional */) {
     String networkNameParam = networkName == null ? containerName : networkName;
     String snapshotNameParam = snapshotName == null ? testrigName : snapshotName;
-    String deltaSnapshotParam = deltaSnapshot == null ? deltaTestrig : deltaSnapshot;
+    String referenceSnapshotParam =
+        referenceSnapshot == null
+            ? deltaSnapshot == null ? deltaTestrig : deltaSnapshot
+            : referenceSnapshot;
     try {
       _logger.infof(
           "WMS:getAnalysisAnswer %s %s %s %s\n",
@@ -633,8 +637,8 @@ public class WorkMgrService {
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
       checkStringParam(networkNameParam, "Network name");
-      checkStringParam(snapshotNameParam, "Base snapshot name");
-      checkStringParam(baseEnv, "Base environment name");
+      checkStringParam(snapshotNameParam, "Current snapshot name");
+      checkStringParam(baseEnv, "Current environment name");
       checkStringParam(analysisName, "Analysis name");
       checkStringParam(questionName, "Question name");
 
@@ -667,7 +671,7 @@ public class WorkMgrService {
                   networkNameParam,
                   snapshotNameParam,
                   baseEnv,
-                  deltaSnapshotParam,
+                  referenceSnapshotParam,
                   deltaEnv,
                   analysisName,
                   questionName);
@@ -682,11 +686,11 @@ public class WorkMgrService {
       String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.errorf(
           "WMS:getAnalysisAnswer exception for apikey:%s in network:%s, snapshot:%s, "
-              + "deltasnapshot:%s; exception:%s",
+              + "referencesnapshot:%s; exception:%s",
           apiKey,
           networkNameParam,
           snapshotNameParam,
-          deltaSnapshotParam == null ? "" : deltaSnapshotParam,
+          referenceSnapshotParam == null ? "" : referenceSnapshotParam,
           stackTrace);
       return failureResponse(e.getMessage());
     }
@@ -699,9 +703,9 @@ public class WorkMgrService {
    * @param clientVersion The version of the client
    * @param networkName The name of the network in which the analysis resides
    * @param snapshotName The name of the snapshot on which the analysis was run
-   * @param baseEnv The name of the base environment on which the analysis was run
-   * @param deltaSnapshot The name of the delta snapshot on which the analysis was run
-   * @param deltaEnv The name of the delta environment on which the analysis was run
+   * @param baseEnv The name of the environment on which the analysis was run
+   * @param referenceSnapshot The name of the reference snapshot on which the analysis was run
+   * @param deltaEnv The name of the reference environment on which the analysis was run
    * @param analysisName The name of the analysis
    * @return TODO: document JSON response
    */
@@ -718,12 +722,16 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_ENV_NAME) String baseEnv,
       @FormDataParam(CoordConsts.SVC_KEY_DELTA_TESTRIG_NAME) String deltaTestrig,
       @FormDataParam(CoordConsts.SVC_KEY_DELTA_SNAPSHOT_NAME) String deltaSnapshot,
+      @FormDataParam(CoordConsts.SVC_KEY_REFERENCE_SNAPSHOT_NAME) String referenceSnapshot,
       @FormDataParam(CoordConsts.SVC_KEY_DELTA_ENV_NAME) String deltaEnv,
       @FormDataParam(CoordConsts.SVC_KEY_ANALYSIS_NAME) String analysisName,
       @FormDataParam(CoordConsts.SVC_KEY_WORKITEM) String workItemStr /* optional */) {
     String networkNameParam = networkName == null ? containerName : networkName;
     String snapshotNameParam = snapshotName == null ? testrigName : snapshotName;
-    String deltaSnapshotParam = deltaSnapshot == null ? deltaTestrig : deltaSnapshot;
+    String referenceSnapshotParam =
+        referenceSnapshot == null
+            ? deltaSnapshot == null ? deltaTestrig : deltaSnapshot
+            : referenceSnapshot;
     try {
       _logger.infof(
           "WMS:getAnalysisAnswers %s %s %s %s\n",
@@ -732,8 +740,8 @@ public class WorkMgrService {
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
       checkStringParam(networkNameParam, "Network name");
-      checkStringParam(snapshotNameParam, "Base snapshot name");
-      checkStringParam(baseEnv, "Base environment name");
+      checkStringParam(snapshotNameParam, "Current snapshot name");
+      checkStringParam(baseEnv, "Current environment name");
       checkStringParam(analysisName, "Analysis name");
 
       checkApiKeyValidity(apiKey);
@@ -765,7 +773,7 @@ public class WorkMgrService {
                   networkNameParam,
                   snapshotNameParam,
                   baseEnv,
-                  deltaSnapshotParam,
+                  referenceSnapshotParam,
                   deltaEnv,
                   analysisName);
 
@@ -779,11 +787,11 @@ public class WorkMgrService {
       String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.errorf(
           "WMS:getAnalysisAnswers exception for apikey:%s in network:%s, snapshot:%s, "
-              + "deltasnapshot:%s; exception:%s",
+              + "referencesnapshot:%s; exception:%s",
           apiKey,
           networkNameParam,
           snapshotNameParam,
-          deltaSnapshotParam == null ? "" : deltaSnapshotParam,
+          referenceSnapshotParam == null ? "" : referenceSnapshotParam,
           stackTrace);
       return failureResponse(e.getMessage());
     }
@@ -796,7 +804,7 @@ public class WorkMgrService {
    * @param clientVersion The version of the client
    * @param networkName The name of the network in which the analysis resides
    * @param snapshotName The name of the snapshot on which the analysis was run
-   * @param deltaSnapshot The name of the delta snapshot on which the analysis was run
+   * @param referenceSnapshot The name of the reference snapshot on which the analysis was run
    * @param analysisName The name of the analysis
    * @param analysisQuestionsStr The names of the questions for which to retrieve metrics
    * @return TODO: document JSON response
@@ -810,13 +818,14 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_NETWORK_NAME) String networkName,
       @FormDataParam(CoordConsts.SVC_KEY_SNAPSHOT_NAME) String snapshotName,
       @FormDataParam(CoordConsts.SVC_KEY_DELTA_SNAPSHOT_NAME) String deltaSnapshot,
+      @FormDataParam(CoordConsts.SVC_KEY_REFERENCE_SNAPSHOT_NAME) String referenceSnapshot,
       @FormDataParam(CoordConsts.SVC_KEY_ANALYSIS_NAME) String analysisName,
       @FormDataParam(CoordConsts.SVC_KEY_ANALYSIS_QUESTIONS)
           String analysisQuestionsStr /* optional */,
       @FormDataParam(CoordConsts.SVC_KEY_WORKITEM) String workItemStr /* optional */) {
     String networkNameParam = networkName;
     String snapshotNameParam = snapshotName;
-    String deltaSnapshotParam = deltaSnapshot;
+    String referenceSnapshotParam = referenceSnapshot == null ? deltaSnapshot : referenceSnapshot;
     try {
       _logger.infof(
           "WMS:getAnalysisAnswersMetrics %s %s %s %s %s\n",
@@ -825,7 +834,7 @@ public class WorkMgrService {
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
       checkStringParam(networkNameParam, "Network name");
-      checkStringParam(snapshotNameParam, "Base snapshot name");
+      checkStringParam(snapshotNameParam, "Current snapshot name");
       checkStringParam(analysisName, "Analysis name");
       Set<String> analysisQuestions =
           Strings.isNullOrEmpty(analysisQuestionsStr)
@@ -861,7 +870,7 @@ public class WorkMgrService {
               .getAnalysisAnswersMetadata(
                   networkNameParam,
                   snapshotNameParam,
-                  deltaSnapshotParam,
+                  referenceSnapshotParam,
                   analysisName,
                   analysisQuestions);
 
@@ -877,11 +886,11 @@ public class WorkMgrService {
       String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.errorf(
           "WMS:getAnalysisAnswersMetrics exception for apikey:%s in network:%s, snapshot:%s, "
-              + "deltasnapshot:%s; exception:%s",
+              + "referencesnapshot:%s; exception:%s",
           apiKey,
           networkNameParam,
           snapshotNameParam,
-          deltaSnapshotParam == null ? "" : deltaSnapshotParam,
+          referenceSnapshotParam == null ? "" : referenceSnapshotParam,
           stackTrace);
       return failureResponse(e.getMessage());
     }
@@ -894,7 +903,7 @@ public class WorkMgrService {
    * @param clientVersion The version of the client
    * @param networkName The name of the network in which the analysis resides
    * @param snapshotName The name of the snapshot on which the analysis was run
-   * @param deltaSnapshot The name of the delta snapshot on which the analysis was run
+   * @param referenceSnapshot The name of the reference snapshot on which the analysis was run
    * @param analysisName The name of the analysis
    * @param analysisAnswersOptionsStr Options specifying which answers to retrieve and how to
    *     process them
@@ -909,12 +918,13 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_NETWORK_NAME) String networkName,
       @FormDataParam(CoordConsts.SVC_KEY_SNAPSHOT_NAME) String snapshotName,
       @FormDataParam(CoordConsts.SVC_KEY_DELTA_SNAPSHOT_NAME) String deltaSnapshot,
+      @FormDataParam(CoordConsts.SVC_KEY_REFERENCE_SNAPSHOT_NAME) String referenceSnapshot,
       @FormDataParam(CoordConsts.SVC_KEY_ANALYSIS_NAME) String analysisName,
       @FormDataParam(CoordConsts.SVC_KEY_ANALYSIS_ANSWERS_OPTIONS) String analysisAnswersOptionsStr,
       @FormDataParam(CoordConsts.SVC_KEY_WORKITEM) String workItemStr /* optional */) {
     String networkNameParam = networkName;
     String snapshotNameParam = snapshotName;
-    String deltaSnapshotParam = deltaSnapshot;
+    String referenceSnapshotParam = referenceSnapshot == null ? deltaSnapshot : referenceSnapshot;
     try {
       _logger.infof(
           "WMS:getAnalysisAnswersRows %s %s %s %s %s\n",
@@ -923,7 +933,7 @@ public class WorkMgrService {
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
       checkStringParam(networkNameParam, "Network name");
-      checkStringParam(snapshotNameParam, "Base snapshot name");
+      checkStringParam(snapshotNameParam, "Current snapshot name");
       checkStringParam(analysisName, "Analysis name");
       Map<String, AnalysisAnswerOptions> analysisAnswersOptions =
           BatfishObjectMapper.mapper()
@@ -960,7 +970,7 @@ public class WorkMgrService {
                   networkNameParam,
                   snapshotNameParam,
                   BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
-                  deltaSnapshotParam,
+                  referenceSnapshotParam,
                   BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
                   analysisName,
                   analysisAnswersOptions.keySet());
@@ -978,11 +988,11 @@ public class WorkMgrService {
       String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.errorf(
           "WMS:getAnalysisAnswersMetrics exception for apikey:%s in network:%s, snapshot:%s, "
-              + "deltasnapshot:%s; exception:%s",
+              + "referencesnapshot:%s; exception:%s",
           apiKey,
           networkNameParam,
           snapshotNameParam,
-          deltaSnapshotParam == null ? "" : deltaSnapshotParam,
+          referenceSnapshotParam == null ? "" : referenceSnapshotParam,
           stackTrace);
       return failureResponse(e.getMessage());
     }
@@ -995,9 +1005,9 @@ public class WorkMgrService {
    * @param clientVersion The version of the client
    * @param networkName The name of the network in which the question was asked
    * @param snapshotName The name of the snapshot on which the question was asked
-   * @param baseEnv The name of the base environment on which the question was asked
-   * @param deltaSnapshot The name of the delta snapshot on which the question was asked
-   * @param deltaEnv The name of the delta environment on which the question was asked
+   * @param baseEnv The name of the environment on which the question was asked
+   * @param referenceSnapshot The name of the reference snapshot on which the question was asked
+   * @param deltaEnv The name of the reference environment on which the question was asked
    * @param questionName The name of the question
    * @return TODO: document JSON response
    */
@@ -1014,12 +1024,16 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_ENV_NAME) String baseEnv,
       @FormDataParam(CoordConsts.SVC_KEY_DELTA_TESTRIG_NAME) String deltaTestrig,
       @FormDataParam(CoordConsts.SVC_KEY_DELTA_SNAPSHOT_NAME) String deltaSnapshot,
+      @FormDataParam(CoordConsts.SVC_KEY_REFERENCE_SNAPSHOT_NAME) String referenceSnapshot,
       @FormDataParam(CoordConsts.SVC_KEY_DELTA_ENV_NAME) String deltaEnv,
       @FormDataParam(CoordConsts.SVC_KEY_QUESTION_NAME) String questionName,
       @FormDataParam(CoordConsts.SVC_KEY_WORKITEM) String workItemStr /* optional */) {
     String networkNameParam = networkName == null ? containerName : networkName;
     String snapshotNameParam = snapshotName == null ? testrigName : snapshotName;
-    String deltaSnapshotParam = deltaSnapshot == null ? deltaTestrig : deltaSnapshot;
+    String referenceSnapshotParam =
+        referenceSnapshot == null
+            ? deltaSnapshot == null ? deltaTestrig : deltaSnapshot
+            : referenceSnapshot;
     try {
       _logger.infof(
           "WMS:getAnswer %s %s %s %s\n", apiKey, networkNameParam, snapshotNameParam, questionName);
@@ -1027,8 +1041,8 @@ public class WorkMgrService {
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
       checkStringParam(networkNameParam, "Network name");
-      checkStringParam(snapshotNameParam, "Base snapshot name");
-      checkStringParam(baseEnv, "Base environment name");
+      checkStringParam(snapshotNameParam, "Current snapshot name");
+      checkStringParam(baseEnv, "Current environment name");
       checkStringParam(questionName, "Question name");
 
       checkApiKeyValidity(apiKey);
@@ -1059,7 +1073,7 @@ public class WorkMgrService {
                   networkNameParam,
                   snapshotNameParam,
                   baseEnv,
-                  deltaSnapshotParam,
+                  referenceSnapshotParam,
                   deltaEnv,
                   questionName);
 
@@ -1070,12 +1084,12 @@ public class WorkMgrService {
     } catch (Exception e) {
       String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.errorf(
-          "WMS:getAnswer exception for apikey:%s in network:%s, snapshot:%s, deltasnapshot:%s; "
+          "WMS:getAnswer exception for apikey:%s in network:%s, snapshot:%s, referencesnapshot:%s; "
               + "exception:%s",
           apiKey,
           networkNameParam,
           snapshotNameParam,
-          deltaSnapshotParam == null ? "" : deltaSnapshotParam,
+          referenceSnapshotParam == null ? "" : referenceSnapshotParam,
           stackTrace);
       return failureResponse(e.getMessage());
     }
@@ -2248,7 +2262,7 @@ public class WorkMgrService {
    * @param clientVersion The version of the client
    * @param containerName The name of the container under which the testrig resides
    * @param testrigName The name of the testrig under which to upload the new environment
-   * @param baseEnvName The base environment name from which the new environment initially inherits
+   * @param baseEnvName The environment name from which the new environment initially inherits
    * @param envName The name of the new environment to create
    * @param fileStream The stream from which the contents of the new environment are read. These
    *     contents overwrite those inherited from any base environment.

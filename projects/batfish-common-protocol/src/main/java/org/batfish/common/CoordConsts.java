@@ -103,6 +103,7 @@ public class CoordConsts {
   public static final String SVC_KEY_QUESTION = "question";
   public static final String SVC_KEY_QUESTION_LIST = "questionlist";
   public static final String SVC_KEY_QUESTION_NAME = "questionname";
+  public static final String SVC_KEY_REFERENCE_SNAPSHOT_NAME = "referencesnapshotname";
   public static final String SVC_KEY_RESULT = "result";
   public static final String SVC_KEY_SETTINGS = "settings";
   public static final String SVC_KEY_SNAPSHOT_INFO = "snapshotinfo";
