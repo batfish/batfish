@@ -875,12 +875,8 @@ public class WorkMgrTest {
     TableAnswerElement notFiltered = _manager.processAnalysisAnswerTable(table, optionsNotFiltered);
     TableAnswerElement filtered = _manager.processAnalysisAnswerTable(table, optionsFiltered);
 
-    assertThat(
-        notFiltered.getRowsList(),
-        equalTo(ImmutableList.of(row1, row2)));
-    assertThat(
-        filtered.getRowsList(),
-        equalTo(ImmutableList.of(row1)));
+    assertThat(notFiltered.getRowsList(), equalTo(ImmutableList.of(row1, row2)));
+    assertThat(filtered.getRowsList(), equalTo(ImmutableList.of(row1)));
 
     assertThat(notFiltered.getSummary().getNumResults(), equalTo(2));
     assertThat(filtered.getSummary().getNumResults(), equalTo(1));
