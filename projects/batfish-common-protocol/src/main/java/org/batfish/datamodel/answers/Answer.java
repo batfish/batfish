@@ -85,20 +85,6 @@ public class Answer {
     return string.toString();
   }
 
-  public Answer prettyPrintAnswer() {
-    Answer answer = new Answer();
-    answer.setQuestion(_question);
-    answer.setStatus(_status);
-
-    for (AnswerElement ae : _answerElements) {
-      String aePrettyStr = ae.prettyPrint();
-      AnswerElement prettyAnswerElement = new StringAnswerElement(aePrettyStr);
-      answer.addAnswerElement(prettyAnswerElement);
-    }
-
-    return answer;
-  }
-
   @JsonProperty(BfConsts.PROP_ANSWER_ELEMENTS)
   public void setAnswerElements(List<AnswerElement> answerElements) {
     _answerElements = answerElements;

@@ -1,4 +1,4 @@
-package org.batfish.question.tracefilters;
+package org.batfish.question.testfilters;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -12,7 +12,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-public class TraceFiltersQuestionTest {
+public class TestFiltersQuestionTest {
   @Rule public ExpectedException exception = ExpectedException.none();
 
   /**
@@ -22,7 +22,7 @@ public class TraceFiltersQuestionTest {
    */
   @Test
   public void testDefaultSpecifierInput() {
-    TraceFiltersQuestion question = new TraceFiltersQuestion(null, "acl");
+    TestFiltersQuestion question = new TestFiltersQuestion(null, "acl");
 
     assertThat(
         question.getFilterSpecifier(),
@@ -32,11 +32,11 @@ public class TraceFiltersQuestionTest {
   @Test
   public void testDeserializationDefaultValues() throws IOException {
     String serialized =
-        String.format("{\"class\":\"%s\"}", TraceFiltersQuestion.class.getCanonicalName());
-    TraceFiltersQuestion q =
-        BatfishObjectMapper.mapper().readValue(serialized, TraceFiltersQuestion.class);
+        String.format("{\"class\":\"%s\"}", TestFiltersQuestion.class.getCanonicalName());
+    TestFiltersQuestion q =
+        BatfishObjectMapper.mapper().readValue(serialized, TestFiltersQuestion.class);
 
     assertThat(q.getFilterSpecifier(), notNullValue());
-    assertThat(q.getNodeRegex(), notNullValue());
+    assertThat(q.getNodes(), notNullValue());
   }
 }

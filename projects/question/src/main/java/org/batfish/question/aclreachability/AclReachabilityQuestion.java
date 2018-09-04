@@ -1,4 +1,4 @@
-package org.batfish.question.aclreachability2;
+package org.batfish.question.aclreachability;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 
@@ -15,10 +15,10 @@ import org.batfish.specifier.NodeSpecifierFactory;
 
 /**
  * A question that returns unreachable lines of ACLs in a tabular format. {@link
- * AclReachability2Question#_filterSpecifierInput} determines which ACLs are checked, and {@link
- * AclReachability2Question#_nodeSpecifierInput} determines which nodes are checked for those ACLs.
+ * AclReachabilityQuestion#_filterSpecifierInput} determines which ACLs are checked, and {@link
+ * AclReachabilityQuestion#_nodeSpecifierInput} determines which nodes are checked for those ACLs.
  */
-public class AclReachability2Question extends Question {
+public class AclReachabilityQuestion extends Question {
   private static final String DEFAULT_FILTER_SPECIFIER_FACTORY =
       FlexibleFilterSpecifierFactory.NAME;
 
@@ -26,11 +26,11 @@ public class AclReachability2Question extends Question {
 
   private static final String PROP_FILTER_SPECIFIER_FACTORY = "filterSpecifierFactory";
 
-  private static final String PROP_FILTER_SPECIFIER_INPUT = "filterSpecifierInput";
+  private static final String PROP_FILTER_SPECIFIER_INPUT = "filters";
 
   private static final String PROP_NODE_SPECIFIER_FACTORY = "nodeSpecifierFactory";
 
-  private static final String PROP_NODE_SPECIFIER_INPUT = "nodeSpecifierInput";
+  private static final String PROP_NODE_SPECIFIER_INPUT = "nodes";
 
   private String _filterSpecifierFactory;
 
@@ -40,11 +40,11 @@ public class AclReachability2Question extends Question {
 
   private String _nodeSpecifierInput;
 
-  public AclReachability2Question() {
+  public AclReachabilityQuestion() {
     this(null, null, null, null);
   }
 
-  public AclReachability2Question(
+  public AclReachabilityQuestion(
       @Nullable @JsonProperty(PROP_FILTER_SPECIFIER_FACTORY) String filterSpecifierFactory,
       @Nullable @JsonProperty(PROP_FILTER_SPECIFIER_INPUT) String filtersSpecifierInput,
       @Nullable @JsonProperty(PROP_NODE_SPECIFIER_FACTORY) String nodeSpecifierFactory,
@@ -72,7 +72,7 @@ public class AclReachability2Question extends Question {
 
   @Override
   public String getName() {
-    return "aclreachability2";
+    return "aclReachability";
   }
 
   @JsonProperty(PROP_NODE_SPECIFIER_FACTORY)

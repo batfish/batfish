@@ -1,5 +1,9 @@
 package org.batfish.coordinator.resources;
 
+import static org.batfish.common.CoordConstsV2.RSC_NODE_ROLES;
+import static org.batfish.common.CoordConstsV2.RSC_REFERENCE_LIBRARY;
+import static org.batfish.common.CoordConstsV2.RSC_SETTINGS;
+
 import javax.ws.rs.DELETE;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.GET;
@@ -10,7 +14,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Container;
-import org.batfish.common.CoordConstsV2;
 import org.batfish.coordinator.Main;
 
 /**
@@ -42,15 +45,21 @@ public class ContainerResource {
   }
 
   /** Relocate the request to {@link NodeRolesResource}. */
-  @Path(CoordConstsV2.RSC_NODE_ROLES)
+  @Path(RSC_NODE_ROLES)
   public NodeRolesResource getNodeRolesResource() {
     return new NodeRolesResource(_name);
   }
 
   /** Relocate the request to {@link ReferenceLibraryResource}. */
-  @Path(CoordConstsV2.RSC_REFERENCE_LIBRARY)
+  @Path(RSC_REFERENCE_LIBRARY)
   public ReferenceLibraryResource getReferenceLibraryResource() {
     return new ReferenceLibraryResource(_name);
+  }
+
+  /** Relocate the request to {@link NetworkSettingsResource}. */
+  @Path(RSC_SETTINGS)
+  public NetworkSettingsResource getSettingsResource() {
+    return new NetworkSettingsResource(_name);
   }
 
   /** Delete a specified container with name: {@link #_name}. */

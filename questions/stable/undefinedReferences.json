@@ -1,7 +1,7 @@
 {
     "class": "org.batfish.question.UndefinedReferencesQuestionPlugin$UndefinedReferencesQuestion",
     "differential": false,
-    "nodeRegex": "${nodeRegex}",
+    "nodes": "${nodes}",
     "instance": {
         "description": "Identify undefined references in configuration",
         "instanceName": "undefinedReferences",
@@ -10,8 +10,8 @@
             "default"
         ],
         "variables": {
-            "nodeRegex": {
-                "description": "Only check nodes that match this specifier",
+            "nodes": {
+                "description": "Look for undefined references on nodes matching this name or regex",
                 "type": "nodeSpec",
                 "value": ".*"
             }

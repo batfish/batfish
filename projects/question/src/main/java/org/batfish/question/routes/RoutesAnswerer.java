@@ -26,6 +26,7 @@ import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
@@ -43,22 +44,22 @@ public class RoutesAnswerer extends Answerer {
   static final String COL_NODE = "Node";
   static final String COL_VRF_NAME = "VRF";
   static final String COL_NETWORK = "Network";
-  static final String COL_NEXT_HOP_IP = "NextHopIp";
+  static final String COL_NEXT_HOP_IP = "Next_Hop_IP";
   static final String COL_PROTOCOL = "Protocol";
   static final String COL_TAG = "Tag";
 
   // Present sometimes
-  static final String COL_NEXT_HOP = "NextHop";
+  static final String COL_NEXT_HOP = "Next_Hop";
   static final String COL_METRIC = "Metric";
 
   // Main RIB
-  static final String COL_ADMIN_DISTANCE = "AdminDistance";
+  static final String COL_ADMIN_DISTANCE = "Admin_Distance";
 
   // BGP only
-  static final String COL_AS_PATH = "AsPath";
-  static final String COL_LOCAL_PREF = "LocalPref";
+  static final String COL_AS_PATH = "AS_Path";
+  static final String COL_LOCAL_PREF = "Local_Pref";
   static final String COL_COMMUNITIES = "Communities";
-  static final String COL_ORIGIN_PROTOCOL = "OriginProtocol";
+  static final String COL_ORIGIN_PROTOCOL = "Origin_Protocol";
 
   RoutesAnswerer(Question question, IBatfish batfish) {
     super(question, batfish);
@@ -67,39 +68,51 @@ public class RoutesAnswerer extends Answerer {
   @Override
   public AnswerElement answer() {
     RoutesQuestion question = (RoutesQuestion) _question;
-    TableAnswerElement answer = new TableAnswerElement(getTableMetadata(question.getProtocol()));
+    TableAnswerElement answer = new TableAnswerElement(getTableMetadata(question.getRib()));
     DataPlane dp = _batfish.loadDataPlane();
     answer.postProcessAnswer(
         _question,
         generateRows(
             dp,
-            question.getProtocol(),
-            question.getNodeRegex().getMatchingNodes(_batfish),
-            question.getVrfRegex(),
+            question.getRib(),
+            question.getNodes().getMatchingNodes(_batfish),
+            question.getNetwork(),
+            question.getProtocols(),
+            question.getVrfs(),
             computeIpNodeOwners(_batfish.loadConfigurations(), true)));
     return answer;
   }
 
   private static Multiset<Row> generateRows(
       DataPlane dp,
-      RibProtocol protocol,
+      RibProtocol rib,
       Set<String> matchingNodes,
+      @Nullable Prefix network,
+      String protocolRegex,
       String vrfRegex,
       @Nullable Map<Ip, Set<String>> ipOwners) {
-    switch (protocol) {
+    switch (rib) {
       case BGP:
-        return getBgpRibRoutes(dp.getBgpRoutes(false), matchingNodes, vrfRegex);
+        return getBgpRibRoutes(
+            dp.getBgpRoutes(false), matchingNodes, network, protocolRegex, vrfRegex);
       case BGPMP:
-        return getBgpRibRoutes(dp.getBgpRoutes(true), matchingNodes, vrfRegex);
+        return getBgpRibRoutes(
+            dp.getBgpRoutes(true), matchingNodes, network, protocolRegex, vrfRegex);
       case MAIN:
       default:
-        return getMainRibRoutes(dp.getRibs(), matchingNodes, vrfRegex, ipOwners);
+        return getMainRibRoutes(
+            dp.getRibs(), matchingNodes, network, protocolRegex, vrfRegex, ipOwners);
     }
   }
 
   private static Multiset<Row> getBgpRibRoutes(
-      Table<String, String, Set<BgpRoute>> bgpRoutes, Set<String> matchingNodes, String vrfRegex) {
+      Table<String, String, Set<BgpRoute>> bgpRoutes,
+      Set<String> matchingNodes,
+      @Nullable Prefix network,
+      String protocolRegex,
+      String vrfRegex) {
     HashMultiset<Row> rows = HashMultiset.create();
+    Pattern compiledProtocolRegex = Pattern.compile(protocolRegex, Pattern.CASE_INSENSITIVE);
     Pattern compiledVrfRegex = Pattern.compile(vrfRegex);
     matchingNodes.forEach(
         hostname ->
@@ -108,7 +121,9 @@ public class RoutesAnswerer extends Answerer {
                 .forEach(
                     (vrfName, routes) -> {
                       if (compiledVrfRegex.matcher(vrfName).matches()) {
-                        rows.addAll(getRowsForBgpRoutes(hostname, vrfName, routes));
+                        rows.addAll(
+                            getRowsForBgpRoutes(
+                                hostname, vrfName, network, compiledProtocolRegex, routes));
                       }
                     }));
     return rows;
@@ -119,9 +134,12 @@ public class RoutesAnswerer extends Answerer {
   static Multiset<Row> getMainRibRoutes(
       SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs,
       Set<String> matchingNodes,
+      @Nullable Prefix network,
+      String protocolRegex,
       String vrfRegex,
       @Nullable Map<Ip, Set<String>> ipOwners) {
     HashMultiset<Row> rows = HashMultiset.create();
+    Pattern compiledProtocolRegex = Pattern.compile(protocolRegex, Pattern.CASE_INSENSITIVE);
     Pattern compiledVrfRegex = Pattern.compile(vrfRegex);
     ribs.forEach(
         (node, vrfMap) -> {
@@ -129,7 +147,14 @@ public class RoutesAnswerer extends Answerer {
             vrfMap.forEach(
                 (vrfName, rib) -> {
                   if (compiledVrfRegex.matcher(vrfName).matches()) {
-                    rows.addAll(getRowsForAbstractRoutes(node, vrfName, rib.getRoutes(), ipOwners));
+                    rows.addAll(
+                        getRowsForAbstractRoutes(
+                            node,
+                            vrfName,
+                            network,
+                            compiledProtocolRegex,
+                            rib.getRoutes(),
+                            ipOwners));
                   }
                 });
           }
@@ -142,11 +167,17 @@ public class RoutesAnswerer extends Answerer {
   private static List<Row> getRowsForAbstractRoutes(
       String node,
       String vrfName,
+      @Nullable Prefix network,
+      Pattern compiledProtocolRegex,
       Set<AbstractRoute> routes,
       @Nullable Map<Ip, Set<String>> ipOwners) {
     Node nodeObj = new Node(node);
     return routes
         .stream()
+        .filter(
+            route ->
+                (network == null || network.equals(route.getNetwork()))
+                    && compiledProtocolRegex.matcher(route.getProtocol().protocolName()).matches())
         .map(
             route ->
                 Row.builder()
@@ -182,10 +213,19 @@ public class RoutesAnswerer extends Answerer {
   /** Convert a set of {@link BgpRoute} into a list of rows. */
   @Nonnull
   @VisibleForTesting
-  static List<Row> getRowsForBgpRoutes(String hostname, String vrfName, Set<BgpRoute> routes) {
+  static List<Row> getRowsForBgpRoutes(
+      String hostname,
+      String vrfName,
+      @Nullable Prefix network,
+      Pattern compiledProtocolRegex,
+      Set<BgpRoute> routes) {
     Node nodeObj = new Node(hostname);
     return routes
         .stream()
+        .filter(
+            route ->
+                (network == null || network.equals(route.getNetwork()))
+                    && compiledProtocolRegex.matcher(route.getProtocol().protocolName()).matches())
         .map(
             route ->
                 Row.builder()
@@ -209,12 +249,12 @@ public class RoutesAnswerer extends Answerer {
         .collect(toImmutableList());
   }
 
-  /** Generate the table metadata based on the protocol for which we are examining the RIBs */
+  /** Generate the table metadata based on the {@code rib} we are pulling */
   @VisibleForTesting
-  static TableMetadata getTableMetadata(RibProtocol protocol) {
+  static TableMetadata getTableMetadata(RibProtocol rib) {
     ImmutableList.Builder<ColumnMetadata> columnBuilder = ImmutableList.builder();
     addCommonTableColumnsAtStart(columnBuilder);
-    switch (protocol) {
+    switch (rib) {
       case BGP:
         columnBuilder.add(
             new ColumnMetadata(

@@ -1,0 +1,25 @@
+{
+  "class" : "org.batfish.question.namedstructures.NamedStructuresQuestion",
+  "nodes" : ".*",
+  "properties" : ".*",
+  "differential" : false,
+  "includeOneTableKeys" : true,
+  "instance" : {
+    "description" : "Return named structure definitions",
+    "instanceName" : "qname",
+    "variables" : {
+      "nodes" : {
+        "description" : "Include nodes matching this name or regex",
+        "optional" : true,
+        "type" : "nodeSpec",
+        "value" : ".*"
+      },
+      "properties" : {
+        "description" : "Include properties matching this regex",
+        "optional" : true,
+        "type" : "namedStructureSpec",
+        "value" : ".*"
+      }
+    }
+  }
+}

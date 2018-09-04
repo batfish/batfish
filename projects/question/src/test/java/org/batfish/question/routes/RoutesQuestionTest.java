@@ -16,8 +16,8 @@ public class RoutesQuestionTest {
     assertThat(question.getDataPlane(), equalTo(true));
     assertThat(question.getName(), equalTo("routes2"));
 
-    assertThat(question.getNodeRegex(), equalTo(NodesSpecifier.ALL));
-    assertThat(question.getVrfRegex(), equalTo(".*"));
-    assertThat(question.getProtocol(), equalTo(RibProtocol.MAIN));
+    assertThat(question.getNodes(), equalTo(NodesSpecifier.ALL));
+    assertThat(question.getVrfs(), equalTo(".*"));
+    assertThat(question.getRib(), equalTo(RibProtocol.MAIN));
   }
 }

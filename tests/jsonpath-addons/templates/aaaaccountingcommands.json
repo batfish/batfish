@@ -5,7 +5,7 @@
         "class": "org.batfish.question.NodesQuestionPlugin$NodesQuestion",
         "differential": false,
         "instance": null,
-        "nodeRegex": "${nodeRegex}",
+        "nodes": "${nodes}",
         "nodeTypes": [],
         "summary": false
     },
@@ -23,9 +23,9 @@
                 "description": "The reference level",
                 "type": "integer"
             },
-            "nodeRegex": {
+            "nodes": {
                 "description": "Only include nodes whose name matches this regex",
-                "type": "javaRegex",
+                "type": "nodeSpec",
                 "value": ".*"
             }
         }

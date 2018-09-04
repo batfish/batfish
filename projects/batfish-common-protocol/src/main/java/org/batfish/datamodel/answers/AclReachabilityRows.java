@@ -21,12 +21,17 @@ import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableMetadata;
 
-/**
- * Represents answers to aclReachability2. Implements {@link AclLinesAnswerElementInterface} so that
- * aclReachability and aclReachability2 can use some of the same methods to answer both.
- */
+/** Represents answers to aclReachability. */
 @ParametersAreNonnullByDefault
-public class AclLines2Rows implements AclLinesAnswerElementInterface {
+public class AclReachabilityRows {
+  public static final String COL_SOURCES = "ACL_Sources";
+  public static final String COL_LINES = "Lines";
+  public static final String COL_BLOCKED_LINE_ACTION = "Blocked_Line_Action";
+  public static final String COL_BLOCKED_LINE_NUM = "Blocked_Line_Num";
+  public static final String COL_BLOCKING_LINE_NUMS = "Blocking_Line_Nums";
+  public static final String COL_REASON = "Reason";
+  public static final String COL_DIFF_ACTION = "Different_Action";
+  public static final String COL_MESSAGE = "Message";
 
   public static enum Reason {
     CYCLICAL_REFERENCE,
@@ -35,15 +40,6 @@ public class AclLines2Rows implements AclLinesAnswerElementInterface {
     UNDEFINED_REFERENCE,
     UNMATCHABLE
   }
-
-  public static final String COL_SOURCES = "aclSources";
-  public static final String COL_LINES = "lines";
-  public static final String COL_BLOCKED_LINE_ACTION = "blockedLineAction";
-  public static final String COL_BLOCKED_LINE_NUM = "blockedLineNum";
-  public static final String COL_BLOCKING_LINE_NUMS = "blockingLineNums";
-  public static final String COL_REASON = "reason";
-  public static final String COL_DIFF_ACTION = "differentAction";
-  public static final String COL_MESSAGE = "message";
 
   public static final Map<String, ColumnMetadata> COLUMN_METADATA =
       ImmutableMap.<String, ColumnMetadata>builder()
@@ -81,7 +77,6 @@ public class AclLines2Rows implements AclLinesAnswerElementInterface {
 
   private final Multiset<Row> _rows = HashMultiset.create();
 
-  @Override
   public void addUnreachableLine(
       AclSpecs aclSpecs, int lineNumber, boolean unmatchable, SortedSet<Integer> blockingLines) {
 
@@ -160,7 +155,6 @@ public class AclLines2Rows implements AclLinesAnswerElementInterface {
     return new TableMetadata(columnMetadata, textDesc);
   }
 
-  @Override
   public void addCycle(String hostname, List<String> aclsInCycle) {
     _rows.add(
         Row.builder(COLUMN_METADATA)

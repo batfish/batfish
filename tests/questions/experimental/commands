@@ -1,46 +1,49 @@
 load-questions questions/experimental
 
 # validate aclReachability
-test -raw tests/questions/experimental/aclReachability.ref validate-template aclReachability filterSpecifierInput=".*", nodeSpecifierInput=".*"
+test -raw tests/questions/experimental/aclReachability.ref validate-template aclReachability filters=".*", nodes=".*"
 
 # validate bgpProperties
-test -raw tests/questions/experimental/bgpProperties.ref validate-template bgpProperties nodeRegex=".*", propertySpec="multipath-.*"
+test -raw tests/questions/experimental/bgpProperties.ref validate-template bgpProperties nodes=".*", properties="multipath-.*"
 
 # validate bgpSessionStatus
-test -raw tests/questions/experimental/bgpSessionStatus.ref validate-template bgpSessionStatus includeEstablishedCount=true, node1Regex=".*", node2Regex=".*", status=".*", type=".*"
+test -raw tests/questions/experimental/bgpSessionStatus.ref validate-template bgpSessionStatus includeEstablishedCount=true, nodes=".*", remoteNodes=".*", status=".*", type=".*"
 
 # validate filterTable
 test -raw tests/questions/experimental/filterTable.ref validate-template filterTable filter = "mtu == 1500", innerQuestion={"class": "org.batfish.question.interfaceproperties.InterfacePropertiesQuestion"}, columns=["interface", "mtu"]
 
 # validate interfaceMtu
-test -raw tests/questions/experimental/interfaceMtu.ref validate-template interfaceMtu comparator='>', interfaceRegex='Gig.*', mtuBytes=0, nodeRegex='as1core2'
+test -raw tests/questions/experimental/interfaceMtu.ref validate-template interfaceMtu comparator='>', interfaces='Gig.*', mtuBytes=0, nodes='as1core2'
 
 # validate interfaceProperties
-test -raw tests/questions/experimental/interfaceProperties.ref validate-template interfaceProperties nodeRegex=".*", interfaceRegex=".*", propertySpec=".*"
+test -raw tests/questions/experimental/interfaceProperties.ref validate-template interfaceProperties excludeShutInterfaces=false, nodes=".*", interfaces=".*", properties=".*"
+
+# validate namedStructures
+test -raw tests/questions/experimental/namedStructures.ref validate-template namedStructures nodes=".*", properties=".*"
 
 # validate neighbors
-test -raw tests/questions/experimental/neighbors.ref validate-template neighbors neighborTypes=["ebgp"], node1Regex=".*", node2Regex=".*", style="summary", roleDimension="default"
+test -raw tests/questions/experimental/neighbors.ref validate-template neighbors neighborTypes=["ebgp"], nodes=".*", remoteNodes=".*", style="summary", roleDimension="default"
 
 # validate nodes
-test -raw tests/questions/experimental/nodes.ref validate-template nodes nodeRegex=".*", nodeTypes=["ospf"], summary=true
+test -raw tests/questions/experimental/nodes.ref validate-template nodes nodes=".*", nodeTypes=["ospf"], summary=true
 
 # validate nodeProperties
-test -raw tests/questions/experimental/nodeProperties.ref validate-template nodeProperties nodeRegex=".*", propertySpec="ntp.*"
+test -raw tests/questions/experimental/nodeProperties.ref validate-template nodeProperties nodes=".*", properties="ntp.*"
 
 # validate ospfProperties
-test -raw tests/questions/experimental/ospfProperties.ref validate-template ospfProperties nodeRegex=".*", propertySpec="maximum-.*"
+test -raw tests/questions/experimental/ospfProperties.ref validate-template ospfProperties nodes=".*", properties="maximum-.*"
 
 # validate prefixTracer
-test -raw tests/questions/experimental/prefixTracer.ref validate-template prefixTracer nodeRegex=".*", prefix="0.0.0.0/0"
+test -raw tests/questions/experimental/prefixTracer.ref validate-template prefixTracer nodes=".*", prefix="0.0.0.0/0"
 
 # validate reachfilter
-test -raw tests/questions/experimental/reachfilter.ref validate-template reachfilter complementHeaderSpace=false, filterRegex=".*", query="matchLine 0", destinationIpSpaceSpecifierFactory="destFactory", dst="2.2.2.2", sourceInterfaces=".*", sourceIpSpaceSpecifierFactory="sourceFactory", src="1.1.1.1", nodeSpecifierInput=".*", nodeSpecifierFactory="nodesFactory", srcPorts=[0], dstPorts=[0], dstProtocols=["tcp"]
+test -raw tests/questions/experimental/reachfilter.ref validate-template reachfilter complementHeaderSpace=false, filterRegex=".*", query="matchLine 0", destinationIpSpaceSpecifierFactory="destFactory", dst="2.2.2.2", sourceInterfaces=".*", sourceIpSpaceSpecifierFactory="sourceFactory", src="1.1.1.1", nodeSpecifierInput=".*", nodeSpecifierFactory="nodesFactory", srcPorts=[0], dstPorts=[0], dstProtocols=["http"]
 
 # validate specifiers
-test -raw tests/questions/experimental/specifiers.ref validate-template specifiers queryType="filter", filterSpecifierFactory="FlexibleFilterSpecifierFactory", filterSpecifierInput="filterSpecifierInput", interfaceSpecifierFactory="FlexibleInterfaceSpecifierFactory", interfaceSpecifierInput="filterSpecifierInput", ipSpaceSpecifierFactory="InferFromLocationIpSpaceSpecifierFactory", ipSpaceSpecifierInput="ipSpaceSpecifierInput", locationSpecifierFactory="FlexibleLocationSpecifierFactory", locationSpecifierInput="locationSpecifierInput", nodeSpecifierFactory="FlexibleNodeSpecifierFactory", nodeSpecifierInput="nodeSpecifierInput" 
+test -raw tests/questions/experimental/specifiers.ref validate-template specifiers queryType="filter", filterSpecifierFactory="FlexibleFilterSpecifierFactory", filterSpecifierInput="filterSpecifierInput", interfaceSpecifierFactory="FlexibleInterfaceSpecifierFactory", interfaceSpecifierInput="filterSpecifierInput", ipSpaceSpecifierFactory="InferFromLocationIpSpaceSpecifierFactory", ipSpaceSpecifierInput="ipSpaceSpecifierInput", locationSpecifierFactory="FlexibleLocationSpecifierFactory", locationSpecifierInput="locationSpecifierInput", nodeSpecifierFactory="FlexibleNodeSpecifierFactory", nodeSpecifierInput="nodeSpecifierInput"
 
 # validate specifiersReachability
 test -raw tests/questions/experimental/specifiersReachability.ref validate-template specifiersReachability actions=["accept"], debug=false, destinationIpSpaceSpecifierFactory="destFactory", dst="destination.*", finalNodesSpecifierFactory="finalNodeFactory", finalNodesSpecifierInput="finalNode", sourceLocationSpecifierFactory="sourceFactory", src="sourceNode"
 
 # test traceroute
-test  -raw tests/questions/experimental/traceroute.ref validate-template traceroute dscp=12, dst="1.2.3.4", dstPort=23, dstProtocol="udp", ecn=1, fragmentOffset=12, icmpCode=12, icmpType=23, ignoreAcls=false, ipProtocol="23", packetLength=12, srcIpSpace="1.1.1.1", srcPort=123, srcProtocol="tcp", state="new", tcpAck=true, tcpCwr=false, tcpEce=true, tcpFin=false, tcpPsh=true, tcpRst=false, tcpSyn=true, tcpUrg=false, traceStart="location"
+test  -raw tests/questions/experimental/traceroute.ref validate-template traceroute dscp=12, dst="1.2.3.4", dstPort=23, dstProtocol="dns", ecn=1, fragmentOffset=12, icmpCode=12, icmpType=23, ignoreAcls=false, ipProtocol="tcp", packetLength=12, srcIpSpace="1.1.1.1", srcPort=123, srcProtocol="http", state="new", tcpAck=true, tcpCwr=false, tcpEce=true, tcpFin=false, tcpPsh=true, tcpRst=false, tcpSyn=true, tcpUrg=false, traceStart="location"

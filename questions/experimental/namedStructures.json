@@ -1,21 +1,21 @@
 {
     "class": "org.batfish.question.namedstructures.NamedStructuresQuestion",
     "differential": false,
-    "nodeRegex": "${nodeRegex}",
-    "propertySpec": "${propertySpec}",
+    "nodes": "${nodes}",
+    "properties": "${properties}",
     "instance": {
         "description": "Return named structure definitions",
         "instanceName": "namedStructures",
         "tags": [
         ],
         "variables": {
-            "nodeRegex": {
-                "description": "Only include nodes that match this regex",
+            "nodes": {
+                "description": "Include nodes matching this name or regex",
                 "type": "nodeSpec",
                 "optional": true
             },
-            "propertySpec": {
-                "description": "Only include properties that match this regex. Default behavior is to return all properties",
+            "properties": {
+                "description": "Include properties matching this regex",
                 "type": "namedStructureSpec",
                 "optional": true
             }

@@ -1,25 +1,25 @@
 {
-    "class": "org.batfish.question.aclreachability2.AclReachability2Question",
+    "class": "org.batfish.question.aclreachability.AclReachabilityQuestion",
     "differential": false,
-    "filterSpecifierInput": "${filterSpecifierInput}",
-    "nodeSpecifierInput": "${nodeSpecifierInput}",
+    "filters": "${filters}",
+    "nodes": "${nodes}",
     "instance": {
-        "description": "Display ACLs/filters with unreachable lines",
+        "description": "Identify ACLs/filters with unreachable lines",
         "instanceName": "aclReachability",
-        "longDescription": "Return ACLs/filters with unreachable lines, along with all of the unreachable lines within each ACL/filter.",
+        "longDescription": "This question finds all unreachable lines in the specified ACLs/filters.",
         "tags": [
             "acl",
             "default"
         ],
         "variables": {
-            "filterSpecifierInput": {
-              "description": "Name or regex identifying the filter(s) to test",
+            "filters": {
+              "description": "Name or regex identifying the filters to test",
               "type": "string",
               "optional": true
             },
-            "nodeSpecifierInput": {
-              "description": "Name or regex identifying the nodes to restrict the test to",
-              "type": "string",
+            "nodes": {
+              "description": "Examine filters on nodes matching this name or regex",
+              "type": "nodeSpec",
               "optional": true
             }
         }

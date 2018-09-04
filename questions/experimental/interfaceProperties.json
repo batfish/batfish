@@ -1,9 +1,10 @@
 {
     "class": "org.batfish.question.interfaceproperties.InterfacePropertiesQuestion",
     "differential": false,
-    "interfaceRegex": "${interfaceRegex}",
-    "nodeRegex": "${nodeRegex}",
-    "propertySpec": "${propertySpec}",
+    "excludeShutInterfaces": "${excludeShutInterfaces}",
+    "interfaces": "${interfaces}",
+    "nodes": "${nodes}",
+    "properties": "${properties}",
     "instance": {
         "description": "Returns configuration properties of interfaces",
         "instanceName": "interfaceProperties",
@@ -12,18 +13,23 @@
             "interfaces"
         ],
         "variables": {
-            "interfaceRegex": {
-                "description": "Only include interfaces that match this regex",
+            "excludeShutInterfaces": {
+                "description": "Exclude interfaces that are shutdown",
+                "type": "boolean",
+                "optional": true
+            },
+            "interfaces": {
+                "description": "Include interfaces matching this regex",
                 "type": "javaRegex",
                 "optional": true
             },
-            "nodeRegex": {
-                "description": "Only include nodes that match this regex",
+            "nodes": {
+                "description": "Include nodes matching this name or regex",
                 "type": "nodeSpec",
                 "optional": true
             },
-            "propertySpec": {
-                "description": "Only include properties that match this regex. Default behavior is to return all properties",
+            "properties": {
+                "description": "Include properties matching this regex",
                 "type": "interfacePropertySpec",
                 "optional": true
             }

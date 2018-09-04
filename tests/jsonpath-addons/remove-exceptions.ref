@@ -7,7 +7,7 @@
     "class" : "org.batfish.question.NodesQuestionPlugin$NodesQuestion",
     "differential" : false,
     "includeOneTableKeys" : true,
-    "nodeRegex" : ".*",
+    "nodes" : ".*",
     "summary" : false
   },
   "instance" : {
@@ -25,10 +25,10 @@
         "optional" : false,
         "type" : "integer"
       },
-      "nodeRegex" : {
+      "nodes" : {
         "description" : "Only include nodes whose name matches this regex",
         "optional" : false,
-        "type" : "javaRegex",
+        "type" : "nodeSpec",
         "value" : ".*"
       }
     }

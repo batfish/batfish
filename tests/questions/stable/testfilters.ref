@@ -1,12 +1,12 @@
 {
-  "class" : "org.batfish.question.tracefilters.TraceFiltersQuestion",
-  "filterRegex" : ".*",
-  "nodeRegex" : ".*",
+  "class" : "org.batfish.question.testfilters.TestFiltersQuestion",
+  "filters" : ".*",
+  "nodes" : ".*",
   "differential" : false,
   "dscp" : 12,
   "dst" : "1.2.3.4",
   "dstPort" : 23,
-  "dstProtocol" : "udp",
+  "dstProtocol" : "http",
   "ecn" : 1,
   "fragmentOffset" : 12,
   "icmpCode" : 12,
@@ -14,7 +14,7 @@
   "includeOneTableKeys" : true,
   "ingressInterface" : "randomInterface",
   "instance" : {
-    "description" : "Evaluate the processing of a flow by a given filter/ACL.",
+    "description" : "Evaluate the processing of a flow by a given filter/ACL",
     "instanceName" : "qname",
     "longDescription" : "Find the disposition of the specified flow when processed through the specified filter/ACL.",
     "tags" : [
@@ -46,7 +46,7 @@
         "description" : "Destination named protocol (can affect IP protocol number; ICMP type/code; TCP/UDP destination port)",
         "optional" : true,
         "type" : "string",
-        "value" : "udp"
+        "value" : "http"
       },
       "ecn" : {
         "description" : "Applied Explicit Congestion Notification (ECN) value in TCP header",
@@ -54,7 +54,7 @@
         "type" : "integer",
         "value" : 1
       },
-      "filterRegex" : {
+      "filters" : {
         "description" : "Only consider filters that match this regular expression",
         "optional" : false,
         "type" : "javaRegex",
@@ -89,12 +89,12 @@
         "description" : "IP Protocol number in IP header",
         "optional" : true,
         "type" : "string",
-        "value" : "23"
+        "value" : "tcp"
       },
-      "nodeRegex" : {
-        "description" : "Only consider filters present on nodes that match this regular expression",
+      "nodes" : {
+        "description" : "Examine filters on nodes matching this name or regex",
         "optional" : false,
-        "type" : "javaRegex",
+        "type" : "nodeSpec",
         "value" : ".*"
       },
       "packetLength" : {
@@ -119,7 +119,7 @@
         "description" : "Source named protocol (can affect IP protocol number; ICMP type/code; TCP/UDP source port)",
         "optional" : true,
         "type" : "string",
-        "value" : "tcp"
+        "value" : "dns"
       },
       "state" : {
         "allowedValues" : [
@@ -183,11 +183,11 @@
       }
     }
   },
-  "ipProtocol" : "TRUNK1",
+  "ipProtocol" : "TCP",
   "packetLength" : 12,
   "srcIp" : "1.1.1.1",
   "srcPort" : 123,
-  "srcProtocol" : "tcp",
+  "srcProtocol" : "dns",
   "state" : "NEW",
   "tcpAck" : true,
   "tcpCwr" : false,

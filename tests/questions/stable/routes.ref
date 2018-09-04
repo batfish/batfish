@@ -1,26 +1,40 @@
 {
   "class" : "org.batfish.question.routes.RoutesQuestion",
-  "nodeRegex" : ".*",
-  "protocol" : "MAIN",
-  "vrfRegex" : ".*",
+  "network" : "1.1.1.0/24",
+  "nodes" : ".*",
+  "protocols" : ".*",
+  "rib" : "MAIN",
+  "vrfs" : ".*",
   "differential" : false,
   "includeOneTableKeys" : true,
   "instance" : {
     "description" : "Show routing tables",
     "instanceName" : "qname",
-    "longDescription" : "Return routes for the specified RIB for specified VRF for specified node(s)",
+    "longDescription" : "Return routes for the specified RIB for specified VRF for specified node(s).",
     "tags" : [
       "dataPlane",
       "route"
     ],
     "variables" : {
-      "nodeRegex" : {
-        "description" : "Only include routes for nodes whose name matches this regex",
+      "network" : {
+        "description" : "Examine routes for networks matching this prefix",
+        "optional" : true,
+        "type" : "prefix",
+        "value" : "1.1.1.1/24"
+      },
+      "nodes" : {
+        "description" : "Examine routes on nodes matching this name or regex",
+        "optional" : false,
+        "type" : "nodeSpec",
+        "value" : ".*"
+      },
+      "protocols" : {
+        "description" : "Examine routes for protocols matching this name or regex",
         "optional" : false,
         "type" : "javaRegex",
         "value" : ".*"
       },
-      "protocol" : {
+      "rib" : {
         "allowedValues" : [
           "bgp",
           "bgpmp",
@@ -31,8 +45,8 @@
         "type" : "string",
         "value" : "main"
       },
-      "vrfRegex" : {
-        "description" : "Only include routes for VRFs whose name matches this regex",
+      "vrfs" : {
+        "description" : "Examine routes on VRFs matching this name or regex",
         "optional" : false,
         "type" : "javaRegex",
         "value" : ".*"

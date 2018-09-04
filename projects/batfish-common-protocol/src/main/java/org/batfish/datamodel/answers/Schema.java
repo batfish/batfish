@@ -59,7 +59,6 @@ public class Schema {
   public static final Schema ACL_TRACE = new Schema("AclTrace");
   public static final Schema BOOLEAN = new Schema("Boolean");
   public static final Schema DOUBLE = new Schema("Double");
-  public static final Schema ENVIRONMENT = new Schema("Environment");
   public static final Schema FILE_LINE = new Schema("FileLine");
   public static final Schema FILE_LINES = new Schema("FileLines");
   public static final Schema FLOW = new Schema("Flow");
