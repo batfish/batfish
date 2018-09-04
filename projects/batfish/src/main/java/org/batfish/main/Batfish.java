@@ -625,7 +625,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       try {
         rawQuestionStr =
             _storage.loadQuestion(
-                _settings.getContainer(), _settings.getAnalysisName(), _settings.getQuestionName());
+                _settings.getContainer(), _settings.getQuestionName(), _settings.getAnalysisName());
       } catch (Exception e) {
         Answer answer = new Answer();
         BatfishException exception = new BatfishException("Could not read question", e);

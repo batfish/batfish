@@ -299,7 +299,7 @@ public final class FileBasedStorage implements StorageProvider {
       @Nullable String referenceSnapshot,
       @Nullable String analysis) {
     return referenceSnapshot != null
-        ? getDeltaAnswerDir(network, snapshot, referenceSnapshot, question, analysis)
+        ? getDeltaAnswerDir(network, snapshot, question, referenceSnapshot, analysis)
         : getStandardAnswerDir(network, snapshot, question, analysis);
   }
 
@@ -324,8 +324,8 @@ public final class FileBasedStorage implements StorageProvider {
   private @Nonnull Path getDeltaAnswerDir(
       String network,
       String snapshot,
-      String referenceSnapshot,
       String question,
+      String referenceSnapshot,
       @Nullable String analysis) {
     Path snapshotDir = getSnapshotDir(network, snapshot);
     return analysis != null
@@ -508,7 +508,7 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   @Override
-  public @Nonnull String loadQuestion(String network, @Nullable String analysis, String question) {
+  public @Nonnull String loadQuestion(String network, String question, @Nullable String analysis) {
     return CommonUtil.readFile(getQuestionPath(network, question, analysis));
   }
 
@@ -536,7 +536,7 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   @Override
-  public boolean checkQuestionExists(String network, String question, String analysis) {
+  public boolean checkQuestionExists(String network, String question, @Nullable String analysis) {
     return Files.exists(getQuestionPath(network, question, analysis));
   }
 
@@ -605,7 +605,8 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   @Override
-  public FileTime getQuestionLastModifiedTime(String network, String question, String analysis) {
+  public FileTime getQuestionLastModifiedTime(
+      String network, String question, @Nullable String analysis) {
     return CommonUtil.getLastModifiedTime(getQuestionPath(network, question, analysis));
   }
 
