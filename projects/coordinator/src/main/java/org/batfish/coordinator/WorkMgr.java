@@ -669,9 +669,9 @@ public class WorkMgr extends AbstractCoordinator {
       String question,
       @Nullable String referenceSnapshot,
       @Nullable String analysis)
-      throws JsonProcessingException {
+      throws JsonProcessingException, FileNotFoundException {
     if (!_storage.checkQuestionExists(network, question, analysis)) {
-      throw new BatfishException("Question file not found for " + question);
+      throw new FileNotFoundException("Question file not found for " + question);
     }
     String answer = "unknown";
     try {
@@ -708,7 +708,7 @@ public class WorkMgr extends AbstractCoordinator {
       String referenceSnapshot,
       String deltaEnv,
       String analysis)
-      throws JsonProcessingException {
+      throws JsonProcessingException, FileNotFoundException {
     SortedSet<String> questions = listAnalysisQuestions(network, analysis);
     Map<String, String> retMap = new TreeMap<>();
     for (String question : questions) {
@@ -725,7 +725,7 @@ public class WorkMgr extends AbstractCoordinator {
       String deltaEnv,
       String analysis,
       Set<String> analysisQuestions)
-      throws JsonProcessingException {
+      throws JsonProcessingException, FileNotFoundException {
     SortedSet<String> allQuestions = listAnalysisQuestions(network, analysis);
     SortedSet<String> questions =
         analysisQuestions.isEmpty()

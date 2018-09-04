@@ -386,7 +386,7 @@ public class WorkMgrTest {
   }
 
   @Test
-  public void testGetAnalysisAnswer() throws JsonProcessingException {
+  public void testGetAnalysisAnswer() throws JsonProcessingException, FileNotFoundException {
     String containerName = "container1";
     String testrigName = "testrig1";
     String analysisName = "analysis1";
@@ -428,7 +428,7 @@ public class WorkMgrTest {
   }
 
   @Test
-  public void testGetAnalysisAnswers() throws JsonProcessingException {
+  public void testGetAnalysisAnswers() throws JsonProcessingException, FileNotFoundException {
     String containerName = "container1";
     String testrigName = "testrig1";
     String analysisName = "analysis1";
