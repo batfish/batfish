@@ -557,7 +557,7 @@ public final class FileBasedStorage implements StorageProvider {
     if (!Files.exists(answerPath)) {
       throw new FileNotFoundException(
           String.format(
-              "Could not find answer for question:'%s' in network:'%s'; snapshot:%s; referenceSnapshot:%s; analysis:%s",
+              "Could not find answer for question:'%s' in network:'%s'; snapshot:'%s'; referenceSnapshot:'%s'; analysis:'%s'",
               question, network, snapshot, referenceSnapshot, analysis));
     }
     return FileUtils.readFileToString(answerPath.toFile());
@@ -576,7 +576,7 @@ public final class FileBasedStorage implements StorageProvider {
     if (!Files.exists(answerMetadataPath)) {
       throw new FileNotFoundException(
           String.format(
-              "Could not find answer metadata for question:'%s' in network:'%s'; snapshot:%s; referenceSnapshot:%s; analysis:%s",
+              "Could not find answer metadata for question:'%s' in network:'%s'; snapshot:'%s'; referenceSnapshot:'%s'; analysis:'%s'",
               question, network, snapshot, referenceSnapshot, analysis));
     }
     String answerMetadataStr = FileUtils.readFileToString(answerMetadataPath.toFile());
