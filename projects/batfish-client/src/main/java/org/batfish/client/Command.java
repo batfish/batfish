@@ -13,6 +13,7 @@ public enum Command {
   ADD_BATFISH_OPTION("add-batfish-option"),
   ANSWER("answer"),
   ANSWER_DELTA("answer-delta"),
+  ANSWER_REFERENCE("answer-reference"),
   AUTOCOMPLETE("autocomplete"),
   CAT("cat"),
   CHECK_API_KEY("checkapikey"),
@@ -32,21 +33,26 @@ public enum Command {
   EXIT("exit"),
   GEN_DELTA_DP("generate-delta-dataplane"),
   GEN_DP("generate-dataplane"),
+  GEN_REFERENCE_DP("generate-reference-dataplane"),
   GET("get"),
   GET_ANALYSIS_ANSWERS("get-analysis-answers"),
   GET_ANALYSIS_ANSWERS_DELTA("get-analysis-answers-delta"),
   GET_ANALYSIS_ANSWERS_DIFFERENTIAL("get-analysis-answers-differential"),
+  GET_ANALYSIS_ANSWERS_REFERENCE("get-analysis-answers-reference"),
   GET_ANSWER("get-answer"),
   GET_ANSWER_DELTA("get-answer-delta"),
   GET_ANSWER_DIFFERENTIAL("get-answer-differential"),
+  GET_ANSWER_REFERENCE("get-answer-reference"),
   GET_CONFIGURATION("get-configuration"),
   GET_CONTAINER("get-container"),
   GET_DELTA("get-delta"),
   GET_NETWORK("get-network"),
   GET_OBJECT("get-object"),
   GET_OBJECT_DELTA("get-delta-object"),
+  GET_OBJECT_REFERENCE("get-reference-object"),
   GET_QUESTION("get-question"),
   GET_QUESTION_TEMPLATES("get-question-templates"),
+  GET_REFERENCE("get-reference"),
   GET_WORK_STATUS("get-work-status"),
   HELP("help"),
   INIT_ANALYSIS("init-analysis"),
@@ -55,6 +61,7 @@ public enum Command {
   INIT_DELTA_TESTRIG("init-delta-testrig"),
   INIT_ENVIRONMENT("init-environment"),
   INIT_NETWORK("init-network"),
+  INIT_REFERENCE_SNAPSHOT("init-reference-snapshot"),
   INIT_SNAPSHOT("init-snapshot"),
   INIT_TESTRIG("init-testrig"),
   KILL_WORK("kill-work"),
@@ -74,6 +81,7 @@ public enum Command {
   RUN_ANALYSIS("run-analysis"),
   RUN_ANALYSIS_DELTA("run-analysis-delta"),
   RUN_ANALYSIS_DIFFERENTIAL("run-analysis-differential"),
+  RUN_ANALYSIS_REFERENCE("run-analysis-reference"),
   SET_BACKGROUND_EXECUCTION("set-background-execution"),
   SET_BATFISH_LOGLEVEL("set-batfish-loglevel"),
   SET_CONTAINER("set-container"),
@@ -85,6 +93,7 @@ public enum Command {
   SET_LOGLEVEL("set-loglevel"),
   SET_NETWORK("set-network"),
   SET_PRETTY_PRINT("set-pretty-print"),
+  SET_REFERENCE_SNAPSHOT("set-reference-snapshot"),
   SET_SNAPSHOT("set-snapshot"),
   SET_TESTRIG("set-testrig"),
   SHOW_API_KEY("show-api-key"),
@@ -96,6 +105,7 @@ public enum Command {
   SHOW_DELTA_TESTRIG("show-delta-testrig"),
   SHOW_LOGLEVEL("show-loglevel"),
   SHOW_NETWORK("show-network"),
+  SHOW_REFERENCE_SNAPSHOT("show-reference-snapshot"),
   SHOW_SNAPSHOT("show-snapshot"),
   SHOW_TESTRIG("show-testrig"),
   SHOW_VERSION("show-version"),
@@ -134,21 +144,32 @@ public enum Command {
     ImmutableMap.Builder<Command, String> map = ImmutableMap.builder();
 
     String containerMsg = "The term \"container\" has been replaced with \"network\".";
+    String deltaMsg = "The term \"delta\" has been replaced with \"reference\".";
     String testrigMsg = "The term \"testrig\" has been replaced with \"snapshot\".";
 
+    map.put(ANSWER_DELTA, getDeprecatedMsg(deltaMsg, ANSWER_REFERENCE));
     map.put(DEL_CONTAINER, getDeprecatedMsg(containerMsg, DEL_NETWORK));
     map.put(DEL_TESTRIG, getDeprecatedMsg(testrigMsg, DEL_SNAPSHOT));
+    map.put(GEN_DELTA_DP, getDeprecatedMsg(deltaMsg, GEN_REFERENCE_DP));
+    map.put(GET_ANALYSIS_ANSWERS_DELTA, getDeprecatedMsg(deltaMsg, GET_ANALYSIS_ANSWERS_REFERENCE));
+    map.put(GET_ANSWER_DELTA, getDeprecatedMsg(deltaMsg, GET_ANSWER_REFERENCE));
     map.put(GET_CONTAINER, getDeprecatedMsg(containerMsg, GET_NETWORK));
+    map.put(GET_DELTA, getDeprecatedMsg(deltaMsg, GET_REFERENCE));
+    map.put(GET_OBJECT_DELTA, getDeprecatedMsg(deltaMsg, GET_OBJECT_REFERENCE));
     map.put(INIT_CONTAINER, getDeprecatedMsg(containerMsg, INIT_NETWORK));
-    map.put(INIT_DELTA_TESTRIG, getDeprecatedMsg(testrigMsg, INIT_DELTA_SNAPSHOT));
+    map.put(INIT_DELTA_TESTRIG, getDeprecatedMsg(testrigMsg, INIT_REFERENCE_SNAPSHOT));
+    map.put(INIT_DELTA_SNAPSHOT, getDeprecatedMsg(deltaMsg, INIT_REFERENCE_SNAPSHOT));
     map.put(INIT_TESTRIG, getDeprecatedMsg(testrigMsg, INIT_SNAPSHOT));
     map.put(LIST_CONTAINERS, getDeprecatedMsg(containerMsg, LIST_NETWORKS));
     map.put(LIST_TESTRIGS, getDeprecatedMsg(testrigMsg, LIST_SNAPSHOTS));
+    map.put(RUN_ANALYSIS_DELTA, getDeprecatedMsg(deltaMsg, RUN_ANALYSIS_REFERENCE));
     map.put(SET_CONTAINER, getDeprecatedMsg(containerMsg, SET_NETWORK));
-    map.put(SET_DELTA_TESTRIG, getDeprecatedMsg(testrigMsg, SET_DELTA_SNAPSHOT));
+    map.put(SET_DELTA_TESTRIG, getDeprecatedMsg(testrigMsg, SET_REFERENCE_SNAPSHOT));
+    map.put(SET_DELTA_SNAPSHOT, getDeprecatedMsg(deltaMsg, SET_REFERENCE_SNAPSHOT));
     map.put(SET_TESTRIG, getDeprecatedMsg(testrigMsg, SET_SNAPSHOT));
     map.put(SHOW_CONTAINER, getDeprecatedMsg(containerMsg, SHOW_NETWORK));
-    map.put(SHOW_DELTA_TESTRIG, getDeprecatedMsg(testrigMsg, SHOW_DELTA_SNAPSHOT));
+    map.put(SHOW_DELTA_TESTRIG, getDeprecatedMsg(testrigMsg, SHOW_REFERENCE_SNAPSHOT));
+    map.put(SHOW_DELTA_SNAPSHOT, getDeprecatedMsg(deltaMsg, SHOW_REFERENCE_SNAPSHOT));
     map.put(SHOW_TESTRIG, getDeprecatedMsg(testrigMsg, SHOW_SNAPSHOT));
     map.put(SYNC_TESTRIGS_SYNC_NOW, getDeprecatedMsg(testrigMsg, SYNC_SNAPSHOTS_SYNC_NOW));
     map.put(
@@ -177,12 +198,17 @@ public enum Command {
         ANSWER,
         new Pair<>(
             "<template-name>  [questionName=name] [param1=value1 [param2=value2] ...]",
-            "Answer the template by name for the base environment"));
+            "Answer the template by name for the current environment"));
     descs.put(
         ANSWER_DELTA,
         new Pair<>(
             "<template-name>   [questionName=name] [param1=value1 [param2=value2] ...]",
             "Answer the template by name for the delta environment"));
+    descs.put(
+        ANSWER_REFERENCE,
+        new Pair<>(
+            "<template-name>   [questionName=name] [param1=value1 [param2=value2] ...]",
+            "Answer the template by name for the reference snapshot"));
     descs.put(
         AUTOCOMPLETE,
         new Pair<>(
@@ -215,17 +241,28 @@ public enum Command {
     descs.put(EXIT, new Pair<>("", "Terminate interactive client session"));
     descs.put(GEN_DELTA_DP, new Pair<>("", "Generate dataplane for the delta environment"));
     descs.put(GEN_DP, new Pair<>("", "Generate dataplane for the default environment"));
+    descs.put(GEN_REFERENCE_DP, new Pair<>("", "Generate dataplane for the reference snapshot"));
     descs.put(
         GET,
         new Pair<>(
             "<question-type>  [param1=value1 [param2=value2] ...]",
-            "Answer the question by type for the base environment"));
+            "Answer the question by type for the current environment"));
     descs.put(
         GET_ANALYSIS_ANSWERS,
         new Pair<>("<analysis-name>", "Get the answers for a previously run analysis"));
     descs.put(
+        GET_ANALYSIS_ANSWERS_REFERENCE,
+        new Pair<>(
+            "<analysis-name>",
+            "Get the answers for an analysis previously run on the reference snapshot"));
+    descs.put(
         GET_ANSWER,
         new Pair<>("<question-name>", "Get the answer for a previously answered question"));
+    descs.put(
+        GET_ANSWER_REFERENCE,
+        new Pair<>(
+            "<question-name>",
+            "Get the answer for a question previously answered on the reference snapshot"));
     descs.put(
         GET_CONFIGURATION,
         new Pair<>(
@@ -240,8 +277,16 @@ public enum Command {
     descs.put(GET_NETWORK, new Pair<>("<network-name>", "Get the information of the network"));
     descs.put(GET_OBJECT, new Pair<>("<object path>", "Get the object"));
     descs.put(GET_OBJECT_DELTA, new Pair<>("<object path>", "Get the object from delta snapshot"));
+    descs.put(
+        GET_OBJECT_REFERENCE,
+        new Pair<>("<object path>", "Get the object from reference snapshot"));
     descs.put(GET_QUESTION, new Pair<>("<question-name>", "Get the question and parameter files"));
     descs.put(GET_QUESTION_TEMPLATES, new Pair<>("", "Get question templates from coordinator"));
+    descs.put(
+        GET_REFERENCE,
+        new Pair<>(
+            "<question-file>  [param1=value1 [param2=value2] ...]",
+            "Answer the question by type for the reference snapshot"));
     descs.put(GET_WORK_STATUS, new Pair<>("<work-id>", "Get the status of the specified work id"));
     descs.put(HELP, new Pair<>("[command]", "Print the list of supported commands"));
     descs.put(
@@ -268,7 +313,7 @@ public enum Command {
             "[sourcePath=path], [newEnvironmentName=string], [newEnvironmentPrefix=string], "
                 + "[sourceEnvironmentName=string], [nodeBlacklist=string_set], "
                 + "[interfaceBlacklist=map_of_strings_to_string_sets], [edgeBlacklist=edge_set]",
-            "    Initialize a new delta environment\n"
+            "    Initialize a new reference environment\n"
                 + "\n"
                 + "    Arguments:\n"
                 + "\n"
@@ -307,7 +352,7 @@ public enum Command {
                 + "    doDelta\n"
                 + "        Whether the sourceEnvironment and newEnvironment should be chosen "
                 + "from/created in the\n"
-                + "        current base(false) or delta(true) snapshot. Defaults to false.\n"
+                + "        current(false) or reference(true) snapshot. Defaults to false.\n"
                 + "\n"));
     /*                + "    update\n"
     + "        Whether to update the current base(doDelta=false)/delta(doDelta=true) "
@@ -321,6 +366,11 @@ public enum Command {
         INIT_NETWORK,
         new Pair<>(
             "[-setname <network-name> | <network-name-prefix>]", "Initialize a new network"));
+    descs.put(
+        INIT_REFERENCE_SNAPSHOT,
+        new Pair<>(
+            "[-autoanalyze] <snapshot zipfile or directory> [<snapshot-name>]",
+            "Initialize the reference snapshot with default environment"));
     descs.put(
         INIT_SNAPSHOT,
         new Pair<>(
@@ -362,6 +412,11 @@ public enum Command {
     descs.put(
         RUN_ANALYSIS, new Pair<>("<analysis-name>", "Run the (previously configured) analysis"));
     descs.put(
+        RUN_ANALYSIS_REFERENCE,
+        new Pair<>(
+            "<analysis-name>",
+            "Run the (previously configured) analysis on the reference snapshot"));
+    descs.put(
         SET_BACKGROUND_EXECUCTION,
         new Pair<>("<true|false>", "Whether to wait for commands to finish before returning"));
     descs.put(
@@ -375,7 +430,7 @@ public enum Command {
     descs.put(
         SET_DELTA_TESTRIG,
         new Pair<>("<snapshot-name> [environment name]", "Set the delta snapshot"));
-    descs.put(SET_ENV, new Pair<>("<environment-name>", "Set the current base environment"));
+    descs.put(SET_ENV, new Pair<>("<environment-name>", "Set the current environment"));
     descs.put(
         SET_FIXED_WORKITEM_ID,
         new Pair<>("<uuid>", "Fix the UUID for WorkItems. Useful for testing; use carefully"));
@@ -385,9 +440,12 @@ public enum Command {
     descs.put(SET_NETWORK, new Pair<>("<network-name>", "Set the current network"));
     descs.put(SET_PRETTY_PRINT, new Pair<>("<true|false>", "Whether to pretty print answers"));
     descs.put(
-        SET_SNAPSHOT, new Pair<>("<snapshot-name> [environment name]", "Set the base snapshot"));
+        SET_REFERENCE_SNAPSHOT,
+        new Pair<>("<snapshot-name> [environment name]", "Set the reference snapshot"));
     descs.put(
-        SET_TESTRIG, new Pair<>("<snapshot-name> [environment name]", "Set the base snapshot"));
+        SET_SNAPSHOT, new Pair<>("<snapshot-name> [environment name]", "Set the current snapshot"));
+    descs.put(
+        SET_TESTRIG, new Pair<>("<snapshot-name> [environment name]", "Set the current snapshot"));
     descs.put(SHOW_API_KEY, new Pair<>("", "Show API Key"));
     descs.put(SHOW_BATFISH_LOGLEVEL, new Pair<>("", "Show current batfish loglevel"));
     descs.put(
@@ -399,8 +457,9 @@ public enum Command {
     descs.put(SHOW_DELTA_TESTRIG, new Pair<>("", "Show delta snapshot and environment"));
     descs.put(SHOW_LOGLEVEL, new Pair<>("", "Show current client loglevel"));
     descs.put(SHOW_NETWORK, new Pair<>("", "Show active network"));
-    descs.put(SHOW_SNAPSHOT, new Pair<>("", "Show base snapshot and environment"));
-    descs.put(SHOW_TESTRIG, new Pair<>("", "Show base snapshot and environment"));
+    descs.put(SHOW_REFERENCE_SNAPSHOT, new Pair<>("", "Show reference snapshot and environment"));
+    descs.put(SHOW_SNAPSHOT, new Pair<>("", "Show current snapshot and environment"));
+    descs.put(SHOW_TESTRIG, new Pair<>("", "Show current snapshot and environment"));
     descs.put(SHOW_VERSION, new Pair<>("", "Show the version of Client and Service"));
     descs.put(
         SYNC_SNAPSHOTS_SYNC_NOW,

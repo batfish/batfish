@@ -139,7 +139,7 @@ public class Client extends AbstractClient implements IClient {
   private static final String DEFAULT_SNAPSHOT_PREFIX = "ss_";
 
   private static final String DIFF_NOT_READY_MSG =
-      "Cannot ask differential question without first setting delta testrig/environment\n";
+      "Cannot ask differential question without first setting reference snapshot\n";
 
   private static final String ENV_HOME = "HOME";
 
@@ -1861,11 +1861,11 @@ public class Client extends AbstractClient implements IClient {
     if (!delta) {
       _currTestrig = testrigName;
       _currEnv = DEFAULT_ENV_NAME;
-      _logger.infof("Base snapshot is now %s\n", _currTestrig);
+      _logger.infof("Current snapshot is now %s\n", _currTestrig);
     } else {
       _currDeltaTestrig = testrigName;
       _currDeltaEnv = DEFAULT_ENV_NAME;
-      _logger.infof("Delta snapshot is now %s\n", _currDeltaTestrig);
+      _logger.infof("Reference snapshot is now %s\n", _currDeltaTestrig);
     }
 
     return true;
@@ -2571,6 +2571,7 @@ public class Client extends AbstractClient implements IClient {
       case ANSWER:
         return answer(words, outWriter, options, parameters, false);
       case ANSWER_DELTA:
+      case ANSWER_REFERENCE:
         return answer(words, outWriter, options, parameters, true);
       case AUTOCOMPLETE:
         return autoComplete(options, parameters);
@@ -2607,6 +2608,7 @@ public class Client extends AbstractClient implements IClient {
       case GEN_DP:
         return generateDataplane(outWriter, options, parameters);
       case GEN_DELTA_DP:
+      case GEN_REFERENCE_DP:
         return generateDeltaDataplane(outWriter, options, parameters);
       case GET:
         return get(words, outWriter, options, parameters, false);
@@ -2615,16 +2617,19 @@ public class Client extends AbstractClient implements IClient {
       case GET_CONTAINER:
         return getNetwork(options, parameters);
       case GET_DELTA:
+      case GET_REFERENCE:
         return get(words, outWriter, options, parameters, true);
       case GET_ANALYSIS_ANSWERS:
         return getAnalysisAnswers(outWriter, options, parameters, false, false);
       case GET_ANALYSIS_ANSWERS_DELTA:
+      case GET_ANALYSIS_ANSWERS_REFERENCE:
         return getAnalysisAnswers(outWriter, options, parameters, true, false);
       case GET_ANALYSIS_ANSWERS_DIFFERENTIAL:
         return getAnalysisAnswers(outWriter, options, parameters, false, true);
       case GET_ANSWER:
         return getAnswer(outWriter, options, parameters, false, false);
       case GET_ANSWER_DELTA:
+      case GET_ANSWER_REFERENCE:
         return getAnswer(outWriter, options, parameters, true, false);
       case GET_ANSWER_DIFFERENTIAL:
         return getAnswer(outWriter, options, parameters, false, true);
@@ -2633,6 +2638,7 @@ public class Client extends AbstractClient implements IClient {
       case GET_OBJECT:
         return getObject(outWriter, options, parameters, false);
       case GET_OBJECT_DELTA:
+      case GET_OBJECT_REFERENCE:
         return getObject(outWriter, options, parameters, false);
       case GET_QUESTION:
         return getQuestion(options, parameters);
@@ -2647,6 +2653,7 @@ public class Client extends AbstractClient implements IClient {
       case INIT_CONTAINER:
         return initNetwork(options, parameters);
       case INIT_DELTA_SNAPSHOT:
+      case INIT_REFERENCE_SNAPSHOT:
         return initSnapshot(outWriter, options, parameters, true);
       case INIT_DELTA_TESTRIG:
         return initSnapshot(outWriter, options, parameters, true);
@@ -2687,6 +2694,7 @@ public class Client extends AbstractClient implements IClient {
       case RUN_ANALYSIS:
         return runAnalysis(outWriter, options, parameters, false, false);
       case RUN_ANALYSIS_DELTA:
+      case RUN_ANALYSIS_REFERENCE:
         return runAnalysis(outWriter, options, parameters, true, false);
       case RUN_ANALYSIS_DIFFERENTIAL:
         return runAnalysis(outWriter, options, parameters, false, true);
@@ -2703,8 +2711,8 @@ public class Client extends AbstractClient implements IClient {
       case SET_FIXED_WORKITEM_ID:
         return setFixedWorkItemId(options, parameters);
       case SET_DELTA_SNAPSHOT:
-        return setDeltaSnapshot(options, parameters);
       case SET_DELTA_TESTRIG:
+      case SET_REFERENCE_SNAPSHOT:
         return setDeltaSnapshot(options, parameters);
       case SET_LOGLEVEL:
         return setLogLevel(options, parameters);
@@ -2727,8 +2735,8 @@ public class Client extends AbstractClient implements IClient {
       case SHOW_COORDINATOR_HOST:
         return showCoordinatorHost(options, parameters);
       case SHOW_DELTA_SNAPSHOT:
-        return showDeltaSnapshot(options, parameters);
       case SHOW_DELTA_TESTRIG:
+      case SHOW_REFERENCE_SNAPSHOT:
         return showDeltaSnapshot(options, parameters);
       case SHOW_LOGLEVEL:
         return showLogLevel(options, parameters);
@@ -3005,7 +3013,7 @@ public class Client extends AbstractClient implements IClient {
     }
     _currDeltaTestrig = parameters.get(0);
     _currDeltaEnv = (parameters.size() > 1) ? parameters.get(1) : DEFAULT_ENV_NAME;
-    _logger.outputf("Delta snapshot->env is now %s->%s\n", _currDeltaTestrig, _currDeltaEnv);
+    _logger.outputf("Reference snapshot->env is now %s->%s\n", _currDeltaTestrig, _currDeltaEnv);
     return true;
   }
 
@@ -3017,7 +3025,7 @@ public class Client extends AbstractClient implements IClient {
       return false;
     }
     _currEnv = parameters.get(0);
-    _logger.outputf("Base snapshot->env is now %s->%s\n", _currTestrig, _currEnv);
+    _logger.outputf("Current snapshot->env is now %s->%s\n", _currTestrig, _currEnv);
     return true;
   }
 
@@ -3067,7 +3075,7 @@ public class Client extends AbstractClient implements IClient {
 
     _currTestrig = parameters.get(0);
     _currEnv = (parameters.size() > 1) ? parameters.get(1) : DEFAULT_ENV_NAME;
-    _logger.outputf("Base snapshot->env is now %s->%s\n", _currTestrig, _currEnv);
+    _logger.outputf("Current snapshot->env is now %s->%s\n", _currTestrig, _currEnv);
     return true;
   }
 
@@ -3121,7 +3129,8 @@ public class Client extends AbstractClient implements IClient {
     if (!isSetDeltaEnvironment()) {
       return false;
     }
-    _logger.outputf("Delta snapshot->environment is %s->%s\n", _currDeltaTestrig, _currDeltaEnv);
+    _logger.outputf(
+        "Reference snapshot->environment is %s->%s\n", _currDeltaTestrig, _currDeltaEnv);
     return true;
   }
 
@@ -3140,7 +3149,7 @@ public class Client extends AbstractClient implements IClient {
     if (!isSetTestrig()) {
       return false;
     }
-    _logger.outputf("Base snapshot->environment is %s->%s\n", _currTestrig, _currEnv);
+    _logger.outputf("Current snapshot->environment is %s->%s\n", _currTestrig, _currEnv);
     return true;
   }
 
@@ -3345,11 +3354,11 @@ public class Client extends AbstractClient implements IClient {
     if (doDelta) {
       _currDeltaTestrig = null;
       _currDeltaEnv = null;
-      _logger.info("Delta testrig and environment are now unset\n");
+      _logger.info("Reference testrig and environment are now unset\n");
     } else {
       _currTestrig = null;
       _currEnv = null;
-      _logger.info("Base testrig and environment are now unset\n");
+      _logger.info("Current testrig and environment are now unset\n");
     }
   }
 
