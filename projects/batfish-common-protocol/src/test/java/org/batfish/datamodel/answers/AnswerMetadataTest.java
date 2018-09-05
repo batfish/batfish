@@ -1,6 +1,7 @@
 package org.batfish.datamodel.answers;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.testing.EqualsTester;
 import org.junit.Test;
 
@@ -10,19 +11,23 @@ public final class AnswerMetadataTest {
   public void testEquals() {
     AnswerMetadata group1Elem1 =
         new AnswerMetadata(
-            new Metrics(ImmutableMap.of("A", ImmutableMap.of(Aggregation.MAX, 1)), 2),
+            new Metrics(
+                ImmutableMap.of("A", ImmutableMap.of(Aggregation.MAX, 1)), ImmutableSet.of(), 2),
             AnswerStatus.SUCCESS);
     AnswerMetadata group1Elem2 =
         new AnswerMetadata(
-            new Metrics(ImmutableMap.of("A", ImmutableMap.of(Aggregation.MAX, 1)), 2),
+            new Metrics(
+                ImmutableMap.of("A", ImmutableMap.of(Aggregation.MAX, 1)), ImmutableSet.of(), 2),
             AnswerStatus.SUCCESS);
     AnswerMetadata group2Elem1 =
         new AnswerMetadata(
-            new Metrics(ImmutableMap.of("B", ImmutableMap.of(Aggregation.MAX, 1)), 2),
+            new Metrics(
+                ImmutableMap.of("B", ImmutableMap.of(Aggregation.MAX, 1)), ImmutableSet.of(), 2),
             AnswerStatus.SUCCESS);
     AnswerMetadata group3Elem1 =
         new AnswerMetadata(
-            new Metrics(ImmutableMap.of("A", ImmutableMap.of(Aggregation.MAX, 1)), 2),
+            new Metrics(
+                ImmutableMap.of("A", ImmutableMap.of(Aggregation.MAX, 1)), ImmutableSet.of(), 2),
             AnswerStatus.FAILURE);
 
     new EqualsTester()
