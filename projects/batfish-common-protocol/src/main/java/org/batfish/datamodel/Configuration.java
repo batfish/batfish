@@ -524,6 +524,12 @@ public final class Configuration implements Serializable {
     return _interfaces;
   }
 
+  @JsonIgnore
+  @Deprecated // to enable users to migrate to new API.
+  public NavigableMap<String, Interface> getInterfaces() {
+    return getAllInterfaces();
+  }
+
   @JsonPropertyDescription("Dictionary of all IPV6 access-lists for this node.")
   @JsonProperty(PROP_IP6_ACCESS_LISTS)
   public NavigableMap<String, Ip6AccessList> getIp6AccessLists() {
