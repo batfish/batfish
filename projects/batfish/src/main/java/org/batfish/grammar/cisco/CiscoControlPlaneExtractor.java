@@ -6653,6 +6653,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitRe_network(Re_networkContext ctx) {
+    if (_currentEigrpProcess == null) {
+      _w.addWarning(ctx, getFullText(ctx), _parser, "No eigrp process available");
+      return;
+    }
     // In process context
     Ip address = toIp(ctx.address);
     Ip mask = (ctx.mask != null) ? toIp(ctx.mask) : address.getClassMask().inverted();
