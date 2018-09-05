@@ -2358,7 +2358,8 @@
           "filename" : "configs/juniper_isis",
           "lines" : [
             4,
-            5
+            5,
+            6
           ]
         }
       },

@@ -45941,6 +45941,28 @@
             "                  name = VARIABLE:'ge-0/0/0'  <== mode:M_Interface",
             "                  PERIOD:'.'  <== mode:DEFAULT_MODE",
             "                  unit = DEC:'0'  <== mode:DEFAULT_MODE)",
+            "                (isi_level",
+            "                  LEVEL:'level'  <== mode:DEFAULT_MODE",
+            "                  DEC:'2'  <== mode:DEFAULT_MODE",
+            "                  (isil_priority",
+            "                    PRIORITY:'priority'  <== mode:DEFAULT_MODE",
+            "                    DEC:'65'  <== mode:DEFAULT_MODE))))))))",
+            "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "  (set_line",
+            "    SET:'set'  <== mode:DEFAULT_MODE",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_protocols",
+            "            PROTOCOLS:'protocols'  <== mode:DEFAULT_MODE",
+            "            (p_isis",
+            "              ISIS:'isis'  <== mode:DEFAULT_MODE",
+            "              (is_interface",
+            "                INTERFACE:'interface'  <== mode:DEFAULT_MODE",
+            "                id = (interface_id",
+            "                  name = VARIABLE:'ge-0/0/0'  <== mode:M_Interface",
+            "                  PERIOD:'.'  <== mode:DEFAULT_MODE",
+            "                  unit = DEC:'0'  <== mode:DEFAULT_MODE)",
             "                (isi_null",
             "                  LDP_SYNCHRONIZATION:'ldp-synchronization'  <== mode:DEFAULT_MODE",
             "                  (null_filler))))))))",
@@ -56874,6 +56896,16 @@
             }
           ]
         },
+        "juniper_isis" : {
+          "Parse warnings" : [
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 4,
+              "Parser_Context" : "[isil_priority isi_level is_interface p_isis s_protocols s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "priority 65"
+            }
+          ]
+        },
         "juniper_policy_statement" : {
           "Red flags" : [
             {
@@ -62285,7 +62317,8 @@
             "ge-0/0/0.0" : {
               "isis interface" : [
                 4,
-                5
+                5,
+                6
               ]
             }
           }
