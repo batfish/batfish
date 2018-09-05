@@ -866,7 +866,10 @@ public class WorkMgrServiceTest {
     int value = 5;
     AnswerMetadata testAnswerMetadata =
         new AnswerMetadata(
-            new Metrics(ImmutableMap.of(columnName, ImmutableMap.of(Aggregation.MAX, value)), 1),
+            new Metrics(
+                ImmutableMap.of(columnName, ImmutableMap.of(Aggregation.MAX, value)),
+                ImmutableSet.of(),
+                1),
             AnswerStatus.SUCCESS);
     String answerMetadata = BatfishObjectMapper.writePrettyString(testAnswerMetadata);
 
@@ -929,7 +932,9 @@ public class WorkMgrServiceTest {
         equalTo(
             new AnswerMetadata(
                 new Metrics(
-                    ImmutableMap.of(columnName, ImmutableMap.of(Aggregation.MAX, value)), 1),
+                    ImmutableMap.of(columnName, ImmutableMap.of(Aggregation.MAX, value)),
+                    ImmutableSet.of(),
+                    1),
                 AnswerStatus.SUCCESS)));
   }
 
@@ -943,7 +948,10 @@ public class WorkMgrServiceTest {
     int value = 5;
     AnswerMetadata testAnswerMetadata =
         new AnswerMetadata(
-            new Metrics(ImmutableMap.of(columnName, ImmutableMap.of(Aggregation.MAX, value)), 1),
+            new Metrics(
+                ImmutableMap.of(columnName, ImmutableMap.of(Aggregation.MAX, value)),
+                ImmutableSet.of(),
+                1),
             AnswerStatus.SUCCESS);
 
     Main.getWorkMgr().getStorage().storeQuestion(questionContent, _networkName, questionName, null);
@@ -975,7 +983,9 @@ public class WorkMgrServiceTest {
         equalTo(
             new AnswerMetadata(
                 new Metrics(
-                    ImmutableMap.of(columnName, ImmutableMap.of(Aggregation.MAX, value)), 1),
+                    ImmutableMap.of(columnName, ImmutableMap.of(Aggregation.MAX, value)),
+                    ImmutableSet.of(),
+                    1),
                 AnswerStatus.SUCCESS)));
   }
 }
