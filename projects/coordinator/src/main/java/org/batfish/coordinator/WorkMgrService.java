@@ -1079,7 +1079,7 @@ public class WorkMgrService {
    * @param clientVersion The version of the client
    * @param networkName The name of the network in which the answer resides
    * @param snapshotName The name of the snapshot on which the question was run
-   * @param deltaSnapshot The name of the delta snapshot on which the analysis was run
+   * @param referenceSnapshotName The name of the reference snapshot on which the analysis was run
    * @param questionName The name of the question
    * @param analysisName (optional) The name of the analysis containing the question
    * @param answerRowsOptionsStr Options specifying how to process the rows of the answer
@@ -1093,14 +1093,14 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
       @FormDataParam(CoordConsts.SVC_KEY_NETWORK_NAME) String networkName,
       @FormDataParam(CoordConsts.SVC_KEY_SNAPSHOT_NAME) String snapshotName,
-      @FormDataParam(CoordConsts.SVC_KEY_DELTA_SNAPSHOT_NAME) String deltaSnapshot,
+      @FormDataParam(CoordConsts.SVC_KEY_REFERENCE_SNAPSHOT_NAME) String referenceSnapshotName,
       @FormDataParam(CoordConsts.SVC_KEY_ANALYSIS_NAME) String analysisName,
       @FormDataParam(CoordConsts.SVC_KEY_QUESTION_NAME) String questionName,
       @FormDataParam(CoordConsts.SVC_KEY_ANALYSIS_ANSWERS_OPTIONS) String answerRowsOptionsStr,
       @FormDataParam(CoordConsts.SVC_KEY_WORKITEM) String workItemStr /* optional */) {
     String networkNameParam = networkName;
     String snapshotNameParam = snapshotName;
-    String referenceSnapshotParam = deltaSnapshot;
+    String referenceSnapshotParam = referenceSnapshotName;
     try {
       _logger.infof(
           "WMS:getAnswerRows %s %s %s %s %s\n",
@@ -1139,7 +1139,8 @@ public class WorkMgrService {
 
       String rawAnswer =
           Main.getWorkMgr()
-              .getAnswer(networkName, snapshotName, questionName, deltaSnapshot, analysisName);
+              .getAnswer(
+                  networkName, snapshotName, questionName, referenceSnapshotParam, analysisName);
 
       Answer answer = Main.getWorkMgr().processAnswerRows(rawAnswer, answersRowsOptions);
 
@@ -1153,7 +1154,7 @@ public class WorkMgrService {
       String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.errorf(
           "WMS:getAnswerRows exception for apikey:%s in network:%s, snapshot:%s, "
-              + "deltasnapshot:%s; exception:%s",
+              + "referencesnapshot:%s; exception:%s",
           apiKey, networkNameParam, snapshotNameParam, referenceSnapshotParam, stackTrace);
       return failureResponse(e.getMessage());
     }
