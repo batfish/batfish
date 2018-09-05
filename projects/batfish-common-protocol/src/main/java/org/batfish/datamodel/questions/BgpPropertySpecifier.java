@@ -3,6 +3,7 @@ package org.batfish.datamodel.questions;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -24,28 +25,29 @@ import org.batfish.datamodel.answers.Schema;
  */
 public class BgpPropertySpecifier extends PropertySpecifier {
 
-  public static final String ACTIVE_NEIGHBORS = "Active_Neighbors";
-  public static final String CLUSTER_IDS = "Cluster_IDs";
-  public static final String GENERATED_ROUTES = "Generated_Routes";
-  public static final String MULTIPATH_EQUIVALENT_AS_PATH_MATCH_MODE =
-      "Multipath_Equivalent_AS_Path_Match_Mode";
+  // public static final String CLUSTER_IDS = "Cluster_IDs";
+  public static final String MULTIPATH_EQUIVALENT_AS_PATH_MATCH_MODE = "Multipath_Match_Mode";
   public static final String MULTIPATH_EBGP = "Multipath_EBGP";
   public static final String MULTIPATH_IBGP = "Multipath_IBGP";
-  public static final String ORIGINATION_SPACE = "Origination_Space";
-  public static final String PASSIVE_NEIGHBORS = "Passive_Neighbors";
+  public static final String NEIGHBORS = "Passive_Neighbors";
   public static final String TIE_BREAKER = "Tie_Breaker";
 
   public static Map<String, PropertyDescriptor<BgpProcess>> JAVA_MAP =
       new ImmutableMap.Builder<String, PropertyDescriptor<BgpProcess>>()
-          .put(
-              ACTIVE_NEIGHBORS,
-              new PropertyDescriptor<>(BgpProcess::getActiveNeighbors, Schema.set(Schema.STRING)))
+          /*
+          Suppressing CLUSTER_IDs until we can figure out how to get these for route reflectors only
+
           .put(
               CLUSTER_IDS,
-              new PropertyDescriptor<>(BgpProcess::getClusterIds, Schema.set(Schema.STRING)))
-          .put(
-              GENERATED_ROUTES,
-              new PropertyDescriptor<>(BgpProcess::getGeneratedRoutes, Schema.set(Schema.STRING)))
+              new PropertyDescriptor<>(
+                  (process) ->
+                      process
+                          .getClusterIds()
+                          .stream()
+                          .map(Ip::new)
+                          .collect(ImmutableSet.toImmutableSet()),
+                  Schema.set(Schema.STRING)))
+          */
           .put(
               MULTIPATH_EQUIVALENT_AS_PATH_MATCH_MODE,
               new PropertyDescriptor<>(
@@ -57,11 +59,13 @@ public class BgpPropertySpecifier extends PropertySpecifier {
               MULTIPATH_IBGP,
               new PropertyDescriptor<>(BgpProcess::getMultipathIbgp, Schema.BOOLEAN))
           .put(
-              ORIGINATION_SPACE,
-              new PropertyDescriptor<>(BgpProcess::getOriginationSpace, Schema.STRING))
-          .put(
-              PASSIVE_NEIGHBORS,
-              new PropertyDescriptor<>(BgpProcess::getPassiveNeighbors, Schema.set(Schema.STRING)))
+              NEIGHBORS,
+              new PropertyDescriptor<>(
+                  (process) ->
+                      Iterables.concat(
+                          process.getActiveNeighbors().keySet(),
+                          process.getPassiveNeighbors().keySet()),
+                  Schema.set(Schema.STRING)))
           // skip router-id; included as part of process identity
           .put(TIE_BREAKER, new PropertyDescriptor<>(BgpProcess::getTieBreaker, Schema.STRING))
           .build();

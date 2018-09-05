@@ -1,4 +1,4 @@
-package org.batfish.main;
+package org.batfish.question.specifiers;
 
 import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
 import static org.batfish.question.specifiers.SpecifiersAnswerer.COL_IP_SPACE;
@@ -25,8 +25,8 @@ import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.matchers.TableAnswerElementMatchers;
 import org.batfish.datamodel.table.TableAnswerElement;
-import org.batfish.question.specifiers.SpecifiersAnswerer;
-import org.batfish.question.specifiers.SpecifiersQuestion;
+import org.batfish.main.Batfish;
+import org.batfish.main.BatfishTestUtils;
 import org.batfish.question.specifiers.SpecifiersQuestion.QueryType;
 import org.batfish.specifier.InterfaceLocation;
 import org.hamcrest.Matchers;
@@ -35,7 +35,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-public class SpecifiersQuestionTest {
+/** End-to-end tests of {@link SpecifiersQuestion}. */
+public class SpecifiersTest {
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
   private Batfish _batfish;

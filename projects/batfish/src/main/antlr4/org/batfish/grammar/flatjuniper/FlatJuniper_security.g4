@@ -1029,9 +1029,11 @@ sepctxp_then
 :
    THEN
    (
-      sepctxpt_deny
+      sepctxpt_count
+      | sepctxpt_deny
       | sepctxpt_log
       | sepctxpt_permit
+      | sepctxpt_trace
    )
 ;
 
@@ -1069,6 +1071,11 @@ sepctxpm_source_identity
    )
 ;
 
+sepctxpt_count
+:
+   COUNT
+;
+
 sepctxpt_deny
 :
    DENY
@@ -1087,6 +1094,11 @@ sepctxpt_permit
       apply
       | sepctxptp_tunnel
    )
+;
+
+sepctxpt_trace
+:
+   TRACE
 ;
 
 sepctxptp_tunnel

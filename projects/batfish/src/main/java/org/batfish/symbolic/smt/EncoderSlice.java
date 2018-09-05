@@ -10,6 +10,7 @@ import com.microsoft.z3.Expr;
 import com.microsoft.z3.Solver;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -30,6 +31,7 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.questions.smt.BgpDecisionVariable;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.statement.If;
@@ -1386,22 +1388,39 @@ class EncoderSlice {
       tiebreak = mkTrue();
     }
 
+    /* This creates two maps bgpRankingBetter and bgpRankingEq that associate each BGP path ranking
+    criterion with an SMT variable that denotes that the best route is better (resp. equal) than
+    another route (vars). To construct the final BoolExpr as described above,
+    we iterate the list (bgpRanks) of BgpDecisionVariable elemnts and only use the SMT variables
+    that are relevant as dictated by the list. */
+    EnumMap<BgpDecisionVariable, BoolExpr> bgpRankingBetter =
+        new EnumMap<>(BgpDecisionVariable.class);
+    EnumMap<BgpDecisionVariable, BoolExpr> bgpRankingEq = new EnumMap<>(BgpDecisionVariable.class);
+    bgpRankingBetter.put(BgpDecisionVariable.LOCALPREF, betterLp);
+    bgpRankingEq.put(BgpDecisionVariable.LOCALPREF, equalLp);
+    bgpRankingBetter.put(BgpDecisionVariable.PATHLEN, betterMet);
+    bgpRankingEq.put(BgpDecisionVariable.PATHLEN, equalMet);
+    bgpRankingBetter.put(BgpDecisionVariable.MED, betterMed);
+    bgpRankingEq.put(BgpDecisionVariable.MED, equalMed);
+    bgpRankingBetter.put(BgpDecisionVariable.EBGP_PREF_IBGP, betterInternal);
+    bgpRankingEq.put(BgpDecisionVariable.EBGP_PREF_IBGP, equalInternal);
+    bgpRankingBetter.put(BgpDecisionVariable.IGPCOST, betterIgpMet);
+    bgpRankingEq.put(BgpDecisionVariable.IGPCOST, equalIgpMet);
+
     BoolExpr b = mkAnd(equalOspfType, tiebreak);
-    BoolExpr b1 = mkOr(betterOspfType, b);
-    BoolExpr b2 = mkAnd(equalIgpMet, b1);
-    BoolExpr b3 = mkOr(betterIgpMet, b2);
-    BoolExpr b4 = mkAnd(equalInternal, b3);
-    BoolExpr b5 = mkOr(betterInternal, b4);
-    BoolExpr b6 = mkAnd(equalMed, b5);
-    BoolExpr b7 = mkOr(betterMed, b6);
-    BoolExpr b8 = mkAnd(equalMet, b7);
-    BoolExpr b9 = mkOr(betterMet, b8);
-    BoolExpr b10 = mkAnd(equalLp, b9);
-    BoolExpr b11 = mkOr(betterLp, b10);
-    BoolExpr b12 = mkAnd(equalAd, b11);
-    BoolExpr b13 = mkOr(betterAd, b12);
-    BoolExpr b14 = mkAnd(equalLen, b13);
-    return mkOr(betterLen, b14);
+    b = mkOr(betterOspfType, b);
+
+    List<BgpDecisionVariable> bgpRanks = new ArrayList<>(_encoder.getQuestion().getBgpRanking());
+    Collections.reverse(bgpRanks);
+    for (BgpDecisionVariable bgpVar : bgpRanks) {
+      b = mkAnd(bgpRankingEq.get(bgpVar), b);
+      b = mkOr(bgpRankingBetter.get(bgpVar), b);
+    }
+
+    b = mkAnd(equalAd, b);
+    b = mkOr(betterAd, b);
+    b = mkAnd(equalLen, b);
+    return mkOr(betterLen, b);
   }
 
   /*

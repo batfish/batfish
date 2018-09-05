@@ -1,4 +1,4 @@
-package org.batfish.allinone;
+package org.batfish.question.specifiers;
 
 import static org.batfish.datamodel.matchers.FlowHistoryInfoMatchers.hasFlow;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasDstIp;
@@ -26,8 +26,6 @@ import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
-import org.batfish.question.specifiers.SpecifiersReachabilityAnswerer;
-import org.batfish.question.specifiers.SpecifiersReachabilityQuestion;
 import org.batfish.specifier.AllInterfacesLocationSpecifierFactory;
 import org.batfish.specifier.ConstantUniverseIpSpaceSpecifierFactory;
 import org.batfish.specifier.NameRegexInterfaceLocationSpecifierFactory;
@@ -36,8 +34,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-/** End-to-end SpecifiersReachabilityQuestion tests. */
-public class SpecifiersReachabilityQuestionTest {
+/** End-to-end tests of {@link SpecifiersReachabilityQuestion}. */
+public class SpecifiersReachabilityTest {
   private static final String LOOPBACK = "Loopback0";
   private static final String NODE1 = "node1";
   private static final String NODE2 = "node2";

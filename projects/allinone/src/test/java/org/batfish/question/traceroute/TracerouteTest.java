@@ -8,12 +8,10 @@ import static org.batfish.datamodel.matchers.FlowMatchers.hasSrcIp;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasTag;
 import static org.batfish.datamodel.matchers.FlowTraceMatchers.hasDisposition;
 import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
-import static org.batfish.question.traceroute.TracerouteAnswerer.COL_FLOW;
 import static org.batfish.question.traceroute.TracerouteAnswerer.COL_TRACES;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anyOf;
-import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.everyItem;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
@@ -35,10 +33,7 @@ import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.Schema;
-import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.TableAnswerElement;
-import org.batfish.datamodel.table.TableDiff;
-import org.batfish.datamodel.table.TableMetadata;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
@@ -50,7 +45,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-public class TracerouteAnswererTest {
+/** End-to-end tests of {@link TracerouteQuestion}. */
+public class TracerouteTest {
   private static final String TAG = "tag";
 
   private static final String FAST_ETHERNET = "FastEthernet0/0";
@@ -80,54 +76,6 @@ public class TracerouteAnswererTest {
             _folder);
 
     _batfish.computeDataPlane(false);
-  }
-
-  @Test
-  public void testCreateMetadata() {
-    TableMetadata tableMetadata = TracerouteAnswerer.createMetadata(false);
-    List<String> columnNames =
-        tableMetadata
-            .getColumnMetadata()
-            .stream()
-            .map(ColumnMetadata::getName)
-            .collect(ImmutableList.toImmutableList());
-    List<Schema> columnSchemas =
-        tableMetadata
-            .getColumnMetadata()
-            .stream()
-            .map(ColumnMetadata::getSchema)
-            .collect(ImmutableList.toImmutableList());
-
-    assertThat(columnNames, equalTo(ImmutableList.of(COL_FLOW, COL_TRACES)));
-    assertThat(
-        columnSchemas, equalTo(ImmutableList.of(Schema.FLOW, Schema.set(Schema.FLOW_TRACE))));
-
-    TableMetadata diffTableMetadata = TracerouteAnswerer.createMetadata(true);
-    List<String> diffColumnNames =
-        diffTableMetadata
-            .getColumnMetadata()
-            .stream()
-            .map(ColumnMetadata::getName)
-            .collect(ImmutableList.toImmutableList());
-    List<Schema> diffColumnSchemas =
-        diffTableMetadata
-            .getColumnMetadata()
-            .stream()
-            .map(ColumnMetadata::getSchema)
-            .collect(ImmutableList.toImmutableList());
-
-    assertThat(
-        diffColumnNames,
-        equalTo(
-            ImmutableList.of(
-                COL_FLOW,
-                TableDiff.baseColumnName(COL_TRACES),
-                TableDiff.deltaColumnName(COL_TRACES))));
-    assertThat(
-        diffColumnSchemas,
-        equalTo(
-            ImmutableList.of(
-                Schema.FLOW, Schema.set(Schema.FLOW_TRACE), Schema.set(Schema.FLOW_TRACE))));
   }
 
   @Test

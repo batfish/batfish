@@ -1,4 +1,4 @@
-package org.batfish.allinone;
+package org.batfish.question.aclreachability;
 
 import static org.batfish.datamodel.IpAccessListLine.acceptingHeaderSpace;
 import static org.batfish.datamodel.IpAccessListLine.rejectingHeaderSpace;
@@ -39,7 +39,6 @@ import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.answers.AclReachabilityRows;
 import org.batfish.datamodel.answers.AclSpecs;
-import org.batfish.question.aclreachability.AclReachabilityAnswerer;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;

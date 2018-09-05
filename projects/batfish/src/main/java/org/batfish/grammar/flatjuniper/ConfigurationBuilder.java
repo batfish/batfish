@@ -252,6 +252,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isil_hello_authenticati
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isil_hello_intervalContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isil_hold_timeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isil_metricContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isil_priorityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isil_te_metricContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isl_disableContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isl_wide_metrics_onlyContext;
@@ -1348,12 +1349,55 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     }
   }
 
+  /**
+   * Maps a user-friendly name for an ICMP Code to an integer, or returns {@code null} and warns for
+   * unknown strings. See
+   * https://www.juniper.net/documentation/en_US/junos/topics/usage-guidelines/services-configuring-application-protocol-properties.html#id-10141121
+   */
   @Nullable
   private static Integer toIcmpCode(Icmp_codeContext ctx, Warnings w) {
-    if (ctx.FRAGMENTATION_NEEDED() != null) {
-      return IcmpCode.PACKET_TOO_BIG;
+    if (ctx.COMMUNICATION_PROHIBITED_BY_FILTERING() != null) {
+      return IcmpCode.COMMUNICATION_ADMINISTRATIVELY_PROHIBITED;
+    } else if (ctx.DESTINATION_HOST_PROHIBITED() != null) {
+      return IcmpCode.DESTINATION_HOST_PROHIBITED;
+    } else if (ctx.DESTINATION_HOST_UNKNOWN() != null) {
+      return IcmpCode.DESTINATION_HOST_UNKNOWN;
+    } else if (ctx.FRAGMENTATION_NEEDED() != null) {
+      return IcmpCode.FRAGMENTATION_NEEDED;
+    } else if (ctx.HOST_PRECEDENCE_VIOLATION() != null) {
+      return IcmpCode.HOST_PRECEDENCE_VIOLATION;
     } else if (ctx.HOST_UNREACHABLE() != null) {
-      return IcmpCode.DESTINATION_HOST_UNREACHABLE;
+      return IcmpCode.HOST_UNREACHABLE;
+    } else if (ctx.HOST_UNREACHABLE_FOR_TOS() != null) {
+      return IcmpCode.HOST_UNREACHABLE_FOR_TOS;
+    } else if (ctx.IP_HEADER_BAD() != null) {
+      return IcmpCode.INVALID_IP_HEADER;
+    } else if (ctx.NETWORK_UNREACHABLE() != null) {
+      return IcmpCode.NETWORK_UNREACHABLE;
+    } else if (ctx.NETWORK_UNREACHABLE_FOR_TOS() != null) {
+      return IcmpCode.NETWORK_UNREACHABLE_FOR_TOS;
+    } else if (ctx.PORT_UNREACHABLE() != null) {
+      return IcmpCode.PORT_UNREACHABLE;
+    } else if (ctx.PRECEDENCE_CUTOFF_IN_EFFECT() != null) {
+      return IcmpCode.PRECEDENCE_CUTOFF_IN_EFFECT;
+    } else if (ctx.PROTOCOL_UNREACHABLE() != null) {
+      return IcmpCode.PROTOCOL_UNREACHABLE;
+    } else if (ctx.REDIRECT_FOR_HOST() != null) {
+      return IcmpCode.HOST_ERROR;
+    } else if (ctx.REDIRECT_FOR_NETWORK() != null) {
+      return IcmpCode.NETWORK_ERROR;
+    } else if (ctx.REDIRECT_FOR_TOS_AND_HOST() != null) {
+      return IcmpCode.TOS_AND_HOST_ERROR;
+    } else if (ctx.REDIRECT_FOR_TOS_AND_NET() != null) {
+      return IcmpCode.TOS_AND_NETWORK_ERROR;
+    } else if (ctx.REQUIRED_OPTION_MISSING() != null) {
+      return IcmpCode.REQUIRED_OPTION_MISSING;
+    } else if (ctx.SOURCE_HOST_ISOLATED() != null) {
+      return IcmpCode.SOURCE_HOST_ISOLATED;
+    } else if (ctx.SOURCE_ROUTE_FAILED() != null) {
+      return IcmpCode.SOURCE_ROUTE_FAILED;
+    } else if (ctx.TTL_EQ_ZERO_DURING_REASSEMBLY() != null) {
+      return IcmpCode.TTL_EQ_ZERO_DURING_REASSEMBLY;
     } else if (ctx.TTL_EQ_ZERO_DURING_TRANSIT() != null) {
       return IcmpCode.TTL_EQ_ZERO_DURING_TRANSIT;
     } else {
@@ -1362,21 +1406,44 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     }
   }
 
-  private static int toIcmpType(Icmp_typeContext ctx) {
-    if (ctx.ECHO_REPLY() != null) {
+  /**
+   * Maps a user-friendly name for an ICMP Type to an integer, or returns {@code null} and warns for
+   * unknown strings. See
+   * https://www.juniper.net/documentation/en_US/junos/topics/usage-guidelines/services-configuring-application-protocol-properties.html#id-10141121
+   */
+  @Nullable
+  private static Integer toIcmpType(Icmp_typeContext ctx, Warnings w) {
+    if (ctx.DESTINATION_UNREACHABLE() != null) {
+      return IcmpType.DESTINATION_UNREACHABLE;
+    } else if (ctx.ECHO_REPLY() != null) {
       return IcmpType.ECHO_REPLY;
     } else if (ctx.ECHO_REQUEST() != null) {
       return IcmpType.ECHO_REQUEST;
+    } else if (ctx.INFO_REPLY() != null) {
+      return IcmpType.INFO_REPLY;
+    } else if (ctx.INFO_REQUEST() != null) {
+      return IcmpType.INFO_REQUEST;
     } else if (ctx.PARAMETER_PROBLEM() != null) {
       return IcmpType.PARAMETER_PROBLEM;
+    } else if (ctx.REDIRECT() != null) {
+      return IcmpType.REDIRECT_MESSAGE;
+    } else if (ctx.ROUTER_ADVERTISEMENT() != null) {
+      return IcmpType.ROUTER_ADVERTISEMENT;
+    } else if (ctx.ROUTER_SOLICIT() != null) {
+      return IcmpType.ROUTER_SOLICITATION;
     } else if (ctx.SOURCE_QUENCH() != null) {
       return IcmpType.SOURCE_QUENCH;
     } else if (ctx.TIME_EXCEEDED() != null) {
       return IcmpType.TIME_EXCEEDED;
+    } else if (ctx.TIMESTAMP() != null) {
+      return IcmpType.TIMESTAMP_REQUEST;
+    } else if (ctx.TIMESTAMP_REPLY() != null) {
+      return IcmpType.TIMESTAMP_REPLY;
     } else if (ctx.UNREACHABLE() != null) {
       return IcmpType.DESTINATION_UNREACHABLE;
     } else {
-      throw new BatfishException("Missing mapping for icmp-type: '" + ctx.getText() + "'");
+      w.redFlag(String.format("Missing mapping for icmp-type: '%s'", ctx.getText()));
+      return null;
     }
   }
 
@@ -3195,17 +3262,18 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       // TODO: support icmpv6
       return;
     }
-    SubRange icmpTypeRange;
     if (ctx.subrange() != null) {
-      icmpTypeRange = toSubRange(ctx.subrange());
+      SubRange icmpTypeRange = toSubRange(ctx.subrange());
+      _currentFwTerm.getFroms().add(new FwFromIcmpType(icmpTypeRange));
     } else if (ctx.icmp_type() != null) {
-      int icmpType = toIcmpType(ctx.icmp_type());
-      icmpTypeRange = new SubRange(icmpType, icmpType);
+      Integer icmpType = toIcmpType(ctx.icmp_type(), _w);
+      if (icmpType != null) {
+        SubRange icmpTypeRange = new SubRange(icmpType, icmpType);
+        _currentFwTerm.getFroms().add(new FwFromIcmpType(icmpTypeRange));
+      }
     } else {
-      throw new BatfishException("Invalid icmp-type");
+      todo(ctx);
     }
-    FwFrom from = new FwFromIcmpType(icmpTypeRange);
-    _currentFwTerm.getFroms().add(from);
   }
 
   @Override
@@ -3682,6 +3750,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void exitIsil_metric(Isil_metricContext ctx) {
     int metric = toInt(ctx.DEC());
     _currentIsisInterfaceLevelSettings.setMetric(metric);
+  }
+
+  @Override
+  public void exitIsil_priority(Isil_priorityContext ctx) {
+    todo(ctx);
   }
 
   @Override
