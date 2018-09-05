@@ -53,7 +53,7 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import org.batfish.common.AnalysisAnswerOptions;
+import org.batfish.common.AnswerRowsOptions;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
@@ -1817,18 +1817,18 @@ public class WorkMgr extends AbstractCoordinator {
    * analysisAnswersOptions}
    */
   public Map<String, Answer> processAnalysisAnswers(
-      Map<String, String> rawAnswers, Map<String, AnalysisAnswerOptions> analysisAnswersOptions) {
+      Map<String, String> rawAnswers, Map<String, AnswerRowsOptions> answersRowsOptions) {
     return CommonUtil.toImmutableMap(
         rawAnswers,
         Entry::getKey,
         rawAnswersEntry ->
-            processAnalysisAnswer(
-                rawAnswersEntry.getValue(), analysisAnswersOptions.get(rawAnswersEntry.getKey())));
+            processAnswerRows(
+                rawAnswersEntry.getValue(), answersRowsOptions.get(rawAnswersEntry.getKey())));
   }
 
   @VisibleForTesting
   @Nonnull
-  Answer processAnalysisAnswer(String rawAnswerStr, AnalysisAnswerOptions options) {
+  Answer processAnswerRows(String rawAnswerStr, AnswerRowsOptions options) {
     if (rawAnswerStr == null) {
       Answer answer = Answer.failureAnswer("Not found", null);
       answer.setStatus(AnswerStatus.NOTFOUND);
@@ -1840,7 +1840,7 @@ public class WorkMgr extends AbstractCoordinator {
       TableAnswerElement rawTable = (TableAnswerElement) rawAnswer.getAnswerElements().get(0);
       Answer answer = new Answer();
       answer.setStatus(rawAnswer.getStatus());
-      answer.addAnswerElement(processAnalysisAnswerTable(rawTable, options));
+      answer.addAnswerElement(processAnswerTable(rawTable, options));
       return answer;
     } catch (Exception e) {
       _logger.errorf(
@@ -1851,8 +1851,7 @@ public class WorkMgr extends AbstractCoordinator {
 
   @VisibleForTesting
   @Nonnull
-  TableAnswerElement processAnalysisAnswerTable(
-      TableAnswerElement rawTable, AnalysisAnswerOptions options) {
+  TableAnswerElement processAnswerTable(TableAnswerElement rawTable, AnswerRowsOptions options) {
     Map<String, ColumnMetadata> rawColumnMap = rawTable.getMetadata().toColumnMap();
     List<Row> filteredRows =
         rawTable

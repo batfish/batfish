@@ -13,17 +13,17 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public final class AnalysisAnswerOptions {
+public final class AnswerRowsOptions {
 
   @JsonCreator
-  private static @Nonnull AnalysisAnswerOptions create(
+  private static @Nonnull AnswerRowsOptions create(
       @JsonProperty(BfConsts.PROP_COLUMNS) Set<String> columns,
       @JsonProperty(BfConsts.PROP_FILTERS) List<ColumnFilter> filters,
       @JsonProperty(BfConsts.PROP_MAX_ROWS) Integer maxRows,
       @JsonProperty(BfConsts.PROP_ROW_OFFSET) Integer rowOffset,
       @JsonProperty(BfConsts.PROP_SORT_ORDER) List<ColumnSortOption> sortOrder,
       @JsonProperty(BfConsts.PROP_UNIQUE_ROWS) Boolean uniqueRows) {
-    return new AnalysisAnswerOptions(
+    return new AnswerRowsOptions(
         firstNonNull(columns, ImmutableSet.of()),
         firstNonNull(filters, ImmutableList.of()),
         firstNonNull(maxRows, Integer.MAX_VALUE),
@@ -44,7 +44,7 @@ public final class AnalysisAnswerOptions {
 
   private final boolean _uniqueRows;
 
-  public AnalysisAnswerOptions(
+  public AnswerRowsOptions(
       @Nonnull Set<String> columns,
       @Nonnull List<ColumnFilter> filters,
       int maxRows,
@@ -64,10 +64,10 @@ public final class AnalysisAnswerOptions {
     if (this == obj) {
       return true;
     }
-    if (!(obj instanceof AnalysisAnswerOptions)) {
+    if (!(obj instanceof AnswerRowsOptions)) {
       return false;
     }
-    AnalysisAnswerOptions rhs = (AnalysisAnswerOptions) obj;
+    AnswerRowsOptions rhs = (AnswerRowsOptions) obj;
     return _columns.equals(rhs._columns)
         && _filters.equals(rhs._filters)
         && _maxRows == rhs._maxRows

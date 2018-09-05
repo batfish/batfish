@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.Objects;
 import javax.ws.rs.core.Response;
 import org.apache.commons.io.FileUtils;
-import org.batfish.common.AnalysisAnswerOptions;
+import org.batfish.common.AnswerRowsOptions;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.ColumnFilter;
@@ -764,10 +764,10 @@ public class WorkMgrServiceTest {
     String questionName = "question1";
     String questionContent = "questionContent";
     String columnName = "col";
-    Map<String, AnalysisAnswerOptions> analysisAnswersOptions =
+    Map<String, AnswerRowsOptions> analysisAnswersOptions =
         ImmutableMap.of(
             questionName,
-            new AnalysisAnswerOptions(
+            new AnswerRowsOptions(
                 ImmutableSet.of(columnName),
                 ImmutableList.of(new ColumnFilter(columnName, "")),
                 Integer.MAX_VALUE,
@@ -987,5 +987,95 @@ public class WorkMgrServiceTest {
                     ImmutableSet.of(),
                     1),
                 AnswerStatus.SUCCESS)));
+  }
+
+  @Test
+  public void testGetAnswerRows() throws Exception {
+    String analysisName = "analysis1";
+    String questionName = "question1";
+    String questionContent = "questionContent";
+    String columnName = "col";
+    AnswerRowsOptions answersRowsOptions =
+        new AnswerRowsOptions(
+            ImmutableSet.of(columnName),
+            ImmutableList.of(new ColumnFilter(columnName, "")),
+            Integer.MAX_VALUE,
+            0,
+            ImmutableList.of(new ColumnSortOption(columnName, false)),
+            false);
+    String analysisAnswersOptionsStr = BatfishObjectMapper.writePrettyString(answersRowsOptions);
+
+    initNetworkEnvironment();
+
+    int value = 5;
+    Answer testAnswer = new Answer();
+    testAnswer.addAnswerElement(
+        new TableAnswerElement(
+                new TableMetadata(
+                    ImmutableList.of(new ColumnMetadata(columnName, Schema.INTEGER, "foobar")),
+                    new DisplayHints().getTextDesc()))
+            .addRow(Row.of(columnName, value)));
+    testAnswer.setStatus(AnswerStatus.SUCCESS);
+    String answer = BatfishObjectMapper.writePrettyString(testAnswer);
+
+    String analysisJsonString =
+        String.format("{\"%s\":{\"question\":\"%s\"}}", questionName, questionContent);
+    File analysisFile = _networksFolder.newFile(analysisName);
+    FileUtils.writeStringToFile(analysisFile, analysisJsonString);
+
+    _service.configureAnalysis(
+        CoordConsts.DEFAULT_API_KEY,
+        Version.getVersion(),
+        null,
+        _networkName,
+        "new",
+        analysisName,
+        new FileInputStream(analysisFile),
+        "",
+        null);
+
+    Path answerDir =
+        _networksFolder
+            .getRoot()
+            .toPath()
+            .resolve(
+                Paths.get(
+                    _networkName,
+                    BfConsts.RELPATH_TESTRIGS_DIR,
+                    _snapshotName,
+                    BfConsts.RELPATH_ANALYSES_DIR,
+                    analysisName,
+                    BfConsts.RELPATH_QUESTIONS_DIR,
+                    questionName,
+                    BfConsts.RELPATH_ENVIRONMENTS_DIR,
+                    BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME));
+
+    Path answer1Path = answerDir.resolve(BfConsts.RELPATH_ANSWER_JSON);
+    answerDir.toFile().mkdirs();
+    CommonUtil.writeFile(answer1Path, answer);
+
+    JSONArray answerOutput =
+        _service.getAnswerRows(
+            CoordConsts.DEFAULT_API_KEY,
+            Version.getVersion(),
+            _networkName,
+            _snapshotName,
+            null,
+            analysisName,
+            questionName,
+            analysisAnswersOptionsStr,
+            null);
+
+    assertThat(answerOutput.get(0), equalTo(CoordConsts.SVC_KEY_SUCCESS));
+
+    JSONObject answerJsonObject = (JSONObject) answerOutput.get(1);
+    String answersJsonString = answerJsonObject.getString(CoordConsts.SVC_KEY_ANSWER);
+    Answer processedAnswer =
+        BatfishObjectMapper.mapper().readValue(answersJsonString, new TypeReference<Answer>() {});
+
+    TableAnswerElement processedTable =
+        (TableAnswerElement) processedAnswer.getAnswerElements().get(0);
+
+    assertThat(processedTable.getRowsList(), equalTo(ImmutableList.of(Row.of(columnName, value))));
   }
 }
