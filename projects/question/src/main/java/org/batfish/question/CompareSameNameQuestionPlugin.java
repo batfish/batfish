@@ -141,7 +141,7 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
       add(IkeGateway.class, Configuration::getIkeGateways);
       add(IkePolicy.class, Configuration::getIkePolicies);
       add(IkeProposal.class, Configuration::getIkeProposals);
-      add(Interface.class, Configuration::getInterfaces);
+      add(Interface.class, Configuration::getAllInterfaces);
       add(Ip6AccessList.class, Configuration::getIp6AccessLists);
       add(IpAccessList.class, Configuration::getIpAccessLists);
       add(IpsecPolicy.class, Configuration::getIpsecPolicies);

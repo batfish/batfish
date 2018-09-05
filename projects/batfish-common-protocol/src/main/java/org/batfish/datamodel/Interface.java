@@ -128,7 +128,7 @@ public final class Interface extends ComparableStructure<String> {
       iface.setOutgoingFilter(_outgoingFilter);
       iface.setOwner(_owner);
       if (_owner != null) {
-        _owner.getInterfaces().put(name, iface);
+        _owner.getAllInterfaces().put(name, iface);
       }
       iface.setProxyArp(_proxyArp);
       iface.setSourceNats(_sourceNats);

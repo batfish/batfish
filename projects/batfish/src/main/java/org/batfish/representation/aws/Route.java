@@ -219,7 +219,7 @@ public class Route implements Serializable {
             // set up remote vpc router interface
             InterfaceAddress remoteVpcIfaceAddress = peeringLink.getSecond();
             Interface remoteVpcIface = new Interface(remoteVpcIfaceName, remoteVpcCfgNode);
-            remoteVpcCfgNode.getInterfaces().put(remoteVpcIfaceName, remoteVpcIface);
+            remoteVpcCfgNode.getAllInterfaces().put(remoteVpcIfaceName, remoteVpcIface);
             remoteVpcCfgNode
                 .getDefaultVrf()
                 .getInterfaces()

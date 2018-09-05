@@ -619,7 +619,7 @@ class CiscoConversions {
       Warnings w) {
 
     List<org.batfish.datamodel.Interface> referencingInterfaces =
-        c.getInterfaces()
+        c.getAllInterfaces()
             .values()
             .stream()
             .filter(iface -> Objects.equals(iface.getCryptoMap(), cryptoMapName))
@@ -861,7 +861,7 @@ class CiscoConversions {
       Warnings w) {
 
     List<org.batfish.datamodel.Interface> referencingInterfaces =
-        c.getInterfaces()
+        c.getAllInterfaces()
             .values()
             .stream()
             .filter(iface -> Objects.equals(iface.getCryptoMap(), cryptoMapName))

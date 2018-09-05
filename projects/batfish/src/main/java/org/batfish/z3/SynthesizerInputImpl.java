@@ -371,7 +371,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
                 Function.identity(),
                 node ->
                     ImmutableList.sortedCopyOf(
-                        _configurations.get(node).getInterfaces().keySet())));
+                        _configurations.get(node).getAllInterfaces().keySet())));
   }
 
   private Map<String, Map<String, IntExpr>> computeSourceInterfaceFieldValues() {
@@ -445,7 +445,8 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
             return;
           }
           String outInterface = edge.getInt1();
-          String vrf = _configurations.get(hostname).getInterfaces().get(outInterface).getVrfName();
+          String vrf =
+              _configurations.get(hostname).getAllInterfaces().get(outInterface).getVrfName();
           String recvNode = edge.getNode2();
           String recvInterface = edge.getInt2();
           output
@@ -600,11 +601,12 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
           return enabledInterfacesEntry
               .getValue()
               .stream()
-              .filter(ifaceName -> c.getInterfaces().get(ifaceName).getIncomingFilterName() != null)
+              .filter(
+                  ifaceName -> c.getAllInterfaces().get(ifaceName).getIncomingFilterName() != null)
               .collect(
                   ImmutableMap.toImmutableMap(
                       Function.identity(),
-                      ifaceName -> c.getInterfaces().get(ifaceName).getIncomingFilterName()));
+                      ifaceName -> c.getAllInterfaces().get(ifaceName).getIncomingFilterName()));
         });
   }
 
@@ -616,7 +618,8 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
             entry -> {
               String hostname = entry.getKey();
               Set<String> enabledInterfaceNames = entry.getValue();
-              Map<String, Interface> nodeInterfaces = _configurations.get(hostname).getInterfaces();
+              Map<String, Interface> nodeInterfaces =
+                  _configurations.get(hostname).getAllInterfaces();
               return enabledInterfaceNames
                   .stream()
                   .map(nodeInterfaces::get)
@@ -651,7 +654,10 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
             Entry::getKey,
             enabledInterfacesEntry ->
                 ImmutableSet.copyOf(
-                    _configurations.get(enabledInterfacesEntry.getKey()).getInterfaces().values()));
+                    _configurations
+                        .get(enabledInterfacesEntry.getKey())
+                        .getAllInterfaces()
+                        .values()));
 
     Map<Ip, Map<String, Set<String>>> ipOwners = computeIpVrfOwners(true, enabledInterfaces);
     Map<String, Map<String, Set<Ip>>> ipsByNodeByVrf = new HashMap<>();
@@ -735,11 +741,12 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
           return enabledInterfacesEntry
               .getValue()
               .stream()
-              .filter(ifaceName -> c.getInterfaces().get(ifaceName).getOutgoingFilterName() != null)
+              .filter(
+                  ifaceName -> c.getAllInterfaces().get(ifaceName).getOutgoingFilterName() != null)
               .collect(
                   ImmutableMap.toImmutableMap(
                       Function.identity(),
-                      ifaceName -> c.getInterfaces().get(ifaceName).getOutgoingFilterName()));
+                      ifaceName -> c.getAllInterfaces().get(ifaceName).getOutgoingFilterName()));
         });
   }
 
@@ -774,7 +781,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
               ifaces,
               Function.identity(),
               ifaceName ->
-                  c.getInterfaces()
+                  c.getAllInterfaces()
                       .get(ifaceName)
                       .getSourceNats()
                       .stream()

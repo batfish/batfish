@@ -70,7 +70,7 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
     }
 
     if (prerouting != null) {
-      for (Interface i : configuration.getInterfaces().values()) {
+      for (Interface i : configuration.getAllInterfaces().values()) {
 
         String dbgName = configuration.getHostname() + ":" + i.getName();
 
@@ -103,7 +103,7 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
     }
 
     if (postrouting != null) {
-      for (Interface i : configuration.getInterfaces().values()) {
+      for (Interface i : configuration.getAllInterfaces().values()) {
 
         String dbgName = configuration.getHostname() + ":" + i.getName();
 

@@ -494,7 +494,7 @@ class AbstractionBuilder {
 
     // Update interfaces
     NavigableMap<String, Interface> abstractInterfaces = new TreeMap<>();
-    for (Entry<String, Interface> entry : conf.getInterfaces().entrySet()) {
+    for (Entry<String, Interface> entry : conf.getAllInterfaces().entrySet()) {
       String name = entry.getKey();
       Interface iface = entry.getValue();
       if (toRetain.contains(iface)) {

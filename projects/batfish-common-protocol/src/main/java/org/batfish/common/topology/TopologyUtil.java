@@ -333,7 +333,7 @@ public final class TopologyUtil {
     if (c == null) {
       return null;
     }
-    return c.getInterfaces().get(layer1Node.getInterfaceName());
+    return c.getAllInterfaces().get(layer1Node.getInterfaceName());
   }
 
   public static @Nullable Interface getInterface(
@@ -342,7 +342,7 @@ public final class TopologyUtil {
     if (c == null) {
       return null;
     }
-    return c.getInterfaces().get(layer2Node.getInterfaceName());
+    return c.getAllInterfaces().get(layer2Node.getInterfaceName());
   }
 
   private static boolean matchingSubnet(

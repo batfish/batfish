@@ -215,7 +215,7 @@ public class HostConfiguration extends VendorConfiguration {
             hostInterface -> {
               String canonicalName = hostInterface.getCanonicalName();
               Interface newIface = hostInterface.toInterface(_c, _w);
-              _c.getInterfaces().put(canonicalName, newIface);
+              _c.getAllInterfaces().put(canonicalName, newIface);
               _c.getDefaultVrf().getInterfaces().put(canonicalName, newIface);
             });
 
@@ -253,8 +253,8 @@ public class HostConfiguration extends VendorConfiguration {
         break;
       }
     }
-    if (_staticRoutes.isEmpty() && staticRoutes.isEmpty() && !_c.getInterfaces().isEmpty()) {
-      String ifaceName = _c.getInterfaces().values().iterator().next().getName();
+    if (_staticRoutes.isEmpty() && staticRoutes.isEmpty() && !_c.getAllInterfaces().isEmpty()) {
+      String ifaceName = _c.getAllInterfaces().values().iterator().next().getName();
       _c.getDefaultVrf()
           .getStaticRoutes()
           .add(

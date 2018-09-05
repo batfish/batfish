@@ -192,7 +192,7 @@ public final class IpsecVpn extends ComparableStructure<String> {
   public void resolveReferences(Configuration owner) {
     _owner = owner;
     if (_bindInterfaceName != null) {
-      _bindInterface = owner.getInterfaces().get(_bindInterfaceName);
+      _bindInterface = owner.getAllInterfaces().get(_bindInterfaceName);
     }
     if (_ikeGatewayName != null) {
       _ikeGateway = owner.getIkeGateways().get(_ikeGatewayName);

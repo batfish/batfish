@@ -324,13 +324,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
       // nodes are valid, now checking corresponding interfaces
       Configuration config1 = configurations.get(edge.getNode1());
       Configuration config2 = configurations.get(edge.getNode2());
-      if (!config1.getInterfaces().containsKey(edge.getInt1())) {
+      if (!config1.getAllInterfaces().containsKey(edge.getInt1())) {
         throw new BatfishException(
             String.format(
                 "Topology contains a non-existent interface '%s' on node '%s'",
                 edge.getInt1(), edge.getNode1()));
       }
-      if (!config2.getInterfaces().containsKey(edge.getInt2())) {
+      if (!config2.getAllInterfaces().containsKey(edge.getInt2())) {
         throw new BatfishException(
             String.format(
                 "Topology contains a non-existent interface '%s' on node '%s'",
@@ -954,7 +954,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         String hostname = c.getHostname();
         String aclName = line.getAclName();
         Synthesizer aclSynthesizer = synthesizeAcls(hostname, c, aclName);
-        List<String> interfaces = ImmutableList.copyOf(c.getInterfaces().keySet());
+        List<String> interfaces = ImmutableList.copyOf(c.getAllInterfaces().keySet());
         NavigableMap<String, IpSpace> ipSpaces = ImmutableSortedMap.copyOf(c.getIpSpaces());
         NavigableMap<String, IpAccessList> acls = ImmutableSortedMap.copyOf(c.getIpAccessLists());
         IpAccessList acl = c.getIpAccessLists().get(aclName);
@@ -1387,7 +1387,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       Integer vlanNumber = null;
       // Populate vlanInterface and nonVlanInterfaces, and initialize
       // vlanMemberCounts:
-      for (Interface iface : c.getInterfaces().values()) {
+      for (Interface iface : c.getAllInterfaces().values()) {
         if ((iface.getInterfaceType() == InterfaceType.VLAN)
             && ((vlanNumber = CommonUtil.getInterfaceVlanNumber(iface.getName())) != null)) {
           vlanInterfaces.put(vlanNumber, iface);
@@ -2333,7 +2333,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
                   String remoteHostname = edge.getNode2();
                   String remoteIfaceName = edge.getInt2();
                   Configuration remoteNode = configurations.get(remoteHostname);
-                  Interface remoteIface = remoteNode.getInterfaces().get(remoteIfaceName);
+                  Interface remoteIface = remoteNode.getAllInterfaces().get(remoteIfaceName);
                   Vrf remoteVrf = remoteIface.getVrf();
                   String remoteVrfName = remoteVrf.getName();
                   RipProcess remoteProc = remoteVrf.getRipProcess();
@@ -3054,7 +3054,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
       }
 
       String vrf =
-          diffConfigurations.get(ingressNode).getInterfaces().get(outInterface).getVrf().getName();
+          diffConfigurations
+              .get(ingressNode)
+              .getAllInterfaces()
+              .get(outInterface)
+              .getVrf()
+              .getName();
       IngressLocation ingressLocation = IngressLocation.vrf(ingressNode, vrf);
       BooleanExpr srcIpConstraint = srcIpConstraints.get(ingressLocation);
 
@@ -3093,12 +3098,17 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
       // skip if the source node or interface has been removed
       if (!diffConfigurations.containsKey(ingressNode)
-          || !diffConfigurations.get(ingressNode).getInterfaces().containsKey(outInterface)) {
+          || !diffConfigurations.get(ingressNode).getAllInterfaces().containsKey(outInterface)) {
         continue;
       }
 
       String vrf =
-          diffConfigurations.get(ingressNode).getInterfaces().get(outInterface).getVrf().getName();
+          diffConfigurations
+              .get(ingressNode)
+              .getAllInterfaces()
+              .get(outInterface)
+              .getVrf()
+              .getName();
       IngressLocation ingressLocation = IngressLocation.vrf(ingressNode, vrf);
       BooleanExpr srcIpConstraint = srcIpConstraints.get(ingressLocation);
 
@@ -3357,7 +3367,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       return;
     }
 
-    @Nullable Interface nodeIface = node.getInterfaces().get(ifaceName);
+    @Nullable Interface nodeIface = node.getAllInterfaces().get(ifaceName);
     if (nodeIface == null) {
       veae.setValid(false);
       veae.getUndefinedInterfaceBlacklistInterfaces()
@@ -3384,7 +3394,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     for (String hostname : blacklistNodes) {
       Configuration node = configurations.get(hostname);
       if (node != null) {
-        for (Interface iface : node.getInterfaces().values()) {
+        for (Interface iface : node.getAllInterfaces().values()) {
           iface.setActive(false);
           iface.setBlacklisted(true);
         }
@@ -4816,8 +4826,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
       for (Edge textEdge : textEdges) {
         Configuration node1 = configs.get(textEdge.getNode1());
         Configuration node2 = configs.get(textEdge.getNode2());
-        Interface interface1 = node1.getInterfaces().get(textEdge.getInt1());
-        Interface interface2 = node2.getInterfaces().get(textEdge.getInt2());
+        Interface interface1 = node1.getAllInterfaces().get(textEdge.getInt1());
+        Interface interface2 = node2.getAllInterfaces().get(textEdge.getInt2());
         JSONObject jEdge = new JSONObject();
         jEdge.put("interface1", interface1.toJSONObject());
         jEdge.put("interface2", interface2.toJSONObject());

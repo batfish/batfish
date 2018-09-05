@@ -14,7 +14,7 @@ public final class AllInterfacesLocationSpecifier implements LocationSpecifier {
     return ctxt.getConfigs()
         .values()
         .stream()
-        .flatMap(node -> node.getInterfaces().values().stream())
+        .flatMap(node -> node.getAllInterfaces().values().stream())
         .map(iface -> new InterfaceLocation(iface.getOwner().getHostname(), iface.getName()))
         .collect(ImmutableSet.toImmutableSet());
   }

@@ -15,7 +15,7 @@ public final class NodeRoleRegexInterfaceLocationSpecifier extends NodeRoleRegex
 
   @Override
   Stream<Location> getNodeLocations(Configuration node) {
-    return node.getInterfaces()
+    return node.getAllInterfaces()
         .values()
         .stream()
         .map(iface -> new InterfaceLocation(node.getHostname(), iface.getName()));

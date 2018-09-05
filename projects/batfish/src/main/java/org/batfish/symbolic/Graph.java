@@ -278,7 +278,7 @@ public class Graph {
       OspfProcess ospf = conf.getDefaultVrf().getOspfProcess();
       for (OspfArea area : ospf.getAreas().values()) {
         for (String ifaceName : area.getInterfaces()) {
-          Interface iface = conf.getInterfaces().get(ifaceName);
+          Interface iface = conf.getAllInterfaces().get(ifaceName);
           if (iface.getActive() && iface.getOspfEnabled()) {
             acc.add(iface.getAddress().getPrefix());
           }
@@ -326,7 +326,7 @@ public class Graph {
     }
 
     if (proto.isConnected()) {
-      for (Interface iface : conf.getInterfaces().values()) {
+      for (Interface iface : conf.getAllInterfaces().values()) {
         InterfaceAddress address = iface.getAddress();
         if (address != null) {
           acc.add(address.getPrefix());
@@ -357,7 +357,7 @@ public class Graph {
       String router = entry.getKey();
       Configuration conf = entry.getValue();
       Set<NodeInterfacePair> ifacePairs = new HashSet<>();
-      for (Entry<String, Interface> entry2 : conf.getInterfaces().entrySet()) {
+      for (Entry<String, Interface> entry2 : conf.getAllInterfaces().entrySet()) {
         String name = entry2.getKey();
         Interface iface = entry2.getValue();
         NodeInterfacePair nip = new NodeInterfacePair(router, name);
