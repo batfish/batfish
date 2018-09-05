@@ -1,4 +1,4 @@
-package org.batfish.allinone;
+package org.batfish.question.aaaauthenticationlogin;
 
 import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
 import static org.batfish.datamodel.matchers.RowsMatchers.hasSize;
@@ -20,13 +20,12 @@ import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
-import org.batfish.question.aaaauthenticationlogin.AaaAuthenticationLoginAnswerer;
-import org.batfish.question.aaaauthenticationlogin.AaaAuthenticationLoginQuestion;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-public class AaaAuthenticationTest {
+/** End-to-end tests of {@link AaaAuthenticationLoginQuestion}. */
+public class AaaAuthenticationLoginTest {
 
   private static String TESTCONFIGS_PREFIX = "org/batfish/allinone/testconfigs/";
 
