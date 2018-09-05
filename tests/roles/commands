@@ -3,7 +3,7 @@ add-batfish-option haltonparseerror
 add-batfish-option verboseparse
 
 
-init-snapshot networks/example roles-example
+init-snapshot tests/roles/networks/example roles-example
 
 test tests/roles/roleNeighbors.ref get neighbors neighborTypes=["ebgp","ibgp","ospf","layer3"], style="role", roleDimension="default"
 test tests/roles/roles.ref get roles roleDimension="default"
