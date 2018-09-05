@@ -1062,4 +1062,62 @@ public class WorkMgrServiceTest {
 
     assertThat(processedTable.getRowsList(), equalTo(ImmutableList.of(Row.of(columnName, value))));
   }
+
+  @Test
+  public void testGetAnswerRowsAdHoc() throws Exception {
+    String question = "question1";
+    String questionContent = "questionContent";
+    String columnName = "col";
+    AnswerRowsOptions answersRowsOptions =
+        new AnswerRowsOptions(
+            ImmutableSet.of(columnName),
+            ImmutableList.of(new ColumnFilter(columnName, "")),
+            Integer.MAX_VALUE,
+            0,
+            ImmutableList.of(new ColumnSortOption(columnName, false)),
+            false);
+    String answerRowsOptionsStr = BatfishObjectMapper.writePrettyString(answersRowsOptions);
+
+    initNetworkEnvironment();
+
+    int value = 5;
+    Answer testAnswer = new Answer();
+    testAnswer.addAnswerElement(
+        new TableAnswerElement(
+                new TableMetadata(
+                    ImmutableList.of(new ColumnMetadata(columnName, Schema.INTEGER, "foobar")),
+                    new DisplayHints().getTextDesc()))
+            .addRow(Row.of(columnName, value)));
+    testAnswer.setStatus(AnswerStatus.SUCCESS);
+    String answer = BatfishObjectMapper.writePrettyString(testAnswer);
+
+    Main.getWorkMgr().getStorage().storeQuestion(questionContent, _networkName, question, null);
+    Main.getWorkMgr()
+        .getStorage()
+        .storeAnswer(answer, _networkName, _snapshotName, question, null, null);
+
+    JSONArray answerOutput =
+        _service.getAnswerRows(
+            CoordConsts.DEFAULT_API_KEY,
+            Version.getVersion(),
+            _networkName,
+            _snapshotName,
+            null,
+            null,
+            question,
+            answerRowsOptionsStr,
+            null);
+
+    assertThat(answerOutput.get(0), equalTo(CoordConsts.SVC_KEY_SUCCESS));
+
+    JSONObject answerJsonObject = (JSONObject) answerOutput.get(1);
+    String answersJsonString = answerJsonObject.getString(CoordConsts.SVC_KEY_ANSWER);
+    Answer processedAnswer =
+        BatfishObjectMapper.mapper().readValue(answersJsonString, new TypeReference<Answer>() {});
+
+    TableAnswerElement processedTable =
+        (TableAnswerElement) processedAnswer.getAnswerElements().get(0);
+
+    assertThat(processedTable.getRowsList(), equalTo(ImmutableList.of(Row.of(columnName, value))));
+  }
 }

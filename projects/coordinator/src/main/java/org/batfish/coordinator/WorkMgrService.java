@@ -1112,7 +1112,6 @@ public class WorkMgrService {
       checkStringParam(clientVersion, "Client version");
       checkStringParam(networkNameParam, "Network name");
       checkStringParam(snapshotNameParam, "Base snapshot name");
-      checkStringParam(analysisName, "Analysis name");
       AnswerRowsOptions answersRowsOptions =
           BatfishObjectMapper.mapper()
               .readValue(answerRowsOptionsStr, new TypeReference<AnswerRowsOptions>() {});
