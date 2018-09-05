@@ -922,6 +922,7 @@ public class WorkMgrServiceTest {
             _networkName,
             _snapshotName,
             null,
+            null,
             analysisName,
             questionName,
             null);
@@ -972,6 +973,7 @@ public class WorkMgrServiceTest {
             Version.getVersion(),
             _networkName,
             _snapshotName,
+            null,
             null,
             null,
             questionName,

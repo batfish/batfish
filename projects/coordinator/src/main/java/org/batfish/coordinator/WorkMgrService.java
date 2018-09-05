@@ -1076,7 +1076,7 @@ public class WorkMgrService {
    * @param clientVersion The version of the client
    * @param networkName The name of the network in which the question resides
    * @param snapshotName The name of the snapshot on which the question was run
-   * @param deltaSnapshot The name of the delta snapshot on which the question was run
+   * @param referenceSnapshotName The name of the reference snapshot on which the question was run
    * @param analysis (optional) The name of the analysis containing the question, or {@code null} if
    *     requesting metrics for an ad-hoc question
    * @param question The name of the question
@@ -1091,16 +1091,18 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_NETWORK_NAME) String networkName,
       @FormDataParam(CoordConsts.SVC_KEY_SNAPSHOT_NAME) String snapshotName,
       @FormDataParam(CoordConsts.SVC_KEY_DELTA_SNAPSHOT_NAME) String deltaSnapshot,
+      @FormDataParam(CoordConsts.SVC_KEY_REFERENCE_SNAPSHOT_NAME) String referenceSnapshotName,
       @FormDataParam(CoordConsts.SVC_KEY_ANALYSIS_NAME) String analysis,
       @FormDataParam(CoordConsts.SVC_KEY_QUESTION_NAME) String question,
       @FormDataParam(CoordConsts.SVC_KEY_WORKITEM) String workItemStr) {
     String network = networkName;
     String snapshot = snapshotName;
-    String referenceSnapshot = deltaSnapshot;
+    String referenceSnapshot =
+        referenceSnapshotName != null ? referenceSnapshotName : deltaSnapshot;
     try {
       _logger.infof(
           "WMS:getAnswerMetrics %s %s %s %s %s %s\n",
-          apiKey, network, snapshot, deltaSnapshot, analysis, question);
+          apiKey, network, snapshot, referenceSnapshot, analysis, question);
 
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
