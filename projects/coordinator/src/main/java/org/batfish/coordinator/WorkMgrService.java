@@ -625,10 +625,10 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_WORKITEM) String workItemStr /* optional */) {
     String networkNameParam = networkName == null ? containerName : networkName;
     String snapshotNameParam = snapshotName == null ? testrigName : snapshotName;
-    String referenceSnapshotParam =
-        referenceSnapshot == null
-            ? deltaSnapshot == null ? deltaTestrig : deltaSnapshot
-            : referenceSnapshot;
+    String referenceSnapshotParam = referenceSnapshot;
+    if (referenceSnapshotParam == null) {
+      referenceSnapshotParam = deltaSnapshot == null ? deltaTestrig : deltaSnapshot;
+    }
     try {
       _logger.infof(
           "WMS:getAnalysisAnswer %s %s %s %s\n",
@@ -685,11 +685,7 @@ public class WorkMgrService {
       _logger.errorf(
           "WMS:getAnalysisAnswer exception for apikey:%s in network:%s, snapshot:%s, "
               + "referencesnapshot:%s; exception:%s",
-          apiKey,
-          networkNameParam,
-          snapshotNameParam,
-          referenceSnapshotParam == null ? "" : referenceSnapshotParam,
-          stackTrace);
+          apiKey, networkNameParam, snapshotNameParam, referenceSnapshotParam, stackTrace);
       return failureResponse(e.getMessage());
     }
   }
@@ -726,10 +722,10 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_WORKITEM) String workItemStr /* optional */) {
     String networkNameParam = networkName == null ? containerName : networkName;
     String snapshotNameParam = snapshotName == null ? testrigName : snapshotName;
-    String referenceSnapshotParam =
-        referenceSnapshot == null
-            ? deltaSnapshot == null ? deltaTestrig : deltaSnapshot
-            : referenceSnapshot;
+    String referenceSnapshotParam = referenceSnapshot;
+    if (referenceSnapshotParam == null) {
+      referenceSnapshotParam = deltaSnapshot == null ? deltaTestrig : deltaSnapshot;
+    }
     try {
       _logger.infof(
           "WMS:getAnalysisAnswers %s %s %s %s\n",
@@ -787,11 +783,7 @@ public class WorkMgrService {
       _logger.errorf(
           "WMS:getAnalysisAnswers exception for apikey:%s in network:%s, snapshot:%s, "
               + "referencesnapshot:%s; exception:%s",
-          apiKey,
-          networkNameParam,
-          snapshotNameParam,
-          referenceSnapshotParam == null ? "" : referenceSnapshotParam,
-          stackTrace);
+          apiKey, networkNameParam, snapshotNameParam, referenceSnapshotParam, stackTrace);
       return failureResponse(e.getMessage());
     }
   }
@@ -886,11 +878,7 @@ public class WorkMgrService {
       _logger.errorf(
           "WMS:getAnalysisAnswersMetrics exception for apikey:%s in network:%s, snapshot:%s, "
               + "referencesnapshot:%s; exception:%s",
-          apiKey,
-          networkNameParam,
-          snapshotNameParam,
-          referenceSnapshotParam == null ? "" : referenceSnapshotParam,
-          stackTrace);
+          apiKey, networkNameParam, snapshotNameParam, referenceSnapshotParam, stackTrace);
       return failureResponse(e.getMessage());
     }
   }
@@ -988,11 +976,7 @@ public class WorkMgrService {
       _logger.errorf(
           "WMS:getAnalysisAnswersMetrics exception for apikey:%s in network:%s, snapshot:%s, "
               + "referencesnapshot:%s; exception:%s",
-          apiKey,
-          networkNameParam,
-          snapshotNameParam,
-          referenceSnapshotParam == null ? "" : referenceSnapshotParam,
-          stackTrace);
+          apiKey, networkNameParam, snapshotNameParam, referenceSnapshotParam, stackTrace);
       return failureResponse(e.getMessage());
     }
   }
@@ -1080,11 +1064,7 @@ public class WorkMgrService {
       _logger.errorf(
           "WMS:getAnswer exception for apikey:%s in network:%s, snapshot:%s, referencesnapshot:%s; "
               + "exception:%s",
-          apiKey,
-          networkNameParam,
-          snapshotNameParam,
-          referenceSnapshotParam == null ? "" : referenceSnapshotParam,
-          stackTrace);
+          apiKey, networkNameParam, snapshotNameParam, referenceSnapshotParam, stackTrace);
       return failureResponse(e.getMessage());
     }
   }
