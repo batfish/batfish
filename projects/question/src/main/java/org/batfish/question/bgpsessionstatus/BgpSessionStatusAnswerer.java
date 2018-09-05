@@ -51,7 +51,7 @@ public class BgpSessionStatusAnswerer extends Answerer {
   public static final String COL_REMOTE_NODE = "Remote_Node";
   public static final String COL_REMOTE_PREFIX = "Remote_Prefix";
   public static final String COL_SESSION_TYPE = "Session_Type";
-  public static final String COL_VRF_NAME = "VRF_Name";
+  public static final String COL_VRF_NAME = "VRF";
 
   /** Answerer for the BGP Session status question (new version). */
   public BgpSessionStatusAnswerer(Question question, IBatfish batfish) {
