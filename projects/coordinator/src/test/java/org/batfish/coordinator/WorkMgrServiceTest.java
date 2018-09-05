@@ -247,6 +247,7 @@ public class WorkMgrServiceTest {
             null,
             null,
             null,
+            null,
             analysisName,
             questionName,
             workItemString);
@@ -260,6 +261,7 @@ public class WorkMgrServiceTest {
             null,
             _snapshotName,
             BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
+            null,
             null,
             null,
             null,
@@ -572,6 +574,7 @@ public class WorkMgrServiceTest {
             null,
             null,
             null,
+            null,
             analysisName,
             questionName,
             workItemString);
@@ -585,6 +588,7 @@ public class WorkMgrServiceTest {
             _snapshotName,
             null,
             BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
+            null,
             null,
             null,
             null,
@@ -730,6 +734,7 @@ public class WorkMgrServiceTest {
             _networkName,
             _snapshotName,
             null,
+            null,
             analysisName,
             analysisQuestionsStr,
             null);
@@ -828,6 +833,7 @@ public class WorkMgrServiceTest {
             Version.getVersion(),
             _networkName,
             _snapshotName,
+            null,
             null,
             analysisName,
             analysisAnswersOptionsStr,
