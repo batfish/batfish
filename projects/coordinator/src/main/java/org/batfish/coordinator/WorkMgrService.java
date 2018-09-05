@@ -1066,7 +1066,7 @@ public class WorkMgrService {
           apiKey,
           networkNameParam,
           snapshotNameParam,
-          deltaSnapshotParam == null ? "" : deltaSnapshotParam,
+          referenceSnapshotParam == null ? "" : referenceSnapshotParam,
           stackTrace);
       return failureResponse(e.getMessage());
     }
@@ -1100,7 +1100,7 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_WORKITEM) String workItemStr /* optional */) {
     String networkNameParam = networkName;
     String snapshotNameParam = snapshotName;
-    String deltaSnapshotParam = deltaSnapshot;
+    String referenceSnapshotParam = deltaSnapshot;
     try {
       _logger.infof(
           "WMS:getAnswerRows %s %s %s %s %s\n",
