@@ -1,4 +1,4 @@
-package org.batfish.allinone;
+package org.batfish.question.aclreachability;
 
 import static org.batfish.datamodel.IpAccessListLine.acceptingHeaderSpace;
 import static org.batfish.datamodel.IpAccessListLine.rejectingHeaderSpace;
@@ -50,13 +50,12 @@ import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
-import org.batfish.question.aclreachability.AclReachabilityAnswerer;
-import org.batfish.question.aclreachability.AclReachabilityQuestion;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+/** End-to-end tests of {@link AclReachabilityQuestion}. */
 public class AclReachabilityTest {
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();

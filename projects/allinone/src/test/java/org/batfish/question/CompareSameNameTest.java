@@ -1,4 +1,4 @@
-package org.batfish.allinone;
+package org.batfish.question;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
@@ -13,7 +13,6 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
-import org.batfish.question.CompareSameNameQuestionPlugin;
 import org.batfish.question.CompareSameNameQuestionPlugin.CompareSameNameAnswerElement;
 import org.batfish.question.CompareSameNameQuestionPlugin.CompareSameNameAnswerer;
 import org.batfish.question.CompareSameNameQuestionPlugin.CompareSameNameQuestion;
@@ -22,6 +21,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+/** End-to-end tests of {@link CompareSameNameQuestion}. */
 public class CompareSameNameTest {
 
   private Configuration.Builder _cb;

@@ -1,4 +1,4 @@
-package org.batfish.allinone;
+package org.batfish.question.testfilters;
 
 import static org.batfish.datamodel.IpAccessListLine.acceptingHeaderSpace;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessLists;
@@ -32,13 +32,12 @@ import org.batfish.datamodel.matchers.PermittedByIpAccessListLineMatchers;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
-import org.batfish.question.testfilters.TestFiltersAnswerer;
-import org.batfish.question.testfilters.TestFiltersQuestion;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+/** End-to-end tests of {@link TestFiltersQuestion}. */
 public class TestFiltersTest {
 
   private Configuration _c;

@@ -1,4 +1,4 @@
-package org.batfish.allinone;
+package org.batfish.dataplane;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
