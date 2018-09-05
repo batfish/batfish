@@ -237,6 +237,6 @@ public final class TracerouteAnswerer extends Answerer {
   }
 
   private String interfaceVrf(String node, String iface) {
-    return _configurations.get(node).getInterfaces().get(iface).getVrf().getName();
+    return _configurations.get(node).getAllInterfaces().get(iface).getVrf().getName();
   }
 }

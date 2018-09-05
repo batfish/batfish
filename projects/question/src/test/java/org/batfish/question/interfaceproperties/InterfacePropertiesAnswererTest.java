@@ -53,7 +53,7 @@ public class InterfacePropertiesAnswererTest {
     Interface iface2 = new Interface("iface2", conf1);
     iface2.setDescription("blah blah blah");
 
-    conf1.getInterfaces().putAll(ImmutableMap.of("iface1", iface1, "iface2", iface2));
+    conf1.getAllInterfaces().putAll(ImmutableMap.of("iface1", iface1, "iface2", iface2));
 
     String property1 = InterfacePropertySpecifier.DESCRIPTION;
     String property2 = InterfacePropertySpecifier.ACTIVE;
@@ -88,7 +88,7 @@ public class InterfacePropertiesAnswererTest {
     Configuration conf = new Configuration("node", ConfigurationFormat.CISCO_IOS);
     Interface active = Interface.builder().setName("active").setOwner(conf).setActive(true).build();
     Interface shut = Interface.builder().setName("shut").setOwner(conf).setActive(false).build();
-    conf.getInterfaces().putAll(ImmutableMap.of("active", active, "shut", shut));
+    conf.getAllInterfaces().putAll(ImmutableMap.of("active", active, "shut", shut));
 
     String property = InterfacePropertySpecifier.DESCRIPTION;
     InterfacePropertySpecifier propertySpecifier = new InterfacePropertySpecifier(property);

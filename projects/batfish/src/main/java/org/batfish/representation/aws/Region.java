@@ -379,7 +379,7 @@ public class Region implements Serializable {
 
       // applying the filters to all interfaces in the node
       cfgNode
-          .getInterfaces()
+          .getAllInterfaces()
           .values()
           .forEach(
               iface -> {

@@ -330,7 +330,7 @@ public final class BDDReachabilityAnalysisFactory {
     return _configs
         .values()
         .stream()
-        .flatMap(c -> c.getInterfaces().values().stream())
+        .flatMap(c -> c.getAllInterfaces().values().stream())
         .map(
             iface -> {
               String nodeNode = iface.getOwner().getHostname();
@@ -472,7 +472,7 @@ public final class BDDReachabilityAnalysisFactory {
                   new PreOutEdgePostNat(node1, iface1, node2, iface2);
 
               List<SourceNat> sourceNats =
-                  _configs.get(node1).getInterfaces().get(iface1).getSourceNats();
+                  _configs.get(node1).getAllInterfaces().get(iface1).getSourceNats();
 
               List<BDDSourceNat> bddSourceNats = null;
               if (sourceNats != null) {
@@ -508,7 +508,7 @@ public final class BDDReachabilityAnalysisFactory {
               String iface2 = edge.getInt2();
 
               String aclName =
-                  _configs.get(node1).getInterfaces().get(iface1).getOutgoingFilterName();
+                  _configs.get(node1).getAllInterfaces().get(iface1).getOutgoingFilterName();
               BDD aclDenyBDD = _aclDenyBDDs.get(node1).get(aclName);
 
               return aclDenyBDD != null
@@ -534,7 +534,7 @@ public final class BDDReachabilityAnalysisFactory {
               String iface2 = edge.getInt2();
 
               String aclName =
-                  _configs.get(node1).getInterfaces().get(iface1).getOutgoingFilterName();
+                  _configs.get(node1).getAllInterfaces().get(iface1).getOutgoingFilterName();
               BDD aclPermitBDD =
                   aclName == null
                       ? _bddPacket.getFactory().one()
@@ -594,7 +594,7 @@ public final class BDDReachabilityAnalysisFactory {
                                   String outAcl =
                                       _configs
                                           .get(node)
-                                          .getInterfaces()
+                                          .getAllInterfaces()
                                           .get(iface)
                                           .getOutgoingFilterName();
                                   BDD outAclBDD =
@@ -647,7 +647,7 @@ public final class BDDReachabilityAnalysisFactory {
         String vrf =
             _configs
                 .get(interfaceLocation.getNodeName())
-                .getInterfaces()
+                .getAllInterfaces()
                 .get(interfaceLocation.getInterfaceName())
                 .getVrf()
                 .getName();
@@ -680,7 +680,7 @@ public final class BDDReachabilityAnalysisFactory {
   }
 
   private String ifaceVrf(String node, String iface) {
-    return _configs.get(node).getInterfaces().get(iface).getVrfName();
+    return _configs.get(node).getAllInterfaces().get(iface).getVrfName();
   }
 
   private static Map<String, Map<String, BDD>> computeVrfAcceptBDDs(

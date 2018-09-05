@@ -226,7 +226,7 @@ class TracerouteEngineImplContext {
     } else {
       FlowTraceHop lastHop = hopsSoFar.get(hopsSoFar.size() - 1);
       srcInterface = lastHop.getEdge().getInt2();
-      vrfName = currentConfiguration.getInterfaces().get(srcInterface).getVrf().getName();
+      vrfName = currentConfiguration.getAllInterfaces().get(srcInterface).getVrf().getName();
     }
     // .. and what the next hops are based on the FIB.
     Fib currentFib = _fibs.get(currentNodeName).get(vrfName);
@@ -311,7 +311,7 @@ class TracerouteEngineImplContext {
                 Interface outgoingInterface =
                     _configurations
                         .get(nextHopInterface.getHostname())
-                        .getInterfaces()
+                        .getAllInterfaces()
                         .get(nextHopInterface.getInterface());
 
                 // Apply any relevant source NAT rules.
@@ -547,7 +547,8 @@ class TracerouteEngineImplContext {
     }
     String nextNodeName = edge.getNode2();
     // check input filter
-    Interface nextInterface = _configurations.get(nextNodeName).getInterfaces().get(edge.getInt2());
+    Interface nextInterface =
+        _configurations.get(nextNodeName).getAllInterfaces().get(edge.getInt2());
     IpAccessList inFilter = nextInterface.getIncomingFilter();
     if (!_ignoreAcls && inFilter != null) {
       FlowDisposition disposition = FlowDisposition.DENIED_IN;
@@ -632,7 +633,7 @@ class TracerouteEngineImplContext {
     IpAccessList outFilter =
         _configurations
             .get(transmissionContext._currentNodeName)
-            .getInterfaces()
+            .getAllInterfaces()
             .get(nextHopInterfaceName)
             .getOutgoingFilter();
     if (!_ignoreAcls && outFilter != null) {
@@ -653,7 +654,7 @@ class TracerouteEngineImplContext {
     if (_forwardingAnalysis
         .getNeighborUnreachable()
         .get(transmissionContext._currentNodeName)
-        .get(c.getInterfaces().get(nextHopInterfaceName).getVrfName())
+        .get(c.getAllInterfaces().get(nextHopInterfaceName).getVrfName())
         .get(nextHopInterfaceName)
         .containsIp(arpIp, c.getIpSpaces())) {
       FlowTrace trace = neighborUnreachableTrace(nextHopInterface, transmissionContext);

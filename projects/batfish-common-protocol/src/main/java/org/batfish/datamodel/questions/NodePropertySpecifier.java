@@ -102,7 +102,7 @@ public class NodePropertySpecifier extends PropertySpecifier {
               new PropertyDescriptor<>(Configuration::getIkePolicies, Schema.set(Schema.STRING)))
           .put(
               INTERFACES,
-              new PropertyDescriptor<>(Configuration::getInterfaces, Schema.set(Schema.STRING)))
+              new PropertyDescriptor<>(Configuration::getAllInterfaces, Schema.set(Schema.STRING)))
           .put(
               IP_ACCESS_LISTS,
               new PropertyDescriptor<>(Configuration::getIpAccessLists, Schema.set(Schema.STRING)))

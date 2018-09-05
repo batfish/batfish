@@ -119,7 +119,7 @@ public class LocationSpecifierTest {
         _testConfigs
             .entrySet()
             .stream()
-            .map(entry -> entry.getValue().getInterfaces().values().iterator().next())
+            .map(entry -> entry.getValue().getAllInterfaces().values().iterator().next())
             .collect(Collectors.toList());
 
     Pattern pat =
@@ -161,7 +161,7 @@ public class LocationSpecifierTest {
         _testConfigs
             .entrySet()
             .stream()
-            .map(entry -> entry.getValue().getInterfaces().values().iterator().next())
+            .map(entry -> entry.getValue().getAllInterfaces().values().iterator().next())
             .collect(Collectors.toList());
 
     Pattern pat = Pattern.compile(interfaces.get(0).getName() + "|" + interfaces.get(1).getName());
@@ -177,7 +177,7 @@ public class LocationSpecifierTest {
   @Test
   public void testNodeNameRegexInterfaceLocationSpecifiers() {
     Configuration config = _testConfigs.values().iterator().next();
-    List<Interface> ifaces = ImmutableList.copyOf(config.getInterfaces().values());
+    List<Interface> ifaces = ImmutableList.copyOf(config.getAllInterfaces().values());
     Pattern pat = Pattern.compile(config.getHostname());
 
     assertThat(
@@ -193,7 +193,7 @@ public class LocationSpecifierTest {
   public void testNodeRoleRegexInterfaceLocationSpecifier() {
     Set<Location> nodeInterfaceLocations =
         _roleNode
-            .getInterfaces()
+            .getAllInterfaces()
             .values()
             .stream()
             .map(iface -> new InterfaceLocation(iface.getOwner().getHostname(), iface.getName()))
@@ -201,7 +201,7 @@ public class LocationSpecifierTest {
 
     Set<Location> nodeInterfaceLinkLocations =
         _roleNode
-            .getInterfaces()
+            .getAllInterfaces()
             .values()
             .stream()
             .map(

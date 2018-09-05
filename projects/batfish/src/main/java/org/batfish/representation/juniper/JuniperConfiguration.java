@@ -1198,7 +1198,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     Interface oldExternalInterface = oldIkeGateway.getExternalInterface();
     if (oldExternalInterface != null) {
       org.batfish.datamodel.Interface newExternalInterface =
-          _c.getInterfaces().get(oldExternalInterface.getName());
+          _c.getAllInterfaces().get(oldExternalInterface.getName());
       if (newExternalInterface != null) {
         newIkeGateway.setExternalInterface(newExternalInterface);
       }
@@ -1668,7 +1668,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
     Interface oldBindInterface = oldIpsecVpn.getBindInterface();
     if (oldBindInterface != null) {
       String bindInterfaceName = oldBindInterface.getName();
-      org.batfish.datamodel.Interface newBindInterface = _c.getInterfaces().get(bindInterfaceName);
+      org.batfish.datamodel.Interface newBindInterface =
+          _c.getAllInterfaces().get(bindInterfaceName);
       if (newBindInterface != null) {
         newIpsecVpn.setBindInterface(newBindInterface);
       }
@@ -2105,7 +2106,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       Interface unitIface = eUnit.getValue();
       unitIface.inheritUnsetFields();
       org.batfish.datamodel.Interface newUnitIface = toInterface(unitIface);
-      _c.getInterfaces().put(unitName, newUnitIface);
+      _c.getAllInterfaces().put(unitName, newUnitIface);
       Vrf vrf = newUnitIface.getVrf();
       String vrfName = vrf.getName();
       vrf.getInterfaces().put(unitName, newUnitIface);
@@ -2241,10 +2242,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
         DhcpRelayGroup rg = e2.getValue();
         List<org.batfish.datamodel.Interface> interfaces = new ArrayList<>();
         if (rg.getAllInterfaces()) {
-          interfaces.addAll(_c.getInterfaces().values());
+          interfaces.addAll(_c.getAllInterfaces().values());
         } else {
           for (String ifaceName : rg.getInterfaces()) {
-            org.batfish.datamodel.Interface iface = _c.getInterfaces().get(ifaceName);
+            org.batfish.datamodel.Interface iface = _c.getAllInterfaces().get(ifaceName);
             interfaces.add(iface);
           }
         }
@@ -2461,7 +2462,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       String inboundInterfaceName = e.getKey();
       FirewallFilter inboundInterfaceFilter = e.getValue();
       String inboundInterfaceFilterName = inboundInterfaceFilter.getName();
-      org.batfish.datamodel.Interface newIface = _c.getInterfaces().get(inboundInterfaceName);
+      org.batfish.datamodel.Interface newIface = _c.getAllInterfaces().get(inboundInterfaceName);
       newZone.getInboundInterfaceFiltersNames().put(newIface.getName(), inboundInterfaceFilterName);
     }
 
@@ -2476,7 +2477,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     newZone.setInboundInterfaceFiltersNames(new TreeMap<>());
     for (Interface iface : zone.getInterfaces()) {
       String ifaceName = iface.getName();
-      org.batfish.datamodel.Interface newIface = _c.getInterfaces().get(ifaceName);
+      org.batfish.datamodel.Interface newIface = _c.getAllInterfaces().get(ifaceName);
       newIface.setZoneName(zoneName);
       FirewallFilter inboundInterfaceFilter = zone.getInboundInterfaceFilters().get(ifaceName);
       if (inboundInterfaceFilter != null) {

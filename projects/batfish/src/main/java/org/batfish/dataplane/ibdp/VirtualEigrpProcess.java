@@ -96,7 +96,7 @@ class VirtualEigrpProcess {
      * internal route.
      */
     for (String ifaceName : c.getVrfs().get(vrfName).getInterfaceNames()) {
-      Interface iface = c.getInterfaces().get(ifaceName);
+      Interface iface = c.getAllInterfaces().get(ifaceName);
       if (iface.getActive()
           && iface.getEigrp() != null
           && iface.getEigrp().getAsn() == _asn

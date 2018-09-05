@@ -130,7 +130,7 @@ public class BatfishTest {
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations();
     assertThat(
-        configurations.get("host1").getInterfaces().get("Ethernet0").getIncomingFilterName(),
+        configurations.get("host1").getAllInterfaces().get("Ethernet0").getIncomingFilterName(),
         is(notNullValue()));
   }
 
@@ -363,9 +363,9 @@ public class BatfishTest {
 
     // Assert that the config parsed successfully
     assertThat(configs, hasKey("host1"));
-    assertThat(configs.get("host1").getInterfaces(), hasKey("Vlan65"));
+    assertThat(configs.get("host1").getAllInterfaces(), hasKey("Vlan65"));
     assertThat(
-        configs.get("host1").getInterfaces().get("Vlan65").getVrrpGroups().keySet(), hasSize(1));
+        configs.get("host1").getAllInterfaces().get("Vlan65").getVrrpGroups().keySet(), hasSize(1));
 
     // Tests that computing IP owners with such a bad interface does not crash.
     CommonUtil.computeIpNodeOwners(configs, false);

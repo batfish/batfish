@@ -73,8 +73,8 @@ public class NodesQuestionPlugin extends QuestionPlugin {
           _communityLists = node.getCommunityLists().navigableKeySet();
         }
         _configurationFormat = node.getConfigurationFormat();
-        if (!node.getInterfaces().isEmpty()) {
-          _interfaces = node.getInterfaces().navigableKeySet();
+        if (!node.getAllInterfaces().isEmpty()) {
+          _interfaces = node.getAllInterfaces().navigableKeySet();
         }
         if (!node.getIkeGateways().isEmpty()) {
           _ikeGateways = node.getIkeGateways().navigableKeySet();

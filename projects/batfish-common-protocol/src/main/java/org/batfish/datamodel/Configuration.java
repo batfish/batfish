@@ -520,7 +520,7 @@ public final class Configuration implements Serializable {
 
   @JsonPropertyDescription("Dictionary of all interfaces across all VRFs for this node.")
   @JsonProperty(PROP_INTERFACES)
-  public NavigableMap<String, Interface> getInterfaces() {
+  public NavigableMap<String, Interface> getAllInterfaces() {
     return _interfaces;
   }
 

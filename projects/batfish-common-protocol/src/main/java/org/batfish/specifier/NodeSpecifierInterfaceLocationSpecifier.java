@@ -38,7 +38,7 @@ public class NodeSpecifierInterfaceLocationSpecifier implements LocationSpecifie
     return _nodeSpecifier
         .resolve(ctxt)
         .stream()
-        .map(n -> ctxt.getConfigs().get(n).getInterfaces().values())
+        .map(n -> ctxt.getConfigs().get(n).getAllInterfaces().values())
         .flatMap(Collection::stream)
         .map(iface -> new InterfaceLocation(iface.getOwner().getHostname(), iface.getName()))
         .collect(Collectors.toSet());

@@ -411,8 +411,10 @@ public class EdgesAnswerer extends Answerer {
 
   @VisibleForTesting
   static Row layer3EdgeToRow(Map<String, Configuration> configurations, Edge edge) {
-    Interface interface1 = configurations.get(edge.getNode1()).getInterfaces().get(edge.getInt1());
-    Interface interface2 = configurations.get(edge.getNode2()).getInterfaces().get(edge.getInt2());
+    Interface interface1 =
+        configurations.get(edge.getNode1()).getAllInterfaces().get(edge.getInt1());
+    Interface interface2 =
+        configurations.get(edge.getNode2()).getAllInterfaces().get(edge.getInt2());
     Set<Ip> ips1 =
         interface1
             .getAllAddresses()

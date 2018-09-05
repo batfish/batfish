@@ -112,7 +112,7 @@ public class ElasticsearchDomainTest {
         configurations
             .values()
             .stream()
-            .map(Configuration::getInterfaces)
+            .map(Configuration::getAllInterfaces)
             .map(Map::values)
             .flatMap(Collection::stream)
             .map(Interface::getAllAddresses)
@@ -166,9 +166,9 @@ public class ElasticsearchDomainTest {
     Map<String, Configuration> configurations = loadAwsConfigurations();
 
     assertThat(configurations, hasKey("es-domain"));
-    assertThat(configurations.get("es-domain").getInterfaces().entrySet(), hasSize(2));
+    assertThat(configurations.get("es-domain").getAllInterfaces().entrySet(), hasSize(2));
 
-    for (Interface iface : configurations.get("es-domain").getInterfaces().values()) {
+    for (Interface iface : configurations.get("es-domain").getAllInterfaces().values()) {
       assertThat(
           iface.getOutgoingFilter(),
           hasLines(
