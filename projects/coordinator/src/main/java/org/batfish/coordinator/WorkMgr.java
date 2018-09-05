@@ -80,6 +80,7 @@ import org.batfish.datamodel.TestrigMetadata;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.AnswerStatus;
+import org.batfish.datamodel.answers.AnswerSummary;
 import org.batfish.datamodel.answers.AutocompleteSuggestion;
 import org.batfish.datamodel.answers.AutocompleteSuggestion.CompletionType;
 import org.batfish.datamodel.answers.MajorIssueConfig;
@@ -1853,15 +1854,17 @@ public class WorkMgr extends AbstractCoordinator {
   TableAnswerElement processAnalysisAnswerTable(
       TableAnswerElement rawTable, AnalysisAnswerOptions options) {
     Map<String, ColumnMetadata> rawColumnMap = rawTable.getMetadata().toColumnMap();
-    Stream<Row> filteredStream =
+    List<Row> filteredRows =
         rawTable
             .getRowsList()
             .stream()
-            .filter(row -> options.getFilters().stream().allMatch(filter -> filter.matches(row)));
+            .filter(row -> options.getFilters().stream().allMatch(filter -> filter.matches(row)))
+            .collect(ImmutableList.toImmutableList());
+
     Stream<Row> sortedStream =
         options.getSortOrder().isEmpty()
-            ? filteredStream
-            : filteredStream.sorted(buildComparator(rawColumnMap, options.getSortOrder()));
+            ? filteredRows.stream()
+            : filteredRows.stream().sorted(buildComparator(rawColumnMap, options.getSortOrder()));
     Stream<Row> projectedStream;
     TableAnswerElement table;
     if (options.getColumns().isEmpty()) {
@@ -1885,6 +1888,8 @@ public class WorkMgr extends AbstractCoordinator {
     Stream<Row> truncatedStream =
         uniquifiedStream.skip(options.getRowOffset()).limit(options.getMaxRows());
     truncatedStream.forEach(table::addRow);
+    table.setSummary(rawTable.getSummary() != null ? rawTable.getSummary() : new AnswerSummary());
+    table.getSummary().setNumResults(filteredRows.size());
     return table;
   }
 
