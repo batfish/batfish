@@ -1142,7 +1142,7 @@ public class WorkMgrService {
 
       String rawAnswer =
           Main.getWorkMgr()
-              .getAnswer(networkName, snapshotName, deltaSnapshot, analysisName, questionName);
+              .getAnswer(networkName, snapshotName, questionName, deltaSnapshot, analysisName);
 
       Answer answer = Main.getWorkMgr().processAnswerRows(rawAnswer, answersRowsOptions);
 

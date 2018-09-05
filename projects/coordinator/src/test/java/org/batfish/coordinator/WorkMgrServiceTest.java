@@ -990,9 +990,9 @@ public class WorkMgrServiceTest {
   }
 
   @Test
-  public void testGetAnswerRows() throws Exception {
-    String analysisName = "analysis1";
-    String questionName = "question1";
+  public void testGetAnswerRowsAnalysis() throws Exception {
+    String analysis = "analysis1";
+    String question = "question1";
     String questionContent = "questionContent";
     String columnName = "col";
     AnswerRowsOptions answersRowsOptions =
@@ -1003,7 +1003,7 @@ public class WorkMgrServiceTest {
             0,
             ImmutableList.of(new ColumnSortOption(columnName, false)),
             false);
-    String analysisAnswersOptionsStr = BatfishObjectMapper.writePrettyString(answersRowsOptions);
+    String answerRowsOptionsStr = BatfishObjectMapper.writePrettyString(answersRowsOptions);
 
     initNetworkEnvironment();
 
@@ -1019,8 +1019,8 @@ public class WorkMgrServiceTest {
     String answer = BatfishObjectMapper.writePrettyString(testAnswer);
 
     String analysisJsonString =
-        String.format("{\"%s\":{\"question\":\"%s\"}}", questionName, questionContent);
-    File analysisFile = _networksFolder.newFile(analysisName);
+        String.format("{\"%s\":{\"question\":\"%s\"}}", question, questionContent);
+    File analysisFile = _networksFolder.newFile(analysis);
     FileUtils.writeStringToFile(analysisFile, analysisJsonString);
 
     _service.configureAnalysis(
@@ -1029,30 +1029,14 @@ public class WorkMgrServiceTest {
         null,
         _networkName,
         "new",
-        analysisName,
+        analysis,
         new FileInputStream(analysisFile),
         "",
         null);
 
-    Path answerDir =
-        _networksFolder
-            .getRoot()
-            .toPath()
-            .resolve(
-                Paths.get(
-                    _networkName,
-                    BfConsts.RELPATH_TESTRIGS_DIR,
-                    _snapshotName,
-                    BfConsts.RELPATH_ANALYSES_DIR,
-                    analysisName,
-                    BfConsts.RELPATH_QUESTIONS_DIR,
-                    questionName,
-                    BfConsts.RELPATH_ENVIRONMENTS_DIR,
-                    BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME));
-
-    Path answer1Path = answerDir.resolve(BfConsts.RELPATH_ANSWER_JSON);
-    answerDir.toFile().mkdirs();
-    CommonUtil.writeFile(answer1Path, answer);
+    Main.getWorkMgr()
+        .getStorage()
+        .storeAnswer(answer, _networkName, _snapshotName, question, null, analysis);
 
     JSONArray answerOutput =
         _service.getAnswerRows(
@@ -1061,9 +1045,9 @@ public class WorkMgrServiceTest {
             _networkName,
             _snapshotName,
             null,
-            analysisName,
-            questionName,
-            analysisAnswersOptionsStr,
+            analysis,
+            question,
+            answerRowsOptionsStr,
             null);
 
     assertThat(answerOutput.get(0), equalTo(CoordConsts.SVC_KEY_SUCCESS));
