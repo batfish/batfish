@@ -145,6 +145,7 @@ public class CoordConsts {
   public static final String SVC_RSC_GET_ANALYSIS_ANSWERS_ROWS = "getanalysisanswersrows";
   public static final String SVC_RSC_GET_ANSWER = "getanswer";
   public static final String SVC_RSC_GET_ANSWER_METRICS = "getanswermetrics";
+  public static final String SVC_RSC_GET_ANSWER_ROWS = "getanswerrows";
   public static final String SVC_RSC_GET_CONFIGURATION = "getconfiguration";
   public static final String SVC_RSC_GET_CONTAINER = "getcontainer";
   public static final String SVC_RSC_GET_NETWORK = "getnetwork";

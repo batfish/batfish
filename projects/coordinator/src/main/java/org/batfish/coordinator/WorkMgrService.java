@@ -1088,7 +1088,7 @@ public class WorkMgrService {
    * @return TODO: document JSON response
    */
   @POST
-  @Path(CoordConsts.SVC_RSC_GET_ANALYSIS_ANSWERS_ROWS)
+  @Path(CoordConsts.SVC_RSC_GET_ANSWER_ROWS)
   @Produces(MediaType.APPLICATION_JSON)
   public JSONArray getAnswerRows(
       @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
