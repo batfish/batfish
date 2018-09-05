@@ -356,7 +356,7 @@ public class AclReachabilityAnswerer extends Answerer {
         Configuration c = configurations.get(hostname);
         Set<IpAccessList> acls = specifiedAcls.get(hostname);
         HeaderSpaceSanitizer headerSpaceSanitizer = new HeaderSpaceSanitizer(c.getIpSpaces());
-        Map<String, Interface> nodeInterfaces = c.getInterfaces();
+        Map<String, Interface> nodeInterfaces = c.getAllInterfaces();
 
         // Build graph of AclNodes containing pointers to dependencies and referencing nodes
         Map<String, AclNode> aclNodeMap = new TreeMap<>();

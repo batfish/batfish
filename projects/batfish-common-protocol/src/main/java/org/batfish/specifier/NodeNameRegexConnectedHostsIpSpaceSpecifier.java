@@ -44,7 +44,7 @@ public final class NodeNameRegexConnectedHostsIpSpaceSpecifier implements IpSpac
         .values()
         .stream()
         .filter(node -> _pattern.matcher(node.getHostname()).matches())
-        .flatMap(node -> node.getInterfaces().values().stream())
+        .flatMap(node -> node.getAllInterfaces().values().stream())
         .flatMap(iface -> iface.getAllAddresses().stream())
         .filter(
             ifaceAddr -> ifaceAddr.getPrefix().getPrefixLength() <= HOST_SUBNET_MAX_PREFIX_LENGTH)

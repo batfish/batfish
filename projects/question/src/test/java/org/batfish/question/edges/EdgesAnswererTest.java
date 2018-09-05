@@ -221,8 +221,8 @@ public class EdgesAnswererTest {
 
     _host1.setVrfs(ImmutableSortedMap.of("vrf1", vrf1));
     _host2.setVrfs(ImmutableSortedMap.of("vrf2", vrf2));
-    _host1.getInterfaces().get("int1").setVrf(vrf1);
-    _host2.getInterfaces().get("int2").setVrf(vrf2);
+    _host1.getAllInterfaces().get("int1").setVrf(vrf1);
+    _host2.getAllInterfaces().get("int2").setVrf(vrf2);
 
     Multiset<Row> rows =
         getOspfEdges(_configurations, _includeNodes, _includeRemoteNodes, _topology);
@@ -254,8 +254,8 @@ public class EdgesAnswererTest {
         ImmutableSortedMap.of(new Pair<>(new Ip("2.2.2.2"), new Ip("1.1.1.1")), ripNeighbor2));
     ripNeighbor1.setOwner(_host1);
     ripNeighbor2.setOwner(_host2);
-    ripNeighbor1.setIface(_host1.getInterfaces().get("int1"));
-    ripNeighbor2.setIface(_host2.getInterfaces().get("int2"));
+    ripNeighbor1.setIface(_host1.getAllInterfaces().get("int1"));
+    ripNeighbor2.setIface(_host2.getAllInterfaces().get("int2"));
     ripNeighbor1.setRemoteRipNeighbor(ripNeighbor2);
     ripNeighbor2.setRemoteRipNeighbor(ripNeighbor1);
 

@@ -157,7 +157,7 @@ public class SecurityGroup implements AwsVpcEntity, Serializable {
 
   public void updateConfigIps(Configuration configuration) {
     configuration
-        .getInterfaces()
+        .getAllInterfaces()
         .values()
         .stream()
         .flatMap(iface -> iface.getAllAddresses().stream())

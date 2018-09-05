@@ -232,7 +232,7 @@ public class BatfishTestUtils {
       String nodeName, ConfigurationFormat configFormat, String... interfaceNames) {
     Configuration config = new Configuration(nodeName, configFormat);
     for (String interfaceName : interfaceNames) {
-      config.getInterfaces().put(interfaceName, new Interface(interfaceName, config));
+      config.getAllInterfaces().put(interfaceName, new Interface(interfaceName, config));
     }
     return config;
   }

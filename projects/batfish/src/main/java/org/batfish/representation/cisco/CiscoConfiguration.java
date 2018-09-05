@@ -524,7 +524,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
   private void applyVrrp(Configuration c) {
     _vrrpGroups.forEach(
         (ifaceName, vrrpInterface) -> {
-          org.batfish.datamodel.Interface iface = c.getInterfaces().get(ifaceName);
+          org.batfish.datamodel.Interface iface = c.getAllInterfaces().get(ifaceName);
           if (iface != null) {
             vrrpInterface
                 .getVrrpGroups()
@@ -3122,7 +3122,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
           if (vrfName == null) {
             throw new BatfishException("Missing vrf name for iface: '" + iface.getName() + "'");
           }
-          c.getInterfaces().put(newIfaceName, newInterface);
+          c.getAllInterfaces().put(newIfaceName, newInterface);
           c.getVrfs().get(vrfName).getInterfaces().put(newIfaceName, newInterface);
         });
 
@@ -3204,7 +3204,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
           continue;
         }
         IpsecVpn ipsecVpn = new IpsecVpn(name, c);
-        ipsecVpn.setBindInterface(c.getInterfaces().get(name));
+        ipsecVpn.setBindInterface(c.getAllInterfaces().get(name));
         ipsecVpn.setIpsecPolicy(c.getIpsecPolicies().get(tunnel.getIpsecProfileName()));
         Ip source = tunnel.getSourceAddress();
         Ip destination = tunnel.getDestination();
@@ -3889,7 +3889,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         ikeGateway.setAddress(remoteIdentity.toPrefix().getStartIp());
         Interface oldIface = getInterfaceByTunnelAddresses(localAddress, remoteIdentity.toPrefix());
         if (oldIface != null) {
-          ikeGateway.setExternalInterface(c.getInterfaces().get(oldIface.getName()));
+          ikeGateway.setExternalInterface(c.getAllInterfaces().get(oldIface.getName()));
         } else {
           _w.redFlag(
               String.format(

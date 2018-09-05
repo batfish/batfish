@@ -136,7 +136,7 @@ final class ConfigurationMatchersImpl {
 
     @Override
     protected Interface featureValueOf(Configuration actual) {
-      return actual.getInterfaces().get(_name);
+      return actual.getAllInterfaces().get(_name);
     }
   }
 
@@ -147,7 +147,7 @@ final class ConfigurationMatchersImpl {
 
     @Override
     protected Map<String, Interface> featureValueOf(Configuration actual) {
-      return actual.getInterfaces();
+      return actual.getAllInterfaces();
     }
   }
 

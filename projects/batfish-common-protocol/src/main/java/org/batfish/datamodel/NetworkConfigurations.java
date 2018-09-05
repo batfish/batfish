@@ -60,7 +60,7 @@ public final class NetworkConfigurations {
     if (c == null) {
       return null;
     }
-    return c.getInterfaces().get(interfaceName);
+    return c.getAllInterfaces().get(interfaceName);
   }
 
   @Nullable

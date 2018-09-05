@@ -918,7 +918,7 @@ public class VirtualRouter implements Serializable {
         .forEach(
             (areaNum, area) -> {
               for (String ifaceName : area.getInterfaces()) {
-                Interface iface = _c.getInterfaces().get(ifaceName);
+                Interface iface = _c.getAllInterfaces().get(ifaceName);
                 if (iface.getActive()) {
                   Set<Prefix> allNetworkPrefixes =
                       iface
@@ -1316,7 +1316,7 @@ public class VirtualRouter implements Serializable {
     for (StaticRoute sr : _vrf.getStaticRoutes()) {
       if (isInterfaceRoute(sr)) {
         // We have an interface route, check if interface is active
-        Interface nextHopInterface = _c.getInterfaces().get(sr.getNextHopInterface());
+        Interface nextHopInterface = _c.getAllInterfaces().get(sr.getNextHopInterface());
 
         if (Interface.NULL_INTERFACE_NAME.equals(sr.getNextHopInterface())
             || (nextHopInterface != null && (nextHopInterface.getActive()))) {
@@ -1528,7 +1528,8 @@ public class VirtualRouter implements Serializable {
         if (Route.UNSET_ROUTE_NEXT_HOP_IP.equals(nextHopIp)) {
           // should only happen for ibgp
           String nextHopInterface = route.getNextHopInterface();
-          InterfaceAddress nextHopAddress = _c.getInterfaces().get(nextHopInterface).getAddress();
+          InterfaceAddress nextHopAddress =
+              _c.getAllInterfaces().get(nextHopInterface).getAddress();
           if (nextHopAddress == null) {
             throw new BatfishException("route's nextHopInterface has no address");
           }
@@ -1848,7 +1849,7 @@ public class VirtualRouter implements Serializable {
       String neighborInterfaceName = edge.getInt2();
       OspfArea area = connectingInterface.getOspfArea();
       Configuration nc = neighbor.getConfiguration();
-      Interface neighborInterface = nc.getInterfaces().get(neighborInterfaceName);
+      Interface neighborInterface = nc.getAllInterfaces().get(neighborInterfaceName);
       String neighborVrfName = neighborInterface.getVrfName();
       VirtualRouter neighborVirtualRouter =
           allNodes.get(neighborName).getVirtualRouters().get(neighborVrfName);
@@ -2237,7 +2238,8 @@ public class VirtualRouter implements Serializable {
 
       String neighborName = edge.getNode2();
       Node neighbor = nodes.get(neighborName);
-      Interface neighborInterface = neighbor.getConfiguration().getInterfaces().get(edge.getInt2());
+      Interface neighborInterface =
+          neighbor.getConfiguration().getAllInterfaces().get(edge.getInt2());
 
       changed |=
           propagateOspfInternalRoutesFromNeighbor(
@@ -2288,7 +2290,7 @@ public class VirtualRouter implements Serializable {
       Node neighbor = nodes.get(neighborName);
       String neighborInterfaceName = edge.getInt2();
       Interface neighborInterface =
-          neighbor.getConfiguration().getInterfaces().get(neighborInterfaceName);
+          neighbor.getConfiguration().getAllInterfaces().get(neighborInterfaceName);
       String neighborVrfName = neighborInterface.getVrfName();
       VirtualRouter neighborVirtualRouter =
           nodes.get(neighborName).getVirtualRouters().get(neighborVrfName);
@@ -2989,7 +2991,7 @@ public class VirtualRouter implements Serializable {
       String neighborInterfaceName = edge.getInt2();
       OspfArea area = connectingInterface.getOspfArea();
       Configuration nc = neighbor.getConfiguration();
-      Interface neighborInterface = nc.getInterfaces().get(neighborInterfaceName);
+      Interface neighborInterface = nc.getAllInterfaces().get(neighborInterfaceName);
       String neighborVrfName = neighborInterface.getVrfName();
       VirtualRouter neighborVirtualRouter =
           allNodes.get(neighborName).getVirtualRouters().get(neighborVrfName);

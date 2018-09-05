@@ -16,7 +16,7 @@ public final class NodeRoleRegexInterfaceLinkLocationSpecifier
 
   @Override
   Stream<Location> getNodeLocations(Configuration node) {
-    return node.getInterfaces()
+    return node.getAllInterfaces()
         .values()
         .stream()
         .map(iface -> new InterfaceLinkLocation(node.getHostname(), iface.getName()));

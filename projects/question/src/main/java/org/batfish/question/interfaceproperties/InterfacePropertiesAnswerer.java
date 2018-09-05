@@ -141,7 +141,7 @@ public class InterfacePropertiesAnswerer extends Answerer {
     Multiset<Row> rows = HashMultiset.create();
 
     for (String nodeName : nodes) {
-      for (Interface iface : configurations.get(nodeName).getInterfaces().values()) {
+      for (Interface iface : configurations.get(nodeName).getAllInterfaces().values()) {
         if (!interfacesSpecifier.matches(iface) || (excludeShutInterfaces && !iface.getActive())) {
           continue;
         }

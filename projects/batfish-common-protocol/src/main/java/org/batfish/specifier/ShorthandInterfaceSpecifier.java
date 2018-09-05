@@ -45,7 +45,7 @@ public final class ShorthandInterfaceSpecifier implements InterfaceSpecifier {
         .values()
         .stream()
         .filter(c -> nodes.contains(c.getHostname()))
-        .map(c -> c.getInterfaces().values())
+        .map(c -> c.getAllInterfaces().values())
         .flatMap(Collection::stream)
         .filter(_shorthandSpecifier::matches)
         .collect(Collectors.toSet());

@@ -385,7 +385,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     // Interfaces
     NavigableMap<String, org.batfish.datamodel.Interface> map = new TreeMap<>();
     for (String interfaceName : vr.getInterfaceNames()) {
-      org.batfish.datamodel.Interface iface = _c.getInterfaces().get(interfaceName);
+      org.batfish.datamodel.Interface iface = _c.getAllInterfaces().get(interfaceName);
       if (iface != null) {
         map.put(interfaceName, iface);
         iface.setVrf(vrf);
@@ -416,7 +416,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     convertVirtualSystems();
 
     for (Entry<String, Interface> i : _interfaces.entrySet()) {
-      _c.getInterfaces().put(i.getKey(), toInterface(i.getValue()));
+      _c.getAllInterfaces().put(i.getKey(), toInterface(i.getValue()));
     }
 
     // Vrf conversion uses interfaces, so must be done after interface exist in VI model
@@ -428,7 +428,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     // So put orphaned interfaces in a constructed Vrf and shut them down
     Vrf nullVrf = new Vrf(NULL_VRF_NAME);
     NavigableMap<String, org.batfish.datamodel.Interface> orphanedInterfaces = new TreeMap<>();
-    for (Entry<String, org.batfish.datamodel.Interface> i : _c.getInterfaces().entrySet()) {
+    for (Entry<String, org.batfish.datamodel.Interface> i : _c.getAllInterfaces().entrySet()) {
       org.batfish.datamodel.Interface iface = i.getValue();
       if (iface.getVrf() == null) {
         orphanedInterfaces.put(iface.getName(), iface);

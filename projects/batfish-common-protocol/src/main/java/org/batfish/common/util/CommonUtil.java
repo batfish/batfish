@@ -540,7 +540,7 @@ public class CommonUtil {
                                 iface ->
                                     configs
                                         .get(nodeEntry.getKey())
-                                        .getInterfaces()
+                                        .getAllInterfaces()
                                         .get(iface)
                                         .getVrfName())
                             .collect(Collectors.toList()))));
@@ -601,7 +601,7 @@ public class CommonUtil {
     return toImmutableMap(
         configurations,
         Entry::getKey,
-        e -> ImmutableSet.copyOf(e.getValue().getInterfaces().values()));
+        e -> ImmutableSet.copyOf(e.getValue().getAllInterfaces().values()));
   }
 
   public static void copy(Path srcPath, Path dstPath) {
@@ -808,7 +808,7 @@ public class CommonUtil {
    * @return Any Interface that matches the condition
    */
   public static Optional<Interface> getActiveInterfaceWithName(String name, Configuration c) {
-    return c.getInterfaces()
+    return c.getAllInterfaces()
         .values()
         .stream()
         .filter(iface -> iface.getActive() && iface.getName().equals(name))
@@ -823,7 +823,7 @@ public class CommonUtil {
    * @return Any Interface that matches the condition
    */
   public static Optional<Interface> getActiveInterfaceWithIp(Ip ipAddress, Configuration c) {
-    return c.getInterfaces()
+    return c.getAllInterfaces()
         .values()
         .stream()
         .filter(
@@ -1239,7 +1239,7 @@ public class CommonUtil {
      */
     ImmutableSetMultimap.Builder<Ip, IpWildcardSetIpSpace> builder = ImmutableSetMultimap.builder();
     for (Configuration c : configurations.values()) {
-      Collection<Interface> interfaces = c.getInterfaces().values();
+      Collection<Interface> interfaces = c.getAllInterfaces().values();
       Set<InterfaceAddress> nonNattedInterfaceAddresses =
           interfaces
               .stream()
@@ -1289,7 +1289,7 @@ public class CommonUtil {
             long areaNum = e3.getKey();
             OspfArea area = e3.getValue();
             for (String ifaceName : area.getInterfaces()) {
-              Interface iface = c.getInterfaces().get(ifaceName);
+              Interface iface = c.getAllInterfaces().get(ifaceName);
               if (iface.getOspfPassive()) {
                 continue;
               }
@@ -1303,7 +1303,7 @@ public class CommonUtil {
                     String remoteHostname = edge.getNode2();
                     String remoteIfaceName = edge.getInt2();
                     Configuration remoteNode = configurations.get(remoteHostname);
-                    Interface remoteIface = remoteNode.getInterfaces().get(remoteIfaceName);
+                    Interface remoteIface = remoteNode.getAllInterfaces().get(remoteIfaceName);
                     if (remoteIface.getOspfPassive()) {
                       continue;
                     }
@@ -1567,7 +1567,7 @@ public class CommonUtil {
     Map<Prefix, List<Interface>> prefixInterfaces = new HashMap<>();
     configurations.forEach(
         (nodeName, node) -> {
-          for (Interface iface : node.getInterfaces().values()) {
+          for (Interface iface : node.getAllInterfaces().values()) {
             if (!iface.isLoopback(node.getConfigurationFormat()) && iface.getActive()) {
               for (InterfaceAddress address : iface.getAllAddresses()) {
                 if (address.getNetworkBits() < Prefix.MAX_PREFIX_LENGTH) {

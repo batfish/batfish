@@ -852,9 +852,9 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
             SortedSet<VerboseEdge> vMatchingEdges = new TreeSet<>();
             for (Edge edge : matchingEdges) {
               Configuration n1 = configurations.get(edge.getNode1());
-              Interface i1 = n1.getInterfaces().get(edge.getInt1());
+              Interface i1 = n1.getAllInterfaces().get(edge.getInt1());
               Configuration n2 = configurations.get(edge.getNode2());
-              Interface i2 = n2.getInterfaces().get(edge.getInt2());
+              Interface i2 = n2.getAllInterfaces().get(edge.getInt2());
               vMatchingEdges.add(new VerboseEdge(i1, i2, edge));
             }
             answerElement.setVerboseLayer3Neighbors(vMatchingEdges);
