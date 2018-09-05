@@ -95,8 +95,7 @@ public class Hierarchy {
 
       @Override
       public boolean isMatchedBy(HierarchyWildcardNode node) {
-        String regex = node._wildcard.replaceAll("\\*", ".*");
-        return _text.matches(regex);
+        return matchWithJuniperRegex(_text, node._wildcard);
       }
 
       @Override
@@ -700,5 +699,10 @@ public class Hierarchy {
 
   public void setApplyGroupsExcept(HierarchyPath path, String groupName) {
     _masterTree.setApplyGroupsExcept(path, groupName);
+  }
+
+  static boolean matchWithJuniperRegex(String candidate, String juniperRegex) {
+    String regex = juniperRegex.replaceAll("\\*", ".*");
+    return candidate.matches(regex);
   }
 }
