@@ -249,27 +249,22 @@ public class PacketHeaderConstraints {
       throws IllegalArgumentException {
     // Ensure IP protocols is not an empty set
     Set<IpProtocol> ipProtocols = headerConstraints.getIpProtocols();
-    if (ipProtocols != null) {
-      checkArgument(!ipProtocols.isEmpty(), "Cannot have empty set of IpProtocols");
-    }
+    checkArgument(
+        ipProtocols == null || !ipProtocols.isEmpty(), "Cannot have empty set of IpProtocols");
     validateIpFields(headerConstraints);
     validateIcmpFields(headerConstraints);
     validatePortValues(headerConstraints.getSrcPorts());
     validatePortValues(headerConstraints.getDstPorts());
     try {
       areProtocolsAndPortsCompatible(
-          headerConstraints.getIpProtocols(),
-          headerConstraints.getSrcPorts(),
-          headerConstraints.getSrcProtocols());
+          ipProtocols, headerConstraints.getSrcPorts(), headerConstraints.getSrcProtocols());
     } catch (IllegalArgumentException e) {
       throw new IllegalArgumentException(
           String.format("Source ports/protocols are incompatible: %s", e.getMessage()));
     }
     try {
       areProtocolsAndPortsCompatible(
-          headerConstraints.getIpProtocols(),
-          headerConstraints.getDstPorts(),
-          headerConstraints.getDstProtocols());
+          ipProtocols, headerConstraints.getDstPorts(), headerConstraints.getDstProtocols());
     } catch (IllegalArgumentException e) {
       throw new IllegalArgumentException(
           String.format("Destination ports/protocols are incompatible: %s", e.getMessage()));
@@ -283,8 +278,7 @@ public class PacketHeaderConstraints {
     if (ports == null) {
       return;
     }
-    if (ports.isEmpty()
-        || ports.stream().map(SubRange::isEmpty).allMatch(Predicate.isEqual(true))) {
+    if (ports.isEmpty() || ports.stream().allMatch(SubRange::isEmpty)) {
       throw new IllegalArgumentException("Empty port ranges are not allowed");
     }
     Optional<SubRange> invalidRange =

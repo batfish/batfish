@@ -81,15 +81,24 @@ public class PacketHeaderConstraintsTest {
         areProtocolsAndPortsCompatible(
             null, ImmutableSet.of(new SubRange(0, 1000)), ImmutableSet.of(SSH, HTTP)),
         equalTo(true));
+  }
 
+  @Test
+  public void testAreProtocolsAndPortsIncompatibleNoTCP() {
     thrown.expect(IllegalArgumentException.class); // Not TCP and SSH
     areProtocolsAndPortsCompatible(
         ImmutableSet.of(IpProtocol.IP), ImmutableSet.of(new SubRange(22)), ImmutableSet.of(SSH));
+  }
 
+  @Test
+  public void testAreProtocolsAndPortsIncompatibleEmptyPortRange() {
     thrown.expect(IllegalArgumentException.class); // empty port subrange
     areProtocolsAndPortsCompatible(
         ImmutableSet.of(IpProtocol.IP), ImmutableSet.of(new SubRange(20, 1)), ImmutableSet.of(SSH));
+  }
 
+  @Test
+  public void testAreProtocolsAndPortsIncompatibleWrongPorts() {
     thrown.expect(IllegalArgumentException.class); // wrong port subrange and application protocols
     areProtocolsAndPortsCompatible(
         ImmutableSet.of(IpProtocol.IP),
@@ -112,19 +121,29 @@ public class PacketHeaderConstraintsTest {
     assertThat(
         resolveIpProtocols(null, null, null, ImmutableSet.of(Protocol.SSH), null),
         equalTo(ImmutableSet.of(IpProtocol.TCP)));
+  }
 
-    thrown.expect(IllegalArgumentException.class); // both tcp and udp at the same time in src/dst
+  @Test
+  public void testResolveIpProtocolsTcpAndUdp() {
+    thrown.expect(IllegalArgumentException.class);
+    // both tcp and udp at the same time in src/dst
     resolveIpProtocols(null, null, null, ImmutableSet.of(Protocol.SSH), ImmutableSet.of(DNS));
+  }
 
-    thrown.expect(IllegalArgumentException.class); // ICMP + ports
+  @Test
+  public void testResolveIpProtocolsIcmpAndPorts() {
+    thrown.expect(IllegalArgumentException.class);
     resolveIpProtocols(
         Collections.singleton(IpProtocol.ICMP),
         Collections.singleton(new SubRange(10, 10)),
         null,
         null,
         null);
+  }
 
-    thrown.expect(IllegalArgumentException.class); // ICMP + TCP protocol (e.g., SSH)
+  @Test
+  public void testResolveIpProtocolsIcmpAndTcp() {
+    thrown.expect(IllegalArgumentException.class);
     resolveIpProtocols(
         Collections.singleton(IpProtocol.ICMP), null, null, null, Collections.singleton(SSH));
   }
