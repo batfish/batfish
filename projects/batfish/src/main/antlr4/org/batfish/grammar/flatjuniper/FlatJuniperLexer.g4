@@ -5148,6 +5148,11 @@ TO_ZONE
    'to-zone'
 ;
 
+TRACE
+:
+   'trace'
+;
+
 TRACEOPTIONS
 :
    'traceoptions'

@@ -110,6 +110,7 @@ isi_level
     | isil_hello_interval
     | isil_hold_time
     | isil_metric
+    | isil_priority
     | isil_te_metric
   )
 ;
@@ -173,6 +174,11 @@ isil_hold_time
 isil_metric
 :
   METRIC DEC
+;
+
+isil_priority
+:
+  PRIORITY DEC
 ;
 
 isil_te_metric
