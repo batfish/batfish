@@ -8,7 +8,6 @@ add-batfish-option verboseparse
 init-snapshot networks/example snapshot0
 init-snapshot networks/example snapshot1
 test -raw tests/ui-focused/del-snapshot.ref del-snapshot snapshot0
-test -raw tests/ui-focused/list-snapshots1.ref list-snapshots -nometadata
 
 #### creating, listing, and deleting analyses
 test -raw tests/ui-focused/init-analysis0.ref init-analysis analysis0 tests/ui-focused/templates
