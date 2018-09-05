@@ -1732,6 +1732,16 @@ INET6_VPN
    'inet6-vpn'
 ;
 
+INFO_REPLY
+:
+  'info-reply'
+;
+
+INFO_REQUEST
+:
+  'info-request'
+;
+
 INGRESS
 :
   'ingress'
@@ -3237,6 +3247,16 @@ MAPPED_PORT
 MARTIANS
 :
    'martians'
+;
+
+MASK_REPLY
+:
+   'mask-reply'
+;
+
+MASK_REQUEST
+:
+   'mask-request'
 ;
 
 MASTER_ONLY
@@ -5102,6 +5122,16 @@ TIMED
 TIMEOUT
 :
    'timeout'
+;
+
+TIMESTAMP
+:
+   'timestamp'
+;
+
+TIMESTAMP_REPLY
+:
+   'timestamp-reply'
 ;
 
 TO

@@ -1,5 +1,9 @@
 package org.batfish.datamodel;
 
+/**
+ * Represents the integer constants used for ICMP Types. For more information, see RFC-792,
+ * RFC-1122, RFC-1812, and more.
+ */
 public final class IcmpType {
   public static final int ALTERNATE_ADDRESS = 0x6;
 
@@ -10,6 +14,10 @@ public final class IcmpType {
   public static final int ECHO_REPLY = 0x0;
 
   public static final int ECHO_REQUEST = 0x8;
+
+  public static final int INFO_REPLY = 0x10;
+
+  public static final int INFO_REQUEST = 0xf;
 
   public static final int MASK_REPLY = 0x12;
 
