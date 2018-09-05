@@ -21,7 +21,7 @@
           "description" : "The VRF in which this session is configured",
           "isKey" : true,
           "isValue" : false,
-          "name" : "VRF_Name",
+          "name" : "VRF",
           "schema" : "String"
         },
         {
@@ -67,7 +67,7 @@
           "schema" : "Integer"
         }
       ],
-      "textDesc" : "On ${Node} session ${VRF_Name}:${Remote_Prefix} has configured status ${Configured_Status}."
+      "textDesc" : "On ${Node} session ${VRF}:${Remote_Prefix} has configured status ${Configured_Status}."
     },
     "rows" : [
       {
@@ -88,7 +88,7 @@
         },
         "Remote_Prefix" : "10.23.21.3/32",
         "Session_Type" : "EBGP_SINGLEHOP",
-        "VRF_Name" : "default"
+        "VRF" : "default"
       }
     ],
     "summary" : {

@@ -375,4 +375,8 @@ public class Row implements Comparable<Row>, Serializable {
   public String toString() {
     return _data.toString();
   }
+
+  public boolean hasNonNull(String column) {
+    return _data.hasNonNull(column);
+  }
 }

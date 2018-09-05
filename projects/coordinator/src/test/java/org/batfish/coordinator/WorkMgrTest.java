@@ -567,7 +567,8 @@ public class WorkMgrTest {
     String questionName = "question1";
     String questionContent = "{}";
     AnswerMetadata answerMetadata =
-        new AnswerMetadata(new Metrics(ImmutableMap.of(), 1), AnswerStatus.SUCCESS);
+        new AnswerMetadata(
+            new Metrics(ImmutableMap.of(), ImmutableSet.of(), 1), AnswerStatus.SUCCESS);
     _manager.initContainer(networkName, null);
     _manager.configureAnalysis(
         networkName,
@@ -592,7 +593,8 @@ public class WorkMgrTest {
     String analysisName = "analysis1";
     String questionName = "question1";
     AnswerMetadata answerMetadata =
-        new AnswerMetadata(new Metrics(ImmutableMap.of(), 1), AnswerStatus.SUCCESS);
+        new AnswerMetadata(
+            new Metrics(ImmutableMap.of(), ImmutableSet.of(), 1), AnswerStatus.SUCCESS);
     _manager.initContainer(networkName, null);
     _manager.configureAnalysis(
         networkName, true, analysisName, ImmutableMap.of(), ImmutableList.of(), null);
@@ -634,7 +636,8 @@ public class WorkMgrTest {
     String analysisName = "analysis1";
     String questionName = "question1";
     AnswerMetadata answerMetadata =
-        new AnswerMetadata(new Metrics(ImmutableMap.of(), 1), AnswerStatus.SUCCESS);
+        new AnswerMetadata(
+            new Metrics(ImmutableMap.of(), ImmutableSet.of(), 1), AnswerStatus.SUCCESS);
     _manager.initContainer(networkName, null);
     _storage.storeAnswerMetadata(
         answerMetadata, networkName, snapshotName, questionName, null, analysisName);
@@ -651,7 +654,8 @@ public class WorkMgrTest {
     String questionContent = "{}";
     String questionName = "question2Name";
     AnswerMetadata answerMetadata =
-        new AnswerMetadata(new Metrics(ImmutableMap.of(), 2), AnswerStatus.SUCCESS);
+        new AnswerMetadata(
+            new Metrics(ImmutableMap.of(), ImmutableSet.of(), 2), AnswerStatus.SUCCESS);
     _manager.initContainer(networkName, null);
     _manager.uploadQuestion(networkName, questionName, questionContent, false);
     _storage.storeAnswerMetadata(
@@ -685,7 +689,8 @@ public class WorkMgrTest {
     String snapshotName = "snapshot1";
     String questionName = "question2Name";
     AnswerMetadata answerMetadata =
-        new AnswerMetadata(new Metrics(ImmutableMap.of(), 2), AnswerStatus.SUCCESS);
+        new AnswerMetadata(
+            new Metrics(ImmutableMap.of(), ImmutableSet.of(), 2), AnswerStatus.SUCCESS);
     _manager.initContainer(networkName, null);
     _storage.storeAnswerMetadata(
         answerMetadata, networkName, snapshotName, questionName, null, null);
@@ -957,12 +962,14 @@ public class WorkMgrTest {
             ImmutableList.of(),
             false);
 
-    assertThat(
-        _manager.processAnalysisAnswerTable(table, optionsNotFiltered).getRowsList(),
-        equalTo(ImmutableList.of(row1, row2)));
-    assertThat(
-        _manager.processAnalysisAnswerTable(table, optionsFiltered).getRowsList(),
-        equalTo(ImmutableList.of(row1)));
+    TableAnswerElement notFiltered = _manager.processAnalysisAnswerTable(table, optionsNotFiltered);
+    TableAnswerElement filtered = _manager.processAnalysisAnswerTable(table, optionsFiltered);
+
+    assertThat(notFiltered.getRowsList(), equalTo(ImmutableList.of(row1, row2)));
+    assertThat(filtered.getRowsList(), equalTo(ImmutableList.of(row1)));
+
+    assertThat(notFiltered.getSummary().getNumResults(), equalTo(2));
+    assertThat(filtered.getSummary().getNumResults(), equalTo(1));
   }
 
   @Test
