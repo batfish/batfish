@@ -34,7 +34,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-public class ReducedReachabilityQuestionTest {
+/** End-to-end tests of {@link ReducedReachabilityQuestion}. */
+public class ReducedReachabilityTest {
   private static final String LOOPBACK = "Loopback0";
   private static final String NODE1 = "node1";
   private static final String NODE2 = "node2";
@@ -50,7 +51,7 @@ public class ReducedReachabilityQuestionTest {
 
   private org.batfish.datamodel.Vrf.Builder _vb;
 
-  public ReducedReachabilityQuestionTest() {}
+  public ReducedReachabilityTest() {}
 
   @Before
   public void setup() {

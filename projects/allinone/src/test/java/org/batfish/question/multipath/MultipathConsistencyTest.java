@@ -25,9 +25,9 @@ import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Tests of {@link MultipathConsistencyQuestion}. */
+/** End-to-end tests of {@link MultipathConsistencyQuestion}. */
 @RunWith(JUnit4.class)
-public class MultipathConsistencyQuestionTest {
+public class MultipathConsistencyTest {
   @Rule public TemporaryFolder temp = new TemporaryFolder();
 
   private TestNetwork _testNetwork;

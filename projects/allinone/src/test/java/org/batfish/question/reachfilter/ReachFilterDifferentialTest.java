@@ -34,7 +34,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-public class ReachFilterAnswererDifferentialTest {
+/** End-to-end tests of {@link ReachFilterQuestion} in differential mode. */
+public class ReachFilterDifferentialTest {
   @Rule public TemporaryFolder _tmp = new TemporaryFolder();
 
   private static final String HOSTNAME = "hostname";
