@@ -45,6 +45,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+/** End-to-end tests of {@link TracerouteQuestion}. */
 public class TracerouteTest {
   private static final String TAG = "tag";
 
