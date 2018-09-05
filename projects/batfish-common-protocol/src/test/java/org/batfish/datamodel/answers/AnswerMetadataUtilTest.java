@@ -6,8 +6,10 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import org.batfish.common.BatfishLogger;
 import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.table.ColumnMetadata;
@@ -49,7 +51,9 @@ public class AnswerMetadataUtilTest {
         equalTo(
             new AnswerMetadata(
                 new Metrics(
-                    ImmutableMap.of(columnName, ImmutableMap.of(Aggregation.MAX, value)), 1),
+                    ImmutableMap.of(columnName, ImmutableMap.of(Aggregation.MAX, value)),
+                    ImmutableSet.of(),
+                    1),
                 AnswerStatus.SUCCESS)));
   }
 
@@ -80,7 +84,9 @@ public class AnswerMetadataUtilTest {
 
     assertThat(
         AnswerMetadataUtil.computeAnswerMetadata(testAnswer, _logger),
-        equalTo(new AnswerMetadata(new Metrics(ImmutableMap.of(), 1), AnswerStatus.SUCCESS)));
+        equalTo(
+            new AnswerMetadata(
+                new Metrics(ImmutableMap.of(), ImmutableSet.of(), 1), AnswerStatus.SUCCESS)));
   }
 
   @Test
@@ -100,6 +106,33 @@ public class AnswerMetadataUtilTest {
     assertThat(
         AnswerMetadataUtil.computeColumnAggregations(table, aggregations, _logger),
         equalTo(ImmutableMap.of(columnName, ImmutableMap.of(Aggregation.MAX, value))));
+  }
+
+  @Test
+  public void testComputeEmptyColumns() {
+    String fullColumn = "full";
+    String partialColumn = "partial";
+    String emptyColumn = "empty";
+    String val = "val";
+    Map<String, ColumnMetadata> columnMetadata =
+        ImmutableMap.of(
+            fullColumn,
+            new ColumnMetadata(fullColumn, Schema.STRING, fullColumn),
+            partialColumn,
+            new ColumnMetadata(partialColumn, Schema.STRING, partialColumn),
+            emptyColumn,
+            new ColumnMetadata(emptyColumn, Schema.STRING, emptyColumn));
+
+    TableAnswerElement table =
+        new TableAnswerElement(
+            new TableMetadata(
+                columnMetadata.values().stream().collect(ImmutableList.toImmutableList())));
+
+    table.addRow(Row.builder(columnMetadata).put(fullColumn, val).put(partialColumn, val).build());
+    table.addRow(Row.builder(columnMetadata).put(fullColumn, val).build());
+
+    assertThat(
+        AnswerMetadataUtil.computeEmptyColumns(table), equalTo(ImmutableSet.of(emptyColumn)));
   }
 
   @Test
