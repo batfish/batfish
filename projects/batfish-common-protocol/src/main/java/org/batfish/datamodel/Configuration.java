@@ -423,15 +423,6 @@ public final class Configuration implements Serializable {
         .collect(ImmutableSet.toImmutableSet());
   }
 
-  public Set<String> inactiveInterfaces() {
-    return _interfaces
-        .values()
-        .stream()
-        .filter(iface -> !iface.getActive())
-        .map(Interface::getName)
-        .collect(ImmutableSet.toImmutableSet());
-  }
-
   @JsonProperty(PROP_COMMUNITY_LISTS)
   @JsonPropertyDescription("Dictionary of all community-lists for this node.")
   public NavigableMap<String, CommunityList> getCommunityLists() {
