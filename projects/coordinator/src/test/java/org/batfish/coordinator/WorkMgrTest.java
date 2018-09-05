@@ -957,12 +957,14 @@ public class WorkMgrTest {
             ImmutableList.of(),
             false);
 
-    assertThat(
-        _manager.processAnalysisAnswerTable(table, optionsNotFiltered).getRowsList(),
-        equalTo(ImmutableList.of(row1, row2)));
-    assertThat(
-        _manager.processAnalysisAnswerTable(table, optionsFiltered).getRowsList(),
-        equalTo(ImmutableList.of(row1)));
+    TableAnswerElement notFiltered = _manager.processAnalysisAnswerTable(table, optionsNotFiltered);
+    TableAnswerElement filtered = _manager.processAnalysisAnswerTable(table, optionsFiltered);
+
+    assertThat(notFiltered.getRowsList(), equalTo(ImmutableList.of(row1, row2)));
+    assertThat(filtered.getRowsList(), equalTo(ImmutableList.of(row1)));
+
+    assertThat(notFiltered.getSummary().getNumResults(), equalTo(2));
+    assertThat(filtered.getSummary().getNumResults(), equalTo(1));
   }
 
   @Test
