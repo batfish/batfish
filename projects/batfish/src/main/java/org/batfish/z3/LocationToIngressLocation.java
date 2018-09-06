@@ -28,6 +28,6 @@ public final class LocationToIngressLocation implements LocationVisitor<IngressL
   public IngressLocation visitInterfaceLocation(InterfaceLocation interfaceLocation) {
     String node = interfaceLocation.getNodeName();
     String iface = interfaceLocation.getInterfaceName();
-    return IngressLocation.vrf(node, _configs.get(node).getInterfaces().get(iface).getVrfName());
+    return IngressLocation.vrf(node, _configs.get(node).getAllInterfaces().get(iface).getVrfName());
   }
 }

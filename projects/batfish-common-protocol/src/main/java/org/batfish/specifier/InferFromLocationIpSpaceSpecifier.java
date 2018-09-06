@@ -24,7 +24,12 @@ public final class InferFromLocationIpSpaceSpecifier implements IpSpaceSpecifier
     }
 
     private Set<InterfaceAddress> interfaceAddresses(String node, String iface) {
-      return _specifierContext.getConfigs().get(node).getInterfaces().get(iface).getAllAddresses();
+      return _specifierContext
+          .getConfigs()
+          .get(node)
+          .getAllInterfaces()
+          .get(iface)
+          .getAllAddresses();
     }
 
     @Override

@@ -1,0 +1,11 @@
+[
+  {
+    "class" : "org.batfish.symbolic.answers.SmtReachabilityAnswerElement",
+    "flowHistory" : {
+      "class" : "org.batfish.datamodel.FlowHistory"
+    },
+    "result" : {
+      "verified" : true
+    }
+  }
+]

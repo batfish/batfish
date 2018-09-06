@@ -136,7 +136,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                 Entry::getKey, // hostname
                 ribsByNodeEntry -> {
                   String hostname = ribsByNodeEntry.getKey();
-                  Map<String, Interface> interfaces = configurations.get(hostname).getInterfaces();
+                  Map<String, Interface> interfaces =
+                      configurations.get(hostname).getAllInterfaces();
                   Map<String, IpSpace> routableIpsByVrf = routableIpsByNodeVrf.get(hostname);
                   Map<String, IpSpace> ipsRoutedOutInterfaces =
                       _ipsRoutedOutInterfaces.get(hostname);
@@ -198,7 +199,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                   Set<AbstractRoute> routes = routesWithDestIpEdgeEntry.getValue();
                   String hostname = edge.getNode1();
                   String iface = edge.getInt1();
-                  String vrf = configurations.get(hostname).getInterfaces().get(iface).getVrfName();
+                  String vrf =
+                      configurations.get(hostname).getAllInterfaces().get(iface).getVrfName();
                   GenericRib<AbstractRoute> rib = ribs.get(hostname).get(vrf);
                   IpSpace dstIpMatchesSomeRoutePrefix = computeRouteMatchConditions(routes, rib);
                   String recvNode = edge.getNode2();
@@ -224,7 +226,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                   Edge edge = routesWithNextHopIpArpTrueEntry.getKey();
                   String hostname = edge.getNode1();
                   String iface = edge.getInt1();
-                  String vrf = configurations.get(hostname).getInterfaces().get(iface).getVrfName();
+                  String vrf =
+                      configurations.get(hostname).getAllInterfaces().get(iface).getVrfName();
                   GenericRib<AbstractRoute> rib = ribs.get(hostname).get(vrf);
                   Set<AbstractRoute> routes = routesWithNextHopIpArpTrueEntry.getValue();
                   return computeRouteMatchConditions(routes, rib);

@@ -41,7 +41,7 @@ public abstract class InterfaceDescriptionRegexLocationSpecifier implements Loca
     return ctxt.getConfigs()
         .values()
         .stream()
-        .flatMap(config -> config.getInterfaces().values().stream())
+        .flatMap(config -> config.getAllInterfaces().values().stream())
         .filter(iface -> _pattern.matcher(iface.getDescription()).matches())
         .map(this::getLocation)
         .collect(ImmutableSet.toImmutableSet());

@@ -210,7 +210,7 @@ public class BgpSessionStatusQuestionPlugin extends QuestionPlugin {
       Map<Ip, Set<String>> ipOwners = new HashMap<>();
       // TODO: refactor this out into CommonUtil
       for (Configuration c : configurations.values()) {
-        for (Interface i : c.getInterfaces().values()) {
+        for (Interface i : c.getAllInterfaces().values()) {
           if (i.getActive() && i.getAddress() != null) {
             for (InterfaceAddress address : i.getAllAddresses()) {
               Ip ip = address.getIp();

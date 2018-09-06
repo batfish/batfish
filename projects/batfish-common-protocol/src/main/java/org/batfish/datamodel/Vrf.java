@@ -278,7 +278,7 @@ public class Vrf extends ComparableStructure<String> {
   public void resolveReferences(Configuration owner) {
     if (_interfaceNames != null) {
       for (String ifaceName : _interfaceNames) {
-        _interfaces.put(ifaceName, owner.getInterfaces().get(ifaceName));
+        _interfaces.put(ifaceName, owner.getAllInterfaces().get(ifaceName));
       }
     }
   }

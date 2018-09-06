@@ -233,7 +233,7 @@ public class DestinationClasses {
         protos.add(Protocol.STATIC);
       }
 
-      if (!conf.getInterfaces().isEmpty()) {
+      if (!conf.getAllInterfaces().isEmpty()) {
         protos.add(Protocol.CONNECTED);
       }
     }

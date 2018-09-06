@@ -49,7 +49,7 @@ public class ConfigurationDiff extends AnswerElement {
     if (_communityListsDiff.isEmpty()) {
       _communityListsDiff = null;
     }
-    _interfacesDiff = new InterfacesDiff(before.getInterfaces(), after.getInterfaces());
+    _interfacesDiff = new InterfacesDiff(before.getAllInterfaces(), after.getAllInterfaces());
     if (_interfacesDiff.isEmpty()) {
       _interfacesDiff = null;
     }

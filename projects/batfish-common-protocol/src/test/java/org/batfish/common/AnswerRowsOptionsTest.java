@@ -5,68 +5,68 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.testing.EqualsTester;
 import org.junit.Test;
 
-public final class AnalysisAnswerOptionsTest {
+public final class AnswerRowsOptionsTest {
 
   @Test
   public void testEquals() {
-    AnalysisAnswerOptions group1Elem1 =
-        new AnalysisAnswerOptions(
+    AnswerRowsOptions group1Elem1 =
+        new AnswerRowsOptions(
             ImmutableSet.of("a"),
             ImmutableList.of(new ColumnFilter("a", "1")),
             1,
             2,
             ImmutableList.of(new ColumnSortOption("c", false)),
             false);
-    AnalysisAnswerOptions group1Elem2 =
-        new AnalysisAnswerOptions(
+    AnswerRowsOptions group1Elem2 =
+        new AnswerRowsOptions(
             ImmutableSet.of("a"),
             ImmutableList.of(new ColumnFilter("a", "1")),
             1,
             2,
             ImmutableList.of(new ColumnSortOption("c", false)),
             false);
-    AnalysisAnswerOptions group2Elem1 =
-        new AnalysisAnswerOptions(
+    AnswerRowsOptions group2Elem1 =
+        new AnswerRowsOptions(
             ImmutableSet.of("b"),
             ImmutableList.of(new ColumnFilter("a", "1")),
             1,
             2,
             ImmutableList.of(new ColumnSortOption("c", false)),
             false);
-    AnalysisAnswerOptions group3Elem1 =
-        new AnalysisAnswerOptions(
+    AnswerRowsOptions group3Elem1 =
+        new AnswerRowsOptions(
             ImmutableSet.of("a"),
             ImmutableList.of(new ColumnFilter("a", "2")),
             1,
             2,
             ImmutableList.of(new ColumnSortOption("c", false)),
             false);
-    AnalysisAnswerOptions group4Elem1 =
-        new AnalysisAnswerOptions(
+    AnswerRowsOptions group4Elem1 =
+        new AnswerRowsOptions(
             ImmutableSet.of("a"),
             ImmutableList.of(new ColumnFilter("a", "1")),
             3,
             2,
             ImmutableList.of(new ColumnSortOption("c", false)),
             false);
-    AnalysisAnswerOptions group5Elem1 =
-        new AnalysisAnswerOptions(
+    AnswerRowsOptions group5Elem1 =
+        new AnswerRowsOptions(
             ImmutableSet.of("a"),
             ImmutableList.of(new ColumnFilter("a", "1")),
             1,
             4,
             ImmutableList.of(new ColumnSortOption("c", false)),
             false);
-    AnalysisAnswerOptions group6Elem1 =
-        new AnalysisAnswerOptions(
+    AnswerRowsOptions group6Elem1 =
+        new AnswerRowsOptions(
             ImmutableSet.of("a"),
             ImmutableList.of(new ColumnFilter("a", "1")),
             1,
             2,
             ImmutableList.of(new ColumnSortOption("d", false)),
             false);
-    AnalysisAnswerOptions group7Elem1 =
-        new AnalysisAnswerOptions(
+    AnswerRowsOptions group7Elem1 =
+        new AnswerRowsOptions(
             ImmutableSet.of("a"),
             ImmutableList.of(new ColumnFilter("a", "1")),
             1,

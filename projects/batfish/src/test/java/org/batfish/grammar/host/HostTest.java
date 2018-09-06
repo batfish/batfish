@@ -62,10 +62,10 @@ public class HostTest {
     /*
      * NAT settings on host1 (not-shared version) should result in tunnel interfaces being down
      */
-    assertThat(configurations.get("cisco_host").getInterfaces().get("Tunnel1"), not(isActive()));
-    assertThat(configurations.get("cisco_host").getInterfaces().get("Tunnel2"), not(isActive()));
-    assertThat(configurations.get("vgw-81fd279f").getInterfaces().get("vpn1"), not(isActive()));
-    assertThat(configurations.get("vgw-81fd279f").getInterfaces().get("vpn2"), not(isActive()));
+    assertThat(configurations.get("cisco_host").getAllInterfaces().get("Tunnel1"), not(isActive()));
+    assertThat(configurations.get("cisco_host").getAllInterfaces().get("Tunnel2"), not(isActive()));
+    assertThat(configurations.get("vgw-81fd279f").getAllInterfaces().get("vpn1"), not(isActive()));
+    assertThat(configurations.get("vgw-81fd279f").getAllInterfaces().get("vpn2"), not(isActive()));
   }
 
   @Test
@@ -75,9 +75,9 @@ public class HostTest {
     /*
      * NAT settings on host1 (shared version) should result in tunnel interfaces being up
      */
-    assertThat(configurations.get("cisco_host").getInterfaces().get("Tunnel1"), isActive());
-    assertThat(configurations.get("cisco_host").getInterfaces().get("Tunnel2"), isActive());
-    assertThat(configurations.get("vgw-81fd279f").getInterfaces().get("vpn1"), isActive());
-    assertThat(configurations.get("vgw-81fd279f").getInterfaces().get("vpn2"), isActive());
+    assertThat(configurations.get("cisco_host").getAllInterfaces().get("Tunnel1"), isActive());
+    assertThat(configurations.get("cisco_host").getAllInterfaces().get("Tunnel2"), isActive());
+    assertThat(configurations.get("vgw-81fd279f").getAllInterfaces().get("vpn1"), isActive());
+    assertThat(configurations.get("vgw-81fd279f").getAllInterfaces().get("vpn2"), isActive());
   }
 }

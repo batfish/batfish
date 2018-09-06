@@ -252,6 +252,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isil_hello_authenticati
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isil_hello_intervalContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isil_hold_timeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isil_metricContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isil_priorityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isil_te_metricContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isl_disableContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isl_wide_metrics_onlyContext;
@@ -3749,6 +3750,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void exitIsil_metric(Isil_metricContext ctx) {
     int metric = toInt(ctx.DEC());
     _currentIsisInterfaceLevelSettings.setMetric(metric);
+  }
+
+  @Override
+  public void exitIsil_priority(Isil_priorityContext ctx) {
+    todo(ctx);
   }
 
   @Override
