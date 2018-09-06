@@ -1051,8 +1051,8 @@ public class WorkMgrServiceTest {
             _networkName,
             _snapshotName,
             null,
-            analysis,
             question,
+            analysis,
             answerRowsOptionsStr,
             null);
 
@@ -1109,8 +1109,8 @@ public class WorkMgrServiceTest {
             _networkName,
             _snapshotName,
             null,
-            null,
             question,
+            null,
             answerRowsOptionsStr,
             null);
 
