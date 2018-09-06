@@ -1063,26 +1063,23 @@ public class WorkMgrService {
       _logger.errorf(
           "WMS:getAnswer exception for apikey:%s in network:%s, snapshot:%s, referencesnapshot:%s; "
               + "exception:%s",
-          apiKey,
-          networkNameParam,
-          snapshotNameParam,
-          referenceSnapshotParam == null ? "" : referenceSnapshotParam,
-          stackTrace);
+          apiKey, networkNameParam, snapshotNameParam, referenceSnapshotParam, stackTrace);
       return failureResponse(e.getMessage());
     }
   }
 
   /**
-   * Get metrics for answers for a previously run analysis
+   * Get metrics for answers for a previously run ad-hoc or analysis question
    *
    * @param apiKey The API key of the client
    * @param clientVersion The version of the client
    * @param networkName The name of the network in which the answer resides
    * @param snapshotName The name of the snapshot on which the question was run
-   * @param referenceSnapshotName The name of the reference snapshot on which the analysis was run
+   * @param referenceSnapshotName The name of the reference snapshot on which the question was run
    * @param questionName The name of the question
    * @param analysisName (optional) The name of the analysis containing the question
    * @param answerRowsOptionsStr Options specifying how to process the rows of the answer
+   * @param workItemStr The work item
    * @return TODO: document JSON response
    */
   @POST
@@ -1094,36 +1091,40 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_NETWORK_NAME) String networkName,
       @FormDataParam(CoordConsts.SVC_KEY_SNAPSHOT_NAME) String snapshotName,
       @FormDataParam(CoordConsts.SVC_KEY_REFERENCE_SNAPSHOT_NAME) String referenceSnapshotName,
-      @FormDataParam(CoordConsts.SVC_KEY_ANALYSIS_NAME) String analysisName,
       @FormDataParam(CoordConsts.SVC_KEY_QUESTION_NAME) String questionName,
+      @FormDataParam(CoordConsts.SVC_KEY_ANALYSIS_NAME) String analysisName,
       @FormDataParam(CoordConsts.SVC_KEY_ANALYSIS_ANSWERS_OPTIONS) String answerRowsOptionsStr,
       @FormDataParam(CoordConsts.SVC_KEY_WORKITEM) String workItemStr /* optional */) {
-    String networkNameParam = networkName;
-    String snapshotNameParam = snapshotName;
-    String referenceSnapshotParam = referenceSnapshotName;
     try {
       _logger.infof(
-          "WMS:getAnswerRows %s %s %s %s %s\n",
-          apiKey, networkNameParam, snapshotNameParam, analysisName, answerRowsOptionsStr);
+          "WMS:getAnswerRows %s %s %s %s %s %s %s\n",
+          apiKey,
+          networkName,
+          snapshotName,
+          referenceSnapshotName,
+          questionName,
+          analysisName,
+          answerRowsOptionsStr);
 
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
-      checkStringParam(networkNameParam, "Network name");
-      checkStringParam(snapshotNameParam, "Base snapshot name");
+      checkStringParam(networkName, "Network name");
+      checkStringParam(snapshotName, "Current snapshot name");
+      checkStringParam(questionName, "Question name");
       AnswerRowsOptions answersRowsOptions =
           BatfishObjectMapper.mapper()
               .readValue(answerRowsOptionsStr, new TypeReference<AnswerRowsOptions>() {});
 
       checkApiKeyValidity(apiKey);
       checkClientVersion(clientVersion);
-      checkNetworkAccessibility(apiKey, networkNameParam);
+      checkNetworkAccessibility(apiKey, networkName);
 
       JSONObject response = new JSONObject();
 
       if (!Strings.isNullOrEmpty(workItemStr)) {
         WorkItem workItem = BatfishObjectMapper.mapper().readValue(workItemStr, WorkItem.class);
-        if (!workItem.getContainerName().equals(networkNameParam)
-            || !workItem.getTestrigName().equals(snapshotNameParam)) {
+        if (!workItem.getContainerName().equals(networkName)
+            || !workItem.getTestrigName().equals(snapshotName)) {
           return failureResponse(
               "Mismatch in parameters: WorkItem is not for the supplied network or snapshot");
         }
@@ -1140,7 +1141,7 @@ public class WorkMgrService {
       String rawAnswer =
           Main.getWorkMgr()
               .getAnswer(
-                  networkName, snapshotName, questionName, referenceSnapshotParam, analysisName);
+                  networkName, snapshotName, questionName, referenceSnapshotName, analysisName);
 
       Answer answer = Main.getWorkMgr().processAnswerRows(rawAnswer, answersRowsOptions);
 
@@ -1148,14 +1149,20 @@ public class WorkMgrService {
 
       return successResponse(response.put(CoordConsts.SVC_KEY_ANSWER, answerStr));
     } catch (IllegalArgumentException | AccessControlException e) {
-      _logger.errorf("WMS:getAnalysisAnswers exception: %s\n", e.getMessage());
+      _logger.errorf("WMS:getAnswerRows exception: %s\n", e.getMessage());
       return failureResponse(e.getMessage());
     } catch (Exception e) {
       String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.errorf(
           "WMS:getAnswerRows exception for apikey:%s in network:%s, snapshot:%s, "
-              + "referencesnapshot:%s; exception:%s",
-          apiKey, networkNameParam, snapshotNameParam, referenceSnapshotParam, stackTrace);
+              + "referencesnapshot:%s, question:%s, analysis:%s; exception:%s",
+          apiKey,
+          networkName,
+          snapshotName,
+          referenceSnapshotName,
+          questionName,
+          analysisName,
+          stackTrace);
       return failureResponse(e.getMessage());
     }
   }

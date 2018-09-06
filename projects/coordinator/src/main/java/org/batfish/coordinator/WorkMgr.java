@@ -1843,8 +1843,7 @@ public class WorkMgr extends AbstractCoordinator {
       answer.addAnswerElement(processAnswerTable(rawTable, options));
       return answer;
     } catch (Exception e) {
-      _logger.errorf(
-          "Failed to convert answer string to ProcessAnalysisAnswerResult: %s", e.getMessage());
+      _logger.errorf("Failed to convert answer string to Answer: %s", e.getMessage());
       return Answer.failureAnswer(e.getMessage(), null);
     }
   }
