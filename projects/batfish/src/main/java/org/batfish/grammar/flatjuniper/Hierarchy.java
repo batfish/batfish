@@ -464,7 +464,6 @@ public class Hierarchy {
      */
     private static StatementContext setLineHelper(
         Set_lineContext setLine, HierarchyPath path, int overrideLine, boolean markWildcards) {
-      Set_line_tailContext setLineTail = new Set_line_tailContext(setLine, -1);
       StringBuilder sb = new StringBuilder();
       for (HierarchyChildNode pathNode : path._nodes) {
         sb.append(pathNode._text);
@@ -475,6 +474,7 @@ public class Hierarchy {
       newStatementText =
           "set " + newStatementText.substring(0, newStatementText.length() - 1) + "\n";
       TerminalNode set = new TerminalNodeImpl(new CommonToken(FlatJuniperLexer.SET, "set"));
+      Set_line_tailContext setLineTail = new Set_line_tailContext(setLine, -1);
       TerminalNode newline = new TerminalNodeImpl(new CommonToken(FlatJuniperLexer.NEWLINE, "\n"));
       setLine.children = new ArrayList<>();
       setLine.children.add(set);
@@ -482,6 +482,7 @@ public class Hierarchy {
       setLine.children.add(newline);
       Settings settings = parserSettings();
       FlatJuniperCombinedParser parser = new FlatJuniperCombinedParser(newStatementText, settings);
+      // Use the supplied line number for the constructed nodes
       parser.getLexer().setOverrideTokenStartLine(overrideLine);
       if (markWildcards) {
         parser.setMarkWildcards(true);
