@@ -2097,7 +2097,6 @@ public class FlatJuniperGrammarTest {
   public void testJuniperWildcardsReference() throws IOException {
     String hostname = "juniper-wildcards";
     String filename = "configs/" + hostname;
-    Configuration c = parseConfig(hostname);
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse();
