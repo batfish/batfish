@@ -32,7 +32,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import org.apache.commons.io.FileExistsException;
-import org.batfish.common.AnalysisAnswerOptions;
+import org.batfish.common.AnswerRowsOptions;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
@@ -892,8 +892,8 @@ public class WorkMgrService {
    * @param snapshotName The name of the snapshot on which the analysis was run
    * @param referenceSnapshot The name of the reference snapshot on which the analysis was run
    * @param analysisName The name of the analysis
-   * @param analysisAnswersOptionsStr Options specifying which answers to retrieve and how to
-   *     process them
+   * @param answersRowsOptionsStr Options specifying which answers to retrieve and how to process
+   *     them
    * @return TODO: document JSON response
    */
   @POST
@@ -907,7 +907,7 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_DELTA_SNAPSHOT_NAME) String deltaSnapshot,
       @FormDataParam(CoordConsts.SVC_KEY_REFERENCE_SNAPSHOT_NAME) String referenceSnapshot,
       @FormDataParam(CoordConsts.SVC_KEY_ANALYSIS_NAME) String analysisName,
-      @FormDataParam(CoordConsts.SVC_KEY_ANALYSIS_ANSWERS_OPTIONS) String analysisAnswersOptionsStr,
+      @FormDataParam(CoordConsts.SVC_KEY_ANALYSIS_ANSWERS_OPTIONS) String answersRowsOptionsStr,
       @FormDataParam(CoordConsts.SVC_KEY_WORKITEM) String workItemStr /* optional */) {
     String networkNameParam = networkName;
     String snapshotNameParam = snapshotName;
@@ -915,18 +915,17 @@ public class WorkMgrService {
     try {
       _logger.infof(
           "WMS:getAnalysisAnswersRows %s %s %s %s %s\n",
-          apiKey, networkNameParam, snapshotNameParam, analysisName, analysisAnswersOptionsStr);
+          apiKey, networkNameParam, snapshotNameParam, analysisName, answersRowsOptionsStr);
 
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
       checkStringParam(networkNameParam, "Network name");
       checkStringParam(snapshotNameParam, "Current snapshot name");
       checkStringParam(analysisName, "Analysis name");
-      Map<String, AnalysisAnswerOptions> analysisAnswersOptions =
+      Map<String, AnswerRowsOptions> analysisAnswersOptions =
           BatfishObjectMapper.mapper()
               .readValue(
-                  analysisAnswersOptionsStr,
-                  new TypeReference<Map<String, AnalysisAnswerOptions>>() {});
+                  answersRowsOptionsStr, new TypeReference<Map<String, AnswerRowsOptions>>() {});
 
       checkApiKeyValidity(apiKey);
       checkClientVersion(clientVersion);
@@ -974,7 +973,7 @@ public class WorkMgrService {
     } catch (Exception e) {
       String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.errorf(
-          "WMS:getAnalysisAnswersMetrics exception for apikey:%s in network:%s, snapshot:%s, "
+          "WMS:getAnalysisAnswersRows exception for apikey:%s in network:%s, snapshot:%s, "
               + "referencesnapshot:%s; exception:%s",
           apiKey, networkNameParam, snapshotNameParam, referenceSnapshotParam, stackTrace);
       return failureResponse(e.getMessage());
@@ -1065,6 +1064,105 @@ public class WorkMgrService {
           "WMS:getAnswer exception for apikey:%s in network:%s, snapshot:%s, referencesnapshot:%s; "
               + "exception:%s",
           apiKey, networkNameParam, snapshotNameParam, referenceSnapshotParam, stackTrace);
+      return failureResponse(e.getMessage());
+    }
+  }
+
+  /**
+   * Get metrics for answers for a previously run ad-hoc or analysis question
+   *
+   * @param apiKey The API key of the client
+   * @param clientVersion The version of the client
+   * @param networkName The name of the network in which the answer resides
+   * @param snapshotName The name of the snapshot on which the question was run
+   * @param referenceSnapshotName The name of the reference snapshot on which the question was run
+   * @param questionName The name of the question
+   * @param analysisName (optional) The name of the analysis containing the question
+   * @param answerRowsOptionsStr Options specifying how to process the rows of the answer
+   * @param workItemStr The work item
+   * @return TODO: document JSON response
+   */
+  @POST
+  @Path(CoordConsts.SVC_RSC_GET_ANSWER_ROWS)
+  @Produces(MediaType.APPLICATION_JSON)
+  public JSONArray getAnswerRows(
+      @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
+      @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
+      @FormDataParam(CoordConsts.SVC_KEY_NETWORK_NAME) String networkName,
+      @FormDataParam(CoordConsts.SVC_KEY_SNAPSHOT_NAME) String snapshotName,
+      @FormDataParam(CoordConsts.SVC_KEY_REFERENCE_SNAPSHOT_NAME) String referenceSnapshotName,
+      @FormDataParam(CoordConsts.SVC_KEY_QUESTION_NAME) String questionName,
+      @FormDataParam(CoordConsts.SVC_KEY_ANALYSIS_NAME) String analysisName,
+      @FormDataParam(CoordConsts.SVC_KEY_ANALYSIS_ANSWERS_OPTIONS) String answerRowsOptionsStr,
+      @FormDataParam(CoordConsts.SVC_KEY_WORKITEM) String workItemStr /* optional */) {
+    try {
+      _logger.infof(
+          "WMS:getAnswerRows %s %s %s %s %s %s %s\n",
+          apiKey,
+          networkName,
+          snapshotName,
+          referenceSnapshotName,
+          questionName,
+          analysisName,
+          answerRowsOptionsStr);
+
+      checkStringParam(apiKey, "API key");
+      checkStringParam(clientVersion, "Client version");
+      checkStringParam(networkName, "Network name");
+      checkStringParam(snapshotName, "Current snapshot name");
+      checkStringParam(questionName, "Question name");
+      AnswerRowsOptions answersRowsOptions =
+          BatfishObjectMapper.mapper()
+              .readValue(answerRowsOptionsStr, new TypeReference<AnswerRowsOptions>() {});
+
+      checkApiKeyValidity(apiKey);
+      checkClientVersion(clientVersion);
+      checkNetworkAccessibility(apiKey, networkName);
+
+      JSONObject response = new JSONObject();
+
+      if (!Strings.isNullOrEmpty(workItemStr)) {
+        WorkItem workItem = BatfishObjectMapper.mapper().readValue(workItemStr, WorkItem.class);
+        if (!workItem.getContainerName().equals(networkName)
+            || !workItem.getTestrigName().equals(snapshotName)) {
+          return failureResponse(
+              "Mismatch in parameters: WorkItem is not for the supplied network or snapshot");
+        }
+        QueuedWork work = Main.getWorkMgr().getMatchingWork(workItem, QueueType.INCOMPLETE);
+        if (work != null) {
+          String taskStr = BatfishObjectMapper.writePrettyString(work.getLastTaskCheckResult());
+          response
+              .put(CoordConsts.SVC_KEY_WORKID, work.getWorkItem().getId())
+              .put(CoordConsts.SVC_KEY_WORKSTATUS, work.getStatus().toString())
+              .put(CoordConsts.SVC_KEY_TASKSTATUS, taskStr);
+        }
+      }
+
+      String rawAnswer =
+          Main.getWorkMgr()
+              .getAnswer(
+                  networkName, snapshotName, questionName, referenceSnapshotName, analysisName);
+
+      Answer answer = Main.getWorkMgr().processAnswerRows(rawAnswer, answersRowsOptions);
+
+      String answerStr = BatfishObjectMapper.writePrettyString(answer);
+
+      return successResponse(response.put(CoordConsts.SVC_KEY_ANSWER, answerStr));
+    } catch (IllegalArgumentException | AccessControlException e) {
+      _logger.errorf("WMS:getAnswerRows exception: %s\n", e.getMessage());
+      return failureResponse(e.getMessage());
+    } catch (Exception e) {
+      String stackTrace = Throwables.getStackTraceAsString(e);
+      _logger.errorf(
+          "WMS:getAnswerRows exception for apikey:%s in network:%s, snapshot:%s, "
+              + "referencesnapshot:%s, question:%s, analysis:%s; exception:%s",
+          apiKey,
+          networkName,
+          snapshotName,
+          referenceSnapshotName,
+          questionName,
+          analysisName,
+          stackTrace);
       return failureResponse(e.getMessage());
     }
   }
