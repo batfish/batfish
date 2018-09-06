@@ -107,6 +107,7 @@ import static org.batfish.representation.juniper.JuniperStructureType.APPLICATIO
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION_SET;
 import static org.batfish.representation.juniper.JuniperStructureType.AUTHENTICATION_KEY_CHAIN;
 import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_FILTER;
+import static org.batfish.representation.juniper.JuniperStructureType.INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureType.PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureType.VLAN;
 import static org.batfish.representation.juniper.JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION;
@@ -2090,6 +2091,29 @@ public class FlatJuniperGrammarTest {
 
     /* The wildcard-looking BGP group name should not be pruned since its parse-tree node was not created via preprocessor. */
     assertThat(c, hasDefaultVrf(hasBgpProcess(hasNeighbors(hasKey(neighborPrefix)))));
+  }
+
+  @Test
+  public void testJuniperWildcardsReference() throws IOException {
+    String hostname = "juniper-wildcards";
+    String filename = "configs/" + hostname;
+    Configuration c = parseConfig(hostname);
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    // Confirm definitions are tracked properly for structures defined by apply-groups/apply-path
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(
+            filename, INTERFACE, "lo0", containsInAnyOrder(4, 7)));
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(
+            filename, PREFIX_LIST, "p1", containsInAnyOrder(4, 8)));
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(filename, PREFIX_LIST, "p2", containsInAnyOrder(5)));
   }
 
   @Test

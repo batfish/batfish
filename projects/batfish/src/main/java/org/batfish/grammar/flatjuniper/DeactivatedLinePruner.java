@@ -43,7 +43,7 @@ public class DeactivatedLinePruner extends FlatJuniperParserBaseListener {
       _enablePathRecording = false;
       _reenablePathRecording = true;
       String text = ctx.getText();
-      _currentPath.addNode(text);
+      _currentPath.addNode(text, ctx.getStart().getLine());
     }
   }
 
@@ -94,7 +94,7 @@ public class DeactivatedLinePruner extends FlatJuniperParserBaseListener {
   public void visitTerminal(TerminalNode node) {
     if (_enablePathRecording) {
       String text = node.getText();
-      _currentPath.addNode(text);
+      _currentPath.addNode(text, node.getSymbol().getLine());
     }
   }
 }
