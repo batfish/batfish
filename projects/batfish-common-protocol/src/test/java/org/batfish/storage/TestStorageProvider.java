@@ -11,6 +11,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.answers.MajorIssueConfig;
 
 public class TestStorageProvider implements StorageProvider {
 
@@ -42,6 +43,19 @@ public class TestStorageProvider implements StorageProvider {
 
   @Override
   public Layer1Topology loadLayer1Topology(String network, String snapshot) {
+    throw new UnsupportedOperationException(
+        "no implementation for generated method"); // TODO Auto-generated method stub
+  }
+
+  @Override
+  public MajorIssueConfig loadMajorIssueConfig(String network, String majorIssueType) {
+    throw new UnsupportedOperationException(
+        "no implementation for generated method"); // TODO Auto-generated method stub
+  }
+
+  @Override
+  public void storeMajorIssueConfig(
+      String network, String majorIssueType, MajorIssueConfig majorIssueConfig) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
   }

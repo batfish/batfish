@@ -49,6 +49,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.answers.MajorIssueConfig;
 
 /** A utility class that abstracts the underlying file system storage used by {@link Batfish}. */
 @ParametersAreNonnullByDefault
@@ -200,6 +201,46 @@ public final class FileBasedStorage implements StorageProvider {
     } finally {
       counter.incrementAndGet();
     }
+  }
+
+  @Override
+  public @Nonnull MajorIssueConfig loadMajorIssueConfig(String network, String majorIssueType) {
+    Path path =
+        getNetworkDir(network)
+            .resolve(BfConsts.RELPATH_CONTAINER_SETTINGS)
+            .resolve(BfConsts.RELPATH_CONTAINER_SETTINGS_ISSUES)
+            .resolve(majorIssueType + ".json");
+
+    if (!Files.exists(path)) {
+      return new MajorIssueConfig(majorIssueType, null);
+    }
+
+    String majorIssueFileText = CommonUtil.readFile(path);
+
+    try {
+      return BatfishObjectMapper.mapper().readValue(majorIssueFileText, MajorIssueConfig.class);
+    } catch (IOException e) {
+      _logger.errorf(
+          "ERROR: Could not cast file for major issue %s in network %s to MajorIssueConfig: %s",
+          majorIssueType, network, Throwables.getStackTraceAsString(e));
+      return new MajorIssueConfig(majorIssueType, null);
+    }
+  }
+
+  @Override
+  public void storeMajorIssueConfig(
+      String network, String majorIssueType, MajorIssueConfig majorIssueConfig) throws IOException {
+    Path path =
+        getNetworkDir(network)
+            .resolve(BfConsts.RELPATH_CONTAINER_SETTINGS)
+            .resolve(BfConsts.RELPATH_CONTAINER_SETTINGS_ISSUES)
+            .resolve(majorIssueType + ".json");
+
+    if (Files.notExists(path)) {
+      Files.createDirectories(path.getParent());
+      Files.createFile(path);
+    }
+    CommonUtil.writeFile(path, BatfishObjectMapper.mapper().writeValueAsString(majorIssueConfig));
   }
 
   /**

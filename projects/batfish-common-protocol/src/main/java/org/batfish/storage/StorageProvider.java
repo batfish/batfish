@@ -14,6 +14,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.answers.MajorIssueConfig;
 
 /** Storage backend for loading and storing persistent data used by Batfish */
 @ParametersAreNonnullByDefault
@@ -61,6 +62,27 @@ public interface StorageProvider {
    */
   @Nullable
   Layer1Topology loadLayer1Topology(String network, String snapshot);
+
+  /**
+   * Returns the {@link MajorIssueConfig} for the given network
+   *
+   * @param network The name of the network
+   * @param majorIssueType The type of the {@link MajorIssueConfig}
+   */
+  @Nonnull
+  MajorIssueConfig loadMajorIssueConfig(String network, String majorIssueType);
+
+  /**
+   * Stores the {@link MajorIssueConfig} into the given network. Will replace any previously-stored
+   * {@link MajorIssueConfig}s
+   *
+   * @param network The name of the network
+   * @param majorIssueType The type of the {@link MajorIssueConfig}
+   * @param majorIssueConfig The {@link MajorIssueConfig} to be stored
+   * @throws {@link IOException} if there is an error writing writing the config
+   */
+  void storeMajorIssueConfig(
+      String network, String majorIssueType, MajorIssueConfig majorIssueConfig) throws IOException;
 
   /**
    * Stores the configurations into the compressed config path for the given snapshot. Will replace
