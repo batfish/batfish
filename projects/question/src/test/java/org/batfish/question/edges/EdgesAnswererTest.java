@@ -144,12 +144,10 @@ public class EdgesAnswererTest {
         rows,
         contains(
             allOf(
-                hasColumn(COL_NODE, equalTo(new Node("host1")), Schema.NODE),
                 hasColumn(
                     COL_INTERFACE,
                     equalTo(new NodeInterfacePair("host1", "int1")),
                     Schema.INTERFACE),
-                hasColumn(COL_REMOTE_NODE, equalTo(new Node("host2")), Schema.NODE),
                 hasColumn(
                     COL_REMOTE_INTERFACE,
                     equalTo(new NodeInterfacePair("host2", "int2")),
@@ -230,12 +228,10 @@ public class EdgesAnswererTest {
         rows,
         contains(
             allOf(
-                hasColumn(COL_NODE, equalTo(new Node("host1")), Schema.NODE),
                 hasColumn(
                     COL_INTERFACE,
                     equalTo(new NodeInterfacePair("host1", "int1")),
                     Schema.INTERFACE),
-                hasColumn(COL_REMOTE_NODE, equalTo(new Node("host2")), Schema.NODE),
                 hasColumn(
                     COL_REMOTE_INTERFACE,
                     equalTo(new NodeInterfacePair("host2", "int2")),
@@ -275,23 +271,19 @@ public class EdgesAnswererTest {
         containsInAnyOrder(
             ImmutableList.of(
                 allOf(
-                    hasColumn(COL_NODE, equalTo(new Node("host1")), Schema.NODE),
                     hasColumn(
                         COL_INTERFACE,
                         equalTo(new NodeInterfacePair("host1", "int1")),
                         Schema.INTERFACE),
-                    hasColumn(COL_REMOTE_NODE, equalTo(new Node("host2")), Schema.NODE),
                     hasColumn(
                         COL_REMOTE_INTERFACE,
                         equalTo(new NodeInterfacePair("host2", "int2")),
                         Schema.INTERFACE)),
                 allOf(
-                    hasColumn(COL_NODE, equalTo(new Node("host2")), Schema.NODE),
                     hasColumn(
                         COL_INTERFACE,
                         equalTo(new NodeInterfacePair("host2", "int2")),
                         Schema.INTERFACE),
-                    hasColumn(COL_REMOTE_NODE, equalTo(new Node("host1")), Schema.NODE),
                     hasColumn(
                         COL_REMOTE_INTERFACE,
                         equalTo(new NodeInterfacePair("host1", "int1")),
@@ -314,12 +306,10 @@ public class EdgesAnswererTest {
         rows,
         contains(
             allOf(
-                hasColumn(COL_NODE, equalTo(new Node("host1")), Schema.NODE),
                 hasColumn(
                     COL_INTERFACE,
                     equalTo(new NodeInterfacePair("host1", "int1")),
                     Schema.INTERFACE),
-                hasColumn(COL_REMOTE_NODE, equalTo(new Node("host2")), Schema.NODE),
                 hasColumn(
                     COL_REMOTE_INTERFACE,
                     equalTo(new NodeInterfacePair("host2", "int2")),
@@ -340,12 +330,10 @@ public class EdgesAnswererTest {
         rows,
         contains(
             allOf(
-                hasColumn(COL_NODE, equalTo(new Node("host1")), Schema.NODE),
                 hasColumn(
                     COL_INTERFACE,
                     equalTo(new NodeInterfacePair("host1", "int1")),
                     Schema.INTERFACE),
-                hasColumn(COL_REMOTE_NODE, equalTo(new Node("host2")), Schema.NODE),
                 hasColumn(
                     COL_REMOTE_INTERFACE,
                     equalTo(new NodeInterfacePair("host2", "int2")),
@@ -367,13 +355,11 @@ public class EdgesAnswererTest {
         rows,
         contains(
             allOf(
-                hasColumn(COL_NODE, equalTo(new Node("host1")), Schema.NODE),
                 hasColumn(
                     COL_INTERFACE,
                     equalTo(new NodeInterfacePair("host1", "int1")),
                     Schema.INTERFACE),
                 hasColumn(COL_VLAN, equalTo("1"), Schema.STRING),
-                hasColumn(COL_REMOTE_NODE, equalTo(new Node("host2")), Schema.NODE),
                 hasColumn(
                     COL_REMOTE_INTERFACE,
                     equalTo(new NodeInterfacePair("host2", "int2")),
@@ -393,14 +379,12 @@ public class EdgesAnswererTest {
         rows,
         contains(
             allOf(
-                hasColumn(COL_NODE, equalTo(new Node("host1")), Schema.NODE),
                 hasColumn(
                     COL_INTERFACE,
                     equalTo(new NodeInterfacePair("host1", "int1")),
                     Schema.INTERFACE),
                 hasColumn(
                     COL_IPS, equalTo(ImmutableSet.of(new Ip("1.1.1.1"))), Schema.set(Schema.IP)),
-                hasColumn(COL_REMOTE_NODE, equalTo(new Node("host2")), Schema.NODE),
                 hasColumn(
                     COL_REMOTE_INTERFACE,
                     equalTo(new NodeInterfacePair("host2", "int2")),
@@ -422,10 +406,8 @@ public class EdgesAnswererTest {
     assertThat(
         row,
         allOf(
-            hasColumn(COL_NODE, equalTo(new Node("host1")), Schema.NODE),
             hasColumn(
                 COL_INTERFACE, equalTo(new NodeInterfacePair("host1", "int1")), Schema.INTERFACE),
-            hasColumn(COL_REMOTE_NODE, equalTo(new Node("host2")), Schema.NODE),
             hasColumn(
                 COL_REMOTE_INTERFACE,
                 equalTo(new NodeInterfacePair("host2", "int2")),
@@ -439,10 +421,8 @@ public class EdgesAnswererTest {
     assertThat(
         row,
         allOf(
-            hasColumn(COL_NODE, equalTo(new Node("host1")), Schema.NODE),
             hasColumn(
                 COL_INTERFACE, equalTo(new NodeInterfacePair("host1", "int1")), Schema.INTERFACE),
-            hasColumn(COL_REMOTE_NODE, equalTo(new Node("host2")), Schema.NODE),
             hasColumn(
                 COL_REMOTE_INTERFACE,
                 equalTo(new NodeInterfacePair("host2", "int2")),
@@ -459,10 +439,8 @@ public class EdgesAnswererTest {
     assertThat(
         row,
         allOf(
-            hasColumn(COL_NODE, equalTo(new Node("host1")), Schema.NODE),
             hasColumn(
                 COL_INTERFACE, equalTo(new NodeInterfacePair("host1", "int1")), Schema.INTERFACE),
-            hasColumn(COL_REMOTE_NODE, equalTo(new Node("host2")), Schema.NODE),
             hasColumn(
                 COL_REMOTE_INTERFACE,
                 equalTo(new NodeInterfacePair("host2", "int2")),
@@ -476,10 +454,8 @@ public class EdgesAnswererTest {
     assertThat(
         row,
         allOf(
-            hasColumn(COL_NODE, equalTo(new Node("host1")), Schema.NODE),
             hasColumn(
                 COL_INTERFACE, equalTo(new NodeInterfacePair("host1", "int1")), Schema.INTERFACE),
-            hasColumn(COL_REMOTE_NODE, equalTo(new Node("host2")), Schema.NODE),
             hasColumn(
                 COL_REMOTE_INTERFACE,
                 equalTo(new NodeInterfacePair("host2", "int2")),
@@ -506,10 +482,8 @@ public class EdgesAnswererTest {
     assertThat(
         row,
         allOf(
-            hasColumn(COL_NODE, equalTo(new Node("host1")), Schema.NODE),
             hasColumn(
                 COL_INTERFACE, equalTo(new NodeInterfacePair("host1", "int1")), Schema.INTERFACE),
-            hasColumn(COL_REMOTE_NODE, equalTo(new Node("host2")), Schema.NODE),
             hasColumn(
                 COL_REMOTE_INTERFACE,
                 equalTo(new NodeInterfacePair("host2", "int2")),
@@ -522,11 +496,9 @@ public class EdgesAnswererTest {
     assertThat(
         row,
         allOf(
-            hasColumn(COL_NODE, equalTo(new Node("host1")), Schema.NODE),
             hasColumn(
                 COL_INTERFACE, equalTo(new NodeInterfacePair("host1", "int1")), Schema.INTERFACE),
             hasColumn(COL_VLAN, equalTo("1"), Schema.STRING),
-            hasColumn(COL_REMOTE_NODE, equalTo(new Node("host2")), Schema.NODE),
             hasColumn(
                 COL_REMOTE_INTERFACE,
                 equalTo(new NodeInterfacePair("host2", "int2")),
@@ -542,11 +514,9 @@ public class EdgesAnswererTest {
     assertThat(
         row,
         allOf(
-            hasColumn(COL_NODE, equalTo(new Node("host1")), Schema.NODE),
             hasColumn(
                 COL_INTERFACE, equalTo(new NodeInterfacePair("host1", "int1")), Schema.INTERFACE),
             hasColumn(COL_IPS, equalTo(ImmutableSet.of(new Ip("1.1.1.1"))), Schema.set(Schema.IP)),
-            hasColumn(COL_REMOTE_NODE, equalTo(new Node("host2")), Schema.NODE),
             hasColumn(
                 COL_REMOTE_INTERFACE,
                 equalTo(new NodeInterfacePair("host2", "int2")),
@@ -565,26 +535,14 @@ public class EdgesAnswererTest {
             .stream()
             .map(ColumnMetadata::getName)
             .collect(ImmutableList.toImmutableList()),
-        contains(
-            COL_NODE,
-            COL_INTERFACE,
-            COL_IPS,
-            COL_REMOTE_NODE,
-            COL_REMOTE_INTERFACE,
-            COL_REMOTE_IPS));
+        contains(COL_INTERFACE, COL_IPS, COL_REMOTE_INTERFACE, COL_REMOTE_IPS));
 
     assertThat(
         columnMetadata
             .stream()
             .map(ColumnMetadata::getSchema)
             .collect(ImmutableList.toImmutableList()),
-        contains(
-            Schema.NODE,
-            Schema.INTERFACE,
-            Schema.set(Schema.IP),
-            Schema.NODE,
-            Schema.INTERFACE,
-            Schema.set(Schema.IP)));
+        contains(Schema.INTERFACE, Schema.set(Schema.IP), Schema.INTERFACE, Schema.set(Schema.IP)));
   }
 
   @Test
@@ -595,26 +553,14 @@ public class EdgesAnswererTest {
             .stream()
             .map(ColumnMetadata::getName)
             .collect(ImmutableList.toImmutableList()),
-        contains(
-            COL_NODE,
-            COL_INTERFACE,
-            COL_VLAN,
-            COL_REMOTE_NODE,
-            COL_REMOTE_INTERFACE,
-            COL_REMOTE_VLAN));
+        contains(COL_INTERFACE, COL_VLAN, COL_REMOTE_INTERFACE, COL_REMOTE_VLAN));
 
     assertThat(
         columnMetadata
             .stream()
             .map(ColumnMetadata::getSchema)
             .collect(ImmutableList.toImmutableList()),
-        contains(
-            Schema.NODE,
-            Schema.INTERFACE,
-            Schema.STRING,
-            Schema.NODE,
-            Schema.INTERFACE,
-            Schema.STRING));
+        contains(Schema.INTERFACE, Schema.STRING, Schema.INTERFACE, Schema.STRING));
   }
 
   @Test
@@ -644,13 +590,13 @@ public class EdgesAnswererTest {
             .stream()
             .map(ColumnMetadata::getName)
             .collect(ImmutableList.toImmutableList()),
-        contains(COL_NODE, COL_INTERFACE, COL_REMOTE_NODE, COL_REMOTE_INTERFACE));
+        contains(COL_INTERFACE, COL_REMOTE_INTERFACE));
 
     assertThat(
         columnMetadata
             .stream()
             .map(ColumnMetadata::getSchema)
             .collect(ImmutableList.toImmutableList()),
-        contains(Schema.NODE, Schema.INTERFACE, Schema.NODE, Schema.INTERFACE));
+        contains(Schema.INTERFACE, Schema.INTERFACE));
   }
 }
