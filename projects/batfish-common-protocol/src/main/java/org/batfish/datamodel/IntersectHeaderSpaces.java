@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 
 /**
- * Compute the intersection of two HeaderSpaces.  Tries to detect empty intersections, but isn't
+ * Compute the intersection of two HeaderSpaces. Tries to detect empty intersections, but isn't
  * always able to. In particular, empty intersections of {@link IpSpace} fields are not detected.
  */
 public final class IntersectHeaderSpaces {
