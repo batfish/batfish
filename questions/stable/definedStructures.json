@@ -4,7 +4,7 @@
     "instance": {
         "description": "Lists the structures defined in the network",
         "instanceName": "definedStructures",
-        "longDescription": "Lists the structures defined in the network, along with the files and line numbers in which they are defined",
+        "longDescription": "Lists the structures defined in the network, along with the files and line numbers in which they are defined.",
         "variables": {
             "names": {
                 "description": "Include structures whose name matches this string or regex",
