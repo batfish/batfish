@@ -41,7 +41,7 @@ public class WildcardApplicator extends FlatJuniperParserBaseListener {
       _enablePathRecording = false;
       _reenablePathRecording = true;
       String text = ctx.getText();
-      _currentPath.addNode(text);
+      _currentPath.addNode(text, ctx.getStart().getLine());
     }
   }
 
@@ -84,10 +84,11 @@ public class WildcardApplicator extends FlatJuniperParserBaseListener {
   public void visitTerminal(TerminalNode node) {
     if (_enablePathRecording) {
       String text = node.getText();
+      int line = node.getSymbol().getLine();
       if (node.getSymbol().getType() == FlatJuniperLexer.WILDCARD_ARTIFACT) {
-        _currentPath.addWildcardNode(text);
+        _currentPath.addWildcardNode(text, line);
       } else {
-        _currentPath.addNode(text);
+        _currentPath.addNode(text, line);
       }
     }
   }

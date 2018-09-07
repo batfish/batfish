@@ -54,7 +54,7 @@ public class GroupTreeBuilder extends FlatJuniperParserBaseListener {
       _enablePathRecording = false;
       _reenablePathRecording = true;
       String text = ctx.getText();
-      _currentPath.addNode(text);
+      _currentPath.addNode(text, ctx.getStart().getLine());
     }
   }
 
@@ -99,10 +99,11 @@ public class GroupTreeBuilder extends FlatJuniperParserBaseListener {
     for (Token currentToken : unfilteredTokens) {
       if (currentToken.getChannel() != Lexer.HIDDEN) {
         String text = currentToken.getText();
+        int line = currentToken.getLine();
         if (currentToken.getType() == FlatJuniperLexer.WILDCARD) {
-          path.addWildcardNode(text);
+          path.addWildcardNode(text, line);
         } else {
-          path.addNode(text);
+          path.addNode(text, line);
         }
       }
     }
@@ -125,10 +126,11 @@ public class GroupTreeBuilder extends FlatJuniperParserBaseListener {
   public void visitTerminal(TerminalNode node) {
     if (_enablePathRecording) {
       String text = node.getText();
+      int line = node.getSymbol().getLine();
       if (node.getSymbol().getType() == FlatJuniperLexer.WILDCARD) {
-        _currentPath.addWildcardNode(text);
+        _currentPath.addWildcardNode(text, line);
       } else {
-        _currentPath.addNode(text);
+        _currentPath.addNode(text, line);
       }
     }
   }
