@@ -73,7 +73,17 @@ public final class AclLineMatchExprs {
     return new MatchSrcInterface(ImmutableList.copyOf(iface));
   }
 
-  public static NotMatchExpr not(AclLineMatchExpr expr) {
+  /**
+   * smart constructor for NotMatchExpr that does constant-time simplifications (i.e. when expr is
+   * {@code TRUE} or {@code FALSE}.
+   */
+  public static AclLineMatchExpr not(AclLineMatchExpr expr) {
+    if (expr == TRUE) {
+      return FALSE;
+    }
+    if (expr == FALSE) {
+      return TRUE;
+    }
     return new NotMatchExpr(expr);
   }
 

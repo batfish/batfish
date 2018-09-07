@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableSortedSet;
 import java.util.Comparator;
 import java.util.SortedSet;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.GenericAclLineMatchExprVisitor;
@@ -32,7 +33,7 @@ public final class Negate implements GenericAclLineMatchExprVisitor<AclLineMatch
   private static SortedSet<AclLineMatchExpr> negate(SortedSet<AclLineMatchExpr> exprs) {
     return exprs
         .stream()
-        .map(NotMatchExpr::new)
+        .map(AclLineMatchExprs::not)
         .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
   }
 
