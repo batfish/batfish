@@ -1,0 +1,36 @@
+{
+  "class" : "org.batfish.question.ipsecsessionstatus.IpsecSessionStatusQuestion",
+  "nodes" : "n1",
+  "remoteNodes" : "n2",
+  "status" : ".*",
+  "differential" : false,
+  "includeOneTableKeys" : true,
+  "instance" : {
+    "description" : "Returns the status of configured IPSec sessions",
+    "instanceName" : "qname",
+    "tags" : [
+      "configuration",
+      "ip"
+    ],
+    "variables" : {
+      "nodes" : {
+        "description" : "Include sessions whose first node matches this name or regex",
+        "optional" : true,
+        "type" : "nodeSpec",
+        "value" : "n1"
+      },
+      "remoteNodes" : {
+        "description" : "Include sessions whose second node matches this name or regex",
+        "optional" : true,
+        "type" : "nodeSpec",
+        "value" : "n2"
+      },
+      "status" : {
+        "description" : "Only include IPSec sessions for which status matches this regex",
+        "optional" : true,
+        "type" : "javaRegex",
+        "value" : ".*"
+      }
+    }
+  }
+}
