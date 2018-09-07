@@ -66,7 +66,8 @@ public interface StorageProvider {
 
   /**
    * Returns the {@link MajorIssueConfig} for the given network and majorIssueType. If no config
-   * exists, will return a valid {@link MajorIssueConfig} with no {@link MinorIssueConfig}s
+   * exists, will return a valid {@link MajorIssueConfig} with an empty list of {@link
+   * MinorIssueConfig}s
    */
   @Nonnull
   MajorIssueConfig loadMajorIssueConfig(String network, String majorIssueType);

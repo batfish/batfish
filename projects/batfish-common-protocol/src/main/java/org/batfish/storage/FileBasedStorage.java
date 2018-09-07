@@ -230,8 +230,8 @@ public final class FileBasedStorage implements StorageProvider {
 
     if (Files.notExists(path)) {
       Files.createDirectories(path.getParent());
-      Files.createFile(path);
     }
+
     CommonUtil.writeFile(path, BatfishObjectMapper.mapper().writeValueAsString(majorIssueConfig));
   }
 
