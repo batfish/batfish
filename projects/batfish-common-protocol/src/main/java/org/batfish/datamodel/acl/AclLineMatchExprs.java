@@ -74,8 +74,8 @@ public final class AclLineMatchExprs {
   }
 
   /**
-   * smart constructor for NotMatchExpr that does constant-time simplifications (i.e. when expr is
-   * {@code TRUE} or {@code FALSE}.
+   * Smart constructor for NotMatchExpr that does constant-time simplifications (i.e. when expr is
+   * {@code TRUE} or {@code FALSE}).
    */
   public static AclLineMatchExpr not(AclLineMatchExpr expr) {
     if (expr == TRUE) {
