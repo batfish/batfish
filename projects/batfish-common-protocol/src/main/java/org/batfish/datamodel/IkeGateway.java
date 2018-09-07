@@ -127,7 +127,7 @@ public class IkeGateway implements Serializable {
 
   public void resolveReferences(Configuration owner) {
     if (_externalInterfaceName != null) {
-      _externalInterface = owner.getInterfaces().get(_externalInterfaceName);
+      _externalInterface = owner.getAllInterfaces().get(_externalInterfaceName);
     }
     if (_ikePolicyName != null) {
       _ikePolicy = owner.getIkePolicies().get(_ikePolicyName);

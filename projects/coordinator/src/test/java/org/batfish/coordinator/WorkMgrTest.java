@@ -16,6 +16,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -30,7 +31,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import org.batfish.common.AnalysisAnswerOptions;
+import org.batfish.common.AnswerRowsOptions;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BfConsts;
 import org.batfish.common.ColumnFilter;
@@ -43,8 +44,10 @@ import org.batfish.common.util.WorkItemBuilder;
 import org.batfish.coordinator.AnalysisMetadataMgr.AnalysisType;
 import org.batfish.datamodel.TestrigMetadata;
 import org.batfish.datamodel.answers.Answer;
+import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.Issue;
+import org.batfish.datamodel.answers.Metrics;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.pojo.Topology;
@@ -52,6 +55,7 @@ import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
+import org.batfish.storage.StorageProvider;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -67,10 +71,13 @@ public class WorkMgrTest {
 
   private WorkMgr _manager;
 
+  private StorageProvider _storage;
+
   @Before
   public void initManager() throws Exception {
     WorkMgrTestUtils.initWorkManager(_folder);
     _manager = Main.getWorkMgr();
+    _storage = _manager.getStorage();
   }
 
   private static void createTestrigWithMetadata(String container, String testrig)
@@ -379,7 +386,7 @@ public class WorkMgrTest {
   }
 
   @Test
-  public void testGetAnalysisAnswer() throws JsonProcessingException {
+  public void testGetAnalysisAnswer() throws JsonProcessingException, FileNotFoundException {
     String containerName = "container1";
     String testrigName = "testrig1";
     String analysisName = "analysis1";
@@ -401,74 +408,15 @@ public class WorkMgrTest {
     _manager.configureAnalysis(
         containerName, true, analysisName, questionsToAdd, Lists.newArrayList(), null);
 
-    Path answer1Dir =
-        _folder
-            .getRoot()
-            .toPath()
-            .resolve(
-                Paths.get(
-                    containerName,
-                    BfConsts.RELPATH_TESTRIGS_DIR,
-                    testrigName,
-                    BfConsts.RELPATH_ANALYSES_DIR,
-                    analysisName,
-                    BfConsts.RELPATH_QUESTIONS_DIR,
-                    question1Name,
-                    BfConsts.RELPATH_ENVIRONMENTS_DIR,
-                    BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME));
-
-    Path answer2Dir =
-        _folder
-            .getRoot()
-            .toPath()
-            .resolve(
-                Paths.get(
-                    containerName,
-                    BfConsts.RELPATH_TESTRIGS_DIR,
-                    testrigName,
-                    BfConsts.RELPATH_ANALYSES_DIR,
-                    analysisName,
-                    BfConsts.RELPATH_QUESTIONS_DIR,
-                    question2Name,
-                    BfConsts.RELPATH_ENVIRONMENTS_DIR,
-                    BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME));
-
-    Path answer1Path = answer1Dir.resolve(BfConsts.RELPATH_ANSWER_JSON);
-    Path answer2Path = answer2Dir.resolve(BfConsts.RELPATH_ANSWER_JSON);
-
-    answer1Dir.toFile().mkdirs();
-    answer2Dir.toFile().mkdirs();
-
-    CommonUtil.writeFile(answer1Path, answer1);
-    CommonUtil.writeFile(answer2Path, answer2);
+    _storage.storeAnswer(answer1, containerName, testrigName, question1Name, null, analysisName);
+    _storage.storeAnswer(answer2, containerName, testrigName, question2Name, null, analysisName);
 
     String answer1Output =
-        _manager.getAnalysisAnswer(
-            containerName,
-            testrigName,
-            BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
-            null,
-            null,
-            analysisName,
-            question1Name);
+        _manager.getAnswer(containerName, testrigName, question1Name, null, analysisName);
     String answer2Output =
-        _manager.getAnalysisAnswer(
-            containerName,
-            testrigName,
-            BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
-            null,
-            null,
-            analysisName,
-            question2Name);
+        _manager.getAnswer(containerName, testrigName, question2Name, null, analysisName);
     String answer3Output =
-        _manager.getAnalysisAnswer(
-            containerName,
-            testrigName,
-            BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
-            null,
-            null,
-            analysisName,
-            question3Name);
+        _manager.getAnswer(containerName, testrigName, question3Name, null, analysisName);
 
     Answer failedAnswer = Answer.failureAnswer("Not answered", null);
     failedAnswer.setStatus(AnswerStatus.NOTFOUND);
@@ -480,7 +428,7 @@ public class WorkMgrTest {
   }
 
   @Test
-  public void testGetAnalysisAnswers() throws JsonProcessingException {
+  public void testGetAnalysisAnswers() throws JsonProcessingException, FileNotFoundException {
     String containerName = "container1";
     String testrigName = "testrig1";
     String analysisName = "analysis1";
@@ -547,7 +495,8 @@ public class WorkMgrTest {
             BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
             null,
             null,
-            analysisName);
+            analysisName,
+            ImmutableSet.of());
     Map<String, String> answers2 =
         _manager.getAnalysisAnswers(
             containerName,
@@ -607,6 +556,147 @@ public class WorkMgrTest {
         "Work Queue not correct for user analyses",
         workQueue.get(1).matches(analysisWorkItem),
         equalTo(true));
+  }
+
+  @Test
+  public void testGetAnswerMetadataAnalysisSuccess()
+      throws JsonProcessingException, FileNotFoundException {
+    String networkName = "network1";
+    String snapshotName = "snapshot1";
+    String analysisName = "analysis1";
+    String questionName = "question1";
+    String questionContent = "{}";
+    AnswerMetadata answerMetadata =
+        new AnswerMetadata(
+            new Metrics(ImmutableMap.of(), ImmutableSet.of(), 1), AnswerStatus.SUCCESS);
+    _manager.initContainer(networkName, null);
+    _manager.configureAnalysis(
+        networkName,
+        true,
+        analysisName,
+        ImmutableMap.of(questionName, questionContent),
+        ImmutableList.of(),
+        null);
+    _storage.storeAnswerMetadata(
+        answerMetadata, networkName, snapshotName, questionName, null, analysisName);
+    AnswerMetadata answerResult =
+        _manager.getAnswerMetadata(networkName, snapshotName, questionName, null, analysisName);
+
+    assertThat(answerResult, equalTo(answerMetadata));
+  }
+
+  @Test
+  public void testGetAnswerMetadataAnalysisMissingQuestion()
+      throws JsonProcessingException, FileNotFoundException {
+    String networkName = "network1";
+    String snapshotName = "snapshot1";
+    String analysisName = "analysis1";
+    String questionName = "question1";
+    AnswerMetadata answerMetadata =
+        new AnswerMetadata(
+            new Metrics(ImmutableMap.of(), ImmutableSet.of(), 1), AnswerStatus.SUCCESS);
+    _manager.initContainer(networkName, null);
+    _manager.configureAnalysis(
+        networkName, true, analysisName, ImmutableMap.of(), ImmutableList.of(), null);
+    _storage.storeAnswerMetadata(
+        answerMetadata, networkName, snapshotName, questionName, null, analysisName);
+
+    _thrown.expect(FileNotFoundException.class);
+    _manager.getAnswerMetadata(networkName, snapshotName, questionName, null, analysisName);
+  }
+
+  @Test
+  public void testGetAnswerMetadataAnalysisMissingAnswerMetadata()
+      throws JsonProcessingException, FileNotFoundException {
+    String networkName = "network1";
+    String snapshotName = "snapshot1";
+    String analysisName = "analysis1";
+    String questionName = "question1";
+    String questionContent = "{}";
+    _manager.initContainer(networkName, null);
+    _manager.configureAnalysis(
+        networkName,
+        true,
+        analysisName,
+        ImmutableMap.of(questionName, questionContent),
+        ImmutableList.of(),
+        null);
+    _storage.storeAnswer("answer", networkName, snapshotName, questionName, null, analysisName);
+    AnswerMetadata answerResult =
+        _manager.getAnswerMetadata(networkName, snapshotName, questionName, null, analysisName);
+
+    assertThat(answerResult, equalTo(new AnswerMetadata(null, AnswerStatus.NOTFOUND)));
+  }
+
+  @Test
+  public void testGetAnswerMetadataAnalysisMissingAnalysis()
+      throws JsonProcessingException, FileNotFoundException {
+    String networkName = "network1";
+    String snapshotName = "snapshot1";
+    String analysisName = "analysis1";
+    String questionName = "question1";
+    AnswerMetadata answerMetadata =
+        new AnswerMetadata(
+            new Metrics(ImmutableMap.of(), ImmutableSet.of(), 1), AnswerStatus.SUCCESS);
+    _manager.initContainer(networkName, null);
+    _storage.storeAnswerMetadata(
+        answerMetadata, networkName, snapshotName, questionName, null, analysisName);
+
+    _thrown.expect(Exception.class);
+    _manager.getAnswerMetadata(networkName, snapshotName, questionName, null, analysisName);
+  }
+
+  @Test
+  public void testGetAnswerMetadataAdHocSuccess()
+      throws JsonProcessingException, FileNotFoundException {
+    String networkName = "network1";
+    String snapshotName = "snapshot1";
+    String questionContent = "{}";
+    String questionName = "question2Name";
+    AnswerMetadata answerMetadata =
+        new AnswerMetadata(
+            new Metrics(ImmutableMap.of(), ImmutableSet.of(), 2), AnswerStatus.SUCCESS);
+    _manager.initContainer(networkName, null);
+    _manager.uploadQuestion(networkName, questionName, questionContent, false);
+    _storage.storeAnswerMetadata(
+        answerMetadata, networkName, snapshotName, questionName, null, null);
+    AnswerMetadata answer2Result =
+        _manager.getAnswerMetadata(networkName, snapshotName, questionName, null, null);
+
+    assertThat(answer2Result, equalTo(answerMetadata));
+  }
+
+  @Test
+  public void testGetAnswerMetadataAdHocMissingAnswerMetadata()
+      throws JsonProcessingException, FileNotFoundException {
+    String networkName = "network1";
+    String snapshotName = "snapshot1";
+    String questionContent = "{}";
+    String questionName = "question2Name";
+    _manager.initContainer(networkName, null);
+    _manager.uploadQuestion(networkName, questionName, questionContent, false);
+    _storage.storeAnswer("answer", networkName, snapshotName, questionName, null, null);
+    AnswerMetadata answer2Result =
+        _manager.getAnswerMetadata(networkName, snapshotName, questionName, null, null);
+
+    assertThat(answer2Result, equalTo(new AnswerMetadata(null, AnswerStatus.NOTFOUND)));
+  }
+
+  @Test
+  public void testGetAnswerMetadataAdHocMissingQuestion()
+      throws JsonProcessingException, FileNotFoundException {
+    String networkName = "network1";
+    String snapshotName = "snapshot1";
+    String questionName = "question2Name";
+    AnswerMetadata answerMetadata =
+        new AnswerMetadata(
+            new Metrics(ImmutableMap.of(), ImmutableSet.of(), 2), AnswerStatus.SUCCESS);
+    _manager.initContainer(networkName, null);
+    _storage.storeAnswerMetadata(
+        answerMetadata, networkName, snapshotName, questionName, null, null);
+
+    _thrown.expect(Exception.class);
+    _manager.getAnswerMetadata(networkName, snapshotName, null, null, questionName);
   }
 
   @Test
@@ -686,16 +776,15 @@ public class WorkMgrTest {
     answer.setStatus(AnswerStatus.SUCCESS);
     String answerStr = BatfishObjectMapper.writePrettyString(answer);
     Map<String, String> rawAnswers = ImmutableMap.of(questionName, answerStr);
-    AnalysisAnswerOptions options =
-        new AnalysisAnswerOptions(
+    AnswerRowsOptions options =
+        new AnswerRowsOptions(
             ImmutableSet.of(columnName),
             ImmutableList.of(),
             maxRows,
             rowOffset,
             ImmutableList.of(new ColumnSortOption(columnName, true)),
             false);
-    Map<String, AnalysisAnswerOptions> analysisAnswersOptions =
-        ImmutableMap.of(questionName, options);
+    Map<String, AnswerRowsOptions> analysisAnswersOptions = ImmutableMap.of(questionName, options);
 
     Map<String, Answer> processedAnswers =
         _manager.processAnalysisAnswers(rawAnswers, analysisAnswersOptions);
@@ -707,7 +796,7 @@ public class WorkMgrTest {
   }
 
   @Test
-  public void testProcessAnalysisAnswer() throws IOException {
+  public void testProcessAnswerRows() throws IOException {
     String columnName = "issue";
     int maxRows = 1;
     int rowOffset = 0;
@@ -720,8 +809,8 @@ public class WorkMgrTest {
     answer.addAnswerElement(table);
     answer.setStatus(AnswerStatus.SUCCESS);
     String answerStr = BatfishObjectMapper.writePrettyString(answer);
-    AnalysisAnswerOptions options =
-        new AnalysisAnswerOptions(
+    AnswerRowsOptions options =
+        new AnswerRowsOptions(
             ImmutableSet.of(columnName),
             ImmutableList.of(),
             maxRows,
@@ -731,19 +820,19 @@ public class WorkMgrTest {
 
     List<Row> processedRows =
         ((TableAnswerElement)
-                _manager.processAnalysisAnswer(answerStr, options).getAnswerElements().get(0))
+                _manager.processAnswerRows(answerStr, options).getAnswerElements().get(0))
             .getRowsList();
 
     assertThat(processedRows, equalTo(table.getRowsList()));
   }
 
   @Test
-  public void testProcessAnalysisAnswerFailure() throws IOException {
+  public void testProcessAnswerRowsFailure() throws IOException {
     String columnName = "issue";
     int maxRows = 1;
     int rowOffset = 0;
-    AnalysisAnswerOptions options =
-        new AnalysisAnswerOptions(
+    AnswerRowsOptions options =
+        new AnswerRowsOptions(
             ImmutableSet.of(columnName),
             ImmutableList.of(),
             maxRows,
@@ -753,31 +842,31 @@ public class WorkMgrTest {
     Answer badInput = new Answer();
     badInput.setStatus(AnswerStatus.SUCCESS);
     String rawAnswerStr = BatfishObjectMapper.writePrettyString(badInput);
-    Answer processedAnswer = _manager.processAnalysisAnswer(rawAnswerStr, options);
+    Answer processedAnswer = _manager.processAnswerRows(rawAnswerStr, options);
 
     assertThat(processedAnswer.getStatus(), equalTo(AnswerStatus.FAILURE));
   }
 
   @Test
-  public void testProcessAnalysisAnswerNotFound() throws IOException {
+  public void testProcessAnswerRowsNotFound() throws IOException {
     String columnName = "issue";
     int maxRows = 1;
     int rowOffset = 0;
-    AnalysisAnswerOptions options =
-        new AnalysisAnswerOptions(
+    AnswerRowsOptions options =
+        new AnswerRowsOptions(
             ImmutableSet.of(columnName),
             ImmutableList.of(),
             maxRows,
             rowOffset,
             ImmutableList.of(new ColumnSortOption(columnName, true)),
             false);
-    Answer processedAnswer = _manager.processAnalysisAnswer(null, options);
+    Answer processedAnswer = _manager.processAnswerRows(null, options);
 
     assertThat(processedAnswer.getStatus(), equalTo(AnswerStatus.NOTFOUND));
   }
 
   @Test
-  public void testProcessAnalysisAnswerTableSorting() {
+  public void testProcessAnswerTableSorting() {
     String columnName = "val";
     TableAnswerElement table =
         new TableAnswerElement(
@@ -787,16 +876,16 @@ public class WorkMgrTest {
     Row row2 = Row.of(columnName, 2);
     table.addRow(row1);
     table.addRow(row2);
-    AnalysisAnswerOptions optionsSorting =
-        new AnalysisAnswerOptions(
+    AnswerRowsOptions optionsSorting =
+        new AnswerRowsOptions(
             ImmutableSet.of(columnName),
             ImmutableList.of(),
             Integer.MAX_VALUE,
             0,
             ImmutableList.of(new ColumnSortOption(columnName, false)),
             false);
-    AnalysisAnswerOptions optionsSortingReverse =
-        new AnalysisAnswerOptions(
+    AnswerRowsOptions optionsSortingReverse =
+        new AnswerRowsOptions(
             ImmutableSet.of(columnName),
             ImmutableList.of(),
             Integer.MAX_VALUE,
@@ -805,15 +894,15 @@ public class WorkMgrTest {
             false);
 
     assertThat(
-        _manager.processAnalysisAnswerTable(table, optionsSorting).getRowsList(),
+        _manager.processAnswerTable(table, optionsSorting).getRowsList(),
         equalTo(ImmutableList.of(row1, row2)));
     assertThat(
-        _manager.processAnalysisAnswerTable(table, optionsSortingReverse).getRowsList(),
+        _manager.processAnswerTable(table, optionsSortingReverse).getRowsList(),
         equalTo(ImmutableList.of(row2, row1)));
   }
 
   @Test
-  public void testProcessAnalysisAnswerTableOffset() {
+  public void testProcessAnswerTableOffset() {
     String columnName = "val";
     TableAnswerElement table =
         new TableAnswerElement(
@@ -823,16 +912,16 @@ public class WorkMgrTest {
     Row row2 = Row.of(columnName, 2);
     table.addRow(row1);
     table.addRow(row2);
-    AnalysisAnswerOptions optionsNoOffset =
-        new AnalysisAnswerOptions(
+    AnswerRowsOptions optionsNoOffset =
+        new AnswerRowsOptions(
             ImmutableSet.of(columnName),
             ImmutableList.of(),
             Integer.MAX_VALUE,
             0,
             ImmutableList.of(),
             false);
-    AnalysisAnswerOptions optionsOffset =
-        new AnalysisAnswerOptions(
+    AnswerRowsOptions optionsOffset =
+        new AnswerRowsOptions(
             ImmutableSet.of(columnName),
             ImmutableList.of(),
             Integer.MAX_VALUE,
@@ -841,15 +930,15 @@ public class WorkMgrTest {
             false);
 
     assertThat(
-        _manager.processAnalysisAnswerTable(table, optionsNoOffset).getRowsList(),
+        _manager.processAnswerTable(table, optionsNoOffset).getRowsList(),
         equalTo(ImmutableList.of(row1, row2)));
     assertThat(
-        _manager.processAnalysisAnswerTable(table, optionsOffset).getRowsList(),
+        _manager.processAnswerTable(table, optionsOffset).getRowsList(),
         equalTo(ImmutableList.of(row2)));
   }
 
   @Test
-  public void testProcessAnalysisAnswerTableFiltered() {
+  public void testProcessAnswerTableFiltered() {
     String columnName = "val";
     TableAnswerElement table =
         new TableAnswerElement(
@@ -860,11 +949,11 @@ public class WorkMgrTest {
     Row row2 = Row.of(columnName, "goodbye");
     table.addRow(row1);
     table.addRow(row2);
-    AnalysisAnswerOptions optionsNotFiltered =
-        new AnalysisAnswerOptions(
+    AnswerRowsOptions optionsNotFiltered =
+        new AnswerRowsOptions(
             ImmutableSet.of(), ImmutableList.of(), Integer.MAX_VALUE, 0, ImmutableList.of(), false);
-    AnalysisAnswerOptions optionsFiltered =
-        new AnalysisAnswerOptions(
+    AnswerRowsOptions optionsFiltered =
+        new AnswerRowsOptions(
             ImmutableSet.of(),
             ImmutableList.of(new ColumnFilter(columnName, whitelistedValue)),
             Integer.MAX_VALUE,
@@ -872,16 +961,18 @@ public class WorkMgrTest {
             ImmutableList.of(),
             false);
 
-    assertThat(
-        _manager.processAnalysisAnswerTable(table, optionsNotFiltered).getRowsList(),
-        equalTo(ImmutableList.of(row1, row2)));
-    assertThat(
-        _manager.processAnalysisAnswerTable(table, optionsFiltered).getRowsList(),
-        equalTo(ImmutableList.of(row1)));
+    TableAnswerElement notFiltered = _manager.processAnswerTable(table, optionsNotFiltered);
+    TableAnswerElement filtered = _manager.processAnswerTable(table, optionsFiltered);
+
+    assertThat(notFiltered.getRowsList(), equalTo(ImmutableList.of(row1, row2)));
+    assertThat(filtered.getRowsList(), equalTo(ImmutableList.of(row1)));
+
+    assertThat(notFiltered.getSummary().getNumResults(), equalTo(2));
+    assertThat(filtered.getSummary().getNumResults(), equalTo(1));
   }
 
   @Test
-  public void testProcessAnalysisAnswerTableMaxRows() {
+  public void testProcessAnswerTableMaxRows() {
     String columnName = "val";
     TableAnswerElement table =
         new TableAnswerElement(
@@ -891,23 +982,23 @@ public class WorkMgrTest {
     Row row2 = Row.of(columnName, 2);
     table.addRow(row1);
     table.addRow(row2);
-    AnalysisAnswerOptions optionsNoLimit =
-        new AnalysisAnswerOptions(
+    AnswerRowsOptions optionsNoLimit =
+        new AnswerRowsOptions(
             ImmutableSet.of(), ImmutableList.of(), Integer.MAX_VALUE, 0, ImmutableList.of(), false);
-    AnalysisAnswerOptions optionsLimit =
-        new AnalysisAnswerOptions(
+    AnswerRowsOptions optionsLimit =
+        new AnswerRowsOptions(
             ImmutableSet.of(), ImmutableList.of(), 1, 0, ImmutableList.of(), false);
 
     assertThat(
-        _manager.processAnalysisAnswerTable(table, optionsNoLimit).getRowsList(),
+        _manager.processAnswerTable(table, optionsNoLimit).getRowsList(),
         equalTo(ImmutableList.of(row1, row2)));
     assertThat(
-        _manager.processAnalysisAnswerTable(table, optionsLimit).getRowsList(),
+        _manager.processAnswerTable(table, optionsLimit).getRowsList(),
         equalTo(ImmutableList.of(row1)));
   }
 
   @Test
-  public void testProcessAnalysisAnswerTableProject() {
+  public void testProcessAnswerTableProject() {
     String columnName = "val";
     String otherColumnName = "val2";
     TableMetadata originalMetadata =
@@ -920,11 +1011,11 @@ public class WorkMgrTest {
     Row row2 = Row.of(columnName, 2, otherColumnName, 4);
     table.addRow(row1);
     table.addRow(row2);
-    AnalysisAnswerOptions optionsNoProject =
-        new AnalysisAnswerOptions(
+    AnswerRowsOptions optionsNoProject =
+        new AnswerRowsOptions(
             ImmutableSet.of(), ImmutableList.of(), Integer.MAX_VALUE, 0, ImmutableList.of(), false);
-    AnalysisAnswerOptions optionsProject =
-        new AnalysisAnswerOptions(
+    AnswerRowsOptions optionsProject =
+        new AnswerRowsOptions(
             ImmutableSet.of(columnName),
             ImmutableList.of(),
             Integer.MAX_VALUE,
@@ -936,15 +1027,15 @@ public class WorkMgrTest {
     Row row2Projected = Row.of(columnName, 2);
 
     assertThat(
-        _manager.processAnalysisAnswerTable(table, optionsNoProject).getRowsList(),
+        _manager.processAnswerTable(table, optionsNoProject).getRowsList(),
         equalTo(ImmutableList.of(row1, row2)));
     assertThat(
-        _manager.processAnalysisAnswerTable(table, optionsProject).getRowsList(),
+        _manager.processAnswerTable(table, optionsProject).getRowsList(),
         equalTo(ImmutableList.of(row1Projected, row2Projected)));
   }
 
   @Test
-  public void testProcessAnalysisAnswerTableUniqueRows() {
+  public void testProcessAnswerTableUniqueRows() {
     String columnName = "val";
     TableAnswerElement table =
         new TableAnswerElement(
@@ -954,18 +1045,18 @@ public class WorkMgrTest {
     Row row2 = Row.of(columnName, 1);
     table.addRow(row1);
     table.addRow(row2);
-    AnalysisAnswerOptions optionsNonUnique =
-        new AnalysisAnswerOptions(
+    AnswerRowsOptions optionsNonUnique =
+        new AnswerRowsOptions(
             ImmutableSet.of(), ImmutableList.of(), Integer.MAX_VALUE, 0, ImmutableList.of(), false);
-    AnalysisAnswerOptions optionsUnique =
-        new AnalysisAnswerOptions(
+    AnswerRowsOptions optionsUnique =
+        new AnswerRowsOptions(
             ImmutableSet.of(), ImmutableList.of(), Integer.MAX_VALUE, 0, ImmutableList.of(), true);
 
     assertThat(
-        _manager.processAnalysisAnswerTable(table, optionsNonUnique).getRowsList(),
+        _manager.processAnswerTable(table, optionsNonUnique).getRowsList(),
         equalTo(ImmutableList.of(row1, row2)));
     assertThat(
-        _manager.processAnalysisAnswerTable(table, optionsUnique).getRowsList(),
+        _manager.processAnswerTable(table, optionsUnique).getRowsList(),
         equalTo(ImmutableList.of(row1)));
   }
 

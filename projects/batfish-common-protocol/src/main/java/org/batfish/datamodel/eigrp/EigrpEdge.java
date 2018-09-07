@@ -39,12 +39,12 @@ public final class EigrpEdge implements Serializable, Comparable<EigrpEdge> {
   static Optional<EigrpEdge> edgeIfAdjacent(Edge edge, Map<String, Configuration> configurations) {
     // vertex1
     Configuration c1 = configurations.get(edge.getNode1());
-    Interface iface1 = c1.getInterfaces().get(edge.getInt1());
+    Interface iface1 = c1.getAllInterfaces().get(edge.getInt1());
     EigrpInterfaceSettings eigrp1 = iface1.getEigrp();
 
     // vertex2
     Configuration c2 = configurations.get(edge.getNode2());
-    Interface iface2 = c2.getInterfaces().get(edge.getInt2());
+    Interface iface2 = c2.getAllInterfaces().get(edge.getInt2());
     EigrpInterfaceSettings eigrp2 = iface2.getEigrp();
 
     if (eigrp1 == null

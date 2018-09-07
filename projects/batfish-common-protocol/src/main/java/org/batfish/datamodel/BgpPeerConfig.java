@@ -88,7 +88,7 @@ public abstract class BgpPeerConfig implements Serializable {
   @Nullable private final BgpAuthenticationSettings _authenticationSettings;
 
   /** The cluster id associated with this peer to be used in route reflection */
-  private final Long _clusterId;
+  @Nullable private final Long _clusterId;
 
   /** The default metric associated with routes sent to this peer */
   private final int _defaultMetric;
@@ -240,6 +240,7 @@ public abstract class BgpPeerConfig implements Serializable {
 
   @JsonProperty(PROP_CLUSTER_ID)
   @JsonPropertyDescription("Route-reflection cluster-id for this peer")
+  @Nullable
   public Long getClusterId() {
     return _clusterId;
   }
@@ -273,11 +274,13 @@ public abstract class BgpPeerConfig implements Serializable {
 
   @JsonProperty(PROP_EXPORT_POLICY)
   @JsonPropertyDescription("The policy governing all advertisements sent to this peer")
+  @Nullable
   public String getExportPolicy() {
     return _exportPolicy;
   }
 
   @JsonProperty(PROP_EXPORT_POLICY_SOURCES)
+  @Nonnull
   public SortedSet<String> getExportPolicySources() {
     return _exportPolicySources;
   }
@@ -294,17 +297,20 @@ public abstract class BgpPeerConfig implements Serializable {
   @JsonPropertyDescription(
       "Name of a group in the original vendor-specific configuration to which this peer is "
           + "assigned")
+  @Nullable
   public String getGroup() {
     return _group;
   }
 
   @JsonProperty(PROP_IMPORT_POLICY)
   @JsonPropertyDescription("Routing policy governing all advertisements received from this peer")
+  @Nullable
   public String getImportPolicy() {
     return _importPolicy;
   }
 
   @JsonProperty(PROP_IMPORT_POLICY_SOURCES)
+  @Nonnull
   public SortedSet<String> getImportPolicySources() {
     return _importPolicySources;
   }
@@ -318,6 +324,7 @@ public abstract class BgpPeerConfig implements Serializable {
 
   @JsonProperty(PROP_LOCAL_IP)
   @JsonPropertyDescription("The local (source) IPV4 address of this peering")
+  @Nullable
   public Ip getLocalIp() {
     return _localIp;
   }

@@ -3,11 +3,20 @@ load-questions questions/stable
 # validate aaaAuthenticationLogin
 test -raw tests/questions/stable/aaaAuthenticationLogin.ref validate-template aaaAuthenticationLogin nodes=".*"
 
+# validate definedStructures
+test -raw tests/questions/stable/definedStructures.ref validate-template definedStructures nodes="n1", names="m1", types="t1"
+
 # validate fileParseStatus
 test -raw tests/questions/stable/fileParseStatus.ref validate-template fileParseStatus
 
 # validate ipOwners
 test -raw tests/questions/stable/ipOwners.ref validate-template ipOwners duplicatesOnly=false
+
+# validate edges
+test -raw tests/questions/stable/edges.ref validate-template edges edgeType="bgp", nodes=".*", remoteNodes=".*"
+
+# validate ipsecSessionStatus
+test -raw tests/questions/stable/ipsecSessionStatus.ref validate-template ipsecSessionStatus nodes="n1", remoteNodes="n2", status=".*"
 
 # validate parseWarning
 test -raw tests/questions/stable/parseWarning.ref validate-template parseWarning
@@ -16,7 +25,7 @@ test -raw tests/questions/stable/parseWarning.ref validate-template parseWarning
 test -raw tests/questions/stable/routes.ref validate-template routes network="1.1.1.1/24", nodes=".*", vrfs=".*", rib="main", protocols=".*"
 
 # test testfilters
-test  -raw tests/questions/stable/testfilters.ref validate-template testfilters dscp=12, dst="1.2.3.4", dstPort=23, dstProtocol="udp", ecn=1, filters=".*", fragmentOffset=12, icmpCode=12, icmpType=23, ingressInterface="randomInterface", ipProtocol="23", nodes=".*", packetLength=12, srcIp="1.1.1.1", srcPort=123, srcProtocol="tcp", state="new", tcpAck=true, tcpCwr=false, tcpEce=true, tcpFin=false, tcpPsh=true, tcpRst=false, tcpSyn=true, tcpUrg=false
+test  -raw tests/questions/stable/testfilters.ref validate-template testfilters dscp=12, dst="1.2.3.4", dstPort=23, dstProtocol="http", ecn=1, filters=".*", fragmentOffset=12, icmpCode=12, icmpType=23, ingressInterface="randomInterface", ipProtocol="tcp", nodes=".*", packetLength=12, srcIp="1.1.1.1", srcPort=123, srcProtocol="dns", state="new", tcpAck=true, tcpCwr=false, tcpEce=true, tcpFin=false, tcpPsh=true, tcpRst=false, tcpSyn=true, tcpUrg=false
 
 # test undefinedReferences
 test -raw tests/questions/stable/undefinedReferences.ref validate-template undefinedreferences nodes=".*"

@@ -744,7 +744,16 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
         for (EndpointPair<BgpPeerConfigId> session : _bgpTopology.edges()) {
           BgpPeerConfigId bgpPeerConfigId = session.source();
           BgpPeerConfigId remoteBgpPeerConfigId = session.target();
-          boolean ebgp = _bgpTopology.edgeValue(bgpPeerConfigId, remoteBgpPeerConfigId).isEbgp();
+          boolean ebgp =
+              _bgpTopology
+                  .edgeValue(bgpPeerConfigId, remoteBgpPeerConfigId)
+                  .orElseThrow(
+                      () ->
+                          new IllegalStateException(
+                              String.format(
+                                  "Edge %s -> %s not in BGP topology",
+                                  bgpPeerConfigId, remoteBgpPeerConfigId)))
+                  .isEbgp();
           if (ebgp) {
             VerboseBgpEdge edge =
                 constructVerboseBgpEdge(
@@ -785,7 +794,14 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
           BgpPeerConfigId bgpPeerConfigId = session.source();
           BgpPeerConfigId remoteBgpPeerConfigId = session.target();
           BgpSessionProperties sessionProp =
-              _bgpTopology.edgeValue(bgpPeerConfigId, remoteBgpPeerConfigId);
+              _bgpTopology
+                  .edgeValue(bgpPeerConfigId, remoteBgpPeerConfigId)
+                  .orElseThrow(
+                      () ->
+                          new IllegalStateException(
+                              String.format(
+                                  "Edge %s -> %s not in IBGP topology",
+                                  bgpPeerConfigId, remoteBgpPeerConfigId)));
           boolean ibgp = sessionProp.getSessionType() == SessionType.IBGP;
           if (ibgp) {
             VerboseBgpEdge edge =
@@ -836,9 +852,9 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
             SortedSet<VerboseEdge> vMatchingEdges = new TreeSet<>();
             for (Edge edge : matchingEdges) {
               Configuration n1 = configurations.get(edge.getNode1());
-              Interface i1 = n1.getInterfaces().get(edge.getInt1());
+              Interface i1 = n1.getAllInterfaces().get(edge.getInt1());
               Configuration n2 = configurations.get(edge.getNode2());
-              Interface i2 = n2.getInterfaces().get(edge.getInt2());
+              Interface i2 = n2.getAllInterfaces().get(edge.getInt2());
               vMatchingEdges.add(new VerboseEdge(i1, i2, edge));
             }
             answerElement.setVerboseLayer3Neighbors(vMatchingEdges);

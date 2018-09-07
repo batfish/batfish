@@ -52,7 +52,7 @@ public final class IsisEdge implements Comparable<IsisEdge> {
       Edge edge, Map<String, Configuration> configurations) {
     // vertex1
     Configuration c1 = configurations.get(edge.getNode1());
-    Interface iface1 = c1.getInterfaces().get(edge.getInt1());
+    Interface iface1 = c1.getAllInterfaces().get(edge.getInt1());
     Vrf vrf1 = iface1.getVrf();
     IsisProcess proc1 = vrf1.getIsisProcess();
     if (proc1 == null) {
@@ -65,7 +65,7 @@ public final class IsisEdge implements Comparable<IsisEdge> {
 
     // vertex2
     Configuration c2 = configurations.get(edge.getNode2());
-    Interface iface2 = c2.getInterfaces().get(edge.getInt2());
+    Interface iface2 = c2.getAllInterfaces().get(edge.getInt2());
     Vrf vrf2 = iface2.getVrf();
     IsisProcess proc2 = vrf2.getIsisProcess();
     if (proc2 == null) {

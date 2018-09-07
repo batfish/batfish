@@ -1059,8 +1059,8 @@ public class CiscoGrammarTest {
     assertThat(c, hasInterface(eth2Name, hasOutgoingFilterName(zone2OutgoingAclName)));
     assertThat(c, hasInterface(eth3Name, hasOutgoingFilterName(eth3CombinedAclName)));
 
-    IpAccessList eth2Acl = c.getInterfaces().get(eth2Name).getOutgoingFilter();
-    IpAccessList eth3Acl = c.getInterfaces().get(eth3Name).getOutgoingFilter();
+    IpAccessList eth2Acl = c.getAllInterfaces().get(eth2Name).getOutgoingFilter();
+    IpAccessList eth3Acl = c.getAllInterfaces().get(eth3Name).getOutgoingFilter();
 
     /* Check that expected traffic is permitted/denied */
     Flow permittedByBoth =
@@ -1147,7 +1147,7 @@ public class CiscoGrammarTest {
   @Test
   public void testIosInterfaceStandby() throws IOException {
     Configuration c = parseConfig("ios-interface-standby");
-    Interface i = c.getInterfaces().get("Ethernet0");
+    Interface i = c.getAllInterfaces().get("Ethernet0");
 
     assertThat(
         c,
@@ -2717,7 +2717,7 @@ public class CiscoGrammarTest {
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations();
 
-    Interface i1 = configurations.get(iosHostname).getInterfaces().get(i1Name);
+    Interface i1 = configurations.get(iosHostname).getAllInterfaces().get(i1Name);
     assertThat(i1, hasDeclaredNames("Ethernet0/0", "e0/0", "Eth0/0", "ether0/0-1"));
   }
 
@@ -3012,7 +3012,7 @@ public class CiscoGrammarTest {
         configurations
             .values()
             .stream()
-            .flatMap(c -> c.getInterfaces().values().stream())
+            .flatMap(c -> c.getAllInterfaces().values().stream())
             .filter(i -> i.getInterfaceType().equals(InterfaceType.TUNNEL) && i.getActive())
             .count(),
         equalTo(4L));
@@ -3171,8 +3171,8 @@ public class CiscoGrammarTest {
     Map<String, Configuration> configurations = batfish.loadConfigurations();
 
     Configuration iosMaxMetric = configurations.get(iosOspfPointToPoint);
-    Interface e0Sub0 = iosMaxMetric.getInterfaces().get("Ethernet0/0");
-    Interface e0Sub1 = iosMaxMetric.getInterfaces().get("Ethernet0/1");
+    Interface e0Sub0 = iosMaxMetric.getAllInterfaces().get("Ethernet0/0");
+    Interface e0Sub1 = iosMaxMetric.getAllInterfaces().get("Ethernet0/1");
 
     assertTrue(e0Sub0.getOspfPointToPoint());
     assertFalse(e0Sub1.getOspfPointToPoint());
@@ -3194,7 +3194,7 @@ public class CiscoGrammarTest {
     Map<String, Configuration> configurations = batfish.loadConfigurations();
 
     Configuration iosRecovery = configurations.get(hostname);
-    Map<String, Interface> iosRecoveryInterfaces = iosRecovery.getInterfaces();
+    Map<String, Interface> iosRecoveryInterfaces = iosRecovery.getAllInterfaces();
     Set<String> iosRecoveryInterfaceNames = iosRecoveryInterfaces.keySet();
     Set<InterfaceAddress> l3Prefixes = iosRecoveryInterfaces.get("Loopback3").getAllAddresses();
     Set<InterfaceAddress> l4Prefixes = iosRecoveryInterfaces.get("Loopback4").getAllAddresses();

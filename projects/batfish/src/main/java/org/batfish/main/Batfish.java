@@ -141,6 +141,7 @@ import org.batfish.datamodel.answers.DataPlaneAnswerElement;
 import org.batfish.datamodel.answers.FlattenVendorConfigurationAnswerElement;
 import org.batfish.datamodel.answers.InitInfoAnswerElement;
 import org.batfish.datamodel.answers.InitStepAnswerElement;
+import org.batfish.datamodel.answers.MajorIssueConfig;
 import org.batfish.datamodel.answers.NodAnswerElement;
 import org.batfish.datamodel.answers.NodFirstUnsatAnswerElement;
 import org.batfish.datamodel.answers.NodSatAnswerElement;
@@ -198,6 +199,8 @@ import org.batfish.specifier.Location;
 import org.batfish.specifier.SpecifierContext;
 import org.batfish.specifier.SpecifierContextImpl;
 import org.batfish.specifier.UnionLocationSpecifier;
+import org.batfish.storage.FileBasedStorage;
+import org.batfish.storage.StorageProvider;
 import org.batfish.symbolic.abstraction.BatfishCompressor;
 import org.batfish.symbolic.abstraction.Roles;
 import org.batfish.symbolic.bdd.AclLineMatchExprToBDD;
@@ -321,13 +324,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
       // nodes are valid, now checking corresponding interfaces
       Configuration config1 = configurations.get(edge.getNode1());
       Configuration config2 = configurations.get(edge.getNode2());
-      if (!config1.getInterfaces().containsKey(edge.getInt1())) {
+      if (!config1.getAllInterfaces().containsKey(edge.getInt1())) {
         throw new BatfishException(
             String.format(
                 "Topology contains a non-existent interface '%s' on node '%s'",
                 edge.getInt1(), edge.getNode1()));
       }
-      if (!config2.getInterfaces().containsKey(edge.getInt2())) {
+      if (!config2.getAllInterfaces().containsKey(edge.getInt2())) {
         throw new BatfishException(
             String.format(
                 "Topology contains a non-existent interface '%s' on node '%s'",
@@ -371,16 +374,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
-  public static void initQuestionSettings(Settings settings) {
-    String questionName = settings.getQuestionName();
-    Path containerDir = settings.getStorageBase().resolve(settings.getContainer());
-    if (questionName != null) {
-      Path questionPath =
-          containerDir.resolve(BfConsts.RELPATH_QUESTIONS_DIR).resolve(questionName);
-      settings.setQuestionPath(questionPath.resolve(BfConsts.RELPATH_QUESTION_FILE));
-    }
-  }
-
   public static void initTestrigSettings(Settings settings) {
     String testrig = settings.getTestrig();
     String envName = settings.getEnvironmentName();
@@ -405,7 +398,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
       } else {
         settings.setActiveTestrigSettings(settings.getBaseTestrigSettings());
       }
-      initQuestionSettings(settings);
     } else if (containerDir != null) {
       throw new CleanBatfishException("Must supply argument to -" + BfConsts.ARG_TESTRIG);
     }
@@ -511,7 +503,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private Settings _settings;
 
-  private final BatfishStorage _storage;
+  private final StorageProvider _storage;
 
   // this variable is used communicate with parent thread on how the job
   // finished (null if job finished successfully)
@@ -530,7 +522,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
       Cache<NetworkSnapshot, DataPlane> cachedCompressedDataPlanes,
       Cache<NetworkSnapshot, DataPlane> cachedDataPlanes,
       Map<NetworkSnapshot, SortedMap<String, BgpAdvertisementsByVrf>> cachedEnvironmentBgpTables,
-      Map<NetworkSnapshot, SortedMap<String, RoutesByVrf>> cachedEnvironmentRoutingTables) {
+      Map<NetworkSnapshot, SortedMap<String, RoutesByVrf>> cachedEnvironmentRoutingTables,
+      @Nullable StorageProvider alternateStorageProvider) {
     super(settings.getSerializeToText());
     _settings = settings;
     _bgpTablePlugins = new TreeMap<>();
@@ -550,82 +543,76 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _testrigSettingsStack = new ArrayList<>();
     _dataPlanePlugins = new HashMap<>();
     _storage =
-        new BatfishStorage(
-            _settings.getStorageBase().resolve(_settings.getContainer()), _logger, this::newBatch);
+        alternateStorageProvider != null
+            ? alternateStorageProvider
+            : new FileBasedStorage(_settings.getStorageBase(), _logger, this::newBatch);
   }
 
   private Answer analyze() {
-    Answer answer = new Answer();
-    AnswerSummary summary = new AnswerSummary();
-    String analysisName = _settings.getAnalysisName();
-    String containerName = _settings.getContainer();
-    Path analysisQuestionsDir =
-        _settings
-            .getStorageBase()
-            .resolve(containerName)
-            .resolve(
-                Paths.get(
-                        BfConsts.RELPATH_ANALYSES_DIR, analysisName, BfConsts.RELPATH_QUESTIONS_DIR)
-                    .toString());
-    if (!Files.exists(analysisQuestionsDir)) {
-      throw new BatfishException(
-          "Analysis questions dir does not exist: '" + analysisQuestionsDir + "'");
+    try {
+      Answer answer = new Answer();
+      AnswerSummary summary = new AnswerSummary();
+      String analysisName = _settings.getAnalysisName();
+      String containerName = _settings.getContainer();
+      RunAnalysisAnswerElement ae = new RunAnalysisAnswerElement();
+      _storage
+          .listAnalysisQuestions(containerName, analysisName)
+          .forEach(
+              questionName -> {
+                _settings.setQuestionName(questionName);
+                Answer currentAnswer;
+                try (ActiveSpan analysisQuestionSpan =
+                    GlobalTracer.get()
+                        .buildSpan("Getting answer to analysis question")
+                        .startActive()) {
+                  assert analysisQuestionSpan != null; // make span not show up as unused
+                  analysisQuestionSpan.setTag("analysis-name", analysisName);
+                  currentAnswer = answer();
+                }
+                // Ensuring that question was parsed successfully
+                if (currentAnswer.getQuestion() != null) {
+                  try {
+                    // TODO: This can be represented much cleanly and easily with a Json
+                    _logger.infof(
+                        "Ran question:%s from analysis:%s in container:%s; work-id:%s, status:%s, "
+                            + "computed dataplane:%s, parameters:%s\n",
+                        questionName,
+                        analysisName,
+                        containerName,
+                        getTaskId(),
+                        currentAnswer.getSummary().getNumFailed() > 0 ? "failed" : "passed",
+                        currentAnswer.getQuestion().getDataPlane(),
+                        BatfishObjectMapper.writeString(
+                            currentAnswer.getQuestion().getInstance().getVariables()));
+                  } catch (JsonProcessingException e) {
+                    throw new BatfishException(
+                        String.format(
+                            "Error logging question %s in analysis %s", questionName, analysisName),
+                        e);
+                  }
+                }
+                try {
+                  outputAnswer(currentAnswer);
+                  outputAnswerMetadata(currentAnswer);
+                  ae.getAnswers().put(questionName, currentAnswer);
+                } catch (Exception e) {
+                  Answer errorAnswer = new Answer();
+                  errorAnswer.addAnswerElement(
+                      new BatfishStackTrace(new BatfishException("Failed to output answer", e)));
+                  ae.getAnswers().put(questionName, errorAnswer);
+                }
+                ae.getAnswers().put(questionName, currentAnswer);
+                summary.combine(currentAnswer.getSummary());
+              });
+
+      answer.addAnswerElement(ae);
+      answer.setSummary(summary);
+      return answer;
+    } finally {
+      // ensure question name is null so logger does not try to write analysis answer into a
+      // question's answer folder
+      _settings.setQuestionName(null);
     }
-    RunAnalysisAnswerElement ae = new RunAnalysisAnswerElement();
-    try (Stream<Path> questions = CommonUtil.list(analysisQuestionsDir)) {
-      questions.forEach(
-          analysisQuestionDir -> {
-            String questionName = analysisQuestionDir.getFileName().toString();
-            Path analysisQuestionPath = analysisQuestionDir.resolve(BfConsts.RELPATH_QUESTION_FILE);
-            _settings.setQuestionPath(analysisQuestionPath);
-            Answer currentAnswer;
-            try (ActiveSpan analysisQuestionSpan =
-                GlobalTracer.get().buildSpan("Getting answer to analysis question").startActive()) {
-              assert analysisQuestionSpan != null; // make span not show up as unused
-              analysisQuestionSpan.setTag("analysis-name", analysisName);
-              currentAnswer = answer();
-            }
-            // Ensuring that question was parsed successfully
-            if (currentAnswer.getQuestion() != null) {
-              try {
-                // TODO: This can be represented much cleanly and easily with a Json
-                _logger.infof(
-                    "Ran question:%s from analysis:%s in container:%s; work-id:%s, status:%s, "
-                        + "computed dataplane:%s, parameters:%s\n",
-                    questionName,
-                    analysisName,
-                    containerName,
-                    getTaskId(),
-                    currentAnswer.getSummary().getNumFailed() > 0 ? "failed" : "passed",
-                    currentAnswer.getQuestion().getDataPlane(),
-                    BatfishObjectMapper.writeString(
-                        currentAnswer.getQuestion().getInstance().getVariables()));
-              } catch (JsonProcessingException e) {
-                throw new BatfishException(
-                    String.format(
-                        "Error logging question %s in analysis %s", questionName, analysisName),
-                    e);
-              }
-            }
-            initAnalysisQuestionPath(analysisName, questionName);
-            try {
-              outputAnswer(currentAnswer);
-              outputAnswerMetadata(currentAnswer);
-              ae.getAnswers().put(questionName, currentAnswer);
-            } catch (Exception e) {
-              Answer errorAnswer = new Answer();
-              errorAnswer.addAnswerElement(
-                  new BatfishStackTrace(new BatfishException("Failed to output answer", e)));
-              ae.getAnswers().put(questionName, errorAnswer);
-            }
-            ae.getAnswers().put(questionName, currentAnswer);
-            _settings.setQuestionPath(null);
-            summary.combine(currentAnswer.getSummary());
-          });
-    }
-    answer.addAnswerElement(ae);
-    answer.setSummary(summary);
-    return answer;
   }
 
   public Answer answer() {
@@ -635,13 +622,27 @@ public class Batfish extends PluginConsumer implements IBatfish {
     try (ActiveSpan parseQuestionSpan =
         GlobalTracer.get().buildSpan("Parse question").startActive()) {
       assert parseQuestionSpan != null; // avoid not used warning
-      question = Question.parseQuestion(_settings.getQuestionPath());
-    } catch (Exception e) {
-      Answer answer = new Answer();
-      BatfishException exception = new BatfishException("Could not parse question", e);
-      answer.setStatus(AnswerStatus.FAILURE);
-      answer.addAnswerElement(exception.getBatfishStackTrace());
-      return answer;
+      String rawQuestionStr;
+      try {
+        rawQuestionStr =
+            _storage.loadQuestion(
+                _settings.getContainer(), _settings.getQuestionName(), _settings.getAnalysisName());
+      } catch (Exception e) {
+        Answer answer = new Answer();
+        BatfishException exception = new BatfishException("Could not read question", e);
+        answer.setStatus(AnswerStatus.FAILURE);
+        answer.addAnswerElement(exception.getBatfishStackTrace());
+        return answer;
+      }
+      try {
+        question = Question.parseQuestion(rawQuestionStr);
+      } catch (Exception e) {
+        Answer answer = new Answer();
+        BatfishException exception = new BatfishException("Could not parse question", e);
+        answer.setStatus(AnswerStatus.FAILURE);
+        answer.addAnswerElement(exception.getBatfishStackTrace());
+        return answer;
+      }
     }
 
     if (GlobalTracer.get().activeSpan() != null) {
@@ -953,7 +954,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         String hostname = c.getHostname();
         String aclName = line.getAclName();
         Synthesizer aclSynthesizer = synthesizeAcls(hostname, c, aclName);
-        List<String> interfaces = ImmutableList.copyOf(c.getInterfaces().keySet());
+        List<String> interfaces = ImmutableList.copyOf(c.getAllInterfaces().keySet());
         NavigableMap<String, IpSpace> ipSpaces = ImmutableSortedMap.copyOf(c.getIpSpaces());
         NavigableMap<String, IpAccessList> acls = ImmutableSortedMap.copyOf(c.getIpAccessLists());
         IpAccessList acl = c.getIpAccessLists().get(aclName);
@@ -1114,7 +1115,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     DataPlanePlugin dataPlanePlugin = getDataPlanePlugin();
     ComputeDataPlaneResult result = dataPlanePlugin.computeDataPlane(false, configs, topo);
 
-    _storage.storeCompressedConfigurations(configs, _testrigSettings.getName());
+    _storage.storeCompressedConfigurations(
+        configs, _settings.getContainer(), _testrigSettings.getName());
     return new CompressDataPlaneResult(configs, result._dataPlane, result._answerElement);
   }
 
@@ -1213,11 +1215,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @VisibleForTesting
   Topology computeTestrigTopology(Map<String, Configuration> configurations) {
-    Topology legacyTopology = _storage.loadLegacyTopology(_testrigSettings.getName());
+    Topology legacyTopology =
+        _storage.loadLegacyTopology(_settings.getContainer(), _testrigSettings.getName());
     if (legacyTopology != null) {
       return legacyTopology;
     }
-    Layer1Topology rawLayer1Topology = _storage.loadLayer1Topology(_testrigSettings.getName());
+    Layer1Topology rawLayer1Topology =
+        _storage.loadLayer1Topology(_settings.getContainer(), _testrigSettings.getName());
     if (rawLayer1Topology != null) {
       _logger.infof(
           "Testrig:%s in container:%s has layer-1 topology file",
@@ -1383,7 +1387,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       Integer vlanNumber = null;
       // Populate vlanInterface and nonVlanInterfaces, and initialize
       // vlanMemberCounts:
-      for (Interface iface : c.getInterfaces().values()) {
+      for (Interface iface : c.getAllInterfaces().values()) {
         if ((iface.getInterfaceType() == InterfaceType.VLAN)
             && ((vlanNumber = CommonUtil.getInterfaceVlanNumber(iface.getName())) != null)) {
           vlanInterfaces.put(vlanNumber, iface);
@@ -1944,6 +1948,16 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
+  /**
+   * Returns the {@link MajorIssueConfig} for the given major issue type.
+   *
+   * <p>If the corresponding file is not found or it cannot be deserealized, return an empty object.
+   */
+  @Override
+  public MajorIssueConfig getMajorIssueConfig(String majorIssueType) {
+    return _storage.loadMajorIssueConfig(_settings.getContainer(), majorIssueType);
+  }
+
   @Override
   public Map<String, String> getQuestionTemplates() {
     if (_settings.getCoordinatorHost() == null) {
@@ -2060,22 +2074,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Override
   public PluginClientType getType() {
     return PluginClientType.BATFISH;
-  }
-
-  private void initAnalysisQuestionPath(String analysisName, String questionName) {
-    Path questionDir =
-        _testrigSettings
-            .getBasePath()
-            .resolve(
-                Paths.get(
-                        BfConsts.RELPATH_ANALYSES_DIR,
-                        analysisName,
-                        BfConsts.RELPATH_QUESTIONS_DIR,
-                        questionName)
-                    .toString());
-    questionDir.toFile().mkdirs();
-    Path questionPath = questionDir.resolve(BfConsts.RELPATH_QUESTION_FILE);
-    _settings.setQuestionPath(questionPath);
   }
 
   @Override
@@ -2321,7 +2319,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
                   String remoteHostname = edge.getNode2();
                   String remoteIfaceName = edge.getInt2();
                   Configuration remoteNode = configurations.get(remoteHostname);
-                  Interface remoteIface = remoteNode.getInterfaces().get(remoteIfaceName);
+                  Interface remoteIface = remoteNode.getAllInterfaces().get(remoteIfaceName);
                   Vrf remoteVrf = remoteIface.getVrf();
                   String remoteVrfName = remoteVrf.getName();
                   RipProcess remoteProc = remoteVrf.getRipProcess();
@@ -2391,7 +2389,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _logger.debugf("Loading configurations for %s, cache miss", snapshot);
 
     // Next, see if we have an up-to-date, environment-specific configurations on disk.
-    configurations = _storage.loadCompressedConfigurations(snapshot.getSnapshot().getTestrig());
+    configurations =
+        _storage.loadCompressedConfigurations(
+            _settings.getContainer(), snapshot.getSnapshot().getTestrig());
     if (configurations != null) {
       return configurations;
     } else {
@@ -2417,7 +2417,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _logger.debugf("Loading configurations for %s, cache miss", snapshot);
 
     // Next, see if we have an up-to-date, environment-specific configurations on disk.
-    configurations = _storage.loadConfigurations(snapshot.getSnapshot().getTestrig());
+    configurations =
+        _storage.loadConfigurations(_settings.getContainer(), snapshot.getSnapshot().getTestrig());
     if (configurations != null) {
       _logger.debugf("Loaded configurations for %s off disk", snapshot);
       applyEnvironment(configurations);
@@ -2435,7 +2436,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _logger.infof("Repairing configurations for testrig %s", _testrigSettings.getName());
     repairConfigurations();
     SortedMap<String, Configuration> configurations =
-        _storage.loadConfigurations(_testrigSettings.getName());
+        _storage.loadConfigurations(_settings.getContainer(), _testrigSettings.getName());
     Verify.verify(
         configurations != null,
         "Configurations should not be null when loaded immediately after repair.");
@@ -2446,7 +2447,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Override
   public ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElementOrReparse() {
     ConvertConfigurationAnswerElement ccae =
-        _storage.loadConvertConfigurationAnswerElement(_testrigSettings.getName());
+        _storage.loadConvertConfigurationAnswerElement(
+            _settings.getContainer(), _testrigSettings.getName());
     if (ccae != null
         && Version.isCompatibleVersion(
             "Service", "Old processed configurations", ccae.getVersion())) {
@@ -2454,7 +2456,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
 
     repairConfigurations();
-    ccae = _storage.loadConvertConfigurationAnswerElement(_testrigSettings.getName());
+    ccae =
+        _storage.loadConvertConfigurationAnswerElement(
+            _settings.getContainer(), _testrigSettings.getName());
     if (ccae != null
         && Version.isCompatibleVersion(
             "Service", "Old processed configurations", ccae.getVersion())) {
@@ -2488,7 +2492,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
        * repaired, so we still might need to load it from disk.
        */
       loadDataPlaneAnswerElement(compressed);
-      dp = cache.getIfPresent(_testrigSettings);
+      dp = cache.getIfPresent(snapshot);
       if (dp == null) {
         newBatch("Loading data plane from disk", 0);
         dp = deserializeObject(path, DataPlane.class);
@@ -2762,14 +2766,18 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   void outputAnswerMetadata(Answer answer) {
+    String question = _settings.getQuestionName();
+    if (question == null) {
+      return;
+    }
+    String deltaSnapshot = _settings.getDiffQuestion() ? _deltaTestrigSettings.getName() : null;
     _storage.storeAnswerMetadata(
         AnswerMetadataUtil.computeAnswerMetadata(answer, _logger),
-        _settings.getAnalysisName(),
-        _settings.getQuestionPath(),
+        _settings.getContainer(),
         _baseTestrigSettings.getName(),
-        _deltaTestrigSettings.getName(),
-        _settings.getQuestionName(),
-        _settings.getDiffQuestion());
+        question,
+        deltaSnapshot,
+        _settings.getAnalysisName());
   }
 
   private ParserRuleContext parse(BatfishCombinedParser<?, ?> parser) {
@@ -3032,7 +3040,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
       }
 
       String vrf =
-          diffConfigurations.get(ingressNode).getInterfaces().get(outInterface).getVrf().getName();
+          diffConfigurations
+              .get(ingressNode)
+              .getAllInterfaces()
+              .get(outInterface)
+              .getVrf()
+              .getName();
       IngressLocation ingressLocation = IngressLocation.vrf(ingressNode, vrf);
       BooleanExpr srcIpConstraint = srcIpConstraints.get(ingressLocation);
 
@@ -3071,12 +3084,17 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
       // skip if the source node or interface has been removed
       if (!diffConfigurations.containsKey(ingressNode)
-          || !diffConfigurations.get(ingressNode).getInterfaces().containsKey(outInterface)) {
+          || !diffConfigurations.get(ingressNode).getAllInterfaces().containsKey(outInterface)) {
         continue;
       }
 
       String vrf =
-          diffConfigurations.get(ingressNode).getInterfaces().get(outInterface).getVrf().getName();
+          diffConfigurations
+              .get(ingressNode)
+              .getAllInterfaces()
+              .get(outInterface)
+              .getVrf()
+              .getName();
       IngressLocation ingressLocation = IngressLocation.vrf(ingressNode, vrf);
       BooleanExpr srcIpConstraint = srcIpConstraints.get(ingressLocation);
 
@@ -3335,7 +3353,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       return;
     }
 
-    @Nullable Interface nodeIface = node.getInterfaces().get(ifaceName);
+    @Nullable Interface nodeIface = node.getAllInterfaces().get(ifaceName);
     if (nodeIface == null) {
       veae.setValid(false);
       veae.getUndefinedInterfaceBlacklistInterfaces()
@@ -3362,7 +3380,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     for (String hostname : blacklistNodes) {
       Configuration node = configurations.get(hostname);
       if (node != null) {
-        for (Interface iface : node.getInterfaces().values()) {
+        for (Interface iface : node.getAllInterfaces().values()) {
           iface.setActive(false);
           iface.setBlacklisted(true);
         }
@@ -4083,7 +4101,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
         org.batfish.datamodel.pojo.Topology.create(
             _testrigSettings.getName(), configurations, testrigTopology);
     serializeAsJson(_testrigSettings.getPojoTopologyPath(), pojoTopology, "testrig pojo topology");
-    _storage.storeConfigurations(configurations, answerElement, _testrigSettings.getName());
+    _storage.storeConfigurations(
+        configurations, answerElement, _settings.getContainer(), _testrigSettings.getName());
 
     applyEnvironment(configurations);
     Topology envTopology = computeEnvironmentTopology(configurations);
@@ -4757,14 +4776,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private void writeJsonAnswer(String structuredAnswerString) {
+    String deltaSnapshot = _settings.getDiffQuestion() ? _deltaTestrigSettings.getName() : null;
     _storage.storeAnswer(
         structuredAnswerString,
-        _settings.getAnalysisName(),
-        _settings.getQuestionPath(),
+        _settings.getContainer(),
         _baseTestrigSettings.getName(),
-        _deltaTestrigSettings.getName(),
         _settings.getQuestionName(),
-        _settings.getDiffQuestion());
+        deltaSnapshot,
+        _settings.getAnalysisName());
   }
 
   private void writeJsonAnswerWithLog(@Nullable String logString, String structuredAnswerString) {
@@ -4780,7 +4799,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
       CommonUtil.writeFile(jsonPath, logString);
     }
     // Write answer.json and answer-pretty.json if WorkItem was answering a question
-    writeJsonAnswer(structuredAnswerString);
+    if (_settings.getQuestionName() != null) {
+      writeJsonAnswer(structuredAnswerString);
+    }
   }
 
   private void writeJsonTopology() {
@@ -4791,8 +4812,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
       for (Edge textEdge : textEdges) {
         Configuration node1 = configs.get(textEdge.getNode1());
         Configuration node2 = configs.get(textEdge.getNode2());
-        Interface interface1 = node1.getInterfaces().get(textEdge.getInt1());
-        Interface interface2 = node2.getInterfaces().get(textEdge.getInt2());
+        Interface interface1 = node1.getAllInterfaces().get(textEdge.getInt1());
+        Interface interface2 = node2.getAllInterfaces().get(textEdge.getInt2());
         JSONObject jEdge = new JSONObject();
         jEdge.put("interface1", interface1.toJSONObject());
         jEdge.put("interface2", interface2.toJSONObject());
@@ -4811,7 +4832,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public @Nullable Layer1Topology getLayer1Topology() {
-    return _storage.loadLayer1Topology(_testrigSettings.getName());
+    return _storage.loadLayer1Topology(_settings.getContainer(), _testrigSettings.getName());
   }
 
   @Override

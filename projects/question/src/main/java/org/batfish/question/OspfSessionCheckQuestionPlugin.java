@@ -206,7 +206,7 @@ public class OspfSessionCheckQuestionPlugin extends QuestionPlugin {
       OspfSessionCheckAnswerElement answerElement = new OspfSessionCheckAnswerElement();
       Map<Ip, Set<String>> ipOwners = new HashMap<>();
       for (Configuration c : configurations.values()) {
-        for (Interface i : c.getInterfaces().values()) {
+        for (Interface i : c.getAllInterfaces().values()) {
           if (i.getActive() && i.getAddress() != null) {
             for (InterfaceAddress address : i.getAllAddresses()) {
               Set<String> currentIpOwners =

@@ -306,8 +306,9 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
 
         // iBGP connection to VPC
         Configuration vpcNode = awsConfiguration.getConfigurationNodes().get(vpcId);
-        Ip vpcIfaceAddress = vpcNode.getInterfaces().get(_vpnGatewayId).getAddress().getIp();
-        Ip vgwToVpcIfaceAddress = vpnGatewayCfgNode.getInterfaces().get(vpcId).getAddress().getIp();
+        Ip vpcIfaceAddress = vpcNode.getAllInterfaces().get(_vpnGatewayId).getAddress().getIp();
+        Ip vgwToVpcIfaceAddress =
+            vpnGatewayCfgNode.getAllInterfaces().get(vpcId).getAddress().getIp();
         BgpActivePeerConfig.Builder vgwToVpcBuilder = BgpActivePeerConfig.builder();
         vgwToVpcBuilder
             .setPeerAddress(vpcIfaceAddress)

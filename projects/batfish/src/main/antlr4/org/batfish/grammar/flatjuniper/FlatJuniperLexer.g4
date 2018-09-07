@@ -4,11 +4,16 @@ options {
    superClass = 'org.batfish.grammar.BatfishLexer';
 }
 
+@header {
+import static com.google.common.base.MoreObjects.firstNonNull;
+}
+
 @members {
 boolean enableIPV6_ADDRESS = true;
 boolean enableIP_ADDRESS = true;
 boolean enableDEC = true;
 boolean _markWildcards = false;
+private Integer _overrideTokenStartLine;
 
 public boolean isPrefix() {
    char nextChar = (char)this.getInputStream().LA(1);
@@ -16,6 +21,14 @@ public boolean isPrefix() {
       return false;
     }
     return true;
+}
+
+@Override
+public Token emit() {
+  Token t = _factory.create(_tokenFactorySourcePair, _type, _text, _channel, _tokenStartCharIndex, getCharIndex()-1,
+    firstNonNull(_overrideTokenStartLine, _tokenStartLine), _tokenStartCharPositionInLine);
+  emit(t);
+  return t;
 }
 
 @Override
@@ -30,6 +43,10 @@ public String printStateVariables() {
 
 public void setMarkWildcards(boolean markWildcards) {
    _markWildcards = markWildcards;
+}
+
+public void setOverrideTokenStartLine(Integer overrideTokenStartLine) {
+  _overrideTokenStartLine = overrideTokenStartLine;
 }
 
 private void setWildcard() {
@@ -1732,6 +1749,16 @@ INET6_VPN
    'inet6-vpn'
 ;
 
+INFO_REPLY
+:
+  'info-reply'
+;
+
+INFO_REQUEST
+:
+  'info-request'
+;
+
 INGRESS
 :
   'ingress'
@@ -3237,6 +3264,16 @@ MAPPED_PORT
 MARTIANS
 :
    'martians'
+;
+
+MASK_REPLY
+:
+   'mask-reply'
+;
+
+MASK_REQUEST
+:
+   'mask-request'
 ;
 
 MASTER_ONLY
@@ -5104,6 +5141,16 @@ TIMEOUT
    'timeout'
 ;
 
+TIMESTAMP
+:
+   'timestamp'
+;
+
+TIMESTAMP_REPLY
+:
+   'timestamp-reply'
+;
+
 TO
 :
    'to'
@@ -5116,6 +5163,11 @@ TOLERANCE
 TO_ZONE
 :
    'to-zone'
+;
+
+TRACE
+:
+   'trace'
 ;
 
 TRACEOPTIONS

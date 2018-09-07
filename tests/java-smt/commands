@@ -112,6 +112,12 @@ test tests/java-smt/acl1-differential3.ref get smt-reachability dstIps=[70.70.70
 init-snapshot networks/smt-examples/IBGP1 tr-smt-ibgp1
 test tests/java-smt/ibgp1-forwarding.ref get smt-forwarding dstIps=["20.20.20.20"], fullModel=True, baseEnvType=none
 
+# Check correctness of bgpRanking attribute
+init-snapshot test_rigs/smt-examples/LP tr-smt-lp
+test tests/java-smt/lp-reachability1.ref get smt-reachability finalNodeRegex="r1", ingressNodeRegex="r2", finalIfaceRegex="Loopback.*", fullModel=True, bgpRanking=[]
+test tests/java-smt/lp-reachability2.ref get smt-reachability finalNodeRegex="r1", ingressNodeRegex="r2", finalIfaceRegex="Loopback.*", fullModel=True, bgpRanking=["localpref"]
+test tests/java-smt/lp-reachability3.ref get smt-reachability finalNodeRegex="r1", ingressNodeRegex="r2", finalIfaceRegex="Loopback.*", fullModel=True
+
 # Check correctness of multiple ASes using both iBGP and eBGP. Also ensures
 # correct handling of transitivity and path metric update
 init-snapshot networks/smt-examples/IBGP2 tr-smt-ibgp2

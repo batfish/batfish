@@ -92,7 +92,7 @@ public class UniqueIpAssignmentsQuestionPlugin extends QuestionPlugin {
       return nodes
           .stream()
           // convert to stream of interfaces
-          .flatMap(node -> configs.get(node).getInterfaces().values().stream())
+          .flatMap(node -> configs.get(node).getAllInterfaces().values().stream())
           // narrow to interfaces of interest
           .filter(
               iface ->

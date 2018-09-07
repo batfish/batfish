@@ -66,13 +66,13 @@ public class NetworkFactoryTest {
 
     assertThat(i1.getName(), is(notNullValue()));
     assertThat(i1.getName(), not(equalTo(i2.getName())));
-    assertThat(c.getInterfaces(), not(hasKey(i1.getName())));
+    assertThat(c.getAllInterfaces(), not(hasKey(i1.getName())));
     assertThat(i2.getName(), is(notNullValue()));
-    assertThat(c.getInterfaces(), not(hasKey(i2.getName())));
-    assertThat(c.getInterfaces(), hasKey(i3.getName()));
+    assertThat(c.getAllInterfaces(), not(hasKey(i2.getName())));
+    assertThat(c.getAllInterfaces(), hasKey(i3.getName()));
     assertThat(i3.getOwner(), sameInstance(c));
     assertThat(vrf.getInterfaces(), not(hasKey(i3.getName())));
-    assertThat(c.getInterfaces(), hasKey(i4.getName()));
+    assertThat(c.getAllInterfaces(), hasKey(i4.getName()));
     assertThat(vrf.getInterfaces(), hasKey(i4.getName()));
     assertThat(i4.getVrf(), sameInstance(vrf));
   }

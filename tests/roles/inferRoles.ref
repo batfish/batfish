@@ -1,74 +1,54 @@
-{
-  "answerElements" : [
-    {
-      "class" : "org.batfish.question.InferRolesQuestionPlugin$InferRolesAnswerElement",
-      "matchingNodesCount" : {
-        "auto0" : 13,
-        "auto1" : 13
+[
+  {
+    "class" : "org.batfish.question.InferRolesQuestionPlugin$InferRolesAnswerElement",
+    "matchingNodesCount" : {
+      "auto0" : 13,
+      "auto1" : 13
+    },
+    "roleDimensions" : [
+      {
+        "name" : "auto0",
+        "roleRegexes" : [
+          "\\p{Alpha}+\\p{Digit}+(\\p{Alpha}+)\\p{Digit}+"
+        ],
+        "roles" : [
+          {
+            "caseSensitive" : false,
+            "name" : "border",
+            "regex" : "\\p{Alpha}+\\p{Digit}+border\\p{Digit}+"
+          },
+          {
+            "caseSensitive" : false,
+            "name" : "core",
+            "regex" : "\\p{Alpha}+\\p{Digit}+core\\p{Digit}+"
+          },
+          {
+            "caseSensitive" : false,
+            "name" : "dept",
+            "regex" : "\\p{Alpha}+\\p{Digit}+dept\\p{Digit}+"
+          },
+          {
+            "caseSensitive" : false,
+            "name" : "dist",
+            "regex" : "\\p{Alpha}+\\p{Digit}+dist\\p{Digit}+"
+          }
+        ],
+        "type" : "AUTO"
       },
-      "roleDimensions" : [
-        {
-          "name" : "auto0",
-          "roleRegexes" : [
-            "\\p{Alnum}+\\Q-\\E(\\p{Alpha}+)\\p{Alnum}*\\Q-\\E\\p{Digit}+"
-          ],
-          "roles" : [
-            {
-              "caseSensitive" : false,
-              "name" : "border",
-              "regex" : "\\p{Alnum}+\\Q-\\Eborder\\p{Alnum}*\\Q-\\E\\p{Digit}+"
-            },
-            {
-              "caseSensitive" : false,
-              "name" : "core",
-              "regex" : "\\p{Alnum}+\\Q-\\Ecore\\p{Alnum}*\\Q-\\E\\p{Digit}+"
-            },
-            {
-              "caseSensitive" : false,
-              "name" : "leaf",
-              "regex" : "\\p{Alnum}+\\Q-\\Eleaf\\p{Alnum}*\\Q-\\E\\p{Digit}+"
-            },
-            {
-              "caseSensitive" : false,
-              "name" : "spine",
-              "regex" : "\\p{Alnum}+\\Q-\\Espine\\p{Alnum}*\\Q-\\E\\p{Digit}+"
-            }
-          ],
-          "type" : "AUTO"
-        },
-        {
-          "name" : "auto1",
-          "roleRegexes" : [
-            "(\\p{Alpha}+)\\p{Alnum}*\\Q-\\E\\p{Alnum}+\\Q-\\E\\p{Digit}+"
-          ],
-          "roles" : [
-            {
-              "caseSensitive" : false,
-              "name" : "bb",
-              "regex" : "bb\\p{Alnum}*\\Q-\\E\\p{Alnum}+\\Q-\\E\\p{Digit}+"
-            },
-            {
-              "caseSensitive" : false,
-              "name" : "dc",
-              "regex" : "dc\\p{Alnum}*\\Q-\\E\\p{Alnum}+\\Q-\\E\\p{Digit}+"
-            }
-          ],
-          "type" : "AUTO"
-        }
-      ]
-    }
-  ],
-  "question" : {
-    "class" : "org.batfish.question.InferRolesQuestionPlugin$InferRolesQuestion",
-    "caseSensitive" : false,
-    "differential" : false,
-    "includeOneTableKeys" : true,
-    "nodeRegex" : ".*"
-  },
-  "status" : "SUCCESS",
-  "summary" : {
-    "numFailed" : 0,
-    "numPassed" : 0,
-    "numResults" : 0
+      {
+        "name" : "auto1",
+        "roleRegexes" : [
+          "(\\p{Alpha}+)\\p{Digit}+\\p{Alpha}+\\p{Digit}+"
+        ],
+        "roles" : [
+          {
+            "caseSensitive" : false,
+            "name" : "as",
+            "regex" : "as\\p{Digit}+\\p{Alpha}+\\p{Digit}+"
+          }
+        ],
+        "type" : "AUTO"
+      }
+    ]
   }
-}
+]

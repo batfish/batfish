@@ -150,7 +150,7 @@ public class IsisLoopbacksQuestionPlugin extends QuestionPlugin {
           continue;
         }
         Configuration c = e.getValue();
-        c.getInterfaces()
+        c.getAllInterfaces()
             .forEach(
                 (interfaceName, iface) -> {
                   if (iface.isLoopback(c.getConfigurationFormat())) {

@@ -28,37 +28,14 @@ java_library(
     ],
 )
 
-java_library(
-    name = "allinone_testlib",
-    testonly = True,
-    srcs = glob(
-        [
-            "src/test/**/*.java",
-        ],
-        exclude = ["src/test/**/*Test.java"],
-    ),
-    deps = [
-        ":allinone",
-        "//projects/batfish",
-        "//projects/batfish:batfish_testlib",
-        "//projects/batfish-common-protocol:common",
-        "//projects/batfish-common-protocol:common_testlib",
-        "//projects/question",
-        "@guava//:compile",
-        "@junit//:compile",
-    ],
-)
-
 junit_tests(
-    name = "allinone_tests",
+    name = "AaaAuthenticationLoginTest",
     size = "small",
-    srcs = glob([
-        "src/test/**/*Test.java",
-    ]),
-    resources = glob(["src/test/resources/**"]),
+    srcs = [
+        "src/test/java/org/batfish/question/aaaauthenticationlogin/AaaAuthenticationLoginTest.java",
+    ],
+    resources = glob(["src/test/resources/org/batfish/allinone/testconfigs/*"]),
     deps = [
-        ":allinone",
-        ":allinone_testlib",
         "//projects/batfish",
         "//projects/batfish:batfish_testlib",
         "//projects/batfish-common-protocol:common",
@@ -66,7 +43,192 @@ junit_tests(
         "//projects/question",
         "@guava//:compile",
         "@hamcrest//:compile",
-        "@jackson_core//:compile",
-        "@junit//:compile",
+    ],
+)
+
+junit_tests(
+    name = "AclReachabilityTest",
+    size = "small",
+    srcs = [
+        "src/test/java/org/batfish/question/aclreachability/AclReachabilityTest.java",
+    ],
+    deps = [
+        "//projects/batfish",
+        "//projects/batfish:batfish_testlib",
+        "//projects/batfish-common-protocol:common",
+        "//projects/question",
+        "@guava//:compile",
+        "@hamcrest//:compile",
+    ],
+)
+
+junit_tests(
+    name = "CompareSameNameTest",
+    size = "small",
+    srcs = [
+        "src/test/java/org/batfish/question/CompareSameNameTest.java",
+    ],
+    deps = [
+        "//projects/batfish",
+        "//projects/batfish:batfish_testlib",
+        "//projects/batfish-common-protocol:common",
+        "//projects/question",
+        "@guava//:compile",
+        "@hamcrest//:compile",
+    ],
+)
+
+junit_tests(
+    name = "MultipathConsistencyTest",
+    size = "small",
+    srcs = [
+        "src/test/java/org/batfish/question/multipath/MultipathConsistencyTest.java",
+    ],
+    deps = [
+        "//projects/batfish",
+        "//projects/batfish:batfish_testlib",
+        "//projects/batfish-common-protocol:common",
+        "//projects/batfish-common-protocol:common_testlib",
+        "//projects/question",
+        "@guava//:compile",
+        "@hamcrest//:compile",
+    ],
+)
+
+junit_tests(
+    name = "SpecifiersReachabilityTest",
+    size = "small",
+    srcs = [
+        "src/test/java/org/batfish/question/specifiers/SpecifiersReachabilityTest.java",
+    ],
+    resources = glob(["src/test/resources/org/batfish/allinone/testrigs/specifiers-reachability/**"]),
+    deps = [
+        "//projects/batfish",
+        "//projects/batfish:batfish_testlib",
+        "//projects/batfish-common-protocol:common",
+        "//projects/batfish-common-protocol:common_testlib",
+        "//projects/question",
+        "@guava//:compile",
+        "@hamcrest//:compile",
+    ],
+)
+
+junit_tests(
+    name = "SpecifiersTest",
+    size = "small",
+    srcs = [
+        "src/test/java/org/batfish/question/specifiers/SpecifiersTest.java",
+    ],
+    deps = [
+        "//projects/batfish",
+        "//projects/batfish:batfish_testlib",
+        "//projects/batfish-common-protocol:common",
+        "//projects/batfish-common-protocol:common_testlib",
+        "//projects/question",
+        "@guava//:compile",
+        "@hamcrest//:compile",
+    ],
+)
+
+junit_tests(
+    name = "TestFiltersTest",
+    size = "small",
+    srcs = [
+        "src/test/java/org/batfish/question/testfilters/TestFiltersTest.java",
+    ],
+    deps = [
+        "//projects/batfish",
+        "//projects/batfish:batfish_testlib",
+        "//projects/batfish-common-protocol:common",
+        "//projects/batfish-common-protocol:common_testlib",
+        "//projects/question",
+        "@guava//:compile",
+        "@hamcrest//:compile",
+    ],
+)
+
+junit_tests(
+    name = "ReachFilterDifferentialTest",
+    size = "small",
+    srcs = [
+        "src/test/java/org/batfish/question/reachfilter/ReachFilterDifferentialTest.java",
+    ],
+    deps = [
+        "//projects/batfish",
+        "//projects/batfish:batfish_testlib",
+        "//projects/batfish-common-protocol:common",
+        "//projects/batfish-common-protocol:common_testlib",
+        "//projects/question",
+        "@guava//:compile",
+        "@hamcrest//:compile",
+    ],
+)
+
+junit_tests(
+    name = "ReachFilterTest",
+    size = "small",
+    srcs = [
+        "src/test/java/org/batfish/question/reachfilter/ReachFilterTest.java",
+    ],
+    deps = [
+        "//projects/batfish",
+        "//projects/batfish:batfish_testlib",
+        "//projects/batfish-common-protocol:common",
+        "//projects/batfish-common-protocol:common_testlib",
+        "//projects/question",
+        "@guava//:compile",
+        "@hamcrest//:compile",
+    ],
+)
+
+junit_tests(
+    name = "ReducedReachabilityTest",
+    size = "small",
+    srcs = [
+        "src/test/java/org/batfish/question/reducedreachability/ReducedReachabilityTest.java",
+    ],
+    deps = [
+        "//projects/batfish",
+        "//projects/batfish:batfish_testlib",
+        "//projects/batfish-common-protocol:common",
+        "//projects/batfish-common-protocol:common_testlib",
+        "//projects/question",
+        "@guava//:compile",
+        "@hamcrest//:compile",
+    ],
+)
+
+junit_tests(
+    name = "TracerouteTest",
+    size = "small",
+    srcs = [
+        "src/test/java/org/batfish/question/traceroute/TracerouteTest.java",
+    ],
+    resources = glob(["src/test/resources/org/batfish/allinone/testrigs/specifiers-reachability/**"]),
+    deps = [
+        "//projects/batfish",
+        "//projects/batfish:batfish_testlib",
+        "//projects/batfish-common-protocol:common",
+        "//projects/batfish-common-protocol:common_testlib",
+        "//projects/question",
+        "@guava//:compile",
+        "@hamcrest//:compile",
+    ],
+)
+
+junit_tests(
+    name = "smt_tests",
+    size = "small",
+    srcs = glob([
+        "src/test/java/org/batfish/symbolic/smt/*.java",
+    ]),
+    deps = [
+        "//projects/batfish",
+        "//projects/batfish:batfish_testlib",
+        "//projects/batfish-common-protocol:common",
+        "//projects/batfish-common-protocol:common_testlib",
+        "//projects/question",
+        "@guava//:compile",
+        "@hamcrest//:compile",
     ],
 )

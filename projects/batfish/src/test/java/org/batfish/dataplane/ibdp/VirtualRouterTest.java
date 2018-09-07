@@ -584,14 +584,17 @@ public class VirtualRouterTest {
     exportingRouter._ospfIntraAreaRib.mergeRoute(route);
 
     // Set interaces on router 1 to be OSPF passive
-    testRouter.getConfiguration().getInterfaces().forEach((name, iface) -> iface.setActive(false));
+    testRouter
+        .getConfiguration()
+        .getAllInterfaces()
+        .forEach((name, iface) -> iface.setActive(false));
 
     // Test 1
     testRouter.propagateOspfInternalRoutesFromNeighbor(
         testRouter._vrf.getOspfProcess(),
         nodes.get("R2"),
-        testRouter.getConfiguration().getInterfaces().firstEntry().getValue(),
-        exportingRouter.getConfiguration().getInterfaces().get(exportingRouterInterfaceName),
+        testRouter.getConfiguration().getAllInterfaces().firstEntry().getValue(),
+        exportingRouter.getConfiguration().getAllInterfaces().get(exportingRouterInterfaceName),
         adminCost);
 
     assertThat(
@@ -602,18 +605,21 @@ public class VirtualRouterTest {
         is(emptyIterableOf(OspfIntraAreaRoute.class)));
 
     // Flip interfaces on router 2 to be passive now
-    testRouter.getConfiguration().getInterfaces().forEach((name, iface) -> iface.setActive(true));
+    testRouter
+        .getConfiguration()
+        .getAllInterfaces()
+        .forEach((name, iface) -> iface.setActive(true));
     exportingRouter
         .getConfiguration()
-        .getInterfaces()
+        .getAllInterfaces()
         .forEach((name, iface) -> iface.setActive(false));
 
     // Test 2
     testRouter.propagateOspfInternalRoutesFromNeighbor(
         testRouter._vrf.getOspfProcess(),
         nodes.get("R2"),
-        testRouter.getConfiguration().getInterfaces().firstEntry().getValue(),
-        exportingRouter.getConfiguration().getInterfaces().get(exportingRouterInterfaceName),
+        testRouter.getConfiguration().getAllInterfaces().firstEntry().getValue(),
+        exportingRouter.getConfiguration().getAllInterfaces().get(exportingRouterInterfaceName),
         adminCost);
 
     assertThat(

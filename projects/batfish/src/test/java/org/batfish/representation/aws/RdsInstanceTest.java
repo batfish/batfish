@@ -117,7 +117,7 @@ public class RdsInstanceTest {
         configurations
             .values()
             .stream()
-            .map(Configuration::getInterfaces)
+            .map(Configuration::getAllInterfaces)
             .map(Map::values)
             .flatMap(Collection::stream)
             .map(Interface::getAllAddresses)
@@ -146,9 +146,9 @@ public class RdsInstanceTest {
     Map<String, Configuration> configurations = loadAwsConfigurations();
 
     assertThat(configurations, hasKey("test-rds"));
-    assertThat(configurations.get("test-rds").getInterfaces().entrySet(), hasSize(2));
+    assertThat(configurations.get("test-rds").getAllInterfaces().entrySet(), hasSize(2));
 
-    for (Interface iface : configurations.get("test-rds").getInterfaces().values()) {
+    for (Interface iface : configurations.get("test-rds").getAllInterfaces().values()) {
       assertThat(
           iface.getOutgoingFilter(),
           hasLines(

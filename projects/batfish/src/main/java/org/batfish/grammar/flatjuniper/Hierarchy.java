@@ -60,12 +60,14 @@ public class Hierarchy {
     private abstract static class HierarchyChildNode extends HierarchyNode {
 
       private Set_lineContext _line;
+      protected int _lineNumber;
       protected String _sourceGroup;
       public List<String> _sourceWildcards;
       protected String _text;
 
-      private HierarchyChildNode(String text) {
+      private HierarchyChildNode(String text, int lineNumber) {
         _text = text;
+        _lineNumber = lineNumber;
       }
 
       public abstract HierarchyChildNode copy();
@@ -79,13 +81,13 @@ public class Hierarchy {
 
     private static final class HierarchyLiteralNode extends HierarchyChildNode {
 
-      private HierarchyLiteralNode(String text) {
-        super(text);
+      private HierarchyLiteralNode(String text, int lineNumber) {
+        super(text, lineNumber);
       }
 
       @Override
       public HierarchyChildNode copy() {
-        return new HierarchyLiteralNode(_text);
+        return new HierarchyLiteralNode(_text, _lineNumber);
       }
 
       @Override
@@ -95,8 +97,7 @@ public class Hierarchy {
 
       @Override
       public boolean isMatchedBy(HierarchyWildcardNode node) {
-        String regex = node._wildcard.replaceAll("\\*", ".*");
-        return _text.matches(regex);
+        return matchWithJuniperRegex(_text, node._wildcard);
       }
 
       @Override
@@ -170,14 +171,14 @@ public class Hierarchy {
         _nodes = new ArrayList<>();
       }
 
-      public void addNode(String text) {
-        HierarchyChildNode newNode = new HierarchyLiteralNode(text);
+      public void addNode(String text, int lineNumber) {
+        HierarchyChildNode newNode = new HierarchyLiteralNode(text, lineNumber);
         _nodes.add(newNode);
       }
 
-      public void addWildcardNode(String text) {
+      public void addWildcardNode(String text, int lineNumber) {
         _containsWildcard = true;
-        HierarchyChildNode newNode = new HierarchyWildcardNode(text);
+        HierarchyChildNode newNode = new HierarchyWildcardNode(text, lineNumber);
         _nodes.add(newNode);
       }
 
@@ -210,8 +211,8 @@ public class Hierarchy {
 
       private String _wildcard;
 
-      private HierarchyWildcardNode(String text) {
-        super(text);
+      private HierarchyWildcardNode(String text, int lineNumber) {
+        super(text, lineNumber);
         if (text.charAt(0) != '<' || text.charAt(text.length() - 1) != '>') {
           throw new BatfishException("Improperly-formatted wildcard: " + text);
         }
@@ -220,7 +221,7 @@ public class Hierarchy {
 
       @Override
       public HierarchyChildNode copy() {
-        return new HierarchyWildcardNode(_text);
+        return new HierarchyWildcardNode(_text, _lineNumber);
       }
 
       @Override
@@ -275,41 +276,13 @@ public class Hierarchy {
         Flat_juniper_configurationContext configurationContext,
         boolean clusterGroup) {
       if (groupLine != null) {
+        int overrideLine = groupLine.getStart().getLine();
         Set_lineContext setLine = new Set_lineContext(configurationContext, -1);
         if (masterTree.addPath(path, setLine, _groupName) == AddPathResult.BLACKLISTED) {
           return;
         }
-        StringBuilder sb = new StringBuilder();
-        for (HierarchyChildNode pathNode : path._nodes) {
-          sb.append(pathNode._text + " ");
-        }
-        String newStatementText = sb.toString();
-        // get rid of last " ", which matters for tokens where whitespace is
-        // not ignored
-        newStatementText =
-            "set " + newStatementText.substring(0, newStatementText.length() - 1) + "\n";
-        TerminalNode set = new TerminalNodeImpl(new CommonToken(FlatJuniperLexer.SET, "set"));
-        Set_line_tailContext setLineTail = new Set_line_tailContext(setLine, -1);
-        TerminalNode newline =
-            new TerminalNodeImpl(new CommonToken(FlatJuniperLexer.NEWLINE, "\n"));
-        setLine.children = new ArrayList<>();
-        setLine.children.add(set);
-        setLine.children.add(setLineTail);
-        setLine.children.add(newline);
-        Settings settings = parserSettings();
-        FlatJuniperCombinedParser parser =
-            new FlatJuniperCombinedParser(newStatementText, settings);
-        parser.setMarkWildcards(true);
-        Flat_juniper_configurationContext newConfiguration =
-            parser.getParser().flat_juniper_configuration();
-        parser.setMarkWildcards(false);
-        // StatementContext newStatement = parser.getParser().statement();
-        StatementContext newStatement = newConfiguration.set_line(0).set_line_tail().statement();
-        newStatement.parent = setLineTail;
-
-        setLineTail.children = new ArrayList<>();
-        if (!clusterGroup || !IsHostnameStatement.isHostnameStatement(newStatement)) {
-          setLineTail.children.add(newStatement);
+        StatementContext newStatement = setLineHelper(setLine, path, overrideLine, true);
+        if (!(clusterGroup && IsHostnameStatement.isHostnameStatement(newStatement))) {
           lines.add(setLine);
         }
       }
@@ -355,9 +328,11 @@ public class Hierarchy {
       HierarchyChildNode wildcardNode = findExactPathMatchNode(path);
       String sourceGroup = wildcardNode._sourceGroup;
       int remainingWildcards = 0;
+      int lineNumber = -1;
       for (HierarchyChildNode node : path._nodes) {
         if (node.isWildcard()) {
           remainingWildcards++;
+          lineNumber = node._lineNumber;
         }
       }
       List<String> appliedWildcards = new ArrayList<>();
@@ -372,7 +347,8 @@ public class Hierarchy {
           remainingWildcards,
           appliedWildcards,
           newPath,
-          lines);
+          lines,
+          lineNumber);
       return lines;
     }
 
@@ -385,7 +361,8 @@ public class Hierarchy {
         int remainingWildcards,
         List<String> appliedWildcards,
         HierarchyPath newPath,
-        List<ParseTree> lines) {
+        List<ParseTree> lines,
+        int overrideLineNumber) {
       if (destinationTreeRoot._blacklistedGroups.contains(sourceGroup)) {
         return;
       }
@@ -408,7 +385,8 @@ public class Hierarchy {
         if (startingIndex == path._nodes.size() - 1) {
           newDestinationTreeRoot._sourceWildcards = new ArrayList<>();
           newDestinationTreeRoot._sourceWildcards.addAll(appliedWildcards);
-          newDestinationTreeRoot._line = generateSetLine(newPath, configurationContext);
+          newDestinationTreeRoot._line =
+              generateSetLine(newPath, configurationContext, overrideLineNumber);
           lines.add(newDestinationTreeRoot._line);
         } else {
           applyWildcardPath(
@@ -420,7 +398,8 @@ public class Hierarchy {
               remainingWildcards,
               appliedWildcards,
               newPath,
-              lines);
+              lines,
+              overrideLineNumber);
         }
         newPath._nodes.remove(newPath._nodes.size() - 1);
       } else {
@@ -440,7 +419,8 @@ public class Hierarchy {
                   remainingWildcards - 1,
                   appliedWildcards,
                   newPath,
-                  lines);
+                  lines,
+                  overrideLineNumber);
               newPath._nodes.remove(newPath._nodes.size() - 1);
             }
           }
@@ -477,14 +457,19 @@ public class Hierarchy {
       return matchNode;
     }
 
-    private Set_lineContext generateSetLine(
-        HierarchyPath path, Flat_juniper_configurationContext configurationContext) {
-      Set_lineContext setLine = new Set_lineContext(configurationContext, -1);
+    /**
+     * Populate the specified setLine's children with the supplied path and return the generated set
+     * statement
+     */
+    private static StatementContext setLineHelper(
+        Set_lineContext setLine, HierarchyPath path, int overrideLine, boolean markWildcards) {
       StringBuilder sb = new StringBuilder();
       for (HierarchyChildNode pathNode : path._nodes) {
-        sb.append(pathNode._text + " ");
+        sb.append(pathNode._text);
+        sb.append(" ");
       }
       String newStatementText = sb.toString();
+      // Get rid of last " ", which matters for tokens where whitespace is not ignored
       newStatementText =
           "set " + newStatementText.substring(0, newStatementText.length() - 1) + "\n";
       TerminalNode set = new TerminalNodeImpl(new CommonToken(FlatJuniperLexer.SET, "set"));
@@ -496,14 +481,30 @@ public class Hierarchy {
       setLine.children.add(newline);
       Settings settings = parserSettings();
       FlatJuniperCombinedParser parser = new FlatJuniperCombinedParser(newStatementText, settings);
+      // Use the supplied line number for the constructed nodes
+      parser.getLexer().setOverrideTokenStartLine(overrideLine);
+      if (markWildcards) {
+        parser.setMarkWildcards(true);
+      }
       Flat_juniper_configurationContext newConfiguration =
           parser.getParser().flat_juniper_configuration();
+      if (markWildcards) {
+        parser.setMarkWildcards(false);
+      }
       StatementContext newStatement = newConfiguration.set_line(0).set_line_tail().statement();
       newStatement.parent = setLineTail;
 
       setLineTail.children = new ArrayList<>();
       setLineTail.children.add(newStatement);
+      return newStatement;
+    }
 
+    private Set_lineContext generateSetLine(
+        HierarchyPath path,
+        Flat_juniper_configurationContext configurationContext,
+        int overrideLine) {
+      Set_lineContext setLine = new Set_lineContext(configurationContext, -1);
+      setLineHelper(setLine, path, overrideLine, false);
       return setLine;
     }
 
@@ -563,8 +564,10 @@ public class Hierarchy {
         HierarchyPath applyPathPath,
         Flat_juniper_configurationContext configurationContext) {
       List<ParseTree> lines = new ArrayList<>();
-      List<String> candidatePrefixes = getApplyPathPrefixes(applyPathPath);
-      for (String candidatePrefix : candidatePrefixes) {
+      List<HierarchyChildNode> candidateNodes = getApplyPathPrefixes(applyPathPath);
+      for (HierarchyChildNode candidateNode : candidateNodes) {
+        String candidatePrefix = candidateNode._text;
+        int candidateLineNumber = candidateNode._lineNumber;
         String finalPrefixStr;
         boolean ipv6 = candidatePrefix.contains(":");
         boolean isPrefix = candidatePrefix.contains("/");
@@ -590,26 +593,30 @@ public class Hierarchy {
           throw new BatfishException(
               "Invalid ip(v6) address or prefix: \"" + candidatePrefix + "\"", e);
         }
-        basePath.addNode(finalPrefixStr);
-        Set_lineContext setLine = generateSetLine(basePath, configurationContext);
+        basePath.addNode(finalPrefixStr, candidateLineNumber);
+        Set_lineContext setLine =
+            generateSetLine(basePath, configurationContext, candidateLineNumber);
         lines.add(setLine);
         basePath._nodes.remove(basePath._nodes.size() - 1);
       }
       return lines;
     }
 
-    private List<String> getApplyPathPrefixes(HierarchyPath path) {
-      List<String> prefixes = new ArrayList<>();
+    private List<HierarchyChildNode> getApplyPathPrefixes(HierarchyPath path) {
+      List<HierarchyChildNode> prefixes = new ArrayList<>();
       getApplyPathPrefixes(path, _root, 0, prefixes);
       return prefixes;
     }
 
     private void getApplyPathPrefixes(
-        HierarchyPath path, HierarchyNode currentNode, int currentDepth, List<String> prefixes) {
+        HierarchyPath path,
+        HierarchyNode currentNode,
+        int currentDepth,
+        List<HierarchyChildNode> prefixes) {
       if (currentDepth == path._nodes.size() - 1) {
         for (HierarchyChildNode currentChild : currentNode.getChildren().values()) {
           if (!currentChild.isWildcard()) {
-            prefixes.add(currentChild._text);
+            prefixes.add(currentChild);
           }
         }
       } else {
@@ -700,5 +707,10 @@ public class Hierarchy {
 
   public void setApplyGroupsExcept(HierarchyPath path, String groupName) {
     _masterTree.setApplyGroupsExcept(path, groupName);
+  }
+
+  static boolean matchWithJuniperRegex(String candidate, String juniperRegex) {
+    String regex = juniperRegex.replaceAll("\\*", ".*");
+    return candidate.matches(regex);
   }
 }

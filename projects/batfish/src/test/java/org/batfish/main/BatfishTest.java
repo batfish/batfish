@@ -17,8 +17,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -46,6 +44,7 @@ import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.ParseStatus;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.representation.host.HostConfiguration;
+import org.batfish.storage.TestStorageProvider;
 import org.batfish.vendor.VendorConfiguration;
 import org.junit.Rule;
 import org.junit.Test;
@@ -62,29 +61,30 @@ public class BatfishTest {
   @Test
   public void testAnswerBadQuestion() throws IOException {
     // missing class field
-    String badQuestionStr =
-        "{"
-            + "\"differential\": false,"
-            + "\"instance\": {"
-            + "\"description\": \"Outputs cases where undefined structures (e.g., ACL, routemaps) "
-            + "are referenced.\","
-            + "\"instanceName\": \"undefinedReferences\","
-            + "\"longDescription\": \"Such occurrences indicate configuration errors and can have"
-            + "serious consequences with some vendors.\","
-            + "\"tags\": [\"default\"],"
-            + "\"variables\": {\"nodeRegex\": {"
-            + "\"description\": \"Only check nodes whose name matches this regex\","
-            + "\"type\": \"javaRegex\","
-            + "\"value\": \".*\""
-            + "}}"
-            + "},"
-            + "\"nodeRegex\": \"${nodeRegex}\""
-            + "}";
-
-    Path questionPath = _folder.newFile("testAnswerBadQuestion").toPath();
-    Files.write(questionPath, badQuestionStr.getBytes(StandardCharsets.UTF_8));
-    Batfish batfish = BatfishTestUtils.getBatfish(new TreeMap<>(), _folder);
-    batfish.getSettings().setQuestionPath(questionPath);
+    Batfish batfish =
+        BatfishTestUtils.getBatfish(
+            new TestStorageProvider() {
+              @Override
+              public String loadQuestion(String network, String analysis, String question) {
+                return "{"
+                    + "\"differential\": false,"
+                    + "\"instance\": {"
+                    + "\"description\": \"Outputs cases where undefined structures (e.g., ACL, routemaps) "
+                    + "are referenced.\","
+                    + "\"instanceName\": \"undefinedReferences\","
+                    + "\"longDescription\": \"Such occurrences indicate configuration errors and can have"
+                    + "serious consequences with some vendors.\","
+                    + "\"tags\": [\"default\"],"
+                    + "\"variables\": {\"nodeRegex\": {"
+                    + "\"description\": \"Only check nodes whose name matches this regex\","
+                    + "\"type\": \"javaRegex\","
+                    + "\"value\": \".*\""
+                    + "}}"
+                    + "},"
+                    + "\"nodeRegex\": \"${nodeRegex}\""
+                    + "}";
+              }
+            });
     Answer answer = batfish.answer();
     assertThat(answer.getQuestion(), is(nullValue()));
     assertEquals(answer.getStatus(), AnswerStatus.FAILURE);
@@ -130,7 +130,7 @@ public class BatfishTest {
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations();
     assertThat(
-        configurations.get("host1").getInterfaces().get("Ethernet0").getIncomingFilterName(),
+        configurations.get("host1").getAllInterfaces().get("Ethernet0").getIncomingFilterName(),
         is(notNullValue()));
   }
 
@@ -363,9 +363,9 @@ public class BatfishTest {
 
     // Assert that the config parsed successfully
     assertThat(configs, hasKey("host1"));
-    assertThat(configs.get("host1").getInterfaces(), hasKey("Vlan65"));
+    assertThat(configs.get("host1").getAllInterfaces(), hasKey("Vlan65"));
     assertThat(
-        configs.get("host1").getInterfaces().get("Vlan65").getVrrpGroups().keySet(), hasSize(1));
+        configs.get("host1").getAllInterfaces().get("Vlan65").getVrrpGroups().keySet(), hasSize(1));
 
     // Tests that computing IP owners with such a bad interface does not crash.
     CommonUtil.computeIpNodeOwners(configs, false);

@@ -70,9 +70,10 @@ _GenSuite = rule(
 
 def junit_tests(name, srcs, **kwargs):
     s_name = name.replace("-", "_") + "TestSuite"
+    test_files = [s for s in srcs if s.endswith("Test.java")]
     _GenSuite(
         name = s_name,
-        srcs = srcs,
+        srcs = test_files,
         outname = s_name,
     )
     native.java_test(

@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.Objects;
 import javax.ws.rs.core.Response;
 import org.apache.commons.io.FileUtils;
-import org.batfish.common.AnalysisAnswerOptions;
+import org.batfish.common.AnswerRowsOptions;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.ColumnFilter;
@@ -49,6 +49,7 @@ import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
+import org.batfish.storage.FileBasedStorage;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 import org.junit.Rule;
@@ -78,7 +79,11 @@ public class WorkMgrServiceTest {
         });
     Main.setLogger(logger);
     Main.initAuthorizer();
-    WorkMgr manager = new WorkMgr(settings, logger);
+    WorkMgr manager =
+        new WorkMgr(
+            settings,
+            logger,
+            new FileBasedStorage(Main.getSettings().getContainersLocation(), logger));
     Main.setWorkMgr(manager);
     manager.initContainer(_networkName, null);
     _service = new WorkMgrService();
@@ -242,6 +247,7 @@ public class WorkMgrServiceTest {
             null,
             null,
             null,
+            null,
             analysisName,
             questionName,
             workItemString);
@@ -255,6 +261,7 @@ public class WorkMgrServiceTest {
             null,
             _snapshotName,
             BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
+            null,
             null,
             null,
             null,
@@ -567,6 +574,7 @@ public class WorkMgrServiceTest {
             null,
             null,
             null,
+            null,
             analysisName,
             questionName,
             workItemString);
@@ -580,6 +588,7 @@ public class WorkMgrServiceTest {
             _snapshotName,
             null,
             BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
+            null,
             null,
             null,
             null,
@@ -678,7 +687,10 @@ public class WorkMgrServiceTest {
     int value = 5;
     AnswerMetadata testAnswerMetadata =
         new AnswerMetadata(
-            new Metrics(ImmutableMap.of(columnName, ImmutableMap.of(Aggregation.MAX, value)), 1),
+            new Metrics(
+                ImmutableMap.of(columnName, ImmutableMap.of(Aggregation.MAX, value)),
+                ImmutableSet.of(),
+                1),
             AnswerStatus.SUCCESS);
     String answerMetadata = BatfishObjectMapper.writePrettyString(testAnswerMetadata);
 
@@ -725,6 +737,7 @@ public class WorkMgrServiceTest {
             _networkName,
             _snapshotName,
             null,
+            null,
             analysisName,
             analysisQuestionsStr,
             null);
@@ -745,6 +758,7 @@ public class WorkMgrServiceTest {
                     new AnswerMetadata(
                         new Metrics(
                             ImmutableMap.of(columnName, ImmutableMap.of(Aggregation.MAX, value)),
+                            ImmutableSet.of(),
                             1),
                         AnswerStatus.SUCCESS)))));
   }
@@ -755,10 +769,10 @@ public class WorkMgrServiceTest {
     String questionName = "question1";
     String questionContent = "questionContent";
     String columnName = "col";
-    Map<String, AnalysisAnswerOptions> analysisAnswersOptions =
+    Map<String, AnswerRowsOptions> analysisAnswersOptions =
         ImmutableMap.of(
             questionName,
-            new AnalysisAnswerOptions(
+            new AnswerRowsOptions(
                 ImmutableSet.of(columnName),
                 ImmutableList.of(new ColumnFilter(columnName, "")),
                 Integer.MAX_VALUE,
@@ -824,6 +838,7 @@ public class WorkMgrServiceTest {
             _networkName,
             _snapshotName,
             null,
+            null,
             analysisName,
             analysisAnswersOptionsStr,
             null);
@@ -839,6 +854,275 @@ public class WorkMgrServiceTest {
     assertThat(structuredAnswers.keySet(), equalTo(ImmutableSet.of(questionName)));
 
     Answer processedAnswer = structuredAnswers.get(questionName);
+    TableAnswerElement processedTable =
+        (TableAnswerElement) processedAnswer.getAnswerElements().get(0);
+
+    assertThat(processedTable.getRowsList(), equalTo(ImmutableList.of(Row.of(columnName, value))));
+  }
+
+  @Test
+  public void testGetAnswerMetricsAnalysis() throws Exception {
+    String analysisName = "analysis1";
+    String questionName = "question1";
+    String questionContent = "questionContent";
+
+    initNetworkEnvironment();
+
+    String columnName = "col";
+    int value = 5;
+    AnswerMetadata testAnswerMetadata =
+        new AnswerMetadata(
+            new Metrics(
+                ImmutableMap.of(columnName, ImmutableMap.of(Aggregation.MAX, value)),
+                ImmutableSet.of(),
+                1),
+            AnswerStatus.SUCCESS);
+    String answerMetadata = BatfishObjectMapper.writePrettyString(testAnswerMetadata);
+
+    String analysisJsonString =
+        String.format("{\"%s\":{\"question\":\"%s\"}}", questionName, questionContent);
+    File analysisFile = _networksFolder.newFile(analysisName);
+    FileUtils.writeStringToFile(analysisFile, analysisJsonString);
+
+    _service.configureAnalysis(
+        CoordConsts.DEFAULT_API_KEY,
+        Version.getVersion(),
+        null,
+        _networkName,
+        "new",
+        analysisName,
+        new FileInputStream(analysisFile),
+        "",
+        null);
+
+    Path answerDir =
+        _networksFolder
+            .getRoot()
+            .toPath()
+            .resolve(
+                Paths.get(
+                    _networkName,
+                    BfConsts.RELPATH_TESTRIGS_DIR,
+                    _snapshotName,
+                    BfConsts.RELPATH_ANALYSES_DIR,
+                    analysisName,
+                    BfConsts.RELPATH_QUESTIONS_DIR,
+                    questionName,
+                    BfConsts.RELPATH_ENVIRONMENTS_DIR,
+                    BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME));
+
+    Path answer1MetadataPath = answerDir.resolve(BfConsts.RELPATH_ANSWER_METADATA);
+    answerDir.toFile().mkdirs();
+    CommonUtil.writeFile(answer1MetadataPath, answerMetadata);
+
+    JSONArray answerOutput =
+        _service.getAnswerMetrics(
+            CoordConsts.DEFAULT_API_KEY,
+            Version.getVersion(),
+            _networkName,
+            _snapshotName,
+            null,
+            null,
+            analysisName,
+            questionName,
+            null);
+
+    assertThat(answerOutput.get(0), equalTo(CoordConsts.SVC_KEY_SUCCESS));
+
+    JSONObject answerJsonObject = (JSONObject) answerOutput.get(1);
+    String answerJsonString = answerJsonObject.getString(CoordConsts.SVC_KEY_ANSWER);
+    AnswerMetadata structuredAnswer =
+        BatfishObjectMapper.mapper()
+            .readValue(answerJsonString, new TypeReference<AnswerMetadata>() {});
+    assertThat(
+        structuredAnswer,
+        equalTo(
+            new AnswerMetadata(
+                new Metrics(
+                    ImmutableMap.of(columnName, ImmutableMap.of(Aggregation.MAX, value)),
+                    ImmutableSet.of(),
+                    1),
+                AnswerStatus.SUCCESS)));
+  }
+
+  @Test
+  public void testGetAnswerMetricsAdHoc() throws Exception {
+    String questionName = "question1";
+    String questionContent = "questionContent";
+    String columnName = "col";
+    initNetworkEnvironment();
+
+    int value = 5;
+    AnswerMetadata testAnswerMetadata =
+        new AnswerMetadata(
+            new Metrics(
+                ImmutableMap.of(columnName, ImmutableMap.of(Aggregation.MAX, value)),
+                ImmutableSet.of(),
+                1),
+            AnswerStatus.SUCCESS);
+
+    Main.getWorkMgr().getStorage().storeQuestion(questionContent, _networkName, questionName, null);
+    Main.getWorkMgr()
+        .getStorage()
+        .storeAnswerMetadata(
+            testAnswerMetadata, _networkName, _snapshotName, questionName, null, null);
+
+    JSONArray answerOutput =
+        _service.getAnswerMetrics(
+            CoordConsts.DEFAULT_API_KEY,
+            Version.getVersion(),
+            _networkName,
+            _snapshotName,
+            null,
+            null,
+            null,
+            questionName,
+            null);
+
+    assertThat(answerOutput.get(0), equalTo(CoordConsts.SVC_KEY_SUCCESS));
+
+    JSONObject answerJsonObject = (JSONObject) answerOutput.get(1);
+    String answerJsonString = answerJsonObject.getString(CoordConsts.SVC_KEY_ANSWER);
+    AnswerMetadata structuredAnswer =
+        BatfishObjectMapper.mapper()
+            .readValue(answerJsonString, new TypeReference<AnswerMetadata>() {});
+    assertThat(
+        structuredAnswer,
+        equalTo(
+            new AnswerMetadata(
+                new Metrics(
+                    ImmutableMap.of(columnName, ImmutableMap.of(Aggregation.MAX, value)),
+                    ImmutableSet.of(),
+                    1),
+                AnswerStatus.SUCCESS)));
+  }
+
+  @Test
+  public void testGetAnswerRowsAnalysis() throws Exception {
+    String analysis = "analysis1";
+    String question = "question1";
+    String questionContent = "questionContent";
+    String columnName = "col";
+    AnswerRowsOptions answersRowsOptions =
+        new AnswerRowsOptions(
+            ImmutableSet.of(columnName),
+            ImmutableList.of(new ColumnFilter(columnName, "")),
+            Integer.MAX_VALUE,
+            0,
+            ImmutableList.of(new ColumnSortOption(columnName, false)),
+            false);
+    String answerRowsOptionsStr = BatfishObjectMapper.writePrettyString(answersRowsOptions);
+
+    initNetworkEnvironment();
+
+    int value = 5;
+    Answer testAnswer = new Answer();
+    testAnswer.addAnswerElement(
+        new TableAnswerElement(
+                new TableMetadata(
+                    ImmutableList.of(new ColumnMetadata(columnName, Schema.INTEGER, "foobar")),
+                    new DisplayHints().getTextDesc()))
+            .addRow(Row.of(columnName, value)));
+    testAnswer.setStatus(AnswerStatus.SUCCESS);
+    String answer = BatfishObjectMapper.writePrettyString(testAnswer);
+
+    String analysisJsonString =
+        String.format("{\"%s\":{\"question\":\"%s\"}}", question, questionContent);
+    File analysisFile = _networksFolder.newFile(analysis);
+    FileUtils.writeStringToFile(analysisFile, analysisJsonString);
+
+    _service.configureAnalysis(
+        CoordConsts.DEFAULT_API_KEY,
+        Version.getVersion(),
+        null,
+        _networkName,
+        "new",
+        analysis,
+        new FileInputStream(analysisFile),
+        "",
+        null);
+
+    Main.getWorkMgr()
+        .getStorage()
+        .storeAnswer(answer, _networkName, _snapshotName, question, null, analysis);
+
+    JSONArray answerOutput =
+        _service.getAnswerRows(
+            CoordConsts.DEFAULT_API_KEY,
+            Version.getVersion(),
+            _networkName,
+            _snapshotName,
+            null,
+            question,
+            analysis,
+            answerRowsOptionsStr,
+            null);
+
+    assertThat(answerOutput.get(0), equalTo(CoordConsts.SVC_KEY_SUCCESS));
+
+    JSONObject answerJsonObject = (JSONObject) answerOutput.get(1);
+    String answersJsonString = answerJsonObject.getString(CoordConsts.SVC_KEY_ANSWER);
+    Answer processedAnswer =
+        BatfishObjectMapper.mapper().readValue(answersJsonString, new TypeReference<Answer>() {});
+
+    TableAnswerElement processedTable =
+        (TableAnswerElement) processedAnswer.getAnswerElements().get(0);
+
+    assertThat(processedTable.getRowsList(), equalTo(ImmutableList.of(Row.of(columnName, value))));
+  }
+
+  @Test
+  public void testGetAnswerRowsAdHoc() throws Exception {
+    String question = "question1";
+    String questionContent = "questionContent";
+    String columnName = "col";
+    AnswerRowsOptions answersRowsOptions =
+        new AnswerRowsOptions(
+            ImmutableSet.of(columnName),
+            ImmutableList.of(new ColumnFilter(columnName, "")),
+            Integer.MAX_VALUE,
+            0,
+            ImmutableList.of(new ColumnSortOption(columnName, false)),
+            false);
+    String answerRowsOptionsStr = BatfishObjectMapper.writePrettyString(answersRowsOptions);
+
+    initNetworkEnvironment();
+
+    int value = 5;
+    Answer testAnswer = new Answer();
+    testAnswer.addAnswerElement(
+        new TableAnswerElement(
+                new TableMetadata(
+                    ImmutableList.of(new ColumnMetadata(columnName, Schema.INTEGER, "foobar")),
+                    new DisplayHints().getTextDesc()))
+            .addRow(Row.of(columnName, value)));
+    testAnswer.setStatus(AnswerStatus.SUCCESS);
+    String answer = BatfishObjectMapper.writePrettyString(testAnswer);
+
+    Main.getWorkMgr().getStorage().storeQuestion(questionContent, _networkName, question, null);
+    Main.getWorkMgr()
+        .getStorage()
+        .storeAnswer(answer, _networkName, _snapshotName, question, null, null);
+
+    JSONArray answerOutput =
+        _service.getAnswerRows(
+            CoordConsts.DEFAULT_API_KEY,
+            Version.getVersion(),
+            _networkName,
+            _snapshotName,
+            null,
+            question,
+            null,
+            answerRowsOptionsStr,
+            null);
+
+    assertThat(answerOutput.get(0), equalTo(CoordConsts.SVC_KEY_SUCCESS));
+
+    JSONObject answerJsonObject = (JSONObject) answerOutput.get(1);
+    String answersJsonString = answerJsonObject.getString(CoordConsts.SVC_KEY_ANSWER);
+    Answer processedAnswer =
+        BatfishObjectMapper.mapper().readValue(answersJsonString, new TypeReference<Answer>() {});
+
     TableAnswerElement processedTable =
         (TableAnswerElement) processedAnswer.getAnswerElements().get(0);
 

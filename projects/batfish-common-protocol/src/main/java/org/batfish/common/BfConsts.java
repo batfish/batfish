@@ -105,6 +105,7 @@ public class BfConsts {
   public static final String PROP_DIFFERENTIAL = "differential";
   public static final String PROP_DISPLAY_HINTS = "displayHints";
   public static final String PROP_EXCLUSIONS = "exclusions";
+  public static final String PROP_EMPTY_COLUMNS = "emptyColumns";
   public static final String PROP_FILTERS = "filters";
   public static final String PROP_INCLUDE_ONE_TABLE_KEYS = "includeOneTableKeys";
   public static final String PROP_INNER_QUESTION = "innerQuestion";
@@ -139,6 +140,8 @@ public class BfConsts {
   public static final String RELPATH_AWS_CONFIGS_DIR = "aws_configs";
   public static final String RELPATH_AWS_CONFIGS_FILE = "aws_configs";
   public static final String RELPATH_CONFIGURATIONS_DIR = "configs";
+  public static final String RELPATH_CONTAINER_SETTINGS = "settings";
+  public static final String RELPATH_CONTAINER_SETTINGS_ISSUES = "issues";
   public static final String RELPATH_CONVERT_ANSWER_PATH = "convert_answer";
   public static final String RELPATH_COMPRESSED_DATA_PLANE = "compressed_dp";
   public static final String RELPATH_COMPRESSED_DATA_PLANE_ANSWER = "compressed_dp_answer";

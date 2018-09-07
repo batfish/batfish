@@ -35,6 +35,7 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.hasReferenceBandw
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRouteFilterList;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRouteFilterLists;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReferenceWithReferenceLines;
 import static org.batfish.datamodel.matchers.GeneratedRouteMatchers.isDiscard;
 import static org.batfish.datamodel.matchers.IkePhase1PolicyMatchers.hasIkePhase1Key;
 import static org.batfish.datamodel.matchers.IkePhase1PolicyMatchers.hasIkePhase1Proposals;
@@ -107,11 +108,13 @@ import static org.batfish.representation.juniper.JuniperStructureType.APPLICATIO
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION_SET;
 import static org.batfish.representation.juniper.JuniperStructureType.AUTHENTICATION_KEY_CHAIN;
 import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_FILTER;
+import static org.batfish.representation.juniper.JuniperStructureType.INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureType.PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureType.VLAN;
 import static org.batfish.representation.juniper.JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION;
 import static org.batfish.representation.juniper.JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION_SET;
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_VLAN;
+import static org.batfish.representation.juniper.JuniperStructureUsage.OSPF_AREA_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.SECURITY_POLICY_MATCH_APPLICATION;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.Matchers.allOf;
@@ -766,7 +769,7 @@ public class FlatJuniperGrammarTest {
     Flow flowDeniedByFilter = createFlow(addrDeniedByFilter, untrustIpAddr);
     Flow flowDefaultPolicy = createFlow(addrDefaultPolicy, untrustIpAddr);
 
-    IpAccessList aclUntrustOut = c.getInterfaces().get(interfaceNameUntrust).getOutgoingFilter();
+    IpAccessList aclUntrustOut = c.getAllInterfaces().get(interfaceNameUntrust).getOutgoingFilter();
 
     /* Confirm flow from address explicitly allowed by zone policy is accepted */
     assertThat(
@@ -824,7 +827,7 @@ public class FlatJuniperGrammarTest {
     Flow flowFromWildcardAddr = createFlow(wildcardAddr, untrustIpAddr);
     Flow flowFromNotWildcardAddr = createFlow(notWildcardAddr, untrustIpAddr);
     IpAccessList untrustCombinedAcl =
-        c.getInterfaces().get(interfaceNameUntrust).getOutgoingFilter();
+        c.getAllInterfaces().get(interfaceNameUntrust).getOutgoingFilter();
 
     // Should have three global IpSpaces in the config
     assertThat(
@@ -878,8 +881,8 @@ public class FlatJuniperGrammarTest {
     Flow trustToUntrustFlow = createFlow(trustedIpAddr, untrustedIpAddr);
     Flow untrustToTrustFlow = createFlow(untrustedIpAddr, trustedIpAddr);
 
-    IpAccessList aclTrustOut = c.getInterfaces().get(interfaceNameTrust).getOutgoingFilter();
-    IpAccessList aclUntrustOut = c.getInterfaces().get(interfaceNameUntrust).getOutgoingFilter();
+    IpAccessList aclTrustOut = c.getAllInterfaces().get(interfaceNameTrust).getOutgoingFilter();
+    IpAccessList aclUntrustOut = c.getAllInterfaces().get(interfaceNameUntrust).getOutgoingFilter();
 
     /*
      * Should have six ACLs:
@@ -927,8 +930,8 @@ public class FlatJuniperGrammarTest {
     Flow trustToUntrustFlow = createFlow(trustedIpAddr, untrustedIpAddr);
     Flow untrustToTrustFlow = createFlow(untrustedIpAddr, trustedIpAddr);
 
-    IpAccessList aclTrustOut = c.getInterfaces().get(interfaceNameTrust).getOutgoingFilter();
-    IpAccessList aclUntrustOut = c.getInterfaces().get(interfaceNameUntrust).getOutgoingFilter();
+    IpAccessList aclTrustOut = c.getAllInterfaces().get(interfaceNameTrust).getOutgoingFilter();
+    IpAccessList aclUntrustOut = c.getAllInterfaces().get(interfaceNameUntrust).getOutgoingFilter();
 
     /* Make sure the global-address-book address is the only config ipSpace */
     assertThat(c.getIpSpaces().keySet(), containsInAnyOrder(trustedSpaceName));
@@ -962,8 +965,8 @@ public class FlatJuniperGrammarTest {
     Flow trustToUntrustFlow = createFlow(trustedIpAddr, untrustedIpAddr);
     Flow untrustToTrustFlow = createFlow(untrustedIpAddr, trustedIpAddr);
 
-    IpAccessList aclTrustOut = c.getInterfaces().get(interfaceNameTrust).getOutgoingFilter();
-    IpAccessList aclUntrustOut = c.getInterfaces().get(interfaceNameUntrust).getOutgoingFilter();
+    IpAccessList aclTrustOut = c.getAllInterfaces().get(interfaceNameTrust).getOutgoingFilter();
+    IpAccessList aclUntrustOut = c.getAllInterfaces().get(interfaceNameUntrust).getOutgoingFilter();
 
     /*
      * Should have five ACLs generated by logic in toVendorIndependent:
@@ -1007,8 +1010,8 @@ public class FlatJuniperGrammarTest {
     Flow untrustToTrustReturnFlow =
         createFlow(untrustedIpAddr, trustedIpAddr, FlowState.ESTABLISHED);
 
-    IpAccessList aclTrustOut = c.getInterfaces().get(interfaceNameTrust).getOutgoingFilter();
-    IpAccessList aclUntrustOut = c.getInterfaces().get(interfaceNameUntrust).getOutgoingFilter();
+    IpAccessList aclTrustOut = c.getAllInterfaces().get(interfaceNameTrust).getOutgoingFilter();
+    IpAccessList aclUntrustOut = c.getAllInterfaces().get(interfaceNameUntrust).getOutgoingFilter();
 
     /*
      * Should have six ACLs:
@@ -1067,7 +1070,7 @@ public class FlatJuniperGrammarTest {
     Flow flowFromSpecificAddr = createFlow(specificAddr, untrustIpAddr);
     Flow flowFromNotAllowedAddr = createFlow(notAllowedAddr, untrustIpAddr);
 
-    IpAccessList aclUntrustOut = c.getInterfaces().get(interfaceNameUntrust).getOutgoingFilter();
+    IpAccessList aclUntrustOut = c.getAllInterfaces().get(interfaceNameUntrust).getOutgoingFilter();
 
     // Should have a an IpSpace in the config corresponding to the trust zone's ADDR1 address
     final String ipSpaceName = "trust~ADDR1";
@@ -1109,19 +1112,20 @@ public class FlatJuniperGrammarTest {
     Flow trustToUntrustFlow = createFlow(trustedIpAddr, untrustedIpAddr);
     Flow untrustToTrustFlow = createFlow(untrustedIpAddr, trustedIpAddr);
 
-    IpAccessList aclTrustOut = c.getInterfaces().get(interfaceNameTrust).getOutgoingFilter();
-    IpAccessList aclUntrustOut = c.getInterfaces().get(interfaceNameUntrust).getOutgoingFilter();
+    IpAccessList aclTrustOut = c.getAllInterfaces().get(interfaceNameTrust).getOutgoingFilter();
+    IpAccessList aclUntrustOut = c.getAllInterfaces().get(interfaceNameUntrust).getOutgoingFilter();
 
     // Should have two zones
     assertThat(c.getZones().keySet(), containsInAnyOrder(zoneTrust, zoneUntrust));
 
     // Should have two interfaces
     assertThat(
-        c.getInterfaces().keySet(), containsInAnyOrder(interfaceNameTrust, interfaceNameUntrust));
+        c.getAllInterfaces().keySet(),
+        containsInAnyOrder(interfaceNameTrust, interfaceNameUntrust));
 
     // Confirm the interfaces are associated with their zones
-    assertThat(c.getInterfaces().get(interfaceNameTrust), hasZoneName(equalTo(zoneTrust)));
-    assertThat(c.getInterfaces().get(interfaceNameUntrust), hasZoneName(equalTo(zoneUntrust)));
+    assertThat(c.getAllInterfaces().get(interfaceNameTrust), hasZoneName(equalTo(zoneTrust)));
+    assertThat(c.getAllInterfaces().get(interfaceNameUntrust), hasZoneName(equalTo(zoneUntrust)));
 
     /* Simple flows should be blocked */
     assertThat(
@@ -1416,7 +1420,7 @@ public class FlatJuniperGrammarTest {
     Configuration c = parseConfig("interfaceMtu");
 
     /* Properly configured interfaces should be present in respective areas. */
-    assertThat(c.getInterfaces().keySet(), equalTo(Collections.singleton("xe-0/0/0:0.0")));
+    assertThat(c.getAllInterfaces().keySet(), equalTo(Collections.singleton("xe-0/0/0:0.0")));
     assertThat(c, hasInterface("xe-0/0/0:0.0", hasMtu(9000)));
   }
 
@@ -1890,7 +1894,7 @@ public class FlatJuniperGrammarTest {
     Flow whiteListedSrc = createFlow("1.8.3.9", "2.5.6.7");
     Flow blackListedSrc = createFlow("5.8.4.9", "2.5.6.7");
 
-    IpAccessList incomingFilter = c.getInterfaces().get("fw-s-add.0").getIncomingFilter();
+    IpAccessList incomingFilter = c.getAllInterfaces().get("fw-s-add.0").getIncomingFilter();
 
     // Whitelisted source address should be allowed
     assertThat(incomingFilter, accepts(whiteListedSrc, "fw-s-add.0", c));
@@ -1908,7 +1912,7 @@ public class FlatJuniperGrammarTest {
     Flow whiteListedDst = createFlow("2.5.6.7", "1.8.3.9");
     Flow blackListedDst = createFlow("2.5.6.7", "5.8.4.9");
 
-    IpAccessList incomingFilter = c.getInterfaces().get("fw-s-add.0").getIncomingFilter();
+    IpAccessList incomingFilter = c.getAllInterfaces().get("fw-s-add.0").getIncomingFilter();
 
     // Whitelisted source address should be allowed
     assertThat(incomingFilter, accepts(whiteListedDst, "fw-s-add.0", c));
@@ -2090,6 +2094,38 @@ public class FlatJuniperGrammarTest {
 
     /* The wildcard-looking BGP group name should not be pruned since its parse-tree node was not created via preprocessor. */
     assertThat(c, hasDefaultVrf(hasBgpProcess(hasNeighbors(hasKey(neighborPrefix)))));
+  }
+
+  @Test
+  public void testJuniperWildcardsReference() throws IOException {
+    String hostname = "juniper-wildcards";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    // Confirm definitions are tracked properly for structures defined by apply-groups/apply-path
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(
+            filename, INTERFACE, "lo0", containsInAnyOrder(4, 8)));
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(
+            filename, PREFIX_LIST, "p1", containsInAnyOrder(4, 9)));
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(filename, PREFIX_LIST, "p2", containsInAnyOrder(5)));
+
+    // Confirm undefined references are also tracked properly for apply-groups related references
+    assertThat(
+        ccae,
+        hasUndefinedReferenceWithReferenceLines(
+            filename,
+            INTERFACE,
+            "iface_undefined",
+            OSPF_AREA_INTERFACE,
+            containsInAnyOrder(6, 14)));
   }
 
   @Test

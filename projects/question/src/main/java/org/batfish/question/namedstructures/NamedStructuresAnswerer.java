@@ -25,7 +25,7 @@ import org.batfish.datamodel.table.TableMetadata;
 
 public class NamedStructuresAnswerer extends Answerer {
 
-  public static final String COL_NODE = "node";
+  public static final String COL_NODE = "Node";
 
   public NamedStructuresAnswerer(Question question, IBatfish batfish) {
     super(question, batfish);
@@ -47,7 +47,7 @@ public class NamedStructuresAnswerer extends Answerer {
     columnMetadataList.add(new ColumnMetadata(COL_NODE, Schema.NODE, "Node", true, false));
 
     for (String nodeName : nodes) {
-      for (String namedStructure : question.getPropertySpec().getMatchingProperties()) {
+      for (String namedStructure : question.getProperties().getMatchingProperties()) {
         Object namedStructureValues =
             NamedStructureSpecifier.JAVA_MAP
                 .get(namedStructure)
@@ -142,7 +142,7 @@ public class NamedStructuresAnswerer extends Answerer {
   public AnswerElement answer() {
     NamedStructuresQuestion question = (NamedStructuresQuestion) _question;
     Map<String, Configuration> configurations = _batfish.loadConfigurations();
-    Set<String> nodes = question.getNodeRegex().getMatchingNodes(_batfish);
+    Set<String> nodes = question.getNodes().getMatchingNodes(_batfish);
 
     TableMetadata tableMetadata = createNamedStructuresMetadata(question, configurations, nodes);
 
