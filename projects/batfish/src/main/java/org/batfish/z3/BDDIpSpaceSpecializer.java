@@ -14,9 +14,14 @@ import org.batfish.symbolic.bdd.BDDInteger;
 import org.batfish.symbolic.bdd.BDDUtils;
 import org.batfish.symbolic.bdd.IpSpaceToBDD;
 
+/**
+ * An {@link IpSpaceSpecializer} that uses a {@link BDD} to represent the headerspace to which we
+ * want to specialize.
+ */
 public final class BDDIpSpaceSpecializer extends IpSpaceSpecializer {
   private final BDD _bdd;
   private final IpSpaceToBDD _ipSpaceToBDD;
+  private final boolean _simplifyToUniverse;
 
   public BDDIpSpaceSpecializer(IpSpace ipSpace, Map<String, IpSpace> namedIpSpaces) {
     super(namedIpSpaces);
@@ -25,6 +30,7 @@ public final class BDDIpSpaceSpecializer extends IpSpaceSpecializer {
     BDDInteger ipAddrBdd = BDDInteger.makeFromIndex(factory, 32, 0, true);
     _ipSpaceToBDD = new IpSpaceToBDD(factory, ipAddrBdd, namedIpSpaces);
     _bdd = ipSpace.accept(_ipSpaceToBDD);
+    _simplifyToUniverse = true;
   }
 
   /**
@@ -38,9 +44,18 @@ public final class BDDIpSpaceSpecializer extends IpSpaceSpecializer {
    */
   public BDDIpSpaceSpecializer(
       BDD bdd, Map<String, IpSpace> namedIpSpaces, IpSpaceToBDD ipSpaceToBDD) {
+    this(bdd, namedIpSpaces, ipSpaceToBDD, true);
+  }
+
+  public BDDIpSpaceSpecializer(
+      BDD bdd,
+      Map<String, IpSpace> namedIpSpaces,
+      IpSpaceToBDD ipSpaceToBDD,
+      boolean simplifyToUniverse) {
     super(namedIpSpaces);
     _bdd = bdd;
     _ipSpaceToBDD = ipSpaceToBDD;
+    _simplifyToUniverse = simplifyToUniverse;
   }
 
   @Override
@@ -75,7 +90,7 @@ public final class BDDIpSpaceSpecializer extends IpSpaceSpecializer {
       return EmptyIpSpace.INSTANCE;
     }
 
-    if (ipSpaceBDD.not().and(_bdd).isZero()) {
+    if (_simplifyToUniverse && ipSpaceBDD.not().and(_bdd).isZero()) {
       // _bdd's ip space is a subset of ipSpace.
       return UniverseIpSpace.INSTANCE;
     }
