@@ -325,7 +325,7 @@ public class EdgesAnswerer extends Answerer {
   static Row eigrpEdgeToRow(EigrpEdge eigrpEdge) {
     RowBuilder row = Row.builder();
     row.put(
-        COL_INTERFACE,
+            COL_INTERFACE,
             new NodeInterfacePair(
                 eigrpEdge.getNode1().getHostname(), eigrpEdge.getNode1().getInterfaceName()))
         .put(
@@ -356,7 +356,7 @@ public class EdgesAnswerer extends Answerer {
   static Row isisEdgeToRow(IsisEdge isisEdge) {
     RowBuilder row = Row.builder();
     row.put(
-        COL_INTERFACE,
+            COL_INTERFACE,
             new NodeInterfacePair(
                 isisEdge.getNode1().getHostname(), isisEdge.getNode1().getInterfaceName()))
         .put(
@@ -370,7 +370,7 @@ public class EdgesAnswerer extends Answerer {
   static Row layer1EdgeToRow(Layer1Edge layer1Edge) {
     RowBuilder row = Row.builder();
     row.put(
-        COL_INTERFACE,
+            COL_INTERFACE,
             new NodeInterfacePair(
                 layer1Edge.getNode1().getHostname(), layer1Edge.getNode1().getInterfaceName()))
         .put(
@@ -385,7 +385,7 @@ public class EdgesAnswerer extends Answerer {
   static Row layer2EdgeToRow(Layer2Edge layer2Edge) {
     RowBuilder row = Row.builder();
     row.put(
-        COL_INTERFACE,
+            COL_INTERFACE,
             new NodeInterfacePair(
                 layer2Edge.getNode1().getHostname(), layer2Edge.getNode1().getInterfaceName()))
         .put(COL_VLAN, layer2Edge.getNode1().getVlanId())

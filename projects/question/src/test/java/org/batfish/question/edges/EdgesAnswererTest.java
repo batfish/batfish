@@ -2,15 +2,15 @@ package org.batfish.question.edges;
 
 import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
 import static org.batfish.question.edges.EdgesAnswerer.COL_AS_NUMBER;
+import static org.batfish.question.edges.EdgesAnswerer.COL_INTERFACE;
 import static org.batfish.question.edges.EdgesAnswerer.COL_IP;
 import static org.batfish.question.edges.EdgesAnswerer.COL_IPS;
 import static org.batfish.question.edges.EdgesAnswerer.COL_NODE;
-import static org.batfish.question.edges.EdgesAnswerer.COL_INTERFACE;
 import static org.batfish.question.edges.EdgesAnswerer.COL_REMOTE_AS_NUMBER;
+import static org.batfish.question.edges.EdgesAnswerer.COL_REMOTE_INTERFACE;
 import static org.batfish.question.edges.EdgesAnswerer.COL_REMOTE_IP;
 import static org.batfish.question.edges.EdgesAnswerer.COL_REMOTE_IPS;
 import static org.batfish.question.edges.EdgesAnswerer.COL_REMOTE_NODE;
-import static org.batfish.question.edges.EdgesAnswerer.COL_REMOTE_INTERFACE;
 import static org.batfish.question.edges.EdgesAnswerer.COL_REMOTE_VLAN;
 import static org.batfish.question.edges.EdgesAnswerer.COL_VLAN;
 import static org.batfish.question.edges.EdgesAnswerer.eigrpEdgeToRow;
@@ -407,9 +407,7 @@ public class EdgesAnswererTest {
         row,
         allOf(
             hasColumn(
-                COL_INTERFACE,
-                equalTo(new NodeInterfacePair("host1", "int1")),
-                Schema.INTERFACE),
+                COL_INTERFACE, equalTo(new NodeInterfacePair("host1", "int1")), Schema.INTERFACE),
             hasColumn(
                 COL_REMOTE_INTERFACE,
                 equalTo(new NodeInterfacePair("host2", "int2")),
@@ -424,9 +422,7 @@ public class EdgesAnswererTest {
         row,
         allOf(
             hasColumn(
-                COL_INTERFACE,
-                equalTo(new NodeInterfacePair("host1", "int1")),
-                Schema.INTERFACE),
+                COL_INTERFACE, equalTo(new NodeInterfacePair("host1", "int1")), Schema.INTERFACE),
             hasColumn(
                 COL_REMOTE_INTERFACE,
                 equalTo(new NodeInterfacePair("host2", "int2")),
@@ -444,9 +440,7 @@ public class EdgesAnswererTest {
         row,
         allOf(
             hasColumn(
-                COL_INTERFACE,
-                equalTo(new NodeInterfacePair("host1", "int1")),
-                Schema.INTERFACE),
+                COL_INTERFACE, equalTo(new NodeInterfacePair("host1", "int1")), Schema.INTERFACE),
             hasColumn(
                 COL_REMOTE_INTERFACE,
                 equalTo(new NodeInterfacePair("host2", "int2")),
@@ -461,9 +455,7 @@ public class EdgesAnswererTest {
         row,
         allOf(
             hasColumn(
-                COL_INTERFACE,
-                equalTo(new NodeInterfacePair("host1", "int1")),
-                Schema.INTERFACE),
+                COL_INTERFACE, equalTo(new NodeInterfacePair("host1", "int1")), Schema.INTERFACE),
             hasColumn(
                 COL_REMOTE_INTERFACE,
                 equalTo(new NodeInterfacePair("host2", "int2")),
@@ -491,9 +483,7 @@ public class EdgesAnswererTest {
         row,
         allOf(
             hasColumn(
-                COL_INTERFACE,
-                equalTo(new NodeInterfacePair("host1", "int1")),
-                Schema.INTERFACE),
+                COL_INTERFACE, equalTo(new NodeInterfacePair("host1", "int1")), Schema.INTERFACE),
             hasColumn(
                 COL_REMOTE_INTERFACE,
                 equalTo(new NodeInterfacePair("host2", "int2")),
@@ -507,9 +497,7 @@ public class EdgesAnswererTest {
         row,
         allOf(
             hasColumn(
-                COL_INTERFACE,
-                equalTo(new NodeInterfacePair("host1", "int1")),
-                Schema.INTERFACE),
+                COL_INTERFACE, equalTo(new NodeInterfacePair("host1", "int1")), Schema.INTERFACE),
             hasColumn(COL_VLAN, equalTo("1"), Schema.STRING),
             hasColumn(
                 COL_REMOTE_INTERFACE,
@@ -527,9 +515,7 @@ public class EdgesAnswererTest {
         row,
         allOf(
             hasColumn(
-                COL_INTERFACE,
-                equalTo(new NodeInterfacePair("host1", "int1")),
-                Schema.INTERFACE),
+                COL_INTERFACE, equalTo(new NodeInterfacePair("host1", "int1")), Schema.INTERFACE),
             hasColumn(COL_IPS, equalTo(ImmutableSet.of(new Ip("1.1.1.1"))), Schema.set(Schema.IP)),
             hasColumn(
                 COL_REMOTE_INTERFACE,
