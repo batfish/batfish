@@ -1955,21 +1955,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
    */
   @Override
   public MajorIssueConfig getMajorIssueConfig(String majorIssueType) {
-    try {
-      return MajorIssueConfig.read(
-          _settings
-              .getStorageBase()
-              .resolve(_settings.getContainer())
-              .resolve(BfConsts.RELPATH_CONTAINER_SETTINGS)
-              .resolve(BfConsts.RELPATH_CONTAINER_SETTINGS_ISSUES)
-              .resolve(majorIssueType + ".json"),
-          majorIssueType);
-    } catch (IOException e) {
-      _logger.errorf(
-          "ERROR: Could not cast file for major issue %s to MajorIssueConfig: %s",
-          majorIssueType, Throwables.getStackTraceAsString(e));
-      return new MajorIssueConfig(majorIssueType, null);
-    }
+    return _storage.loadMajorIssueConfig(_settings.getContainer(), majorIssueType);
   }
 
   @Override

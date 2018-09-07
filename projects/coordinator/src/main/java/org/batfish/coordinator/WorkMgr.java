@@ -924,19 +924,7 @@ public class WorkMgr extends AbstractCoordinator {
 
   /** Fetches the {@code MajorIssueConfig} for the given network and major issue type. */
   public MajorIssueConfig getMajorIssueConfig(String networkName, String majorIssueType) {
-    try {
-      return MajorIssueConfig.read(
-          getdirNetwork(networkName)
-              .resolve(BfConsts.RELPATH_CONTAINER_SETTINGS)
-              .resolve(BfConsts.RELPATH_CONTAINER_SETTINGS_ISSUES)
-              .resolve(majorIssueType + ".json"),
-          majorIssueType);
-    } catch (IOException e) {
-      _logger.errorf(
-          "ERROR: Could not cast file for major issue %s in network %s to MajorIssueConfig: %s",
-          majorIssueType, networkName, Throwables.getStackTraceAsString(e));
-      return new MajorIssueConfig(majorIssueType, null);
-    }
+    return _storage.loadMajorIssueConfig(networkName, majorIssueType);
   }
 
   /**
@@ -1538,16 +1526,7 @@ public class WorkMgr extends AbstractCoordinator {
   /** Writes the {@code MajorIssueConfig} for the given network and major issue type. */
   public void putMajorIssueConfig(
       String networkName, String majorIssueType, MajorIssueConfig config) throws IOException {
-    Path path =
-        getdirNetwork(networkName)
-            .resolve(BfConsts.RELPATH_CONTAINER_SETTINGS)
-            .resolve(BfConsts.RELPATH_CONTAINER_SETTINGS_ISSUES)
-            .resolve(majorIssueType + ".json");
-    if (Files.notExists(path)) {
-      Files.createDirectories(path.getParent());
-      Files.createFile(path);
-    }
-    CommonUtil.writeFile(path, BatfishObjectMapper.mapper().writeValueAsString(config));
+    _storage.storeMajorIssueConfig(networkName, majorIssueType, config);
   }
 
   public void putObject(
