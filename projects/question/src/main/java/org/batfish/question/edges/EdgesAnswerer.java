@@ -54,17 +54,14 @@ import org.batfish.datamodel.table.TableMetadata;
 
 public class EdgesAnswerer extends Answerer {
 
-  // Global (always present) columns
-  static final String COL_NODE = "Node";
-  static final String COL_REMOTE_NODE = "Remote_Node";
-
-  // Present sometime
-  static final String COL_INTERFACE = "Interface";
-  static final String COL_REMOTE_INTERFACE = "Remote_Interface";
+  static final String COL_NODE_INTERFACE = "Node:Interface";
+  static final String COL_REMOTE_NODE_INTERFACE = "Remote_Node:Remote_Interface";
   static final String COL_IPS = "IPs";
   static final String COL_REMOTE_IPS = "Remote_IPs";
 
   // BGP only
+  static final String COL_NODE = "Node";
+  static final String COL_REMOTE_NODE = "Remote_Node";
   static final String COL_AS_NUMBER = "AS_Number";
   static final String COL_REMOTE_AS_NUMBER = "Remote_AS_Number";
   static final String COL_IP = "IP";
@@ -327,14 +324,12 @@ public class EdgesAnswerer extends Answerer {
   @VisibleForTesting
   static Row eigrpEdgeToRow(EigrpEdge eigrpEdge) {
     RowBuilder row = Row.builder();
-    row.put(COL_NODE, new Node(eigrpEdge.getNode1().getHostname()))
-        .put(
-            COL_INTERFACE,
+    row.put(
+            COL_NODE_INTERFACE,
             new NodeInterfacePair(
                 eigrpEdge.getNode1().getHostname(), eigrpEdge.getNode1().getInterfaceName()))
-        .put(COL_REMOTE_NODE, new Node(eigrpEdge.getNode2().getHostname()))
         .put(
-            COL_REMOTE_INTERFACE,
+            COL_REMOTE_NODE_INTERFACE,
             new NodeInterfacePair(
                 eigrpEdge.getNode2().getHostname(), eigrpEdge.getNode2().getInterfaceName()));
     return row.build();
@@ -360,14 +355,12 @@ public class EdgesAnswerer extends Answerer {
 
   static Row isisEdgeToRow(IsisEdge isisEdge) {
     RowBuilder row = Row.builder();
-    row.put(COL_NODE, new Node(isisEdge.getNode1().getHostname()))
-        .put(
-            COL_INTERFACE,
+    row.put(
+            COL_NODE_INTERFACE,
             new NodeInterfacePair(
                 isisEdge.getNode1().getHostname(), isisEdge.getNode1().getInterfaceName()))
-        .put(COL_REMOTE_NODE, new Node(isisEdge.getNode2().getHostname()))
         .put(
-            COL_REMOTE_INTERFACE,
+            COL_REMOTE_NODE_INTERFACE,
             new NodeInterfacePair(
                 isisEdge.getNode2().getHostname(), isisEdge.getNode2().getInterfaceName()));
     return row.build();
@@ -376,14 +369,12 @@ public class EdgesAnswerer extends Answerer {
   @VisibleForTesting
   static Row layer1EdgeToRow(Layer1Edge layer1Edge) {
     RowBuilder row = Row.builder();
-    row.put(COL_NODE, new Node(layer1Edge.getNode1().getHostname()))
-        .put(
-            COL_INTERFACE,
+    row.put(
+            COL_NODE_INTERFACE,
             new NodeInterfacePair(
                 layer1Edge.getNode1().getHostname(), layer1Edge.getNode1().getInterfaceName()))
-        .put(COL_REMOTE_NODE, new Node(layer1Edge.getNode2().getHostname()))
         .put(
-            COL_REMOTE_INTERFACE,
+            COL_REMOTE_NODE_INTERFACE,
             new NodeInterfacePair(
                 layer1Edge.getNode2().getHostname(), layer1Edge.getNode2().getInterfaceName()));
 
@@ -393,15 +384,13 @@ public class EdgesAnswerer extends Answerer {
   @VisibleForTesting
   static Row layer2EdgeToRow(Layer2Edge layer2Edge) {
     RowBuilder row = Row.builder();
-    row.put(COL_NODE, new Node(layer2Edge.getNode1().getHostname()))
-        .put(
-            COL_INTERFACE,
+    row.put(
+            COL_NODE_INTERFACE,
             new NodeInterfacePair(
                 layer2Edge.getNode1().getHostname(), layer2Edge.getNode1().getInterfaceName()))
         .put(COL_VLAN, layer2Edge.getNode1().getVlanId())
-        .put(COL_REMOTE_NODE, new Node(layer2Edge.getNode2().getHostname()))
         .put(
-            COL_REMOTE_INTERFACE,
+            COL_REMOTE_NODE_INTERFACE,
             new NodeInterfacePair(
                 layer2Edge.getNode2().getHostname(), layer2Edge.getNode2().getInterfaceName()))
         .put(COL_REMOTE_VLAN, layer2Edge.getNode2().getVlanId());
@@ -431,11 +420,9 @@ public class EdgesAnswerer extends Answerer {
             .collect(Collectors.toSet());
 
     RowBuilder row = Row.builder();
-    row.put(COL_NODE, new Node(edge.getNode1()))
-        .put(COL_INTERFACE, new NodeInterfacePair(edge.getNode1(), edge.getInt1()))
+    row.put(COL_NODE_INTERFACE, new NodeInterfacePair(edge.getNode1(), edge.getInt1()))
         .put(COL_IPS, ips1)
-        .put(COL_REMOTE_NODE, new Node(edge.getNode2()))
-        .put(COL_REMOTE_INTERFACE, new NodeInterfacePair(edge.getNode2(), edge.getInt2()))
+        .put(COL_REMOTE_NODE_INTERFACE, new NodeInterfacePair(edge.getNode2(), edge.getInt2()))
         .put(COL_REMOTE_IPS, ips2);
 
     return row.build();
@@ -444,19 +431,15 @@ public class EdgesAnswerer extends Answerer {
   @VisibleForTesting
   static Row getOspfEdgeRow(String node, String iface, String remoteNode, String remoteIface) {
     RowBuilder row = Row.builder();
-    row.put(COL_NODE, new Node(node))
-        .put(COL_INTERFACE, new NodeInterfacePair(node, iface))
-        .put(COL_REMOTE_NODE, new Node(remoteNode))
-        .put(COL_REMOTE_INTERFACE, new NodeInterfacePair(remoteNode, remoteIface));
+    row.put(COL_NODE_INTERFACE, new NodeInterfacePair(node, iface))
+        .put(COL_REMOTE_NODE_INTERFACE, new NodeInterfacePair(remoteNode, remoteIface));
     return row.build();
   }
 
   static Row getRipEdgeRow(String node, String iface, String remoteNode, String remoteIface) {
     RowBuilder row = Row.builder();
-    row.put(COL_NODE, new Node(node))
-        .put(COL_INTERFACE, new NodeInterfacePair(node, iface))
-        .put(COL_REMOTE_NODE, new Node(remoteNode))
-        .put(COL_REMOTE_INTERFACE, new NodeInterfacePair(remoteNode, remoteIface));
+    row.put(COL_NODE_INTERFACE, new NodeInterfacePair(node, iface))
+        .put(COL_REMOTE_NODE_INTERFACE, new NodeInterfacePair(remoteNode, remoteIface));
     return row.build();
   }
 
@@ -468,30 +451,17 @@ public class EdgesAnswerer extends Answerer {
       case LAYER3:
         columnBuilder.add(
             new ColumnMetadata(
-                COL_NODE,
-                Schema.NODE,
-                "Node from which the edge originates",
-                Boolean.FALSE,
-                Boolean.TRUE));
-        columnBuilder.add(
-            new ColumnMetadata(
-                COL_INTERFACE,
+                COL_NODE_INTERFACE,
                 Schema.INTERFACE,
                 "Interface from which the edge originates",
                 Boolean.FALSE,
                 Boolean.TRUE));
         columnBuilder.add(
             new ColumnMetadata(COL_IPS, Schema.set(Schema.IP), "IPs", Boolean.FALSE, Boolean.TRUE));
+
         columnBuilder.add(
             new ColumnMetadata(
-                COL_REMOTE_NODE,
-                Schema.NODE,
-                "Node at which the edge terminates",
-                Boolean.FALSE,
-                Boolean.TRUE));
-        columnBuilder.add(
-            new ColumnMetadata(
-                COL_REMOTE_INTERFACE,
+                COL_REMOTE_NODE_INTERFACE,
                 Schema.INTERFACE,
                 "Interface at which the edge terminates",
                 Boolean.FALSE,
@@ -504,14 +474,7 @@ public class EdgesAnswerer extends Answerer {
       case LAYER2:
         columnBuilder.add(
             new ColumnMetadata(
-                COL_NODE,
-                Schema.NODE,
-                "Node from which the edge originates",
-                Boolean.FALSE,
-                Boolean.TRUE));
-        columnBuilder.add(
-            new ColumnMetadata(
-                COL_INTERFACE,
+                COL_NODE_INTERFACE,
                 Schema.INTERFACE,
                 "Interface from which the edge originates",
                 Boolean.FALSE,
@@ -523,16 +486,10 @@ public class EdgesAnswerer extends Answerer {
                 "VLAN containing the originator",
                 Boolean.FALSE,
                 Boolean.TRUE));
+
         columnBuilder.add(
             new ColumnMetadata(
-                COL_REMOTE_NODE,
-                Schema.NODE,
-                "Node at which the edge terminates",
-                Boolean.FALSE,
-                Boolean.TRUE));
-        columnBuilder.add(
-            new ColumnMetadata(
-                COL_REMOTE_INTERFACE,
+                COL_REMOTE_NODE_INTERFACE,
                 Schema.INTERFACE,
                 "Interface at which the edge terminates",
                 Boolean.FALSE,
@@ -593,28 +550,15 @@ public class EdgesAnswerer extends Answerer {
       default:
         columnBuilder.add(
             new ColumnMetadata(
-                COL_NODE,
-                Schema.NODE,
-                "Node from which the edge originates",
-                Boolean.FALSE,
-                Boolean.TRUE));
-        columnBuilder.add(
-            new ColumnMetadata(
-                COL_INTERFACE,
+                COL_NODE_INTERFACE,
                 Schema.INTERFACE,
                 "Interface from which the edge originates",
                 Boolean.FALSE,
                 Boolean.TRUE));
+
         columnBuilder.add(
             new ColumnMetadata(
-                COL_REMOTE_NODE,
-                Schema.NODE,
-                "Node at which the edge terminates",
-                Boolean.FALSE,
-                Boolean.TRUE));
-        columnBuilder.add(
-            new ColumnMetadata(
-                COL_REMOTE_INTERFACE,
+                COL_REMOTE_NODE_INTERFACE,
                 Schema.INTERFACE,
                 "Interface at which the edge terminates",
                 Boolean.FALSE,
