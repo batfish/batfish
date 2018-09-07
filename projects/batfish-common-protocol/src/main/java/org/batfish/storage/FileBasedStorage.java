@@ -235,13 +235,21 @@ public final class FileBasedStorage implements StorageProvider {
     CommonUtil.writeFile(path, BatfishObjectMapper.mapper().writeValueAsString(majorIssueConfig));
   }
 
-  private Path getMajorIssueConfigDir(String network, String majorIssueType) {
-    return getNetworkDir(network)
-        .resolve(BfConsts.RELPATH_CONTAINER_SETTINGS)
+  private @Nonnull Path getMajorIssueConfigDir(String network, String majorIssueType) {
+    return getNetworkSettingsDir(network)
         .resolve(BfConsts.RELPATH_CONTAINER_SETTINGS_ISSUES)
         .resolve(majorIssueType + ".json");
   }
 
+  private @Nonnull Path getNetworkSettingsDir(String network) {
+    return getNetworkDir(network)
+        .resolve(BfConsts.RELPATH_CONTAINER_SETTINGS);
+  }
+
+  private @Nonnull Path getQuestionSettingsPath(String network, String questionClass) {
+    return getNetworkSettingsDir(network).resolve(BfConsts.RELPATH_QUESTIONS_DIR).resolve(String.format("%s.json", questionClass));
+  }
+  
   /**
    * Stores the configurations into the compressed config path for the given testrig. Will replace
    * any previously-stored compressed configurations.
@@ -682,5 +690,26 @@ public final class FileBasedStorage implements StorageProvider {
           String.format("Unable to create question directory '%s'", questionDir));
     }
     CommonUtil.writeFile(questionPath, questionStr);
+  }
+
+  @Override
+  public @Nullable String loadQuestionSettings(String network, String questionClass)
+      throws IOException {
+    Path questionSettingsPath = getQuestionSettingsPath(network, questionClass);
+    if (!Files.exists(questionSettingsPath)) {
+      return null;
+    }
+    return FileUtils.readFileToString(questionSettingsPath.toFile());
+  }
+
+  @Override
+  public boolean checkNetworkExists(String network) {
+    return Files.exists(getNetworkDir(network));
+  }
+
+  @Override
+  public void storeQuestionSettings(String settings, String network, String questionClass)
+      throws IOException {
+    FileUtils.writeStringToFile(getQuestionSettingsPath(network, questionClass).toFile(), settings);
   }
 }
