@@ -11,6 +11,7 @@ java_library(
     deps = [
         "//projects/batfish-common-protocol:parser_common",
         "@antlr4_runtime//:compile",
+        "@guava//:compile",
     ],
 )
 
