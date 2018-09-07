@@ -74,8 +74,8 @@ public final class AclLineMatchExprs {
   }
 
   /**
-   * Smart constructor for NotMatchExpr that does constant-time simplifications (i.e. when expr is
-   * {@code TRUE} or {@code FALSE}).
+   * Smart constructor for {@link NotMatchExpr} that does constant-time simplifications (i.e. when
+   * expr is {@link #TRUE} or {@link #FALSE}).
    */
   public static AclLineMatchExpr not(AclLineMatchExpr expr) {
     if (expr == TRUE) {
@@ -83,6 +83,9 @@ public final class AclLineMatchExprs {
     }
     if (expr == FALSE) {
       return TRUE;
+    }
+    if (expr instanceof NotMatchExpr) {
+      return ((NotMatchExpr) expr).getOperand();
     }
     return new NotMatchExpr(expr);
   }

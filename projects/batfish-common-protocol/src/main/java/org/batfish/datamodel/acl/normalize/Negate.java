@@ -17,9 +17,9 @@ import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
 
 /**
- * Negate an AclLineMatchExpr. Eliminate double-negation and apply deMorgan's law where possible.
- * Negate shallowly -- rather than recursively negating when applying deMorgan, use a {@link
- * NotMatchExpr}.
+ * Negate an {@link AclLineMatchExpr}. Eliminate double-negation and apply deMorgan's law where
+ * possible. Negate shallowly -- rather than recursively negating when applying deMorgan, use
+ * {@link AclLineMatchExprs#not}.
  */
 public final class Negate implements GenericAclLineMatchExprVisitor<AclLineMatchExpr> {
   private static final Negate INSTANCE = new Negate();
