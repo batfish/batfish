@@ -15,7 +15,6 @@ import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.MajorIssueConfig;
-import org.batfish.datamodel.answers.MinorIssueConfig;
 
 /** Storage backend for loading and storing persistent data used by Batfish */
 @ParametersAreNonnullByDefault
