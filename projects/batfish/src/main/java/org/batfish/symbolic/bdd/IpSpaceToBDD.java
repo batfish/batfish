@@ -35,7 +35,7 @@ import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
  * Visitor that converts an {@link IpSpace} to a {@link BDD}. Its constructor takes a {@link
  * BDDInteger} that should will be constrained to be in the space.
  */
-public final class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
+public class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
 
   private final BDDInteger _bddInteger;
 

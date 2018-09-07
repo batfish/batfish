@@ -29,7 +29,7 @@ public final class BDDIpSpaceSpecializer extends IpSpaceSpecializer {
     BDDFactory factory = BDDUtils.bddFactory(32);
     BDDInteger ipAddrBdd = BDDInteger.makeFromIndex(factory, 32, 0, true);
     _ipSpaceToBDD = new IpSpaceToBDD(factory, ipAddrBdd, namedIpSpaces);
-    _bdd = ipSpace.accept(_ipSpaceToBDD);
+    _bdd = _ipSpaceToBDD.visit(ipSpace);
     _simplifyToUniverse = true;
   }
 
@@ -83,7 +83,7 @@ public final class BDDIpSpaceSpecializer extends IpSpaceSpecializer {
    * return UniverseIpSpace. Otherwise, return ipSpace.
    */
   private IpSpace emptyIfNoIntersection(IpSpace ipSpace) {
-    BDD ipSpaceBDD = ipSpace.accept(_ipSpaceToBDD);
+    BDD ipSpaceBDD = _ipSpaceToBDD.visit(ipSpace);
 
     if (ipSpaceBDD.and(_bdd).isZero()) {
       // disjoint ip spaces
