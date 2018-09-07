@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -17,6 +18,8 @@ import org.batfish.common.Version;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.answers.MajorIssueConfig;
+import org.batfish.datamodel.answers.MinorIssueConfig;
 import org.batfish.storage.FileBasedStorage;
 import org.junit.Before;
 import org.junit.Rule;
@@ -77,5 +80,26 @@ public class FileBasedStorageTest {
     _storage.storeConfigurations(configs, oldConvertAnswer, network, snapshot);
 
     assertThat(_storage.loadConfigurations(network, snapshot), nullValue());
+  }
+
+  @Test
+  public void testMajorIssueConfigRoundTrip() throws IOException {
+    String majorIssue = "majorIssue";
+    String network = "network";
+    MinorIssueConfig minorIssueConfig = new MinorIssueConfig("minorIssue", 100, "www.google.com");
+    MajorIssueConfig majorIssueConfig =
+        new MajorIssueConfig(majorIssue, ImmutableList.of(minorIssueConfig));
+
+    _storage.storeMajorIssueConfig(network, majorIssue, majorIssueConfig);
+    assertThat(_storage.loadMajorIssueConfig(network, majorIssue), equalTo(majorIssueConfig));
+  }
+
+  @Test
+  public void testLoadMissingMajorIssueConfig() {
+    String majorIssue = "majorIssue";
+    String network = "network";
+    assertThat(
+        _storage.loadMajorIssueConfig(network, majorIssue),
+        equalTo(new MajorIssueConfig(majorIssue, null)));
   }
 }
