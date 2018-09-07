@@ -2,6 +2,7 @@ package org.batfish.z3;
 
 import static org.batfish.datamodel.IpAccessListLine.acceptingHeaderSpace;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.FALSE;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.ORIGINATING_FROM_DEVICE;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.TRUE;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.match;
 import static org.hamcrest.Matchers.equalTo;
@@ -31,6 +32,7 @@ import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.OriginatingFromDevice;
+import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.symbolic.bdd.AclLineMatchExprToBDD;
 import org.batfish.symbolic.bdd.BDDInteger;
 import org.batfish.symbolic.bdd.BDDPacket;
@@ -435,5 +437,39 @@ public class BDDIpAccessListSpecializerTest {
     HeaderSpace original = HeaderSpace.builder().setTcpFlags(originalFlagsList).build();
     HeaderSpace specialized = HeaderSpace.builder().setTcpFlags(specializedFlagsList).build();
     assertThat(specializer.specialize(original), equalTo(specialized));
+  }
+
+  @Test
+  public void testSpecializeToUniverse() {
+    IpSpace ipSpace = Prefix.parse("1.0.0.0/8").toIpSpace();
+    Ip ip = new Ip("1.1.1.1");
+    String iface = "iface";
+    BDDSourceManager mgr = BDDSourceManager.forInterfaces(PKT, ImmutableSet.of(iface));
+
+    // test OriginatingFromDevice
+    BDD bdd = mgr.getOriginatingFromDeviceBDD();
+    AclLineMatchExpr expr = ORIGINATING_FROM_DEVICE;
+    IpAccessListSpecializer specializerToTrue =
+        new BDDIpAccessListSpecializer(PKT, bdd, ImmutableMap.of(), mgr, true);
+    IpAccessListSpecializer specializer =
+        new BDDIpAccessListSpecializer(PKT, bdd, ImmutableMap.of(), mgr, false);
+    assertThat(expr.accept(specializerToTrue), equalTo(TrueExpr.INSTANCE));
+    assertThat(expr.accept(specializer), equalTo(expr));
+
+    // test MatchSrcInterface
+    bdd = mgr.getSourceInterfaceBDD(iface);
+    expr = new MatchSrcInterface(ImmutableList.of(iface));
+    specializerToTrue = new BDDIpAccessListSpecializer(PKT, bdd, ImmutableMap.of(), mgr, true);
+    specializer = new BDDIpAccessListSpecializer(PKT, bdd, ImmutableMap.of(), mgr, false);
+    assertThat(expr.accept(specializerToTrue), equalTo(TrueExpr.INSTANCE));
+    assertThat(expr.accept(specializer), equalTo(expr));
+
+    // test MatchHeaderSpace
+    bdd = DST_IP_SPACE_TO_BDD.toBDD(ip);
+    expr = new MatchHeaderSpace(HeaderSpace.builder().setDstIps(ipSpace).build());
+    specializerToTrue = new BDDIpAccessListSpecializer(PKT, bdd, ImmutableMap.of(), mgr, true);
+    specializer = new BDDIpAccessListSpecializer(PKT, bdd, ImmutableMap.of(), mgr, false);
+    assertThat(expr.accept(specializerToTrue), equalTo(TrueExpr.INSTANCE));
+    assertThat(expr.accept(specializer), equalTo(expr));
   }
 }

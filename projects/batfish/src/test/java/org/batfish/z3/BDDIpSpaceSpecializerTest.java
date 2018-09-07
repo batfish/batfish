@@ -20,13 +20,14 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class BDDIpSpaceSpecializerTest {
+  private BDDFactory _factory;
   private IpSpaceToBDD _toBdd;
 
   @Before
   public void init() {
-    BDDFactory factory = BDDUtils.bddFactory(32);
-    BDDInteger ipAddrBdd = BDDInteger.makeFromIndex(factory, 32, 0, true);
-    _toBdd = new IpSpaceToBDD(factory, ipAddrBdd);
+    _factory = BDDUtils.bddFactory(32);
+    BDDInteger ipAddrBdd = BDDInteger.makeFromIndex(_factory, 32, 0, true);
+    _toBdd = new IpSpaceToBDD(_factory, ipAddrBdd);
   }
 
   private BDDIpSpaceSpecializer specializer(IpSpace specializeIpSpace) {
@@ -86,5 +87,23 @@ public class BDDIpSpaceSpecializerTest {
                 .thenPermitting(ipSpace1, ipSpace2)
                 .thenRejecting(ipSpace4)
                 .build()));
+  }
+
+  @Test
+  public void testSpecializeToUniverse() {
+    IpSpace ipSpace = Prefix.parse("1.0.0.0/8").toIpSpace();
+    Ip ip = new Ip("1.1.1.1");
+    IpSpaceSpecializer specializer =
+        new BDDIpSpaceSpecializer(_toBdd.toBDD(ip), ImmutableMap.of(), _toBdd, true);
+    assertThat(specializer.specialize(ipSpace), equalTo(UniverseIpSpace.INSTANCE));
+  }
+
+  @Test
+  public void testDontSpecializeToUniverse() {
+    IpSpace ipSpace = Prefix.parse("1.0.0.0/8").toIpSpace();
+    Ip ip = new Ip("1.1.1.1");
+    IpSpaceSpecializer specializer =
+        new BDDIpSpaceSpecializer(_toBdd.toBDD(ip), ImmutableMap.of(), _toBdd, false);
+    assertThat(specializer.specialize(ipSpace), equalTo(ipSpace));
   }
 }

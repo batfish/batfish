@@ -49,7 +49,7 @@ public class ApplyPathApplicator extends FlatJuniperParserBaseListener {
       _enablePathRecording = false;
       _reenablePathRecording = true;
       String text = ctx.getText();
-      _currentPath.addNode(text);
+      _currentPath.addNode(text, ctx.getStart().getLine());
     }
   }
 
@@ -57,14 +57,15 @@ public class ApplyPathApplicator extends FlatJuniperParserBaseListener {
   public void enterPoplt_apply_path(Poplt_apply_pathContext ctx) {
     HierarchyPath applyPathPath = new HierarchyPath();
     String pathQuoted = ctx.path.getText();
+    int line = ctx.path.getLine();
     String pathWithoutQuotes = pathQuoted.substring(1, pathQuoted.length() - 1);
     String[] pathComponents = pathWithoutQuotes.split("\\s+");
     for (String pathComponent : pathComponents) {
       boolean isWildcard = pathComponent.charAt(0) == '<';
       if (isWildcard) {
-        applyPathPath.addWildcardNode(pathComponent);
+        applyPathPath.addWildcardNode(pathComponent, line);
       } else {
-        applyPathPath.addNode(pathComponent);
+        applyPathPath.addNode(pathComponent, line);
       }
     }
     int insertionIndex = _newConfigurationLines.indexOf(_currentSetLine);
@@ -122,10 +123,11 @@ public class ApplyPathApplicator extends FlatJuniperParserBaseListener {
   public void visitTerminal(TerminalNode node) {
     if (_enablePathRecording) {
       String text = node.getText();
+      int line = node.getSymbol().getLine();
       if (node.getSymbol().getType() == FlatJuniperLexer.WILDCARD) {
-        _currentPath.addWildcardNode(text);
+        _currentPath.addWildcardNode(text, line);
       } else {
-        _currentPath.addNode(text);
+        _currentPath.addNode(text, line);
       }
     }
   }
