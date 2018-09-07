@@ -205,11 +205,7 @@ public final class FileBasedStorage implements StorageProvider {
 
   @Override
   public @Nonnull MajorIssueConfig loadMajorIssueConfig(String network, String majorIssueType) {
-    Path path =
-        getNetworkDir(network)
-            .resolve(BfConsts.RELPATH_CONTAINER_SETTINGS)
-            .resolve(BfConsts.RELPATH_CONTAINER_SETTINGS_ISSUES)
-            .resolve(majorIssueType + ".json");
+    Path path = getMajorIssueConfigDir(network, majorIssueType);
 
     if (!Files.exists(path)) {
       return new MajorIssueConfig(majorIssueType, null);
@@ -230,17 +226,20 @@ public final class FileBasedStorage implements StorageProvider {
   @Override
   public void storeMajorIssueConfig(
       String network, String majorIssueType, MajorIssueConfig majorIssueConfig) throws IOException {
-    Path path =
-        getNetworkDir(network)
-            .resolve(BfConsts.RELPATH_CONTAINER_SETTINGS)
-            .resolve(BfConsts.RELPATH_CONTAINER_SETTINGS_ISSUES)
-            .resolve(majorIssueType + ".json");
+    Path path = getMajorIssueConfigDir(network, majorIssueType);
 
     if (Files.notExists(path)) {
       Files.createDirectories(path.getParent());
       Files.createFile(path);
     }
     CommonUtil.writeFile(path, BatfishObjectMapper.mapper().writeValueAsString(majorIssueConfig));
+  }
+
+  private Path getMajorIssueConfigDir(String network, String majorIssueType) {
+    return getNetworkDir(network)
+        .resolve(BfConsts.RELPATH_CONTAINER_SETTINGS)
+        .resolve(BfConsts.RELPATH_CONTAINER_SETTINGS_ISSUES)
+        .resolve(majorIssueType + ".json");
   }
 
   /**

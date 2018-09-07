@@ -15,6 +15,7 @@ import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.MajorIssueConfig;
+import org.batfish.datamodel.answers.MinorIssueConfig;
 
 /** Storage backend for loading and storing persistent data used by Batfish */
 @ParametersAreNonnullByDefault
@@ -64,10 +65,8 @@ public interface StorageProvider {
   Layer1Topology loadLayer1Topology(String network, String snapshot);
 
   /**
-   * Returns the {@link MajorIssueConfig} for the given network
-   *
-   * @param network The name of the network
-   * @param majorIssueType The type of the {@link MajorIssueConfig}
+   * Returns the {@link MajorIssueConfig} for the given network and majorIssueType. If no config
+   * exists, will return a valid {@link MajorIssueConfig} with no {@link MinorIssueConfig}s
    */
   @Nonnull
   MajorIssueConfig loadMajorIssueConfig(String network, String majorIssueType);
