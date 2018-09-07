@@ -15,31 +15,31 @@ import org.batfish.question.ipsecsessionstatus.IpsecSessionInfo.IpsecSessionStat
 /** Return status of all IPSec sessions in the network */
 public class IpsecSessionStatusQuestion extends Question {
 
-  private static final String PROP_INITIATOR_REGEX = "initiatorRegex";
+  private static final String PROP_NODES = "nodes";
 
-  private static final String PROP_RESPONDER_REGEX = "responderRegex";
+  private static final String PROP_REMOTE_NODES = "remoteNodes";
 
-  private static final String PROP_STATUS_REGEX = "statusRegex";
+  private static final String PROP_STATUS = "status";
 
-  private static final String QUESTION_NAME = "ipsecsessionstatus";
+  private static final String QUESTION_NAME = "ipsecSessionStatus";
 
-  @Nonnull private NodesSpecifier _initiatorRegex;
+  @Nonnull private NodesSpecifier _nodes;
 
-  @Nonnull private NodesSpecifier _responderRegex;
+  @Nonnull private NodesSpecifier _remoteNodes;
 
-  @Nonnull private Pattern _statusRegex;
+  @Nonnull private Pattern _status;
 
   @JsonCreator
   public IpsecSessionStatusQuestion(
-      @Nullable @JsonProperty(PROP_INITIATOR_REGEX) NodesSpecifier initiatorRegex,
-      @Nullable @JsonProperty(PROP_RESPONDER_REGEX) NodesSpecifier responderRegex,
-      @Nullable @JsonProperty(PROP_STATUS_REGEX) String statusRegex) {
-    _initiatorRegex = firstNonNull(initiatorRegex, NodesSpecifier.ALL);
-    _responderRegex = firstNonNull(responderRegex, NodesSpecifier.ALL);
-    _statusRegex =
-        Strings.isNullOrEmpty(statusRegex)
+      @Nullable @JsonProperty(PROP_NODES) NodesSpecifier nodes,
+      @Nullable @JsonProperty(PROP_REMOTE_NODES) NodesSpecifier remoteNodes,
+      @Nullable @JsonProperty(PROP_STATUS) String status) {
+    _nodes = firstNonNull(nodes, NodesSpecifier.ALL);
+    _remoteNodes = firstNonNull(remoteNodes, NodesSpecifier.ALL);
+    _status =
+        Strings.isNullOrEmpty(status)
             ? Pattern.compile(".*")
-            : Pattern.compile(statusRegex.toUpperCase());
+            : Pattern.compile(status.toUpperCase());
   }
 
   @Override
@@ -52,22 +52,22 @@ public class IpsecSessionStatusQuestion extends Question {
     return QUESTION_NAME;
   }
 
-  @JsonProperty(PROP_INITIATOR_REGEX)
+  @JsonProperty(PROP_NODES)
   public NodesSpecifier getInitiatorRegex() {
-    return _initiatorRegex;
+    return _nodes;
   }
 
-  @JsonProperty(PROP_RESPONDER_REGEX)
+  @JsonProperty(PROP_REMOTE_NODES)
   public NodesSpecifier getResponderRegex() {
-    return _responderRegex;
+    return _remoteNodes;
   }
 
-  @JsonProperty(PROP_STATUS_REGEX)
-  public String getStatusRegex() {
-    return _statusRegex.toString();
+  @JsonProperty(PROP_STATUS)
+  public String getStatus() {
+    return _status.toString();
   }
 
   boolean matchesStatus(@Nullable IpsecSessionStatus status) {
-    return status != null && _statusRegex.matcher(status.toString()).matches();
+    return status != null && _status.matcher(status.toString()).matches();
   }
 }
