@@ -48,7 +48,6 @@ public class AclLineMatchExprToBDD implements GenericAclLineMatchExprVisitor<BDD
       Map<String, IpSpace> namedIpSpaces) {
     this(
         factory,
-        packet,
         aclEnv,
         namedIpSpaces,
         BDDSourceManager.forInterfaces(packet, ImmutableSet.of()),
@@ -71,7 +70,6 @@ public class AclLineMatchExprToBDD implements GenericAclLineMatchExprVisitor<BDD
 
   public AclLineMatchExprToBDD(
       BDDFactory factory,
-      BDDPacket packet,
       Map<String, Supplier<BDD>> aclEnv,
       Map<String, IpSpace> namedIpSpaces,
       BDDSourceManager bddSrcManager,

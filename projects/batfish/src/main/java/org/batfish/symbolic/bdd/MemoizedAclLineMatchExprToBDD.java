@@ -20,7 +20,6 @@ public class MemoizedAclLineMatchExprToBDD extends AclLineMatchExprToBDD {
       Map<String, IpSpace> namedIpSpaces) {
     super(
         factory,
-        packet,
         aclEnv,
         namedIpSpaces,
         new BDDSourceManager(packet, ImmutableSet.of()),
@@ -39,7 +38,6 @@ public class MemoizedAclLineMatchExprToBDD extends AclLineMatchExprToBDD {
       @Nonnull BDDSourceManager bddSrcManager) {
     super(
         factory,
-        packet,
         aclEnv,
         namedIpSpaces,
         bddSrcManager,
