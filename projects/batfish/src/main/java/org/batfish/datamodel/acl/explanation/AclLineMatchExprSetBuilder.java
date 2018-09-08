@@ -54,8 +54,14 @@ public abstract class AclLineMatchExprSetBuilder {
       return;
     }
 
-    if (!_exprs.isEmpty() && exprBdd.imp(_orExprBDDs).isOne()) {
-      // can remove something
+    /*
+     * Check if expr makes some other element in the set redundant, and if so remove it. This is
+     * a linear-time check (linear number of BDD operations), so we want to avoid it if possible.
+     * We do this by maintaining _orExprBDDs (the disjunction of the BDDs in _exprs). If exprBdd
+     * is disjoint from that intersection, we know nothing is redundant, and can skip the check.
+     */
+    if (!_exprs.isEmpty() && !exprBdd.and(_orExprBDDs).isZero()) {
+      // try to remove something
       List<AclLineMatchExpr> toRemove = new ArrayList<>();
       _exprs.forEach(
           (expr1, bdd1) -> {
@@ -64,10 +70,10 @@ public abstract class AclLineMatchExprSetBuilder {
               toRemove.add(expr1);
             }
           });
-      assert !toRemove.isEmpty();
-      toRemove.forEach(_exprs::remove);
-
-      _orExprBDDs = _exprs.values().stream().reduce(_bdd.getFactory().zero(), BDD::or);
+      if (!toRemove.isEmpty()) {
+        toRemove.forEach(_exprs::remove);
+        _orExprBDDs = _exprs.values().stream().reduce(_bdd.getFactory().zero(), BDD::or);
+      }
     }
 
     _exprs.put(expr, exprBdd);
