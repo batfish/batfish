@@ -154,6 +154,28 @@ final class ReachabilityParametersResolver {
     return destinationIpSpace;
   }
 
+  /** Returns {@code true} iff the given {@link Location} is active (aka, interface is up). */
+  @VisibleForTesting
+  static boolean isActive(Location l, Map<String, Configuration> configs) {
+    NodeInterfacePair iface;
+    if (l instanceof InterfaceLocation) {
+      iface =
+          new NodeInterfacePair(
+              ((InterfaceLocation) l).getNodeName(), ((InterfaceLocation) l).getInterfaceName());
+    } else {
+      assert l instanceof InterfaceLinkLocation;
+      iface =
+          new NodeInterfacePair(
+              ((InterfaceLinkLocation) l).getNodeName(),
+              ((InterfaceLinkLocation) l).getInterfaceName());
+    }
+    return configs
+        .get(iface.getHostname())
+        .getAllInterfaces()
+        .get(iface.getInterface())
+        .getActive();
+  }
+
   @VisibleForTesting
   IpSpaceAssignment resolveSourceIpSpaceAssignment() throws InvalidReachabilityParametersException {
     Set<Location> sourceLocations =
@@ -161,27 +183,7 @@ final class ReachabilityParametersResolver {
             .getSourceLocationSpecifier()
             .resolve(_context)
             .stream()
-            .filter(
-                l -> {
-                  NodeInterfacePair iface;
-                  if (l instanceof InterfaceLocation) {
-                    iface =
-                        new NodeInterfacePair(
-                            ((InterfaceLocation) l).getNodeName(),
-                            ((InterfaceLocation) l).getInterfaceName());
-                  } else {
-                    assert l instanceof InterfaceLinkLocation;
-                    iface =
-                        new NodeInterfacePair(
-                            ((InterfaceLinkLocation) l).getNodeName(),
-                            ((InterfaceLinkLocation) l).getInterfaceName());
-                  }
-                  return _configs
-                      .get(iface.getHostname())
-                      .getInterfaces()
-                      .get(iface.getInterface())
-                      .getActive();
-                })
+            .filter(l -> isActive(l, _configs))
             .collect(ImmutableSet.toImmutableSet());
     if (sourceLocations.isEmpty()) {
       throw new InvalidReachabilityParametersException("No matching source locations");
