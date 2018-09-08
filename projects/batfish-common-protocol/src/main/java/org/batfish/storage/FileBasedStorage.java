@@ -5,6 +5,7 @@ import static org.batfish.common.plugin.PluginConsumer.detectFormat;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.Closer;
@@ -242,14 +243,15 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   private @Nonnull Path getNetworkSettingsDir(String network) {
-    return getNetworkDir(network)
-        .resolve(BfConsts.RELPATH_CONTAINER_SETTINGS);
+    return getNetworkDir(network).resolve(BfConsts.RELPATH_CONTAINER_SETTINGS);
   }
 
   private @Nonnull Path getQuestionSettingsPath(String network, String questionClass) {
-    return getNetworkSettingsDir(network).resolve(BfConsts.RELPATH_QUESTIONS_DIR).resolve(String.format("%s.json", questionClass));
+    return getNetworkSettingsDir(network)
+        .resolve(BfConsts.RELPATH_QUESTIONS_DIR)
+        .resolve(String.format("%s.json", questionClass));
   }
-  
+
   /**
    * Stores the configurations into the compressed config path for the given testrig. Will replace
    * any previously-stored compressed configurations.
@@ -541,7 +543,9 @@ public final class FileBasedStorage implements StorageProvider {
     return getNetworkDir(network).resolve(BfConsts.RELPATH_QUESTIONS_DIR).resolve(question);
   }
 
-  private @Nonnull Path getNetworkDir(String network) {
+  @VisibleForTesting
+  @Nonnull
+  Path getNetworkDir(String network) {
     return _baseDir.resolve(network);
   }
 

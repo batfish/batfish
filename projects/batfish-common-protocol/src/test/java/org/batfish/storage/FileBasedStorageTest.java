@@ -1,4 +1,4 @@
-package org.batfish.main;
+package org.batfish.storage;
 
 import static org.batfish.common.Version.INCOMPATIBLE_VERSION;
 import static org.hamcrest.Matchers.equalTo;
@@ -20,7 +20,6 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.MajorIssueConfig;
 import org.batfish.datamodel.answers.MinorIssueConfig;
-import org.batfish.storage.FileBasedStorage;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -101,5 +100,38 @@ public class FileBasedStorageTest {
     assertThat(
         _storage.loadMajorIssueConfig(network, majorIssue),
         equalTo(new MajorIssueConfig(majorIssue, null)));
+  }
+
+  @Test
+  public void testStoreQuestionSettingsThenLoad() throws IOException {
+    String network = "network";
+    String questionClass = "q1";
+    String settings = "{}";
+    _storage.storeQuestionSettings(settings, network, questionClass);
+
+    assertThat(_storage.loadQuestionSettings(network, questionClass), equalTo(settings));
+  }
+
+  @Test
+  public void testLoadQuestionSettingsMissing() throws IOException {
+    String network = "network";
+    String questionClass = "q1";
+
+    assertThat(_storage.loadQuestionSettings(network, questionClass), nullValue());
+  }
+
+  @Test
+  public void testCheckNetworkExistsTrue() {
+    String network = "network";
+    _storage.getNetworkDir(network).toFile().mkdirs();
+
+    assertThat(_storage.checkNetworkExists(network), equalTo(true));
+  }
+
+  @Test
+  public void testCheckNetworkExistsFalse() {
+    String network = "network";
+
+    assertThat(_storage.checkNetworkExists(network), equalTo(false));
   }
 }
