@@ -238,6 +238,7 @@ public final class FileBasedStorage implements StorageProvider {
 
   private @Nonnull Path getMajorIssueConfigDir(String network, String majorIssueType) {
     return getNetworkSettingsDir(network)
+        .resolve(BfConsts.RELPATH_CONTAINER_SETTINGS)
         .resolve(BfConsts.RELPATH_CONTAINER_SETTINGS_ISSUES)
         .resolve(majorIssueType + ".json");
   }
