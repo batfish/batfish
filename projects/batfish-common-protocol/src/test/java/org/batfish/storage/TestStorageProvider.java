@@ -160,4 +160,23 @@ public class TestStorageProvider implements StorageProvider {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
   }
+
+  @Override
+  public String loadQuestionSettings(String network, String questionClass) throws IOException {
+    throw new UnsupportedOperationException(
+        "no implementation for generated method"); // TODO Auto-generated method stub
+  }
+
+  @Override
+  public boolean checkNetworkExists(String network) {
+    throw new UnsupportedOperationException(
+        "no implementation for generated method"); // TODO Auto-generated method stub
+  }
+
+  @Override
+  public void storeQuestionSettings(String settings, String network, String questionClass)
+      throws IOException {
+    throw new UnsupportedOperationException(
+        "no implementation for generated method"); // TODO Auto-generated method stub
+  }
 }
