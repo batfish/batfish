@@ -38,14 +38,14 @@ import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
 
 class IpsecSessionStatusAnswerer extends Answerer {
-  static final String COL_INITIATOR = "Initiator";
-  static final String COL_INIT_INTERFACE = "InitiatorInterface";
-  static final String COL_INIT_IP = "InitiatorIp";
-  static final String COL_RESPONDER = "Responder";
-  static final String COL_RESPONDER_INTERFACE = "ResponderInterface";
-  static final String COL_RESPONDER_IP = "ResponderIp";
-  static final String COL_STATUS = "status";
-  static final String COL_TUNNEL_INTERFACES = "TunnelInterfaces";
+  static final String COL_INITIATOR = "Node";
+  static final String COL_INIT_INTERFACE = "Node_Interface";
+  static final String COL_INIT_IP = "Node_IP";
+  static final String COL_RESPONDER = "Remote_Node";
+  static final String COL_RESPONDER_INTERFACE = "Remote_Node_Interface";
+  static final String COL_RESPONDER_IP = "Remote_Node_IP";
+  static final String COL_STATUS = "Status";
+  static final String COL_TUNNEL_INTERFACES = "Tunnel_Interfaces";
   private static final String NOT_APPLICABLE = "Not Applicable";
 
   IpsecSessionStatusAnswerer(Question question, IBatfish batfish) {

@@ -73,16 +73,29 @@ public final class AclLineMatchExprs {
     return new MatchSrcInterface(ImmutableList.copyOf(iface));
   }
 
+  /**
+   * Smart constructor for {@link NotMatchExpr} that does constant-time simplifications (i.e. when
+   * expr is {@link #TRUE} or {@link #FALSE}).
+   */
+  public static AclLineMatchExpr not(AclLineMatchExpr expr) {
+    if (expr == TRUE) {
+      return FALSE;
+    }
+    if (expr == FALSE) {
+      return TRUE;
+    }
+    if (expr instanceof NotMatchExpr) {
+      return ((NotMatchExpr) expr).getOperand();
+    }
+    return new NotMatchExpr(expr);
+  }
+
   public static MatchHeaderSpace matchSrc(IpSpace ipSpace) {
     return new MatchHeaderSpace(HeaderSpace.builder().setSrcIps(ipSpace).build());
   }
 
   public static MatchHeaderSpace matchSrcIp(String ip) {
     return matchSrc(new Ip(ip).toIpSpace());
-  }
-
-  public static NotMatchExpr not(AclLineMatchExpr expr) {
-    return new NotMatchExpr(expr);
   }
 
   public static AclLineMatchExpr or(AclLineMatchExpr... exprs) {
