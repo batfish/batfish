@@ -59,11 +59,11 @@ Batfish supports configurations for a large and growing set of (physical and vir
   - Arista
   - Aruba
   - AWS VPCs
-  - Cisco (Nexus, IOS, IOS-XR, ASA)
+  - Cisco (All Cisco NX-OS, IOS, IOS-XR, IOS-XR devices including Cisco ASA)
   - Dell Force10
   - Foundry
   - iptables (on hosts)
-  - Juniper (JunOS, SRX)
+  - Juniper (All JunOS plaforms: MX, EX, QFX, SRX)
   - MRV
   - Palo Alto Networks
   - Quagga
