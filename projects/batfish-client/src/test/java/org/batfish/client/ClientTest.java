@@ -1497,8 +1497,7 @@ public class ClientTest {
     variable.setValues(allowedValues);
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage(
-        String.format(
-            "Invalid value: false, allowed values are:\n%s", allowedValues.get(0).toString()));
+        String.format("Invalid value: false, allowed values are: %s", allowedValues));
     Client.validateNode(invalidNode, variable, parameterName);
   }
 

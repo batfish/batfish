@@ -53,7 +53,6 @@ import java.util.TreeSet;
 import java.util.UUID;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.apache.commons.io.output.WriterOutputStream;
@@ -97,7 +96,6 @@ import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.AutocompleteSuggestion.CompletionType;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.pojo.WorkStatus;
-import org.batfish.datamodel.questions.AllowedValue;
 import org.batfish.datamodel.questions.BgpPropertySpecifier;
 import org.batfish.datamodel.questions.InterfacePropertySpecifier;
 import org.batfish.datamodel.questions.NamedStructureSpecifier;
@@ -302,15 +300,7 @@ public class Client extends AbstractClient implements IClient {
             .noneMatch(allowedValue -> allowedValue.getValue().equals(value.asText()))) {
       throw new BatfishException(
           String.format(
-              "Invalid value: %s, allowed values are:\n%s",
-              value.asText(),
-              String.join(
-                  "\n",
-                  variable
-                      .getValues()
-                      .stream()
-                      .map(AllowedValue::toString)
-                      .collect(Collectors.toList()))));
+              "Invalid value: %s, allowed values are: %s", value.asText(), variable.getValues()));
     }
   }
 
