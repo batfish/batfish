@@ -73,6 +73,14 @@ public final class AclLineMatchExprs {
     return new MatchSrcInterface(ImmutableList.copyOf(iface));
   }
 
+  public static MatchHeaderSpace matchSrc(IpSpace ipSpace) {
+    return new MatchHeaderSpace(HeaderSpace.builder().setSrcIps(ipSpace).build());
+  }
+
+  public static MatchHeaderSpace matchSrcIp(String ip) {
+    return matchSrc(new Ip(ip).toIpSpace());
+  }
+
   public static NotMatchExpr not(AclLineMatchExpr expr) {
     return new NotMatchExpr(expr);
   }

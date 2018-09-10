@@ -114,7 +114,7 @@ public class AclLineMatchExprToBDD implements GenericAclLineMatchExprVisitor<BDD
 
   @Override
   public BDD visitNotMatchExpr(NotMatchExpr notMatchExpr) {
-    return notMatchExpr.getOperand().accept(this).not();
+    return visit(notMatchExpr.getOperand()).not();
   }
 
   @Override
