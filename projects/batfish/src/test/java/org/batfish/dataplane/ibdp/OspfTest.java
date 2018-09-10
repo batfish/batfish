@@ -148,8 +148,7 @@ public class OspfTest {
     OspfArea.Builder oabe = nf.ospfAreaBuilder().setNumber(areaE);
     OspfArea.Builder oabf = nf.ospfAreaBuilder().setNumber(areaF);
     OspfArea.Builder oabg = nf.ospfAreaBuilder().setNumber(areaG);
-    Interface.Builder ib =
-        nf.interfaceBuilder().setActive(true).setOspfCost(1).setOspfEnabled(true);
+    Interface.Builder ib = nf.interfaceBuilder().setOspfCost(1).setOspfEnabled(true);
 
     Configuration c1 = cb.setHostname(C1_NAME).build();
     Vrf v1 = vb.setOwner(c1).build();
@@ -303,7 +302,6 @@ public class OspfTest {
     Vrf.Builder vb = nf.vrfBuilder().setName(Configuration.DEFAULT_VRF_NAME);
     Interface.Builder ib =
         nf.interfaceBuilder()
-            .setActive(true)
             .setOspfCost(10)
             .setOspfEnabled(true)
             .setOspfPointToPoint(true)

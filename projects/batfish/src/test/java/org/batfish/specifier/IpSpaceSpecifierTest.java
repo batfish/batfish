@@ -45,7 +45,7 @@ public class IpSpaceSpecifierTest {
     NetworkFactory nf = new NetworkFactory();
     Builder cb = nf.configurationBuilder();
     cb.setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
-    Interface.Builder ib = nf.interfaceBuilder();
+    Interface.Builder ib = nf.interfaceBuilder().setActive(false);
 
     _c1 = cb.build();
     ib.setOwner(_c1);

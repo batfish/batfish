@@ -77,7 +77,7 @@ public class SynthesizerInputImplTest {
     _nf = new NetworkFactory();
     _cb = _nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
     _vb = _nf.vrfBuilder();
-    _ib = _nf.interfaceBuilder().setActive(true).setBandwidth(1E9d);
+    _ib = _nf.interfaceBuilder().setBandwidth(1E9d);
     _aclb = _nf.aclBuilder();
     _inputBuilder = SynthesizerInputImpl.builder();
     _snb = SourceNat.builder();

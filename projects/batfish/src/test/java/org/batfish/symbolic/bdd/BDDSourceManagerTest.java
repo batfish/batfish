@@ -63,7 +63,7 @@ public class BDDSourceManagerTest {
     NetworkFactory nf = new NetworkFactory();
     Configuration config =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
-    Interface.Builder ib = nf.interfaceBuilder().setOwner(config).setActive(true);
+    Interface.Builder ib = nf.interfaceBuilder().setOwner(config);
     ib.setName(IFACE1).build();
     ib.setName(IFACE2).build();
     String iface3 = "iface3";

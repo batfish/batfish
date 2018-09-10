@@ -157,7 +157,7 @@ public class TracerouteEngineTest {
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
     Configuration config = cb.build();
     Vrf.Builder vb = nf.vrfBuilder().setOwner(config);
-    Interface.Builder ib = nf.interfaceBuilder().setActive(true).setOwner(config);
+    Interface.Builder ib = nf.interfaceBuilder().setOwner(config);
 
     Vrf vrf1 = vb.build();
     Vrf vrf2 = vb.build();
@@ -197,7 +197,7 @@ public class TracerouteEngineTest {
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
     Vrf.Builder vb = nf.vrfBuilder().setName(Configuration.DEFAULT_VRF_NAME);
-    Interface.Builder ib = nf.interfaceBuilder().setActive(true).setProxyArp(true);
+    Interface.Builder ib = nf.interfaceBuilder().setProxyArp(true);
 
     Configuration source = cb.build();
     Vrf vSource = vb.setOwner(source).build();
@@ -322,7 +322,6 @@ public class TracerouteEngineTest {
     IpAccessList outgoingFilter =
         nf.aclBuilder().setOwner(c).setName("outgoingAcl").setLines(ImmutableList.of()).build();
     nf.interfaceBuilder()
-        .setActive(true)
         .setOwner(c)
         .setVrf(v)
         .setAddress(new InterfaceAddress("1.0.0.0/24"))
@@ -352,7 +351,7 @@ public class TracerouteEngineTest {
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
     Vrf.Builder vb = nf.vrfBuilder().setName(Configuration.DEFAULT_VRF_NAME);
-    Interface.Builder ib = nf.interfaceBuilder().setActive(true);
+    Interface.Builder ib = nf.interfaceBuilder();
 
     // c1
     Configuration c1 = cb.build();
