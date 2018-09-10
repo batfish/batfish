@@ -1,6 +1,7 @@
 package org.batfish.datamodel;
 
-import com.google.common.base.Preconditions;
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Sets;
 import java.util.Comparator;
@@ -9,7 +10,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
 import javax.annotation.Nullable;
-import org.batfish.common.BatfishException;
 
 /**
  * Compute the intersection of two HeaderSpaces. Tries to detect empty intersections, but isn't
@@ -40,12 +40,12 @@ public final class IntersectHeaderSpaces {
   }
 
   public static Optional<HeaderSpace> intersect(HeaderSpace h1, HeaderSpace h2) {
-    Preconditions.checkArgument(unconstrained(h1.getSrcOrDstIps()));
-    Preconditions.checkArgument(unconstrained(h2.getSrcOrDstIps()));
-    Preconditions.checkArgument(unconstrained(h1.getSrcOrDstPorts()));
-    Preconditions.checkArgument(unconstrained(h2.getSrcOrDstPorts()));
-    Preconditions.checkArgument(unconstrained(h1.getSrcOrDstProtocols()));
-    Preconditions.checkArgument(unconstrained(h2.getSrcOrDstProtocols()));
+    checkArgument(isUnconstrained(h1.getSrcOrDstIps()));
+    checkArgument(isUnconstrained(h2.getSrcOrDstIps()));
+    checkArgument(isUnconstrained(h1.getSrcOrDstPorts()));
+    checkArgument(isUnconstrained(h2.getSrcOrDstPorts()));
+    checkArgument(isUnconstrained(h1.getSrcOrDstProtocols()));
+    checkArgument(isUnconstrained(h2.getSrcOrDstProtocols()));
 
     try {
       return Optional.of(
@@ -79,27 +79,26 @@ public final class IntersectHeaderSpaces {
     if (tcpFlags2 == null || tcpFlags2.isEmpty()) {
       return tcpFlags1;
     }
-    throw new BatfishException(
-        "Not implemented: nontrivial intersection of TcpFlagMatchConditions");
+    throw new UnsupportedOperationException("Nontrivial intersection of TcpFlagMatchConditions");
   }
 
-  private static boolean unconstrained(IpSpace srcOrDstIps) {
+  private static boolean isUnconstrained(IpSpace srcOrDstIps) {
     return srcOrDstIps == null;
   }
 
-  private static <A> boolean unconstrained(@Nullable Set<A> set) {
+  private static <T> boolean isUnconstrained(@Nullable Set<T> set) {
     return set == null || set.isEmpty();
   }
 
-  static <A extends Comparable<A>> SortedSet<A> intersectSimpleSets(
-      SortedSet<A> s1, SortedSet<A> s2) throws NoIntersection {
-    if (s1.isEmpty()) {
+  static <T extends Comparable<T>> SortedSet<T> intersectSimpleSets(
+      SortedSet<T> s1, SortedSet<T> s2) throws NoIntersection {
+    if (isUnconstrained(s1)) {
       return s2;
     }
-    if (s2.isEmpty()) {
+    if (isUnconstrained(s2)) {
       return s1;
     }
-    SortedSet<A> intersection =
+    SortedSet<T> intersection =
         s1.stream()
             .filter(s2::contains)
             .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
@@ -111,18 +110,15 @@ public final class IntersectHeaderSpaces {
 
   static SortedSet<SubRange> intersectSubRangeSets(SortedSet<SubRange> s1, SortedSet<SubRange> s2)
       throws NoIntersection {
-    if (s1.isEmpty()) {
-      // s1 is unconstrained
+    if (isUnconstrained(s1)) {
       return s2;
     }
-    if (s2.isEmpty()) {
-      // s2 is unconstrained
+    if (isUnconstrained(s2)) {
       return s1;
     }
-
     SortedSet<SubRange> intersection =
         s1.stream()
-            .flatMap(r1 -> s2.stream().map(r2 -> intersect(r1, r2)))
+            .flatMap(r1 -> s2.stream().map(r1::intersection))
             .filter(Optional::isPresent)
             .map(Optional::get)
             .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
@@ -134,11 +130,5 @@ public final class IntersectHeaderSpaces {
       throw new NoIntersection();
     }
     return intersection;
-  }
-
-  private static Optional<SubRange> intersect(SubRange r1, SubRange r2) {
-    int start = Integer.max(r1.getStart(), r2.getStart());
-    int end = Integer.min(r1.getEnd(), r2.getEnd());
-    return start <= end ? Optional.of(new SubRange(start, end)) : Optional.empty();
   }
 }
