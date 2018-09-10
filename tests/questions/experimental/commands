@@ -3,6 +3,12 @@ load-questions questions/experimental
 # validate aclReachability
 test -raw tests/questions/experimental/aclReachability.ref validate-template aclReachability filters=".*", nodes=".*"
 
+# validate bddMultipathConsistency
+test -raw tests/questions/experimental/bddMultipathConsistency.ref validate-template bddMultipathConsistency
+
+# validate bddReducedReachability
+test -raw tests/questions/experimental/bddReducedReachability.ref validate-template bddReducedReachability
+
 # validate bgpProperties
 test -raw tests/questions/experimental/bgpProperties.ref validate-template bgpProperties nodes=".*", properties="multipath-.*"
 
