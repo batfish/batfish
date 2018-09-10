@@ -53,6 +53,7 @@ import java.util.TreeSet;
 import java.util.UUID;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.apache.commons.io.output.WriterOutputStream;
@@ -96,6 +97,7 @@ import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.AutocompleteSuggestion.CompletionType;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.pojo.WorkStatus;
+import org.batfish.datamodel.questions.AllowedValue;
 import org.batfish.datamodel.questions.BgpPropertySpecifier;
 import org.batfish.datamodel.questions.InterfacePropertySpecifier;
 import org.batfish.datamodel.questions.NamedStructureSpecifier;
@@ -278,7 +280,7 @@ public class Client extends AbstractClient implements IClient {
    * This method calls {@link Client#validateType(JsonNode, Variable)} to check that the contents
    * encoded in {@code value} match the requirement specified in {@code variable}. Also, this method
    * validates the input {@code value} is allowed according to {@link
-   * Question.InstanceData.Variable#_allowedValues allowedValues} specified in {@code variable}.
+   * Question.InstanceData.Variable#_values values} specified in {@code variable}.
    *
    * @throws BatfishException if the content type encoded in input {@code value} does not satisfy
    *     the type requirements specified in {@code variable}, or the input {@code value} is not an
@@ -293,12 +295,22 @@ public class Client extends AbstractClient implements IClient {
           String.format("Invalid value for parameter %s: %s", parameterName, value);
       throw new BatfishException(errorMessage, e);
     }
-    if (!(variable.getAllowedValues().isEmpty()
-        || variable.getAllowedValues().contains(value.asText()))) {
+    if (!variable.getValues().isEmpty()
+        && variable
+            .getValues()
+            .stream()
+            .noneMatch(allowedValue -> allowedValue.getValue().equals(value.asText()))) {
       throw new BatfishException(
           String.format(
-              "Invalid value: %s, allowed values are: %s",
-              value.asText(), variable.getAllowedValues()));
+              "Invalid value: %s, allowed values are:\n%s",
+              value.asText(),
+              String.join(
+                  "\n",
+                  variable
+                      .getValues()
+                      .stream()
+                      .map(AllowedValue::toString)
+                      .collect(Collectors.toList()))));
     }
   }
 

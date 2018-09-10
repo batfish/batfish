@@ -90,6 +90,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.difflib.algorithm.DiffException;
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
 import java.io.File;
 import java.io.FileWriter;
@@ -98,9 +99,8 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.SortedSet;
-import java.util.TreeSet;
 import org.apache.commons.lang3.ArrayUtils;
 import org.batfish.client.answer.LoadQuestionAnswerElement;
 import org.batfish.common.BatfishException;
@@ -111,6 +111,7 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.answers.Answer;
+import org.batfish.datamodel.questions.AllowedValue;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.Question.InstanceData.Variable;
 import org.batfish.datamodel.questions.Question.InstanceData.Variable.Type;
@@ -1492,12 +1493,12 @@ public class ClientTest {
     JsonNode invalidNode = _mapper.readTree("false");
     Question.InstanceData.Variable variable = new Question.InstanceData.Variable();
     variable.setType(BOOLEAN);
-    SortedSet<String> allowedValues = new TreeSet<>();
-    allowedValues.add("true");
-    variable.setAllowedValues(allowedValues);
+    List<AllowedValue> allowedValues = ImmutableList.of(new AllowedValue("true", "description"));
+    variable.setValues(allowedValues);
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage(
-        String.format("Invalid value: false, allowed values are: %s", allowedValues));
+        String.format(
+            "Invalid value: false, allowed values are:\n%s", allowedValues.get(0).toString()));
     Client.validateNode(invalidNode, variable, parameterName);
   }
 
@@ -1507,9 +1508,8 @@ public class ClientTest {
     JsonNode invalidNode = _mapper.readTree("false");
     Question.InstanceData.Variable variable = new Question.InstanceData.Variable();
     variable.setType(BOOLEAN);
-    SortedSet<String> allowedValues = new TreeSet<>();
-    allowedValues.add("false");
-    variable.setAllowedValues(allowedValues);
+    List<AllowedValue> allowedValues = ImmutableList.of(new AllowedValue("false", "description"));
+    variable.setValues(allowedValues);
     Client.validateNode(invalidNode, variable, parameterName);
   }
 
