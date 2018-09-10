@@ -27,7 +27,33 @@
         "description" : "Types of edges to include",
         "optional" : true,
         "type" : "string",
-        "value" : "bgp"
+        "value" : "bgp",
+        "values" : [
+          {
+            "name" : "bgp"
+          },
+          {
+            "name" : "eigrp"
+          },
+          {
+            "name" : "isis"
+          },
+          {
+            "name" : "layer1"
+          },
+          {
+            "name" : "layer2"
+          },
+          {
+            "name" : "layer3"
+          },
+          {
+            "name" : "ospf"
+          },
+          {
+            "name" : "rip"
+          }
+        ]
       },
       "nodes" : {
         "description" : "Include edges whose first node matches this name or regex",
