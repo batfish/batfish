@@ -1,5 +1,7 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.MoreObjects.toStringHelper;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 
@@ -90,5 +92,14 @@ public class SourceNat implements Serializable {
   @JsonProperty(PROP_POOL_IP_LAST)
   public void setPoolIpLast(Ip poolIpLast) {
     _poolIpLast = poolIpLast;
+  }
+
+  @Override
+  public String toString() {
+    return toStringHelper(SourceNat.class)
+        .add(PROP_ACL, _acl.getName())
+        .add(PROP_POOL_IP_FIRST, _poolIpFirst)
+        .add(PROP_POOL_IP_LAST, _poolIpLast)
+        .toString();
   }
 }
