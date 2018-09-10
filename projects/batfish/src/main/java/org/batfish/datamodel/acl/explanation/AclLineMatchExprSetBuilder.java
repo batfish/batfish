@@ -11,7 +11,7 @@ import org.batfish.symbolic.bdd.AclLineMatchExprToBDD;
 
 /**
  * Represents a set of {@link AclLineMatchExpr AclLineMatchExprs} -- either a set of conjuncts or a
- * set of disjuncts. Removes
+ * set of disjuncts. Uses {@link BDD BDDs} to detect and remove redundant members.
  */
 public abstract class AclLineMatchExprSetBuilder {
 
