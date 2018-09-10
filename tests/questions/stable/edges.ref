@@ -30,28 +30,28 @@
         "value" : "bgp",
         "values" : [
           {
-            "value" : "bgp"
+            "name" : "bgp"
           },
           {
-            "value" : "eigrp"
+            "name" : "eigrp"
           },
           {
-            "value" : "isis"
+            "name" : "isis"
           },
           {
-            "value" : "layer1"
+            "name" : "layer1"
           },
           {
-            "value" : "layer2"
+            "name" : "layer2"
           },
           {
-            "value" : "layer3"
+            "name" : "layer3"
           },
           {
-            "value" : "ospf"
+            "name" : "ospf"
           },
           {
-            "value" : "rip"
+            "name" : "rip"
           }
         ]
       },

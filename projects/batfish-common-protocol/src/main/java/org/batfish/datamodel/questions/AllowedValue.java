@@ -8,20 +8,20 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public class AllowedValue {
-  private static final String PROP_VALUE = "value";
+  private static final String PROP_NAME = "name";
   private static final String PROP_DESCRIPTION = "description";
-  private String _value;
+  private String _name;
   private String _description;
 
   @JsonCreator
   private static @Nonnull AllowedValue create(
-      @JsonProperty(PROP_VALUE) String value, @JsonProperty(PROP_DESCRIPTION) String description) {
-    checkArgument(value != null, String.format("%s is required", PROP_VALUE));
-    return new AllowedValue(value, description);
+      @JsonProperty(PROP_NAME) String name, @JsonProperty(PROP_DESCRIPTION) String description) {
+    checkArgument(name != null, String.format("%s is required", PROP_NAME));
+    return new AllowedValue(name, description);
   }
 
-  public AllowedValue(String value, @Nullable String description) {
-    _value = value;
+  public AllowedValue(String name, @Nullable String description) {
+    _name = name;
     _description = description;
   }
 
@@ -30,9 +30,9 @@ public class AllowedValue {
     return _description;
   }
 
-  @JsonProperty(PROP_VALUE)
-  public String getValue() {
-    return _value;
+  @JsonProperty(PROP_NAME)
+  public String getName() {
+    return _name;
   }
 
   @JsonProperty(PROP_DESCRIPTION)
@@ -40,13 +40,13 @@ public class AllowedValue {
     _description = description;
   }
 
-  @JsonProperty(PROP_VALUE)
-  public void setValue(String value) {
-    _value = value;
+  @JsonProperty(PROP_NAME)
+  public void setName(String name) {
+    _name = name;
   }
 
   @Override
   public String toString() {
-    return _description == null ? _value : String.format("%s: %s", _value, _description);
+    return _description == null ? _name : String.format("%s: %s", _name, _description);
   }
 }

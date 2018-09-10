@@ -139,7 +139,7 @@ public abstract class Question implements IQuestion {
       public SortedSet<String> getAllowedValues() {
         return _values
             .stream()
-            .map(AllowedValue::getValue)
+            .map(AllowedValue::getName)
             .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
       }
 

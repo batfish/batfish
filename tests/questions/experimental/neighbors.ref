@@ -37,28 +37,28 @@
         ],
         "values" : [
           {
-            "value" : "ebgp"
+            "name" : "ebgp"
           },
           {
-            "value" : "eigrp"
+            "name" : "eigrp"
           },
           {
-            "value" : "ibgp"
+            "name" : "ibgp"
           },
           {
-            "value" : "layer1"
+            "name" : "layer1"
           },
           {
-            "value" : "layer2"
+            "name" : "layer2"
           },
           {
-            "value" : "layer3"
+            "name" : "layer3"
           },
           {
-            "value" : "ospf"
+            "name" : "ospf"
           },
           {
-            "value" : "rip"
+            "name" : "rip"
           }
         ]
       },
@@ -92,13 +92,13 @@
         "value" : "summary",
         "values" : [
           {
-            "value" : "role"
+            "name" : "role"
           },
           {
-            "value" : "summary"
+            "name" : "summary"
           },
           {
-            "value" : "verbose"
+            "name" : "verbose"
           }
         ]
       }

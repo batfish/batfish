@@ -297,7 +297,7 @@ public class Client extends AbstractClient implements IClient {
         && variable
             .getValues()
             .stream()
-            .noneMatch(allowedValue -> allowedValue.getValue().equals(value.asText()))) {
+            .noneMatch(allowedValue -> allowedValue.getName().equals(value.asText()))) {
       throw new BatfishException(
           String.format(
               "Invalid value: %s, allowed values are: %s", value.asText(), variable.getValues()));

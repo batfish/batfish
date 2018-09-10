@@ -118,16 +118,16 @@
         "value" : "new",
         "values" : [
           {
-            "value" : "established"
+            "name" : "established"
           },
           {
-            "value" : "invalid"
+            "name" : "invalid"
           },
           {
-            "value" : "new"
+            "name" : "new"
           },
           {
-            "value" : "related"
+            "name" : "related"
           }
         ]
       },
