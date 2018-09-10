@@ -34,6 +34,32 @@
         "type" : "string",
         "value" : [
           "ebgp"
+        ],
+        "values" : [
+          {
+            "value" : "ebgp"
+          },
+          {
+            "value" : "eigrp"
+          },
+          {
+            "value" : "ibgp"
+          },
+          {
+            "value" : "layer1"
+          },
+          {
+            "value" : "layer2"
+          },
+          {
+            "value" : "layer3"
+          },
+          {
+            "value" : "ospf"
+          },
+          {
+            "value" : "rip"
+          }
         ]
       },
       "nodes" : {
@@ -63,7 +89,18 @@
         "description" : "String indicating the style of information requested about each neighbor",
         "optional" : false,
         "type" : "string",
-        "value" : "summary"
+        "value" : "summary",
+        "values" : [
+          {
+            "value" : "role"
+          },
+          {
+            "value" : "summary"
+          },
+          {
+            "value" : "verbose"
+          }
+        ]
       }
     }
   }
