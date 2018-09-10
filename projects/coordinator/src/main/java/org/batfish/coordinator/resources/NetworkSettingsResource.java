@@ -17,8 +17,6 @@ import javax.ws.rs.core.Response;
 @Produces(MediaType.APPLICATION_JSON)
 public class NetworkSettingsResource {
 
-  private static final String PARAM_CLASS_NAME = "classname";
-
   private String _network;
 
   public NetworkSettingsResource(String network) {
@@ -38,9 +36,9 @@ public class NetworkSettingsResource {
   }
 
   /** Relocate the request to QuestionSettingsResource. */
-  @Path(RSC_QUESTIONS + "/{" + PARAM_CLASS_NAME + "}")
+  @Path(RSC_QUESTIONS + "/{classname}")
   public QuestionSettingsResource getQuestionsSettingsResource(
-      @PathParam(PARAM_CLASS_NAME) String className) {
+      @PathParam("classname") String className) {
     return new QuestionSettingsResource(_network, className);
   }
 }
