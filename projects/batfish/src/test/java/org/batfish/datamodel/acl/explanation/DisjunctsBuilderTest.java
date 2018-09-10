@@ -3,7 +3,6 @@ package org.batfish.datamodel.acl.explanation;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.FALSE;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.TRUE;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
-import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcIp;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.hamcrest.Matchers.equalTo;
@@ -16,39 +15,63 @@ import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.NotMatchExpr;
 import org.batfish.symbolic.bdd.AclLineMatchExprToBDD;
 import org.batfish.symbolic.bdd.BDDPacket;
+import org.junit.Before;
 import org.junit.Test;
 
 public class DisjunctsBuilderTest {
-  @Test
-  public void testDisjunctsBuilder() {
+  private static final AclLineMatchExpr DST_IP = matchDst(new Ip("1.2.3.4"));
+  private static final AclLineMatchExpr DST_PREFIX = matchDst(Prefix.parse("1.2.3.0/24"));
+  private static final AclLineMatchExpr SRC_IP = matchSrcIp("2.3.4.5");
+
+  private DisjunctsBuilder _orBuilder;
+
+  @Before
+  public void setup() {
     BDDPacket pkt = new BDDPacket();
-    AclLineMatchExprToBDD toBDD =
+    AclLineMatchExprToBDD toBdd =
         new AclLineMatchExprToBDD(pkt.getFactory(), pkt, ImmutableMap.of(), ImmutableMap.of());
-    DisjunctsBuilder orBuilder = new DisjunctsBuilder(toBDD);
+    _orBuilder = new DisjunctsBuilder(toBdd);
+  }
 
-    assertThat(orBuilder.build(), equalTo(FALSE));
+  @Test
+  public void testEmpty() {
+    assertThat(_orBuilder.build(), equalTo(FALSE));
+  }
 
-    AclLineMatchExpr dstIp = matchDst(new Ip("1.2.3.4"));
-    AclLineMatchExpr dstPrefix = matchDst(Prefix.parse("1.2.3.0/24"));
-    AclLineMatchExpr srcIp = matchSrcIp("2.3.4.5");
-    AclLineMatchExpr srcPrefix = matchSrc(Prefix.parse("2.3.4.0/24"));
+  @Test
+  public void testOne() {
+    _orBuilder.add(DST_PREFIX);
+    assertThat(_orBuilder.build(), equalTo(DST_PREFIX));
+  }
 
-    orBuilder.add(dstPrefix);
-    assertThat(orBuilder.build(), equalTo(dstPrefix));
+  @Test
+  public void testRedundantFirst() {
+    // discard redundant conjunct added first
+    _orBuilder.add(DST_IP);
+    _orBuilder.add(DST_PREFIX);
+    assertThat(_orBuilder.build(), equalTo(DST_PREFIX));
+  }
 
-    // discard redundant conjunct
-    orBuilder.add(dstIp);
-    assertThat(orBuilder.build(), equalTo(dstPrefix));
+  @Test
+  public void testRedundantSecond() {
+    // discard redundant conjunct added second
+    _orBuilder.add(DST_PREFIX);
+    _orBuilder.add(DST_IP);
+    assertThat(_orBuilder.build(), equalTo(DST_PREFIX));
+  }
 
-    orBuilder.add(srcIp);
-    assertThat(orBuilder.build(), equalTo(or(dstPrefix, srcIp)));
+  @Test
+  public void testRelevant() {
+    _orBuilder.add(DST_PREFIX);
+    _orBuilder.add(SRC_IP);
+    assertThat(_orBuilder.build(), equalTo(or(DST_PREFIX, SRC_IP)));
+  }
 
-    // replace conjunct made redundant by the new one
-    orBuilder.add(srcPrefix);
-    assertThat(orBuilder.build(), equalTo(or(dstPrefix, srcPrefix)));
-
+  @Test
+  public void testShort() {
     // short-circuit
-    orBuilder.add(new NotMatchExpr(dstPrefix));
-    assertThat(orBuilder.build(), equalTo(TRUE));
+    _orBuilder.add(DST_PREFIX);
+    _orBuilder.add(new NotMatchExpr(DST_PREFIX));
+    assertThat(_orBuilder.build(), equalTo(TRUE));
   }
 }

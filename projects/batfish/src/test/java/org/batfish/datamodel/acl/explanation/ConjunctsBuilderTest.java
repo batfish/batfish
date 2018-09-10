@@ -4,7 +4,6 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.FALSE;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.TRUE;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
-import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcIp;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -15,40 +14,63 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.symbolic.bdd.AclLineMatchExprToBDD;
 import org.batfish.symbolic.bdd.BDDPacket;
+import org.junit.Before;
 import org.junit.Test;
 
 public class ConjunctsBuilderTest {
 
-  @Test
-  public void testConjunctsBuilder() {
+  private ConjunctsBuilder _andBuilder;
+  private static final AclLineMatchExpr DST_IP = matchDst(new Ip("1.2.3.4"));
+  private static final AclLineMatchExpr DST_PREFIX = matchDst(Prefix.parse("1.2.3.0/24"));
+  private static final AclLineMatchExpr SRC_IP = matchSrcIp("2.3.4.5");
+
+  @Before
+  public void setup() {
     BDDPacket pkt = new BDDPacket();
     AclLineMatchExprToBDD toBDD =
         new AclLineMatchExprToBDD(pkt.getFactory(), pkt, ImmutableMap.of(), ImmutableMap.of());
-    ConjunctsBuilder andBuilder = new ConjunctsBuilder(toBDD);
+    _andBuilder = new ConjunctsBuilder(toBDD);
+  }
 
-    assertThat(andBuilder.build(), equalTo(TRUE));
+  @Test
+  public void testEmpty() {
+    assertThat(_andBuilder.build(), equalTo(TRUE));
+  }
 
-    AclLineMatchExpr dstIp = matchDst(new Ip("1.2.3.4"));
-    AclLineMatchExpr dstPrefix = matchDst(Prefix.parse("1.2.3.0/24"));
-    AclLineMatchExpr srcIp = matchSrcIp("2.3.4.5");
-    AclLineMatchExpr srcPrefix = matchSrc(Prefix.parse("2.3.4.0/24"));
+  @Test
+  public void testOne() {
+    _andBuilder.add(DST_IP);
+    assertThat(_andBuilder.build(), equalTo(DST_IP));
+  }
 
-    andBuilder.add(dstIp);
-    assertThat(andBuilder.build(), equalTo(dstIp));
+  @Test
+  public void testRedundantFirst() {
+    // discard redundant conjunct added first
+    _andBuilder.add(DST_PREFIX);
+    _andBuilder.add(DST_IP);
+    assertThat(_andBuilder.build(), equalTo(DST_IP));
+  }
 
-    // discard redundant conjunct
-    andBuilder.add(dstPrefix);
-    assertThat(andBuilder.build(), equalTo(dstIp));
+  @Test
+  public void testRedundantSecond() {
+    // discard redundant conjunct added second
+    _andBuilder.add(DST_IP);
+    _andBuilder.add(DST_PREFIX);
+    assertThat(_andBuilder.build(), equalTo(DST_IP));
+  }
 
-    andBuilder.add(srcPrefix);
-    assertThat(andBuilder.build(), equalTo(and(dstIp, srcPrefix)));
+  @Test
+  public void testRelevant() {
+    _andBuilder.add(DST_IP);
+    _andBuilder.add(SRC_IP);
+    assertThat(_andBuilder.build(), equalTo(and(DST_IP, SRC_IP)));
+  }
 
-    // replace conjunct made redundant by the new one
-    andBuilder.add(srcIp);
-    assertThat(andBuilder.build(), equalTo(and(dstIp, srcIp)));
-
+  @Test
+  public void testShort() {
     // short-circuit
-    andBuilder.add(matchSrcIp("1.1.1.1"));
-    assertThat(andBuilder.build(), equalTo(FALSE));
+    _andBuilder.add(SRC_IP);
+    _andBuilder.add(matchSrcIp("1.1.1.1"));
+    assertThat(_andBuilder.build(), equalTo(FALSE));
   }
 }
