@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import java.io.Serializable;
 import java.util.Comparator;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.IntStream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -106,6 +107,13 @@ public final class SubRange implements Serializable, Comparable<SubRange> {
   /** Check whether a given integer belongs to this range */
   public boolean includes(int integer) {
     return _start <= integer && integer <= _end;
+  }
+
+  /** Compute the intersection of this and another range. */
+  public Optional<SubRange> intersection(SubRange other) {
+    int start = Integer.max(_start, other._start);
+    int end = Integer.min(_end, other._end);
+    return start <= end ? Optional.of(new SubRange(start, end)) : Optional.empty();
   }
 
   /** Returns true if this subrange is empty */
