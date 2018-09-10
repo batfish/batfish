@@ -1,6 +1,6 @@
 package org.batfish.datamodel.questions;
 
-import static java.util.Objects.requireNonNull;
+import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -16,7 +16,8 @@ public class AllowedValue {
   @JsonCreator
   private static @Nonnull AllowedValue create(
       @JsonProperty(PROP_VALUE) String value, @JsonProperty(PROP_DESCRIPTION) String description) {
-    return new AllowedValue(requireNonNull(value), description);
+    checkArgument(value != null, String.format("%s is required", PROP_VALUE));
+    return new AllowedValue(value, description);
   }
 
   public AllowedValue(String value, @Nullable String description) {
