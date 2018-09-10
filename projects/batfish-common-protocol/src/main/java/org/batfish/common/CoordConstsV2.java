@@ -15,6 +15,7 @@ public class CoordConstsV2 {
   public static final String RSC_NETWORK = "network";
   public static final String RSC_NETWORKS = "networks";
   public static final String RSC_NODE_ROLES = "noderoles";
+  public static final String RSC_QUESTIONS = "questions";
   public static final String RSC_REFERENCE_LIBRARY = "referencelibrary";
   public static final String RSC_SETTINGS = "settings";
 }
