@@ -1,4 +1,4 @@
-package org.batfish.z3;
+package org.batfish.common.ipspace;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;

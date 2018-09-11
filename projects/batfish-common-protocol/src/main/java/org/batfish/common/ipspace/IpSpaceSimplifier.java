@@ -1,4 +1,4 @@
-package org.batfish.z3;
+package org.batfish.common.ipspace;
 
 import com.google.common.collect.ImmutableMap;
 import java.util.ArrayList;

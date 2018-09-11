@@ -5,6 +5,7 @@ import java.util.Optional;
 import java.util.Set;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
+import org.batfish.common.ipspace.IpSpaceSpecializer;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;

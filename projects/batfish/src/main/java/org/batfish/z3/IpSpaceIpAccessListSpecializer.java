@@ -4,6 +4,7 @@ import static org.batfish.datamodel.AclIpSpace.difference;
 import static org.batfish.datamodel.AclIpSpace.union;
 
 import java.util.Map;
+import org.batfish.common.ipspace.IpSpaceSpecializer;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
