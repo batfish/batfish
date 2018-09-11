@@ -1,9 +1,9 @@
 package org.batfish.symbolic.bdd;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.common.bdd.BDDUtils.isAssignment;
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.SOURCE_ORIGINATING_FROM_DEVICE;
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.referencedSources;
-import static org.batfish.symbolic.bdd.BDDUtils.isAssignment;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
@@ -16,6 +16,8 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import net.sf.javabdd.BDD;
+import org.batfish.common.bdd.BDDInteger;
+import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IpAccessList;

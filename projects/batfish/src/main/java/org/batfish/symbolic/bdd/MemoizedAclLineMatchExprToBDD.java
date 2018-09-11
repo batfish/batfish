@@ -9,6 +9,8 @@ import java.util.function.Supplier;
 import javax.annotation.Nonnull;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
+import org.batfish.common.bdd.BDDPacket;
+import org.batfish.common.bdd.MemoizedIpSpaceToBDD;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 
