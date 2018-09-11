@@ -373,13 +373,7 @@ public final class BDDReachabilityAnalysisTest {
         _graphFactory.bddReachabilityAnalysis(assignment, _dstIface2Ip.toIpSpace());
 
     BDD natAclIpBDD = srcIpBDD(SOURCE_NAT_ACL_IP);
-    BDD srcNatAclBDD =
-        BDDAcl.create(
-                PKT,
-                _net._link2SrcSourceNatAcl,
-                _net._srcNode.getIpAccessLists(),
-                _net._srcNode.getIpSpaces())
-            .getBdd();
+    BDD srcNatAclBDD = BDDAcl.create(PKT, _net._link2SrcSourceNatAcl).getBdd();
     assertThat(srcNatAclBDD, equalTo(natAclIpBDD));
 
     OriginateVrf originateVrf = new OriginateVrf(_srcName, Configuration.DEFAULT_VRF_NAME);

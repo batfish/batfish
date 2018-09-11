@@ -20,7 +20,6 @@ import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Vrf;
-import org.batfish.datamodel.acl.PermittedByAcl;
 
 /** A test network with two nodes and two static routes from one to the other. */
 public final class TestNetwork {
@@ -31,7 +30,6 @@ public final class TestNetwork {
   public static final Ip SOURCE_NAT_ACL_IP = new Ip("5.5.5.5");
   public static final Ip SOURCE_NAT_POOL_IP = new Ip("6.6.6.6");
   public static final int POST_SOURCE_NAT_ACL_DEST_PORT = 1234;
-  public static final String INDIRECT_ACL_NAME = "~Indirect_Acl~";
 
   public final SortedMap<String, Configuration> _configs;
   public final Interface _dstIface1;
@@ -83,26 +81,15 @@ public final class TestNetwork {
     // unset incoming filter
     ib.setIncomingFilter(null);
 
-    // indirect ACL for second link srcNode
-    nf.aclBuilder()
-        .setOwner(_srcNode)
-        .setLines(
-            ImmutableList.of(
-                IpAccessListLine.acceptingHeaderSpace(
-                    HeaderSpace.builder().setSrcIps(SOURCE_NAT_ACL_IP.toIpSpace()).build())))
-        .setName(INDIRECT_ACL_NAME)
-        .build();
-
+    // second link
     _link2SrcSourceNatAcl =
         nf.aclBuilder()
             .setOwner(_srcNode)
             .setLines(
                 ImmutableList.of(
-                    IpAccessListLine.accepting()
-                        .setMatchCondition(new PermittedByAcl(INDIRECT_ACL_NAME))
-                        .build()))
+                    IpAccessListLine.acceptingHeaderSpace(
+                        HeaderSpace.builder().setSrcIps(SOURCE_NAT_ACL_IP.toIpSpace()).build())))
             .build();
-
     IpAccessList link2PostSourceNatAcl =
         nf.aclBuilder()
             .setOwner(_srcNode)
