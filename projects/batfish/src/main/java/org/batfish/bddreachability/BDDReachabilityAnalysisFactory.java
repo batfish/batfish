@@ -146,7 +146,12 @@ public final class BDDReachabilityAnalysisFactory {
             toImmutableMap(
                 nodeEntry.getValue().getIpAccessLists(),
                 Entry::getKey,
-                aclEntry -> BDDAcl.create(bddPacket, aclEntry.getValue())));
+                aclEntry ->
+                    BDDAcl.create(
+                        bddPacket,
+                        aclEntry.getValue(),
+                        nodeEntry.getValue().getIpAccessLists(),
+                        nodeEntry.getValue().getIpSpaces())));
   }
 
   private static Map<String, Map<String, BDD>> computeAclDenyBDDs(
