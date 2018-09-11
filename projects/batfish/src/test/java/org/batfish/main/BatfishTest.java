@@ -403,10 +403,10 @@ public class BatfishTest {
   }
 
   @Test
-  public void testLoadQuestionSettings() {
+  public void testLoadQuestionSettingsPresent() {
     String questionSettings = "{}";
 
-    Batfish batfishWithSettings =
+    Batfish batfish =
         BatfishTestUtils.getBatfish(
             new TestStorageProvider() {
               @Override
@@ -415,7 +415,13 @@ public class BatfishTest {
                 return questionSettings;
               }
             });
-    Batfish batfishWithoutSettings =
+
+    assertThat(batfish.loadQuestionSettings(TestQuestion.class), equalTo(questionSettings));
+  }
+
+  @Test
+  public void testLoadQuestionSettingsAbsent() {
+    Batfish batfish =
         BatfishTestUtils.getBatfish(
             new TestStorageProvider() {
               @Override
@@ -425,8 +431,22 @@ public class BatfishTest {
               }
             });
 
-    assertThat(
-        batfishWithSettings.loadQuestionSettings(TestQuestion.class), equalTo(questionSettings));
-    assertThat(batfishWithoutSettings.loadQuestionSettings(TestQuestion.class), nullValue());
+    assertThat(batfish.loadQuestionSettings(TestQuestion.class), nullValue());
+  }
+
+  @Test
+  public void testLoadQuestionSettingsError() {
+    Batfish batfish =
+        BatfishTestUtils.getBatfish(
+            new TestStorageProvider() {
+              @Override
+              public String loadQuestionSettings(String network, String questionClass)
+                  throws IOException {
+                throw new IOException("simulated error");
+              }
+            });
+
+    _thrown.expect(BatfishException.class);
+    assertThat(batfish.loadQuestionSettings(TestQuestion.class), nullValue());
   }
 }
