@@ -43,6 +43,7 @@ import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.ParseStatus;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
+import org.batfish.datamodel.questions.TestQuestion;
 import org.batfish.representation.host.HostConfiguration;
 import org.batfish.storage.TestStorageProvider;
 import org.batfish.vendor.VendorConfiguration;
@@ -399,5 +400,53 @@ public class BatfishTest {
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage("Failed to walk path: " + nonExistPath);
     Batfish.listAllFiles(nonExistPath);
+  }
+
+  @Test
+  public void testLoadQuestionSettingsPresent() {
+    String questionSettings = "{}";
+
+    Batfish batfish =
+        BatfishTestUtils.getBatfish(
+            new TestStorageProvider() {
+              @Override
+              public String loadQuestionSettings(String network, String questionClass)
+                  throws IOException {
+                return questionSettings;
+              }
+            });
+
+    assertThat(batfish.loadQuestionSettings(TestQuestion.class), equalTo(questionSettings));
+  }
+
+  @Test
+  public void testLoadQuestionSettingsAbsent() {
+    Batfish batfish =
+        BatfishTestUtils.getBatfish(
+            new TestStorageProvider() {
+              @Override
+              public String loadQuestionSettings(String network, String questionClass)
+                  throws IOException {
+                return null;
+              }
+            });
+
+    assertThat(batfish.loadQuestionSettings(TestQuestion.class), nullValue());
+  }
+
+  @Test
+  public void testLoadQuestionSettingsError() {
+    Batfish batfish =
+        BatfishTestUtils.getBatfish(
+            new TestStorageProvider() {
+              @Override
+              public String loadQuestionSettings(String network, String questionClass)
+                  throws IOException {
+                throw new IOException("simulated error");
+              }
+            });
+
+    _thrown.expect(BatfishException.class);
+    assertThat(batfish.loadQuestionSettings(TestQuestion.class), nullValue());
   }
 }
