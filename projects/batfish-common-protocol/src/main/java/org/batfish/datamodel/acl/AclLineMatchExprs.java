@@ -106,14 +106,6 @@ public final class AclLineMatchExprs {
     return new NotMatchExpr(expr);
   }
 
-  public static MatchHeaderSpace matchSrc(IpSpace ipSpace) {
-    return new MatchHeaderSpace(HeaderSpace.builder().setSrcIps(ipSpace).build());
-  }
-
-  public static MatchHeaderSpace matchSrcIp(String ip) {
-    return matchSrc(new Ip(ip).toIpSpace());
-  }
-
   public static AclLineMatchExpr or(AclLineMatchExpr... exprs) {
     return or(
         Arrays.stream(exprs).collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural())));

@@ -49,7 +49,8 @@ public class AclLineMatchExprToBDD implements GenericAclLineMatchExprVisitor<BDD
     this(
         bddFactory,
         packet,
-        aclEnv, BDDSourceManager.forInterfaces(packet, ImmutableSet.of()),
+        aclEnv,
+        BDDSourceManager.forInterfaces(packet, ImmutableSet.of()),
         new HeaderSpaceToBDD(packet, namedIpSpaces));
   }
 
@@ -67,8 +68,12 @@ public class AclLineMatchExprToBDD implements GenericAclLineMatchExprVisitor<BDD
     _headerSpaceToBDD = new HeaderSpaceToBDD(packet, namedIpSpaces);
   }
 
-  public AclLineMatchExprToBDD(BDDFactory bddFactory, BDDPacket packet,
-      Map<String, Supplier<BDD>> aclEnv, BDDSourceManager bddSrcManager, HeaderSpaceToBDD headerSpaceToBDD) {
+  public AclLineMatchExprToBDD(
+      BDDFactory bddFactory,
+      BDDPacket packet,
+      Map<String, Supplier<BDD>> aclEnv,
+      BDDSourceManager bddSrcManager,
+      HeaderSpaceToBDD headerSpaceToBDD) {
     _aclEnv = ImmutableMap.copyOf(aclEnv);
     _bddFactory = bddFactory;
     _bddOps = new BDDOps(bddFactory);
