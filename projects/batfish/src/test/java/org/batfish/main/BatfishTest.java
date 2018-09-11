@@ -43,6 +43,7 @@ import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.ParseStatus;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
+import org.batfish.datamodel.questions.TestQuestion;
 import org.batfish.representation.host.HostConfiguration;
 import org.batfish.storage.TestStorageProvider;
 import org.batfish.vendor.VendorConfiguration;
@@ -399,5 +400,33 @@ public class BatfishTest {
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage("Failed to walk path: " + nonExistPath);
     Batfish.listAllFiles(nonExistPath);
+  }
+
+  @Test
+  public void testLoadQuestionSettings() {
+    String questionSettings = "{}";
+
+    Batfish batfishWithSettings =
+        BatfishTestUtils.getBatfish(
+            new TestStorageProvider() {
+              @Override
+              public String loadQuestionSettings(String network, String questionClass)
+                  throws IOException {
+                return questionSettings;
+              }
+            });
+    Batfish batfishWithoutSettings =
+        BatfishTestUtils.getBatfish(
+            new TestStorageProvider() {
+              @Override
+              public String loadQuestionSettings(String network, String questionClass)
+                  throws IOException {
+                return null;
+              }
+            });
+
+    assertThat(
+        batfishWithSettings.loadQuestionSettings(TestQuestion.class), equalTo(questionSettings));
+    assertThat(batfishWithoutSettings.loadQuestionSettings(TestQuestion.class), nullValue());
   }
 }
