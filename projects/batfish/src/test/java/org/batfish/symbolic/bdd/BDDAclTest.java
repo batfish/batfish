@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.Map;
 import net.sf.javabdd.BDD;
 import org.batfish.common.BatfishException;
+import org.batfish.common.bdd.BDDPacket;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;

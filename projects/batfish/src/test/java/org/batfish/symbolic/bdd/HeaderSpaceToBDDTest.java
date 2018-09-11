@@ -9,6 +9,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import net.sf.javabdd.BDD;
+import org.batfish.common.bdd.BDDInteger;
+import org.batfish.common.bdd.BDDPacket;
 import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;

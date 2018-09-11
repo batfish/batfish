@@ -9,12 +9,12 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableMap;
+import org.batfish.common.bdd.BDDPacket;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.NotMatchExpr;
 import org.batfish.symbolic.bdd.AclLineMatchExprToBDD;
-import org.batfish.symbolic.bdd.BDDPacket;
 import org.junit.Before;
 import org.junit.Test;
 

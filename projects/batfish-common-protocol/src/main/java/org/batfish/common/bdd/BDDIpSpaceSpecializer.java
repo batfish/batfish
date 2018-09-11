@@ -1,4 +1,4 @@
-package org.batfish.z3;
+package org.batfish.common.bdd;
 
 import java.util.Map;
 import java.util.Optional;
@@ -11,9 +11,6 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.UniverseIpSpace;
-import org.batfish.symbolic.bdd.BDDInteger;
-import org.batfish.symbolic.bdd.BDDUtils;
-import org.batfish.symbolic.bdd.IpSpaceToBDD;
 
 /**
  * An {@link IpSpaceSpecializer} that uses a {@link BDD} to represent the headerspace to which we

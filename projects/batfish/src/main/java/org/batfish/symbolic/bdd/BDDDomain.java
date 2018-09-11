@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Objects;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
+import org.batfish.common.bdd.BDDInteger;
 
 /*
  * Class that wraps a BDDInteger around a finite collection of values

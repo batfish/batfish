@@ -12,6 +12,11 @@ import java.util.SortedSet;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
+import org.batfish.common.bdd.BDDInteger;
+import org.batfish.common.bdd.BDDIpSpaceSpecializer;
+import org.batfish.common.bdd.BDDOps;
+import org.batfish.common.bdd.BDDPacket;
+import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpAccessList;
@@ -25,11 +30,7 @@ import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.TrueExpr;
-import org.batfish.symbolic.bdd.BDDInteger;
-import org.batfish.symbolic.bdd.BDDOps;
-import org.batfish.symbolic.bdd.BDDPacket;
 import org.batfish.symbolic.bdd.BDDSourceManager;
-import org.batfish.symbolic.bdd.IpSpaceToBDD;
 
 /**
  * An {@link IpAccessListSpecializer} that uses {@link BDD BDDs} to represent the headerspace of

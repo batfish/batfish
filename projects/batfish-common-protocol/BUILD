@@ -58,6 +58,7 @@ java_library(
     ],
     deps = [
         ":parser_common",
+        "//projects/lib/bdd",
         "//projects/lib/jackson-jsonschema:jackson_jsonschema",
         "//projects/lib/jsonpath",
         "//projects/lib/z3",
@@ -128,6 +129,7 @@ junit_tests(
         ":common",
         ":common_testlib",
         ":recovery_grammar",
+        "//projects/lib/bdd",
         "@antlr4_runtime//:compile",
         "@guava//:compile",
         "@guava_testlib//:compile",

@@ -6,11 +6,11 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
+import org.batfish.common.bdd.BDDPacket;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Prefix;
 import org.batfish.symbolic.Graph;
 import org.batfish.symbolic.bdd.BDDNetwork;
-import org.batfish.symbolic.bdd.BDDPacket;
 import org.batfish.symbolic.utils.Tuple;
 
 public class NetworkSlice {
