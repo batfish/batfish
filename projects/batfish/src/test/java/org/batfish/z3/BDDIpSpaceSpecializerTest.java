@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableMap;
 import net.sf.javabdd.BDDFactory;
+import org.batfish.common.ipspace.IpSpaceSpecializer;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Ip;
