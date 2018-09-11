@@ -25,10 +25,13 @@ public class HeaderSpaceToBDDTest {
 
   private BDDPacket _pkt;
 
+  private IpSpaceToBDD _dstIpSpaceToBdd;
+
   @Before
   public void setup() {
     _pkt = new BDDPacket();
     _toBDD = new HeaderSpaceToBDD(_pkt, ImmutableMap.of());
+    _dstIpSpaceToBdd = new IpSpaceToBDD(_pkt.getFactory(), _pkt.getDstIp());
   }
 
   @Test
@@ -39,7 +42,7 @@ public class HeaderSpaceToBDDTest {
   @Test
   public void test_negate() {
     IpSpace ip = new Ip("1.2.3.4").toIpSpace();
-    BDD ipBDD = _toBDD.toBDD(ip, _pkt.getDstIp());
+    BDD ipBDD = _toBDD.toBDD(ip, _dstIpSpaceToBdd);
     assertThat(
         _toBDD.toBDD(HeaderSpace.builder().setDstIps(ip).setNegate(true).build()),
         equalTo(ipBDD.not()));

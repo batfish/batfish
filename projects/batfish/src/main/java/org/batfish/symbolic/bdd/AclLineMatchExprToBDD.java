@@ -7,7 +7,7 @@ import com.google.common.collect.ImmutableSet;
 import java.util.Map;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import org.batfish.common.BatfishException;
@@ -26,6 +26,7 @@ import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
 
 /** Visit an {@link AclLineMatchExpr} and convert it to a BDD. */
+@ParametersAreNonnullByDefault
 public class AclLineMatchExprToBDD implements GenericAclLineMatchExprVisitor<BDD> {
 
   private final Map<String, Supplier<BDD>> _aclEnv;
@@ -45,12 +46,12 @@ public class AclLineMatchExprToBDD implements GenericAclLineMatchExprVisitor<BDD
       BDDPacket packet,
       Map<String, Supplier<BDD>> aclEnv,
       Map<String, IpSpace> namedIpSpaces) {
-    _aclEnv = ImmutableMap.copyOf(aclEnv);
-    _bddFactory = bddFactory;
-    _bddOps = new BDDOps(bddFactory);
-    _bddPacket = packet;
-    _bddSrcManager = BDDSourceManager.forInterfaces(packet, ImmutableSet.of());
-    _headerSpaceToBDD = new HeaderSpaceToBDD(packet, namedIpSpaces);
+    this(
+        bddFactory,
+        packet,
+        aclEnv,
+        BDDSourceManager.forInterfaces(packet, ImmutableSet.of()),
+        new HeaderSpaceToBDD(packet, namedIpSpaces));
   }
 
   public AclLineMatchExprToBDD(
@@ -58,13 +59,27 @@ public class AclLineMatchExprToBDD implements GenericAclLineMatchExprVisitor<BDD
       BDDPacket packet,
       Map<String, Supplier<BDD>> aclEnv,
       Map<String, IpSpace> namedIpSpaces,
-      @Nonnull BDDSourceManager bddSrcManager) {
+      BDDSourceManager bddSrcManager) {
     _aclEnv = ImmutableMap.copyOf(aclEnv);
     _bddFactory = bddFactory;
     _bddOps = new BDDOps(bddFactory);
     _bddPacket = packet;
     _bddSrcManager = bddSrcManager;
     _headerSpaceToBDD = new HeaderSpaceToBDD(packet, namedIpSpaces);
+  }
+
+  public AclLineMatchExprToBDD(
+      BDDFactory bddFactory,
+      BDDPacket packet,
+      Map<String, Supplier<BDD>> aclEnv,
+      BDDSourceManager bddSrcManager,
+      HeaderSpaceToBDD headerSpaceToBDD) {
+    _aclEnv = ImmutableMap.copyOf(aclEnv);
+    _bddFactory = bddFactory;
+    _bddOps = new BDDOps(bddFactory);
+    _bddPacket = packet;
+    _bddSrcManager = bddSrcManager;
+    _headerSpaceToBDD = headerSpaceToBDD;
   }
 
   public BDDPacket getBDDPacket() {
@@ -103,7 +118,7 @@ public class AclLineMatchExprToBDD implements GenericAclLineMatchExprVisitor<BDD
 
   @Override
   public BDD visitNotMatchExpr(NotMatchExpr notMatchExpr) {
-    return notMatchExpr.getOperand().accept(this).not();
+    return visit(notMatchExpr.getOperand()).not();
   }
 
   @Override
