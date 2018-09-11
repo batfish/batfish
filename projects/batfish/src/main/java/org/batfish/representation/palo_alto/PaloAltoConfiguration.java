@@ -445,9 +445,6 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
       _c.getVrfs().put(nullVrf.getName(), nullVrf);
     }
 
-    // Handle converting items within virtual systems
-    convertVirtualSystems();
-
     // Count and mark simple structure usages and identify undefined references
     markConcreteStructure(
         PaloAltoStructureType.INTERFACE,

@@ -69,6 +69,22 @@ public final class AclLineMatchExprs {
     return matchDst(new Ip(ip).toIpSpace());
   }
 
+  public static MatchHeaderSpace matchSrc(IpSpace ipSpace) {
+    return new MatchHeaderSpace(HeaderSpace.builder().setSrcIps(ipSpace).build());
+  }
+
+  public static MatchHeaderSpace matchSrc(Ip ip) {
+    return matchSrc(ip.toIpSpace());
+  }
+
+  public static MatchHeaderSpace matchSrc(Prefix prefix) {
+    return matchSrc(prefix.toIpSpace());
+  }
+
+  public static MatchHeaderSpace matchSrcIp(String ip) {
+    return matchSrc(new Ip(ip).toIpSpace());
+  }
+
   public static MatchSrcInterface matchSrcInterface(String... iface) {
     return new MatchSrcInterface(ImmutableList.copyOf(iface));
   }

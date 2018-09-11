@@ -1,0 +1,15 @@
+{
+  "class": "org.batfish.question.reducedreachability.ReducedReachabilityQuestion",
+  "differential": true,
+  "instance": {
+    "description": "Detect reduced reachability.",
+    "instanceName": "bddReducedReachability",
+    "longDescription": "Zero-input reduced reachability check using BDDs",
+    "tags": [
+      "dataPlane",
+      "reachability",
+      "reduced reachability"
+    ],
+    "variables": {}
+  }
+}

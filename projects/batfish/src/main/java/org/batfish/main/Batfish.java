@@ -4843,4 +4843,17 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
     return TopologyUtil.computeLayer2Topology(layer1Topology, loadConfigurations());
   }
+
+  @Override
+  public @Nullable String loadQuestionSettings(@Nonnull Class<? extends Question> questionClass) {
+    try {
+      return _storage.loadQuestionSettings(
+          _settings.getContainer(), questionClass.getCanonicalName());
+    } catch (IOException e) {
+      throw new BatfishException(
+          String.format(
+              "Failed to read question settings for class: '%s'", questionClass.getCanonicalName()),
+          e);
+    }
+  }
 }

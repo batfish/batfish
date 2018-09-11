@@ -11,9 +11,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -110,8 +114,6 @@ public abstract class Question implements IQuestion {
         }
       }
 
-      private SortedSet<String> _allowedValues;
-
       private String _description;
 
       private String _longDescription;
@@ -126,13 +128,19 @@ public abstract class Question implements IQuestion {
 
       private JsonNode _value;
 
+      private List<AllowedValue> _values;
+
       public Variable() {
-        _allowedValues = new TreeSet<>();
+        _values = new ArrayList<>();
       }
 
       @JsonProperty(BfConsts.PROP_ALLOWED_VALUES)
+      @Deprecated
       public SortedSet<String> getAllowedValues() {
-        return _allowedValues;
+        return _values
+            .stream()
+            .map(AllowedValue::getName)
+            .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
       }
 
       @JsonProperty(BfConsts.PROP_DESCRIPTION)
@@ -171,9 +179,21 @@ public abstract class Question implements IQuestion {
         return _value;
       }
 
+      @JsonProperty(BfConsts.PROP_VALUES)
+      public List<AllowedValue> getValues() {
+        return _values;
+      }
+
       @JsonProperty(BfConsts.PROP_ALLOWED_VALUES)
+      @Deprecated
       public void setAllowedValues(SortedSet<String> allowedValues) {
-        _allowedValues = allowedValues;
+        if (_values.isEmpty()) {
+          _values =
+              allowedValues
+                  .stream()
+                  .map(v -> new AllowedValue(v, null))
+                  .collect(ImmutableList.toImmutableList());
+        }
       }
 
       @JsonProperty(BfConsts.PROP_DESCRIPTION)
@@ -213,6 +233,11 @@ public abstract class Question implements IQuestion {
         } else {
           _value = value;
         }
+      }
+
+      @JsonProperty(BfConsts.PROP_VALUES)
+      public void setValues(List<AllowedValue> values) {
+        _values = values;
       }
     }
 

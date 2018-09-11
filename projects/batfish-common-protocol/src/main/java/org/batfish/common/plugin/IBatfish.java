@@ -9,6 +9,7 @@ import java.util.SortedSet;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.regex.Pattern;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.apache.commons.configuration2.ImmutableConfiguration;
 import org.batfish.common.Answerer;
@@ -223,4 +224,7 @@ public interface IBatfish extends IPluginConsumer {
   void writeDataPlane(DataPlane dp, DataPlaneAnswerElement ae);
 
   Set<Flow> bddMultipathConsistency();
+
+  @Nullable
+  String loadQuestionSettings(@Nonnull Class<? extends Question> questionClass);
 }

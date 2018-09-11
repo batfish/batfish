@@ -78,6 +78,7 @@ junit_tests(
         ":coordinator",
         ":coordinator_testlib",
         "//projects/batfish-common-protocol:common",
+        "//projects/batfish-common-protocol:common_testlib",
         "//projects/question",
         "@commons_io//:compile",
         "@guava//:compile",

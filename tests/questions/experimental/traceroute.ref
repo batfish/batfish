@@ -115,7 +115,21 @@
         "description" : "Non-transitive stateful-firewall state (applies to all protocols, and is independent of TCP flags)",
         "optional" : true,
         "type" : "string",
-        "value" : "new"
+        "value" : "new",
+        "values" : [
+          {
+            "name" : "established"
+          },
+          {
+            "name" : "invalid"
+          },
+          {
+            "name" : "new"
+          },
+          {
+            "name" : "related"
+          }
+        ]
       },
       "tcpAck" : {
         "description" : "ACK bit in TCP flags in TCP header",

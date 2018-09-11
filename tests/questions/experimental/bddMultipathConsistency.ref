@@ -1,0 +1,15 @@
+{
+  "class" : "org.batfish.question.multipath.MultipathConsistencyQuestion",
+  "differential" : false,
+  "includeOneTableKeys" : true,
+  "instance" : {
+    "description" : "Validate multipath consistency.",
+    "instanceName" : "qname",
+    "longDescription" : "Zero-input multipath consistency check using BDDs",
+    "tags" : [
+      "dataPlane",
+      "multipath consistency",
+      "reachability"
+    ]
+  }
+}
