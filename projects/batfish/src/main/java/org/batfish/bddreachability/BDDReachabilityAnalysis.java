@@ -290,7 +290,8 @@ public class BDDReachabilityAnalysis {
                 entry -> entry.getValue().getOrDefault(Accept.INSTANCE, zero)));
   }
 
-  private static IngressLocation toIngressLocation(StateExpr stateExpr) {
+  @VisibleForTesting
+  static IngressLocation toIngressLocation(StateExpr stateExpr) {
     Preconditions.checkArgument(
         stateExpr instanceof OriginateVrf || stateExpr instanceof OriginateInterfaceLink);
 
