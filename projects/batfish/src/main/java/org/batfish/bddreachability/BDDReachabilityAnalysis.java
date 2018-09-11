@@ -275,6 +275,7 @@ public class BDDReachabilityAnalysis {
   }
 
   public Map<IngressLocation, BDD> getIngressLocationAcceptBDDs() {
+    BDD zero = _bddPacket.getFactory().zero();
     return _reverseReachableStates
         .get()
         .entrySet()
@@ -286,7 +287,7 @@ public class BDDReachabilityAnalysis {
         .collect(
             ImmutableMap.toImmutableMap(
                 entry -> toIngressLocation(entry.getKey()),
-                entry -> entry.getValue().get(Accept.INSTANCE)));
+                entry -> entry.getValue().getOrDefault(Accept.INSTANCE, zero)));
   }
 
   private static IngressLocation toIngressLocation(StateExpr stateExpr) {
