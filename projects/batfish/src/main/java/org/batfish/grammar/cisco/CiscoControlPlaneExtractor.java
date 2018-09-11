@@ -253,7 +253,6 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ErrorNode;
-import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.common.BatfishException;
@@ -1008,6 +1007,7 @@ import org.batfish.grammar.cisco.CiscoParser.Use_neighbor_group_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Use_session_group_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.VariableContext;
 import org.batfish.grammar.cisco.CiscoParser.Variable_access_listContext;
+import org.batfish.grammar.cisco.CiscoParser.Variable_service_protocolContext;
 import org.batfish.grammar.cisco.CiscoParser.Viaf_vrrpContext;
 import org.batfish.grammar.cisco.CiscoParser.Viafv_addressContext;
 import org.batfish.grammar.cisco.CiscoParser.Viafv_preemptContext;
@@ -1336,24 +1336,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return text.substring(1, text.length() - 1);
     } else {
       throw new BatfishException("Improperly-quoted string");
-    }
-  }
-
-  @Nullable
-  private static ServiceObjectGroup.ServiceProtocol toServiceProtocol(ParseTree protocol) {
-    if (protocol == null) {
-      return null;
-    }
-    switch (protocol.getText()) {
-      case "tcp":
-        return ServiceProtocol.TCP;
-      case "udp":
-        return ServiceProtocol.UDP;
-      case "tcp-udp":
-        return ServiceProtocol.TCP_UDP;
-      default:
-        throw new RedFlagBatfishException(
-            "got unexpected service protocol type: '" + protocol.getText() + "'");
     }
   }
 
@@ -2696,10 +2678,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterOgg_service(Ogg_serviceContext ctx) {
-    // Group name is the first child in the context
-    String name = ctx.name.children.get(0).getText();
-    // Service protocol might be second child
-    ServiceProtocol protocol = toServiceProtocol(ctx.name.getChild(1));
+    String name = ctx.name.getText();
+    ServiceProtocol protocol = toServiceProtocol(ctx.protocol_type);
     _currentServiceObjectGroup = new ServiceObjectGroup(name, protocol);
     if (_configuration.getObjectGroups().containsKey(name)) {
       warnObjectGroupRedefinition(name);
@@ -2747,10 +2727,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterOg_service(Og_serviceContext ctx) {
-    // Group name is the first child in the context
-    String name = ctx.name.children.get(0).getText();
-    // Service protocol might be second child
-    ServiceProtocol protocol = toServiceProtocol(ctx.name.getChild(1));
+    String name = ctx.name.getText();
+    ServiceProtocol protocol = toServiceProtocol(ctx.protocol_type);
     // If there is a conflict, create a dummy object group
     if (_configuration.getObjectGroups().get(name) != null) {
       _currentServiceObjectGroup = new ServiceObjectGroup(name, protocol);
@@ -10721,6 +10699,25 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private void warnUndefinedObjectGroupReferenced(String name) {
     _w.redFlag("Referenced object group was not defined: '" + name + "'");
+  }
+
+  @Nullable
+  private ServiceObjectGroup.ServiceProtocol toServiceProtocol(
+      Variable_service_protocolContext protocol) {
+    if (protocol == null) {
+      return null;
+    }
+    switch (protocol.getText()) {
+    case "tcp":
+      return ServiceProtocol.TCP;
+    case "udp":
+      return ServiceProtocol.UDP;
+    case "tcp-udp":
+      return ServiceProtocol.TCP_UDP;
+    default:
+      _w.redFlag("got unexpected service protocol type: '" + protocol.getText() + "'");
+      return null;
+    }
   }
 
   @Override

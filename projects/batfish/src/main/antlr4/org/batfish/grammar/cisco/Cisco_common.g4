@@ -577,6 +577,16 @@ variable_secret
    ~( NEWLINE | ROLE )+
 ;
 
+variable_group_id
+:
+    ~( NEWLINE | TCP | TCP_UDP | UDP )+
+;
+
+variable_service_protocol
+:
+     TCP | TCP_UDP | UDP
+;
+
 variable_vlan
 :
    ~( NEWLINE | ACCESS_MAP | DEC )

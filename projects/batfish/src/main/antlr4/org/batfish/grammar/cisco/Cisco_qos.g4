@@ -330,7 +330,11 @@ oggp_group_object
 
 ogg_service
 :
-   SERVICE name = variable_permissive NEWLINE
+   SERVICE name = variable_group_id
+   (
+      protocol_type = variable_service_protocol
+   )?
+   NEWLINE
    (
       og_description
       | oggs_group_object
@@ -339,7 +343,7 @@ ogg_service
 
 oggs_group_object
 :
-   GROUP_OBJECT name = variable_permissive NEWLINE
+   GROUP_OBJECT name = variable_group_id NEWLINE
 ;
 
 og_description
@@ -401,7 +405,11 @@ og_protocol
 
 og_service
 :
-   SERVICE name = variable_permissive NEWLINE
+   SERVICE name = variable_group_id
+   (
+      protocol_type = variable_service_protocol
+   )?
+   NEWLINE
    (
       ogs_description
       | ogs_group_object
@@ -523,7 +531,7 @@ ogs_description
 
 ogs_group_object
 :
-   GROUP_OBJECT name = variable_permissive NEWLINE
+   GROUP_OBJECT name = variable_group_id NEWLINE
 ;
 
 ogs_icmp
