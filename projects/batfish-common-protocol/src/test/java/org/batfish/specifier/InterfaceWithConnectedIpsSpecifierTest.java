@@ -1,0 +1,87 @@
+package org.batfish.specifier;
+
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.junit.Assert.assertThat;
+
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedMap;
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.InterfaceAddress;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Prefix;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+
+/** Tests of {@link InterfaceWithConnectedIpsSpecifier}. */
+public class InterfaceWithConnectedIpsSpecifierTest {
+
+  @Rule public final ExpectedException exception = ExpectedException.none();
+
+  @Test
+  public void testLoad() {
+    assertThat(
+        InterfaceSpecifierFactory.load(InterfaceWithConnectedIpsSpecifier.NAME),
+        instanceOf(InterfaceWithConnectedIpsSpecifier.Factory.class));
+  }
+
+  @Test
+  public void resolve() {
+    Configuration node1 = new Configuration("node1", ConfigurationFormat.CISCO_IOS);
+    Interface iface11 =
+        Interface.builder()
+            .setName("iface11")
+            .setOwner(node1)
+            .setAddress(new InterfaceAddress("1.2.3.4/24"))
+            .setActive(true)
+            .build();
+    Interface iface12 =
+        Interface.builder()
+            .setName("iface12")
+            .setActive(true)
+            .setOwner(node1)
+            .setAddress(new InterfaceAddress("2.3.4.5/24"))
+            .build();
+    node1.setInterfaces(ImmutableSortedMap.of("iface11", iface11, "iface12", iface12));
+
+    Configuration node2 = new Configuration("node2", ConfigurationFormat.CISCO_IOS);
+    Interface iface2 =
+        Interface.builder()
+            .setName("iface2")
+            .setActive(true)
+            .setOwner(node2)
+            .setAddress(new InterfaceAddress("1.2.3.5/30"))
+            .build();
+    node2.setInterfaces(ImmutableSortedMap.of("iface2", iface2));
+
+    MockSpecifierContext ctxt =
+        MockSpecifierContext.builder()
+            .setConfigs(ImmutableMap.of("node1", node1, "node2", node2))
+            .build();
+
+    assertThat(
+        new InterfaceWithConnectedIpsSpecifier(new Ip("1.2.3.4").toIpSpace())
+            .resolve(ImmutableSet.of("node1", "node2"), ctxt),
+        equalTo(ImmutableSet.of(iface11, iface2)));
+
+    assertThat(
+        new InterfaceWithConnectedIpsSpecifier(new Ip("1.2.3.8").toIpSpace())
+            .resolve(ImmutableSet.of("node1", "node2"), ctxt),
+        equalTo(ImmutableSet.of(iface11)));
+
+    assertThat(
+        new InterfaceWithConnectedIpsSpecifier(new Ip("2.3.4.5").toIpSpace())
+            .resolve(ImmutableSet.of("node1", "node2"), ctxt),
+        equalTo(ImmutableSet.of(iface12)));
+
+    assertThat(
+        new InterfaceWithConnectedIpsSpecifier(Prefix.parse("3.0.0.0/24").toIpSpace())
+            .resolve(ImmutableSet.of("node1", "node2"), ctxt),
+        empty());
+  }
+}
