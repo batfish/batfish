@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -e
 
 VERSION="2018-01-12-450f3c9b459d128135abb5bbd4fa0508fe26bfae"
 
@@ -38,7 +39,7 @@ install_z3_cygwin() {
   set -e
   echo "Creating temporary installation folder for Z3"
   WORKING="$(mktemp -d)"
-  cd "$WORKING" || exit 1
+  cd "$WORKING"
   echo "Downloading Z3 64-bit from ${Z364_ZIP_URL}"
   wget "${Z364_ZIP_URL}"
   echo "Unpacking Z3 64-bit installation files"
@@ -69,9 +70,9 @@ install_z3_cygwin() {
   getfacl "${W32DIR}/msvcr110.dll" | setfacl -f - "${W32DIR}/z3java.dll"
   cp "${Z332_DIR}/bin/Microsoft.Z3.dll" "${W32DIR}/"
   getfacl "${W32DIR}/msvcr110.dll" | setfacl -f - "${W32DIR}/Microsoft.Z3.dll"
-  cd "${OLD_PWD}" || exit 1
+  cd "${OLD_PWD}"
   echo "Removing temporary installation files"
-  rm -rf "${WORKING}" || exit 1
+  rm -rf "${WORKING}"
 }
 
 install_z3_linux() {
@@ -103,23 +104,23 @@ install_z3_osx() {
   set -x
   echo "Creating temporary installation folder for Z3"
   WORKING="$(mktemp -d)"
-  cd "${WORKING}" || exit 1
-  umask 0022 || exit 1
+  cd "${WORKING}"
+  umask 0022
   echo "Downloading Z3 from ${Z3_ZIP_URL}"
-  curl -L "${Z3_ZIP_URL}" -o "${Z3_ZIP}" || exit 1
+  curl -L "${Z3_ZIP_URL}" -o "${Z3_ZIP}"
   echo "Unpacking Z3 installation files"
-  unzip "${Z3_ZIP}" || exit 1
-  cd "${Z3_DIR}" || exit 1
+  unzip "${Z3_ZIP}"
+  cd "${Z3_DIR}"
   echo "Installing Z3 to ${INSTALL_PREFIX}"
   mkdir -p "${LIBDIR}" "${EXTDIR}" "${BINDIR}"
-  cp "lib/libz3.dylib" "lib/libz3java.dylib" "lib/libomp.dylib" "${LIBDIR}/" || exit 1
+  cp "lib/libz3.dylib" "lib/libz3java.dylib" "lib/libomp.dylib" "${LIBDIR}/"
   ln -s "${LIBDIR}/libz3.dylib" "${EXTDIR}/libz3.dylib"
   ln -s "${LIBDIR}/libz3java.dylib" "${EXTDIR}/libz3java.dylib"
   cp "bin/z3" "${BINDIR}/"
-  umask "${OLD_UMASK}" || exit 1
-  cd "${OLD_PWD}" || exit 1
+  umask "${OLD_UMASK}"
+  cd "${OLD_PWD}"
   echo "Removing temporary installation files"
-  rm -rf "${WORKING}" || exit 1
+  rm -rf "${WORKING}"
 }
 
 install_z3_ubuntu() {
