@@ -8,12 +8,14 @@ import static org.junit.Assert.assertThat;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.testing.EqualsTester;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
+import org.batfish.specifier.InterfaceWithConnectedIpsSpecifier.Factory;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -31,7 +33,34 @@ public class InterfaceWithConnectedIpsSpecifierTest {
   }
 
   @Test
-  public void resolve() {
+  public void testLoadNull() {
+    Factory f = new Factory();
+
+    exception.expect(IllegalArgumentException.class);
+    exception.expectMessage("wildcard provided as a string input, not null");
+    f.buildInterfaceSpecifier(null);
+  }
+
+  @Test
+  public void testLoadNotString() {
+    Factory f = new Factory();
+
+    exception.expect(IllegalArgumentException.class);
+    exception.expectMessage("wildcard provided as a string input, not 3");
+    f.buildInterfaceSpecifier(3);
+  }
+
+  @Test
+  public void testLoadNotIpSpace() {
+    Factory f = new Factory();
+
+    exception.expect(IllegalArgumentException.class);
+    exception.expectMessage("Invalid ip string: \"45.6\"");
+    f.buildInterfaceSpecifier("45.6");
+  }
+
+  @Test
+  public void testResolve() {
     Configuration node1 = new Configuration("node1", ConfigurationFormat.CISCO_IOS);
     Interface iface11 =
         Interface.builder()
@@ -83,5 +112,15 @@ public class InterfaceWithConnectedIpsSpecifierTest {
         new InterfaceWithConnectedIpsSpecifier(Prefix.parse("3.0.0.0/24").toIpSpace())
             .resolve(ImmutableSet.of("node1", "node2"), ctxt),
         empty());
+  }
+
+  @Test
+  public void testEquals() {
+    new EqualsTester()
+        .addEqualityGroup(
+            new InterfaceWithConnectedIpsSpecifier(new Ip("1.2.3.4").toIpSpace()),
+            new InterfaceWithConnectedIpsSpecifier(new Ip("1.2.3.4").toIpSpace()))
+        .addEqualityGroup(new InterfaceWithConnectedIpsSpecifier(new Ip("1.2.3.5").toIpSpace()))
+        .testEquals();
   }
 }

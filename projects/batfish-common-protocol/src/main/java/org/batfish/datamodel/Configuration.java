@@ -23,7 +23,6 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
@@ -517,11 +516,6 @@ public final class Configuration implements Serializable {
   @JsonPropertyDescription("Dictionary of all IKE phase1 proposals for this node.")
   public NavigableMap<String, IkePhase1Proposal> getIkePhase1Proposals() {
     return _ikePhase1Proposals;
-  }
-
-  @JsonIgnore // only for code
-  public Stream<Interface> activeInterfaceStream() {
-    return _interfaces.values().stream().filter(Interface::getActive);
   }
 
   @JsonPropertyDescription("Dictionary of all interfaces across all VRFs for this node.")

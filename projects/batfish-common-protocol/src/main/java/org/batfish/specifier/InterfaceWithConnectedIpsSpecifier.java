@@ -10,22 +10,22 @@ import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.bdd.BDDIpSpaceSpecializer;
-import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
 
-/**
- * An {@link InterfaceSpecifier} that resolves interfaces connected to a given {@link
- * org.batfish.datamodel.IpSpace}.
- */
+/** An {@link InterfaceSpecifier} that resolves interfaces connected to a given {@link IpSpace}. */
 public final class InterfaceWithConnectedIpsSpecifier implements InterfaceSpecifier {
   @Nonnull private final IpSpace _ipSpace;
   @Nonnull private final BDDIpSpaceSpecializer _specializer;
   public static final String NAME = InterfaceWithConnectedIpsSpecifier.class.getName();
 
+  /**
+   * Creates an {@link InterfaceWithConnectedIpsSpecifier} that resolves to interfaces connected to
+   * networks overlapping the specified {@link IpSpace}.
+   */
   public InterfaceWithConnectedIpsSpecifier(@Nonnull IpSpace ipSpace) {
     _ipSpace = ipSpace;
     _specializer = new BDDIpSpaceSpecializer(_ipSpace, Collections.emptyMap());
@@ -57,11 +57,12 @@ public final class InterfaceWithConnectedIpsSpecifier implements InterfaceSpecif
         .values()
         .stream()
         .filter(c -> nodes.contains(c.getHostname()))
-        .flatMap(Configuration::activeInterfaceStream)
+        .flatMap(c -> c.getAllInterfaces().values().stream().filter(Interface::getActive))
         .filter(i -> i.getAllAddresses().stream().anyMatch(this::interfaceAddressMatchesIpSpace))
         .collect(Collectors.toSet());
   }
 
+  /** Factory for {@link InterfaceWithConnectedIpsSpecifier}. */
   @AutoService(InterfaceSpecifierFactory.class)
   public static class Factory implements InterfaceSpecifierFactory {
 
