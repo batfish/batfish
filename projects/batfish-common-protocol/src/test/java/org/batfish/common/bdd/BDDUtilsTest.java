@@ -1,6 +1,6 @@
-package org.batfish.symbolic.bdd;
+package org.batfish.common.bdd;
 
-import static org.batfish.symbolic.bdd.BDDUtils.isAssignment;
+import static org.batfish.common.bdd.BDDUtils.isAssignment;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import net.sf.javabdd.BDD;

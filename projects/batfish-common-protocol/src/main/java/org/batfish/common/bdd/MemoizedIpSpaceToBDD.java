@@ -1,4 +1,4 @@
-package org.batfish.symbolic.bdd;
+package org.batfish.common.bdd;
 
 import com.google.common.annotations.VisibleForTesting;
 import java.util.IdentityHashMap;
