@@ -23,7 +23,7 @@ import org.junit.rules.ExpectedException;
 /** Tests of {@link InterfaceWithConnectedIpsSpecifier}. */
 public class InterfaceWithConnectedIpsSpecifierTest {
 
-  @Rule public final ExpectedException exception = ExpectedException.none();
+  @Rule public final ExpectedException _exception = ExpectedException.none();
 
   @Test
   public void testLoad() {
@@ -36,8 +36,8 @@ public class InterfaceWithConnectedIpsSpecifierTest {
   public void testLoadNull() {
     Factory f = new Factory();
 
-    exception.expect(IllegalArgumentException.class);
-    exception.expectMessage("wildcard provided as a string input, not null");
+    _exception.expect(IllegalArgumentException.class);
+    _exception.expectMessage("wildcard provided as a string input, not null");
     f.buildInterfaceSpecifier(null);
   }
 
@@ -45,8 +45,8 @@ public class InterfaceWithConnectedIpsSpecifierTest {
   public void testLoadNotString() {
     Factory f = new Factory();
 
-    exception.expect(IllegalArgumentException.class);
-    exception.expectMessage("wildcard provided as a string input, not 3");
+    _exception.expect(IllegalArgumentException.class);
+    _exception.expectMessage("wildcard provided as a string input, not 3");
     f.buildInterfaceSpecifier(3);
   }
 
@@ -54,8 +54,8 @@ public class InterfaceWithConnectedIpsSpecifierTest {
   public void testLoadNotIpSpace() {
     Factory f = new Factory();
 
-    exception.expect(IllegalArgumentException.class);
-    exception.expectMessage("Invalid ip string: \"45.6\"");
+    _exception.expect(IllegalArgumentException.class);
+    _exception.expectMessage("Invalid ip string: \"45.6\"");
     f.buildInterfaceSpecifier("45.6");
   }
 
