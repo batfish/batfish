@@ -183,7 +183,7 @@ public class SynthesizerInputImplTest {
                             .build())))
             .build();
     Vrf vrf = _vb.setOwner(c).build();
-    _ib.setOwner(c).setActive(true).setVrf(vrf).setOutgoingFilter(aclWithoutLines).build();
+    _ib.setOwner(c).setVrf(vrf).setOutgoingFilter(aclWithoutLines).build();
     _ib.setOutgoingFilter(aclWithLines).build();
     _ib.setOutgoingFilter(null);
 

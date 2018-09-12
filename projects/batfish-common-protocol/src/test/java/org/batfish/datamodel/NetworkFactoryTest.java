@@ -99,7 +99,8 @@ public class NetworkFactoryTest {
     OspfArea.Builder oab = nf.ospfAreaBuilder();
     OspfArea oa1 = oab.build();
     OspfArea oa2 = oab.setOspfProcess(ospfProcess).build();
-    Interface iface = nf.interfaceBuilder().setOwner(c).setVrf(vrf).setOspfArea(oa2).build();
+    Interface iface =
+        nf.interfaceBuilder().setOwner(c).setActive(false).setVrf(vrf).setOspfArea(oa2).build();
 
     assertThat(oa1.getName(), not(equalTo(oa2.getName())));
     assertThat(oa1, not(sameInstance(oa2)));
