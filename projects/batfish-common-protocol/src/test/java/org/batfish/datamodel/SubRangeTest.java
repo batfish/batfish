@@ -4,6 +4,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.testing.EqualsTester;
+import java.util.Optional;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -63,6 +64,23 @@ public class SubRangeTest {
     assertThat(base.contains(new SubRange(-1, 5)), equalTo(false));
     assertThat(base.contains(new SubRange(-1, 11)), equalTo(false));
     assertThat(new SubRange(-1, 11).contains(base), equalTo(true));
+  }
+
+  @Test
+  public void testIntersection() {
+    SubRange range0To20 = new SubRange(0, 20);
+    SubRange range3To7 = new SubRange(3, 7);
+    SubRange range5To7 = new SubRange(5, 7);
+    SubRange range5To10 = new SubRange(5, 10);
+    SubRange range6To8 = new SubRange(6, 8);
+    SubRange range8To20 = new SubRange(8, 20);
+    SubRange range8To10 = new SubRange(8, 10);
+    SubRange range15To20 = new SubRange(15, 20);
+    assertThat(range5To10.intersection(range6To8), equalTo(Optional.of(range6To8)));
+    assertThat(range5To10.intersection(range8To20), equalTo(Optional.of(range8To10)));
+    assertThat(range5To10.intersection(range3To7), equalTo(Optional.of(range5To7)));
+    assertThat(range5To10.intersection(range0To20), equalTo(Optional.of(range5To10)));
+    assertThat(range5To10.intersection(range15To20), equalTo(Optional.empty()));
   }
 
   @Test

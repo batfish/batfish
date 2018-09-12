@@ -199,6 +199,13 @@
 
     <!-- Test scope dependencies. -->
     <dependency>
+      <groupId>org.batfish</groupId>
+      <artifactId>batfish-common-protocol</artifactId>
+      <classifier>tests</classifier>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <scope>test</scope>

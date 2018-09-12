@@ -2,6 +2,8 @@ package org.batfish.question.multipath;
 
 import static org.batfish.datamodel.matchers.FlowTraceMatchers.hasDisposition;
 import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
+import static org.batfish.question.traceroute.TracerouteAnswerer.COL_FLOW;
+import static org.batfish.question.traceroute.TracerouteAnswerer.COL_TRACES;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
@@ -63,12 +65,12 @@ public class MultipathConsistencyTest {
 
     assertThat(
         ae.getRows().getData().iterator().next(),
-        hasColumn("flow", equalTo(testFlow), Schema.FLOW));
+        hasColumn(COL_FLOW, equalTo(testFlow), Schema.FLOW));
 
     assertThat(
         ae.getRows().getData().iterator().next(),
         hasColumn(
-            "traces",
+            COL_TRACES,
             containsInAnyOrder(
                 ImmutableList.of(
                     hasDisposition(FlowDisposition.DENIED_IN),

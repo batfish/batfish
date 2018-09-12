@@ -9,6 +9,7 @@ import java.util.SortedSet;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.regex.Pattern;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.apache.commons.configuration2.ImmutableConfiguration;
 import org.batfish.common.Answerer;
@@ -437,6 +438,11 @@ public class IBatfishTestAdapter implements IBatfish {
 
   @Override
   public Set<Flow> bddMultipathConsistency() {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public @Nullable String loadQuestionSettings(@Nonnull Class<? extends Question> questionClass) {
     throw new UnsupportedOperationException();
   }
 }

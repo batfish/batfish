@@ -1,4 +1,4 @@
-package org.batfish.z3;
+package org.batfish.common.ipspace;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;

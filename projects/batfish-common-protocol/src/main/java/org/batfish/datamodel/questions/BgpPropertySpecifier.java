@@ -29,7 +29,7 @@ public class BgpPropertySpecifier extends PropertySpecifier {
   public static final String MULTIPATH_EQUIVALENT_AS_PATH_MATCH_MODE = "Multipath_Match_Mode";
   public static final String MULTIPATH_EBGP = "Multipath_EBGP";
   public static final String MULTIPATH_IBGP = "Multipath_IBGP";
-  public static final String NEIGHBORS = "Passive_Neighbors";
+  public static final String NEIGHBORS = "Neighbors";
   public static final String TIE_BREAKER = "Tie_Breaker";
 
   public static Map<String, PropertyDescriptor<BgpProcess>> JAVA_MAP =

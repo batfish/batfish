@@ -1,9 +1,11 @@
 package org.batfish.coordinator.resources;
 
 import static org.batfish.common.CoordConstsV2.RSC_ISSUES;
+import static org.batfish.common.CoordConstsV2.RSC_QUESTIONS;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -31,5 +33,12 @@ public class NetworkSettingsResource {
   @GET
   public Response getNetworkSettings() {
     return Response.noContent().build();
+  }
+
+  /** Relocate the request to QuestionSettingsResource. */
+  @Path(RSC_QUESTIONS + "/{classname}")
+  public QuestionSettingsResource getQuestionsSettingsResource(
+      @PathParam("classname") String className) {
+    return new QuestionSettingsResource(_network, className);
   }
 }
