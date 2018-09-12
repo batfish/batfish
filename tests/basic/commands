@@ -5,7 +5,7 @@ add-batfish-option haltonparseerror
 add-batfish-option verboseparse
 
 # some ref tests using example network
-test -compareall tests/basic/init.ref init-snapshot networks/campus-example/example basic-example
+test -compareall tests/basic/init.ref init-snapshot networks/example/live basic-example
 test tests/basic/parse-status.ref get fileparsestatus
 test -compareall tests/basic/genDp.ref generate-dataplane
 test -raw tests/basic/topology.ref get-object testrig_pojo_topology
@@ -16,7 +16,7 @@ test tests/basic/neighbors.ref get neighbors style=verbose, neighborTypes=["ebgp
 test tests/basic/routes.ref get routes
 
 # some ref tests using delta snapshot
-test -compareall tests/basic/init-delta.ref init-delta-snapshot networks/campus-example/example-with-delta basic-example-delta
+test -compareall tests/basic/init-delta.ref init-delta-snapshot networks/example/candidate basic-example-delta
 test -compareall tests/basic/genDp-delta.ref generate-delta-dataplane
 test tests/basic/nodes-diff.ref get nodes summary=false, differential=true
 
