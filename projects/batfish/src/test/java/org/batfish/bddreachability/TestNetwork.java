@@ -45,7 +45,7 @@ public final class TestNetwork {
   public TestNetwork() throws IOException {
     NetworkFactory nf = new NetworkFactory();
     Builder cb = nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
-    Interface.Builder ib = nf.interfaceBuilder().setActive(true).setBandwidth(1E9d);
+    Interface.Builder ib = nf.interfaceBuilder().setBandwidth(1E9d);
     Vrf.Builder vb = nf.vrfBuilder().setName(Configuration.DEFAULT_VRF_NAME);
 
     _srcNode = cb.build();

@@ -39,7 +39,7 @@ public class LocationSpecifierTest {
     Configuration.Builder cb = nf.configurationBuilder();
     cb.setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
     Vrf.Builder vb = nf.vrfBuilder();
-    Interface.Builder ib = nf.interfaceBuilder();
+    Interface.Builder ib = nf.interfaceBuilder().setActive(false);
 
     Configuration n1 = cb.build();
     vb.setOwner(n1);

@@ -52,7 +52,7 @@ public class DifferentialReachFilterTest {
         _nf.configurationBuilder()
             .setHostname(HOSTNAME)
             .setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
-    _ib = _nf.interfaceBuilder().setActive(true);
+    _ib = _nf.interfaceBuilder();
     _ab = _nf.aclBuilder();
     _params =
         ReachFilterParameters.builder()

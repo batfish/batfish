@@ -34,7 +34,7 @@ public class OspfNeighborTest {
   public void setup() {
     _nf = new NetworkFactory();
     _cb = _nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
-    _ib = _nf.interfaceBuilder().setActive(true).setOspfCost(100);
+    _ib = _nf.interfaceBuilder().setOspfCost(100);
     _oab = _nf.ospfAreaBuilder().setNumber(0L);
     _opb = _nf.ospfProcessBuilder();
     _vb = _nf.vrfBuilder();

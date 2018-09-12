@@ -71,7 +71,7 @@ public class IsisTest {
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
     Vrf.Builder vb = nf.vrfBuilder().setName(Configuration.DEFAULT_VRF_NAME);
     IsisProcess.Builder ipb = IsisProcess.builder();
-    Interface.Builder ib = nf.interfaceBuilder().setActive(true);
+    Interface.Builder ib = nf.interfaceBuilder();
     IsisInterfaceSettings.Builder iib = IsisInterfaceSettings.builder().setPointToPoint(true);
     IsisInterfaceLevelSettings activeIls =
         IsisInterfaceLevelSettings.builder().setMode(IsisInterfaceMode.ACTIVE).build();

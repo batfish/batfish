@@ -88,6 +88,7 @@ public final class Interface extends ComparableStructure<String> {
 
     Builder(NetworkFactory networkFactory) {
       super(networkFactory, Interface.class);
+      _active = true;
       _additionalArpIps = ImmutableSortedSet.of();
       _declaredNames = ImmutableSortedSet.of();
       _hsrpGroups = ImmutableMap.of();
