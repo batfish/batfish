@@ -3,6 +3,7 @@ package org.batfish.datamodel.questions;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableMap;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -175,6 +176,18 @@ public class NodePropertySpecifier extends PropertySpecifier {
   public NodePropertySpecifier(String expression) {
     _expression = expression;
     _pattern = Pattern.compile(_expression.trim().toLowerCase()); // canonicalize
+  }
+
+  public NodePropertySpecifier(Collection<String> properties) {
+    // canonicalize, quote, and join
+    _expression =
+        properties
+            .stream()
+            .map(String::trim)
+            .map(String::toLowerCase)
+            .map(Pattern::quote)
+            .collect(Collectors.joining("|"));
+    _pattern = Pattern.compile(_expression);
   }
 
   /**
