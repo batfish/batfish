@@ -36,7 +36,6 @@ install_z3_cygwin() {
   Z332_ZIP="$(basename "${Z332_ZIP_URL}")"
   Z332_DIR="$(basename "${Z332_ZIP}" .zip)"
   set -x
-  set -e
   echo "Creating temporary installation folder for Z3"
   WORKING="$(mktemp -d)"
   cd "$WORKING"
