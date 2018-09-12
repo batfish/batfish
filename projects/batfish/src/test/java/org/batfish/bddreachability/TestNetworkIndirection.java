@@ -13,6 +13,7 @@ import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
+import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
@@ -24,6 +25,7 @@ public final class TestNetworkIndirection {
   public static final Prefix LINK_NETWORK = Prefix.parse("1.0.0.0/31");
   public static final Ip IP_SPACE_IP_ADDR = new Ip("5.5.5.5");
   public static final String INDIRECT_ACL_NAME = "~Indirect_Acl~";
+  public static final String INDIRECT_IPSPACE_NAME = "~Indirect_IpSpace~";
 
   public final SortedMap<String, Configuration> _configs;
   public final Interface _iface;
@@ -38,13 +40,18 @@ public final class TestNetworkIndirection {
     _node = cb.build();
     Vrf dstVrf = vb.setOwner(_node).build();
 
-    // indirect ACL used by the following ACL
+    // indirect IP space used by the indirect ACL
+    _node.setIpSpaces(ImmutableSortedMap.of(INDIRECT_IPSPACE_NAME, IP_SPACE_IP_ADDR.toIpSpace()));
+
+    // indirect ACL used by the ingress ACL
     nf.aclBuilder()
         .setOwner(_node)
         .setLines(
             ImmutableList.of(
                 IpAccessListLine.acceptingHeaderSpace(
-                    HeaderSpace.builder().setSrcIps(IP_SPACE_IP_ADDR.toIpSpace()).build())))
+                    HeaderSpace.builder()
+                        .setSrcIps(new IpSpaceReference(INDIRECT_IPSPACE_NAME))
+                        .build())))
         .setName(INDIRECT_ACL_NAME)
         .build();
 

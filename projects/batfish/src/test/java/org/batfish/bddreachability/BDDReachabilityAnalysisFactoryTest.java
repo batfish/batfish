@@ -21,7 +21,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
     batfish.computeDataPlane(false);
     DataPlane dataPlane = batfish.loadDataPlane();
 
-    // Confirm factory building does not throw
+    // Confirm factory building does not throw, even with IpSpace and ACL indirection
     new BDDReachabilityAnalysisFactory(PKT, net._configs, dataPlane.getForwardingAnalysis());
   }
 }
