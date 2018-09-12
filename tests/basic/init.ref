@@ -1698,6 +1698,904 @@
         "hosts/host1.json" : { },
         "hosts/host2.json" : { }
       },
+      "referencedStructures" : {
+        "configs/as1border1.cfg" : {
+          "community-list" : {
+            "as2_community" : {
+              "route-map match community-list" : [
+                154
+              ]
+            },
+            "as3_community" : {
+              "route-map match community-list" : [
+                168
+              ]
+            }
+          },
+          "interface" : {
+            "Ethernet0/0" : {
+              "interface" : [
+                54
+              ]
+            },
+            "GigabitEthernet0/0" : {
+              "interface" : [
+                59
+              ]
+            },
+            "GigabitEthernet1/0" : {
+              "interface" : [
+                66
+              ]
+            },
+            "Loopback0" : {
+              "interface" : [
+                51
+              ],
+              "update-source interface" : [
+                90
+              ]
+            }
+          },
+          "ipv4 acl" : {
+            "101" : {
+              "route-map match ipv4 access-list" : [
+                139,
+                158
+              ]
+            },
+            "102" : {
+              "route-map match ipv4 access-list" : [
+                163
+              ]
+            },
+            "103" : {
+              "route-map match ipv4 access-list" : [
+                144
+              ]
+            }
+          },
+          "ipv4 prefix-list" : {
+            "default_list" : {
+              "route-map match ipv4 prefix-list" : [
+                149
+              ]
+            }
+          },
+          "route-map" : {
+            "as1_to_as2" : {
+              "bgp outbound route-map" : [
+                105
+              ]
+            },
+            "as1_to_as3" : {
+              "bgp outbound route-map" : [
+                108
+              ]
+            },
+            "as2_to_as1" : {
+              "bgp inbound route-map" : [
+                104
+              ]
+            },
+            "as3_to_as1" : {
+              "bgp inbound route-map" : [
+                107
+              ]
+            }
+          }
+        },
+        "configs/as1border2.cfg" : {
+          "community-list" : {
+            "as2_community" : {
+              "route-map match community-list" : [
+                153
+              ]
+            },
+            "as3_community" : {
+              "route-map match community-list" : [
+                167
+              ]
+            },
+            "as4_community" : {
+              "route-map match community-list" : [
+                176
+              ]
+            }
+          },
+          "interface" : {
+            "Ethernet0/0" : {
+              "interface" : [
+                57
+              ]
+            },
+            "GigabitEthernet0/0" : {
+              "interface" : [
+                62
+              ]
+            },
+            "GigabitEthernet1/0" : {
+              "interface" : [
+                69
+              ]
+            },
+            "GigabitEthernet2/0" : {
+              "interface" : [
+                73
+              ]
+            },
+            "Loopback0" : {
+              "interface" : [
+                54
+              ],
+              "update-source interface" : [
+                94
+              ]
+            }
+          },
+          "ipv4 acl" : {
+            "101" : {
+              "route-map match ipv4 access-list" : [
+                143,
+                157
+              ]
+            },
+            "102" : {
+              "route-map match ipv4 access-list" : [
+                162
+              ]
+            },
+            "103" : {
+              "route-map match ipv4 access-list" : [
+                148
+              ]
+            }
+          },
+          "ipv4 prefix-list" : {
+            "as4-prefixes" : {
+              "route-map match ipv4 prefix-list" : [
+                175
+              ]
+            }
+          },
+          "route-map" : {
+            "as1_to_as2" : {
+              "bgp outbound route-map" : [
+                108
+              ]
+            },
+            "as1_to_as3" : {
+              "bgp outbound route-map" : [
+                111
+              ]
+            },
+            "as1_to_as4" : {
+              "bgp outbound route-map" : [
+                113
+              ]
+            },
+            "as2_to_as1" : {
+              "bgp inbound route-map" : [
+                107
+              ]
+            },
+            "as3_to_as1" : {
+              "bgp inbound route-map" : [
+                110
+              ]
+            },
+            "as4_to_as1" : {
+              "bgp inbound route-map" : [
+                112
+              ]
+            }
+          }
+        },
+        "configs/as1core1.cfg" : {
+          "interface" : {
+            "Ethernet0/0" : {
+              "interface" : [
+                57
+              ]
+            },
+            "GigabitEthernet0/0" : {
+              "interface" : [
+                62
+              ]
+            },
+            "GigabitEthernet1/0" : {
+              "interface" : [
+                69
+              ]
+            },
+            "Loopback0" : {
+              "interface" : [
+                54
+              ],
+              "update-source interface" : [
+                83,
+                85
+              ]
+            }
+          }
+        },
+        "configs/as2border1.cfg" : {
+          "community-list" : {
+            "as1_community" : {
+              "route-map match community-list" : [
+                160
+              ]
+            },
+            "as3_community" : {
+              "route-map match community-list" : [
+                175
+              ]
+            }
+          },
+          "interface" : {
+            "Ethernet0/0" : {
+              "interface" : [
+                59
+              ]
+            },
+            "GigabitEthernet0/0" : {
+              "interface" : [
+                64
+              ]
+            },
+            "GigabitEthernet1/0" : {
+              "interface" : [
+                73
+              ]
+            },
+            "GigabitEthernet2/0" : {
+              "interface" : [
+                77
+              ]
+            },
+            "Loopback0" : {
+              "interface" : [
+                56
+              ],
+              "update-source interface" : [
+                96,
+                98
+              ]
+            }
+          },
+          "ipv4 acl" : {
+            "101" : {
+              "route-map match ipv4 access-list" : [
+                165
+              ]
+            },
+            "103" : {
+              "route-map match ipv4 access-list" : [
+                155
+              ]
+            },
+            "INSIDE_TO_AS1" : {
+              "interface outgoing ip access-list" : [
+                67
+              ]
+            },
+            "OUTSIDE_TO_INSIDE" : {
+              "interface incoming ip access-list" : [
+                66
+              ]
+            }
+          },
+          "ipv4 prefix-list" : {
+            "outbound_routes" : {
+              "route-map match ipv4 prefix-list" : [
+                150,
+                170
+              ]
+            }
+          },
+          "route-map" : {
+            "as1_to_as2" : {
+              "bgp inbound route-map" : [
+                107
+              ]
+            },
+            "as2_to_as1" : {
+              "bgp outbound route-map" : [
+                108
+              ]
+            },
+            "as2_to_as3" : {
+              "bgp outbound route-map" : [
+                113
+              ]
+            },
+            "as3_to_as2" : {
+              "bgp inbound route-map" : [
+                112
+              ]
+            }
+          }
+        },
+        "configs/as2border2.cfg" : {
+          "community-list" : {
+            "as1_community" : {
+              "route-map match community-list" : [
+                156
+              ]
+            },
+            "as3_community" : {
+              "route-map match community-list" : [
+                171
+              ]
+            }
+          },
+          "interface" : {
+            "Ethernet0/0" : {
+              "interface" : [
+                56
+              ]
+            },
+            "GigabitEthernet0/0" : {
+              "interface" : [
+                61
+              ]
+            },
+            "GigabitEthernet1/0" : {
+              "interface" : [
+                70
+              ]
+            },
+            "GigabitEthernet2/0" : {
+              "interface" : [
+                74
+              ]
+            },
+            "Loopback0" : {
+              "interface" : [
+                53
+              ],
+              "update-source interface" : [
+                93,
+                95
+              ]
+            }
+          },
+          "ipv4 acl" : {
+            "101" : {
+              "route-map match ipv4 access-list" : [
+                161
+              ]
+            },
+            "103" : {
+              "route-map match ipv4 access-list" : [
+                151
+              ]
+            },
+            "INSIDE_TO_AS3" : {
+              "interface outgoing ip access-list" : [
+                64
+              ]
+            },
+            "OUTSIDE_TO_INSIDE" : {
+              "interface incoming ip access-list" : [
+                63
+              ]
+            }
+          },
+          "ipv4 prefix-list" : {
+            "outbound_routes" : {
+              "route-map match ipv4 prefix-list" : [
+                146,
+                166
+              ]
+            }
+          },
+          "route-map" : {
+            "as1_to_as2" : {
+              "bgp inbound route-map" : [
+                104
+              ]
+            },
+            "as2_to_as1" : {
+              "bgp outbound route-map" : [
+                105
+              ]
+            },
+            "as2_to_as3" : {
+              "bgp outbound route-map" : [
+                110
+              ]
+            },
+            "as3_to_as2" : {
+              "bgp inbound route-map" : [
+                109
+              ]
+            }
+          }
+        },
+        "configs/as2core1.cfg" : {
+          "interface" : {
+            "Ethernet0/0" : {
+              "interface" : [
+                57
+              ]
+            },
+            "GigabitEthernet0/0" : {
+              "interface" : [
+                62
+              ]
+            },
+            "GigabitEthernet1/0" : {
+              "interface" : [
+                69
+              ]
+            },
+            "GigabitEthernet2/0" : {
+              "interface" : [
+                73
+              ]
+            },
+            "GigabitEthernet3/0" : {
+              "interface" : [
+                78
+              ]
+            },
+            "Loopback0" : {
+              "interface" : [
+                54
+              ],
+              "update-source interface" : [
+                93,
+                95,
+                97,
+                99
+              ]
+            }
+          },
+          "ipv4 acl" : {
+            "blocktelnet" : {
+              "interface incoming ip access-list" : [
+                75,
+                80
+              ]
+            }
+          }
+        },
+        "configs/as2core2.cfg" : {
+          "interface" : {
+            "Ethernet0/0" : {
+              "interface" : [
+                57
+              ]
+            },
+            "GigabitEthernet0/0" : {
+              "interface" : [
+                62
+              ]
+            },
+            "GigabitEthernet1/0" : {
+              "interface" : [
+                70
+              ]
+            },
+            "GigabitEthernet2/0" : {
+              "interface" : [
+                75
+              ]
+            },
+            "GigabitEthernet3/0" : {
+              "interface" : [
+                80
+              ]
+            },
+            "Loopback0" : {
+              "interface" : [
+                54
+              ],
+              "update-source interface" : [
+                94,
+                96,
+                98,
+                100
+              ]
+            }
+          },
+          "route-map" : {
+            "filter-bogons" : {
+              "bgp inbound route-map" : [
+                109
+              ]
+            }
+          }
+        },
+        "configs/as2dept1.cfg" : {
+          "community-list" : {
+            "as2_community" : {
+              "route-map match community-list" : [
+                132
+              ]
+            }
+          },
+          "interface" : {
+            "Ethernet0/0" : {
+              "interface" : [
+                54
+              ]
+            },
+            "GigabitEthernet0/0" : {
+              "interface" : [
+                59
+              ]
+            },
+            "GigabitEthernet1/0" : {
+              "interface" : [
+                66
+              ]
+            },
+            "GigabitEthernet2/0" : {
+              "interface" : [
+                70
+              ]
+            },
+            "GigabitEthernet3/0" : {
+              "interface" : [
+                75
+              ]
+            },
+            "Loopback0" : {
+              "interface" : [
+                51
+              ]
+            }
+          },
+          "ipv4 acl" : {
+            "102" : {
+              "route-map match ipv4 access-list" : [
+                127
+              ]
+            },
+            "RESTRICT_HOST_TRAFFIC_IN" : {
+              "interface incoming ip access-list" : [
+                72,
+                77
+              ]
+            }
+          },
+          "route-map" : {
+            "as2_to_dept" : {
+              "bgp inbound route-map" : [
+                95
+              ]
+            },
+            "dept_to_as2" : {
+              "bgp outbound route-map" : [
+                96
+              ]
+            }
+          }
+        },
+        "configs/as2dist1.cfg" : {
+          "community-list" : {
+            "dept_community" : {
+              "route-map match community-list" : [
+                128
+              ]
+            }
+          },
+          "interface" : {
+            "Ethernet0/0" : {
+              "interface" : [
+                54
+              ]
+            },
+            "GigabitEthernet0/0" : {
+              "interface" : [
+                59
+              ]
+            },
+            "GigabitEthernet1/0" : {
+              "interface" : [
+                66
+              ]
+            },
+            "GigabitEthernet2/0" : {
+              "interface" : [
+                70
+              ]
+            },
+            "Loopback0" : {
+              "interface" : [
+                51
+              ],
+              "update-source interface" : [
+                88,
+                90
+              ]
+            }
+          },
+          "ipv4 acl" : {
+            "105" : {
+              "route-map match ipv4 access-list" : [
+                123
+              ]
+            }
+          },
+          "route-map" : {
+            "as2dist_to_dept" : {
+              "bgp outbound route-map" : [
+                101
+              ]
+            },
+            "dept_to_as2dist" : {
+              "bgp inbound route-map" : [
+                100
+              ]
+            }
+          }
+        },
+        "configs/as2dist2.cfg" : {
+          "community-list" : {
+            "dept_community" : {
+              "route-map match community-list" : [
+                128
+              ]
+            }
+          },
+          "interface" : {
+            "Ethernet0/0" : {
+              "interface" : [
+                54
+              ]
+            },
+            "GigabitEthernet0/0" : {
+              "interface" : [
+                59
+              ]
+            },
+            "GigabitEthernet1/0" : {
+              "interface" : [
+                66
+              ]
+            },
+            "GigabitEthernet2/0" : {
+              "interface" : [
+                70
+              ]
+            },
+            "Loopback0" : {
+              "interface" : [
+                51
+              ],
+              "update-source interface" : [
+                88,
+                90
+              ]
+            }
+          },
+          "ipv4 acl" : {
+            "105" : {
+              "route-map match ipv4 access-list" : [
+                123
+              ]
+            }
+          },
+          "route-map" : {
+            "as2dist_to_dept" : {
+              "bgp outbound route-map" : [
+                101
+              ]
+            },
+            "dept_to_as2dist" : {
+              "bgp inbound route-map" : [
+                100
+              ]
+            }
+          }
+        },
+        "configs/as3border1.cfg" : {
+          "community-list" : {
+            "as1_community" : {
+              "route-map match community-list" : [
+                143
+              ]
+            },
+            "as2_community" : {
+              "route-map match community-list" : [
+                162
+              ]
+            }
+          },
+          "interface" : {
+            "Ethernet0/0" : {
+              "interface" : [
+                57
+              ]
+            },
+            "GigabitEthernet0/0" : {
+              "interface" : [
+                62
+              ]
+            },
+            "GigabitEthernet1/0" : {
+              "interface" : [
+                69
+              ]
+            },
+            "Loopback0" : {
+              "interface" : [
+                54
+              ],
+              "update-source interface" : [
+                88
+              ]
+            }
+          },
+          "ipv4 acl" : {
+            "101" : {
+              "route-map match ipv4 access-list" : [
+                147
+              ]
+            },
+            "102" : {
+              "route-map match ipv4 access-list" : [
+                133
+              ]
+            },
+            "103" : {
+              "route-map match ipv4 access-list" : [
+                138,
+                152
+              ]
+            }
+          },
+          "ipv4 prefix-list" : {
+            "default_list" : {
+              "route-map match ipv4 prefix-list" : [
+                157
+              ]
+            }
+          },
+          "route-map" : {
+            "as1_to_as3" : {
+              "bgp inbound route-map" : [
+                98
+              ]
+            },
+            "as2_to_as3" : {
+              "bgp inbound route-map" : [
+                101
+              ]
+            },
+            "as3_to_as1" : {
+              "bgp outbound route-map" : [
+                99
+              ]
+            },
+            "as3_to_as2" : {
+              "bgp outbound route-map" : [
+                102
+              ]
+            }
+          }
+        },
+        "configs/as3border2.cfg" : {
+          "community-list" : {
+            "as1_community" : {
+              "route-map match community-list" : [
+                141
+              ]
+            },
+            "as2_community" : {
+              "route-map match community-list" : [
+                155
+              ]
+            }
+          },
+          "interface" : {
+            "Ethernet0/0" : {
+              "interface" : [
+                57
+              ]
+            },
+            "GigabitEthernet0/0" : {
+              "interface" : [
+                62
+              ]
+            },
+            "GigabitEthernet1/0" : {
+              "interface" : [
+                69
+              ]
+            },
+            "Loopback0" : {
+              "interface" : [
+                54
+              ],
+              "update-source interface" : [
+                88
+              ]
+            }
+          },
+          "ipv4 acl" : {
+            "101" : {
+              "route-map match ipv4 access-list" : [
+                145
+              ]
+            },
+            "102" : {
+              "route-map match ipv4 access-list" : [
+                131
+              ]
+            },
+            "103" : {
+              "route-map match ipv4 access-list" : [
+                136,
+                150
+              ]
+            }
+          },
+          "route-map" : {
+            "as1_to_as3" : {
+              "bgp inbound route-map" : [
+                98
+              ]
+            },
+            "as2_to_as3" : {
+              "bgp inbound route-map" : [
+                101
+              ]
+            },
+            "as3_to_as1" : {
+              "bgp outbound route-map" : [
+                99
+              ]
+            },
+            "as3_to_as2" : {
+              "bgp outbound route-map" : [
+                102
+              ]
+            }
+          }
+        },
+        "configs/as3core1.cfg" : {
+          "interface" : {
+            "Ethernet0/0" : {
+              "interface" : [
+                57
+              ]
+            },
+            "GigabitEthernet0/0" : {
+              "interface" : [
+                62
+              ]
+            },
+            "GigabitEthernet1/0" : {
+              "interface" : [
+                69
+              ]
+            },
+            "GigabitEthernet2/0" : {
+              "interface" : [
+                73
+              ]
+            },
+            "GigabitEthernet3/0" : {
+              "interface" : [
+                77
+              ]
+            },
+            "Loopback0" : {
+              "interface" : [
+                54
+              ],
+              "update-source interface" : [
+                90,
+                92
+              ]
+            }
+          }
+        }
+      },
       "undefinedReferences" : {
         "configs/as2core2.cfg" : {
           "route-map" : {
