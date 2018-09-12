@@ -81,7 +81,7 @@ public class NodJobChunkingTest {
     _nf = new NetworkFactory();
     Configuration.Builder cb =
         _nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
-    Interface.Builder ib = _nf.interfaceBuilder().setActive(true).setBandwidth(1E9d);
+    Interface.Builder ib = _nf.interfaceBuilder().setBandwidth(1E9d);
     Vrf.Builder vb = _nf.vrfBuilder();
 
     _srcNode1 = cb.build();

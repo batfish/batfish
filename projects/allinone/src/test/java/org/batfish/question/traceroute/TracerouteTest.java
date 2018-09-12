@@ -173,7 +173,6 @@ public class TracerouteTest {
 
     // destination interface
     nf.interfaceBuilder()
-        .setActive(true)
         .setAddress(new InterfaceAddress("1.1.1.0/31"))
         .setOwner(c1)
         .setOutgoingFilter(

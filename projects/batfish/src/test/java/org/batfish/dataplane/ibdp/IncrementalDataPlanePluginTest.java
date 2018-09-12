@@ -137,7 +137,7 @@ public class IncrementalDataPlanePluginTest {
         _cb.setHostname(CORE_NAME).setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
 
     Vrf corevrf = _vb.setOwner(core).build();
-    _ib.setOwner(core).setVrf(corevrf).setActive(true);
+    _ib.setOwner(core).setVrf(corevrf);
     _ib.setAddress(new InterfaceAddress(coreId, interfcePrefixBits)).build();
     BgpProcess coreProc = _pb.setRouterId(coreId).setVrf(corevrf).build();
     _nb.setBgpProcess(coreProc)
@@ -704,7 +704,6 @@ public class IncrementalDataPlanePluginTest {
             .setOwner(c)
             .setVrf(vrf)
             .setAddress(new InterfaceAddress("10.0.0.0/24"))
-            .setActive(true)
             .build();
     StaticRoute srBoth =
         StaticRoute.builder()

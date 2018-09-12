@@ -58,8 +58,8 @@ public class ReachabilityParametersResolverTest {
     NetworkFactory nf = new NetworkFactory();
     _node = nf.configurationBuilder().setConfigurationFormat(CISCO_IOS).build();
     Vrf vrf = nf.vrfBuilder().setOwner(_node).build();
-    _activeInterface = nf.interfaceBuilder().setActive(true).setOwner(_node).setVrf(vrf).build();
-    _inactiveInterface = nf.interfaceBuilder().setOwner(_node).setVrf(vrf).build();
+    _activeInterface = nf.interfaceBuilder().setOwner(_node).setVrf(vrf).build();
+    _inactiveInterface = nf.interfaceBuilder().setActive(false).setOwner(_node).setVrf(vrf).build();
     SortedMap<String, Configuration> configs = ImmutableSortedMap.of(_node.getHostname(), _node);
     _batfish = BatfishTestUtils.getBatfish(configs, _tempFolder);
     _batfish.computeDataPlane(false);

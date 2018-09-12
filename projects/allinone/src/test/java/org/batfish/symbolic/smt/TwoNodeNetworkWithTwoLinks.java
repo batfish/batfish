@@ -33,7 +33,7 @@ public class TwoNodeNetworkWithTwoLinks {
   public static Batfish create(TemporaryFolder temp) throws IOException {
     NetworkFactory nf = new NetworkFactory();
     Builder cb = nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
-    Interface.Builder ib = nf.interfaceBuilder().setActive(true).setBandwidth(1E9d);
+    Interface.Builder ib = nf.interfaceBuilder().setBandwidth(1E9d);
     Vrf.Builder vb = nf.vrfBuilder().setName(Configuration.DEFAULT_VRF_NAME);
 
     Configuration dstNode = cb.setHostname(DST_NODE).build();
