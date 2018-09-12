@@ -2608,6 +2608,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     addIcmpTypeGroupReference(ctx.name.getText());
   }
 
+  @Override public void exitOgg_icmp_type(Ogg_icmp_typeContext ctx) {
+    _currentIcmpTypeObjectGroup = null;
+  }
+
   @Override
   public void exitOgit_group_object(Ogit_group_objectContext ctx) {
     addIcmpTypeGroupReference(ctx.name.getText());
