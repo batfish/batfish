@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Configuration;
@@ -42,7 +43,6 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
-import org.batfish.symbolic.bdd.BDDPacket;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 

@@ -11,6 +11,7 @@ import static org.hamcrest.Matchers.equalTo;
 import com.google.common.collect.ImmutableMap;
 import java.util.Optional;
 import net.sf.javabdd.BDD;
+import org.batfish.common.bdd.BDDPacket;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.junit.Before;
 import org.junit.Test;

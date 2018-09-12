@@ -1,4 +1,4 @@
-package org.batfish.symbolic.bdd;
+package org.batfish.common.bdd;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;

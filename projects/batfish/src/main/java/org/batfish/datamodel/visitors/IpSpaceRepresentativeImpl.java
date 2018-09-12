@@ -3,11 +3,11 @@ package org.batfish.datamodel.visitors;
 import com.google.auto.service.AutoService;
 import java.util.Optional;
 import net.sf.javabdd.BDD;
+import org.batfish.common.bdd.BDDInteger;
+import org.batfish.common.bdd.BDDPacket;
+import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
-import org.batfish.symbolic.bdd.BDDInteger;
-import org.batfish.symbolic.bdd.BDDPacket;
-import org.batfish.symbolic.bdd.IpSpaceToBDD;
 
 /**
  * Finds a representative {@link Ip} contained in an input {@link IpSpace}, if any exists. In
