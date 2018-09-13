@@ -16,4 +16,12 @@ object-group group icmp-type services
  group-object echo_group
  group-object unreachable_group
  group-object redirect_group
+ group-object UNDEFINED_GROUP
 !
+object-group icmp-type mask_reply_group
+ icmp-object mask-reply
+!
+object-group icmp-type mixed_group
+ icmp-object mask-reply
+ group-object mask_reply_group
+ group-object UNDEFINED_GROUP_MIXED

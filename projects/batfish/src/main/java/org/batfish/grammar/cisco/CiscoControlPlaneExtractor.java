@@ -44,10 +44,6 @@ import static org.batfish.representation.cisco.CiscoStructureType.KEYRING;
 import static org.batfish.representation.cisco.CiscoStructureType.L2TP_CLASS;
 import static org.batfish.representation.cisco.CiscoStructureType.MAC_ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureType.NAT_POOL;
-import static org.batfish.representation.cisco.CiscoStructureType.NESTED_ICMP_TYPE_OBJECT_GROUP;
-import static org.batfish.representation.cisco.CiscoStructureType.NESTED_NETWORK_OBJECT_GROUP;
-import static org.batfish.representation.cisco.CiscoStructureType.NESTED_PROTOCOL_OBJECT_GROUP;
-import static org.batfish.representation.cisco.CiscoStructureType.NESTED_SERVICE_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureType.NETWORK_OBJECT;
 import static org.batfish.representation.cisco.CiscoStructureType.NETWORK_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureType.POLICY_MAP;
@@ -132,7 +128,10 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_REDISTR
 import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_REDISTRIBUTE_RIP_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_REDISTRIBUTE_STATIC_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP;
+import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OR_SERVICE_OBJECT_GROUP;
+import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_SERVICE_OBJECT_GROUP;
+import static org.batfish.representation.cisco.CiscoStructureUsage.ICMP_TYPE_OBJECT_GROUP_GROUP_OBJECT;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INSPECT_CLASS_MAP_MATCH_ACCESS_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INSPECT_POLICY_MAP_INSPECT_CLASS;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_BFD_TEMPLATE;
@@ -191,6 +190,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.POLICY_MAP_CL
 import static org.batfish.representation.cisco.CiscoStructureUsage.POLICY_MAP_CLASS_SERVICE_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureUsage.POLICY_MAP_EVENT_CLASS;
 import static org.batfish.representation.cisco.CiscoStructureUsage.POLICY_MAP_EVENT_CLASS_ACTIVATE;
+import static org.batfish.representation.cisco.CiscoStructureUsage.PROTOCOL_OBJECT_GROUP_GROUP_OBJECT;
 import static org.batfish.representation.cisco.CiscoStructureUsage.QOS_ENFORCE_RULE_SERVICE_CLASS;
 import static org.batfish.representation.cisco.CiscoStructureUsage.RIP_DISTRIBUTE_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTER_ISIS_DISTRIBUTE_LIST_ACL;
@@ -696,6 +696,7 @@ import org.batfish.grammar.cisco.CiscoParser.Ogn_ip_with_maskContext;
 import org.batfish.grammar.cisco.CiscoParser.Ogn_network_objectContext;
 import org.batfish.grammar.cisco.CiscoParser.Ogp_group_objectContext;
 import org.batfish.grammar.cisco.CiscoParser.Ogp_protocol_objectContext;
+import org.batfish.grammar.cisco.CiscoParser.Ogs_group_objectContext;
 import org.batfish.grammar.cisco.CiscoParser.Ogs_icmpContext;
 import org.batfish.grammar.cisco.CiscoParser.Ogs_port_objectContext;
 import org.batfish.grammar.cisco.CiscoParser.Ogs_service_objectContext;
@@ -1007,6 +1008,8 @@ import org.batfish.grammar.cisco.CiscoParser.Use_neighbor_group_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Use_session_group_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.VariableContext;
 import org.batfish.grammar.cisco.CiscoParser.Variable_access_listContext;
+import org.batfish.grammar.cisco.CiscoParser.Variable_group_idContext;
+import org.batfish.grammar.cisco.CiscoParser.Variable_permissiveContext;
 import org.batfish.grammar.cisco.CiscoParser.Variable_service_protocolContext;
 import org.batfish.grammar.cisco.CiscoParser.Viaf_vrrpContext;
 import org.batfish.grammar.cisco.CiscoParser.Viafv_addressContext;
@@ -2586,6 +2589,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitOgit_group_object(Ogit_group_objectContext ctx) {
+    addIcmpTypeGroupReference(ctx.name);
+  }
+
+  @Override
   public void exitOg_icmp_type(Og_icmp_typeContext ctx) {
     _currentIcmpTypeObjectGroup = null;
   }
@@ -2599,29 +2607,27 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else {
       _configuration.getIcmpTypeObjectGroups().put(name, _currentIcmpTypeObjectGroup);
       _configuration.getObjectGroups().put(name, _currentIcmpTypeObjectGroup);
-      defineStructure(NESTED_ICMP_TYPE_OBJECT_GROUP, name, ctx);
+      defineStructure(ICMP_TYPE_OBJECT_GROUP, name, ctx);
     }
   }
 
   @Override
   public void exitOggit_group_object(Oggit_group_objectContext ctx) {
-    addIcmpTypeGroupReference(ctx.name.getText());
+    addIcmpTypeGroupReference(ctx.name);
   }
 
   @Override public void exitOgg_icmp_type(Ogg_icmp_typeContext ctx) {
     _currentIcmpTypeObjectGroup = null;
   }
 
-  @Override
-  public void exitOgit_group_object(Ogit_group_objectContext ctx) {
-    addIcmpTypeGroupReference(ctx.name.getText());
-  }
-
-  private void addIcmpTypeGroupReference(String name) {
+  private void addIcmpTypeGroupReference(Variable_permissiveContext nameCtx) {
+    String name = nameCtx.getText();
     if (_configuration.getIcmpTypeObjectGroups().containsKey(name)) {
       _currentIcmpTypeObjectGroup.getLines().add(new IcmpTypeGroupReferenceLine(name));
+      _configuration.referenceStructure(
+          ICMP_TYPE_OBJECT_GROUP, name, ICMP_TYPE_OBJECT_GROUP_GROUP_OBJECT, nameCtx.start.getLine());
     } else {
-      warnUndefinedObjectGroupReferenced(name);
+      _configuration.getUndefinedIcmpTypeGroups().put(name, nameCtx.start.getLine());
     }
   }
 
@@ -2634,7 +2640,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else {
       _configuration.getNetworkObjectGroups().put(name, _currentNetworkObjectGroup);
       _configuration.getObjectGroups().put(name, _currentNetworkObjectGroup);
-      defineStructure(NESTED_NETWORK_OBJECT_GROUP, name, ctx);
+      defineStructure(NETWORK_OBJECT_GROUP, name, ctx);
     }
   }
 
@@ -2643,8 +2649,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String name = ctx.name.getText();
     if (_configuration.getNetworkObjectGroups().containsKey(name)) {
       _currentNetworkObjectGroup.getLines().add(new IpSpaceReference(name));
+      _configuration.referenceStructure(
+          NETWORK_OBJECT_GROUP, name, NETWORK_OBJECT_GROUP_GROUP_OBJECT, ctx.name.start.getLine());
     } else {
-      warnUndefinedObjectGroupReferenced(name);
+      _configuration.getUndefinedNetworkGroups().put(name, ctx.start.getLine());
     }
   }
 
@@ -2662,7 +2670,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else {
       _configuration.getProtocolObjectGroups().put(name, _currentProtocolObjectGroup);
       _configuration.getObjectGroups().put(name, _currentProtocolObjectGroup);
-      defineStructure(NESTED_PROTOCOL_OBJECT_GROUP, name, ctx);
+      defineStructure(PROTOCOL_OBJECT_GROUP, name, ctx);
     }
   }
 
@@ -2671,8 +2679,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String name = ctx.name.getText();
     if (_configuration.getProtocolObjectGroups().containsKey(name)) {
       _currentProtocolObjectGroup.getLines().add(new ProtocolObjectGroupReferenceLine(name));
+      _configuration.referenceStructure(
+          PROTOCOL_OBJECT_GROUP, name, EXTENDED_ACCESS_LIST_PROTOCOL_OBJECT_GROUP, ctx.name.start.getLine());
     } else {
-      warnUndefinedObjectGroupReferenced(name);
+      _configuration.getUndefinedProtocolGroups().put(name, ctx.start.getLine());
     }
   }
 
@@ -2690,18 +2700,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else {
       _configuration.getServiceObjectGroups().put(name, _currentServiceObjectGroup);
       _configuration.getObjectGroups().put(name, _currentServiceObjectGroup);
-      defineStructure(NESTED_SERVICE_OBJECT_GROUP, name, ctx);
+      defineStructure(SERVICE_OBJECT_GROUP, name, ctx);
     }
   }
 
   @Override
   public void exitOggs_group_object(Oggs_group_objectContext ctx) {
-    String name = ctx.name.getText();
-    if (_configuration.getServiceObjectGroups().containsKey(name)) {
-      _currentServiceObjectGroup.getLines().add(new ServiceObjectGroupReferenceServiceObjectGroupLine(name));
-    } else {
-      warnUndefinedObjectGroupReferenced(name);
-    }
+    addServiceGroupreference(ctx.name);
   }
 
   @Override
@@ -2825,9 +2830,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override public void exitOgp_group_object(Ogp_group_objectContext ctx) {
+    String name = ctx.name.getText();
     _currentProtocolObjectGroup
         .getLines()
-        .add(new ProtocolObjectGroupReferenceLine(ctx.name.getText()));
+        .add(new ProtocolObjectGroupReferenceLine(name));
+    _configuration.referenceStructure(PROTOCOL_OBJECT_GROUP, name, PROTOCOL_OBJECT_GROUP_GROUP_OBJECT, ctx.name.start.getLine());
   }
 
   @Override
@@ -2857,6 +2864,21 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else if (ctx.service_specifier() != null) {
       _currentServiceObjectGroup.getLines().add(_currentServiceObject);
       _currentServiceObject = null;
+    }
+  }
+
+  @Override public void exitOgs_group_object(Ogs_group_objectContext ctx) {
+    addServiceGroupreference(ctx.name);
+  }
+
+  private void addServiceGroupreference(Variable_group_idContext nameCtx) {
+    String name = nameCtx.getText();
+    if (_configuration.getServiceObjectGroups().containsKey(name)) {
+      _currentServiceObjectGroup.getLines().add(new ServiceObjectGroupReferenceServiceObjectGroupLine(name));
+      _configuration.referenceStructure(
+          SERVICE_OBJECT_GROUP, name, EXTENDED_ACCESS_LIST_SERVICE_OBJECT_GROUP, nameCtx.start.getLine());
+    } else {
+      _configuration.getUndefinedServiceGroups().put(name, nameCtx.start.getLine());
     }
   }
 

@@ -18,4 +18,12 @@ object-group group network admin
  group-object eng
  group-object hr
  group-object finance
+ group-object UNDEFINED_GROUP
 !
+object-group network it
+ network-object host 10.2.3.4
+!
+object-group network mixed_group
+ network-object host 10.2.3.5
+ group-object it
+ group-object UNDEFINED_GROUP_MIXED

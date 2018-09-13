@@ -156,6 +156,7 @@ import static org.batfish.representation.cisco.CiscoConfiguration.computeService
 import static org.batfish.representation.cisco.CiscoConfiguration.computeZonePairAclName;
 import static org.batfish.representation.cisco.CiscoStructureType.ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureType.BFD_TEMPLATE;
+import static org.batfish.representation.cisco.CiscoStructureType.ICMP_TYPE_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureType.INSPECT_CLASS_MAP;
 import static org.batfish.representation.cisco.CiscoStructureType.INSPECT_POLICY_MAP;
 import static org.batfish.representation.cisco.CiscoStructureType.IPV4_ACCESS_LIST;
@@ -655,73 +656,145 @@ public class CiscoGrammarTest {
   @Test
   public void testAsaNestedIcmpTypeObjectGroup() throws IOException {
     String hostname = "asa-nested-icmp-type-object-group";
+    String filename = "configs/" + hostname;
     String services = computeIcmpObjectGroupAclName("services");
+    String mixedGroup = computeIcmpObjectGroupAclName("mixed_group");
 
     Flow echoReplyFlow = createIcmpFlow(IcmpType.ECHO_REPLY);
     Flow unreachableFlow = createIcmpFlow(IcmpType.DESTINATION_UNREACHABLE);
     Flow redirectFlow = createIcmpFlow(IcmpType.REDIRECT_MESSAGE);
+    Flow maskReplyFlow = createIcmpFlow(IcmpType.MASK_REPLY);
     Flow otherFlow = createIcmpFlow(IcmpType.TRACEROUTE);
 
     Configuration c = parseConfig(hostname);
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    /* Confirm objects have the correct number of referrers */
+    assertThat(ccae, hasNumReferrers(filename, ICMP_TYPE_OBJECT_GROUP, "echo_group", 1));
+    assertThat(ccae, hasNumReferrers(filename, ICMP_TYPE_OBJECT_GROUP, "unreachable_group", 1));
+    assertThat(ccae, hasNumReferrers(filename, ICMP_TYPE_OBJECT_GROUP, "redirect_group", 1));
+    assertThat(ccae, hasNumReferrers(filename, ICMP_TYPE_OBJECT_GROUP, "services", 0));
+    assertThat(ccae, hasNumReferrers(filename, ICMP_TYPE_OBJECT_GROUP, "mask_reply_group", 1));
+    assertThat(ccae, hasNumReferrers(filename, ICMP_TYPE_OBJECT_GROUP, "mixed_group", 0));
+    /* Confirm undefined reference shows up as such */
+    assertThat(ccae, hasUndefinedReference(filename, ICMP_TYPE_OBJECT_GROUP, "UNDEFINED_GROUP"));
+    assertThat(ccae, hasUndefinedReference(filename, ICMP_TYPE_OBJECT_GROUP, "UNDEFINED_GROUP_MIXED"));
 
     assertThat(c, hasIpAccessList(services, accepts(echoReplyFlow, null, c)));
     assertThat(c, hasIpAccessList(services, accepts(unreachableFlow, null, c)));
     assertThat(c, hasIpAccessList(services, accepts(redirectFlow, null, c)));
+    assertThat(c, hasIpAccessList(mixedGroup, accepts(maskReplyFlow, null, c)));
     assertThat(c, hasIpAccessList(services, not(accepts(otherFlow, null, c))));
   }
 
   @Test
   public void testAsaNestedNetworkObjectGroup() throws IOException {
     String hostname = "asa-nested-network-object-group";
+    String filename = "configs/" + hostname;
     Ip engHostIp = new Ip("10.1.1.5");
     Ip hrHostIp = new Ip("10.1.2.8");
     Ip financeHostIp = new Ip("10.1.4.89");
+    Ip itIp = new Ip("10.2.3.4");
     Ip otherIp = new Ip("1.2.3.4");
+
     Configuration c = parseConfig(hostname);
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    /* Confirm service have the correct number of referrers */
+    assertThat(ccae, hasNumReferrers(filename, NETWORK_OBJECT_GROUP, "eng", 1));
+    assertThat(ccae, hasNumReferrers(filename, NETWORK_OBJECT_GROUP, "hr", 1));
+    assertThat(ccae, hasNumReferrers(filename, NETWORK_OBJECT_GROUP, "finance", 1));
+    assertThat(ccae, hasNumReferrers(filename, NETWORK_OBJECT_GROUP, "admin", 0));
+    assertThat(ccae, hasNumReferrers(filename, NETWORK_OBJECT_GROUP, "it", 1));
+    assertThat(ccae, hasNumReferrers(filename, NETWORK_OBJECT_GROUP, "mixed_group", 0));
+    /* Confirm undefined reference shows up as such */
+    assertThat(ccae, hasUndefinedReference(filename, NETWORK_OBJECT_GROUP, "UNDEFINED_GROUP"));
+    assertThat(ccae, hasUndefinedReference(filename, NETWORK_OBJECT_GROUP, "UNDEFINED_GROUP_MIXED"));
 
     assertThat(c, hasIpSpace("admin", containsIp(engHostIp, c.getIpSpaces())));
     assertThat(c, hasIpSpace("admin", containsIp(hrHostIp, c.getIpSpaces())));
     assertThat(c, hasIpSpace("admin", containsIp(financeHostIp, c.getIpSpaces())));
+    assertThat(c, hasIpSpace("mixed_group", containsIp(itIp, c.getIpSpaces())));
     assertThat(c, hasIpSpace("admin", not(containsIp(otherIp, c.getIpSpaces()))));
   }
 
   @Test
   public void testAsaNestedProtocolObjectGroup() throws IOException {
     String hostname = "asa-nested-protocol-object-group";
+    String filename = "configs/" + hostname;
     String protocols = computeProtocolObjectGroupAclName("protocols");
+    String mixedGroup = computeProtocolObjectGroupAclName("mixed_group");
     int someSrcPort = 65535;
     int someDstPort = 1;
 
     Flow igmpFlow = createFlow(IpProtocol.IGMP, someSrcPort, someDstPort);
     Flow tcpFlow = createFlow(IpProtocol.TCP, someSrcPort, someDstPort);
     Flow ospfFlow = createFlow(IpProtocol.OSPF, someSrcPort, someDstPort);
+    Flow greFlow = createFlow(IpProtocol.GRE, someSrcPort, someDstPort);
     Flow otherFlow = createFlow(IpProtocol.AHP, someSrcPort, someDstPort);
 
     Configuration c = parseConfig(hostname);
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    /* Confirm service have the correct number of referrers */
+    assertThat(ccae, hasNumReferrers(filename, PROTOCOL_OBJECT_GROUP, "proto1", 1));
+    assertThat(ccae, hasNumReferrers(filename, PROTOCOL_OBJECT_GROUP, "proto2", 1));
+    assertThat(ccae, hasNumReferrers(filename, PROTOCOL_OBJECT_GROUP, "proto3", 1));
+    assertThat(ccae, hasNumReferrers(filename, PROTOCOL_OBJECT_GROUP, "protocols", 0));
+    assertThat(ccae, hasNumReferrers(filename, PROTOCOL_OBJECT_GROUP, "proto4", 1));
+    assertThat(ccae, hasNumReferrers(filename, PROTOCOL_OBJECT_GROUP, "mixed_group", 0));
+    /* Confirm undefined reference shows up as such */
+    assertThat(ccae, hasUndefinedReference(filename, PROTOCOL_OBJECT_GROUP, "UNDEFINED_GROUP"));
+    assertThat(ccae, hasUndefinedReference(filename, PROTOCOL_OBJECT_GROUP, "UNDEFINED_GROUP_MIXED"));
 
     assertThat(c, hasIpAccessList(protocols, accepts(igmpFlow, null, c)));
     assertThat(c, hasIpAccessList(protocols, accepts(tcpFlow, null, c)));
     assertThat(c, hasIpAccessList(protocols, accepts(ospfFlow, null, c)));
+    assertThat(c, hasIpAccessList(mixedGroup, accepts(greFlow, null, c)));
     assertThat(c, hasIpAccessList(protocols, not(accepts(otherFlow, null, c))));
   }
 
   @Test
   public void testAsaNestedServiceObjectGroup() throws IOException {
     String hostname = "asa-nested-service-object-group";
+    String filename = "configs/" + hostname;
     String services = computeServiceObjectGroupAclName("services");
+    String mixedGroup = computeServiceObjectGroupAclName("mixed_group");
     int someSrcPort = 65535;
     int someDstPort = 1;
 
     Flow dns = createFlow(IpProtocol.UDP, someSrcPort, 53);
     Flow customPort = createFlow(IpProtocol.UDP, someSrcPort, 1234);
     Flow customPortInRange = createFlow(IpProtocol.TCP, someSrcPort, 2350);
+    Flow customNestedPort = createFlow(IpProtocol.UDP, someSrcPort, 4444);
     Flow otherFlow = createFlow(IpProtocol.AHP, someSrcPort, someDstPort);
 
     Configuration c = parseConfig(hostname);
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    /* Confirm objects have the correct number of referrers */
+    assertThat(ccae, hasNumReferrers(filename, SERVICE_OBJECT_GROUP, "service1", 1));
+    assertThat(ccae, hasNumReferrers(filename, SERVICE_OBJECT_GROUP, "service2", 1));
+    assertThat(ccae, hasNumReferrers(filename, SERVICE_OBJECT_GROUP, "service3", 1));
+    assertThat(ccae, hasNumReferrers(filename, SERVICE_OBJECT_GROUP, "services", 0));
+    assertThat(ccae, hasNumReferrers(filename, SERVICE_OBJECT_GROUP, "service4", 1));
+    assertThat(ccae, hasNumReferrers(filename, SERVICE_OBJECT_GROUP, "mixed_group", 0));
+    /* Confirm undefined reference shows up as such */
+    assertThat(ccae, hasUndefinedReference(filename, SERVICE_OBJECT_GROUP, "UNDEFINED_GROUP"));
+    assertThat(ccae, hasUndefinedReference(filename, SERVICE_OBJECT_GROUP, "UNDEFINED_GROUP_MIXED"));
 
     assertThat(c, hasIpAccessList(services, accepts(dns, null, c)));
     assertThat(c, hasIpAccessList(services, accepts(customPort, null, c)));
     assertThat(c, hasIpAccessList(services, accepts(customPortInRange, null, c)));
+    assertThat(c, hasIpAccessList(mixedGroup, accepts(customNestedPort, null, c)));
     assertThat(c, hasIpAccessList(services, not(accepts(otherFlow, null, c))));
   }
 
