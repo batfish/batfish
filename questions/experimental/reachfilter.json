@@ -6,6 +6,7 @@
   "dstPorts": "${dstPorts}",
   "dstProtocols": "${dstProtocols}",
   "filters": "${filters}",
+  "ipProtocols": "${ipProtocols}",
   "nodes": "${nodes}",
   "sourceInterfaces" : "${sourceInterfaces}",
   "src": "${src}",
@@ -47,6 +48,12 @@
         "description": "Only evaluate filters that match this regex",
         "optional": true,
         "type": "javaRegex"
+      },
+      "ipProtocols": {
+        "description": "Restrict space of returned headers to those with IP protocol numbers in this set",
+        "minElements": 0,
+        "optional": true,
+        "type": "string"
       },
       "nodes": {
         "description": "Only evaluate filters present on nodes matching this regex",
