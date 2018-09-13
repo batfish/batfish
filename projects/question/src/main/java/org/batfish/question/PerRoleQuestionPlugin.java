@@ -110,8 +110,7 @@ public class PerRoleQuestionPlugin extends QuestionPlugin {
         String regex = namesToRegex(Sets.intersection(innerIncludeNodes, roleNodes));
         innerNRQuestion.setNodeRegex(new NodesSpecifier(regex));
         String innerQuestionName = innerQuestion.getName();
-        Answerer innerAnswerer =
-            _batfish.getAnswererCreators().get(innerQuestionName).apply(innerQuestion, _batfish);
+        Answerer innerAnswerer = _batfish.createAnswerer(innerQuestion);
         AnswerElement innerAnswer = innerAnswerer.answer();
         results.put(role, innerAnswer);
       }

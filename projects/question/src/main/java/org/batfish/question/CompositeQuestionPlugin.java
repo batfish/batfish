@@ -45,9 +45,7 @@ public class CompositeQuestionPlugin extends QuestionPlugin {
       CompositeQuestion question = (CompositeQuestion) _question;
       CompositeAnswerElement answerElement = new CompositeAnswerElement();
       for (Question innerQuestion : question._questions) {
-        String innerQuestionName = innerQuestion.getName();
-        Answerer innerAnswerer =
-            _batfish.getAnswererCreators().get(innerQuestionName).apply(innerQuestion, _batfish);
+        Answerer innerAnswerer = _batfish.createAnswerer(innerQuestion);
         AnswerElement innerAnswer = innerAnswerer.answer();
         answerElement._answers.add(innerAnswer);
       }

@@ -82,8 +82,7 @@ public class JsonPathToTableAnswerer extends Answerer {
 
     Question innerQuestion = question.getInnerQuestion();
     String innerQuestionName = innerQuestion.getName();
-    Answerer innerAnswerer =
-        _batfish.getAnswererCreators().get(innerQuestionName).apply(innerQuestion, _batfish);
+    Answerer innerAnswerer = _batfish.createAnswerer(innerQuestion);
     AnswerElement innerAnswer =
         (innerQuestion.getDifferential()) ? innerAnswerer.answerDiff() : innerAnswerer.answer();
 

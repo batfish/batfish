@@ -1713,11 +1713,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // _testrigSettings.getSerializeIndependentPath());
   }
 
-  @Override
-  public Map<String, BiFunction<Question, IBatfish, Answerer>> getAnswererCreators() {
-    return _answererCreators;
-  }
-
   public TestrigSettings getBaseTestrigSettings() {
     return _baseTestrigSettings;
   }
@@ -4855,5 +4850,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
               "Failed to read question settings for class: '%s'", questionClass.getCanonicalName()),
           e);
     }
+  }
+
+  @Override
+  public @Nonnull Answerer createAnswerer(@Nonnull Question question) {
+    BiFunction<Question, IBatfish, Answerer> creator = _answererCreators.get(question.getName());
+    return creator != null ? creator.apply(question, this) : null;
   }
 }
