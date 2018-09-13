@@ -12,6 +12,8 @@ import java.util.Map.Entry;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import net.sf.javabdd.BDD;
+import org.batfish.common.bdd.BDDPacket;
+import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ForwardingAnalysis;
@@ -24,8 +26,6 @@ import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.LocationVisitor;
 import org.batfish.symbolic.bdd.BDDAcl;
-import org.batfish.symbolic.bdd.BDDPacket;
-import org.batfish.symbolic.bdd.IpSpaceToBDD;
 import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.state.Accept;
 import org.batfish.z3.state.Drop;
@@ -146,7 +146,12 @@ public final class BDDReachabilityAnalysisFactory {
             toImmutableMap(
                 nodeEntry.getValue().getIpAccessLists(),
                 Entry::getKey,
-                aclEntry -> BDDAcl.create(bddPacket, aclEntry.getValue())));
+                aclEntry ->
+                    BDDAcl.create(
+                        bddPacket,
+                        aclEntry.getValue(),
+                        nodeEntry.getValue().getIpAccessLists(),
+                        nodeEntry.getValue().getIpSpaces())));
   }
 
   private static Map<String, Map<String, BDD>> computeAclDenyBDDs(

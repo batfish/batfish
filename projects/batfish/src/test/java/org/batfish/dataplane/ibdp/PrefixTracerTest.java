@@ -98,7 +98,6 @@ public class PrefixTracerTest {
             .setAddress(new InterfaceAddress(neighbor1Ip, MAX_PREFIX_LENGTH - 1))
             .setOwner(c1)
             .setVrf(vrf1)
-            .setActive(true)
             .build();
     vrf1.setStaticRoutes(
         ImmutableSortedSet.of(
@@ -122,7 +121,6 @@ public class PrefixTracerTest {
     nf.interfaceBuilder()
         .setAddress(new InterfaceAddress(neighbor2Ip, MAX_PREFIX_LENGTH - 1))
         .setOwner(c2)
-        .setActive(true)
         .setVrf(vrf2)
         .build();
     bp = nf.bgpProcessBuilder().setVrf(vrf2).setRouterId(neighbor2Ip).build();

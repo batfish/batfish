@@ -39,7 +39,6 @@ public class Utils {
         .setName(name)
         .setOwner(c)
         .setVrf(c.getDefaultVrf())
-        .setActive(true)
         .setAddress(primaryAddress)
         .build();
   }

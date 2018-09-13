@@ -12,9 +12,13 @@ import java.util.SortedSet;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
+import org.batfish.common.bdd.BDDInteger;
+import org.batfish.common.bdd.BDDIpSpaceSpecializer;
+import org.batfish.common.bdd.BDDOps;
+import org.batfish.common.bdd.BDDPacket;
+import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.HeaderSpace;
-import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.SubRange;
@@ -25,11 +29,7 @@ import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.TrueExpr;
-import org.batfish.symbolic.bdd.BDDInteger;
-import org.batfish.symbolic.bdd.BDDOps;
-import org.batfish.symbolic.bdd.BDDPacket;
 import org.batfish.symbolic.bdd.BDDSourceManager;
-import org.batfish.symbolic.bdd.IpSpaceToBDD;
 
 /**
  * An {@link IpAccessListSpecializer} that uses {@link BDD BDDs} to represent the headerspace of
@@ -83,22 +83,32 @@ public final class BDDIpAccessListSpecializer extends IpAccessListSpecializer {
       Map<String, IpSpace> namedIpSpaces,
       BDDSourceManager bddSrcManager,
       boolean simplifyToTrue) {
+    this(
+        pkt,
+        flowBDD,
+        namedIpSpaces,
+        bddSrcManager,
+        new IpSpaceToBDD(pkt.getDstIp().getFactory(), pkt.getDstIp(), namedIpSpaces),
+        new IpSpaceToBDD(pkt.getSrcIp().getFactory(), pkt.getSrcIp(), namedIpSpaces),
+        simplifyToTrue);
+  }
+
+  public BDDIpAccessListSpecializer(
+      BDDPacket pkt,
+      BDD flowBDD,
+      Map<String, IpSpace> namedIpSpaces,
+      BDDSourceManager bddSrcManager,
+      IpSpaceToBDD dstIpSpaceToBdd,
+      IpSpaceToBDD srcIpSpaceToBdd,
+      boolean simplifyToTrue) {
     _bddSrcManager = bddSrcManager;
     _dstIpSpaceSpecializer =
-        new BDDIpSpaceSpecializer(
-            flowBDD,
-            namedIpSpaces,
-            new IpSpaceToBDD(pkt.getDstIp().getFactory(), pkt.getDstIp(), namedIpSpaces),
-            simplifyToTrue);
+        new BDDIpSpaceSpecializer(flowBDD, namedIpSpaces, dstIpSpaceToBdd, simplifyToTrue);
     _pkt = pkt;
     _flowBDD = flowBDD;
     _simplifyToTrue = simplifyToTrue;
     _srcIpSpaceSpecializer =
-        new BDDIpSpaceSpecializer(
-            flowBDD,
-            namedIpSpaces,
-            new IpSpaceToBDD(pkt.getSrcIp().getFactory(), pkt.getSrcIp(), namedIpSpaces),
-            simplifyToTrue);
+        new BDDIpSpaceSpecializer(flowBDD, namedIpSpaces, srcIpSpaceToBdd, simplifyToTrue);
   }
 
   @VisibleForTesting

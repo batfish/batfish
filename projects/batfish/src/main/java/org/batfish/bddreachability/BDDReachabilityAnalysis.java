@@ -22,10 +22,10 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import net.sf.javabdd.BDD;
 import org.batfish.common.BatfishException;
+import org.batfish.common.bdd.BDDOps;
+import org.batfish.common.bdd.BDDPacket;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Flow.Builder;
-import org.batfish.symbolic.bdd.BDDOps;
-import org.batfish.symbolic.bdd.BDDPacket;
 import org.batfish.z3.IngressLocation;
 import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.state.Accept;
@@ -275,6 +275,7 @@ public class BDDReachabilityAnalysis {
   }
 
   public Map<IngressLocation, BDD> getIngressLocationAcceptBDDs() {
+    BDD zero = _bddPacket.getFactory().zero();
     return _reverseReachableStates
         .get()
         .entrySet()
@@ -286,10 +287,11 @@ public class BDDReachabilityAnalysis {
         .collect(
             ImmutableMap.toImmutableMap(
                 entry -> toIngressLocation(entry.getKey()),
-                entry -> entry.getValue().get(Accept.INSTANCE)));
+                entry -> entry.getValue().getOrDefault(Accept.INSTANCE, zero)));
   }
 
-  private static IngressLocation toIngressLocation(StateExpr stateExpr) {
+  @VisibleForTesting
+  static IngressLocation toIngressLocation(StateExpr stateExpr) {
     Preconditions.checkArgument(
         stateExpr instanceof OriginateVrf || stateExpr instanceof OriginateInterfaceLink);
 

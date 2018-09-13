@@ -6,8 +6,8 @@ import java.util.Set;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 /**
- * Wraps another LocationSpecifer, and converts all its InterfaceLocations to
- * InterfaceLinkLocations.
+ * Wraps another {@link LocationSpecifier}, and converts all its {@link InterfaceLocation
+ * InterfaceLocations} to {@link InterfaceLinkLocation InterfaceLinkLocations}.
  */
 @ParametersAreNonnullByDefault
 public class ToInterfaceLinkLocationSpecifier implements LocationSpecifier {
