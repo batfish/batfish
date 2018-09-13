@@ -11,6 +11,7 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import org.batfish.common.bdd.BDDPacket;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpWildcard;
@@ -19,7 +20,6 @@ import org.batfish.datamodel.acl.AclLineMatchExprNormalizer;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.symbolic.bdd.AclLineMatchExprToBDD;
-import org.batfish.symbolic.bdd.BDDPacket;
 import org.batfish.symbolic.bdd.BDDSourceManager;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
