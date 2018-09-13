@@ -56,12 +56,7 @@ public final class AclLineMatchExprNormalizer implements GenericAclLineMatchExpr
         unsat.add(conjunctsBuilder);
       }
     }
-    if (unsat.size() > 0) {
-      System.out.println(
-          String.format(
-              "Removing %d of %d conjunctsBuilders", unsat.size(), _conjunctsBuilders.size()));
-      _conjunctsBuilders.removeAll(unsat);
-    }
+    _conjunctsBuilders.removeAll(unsat);
   }
 
   @Override
