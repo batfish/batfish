@@ -10,6 +10,9 @@
     "http"
   ],
   "filters" : ".*",
+  "ipProtocols" : [
+    "TCP"
+  ],
   "nodeSpecifierFactory" : "FlexibleNodeSpecifierFactory",
   "nodes" : ".*",
   "sourceIpSpaceSpecifierFactory" : "FlexibleUniverseIpSpaceSpecifierFactory",
@@ -63,6 +66,15 @@
         "optional" : true,
         "type" : "javaRegex",
         "value" : ".*"
+      },
+      "ipProtocols" : {
+        "description" : "Restrict space of returned headers to those with IP protocols in this set",
+        "minElements" : 0,
+        "optional" : true,
+        "type" : "string",
+        "value" : [
+          "tcp"
+        ]
       },
       "nodes" : {
         "description" : "Only evaluate filters present on nodes matching this regex",
