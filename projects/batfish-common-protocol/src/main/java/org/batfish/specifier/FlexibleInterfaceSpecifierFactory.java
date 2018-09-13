@@ -12,8 +12,9 @@ import org.batfish.datamodel.questions.InterfacesSpecifier;
  *
  * <ul>
  *   <li>null: returns ShorthandInterfaceSpecifier(InterfacesSpecifier.ALL)
- *   <li>vrf(regex): returns {@link VrfNameRegexInterfaceSpecifier}
  *   <li>connectedTo(ip, prefix, or wildcard): returns {@link InterfaceWithConnectedIpsSpecifier}
+ *   <li>vrf(regex): returns {@link VrfNameRegexInterfaceSpecifier}
+ *   <li>zone(regex): returns {@link ZoneNameRegexInterfaceSpecifier}
  *   <li>all other inputs go directly to {@link ShorthandInterfaceSpecifier}
  * </ul>
  */
@@ -26,6 +27,9 @@ public class FlexibleInterfaceSpecifierFactory implements InterfaceSpecifierFact
 
   private static final Pattern VRF_PATTERN =
       Pattern.compile("vrf\\((.*)\\)", Pattern.CASE_INSENSITIVE);
+
+  private static final Pattern ZONE_PATTERN =
+      Pattern.compile("zone\\((.*)\\)", Pattern.CASE_INSENSITIVE);
 
   @Override
   public String getName() {
@@ -40,8 +44,15 @@ public class FlexibleInterfaceSpecifierFactory implements InterfaceSpecifierFact
     checkArgument(input instanceof String, NAME + " requires String input");
     String str = ((String) input).trim();
 
+    // connected to subnet pattern
+    Matcher matcher = CONNECTED_TO_PATTERN.matcher(str);
+    if (matcher.find()) {
+      String ipWildcard = matcher.group(1).trim();
+      return new InterfaceWithConnectedIpsSpecifier.Factory().buildInterfaceSpecifier(ipWildcard);
+    }
+
     // VRF pattern
-    Matcher matcher = VRF_PATTERN.matcher(str);
+    matcher = VRF_PATTERN.matcher(str);
     if (matcher.find()) {
       String[] words = matcher.group(1).trim().split(",");
       checkArgument(
@@ -53,11 +64,17 @@ public class FlexibleInterfaceSpecifierFactory implements InterfaceSpecifierFact
           Pattern.compile(words[0].trim(), Pattern.CASE_INSENSITIVE));
     }
 
-    // connected to subnet pattern
-    matcher = CONNECTED_TO_PATTERN.matcher(str);
+    // Zone pattern
+    matcher = ZONE_PATTERN.matcher(str);
     if (matcher.find()) {
-      String ipWildcard = matcher.group(1).trim();
-      return new InterfaceWithConnectedIpsSpecifier.Factory().buildInterfaceSpecifier(ipWildcard);
+      String[] words = matcher.group(1).trim().split(",");
+      checkArgument(
+          words.length == 1,
+          "Parameter(s) to zone() should be a regex over the zone names. Got ("
+              + matcher.group(1)
+              + ")");
+      return new ZoneNameRegexInterfaceSpecifier(
+          Pattern.compile(words[0].trim(), Pattern.CASE_INSENSITIVE));
     }
 
     return new ShorthandInterfaceSpecifier(new InterfacesSpecifier(str));
