@@ -36,7 +36,6 @@ public class AclLineMatchExprNormalizerTest {
   private static final AclLineMatchExpr E =
       matchDst(new IpWildcard(new Ip(0x00000000L), new Ip(0xFFF0FFFFL)));
 
-  private AclLineMatchExprNormalizer _normalizer;
   private AclLineMatchExprToBDD _toBDD;
 
   @Before
@@ -48,8 +47,7 @@ public class AclLineMatchExprNormalizerTest {
   }
 
   private AclLineMatchExpr normalize(AclLineMatchExpr expr) {
-    _normalizer = new AclLineMatchExprNormalizer(_toBDD);
-    return _normalizer.normalize(expr);
+    return AclLineMatchExprNormalizer.normalize(_toBDD, expr);
   }
 
   @Test
