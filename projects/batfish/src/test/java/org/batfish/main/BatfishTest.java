@@ -29,6 +29,7 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.topology.Layer1Edge;
 import org.batfish.common.topology.Layer1Node;
@@ -40,9 +41,11 @@ import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.Answer;
+import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.ParseStatus;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
+import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.TestQuestion;
 import org.batfish.representation.host.HostConfiguration;
 import org.batfish.storage.TestStorageProvider;
@@ -448,5 +451,29 @@ public class BatfishTest {
 
     _thrown.expect(BatfishException.class);
     assertThat(batfish.loadQuestionSettings(TestQuestion.class), nullValue());
+  }
+
+  @Test
+  public void testCreateAnswerer() {
+    Batfish batfish = BatfishTestUtils.getBatfish(new TestStorageProvider());
+    Question testQuestion =
+        new TestQuestion() {
+          @Override
+          public String getName() {
+            return "q1";
+          }
+        };
+    Answerer testAnswerer =
+        new Answerer(testQuestion, batfish) {
+          @Override
+          public AnswerElement answer() {
+            throw new UnsupportedOperationException(
+                "no implementation for generated method"); // TODO Auto-generated method stub
+          }
+        };
+
+    batfish.registerAnswerer("q1", "q1ClassName", (q, b) -> testAnswerer);
+
+    assertThat(batfish.createAnswerer(testQuestion), equalTo(testAnswerer));
   }
 }
