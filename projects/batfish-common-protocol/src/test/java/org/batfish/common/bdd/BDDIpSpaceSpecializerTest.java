@@ -1,10 +1,11 @@
-package org.batfish.z3;
+package org.batfish.common.bdd;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableMap;
 import net.sf.javabdd.BDDFactory;
+import org.batfish.common.ipspace.IpSpaceSpecializer;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Ip;
@@ -13,9 +14,6 @@ import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.UniverseIpSpace;
-import org.batfish.symbolic.bdd.BDDInteger;
-import org.batfish.symbolic.bdd.BDDUtils;
-import org.batfish.symbolic.bdd.IpSpaceToBDD;
 import org.junit.Before;
 import org.junit.Test;
 

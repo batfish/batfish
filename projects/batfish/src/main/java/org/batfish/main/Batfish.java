@@ -81,6 +81,7 @@ import org.batfish.common.Snapshot;
 import org.batfish.common.Version;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
+import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.plugin.BgpTablePlugin;
 import org.batfish.common.plugin.DataPlanePlugin;
 import org.batfish.common.plugin.DataPlanePlugin.ComputeDataPlaneResult;
@@ -205,7 +206,6 @@ import org.batfish.symbolic.abstraction.BatfishCompressor;
 import org.batfish.symbolic.abstraction.Roles;
 import org.batfish.symbolic.bdd.AclLineMatchExprToBDD;
 import org.batfish.symbolic.bdd.BDDAcl;
-import org.batfish.symbolic.bdd.BDDPacket;
 import org.batfish.symbolic.bdd.BDDSourceManager;
 import org.batfish.symbolic.bdd.HeaderSpaceToBDD;
 import org.batfish.symbolic.smt.PropertyChecker;
@@ -4842,5 +4842,18 @@ public class Batfish extends PluginConsumer implements IBatfish {
       return null;
     }
     return TopologyUtil.computeLayer2Topology(layer1Topology, loadConfigurations());
+  }
+
+  @Override
+  public @Nullable String loadQuestionSettings(@Nonnull Class<? extends Question> questionClass) {
+    try {
+      return _storage.loadQuestionSettings(
+          _settings.getContainer(), questionClass.getCanonicalName());
+    } catch (IOException e) {
+      throw new BatfishException(
+          String.format(
+              "Failed to read question settings for class: '%s'", questionClass.getCanonicalName()),
+          e);
+    }
   }
 }

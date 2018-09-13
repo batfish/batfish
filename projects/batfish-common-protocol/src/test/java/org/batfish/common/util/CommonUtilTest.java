@@ -81,7 +81,6 @@ public class CommonUtilTest {
     Configuration c2 = cb.setHostname("n2").build();
 
     Interface.Builder ib = _nf.interfaceBuilder();
-    ib.setActive(true);
 
     _i1 =
         ib.setOwner(c1)

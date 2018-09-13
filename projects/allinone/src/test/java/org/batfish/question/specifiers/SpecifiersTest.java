@@ -55,7 +55,6 @@ public class SpecifiersTest {
     Vrf vrf = nf.vrfBuilder().setOwner(c).build();
     Interface iface =
         nf.interfaceBuilder()
-            .setActive(true)
             .setVrf(vrf)
             .setOwner(c)
             .setAddress(new InterfaceAddress(INTERFACE_IP, Prefix.MAX_PREFIX_LENGTH))

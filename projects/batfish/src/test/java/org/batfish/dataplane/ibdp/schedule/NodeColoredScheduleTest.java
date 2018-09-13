@@ -97,7 +97,7 @@ public class NodeColoredScheduleTest {
 
     Configuration r1 = cb.setHostname("r1").build();
     Vrf vEdge1 = vb.setOwner(r1).build();
-    ib.setOwner(r1).setVrf(vEdge1).setActive(true);
+    ib.setOwner(r1).setVrf(vEdge1);
     ib.setAddress(new InterfaceAddress(new Ip("1.1.1.1"), 32)).build();
     BgpProcess r1Proc = pb.setRouterId(new Ip("1.1.1.1")).setVrf(vEdge1).build();
     nb.setRemoteAs(2L)

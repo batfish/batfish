@@ -1,4 +1,4 @@
-package org.batfish.symbolic.bdd;
+package org.batfish.common.bdd;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 

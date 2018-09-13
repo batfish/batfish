@@ -111,7 +111,7 @@ public class ReducedReachabilityTest {
     _nf = new NetworkFactory();
     _cb = _nf.configurationBuilder().setConfigurationFormat(CISCO_IOS);
     _vb = _nf.vrfBuilder().setName(Configuration.DEFAULT_VRF_NAME);
-    _ib = _nf.interfaceBuilder().setActive(true);
+    _ib = _nf.interfaceBuilder();
   }
 
   /** Test that we detect reduced reachability caused by a removed static route. */

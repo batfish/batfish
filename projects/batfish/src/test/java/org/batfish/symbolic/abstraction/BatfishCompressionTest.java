@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Configuration;
@@ -42,7 +43,6 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
-import org.batfish.symbolic.bdd.BDDPacket;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
@@ -80,7 +80,7 @@ public class BatfishCompressionTest {
     Vrf v3 = vb.setOwner(_compressedNode3).build();
     vb.setOwner(_compressedNode2).build(); // add a vrf to c2 too
     Prefix p = Prefix.parse("10.23.0.0/31");
-    Interface.Builder ib = nf.interfaceBuilder().setActive(true);
+    Interface.Builder ib = nf.interfaceBuilder();
     ib.setOwner(_compressedNode1)
         .setVrf(v1)
         .setAddress(new InterfaceAddress(p.getStartIp(), p.getPrefixLength()))
@@ -139,7 +139,7 @@ public class BatfishCompressionTest {
     Prefix pAC = Prefix.parse("10.13.0.0/31");
     Prefix pBD = Prefix.parse("10.24.0.0/31");
     Prefix pCD = Prefix.parse("10.34.0.0/31");
-    Interface.Builder ib = nf.interfaceBuilder().setActive(true);
+    Interface.Builder ib = nf.interfaceBuilder();
 
     // Add a route from A --> B
     ib.setOwner(cA)
@@ -226,7 +226,7 @@ public class BatfishCompressionTest {
     Vrf v3 = vb.setOwner(c3).build();
     Prefix p12 = Prefix.parse("10.12.0.0/31");
     Prefix p23 = Prefix.parse("10.23.0.0/31");
-    Interface.Builder ib = nf.interfaceBuilder().setActive(true);
+    Interface.Builder ib = nf.interfaceBuilder();
     ib.setOwner(c1)
         .setVrf(v1)
         .setAddress(new InterfaceAddress(p12.getStartIp(), p12.getPrefixLength()))

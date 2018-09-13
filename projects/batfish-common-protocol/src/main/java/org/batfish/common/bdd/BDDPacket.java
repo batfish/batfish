@@ -1,8 +1,8 @@
-package org.batfish.symbolic.bdd;
+package org.batfish.common.bdd;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static org.batfish.symbolic.bdd.BDDInteger.makeFromIndex;
-import static org.batfish.symbolic.bdd.BDDUtils.isAssignment;
+import static org.batfish.common.bdd.BDDInteger.makeFromIndex;
+import static org.batfish.common.bdd.BDDUtils.isAssignment;
 
 import java.util.HashMap;
 import java.util.HashSet;
