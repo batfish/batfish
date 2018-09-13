@@ -1,7 +1,7 @@
 {
   "class" : "org.batfish.question.reachfilter.ReachFilterQuestion",
   "complementHeaderSpace" : false,
-  "destinationIpSpaceSpecifierFactory" : "destFactory",
+  "destinationIpSpaceSpecifierFactory" : "FlexibleUniverseIpSpaceSpecifierFactory",
   "dst" : "2.2.2.2",
   "dstPorts" : [
     "0-0"
@@ -9,10 +9,10 @@
   "dstProtocols" : [
     "http"
   ],
-  "filterRegex" : ".*",
-  "nodeSpecifierFactory" : "nodesFactory",
-  "nodeSpecifierInput" : ".*",
-  "sourceIpSpaceSpecifierFactory" : "sourceFactory",
+  "filters" : ".*",
+  "nodeSpecifierFactory" : "FlexibleNodeSpecifierFactory",
+  "nodes" : ".*",
+  "sourceIpSpaceSpecifierFactory" : "FlexibleUniverseIpSpaceSpecifierFactory",
   "src" : "1.1.1.1",
   "srcPorts" : [
     "0-0"
@@ -33,12 +33,6 @@
         "optional" : true,
         "type" : "boolean",
         "value" : false
-      },
-      "destinationIpSpaceSpecifierFactory" : {
-        "description" : "Name of the IpSpaceSpecifierFactory to use for the destination IpSpace",
-        "optional" : true,
-        "type" : "string",
-        "value" : "destFactory"
       },
       "dst" : {
         "description" : "Flexible specification of destinoation IpSpace",
@@ -64,19 +58,13 @@
           "http"
         ]
       },
-      "filterRegex" : {
+      "filters" : {
         "description" : "Only evaluate filters that match this regex",
         "optional" : true,
         "type" : "javaRegex",
         "value" : ".*"
       },
-      "nodeSpecifierFactory" : {
-        "description" : "Name of the nodeSpecifierFactory to use",
-        "optional" : true,
-        "type" : "string",
-        "value" : "nodesFactory"
-      },
-      "nodeSpecifierInput" : {
+      "nodes" : {
         "description" : "Only evaluate filters present on nodes matching this regex",
         "optional" : true,
         "type" : "string",
@@ -93,12 +81,6 @@
         "optional" : true,
         "type" : "string",
         "value" : ".*"
-      },
-      "sourceIpSpaceSpecifierFactory" : {
-        "description" : "Name of the IpSpaceSpecifierFactory to use for the source IpSpace",
-        "optional" : true,
-        "type" : "string",
-        "value" : "sourceFactory"
       },
       "src" : {
         "description" : "Flexible specification of source IpSpace",
