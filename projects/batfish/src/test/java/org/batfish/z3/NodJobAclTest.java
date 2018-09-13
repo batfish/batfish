@@ -70,7 +70,7 @@ public class NodJobAclTest {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
-    Interface.Builder ib = nf.interfaceBuilder().setActive(true).setBandwidth(1E9d);
+    Interface.Builder ib = nf.interfaceBuilder().setBandwidth(1E9d);
     IpAccessList.Builder aclb = nf.aclBuilder();
     Vrf.Builder vb = nf.vrfBuilder();
 
@@ -217,7 +217,7 @@ public class NodJobAclTest {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
-    Interface.Builder ib = nf.interfaceBuilder().setActive(true).setBandwidth(1E9d);
+    Interface.Builder ib = nf.interfaceBuilder().setBandwidth(1E9d);
     IpAccessList.Builder aclb = nf.aclBuilder();
     Vrf.Builder vb = nf.vrfBuilder();
 
@@ -357,7 +357,7 @@ public class NodJobAclTest {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
-    Interface.Builder ib = nf.interfaceBuilder().setActive(true).setBandwidth(1E9d);
+    Interface.Builder ib = nf.interfaceBuilder().setBandwidth(1E9d);
     Vrf.Builder vb = nf.vrfBuilder();
     IpAccessList.Builder aclb = nf.aclBuilder();
 

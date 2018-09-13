@@ -92,7 +92,7 @@ public class BfConsts {
   public static final String PROP_AGGREGATION = "aggregation";
   public static final String PROP_AGGREGATIONS = "aggregations";
   public static final String PROP_ALLINONE_PROPERTIES_PATH = "batfishAllinonePropertiesPath";
-  public static final String PROP_ALLOWED_VALUES = "allowedValues";
+  @Deprecated public static final String PROP_ALLOWED_VALUES = "allowedValues";
   public static final String PROP_ANSWER_ELEMENTS = "answerElements";
   public static final String PROP_ASSERTION = "assertion";
   public static final String PROP_BATFISH_PROPERTIES_PATH = "batfishBatfishPropertiesPath";
@@ -129,6 +129,7 @@ public class BfConsts {
   public static final String PROP_TYPE = "type";
   public static final String PROP_UNIQUE_ROWS = "uniqueRows";
   public static final String PROP_VALUE = "value";
+  public static final String PROP_VALUES = "values";
   public static final String PROP_VARIABLES = "variables";
 
   public static final String RELPATH_ANALYSES_DIR = "analyses";

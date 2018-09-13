@@ -274,4 +274,29 @@ public interface StorageProvider {
    */
   void storeQuestion(
       String questionStr, String network, String question, @Nullable String analysis);
+
+  /**
+   * Return the JSON-serialized settings for the specified question class for the specified network,
+   * or null if no custom settings exist.
+   *
+   * @param network The name of the network
+   * @param questionClass The fully-qualified class name of the question
+   * @throws IOException if there is an error trying to read the settings
+   */
+  @Nullable
+  String loadQuestionSettings(String network, String questionClass) throws IOException;
+
+  /** Returns {@code true} iff the specified network question exists. */
+  boolean checkNetworkExists(String network);
+
+  /**
+   * Write the JSON-serialized settings for the specified question class for the specified network.
+   *
+   * @param network The name of the network
+   * @param questionClass The fully-qualified class name of the question
+   * @param settings The settings to write
+   * @throws IOException if there is an error writing the settings
+   */
+  void storeQuestionSettings(String settings, String network, String questionClass)
+      throws IOException;
 }

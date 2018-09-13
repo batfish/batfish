@@ -11,6 +11,10 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
+import org.batfish.common.bdd.BDDInteger;
+import org.batfish.common.bdd.BDDOps;
+import org.batfish.common.bdd.BDDPacket;
+import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpProtocol;
@@ -24,12 +28,37 @@ public final class HeaderSpaceToBDD {
   private final BDDOps _bddOps;
   private final BDDPacket _bddPacket;
   private final Map<String, IpSpace> _namedIpSpaces;
+  private final IpSpaceToBDD _dstIpSpaceToBdd;
+  private final IpSpaceToBDD _srcIpSpaceToBdd;
 
   public HeaderSpaceToBDD(BDDPacket bddPacket, Map<String, IpSpace> namedIpSpaces) {
     _bddFactory = bddPacket.getFactory();
     _bddOps = new BDDOps(_bddFactory);
     _bddPacket = bddPacket;
     _namedIpSpaces = ImmutableMap.copyOf(namedIpSpaces);
+    _dstIpSpaceToBdd = new IpSpaceToBDD(_bddFactory, _bddPacket.getDstIp(), _namedIpSpaces);
+    _srcIpSpaceToBdd = new IpSpaceToBDD(_bddFactory, _bddPacket.getSrcIp(), _namedIpSpaces);
+  }
+
+  public HeaderSpaceToBDD(
+      BDDPacket bddPacket,
+      Map<String, IpSpace> namedIpSpaces,
+      IpSpaceToBDD dstIpSpaceToBdd,
+      IpSpaceToBDD srcIpSpaceToBdd) {
+    _bddFactory = bddPacket.getFactory();
+    _bddOps = new BDDOps(_bddFactory);
+    _bddPacket = bddPacket;
+    _namedIpSpaces = ImmutableMap.copyOf(namedIpSpaces);
+    _dstIpSpaceToBdd = dstIpSpaceToBdd;
+    _srcIpSpaceToBdd = srcIpSpaceToBdd;
+  }
+
+  public IpSpaceToBDD getDstIpSpaceToBdd() {
+    return _dstIpSpaceToBdd;
+  }
+
+  public IpSpaceToBDD getSrcIpSpaceToBdd() {
+    return _srcIpSpaceToBdd;
   }
 
   @VisibleForTesting
@@ -43,11 +72,8 @@ public final class HeaderSpaceToBDD {
 
   @VisibleForTesting
   @Nullable
-  BDD toBDD(@Nullable IpSpace ipSpace, BDDInteger var) {
-    if (ipSpace == null) {
-      return null;
-    }
-    return ipSpace.accept(new IpSpaceToBDD(_bddFactory, var, _namedIpSpaces));
+  BDD toBDD(@Nullable IpSpace ipSpace, IpSpaceToBDD toBdd) {
+    return ipSpace == null ? null : toBdd.visit(ipSpace);
   }
 
   @VisibleForTesting
@@ -113,13 +139,13 @@ public final class HeaderSpaceToBDD {
   public BDD toBDD(HeaderSpace headerSpace) {
     BDD positiveSpace =
         _bddOps.and(
-            toBDD(headerSpace.getDstIps(), _bddPacket.getDstIp()),
-            BDDOps.negateIfNonNull(toBDD(headerSpace.getNotDstIps(), _bddPacket.getDstIp())),
-            toBDD(headerSpace.getSrcIps(), _bddPacket.getSrcIp()),
-            BDDOps.negateIfNonNull(toBDD(headerSpace.getNotSrcIps(), _bddPacket.getSrcIp())),
+            toBDD(headerSpace.getDstIps(), _dstIpSpaceToBdd),
+            BDDOps.negateIfNonNull(toBDD(headerSpace.getNotDstIps(), _dstIpSpaceToBdd)),
+            toBDD(headerSpace.getSrcIps(), _srcIpSpaceToBdd),
+            BDDOps.negateIfNonNull(toBDD(headerSpace.getNotSrcIps(), _srcIpSpaceToBdd)),
             BDDOps.orNull(
-                toBDD(headerSpace.getSrcOrDstIps(), _bddPacket.getDstIp()),
-                toBDD(headerSpace.getSrcOrDstIps(), _bddPacket.getSrcIp())),
+                toBDD(headerSpace.getSrcOrDstIps(), _dstIpSpaceToBdd),
+                toBDD(headerSpace.getSrcOrDstIps(), _srcIpSpaceToBdd)),
             toBDD(headerSpace.getDstPorts(), _bddPacket.getDstPort()),
             BDDOps.negateIfNonNull(toBDD(headerSpace.getNotDstPorts(), _bddPacket.getDstPort())),
             toBDD(headerSpace.getSrcPorts(), _bddPacket.getSrcPort()),

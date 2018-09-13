@@ -381,7 +381,7 @@ public class RouteReflectionTest {
             .setType(BgpAdvertisementType.EBGP_SENT);
     _nf = new NetworkFactory();
     _cb = _nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
-    _ib = _nf.interfaceBuilder().setActive(true);
+    _ib = _nf.interfaceBuilder();
     _nb = _nf.bgpNeighborBuilder().setLocalAs(2L);
     _pb = _nf.bgpProcessBuilder();
     _vb = _nf.vrfBuilder().setName(Configuration.DEFAULT_VRF_NAME);
