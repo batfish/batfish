@@ -1,10 +1,10 @@
 package org.batfish.bddreachability;
 
 import java.io.IOException;
+import org.batfish.common.bdd.BDDPacket;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
-import org.batfish.symbolic.bdd.BDDPacket;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
