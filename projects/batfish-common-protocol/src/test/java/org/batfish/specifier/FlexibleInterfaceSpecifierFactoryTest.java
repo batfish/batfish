@@ -5,6 +5,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.util.regex.Pattern;
+import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.questions.InterfacesSpecifier;
 import org.junit.Rule;
 import org.junit.Test;
@@ -13,6 +14,13 @@ import org.junit.rules.ExpectedException;
 public class FlexibleInterfaceSpecifierFactoryTest {
 
   @Rule public final ExpectedException exception = ExpectedException.none();
+
+  @Test
+  public void testConnectedTo() {
+    assertThat(
+        new FlexibleInterfaceSpecifierFactory().buildInterfaceSpecifier("connectedTo(1.2.3.4)"),
+        equalTo(new InterfaceWithConnectedIpsSpecifier(new IpWildcard("1.2.3.4").toIpSpace())));
+  }
 
   @Test
   public void testGarbageIn() {

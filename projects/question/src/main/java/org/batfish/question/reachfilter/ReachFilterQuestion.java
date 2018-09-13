@@ -42,7 +42,7 @@ public final class ReachFilterQuestion extends Question {
 
   private static final String FILTER_SPECIFIER_FACTORY = FlexibleFilterSpecifierFactory.NAME;
 
-  private static final String PROP_FILTER_SPECIFIER_INPUT = "filterRegex";
+  private static final String PROP_FILTERS = "filters";
 
   private static final String PROP_COMPLEMENT_HEADERSPACE = "complementHeaderSpace";
 
@@ -57,7 +57,7 @@ public final class ReachFilterQuestion extends Question {
 
   private static final String PROP_NODE_SPECIFIER_FACTORY = "nodeSpecifierFactory";
 
-  private static final String PROP_NODE_SPECIFIER_INPUT = "nodeSpecifierInput";
+  private static final String PROP_NODES = "nodes";
 
   private static final String PROP_SRC_PORTS = "srcPorts";
 
@@ -82,11 +82,11 @@ public final class ReachFilterQuestion extends Question {
   // Invariant: null unless _type == MATCH_LINE
   @Nullable private Integer _lineNumber;
 
-  @Nullable private final String _filterSpecifierInput;
+  @Nullable private final String _filters;
 
   @Nonnull private final String _nodeSpecifierFactory;
 
-  @Nullable private final String _nodeSpecifierInput;
+  @Nullable private final String _nodes;
 
   @Nonnull private final String _destinationIpSpaceSpecifierFactory;
 
@@ -109,7 +109,7 @@ public final class ReachFilterQuestion extends Question {
   @JsonCreator
   private ReachFilterQuestion(
       @JsonProperty(PROP_COMPLEMENT_HEADERSPACE) boolean complementHeaderSpace,
-      @JsonProperty(PROP_FILTER_SPECIFIER_INPUT) @Nullable String filterSpecifierInput,
+      @JsonProperty(PROP_FILTERS) @Nullable String filters,
       @JsonProperty(PROP_DESTINATION_IP_SPACE_SPECIFIER_FACTORY) @Nullable
           String destinationIpSpaceSpecifierFactory,
       @JsonProperty(PROP_DESTINATION_IP_SPACE_SPECIFIER_INPUT) @Nullable
@@ -118,7 +118,7 @@ public final class ReachFilterQuestion extends Question {
       @JsonProperty(PROP_SRC_PORTS) @Nullable SortedSet<SubRange> srcPorts,
       @JsonProperty(PROP_DST_PROTOCOLS) @Nullable SortedSet<Protocol> dstProtocols,
       @JsonProperty(PROP_NODE_SPECIFIER_FACTORY) @Nullable String nodeSpecifierFactory,
-      @JsonProperty(PROP_NODE_SPECIFIER_INPUT) @Nullable String nodesSpecifierInput,
+      @JsonProperty(PROP_NODES) @Nullable String nodes,
       @JsonProperty(PROP_SOURCE_INTERFACE_FILTER_SPECIFIER) @Nullable String sourceInterfaces,
       @JsonProperty(PROP_SOURCE_IP_SPACE_SPECIFIER_FACTORY) @Nullable
           String sourceIpSpaceSpecifierFactory,
@@ -126,9 +126,9 @@ public final class ReachFilterQuestion extends Question {
           String sourceIpSpaceSpecifierInput,
       @JsonProperty(PROP_QUERY) @Nullable String type) {
     _complementHeaderSpace = complementHeaderSpace;
-    _filterSpecifierInput = filterSpecifierInput;
+    _filters = filters;
     _nodeSpecifierFactory = firstNonNull(nodeSpecifierFactory, FlexibleNodeSpecifierFactory.NAME);
-    _nodeSpecifierInput = nodesSpecifierInput;
+    _nodes = nodes;
     _destinationIpSpaceSpecifierFactory =
         firstNonNull(destinationIpSpaceSpecifierFactory, DEFAULT_DST_IP_SPECIFIER_FACTORY);
     _destinationIpSpaceSpecifierInput = destinationIpSpaceSpecifierInput;
@@ -164,14 +164,13 @@ public final class ReachFilterQuestion extends Question {
   @Nonnull
   @JsonIgnore
   public FilterSpecifier getFilterSpecifier() {
-    return FilterSpecifierFactory.load(FILTER_SPECIFIER_FACTORY)
-        .buildFilterSpecifier(_filterSpecifierInput);
+    return FilterSpecifierFactory.load(FILTER_SPECIFIER_FACTORY).buildFilterSpecifier(_filters);
   }
 
   @Nullable
-  @JsonProperty(PROP_FILTER_SPECIFIER_INPUT)
-  private String getFilterSpecifierInput() {
-    return _filterSpecifierInput;
+  @JsonProperty(PROP_FILTERS)
+  private String getFilters() {
+    return _filters;
   }
 
   @JsonProperty(PROP_NODE_SPECIFIER_FACTORY)
@@ -180,10 +179,10 @@ public final class ReachFilterQuestion extends Question {
     return _nodeSpecifierFactory;
   }
 
-  @JsonProperty(PROP_NODE_SPECIFIER_INPUT)
+  @JsonProperty(PROP_NODES)
   @Nullable
-  public String getNodeSpecifierInput() {
-    return _nodeSpecifierInput;
+  public String getNodes() {
+    return _nodes;
   }
 
   @JsonIgnore
@@ -253,7 +252,7 @@ public final class ReachFilterQuestion extends Question {
 
   @Nonnull
   NodeSpecifier getNodesSpecifier() {
-    return NodeSpecifierFactory.load(_nodeSpecifierFactory).buildNodeSpecifier(_nodeSpecifierInput);
+    return NodeSpecifierFactory.load(_nodeSpecifierFactory).buildNodeSpecifier(_nodes);
   }
 
   @VisibleForTesting

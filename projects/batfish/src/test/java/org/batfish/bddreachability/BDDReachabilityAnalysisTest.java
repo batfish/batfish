@@ -1,5 +1,6 @@
 package org.batfish.bddreachability;
 
+import static org.batfish.bddreachability.BDDReachabilityAnalysis.toIngressLocation;
 import static org.batfish.bddreachability.TestNetwork.DST_PREFIX_1;
 import static org.batfish.bddreachability.TestNetwork.DST_PREFIX_2;
 import static org.batfish.bddreachability.TestNetwork.LINK_1_NETWORK;
@@ -17,6 +18,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.util.List;
@@ -414,5 +416,22 @@ public final class BDDReachabilityAnalysisTest {
 
     Flow flow = graph.multipathInconsistencyToFlow(inconsistency, FLOW_TAG);
     assertThat(flow, hasDstIp(_dstIface2Ip));
+  }
+
+  @Test
+  public void testDefaultAcceptBDD() {
+    BDDPacket pkt = new BDDPacket();
+    OriginateVrf originateVrf = new OriginateVrf("host", "vrf");
+    BDD one = pkt.getFactory().one();
+    BDDReachabilityAnalysis graph =
+        new BDDReachabilityAnalysis(
+            pkt,
+            ImmutableMap.of(originateVrf, one),
+            ImmutableMap.of(
+                originateVrf,
+                ImmutableMap.of(Drop.INSTANCE, new Edge(originateVrf, Drop.INSTANCE, one))));
+    assertThat(
+        graph.getIngressLocationAcceptBDDs(),
+        equalTo(ImmutableMap.of(toIngressLocation(originateVrf), pkt.getFactory().zero())));
   }
 }
