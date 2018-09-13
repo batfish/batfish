@@ -38,7 +38,7 @@ public final class TopologyUtilTest {
     _nf = new NetworkFactory();
     _cb = _nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
     _vb = _nf.vrfBuilder().setName(Configuration.DEFAULT_VRF_NAME);
-    _ib = _nf.interfaceBuilder().setActive(true);
+    _ib = _nf.interfaceBuilder();
   }
 
   @Test

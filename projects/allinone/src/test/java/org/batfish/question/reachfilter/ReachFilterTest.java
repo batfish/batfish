@@ -181,7 +181,7 @@ public final class ReachFilterTest {
                 SRC_ACL.getName(),
                 SRC_ACL));
 
-    Builder ib = nf.interfaceBuilder().setActive(true).setOwner(_config);
+    Builder ib = nf.interfaceBuilder().setOwner(_config);
     ib.setName(IFACE1).build();
     ib.setName(IFACE2).build();
 

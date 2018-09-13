@@ -13,6 +13,7 @@ import java.util.Optional;
 import java.util.function.Supplier;
 import net.sf.javabdd.BDD;
 import org.batfish.common.BatfishException;
+import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.util.NonRecursiveSupplier;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.acl.AclLineMatchExpr;

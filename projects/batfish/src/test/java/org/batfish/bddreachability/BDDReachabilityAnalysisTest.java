@@ -1,5 +1,6 @@
 package org.batfish.bddreachability;
 
+import static org.batfish.bddreachability.BDDReachabilityAnalysis.toIngressLocation;
 import static org.batfish.bddreachability.TestNetwork.DST_PREFIX_1;
 import static org.batfish.bddreachability.TestNetwork.DST_PREFIX_2;
 import static org.batfish.bddreachability.TestNetwork.LINK_1_NETWORK;
@@ -17,12 +18,17 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import net.sf.javabdd.BDD;
+import org.batfish.common.bdd.BDDInteger;
+import org.batfish.common.bdd.BDDOps;
+import org.batfish.common.bdd.BDDPacket;
+import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Flow;
@@ -33,10 +39,6 @@ import org.batfish.main.BatfishTestUtils;
 import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.symbolic.bdd.BDDAcl;
-import org.batfish.symbolic.bdd.BDDInteger;
-import org.batfish.symbolic.bdd.BDDOps;
-import org.batfish.symbolic.bdd.BDDPacket;
-import org.batfish.symbolic.bdd.IpSpaceToBDD;
 import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.state.Accept;
 import org.batfish.z3.state.Drop;
@@ -414,5 +416,22 @@ public final class BDDReachabilityAnalysisTest {
 
     Flow flow = graph.multipathInconsistencyToFlow(inconsistency, FLOW_TAG);
     assertThat(flow, hasDstIp(_dstIface2Ip));
+  }
+
+  @Test
+  public void testDefaultAcceptBDD() {
+    BDDPacket pkt = new BDDPacket();
+    OriginateVrf originateVrf = new OriginateVrf("host", "vrf");
+    BDD one = pkt.getFactory().one();
+    BDDReachabilityAnalysis graph =
+        new BDDReachabilityAnalysis(
+            pkt,
+            ImmutableMap.of(originateVrf, one),
+            ImmutableMap.of(
+                originateVrf,
+                ImmutableMap.of(Drop.INSTANCE, new Edge(originateVrf, Drop.INSTANCE, one))));
+    assertThat(
+        graph.getIngressLocationAcceptBDDs(),
+        equalTo(ImmutableMap.of(toIngressLocation(originateVrf), pkt.getFactory().zero())));
   }
 }

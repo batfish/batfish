@@ -72,7 +72,7 @@ public final class IsisEdgeTest {
             .setLevel1(isisInterfaceLevelSettings)
             .setLevel2(isisInterfaceLevelSettings)
             .build();
-    Interface.Builder ib = nf.interfaceBuilder().setActive(true).setIsis(isisInterfaceSettings);
+    Interface.Builder ib = nf.interfaceBuilder().setIsis(isisInterfaceSettings);
 
     Configuration c1 = cb.build();
     Vrf v1 = vb.setOwner(c1).build();

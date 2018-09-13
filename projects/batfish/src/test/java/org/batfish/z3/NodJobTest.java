@@ -110,7 +110,7 @@ public class NodJobTest {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
-    Interface.Builder ib = nf.interfaceBuilder().setActive(true).setBandwidth(1E9d);
+    Interface.Builder ib = nf.interfaceBuilder().setBandwidth(1E9d);
     IpAccessList.Builder aclb = nf.aclBuilder();
     SourceNat.Builder snb = SourceNat.builder();
     Vrf.Builder vb = nf.vrfBuilder();
