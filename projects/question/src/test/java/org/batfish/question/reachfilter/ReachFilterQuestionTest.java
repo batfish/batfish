@@ -31,6 +31,25 @@ public class ReachFilterQuestionTest {
   @Rule public ExpectedException exception = ExpectedException.none();
 
   @Test
+  public void testAllowOriginatingFromDevice() throws IOException {
+    ReachFilterQuestion question = ReachFilterQuestion.builder().build();
+    assertThat(
+        "allowOriginatingFromDevice is false by default",
+        !question.toReachFilterParameters().getAllowOriginatingFromDevice());
+
+    question = ReachFilterQuestion.builder().setAllowOriginatingFromDevice(true).build();
+    assertThat(
+        "allowOriginatingFromDevice setter should work",
+        question.toReachFilterParameters().getAllowOriginatingFromDevice());
+
+    // test (de)serialization
+    question = BatfishObjectMapper.clone(question, ReachFilterQuestion.class);
+    assertThat(
+        "allowOriginatingFromDevice should be preserved by (de)serialization",
+        question.toReachFilterParameters().getAllowOriginatingFromDevice());
+  }
+
+  @Test
   public void testDeserializationDefaultValues() throws IOException {
     String serialized =
         String.format("{\"class\":\"%s\"}", ReachFilterQuestion.class.getCanonicalName());

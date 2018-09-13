@@ -4376,7 +4376,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
             referencedSources(deltaConfig.getIpAccessLists(), deltaAcl));
 
     BDDSourceManager mgr =
-        BDDSourceManager.forSources(bddPacket, activeInterfaces, referencedSources);
+        BDDSourceManager.forSources(
+            bddPacket,
+            reachFilterParameters.getAllowOriginatingFromDevice(),
+            activeInterfaces,
+            referencedSources);
     BDD baseAclBDD =
         BDDAcl.create(
                 bddPacket, baseAcl, baseConfig.getIpAccessLists(), baseConfig.getIpSpaces(), mgr)
@@ -4438,10 +4442,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
             .build());
   }
 
-  @Override
-  public Optional<Flow> reachFilter(
-      Configuration node, IpAccessList acl, ReachFilterParameters parameters) {
-    BDDPacket bddPacket = new BDDPacket();
+  private BDDSourceManager getBDDSourceManager(
+      BDDPacket bddPacket, Configuration node, IpAccessList acl, ReachFilterParameters parameters) {
 
     Set<String> activeInterfaces =
         Sets.intersection(
@@ -4449,9 +4451,15 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     Set<String> referencedSources = referencedSources(node.getIpAccessLists(), acl);
 
-    BDDSourceManager mgr =
-        BDDSourceManager.forSources(bddPacket, activeInterfaces, referencedSources);
+    return BDDSourceManager.forSources(
+        bddPacket, parameters.getAllowOriginatingFromDevice(), activeInterfaces, referencedSources);
+  }
 
+  @Override
+  public Optional<Flow> reachFilter(
+      Configuration node, IpAccessList acl, ReachFilterParameters parameters) {
+    BDDPacket bddPacket = new BDDPacket();
+    BDDSourceManager mgr = getBDDSourceManager(bddPacket, node, acl, parameters);
     BDD headerSpaceBDD =
         new HeaderSpaceToBDD(bddPacket, node.getIpSpaces())
             .toBDD(parameters.resolveHeaderspace(specifierContext()));
