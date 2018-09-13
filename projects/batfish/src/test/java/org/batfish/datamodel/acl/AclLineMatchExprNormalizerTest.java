@@ -1,4 +1,4 @@
-package org.batfish.main;
+package org.batfish.datamodel.acl;
 
 import static org.batfish.datamodel.acl.AclLineMatchExprs.FALSE;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.ORIGINATING_FROM_DEVICE;
@@ -15,10 +15,6 @@ import org.batfish.common.bdd.BDDPacket;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpWildcard;
-import org.batfish.datamodel.acl.AclLineMatchExpr;
-import org.batfish.datamodel.acl.AclLineMatchExprNormalizer;
-import org.batfish.datamodel.acl.AclLineMatchExprs;
-import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.symbolic.bdd.AclLineMatchExprToBDD;
 import org.batfish.symbolic.bdd.BDDSourceManager;
 import org.hamcrest.Matchers;
