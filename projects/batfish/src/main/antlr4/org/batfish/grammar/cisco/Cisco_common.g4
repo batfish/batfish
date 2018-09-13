@@ -157,6 +157,7 @@ icmp_object_type
    | TIMESTAMP_REQUEST
    | TRACEROUTE
    | UNREACHABLE
+   | UNSET
 ;
 
 int_expr

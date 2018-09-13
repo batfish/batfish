@@ -9596,6 +9596,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return IcmpType.ECHO_REQUEST;
     } else if (ctx.ECHO_REPLY() != null) {
       return IcmpType.ECHO_REPLY;
+    } else if (ctx.INFORMATION_REPLY() != null) {
+      return IcmpType.INFO_REPLY;
+    } else if (ctx.INFORMATION_REQUEST() != null) {
+      return IcmpType.INFO_REQUEST;
+    } else if (ctx.MASK_REPLY() != null) {
+      return IcmpType.MASK_REPLY;
+    } else if (ctx.MASK_REQUEST() != null) {
+      return IcmpType.MASK_REQUEST;
     } else if (ctx.MOBILE_REDIRECT() != null) {
       return IcmpType.MOBILE_REDIRECT;
     } else if (ctx.PARAMETER_PROBLEM() != null) {
@@ -9618,6 +9626,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return IcmpType.TRACEROUTE;
     } else if (ctx.UNREACHABLE() != null) {
       return IcmpType.DESTINATION_UNREACHABLE;
+    } else if (ctx.UNSET() != null) {
+      return IcmpType.UNSET;
     } else {
       throw convError(IcmpType.class, ctx);
     }
