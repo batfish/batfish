@@ -118,7 +118,7 @@ public final class BDDAcl {
     return new BDDAcl(pkt, acl, bddAclEnv, ipSpaceEnv, bddSrcManager);
   }
 
-  private static BDDAcl createWithBDDAclEnv(
+  public static BDDAcl createWithBDDAclEnv(
       BDDPacket pkt,
       IpAccessList acl,
       Map<String, Supplier<BDD>> aclEnv,

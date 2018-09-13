@@ -9,6 +9,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Suppliers;
 import com.google.common.base.Throwables;
 import com.google.common.base.Verify;
 import com.google.common.cache.Cache;
@@ -61,6 +62,8 @@ import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
+import net.sf.javabdd.BDDFactory;
+import net.sf.javabdd.BuDDyFactory;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.apache.commons.configuration2.ImmutableConfiguration;
@@ -738,8 +741,104 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return new NodSatJob<>(_settings, aclSynthesizer, query, true);
   }
 
-  @Override
+  // new implementation using BDD
   public void answerAclReachability(List<AclSpecs> aclSpecs, AclReachabilityRows answerRows) {
+    BDDPacket bddPacket = new BDDPacket();
+    BDDFactory bddFactory = bddPacket.getFactory();
+    // aclName -> bdd representation of acl
+    Map<String, Supplier<BDD>> bddAclEnv = new TreeMap<>();
+
+    // build bddAclEnv
+    for (AclSpecs aclSpec : aclSpecs) {
+      BDDSourceManager sourceMgr =
+          BDDSourceManager.forInterfaces(bddPacket, aclSpec.acl.getInterfaces());
+      bddAclEnv.put(
+          aclSpec.acl.getAclName(),
+          Suppliers.memoize(
+              () ->
+                  BDDAcl.createWithBDDAclEnv(
+                      bddPacket,
+                      aclSpec.acl.getSanitizedAcl(),
+                      bddAclEnv,
+                      ImmutableMap.of(),
+                      sourceMgr).getBdd()));
+
+      Map<String, IpAccessList> dependencies = aclSpec.acl.getDependencies();
+      dependencies.forEach(
+          (aclName, acl) -> {
+            bddAclEnv.put(
+                aclName,
+                Suppliers.memoize(
+                    () ->
+                        BDDAcl.createWithBDDAclEnv(
+                            bddPacket,
+                            acl,
+                            bddAclEnv,
+                            ImmutableMap.of(),
+                            sourceMgr).getBdd()));
+          }
+      );
+    }
+
+    // compute unreachable and unmatchable acl lines for each acl
+    for (AclSpecs aclSpec : aclSpecs) {
+      String hostname = aclSpec.reprHostname;
+      String aclName = aclSpec.acl.getAclName();
+      IpAccessList ipAcl = aclSpec.acl.getSanitizedAcl();
+      List<IpAccessListLine> lines = ipAcl.getLines();
+
+      BDDSourceManager sourceMgr =
+          BDDSourceManager.forInterfaces(bddPacket, aclSpec.acl.getInterfaces());
+      Map<Integer, BDD> ipLineToBDDMap = new TreeMap<>();
+      Set<Integer> unreachableButMatchableLineNums = new HashSet<>();
+
+      // compute if each acl line is unmatchable and/or unreachable
+      BDD rest = bddFactory.one();
+      for (int lineNum = 0; lineNum < lines.size(); lineNum++) {
+        IpAccessListLine line = lines.get(lineNum);
+        AclLineMatchExpr matchExpr = line.getMatchCondition();
+        BDD lineBDD =
+            matchExpr.accept(
+                new AclLineMatchExprToBDD(
+                    bddPacket.getFactory(),
+                    bddPacket,
+                    bddAclEnv,
+                    ImmutableMap.of(),
+                    sourceMgr));
+        ipLineToBDDMap.put(lineNum, lineBDD);
+        if (lineBDD.isZero()) {
+          // this line is unmatchable
+          answerRows.addUnreachableLine(aclSpec, lineNum, true, new TreeSet<>());
+        } else if (rest.isZero() || lineBDD.and(rest).isZero()) {
+          unreachableButMatchableLineNums.add(lineNum);
+        }
+        rest.andWith(lineBDD.not());
+      }
+
+      // compute blocking lines
+      // can be parallelized
+      for (int lineNum : unreachableButMatchableLineNums) {
+        IpAccessListLine line = lines.get(lineNum);
+
+        SortedSet<Integer> blockingLineNums = new TreeSet<Integer>();
+        BDD restOfLine = ipLineToBDDMap.get(lineNum);
+
+        for (int prevLineNum = 0; prevLineNum < lineNum; prevLineNum++) {
+          if (restOfLine.isZero())
+            break;
+          BDD prevBDD = ipLineToBDDMap.get(prevLineNum);
+
+          if (!(prevBDD.and(restOfLine).isZero())) {
+            blockingLineNums.add(prevLineNum);
+            restOfLine = restOfLine.and(prevBDD.not());
+          }
+        }
+        answerRows.addUnreachableLine(aclSpec, lineNum, false, blockingLineNums);
+      }
+    }
+  }
+
+  public void answerAclReachability1(List<AclSpecs> aclSpecs, AclReachabilityRows answerRows) {
 
     // Map aclSpecs into a map of hostname/aclName pairs to AclSpecs objects
     Map<AclIdentifier, AclSpecs> aclSpecsMap =
