@@ -16,7 +16,6 @@ object-group group service services tcp-udp
  group-object service1
  group-object service2
  group-object service3
- group-object UNDEFINED_GROUP
 !
 object-group service service4
  port-object eq 4444
@@ -25,4 +24,7 @@ object-group service mixed_group
  port-object eq 5555
  group-object service4
  group-object UNDEFINED_GROUP_MIXED
+!
+object-group group service services_undef tcp-udp
+ group-object UNDEFINED_GROUP
 !

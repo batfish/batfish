@@ -2625,16 +2625,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private void addIcmpTypeGroupReference(Variable_permissiveContext nameCtx) {
     String name = nameCtx.getText();
-    if (_configuration.getIcmpTypeObjectGroups().containsKey(name)) {
-      _currentIcmpTypeObjectGroup.getLines().add(new IcmpTypeGroupReferenceLine(name));
-      _configuration.referenceStructure(
-          ICMP_TYPE_OBJECT_GROUP,
-          name,
-          ICMP_TYPE_OBJECT_GROUP_GROUP_OBJECT,
-          nameCtx.start.getLine());
-    } else {
-      _configuration.getUndefinedIcmpTypeGroups().put(name, nameCtx.start.getLine());
-    }
+    _currentIcmpTypeObjectGroup.getLines().add(new IcmpTypeGroupReferenceLine(name));
+    _configuration.referenceStructure(
+        ICMP_TYPE_OBJECT_GROUP, name, ICMP_TYPE_OBJECT_GROUP_GROUP_OBJECT, nameCtx.start.getLine());
   }
 
   @Override
@@ -2653,13 +2646,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitOggn_group_object(Oggn_group_objectContext ctx) {
     String name = ctx.name.getText();
-    if (_configuration.getNetworkObjectGroups().containsKey(name)) {
-      _currentNetworkObjectGroup.getLines().add(new IpSpaceReference(name));
-      _configuration.referenceStructure(
-          NETWORK_OBJECT_GROUP, name, NETWORK_OBJECT_GROUP_GROUP_OBJECT, ctx.name.start.getLine());
-    } else {
-      _configuration.getUndefinedNetworkGroups().put(name, ctx.start.getLine());
-    }
+    _currentNetworkObjectGroup.getLines().add(new IpSpaceReference(name));
+    _configuration.referenceStructure(
+        NETWORK_OBJECT_GROUP, name, NETWORK_OBJECT_GROUP_GROUP_OBJECT, ctx.name.start.getLine());
   }
 
   @Override
@@ -2683,16 +2672,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitOggp_group_object(Oggp_group_objectContext ctx) {
     String name = ctx.name.getText();
-    if (_configuration.getProtocolObjectGroups().containsKey(name)) {
-      _currentProtocolObjectGroup.getLines().add(new ProtocolObjectGroupReferenceLine(name));
-      _configuration.referenceStructure(
-          PROTOCOL_OBJECT_GROUP,
-          name,
-          EXTENDED_ACCESS_LIST_PROTOCOL_OBJECT_GROUP,
-          ctx.name.start.getLine());
-    } else {
-      _configuration.getUndefinedProtocolGroups().put(name, ctx.start.getLine());
-    }
+    _currentProtocolObjectGroup.getLines().add(new ProtocolObjectGroupReferenceLine(name));
+    _configuration.referenceStructure(
+        PROTOCOL_OBJECT_GROUP,
+        name,
+        EXTENDED_ACCESS_LIST_PROTOCOL_OBJECT_GROUP,
+        ctx.name.start.getLine());
   }
 
   @Override
@@ -2716,7 +2701,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitOggs_group_object(Oggs_group_objectContext ctx) {
-    addServiceGroupreference(ctx.name);
+    addServiceGroupReference(ctx.name);
   }
 
   @Override
@@ -2879,23 +2864,19 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitOgs_group_object(Ogs_group_objectContext ctx) {
-    addServiceGroupreference(ctx.name);
+    addServiceGroupReference(ctx.name);
   }
 
-  private void addServiceGroupreference(Variable_group_idContext nameCtx) {
+  private void addServiceGroupReference(Variable_group_idContext nameCtx) {
     String name = nameCtx.getText();
-    if (_configuration.getServiceObjectGroups().containsKey(name)) {
-      _currentServiceObjectGroup
-          .getLines()
-          .add(new ServiceObjectGroupReferenceServiceObjectGroupLine(name));
-      _configuration.referenceStructure(
-          SERVICE_OBJECT_GROUP,
-          name,
-          EXTENDED_ACCESS_LIST_SERVICE_OBJECT_GROUP,
-          nameCtx.start.getLine());
-    } else {
-      _configuration.getUndefinedServiceGroups().put(name, nameCtx.start.getLine());
-    }
+    _currentServiceObjectGroup
+        .getLines()
+        .add(new ServiceObjectGroupReferenceServiceObjectGroupLine(name));
+    _configuration.referenceStructure(
+        SERVICE_OBJECT_GROUP,
+        name,
+        EXTENDED_ACCESS_LIST_SERVICE_OBJECT_GROUP,
+        nameCtx.start.getLine());
   }
 
   @Override

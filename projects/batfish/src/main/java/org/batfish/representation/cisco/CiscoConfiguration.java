@@ -465,14 +465,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private transient Set<NamedBgpPeerGroup> _unusedPeerSessions;
 
-  private final SortedMap<String, Integer> _undefinedIcmpTypeGroups;
-
-  private final SortedMap<String, Integer> _undefinedNetworkGroups;
-
-  private final SortedMap<String, Integer> _undefinedProtocolGroups;
-
-  private final SortedMap<String, Integer> _undefinedServiceGroups;
-
   private ConfigurationFormat _vendor;
 
   private final Map<String, Vrf> _vrfs;
@@ -533,10 +525,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _tacacsServers = new TreeSet<>();
     _trackingGroups = new TreeMap<>();
     _undefinedPeerGroups = new TreeMap<>();
-    _undefinedIcmpTypeGroups = new TreeMap<>();
-    _undefinedNetworkGroups = new TreeMap<>();
-    _undefinedProtocolGroups = new TreeMap<>();
-    _undefinedServiceGroups = new TreeMap<>();
     _vrfs = new TreeMap<>();
     _vrfs.put(Configuration.DEFAULT_VRF_NAME, new Vrf(Configuration.DEFAULT_VRF_NAME));
     _vrrpGroups = new TreeMap<>();
@@ -956,22 +944,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public SortedMap<String, Integer> getUndefinedPeerGroups() {
     return _undefinedPeerGroups;
-  }
-
-  public SortedMap<String, Integer> getUndefinedIcmpTypeGroups() {
-    return _undefinedIcmpTypeGroups;
-  }
-
-  public SortedMap<String, Integer> getUndefinedNetworkGroups() {
-    return _undefinedNetworkGroups;
-  }
-
-  public SortedMap<String, Integer> getUndefinedProtocolGroups() {
-    return _undefinedProtocolGroups;
-  }
-
-  public SortedMap<String, Integer> getUndefinedServiceGroups() {
-    return _undefinedServiceGroups;
   }
 
   private Ip getUpdateSource(
@@ -3343,22 +3315,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
         _undefinedPeerGroups,
         CiscoStructureType.BGP_PEER_GROUP,
         CiscoStructureUsage.BGP_NEIGHBOR_STATEMENT);
-    undefinedGroups(
-        _undefinedIcmpTypeGroups,
-        CiscoStructureType.ICMP_TYPE_OBJECT_GROUP,
-        CiscoStructureUsage.ICMP_TYPE_OBJECT_GROUP_GROUP_OBJECT);
-    undefinedGroups(
-        _undefinedNetworkGroups,
-        CiscoStructureType.NETWORK_OBJECT_GROUP,
-        CiscoStructureUsage.NETWORK_OBJECT_GROUP_GROUP_OBJECT);
-    undefinedGroups(
-        _undefinedProtocolGroups,
-        CiscoStructureType.PROTOCOL_OBJECT_GROUP,
-        CiscoStructureUsage.PROTOCOL_OBJECT_GROUP_GROUP_OBJECT);
-    undefinedGroups(
-        _undefinedServiceGroups,
-        CiscoStructureType.SERVICE_OBJECT_GROUP,
-        CiscoStructureUsage.SERVICE_OBJECT_GROUP_SERVICE_OBJECT);
 
     markConcreteStructure(
         CiscoStructureType.BFD_TEMPLATE, CiscoStructureUsage.INTERFACE_BFD_TEMPLATE);

@@ -16,7 +16,6 @@ object-group group protocol protocols
  group-object proto1
  group-object proto2
  group-object proto3
- group-object UNDEFINED_GROUP
 !
 object-group protocol proto4
  protocol-object gre
@@ -25,4 +24,7 @@ object-group protocol mixed_group
  protocol-object igmp
  group-object proto4
  group-object UNDEFINED_GROUP_MIXED
+!
+object-group group protocol protocol_undef
+ group-object UNDEFINED_GROUP
 !
