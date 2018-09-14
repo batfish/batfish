@@ -725,6 +725,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   // new implementation using BDD
+  @Override
   public void answerAclReachability(List<AclSpecs> aclSpecs, AclReachabilityRows answerRows) {
     BDDPacket bddPacket = new BDDPacket();
     BDDFactory bddFactory = bddPacket.getFactory();
@@ -762,8 +763,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     // compute unreachable and unmatchable acl lines for each acl
     for (AclSpecs aclSpec : aclSpecs) {
-      String hostname = aclSpec.reprHostname;
-      String aclName = aclSpec.acl.getAclName();
       IpAccessList ipAcl = aclSpec.acl.getSanitizedAcl();
       List<IpAccessListLine> lines = ipAcl.getLines();
 
@@ -794,8 +793,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
       // compute blocking lines
       // can be parallelized
       for (int lineNum : unreachableButMatchableLineNums) {
-        IpAccessListLine line = lines.get(lineNum);
-
         SortedSet<Integer> blockingLineNums = new TreeSet<Integer>();
         BDD restOfLine = ipLineToBDDMap.get(lineNum);
 
