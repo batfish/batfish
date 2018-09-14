@@ -463,6 +463,13 @@ public class BatfishTest {
             return "q1";
           }
         };
+    Question testQuestionMissing =
+        new TestQuestion() {
+          @Override
+          public String getName() {
+            return "q2";
+          }
+        };
     Answerer testAnswerer =
         new Answerer(testQuestion, batfish) {
           @Override
@@ -474,6 +481,10 @@ public class BatfishTest {
 
     batfish.registerAnswerer("q1", "q1ClassName", (q, b) -> testAnswerer);
 
+    // should get the answerer the creator supplies
     assertThat(batfish.createAnswerer(testQuestion), equalTo(testAnswerer));
+
+    // should get null answerer if no creator available
+    assertThat(batfish.createAnswerer(testQuestionMissing), nullValue());
   }
 }
