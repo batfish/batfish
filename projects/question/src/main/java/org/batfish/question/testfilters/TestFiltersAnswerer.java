@@ -13,6 +13,7 @@ import org.batfish.datamodel.FilterResult;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.acl.AclTrace;
 import org.batfish.datamodel.acl.AclTracer;
@@ -29,6 +30,10 @@ import org.batfish.specifier.FilterSpecifier;
 import org.batfish.specifier.SpecifierContext;
 
 public class TestFiltersAnswerer extends Answerer {
+
+  private static int DEFAULT_DST_PORT = 80; // HTTP
+  private static IpProtocol DEFAULT_IP_PROTOCOL = IpProtocol.TCP;
+  private static int DEFAULT_SRC_PORT = 49152; // lowest ephemeral port
 
   public static final String COL_NODE = "Node";
   public static final String COL_FILTER_NAME = "Filter_Name";
@@ -92,6 +97,19 @@ public class TestFiltersAnswerer extends Answerer {
     flowBuilder.setIngressNode(ingressNode);
     if (flowBuilder.getDstIp().equals(Ip.AUTO)) {
       flowBuilder.setDstIp(question.createDstIpFromDst(configurations));
+    }
+    // reasonable defaults when values are not specified
+    if (question.getIpProtocol() == null) {
+      flowBuilder.setIpProtocol(DEFAULT_IP_PROTOCOL);
+    }
+    if (flowBuilder.getIpProtocol() == IpProtocol.TCP
+        || flowBuilder.getIpProtocol() == IpProtocol.UDP) {
+      if (question.getDstPort() == null) {
+        flowBuilder.setSrcPort(DEFAULT_DST_PORT);
+      }
+      if (question.getSrcPort() == null) {
+        flowBuilder.setSrcPort(DEFAULT_SRC_PORT);
+      }
     }
     return flowBuilder.build();
   }
