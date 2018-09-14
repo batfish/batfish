@@ -65,7 +65,7 @@
         "Flow" : {
           "dscp" : 0,
           "dstIp" : "1.1.1.1",
-          "dstPort" : 0,
+          "dstPort" : 80,
           "ecn" : 0,
           "fragmentOffset" : 0,
           "icmpCode" : 255,
@@ -111,7 +111,7 @@
         "Flow" : {
           "dscp" : 0,
           "dstIp" : "1.1.1.1",
-          "dstPort" : 0,
+          "dstPort" : 80,
           "ecn" : 0,
           "fragmentOffset" : 0,
           "icmpCode" : 255,
@@ -157,7 +157,7 @@
         "Flow" : {
           "dscp" : 0,
           "dstIp" : "1.1.1.1",
-          "dstPort" : 0,
+          "dstPort" : 80,
           "ecn" : 0,
           "fragmentOffset" : 0,
           "icmpCode" : 255,
@@ -203,7 +203,7 @@
         "Flow" : {
           "dscp" : 0,
           "dstIp" : "1.1.1.1",
-          "dstPort" : 0,
+          "dstPort" : 80,
           "ecn" : 0,
           "fragmentOffset" : 0,
           "icmpCode" : 255,
@@ -249,7 +249,7 @@
         "Flow" : {
           "dscp" : 0,
           "dstIp" : "1.1.1.1",
-          "dstPort" : 0,
+          "dstPort" : 80,
           "ecn" : 0,
           "fragmentOffset" : 0,
           "icmpCode" : 255,
@@ -295,7 +295,7 @@
         "Flow" : {
           "dscp" : 0,
           "dstIp" : "1.1.1.1",
-          "dstPort" : 0,
+          "dstPort" : 80,
           "ecn" : 0,
           "fragmentOffset" : 0,
           "icmpCode" : 255,

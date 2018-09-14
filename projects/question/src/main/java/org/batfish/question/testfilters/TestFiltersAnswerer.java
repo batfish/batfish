@@ -112,7 +112,7 @@ public class TestFiltersAnswerer extends Answerer {
     if (flowBuilder.getIpProtocol() == IpProtocol.TCP
         || flowBuilder.getIpProtocol() == IpProtocol.UDP) {
       if (question.getDstPort() == null) {
-        flowBuilder.setSrcPort(DEFAULT_DST_PORT);
+        flowBuilder.setDstPort(DEFAULT_DST_PORT);
       }
       if (question.getSrcPort() == null) {
         flowBuilder.setSrcPort(DEFAULT_SRC_PORT);
