@@ -1,8 +1,12 @@
 package org.batfish.question;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.graph.EndpointPair;
 import com.google.common.graph.Network;
@@ -13,6 +17,8 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
@@ -97,54 +103,54 @@ public class VIModelQuestionPlugin extends QuestionPlugin {
         @JsonProperty(PROP_LAYER3_EDGES) SortedSet<VerboseEdge> layer3Edges,
         @JsonProperty(PROP_OSPF_EDGES) SortedSet<VerboseOspfEdge> ospfEdges,
         @JsonProperty(PROP_RIP_EDGES) SortedSet<VerboseRipEdge> ripEdges) {
-      _nodes = nodes;
+      _nodes = firstNonNull(nodes, ImmutableSortedMap.of());
       _bgpEdges = new TreeSet<>(VERBOSE_BGP_EDGE_COMPARATOR);
-      _bgpEdges.addAll(bgpEdges);
-      _eigrpEdges = eigrpEdges;
+      _bgpEdges.addAll(firstNonNull(bgpEdges, ImmutableSet.of()));
+      _eigrpEdges = firstNonNull(eigrpEdges, ImmutableSortedSet.of());
       _layer1Edges = layer1Edges;
       _layer2Edges = layer2Edges;
-      _layer3Edges = layer3Edges;
-      _ospfEdges = ospfEdges;
-      _ripEdges = ripEdges;
+      _layer3Edges = firstNonNull(layer3Edges, ImmutableSortedSet.of());
+      _ospfEdges = firstNonNull(ospfEdges, ImmutableSortedSet.of());
+      _ripEdges = firstNonNull(ripEdges, ImmutableSortedSet.of());
     }
 
     @JsonProperty(PROP_NODES)
-    public SortedMap<String, Configuration> getNodes() {
+    public @Nonnull SortedMap<String, Configuration> getNodes() {
       return _nodes;
     }
 
     @JsonProperty(PROP_BGP_EDGES)
-    public SortedSet<VerboseBgpEdge> getBgpEdges() {
+    public @Nonnull SortedSet<VerboseBgpEdge> getBgpEdges() {
       return _bgpEdges;
     }
 
     @JsonProperty(PROP_EIGRP_EDGES)
-    public SortedSet<VerboseEigrpEdge> getEigrpEdges() {
+    public @Nonnull SortedSet<VerboseEigrpEdge> getEigrpEdges() {
       return _eigrpEdges;
     }
 
     @JsonProperty(PROP_LAYER1_EDGES)
-    public Layer1Topology getLayer1Edges() {
+    public @Nullable Layer1Topology getLayer1Edges() {
       return _layer1Edges;
     }
 
     @JsonProperty(PROP_LAYER2_EDGES)
-    public Layer2Topology getLayer2Edges() {
+    public @Nullable Layer2Topology getLayer2Edges() {
       return _layer2Edges;
     }
 
     @JsonProperty(PROP_LAYER3_EDGES)
-    public SortedSet<VerboseEdge> getLayer3Edges() {
+    public @Nonnull SortedSet<VerboseEdge> getLayer3Edges() {
       return _layer3Edges;
     }
 
     @JsonProperty(PROP_OSPF_EDGES)
-    public SortedSet<VerboseOspfEdge> getOspfEdges() {
+    public @Nonnull SortedSet<VerboseOspfEdge> getOspfEdges() {
       return _ospfEdges;
     }
 
     @JsonProperty(PROP_RIP_EDGES)
-    public SortedSet<VerboseRipEdge> getRipEdges() {
+    public @Nonnull SortedSet<VerboseRipEdge> getRipEdges() {
       return _ripEdges;
     }
   }
