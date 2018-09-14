@@ -106,15 +106,21 @@ public class TestFiltersAnswerer extends Answerer {
   /** Applies reasonable default values for fields when left unspecified */
   @VisibleForTesting
   static void applyDefaults(Flow.Builder flowBuilder, TestFiltersQuestion question) {
-    if (question.getIpProtocol() == null) {
+    if (question.getIpProtocol() == null
+        // IpProtocol is specified if src or dst protocol is specified
+        && question.getDstProtocol() == null
+        && question.getSrcProtocol() == null) {
       flowBuilder.setIpProtocol(DEFAULT_IP_PROTOCOL);
     }
     if (flowBuilder.getIpProtocol() == IpProtocol.TCP
-        || flowBuilder.getIpProtocol() == IpProtocol.UDP) {
-      if (question.getDstPort() == null) {
+        || flowBuilder.getIpProtocol() == IpProtocol.UDP
+        // IpProtocol is tcp or udp when src or dst protocol is specified
+        || question.getSrcProtocol() != null
+        || question.getDstProtocol() != null) {
+      if (question.getDstPort() == null && question.getDstProtocol() == null) {
         flowBuilder.setDstPort(DEFAULT_DST_PORT);
       }
-      if (question.getSrcPort() == null) {
+      if (question.getSrcPort() == null && question.getSrcProtocol() == null) {
         flowBuilder.setSrcPort(DEFAULT_SRC_PORT);
       }
     }
