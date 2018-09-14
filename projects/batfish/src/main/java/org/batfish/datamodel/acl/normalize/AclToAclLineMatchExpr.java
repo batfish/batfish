@@ -1,6 +1,5 @@
 package org.batfish.datamodel.acl.normalize;
 
-import static org.batfish.datamodel.acl.AclLineMatchExprs.FALSE;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.not;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
@@ -104,26 +103,39 @@ public final class AclToAclLineMatchExpr
   }
 
   private AclLineMatchExpr toAclLineMatchExpr(IpAccessList acl) {
-    List<AclLineMatchExpr> rejects = new ArrayList<>();
+    /*
+     * We're going to construct an OrMatchExpr with a disjunct per PERMIT line in the ACL. We use
+     * a disjuncts builder to remove redundant disjuncts.
+     */
     DisjunctsBuilder disjunctsBuilder = new DisjunctsBuilder(_aclMatchExprToBDD);
+
+    /*
+     * The disjunct for each PERMIT line is the expression "match the line but do not match any
+     * earlier DENY line". As we walk the ACL we remember the expressions for earlier deny lines in
+     * this list.
+     */
+    List<AclLineMatchExpr> earlierDenyLineExprs = new ArrayList<>();
+
     for (IpAccessListLine line : acl.getLines()) {
-      if (line.getMatchCondition() == FALSE) {
-        continue;
-      }
       AclLineMatchExpr expr = line.getMatchCondition().accept(this);
       if (line.getAction() == LineAction.PERMIT) {
-        if (rejects.isEmpty()) {
-          disjunctsBuilder.add(expr);
-        } else {
-          ConjunctsBuilder conjunctsBuilder = new ConjunctsBuilder(_aclMatchExprToBDD);
-          conjunctsBuilder.add(expr);
-          rejects.forEach(conjunctsBuilder::add);
-          if (!conjunctsBuilder.unsat()) {
-            disjunctsBuilder.add(conjunctsBuilder.build());
-          }
-        }
+        /*
+         * This is a PERMIT line, so the output is going to include a disjunct for it. The disjunct
+         * is an AndMatchExpr -- matches this line, and doesn't match each previous DENY line. We
+         * use a ConjunctsBuilder to remove redundant conjuncts.
+         */
+        ConjunctsBuilder conjunctsBuilder = new ConjunctsBuilder(_aclMatchExprToBDD);
+        // matches this PERMIT line
+        conjunctsBuilder.add(expr);
+        // does not match any earlier DENY line.
+        earlierDenyLineExprs.forEach(conjunctsBuilder::add);
+
+        disjunctsBuilder.add(conjunctsBuilder.build());
       } else {
-        rejects.add(not(expr));
+        /*
+         * this is a DENY line, so add it to our list of DENY line expressions.
+         */
+        earlierDenyLineExprs.add(not(expr));
       }
     }
     return disjunctsBuilder.build();
