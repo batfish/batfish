@@ -23,7 +23,6 @@ import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.Layer2Topology;
-import org.batfish.common.topology.TopologyUtil;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpPeerConfigId;
@@ -889,8 +888,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
           answerElement.setLayer1Neighbors(layer1Topology);
         }
         if (layer2) {
-          answerElement.setLayer2Neighbors(
-              TopologyUtil.computeLayer2Topology(layer1Topology, configurations));
+          answerElement.setLayer2Neighbors(_batfish.getLayer2Topology());
         }
       }
       return answerElement;
