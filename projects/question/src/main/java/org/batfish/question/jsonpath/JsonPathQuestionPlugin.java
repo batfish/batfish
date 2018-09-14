@@ -159,9 +159,7 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
       List<JsonPathQuery> paths = question.getPaths();
 
       Question innerQuestion = question._innerQuestion;
-      String innerQuestionName = innerQuestion.getName();
-      Answerer innerAnswerer =
-          _batfish.getAnswererCreators().get(innerQuestionName).apply(innerQuestion, _batfish);
+      Answerer innerAnswerer = _batfish.createAnswerer(innerQuestion);
       AnswerElement innerAnswer =
           (innerQuestion.getDifferential()) ? innerAnswerer.answerDiff() : innerAnswerer.answer();
 
