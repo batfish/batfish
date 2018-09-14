@@ -62,7 +62,7 @@ public final class AclTracer extends Evaluator {
     super(flow, srcInterface, availableAcls, namedIpSpaces);
     _ipSpaceNames = new IdentityHashMap<>();
     _ipSpaceMetadata = new IdentityHashMap<>();
-    _traceRoot = new TraceEventNode(null);
+    _traceRoot = TraceEventNode.withParent(null);
     _currentTreeNode = _traceRoot;
     namedIpSpaces.forEach((name, ipSpace) -> _ipSpaceNames.put(ipSpace, name));
     namedIpSpaceMetadata.forEach(
@@ -443,7 +443,7 @@ public final class AclTracer extends Evaluator {
    */
   public void newTrace() {
     // Add new child, set it as current node
-    _currentTreeNode = _currentTreeNode.addChild(new TraceEventNode(_currentTreeNode));
+    _currentTreeNode = _currentTreeNode.addChild(TraceEventNode.withParent(_currentTreeNode));
   }
 
   /** End a trace: indicates that tracing of a structure is finished. */
@@ -462,17 +462,22 @@ public final class AclTracer extends Evaluator {
   }
 
   /** For building trace event trees */
-  private class TraceEventNode {
+  private static final class TraceEventNode {
     private @Nullable TraceEvent _event;
-    private @Nullable TraceEventNode _parent;
-    private @Nonnull List<TraceEventNode> _children;
+    private final @Nullable TraceEventNode _parent;
+    private final @Nonnull List<TraceEventNode> _children;
 
-    // This is not a copy constructor, it's a constructor linking this tree node to a parent node
-    @SuppressWarnings("IncompleteCopyConstructor")
-    public TraceEventNode(@Nullable TraceEventNode parent) {
-      _event = null;
+    private TraceEventNode(
+        @Nullable TraceEvent event,
+        @Nullable TraceEventNode parent,
+        @Nonnull List<TraceEventNode> children) {
+      _event = event;
       _parent = parent;
-      _children = new ArrayList<>();
+      _children = children;
+    }
+
+    static TraceEventNode withParent(@Nullable TraceEventNode parent) {
+      return new TraceEventNode(null, parent, new ArrayList<>());
     }
 
     @Nonnull
@@ -490,10 +495,6 @@ public final class AclTracer extends Evaluator {
       return _event;
     }
 
-    public void setParent(@Nullable TraceEventNode parent) {
-      _parent = parent;
-    }
-
     public void setEvent(@Nonnull TraceEvent event) {
       _event = event;
     }
@@ -504,6 +505,7 @@ public final class AclTracer extends Evaluator {
       return node;
     }
 
+    /** Clears all children from this node */
     void clearChildren() {
       _children.clear();
     }
