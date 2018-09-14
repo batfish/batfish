@@ -75,7 +75,7 @@ public interface IBatfish extends IPluginConsumer {
 
   ReferenceLibrary getReferenceLibraryData();
 
-  @Deprecated
+  @Deprecated // use createAnswerer instead
   Map<String, BiFunction<Question, IBatfish, Answerer>> getAnswererCreators();
 
   @Nullable
