@@ -1,7 +1,6 @@
 package org.batfish.main;
 
 import static java.util.stream.Collectors.toMap;
-import static org.batfish.common.util.CommonUtil.toImmutableSortedMap;
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.referencedSources;
 import static org.batfish.main.ReachabilityParametersResolver.resolveReachabilityParameters;
 
@@ -34,7 +33,6 @@ import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -42,7 +40,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.NavigableMap;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
@@ -53,17 +50,14 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
-import net.sf.javabdd.BuDDyFactory;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.apache.commons.configuration2.ImmutableConfiguration;
@@ -130,8 +124,6 @@ import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
-import org.batfish.datamodel.acl.PermittedByAcl;
-import org.batfish.datamodel.acl.TypeMatchExprsCollector;
 import org.batfish.datamodel.answers.AclReachabilityRows;
 import org.batfish.datamodel.answers.AclSpecs;
 import org.batfish.datamodel.answers.Answer;
@@ -213,14 +205,10 @@ import org.batfish.symbolic.bdd.BDDSourceManager;
 import org.batfish.symbolic.bdd.HeaderSpaceToBDD;
 import org.batfish.symbolic.smt.PropertyChecker;
 import org.batfish.vendor.VendorConfiguration;
-import org.batfish.z3.AclIdentifier;
 import org.batfish.z3.AclLine;
 import org.batfish.z3.AclLineIndependentSatisfiabilityQuerySynthesizer;
-import org.batfish.z3.AclReachabilityQuerySynthesizer;
-import org.batfish.z3.BDDIpAccessListSpecializer;
 import org.batfish.z3.BlacklistDstIpQuerySynthesizer;
 import org.batfish.z3.CompositeNodJob;
-import org.batfish.z3.EarliestMoreGeneralReachableLineQuerySynthesizer;
 import org.batfish.z3.IngressLocation;
 import org.batfish.z3.LocationToIngressLocation;
 import org.batfish.z3.MultipathInconsistencyQuerySynthesizer;
@@ -233,13 +221,8 @@ import org.batfish.z3.ReachabilityQuerySynthesizer;
 import org.batfish.z3.StandardReachabilityQuerySynthesizer;
 import org.batfish.z3.Synthesizer;
 import org.batfish.z3.SynthesizerInputImpl;
-import org.batfish.z3.expr.BasicRuleStatement;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.OrExpr;
-import org.batfish.z3.expr.RuleStatement;
-import org.batfish.z3.expr.TrueExpr;
-import org.batfish.z3.state.AclLineMatch;
-import org.batfish.z3.state.NumberedQuery;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -757,11 +740,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
           Suppliers.memoize(
               () ->
                   BDDAcl.createWithBDDAclEnv(
-                      bddPacket,
-                      aclSpec.acl.getSanitizedAcl(),
-                      bddAclEnv,
-                      ImmutableMap.of(),
-                      sourceMgr).getBdd()));
+                          bddPacket,
+                          aclSpec.acl.getSanitizedAcl(),
+                          bddAclEnv,
+                          ImmutableMap.of(),
+                          sourceMgr)
+                      .getBdd()));
 
       Map<String, IpAccessList> dependencies = aclSpec.acl.getDependencies();
       dependencies.forEach(
@@ -771,13 +755,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
                 Suppliers.memoize(
                     () ->
                         BDDAcl.createWithBDDAclEnv(
-                            bddPacket,
-                            acl,
-                            bddAclEnv,
-                            ImmutableMap.of(),
-                            sourceMgr).getBdd()));
-          }
-      );
+                                bddPacket, acl, bddAclEnv, ImmutableMap.of(), sourceMgr)
+                            .getBdd()));
+          });
     }
 
     // compute unreachable and unmatchable acl lines for each acl
@@ -800,11 +780,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         BDD lineBDD =
             matchExpr.accept(
                 new AclLineMatchExprToBDD(
-                    bddPacket.getFactory(),
-                    bddPacket,
-                    bddAclEnv,
-                    ImmutableMap.of(),
-                    sourceMgr));
+                    bddPacket.getFactory(), bddPacket, bddAclEnv, ImmutableMap.of(), sourceMgr));
         ipLineToBDDMap.put(lineNum, lineBDD);
         if (lineBDD.isZero()) {
           // this line is unmatchable
@@ -824,8 +800,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         BDD restOfLine = ipLineToBDDMap.get(lineNum);
 
         for (int prevLineNum = 0; prevLineNum < lineNum; prevLineNum++) {
-          if (restOfLine.isZero())
-            break;
+          if (restOfLine.isZero()) break;
           BDD prevBDD = ipLineToBDDMap.get(prevLineNum);
 
           if (!(prevBDD.and(restOfLine).isZero())) {
