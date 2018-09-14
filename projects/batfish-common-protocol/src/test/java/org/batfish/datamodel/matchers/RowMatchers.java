@@ -16,7 +16,7 @@ public final class RowMatchers {
    * keyMatcher} and whose value is matched by {@code valueMatcher}. Caller should pass in a {@link
    * TypeReference} suitable for use by {@link Row#get(String, TypeReference)}.
    */
-  public static @Nonnull <V> Matcher<? super Row> hasColumn(
+  public static @Nonnull <V> Matcher<Row> hasColumn(
       @Nonnull Matcher<? super String> keyMatcher,
       @Nonnull Matcher<? super V> valueMatcher,
       @Nonnull Schema schema) {
@@ -28,7 +28,7 @@ public final class RowMatchers {
    * is matched by {@code valueMatcher}. Caller should pass in a {@link TypeReference} suitable for
    * use by {@link Row#get(String, TypeReference)}.
    */
-  public static @Nonnull <V> Matcher<? super Row> hasColumn(
+  public static @Nonnull <V> Matcher<Row> hasColumn(
       String key, Matcher<? super V> valueMatcher, Schema schema) {
     return new HasColumn<>(equalTo(key), valueMatcher, schema);
   }
