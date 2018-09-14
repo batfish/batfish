@@ -39,13 +39,13 @@ final class TableAnswerElementMatchersImpl {
     }
   }
 
-  static final class HasRows extends FeatureMatcher<TableAnswerElement, Iterable<? extends Row>> {
-    public HasRows(@Nonnull Matcher<? super Iterable<? extends Row>> subMatcher) {
+  static final class HasRows extends FeatureMatcher<TableAnswerElement, Iterable<Row>> {
+    public HasRows(@Nonnull Matcher<? super Iterable<Row>> subMatcher) {
       super(subMatcher, "TableAnswerElement with rows:", "rows");
     }
 
     @Override
-    protected Iterable<? extends Row> featureValueOf(TableAnswerElement actual) {
+    protected Iterable<Row> featureValueOf(TableAnswerElement actual) {
       return () -> actual.getRows().iterator();
     }
   }
