@@ -1,4 +1,4 @@
-package org.batfish.main;
+package org.batfish.question.reachfilter;
 
 import static org.batfish.datamodel.IpAccessListLine.accepting;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
@@ -21,8 +21,9 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.UniverseIpSpace;
+import org.batfish.main.Batfish;
+import org.batfish.main.BatfishTestUtils;
 import org.batfish.question.ReachFilterParameters;
-import org.batfish.question.reachfilter.DifferentialReachFilterResult;
 import org.batfish.specifier.ConstantIpSpaceSpecifier;
 import org.batfish.specifier.NameRegexInterfaceLinkLocationSpecifier;
 import org.junit.Before;
@@ -30,7 +31,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-public class DifferentialReachFilterTest {
+/** Test of the internal implementation of {@link ReachFilterQuestion}. */
+public class ReachFilterQuestionTestDifferential {
   @Rule public TemporaryFolder _tmp = new TemporaryFolder();
 
   private static final String HOSTNAME = "hostname";
@@ -142,8 +144,6 @@ public class DifferentialReachFilterTest {
             .toBuilder()
             .setStartLocationSpecifier(new NameRegexInterfaceLinkLocationSpecifier(IFACE1))
             .build();
-
-    params = _params;
 
     // can match line 1 because IFACE1 is specified
     DifferentialReachFilterResult result =
