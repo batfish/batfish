@@ -62,12 +62,7 @@ public class FilterTableAnswerer extends Answerer {
   public AnswerElement answer() {
     FilterTableQuestion question = (FilterTableQuestion) _question;
     Question innerQuestion = question.getInnerQuestion();
-    AnswerElement innerAnswer =
-        _batfish
-            .getAnswererCreators()
-            .get(innerQuestion.getName())
-            .apply(innerQuestion, _batfish)
-            .answer();
+    AnswerElement innerAnswer = _batfish.createAnswerer(innerQuestion).answer();
     if (!(innerAnswer instanceof TableAnswerElement)) {
       throw new IllegalArgumentException("The inner question does not produce table answers");
     }

@@ -1,7 +1,6 @@
 package org.batfish.common;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import java.util.function.BiFunction;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.JsonDiff;
@@ -17,13 +16,12 @@ public abstract class Answerer {
 
   public static Answerer create(Question question, IBatfish batfish) {
     String questionName = question.getName();
-    BiFunction<Question, IBatfish, Answerer> answererCreator =
-        batfish.getAnswererCreators().get(questionName);
-    if (answererCreator == null) {
+    Answerer answerer = batfish.createAnswerer(question);
+    if (answerer == null) {
       throw new BatfishException(
           "Cannot create answerer for missing question with name: " + questionName);
     }
-    return answererCreator.apply(question, batfish);
+    return answerer;
   }
 
   protected final IBatfish _batfish;
