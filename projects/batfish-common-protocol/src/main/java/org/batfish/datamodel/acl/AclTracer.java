@@ -476,37 +476,37 @@ public final class AclTracer extends Evaluator {
       _children = children;
     }
 
-    static TraceEventNode withParent(@Nullable TraceEventNode parent) {
+    private static TraceEventNode withParent(@Nullable TraceEventNode parent) {
       return new TraceEventNode(null, parent, new ArrayList<>());
     }
 
     @Nonnull
-    public List<TraceEventNode> getChildren() {
+    private List<TraceEventNode> getChildren() {
       return _children;
     }
 
     @Nullable
-    public TraceEventNode getParent() {
+    private TraceEventNode getParent() {
       return _parent;
     }
 
     @Nullable
-    public TraceEvent getEvent() {
+    private TraceEvent getEvent() {
       return _event;
     }
 
-    public void setEvent(@Nonnull TraceEvent event) {
+    private void setEvent(@Nonnull TraceEvent event) {
       _event = event;
     }
 
     /** Adds a new child to this node trace node. Returns pointer to given node */
-    TraceEventNode addChild(@Nonnull TraceEventNode node) {
+    private TraceEventNode addChild(@Nonnull TraceEventNode node) {
       _children.add(node);
       return node;
     }
 
     /** Clears all children from this node */
-    void clearChildren() {
+    private void clearChildren() {
       _children.clear();
     }
   }
