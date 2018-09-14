@@ -1,6 +1,7 @@
 {
   "class": "org.batfish.question.reachfilter.ReachFilterQuestion",
   "differential": false,
+  "allowOriginatingFromDevice": "${allowOriginatingFromDevice}",
   "complementHeaderSpace": "${complementHeaderSpace}",
   "dst": "${dst}",
   "dstPorts": "${dstPorts}",
@@ -21,6 +22,11 @@
       "acl"
     ],
     "variables": {
+      "allowOriginatingFromDevice": {
+        "description": "Consider the device itself as a possible source",
+        "optional": true,
+        "type": "boolean"
+      },
       "complementHeaderSpace": {
         "description": "Search for packet headers outside the specified headerspace, rather than inside the space.",
         "optional": true,

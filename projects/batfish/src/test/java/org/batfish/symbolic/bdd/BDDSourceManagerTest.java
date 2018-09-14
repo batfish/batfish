@@ -4,6 +4,7 @@ import static org.batfish.common.bdd.BDDOps.orNull;
 import static org.batfish.datamodel.IpAccessListLine.ACCEPT_ALL;
 import static org.batfish.datamodel.IpAccessListLine.accepting;
 import static org.batfish.datamodel.IpAccessListLine.rejecting;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.ORIGINATING_FROM_DEVICE;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.SOURCE_ORIGINATING_FROM_DEVICE;
 import static org.batfish.symbolic.bdd.BDDMatchers.isZero;
@@ -36,35 +37,14 @@ public class BDDSourceManagerTest {
 
   BDDPacket _pkt = new BDDPacket();
 
-  BDDSourceManager _mgr = BDDSourceManager.forInterfaces(_pkt, IFACES);
+  Configuration _cfg;
 
-  @Test
-  public void test() {
-    BDD deviceBDD = _mgr.getOriginatingFromDeviceBDD();
-    BDD bdd1 = _mgr.getSourceInterfaceBDD(IFACE1);
-    BDD bdd2 = _mgr.getSourceInterfaceBDD(IFACE2);
-    assertThat(_mgr.getSourceFromAssignment(bdd1), equalTo(Optional.of(IFACE1)));
-    assertThat(_mgr.getSourceFromAssignment(bdd2), equalTo(Optional.of(IFACE2)));
-    assertThat(_mgr.getSourceFromAssignment(deviceBDD), equalTo(Optional.empty()));
-  }
+  IpAccessList _acl;
 
-  @Test
-  public void testSane() {
-    BDD noSource =
-        orNull(
-                _mgr.getOriginatingFromDeviceBDD(),
-                _mgr.getSourceInterfaceBDD(IFACE1),
-                _mgr.getSourceInterfaceBDD(IFACE2))
-            .not();
-    assertThat(_mgr.isSane().and(noSource), isZero());
-  }
-
-  @Test
-  public void testForIpAccessList() {
+  private void setupAclAndConfig() {
     NetworkFactory nf = new NetworkFactory();
-    Configuration config =
-        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
-    Interface.Builder ib = nf.interfaceBuilder().setOwner(config);
+    _cfg = nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
+    Interface.Builder ib = nf.interfaceBuilder().setOwner(_cfg);
     ib.setName(IFACE1).build();
     ib.setName(IFACE2).build();
     String iface3 = "iface3";
@@ -73,20 +53,64 @@ public class BDDSourceManagerTest {
     ib.setName(iface4).setActive(false).build();
 
     // an ACL that can only match with an IFACE2 or iface3
-    IpAccessList acl =
+    _acl =
         IpAccessList.builder()
             .setName("acl")
             .setLines(
                 ImmutableList.of(
                     accepting().setMatchCondition(matchSrcInterface(IFACE1)).build(),
+                    accepting().setMatchCondition(ORIGINATING_FROM_DEVICE).build(),
                     rejecting().setMatchCondition(matchSrcInterface(iface4)).build(),
                     ACCEPT_ALL))
             .build();
+  }
 
-    BDDSourceManager mgr = BDDSourceManager.forIpAccessList(_pkt, config, acl);
+  @Test
+  public void test() {
+    BDDSourceManager mgr = BDDSourceManager.forInterfaces(_pkt, IFACES);
+    BDD deviceBDD = mgr.getOriginatingFromDeviceBDD();
+    BDD bdd1 = mgr.getSourceInterfaceBDD(IFACE1);
+    BDD bdd2 = mgr.getSourceInterfaceBDD(IFACE2);
+    assertThat(mgr.getSourceFromAssignment(bdd1), equalTo(Optional.of(IFACE1)));
+    assertThat(mgr.getSourceFromAssignment(bdd2), equalTo(Optional.of(IFACE2)));
+    assertThat(mgr.getSourceFromAssignment(deviceBDD), equalTo(Optional.empty()));
+  }
+
+  @Test
+  public void testSane() {
+    BDDSourceManager mgr = BDDSourceManager.forInterfaces(_pkt, IFACES);
+    BDD noSource =
+        orNull(
+                mgr.getOriginatingFromDeviceBDD(),
+                mgr.getSourceInterfaceBDD(IFACE1),
+                mgr.getSourceInterfaceBDD(IFACE2))
+            .not();
+    assertThat(mgr.isSane().and(noSource), isZero());
+  }
+
+  @Test
+  public void testForIpAccessList() {
+    setupAclAndConfig();
+    BDDSourceManager mgr =
+        BDDSourceManager.forIpAccessList(
+            _pkt, true, _cfg.activeInterfaces(), _cfg.getIpAccessLists(), _acl);
+    Map<String, BDD> srcBDDs = mgr.getSourceBDDs();
+    // 3 entries: one for each referenced and active source, plus one unreferenced active source.
+    assertThat(srcBDDs.entrySet(), hasSize(3));
+    assertThat(srcBDDs, hasEntry(equalTo(IFACE1), not(isZero())));
+    assertThat(srcBDDs, hasEntry(equalTo(IFACE2), not(isZero())));
+    assertThat(srcBDDs, hasEntry(equalTo(SOURCE_ORIGINATING_FROM_DEVICE), not(isZero())));
+  }
+
+  @Test
+  public void testDisallowOriginatingFromDevice() {
+    setupAclAndConfig();
+    BDDSourceManager mgr =
+        BDDSourceManager.forIpAccessList(
+            _pkt, false, _cfg.activeInterfaces(), _cfg.getIpAccessLists(), _acl);
     Map<String, BDD> srcBDDs = mgr.getSourceBDDs();
     assertThat(srcBDDs.entrySet(), hasSize(2));
     assertThat(srcBDDs, hasEntry(equalTo(IFACE1), not(isZero())));
-    assertThat(srcBDDs, hasEntry(equalTo(SOURCE_ORIGINATING_FROM_DEVICE), not(isZero())));
+    assertThat(srcBDDs, hasEntry(equalTo(IFACE2), not(isZero())));
   }
 }

@@ -35,6 +35,10 @@ import org.batfish.specifier.NodeSpecifierFactory;
 /** A question to determine which flows match a particular ACL action. */
 public final class ReachFilterQuestion extends Question {
 
+  private static final boolean DEFAULT_ALLOW_ORIGINATING_FROM_DEVICE = false;
+
+  private static final boolean DEFAULT_COMPLEMENT_HEADER_SPACE = false;
+
   private static final String DEFAULT_DST_IP_SPECIFIER_FACTORY =
       FlexibleUniverseIpSpaceSpecifierFactory.NAME;
 
@@ -42,6 +46,8 @@ public final class ReachFilterQuestion extends Question {
       FlexibleUniverseIpSpaceSpecifierFactory.NAME;
 
   private static final String FILTER_SPECIFIER_FACTORY = FlexibleFilterSpecifierFactory.NAME;
+
+  private static final String PROP_ALLOW_ORIGINATING_FROM_DEVICE = "allowOriginatingFromDevice";
 
   private static final String PROP_FILTERS = "filters";
 
@@ -80,6 +86,8 @@ public final class ReachFilterQuestion extends Question {
     MATCH_LINE
   }
 
+  private final boolean _allowOriginatingFromDevice;
+
   private final boolean _complementHeaderSpace;
 
   // Invariant: null unless _type == MATCH_LINE
@@ -113,6 +121,7 @@ public final class ReachFilterQuestion extends Question {
 
   @JsonCreator
   private ReachFilterQuestion(
+      @JsonProperty(PROP_ALLOW_ORIGINATING_FROM_DEVICE) boolean allowOriginatingFromDevice,
       @JsonProperty(PROP_COMPLEMENT_HEADERSPACE) boolean complementHeaderSpace,
       @JsonProperty(PROP_FILTERS) @Nullable String filters,
       @JsonProperty(PROP_DESTINATION_IP_SPACE_SPECIFIER_FACTORY) @Nullable
@@ -131,6 +140,7 @@ public final class ReachFilterQuestion extends Question {
           String sourceIpSpaceSpecifierInput,
       @JsonProperty(PROP_SRC_PORTS) @Nullable SortedSet<SubRange> srcPorts,
       @JsonProperty(PROP_QUERY) @Nullable String type) {
+    _allowOriginatingFromDevice = allowOriginatingFromDevice;
     _complementHeaderSpace = complementHeaderSpace;
     _filters = filters;
     _nodeSpecifierFactory = firstNonNull(nodeSpecifierFactory, FlexibleNodeSpecifierFactory.NAME);
@@ -150,7 +160,27 @@ public final class ReachFilterQuestion extends Question {
   }
 
   ReachFilterQuestion() {
-    this(false, null, null, null, null, null, null, null, null, null, null, null, null, null);
+    this(
+        DEFAULT_ALLOW_ORIGINATING_FROM_DEVICE,
+        DEFAULT_COMPLEMENT_HEADER_SPACE,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null);
+  }
+
+  @JsonProperty(PROP_ALLOW_ORIGINATING_FROM_DEVICE)
+  public boolean getAllowOriginatingFromDevice() {
+    return _allowOriginatingFromDevice;
   }
 
   @JsonProperty(PROP_COMPLEMENT_HEADERSPACE)
@@ -304,6 +334,7 @@ public final class ReachFilterQuestion extends Question {
   @VisibleForTesting
   ReachFilterParameters toReachFilterParameters() {
     return ReachFilterParameters.builder()
+        .setAllowOriginatingFromDevice(_allowOriginatingFromDevice)
         .setHeaderSpace(getHeaderSpace())
         .setSourceInterfaceSpecifier(getSourceInterfaceSpecifier())
         .setSourceIpSpaceSpecifier(getSourceSpecifier())
@@ -317,7 +348,8 @@ public final class ReachFilterQuestion extends Question {
 
   @VisibleForTesting
   static final class Builder {
-    private boolean _complementHeaderSpace;
+    private boolean _allowOriginatingFromDevice = DEFAULT_ALLOW_ORIGINATING_FROM_DEVICE;
+    private boolean _complementHeaderSpace = DEFAULT_COMPLEMENT_HEADER_SPACE;
     private String _filterSpecifierInput;
     private String _nodeSpecifierFactory;
     private String _nodeSpecifierInput;
@@ -333,6 +365,11 @@ public final class ReachFilterQuestion extends Question {
     private String _type;
 
     private Builder() {}
+
+    public Builder setAllowOriginatingFromDevice(boolean allowOriginatingFromDevice) {
+      _allowOriginatingFromDevice = allowOriginatingFromDevice;
+      return this;
+    }
 
     public Builder setComplementHeaderSpace(boolean complementHeaderSpace) {
       _complementHeaderSpace = complementHeaderSpace;
@@ -407,6 +444,7 @@ public final class ReachFilterQuestion extends Question {
 
     public ReachFilterQuestion build() {
       return new ReachFilterQuestion(
+          _allowOriginatingFromDevice,
           _complementHeaderSpace,
           _filterSpecifierInput,
           _destinationIpSpaceSpecifierFactory,

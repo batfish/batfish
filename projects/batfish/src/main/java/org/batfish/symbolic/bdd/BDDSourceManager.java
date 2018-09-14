@@ -8,6 +8,7 @@ import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.referen
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSet.Builder;
 import com.google.common.collect.Sets;
 import com.google.common.math.LongMath;
 import java.math.RoundingMode;
@@ -19,7 +20,6 @@ import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDInteger;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.util.CommonUtil;
-import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IpAccessList;
 
 /**
@@ -73,22 +73,20 @@ public final class BDDSourceManager {
             .build());
   }
 
-  public static BDDSourceManager forIpAccessList(
-      BDDPacket pkt, Configuration config, IpAccessList acl) {
-    return forIpAccessList(pkt, config.activeInterfaces(), config.getIpAccessLists(), acl);
-  }
-
   public static BDDSourceManager forSources(
-      BDDPacket pkt, Set<String> activeInterfaces, Set<String> referencedSources) {
+      BDDPacket pkt,
+      boolean allowOriginatingFromDevice,
+      Set<String> activeInterfaces,
+      Set<String> referencedSources) {
     if (referencedSources.isEmpty()) {
       return new BDDSourceManager(pkt, ImmutableSet.of());
     }
 
-    Set<String> activeSources =
-        ImmutableSet.<String>builder()
-            .add(SOURCE_ORIGINATING_FROM_DEVICE)
-            .addAll(activeInterfaces)
-            .build();
+    Builder<String> activeSourcesBuilder = ImmutableSet.<String>builder().addAll(activeInterfaces);
+    if (allowOriginatingFromDevice) {
+      activeSourcesBuilder.add(SOURCE_ORIGINATING_FROM_DEVICE);
+    }
+    Set<String> activeSources = activeSourcesBuilder.build();
 
     // discard any referenced interfaces that are inactive
     Set<String> referencedActiveSources = Sets.intersection(referencedSources, activeSources);
@@ -116,11 +114,12 @@ public final class BDDSourceManager {
    */
   public static BDDSourceManager forIpAccessList(
       BDDPacket pkt,
+      boolean allowOriginatingFromDevice,
       Set<String> activeInterfaces,
       Map<String, IpAccessList> namedAcls,
       IpAccessList acl) {
     Set<String> referencedSources = referencedSources(namedAcls, acl);
-    return forSources(pkt, activeInterfaces, referencedSources);
+    return forSources(pkt, allowOriginatingFromDevice, activeInterfaces, referencedSources);
   }
 
   /**

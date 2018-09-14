@@ -17,20 +17,27 @@ import org.batfish.specifier.SpecifierContext;
 
 /** A set of parameters for ACL filter analysis that uses high-level specifiers. */
 public final class ReachFilterParameters {
+  private final boolean _allowOriginatingFromDevice;
   private final @Nonnull IpSpaceSpecifier _destinationIpSpaceSpecifier;
   private final @Nonnull HeaderSpace _headerSpace;
   private final @Nonnull InterfaceSpecifier _sourceInterfaceSpecifier;
   private final @Nonnull IpSpaceSpecifier _sourceIpSpaceSpecifier;
 
   private ReachFilterParameters(
+      boolean allowOriginatingFromDevice,
       @Nonnull IpSpaceSpecifier destinationIpSpaceSpecifier,
       @Nonnull InterfaceSpecifier sourceInterfaceSpecifier,
       @Nonnull IpSpaceSpecifier sourceIpSpaceSpecifier,
       @Nonnull HeaderSpace headerSpace) {
+    _allowOriginatingFromDevice = allowOriginatingFromDevice;
     _destinationIpSpaceSpecifier = destinationIpSpaceSpecifier;
     _headerSpace = headerSpace;
     _sourceInterfaceSpecifier = sourceInterfaceSpecifier;
     _sourceIpSpaceSpecifier = sourceIpSpaceSpecifier;
+  }
+
+  public boolean getAllowOriginatingFromDevice() {
+    return _allowOriginatingFromDevice;
   }
 
   @Nonnull
@@ -79,6 +86,7 @@ public final class ReachFilterParameters {
   }
 
   public static final class Builder {
+    private boolean _allowOriginatingFromDevice;
     private IpSpaceSpecifier _destinationIpSpaceSpecifier;
     private HeaderSpace _headerSpace;
     private InterfaceSpecifier _sourceInterfaceSpecifier;
@@ -86,14 +94,23 @@ public final class ReachFilterParameters {
 
     private Builder() {}
 
-    public Builder setDestinationIpSpaceSpecifier(
-        @Nonnull IpSpaceSpecifier destinationIpSpaceSpecifier) {
-      _destinationIpSpaceSpecifier = destinationIpSpaceSpecifier;
+    public ReachFilterParameters build() {
+      return new ReachFilterParameters(
+          _allowOriginatingFromDevice,
+          requireNonNull(_destinationIpSpaceSpecifier),
+          requireNonNull(_sourceInterfaceSpecifier),
+          requireNonNull(_sourceIpSpaceSpecifier),
+          requireNonNull(_headerSpace));
+    }
+
+    public Builder setAllowOriginatingFromDevice(boolean allowOriginatingFromDevice) {
+      _allowOriginatingFromDevice = allowOriginatingFromDevice;
       return this;
     }
 
-    public Builder setSourceIpSpaceSpecifier(@Nonnull IpSpaceSpecifier sourceIpSpaceSpecifier) {
-      _sourceIpSpaceSpecifier = sourceIpSpaceSpecifier;
+    public Builder setDestinationIpSpaceSpecifier(
+        @Nonnull IpSpaceSpecifier destinationIpSpaceSpecifier) {
+      _destinationIpSpaceSpecifier = destinationIpSpaceSpecifier;
       return this;
     }
 
@@ -102,17 +119,14 @@ public final class ReachFilterParameters {
       return this;
     }
 
-    public ReachFilterParameters build() {
-      return new ReachFilterParameters(
-          requireNonNull(_destinationIpSpaceSpecifier),
-          requireNonNull(_sourceInterfaceSpecifier),
-          requireNonNull(_sourceIpSpaceSpecifier),
-          requireNonNull(_headerSpace));
-    }
-
     public Builder setSourceInterfaceSpecifier(
         @Nonnull InterfaceSpecifier sourceInterfaceSpecifier) {
       _sourceInterfaceSpecifier = sourceInterfaceSpecifier;
+      return this;
+    }
+
+    public Builder setSourceIpSpaceSpecifier(@Nonnull IpSpaceSpecifier sourceIpSpaceSpecifier) {
+      _sourceIpSpaceSpecifier = sourceIpSpaceSpecifier;
       return this;
     }
   }

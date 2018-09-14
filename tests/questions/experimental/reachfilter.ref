@@ -1,5 +1,6 @@
 {
   "class" : "org.batfish.question.reachfilter.ReachFilterQuestion",
+  "allowOriginatingFromDevice" : false,
   "complementHeaderSpace" : false,
   "destinationIpSpaceSpecifierFactory" : "FlexibleUniverseIpSpaceSpecifierFactory",
   "dst" : "2.2.2.2",
@@ -31,6 +32,12 @@
       "dataPlane"
     ],
     "variables" : {
+      "allowOriginatingFromDevice" : {
+        "description" : "Consider the device itself as a possible source",
+        "optional" : true,
+        "type" : "boolean",
+        "value" : false
+      },
       "complementHeaderSpace" : {
         "description" : "Search for packet headers outside the specified headerspace, rather than inside the space.",
         "optional" : true,
