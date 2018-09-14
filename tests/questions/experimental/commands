@@ -53,3 +53,6 @@ test -raw tests/questions/experimental/specifiersReachability.ref validate-templ
 
 # test traceroute
 test  -raw tests/questions/experimental/traceroute.ref validate-template traceroute dscp=12, dst="1.2.3.4", dstPort=23, dstProtocol="dns", ecn=1, fragmentOffset=12, icmpCode=12, icmpType=23, ignoreAcls=false, ipProtocol="tcp", packetLength=12, srcIpSpace="1.1.1.1", srcPort=123, srcProtocol="http", state="new", tcpAck=true, tcpCwr=false, tcpEce=true, tcpFin=false, tcpPsh=true, tcpRst=false, tcpSyn=true, tcpUrg=false, traceStart="location"
+
+# test viModel
+test -raw tests/questions/experimental/viModel.ref validate-template viModel 
