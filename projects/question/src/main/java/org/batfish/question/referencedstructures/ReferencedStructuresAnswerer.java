@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.SortedSet;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.batfish.common.Answerer;
@@ -60,34 +59,31 @@ public class ReferencedStructuresAnswerer extends Answerer {
                 return;
               }
               List<Row> rows1 = new ArrayList<>();
-              for (Entry<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>> e1 :
-                  value.entrySet()) {
-                String structType = e1.getKey();
-                if (!includeStructureTypes.matcher(structType).matches()) {
-                  continue;
-                }
-                for (Entry<String, SortedMap<String, SortedSet<Integer>>> e2 :
-                    e1.getValue().entrySet()) {
-                  String name = e2.getKey();
-                  if (!includeStructureNames.matcher(name).matches()) {
-                    continue;
-                  }
-                  for (Entry<String, SortedSet<Integer>> e3 : e2.getValue().entrySet()) {
-                    String context = e3.getKey();
-                    SortedSet<Integer> lineNums = e3.getValue();
-                    rows1.add(
-                        Row.of(
-                            COL_STRUCTURE_TYPE,
-                            structType,
-                            COL_STRUCTURE_NAME,
-                            name,
-                            COL_CONTEXT,
-                            context,
-                            COL_SOURCE_LINES,
-                            new FileLines(filename, lineNums)));
-                  }
-                }
-              }
+              value.forEach(
+                  (structType, byName) -> {
+                    if (!includeStructureTypes.matcher(structType).matches()) {
+                      return;
+                    }
+                    byName.forEach(
+                        (name, byContext) -> {
+                          if (!includeStructureNames.matcher(name).matches()) {
+                            return;
+                          }
+                          byContext.forEach(
+                              (context, lineNums) -> {
+                                rows1.add(
+                                    Row.of(
+                                        COL_STRUCTURE_TYPE,
+                                        structType,
+                                        COL_STRUCTURE_NAME,
+                                        name,
+                                        COL_CONTEXT,
+                                        context,
+                                        COL_SOURCE_LINES,
+                                        new FileLines(filename, lineNums)));
+                              });
+                        });
+                  });
               rows.addAll(rows1);
             });
 

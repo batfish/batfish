@@ -45,7 +45,7 @@ public class ReferencedStructuresQuestion extends Question {
 
   @Override
   public String getName() {
-    return "referencedstructures";
+    return "referencedStructures";
   }
 
   @JsonProperty(PROP_NAMES)
