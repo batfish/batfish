@@ -27913,7 +27913,7 @@
             "      OBJECT_GROUP:'object-group'  <== mode:DEFAULT_MODE",
             "      (og_service",
             "        SERVICE:'service'  <== mode:M_ObjectGroup",
-            "        name = (variable_permissive",
+            "        name = (variable_group_id",
             "          VARIABLE:'SVCGRP-ICMP'  <== mode:DEFAULT_MODE)",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "        (ogs_service_object",
