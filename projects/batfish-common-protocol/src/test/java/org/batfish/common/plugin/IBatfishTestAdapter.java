@@ -105,6 +105,11 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
+  public Map<String, BiFunction<Question, IBatfish, Answerer>> getAnswererCreators() {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public String getContainerName() {
     throw new UnsupportedOperationException();
   }

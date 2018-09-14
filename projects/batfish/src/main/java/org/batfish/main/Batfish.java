@@ -1713,6 +1713,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // _testrigSettings.getSerializeIndependentPath());
   }
 
+  @Override
+  public Map<String, BiFunction<Question, IBatfish, Answerer>> getAnswererCreators() {
+    return _answererCreators;
+  }
+
   public TestrigSettings getBaseTestrigSettings() {
     return _baseTestrigSettings;
   }
