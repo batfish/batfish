@@ -175,19 +175,14 @@ public class NodePropertySpecifier extends PropertySpecifier {
   @JsonCreator
   public NodePropertySpecifier(String expression) {
     _expression = expression;
-    _pattern = Pattern.compile(_expression.trim().toLowerCase()); // canonicalize
+    _pattern = Pattern.compile(_expression.trim(), Pattern.CASE_INSENSITIVE);
   }
 
   public NodePropertySpecifier(Collection<String> properties) {
-    // canonicalize, quote, and join
+    // quote and join
     _expression =
-        properties
-            .stream()
-            .map(String::trim)
-            .map(String::toLowerCase)
-            .map(Pattern::quote)
-            .collect(Collectors.joining("|"));
-    _pattern = Pattern.compile(_expression);
+        properties.stream().map(String::trim).map(Pattern::quote).collect(Collectors.joining("|"));
+    _pattern = Pattern.compile(_expression, Pattern.CASE_INSENSITIVE);
   }
 
   /**
@@ -206,7 +201,7 @@ public class NodePropertySpecifier extends PropertySpecifier {
     return JAVA_MAP
         .keySet()
         .stream()
-        .filter(prop -> _pattern.matcher(prop.toLowerCase()).matches())
+        .filter(prop -> _pattern.matcher(prop).matches())
         .collect(Collectors.toSet());
   }
 
