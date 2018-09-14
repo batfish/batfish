@@ -377,7 +377,7 @@ public class AclReachabilityTest {
                 .put(COL_LINES, lineNames)
                 .put(COL_BLOCKED_LINE_NUM, 2)
                 .put(COL_BLOCKED_LINE_ACTION, PERMIT)
-                .put(COL_BLOCKING_LINE_NUMS, ImmutableList.of())
+                .put(COL_BLOCKING_LINE_NUMS, ImmutableList.of(0, 1))
                 .put(COL_DIFF_ACTION, false)
                 .put(COL_REASON, MULTIPLE_BLOCKING_LINES)
                 .put(

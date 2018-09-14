@@ -109,7 +109,7 @@ public class AclReachabilityRows {
             ? Reason.UNDEFINED_REFERENCE
             : unmatchable
                 ? Reason.UNMATCHABLE
-                : blockingLines.isEmpty()
+                : blockingLines.size() > 1
                     ? Reason.MULTIPLE_BLOCKING_LINES
                     : Reason.SINGLE_BLOCKING_LINE;
     _rows.add(
