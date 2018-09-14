@@ -680,7 +680,8 @@ public class CiscoGrammarTest {
     assertThat(ccae, hasNumReferrers(filename, ICMP_TYPE_OBJECT_GROUP, "mixed_group", 0));
     /* Confirm undefined reference shows up as such */
     assertThat(ccae, hasUndefinedReference(filename, ICMP_TYPE_OBJECT_GROUP, "UNDEFINED_GROUP"));
-    assertThat(ccae, hasUndefinedReference(filename, ICMP_TYPE_OBJECT_GROUP, "UNDEFINED_GROUP_MIXED"));
+    assertThat(
+        ccae, hasUndefinedReference(filename, ICMP_TYPE_OBJECT_GROUP, "UNDEFINED_GROUP_MIXED"));
 
     assertThat(c, hasIpAccessList(services, accepts(echoReplyFlow, null, c)));
     assertThat(c, hasIpAccessList(services, accepts(unreachableFlow, null, c)));
@@ -713,7 +714,8 @@ public class CiscoGrammarTest {
     assertThat(ccae, hasNumReferrers(filename, NETWORK_OBJECT_GROUP, "mixed_group", 0));
     /* Confirm undefined reference shows up as such */
     assertThat(ccae, hasUndefinedReference(filename, NETWORK_OBJECT_GROUP, "UNDEFINED_GROUP"));
-    assertThat(ccae, hasUndefinedReference(filename, NETWORK_OBJECT_GROUP, "UNDEFINED_GROUP_MIXED"));
+    assertThat(
+        ccae, hasUndefinedReference(filename, NETWORK_OBJECT_GROUP, "UNDEFINED_GROUP_MIXED"));
 
     assertThat(c, hasIpSpace("admin", containsIp(engHostIp, c.getIpSpaces())));
     assertThat(c, hasIpSpace("admin", containsIp(hrHostIp, c.getIpSpaces())));
@@ -751,7 +753,8 @@ public class CiscoGrammarTest {
     assertThat(ccae, hasNumReferrers(filename, PROTOCOL_OBJECT_GROUP, "mixed_group", 0));
     /* Confirm undefined reference shows up as such */
     assertThat(ccae, hasUndefinedReference(filename, PROTOCOL_OBJECT_GROUP, "UNDEFINED_GROUP"));
-    assertThat(ccae, hasUndefinedReference(filename, PROTOCOL_OBJECT_GROUP, "UNDEFINED_GROUP_MIXED"));
+    assertThat(
+        ccae, hasUndefinedReference(filename, PROTOCOL_OBJECT_GROUP, "UNDEFINED_GROUP_MIXED"));
 
     assertThat(c, hasIpAccessList(protocols, accepts(igmpFlow, null, c)));
     assertThat(c, hasIpAccessList(protocols, accepts(tcpFlow, null, c)));
@@ -789,7 +792,8 @@ public class CiscoGrammarTest {
     assertThat(ccae, hasNumReferrers(filename, SERVICE_OBJECT_GROUP, "mixed_group", 0));
     /* Confirm undefined reference shows up as such */
     assertThat(ccae, hasUndefinedReference(filename, SERVICE_OBJECT_GROUP, "UNDEFINED_GROUP"));
-    assertThat(ccae, hasUndefinedReference(filename, SERVICE_OBJECT_GROUP, "UNDEFINED_GROUP_MIXED"));
+    assertThat(
+        ccae, hasUndefinedReference(filename, SERVICE_OBJECT_GROUP, "UNDEFINED_GROUP_MIXED"));
 
     assertThat(c, hasIpAccessList(services, accepts(dns, null, c)));
     assertThat(c, hasIpAccessList(services, accepts(customPort, null, c)));

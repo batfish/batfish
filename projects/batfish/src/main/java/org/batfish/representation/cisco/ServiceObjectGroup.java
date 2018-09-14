@@ -18,8 +18,7 @@ public class ServiceObjectGroup extends ObjectGroup {
   private static final long serialVersionUID = 1L;
 
   private final List<ServiceObjectGroupLine> _lines;
-  @Nullable
-  private ServiceProtocol _protocol;
+  @Nullable private ServiceProtocol _protocol;
 
   public ServiceObjectGroup(String name, @Nullable ServiceProtocol protocol) {
     super(name);

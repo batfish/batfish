@@ -1,6 +1,7 @@
 package org.batfish.representation.cisco;
 
 import static org.batfish.representation.cisco.CiscoConfiguration.computeIcmpObjectGroupAclName;
+
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.PermittedByAcl;
 

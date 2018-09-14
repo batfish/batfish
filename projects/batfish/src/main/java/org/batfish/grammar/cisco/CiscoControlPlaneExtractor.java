@@ -2585,7 +2585,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitOgit_icmp_object(Ogit_icmp_objectContext ctx) {
-    _currentIcmpTypeObjectGroup.getLines().add(new IcmpTypeGroupTypeLine(toIcmpType(ctx.icmp_object_type())));
+    _currentIcmpTypeObjectGroup
+        .getLines()
+        .add(new IcmpTypeGroupTypeLine(toIcmpType(ctx.icmp_object_type())));
   }
 
   @Override
@@ -2616,7 +2618,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     addIcmpTypeGroupReference(ctx.name);
   }
 
-  @Override public void exitOgg_icmp_type(Ogg_icmp_typeContext ctx) {
+  @Override
+  public void exitOgg_icmp_type(Ogg_icmp_typeContext ctx) {
     _currentIcmpTypeObjectGroup = null;
   }
 
@@ -2625,7 +2628,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (_configuration.getIcmpTypeObjectGroups().containsKey(name)) {
       _currentIcmpTypeObjectGroup.getLines().add(new IcmpTypeGroupReferenceLine(name));
       _configuration.referenceStructure(
-          ICMP_TYPE_OBJECT_GROUP, name, ICMP_TYPE_OBJECT_GROUP_GROUP_OBJECT, nameCtx.start.getLine());
+          ICMP_TYPE_OBJECT_GROUP,
+          name,
+          ICMP_TYPE_OBJECT_GROUP_GROUP_OBJECT,
+          nameCtx.start.getLine());
     } else {
       _configuration.getUndefinedIcmpTypeGroups().put(name, nameCtx.start.getLine());
     }
@@ -2680,13 +2686,17 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (_configuration.getProtocolObjectGroups().containsKey(name)) {
       _currentProtocolObjectGroup.getLines().add(new ProtocolObjectGroupReferenceLine(name));
       _configuration.referenceStructure(
-          PROTOCOL_OBJECT_GROUP, name, EXTENDED_ACCESS_LIST_PROTOCOL_OBJECT_GROUP, ctx.name.start.getLine());
+          PROTOCOL_OBJECT_GROUP,
+          name,
+          EXTENDED_ACCESS_LIST_PROTOCOL_OBJECT_GROUP,
+          ctx.name.start.getLine());
     } else {
       _configuration.getUndefinedProtocolGroups().put(name, ctx.start.getLine());
     }
   }
 
-  @Override public void exitOgg_protocol(Ogg_protocolContext ctx) {
+  @Override
+  public void exitOgg_protocol(Ogg_protocolContext ctx) {
     _currentProtocolObjectGroup = null;
   }
 
@@ -2829,12 +2839,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         .add(new ProtocolObjectGroupProtocolLine(toIpProtocol(ctx.protocol())));
   }
 
-  @Override public void exitOgp_group_object(Ogp_group_objectContext ctx) {
+  @Override
+  public void exitOgp_group_object(Ogp_group_objectContext ctx) {
     String name = ctx.name.getText();
-    _currentProtocolObjectGroup
-        .getLines()
-        .add(new ProtocolObjectGroupReferenceLine(name));
-    _configuration.referenceStructure(PROTOCOL_OBJECT_GROUP, name, PROTOCOL_OBJECT_GROUP_GROUP_OBJECT, ctx.name.start.getLine());
+    _currentProtocolObjectGroup.getLines().add(new ProtocolObjectGroupReferenceLine(name));
+    _configuration.referenceStructure(
+        PROTOCOL_OBJECT_GROUP, name, PROTOCOL_OBJECT_GROUP_GROUP_OBJECT, ctx.name.start.getLine());
   }
 
   @Override
@@ -2867,16 +2877,22 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
   }
 
-  @Override public void exitOgs_group_object(Ogs_group_objectContext ctx) {
+  @Override
+  public void exitOgs_group_object(Ogs_group_objectContext ctx) {
     addServiceGroupreference(ctx.name);
   }
 
   private void addServiceGroupreference(Variable_group_idContext nameCtx) {
     String name = nameCtx.getText();
     if (_configuration.getServiceObjectGroups().containsKey(name)) {
-      _currentServiceObjectGroup.getLines().add(new ServiceObjectGroupReferenceServiceObjectGroupLine(name));
+      _currentServiceObjectGroup
+          .getLines()
+          .add(new ServiceObjectGroupReferenceServiceObjectGroupLine(name));
       _configuration.referenceStructure(
-          SERVICE_OBJECT_GROUP, name, EXTENDED_ACCESS_LIST_SERVICE_OBJECT_GROUP, nameCtx.start.getLine());
+          SERVICE_OBJECT_GROUP,
+          name,
+          EXTENDED_ACCESS_LIST_SERVICE_OBJECT_GROUP,
+          nameCtx.start.getLine());
     } else {
       _configuration.getUndefinedServiceGroups().put(name, nameCtx.start.getLine());
     }
@@ -10734,15 +10750,15 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return null;
     }
     switch (protocol.getText()) {
-    case "tcp":
-      return ServiceProtocol.TCP;
-    case "udp":
-      return ServiceProtocol.UDP;
-    case "tcp-udp":
-      return ServiceProtocol.TCP_UDP;
-    default:
-      _w.redFlag("got unexpected service protocol type: '" + protocol.getText() + "'");
-      return null;
+      case "tcp":
+        return ServiceProtocol.TCP;
+      case "udp":
+        return ServiceProtocol.UDP;
+      case "tcp-udp":
+        return ServiceProtocol.TCP_UDP;
+      default:
+        _w.redFlag("got unexpected service protocol type: '" + protocol.getText() + "'");
+        return null;
     }
   }
 

@@ -6,7 +6,8 @@ import javax.annotation.Nonnull;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.PermittedByAcl;
 
-public final class ServiceObjectGroupReferenceServiceObjectGroupLine implements ServiceObjectGroupLine {
+public final class ServiceObjectGroupReferenceServiceObjectGroupLine
+    implements ServiceObjectGroupLine {
 
   /** */
   private static final long serialVersionUID = 1L;

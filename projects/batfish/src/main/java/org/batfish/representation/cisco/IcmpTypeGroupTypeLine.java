@@ -24,8 +24,6 @@ public class IcmpTypeGroupTypeLine implements IcmpTypeObjectGroupLine {
   @Override
   public AclLineMatchExpr toAclLineMatchExpr() {
     return new MatchHeaderSpace(
-        HeaderSpace.builder()
-            .setIcmpTypes(ImmutableList.of(new SubRange(_type)))
-            .build());
+        HeaderSpace.builder().setIcmpTypes(ImmutableList.of(new SubRange(_type))).build());
   }
 }

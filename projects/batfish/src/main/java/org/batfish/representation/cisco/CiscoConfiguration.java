@@ -534,7 +534,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _trackingGroups = new TreeMap<>();
     _undefinedPeerGroups = new TreeMap<>();
     _undefinedIcmpTypeGroups = new TreeMap<>();
-    _undefinedNetworkGroups= new TreeMap<>();
+    _undefinedNetworkGroups = new TreeMap<>();
     _undefinedProtocolGroups = new TreeMap<>();
     _undefinedServiceGroups = new TreeMap<>();
     _vrfs = new TreeMap<>();
@@ -3339,11 +3339,26 @@ public final class CiscoConfiguration extends VendorConfiguration {
         });
 
     // warn about references to undefined peer groups
-    undefinedGroups(_undefinedPeerGroups, CiscoStructureType.BGP_PEER_GROUP, CiscoStructureUsage.BGP_NEIGHBOR_STATEMENT);
-    undefinedGroups(_undefinedIcmpTypeGroups, CiscoStructureType.ICMP_TYPE_OBJECT_GROUP, CiscoStructureUsage.ICMP_TYPE_OBJECT_GROUP_GROUP_OBJECT);
-    undefinedGroups(_undefinedNetworkGroups, CiscoStructureType.NETWORK_OBJECT_GROUP, CiscoStructureUsage.NETWORK_OBJECT_GROUP_GROUP_OBJECT);
-    undefinedGroups(_undefinedProtocolGroups, CiscoStructureType.PROTOCOL_OBJECT_GROUP, CiscoStructureUsage.PROTOCOL_OBJECT_GROUP_GROUP_OBJECT);
-    undefinedGroups(_undefinedServiceGroups, CiscoStructureType.SERVICE_OBJECT_GROUP, CiscoStructureUsage.SERVICE_OBJECT_GROUP_SERVICE_OBJECT);
+    undefinedGroups(
+        _undefinedPeerGroups,
+        CiscoStructureType.BGP_PEER_GROUP,
+        CiscoStructureUsage.BGP_NEIGHBOR_STATEMENT);
+    undefinedGroups(
+        _undefinedIcmpTypeGroups,
+        CiscoStructureType.ICMP_TYPE_OBJECT_GROUP,
+        CiscoStructureUsage.ICMP_TYPE_OBJECT_GROUP_GROUP_OBJECT);
+    undefinedGroups(
+        _undefinedNetworkGroups,
+        CiscoStructureType.NETWORK_OBJECT_GROUP,
+        CiscoStructureUsage.NETWORK_OBJECT_GROUP_GROUP_OBJECT);
+    undefinedGroups(
+        _undefinedProtocolGroups,
+        CiscoStructureType.PROTOCOL_OBJECT_GROUP,
+        CiscoStructureUsage.PROTOCOL_OBJECT_GROUP_GROUP_OBJECT);
+    undefinedGroups(
+        _undefinedServiceGroups,
+        CiscoStructureType.SERVICE_OBJECT_GROUP,
+        CiscoStructureUsage.SERVICE_OBJECT_GROUP_SERVICE_OBJECT);
 
     markConcreteStructure(
         CiscoStructureType.BFD_TEMPLATE, CiscoStructureUsage.INTERFACE_BFD_TEMPLATE);
@@ -3586,13 +3601,15 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     // objects
     markConcreteStructure(
-        CiscoStructureType.ICMP_TYPE_OBJECT, CiscoStructureUsage.ICMP_TYPE_OBJECT_GROUP_ICMP_OBJECT);
+        CiscoStructureType.ICMP_TYPE_OBJECT,
+        CiscoStructureUsage.ICMP_TYPE_OBJECT_GROUP_ICMP_OBJECT);
     markConcreteStructure(
         CiscoStructureType.NETWORK_OBJECT, CiscoStructureUsage.NETWORK_OBJECT_GROUP_NETWORK_OBJECT);
     markConcreteStructure(
         CiscoStructureType.SERVICE_OBJECT, CiscoStructureUsage.SERVICE_OBJECT_GROUP_SERVICE_OBJECT);
     markConcreteStructure(
-        CiscoStructureType.PROTOCOL_OBJECT, CiscoStructureUsage.PROTOCOL_OBJECT_GROUP_PROTOCOL_OBJECT);
+        CiscoStructureType.PROTOCOL_OBJECT,
+        CiscoStructureUsage.PROTOCOL_OBJECT_GROUP_PROTOCOL_OBJECT);
 
     // service template
     markConcreteStructure(
@@ -3631,9 +3648,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return c;
   }
 
-  private void undefinedGroups(Map<String, Integer> groupReferences, StructureType structureType, StructureUsage structureUsage) {
+  private void undefinedGroups(
+      Map<String, Integer> groupReferences,
+      StructureType structureType,
+      StructureUsage structureUsage) {
     for (Entry<String, Integer> e : groupReferences.entrySet()) {
-      undefined( structureType, e.getKey(), structureUsage, e.getValue());
+      undefined(structureType, e.getKey(), structureUsage, e.getValue());
     }
   }
 
