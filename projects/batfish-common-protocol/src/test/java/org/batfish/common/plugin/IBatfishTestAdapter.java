@@ -104,6 +104,7 @@ public class IBatfishTestAdapter implements IBatfish {
     throw new UnsupportedOperationException();
   }
 
+  @Deprecated
   @Override
   public Map<String, BiFunction<Question, IBatfish, Answerer>> getAnswererCreators() {
     throw new UnsupportedOperationException();
