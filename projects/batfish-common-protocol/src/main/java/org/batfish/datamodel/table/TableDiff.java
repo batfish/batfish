@@ -32,9 +32,6 @@ public final class TableDiff {
   public static final String COL_KEY_STATUS_ONLY_BASE = "Only in Base";
   public static final String COL_KEY_STATUS_ONLY_DELTA = "Only in Delta";
 
-  static final String NULL_VALUE_BASE = "Base value is null";
-  private static final String NULL_VALUE_DELTA = "Delta value is null";
-
   /** Returns the modified column name to represent the delta value of the original column */
   public static String baseColumnName(String originalColumnName) {
     return COL_BASE_PREFIX + originalColumnName;
