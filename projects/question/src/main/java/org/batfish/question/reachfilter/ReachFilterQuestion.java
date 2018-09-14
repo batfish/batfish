@@ -23,12 +23,12 @@ import org.batfish.question.ReachFilterParameters;
 import org.batfish.specifier.FilterSpecifier;
 import org.batfish.specifier.FilterSpecifierFactory;
 import org.batfish.specifier.FlexibleFilterSpecifierFactory;
-import org.batfish.specifier.FlexibleInterfaceSpecifierFactory;
+import org.batfish.specifier.FlexibleLocationSpecifierFactory;
 import org.batfish.specifier.FlexibleNodeSpecifierFactory;
 import org.batfish.specifier.FlexibleUniverseIpSpaceSpecifierFactory;
-import org.batfish.specifier.InterfaceSpecifier;
 import org.batfish.specifier.IpSpaceSpecifier;
 import org.batfish.specifier.IpSpaceSpecifierFactory;
+import org.batfish.specifier.LocationSpecifier;
 import org.batfish.specifier.NodeSpecifier;
 import org.batfish.specifier.NodeSpecifierFactory;
 
@@ -64,7 +64,7 @@ public final class ReachFilterQuestion extends Question {
 
   private static final String PROP_SRC_PORTS = "srcPorts";
 
-  private static final String PROP_SOURCE_INTERFACE_FILTER_SPECIFIER = "sourceInterfaces";
+  private static final String PROP_START_LOCATION = "start";
 
   private static final String PROP_SOURCE_IP_SPACE_SPECIFIER_FACTORY =
       "sourceIpSpaceSpecifierFactory";
@@ -101,7 +101,7 @@ public final class ReachFilterQuestion extends Question {
 
   @Nonnull private final SortedSet<IpProtocol> _ipProtocols;
 
-  @Nullable private final String _sourceInterfaces;
+  @Nullable private final String _start;
 
   @Nonnull private final String _sourceIpSpaceSpecifierFactory;
 
@@ -124,7 +124,7 @@ public final class ReachFilterQuestion extends Question {
       @JsonProperty(PROP_IP_PROTOCOLS) @Nullable SortedSet<IpProtocol> ipProtocols,
       @JsonProperty(PROP_NODE_SPECIFIER_FACTORY) @Nullable String nodeSpecifierFactory,
       @JsonProperty(PROP_NODES) @Nullable String nodes,
-      @JsonProperty(PROP_SOURCE_INTERFACE_FILTER_SPECIFIER) @Nullable String sourceInterfaces,
+      @JsonProperty(PROP_START_LOCATION) @Nullable String start,
       @JsonProperty(PROP_SOURCE_IP_SPACE_SPECIFIER_FACTORY) @Nullable
           String sourceIpSpaceSpecifierFactory,
       @JsonProperty(PROP_SOURCE_IP_SPACE_SPECIFIER_INPUT) @Nullable
@@ -141,7 +141,7 @@ public final class ReachFilterQuestion extends Question {
     _dstPorts = firstNonNull(dstPorts, ImmutableSortedSet.of());
     _dstProtocols = firstNonNull(dstProtocols, ImmutableSortedSet.of());
     _ipProtocols = firstNonNull(ipProtocols, ImmutableSortedSet.of());
-    _sourceInterfaces = sourceInterfaces;
+    _start = start;
     _sourceIpSpaceSpecifierFactory =
         firstNonNull(sourceIpSpaceSpecifierFactory, DEFAULT_SRC_IP_SPECIFIER_FACTORY);
     _sourceIpSpaceSpecifierInput = sourceIpSpaceSpecifierInput;
@@ -257,8 +257,8 @@ public final class ReachFilterQuestion extends Question {
   }
 
   @Nonnull
-  private InterfaceSpecifier getSourceInterfaceSpecifier() {
-    return new FlexibleInterfaceSpecifierFactory().buildInterfaceSpecifier(_sourceInterfaces);
+  private LocationSpecifier getStartLocationSpecifier() {
+    return new FlexibleLocationSpecifierFactory().buildLocationSpecifier(_start);
   }
 
   @Nonnull
@@ -305,7 +305,7 @@ public final class ReachFilterQuestion extends Question {
   ReachFilterParameters toReachFilterParameters() {
     return ReachFilterParameters.builder()
         .setHeaderSpace(getHeaderSpace())
-        .setSourceInterfaceSpecifier(getSourceInterfaceSpecifier())
+        .setStartLocationSpecifier(getStartLocationSpecifier())
         .setSourceIpSpaceSpecifier(getSourceSpecifier())
         .setDestinationIpSpaceSpecifier(getDestinationSpecifier())
         .build();
@@ -326,7 +326,7 @@ public final class ReachFilterQuestion extends Question {
     private SortedSet<SubRange> _dstPorts;
     private SortedSet<Protocol> _dstProtocols;
     private SortedSet<IpProtocol> _ipProtocols;
-    private String _sourceInterfaces;
+    private String _start;
     private String _sourceIpSpaceSpecifierFactory;
     private String _sourceIpSpaceSpecifierInput;
     private SortedSet<SubRange> _srcPorts;
@@ -385,8 +385,8 @@ public final class ReachFilterQuestion extends Question {
       return this;
     }
 
-    public Builder setSourceInterfaces(String sourceInterfaces) {
-      _sourceInterfaces = sourceInterfaces;
+    public Builder setStart(String start) {
+      _start = start;
       return this;
     }
 
@@ -416,7 +416,7 @@ public final class ReachFilterQuestion extends Question {
           _ipProtocols,
           _nodeSpecifierFactory,
           _nodeSpecifierInput,
-          _sourceInterfaces,
+          _start,
           _sourceIpSpaceSpecifierFactory,
           _sourceIpSpaceSpecifierInput,
           _srcPorts,
