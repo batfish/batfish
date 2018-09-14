@@ -1,5 +1,6 @@
 package org.batfish.question.testfilters;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multiset;
@@ -31,9 +32,9 @@ import org.batfish.specifier.SpecifierContext;
 
 public class TestFiltersAnswerer extends Answerer {
 
-  private static int DEFAULT_DST_PORT = 80; // HTTP
-  private static IpProtocol DEFAULT_IP_PROTOCOL = IpProtocol.TCP;
-  private static int DEFAULT_SRC_PORT = 49152; // lowest ephemeral port
+  static int DEFAULT_DST_PORT = 80; // HTTP
+  static IpProtocol DEFAULT_IP_PROTOCOL = IpProtocol.TCP;
+  static int DEFAULT_SRC_PORT = 49152; // lowest ephemeral port
 
   public static final String COL_NODE = "Node";
   public static final String COL_FILTER_NAME = "Filter_Name";
@@ -90,7 +91,7 @@ public class TestFiltersAnswerer extends Answerer {
     return answer;
   }
 
-  private Flow getFlow(
+  private static Flow getFlow(
       String ingressNode, TestFiltersQuestion question, Map<String, Configuration> configurations) {
     Flow.Builder flowBuilder = question.createBaseFlowBuilder();
     flowBuilder.setTag("FlowTag"); // dummy tag; consistent tags enable flow diffs
@@ -98,7 +99,13 @@ public class TestFiltersAnswerer extends Answerer {
     if (flowBuilder.getDstIp().equals(Ip.AUTO)) {
       flowBuilder.setDstIp(question.createDstIpFromDst(configurations));
     }
-    // reasonable defaults when values are not specified
+    applyDefaults(flowBuilder, question);
+    return flowBuilder.build();
+  }
+
+  /** Applies reasonable default values for fields when left unspecified */
+  @VisibleForTesting
+  static void applyDefaults(Flow.Builder flowBuilder, TestFiltersQuestion question) {
     if (question.getIpProtocol() == null) {
       flowBuilder.setIpProtocol(DEFAULT_IP_PROTOCOL);
     }
@@ -111,7 +118,6 @@ public class TestFiltersAnswerer extends Answerer {
         flowBuilder.setSrcPort(DEFAULT_SRC_PORT);
       }
     }
-    return flowBuilder.build();
   }
 
   private static Row getRow(
