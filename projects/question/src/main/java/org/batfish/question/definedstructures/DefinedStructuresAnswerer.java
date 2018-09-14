@@ -108,7 +108,7 @@ public class DefinedStructuresAnswerer extends Answerer {
 
   private static final String DEFAULT_TEXT_DESC =
       String.format(
-          "A(n) structure of type ${%s} named ${%s} is defined at ${%s}.",
+          "A structure of type ${%s} named ${%s} is defined at ${%s}.",
           COL_STRUCT_TYPE, COL_STRUCTURE_NAME, COL_SOURCE_LINES);
 
   public static TableMetadata createMetadata(Question question) {

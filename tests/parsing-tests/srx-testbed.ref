@@ -6369,6 +6369,433 @@
           }
         }
       },
+      "referencedStructures" : {
+        "configs/junos-srx-1.cfg" : {
+          "bgp group" : {
+            "physical" : {
+              "bgp group neighbor" : [
+                113,
+                114
+              ]
+            }
+          },
+          "ike gateway" : {
+            "gateway-2" : {
+              "ipsec vpn ike gateway" : [
+                37
+              ]
+            },
+            "gateway-3" : {
+              "ipsec vpn ike gateway" : [
+                34
+              ]
+            }
+          },
+          "ike policy" : {
+            "test-ike-policy" : {
+              "ike gateway ike policy" : [
+                25,
+                28
+              ]
+            }
+          },
+          "interface" : {
+            "fxp0" : {
+              "interface" : [
+                99
+              ]
+            },
+            "fxp0.0" : {
+              "interface" : [
+                99
+              ]
+            },
+            "ge-0/0/0" : {
+              "interface" : [
+                96
+              ]
+            },
+            "ge-0/0/0.0" : {
+              "ike gateway external-interface" : [
+                30
+              ],
+              "interface" : [
+                96
+              ],
+              "security zones security-zone interfaces" : [
+                89
+              ]
+            },
+            "ge-0/0/1" : {
+              "interface" : [
+                97
+              ]
+            },
+            "ge-0/0/1.0" : {
+              "ike gateway external-interface" : [
+                27
+              ],
+              "interface" : [
+                97
+              ],
+              "security zones security-zone interfaces" : [
+                90
+              ]
+            },
+            "ge-0/0/2" : {
+              "interface" : [
+                98
+              ]
+            },
+            "ge-0/0/2.0" : {
+              "interface" : [
+                98
+              ],
+              "security zones security-zone interfaces" : [
+                93
+              ]
+            },
+            "lo0" : {
+              "interface" : [
+                100
+              ]
+            },
+            "lo0.0" : {
+              "interface" : [
+                100
+              ],
+              "security zones security-zone interfaces" : [
+                95
+              ]
+            },
+            "st0" : {
+              "interface" : [
+                101,
+                102
+              ]
+            },
+            "st0.2" : {
+              "interface" : [
+                101
+              ],
+              "ipsec vpn bind-interface" : [
+                36
+              ],
+              "security zones security-zone interfaces" : [
+                82
+              ]
+            },
+            "st0.3" : {
+              "interface" : [
+                102
+              ],
+              "ipsec vpn bind-interface" : [
+                33
+              ],
+              "security zones security-zone interfaces" : [
+                83
+              ]
+            }
+          },
+          "ipsec policy" : {
+            "test-ipsec-policy" : {
+              "ipsec vpn ipsec policy" : [
+                35,
+                38
+              ]
+            }
+          },
+          "policy-statement" : {
+            "bgp_export" : {
+              "bgp export policy-statement" : [
+                105
+              ]
+            },
+            "loadbal" : {
+              "forwarding-table export policy-statement" : [
+                104
+              ]
+            }
+          }
+        },
+        "configs/junos-srx-2.cfg" : {
+          "bgp group" : {
+            "physical" : {
+              "bgp group neighbor" : [
+                92,
+                93
+              ]
+            }
+          },
+          "ike gateway" : {
+            "gateway-1" : {
+              "ipsec vpn ike gateway" : [
+                34
+              ]
+            },
+            "gateway-3" : {
+              "ipsec vpn ike gateway" : [
+                37
+              ]
+            }
+          },
+          "ike policy" : {
+            "test-ike-policy" : {
+              "ike gateway ike policy" : [
+                25,
+                28
+              ]
+            }
+          },
+          "interface" : {
+            "fxp0" : {
+              "interface" : [
+                85
+              ]
+            },
+            "fxp0.0" : {
+              "interface" : [
+                85
+              ]
+            },
+            "ge-0/0/0" : {
+              "interface" : [
+                82
+              ]
+            },
+            "ge-0/0/0.0" : {
+              "ike gateway external-interface" : [
+                27
+              ],
+              "interface" : [
+                82
+              ],
+              "security zones security-zone interfaces" : [
+                75
+              ]
+            },
+            "ge-0/0/1" : {
+              "interface" : [
+                83
+              ]
+            },
+            "ge-0/0/1.0" : {
+              "ike gateway external-interface" : [
+                30
+              ],
+              "interface" : [
+                83
+              ],
+              "security zones security-zone interfaces" : [
+                76
+              ]
+            },
+            "ge-0/0/2" : {
+              "interface" : [
+                84
+              ]
+            },
+            "ge-0/0/2.0" : {
+              "interface" : [
+                84
+              ],
+              "security zones security-zone interfaces" : [
+                81
+              ]
+            },
+            "lo0" : {
+              "interface" : [
+                86
+              ]
+            },
+            "lo0.0" : {
+              "interface" : [
+                86
+              ],
+              "security zones security-zone interfaces" : [
+                78
+              ]
+            },
+            "st0" : {
+              "interface" : [
+                87,
+                88
+              ]
+            },
+            "st0.1" : {
+              "interface" : [
+                87
+              ],
+              "ipsec vpn bind-interface" : [
+                33
+              ],
+              "security zones security-zone interfaces" : [
+                68
+              ]
+            },
+            "st0.3" : {
+              "interface" : [
+                88
+              ],
+              "ipsec vpn bind-interface" : [
+                36
+              ],
+              "security zones security-zone interfaces" : [
+                69
+              ]
+            }
+          },
+          "ipsec policy" : {
+            "test-ipsec-policy" : {
+              "ipsec vpn ipsec policy" : [
+                35,
+                38
+              ]
+            }
+          },
+          "policy-statement" : {
+            "bgp_export" : {
+              "bgp export policy-statement" : [
+                89
+              ]
+            }
+          }
+        },
+        "configs/junos-srx-3.cfg" : {
+          "bgp group" : {
+            "physical" : {
+              "bgp group neighbor" : [
+                83,
+                84
+              ]
+            }
+          },
+          "ike gateway" : {
+            "gateway-2" : {
+              "ipsec vpn ike gateway" : [
+                34
+              ]
+            }
+          },
+          "ike policy" : {
+            "test-ike-policy" : {
+              "ike gateway ike policy" : [
+                25,
+                28
+              ]
+            }
+          },
+          "interface" : {
+            "fxp0" : {
+              "interface" : [
+                76
+              ]
+            },
+            "fxp0.0" : {
+              "interface" : [
+                76
+              ]
+            },
+            "ge-0/0/0" : {
+              "interface" : [
+                73
+              ]
+            },
+            "ge-0/0/0.0" : {
+              "ike gateway external-interface" : [
+                30
+              ],
+              "interface" : [
+                73
+              ],
+              "security zones security-zone interfaces" : [
+                66
+              ]
+            },
+            "ge-0/0/1" : {
+              "interface" : [
+                74
+              ]
+            },
+            "ge-0/0/1.0" : {
+              "ike gateway external-interface" : [
+                27
+              ],
+              "interface" : [
+                74
+              ],
+              "security zones security-zone interfaces" : [
+                67
+              ]
+            },
+            "ge-0/0/2" : {
+              "interface" : [
+                75
+              ]
+            },
+            "ge-0/0/2.0" : {
+              "interface" : [
+                75
+              ],
+              "security zones security-zone interfaces" : [
+                72
+              ]
+            },
+            "lo0" : {
+              "interface" : [
+                77
+              ]
+            },
+            "lo0.0" : {
+              "interface" : [
+                77
+              ],
+              "security zones security-zone interfaces" : [
+                69
+              ]
+            },
+            "st0" : {
+              "interface" : [
+                78,
+                79
+              ]
+            },
+            "st0.1" : {
+              "interface" : [
+                78
+              ],
+              "security zones security-zone interfaces" : [
+                59
+              ]
+            },
+            "st0.2" : {
+              "interface" : [
+                79
+              ],
+              "ipsec vpn bind-interface" : [
+                33
+              ],
+              "security zones security-zone interfaces" : [
+                60
+              ]
+            }
+          },
+          "ipsec policy" : {
+            "test-ipsec-policy" : {
+              "ipsec vpn ipsec policy" : [
+                35
+              ]
+            }
+          },
+          "policy-statement" : {
+            "bgp_export" : {
+              "bgp export policy-statement" : [
+                80
+              ]
+            }
+          }
+        }
+      },
       "version" : "0.36.0"
     },
     {
