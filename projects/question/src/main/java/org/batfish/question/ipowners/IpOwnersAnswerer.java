@@ -28,7 +28,7 @@ class IpOwnersAnswerer extends Answerer {
   static final String COL_INTERFACE_NAME = "Interface";
   static final String COL_IP = "IP";
   static final String COL_MASK = "Mask";
-  static final String COL_NODE = "Hostname";
+  static final String COL_NODE = "Node";
   static final String COL_VRFNAME = "VRF";
 
   IpOwnersAnswerer(Question question, IBatfish batfish) {
