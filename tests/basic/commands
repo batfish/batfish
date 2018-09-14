@@ -57,12 +57,8 @@ test -compareall tests/basic/genDp-env.ref generate-delta-dataplane
 #test tests/basic/init-env-bad.ref init-environment newEnvironmentName="newenv-bad", interfaceBlacklist=[{hostname="as2border2",interface="GigabitEthernet"}]
 
 # disable-as-reuse
-init-snapshot networks/dc-as-reuse basic-dc-as-reuse
+init-snapshot tests/basic/networks/dc-as-reuse basic-dc-as-reuse
 test tests/basic/routes-dc-as-reuse.ref get routes
-
-# snat
-init-snapshot networks/snat basic-snat
-test tests/basic/traceroute-snat.ref get traceroute ingressNode=host1, dst="1.2.3.4"
 
 # iptables
 test -compareall tests/basic/example-iptables-init.ref init-snapshot networks/example-iptables
