@@ -8,7 +8,7 @@
   "filters": "${filters}",
   "ipProtocols": "${ipProtocols}",
   "nodes": "${nodes}",
-  "sourceInterfaces" : "${sourceInterfaces}",
+  "start" : "${start}",
   "src": "${src}",
   "srcPorts": "${srcPorts}",
   "query": "${query}",
