@@ -60,11 +60,6 @@
         "optional": true,
         "type": "string"
       },
-      "sourceInterfaces": {
-        "description": "Only consider these interfaces as possible sources",
-        "optional": true,
-        "type": "string"
-      },
       "src": {
         "description": "Flexible specification of source IpSpace",
         "optional": true,
@@ -75,6 +70,11 @@
         "minElements": 0,
         "optional": true,
         "type": "subrange"
+      },
+      "start": {
+        "description": "Only consider specified locations as possible sources",
+        "optional": true,
+        "type": "string"
       },
       "query": {
         "description": "The behavior that you want evaluated. Options are: permit|deny|matchLine <line number>. Only one option should be selected",
