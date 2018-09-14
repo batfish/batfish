@@ -1,5 +1,6 @@
 package org.batfish.question.testfilters;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multiset;
@@ -13,6 +14,7 @@ import org.batfish.datamodel.FilterResult;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.acl.AclTrace;
 import org.batfish.datamodel.acl.AclTracer;
@@ -29,6 +31,10 @@ import org.batfish.specifier.FilterSpecifier;
 import org.batfish.specifier.SpecifierContext;
 
 public class TestFiltersAnswerer extends Answerer {
+
+  static int DEFAULT_DST_PORT = 80; // HTTP
+  static IpProtocol DEFAULT_IP_PROTOCOL = IpProtocol.TCP;
+  static int DEFAULT_SRC_PORT = 49152; // lowest ephemeral port
 
   public static final String COL_NODE = "Node";
   public static final String COL_FILTER_NAME = "Filter_Name";
@@ -85,7 +91,7 @@ public class TestFiltersAnswerer extends Answerer {
     return answer;
   }
 
-  private Flow getFlow(
+  private static Flow getFlow(
       String ingressNode, TestFiltersQuestion question, Map<String, Configuration> configurations) {
     Flow.Builder flowBuilder = question.createBaseFlowBuilder();
     flowBuilder.setTag("FlowTag"); // dummy tag; consistent tags enable flow diffs
@@ -93,7 +99,25 @@ public class TestFiltersAnswerer extends Answerer {
     if (flowBuilder.getDstIp().equals(Ip.AUTO)) {
       flowBuilder.setDstIp(question.createDstIpFromDst(configurations));
     }
+    applyDefaults(flowBuilder, question);
     return flowBuilder.build();
+  }
+
+  /** Applies reasonable default values for fields when left unspecified */
+  @VisibleForTesting
+  static void applyDefaults(Flow.Builder flowBuilder, TestFiltersQuestion question) {
+    if (question.getIpProtocol() == null) {
+      flowBuilder.setIpProtocol(DEFAULT_IP_PROTOCOL);
+    }
+    if (flowBuilder.getIpProtocol() == IpProtocol.TCP
+        || flowBuilder.getIpProtocol() == IpProtocol.UDP) {
+      if (question.getDstPort() == null) {
+        flowBuilder.setDstPort(DEFAULT_DST_PORT);
+      }
+      if (question.getSrcPort() == null) {
+        flowBuilder.setSrcPort(DEFAULT_SRC_PORT);
+      }
+    }
   }
 
   private static Row getRow(
