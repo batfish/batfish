@@ -73,6 +73,10 @@ public final class IpAccessListLine implements Serializable {
     return new Builder().setAction(LineAction.PERMIT);
   }
 
+  public static IpAccessListLine accepting(AclLineMatchExpr expr) {
+    return new Builder().setAction(LineAction.PERMIT).setMatchCondition(expr).build();
+  }
+
   public static IpAccessListLine acceptingHeaderSpace(HeaderSpace headerSpace) {
     return accepting().setMatchCondition(new MatchHeaderSpace(headerSpace)).build();
   }
@@ -83,6 +87,10 @@ public final class IpAccessListLine implements Serializable {
 
   public static Builder rejecting() {
     return new Builder().setAction(LineAction.DENY);
+  }
+
+  public static IpAccessListLine rejecting(AclLineMatchExpr expr) {
+    return new Builder().setAction(LineAction.DENY).setMatchCondition(expr).build();
   }
 
   public static IpAccessListLine rejectingHeaderSpace(HeaderSpace headerSpace) {
