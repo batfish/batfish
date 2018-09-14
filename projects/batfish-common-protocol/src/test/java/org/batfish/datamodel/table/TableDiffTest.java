@@ -1,13 +1,11 @@
 package org.batfish.datamodel.table;
 
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertNull;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -80,31 +78,6 @@ public class TableDiffTest {
   }
 
   @Test
-  public void diffCells() {
-    /** One value is null */
-    assertThat(
-        TableDiff.diffCells(null, 1, Schema.INTEGER),
-        equalTo(TableDiff.resultDifferent(TableDiff.NULL_VALUE_BASE)));
-
-    /** Both values are null */
-    assertThat(TableDiff.diffCells(null, null, Schema.INTEGER), equalTo(TableDiff.RESULT_SAME));
-
-    /** Integer difference */
-    assertThat(TableDiff.diffCells(1, 2, Schema.INTEGER), equalTo(TableDiff.resultDifferent("-1")));
-
-    /** Set difference */
-    String diffValue =
-        TableDiff.diffCells(
-            ImmutableSet.of(1, 2), ImmutableSet.of(2, 3), Schema.set(Schema.INTEGER));
-    assertThat(diffValue, containsString("+ [1]"));
-    assertThat(diffValue, containsString("- [3]"));
-
-    /** String (and other types) */
-    assertThat(TableDiff.diffCells("a", "b", Schema.STRING), equalTo(TableDiff.RESULT_DIFFERENT));
-    assertThat(TableDiff.diffCells("a", "a", Schema.STRING), equalTo(TableDiff.RESULT_SAME));
-  }
-
-  @Test
   public void diffMetadata() {
     List<ColumnMetadata> inputColumns = mixColumns();
 
@@ -118,12 +91,6 @@ public class TableDiffTest {
                 colKey,
                 new ColumnMetadata("both", Schema.STRING, "both", true, false),
                 colKeyStatus,
-                new ColumnMetadata(
-                    TableDiff.diffColumnName("value"),
-                    Schema.STRING,
-                    TableDiff.diffColumnDescription("value"),
-                    false,
-                    true),
                 new ColumnMetadata(
                     TableDiff.baseColumnName("value"), Schema.STRING, "value", false, false),
                 new ColumnMetadata(
@@ -152,8 +119,6 @@ public class TableDiffTest {
                 TableDiff.COL_KEY_PRESENCE,
                 TableDiff.COL_KEY_STATUS_BOTH,
                 // value
-                TableDiff.diffColumnName("value"),
-                TableDiff.diffCells("value1", null, Schema.STRING),
                 TableDiff.baseColumnName("value"),
                 "value1",
                 TableDiff.deltaColumnName("value"),
@@ -183,8 +148,6 @@ public class TableDiffTest {
             Row.of(
                 TableDiff.COL_KEY_PRESENCE,
                 TableDiff.COL_KEY_STATUS_ONLY_BASE,
-                TableDiff.diffColumnName("key"),
-                TableDiff.resultDifferent(TableDiff.COL_KEY_STATUS_ONLY_BASE),
                 TableDiff.baseColumnName("key"),
                 "value",
                 TableDiff.deltaColumnName("key"),
@@ -199,8 +162,6 @@ public class TableDiffTest {
             Row.of(
                 TableDiff.COL_KEY_PRESENCE,
                 TableDiff.COL_KEY_STATUS_ONLY_DELTA,
-                TableDiff.diffColumnName("key"),
-                TableDiff.resultDifferent(TableDiff.COL_KEY_STATUS_ONLY_DELTA),
                 TableDiff.baseColumnName("key"),
                 null,
                 TableDiff.deltaColumnName("key"),
@@ -293,7 +254,6 @@ public class TableDiffTest {
                     .put("key", "key1")
                     .put("both", "both1")
                     .put(TableDiff.COL_KEY_PRESENCE, TableDiff.COL_KEY_STATUS_BOTH)
-                    .put(TableDiff.diffColumnName("value"), TableDiff.RESULT_DIFFERENT)
                     .put(TableDiff.baseColumnName("value"), "value1")
                     .put(TableDiff.deltaColumnName("value"), "value2")
                     .put(TableDiff.baseColumnName("neither"), "neither1")
@@ -322,7 +282,6 @@ public class TableDiffTest {
             .add(
                 Row.builder()
                     .put(TableDiff.COL_KEY_PRESENCE, TableDiff.COL_KEY_STATUS_BOTH)
-                    .put(TableDiff.diffColumnName("value"), TableDiff.RESULT_DIFFERENT)
                     .put(TableDiff.baseColumnName("value"), "value1")
                     .put(TableDiff.deltaColumnName("value"), "value2")
                     .build());
