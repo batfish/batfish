@@ -2,6 +2,7 @@ package org.batfish.main;
 
 import static java.util.stream.Collectors.toMap;
 import static org.batfish.common.util.CommonUtil.toImmutableSortedMap;
+import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.SOURCE_ORIGINATING_FROM_DEVICE;
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.referencedSources;
 import static org.batfish.main.ReachabilityParametersResolver.resolveReachabilityParameters;
 
@@ -194,9 +195,11 @@ import org.batfish.role.NodeRolesData;
 import org.batfish.specifier.AllInterfaceLinksLocationSpecifier;
 import org.batfish.specifier.AllInterfacesLocationSpecifier;
 import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
+import org.batfish.specifier.InterfaceLinkLocation;
 import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.specifier.Location;
+import org.batfish.specifier.LocationVisitor;
 import org.batfish.specifier.SpecifierContext;
 import org.batfish.specifier.SpecifierContextImpl;
 import org.batfish.specifier.UnionLocationSpecifier;
@@ -4359,24 +4362,26 @@ public class Batfish extends PluginConsumer implements IBatfish {
         new HeaderSpaceToBDD(bddPacket, baseConfig.getIpSpaces()).toBDD(headerSpace);
 
     // resolve specified source interfaces that exist in both configs.
-    Set<String> commonSourceInterfaces =
+    Set<String> commonSources =
         Sets.intersection(
-            resolveBaseSourceInterfaces(reachFilterParameters, baseConfig.getHostname()),
-            resolveDeltaSourceInterfaces(reachFilterParameters, deltaConfig.getHostname()));
+            resolveBaseSources(reachFilterParameters, baseConfig.getHostname()),
+            resolveDeltaSources(reachFilterParameters, deltaConfig.getHostname()));
 
-    // effectively active interfaces are those of interest that are active in both configs.
-    Set<String> activeInterfaces =
-        Sets.intersection(
-            commonSourceInterfaces,
-            Sets.intersection(baseConfig.activeInterfaces(), deltaConfig.activeInterfaces()));
+    Set<String> inactiveInterfaces =
+        Sets.union(
+            Sets.difference(baseConfig.getAllInterfaces().keySet(), baseConfig.activeInterfaces()),
+            Sets.difference(
+                deltaConfig.getAllInterfaces().keySet(), deltaConfig.activeInterfaces()));
+
+    // effectively active sources are those of interest that are active in both configs.
+    Set<String> activeSources = Sets.difference(commonSources, inactiveInterfaces);
 
     Set<String> referencedSources =
         Sets.union(
             referencedSources(baseConfig.getIpAccessLists(), baseAcl),
             referencedSources(deltaConfig.getIpAccessLists(), deltaAcl));
 
-    BDDSourceManager mgr =
-        BDDSourceManager.forSources(bddPacket, activeInterfaces, referencedSources);
+    BDDSourceManager mgr = BDDSourceManager.forSources(bddPacket, activeSources, referencedSources);
     BDD baseAclBDD =
         BDDAcl.create(
                 bddPacket, baseAcl, baseConfig.getIpAccessLists(), baseConfig.getIpSpaces(), mgr)
@@ -4401,26 +4406,53 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return new DifferentialReachFilterResult(increasedFlow, decreasedFlow);
   }
 
-  private Set<String> resolveDeltaSourceInterfaces(ReachFilterParameters parameters, String node) {
+  private Set<String> resolveDeltaSources(ReachFilterParameters parameters, String node) {
     pushDeltaEnvironment();
-    Set<String> sourceInterfaces = resolveSourceInterfaces(parameters, node);
+    Set<String> sources = resolveSources(parameters, node);
     popEnvironment();
-    return sourceInterfaces;
+    return sources;
   }
 
-  private Set<String> resolveBaseSourceInterfaces(ReachFilterParameters parameters, String node) {
+  private Set<String> resolveBaseSources(ReachFilterParameters parameters, String node) {
     pushBaseEnvironment();
-    Set<String> sourceInterfaces = resolveSourceInterfaces(parameters, node);
+    Set<String> sources = resolveSources(parameters, node);
     popEnvironment();
-    return sourceInterfaces;
+    return sources;
   }
 
-  private Set<String> resolveSourceInterfaces(ReachFilterParameters parameters, String node) {
+  private Set<String> resolveSources(ReachFilterParameters parameters, String node) {
+    LocationVisitor<Boolean> onNode =
+        new LocationVisitor<Boolean>() {
+          @Override
+          public Boolean visitInterfaceLinkLocation(InterfaceLinkLocation interfaceLinkLocation) {
+            return interfaceLinkLocation.getNodeName().equals(node);
+          }
+
+          @Override
+          public Boolean visitInterfaceLocation(InterfaceLocation interfaceLocation) {
+            return interfaceLocation.getNodeName().equals(node);
+          }
+        };
+
+    LocationVisitor<String> locationToSource =
+        new LocationVisitor<String>() {
+          @Override
+          public String visitInterfaceLinkLocation(InterfaceLinkLocation interfaceLinkLocation) {
+            return interfaceLinkLocation.getInterfaceName();
+          }
+
+          @Override
+          public String visitInterfaceLocation(InterfaceLocation interfaceLocation) {
+            return SOURCE_ORIGINATING_FROM_DEVICE;
+          }
+        };
+
     return parameters
-        .getSourceInterfaceSpecifier()
-        .resolve(ImmutableSet.of(node), specifierContext())
+        .getStartLocationSpecifier()
+        .resolve(specifierContext())
         .stream()
-        .map(Interface::getName)
+        .filter(onNode::visit)
+        .map(locationToSource::visit)
         .collect(ImmutableSet.toImmutableSet());
   }
 
@@ -4443,14 +4475,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
       Configuration node, IpAccessList acl, ReachFilterParameters parameters) {
     BDDPacket bddPacket = new BDDPacket();
 
-    Set<String> activeInterfaces =
-        Sets.intersection(
-            node.activeInterfaces(), resolveSourceInterfaces(parameters, node.getHostname()));
+    Set<String> inactiveInterfaces =
+        Sets.difference(node.getAllInterfaces().keySet(), node.activeInterfaces());
+    Set<String> activeSources =
+        Sets.difference(resolveSources(parameters, node.getHostname()), inactiveInterfaces);
 
     Set<String> referencedSources = referencedSources(node.getIpAccessLists(), acl);
 
-    BDDSourceManager mgr =
-        BDDSourceManager.forSources(bddPacket, activeInterfaces, referencedSources);
+    BDDSourceManager mgr = BDDSourceManager.forSources(bddPacket, activeSources, referencedSources);
 
     BDD headerSpaceBDD =
         new HeaderSpaceToBDD(bddPacket, node.getIpSpaces())

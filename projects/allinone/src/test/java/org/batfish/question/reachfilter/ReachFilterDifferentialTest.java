@@ -82,7 +82,9 @@ public class ReachFilterDifferentialTest {
     Batfish batfish = getBatfish(baseConfig, deltaConfig);
     TableAnswerElement answer =
         (TableAnswerElement)
-            new ReachFilterAnswerer(new ReachFilterQuestion(), batfish).answerDiff();
+            new ReachFilterAnswerer(
+                    ReachFilterQuestion.builder().setStart("enter(.*)").build(), batfish)
+                .answerDiff();
     assertThat(
         answer,
         hasRows(

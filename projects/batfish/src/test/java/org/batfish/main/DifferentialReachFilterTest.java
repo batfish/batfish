@@ -6,6 +6,7 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasDstIp;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasIngressInterface;
+import static org.batfish.specifier.LocationSpecifiers.ALL_LOCATIONS;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 
@@ -20,12 +21,10 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.UniverseIpSpace;
-import org.batfish.datamodel.questions.InterfacesSpecifier;
 import org.batfish.question.ReachFilterParameters;
 import org.batfish.question.reachfilter.DifferentialReachFilterResult;
 import org.batfish.specifier.ConstantIpSpaceSpecifier;
-import org.batfish.specifier.FlexibleInterfaceSpecifierFactory;
-import org.batfish.specifier.ShorthandInterfaceSpecifier;
+import org.batfish.specifier.NameRegexInterfaceLinkLocationSpecifier;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -58,8 +57,7 @@ public class DifferentialReachFilterTest {
         ReachFilterParameters.builder()
             .setDestinationIpSpaceSpecifier(new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE))
             .setSourceIpSpaceSpecifier(new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE))
-            .setSourceInterfaceSpecifier(
-                new FlexibleInterfaceSpecifierFactory().buildInterfaceSpecifier(null))
+            .setStartLocationSpecifier(ALL_LOCATIONS)
             .setHeaderSpace(HeaderSpace.builder().build())
             .build();
   }
@@ -142,8 +140,7 @@ public class DifferentialReachFilterTest {
     ReachFilterParameters params =
         _params
             .toBuilder()
-            .setSourceInterfaceSpecifier(
-                new ShorthandInterfaceSpecifier(new InterfacesSpecifier(IFACE1)))
+            .setStartLocationSpecifier(new NameRegexInterfaceLinkLocationSpecifier(IFACE1))
             .build();
 
     params = _params;
@@ -158,8 +155,7 @@ public class DifferentialReachFilterTest {
     params =
         _params
             .toBuilder()
-            .setSourceInterfaceSpecifier(
-                new ShorthandInterfaceSpecifier(new InterfacesSpecifier(IFACE2)))
+            .setStartLocationSpecifier(new NameRegexInterfaceLinkLocationSpecifier(IFACE2))
             .build();
 
     // not can't match line 1 because IFACE2 is specified

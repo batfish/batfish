@@ -19,6 +19,7 @@ import static org.batfish.question.reachfilter.ReachFilterAnswerer.toMatchLineAc
 import static org.batfish.question.testfilters.TestFiltersAnswerer.COL_ACTION;
 import static org.batfish.question.testfilters.TestFiltersAnswerer.COL_FILTER_NAME;
 import static org.batfish.question.testfilters.TestFiltersAnswerer.COL_LINE_NUMBER;
+import static org.batfish.specifier.LocationSpecifiers.ALL_LOCATIONS;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
@@ -54,13 +55,12 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.answers.Schema;
-import org.batfish.datamodel.questions.InterfacesSpecifier;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.question.ReachFilterParameters;
 import org.batfish.specifier.ConstantIpSpaceSpecifier;
-import org.batfish.specifier.ShorthandInterfaceSpecifier;
+import org.batfish.specifier.NameRegexInterfaceLinkLocationSpecifier;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -160,7 +160,7 @@ public final class ReachFilterTest {
 
   private static Configuration _config;
 
-  private static ReachFilterParameters _defaultReachFilterParams;
+  private static ReachFilterParameters _allLocationsParams;
 
   @BeforeClass
   public static void setup() throws IOException {
@@ -181,7 +181,7 @@ public final class ReachFilterTest {
                 SRC_ACL.getName(),
                 SRC_ACL));
 
-    Builder ib = nf.interfaceBuilder().setOwner(_config);
+    Builder ib = nf.interfaceBuilder().setActive(true).setOwner(_config);
     ib.setName(IFACE1).build();
     ib.setName(IFACE2).build();
 
@@ -189,7 +189,12 @@ public final class ReachFilterTest {
         ImmutableSortedMap.of(_config.getHostname(), _config);
 
     _batfish = BatfishTestUtils.getBatfish(configurationMap, _tmp);
-    _defaultReachFilterParams = new ReachFilterQuestion().toReachFilterParameters();
+    _allLocationsParams =
+        new ReachFilterQuestion()
+            .toReachFilterParameters()
+            .toBuilder()
+            .setStartLocationSpecifier(ALL_LOCATIONS)
+            .build();
   }
 
   @Test
@@ -243,34 +248,32 @@ public final class ReachFilterTest {
   @Test
   public void testReachFilter_deny_ACCEPT_ALL() {
     Optional<Flow> permitFlow =
-        _batfish.reachFilter(_config, toDenyAcl(ACCEPT_ALL_ACL), _defaultReachFilterParams);
+        _batfish.reachFilter(_config, toDenyAcl(ACCEPT_ALL_ACL), _allLocationsParams);
     assertThat("Should not find permitted flow", !permitFlow.isPresent());
   }
 
   @Test
   public void testReachFilter_deny_REJECT_ALL() {
     Optional<Flow> permitFlow =
-        _batfish.reachFilter(_config, toDenyAcl(REJECT_ALL_ACL), _defaultReachFilterParams);
+        _batfish.reachFilter(_config, toDenyAcl(REJECT_ALL_ACL), _allLocationsParams);
     assertThat("Should find permitted flow", permitFlow.isPresent());
   }
 
   @Test
   public void testReachFilter_permit_ACCEPT_ALL() {
-    Optional<Flow> permitFlow =
-        _batfish.reachFilter(_config, ACCEPT_ALL_ACL, _defaultReachFilterParams);
+    Optional<Flow> permitFlow = _batfish.reachFilter(_config, ACCEPT_ALL_ACL, _allLocationsParams);
     assertThat("Should find permitted flow", permitFlow.isPresent());
   }
 
   @Test
   public void testReachFilter_permit_REJECT_ALL() {
-    Optional<Flow> permitFlow =
-        _batfish.reachFilter(_config, REJECT_ALL_ACL, _defaultReachFilterParams);
+    Optional<Flow> permitFlow = _batfish.reachFilter(_config, REJECT_ALL_ACL, _allLocationsParams);
     assertThat(permitFlow, equalTo(Optional.empty()));
   }
 
   @Test
   public void testReachFilter_permit() {
-    Optional<Flow> permitFlow = _batfish.reachFilter(_config, ACL, _defaultReachFilterParams);
+    Optional<Flow> permitFlow = _batfish.reachFilter(_config, ACL, _allLocationsParams);
     assertThat("Should find permitted flow", permitFlow.isPresent());
     assertThat(permitFlow.get(), hasDstIp(oneOf(IP0, IP3)));
   }
@@ -278,7 +281,7 @@ public final class ReachFilterTest {
   @Test
   public void testReachFilter_permit_headerSpace() {
     ReachFilterParameters.Builder paramsBuilder =
-        _defaultReachFilterParams
+        _allLocationsParams
             .toBuilder()
             .setDestinationIpSpaceSpecifier(new ConstantIpSpaceSpecifier(IP0.toIpSpace()))
             .setSourceIpSpaceSpecifier(new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE))
@@ -297,8 +300,7 @@ public final class ReachFilterTest {
 
   @Test
   public void testReachFilter_deny() {
-    Optional<Flow> permitFlow =
-        _batfish.reachFilter(_config, toDenyAcl(ACL), _defaultReachFilterParams);
+    Optional<Flow> permitFlow = _batfish.reachFilter(_config, toDenyAcl(ACL), _allLocationsParams);
     assertThat("Should find permitted flow", permitFlow.isPresent());
     assertThat(permitFlow.get(), hasDstIp(not(oneOf(IP0, IP3))));
   }
@@ -306,19 +308,19 @@ public final class ReachFilterTest {
   @Test
   public void testReachFilter_matchLine() {
     Optional<Flow> permitFlow =
-        _batfish.reachFilter(_config, toMatchLineAcl(0, ACL), _defaultReachFilterParams);
+        _batfish.reachFilter(_config, toMatchLineAcl(0, ACL), _allLocationsParams);
     assertThat("Should find permitted flow", permitFlow.isPresent());
     assertThat(permitFlow.get(), hasDstIp(IP0));
 
-    permitFlow = _batfish.reachFilter(_config, toMatchLineAcl(1, ACL), _defaultReachFilterParams);
+    permitFlow = _batfish.reachFilter(_config, toMatchLineAcl(1, ACL), _allLocationsParams);
     assertThat("Should find permitted flow", permitFlow.isPresent());
     assertThat(permitFlow.get(), hasDstIp(IP1));
 
-    permitFlow = _batfish.reachFilter(_config, toMatchLineAcl(2, ACL), _defaultReachFilterParams);
+    permitFlow = _batfish.reachFilter(_config, toMatchLineAcl(2, ACL), _allLocationsParams);
     assertThat("Should find permitted flow", permitFlow.isPresent());
     assertThat(permitFlow.get(), hasDstIp(IP2));
 
-    permitFlow = _batfish.reachFilter(_config, toMatchLineAcl(3, ACL), _defaultReachFilterParams);
+    permitFlow = _batfish.reachFilter(_config, toMatchLineAcl(3, ACL), _allLocationsParams);
     assertThat("Should find permitted flow", permitFlow.isPresent());
     assertThat(permitFlow.get(), hasDstIp(IP3));
   }
@@ -326,8 +328,7 @@ public final class ReachFilterTest {
   @Test
   public void testReachFilter_matchLine_blocked() {
     Optional<Flow> permitFlow =
-        _batfish.reachFilter(
-            _config, toMatchLineAcl(2, BLOCKED_LINE_ACL), _defaultReachFilterParams);
+        _batfish.reachFilter(_config, toMatchLineAcl(2, BLOCKED_LINE_ACL), _allLocationsParams);
     assertThat("Should not find permitted flow", !permitFlow.isPresent());
   }
 
@@ -372,21 +373,21 @@ public final class ReachFilterTest {
   @Test
   public void testMatchSrcInterface() {
     Optional<Flow> flow =
-        _batfish.reachFilter(_config, toMatchLineAcl(0, SRC_ACL), _defaultReachFilterParams);
+        _batfish.reachFilter(_config, toMatchLineAcl(0, SRC_ACL), _allLocationsParams);
     assertThat(flow.get(), allOf(hasIngressInterface(nullValue()), hasDstIp(IP0)));
 
-    flow = _batfish.reachFilter(_config, toMatchLineAcl(1, SRC_ACL), _defaultReachFilterParams);
+    flow = _batfish.reachFilter(_config, toMatchLineAcl(1, SRC_ACL), _allLocationsParams);
     assertThat(flow.get(), allOf(hasIngressInterface(IFACE1), hasDstIp(IP1)));
 
-    flow = _batfish.reachFilter(_config, toMatchLineAcl(2, SRC_ACL), _defaultReachFilterParams);
+    flow = _batfish.reachFilter(_config, toMatchLineAcl(2, SRC_ACL), _allLocationsParams);
     assertThat(flow.get(), allOf(hasIngressInterface(IFACE2), hasDstIp(IP2)));
 
     // cannot have two different source interfaces
-    flow = _batfish.reachFilter(_config, toMatchLineAcl(3, SRC_ACL), _defaultReachFilterParams);
+    flow = _batfish.reachFilter(_config, toMatchLineAcl(3, SRC_ACL), _allLocationsParams);
     assertThat(flow, equalTo(Optional.empty()));
 
     // cannot have originate from device and have a source interface
-    flow = _batfish.reachFilter(_config, toMatchLineAcl(4, SRC_ACL), _defaultReachFilterParams);
+    flow = _batfish.reachFilter(_config, toMatchLineAcl(4, SRC_ACL), _allLocationsParams);
     assertThat(flow, equalTo(Optional.empty()));
   }
 
@@ -403,8 +404,7 @@ public final class ReachFilterTest {
                     rejecting().setMatchCondition(matchSrcInterface(IFACE2)).build(),
                     ACCEPT_ALL))
             .build();
-    Optional<Flow> flow =
-        _batfish.reachFilter(_config, denyAllSourcesAcl, _defaultReachFilterParams);
+    Optional<Flow> flow = _batfish.reachFilter(_config, denyAllSourcesAcl, _allLocationsParams);
     assertThat(flow, equalTo(Optional.empty()));
   }
 
@@ -420,8 +420,7 @@ public final class ReachFilterTest {
                     rejecting().setMatchCondition(matchSrcInterface(IFACE1)).build(),
                     ACCEPT_ALL))
             .build();
-    Optional<Flow> flow =
-        _batfish.reachFilter(_config, denyAllSourcesAcl, _defaultReachFilterParams);
+    Optional<Flow> flow = _batfish.reachFilter(_config, denyAllSourcesAcl, _allLocationsParams);
     assertThat("Should find a flow", flow.isPresent());
     assertThat(flow.get(), hasIngressInterface(IFACE2));
   }
@@ -429,10 +428,9 @@ public final class ReachFilterTest {
   @Test
   public void testSourceInterfaceParameter() {
     ReachFilterParameters params =
-        _defaultReachFilterParams
+        _allLocationsParams
             .toBuilder()
-            .setSourceInterfaceSpecifier(
-                new ShorthandInterfaceSpecifier(new InterfacesSpecifier(IFACE1)))
+            .setStartLocationSpecifier(new NameRegexInterfaceLinkLocationSpecifier(IFACE1))
             .build();
 
     // can match line 1 because IFACE1 is specified
@@ -448,7 +446,7 @@ public final class ReachFilterTest {
   public void testReachFilter_ACCEPT_ALL_dstIpConstraint() {
     Ip constraintIp = new Ip("21.21.21.21");
     ReachFilterParameters params =
-        _defaultReachFilterParams
+        _allLocationsParams
             .toBuilder()
             .setDestinationIpSpaceSpecifier(new ConstantIpSpaceSpecifier(constraintIp.toIpSpace()))
             .setSourceIpSpaceSpecifier(new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE))
@@ -462,7 +460,7 @@ public final class ReachFilterTest {
   public void testReachFilter_ACCEPT_ALL_srcIpConstraint() {
     Ip constraintIp = new Ip("21.21.21.21");
     ReachFilterParameters params =
-        _defaultReachFilterParams
+        _allLocationsParams
             .toBuilder()
             .setDestinationIpSpaceSpecifier(new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE))
             .setSourceIpSpaceSpecifier(new ConstantIpSpaceSpecifier(constraintIp.toIpSpace()))
@@ -478,7 +476,7 @@ public final class ReachFilterTest {
     hs.setSrcPorts(Collections.singletonList(new SubRange(1111, 1111)));
     hs.setDstPorts(Collections.singletonList(new SubRange(2222, 2222)));
     ReachFilterParameters params =
-        _defaultReachFilterParams
+        _allLocationsParams
             .toBuilder()
             .setDestinationIpSpaceSpecifier(new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE))
             .setSourceIpSpaceSpecifier(new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE))
