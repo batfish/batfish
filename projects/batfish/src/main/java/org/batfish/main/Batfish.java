@@ -800,7 +800,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
         BDD restOfLine = ipLineToBDDMap.get(lineNum);
 
         for (int prevLineNum = 0; prevLineNum < lineNum; prevLineNum++) {
-          if (restOfLine.isZero()) {break; }
+          if (restOfLine.isZero()) {
+            break;
+          }
           BDD prevBDD = ipLineToBDDMap.get(prevLineNum);
 
           if (!(prevBDD.and(restOfLine).isZero())) {
