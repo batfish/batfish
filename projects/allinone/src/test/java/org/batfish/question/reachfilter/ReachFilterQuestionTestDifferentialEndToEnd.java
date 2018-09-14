@@ -35,7 +35,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 /** End-to-end tests of {@link ReachFilterQuestion} in differential mode. */
-public class ReachFilterDifferentialTest {
+public class ReachFilterQuestionTestDifferentialEndToEnd {
   @Rule public TemporaryFolder _tmp = new TemporaryFolder();
 
   private static final String HOSTNAME = "hostname";
@@ -82,7 +82,9 @@ public class ReachFilterDifferentialTest {
     Batfish batfish = getBatfish(baseConfig, deltaConfig);
     TableAnswerElement answer =
         (TableAnswerElement)
-            new ReachFilterAnswerer(new ReachFilterQuestion(), batfish).answerDiff();
+            new ReachFilterAnswerer(
+                    ReachFilterQuestion.builder().setStart("enter(.*)").build(), batfish)
+                .answerDiff();
     assertThat(
         answer,
         hasRows(

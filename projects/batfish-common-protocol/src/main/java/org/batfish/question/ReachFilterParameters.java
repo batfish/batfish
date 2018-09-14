@@ -10,26 +10,26 @@ import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpSpace;
-import org.batfish.specifier.InterfaceSpecifier;
 import org.batfish.specifier.IpSpaceAssignment.Entry;
 import org.batfish.specifier.IpSpaceSpecifier;
+import org.batfish.specifier.LocationSpecifier;
 import org.batfish.specifier.SpecifierContext;
 
 /** A set of parameters for ACL filter analysis that uses high-level specifiers. */
 public final class ReachFilterParameters {
   private final @Nonnull IpSpaceSpecifier _destinationIpSpaceSpecifier;
   private final @Nonnull HeaderSpace _headerSpace;
-  private final @Nonnull InterfaceSpecifier _sourceInterfaceSpecifier;
+  private final @Nonnull LocationSpecifier _startLocationSpecifier;
   private final @Nonnull IpSpaceSpecifier _sourceIpSpaceSpecifier;
 
   private ReachFilterParameters(
       @Nonnull IpSpaceSpecifier destinationIpSpaceSpecifier,
-      @Nonnull InterfaceSpecifier sourceInterfaceSpecifier,
+      @Nonnull LocationSpecifier startLocationSpecifier,
       @Nonnull IpSpaceSpecifier sourceIpSpaceSpecifier,
       @Nonnull HeaderSpace headerSpace) {
     _destinationIpSpaceSpecifier = destinationIpSpaceSpecifier;
     _headerSpace = headerSpace;
-    _sourceInterfaceSpecifier = sourceInterfaceSpecifier;
+    _startLocationSpecifier = startLocationSpecifier;
     _sourceIpSpaceSpecifier = sourceIpSpaceSpecifier;
   }
 
@@ -39,8 +39,8 @@ public final class ReachFilterParameters {
   }
 
   @Nonnull
-  public InterfaceSpecifier getSourceInterfaceSpecifier() {
-    return _sourceInterfaceSpecifier;
+  public LocationSpecifier getStartLocationSpecifier() {
+    return _startLocationSpecifier;
   }
 
   @Nonnull
@@ -74,14 +74,14 @@ public final class ReachFilterParameters {
     return new Builder()
         .setDestinationIpSpaceSpecifier(_destinationIpSpaceSpecifier)
         .setHeaderSpace(_headerSpace)
-        .setSourceInterfaceSpecifier(_sourceInterfaceSpecifier)
+        .setStartLocationSpecifier(_startLocationSpecifier)
         .setSourceIpSpaceSpecifier(_sourceIpSpaceSpecifier);
   }
 
   public static final class Builder {
     private IpSpaceSpecifier _destinationIpSpaceSpecifier;
     private HeaderSpace _headerSpace;
-    private InterfaceSpecifier _sourceInterfaceSpecifier;
+    private LocationSpecifier _startLocationSpecifier;
     private IpSpaceSpecifier _sourceIpSpaceSpecifier;
 
     private Builder() {}
@@ -105,14 +105,13 @@ public final class ReachFilterParameters {
     public ReachFilterParameters build() {
       return new ReachFilterParameters(
           requireNonNull(_destinationIpSpaceSpecifier),
-          requireNonNull(_sourceInterfaceSpecifier),
+          requireNonNull(_startLocationSpecifier),
           requireNonNull(_sourceIpSpaceSpecifier),
           requireNonNull(_headerSpace));
     }
 
-    public Builder setSourceInterfaceSpecifier(
-        @Nonnull InterfaceSpecifier sourceInterfaceSpecifier) {
-      _sourceInterfaceSpecifier = sourceInterfaceSpecifier;
+    public Builder setStartLocationSpecifier(@Nonnull LocationSpecifier startLocationSpecifier) {
+      _startLocationSpecifier = startLocationSpecifier;
       return this;
     }
   }

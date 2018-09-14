@@ -88,12 +88,6 @@
         "type" : "string",
         "value" : "matchLine 0"
       },
-      "sourceInterfaces" : {
-        "description" : "Only consider these interfaces as possible sources",
-        "optional" : true,
-        "type" : "string",
-        "value" : ".*"
-      },
       "src" : {
         "description" : "Flexible specification of source IpSpace",
         "optional" : true,
@@ -108,6 +102,12 @@
         "value" : [
           0
         ]
+      },
+      "start" : {
+        "description" : "Only consider specified locations as possible sources",
+        "optional" : true,
+        "type" : "string",
+        "value" : ".*"
       }
     }
   }
