@@ -9,6 +9,7 @@ import java.util.Iterator;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
 
 public final class AclLineMatchExprs {
@@ -59,6 +60,10 @@ public final class AclLineMatchExprs {
 
   public static MatchHeaderSpace matchDst(Ip ip) {
     return matchDst(ip.toIpSpace());
+  }
+
+  public static MatchHeaderSpace matchDst(IpWildcard wc) {
+    return matchDst(wc.toIpSpace());
   }
 
   public static MatchHeaderSpace matchDst(Prefix prefix) {

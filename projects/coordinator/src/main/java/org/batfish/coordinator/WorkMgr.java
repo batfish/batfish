@@ -453,6 +453,22 @@ public class WorkMgr extends AbstractCoordinator {
     }
   }
 
+  @VisibleForTesting
+  Path getQuestionPath(WorkItem workItem) {
+    String qName = WorkItemBuilder.getQuestionName(workItem);
+    if (qName == null) {
+      throw new BatfishException("Question name not provided for ANSWER work");
+    }
+    String aName = WorkItemBuilder.getAnalysisName(workItem);
+    if (aName == null) {
+      // answering ad-hoc question
+      return getpathContainerQuestion(workItem.getContainerName(), qName);
+    } else {
+      // answering question in policy
+      return getpathAnalysisQuestion(workItem.getContainerName(), aName, qName);
+    }
+  }
+
   private WorkDetails computeWorkDetails(WorkItem workItem) {
 
     WorkType workType = WorkType.UNKNOWN;
@@ -472,11 +488,7 @@ public class WorkMgr extends AbstractCoordinator {
       if (workType != WorkType.UNKNOWN) {
         throw new BatfishException("Cannot do composite work. Separate ANSWER from other work.");
       }
-      String qName = WorkItemBuilder.getQuestionName(workItem);
-      if (qName == null) {
-        throw new BatfishException("Question name not provided for ANSWER work");
-      }
-      Path qFile = getpathContainerQuestion(workItem.getContainerName(), qName);
+      Path qFile = getQuestionPath(workItem);
       Question question = Question.parseQuestion(qFile);
       workType =
           question.getIndependent()
@@ -846,7 +858,8 @@ public class WorkMgr extends AbstractCoordinator {
     Path analysisDir = getdirContainerAnalysis(containerName, analysisName);
     Path qDir = analysisDir.resolve(Paths.get(BfConsts.RELPATH_QUESTIONS_DIR, qName));
     if (!Files.exists(qDir)) {
-      throw new BatfishException("Question '" + qName + "' does not exist");
+      throw new BatfishException(
+          "Question '" + qName + "' does not exist in analysis '" + analysisName + "'");
     }
     return qDir;
   }
