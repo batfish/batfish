@@ -2,6 +2,8 @@ package org.batfish.datamodel.isis;
 
 import static com.google.common.base.MoreObjects.toStringHelper;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Comparator;
 import java.util.Objects;
 import javax.annotation.Nonnull;
@@ -11,6 +13,10 @@ import org.batfish.datamodel.NetworkConfigurations;
 
 public final class IsisNode implements Comparable<IsisNode> {
 
+  private static final String PROP_HOSTNAME = "hostname";
+
+  private static final String PROP_INTERFACE = "interface";
+
   private final String _hostname;
 
   private final String _interfaceName;
@@ -18,6 +24,13 @@ public final class IsisNode implements Comparable<IsisNode> {
   public IsisNode(@Nonnull String hostname, @Nonnull String interfaceName) {
     _hostname = hostname;
     _interfaceName = interfaceName;
+  }
+
+  @JsonCreator
+  private static @Nonnull IsisNode create(
+      @JsonProperty(PROP_HOSTNAME) String hostname,
+      @JsonProperty(PROP_INTERFACE) String interfaceName) {
+    return new IsisNode(hostname, interfaceName);
   }
 
   @Override
@@ -39,6 +52,7 @@ public final class IsisNode implements Comparable<IsisNode> {
     return _hostname.equals(rhs._hostname) && _interfaceName.equals(rhs._interfaceName);
   }
 
+  @JsonProperty(PROP_HOSTNAME)
   public @Nonnull String getHostname() {
     return _hostname;
   }
@@ -47,6 +61,7 @@ public final class IsisNode implements Comparable<IsisNode> {
     return nc.getInterface(_hostname, _interfaceName);
   }
 
+  @JsonProperty(PROP_INTERFACE)
   public @Nonnull String getInterfaceName() {
     return _interfaceName;
   }
