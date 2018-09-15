@@ -4891,7 +4891,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public @Nonnull Answerer createAnswerer(@Nonnull Question question) {
+  public @Nullable Answerer createAnswerer(@Nonnull Question question) {
     BiFunction<Question, IBatfish, Answerer> creator = _answererCreators.get(question.getName());
     return creator != null ? creator.apply(question, this) : null;
   }
