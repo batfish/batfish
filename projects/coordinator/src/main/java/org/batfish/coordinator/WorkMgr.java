@@ -2,6 +2,7 @@ package org.batfish.coordinator;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Strings.isNullOrEmpty;
+import static java.util.Comparator.nullsFirst;
 import static java.util.stream.Collectors.toCollection;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -26,6 +27,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.FileTime;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
@@ -777,22 +779,68 @@ public class WorkMgr extends AbstractCoordinator {
     try {
       AnswerMetadata answerMetadata =
           _storage.loadAnswerMetadata(network, snapshot, question, referenceSnapshot, analysis);
+      FileTime answerMetadataLastModifiedTime = _storage.getAnswerMetadataLastModifiedTime(
+          network, snapshot, question, referenceSnapshot, analysis);
       if (_storage
               .getQuestionLastModifiedTime(network, question, analysis)
               .compareTo(
-                  _storage.getAnswerMetadataLastModifiedTime(
-                      network, snapshot, question, referenceSnapshot, analysis))
+                  answerMetadataLastModifiedTime)
           > 0) {
-        return new AnswerMetadata(null, AnswerStatus.STALE);
+        return AnswerMetadata.forStatus(AnswerStatus.STALE);
       }
-      return answerMetadata;
+      return applyPendingNetworkSettingsChanges(
+          answerMetadata, answerMetadataLastModifiedTime, network, question, analysis);
     } catch (FileNotFoundException e) {
-      return new AnswerMetadata(null, AnswerStatus.NOTFOUND);
+      return AnswerMetadata.forStatus(AnswerStatus.NOTFOUND);
     } catch (IOException e) {
       _logger.errorf(
           "Failed to read answer metadata file:\n%s", Throwables.getStackTraceAsString(e));
-      return new AnswerMetadata(null, AnswerStatus.FAILURE);
+      return AnswerMetadata.forStatus(AnswerStatus.FAILURE);
     }
+  }
+
+  @VisibleForTesting
+  @Nonnull
+  AnswerMetadata applyPendingNetworkSettingsChanges(
+      @Nonnull AnswerMetadata currentAnswerMetadata,
+      @Nonnull FileTime answerMetadataLastModifiedTime,
+      @Nonnull String network,
+      @Nonnull String question,
+      @Nullable String analysis) {
+    return applyPendingIssuesSettingsChanges(
+        currentAnswerMetadata, answerMetadataLastModifiedTime, network, question, analysis);
+  }
+
+  @VisibleForTesting
+  @Nonnull
+  AnswerMetadata applyPendingIssuesSettingsChanges(
+      @Nonnull AnswerMetadata currentAnswerMetadata,
+      @Nonnull FileTime answerMetadataLastModifiedTime,
+      @Nonnull String network,
+      @Nonnull String question,
+      @Nullable String analysis) {
+    Comparator<FileTime> nullsOlder = nullsFirst(FileTime::compareTo);
+    if (currentAnswerMetadata
+        .getMajorIssueTypes()
+        .stream()
+        .noneMatch(
+            majorIssueType ->
+                nullsOlder.compare(
+                        _storage.getMajorIssueConfigLastModifiedTime(network, majorIssueType),
+                        answerMetadataLastModifiedTime)
+                    > 0)) {
+      // No major issue configuration is newer than the answer metadata, so nothing to do.
+      return currentAnswerMetadata;
+    }
+    return applyIssuesConfiguration(network, question, analysis);
+  }
+
+  @VisibleForTesting
+  @Nonnull
+  AnswerMetadata applyIssuesConfiguration(
+      @Nonnull String network, @Nonnull String question, @Nullable String analysis) {
+    throw new UnsupportedOperationException(
+        "no implementation for generated method"); // TODO Auto-generated method stub
   }
 
   /**

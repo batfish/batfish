@@ -2,6 +2,7 @@ package org.batfish.storage;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
 import java.util.List;
 import java.util.Map;
@@ -299,4 +300,14 @@ public interface StorageProvider {
    */
   void storeQuestionSettings(String settings, String network, String questionClass)
       throws IOException;
+
+  /**
+   * Returns the last-modified time of the configuration for the specified major issue type for the
+   * specified network, or {@code null} if no such configuration exists
+   *
+   * @param network
+   * @param majorIssueType
+   */
+  @Nullable
+  FileTime getMajorIssueConfigLastModifiedTime(String network, String majorIssueType);
 }

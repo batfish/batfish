@@ -10,10 +10,14 @@ public final class AnswerMetadataTest {
   @Test
   public void testEquals() {
     AnswerMetadata group1Elem1 =
-        new AnswerMetadata(
-            new Metrics(
-                ImmutableMap.of("A", ImmutableMap.of(Aggregation.MAX, 1)), ImmutableSet.of(), 2),
-            AnswerStatus.SUCCESS);
+        AnswerMetadata.builder()
+            .setMetrics(
+                new Metrics(
+                    ImmutableMap.of("A", ImmutableMap.of(Aggregation.MAX, 1)),
+                    ImmutableSet.of(),
+                    2))
+            .setStatus(AnswerStatus.SUCCESS)
+            .build();
     AnswerMetadata group1Elem2 =
         new AnswerMetadata(
             new Metrics(
