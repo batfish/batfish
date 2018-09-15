@@ -21,10 +21,10 @@ import java.io.IOException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.HeaderSpace;
-import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.NetworkFactory;
+import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.answers.Schema;
@@ -94,8 +94,9 @@ public class TestFiltersTest {
     assertThat(_c, hasIpAccessLists(hasEntry(referencedAcl.getName(), referencedAcl)));
     assertThat(_c, hasIpAccessLists(hasEntry(acl.getName(), acl)));
 
-    TestFiltersQuestion question = new TestFiltersQuestion(null, null);
-    question.setSrcIp(new Ip("1.0.0.4"));
+    TestFiltersQuestion question =
+        new TestFiltersQuestion(
+            null, null, PacketHeaderConstraints.builder().setSrcIp("1.0.0.4").build(), null);
     TestFiltersAnswerer answerer = new TestFiltersAnswerer(question, batfish);
     TableAnswerElement answer = answerer.answer();
 
@@ -150,7 +151,7 @@ public class TestFiltersTest {
         BatfishTestUtils.getBatfish(
             ImmutableSortedMap.of(c1.getHostname(), c1, c2.getHostname(), c2, c3.getHostname(), c3),
             _folder);
-    TestFiltersQuestion question = new TestFiltersQuestion(null, null);
+    TestFiltersQuestion question = new TestFiltersQuestion(null, null, null, null);
     TestFiltersAnswerer answerer = new TestFiltersAnswerer(question, batfish);
     TableAnswerElement answer = answerer.answer();
 
