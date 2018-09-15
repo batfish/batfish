@@ -2,6 +2,7 @@ package org.batfish.datamodel.answers;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.MoreObjects.toStringHelper;
+import static java.util.Objects.requireNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -16,14 +17,61 @@ import org.batfish.common.BfConsts;
 
 public class Metrics {
 
+  public static class Builder {
+    private Map<String, Map<Aggregation, Object>> _aggregations;
+
+    private Set<String> _emptyColumns;
+
+    private Set<String> _majorIssueTypes;
+
+    private Integer _numRows;
+
+    private Builder() {
+      _aggregations = ImmutableMap.of();
+      _emptyColumns = ImmutableSet.of();
+      _majorIssueTypes = ImmutableSet.of();
+    }
+
+    public @Nonnull Metrics build() {
+      return new Metrics(_aggregations, _emptyColumns, _majorIssueTypes, requireNonNull(_numRows));
+    }
+
+    public @Nonnull Builder setAggregations(
+        @Nonnull Map<String, Map<Aggregation, Object>> aggregations) {
+      _aggregations = ImmutableMap.copyOf(aggregations);
+      return this;
+    }
+
+    public @Nonnull Builder setEmptyColumns(@Nonnull Set<String> emptyColumns) {
+      _emptyColumns = ImmutableSet.copyOf(emptyColumns);
+      return this;
+    }
+
+    public @Nonnull Builder setMajorIssueTypes(@Nonnull Set<String> majorIssueTypes) {
+      _majorIssueTypes = ImmutableSet.copyOf(majorIssueTypes);
+      return this;
+    }
+
+    public @Nonnull Builder setNumRows(int numRows) {
+      _numRows = numRows;
+      return this;
+    }
+  }
+
+  public static @Nonnull Builder builder() {
+    return new Builder();
+  }
+
   @JsonCreator
   private static @Nonnull Metrics create(
       @JsonProperty(BfConsts.PROP_AGGREGATIONS) Map<String, Map<Aggregation, Object>> aggregations,
       @JsonProperty(BfConsts.PROP_EMPTY_COLUMNS) Set<String> emptyColumns,
+      @JsonProperty(BfConsts.PROP_MAJOR_ISSUE_TYPES) Set<String> majorIssueTypes,
       @JsonProperty(BfConsts.PROP_NUM_ROWS) int numRows) {
     return new Metrics(
         firstNonNull(aggregations, ImmutableMap.of()),
         firstNonNull(emptyColumns, ImmutableSet.of()),
+        firstNonNull(majorIssueTypes, ImmutableSet.of()),
         numRows);
   }
 
@@ -31,14 +79,18 @@ public class Metrics {
 
   private final Set<String> _emptyColumns;
 
+  private final Set<String> _majorIssueTypes;
+
   private final int _numRows;
 
-  public Metrics(
+  private Metrics(
       @Nonnull Map<String, Map<Aggregation, Object>> aggregations,
       @Nonnull Set<String> emptyColumns,
+      @Nonnull Set<String> majorIssueTypes,
       int numRows) {
     _aggregations = aggregations;
     _emptyColumns = emptyColumns;
+    _majorIssueTypes = majorIssueTypes;
     _numRows = numRows;
   }
 
@@ -53,6 +105,7 @@ public class Metrics {
     Metrics rhs = (Metrics) obj;
     return _aggregations.equals(rhs._aggregations)
         && _emptyColumns.equals(rhs._emptyColumns)
+        && _majorIssueTypes.equals(rhs._majorIssueTypes)
         && _numRows == rhs._numRows;
   }
 
@@ -66,6 +119,11 @@ public class Metrics {
     return _emptyColumns;
   }
 
+  @JsonProperty(BfConsts.PROP_MAJOR_ISSUE_TYPES)
+  public Set<String> getMajorIssueTypes() {
+    return _majorIssueTypes;
+  }
+
   @JsonProperty(BfConsts.PROP_NUM_ROWS)
   public int getNumRows() {
     return _numRows;
@@ -73,14 +131,16 @@ public class Metrics {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_aggregations, _emptyColumns, _numRows);
+    return Objects.hash(_aggregations, _emptyColumns, _majorIssueTypes, _numRows);
   }
 
   @Override
   public String toString() {
     return toStringHelper(getClass())
+        .omitNullValues()
         .add(BfConsts.PROP_AGGREGATIONS, _aggregations)
         .add(BfConsts.PROP_EMPTY_COLUMNS, _emptyColumns)
+        .add(BfConsts.PROP_MAJOR_ISSUE_TYPES, !_majorIssueTypes.isEmpty() ? _majorIssueTypes : null)
         .add(BfConsts.PROP_NUM_ROWS, _numRows)
         .toString();
   }

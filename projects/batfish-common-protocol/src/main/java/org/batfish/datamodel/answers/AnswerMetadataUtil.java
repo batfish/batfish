@@ -25,9 +25,12 @@ public final class AnswerMetadataUtil {
   public static @Nonnull AnswerMetadata computeAnswerMetadata(
       @Nonnull Answer answer, @Nonnull BatfishLogger logger) {
     try {
-      return new AnswerMetadata(computeMetrics(answer, logger), answer.getStatus());
+      return AnswerMetadata.builder()
+          .setMetrics(computeMetrics(answer, logger))
+          .setStatus(answer.getStatus())
+          .build();
     } catch (Exception e) {
-      return new AnswerMetadata(null, AnswerStatus.FAILURE);
+      return AnswerMetadata.forStatus(AnswerStatus.FAILURE);
     }
   }
 

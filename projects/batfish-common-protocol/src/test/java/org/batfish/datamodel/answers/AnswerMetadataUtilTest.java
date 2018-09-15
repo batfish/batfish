@@ -49,12 +49,15 @@ public class AnswerMetadataUtilTest {
     assertThat(
         AnswerMetadataUtil.computeAnswerMetadata(testAnswer, _logger),
         equalTo(
-            new AnswerMetadata(
-                new Metrics(
-                    ImmutableMap.of(columnName, ImmutableMap.of(Aggregation.MAX, value)),
-                    ImmutableSet.of(),
-                    1),
-                AnswerStatus.SUCCESS)));
+            AnswerMetadata.builder()
+                .setMetrics(
+                    Metrics.builder()
+                        .setAggregations(
+                            ImmutableMap.of(columnName, ImmutableMap.of(Aggregation.MAX, value)))
+                        .setNumRows(1)
+                        .build())
+                .setStatus(AnswerStatus.SUCCESS)
+                .build()));
   }
 
   @Test
@@ -64,7 +67,7 @@ public class AnswerMetadataUtilTest {
 
     assertThat(
         AnswerMetadataUtil.computeAnswerMetadata(testAnswer, _logger),
-        equalTo(new AnswerMetadata(null, AnswerStatus.FAILURE)));
+        equalTo(AnswerMetadata.forStatus(AnswerStatus.FAILURE)));
   }
 
   @Test
@@ -85,8 +88,10 @@ public class AnswerMetadataUtilTest {
     assertThat(
         AnswerMetadataUtil.computeAnswerMetadata(testAnswer, _logger),
         equalTo(
-            new AnswerMetadata(
-                new Metrics(ImmutableMap.of(), ImmutableSet.of(), 1), AnswerStatus.SUCCESS)));
+            AnswerMetadata.builder()
+                .setMetrics(Metrics.builder().setNumRows(1).build())
+                .setStatus(AnswerStatus.SUCCESS)
+                .build()));
   }
 
   @Test
