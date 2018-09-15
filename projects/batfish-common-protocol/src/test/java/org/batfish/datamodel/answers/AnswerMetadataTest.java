@@ -9,16 +9,19 @@ public final class AnswerMetadataTest {
 
   @Test
   public void testEquals() {
-    AnswerMetadata group1Elem1 =
-        AnswerMetadata.builder()
+    AnswerMetadata.Builder builder = AnswerMetadata.builder().setStatus(AnswerStatus.SUCCESS);
+
+    AnswerMetadata group1Elem1 = builder.build();
+    AnswerMetadata group1Elem2 = builder.build();
+    AnswerMetadata group2Elem1 =
+        builder
             .setMetrics(
                 new Metrics(
                     ImmutableMap.of("A", ImmutableMap.of(Aggregation.MAX, 1)),
                     ImmutableSet.of(),
                     2))
-            .setStatus(AnswerStatus.SUCCESS)
             .build();
-    AnswerMetadata group1Elem2 =
+
         new AnswerMetadata(
             new Metrics(
                 ImmutableMap.of("A", ImmutableMap.of(Aggregation.MAX, 1)), ImmutableSet.of(), 2),
