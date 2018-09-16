@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
@@ -22,9 +23,9 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
-import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.AclTrace;
 import org.batfish.datamodel.acl.AclTracer;
 import org.batfish.datamodel.answers.Schema;
@@ -33,11 +34,9 @@ import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
-import org.batfish.datamodel.table.Row.RowBuilder;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
 import org.batfish.datamodel.visitors.IpSpaceRepresentative;
-import org.batfish.question.traceroute.TracerouteQuestion;
 import org.batfish.specifier.FilterSpecifier;
 import org.batfish.specifier.FlexibleInferFromLocationIpSpaceSpecifierFactory;
 import org.batfish.specifier.InterfaceLinkLocation;
@@ -68,29 +67,27 @@ public class TestFiltersAnswerer extends Answerer {
   public static final String COL_LINE_CONTENT = "Line_Content";
   public static final String COL_TRACE = "Trace";
 
-  private final Map<String, Configuration> _configurations;
   private final IpSpaceRepresentative _ipSpaceRepresentative;
   private final IpSpaceAssignment _sourceIpAssignment;
 
   public TestFiltersAnswerer(Question question, IBatfish batfish) {
     super(question, batfish);
-    _configurations = batfish.loadConfigurations();
     _ipSpaceRepresentative = IpSpaceRepresentative.load();
-    _sourceIpAssignment = initSourceIpAssignment();
+    _sourceIpAssignment =
+        initSourceIpAssignment((TestFiltersQuestion) question, batfish.specifierContext());
   }
 
   @VisibleForTesting
-  IpSpaceAssignment initSourceIpAssignment() {
+  static IpSpaceAssignment initSourceIpAssignment(
+      TestFiltersQuestion question, SpecifierContext ctxt) {
     /* construct specifiers */
-    TestFiltersQuestion question = (TestFiltersQuestion) _question;
-    LocationSpecifier sourceLocationSpecifier = (question).getStartLocationSpecifier();
+    LocationSpecifier sourceLocationSpecifier = question.getStartLocationSpecifier();
 
     IpSpaceSpecifier sourceIpSpaceSpecifier =
         IpSpaceSpecifierFactory.load(IP_SPECIFIER_FACTORY)
             .buildIpSpaceSpecifier(question.getHeaders().getSrcIps());
 
     /* resolve specifiers */
-    SpecifierContext ctxt = _batfish.specifierContext();
     Set<Location> sourceLocations = sourceLocationSpecifier.resolve(ctxt);
     return sourceIpSpaceSpecifier.resolve(sourceLocations, ctxt);
   }
@@ -126,33 +123,41 @@ public class TestFiltersAnswerer extends Answerer {
 
   @Override
   public TableAnswerElement answer() {
+    Multiset<Row> rows = getRows();
+
     TestFiltersQuestion question = (TestFiltersQuestion) _question;
-    Map<String, Configuration> configurations = _batfish.loadConfigurations();
-    Set<String> includeNodes = question.getNodes().getMatchingNodes(_batfish);
-    SpecifierContext specifierContext = _batfish.specifierContext();
-
-    Multiset<Row> rows = rawAnswer(configurations, question, includeNodes, specifierContext);
-
     TableAnswerElement answer = create(question);
     answer.postProcessAnswer(question, rows);
     return answer;
   }
 
-  private Set<Flow> getFlows(String node) {
+  private Set<Flow> getFlows(Configuration c) {
     TestFiltersQuestion question = (TestFiltersQuestion) _question;
+    String node = c.getHostname();
     Set<Location> srcLocations =
-        question.getStartLocationSpecifier().resolve(_batfish.specifierContext());
+        question
+            .getStartLocationSpecifier()
+            .resolve(_batfish.specifierContext())
+            .stream()
+            .filter(LocationVisitor.onNode(node)::visit)
+            .collect(Collectors.toSet());
 
     ImmutableSet.Builder<Flow> setBuilder = ImmutableSet.builder();
+
+    // this will happen if the node has no interfaces, and someone is just testing their ACLs
+    if (srcLocations.isEmpty() && question.getStartLocation() == null) {
+      Flow.Builder flowBuilder = headerConstraintsToFlow(question.getHeaders(), null);
+      flowBuilder.setIngressNode(node);
+      flowBuilder.setIngressInterface(null);
+      flowBuilder.setIngressVrf("default"); // dummy since Flow needs non-null interface or vrf
+      flowBuilder.setTag("FlowTag"); // dummy tag; consistent tags enable flow diffs
+      setBuilder.add(flowBuilder.build());
+    }
 
     // Perform cross-product of all locations to flows
     for (Location srcLocation : srcLocations) {
       Flow.Builder flowBuilder = headerConstraintsToFlow(question.getHeaders(), srcLocation);
-      setSourceLocation(flowBuilder, srcLocation);
-      // should this filtering happen earlier for performance?
-      if (!flowBuilder.getIngressNode().equals(node)) {
-        continue;
-      }
+      setSourceLocation(flowBuilder, srcLocation, c);
       flowBuilder.setTag("FlowTag"); // dummy tag; consistent tags enable flow diffs
       setBuilder.add(flowBuilder.build());
     }
@@ -160,34 +165,60 @@ public class TestFiltersAnswerer extends Answerer {
     return setBuilder.build();
   }
 
-  private void setSourceLocation(Builder flowBuilder, Location loc) {
-    loc.accept(
-        new LocationVisitor<Void>() {
-          @Override
-          public Void visitInterfaceLinkLocation(
-              @Nonnull InterfaceLinkLocation interfaceLinkLocation) {
-            flowBuilder
-                .setIngressInterface(interfaceLinkLocation.getInterfaceName())
-                .setIngressNode(interfaceLinkLocation.getNodeName())
-                .setIngressVrf(null);
-            return null;
-          }
-
-          @Override
-          public Void visitInterfaceLocation(@Nonnull InterfaceLocation interfaceLocation) {
-            flowBuilder
-                .setIngressInterface(null)
-                .setIngressNode(interfaceLocation.getNodeName())
-                .setIngressVrf(
-                    interfaceVrf(
-                        interfaceLocation.getNodeName(), interfaceLocation.getInterfaceName()));
-            return null;
-          }
-        });
+  /**
+   * Returns a {@link Row} with results from injecting {@code flow} into {@code filter} at node
+   * represented by {@code c}.
+   */
+  public static Row getRow(IpAccessList filter, Flow flow, Configuration c) {
+    AclTrace trace =
+        AclTracer.trace(
+            filter,
+            flow,
+            flow.getIngressInterface(),
+            c.getIpAccessLists(),
+            c.getIpSpaces(),
+            c.getIpSpaceMetadata());
+    FilterResult result =
+        filter.filter(flow, flow.getIngressInterface(), c.getIpAccessLists(), c.getIpSpaces());
+    Integer matchLine = result.getMatchLine();
+    String lineDesc = "no-match";
+    if (matchLine != null) {
+      lineDesc = filter.getLines().get(matchLine).getName();
+      if (lineDesc == null) {
+        lineDesc = "line:" + matchLine;
+      }
+    }
+    return Row.builder()
+        .put(COL_NODE, new Node(c.getHostname()))
+        .put(COL_FILTER_NAME, filter.getName())
+        .put(COL_FLOW, flow)
+        .put(COL_ACTION, result.getAction())
+        .put(COL_LINE_NUMBER, matchLine)
+        .put(COL_LINE_CONTENT, lineDesc)
+        .put(COL_TRACE, trace)
+        .build();
   }
 
-  private String interfaceVrf(String node, String iface) {
-    return _configurations.get(node).getAllInterfaces().get(iface).getVrf().getName();
+  Multiset<Row> getRows() {
+    TestFiltersQuestion question = (TestFiltersQuestion) _question;
+    Map<String, Configuration> configurations = _batfish.loadConfigurations();
+    Set<String> includeNodes = question.getNodes().getMatchingNodes(_batfish);
+    FilterSpecifier filterSpecifier = question.getFilterSpecifier();
+
+    Multiset<Row> rows = HashMultiset.create();
+
+    for (String node : includeNodes) {
+      Configuration c = configurations.get(node);
+      Set<Flow> flows = getFlows(c);
+
+      // there should be another for loop for v6 filters when we add v6 support
+      for (IpAccessList filter : filterSpecifier.resolve(node, _batfish.specifierContext())) {
+        for (Flow flow : flows) {
+          rows.add(getRow(filter, flow, c));
+        }
+      }
+    }
+    return rows;
   }
 
   /**
@@ -202,7 +233,7 @@ public class TestFiltersAnswerer extends Answerer {
       throws IllegalArgumentException {
     Flow.Builder builder = Flow.builder();
 
-    // Extract and source IP from header constraints,
+    // Extract source IP from header constraints,
     String headerSrcIp = constraints.getSrcIps();
     if (headerSrcIp != null) {
       // interpret given Src IP using sane mode
@@ -218,6 +249,10 @@ public class TestFiltersAnswerer extends Answerer {
       Optional<Ip> srcIp = _ipSpaceRepresentative.getRepresentative(space);
       checkArgument(srcIp.isPresent(), "At least one source IP is required");
       builder.setSrcIp(srcIp.get());
+    } else if (srcLocation == null) {
+      Optional<Ip> srcIp = _ipSpaceRepresentative.getRepresentative(UniverseIpSpace.INSTANCE);
+      checkArgument(srcIp.isPresent(), "At least one source IP is required");
+      builder.setSrcIp(srcIp.get());
     } else {
       // Use from source location to determine header Src IP
       Optional<Entry> entry =
@@ -227,8 +262,7 @@ public class TestFiltersAnswerer extends Answerer {
               .filter(e -> e.getLocations().contains(srcLocation))
               .findFirst();
 
-      final String locationSpecifierInput =
-          ((TracerouteQuestion) _question).getSourceLocationSpecifierInput();
+      final String locationSpecifierInput = ((TestFiltersQuestion) _question).getStartLocation();
       checkArgument(
           entry.isPresent(),
           "Cannot resolve a source IP address from location %s",
@@ -242,19 +276,24 @@ public class TestFiltersAnswerer extends Answerer {
     }
 
     String headerDstIp = constraints.getDstIps();
-    checkArgument(constraints.getDstIps() != null, "Cannot run testfilters without destination IP");
-    IpSpaceSpecifier dstIpSpecifier =
-        IpSpaceSpecifierFactory.load(IP_SPECIFIER_FACTORY).buildIpSpaceSpecifier(headerDstIp);
-    IpSpaceAssignment dstIps =
-        dstIpSpecifier.resolve(ImmutableSet.of(), _batfish.specifierContext());
-    checkArgument(
-        dstIps.getEntries().size() == 1,
-        "Specified destination: %s, resolves to more than one IP",
-        headerDstIp);
-    IpSpace space = dstIps.getEntries().iterator().next().getIpSpace();
-    Optional<Ip> dstIp = _ipSpaceRepresentative.getRepresentative(space);
-    checkArgument(dstIp.isPresent(), "At least one destination IP is required");
-    builder.setDstIp(dstIp.get());
+    if (headerDstIp != null) {
+      IpSpaceSpecifier dstIpSpecifier =
+          IpSpaceSpecifierFactory.load(IP_SPECIFIER_FACTORY).buildIpSpaceSpecifier(headerDstIp);
+      IpSpaceAssignment dstIps =
+          dstIpSpecifier.resolve(ImmutableSet.of(), _batfish.specifierContext());
+      checkArgument(
+          dstIps.getEntries().size() == 1,
+          "Specified destination: %s, resolves to more than one IP",
+          headerDstIp);
+      IpSpace space = dstIps.getEntries().iterator().next().getIpSpace();
+      Optional<Ip> dstIp = _ipSpaceRepresentative.getRepresentative(space);
+      checkArgument(dstIp.isPresent(), "At least one destination IP is required");
+      builder.setDstIp(dstIp.get());
+    } else {
+      Optional<Ip> dstIp = _ipSpaceRepresentative.getRepresentative(UniverseIpSpace.INSTANCE);
+      checkArgument(dstIp.isPresent(), "At least one destination IP is required");
+      builder.setDstIp(dstIp.get());
+    }
 
     // Deal with IP packet header values.
     // IP protocol (default to UDP)
@@ -329,76 +368,31 @@ public class TestFiltersAnswerer extends Answerer {
     return builder;
   }
 
-  private static Row getRow(
-      String nodeName,
-      String filterName,
-      Flow flow,
-      LineAction action,
-      Integer matchLine,
-      String lineContent,
-      AclTrace trace) {
-    RowBuilder row = Row.builder();
-    row.put(TestFiltersAnswerer.COL_NODE, new Node(nodeName))
-        .put(TestFiltersAnswerer.COL_FILTER_NAME, filterName)
-        .put(TestFiltersAnswerer.COL_FLOW, flow)
-        .put(TestFiltersAnswerer.COL_ACTION, action)
-        .put(TestFiltersAnswerer.COL_LINE_NUMBER, matchLine)
-        .put(TestFiltersAnswerer.COL_LINE_CONTENT, lineContent)
-        .put(TestFiltersAnswerer.COL_TRACE, trace);
-    return row.build();
-  }
-
-  Multiset<Row> rawAnswer(
-      Map<String, Configuration> configurations,
-      TestFiltersQuestion question,
-      Set<String> includeNodes,
-      SpecifierContext specifierContext) {
-
-    FilterSpecifier filterSpecifier = question.getFilterSpecifier();
-
-    Multiset<Row> rows = HashMultiset.create();
-
-    for (Configuration c : configurations.values()) {
-      if (!includeNodes.contains(c.getHostname())) {
-        continue;
-      }
-      // there should be another for loop for v6 filters when we add v6 support
-      for (IpAccessList filter : filterSpecifier.resolve(c.getHostname(), specifierContext)) {
-
-        Set<Flow> flows = getFlows(c.getHostname());
-
-        for (Flow flow : flows) {
-          AclTrace trace =
-              AclTracer.trace(
-                  filter,
-                  flow,
-                  flow.getIngressInterface(),
-                  c.getIpAccessLists(),
-                  c.getIpSpaces(),
-                  c.getIpSpaceMetadata());
-          FilterResult result =
-              filter.filter(
-                  flow, flow.getIngressInterface(), c.getIpAccessLists(), c.getIpSpaces());
-          Integer matchLine = result.getMatchLine();
-          String lineDesc = "no-match";
-          if (matchLine != null) {
-            lineDesc = filter.getLines().get(matchLine).getName();
-            if (lineDesc == null) {
-              lineDesc = "line:" + matchLine;
-            }
+  private static void setSourceLocation(Builder flowBuilder, Location loc, Configuration c) {
+    loc.accept(
+        new LocationVisitor<Void>() {
+          @Override
+          public Void visitInterfaceLinkLocation(
+              @Nonnull InterfaceLinkLocation interfaceLinkLocation) {
+            flowBuilder
+                .setIngressInterface(interfaceLinkLocation.getInterfaceName())
+                .setIngressNode(interfaceLinkLocation.getNodeName())
+                .setIngressVrf(null);
+            return null;
           }
-          rows.add(
-              getRow(
-                  c.getHostname(),
-                  filter.getName(),
-                  flow,
-                  result.getAction(),
-                  matchLine,
-                  lineDesc,
-                  trace));
-        }
-      }
-    }
-    return rows;
+
+          @Override
+          public Void visitInterfaceLocation(@Nonnull InterfaceLocation interfaceLocation) {
+            flowBuilder
+                .setIngressInterface(null)
+                .setIngressNode(interfaceLocation.getNodeName())
+                .setIngressVrf(
+                    c.getAllInterfaces()
+                        .get(interfaceLocation.getInterfaceName())
+                        .getVrf()
+                        .getName());
+            return null;
+          }
+        });
   }
 }

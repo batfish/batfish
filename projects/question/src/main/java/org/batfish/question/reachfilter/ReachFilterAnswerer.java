@@ -20,7 +20,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.stream.Stream;
-import javax.annotation.Nonnull;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Pair;
@@ -30,13 +29,10 @@ import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.answers.AnswerElement;
-import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.Row;
-import org.batfish.datamodel.table.Rows;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableDiff;
 import org.batfish.question.ReachFilterParameters;
@@ -179,7 +175,7 @@ public final class ReachFilterAnswerer extends Answerer {
         _batfish.getLogger().warn(t.getMessage());
         continue;
       }
-      result.ifPresent(flow -> rows.add(testFiltersRow(hostname, acl, flow)));
+      result.ifPresent(flow -> rows.add(TestFiltersAnswerer.getRow(acl, flow, node)));
     }
 
     _tableAnswerElement =
@@ -290,52 +286,9 @@ public final class ReachFilterAnswerer extends Answerer {
     } else {
       _batfish.pushDeltaEnvironment();
     }
-    Row row = testFiltersRow(hostname, acl, flow);
+    Row row = TestFiltersAnswerer.getRow(acl, flow, _batfish.loadConfigurations().get(hostname));
     _batfish.popEnvironment();
     return row;
-  }
-
-  @VisibleForTesting
-  @Nonnull
-  Row testFiltersRow(String hostname, IpAccessList acl, Flow flow) {
-
-    PacketHeaderConstraints.Builder headers = PacketHeaderConstraints.builder();
-    headers.setDscps(makeSetSubrangeFromInt(flow.getDscp()));
-    headers.setDstIp(flow.getDstIp().toString());
-    headers.setDstPorts(makeSetSubrangeFromInt(flow.getDstPort()));
-    headers.setEcns(makeSetSubrangeFromInt(flow.getEcn()));
-    headers.setFragmentOffsets(makeSetSubrangeFromInt(flow.getFragmentOffset()));
-    headers.setIcmpCodes(makeSetSubrangeFromInt(flow.getFragmentOffset()));
-    headers.setIcmpTypes(makeSetSubrangeFromInt(flow.getFragmentOffset()));
-    headers.setIpProtocols(ImmutableSet.of(flow.getIpProtocol()));
-    headers.setPacketLengths(makeSetSubrangeFromInt(flow.getPacketLength()));
-    headers.setSrcIp(flow.getSrcIp().toString());
-    headers.setSrcPorts(makeSetSubrangeFromInt(flow.getSrcPort()));
-    headers.setFlowStates(ImmutableSet.of(flow.getState()));
-
-    // TODO: how to turn a flow into a location
-    // headers.setIngressInterface(flow.getIngressInterface());
-
-    TestFiltersQuestion testFiltersQuestion =
-        new TestFiltersQuestion(new NodesSpecifier(hostname), acl.getName(), headers.build(), null);
-
-    // TCP flags are not supported by headers yet
-    //    headers.setTcpFlagsAck(flow.getTcpFlagsAck() == 1);
-    //    headers.setTcpFlagsCwr(flow.getTcpFlagsCwr() == 1);
-    //    headers.setTcpFlagsEce(flow.getTcpFlagsEce() == 1);
-    //    headers.setTcpFlagsFin(flow.getTcpFlagsFin() == 1);
-    //    headers.setTcpFlagsPsh(flow.getTcpFlagsPsh() == 1);
-    //    headers.setTcpFlagsRst(flow.getTcpFlagsRst() == 1);
-    //    headers.setTcpFlagsSyn(flow.getTcpFlagsSyn() == 1);
-    //    headers.setTcpFlagsUrg(flow.getTcpFlagsUrg() == 1);
-
-    Rows rows = new TestFiltersAnswerer(testFiltersQuestion, _batfish).answer().getRows();
-    if (rows.size() != 1) {
-      throw new BatfishException(
-          String.format(
-              "TraceFiltersAnswerer produced an unexpected number of Rows: %d", rows.size()));
-    }
-    return rows.iterator().next();
   }
 
   /** Adds {@code nodes} (which are present in only one snapshot) to the {@code table} */
