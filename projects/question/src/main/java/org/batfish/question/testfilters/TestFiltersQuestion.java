@@ -81,7 +81,7 @@ public class TestFiltersQuestion extends Question {
   }
 
   @JsonProperty(PROP_START_LOCATION)
-  private String getStartLocation() {
+  public String getStartLocation() {
     return _startLocation;
   }
 

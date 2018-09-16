@@ -4422,19 +4422,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private Set<String> resolveSources(ReachFilterParameters parameters, String node) {
-    LocationVisitor<Boolean> onNode =
-        new LocationVisitor<Boolean>() {
-          @Override
-          public Boolean visitInterfaceLinkLocation(InterfaceLinkLocation interfaceLinkLocation) {
-            return interfaceLinkLocation.getNodeName().equals(node);
-          }
-
-          @Override
-          public Boolean visitInterfaceLocation(InterfaceLocation interfaceLocation) {
-            return interfaceLocation.getNodeName().equals(node);
-          }
-        };
-
     LocationVisitor<String> locationToSource =
         new LocationVisitor<String>() {
           @Override
@@ -4452,7 +4439,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         .getStartLocationSpecifier()
         .resolve(specifierContext())
         .stream()
-        .filter(onNode::visit)
+        .filter(LocationVisitor.onNode(node)::visit)
         .map(locationToSource::visit)
         .collect(ImmutableSet.toImmutableSet());
   }
