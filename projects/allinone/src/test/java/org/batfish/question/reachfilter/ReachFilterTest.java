@@ -335,7 +335,6 @@ public final class ReachFilterTest {
 
   @Test
   public void testTestFilter() {
-    ReachFilterQuestion question = new ReachFilterQuestion();
     String hostname = _config.getHostname();
     Flow flow = Flow.builder().setIngressNode(hostname).setDstIp(IP2).setTag("tag").build();
     assertThat(
