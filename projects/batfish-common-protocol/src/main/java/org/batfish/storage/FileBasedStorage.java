@@ -717,4 +717,14 @@ public final class FileBasedStorage implements StorageProvider {
       throws IOException {
     FileUtils.writeStringToFile(getQuestionSettingsPath(network, questionClass).toFile(), settings);
   }
+
+  @Override
+  public @Nullable FileTime getMajorIssueConfigLastModifiedTime(
+      String network, String majorIssueType) {
+    Path path = getMajorIssueConfigDir(network, majorIssueType);
+    if (!Files.exists(path)) {
+      return null;
+    }
+    return CommonUtil.getLastModifiedTime(path);
+  }
 }

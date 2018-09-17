@@ -819,8 +819,13 @@ public class WorkMgr extends AbstractCoordinator {
       @Nonnull String network,
       @Nonnull String question,
       @Nullable String analysis) {
+    if (currentAnswerMetadata.getMetrics() == null) {
+      // issues configuration not applicable to this answer, so nothing to do.
+      return currentAnswerMetadata;
+    }
     Comparator<FileTime> nullsOlder = nullsFirst(FileTime::compareTo);
     if (currentAnswerMetadata
+        .getMetrics()
         .getMajorIssueTypes()
         .stream()
         .noneMatch(

@@ -947,12 +947,15 @@ public class WorkMgrServiceTest {
     assertThat(
         structuredAnswer,
         equalTo(
-            new AnswerMetadata(
-                new Metrics(
-                    ImmutableMap.of(columnName, ImmutableMap.of(Aggregation.MAX, value)),
-                    ImmutableSet.of(),
-                    1),
-                AnswerStatus.SUCCESS)));
+            AnswerMetadata.builder()
+                .setMetrics(
+                    Metrics.builder()
+                        .setAggregations(
+                            ImmutableMap.of(columnName, ImmutableMap.of(Aggregation.MAX, value)))
+                        .setNumRows(1)
+                        .build())
+                .setStatus(AnswerStatus.SUCCESS)
+                .build()));
   }
 
   @Test
@@ -964,12 +967,15 @@ public class WorkMgrServiceTest {
 
     int value = 5;
     AnswerMetadata testAnswerMetadata =
-        new AnswerMetadata(
-            new Metrics(
-                ImmutableMap.of(columnName, ImmutableMap.of(Aggregation.MAX, value)),
-                ImmutableSet.of(),
-                1),
-            AnswerStatus.SUCCESS);
+        AnswerMetadata.builder()
+            .setMetrics(
+                Metrics.builder()
+                    .setAggregations(
+                        ImmutableMap.of(columnName, ImmutableMap.of(Aggregation.MAX, value)))
+                    .setNumRows(1)
+                    .build())
+            .setStatus(AnswerStatus.SUCCESS)
+            .build();
 
     Main.getWorkMgr().getStorage().storeQuestion(questionContent, _networkName, questionName, null);
     Main.getWorkMgr()
@@ -999,12 +1005,15 @@ public class WorkMgrServiceTest {
     assertThat(
         structuredAnswer,
         equalTo(
-            new AnswerMetadata(
-                new Metrics(
-                    ImmutableMap.of(columnName, ImmutableMap.of(Aggregation.MAX, value)),
-                    ImmutableSet.of(),
-                    1),
-                AnswerStatus.SUCCESS)));
+            AnswerMetadata.builder()
+                .setMetrics(
+                    Metrics.builder()
+                        .setAggregations(
+                            ImmutableMap.of(columnName, ImmutableMap.of(Aggregation.MAX, value)))
+                        .setNumRows(1)
+                        .build())
+                .setStatus(AnswerStatus.SUCCESS)
+                .build()));
   }
 
   @Test

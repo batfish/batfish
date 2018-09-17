@@ -9,29 +9,23 @@ public final class MetricsTest {
 
   @Test
   public void testEquals() {
-    Metrics group1Elem1 =
-        new Metrics(
-            ImmutableMap.of("a", ImmutableMap.of(Aggregation.MAX, "A")), ImmutableSet.of(), 1);
-    Metrics group1Elem2 =
-        new Metrics(
-            ImmutableMap.of("a", ImmutableMap.of(Aggregation.MAX, "A")), ImmutableSet.of(), 1);
+    Metrics.Builder builder = Metrics.builder();
+    Metrics group1Elem1 = builder.build();
+    Metrics group1Elem2 = builder.build();
     Metrics group2Elem1 =
-        new Metrics(
-            ImmutableMap.of("b", ImmutableMap.of(Aggregation.MAX, "A")), ImmutableSet.of(), 1);
-    Metrics group3Elem1 =
-        new Metrics(
-            ImmutableMap.of("a", ImmutableMap.of(Aggregation.MAX, "A")), ImmutableSet.of(), 2);
-    Metrics group4Elem1 =
-        new Metrics(
-            ImmutableMap.of("a", ImmutableMap.of(Aggregation.MAX, "A")),
-            ImmutableSet.of("blah"),
-            1);
+        builder
+            .setAggregations(ImmutableMap.of("a", ImmutableMap.of(Aggregation.MAX, "A")))
+            .build();
+    Metrics group3Elem1 = builder.setEmptyColumns(ImmutableSet.of("b")).build();
+    Metrics group4Elem1 = builder.setMajorIssueTypes(ImmutableSet.of("c")).build();
+    Metrics group5Elem1 = builder.setNumRows(5).build();
 
     new EqualsTester()
         .addEqualityGroup(group1Elem1, group1Elem2)
         .addEqualityGroup(group2Elem1)
         .addEqualityGroup(group3Elem1)
         .addEqualityGroup(group4Elem1)
+        .addEqualityGroup(group5Elem1)
         .testEquals();
   }
 }

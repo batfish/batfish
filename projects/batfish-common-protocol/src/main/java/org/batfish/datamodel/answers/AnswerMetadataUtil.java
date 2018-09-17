@@ -148,7 +148,11 @@ public final class AnswerMetadataUtil {
     Map<String, Map<Aggregation, Object>> columnAggregationResults =
         computeColumnAggregations(table, columnAggregationsBuilder.build(), logger);
     Set<String> emptyColumns = computeEmptyColumns(table);
-    return new Metrics(columnAggregationResults, emptyColumns, numRows);
+    return Metrics.builder()
+        .setAggregations(columnAggregationResults)
+        .setEmptyColumns(emptyColumns)
+        .setNumRows(numRows)
+        .build();
   }
 
   private AnswerMetadataUtil() {}
