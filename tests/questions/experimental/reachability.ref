@@ -45,7 +45,7 @@
         "type" : "string",
         "value" : "ddd"
       },
-      "end" : {
+      "finalNodes" : {
         "description" : "Input to specify the set of nodes at which traces should end",
         "optional" : true,
         "type" : "string",

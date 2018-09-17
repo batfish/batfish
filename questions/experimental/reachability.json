@@ -5,7 +5,7 @@
     "class": "org.batfish.question.specifiers.SpecifiersReachabilityQuestion",
     "forbiddenTransitNodesNodeSpecifierInput" : "${avoidNodes}",
     "destinationIpSpaceSpecifierInput": "${dstIps}",
-    "finalNodesSpecifierInput": "${end}",
+    "finalNodesSpecifierInput": "${finalNodes}",
     "requiredTransitNodesNodeSpecifierInput": "${transitNodes}",
     "sourceLocationSpecifierInput": "${start}",
     "sourceIpSpaceSpecifierInput": "${srcIps}"
@@ -37,7 +37,7 @@
         "optional": true,
         "type": "string"
       },
-      "end": {
+      "finalNodes": {
         "description": "Input to specify the set of nodes at which traces should end",
         "optional": true,
         "type": "string"
