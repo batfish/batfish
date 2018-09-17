@@ -67,7 +67,7 @@ public final class TableAnswerElement extends AnswerElement {
       }
     }
     // no matching exclusionName found; create a new one
-    ExcludedRows rows = new ExcludedRows(exclusionName, new Rows());
+    ExcludedRows rows = new ExcludedRows(exclusionName);
     rows.addRow(row);
     _excludedRows.add(rows);
   }
