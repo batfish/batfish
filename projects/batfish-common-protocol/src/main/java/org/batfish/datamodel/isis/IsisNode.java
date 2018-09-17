@@ -13,7 +13,7 @@ import org.batfish.datamodel.NetworkConfigurations;
 
 public final class IsisNode implements Comparable<IsisNode> {
 
-  private static final String PROP_HOSTNAME = "hostname";
+  private static final String PROP_NODE = "node";
 
   private static final String PROP_INTERFACE = "interface";
 
@@ -28,7 +28,7 @@ public final class IsisNode implements Comparable<IsisNode> {
 
   @JsonCreator
   private static @Nonnull IsisNode create(
-      @JsonProperty(PROP_HOSTNAME) String hostname,
+      @JsonProperty(PROP_NODE) String hostname,
       @JsonProperty(PROP_INTERFACE) String interfaceName) {
     return new IsisNode(hostname, interfaceName);
   }
@@ -52,7 +52,7 @@ public final class IsisNode implements Comparable<IsisNode> {
     return _hostname.equals(rhs._hostname) && _interfaceName.equals(rhs._interfaceName);
   }
 
-  @JsonProperty(PROP_HOSTNAME)
+  @JsonProperty(PROP_NODE)
   public @Nonnull String getHostname() {
     return _hostname;
   }

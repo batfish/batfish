@@ -54,7 +54,6 @@ import org.batfish.datamodel.isis.IsisTopology;
 import org.batfish.datamodel.ospf.OspfNeighbor;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.questions.Question;
-import org.batfish.question.VIModelQuestionPlugin.VIModelAnswerElement.Edges;
 
 @AutoService(Plugin.class)
 public class VIModelQuestionPlugin extends QuestionPlugin {
@@ -67,7 +66,7 @@ public class VIModelQuestionPlugin extends QuestionPlugin {
 
   public static class VIModelAnswerElement extends AnswerElement {
 
-    public static class Edges {
+    private static final class Edges {
 
       private static final String PROP_BGP = "bgp";
 
@@ -101,12 +100,12 @@ public class VIModelQuestionPlugin extends QuestionPlugin {
 
       private SortedSet<VerboseRipEdge> _ripEdges;
 
-      public static Edges createEmpty() {
+      private static Edges createEmpty() {
         return new Edges(null, null, null, null, null, null, null, null);
       }
 
       @JsonCreator
-      public Edges(
+      private Edges(
           @JsonProperty(PROP_BGP) Set<VerboseBgpEdge> bgpEdges,
           @JsonProperty(PROP_EIGRP) SortedSet<VerboseEigrpEdge> eigrpEdges,
           @JsonProperty(PROP_ISIS) SortedSet<IsisEdge> isisEdges,
@@ -176,11 +175,25 @@ public class VIModelQuestionPlugin extends QuestionPlugin {
     private final Edges _edges;
 
     @JsonCreator
-    public VIModelAnswerElement(
+    private VIModelAnswerElement(
         @JsonProperty(PROP_NODES) SortedMap<String, Configuration> nodes,
         @JsonProperty(PROP_EDGES) Edges edges) {
       _nodes = firstNonNull(nodes, ImmutableSortedMap.of());
       _edges = firstNonNull(edges, Edges.createEmpty());
+    }
+
+    public VIModelAnswerElement(
+        @Nonnull SortedMap<String, Configuration> nodes,
+        Set<VerboseBgpEdge> bgp,
+        SortedSet<VerboseEigrpEdge> eigrp,
+        SortedSet<IsisEdge> isis,
+        Layer1Topology layer1,
+        Layer2Topology layer2,
+        SortedSet<VerboseEdge> layer3,
+        SortedSet<VerboseOspfEdge> ospf,
+        SortedSet<VerboseRipEdge> rip) {
+      this._nodes = nodes;
+      this._edges = new Edges(bgp, eigrp, isis, layer1, layer2, layer3, ospf, rip);
     }
 
     @JsonProperty(PROP_NODES)
@@ -210,15 +223,14 @@ public class VIModelQuestionPlugin extends QuestionPlugin {
 
       return new VIModelAnswerElement(
           configs,
-          new Edges(
-              getBgpEdges(configs, ipOwners),
-              getEigrpEdges(configs, topology),
-              getIsisEdges(configs, topology),
-              _batfish.getLayer1Topology(),
-              _batfish.getLayer2Topology(),
-              getLayer3Edges(configs, topology),
-              getOspfEdges(configs),
-              getRipEdges(configs)));
+          getBgpEdges(configs, ipOwners),
+          getEigrpEdges(configs, topology),
+          getIsisEdges(configs, topology),
+          _batfish.getLayer1Topology(),
+          _batfish.getLayer2Topology(),
+          getLayer3Edges(configs, topology),
+          getOspfEdges(configs),
+          getRipEdges(configs));
     }
 
     private static SortedSet<VerboseBgpEdge> getBgpEdges(
