@@ -28,16 +28,16 @@ public final class TracerouteQuestion extends Question {
   private static final String PROP_HEADER_CONSTRAINTS = "headers";
 
   private final boolean _ignoreAcls;
-  private final @Nullable String _sourceLocationSpecifierInput;
+  private final @Nullable String _sourceLocationStr;
   private final PacketHeaderConstraints _headerConstraints;
 
   @JsonCreator
   TracerouteQuestion(
       @JsonProperty(PROP_IGNORE_ACLS) boolean ignoreAcls,
-      @JsonProperty(PROP_SOURCE_LOCATION) @Nullable String sourceLocationSpecifierInput,
+      @JsonProperty(PROP_SOURCE_LOCATION) @Nullable String sourceLocationStr,
       @JsonProperty(PROP_HEADER_CONSTRAINTS) @Nullable PacketHeaderConstraints headerConstraints) {
     _ignoreAcls = ignoreAcls;
-    _sourceLocationSpecifierInput = sourceLocationSpecifierInput;
+    _sourceLocationStr = sourceLocationStr;
     _headerConstraints = firstNonNull(headerConstraints, PacketHeaderConstraints.unconstrained());
   }
 
@@ -62,8 +62,8 @@ public final class TracerouteQuestion extends Question {
   }
 
   @JsonProperty(PROP_SOURCE_LOCATION)
-  public @Nullable String getSourceLocationSpecifierInput() {
-    return _sourceLocationSpecifierInput;
+  public @Nullable String getSourceLocationStr() {
+    return _sourceLocationStr;
   }
 
   @Override
@@ -76,8 +76,8 @@ public final class TracerouteQuestion extends Question {
     try {
       StringBuilder sb = new StringBuilder();
       sb.append(String.format("traceroute %s", prettyPrintBase()));
-      if (_sourceLocationSpecifierInput != null) {
-        sb.append(String.format(", %s=%s", PROP_SOURCE_LOCATION, _sourceLocationSpecifierInput));
+      if (_sourceLocationStr != null) {
+        sb.append(String.format(", %s=%s", PROP_SOURCE_LOCATION, _sourceLocationStr));
       }
       return sb.toString();
     } catch (Exception e) {

@@ -78,7 +78,7 @@ public final class TracerouteAnswerer extends Answerer {
     TracerouteQuestion tracerouteQuestion = (TracerouteQuestion) _question;
     LocationSpecifier sourceLocationSpecifier =
         LocationSpecifierFactory.load(SRC_LOCATION_SPECIFIER_FACTORY)
-            .buildLocationSpecifier(tracerouteQuestion.getSourceLocationSpecifierInput());
+            .buildLocationSpecifier(tracerouteQuestion.getSourceLocationStr());
 
     IpSpaceSpecifier sourceIpSpaceSpecifier =
         IpSpaceSpecifierFactory.load(IP_SPECIFIER_FACTORY)
@@ -207,7 +207,7 @@ public final class TracerouteAnswerer extends Answerer {
 
     Set<Location> srcLocations =
         LocationSpecifierFactory.load(SRC_LOCATION_SPECIFIER_FACTORY)
-            .buildLocationSpecifier(question.getSourceLocationSpecifierInput())
+            .buildLocationSpecifier(question.getSourceLocationStr())
             .resolve(_batfish.specifierContext());
 
     ImmutableSet.Builder<Flow> setBuilder = ImmutableSet.builder();
@@ -297,8 +297,7 @@ public final class TracerouteAnswerer extends Answerer {
               .filter(e -> e.getLocations().contains(srcLocation))
               .findFirst();
 
-      final String locationSpecifierInput =
-          ((TracerouteQuestion) _question).getSourceLocationSpecifierInput();
+      final String locationSpecifierInput = ((TracerouteQuestion) _question).getSourceLocationStr();
       checkArgument(
           entry.isPresent(),
           "Cannot resolve a source IP address from location %s",
