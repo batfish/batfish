@@ -5,10 +5,11 @@ add-batfish-option haltonparseerror
 add-batfish-option verboseparse
 
 # some ref tests using example network
-test -compareall tests/basic/init.ref init-snapshot networks/example basic-example
+test -compareall tests/basic/init.ref init-snapshot networks/example/live basic-example
 test tests/basic/parse-status.ref get fileparsestatus
 test -compareall tests/basic/genDp.ref generate-dataplane
 test -raw tests/basic/topology.ref get-object testrig_pojo_topology
+test tests/basic/viModel.ref get viModel
 test tests/basic/nodes-summary.ref get nodes summary=true
 test tests/basic/nodes.ref get nodes summary=false
 test tests/basic/neighbors-summary.ref get neighbors neighborTypes=["ebgp","ibgp","ospf","layer3"]
@@ -16,8 +17,7 @@ test tests/basic/neighbors.ref get neighbors style=verbose, neighborTypes=["ebgp
 test tests/basic/routes.ref get routes
 
 # some ref tests using delta snapshot
-test -compareall tests/basic/init-delta.ref init-delta-snapshot networks/example-with-delta basic-example-delta
-test -compareall tests/basic/genDp-delta.ref generate-delta-dataplane
+test -compareall tests/basic/init-candidate.ref init-delta-snapshot networks/example/candidate basic-example-candidate
 test tests/basic/nodes-diff.ref get nodes summary=false, differential=true
 
 # Everything below here is to be converted into regular unit tests in some form.
@@ -29,7 +29,6 @@ test tests/basic/error.ref -error get error
 test tests/basic/isisLoopbacks.ref get isisLoopbacks
 test tests/basic/ospfSessionCheck.ref get ospfsessioncheck
 test tests/basic/ospfStatus.ref get ospfstatus interfacesSpecifier="Loopback.*", status=".*passive"
-test tests/basic/routes-diff.ref get routes differential=true
 test tests/basic/selfAdjacencies.ref get selfAdjacencies
 test tests/basic/testfilters.ref get testFilters dst="1.1.1.1", nodes="host.*", filters="filter.*"
 test tests/basic/traceroute-1-2.ref get traceroute ingressNode="as1core1", dst="host1"
@@ -70,3 +69,8 @@ test tests/basic/example-iptables-protection.ref get reachability notIngressNode
 add-batfish-option z3timeout 1
 init-snapshot networks/fattree-examples/fattree2
 test tests/basic/z3timeout.ref -error get reachability dstIps=['70.0.2.0'], specialize=false
+
+# data-plane related diff tests
+test -compareall tests/basic/init-with-ba.ref init-snapshot networks/example/live-with-bgp-announcements example-with-ba
+set-delta-snapshot basic-example-candidate
+test tests/basic/routes-diff.ref get routes differential=true

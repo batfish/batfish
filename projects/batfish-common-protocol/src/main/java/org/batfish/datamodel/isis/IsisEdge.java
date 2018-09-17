@@ -1,11 +1,14 @@
 package org.batfish.datamodel.isis;
 
 import static com.google.common.base.MoreObjects.toStringHelper;
+import static java.util.Objects.requireNonNull;
 import static java.util.Optional.empty;
 import static org.batfish.datamodel.isis.IsisLevel.LEVEL_1;
 import static org.batfish.datamodel.isis.IsisLevel.LEVEL_1_2;
 import static org.batfish.datamodel.isis.IsisLevel.LEVEL_2;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Map;
@@ -130,6 +133,12 @@ public final class IsisEdge implements Comparable<IsisEdge> {
     return LEVEL_2;
   }
 
+  private static final String PROP_CIRCUIT_TYPE = "circuitType";
+
+  private static final String PROP_NODE1 = "node1";
+
+  private static final String PROP_NODE2 = "node2";
+
   private final IsisLevel _circuitType;
 
   private final IsisNode _node1;
@@ -141,6 +150,14 @@ public final class IsisEdge implements Comparable<IsisEdge> {
     _circuitType = circuitType;
     _node1 = node1;
     _node2 = node2;
+  }
+
+  @JsonCreator
+  private static @Nonnull IsisEdge create(
+      @JsonProperty(PROP_CIRCUIT_TYPE) IsisLevel circuitType,
+      @JsonProperty(PROP_NODE1) IsisNode node1,
+      @JsonProperty(PROP_NODE2) IsisNode node2) {
+    return new IsisEdge(requireNonNull(circuitType), requireNonNull(node1), requireNonNull(node2));
   }
 
   @Override
@@ -165,16 +182,19 @@ public final class IsisEdge implements Comparable<IsisEdge> {
         && _node2.equals(rhs._node2);
   }
 
+  @JsonProperty(PROP_CIRCUIT_TYPE)
   @Nonnull
   public IsisLevel getCircuitType() {
     return _circuitType;
   }
 
+  @JsonProperty(PROP_NODE1)
   @Nonnull
   public IsisNode getNode1() {
     return _node1;
   }
 
+  @JsonProperty(PROP_NODE2)
   @Nonnull
   public IsisNode getNode2() {
     return _node2;

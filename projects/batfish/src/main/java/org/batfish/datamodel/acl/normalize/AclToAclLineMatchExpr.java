@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.function.Supplier;
 import javax.annotation.Nonnull;
 import net.sf.javabdd.BDD;
+import org.batfish.common.bdd.AclLineMatchExprToBDD;
 import org.batfish.common.util.NonRecursiveSupplier;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
@@ -32,7 +33,6 @@ import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.acl.explanation.ConjunctsBuilder;
 import org.batfish.datamodel.acl.explanation.DisjunctsBuilder;
-import org.batfish.symbolic.bdd.AclLineMatchExprToBDD;
 
 /**
  * Reduce an {@link org.batfish.datamodel.IpAccessList} to a single {@link AclLineMatchExpr}.
