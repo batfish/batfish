@@ -17,25 +17,24 @@ public final class IsisNode implements Comparable<IsisNode> {
 
   private static final String PROP_INTERFACE = "interface";
 
-  private final String _hostname;
+  private final String _node;
 
   private final String _interfaceName;
 
-  public IsisNode(@Nonnull String hostname, @Nonnull String interfaceName) {
-    _hostname = hostname;
+  public IsisNode(@Nonnull String node, @Nonnull String interfaceName) {
+    _node = node;
     _interfaceName = interfaceName;
   }
 
   @JsonCreator
   private static @Nonnull IsisNode create(
-      @JsonProperty(PROP_NODE) String hostname,
-      @JsonProperty(PROP_INTERFACE) String interfaceName) {
-    return new IsisNode(hostname, interfaceName);
+      @JsonProperty(PROP_NODE) String node, @JsonProperty(PROP_INTERFACE) String interfaceName) {
+    return new IsisNode(node, interfaceName);
   }
 
   @Override
   public int compareTo(IsisNode o) {
-    return Comparator.comparing(IsisNode::getHostname)
+    return Comparator.comparing(IsisNode::getNode)
         .thenComparing(IsisNode::getInterfaceName)
         .compare(this, o);
   }
@@ -49,16 +48,16 @@ public final class IsisNode implements Comparable<IsisNode> {
       return false;
     }
     IsisNode rhs = (IsisNode) o;
-    return _hostname.equals(rhs._hostname) && _interfaceName.equals(rhs._interfaceName);
+    return _node.equals(rhs._node) && _interfaceName.equals(rhs._interfaceName);
   }
 
   @JsonProperty(PROP_NODE)
-  public @Nonnull String getHostname() {
-    return _hostname;
+  public @Nonnull String getNode() {
+    return _node;
   }
 
   public @Nullable Interface getInterface(@Nonnull NetworkConfigurations nc) {
-    return nc.getInterface(_hostname, _interfaceName);
+    return nc.getInterface(_node, _interfaceName);
   }
 
   @JsonProperty(PROP_INTERFACE)
@@ -76,13 +75,13 @@ public final class IsisNode implements Comparable<IsisNode> {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_hostname, _interfaceName);
+    return Objects.hash(_node, _interfaceName);
   }
 
   @Override
   public String toString() {
     return toStringHelper(getClass())
-        .add("hostname", _hostname)
+        .add("node", _node)
         .add("interfaceName", _interfaceName)
         .toString();
   }
