@@ -67,7 +67,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 /** End-to-end tests of {@link ReachFilterQuestion}. */
-public final class ReachFilterQuestionTestEndToEnd {
+public final class ReachFilterTest {
   private static final String IFACE1 = "iface1";
 
   private static final String IFACE2 = "iface2";
