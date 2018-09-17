@@ -1,4 +1,4 @@
-package org.batfish.symbolic.bdd;
+package org.batfish.common.bdd;
 
 import net.sf.javabdd.BDD;
 import org.hamcrest.BaseMatcher;

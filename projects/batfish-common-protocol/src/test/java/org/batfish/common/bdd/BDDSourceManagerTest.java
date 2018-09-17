@@ -1,4 +1,4 @@
-package org.batfish.symbolic.bdd;
+package org.batfish.common.bdd;
 
 import static org.batfish.common.bdd.BDDOps.orNull;
 import static org.batfish.datamodel.IpAccessListLine.ACCEPT_ALL;
@@ -6,12 +6,9 @@ import static org.batfish.datamodel.IpAccessListLine.accepting;
 import static org.batfish.datamodel.IpAccessListLine.rejecting;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.SOURCE_ORIGINATING_FROM_DEVICE;
-import static org.batfish.symbolic.bdd.BDDMatchers.isZero;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.not;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -19,12 +16,13 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import net.sf.javabdd.BDD;
-import org.batfish.common.bdd.BDDPacket;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.NetworkFactory;
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
 import org.junit.Test;
 
 public class BDDSourceManagerTest {
@@ -56,7 +54,7 @@ public class BDDSourceManagerTest {
                 _mgr.getSourceInterfaceBDD(IFACE1),
                 _mgr.getSourceInterfaceBDD(IFACE2))
             .not();
-    assertThat(_mgr.isSane().and(noSource), isZero());
+    MatcherAssert.assertThat(_mgr.isSane().and(noSource), BDDMatchers.isZero());
   }
 
   @Test
@@ -86,7 +84,11 @@ public class BDDSourceManagerTest {
     BDDSourceManager mgr = BDDSourceManager.forIpAccessList(_pkt, config, acl);
     Map<String, BDD> srcBDDs = mgr.getSourceBDDs();
     assertThat(srcBDDs.entrySet(), hasSize(2));
-    assertThat(srcBDDs, hasEntry(equalTo(IFACE1), not(isZero())));
-    assertThat(srcBDDs, hasEntry(equalTo(SOURCE_ORIGINATING_FROM_DEVICE), not(isZero())));
+    MatcherAssert.assertThat(
+        srcBDDs, Matchers.hasEntry(equalTo(IFACE1), Matchers.not(BDDMatchers.isZero())));
+    MatcherAssert.assertThat(
+        srcBDDs,
+        Matchers.hasEntry(
+            equalTo(SOURCE_ORIGINATING_FROM_DEVICE), Matchers.not(BDDMatchers.isZero())));
   }
 }

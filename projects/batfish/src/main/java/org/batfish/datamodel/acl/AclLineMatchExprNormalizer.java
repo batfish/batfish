@@ -10,9 +10,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import net.sf.javabdd.BDD;
 import org.batfish.common.BatfishException;
+import org.batfish.common.bdd.AclLineMatchExprToBDD;
 import org.batfish.datamodel.acl.explanation.ConjunctsBuilder;
 import org.batfish.datamodel.acl.normalize.Negate;
-import org.batfish.symbolic.bdd.AclLineMatchExprToBDD;
 
 /**
  * Normalizes {@link AclLineMatchExpr AclLineMatchExprs} to their version of DNF (disjunctive normal
