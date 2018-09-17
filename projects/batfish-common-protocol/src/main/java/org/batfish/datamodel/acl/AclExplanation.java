@@ -16,10 +16,14 @@ import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IntersectHeaderSpaces;
 
 /**
- * Generates reduced explanations of satisfiable {@link AclLineMatchExpr AclLineMatchExprs} in
- * normal form. Currently only reduces positive spaces, by intersecting {@link HeaderSpace} objects
- * in {@link MatchHeaderSpace} expressions and intersecting sets of interfaces in {@link
- * MatchSrcInterface} expressions.
+ * Generates reduced explanations of satisfiable sets of {@link AclLineMatchExpr} literals: positive
+ * {@link MatchHeaderSpace}, negative {@link MatchHeaderSpace} (negated by {@link NotMatchExpr}),
+ * {@link OriginatingFromDevice}, and {@link MatchSrcInterface}). Merges multiple positive {@link
+ * MatchHeaderSpace} constraints using {@link IntersectHeaderSpaces}.
+ *
+ * <p>Generated explanations have the format: at most 1 positive {@link MatchHeaderSpace} constraint
+ * (default meaning unconstrained), at most 1 location constraint ({@link OriginatingFromDevice} or
+ * {@link MatchSrcInterface}), and some number of negative {@link MatchHeaderSpace} constraints.
  */
 public final class AclExplanation {
 
@@ -30,12 +34,12 @@ public final class AclExplanation {
   private final class AclLineMatchExprVisitor implements GenericAclLineMatchExprVisitor<Void> {
     @Override
     public Void visitAndMatchExpr(AndMatchExpr andMatchExpr) {
-      throw new IllegalArgumentException("Can only explain normalized AclLineMatchExprs.");
+      throw new IllegalArgumentException("Can only explain AclLineMatchExpr literals.");
     }
 
     @Override
     public Void visitFalseExpr(FalseExpr falseExpr) {
-      throw new IllegalArgumentException("Can only explain satisfiable AclLineMatchExprs.");
+      throw new IllegalArgumentException("Can only explain AclLineMatchExpr literals.");
     }
 
     @Override
@@ -57,7 +61,7 @@ public final class AclExplanation {
         forbidHeaderSpace(headerSpace);
         return null;
       }
-      throw new IllegalArgumentException("Can only explain normalized AclLineMatchExprs.");
+      throw new IllegalArgumentException("Can only explain AclLineMatchExpr literals.");
     }
 
     @Override
@@ -68,12 +72,12 @@ public final class AclExplanation {
 
     @Override
     public Void visitOrMatchExpr(OrMatchExpr orMatchExpr) {
-      throw new IllegalArgumentException("Can only explain normalized AclLineMatchExprs.");
+      throw new IllegalArgumentException("Can only explain AclLineMatchExpr literals.");
     }
 
     @Override
     public Void visitPermittedByAcl(PermittedByAcl permittedByAcl) {
-      throw new IllegalArgumentException("Can only explain normalized AclLineMatchExprs.");
+      throw new IllegalArgumentException("Can only explain AclLineMatchExpr literals.");
     }
 
     @Override
@@ -152,6 +156,8 @@ public final class AclExplanation {
         break;
       case ANY:
         break;
+      default:
+        throw new IllegalArgumentException("unexpected Sources value: " + _sources);
     }
     SortedSet<AclLineMatchExpr> conjuncts = conjunctsBuilder.build();
     if (conjuncts.isEmpty()) {
@@ -163,7 +169,7 @@ public final class AclExplanation {
     return new AndMatchExpr(conjuncts);
   }
 
-  public static AclLineMatchExpr explain(Iterable<AclLineMatchExpr> conjuncts) {
+  public static AclLineMatchExpr explainLiterals(Iterable<AclLineMatchExpr> conjuncts) {
     AclExplanation explanation = new AclExplanation();
     conjuncts.forEach(explanation._visitor::visit);
     return explanation.build();
