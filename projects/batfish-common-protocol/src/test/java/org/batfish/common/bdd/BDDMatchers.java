@@ -1,9 +1,9 @@
-package org.batfish.symbolic.bdd;
+package org.batfish.common.bdd;
 
 import net.sf.javabdd.BDD;
-import org.batfish.symbolic.bdd.BDDMatchersImpl.Intersects;
-import org.batfish.symbolic.bdd.BDDMatchersImpl.IsOne;
-import org.batfish.symbolic.bdd.BDDMatchersImpl.IsZero;
+import org.batfish.common.bdd.BDDMatchersImpl.Intersects;
+import org.batfish.common.bdd.BDDMatchersImpl.IsOne;
+import org.batfish.common.bdd.BDDMatchersImpl.IsZero;
 import org.hamcrest.Matcher;
 
 public final class BDDMatchers {

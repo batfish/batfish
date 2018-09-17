@@ -1,4 +1,4 @@
-package org.batfish.symbolic.bdd;
+package org.batfish.common.bdd;
 
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDstIp;
@@ -11,8 +11,8 @@ import static org.hamcrest.Matchers.equalTo;
 import com.google.common.collect.ImmutableMap;
 import java.util.Optional;
 import net.sf.javabdd.BDD;
-import org.batfish.common.bdd.BDDPacket;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.hamcrest.MatcherAssert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -32,22 +32,22 @@ public class MemoizedAclLineMatchExprToBDDTest {
 
   @Test
   public void testVisit() {
-    assertThat(_toBdd.getMemoizedBdd(MATCH_DST_IP), equalTo(Optional.empty()));
+    MatcherAssert.assertThat(_toBdd.getMemoizedBdd(MATCH_DST_IP), equalTo(Optional.empty()));
     BDD bdd = _toBdd.visit(MATCH_DST_IP);
-    assertThat(_toBdd.getMemoizedBdd(MATCH_DST_IP), equalTo(Optional.of(bdd)));
+    MatcherAssert.assertThat(_toBdd.getMemoizedBdd(MATCH_DST_IP), equalTo(Optional.of(bdd)));
   }
 
   @Test
   public void testNegate() {
-    assertThat(_toBdd.getMemoizedBdd(MATCH_DST_IP), equalTo(Optional.empty()));
+    MatcherAssert.assertThat(_toBdd.getMemoizedBdd(MATCH_DST_IP), equalTo(Optional.empty()));
     BDD bdd = _toBdd.visit(not(MATCH_DST_IP));
-    assertThat(_toBdd.getMemoizedBdd(MATCH_DST_IP), equalTo(Optional.of(bdd.not())));
+    MatcherAssert.assertThat(_toBdd.getMemoizedBdd(MATCH_DST_IP), equalTo(Optional.of(bdd.not())));
   }
 
   @Test
   public void testAnd() {
-    assertThat(_toBdd.getMemoizedBdd(MATCH_DST_IP), equalTo(Optional.empty()));
-    assertThat(_toBdd.getMemoizedBdd(MATCH_SRC_IP), equalTo(Optional.empty()));
+    MatcherAssert.assertThat(_toBdd.getMemoizedBdd(MATCH_DST_IP), equalTo(Optional.empty()));
+    MatcherAssert.assertThat(_toBdd.getMemoizedBdd(MATCH_SRC_IP), equalTo(Optional.empty()));
     BDD bdd = _toBdd.visit(and(MATCH_DST_IP, MATCH_SRC_IP));
     Optional<BDD> dstBdd = _toBdd.getMemoizedBdd(MATCH_DST_IP);
     Optional<BDD> srcBdd = _toBdd.getMemoizedBdd(MATCH_SRC_IP);
@@ -58,8 +58,8 @@ public class MemoizedAclLineMatchExprToBDDTest {
 
   @Test
   public void testOr() {
-    assertThat(_toBdd.getMemoizedBdd(MATCH_DST_IP), equalTo(Optional.empty()));
-    assertThat(_toBdd.getMemoizedBdd(MATCH_SRC_IP), equalTo(Optional.empty()));
+    MatcherAssert.assertThat(_toBdd.getMemoizedBdd(MATCH_DST_IP), equalTo(Optional.empty()));
+    MatcherAssert.assertThat(_toBdd.getMemoizedBdd(MATCH_SRC_IP), equalTo(Optional.empty()));
     BDD bdd = _toBdd.visit(or(MATCH_DST_IP, MATCH_SRC_IP));
     Optional<BDD> dstBdd = _toBdd.getMemoizedBdd(MATCH_DST_IP);
     Optional<BDD> srcBdd = _toBdd.getMemoizedBdd(MATCH_SRC_IP);

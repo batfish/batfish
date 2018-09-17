@@ -1,4 +1,4 @@
-package org.batfish.symbolic.bdd;
+package org.batfish.common.bdd;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
@@ -9,8 +9,6 @@ import java.util.function.Supplier;
 import javax.annotation.Nonnull;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
-import org.batfish.common.bdd.BDDPacket;
-import org.batfish.common.bdd.MemoizedIpSpaceToBDD;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 
@@ -30,7 +28,7 @@ public final class MemoizedAclLineMatchExprToBDD extends AclLineMatchExprToBDD {
         factory,
         packet,
         aclEnv,
-        new BDDSourceManager(packet, ImmutableSet.of()),
+        BDDSourceManager.forInterfaces(packet, ImmutableSet.of()),
         new HeaderSpaceToBDD(
             packet,
             namedIpSpaces,

@@ -1,4 +1,4 @@
-package org.batfish.symbolic.bdd;
+package org.batfish.common.bdd;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.common.bdd.BDDUtils.isAssignment;
@@ -16,8 +16,6 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import net.sf.javabdd.BDD;
-import org.batfish.common.bdd.BDDInteger;
-import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IpAccessList;
