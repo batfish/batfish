@@ -1,68 +1,36 @@
 package org.batfish.symbolic.bdd;
 
-import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.Supplier;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import org.batfish.common.bdd.BDDPacket;
-import org.batfish.common.util.NonRecursiveSupplier;
+import org.batfish.common.bdd.BDDSourceManager;
+import org.batfish.common.bdd.IpAccessListToBDD;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpSpace;
-import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 
 /** Representation of an Access Control List (ACL) as a Binary Decision Diagram (BDD). */
 @ParametersAreNonnullByDefault
 public final class BDDAcl {
-
-  @Nonnull private final Map<String, Supplier<BDD>> _aclEnv;
-
   @Nonnull private BDD _bdd;
-
-  @Nonnull private final BDDSourceManager _bddSrcManager;
-
-  @Nonnull private final BDDFactory _factory;
-
-  @Nonnull private final Map<String, IpSpace> _ipSpaceEnv;
 
   @Nonnull private final BDDPacket _pkt;
 
-  private final AclLineMatchExprToBDD _aclLineMatchExprToBDD;
-
-  private BDDAcl(
-      BDDPacket pkt,
-      IpAccessList acl,
-      Map<String, Supplier<BDD>> aclEnv,
-      Map<String, IpSpace> ipSpaceEnv,
-      BDDSourceManager bddSrcManager) {
-    _aclEnv = ImmutableMap.copyOf(aclEnv);
-    _bddSrcManager = bddSrcManager;
+  private BDDAcl(BDD bdd, BDDPacket pkt) {
+    _bdd = bdd;
     _pkt = pkt;
-    _factory = _pkt.getFactory();
-    _ipSpaceEnv = ImmutableMap.copyOf(ipSpaceEnv);
-    _aclLineMatchExprToBDD =
-        new AclLineMatchExprToBDD(_factory, _pkt, _aclEnv, _ipSpaceEnv, _bddSrcManager);
-    _bdd = computeACL(_factory, _aclLineMatchExprToBDD, acl);
   }
 
   private BDDAcl(BDDAcl other) {
     _bdd = other._bdd;
-    _aclEnv = other._aclEnv;
-    _bddSrcManager = other._bddSrcManager;
-    _factory = other._factory;
-    _ipSpaceEnv = ImmutableMap.copyOf(other._ipSpaceEnv);
     _pkt = other._pkt;
-    _aclLineMatchExprToBDD = other._aclLineMatchExprToBDD;
   }
 
   /**
@@ -104,48 +72,8 @@ public final class BDDAcl {
       Map<String, IpAccessList> aclEnv,
       Map<String, IpSpace> ipSpaceEnv,
       BDDSourceManager bddSrcManager) {
-    // use laziness to tie the recursive knot.
-    Map<String, Supplier<BDD>> bddAclEnv = new HashMap<>();
-    aclEnv.forEach(
-        (name, namedAcl) ->
-            bddAclEnv.put(
-                name,
-                Suppliers.memoize(
-                    new NonRecursiveSupplier<>(
-                        () ->
-                            createWithBDDAclEnv(pkt, namedAcl, bddAclEnv, ipSpaceEnv, bddSrcManager)
-                                ._bdd))));
-
-    return new BDDAcl(pkt, acl, bddAclEnv, ipSpaceEnv, bddSrcManager);
-  }
-
-  private static BDDAcl createWithBDDAclEnv(
-      BDDPacket pkt,
-      IpAccessList acl,
-      Map<String, Supplier<BDD>> aclEnv,
-      Map<String, IpSpace> ipSpaceEnv,
-      BDDSourceManager bddSrcManager) {
-    return new BDDAcl(pkt, acl, aclEnv, ipSpaceEnv, bddSrcManager);
-  }
-
-  /**
-   * Convert an Access Control List (ACL) to a symbolic boolean expression. The default action in an
-   * ACL is to deny all traffic.
-   */
-  @Nonnull
-  private static BDD computeACL(
-      BDDFactory bddFactory, AclLineMatchExprToBDD aclLineMatchExprToBDD, IpAccessList acl) {
-    BDD result = bddFactory.zero();
-    for (IpAccessListLine line : Lists.reverse(acl.getLines())) {
-      BDD lineBDD = aclLineMatchExprToBDD.visit(line.getMatchCondition());
-      BDD actionBDD = line.getAction() == LineAction.PERMIT ? bddFactory.one() : bddFactory.zero();
-      result = lineBDD.ite(actionBDD, result);
-    }
-    return result;
-  }
-
-  public AclLineMatchExprToBDD getAclLineMatchExprToBDD() {
-    return _aclLineMatchExprToBDD;
+    BDD bdd = IpAccessListToBDD.create(pkt, aclEnv, ipSpaceEnv, bddSrcManager).toBdd(acl);
+    return new BDDAcl(bdd, pkt);
   }
 
   @Nonnull
@@ -155,7 +83,7 @@ public final class BDDAcl {
 
   @Nonnull
   public BDDFactory getFactory() {
-    return _factory;
+    return _pkt.getFactory();
   }
 
   @Nonnull

@@ -5,9 +5,9 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
+import org.batfish.common.bdd.AclLineMatchExprToBDD;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.OrMatchExpr;
-import org.batfish.symbolic.bdd.AclLineMatchExprToBDD;
 
 /**
  * A builder for the disjuncts of an {@link OrMatchExpr}. Uses {@link BDD BDDs} to remove redundant

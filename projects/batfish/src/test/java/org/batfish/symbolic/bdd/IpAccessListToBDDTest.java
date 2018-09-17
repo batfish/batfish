@@ -4,11 +4,14 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import java.util.Arrays;
 import java.util.Map;
 import net.sf.javabdd.BDD;
 import org.batfish.common.BatfishException;
 import org.batfish.common.bdd.BDDPacket;
+import org.batfish.common.bdd.BDDSourceManager;
+import org.batfish.common.bdd.IpAccessListToBDD;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
@@ -22,7 +25,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-public class BDDAclTest {
+public class IpAccessListToBDDTest {
   @Rule public ExpectedException exception = ExpectedException.none();
 
   private NetworkFactory _nf;
@@ -55,16 +58,28 @@ public class BDDAclTest {
         aclWithLines(accepting(HeaderSpace.builder().setDstIps(fooIp.toIpSpace()).build()));
     Map<String, IpAccessList> namedAcls = ImmutableMap.of("foo", fooAcl);
     IpAccessList acl = aclWithLines(accepting(new PermittedByAcl("foo")));
-    BDD bdd = BDDAcl.create(_pkt, acl, namedAcls, ImmutableMap.of()).getBdd();
+    BDD bdd =
+        IpAccessListToBDD.create(
+                _pkt,
+                namedAcls,
+                ImmutableMap.of(),
+                BDDSourceManager.forInterfaces(_pkt, ImmutableSet.of()))
+            .toBdd(acl);
     assertThat(bdd, equalTo(fooIpBDD));
   }
 
   @Test
   public void testPermittedByAcl_undefined() {
     IpAccessList acl = aclWithLines(accepting(new PermittedByAcl("foo")));
+    IpAccessListToBDD ipAccessListToBDD =
+        IpAccessListToBDD.create(
+            _pkt,
+            ImmutableMap.of(),
+            ImmutableMap.of(),
+            BDDSourceManager.forInterfaces(_pkt, ImmutableSet.of()));
     exception.expect(IllegalArgumentException.class);
     exception.expectMessage("Undefined PermittedByAcl reference: foo");
-    BDDAcl.create(_pkt, acl);
+    ipAccessListToBDD.toBdd(acl);
   }
 
   @Test
@@ -72,8 +87,14 @@ public class BDDAclTest {
     PermittedByAcl permittedByAcl = new PermittedByAcl("foo");
     IpAccessList fooAcl = aclWithLines(accepting(permittedByAcl));
     Map<String, IpAccessList> namedAcls = ImmutableMap.of("foo", fooAcl);
+    IpAccessListToBDD ipAccessListToBDD =
+        IpAccessListToBDD.create(
+            _pkt,
+            namedAcls,
+            ImmutableMap.of(),
+            BDDSourceManager.forInterfaces(_pkt, ImmutableSet.of()));
     exception.expect(BatfishException.class);
     exception.expectMessage("Circular PermittedByAcl reference: foo");
-    BDDAcl.create(_pkt, fooAcl, namedAcls, ImmutableMap.of());
+    ipAccessListToBDD.toBdd(fooAcl);
   }
 }

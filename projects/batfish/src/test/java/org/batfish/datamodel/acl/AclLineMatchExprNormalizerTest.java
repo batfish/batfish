@@ -11,12 +11,12 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import org.batfish.common.bdd.AclLineMatchExprToBDD;
 import org.batfish.common.bdd.BDDPacket;
+import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpWildcard;
-import org.batfish.symbolic.bdd.AclLineMatchExprToBDD;
-import org.batfish.symbolic.bdd.BDDSourceManager;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
