@@ -122,6 +122,26 @@ public final class AnswerMetadataUtil {
   }
 
   @VisibleForTesting
+  static @Nonnull Set<String> computeMajorIssueTypes(TableAnswerElement table) {
+    return table
+        .getMetadata()
+        .getColumnMetadata()
+        .stream()
+        .filter(c -> c.getSchema().equals(Schema.ISSUE))
+        .map(ColumnMetadata::getName)
+        .flatMap(
+            column ->
+                table
+                    .getRowsList()
+                    .stream()
+                    .filter(row -> row.hasNonNull(column))
+                    .map(row -> row.getIssue(column))
+                    .map(Issue::getType)
+                    .map(Issue.Type::getMajor))
+        .collect(ImmutableSet.toImmutableSet());
+  }
+
+  @VisibleForTesting
   static @Nullable Metrics computeMetrics(@Nonnull Answer answer, @Nonnull BatfishLogger logger) {
     if (answer.getAnswerElements().isEmpty()) {
       return null;
@@ -148,9 +168,11 @@ public final class AnswerMetadataUtil {
     Map<String, Map<Aggregation, Object>> columnAggregationResults =
         computeColumnAggregations(table, columnAggregationsBuilder.build(), logger);
     Set<String> emptyColumns = computeEmptyColumns(table);
+    Set<String> majorIssueTypes = computeMajorIssueTypes(table);
     return Metrics.builder()
         .setAggregations(columnAggregationResults)
         .setEmptyColumns(emptyColumns)
+        .setMajorIssueTypes(majorIssueTypes)
         .setNumRows(numRows)
         .build();
   }

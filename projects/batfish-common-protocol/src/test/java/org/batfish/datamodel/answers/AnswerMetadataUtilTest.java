@@ -23,9 +23,9 @@ import org.junit.rules.ExpectedException;
 
 public class AnswerMetadataUtilTest {
 
-  @Rule public ExpectedException _thrown = ExpectedException.none();
-
   private BatfishLogger _logger;
+
+  @Rule public ExpectedException _thrown = ExpectedException.none();
 
   @Before
   public void setup() {
@@ -35,15 +35,21 @@ public class AnswerMetadataUtilTest {
   @Test
   public void testComputeAnswerMetadata() throws IOException {
     String columnName = "col";
+    String issueColumnName = "colIssue";
     int value = 5;
+    String major = "m";
+    int severity = 1;
+    Issue issueValue = new Issue("a", severity, new Issue.Type(major, "c"));
 
     Answer testAnswer = new Answer();
     testAnswer.addAnswerElement(
         new TableAnswerElement(
                 new TableMetadata(
-                    ImmutableList.of(new ColumnMetadata(columnName, Schema.INTEGER, "foobar")),
+                    ImmutableList.of(
+                        new ColumnMetadata(columnName, Schema.INTEGER, "foobar"),
+                        new ColumnMetadata(issueColumnName, Schema.ISSUE, "barfoo")),
                     new DisplayHints().getTextDesc()))
-            .addRow(Row.of(columnName, value)));
+            .addRow(Row.of(columnName, value, issueColumnName, issueValue)));
     testAnswer.setStatus(AnswerStatus.SUCCESS);
 
     assertThat(
@@ -53,21 +59,16 @@ public class AnswerMetadataUtilTest {
                 .setMetrics(
                     Metrics.builder()
                         .setAggregations(
-                            ImmutableMap.of(columnName, ImmutableMap.of(Aggregation.MAX, value)))
+                            ImmutableMap.of(
+                                columnName,
+                                ImmutableMap.of(Aggregation.MAX, value),
+                                issueColumnName,
+                                ImmutableMap.of(Aggregation.MAX, severity)))
+                        .setMajorIssueTypes(ImmutableSet.of(major))
                         .setNumRows(1)
                         .build())
                 .setStatus(AnswerStatus.SUCCESS)
                 .build()));
-  }
-
-  @Test
-  public void testComputeAnswerMetadataUnsuccessfulAnswer() throws IOException {
-    Answer testAnswer = new Answer();
-    testAnswer.setStatus(AnswerStatus.FAILURE);
-
-    assertThat(
-        AnswerMetadataUtil.computeAnswerMetadata(testAnswer, _logger),
-        equalTo(AnswerMetadata.forStatus(AnswerStatus.FAILURE)));
   }
 
   @Test
@@ -95,6 +96,34 @@ public class AnswerMetadataUtilTest {
   }
 
   @Test
+  public void testComputeAnswerMetadataUnsuccessfulAnswer() throws IOException {
+    Answer testAnswer = new Answer();
+    testAnswer.setStatus(AnswerStatus.FAILURE);
+
+    assertThat(
+        AnswerMetadataUtil.computeAnswerMetadata(testAnswer, _logger),
+        equalTo(AnswerMetadata.forStatus(AnswerStatus.FAILURE)));
+  }
+
+  @Test
+  public void testComputeColumnAggregationMax() {
+    String columnName = "col";
+    int value = 5;
+
+    TableAnswerElement table =
+        new TableAnswerElement(
+                new TableMetadata(
+                    ImmutableList.of(new ColumnMetadata(columnName, Schema.INTEGER, "foobar")),
+                    new DisplayHints().getTextDesc()))
+            .addRow(Row.of(columnName, value));
+    ColumnAggregation columnAggregation = new ColumnAggregation(Aggregation.MAX, columnName);
+
+    assertThat(
+        AnswerMetadataUtil.computeColumnAggregation(table, columnAggregation, _logger),
+        equalTo(new ColumnAggregationResult(Aggregation.MAX, columnName, value)));
+  }
+
+  @Test
   public void testComputeColumnAggregations() {
     String columnName = "col";
     int value = 5;
@@ -114,35 +143,9 @@ public class AnswerMetadataUtilTest {
   }
 
   @Test
-  public void testComputeEmptyColumns() {
-    String fullColumn = "full";
-    String partialColumn = "partial";
-    String emptyColumn = "empty";
-    String val = "val";
-    Map<String, ColumnMetadata> columnMetadata =
-        ImmutableMap.of(
-            fullColumn,
-            new ColumnMetadata(fullColumn, Schema.STRING, fullColumn),
-            partialColumn,
-            new ColumnMetadata(partialColumn, Schema.STRING, partialColumn),
-            emptyColumn,
-            new ColumnMetadata(emptyColumn, Schema.STRING, emptyColumn));
-
-    TableAnswerElement table =
-        new TableAnswerElement(
-            new TableMetadata(
-                columnMetadata.values().stream().collect(ImmutableList.toImmutableList())));
-
-    table.addRow(Row.builder(columnMetadata).put(fullColumn, val).put(partialColumn, val).build());
-    table.addRow(Row.builder(columnMetadata).put(fullColumn, val).build());
-
-    assertThat(
-        AnswerMetadataUtil.computeEmptyColumns(table), equalTo(ImmutableSet.of(emptyColumn)));
-  }
-
-  @Test
-  public void testComputeColumnAggregationMax() {
+  public void testComputeColumnMaxInvalidColumn() {
     String columnName = "col";
+    String invalidColumnName = "invalid";
     int value = 5;
 
     TableAnswerElement table =
@@ -151,11 +154,37 @@ public class AnswerMetadataUtilTest {
                     ImmutableList.of(new ColumnMetadata(columnName, Schema.INTEGER, "foobar")),
                     new DisplayHints().getTextDesc()))
             .addRow(Row.of(columnName, value));
-    ColumnAggregation columnAggregation = new ColumnAggregation(Aggregation.MAX, columnName);
 
-    assertThat(
-        AnswerMetadataUtil.computeColumnAggregation(table, columnAggregation, _logger),
-        equalTo(new ColumnAggregationResult(Aggregation.MAX, columnName, value)));
+    _thrown.expect(IllegalArgumentException.class);
+    AnswerMetadataUtil.computeColumnMax(table, invalidColumnName, _logger);
+  }
+
+  @Test
+  public void testComputeColumnMaxInvalidSchema() {
+    String columnName = "col";
+    String value = "hello";
+
+    TableAnswerElement table =
+        new TableAnswerElement(
+                new TableMetadata(
+                    ImmutableList.of(new ColumnMetadata(columnName, Schema.STRING, "foobar")),
+                    new DisplayHints().getTextDesc()))
+            .addRow(Row.of(columnName, value));
+
+    assertThat(AnswerMetadataUtil.computeColumnMax(table, columnName, _logger), nullValue());
+  }
+
+  @Test
+  public void testComputeColumnMaxNoRows() {
+    String columnName = "col";
+
+    TableAnswerElement table =
+        new TableAnswerElement(
+            new TableMetadata(
+                ImmutableList.of(new ColumnMetadata(columnName, Schema.INTEGER, "foobar")),
+                new DisplayHints().getTextDesc()));
+
+    assertThat(AnswerMetadataUtil.computeColumnMax(table, columnName, _logger), nullValue());
   }
 
   @Test
@@ -207,39 +236,36 @@ public class AnswerMetadataUtilTest {
   }
 
   @Test
-  public void testComputeColumnMaxNoRows() {
-    String columnName = "col";
+  public void testComputeEmptyColumns() {
+    String fullColumn = "full";
+    String partialColumn = "partial";
+    String emptyColumn = "empty";
+    String val = "val";
+    Map<String, ColumnMetadata> columnMetadata =
+        ImmutableMap.of(
+            fullColumn,
+            new ColumnMetadata(fullColumn, Schema.STRING, fullColumn),
+            partialColumn,
+            new ColumnMetadata(partialColumn, Schema.STRING, partialColumn),
+            emptyColumn,
+            new ColumnMetadata(emptyColumn, Schema.STRING, emptyColumn));
 
     TableAnswerElement table =
         new TableAnswerElement(
             new TableMetadata(
-                ImmutableList.of(new ColumnMetadata(columnName, Schema.INTEGER, "foobar")),
-                new DisplayHints().getTextDesc()));
+                columnMetadata.values().stream().collect(ImmutableList.toImmutableList())));
 
-    assertThat(AnswerMetadataUtil.computeColumnMax(table, columnName, _logger), nullValue());
+    table.addRow(Row.builder(columnMetadata).put(fullColumn, val).put(partialColumn, val).build());
+    table.addRow(Row.builder(columnMetadata).put(fullColumn, val).build());
+
+    assertThat(
+        AnswerMetadataUtil.computeEmptyColumns(table), equalTo(ImmutableSet.of(emptyColumn)));
   }
 
   @Test
-  public void testComputeColumnMaxInvalidColumn() {
+  public void testComputeMajorIssueTypesNoColumn() {
     String columnName = "col";
-    String invalidColumnName = "invalid";
-    int value = 5;
-
-    TableAnswerElement table =
-        new TableAnswerElement(
-                new TableMetadata(
-                    ImmutableList.of(new ColumnMetadata(columnName, Schema.INTEGER, "foobar")),
-                    new DisplayHints().getTextDesc()))
-            .addRow(Row.of(columnName, value));
-
-    _thrown.expect(IllegalArgumentException.class);
-    AnswerMetadataUtil.computeColumnMax(table, invalidColumnName, _logger);
-  }
-
-  @Test
-  public void testComputeColumnMaxInvalidSchema() {
-    String columnName = "col";
-    String value = "hello";
+    String value = "foo";
 
     TableAnswerElement table =
         new TableAnswerElement(
@@ -248,6 +274,36 @@ public class AnswerMetadataUtilTest {
                     new DisplayHints().getTextDesc()))
             .addRow(Row.of(columnName, value));
 
-    assertThat(AnswerMetadataUtil.computeColumnMax(table, columnName, _logger), nullValue());
+    assertThat(AnswerMetadataUtil.computeMajorIssueTypes(table), equalTo(ImmutableSet.of()));
+  }
+
+  @Test
+  public void testComputeMajorIssueTypesNone() {
+    String columnName = "col";
+
+    TableAnswerElement table =
+        new TableAnswerElement(
+                new TableMetadata(
+                    ImmutableList.of(new ColumnMetadata(columnName, Schema.ISSUE, "foobar")),
+                    new DisplayHints().getTextDesc()))
+            .addRow(Row.of());
+
+    assertThat(AnswerMetadataUtil.computeMajorIssueTypes(table), equalTo(ImmutableSet.of()));
+  }
+
+  @Test
+  public void testComputeMajorIssueTypesSome() {
+    String columnName = "col";
+    String major = "m";
+    Issue value = new Issue("a", 1, new Issue.Type(major, "c"));
+
+    TableAnswerElement table =
+        new TableAnswerElement(
+                new TableMetadata(
+                    ImmutableList.of(new ColumnMetadata(columnName, Schema.ISSUE, "foobar")),
+                    new DisplayHints().getTextDesc()))
+            .addRow(Row.of(columnName, value));
+
+    assertThat(AnswerMetadataUtil.computeMajorIssueTypes(table), equalTo(ImmutableSet.of(major)));
   }
 }

@@ -779,12 +779,12 @@ public class WorkMgr extends AbstractCoordinator {
     try {
       AnswerMetadata answerMetadata =
           _storage.loadAnswerMetadata(network, snapshot, question, referenceSnapshot, analysis);
-      FileTime answerMetadataLastModifiedTime = _storage.getAnswerMetadataLastModifiedTime(
-          network, snapshot, question, referenceSnapshot, analysis);
+      FileTime answerMetadataLastModifiedTime =
+          _storage.getAnswerMetadataLastModifiedTime(
+              network, snapshot, question, referenceSnapshot, analysis);
       if (_storage
               .getQuestionLastModifiedTime(network, question, analysis)
-              .compareTo(
-                  answerMetadataLastModifiedTime)
+              .compareTo(answerMetadataLastModifiedTime)
           > 0) {
         return AnswerMetadata.forStatus(AnswerStatus.STALE);
       }
