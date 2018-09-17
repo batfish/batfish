@@ -1,4 +1,4 @@
-package org.batfish.symbolic.bdd;
+package org.batfish.common.bdd;
 
 import com.google.common.base.Suppliers;
 import com.google.common.collect.Lists;
@@ -9,7 +9,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
-import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.util.NonRecursiveSupplier;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;

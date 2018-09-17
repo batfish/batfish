@@ -22,7 +22,10 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import java.util.Map;
+import org.batfish.common.bdd.AclLineMatchExprToBDD;
 import org.batfish.common.bdd.BDDPacket;
+import org.batfish.common.bdd.BDDSourceManager;
+import org.batfish.common.bdd.IpAccessListToBDD;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
@@ -30,9 +33,6 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
-import org.batfish.symbolic.bdd.AclLineMatchExprToBDD;
-import org.batfish.symbolic.bdd.BDDSourceManager;
-import org.batfish.symbolic.bdd.IpAccessListToBDD;
 import org.junit.Test;
 
 public class AclToAclLineMatchExprTest {

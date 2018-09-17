@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import net.sf.javabdd.BDD;
+import org.batfish.common.bdd.AclLineMatchExprToBDD;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
-import org.batfish.symbolic.bdd.AclLineMatchExprToBDD;
 
 /**
  * Represents a set of {@link AclLineMatchExpr AclLineMatchExprs} -- either a set of conjuncts or a

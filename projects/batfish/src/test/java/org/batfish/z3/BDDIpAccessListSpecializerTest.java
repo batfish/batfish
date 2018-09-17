@@ -15,8 +15,10 @@ import com.google.common.collect.ImmutableSet;
 import java.util.Optional;
 import java.util.Set;
 import net.sf.javabdd.BDD;
+import org.batfish.common.bdd.AclLineMatchExprToBDD;
 import org.batfish.common.bdd.BDDInteger;
 import org.batfish.common.bdd.BDDPacket;
+import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.HeaderSpace;
@@ -36,8 +38,6 @@ import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.NotMatchExpr;
 import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.OriginatingFromDevice;
-import org.batfish.symbolic.bdd.AclLineMatchExprToBDD;
-import org.batfish.symbolic.bdd.BDDSourceManager;
 import org.junit.Test;
 
 public class BDDIpAccessListSpecializerTest {
