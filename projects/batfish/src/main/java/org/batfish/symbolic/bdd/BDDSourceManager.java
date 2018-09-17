@@ -75,20 +75,18 @@ public final class BDDSourceManager {
 
   public static BDDSourceManager forIpAccessList(
       BDDPacket pkt, Configuration config, IpAccessList acl) {
-    return forIpAccessList(pkt, config.activeInterfaces(), config.getIpAccessLists(), acl);
+    return forIpAccessList(
+        pkt,
+        Sets.union(ImmutableSet.of(SOURCE_ORIGINATING_FROM_DEVICE), config.activeInterfaces()),
+        config.getIpAccessLists(),
+        acl);
   }
 
   public static BDDSourceManager forSources(
-      BDDPacket pkt, Set<String> activeInterfaces, Set<String> referencedSources) {
+      BDDPacket pkt, Set<String> activeSources, Set<String> referencedSources) {
     if (referencedSources.isEmpty()) {
       return new BDDSourceManager(pkt, ImmutableSet.of());
     }
-
-    Set<String> activeSources =
-        ImmutableSet.<String>builder()
-            .add(SOURCE_ORIGINATING_FROM_DEVICE)
-            .addAll(activeInterfaces)
-            .build();
 
     // discard any referenced interfaces that are inactive
     Set<String> referencedActiveSources = Sets.intersection(referencedSources, activeSources);

@@ -30,19 +30,27 @@ public class ConvertConfigurationAnswerElement extends InitStepAnswerElement
   private static final String PROP_DEFINED_STRUCTURES = "definedStructures";
   private static final String PROP_ERRORS = "errors";
   private static final String PROP_FAILED = "failed";
+  private static final String PROP_REFERENCED_STRUCTURES = "referencedStructures";
   private static final String PROP_UNDEFINED_REFERENCES = "undefinedReferences";
   private static final String PROP_VERSION = "version";
   private static final String PROP_WARNINGS = "warnings";
 
-  // hostname -> structType -> structName -> info
+  // filename -> structType -> structName -> info
   @Nonnull
   private SortedMap<String, SortedMap<String, SortedMap<String, DefinedStructureInfo>>>
       _definedStructures;
+
+  // filename -> structType -> structName -> usage -> lines
+  @Nonnull
+  private SortedMap<
+          String, SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>>
+      _referencedStructures;
 
   @Nonnull private SortedMap<String, BatfishException.BatfishStackTrace> _errors;
 
   @Nonnull private Set<String> _failed;
 
+  // filename -> structType -> structName -> usage -> lines
   @Nonnull
   private SortedMap<
           String, SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>>
@@ -53,14 +61,19 @@ public class ConvertConfigurationAnswerElement extends InitStepAnswerElement
   @Nonnull private SortedMap<String, Warnings> _warnings;
 
   public ConvertConfigurationAnswerElement() {
-    this(null, null, null, null, null, null);
+    this(null, null, null, null, null, null, null);
   }
 
   @JsonCreator
-  public ConvertConfigurationAnswerElement(
+  private ConvertConfigurationAnswerElement(
       @JsonProperty(PROP_DEFINED_STRUCTURES)
           SortedMap<String, SortedMap<String, SortedMap<String, DefinedStructureInfo>>>
               definedStructures,
+      @JsonProperty(PROP_REFERENCED_STRUCTURES)
+          SortedMap<
+                  String,
+                  SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>>
+              referencedstructures,
       @JsonProperty(PROP_ERRORS) SortedMap<String, BatfishException.BatfishStackTrace> errors,
       @JsonProperty(PROP_FAILED) SortedSet<String> failed,
       @JsonProperty(PROP_UNDEFINED_REFERENCES)
@@ -73,12 +86,14 @@ public class ConvertConfigurationAnswerElement extends InitStepAnswerElement
     _definedStructures = firstNonNull(definedStructures, new TreeMap<>());
     _errors = firstNonNull(errors, new TreeMap<>());
     _failed = firstNonNull(failed, new TreeSet<>());
+    _referencedStructures = firstNonNull(referencedstructures, new TreeMap<>());
     _undefinedReferences = firstNonNull(undefinedReferences, new TreeMap<>());
     _version = firstNonNull(version, Version.getVersion());
     _warnings = firstNonNull(warnings, new TreeMap<>());
   }
 
   @JsonProperty(PROP_DEFINED_STRUCTURES)
+  @Nonnull
   public SortedMap<String, SortedMap<String, SortedMap<String, DefinedStructureInfo>>>
       getDefinedStructures() {
     return _definedStructures;
@@ -86,16 +101,27 @@ public class ConvertConfigurationAnswerElement extends InitStepAnswerElement
 
   @Override
   @JsonProperty(PROP_ERRORS)
+  @Nonnull
   public SortedMap<String, BatfishException.BatfishStackTrace> getErrors() {
     return _errors;
   }
 
   @JsonProperty(PROP_FAILED)
+  @Nonnull
   public Set<String> getFailed() {
     return _failed;
   }
 
+  @JsonProperty(PROP_REFERENCED_STRUCTURES)
+  @Nonnull
+  public SortedMap<
+          String, SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>>
+      getReferencedStructures() {
+    return _referencedStructures;
+  }
+
   @JsonProperty(PROP_UNDEFINED_REFERENCES)
+  @Nonnull
   public SortedMap<
           String, SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>>
       getUndefinedReferences() {
@@ -103,12 +129,14 @@ public class ConvertConfigurationAnswerElement extends InitStepAnswerElement
   }
 
   @JsonProperty(PROP_VERSION)
+  @Nonnull
   public String getVersion() {
     return _version;
   }
 
   @Override
   @JsonProperty(PROP_WARNINGS)
+  @Nonnull
   public SortedMap<String, Warnings> getWarnings() {
     return _warnings;
   }
@@ -179,14 +207,18 @@ public class ConvertConfigurationAnswerElement extends InitStepAnswerElement
   }
 
   public void setDefinedStructures(
-      SortedMap<String, SortedMap<String, SortedMap<String, DefinedStructureInfo>>>
-          definedStructures) {
+      @Nonnull
+          SortedMap<String, SortedMap<String, SortedMap<String, DefinedStructureInfo>>>
+              definedStructures) {
     _definedStructures = definedStructures;
   }
 
   public void setUndefinedReferences(
-      SortedMap<String, SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>>
-          undefinedReferences) {
+      @Nonnull
+          SortedMap<
+                  String,
+                  SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>>
+              undefinedReferences) {
     _undefinedReferences = undefinedReferences;
   }
 

@@ -13,7 +13,7 @@ public final class TableAnswerElementMatchers {
    * TableAnswerElement}'s {@code rows}.
    */
   public static Matcher<TableAnswerElement> hasRows(
-      @Nonnull Matcher<? super Iterable<? extends Row>> subMatcher) {
+      @Nonnull Matcher<? super Iterable<Row>> subMatcher) {
     return new HasRows(subMatcher);
   }
 

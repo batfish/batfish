@@ -43,7 +43,7 @@ test -raw tests/questions/experimental/ospfProperties.ref validate-template ospf
 test -raw tests/questions/experimental/prefixTracer.ref validate-template prefixTracer nodes=".*", prefix="0.0.0.0/0"
 
 # validate reachfilter
-test -raw tests/questions/experimental/reachfilter.ref validate-template reachfilter complementHeaderSpace=false, filters=".*", query="matchLine 0", dst="2.2.2.2", sourceInterfaces=".*", src="1.1.1.1", nodes=".*", srcPorts=[0], dstPorts=[0], dstProtocols=["http"]
+test -raw tests/questions/experimental/reachfilter.ref validate-template reachfilter complementHeaderSpace=false, filters=".*", query="matchLine 0", dst="2.2.2.2", ipProtocols=["tcp"], start=".*", src="1.1.1.1", nodes=".*", srcPorts=[0], dstPorts=[0], dstProtocols=["http"]
 
 # validate specifiers
 test -raw tests/questions/experimental/specifiers.ref validate-template specifiers queryType="filter", filterSpecifierFactory="FlexibleFilterSpecifierFactory", filterSpecifierInput="filterSpecifierInput", interfaceSpecifierFactory="FlexibleInterfaceSpecifierFactory", interfaceSpecifierInput="filterSpecifierInput", ipSpaceSpecifierFactory="InferFromLocationIpSpaceSpecifierFactory", ipSpaceSpecifierInput="ipSpaceSpecifierInput", locationSpecifierFactory="FlexibleLocationSpecifierFactory", locationSpecifierInput="locationSpecifierInput", nodeSpecifierFactory="FlexibleNodeSpecifierFactory", nodeSpecifierInput="nodeSpecifierInput"
@@ -53,3 +53,6 @@ test -raw tests/questions/experimental/specifiersReachability.ref validate-templ
 
 # test traceroute
 test  -raw tests/questions/experimental/traceroute.ref validate-template traceroute startLocation="location", ignoreAcls=false, headers=null
+
+# test viModel
+test -raw tests/questions/experimental/viModel.ref validate-template viModel

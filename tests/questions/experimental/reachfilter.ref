@@ -10,6 +10,9 @@
     "http"
   ],
   "filters" : ".*",
+  "ipProtocols" : [
+    "TCP"
+  ],
   "nodeSpecifierFactory" : "FlexibleNodeSpecifierFactory",
   "nodes" : ".*",
   "sourceIpSpaceSpecifierFactory" : "FlexibleUniverseIpSpaceSpecifierFactory",
@@ -64,6 +67,15 @@
         "type" : "javaRegex",
         "value" : ".*"
       },
+      "ipProtocols" : {
+        "description" : "Restrict space of returned headers to those with IP protocols in this set",
+        "minElements" : 0,
+        "optional" : true,
+        "type" : "string",
+        "value" : [
+          "tcp"
+        ]
+      },
       "nodes" : {
         "description" : "Only evaluate filters present on nodes matching this regex",
         "optional" : true,
@@ -75,12 +87,6 @@
         "optional" : true,
         "type" : "string",
         "value" : "matchLine 0"
-      },
-      "sourceInterfaces" : {
-        "description" : "Only consider these interfaces as possible sources",
-        "optional" : true,
-        "type" : "string",
-        "value" : ".*"
       },
       "src" : {
         "description" : "Flexible specification of source IpSpace",
@@ -96,6 +102,12 @@
         "value" : [
           0
         ]
+      },
+      "start" : {
+        "description" : "Only consider specified locations as possible sources",
+        "optional" : true,
+        "type" : "string",
+        "value" : ".*"
       }
     }
   }

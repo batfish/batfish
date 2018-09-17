@@ -1,0 +1,32 @@
+{
+    "class": "org.batfish.question.referencedstructures.ReferencedStructuresQuestion",
+    "differential": false,
+    "instance": {
+        "description": "Lists the references in configuration files to vendor-specific structures",
+        "instanceName": "referencedStructures",
+        "longDescription": "Lists the references in configuration files to vendor-specific structures, along with the line number, the name and the type of the structure referenced, and configuration context in which each reference occurs.",
+        "variables": {
+            "names": {
+                "description": "Include structures whose name matches this string or regex",
+                "type": "javaRegex",
+                "value": ".*",
+                "optional": true
+            },
+            "nodes": {
+                "description": "Include files used to generate nodes whose name matches this name or regex",
+                "type": "nodeSpec",
+                "value": ".*",
+                "optional": true
+            },
+            "types": {
+                "description": "Include structures whose vendor-specific type matches this string or regex",
+                "type": "javaRegex",
+                "value": ".*",
+                "optional": true
+            }
+        }
+    },
+    "names": "${names}",
+    "nodes": "${nodes}",
+    "types": "${types}"
+}
