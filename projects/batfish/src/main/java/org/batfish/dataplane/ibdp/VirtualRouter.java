@@ -2452,7 +2452,7 @@ public class VirtualRouter implements Serializable {
             edge -> {
               VirtualRouter remoteVr =
                   allNodes
-                      .get(edge.getNode1().getHostname())
+                      .get(edge.getNode1().getNode())
                       .getVirtualRouters()
                       .get(edge.getNode1().getInterface(nc).getVrfName());
               Queue<RouteAdvertisement<IsisRoute>> queue =
