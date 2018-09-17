@@ -1,7 +1,9 @@
 [
   {
     "class" : "org.batfish.question.RoutesQuestionPlugin$RoutesAnswerElement",
-    "added" : [
+    "againstEnvironment" : false,
+    "detail" : false,
+    "removed" : [
       {
         "administrativeCost" : 200,
         "metric" : 20,
@@ -39,8 +41,6 @@
         "vrf" : "default"
       }
     ],
-    "againstEnvironment" : false,
-    "detail" : false,
     "routesByHostname" : {
       "as1border1" : {
         "default" : [
