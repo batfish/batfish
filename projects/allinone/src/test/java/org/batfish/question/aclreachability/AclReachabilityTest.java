@@ -367,8 +367,6 @@ public class AclReachabilityTest {
 
     /*
      Construct the expected result. Line 2 should be blocked by both previous lines.
-     Currently we are not finding the line numbers of multiple blocking lines, so list of blocking
-     line numbers should be empty.
     */
     Multiset<Row> expected =
         ImmutableMultiset.of(
