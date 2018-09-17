@@ -19,6 +19,7 @@ import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import java.util.Map;
 import org.batfish.common.bdd.BDDPacket;
@@ -30,7 +31,8 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.symbolic.bdd.AclLineMatchExprToBDD;
-import org.batfish.symbolic.bdd.BDDAcl;
+import org.batfish.symbolic.bdd.BDDSourceManager;
+import org.batfish.symbolic.bdd.IpAccessListToBDD;
 import org.junit.Test;
 
 public class AclToAclLineMatchExprTest {
@@ -78,34 +80,37 @@ public class AclToAclLineMatchExprTest {
               ImmutableList.of(ACCEPT_C, REJECT_C, accepting(EXPR_REFERENCE), ACCEPT_D, REJECT_E))
           .build();
 
-  private static AclLineMatchExprToBDD aclLineMatchExprToBDD(IpAccessList acl) {
-    return aclLineMatchExprToBDD(acl, ImmutableMap.of());
+  private static AclLineMatchExprToBDD aclLineMatchExprToBDD() {
+    return aclLineMatchExprToBDD(ImmutableMap.of());
   }
 
-  private static AclLineMatchExprToBDD aclLineMatchExprToBDD(
-      IpAccessList acl, Map<String, IpAccessList> namedAcls) {
-    return BDDAcl.create(new BDDPacket(), acl, namedAcls, ImmutableMap.of())
+  private static AclLineMatchExprToBDD aclLineMatchExprToBDD(Map<String, IpAccessList> namedAcls) {
+    BDDPacket pkt = new BDDPacket();
+    return IpAccessListToBDD.create(
+            pkt,
+            namedAcls,
+            ImmutableMap.of(),
+            BDDSourceManager.forInterfaces(pkt, ImmutableSet.of()))
         .getAclLineMatchExprToBDD();
   }
 
   private static AclToAclLineMatchExpr aclToAclLineMatchExpr() {
-    return new AclToAclLineMatchExpr(
-        BDDAcl.create(new BDDPacket(), IpAccessList.builder().setName("").build())
-            .getAclLineMatchExprToBDD(),
-        ImmutableMap.of(ACL_REFERENT.getName(), ACL_REFERENT));
+    ImmutableMap<String, IpAccessList> namedAcls =
+        ImmutableMap.of(ACL_REFERENT.getName(), ACL_REFERENT);
+    return new AclToAclLineMatchExpr(aclLineMatchExprToBDD(namedAcls), namedAcls);
   }
 
   @Test
   public void testSimple() {
     assertThat(
-        toAclLineMatchExpr(aclLineMatchExprToBDD(SIMPLE_ACL), SIMPLE_ACL, ImmutableMap.of()),
+        toAclLineMatchExpr(aclLineMatchExprToBDD(), SIMPLE_ACL, ImmutableMap.of()),
         equalTo(or(EXPR_A, and(not(EXPR_B), EXPR_C), and(not(EXPR_B), not(EXPR_C), EXPR_D))));
   }
 
   @Test
   public void testSimpleLines() {
     assertThat(
-        aclLines(aclLineMatchExprToBDD(SIMPLE_ACL), SIMPLE_ACL, ImmutableMap.of()),
+        aclLines(aclLineMatchExprToBDD(), SIMPLE_ACL, ImmutableMap.of()),
         equalTo(SIMPLE_ACL_LINES));
   }
 
@@ -113,7 +118,7 @@ public class AclToAclLineMatchExprTest {
   public void testReference() {
     Map<String, IpAccessList> namedAcls = ImmutableMap.of(ACL_REFERENT.getName(), ACL_REFERENT);
     AclLineMatchExpr expr =
-        toAclLineMatchExpr(aclLineMatchExprToBDD(ACL_REFERRER, namedAcls), ACL_REFERRER, namedAcls);
+        toAclLineMatchExpr(aclLineMatchExprToBDD(namedAcls), ACL_REFERRER, namedAcls);
     assertThat(
         expr,
         equalTo(
@@ -130,7 +135,7 @@ public class AclToAclLineMatchExprTest {
   public void testReferenceLines() {
     Map<String, IpAccessList> namedAcls = ImmutableMap.of(ACL_REFERENT.getName(), ACL_REFERENT);
     List<IpAccessListLine> lines =
-        aclLines(aclLineMatchExprToBDD(ACL_REFERRER, namedAcls), ACL_REFERRER, namedAcls);
+        aclLines(aclLineMatchExprToBDD(namedAcls), ACL_REFERRER, namedAcls);
     assertThat(
         lines,
         equalTo(
