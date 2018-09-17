@@ -190,8 +190,8 @@ public class EdgesAnswerer extends Answerer {
         .filter(Objects::nonNull)
         .filter(
             isisEdge ->
-                includeNodes.contains(isisEdge.getNode1().getHostname())
-                    && includeRemoteNodes.contains(isisEdge.getNode2().getHostname()))
+                includeNodes.contains(isisEdge.getNode1().getNode())
+                    && includeRemoteNodes.contains(isisEdge.getNode2().getNode()))
         .map(EdgesAnswerer::isisEdgeToRow)
         .collect(Collectors.toCollection(HashMultiset::create));
   }
@@ -358,11 +358,11 @@ public class EdgesAnswerer extends Answerer {
     row.put(
             COL_INTERFACE,
             new NodeInterfacePair(
-                isisEdge.getNode1().getHostname(), isisEdge.getNode1().getInterfaceName()))
+                isisEdge.getNode1().getNode(), isisEdge.getNode1().getInterfaceName()))
         .put(
             COL_REMOTE_INTERFACE,
             new NodeInterfacePair(
-                isisEdge.getNode2().getHostname(), isisEdge.getNode2().getInterfaceName()));
+                isisEdge.getNode2().getNode(), isisEdge.getNode2().getInterfaceName()));
     return row.build();
   }
 
