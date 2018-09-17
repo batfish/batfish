@@ -31,7 +31,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 /** Tests of {@link Batfish#reachFilter} in differential mode. */
-public class BatfishDifferentialReachFilterTest {
+public class BatfishReachFilterDifferentialTest {
   @Rule public TemporaryFolder _tmp = new TemporaryFolder();
 
   private static final String HOSTNAME = "hostname";
