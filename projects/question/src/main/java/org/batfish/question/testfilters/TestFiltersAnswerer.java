@@ -23,6 +23,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.UniverseIpSpace;
@@ -54,10 +55,6 @@ public class TestFiltersAnswerer extends Answerer {
 
   private static final String IP_SPECIFIER_FACTORY =
       FlexibleInferFromLocationIpSpaceSpecifierFactory.NAME;
-
-  static int DEFAULT_DST_PORT = 80; // HTTP
-  static IpProtocol DEFAULT_IP_PROTOCOL = IpProtocol.TCP;
-  static int DEFAULT_SRC_PORT = 49152; // lowest ephemeral port
 
   public static final String COL_NODE = "Node";
   public static final String COL_FILTER_NAME = "Filter_Name";
@@ -131,7 +128,7 @@ public class TestFiltersAnswerer extends Answerer {
     return answer;
   }
 
-  private Set<Flow> getFlows(Configuration c) {
+  private Set<Flow> getFlows(Configuration c, ImmutableSet.Builder<String> allProblems) {
     TestFiltersQuestion question = (TestFiltersQuestion) _question;
     String node = c.getHostname();
     Set<Location> srcLocations =
@@ -146,20 +143,30 @@ public class TestFiltersAnswerer extends Answerer {
 
     // this will happen if the node has no interfaces, and someone is just testing their ACLs
     if (srcLocations.isEmpty() && question.getStartLocation() == null) {
-      Flow.Builder flowBuilder = headerConstraintsToFlow(question.getHeaders(), null);
-      flowBuilder.setIngressNode(node);
-      flowBuilder.setIngressInterface(null);
-      flowBuilder.setIngressVrf("default"); // dummy since Flow needs non-null interface or vrf
-      flowBuilder.setTag("FlowTag"); // dummy tag; consistent tags enable flow diffs
-      setBuilder.add(flowBuilder.build());
+      try {
+        Flow.Builder flowBuilder = headerConstraintsToFlow(question.getHeaders(), null);
+        flowBuilder.setIngressNode(node);
+        flowBuilder.setIngressInterface(null);
+        flowBuilder.setIngressVrf(
+            Configuration.DEFAULT_VRF_NAME); // dummy because Flow needs non-null interface or vrf
+        flowBuilder.setTag("FlowTag"); // dummy tag; consistent tags enable flow diffs
+        setBuilder.add(flowBuilder.build());
+      } catch (IllegalArgumentException e) {
+        allProblems.add(e.getMessage());
+      }
     }
 
     // Perform cross-product of all locations to flows
     for (Location srcLocation : srcLocations) {
-      Flow.Builder flowBuilder = headerConstraintsToFlow(question.getHeaders(), srcLocation);
-      setSourceLocation(flowBuilder, srcLocation, c);
-      flowBuilder.setTag("FlowTag"); // dummy tag; consistent tags enable flow diffs
-      setBuilder.add(flowBuilder.build());
+      try {
+        Flow.Builder flowBuilder = headerConstraintsToFlow(question.getHeaders(), srcLocation);
+        setSourceLocation(flowBuilder, srcLocation, c);
+        flowBuilder.setTag("FlowTag"); // dummy tag; consistent tags enable flow diffs
+        setBuilder.add(flowBuilder.build());
+      } catch (IllegalArgumentException e) {
+        // record this error but try to keep going
+        allProblems.add(e.getMessage());
+      }
     }
 
     return setBuilder.build();
@@ -199,6 +206,7 @@ public class TestFiltersAnswerer extends Answerer {
         .build();
   }
 
+  @VisibleForTesting
   Multiset<Row> getRows() {
     TestFiltersQuestion question = (TestFiltersQuestion) _question;
     Map<String, Configuration> configurations = _batfish.loadConfigurations();
@@ -207,9 +215,12 @@ public class TestFiltersAnswerer extends Answerer {
 
     Multiset<Row> rows = HashMultiset.create();
 
+    // collect all errors while building flows; return this set when no valid flow is found
+    ImmutableSet.Builder<String> allProblems = ImmutableSet.builder();
+
     for (String node : includeNodes) {
       Configuration c = configurations.get(node);
-      Set<Flow> flows = getFlows(c);
+      Set<Flow> flows = getFlows(c, allProblems);
 
       // there should be another for loop for v6 filters when we add v6 support
       for (IpAccessList filter : filterSpecifier.resolve(node, _batfish.specifierContext())) {
@@ -218,6 +229,10 @@ public class TestFiltersAnswerer extends Answerer {
         }
       }
     }
+    checkArgument(
+        rows.size() > 0,
+        "No valid flow found for specified parameters. Potential problems: %d",
+        String.join(",", allProblems.build()));
     return rows;
   }
 
@@ -304,7 +319,7 @@ public class TestFiltersAnswerer extends Answerer {
     if (ipProtocols != null) {
       builder.setIpProtocol(ipProtocols.iterator().next());
     } else {
-      builder.setIpProtocol(DEFAULT_IP_PROTOCOL);
+      builder.setIpProtocol(IpProtocol.TCP);
     }
 
     // Src Ports
@@ -316,7 +331,7 @@ public class TestFiltersAnswerer extends Answerer {
       SubRange srcPort = srcPorts.iterator().next();
       builder.setSrcPort(srcPort.getStart());
     } else {
-      builder.setSrcPort(DEFAULT_SRC_PORT);
+      builder.setSrcPort(NamedPort.EPHEMERAL_LOWEST.number());
     }
 
     // Dst Ports
@@ -331,7 +346,7 @@ public class TestFiltersAnswerer extends Answerer {
       }
       builder.setDstPort(dstPort.getStart());
     } else {
-      builder.setDstPort(DEFAULT_DST_PORT);
+      builder.setDstPort(NamedPort.HTTP.number());
     }
 
     // Icmp values
