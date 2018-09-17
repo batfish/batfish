@@ -8,6 +8,10 @@ import org.batfish.datamodel.questions.NodesSpecifier;
 public final class LocationSpecifiers {
   private LocationSpecifiers() {}
 
+  public static final LocationSpecifier ALL_LOCATIONS =
+      new UnionLocationSpecifier(
+          AllInterfacesLocationSpecifier.INSTANCE, AllInterfaceLinksLocationSpecifier.INSTANCE);
+
   public static LocationSpecifier difference(
       @Nonnull LocationSpecifier locsIn, @Nonnull LocationSpecifier locsOut) {
     if (locsIn == NullLocationSpecifier.INSTANCE) {

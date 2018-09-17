@@ -75,7 +75,11 @@ public interface IBatfish extends IPluginConsumer {
 
   ReferenceLibrary getReferenceLibraryData();
 
+  @Deprecated // use createAnswerer instead
   Map<String, BiFunction<Question, IBatfish, Answerer>> getAnswererCreators();
+
+  @Nullable
+  Answerer createAnswerer(@Nonnull Question question);
 
   String getContainerName();
 

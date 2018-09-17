@@ -12,6 +12,10 @@ public final class NameRegexInterfaceLinkLocationSpecifier
     super(pattern);
   }
 
+  public NameRegexInterfaceLinkLocationSpecifier(String pattern) {
+    super(Pattern.compile(pattern));
+  }
+
   @Override
   protected Location getLocation(Interface iface) {
     return new InterfaceLinkLocation(iface.getOwner().getHostname(), iface.getName());

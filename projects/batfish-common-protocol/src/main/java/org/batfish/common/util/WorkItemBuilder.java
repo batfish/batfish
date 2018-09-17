@@ -17,6 +17,28 @@ public class WorkItemBuilder {
       String deltaEnvName,
       boolean isDifferential,
       boolean isDelta) {
+    return getWorkItemAnswerQuestion(
+        questionName,
+        containerName,
+        testrigName,
+        envName,
+        deltaTestrig,
+        deltaEnvName,
+        null,
+        isDifferential,
+        isDelta);
+  }
+
+  public static WorkItem getWorkItemAnswerQuestion(
+      String questionName,
+      String containerName,
+      String testrigName,
+      String envName,
+      String deltaTestrig,
+      String deltaEnvName,
+      String analysisName,
+      boolean isDifferential,
+      boolean isDelta) {
     WorkItem wItem = new WorkItem(containerName, testrigName);
     wItem.addRequestParam(BfConsts.COMMAND_ANSWER, "");
     wItem.addRequestParam(BfConsts.ARG_QUESTION_NAME, questionName);
@@ -32,6 +54,9 @@ public class WorkItemBuilder {
     }
     if (isDelta) {
       wItem.addRequestParam(BfConsts.ARG_DIFF_ACTIVE, "");
+    }
+    if (analysisName != null) {
+      wItem.addRequestParam(BfConsts.ARG_ANALYSIS_NAME, analysisName);
     }
     return wItem;
   }

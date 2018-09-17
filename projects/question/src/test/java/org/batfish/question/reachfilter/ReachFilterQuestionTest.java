@@ -9,10 +9,12 @@ import static org.hamcrest.Matchers.nullValue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
 import java.util.Arrays;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.question.ReachFilterParameters;
 import org.batfish.question.reachfilter.ReachFilterQuestion.Type;
@@ -40,7 +42,7 @@ public class ReachFilterQuestionTest {
     assertThat(q.getNodesSpecifier(), notNullValue());
     assertThat(q.getDataPlane(), equalTo(false));
     assertThat(q.getNodeSpecifierFactory(), equalTo(FlexibleNodeSpecifierFactory.NAME));
-    assertThat(q.getNodeSpecifierInput(), nullValue());
+    assertThat(q.getNodes(), nullValue());
     assertThat(
         q.getDestinationIpSpaceSpecifierFactory(),
         equalTo(FlexibleUniverseIpSpaceSpecifierFactory.NAME));
@@ -90,5 +92,19 @@ public class ReachFilterQuestionTest {
     exception.expect(BatfishException.class);
     exception.expectMessage("Unrecognized query: foo");
     ReachFilterQuestion.builder().setQuery("foo").build();
+  }
+
+  @Test
+  public void testIpProtocols() throws IOException {
+    ImmutableSortedSet<IpProtocol> ipProtocols =
+        ImmutableSortedSet.of(IpProtocol.TCP, IpProtocol.ICMP);
+    ReachFilterQuestion question =
+        ReachFilterQuestion.builder().setIpProtocols(ipProtocols).build();
+
+    assertThat(question.getHeaderSpace().getIpProtocols(), equalTo(ipProtocols));
+
+    // test (de)serialization
+    question = BatfishObjectMapper.clone(question, ReachFilterQuestion.class);
+    assertThat(question.getHeaderSpace().getIpProtocols(), equalTo(ipProtocols));
   }
 }
