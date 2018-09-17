@@ -30,10 +30,12 @@ import javax.annotation.Nullable;
  */
 public class PacketHeaderConstraints {
 
+  private static final String PROP_APPLICATIONS = "applications";
   private static final String PROP_DSCPS = "dscps";
   private static final String PROP_DST_IPS = "dstIps";
   private static final String PROP_DST_PORTS = "dstPorts";
   private static final String PROP_ECNS = "ecns";
+  private static final String PROP_FLOW_STATES = "flowStates";
   private static final String PROP_FRAGMENT_OFFSETS = "fragmentOffsets";
   private static final String PROP_ICMP_CODES = "icmpCodes";
   private static final String PROP_ICMP_TYPES = "icmpTypes";
@@ -41,8 +43,7 @@ public class PacketHeaderConstraints {
   private static final String PROP_PACKET_LENGTHS = "packetLengths";
   private static final String PROP_SRC_IPS = "srcIps";
   private static final String PROP_SRC_PORTS = "srcPorts";
-  private static final String PROP_FLOW_STATES = "flowStates";
-  private static final String PROP_APPLICATIONS = "applications";
+
   static final Set<IpProtocol> IP_PROTOCOLS_WITH_PORTS =
       ImmutableSet.of(IpProtocol.TCP, IpProtocol.UDP, IpProtocol.DCCP, IpProtocol.SCTP);
 

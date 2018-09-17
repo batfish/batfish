@@ -16,12 +16,14 @@ import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.Flow.Builder;
 import org.batfish.datamodel.FlowHistory;
 import org.batfish.datamodel.FlowHistory.FlowHistoryInfo;
 import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.answers.AnswerElement;
@@ -246,6 +248,31 @@ public final class TracerouteAnswerer extends Answerer {
     Flow.Builder builder = Flow.builder();
 
     // Extract and source IP from header constraints,
+    setSrcIp(constraints, srcLocation, builder);
+
+    setDstIp(constraints, builder);
+
+    // Deal with IP packet header values.
+    setIpProtocol(constraints, builder);
+
+    // Src Ports (default to lowest ephemeral, for UDP traceroute)
+    setSrcPort(constraints, builder);
+
+    // Dst Ports (default to 33434, for UDP traceroute)
+    setDstPort(constraints, builder);
+
+    // Icmp values
+    setIcmpValue(constraints, builder);
+
+    // DSCP value
+    setDscpValue(constraints, builder);
+
+    // TODO: ECN value, fragments, etc
+    return builder;
+  }
+
+  private void setSrcIp(
+      PacketHeaderConstraints constraints, Location srcLocation, Builder builder) {
     String headerSrcIp = constraints.getSrcIps();
     if (headerSrcIp != null) {
       // interpret given Src IP using sane mode
@@ -283,63 +310,24 @@ public final class TracerouteAnswerer extends Answerer {
           srcLocation);
       builder.setSrcIp(srcIp.get());
     }
+  }
 
-    String headerDstIp = constraints.getDstIps();
-    checkArgument(
-        constraints.getDstIps() != null, "Cannot perform traceroute without a destination");
-    IpSpaceSpecifier dstIpSpecifier =
-        IpSpaceSpecifierFactory.load(IP_SPECIFIER_FACTORY).buildIpSpaceSpecifier(headerDstIp);
-    IpSpaceAssignment dstIps =
-        dstIpSpecifier.resolve(ImmutableSet.of(), _batfish.specifierContext());
-    checkArgument(
-        dstIps.getEntries().size() == 1,
-        "Specified destination: %s, resolves to more than one IP",
-        headerDstIp);
-    IpSpace space = dstIps.getEntries().iterator().next().getIpSpace();
-    Optional<Ip> dstIp = _ipSpaceRepresentative.getRepresentative(space);
-    checkArgument(dstIp.isPresent(), "At least one destination IP is required");
-    builder.setDstIp(dstIp.get());
-
-    // Deal with IP packet header values.
-    // IP protocol (default to UDP)
-    Set<IpProtocol> ipProtocols = constraints.resolveIpProtocols();
-    checkArgument(
-        ipProtocols == null || ipProtocols.size() == 1,
-        "Cannot perform traceroute with multiple IP protocols");
-    if (ipProtocols != null) {
-      builder.setIpProtocol(ipProtocols.iterator().next());
-    } else {
-      builder.setIpProtocol(IpProtocol.UDP);
-    }
-
-    // Src Ports (default to 33434, traceroute)
-    Set<SubRange> srcPorts = constraints.getSrcPorts();
-    checkArgument(
-        srcPorts == null || srcPorts.size() == 1,
-        "Cannot perform traceroute with multiple source ports");
-    if (srcPorts != null) {
-      SubRange srcPort = srcPorts.iterator().next();
-      builder.setSrcPort(srcPort.getStart());
-    } else {
-      builder.setSrcPort(TRACEROUTE_PORT);
-    }
-
-    // Dst Ports (default to 33434, traceroute)
-    Set<SubRange> dstPorts = constraints.resolveDstPorts();
-    checkArgument(
-        dstPorts == null || dstPorts.size() == 1,
-        "Cannot perform traceroute with multiple destination ports");
-    if (dstPorts != null) {
-      SubRange dstPort = dstPorts.iterator().next();
-      if (dstPorts.size() > 1 || !dstPort.isSingleValue()) {
-        throw new IllegalArgumentException();
+  @VisibleForTesting
+  static void setDscpValue(PacketHeaderConstraints constraints, Builder builder) {
+    Set<SubRange> dscps = constraints.getDscps();
+    if (dscps != null) {
+      SubRange dscp = dscps.iterator().next();
+      if (dscps.size() > 1 || !dscp.isSingleValue()) {
+        throw new IllegalArgumentException("Cannot perform traceroute with multiple DSCP values");
       }
-      builder.setDstPort(dstPort.getStart());
+      builder.setDscp(dscp.getStart());
     } else {
-      builder.setDstPort(TRACEROUTE_PORT);
+      builder.setDscp(0);
     }
+  }
 
-    // Icmp values
+  @VisibleForTesting
+  static void setIcmpValue(PacketHeaderConstraints constraints, Builder builder) {
     Set<SubRange> icmpTypes = constraints.getIcmpTypes();
     if (icmpTypes != null) {
       SubRange icmpType = icmpTypes.iterator().next();
@@ -356,21 +344,65 @@ public final class TracerouteAnswerer extends Answerer {
       }
       builder.setIcmpType(icmpCode.getStart());
     }
+  }
 
-    // DSCP value
-    Set<SubRange> dscps = constraints.getDscps();
-    if (dscps != null) {
-      SubRange dscp = dscps.iterator().next();
-      if (dscps.size() > 1 || !dscp.isSingleValue()) {
-        throw new IllegalArgumentException("Cannot perform traceroute with multiple DSCP values");
-      }
-      builder.setDscp(dscp.getStart());
+  @VisibleForTesting
+  static void setDstPort(PacketHeaderConstraints constraints, Builder builder) {
+    Set<SubRange> dstPorts = constraints.resolveDstPorts();
+    checkArgument(
+        dstPorts == null || dstPorts.size() == 1,
+        "Cannot perform traceroute with multiple destination ports");
+    if (dstPorts != null) {
+      SubRange dstPort = dstPorts.iterator().next();
+      builder.setDstPort(dstPort.getStart());
     } else {
-      builder.setDscp(0);
+      builder.setDstPort(TRACEROUTE_PORT);
     }
+  }
 
-    // TODO: ECN value, fragments, etc
-    return builder;
+  @VisibleForTesting
+  static void setSrcPort(PacketHeaderConstraints constraints, Builder builder) {
+    Set<SubRange> srcPorts = constraints.getSrcPorts();
+    checkArgument(
+        srcPorts == null || srcPorts.size() == 1,
+        "Cannot perform traceroute with multiple source ports");
+    if (srcPorts != null) {
+      SubRange srcPort = srcPorts.iterator().next();
+      builder.setSrcPort(srcPort.getStart());
+    } else {
+      builder.setSrcPort(NamedPort.EPHEMERAL_LOWEST.number());
+    }
+  }
+
+  private static void setIpProtocol(PacketHeaderConstraints constraints, Builder builder) {
+    // IP protocol (default to UDP)
+    Set<IpProtocol> ipProtocols = constraints.resolveIpProtocols();
+    checkArgument(
+        ipProtocols == null || ipProtocols.size() == 1,
+        "Cannot perform traceroute with multiple IP protocols");
+    if (ipProtocols != null) {
+      builder.setIpProtocol(ipProtocols.iterator().next());
+    } else {
+      builder.setIpProtocol(IpProtocol.UDP);
+    }
+  }
+
+  private void setDstIp(PacketHeaderConstraints constraints, Builder builder) {
+    String headerDstIp = constraints.getDstIps();
+    checkArgument(
+        constraints.getDstIps() != null, "Cannot perform traceroute without a destination");
+    IpSpaceSpecifier dstIpSpecifier =
+        IpSpaceSpecifierFactory.load(IP_SPECIFIER_FACTORY).buildIpSpaceSpecifier(headerDstIp);
+    IpSpaceAssignment dstIps =
+        dstIpSpecifier.resolve(ImmutableSet.of(), _batfish.specifierContext());
+    checkArgument(
+        dstIps.getEntries().size() == 1,
+        "Specified destination: %s, resolves to more than one IP",
+        headerDstIp);
+    IpSpace space = dstIps.getEntries().iterator().next().getIpSpace();
+    Optional<Ip> dstIp = _ipSpaceRepresentative.getRepresentative(space);
+    checkArgument(dstIp.isPresent(), "At least one destination IP is required");
+    builder.setDstIp(dstIp.get());
   }
 
   private void setSourceLocation(Flow.Builder flowBuilder, Location loc) {

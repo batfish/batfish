@@ -24,7 +24,7 @@ import org.batfish.datamodel.questions.Question;
 public final class TracerouteQuestion extends Question {
 
   private static final String PROP_IGNORE_ACLS = "ignoreAcls";
-  private static final String PROP_SOURCE_LOCATION_SPECIFIER_INPUT = "startLocation";
+  private static final String PROP_SOURCE_LOCATION = "startLocation";
   private static final String PROP_HEADER_CONSTRAINTS = "headers";
 
   private final boolean _ignoreAcls;
@@ -34,8 +34,7 @@ public final class TracerouteQuestion extends Question {
   @JsonCreator
   TracerouteQuestion(
       @JsonProperty(PROP_IGNORE_ACLS) boolean ignoreAcls,
-      @JsonProperty(PROP_SOURCE_LOCATION_SPECIFIER_INPUT) @Nullable
-          String sourceLocationSpecifierInput,
+      @JsonProperty(PROP_SOURCE_LOCATION) @Nullable String sourceLocationSpecifierInput,
       @JsonProperty(PROP_HEADER_CONSTRAINTS) @Nullable PacketHeaderConstraints headerConstraints) {
     _ignoreAcls = ignoreAcls;
     _sourceLocationSpecifierInput = sourceLocationSpecifierInput;
@@ -62,7 +61,7 @@ public final class TracerouteQuestion extends Question {
     return _ignoreAcls;
   }
 
-  @JsonProperty(PROP_SOURCE_LOCATION_SPECIFIER_INPUT)
+  @JsonProperty(PROP_SOURCE_LOCATION)
   public @Nullable String getSourceLocationSpecifierInput() {
     return _sourceLocationSpecifierInput;
   }
@@ -78,9 +77,7 @@ public final class TracerouteQuestion extends Question {
       StringBuilder sb = new StringBuilder();
       sb.append(String.format("traceroute %s", prettyPrintBase()));
       if (_sourceLocationSpecifierInput != null) {
-        sb.append(
-            String.format(
-                ", %s=%s", PROP_SOURCE_LOCATION_SPECIFIER_INPUT, _sourceLocationSpecifierInput));
+        sb.append(String.format(", %s=%s", PROP_SOURCE_LOCATION, _sourceLocationSpecifierInput));
       }
       return sb.toString();
     } catch (Exception e) {

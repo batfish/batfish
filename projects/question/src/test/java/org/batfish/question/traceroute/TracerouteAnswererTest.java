@@ -2,6 +2,10 @@ package org.batfish.question.traceroute;
 
 import static org.batfish.question.traceroute.TracerouteAnswerer.COL_FLOW;
 import static org.batfish.question.traceroute.TracerouteAnswerer.COL_TRACES;
+import static org.batfish.question.traceroute.TracerouteAnswerer.setDscpValue;
+import static org.batfish.question.traceroute.TracerouteAnswerer.setDstPort;
+import static org.batfish.question.traceroute.TracerouteAnswerer.setIcmpValue;
+import static org.batfish.question.traceroute.TracerouteAnswerer.setSrcPort;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
@@ -13,11 +17,14 @@ import com.google.common.collect.Multiset;
 import java.util.List;
 import java.util.Set;
 import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.Flow.Builder;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.FlowHistory;
 import org.batfish.datamodel.FlowHistory.FlowHistoryInfo;
 import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.PacketHeaderConstraints;
+import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.table.ColumnMetadata;
@@ -149,5 +156,39 @@ public class TracerouteAnswererTest {
                 flow,
                 TracerouteAnswerer.COL_TRACES,
                 historyInfo.getPaths().values().stream().findAny())));
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testSetIcmpValueMultiple() {
+    setIcmpValue(
+        PacketHeaderConstraints.builder()
+            .setIcmpCodes(ImmutableSet.of(new SubRange(0, 10)))
+            .build(),
+        Flow.builder());
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testSetDscpValueMultiple() {
+    setDscpValue(
+        PacketHeaderConstraints.builder().setDscps(ImmutableSet.of(new SubRange(0, 10))).build(),
+        Flow.builder());
+  }
+
+  @Test()
+  public void testSetSrcPortMultiple() {
+    Builder builder = Flow.builder().setIngressNode("node").setTag("tag");
+    setSrcPort(
+        PacketHeaderConstraints.builder().setSrcPorts(ImmutableSet.of(new SubRange(1, 10))).build(),
+        builder);
+    assertThat(builder.build().getSrcPort(), equalTo(1));
+  }
+
+  @Test()
+  public void testSetDstPortMultiple() {
+    Builder builder = Flow.builder().setIngressNode("node").setTag("tag");
+    setDstPort(
+        PacketHeaderConstraints.builder().setDstPorts(ImmutableSet.of(new SubRange(1, 10))).build(),
+        builder);
+    assertThat(builder.build().getDstPort(), equalTo(1));
   }
 }
