@@ -49,16 +49,22 @@ def test_instance_vars_present(question, question_text):
 
 def test_instance_vars_with_values(question):
     """Tests that variables with allowed values have descriptions."""
-    whitelist = ['edges', 'neighbors', 'routes']
+    whitelist = {
+        ('edges', 'edgeType'),
+        ('neighbors', 'neighborTypes'),
+        ('neighbors', 'style'),
+        ('routes', 'rib'),
+    }
     instance = question['instance']
+    qname = instance['instanceName']
     for name, var in instance.get('variables', {}).items():
         assert 'allowedValues' not in var, 'variable {} should migrate to values'.format(name)
-        if instance['instanceName'] in whitelist:
+        if (qname, name) in whitelist:
             # Whitelisted, skip check that description is present
             continue
 
         for value in var.get('values', []):
-            assert 'description' in value
+            assert 'description' in value, 'add description to {} or whitelist it'.format(name)
 
 
 def test_types(question):
