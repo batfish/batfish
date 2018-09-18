@@ -4,10 +4,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.LinkedHashMultiset;
 import com.google.common.collect.Multiset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
@@ -18,6 +20,7 @@ import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.DefinedStructureInfo;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.collections.FileLines;
+import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.ColumnMetadata;
@@ -30,10 +33,9 @@ public class UnusedStructuresQuestionPlugin extends QuestionPlugin {
 
   public static class UnusedStructuresAnswerer extends Answerer {
 
-    static final String COL_FILENAME = "File_Name";
-    static final String COL_LINES = "Lines";
-    static final String COL_STRUCT_NAME = "Struct_Name";
-    static final String COL_STRUCT_TYPE = "Struct_Type";
+    public static final String COL_SOURCE_LINES = "Source_Lines";
+    public static final String COL_STRUCTURE_NAME = "Structure_Name";
+    public static final String COL_STRUCTURE_TYPE = "Structure_Type";
 
     public UnusedStructuresAnswerer(Question question, IBatfish batfish) {
       super(question, batfish);
@@ -67,14 +69,14 @@ public class UnusedStructuresQuestionPlugin extends QuestionPlugin {
           .filter(e -> includeFiles.contains(e.getKey()))
           .forEach(e -> rows.addAll(processEntryToRows(e)));
 
-      TableAnswerElement table = new TableAnswerElement(createMetadata());
+      TableAnswerElement table = new TableAnswerElement(createMetadata(question));
       table.postProcessAnswer(_question, rows);
       return table;
     }
 
     @VisibleForTesting
     // Entry is: filename -> struct type -> struct name -> defined structure info
-    public static List<Row> processEntryToRows(
+    static List<Row> processEntryToRows(
         Entry<String, SortedMap<String, SortedMap<String, DefinedStructureInfo>>> e) {
       List<Row> rows = new ArrayList<>();
       String filename = e.getKey();
@@ -85,35 +87,50 @@ public class UnusedStructuresQuestionPlugin extends QuestionPlugin {
           DefinedStructureInfo info = e2.getValue();
           if (info.getNumReferrers() == 0) {
             rows.add(
-                Row.of(
-                    COL_FILENAME,
-                    filename,
-                    COL_STRUCT_TYPE,
-                    structType,
-                    COL_STRUCT_NAME,
-                    name,
-                    COL_LINES,
-                    new FileLines(filename, info.getDefinitionLines())));
+                Row.builder(COLUMN_METADATA_MAP)
+                    .put(COL_STRUCTURE_TYPE, structType)
+                    .put(COL_STRUCTURE_NAME, name)
+                    .put(COL_SOURCE_LINES, new FileLines(filename, info.getDefinitionLines()))
+                    .build());
           }
         }
       }
       return rows;
     }
 
-    private static TableMetadata createMetadata() {
-      List<ColumnMetadata> columnMetadata =
-          ImmutableList.of(
-              new ColumnMetadata(
-                  COL_FILENAME, Schema.STRING, "File containing structure", true, false),
-              new ColumnMetadata(COL_STRUCT_TYPE, Schema.STRING, "Type of structure", false, false),
-              new ColumnMetadata(COL_STRUCT_NAME, Schema.STRING, "Name of structure", true, false),
-              new ColumnMetadata(
-                  COL_LINES, Schema.FILE_LINES, "Lines where structure appears", false, false));
-      String textDesc =
-          String.format(
-              "'${%s}' has unused '${%s}' called '${%s}' at line(s) ${%s}",
-              COL_FILENAME, COL_STRUCT_TYPE, COL_STRUCT_NAME, COL_LINES);
-      return new TableMetadata(columnMetadata, textDesc);
+    private static final List<ColumnMetadata> COLUMN_METADATA =
+        ImmutableList.of(
+            new ColumnMetadata(
+                COL_STRUCTURE_TYPE,
+                Schema.STRING,
+                "Vendor-specific type of the structure",
+                true,
+                false),
+            new ColumnMetadata(
+                COL_STRUCTURE_NAME, Schema.STRING, "Name of the structure", true, false),
+            new ColumnMetadata(
+                COL_SOURCE_LINES,
+                Schema.FILE_LINES,
+                "File and line numbers where the structure is defined",
+                true,
+                false));
+
+    private static final Map<String, ColumnMetadata> COLUMN_METADATA_MAP =
+        COLUMN_METADATA
+            .stream()
+            .collect(ImmutableMap.toImmutableMap(ColumnMetadata::getName, cm -> cm));
+    private static final String DEFAULT_TEXT_DESC =
+        String.format(
+            "An unused structure of type ${%s} named ${%s} is defined at ${%s}.",
+            COL_STRUCTURE_TYPE, COL_STRUCTURE_NAME, COL_SOURCE_LINES);
+
+    public static TableMetadata createMetadata(Question question) {
+      String textDesc = DEFAULT_TEXT_DESC;
+      DisplayHints dhints = question.getDisplayHints();
+      if (dhints != null && dhints.getTextDesc() != null) {
+        textDesc = dhints.getTextDesc();
+      }
+      return new TableMetadata(COLUMN_METADATA, textDesc);
     }
   }
 
