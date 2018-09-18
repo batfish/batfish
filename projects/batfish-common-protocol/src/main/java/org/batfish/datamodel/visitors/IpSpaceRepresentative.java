@@ -1,24 +1,27 @@
 package org.batfish.datamodel.visitors;
 
-import static com.google.common.base.Preconditions.checkState;
-
-import com.google.common.collect.ImmutableList;
-import java.util.List;
 import java.util.Optional;
-import java.util.ServiceLoader;
+import org.batfish.common.bdd.BDDInteger;
+import org.batfish.common.bdd.BDDPacket;
+import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
 
-public interface IpSpaceRepresentative {
-  static IpSpaceRepresentative load() {
-    List<IpSpaceRepresentative> impls =
-        ImmutableList.copyOf(ServiceLoader.load(IpSpaceRepresentative.class));
-    checkState(!impls.isEmpty(), "No IpSpaceRepresentative implementation found");
-    checkState(
-        impls.size() == 1,
-        String.format("Only 1 IpSpaceRepresentative allowed. Found %d", impls.size()));
-    return impls.get(0);
+/** Simple class for finding representative {@link Ip IP Addresses} in an {@link IpSpace}. */
+public final class IpSpaceRepresentative {
+  private final IpSpaceToBDD _ipSpaceToBDD;
+
+  public IpSpaceRepresentative() {
+    BDDPacket bddPacket = new BDDPacket();
+    BDDInteger ipAddrBdd = bddPacket.getDstIp();
+    _ipSpaceToBDD = new IpSpaceToBDD(bddPacket.getFactory(), ipAddrBdd);
   }
 
-  Optional<Ip> getRepresentative(IpSpace ipSpace);
+  /** Returns some representative element of an {@link IpSpace ip space}, if any exists. */
+  public Optional<Ip> getRepresentative(IpSpace ipSpace) {
+    return _ipSpaceToBDD
+        .getBDDInteger()
+        .getValueSatisfying(_ipSpaceToBDD.visit(ipSpace))
+        .map(Ip::new);
+  }
 }
