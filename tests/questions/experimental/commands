@@ -55,4 +55,4 @@ test -raw tests/questions/experimental/specifiersReachability.ref validate-templ
 test  -raw tests/questions/experimental/traceroute.ref validate-template traceroute startLocation="location", ignoreAcls=false, headers=null
 
 # test viModel
-test -raw tests/questions/experimental/viModel.ref validate-template viModel 
+test -raw tests/questions/experimental/viModel.ref validate-template viModel
