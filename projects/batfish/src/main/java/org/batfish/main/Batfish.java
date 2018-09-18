@@ -757,7 +757,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         } else if (rest.isZero() || lineBDD.and(rest).isZero()) {
           unreachableButMatchableLineNums.add(lineNum);
         }
-        rest.andWith(lineBDD.not());
+        rest = rest.and(lineBDD.not());
       }
 
       // compute blocking lines
