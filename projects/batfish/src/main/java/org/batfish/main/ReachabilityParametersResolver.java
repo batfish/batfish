@@ -18,7 +18,7 @@ import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.questions.InvalidReachabilityParametersException;
-import org.batfish.datamodel.visitors.IpSpaceRepresentativeImpl;
+import org.batfish.datamodel.visitors.IpSpaceRepresentative;
 import org.batfish.main.Batfish.CompressDataPlaneResult;
 import org.batfish.question.ReachabilityParameters;
 import org.batfish.question.ResolvedReachabilityParameters;
@@ -48,7 +48,7 @@ final class ReachabilityParametersResolver {
 
   private final NetworkSnapshot _snapshot;
 
-  private final IpSpaceRepresentativeImpl _ipSpaceRepresentative;
+  private final IpSpaceRepresentative _ipSpaceRepresentative;
 
   @VisibleForTesting
   ReachabilityParametersResolver(
@@ -58,7 +58,7 @@ final class ReachabilityParametersResolver {
     _snapshot = snapshot;
     initConfigsAndDataPlane();
     _context = new SpecifierContextImpl(batfish, _configs);
-    _ipSpaceRepresentative = new IpSpaceRepresentativeImpl();
+    _ipSpaceRepresentative = new IpSpaceRepresentative();
   }
 
   public static ResolvedReachabilityParameters resolveReachabilityParameters(

@@ -69,7 +69,7 @@ public final class TracerouteAnswerer extends Answerer {
   TracerouteAnswerer(Question question, IBatfish batfish) {
     super(question, batfish);
     _configurations = batfish.loadConfigurations();
-    _ipSpaceRepresentative = IpSpaceRepresentative.load();
+    _ipSpaceRepresentative = new IpSpaceRepresentative();
     _sourceIpAssignment = initSourceIpAssignment();
   }
 
