@@ -1,61 +1,75 @@
 #!/usr/bin/env python3
-from glob import glob
-from json import load, loads
-from os import pardir, path, walk
-from pytest import fixture, skip
 import re
+from glob import glob
+from json import load
+from os import pardir, path
+
+import pytest
 
 REPO = path.abspath(path.join(path.dirname(__file__), pardir, pardir))
 QUESTIONS = glob(REPO + '/questions*/**/*.json', recursive=True)
 
 
-@fixture(scope='module', params=QUESTIONS)
-def question(request):
+@pytest.fixture(scope='module', params=QUESTIONS)
+def question_path(request):
     yield path.relpath(request.param, REPO)
 
 
-def test_proper_json(question):
-    """Tests that questions are properly formatted."""
-    with open(path.join(REPO, question), 'r') as qfile:
+@pytest.fixture(scope='module')
+def question_text(question_path):
+    with open(path.join(REPO, question_path), 'r') as qfile:
+        return qfile.read()
+
+
+@pytest.fixture(scope='module')
+def question(question_path):
+    with open(path.join(REPO, question_path), 'r') as qfile:
         q = load(qfile)  # Throws if the question is not valid JSON.
 
     assert 'class' in q
-
-
-def test_name_and_filename_match(question):
-    """Tests that all questions have filenames that match their instance name."""
-    with open(path.join(REPO, question), 'r') as qfile:
-        q = load(qfile)
-
     assert 'instance' in q
-    assert 'instanceName' in q['instance']
+    return q
 
-    name = q['instance']['instanceName']
-    filename = path.splitext(path.basename(question))[0]
+
+def test_name_and_filename_match(question_path, question):
+    """Tests that all questions have filenames that match their instance name."""
+    assert 'instanceName' in question['instance']
+    name = question['instance']['instanceName']
+    filename = path.splitext(path.basename(question_path))[0]
     assert name == filename
 
 
-def test_instance_vars_present(question):
+def test_instance_vars_present(question, question_text):
     """Tests that all questions with instance variables use those variables."""
-    with open(path.join(REPO, question), 'r') as qfile:
-        text = qfile.read()
-        q = loads(text)
-
-    assert 'instance' in q
-    instance = q['instance']
+    instance = question['instance']
     for v in instance.get('variables', {}):
         v_pattern = '${' + v + '}'
-        assert v_pattern in text
+        assert v_pattern in question_text
+
+
+def test_instance_vars_with_values(question):
+    """Tests that variables with allowed values have descriptions."""
+    whitelist = {
+        ('edges', 'edgeType'),
+        ('neighbors', 'neighborTypes'),
+        ('neighbors', 'style'),
+        ('routes', 'rib'),
+    }
+    instance = question['instance']
+    qname = instance['instanceName']
+    for name, var in instance.get('variables', {}).items():
+        assert 'allowedValues' not in var, 'variable {} should migrate to values'.format(name)
+        if (qname, name) in whitelist:
+            # Whitelisted, skip check that description is present
+            continue
+
+        for value in var.get('values', []):
+            assert 'description' in value, 'add description to {} or whitelist it'.format(name)
 
 
 def test_types(question):
     """Tests (partially) that instance variable properties have the correct types."""
-    with open(path.join(REPO, question), 'r') as qfile:
-        text = qfile.read()
-        q = loads(text)
-
-    assert 'instance' in q
-    instance = q['instance']
+    instance = question['instance']
     for name, data in instance.get('variables', {}).items():
         assert 'optional' not in data or isinstance(data['optional'], bool)
         if data.get('type') == 'boolean':
@@ -64,15 +78,15 @@ def test_types(question):
             assert 'value' not in data or isinstance(data['value'], int)
 
 
-def test_indented_with_spaces(question):
+def test_indented_with_spaces(question_text):
     """Tests that JSON is indented with spaces, and not tabs."""
     pattern = re.compile(r"\t+")
-    with open(path.join(REPO, question), 'r') as qfile:
-        for line in qfile:
-            if re.search(pattern, line) is not None:
-                raise ValueError(
-                    "Found tab indentation in question {}. Please run \"sed -i '' 's/\\\\t/    /g' {}\" to switch to spaces.".format(question, path.join(REPO, question)))
+    for line in question_text:
+        if re.search(pattern, line) is not None:
+            raise ValueError(
+                "Found tab indentation in question {}. Please run \"sed -i '' 's/\\\\t/    /g' {}\" to switch to spaces.".format(
+                    question, path.join(REPO, question)))
+
 
 if __name__ == '__main__':
     pytest.main()
-
