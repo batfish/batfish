@@ -5,6 +5,11 @@ trap 'kill -9 $(pgrep -g $$ | grep -v $$) >& /dev/null' EXIT SIGINT SIGTERM
 
 . "$(dirname "$0")/../tools/batfish_functions.sh"
 
+# Run question formatting tests, and exit early if they fail.
+echo -e "\n  ..... Running question formatting tests"
+pushd tests
+python3 -m pytest || exit 1
+popd
 
 # Build batfish and run the Maven unit tests.
 batfish_test_all || exit 1
@@ -17,11 +22,6 @@ export ALLINONE_JAVA_ARGS=" \
 "
 
 exit_code=0
-
-echo -e "\n  ..... Running question formatting tests"
-pushd tests
-python3 -m pytest || exit_code=$?
-popd
 
 echo -e "\n  ..... Running parsing tests"
 allinone -cmdfile tests/parsing-tests/commands || exit_code=$?
