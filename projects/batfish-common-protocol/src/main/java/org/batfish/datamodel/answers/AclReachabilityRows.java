@@ -106,9 +106,7 @@ public class AclReachabilityRows {
     Reason reason =
         canonicalAcl.hasUndefinedRef(lineNumber)
             ? Reason.UNDEFINED_REFERENCE
-            : unmatchable
-                ? Reason.UNMATCHABLE
-                : Reason.BLOCKING_LINES;
+            : unmatchable ? Reason.UNMATCHABLE : Reason.BLOCKING_LINES;
     _rows.add(
         Row.builder(COLUMN_METADATA)
             .put(COL_SOURCES, flatSources)
