@@ -31,8 +31,7 @@ public final class MemoizedIpAccessListToBDD extends IpAccessListToBDD {
             namedIpSpaces,
             new MemoizedIpSpaceToBDD(factory, packet.getDstIp(), namedIpSpaces),
             new MemoizedIpSpaceToBDD(factory, packet.getSrcIp(), namedIpSpaces)),
-        aclEnv,
-        namedIpSpaces);
+        aclEnv);
   }
 
   @Override

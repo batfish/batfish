@@ -51,15 +51,14 @@ public class IpAccessListToBDD implements GenericAclLineMatchExprVisitor<BDD> {
       @Nonnull BDDSourceManager bddSrcManager,
       @Nonnull Map<String, IpAccessList> aclEnv,
       @Nonnull Map<String, IpSpace> ipSpaceEnv) {
-    this(pkt, bddSrcManager, new HeaderSpaceToBDD(pkt, ipSpaceEnv), aclEnv, ipSpaceEnv);
+    this(pkt, bddSrcManager, new HeaderSpaceToBDD(pkt, ipSpaceEnv), aclEnv);
   }
 
   public IpAccessListToBDD(
       @Nonnull BDDPacket pkt,
       @Nonnull BDDSourceManager bddSrcManager,
       @Nonnull HeaderSpaceToBDD headerSpaceToBDD,
-      @Nonnull Map<String, IpAccessList> aclEnv,
-      @Nonnull Map<String, IpSpace> ipSpaceEnv) {
+      @Nonnull Map<String, IpAccessList> aclEnv) {
     // use laziness to tie the recursive knot.
     _aclEnv = new HashMap<>();
     aclEnv.forEach(
