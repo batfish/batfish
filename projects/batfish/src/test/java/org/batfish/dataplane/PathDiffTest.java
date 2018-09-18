@@ -44,7 +44,7 @@ public class PathDiffTest {
     Vrf vA = vb.setOwner(cA).build();
     Vrf vB = vb.setOwner(cB).build();
 
-    Interface.Builder ib = nf.interfaceBuilder().setActive(true).setBandwidth(1E9d);
+    Interface.Builder ib = nf.interfaceBuilder().setBandwidth(1E9d);
 
     // A's interface
     Prefix pA = Prefix.parse("3.3.3.3/32");

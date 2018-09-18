@@ -1,0 +1,15 @@
+{
+  "class" : "org.batfish.question.reducedreachability.ReducedReachabilityQuestion",
+  "differential" : true,
+  "includeOneTableKeys" : true,
+  "instance" : {
+    "description" : "Detect reduced reachability.",
+    "instanceName" : "qname",
+    "longDescription" : "Finds flows that are accepted in one snapshot but dropped in another",
+    "tags" : [
+      "dataPlane",
+      "reachability",
+      "reduced reachability"
+    ]
+  }
+}

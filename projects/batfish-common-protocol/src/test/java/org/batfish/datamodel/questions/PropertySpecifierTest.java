@@ -52,29 +52,48 @@ public class PropertySpecifierTest {
                 new AutocompleteSuggestion(NodePropertySpecifier.NTP_SOURCE_INTERFACE, false))));
   }
 
+  /** Map should be converted to set of strings when the schema is string list */
   @Test
-  public void convertTypeIfNeeded() {
-    // map should be converted to set of strings when the schema is string list
+  public void convertTypeIfNeededMapToStringSet() {
     Object propertyValueMap =
         PropertySpecifier.convertTypeIfNeeded(
             ImmutableSortedMap.of("k1", "v1", "k2", "v2"),
             new PropertyDescriptor<Configuration>(null, Schema.list(Schema.STRING)));
     assertThat(propertyValueMap, equalTo(ImmutableSet.of("k1", "k2")));
+  }
 
-    // other objects should be mapped to their string forms
+  /** Non-string objects should be mapped to their string forms when the schema is String */
+  @Test
+  public void convertTypeIfNeededNonStringToString() {
     Object propertyValueObject =
         PropertySpecifier.convertTypeIfNeeded(
             new Configuration("cname", ConfigurationFormat.CISCO_IOS),
             new PropertyDescriptor<Configuration>(null, Schema.STRING));
     assertThat(propertyValueObject, equalTo("cname"));
+  }
 
-    // null should remain null and not crash
+  /** Collection of non-strings should be converted to collection of strings when desired */
+  @Test
+  public void convertTypeIfNeededNonStringCollectionToStringCollection() {
+    Object propertyValueCollection =
+        PropertySpecifier.convertTypeIfNeeded(
+            ImmutableList.of(new Configuration("cname", ConfigurationFormat.CISCO_IOS)),
+            new PropertyDescriptor<Configuration>(null, Schema.list(Schema.STRING)));
+    assertThat(propertyValueCollection, equalTo(ImmutableList.of("cname")));
+  }
+
+  /** Null should remain null and not crash */
+  @Test
+  public void convertTypeIfNeededNullInput() {
     Object propertyValueNull =
         PropertySpecifier.convertTypeIfNeeded(
             null, new PropertyDescriptor<Configuration>(null, Schema.STRING));
     assertThat(propertyValueNull, equalTo(null));
+  }
 
-    // protect other objects
+  /** Protect other objects for which conversion is not needed */
+  @Test
+  public void convertTypeIfNeededNoConversion() {
     Object propertyValueOther =
         PropertySpecifier.convertTypeIfNeeded(
             new Node("node"), new PropertyDescriptor<Configuration>(null, Schema.NODE));

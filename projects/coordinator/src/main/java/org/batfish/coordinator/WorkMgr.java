@@ -6,7 +6,10 @@ import static java.util.stream.Collectors.toCollection;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
@@ -450,6 +453,22 @@ public class WorkMgr extends AbstractCoordinator {
     }
   }
 
+  @VisibleForTesting
+  Path getQuestionPath(WorkItem workItem) {
+    String qName = WorkItemBuilder.getQuestionName(workItem);
+    if (qName == null) {
+      throw new BatfishException("Question name not provided for ANSWER work");
+    }
+    String aName = WorkItemBuilder.getAnalysisName(workItem);
+    if (aName == null) {
+      // answering ad-hoc question
+      return getpathContainerQuestion(workItem.getContainerName(), qName);
+    } else {
+      // answering question in policy
+      return getpathAnalysisQuestion(workItem.getContainerName(), aName, qName);
+    }
+  }
+
   private WorkDetails computeWorkDetails(WorkItem workItem) {
 
     WorkType workType = WorkType.UNKNOWN;
@@ -469,11 +488,7 @@ public class WorkMgr extends AbstractCoordinator {
       if (workType != WorkType.UNKNOWN) {
         throw new BatfishException("Cannot do composite work. Separate ANSWER from other work.");
       }
-      String qName = WorkItemBuilder.getQuestionName(workItem);
-      if (qName == null) {
-        throw new BatfishException("Question name not provided for ANSWER work");
-      }
-      Path qFile = getpathContainerQuestion(workItem.getContainerName(), qName);
+      Path qFile = getQuestionPath(workItem);
       Question question = Question.parseQuestion(qFile);
       workType =
           question.getIndependent()
@@ -843,7 +858,8 @@ public class WorkMgr extends AbstractCoordinator {
     Path analysisDir = getdirContainerAnalysis(containerName, analysisName);
     Path qDir = analysisDir.resolve(Paths.get(BfConsts.RELPATH_QUESTIONS_DIR, qName));
     if (!Files.exists(qDir)) {
-      throw new BatfishException("Question '" + qName + "' does not exist");
+      throw new BatfishException(
+          "Question '" + qName + "' does not exist in analysis '" + analysisName + "'");
     }
     return qDir;
   }
@@ -924,19 +940,7 @@ public class WorkMgr extends AbstractCoordinator {
 
   /** Fetches the {@code MajorIssueConfig} for the given network and major issue type. */
   public MajorIssueConfig getMajorIssueConfig(String networkName, String majorIssueType) {
-    try {
-      return MajorIssueConfig.read(
-          getdirNetwork(networkName)
-              .resolve(BfConsts.RELPATH_CONTAINER_SETTINGS)
-              .resolve(BfConsts.RELPATH_CONTAINER_SETTINGS_ISSUES)
-              .resolve(majorIssueType + ".json"),
-          majorIssueType);
-    } catch (IOException e) {
-      _logger.errorf(
-          "ERROR: Could not cast file for major issue %s in network %s to MajorIssueConfig: %s",
-          majorIssueType, networkName, Throwables.getStackTraceAsString(e));
-      return new MajorIssueConfig(majorIssueType, null);
-    }
+    return _storage.loadMajorIssueConfig(networkName, majorIssueType);
   }
 
   /**
@@ -1538,16 +1542,7 @@ public class WorkMgr extends AbstractCoordinator {
   /** Writes the {@code MajorIssueConfig} for the given network and major issue type. */
   public void putMajorIssueConfig(
       String networkName, String majorIssueType, MajorIssueConfig config) throws IOException {
-    Path path =
-        getdirNetwork(networkName)
-            .resolve(BfConsts.RELPATH_CONTAINER_SETTINGS)
-            .resolve(BfConsts.RELPATH_CONTAINER_SETTINGS_ISSUES)
-            .resolve(majorIssueType + ".json");
-    if (Files.notExists(path)) {
-      Files.createDirectories(path.getParent());
-      Files.createFile(path);
-    }
-    CommonUtil.writeFile(path, BatfishObjectMapper.mapper().writeValueAsString(config));
+    _storage.storeMajorIssueConfig(networkName, majorIssueType, config);
   }
 
   public void putObject(
@@ -1806,10 +1801,8 @@ public class WorkMgr extends AbstractCoordinator {
     }
   }
 
-  /** Returns true if the container {@code containerName} exists, false otherwise. */
   public boolean checkContainerExists(String containerName) {
-    Path containerDir = getdirContainer(containerName, false);
-    return Files.exists(containerDir);
+    return _storage.checkNetworkExists(containerName);
   }
 
   /**
@@ -1928,5 +1921,75 @@ public class WorkMgr extends AbstractCoordinator {
       _logger.error(message);
       throw new UnsupportedOperationException(message);
     }
+  }
+
+  /**
+   * Return the JSON-serialized settings for the specified question class for the specified network;
+   * or {@code null} if either no custom settings exist for the question or no value is present at
+   * the path produced from the sepcified components.
+   *
+   * @param network The name of the network
+   * @param questionClass The fully-qualified class name of the question
+   * @param components The components to traverse from the root of the question settings to reach
+   *     the desired section or value
+   * @throws IOException if there is an error reading the settings
+   */
+  public @Nullable String getQuestionSettings(
+      String network, String questionClass, List<String> components) throws IOException {
+    String questionSettings;
+    questionSettings = _storage.loadQuestionSettings(network, questionClass);
+    if (questionSettings == null) {
+      return null;
+    }
+    if (components.isEmpty()) {
+      return questionSettings;
+    }
+    JsonNode root = BatfishObjectMapper.mapper().readTree(questionSettings);
+    JsonNode current = root;
+    for (String component : components) {
+      if (!current.has(component)) {
+        return null;
+      }
+      current = current.get(component);
+    }
+    return BatfishObjectMapper.writeString(current);
+  }
+
+  /**
+   * Write the JSON settings for the specified question class for the specified network at the end
+   * of the path computed from the specified components. Any absent components will be created.
+   *
+   * @param network The name of the network
+   * @param questionClass The fully-qualified class name of the question
+   * @param components The components to traverse from the root of the question settings to reach
+   *     the desired section or value
+   * @param value The settings value to write at the end of the path
+   * @throws IOException if there is an error writing the settings
+   */
+  public synchronized void writeQuestionSettings(
+      String network, String questionClass, List<String> components, JsonNode value)
+      throws IOException {
+    String questionSettings;
+    questionSettings = _storage.loadQuestionSettings(network, questionClass);
+    JsonNodeFactory factory = BatfishObjectMapper.mapper().getNodeFactory();
+    JsonNode root;
+    if (!components.isEmpty()) {
+      root =
+          questionSettings != null
+              ? (ObjectNode) BatfishObjectMapper.mapper().readTree(questionSettings)
+              : new ObjectNode(factory);
+      ObjectNode current = (ObjectNode) root;
+      for (String component : components.subList(0, components.size() - 1)) {
+        if (!current.has(component)) {
+          current.set(component, new ObjectNode(factory));
+        }
+        current = (ObjectNode) current.get(component);
+      }
+      current.set(components.get(components.size() - 1), value);
+    } else {
+      root = value;
+    }
+    _storage.storeQuestionSettings(
+        BatfishObjectMapper.writePrettyString(root), network, questionClass);
   }
 }

@@ -5,6 +5,7 @@ import static org.batfish.common.plugin.PluginConsumer.detectFormat;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.Closer;
@@ -49,6 +50,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.answers.MajorIssueConfig;
 
 /** A utility class that abstracts the underlying file system storage used by {@link Batfish}. */
 @ParametersAreNonnullByDefault
@@ -200,6 +202,55 @@ public final class FileBasedStorage implements StorageProvider {
     } finally {
       counter.incrementAndGet();
     }
+  }
+
+  @Override
+  public @Nonnull MajorIssueConfig loadMajorIssueConfig(String network, String majorIssueType) {
+    Path path = getMajorIssueConfigDir(network, majorIssueType);
+
+    if (!Files.exists(path)) {
+      return new MajorIssueConfig(majorIssueType, null);
+    }
+
+    String majorIssueFileText = CommonUtil.readFile(path);
+
+    try {
+      return BatfishObjectMapper.mapper().readValue(majorIssueFileText, MajorIssueConfig.class);
+    } catch (IOException e) {
+      _logger.errorf(
+          "ERROR: Could not cast file for major issue %s in network %s to MajorIssueConfig: %s",
+          majorIssueType, network, Throwables.getStackTraceAsString(e));
+      return new MajorIssueConfig(majorIssueType, null);
+    }
+  }
+
+  @Override
+  public void storeMajorIssueConfig(
+      String network, String majorIssueType, MajorIssueConfig majorIssueConfig) throws IOException {
+    Path path = getMajorIssueConfigDir(network, majorIssueType);
+
+    if (Files.notExists(path)) {
+      Files.createDirectories(path.getParent());
+    }
+
+    CommonUtil.writeFile(path, BatfishObjectMapper.mapper().writeValueAsString(majorIssueConfig));
+  }
+
+  private @Nonnull Path getMajorIssueConfigDir(String network, String majorIssueType) {
+    return getNetworkSettingsDir(network)
+        .resolve(BfConsts.RELPATH_CONTAINER_SETTINGS)
+        .resolve(BfConsts.RELPATH_CONTAINER_SETTINGS_ISSUES)
+        .resolve(majorIssueType + ".json");
+  }
+
+  private @Nonnull Path getNetworkSettingsDir(String network) {
+    return getNetworkDir(network).resolve(BfConsts.RELPATH_CONTAINER_SETTINGS);
+  }
+
+  private @Nonnull Path getQuestionSettingsPath(String network, String questionClass) {
+    return getNetworkSettingsDir(network)
+        .resolve(BfConsts.RELPATH_QUESTIONS_DIR)
+        .resolve(String.format("%s.json", questionClass));
   }
 
   /**
@@ -493,7 +544,9 @@ public final class FileBasedStorage implements StorageProvider {
     return getNetworkDir(network).resolve(BfConsts.RELPATH_QUESTIONS_DIR).resolve(question);
   }
 
-  private @Nonnull Path getNetworkDir(String network) {
+  @VisibleForTesting
+  @Nonnull
+  Path getNetworkDir(String network) {
     return _baseDir.resolve(network);
   }
 
@@ -642,5 +695,26 @@ public final class FileBasedStorage implements StorageProvider {
           String.format("Unable to create question directory '%s'", questionDir));
     }
     CommonUtil.writeFile(questionPath, questionStr);
+  }
+
+  @Override
+  public @Nullable String loadQuestionSettings(String network, String questionClass)
+      throws IOException {
+    Path questionSettingsPath = getQuestionSettingsPath(network, questionClass);
+    if (!Files.exists(questionSettingsPath)) {
+      return null;
+    }
+    return FileUtils.readFileToString(questionSettingsPath.toFile());
+  }
+
+  @Override
+  public boolean checkNetworkExists(String network) {
+    return Files.exists(getNetworkDir(network));
+  }
+
+  @Override
+  public void storeQuestionSettings(String settings, String network, String questionClass)
+      throws IOException {
+    FileUtils.writeStringToFile(getQuestionSettingsPath(network, questionClass).toFile(), settings);
   }
 }

@@ -7,17 +7,12 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nonnull;
-import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.common.util.CommonUtil;
 
 /** Represents the configuration of a major issue type */
 public class MajorIssueConfig {
@@ -82,24 +77,6 @@ public class MajorIssueConfig {
     tmpList.removeIf(i -> i.getMinor().equals(config.getMinor()));
     tmpList.add(config);
     _minorIssueConfigs = ImmutableSet.copyOf(tmpList);
-  }
-
-  /**
-   * Reads the {@link MajorIssueConfig} object from the provided Path. If the path does not exist,
-   * initializes a new object.
-   *
-   * @param dataPath The Path to read from
-   * @return The read data
-   * @throws IOException If file exists but its contents could not be cast to {@link
-   *     MajorIssueConfig}
-   */
-  public static MajorIssueConfig read(Path dataPath, String majorIssue) throws IOException {
-    if (Files.exists(dataPath)) {
-      return BatfishObjectMapper.mapper()
-          .readValue(CommonUtil.readFile(dataPath), MajorIssueConfig.class);
-    } else {
-      return new MajorIssueConfig(majorIssue, null);
-    }
   }
 
   @Override

@@ -103,7 +103,7 @@ public class EigrpTest {
 
     EigrpProcess.Builder epb =
         EigrpProcess.builder().setAsNumber(asn).setRouterId(new Ip("100.100.100.100"));
-    Interface.Builder eib = nf.interfaceBuilder().setActive(true).setOspfCost(1);
+    Interface.Builder eib = nf.interfaceBuilder().setOspfCost(1);
 
     /* Configuration 1 */
     Configuration c1 = buildConfiguration(R1, eib, epb, null, null, null);
@@ -243,14 +243,13 @@ public class EigrpTest {
 
     EigrpProcess.Builder epb =
         EigrpProcess.builder().setAsNumber(asn).setRouterId(new Ip("100.100.100.100"));
-    Interface.Builder eib = nf.interfaceBuilder().setActive(true).setOspfCost(1);
+    Interface.Builder eib = nf.interfaceBuilder().setOspfCost(1);
 
-    Interface.Builder nib = nf.interfaceBuilder().setActive(true).setOspfCost(1);
+    Interface.Builder nib = nf.interfaceBuilder().setOspfCost(1);
 
     OspfProcess.Builder opb = nf.ospfProcessBuilder();
     OspfArea.Builder oab = nf.ospfAreaBuilder().setNumber(area);
-    Interface.Builder oib =
-        nf.interfaceBuilder().setActive(true).setOspfCost(1).setOspfEnabled(true);
+    Interface.Builder oib = nf.interfaceBuilder().setOspfCost(1).setOspfEnabled(true);
 
     /* Configuration 1 */
     Configuration c1 = buildConfiguration(R1, eib, epb, oib, opb, nib);

@@ -14,6 +14,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.answers.MajorIssueConfig;
 
 /** Storage backend for loading and storing persistent data used by Batfish */
 @ParametersAreNonnullByDefault
@@ -61,6 +62,26 @@ public interface StorageProvider {
    */
   @Nullable
   Layer1Topology loadLayer1Topology(String network, String snapshot);
+
+  /**
+   * Returns the {@link MajorIssueConfig} for the given network and majorIssueType. If no config
+   * exists, will return a valid {@link MajorIssueConfig} with an empty list of {@link
+   * MinorIssueConfig}s
+   */
+  @Nonnull
+  MajorIssueConfig loadMajorIssueConfig(String network, String majorIssueType);
+
+  /**
+   * Stores the {@link MajorIssueConfig} into the given network. Will replace any previously-stored
+   * {@link MajorIssueConfig}s
+   *
+   * @param network The name of the network
+   * @param majorIssueType The type of the {@link MajorIssueConfig}
+   * @param majorIssueConfig The {@link MajorIssueConfig} to be stored
+   * @throws {@link IOException} if there is an error writing writing the config
+   */
+  void storeMajorIssueConfig(
+      String network, String majorIssueType, MajorIssueConfig majorIssueConfig) throws IOException;
 
   /**
    * Stores the configurations into the compressed config path for the given snapshot. Will replace
@@ -253,4 +274,29 @@ public interface StorageProvider {
    */
   void storeQuestion(
       String questionStr, String network, String question, @Nullable String analysis);
+
+  /**
+   * Return the JSON-serialized settings for the specified question class for the specified network,
+   * or null if no custom settings exist.
+   *
+   * @param network The name of the network
+   * @param questionClass The fully-qualified class name of the question
+   * @throws IOException if there is an error trying to read the settings
+   */
+  @Nullable
+  String loadQuestionSettings(String network, String questionClass) throws IOException;
+
+  /** Returns {@code true} iff the specified network question exists. */
+  boolean checkNetworkExists(String network);
+
+  /**
+   * Write the JSON-serialized settings for the specified question class for the specified network.
+   *
+   * @param network The name of the network
+   * @param questionClass The fully-qualified class name of the question
+   * @param settings The settings to write
+   * @throws IOException if there is an error writing the settings
+   */
+  void storeQuestionSettings(String settings, String network, String questionClass)
+      throws IOException;
 }

@@ -9,6 +9,7 @@ import java.util.Iterator;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
 
 public final class AclLineMatchExprs {
@@ -61,6 +62,10 @@ public final class AclLineMatchExprs {
     return matchDst(ip.toIpSpace());
   }
 
+  public static MatchHeaderSpace matchDst(IpWildcard wc) {
+    return matchDst(wc.toIpSpace());
+  }
+
   public static MatchHeaderSpace matchDst(Prefix prefix) {
     return matchDst(prefix.toIpSpace());
   }
@@ -69,11 +74,40 @@ public final class AclLineMatchExprs {
     return matchDst(new Ip(ip).toIpSpace());
   }
 
+  public static MatchHeaderSpace matchSrc(IpSpace ipSpace) {
+    return new MatchHeaderSpace(HeaderSpace.builder().setSrcIps(ipSpace).build());
+  }
+
+  public static MatchHeaderSpace matchSrc(Ip ip) {
+    return matchSrc(ip.toIpSpace());
+  }
+
+  public static MatchHeaderSpace matchSrc(Prefix prefix) {
+    return matchSrc(prefix.toIpSpace());
+  }
+
+  public static MatchHeaderSpace matchSrcIp(String ip) {
+    return matchSrc(new Ip(ip).toIpSpace());
+  }
+
   public static MatchSrcInterface matchSrcInterface(String... iface) {
     return new MatchSrcInterface(ImmutableList.copyOf(iface));
   }
 
-  public static NotMatchExpr not(AclLineMatchExpr expr) {
+  /**
+   * Smart constructor for {@link NotMatchExpr} that does constant-time simplifications (i.e. when
+   * expr is {@link #TRUE} or {@link #FALSE}).
+   */
+  public static AclLineMatchExpr not(AclLineMatchExpr expr) {
+    if (expr == TRUE) {
+      return FALSE;
+    }
+    if (expr == FALSE) {
+      return TRUE;
+    }
+    if (expr instanceof NotMatchExpr) {
+      return ((NotMatchExpr) expr).getOperand();
+    }
     return new NotMatchExpr(expr);
   }
 

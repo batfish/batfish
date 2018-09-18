@@ -1,6 +1,7 @@
 package org.batfish.main;
 
 import static java.util.stream.Collectors.toMap;
+import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.SOURCE_ORIGINATING_FROM_DEVICE;
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.referencedSources;
 import static org.batfish.main.ReachabilityParametersResolver.resolveReachabilityParameters;
 
@@ -8,7 +9,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Suppliers;
 import com.google.common.base.Throwables;
 import com.google.common.base.Verify;
 import com.google.common.cache.Cache;
@@ -78,6 +78,10 @@ import org.batfish.common.Snapshot;
 import org.batfish.common.Version;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
+import org.batfish.common.bdd.BDDPacket;
+import org.batfish.common.bdd.BDDSourceManager;
+import org.batfish.common.bdd.HeaderSpaceToBDD;
+import org.batfish.common.bdd.IpAccessListToBDD;
 import org.batfish.common.plugin.BgpTablePlugin;
 import org.batfish.common.plugin.DataPlanePlugin;
 import org.batfish.common.plugin.DataPlanePlugin.ComputeDataPlaneResult;
@@ -188,9 +192,11 @@ import org.batfish.role.NodeRolesData;
 import org.batfish.specifier.AllInterfaceLinksLocationSpecifier;
 import org.batfish.specifier.AllInterfacesLocationSpecifier;
 import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
+import org.batfish.specifier.InterfaceLinkLocation;
 import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.specifier.Location;
+import org.batfish.specifier.LocationVisitor;
 import org.batfish.specifier.SpecifierContext;
 import org.batfish.specifier.SpecifierContextImpl;
 import org.batfish.specifier.UnionLocationSpecifier;
@@ -198,11 +204,7 @@ import org.batfish.storage.FileBasedStorage;
 import org.batfish.storage.StorageProvider;
 import org.batfish.symbolic.abstraction.BatfishCompressor;
 import org.batfish.symbolic.abstraction.Roles;
-import org.batfish.symbolic.bdd.AclLineMatchExprToBDD;
 import org.batfish.symbolic.bdd.BDDAcl;
-import org.batfish.symbolic.bdd.BDDPacket;
-import org.batfish.symbolic.bdd.BDDSourceManager;
-import org.batfish.symbolic.bdd.HeaderSpaceToBDD;
 import org.batfish.symbolic.smt.PropertyChecker;
 import org.batfish.vendor.VendorConfiguration;
 import org.batfish.z3.AclLine;
@@ -729,46 +731,20 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public void answerAclReachability(List<AclSpecs> aclSpecs, AclReachabilityRows answerRows) {
     BDDPacket bddPacket = new BDDPacket();
     BDDFactory bddFactory = bddPacket.getFactory();
-    // aclName -> bdd representation of acl
-    Map<String, Supplier<BDD>> bddAclEnv = new TreeMap<>();
 
-    // build bddAclEnv
     for (AclSpecs aclSpec : aclSpecs) {
       BDDSourceManager sourceMgr =
           BDDSourceManager.forInterfaces(bddPacket, aclSpec.acl.getInterfaces());
-      bddAclEnv.put(
-          aclSpec.acl.getAclName(),
-          Suppliers.memoize(
-              () ->
-                  BDDAcl.createWithBDDAclEnv(
-                          bddPacket,
-                          aclSpec.acl.getSanitizedAcl(),
-                          bddAclEnv,
-                          ImmutableMap.of(),
-                          sourceMgr)
-                      .getBdd()));
+      IpAccessListToBDD ipAccessListToBDD = IpAccessListToBDD.create(
+          bddPacket,
+          aclSpec.acl.getDependencies(),
+          ImmutableMap.of(),
+          sourceMgr);
 
-      Map<String, IpAccessList> dependencies = aclSpec.acl.getDependencies();
-      dependencies.forEach(
-          (aclName, acl) -> {
-            bddAclEnv.put(
-                aclName,
-                Suppliers.memoize(
-                    () ->
-                        BDDAcl.createWithBDDAclEnv(
-                                bddPacket, acl, bddAclEnv, ImmutableMap.of(), sourceMgr)
-                            .getBdd()));
-          });
-    }
-
-    // compute unreachable and unmatchable acl lines for each acl
-    for (AclSpecs aclSpec : aclSpecs) {
       IpAccessList ipAcl = aclSpec.acl.getSanitizedAcl();
       List<IpAccessListLine> lines = ipAcl.getLines();
 
-      BDDSourceManager sourceMgr =
-          BDDSourceManager.forInterfaces(bddPacket, aclSpec.acl.getInterfaces());
-      Map<Integer, BDD> ipLineToBDDMap = new TreeMap<>();
+      List<BDD> ipLineToBDDMap = new ArrayList<>();
       Set<Integer> unreachableButMatchableLineNums = new HashSet<>();
 
       // compute if each acl line is unmatchable and/or unreachable
@@ -776,11 +752,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
       for (int lineNum = 0; lineNum < lines.size(); lineNum++) {
         IpAccessListLine line = lines.get(lineNum);
         AclLineMatchExpr matchExpr = line.getMatchCondition();
-        BDD lineBDD =
-            matchExpr.accept(
-                new AclLineMatchExprToBDD(
-                    bddPacket.getFactory(), bddPacket, bddAclEnv, ImmutableMap.of(), sourceMgr));
-        ipLineToBDDMap.put(lineNum, lineBDD);
+        BDD lineBDD = matchExpr.accept(ipAccessListToBDD.getAclLineMatchExprToBDD());
+        ipLineToBDDMap.add(lineBDD);
         if (lineBDD.isZero()) {
           // this line is unmatchable
           answerRows.addUnreachableLine(aclSpec, lineNum, true, new TreeSet<>());
@@ -1552,6 +1525,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // _testrigSettings.getSerializeIndependentPath());
   }
 
+  @Deprecated
   @Override
   public Map<String, BiFunction<Question, IBatfish, Answerer>> getAnswererCreators() {
     return _answererCreators;
@@ -1794,21 +1768,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
    */
   @Override
   public MajorIssueConfig getMajorIssueConfig(String majorIssueType) {
-    try {
-      return MajorIssueConfig.read(
-          _settings
-              .getStorageBase()
-              .resolve(_settings.getContainer())
-              .resolve(BfConsts.RELPATH_CONTAINER_SETTINGS)
-              .resolve(BfConsts.RELPATH_CONTAINER_SETTINGS_ISSUES)
-              .resolve(majorIssueType + ".json"),
-          majorIssueType);
-    } catch (IOException e) {
-      _logger.errorf(
-          "ERROR: Could not cast file for major issue %s to MajorIssueConfig: %s",
-          majorIssueType, Throwables.getStackTraceAsString(e));
-      return new MajorIssueConfig(majorIssueType, null);
-    }
+    return _storage.loadMajorIssueConfig(_settings.getContainer(), majorIssueType);
   }
 
   @Override
@@ -4212,24 +4172,26 @@ public class Batfish extends PluginConsumer implements IBatfish {
         new HeaderSpaceToBDD(bddPacket, baseConfig.getIpSpaces()).toBDD(headerSpace);
 
     // resolve specified source interfaces that exist in both configs.
-    Set<String> commonSourceInterfaces =
+    Set<String> commonSources =
         Sets.intersection(
-            resolveBaseSourceInterfaces(reachFilterParameters, baseConfig.getHostname()),
-            resolveDeltaSourceInterfaces(reachFilterParameters, deltaConfig.getHostname()));
+            resolveBaseSources(reachFilterParameters, baseConfig.getHostname()),
+            resolveDeltaSources(reachFilterParameters, deltaConfig.getHostname()));
 
-    // effectively active interfaces are those of interest that are active in both configs.
-    Set<String> activeInterfaces =
-        Sets.intersection(
-            commonSourceInterfaces,
-            Sets.intersection(baseConfig.activeInterfaces(), deltaConfig.activeInterfaces()));
+    Set<String> inactiveInterfaces =
+        Sets.union(
+            Sets.difference(baseConfig.getAllInterfaces().keySet(), baseConfig.activeInterfaces()),
+            Sets.difference(
+                deltaConfig.getAllInterfaces().keySet(), deltaConfig.activeInterfaces()));
+
+    // effectively active sources are those of interest that are active in both configs.
+    Set<String> activeSources = Sets.difference(commonSources, inactiveInterfaces);
 
     Set<String> referencedSources =
         Sets.union(
             referencedSources(baseConfig.getIpAccessLists(), baseAcl),
             referencedSources(deltaConfig.getIpAccessLists(), deltaAcl));
 
-    BDDSourceManager mgr =
-        BDDSourceManager.forSources(bddPacket, activeInterfaces, referencedSources);
+    BDDSourceManager mgr = BDDSourceManager.forSources(bddPacket, activeSources, referencedSources);
     BDD baseAclBDD =
         BDDAcl.create(
                 bddPacket, baseAcl, baseConfig.getIpAccessLists(), baseConfig.getIpSpaces(), mgr)
@@ -4254,26 +4216,53 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return new DifferentialReachFilterResult(increasedFlow, decreasedFlow);
   }
 
-  private Set<String> resolveDeltaSourceInterfaces(ReachFilterParameters parameters, String node) {
+  private Set<String> resolveDeltaSources(ReachFilterParameters parameters, String node) {
     pushDeltaEnvironment();
-    Set<String> sourceInterfaces = resolveSourceInterfaces(parameters, node);
+    Set<String> sources = resolveSources(parameters, node);
     popEnvironment();
-    return sourceInterfaces;
+    return sources;
   }
 
-  private Set<String> resolveBaseSourceInterfaces(ReachFilterParameters parameters, String node) {
+  private Set<String> resolveBaseSources(ReachFilterParameters parameters, String node) {
     pushBaseEnvironment();
-    Set<String> sourceInterfaces = resolveSourceInterfaces(parameters, node);
+    Set<String> sources = resolveSources(parameters, node);
     popEnvironment();
-    return sourceInterfaces;
+    return sources;
   }
 
-  private Set<String> resolveSourceInterfaces(ReachFilterParameters parameters, String node) {
+  private Set<String> resolveSources(ReachFilterParameters parameters, String node) {
+    LocationVisitor<Boolean> onNode =
+        new LocationVisitor<Boolean>() {
+          @Override
+          public Boolean visitInterfaceLinkLocation(InterfaceLinkLocation interfaceLinkLocation) {
+            return interfaceLinkLocation.getNodeName().equals(node);
+          }
+
+          @Override
+          public Boolean visitInterfaceLocation(InterfaceLocation interfaceLocation) {
+            return interfaceLocation.getNodeName().equals(node);
+          }
+        };
+
+    LocationVisitor<String> locationToSource =
+        new LocationVisitor<String>() {
+          @Override
+          public String visitInterfaceLinkLocation(InterfaceLinkLocation interfaceLinkLocation) {
+            return interfaceLinkLocation.getInterfaceName();
+          }
+
+          @Override
+          public String visitInterfaceLocation(InterfaceLocation interfaceLocation) {
+            return SOURCE_ORIGINATING_FROM_DEVICE;
+          }
+        };
+
     return parameters
-        .getSourceInterfaceSpecifier()
-        .resolve(ImmutableSet.of(node), specifierContext())
+        .getStartLocationSpecifier()
+        .resolve(specifierContext())
         .stream()
-        .map(Interface::getName)
+        .filter(onNode::visit)
+        .map(locationToSource::visit)
         .collect(ImmutableSet.toImmutableSet());
   }
 
@@ -4296,14 +4285,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
       Configuration node, IpAccessList acl, ReachFilterParameters parameters) {
     BDDPacket bddPacket = new BDDPacket();
 
-    Set<String> activeInterfaces =
-        Sets.intersection(
-            node.activeInterfaces(), resolveSourceInterfaces(parameters, node.getHostname()));
+    Set<String> inactiveInterfaces =
+        Sets.difference(node.getAllInterfaces().keySet(), node.activeInterfaces());
+    Set<String> activeSources =
+        Sets.difference(resolveSources(parameters, node.getHostname()), inactiveInterfaces);
 
     Set<String> referencedSources = referencedSources(node.getIpAccessLists(), acl);
 
-    BDDSourceManager mgr =
-        BDDSourceManager.forSources(bddPacket, activeInterfaces, referencedSources);
+    BDDSourceManager mgr = BDDSourceManager.forSources(bddPacket, activeSources, referencedSources);
 
     BDD headerSpaceBDD =
         new HeaderSpaceToBDD(bddPacket, node.getIpSpaces())
@@ -4695,5 +4684,24 @@ public class Batfish extends PluginConsumer implements IBatfish {
       return null;
     }
     return TopologyUtil.computeLayer2Topology(layer1Topology, loadConfigurations());
+  }
+
+  @Override
+  public @Nullable String loadQuestionSettings(@Nonnull Class<? extends Question> questionClass) {
+    try {
+      return _storage.loadQuestionSettings(
+          _settings.getContainer(), questionClass.getCanonicalName());
+    } catch (IOException e) {
+      throw new BatfishException(
+          String.format(
+              "Failed to read question settings for class: '%s'", questionClass.getCanonicalName()),
+          e);
+    }
+  }
+
+  @Override
+  public @Nullable Answerer createAnswerer(@Nonnull Question question) {
+    BiFunction<Question, IBatfish, Answerer> creator = _answererCreators.get(question.getName());
+    return creator != null ? creator.apply(question, this) : null;
   }
 }

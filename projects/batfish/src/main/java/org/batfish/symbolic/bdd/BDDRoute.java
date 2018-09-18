@@ -14,6 +14,7 @@ import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.BDDPairing;
 import net.sf.javabdd.JFactory;
 import org.batfish.common.BatfishException;
+import org.batfish.common.bdd.BDDInteger;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.symbolic.CommunityVar;

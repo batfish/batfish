@@ -1,0 +1,32 @@
+{
+    "class": "org.batfish.question.definedstructures.DefinedStructuresQuestion",
+    "differential": false,
+    "instance": {
+        "description": "Lists the structures defined in the network",
+        "instanceName": "definedStructures",
+        "longDescription": "Lists the structures defined in the network, along with the files and line numbers in which they are defined.",
+        "variables": {
+            "names": {
+                "description": "Include structures whose name matches this string or regex",
+                "type": "javaRegex",
+                "value": ".*",
+                "optional": true
+            },
+            "nodes": {
+                "description": "Include files used to generate nodes whose name matches this name or regex",
+                "type": "nodeSpec",
+                "value": ".*",
+                "optional": true
+            },
+            "types": {
+                "description": "Include structures whose vendor-specific type matches this string or regex",
+                "type": "javaRegex",
+                "value": ".*",
+                "optional": true
+            }
+        }
+    },
+    "names": "${names}",
+    "nodes": "${nodes}",
+    "types": "${types}"
+}

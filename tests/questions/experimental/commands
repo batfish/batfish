@@ -18,6 +18,9 @@ test -raw tests/questions/experimental/interfaceMtu.ref validate-template interf
 # validate interfaceProperties
 test -raw tests/questions/experimental/interfaceProperties.ref validate-template interfaceProperties excludeShutInterfaces=false, nodes=".*", interfaces=".*", properties=".*"
 
+# validate multipathConsistency
+test -raw tests/questions/experimental/multipathConsistency.ref validate-template multipathConsistency
+
 # validate namedStructures
 test -raw tests/questions/experimental/namedStructures.ref validate-template namedStructures nodes=".*", properties=".*"
 
@@ -36,14 +39,20 @@ test -raw tests/questions/experimental/ospfProperties.ref validate-template ospf
 # validate prefixTracer
 test -raw tests/questions/experimental/prefixTracer.ref validate-template prefixTracer nodes=".*", prefix="0.0.0.0/0"
 
+# validate reachability
+test -raw tests/questions/experimental/reachability.ref validate-template reachability actions=["accept"], start="aaa", "finalNodes"="bbb", "transitNodes" = "ccc", avoidNodes="ddd", srcIps="sss", dstIps="ddd"
+
 # validate reachfilter
-test -raw tests/questions/experimental/reachfilter.ref validate-template reachfilter complementHeaderSpace=false, filterRegex=".*", query="matchLine 0", destinationIpSpaceSpecifierFactory="destFactory", dst="2.2.2.2", sourceInterfaces=".*", sourceIpSpaceSpecifierFactory="sourceFactory", src="1.1.1.1", nodeSpecifierInput=".*", nodeSpecifierFactory="nodesFactory", srcPorts=[0], dstPorts=[0], dstProtocols=["http"]
+test -raw tests/questions/experimental/reachfilter.ref validate-template reachfilter complementHeaderSpace=false, filters=".*", query="matchLine 0", dst="2.2.2.2", ipProtocols=["tcp"], start=".*", src="1.1.1.1", nodes=".*", srcPorts=[0], dstPorts=[0], dstProtocols=["http"]
+
+# validate reducedReachability
+test -raw tests/questions/experimental/reducedReachability.ref validate-template reducedReachability
 
 # validate specifiers
 test -raw tests/questions/experimental/specifiers.ref validate-template specifiers queryType="filter", filterSpecifierFactory="FlexibleFilterSpecifierFactory", filterSpecifierInput="filterSpecifierInput", interfaceSpecifierFactory="FlexibleInterfaceSpecifierFactory", interfaceSpecifierInput="filterSpecifierInput", ipSpaceSpecifierFactory="InferFromLocationIpSpaceSpecifierFactory", ipSpaceSpecifierInput="ipSpaceSpecifierInput", locationSpecifierFactory="FlexibleLocationSpecifierFactory", locationSpecifierInput="locationSpecifierInput", nodeSpecifierFactory="FlexibleNodeSpecifierFactory", nodeSpecifierInput="nodeSpecifierInput"
 
-# validate specifiersReachability
-test -raw tests/questions/experimental/specifiersReachability.ref validate-template specifiersReachability actions=["accept"], debug=false, destinationIpSpaceSpecifierFactory="destFactory", dst="destination.*", finalNodesSpecifierFactory="finalNodeFactory", finalNodesSpecifierInput="finalNode", sourceLocationSpecifierFactory="sourceFactory", src="sourceNode"
-
 # test traceroute
-test  -raw tests/questions/experimental/traceroute.ref validate-template traceroute dscp=12, dst="1.2.3.4", dstPort=23, dstProtocol="dns", ecn=1, fragmentOffset=12, icmpCode=12, icmpType=23, ignoreAcls=false, ipProtocol="tcp", packetLength=12, srcIpSpace="1.1.1.1", srcPort=123, srcProtocol="http", state="new", tcpAck=true, tcpCwr=false, tcpEce=true, tcpFin=false, tcpPsh=true, tcpRst=false, tcpSyn=true, tcpUrg=false, traceStart="location"
+test  -raw tests/questions/experimental/traceroute.ref validate-template traceroute startLocation="location", ignoreAcls=false, headers=null
+
+# test viModel
+test -raw tests/questions/experimental/viModel.ref validate-template viModel

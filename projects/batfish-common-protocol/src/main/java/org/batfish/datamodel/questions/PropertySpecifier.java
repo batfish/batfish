@@ -4,6 +4,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.annotations.VisibleForTesting;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -12,12 +13,14 @@ import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.answers.AutocompleteSuggestion;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.datamodel.answers.Schema.Type;
 import org.batfish.datamodel.table.Row.RowBuilder;
 
 public abstract class PropertySpecifier {
@@ -98,14 +101,34 @@ public abstract class PropertySpecifier {
               .collect(Collectors.toSet());
     }
 
-    // check if a conversion to String is needed for complex objects (e.g., VRF)
-    if (propertyDescriptor.getSchema().equals(Schema.STRING)
+    // check if a conversion to String or List/Set<String> is needed for complex objects (e.g., VRF)
+    Schema targetSchema = propertyDescriptor.getSchema();
+    if (targetSchema.equals(Schema.STRING)
         && outputPropertyValue != null
         && !(outputPropertyValue instanceof String)) {
       if (outputPropertyValue instanceof ComparableStructure) {
         outputPropertyValue = ((ComparableStructure<?>) outputPropertyValue).getName();
       } else {
         outputPropertyValue = outputPropertyValue.toString();
+      }
+    } else if ((targetSchema.equals(Schema.list(Schema.STRING))
+            || targetSchema.equals(Schema.set(Schema.STRING)))
+        && outputPropertyValue != null
+        && outputPropertyValue instanceof Collection<?>) {
+      Collection<?> outputCollection = (Collection<?>) outputPropertyValue;
+      if (!outputCollection.isEmpty() && !(outputCollection.iterator().next() instanceof String)) {
+        Stream<?> stream =
+            outputCollection
+                .stream()
+                .map(
+                    e ->
+                        (e instanceof ComparableStructure)
+                            ? ((ComparableStructure<?>) e).getName()
+                            : e.toString());
+        outputPropertyValue =
+            targetSchema.getType() == Type.LIST
+                ? stream.collect(Collectors.toList())
+                : stream.collect(Collectors.toSet());
       }
     }
 

@@ -12,6 +12,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
+import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.answers.AnswerElement;
@@ -22,7 +23,6 @@ import org.batfish.symbolic.GraphEdge;
 import org.batfish.symbolic.answers.RoleAnswerElement;
 import org.batfish.symbolic.bdd.BDDAcl;
 import org.batfish.symbolic.bdd.BDDNetwork;
-import org.batfish.symbolic.bdd.BDDPacket;
 import org.batfish.symbolic.bdd.BDDRoute;
 import org.batfish.symbolic.utils.Tuple;
 

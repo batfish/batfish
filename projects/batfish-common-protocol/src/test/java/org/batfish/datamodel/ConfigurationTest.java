@@ -159,7 +159,7 @@ public class ConfigurationTest {
 
     Configuration.Builder cb =
         _factory.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
-    Interface.Builder ib = _factory.interfaceBuilder().setActive(true);
+    Interface.Builder ib = _factory.interfaceBuilder();
     Vrf.Builder vb = _factory.vrfBuilder().setName(Configuration.DEFAULT_VRF_NAME);
 
     Configuration c1 = cb.build();

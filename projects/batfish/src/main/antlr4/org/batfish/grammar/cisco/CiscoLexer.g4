@@ -12413,6 +12413,11 @@ UNREACHABLES
    'unreachables'
 ;
 
+UNSET
+:
+   'unset'
+;
+
 UNSUPPRESS_MAP
 :
    'unsuppress-map'
@@ -15058,6 +15063,16 @@ M_ObjectGroup_SERVICE
 M_ObjectGroup_USER
 :
   'user' -> type ( USER ) , popMode
+;
+
+M_ObjectGroup_ICMP_TYPE
+:
+  'icmp-type' -> type ( ICMP_TYPE ) , popMode
+;
+
+M_ObjectGroup_GROUP
+:
+  'group' -> type ( GROUP ) , popMode
 ;
 
 /* Do not reorder above literals */

@@ -140,6 +140,20 @@ public abstract class VendorConfiguration implements Serializable, GenericConfig
   public final void setAnswerElement(ConvertConfigurationAnswerElement answerElement) {
     _answerElement = answerElement;
     _answerElement.getDefinedStructures().put(getFilename(), _structureDefinitions);
+    _structureReferences.forEach(
+        (structType, byType) ->
+            byType.forEach(
+                (name, byUsage) ->
+                    byUsage.forEach(
+                        (usage, lines) ->
+                            lines.forEach(
+                                line ->
+                                    addStructureReference(
+                                        _answerElement.getReferencedStructures(),
+                                        structType,
+                                        name,
+                                        usage,
+                                        line)))));
   }
 
   public void setFilename(String filename) {
@@ -164,10 +178,16 @@ public abstract class VendorConfiguration implements Serializable, GenericConfig
 
   public abstract Configuration toVendorIndependentConfiguration() throws VendorConversionException;
 
-  public void undefined(StructureType structureType, String name, StructureUsage usage, int line) {
+  private void addStructureReference(
+      SortedMap<String, SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>>
+          referenceMap,
+      StructureType structureType,
+      String name,
+      StructureUsage usage,
+      int line) {
     String filename = getFilename();
     SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>> byType =
-        _answerElement.getUndefinedReferences().computeIfAbsent(filename, k -> new TreeMap<>());
+        referenceMap.computeIfAbsent(filename, k -> new TreeMap<>());
     String type = structureType.getDescription();
     SortedMap<String, SortedMap<String, SortedSet<Integer>>> byName =
         byType.computeIfAbsent(type, k -> new TreeMap<>());
@@ -176,6 +196,11 @@ public abstract class VendorConfiguration implements Serializable, GenericConfig
     String usageStr = usage.getDescription();
     SortedSet<Integer> lines = byUsage.computeIfAbsent(usageStr, k -> new TreeSet<>());
     lines.add(line);
+  }
+
+  public void undefined(StructureType structureType, String name, StructureUsage usage, int line) {
+    addStructureReference(
+        _answerElement.getUndefinedReferences(), structureType, name, usage, line);
   }
 
   /**

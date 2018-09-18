@@ -54,7 +54,7 @@ public class ReachFilterDifferentialTest {
         _nf.configurationBuilder()
             .setHostname(HOSTNAME)
             .setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
-    _ib = _nf.interfaceBuilder().setActive(true).setName(IFACE);
+    _ib = _nf.interfaceBuilder().setName(IFACE);
     _ab = _nf.aclBuilder().setName(ACLNAME);
   }
 
@@ -82,7 +82,9 @@ public class ReachFilterDifferentialTest {
     Batfish batfish = getBatfish(baseConfig, deltaConfig);
     TableAnswerElement answer =
         (TableAnswerElement)
-            new ReachFilterAnswerer(new ReachFilterQuestion(), batfish).answerDiff();
+            new ReachFilterAnswerer(
+                    ReachFilterQuestion.builder().setStart("enter(.*)").build(), batfish)
+                .answerDiff();
     assertThat(
         answer,
         hasRows(

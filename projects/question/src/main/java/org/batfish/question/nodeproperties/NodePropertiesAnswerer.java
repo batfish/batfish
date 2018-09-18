@@ -11,7 +11,6 @@ import javax.annotation.Nonnull;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.DisplayHints;
@@ -68,7 +67,7 @@ public class NodePropertiesAnswerer extends Answerer {
   }
 
   @Override
-  public AnswerElement answer() {
+  public TableAnswerElement answer() {
     NodePropertiesQuestion question = (NodePropertiesQuestion) _question;
     Map<String, Configuration> configurations = _batfish.loadConfigurations();
     Set<String> nodes = question.getNodes().getMatchingNodes(_batfish);

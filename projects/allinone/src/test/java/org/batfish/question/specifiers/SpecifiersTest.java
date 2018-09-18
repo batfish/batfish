@@ -14,7 +14,6 @@ import java.io.IOException;
 import java.util.SortedMap;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
@@ -45,6 +44,8 @@ public class SpecifiersTest {
 
   private InterfaceLocation _interfaceLocation;
 
+  private static final Ip INTERFACE_IP = new Ip("10.0.0.0");
+
   @Before
   public void setup() throws IOException {
     NetworkFactory nf = new NetworkFactory();
@@ -56,7 +57,7 @@ public class SpecifiersTest {
         nf.interfaceBuilder()
             .setVrf(vrf)
             .setOwner(c)
-            .setAddress(new InterfaceAddress(new Ip("10.0.0.0"), Prefix.MAX_PREFIX_LENGTH))
+            .setAddress(new InterfaceAddress(INTERFACE_IP, Prefix.MAX_PREFIX_LENGTH))
             .build();
     _interfaceLocation = new InterfaceLocation(iface.getOwner().getHostname(), iface.getName());
     _configs = ImmutableSortedMap.of(c.getHostname(), c);
@@ -64,7 +65,7 @@ public class SpecifiersTest {
   }
 
   @Test
-  public void testIpSpaceNoInputQuery() {
+  public void testIpSpaceDefault() {
     SpecifiersQuestion question = new SpecifiersQuestion(QueryType.IP_SPACE);
 
     AnswerElement answer = new SpecifiersAnswerer(question, _batfish).answer();
@@ -78,7 +79,7 @@ public class SpecifiersTest {
             Matchers.contains(
                 allOf(
                     hasColumn(
-                        COL_IP_SPACE, equalTo(EmptyIpSpace.INSTANCE.toString()), Schema.STRING),
+                        COL_IP_SPACE, equalTo(INTERFACE_IP.toIpSpace().toString()), Schema.STRING),
                     hasColumn(
                         COL_LOCATIONS,
                         equalTo(ImmutableSet.of(_interfaceLocation).toString()),

@@ -4,6 +4,7 @@ import static org.batfish.datamodel.matchers.FlowMatchers.hasDstIp;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasIngressInterface;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasIngressNode;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasIngressVrf;
+import static org.batfish.datamodel.matchers.FlowMatchers.hasIpProtocol;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasSrcIp;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasTag;
 import static org.batfish.datamodel.matchers.FlowTraceMatchers.hasDisposition;
@@ -15,6 +16,7 @@ import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.everyItem;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.nullValue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
@@ -30,19 +32,19 @@ import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessListLine;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.NetworkFactory;
+import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
-import org.batfish.specifier.NameRegexInterfaceLinkLocationSpecifierFactory;
-import org.batfish.specifier.NodeNameRegexInterfaceLinkLocationSpecifierFactory;
-import org.batfish.specifier.NodeNameRegexInterfaceLocationSpecifierFactory;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 
 /** End-to-end tests of {@link TracerouteQuestion}. */
@@ -63,6 +65,7 @@ public class TracerouteTest {
   private static final String VRF = "default";
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @Rule public ExpectedException thrown = ExpectedException.none();
 
   private Batfish _batfish;
 
@@ -80,9 +83,9 @@ public class TracerouteTest {
 
   @Test
   public void testGetFlows_interfaceSource() {
-    TracerouteQuestion question = new TracerouteQuestion();
-    question.setSourceLocationSpecifierFactory(NodeNameRegexInterfaceLocationSpecifierFactory.NAME);
-    question.setSourceLocationSpecifierInput("node1");
+    TracerouteQuestion question =
+        new TracerouteQuestion(
+            false, "node1", PacketHeaderConstraints.builder().setDstIp("2.2.2.2").build());
 
     TracerouteAnswerer answerer = new TracerouteAnswerer(question, _batfish);
     Set<Flow> flows = answerer.getFlows(TAG);
@@ -110,17 +113,28 @@ public class TracerouteTest {
   }
 
   @Test
+  public void testGetFlows_interfaceLinkSourceNoSourceIp() {
+    TracerouteQuestion question =
+        new TracerouteQuestion(
+            false, "enter(node1)", PacketHeaderConstraints.builder().setDstIp("2.2.2.2").build());
+
+    TracerouteAnswerer answerer = new TracerouteAnswerer(question, _batfish);
+    thrown.expect(IllegalArgumentException.class);
+    answerer.getFlows(TAG);
+  }
+
+  @Test
   public void testGetFlows_interfaceLinkSource() {
-    TracerouteQuestion question = new TracerouteQuestion();
-    question.setSourceLocationSpecifierFactory(
-        NodeNameRegexInterfaceLinkLocationSpecifierFactory.NAME);
-    question.setSourceLocationSpecifierInput("node1");
+    TracerouteQuestion question =
+        new TracerouteQuestion(
+            false,
+            "enter(node1)",
+            PacketHeaderConstraints.builder().setSrcIp("1.1.1.0").setDstIp("2.2.2.2").build());
 
     TracerouteAnswerer answerer = new TracerouteAnswerer(question, _batfish);
     Set<Flow> flows = answerer.getFlows(TAG);
 
     // neither interfaces have networks for which link (host) IPs can be inferred
-    String ingressVrf = null;
     assertThat(flows, hasSize(2));
     assertThat(
         flows,
@@ -128,8 +142,9 @@ public class TracerouteTest {
             allOf(
                 hasIngressInterface(LOOPBACK),
                 hasIngressNode("node1"),
-                hasIngressVrf(ingressVrf),
-                hasSrcIp(Ip.ZERO),
+                hasIngressVrf(nullValue()),
+                hasSrcIp(new Ip("1.1.1.0")),
+                hasIpProtocol(IpProtocol.UDP),
                 hasTag(TAG))));
     assertThat(
         flows,
@@ -137,17 +152,19 @@ public class TracerouteTest {
             allOf(
                 hasIngressInterface(FAST_ETHERNET),
                 hasIngressNode("node1"),
-                hasIngressVrf(ingressVrf),
-                hasSrcIp(Ip.ZERO),
+                hasIngressVrf(nullValue()),
+                hasSrcIp(new Ip("1.1.1.0")),
+                hasIpProtocol(IpProtocol.UDP),
                 hasTag(TAG))));
   }
 
   @Test
   public void testGetFlows_dst() {
-    TracerouteQuestion question = new TracerouteQuestion();
-    question.setDst("node2");
-    question.setSourceLocationSpecifierFactory(NameRegexInterfaceLinkLocationSpecifierFactory.NAME);
-    question.setSourceLocationSpecifierInput(LOOPBACK);
+    TracerouteQuestion question =
+        new TracerouteQuestion(
+            false,
+            String.format("%s[%s]", NODE1, LOOPBACK),
+            PacketHeaderConstraints.builder().setDstIp("ofLocation(node2)").build());
 
     TracerouteAnswerer answerer = new TracerouteAnswerer(question, _batfish);
     Set<Flow> flows = answerer.getFlows(TAG);
@@ -173,7 +190,6 @@ public class TracerouteTest {
 
     // destination interface
     nf.interfaceBuilder()
-        .setActive(true)
         .setAddress(new InterfaceAddress("1.1.1.0/31"))
         .setOwner(c1)
         .setOutgoingFilter(
@@ -192,10 +208,9 @@ public class TracerouteTest {
     SortedMap<String, Configuration> configs = aclNetwork();
     Batfish batfish = BatfishTestUtils.getBatfish(configs, _folder);
     batfish.computeDataPlane(false);
+    PacketHeaderConstraints header = PacketHeaderConstraints.builder().setDstIp("1.1.1.1").build();
 
-    TracerouteQuestion question = new TracerouteQuestion();
-    question.setDst("1.1.1.1");
-    question.setSourceLocationSpecifierInput(".*");
+    TracerouteQuestion question = new TracerouteQuestion(false, ".*", header);
 
     // without ignoreAcls we get DENIED_OUT
     TracerouteAnswerer answerer = new TracerouteAnswerer(question, batfish);
@@ -210,7 +225,8 @@ public class TracerouteTest {
                 Schema.set(Schema.FLOW_TRACE))));
 
     // with ignoreAcls we get NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
-    question.setIgnoreAcls(true);
+    question = new TracerouteQuestion(true, ".*", header);
+    answerer = new TracerouteAnswerer(question, batfish);
     answer = (TableAnswerElement) answerer.answer();
     assertThat(answer.getRows().getData(), hasSize(1));
     assertThat(

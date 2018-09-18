@@ -14,6 +14,7 @@ import org.batfish.datamodel.TestrigMetadata;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.pojo.Topology;
 import org.batfish.storage.FileBasedStorage;
+import org.batfish.storage.StorageProvider;
 import org.junit.rules.TemporaryFolder;
 
 public final class WorkMgrTestUtils {
@@ -46,5 +47,13 @@ public final class WorkMgrTestUtils {
             .getdirTestrig(container, testrig)
             .resolve(BfConsts.RELPATH_TESTRIG_POJO_TOPOLOGY_PATH),
         BatfishObjectMapper.mapper().writeValueAsString(topology));
+  }
+
+  public static void initWorkManager(StorageProvider storage) {
+    BatfishLogger logger = new BatfishLogger("debug", false);
+    Main.mainInit(new String[] {});
+    Main.setLogger(logger);
+    Main.initAuthorizer();
+    Main.setWorkMgr(new WorkMgr(Main.getSettings(), logger, storage));
   }
 }

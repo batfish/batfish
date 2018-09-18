@@ -139,8 +139,7 @@ public class VirtualRouterTest {
   private static void addInterfaces(
       Configuration c, Map<String, InterfaceAddress> interfaceAddresses) {
     NetworkFactory nf = new NetworkFactory();
-    Interface.Builder ib =
-        nf.interfaceBuilder().setActive(true).setOwner(c).setVrf(c.getDefaultVrf());
+    Interface.Builder ib = nf.interfaceBuilder().setOwner(c).setVrf(c.getDefaultVrf());
     interfaceAddresses.forEach(
         (ifaceName, address) ->
             ib.setName(ifaceName).setAddress(address).setBandwidth(100d).build());
@@ -766,7 +765,7 @@ public class VirtualRouterTest {
     Vrf vrf1 = nf.vrfBuilder().setName(DEFAULT_VRF_NAME).setOwner(c1).build();
     Vrf vrf2 = nf.vrfBuilder().setName(DEFAULT_VRF_NAME).setOwner(c2).build();
 
-    Interface.Builder ib = nf.interfaceBuilder();
+    Interface.Builder ib = nf.interfaceBuilder().setActive(false);
     ib.setAddress(new InterfaceAddress("1.1.1.1/30")).setOwner(c1).build();
     ib.setAddress(new InterfaceAddress("1.1.1.2/30")).setOwner(c2).build();
 
@@ -861,7 +860,7 @@ public class VirtualRouterTest {
             .setLevel1(isisInterfaceLevelSettings)
             .setLevel2(isisInterfaceLevelSettings)
             .build();
-    Interface.Builder ib = nf.interfaceBuilder().setActive(true);
+    Interface.Builder ib = nf.interfaceBuilder();
 
     Configuration c1 = cb.build();
     Vrf v1 = vb.setOwner(c1).build();

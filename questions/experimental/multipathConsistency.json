@@ -1,0 +1,15 @@
+{
+  "class": "org.batfish.question.multipath.MultipathConsistencyQuestion",
+  "differential": false,
+  "instance": {
+    "description": "Validate multipath consistency.",
+    "instanceName": "multipathConsistency",
+    "longDescription": "Finds flows that are treated differently by different paths in the presence of multipath routing",
+    "tags": [
+      "dataPlane",
+      "reachability",
+      "multipath consistency"
+    ],
+    "variables": {}
+  }
+}
